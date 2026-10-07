@@ -151,3 +151,39 @@
     bubbles.appendChild(b);
   }
 })();
+
+// --- Nouvelle version : le hub vérifie version.txt et propose de recharger -------------------------
+// (le profil choisi et le thème restent enregistrés sur l'appareil)
+(function () {
+  var meta = document.querySelector('meta[name="hub-version"]');
+  var current = meta ? meta.content : '';
+  if (!current || current === '__VERSION__') return; // copie locale, pas encore mise en ligne
+  var shown = false;
+
+  function show() {
+    if (shown) return;
+    shown = true;
+    var bar = document.createElement('div');
+    bar.className = 'update-bar';
+    bar.setAttribute('role', 'status');
+    bar.innerHTML = '<span><strong>Nouvelle version du hub</strong><br>Mettez à jour, vos choix sont gardés.</span>' +
+      '<button type="button">Mettre à jour</button>';
+    bar.querySelector('button').addEventListener('click', function () {
+      this.textContent = 'Un instant…';
+      this.disabled = true;
+      location.reload();
+    });
+    document.body.appendChild(bar);
+  }
+
+  function check() {
+    fetch('version.txt?t=' + Date.now(), { cache: 'no-store' })
+      .then(function (r) { return r.ok ? r.text() : ''; })
+      .then(function (v) { v = (v || '').trim(); if (v && v !== current) show(); })
+      .catch(function () { /* hors ligne : on réessaiera */ });
+  }
+
+  check();
+  document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') check(); });
+  setInterval(check, 10 * 60 * 1000);
+})();
