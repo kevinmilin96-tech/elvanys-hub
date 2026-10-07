@@ -99,13 +99,19 @@
     }).join('');
   }
 
+  // Lien vers une application, avec l'adresse du hub : l'application affiche alors « Espace magasin » pour revenir ici.
+  function appLink(url) {
+    var back = location.href.split('#')[0];
+    return url + (url.indexOf('?') === -1 ? '?' : '&') + 'hub=' + encodeURIComponent(back);
+  }
+
   function render() {
     var current = profils.find(function (p) { return p.id === profil; });
     $('#profile-label').textContent = current ? (current.court || current.nom) : 'Choisir mon profil';
     var apps = (ent.applications || []).filter(function (a) { return !profil || a.pour.indexOf(profil) !== -1; });
     $('#apps-note').textContent = current ? 'Profil : ' + current.nom : 'Tous les profils';
     var html = apps.map(function (a, i) {
-      return '<a class="tile tone-' + esc(a.couleur || 'principale') + '" href="' + esc(a.url) + '" style="--i:' + i + '">' +
+      return '<a class="tile tone-' + esc(a.couleur || 'principale') + '" href="' + esc(appLink(a.url)) + '" style="--i:' + i + '">' +
         '<span class="tile-ico">' + (ICONS[a.icone] || ICONS.bientot) + '</span>' +
         '<span class="tile-name">' + tileName(a) + '</span>' +
         '<span class="tile-desc">' + esc(a.description) + '</span>' +
