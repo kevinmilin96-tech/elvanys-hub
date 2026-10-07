@@ -31,7 +31,7 @@ window.HUB_ENTREPRISES = {
         description: 'Questionnaires anonymes, quiz et défis d’équipe.',
         url: 'https://demo-boost.elvanys.fr',
         icone: 'boost',
-        couleur: 'accent',
+        couleur: 'boost',
         pour: ['collaborateur', 'direction'],
         public: 'Tous les collaborateurs',
       },

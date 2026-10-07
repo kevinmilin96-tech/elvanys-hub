@@ -77,7 +77,7 @@
 
   // --- Icônes des applications (traits fins, comme les tuiles de la maquette) -------------------
   var ICONS = {
-    boost: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="24" cy="24" r="20"/><circle cx="24" cy="24" r="13.5"/><circle cx="24" cy="24" r="7"/></svg>',
+    boost: '<svg viewBox="0 0 48 48" fill="none" stroke-width="2.2" aria-hidden="true"><circle cx="24" cy="24" r="21" stroke="#5fb84a"/><circle cx="24" cy="24" r="16.5" stroke="#f7862a"/><circle cx="24" cy="24" r="12" stroke="#2a7fc1"/><circle cx="24" cy="24" r="7.5" stroke="#e5262c"/><circle cx="24" cy="24" r="3" fill="#6b2bd9" stroke="none"/></svg>',
     vigilys: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><rect x="10" y="10" width="28" height="28"/><path d="M24 4 L44 24 L24 44 L4 24 Z"/><circle cx="24" cy="24" r="8"/></svg>',
     bientot: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="24" cy="17" r="10"/><circle cx="17" cy="29" r="10"/><circle cx="31" cy="29" r="10"/></svg>',
   };
@@ -90,6 +90,15 @@
 
   function esc(s) { return String(s).replace(/[&<>"']/g, function (ch) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]; }); }
 
+  // Couleurs de Boost : une par lettre (Bien-être, Organisation, Optimisation, Sécurité, Travail)
+  var BOOST_COLORS = ['#5fb84a', '#f7862a', '#2a7fc1', '#e5262c', '#6b2bd9'];
+  function tileName(a) {
+    if (a.couleur !== 'boost') return esc(a.nom);
+    return String(a.nom).toUpperCase().split('').map(function (ch, i) {
+      return '<span style="color:' + BOOST_COLORS[i % BOOST_COLORS.length] + '">' + esc(ch) + '</span>';
+    }).join('');
+  }
+
   function render() {
     var current = profils.find(function (p) { return p.id === profil; });
     $('#profile-label').textContent = current ? (current.court || current.nom) : 'Choisir mon profil';
@@ -98,7 +107,7 @@
     var html = apps.map(function (a, i) {
       return '<a class="tile tone-' + esc(a.couleur || 'principale') + '" href="' + esc(a.url) + '" style="--i:' + i + '">' +
         '<span class="tile-ico">' + (ICONS[a.icone] || ICONS.bientot) + '</span>' +
-        '<span class="tile-name">' + esc(a.nom) + '</span>' +
+        '<span class="tile-name">' + tileName(a) + '</span>' +
         '<span class="tile-desc">' + esc(a.description) + '</span>' +
         '<span class="tile-foot"><span class="tile-chip">' + esc(a.public || '') + '</span>' +
         '<span class="tile-go">Ouvrir <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></span>' +

@@ -169,3 +169,10 @@ a.tile:focus-visible { outline: 3px solid var(--tone); outline-offset: 3px; }
 }
 .help a { color: var(--brand); font-weight: 800; text-decoration: underline; text-underline-offset: 3px; overflow-wrap: anywhere; }
 :root[data-theme="dark"] .help a { color: var(--accent); }
+
+/* Tuile Boost : les couleurs du logo Boost plutôt que l'orange du magasin */
+.tile.tone-boost { --tone: #2a7fc1; }
+.tile.tone-boost .tile-name { letter-spacing: 1px; text-shadow: 0 2px 0 rgba(0, 0, 0, .06); }
+.tile.tone-boost .tile-go { color: #6b2bd9; }
+:root[data-theme="dark"] .tile.tone-boost { --tone: #5aa9e6; }
+:root[data-theme="dark"] .tile.tone-boost .tile-go { color: #a78bfa; }
