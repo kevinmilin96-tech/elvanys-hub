@@ -24,8 +24,31 @@
   $('#societe').textContent = ent.societe || '';
   $('#accueil').textContent = ent.accueil || '';
   $('#contact').textContent = ent.contact || '';
+  loadContact();
   if (ent.pastille) { $('#pastille').src = ent.pastille; } else { $('#pastille').remove(); }
   $('#logo').alt = ent.nom;
+
+  // --- Contact « Besoin d'aide ? » : réglé dans Vigilys (Paramètres > Hub du magasin) ----------
+  // Sans réponse du serveur (fichier ouvert en local, coupure), le message de la fiche reste affiché.
+  function loadContact() {
+    if (!ent.contactApi || !/^https?:$/.test(location.protocol) || !window.fetch) return;
+    fetch(ent.contactApi, { cache: 'no-store' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (c) {
+        if (!c) return;
+        var name = [c.prenom, c.nom].filter(Boolean).join(' ');
+        if (!name && !c.email) return;
+        var el = $('#contact');
+        el.textContent = 'Contactez ' + (name || 'nous') + (c.email ? ' : ' : '');
+        if (c.email) {
+          var a = document.createElement('a');
+          a.href = 'mailto:' + c.email;
+          a.textContent = c.email;
+          el.appendChild(a);
+        }
+      })
+      .catch(function () { /* message par défaut conservé */ });
+  }
 
   var date = new Date();
   var h = date.getHours();
@@ -69,7 +92,7 @@
 
   function render() {
     var current = profils.find(function (p) { return p.id === profil; });
-    $('#profile-label').textContent = current ? current.nom : 'Choisir mon profil';
+    $('#profile-label').textContent = current ? (current.court || current.nom) : 'Choisir mon profil';
     var apps = (ent.applications || []).filter(function (a) { return !profil || a.pour.indexOf(profil) !== -1; });
     $('#apps-note').textContent = current ? 'Profil : ' + current.nom : 'Tous les profils';
     var html = apps.map(function (a, i) {

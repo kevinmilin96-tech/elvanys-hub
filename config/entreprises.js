@@ -1,6 +1,7 @@
 // Hub Elvanys — une fiche par entreprise : identité visuelle, profils et applications proposées.
 // L'entreprise affichée est choisie par l'adresse (blaye.elvanys.fr → « blaye ») ou par ?e=blaye.
 // Les profils servent seulement à trier les tuiles : chaque application garde sa propre connexion.
+// « court » (facultatif) : nom abrégé du profil pour le bouton en haut de page.
 
 window.HUB_ENTREPRISES = {
   blaye: {
@@ -17,9 +18,10 @@ window.HUB_ENTREPRISES = {
       sombre: { principale: '#4ea3e6', accent: '#f4a245' },
     },
     contact: 'Une question ? Adressez-vous à l’accueil du magasin ou à votre responsable.',
+    contactApi: '/api/hub/contact', // contact réglé dans Vigilys (Paramètres > Hub du magasin)
     profils: [
       { id: 'collaborateur', nom: 'Collaborateur', detail: 'Salarié du magasin' },
-      { id: 'agent', nom: 'Agent de sécurité', detail: 'Société de sécurité' },
+      { id: 'agent', nom: 'Agent de sécurité / Agent de maintenance', court: 'Agent', detail: 'Sécurité et maintenance du site' },
       { id: 'direction', nom: 'Direction', detail: 'Direction et encadrement' },
     ],
     applications: [
@@ -41,7 +43,7 @@ window.HUB_ENTREPRISES = {
         icone: 'vigilys',
         couleur: 'principale',
         pour: ['agent', 'direction'],
-        public: 'Sécurité et direction',
+        public: 'Sécurité, maintenance et direction',
       },
     ],
   },

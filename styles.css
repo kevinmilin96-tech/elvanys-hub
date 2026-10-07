@@ -167,3 +167,5 @@ a.tile:focus-visible { outline: 3px solid var(--tone); outline-offset: 3px; }
   .bubbles span, .tile { animation: none; }
   .toggle-knob, .tile { transition: none; }
 }
+.help a { color: var(--brand); font-weight: 800; text-decoration: underline; text-underline-offset: 3px; overflow-wrap: anywhere; }
+:root[data-theme="dark"] .help a { color: var(--accent); }
