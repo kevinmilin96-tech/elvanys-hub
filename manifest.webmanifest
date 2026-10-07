@@ -1,0 +1,11 @@
+{
+  "name": "Espace magasin",
+  "short_name": "Espace",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f2f6fb",
+  "theme_color": "#0e70b5",
+  "icons": [
+    { "src": "assets/entreprises/blaye/leclerc-pastille.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}
