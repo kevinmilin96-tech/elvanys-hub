@@ -72,9 +72,10 @@ body {
 .hero p { margin: 0; max-width: 460px; font-size: 17px; font-weight: 600; opacity: .92; line-height: 1.45; }
 .hero-logo {
   position: relative; flex: 0 1 300px; width: 300px; max-width: 100%; height: auto;
-  padding: 16px 20px; border-radius: 22px; background: #fff; box-shadow: 0 14px 30px rgba(0, 0, 0, .15);
+  /* logo détouré posé sur le bandeau : blanc sur le bleu, doré en sombre */
+  filter: brightness(0) invert(1) drop-shadow(0 6px 14px rgba(0, 0, 0, .18));
 }
-:root[data-theme="dark"] .hero-logo { background: transparent; box-shadow: none; padding: 0; }
+:root[data-theme="dark"] .hero-logo { filter: none; }
 .bubbles { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
 .bubbles span {
   position: absolute; bottom: -70px; border-radius: 50%;
@@ -152,7 +153,7 @@ a.tile:focus-visible { outline: 3px solid var(--tone); outline-offset: 3px; }
   .hero { border-radius: 24px; padding: 22px; gap: 18px; }
   .hero h1 { font-size: 40px; }
   .hero p { font-size: 15px; }
-  .hero-logo { order: -1; flex: 0 0 auto; width: 190px; padding: 10px 14px; border-radius: 16px; }
+  .hero-logo { order: -1; flex: 0 0 auto; width: 190px; }
   .hero::after { width: 200px; height: 200px; right: -70px; bottom: -80px; }
   .tiles { grid-template-columns: 1fr; gap: 14px; }
   .tile { min-height: 0; padding: 20px; display: grid; grid-template-columns: 56px 1fr; column-gap: 16px; row-gap: 4px; align-items: center; }
