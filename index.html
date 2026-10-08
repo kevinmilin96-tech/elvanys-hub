@@ -28,9 +28,9 @@
         </div>
       </div>
       <div class="top-actions">
-        <button type="button" class="profile-chip" id="profile-chip" aria-haspopup="dialog">
+        <button type="button" class="profile-chip" id="profile-chip" aria-haspopup="dialog" hidden>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>
-          <span id="profile-label">Choisir mon profil</span>
+          <span id="profile-label">Mon compte</span>
         </button>
         <button type="button" class="toggle" id="theme-toggle" role="switch" aria-label="Changer de thème (clair ou sombre)">
           <svg class="toggle-ico sun" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
@@ -50,10 +50,49 @@
       <img class="hero-logo" id="logo" alt="">
     </section>
 
-    <section aria-labelledby="apps-title">
+    <!-- Connexion / demande de compte (affichée tant qu'on n'est pas connecté) -->
+    <section class="auth" id="auth" aria-labelledby="auth-title" hidden>
+      <div class="auth-card">
+        <div class="auth-tabs" role="tablist">
+          <button type="button" role="tab" class="auth-tab is-on" data-tab="login" aria-selected="true">Se connecter</button>
+          <button type="button" role="tab" class="auth-tab" data-tab="signup" aria-selected="false">Créer un compte</button>
+        </div>
+        <h2 id="auth-title" class="sr-only">Connexion</h2>
+        <form class="auth-form" id="login-form" novalidate>
+          <label>Adresse e-mail<input type="email" name="email" autocomplete="username" required></label>
+          <label>Mot de passe
+            <span class="pwd"><input type="password" name="password" autocomplete="current-password" required><button type="button" class="pwd-eye" aria-label="Afficher le mot de passe">👁</button></span>
+          </label>
+          <p class="auth-msg" role="alert"></p>
+          <button type="submit" class="btn-main">Se connecter</button>
+          <p class="auth-hint">Mot de passe oublié ? Demandez à votre responsable un mot de passe provisoire.</p>
+        </form>
+        <form class="auth-form" id="signup-form" novalidate hidden>
+          <div class="auth-row">
+            <label>Prénom<input name="prenom" autocomplete="given-name" maxlength="60" required></label>
+            <label>Nom<input name="nom" autocomplete="family-name" maxlength="60"></label>
+          </div>
+          <label>Adresse e-mail<input type="email" name="email" autocomplete="email" required></label>
+          <label>Mot de passe <small>(8 caractères minimum)</small>
+            <span class="pwd"><input type="password" name="password" autocomplete="new-password" minlength="8" required><button type="button" class="pwd-eye" aria-label="Afficher le mot de passe">👁</button></span>
+          </label>
+          <p class="auth-msg" role="alert"></p>
+          <button type="submit" class="btn-main">Envoyer ma demande</button>
+          <p class="auth-hint">Votre compte sera activé après validation par un responsable du magasin.</p>
+        </form>
+        <div class="auth-done" id="auth-done" hidden>
+          <div class="auth-done-ico" aria-hidden="true">⏳</div>
+          <h3 id="auth-done-title">Demande envoyée</h3>
+          <p id="auth-done-text">Un responsable du magasin va valider votre compte. Vous pourrez ensuite vous connecter.</p>
+          <button type="button" class="btn-soft" id="auth-back">Retour à la connexion</button>
+        </div>
+      </div>
+    </section>
+
+    <section aria-labelledby="apps-title" id="apps" hidden>
       <div class="section-head">
         <h2 id="apps-title">Vos applications</h2>
-        <span class="section-note" id="apps-note"></span>
+        <button type="button" class="admin-btn" id="admin-btn" hidden>Comptes <span class="admin-badge" id="admin-badge" hidden></span></button>
       </div>
       <div class="tiles" id="tiles"></div>
     </section>
@@ -67,19 +106,55 @@
     </section>
 
     <footer class="foot">
-      <span>Chaque application garde sa propre connexion.</span>
+      <span>Un compte pour toutes les applications du magasin.</span>
       <span>Elvanys</span>
     </footer>
   </div>
 
-  <dialog class="sheet" id="profiles" aria-labelledby="profiles-title">
-    <form method="dialog" class="sheet-inner">
-      <h2 id="profiles-title">Qui êtes-vous ?</h2>
-      <p>Pour afficher les applications qui vous concernent. Vous pourrez changer à tout moment.</p>
-      <div class="profile-list" id="profile-list"></div>
-      <button type="submit" class="sheet-close" value="cancel">Plus tard</button>
-    </form>
+  <!-- Mon compte -->
+  <dialog class="sheet" id="account-sheet" aria-labelledby="account-title">
+    <div class="sheet-inner">
+      <h2 id="account-title">Mon compte</h2>
+      <div class="account-card" id="account-card"></div>
+      <details class="account-pwd">
+        <summary>Changer mon mot de passe</summary>
+        <form class="auth-form" id="password-form" novalidate>
+          <label>Mot de passe actuel<input type="password" name="current" autocomplete="current-password" required></label>
+          <label>Nouveau mot de passe <small>(8 caractères minimum)</small><input type="password" name="password" autocomplete="new-password" minlength="8" required></label>
+          <p class="auth-msg" role="alert"></p>
+          <button type="submit" class="btn-main">Enregistrer</button>
+        </form>
+      </details>
+      <button type="button" class="btn-danger-soft" id="logout-btn">Se déconnecter</button>
+      <button type="button" class="sheet-close" data-close>Fermer</button>
+    </div>
   </dialog>
+
+  <!-- Administration des comptes (administrateurs) -->
+  <dialog class="sheet sheet-wide" id="admin-sheet" aria-labelledby="admin-title">
+    <div class="sheet-inner">
+      <div class="admin-head">
+        <h2 id="admin-title">Comptes</h2>
+        <button type="button" class="sheet-x" data-close aria-label="Fermer">✕</button>
+      </div>
+      <div class="admin-filter" role="tablist" id="admin-filter">
+        <button type="button" class="is-on" data-filter="en_attente">En attente</button>
+        <button type="button" data-filter="valide">Validés</button>
+        <button type="button" data-filter="autres">Suspendus / refusés</button>
+      </div>
+      <div class="admin-list" id="admin-list"></div>
+    </div>
+  </dialog>
+
+  <!-- Ouverture automatique de l'application (accès direct) -->
+  <div class="direct" id="direct" hidden>
+    <div class="direct-card">
+      <div class="direct-spin" aria-hidden="true"></div>
+      <p id="direct-text">Ouverture…</p>
+      <button type="button" class="btn-soft" id="direct-stay">Rester sur l'espace magasin</button>
+    </div>
+  </div>
+
 
   <script src="config/entreprises.js?v=__VERSION__"></script>
   <script src="app.js?v=__VERSION__"></script>

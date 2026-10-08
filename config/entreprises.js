@@ -32,6 +32,7 @@ window.HUB_ENTREPRISES = {
         url: 'https://demo-boost.elvanys.fr',
         icone: 'boost',
         couleur: 'boost',
+        sso: true, // Boost lit le passe du hub (prénom affiché, pas de seconde connexion)
         pour: ['collaborateur', 'direction'],
         public: 'Tous les collaborateurs',
       },
