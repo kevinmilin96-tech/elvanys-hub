@@ -276,6 +276,7 @@
       busy(f, false);
       if (r.status === 200 && r.data.token) {
         setSession(r.data.token);
+        unlockAdmin();
         f.reset();
         enter(r.data.meta.account, 0, true);
         refreshMe(); // compteur des demandes (administrateurs)
@@ -530,10 +531,61 @@
     });
   });
 
-  $('#admin-btn').addEventListener('click', function () {
+  // --- Verrou de l'administration : mot de passe redemandé après 10 min sans activité ---
+  // La dernière activité est gardée sur l'appareil : rouvrir le hub le lendemain redemande le mot de passe.
+  var ADMIN_IDLE = 10 * 60 * 1000;
+  var ACTIVITY_KEY = 'hub_activity_' + id;
+  var lastActivity = Number(store.get(ACTIVITY_KEY)) || 0;
+  var savedAt = 0;
+  function markActivity() {
+    var now = Date.now();
+    if (now - lastActivity > ADMIN_IDLE) return; // déjà verrouillé : seule la confirmation rouvre
+    lastActivity = now;
+    if (now - savedAt > 15000) { savedAt = now; store.set(ACTIVITY_KEY, String(now)); }
+  }
+  function unlockAdmin() {
+    lastActivity = Date.now();
+    savedAt = lastActivity;
+    store.set(ACTIVITY_KEY, String(lastActivity));
+  }
+  function adminLocked() { return Date.now() - lastActivity > ADMIN_IDLE; }
+  ['pointerdown', 'keydown', 'scroll', 'touchstart'].forEach(function (ev) {
+    window.addEventListener(ev, markActivity, { passive: true, capture: true });
+  });
+  // Administration ouverte mais plus personne ne s'en sert : on la referme.
+  setInterval(function () {
+    if (adminLocked() && $('#admin-sheet').open) closeSheet($('#admin-sheet'));
+  }, 10000);
+
+  function openAdmin() {
     adminFilter = 'en_attente';
     openSheet($('#admin-sheet'));
     loadAdmin();
+  }
+  $('#admin-btn').addEventListener('click', function () {
+    if (!adminLocked()) { markActivity(); openAdmin(); return; }
+    var f = $('#admin-lock-form');
+    f.reset();
+    f.querySelector('.auth-msg').textContent = '';
+    openSheet($('#admin-lock'));
+  });
+  $('#admin-lock-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var f = e.target;
+    var msg = f.querySelector('.auth-msg');
+    if (!f.password.value) { msg.textContent = 'Indiquez votre mot de passe.'; return; }
+    busy(f, true);
+    api('POST', '/api/hub/login', { email: account.email, password: f.password.value }).then(function (r) {
+      busy(f, false);
+      if (r.status === 200 && r.data.token) {
+        setSession(r.data.token);
+        unlockAdmin();
+        closeSheet($('#admin-lock'));
+        openAdmin();
+      } else {
+        msg.textContent = r.status === 400 ? 'Mot de passe incorrect.' : (r.data.message || 'Vérification impossible.');
+      }
+    });
   });
 
   // --- Démarrage : session existante ? ---

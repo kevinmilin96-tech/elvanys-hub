@@ -284,3 +284,6 @@ a.tile:focus-visible { outline: 3px solid var(--tone); outline-offset: 3px; }
   .auth-row, .acc-fields { grid-template-columns: 1fr; }
   .acc-actions > * { flex: 1 1 auto; }
 }
+
+/* Verrou de l'administration */
+#admin-lock .admin-lock-text { margin: 0 0 12px; color: var(--muted, #5b6472); }
