@@ -40,7 +40,7 @@ window.HUB_ENTREPRISES = {
         id: 'vigilys',
         nom: 'Vigilys',
         description: 'Main courante, rondes, incidents et maintenance du site.',
-        url: 'https://demo-securlog.elvanys.fr',
+        url: 'https://demo-vigilys.elvanys.fr',
         icone: 'vigilys',
         couleur: 'principale',
         pour: ['agent', 'direction'],
