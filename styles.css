@@ -294,3 +294,8 @@ a.tile:focus-visible { outline: 3px solid var(--tone); outline-offset: 3px; }
 .journal-row p { margin: 4px 0 0; font-size: 15px; line-height: 1.4; }
 .journal-row ul { margin: 6px 0 0; padding-left: 18px; font-size: 14px; color: var(--muted); }
 .journal-date { font-size: 12px; font-weight: 800; color: var(--muted); }
+
+/* Mot de passe oublié : lien discret sous le bouton, texte d'introduction */
+.auth-link { align-self: center; padding: 6px 10px; border: 0; background: none; font: inherit; font-size: 14px; font-weight: 800; color: var(--brand); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.auth-link:focus-visible { outline: 3px solid var(--brand); outline-offset: 2px; border-radius: 8px; }
+.auth-lead { margin: 0; font-size: 15px; line-height: 1.45; color: var(--text); }

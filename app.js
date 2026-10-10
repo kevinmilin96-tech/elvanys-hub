@@ -93,9 +93,12 @@
   var stay = params.has('rester');
   // ?inscription : une appli (ex. l'Académie de Boost) envoie ici pour créer un compte
   var wantSignup = params.has('inscription');
-  if (stay || wantSignup) {
+  // ?reset=<jeton> : lien « mot de passe oublié » reçu par e-mail (retiré tout de suite de l'adresse)
+  var resetToken = params.get('reset') || '';
+  if (stay || wantSignup || resetToken) {
     params.delete('rester');
     params.delete('inscription');
+    params.delete('reset');
     var q = params.toString();
     history.replaceState(history.state, '', location.pathname + (q ? '?' + q : '') + location.hash);
   }
@@ -237,8 +240,17 @@
     });
     $('#login-form').hidden = tab !== 'login';
     $('#signup-form').hidden = tab !== 'signup';
+    $('#forgot-form').hidden = true;
+    $('#reset-form').hidden = true;
     $('#auth-done').hidden = true;
     document.querySelector('.auth-tabs').hidden = false;
+  }
+  // Écrans « mot de passe oublié » et « nouveau mot de passe » (sans les onglets)
+  function showAuthForm(id) {
+    ['#login-form', '#signup-form', '#forgot-form', '#reset-form', '#auth-done'].forEach(function (sel) { $(sel).hidden = sel !== id; });
+    document.querySelector('.auth-tabs').hidden = true;
+    var first = $(id).querySelector('input');
+    if (first) first.focus();
   }
   document.querySelectorAll('.auth-tab').forEach(function (b) {
     b.addEventListener('click', function () { switchTab(b.getAttribute('data-tab')); });
@@ -252,6 +264,8 @@
   function doneScreen(icon, title, text) {
     $('#login-form').hidden = true;
     $('#signup-form').hidden = true;
+    $('#forgot-form').hidden = true;
+    $('#reset-form').hidden = true;
     document.querySelector('.auth-tabs').hidden = true;
     document.querySelector('.auth-done-ico').textContent = icon;
     $('#auth-done-title').textContent = title;
@@ -303,6 +317,50 @@
         doneScreen('✅', 'Demande envoyée', 'Un responsable du magasin va valider votre compte. Vous pourrez ensuite vous connecter avec votre e-mail et votre mot de passe.');
       } else {
         msg.textContent = r.data.message || 'Envoi impossible.';
+      }
+    });
+  });
+
+  // --- Mot de passe oublié ---
+  $('#forgot-open').addEventListener('click', function () {
+    var mail = $('#login-form').email.value;
+    showAuthForm('#forgot-form');
+    if (mail) $('#forgot-form').email.value = mail;
+  });
+  document.querySelectorAll('[data-back-login]').forEach(function (b) {
+    b.addEventListener('click', function () { switchTab('login'); });
+  });
+  $('#forgot-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var f = e.target, msg = f.querySelector('.auth-msg');
+    msg.textContent = '';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email.value.trim())) { msg.textContent = 'Adresse e-mail invalide.'; return; }
+    busy(f, true);
+    api('POST', '/api/hub/password/forgot', { email: f.email.value }).then(function (r) {
+      busy(f, false);
+      if (r.status === 200) {
+        f.reset();
+        doneScreen('📧', 'Regardez vos e-mails', 'Si cette adresse correspond à un compte validé, un lien vient de partir. Il marche une seule fois, pendant 30 minutes. Pensez à regarder dans les indésirables.');
+      } else {
+        msg.textContent = r.data.message || 'Envoi impossible.';
+      }
+    });
+  });
+  $('#reset-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var f = e.target, msg = f.querySelector('.auth-msg');
+    msg.textContent = '';
+    if (f.password.value.length < 8) { msg.textContent = 'Mot de passe : 8 caractères minimum.'; return; }
+    if (f.password.value !== f.password2.value) { msg.textContent = 'Les deux mots de passe ne sont pas identiques.'; return; }
+    busy(f, true);
+    api('POST', '/api/hub/password/reset', { token: resetToken, password: f.password.value }).then(function (r) {
+      busy(f, false);
+      if (r.status === 200) {
+        resetToken = '';
+        f.reset();
+        doneScreen('🔑', 'Mot de passe changé', 'Vous pouvez maintenant vous connecter avec votre nouveau mot de passe.');
+      } else {
+        msg.textContent = r.data.message || 'Enregistrement impossible.';
       }
     });
   });
@@ -464,6 +522,7 @@
     droits: 'a modifié les droits de',
     mot_de_passe_provisoire: 'a donné un mot de passe provisoire à',
     mot_de_passe_modifie: 'a changé son mot de passe',
+    mot_de_passe_reinitialise: 'a choisi un nouveau mot de passe (lien reçu par e-mail)',
     suppression: 'a supprimé le compte de',
   };
   var FIELD_LABEL = { statut: 'Statut', profil: 'Profil', apps: 'Applications', acces_direct: 'Accès direct', admin: 'Administrateur' };
@@ -489,7 +548,7 @@
       $('#admin-list').innerHTML = '<p class="journal-note">Les 300 dernières actions. Le journal ne peut être ni modifié ni effacé depuis le hub.</p>' + r.data.map(function (l) {
         var who = l.actor ? shortName(l.actor) : (l.action === 'demande' ? shortName(l.target) : 'Sécurité');
         var verb = ACTION_LABEL[l.action] || l.action;
-        var target = (l.action === 'demande' || l.action === 'mot_de_passe_modifie') ? '' : ' ' + shortName(l.target);
+        var target = (l.action === 'demande' || l.action === 'mot_de_passe_modifie' || l.action === 'mot_de_passe_reinitialise') ? '' : ' ' + shortName(l.target);
         var det = Object.keys(l.details || {}).filter(function (k) { return FIELD_LABEL[k] && Array.isArray(l.details[k]); }).map(function (k) {
           return '<li>' + esc(FIELD_LABEL[k]) + ' : ' + esc(fieldValue(k, l.details[k][0])) + ' → <b>' + esc(fieldValue(k, l.details[k][1])) + '</b></li>';
         }).join('');
@@ -656,7 +715,11 @@
   }
 
   greet();
-  if (token) refreshMe();
+  if (resetToken) {
+    // Lien reçu par e-mail : on choisit le nouveau mot de passe (toutes les sessions tomberont ensuite)
+    show('auth');
+    showAuthForm('#reset-form');
+  } else if (token) refreshMe();
   else {
     show('auth');
     if (wantSignup) {
