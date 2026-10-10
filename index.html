@@ -16,6 +16,43 @@
     // Thème appliqué avant l'affichage (évite un flash)
     try { document.documentElement.dataset.theme = localStorage.getItem('hub_theme') || 'light'; } catch (e) { document.documentElement.dataset.theme = 'light'; }
   </script>
+    <script>
+      /* Navigateur trop ancien (avant Chrome 111 / Safari 16.2, début 2023) : l'affichage serait cassé.
+         On le dit clairement, avec la marche à suivre. Écrit en JavaScript ancien exprès. */
+      (function () {
+        try {
+          if (window.CSS && CSS.supports && CSS.supports('color', 'color-mix(in srgb, red, blue)')) return;
+          if (sessionStorage.getItem('vieux_navigateur_ok')) return;
+        } catch (e) { /* on affiche le message */ }
+        function show() {
+          var ua = navigator.userAgent;
+          var ios = /iPhone|iPad|iPod/.test(ua);
+          var android = /Android/.test(ua);
+          var how = ios
+            ? 'Mettez à jour votre iPhone ou iPad (Réglages, Général, Mise à jour logicielle), puis rouvrez l\'application.'
+            : android
+              ? 'Ouvrez le Play Store et mettez à jour « Chrome » et « Android System WebView », puis rouvrez l\'application.'
+              : 'Mettez à jour votre navigateur (Chrome, Edge, Firefox ou Safari), puis rouvrez cette page.';
+          var d = document.createElement('div');
+          d.setAttribute('role', 'alertdialog');
+          d.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;z-index:2147483647;background:#ffffff;color:#1d1b3a;font-family:Arial,Helvetica,sans-serif;padding:40px 20px;overflow:auto;text-align:center';
+          d.innerHTML = '<div style="max-width:420px;margin:0 auto">'
+            + '<div style="font-size:52px;line-height:1">&#128260;</div>'
+            + '<h1 style="font-size:23px;margin:16px 0 12px">Votre navigateur est trop ancien</h1>'
+            + '<p style="font-size:16px;line-height:1.5;margin:0 0 16px">Cette application a besoin d\'une version plus récente pour s\'afficher correctement.</p>'
+            + '<p style="font-size:16px;line-height:1.5;margin:0 0 24px;font-weight:bold">' + how + '</p>'
+            + (android ? '<a href="https://play.google.com/store/apps/details?id=com.android.chrome" style="display:block;padding:15px;border-radius:12px;background:#0e70b5;color:#ffffff;text-decoration:none;font-weight:bold;font-size:16px;margin-bottom:14px">Mettre à jour Chrome</a>' : '')
+            + '<button type="button" style="padding:12px;border:0;background:none;color:#5b5880;text-decoration:underline;font-size:15px">Continuer quand même (affichage abîmé)</button>'
+            + '</div>';
+          d.getElementsByTagName('button')[0].onclick = function () {
+            try { sessionStorage.setItem('vieux_navigateur_ok', '1'); } catch (e) { /* ignoré */ }
+            d.parentNode.removeChild(d);
+          };
+          document.body.appendChild(d);
+        }
+        if (document.body) show(); else document.addEventListener('DOMContentLoaded', show);
+      })();
+    </script>
 </head>
 <body>
   <div class="page">
