@@ -91,8 +91,11 @@
   var profils = ent.profils || [];
   var params = new URLSearchParams(location.search);
   var stay = params.has('rester');
-  if (stay) {
+  // ?inscription : une appli (ex. l'Académie de Boost) envoie ici pour créer un compte
+  var wantSignup = params.has('inscription');
+  if (stay || wantSignup) {
     params.delete('rester');
+    params.delete('inscription');
     var q = params.toString();
     history.replaceState(history.state, '', location.pathname + (q ? '?' + q : '') + location.hash);
   }
@@ -549,7 +552,14 @@
   }
 
   greet();
-  if (token) refreshMe(); else show('auth');
+  if (token) refreshMe();
+  else {
+    show('auth');
+    if (wantSignup) {
+      switchTab('signup');
+      setTimeout(function () { $('#signup-form').scrollIntoView({ block: 'start' }); }, 300);
+    }
+  }
 
   // --- Bulles (clin d'œil au logo du magasin) ---------------------------------------------------
   var bubbles = $('.bubbles');
