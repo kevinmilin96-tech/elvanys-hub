@@ -347,9 +347,10 @@
     });
   });
 
+  // Déconnexion partout : le serveur ferme aussi les sessions ouvertes dans les applis (Boost…).
   $('#logout-btn').addEventListener('click', function () {
     closeSheet($('#account-sheet'));
-    leave();
+    api('POST', '/api/hub/logout').then(function () { leave(); });
   });
 
   // --- Administration des comptes ---
@@ -407,8 +408,9 @@
       var f = b.getAttribute('data-filter');
       var n = adminList.filter(function (a) { return inFilter(a, f); }).length;
       b.classList.toggle('is-on', f === adminFilter);
-      b.textContent = FILTER_LABEL[f] + ' (' + n + ')';
+      b.textContent = f === 'journal' ? 'Journal' : FILTER_LABEL[f] + ' (' + n + ')';
     });
+    if (adminFilter === 'journal') { loadJournal(); return; }
     var list = adminList.filter(function (a) { return inFilter(a, adminFilter); });
     if (!list.length) {
       $('#admin-list').innerHTML = '<p class="admin-empty">' + (adminFilter === 'en_attente' ? 'Aucune demande en attente.' : 'Aucun compte ici.') + '</p>';
@@ -450,6 +452,56 @@
     var want = appsForProfil(e.target.value);
     card.querySelectorAll('input[name="apps"]').forEach(function (b) { b.checked = want.indexOf(b.value) !== -1; });
   });
+
+  // --- Journal : qui a fait quoi sur les comptes (lecture seule) ---
+  var ACTION_LABEL = {
+    demande: 'a demandé un compte',
+    validation: 'a validé le compte de',
+    reactivation: 'a réactivé le compte de',
+    refus: 'a refusé la demande de',
+    suspension: 'a suspendu le compte de',
+    remise_en_attente: 'a remis en attente le compte de',
+    droits: 'a modifié les droits de',
+    mot_de_passe_provisoire: 'a donné un mot de passe provisoire à',
+    mot_de_passe_modifie: 'a changé son mot de passe',
+    suppression: 'a supprimé le compte de',
+  };
+  var FIELD_LABEL = { statut: 'Statut', profil: 'Profil', apps: 'Applications', acces_direct: 'Accès direct', admin: 'Administrateur' };
+  function shortName(label) { return String(label || '').replace(/s*<[^>]*>$/, '') || '(compte supprimé)'; }
+  function fieldValue(k, v) {
+    if (k === 'admin') return v ? 'oui' : 'non';
+    if (k === 'statut') return STATUT_LABEL[v] || v;
+    if (k === 'apps') return v ? String(v).split(',').map(function (id) { var x = (ent.applications || []).filter(function (a) { return a.id === id; })[0]; return x ? x.nom : id; }).join(', ') : 'aucune';
+    if (k === 'profil') { var p = profils.filter(function (x) { return x.id === v; })[0]; return p ? p.nom : v; }
+    if (k === 'acces_direct' && v) { var ap = (ent.applications || []).filter(function (x) { return x.id === v; })[0]; return ap ? ap.nom : v; }
+    return v || 'non';
+  }
+  function fmtDateTime(v) {
+    var d = new Date(String(v || '').replace(' ', 'T'));
+    return isNaN(d) ? '' : d.toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  }
+  function loadJournal() {
+    $('#admin-list').innerHTML = '<p class="admin-empty">Chargement…</p>';
+    api('GET', '/api/hub/admin/audit').then(function (r) {
+      if (adminFilter !== 'journal') return;
+      if (r.status !== 200) { $('#admin-list').innerHTML = '<p class="admin-empty">' + esc(r.data.message || 'Journal indisponible.') + '</p>'; return; }
+      if (!r.data.length) { $('#admin-list').innerHTML = '<p class="admin-empty">Rien dans le journal pour le moment.</p>'; return; }
+      $('#admin-list').innerHTML = '<p class="journal-note">Les 300 dernières actions. Le journal ne peut être ni modifié ni effacé depuis le hub.</p>' + r.data.map(function (l) {
+        var who = l.actor ? shortName(l.actor) : (l.action === 'demande' ? shortName(l.target) : 'Sécurité');
+        var verb = ACTION_LABEL[l.action] || l.action;
+        var target = (l.action === 'demande' || l.action === 'mot_de_passe_modifie') ? '' : ' ' + shortName(l.target);
+        var det = Object.keys(l.details || {}).filter(function (k) { return FIELD_LABEL[k] && Array.isArray(l.details[k]); }).map(function (k) {
+          return '<li>' + esc(FIELD_LABEL[k]) + ' : ' + esc(fieldValue(k, l.details[k][0])) + ' → <b>' + esc(fieldValue(k, l.details[k][1])) + '</b></li>';
+        }).join('');
+        var line = l.action === 'compte_bloque'
+          ? '🔒 Compte de <b>' + esc(shortName(l.target)) + '</b> bloqué 15 min après 5 mots de passe faux'
+          : '<b>' + esc(who) + '</b> ' + esc(verb) + '<b>' + esc(target) + '</b>';
+        return '<div class="journal-row"><span class="journal-date">' + esc(fmtDateTime(l.created)) + '</span>' +
+          '<p>' + line + '</p>' +
+          (det ? '<ul>' + det + '</ul>' : '') + '</div>';
+      }).join('');
+    });
+  }
 
   $('#admin-filter').addEventListener('click', function (e) {
     var b = e.target.closest('button[data-filter]');

@@ -287,3 +287,10 @@ a.tile:focus-visible { outline: 3px solid var(--tone); outline-offset: 3px; }
 
 /* Verrou de l'administration */
 #admin-lock .admin-lock-text { margin: 0 0 12px; color: var(--muted, #5b6472); }
+
+/* Journal des actions sur les comptes */
+.journal-note { margin: 4px 0 8px; font-size: 13px; color: var(--muted); }
+.journal-row { padding: 12px 14px; border-radius: 14px; background: var(--soft); }
+.journal-row p { margin: 4px 0 0; font-size: 15px; line-height: 1.4; }
+.journal-row ul { margin: 6px 0 0; padding-left: 18px; font-size: 14px; color: var(--muted); }
+.journal-date { font-size: 12px; font-weight: 800; color: var(--muted); }
