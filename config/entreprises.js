@@ -1,5 +1,5 @@
 // Hub Elvanys — une fiche par entreprise : identité visuelle, profils et applications proposées.
-// L'entreprise affichée est choisie par l'adresse (blaye.elvanys.fr → « blaye ») ou par ?e=blaye.
+// L'entreprise affichée est choisie par l'adresse (blaye-hub.elvanys.fr → « blaye ») ou par ?e=blaye.
 // Les profils servent seulement à trier les tuiles : chaque application garde sa propre connexion.
 // « court » (facultatif) : nom abrégé du profil pour le bouton en haut de page.
 
@@ -29,7 +29,7 @@ window.HUB_ENTREPRISES = {
         id: 'boost',
         nom: 'Boost',
         description: 'Questionnaires anonymes, quiz et défis d’équipe.',
-        url: 'https://demo-boost.elvanys.fr',
+        url: 'https://blaye-boost.elvanys.fr',
         icone: 'boost',
         couleur: 'boost',
         sso: true, // Boost lit le passe du hub (prénom affiché, pas de seconde connexion)
@@ -40,7 +40,7 @@ window.HUB_ENTREPRISES = {
         id: 'vigilys',
         nom: 'Vigilys',
         description: 'Main courante, rondes, incidents et maintenance du site.',
-        url: 'https://demo-vigilys.elvanys.fr',
+        url: 'https://blaye-vigilys.elvanys.fr',
         icone: 'vigilys',
         couleur: 'principale',
         pour: ['agent', 'direction'],
@@ -49,5 +49,12 @@ window.HUB_ENTREPRISES = {
     ],
   },
 };
+
+// Démo : même fiche que Blaye, avec les adresses de démonstration.
+window.HUB_ENTREPRISES.demo = Object.assign({}, window.HUB_ENTREPRISES.blaye, {
+  applications: window.HUB_ENTREPRISES.blaye.applications.map(function (a) {
+    return Object.assign({}, a, { url: a.url.replace('://blaye-', '://demo-') });
+  }),
+});
 
 window.HUB_ENTREPRISE_PAR_DEFAUT = 'blaye';
