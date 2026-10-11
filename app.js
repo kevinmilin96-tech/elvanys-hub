@@ -491,6 +491,7 @@
     return api('GET', '/api/hub/admin/accounts').then(function (r) {
       if (r.status !== 200) { $('#admin-list').innerHTML = '<p class="admin-empty">' + esc(r.data.message || 'Liste indisponible.') + '</p>'; return; }
       adminList = r.data;
+      refreshCandCount();
       renderAdmin();
     });
   }
@@ -518,6 +519,7 @@
       '<label>Accès direct<select name="acces_direct">' + directOpts + '</select></label>' +
       '<label class="chk"><input type="checkbox" name="admin"' + (a.admin ? ' checked' : '') + (a.id === account.id ? ' disabled' : '') + '> Administrateur (gère les comptes)</label>' +
       '<label class="chk"><input type="checkbox" name="moderateur"' + (a.moderateur ? ' checked' : '') + '> Modérateur (relit les propositions des salariés ; à désigner avec la direction et le CSE)</label>' +
+      '<label class="chk"><input type="checkbox" name="createur"' + (a.createur ? ' checked' : '') + '> Créateur (crée des quiz dans le Studio ; sur candidature)</label>' +
       '</div>';
   }
 
@@ -526,9 +528,10 @@
       var f = b.getAttribute('data-filter');
       var n = adminList.filter(function (a) { return inFilter(a, f); }).length;
       b.classList.toggle('is-on', f === adminFilter);
-      b.textContent = f === 'journal' ? 'Journal' : FILTER_LABEL[f] + ' (' + n + ')';
+      b.textContent = f === 'journal' ? 'Journal' : f === 'candidatures' ? 'Candidatures' + (candPending ? ' (' + candPending + ')' : '') : FILTER_LABEL[f] + ' (' + n + ')';
     });
     if (adminFilter === 'journal') { loadJournal(); return; }
+    if (adminFilter === 'candidatures') { loadCandidatures(); return; }
     var list = adminList.filter(function (a) { return inFilter(a, adminFilter); });
     if (!list.length) {
       $('#admin-list').innerHTML = '<p class="admin-empty">' + (adminFilter === 'en_attente' ? 'Aucune demande en attente.' : 'Aucun compte ici.') + '</p>';
@@ -571,6 +574,59 @@
     card.querySelectorAll('input[name="apps"]').forEach(function (b) { b.checked = want.indexOf(b.value) !== -1; });
   });
 
+  // --- Candidatures « Devenir modérateur / créateur » (envoyées depuis le Profil de Boost) ---
+  // Décision avec la direction et le CSE ; accepter coche la case du compte ; un refus demande un mot d'explication.
+  var candPending = 0;
+  var ROLE_LABEL = { moderateur: 'Modérateur', createur: 'Créateur' };
+  var CAND_STATUS = { en_attente: 'En attente', acceptee: 'Acceptée', refusee: 'Refusée' };
+  function refreshCandCount() {
+    api('GET', '/api/hub/admin/candidatures').then(function (r) {
+      if (r.status !== 200) return;
+      candPending = r.data.filter(function (c) { return c.status === 'en_attente'; }).length;
+      var b = document.querySelector('#admin-filter button[data-filter="candidatures"]');
+      if (b) b.textContent = 'Candidatures' + (candPending ? ' (' + candPending + ')' : '');
+    });
+  }
+  function loadCandidatures() {
+    $('#admin-list').innerHTML = '<p class="admin-empty">Chargement…</p>';
+    api('GET', '/api/hub/admin/candidatures').then(function (r) {
+      if (adminFilter !== 'candidatures') return;
+      if (r.status !== 200) { $('#admin-list').innerHTML = '<p class="admin-empty">' + esc(r.data.message || 'Indisponible.') + '</p>'; return; }
+      candPending = r.data.filter(function (c) { return c.status === 'en_attente'; }).length;
+      var intro = '<p class="journal-note">Les salariés candidatent depuis leur Profil dans Boost. Décidez avec la direction et le CSE, sur des profils précis : accepter coche la case du compte ; refuser demande un mot d’explication, que la personne lira.</p>';
+      if (!r.data.length) { $('#admin-list').innerHTML = intro + '<p class="admin-empty">Aucune candidature pour le moment.</p>'; return; }
+      $('#admin-list').innerHTML = intro + r.data.map(function (c) {
+        var a = c.account || {};
+        var head = '<div class="acc-head"><span class="acc-avatar" aria-hidden="true">' + esc((a.prenom || '?').charAt(0).toUpperCase()) + '</span>' +
+          '<div><strong>' + esc((a.prenom || '') + ' ' + (a.nom || '')) + ' · ' + esc(ROLE_LABEL[c.role] || c.role) + '</strong>' +
+          '<span>' + esc(a.email || '') + (a.sector ? ' · ' + esc(a.sector) : '') + '</span>' +
+          '<small>Candidature du ' + esc(fmtDate(c.created)) + (a.since ? ' · compte depuis le ' + esc(fmtDate(a.since)) : '') + '</small></div></div>';
+        var body = '<p class="cand-motivation">« ' + esc(c.motivation) + ' »</p>';
+        if (c.status !== 'en_attente') {
+          return '<article class="acc">' + head + body + '<p class="acc-msg">' + esc(CAND_STATUS[c.status] || c.status) + (c.decided_by ? ' par ' + esc(c.decided_by) : '') + (c.note ? ' · « ' + esc(c.note) + ' »' : '') + '</p></article>';
+        }
+        return '<article class="acc" data-cand="' + esc(c.id) + '">' + head + body +
+          '<label class="cand-note">Mot pour la personne <small>(obligatoire en cas de refus)</small><textarea rows="2" maxlength="500"></textarea></label>' +
+          '<p class="acc-msg" role="status"></p>' +
+          '<div class="acc-actions"><button type="button" class="btn-main" data-cand-act="acceptee">Accepter</button><button type="button" class="btn-soft" data-cand-act="refusee">Refuser</button></div></article>';
+      }).join('');
+    });
+  }
+  $('#admin-list').addEventListener('click', function (e) {
+    var b = e.target.closest('button[data-cand-act]');
+    if (!b) return;
+    var card = b.closest('[data-cand]');
+    var decision = b.getAttribute('data-cand-act');
+    var note = card.querySelector('textarea').value;
+    if (decision === 'acceptee' && !window.confirm('Accepter cette candidature ? La case sera cochée sur son compte.')) return;
+    b.disabled = true;
+    api('POST', '/api/hub/admin/candidatures/' + card.getAttribute('data-cand'), { decision: decision, note: note }).then(function (r) {
+      b.disabled = false;
+      if (r.status !== 200) { card.querySelector('.acc-msg').textContent = r.data.message || 'Impossible.'; return; }
+      loadAdmin();
+    });
+  });
+
   // --- Journal : qui a fait quoi sur les comptes (lecture seule) ---
   var ACTION_LABEL = {
     demande: 'a demandé un compte',
@@ -584,11 +640,13 @@
     mot_de_passe_modifie: 'a changé son mot de passe',
     mot_de_passe_reinitialise: 'a choisi un nouveau mot de passe (lien reçu par e-mail)',
     suppression: 'a supprimé le compte de',
+    candidature: 'a envoyé une candidature',
+    candidature_refusee: 'n’a pas retenu la candidature de',
   };
-  var FIELD_LABEL = { statut: 'Statut', profil: 'Profil', apps: 'Applications', acces_direct: 'Accès direct', admin: 'Administrateur', moderateur: 'Modérateur' };
+  var FIELD_LABEL = { statut: 'Statut', profil: 'Profil', apps: 'Applications', acces_direct: 'Accès direct', admin: 'Administrateur', moderateur: 'Modérateur', createur: 'Créateur' };
   function shortName(label) { return String(label || '').replace(/s*<[^>]*>$/, '') || '(compte supprimé)'; }
   function fieldValue(k, v) {
-    if (k === 'admin') return v ? 'oui' : 'non';
+    if (k === 'admin' || k === 'moderateur' || k === 'createur') return v ? 'oui' : 'non';
     if (k === 'statut') return STATUT_LABEL[v] || v;
     if (k === 'apps') return v ? String(v).split(',').map(function (id) { var x = (ent.applications || []).filter(function (a) { return a.id === id; })[0]; return x ? x.nom : id; }).join(', ') : 'aucune';
     if (k === 'profil') { var p = profils.filter(function (x) { return x.id === v; })[0]; return p ? p.nom : v; }
@@ -641,6 +699,8 @@
     if (adm && !adm.disabled) out.admin = adm.checked;
     var mod = card.querySelector('input[name="moderateur"]');
     if (mod) out.moderateur = mod.checked;
+    var crea = card.querySelector('input[name="createur"]');
+    if (crea) out.createur = crea.checked;
     return out;
   }
 
