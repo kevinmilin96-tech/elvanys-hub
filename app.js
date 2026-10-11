@@ -520,6 +520,7 @@
       '<label class="chk"><input type="checkbox" name="admin"' + (a.admin ? ' checked' : '') + (a.id === account.id ? ' disabled' : '') + '> Administrateur (gère les comptes)</label>' +
       '<label class="chk"><input type="checkbox" name="moderateur"' + (a.moderateur ? ' checked' : '') + '> Modérateur (relit les propositions des salariés ; à désigner avec la direction et le CSE)</label>' +
       '<label class="chk"><input type="checkbox" name="createur"' + (a.createur ? ' checked' : '') + '> Créateur (crée des quiz dans le Studio ; sur candidature)</label>' +
+      '<label class="chk"><input type="checkbox" name="testeur"' + (a.testeur ? ' checked' : '') + '> Testeur (voit les démos express privées de Boost, pour les présentations au CSE et à la direction)</label>' +
       '</div>';
   }
 
@@ -577,7 +578,7 @@
   // --- Candidatures « Devenir modérateur / créateur » (envoyées depuis le Profil de Boost) ---
   // Décision avec la direction et le CSE ; accepter coche la case du compte ; un refus demande un mot d'explication.
   var candPending = 0;
-  var ROLE_LABEL = { moderateur: 'Modérateur', createur: 'Créateur' };
+  var ROLE_LABEL = { moderateur: 'Modérateur', createur: 'Créateur', testeur: 'Testeur' };
   var CAND_STATUS = { en_attente: 'En attente', acceptee: 'Acceptée', refusee: 'Refusée' };
   function refreshCandCount() {
     api('GET', '/api/hub/admin/candidatures').then(function (r) {
@@ -643,10 +644,10 @@
     candidature: 'a envoyé une candidature',
     candidature_refusee: 'n’a pas retenu la candidature de',
   };
-  var FIELD_LABEL = { statut: 'Statut', profil: 'Profil', apps: 'Applications', acces_direct: 'Accès direct', admin: 'Administrateur', moderateur: 'Modérateur', createur: 'Créateur' };
+  var FIELD_LABEL = { statut: 'Statut', profil: 'Profil', apps: 'Applications', acces_direct: 'Accès direct', admin: 'Administrateur', moderateur: 'Modérateur', createur: 'Créateur', testeur: 'Testeur' };
   function shortName(label) { return String(label || '').replace(/s*<[^>]*>$/, '') || '(compte supprimé)'; }
   function fieldValue(k, v) {
-    if (k === 'admin' || k === 'moderateur' || k === 'createur') return v ? 'oui' : 'non';
+    if (k === 'admin' || k === 'moderateur' || k === 'createur' || k === 'testeur') return v ? 'oui' : 'non';
     if (k === 'statut') return STATUT_LABEL[v] || v;
     if (k === 'apps') return v ? String(v).split(',').map(function (id) { var x = (ent.applications || []).filter(function (a) { return a.id === id; })[0]; return x ? x.nom : id; }).join(', ') : 'aucune';
     if (k === 'profil') { var p = profils.filter(function (x) { return x.id === v; })[0]; return p ? p.nom : v; }
@@ -701,6 +702,8 @@
     if (mod) out.moderateur = mod.checked;
     var crea = card.querySelector('input[name="createur"]');
     if (crea) out.createur = crea.checked;
+    var tst = card.querySelector('input[name="testeur"]');
+    if (tst) out.testeur = tst.checked;
     return out;
   }
 
