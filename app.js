@@ -240,6 +240,7 @@
     });
     $('#login-form').hidden = tab !== 'login';
     $('#signup-form').hidden = tab !== 'signup';
+    if (tab === 'signup') loadSectors();
     $('#forgot-form').hidden = true;
     $('#reset-form').hidden = true;
     $('#auth-done').hidden = true;
@@ -302,15 +303,43 @@
     });
   });
 
+  // Secteurs du magasin (liste publique) : le champ n'apparaît que si l'entreprise en a.
+  var LATER = '__plus_tard';
+  var sectorsLoaded = false;
+  function loadSectors() {
+    if (sectorsLoaded) return;
+    sectorsLoaded = true;
+    api('GET', '/api/hub/sectors').then(function (r) {
+      var tree = (r.status === 200 && r.data.tree) || [];
+      if (!tree.length) return;
+      var html = '<option value="">Choisissez votre secteur…</option>';
+      tree.forEach(function (loc) {
+        if (loc.children.length) {
+          html += '<optgroup label="' + esc((loc.emoji ? loc.emoji + ' ' : '') + loc.name) + '">' + loc.children.map(function (c) {
+            return '<option value="' + esc(c.id) + '">' + esc((c.emoji ? c.emoji + ' ' : '') + c.name) + '</option>';
+          }).join('') + '</optgroup>';
+        } else {
+          html += '<option value="' + esc(loc.id) + '">' + esc((loc.emoji ? loc.emoji + ' ' : '') + loc.name) + '</option>';
+        }
+      });
+      html += '<option value="' + LATER + '">Je ne trouve pas mon secteur (je le choisirai plus tard)</option>';
+      $('#signup-form').secteur.innerHTML = html;
+      $('#signup-sector').hidden = false;
+    });
+  }
+
   $('#signup-form').addEventListener('submit', function (e) {
     e.preventDefault();
     var f = e.target, msg = f.querySelector('.auth-msg');
     msg.textContent = '';
     if (!f.prenom.value.trim()) { msg.textContent = 'Indiquez votre prénom.'; return; }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email.value.trim())) { msg.textContent = 'Adresse e-mail invalide.'; return; }
+    var sectorOn = !$('#signup-sector').hidden;
+    if (sectorOn && !f.secteur.value) { msg.textContent = 'Choisissez votre secteur (ou « Je ne trouve pas mon secteur »).'; return; }
     if (f.password.value.length < 8) { msg.textContent = 'Mot de passe : 8 caractères minimum.'; return; }
     busy(f, true);
-    api('POST', '/api/hub/signup', { prenom: f.prenom.value, nom: f.nom.value, email: f.email.value, password: f.password.value }).then(function (r) {
+    var secteur = sectorOn && f.secteur.value !== LATER ? f.secteur.value : '';
+    api('POST', '/api/hub/signup', { prenom: f.prenom.value, nom: f.nom.value, email: f.email.value, password: f.password.value, secteur: secteur }).then(function (r) {
       busy(f, false);
       if (r.status === 200) {
         f.reset();
