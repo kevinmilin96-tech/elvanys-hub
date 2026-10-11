@@ -517,6 +517,7 @@
       '<fieldset><legend>Applications</legend>' + apps + '</fieldset>' +
       '<label>Accès direct<select name="acces_direct">' + directOpts + '</select></label>' +
       '<label class="chk"><input type="checkbox" name="admin"' + (a.admin ? ' checked' : '') + (a.id === account.id ? ' disabled' : '') + '> Administrateur (gère les comptes)</label>' +
+      '<label class="chk"><input type="checkbox" name="moderateur"' + (a.moderateur ? ' checked' : '') + '> Modérateur (relit les propositions des salariés ; à désigner avec la direction et le CSE)</label>' +
       '</div>';
   }
 
@@ -584,7 +585,7 @@
     mot_de_passe_reinitialise: 'a choisi un nouveau mot de passe (lien reçu par e-mail)',
     suppression: 'a supprimé le compte de',
   };
-  var FIELD_LABEL = { statut: 'Statut', profil: 'Profil', apps: 'Applications', acces_direct: 'Accès direct', admin: 'Administrateur' };
+  var FIELD_LABEL = { statut: 'Statut', profil: 'Profil', apps: 'Applications', acces_direct: 'Accès direct', admin: 'Administrateur', moderateur: 'Modérateur' };
   function shortName(label) { return String(label || '').replace(/s*<[^>]*>$/, '') || '(compte supprimé)'; }
   function fieldValue(k, v) {
     if (k === 'admin') return v ? 'oui' : 'non';
@@ -638,6 +639,8 @@
     if (direct) out.acces_direct = direct.value;
     var adm = card.querySelector('input[name="admin"]');
     if (adm && !adm.disabled) out.admin = adm.checked;
+    var mod = card.querySelector('input[name="moderateur"]');
+    if (mod) out.moderateur = mod.checked;
     return out;
   }
 
