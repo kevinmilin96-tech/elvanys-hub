@@ -593,7 +593,7 @@
       if (adminFilter !== 'candidatures') return;
       if (r.status !== 200) { $('#admin-list').innerHTML = '<p class="admin-empty">' + esc(r.data.message || 'Indisponible.') + '</p>'; return; }
       candPending = r.data.filter(function (c) { return c.status === 'en_attente'; }).length;
-      var intro = '<p class="journal-note">Les salariés candidatent depuis leur Profil dans Boost. Décidez avec la direction et le CSE, sur des profils précis : accepter coche la case du compte ; refuser demande un mot d’explication, que la personne lira.</p>';
+      var intro = '<p class="journal-note">Les salariés candidatent depuis leur Profil dans Boost. Décidez avec la direction et le CSE : accepter coche la case du compte ; refuser demande un mot d’explication, que la personne lira.</p>';
       if (!r.data.length) { $('#admin-list').innerHTML = intro + '<p class="admin-empty">Aucune candidature pour le moment.</p>'; return; }
       $('#admin-list').innerHTML = intro + r.data.map(function (c) {
         var a = c.account || {};
