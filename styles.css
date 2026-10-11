@@ -298,6 +298,9 @@ a.tile:focus-visible { outline: 3px solid var(--tone); outline-offset: 3px; }
 /* Mot de passe oublié : lien discret sous le bouton, texte d'introduction */
 .auth-link { align-self: center; padding: 6px 10px; border: 0; background: none; font: inherit; font-size: 14px; font-weight: 800; color: var(--brand); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 .auth-link:focus-visible { outline: 3px solid var(--brand); outline-offset: 2px; border-radius: 8px; }
+.auth-rgpd { padding: 10px 12px; border-radius: 12px; border: 1px solid var(--border); background: var(--bg, transparent); color: var(--text); font-size: 13px; line-height: 1.45; text-align: left; }
+.auth-rgpd p { margin: 0 0 6px; }
+.auth-rgpd p:last-child { margin: 0; }
 .auth-lead { margin: 0; font-size: 15px; line-height: 1.45; color: var(--text); }
 
 /* Création de compte : explication sous le choix du secteur */

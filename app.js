@@ -303,6 +303,36 @@
     });
   });
 
+  // « Vos données » (formulaire Créer un compte) : la mention RGPD réglée par l'animateur de Boost (/api/hub/rgpd, public,
+  // aucune donnée sur les salariés). Le détail complet est dans Boost → Profil → « Mes données ».
+  (function () {
+    var btn = document.getElementById('signup-rgpd-btn');
+    var box = document.getElementById('signup-rgpd');
+    if (!btn || !box) return;
+    var TODO = 'à compléter par le magasin';
+    btn.addEventListener('click', function () {
+      var show = box.hidden;
+      box.hidden = !show;
+      btn.setAttribute('aria-expanded', show ? 'true' : 'false');
+      if (!show || box.dataset.loaded) return;
+      box.textContent = 'Chargement…';
+      api('GET', '/api/hub/rgpd').then(function (r) {
+        if (r.status !== 200) { box.textContent = 'Détail indisponible pour le moment : réessayez dans un instant.'; return; }
+        var g = r.data || {};
+        box.dataset.loaded = '1';
+        box.innerHTML =
+          '<p><b>Ce qui est gardé :</b> vos prénom, nom, e-mail et secteur, et dans Boost votre progression (points, badges), ' +
+          'vos parties de Versus et les mercis envoyés. Vos réponses aux questionnaires Pulse restent <b>anonymes</b>.</p>' +
+          '<p><b>Jamais utilisé</b> pour évaluer ou noter qui que ce soit : la direction ne voit que des totaux.</p>' +
+          '<p><b>Durée :</b> ' + esc(g.duree_compte || TODO) + ' (activité : ' + esc(g.duree_activite || TODO) + ').</p>' +
+          '<p><b>Responsable :</b> ' + esc(g.responsable || TODO) + (g.adresse ? ', ' + esc(g.adresse) : '') +
+          '. <b>Contact :</b> ' + esc(g.contact || TODO) + '.</p>' +
+          '<p>Vous pouvez voir vos données, les faire corriger ou demander leur suppression (Boost → Profil → « Mes données »), ' +
+          'et saisir la CNIL (cnil.fr) en cas de désaccord.</p>';
+      });
+    });
+  })();
+
   // Secteurs du magasin (liste publique) : le champ n'apparaît que si l'entreprise en a.
   var LATER = '__plus_tard';
   var sectorsLoaded = false;
