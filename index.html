@@ -124,6 +124,14 @@
           <button type="submit" class="btn-main">Enregistrer le mot de passe</button>
           <button type="button" class="auth-link" data-back-login>Retour à la connexion</button>
         </form>
+        <form class="auth-form" id="code-form" novalidate hidden>
+          <p class="auth-lead" id="code-lead">Nouvel appareil : un code à 6 chiffres vient de partir sur votre adresse e-mail.</p>
+          <label>Code reçu par e-mail<input name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" required></label>
+          <p class="auth-msg" role="alert"></p>
+          <button type="submit" class="btn-main">Valider le code</button>
+          <button type="button" class="auth-link" data-back-login>Retour à la connexion</button>
+          <p class="auth-hint">Le code est valable 10 minutes. L'appareil sera ensuite reconnu pendant 30 jours. Pas reçu ? Regardez dans les indésirables, ou demandez à un autre administrateur de « faire confiance à cet appareil » depuis votre fiche.</p>
+        </form>
         <form class="auth-form" id="signup-form" novalidate hidden>
           <div class="auth-row">
             <label>Prénom<input name="prenom" autocomplete="given-name" maxlength="60" required></label>

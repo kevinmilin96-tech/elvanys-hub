@@ -115,6 +115,19 @@
       .catch(function () { return { status: 0, data: { message: 'Pas de connexion au serveur. Réessayez.' } }; });
   }
 
+  // Identifiant de cet appareil pour le code des nouveaux appareils (12/10) : tiré au hasard une fois, gardé ici
+  function deviceId() {
+    var d = store.get('hub_device_id');
+    if (!d || !/^[A-Za-z0-9_-]{16,80}$/.test(d)) {
+      var a = new Uint8Array(16);
+      (window.crypto || window.msCrypto).getRandomValues(a);
+      d = Array.prototype.map.call(a, function (x) { return ('0' + x.toString(16)).slice(-2); }).join('');
+      store.set('hub_device_id', d);
+    }
+    return d;
+  }
+  var codeTicket = null;
+
   function setSession(t) {
     token = t || null;
     if (t) store.set(SESSION_KEY, t); else { try { localStorage.removeItem(SESSION_KEY); } catch (e) { /* ignoré */ } }
@@ -243,12 +256,13 @@
     if (tab === 'signup') loadSectors();
     $('#forgot-form').hidden = true;
     $('#reset-form').hidden = true;
+    $('#code-form').hidden = true;
     $('#auth-done').hidden = true;
     document.querySelector('.auth-tabs').hidden = false;
   }
   // Écrans « mot de passe oublié » et « nouveau mot de passe » (sans les onglets)
   function showAuthForm(id) {
-    ['#login-form', '#signup-form', '#forgot-form', '#reset-form', '#auth-done'].forEach(function (sel) { $(sel).hidden = sel !== id; });
+    ['#login-form', '#signup-form', '#forgot-form', '#reset-form', '#code-form', '#auth-done'].forEach(function (sel) { $(sel).hidden = sel !== id; });
     document.querySelector('.auth-tabs').hidden = true;
     var first = $(id).querySelector('input');
     if (first) first.focus();
@@ -262,6 +276,34 @@
       input.type = input.type === 'password' ? 'text' : 'password';
     });
   });
+  // Administrateur sur un nouvel appareil : le serveur envoie un code par e-mail avant d'ouvrir la session
+  function showCode(data) {
+    codeTicket = data.ticket;
+    $('#code-lead').textContent = data.message || 'Nouvel appareil : un code à 6 chiffres vient de partir sur votre adresse e-mail.';
+    $('#code-form').reset();
+    $('#code-form .auth-msg').textContent = '';
+    showAuthForm('#code-form');
+  }
+  function sessionOpened(r) {
+    setSession(r.data.token);
+    unlockAdmin();
+    $('#login-form').reset();
+    enter(r.data.meta.account, 0, true);
+    refreshMe();
+  }
+  $('#code-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var f = e.target, msg = f.querySelector('.auth-msg');
+    var code = String(f.code.value || '').replace(/\D/g, '');
+    if (code.length !== 6) { msg.textContent = 'Le code a 6 chiffres.'; return; }
+    busy(f, true);
+    api('POST', '/api/hub/login/code', { ticket: codeTicket, code: code, device: deviceId() }).then(function (r) {
+      busy(f, false);
+      if (r.status === 200 && r.data.token) { codeTicket = null; f.reset(); sessionOpened(r); }
+      else msg.textContent = r.data.message || 'Code refusé.';
+    });
+  });
+
   function doneScreen(icon, title, text) {
     $('#login-form').hidden = true;
     $('#signup-form').hidden = true;
@@ -287,14 +329,13 @@
     msg.textContent = '';
     if (!f.email.value.trim() || !f.password.value) { msg.textContent = 'Indiquez votre e-mail et votre mot de passe.'; return; }
     busy(f, true);
-    api('POST', '/api/hub/login', { email: f.email.value, password: f.password.value }).then(function (r) {
+    api('POST', '/api/hub/login', { email: f.email.value, password: f.password.value, device: deviceId() }).then(function (r) {
       busy(f, false);
-      if (r.status === 200 && r.data.token) {
-        setSession(r.data.token);
-        unlockAdmin();
-        f.reset();
-        enter(r.data.meta.account, 0, true);
-        refreshMe(); // compteur des demandes (administrateurs)
+      if (r.status === 200 && r.data.mfa) {
+        f.password.value = '';
+        showCode(r.data);
+      } else if (r.status === 200 && r.data.token) {
+        sessionOpened(r); // compteur des demandes (administrateurs) : refreshMe
       } else if (r.status === 403 && r.data.code === 'en_attente') {
         doneScreen('⏳', 'Compte en attente', 'Votre compte attend encore la validation d\'un responsable du magasin.');
       } else {
@@ -589,6 +630,7 @@
         actions = '<button type="button" class="btn-main" data-act="valider">Réactiver</button>' +
           '<button type="button" class="btn-soft danger" data-act="supprimer">' + (a.statut === 'suspendu' ? 'Supprimer maintenant' : 'Supprimer') + '</button>';
       }
+      if (a.appareil_en_attente && !self) actions += '<button type="button" class="btn-soft" data-act="appareil" title="Le code par e-mail n’arrive pas ? Faites confiance à l’appareil qui l’a demandé.">Faire confiance à son nouvel appareil</button>';
       return '<article class="acc" data-id="' + esc(a.id) + '">' +
         '<div class="acc-head"><span class="acc-avatar" aria-hidden="true">' + esc((a.prenom || '?').charAt(0).toUpperCase()) + '</span>' +
         '<div><strong>' + esc(a.prenom + ' ' + (a.nom || '')) + (self ? ' <em>(vous)</em>' : '') + '</strong><span>' + esc(a.email) + '</span><small>' + esc(meta) + '</small></div></div>' +
@@ -691,6 +733,7 @@
     mot_de_passe_reinitialise: 'a choisi un nouveau mot de passe (lien reçu par e-mail)',
     suppression: 'a supprimé le compte de',
     suppression_auto: 'a effacé (3 mois après la suspension) le compte de',
+    appareil_approuve: 'a fait confiance au nouvel appareil de',
     candidature: 'a envoyé une candidature',
     candidature_refusee: 'n’a pas retenu la candidature de',
     entree_animateur: 'a ouvert l’espace animateur de Boost',
@@ -788,6 +831,16 @@
     msg.textContent = '';
     msg.classList.remove('is-ok');
 
+    if (act === 'appareil') {
+      if (!confirmInline(b, 'Confirmer : c’est bien elle ou lui ?')) return;
+      api('POST', '/api/hub/admin/accounts/' + aid + '/appareil').then(function (r) {
+        b.textContent = 'Faire confiance à son nouvel appareil';
+        if (r.status !== 200) { msg.textContent = r.data.message || 'Impossible.'; return; }
+        msg.textContent = 'Appareil reconnu pour 30 jours : ' + acc.prenom + ' peut se reconnecter, sans code.';
+        msg.classList.add('is-ok');
+      });
+      return;
+    }
     if (act === 'mdp') {
       if (!confirmInline(b, 'Confirmer ?')) return;
       api('POST', '/api/hub/admin/accounts/' + aid + '/password').then(function (r) {
@@ -871,9 +924,15 @@
     var msg = f.querySelector('.auth-msg');
     if (!f.password.value) { msg.textContent = 'Indiquez votre mot de passe.'; return; }
     busy(f, true);
-    api('POST', '/api/hub/login', { email: account.email, password: f.password.value }).then(function (r) {
+    api('POST', '/api/hub/login', { email: account.email, password: f.password.value, device: deviceId() }).then(function (r) {
       busy(f, false);
-      if (r.status === 200 && r.data.token) {
+      if (r.status === 200 && r.data.mfa) {
+        // L'appareil n'est plus reconnu (30 jours passés) : on repasse par le code
+        f.reset();
+        closeSheet($('#admin-lock'));
+        leave();
+        showCode(r.data);
+      } else if (r.status === 200 && r.data.token) {
         setSession(r.data.token);
         unlockAdmin();
         closeSheet($('#admin-lock'));
