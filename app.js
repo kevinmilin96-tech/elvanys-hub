@@ -529,7 +529,7 @@
   // Rubriques de l'espace animateur de Boost. Même liste que le serveur (boost_anim_logic.js) et Boost (App.jsx, NAV) :
   // les changer ensemble. Un administrateur a toujours toutes les rubriques.
   var ANIM_RUBRIQUES = [
-    ['questionnaires', 'Questionnaires'], ['tokens', 'Jetons'], ['results', 'Résultats'], ['messages', 'Messages'],
+    ['questionnaires', 'Questionnaires'], ['validation', 'À valider (relecture des quiz)'], ['tokens', 'Jetons'], ['results', 'Résultats'], ['messages', 'Messages'],
     ['direct', 'En direct (mur de réponses)'], ['versus', 'Versus'], ['championnat', 'Championnat'], ['escape', 'Escape game'],
     ['raid', 'Raid du magasin'], ['pronos', 'Pronostics'], ['suggestions', 'Suggestions de quiz'], ['creations', 'Quiz des créateurs'],
     ['idees', 'Boîte à idées'], ['saviez', 'Le saviez-vous ?'], ['mercis', 'Mercis'], ['jauges', 'Jauges solidaires (montants privés)'],
@@ -538,7 +538,7 @@
     ['testeurs', 'Testeurs (démo)'],
   ];
   var ANIM_PRESETS = {
-    animateur: ['questionnaires', 'tokens', 'results', 'messages', 'versus', 'championnat', 'escape', 'raid', 'direct', 'pronos', 'suggestions', 'creations', 'idees', 'mercis', 'saviez'],
+    animateur: ['questionnaires', 'validation', 'tokens', 'results', 'messages', 'versus', 'championnat', 'escape', 'raid', 'direct', 'pronos', 'suggestions', 'creations', 'idees', 'mercis', 'saviez'],
     chef: ['direct'], // chef d'équipe : seulement de petites animations en direct (mur de réponses)
   };
   function animPermsBlock(a) {
