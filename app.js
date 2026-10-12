@@ -85,6 +85,10 @@
   // Copie locale (localhost) : serveur de test, réglable par localStorage « hub_api ».
   var isLocal = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
   var API = isLocal ? (store.get('hub_api') || 'http://127.0.0.1:8098') : '';
+  // Copie locale : adresse de Boost à essayer (localStorage « hub_boost_url », ex. http://127.0.0.1:5182)
+  if (isLocal && /^http:\/\/(localhost|127\.0\.0\.1):\d+\/?$/.test(store.get('hub_boost_url') || '')) {
+    (ent.applications || []).forEach(function (a) { if (a.id === 'boost') a.url = store.get('hub_boost_url').replace(/\/$/, ''); });
+  }
   var SESSION_KEY = 'hub_session_' + id;
   var token = store.get(SESSION_KEY);
   var account = null;
