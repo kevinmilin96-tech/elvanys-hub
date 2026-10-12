@@ -521,7 +521,38 @@
       '<label class="chk"><input type="checkbox" name="moderateur"' + (a.moderateur ? ' checked' : '') + '> Modérateur (relit les propositions des salariés ; à désigner avec la direction et le CSE)</label>' +
       '<label class="chk"><input type="checkbox" name="createur"' + (a.createur ? ' checked' : '') + '> Créateur (crée des quiz dans le Studio ; sur candidature)</label>' +
       '<label class="chk"><input type="checkbox" name="testeur"' + (a.testeur ? ' checked' : '') + '> Testeur (voit les démos express privées de Boost, pour les présentations au CSE et à la direction)</label>' +
+      '<label class="chk"><input type="checkbox" name="animateur"' + (a.animateur ? ' checked' : '') + '> Animateur de Boost (entre dans l’espace animateur avec son mot de passe du hub, seulement dans les rubriques cochées)</label>' +
+      animPermsBlock(a) +
       '</div>';
+  }
+
+  // Rubriques de l'espace animateur de Boost. Même liste que le serveur (boost_anim_logic.js) et Boost (App.jsx, NAV) :
+  // les changer ensemble. Un administrateur a toujours toutes les rubriques.
+  var ANIM_RUBRIQUES = [
+    ['questionnaires', 'Questionnaires'], ['tokens', 'Jetons'], ['results', 'Résultats'], ['messages', 'Messages'],
+    ['direct', 'En direct (mur de réponses)'], ['versus', 'Versus'], ['championnat', 'Championnat'], ['escape', 'Escape game'],
+    ['raid', 'Raid du magasin'], ['pronos', 'Pronostics'], ['suggestions', 'Suggestions de quiz'], ['creations', 'Quiz des créateurs'],
+    ['idees', 'Boîte à idées'], ['saviez', 'Le saviez-vous ?'], ['mercis', 'Mercis'], ['jauges', 'Jauges solidaires (montants privés)'],
+    ['modules', 'Modules à débloquer'], ['sectors', 'Secteurs'], ['indicateurs', 'Indicateurs de la direction'],
+    ['calendrier', 'Calendrier de l’année'], ['appearance', 'Apparence'], ['devices', 'Appareils'], ['settings', 'Réglages et « Mes données »'],
+    ['testeurs', 'Testeurs (démo)'],
+  ];
+  var ANIM_PRESETS = {
+    animateur: ['questionnaires', 'tokens', 'results', 'messages', 'versus', 'championnat', 'escape', 'raid', 'direct', 'pronos', 'suggestions', 'creations', 'idees', 'mercis', 'saviez'],
+    chef: ['direct'], // chef d'équipe : seulement de petites animations en direct (mur de réponses)
+  };
+  function animPermsBlock(a) {
+    var mine = a.anim_perms || [];
+    var boxes = ANIM_RUBRIQUES.map(function (r) {
+      return '<label class="chk"><input type="checkbox" name="anim_perms" value="' + r[0] + '"' + (mine.indexOf(r[0]) !== -1 ? ' checked' : '') + '> ' + esc(r[1]) + '</label>';
+    }).join('');
+    return '<fieldset class="anim-perms"' + (a.animateur ? '' : ' style="display:none"') + '><legend>Rubriques de l’espace animateur</legend>' +
+      (a.admin ? '<p class="journal-note">Administrateur : il a déjà toutes les rubriques.</p>' : '') +
+      '<p class="anim-presets">Profil tout prêt : <button type="button" class="btn-soft" data-preset="animateur">Animateur</button> ' +
+      '<button type="button" class="btn-soft" data-preset="chef">Chef d’équipe (En direct seulement)</button></p>' + boxes + '</fieldset>';
+  }
+  function setAnimPerms(card, list) {
+    card.querySelectorAll('input[name="anim_perms"]').forEach(function (b) { b.checked = list.indexOf(b.value) !== -1; });
   }
 
   function renderAdmin() {
@@ -566,6 +597,21 @@
   }
 
   // Changer le profil d'une demande recoche les applications prévues pour ce profil
+  // Case « Animateur » : montre les rubriques ; cochée la première fois, profil « Animateur » précoché
+  $('#admin-list').addEventListener('change', function (e) {
+    if (e.target.name !== 'animateur') return;
+    var card = e.target.closest('.acc');
+    var box = card.querySelector('.anim-perms');
+    if (box) box.style.display = e.target.checked ? '' : 'none';
+    var any = Array.prototype.some.call(card.querySelectorAll('input[name="anim_perms"]'), function (b) { return b.checked; });
+    if (e.target.checked && !any) setAnimPerms(card, ANIM_PRESETS.animateur);
+  });
+  $('#admin-list').addEventListener('click', function (e) {
+    var b = e.target.closest('button[data-preset]');
+    if (!b) return;
+    setAnimPerms(b.closest('.acc'), ANIM_PRESETS[b.getAttribute('data-preset')] || []);
+  });
+
   $('#admin-list').addEventListener('change', function (e) {
     if (e.target.name !== 'profil') return;
     var card = e.target.closest('.acc');
@@ -643,11 +689,16 @@
     suppression: 'a supprimé le compte de',
     candidature: 'a envoyé une candidature',
     candidature_refusee: 'n’a pas retenu la candidature de',
+    entree_animateur: 'a ouvert l’espace animateur de Boost',
   };
-  var FIELD_LABEL = { statut: 'Statut', profil: 'Profil', apps: 'Applications', acces_direct: 'Accès direct', admin: 'Administrateur', moderateur: 'Modérateur', createur: 'Créateur', testeur: 'Testeur' };
+  var FIELD_LABEL = { statut: 'Statut', profil: 'Profil', apps: 'Applications', acces_direct: 'Accès direct', admin: 'Administrateur', moderateur: 'Modérateur', createur: 'Créateur', testeur: 'Testeur', animateur: 'Animateur', anim_perms: 'Rubriques animateur' };
   function shortName(label) { return String(label || '').replace(/s*<[^>]*>$/, '') || '(compte supprimé)'; }
   function fieldValue(k, v) {
-    if (k === 'admin' || k === 'moderateur' || k === 'createur' || k === 'testeur') return v ? 'oui' : 'non';
+    if (k === 'admin' || k === 'moderateur' || k === 'createur' || k === 'testeur' || k === 'animateur') return v ? 'oui' : 'non';
+    if (k === 'anim_perms') {
+      var ids = String(v || '').split(',').filter(Boolean);
+      return ids.length ? ids.map(function (id) { var r = ANIM_RUBRIQUES.filter(function (x) { return x[0] === id; })[0]; return r ? r[1] : id; }).join(', ') : 'aucune';
+    }
     if (k === 'statut') return STATUT_LABEL[v] || v;
     if (k === 'apps') return v ? String(v).split(',').map(function (id) { var x = (ent.applications || []).filter(function (a) { return a.id === id; })[0]; return x ? x.nom : id; }).join(', ') : 'aucune';
     if (k === 'profil') { var p = profils.filter(function (x) { return x.id === v; })[0]; return p ? p.nom : v; }
@@ -667,7 +718,7 @@
       $('#admin-list').innerHTML = '<p class="journal-note">Les 300 dernières actions. Le journal ne peut être ni modifié ni effacé depuis le hub.</p>' + r.data.map(function (l) {
         var who = l.actor ? shortName(l.actor) : (l.action === 'demande' ? shortName(l.target) : 'Sécurité');
         var verb = ACTION_LABEL[l.action] || l.action;
-        var target = (l.action === 'demande' || l.action === 'mot_de_passe_modifie' || l.action === 'mot_de_passe_reinitialise') ? '' : ' ' + shortName(l.target);
+        var target = (l.action === 'demande' || l.action === 'mot_de_passe_modifie' || l.action === 'mot_de_passe_reinitialise' || l.action === 'entree_animateur') ? '' : ' ' + shortName(l.target);
         var det = Object.keys(l.details || {}).filter(function (k) { return FIELD_LABEL[k] && Array.isArray(l.details[k]); }).map(function (k) {
           return '<li>' + esc(FIELD_LABEL[k]) + ' : ' + esc(fieldValue(k, l.details[k][0])) + ' → <b>' + esc(fieldValue(k, l.details[k][1])) + '</b></li>';
         }).join('');
@@ -704,6 +755,11 @@
     if (crea) out.createur = crea.checked;
     var tst = card.querySelector('input[name="testeur"]');
     if (tst) out.testeur = tst.checked;
+    var anim = card.querySelector('input[name="animateur"]');
+    if (anim) {
+      out.animateur = anim.checked;
+      if (anim.checked) out.anim_perms = Array.prototype.filter.call(card.querySelectorAll('input[name="anim_perms"]'), function (b) { return b.checked; }).map(function (b) { return b.value; });
+    }
     return out;
   }
 
