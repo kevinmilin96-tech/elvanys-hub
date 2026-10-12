@@ -220,8 +220,18 @@
     $('#admin-btn').hidden = !acc.admin;
     setBadge(pending);
     // Accès direct : on part tout de suite dans l'application (sauf retour volontaire au hub)
+    if (acc.mdp_provisoire) { setTimeout(askNewPassword, 0); return; }
     var direct = acc.acces_direct && appById(acc.acces_direct);
     if (direct && acc.apps.indexOf(direct.id) !== -1 && (!stay || fromLogin)) startDirect(direct);
+  }
+  // Mot de passe provisoire (donné par un administrateur) : on demande d'en choisir un tout de suite
+  function askNewPassword() {
+    $('#profile-chip').click();
+    var box = document.querySelector('#account-sheet .account-pwd');
+    if (box) box.open = true;
+    var m = $('#password-form .auth-msg');
+    m.classList.remove('is-ok');
+    m.textContent = 'Votre mot de passe est provisoire : choisissez le vôtre (tapez d’abord le mot de passe provisoire).';
   }
 
   var directTimer = null;
@@ -327,7 +337,7 @@
     e.preventDefault();
     var f = e.target, msg = f.querySelector('.auth-msg');
     msg.textContent = '';
-    if (!f.email.value.trim() || !f.password.value) { msg.textContent = 'Indiquez votre e-mail et votre mot de passe.'; return; }
+    if (!f.email.value.trim() || !f.password.value) { msg.textContent = 'Indiquez votre e-mail (ou votre identifiant) et votre mot de passe.'; return; }
     busy(f, true);
     api('POST', '/api/hub/login', { email: f.email.value, password: f.password.value, device: deviceId() }).then(function (r) {
       busy(f, false);
@@ -478,7 +488,7 @@
     var direct = account.acces_direct && appById(account.acces_direct);
     $('#account-card').innerHTML =
       '<strong>' + esc(account.prenom + ' ' + (account.nom || '')) + '</strong>' +
-      '<span>' + esc(account.email) + '</span>' +
+      '<span>' + esc(account.email || ('Identifiant : ' + (account.identifiant || ''))) + '</span>' +
       '<span>' + esc(profilName(account.profil) || 'Profil non défini') + (account.admin ? ' · Administrateur' : '') + '</span>' +
       '<span>Applications : ' + esc(apps.join(', ') || 'aucune') + '</span>' +
       (direct ? '<span>Ouverture directe : ' + esc(direct.nom) + '</span>' : '');
@@ -499,6 +509,7 @@
         f.reset();
         msg.textContent = 'Mot de passe modifié.';
         msg.classList.add('is-ok');
+        if (account) account.mdp_provisoire = false;
       } else {
         msg.textContent = r.data.message || 'Modification impossible.';
       }
@@ -554,6 +565,14 @@
     var directOpts = '<option value="">Non : il arrive sur l\'espace magasin</option>' + (ent.applications || []).map(function (app) {
       return '<option value="' + esc(app.id) + '"' + (a.acces_direct === app.id ? ' selected' : '') + '>Oui : ouvrir ' + esc(app.nom) + '</option>';
     }).join('');
+    // Compte sans e-mail : accès d'un collaborateur seulement (décision du 12/10) → ni profil à changer, ni rôles
+    if (!a.email) {
+      return '<div class="acc-fields">' +
+        '<fieldset><legend>Applications</legend>' + apps + '</fieldset>' +
+        '<label>Accès direct<select name="acces_direct">' + directOpts + '</select></label>' +
+        '<p class="auth-hint">Compte sans e-mail : accès d’un collaborateur seulement (ni administrateur, ni animateur, ni modérateur, ni créateur). Mot de passe oublié : « Mot de passe provisoire ».</p>' +
+        '</div>';
+    }
     return '<div class="acc-fields">' +
       '<label>Profil<select name="profil">' + profilOpts + '</select></label>' +
       '<fieldset><legend>Applications</legend>' + apps + '</fieldset>' +
@@ -633,7 +652,7 @@
       if (a.appareil_en_attente && !self) actions += '<button type="button" class="btn-soft" data-act="appareil" title="Le code par e-mail n’arrive pas ? Faites confiance à l’appareil qui l’a demandé.">Faire confiance à son nouvel appareil</button>';
       return '<article class="acc" data-id="' + esc(a.id) + '">' +
         '<div class="acc-head"><span class="acc-avatar" aria-hidden="true">' + esc((a.prenom || '?').charAt(0).toUpperCase()) + '</span>' +
-        '<div><strong>' + esc(a.prenom + ' ' + (a.nom || '')) + (self ? ' <em>(vous)</em>' : '') + '</strong><span>' + esc(a.email) + '</span><small>' + esc(meta) + '</small></div></div>' +
+        '<div><strong>' + esc(a.prenom + ' ' + (a.nom || '')) + (self ? ' <em>(vous)</em>' : '') + '</strong><span>' + esc(a.email || ('🔑 Identifiant : ' + (a.identifiant || '') + ' · sans e-mail')) + '</span><small>' + esc(meta) + '</small></div></div>' +
         (a.statut === 'refuse' ? '' : accountForm(a)) +
         '<p class="acc-msg" role="status"></p>' +
         '<div class="acc-actions">' + actions + '</div>' +
@@ -734,6 +753,7 @@
     suppression: 'a supprimé le compte de',
     suppression_auto: 'a effacé (3 mois après la suspension) le compte de',
     appareil_approuve: 'a fait confiance au nouvel appareil de',
+    creation_sans_email: 'a créé un compte sans e-mail pour',
     candidature: 'a envoyé une candidature',
     candidature_refusee: 'n’a pas retenu la candidature de',
     entree_animateur: 'a ouvert l’espace animateur de Boost',
@@ -778,6 +798,23 @@
       }).join('');
     });
   }
+
+  $('#noemail-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var f = e.target, msg = f.querySelector('.auth-msg');
+    msg.classList.remove('is-ok');
+    if (f.prenom.value.trim().length < 2) { msg.textContent = 'Indiquez au moins le prénom.'; return; }
+    busy(f, true);
+    api('POST', '/api/hub/admin/accounts', { prenom: f.prenom.value, nom: f.nom.value }).then(function (r) {
+      busy(f, false);
+      if (r.status !== 200) { msg.textContent = r.data.message || 'Création impossible.'; return; }
+      var a = r.data.account;
+      msg.innerHTML = 'Compte de ' + esc(a.prenom) + ' créé. Identifiant : <code>' + esc(a.identifiant) + '</code> · mot de passe provisoire : <code>' + esc(r.data.password) + '</code><br>Remettez-les en main propre (sur papier) : la personne choisira son mot de passe à la première connexion. Le mot de passe ne sera plus affiché.';
+      msg.classList.add('is-ok');
+      f.prenom.value = ''; f.nom.value = '';
+      loadAdmin();
+    });
+  });
 
   $('#admin-filter').addEventListener('click', function (e) {
     var b = e.target.closest('button[data-filter]');
@@ -846,7 +883,7 @@
       api('POST', '/api/hub/admin/accounts/' + aid + '/password').then(function (r) {
         b.textContent = 'Mot de passe provisoire';
         if (r.status !== 200) { msg.textContent = r.data.message || 'Impossible.'; return; }
-        msg.innerHTML = 'Mot de passe provisoire de ' + esc(acc.prenom) + ' : <code>' + esc(r.data.password) + '</code><br>Donnez-le-lui : il pourra le changer dans « Mon compte ». Il ne sera plus affiché.';
+        msg.innerHTML = 'Mot de passe provisoire de ' + esc(acc.prenom) + ' : <code>' + esc(r.data.password) + '</code><br>À remettre en main propre : la personne choisira le sien à la prochaine connexion. Il ne sera plus affiché.';
         msg.classList.add('is-ok');
       });
       return;

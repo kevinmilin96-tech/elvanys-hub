@@ -96,7 +96,7 @@
         </div>
         <h2 id="auth-title" class="sr-only">Connexion</h2>
         <form class="auth-form" id="login-form" novalidate>
-          <label>Adresse e-mail<input type="email" name="email" autocomplete="username" required></label>
+          <label>Adresse e-mail ou identifiant<input type="text" name="email" autocomplete="username" autocapitalize="none" spellcheck="false" required></label>
           <label>Mot de passe
             <span class="pwd"><input type="password" name="password" autocomplete="current-password" required><button type="button" class="pwd-eye" aria-label="Afficher le mot de passe">👁</button></span>
           </label>
@@ -222,6 +222,18 @@
         <h2 id="admin-title">Comptes</h2>
         <button type="button" class="sheet-x" data-close aria-label="Fermer">✕</button>
       </div>
+      <details class="admin-create">
+        <summary>＋ Créer un compte pour un salarié sans e-mail</summary>
+        <form class="auth-form" id="noemail-form" novalidate>
+          <p class="auth-hint">Le hub crée un identifiant (prénom.nom) et un mot de passe provisoire, à changer à la première connexion. Ce compte a seulement les accès d'un collaborateur : ni administrateur, ni animateur, ni modérateur, ni créateur.</p>
+          <div class="auth-row">
+            <label>Prénom<input name="prenom" maxlength="60" required></label>
+            <label>Nom<input name="nom" maxlength="60"></label>
+          </div>
+          <p class="auth-msg" role="status"></p>
+          <button type="submit" class="btn-main">Créer le compte</button>
+        </form>
+      </details>
       <div class="admin-filter" role="tablist" id="admin-filter">
         <button type="button" class="is-on" data-filter="en_attente">En attente</button>
         <button type="button" data-filter="valide">Validés</button>

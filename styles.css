@@ -308,3 +308,9 @@ a.tile:focus-visible { outline: 3px solid var(--tone); outline-offset: 3px; }
 .cand-motivation { margin: 6px 0; padding: 10px 12px; border-radius: 12px; background: var(--soft); font-style: italic; font-size: 14px; }
 .cand-note { display: flex; flex-direction: column; gap: 4px; font-size: 13px; font-weight: 700; }
 .cand-note textarea { width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); color: var(--text); font: inherit; font-weight: 500; }
+
+/* Créer un compte pour un salarié sans e-mail (administration, 12/10) */
+.admin-create { margin: 0 0 12px; border: 1px dashed var(--line, #d9d6ef); border-radius: 14px; padding: 8px 12px; }
+.admin-create summary { cursor: pointer; font-weight: 700; }
+.admin-create .auth-form { margin-top: 10px; }
+.admin-create code { font-size: 1.05em; padding: 1px 6px; border-radius: 6px; background: rgba(0,0,0,.06); user-select: all; }
