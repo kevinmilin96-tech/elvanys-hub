@@ -574,6 +574,7 @@
     $('#admin-list').innerHTML = list.map(function (a) {
       var self = a.id === account.id;
       var meta = a.statut === 'en_attente' ? 'Demande du ' + fmtDate(a.created)
+        : a.statut === 'suspendu' && a.suspendu_le ? 'Suspendu le ' + fmtDate(a.suspendu_le) + (a.efface_le ? ' · effacé automatiquement le ' + fmtDate(a.efface_le) + ' (avec ses données de Boost)' : '')
         : (a.valide_le ? 'Validé le ' + fmtDate(a.valide_le) + (a.valide_par ? ' par ' + a.valide_par : '') : STATUT_LABEL[a.statut]) +
           (a.dernier_acces ? ' · dernière connexion le ' + fmtDate(a.dernier_acces) : '');
       var actions;
@@ -586,7 +587,7 @@
             '<button type="button" class="btn-soft danger" data-act="suspendre">Suspendre</button>');
       } else {
         actions = '<button type="button" class="btn-main" data-act="valider">Réactiver</button>' +
-          '<button type="button" class="btn-soft danger" data-act="supprimer">Supprimer</button>';
+          '<button type="button" class="btn-soft danger" data-act="supprimer">' + (a.statut === 'suspendu' ? 'Supprimer maintenant' : 'Supprimer') + '</button>';
       }
       return '<article class="acc" data-id="' + esc(a.id) + '">' +
         '<div class="acc-head"><span class="acc-avatar" aria-hidden="true">' + esc((a.prenom || '?').charAt(0).toUpperCase()) + '</span>' +
@@ -689,6 +690,7 @@
     mot_de_passe_modifie: 'a changé son mot de passe',
     mot_de_passe_reinitialise: 'a choisi un nouveau mot de passe (lien reçu par e-mail)',
     suppression: 'a supprimé le compte de',
+    suppression_auto: 'a effacé (3 mois après la suspension) le compte de',
     candidature: 'a envoyé une candidature',
     candidature_refusee: 'n’a pas retenu la candidature de',
     entree_animateur: 'a ouvert l’espace animateur de Boost',
@@ -718,7 +720,7 @@
       if (r.status !== 200) { $('#admin-list').innerHTML = '<p class="admin-empty">' + esc(r.data.message || 'Journal indisponible.') + '</p>'; return; }
       if (!r.data.length) { $('#admin-list').innerHTML = '<p class="admin-empty">Rien dans le journal pour le moment.</p>'; return; }
       $('#admin-list').innerHTML = '<p class="journal-note">Les 300 dernières actions. Le journal ne peut être ni modifié ni effacé depuis le hub.</p>' + r.data.map(function (l) {
-        var who = l.actor ? shortName(l.actor) : (l.action === 'demande' ? shortName(l.target) : 'Sécurité');
+        var who = l.actor ? shortName(l.actor) : (l.action === 'demande' ? shortName(l.target) : l.action === 'suppression_auto' ? 'Le hub' : 'Sécurité');
         var verb = ACTION_LABEL[l.action] || l.action;
         var target = (l.action === 'demande' || l.action === 'mot_de_passe_modifie' || l.action === 'mot_de_passe_reinitialise' || l.action === 'entree_animateur') ? '' : ' ' + shortName(l.target);
         var det = Object.keys(l.details || {}).filter(function (k) { return FIELD_LABEL[k] && Array.isArray(l.details[k]); }).map(function (k) {
