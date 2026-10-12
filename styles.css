@@ -213,6 +213,10 @@ a.tile:focus-visible { outline: 3px solid var(--tone); outline-offset: 3px; }
 .pwd { position: relative; display: block; width: 100%; }
 .pwd input { width: 100%; box-sizing: border-box; padding-right: 52px; }
 .pwd-eye { position: absolute; right: 6px; top: 0; bottom: 0; margin: auto 0; width: 40px; height: 40px; padding: 0; line-height: 40px; text-align: center; -webkit-appearance: none; appearance: none; border: 0; border-radius: 10px; background: none; cursor: pointer; font-size: 18px; opacity: .7; }
+/* Carte testeur de la démo (#demo=) : connexion en cours, carte en veille ou plus valable */
+.demo-note { margin: 0 0 16px; padding: 12px 14px; border-radius: 14px; background: var(--soft); border: 1px solid var(--border); font-weight: 700; line-height: 1.45; }
+.demo-note.is-sleep { border-color: var(--brand); }
+.demo-note.is-off { border-color: #d6453d; }
 .auth-msg, .acc-msg { margin: 0; min-height: 1px; font-size: 14px; font-weight: 700; color: #d6453d; }
 .auth-msg:empty, .acc-msg:empty { display: none; }
 .auth-msg.is-ok, .acc-msg.is-ok { color: #1f8a4c; }

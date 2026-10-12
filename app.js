@@ -102,6 +102,11 @@
   var wantSignup = params.has('inscription');
   // ?reset=<jeton> : lien « mot de passe oublié » reçu par e-mail (retiré tout de suite de l'adresse)
   var resetToken = params.get('reset') || '';
+  // #demo=<code> : carte testeur de la démo (QR). Le code est après le #, donc jamais envoyé au serveur web ni écrit dans
+  // ses journaux ; on l'efface aussitôt de l'adresse, puis on l'échange contre une session (démo seulement, côté serveur).
+  var demoMatch = /(?:^#|&)demo=([A-Za-z0-9]{20,64})/.exec(location.hash);
+  var demoCode = demoMatch ? demoMatch[1] : '';
+  if (demoMatch) history.replaceState(history.state, '', location.pathname + location.search);
   if (stay || wantSignup || resetToken || kiosk) {
     params.delete('kiosque');
     params.delete('rester');
@@ -1027,7 +1032,26 @@
 
   greet();
   if (kiosk && token) setSession(null); // tablette partagée : jamais la session de quelqu'un d'autre
-  if (resetToken) {
+  if (demoCode) {
+    // Carte testeur : la session de la carte remplace celle qui serait restée sur ce téléphone
+    setSession(null);
+    show('auth');
+    var demoNote = $('#demo-note');
+    demoNote.className = 'demo-note';
+    demoNote.textContent = 'Connexion à la démo…';
+    demoNote.hidden = false;
+    api('POST', '/api/hub/demo/exchange', { code: demoCode }).then(function (r) {
+      if (r.status === 200 && r.data.token) {
+        demoNote.hidden = true;
+        sessionOpened(r);
+        return;
+      }
+      demoNote.className = 'demo-note' + (r.data.veille ? ' is-sleep' : ' is-off');
+      demoNote.textContent = r.data.veille
+        ? '🌙 Cette carte de démonstration est en veille. Demandez à l’animateur de l’allumer, puis scannez-la de nouveau.'
+        : (r.status === 0 ? r.data.message : 'Cette carte n’est plus valable. Demandez une autre carte à l’animateur.');
+    });
+  } else if (resetToken) {
     // Lien reçu par e-mail : on choisit le nouveau mot de passe (toutes les sessions tomberont ensuite)
     show('auth');
     showAuthForm('#reset-form');
