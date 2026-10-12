@@ -531,7 +531,7 @@
   var ANIM_RUBRIQUES = [
     ['questionnaires', 'Questionnaires'], ['validation', 'À valider (relecture des quiz)'], ['tokens', 'Jetons'], ['results', 'Résultats'], ['messages', 'Messages'],
     ['direct', 'En direct (mur de réponses)'], ['versus', 'Versus'], ['championnat', 'Championnat'], ['escape', 'Escape game'],
-    ['raid', 'Raid du magasin'], ['pronos', 'Pronostics'], ['suggestions', 'Suggestions de quiz'], ['creations', 'Quiz des créateurs'],
+    ['raid', 'Raid du magasin'], ['pronos', 'Pronostics'], ['suggestions', 'Suggestions de quiz'], ['creations', 'Quiz des créateurs et Atelier'],
     ['idees', 'Boîte à idées'], ['saviez', 'Le saviez-vous ?'], ['mercis', 'Mercis'], ['jauges', 'Jauges solidaires (montants privés)'],
     ['modules', 'Modules à débloquer'], ['sectors', 'Secteurs'], ['indicateurs', 'Indicateurs de la direction'],
     ['calendrier', 'Calendrier de l’année'], ['appearance', 'Apparence'], ['devices', 'Appareils'], ['settings', 'Réglages et « Mes données »'],
