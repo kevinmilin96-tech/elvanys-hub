@@ -540,6 +540,7 @@
   var ANIM_PRESETS = {
     animateur: ['questionnaires', 'validation', 'tokens', 'results', 'messages', 'versus', 'championnat', 'escape', 'raid', 'direct', 'pronos', 'suggestions', 'creations', 'idees', 'mercis', 'saviez'],
     chef: ['direct'], // chef d'équipe : seulement de petites animations en direct (mur de réponses)
+    relecteur: ['validation'], // relecteur (ex. référent sécurité) : lit les quiz en attente et laisse des remarques (décision du 12/10)
   };
   function animPermsBlock(a) {
     var mine = a.anim_perms || [];
@@ -549,7 +550,8 @@
     return '<fieldset class="anim-perms"' + (a.animateur ? '' : ' style="display:none"') + '><legend>Rubriques de l’espace animateur</legend>' +
       (a.admin ? '<p class="journal-note">Administrateur : il a déjà toutes les rubriques.</p>' : '') +
       '<p class="anim-presets">Profil tout prêt : <button type="button" class="btn-soft" data-preset="animateur">Animateur</button> ' +
-      '<button type="button" class="btn-soft" data-preset="chef">Chef d’équipe (En direct seulement)</button></p>' + boxes + '</fieldset>';
+      '<button type="button" class="btn-soft" data-preset="chef">Chef d’équipe (En direct seulement)</button> ' +
+      '<button type="button" class="btn-soft" data-preset="relecteur">Relecteur (À valider seulement)</button></p>' + boxes + '</fieldset>';
   }
   function setAnimPerms(card, list) {
     card.querySelectorAll('input[name="anim_perms"]').forEach(function (b) { b.checked = list.indexOf(b.value) !== -1; });
