@@ -91,11 +91,15 @@
   var profils = ent.profils || [];
   var params = new URLSearchParams(location.search);
   var stay = params.has('rester');
+  // ?kiosque : on arrive de la tablette partagée du magasin (Boost) ; après la connexion, le hub ouvre Boost et
+  // oublie aussitôt sa propre session sur cette tablette (le compte n'y reste pas pour le suivant)
+  var kiosk = params.has('kiosque');
   // ?inscription : une appli (ex. l'Académie de Boost) envoie ici pour créer un compte
   var wantSignup = params.has('inscription');
   // ?reset=<jeton> : lien « mot de passe oublié » reçu par e-mail (retiré tout de suite de l'adresse)
   var resetToken = params.get('reset') || '';
-  if (stay || wantSignup || resetToken) {
+  if (stay || wantSignup || resetToken || kiosk) {
+    params.delete('kiosque');
     params.delete('rester');
     params.delete('inscription');
     params.delete('reset');
@@ -295,12 +299,25 @@
     showAuthForm('#code-form');
   }
   function sessionOpened(r) {
+    if (kiosk) { kioskOpenBoost(r.data.token); return; }
     setSession(r.data.token);
     unlockAdmin();
     $('#login-form').reset();
     enter(r.data.meta.account, 0, true);
     refreshMe();
   }
+  // Tablette du magasin : passe vers Boost avec la session qui vient de s'ouvrir, puis plus aucune session gardée ici
+  function kioskOpenBoost(t) {
+    var boost = (ent.applications || []).find(function (a) { return a.id === 'boost'; });
+    token = t;
+    api('POST', '/api/hub/sso/start', { app: 'boost' }).then(function (r) {
+      setSession(null);
+      $('#login-form').reset();
+      if (!boost) { leave(); return; }
+      location.href = appLink(boost, r.status === 200 ? r.data.code : null);
+    });
+  }
+
   $('#code-form').addEventListener('submit', function (e) {
     e.preventDefault();
     var f = e.target, msg = f.querySelector('.auth-msg');
@@ -995,7 +1012,17 @@
     });
   }
 
+  // Lien « Pulse sans compte » sur l'écran de connexion (si l'entreprise a Boost)
+  (function () {
+    var boost = (ent.applications || []).find(function (a) { return a.id === 'boost'; });
+    var link = $('#pulse-link');
+    if (!boost || !link) return;
+    link.href = appLink(boost);
+    link.hidden = false;
+  })();
+
   greet();
+  if (kiosk && token) setSession(null); // tablette partagée : jamais la session de quelqu'un d'autre
   if (resetToken) {
     // Lien reçu par e-mail : on choisit le nouveau mot de passe (toutes les sessions tomberont ensuite)
     show('auth');
