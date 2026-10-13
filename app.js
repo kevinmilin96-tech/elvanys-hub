@@ -381,7 +381,7 @@
   });
 
   // « Vos données » (formulaire Créer un compte) : la mention RGPD réglée par l'animateur de Boost (/api/hub/rgpd, public,
-  // aucune donnée sur les salariés). Le détail complet est dans Boost → Profil → « Mes données ».
+  // aucune donnée sur les collaborateurs). Le détail complet est dans Boost → Profil → « Mes données ».
   (function () {
     var btn = document.getElementById('signup-rgpd-btn');
     var box = document.getElementById('signup-rgpd');
@@ -604,7 +604,7 @@
       '<fieldset><legend>Applications</legend>' + apps + '</fieldset>' +
       '<label>Accès direct<select name="acces_direct">' + directOpts + '</select></label>' +
       '<label class="chk"><input type="checkbox" name="admin"' + (a.admin ? ' checked' : '') + (a.id === account.id ? ' disabled' : '') + '> Administrateur (gère les comptes)</label>' +
-      '<label class="chk"><input type="checkbox" name="moderateur"' + (a.moderateur ? ' checked' : '') + '> Modérateur (relit les propositions des salariés ; à désigner avec la direction et le CSE)</label>' +
+      '<label class="chk"><input type="checkbox" name="moderateur"' + (a.moderateur ? ' checked' : '') + '> Modérateur (relit les propositions des collaborateurs ; à désigner avec la direction et le CSE)</label>' +
       '<label class="chk"><input type="checkbox" name="createur"' + (a.createur ? ' checked' : '') + '> Créateur (crée des quiz dans le Studio ; sur candidature)</label>' +
       '<label class="chk"><input type="checkbox" name="testeur"' + (a.testeur ? ' checked' : '') + '> Testeur (voit les démos express privées de Boost, pour les présentations au CSE et à la direction)</label>' +
       '<label class="chk"><input type="checkbox" name="animateur"' + (a.animateur ? ' checked' : '') + '> Animateur de Boost (entre dans l’espace animateur avec son mot de passe du hub, seulement dans les rubriques cochées)</label>' +
@@ -730,7 +730,7 @@
       if (adminFilter !== 'candidatures') return;
       if (r.status !== 200) { $('#admin-list').innerHTML = '<p class="admin-empty">' + esc(r.data.message || 'Indisponible.') + '</p>'; return; }
       candPending = r.data.filter(function (c) { return c.status === 'en_attente'; }).length;
-      var intro = '<p class="journal-note">Les salariés candidatent depuis leur Profil dans Boost. Décidez avec la direction et le CSE : accepter coche la case du compte ; refuser demande un mot d’explication, que la personne lira.</p>';
+      var intro = '<p class="journal-note">Les collaborateurs candidatent depuis leur Profil dans Boost. Décidez avec la direction et le CSE : accepter coche la case du compte ; refuser demande un mot d’explication, que la personne lira.</p>';
       if (!r.data.length) { $('#admin-list').innerHTML = intro + '<p class="admin-empty">Aucune candidature pour le moment.</p>'; return; }
       $('#admin-list').innerHTML = intro + r.data.map(function (c) {
         var a = c.account || {};

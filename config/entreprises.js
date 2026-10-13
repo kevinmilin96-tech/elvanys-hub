@@ -20,7 +20,7 @@ window.HUB_ENTREPRISES = {
     contact: 'Une question ? Adressez-vous à l’accueil du magasin ou à votre responsable.',
     contactApi: '/api/hub/contact', // contact réglé dans Vigilys (Paramètres > Hub du magasin)
     profils: [
-      { id: 'collaborateur', nom: 'Collaborateur', detail: 'Salarié du magasin' },
+      { id: 'collaborateur', nom: 'Collaborateur', detail: 'Membre de l’équipe du magasin' },
       { id: 'agent', nom: 'Agent de sécurité / Agent de maintenance', court: 'Agent', detail: 'Sécurité et maintenance du site' },
       { id: 'direction', nom: 'Direction', detail: 'Direction et encadrement' },
     ],
