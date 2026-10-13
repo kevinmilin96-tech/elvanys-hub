@@ -402,6 +402,7 @@
           'vos parties de Versus et les mercis envoyés. Vos réponses aux questionnaires Pulse restent <b>anonymes</b>.</p>' +
           '<p><b>Jamais utilisé</b> pour évaluer ou noter qui que ce soit : la direction ne voit que des totaux.</p>' +
           '<p><b>Durée :</b> ' + esc(g.duree_compte || TODO) + ' (activité : ' + esc(g.duree_activite || TODO) + ').</p>' +
+          '<p><b>Compte inactif :</b> sans connexion pendant 12 mois, le compte est suspendu puis effacé 3 mois plus tard ; un e-mail vous prévient un mois avant, et une simple connexion suffit à le garder.</p>' +
           '<p><b>Responsable :</b> ' + esc(g.responsable || TODO) + (g.adresse ? ', ' + esc(g.adresse) : '') +
           '. <b>Contact :</b> ' + esc(g.contact || TODO) + '.</p>' +
           '<p>Vous pouvez voir vos données, les faire corriger ou demander leur suppression (Boost → Profil → « Mes données »). ' +
@@ -778,6 +779,8 @@
     mot_de_passe_reinitialise: 'a choisi un nouveau mot de passe (lien reçu par e-mail)',
     suppression: 'a supprimé le compte de',
     suppression_auto: 'a effacé (3 mois après la suspension) le compte de',
+    inactivite_rappel: 'a envoyé un rappel (bientôt 12 mois sans connexion) à',
+    suspension_inactivite: 'a suspendu (12 mois sans connexion) le compte de',
     appareil_approuve: 'a fait confiance au nouvel appareil de',
     creation_sans_email: 'a créé un compte sans e-mail pour',
     candidature: 'a envoyé une candidature',
@@ -809,7 +812,7 @@
       if (r.status !== 200) { $('#admin-list').innerHTML = '<p class="admin-empty">' + esc(r.data.message || 'Journal indisponible.') + '</p>'; return; }
       if (!r.data.length) { $('#admin-list').innerHTML = '<p class="admin-empty">Rien dans le journal pour le moment.</p>'; return; }
       $('#admin-list').innerHTML = '<p class="journal-note">Les 300 dernières actions. Le journal ne peut être ni modifié ni effacé depuis le hub.</p>' + r.data.map(function (l) {
-        var who = l.actor ? shortName(l.actor) : (l.action === 'demande' ? shortName(l.target) : l.action === 'suppression_auto' ? 'Le hub' : 'Sécurité');
+        var who = l.actor ? shortName(l.actor) : (l.action === 'demande' ? shortName(l.target) : (l.action === 'suppression_auto' || l.action === 'inactivite_rappel' || l.action === 'suspension_inactivite') ? 'Le hub' : 'Sécurité');
         var verb = ACTION_LABEL[l.action] || l.action;
         var target = (l.action === 'demande' || l.action === 'mot_de_passe_modifie' || l.action === 'mot_de_passe_reinitialise' || l.action === 'entree_animateur') ? '' : ' ' + shortName(l.target);
         var det = Object.keys(l.details || {}).filter(function (k) { return FIELD_LABEL[k] && Array.isArray(l.details[k]); }).map(function (k) {
