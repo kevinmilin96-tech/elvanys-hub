@@ -404,8 +404,8 @@
           '<p><b>Durée :</b> ' + esc(g.duree_compte || TODO) + ' (activité : ' + esc(g.duree_activite || TODO) + ').</p>' +
           '<p><b>Responsable :</b> ' + esc(g.responsable || TODO) + (g.adresse ? ', ' + esc(g.adresse) : '') +
           '. <b>Contact :</b> ' + esc(g.contact || TODO) + '.</p>' +
-          '<p>Vous pouvez voir vos données, les faire corriger ou demander leur suppression (Boost → Profil → « Mes données »), ' +
-          'et saisir la CNIL (cnil.fr) en cas de désaccord.</p>';
+          '<p>Vous pouvez voir vos données, les faire corriger ou demander leur suppression (Boost → Profil → « Mes données »). ' +
+          'Une question ou un souci se règle d’abord avec le contact ci-dessus ; en dernier recours, la loi prévoit de pouvoir saisir la CNIL (cnil.fr).</p>';
       });
     });
   })();
