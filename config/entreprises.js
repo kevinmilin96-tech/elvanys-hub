@@ -46,6 +46,16 @@ window.HUB_ENTREPRISES = {
         pour: ['agent', 'direction'],
         public: 'Sécurité, maintenance et direction',
       },
+      {
+        id: 'registrys',
+        nom: 'Registrys',
+        description: 'Registre de sécurité : vérifications, observations, prestataires et plans.',
+        url: 'https://blaye-vigilys.elvanys.fr/registrys.html', // page du site de Vigilys (14/10) ; adresse propre plus tard
+        icone: 'registrys',
+        couleur: 'principale',
+        pour: ['agent', 'direction'],
+        public: 'Responsable sécurité, technique et direction',
+      },
     ],
   },
 };
