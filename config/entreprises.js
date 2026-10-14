@@ -53,7 +53,7 @@ window.HUB_ENTREPRISES = {
         url: 'https://blaye-vigilys.elvanys.fr/registrys.html', // page du site de Vigilys (14/10) ; adresse propre plus tard
         icone: 'registrys',
         couleur: 'principale',
-        pour: ['agent', 'direction'],
+        pour: [], // jamais cochée d'office : l'administrateur choisit chaque compte (demande de l'utilisateur, 14/10)
         public: 'Responsable sécurité, technique et direction',
       },
     ],
