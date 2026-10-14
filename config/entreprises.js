@@ -42,7 +42,7 @@ window.HUB_ENTREPRISES = {
         description: 'Main courante, rondes, incidents et maintenance du site.',
         url: 'https://blaye-vigilys.elvanys.fr',
         icone: 'vigilys',
-        couleur: 'principale',
+        couleur: 'vigilys',
         pour: ['agent', 'direction'],
         public: 'Sécurité, maintenance et direction',
       },
@@ -52,7 +52,7 @@ window.HUB_ENTREPRISES = {
         description: 'Registre de sécurité : vérifications, observations, prestataires et plans.',
         url: 'https://blaye-vigilys.elvanys.fr/registrys.html', // page du site de Vigilys (14/10) ; adresse propre plus tard
         icone: 'registrys',
-        couleur: 'principale',
+        couleur: 'registrys',
         pour: [], // jamais cochée d'office : l'administrateur choisit chaque compte (demande de l'utilisateur, 14/10)
         public: 'Responsable sécurité, technique et direction',
       },

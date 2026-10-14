@@ -76,8 +76,10 @@
   // --- Icônes des applications (traits fins, comme les tuiles de la maquette) -------------------
   var ICONS = {
     boost: '<svg viewBox="0 0 48 48" fill="none" stroke-width="2.2" aria-hidden="true"><circle cx="24" cy="24" r="21" stroke="#5fb84a"/><circle cx="24" cy="24" r="16.5" stroke="#f7862a"/><circle cx="24" cy="24" r="12" stroke="#2a7fc1"/><circle cx="24" cy="24" r="7.5" stroke="#e5262c"/><circle cx="24" cy="24" r="3" fill="#6b2bd9" stroke="none"/></svg>',
-    registrys: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M12 6 H34 L38 10 V42 H12 Z"/><path d="M18 16 H32 M18 23 H32"/><path d="M18 32 L22 36 L31 27"/></svg>',
-    vigilys: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><rect x="10" y="10" width="28" height="28"/><path d="M24 4 L44 24 L24 44 L4 24 Z"/><circle cx="24" cy="24" r="8"/></svg>',
+    // Couleurs de Registrys (14/10) : encre bleu-nuit + vert menthe, comme son logo
+    registrys: '<svg viewBox="0 0 48 48" fill="none" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M11 5 H33 L38 10 V43 H11 Z" stroke="var(--reg-ink)"/><path d="M17 15 H32 M17 22 H32" stroke="var(--reg-ink)" opacity=".55"/><circle cx="31" cy="33" r="8.5" fill="#0e9e72" stroke="none"/><path d="M27 33 L30 36 L35.5 30" stroke="#fff" stroke-width="2.6"/></svg>',
+    // Couleurs de Vigilys (14/10, celles de la présentation) : indigo → bleu ciel → menthe
+    vigilys: '<svg viewBox="0 0 48 48" fill="none" stroke-width="2.4" stroke-linejoin="round" aria-hidden="true"><defs><linearGradient id="vg-grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4F4FD0"/><stop offset=".55" stop-color="#4CC3F5"/><stop offset="1" stop-color="#2fd3b5"/></linearGradient></defs><path d="M24 4 L44 24 L24 44 L4 24 Z" stroke="url(#vg-grad)"/><rect x="11" y="11" width="26" height="26" stroke="#4F4FD0" opacity=".85"/><circle cx="24" cy="24" r="8" stroke="#4CC3F5"/><circle cx="24" cy="24" r="3" fill="#2fd3b5" stroke="none"/></svg>',
     bientot: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="24" cy="17" r="10"/><circle cx="17" cy="29" r="10"/><circle cx="31" cy="29" r="10"/></svg>',
   };
 
@@ -158,6 +160,8 @@
   // Couleurs de Boost : une par lettre (Bien-être, Organisation, Optimisation, Sécurité, Travail)
   var BOOST_COLORS = ['#5fb84a', '#f7862a', '#2a7fc1', '#e5262c', '#6b2bd9'];
   function tileName(a) {
+    // Registrys en deux tons : « Regis » à l'encre, « trys » en vert menthe
+    if (a.couleur === 'registrys') return '<span class="reg-a">' + esc(String(a.nom).slice(0, 5)) + '</span><span class="reg-b">' + esc(String(a.nom).slice(5)) + '</span>';
     if (a.couleur !== 'boost') return esc(a.nom);
     return String(a.nom).toUpperCase().split('').map(function (ch, i) {
       return '<span style="color:' + BOOST_COLORS[i % BOOST_COLORS.length] + '">' + esc(ch) + '</span>';
@@ -508,6 +512,15 @@
   function closeSheet(d) { if (d.close) d.close(); else d.removeAttribute('open'); }
   document.querySelectorAll('[data-close]').forEach(function (b) {
     b.addEventListener('click', function () { closeSheet(b.closest('dialog')); });
+  });
+  // Toucher à côté de la fenêtre la ferme (demande de l'utilisateur, 14/10 : la liste des comptes est longue).
+  // Le geste doit commencer ET finir à côté : sélectionner un texte dans la fenêtre ne la ferme pas.
+  ['account-sheet', 'admin-sheet'].forEach(function (id) {
+    var d = document.getElementById(id);
+    if (!d) return;
+    var downOutside = false;
+    d.addEventListener('pointerdown', function (e) { downOutside = e.target === d; });
+    d.addEventListener('click', function (e) { if (e.target === d && downOutside) closeSheet(d); downOutside = false; });
   });
 
   $('#profile-chip').addEventListener('click', function () {

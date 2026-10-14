@@ -171,6 +171,17 @@ a.tile:focus-visible { outline: 3px solid var(--tone); outline-offset: 3px; }
 :root[data-theme="dark"] .help a { color: var(--accent); }
 
 /* Tuile Boost : les couleurs du logo Boost plutôt que l'orange du magasin */
+/* Vigilys et Registrys à leurs couleurs (14/10), comme Boost */
+.tile.tone-vigilys { --tone: #4F4FD0; }
+.tile.tone-vigilys .tile-name { background: linear-gradient(90deg, #4F4FD0, #1fa3e0 60%, #13a88f); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.tile.tone-registrys { --tone: #0e9e72; --reg-ink: #13262c; }
+.tile.tone-registrys .tile-name .reg-a { color: #13262c; }
+.tile.tone-registrys .tile-name .reg-b { color: #0e9e72; }
+:root[data-theme="dark"] .tile.tone-vigilys { --tone: #9192F8; }
+:root[data-theme="dark"] .tile.tone-vigilys .tile-name { background-image: linear-gradient(90deg, #9192F8, #4CC3F5 60%, #5EEAD4); }
+:root[data-theme="dark"] .tile.tone-registrys { --tone: #3fd6a2; --reg-ink: #eef6f4; }
+:root[data-theme="dark"] .tile.tone-registrys .tile-name .reg-a { color: #eef6f4; }
+:root[data-theme="dark"] .tile.tone-registrys .tile-name .reg-b { color: #3fd6a2; }
 .tile.tone-boost { --tone: #2a7fc1; }
 .tile.tone-boost .tile-name { letter-spacing: 1px; text-shadow: 0 2px 0 rgba(0, 0, 0, .06); }
 .tile.tone-boost .tile-go { color: #6b2bd9; }
@@ -254,6 +265,8 @@ a.tile:focus-visible { outline: 3px solid var(--tone); outline-offset: 3px; }
 .sheet-wide { width: min(720px, calc(100vw - 24px)); max-height: calc(100dvh - 32px); }
 .sheet-wide .sheet-inner { max-height: calc(100dvh - 32px); box-sizing: border-box; overflow-y: auto; }
 .admin-head { display: flex; align-items: center; justify-content: space-between; }
+/* Titre et croix toujours visibles quand on descend dans la liste des comptes (14/10) */
+.sheet-wide .admin-head { position: sticky; top: -26px; z-index: 3; margin: -26px -26px 0; padding: 18px 26px 12px; background: var(--surface); box-shadow: 0 1px 0 var(--border); }
 .sheet-x { width: 42px; height: 42px; border: 0; border-radius: 12px; background: var(--soft); color: var(--text); cursor: pointer; font-size: 16px; }
 .admin-filter { display: flex; gap: 6px; flex-wrap: wrap; }
 .admin-search { display: flex; align-items: center; gap: 10px; margin-top: 10px; padding: 0 14px; min-height: 44px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); color: var(--muted); }
