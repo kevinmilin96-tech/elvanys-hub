@@ -54,7 +54,7 @@ window.HUB_ENTREPRISES = {
         icone: 'registrys',
         couleur: 'registrys',
         pour: [], // jamais cochée d'office : l'administrateur choisit chaque compte (demande de l'utilisateur, 14/10)
-        public: 'Sécurité, technique et direction',
+        public: 'Incendie, technique et direction',
       },
     ],
   },
