@@ -256,6 +256,10 @@ a.tile:focus-visible { outline: 3px solid var(--tone); outline-offset: 3px; }
 .admin-head { display: flex; align-items: center; justify-content: space-between; }
 .sheet-x { width: 42px; height: 42px; border: 0; border-radius: 12px; background: var(--soft); color: var(--text); cursor: pointer; font-size: 16px; }
 .admin-filter { display: flex; gap: 6px; flex-wrap: wrap; }
+.admin-search { display: flex; align-items: center; gap: 10px; margin-top: 10px; padding: 0 14px; min-height: 44px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); color: var(--muted); }
+.admin-search[hidden] { display: none; }
+.admin-search input { flex: 1; min-width: 0; border: 0; background: transparent; color: var(--text, inherit); font: 600 15px Manrope, sans-serif; outline: none; }
+.admin-search:focus-within { border-color: var(--brand); }
 .admin-filter button { min-height: 38px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); color: var(--muted); cursor: pointer; font: 800 13px Manrope, sans-serif; }
 .admin-filter button.is-on { background: var(--brand); border-color: var(--brand); color: #fff; }
 :root[data-theme="dark"] .admin-filter button.is-on { background: var(--accent); border-color: var(--accent); color: #1a1205; }

@@ -645,6 +645,19 @@
     card.querySelectorAll('input[name="anim_perms"]').forEach(function (b) { b.checked = list.indexOf(b.value) !== -1; });
   }
 
+  // Recherche d'un compte : sans majuscules ni accents
+  function norm(s) { return String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim(); }
+  function matches(a, q) {
+    // Aussi par « titre » (demande de l'utilisateur) : profil, rôles, applications ouvertes
+    var titres = [profilName(a.profil),
+      a.admin ? 'administrateur admin' : '', a.animateur ? 'animateur' : '', a.moderateur ? 'moderateur' : '',
+      a.testeur ? 'testeur' : '', a.createur ? 'createur' : '',
+      (a.apps || []).map(function (id) { var x = appById(id); return x ? x.nom : id; }).join(' ')];
+    var hay = norm([a.prenom, a.nom, a.prenom && a.nom ? a.nom + ' ' + a.prenom : '', a.identifiant, a.email].concat(titres).join(' | '));
+    return q.split(/\s+/).every(function (w) { return hay.indexOf(w) !== -1; });
+  }
+  $('#admin-search').addEventListener('input', function () { renderAdmin(); });
+
   function renderAdmin() {
     document.querySelectorAll('#admin-filter button').forEach(function (b) {
       var f = b.getAttribute('data-filter');
@@ -652,14 +665,20 @@
       b.classList.toggle('is-on', f === adminFilter);
       b.textContent = f === 'journal' ? 'Journal' : f === 'candidatures' ? 'Candidatures' + (candPending ? ' (' + candPending + ')' : '') : FILTER_LABEL[f] + ' (' + n + ')';
     });
+    $('#admin-search-box').hidden = adminFilter === 'journal' || adminFilter === 'candidatures';
     if (adminFilter === 'journal') { loadJournal(); return; }
     if (adminFilter === 'candidatures') { loadCandidatures(); return; }
-    var list = adminList.filter(function (a) { return inFilter(a, adminFilter); });
+    // Recherche (14/10) : quand on tape un nom, on cherche dans TOUS les comptes, quel que soit l'onglet
+    var q = norm($('#admin-search').value);
+    var list = q ? adminList.filter(function (a) { return matches(a, q); })
+      : adminList.filter(function (a) { return inFilter(a, adminFilter); });
     if (!list.length) {
-      $('#admin-list').innerHTML = '<p class="admin-empty">' + (adminFilter === 'en_attente' ? 'Aucune demande en attente.' : 'Aucun compte ici.') + '</p>';
+      $('#admin-list').innerHTML = '<p class="admin-empty">' + (q ? 'Aucun compte ne correspond à « ' + esc($('#admin-search').value.trim()) + ' ».'
+        : adminFilter === 'en_attente' ? 'Aucune demande en attente.' : 'Aucun compte ici.') + '</p>';
       return;
     }
-    $('#admin-list').innerHTML = list.map(function (a) {
+    var found = q ? '<p class="journal-note">' + list.length + ' compte' + (list.length > 1 ? 's' : '') + ' trouvé' + (list.length > 1 ? 's' : '') + ', tous statuts confondus.</p>' : '';
+    $('#admin-list').innerHTML = found + list.map(function (a) {
       var self = a.id === account.id;
       var meta = a.statut === 'en_attente' ? 'Demande du ' + fmtDate(a.created)
         : a.statut === 'suspendu' && a.suspendu_le ? 'Suspendu le ' + fmtDate(a.suspendu_le) + (a.efface_le ? ' · effacé automatiquement le ' + fmtDate(a.efface_le) + ' (avec ses données de Boost)' : '')
