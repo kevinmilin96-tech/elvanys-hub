@@ -131,6 +131,18 @@
   .types-ajout span i { font-style: normal; font-size: 18px; }
   .types-ajout span small { display: block; color: var(--gris); font-weight: 600; font-size: 10px; }
   .types-ajout span.plus-tard { opacity: .45; }
+  .logos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  @media (max-width: 1000px) { .logos { grid-template-columns: 1fr; } }
+  .logo-carte { background: #fff; border-radius: 20px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+  .logo-carte p { margin: 0; color: #4b5263; font-weight: 600; font-size: 14px; line-height: 1.5; }
+  .logo-fonds { display: grid; grid-template-columns: 1fr 1fr; border-radius: 14px; overflow: hidden; }
+  .logo-fonds > div { display: grid; place-items: center; padding: 18px 0; }
+  .logo-fonds .clair { background: #f7f5f0; } .logo-fonds .sombre { background: #121826; }
+  .logo-fonds .logo-svg { width: 140px; height: 140px; }
+  .logo-tailles { display: flex; align-items: center; gap: 18px; }
+  .logo-tailles .t48 .logo-svg { width: 48px; height: 48px; } .logo-tailles .t24 .logo-svg { width: 24px; height: 24px; }
+  .logo-tailles .appli { display: flex; align-items: center; gap: 8px; background: #1b2333; color: #fff; border-radius: 12px; padding: 6px 12px 6px 6px; font-weight: 800; }
+  .logo-tailles .appli .logo-svg { width: 34px; height: 34px; }
 </style>
 </head>
 <body>
@@ -290,10 +302,79 @@
 </section>
 
 <section class="bloc">
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <linearGradient id="or" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f6dc8e"/><stop offset=".45" stop-color="#d4a73c"/><stop offset="1" stop-color="#9c6f17"/></linearGradient>
+  <linearGradient id="orDoux" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fbe9b7"/><stop offset="1" stop-color="#c9962e"/></linearGradient>
+  <radialGradient id="nuit" cx=".35" cy=".3" r=".9"><stop offset="0" stop-color="#34436a"/><stop offset=".6" stop-color="#1b2333"/><stop offset="1" stop-color="#0d121c"/></radialGradient>
+  <radialGradient id="halo" cx=".5" cy=".5" r=".5"><stop offset=".62" stop-color="#d4a73c" stop-opacity=".0"/><stop offset=".8" stop-color="#d4a73c" stop-opacity=".35"/><stop offset="1" stop-color="#d4a73c" stop-opacity="0"/></radialGradient>
+  <linearGradient id="blanc" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#e3e7ef"/></linearGradient>
+  <linearGradient id="reflet" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+  <filter id="ombre" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="6" stdDeviation="6" flood-color="#0d121c" flood-opacity=".45"/></filter>
+  <path id="bouclier" d="M50 18 L76 28 V50 C76 66 65 77 50 83 C35 77 24 66 24 50 V28 Z"/>
+</defs></svg>
+  <h2><i>3</i> Le logo — bouclier dans un anneau lumineux (or · bleu-nuit · blanc)</h2>
+  <div class="logos">
+    <div class="logo-carte"><b>A · Bouclier blanc, anneau de progression</b><div class="logo-fonds"><div class="clair"><svg viewBox="0 0 100 100" class="logo-svg"><circle cx="50" cy="50" r="49" fill="url(#halo)"/><circle cx="50" cy="50" r="42" fill="none" stroke="#efe6cf" stroke-width="6"/>
+<circle cx="50" cy="50" r="42" fill="none" stroke="url(#or)" stroke-width="6" stroke-linecap="round" stroke-dasharray="230 264" transform="rotate(-90 50 50)"/>
+<circle cx="50" cy="50" r="35" fill="url(#nuit)" filter="url(#ombre)"/><g transform="translate(50 52) scale(.62) translate(-50 -50)"><use href="#bouclier" fill="url(#blanc)"/><path d="M38 51 L47 60 L63 42" fill="none" stroke="#c9962e" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></g>
+<ellipse cx="42" cy="30" rx="17" ry="8" fill="url(#reflet)"/></svg></div><div class="sombre"><svg viewBox="0 0 100 100" class="logo-svg"><circle cx="50" cy="50" r="49" fill="url(#halo)"/><circle cx="50" cy="50" r="42" fill="none" stroke="#efe6cf" stroke-width="6"/>
+<circle cx="50" cy="50" r="42" fill="none" stroke="url(#or)" stroke-width="6" stroke-linecap="round" stroke-dasharray="230 264" transform="rotate(-90 50 50)"/>
+<circle cx="50" cy="50" r="35" fill="url(#nuit)" filter="url(#ombre)"/><g transform="translate(50 52) scale(.62) translate(-50 -50)"><use href="#bouclier" fill="url(#blanc)"/><path d="M38 51 L47 60 L63 42" fill="none" stroke="#c9962e" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></g>
+<ellipse cx="42" cy="30" rx="17" ry="8" fill="url(#reflet)"/></svg></div></div>
+      <div class="logo-tailles"><span class="t48"><svg viewBox="0 0 100 100" class="logo-svg"><circle cx="50" cy="50" r="49" fill="url(#halo)"/><circle cx="50" cy="50" r="42" fill="none" stroke="#efe6cf" stroke-width="6"/>
+<circle cx="50" cy="50" r="42" fill="none" stroke="url(#or)" stroke-width="6" stroke-linecap="round" stroke-dasharray="230 264" transform="rotate(-90 50 50)"/>
+<circle cx="50" cy="50" r="35" fill="url(#nuit)" filter="url(#ombre)"/><g transform="translate(50 52) scale(.62) translate(-50 -50)"><use href="#bouclier" fill="url(#blanc)"/><path d="M38 51 L47 60 L63 42" fill="none" stroke="#c9962e" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></g>
+<ellipse cx="42" cy="30" rx="17" ry="8" fill="url(#reflet)"/></svg></span><span class="t24"><svg viewBox="0 0 100 100" class="logo-svg"><circle cx="50" cy="50" r="49" fill="url(#halo)"/><circle cx="50" cy="50" r="42" fill="none" stroke="#efe6cf" stroke-width="6"/>
+<circle cx="50" cy="50" r="42" fill="none" stroke="url(#or)" stroke-width="6" stroke-linecap="round" stroke-dasharray="230 264" transform="rotate(-90 50 50)"/>
+<circle cx="50" cy="50" r="35" fill="url(#nuit)" filter="url(#ombre)"/><g transform="translate(50 52) scale(.62) translate(-50 -50)"><use href="#bouclier" fill="url(#blanc)"/><path d="M38 51 L47 60 L63 42" fill="none" stroke="#c9962e" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></g>
+<ellipse cx="42" cy="30" rx="17" ry="8" fill="url(#reflet)"/></svg></span><span class="appli"><svg viewBox="0 0 100 100" class="logo-svg"><circle cx="50" cy="50" r="49" fill="url(#halo)"/><circle cx="50" cy="50" r="42" fill="none" stroke="#efe6cf" stroke-width="6"/>
+<circle cx="50" cy="50" r="42" fill="none" stroke="url(#or)" stroke-width="6" stroke-linecap="round" stroke-dasharray="230 264" transform="rotate(-90 50 50)"/>
+<circle cx="50" cy="50" r="35" fill="url(#nuit)" filter="url(#ombre)"/><g transform="translate(50 52) scale(.62) translate(-50 -50)"><use href="#bouclier" fill="url(#blanc)"/><path d="M38 51 L47 60 L63 42" fill="none" stroke="#c9962e" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></g>
+<ellipse cx="42" cy="30" rx="17" ry="8" fill="url(#reflet)"/></svg><small>Aureus</small></span></div><p>Le plus proche de la maquette : l’anneau or rappelle le score de sécurité ; bouclier blanc avec une coche or.</p></div>
+    <div class="logo-carte"><b>B · Bouclier or gravé « AU »</b><div class="logo-fonds"><div class="clair"><svg viewBox="0 0 100 100" class="logo-svg"><circle cx="50" cy="50" r="49" fill="url(#halo)"/><circle cx="50" cy="50" r="40" fill="url(#nuit)" filter="url(#ombre)"/>
+<circle cx="50" cy="50" r="40" fill="none" stroke="url(#or)" stroke-width="3"/><circle cx="50" cy="50" r="34" fill="none" stroke="#c9962e" stroke-opacity=".35" stroke-width="1"/>
+<g transform="translate(50 51) scale(.7) translate(-50 -50)"><use href="#bouclier" fill="url(#or)"/><text x="50" y="59" text-anchor="middle" font-family="system-ui, sans-serif" font-weight="900" font-size="22" fill="#1b2333" letter-spacing="1">AU</text></g>
+<ellipse cx="41" cy="27" rx="18" ry="7" fill="url(#reflet)"/></svg></div><div class="sombre"><svg viewBox="0 0 100 100" class="logo-svg"><circle cx="50" cy="50" r="49" fill="url(#halo)"/><circle cx="50" cy="50" r="40" fill="url(#nuit)" filter="url(#ombre)"/>
+<circle cx="50" cy="50" r="40" fill="none" stroke="url(#or)" stroke-width="3"/><circle cx="50" cy="50" r="34" fill="none" stroke="#c9962e" stroke-opacity=".35" stroke-width="1"/>
+<g transform="translate(50 51) scale(.7) translate(-50 -50)"><use href="#bouclier" fill="url(#or)"/><text x="50" y="59" text-anchor="middle" font-family="system-ui, sans-serif" font-weight="900" font-size="22" fill="#1b2333" letter-spacing="1">AU</text></g>
+<ellipse cx="41" cy="27" rx="18" ry="7" fill="url(#reflet)"/></svg></div></div>
+      <div class="logo-tailles"><span class="t48"><svg viewBox="0 0 100 100" class="logo-svg"><circle cx="50" cy="50" r="49" fill="url(#halo)"/><circle cx="50" cy="50" r="40" fill="url(#nuit)" filter="url(#ombre)"/>
+<circle cx="50" cy="50" r="40" fill="none" stroke="url(#or)" stroke-width="3"/><circle cx="50" cy="50" r="34" fill="none" stroke="#c9962e" stroke-opacity=".35" stroke-width="1"/>
+<g transform="translate(50 51) scale(.7) translate(-50 -50)"><use href="#bouclier" fill="url(#or)"/><text x="50" y="59" text-anchor="middle" font-family="system-ui, sans-serif" font-weight="900" font-size="22" fill="#1b2333" letter-spacing="1">AU</text></g>
+<ellipse cx="41" cy="27" rx="18" ry="7" fill="url(#reflet)"/></svg></span><span class="t24"><svg viewBox="0 0 100 100" class="logo-svg"><circle cx="50" cy="50" r="49" fill="url(#halo)"/><circle cx="50" cy="50" r="40" fill="url(#nuit)" filter="url(#ombre)"/>
+<circle cx="50" cy="50" r="40" fill="none" stroke="url(#or)" stroke-width="3"/><circle cx="50" cy="50" r="34" fill="none" stroke="#c9962e" stroke-opacity=".35" stroke-width="1"/>
+<g transform="translate(50 51) scale(.7) translate(-50 -50)"><use href="#bouclier" fill="url(#or)"/><text x="50" y="59" text-anchor="middle" font-family="system-ui, sans-serif" font-weight="900" font-size="22" fill="#1b2333" letter-spacing="1">AU</text></g>
+<ellipse cx="41" cy="27" rx="18" ry="7" fill="url(#reflet)"/></svg></span><span class="appli"><svg viewBox="0 0 100 100" class="logo-svg"><circle cx="50" cy="50" r="49" fill="url(#halo)"/><circle cx="50" cy="50" r="40" fill="url(#nuit)" filter="url(#ombre)"/>
+<circle cx="50" cy="50" r="40" fill="none" stroke="url(#or)" stroke-width="3"/><circle cx="50" cy="50" r="34" fill="none" stroke="#c9962e" stroke-opacity=".35" stroke-width="1"/>
+<g transform="translate(50 51) scale(.7) translate(-50 -50)"><use href="#bouclier" fill="url(#or)"/><text x="50" y="59" text-anchor="middle" font-family="system-ui, sans-serif" font-weight="900" font-size="22" fill="#1b2333" letter-spacing="1">AU</text></g>
+<ellipse cx="41" cy="27" rx="18" ry="7" fill="url(#reflet)"/></svg><small>Aureus</small></span></div><p>Garde le « AU » d’Aureus (l’or en chimie) dans un bouclier doré, sur un disque bleu-nuit cerclé d’or.</p></div>
+    <div class="logo-carte"><b>C · Icône d’appli, serrure</b><div class="logo-fonds"><div class="clair"><svg viewBox="0 0 100 100" class="logo-svg"><circle cx="50" cy="50" r="49" fill="url(#halo)"/><rect x="12" y="12" width="76" height="76" rx="22" fill="url(#nuit)" filter="url(#ombre)"/>
+<rect x="12" y="12" width="76" height="76" rx="22" fill="none" stroke="url(#or)" stroke-width="2.5"/>
+<g transform="translate(50 50) scale(.66) translate(-50 -50)"><use href="#bouclier" fill="none" stroke="url(#orDoux)" stroke-width="6" stroke-linejoin="round"/><circle cx="50" cy="45" r="7" fill="#fff"/><path d="M46 49 L44 64 H56 L54 49 Z" fill="#fff"/></g>
+<ellipse cx="40" cy="22" rx="20" ry="6" fill="url(#reflet)"/></svg></div><div class="sombre"><svg viewBox="0 0 100 100" class="logo-svg"><circle cx="50" cy="50" r="49" fill="url(#halo)"/><rect x="12" y="12" width="76" height="76" rx="22" fill="url(#nuit)" filter="url(#ombre)"/>
+<rect x="12" y="12" width="76" height="76" rx="22" fill="none" stroke="url(#or)" stroke-width="2.5"/>
+<g transform="translate(50 50) scale(.66) translate(-50 -50)"><use href="#bouclier" fill="none" stroke="url(#orDoux)" stroke-width="6" stroke-linejoin="round"/><circle cx="50" cy="45" r="7" fill="#fff"/><path d="M46 49 L44 64 H56 L54 49 Z" fill="#fff"/></g>
+<ellipse cx="40" cy="22" rx="20" ry="6" fill="url(#reflet)"/></svg></div></div>
+      <div class="logo-tailles"><span class="t48"><svg viewBox="0 0 100 100" class="logo-svg"><circle cx="50" cy="50" r="49" fill="url(#halo)"/><rect x="12" y="12" width="76" height="76" rx="22" fill="url(#nuit)" filter="url(#ombre)"/>
+<rect x="12" y="12" width="76" height="76" rx="22" fill="none" stroke="url(#or)" stroke-width="2.5"/>
+<g transform="translate(50 50) scale(.66) translate(-50 -50)"><use href="#bouclier" fill="none" stroke="url(#orDoux)" stroke-width="6" stroke-linejoin="round"/><circle cx="50" cy="45" r="7" fill="#fff"/><path d="M46 49 L44 64 H56 L54 49 Z" fill="#fff"/></g>
+<ellipse cx="40" cy="22" rx="20" ry="6" fill="url(#reflet)"/></svg></span><span class="t24"><svg viewBox="0 0 100 100" class="logo-svg"><circle cx="50" cy="50" r="49" fill="url(#halo)"/><rect x="12" y="12" width="76" height="76" rx="22" fill="url(#nuit)" filter="url(#ombre)"/>
+<rect x="12" y="12" width="76" height="76" rx="22" fill="none" stroke="url(#or)" stroke-width="2.5"/>
+<g transform="translate(50 50) scale(.66) translate(-50 -50)"><use href="#bouclier" fill="none" stroke="url(#orDoux)" stroke-width="6" stroke-linejoin="round"/><circle cx="50" cy="45" r="7" fill="#fff"/><path d="M46 49 L44 64 H56 L54 49 Z" fill="#fff"/></g>
+<ellipse cx="40" cy="22" rx="20" ry="6" fill="url(#reflet)"/></svg></span><span class="appli"><svg viewBox="0 0 100 100" class="logo-svg"><circle cx="50" cy="50" r="49" fill="url(#halo)"/><rect x="12" y="12" width="76" height="76" rx="22" fill="url(#nuit)" filter="url(#ombre)"/>
+<rect x="12" y="12" width="76" height="76" rx="22" fill="none" stroke="url(#or)" stroke-width="2.5"/>
+<g transform="translate(50 50) scale(.66) translate(-50 -50)"><use href="#bouclier" fill="none" stroke="url(#orDoux)" stroke-width="6" stroke-linejoin="round"/><circle cx="50" cy="45" r="7" fill="#fff"/><path d="M46 49 L44 64 H56 L54 49 Z" fill="#fff"/></g>
+<ellipse cx="40" cy="22" rx="20" ry="6" fill="url(#reflet)"/></svg><small>Aureus</small></span></div><p>Format icône d’application (carré arrondi) : bouclier tracé en or et serrure blanche.</p></div>
+  </div>
+  <p class="note">Les trois marchent sur fond clair et sombre, et restent lisibles en tout petit (onglet du navigateur). Dites-moi la lettre ; je peux aussi en mélanger deux.</p>
+</section>
+
+<section class="bloc">
   <h2><i>?</i> À choisir</h2>
   <ol class="questions">
     <li><b>Thème</b> : PC sombre + téléphone clair (comme les captures), tout sombre, ou tout clair ? (on peut aussi laisser le choix dans les réglages)</li>
-    <li><b>Couleur d’accent</b> : l’or d’Aureus, ou le bordeaux du concept que vous avez trouvé ?</li>
+    <li><s><b>Couleur d’accent</b></s> → <b>CHOISI : or · bleu-nuit · blanc</b> (15/10).</li>
+    <li><b>Logo</b> : A, B ou C (partie 3) ?</li>
     <li><b>Accueil du téléphone</b> : le tableau de bord (score, coffres, récents) ou directement la liste des fiches ?</li>
     <li><b>Types de fiche</b> (écran « Ajouter ») : il en manque ? il y en a de trop ?</li>
     <li>Les <b>fuites de mots de passe sur internet</b> (« dark web » de la capture) demandent d’interroger un service extérieur
