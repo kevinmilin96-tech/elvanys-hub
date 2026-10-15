@@ -2,8 +2,8 @@
 // La page ouvre une boîte de 10 minutes sur le serveur, tire une clé et affiche un QR (adresse d'Aureus + clé après le #).
 // Le téléphone y dépose des secrets chiffrés ; ici on les relève, on les déchiffre et on propose « Copier ».
 // Rien n'est gardé : le secret reçu s'efface de l'écran au bout de 60 secondes, la boîte est fermée en quittant.
-import { qrSvg } from './qr.js';
-import { nouvelleCleBoite, controleBoite, dechiffrerBoite } from './coffre-crypto.js';
+import { qrSvg } from './qr.js?v=__VERSION__';
+import { nouvelleCleBoite, controleBoite, dechiffrerBoite } from './coffre-crypto.js?v=__VERSION__';
 
 const $ = (s) => document.querySelector(s);
 const local = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);

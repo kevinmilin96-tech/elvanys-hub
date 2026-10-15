@@ -10,7 +10,7 @@
 //         la clé du coffre rangée sur l'appareil.
 //     Le serveur seul ne peut pas deviner le code (il n'a pas le sel) ; l'appareil volé seul non plus (il lui
 //     manque la moitié du serveur, qui ne se donne qu'en 5 essais).
-import { MOTS } from './mots.js';
+import { MOTS } from './mots.js?v=__VERSION__';
 
 export const ITERATIONS = 600000;
 const enc = new TextEncoder();

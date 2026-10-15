@@ -1,6 +1,6 @@
 // Lecture d'un lien autodestructible Aureus (sans compte). La clé est après le # : elle ne part jamais au serveur.
 // Le serveur rend le message chiffré et l'efface aussitôt ; on le déchiffre ici.
-import { dechiffrerLien } from './coffre-crypto.js';
+import { dechiffrerLien } from './coffre-crypto.js?v=__VERSION__';
 
 const local = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
 const API = local ? (localStorage.getItem('hub_api') || 'http://127.0.0.1:8098') : '';

@@ -1,7 +1,7 @@
 // Aureus — coffre-fort numérique, ébauche du 15/10/2026 (étape 1 : le socle + lien autodestructible).
 // Ouvert depuis le hub (même adresse, même compte). Tout est chiffré ici, sur l'appareil : le serveur ne reçoit
 // que des blocs illisibles (voir coffre-crypto.js). La clé du coffre ne vit qu'en mémoire, effacée au verrouillage.
-import * as C from './coffre-crypto.js';
+import * as C from './coffre-crypto.js?v=__VERSION__';
 
 const $ = (s, el = document) => el.querySelector(s);
 const ecran = $('#ecran');
