@@ -623,7 +623,17 @@ let derniere = Date.now();
 let cachee = 0;
 function activite() { derniere = Date.now(); }
 ['pointerdown', 'keydown', 'scroll'].forEach((ev) => document.addEventListener(ev, activite, { passive: true }));
+// Protection des regards (15/10) : une page web ne peut pas interdire les captures d'écran (l'appli Android le fera),
+// mais on masque le coffre dès qu'on quitte l'onglet ou l'appli (aperçu des applis ouvertes, partage d'écran).
+const voile = document.createElement('div');
+voile.className = 'au-voile';
+voile.innerHTML = '<span class="au-badge big">AU</span><b>Aureus</b>';
+document.body.appendChild(voile);
+const masquer = (oui) => document.body.classList.toggle('au-masque', oui && !!cle);
+window.addEventListener('blur', () => masquer(true));
+window.addEventListener('focus', () => masquer(false));
 document.addEventListener('visibilitychange', () => {
+  masquer(document.hidden);
   if (document.hidden) cachee = Date.now();
   else if (cle && cachee && Date.now() - cachee > 60000) verrouiller();
 });

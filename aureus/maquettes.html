@@ -126,6 +126,11 @@
   .lbl { font-size: 12px; font-weight: 800; color: var(--gris); margin-bottom: -6px; }
   .questions { background: #fff; border-radius: 14px; padding: 14px 18px; line-height: 1.6; font-weight: 600; color: #3c4354; }
   .questions li { margin: 4px 0; }
+  .types-ajout { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .types-ajout span { display: flex; align-items: center; gap: 8px; background: #faf8f3; border: 1px solid #efe9db; border-radius: 14px; padding: 10px; font-size: 12px; font-weight: 800; }
+  .types-ajout span i { font-style: normal; font-size: 18px; }
+  .types-ajout span small { display: block; color: var(--gris); font-weight: 600; font-size: 10px; }
+  .types-ajout span.plus-tard { opacity: .45; }
 </style>
 </head>
 <body>
@@ -190,7 +195,7 @@
 </section>
 
 <section class="bloc">
-  <h2><i>2</i> Sur téléphone — accueil, santé, fiche, nouveau coffre</h2>
+  <h2><i>2</i> Sur téléphone — accueil, santé, fiche, nouveau coffre, ajouter</h2>
   <div class="tels">
     <div class="tel-col"><b>Accueil</b>
       <div class="tel"><div class="barre-etat"><span>9:41</span><span>●●● 🔋</span></div>
@@ -258,6 +263,29 @@
         </div>
       </div>
     </div>
+
+    <div class="tel-col"><b>Ajouter (le « + »)</b>
+      <div class="tel"><div class="barre-etat"><span>9:41</span><span>●●● 🔋</span></div>
+        <div class="contenu">
+          <div class="haut"><span class="rond">✕</span><b>Ajouter dans…</b><span class="chip" style="background:#e6f0fa;color:#1d5f9c"><span class="pastille" style="background:#2a7fc1"></span>🛒 Leclerc ▾</span></div>
+          <div class="types-ajout">
+            <span><i>🔑</i><div>Identifiant<small>sites, mot de passe, 2FA</small></div></span>
+            <span><i>💳</i><div>Carte bancaire<small>avec son code PIN</small></div></span>
+            <span><i>📝</i><div>Note<small>texte protégé</small></div></span>
+            <span><i>🪪</i><div>Identité<small>adresse, papiers…</small></div></span>
+            <span><i>🔢</i><div>Code<small>digicode, alarme…</small></div></span>
+            <span><i>📶</i><div>Wi-Fi<small>+ QR pour se connecter</small></div></span>
+            <span><i>🏢</i><div>Accès logiciel<small>adresse + support</small></div></span>
+            <span><i>🎲</i><div>Mot de passe<small>générateur</small></div></span>
+            <span><i>🖥️</i><div>Clé SSH<small>serveurs</small></div></span>
+            <span><i>🧩</i><div>Personnalisé<small>vos propres champs</small></div></span>
+            <span class="plus-tard"><i>📧</i><div>Alias d’e-mail<small>plus tard</small></div></span>
+            <span class="plus-tard"><i>📎</i><div>Pièce jointe<small>plus tard</small></div></span>
+          </div>
+        </div>
+        <div class="nav"><span>🏠<br>Coffre</span><span class="plus">✕</span><span>🛡️<br>Santé</span></div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -267,6 +295,7 @@
     <li><b>Thème</b> : PC sombre + téléphone clair (comme les captures), tout sombre, ou tout clair ? (on peut aussi laisser le choix dans les réglages)</li>
     <li><b>Couleur d’accent</b> : l’or d’Aureus, ou le bordeaux du concept que vous avez trouvé ?</li>
     <li><b>Accueil du téléphone</b> : le tableau de bord (score, coffres, récents) ou directement la liste des fiches ?</li>
+    <li><b>Types de fiche</b> (écran « Ajouter ») : il en manque ? il y en a de trop ?</li>
     <li>Les <b>fuites de mots de passe sur internet</b> (« dark web » de la capture) demandent d’interroger un service extérieur
       (Have I Been Pwned, sans envoyer le mot de passe) : à garder pour plus tard ?</li>
   </ol>

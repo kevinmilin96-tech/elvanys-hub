@@ -135,3 +135,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .au-envoi small { display: block; color: #c8cbd3; font-weight: 600; }
 .au-envoi .au-btn.ghost { color: #fff; border-color: rgba(255,255,255,.3); min-height: 40px; }
 .au-magique { background: var(--or-clair) !important; }
+
+/* Coffre masqué quand on quitte l'onglet ou l'appli (15/10) */
+.au-voile { display: none; position: fixed; inset: 0; z-index: 100; background: var(--ink); color: var(--or2, #e7c46b); flex-direction: column; align-items: center; justify-content: center; gap: 14px; font-size: 22px; }
+body.au-masque .au-voile { display: flex; }
+body.au-masque .au-main, body.au-masque dialog { filter: blur(18px); }
