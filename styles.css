@@ -171,9 +171,13 @@ a.tile:focus-visible { outline: 3px solid var(--tone); outline-offset: 3px; }
 :root[data-theme="dark"] .help a { color: var(--accent); }
 
 /* Tuile Boost : les couleurs du logo Boost plutôt que l'orange du magasin */
-/* Hop-là (15/10) : vert santé */
-.tile.tone-hopla { --tone: #2e9b62; }
-:root[data-theme="dark"] .tile.tone-hopla { --tone: #5fd18f; }
+/* Hop-là (15/10) : vert santé + orange du bec de la cigogne, comme son appli */
+.tile.tone-hopla { --tone: #2e9b62; --hop-vert: #2e9b62; }
+.tile.tone-hopla .tile-name .hop-a { background: linear-gradient(135deg, #5cc489, #2e9b62 55%, #1f6b44); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.tile.tone-hopla .tile-name .hop-b { color: #f07a3a; }
+:root[data-theme="dark"] .tile.tone-hopla { --tone: #5fd18f; --hop-vert: #5fd18f; }
+:root[data-theme="dark"] .tile.tone-hopla .tile-name .hop-a { background-image: linear-gradient(135deg, #9be8bb, #5fd18f 55%, #3fb877); }
+:root[data-theme="dark"] .tile.tone-hopla .tile-name .hop-b { color: #ff9a5c; }
 /* Vigilys et Registrys à leurs couleurs (14/10), comme Boost */
 .tile.tone-vigilys { --tone: #4F4FD0; }
 .tile.tone-vigilys .tile-name { background: linear-gradient(90deg, #4F4FD0, #1fa3e0 60%, #13a88f); -webkit-background-clip: text; background-clip: text; color: transparent; }

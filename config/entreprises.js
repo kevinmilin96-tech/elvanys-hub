@@ -82,7 +82,7 @@ window.HUB_ENTREPRISES.demo = Object.assign({}, window.HUB_ENTREPRISES.blaye, {
 window.HUB_ENTREPRISES.demo.applications.push({
   id: 'hopla',
   nom: 'Hop-là',
-  description: 'Bien manger, cuisiner malin le dimanche, avancer à deux : poids, mensurations, recettes de saison.',
+  description: 'Bien manger et cuisiner malin, à deux : poids, mesures et recettes de saison.',
   url: 'https://demo-hub.elvanys.fr/hopla/index.html',
   icone: 'hopla',
   couleur: 'hopla',
