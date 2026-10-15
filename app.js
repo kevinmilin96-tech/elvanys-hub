@@ -110,7 +110,9 @@
     params.delete('tablette');
     history.replaceState(history.state, '', location.pathname + (params.toString() ? '?' + params.toString() : '') + location.hash);
   }
-  var tablet = store.get(TABLET_KEY) === '1';
+  // L'appli Kiosque Elvanys (borne Android) se reconnaît à son nom dans le navigateur : toujours en mode tablette
+  var kioskApp = /KiosqueElvanys\//.test(navigator.userAgent);
+  var tablet = kioskApp || store.get(TABLET_KEY) === '1';
   var kiosk = params.has('kiosque') || tablet;
   // ?inscription : une appli (ex. l'Académie de Boost) envoie ici pour créer un compte
   var wantSignup = params.has('inscription');
@@ -1099,6 +1101,16 @@
     $('#login-form [name="password"]').setAttribute('autocomplete', 'off');
     var tabletNote = $('#tablet-note');
     if (tabletNote) tabletNote.hidden = false;
+    // Appareil mis en mode tablette par erreur (ou essai fini) : un lien pour l'enlever, sauf dans l'appli Kiosque Elvanys
+    var tabletOff = $('#tablet-off');
+    if (tabletOff && !kioskApp) {
+      tabletOff.hidden = false;
+      tabletOff.addEventListener('click', function () {
+        if (!window.confirm('Cet appareil n’est pas la tablette du magasin ? Le hub gardera de nouveau votre connexion ici.')) return;
+        try { localStorage.removeItem(TABLET_KEY); } catch (e) { /* ignoré */ }
+        location.reload();
+      });
+    }
     // Quelqu'un part en pleine saisie : le formulaire se vide après 90 s sans toucher (le suivant ne voit rien)
     var tabletTimer = null;
     $('#login-form').addEventListener('input', function () {
