@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Aureus · planche de maquettes (15/10/2026)</title>
+<!-- Planche de MAQUETTES à valider (rien n'est branché) : inspirée des captures Dribbble de l'utilisateur
+     (PC sombre en 3 colonnes ; téléphone avec tableau de bord et santé du coffre), aux couleurs d'Aureus. -->
+<style>
+  :root { --ink:#1b2333; --nuit:#121826; --panneau:#1b2333; --panneau2:#222b3d; --or:#c9962e; --or2:#e7c46b; --orc:#f6ecd6;
+    --cyan:#0e9fb5; --vert:#2fb37a; --rouge:#d9534f; --gris:#8a93a6; --fond:#ecebe6; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--fond); color: var(--ink); font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
+  header.planche { padding: 28px 32px 8px; max-width: 1400px; margin: 0 auto; }
+  header.planche h1 { margin: 0; font-size: 28px; }
+  header.planche p { margin: 6px 0 0; color: #5d6577; font-weight: 600; max-width: 900px; line-height: 1.5; }
+  .bloc { max-width: 1400px; margin: 0 auto; padding: 18px 32px 30px; }
+  .bloc > h2 { font-size: 18px; margin: 18px 0 12px; display: flex; gap: 10px; align-items: center; }
+  .bloc > h2 i { font-style: normal; background: var(--ink); color: var(--or2); border-radius: 8px; padding: 2px 10px; font-size: 14px; }
+  .note { background: #fff; border-left: 4px solid var(--or); border-radius: 10px; padding: 10px 14px; margin: 12px 0 0; font-weight: 600; color: #4b5263; line-height: 1.5; font-size: 14px; }
+
+  /* ---------- PC : 3 colonnes sombres ---------- */
+  .pc { display: grid; grid-template-columns: 250px 360px 1fr; height: 740px; border-radius: 22px; overflow: hidden; background: var(--nuit); color: #e8eaf0;
+    box-shadow: 0 30px 60px -30px rgba(0,0,0,.6); }
+  .pc-menu { background: #0e131e; padding: 18px 14px; display: flex; flex-direction: column; gap: 4px; }
+  .moi { display: flex; align-items: center; gap: 10px; padding: 4px 6px 16px; }
+  .av { width: 40px; height: 40px; border-radius: 12px; background: linear-gradient(140deg, var(--or2), var(--or)); color: var(--ink); display: grid; place-items: center; font-weight: 900; }
+  .moi b { display: block; } .moi small { color: var(--or2); font-weight: 700; font-size: 12px; }
+  .titre-menu { margin: 14px 8px 4px; font-size: 11px; text-transform: uppercase; letter-spacing: .8px; color: var(--gris); font-weight: 800; }
+  .lig { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 10px; font-weight: 650; font-size: 14px; color: #cfd3dc; }
+  .lig.on { background: var(--panneau2); color: #fff; }
+  .lig .n { margin-left: auto; font-size: 12px; color: var(--gris); }
+  .pastille { width: 10px; height: 10px; border-radius: 50%; flex: 0 0 auto; }
+  .lig.plus { color: var(--or2); }
+  .pc-menu .bas { margin-top: auto; }
+  .pc-liste { background: var(--panneau); border-right: 1px solid #2a3346; display: flex; flex-direction: column; position: relative; }
+  .rech { margin: 16px; background: #0e131e; border-radius: 12px; padding: 12px 14px; color: var(--gris); font-size: 14px; display: flex; justify-content: space-between; }
+  .filtres { display: flex; gap: 6px; padding: 0 16px 10px; }
+  .filtres span { font-size: 12px; font-weight: 750; padding: 5px 10px; border-radius: 999px; background: #0e131e; color: var(--gris); }
+  .filtres span.on { background: var(--or); color: var(--ink); }
+  .item { display: flex; align-items: center; gap: 12px; padding: 11px 16px; border-left: 3px solid transparent; }
+  .item.on { background: #26304a; border-left-color: var(--or); }
+  .logo { width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; font-weight: 900; color: #fff; flex: 0 0 auto; font-size: 15px; }
+  .item b { display: block; font-size: 14px; } .item small { color: var(--gris); font-size: 12px; }
+  .item .coffre { margin-left: auto; }
+  .fab { position: absolute; right: 18px; bottom: 18px; width: 54px; height: 54px; border-radius: 50%; background: var(--or); color: var(--ink); display: grid; place-items: center;
+    font-size: 30px; font-weight: 700; box-shadow: 0 10px 24px -8px rgba(201,150,46,.7); }
+  .pc-fiche { padding: 22px 26px; display: flex; flex-direction: column; gap: 4px; background: linear-gradient(180deg, #161d2c, var(--nuit)); }
+  .fiche-tete { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .fiche-tete h3 { margin: 0; font-size: 20px; } .fiche-tete small { color: var(--gris); }
+  .actions { margin-left: auto; display: flex; gap: 6px; }
+  .ico { width: 36px; height: 36px; border-radius: 10px; background: var(--panneau2); display: grid; place-items: center; font-size: 15px; }
+  .ico.or { background: var(--or); color: var(--ink); }
+  .chip { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 800; padding: 4px 10px; border-radius: 999px; background: var(--panneau2); width: fit-content; }
+  .champ { padding: 14px 0; border-bottom: 1px solid #263045; }
+  .champ label { display: block; color: var(--gris); font-size: 12px; font-weight: 750; margin-bottom: 6px; }
+  .val { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 15px; }
+  .val .ico { width: 30px; height: 30px; font-size: 13px; }
+  .mono { font-family: ui-monospace, Menlo, Consolas, monospace; letter-spacing: 1px; }
+  .totp { font-size: 26px; color: var(--or2); letter-spacing: 4px; }
+  .anneau { width: 30px; height: 30px; border-radius: 50%; background: conic-gradient(var(--or) 0 62%, #2a3346 62% 100%); display: grid; place-items: center; font-size: 11px; }
+  .anneau::after { content: '19'; width: 22px; height: 22px; border-radius: 50%; background: var(--nuit); display: grid; place-items: center; color: var(--or2); font-weight: 800; }
+  .pied-fiche { margin-top: auto; display: flex; justify-content: space-between; color: var(--gris); font-size: 12px; font-weight: 650; }
+
+  /* ---------- Téléphones ---------- */
+  .tels { display: flex; gap: 26px; flex-wrap: wrap; }
+  .tel-col { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .tel-col > b { font-size: 14px; }
+  .tel { width: 300px; height: 620px; border-radius: 42px; background: #fff; border: 8px solid #10141d; overflow: hidden; position: relative; display: flex; flex-direction: column;
+    box-shadow: 0 30px 50px -30px rgba(0,0,0,.6); }
+  .barre-etat { display: flex; justify-content: space-between; padding: 10px 20px 4px; font-size: 12px; font-weight: 800; }
+  .contenu { flex: 1; padding: 6px 16px 90px; display: flex; flex-direction: column; gap: 12px; overflow: hidden; }
+  .haut { display: flex; justify-content: space-between; align-items: center; }
+  .rond { width: 38px; height: 38px; border-radius: 50%; background: #f1efe9; display: grid; place-items: center; }
+  .marque { display: flex; align-items: center; gap: 8px; font-weight: 850; }
+  .marque .av { width: 28px; height: 28px; border-radius: 8px; font-size: 11px; }
+  .salut small { display: block; color: var(--gris); font-weight: 650; }
+  .salut b { font-size: 22px; }
+  .salut .ok { display: flex; gap: 6px; align-items: center; color: var(--vert); font-weight: 750; font-size: 13px; }
+  .rech-tel { background: var(--ink); color: #c8cdd8; border-radius: 16px; padding: 12px 14px; font-size: 13px; display: flex; justify-content: space-between; }
+  .cartes2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .carte-tot { background: linear-gradient(150deg, var(--ink), #2b3754); color: #fff; border-radius: 18px; padding: 14px; }
+  .carte-tot small { color: #c8cdd8; font-weight: 650; } .carte-tot b { display: block; font-size: 30px; }
+  .carte-score { background: #fff; border: 1px solid #ece6d8; border-radius: 18px; padding: 14px; }
+  .carte-score small { font-weight: 700; } .carte-score b { display: block; font-size: 28px; color: var(--or); }
+  .jauge { height: 6px; border-radius: 6px; background: #f1ead7; overflow: hidden; } .jauge i { display: block; width: 87%; height: 100%; background: var(--or); }
+  .sous { display: flex; justify-content: space-between; font-weight: 800; font-size: 14px; } .sous small { color: var(--or); font-weight: 750; }
+  .coffres { display: flex; gap: 8px; }
+  .coffres span { flex: 1; border-radius: 14px; padding: 9px 8px; font-size: 12px; font-weight: 800; color: #fff; text-align: center; }
+  .types { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .types span { background: #faf8f3; border: 1px solid #efe9db; border-radius: 14px; padding: 8px 4px; text-align: center; font-size: 11px; font-weight: 750; }
+  .types span b { display: block; font-size: 16px; }
+  .recents { background: #faf8f3; border-radius: 16px; padding: 4px 10px; }
+  .r { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #efe9db; font-size: 13px; }
+  .r:last-child { border: 0; } .r b { display: block; } .r small { color: var(--gris); font-size: 11px; }
+  .r .logo { width: 32px; height: 32px; font-size: 13px; }
+  .r .tag { margin-left: auto; font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 999px; background: var(--orc); color: #8a6312; }
+  .nav { position: absolute; left: 12px; right: 12px; bottom: 12px; height: 62px; background: #fff; border-radius: 22px; box-shadow: 0 8px 24px -10px rgba(0,0,0,.35);
+    display: grid; grid-template-columns: 1fr 1fr 1fr; align-items: center; text-align: center; font-size: 11px; font-weight: 800; color: var(--gris); }
+  .nav .on { color: var(--ink); } .nav .plus { width: 54px; height: 54px; margin: -30px auto 0; border-radius: 50%; background: var(--or); color: var(--ink); display: grid; place-items: center; font-size: 30px; }
+  .vague { background: linear-gradient(160deg, var(--ink), #2b3754); color: #fff; margin: -6px -16px 0; padding: 14px 18px 30px; border-radius: 0 0 40px 40px; }
+  .vague b { font-size: 20px; display: block; margin-top: 10px; } .vague small { color: #c8cdd8; font-weight: 650; }
+  .score-zone { display: flex; align-items: flex-end; gap: 16px; margin-top: -24px; } .score-zone > div { padding-bottom: 4px; }
+  .bouclier { width: 110px; height: 110px; border-radius: 50%; background: conic-gradient(var(--or) 0 87%, #f1ead7 87% 100%); display: grid; place-items: center; box-shadow: 0 12px 26px -12px rgba(0,0,0,.5); }
+  .bouclier::after { content: '🛡️'; width: 84px; height: 84px; border-radius: 50%; background: var(--ink); display: grid; place-items: center; font-size: 36px; }
+  .score-zone b { font-size: 36px; color: var(--ink); display: block; } .score-zone span { font-size: 12px; font-weight: 800; background: var(--orc); color: #8a6312; padding: 4px 10px; border-radius: 999px; }
+  .tuiles3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .tuiles3 div { background: #faf8f3; border: 1px solid #efe9db; border-radius: 14px; padding: 10px; font-size: 11px; font-weight: 750; color: var(--gris); }
+  .tuiles3 b { display: block; font-size: 22px; color: var(--ink); } .tuiles3 .alerte b { color: var(--rouge); }
+  .reco { display: flex; align-items: center; gap: 10px; background: #faf8f3; border-radius: 14px; padding: 9px 10px; font-size: 12px; }
+  .reco .ico { background: var(--ink); color: var(--or2); width: 34px; height: 34px; border-radius: 10px; }
+  .reco b { display: block; font-size: 13px; } .reco small { color: var(--gris); } .reco::after { content: '›'; margin-left: auto; color: var(--gris); font-size: 18px; }
+  .fiche-tel .entete { display: flex; align-items: center; gap: 10px; }
+  .bloc-champ { background: #faf8f3; border-radius: 14px; padding: 10px 12px; }
+  .bloc-champ label { display: block; font-size: 11px; color: var(--gris); font-weight: 800; margin-bottom: 4px; }
+  .bloc-champ .val { color: var(--ink); font-size: 14px; } .bloc-champ .ico { background: #fff; border: 1px solid #ece6d8; width: 30px; height: 30px; }
+  .bloc-champ .totp { color: var(--or); font-size: 24px; }
+  .bloc-champ .anneau::after { background: #faf8f3; color: var(--or); }
+  .grille-coul { display: flex; gap: 8px; flex-wrap: wrap; } .grille-coul i { width: 34px; height: 34px; border-radius: 50%; display: block; }
+  .grille-coul i.on { outline: 3px solid var(--ink); outline-offset: 2px; }
+  .grille-ico { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; } .grille-ico span { background: #faf8f3; border-radius: 10px; padding: 7px 0; text-align: center; }
+  .grille-ico span.on { background: var(--ink); }
+  .btn-plein { background: var(--ink); color: #fff; border-radius: 14px; padding: 13px; text-align: center; font-weight: 800; }
+  .champ-clair { background: #faf8f3; border: 1px solid #efe9db; border-radius: 12px; padding: 11px 12px; font-weight: 700; font-size: 14px; }
+  .lbl { font-size: 12px; font-weight: 800; color: var(--gris); margin-bottom: -6px; }
+  .questions { background: #fff; border-radius: 14px; padding: 14px 18px; line-height: 1.6; font-weight: 600; color: #3c4354; }
+  .questions li { margin: 4px 0; }
+</style>
+</head>
+<body>
+<header class="planche">
+  <h1>Aureus · planche de maquettes « façon Proton Pass »</h1>
+  <p>Inspirée de vos deux captures Dribbble : sur PC, 3 colonnes sombres (menu · liste · fiche) ; sur téléphone, un accueil
+  « tableau de bord » et la santé du coffre. Couleurs d’Aureus : bleu-nuit et or. <b>Rien n’est branché</b> : c’est pour choisir avant de construire.
+  Les données sont fictives.</p>
+</header>
+
+<section class="bloc">
+  <h2><i>1</i> Sur PC — 3 colonnes, coffres par entreprise</h2>
+  <div class="pc">
+    <nav class="pc-menu">
+      <div class="moi"><span class="av">CD</span><div><b>Camille D.</b><small>Coffre ouvert · 🔒 dans 4 min</small></div></div>
+      <div class="titre-menu">Coffres</div>
+      <div class="lig on"><span class="pastille" style="background:#c9962e"></span>Tous les coffres<span class="n">142</span></div>
+      <div class="lig"><span class="pastille" style="background:#2a7fc1"></span>🛒 Leclerc Blaye<span class="n">58</span></div>
+      <div class="lig"><span class="pastille" style="background:#7c5cff"></span>🧩 Elvanys<span class="n">41</span></div>
+      <div class="lig"><span class="pastille" style="background:#2fb37a"></span>🏠 Perso<span class="n">43</span></div>
+      <div class="lig plus">＋ Nouveau coffre</div>
+      <div class="titre-menu">Catégories</div>
+      <div class="lig">🔑 Identifiants<span class="n">98</span></div>
+      <div class="lig">📝 Notes<span class="n">12</span></div>
+      <div class="lig">💳 Cartes<span class="n">6</span></div>
+      <div class="lig">🪪 Identités<span class="n">3</span></div>
+      <div class="lig">⏱️ Codes 2FA<span class="n">15</span></div>
+      <div class="lig">📶 Wi-Fi<span class="n">8</span></div>
+      <div class="bas">
+        <div class="lig">🛡️ Santé du coffre<span class="n" style="color:#e7c46b">87 %</span></div>
+        <div class="lig">🪄 Recevoir sur ce PC</div>
+        <div class="lig">🗑️ Corbeille<span class="n">4</span></div>
+      </div>
+    </nav>
+    <div class="pc-liste">
+      <div class="rech">Chercher : site, identifiant, note…<span>⌕</span></div>
+      <div class="filtres"><span class="on">Récents</span><span>A → Z</span><span>★ Favoris</span></div>
+      <div class="item"><span class="logo" style="background:#e30613">E</span><div><b>Intranet E.Leclerc</b><small>c.dupont</small></div><span class="pastille coffre" style="background:#2a7fc1"></span></div>
+      <div class="item on"><span class="logo" style="background:#0e70b5">S</span><div><b>Steeple</b><small>camille.dupont@blaye.fr</small></div><span class="pastille coffre" style="background:#2a7fc1"></span></div>
+      <div class="item"><span class="logo" style="background:#f38020">C</span><div><b>Cloudflare</b><small>admin@elvanys.fr</small></div><span class="pastille coffre" style="background:#7c5cff"></span></div>
+      <div class="item"><span class="logo" style="background:#000">O</span><div><b>OVH · serveur</b><small>elvanys-admin</small></div><span class="pastille coffre" style="background:#7c5cff"></span></div>
+      <div class="item"><span class="logo" style="background:#0b996e">B</span><div><b>Brevo</b><small>contact@elvanys.fr</small></div><span class="pastille coffre" style="background:#7c5cff"></span></div>
+      <div class="item"><span class="logo" style="background:#d93025">G</span><div><b>Gmail</b><small>camille.perso@gmail.com</small></div><span class="pastille coffre" style="background:#2fb37a"></span></div>
+      <div class="item"><span class="logo" style="background:#1d6f42">💳</span><div><b>Visa perso</b><small>•••• 9012</small></div><span class="pastille coffre" style="background:#2fb37a"></span></div>
+      <span class="fab">＋</span>
+    </div>
+    <div class="pc-fiche">
+      <div class="fiche-tete"><span class="logo" style="background:#0e70b5;width:46px;height:46px">S</span><div><h3>Steeple</h3><small>steeple.com</small></div>
+        <div class="actions"><span class="ico">★</span><span class="ico">🔗</span><span class="ico">✏️</span><span class="ico">🗑️</span></div></div>
+      <span class="chip"><span class="pastille" style="background:#2a7fc1"></span>🛒 Leclerc Blaye · #Communication</span>
+      <div class="champ"><label>Identifiant</label><div class="val">camille.dupont@blaye.fr <span class="ico">📋</span><span class="ico or">🪄</span></div></div>
+      <div class="champ"><label>Mot de passe · fort</label><div class="val mono">••••••••••••••••• <span class="ico">👁</span><span class="ico">📋</span><span class="ico or">🪄</span></div></div>
+      <div class="champ"><label>Code de double authentification (2FA)</label><div class="val"><span class="mono totp">482 913</span><span class="anneau"></span><span class="ico">📋</span><span class="ico or">🪄</span></div></div>
+      <div class="champ"><label>Sites</label><div class="val">steeple.com · app.steeple.com</div></div>
+      <div class="champ"><label>Note</label><div class="val" style="color:#cfd3dc;font-weight:600">Compte de la communication interne du magasin.</div></div>
+      <div class="pied-fiche"><span>Modifié le 14/10/2026 · 3 versions</span><span>🪄 = envoyer au PC relié</span></div>
+    </div>
+  </div>
+  <p class="note">Repris de votre capture : la liste au milieu avec l’icône de chaque site, la fiche à droite avec 👁 et 📋 collés aux valeurs,
+  le gros « + ». Ajouté pour vous : les <b>coffres par entreprise</b> (pastille de couleur sur chaque fiche), les codes 2FA qui tournent,
+  le bouton 🪄 du lien magique, la corbeille et la santé dans le menu.</p>
+</section>
+
+<section class="bloc">
+  <h2><i>2</i> Sur téléphone — accueil, santé, fiche, nouveau coffre</h2>
+  <div class="tels">
+    <div class="tel-col"><b>Accueil</b>
+      <div class="tel"><div class="barre-etat"><span>9:41</span><span>●●● 🔋</span></div>
+        <div class="contenu">
+          <div class="haut"><span class="rond">☰</span><span class="marque"><span class="av">AU</span>Aureus</span><span class="rond">🔒</span></div>
+          <div class="salut"><small>Bonjour,</small><b>Camille 👋</b><span class="ok">● Votre coffre est protégé</span></div>
+          <div class="rech-tel">Chercher un mot de passe…<span>⌕</span></div>
+          <div class="cartes2"><div class="carte-tot"><small>Éléments</small><b>142</b><small>dans 3 coffres</small></div>
+            <div class="carte-score"><small>Santé ›</small><b>87 %</b><div class="jauge"><i></i></div><small style="color:#8a93a6">Très bonne</small></div></div>
+          <div class="sous">Mes coffres<small>Tout voir</small></div>
+          <div class="coffres"><span style="background:#2a7fc1">🛒 Leclerc<br>58</span><span style="background:#7c5cff">🧩 Elvanys<br>41</span><span style="background:#2fb37a">🏠 Perso<br>43</span></div>
+          <div class="types"><span><b>🔑</b>Identifiants</span><span><b>💳</b>Cartes</span><span><b>📝</b>Notes</span><span><b>⏱️</b>2FA</span></div>
+          <div class="sous">Récents</div>
+          <div class="recents">
+            <div class="r"><span class="logo" style="background:#0e70b5">S</span><div><b>Steeple</b><small>Leclerc Blaye</small></div><span class="tag">Identifiant</span></div>
+            <div class="r"><span class="logo" style="background:#f38020">C</span><div><b>Cloudflare</b><small>Elvanys</small></div><span class="tag">2FA</span></div>
+          </div>
+        </div>
+        <div class="nav"><span class="on">🏠<br>Coffre</span><span class="plus">＋</span><span>🛡️<br>Santé</span></div>
+      </div>
+    </div>
+
+    <div class="tel-col"><b>Santé du coffre</b>
+      <div class="tel"><div class="barre-etat" style="background:#1b2333;color:#fff"><span>9:41</span><span>●●● 🔋</span></div>
+        <div class="contenu">
+          <div class="vague"><span class="rond" style="background:rgba(255,255,255,.12)">←</span><b>Santé du coffre</b><small>Ce qui mérite votre attention</small></div>
+          <div class="score-zone"><span class="bouclier"></span><div><small style="font-weight:750;color:#8a93a6">Score global</small><b>87 %</b><span>Très bonne</span></div></div>
+          <div class="tuiles3"><div class="alerte">Faibles<b>2</b>À changer</div><div class="alerte">Réutilisés<b>3</b>Sur 2 sites</div><div>2FA actifs<b>15</b>comptes</div></div>
+          <div class="sous">Recommandations</div>
+          <div class="reco"><span class="ico">⏱️</span><div><b>Activer la 2FA sur 3 comptes</b><small>Cloudflare, OVH, Brevo l’acceptent</small></div></div>
+          <div class="reco"><span class="ico">🔑</span><div><b>2 mots de passe faibles</b><small>Générer des mots de passe solides</small></div></div>
+          <div class="reco"><span class="ico">♻️</span><div><b>3 mots de passe réutilisés</b><small>Un par site, c’est plus sûr</small></div></div>
+          <div class="reco"><span class="ico">📜</span><div><b>Vos 12 mots de secours</b><small>Vérifier que vous les avez toujours</small></div></div>
+        </div>
+        <div class="nav"><span>🏠<br>Coffre</span><span class="plus">＋</span><span class="on">🛡️<br>Santé</span></div>
+      </div>
+    </div>
+
+    <div class="tel-col"><b>Une fiche</b>
+      <div class="tel fiche-tel"><div class="barre-etat"><span>9:41</span><span>●●● 🔋</span></div>
+        <div class="contenu">
+          <div class="haut"><span class="rond">←</span><span style="display:flex;gap:6px"><span class="rond">★</span><span class="rond">✏️</span></span></div>
+          <div class="entete"><span class="logo" style="background:#f38020;width:48px;height:48px;font-size:20px">C</span><div><b style="font-size:18px">Cloudflare</b><br><span class="chip" style="background:#efeaff;color:#5b3fd6"><span class="pastille" style="background:#7c5cff"></span>🧩 Elvanys</span></div></div>
+          <div class="bloc-champ"><label>Identifiant</label><div class="val">admin@elvanys.fr <span class="ico" style="margin-left:auto">📋</span></div></div>
+          <div class="bloc-champ"><label>Mot de passe</label><div class="val mono">•••••••••••••• <span class="ico" style="margin-left:auto">👁</span><span class="ico">📋</span></div></div>
+          <div class="bloc-champ"><label>Code 2FA</label><div class="val"><span class="mono totp">731 045</span><span class="anneau" style="margin-left:auto"></span><span class="ico">📋</span></div></div>
+          <div class="bloc-champ"><label>Site</label><div class="val">dash.cloudflare.com</div></div>
+          <div class="btn-plein">🪄 Envoyer au PC relié</div>
+          <div style="display:flex;gap:8px"><div class="btn-plein" style="flex:1;background:#faf8f3;color:#1b2333">🔗 Partager</div><div class="btn-plein" style="flex:1;background:#fdecea;color:#c0392b">🗑️ Corbeille</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tel-col"><b>Nouveau coffre</b>
+      <div class="tel"><div class="barre-etat"><span>9:41</span><span>●●● 🔋</span></div>
+        <div class="contenu">
+          <div class="haut"><span class="rond">✕</span><b>Nouveau coffre</b><span class="rond" style="visibility:hidden"></span></div>
+          <div class="lbl">Nom</div><div class="champ-clair">Leclerc Blaye</div>
+          <div class="lbl">Couleur</div>
+          <div class="grille-coul"><i class="on" style="background:#2a7fc1"></i><i style="background:#7c5cff"></i><i style="background:#2fb37a"></i><i style="background:#c9962e"></i><i style="background:#e5262c"></i><i style="background:#f7862a"></i><i style="background:#1b2333"></i></div>
+          <div class="lbl">Icône</div>
+          <div class="grille-ico"><span class="on">🛒</span><span>🧩</span><span>🏠</span><span>💼</span><span>🏦</span><span>🎓</span><span>🛠️</span><span>🚗</span><span>❤️</span><span>✈️</span><span>🎮</span><span>📦</span></div>
+          <div class="note" style="margin:0">Une fiche peut changer de coffre à tout moment. Les dossiers et étiquettes restent possibles DANS chaque coffre.</div>
+          <div class="btn-plein" style="margin-top:auto">Créer le coffre</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="bloc">
+  <h2><i>?</i> À choisir</h2>
+  <ol class="questions">
+    <li><b>Thème</b> : PC sombre + téléphone clair (comme les captures), tout sombre, ou tout clair ? (on peut aussi laisser le choix dans les réglages)</li>
+    <li><b>Couleur d’accent</b> : l’or d’Aureus, ou le bordeaux du concept que vous avez trouvé ?</li>
+    <li><b>Accueil du téléphone</b> : le tableau de bord (score, coffres, récents) ou directement la liste des fiches ?</li>
+    <li>Les <b>fuites de mots de passe sur internet</b> (« dark web » de la capture) demandent d’interroger un service extérieur
+      (Have I Been Pwned, sans envoyer le mot de passe) : à garder pour plus tard ?</li>
+  </ol>
+</section>
+</body>
+</html>
