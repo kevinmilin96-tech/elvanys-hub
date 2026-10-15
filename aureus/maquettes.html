@@ -143,6 +143,22 @@
   .logo-tailles .t48 .logo-svg { width: 48px; height: 48px; } .logo-tailles .t24 .logo-svg { width: 24px; height: 24px; }
   .logo-tailles .appli { display: flex; align-items: center; gap: 8px; background: #1b2333; color: #fff; border-radius: 12px; padding: 6px 12px 6px 6px; font-weight: 800; }
   .logo-tailles .appli .logo-svg { width: 34px; height: 34px; }
+  .onglets3 { display: grid; grid-template-columns: repeat(3,1fr); background: #f1efe9; border-radius: 12px; padding: 3px; font-size: 12px; font-weight: 800; text-align: center; }
+  .onglets3 span { padding: 8px 0; border-radius: 10px; color: var(--gris); } .onglets3 span.on { background: var(--ink); color: #fff; }
+  .mdp-gen { background: var(--ink); color: #fff; border-radius: 16px; padding: 16px; font: 800 17px ui-monospace, Menlo, monospace; text-align: center; letter-spacing: .5px; word-break: break-all; }
+  .force { display: flex; gap: 4px; } .force i { flex: 1; height: 6px; border-radius: 4px; background: var(--vert); } .force i.off { background: #e6e2d8; }
+  .reglage { display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: 700; padding: 6px 2px; border-bottom: 1px solid #f0ece2; }
+  .bascule { width: 38px; height: 22px; border-radius: 999px; background: var(--or); position: relative; } .bascule::after { content: ''; position: absolute; right: 3px; top: 3px; width: 16px; height: 16px; border-radius: 50%; background: #fff; }
+  .bascule.off { background: #d9d5cb; } .bascule.off::after { right: auto; left: 3px; }
+  .curseur { height: 6px; border-radius: 6px; background: linear-gradient(90deg, var(--or) 0 60%, #e6e2d8 60%); position: relative; } .curseur::after { content: ''; position: absolute; left: 58%; top: -6px; width: 18px; height: 18px; border-radius: 50%; background: #fff; border: 3px solid var(--or); }
+  .auth { display: flex; align-items: center; gap: 10px; background: #faf8f3; border-radius: 14px; padding: 10px; }
+  .auth .logo { width: 34px; height: 34px; font-size: 13px; } .auth b { display: block; font-size: 13px; } .auth small { color: var(--gris); font-size: 11px; }
+  .auth .code { margin-left: auto; font: 800 17px ui-monospace, Menlo, monospace; color: var(--ink); letter-spacing: 1px; white-space: nowrap; }
+  .auth > div { min-width: 0; } .auth small { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 90px; }
+  .auth .anneau { width: 26px; height: 26px; } .auth .anneau::after { width: 18px; height: 18px; background: #faf8f3; color: var(--or); font-size: 10px; }
+  .scan { border: 2px dashed var(--or); border-radius: 14px; padding: 12px; text-align: center; font-size: 13px; font-weight: 800; color: #8a6312; background: var(--orc); }
+  .fuite { display: flex; align-items: center; gap: 10px; border-radius: 14px; padding: 10px; font-size: 12px; background: #fdecea; }
+  .fuite b { display: block; font-size: 13px; color: #8f2620; } .fuite small { color: #8f5a55; } .fuite.ok { background: #e7f6ee; } .fuite.ok b { color: #1f7a50; } .fuite.ok small { color: #4d8b6e; }
 </style>
 </head>
 <body>
@@ -207,7 +223,7 @@
 </section>
 
 <section class="bloc">
-  <h2><i>2</i> Sur téléphone — accueil, santé, fiche, nouveau coffre, ajouter</h2>
+  <h2><i>2</i> Sur téléphone — accueil, santé, fiche, nouveau coffre, ajouter, générateur, authentificateur, fuites</h2>
   <div class="tels">
     <div class="tel-col"><b>Accueil</b>
       <div class="tel"><div class="barre-etat"><span>9:41</span><span>●●● 🔋</span></div>
@@ -298,6 +314,52 @@
         <div class="nav"><span>🏠<br>Coffre</span><span class="plus">✕</span><span>🛡️<br>Santé</span></div>
       </div>
     </div>
+
+    <div class="tel-col"><b>Générateur (3 modes)</b>
+      <div class="tel"><div class="barre-etat"><span>9:41</span><span>●●● 🔋</span></div>
+        <div class="contenu">
+          <div class="haut"><span class="rond">✕</span><b>Générateur</b><span class="rond">🕘</span></div>
+          <div class="onglets3"><span>Aléatoire</span><span class="on">Phrase</span><span>Code PIN</span></div>
+          <div class="mdp-gen">Tortue-Lumière-Jardin-Hiver-42</div>
+          <div class="force"><i></i><i></i><i></i><i></i></div>
+          <small style="color:#2fb37a;font-weight:800;font-size:12px;margin-top:-6px">Très solide · facile à retenir</small>
+          <div class="reglage">Nombre de mots · 4</div><div class="curseur"></div>
+          <div class="reglage">Séparateur <span class="chip" style="background:#f1efe9">- tiret ▾</span></div>
+          <div class="reglage">Majuscules <span class="bascule"></span></div>
+          <div class="reglage">Ajouter un nombre <span class="bascule"></span></div>
+          <div style="display:flex;gap:8px;margin-top:auto"><div class="btn-plein" style="flex:1;background:#faf8f3;color:#1b2333">🔄 Autre</div><div class="btn-plein" style="flex:1">📋 Copier</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tel-col"><b>Authentificateur (2FA)</b>
+      <div class="tel"><div class="barre-etat"><span>9:41</span><span>●●● 🔋</span></div>
+        <div class="contenu">
+          <div class="haut"><span class="rond">☰</span><b>Authentificateur</b><span class="rond">⌕</span></div>
+          <div class="scan">📷 Scanner le QR d’un site<br><small style="font-weight:650">ou coller la clé secrète</small></div>
+          <div class="auth"><span class="logo" style="background:#f38020">C</span><div><b>Cloudflare</b><small>admin@elvanys.fr</small></div><span class="code">731 045</span><span class="anneau"></span></div>
+          <div class="auth"><span class="logo" style="background:#000">O</span><div><b>OVH</b><small>elvanys-admin</small></div><span class="code">209 118</span><span class="anneau"></span></div>
+          <div class="auth"><span class="logo" style="background:#24292f">G</span><div><b>GitHub</b><small>kevinmilin96-tech</small></div><span class="code">554 902</span><span class="anneau"></span></div>
+          <div class="auth"><span class="logo" style="background:#0e70b5">S</span><div><b>Steeple</b><small>Leclerc Blaye</small></div><span class="code">482 913</span><span class="anneau"></span></div>
+          <p class="note" style="margin:0;font-size:12px">Toucher un code le copie. Les codes viennent aussi des fiches Identifiant.</p>
+        </div>
+        <div class="nav"><span>🏠<br>Coffre</span><span class="plus">＋</span><span class="on">⏱️<br>Codes</span></div>
+      </div>
+    </div>
+
+    <div class="tel-col"><b>Fuites sur internet</b>
+      <div class="tel"><div class="barre-etat" style="background:#1b2333;color:#fff"><span>9:41</span><span>●●● 🔋</span></div>
+        <div class="contenu">
+          <div class="vague"><span class="rond" style="background:rgba(255,255,255,.12)">←</span><b>Fuites sur internet</b><small>Vérifié sans jamais envoyer vos mots de passe</small></div>
+          <div class="fuite"><span style="font-size:22px">⚠️</span><div><b>1 mot de passe retrouvé dans des fuites</b><small>« Gmail » : vu 3 412 fois. Changez-le.</small></div></div>
+          <div class="fuite ok"><span style="font-size:22px">✅</span><div><b>141 mots de passe jamais vus</b><small>Dernière vérification : aujourd’hui 9 h 40</small></div></div>
+          <div class="sous">Vos adresses e-mail</div>
+          <div class="fuite ok" style="background:#faf8f3"><span style="font-size:22px">📧</span><div><b style="color:#1b2333">camille.perso@gmail.com</b><small style="color:#8a93a6">Recherche des fuites d’adresses : option (service payant)</small></div></div>
+          <div class="btn-plein" style="margin-top:auto">🔎 Vérifier maintenant</div>
+        </div>
+        <div class="nav"><span>🏠<br>Coffre</span><span class="plus">＋</span><span class="on">🛡️<br>Santé</span></div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -377,7 +439,8 @@
     <li><b>Logo</b> : A, B ou C (partie 3) ?</li>
     <li><b>Accueil du téléphone</b> : le tableau de bord (score, coffres, récents) ou directement la liste des fiches ?</li>
     <li><b>Types de fiche</b> (écran « Ajouter ») : il en manque ? il y en a de trop ?</li>
-    <li>Les <b>fuites de mots de passe sur internet</b> (« dark web » de la capture) demandent d’interroger un service extérieur
+    <li><s>Fuites, générateur, authentificateur</s> → <b>CHOISI : on garde les trois</b> (15/10).</li>
+    <li style="display:none">Les <b>fuites de mots de passe sur internet</b> (« dark web » de la capture) demandent d’interroger un service extérieur
       (Have I Been Pwned, sans envoyer le mot de passe) : à garder pour plus tard ?</li>
   </ol>
 </section>
