@@ -176,6 +176,8 @@
   var BOOST_COLORS = ['#5fb84a', '#f7862a', '#2a7fc1', '#e5262c', '#6b2bd9'];
   function tileName(a) {
     // Registrys en deux tons : « Regis » à l'encre, « trys » en vert menthe
+    // Aureus en deux tons : « Au » (le symbole de l'or) doré, « reus » à l'encre bleu-nuit
+    if (a.couleur === 'aureus') return '<span class="au-a">' + esc(String(a.nom).slice(0, 2)) + '</span><span class="au-b">' + esc(String(a.nom).slice(2)) + '</span>';
     if (a.couleur === 'registrys') return '<span class="reg-a">' + esc(String(a.nom).slice(0, 5)) + '</span><span class="reg-b">' + esc(String(a.nom).slice(5)) + '</span>';
     if (a.couleur !== 'boost') return esc(a.nom);
     return String(a.nom).toUpperCase().split('').map(function (ch, i) {

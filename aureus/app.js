@@ -134,8 +134,11 @@ function afficherMots(mots) {
     <p class="au-alerte">Notez-les sur papier, dans l’ordre, et rangez-les en lieu sûr (ou dans votre gestionnaire de mots de passe).
     Ne les envoyez à personne. Sans eux, un coffre perdu est perdu pour toujours.</p>
     <ol class="au-mots">${mots.map((m) => `<li>${esc(m)}</li>`).join('')}</ol>
+    <button type="button" class="au-btn ghost" id="mots-copier">📋 Copier les 12 mots</button>
+    <p class="au-aide">Pour les coller dans votre gestionnaire de mots de passe : le presse-papiers est vidé tout seul 30 secondes après.</p>
     <label class="au-check"><input type="checkbox" id="mots-notes"> J’ai noté mes 12 mots</label>
     <button type="button" class="au-btn" id="mots-suite" disabled>Vérifier</button></div>`;
+  $('#mots-copier').onclick = () => copier(mots.join(' '));
   $('#mots-notes').onchange = (e) => { $('#mots-suite').disabled = !e.target.checked; };
   $('#mots-suite').onclick = () => verifierNotes(mots);
 }

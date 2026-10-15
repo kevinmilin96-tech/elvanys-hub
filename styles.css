@@ -182,6 +182,12 @@ a.tile:focus-visible { outline: 3px solid var(--tone); outline-offset: 3px; }
 :root[data-theme="dark"] .tile.tone-registrys { --tone: #3fd6a2; --reg-ink: #eef6f4; }
 :root[data-theme="dark"] .tile.tone-registrys .tile-name .reg-a { color: #eef6f4; }
 :root[data-theme="dark"] .tile.tone-registrys .tile-name .reg-b { color: #3fd6a2; }
+/* Aureus (15/10) : or + bleu-nuit, comme son logo */
+.tile.tone-aureus { --tone: #c9962e; }
+.tile.tone-aureus .tile-name .au-a { background: linear-gradient(135deg, #e7c46b, #c9962e 55%, #9c6f17); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.tile.tone-aureus .tile-name .au-b { color: #1b2333; }
+:root[data-theme="dark"] .tile.tone-aureus { --tone: #e7c46b; }
+:root[data-theme="dark"] .tile.tone-aureus .tile-name .au-b { color: #f3f4f7; }
 .tile.tone-boost { --tone: #2a7fc1; }
 .tile.tone-boost .tile-name { letter-spacing: 1px; text-shadow: 0 2px 0 rgba(0, 0, 0, .06); }
 .tile.tone-boost .tile-go { color: #6b2bd9; }
