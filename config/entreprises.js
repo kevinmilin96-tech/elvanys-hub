@@ -60,7 +60,7 @@ window.HUB_ENTREPRISES = {
         id: 'aureus',
         nom: 'Aureus',
         description: 'Coffre-fort personnel chiffré : identifiants, cartes, notes et liens à lecture unique.',
-        url: 'https://blaye-hub.elvanys.fr/aureus/', // page du hub (15/10, ébauche) ; adresse propre plus tard
+        url: 'https://blaye-hub.elvanys.fr/aureus/index.html', // page du hub (15/10, ébauche ; « /aureus/ » seul renvoie l'accueil du hub) ; adresse propre plus tard
         icone: 'aureus',
         couleur: 'aureus',
         pour: [], // jamais cochée d'office : l'administrateur choisit chaque compte
