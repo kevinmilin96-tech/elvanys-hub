@@ -100,7 +100,18 @@
   var stay = params.has('rester');
   // ?kiosque : on arrive de la tablette partagée du magasin (Boost) ; après la connexion, le hub ouvre Boost et
   // oublie aussitôt sa propre session sur cette tablette (le compte n'y reste pas pour le suivant)
-  var kiosk = params.has('kiosque');
+  // ?tablette=1 (une fois, 15/10) : cet appareil est la tablette du magasin, retenu pour toujours ; il se comporte alors
+  // toujours comme ?kiosque (aucune session gardée ici). ?tablette=0 enlève le mode. Sans risque : ce mode ne fait
+  // qu'oublier les comptes plus vite.
+  var TABLET_KEY = 'hub_tablette_' + id;
+  if (params.has('tablette')) {
+    if (params.get('tablette') === '0') { try { localStorage.removeItem(TABLET_KEY); } catch (e) { /* ignoré */ } }
+    else store.set(TABLET_KEY, '1');
+    params.delete('tablette');
+    history.replaceState(history.state, '', location.pathname + (params.toString() ? '?' + params.toString() : '') + location.hash);
+  }
+  var tablet = store.get(TABLET_KEY) === '1';
+  var kiosk = params.has('kiosque') || tablet;
   // ?inscription : une appli (ex. l'Académie de Boost) envoie ici pour créer un compte
   var wantSignup = params.has('inscription');
   // ?reset=<jeton> : lien « mot de passe oublié » reçu par e-mail (retiré tout de suite de l'adresse)
@@ -1068,6 +1079,19 @@
 
   greet();
   if (kiosk && token) setSession(null); // tablette partagée : jamais la session de quelqu'un d'autre
+  if (tablet) {
+    // Tablette du magasin : Chrome ne doit pas proposer d'enregistrer ni remplir le compte du collaborateur précédent
+    $('#login-form [name="email"]').setAttribute('autocomplete', 'off');
+    $('#login-form [name="password"]').setAttribute('autocomplete', 'off');
+    var tabletNote = $('#tablet-note');
+    if (tabletNote) tabletNote.hidden = false;
+    // Quelqu'un part en pleine saisie : le formulaire se vide après 90 s sans toucher (le suivant ne voit rien)
+    var tabletTimer = null;
+    $('#login-form').addEventListener('input', function () {
+      clearTimeout(tabletTimer);
+      tabletTimer = setTimeout(function () { $('#login-form').reset(); $('#login-form .auth-msg').textContent = ''; }, 90 * 1000);
+    });
+  }
   if (demoCode) {
     // Carte testeur : la session de la carte remplace celle qui serait restée sur ce téléphone
     setSession(null);
