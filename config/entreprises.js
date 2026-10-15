@@ -77,4 +77,17 @@ window.HUB_ENTREPRISES.demo = Object.assign({}, window.HUB_ENTREPRISES.blaye, {
   }),
 });
 
+// Hop-là (15/10) : appli personnelle de l'administrateur, sur la DÉMO seulement (jamais dans la fiche de Blaye).
+// Code : dépôt Hop-la, construit dans le dossier hopla/ du hub. Jamais cochée d'office.
+window.HUB_ENTREPRISES.demo.applications.push({
+  id: 'hopla',
+  nom: 'Hop-là',
+  description: 'Bien manger, cuisiner malin le dimanche, avancer à deux : poids, mensurations, recettes de saison.',
+  url: 'https://demo-hub.elvanys.fr/hopla/index.html',
+  icone: 'hopla',
+  couleur: 'hopla',
+  pour: [],
+  public: 'Personnel',
+});
+
 window.HUB_ENTREPRISE_PAR_DEFAUT = 'blaye';

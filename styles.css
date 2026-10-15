@@ -171,6 +171,9 @@ a.tile:focus-visible { outline: 3px solid var(--tone); outline-offset: 3px; }
 :root[data-theme="dark"] .help a { color: var(--accent); }
 
 /* Tuile Boost : les couleurs du logo Boost plutôt que l'orange du magasin */
+/* Hop-là (15/10) : vert santé */
+.tile.tone-hopla { --tone: #2e9b62; }
+:root[data-theme="dark"] .tile.tone-hopla { --tone: #5fd18f; }
 /* Vigilys et Registrys à leurs couleurs (14/10), comme Boost */
 .tile.tone-vigilys { --tone: #4F4FD0; }
 .tile.tone-vigilys .tile-name { background: linear-gradient(90deg, #4F4FD0, #1fa3e0 60%, #13a88f); -webkit-background-clip: text; background-clip: text; color: transparent; }
