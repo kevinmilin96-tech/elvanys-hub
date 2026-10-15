@@ -163,3 +163,24 @@ export function motDePasse(longueur = 20) {
   }
   return out.join('');
 }
+
+// ------------------------------------------------------------------------- lien magique (sans extension)
+// La page « Réception » du PC tire une clé et la met dans le QR (après le #). Le téléphone chiffre chaque envoi avec ;
+// le serveur ne transporte que du chiffré. Les 3 émojis de contrôle (tirés de la clé) doivent être les mêmes des deux côtés.
+const EMOJIS = ['🍎', '🍋', '🍇', '🥕', '🌽', '🍄', '🌵', '🌻', '🌙', '⭐', '🔥', '💧', '⚡', '❄️', '🌈', '🎈',
+  '🎲', '🎸', '🚲', '🚗', '🚀', '⛵', '🏠', '🔑', '📚', '✏️', '🎁', '🧩', '🐱', '🐶', '🐢', '🦊'];
+
+export function nouvelleCleBoite() { return b64url(hasard(32)); }
+
+export async function controleBoite(cleTexte) {
+  const h = new Uint8Array(await crypto.subtle.digest('SHA-256', deb64url(cleTexte)));
+  return [h[0], h[1], h[2]].map((x) => EMOJIS[x % EMOJIS.length]).join(' ');
+}
+
+export async function chiffrerBoite(cleTexte, objet) {
+  return chiffrer(await cleAes(deb64url(cleTexte)), enc.encode(JSON.stringify(objet)), 'aureus-boite');
+}
+
+export async function dechiffrerBoite(cleTexte, donnees) {
+  return JSON.parse(dec.decode(await dechiffrer(await cleAes(deb64url(cleTexte)), donnees, 'aureus-boite')));
+}

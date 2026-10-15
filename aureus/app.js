@@ -39,6 +39,22 @@ let dossiers = [];          // [{ id, nom, parent }]
 let vue = { dossier: '', etiquette: '', recherche: '' };
 let illisibles = 0;
 
+// Lien magique sans extension : le QR de la page « Réception » du PC ouvre Aureus avec #envoyer=<boîte>.<clé>.
+// On le garde le temps de la connexion (sessionStorage, 10 min) et on l'enlève de l'adresse.
+let envoi = null;       // { id, cle, controle }
+(() => {
+  const m = /#envoyer=([a-z0-9]{15})\.([A-Za-z0-9_-]{43})$/.exec(location.hash);
+  if (m) {
+    sessionStorage.setItem('aureus_envoi', JSON.stringify({ id: m[1], cle: m[2], jusqua: Date.now() + 10 * 60000 }));
+    history.replaceState(null, '', location.pathname + location.search);
+  }
+  try {
+    const e = JSON.parse(sessionStorage.getItem('aureus_envoi') || 'null');
+    if (e && e.jusqua > Date.now()) envoi = { id: e.id, cle: e.cle, controle: '' };
+    else sessionStorage.removeItem('aureus_envoi');
+  } catch { /* ignoré */ }
+})();
+
 const CLE_APPAREIL = () => `aureus_${ENT}_${compte.id}`;
 const lireAppareil = () => { try { return JSON.parse(localStorage.getItem(CLE_APPAREIL()) || 'null'); } catch { return null; } };
 const ID_DOSSIERS = 'dossiers-du-coffre';
@@ -88,7 +104,8 @@ function ecranConnexion() {
   ecran.innerHTML = `<div class="au-card au-center">
     <span class="au-badge big">AU</span><h1>Aureus</h1>
     <p>Le coffre-fort s’ouvre avec votre compte de l’espace magasin.</p>
-    <a class="au-btn" href="../?rester=1">Me connecter à l’espace magasin</a></div>`;
+    <a class="au-btn" href="../?rester=1">Me connecter à l’espace magasin</a>
+    <a class="au-link" href="recevoir.html${local ? `?e=${ENT}` : ''}">🪄 Recevoir un mot de passe sur ce PC (sans me connecter)</a></div>`;
 }
 
 function ecranMessage(titre, texte) {
@@ -278,6 +295,7 @@ async function ouvrirCoffre() {
     } catch { illisibles++; }
   }
   $('#top-actions').hidden = false;
+  if (envoi) envoi.controle = await C.controleBoite(envoi.cle);
   activite();
   dessinerCoffre();
 }
@@ -334,9 +352,11 @@ function dessinerCoffre() {
       <button type="button" class="au-dossier ${!vue.dossier ? 'on' : ''}" data-dossier="">🗂️ Tout le coffre</button>
       ${arbre()}
       <button type="button" class="au-link" id="dossier-nouveau">＋ Nouveau dossier</button>
+      <a class="au-link" href="recevoir.html${local ? `?e=${ENT}` : ''}">🪄 Recevoir sur ce PC</a>
       ${etiquettes.length ? `<h3>Étiquettes</h3><div class="au-tags">${etiquettes.map((t) => `<button type="button" class="au-tag ${vue.etiquette === t ? 'on' : ''}" data-tag="${esc(t)}">#${esc(t)}</button>`).join('')}</div>` : ''}
     </aside>
     <section class="au-liste-zone">
+      ${envoi ? `<div class="au-envoi"><span>🪄 <b>Relié au PC</b> · contrôle <b>${esc(envoi.controle)}</b><small>Ouvrez une fiche et touchez 🪄 pour envoyer.</small></span><button type="button" class="au-btn ghost" id="envoi-fin">Terminer</button></div>` : ''}
       <div class="au-barre">
         <input type="search" id="recherche" placeholder="Chercher dans le coffre…" value="${esc(vue.recherche)}" autocomplete="off">
         <button type="button" class="au-btn" id="fiche-nouvelle">＋ Nouvelle fiche</button>
@@ -361,6 +381,7 @@ function dessinerCoffre() {
   $('#fiche-nouvelle').onclick = () => ouvrirFiche(null, true);
   $('#dossier-nouveau').onclick = nouveauDossier;
   if ($('#dossier-gerer')) $('#dossier-gerer').onclick = gererDossier;
+  if ($('#envoi-fin')) $('#envoi-fin').onclick = () => { envoi = null; sessionStorage.removeItem('aureus_envoi'); dessinerCoffre(); };
 }
 
 // ---------------------------------------------------------------------------------------------- dossiers
@@ -424,13 +445,14 @@ function champsType(type, o, edition) {
       <input data-k="${cle}" ${ro} value="${esc(v)}" ${opts.secret ? 'type="password"' : ''} ${secret} autocomplete="off" autocapitalize="none" spellcheck="false" ${opts.mode ? `inputmode="${opts.mode}"` : ''}>
       ${opts.secret ? '<button type="button" class="au-mini" data-voir title="Afficher">👁</button>' : ''}
       ${opts.generer && edition ? '<button type="button" class="au-mini" data-generer title="Générer un mot de passe">🎲</button>' : ''}
-      ${!edition ? `<button type="button" class="au-mini" data-copier="${cle}" title="Copier">📋</button>` : ''}</span></label>`;
+      ${!edition ? `<button type="button" class="au-mini" data-copier="${cle}" title="Copier">📋</button>` : ''}
+      ${!edition && envoi ? `<button type="button" class="au-mini au-magique" data-envoyer="${cle}" title="Envoyer au PC">🪄</button>` : ''}</span></label>`;
   };
   const note = (edition || o.note) ? `<label class="au-field">Note<textarea data-k="note" ${ro} rows="3">${esc(o.note || '')}</textarea></label>` : '';
   if (type === 'identifiant') return ligne('identifiant', 'Identifiant') + ligne('mdp', 'Mot de passe', { secret: true, generer: true }) + ligne('site', 'Adresse du site') + note;
   if (type === 'carte') return ligne('titulaire', 'Titulaire') + ligne('numero', 'Numéro de carte', { secret: true, mode: 'numeric' }) + ligne('expiration', 'Expiration (MM/AA)') + ligne('cvv', 'Cryptogramme', { secret: true, mode: 'numeric' }) + note;
   return `<label class="au-field">Texte<textarea data-k="texte" ${ro} rows="8">${esc(o.texte || '')}</textarea></label>
-    ${!edition ? '<div class="au-row"><button type="button" class="au-btn ghost" data-copier="texte">📋 Copier le texte</button><button type="button" class="au-btn ghost" id="f-partager">🔗 Partager par lien</button></div>' : ''}`;
+    ${!edition ? `<div class="au-row"><button type="button" class="au-btn ghost" data-copier="texte">📋 Copier le texte</button>${envoi ? '<button type="button" class="au-btn ghost au-magique" data-envoyer="texte">🪄 Envoyer au PC</button>' : ''}<button type="button" class="au-btn ghost" id="f-partager">🔗 Partager par lien</button></div>` : ''}`;
 }
 
 function ouvrirFiche(id, edition) {
@@ -453,6 +475,7 @@ function ouvrirFiche(id, edition) {
     b.querySelectorAll('[data-voir]').forEach((x) => { x.onclick = () => { const i = x.parentNode.querySelector('input'); i.type = i.type === 'password' ? 'text' : 'password'; }; });
     b.querySelectorAll('[data-generer]').forEach((x) => { x.onclick = () => { const i = x.parentNode.querySelector('input'); i.value = C.motDePasse(20); i.type = 'text'; }; });
     b.querySelectorAll('[data-copier]').forEach((x) => { x.onclick = () => copier(o[x.dataset.copier] || ''); });
+    b.querySelectorAll('[data-envoyer]').forEach((x) => { x.onclick = () => envoyerAuPc(x.dataset.envoyer, o); });
     if ($('#f-modif', b)) $('#f-modif', b).onclick = () => { edition = true; dessin(b); };
     if ($('#f-partager', b)) $('#f-partager', b).onclick = () => { fermerBoite(); composerLien(o.texte || ''); };
     if ($('#f-suppr', b)) $('#f-suppr', b).onclick = async () => {
@@ -491,6 +514,20 @@ async function enregistrer(id, objet, msgEl) {
   if (r.status !== 200) { const m = r.data.message || 'Enregistrement impossible.'; if (msgEl) msgEl.textContent = m; else toast(m); return false; }
   fiches.set(id, { objet: { ...objet }, version: r.data.version });
   return true;
+}
+
+const LIBELLES = { identifiant: ['Identifiant'], mdp: ['Mot de passe', true], site: ['Adresse du site'], titulaire: ['Titulaire'],
+  numero: ['Numéro de carte', true], expiration: ['Expiration'], cvv: ['Cryptogramme', true], texte: ['Note', true] };
+
+/** Lien magique : chiffre le champ avec la clé du QR et le dépose dans la boîte du PC. */
+async function envoyerAuPc(champ, o) {
+  if (!envoi) return;
+  const [libelle, secret] = LIBELLES[champ] || [champ];
+  const donnees = await C.chiffrerBoite(envoi.cle, { libelle, titre: o.titre || '', valeur: o[champ] || '', secret: !!secret });
+  const r = await api('POST', `/api/hub/aureus/boites/${envoi.id}/envoi`, { donnees });
+  if (r.status === 200) { toast(`🪄 ${libelle} envoyé au PC`); return; }
+  if (r.status === 404) { envoi = null; sessionStorage.removeItem('aureus_envoi'); fermerBoite(); dessinerCoffre(); }
+  toast(r.data.message || 'Envoi impossible.');
 }
 
 async function copier(texte) {

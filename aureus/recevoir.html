@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self' http://127.0.0.1:8097 http://127.0.0.1:8098; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'">
+  <meta name="referrer" content="no-referrer">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Aureus · recevoir sur ce PC</title>
+  <link rel="stylesheet" href="aureus.css">
+  <script type="module" src="recevoir.js"></script>
+</head>
+<body>
+  <header class="au-top"><a class="au-brand" href="index.html"><span class="au-badge">AU</span><span>Aureus</span></a></header>
+  <main class="au-main">
+    <div class="au-card au-center au-recevoir" id="zone">
+      <h1>🪄 Recevoir sur ce PC</h1>
+      <p>Rien à installer. Scannez ce QR avec l’appareil photo de votre téléphone, ouvrez votre coffre Aureus, puis touchez 🪄 à côté d’un identifiant ou d’un mot de passe.</p>
+      <div class="au-qr" id="qr" aria-label="QR à scanner avec le téléphone"></div>
+      <p class="au-controle">Contrôle : <b id="controle">…</b><small>Le téléphone doit afficher les mêmes émojis.</small></p>
+      <p class="au-etat" id="etat">Préparation…</p>
+      <div id="recu"></div>
+      <div class="au-row"><button type="button" class="au-btn ghost" id="nouveau">Nouveau QR</button><button type="button" class="au-btn ghost" id="fin">Terminer</button></div>
+    </div>
+  </main>
+</body>
+</html>
