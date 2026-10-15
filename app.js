@@ -80,6 +80,8 @@
     registrys: '<svg viewBox="0 0 48 48" fill="none" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M11 5 H33 L38 10 V43 H11 Z" stroke="var(--reg-ink)"/><path d="M17 15 H32 M17 22 H32" stroke="var(--reg-ink)" opacity=".55"/><circle cx="31" cy="33" r="8.5" fill="#0e9e72" stroke="none"/><path d="M27 33 L30 36 L35.5 30" stroke="#fff" stroke-width="2.6"/></svg>',
     // Couleurs de Vigilys (14/10, celles de la présentation) : indigo → bleu ciel → menthe
     vigilys: '<svg viewBox="0 0 48 48" fill="none" stroke-width="2.4" stroke-linejoin="round" aria-hidden="true"><defs><linearGradient id="vg-grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4F4FD0"/><stop offset=".55" stop-color="#4CC3F5"/><stop offset="1" stop-color="#2fd3b5"/></linearGradient></defs><path d="M24 4 L44 24 L24 44 L4 24 Z" stroke="url(#vg-grad)"/><rect x="11" y="11" width="26" height="26" stroke="#4F4FD0" opacity=".85"/><circle cx="24" cy="24" r="8" stroke="#4CC3F5"/><circle cx="24" cy="24" r="3" fill="#2fd3b5" stroke="none"/></svg>',
+    // Aureus (15/10) : badge « AU » or sur encre bleu-nuit, comme l'appli
+    aureus: '<svg viewBox="0 0 48 48" aria-hidden="true"><rect x="5" y="5" width="38" height="38" rx="11" fill="#1b2333"/><rect x="9" y="9" width="30" height="30" rx="8" fill="none" stroke="#c9962e" stroke-width="2"/><text x="24" y="29.5" text-anchor="middle" font-family="system-ui, sans-serif" font-weight="800" font-size="14" fill="#d4a73c">AU</text></svg>',
     bientot: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="24" cy="17" r="10"/><circle cx="17" cy="29" r="10"/><circle cx="31" cy="29" r="10"/></svg>',
   };
 

@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <!-- Coffre-fort : rien ne se charge ni ne part ailleurs que sur ce site (pas de police externe, pas de script tiers) -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self' http://127.0.0.1:8097 http://127.0.0.1:8098; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'">
+  <meta name="referrer" content="no-referrer">
+  <meta name="theme-color" content="#1b2333">
+  <title>Aureus · coffre-fort</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231b2333'/%3E%3Ctext x='16' y='21' text-anchor='middle' font-family='sans-serif' font-weight='800' font-size='13' fill='%23d4a73c'%3EAU%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="aureus.css">
+  <script src="../config/entreprises.js"></script>
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <header class="au-top">
+    <a class="au-brand" href="../?rester=1" title="Retour à l'espace magasin"><span class="au-badge">AU</span><span>Aureus</span></a>
+    <div class="au-top-actions" id="top-actions" hidden>
+      <button type="button" class="au-icon-btn" id="btn-lien" title="Lien autodestructible">🔗<span>Lien</span></button>
+      <button type="button" class="au-icon-btn" id="btn-reglages" title="Réglages">⚙️<span>Réglages</span></button>
+      <button type="button" class="au-icon-btn is-lock" id="btn-verrou" title="Verrouiller">🔒<span>Verrouiller</span></button>
+    </div>
+  </header>
+  <main id="ecran" class="au-main" aria-live="polite"></main>
+  <div class="au-toast" id="toast" role="status" hidden></div>
+</body>
+</html>
