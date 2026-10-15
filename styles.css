@@ -340,3 +340,17 @@ a.tile:focus-visible { outline: 3px solid var(--tone); outline-offset: 3px; }
 .auth-pulse { display: flex; flex-direction: column; gap: 2px; margin-top: 14px; padding: 12px 14px; border-radius: 14px; border: 1.5px dashed var(--line, #d9d6ef); text-decoration: none; color: inherit; }
 .auth-pulse:hover, .auth-pulse:focus-visible { border-style: solid; }
 .auth-pulse small { opacity: .75; }
+
+/* Boîte à outils (15/10) */
+.admin-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+.tool-card { display: flex; flex-direction: column; gap: 10px; padding: 18px; border-radius: 18px; background: var(--soft); border: 1px solid var(--border); }
+.tool-head { display: flex; align-items: center; gap: 12px; }
+.tool-head b { display: block; font-size: 18px; }
+.tool-head small { color: var(--muted); font-weight: 700; }
+.tool-ico { font-size: 30px; }
+.tool-dl { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
+.tool-steps summary { cursor: pointer; font-weight: 800; }
+.tool-steps ol { margin: 10px 0 6px; padding-left: 20px; display: flex; flex-direction: column; gap: 8px; font-weight: 600; line-height: 1.45; }
+.tool-steps code { font-size: 13px; padding: 2px 6px; border-radius: 6px; background: var(--surface); border: 1px solid var(--border); word-break: break-all; }
+.tool-copy { margin-left: 6px; min-height: 30px; padding: 0 10px; font-size: 13px; }
+.tool-note { font-size: 14px; }

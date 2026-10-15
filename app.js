@@ -247,6 +247,7 @@
     renderApps();
     show('apps');
     $('#admin-btn').hidden = !acc.admin;
+    $('#tools-btn').hidden = !acc.admin;
     setBadge(pending);
     // Accès direct : on part tout de suite dans l'application (sauf retour volontaire au hub)
     if (acc.mdp_provisoire) { setTimeout(askNewPassword, 0); return; }
@@ -1021,6 +1022,19 @@
     openSheet($('#admin-sheet'));
     loadAdmin();
   }
+  // Boîte à outils (15/10) : Kiosque Elvanys, téléchargé depuis le site de Boost de l'entreprise
+  $('#tools-btn').addEventListener('click', function () {
+    var boost = (ent.applications || []).find(function (a) { return a.id === 'boost'; });
+    if (boost && boost.url) $('#kiosque-dl').href = boost.url.replace(/\/$/, '') + '/telecharger/kiosque-elvanys-1.0.apk?v=1';
+    $('#kiosque-ent').textContent = id;
+    openSheet($('#tools-sheet'));
+  });
+  document.querySelectorAll('[data-copy]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var t = ($('#' + b.getAttribute('data-copy')) || {}).textContent || '';
+      if (navigator.clipboard) navigator.clipboard.writeText(t).then(function () { b.textContent = 'Copié ✓'; setTimeout(function () { b.textContent = 'Copier'; }, 1500); });
+    });
+  });
   $('#admin-btn').addEventListener('click', function () {
     if (!adminLocked()) { markActivity(); openAdmin(); return; }
     var f = $('#admin-lock-form');

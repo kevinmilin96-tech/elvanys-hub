@@ -170,7 +170,10 @@
     <section aria-labelledby="apps-title" id="apps" hidden>
       <div class="section-head">
         <h2 id="apps-title">Vos applications</h2>
-        <button type="button" class="admin-btn" id="admin-btn" hidden>Comptes <span class="admin-badge" id="admin-badge" hidden></span></button>
+        <div class="admin-btns">
+          <button type="button" class="admin-btn" id="tools-btn" hidden>🧰 Outils</button>
+          <button type="button" class="admin-btn" id="admin-btn" hidden>Comptes <span class="admin-badge" id="admin-badge" hidden></span></button>
+        </div>
       </div>
       <div class="tiles" id="tiles"></div>
     </section>
@@ -204,6 +207,35 @@
         </form>
       </details>
       <button type="button" class="btn-danger-soft" id="logout-btn">Se déconnecter partout</button>
+      <button type="button" class="sheet-close" data-close>Fermer</button>
+    </div>
+  </dialog>
+
+  <!-- Boîte à outils des administrateurs (15/10) : les outils pour installer le matériel du magasin -->
+  <dialog class="sheet sheet-wide" id="tools-sheet" aria-labelledby="tools-title">
+    <div class="sheet-inner">
+      <h2 id="tools-title">🧰 Boîte à outils</h2>
+      <p>Les outils pour installer le matériel du magasin. Réservé aux administrateurs.</p>
+      <div class="tool-card">
+        <div class="tool-head">
+          <span class="tool-ico" aria-hidden="true">📱</span>
+          <div><b>Kiosque Elvanys</b><small>Appli Android · version 1.0</small></div>
+        </div>
+        <p>Transforme une tablette du magasin en borne : elle n’ouvre que le hub et Boost, on ne peut pas en sortir sans le code de sortie, et elle démarre toute seule.</p>
+        <a class="btn-main tool-dl" id="kiosque-dl" download>Télécharger l’appli (fichier .apk)</a>
+        <details class="tool-steps">
+          <summary>Comment l’installer</summary>
+          <ol>
+            <li>Sur la tablette : retirer <b>tous les comptes</b> (Google et celui de la marque), désinstaller Fully, activer le mode développeur puis le <b>Débogage USB</b>.</li>
+            <li>Sur un PC : installer « SDK Platform-Tools » d’Android, y copier le fichier .apk, brancher la tablette par câble.</li>
+            <li>Dans le Terminal du PC : <code>.\adb install kiosque-elvanys-1.0.apk</code></li>
+            <li>Puis : <code id="kiosque-cmd">.\adb shell dpm set-device-owner fr.elvanys.kiosque/.AdminReceiver</code> <button type="button" class="btn-soft tool-copy" data-copy="kiosque-cmd">Copier</button></li>
+            <li>Sur la tablette : ouvrir <b>Kiosque Elvanys</b>, entrer le nom de l’entreprise (<b id="kiosque-ent"></b>) et un code de sortie, à ranger aussitôt dans le Proton Pass.</li>
+            <li>Dans Boost : autoriser la tablette (espace animateur → Appareils).</li>
+          </ol>
+          <p class="tool-note">Sortir de la borne : 5 touchers rapides dans le coin en haut à gauche, puis le code. Code perdu = remise à zéro de la tablette.</p>
+        </details>
+      </div>
       <button type="button" class="sheet-close" data-close>Fermer</button>
     </div>
   </dialog>
