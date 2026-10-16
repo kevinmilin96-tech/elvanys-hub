@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kiosque Elvanys — activer le blocage total (avec un PC)</title>
+<meta name="robots" content="noindex">
+<style>
+  /* Fiche pas à pas (16/10/2026) : rendre Kiosque Elvanys « propriétaire de la tablette » depuis un PC Windows,
+     une seule fois, sans effacer la tablette. Ouverte depuis la boîte à outils du Hub. */
+  :root { --ink: #1f1b3a; --muted: #5d5878; --line: #e3e0f0; --ok: #0e8a5f; --okbg: #e3f6ee; --bad: #c62828; --badbg: #fdecec; --acc: #5b3fd6; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--ink); background: #f6f4fd; line-height: 1.5; }
+  header { background: linear-gradient(120deg, #5b3fd6, #2a7fc1); color: #fff; padding: 22px 20px; }
+  header h1 { margin: 0 0 4px; font-size: 24px; } header p { margin: 0; opacity: .92; }
+  main { max-width: 820px; margin: 0 auto; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+  .card { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 16px 18px; }
+  h2 { margin: 0 0 8px; font-size: 19px; display: flex; gap: 10px; align-items: center; }
+  h2 .n { flex: none; width: 30px; height: 30px; border-radius: 99px; background: var(--acc); color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 15px; }
+  ol, ul { margin: 6px 0; padding-left: 22px; } li { margin: 4px 0; }
+  .cmd { display: flex; gap: 8px; align-items: center; background: #14112b; color: #e8e4ff; border-radius: 10px; padding: 10px 12px; margin: 8px 0; font-family: ui-monospace, Consolas, monospace; font-size: 14.5px; overflow-x: auto; }
+  .cmd code { flex: 1; white-space: nowrap; }
+  .cmd button { flex: none; border: 0; border-radius: 8px; padding: 6px 12px; background: #fff; color: var(--ink); font-weight: 700; cursor: pointer; }
+  .ok { background: var(--okbg); color: var(--ok); border-radius: 10px; padding: 8px 12px; margin: 6px 0; }
+  .note { color: var(--muted); font-size: 14px; }
+  .warn { background: #fff6e0; border: 1px solid #f0c060; border-radius: 12px; padding: 10px 14px; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; } td { border-top: 1px solid var(--line); padding: 8px 6px; vertical-align: top; }
+  td:first-child { font-family: ui-monospace, Consolas, monospace; color: var(--bad); width: 42%; }
+  .check { display: flex; gap: 10px; align-items: flex-start; } .check input { width: 20px; height: 20px; margin-top: 3px; flex: none; }
+  a { color: var(--acc); font-weight: 600; }
+</style></head><body>
+<header>
+  <h1>Activer le blocage total de la borne</h1>
+  <p>Kiosque Elvanys · une seule fois par tablette · environ 10 minutes · un PC Windows et le câble USB de la tablette</p>
+</header>
+<main>
+  <section class="card warn">
+    <b>Pourquoi un PC ?</b> Android interdit à une application de se verrouiller toute seule. Une seule commande, tapée depuis un PC,
+    déclare Kiosque Elvanys « propriétaire de la tablette ». Ensuite, plus aucune sortie possible (ni par le bas, ni par les applis récentes, ni par les notifications), sauf avec votre code de sortie.
+    <b>Rien n’est effacé</b> sur la tablette. Cochez les étapes au fur et à mesure.
+  </section>
+
+  <section class="card">
+    <h2><span class="n">1</span> Sur la tablette : retirer tous les comptes</h2>
+    <label class="check"><input type="checkbox"><span>Paramètres → <b>Comptes</b> (ou « Comptes et sauvegarde », « Mots de passe et comptes ») → retirer le <b>compte Google</b>, et aussi le compte de la marque (Samsung, Xiaomi, Lenovo…) s’il y en a un.</span></label>
+    <label class="check"><input type="checkbox"><span>Samsung : supprimer aussi le « <b>Dossier sécurisé</b> » et les utilisateurs en plus (Paramètres → Comptes → Utilisateurs), s’il y en a.</span></label>
+    <p class="note">Sans ça, Android refuse la commande de l’étape 5. Ensuite, la tablette reste sans compte tant qu’elle sert de borne : elle n’en a pas besoin.</p>
+  </section>
+
+  <section class="card">
+    <h2><span class="n">2</span> Sur la tablette : activer le débogage USB</h2>
+    <label class="check"><input type="checkbox"><span>Paramètres → <b>À propos de la tablette</b> (→ « Informations sur le logiciel » chez Samsung) → toucher <b>7 fois</b> « <b>Numéro de build</b> ». Message : « Vous êtes développeur ».</span></label>
+    <label class="check"><input type="checkbox"><span>Paramètres → <b>Options pour les développeurs</b> (tout en bas, ou dans « Système ») → activer « <b>Débogage USB</b> ».</span></label>
+  </section>
+
+  <section class="card">
+    <h2><span class="n">3</span> Sur le PC : installer l’outil d’Android</h2>
+    <label class="check"><input type="checkbox"><span>Télécharger « <b>SDK Platform-Tools for Windows</b> » sur le site officiel d’Android :
+      <a href="https://developer.android.com/tools/releases/platform-tools" target="_blank" rel="noopener">developer.android.com/tools/releases/platform-tools</a> (accepter les conditions).</span></label>
+    <label class="check"><input type="checkbox"><span>Dézipper le fichier : on obtient un dossier <b>platform-tools</b> (le mettre par exemple dans <code>C:\platform-tools</code>).</span></label>
+    <label class="check"><input type="checkbox"><span>Ouvrir ce dossier, faire un <b>clic droit dans un espace vide</b> → « <b>Ouvrir dans le Terminal</b> ». (Windows 10 : Maj + clic droit → « Ouvrir la fenêtre PowerShell ici ».)</span></label>
+  </section>
+
+  <section class="card">
+    <h2><span class="n">4</span> Brancher la tablette</h2>
+    <label class="check"><input type="checkbox"><span>Brancher la tablette au PC avec son câble. Si la tablette demande quoi faire avec l’USB : « <b>Transfert de fichiers</b> ».</span></label>
+    <label class="check"><input type="checkbox"><span>Dans le Terminal, taper (ou coller) :</span></label>
+    <div class="cmd"><code>.\adb devices</code><button type="button" data-copy=".\adb devices">Copier</button></div>
+    <label class="check"><input type="checkbox"><span>Sur la tablette, le message « <b>Autoriser le débogage USB ?</b> » s’affiche : cocher « Toujours autoriser » puis <b>OK</b>. Retaper la commande : une ligne doit finir par <b>device</b>.</span></label>
+    <div class="ok">✓ Exemple de bonne réponse : <code>R52T80ABCDE&nbsp;&nbsp;&nbsp;device</code></div>
+  </section>
+
+  <section class="card">
+    <h2><span class="n">5</span> La commande qui verrouille</h2>
+    <p>L’application Kiosque Elvanys est déjà installée sur la tablette : il suffit de taper :</p>
+    <div class="cmd"><code>.\adb shell dpm set-device-owner fr.elvanys.kiosque/.AdminReceiver</code><button type="button" data-copy=".\adb shell dpm set-device-owner fr.elvanys.kiosque/.AdminReceiver">Copier</button></div>
+    <div class="ok">✓ Bonne réponse : elle commence par <b>Success: Device owner set to package…</b></div>
+    <p class="note">Si l’application n’était pas installée : copier d’abord le fichier <code>kiosque-elvanys-1.0.apk</code> (boîte à outils du Hub) dans le dossier platform-tools, puis taper <code>.\adb install kiosque-elvanys-1.0.apk</code>.</p>
+  </section>
+
+  <section class="card">
+    <h2><span class="n">6</span> Vérifier</h2>
+    <label class="check"><input type="checkbox"><span>Débrancher le câble, ouvrir <b>Kiosque Elvanys</b> : l’écran de réglage affiche « ✅ <b>Blocage total actif</b> » (sinon, dans le menu caché : 5 touchers en haut à gauche + code de sortie).</span></label>
+    <label class="check"><input type="checkbox"><span>Essayer de sortir par le bas : rien ne doit se passer.</span></label>
+    <label class="check"><input type="checkbox"><span>Pour finir : menu caché → « Ouvrir les réglages Android » → désactiver le <b>Débogage USB</b>.</span></label>
+  </section>
+
+  <section class="card">
+    <h2>Si la commande répond un message d’erreur</h2>
+    <table>
+      <tr><td>… already some accounts on the device</td><td>Il reste un compte sur la tablette : retour à l’étape 1 (Google, compte de la marque, Dossier sécurisé). Si un compte refuse de partir : remise à zéro de la tablette, sans ajouter de compte Google à l’accueil.</td></tr>
+      <tr><td>… already several users on the device</td><td>Supprimer les autres utilisateurs (Paramètres → Comptes → Utilisateurs) et le Dossier sécurisé (Samsung).</td></tr>
+      <tr><td>… device owner is already set</td><td>Une autre application de gestion est déjà « propriétaire » (ex. une ancienne appli de borne) : la désinstaller, ou remettre la tablette à zéro.</td></tr>
+      <tr><td>unauthorized</td><td>Accepter le message « Autoriser le débogage USB ? » sur la tablette (étape 4), puis retaper la commande.</td></tr>
+      <tr><td>(aucun appareil dans la liste)</td><td>Essayer un autre câble (certains ne font que charger) ou un autre port USB ; vérifier le Débogage USB (étape 2) ; tablette Samsung : installer le « Samsung USB Driver » sur le PC.</td></tr>
+      <tr><td>adb n’est pas reconnu…</td><td>Le Terminal n’est pas ouvert dans le dossier platform-tools (étape 3), ou il manque <b>.\</b> devant adb.</td></tr>
+      <tr><td>Unknown admin / not found</td><td>L’application Kiosque Elvanys n’est pas installée : voir la note de l’étape 5.</td></tr>
+    </table>
+    <p class="note">Un autre message ? Prenez-le en photo et envoyez-le à Claude.</p>
+  </section>
+
+  <section class="card">
+    <h2>Bon à savoir</h2>
+    <ul>
+      <li>Sortir de la borne : 5 touchers rapides en haut à <b>gauche</b>, puis le code de sortie.</li>
+      <li>« Quitter la borne et rendre la tablette normale » (menu caché) retire le blocage total : il faudra refaire cette fiche pour le remettre.</li>
+      <li>Code de sortie perdu : seule une remise à zéro de la tablette permet d’en sortir.</li>
+    </ul>
+  </section>
+</main>
+<script>
+  document.querySelectorAll('[data-copy]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var t = b.getAttribute('data-copy');
+      (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(function () { b.textContent = 'Copié ✓'; setTimeout(function () { b.textContent = 'Copier'; }, 1800); }, function () { window.prompt('Copiez la commande :', t); });
+    });
+  });
+</script>
+</body></html>
