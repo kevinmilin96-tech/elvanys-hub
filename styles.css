@@ -367,3 +367,6 @@ a.tile:focus-visible { outline: 3px solid var(--tone); outline-offset: 3px; }
 .tool-steps code { font-size: 13px; padding: 2px 6px; border-radius: 6px; background: var(--surface); border: 1px solid var(--border); word-break: break-all; }
 .tool-copy { margin-left: 6px; min-height: 30px; padding: 0 10px; font-size: 13px; }
 .tool-note { font-size: 14px; }
+
+/* Borne Kiosque Elvanys : choix de l'administrateur connecté (16/10) */
+#kiosk-admin .btn-main, #kiosk-admin .btn-soft { display: block; width: 100%; margin-top: 10px; }

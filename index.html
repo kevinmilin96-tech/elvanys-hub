@@ -160,6 +160,14 @@
           <p id="auth-done-text">Un responsable du magasin va valider votre compte. Vous pourrez ensuite vous connecter.</p>
           <button type="button" class="btn-soft" id="auth-back">Retour à la connexion</button>
         </div>
+        <!-- Borne Kiosque Elvanys (16/10) : un administrateur connecté choisit Boost ou les réglages de la borne (plus de geste caché) -->
+        <div class="auth-done" id="kiosk-admin" hidden>
+          <div class="auth-done-ico" aria-hidden="true">🛠️</div>
+          <h3>Bonjour, administrateur</h3>
+          <p>Vous êtes sur la borne du magasin. Les réglages (wifi, entreprise, code de sortie) demandent ensuite le code de sortie.</p>
+          <button type="button" class="btn-main" id="kiosk-admin-boost">Ouvrir Boost</button>
+          <button type="button" class="btn-soft" id="kiosk-admin-menu">⚙️ Réglages de la borne</button>
+        </div>
         <a class="auth-pulse" id="pulse-link" hidden>
           <b>📊 Répondre à un questionnaire Pulse, sans compte</b>
           <small>Les questionnaires du magasin sont anonymes : pas besoin de compte pour y répondre.</small>

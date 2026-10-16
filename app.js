@@ -308,11 +308,12 @@
     $('#reset-form').hidden = true;
     $('#code-form').hidden = true;
     $('#auth-done').hidden = true;
+    $('#kiosk-admin').hidden = true;
     document.querySelector('.auth-tabs').hidden = false;
   }
   // Écrans « mot de passe oublié » et « nouveau mot de passe » (sans les onglets)
   function showAuthForm(id) {
-    ['#login-form', '#signup-form', '#forgot-form', '#reset-form', '#code-form', '#auth-done'].forEach(function (sel) { $(sel).hidden = sel !== id; });
+    ['#login-form', '#signup-form', '#forgot-form', '#reset-form', '#code-form', '#auth-done', '#kiosk-admin'].forEach(function (sel) { $(sel).hidden = sel !== id; });
     document.querySelector('.auth-tabs').hidden = true;
     var first = $(id).querySelector('input');
     if (first) first.focus();
@@ -335,12 +336,26 @@
     showAuthForm('#code-form');
   }
   function sessionOpened(r) {
+    // Borne Kiosque Elvanys : un administrateur peut ouvrir les réglages de la borne (16/10)
+    if (kioskApp && r.data.meta && r.data.meta.account && r.data.meta.account.admin) { kioskAdminChoice(r.data.token); return; }
     if (kiosk) { kioskOpenBoost(r.data.token); return; }
     setSession(r.data.token);
     unlockAdmin();
     $('#login-form').reset();
     enter(r.data.meta.account, 0, true);
     refreshMe();
+  }
+  // Administrateur sur la borne : Boost, ou les réglages de l'appli (lien spécial « kiosque-elvanys://menu » que seule
+  // l'appli Kiosque Elvanys comprend ; elle demande ensuite le code de sortie). Aucune session gardée sur la borne.
+  function kioskAdminChoice(t) {
+    showAuthForm('#kiosk-admin');
+    $('#kiosk-admin-boost').onclick = function () { kioskOpenBoost(t); };
+    $('#kiosk-admin-menu').onclick = function () {
+      token = t; setSession(null); $('#login-form').reset(); switchTab('login');
+      location.href = 'kiosque-elvanys://menu';
+    };
+    // Sans choix au bout de 2 minutes : on referme (la borne ne garde jamais une session ouverte)
+    setTimeout(function () { if (!$('#kiosk-admin').hidden) { setSession(null); $('#login-form').reset(); switchTab('login'); } }, 120000);
   }
   // Tablette du magasin : passe vers Boost avec la session qui vient de s'ouvrir, puis plus aucune session gardée ici
   function kioskOpenBoost(t) {
