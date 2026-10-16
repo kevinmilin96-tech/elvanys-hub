@@ -1034,8 +1034,9 @@
   }
   // Boîte à outils (15/10) : Kiosque Elvanys, téléchargé depuis le site de Boost de l'entreprise
   $('#tools-btn').addEventListener('click', function () {
-    var boost = (ent.applications || []).find(function (a) { return a.id === 'boost'; });
-    if (boost && boost.url) $('#kiosque-dl').href = boost.url.replace(/\/$/, '') + '/telecharger/kiosque-elvanys-1.0.apk?v=1';
+    // Le fichier est servi par le Hub lui-même (16/10) : passé par Boost, l'ancienne mémoire hors ligne d'un téléphone
+    // pouvait détourner le lien vers l'accueil de Boost. Le Hub n'a pas de mémoire hors ligne.
+    $('#kiosque-dl').href = 'telecharger/kiosque-elvanys-1.0.apk?v=1';
     $('#kiosque-ent').textContent = id;
     openSheet($('#tools-sheet'));
   });
