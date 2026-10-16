@@ -219,7 +219,7 @@
       <div class="tool-card">
         <div class="tool-head">
           <span class="tool-ico" aria-hidden="true">📱</span>
-          <div><b>Kiosque Elvanys</b><small>📲 Application mobile à installer sur la tablette (Android) · version 1.0</small></div>
+          <div><b>Kiosque Elvanys</b><small>📲 Application mobile à installer sur la tablette (Android) · version 1.1</small></div>
         </div>
         <p>Application mobile à installer sur une tablette Android. Elle transforme la tablette du magasin en borne : elle n’ouvre que le hub et Boost, on ne peut pas en sortir sans le code de sortie, et elle démarre toute seule.</p>
         <a class="btn-main tool-dl" id="kiosque-dl" download>Télécharger l’application mobile (fichier .apk)</a>
@@ -228,12 +228,13 @@
           <ol>
             <li>Sur la tablette : retirer <b>tous les comptes</b> (Google et celui de la marque), désinstaller Fully, activer le mode développeur puis le <b>Débogage USB</b>.</li>
             <li>Sur un PC : installer « SDK Platform-Tools » d’Android, y copier le fichier .apk, brancher la tablette par câble.</li>
-            <li>Dans le Terminal du PC : <code>.\adb install kiosque-elvanys-1.0.apk</code></li>
+            <li>Dans le Terminal du PC : <code>.\adb install kiosque-elvanys-1.1.apk</code></li>
             <li>Puis : <code id="kiosque-cmd">.\adb shell dpm set-device-owner fr.elvanys.kiosque/.AdminReceiver</code> <button type="button" class="btn-soft tool-copy" data-copy="kiosque-cmd">Copier</button></li>
             <li>Sur la tablette : ouvrir <b>Kiosque Elvanys</b>, entrer le nom de l’entreprise (<b id="kiosque-ent"></b>) et un code de sortie, à ranger aussitôt dans le Proton Pass.</li>
             <li>Dans Boost : autoriser la tablette (espace animateur → Appareils).</li>
           </ol>
           <p class="tool-note">Sortir de la borne : 5 touchers rapides dans le coin en haut à gauche, puis le code. Code perdu = remise à zéro de la tablette.</p>
+          <p><a class="btn-soft" href="outils/kiosque-qr.html" target="_blank" rel="noopener">📷 Installation sans PC (remise à zéro + QR)</a></p>
           <p><a class="btn-soft" href="outils/kiosque-activation.html" target="_blank" rel="noopener">📄 Fiche pas à pas pour le PC (blocage total)</a></p>
         </details>
       </div>

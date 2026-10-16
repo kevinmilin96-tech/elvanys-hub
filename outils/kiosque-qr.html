@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kiosque Elvanys — installation sans PC (QR)</title>
+<meta name="robots" content="noindex">
+<style>
+  /* Installation « sans PC » (16/10/2026) : remise à zéro de la tablette, 6 touchers sur l'écran de bienvenue, QR
+     d'installation → Kiosque Elvanys s'installe directement « propriétaire de la tablette » (blocage total).
+     QR fabriqué par boost/kiosque-elvanys/qr-installation.cjs (empreinte du certificat de signature + adresse de l'APK). */
+  :root { --ink: #1f1b3a; --muted: #5d5878; --line: #e3e0f0; --ok: #0e8a5f; --okbg: #e3f6ee; --acc: #5b3fd6; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--ink); background: #f6f4fd; line-height: 1.5; }
+  header { background: linear-gradient(120deg, #5b3fd6, #2a7fc1); color: #fff; padding: 20px; }
+  header h1 { margin: 0 0 4px; font-size: 23px; } header p { margin: 0; opacity: .92; }
+  main { max-width: 820px; margin: 0 auto; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+  .card { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 16px 18px; }
+  h2 { margin: 0 0 8px; font-size: 19px; display: flex; gap: 10px; align-items: center; }
+  h2 .n { flex: none; width: 30px; height: 30px; border-radius: 99px; background: var(--acc); color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 15px; }
+  .warn { background: #fff6e0; border: 1px solid #f0c060; }
+  .qr { text-align: center; } .qr img { width: min(420px, 90vw); height: auto; image-rendering: pixelated; background: #fff; padding: 10px; border-radius: 12px; border: 1px solid var(--line); }
+  .ok { background: var(--okbg); color: var(--ok); border-radius: 10px; padding: 8px 12px; margin: 6px 0; }
+  .check { display: flex; gap: 10px; align-items: flex-start; margin: 6px 0; } .check input { width: 20px; height: 20px; margin-top: 3px; flex: none; }
+  .note { color: var(--muted); font-size: 14px; }
+  ul { margin: 6px 0; padding-left: 22px; } li { margin: 4px 0; }
+  a { color: var(--acc); font-weight: 600; }
+  @media (min-width: 900px) { .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-items: start; } }
+</style></head><body>
+<header>
+  <h1>Installer la borne sans PC (QR)</h1>
+  <p>Kiosque Elvanys 1.1 · blocage total dès l’installation · environ 10 minutes · wifi nécessaire</p>
+</header>
+<main>
+  <section class="card warn">
+    <b>⚠️ La tablette va être remise à zéro : tout ce qu’elle contient est effacé.</b> Ouvrez cette page sur un <b>autre appareil</b>
+    (téléphone ou PC) : c’est lui qui montrera le QR à la tablette.
+  </section>
+  <div class="cols">
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <section class="card">
+        <h2><span class="n">1</span> Remettre la tablette à zéro</h2>
+        <label class="check"><input type="checkbox"><span>Paramètres → <b>Système</b> (ou « Gestion globale » chez Samsung) → <b>Réinitialiser</b> → « <b>Effacer toutes les données</b> » (réinitialisation d’usine).</span></label>
+        <label class="check"><input type="checkbox"><span>Attendre le redémarrage : l’écran d’accueil d’Android s’affiche (« Bienvenue », choix de la langue).</span></label>
+      </section>
+      <section class="card">
+        <h2><span class="n">2</span> Les 6 touchers</h2>
+        <label class="check"><input type="checkbox"><span>Sur ce tout premier écran, <b>touchez 6 fois rapidement</b> au même endroit, dans une partie vide de l’écran (au milieu, sous le mot « Bienvenue »).</span></label>
+        <label class="check"><input type="checkbox"><span>Un message propose de configurer l’appareil par QR : <b>Suivant</b>. La tablette peut demander d’abord de se connecter au <b>wifi</b> : le faire.</span></label>
+        <p class="note">Rien ne se passe ? Revenez bien au tout premier écran, et touchez 6 fois au même endroit, ni trop vite ni trop lentement. Sur certaines tablettes, il faut toucher le texte « Bienvenue ».</p>
+      </section>
+      <section class="card">
+        <h2><span class="n">3</span> Scanner le QR</h2>
+        <label class="check"><input type="checkbox"><span>L’appareil photo de la tablette s’ouvre : scannez le QR de cette page.</span></label>
+        <label class="check"><input type="checkbox"><span>Message « <b>Cet appareil appartient à votre organisation</b> » : accepter / Suivant. La tablette télécharge et installe Kiosque Elvanys toute seule.</span></label>
+        <label class="check"><input type="checkbox"><span>Finir l’accueil d’Android <b>sans ajouter de compte Google</b> (« Passer » à chaque proposition).</span></label>
+      </section>
+      <section class="card">
+        <h2><span class="n">4</span> Régler la borne</h2>
+        <label class="check"><input type="checkbox"><span>Ouvrir <b>Kiosque Elvanys</b> (si Android demande l’application d’accueil : la choisir, « Toujours »).</span></label>
+        <div class="ok">✓ L’écran de réglage affiche « <b>Blocage total actif</b> ».</div>
+        <label class="check"><input type="checkbox"><span>Entreprise : <b>demo</b> (démo) ou <b>blaye</b> (magasin) · code de sortie de 6 à 12 chiffres, <b>rangé tout de suite dans le Proton Pass</b>.</span></label>
+        <label class="check"><input type="checkbox"><span>« Enregistrer et ouvrir la borne », puis autoriser la tablette dans Boost (espace animateur → Appareils).</span></label>
+        <label class="check"><input type="checkbox"><span>Vérifier : glisser depuis le bas ne fait plus sortir de la borne.</span></label>
+      </section>
+    </div>
+    <section class="card qr">
+      <h2 style="justify-content:center">Le QR à scanner avec la tablette</h2>
+      <img src="kiosque-qr-installation.svg" alt="QR d’installation de Kiosque Elvanys">
+      <p class="note">Il installe <b>Kiosque Elvanys 1.1</b> depuis le Hub de la démo, vérifié par la signature de l’application.</p>
+      <p class="note">Augmentez la luminosité de l’écran si la tablette n’arrive pas à le lire.</p>
+    </section>
+  </div>
+  <section class="card">
+    <h2>Si ça ne marche pas</h2>
+    <ul>
+      <li><b>« Impossible de configurer l’appareil » / « Contactez votre service informatique »</b> : prenez l’écran en photo et envoyez-la à Claude. En attendant, la tablette reste utilisable : refaites une remise à zéro et utilisez la <a href="kiosque-activation.html">méthode avec un PC</a>.</li>
+      <li><b>Le téléchargement échoue</b> : vérifier le wifi (la tablette doit joindre demo-hub.elvanys.fr).</li>
+      <li><b>Android 7 ou 8</b> : la tablette télécharge d’abord un lecteur de QR (wifi obligatoire) ; c’est normal.</li>
+    </ul>
+    <p class="note">Sortir de la borne : 5 touchers rapides en haut à gauche, puis le code. Code perdu = nouvelle remise à zéro.</p>
+  </section>
+</main>
+</body></html>

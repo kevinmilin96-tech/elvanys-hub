@@ -1036,7 +1036,7 @@
   $('#tools-btn').addEventListener('click', function () {
     // Le fichier est servi par le Hub lui-même (16/10) : passé par Boost, l'ancienne mémoire hors ligne d'un téléphone
     // pouvait détourner le lien vers l'accueil de Boost. Le Hub n'a pas de mémoire hors ligne.
-    $('#kiosque-dl').href = 'telecharger/kiosque-elvanys-1.0.apk?v=1';
+    $('#kiosque-dl').href = 'telecharger/kiosque-elvanys-1.1.apk?v=1';
     $('#kiosque-ent').textContent = id;
     openSheet($('#tools-sheet'));
   });
