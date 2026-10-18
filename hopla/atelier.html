@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>L’atelier Hop-là : l’organigramme</title>
+<style>
+  :root { --vert: #1f6b46; --vert2: #2f8a5d; --fond: #f3faf5; --encre: #1d2b24; --doux: #5d6f65; --ligne: #cfe5d6; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 15px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--encre); background: var(--fond); }
+  main { max-width: 1000px; margin: 0 auto; padding: 18px 14px 40px; }
+  h1 { color: var(--vert); margin: 0 0 4px; font-size: 1.5rem; }
+  .sous { color: var(--doux); margin: 0 0 18px; }
+  .chef { background: var(--vert); color: #fff; border-radius: 16px; padding: 14px 16px; text-align: center; max-width: 520px; margin: 0 auto; }
+  .chef b { font-size: 1.1rem; }
+  .chef small { display: block; opacity: .9; margin-top: 4px; }
+  .fil { width: 3px; height: 22px; background: var(--vert2); margin: 0 auto; }
+  .etapes { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin: 0 auto 4px; }
+  .etapes span { background: #fff; border: 2px solid var(--vert2); color: var(--vert); border-radius: 999px; padding: 4px 10px; font-weight: 700; font-size: 13px; }
+  .etapes i { color: var(--vert2); font-style: normal; align-self: center; }
+  .poles { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-top: 4px; }
+  .pole { background: #fff; border: 1px solid var(--ligne); border-radius: 16px; overflow: hidden; }
+  .pole h2 { margin: 0; padding: 10px 12px; font-size: 1.05rem; color: #fff; }
+  .pole ul { list-style: none; margin: 0; padding: 8px 10px 10px; }
+  .pole li { border-left: 4px solid var(--c); background: #f8fbf9; border-radius: 8px; padding: 7px 9px; margin: 6px 0; }
+  .pole li b { display: block; }
+  .pole li small { color: var(--doux); }
+  .nutri { --c: #2f8a5d; } .nutri h2 { background: #2f8a5d; }
+  .rec { --c: #d9822b; } .rec h2 { background: #d9822b; }
+  .sport { --c: #2b6cb0; } .sport h2 { background: #2b6cb0; }
+  .suivi { --c: #8b5cf6; } .suivi h2 { background: #8b5cf6; }
+  .trans { --c: #c0392b; } .trans h2 { background: #c0392b; }
+  .synth { --c: #1f6b46; } .synth h2 { background: #1f6b46; }
+  .bloc { background: #fff; border: 1px solid var(--ligne); border-radius: 16px; padding: 12px 14px; margin-top: 16px; }
+  .bloc h3 { margin: 0 0 6px; color: var(--vert); font-size: 1.05rem; }
+  .bloc ol, .bloc ul { margin: 0; padding-left: 20px; }
+  .bloc li { margin: 4px 0; }
+  .note { color: var(--doux); font-size: 13px; margin-top: 18px; text-align: center; }
+</style>
+</head>
+<body>
+<main>
+  <h1>L’atelier Hop-là</h1>
+  <p class="sous">Qui fait quoi quand on prépare une nouveauté pour Hop-là (18/10/2026). Chaque case est un agent spécialisé ; Claude les fait travailler dans l’ordre et vous rapporte le résultat.</p>
+
+  <div class="chef"><b>🎼 Claude, chef d’orchestre</b><small>Reçoit votre demande, choisit les pôles utiles, lance l’atelier, vous pose les décisions, puis construit et met en ligne.</small></div>
+  <div class="fil"></div>
+  <div class="etapes"><span>1. Recherche</span><i>→</i><span>2. Création</span><i>→</i><span>3. Relecture</span><i>→</i><span>4. Correction</span><i>→</i><span>5. Synthèse</span></div>
+  <div class="fil"></div>
+
+  <div class="poles">
+    <section class="pole nutri">
+      <h2>🥗 Pôle Nutrition</h2>
+      <ul>
+        <li><b>Études et méthodes</b><small>Ce que disent la science et les autorités (ANSES, PNNS, HAS, OMS, méta-analyses) : métabolisme, déficit, protéines, maintien.</small></li>
+        <li><b>Aliments et calories</b><small>Le côté chiffré : table Ciqual, kcal, protéines, fibres, cru ou cuit, portions.</small></li>
+        <li><b>Effet sur le corps</b><small>Faim, satiété, hormones, eau et cycle, muscle, sommeil, effet yo-yo, expliqués simplement.</small></li>
+        <li><b>La journée et l’organisation</b><small>Idées concrètes : repas, collations, horaires, enfants, week-end, imprévus, budget.</small></li>
+      </ul>
+    </section>
+    <section class="pole rec">
+      <h2>🍲 Pôle Recettes</h2>
+      <ul>
+        <li><b>Le chef</b><small>Écrit les recettes au format de l’appli, préparées le dimanche, de saison, avec le matériel de la maison.</small></li>
+        <li><b>Le vérificateur</b><small>Calories et protéines par portion, quantités réalistes, conservation au frigo et au congélateur sûre.</small></li>
+        <li><b>Le goûteur exigeant</b><small>Bon après 3 jours ? Faisable un dimanche ? Budget, enfants, trop proche d’une recette existante ?</small></li>
+      </ul>
+    </section>
+    <section class="pole sport">
+      <h2>🏃 Pôle Sport</h2>
+      <ul>
+        <li><b>Le chercheur</b><small>OMS, ANSES, INSERM, méta-analyses : dose d’activité, progression, renforcement, cardio, pas.</small></li>
+        <li><b>Le coach</b><small>Transforme la recherche en séances, niveaux et réglages, avec échauffement, versions faciles et signaux d’arrêt.</small></li>
+      </ul>
+    </section>
+    <section class="pole suivi">
+      <h2>📈 Pôle Suivi et motivation</h2>
+      <ul>
+        <li><b>Habitudes et comportement</b><small>Pesée et tendance, mensurations, petites habitudes, défis à deux, rechutes, maintien anti yo-yo, sans culpabiliser.</small></li>
+      </ul>
+    </section>
+    <section class="pole trans">
+      <h2>🛡️ Relecteurs (pour tous les pôles)</h2>
+      <ul>
+        <li><b>Santé et sécurité</b><small>Rien qui ressemble à un avis médical ; grossesse, enfants, diabète, troubles alimentaires ; pas de ton culpabilisant.</small></li>
+        <li><b>Exactitude</b><small>Revérifie chaque chiffre et chaque étude dans les sources.</small></li>
+      </ul>
+    </section>
+    <section class="pole synth">
+      <h2>🧾 Synthèse</h2>
+      <ul>
+        <li><b>Le rédacteur de synthèse</b><small>Ce qu’on a appris, la proposition pour l’appli, 2 à 5 décisions à vous poser, et le plan de construction pour Claude.</small></li>
+      </ul>
+    </section>
+  </div>
+
+  <div class="bloc">
+    <h3>Comment ça se passe</h3>
+    <ol>
+      <li><b>Vous</b> dites ce que vous voulez (ex. « les collations », « un programme de marche », « des recettes d’hiver »).</li>
+      <li><b>Recherche</b> : les chercheurs des pôles utiles travaillent en même temps, chacun dans sa spécialité.</li>
+      <li><b>Création</b> : le chef écrit les recettes, le coach écrit les séances, à partir de ces recherches.</li>
+      <li><b>Relecture</b> : santé, exactitude, et pour les recettes le vérificateur et le goûteur, cherchent les erreurs.</li>
+      <li><b>Correction</b> : le chef corrige ses recettes d’après les remarques.</li>
+      <li><b>Synthèse</b> : un résumé clair, et les décisions que <b>vous</b> prenez (questions avec une recommandation).</li>
+      <li><b>Claude</b> construit dans l’appli, essaie, met en ligne sur la démo, et note tout dans le cahier des charges.</li>
+    </ol>
+  </div>
+  <div class="bloc">
+    <h3>Les règles de l’atelier</h3>
+    <ul>
+      <li>Hop-là est pour n’importe quel foyer : jamais une règle propre à un seul couple.</li>
+      <li>Des sources sérieuses pour chaque chiffre ; les réseaux sociaux servent seulement à trouver des idées.</li>
+      <li>Jamais d’avis médical, jamais d’aliment « interdit », jamais de promesse de résultat.</li>
+      <li>On ne lance que les pôles utiles à la demande : un atelier complet mobilise une quinzaine d’agents.</li>
+    </ul>
+  </div>
+  <p class="note">Fichiers : ~/perso/Hop-la/atelier-claude (agents et workflow « atelier-hopla »), organigramme aussi dans ATELIER.md.</p>
+</main>
+</body>
+</html>
