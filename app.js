@@ -1113,7 +1113,9 @@
     var boost = (ent.applications || []).find(function (a) { return a.id === 'boost'; });
     var link = $('#pulse-link');
     if (!boost || !link) return;
-    link.href = appLink(boost);
+    // &sanscompte=1 (22/10) : Boost oublie tout compte gardé sur l'appareil (sinon, sur la tablette, le compte du
+    // collaborateur précédent réapparaissait)
+    link.href = appLink(boost) + '&sanscompte=1';
     link.hidden = false;
   })();
 
