@@ -659,6 +659,7 @@
       '<label class="chk"><input type="checkbox" name="moderateur"' + (a.moderateur ? ' checked' : '') + '> Modérateur (relit les propositions des collaborateurs ; à désigner avec la direction et le CSE)</label>' +
       '<label class="chk"><input type="checkbox" name="createur"' + (a.createur ? ' checked' : '') + '> Créateur (crée des quiz dans le Studio ; sur candidature)</label>' +
       '<label class="chk"><input type="checkbox" name="testeur"' + (a.testeur ? ' checked' : '') + '> Testeur (voit les démos express privées de Boost, pour les présentations au CSE et à la direction)</label>' +
+      '<label class="chk"><input type="checkbox" name="parcours_lecteur"' + (a.parcours_lecteur ? ' checked' : '') + '> Lit les résultats du parcours d’intégration (direction, RH : lecture seule, dans Boost → Profil)</label>' +
       '<label class="chk"><input type="checkbox" name="animateur"' + (a.animateur ? ' checked' : '') + '> Animateur de Boost (entre dans l’espace animateur avec son mot de passe du hub, seulement dans les rubriques cochées)</label>' +
       animPermsBlock(a) +
       '</div>';
@@ -701,7 +702,7 @@
     // Aussi par « titre » (demande de l'utilisateur) : profil, rôles, applications ouvertes
     var titres = [profilName(a.profil),
       a.admin ? 'administrateur admin' : '', a.animateur ? 'animateur' : '', a.moderateur ? 'moderateur' : '',
-      a.testeur ? 'testeur' : '', a.createur ? 'createur' : '',
+      a.testeur ? 'testeur' : '', a.parcours_lecteur ? 'parcours lecteur' : '', a.createur ? 'createur' : '',
       (a.apps || []).map(function (id) { var x = appById(id); return x ? x.nom : id; }).join(' ')];
     var hay = norm([a.prenom, a.nom, a.prenom && a.nom ? a.nom + ' ' + a.prenom : '', a.identifiant, a.email].concat(titres).join(' | '));
     return q.split(/\s+/).every(function (w) { return hay.indexOf(w) !== -1; });
@@ -785,7 +786,7 @@
   // --- Candidatures « Devenir modérateur / créateur » (envoyées depuis le Profil de Boost) ---
   // Décision avec la direction et le CSE ; accepter coche la case du compte ; un refus demande un mot d'explication.
   var candPending = 0;
-  var ROLE_LABEL = { moderateur: 'Modérateur', createur: 'Créateur', testeur: 'Testeur' };
+  var ROLE_LABEL = { moderateur: 'Modérateur', createur: 'Créateur', testeur: 'Testeur', parcours_lecteur: 'Lecteur du parcours' };
   var CAND_STATUS = { en_attente: 'En attente', acceptee: 'Acceptée', refusee: 'Refusée' };
   function refreshCandCount() {
     api('GET', '/api/hub/admin/candidatures').then(function (r) {
@@ -857,10 +858,10 @@
     candidature_refusee: 'n’a pas retenu la candidature de',
     entree_animateur: 'a ouvert l’espace animateur de Boost',
   };
-  var FIELD_LABEL = { statut: 'Statut', profil: 'Profil', apps: 'Applications', acces_direct: 'Accès direct', admin: 'Administrateur', moderateur: 'Modérateur', createur: 'Créateur', testeur: 'Testeur', animateur: 'Animateur', anim_perms: 'Rubriques animateur' };
+  var FIELD_LABEL = { statut: 'Statut', profil: 'Profil', apps: 'Applications', acces_direct: 'Accès direct', admin: 'Administrateur', moderateur: 'Modérateur', createur: 'Créateur', testeur: 'Testeur', parcours_lecteur: 'Lecteur du parcours', animateur: 'Animateur', anim_perms: 'Rubriques animateur' };
   function shortName(label) { return String(label || '').replace(/s*<[^>]*>$/, '') || '(compte supprimé)'; }
   function fieldValue(k, v) {
-    if (k === 'admin' || k === 'moderateur' || k === 'createur' || k === 'testeur' || k === 'animateur') return v ? 'oui' : 'non';
+    if (k === 'admin' || k === 'moderateur' || k === 'createur' || k === 'testeur' || k === 'parcours_lecteur' || k === 'animateur') return v ? 'oui' : 'non';
     if (k === 'anim_perms') {
       var ids = String(v || '').split(',').filter(Boolean);
       return ids.length ? ids.map(function (id) { var r = ANIM_RUBRIQUES.filter(function (x) { return x[0] === id; })[0]; return r ? r[1] : id; }).join(', ') : 'aucune';
@@ -938,6 +939,8 @@
     if (crea) out.createur = crea.checked;
     var tst = card.querySelector('input[name="testeur"]');
     if (tst) out.testeur = tst.checked;
+    var plc = card.querySelector('input[name="parcours_lecteur"]');
+    if (plc) out.parcours_lecteur = plc.checked;
     var anim = card.querySelector('input[name="animateur"]');
     if (anim) {
       out.animateur = anim.checked;
