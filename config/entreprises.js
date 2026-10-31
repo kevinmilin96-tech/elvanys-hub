@@ -39,12 +39,22 @@ window.HUB_ENTREPRISES = {
       {
         id: 'vigilys',
         nom: 'Vigilys',
-        description: 'Main courante, rondes, incidents et maintenance du site.',
+        description: 'Main courante, consignes, clés, rondes, incidents et planning du poste de sécurité.',
         url: 'https://blaye-vigilys.elvanys.fr',
         icone: 'vigilys',
         couleur: 'vigilys',
         pour: ['agent', 'direction'],
-        public: 'Sécurité, maintenance et direction',
+        public: 'Sécurité et direction',
+      },
+      {
+        id: 'maintys',
+        nom: 'Maintys',
+        description: 'Maintenance du site : parc, préventif, vérifications, interventions, contrats, stock et chantiers.',
+        url: 'https://blaye-vigilys.elvanys.fr/maintys.html', // même site et même base que Vigilys (31/10) ; adresse propre plus tard
+        icone: 'maintys',
+        couleur: 'maintys',
+        pour: [], // jamais cochée d'office : l'administrateur coche les comptes du service technique et de la direction
+        public: 'Maintenance, administratif et direction',
       },
       {
         id: 'registrys',
