@@ -54,7 +54,7 @@ window.HUB_ENTREPRISES = {
         icone: 'maintys',
         couleur: 'maintys',
         pour: [], // jamais cochée d'office : l'administrateur coche les comptes du service technique et de la direction
-        public: 'Maintenance, administratif et direction',
+        public: 'Maintenance et administratif',
       },
       {
         id: 'registrys',
