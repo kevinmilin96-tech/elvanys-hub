@@ -617,9 +617,35 @@
     return f === 'autres' ? (a.statut === 'refuse' || a.statut === 'suspendu') : a.statut === f;
   }
 
+  // Vigilys / Maintys (31/10) : profils et fiches qu'on peut relier à un compte (lus avec la liste des comptes)
+  var VIGILYS = { profils: ['Superviseur', 'Chef de sécurité', 'Agent', 'Technicien', 'Responsable technique', 'Direction', 'Administratif', 'Demandeur'], fiches: [] };
+  function loadVigilys() {
+    return api('GET', '/api/hub/admin/vigilys-fiches').then(function (r) {
+      if (r.status === 200 && r.data) VIGILYS = { profils: r.data.profils || VIGILYS.profils, fiches: r.data.fiches || [] };
+    }).catch(function () {});
+  }
+  function vigilysBlock(a) {
+    var profOpts = '<option value="">— Pas encore choisi —</option>' + VIGILYS.profils.map(function (p) {
+      return '<option value="' + esc(p) + '"' + (a.profil_vigilys === p ? ' selected' : '') + '>' + esc(p) + '</option>';
+    }).join('');
+    var ficheOpts = '<option value="">Créer sa fiche toute seule à sa première ouverture</option>' + VIGILYS.fiches.map(function (f) {
+      var pris = f.lie_a && f.lie_a !== a.id;
+      return '<option value="' + esc(f.id) + '"' + (a.vigilys_agent === f.id ? ' selected' : '') + (pris ? ' disabled' : '') + '>Relier à la fiche existante : ' + esc(f.name) + ' (' + esc(f.role) + ')' + (pris ? ' · déjà reliée' : '') + '</option>';
+    }).join('');
+    var cur = a.vigilys_agent && !VIGILYS.fiches.some(function (f) { return f.id === a.vigilys_agent; }) ? '<option value="' + esc(a.vigilys_agent) + '" selected>Sa fiche créée par le Hub</option>' : '';
+    return '<fieldset class="vg-block"><legend>Vigilys / Maintys</legend>' +
+      '<label class="chk"><input type="checkbox" name="partage"' + (a.partage ? ' checked' : '') + '> Compte partagé du poste de sécurité (Gmail commun : chaque agent entre ensuite avec son nom et son code)</label>' +
+      '<label>Profil dans Vigilys et Maintys (compte personnel : il entre directement par la tuile, sans code)<select name="profil_vigilys">' + profOpts + '</select></label>' +
+      '<label>Fiche<select name="vigilys_agent">' + cur + ficheOpts + '</select></label>' +
+      '<p class="auth-hint">Les droits viennent du profil (comme dans Vigilys). Votre propre compte : reliez-le à votre fiche Superviseur pour garder votre historique.</p>' +
+      '</fieldset>';
+  }
+
   function loadAdmin() {
     $('#admin-list').innerHTML = '<p class="admin-empty">Chargement…</p>';
-    return api('GET', '/api/hub/admin/accounts').then(function (r) {
+    // Fiches Vigilys d'abord, pour que la liste « Fiche » soit remplie à l'affichage
+    return Promise.all([loadVigilys(), api('GET', '/api/hub/admin/accounts')]).then(function (res) {
+      var r = res[1];
       if (r.status !== 200) { $('#admin-list').innerHTML = '<p class="admin-empty">' + esc(r.data.message || 'Liste indisponible.') + '</p>'; return; }
       adminList = r.data;
       refreshCandCount();
@@ -649,6 +675,7 @@
       return '<div class="acc-fields">' +
         '<fieldset><legend>Applications</legend>' + apps + '</fieldset>' +
         '<label>Accès direct<select name="acces_direct">' + directOpts + '</select></label>' +
+        vigilysBlock(a) +
         '<p class="auth-hint">Compte sans e-mail : accès d’un collaborateur seulement (ni administrateur, ni animateur, ni modérateur, ni créateur). Mot de passe oublié : « Mot de passe provisoire ».</p>' +
         '</div>';
     }
@@ -656,6 +683,7 @@
       '<label>Profil<select name="profil">' + profilOpts + '</select></label>' +
       '<fieldset><legend>Applications</legend>' + apps + '</fieldset>' +
       '<label>Accès direct<select name="acces_direct">' + directOpts + '</select></label>' +
+      vigilysBlock(a) +
       '<label class="chk"><input type="checkbox" name="admin"' + (a.admin ? ' checked' : '') + (a.id === account.id ? ' disabled' : '') + '> Administrateur (gère les comptes)</label>' +
       '<label class="chk"><input type="checkbox" name="moderateur"' + (a.moderateur ? ' checked' : '') + '> Modérateur (relit les propositions des collaborateurs ; à désigner avec la direction et le CSE)</label>' +
       '<label class="chk"><input type="checkbox" name="createur"' + (a.createur ? ' checked' : '') + '> Créateur (crée des quiz dans le Studio ; sur candidature)</label>' +
@@ -859,7 +887,7 @@
     candidature_refusee: 'n’a pas retenu la candidature de',
     entree_animateur: 'a ouvert l’espace animateur de Boost',
   };
-  var FIELD_LABEL = { statut: 'Statut', profil: 'Profil', apps: 'Applications', acces_direct: 'Accès direct', admin: 'Administrateur', moderateur: 'Modérateur', createur: 'Créateur', testeur: 'Testeur', parcours_lecteur: 'Lecteur du parcours', animateur: 'Animateur', anim_perms: 'Rubriques animateur' };
+  var FIELD_LABEL = { partage: 'Compte partagé du poste', profil_vigilys: 'Profil Vigilys / Maintys', vigilys_agent: 'Fiche Vigilys', statut: 'Statut', profil: 'Profil', apps: 'Applications', acces_direct: 'Accès direct', admin: 'Administrateur', moderateur: 'Modérateur', createur: 'Créateur', testeur: 'Testeur', parcours_lecteur: 'Lecteur du parcours', animateur: 'Animateur', anim_perms: 'Rubriques animateur' };
   function shortName(label) { return String(label || '').replace(/s*<[^>]*>$/, '') || '(compte supprimé)'; }
   function fieldValue(k, v) {
     if (k === 'admin' || k === 'moderateur' || k === 'createur' || k === 'testeur' || k === 'parcours_lecteur' || k === 'animateur') return v ? 'oui' : 'non';
@@ -932,6 +960,12 @@
     if (boxes.length) out.apps = Array.prototype.filter.call(boxes, function (b) { return b.checked; }).map(function (b) { return b.value; });
     var direct = card.querySelector('select[name="acces_direct"]');
     if (direct) out.acces_direct = direct.value;
+    var part = card.querySelector('input[name="partage"]');
+    if (part) out.partage = part.checked;
+    var pv = card.querySelector('select[name="profil_vigilys"]');
+    if (pv) out.profil_vigilys = pv.value;
+    var va = card.querySelector('select[name="vigilys_agent"]');
+    if (va) out.vigilys_agent = va.value;
     var adm = card.querySelector('input[name="admin"]');
     if (adm && !adm.disabled) out.admin = adm.checked;
     var mod = card.querySelector('input[name="moderateur"]');
