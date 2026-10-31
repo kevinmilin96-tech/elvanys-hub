@@ -43,6 +43,7 @@ window.HUB_ENTREPRISES = {
         url: 'https://blaye-vigilys.elvanys.fr',
         icone: 'vigilys',
         couleur: 'vigilys',
+        sso: true, // passe du Hub : l'appareil est rattaché au compte qui l'ouvre ; appli décochée = accès fermé (31/10)
         pour: ['agent', 'direction'],
         public: 'Sécurité et direction',
       },
@@ -53,6 +54,7 @@ window.HUB_ENTREPRISES = {
         url: 'https://blaye-vigilys.elvanys.fr/maintys.html', // même site et même base que Vigilys (31/10) ; adresse propre plus tard
         icone: 'maintys',
         couleur: 'maintys',
+        sso: true, // passe du Hub : l'appareil est rattaché au compte qui l'ouvre ; appli décochée = accès fermé (31/10)
         pour: [], // jamais cochée d'office : l'administrateur coche les comptes du service technique et de la direction
         public: 'Maintenance et administratif',
       },
