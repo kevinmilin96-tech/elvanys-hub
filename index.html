@@ -224,7 +224,17 @@
   <dialog class="sheet sheet-wide" id="tools-sheet" aria-labelledby="tools-title">
     <div class="sheet-inner">
       <h2 id="tools-title">🧰 Boîte à outils</h2>
-      <p>Les outils pour installer le matériel du magasin. Réservé aux administrateurs.</p>
+      <p>Les outils du magasin. Réservé aux administrateurs.</p>
+      <!-- Catalogue des promotions (03/11) : outil sans compte, page du site de Vigilys de l'entreprise -->
+      <div class="tool-card">
+        <div class="tool-head">
+          <span class="tool-ico" aria-hidden="true">🏷️</span>
+          <div><b>Catalogue des promotions</b><small>Ruptures et produits de remplacement · sans compte</small></div>
+        </div>
+        <p>Le catalogue à feuilleter : les rayons collent un autocollant « RUPTURE » sur la page, avec le produit de remplacement s’il y en a un. Le bureau y dépose le PDF. À ouvrir sur les téléphones pros (et à partager avec l’accueil).</p>
+        <a class="btn-main tool-dl" id="catalogue-lien" target="_blank" rel="noopener">Ouvrir le catalogue</a>
+        <p class="tool-note">Adresse à partager : <code id="catalogue-url"></code> <button type="button" class="btn-soft tool-copy" data-copy="catalogue-url">Copier</button></p>
+      </div>
       <div class="tool-card">
         <div class="tool-head">
           <span class="tool-ico" aria-hidden="true">📱</span>
