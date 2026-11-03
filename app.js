@@ -1091,8 +1091,9 @@
     // pouvait détourner le lien vers l'accueil de Boost. Le Hub n'a pas de mémoire hors ligne.
     $('#kiosque-dl').href = 'telecharger/kiosque-elvanys-1.1.apk?v=1';
     $('#kiosque-ent').textContent = id;
-    var vig = (ent.applications || []).find(function (a) { return a.id === 'vigilys'; });
-    var cat = vig ? vig.url.replace(/\/$/, '') + '/catalogue.html' : '';
+    // Catalogue des promotions (03/11) : site à part, adresse « catalogue » de la fiche ; carte cachée tant que l'entreprise n'en a pas
+    var cat = ent.catalogue || '';
+    $('#catalogue-card').hidden = !cat;
     $('#catalogue-lien').href = cat;
     $('#catalogue-url').textContent = cat;
     openSheet($('#tools-sheet'));

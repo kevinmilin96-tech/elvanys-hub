@@ -19,6 +19,7 @@ window.HUB_ENTREPRISES = {
     },
     contact: 'Une question ? Adressez-vous à l’accueil du magasin ou à votre responsable.',
     contactApi: '/api/hub/contact', // contact réglé dans Vigilys (Paramètres > Hub du magasin)
+    catalogue: '', // Catalogue des promotions (03/11) : site à part (boîte à outils) ; pas encore d'adresse pour Blaye → carte cachée
     profils: [
       { id: 'collaborateur', nom: 'Collaborateur', detail: 'Membre de l’équipe du magasin' },
       { id: 'agent', nom: 'Agent de sécurité / Agent de maintenance', court: 'Agent', detail: 'Sécurité et maintenance du site' },
@@ -101,5 +102,8 @@ window.HUB_ENTREPRISES.demo.applications.push({
   pour: [],
   public: 'Personnel',
 });
+
+// Catalogue des promotions (03/11) : son propre site, servi par la même base que la démo.
+window.HUB_ENTREPRISES.demo.catalogue = 'https://demo-catalogue.elvanys.fr';
 
 window.HUB_ENTREPRISE_PAR_DEFAUT = 'blaye';
