@@ -199,6 +199,12 @@ a.tile:focus-visible { outline: 3px solid var(--tone); outline-offset: 3px; }
 .tile.tone-aureus .tile-name .au-b { color: #1b2333; }
 :root[data-theme="dark"] .tile.tone-aureus { --tone: #e7c46b; }
 :root[data-theme="dark"] .tile.tone-aureus .tile-name .au-b { color: #f3f4f7; }
+/* Pointys (06/11) : bleu canard + ambre, comme son appli */
+.tile.tone-pointys { --tone: #0f7c86; --pz-canard: #0f7c86; }
+.tile.tone-pointys .tile-name .pz-a { color: #0f7c86; }
+.tile.tone-pointys .tile-name .pz-b { color: #e3921f; }
+:root[data-theme="dark"] .tile.tone-pointys { --tone: #36b3bd; --pz-canard: #36b3bd; }
+:root[data-theme="dark"] .tile.tone-pointys .tile-name .pz-a { color: #36b3bd; }
 .tile.tone-boost { --tone: #2a7fc1; }
 .tile.tone-boost .tile-name { letter-spacing: 1px; text-shadow: 0 2px 0 rgba(0, 0, 0, .06); }
 .tile.tone-boost .tile-go { color: #6b2bd9; }
