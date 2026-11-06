@@ -199,13 +199,16 @@ a.tile:focus-visible { outline: 3px solid var(--tone); outline-offset: 3px; }
 .tile.tone-aureus .tile-name .au-b { color: #1b2333; }
 :root[data-theme="dark"] .tile.tone-aureus { --tone: #e7c46b; }
 :root[data-theme="dark"] .tile.tone-aureus .tile-name .au-b { color: #f3f4f7; }
-/* Agorys (06/11) : style vieux journal, rouge brique, comme son appli */
-.tile.tone-agorys { --tone: #e0604e; --ag-prune: #f39a57; } /* 06/11 : nouveau style d'Agorys (corail brique adouci + ambre) */
-.tile.tone-agorys .tile-name .ag-a { color: #c94c3a; font-weight: 800; }
-.tile.tone-agorys .tile-name .ag-b { color: #e0604e; font-weight: 800; }
-:root[data-theme="dark"] .tile.tone-agorys { --tone: #ef7a68; --ag-prune: #f0a061; }
-:root[data-theme="dark"] .tile.tone-agorys .tile-name .ag-a { color: #f59584; }
-:root[data-theme="dark"] .tile.tone-agorys .tile-name .ag-b { color: #ef7a68; }
+/* Agorys (06/11) : palette « Terracotta Énergisé » comme son appli (corail vif → terracotta, jaune soleil pour la 2e bulle) */
+.tile.tone-agorys { --tone: #ff5722; --ag-prune: #eab308; }
+.tile.tone-agorys .tile-name .ag-a { color: #c2410c; font-weight: 800; }
+.tile.tone-agorys .tile-name .ag-b { color: #e2552d; font-weight: 800; }
+:root[data-theme="dark"] .tile.tone-agorys { --tone: #ff7043; --ag-prune: #facc15; }
+:root[data-theme="dark"] .tile.tone-agorys .tile-name .ag-a { color: #ff8a65; }
+:root[data-theme="dark"] .tile.tone-agorys .tile-name .ag-b { color: #ff7043; }
+/* Messages non lus d'Agorys sur la tuile (teal = nouveautés ; chiffres blancs sur teal foncé, lisibles) */
+.tile-nonlus { position: absolute; top: 12px; right: 12px; min-width: 24px; height: 24px; padding: 0 7px; border-radius: 999px; background: #0f766e; color: #fff; font-size: 12.5px; font-weight: 800; display: grid; place-items: center; box-shadow: 0 0 0 3px var(--surface, #fff); }
+:root[data-theme="dark"] .tile-nonlus { background: #2dd4bf; color: #06201c; }
 /* Pointys (06/11) : bleu canard + ambre, comme son appli */
 .tile.tone-pointys { --tone: #0f7c86; --pz-canard: #0f7c86; }
 .tile.tone-pointys .tile-name .pz-a { color: #0f7c86; }

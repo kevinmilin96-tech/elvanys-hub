@@ -85,8 +85,8 @@
     hopla: '<svg viewBox="0 0 48 48" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="24" cy="24" r="21.5" stroke="var(--hop-vert)"/><path d="M12.5 30.5 Q9 34.5 11 37 Q15.5 36 17.5 32.5 Z" fill="var(--hop-vert)" stroke="var(--hop-vert)" stroke-width="1.4"/><path d="M13.5 30 Q18.5 22.5 28 25 Q30.5 29.5 27.5 32.5 Q21 36.5 14.5 33.5 Z" stroke="var(--hop-vert)"/><path d="M27.3 25.6 Q31.8 18.8 28.8 13.4" stroke="var(--hop-vert)"/><circle cx="29.6" cy="11.4" r="3.4" stroke="var(--hop-vert)"/><circle cx="30.4" cy="10.8" r=".9" fill="var(--hop-vert)" stroke="none"/><path d="M33 10.3 L40.5 12.2 L33 13.5 Z" fill="#f07a3a" stroke="#f07a3a" stroke-width="1.2"/><path d="M19.6 34.8 L19.2 40.8 M17 40.8 H21.6 M24.3 34.4 L26.6 38.4 L23.8 40.2" stroke="#f07a3a"/></svg>',
     // Aureus : logo choisi le 15/10 (bouclier or gravé « AU » sur disque bleu-nuit cerclé d'or)
     aureus: '<svg viewBox="0 0 100 100" aria-hidden="true"><defs><linearGradient id="aul-or" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f6dc8e"/><stop offset=".45" stop-color="#d4a73c"/><stop offset="1" stop-color="#9c6f17"/></linearGradient><radialGradient id="aul-nuit" cx=".35" cy=".3" r=".9"><stop offset="0" stop-color="#34436a"/><stop offset=".6" stop-color="#1b2333"/><stop offset="1" stop-color="#0d121c"/></radialGradient></defs><circle cx="50" cy="50" r="44" fill="url(#aul-nuit)"/><circle cx="50" cy="50" r="44" fill="none" stroke="url(#aul-or)" stroke-width="3.5"/><path d="M50 27 L70 34.7 V51.6 C70 63.9 61.6 72.4 50 77 C38.4 72.4 30 63.9 30 51.6 V34.7 Z" fill="url(#aul-or)"/><text x="50" y="58.5" text-anchor="middle" font-family="system-ui, sans-serif" font-weight="900" font-size="17" fill="#1b2333">AU</text></svg>',
-    // Agorys (06/11) : deux bulles de parole dans le cercle de l'agora, rouge brique et brun (style vieux journal, comme son appli)
-    agorys: '<svg viewBox="0 0 48 48" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><defs><linearGradient id="ag-grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f39a57"/><stop offset=".55" stop-color="#e0604e"/><stop offset="1" stop-color="#c94c3a"/></linearGradient></defs><circle cx="24" cy="24" r="21.5" stroke="url(#ag-grad)"/><path d="M10.5 15.5 h15 a3 3 0 0 1 3 3 v7 a3 3 0 0 1 -3 3 h-8 l-5 4 v-4 h-2 a3 3 0 0 1 -3 -3 v-7 a3 3 0 0 1 3 -3 z" stroke="#e0604e"/><path d="M31.5 21.5 h5 a3 3 0 0 1 3 3 v6 a3 3 0 0 1 -3 3 h-1 v3.5 l-4.5 -3.5 h-6 a3 3 0 0 1 -3 -3 v-1" stroke="var(--ag-prune)"/><circle cx="14.5" cy="22" r="1.3" fill="#e0604e" stroke="none"/><circle cx="18.5" cy="22" r="1.3" fill="#e0604e" stroke="none"/><circle cx="22.5" cy="22" r="1.3" fill="#e0604e" stroke="none"/></svg>',
+    // Agorys (06/11) : deux bulles de parole dans le cercle de l'agora ; palette « Terracotta Énergisé » (corail vif → terracotta, jaune soleil, teal), comme son appli
+    agorys: '<svg viewBox="0 0 48 48" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><defs><linearGradient id="ag-grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff7a45"/><stop offset=".5" stop-color="#ff5722"/><stop offset="1" stop-color="#e2552d"/></linearGradient></defs><circle cx="24" cy="24" r="21.5" stroke="url(#ag-grad)"/><path d="M10.5 15.5 h15 a3 3 0 0 1 3 3 v7 a3 3 0 0 1 -3 3 h-8 l-5 4 v-4 h-2 a3 3 0 0 1 -3 -3 v-7 a3 3 0 0 1 3 -3 z" stroke="#ff5722"/><path d="M31.5 21.5 h5 a3 3 0 0 1 3 3 v6 a3 3 0 0 1 -3 3 h-1 v3.5 l-4.5 -3.5 h-6 a3 3 0 0 1 -3 -3 v-1" stroke="var(--ag-prune)"/><circle cx="14.5" cy="22" r="1.3" fill="#14b8a6" stroke="none"/><circle cx="18.5" cy="22" r="1.3" fill="#14b8a6" stroke="none"/><circle cx="22.5" cy="22" r="1.3" fill="#14b8a6" stroke="none"/></svg>',
     // Pointys (06/11) : une porte d'entrée cochée, bleu canard + ambre (comme son appli)
     pointys: '<svg viewBox="0 0 48 48" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="24" cy="24" r="21.5" stroke="var(--pz-canard)"/><path d="M15 36 V13.5 a2 2 0 0 1 2-2 h12 a2 2 0 0 1 2 2 V36" stroke="var(--pz-canard)"/><path d="M11 36 h26" stroke="var(--pz-canard)"/><path d="M21 24.5 l3.2 3.2 l6.3-6.8" stroke="#f2a541" stroke-width="3"/></svg>',
     bientot: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="24" cy="17" r="10"/><circle cx="17" cy="29" r="10"/><circle cx="31" cy="29" r="10"/></svg>',
@@ -243,7 +243,23 @@
         '<span class="tile-name">Bientôt</span><span class="tile-desc">Les prochains outils du magasin apparaîtront ici.</span></div>';
     }
     $('#tiles').innerHTML = html;
+    pastilleAgorys();
   }
+  // Agorys, lot 3 (06/11) : le nombre de messages non lus sur la tuile (un seul nombre, rien d'autre), redemandé
+  // chaque minute quand la page est visible. Absent si zéro, ou si le serveur ne répond pas.
+  function pastilleAgorys() {
+    var t = document.querySelector('#tiles a.tile[data-app="agorys"]');
+    if (!t || !token) return;
+    api('GET', '/api/hub/agorys/non-lus').then(function (r) {
+      var n = r.status === 200 ? Number(r.data.messages) || 0 : 0;
+      var b = t.querySelector('.tile-nonlus');
+      if (!n) { if (b) b.remove(); return; }
+      if (!b) { b = document.createElement('span'); b.className = 'tile-nonlus'; t.appendChild(b); }
+      b.textContent = n > 99 ? '99+' : String(n);
+      b.setAttribute('aria-label', n + (n > 1 ? ' messages non lus' : ' message non lu'));
+    });
+  }
+  setInterval(function () { if (!document.hidden) pastilleAgorys(); }, 60000);
   $('#tiles').addEventListener('click', function (e) {
     var t = e.target.closest('a.tile[data-app]');
     if (!t) return;
