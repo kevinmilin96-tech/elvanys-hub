@@ -117,6 +117,22 @@ window.HUB_ENTREPRISES.demo.applications.push({
   public: 'Tout le magasin',
 });
 
+// Pointys (06/11) : le pointage des intervenants extérieurs (à la place de Sharly), page du hub comme Hop-là, sur la
+// DÉMO seulement pour l'instant (jamais dans la fiche de Blaye sans accord). Jamais cochée d'office : l'administrateur
+// coche « Pointys » sur les comptes de l'accueil, de la réception, de la sécurité… La borne et les QR des entrées
+// (pointys/borne.html?b=…) et l'espace privé des intervenants (pointys/moi.html) sont publics, sans compte.
+// Code : dépôt elvanys-serveur (src/pointys, vite.pointys.config.js), construit dans le dossier pointys/ du hub.
+window.HUB_ENTREPRISES.demo.applications.push({
+  id: 'pointys',
+  nom: 'Pointys',
+  description: 'L’accueil des intervenants extérieurs : qui est dans le magasin, visites, messages, accès.',
+  url: 'https://demo-hub.elvanys.fr/pointys/index.html',
+  icone: 'pointys',
+  couleur: 'pointys',
+  pour: [],
+  public: 'Accueil, réception, sécurité',
+});
+
 // Catalogue des promotions (03/11) : son propre site, servi par la même base que la démo.
 window.HUB_ENTREPRISES.demo.catalogue = 'https://demo-catalogue.elvanys.fr';
 
