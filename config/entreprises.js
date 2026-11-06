@@ -109,7 +109,7 @@ window.HUB_ENTREPRISES.demo.applications.push({
 window.HUB_ENTREPRISES.demo.applications.push({
   id: 'agorys',
   nom: 'Agorys',
-  description: 'Le fil du magasin : nouvelles, bons plans, annonces et mercis, avec photos.',
+  description: 'Le fil du magasin : l’officiel d’abord, puis la vie du magasin, l’agenda et les sondages.',
   url: 'https://demo-hub.elvanys.fr/agorys/index.html',
   icone: 'agorys',
   couleur: 'agorys',

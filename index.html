@@ -205,6 +205,20 @@
   <dialog class="sheet" id="account-sheet" aria-labelledby="account-title">
     <div class="sheet-inner">
       <h2 id="account-title">Mon compte</h2>
+      <!-- Photo de profil commune à toutes les applis (06/11) : réduite par le téléphone, servie seulement aux comptes du magasin -->
+      <div class="account-photo">
+        <span class="account-photo-img" id="account-photo-img" aria-hidden="true"></span>
+        <div class="account-photo-side">
+          <b>Ma photo de profil</b>
+          <div class="account-photo-btns">
+            <button type="button" class="btn-soft" id="photo-choose">Ajouter une photo</button>
+            <button type="button" class="btn-soft danger" id="photo-remove" hidden>Retirer</button>
+          </div>
+          <input type="file" id="photo-input" accept="image/*" hidden>
+        </div>
+      </div>
+      <p class="auth-msg" id="photo-msg" role="alert"></p>
+      <p class="auth-hint">La même dans toutes les applis du magasin. Dans Agorys, c’est vous qui choisissez de la montrer (sinon vos initiales).</p>
       <div class="account-card" id="account-card"></div>
       <details class="account-pwd">
         <summary>Changer mon mot de passe</summary>

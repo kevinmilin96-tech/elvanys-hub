@@ -86,7 +86,7 @@
     // Aureus : logo choisi le 15/10 (bouclier or gravé « AU » sur disque bleu-nuit cerclé d'or)
     aureus: '<svg viewBox="0 0 100 100" aria-hidden="true"><defs><linearGradient id="aul-or" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f6dc8e"/><stop offset=".45" stop-color="#d4a73c"/><stop offset="1" stop-color="#9c6f17"/></linearGradient><radialGradient id="aul-nuit" cx=".35" cy=".3" r=".9"><stop offset="0" stop-color="#34436a"/><stop offset=".6" stop-color="#1b2333"/><stop offset="1" stop-color="#0d121c"/></radialGradient></defs><circle cx="50" cy="50" r="44" fill="url(#aul-nuit)"/><circle cx="50" cy="50" r="44" fill="none" stroke="url(#aul-or)" stroke-width="3.5"/><path d="M50 27 L70 34.7 V51.6 C70 63.9 61.6 72.4 50 77 C38.4 72.4 30 63.9 30 51.6 V34.7 Z" fill="url(#aul-or)"/><text x="50" y="58.5" text-anchor="middle" font-family="system-ui, sans-serif" font-weight="900" font-size="17" fill="#1b2333">AU</text></svg>',
     // Agorys (06/11) : deux bulles de parole dans le cercle de l'agora, rouge brique et brun (style vieux journal, comme son appli)
-    agorys: '<svg viewBox="0 0 48 48" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><defs><linearGradient id="ag-grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e0604e"/><stop offset=".55" stop-color="#c0392b"/><stop offset="1" stop-color="#8a6d4b"/></linearGradient></defs><circle cx="24" cy="24" r="21.5" stroke="url(#ag-grad)"/><path d="M10.5 15.5 h15 a3 3 0 0 1 3 3 v7 a3 3 0 0 1 -3 3 h-8 l-5 4 v-4 h-2 a3 3 0 0 1 -3 -3 v-7 a3 3 0 0 1 3 -3 z" stroke="#c0392b"/><path d="M31.5 21.5 h5 a3 3 0 0 1 3 3 v6 a3 3 0 0 1 -3 3 h-1 v3.5 l-4.5 -3.5 h-6 a3 3 0 0 1 -3 -3 v-1" stroke="var(--ag-prune)"/><circle cx="14.5" cy="22" r="1.3" fill="#c0392b" stroke="none"/><circle cx="18.5" cy="22" r="1.3" fill="#c0392b" stroke="none"/><circle cx="22.5" cy="22" r="1.3" fill="#c0392b" stroke="none"/></svg>',
+    agorys: '<svg viewBox="0 0 48 48" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><defs><linearGradient id="ag-grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f39a57"/><stop offset=".55" stop-color="#e0604e"/><stop offset="1" stop-color="#c94c3a"/></linearGradient></defs><circle cx="24" cy="24" r="21.5" stroke="url(#ag-grad)"/><path d="M10.5 15.5 h15 a3 3 0 0 1 3 3 v7 a3 3 0 0 1 -3 3 h-8 l-5 4 v-4 h-2 a3 3 0 0 1 -3 -3 v-7 a3 3 0 0 1 3 -3 z" stroke="#e0604e"/><path d="M31.5 21.5 h5 a3 3 0 0 1 3 3 v6 a3 3 0 0 1 -3 3 h-1 v3.5 l-4.5 -3.5 h-6 a3 3 0 0 1 -3 -3 v-1" stroke="var(--ag-prune)"/><circle cx="14.5" cy="22" r="1.3" fill="#e0604e" stroke="none"/><circle cx="18.5" cy="22" r="1.3" fill="#e0604e" stroke="none"/><circle cx="22.5" cy="22" r="1.3" fill="#e0604e" stroke="none"/></svg>',
     // Pointys (06/11) : une porte d'entrée cochée, bleu canard + ambre (comme son appli)
     pointys: '<svg viewBox="0 0 48 48" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="24" cy="24" r="21.5" stroke="var(--pz-canard)"/><path d="M15 36 V13.5 a2 2 0 0 1 2-2 h12 a2 2 0 0 1 2 2 V36" stroke="var(--pz-canard)"/><path d="M11 36 h26" stroke="var(--pz-canard)"/><path d="M21 24.5 l3.2 3.2 l6.3-6.8" stroke="#f2a541" stroke-width="3"/></svg>',
     bientot: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="24" cy="17" r="10"/><circle cx="17" cy="29" r="10"/><circle cx="31" cy="29" r="10"/></svg>',
@@ -264,6 +264,7 @@
     greet();
     $('#profile-label').textContent = acc.prenom;
     renderApps();
+    renderPhoto(); // la photo de profil dans la puce « Mon compte »
     show('apps');
     $('#admin-btn').hidden = !acc.admin;
     $('#tools-btn').hidden = !acc.admin;
@@ -580,7 +581,91 @@
       '<span>Applications : ' + esc(apps.join(', ') || 'aucune') + '</span>' +
       (direct ? '<span>Ouverture directe : ' + esc(direct.nom) + '</span>' : '');
     $('#password-form .auth-msg').textContent = '';
+    $('#photo-msg').textContent = '';
+    renderPhoto();
     openSheet($('#account-sheet'));
+  });
+
+  // --- Photo de profil commune au Hub (06/11) : routes /api/hub/photo ; la photo est réduite ICI, sur le téléphone
+  // (carrée, 512 px, ≈ 200 Ko au plus ; le serveur refuse au-delà de 400 Ko). Lue avec la session (fichier protégé).
+  var photoUrl = { v: '', url: '' };
+  function initialsOf(a) { return ((a.prenom || '').trim().charAt(0) + (a.nom || '').trim().charAt(0)).toUpperCase() || '?'; }
+  function loadPhoto(a) {
+    if (!a || !a.photo) return Promise.resolve('');
+    if (photoUrl.v === a.photo) return Promise.resolve(photoUrl.url);
+    return fetch(API + '/api/hub/photo/' + a.id + '?v=' + encodeURIComponent(a.photo), { headers: { Authorization: token || '' } })
+      .then(function (r) { return r.ok ? r.blob() : null; })
+      .then(function (b) { if (!b) return ''; if (photoUrl.url) URL.revokeObjectURL(photoUrl.url); photoUrl = { v: a.photo, url: URL.createObjectURL(b) }; return photoUrl.url; })
+      .catch(function () { return ''; });
+  }
+  function renderPhoto() {
+    if (!account) return;
+    var box = $('#account-photo-img');
+    $('#photo-choose').textContent = account.photo ? 'Changer' : 'Ajouter une photo';
+    $('#photo-remove').hidden = !account.photo;
+    box.textContent = initialsOf(account);
+    box.classList.remove('has-photo');
+    var chip = $('#profile-chip');
+    var old = chip.querySelector('img');
+    if (old && !account.photo) { old.remove(); chip.querySelector('svg').style.display = ''; }
+    loadPhoto(account).then(function (u) {
+      if (!u || !account) return;
+      box.innerHTML = '<img alt="" src="' + u + '">';
+      box.classList.add('has-photo');
+      var img = chip.querySelector('img');
+      if (!img) { img = document.createElement('img'); img.alt = ''; img.className = 'chip-photo'; chip.insertBefore(img, chip.firstChild); }
+      img.src = u; chip.querySelector('svg').style.display = 'none';
+    });
+  }
+  function squarePhoto(file) {
+    return new Promise(function (ok, ko) {
+      var url = URL.createObjectURL(file), img = new Image();
+      img.onerror = function () { URL.revokeObjectURL(url); ko(new Error('Cette image ne s’ouvre pas. Choisissez une photo (JPEG, PNG, WebP…).')); };
+      img.onload = function () {
+        URL.revokeObjectURL(url);
+        var c = Math.min(img.naturalWidth, img.naturalHeight), sizes = [512, 384, 288], qs = [0.85, 0.75, 0.62];
+        function essai(i, j) {
+          if (i >= sizes.length) { ko(new Error('Cette photo est trop lourde, même réduite.')); return; }
+          var cv = document.createElement('canvas'); cv.width = cv.height = Math.min(sizes[i], c);
+          var ctx = cv.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, cv.width, cv.height);
+          ctx.drawImage(img, (img.naturalWidth - c) / 2, (img.naturalHeight - c) / 2, c, c, 0, 0, cv.width, cv.height);
+          cv.toBlob(function (b) {
+            if (b && b.type !== 'image/webp') { cv.toBlob(function (b2) { fin(b2); }, 'image/jpeg', qs[j]); return; } // Safari 16 : pas de WebP
+            fin(b);
+          }, 'image/webp', qs[j]);
+          function fin(b) { if (b && b.size <= 200 * 1024) ok(b); else if (j + 1 < qs.length) essai(i, j + 1); else essai(i + 1, 0); }
+        }
+        essai(0, 0);
+      };
+      img.src = url;
+    });
+  }
+  function photoSend(method, body) {
+    return fetch(API + '/api/hub/photo', { method: method, headers: { Authorization: token || '' }, body: body, cache: 'no-store' })
+      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (d) { return { status: r.status, data: d || {} }; }); })
+      .catch(function () { return { status: 0, data: { message: 'Pas de connexion au serveur. Réessayez.' } }; });
+  }
+  $('#photo-choose').addEventListener('click', function () { $('#photo-input').click(); });
+  $('#photo-input').addEventListener('change', function (e) {
+    var f = e.target.files && e.target.files[0], msg = $('#photo-msg');
+    e.target.value = '';
+    if (!f) return;
+    msg.classList.remove('is-ok'); msg.textContent = 'Réduction de la photo…';
+    squarePhoto(f).then(function (b) {
+      var d = new FormData(); d.append('photo', b, 'photo.' + (b.type === 'image/webp' ? 'webp' : 'jpg'));
+      return photoSend('POST', d);
+    }).then(function (r) {
+      if (r.status === 200) { account.photo = r.data.photo; msg.textContent = 'Photo enregistrée.'; msg.classList.add('is-ok'); renderPhoto(); }
+      else msg.textContent = r.data.message || 'Envoi impossible.';
+    }).catch(function (err) { msg.textContent = err.message; });
+  });
+  $('#photo-remove').addEventListener('click', function () {
+    if (!window.confirm('Retirer votre photo de profil ? Elle disparaît de toutes les applis du magasin.')) return;
+    var msg = $('#photo-msg'); msg.classList.remove('is-ok');
+    photoSend('DELETE').then(function (r) {
+      if (r.status === 200) { account.photo = ''; msg.textContent = 'Photo retirée.'; msg.classList.add('is-ok'); renderPhoto(); }
+      else msg.textContent = r.data.message || 'Impossible pour le moment.';
+    });
   });
 
   $('#password-form').addEventListener('submit', function (e) {
