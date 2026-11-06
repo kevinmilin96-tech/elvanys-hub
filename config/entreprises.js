@@ -103,6 +103,20 @@ window.HUB_ENTREPRISES.demo.applications.push({
   public: 'Personnel',
 });
 
+// Agorys (06/11) : le réseau social du magasin, page du hub comme Hop-là, sur la DÉMO seulement pour l'instant
+// (jamais dans la fiche de Blaye tant que la direction ne l'a pas décidé). Jamais cochée d'office.
+// Code : dépôt elvanys-serveur (src/agorys, vite.agorys.config.js), construit dans le dossier agorys/ du hub.
+window.HUB_ENTREPRISES.demo.applications.push({
+  id: 'agorys',
+  nom: 'Agorys',
+  description: 'Le fil du magasin : nouvelles, bons plans, annonces et mercis, avec photos.',
+  url: 'https://demo-hub.elvanys.fr/agorys/index.html',
+  icone: 'agorys',
+  couleur: 'agorys',
+  pour: [],
+  public: 'Tout le magasin',
+});
+
 // Catalogue des promotions (03/11) : son propre site, servi par la même base que la démo.
 window.HUB_ENTREPRISES.demo.catalogue = 'https://demo-catalogue.elvanys.fr';
 
