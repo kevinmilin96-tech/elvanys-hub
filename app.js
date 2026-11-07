@@ -121,7 +121,10 @@
   }
   // L'appli Kiosque Elvanys (borne Android) se reconnaît à son nom dans le navigateur : toujours en mode tablette
   var kioskApp = /KiosqueElvanys\//.test(navigator.userAgent);
-  var tablet = kioskApp || store.get(TABLET_KEY) === '1';
+  // Kiosque 1.3 (07/11) en mode « poste de sécurité » : Hub normal (le compte partagé du poste reste connecté), jamais le
+  // mode tablette de Boost ; les agents entrent ensuite dans Vigilys avec leur nom et leur code
+  var posteApp = /KiosqueElvanys\/[0-9.]+ poste/.test(navigator.userAgent);
+  var tablet = !posteApp && (kioskApp || store.get(TABLET_KEY) === '1');
   var kiosk = params.has('kiosque') || tablet;
   // ?inscription : une appli (ex. l'Académie de Boost) envoie ici pour créer un compte
   var wantSignup = params.has('inscription');
@@ -363,7 +366,7 @@
   }
   function sessionOpened(r) {
     // Borne Kiosque Elvanys : un administrateur peut ouvrir les réglages de la borne (16/10)
-    if (kioskApp && r.data.meta && r.data.meta.account && r.data.meta.account.admin) { kioskAdminChoice(r.data.token); return; }
+    if (kioskApp && r.data.meta && r.data.meta.account && r.data.meta.account.admin) { kioskAdminChoice(r.data.token, r); return; }
     if (kiosk) { kioskOpenBoost(r.data.token); return; }
     setSession(r.data.token);
     unlockAdmin();
@@ -373,15 +376,24 @@
   }
   // Administrateur sur la borne : Boost, ou les réglages de l'appli (lien spécial « kiosque-elvanys://menu » que seule
   // l'appli Kiosque Elvanys comprend ; elle demande ensuite le code de sortie). Aucune session gardée sur la borne.
-  function kioskAdminChoice(t) {
+  function kioskAdminChoice(t, r) {
     showAuthForm('#kiosk-admin');
-    $('#kiosk-admin-boost').onclick = function () { kioskOpenBoost(t); };
+    var suite = $('#kiosk-admin-boost');
+    if (posteApp) {
+      // Poste de sécurité : l'administrateur continue dans le Hub, comme sur un appareil normal
+      suite.textContent = 'Continuer dans le Hub';
+      suite.onclick = function () { setSession(t); unlockAdmin(); $('#login-form').reset(); enter(r.data.meta.account, 0, true); refreshMe(); };
+    } else {
+      suite.textContent = 'Ouvrir Boost';
+      suite.onclick = function () { kioskOpenBoost(t); };
+    }
     $('#kiosk-admin-menu').onclick = function () {
       token = t; setSession(null); $('#login-form').reset(); switchTab('login');
       location.href = 'kiosque-elvanys://menu';
     };
     // Sans choix au bout de 2 minutes : on referme (la borne ne garde jamais une session ouverte)
     setTimeout(function () { if (!$('#kiosk-admin').hidden) { setSession(null); $('#login-form').reset(); switchTab('login'); } }, 120000);
+    if (posteApp) $('#kiosk-admin p').textContent = 'Vous êtes sur la tablette du poste de sécurité. Les réglages (wifi, entreprise, usage, code de sortie) demandent ensuite le code de sortie.';
   }
   // Tablette du magasin : passe vers Boost avec la session qui vient de s'ouvrir, puis plus aucune session gardée ici
   function kioskOpenBoost(t) {
@@ -1198,7 +1210,7 @@
   $('#tools-btn').addEventListener('click', function () {
     // Le fichier est servi par le Hub lui-même (16/10) : passé par Boost, l'ancienne mémoire hors ligne d'un téléphone
     // pouvait détourner le lien vers l'accueil de Boost. Le Hub n'a pas de mémoire hors ligne.
-    $('#kiosque-dl').href = 'telecharger/kiosque-elvanys-1.2.apk?v=1';
+    $('#kiosque-dl').href = 'telecharger/kiosque-elvanys-1.3.apk?v=1';
     $('#kiosque-ent').textContent = id;
     // Catalogue des promotions (03/11) : site à part, adresse « catalogue » de la fiche ; carte cachée tant que l'entreprise n'en a pas
     var cat = ent.catalogue || '';
