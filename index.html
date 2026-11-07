@@ -252,7 +252,7 @@
       <div class="tool-card">
         <div class="tool-head">
           <span class="tool-ico" aria-hidden="true">📱</span>
-          <div><b>Kiosque Elvanys</b><small>📲 Application mobile à installer sur la tablette (Android) · version 1.8</small></div>
+          <div><b>Kiosque Elvanys</b><small>📲 Application mobile à installer sur la tablette (Android) · version 1.9</small></div>
         </div>
         <p>Application mobile à installer sur une tablette Android. Elle transforme une tablette en borne verrouillée, au choix : <b>borne Boost</b> (salle de pause : le hub puis Boost, aucun compte gardé) ou <b>poste de sécurité</b> (le hub avec le compte partagé du poste, puis Vigilys où chaque agent entre avec son nom et son code). On ne peut pas en sortir sans le code de sortie, les captures d’écran sont interdites, et elle démarre toute seule.</p>
         <a class="btn-main tool-dl" id="kiosque-dl" download>Télécharger l’application mobile (fichier .apk)</a>
@@ -261,7 +261,7 @@
           <ol>
             <li>Sur la tablette : retirer <b>tous les comptes</b> (Google et celui de la marque), désinstaller Fully, activer le mode développeur puis le <b>Débogage USB</b>.</li>
             <li>Sur un PC : installer « SDK Platform-Tools » d’Android, y copier le fichier .apk, brancher la tablette par câble.</li>
-            <li>Dans le Terminal du PC : <code>.\adb install kiosque-elvanys-1.8.apk</code></li>
+            <li>Dans le Terminal du PC : <code>.\adb install kiosque-elvanys-1.9.apk</code></li>
             <li>Puis : <code id="kiosque-cmd">.\adb shell dpm set-device-owner fr.elvanys.kiosque/.AdminReceiver</code> <button type="button" class="btn-soft tool-copy" data-copy="kiosque-cmd">Copier</button></li>
             <li>Sur la tablette : ouvrir <b>Kiosque Elvanys</b>, entrer le nom de l’entreprise (<b id="kiosque-ent"></b>), choisir l’usage (borne Boost ou poste de sécurité) et un code de sortie, à ranger aussitôt dans le Proton Pass.</li>
             <li>Borne Boost : autoriser la tablette dans Boost (espace animateur → Appareils). Poste de sécurité : se connecter au hub avec le compte partagé du poste (case « Compte partagé du poste de sécurité » cochée sur sa fiche), toucher Vigilys, puis autoriser l’appareil dans Vigilys si demandé.</li>
