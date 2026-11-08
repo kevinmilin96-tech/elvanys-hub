@@ -95,6 +95,7 @@ const tex = (f) => { const t = chargeur.load(f); t.colorSpace = THREE.SRGBColorS
 const JEUX = {
   commun: { nom: 'Dés de la Guilde', dossier: 'faces', lueur: 0x9fdcff, force: 1.1 },
   pip: { nom: 'Dés de Pip', dossier: 'faces-pip', lueur: 0xd29bff, force: 0.8 },
+  aldric: { nom: "Dés d'Aldric", dossier: 'faces-aldric', lueur: 0xffd27a, force: 0.7 },
 };
 const cacheMat = {};
 function matieres(cle) {
@@ -215,10 +216,10 @@ function dessinerSacs() {
 }
 document.getElementById('lancer').onclick = lancer;
 document.getElementById('jeu').onclick = () => {
-  jeu = jeu === 'commun' ? 'pip' : 'commun';
+  const ordre = Object.keys(JEUX); jeu = ordre[(ordre.indexOf(jeu) + 1) % ordre.length];
   const m = matieres(jeu); des.forEach((d) => { d.m.material = m; });
-  document.getElementById('jeu').textContent = (jeu === 'pip' ? '🌿 ' : '🎲 ') + JEUX[jeu].nom;
-  anneauMat.color.set(jeu === 'pip' ? 0xc58bff : 0xffd36b);
+  document.getElementById('jeu').textContent = ({ commun: '🎲 ', pip: '🌿 ', aldric: '🔥 ' }[jeu] || '') + JEUX[jeu].nom;
+  anneauMat.color.set({ pip: 0xc58bff, aldric: 0xffd27a }[jeu] || 0xffd36b);
 };
 document.getElementById('raz').onclick = () => { if (enCours) return; des.forEach((d) => { d.sac = [1, 2, 3, 4, 5, 6]; d.sortis = []; d.valeur = 0; d.garde = false; }); regler(nombre); };
 
