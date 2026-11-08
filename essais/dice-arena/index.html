@@ -97,6 +97,7 @@ const JEUX = {
   pip: { nom: 'Dés de Pip', dossier: 'faces-pip', lueur: 0xd29bff, force: 0.8 },
   aldric: { nom: "Dés d'Aldric", dossier: 'faces-aldric', lueur: 0xffd27a, force: 0.7 },
   oria: { nom: "Dés d'Oria", dossier: 'faces-oria', lueur: 0x5ff5e6, force: 0.75 },
+  gorm: { nom: 'Dés de Gorm', dossier: 'faces-gorm', lueur: 0x4f8bff, force: 0.9 },
 };
 const cacheMat = {};
 function matieres(cle) {
@@ -219,8 +220,8 @@ document.getElementById('lancer').onclick = lancer;
 document.getElementById('jeu').onclick = () => {
   const ordre = Object.keys(JEUX); jeu = ordre[(ordre.indexOf(jeu) + 1) % ordre.length];
   const m = matieres(jeu); des.forEach((d) => { d.m.material = m; });
-  document.getElementById('jeu').textContent = ({ commun: '🎲 ', pip: '🌿 ', aldric: '🔥 ', oria: '✨ ' }[jeu] || '') + JEUX[jeu].nom;
-  anneauMat.color.set({ pip: 0xc58bff, aldric: 0xffd27a, oria: 0x5ff5e6 }[jeu] || 0xffd36b);
+  document.getElementById('jeu').textContent = ({ commun: '🎲 ', pip: '🌿 ', aldric: '🔥 ', oria: '✨ ', gorm: '📯 ' }[jeu] || '') + JEUX[jeu].nom;
+  anneauMat.color.set({ pip: 0xc58bff, aldric: 0xffd27a, oria: 0x5ff5e6, gorm: 0x4f8bff }[jeu] || 0xffd36b);
 };
 document.getElementById('raz').onclick = () => { if (enCours) return; des.forEach((d) => { d.sac = [1, 2, 3, 4, 5, 6]; d.sortis = []; d.valeur = 0; d.garde = false; }); regler(nombre); };
 
