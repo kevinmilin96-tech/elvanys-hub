@@ -94,14 +94,14 @@ const tex = (f) => { const t = chargeur.load(f); t.colorSpace = THREE.SRGBColorS
 // Jeux de dés : les dés communs de la Guilde, et les dés de chaque héros (pierre + rune + couleur à lui)
 const JEUX = {
   commun: { nom: 'Dés de la Guilde', dossier: 'faces', lueur: 0x9fdcff, force: 1.1 },
-  pip: { nom: 'Dés de Pip', dossier: 'faces-pip', lueur: 0xc77dff, force: 0.55 },
+  pip: { nom: 'Dés de Pip', dossier: 'faces-pip', lueur: 0xd29bff, force: 0.8 },
 };
 const cacheMat = {};
 function matieres(cle) {
   if (cacheMat[cle]) return cacheMat[cle];
   const j = JEUX[cle];
   cacheMat[cle] = VALEUR_DE_FACE.map((v) => new THREE.MeshStandardMaterial({
-    map: tex(`${j.dossier}/face-${v}.webp`), emissiveMap: tex(`${j.dossier}/lueur-${v}.webp`), emissive: new THREE.Color(j.lueur), emissiveIntensity: j.force,
+    map: tex(`${j.dossier}/face-${v}.webp?v=2`), emissiveMap: tex(`${j.dossier}/lueur-${v}.webp?v=2`), emissive: new THREE.Color(j.lueur), emissiveIntensity: j.force,
     roughness: 0.55, metalness: 0.05,
   }));
   return cacheMat[cle];
