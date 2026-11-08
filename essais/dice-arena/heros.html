@@ -56,7 +56,7 @@
   <li><b class="mot">Ton deck</b> : 20 cartes : les 8 cartes de ton héros, dont certaines en deux exemplaires (12 en tout), et 8 cartes de la Guilde. Tu commences avec 4 cartes en main, tu en pioches 1 par tour, 7 au plus.</li>
   <li><b class="mot">Les dés montent</b> : 3 dés au tour 1, 4 au tour 2, puis 5. Chaque dé tire sa face dans son sac : une face sortie ne revient qu'une fois les six sorties, et le sac est visible.</li>
   <li><b class="mot">Une relance gratuite</b> par tour : tu choisis les dés à relancer, une seule fois.</li>
-  <li><b class="mot">Les PC</b> (points de compétence) : +1 au début de ton tour, 6 au plus. Les cartes se paient en PC.</li>
+  <li><b class="mot">Les PC</b> (points de compétence) : tu commences avec 1 PC, puis +1 au début de chacun de tes tours, 6 au plus. Les cartes se paient en PC.</li>
   <li><b class="mot">Poser tes dés</b> : chaque dé va à UN endroit :
     <ul>
       <li>sur une <b>carte de ta main</b> (tu paies son coût et le dé doit remplir sa condition ; souvent la valeur du dé donne la force de la carte) ;</li>
@@ -64,7 +64,7 @@
       <li>sur ta <b>Garde</b>, qui te protège pendant le tour de l'adversaire ;</li>
       <li>ou tu le <b>vends</b> : +1 PC. Ainsi aucun dé n'est perdu.</li>
     </ul></li>
-  <li><b class="mot">La ligne de front</b> : 5 places de chaque côté pour tes unités (attaque / vie). Une unité attaque une fois par tour, à partir du tour suivant son arrivée. Elle frappe une unité ou le héros adverse, et les deux s'infligent leurs dégâts. Les unités <b>Barrière</b> doivent être attaquées en premier.</li>
+  <li><b class="mot">La ligne de front</b> : 5 places de chaque côté pour tes unités (attaque / vie). Une unité attaque une fois par tour, à partir du tour suivant son arrivée. Elle frappe une unité ou le héros adverse, et les deux s'infligent leurs dégâts. Les unités <b>Barrière</b> doivent être attaquées en premier par les unités adverses ; les Sorts et les Pouvoirs, eux, choisissent librement leur cible.</li>
   <li><b class="mot">L'Ultime</b> : une combinaison difficile + 3 PC, une seule fois par combat.</li>
   <li><b class="mot">La salle</b> : chaque Duel se joue dans une salle tirée au hasard, avec sa règle (exemple : « les 1 comptent comme des 6 »).</li>
   <li><b class="mot">Différence avec le jeu papier</b> : plus de lancer de défense au hasard. La Garde remplace la défense : tu choisis ta protection pendant ton tour, rien ne se joue à ta place.</li>
@@ -85,9 +85,9 @@
 
 <div id="heros"></div>
 
-<div class="q">
-<b class="mot">À décider ensemble</b> avant la page de règles et le combat en images : les PV (36 à 45), la Garde à la place du lancer de défense, l'Ultime une fois par combat, et les 8 cartes de la Guilde (communes à tous, pas encore écrites).
-</div>
+<h2>Les 8 cartes de la Guilde (dans tous les decks)</h2>
+<div class="cartes" id="guilde"></div>
+<div class="q"><b class="mot">Décidé le 8 novembre</b> : la Garde remplace le lancer de défense ; l'Ultime se joue une fois par combat ; 36 à 45 PV, pour un Duel d'environ 10 minutes. Prochaine étape : un combat joué en images, tour par tour.</div>
 </main>
 <script>
 const H = [
@@ -188,6 +188,15 @@ const H = [
     ['Paillasse renversée','r',1,'dé ≤ 2','Se pose en Garde : le premier qui t\'attaque reçoit Poison 3.']],
    papier:'Repris de Blanche et de Fez : le Handicap de Vol acrobatique devient la Brume aveuglante ; l\'esquive et le camouflage deviennent la Fumée.' }
 ];
+const G = [
+ ['Potion de soin','s',1,"n'importe quel dé",'Soigne ton héros de la valeur du dé + 2.'],
+ ['Milicien','u',1,'dé ≤ 3','Unité 2 / 2.'],
+ ['Chien de garde','u',2,"n'importe quel dé",'Unité 2 / 3, Barrière.'],
+ ['Pierre à aiguiser','e',1,"n'importe quel dé",'Une unité gagne +2 attaque.'],
+ ['Bouclier rond','s',0,'dé pair','Bouclier égal à la valeur du dé.'],
+ ['Torche','s',1,'dé ≥ 4','4 dégâts à une unité et révèle les unités Cachées.'],
+ ['Coup de chance','s',0,'dé = 1','Relance 2 de tes dés.'],
+ ['Parchemin d\'étude','s',1,'dé impair','Pioche 1 carte et gagne 1 PC.']];
 const T = { s:'Sort', u:'Unité', e:'Équipement', r:'Réaction' };
 const kit = (lab, x) => `<div><span>${lab} · ${x[0]}</span>${x[1]}</div>`;
 document.getElementById('heros').innerHTML = H.map(h => `
@@ -204,6 +213,8 @@ document.getElementById('heros').innerHTML = H.map(h => `
     <p class="papier">📜 ${h.papier}</p>
   </div>
 </section>`).join('');
+const carte = c => `<div class="c ${c[1]}"><span class="cout">${c[2]}</span><div class="n">${c[0]}</div><div class="t">${T[c[1]]}</div><div class="d">🎲 ${c[3]}</div><div>${c[4]}</div></div>`;
+document.getElementById('guilde').innerHTML = G.map(carte).join('');
 </script>
 </body>
 </html>
