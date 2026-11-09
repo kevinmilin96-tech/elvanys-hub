@@ -45,7 +45,9 @@
   .act b { display:block; color:var(--or); font-size:1.1em; }
   .act.ok { border-color:var(--ok); box-shadow:0 0 8px #7dffb066; }
   .act.non { opacity:.45; }
-  .main { display:grid; grid-template-columns:repeat(3, 1fr); gap:5px; padding:4px 0 8px; }
+  .main { position:fixed; left:0; right:0; bottom:54px; height:118px; z-index:4; pointer-events:none; max-width:560px; margin:0 auto; }
+  .main > * { pointer-events:auto; }
+  #app { padding-bottom:190px !important; }
   .c { min-width:0; background:#f6efdc; color:#2b2117; border-radius:10px; padding:6px 7px; font-size:.74em; line-height:1.25; border:2px solid #b89a5e; position:relative; }
   .c.u2 { background:#e9f0dc; } .c.e2 { background:#e3e8f5; } .c.r2 { background:#f1e1e1; }
   .c .n { font-weight:bold; font-size:1.05em; padding-right:24px; }
@@ -72,9 +74,14 @@
   .heros6 img { width:100%; aspect-ratio:1; border-radius:9px; object-fit:cover; display:block; margin-bottom:4px; }
   .grille6 { display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; margin:10px 0; }
   .grille6 button { background:#f3c96b; color:#2b2117; border:none; border-radius:10px; padding:12px; font-size:1.3em; font-weight:bold; }
-  .main .c { font-size:.68em; padding:5px 6px; }
+  .main .c { position:absolute; bottom:-34px; width:100px; height:142px; padding:5px 6px; font-size:.62em; overflow:hidden; transform-origin:50% 130%;
+    transition:transform .18s ease, left .18s ease, width .18s, height .18s; box-shadow:0 5px 12px #0008; cursor:pointer; }
   .main .c .cout { width:20px; height:20px; font-size:.95em; }
   .main .c .n { padding-right:20px; }
+  .main .c .dd { margin-top:2px; }
+  .main .c.vue { width:164px; height:auto; min-height:206px; font-size:.8em; overflow:visible; box-shadow:0 10px 26px #000c; }
+  .main .c.vue .cout { width:26px; height:26px; }
+  .main .c .jouer { margin-top:6px; background:#2b2117; color:#f3c96b; border-radius:8px; padding:4px 6px; text-align:center; font-weight:bold; }
   .d { position:relative; }
   .d.cache img { filter:brightness(.3) blur(1px); }
   .d.cache::after { content:'?'; position:absolute; top:9px; left:0; right:0; font-size:1.7em; font-weight:bold; color:#fff; pointer-events:none; }
@@ -377,7 +384,26 @@ function simule(idJ, idO) {
 }
 
 // =============================================================================================== interface
-let sel = [], attaquant = null, ciblage = null;
+let sel = [], attaquant = null, ciblage = null, carteVue = null;
+// la main en éventail : 1er toucher = la carte se soulève et s'agrandit ; 2e toucher = on la joue (si les dés choisis conviennent)
+function mainEnEventail(J) {
+  const n = J.main.length; if (!n) return '<i style="color:#c9c1ea;position:absolute;left:0;right:0;text-align:center;top:60px">Main vide</i>';
+  if (carteVue !== null && carteVue >= n) carteVue = null;
+  const mil = (n - 1) / 2, pas = n > 1 ? Math.min(52, 262 / (n - 1)) : 0, ang = n > 1 ? Math.min(7, 32 / (n - 1)) : 0;
+  return J.main.map((k, i) => {
+    const c = CARTES[k], ok = sel.length && permis(J, k, vals(sel), sel), vue = carteVue === i, d = i - mil;
+    const style = vue ? 'left:calc(50% - 82px);transform:translateY(-120px);z-index:60'
+      : `left:calc(50% - 50px + ${d * pas}px);transform:translateY(${Math.round(d * d * 3)}px) rotate(${d * ang}deg);z-index:${i + 1}`;
+    const pied = vue ? `<div class="jouer">${ok ? '👆 Touche encore pour la jouer' : sel.length ? 'Ces dés ne conviennent pas' : 'Choisis d’abord tes dés'}</div>` : '';
+    return `<div class="c ${c.t}2 ${ok ? 'ok' : sel.length ? 'non' : ''} ${vue ? 'vue' : ''}" style="${style}" onclick="toucheCarte(${i})"><span class="cout">${coutCarte(J, k)}</span><div class="n">${c.n}</div><span class="cd">🎲 ${c.txt}</span><div class="dd">${c.d}</div>${pied}</div>`;
+  }).join('');
+}
+function toucheCarte(i) {
+  if (S.fini || roule) return;
+  if (carteVue !== i) { carteVue = i; rendu(); return; }
+  const k = S.J.main[i];
+  if (sel.length && permis(S.J, k, vals(sel), sel)) { carteVue = null; vise(k, i); } else aide(k);
+}
 function nouvellePartie(id, idO, auto) {
   const autres = ORDRE.filter(x => x !== id);
   idO = idO || autres[Math.floor(Math.random() * autres.length)];
@@ -398,7 +424,8 @@ function finDeMonTour() {
   setTimeout(() => { joueOrdi(); if (!S.fini) debutTour(S.J); rendu(); }, 450);
 }
 function choisirDe(i) {
-  if (S.fini || S.J.aLancer || roule) return; const d = S.J.des[i]; if (d.pose) return;
+  if (S.fini || S.J.aLancer || roule) return;
+  if (carteVue !== null && !ciblage) carteVue = null; const d = S.J.des[i]; if (d.pose) return;
   if (ciblage && ciblage.type === 'de') { if (ciblage.ds.includes(d)) return; const c = ciblage; ciblage = null; pose(S.J, c.quoi, c.ds, { d }, c.im); sel = []; rendu(); return; }
   if (ciblage) return;
   sel = sel.includes(d) ? sel.filter(x => x !== d) : [...sel, d]; attaquant = null; rendu();
@@ -517,8 +544,7 @@ function rendu() {
     ${act('pcAjuste', '+1 / −1', `${coutAjuste(J)} PC`, '1 dé')}
     ${actSoins()}
   </div>
-  <div class="main">${J.main.map((k, i) => { const c = CARTES[k]; const ok = sel.length && permis(J, k, vals(sel), sel);
-    return `<div class="c ${c.t}2 ${ok ? 'ok' : sel.length ? 'non' : ''}" onclick="vise('${k}', ${i})"><span class="cout">${coutCarte(J, k)}</span><div class="n">${c.n}</div><span class="cd">🎲 ${c.txt}</span><div>${c.d}</div></div>`; }).join('') || '<i style="color:#c9c1ea">Main vide</i>'}</div>
+  <div class="main" onclick="if(event.target===this){carteVue=null;rendu();}">${mainEnEventail(J)}</div>
   <div class="journal">${S.log.slice(0, 40).map(t => `<div>${t}</div>`).join('')}</div>
   <div class="bas">
     <button class="b0" onclick="regles()">❓ Règles</button>
