@@ -126,7 +126,10 @@
   .vie { position:relative; height:9px !important; }
   .vie b { position:absolute; left:0; top:0; height:100%; background:#ffe27a; border-radius:3px; transition:width .9s .45s ease; }
   .vie i { position:relative; display:block; height:100%; background:linear-gradient(90deg, #e5262c, #ff7a59); border-radius:3px; transition:width .5s ease; }
-  .sonbt { float:right; background:none; border:none; font-size:1.1em; padding:0 2px; line-height:1; }
+  .salle { display:flex; align-items:center; gap:8px; } .salle .st { flex:1; }
+  .sons { display:flex; gap:6px; flex:none; }
+  .sonbt { width:34px; height:34px; border-radius:50%; border:1px solid #f3c96b88; background:radial-gradient(circle at 35% 30%, #3a3570, #1d1b3a); color:#f3c96b; padding:6px; display:grid; place-items:center; box-shadow:0 2px 6px #0008; }
+  .sonbt svg { width:100%; height:100%; } .sonbt.off { color:#8a83b8; border-color:#4b4580; }
   body.fxon #app { pointer-events:none; }
   #fxc { position:fixed; inset:0; pointer-events:none; z-index:20; overflow:hidden; }
   .flotte { position:fixed; transform:translate(-50%,-50%); font-weight:bold; font-size:1.6em; color:#fff; text-shadow:0 2px 0 #000, 0 0 8px #000; white-space:nowrap;
@@ -229,7 +232,8 @@
   .milieu::after { background:linear-gradient(270deg, transparent, #f3c96b, #c084fc); }
   .milieu span { padding:0 8px; color:#f3c96b; font-size:.85em; letter-spacing:.3em; text-shadow:0 0 8px #f3c96b, 0 0 14px #c084fc; animation:lueur 3s ease-in-out infinite; }
   @keyframes lueur { 50% { opacity:.55; } }
-  .front { gap:5px; min-height:94px; }
+  .front { gap:5px; min-height:94px; padding:0 8px; }
+  .front > .u, .front > .place { flex:0 1 66px; min-width:0; }
   .front.vide::after { content:none; }
   .place { width:66px; height:88px; border-radius:11px; border:2px dashed #ffffff1c; background:radial-gradient(circle, #ffffff08, transparent 70%); }
   .place::after { content:'✦'; display:grid; place-items:center; height:100%; color:#ffffff14; font-size:20px; }
@@ -260,7 +264,7 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261109-211750';
+const VERSION = '20261109-212013';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); location.replace('duel.html?v=' + v); }
@@ -279,8 +283,8 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261109-211750"></script>
-<script src="donnees.js?v=20261109-211750"></script>
+<script src="cartes.js?v=20261109-212013"></script>
+<script src="donnees.js?v=20261109-212013"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -843,7 +847,9 @@ function dessine() {
   else if (J.front.some(u => u.pret && !u.louve)) bandeau = '⚔ Touche une créature dorée : attaquer (puis sa cible) ou se mettre en défense. Sinon, elles attaquent le héros à « Fin du tour » (sauf les 👁 cachées, qui restent dans l’ombre).';
   else bandeau = 'Tous tes dés sont posés : touche « Fin du tour ».';
   document.getElementById('app').innerHTML = `
-  <div class="salle"><b>${S.salle.n}</b> · ${S.salle.d}<button class="sonbt" onclick="basculeSon()">${sonOn ? '🔊' : '🔇'}</button><button class="sonbt" onclick="basculeMusique()" style="${musOn ? '' : 'opacity:.35'}">🎵</button></div>
+  <div class="salle"><span class="st"><b>${S.salle.n}</b> · ${S.salle.d}</span><span class="sons">
+    <button class="sonbt ${sonOn ? '' : 'off'}" onclick="basculeSon()" aria-label="Bruitages" title="Bruitages"><svg viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/>${sonOn ? '<path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>' : '<path d="M16 9l5 6M21 9l-5 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>'}</svg></button>
+    <button class="sonbt ${musOn ? '' : 'off'}" onclick="basculeMusique()" aria-label="Musique" title="Musique"><svg viewBox="0 0 24 24"><path d="M9 17V5l11-2v12" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="6.5" cy="17.5" r="2.8" fill="currentColor"/><circle cx="17.5" cy="15.5" r="2.8" fill="currentColor"/>${musOn ? '' : '<path d="M3 3l18 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>'}</svg></button></span></div>
   <div class="plateau">${barre(O, true)}${front(O, true)}<div class="milieu"><span>✦ ◆ ✦</span></div>${front(J, false)}${barre(J, false)}
     <div class="des" ontouchstart="glisseDebut(event)" ontouchend="glisseFin(event)">${J.des.map((d, i) => `<div class="d ${sel.includes(d) ? 'sel' : ''} ${d.pose ? 'pose' : ''} ${d.mod ? 'mod' : ''} ${J.aLancer ? 'cache' : ''} ${i === J.neuf ? 'neuf' : ''}" onclick="choisirDe(${i})"><img src="${FACE(J.id, d.v || 1)}" alt="${d.v || '?'}"><div class="sac">${i === J.neuf ? '✨ nouveau dé' : sacTxt(J, d)}</div></div>`).join('')}${[...Array(Math.max(0, 5 - J.des.length)).keys()].map(k => { const i = J.des.length + k, t = i - 1;
       return `<div class="d verrou"><div class="cad">🔒</div><div class="sac">${J.tours >= t ? 'Handicap ce tour' : 'dé n° ' + (i + 1) + '<br>au tour ' + t}</div></div>`; }).join('')}</div>
