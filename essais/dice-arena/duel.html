@@ -100,13 +100,13 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261109-183239';
+const VERSION = '20261109-185233';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); location.replace('duel.html?v=' + v); }
 }).catch(() => {});
 </script>
-<script src="donnees.js?v=20261109-183239"></script>
+<script src="donnees.js?v=20261109-185233"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -243,7 +243,7 @@ function pose(J, quoi, ds, k, indexMain) {
   if (quoi !== 'ultime') remplit(J, vs.length * JAUGE.parDe);
   if (J.id === 'aldric' && J.six >= 2 && !J.pureteTour && J.purete < 2) { J.purete++; J.pureteTour = true; log('✦ Deux 6 posés : Aldric gagne un jeton de Pureté.'); }
   if (quoi === 'garde') { J.gardeFaite = true; h.garde.f(J, vs, k, ds); return; }
-  if (quoi === 'frappe') { log(`${J.nom} : Frappe (${vs.join(', ')}) : ${[0, 0, 3, 6, 9, 14][vs.length]} dégâts.`); FRAPPE.f(J, vs, k); return; }
+  if (quoi === 'frappe') { log(`${J.nom} : Frappe (${vs.join(', ')}) : ${FRAPPE.dg(vs)} dégâts.`); FRAPPE.f(J, vs, k); return; }
   if (quoi === 'technique') { log(`${J.nom} : Technique (${vs.join(', ')}) : ${[0, 0, 0, 4, 7, 10][vs.length]} dégâts.`); TECHNIQUE.f(J, vs, k); return; }
   if (quoi === 'pouvoir') { log(`${J.nom} : ${h.pouvoir.n} !`); h.pouvoir.f(J, vs, k, ds); return; }
   if (quoi === 'ultime') { J.pc -= 3; J.ultimeFait = true; log(`${J.nom} : ULTIME, ${h.ultime.n} !`); h.ultime.f(J, vs, k, ds); return; }
@@ -318,7 +318,7 @@ function interet(J, quoi, vs) {
   const D = adv(J);
   if (quoi === 'ultime') return J.id === 'pip' ? (J.pv < J.pvMax * .6 ? 120 : 0) : 120;
   if (quoi === 'pouvoir') return J.id === 'zephine' ? 70 : 80;
-  if (quoi === 'frappe') return [0, 0, 25, 50, 70, 95][vs.length];
+  if (quoi === 'frappe') return 10 + FRAPPE.dg(vs) * 7;
   if (quoi === 'technique') return [0, 0, 0, 40, 60, 80][vs.length];
   const c = CARTES[quoi];
   if (c.u) return 30 + c.u.a + c.u.v + (c.u.barriere && !J.front.some(u => u.barriere) ? 15 : 0) + (c.u.charge ? 10 : 0);
@@ -429,8 +429,8 @@ function nouvellePartie(id, idO, auto) {
   const autres = ORDRE.filter(x => x !== id);
   idO = idO || autres[Math.floor(Math.random() * autres.length)];
   S = { J:joueur(id, false), O:joueur(idO, true), salle:SALLES[Math.floor(Math.random() * SALLES.length)], log:[], fini:null, auto:!!auto };
-  // le second joueur (l'ordinateur) compense : 1 PC et 1 carte de plus au départ
-  pioche(S.J, 4); pioche(S.O, 5); S.O.pc = 2;
+  // le second joueur (l'ordinateur) compense : 2 PC et 1 carte de plus au départ (v2.4)
+  pioche(S.J, 4); pioche(S.O, 5); S.O.pc = 3;
   log(`Salle : ${S.salle.n}. ${S.salle.d}`);
   sel = []; attaquant = null; ciblage = null;
   debutTour(S.J);
@@ -625,7 +625,7 @@ function regles() {
   const h = HEROS[S.J.id];
   fenetre(`<h2>Comment on joue</h2><ul>
   <li><b>Les dés ne coûtent rien.</b> Ce sont les <b>cartes</b> qui coûtent des PC (le chiffre bleu). Pour jouer une carte, il faut <b>les deux</b> : assez de PC, et un dé qui remplit sa condition.</li>
-  <li>La <b>Frappe</b>, commune à tous : 2, 3, 4 ou 5 dés identiques font 3, 6, 9 ou 14 dégâts. Gratuite.</li>
+  <li>La <b>Frappe</b>, commune à tous : 2 dés identiques ou plus. Dégâts = la valeur du dé + un bonus (paire +0, 3 dés +3, 4 dés +6, 5 dés +10) : deux 6 = 6, trois 4 = 7, cinq 6 = 16. Gratuite.</li>
   <li>La <b>Technique</b>, commune à tous : 3, 4 ou 5 dés qui se suivent (par exemple 2-3-4) font 4, 7 ou 10 dégâts. Gratuite.</li>
   <li>La <b>Garde</b> et le <b>Pouvoir</b> de ton héros sont gratuits : il suffit des bons dés.</li>
   <li>L’<b>Ultime</b> : sa <b>jauge ⚡</b> gagne 1 point par dé posé (pas vendu) et 1 point tous les 5 dégâts que tu subis. Pleine, l’Ultime se joue avec ses 3 dés et 3 PC, une fois par combat.</li>
