@@ -302,6 +302,12 @@
   .tapis .front > .u, .tapis .front > .place { flex:0 0 15.6cqw; width:15.6cqw; height:22cqw; }
   .tapis .u .av { left:-1.2cqw; right:-1.2cqw; bottom:-2cqw; }
   .tapis .u .av span { width:6.4cqw; height:6.4cqw; font-size:2.6cqw; border-width:1.5px; }
+  /* créatures : la rangée reste DANS l'aire de jeu peinte (14,5 → 85,5 cqw) ; les cartes rétrécissent quand il y en a 4 ou 5 */
+  .tapis .front { left:14.5cqw !important; right:14.5cqw !important; gap:1.8cqw; justify-content:center; }
+  .tapis .front > .place { display:none; }
+  .tapis .front > .u { flex:0 1 15.6cqw; width:auto; min-width:0; height:22cqw; }
+  .tapis .u .av { left:-.6cqw; right:-.6cqw; }
+  .tapis .u b { overflow-wrap:anywhere; hyphens:auto; }
 </style>
 </head>
 <body>
@@ -310,7 +316,7 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261109-213048';
+const VERSION = '20261109-213131';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); location.replace('duel.html?v=' + v); }
@@ -329,8 +335,8 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261109-213048"></script>
-<script src="donnees.js?v=20261109-213048"></script>
+<script src="cartes.js?v=20261109-213131"></script>
+<script src="donnees.js?v=20261109-213131"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
