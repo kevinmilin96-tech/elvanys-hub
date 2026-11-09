@@ -73,11 +73,14 @@ const CARTES = {
   soufre:   { n:'Poudre de soufre', t:'s', c:1, txt:'1 dé', d:'Poison égal à la valeur du dé sur le héros adverse.', cond:un, f:(J, vs) => altere(adv(J), 'poison', vs[0]), ia:(J, vs) => 10 + vs[0] * 6 },
   distil:   { n:'Distillation', t:'s', c:1, txt:'2 dés', d:'Les fond en un seul dé libre égal à leur somme (6 au plus).', cond:vs => vs.length === 2, f:(J, vs, k, ds) => { ds[0].pose = false; modifie(J, ds[0], Math.min(6, somme(vs))); }, ia:(J, vs) => somme(vs) >= 5 ? 9 : 0 },
   precipite:{ n:'Précipité', t:'s', c:1, txt:'dé = 6', d:'Coupe ce dé en deux dés libres de 3.', cond:vs => un(vs) && vs[0] === 6, f:(J, vs, k, ds) => { ds[0].pose = false; modifie(J, ds[0], 3); const n = { v:3, sac:[], pose:false, mod:true, extra:true }; J.des.push(n); }, ia:() => 4 },
-  homoncule:{ n:'Homoncule', t:'u', c:2, txt:'1 dé modifié ce tour', d:'Unité 3 / 4. Ses attaques sur le héros donnent Poison 2.', cond:(vs, ds) => un(vs) && ds && ds[0] && ds[0].mod, u:{ n:'Homoncule', a:3, v:4, poisonneur:true } },
+  homoncule:{ n:'Homoncule', t:'u', c:2, txt:'1 dé modifié ce tour', d:'Unité 3 / 4, Cachée. Ses attaques sur le héros donnent Poison 2.', cond:(vs, ds) => un(vs) && ds && ds[0] && ds[0].mod, u:{ cachee:true, n:'Homoncule', a:3, v:4, poisonneur:true } },
   brume:    { n:'Brume aveuglante', t:'s', c:2, txt:'dé impair', d:'Handicap : l’adversaire lance 1 dé de moins à son prochain tour.', cond:vs => un(vs) && !pair(vs[0]), f:J => altere(adv(J), 'handicap'), ia:() => 32 },
   catalyseur:{ n:'Catalyseur', t:'e', c:2, txt:'dé pair', d:'Chaque fois que tu modifies un dé, 1 dégât au héros adverse.', cond:vs => un(vs) && pair(vs[0]), f:J => { J.catalyseur = true; log(`${J.nom} installe le Catalyseur.`); }, ia:J => J.catalyseur ? 0 : 24 },
   paillasse:{ n:'Paillasse renversée', t:'r', c:1, txt:'dé ≤ 2', d:'Garde : dès qu’une unité t’attaque, le héros adverse reçoit Poison 3.', cond:vs => un(vs) && vs[0] <= 2, f:J => { J.paillasse = true; }, ia:J => adv(J).front.length ? 20 : 2 },
   // ---- la Guilde (tous)
+  cape:     { n:'Cape d’ombre', t:'e', c:1, txt:'dé ≤ 3', d:'Une de tes unités devient Cachée et gagne +1 attaque.', cond:vs => un(vs) && vs[0] <= 3, cible:'uniteA', f:(J, vs, k) => { if (k && k.u) { k.u.cachee = true; k.u.a += 1; log(`${k.u.n} se fond dans l’ombre.`); } }, ia:J => J.front.some(u => !u.cachee && !u.louve) ? 20 : 0 },
+  lynx:     { n:'Lynx des fourrés', t:'u', c:2, txt:'dé ≤ 3', d:'Unité 3 / 2, Cachée.', cond:vs => un(vs) && vs[0] <= 3, u:{ n:'Lynx des fourrés', a:3, v:2, cachee:true } },
+  renard:   { n:'Renard du col', t:'u', c:1, txt:'1 dé', d:'Unité 2 / 3, Cachée.', cond:un, u:{ n:'Renard du col', a:2, v:3, cachee:true } },
   potion:   { n:'Potion de soin', t:'s', c:1, txt:'1 dé', d:'Soigne ton héros de la valeur + 2.', cond:un, f:(J, vs) => soin(J, vs[0] + 2), ia:J => J.pv < J.pvMax * .7 ? 30 : 4 },
   milicien: { n:'Milicien', t:'u', c:1, txt:'dé ≤ 3', d:'Unité 2 / 2.', cond:vs => un(vs) && vs[0] <= 3, u:{ n:'Milicien', a:2, v:2 } },
   chien:    { n:'Chien de garde', t:'u', c:2, txt:'1 dé', d:'Unité 2 / 3, Barrière.', cond:un, u:{ n:'Chien', a:2, v:3, barriere:true } },
@@ -87,7 +90,7 @@ const CARTES = {
   chance:   { n:'Coup de chance', t:'s', c:0, txt:'dé = 1', d:'Relance tes 2 dés libres les plus faibles.', cond:vs => un(vs) && vs[0] === 1, f:J => { const l = J.des.filter(d => !d.pose).sort((a, b) => a.v - b.v).slice(0, 2); l.forEach(d => lance(J, d)); log(`${J.nom} relance ${l.length} dé(s).`); }, ia:() => 4 },
   parchemin:{ n:'Parchemin d’étude', t:'s', c:1, txt:'dé impair', d:'Pioche 1 carte et gagne 1 PC.', cond:vs => un(vs) && !pair(vs[0]), f:J => { pioche(J, 1); J.pc = Math.min(6, J.pc + 1); }, ia:() => 22 },
 };
-const GUILDE = ['potion', 'milicien', 'chien', 'pierre', 'rond', 'torche', 'chance', 'parchemin'];
+const GUILDE = ['potion', 'milicien', 'chien', 'pierre', 'rond', 'torche', 'chance', 'parchemin', 'cape'];
 
 // ------------------------------------------------------------------------------------------- héros (données)
 const HEROS = {
@@ -109,7 +112,7 @@ const HEROS = {
     ultime:{ n:'La Lame de l’Aube', txt:'3 dés identiques', d:'16 dégâts à une cible et Handicap.', cond:vs => vs.length === 3 && egaux(vs), cible:'ennemi',
       f:(J, vs, k) => { degats(k, 16); altere(adv(J), 'handicap'); } } },
   pip: { cit:'« La forêt répond à qui l’écoute. »', role:'Soigne, bloque avec les ronces et appelle sa louve. Ses cartes aiment les petits dés (1 à 3).', papier:'Reprise de la Druidesse : la Jauge de Meute, la Louve et ses 3 dés, Sève vitale, Racines entravantes, Écorce bénie, Purification.', nom:'Pip', titre:'la druidesse et sa louve', c:'#c58bff', pv:35,
-    deck:['ronces', 'ronces', 'seve', 'seve', 'racines', 'racines', 'purif', 'hurlement', 'faon', 'faon', 'lien', 'rosee'],
+    deck:['ronces', 'ronces', 'seve', 'seve', 'racines', 'racines', 'purif', 'hurlement', 'faon', 'faon', 'lien', 'lynx'],
     passif:'L’Appel de l’Alpha : chaque 6 lancé pose un marqueur de Meute. À 3, la Louve (4 / 7) arrive et attaque seule à la fin de chacun de tes tours.',
     garde:{ n:'Écorce bénie', txt:'1 dé', d:'Un 1 ou un 2 : Épines 3. Sinon : Bouclier = la valeur.', cond:un, val:vs => vs[0] <= 2 ? 4 : vs[0],
       f:(J, vs) => { if (vs[0] <= 2) { J.gardeE += 3; log(`${J.nom} : Écorce bénie, Épines 3.`); } else { J.gardeB += vs[0]; log(`${J.nom} : Écorce bénie, Bouclier ${vs[0]}.`); } } },
@@ -118,7 +121,7 @@ const HEROS = {
     ultime:{ n:'L’Éveil du Grand Arbre', txt:'3 dés de 3 ou moins', d:'Ton héros se soigne de 15 et tes unités retrouvent toute leur vie.', cond:vs => vs.length === 3 && vs.every(v => v <= 3),
       f:J => { soin(J, 15); J.front.forEach(u => u.v = u.vmax); } } },
   oria: { cit:'« Je sais déjà ce qui vient. »', role:'Contrôle : voit ses prochaines faces, pioche, renvoie les unités. Aime les suites.', papier:'Repris d’Expérience 626 : la Prémonition (voir à l’avance), Téléportation qui vole des PC, et l’Ultime qui fait taire l’adversaire.', nom:'Oria', titre:'la cartographe', c:'#5ff5e6', pv:42,
-    deck:['longuevue', 'fleche', 'fleche', 'tresor', 'guetteur', 'boussole', 'eclaireuse', 'eclaireuse', 'piege', 'detour', 'guetteur', 'vol'],
+    deck:['longuevue', 'fleche', 'fleche', 'tresor', 'guetteur', 'boussole', 'eclaireuse', 'eclaireuse', 'piege', 'detour', 'renard', 'vol'],
     passif:'Œil du cartographe : tu vois les 2 prochaines faces de chacun de tes dés.',
     garde:{ n:'Repli', txt:'1 dé', d:'Dé impair : Esquive (les prochains dégâts sont divisés par 2). Dé pair : Bouclier = la valeur.', cond:un, val:vs => pair(vs[0]) ? vs[0] : 6,
       f:(J, vs) => { if (pair(vs[0])) { J.gardeB += vs[0]; log(`${J.nom} : Repli, Bouclier ${vs[0]}.`); } else { J.esquive = true; log(`${J.nom} : Repli, Esquive.`); } } },
