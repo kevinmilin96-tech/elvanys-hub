@@ -1,7 +1,7 @@
 <!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex">
 <title>Essai des cartes</title><style>body{margin:0;background:#15132b;color:#fff;font-family:Georgia,serif}.g{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;padding:16px}</style></head><body>
 <div class="g" id="g"></div>
-<script src="donnees.js"></script><script src="cartes.js?v=20261109-214003"></script>
+<script src="donnees.js"></script><script src="cartes.js?v=20261109-214442"></script>
 <script>document.head.insertAdjacentHTML('beforeend', '<style>' + CSS_CARTE + '</style>');
 const ks = (new URLSearchParams(location.search).get('k') || 'seve,racines,faon,lien').split(',');
 document.getElementById('g').innerHTML = ks.map(k => carteGuilde(k, { heros:'pip', art:'portraits/pip.webp', w:+(new URLSearchParams(location.search).get('w') || 216) })).join('');</script></body></html>
