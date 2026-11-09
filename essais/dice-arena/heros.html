@@ -47,12 +47,12 @@
 <body>
 <main>
 <h1>La Guilde des Runes</h1>
-<p class="sous">Fiches de jeu des six héros · version 2.1 du 9 novembre (jauge d’Ultime) : les six équilibrés par 6 000 parties simulées (chaque héros contre chacun des autres) · <a href="duel.html" style="color:#f3c96b">jouer le Duel</a></p>
+<p class="sous">Fiches de jeu des six héros · version 2.2 du 9 novembre (jauge d’Ultime, achats de PC du jeu papier) : les six équilibrés par 9 000 parties simulées (chaque héros contre chacun des autres) · <a href="duel.html" style="color:#f3c96b">jouer le Duel</a></p>
 
 <h2>Le socle du Duel (commun à tous)</h2>
 <div class="bloc">
 <ol>
-  <li><b class="mot">But</b> : faire tomber à 0 les points de vie (PV) du héros adverse. Chaque héros a entre 36 et 46 PV.</li>
+  <li><b class="mot">But</b> : faire tomber à 0 les points de vie (PV) du héros adverse. Chaque héros a entre 34 et 48 PV.</li>
   <li><b class="mot">Ton deck</b> : 20 cartes : les 8 cartes de ton héros, dont certaines en deux exemplaires (12 en tout), et 8 cartes de la Guilde. Tu commences avec 4 cartes en main, tu en pioches 1 par tour, 7 au plus.</li>
   <li><b class="mot">Les dés montent</b> : 3 dés au tour 1, 4 au tour 2, puis 5. Chaque dé tire sa face dans son sac : une face sortie ne revient qu'une fois les six sorties, et le sac est visible.</li>
   <li><b class="mot">Une relance gratuite</b> par tour : tu choisis les dés à relancer, une seule fois.</li>
@@ -64,6 +64,7 @@
       <li>sur ta <b>Garde</b>, qui te protège pendant le tour de l'adversaire ;</li>
       <li>sur la <b>Frappe</b>, commune à tous (l'attaque de base du jeu papier) : 2, 3, 4 ou 5 dés identiques font 3, 6, 9 ou 14 dégâts ;</li>
       <li>ou tu le <b>vends</b> : +1 PC. Ainsi aucun dé n'est perdu.</li>
+      <li><b>Acheter avec ses PC</b>, comme dans le jeu papier : 1 PC = relancer un dé ; 2 PC = +1 ou −1 sur un dé (1 PC pour Zéphine) ; 2 PC = Premiers soins (retire ses altérations).</li>
     </ul></li>
   <li><b class="mot">La ligne de front</b> : 5 places de chaque côté pour tes unités (attaque / vie). Une unité attaque une fois par tour, à partir du tour suivant son arrivée. Elle frappe une unité ou le héros adverse, et les deux s'infligent leurs dégâts. Les unités <b>Barrière</b> doivent être attaquées en premier par les unités adverses ; les Sorts et les Pouvoirs, eux, choisissent librement leur cible.</li>
   <li><b class="mot">Qui paie quoi</b> : les dés ne coûtent rien. Ce sont les <b>cartes</b> qui coûtent des PC (le chiffre bleu) : pour en jouer une, il faut assez de PC ET un dé qui remplit sa condition. La Frappe, la Garde et le Pouvoir sont gratuits ; l'Ultime coûte 3 PC.</li>
@@ -92,7 +93,7 @@
 <div class="cartes" id="guilde"></div>
 <div class="q"><b class="mot">Décidé le 8 novembre</b> : la Garde remplace le lancer de défense ; l'Ultime se joue une fois par combat, quand sa jauge est pleine ; 36 à 46 PV, pour un Duel d'environ 10 minutes. Prochaine étape : un combat joué en images, tour par tour.</div>
 </main>
-<script src="donnees.js?v=3"></script>
+<script src="donnees.js?v=4"></script>
 <script>
 // La page lit les mêmes données que le Duel (donnees.js) : elle ne peut plus prendre de retard sur le jeu.
 const T = { s:'Sort', u:'Unité', e:'Équipement', r:'Réaction' };

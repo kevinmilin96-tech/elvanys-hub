@@ -40,6 +40,7 @@
   .d.pose img { opacity:.25; }
   .d .sac { font-size:.62em; color:var(--doux); letter-spacing:.02em; margin-top:1px; }
   .actions { display:grid; grid-template-columns:repeat(3, 1fr); gap:5px; margin:6px 0; }
+  .actions.pc .act { min-height:40px; background:#1f2a4a; }
   .act { background:#2a2650; color:var(--texte); border:2px solid #4b4580; border-radius:10px; padding:5px 3px; font-size:.74em; line-height:1.2; min-height:50px; }
   .act b { display:block; color:var(--or); font-size:1.1em; }
   .act.ok { border-color:var(--ok); box-shadow:0 0 8px #7dffb066; }
@@ -76,7 +77,7 @@
 <body>
 <div id="app"></div>
 <div id="fen"></div>
-<script src="donnees.js?v=3"></script>
+<script src="donnees.js?v=4"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -177,11 +178,16 @@ function ciblesPossibles(J, type) {
   return [];
 }
 function cibleValide(J, k, type) { if (k && (!k.u || k.J.front.includes(k.u))) return k; return cibleAuto(J, type); }
+// Zéphine, l'alchimiste : son +1 / −1 ne coûte qu'1 PC (sa spécialité reste plus forte que celle des autres)
+const coutAjuste = J => J.id === 'zephine' ? 1 : 2;
 function permis(J, quoi, vs, ds) {
+  if (quoi === 'pcSoins') return J.pc >= 2 && !!(J.poison || J.saigne || J.handicap);
   if (!vs.length) return false;
   const h = HEROS[J.id];
   if (quoi === 'vendre') return true;
   if (quoi === 'transmu') return J.id === 'zephine' && !J.transmu && vs.length === 1;
+  if (quoi === 'pcRelance') return vs.length === 1 && J.pc >= 1;
+  if (quoi === 'pcAjuste') return vs.length === 1 && J.pc >= coutAjuste(J);
   if (quoi === 'garde') return !J.gardeFaite && h.garde.cond(vs, ds);
   if (quoi === 'pouvoir') return h.pouvoir.cond(vs, ds);
   if (quoi === 'frappe') return FRAPPE.cond(vs);
@@ -195,6 +201,9 @@ function permis(J, quoi, vs, ds) {
 }
 function pose(J, quoi, ds, k, indexMain) {
   const vs = vals(ds);
+  if (quoi === 'pcRelance') { J.pc -= 1; const a = ds[0].v; lance(J, ds[0]); log(`${J.nom} paie 1 PC et relance un ${a} : ${ds[0].v}.`); return; }
+  if (quoi === 'pcAjuste') { const c = coutAjuste(J); J.pc -= c; const a = ds[0].v, v = Math.max(1, Math.min(6, a + (k && k.sens || 1))); modifie(J, ds[0], v); log(`${J.nom} paie ${c} PC : ${a} devient ${v}.`); return; }
+  if (quoi === 'pcSoins') { J.pc -= 2; J.poison = 0; J.saigne = 0; J.handicap = 0; log(`${J.nom} paie 2 PC : Premiers soins, plus aucune altération.`); return; }
   if (quoi === 'transmu') { J.transmu = true; const d = ds[0]; const a = d.v; modifie(J, d, opp(a)); log(`${J.nom} transmute un ${a} en ${d.v}.`); return; }
   ds.forEach(d => { d.pose = true; });
   const h = HEROS[J.id];
@@ -302,6 +311,18 @@ function transmutationAuto(J) {
   J.des.filter(d => !d.pose).forEach(d => { const a = d.v; d.v = opp(a); const s = (meilleurCoup(J) || { score:0 }).score; d.v = a; if (s > avant + 8 && (!mieux || s > mieux.s)) mieux = { d, s }; });
   if (mieux) pose(J, 'transmu', [mieux.d]);
 }
+// achats de PC par l'ordinateur : Premiers soins si l'altération pèse ; ±1 si ça améliore nettement son meilleur coup
+function achatsAuto(J) {
+  if (J.pc >= 2 && (J.poison + J.saigne * 2 + (J.handicap ? 3 : 0)) >= 4) pose(J, 'pcSoins', []);
+  for (let n = 0; n < 2 && J.pc >= coutAjuste(J); n++) {
+    const avant = (meilleurCoup(J) || { score:0 }).score; let mieux = null;
+    J.des.filter(d => !d.pose).forEach(d => [-1, 1].forEach(sens => { const v = d.v + sens; if (v < 1 || v > 6) return; const a = d.v; d.v = v;
+      const pc = J.pc; J.pc -= coutAjuste(J); const s2 = (meilleurCoup(J) || { score:0 }).score; J.pc = pc; d.v = a;
+      if (s2 >= avant + 20 && (!mieux || s2 > mieux.s)) mieux = { d, sens, s:s2 }; }));
+    if (!mieux) break;
+    pose(J, 'pcAjuste', [mieux.d], { sens:mieux.sens });
+  }
+}
 function joueOrdi() { debutTour(S.O); if (!S.fini) joueAuto(S.O); }
 function joueAuto(J) {
   transmutationAuto(J);
@@ -313,6 +334,12 @@ function joueAuto(J) {
     re.forEach(d => lance(J, d)); J.relance--; log(`${J.nom} relance ${re.length} dé(s) : ${J.des.map(d => d.v).join(' · ')}`);
     transmutationAuto(J); b = meilleurCoup(J);
   }
+  // relance payante : si le coup reste faible et qu'il reste des PC après
+  if ((!b || b.score < 45) && J.pc >= 3) {
+    const re = J.des.filter(d => !d.pose && !(b ? b.ds : []).includes(d)).sort((x, y) => x.v - y.v)[0];
+    if (re) { pose(J, 'pcRelance', [re]); b = meilleurCoup(J); }
+  }
+  achatsAuto(J);
   for (let i = 0; i < 10; i++) {
     transmutationAuto(J);
     b = meilleurCoup(J); if (!b || b.score < 8) break;
@@ -367,6 +394,8 @@ function choisirDe(i) {
 }
 function vise(quoi, im) {
   if (S.fini) return;
+  if (quoi === 'pcSoins') { if (permis(S.J, 'pcSoins', [])) { pose(S.J, 'pcSoins', []); rendu(); } else aide('pcSoins'); return; }
+  if (quoi === 'pcAjuste' && permis(S.J, quoi, vals(sel), sel)) { const d = sel; choix(`Ton ${d[0].v} devient…`, [d[0].v > 1 ? `${d[0].v - 1} (−1)` : '—', d[0].v < 6 ? `${d[0].v + 1} (+1)` : '—'], i => { if ((i === 0 && d[0].v === 1) || (i === 1 && d[0].v === 6)) return; pose(S.J, 'pcAjuste', d, { sens:i === 0 ? -1 : 1 }); sel = []; rendu(); }); return; }
   if (!permis(S.J, quoi, vals(sel), sel)) { aide(quoi); return; }
   const def = defDe(S.J, quoi), t = def && def.cible;
   if (t && quoi !== 'garde') { ciblage = { quoi, ds:sel, im, type:t }; rendu(); return; }
@@ -406,6 +435,7 @@ function front(P, haut) {
     return `<div class="u ${cls}" onclick="touche({J:S.${cote},u:S.${cote}.front[${i}]})"><b>${u.n}</b><div class="tg">${tags}</div><div class="av"><span>⚔ ${atk(P, u)}</span><span>❤ ${u.v}</span></div></div>`;
   }).join('')}</div>`;
 }
+function actSoins() { const ok = permis(S.J, 'pcSoins', []); return `<button class="act ${ok ? 'ok' : 'non'}" onclick="vise('pcSoins')"><b>Premiers soins</b>2 PC · retire tes altérations</button>`; }
 function act(quoi, titre, cout, txt) {
   const ok = sel.length && permis(S.J, quoi, vals(sel), sel);
   return `<button class="act ${ok ? 'ok' : sel.length ? 'non' : ''}" onclick="vise('${quoi}')"><b>${titre}</b>${cout} · ${txt}</button>`;
@@ -439,6 +469,11 @@ function rendu() {
     ${h.action ? act('transmu', h.action.n, '0 PC', J.transmu ? 'déjà fait' : h.action.txt) : ''}
     ${act('vendre', 'Vendre', '+1 PC', 'par dé')}
   </div>
+  <div class="actions pc">
+    ${act('pcRelance', 'Relancer', '1 PC', '1 dé')}
+    ${act('pcAjuste', '+1 / −1', `${coutAjuste(J)} PC`, '1 dé')}
+    ${actSoins()}
+  </div>
   <div class="main">${J.main.map((k, i) => { const c = CARTES[k]; const ok = sel.length && permis(J, k, vals(sel), sel);
     return `<div class="c ${c.t}2 ${ok ? 'ok' : sel.length ? 'non' : ''}" onclick="vise('${k}', ${i})"><span class="cout">${coutCarte(J, k)}</span><div class="n">${c.n}</div><span class="cd">🎲 ${c.txt}</span><div>${c.d}</div></div>`; }).join('') || '<i style="color:#c9c1ea">Main vide</i>'}</div>
   <div class="journal">${S.log.slice(0, 40).map(t => `<div>${t}</div>`).join('')}</div>
@@ -456,6 +491,9 @@ function aide(quoi) {
   else if (quoi === 'pouvoir') t = `<b>${h.pouvoir.n}</b> (0 PC, ${h.pouvoir.txt}) : ${h.pouvoir.d}`;
   else if (quoi === 'ultime') t = `<b>${h.ultime.n}</b> (jauge pleine + 3 PC + ${h.ultime.txt}, une fois par combat) : ${h.ultime.d}<br><i>Jauge : ${J.jauge} / ${JAUGE.max}. Elle gagne 1 point par dé posé (pas vendu) et 1 point tous les 5 dégâts que tu subis.</i>`;
   else if (quoi === 'frappe') t = `<b>Frappe</b> (0 PC, ${FRAPPE.txt}) : ${FRAPPE.d}`;
+  else if (quoi === 'pcRelance') t = '<b>Relancer un dé</b> (1 PC) : choisis un dé, il est relancé. Tu peux le faire plusieurs fois, 1 PC à chaque fois.';
+  else if (quoi === 'pcAjuste') t = '<b>+1 ou −1</b> (2 PC) : choisis un dé, puis ajoute ou retire 1 (un 5 devient 6 ou 4).';
+  else if (quoi === 'pcSoins') t = '<b>Premiers soins</b> (2 PC) : retire Poison, Saignement et Handicap. Utile seulement si tu en as.';
   else if (quoi === 'transmu') t = `<b>${h.action.n}</b> (${h.action.txt}) : ${h.action.d}`;
   else if (quoi === 'vendre') t = 'Choisis d’abord un ou plusieurs dés, puis touche « Vendre » : chaque dé rapporte 1 PC.';
   else { const c = CARTES[quoi]; t = `<b>${c.n}</b> : coûte <b>${coutCarte(J, quoi)} PC</b> et demande <b>${c.txt}</b>. ${c.d}${c.t === 's' && J.silence ? '<br><i>Tu es réduit au Silence ce tour : pas de Sort.</i>' : ''}`; }
@@ -474,6 +512,7 @@ function regles() {
   <li>La <b>Frappe</b>, commune à tous : 2, 3, 4 ou 5 dés identiques font 3, 6, 9 ou 14 dégâts. Gratuite.</li>
   <li>La <b>Garde</b> et le <b>Pouvoir</b> de ton héros sont gratuits : il suffit des bons dés.</li>
   <li>L’<b>Ultime</b> : sa <b>jauge ⚡</b> gagne 1 point par dé posé (pas vendu) et 1 point tous les 5 dégâts que tu subis. Pleine, l’Ultime se joue avec ses 3 dés et 3 PC, une fois par combat.</li>
+  <li><b>Acheter avec ses PC</b> (comme dans le jeu papier) : 1 PC = relancer un dé ; 2 PC = +1 ou −1 sur un dé ; 2 PC = Premiers soins (retire tes altérations).</li>
   <li>Un dé qui ne sert à rien se <b>vend</b> : +1 PC. Les dés pas posés à la fin du tour sont vendus tout seuls.</li>
   <li>Tu gagnes +1 PC au début de chaque tour (6 au plus). Tu lances 3 dés au tour 1, 4 au tour 2, puis 5. Une relance par tour.</li>
   <li>Sous chaque dé, le <b>sac</b> montre les faces qui peuvent encore sortir : une face sortie ne revient qu’une fois les six sorties.</li>
