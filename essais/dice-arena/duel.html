@@ -100,7 +100,9 @@
   @keyframes roule { 0% { transform:rotate(0) translateY(0) scale(1); } 50% { transform:rotate(190deg) translateY(-10px) scale(1.08); } 100% { transform:rotate(360deg) translateY(0) scale(1); } }
   .lancer { display:block; width:100%; background:var(--or); color:#2b2117; border:none; border-radius:14px; padding:14px; font-size:1.15em; font-weight:bold; margin:6px 0; box-shadow:0 0 14px #f3c96b88; }
   .vie { height:5px; background:#0008; border-radius:3px; margin:2px 0 1px; overflow:hidden; }
-  .vie i { display:block; height:100%; background:linear-gradient(90deg, #e5262c, #ff7a59); border-radius:3px; transition:width .5s ease; }
+  .vie { position:relative; height:9px !important; }
+  .vie b { position:absolute; left:0; top:0; height:100%; background:#ffe27a; border-radius:3px; transition:width .9s .45s ease; }
+  .vie i { position:relative; display:block; height:100%; background:linear-gradient(90deg, #e5262c, #ff7a59); border-radius:3px; transition:width .5s ease; }
   .sonbt { float:right; background:none; border:none; font-size:1.1em; padding:0 2px; line-height:1; }
   body.fxon #app { pointer-events:none; }
   #fxc { position:fixed; inset:0; pointer-events:none; z-index:20; overflow:hidden; }
@@ -109,6 +111,9 @@
   .flotte.rouge { color:#ff5a5a; } .flotte.gros { font-size:2.3em; } .flotte.bleu { color:#8fd3ff; font-size:1.3em; } .flotte.bleu.gros { font-size:1.7em; } .flotte.soin { color:#7dffb0; }
   .flotte.vert { color:#a6ff4d; } .flotte.nom { color:#f3c96b; font-size:1.05em; }
   @keyframes flotte { 0% { opacity:0; transform:translate(-50%,-30%) scale(.6); } 15% { opacity:1; transform:translate(-50%,-70%) scale(1.15); } 100% { opacity:0; transform:translate(-50%,-220%) scale(1); } }
+  .pulse-r { animation:pulser .5s 2; } .pulse-v { animation:pulsev .5s 2; }
+  @keyframes pulser { 50% { transform:scale(1.35); background:#ff2b2b; box-shadow:0 0 12px #ff2b2b; } } @keyframes pulsev { 50% { transform:scale(1.3); background:#1f9a45; box-shadow:0 0 12px #7dffb0; } }
+  .p.pv, .u .av span { display:inline-block; }
   .secoue { animation:secoue .4s; } .rouge { box-shadow:0 0 0 3px #ff3b3b, 0 0 22px #ff3b3b !important; } .vert { box-shadow:0 0 0 3px #a6ff4d, 0 0 18px #a6ff4d !important; }
   @keyframes secoue { 0%,100% { transform:none; } 20% { transform:translateX(-7px) rotate(-1deg); } 40% { transform:translateX(6px); } 60% { transform:translateX(-4px); } 80% { transform:translateX(3px); } }
   .brille { animation:brille .7s; } @keyframes brille { 0%,100% { box-shadow:none; } 40% { box-shadow:0 0 0 3px #7dffb0, 0 0 26px #7dffb0; } }
@@ -191,14 +196,14 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261109-204453';
+const VERSION = '20261109-204548';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); location.replace('duel.html?v=' + v); }
 }).catch(() => {});
 </script>
-<script src="cartes.js?v=20261109-204453"></script>
-<script src="donnees.js?v=20261109-204453"></script>
+<script src="cartes.js?v=20261109-204548"></script>
+<script src="donnees.js?v=20261109-204548"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -661,7 +666,7 @@ function annuler() { sel = []; ciblage = null; attaquant = null; rendu(); }
 
 function barre(P, haut) {
   const ref = `{J:S.${haut ? 'O' : 'J'}}`;
-  return `<div class="barre ${estCible({ J:P }) ? 'cible' : ''} ${P.gardeB || P.bouclier ? 'protege' : ''}" data-bouclier="${(P.gardeB || 0) + (P.bouclier || 0)}" id="b-${haut ? 'O' : 'J'}" style="--c:${P.c}" onclick="touche(${ref})"><img src="${IMG(P.id)}" alt=""><div style="flex:1"><div class="nom">${P.nom}${P.ordi ? ' · ordinateur' : ' · toi'}</div><div class="vie"><i style="width:${Math.max(0, P.pv) / P.pvMax * 100}%"></i></div><div class="pastilles">
+  return `<div class="barre ${estCible({ J:P }) ? 'cible' : ''} ${P.gardeB || P.bouclier ? 'protege' : ''}" data-bouclier="${(P.gardeB || 0) + (P.bouclier || 0)}" id="b-${haut ? 'O' : 'J'}" style="--c:${P.c}" onclick="touche(${ref})"><img src="${IMG(P.id)}" alt=""><div style="flex:1"><div class="nom">${P.nom}${P.ordi ? ' · ordinateur' : ' · toi'}</div><div class="vie"><b style="width:${Math.max(0, P.pv) / P.pvMax * 100}%"></b><i style="width:${Math.max(0, P.pv) / P.pvMax * 100}%"></i></div><div class="pastilles">
     <span class="p pv">❤ ${Math.max(0, P.pv)} / ${P.pvMax}</span><span class="p pc">◆ ${P.pc} PC</span>
     ${P.gardeB ? `<span class="p g pg">🛡 Garde ${P.gardeB}</span>` : ''}${P.gardeE ? `<span class="p g">🌿 Épines ${P.gardeE}</span>` : ''}${P.esquive ? '<span class="p g">💨 Esquive</span>' : ''}
     ${P.bouclier ? `<span class="p g pb">🛡 Bouclier ${P.bouclier}</span>` : ''}${P.contre ? '<span class="p g">⚔ Contre-attaque</span>' : ''}${P.piege ? '<span class="p g">🪤 Piège</span>' : ''}
@@ -926,11 +931,24 @@ function flotte(e, texte, cls) {
   couche().appendChild(d); setTimeout(() => d.remove(), 2000);
 }
 function secoue(e, rouge) { if (!e) return; e.classList.remove('secoue', 'rouge', 'vert'); void e.offsetWidth; e.classList.add('secoue'); if (rouge) e.classList.add(rouge); }
+// un nombre qui défile de l'ancienne à la nouvelle valeur (compte à rebours), avec la pastille qui pulse
+function defile(elt, de, a, fmt, couleur) {
+  if (!elt || de === a) { if (elt) elt.textContent = fmt(a); return; }
+  const t0 = performance.now(), dur = Math.min(1400, 180 + Math.abs(a - de) * 90) * fxVite;
+  elt.classList.remove('pulse-r', 'pulse-v'); void elt.offsetWidth; elt.classList.add(couleur === 'v' ? 'pulse-v' : 'pulse-r');
+  let der = de; const pas = () => { const k = Math.min(1, (performance.now() - t0) / dur), v = Math.round(de + (a - de) * k);
+    if (v !== der) { der = v; elt.textContent = fmt(v); if (sonOn) ton(couleur === 'v' ? 700 + v * 6 : 260 + v * 6, .04, 'square', .025); }
+    if (k < 1) requestAnimationFrame(pas); else elt.textContent = fmt(a); };
+  requestAnimationFrame(pas);
+}
+const nb = t => { const m = /(-?\d+)/.exec(t || ''); return m ? +m[1] : 0; };
 function majVie(c, ev) {
   const e = el(c); if (!e) return;
   if (ev.pv !== undefined && !c.uid) {
     const P = c.s === 'J' ? S.J : S.O, pill = e.querySelector('.p.pv'), barre = e.querySelector('.vie i');
-    if (pill) pill.textContent = `❤ ${ev.pv} / ${P.pvMax}`; if (barre) barre.style.width = (ev.pv / P.pvMax * 100) + '%';
+    const avant = pill ? nb(pill.textContent) : ev.pv, fant = e.querySelector('.vie b');
+    defile(pill, avant, ev.pv, v => `❤ ${v} / ${P.pvMax}`, ev.pv > avant ? 'v' : 'r');
+    if (barre) barre.style.width = (ev.pv / P.pvMax * 100) + '%'; if (fant) fant.style.width = (ev.pv / P.pvMax * 100) + '%';
   }
   if (ev.garde !== undefined && !c.uid) {
     const tot = (ev.garde || 0) + (ev.bouclier || 0), pg = e.querySelector('.pg'), pb = e.querySelector('.pb');
@@ -938,7 +956,7 @@ function majVie(c, ev) {
     if (pb) { if (ev.bouclier) pb.textContent = `🛡 Bouclier ${ev.bouclier}`; else pb.style.opacity = .3; }
     e.dataset.bouclier = tot; if (!tot) e.classList.remove('protege');
   }
-  if (ev.v !== undefined && c.uid) { const s = e.querySelector('.av span:last-child'); if (s) s.textContent = `❤ ${ev.v}`; }
+  if (ev.v !== undefined && c.uid) { const s = e.querySelector('.av span:last-child'); if (s) { const avant = nb(s.textContent); defile(s, avant, ev.v, v => `❤ ${v}`, ev.v > avant ? 'v' : 'r'); } }
 }
 // un objet qui part d'un point et va frapper un autre (carte, boule de magie)
 async function vole(div, de, vers, ms) {
@@ -1109,7 +1127,7 @@ async function joue1(e) {
       majVie(e.c, { garde:e.garde, bouclier:e.bouclier }); await dodo(e.n ? 650 : 900);
     }
     if (e.n) { effetImage(e.vert ? 'poison-tic' : e.n >= 8 ? 'gros-degat' : 'degat', c, e.n >= 8 ? 1.4 : .9); if (e.n >= 8) document.getElementById('app').animate([{ transform:'none' }, { transform:'translate(-6px,4px)' }, { transform:'translate(5px,-5px)' }, { transform:'translate(-3px,2px)' }, { transform:'none' }], { duration:380 }); son(e.n >= 8 ? 'gros' : 'coup'); secoue(c, e.vert ? 'vert' : 'rouge'); flotte(c, `−${e.n} ❤${e.mot ? ' ' + e.mot : ''}`, e.vert ? 'vert' : e.n >= 8 ? 'rouge gros' : 'rouge'); }
-    majVie(e.c, e); await dodo(e.n ? 480 : 200); return;
+    majVie(e.c, e); await dodo(e.n ? Math.min(1300, 380 + e.n * 80) : 200); return;
   }
   if (e.t === 'soin') { const c = el(e.c); son('soin'); effetImage('coeur', c, .9); flotte(c, `+${e.n}`, 'soin'); if (c) { c.classList.remove('brille'); void c.offsetWidth; c.classList.add('brille'); } majVie(e.c, e); await dodo(450); return; }
   if (e.t === 'tombe') { const c = el(e.c); if (!c) return; son('tombe'); effetImage('mort', c, 1); await c.animate([{ transform:'none', opacity:1 }, { transform:'translateY(14px) rotate(14deg) scale(.7)', opacity:0 }], { duration:450 * fxVite, fill:'forwards' }).finished.catch(() => {}); return; }
