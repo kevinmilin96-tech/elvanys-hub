@@ -97,7 +97,16 @@
 <body>
 <div id="app"></div>
 <div id="fen"></div>
-<script src="donnees.js?v=4"></script>
+<script>
+// Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
+// Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
+const VERSION = '20261109-181444';
+fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
+  v = (v || '').trim();
+  if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); location.replace('duel.html?v=' + v); }
+}).catch(() => {});
+</script>
+<script src="donnees.js?v=20261109-181444"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
