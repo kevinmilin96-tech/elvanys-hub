@@ -139,7 +139,7 @@ window.HUB_ENTREPRISES.demo.applications.push({
   id: 'guilde',
   nom: 'La Guilde des Runes',
   description: 'Mon jeu de cartes et de dés : le Duel contre l’ordinateur, six héros, des runes et de la magie.',
-  url: 'https://demo-hub.elvanys.fr/essais/dice-arena/duel.html',
+  url: 'https://demo-hub.elvanys.fr/essais/dice-arena/menu.html',
   icone: 'guilde',
   couleur: 'guilde',
   pour: [],
