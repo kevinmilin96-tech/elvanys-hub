@@ -583,7 +583,7 @@ function raison(quoi) {
     if (c.t === 's' && J.silence) return 'Tu es réduit au Silence ce tour : pas de Sort.';
     if (c.t === 'u' && J.front.length >= 5) return 'Ta ligne de front est pleine (5 unités).';
     if (manque > 0) return `Il te manque ${manque} PC (tu en as ${J.pc}).`;
-    if (!vs.length) return `Choisis d’abord ${/^(1 )?dé\b/.test(c.txt) ? 'un dé' : 'les dés'} : ${c.txt}.`;
+    if (!vs.length) return `Choisis d’abord ${/^(1 )?dé( |$)/.test(c.txt) ? 'un dé' : 'les dés'} : ${c.txt}.`;
     if (!c.cond(vs, sel)) return `${des} : il faut ${c.txt}.`;
     if (c.cible) return 'Il n’y a pas de cible possible pour cette carte.';
     return '';
