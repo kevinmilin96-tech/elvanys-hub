@@ -30,6 +30,7 @@
   .u.choisi { box-shadow:0 0 0 3px #fff, 0 0 12px #fff; }
   .u.cible { box-shadow:0 0 0 3px var(--ok), 0 0 12px var(--ok); }
   .u.dort { opacity:.75; }
+  .u.defense, .u.dort.defense { opacity:1; box-shadow:0 0 0 3px #8fd3ff, 0 0 12px #8fd3ff; }
   .milieu { text-align:center; font-size:.75em; color:#f3c96bcc; font-style:italic; padding:2px 0; }
   .salle { background:#2a2650; border-radius:10px; padding:5px 9px; margin:5px 0; font-size:.82em; }
   .salle b { color:var(--or); }
@@ -176,14 +177,14 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261109-201212';
+const VERSION = '20261109-202857';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); location.replace('duel.html?v=' + v); }
 }).catch(() => {});
 </script>
-<script src="cartes.js?v=20261109-201212"></script>
-<script src="donnees.js?v=20261109-201212"></script>
+<script src="cartes.js?v=20261109-202857"></script>
+<script src="donnees.js?v=20261109-202857"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -273,7 +274,7 @@ function debutTour(J) {
   if (J.oeuvre) { J.des.forEach(d => { d.v = J.oeuvre; }); log(`Grand œuvre : tous les dés de ${J.nom} montrent ${J.oeuvre}.`); J.oeuvre = 0; }
   else if (!J.ordi && !S.auto) J.aLancer = true;
   else J.des.forEach(d => lance(J, d));
-  J.front.forEach(u => { u.pret = !u.entrave; u.entrave = false; });
+  J.front.forEach(u => { u.pret = !u.entrave; u.entrave = false; u.defense = false; });
   log(J.aLancer ? `— Tour ${J.tours} de ${J.nom}` : `— Tour ${J.tours} de ${J.nom} : ${J.des.map(d => d.v).join(' · ')}`);
 }
 function coutCarte(J, k) {
@@ -367,7 +368,10 @@ function attaque(J, u, k) {
     if (D.gardeE && J.front.includes(u)) { log('Les Épines piquent !'); degats({ J, u }, D.gardeE); }
   }
 }
-const ciblesAttaque = D => { const vis = D.front.filter(u => !u.cachee); return vis.some(u => u.barriere) ? vis.filter(u => u.barriere).map(u => ({ J:D, u })) : [{ J:D }, ...vis.map(u => ({ J:D, u }))]; };
+// une créature protège son héros si elle a Barrière ou si elle s'est mise EN DÉFENSE (jusqu'au prochain tour de son joueur)
+const protege = u => u.barriere || u.defense;
+const ciblesAttaque = D => { const vis = D.front.filter(u => !u.cachee); return vis.some(protege) ? vis.filter(protege).map(u => ({ J:D, u })) : [{ J:D }, ...vis.map(u => ({ J:D, u }))]; };
+function enDefense(J, u) { u.defense = true; u.pret = false; log(`🛡 ${u.n} se met en défense : elle protège ${J.nom}.`); fx({ t:'defense', c:ref({ J, u }) }); }
 function attaqueLouve(J) {
   const l = J.front.find(u => u.louve); if (!l || !l.pret) return;
   const D = adv(J), r = [1, 2, 3].map(() => 1 + Math.floor(Math.random() * 6)), c = compte(r)[0];
@@ -376,9 +380,14 @@ function attaqueLouve(J) {
   fx({ t:'louve', de:ref({ J, u:l }), r, n });
   l.pret = false;
   if (c === 2) degats({ J:D }, n, true);
-  else { const bar = D.front.find(u => u.barriere && !u.cachee); degats(bar ? { J:D, u:bar } : { J:D }, n); if (c >= 3) altere(D, 'saigne'); }
+  else { const bar = D.front.find(u => protege(u) && !u.cachee); degats(bar ? { J:D, u:bar } : { J:D }, n); if (c >= 3) altere(D, 'saigne'); }
 }
 // les créatures prêtes qui n'ont pas encore attaqué frappent le héros adverse (ou la créature à Barrière qui le protège)
+function defensesAuto(J) {
+  if (!J.ordi && !S.auto) return; const D = adv(J);
+  if (J.front.some(protege) || !D.front.length || J.pv > J.pvMax * .45) return;
+  const u = J.front.filter(x => x.pret && !x.louve).sort((a, b) => b.v - a.v)[0]; if (u && atk(J, u) <= 3) enDefense(J, u);
+}
 function attaquesRestantes(J) {
   J.front.filter(u => u.pret && !u.louve).forEach(u => { if (S.fini || !J.front.includes(u)) return; const c = ciblesAttaque(adv(J)); attaque(J, u, c.find(x => !x.u) || [...c].sort((a, b) => a.u.v - b.u.v)[0]); });
 }
@@ -482,6 +491,7 @@ function joueAuto(J) {
   sousEnsembles(libres).forEach(ds => { if (ds.length <= 2 && h.garde.cond(vals(ds), ds)) { const v = h.garde.val(vals(ds), ds); if (!g || v > g.v) g = { ds, v }; } });
   if (g && !J.gardeFaite) pose(J, 'garde', g.ds);
   const reste = J.des.filter(d => !d.pose); if (reste.length) pose(J, 'vendre', reste);
+  defensesAuto(J);
   attaquesRestantes(J);
   finTour(J);
 }
@@ -568,7 +578,11 @@ function touche(k) {
   if (ciblage && estCible(k)) { const c = ciblage; ciblage = null; if (c.ds.some(d => d.pose)) { sel = []; rendu(); return; } pose(S.J, c.quoi, c.ds, k, c.im); sel = []; rendu(); return; }
   if (attaquant && estCible(k)) { attaque(S.J, attaquant, k); attaquant = null; rendu(); return; }
   if (k.J === S.J && k.u && k.u.louve && k.u.pret && !ciblage && !S.J.aLancer) { attaquant = null; attaqueLouve(S.J); rendu(); return; }
-  if (k.J === S.J && k.u && k.u.pret && !k.u.louve && !ciblage) { attaquant = attaquant === k.u ? null : k.u; sel = []; rendu(); }
+  if (k.J === S.J && k.u && k.u.pret && !k.u.louve && !ciblage) {
+    if (attaquant === k.u) { attaquant = null; rendu(); return; }
+    const u = k.u; choix(`${u.n} (⚔ ${atk(S.J, u)} · ❤ ${u.v}) : que fait-elle ?`, ['⚔ Attaquer', '🛡 Se mettre en défense'], i => {
+      if (i === 0) { attaquant = u; sel = []; } else { enDefense(S.J, u); attaquant = null; } rendu(); });
+  }
 }
 // le lancer : les dés roulent ~0,8 s avant de montrer leur face (le résultat vient toujours du sac)
 let roule = false;
@@ -617,8 +631,8 @@ function barre(P, haut) {
 function front(P, haut) {
   const cote = haut ? 'O' : 'J';
   return `<div class="front${P.front.length ? '' : ' vide'}" id="f-${cote}">${P.front.map((u, i) => {
-    const cls = [estCible({ J:P, u }) ? 'cible' : '', attaquant === u ? 'choisi' : '', !haut && u.pret ? 'pret' : '', !u.pret ? 'dort' : ''].join(' ');
-    const tags = [u.barriere ? 'Barrière' : '', u.cachee ? 'Cachée' : '', u.charge ? 'Charge' : '', u.epines ? `Épines ${u.epines}` : '', u.bouclier ? `🛡${u.bouclier}` : '', u.entrave ? 'Entravé' : '', u.louve && haut ? 'Louve' : '', !haut ? (u.pret ? (u.louve ? '🐺 touche-la !' : '⚔ prête') : '💤 repos') : ''].filter(Boolean).join(' · ');
+    const cls = [u.defense ? 'defense' : '', estCible({ J:P, u }) ? 'cible' : '', attaquant === u ? 'choisi' : '', !haut && u.pret ? 'pret' : '', !u.pret ? 'dort' : ''].join(' ');
+    const tags = [u.barriere ? 'Barrière' : '', u.cachee ? 'Cachée' : '', u.charge ? 'Charge' : '', u.epines ? `Épines ${u.epines}` : '', u.bouclier ? `🛡${u.bouclier}` : '', u.entrave ? 'Entravé' : '', u.defense ? '🛡 en défense' : '', u.louve && haut ? 'Louve' : '', !haut ? (u.pret ? (u.louve ? '🐺 touche-la !' : '⚔ prête') : '💤 repos') : ''].filter(Boolean).join(' · ');
     const art = u.louve ? 'louve' : u.key, img = typeof ARTS !== 'undefined' && ARTS.includes(art) ? ` style="background:linear-gradient(#0000 30%, #000c 85%), url('cartes/${art}.webp?v=1') center 30%/cover;color:#fff"` : '';
     return `<div class="u ${cls}${img ? ' illu' : ''}" data-uid="${u.id}"${img} onclick="touche({J:S.${cote},u:S.${cote}.front[${i}]})"><b>${u.n}</b><div class="tg">${tags}</div><div class="av"><span>⚔ ${atk(P, u)}</span><span>❤ ${u.v}</span></div></div>`;
   }).join('')}</div>`;
@@ -653,7 +667,7 @@ function dessine() {
   else if (sel.length) bandeau = `Dés choisis : ${vals(sel).join(', ')}. Touche où les poser (en vert).`;
   else if (J.des.some(d => !d.pose)) bandeau = '1. Touche un ou plusieurs dés. 2. Touche où les poser.';
   else if (J.front.some(u => u.pret && u.louve)) bandeau = '🐺 Touche la Louve : elle lance ses 3 dés et attaque. Sinon, elle attaque seule à « Fin du tour ».';
-  else if (J.front.some(u => u.pret && !u.louve)) bandeau = '⚔ Tes créatures dorées peuvent attaquer : touche-en une puis sa cible. Sinon, elles attaquent le héros à « Fin du tour ».';
+  else if (J.front.some(u => u.pret && !u.louve)) bandeau = '⚔ Touche une créature dorée : attaquer (puis sa cible) ou se mettre en défense. Sinon, elles attaquent le héros à « Fin du tour ».';
   else bandeau = 'Tous tes dés sont posés : touche « Fin du tour ».';
   document.getElementById('app').innerHTML = `
   <div class="salle"><b>${S.salle.n}</b> · ${S.salle.d}<button class="sonbt" onclick="basculeSon()">${sonOn ? '🔊' : '🔇'}</button><button class="sonbt" onclick="basculeMusique()" style="${musOn ? '' : 'opacity:.35'}">🎵</button></div>
@@ -742,7 +756,7 @@ function regles() {
   <li>Tu gagnes +1 PC au début de chaque tour (6 au plus). Tu lances 3 dés au tour 1, 4 au tour 2, puis 5. Une relance par tour.</li>
   <li>Sous chaque dé, le <b>sac</b> montre les faces qui peuvent encore sortir : une face sortie ne revient qu’une fois les six sorties.</li>
   <li>Tes <b>unités</b> attaquent à partir du tour suivant leur arrivée : touche ton unité (contour jaune), puis sa cible. Les unités <b>Barrière</b> doivent être attaquées d’abord par les unités. Les unités <b>Cachées</b> ne peuvent pas être visées tant qu’elles n’ont pas attaqué.</li>
-  <li>La <b>Garde</b> = ta défense : tu poses un dé et ton héros gagne un Bouclier (ou une autre protection selon le héros). Ce Bouclier absorbe les prochains dégâts que tu reçois pendant le tour de l’adversaire, puis disparaît. Exemple : Garde 4, l’adversaire frappe à 6, tu ne perds que 2 PV.</li><li>Tes <b>créatures</b> attaquent au tour suivant leur arrivée (sauf Charge) : touche-en une puis sa cible ; celles que tu ne fais pas attaquer frappent le héros adverse à « Fin du tour ». Le Bouclier et la Garde de l’adversaire absorbent leurs coups.</li></ul>
+  <li>La <b>Garde</b> = ta défense : tu poses un dé et ton héros gagne un Bouclier (ou une autre protection selon le héros). Ce Bouclier absorbe les prochains dégâts que tu reçois pendant le tour de l’adversaire, puis disparaît. Exemple : Garde 4, l’adversaire frappe à 6, tu ne perds que 2 PV.</li><li>Tes <b>créatures</b> attaquent au tour suivant leur arrivée (sauf Charge) : touche-en une puis sa cible ; celles que tu ne fais pas attaquer frappent le héros adverse à « Fin du tour ». Le Bouclier et la Garde de l’adversaire absorbent leurs coups.</li><li>Une créature prête peut aussi se mettre <b>en défense</b> (touche-la) : elle n’attaque pas ce tour, mais elle protège ton héros comme une Barrière jusqu’à ton prochain tour : les créatures adverses doivent l’attaquer d’abord.</li></ul>
   <h2>${h.nom}, ${h.titre} (${h.pv} PV)</h2><p><b>Passif</b> : ${h.passif}</p><p><b>Garde · ${h.garde.n}</b> (${h.garde.txt}) : ${h.garde.d}</p><p><b>Pouvoir · ${h.pouvoir.n}</b> (${h.pouvoir.txt}) : ${h.pouvoir.d}</p><p><b>Ultime · ${h.ultime.n}</b> (jauge pleine, ${h.ultime.txt}, 3 PC) : ${h.ultime.d}</p>
   <div class="choixh"><button onclick="fermer()">Jouer</button><button onclick="fermer();accueil()">Changer de héros</button></div>`);
 }
@@ -986,6 +1000,7 @@ async function joue1(e) {
   if (e.t === 'soin') { const c = el(e.c); son('soin'); effetImage('coeur', c, .9); flotte(c, `+${e.n}`, 'soin'); if (c) { c.classList.remove('brille'); void c.offsetWidth; c.classList.add('brille'); } majVie(e.c, e); await dodo(450); return; }
   if (e.t === 'tombe') { const c = el(e.c); if (!c) return; son('tombe'); effetImage('mort', c, 1); await c.animate([{ transform:'none', opacity:1 }, { transform:'translateY(14px) rotate(14deg) scale(.7)', opacity:0 }], { duration:450 * fxVite, fill:'forwards' }).finished.catch(() => {}); return; }
   if (e.t === 'garde') { const c = el({ s:e.s }); son('garde'); effetImage('armure', c, .9); flotte(c, `🛡 ${e.nom}`, 'bleu'); if (c) { c.classList.remove('garde'); void c.offsetWidth; c.classList.add('garde'); } await dodo(450); return; }
+  if (e.t === 'defense') { const c = el(e.c); if (!c) return; son('garde'); if (!effetImage('armure', c, .7)) effet('bouclier', c); flotte(c, '🛡 En défense', 'bleu'); await dodo(500); return; }
   if (e.t === 'pc') { const c = el({ s:e.s }); if (!c) return; ton(1200, .15, 'sine', .1); ton(1600, .2, 'sine', .08, null, .08); effetImage('pc', c, .8); flotte(c, `+${e.n} PC`, 'bleu'); await dodo(350); return; }
   if (e.t === 'jauge') { const c = el({ s:e.s }); if (!c) return; ton(523, .4, 'triangle', .1); ton(784, .5, 'triangle', .1, null, .12); if (!effetImage('jauge', c, 1.2)) effet('lumiere', c); flotte(c, '⚡ Ultime prêt !', 'nom'); await dodo(700); return; }
   if (e.t === 'invoque') { const f = el({ s:e.s, uid:'x' }); son('louve'); effetImage('invocation', f, 1.1); flotte(f, `🐺 ${e.nom} arrive !`, 'nom'); await dodo(700); return; }
