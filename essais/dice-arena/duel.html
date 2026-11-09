@@ -45,8 +45,8 @@
   .act b { display:block; color:var(--or); font-size:1.1em; }
   .act.ok { border-color:var(--ok); box-shadow:0 0 8px #7dffb066; }
   .act.non { opacity:.45; }
-  .main { display:flex; gap:6px; overflow-x:auto; padding:4px 2px 8px; }
-  .c { flex:none; width:128px; background:#f6efdc; color:#2b2117; border-radius:10px; padding:6px 7px; font-size:.74em; line-height:1.25; border:2px solid #b89a5e; position:relative; }
+  .main { display:grid; grid-template-columns:repeat(3, 1fr); gap:5px; padding:4px 0 8px; }
+  .c { min-width:0; background:#f6efdc; color:#2b2117; border-radius:10px; padding:6px 7px; font-size:.74em; line-height:1.25; border:2px solid #b89a5e; position:relative; }
   .c.u2 { background:#e9f0dc; } .c.e2 { background:#e3e8f5; } .c.r2 { background:#f1e1e1; }
   .c .n { font-weight:bold; font-size:1.05em; padding-right:24px; }
   .c .cout { position:absolute; top:4px; right:4px; width:24px; height:24px; border-radius:50%; background:#2a7fc1; color:#fff; font-weight:bold; display:flex; align-items:center; justify-content:center; }
@@ -72,6 +72,15 @@
   .heros6 img { width:100%; aspect-ratio:1; border-radius:9px; object-fit:cover; display:block; margin-bottom:4px; }
   .grille6 { display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; margin:10px 0; }
   .grille6 button { background:#f3c96b; color:#2b2117; border:none; border-radius:10px; padding:12px; font-size:1.3em; font-weight:bold; }
+  .main .c { font-size:.68em; padding:5px 6px; }
+  .main .c .cout { width:20px; height:20px; font-size:.95em; }
+  .main .c .n { padding-right:20px; }
+  .d { position:relative; }
+  .d.cache img { filter:brightness(.3) blur(1px); }
+  .d.cache::after { content:'?'; position:absolute; top:9px; left:0; right:0; font-size:1.7em; font-weight:bold; color:#fff; pointer-events:none; }
+  .d.roule img { animation:roule .28s linear infinite; }
+  @keyframes roule { 0% { transform:rotate(0) translateY(0) scale(1); } 50% { transform:rotate(190deg) translateY(-10px) scale(1.08); } 100% { transform:rotate(360deg) translateY(0) scale(1); } }
+  .lancer { display:block; width:100%; background:var(--or); color:#2b2117; border:none; border-radius:14px; padding:14px; font-size:1.15em; font-weight:bold; margin:6px 0; box-shadow:0 0 14px #f3c96b88; }
 </style>
 </head>
 <body>
@@ -157,9 +166,10 @@ function debutTour(J) {
   if (J.handicap) { n--; J.handicap = 0; log(`Handicap : ${J.nom} lance un dé de moins.`); }
   J.des = J.sacs.slice(0, n).map((sac, i) => ({ sac, v:0, pose:false, mod:false, i }));
   if (J.oeuvre) { J.des.forEach(d => { d.v = J.oeuvre; }); log(`Grand œuvre : tous les dés de ${J.nom} montrent ${J.oeuvre}.`); J.oeuvre = 0; }
+  else if (!J.ordi && !S.auto) J.aLancer = true;
   else J.des.forEach(d => lance(J, d));
   J.front.forEach(u => { u.pret = !u.entrave; u.entrave = false; });
-  log(`— Tour ${J.tours} de ${J.nom} : ${J.des.map(d => d.v).join(' · ')}`);
+  log(J.aLancer ? `— Tour ${J.tours} de ${J.nom}` : `— Tour ${J.tours} de ${J.nom} : ${J.des.map(d => d.v).join(' · ')}`);
 }
 function coutCarte(J, k) {
   const c = CARTES[k]; let n = c.c;
@@ -380,21 +390,24 @@ function nouvellePartie(id, idO, auto) {
   if (!auto) rendu();
 }
 function finDeMonTour() {
-  if (S.fini) return;
+  if (S.fini || roule) return;
+  if (S.J.aLancer) { lancerMesDes(); return; }
   const libres = S.J.des.filter(d => !d.pose);
   if (libres.length) pose(S.J, 'vendre', libres);
   finTour(S.J); sel = []; attaquant = null; ciblage = null; rendu();
   setTimeout(() => { joueOrdi(); if (!S.fini) debutTour(S.J); rendu(); }, 450);
 }
 function choisirDe(i) {
-  if (S.fini) return; const d = S.J.des[i]; if (d.pose) return;
+  if (S.fini || S.J.aLancer || roule) return; const d = S.J.des[i]; if (d.pose) return;
   if (ciblage && ciblage.type === 'de') { if (ciblage.ds.includes(d)) return; const c = ciblage; ciblage = null; pose(S.J, c.quoi, c.ds, { d }, c.im); sel = []; rendu(); return; }
   if (ciblage) return;
   sel = sel.includes(d) ? sel.filter(x => x !== d) : [...sel, d]; attaquant = null; rendu();
 }
 function vise(quoi, im) {
-  if (S.fini) return;
+  if (S.fini || roule) return;
+  if (S.J.aLancer) { lancerMesDes(); return; }
   if (quoi === 'pcSoins') { if (permis(S.J, 'pcSoins', [])) { pose(S.J, 'pcSoins', []); rendu(); } else aide('pcSoins'); return; }
+  if (quoi === 'pcRelance' && permis(S.J, quoi, vals(sel), sel)) { const ds = sel; sel = []; rouler(ds, () => { pose(S.J, 'pcRelance', ds); rendu(); }); return; }
   if (quoi === 'pcAjuste' && permis(S.J, quoi, vals(sel), sel)) { const d = sel; choix(`Ton ${d[0].v} devient…`, [d[0].v > 1 ? `${d[0].v - 1} (−1)` : '—', d[0].v < 6 ? `${d[0].v + 1} (+1)` : '—'], i => { if ((i === 0 && d[0].v === 1) || (i === 1 && d[0].v === 6)) return; pose(S.J, 'pcAjuste', d, { sens:i === 0 ? -1 : 1 }); sel = []; rendu(); }); return; }
   if (!permis(S.J, quoi, vals(sel), sel)) { aide(quoi); return; }
   const def = defDe(S.J, quoi), t = def && def.cible;
@@ -412,7 +425,35 @@ function touche(k) {
   if (attaquant && estCible(k)) { attaque(S.J, attaquant, k); attaquant = null; rendu(); return; }
   if (k.J === S.J && k.u && k.u.pret && !k.u.louve && !ciblage) { attaquant = attaquant === k.u ? null : k.u; sel = []; rendu(); }
 }
-function relancer() { if (!S.J.relance || !sel.length) return; sel.forEach(d => lance(S.J, d)); S.J.relance--; log(`Tu relances ${sel.length} dé(s) : ${S.J.des.map(d => d.v).join(' · ')}`); sel = []; rendu(); }
+// le lancer : les dés roulent ~0,8 s avant de montrer leur face (le résultat vient toujours du sac)
+let roule = false;
+function rouler(ds, ensuite) {
+  if (roule) return; roule = true;
+  const imgs = [...document.querySelectorAll('.des .d')], idx = ds.map(d => S.J.des.indexOf(d));
+  idx.forEach(i => { if (imgs[i]) { imgs[i].classList.remove('cache', 'sel'); imgs[i].classList.add('roule'); } });
+  let t = 0;
+  const it = setInterval(() => {
+    idx.forEach(i => { const im = imgs[i] && imgs[i].querySelector('img'); if (im) im.src = FACE(S.J.id, 1 + Math.floor(Math.random() * 6)); });
+    t += 70;
+    if (t >= 840) { clearInterval(it); roule = false; if (navigator.vibrate) navigator.vibrate(25); ensuite(); }
+  }, 70);
+}
+function lancerMesDes() {
+  const J = S.J; if (!J.aLancer || roule) return;
+  rouler(J.des, () => { J.des.forEach(d => lance(J, d)); J.aLancer = false; log(`Tu lances : ${J.des.map(d => d.v).join(' · ')}`); rendu(); });
+}
+function relancer() {
+  const J = S.J; if (!J.relance || !sel.length || roule) return;
+  const ds = sel; sel = [];
+  rouler(ds, () => { ds.forEach(d => lance(J, d)); J.relance--; log(`Tu relances ${ds.length} dé(s) : ${J.des.map(d => d.v).join(' · ')}`); rendu(); });
+}
+// glisser le doigt vers le haut sur les dés : lancer (ou relancer les dés choisis)
+let glisseY = null;
+function glisseDebut(e) { glisseY = e.touches ? e.touches[0].clientY : null; }
+function glisseFin(e) {
+  if (glisseY === null) return; const y = e.changedTouches ? e.changedTouches[0].clientY : glisseY; const dy = y - glisseY; glisseY = null;
+  if (dy < -40) { if (S.J.aLancer) lancerMesDes(); else if (sel.length && S.J.relance) relancer(); }
+}
 function annuler() { sel = []; ciblage = null; attaquant = null; rendu(); }
 
 function barre(P, haut) {
@@ -449,7 +490,8 @@ function rendu() {
   if (!S || S.auto) return;
   const J = S.J, O = S.O, h = HEROS[J.id];
   let bandeau = '';
-  if (ciblage && ciblage.type === 'de') bandeau = '🎲 Touche le dé à retourner.';
+  if (J.aLancer) bandeau = 'Ton tour commence : lance tes dés !';
+  else if (ciblage && ciblage.type === 'de') bandeau = '🎲 Touche le dé à retourner.';
   else if (ciblage) bandeau = '🎯 Touche la cible (en vert).';
   else if (attaquant) bandeau = `⚔ ${attaquant.n} attaque : touche une cible en vert.`;
   else if (sel.length) bandeau = `Dés choisis : ${vals(sel).join(', ')}. Touche où les poser (en vert).`;
@@ -458,8 +500,9 @@ function rendu() {
   document.getElementById('app').innerHTML = `
   <div class="salle"><b>${S.salle.n}</b> · ${S.salle.d}</div>
   <div class="plateau">${barre(O, true)}${front(O, true)}<div class="milieu">— ligne de front —</div>${front(J, false)}${barre(J, false)}
-    <div class="des">${J.des.map((d, i) => `<div class="d ${sel.includes(d) ? 'sel' : ''} ${d.pose ? 'pose' : ''} ${d.mod ? 'mod' : ''}" onclick="choisirDe(${i})"><img src="${FACE(J.id, d.v)}" alt="${d.v}"><div class="sac">${sacTxt(J, d)}</div></div>`).join('')}</div>
+    <div class="des" ontouchstart="glisseDebut(event)" ontouchend="glisseFin(event)">${J.des.map((d, i) => `<div class="d ${sel.includes(d) ? 'sel' : ''} ${d.pose ? 'pose' : ''} ${d.mod ? 'mod' : ''} ${J.aLancer ? 'cache' : ''}" onclick="choisirDe(${i})"><img src="${FACE(J.id, d.v || 1)}" alt="${d.v || '?'}"><div class="sac">${sacTxt(J, d)}</div></div>`).join('')}</div>
   </div>
+  ${J.aLancer ? '<button class="lancer" onclick="lancerMesDes()">🎲 Lancer les dés <span style="font-weight:normal;font-size:.75em">(ou glisse le doigt vers le haut)</span></button>' : ''}
   <div class="bandeau">${bandeau}${sel.length || ciblage || attaquant ? ' <a href="#" onclick="annuler();return false" style="color:#f3c96b">Annuler</a>' : ''}</div>
   <div class="actions">
     ${act('frappe', 'Frappe', '0 PC', 'dés identiques')}
