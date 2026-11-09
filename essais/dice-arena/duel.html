@@ -100,13 +100,13 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261109-182645';
+const VERSION = '20261109-183052';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); location.replace('duel.html?v=' + v); }
 }).catch(() => {});
 </script>
-<script src="donnees.js?v=20261109-182645"></script>
+<script src="donnees.js?v=20261109-183052"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -197,7 +197,7 @@ function coutCarte(J, k) {
   if (c.t === 'e' && J.forgeGratuite) n = 0;
   return n;
 }
-function defDe(J, quoi) { const h = HEROS[J.id]; return quoi === 'frappe' ? FRAPPE : quoi === 'pouvoir' ? h.pouvoir : quoi === 'ultime' ? h.ultime : quoi === 'garde' ? h.garde : CARTES[quoi]; }
+function defDe(J, quoi) { const h = HEROS[J.id]; return quoi === 'frappe' ? FRAPPE : quoi === 'technique' ? TECHNIQUE : quoi === 'pouvoir' ? h.pouvoir : quoi === 'ultime' ? h.ultime : quoi === 'garde' ? h.garde : CARTES[quoi]; }
 function ciblesPossibles(J, type) {
   const D = adv(J), vis = D.front.filter(u => !u.cachee);
   if (type === 'ennemi') return [{ J:D }, ...vis.map(u => ({ J:D, u }))];
@@ -221,6 +221,7 @@ function permis(J, quoi, vs, ds) {
   if (quoi === 'garde') return !J.gardeFaite && h.garde.cond(vs, ds);
   if (quoi === 'pouvoir') return h.pouvoir.cond(vs, ds);
   if (quoi === 'frappe') return FRAPPE.cond(vs);
+  if (quoi === 'technique') return TECHNIQUE.cond(vs);
   if (quoi === 'ultime') return !J.ultimeFait && J.jauge >= JAUGE.max && J.pc >= 3 && h.ultime.cond(vs, ds);
   const c = CARTES[quoi];
   if (c.t === 's' && J.silence) return false;
@@ -243,6 +244,7 @@ function pose(J, quoi, ds, k, indexMain) {
   if (J.id === 'aldric' && J.six >= 2 && !J.pureteTour && J.purete < 2) { J.purete++; J.pureteTour = true; log('✦ Deux 6 posés : Aldric gagne un jeton de Pureté.'); }
   if (quoi === 'garde') { J.gardeFaite = true; h.garde.f(J, vs, k, ds); return; }
   if (quoi === 'frappe') { log(`${J.nom} : Frappe (${vs.join(', ')}) !`); FRAPPE.f(J, vs, k); return; }
+  if (quoi === 'technique') { log(`${J.nom} : Technique (${vs.join(', ')}) !`); TECHNIQUE.f(J, vs, k); return; }
   if (quoi === 'pouvoir') { log(`${J.nom} : ${h.pouvoir.n} !`); h.pouvoir.f(J, vs, k, ds); return; }
   if (quoi === 'ultime') { J.pc -= 3; J.ultimeFait = true; log(`${J.nom} : ULTIME, ${h.ultime.n} !`); h.ultime.f(J, vs, k, ds); return; }
   const c = CARTES[quoi];
@@ -317,6 +319,7 @@ function interet(J, quoi, vs) {
   if (quoi === 'ultime') return J.id === 'pip' ? (J.pv < J.pvMax * .6 ? 120 : 0) : 120;
   if (quoi === 'pouvoir') return J.id === 'zephine' ? 70 : 80;
   if (quoi === 'frappe') return [0, 0, 25, 50, 70, 95][vs.length];
+  if (quoi === 'technique') return [0, 0, 0, 40, 60, 80][vs.length];
   const c = CARTES[quoi];
   if (c.u) return 30 + c.u.a + c.u.v + (c.u.barriere && !J.front.some(u => u.barriere) ? 15 : 0) + (c.u.charge ? 10 : 0);
   return c.ia ? c.ia(J, vs) : 15;
@@ -326,7 +329,7 @@ function meilleurCoup(J) {
   const essai = (quoi, ds, score, im) => { if (score > (best ? best.score : -1) && permis(J, quoi, vals(ds), ds)) best = { quoi, ds, score, im }; };
   for (const ds of sousEnsembles(libres)) {
     const vs = vals(ds);
-    essai('ultime', ds, interet(J, 'ultime', vs)); essai('pouvoir', ds, interet(J, 'pouvoir', vs)); essai('frappe', ds, interet(J, 'frappe', vs));
+    essai('ultime', ds, interet(J, 'ultime', vs)); essai('pouvoir', ds, interet(J, 'pouvoir', vs)); essai('frappe', ds, interet(J, 'frappe', vs)); essai('technique', ds, interet(J, 'technique', vs));
     J.main.forEach((k, im) => essai(k, ds, interet(J, k, vs) - ds.length, im));
   }
   return best;
@@ -553,6 +556,7 @@ function rendu() {
   <div class="bandeau" ${J.aLancer ? 'style="display:none"' : ''}>${bandeau}${sel.length || ciblage || attaquant ? ' <a href="#" onclick="annuler();return false" style="color:#f3c96b">Annuler</a>' : ''}</div>
   <div class="actions">
     ${act('frappe', '⚔ Frappe', '0 PC', '2 dés identiques ou +')}
+    ${act('technique', '⚔ Technique', '0 PC', '3 dés qui se suivent ou +')}
     ${act('garde', '🛡 Garde', '0 PC', h.garde.txt + ' · bloque les coups')}
     ${act('pouvoir', 'Pouvoir', '0 PC', h.pouvoir.txt)}
     ${act('ultime', 'Ultime', '3 PC', J.ultimeFait ? 'déjà joué' : J.jauge < JAUGE.max ? `jauge ${J.jauge}/${JAUGE.max}` : h.ultime.txt)}
@@ -580,6 +584,7 @@ function aide(quoi) {
   else if (quoi === 'pouvoir') t = `<b>${h.pouvoir.n}</b> (0 PC, ${h.pouvoir.txt}) : ${h.pouvoir.d}`;
   else if (quoi === 'ultime') t = `<b>${h.ultime.n}</b> (jauge pleine + 3 PC + ${h.ultime.txt}, une fois par combat) : ${h.ultime.d}<br><i>Jauge : ${J.jauge} / ${JAUGE.max}. Elle gagne 1 point par dé posé (pas vendu) et 1 point tous les 5 dégâts que tu subis.</i>`;
   else if (quoi === 'frappe') t = `<b>Frappe</b> (0 PC, ${FRAPPE.txt}) : ${FRAPPE.d}`;
+  else if (quoi === 'technique') t = `<b>Technique</b> (0 PC, ${TECHNIQUE.txt}) : ${TECHNIQUE.d}`;
   else if (quoi === 'pcRelance') t = '<b>Relancer un dé</b> (1 PC) : choisis un dé, il est relancé. Tu peux le faire plusieurs fois, 1 PC à chaque fois.';
   else if (quoi === 'pcAjuste') t = '<b>+1 ou −1</b> (2 PC) : choisis un dé, puis ajoute ou retire 1 (un 5 devient 6 ou 4).';
   else if (quoi === 'pcSoins') t = '<b>Premiers soins</b> (2 PC) : retire Poison, Saignement et Handicap. Utile seulement si tu en as.';
@@ -621,6 +626,7 @@ function regles() {
   fenetre(`<h2>Comment on joue</h2><ul>
   <li><b>Les dés ne coûtent rien.</b> Ce sont les <b>cartes</b> qui coûtent des PC (le chiffre bleu). Pour jouer une carte, il faut <b>les deux</b> : assez de PC, et un dé qui remplit sa condition.</li>
   <li>La <b>Frappe</b>, commune à tous : 2, 3, 4 ou 5 dés identiques font 3, 6, 9 ou 14 dégâts. Gratuite.</li>
+  <li>La <b>Technique</b>, commune à tous : 3, 4 ou 5 dés qui se suivent (par exemple 2-3-4) font 4, 7 ou 10 dégâts. Gratuite.</li>
   <li>La <b>Garde</b> et le <b>Pouvoir</b> de ton héros sont gratuits : il suffit des bons dés.</li>
   <li>L’<b>Ultime</b> : sa <b>jauge ⚡</b> gagne 1 point par dé posé (pas vendu) et 1 point tous les 5 dégâts que tu subis. Pleine, l’Ultime se joue avec ses 3 dés et 3 PC, une fois par combat.</li>
   <li><b>Acheter avec ses PC</b> (comme dans le jeu papier) : 1 PC = relancer un dé ; 2 PC = +1 ou −1 sur un dé ; 2 PC = Premiers soins (retire tes altérations).</li>

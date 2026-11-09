@@ -91,7 +91,7 @@ const GUILDE = ['potion', 'milicien', 'chien', 'pierre', 'rond', 'torche', 'chan
 
 // ------------------------------------------------------------------------------------------- héros (données)
 const HEROS = {
-  maelle: { cit:'« Ce qui est forgé ne casse pas. »', role:'Frappe fort et équipe ses unités. Aime les gros dés (5 et 6).', papier:'Repris du jeu papier : les gros coups de Grom (Tranche-chair) et le « Retour » de Peau épaisse, devenu la Fournaise.', nom:'Maëlle', titre:'la forgeronne', c:'#ff8a2a', pv:39,
+  maelle: { cit:'« Ce qui est forgé ne casse pas. »', role:'Frappe fort et équipe ses unités. Aime les gros dés (5 et 6).', papier:'Repris du jeu papier : les gros coups de Grom (Tranche-chair) et le « Retour » de Peau épaisse, devenu la Fournaise.', nom:'Maëlle', titre:'la forgeronne', c:'#ff8a2a', pv:44,
     deck:['marteau', 'marteau', 'lame', 'apprenti', 'apprenti', 'plastron', 'etincelles', 'etincelles', 'golem', 'golem', 'retremper', 'fournaise'],
     passif:'Métal chaud : chaque 6 posé sur une de tes cartes donne 1 Braise. À 3 Braises, ta prochaine carte Équipement ne coûte rien.',
     garde:{ n:'Enclume', txt:'1 dé', d:'Bouclier égal à la valeur, +2 si c’est un 5 ou un 6.', cond:un, val:vs => vs[0] + (vs[0] >= 5 ? 2 : 0),
@@ -99,7 +99,7 @@ const HEROS = {
     pouvoir:{ n:'Coup d’enclume', txt:'3 dés identiques', d:'Dégâts égaux à leur somme moins 2.', cond:vs => vs.length === 3 && egaux(vs), cible:'ennemi', f:(J, vs, k) => degats(k, somme(vs) - 2) },
     ultime:{ n:'Le Grand Martelage', txt:'3 dés de 4 ou plus', d:'16 dégâts à une cible ; tes unités gagnent +2 attaque.', cond:vs => vs.length === 3 && vs.every(v => v >= 4), cible:'ennemi',
       f:(J, vs, k) => { degats(k, 16); J.front.forEach(u => u.a += 2); } } },
-  aldric: { cit:'« Tant que la flamme brille, personne ne passe. »', role:'Protège : murs d’unités Barrière, boucliers, soins. Aime les paires.', papier:'Repris de Gilgamesh : Parade de fer, Mur de lumière, le jeton de Pureté et l’Ultime qui sonne l’adversaire.', nom:'Sire Aldric', titre:'le chevalier-lanterne', c:'#ffd27a', pv:42,
+  aldric: { cit:'« Tant que la flamme brille, personne ne passe. »', role:'Protège : murs d’unités Barrière, boucliers, soins. Aime les paires.', papier:'Repris de Gilgamesh : Parade de fer, Mur de lumière, le jeton de Pureté et l’Ultime qui sonne l’adversaire.', nom:'Sire Aldric', titre:'le chevalier-lanterne', c:'#ffd27a', pv:43,
     deck:['ecuyer', 'ecuyer', 'lanterne', 'serment', 'serment', 'estocade', 'estocade', 'gardien', 'gardien', 'banniere', 'contre', 'releve'],
     passif:'Pureté : poser deux 6 dans le même tour donne un jeton (2 au plus) qui annule la prochaine altération.',
     garde:{ n:'Parade de fer', txt:'1 ou 2 dés', d:'Une paire : Bouclier = valeur × 2. Sinon : le plus haut dé.', cond:vs => vs.length <= 2, val:vs => vs.length === 2 && egaux(vs) ? vs[0] * 2 : Math.max(...vs),
@@ -108,7 +108,7 @@ const HEROS = {
       f:(J, vs, k) => { const h = Math.max(...vs); degats(k, h * 2); J.front.forEach(u => { u.barriere = true; u.bouclier = (u.bouclier || 0) + h; u.pret = true; }); } },
     ultime:{ n:'La Lame de l’Aube', txt:'3 dés identiques', d:'16 dégâts à une cible et Handicap.', cond:vs => vs.length === 3 && egaux(vs), cible:'ennemi',
       f:(J, vs, k) => { degats(k, 16); altere(adv(J), 'handicap'); } } },
-  pip: { cit:'« La forêt répond à qui l’écoute. »', role:'Soigne, bloque avec les ronces et appelle sa louve. Ses cartes aiment les petits dés (1 à 3).', papier:'Reprise de la Druidesse : la Jauge de Meute, la Louve et ses 3 dés, Sève vitale, Racines entravantes, Écorce bénie, Purification.', nom:'Pip', titre:'la druidesse et sa louve', c:'#c58bff', pv:34,
+  pip: { cit:'« La forêt répond à qui l’écoute. »', role:'Soigne, bloque avec les ronces et appelle sa louve. Ses cartes aiment les petits dés (1 à 3).', papier:'Reprise de la Druidesse : la Jauge de Meute, la Louve et ses 3 dés, Sève vitale, Racines entravantes, Écorce bénie, Purification.', nom:'Pip', titre:'la druidesse et sa louve', c:'#c58bff', pv:35,
     deck:['ronces', 'ronces', 'seve', 'seve', 'racines', 'racines', 'purif', 'hurlement', 'faon', 'faon', 'lien', 'rosee'],
     passif:'L’Appel de l’Alpha : chaque 6 lancé pose un marqueur de Meute. À 3, la Louve (4 / 7) arrive et attaque seule à la fin de chacun de tes tours.',
     garde:{ n:'Écorce bénie', txt:'1 dé', d:'Un 1 ou un 2 : Épines 3. Sinon : Bouclier = la valeur.', cond:un, val:vs => vs[0] <= 2 ? 4 : vs[0],
@@ -117,7 +117,7 @@ const HEROS = {
       f:(J, vs, k) => { degats(k, 7); J.bouclier += 3; ajouteMeute(J, 1); } },
     ultime:{ n:'L’Éveil du Grand Arbre', txt:'3 dés de 3 ou moins', d:'Ton héros se soigne de 15 et tes unités retrouvent toute leur vie.', cond:vs => vs.length === 3 && vs.every(v => v <= 3),
       f:J => { soin(J, 15); J.front.forEach(u => u.v = u.vmax); } } },
-  oria: { cit:'« Je sais déjà ce qui vient. »', role:'Contrôle : voit ses prochaines faces, pioche, renvoie les unités. Aime les suites.', papier:'Repris d’Expérience 626 : la Prémonition (voir à l’avance), Téléportation qui vole des PC, et l’Ultime qui fait taire l’adversaire.', nom:'Oria', titre:'la cartographe', c:'#5ff5e6', pv:46,
+  oria: { cit:'« Je sais déjà ce qui vient. »', role:'Contrôle : voit ses prochaines faces, pioche, renvoie les unités. Aime les suites.', papier:'Repris d’Expérience 626 : la Prémonition (voir à l’avance), Téléportation qui vole des PC, et l’Ultime qui fait taire l’adversaire.', nom:'Oria', titre:'la cartographe', c:'#5ff5e6', pv:43,
     deck:['longuevue', 'fleche', 'fleche', 'tresor', 'guetteur', 'boussole', 'eclaireuse', 'eclaireuse', 'piege', 'detour', 'guetteur', 'vol'],
     passif:'Œil du cartographe : tu vois les 2 prochaines faces de chacun de tes dés.',
     garde:{ n:'Repli', txt:'1 dé', d:'Dé impair : Esquive (les prochains dégâts sont divisés par 2). Dé pair : Bouclier = la valeur.', cond:un, val:vs => pair(vs[0]) ? vs[0] : 6,
@@ -126,7 +126,7 @@ const HEROS = {
       f:(J, vs, k) => { degats(k, 10); pioche(J, 2); choisirFace(J); } },
     ultime:{ n:'La Carte du monde', txt:'3 dés qui se suivent', d:'15 dégâts à une cible et Silence (pas de Sort au prochain tour adverse).', cond:vs => suite(vs, 3), cible:'ennemi',
       f:(J, vs, k) => { degats(k, 15); adv(J).silence = true; log(`${adv(J).nom} est réduit au Silence.`); } } },
-  gorm: { cit:'« Un souffle, et toute la guilde se lève. »', role:'Soutien : renforce toutes ses unités d’un coup. Joue sur les dés pairs ou impairs.', papier:'Repris de Grom : Cri de guerre plus fort quand on a moins de PV, Peau épaisse et son Retour, Tranche-chair devenu Tranche-vent.', nom:'Gorm', titre:'le sonneur de cor', c:'#4f8bff', pv:48,
+  gorm: { cit:'« Un souffle, et toute la guilde se lève. »', role:'Soutien : renforce toutes ses unités d’un coup. Joue sur les dés pairs ou impairs.', papier:'Repris de Grom : Cri de guerre plus fort quand on a moins de PV, Peau épaisse et son Retour, Tranche-chair devenu Tranche-vent.', nom:'Gorm', titre:'le sonneur de cor', c:'#4f8bff', pv:46,
     deck:['grave', 'grave', 'aigue', 'aigue', 'echo', 'tambour', 'tambour', 'flute', 'colosse', 'trancheV', 'trancheV', 'cor'],
     passif:'Second souffle : quand tes PV sont plus bas que ceux de l’adversaire, ton Pouvoir donne +2 attaque de plus.',
     garde:{ n:'Peau épaisse', txt:'1 ou 2 dés', d:'Bouclier = somme des dés impairs ; chaque 6 donne Épines 2.', cond:vs => vs.length <= 2, val:vs => somme(vs.filter(v => !pair(v))) + 2 * vs.filter(v => v === 6).length,
@@ -151,6 +151,9 @@ const ORDRE = ['maelle', 'aldric', 'pip', 'oria', 'gorm', 'zephine'];
 const JAUGE = { max:20, parDe:1, parDegats:5 };
 const FRAPPE = { n:'Frappe', txt:'2 à 5 dés identiques', d:'3 / 6 / 9 / 14 dégâts à une cible (2, 3, 4 ou 5 dés identiques).', cond:vs => vs.length >= 2 && egaux(vs), cible:'ennemi',
   f:(J, vs, k) => degats(k, [0, 0, 3, 6, 9, 14][vs.length]) };
+// Technique (09/11, choix de l'utilisateur : la « petite suite » du plateau papier) : commune à tous.
+const TECHNIQUE = { n:'Technique', txt:'3 à 5 dés qui se suivent', d:'4 / 7 / 10 dégâts à une cible (suite de 3, 4 ou 5 dés, par exemple 2-3-4).', cond:vs => vs.length >= 3 && suite(vs, vs.length), cible:'ennemi',
+  f:(J, vs, k) => degats(k, [0, 0, 0, 4, 7, 10][vs.length]) };
 const SALLES = [
   { n:'La Cour de la caserne', d:'Les unités arrivent avec +1 vie.', id:'caserne' },
   { n:'La Salle des échos', d:'La première carte de chaque tour coûte 1 PC de moins.', id:'echos' },
