@@ -169,13 +169,13 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261109-192305';
+const VERSION = '20261109-192548';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); location.replace('duel.html?v=' + v); }
 }).catch(() => {});
 </script>
-<script src="donnees.js?v=20261109-192305"></script>
+<script src="donnees.js?v=20261109-192548"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -511,7 +511,7 @@ function nouvellePartie(id, idO, auto) {
   const autres = ORDRE.filter(x => x !== id);
   idO = idO || autres[Math.floor(Math.random() * autres.length)];
   S = { J:joueur(id, false), O:joueur(idO, true), salle:SALLES[Math.floor(Math.random() * SALLES.length)], log:[], fini:null, auto:!!auto };
-  FX = []; fxApres = []; fxOn = false;
+  FX = []; fxApres = []; fxOn = false; arreteMusique();
   // le second joueur (l'ordinateur) compense : 2 PC et 1 carte de plus au départ (v2.4)
   pioche(S.J, 4); pioche(S.O, 5); S.O.pc = 3;
   log(`Salle : ${S.salle.n}. ${S.salle.d}`);
@@ -574,6 +574,7 @@ function rouler(ds, ensuite) {
 }
 function lancerMesDes() {
   const J = S.J; if (!J.aLancer || roule) return;
+  demarreMusique();
   rouler(J.des, () => { J.des.forEach(d => lance(J, d)); J.aLancer = false; log(`Tu lances : ${J.des.map(d => d.v).join(' · ')}`); rendu(); });
 }
 function relancer() {
@@ -639,7 +640,7 @@ function dessine() {
   else if (J.front.some(u => u.pret && !u.louve)) bandeau = '⚔ Tes créatures dorées peuvent attaquer : touche-en une puis sa cible. Sinon, elles attaquent le héros à « Fin du tour ».';
   else bandeau = 'Tous tes dés sont posés : touche « Fin du tour ».';
   document.getElementById('app').innerHTML = `
-  <div class="salle"><b>${S.salle.n}</b> · ${S.salle.d}<button class="sonbt" onclick="basculeSon()">${sonOn ? '🔊' : '🔇'}</button></div>
+  <div class="salle"><b>${S.salle.n}</b> · ${S.salle.d}<button class="sonbt" onclick="basculeSon()">${sonOn ? '🔊' : '🔇'}</button><button class="sonbt" onclick="basculeMusique()" style="${musOn ? '' : 'opacity:.35'}">🎵</button></div>
   <div class="plateau">${barre(O, true)}${front(O, true)}<div class="milieu">— ligne de front —</div>${front(J, false)}${barre(J, false)}
     <div class="des" ontouchstart="glisseDebut(event)" ontouchend="glisseFin(event)">${J.des.map((d, i) => `<div class="d ${sel.includes(d) ? 'sel' : ''} ${d.pose ? 'pose' : ''} ${d.mod ? 'mod' : ''} ${J.aLancer ? 'cache' : ''}" onclick="choisirDe(${i})"><img src="${FACE(J.id, d.v || 1)}" alt="${d.v || '?'}"><div class="sac">${sacTxt(J, d)}</div></div>`).join('')}</div>
   </div>
@@ -730,6 +731,7 @@ function regles() {
   <div class="choixh"><button onclick="fermer()">Jouer</button><button onclick="fermer();accueil()">Changer de héros</button></div>`);
 }
 function montrerFin() {
+  arreteMusique(1.2);
   son(S.fini === 'gagne' ? 'victoire' : 'defaite');
   fenetre(`<h2>${S.fini === 'gagne' ? '🏆 Victoire !' : '💀 Défaite…'}</h2><p>${S.J.nom} contre ${S.O.nom} : ${S.fini === 'gagne' ? 'gagné' : 'perdu'} en ${S.J.tours} tours.</p><div class="choixh"><button onclick="fermer();nouvellePartie(S.J.id, S.O.id)">Rejouer</button><button onclick="fermer();accueil()">Changer de héros</button></div>`);
 }
@@ -749,6 +751,23 @@ if (typeof document !== 'undefined' && document.getElementById('app')) accueil()
 // =============================================================================================== animations et sons
 // Les sons sont fabriqués par le téléphone (aucun fichier) ; 🔊 / 🔇 dans la barre de la salle.
 let sonOn = localStorage.getItem('guilde-son') !== '0', AC = null;
+// sons enregistrés (fabriqués par ~/creation/sources/musique/guilde/fabrique.py) : musique de combat en boucle, bruit des dés
+let musOn = localStorage.getItem('guilde-musique') !== '0', BUF = {}, musique = null;
+function charge(nom) { const a = ac(); if (!a) return Promise.resolve(null); if (BUF[nom]) return BUF[nom];
+  return BUF[nom] = fetch(`sons/${nom}.mp3?v=1`).then(r => r.arrayBuffer()).then(b => new Promise((ok, ko) => a.decodeAudioData(b, ok, ko))).catch(() => null); }
+function joueBuf(nom, vol) { const a = ac(); if (!a) return; charge(nom).then(b => { if (!b) return; const s = a.createBufferSource(), g = a.createGain(); s.buffer = b; g.gain.value = vol || 1; s.connect(g).connect(a.destination); s.start(); }); }
+function demarreMusique() {
+  if (!musOn || musique || !S || S.auto || S.fini) return; const a = ac(); if (!a) return;
+  musique = { arret:false };
+  charge('combat').then(b => { if (!b || !musique || musique.arret || musique.src) return;
+    const src = a.createBufferSource(), g = a.createGain(); src.buffer = b; src.loop = true; src.loopStart = .05; src.loopEnd = Math.min(b.duration, 40.05);
+    g.gain.setValueAtTime(0, a.currentTime); g.gain.linearRampToValueAtTime(.32, a.currentTime + 2); src.connect(g).connect(a.destination); src.start(0, .05); musique.src = src; musique.g = g; });
+}
+function arreteMusique(fondu) {
+  if (!musique) return; const m = musique; musique = null; m.arret = true; const a = ac();
+  if (m.src && a) { m.g.gain.cancelScheduledValues(a.currentTime); m.g.gain.setValueAtTime(m.g.gain.value, a.currentTime); m.g.gain.linearRampToValueAtTime(0, a.currentTime + (fondu || .4)); m.src.stop(a.currentTime + (fondu || .4) + .05); }
+}
+function basculeMusique() { musOn = !musOn; localStorage.setItem('guilde-musique', musOn ? '1' : '0'); if (musOn) demarreMusique(); else arreteMusique(); dessine(); }
 function basculeSon() { sonOn = !sonOn; localStorage.setItem('guilde-son', sonOn ? '1' : '0'); if (sonOn) son('carte'); dessine(); }
 function ac() { if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return null; } } if (AC.state === 'suspended') AC.resume(); return AC; }
 function ton(f, d, type, vol, fin, depart) {
@@ -775,7 +794,7 @@ function son(q) {
   else if (q === 'soin') { [523, 659, 784, 1046].forEach((f, i) => ton(f, .25, 'sine', .12, null, i * .07)); }
   else if (q === 'carte') { bruit(.22, .25, 400, 3000); }
   else if (q === 'tir') { ton(300, .25, 'sawtooth', .08, 1200); bruit(.2, .15, 2000, 500); }
-  else if (q === 'des') { for (let i = 0; i < 7; i++) bruit(.04, .25, 2500 + Math.random() * 1500, null, i * .11); }
+  else if (q === 'des') joueBuf(Math.random() < .5 ? 'des1' : 'des2', 1);
   else if (q === 'tombe') { ton(400, .5, 'triangle', .2, 60); }
   else if (q === 'garde') { ton(220, .35, 'square', .06, 330); ton(660, .3, 'sine', .1); }
   else if (q === 'tour') { ton(392, .18, 'sine', .12); ton(523, .3, 'sine', .12, null, .12); }
