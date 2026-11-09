@@ -100,13 +100,13 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261109-185956';
+const VERSION = '20261109-190213';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); location.replace('duel.html?v=' + v); }
 }).catch(() => {});
 </script>
-<script src="donnees.js?v=20261109-185956"></script>
+<script src="donnees.js?v=20261109-190213"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -406,6 +406,8 @@ function simule(idJ, idO) {
 
 // =============================================================================================== interface
 let sel = [], attaquant = null, ciblage = null, carteVue = null;
+// une carte agrandie se range dès qu'on touche ailleurs que sur une carte de la main
+document.addEventListener('click', e => { if (carteVue !== null && !e.target.closest('.main .c')) { carteVue = null; rendu(); } });
 // la main en éventail : 1er toucher = la carte se soulève et s'agrandit ; 2e toucher = on la joue (si les dés choisis conviennent)
 function mainEnEventail(J) {
   const n = J.main.length; if (!n) return '<i style="color:#c9c1ea;position:absolute;left:0;right:0;text-align:center;top:60px">Main vide</i>';
