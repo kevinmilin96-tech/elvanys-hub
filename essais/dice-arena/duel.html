@@ -219,7 +219,7 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261109-211338';
+const VERSION = '20261109-211510';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); location.replace('duel.html?v=' + v); }
@@ -238,8 +238,8 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261109-211338"></script>
-<script src="donnees.js?v=20261109-211338"></script>
+<script src="cartes.js?v=20261109-211510"></script>
+<script src="donnees.js?v=20261109-211510"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -481,7 +481,8 @@ function defensesAuto(J) {
   const u = J.front.filter(x => x.pret && !x.louve).sort((a, b) => b.v - a.v)[0]; if (u && atk(J, u) <= 3) enDefense(J, u);
 }
 function attaquesRestantes(J) {
-  J.front.filter(u => u.pret && !u.louve).forEach(u => { if (S.fini || !J.front.includes(u)) return; const c = ciblesAttaque(adv(J)); attaque(J, u, c.find(x => !x.u) || [...c].sort((a, b) => a.u.v - b.u.v)[0]); });
+  // chez le joueur, une créature cachée reste dans l'ombre : elle n'attaque que si on le lui demande
+  J.front.filter(u => u.pret && !u.louve && (J.ordi || S.auto || !u.cachee)).forEach(u => { if (S.fini || !J.front.includes(u)) return; const c = ciblesAttaque(adv(J)); attaque(J, u, c.find(x => !x.u) || [...c].sort((a, b) => a.u.v - b.u.v)[0]); });
 }
 function finTour(J) {
   if (J.id === 'pip') attaqueLouve(J);
@@ -798,7 +799,7 @@ function dessine() {
   else if (sel.length) bandeau = `Dés choisis : ${vals(sel).join(', ')}. Touche où les poser (en vert).`;
   else if (J.des.some(d => !d.pose)) bandeau = '1. Touche un ou plusieurs dés. 2. Touche où les poser.';
   else if (J.front.some(u => u.pret && u.louve)) bandeau = '🐺 Touche la Louve : elle lance ses 3 dés et attaque. Sinon, elle attaque seule à « Fin du tour ».';
-  else if (J.front.some(u => u.pret && !u.louve)) bandeau = '⚔ Touche une créature dorée : attaquer (puis sa cible) ou se mettre en défense. Sinon, elles attaquent le héros à « Fin du tour ».';
+  else if (J.front.some(u => u.pret && !u.louve)) bandeau = '⚔ Touche une créature dorée : attaquer (puis sa cible) ou se mettre en défense. Sinon, elles attaquent le héros à « Fin du tour » (sauf les 👁 cachées, qui restent dans l’ombre).';
   else bandeau = 'Tous tes dés sont posés : touche « Fin du tour ».';
   document.getElementById('app').innerHTML = `
   <div class="salle"><b>${S.salle.n}</b> · ${S.salle.d}<button class="sonbt" onclick="basculeSon()">${sonOn ? '🔊' : '🔇'}</button><button class="sonbt" onclick="basculeMusique()" style="${musOn ? '' : 'opacity:.35'}">🎵</button></div>
@@ -889,7 +890,7 @@ function regles() {
   <li>Tu gagnes +1 PC au début de chaque tour (6 au plus). Tu lances 3 dés au tour 1, 4 au tour 2, puis 5. Une relance par tour.</li>
   <li>Sous chaque dé, le <b>sac</b> montre les faces qui peuvent encore sortir : une face sortie ne revient qu’une fois les six sorties.</li>
   <li>Tes <b>unités</b> attaquent à partir du tour suivant leur arrivée : touche ton unité (contour jaune), puis sa cible. Les unités <b>Barrière</b> doivent être attaquées d’abord par les unités. Les unités <b>Cachées</b> ne peuvent pas être visées tant qu’elles n’ont pas attaqué.</li>
-  <li>La <b>Garde</b> = ta défense : tu poses un dé et ton héros gagne un Bouclier (ou une autre protection selon le héros). Ce Bouclier absorbe les prochains dégâts que tu reçois pendant le tour de l’adversaire, puis disparaît. Exemple : Garde 4, l’adversaire frappe à 6, tu ne perds que 2 PV.</li><li>Tes <b>créatures</b> attaquent au tour suivant leur arrivée (sauf Charge) : touche-en une puis sa cible ; celles que tu ne fais pas attaquer frappent le héros adverse à « Fin du tour ». Le Bouclier et la Garde de l’adversaire absorbent leurs coups.</li><li>Une créature <b>Cachée</b> 👁 ne peut être ni attaquée ni visée tant qu’elle n’a pas attaqué ; sa première attaque depuis l’ombre est une <b>Embuscade</b> (+2 dégâts), puis elle se montre.</li><li>Une créature prête peut aussi se mettre <b>en défense</b> (touche-la) : elle n’attaque pas ce tour, mais elle protège ton héros comme une Barrière jusqu’à ton prochain tour : les créatures adverses doivent l’attaquer d’abord.</li></ul>
+  <li>La <b>Garde</b> = ta défense : tu poses un dé et ton héros gagne un Bouclier (ou une autre protection selon le héros). Ce Bouclier absorbe les prochains dégâts que tu reçois pendant le tour de l’adversaire, puis disparaît. Exemple : Garde 4, l’adversaire frappe à 6, tu ne perds que 2 PV.</li><li>Tes <b>créatures</b> attaquent au tour suivant leur arrivée (sauf Charge) : touche-en une puis sa cible ; celles que tu ne fais pas attaquer frappent le héros adverse à « Fin du tour », sauf les créatures 👁 Cachées, qui restent dans l’ombre tant que tu ne leur demandes pas d’attaquer. Le Bouclier et la Garde de l’adversaire absorbent leurs coups.</li><li>Une créature <b>Cachée</b> 👁 ne peut être ni attaquée ni visée tant qu’elle n’a pas attaqué ; sa première attaque depuis l’ombre est une <b>Embuscade</b> (+2 dégâts), puis elle se montre.</li><li>Une créature prête peut aussi se mettre <b>en défense</b> (touche-la) : elle n’attaque pas ce tour, mais elle protège ton héros comme une Barrière jusqu’à ton prochain tour : les créatures adverses doivent l’attaquer d’abord.</li></ul>
   <h2>${h.nom}, ${h.titre} (${h.pv} PV)</h2><p><b>Passif</b> : ${h.passif}</p><p><b>Garde · ${h.garde.n}</b> (${h.garde.txt}) : ${h.garde.d}</p><p><b>Pouvoir · ${h.pouvoir.n}</b> (${h.pouvoir.txt}) : ${h.pouvoir.d}</p><p><b>Ultime · ${h.ultime.n}</b> (jauge pleine, ${h.ultime.txt}, 3 PC) : ${h.ultime.d}</p>
   <div class="choixh"><button onclick="fermer()">Jouer</button><button onclick="fermer();accueil()">Changer de héros</button></div><div class="choixh"><button onclick="mesParties()">📜 Mes parties</button><button onclick="location.href='menu.html'">⌂ Menu</button></div>`);
 }
