@@ -42,6 +42,8 @@
   .actions { display:grid; grid-template-columns:repeat(3, 1fr); gap:5px; margin:6px 0; }
   .actions.pc .act { min-height:40px; background:#1f2a4a; }
   .act { background:#2a2650; color:var(--texte); border:2px solid #4b4580; border-radius:10px; padding:5px 3px; font-size:.74em; line-height:1.2; min-height:50px; }
+  .act { position:relative; }
+  .act .info { position:absolute; top:3px; right:4px; width:17px; height:17px; border-radius:50%; background:#4b4580; color:#f3c96b; font:bold 11px/17px Georgia, serif; font-style:italic; }
   .act b { display:block; color:var(--or); font-size:1.1em; }
   .act.ok { border-color:var(--ok); box-shadow:0 0 8px #7dffb066; }
   .act.non { opacity:.45; }
@@ -174,14 +176,14 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261109-201113';
+const VERSION = '20261109-201212';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); location.replace('duel.html?v=' + v); }
 }).catch(() => {});
 </script>
-<script src="cartes.js?v=20261109-201113"></script>
-<script src="donnees.js?v=20261109-201113"></script>
+<script src="cartes.js?v=20261109-201212"></script>
+<script src="donnees.js?v=20261109-201212"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -621,10 +623,10 @@ function front(P, haut) {
     return `<div class="u ${cls}${img ? ' illu' : ''}" data-uid="${u.id}"${img} onclick="touche({J:S.${cote},u:S.${cote}.front[${i}]})"><b>${u.n}</b><div class="tg">${tags}</div><div class="av"><span>⚔ ${atk(P, u)}</span><span>❤ ${u.v}</span></div></div>`;
   }).join('')}</div>`;
 }
-function actSoins() { const ok = permis(S.J, 'pcSoins', []); return `<button class="act ${ok ? 'ok' : 'non'}" onclick="vise('pcSoins')"><b>Premiers soins</b>2 PC · retire tes altérations</button>`; }
+function actSoins() { const ok = permis(S.J, 'pcSoins', []); return `<button class="act ${ok ? 'ok' : 'non'}" onclick="vise('pcSoins')"><span class="info" onclick="event.stopPropagation();aide('pcSoins', true)">i</span><b>Premiers soins</b>2 PC · retire tes altérations</button>`; }
 function act(quoi, titre, cout, txt) {
   const ok = sel.length && permis(S.J, quoi, vals(sel), sel);
-  return `<button class="act ${ok ? 'ok' : sel.length ? 'non' : ''}" onclick="vise('${quoi}')"><b>${titre}</b>${cout} · ${txt}</button>`;
+  return `<button class="act ${ok ? 'ok' : sel.length ? 'non' : ''}" onclick="vise('${quoi}')"><span class="info" onclick="event.stopPropagation();aide('${quoi}', true)">i</span><b>${titre}</b>${cout} · ${txt}</button>`;
 }
 function sacTxt(J, d) {
   if (!d.sac || d.extra) return '';
@@ -642,7 +644,11 @@ function dessine() {
   let bandeau = '';
   if (J.aLancer) bandeau = 'Ton tour commence : lance tes dés !';
   else if (ciblage && ciblage.type === 'de') bandeau = '🎲 Touche le dé à retourner.';
-  else if (ciblage) bandeau = '🎯 Touche la cible (en vert).';
+  else if (ciblage) {
+    const q = ciblage.quoi, vs = vals(ciblage.ds), d = q === 'frappe' ? `Frappe (${vs.join(', ')}) : ${FRAPPE.dg(vs)} dégâts` : q === 'technique' ? `Technique (${vs.join(', ')}) : ${[0, 0, 0, 4, 7, 10][vs.length]} dégâts`
+      : q === 'pouvoir' ? `${h.pouvoir.n} : ${h.pouvoir.d}` : q === 'ultime' ? `${h.ultime.n} : ${h.ultime.d}` : CARTES[q] ? `${CARTES[q].n} : ${CARTES[q].d}` : '';
+    bandeau = `🎯 ${d}<br>Touche la cible (en vert).`;
+  }
   else if (attaquant) bandeau = `⚔ ${attaquant.n} attaque : touche une cible en vert.`;
   else if (sel.length) bandeau = `Dés choisis : ${vals(sel).join(', ')}. Touche où les poser (en vert).`;
   else if (J.des.some(d => !d.pose)) bandeau = '1. Touche un ou plusieurs dés. 2. Touche où les poser.';
@@ -679,7 +685,7 @@ function dessine() {
   </div>`;
   if (S.fini) montrerFin();
 }
-function aide(quoi) {
+function aide(quoi, info) {
   const J = S.J, h = HEROS[J.id];
   let t = '';
   if (quoi === 'garde') t = `<b>${h.garde.n}</b> (0 PC, ${h.garde.txt}) : ${h.garde.d}${J.gardeFaite ? '<br><i>Déjà posée ce tour.</i>' : ''}`;
@@ -693,7 +699,7 @@ function aide(quoi) {
   else if (quoi === 'transmu') t = `<b>${h.action.n}</b> (${h.action.txt}) : ${h.action.d}`;
   else if (quoi === 'vendre') t = 'Choisis d’abord un ou plusieurs dés, puis touche « Vendre » : chaque dé rapporte 1 PC.';
   else { const c = CARTES[quoi]; t = `<b>${c.n}</b> : coûte <b>${coutCarte(J, quoi)} PC</b> et demande <b>${c.txt}</b>. ${c.d}${c.t === 's' && J.silence ? '<br><i>Tu es réduit au Silence ce tour : pas de Sort.</i>' : ''}`; }
-  fenetre(`<h2>Pas encore possible</h2><p>${t}</p><p style="color:#f3c96b"><b>${raison(quoi)}</b></p><div class="choixh"><button onclick="fermer()">Compris</button></div>`);
+  fenetre(`<h2>${info ? 'Comment ça marche' : 'Pas encore possible'}</h2><p>${t}</p>${info ? '' : `<p style="color:#f3c96b"><b>${raison(quoi)}</b></p>`}<div class="choixh"><button onclick="fermer()">Compris</button></div>`);
 }
 // pourquoi une action est refusée, en une phrase
 function raison(quoi) {
