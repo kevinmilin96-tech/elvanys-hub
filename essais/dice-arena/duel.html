@@ -256,6 +256,37 @@
   .barre .nom { font-size:1em; }
   .vie { height:11px !important; border-radius:6px; box-shadow:inset 0 1px 3px #000c; }
   .vie i { background:linear-gradient(180deg, #ff6a5e, #c81e2a); border-radius:6px; }
+
+  /* ================= plateau peint « façon Hearthstone » (Gemini, 09/11) : 768 × 1376, tout est placé en cqw (1 cqw = 1 % de la largeur) =================
+     alcôve du haut : centre (50 ; 19,3) diamètre 26 · alcôve du bas : centre (50 ; 132,8) · aire de jeu 14,3 → 86 de large, ligne de runes à 78 · bac à dés : 152 → 168 */
+  .plateau.tapis { container-type:inline-size; aspect-ratio:768/1376; padding:0; border-radius:16px; background:#2a2014 url('decor/plateau-duel.webp?v=1') center/100% 100% no-repeat; box-shadow:0 10px 30px #000a; }
+  .plateau.tapis::before { content:none; }
+  .tapis > * { position:absolute !important; }
+  .tapis .milieu { display:none; }
+  .tapis .barre { left:37cqw; width:26cqw; height:26cqw; padding:0; border:none; background:none; box-shadow:none; display:block; border-radius:50%; }
+  .tapis #b-O { top:6.3cqw; } .tapis #b-J { top:119.8cqw; }
+  .tapis .barre img { position:absolute; inset:0; width:100%; height:100%; border-radius:50%; border:none; box-shadow:inset 0 0 0 2px #0006; }
+  .tapis .barre > div { position:static !important; }
+  .tapis .barre.cible img { box-shadow:0 0 0 4px var(--ok), 0 0 24px var(--ok); }
+  .tapis .barre.protege { box-shadow:0 0 0 3px #8fd3ff, 0 0 22px #4aa8ff; }
+  .tapis .barre .nom { position:absolute; left:50%; transform:translateX(-50%); white-space:nowrap; font-size:3.2cqw; padding:.2em .8em; border-radius:20px; background:#1d1626e6; border:1px solid #f3c96b88; color:#fff; z-index:2; }
+  .tapis #b-O .nom { top:calc(100% - 1cqw); } .tapis #b-J .nom { bottom:calc(100% - 1cqw); }
+  .tapis .barre .vie { position:absolute; left:16%; width:68%; bottom:5%; height:2.2cqw !important; z-index:2; border:1px solid #0008; }
+  .tapis #b-J .vie { bottom:auto; top:5%; }
+  .tapis .barre .pastilles { position:absolute; right:calc(100% + 2cqw); width:34cqw; display:flex; flex-wrap:wrap; justify-content:flex-end; gap:1cqw; margin:0; }
+  .tapis #b-O .pastilles { top:0; } .tapis #b-J .pastilles { bottom:0; }
+  .tapis .p { font-size:2.9cqw; box-shadow:0 1px 3px #000c; border:1px solid #ffffff22; }
+  .tapis .p:not(.pv):not(.pc):not(.g):not(.m):not(.pu):not(.al) { background:#1d1626e0; }
+  .tapis .barre.protege::before { left:-1cqw; top:-1cqw; font-size:3cqw; }
+  .tapis .front { left:4cqw; right:4cqw; height:38cqw; padding:0; gap:1.2cqw; align-items:center; }
+  .tapis #f-O { top:36cqw; } .tapis #f-J { top:80.5cqw; }
+  .tapis .front > .u, .tapis .front > .place { flex:0 0 17.4cqw; width:17.4cqw; height:24cqw; }
+  .tapis .place { border-color:#0000001a; background:#ffffff14; } .tapis .place::after { color:#00000018; }
+  .tapis .u { font-size:2.35cqw; }
+  .tapis .des { left:12cqw; right:12cqw; top:150.5cqw; height:20cqw; margin:0; gap:1.5cqw; align-items:center; flex-wrap:nowrap; }
+  .tapis .d { width:13.5cqw; } .tapis .d img, .tapis .d .cad { width:12cqw; height:12cqw; }
+  .tapis .d .sac { font-size:2.1cqw; line-height:1.1; color:#e9ffe9cc; text-shadow:0 1px 1px #000; }
+  .tapis .d.cache::after { top:2cqw; font-size:6cqw; }
 </style>
 </head>
 <body>
@@ -264,7 +295,7 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261109-212013';
+const VERSION = '20261109-212335';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); location.replace('duel.html?v=' + v); }
@@ -283,8 +314,8 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261109-212013"></script>
-<script src="donnees.js?v=20261109-212013"></script>
+<script src="cartes.js?v=20261109-212335"></script>
+<script src="donnees.js?v=20261109-212335"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -850,7 +881,7 @@ function dessine() {
   <div class="salle"><span class="st"><b>${S.salle.n}</b> · ${S.salle.d}</span><span class="sons">
     <button class="sonbt ${sonOn ? '' : 'off'}" onclick="basculeSon()" aria-label="Bruitages" title="Bruitages"><svg viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/>${sonOn ? '<path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>' : '<path d="M16 9l5 6M21 9l-5 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>'}</svg></button>
     <button class="sonbt ${musOn ? '' : 'off'}" onclick="basculeMusique()" aria-label="Musique" title="Musique"><svg viewBox="0 0 24 24"><path d="M9 17V5l11-2v12" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="6.5" cy="17.5" r="2.8" fill="currentColor"/><circle cx="17.5" cy="15.5" r="2.8" fill="currentColor"/>${musOn ? '' : '<path d="M3 3l18 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>'}</svg></button></span></div>
-  <div class="plateau">${barre(O, true)}${front(O, true)}<div class="milieu"><span>✦ ◆ ✦</span></div>${front(J, false)}${barre(J, false)}
+  <div class="plateau tapis">${barre(O, true)}${front(O, true)}<div class="milieu"><span>✦ ◆ ✦</span></div>${front(J, false)}${barre(J, false)}
     <div class="des" ontouchstart="glisseDebut(event)" ontouchend="glisseFin(event)">${J.des.map((d, i) => `<div class="d ${sel.includes(d) ? 'sel' : ''} ${d.pose ? 'pose' : ''} ${d.mod ? 'mod' : ''} ${J.aLancer ? 'cache' : ''} ${i === J.neuf ? 'neuf' : ''}" onclick="choisirDe(${i})"><img src="${FACE(J.id, d.v || 1)}" alt="${d.v || '?'}"><div class="sac">${i === J.neuf ? '✨ nouveau dé' : sacTxt(J, d)}</div></div>`).join('')}${[...Array(Math.max(0, 5 - J.des.length)).keys()].map(k => { const i = J.des.length + k, t = i - 1;
       return `<div class="d verrou"><div class="cad">🔒</div><div class="sac">${J.tours >= t ? 'Handicap ce tour' : 'dé n° ' + (i + 1) + '<br>au tour ' + t}</div></div>`; }).join('')}</div>
   </div>
