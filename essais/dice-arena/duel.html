@@ -198,7 +198,7 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261109-204905';
+const VERSION = '20261109-205109';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); location.replace('duel.html?v=' + v); }
@@ -217,8 +217,8 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261109-204905"></script>
-<script src="donnees.js?v=20261109-204905"></script>
+<script src="cartes.js?v=20261109-205109"></script>
+<script src="donnees.js?v=20261109-205109"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -821,7 +821,7 @@ function regles() {
   <li>Tes <b>unités</b> attaquent à partir du tour suivant leur arrivée : touche ton unité (contour jaune), puis sa cible. Les unités <b>Barrière</b> doivent être attaquées d’abord par les unités. Les unités <b>Cachées</b> ne peuvent pas être visées tant qu’elles n’ont pas attaqué.</li>
   <li>La <b>Garde</b> = ta défense : tu poses un dé et ton héros gagne un Bouclier (ou une autre protection selon le héros). Ce Bouclier absorbe les prochains dégâts que tu reçois pendant le tour de l’adversaire, puis disparaît. Exemple : Garde 4, l’adversaire frappe à 6, tu ne perds que 2 PV.</li><li>Tes <b>créatures</b> attaquent au tour suivant leur arrivée (sauf Charge) : touche-en une puis sa cible ; celles que tu ne fais pas attaquer frappent le héros adverse à « Fin du tour ». Le Bouclier et la Garde de l’adversaire absorbent leurs coups.</li><li>Une créature prête peut aussi se mettre <b>en défense</b> (touche-la) : elle n’attaque pas ce tour, mais elle protège ton héros comme une Barrière jusqu’à ton prochain tour : les créatures adverses doivent l’attaquer d’abord.</li></ul>
   <h2>${h.nom}, ${h.titre} (${h.pv} PV)</h2><p><b>Passif</b> : ${h.passif}</p><p><b>Garde · ${h.garde.n}</b> (${h.garde.txt}) : ${h.garde.d}</p><p><b>Pouvoir · ${h.pouvoir.n}</b> (${h.pouvoir.txt}) : ${h.pouvoir.d}</p><p><b>Ultime · ${h.ultime.n}</b> (jauge pleine, ${h.ultime.txt}, 3 PC) : ${h.ultime.d}</p>
-  <div class="choixh"><button onclick="fermer()">Jouer</button><button onclick="fermer();accueil()">Changer de héros</button></div><div class="choixh"><button onclick="mesParties()">📜 Mes parties</button></div>`);
+  <div class="choixh"><button onclick="fermer()">Jouer</button><button onclick="fermer();accueil()">Changer de héros</button></div><div class="choixh"><button onclick="mesParties()">📜 Mes parties</button><button onclick="location.href='menu.html'">⌂ Menu</button></div>`);
 }
 // historique des parties, gardé sur le téléphone (les 50 dernières) : sert à l'équilibrage
 const HIST = 'guilde-parties';
@@ -869,7 +869,7 @@ let monHeros = null;
 function accueil() {
   fenetre(`<h2>Duel · prototype</h2><p>1. Choisis ton héros.</p>
   <div class="heros6">${ORDRE.map(id => `<button onclick="monHeros='${id}';adversaire()"><img src="${IMG(id)}" alt="">${HEROS[id].nom}</button>`).join('')}</div>
-  <div class="choixh"><button onclick="mesParties()">📜 Mes parties (${parties().length})</button><button onclick="location.href='https://demo-hub.elvanys.fr/'">⌂ Retour au Hub</button></div>
+  <div class="choixh"><button onclick="mesParties()">📜 Mes parties (${parties().length})</button><button onclick="location.href='menu.html'">⌂ Menu</button></div>
   <p style="color:#c9c1ea;font-size:.85em">Prototype pour essayer les règles : dessins provisoires, chiffres à équilibrer.</p>`);
 }
 function adversaire() {
@@ -877,7 +877,7 @@ function adversaire() {
   <div class="heros6">${ORDRE.filter(id => id !== monHeros).map(id => `<button onclick="fermer();nouvellePartie(monHeros,'${id}');regles()"><img src="${IMG(id)}" alt="">${HEROS[id].nom}</button>`).join('')}
   <button onclick="fermer();nouvellePartie(monHeros);regles()" style="display:flex;align-items:center;justify-content:center;font-size:2em;min-height:110px">🎲<br><span style="font-size:.4em">au hasard</span></button></div>`);
 }
-if (typeof document !== 'undefined' && document.getElementById('app')) accueil();
+if (typeof document !== 'undefined' && document.getElementById('app')) { if (new URLSearchParams(location.search).get('parties')) mesParties(); else accueil(); }
 
 // =============================================================================================== animations et sons
 // Les sons sont fabriqués par le téléphone (aucun fichier) ; 🔊 / 🔇 dans la barre de la salle.
