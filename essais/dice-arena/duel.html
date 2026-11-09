@@ -19,6 +19,7 @@
   .barre img { width:44px; height:44px; border-radius:9px; object-fit:cover; border:2px solid var(--c); flex:none; }
   .barre .nom { font-weight:bold; font-size:.92em; }
   .pastilles { display:flex; flex-wrap:wrap; gap:3px; margin-top:2px; }
+  .pastilles [data-k] { cursor:pointer; }
   .p { background:#0008; border-radius:10px; padding:0 7px; font-size:.76em; white-space:nowrap; }
   .p.pv { background:#7a1f2a; } .p.pc { background:#2a7fc1; } .p.g { background:#5d6b7a; } .p.m { background:#6a3d9a; } .p.pu { background:#b8932d; } .p.al { background:#7a3d1f; }
   .plateau { background:radial-gradient(circle at 50% 50%, #4a3a22, #2a2014 80%); border:3px solid #6b5232; border-radius:16px; padding:6px; margin-top:4px; }
@@ -75,6 +76,18 @@
   .lignep { display:block; width:100%; text-align:left; background:#1d1b3a; color:#fff; border:1px solid #4b4580; border-radius:10px; padding:7px 9px; margin:4px 0; font-size:.88em; }
   #majbar { position:fixed; left:8px; right:8px; top:8px; z-index:40; background:#2a7fc1; color:#fff; border-radius:14px; padding:9px 12px; display:flex; align-items:center; gap:10px; box-shadow:0 8px 24px #000a; font-size:.88em; }
   #majbar span { flex:1; } #majbar button { background:#fff; color:#1d4f80; border:none; border-radius:10px; padding:8px 12px; font-weight:bold; }
+  .ordre { width:min(88vw, 380px); }
+  .ordre-tete { display:flex; align-items:center; gap:10px; padding:12px; margin:-4px -6px 12px; border-radius:14px; background:#1d1b3a center/cover; border:1px solid #4b4580; }
+  .ordre-tete > div { flex:1; } .ordre-nom { font-size:1.3em; font-weight:bold; color:var(--or); }
+  .ordre-stats { display:flex; flex-wrap:wrap; gap:5px; margin-top:4px; } .ordre-stats span { border-radius:10px; padding:1px 8px; font-size:.85em; font-weight:bold; }
+  .oa { background:#c2410c; } .ov { background:#1f7a35; } .oc { background:#5b2ab0; } .ob { background:#5d6b7a; }
+  .ordre-fiche { background:#2a2650; color:var(--or); border:1px solid #6b62b0; border-radius:10px; padding:6px 10px; font-weight:bold; }
+  .ordre-bt { display:flex; align-items:center; gap:12px; width:100%; text-align:left; color:#fff; border:none; border-radius:16px; padding:12px 14px; margin:8px 0; box-shadow:0 4px 0 #0006, inset 0 1px 0 #fff3; }
+  .ordre-bt:active { transform:translateY(2px); box-shadow:0 2px 0 #0006; }
+  .ordre-bt b { display:block; font-size:1.15em; } .ordre-bt small { display:block; opacity:.85; font-size:.82em; margin-top:2px; }
+  .ordre-bt .oi { font-size:1.9em; width:46px; height:46px; display:grid; place-items:center; border-radius:12px; background:#0003; flex:none; }
+  .ordre-bt.att { background:linear-gradient(135deg, #e5562c, #9a1f3a); } .ordre-bt.def { background:linear-gradient(135deg, #2a7fc1, #2a3f8a); }
+  .ordre-annule { display:block; margin:6px auto 0; background:none; border:none; color:var(--doux); text-decoration:underline; }
   .choixh { display:flex; gap:10px; justify-content:center; margin:12px 0; }
   .choixh button { background:#1d1b3a; color:#fff; border:2px solid #4b4580; border-radius:14px; padding:8px; width:150px; }
   .choixh img { width:110px; height:110px; border-radius:12px; object-fit:cover; display:block; margin:0 auto 6px; }
@@ -203,7 +216,7 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261109-205947';
+const VERSION = '20261109-210915';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); location.replace('duel.html?v=' + v); }
@@ -222,8 +235,8 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261109-205947"></script>
-<script src="donnees.js?v=20261109-205947"></script>
+<script src="cartes.js?v=20261109-210915"></script>
+<script src="donnees.js?v=20261109-210915"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -430,6 +443,18 @@ function ficheUnite(P, u) {
     <p style="font-size:1.15em"><b style="color:#ff9a5a">⚔ ${atk(P, u)}</b> attaque · <b style="color:#7dffb0">❤ ${u.v}${u.vmax && u.vmax !== u.v ? ' / ' + u.vmax : ''}</b> vie${u.bouclier ? ` · <b style="color:#8fd3ff">🛡 ${u.bouclier}</b>` : ''}${u.epines ? ` · 🌿 Épines ${u.epines}` : ''}</p>
     <p>${effet}</p>${mots ? `<ul style="padding-left:1.1em">${mots}</ul>` : ''}${etat ? `<p style="color:#f3c96b">${etat}</p>` : ''}
     <div class="choixh"><button onclick="fermer()">Fermer</button></div>`);
+}
+// la fenêtre d'ordre d'une créature prête : attaquer, se mettre en défense, ou voir sa fiche
+function choixUnite(u) {
+  const a = atk(S.J, u) + (u.cachee ? 2 : 0), art = typeof ARTS !== 'undefined' && ARTS.includes(u.louve ? 'louve' : u.key) ? `cartes/${u.louve ? 'louve' : u.key}.webp?v=1` : '';
+  window._ordre = i => { fermer(); if (i === 0) { attaquant = u; sel = []; } else if (i === 1) { enDefense(S.J, u); attaquant = null; } else if (i === 2) { ficheUnite(S.J, u); return; } rendu(); };
+  fenetre(`<div class="ordre">
+    <div class="ordre-tete"${art ? ` style="background-image:linear-gradient(90deg,#1d1b3a 35%,#1d1b3a99),url('${art}')"` : ''}>
+      <div><div class="ordre-nom">${u.n}</div><div class="ordre-stats"><span class="oa">⚔ ${atk(S.J, u)}</span><span class="ov">❤ ${u.v}</span>${u.cachee ? '<span class="oc">👁 Cachée</span>' : ''}${u.barriere ? '<span class="ob">Barrière</span>' : ''}</div></div>
+      <button class="ordre-fiche" onclick="_ordre(2)">ℹ Fiche</button></div>
+    <button class="ordre-bt att" onclick="_ordre(0)"><span class="oi">⚔</span><span><b>Attaquer</b><small>${a} dégât${a > 1 ? 's' : ''}${u.cachee ? ' (Embuscade +2)' : ''} · tu choisis la cible</small></span></button>
+    <button class="ordre-bt def" onclick="_ordre(1)"><span class="oi">🛡</span><span><b>Se mettre en défense</b><small>n’attaque pas · protège ton héros jusqu’à ton prochain tour</small></span></button>
+    <button class="ordre-annule" onclick="fermer()">Annuler</button></div>`);
 }
 function enDefense(J, u) { u.defense = true; u.pret = false; log(`🛡 ${u.n} se met en défense : elle protège ${J.nom}.`); fx({ t:'defense', c:ref({ J, u }) }); }
 function attaqueLouve(J) {
@@ -646,9 +671,7 @@ function touche(k) {
   if (k.J === S.J && k.u && k.u.louve && k.u.pret && !ciblage && !S.J.aLancer) { attaquant = null; attaqueLouve(S.J); rendu(); return; }
   if (k.J === S.J && k.u && k.u.pret && !k.u.louve && !ciblage) {
     if (attaquant === k.u) { attaquant = null; rendu(); return; }
-    const u = k.u; choix(`${u.n} (⚔ ${atk(S.J, u)} · ❤ ${u.v}) : que fait-elle ?`, ['⚔ Attaquer', '🛡 Se mettre en défense', 'ℹ Voir sa fiche'], i => {
-      if (i === 0) { attaquant = u; sel = []; } else if (i === 1) { enDefense(S.J, u); attaquant = null; } else { ficheUnite(S.J, u); return; } rendu(); });
-    return;
+    choixUnite(k.u); return;
   }
   // toute autre créature (adverse, ou à moi mais pas prête) : sa fiche
   if (k.u && !ciblage && !attaquant) ficheUnite(k.J, k.u);
@@ -685,17 +708,48 @@ function glisseFin(e) {
 }
 function annuler() { sel = []; ciblage = null; attaquant = null; rendu(); }
 
+// ce que veut dire chaque étiquette sous la barre de vie (on la touche pour savoir)
+const PASTILLES = {
+  pv:['❤ Points de vie', 'Quand ils tombent à 0, le héros perd la partie.'],
+  pc:['◆ PC (points de compétence)', '+1 au début de chaque tour (6 au plus), +1 par dé vendu. Ils paient les cartes, l’Ultime (3), les relances (1), le +1 / −1 et les Premiers soins.'],
+  garde:['🛡 Garde', 'Bouclier posé avec un dé. Il absorbe les dégâts reçus jusqu’au prochain tour de ce héros, puis disparaît.'],
+  bouclier:['🛡 Bouclier', 'Absorbe les prochains dégâts reçus. Il reste tant qu’il n’est pas usé.'],
+  epines:['🌿 Épines', 'Une créature qui attaque ce héros reçoit ces dégâts en retour.'],
+  esquive:['💨 Esquive', 'Les prochains dégâts reçus sont divisés par deux.'],
+  contre:['⚔ Contre-attaque', 'La 1re créature qui attaque ce héros reçoit d’abord 6 dégâts.'],
+  piege:['🪤 Piège à mâchoires', 'La 1re créature qui attaque reçoit 3 dégâts et ne pourra pas attaquer au tour suivant.'],
+  cor:['📯 Cor de ralliement', 'La 1re créature de ce héros qui devrait tomber reste à 1 vie.'],
+  fournaise:['🔥 Fournaise', 'La prochaine fois que ce héros est blessé, l’adversaire perd la moitié de ces dégâts.'],
+  paillasse:['⚗ Paillasse renversée', 'Dès qu’une créature attaque ce héros, le héros adverse reçoit Poison 3.'],
+  meute:['🐺 Meute', 'Chaque 6 lancé par Pip ajoute un marqueur. À 3, la Louve arrive sur la ligne de front.'],
+  braises:['🔥 Braises', 'Chaque 6 posé sur une carte de Maëlle donne une Braise. À 3, sa prochaine carte Équipement ne coûte rien.'],
+  purete:['✦ Pureté', 'Jeton d’Aldric : il annule la prochaine altération (Poison, Saignement, Handicap) qu’il devrait recevoir. Aldric en gagne un quand il pose deux 6 dans le même tour (2 au plus).'],
+  handicap:['Handicap', 'Ce héros lancera 1 dé de moins à son prochain tour.'],
+  saigne:['Saignement', 'Au début de chacun de ses tours, ce héros perd 2 PV par niveau (3 niveaux au plus). Premiers soins l’enlève.'],
+  poison:['Poison', 'Au début de son tour, ce héros perd autant de PV que le Poison, puis le Poison baisse de 1. Premiers soins l’enlève.'],
+  silence:['Silence', 'Ce héros ne peut pas jouer de carte Sort à ce tour.'],
+  oeuvre:['Grand œuvre', 'Au prochain tour de Zéphine, tous ses dés montreront cette valeur.'],
+  ultime:['⚡ Jauge d’Ultime', '+1 par dé posé (pas vendu), +1 tous les 5 dégâts reçus. Pleine (20), elle permet l’Ultime du héros : 3 PC + sa combinaison de dés, une fois par partie.'],
+  ultimefait:['Ultime utilisé', 'Ce héros a déjà lancé son Ultime : une seule fois par partie.'],
+  main:['🂠 Cartes en main', '+1 carte au début de chaque tour, 7 au plus.'],
+};
+// toucher une étiquette : son explication (sauf pendant qu'on vise : le toucher sert alors à viser le héros)
+document.addEventListener('click', e => {
+  const p = e.target.closest && e.target.closest('.pastilles [data-k]'); if (!p || ciblage || attaquant || fxOn) return;
+  const x = PASTILLES[p.dataset.k]; if (!x) return; e.stopPropagation();
+  fenetre(`<h2>${x[0]}</h2><p><b>${p.textContent.trim()}</b></p><p>${x[1]}</p><div class="choixh"><button onclick="fermer()">Compris</button></div>`);
+}, true);
 function barre(P, haut) {
   const ref = `{J:S.${haut ? 'O' : 'J'}}`;
   return `<div class="barre ${estCible({ J:P }) ? 'cible' : ''} ${P.gardeB || P.bouclier ? 'protege' : ''}" data-bouclier="${(P.gardeB || 0) + (P.bouclier || 0)}" id="b-${haut ? 'O' : 'J'}" style="--c:${P.c}" onclick="touche(${ref})"><img src="${IMG(P.id)}" alt=""><div style="flex:1"><div class="nom">${P.nom}${P.ordi ? ' · ordinateur' : ' · toi'}</div><div class="vie"><b style="width:${Math.max(0, P.pv) / P.pvMax * 100}%"></b><i style="width:${Math.max(0, P.pv) / P.pvMax * 100}%"></i></div><div class="pastilles">
-    <span class="p pv">❤ ${Math.max(0, P.pv)} / ${P.pvMax}</span><span class="p pc">◆ ${P.pc} PC</span>
-    ${P.gardeB ? `<span class="p g pg">🛡 Garde ${P.gardeB}</span>` : ''}${P.gardeE ? `<span class="p g">🌿 Épines ${P.gardeE}</span>` : ''}${P.esquive ? '<span class="p g">💨 Esquive</span>' : ''}
-    ${P.bouclier ? `<span class="p g pb">🛡 Bouclier ${P.bouclier}</span>` : ''}${P.contre ? '<span class="p g">⚔ Contre-attaque</span>' : ''}${P.piege ? '<span class="p g">🪤 Piège</span>' : ''}
-    ${P.cor ? '<span class="p g">📯 Cor</span>' : ''}${P.fournaise ? '<span class="p g">🔥 Fournaise</span>' : ''}${P.paillasse ? '<span class="p g">⚗ Paillasse</span>' : ''}
-    ${P.id === 'pip' && !P.front.some(u => u.louve) ? `<span class="p m">🐺 Meute ${P.meute}/3</span>` : ''}${P.id === 'maelle' ? `<span class="p m">🔥 Braises ${P.braise}/3${P.forgeGratuite ? ' · Équipement gratuit' : ''}</span>` : ''}
-    ${P.purete ? `<span class="p pu">✦ Pureté ${P.purete}</span>` : ''}${P.handicap ? '<span class="p al">Handicap</span>' : ''}${P.saigne ? `<span class="p al">Saignement ${P.saigne}</span>` : ''}
-    ${P.poison ? `<span class="p al">Poison ${P.poison}</span>` : ''}${P.silence ? '<span class="p al">Silence</span>' : ''}${P.oeuvre ? `<span class="p pu">Grand œuvre : ${P.oeuvre}</span>` : ''}
-    ${P.ultimeFait ? '<span class="p">Ultime utilisé</span>' : `<span class="p ${P.jauge >= JAUGE.max ? 'pu' : ''}">⚡ Ultime ${P.jauge}/${JAUGE.max}</span>`}<span class="p">🂠 ${P.main.length} en main</span></div></div></div>`;
+    <span data-k="pv" class="p pv">❤ ${Math.max(0, P.pv)} / ${P.pvMax}</span><span data-k="pc" class="p pc">◆ ${P.pc} PC</span>
+    ${P.gardeB ? `<span data-k="garde" class="p g pg">🛡 Garde ${P.gardeB}</span>` : ''}${P.gardeE ? `<span data-k="epines" class="p g">🌿 Épines ${P.gardeE}</span>` : ''}${P.esquive ? '<span data-k="esquive" class="p g">💨 Esquive</span>' : ''}
+    ${P.bouclier ? `<span data-k="bouclier" class="p g pb">🛡 Bouclier ${P.bouclier}</span>` : ''}${P.contre ? '<span data-k="contre" class="p g">⚔ Contre-attaque</span>' : ''}${P.piege ? '<span data-k="piege" class="p g">🪤 Piège</span>' : ''}
+    ${P.cor ? '<span data-k="cor" class="p g">📯 Cor</span>' : ''}${P.fournaise ? '<span data-k="fournaise" class="p g">🔥 Fournaise</span>' : ''}${P.paillasse ? '<span data-k="paillasse" class="p g">⚗ Paillasse</span>' : ''}
+    ${P.id === 'pip' && !P.front.some(u => u.louve) ? `<span data-k="meute" class="p m">🐺 Meute ${P.meute}/3</span>` : ''}${P.id === 'maelle' ? `<span data-k="braises" class="p m">🔥 Braises ${P.braise}/3${P.forgeGratuite ? ' · Équipement gratuit' : ''}</span>` : ''}
+    ${P.purete ? `<span data-k="purete" class="p pu">✦ Pureté ${P.purete}</span>` : ''}${P.handicap ? '<span data-k="handicap" class="p al">Handicap</span>' : ''}${P.saigne ? `<span data-k="saigne" class="p al">Saignement ${P.saigne}</span>` : ''}
+    ${P.poison ? `<span data-k="poison" class="p al">Poison ${P.poison}</span>` : ''}${P.silence ? '<span data-k="silence" class="p al">Silence</span>' : ''}${P.oeuvre ? `<span data-k="oeuvre" class="p pu">Grand œuvre : ${P.oeuvre}</span>` : ''}
+    ${P.ultimeFait ? '<span data-k="ultimefait" class="p">Ultime utilisé</span>' : `<span data-k="ultime" class="p ${P.jauge >= JAUGE.max ? 'pu' : ''}">⚡ Ultime ${P.jauge}/${JAUGE.max}</span>`}<span data-k="main" class="p">🂠 ${P.main.length} en main</span></div></div></div>`;
 }
 function front(P, haut) {
   const cote = haut ? 'O' : 'J';
