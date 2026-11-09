@@ -172,6 +172,16 @@
   @keyframes carteb { 0% { opacity:0; transform:translateY(20px) rotate(0); } 40% { opacity:1; } 100% { opacity:0; transform:translateY(-40px) rotate(var(--r)); } }
   .piece { bottom:30%; color:#4aa8ff; font-size:20px; text-shadow:0 0 6px #fff; opacity:0; animation:monte .8s ease-out forwards; }
   .fleche-haut { position:absolute; left:50%; top:50%; color:#f3c96b; font-size:34px; text-shadow:0 0 10px #f3c96b; animation:monte .7s ease-out forwards; }
+  .bandact { position:fixed; left:50%; top:8px; transform:translateX(-50%); width:min(94vw, 520px); background:#1d1b3aee; border:2px solid #f3c96b; border-radius:14px; padding:8px 12px;
+    color:#fff; font-size:.95em; text-align:center; box-shadow:0 6px 18px #000a; animation:bandin .25s ease-out; transition:opacity .35s, transform .35s; z-index:3; }
+  .bandact.ordi { border-color:#ff7a59; } .bandact.moi { border-color:#7dffb0; }
+  .bandact.part { opacity:0; transform:translate(-50%, -20px); }
+  .bandact .vs { background:#000a; border-radius:8px; padding:0 6px; white-space:nowrap; } .bandact .dg { color:#ff8a8a; font-weight:bold; white-space:nowrap; }
+  @keyframes bandin { from { opacity:0; transform:translate(-50%, -20px); } }
+  .mire { position:fixed; left:0; top:0; pointer-events:none; }
+  .mire line { stroke:#ff5a5a; stroke-width:3; stroke-dasharray:8 7; animation:defile .4s linear infinite; filter:drop-shadow(0 0 3px #ff2b2b); }
+  .mire circle { fill:none; stroke:#ff5a5a; stroke-width:3; animation:mire .5s ease-out; filter:drop-shadow(0 0 4px #ff2b2b); } .mire circle.c2 { fill:#ff5a5a88; }
+  @keyframes defile { to { stroke-dashoffset:-15; } } @keyframes mire { from { r:60; opacity:0; } }
 </style>
 </head>
 <body>
@@ -180,14 +190,14 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261109-203004';
+const VERSION = '20261109-203245';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); location.replace('duel.html?v=' + v); }
 }).catch(() => {});
 </script>
-<script src="cartes.js?v=20261109-203004"></script>
-<script src="donnees.js?v=20261109-203004"></script>
+<script src="cartes.js?v=20261109-203245"></script>
+<script src="donnees.js?v=20261109-203245"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -196,6 +206,8 @@ const log = t => { S.log.unshift(t); };
 // Animations : le moteur note ce qui se passe (FX), l'écran le rejoue ensuite pas à pas. Rien pendant les simulations.
 let FX = [], fxOn = false, fxApres = [], fxVite = 1;
 const fx = e => { if (S && !S.auto) FX.push(e); };
+// bilan du tour de l'ordinateur (montré à la fin de son tour)
+const bilan = (J, cle, txt) => { if (!S || S.auto || !S.bilan || J !== S.O) return; S.bilan[cle].push(txt); };
 const ref = k => ({ s:k.J === S.J ? 'J' : 'O', uid:k.u ? k.u.id : null });
 function joueur(id, ordi) {
   const h = HEROS[id];
@@ -253,7 +265,7 @@ function degats(k, n, ignore) {
       if (J.esquive) { J.esquive = false; r = Math.floor(r / 2); log(`${J.nom} esquive : dégâts divisés par 2.`); }
       const g = Math.min(J.gardeB, r); J.gardeB -= g; r -= g;
       const b = Math.min(J.bouclier, r); J.bouclier -= b; r -= b;
-      if (g + b) log(`Les boucliers de ${J.nom} absorbent ${g + b}.`); abs = g + b;
+      if (g + b) log(`Les boucliers de ${J.nom} absorbent ${g + b}.`); abs = g + b; if (S.bilan && J === S.J) S.bilan.abs += g + b;
     }
     J.pv -= r; log(r ? `${J.nom} perd ${r} PV.` : `${J.nom} ne perd aucun PV.`);
     fx({ t:'degat', c:ref(k), n:r, abs, pv:Math.max(0, J.pv), garde:J.gardeB, bouclier:J.bouclier });
@@ -266,6 +278,7 @@ function remplit(J, n) { if (J.ultimeFait || J.jauge >= JAUGE.max) return; J.jau
 function fin() { if (S.fini) return; if (S.J.pv <= 0 || S.O.pv <= 0) S.fini = S.J.pv > 0 ? 'gagne' : 'perdu'; }
 
 function debutTour(J) {
+  if (J.gardeB > 0 || J.gardeE > 0) fx({ t:'finGarde', s:J === S.J ? 'J' : 'O', n:J.gardeB });
   J.tours++; J.gardeB = 0; J.gardeE = 0; J.contre = J.piege = J.cor = J.fournaise = J.paillasse = J.esquive = false;
   J.relance = 1 + (J.boussole ? 1 : 0); J.cartesJouees = 0; J.six = 0; J.pureteTour = false; J.transmu = false; J.dernierSort = null; J.gardeFaite = false;
   if (J.tours > 1) { J.pc = Math.min(6, J.pc + 1); pioche(J, 1); }
@@ -327,21 +340,24 @@ function pose(J, quoi, ds, k, indexMain) {
   if (quoi === 'transmu') { J.transmu = true; const d = ds[0]; const a = d.v; modifie(J, d, opp(a)); log(`${J.nom} transmute un ${a} en ${d.v}.`); return; }
   ds.forEach(d => { d.pose = true; });
   const h = HEROS[J.id];
-  if (quoi === 'vendre') { let g = 0; vs.forEach(v => g += (S.salle.id === 'autel' && v === 6) ? 2 : 1); J.pc = Math.min(6, J.pc + g); log(`${J.nom} vend ${vs.length} dé(s) : +${g} PC.`); fx({ t:'pc', s:J === S.J ? 'J' : 'O', n:g }); return; }
+  if (quoi === 'vendre') { let g = 0; vs.forEach(v => g += (S.salle.id === 'autel' && v === 6) ? 2 : 1); J.pc = Math.min(6, J.pc + g); log(`${J.nom} vend ${vs.length} dé(s) : +${g} PC.`); fx({ t:'pc', s:J === S.J ? 'J' : 'O', n:g, nb:vs.length }); return; }
   const six = vs.filter(v => v === 6).length; J.six += six;
   if (quoi !== 'ultime') remplit(J, vs.length * JAUGE.parDe);
   if (J.id === 'aldric' && J.six >= 2 && !J.pureteTour && J.purete < 2) { J.purete++; J.pureteTour = true; log('✦ Deux 6 posés : Aldric gagne un jeton de Pureté.'); }
-  if (quoi === 'garde') { J.gardeFaite = true; fx({ t:'garde', s:J === S.J ? 'J' : 'O', nom:h.garde.n }); h.garde.f(J, vs, k, ds); return; }
-  if (quoi === 'frappe') { log(`${J.nom} : Frappe (${vs.join(', ')}) : ${FRAPPE.dg(vs)} dégâts.`); fx({ t:'tir', id:J.id, s:J === S.J ? 'J' : 'O', vers:k && ref(k), nom:'Frappe', vs }); FRAPPE.f(J, vs, k); return; }
-  if (quoi === 'technique') { log(`${J.nom} : Technique (${vs.join(', ')}) : ${[0, 0, 0, 4, 7, 10][vs.length]} dégâts.`); fx({ t:'tir', id:J.id, s:J === S.J ? 'J' : 'O', vers:k && ref(k), nom:'Technique', vs }); TECHNIQUE.f(J, vs, k); return; }
-  if (quoi === 'pouvoir') { log(`${J.nom} : ${h.pouvoir.n} !`); fx({ t:'carte', key:'pouvoir', id:J.id, s:J === S.J ? 'J' : 'O', nom:h.pouvoir.n, txt:h.pouvoir.d, sorte:'Pouvoir', vers:k && k.J && ref(k), vs }); h.pouvoir.f(J, vs, k, ds); return; }
-  if (quoi === 'ultime') { J.pc -= 3; J.ultimeFait = true; log(`${J.nom} : ULTIME, ${h.ultime.n} !`); fx({ t:'ultime', s:J === S.J ? 'J' : 'O', id:J.id, nom:h.ultime.n, cit:h.cit, vers:k && k.J && ref(k) }); h.ultime.f(J, vs, k, ds); return; }
+  if (quoi === 'garde') { J.gardeFaite = true; const g0 = J.gardeB, e0 = J.gardeE, q0 = J.esquive; h.garde.f(J, vs, k, ds);
+    const quoiG = J.gardeB > g0 ? `Bouclier ${J.gardeB}` : J.gardeE > e0 ? `Épines ${J.gardeE}` : J.esquive && !q0 ? 'Esquive' : h.garde.n;
+    fx({ t:'garde', s:J === S.J ? 'J' : 'O', nom:h.garde.n, quoi:quoiG, vs }); bilan(J, 'gardes', `Garde : ${quoiG}`); return; }
+  if (quoi === 'frappe') { log(`${J.nom} : Frappe (${vs.join(', ')}) : ${FRAPPE.dg(vs)} dégâts.`); fx({ t:'tir', id:J.id, s:J === S.J ? 'J' : 'O', vers:k && ref(k), nom:'Frappe', vs, dg:FRAPPE.dg(vs), cible:k && (k.u ? k.u.n : k.J.nom) }); bilan(J, 'actions', `⚔ Frappe (${vs.join('·')}) : ${FRAPPE.dg(vs)} dégâts`); FRAPPE.f(J, vs, k); return; }
+  if (quoi === 'technique') { log(`${J.nom} : Technique (${vs.join(', ')}) : ${[0, 0, 0, 4, 7, 10][vs.length]} dégâts.`); fx({ t:'tir', id:J.id, s:J === S.J ? 'J' : 'O', vers:k && ref(k), nom:'Technique', vs, dg:[0, 0, 0, 4, 7, 10][vs.length], cible:k && (k.u ? k.u.n : k.J.nom) }); bilan(J, 'actions', `⚔ Technique (${vs.join('·')}) : ${[0, 0, 0, 4, 7, 10][vs.length]} dégâts`); TECHNIQUE.f(J, vs, k); return; }
+  if (quoi === 'pouvoir') { log(`${J.nom} : ${h.pouvoir.n} !`); bilan(J, 'actions', `✨ Pouvoir : ${h.pouvoir.n} (${vs.join('·')})`); fx({ t:'carte', key:'pouvoir', id:J.id, s:J === S.J ? 'J' : 'O', nom:h.pouvoir.n, txt:h.pouvoir.d, sorte:'Pouvoir', vers:k && k.J && ref(k), vs }); h.pouvoir.f(J, vs, k, ds); return; }
+  if (quoi === 'ultime') { J.pc -= 3; J.ultimeFait = true; log(`${J.nom} : ULTIME, ${h.ultime.n} !`); bilan(J, 'actions', `⚡ ULTIME : ${h.ultime.n}`); fx({ t:'ultime', s:J === S.J ? 'J' : 'O', id:J.id, nom:h.ultime.n, cit:h.cit, vers:k && k.J && ref(k) }); h.ultime.f(J, vs, k, ds); return; }
   const c = CARTES[quoi];
   const cout = coutCarte(J, quoi);
   J.pc -= cout; J.cartesJouees++;
   if (c.t === 'e' && J.forgeGratuite) J.forgeGratuite = false;
   J.main.splice(indexMain, 1);
   log(`${J.nom} joue ${c.n} avec ${vs.length > 1 ? 'les dés' : 'le dé'} ${vs.join(', ')} · ${cout} PC (reste ${J.pc}).`);
+  bilan(J, 'actions', `🂠 ${c.n}`);
   fx({ t:'carte', key:quoi, s:J === S.J ? 'J' : 'O', nom:c.n, txt:c.d, sorte:{ u:'Créature', s:'Sort', e:'Équipement', r:'Piège' }[c.t], cout, vers:k && k.J && ref(k), vs });
   if (J.id === 'maelle' && six) {
     J.braise += six * (1 + J.front.filter(u => u.apprenti).length);
@@ -359,7 +375,7 @@ function attaque(J, u, k) {
   if (D.paillasse) { D.paillasse = false; altere(J, 'poison', 3); }
   const a = atk(J, u);
   log(`${u.n} attaque ${k.u ? k.u.n : D.nom}.`);
-  fx({ t:'coup', de:ref({ J, u }), vers:ref(k), uk:u.louve ? 'louve' : u.key });
+  fx({ t:'coup', de:ref({ J, u }), vers:ref(k), uk:u.louve ? 'louve' : u.key, nom:u.n, a, cible:k.u ? k.u.n : D.nom }); bilan(J, 'actions', `🐾 ${u.n} attaque ${k.u ? k.u.n : 'toi'} (${a})`);
   if (k.u) {
     if (k.u.gardien) { D.pc = Math.min(6, D.pc + 1); log('Le Gardien rapporte 1 PC.'); }
     const riposte = atk(D, k.u) + (k.u.epines || 0);
@@ -380,7 +396,7 @@ function attaqueLouve(J) {
   const D = adv(J), r = [1, 2, 3].map(() => 1 + Math.floor(Math.random() * 6)), c = compte(r)[0];
   let n = c >= 3 ? 9 : c === 2 ? 5 : 2; n += r.filter(v => v === 6).length; n += l.a - 4;
   log(`🐺 La Louve lance ${r.join(' · ')} : ${n} dégâts${c === 2 ? ', Instinct' : ''}.`);
-  fx({ t:'louve', de:ref({ J, u:l }), r, n });
+  fx({ t:'louve', de:ref({ J, u:l }), r, n, cible:D.nom }); bilan(J, 'actions', `🐺 La Louve : ${n} dégâts`);
   l.pret = false;
   if (c === 2) degats({ J:D }, n, true);
   else { const bar = D.front.find(u => protege(u) && !u.cachee); degats(bar ? { J:D, u:bar } : { J:D }, n); if (c >= 3) altere(D, 'saigne'); }
@@ -461,7 +477,13 @@ function achatsAuto(J) {
     pose(J, 'pcAjuste', [mieux.d], { sens:mieux.sens });
   }
 }
-function joueOrdi() { fx({ t:'tour', s:'O', nom:S.O.nom }); debutTour(S.O); if (!S.fini) joueAuto(S.O); }
+function joueOrdi() {
+  fx({ t:'tour', s:'O', nom:S.O.nom });
+  S.bilan = { actions:[], gardes:[], pv0:S.J.pv, pvO0:S.O.pv, abs:0, front0:S.J.front.length };
+  debutTour(S.O); if (!S.fini) joueAuto(S.O);
+  const b = S.bilan; S.bilan = null;
+  if (!S.fini) fx({ t:'recap', nom:S.O.nom, actions:b.actions, gardes:b.gardes, perdu:b.pv0 - S.J.pv, abs:b.abs, soinO:S.O.pv - b.pvO0, morts:b.front0 - S.J.front.length });
+}
 function joueAuto(J) {
   transmutationAuto(J);
   let b = meilleurCoup(J);
@@ -964,7 +986,28 @@ function effetImage(nom, cible, f = 1) {
 function effet(nom, cible, f) {
   if (effetImage(nom, cible, f)) return; if (!cible || !EFFETS[nom]) return; try { EFFETS[nom](cible, f); } catch (e) {} }
 
+// bandeau d'action en haut de l'écran : qui fait quoi à qui
+function bandeauAction(s, html, ms) {
+  const d = document.createElement('div'); d.className = 'bandact ' + (s === 'O' ? 'ordi' : 'moi'); d.innerHTML = html; couche().appendChild(d);
+  setTimeout(() => d.classList.add('part'), (ms || 1400) * fxVite); setTimeout(() => d.remove(), ((ms || 1400) + 400) * fxVite);
+}
+const QUI = s => s === 'O' ? S.O.nom : 'Toi';
+// visée : ligne en pointillés de l'attaquant à la cible + mire rouge sur la cible
+async function mire(de, vers) {
+  if (!de || !vers) return; const a = centre(de), b = centre(vers);
+  const sv = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); sv.setAttribute('class', 'mire'); sv.setAttribute('width', innerWidth); sv.setAttribute('height', innerHeight);
+  sv.innerHTML = `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}"/><circle cx="${b.x}" cy="${b.y}" r="24"/><circle class="c2" cx="${b.x}" cy="${b.y}" r="8"/>`;
+  couche().appendChild(sv); await dodo(520); sv.remove();
+}
 async function joue1(e) {
+  if (e.t === 'recap') {
+    const l = [...e.actions.map(x => `<li>${x}</li>`), ...e.gardes.map(x => `<li>🛡 ${x}</li>`)].join('') || '<li>Rien de spécial.</li>';
+    const pv = e.perdu > 0 ? `<b style="color:#ff7a7a">Tu as perdu ${e.perdu} ❤</b>` : e.perdu < 0 ? `<b style="color:#7dffb0">Tu as regagné ${-e.perdu} ❤</b>` : '<b style="color:#7dffb0">Tu n’as perdu aucun ❤</b>';
+    await new Promise(ok => { fenetre(`<h2>Fin du tour de ${e.nom}</h2><ul style="padding-left:1.1em;margin:.3em 0">${l}</ul><p>${pv}${e.abs ? `<br>🛡 Ta Garde a bloqué <b>${e.abs}</b> dégât${e.abs > 1 ? 's' : ''}.` : ''}${e.morts > 0 ? `<br>💀 ${e.morts} de tes créatures est tombée.` : ''}${e.soinO > 0 ? `<br>💚 ${e.nom} s’est soignée de ${e.soinO}.` : ''}</p><div class="choixh"><button id="amoi">À moi ! ▶</button></div>`);
+      document.getElementById('amoi').onclick = () => { fermer(); ok(); }; });
+    return;
+  }
+  if (e.t === 'finGarde') { const c = el({ s:e.s }); if (c) flotte(c, '🛡 Garde terminée', 'bleu'); await dodo(500); return; }
   if (e.t === 'tour') {
     son('tour'); const d = document.createElement('div'); d.className = 'annonce'; d.textContent = e.s === 'O' ? `Tour de ${e.nom}` : 'À toi de jouer !';
     couche().appendChild(d); await dodo(e.s === 'O' ? 900 : 700); d.remove(); return;
@@ -978,7 +1021,7 @@ async function joue1(e) {
     couche().appendChild(d);
     d.animate([{ transform:`translate(-50%, ${ordi ? '-160%' : '60%'}) scale(.4) rotate(${ordi ? -8 : 8}deg)`, opacity:0 }, { transform:'translate(-50%,-50%) scale(1) rotate(0)', opacity:1 }], { duration:280 * fxVite, easing:'ease-out', fill:'forwards' });
     await dodo(e.t === 'ultime' ? 1700 : ordi ? 1250 : 650);
-    const cible = el(e.vers);
+    const cible = el(e.vers); if (cible && e.vers && e.vers.s !== e.s) await mire(d, cible);
     const nomEff = e.t === 'ultime' || e.key === 'pouvoir' ? EFF_HEROS[e.id] : EFF_CARTE[e.key], ou = cible || el({ s:e.s });
     if (cible) { const b = centre(cible); await d.animate([{ transform:'translate(-50%,-50%) scale(1)', opacity:1 }, { transform:`translate(calc(-50% + ${b.x - innerWidth / 2}px), calc(-50% + ${b.y - innerHeight / 2}px)) scale(.25) rotate(20deg)`, opacity:.3 }], { duration:300 * fxVite, easing:'ease-in', fill:'forwards' }).finished.catch(() => {}); }
     else await d.animate([{ opacity:1 }, { opacity:0, transform:'translate(-50%,-50%) scale(1.15)' }], { duration:250 * fxVite, fill:'forwards' }).finished.catch(() => {});
@@ -986,12 +1029,16 @@ async function joue1(e) {
   }
   if (e.t === 'tir') {
     const de = el({ s:e.s }), vers = el(e.vers) || el({ s:e.s === 'J' ? 'O' : 'J' }); if (!de || !vers) return;
+    bandeauAction(e.s, `<b>${QUI(e.s)}</b> · ${e.nom} <span class="vs">🎲 ${e.vs.join(' · ')}</span> → <b>${e.cible === S.J.nom ? 'toi' : e.cible || ''}</b> : <span class="dg">${e.dg} dégâts</span>`);
+    await mire(de, vers);
     son('tir'); flotte(de, `${e.nom} ${e.vs.join('·')}`, 'nom');
     const b = document.createElement('div'); b.className = 'boule'; b.style.setProperty('--c', (e.s === 'J' ? S.J : S.O).c);
     await vole(b, de, vers, 380); effet(EFF_HEROS[e.id] || 'impact', vers, e.vs.length >= 4 ? 1.3 : 1); await dodo(300); return;
   }
   if (e.t === 'coup' || e.t === 'louve') {
     const de = el(e.de), vers = el(e.vers) || el({ s:e.de.s === 'J' ? 'O' : 'J' }); if (!de || !vers) return;
+    bandeauAction(e.de.s, e.t === 'louve' ? `🐺 <b>La Louve</b> bondit → <b>${e.cible === S.J.nom ? 'toi' : e.cible}</b> : <span class="dg">${e.n} dégâts</span>` : `🐾 <b>${e.nom}</b> attaque → <b>${e.cible === S.J.nom ? 'toi' : e.cible}</b> : <span class="dg">${e.a} dégâts</span>`);
+    await mire(de, vers);
     if (e.t === 'louve') { son('louve'); flotte(de, `🐺 ${e.r.join(' · ')}`, 'nom'); await dodo(500); }
     const a = centre(de), b = centre(vers), dx = (b.x - a.x) * .8, dy = (b.y - a.y) * .8;
     de.style.zIndex = 30; de.style.position = 'relative';
@@ -1011,9 +1058,9 @@ async function joue1(e) {
   }
   if (e.t === 'soin') { const c = el(e.c); son('soin'); effetImage('coeur', c, .9); flotte(c, `+${e.n}`, 'soin'); if (c) { c.classList.remove('brille'); void c.offsetWidth; c.classList.add('brille'); } majVie(e.c, e); await dodo(450); return; }
   if (e.t === 'tombe') { const c = el(e.c); if (!c) return; son('tombe'); effetImage('mort', c, 1); await c.animate([{ transform:'none', opacity:1 }, { transform:'translateY(14px) rotate(14deg) scale(.7)', opacity:0 }], { duration:450 * fxVite, fill:'forwards' }).finished.catch(() => {}); return; }
-  if (e.t === 'garde') { const c = el({ s:e.s }); son('garde'); effetImage('armure', c, .9); flotte(c, `🛡 ${e.nom}`, 'bleu'); if (c) { c.classList.remove('garde'); void c.offsetWidth; c.classList.add('garde'); } await dodo(450); return; }
+  if (e.t === 'garde') { const c = el({ s:e.s }); son('garde'); bandeauAction(e.s, `🛡 <b>${QUI(e.s)}</b> pose sa Garde <span class="vs">🎲 ${(e.vs || []).join(' · ')}</span> : <b>${e.quoi}</b> jusqu’au prochain tour`); effetImage('armure', c, .9); flotte(c, `🛡 ${e.quoi || e.nom}`, 'bleu'); if (c) { c.classList.remove('garde'); void c.offsetWidth; c.classList.add('garde'); } await dodo(450); return; }
   if (e.t === 'defense') { const c = el(e.c); if (!c) return; son('garde'); if (!effetImage('armure', c, .7)) effet('bouclier', c); flotte(c, '🛡 En défense', 'bleu'); await dodo(500); return; }
-  if (e.t === 'pc') { const c = el({ s:e.s }); if (!c) return; ton(1200, .15, 'sine', .1); ton(1600, .2, 'sine', .08, null, .08); effetImage('pc', c, .8); flotte(c, `+${e.n} PC`, 'bleu'); await dodo(350); return; }
+  if (e.t === 'pc') { const c = el({ s:e.s }); if (!c) return; bandeauAction(e.s, `◆ <b>${QUI(e.s)}</b> vend ${e.nb || 1} dé${(e.nb || 1) > 1 ? 's' : ''} : <b>+${e.n} PC</b>`, 1000); ton(1200, .15, 'sine', .1); ton(1600, .2, 'sine', .08, null, .08); effetImage('pc', c, .8); flotte(c, `+${e.n} PC`, 'bleu'); await dodo(350); return; }
   if (e.t === 'jauge') { const c = el({ s:e.s }); if (!c) return; ton(523, .4, 'triangle', .1); ton(784, .5, 'triangle', .1, null, .12); if (!effetImage('jauge', c, 1.2)) effet('lumiere', c); flotte(c, '⚡ Ultime prêt !', 'nom'); await dodo(700); return; }
   if (e.t === 'invoque') { const f = el({ s:e.s, uid:'x' }); son('louve'); effetImage('invocation', f, 1.1); flotte(f, `🐺 ${e.nom} arrive !`, 'nom'); await dodo(700); return; }
 }
