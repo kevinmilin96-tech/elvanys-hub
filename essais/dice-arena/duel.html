@@ -287,6 +287,23 @@
   .tapis .d { width:13.5cqw; } .tapis .d img, .tapis .d .cad { width:12cqw; height:12cqw; }
   .tapis .d .sac { font-size:2.1cqw; line-height:1.1; color:#e9ffe9cc; text-shadow:0 1px 1px #000; }
   .tapis .d.cache::after { top:2cqw; font-size:6cqw; }
+  /* plateau peint, retouches du 10/11 : étiquettes autour du portrait (vie et PC en bas, Ultime et main en haut), le reste en colonne ; créatures espacées */
+  .tapis .barre .pastilles { flex-direction:column; align-items:flex-end; flex-wrap:nowrap; gap:1.3cqw; width:34cqw; }
+  .tapis .pastilles .pg, .tapis .pastilles .pb { display:none; }
+  .tapis .pastilles [data-k="pv"], .tapis .pastilles [data-k="pc"], .tapis .pastilles [data-k="ultime"], .tapis .pastilles [data-k="ultimefait"], .tapis .pastilles [data-k="main"] { position:absolute; z-index:3; font-weight:bold; }
+  .tapis .pastilles [data-k="pv"] { font-size:3.6cqw; padding:.15em .55em; border:2px solid #ffd0d0; background:radial-gradient(circle at 35% 30%, #ff6b6b, #a3162a); }
+  .tapis .pastilles [data-k="pc"] { font-size:3.4cqw; padding:.15em .5em; border:2px solid #cfe6ff; background:radial-gradient(circle at 35% 30%, #5fb0ff, #1d4f9a); }
+  .tapis .pastilles [data-k="ultime"], .tapis .pastilles [data-k="ultimefait"], .tapis .pastilles [data-k="main"] { font-size:2.7cqw; }
+  .tapis #b-O .pastilles [data-k="pv"] { left:52cqw; top:17.5cqw; } .tapis #b-O .pastilles [data-k="pc"] { left:31.5cqw; top:17.5cqw; }
+  .tapis #b-O .pastilles [data-k="ultime"], .tapis #b-O .pastilles [data-k="ultimefait"] { left:28cqw; top:-1.5cqw; } .tapis #b-O .pastilles [data-k="main"] { left:56cqw; top:-1.5cqw; }
+  .tapis #b-J .pastilles [data-k="pv"] { left:52cqw; bottom:.5cqw; } .tapis #b-J .pastilles [data-k="pc"] { left:31.5cqw; bottom:.5cqw; }
+  .tapis #b-J .pastilles [data-k="ultime"], .tapis #b-J .pastilles [data-k="ultimefait"] { left:28cqw; bottom:21cqw; } .tapis #b-J .pastilles [data-k="main"] { left:56cqw; bottom:21cqw; }
+  .tapis #b-J .nom { bottom:calc(100% + 2.5cqw); }
+  .tapis #b-O .pastilles { top:4.5cqw; } .tapis #b-J .pastilles { bottom:6cqw; }
+  .tapis .front { gap:3cqw; left:5cqw; right:5cqw; justify-content:center; }
+  .tapis .front > .u, .tapis .front > .place { flex:0 0 15.6cqw; width:15.6cqw; height:22cqw; }
+  .tapis .u .av { left:-1.2cqw; right:-1.2cqw; bottom:-2cqw; }
+  .tapis .u .av span { width:6.4cqw; height:6.4cqw; font-size:2.6cqw; border-width:1.5px; }
 </style>
 </head>
 <body>
@@ -295,7 +312,7 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261109-212335';
+const VERSION = '20261109-212754';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); location.replace('duel.html?v=' + v); }
@@ -314,8 +331,8 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261109-212335"></script>
-<script src="donnees.js?v=20261109-212335"></script>
+<script src="cartes.js?v=20261109-212754"></script>
+<script src="donnees.js?v=20261109-212754"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -327,9 +344,9 @@ const fx = e => { if (S && !S.auto) FX.push(e); };
 // bilan du tour de l'ordinateur (montré à la fin de son tour)
 const bilan = (J, cle, txt) => { if (!S || S.auto || !S.bilan || J !== S.O) return; S.bilan[cle].push(txt); };
 const ref = k => ({ s:k.J === S.J ? 'J' : 'O', uid:k.u ? k.u.id : null });
-function joueur(id, ordi) {
+function joueur(id, ordi, auto) {
   const h = HEROS[id];
-  return { id, ordi, nom:h.nom, c:h.c, pv:h.pv, pvMax:h.pv, pc:1, deck:melange([...h.deck, ...GUILDE]), main:[], des:[], front:[], tours:0,
+  return { id, ordi, nom:h.nom, c:h.c, pv:h.pv, pvMax:h.pv, pc:1, deck:melange(ordi || auto ? deckBase(id) : deckDe(id)), main:[], des:[], front:[], tours:0,
     sacs:[0, 1, 2, 3, 4].map(() => []), jauge:0, degSubis:0, bouclier:0, gardeB:0, gardeE:0, purete:0, handicap:0, saigne:0, poison:0, meute:0, braise:0, relance:1 };
 }
 function melange(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
@@ -705,7 +722,7 @@ function toucheCarte(i) {
 function nouvellePartie(id, idO, auto) {
   const autres = ORDRE.filter(x => x !== id);
   idO = idO || autres[Math.floor(Math.random() * autres.length)];
-  S = { J:joueur(id, false), O:joueur(idO, true), salle:SALLES[Math.floor(Math.random() * SALLES.length)], log:[], fini:null, auto:!!auto };
+  S = { J:joueur(id, false, !!auto), O:joueur(idO, true), salle:SALLES[Math.floor(Math.random() * SALLES.length)], log:[], fini:null, auto:!!auto };
   FX = []; fxApres = []; fxOn = false; arreteMusique();
   // le second joueur (l'ordinateur) compense : 2 PC et 1 carte de plus au départ (v2.4)
   pioche(S.J, 4); pioche(S.O, 5); S.O.pc = 3;
@@ -1026,7 +1043,7 @@ function adversaire() {
   <div class="heros6">${ORDRE.filter(id => id !== monHeros).map(id => `<button onclick="fermer();nouvellePartie(monHeros,'${id}');regles()"><img src="${IMG(id)}" alt="">${HEROS[id].nom}</button>`).join('')}
   <button onclick="fermer();nouvellePartie(monHeros);regles()" style="display:flex;align-items:center;justify-content:center;font-size:2em;min-height:110px">🎲<br><span style="font-size:.4em">au hasard</span></button></div>`);
 }
-if (typeof document !== 'undefined' && document.getElementById('app')) { if (new URLSearchParams(location.search).get('parties')) mesParties(); else accueil(); }
+if (typeof document !== 'undefined' && document.getElementById('app')) { const q = new URLSearchParams(location.search); if (q.get('parties')) mesParties(); else if (q.get('h') && HEROS[q.get('h')]) { monHeros = q.get('h'); adversaire(); } else accueil(); }
 
 // =============================================================================================== animations et sons
 // Les sons sont fabriqués par le téléphone (aucun fichier) ; 🔊 / 🔇 dans la barre de la salle.

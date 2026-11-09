@@ -8,7 +8,7 @@
 <title>La Guilde des Runes</title>
 <script>
 // Même mécanisme que le Duel : une nouvelle version = rechargement tout seul à l'ouverture (publier.sh change VERSION).
-const VERSION = '20261109-212335';
+const VERSION = '20261109-212754';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-menu-' + v)) { sessionStorage.setItem('recharge-menu-' + v, '1'); location.replace('menu.html?v=' + v); }
@@ -20,14 +20,18 @@ fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.te
   html, body { margin:0; min-height:100%; background:#120f24; color:var(--texte); font-family:Georgia, 'Times New Roman', serif; }
   /* ---------- écran titre : le portail runique ---------- */
   #titre { position:fixed; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; overflow:hidden; cursor:pointer; z-index:5;
-    background:radial-gradient(ellipse at 50% 55%, #3a2266 0%, #1c1438 45%, #0b0918 100%); }
+    background:#0b0918 url('decor/portail.webp?v=1') center 42%/cover no-repeat; }
+  #titre::after { content:''; position:absolute; inset:0; background:linear-gradient(180deg, #0b091800 55%, #0b0918cc 100%); pointer-events:none; }
+  #titre > * { z-index:1; }
+  .ciel { opacity:.5; }
   #titre.part { animation:plonge 1.1s cubic-bezier(.6,0,.9,.4) forwards; }
   @keyframes plonge { to { transform:scale(6); opacity:0; filter:blur(4px); } }
   .ciel i { position:absolute; width:2px; height:2px; border-radius:50%; background:#fff; opacity:.6; animation:scint 3s ease-in-out infinite; }
   @keyframes scint { 50% { opacity:.1; } }
-  .portail { position:relative; width:min(78vw, 360px); aspect-ratio:1; margin-top:2vh; }
+  .portail { position:relative; width:min(78vw, 360px); aspect-ratio:1; margin-top:9vh; }
   .portail > * { position:absolute; inset:0; border-radius:50%; }
-  .coeur { inset:22%; background:radial-gradient(circle, #fff 0%, #ffe9a8 12%, #c084fc 38%, #5b2ab0 62%, transparent 72%); filter:blur(2px); animation:respire 3.2s ease-in-out infinite; }
+  .nuage { opacity:.35; }
+  .coeur { opacity:.4; inset:22%; background:radial-gradient(circle, #fff 0%, #ffe9a8 12%, #c084fc 38%, #5b2ab0 62%, transparent 72%); filter:blur(2px); animation:respire 3.2s ease-in-out infinite; }
   .nuage { background:conic-gradient(from 0deg, #8b5cf600, #8b5cf6aa, #5ff5e655, #f3c96b88, #8b5cf600, #e5262c44, #8b5cf6aa, #8b5cf600); filter:blur(16px); animation:tourne 9s linear infinite; }
   .nuage.n2 { inset:8%; filter:blur(10px); animation-duration:6s; animation-direction:reverse; opacity:.8; }
   .anneau { border:2px solid #f3c96b66; animation:tourne 26s linear infinite; }
@@ -111,7 +115,7 @@ fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.te
   <p class="bas">Prototype · dessins et chiffres encore en travail</p>
 </div>
 
-<script src="donnees.js?v=20261109-212335"></script>
+<script src="donnees.js?v=20261109-212754"></script>
 <script>
 // ciel étoilé + runes du portail (symboles, pas des lettres), aux couleurs des héros
 const ciel = document.getElementById('ciel');

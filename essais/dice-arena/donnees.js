@@ -165,3 +165,27 @@ const SALLES = [
   { n:'L’Autel du six', d:'Vendre un 6 rapporte 2 PC au lieu de 1.', id:'autel' },
 ];
 
+// ===== Tour des héros (10/11) : profil de jeu affiché (barres de 1 à 5), équilibre mesuré par le simulateur (v2.5, 6 000 parties),
+// cartes en plus que le joueur peut mettre dans son deck, et deck personnalisé (gardé sur le téléphone, jamais pour l'ordinateur).
+const PROFILS = {
+  maelle: { Attaque:5, Défense:3, Soin:1, Contrôle:1, Difficulté:2, style:'Frappeuse' },
+  aldric: { Attaque:3, Défense:5, Soin:3, Contrôle:1, Difficulté:2, style:'Protecteur' },
+  pip:    { Attaque:3, Défense:3, Soin:5, Contrôle:2, Difficulté:3, style:'Soigneuse' },
+  oria:   { Attaque:3, Défense:2, Soin:1, Contrôle:5, Difficulté:4, style:'Stratège' },
+  gorm:   { Attaque:4, Défense:3, Soin:1, Contrôle:2, Difficulté:3, style:'Soutien' },
+  zephine:{ Attaque:3, Défense:2, Soin:1, Contrôle:4, Difficulté:5, style:'Alchimiste' },
+};
+const EQUILIBRE = { maelle:50, aldric:47, pip:50, oria:50, gorm:51, zephine:52 };
+const POOL_PLUS = { pip:['rosee'], oria:['raccourci', 'guetteur'] };
+const DECK_TAILLE = 21, DECK_MAX = 2;
+const deckBase = id => [...HEROS[id].deck, ...GUILDE];
+const poolDe = id => [...new Set([...HEROS[id].deck, ...(POOL_PLUS[id] || []), ...GUILDE])];
+function deckValide(id, d) {
+  if (!Array.isArray(d) || d.length !== DECK_TAILLE) return false; const pool = poolDe(id), n = {};
+  return d.every(k => { n[k] = (n[k] || 0) + 1; return pool.includes(k) && n[k] <= DECK_MAX; });
+}
+function deckDe(id) {
+  try { const d = JSON.parse(localStorage.getItem('guilde-deck-' + id) || 'null'); if (deckValide(id, d)) return d; } catch (e) {}
+  return deckBase(id);
+}
+
