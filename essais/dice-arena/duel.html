@@ -316,7 +316,7 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261109-213131';
+const VERSION = '20261109-213709';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); location.replace('duel.html?v=' + v); }
@@ -335,8 +335,8 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261109-213131"></script>
-<script src="donnees.js?v=20261109-213131"></script>
+<script src="cartes.js?v=20261109-213709"></script>
+<script src="donnees.js?v=20261109-213709"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -797,7 +797,7 @@ function rouler(ds, ensuite) {
 function lancerMesDes() {
   const J = S.J; if (!J.aLancer || roule) return;
   demarreMusique();
-  rouler(J.des, () => { J.des.forEach(d => lance(J, d)); J.aLancer = false; log(`Tu lances : ${J.des.map(d => d.v).join(' · ')}`); rendu(); });
+  rouler(J.des, () => { J.des.forEach(d => lance(J, d)); J.aLancer = false; if (J.neuf >= 0) { J.neufJusque = Date.now() + 3500; setTimeout(() => { if (!fxOn && S && S.J === J) dessine(); }, 3600); } log(`Tu lances : ${J.des.map(d => d.v).join(' · ')}`); rendu(); });
 }
 function relancer() {
   const J = S.J; if (!J.relance || !sel.length || roule) return;
@@ -903,7 +903,7 @@ function dessine() {
     <button class="sonbt ${sonOn ? '' : 'off'}" onclick="basculeSon()" aria-label="Bruitages" title="Bruitages"><svg viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/>${sonOn ? '<path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>' : '<path d="M16 9l5 6M21 9l-5 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>'}</svg></button>
     <button class="sonbt ${musOn ? '' : 'off'}" onclick="basculeMusique()" aria-label="Musique" title="Musique"><svg viewBox="0 0 24 24"><path d="M9 17V5l11-2v12" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="6.5" cy="17.5" r="2.8" fill="currentColor"/><circle cx="17.5" cy="15.5" r="2.8" fill="currentColor"/>${musOn ? '' : '<path d="M3 3l18 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>'}</svg></button></span></div>
   <div class="plateau tapis">${barre(O, true)}${front(O, true)}<div class="milieu"><span>✦ ◆ ✦</span></div>${front(J, false)}${barre(J, false)}
-    <div class="des" ontouchstart="glisseDebut(event)" ontouchend="glisseFin(event)">${J.des.map((d, i) => `<div class="d ${sel.includes(d) ? 'sel' : ''} ${d.pose ? 'pose' : ''} ${d.mod ? 'mod' : ''} ${J.aLancer ? 'cache' : ''} ${i === J.neuf ? 'neuf' : ''}" onclick="choisirDe(${i})"><img src="${FACE(J.id, d.v || 1)}" alt="${d.v || '?'}"><div class="sac">${i === J.neuf ? '✨ nouveau dé' : sacTxt(J, d)}</div></div>`).join('')}${[...Array(Math.max(0, 5 - J.des.length)).keys()].map(k => { const i = J.des.length + k, t = i - 1;
+    <div class="des" ontouchstart="glisseDebut(event)" ontouchend="glisseFin(event)">${J.des.map((d, i) => `<div class="d ${sel.includes(d) ? 'sel' : ''} ${d.pose ? 'pose' : ''} ${d.mod ? 'mod' : ''} ${J.aLancer ? 'cache' : ''} ${i === J.neuf && (J.aLancer || Date.now() < (J.neufJusque || 0)) ? 'neuf' : ''}" onclick="choisirDe(${i})"><img src="${FACE(J.id, d.v || 1)}" alt="${d.v || '?'}"><div class="sac">${i === J.neuf && (J.aLancer || Date.now() < (J.neufJusque || 0)) ? '✨ nouveau dé' : sacTxt(J, d)}</div></div>`).join('')}${[...Array(Math.max(0, 5 - J.des.length)).keys()].map(k => { const i = J.des.length + k, t = i - 1;
       return `<div class="d verrou"><div class="cad">🔒</div><div class="sac">${J.tours >= t ? 'Handicap ce tour' : 'dé n° ' + (i + 1) + '<br>au tour ' + t}</div></div>`; }).join('')}</div>
   </div>
   ${J.aLancer ? '<button class="lancer" onclick="lancerMesDes()">🎲 Lancer les dés <span style="font-weight:normal;font-size:.75em">(ou glisse le doigt vers le haut)</span></button>' : ''}
