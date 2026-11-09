@@ -174,14 +174,14 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261109-200319';
+const VERSION = '20261109-200458';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); location.replace('duel.html?v=' + v); }
 }).catch(() => {});
 </script>
-<script src="cartes.js?v=20261109-200319"></script>
-<script src="donnees.js?v=20261109-200319"></script>
+<script src="cartes.js?v=20261109-200458"></script>
+<script src="donnees.js?v=20261109-200458"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -920,7 +920,7 @@ const ANIM_IMG = { degat:'eclat', 'gros-degat':'eclat', coeur:'monte', armure:'e
   lame:'eclat', impact:'eclat', lumiere:'tourne', etincelles:'eclat', etoiles:'tourne', ondes:'eclat', vent:'eclat', poison:'monte', brume:'eclat', alchimie:'tourne', bouclier:'eclat', soin:'monte', invocation:'tourne', marteau:'eclat', fleche:'eclat', ronces:'tourne' };
 const IMG_OK = {};
 Object.keys(ANIM_IMG).forEach(n => { const i = new Image(); i.onload = () => { IMG_OK[n] = true; }; i.src = `effets/${n}.webp?v=1`; });
-const ALIAS_IMG = { invoque:'invocation', bouclier:'armure', 'gros-degat':'degat' };
+const ALIAS_IMG = { invoque:'invocation', bouclier:'armure', 'gros-degat':'degat', feuilles:'soin' };
 function effetImage(nom, cible, f = 1) {
   if (!IMG_OK[nom] && ALIAS_IMG[nom] && IMG_OK[ALIAS_IMG[nom]]) { if (nom === 'gros-degat') f *= 1.35; nom = ALIAS_IMG[nom]; }
   if (!IMG_OK[nom] || !cible) return false;
@@ -973,7 +973,7 @@ async function joue1(e) {
   if (e.t === 'degat') {
     const c = el(e.c); if (!c) return;
     if (e.abs) { son('bouclier'); effetImage('armure-casse', c, .8); flotte(c, `🛡 ${e.abs}`, 'bleu'); await dodo(e.n ? 250 : 450); }
-    if (e.n) { effetImage(e.vert ? 'poison-tic' : e.n >= 8 ? 'gros-degat' : 'degat', c, e.n >= 8 ? 1.2 : .9); son(e.n >= 8 ? 'gros' : 'coup'); secoue(c, e.vert ? 'vert' : 'rouge'); flotte(c, `−${e.n}${e.mot ? ' ' + e.mot : ''}`, e.vert ? 'vert' : e.n >= 8 ? 'rouge gros' : 'rouge'); }
+    if (e.n) { effetImage(e.vert ? 'poison-tic' : e.n >= 8 ? 'gros-degat' : 'degat', c, e.n >= 8 ? 1.4 : .9); if (e.n >= 8) document.getElementById('app').animate([{ transform:'none' }, { transform:'translate(-6px,4px)' }, { transform:'translate(5px,-5px)' }, { transform:'translate(-3px,2px)' }, { transform:'none' }], { duration:380 }); son(e.n >= 8 ? 'gros' : 'coup'); secoue(c, e.vert ? 'vert' : 'rouge'); flotte(c, `−${e.n}${e.mot ? ' ' + e.mot : ''}`, e.vert ? 'vert' : e.n >= 8 ? 'rouge gros' : 'rouge'); }
     majVie(e.c, e); await dodo(e.n ? 480 : 200); return;
   }
   if (e.t === 'soin') { const c = el(e.c); son('soin'); effetImage('coeur', c, .9); flotte(c, `+${e.n}`, 'soin'); if (c) { c.classList.remove('brille'); void c.offsetWidth; c.classList.add('brille'); } majVie(e.c, e); await dodo(450); return; }
