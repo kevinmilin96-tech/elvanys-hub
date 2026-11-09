@@ -100,13 +100,13 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261109-185246';
+const VERSION = '20261109-185956';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); location.replace('duel.html?v=' + v); }
 }).catch(() => {});
 </script>
-<script src="donnees.js?v=20261109-185246"></script>
+<script src="donnees.js?v=20261109-185956"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -472,6 +472,7 @@ function touche(k) {
   if (S.fini) return;
   if (ciblage && estCible(k)) { const c = ciblage; ciblage = null; pose(S.J, c.quoi, c.ds, k, c.im); sel = []; rendu(); return; }
   if (attaquant && estCible(k)) { attaque(S.J, attaquant, k); attaquant = null; rendu(); return; }
+  if (k.J === S.J && k.u && k.u.louve && k.u.pret && !ciblage && !S.J.aLancer) { attaquant = null; attaqueLouve(S.J); rendu(); return; }
   if (k.J === S.J && k.u && k.u.pret && !k.u.louve && !ciblage) { attaquant = attaquant === k.u ? null : k.u; sel = []; rendu(); }
 }
 // le lancer : les dés roulent ~0,8 s avant de montrer leur face (le résultat vient toujours du sac)
@@ -520,8 +521,8 @@ function barre(P, haut) {
 function front(P, haut) {
   const cote = haut ? 'O' : 'J';
   return `<div class="front${P.front.length ? '' : ' vide'}">${P.front.map((u, i) => {
-    const cls = [estCible({ J:P, u }) ? 'cible' : '', attaquant === u ? 'choisi' : '', !haut && u.pret && !u.louve ? 'pret' : '', !u.pret ? 'dort' : ''].join(' ');
-    const tags = [u.barriere ? 'Barrière' : '', u.cachee ? 'Cachée' : '', u.charge ? 'Charge' : '', u.epines ? `Épines ${u.epines}` : '', u.bouclier ? `🛡${u.bouclier}` : '', u.entrave ? 'Entravé' : '', u.louve ? 'attaque seule' : '', !haut && !u.louve ? (u.pret ? '⚔ prête' : '💤 repos') : ''].filter(Boolean).join(' · ');
+    const cls = [estCible({ J:P, u }) ? 'cible' : '', attaquant === u ? 'choisi' : '', !haut && u.pret ? 'pret' : '', !u.pret ? 'dort' : ''].join(' ');
+    const tags = [u.barriere ? 'Barrière' : '', u.cachee ? 'Cachée' : '', u.charge ? 'Charge' : '', u.epines ? `Épines ${u.epines}` : '', u.bouclier ? `🛡${u.bouclier}` : '', u.entrave ? 'Entravé' : '', u.louve && haut ? 'Louve' : '', !haut ? (u.pret ? (u.louve ? '🐺 touche-la !' : '⚔ prête') : '💤 repos') : ''].filter(Boolean).join(' · ');
     return `<div class="u ${cls}" onclick="touche({J:S.${cote},u:S.${cote}.front[${i}]})"><b>${u.n}</b><div class="tg">${tags}</div><div class="av"><span>⚔ ${atk(P, u)}</span><span>❤ ${u.v}</span></div></div>`;
   }).join('')}</div>`;
 }
@@ -545,6 +546,7 @@ function rendu() {
   else if (attaquant) bandeau = `⚔ ${attaquant.n} attaque : touche une cible en vert.`;
   else if (sel.length) bandeau = `Dés choisis : ${vals(sel).join(', ')}. Touche où les poser (en vert).`;
   else if (J.des.some(d => !d.pose)) bandeau = '1. Touche un ou plusieurs dés. 2. Touche où les poser.';
+  else if (J.front.some(u => u.pret && u.louve)) bandeau = '🐺 Touche la Louve : elle lance ses 3 dés et attaque. Sinon, elle attaque seule à « Fin du tour ».';
   else if (J.front.some(u => u.pret && !u.louve)) bandeau = '⚔ Tes créatures dorées peuvent attaquer : touche-en une puis sa cible. Sinon, elles attaquent le héros à « Fin du tour ».';
   else bandeau = 'Tous tes dés sont posés : touche « Fin du tour ».';
   document.getElementById('app').innerHTML = `
