@@ -34,6 +34,9 @@
   .u.choisi { box-shadow:0 0 0 3px #fff, 0 0 12px #fff; }
   .u.cible { box-shadow:0 0 0 3px var(--ok), 0 0 12px var(--ok); }
   .u.dort { opacity:.75; }
+  .u.mystere { background:radial-gradient(circle at 50% 35%, #4a2f7a, #160f24 75%); color:#cbb6ff; border-color:#8b5cf6; box-shadow:0 0 12px #8b5cf688; animation:brume 2.4s ease-in-out infinite; }
+  .u.mystere b { font-size:2em; min-height:1.15em; line-height:1.15; color:#e9dcff; text-shadow:0 0 10px #b04bff; } .u.mystere .tg { color:#cbb6ff; } .u.mystere .av span { color:#cbb6ff !important; }
+  @keyframes brume { 50% { box-shadow:0 0 18px #b04bffaa; } }
   .u.cachee { background:linear-gradient(160deg, #3a2a55, #1d1626) !important; color:#e9dcff; border-color:#8b5cf6; box-shadow:0 0 10px #8b5cf688; } .u.cachee b, .u.cachee .tg { color:#e9dcff; }
   .u.defense, .u.dort.defense { opacity:1; box-shadow:0 0 0 3px #8fd3ff, 0 0 12px #8fd3ff; }
   .milieu { text-align:center; font-size:.75em; color:#f3c96bcc; font-style:italic; padding:2px 0; }
@@ -216,7 +219,7 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261109-210915';
+const VERSION = '20261109-211338';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); location.replace('duel.html?v=' + v); }
@@ -235,8 +238,8 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261109-210915"></script>
-<script src="donnees.js?v=20261109-210915"></script>
+<script src="cartes.js?v=20261109-211338"></script>
+<script src="donnees.js?v=20261109-211338"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -397,8 +400,11 @@ function pose(J, quoi, ds, k, indexMain) {
   if (c.t === 'e' && J.forgeGratuite) J.forgeGratuite = false;
   J.main.splice(indexMain, 1);
   log(`${J.nom} joue ${c.n} avec ${vs.length > 1 ? 'les dés' : 'le dé'} ${vs.join(', ')} · ${cout} PC (reste ${J.pc}).`);
-  bilan(J, 'actions', `🂠 ${c.n}`);
-  fx({ t:'carte', key:quoi, s:J === S.J ? 'J' : 'O', nom:c.n, txt:c.d, sorte:{ u:'Créature', s:'Sort', e:'Équipement', r:'Piège' }[c.t], cout, vers:k && k.J && ref(k), vs });
+  const secret = !S.auto && J !== S.J && c.u && c.u.cachee;
+  if (secret) S.log[0] = `${J.nom} pose une créature cachée · ${cout} PC.`;
+  bilan(J, 'actions', secret ? '👁 une créature cachée' : `🂠 ${c.n}`);
+  if (secret) fx({ t:'carte', key:'cachee', s:'O', nom:'Créature cachée', txt:'Une créature arrive dans l’ombre : on ne sait pas laquelle.', sorte:'Créature', cout });
+  else fx({ t:'carte', key:quoi, s:J === S.J ? 'J' : 'O', nom:c.n, txt:c.d, sorte:{ u:'Créature', s:'Sort', e:'Équipement', r:'Piège' }[c.t], cout, vers:k && k.J && ref(k), vs });
   if (J.id === 'maelle' && six) {
     J.braise += six * (1 + J.front.filter(u => u.apprenti).length);
     if (J.braise >= 3) { J.braise = 0; J.forgeGratuite = true; log('🔥 3 Braises : la prochaine carte Équipement de Maëlle ne coûte rien.'); }
@@ -434,6 +440,7 @@ const ciblesAttaque = D => { const vis = D.front.filter(u => !u.cachee); return 
 const MOTS = { barriere:['Barrière', 'protège son héros : les créatures adverses doivent l’attaquer d’abord.'], cachee:['Cachée', 'on ne peut ni l’attaquer ni la viser tant qu’elle n’a pas attaqué. Sa première attaque depuis l’ombre est une EMBUSCADE : +2 dégâts. Ensuite elle se montre (les cartes qui « révèlent » la font sortir de l’ombre plus tôt).'],
   charge:['Charge', 'peut attaquer dès son arrivée.'], defense:['En défense', 'n’attaque pas ce tour et protège son héros comme une Barrière.'], entrave:['Entravée', 'ne pourra pas attaquer au prochain tour.'] };
 function ficheUnite(P, u) {
+  if (P !== S.J && u.cachee) { fenetre('<h2>👁 Créature cachée</h2><p>On ne sait pas ce que c’est : ni son nom, ni son attaque, ni sa vie.</p><p>Tu ne peux ni l’attaquer ni la viser. Elle se montrera quand elle attaquera (avec une <b>Embuscade</b> : +2 dégâts), ou si tu joues une carte qui <b>révèle</b> les Cachées (Torche, Lanterne runique, Flèche de repérage).</p><div class="choixh"><button onclick="fermer()">Compris</button></div>'); return; }
   const c = u.key && CARTES[u.key], art = typeof ARTS !== 'undefined' && ARTS.includes(u.louve ? 'louve' : u.key) ? `<img src="cartes/${u.louve ? 'louve' : u.key}.webp?v=1" style="width:100%;border-radius:10px;margin:4px 0" alt="">` : '';
   const effet = u.louve ? 'La Louve de Pip. Elle attaque toute seule (ou quand on la touche) : elle lance 3 dés. Brelan = 9 dégâts + Saignement ; paire = 5 dégâts qui ignorent Barrière et Bouclier (Instinct) ; sinon 2 dégâts ; +1 par 6.'
     : c ? c.d : '';
@@ -756,6 +763,7 @@ function front(P, haut) {
   return `<div class="front${P.front.length ? '' : ' vide'}" id="f-${cote}">${P.front.map((u, i) => {
     const cls = [u.cachee ? 'cachee' : '', u.defense ? 'defense' : '', estCible({ J:P, u }) ? 'cible' : '', attaquant === u ? 'choisi' : '', !haut && u.pret ? 'pret' : '', !u.pret ? 'dort' : ''].join(' ');
     const tags = [u.barriere ? 'Barrière' : '', u.cachee ? '👁 Cachée' : '', u.charge ? 'Charge' : '', u.epines ? `Épines ${u.epines}` : '', u.bouclier ? `🛡${u.bouclier}` : '', u.entrave ? 'Entravé' : '', u.defense ? '🛡 en défense' : '', u.louve && haut ? 'Louve' : '', !haut ? (u.pret ? (u.louve ? '🐺 touche-la !' : '⚔ prête') : '💤 repos') : ''].filter(Boolean).join(' · ');
+    if (haut && u.cachee) return `<div class="u mystere ${estCible({ J:P, u }) ? 'cible' : ''}" data-uid="${u.id}" onclick="touche({J:S.${cote},u:S.${cote}.front[${i}]})"><b>?</b><div class="tg">👁 Cachée</div><div class="av"><span>⚔ ?</span><span>❤ ?</span></div></div>`;
     const art = u.louve ? 'louve' : u.key, img = typeof ARTS !== 'undefined' && ARTS.includes(art) ? ` style="background:linear-gradient(#0000 30%, #000c 85%), url('cartes/${art}.webp?v=1') center 30%/cover;color:#fff"` : '';
     return `<div class="u ${cls}${img ? ' illu' : ''}" data-uid="${u.id}"${img} onclick="touche({J:S.${cote},u:S.${cote}.front[${i}]})"><b>${u.n}</b><div class="tg">${tags}</div><div class="av"><span>⚔ ${atk(P, u)}</span><span>❤ ${u.v}</span></div></div>`;
   }).join('')}</div>`;
@@ -1020,7 +1028,7 @@ function defile(elt, de, a, fmt, couleur) {
 }
 const nb = t => { const m = /(-?\d+)/.exec(t || ''); return m ? +m[1] : 0; };
 function majVie(c, ev) {
-  const e = el(c); if (!e) return;
+  const e = el(c); if (!e || e.classList.contains('mystere')) return;
   if (ev.pv !== undefined && !c.uid) {
     const P = c.s === 'J' ? S.J : S.O, pill = e.querySelector('.p.pv'), barre = e.querySelector('.vie i');
     const avant = pill ? nb(pill.textContent) : ev.pv, fant = e.querySelector('.vie b');
@@ -1211,7 +1219,7 @@ async function joue1(e) {
   if (e.t === 'garde') { const c = el({ s:e.s }); son('garde'); bandeauAction(e.s, `🛡 <b>${QUI(e.s)}</b> pose sa Garde <span class="vs">🎲 ${(e.vs || []).join(' · ')}</span> : <b>${e.quoi}</b> jusqu’au prochain tour`); effetImage('armure', c, .9); flotte(c, `🛡 ${e.quoi || e.nom}`, 'bleu'); if (c) { c.classList.remove('garde'); void c.offsetWidth; c.classList.add('garde'); } await dodo(450); return; }
   if (e.t === 'defense') { const c = el(e.c); if (!c) return; son('garde'); if (!effetImage('armure', c, .7)) effet('bouclier', c); flotte(c, '🛡 En défense', 'bleu'); await dodo(500); return; }
   if (e.t === 'transforme') {
-    const c = el(e.c); if (!c) return; son('ultime'); effet('alchimie', c, 1.2);
+    const c = el(e.c); if (!c || c.classList.contains('mystere')) return; son('ultime'); effet('alchimie', c, 1.2);
     c.style.position = 'relative'; c.style.zIndex = 25;
     c.animate([{ transform:'scale(1)', filter:'none' }, { transform:'scale(1.25)', filter:'hue-rotate(80deg) brightness(1.6)', offset:.25 }, { transform:'scale(.82)', filter:'hue-rotate(80deg) brightness(1.2)', offset:.8 }, { transform:'scale(.9)', filter:'none' }], { duration:2000 * fxVite, fill:'forwards', easing:'ease-in-out' });
     const sp = c.querySelectorAll('.av span'); flotte(c, e.txt, 'nom');
