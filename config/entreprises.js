@@ -133,6 +133,19 @@ window.HUB_ENTREPRISES.demo.applications.push({
   public: 'Accueil, réception, sécurité',
 });
 
+// La Guilde des Runes (09/11) : jeu PERSONNEL de l'administrateur (cartes et dés), sur la DÉMO seulement, comme Hop-là.
+// Code : essais/dice-arena/ du hub (prototype du Duel). Jamais cochée d'office : cocher « La Guilde des Runes » sur son compte.
+window.HUB_ENTREPRISES.demo.applications.push({
+  id: 'guilde',
+  nom: 'La Guilde des Runes',
+  description: 'Mon jeu de cartes et de dés : le Duel contre l’ordinateur, six héros, des runes et de la magie.',
+  url: 'https://demo-hub.elvanys.fr/essais/dice-arena/duel.html',
+  icone: 'guilde',
+  couleur: 'guilde',
+  pour: [],
+  public: 'Personnel',
+});
+
 // Catalogue des promotions (03/11) : son propre site, servi par la même base que la démo.
 window.HUB_ENTREPRISES.demo.catalogue = 'https://demo-catalogue.elvanys.fr';
 

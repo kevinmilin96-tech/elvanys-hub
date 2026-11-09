@@ -400,3 +400,8 @@ a.tile:focus-visible { outline: 3px solid var(--tone); outline-offset: 3px; }
 
 /* Borne Kiosque Elvanys : choix de l'administrateur connecté (16/10) */
 #kiosk-admin .btn-main, #kiosk-admin .btn-soft { display: block; width: 100%; margin-top: 10px; }
+
+/* La Guilde des Runes (jeu personnel, démo) */
+.tile.tone-guilde { --tone: #8b5cf6; }
+.gu-a { color: #8b5cf6; } .gu-b { color: #c9962e; }
+.tile.tone-guilde .tile-name { font-size: 26px; }
