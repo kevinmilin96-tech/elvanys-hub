@@ -2,7 +2,7 @@
 // Zones mesurées sur le cadre (en % de 864 × 1216) : nom, pierre du coût, fenêtre de l'illustration, bande des dés, effet, losange du bas.
 const ZONES = { nom:[11.6, 8.6, 64.2, 6.3], cout:[85.9, 11.5], fenetre:[12.7, 16.3, 75.2, 39.5], bande:[11.6, 57.6, 77, 5.1], effet:[12.5, 65.4, 75.5, 23.8], bas:[49.8, 93.3] };
 // images déjà reçues (à compléter à chaque image de Gemini) : cadres des héros, illustrations des cartes
-const CADRES_OK = ['pip'], ARTS = ['louve'];
+const CADRES_OK = ['pip'], ARTS = ['louve', 'seve'];
 const CADRE_DE = k => { for (const h of ORDRE) if (HEROS[h].deck.includes(k)) return h; return 'guilde'; };
 const ICONE_SORTE = { u:'⚔', s:'✦', e:'⚒', r:'⛓' };
 function carteGuilde(k, opt = {}) {

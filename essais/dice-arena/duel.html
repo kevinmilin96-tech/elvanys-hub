@@ -174,14 +174,14 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261109-194630';
+const VERSION = '20261109-200319';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); location.replace('duel.html?v=' + v); }
 }).catch(() => {});
 </script>
-<script src="cartes.js?v=20261109-194630"></script>
-<script src="donnees.js?v=20261109-194630"></script>
+<script src="cartes.js?v=20261109-200319"></script>
+<script src="donnees.js?v=20261109-200319"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -917,7 +917,7 @@ EFFETS.griffes = (c, f = 1) => {
 // Images d'effets de Gemini qui arrivent au fil de l'eau : chaque nom listé ici est utilisé dès que effets/<nom>.webp existe ;
 // sinon l'effet dessiné par le téléphone reste. Façon de l'animer : eclat (jaillit puis s'efface), monte (s'élève), tourne (cercle).
 const ANIM_IMG = { degat:'eclat', 'gros-degat':'eclat', coeur:'monte', armure:'eclat', 'armure-casse':'eclat', 'poison-tic':'monte', pc:'monte', jauge:'monte', mort:'monte', victoire:'eclat', defaite:'eclat',
-  lame:'eclat', impact:'eclat', lumiere:'tourne', etincelles:'eclat', etoiles:'tourne', ondes:'eclat', vent:'eclat', poison:'monte', brume:'eclat', alchimie:'tourne', bouclier:'eclat', soin:'monte', invocation:'tourne', marteau:'eclat', fleche:'eclat', ronces:'eclat' };
+  lame:'eclat', impact:'eclat', lumiere:'tourne', etincelles:'eclat', etoiles:'tourne', ondes:'eclat', vent:'eclat', poison:'monte', brume:'eclat', alchimie:'tourne', bouclier:'eclat', soin:'monte', invocation:'tourne', marteau:'eclat', fleche:'eclat', ronces:'tourne' };
 const IMG_OK = {};
 Object.keys(ANIM_IMG).forEach(n => { const i = new Image(); i.onload = () => { IMG_OK[n] = true; }; i.src = `effets/${n}.webp?v=1`; });
 const ALIAS_IMG = { invoque:'invocation', bouclier:'armure', 'gros-degat':'degat' };
