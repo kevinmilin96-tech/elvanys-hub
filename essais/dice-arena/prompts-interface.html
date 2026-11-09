@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>La Guilde des Runes · Prompts de l'interface</title>
+<style>
+  body { margin:0; background:#1d1b3a; color:#f1ecff; font:16px/1.5 Georgia, serif; }
+  main { max-width:720px; margin:0 auto; padding:16px 14px 60px; }
+  h1 { color:#f3c96b; font-size:1.45em; text-align:center; margin:.2em 0; }
+  .sous { text-align:center; color:#c9c1ea; font-style:italic; }
+  .bloc { background:#2a2650; border-radius:14px; padding:12px 14px; margin:16px 0; }
+  h2 { color:#f3c96b; font-size:1.1em; margin:.1em 0 .3em; }
+  .joindre { background:#3a2f12; border:1px solid #f3c96b; border-radius:10px; padding:6px 10px; font-size:.92em; margin:6px 0; }
+  pre { white-space:pre-wrap; background:#0f0e22; border-radius:10px; padding:10px; font:13px/1.45 ui-monospace, Menlo, monospace; color:#e6e0ff; }
+  button { background:#f3c96b; color:#2b2117; border:none; border-radius:10px; padding:8px 14px; font-weight:bold; font-size:1em; }
+  .ok { color:#7dffb0; margin-left:8px; }
+  .plan li { margin:.3em 0; }
+</style>
+</head>
+<body>
+<main>
+<h1>Prompts Gemini de l'interface</h1>
+<p class="sous">La Guilde des Runes · 9 novembre · une image par prompt, dans une discussion Gemini à part</p>
+
+<div class="bloc plan">
+<h2>L'idée des écrans</h2>
+<ul>
+  <li><b>L'accueil = un grand grimoire runique</b> ouvert sur une table de la Guilde. Ses pages portent 4 grands cadres vides où l'appli posera les modes : Duel, Odyssée (donjon), Expédition (donjon en une fois) et Collection. La Coopération viendra plus tard.</li>
+  <li><b>L'Odyssée = des îles volantes</b> qu'on fait glisser de gauche à droite, une par région, chacune avec son ambiance (comme les mondes de Brawl Stars). On commence par une île, puis on garde exactement la même forme pour les autres.</li>
+  <li>Les textes, les boutons et les chiffres sont posés par l'appli : les images restent <b>sans aucun texte</b>.</li>
+</ul>
+</div>
+
+<div id="p"></div>
+</main>
+<script>
+const P = [
+ { t:'1. L’accueil : le grimoire ouvert', j:'Joignez le portrait final de Gorm (modèle de style).',
+   x:`Using the attached image only as a strict style reference (same digital painted style, same soft outlines, same warm amber main light with a cool magical blue rim light, same level of detail), paint the MAIN MENU background of a mobile fantasy card-and-dice game, tall vertical 9:16 format. A huge ancient rune grimoire lies wide open on a heavy oak table in a warm, cozy guild hall at night. On the two open pages there are FOUR large empty rounded parchment panels arranged in a 2 by 2 grid (two on the left page, two on the right page), each framed with fine gold filigree, with an empty round medallion at its top; leave every panel completely EMPTY, with no text and no pictures inside: the game will place the mode buttons there. Around the book, a few small polished blue-grey rune-stone dice glow softly, with candles, rolled maps, a brass lantern and a quill. At the very top, an empty curved banner ribbon for the game title. Generous shapes, visible brush texture, saturated but gentle colors, readable on a phone. No text, no letters, no numbers, no logo, no signature, no watermark.` },
+ { t:'2. L’Odyssée : la première île (les Terres brûlées)', j:'Joignez le portrait final de Gorm (modèle de style).',
+   x:`Using the attached image only as a strict style reference (same digital painted style, same soft outlines, same warm main light with a cool magical rim light, same level of detail), paint a REGION SELECTION screen for a mobile fantasy dice game, tall vertical 9:16 format. In the center floats a single round island seen from slightly above, like a small diorama: scorched volcanic land with glowing lava rivers, black rocks, a ruined stone fortress on its highest point with a faint blue rune portal at its gate. Small rocks and roots hang under the island. Around it, a deep dusky sky with soft clouds and a few distant floating rocks. Leave the bottom quarter of the image calm and empty (sky and clouds only), for a large button. Generous shapes, visible brush texture, saturated but gentle colors. No text, no letters, no numbers, no logo, no signature, no watermark.` },
+ { t:'3. L’Odyssée : la deuxième île (la Forêt de givre)', j:'Joignez l’île des Terres brûlées (image 2), pas le portrait.',
+   x:`Edit the attached image. Keep EXACTLY the same floating island: same round shape, same size, same position, same camera angle, same composition, same empty bottom quarter and same painting style. Change ONLY the theme: the island becomes a frozen crystal forest with snow-covered pines, blue ice crystals, a frozen waterfall, and a ruined ice temple on its highest point with the same faint blue rune portal at its gate; the sky becomes a cold night sky with a soft green aurora. No text, no letters, no numbers, no logo, no signature, no watermark.` },
+];
+document.getElementById('p').innerHTML = P.map((p, i) => `<div class="bloc"><h2>${p.t}</h2><div class="joindre">📎 ${p.j}</div><pre id="t${i}">${p.x}</pre><button onclick="navigator.clipboard.writeText(document.getElementById('t${i}').textContent).then(()=>{this.nextElementSibling.textContent='Copié ✓'})">Copier le prompt</button><span class="ok"></span></div>`).join('');
+</script>
+</body>
+</html>

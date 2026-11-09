@@ -47,7 +47,7 @@
 <body>
 <main>
 <h1>La Guilde des Runes</h1>
-<p class="sous">Fiches de jeu des six héros · version 1 du 8 novembre · chiffres de départ, à équilibrer en jouant</p>
+<p class="sous">Fiches de jeu des six héros · version 1.1 du 9 novembre (Aldric et Pip équilibrés par 200 parties simulées ; les 4 autres pas encore) · <a href="duel.html" style="color:#f3c96b">jouer le Duel</a></p>
 
 <h2>Le socle du Duel (commun à tous)</h2>
 <div class="bloc">
@@ -62,9 +62,12 @@
       <li>sur une <b>carte de ta main</b> (tu paies son coût et le dé doit remplir sa condition ; souvent la valeur du dé donne la force de la carte) ;</li>
       <li>sur ton <b>Pouvoir</b>, la combinaison de ton héros ;</li>
       <li>sur ta <b>Garde</b>, qui te protège pendant le tour de l'adversaire ;</li>
+      <li>sur la <b>Frappe</b>, commune à tous (l'attaque de base du jeu papier) : 2, 3, 4 ou 5 dés identiques font 3, 6, 9 ou 14 dégâts ;</li>
       <li>ou tu le <b>vends</b> : +1 PC. Ainsi aucun dé n'est perdu.</li>
     </ul></li>
   <li><b class="mot">La ligne de front</b> : 5 places de chaque côté pour tes unités (attaque / vie). Une unité attaque une fois par tour, à partir du tour suivant son arrivée. Elle frappe une unité ou le héros adverse, et les deux s'infligent leurs dégâts. Les unités <b>Barrière</b> doivent être attaquées en premier par les unités adverses ; les Sorts et les Pouvoirs, eux, choisissent librement leur cible.</li>
+  <li><b class="mot">Qui paie quoi</b> : les dés ne coûtent rien. Ce sont les <b>cartes</b> qui coûtent des PC (le chiffre bleu) : pour en jouer une, il faut assez de PC ET un dé qui remplit sa condition. La Frappe, la Garde et le Pouvoir sont gratuits ; l'Ultime coûte 3 PC.</li>
+  <li><b class="mot">Le second joueur</b> commence avec 2 PC et 5 cartes, pour compenser.</li>
   <li><b class="mot">L'Ultime</b> : une combinaison difficile + 3 PC, une seule fois par combat.</li>
   <li><b class="mot">La salle</b> : chaque Duel se joue dans une salle tirée au hasard, avec sa règle (exemple : « les 1 comptent comme des 6 »).</li>
   <li><b class="mot">Différence avec le jeu papier</b> : plus de lancer de défense au hasard. La Garde remplace la défense : tu choisis ta protection pendant ton tour, rien ne se joue à ta place.</li>
@@ -111,13 +114,13 @@ const H = [
    role:'Protège : murs d\'unités Barrière, boucliers, soins. Aime les paires.',
    passif:['Pureté','Quand tu poses deux 6 dans le même tour : 1 jeton de Pureté (2 au plus). Il annule la prochaine altération que tu reçois.'],
    garde:['Parade de fer','2 dés : une paire donne un Bouclier égal à la valeur ×2 ; sinon, Bouclier égal au plus haut dé.'],
-   pouvoir:['Mur de lumière','Deux paires : toutes tes unités gagnent Barrière et un Bouclier égal à ta plus haute paire.'],
+   pouvoir:['Mur de lumière','Deux paires : dégâts égaux à la somme de ta plus haute paire ; tes unités gagnent Barrière, un Bouclier égal à cette paire, et peuvent attaquer tout de suite.'],
    ulti:['La Lame de l\'Aube','Un brelan et une paire + 3 PC : 18 dégâts et Handicap.'],
    cartes:[
-    ['Écuyer au pavois','u',2,'dé pair','Unité 1 / 5, Barrière.'],
+    ['Écuyer au pavois','u',2,'dé pair','Unité 2 / 5, Barrière.'],
     ['Lanterne runique','s',1,'n\'importe quel dé','Révèle les unités Cachées et soigne 2 (la valeur du dé s\'il est pair).'],
     ['Serment','s',1,'2 dés identiques','Soigne ton héros de leur somme.'],
-    ['Estocade royale','s',2,'3 dés qui se suivent','9 dégâts à une cible.'],
+    ['Estocade royale','s',2,'3 dés qui se suivent','10 dégâts à une cible.'],
     ['Gardien de la porte','u',3,'une paire','Unité 3 / 7, Barrière. Chaque fois qu\'il bloque une attaque, +1 PC.'],
     ['Bannière de l\'aube','e',2,'dé pair','Tes unités Barrière gagnent +2 attaque.'],
     ['Contre-attaque','r',1,'dé = 6','Se pose en Garde : la première unité qui t\'attaque subit d\'abord 6 dégâts.'],
@@ -125,13 +128,13 @@ const H = [
    papier:'Repris de Gilgamesh : Parade de fer, Mur de lumière, le jeton de Pureté et l\'Ultime qui sonne l\'adversaire.' },
  { id:'pip', nom:'Pip, la druidesse, et sa petite louve', c:'#c58bff', pv:38, cit:'« La forêt répond à qui l\'écoute. »',
    role:'Soigne, bloque avec les ronces et appelle sa louve. Ses cartes aiment les petits dés (1 à 3).',
-   passif:['L\'Appel de l\'Alpha','Chaque 6 que tu lances pose un marqueur de Meute. À 3 marqueurs, la Louve arrive gratuitement sur ta ligne de front (unité 5 / 8). Elle attaque seule à chaque tour avec ses 3 dés : deux identiques = 6 dégâts qui ignorent Barrière et Bouclier ; trois identiques = 12 dégâts + Saignement ; sinon Morsure 3 ; chaque 6 ajoute +2. Si elle tombe, la jauge repart de zéro.'],
+   passif:['L\'Appel de l\'Alpha','Chaque 6 que tu lances pose un marqueur de Meute. À 3 marqueurs, la Louve arrive gratuitement sur ta ligne de front (unité 4 / 7). Elle attaque seule à la fin de chacun de tes tours avec ses 3 dés : deux identiques = 5 dégâts qui ignorent Barrière et Bouclier ; trois identiques = 9 dégâts + Saignement ; sinon Morsure 2 ; chaque 6 ajoute +1. Si elle tombe, la jauge repart de zéro.'],
    garde:['Écorce bénie','1 dé : un 1 ou un 2 donne Épines 3 ; sinon, Bouclier égal à sa valeur.'],
-   pouvoir:['Appel de la Louve','4 dés de 4 ou 5 : 12 dégâts, Bouclier 5 et +1 marqueur de Meute.'],
-   ulti:['L\'Éveil du Grand Arbre','5 dés de 3 ou moins + 3 PC : ton héros et toutes tes unités retrouvent toute leur vie.'],
+   pouvoir:['Appel de la Louve','4 dés de 4 ou 5 : 8 dégâts, Bouclier 3 et +1 marqueur de Meute.'],
+   ulti:['L\'Éveil du Grand Arbre','5 dés de 3 ou moins + 3 PC : ton héros se soigne de 15 et toutes tes unités retrouvent toute leur vie.'],
    cartes:[
     ['Pousse de ronces','u',1,'dé ≤ 2','Unité 0 / 4, Barrière, Épines 1.'],
-    ['Sève guérisseuse','s',1,'dé ≤ 3','Soigne 3 fois la valeur du dé (héros ou unité).'],
+    ['Sève guérisseuse','s',1,'dé ≤ 3','Soigne 2 fois la valeur du dé (héros ou unité).'],
     ['Racines entravantes','s',2,'3 dés qui se suivent','7 dégâts et l\'unité touchée est Entravée.'],
     ['Purification','s',0,'n\'importe quel dé','Retire toutes les altérations d\'un même type, sur ton héros ou une unité.'],
     ['Hurlement','s',1,'dé = 1','+1 marqueur de Meute.'],
