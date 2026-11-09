@@ -120,6 +120,10 @@
     background:linear-gradient(90deg, transparent, #000a 20%, #000a 80%, transparent); padding:14px 0; animation:annonce .9s ease-out; }
   @keyframes annonce { 0% { opacity:0; transform:scale(1.4); } 30% { opacity:1; transform:scale(1); } 100% { opacity:1; } }
   .eff { position:fixed; pointer-events:none; }
+  .main .c.neuve { background:none; border:none; padding:0; overflow:visible; box-shadow:none; }
+  .main .c.neuve.vue { min-height:0; width:164px; }
+  .main .c.neuve.ok { box-shadow:none; animation:none; } .main .c.neuve.ok .carteG { filter:drop-shadow(0 0 6px #7dffb0) drop-shadow(0 0 3px #7dffb0); }
+  .u.illu b, .u.illu .tg { text-shadow:0 1px 2px #000; color:#fff; } .u.illu .av span { text-shadow:0 1px 2px #000; filter:brightness(1.6); }
   .eff i { position:absolute; font-style:normal; }
   .effimg { position:absolute; inset:0; width:100%; height:100%; }
   .griffe { fill:none; stroke:#fff; stroke-width:7; stroke-linecap:round; stroke-dasharray:110; stroke-dashoffset:110; filter:drop-shadow(0 0 4px #ff2b2b) drop-shadow(0 0 2px #900);
@@ -170,13 +174,14 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261109-194252';
+const VERSION = '20261109-194630';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); location.replace('duel.html?v=' + v); }
 }).catch(() => {});
 </script>
-<script src="donnees.js?v=20261109-194252"></script>
+<script src="cartes.js?v=20261109-194630"></script>
+<script src="donnees.js?v=20261109-194630"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -486,6 +491,7 @@ function simule(idJ, idO) {
 }
 
 // =============================================================================================== interface
+document.head.insertAdjacentHTML('beforeend', '<style>' + (typeof CSS_CARTE !== 'undefined' ? CSS_CARTE : '') + '</style>');
 let sel = [], attaquant = null, ciblage = null, carteVue = null;
 // une carte agrandie se range dès qu'on touche ailleurs que sur une carte de la main
 document.addEventListener('click', e => { if (carteVue !== null && !e.target.closest('.main .c')) { carteVue = null; rendu(); } });
@@ -499,6 +505,7 @@ function mainEnEventail(J) {
     const style = vue ? 'left:calc(50% - 82px);transform:translateY(-170px);z-index:60'
       : `left:calc(50% - 50px + ${d * pas}px);transform:translateY(${Math.round(d * d * 2) - (ok ? 18 : 0)}px) rotate(${d * ang}deg);z-index:${ok ? 40 + i : i + 1}`;
     const pied = vue ? `<div class="jouer">${ok ? '👆 Touche encore pour la jouer' : sel.length ? 'Ces dés ne conviennent pas' : 'Choisis d’abord tes dés'}</div>` : '';
+    if (typeof CADRES_OK !== 'undefined' && CADRES_OK.includes(CADRE_DE(k))) return `<div class="c neuve ${ok ? 'ok' : sel.length ? 'non' : ''} ${vue ? 'vue' : ''}" style="${style}" onclick="toucheCarte(${i})">${carteGuilde(k, { w:vue ? 164 : 100, cout:coutCarte(J, k), pied:vue ? `<div class="cg-pied">${ok ? '👆 Touche encore pour la jouer' : sel.length ? 'Ces dés ne conviennent pas' : 'Choisis d’abord tes dés'}</div>` : '' })}</div>`;
     return `<div class="c ${c.t}2 ${ok ? 'ok' : sel.length ? 'non' : ''} ${vue ? 'vue' : ''}" style="${style}" onclick="toucheCarte(${i})"><span class="cout">${coutCarte(J, k)}</span><div class="n">${c.n}</div><span class="cd">🎲 ${c.txt}</span><div class="dd">${c.d}</div>${pied}</div>`;
   }).join('');
 }
@@ -609,7 +616,8 @@ function front(P, haut) {
   return `<div class="front${P.front.length ? '' : ' vide'}" id="f-${cote}">${P.front.map((u, i) => {
     const cls = [estCible({ J:P, u }) ? 'cible' : '', attaquant === u ? 'choisi' : '', !haut && u.pret ? 'pret' : '', !u.pret ? 'dort' : ''].join(' ');
     const tags = [u.barriere ? 'Barrière' : '', u.cachee ? 'Cachée' : '', u.charge ? 'Charge' : '', u.epines ? `Épines ${u.epines}` : '', u.bouclier ? `🛡${u.bouclier}` : '', u.entrave ? 'Entravé' : '', u.louve && haut ? 'Louve' : '', !haut ? (u.pret ? (u.louve ? '🐺 touche-la !' : '⚔ prête') : '💤 repos') : ''].filter(Boolean).join(' · ');
-    return `<div class="u ${cls}" data-uid="${u.id}" onclick="touche({J:S.${cote},u:S.${cote}.front[${i}]})"><b>${u.n}</b><div class="tg">${tags}</div><div class="av"><span>⚔ ${atk(P, u)}</span><span>❤ ${u.v}</span></div></div>`;
+    const art = u.louve ? 'louve' : u.key, img = typeof ARTS !== 'undefined' && ARTS.includes(art) ? ` style="background:linear-gradient(#0000 30%, #000c 85%), url('cartes/${art}.webp?v=1') center 30%/cover;color:#fff"` : '';
+    return `<div class="u ${cls}${img ? ' illu' : ''}" data-uid="${u.id}"${img} onclick="touche({J:S.${cote},u:S.${cote}.front[${i}]})"><b>${u.n}</b><div class="tg">${tags}</div><div class="av"><span>⚔ ${atk(P, u)}</span><span>❤ ${u.v}</span></div></div>`;
   }).join('')}</div>`;
 }
 function actSoins() { const ok = permis(S.J, 'pcSoins', []); return `<button class="act ${ok ? 'ok' : 'non'}" onclick="vise('pcSoins')"><b>Premiers soins</b>2 PC · retire tes altérations</button>`; }
@@ -912,7 +920,9 @@ const ANIM_IMG = { degat:'eclat', 'gros-degat':'eclat', coeur:'monte', armure:'e
   lame:'eclat', impact:'eclat', lumiere:'tourne', etincelles:'eclat', etoiles:'tourne', ondes:'eclat', vent:'eclat', poison:'monte', brume:'eclat', alchimie:'tourne', bouclier:'eclat', soin:'monte', invocation:'tourne', marteau:'eclat', fleche:'eclat', ronces:'eclat' };
 const IMG_OK = {};
 Object.keys(ANIM_IMG).forEach(n => { const i = new Image(); i.onload = () => { IMG_OK[n] = true; }; i.src = `effets/${n}.webp?v=1`; });
+const ALIAS_IMG = { invoque:'invocation', bouclier:'armure', 'gros-degat':'degat' };
 function effetImage(nom, cible, f = 1) {
+  if (!IMG_OK[nom] && ALIAS_IMG[nom] && IMG_OK[ALIAS_IMG[nom]]) { if (nom === 'gros-degat') f *= 1.35; nom = ALIAS_IMG[nom]; }
   if (!IMG_OK[nom] || !cible) return false;
   const d = boite(cible, 170 * f), im = document.createElement('img'); im.src = `effets/${nom}.webp?v=1`; im.className = 'effimg'; d.appendChild(im);
   const k = ANIM_IMG[nom], v = fxVite;
@@ -971,7 +981,7 @@ async function joue1(e) {
   if (e.t === 'garde') { const c = el({ s:e.s }); son('garde'); effetImage('armure', c, .9); flotte(c, `🛡 ${e.nom}`, 'bleu'); if (c) { c.classList.remove('garde'); void c.offsetWidth; c.classList.add('garde'); } await dodo(450); return; }
   if (e.t === 'pc') { const c = el({ s:e.s }); if (!c) return; ton(1200, .15, 'sine', .1); ton(1600, .2, 'sine', .08, null, .08); effetImage('pc', c, .8); flotte(c, `+${e.n} PC`, 'bleu'); await dodo(350); return; }
   if (e.t === 'jauge') { const c = el({ s:e.s }); if (!c) return; ton(523, .4, 'triangle', .1); ton(784, .5, 'triangle', .1, null, .12); if (!effetImage('jauge', c, 1.2)) effet('lumiere', c); flotte(c, '⚡ Ultime prêt !', 'nom'); await dodo(700); return; }
-  if (e.t === 'invoque') { const f = el({ s:e.s, uid:'x' }); son('louve'); flotte(f, `🐺 ${e.nom} arrive !`, 'nom'); await dodo(700); return; }
+  if (e.t === 'invoque') { const f = el({ s:e.s, uid:'x' }); son('louve'); effetImage('invocation', f, 1.1); flotte(f, `🐺 ${e.nom} arrive !`, 'nom'); await dodo(700); return; }
 }
 async function joueFX() {
   fxOn = true; fxVite = 1; document.body.classList.add('fxon');
