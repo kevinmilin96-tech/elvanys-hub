@@ -47,12 +47,12 @@
 <body>
 <main>
 <h1>La Guilde des Runes</h1>
-<p class="sous">Fiches de jeu des six héros · version 1.1 du 9 novembre (Aldric et Pip équilibrés par 200 parties simulées ; les 4 autres pas encore) · <a href="duel.html" style="color:#f3c96b">jouer le Duel</a></p>
+<p class="sous">Fiches de jeu des six héros · version 2 du 9 novembre : les six équilibrés par 6 000 parties simulées (chaque héros contre chacun des autres) · <a href="duel.html" style="color:#f3c96b">jouer le Duel</a></p>
 
 <h2>Le socle du Duel (commun à tous)</h2>
 <div class="bloc">
 <ol>
-  <li><b class="mot">But</b> : faire tomber à 0 les points de vie (PV) du héros adverse. Chaque héros a entre 36 et 45 PV.</li>
+  <li><b class="mot">But</b> : faire tomber à 0 les points de vie (PV) du héros adverse. Chaque héros a entre 36 et 46 PV.</li>
   <li><b class="mot">Ton deck</b> : 20 cartes : les 8 cartes de ton héros, dont certaines en deux exemplaires (12 en tout), et 8 cartes de la Guilde. Tu commences avec 4 cartes en main, tu en pioches 1 par tour, 7 au plus.</li>
   <li><b class="mot">Les dés montent</b> : 3 dés au tour 1, 4 au tour 2, puis 5. Chaque dé tire sa face dans son sac : une face sortie ne revient qu'une fois les six sorties, et le sac est visible.</li>
   <li><b class="mot">Une relance gratuite</b> par tour : tu choisis les dés à relancer, une seule fois.</li>
@@ -90,134 +90,30 @@
 
 <h2>Les 8 cartes de la Guilde (dans tous les decks)</h2>
 <div class="cartes" id="guilde"></div>
-<div class="q"><b class="mot">Décidé le 8 novembre</b> : la Garde remplace le lancer de défense ; l'Ultime se joue une fois par combat ; 36 à 45 PV, pour un Duel d'environ 10 minutes. Prochaine étape : un combat joué en images, tour par tour.</div>
+<div class="q"><b class="mot">Décidé le 8 novembre</b> : la Garde remplace le lancer de défense ; l'Ultime se joue une fois par combat ; 36 à 46 PV, pour un Duel d'environ 10 minutes. Prochaine étape : un combat joué en images, tour par tour.</div>
 </main>
+<script src="donnees.js?v=2"></script>
 <script>
-const H = [
- { id:'maelle', nom:'Maëlle, la forgeronne', c:'#ff8a2a', pv:42, cit:'« Ce qui est forgé ne casse pas. »',
-   role:'Frappe fort et équipe ses unités. Aime les gros dés (5 et 6).',
-   passif:['Métal chaud','Chaque 6 posé sur une de ses cartes donne 1 Braise (3 au plus). À 3 Braises, sa prochaine carte Équipement ne coûte rien.'],
-   garde:['Enclume','1 dé : Bouclier égal à sa valeur, +2 si c\'est un 5 ou un 6.'],
-   pouvoir:['Coup d\'enclume','3 dés identiques : dégâts au héros adverse égaux à leur somme.'],
-   ulti:['Le Grand Martelage','5 dés de 4 ou plus + 3 PC : 20 dégâts à répartir comme tu veux, et toutes tes unités gagnent +2 attaque.'],
-   cartes:[
-    ['Marteau de forge','s',1,'dé = 6','12 dégâts à une cible.'],
-    ['Lame trempée','e',1,'dé ≥ 4','Une unité gagne + la valeur du dé en attaque, pour tout le combat.'],
-    ['Apprenti du soufflet','u',2,'n\'importe quel dé','Unité 2 / 3. Chaque fois que tu poses un 6, +1 Braise.'],
-    ['Plastron rivé','e',2,'dé ≥ 5','Une unité gagne +5 vie et Barrière.'],
-    ['Étincelles','s',0,'dé ≤ 2','2 dégâts à chaque unité adverse. Les petits dés servent aussi.'],
-    ['Golem de bronze','u',4,'dé = 6','Unité 6 / 8, Barrière.'],
-    ['Retremper','s',1,'n\'importe quel dé','Relance un autre dé et ajoute +1 au résultat.'],
-    ['Fournaise','r',1,'dé ≥ 5','Se pose en Garde : renvoie la moitié des dégâts reçus à l\'attaquant.']],
-   papier:'Repris du jeu papier : les gros coups de Grom (Tranche-chair) et le « Retour » de Peau épaisse, qui devient la Fournaise.' },
- { id:'aldric', nom:'Sire Aldric, le chevalier-lanterne', c:'#ffd27a', pv:45, cit:'« Tant que la flamme brille, personne ne passe. »',
-   role:'Protège : murs d\'unités Barrière, boucliers, soins. Aime les paires.',
-   passif:['Pureté','Quand tu poses deux 6 dans le même tour : 1 jeton de Pureté (2 au plus). Il annule la prochaine altération que tu reçois.'],
-   garde:['Parade de fer','2 dés : une paire donne un Bouclier égal à la valeur ×2 ; sinon, Bouclier égal au plus haut dé.'],
-   pouvoir:['Mur de lumière','Deux paires : dégâts égaux à la somme de ta plus haute paire ; tes unités gagnent Barrière, un Bouclier égal à cette paire, et peuvent attaquer tout de suite.'],
-   ulti:['La Lame de l\'Aube','Un brelan et une paire + 3 PC : 18 dégâts et Handicap.'],
-   cartes:[
-    ['Écuyer au pavois','u',2,'dé pair','Unité 2 / 5, Barrière.'],
-    ['Lanterne runique','s',1,'n\'importe quel dé','Révèle les unités Cachées et soigne 2 (la valeur du dé s\'il est pair).'],
-    ['Serment','s',1,'2 dés identiques','Soigne ton héros de leur somme.'],
-    ['Estocade royale','s',2,'3 dés qui se suivent','10 dégâts à une cible.'],
-    ['Gardien de la porte','u',3,'une paire','Unité 3 / 7, Barrière. Chaque fois qu\'il bloque une attaque, +1 PC.'],
-    ['Bannière de l\'aube','e',2,'dé pair','Tes unités Barrière gagnent +2 attaque.'],
-    ['Contre-attaque','r',1,'dé = 6','Se pose en Garde : la première unité qui t\'attaque subit d\'abord 6 dégâts.'],
-    ['Relève de la garde','s',0,'dé ≤ 2','Rends toute sa vie à une unité Barrière.']],
-   papier:'Repris de Gilgamesh : Parade de fer, Mur de lumière, le jeton de Pureté et l\'Ultime qui sonne l\'adversaire.' },
- { id:'pip', nom:'Pip, la druidesse, et sa petite louve', c:'#c58bff', pv:38, cit:'« La forêt répond à qui l\'écoute. »',
-   role:'Soigne, bloque avec les ronces et appelle sa louve. Ses cartes aiment les petits dés (1 à 3).',
-   passif:['L\'Appel de l\'Alpha','Chaque 6 que tu lances pose un marqueur de Meute. À 3 marqueurs, la Louve arrive gratuitement sur ta ligne de front (unité 4 / 7). Elle attaque seule à la fin de chacun de tes tours avec ses 3 dés : deux identiques = 5 dégâts qui ignorent Barrière et Bouclier ; trois identiques = 9 dégâts + Saignement ; sinon Morsure 2 ; chaque 6 ajoute +1. Si elle tombe, la jauge repart de zéro.'],
-   garde:['Écorce bénie','1 dé : un 1 ou un 2 donne Épines 3 ; sinon, Bouclier égal à sa valeur.'],
-   pouvoir:['Appel de la Louve','4 dés de 4 ou 5 : 8 dégâts, Bouclier 3 et +1 marqueur de Meute.'],
-   ulti:['L\'Éveil du Grand Arbre','5 dés de 3 ou moins + 3 PC : ton héros se soigne de 15 et toutes tes unités retrouvent toute leur vie.'],
-   cartes:[
-    ['Pousse de ronces','u',1,'dé ≤ 2','Unité 0 / 4, Barrière, Épines 1.'],
-    ['Sève guérisseuse','s',1,'dé ≤ 3','Soigne 2 fois la valeur du dé (héros ou unité).'],
-    ['Racines entravantes','s',2,'3 dés qui se suivent','7 dégâts et l\'unité touchée est Entravée.'],
-    ['Purification','s',0,'n\'importe quel dé','Retire toutes les altérations d\'un même type, sur ton héros ou une unité.'],
-    ['Hurlement','s',1,'dé = 1','+1 marqueur de Meute.'],
-    ['Faon des clairières','u',2,'dé ≤ 3','Unité 2 / 3. À son arrivée, soigne 3.'],
-    ['Lien de la meute','e',1,'dé ≤ 2','La Louve gagne +2 attaque. Si elle n\'est pas là : +1 marqueur de Meute.'],
-    ['Rosée','s',0,'dé = 1','Pioche 1 carte.']],
-   papier:'Reprise de la Druidesse : la Jauge de Meute, la Louve et ses 3 dés, Sève vitale, Racines entravantes, Écorce bénie, Purification et l\'Ultime de soin complet. Le dilemme reste : les 6 servent peu à ses cartes, mais ils nourrissent la meute.' },
- { id:'oria', nom:'Oria, la cartographe', c:'#5ff5e6', pv:36, cit:'« Je sais déjà ce qui vient. »',
-   role:'Contrôle : voit et choisit ses faces, pioche, déplace les unités. Aime les suites.',
-   passif:['Œil du cartographe','Tu vois les 2 prochaines faces de chacun de tes dés.'],
-   garde:['Repli','1 dé : un dé impair donne Esquive (les prochains dégâts sont divisés par 2) ; un dé pair, un Bouclier égal à sa valeur.'],
-   pouvoir:['Tracé parfait','4 dés qui se suivent : choisis la prochaine face d\'un de tes dés et pioche 2 cartes.'],
-   ulti:['La Carte du monde','5 dés qui se suivent + 3 PC : 15 dégâts et Silence.'],
-   cartes:[
-    ['Longue-vue','s',0,'n\'importe quel dé','Regarde les 3 prochaines faces d\'un dé adverse et d\'un des tiens.'],
-    ['Raccourci','s',1,'dé impair','Reprends un dé déjà posé ce tour et pose-le ailleurs.'],
-    ['Carte au trésor','s',1,'dé ≤ 3','Pioche 2 cartes.'],
-    ['Boussole runique','e',2,'2 dés qui se suivent','Au début de chacun de tes tours, échange les 2 prochaines faces d\'un de tes dés.'],
-    ['Éclaireuse','u',2,'n\'importe quel dé','Unité 2 / 2, Cachée.'],
-    ['Piège à mâchoires','r',1,'dé = 3','Se pose en Garde : la première unité qui attaque subit 3 dégâts et est Entravée.'],
-    ['Détour','s',2,'3 dés qui se suivent','Renvoie une unité adverse dans la main de son joueur.'],
-    ['Vol de provisions','s',1,'dé = 6','Vole 1 PC à l\'adversaire.']],
-   papier:'Repris d\'Expérience 626 : Distorsion et sa Prémonition (voir à l\'avance), Téléportation qui vole des PC, et l\'Ultime qui fait taire l\'adversaire (Silence).' },
- { id:'gorm', nom:'Gorm, le sonneur de cor', c:'#4f8bff', pv:44, cit:'« Un souffle, et toute la guilde se lève. »',
-   role:'Soutien : renforce toutes ses unités d\'un coup. Joue sur les dés pairs ou impairs.',
-   passif:['Second souffle','Quand tes PV sont plus bas que ceux de l\'adversaire, ton Pouvoir donne +2 attaque de plus.'],
-   garde:['Peau épaisse','2 dés : Bouclier égal à la somme des dés impairs ; chaque 6 renvoie 2 dégâts à l\'attaquant.'],
-   pouvoir:['Chant de guerre','4 dés tous pairs ou tous impairs : toutes tes unités gagnent +2 attaque ce tour et peuvent attaquer même si elles viennent d\'arriver.'],
-   ulti:['Le Grand Souffle','5 dés tous pairs ou tous impairs + 3 PC : 16 dégâts au héros adverse et 4 dégâts à chacune de ses unités.'],
-   cartes:[
-    ['Note grave','s',1,'dé pair','Toutes tes unités gagnent + la moitié de la valeur en vie.'],
-    ['Note aiguë','s',0,'dé impair','Une unité gagne + la valeur du dé en attaque ce tour.'],
-    ['Écho','s',1,'n\'importe quel dé','Rejoue l\'effet du dernier Sort que tu as joué ce tour.'],
-    ['Tambour de clan','u',2,'dé pair','Unité 1 / 4. Tes autres unités ont +1 attaque.'],
-    ['Joueuse de flûte','u',2,'dé impair','Unité 2 / 3. À son arrivée, une de tes unités attaque tout de suite.'],
-    ['Colosse des collines','u',5,'dé = 6','Unité 7 / 9, Charge.'],
-    ['Tranche-vent','s',2,'3, 4 ou 5 dés identiques','7, 10 ou 15 dégâts à une cible.'],
-    ['Cor de ralliement','r',1,'dé pair','Se pose en Garde : la première de tes unités qui devrait tomber reste à 1 vie.']],
-   papier:'Repris de Grom : Cri de guerre plus fort quand on a moins de PV que l\'ennemi, Peau épaisse avec son Retour, et Tranche-chair (7 / 10 / 15) qui devient Tranche-vent.' },
- { id:'zephine', nom:'Zéphine, l\'alchimiste', c:'#ff4040', pv:38, cit:'« Rien ne se perd, tout se transforme. »',
-   role:'Transforme les dés et empoisonne. Aime tous les dés, à condition de les changer.',
-   passif:['Transmutation','Une fois par tour, gratuitement : retourne un dé sur sa face opposée (1 et 6, 2 et 5, 3 et 4).'],
-   garde:['Fumée','1 dé : Bouclier égal à sa valeur, +3 si tu as modifié ce dé ce tour.'],
-   pouvoir:['Grand œuvre','5 dés tous différents : à ton prochain tour, tous tes dés montrent la valeur que tu choisis.'],
-   ulti:['La Pierre philosophale','5 dés dont la somme fait exactement 20 + 3 PC : 12 dégâts, Poison 4, et chaque unité adverse devient une unité 1 / 1.'],
-   cartes:[
-    ['Fiole d\'inversion','s',0,'n\'importe quel dé','Retourne un autre dé sur sa face opposée.'],
-    ['Poudre de soufre','s',1,'n\'importe quel dé','Poison égal à la valeur du dé.'],
-    ['Distillation','s',1,'2 dés','Les fond en un seul dé égal à leur somme (6 au plus).'],
-    ['Précipité','s',1,'dé = 6','Coupe ce dé en deux dés de 3.'],
-    ['Homoncule','u',2,'un dé modifié ce tour','Unité 3 / 3. Les unités qu\'il blesse reçoivent Poison 2.'],
-    ['Brume aveuglante','s',2,'dé impair','Handicap : l\'adversaire lance 1 dé de moins à son prochain tour.'],
-    ['Catalyseur','e',2,'dé pair','Chaque fois que tu modifies un dé, 1 dégât au héros adverse.'],
-    ['Paillasse renversée','r',1,'dé ≤ 2','Se pose en Garde : le premier qui t\'attaque reçoit Poison 3.']],
-   papier:'Repris de Blanche et de Fez : le Handicap de Vol acrobatique devient la Brume aveuglante ; l\'esquive et le camouflage deviennent la Fumée.' }
-];
-const G = [
- ['Potion de soin','s',1,"n'importe quel dé",'Soigne ton héros de la valeur du dé + 2.'],
- ['Milicien','u',1,'dé ≤ 3','Unité 2 / 2.'],
- ['Chien de garde','u',2,"n'importe quel dé",'Unité 2 / 3, Barrière.'],
- ['Pierre à aiguiser','e',1,"n'importe quel dé",'Une unité gagne +2 attaque.'],
- ['Bouclier rond','s',0,'dé pair','Bouclier égal à la valeur du dé.'],
- ['Torche','s',1,'dé ≥ 4','4 dégâts à une unité et révèle les unités Cachées.'],
- ['Coup de chance','s',0,'dé = 1','Relance 2 de tes dés.'],
- ['Parchemin d\'étude','s',1,'dé impair','Pioche 1 carte et gagne 1 PC.']];
+// La page lit les mêmes données que le Duel (donnees.js) : elle ne peut plus prendre de retard sur le jeu.
 const T = { s:'Sort', u:'Unité', e:'Équipement', r:'Réaction' };
-const kit = (lab, x) => `<div><span>${lab} · ${x[0]}</span>${x[1]}</div>`;
-document.getElementById('heros').innerHTML = H.map(h => `
+const kit = (lab, n, x) => `<div><span>${lab} · ${n}</span>${x}</div>`;
+const carte = (k, nb) => { const c = CARTES[k]; return `<div class="c ${c.t}"><span class="cout">${c.c}</span><div class="n">${c.n}${nb > 1 ? ` <small>×${nb}</small>` : ''}</div><div class="t">${T[c.t]}</div><div class="d">🎲 ${c.txt}</div><div>${c.d}</div></div>`; };
+const parCarte = deck => { const m = {}; deck.forEach(k => m[k] = (m[k] || 0) + 1); return Object.entries(m); };
+document.getElementById('heros').innerHTML = ORDRE.map(id => { const h = HEROS[id]; return `
 <section class="heros" style="--c:${h.c}">
   <div class="tete">
-    <img src="portraits/${h.id}.webp" alt="">
-    <div><h3>${h.nom}</h3><p class="cit">${h.cit}</p><span class="pv">❤ ${h.pv} PV</span></div>
-    <img class="de" src="faces-${h.id}/face-5.webp" alt="">
+    <img src="portraits/${id}.webp" alt="">
+    <div><h3>${h.nom}, ${h.titre}</h3><p class="cit">${h.cit}</p><span class="pv">❤ ${h.pv} PV</span></div>
+    <img class="de" src="faces-${id}/face-5.webp" alt="">
   </div>
   <div class="corps">
     <p class="role">${h.role}</p>
-    <div class="kit">${kit('Passif', h.passif)}${kit('Garde', h.garde)}${kit('Pouvoir', h.pouvoir)}${kit('Ultime', h.ulti)}</div>
-    <div class="cartes">${h.cartes.map(c => `<div class="c ${c[1]}"><span class="cout">${c[2]}</span><div class="n">${c[0]}</div><div class="t">${T[c[1]]}</div><div class="d">🎲 ${c[3]}</div><div>${c[4]}</div></div>`).join('')}</div>
+    <div class="kit">${kit('Passif', '', h.passif)}${kit('Garde', h.garde.n, `(${h.garde.txt}) ${h.garde.d}`)}${kit('Pouvoir', h.pouvoir.n, `(${h.pouvoir.txt}) ${h.pouvoir.d}`)}${kit('Ultime', h.ultime.n, `(${h.ultime.txt} + 3 PC) ${h.ultime.d}`)}${h.action ? kit('Action', h.action.n, `(${h.action.txt}) ${h.action.d}`) : ''}</div>
+    <div class="cartes">${parCarte(h.deck).map(([k, nb]) => carte(k, nb)).join('')}</div>
     <p class="papier">📜 ${h.papier}</p>
   </div>
-</section>`).join('');
-const carte = c => `<div class="c ${c[1]}"><span class="cout">${c[2]}</span><div class="n">${c[0]}</div><div class="t">${T[c[1]]}</div><div class="d">🎲 ${c[3]}</div><div>${c[4]}</div></div>`;
-document.getElementById('guilde').innerHTML = G.map(carte).join('');
+</section>`; }).join('');
+document.getElementById('guilde').innerHTML = GUILDE.map(k => carte(k, 1)).join('');
 </script>
 </body>
 </html>

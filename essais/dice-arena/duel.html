@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="robots" content="noindex">
-<title>La Guilde des Runes · Duel (prototype)</title>
+<title>La Guilde des Runes · Duel (prototype, 6 héros)</title>
 <style>
   :root { --fond:#1d1b3a; --or:#f3c96b; --texte:#f1ecff; --doux:#c9c1ea; --ok:#7dffb0; }
   * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
@@ -39,8 +39,8 @@
   .d.sel img { border-color:#fff; box-shadow:0 0 10px #fff; }
   .d.pose img { opacity:.25; }
   .d .sac { font-size:.62em; color:var(--doux); letter-spacing:.02em; margin-top:1px; }
-  .actions { display:grid; grid-template-columns:repeat(5, 1fr); gap:5px; margin:6px 0; }
-  .act { background:#2a2650; color:var(--texte); border:2px solid #4b4580; border-radius:10px; padding:5px 3px; font-size:.74em; line-height:1.2; min-height:58px; }
+  .actions { display:grid; grid-template-columns:repeat(3, 1fr); gap:5px; margin:6px 0; }
+  .act { background:#2a2650; color:var(--texte); border:2px solid #4b4580; border-radius:10px; padding:5px 3px; font-size:.74em; line-height:1.2; min-height:50px; }
   .act b { display:block; color:var(--or); font-size:1.1em; }
   .act.ok { border-color:var(--ok); box-shadow:0 0 8px #7dffb066; }
   .act.non { opacity:.45; }
@@ -65,199 +65,163 @@
   .choixh { display:flex; gap:10px; justify-content:center; margin:12px 0; }
   .choixh button { background:#1d1b3a; color:#fff; border:2px solid #4b4580; border-radius:14px; padding:8px; width:150px; }
   .choixh img { width:110px; height:110px; border-radius:12px; object-fit:cover; display:block; margin:0 auto 6px; }
+  .d.mod img { box-shadow:0 0 0 2px #ff6b6b; }
+  .heros6 { display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; margin:10px 0; }
+  .heros6 button { background:#1d1b3a; color:#fff; border:2px solid #4b4580; border-radius:12px; padding:6px; font-size:.85em; }
+  .heros6 img { width:100%; aspect-ratio:1; border-radius:9px; object-fit:cover; display:block; margin-bottom:4px; }
+  .grille6 { display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; margin:10px 0; }
+  .grille6 button { background:#f3c96b; color:#2b2117; border:none; border-radius:10px; padding:12px; font-size:1.3em; font-weight:bold; }
 </style>
 </head>
 <body>
 <div id="app"></div>
 <div id="fen"></div>
+<script src="donnees.js?v=2"></script>
 <script>
-// =============================================================== données
-const IMG = id => `portraits/${id}.webp`;
-const FACE = (id, v) => `faces-${id}/face-${v}.webp`;
-const vals = ds => ds.map(d => d.v);
-const egaux = vs => vs.length > 1 && vs.every(v => v === vs[0]);
-const suite = (vs, n) => { if (vs.length !== n) return false; const s = [...vs].sort((a, b) => a - b); return s.every((v, i) => i === 0 || v === s[i - 1] + 1); };
-const compte = vs => { const m = {}; vs.forEach(v => m[v] = (m[v] || 0) + 1); return Object.values(m).sort((a, b) => b - a); };
-
-// Cartes. cond(vs) : les dés choisis conviennent-ils ? cible : 'ennemi' (héros ou unité adverse), 'uniteE', 'allie', 'uniteA', 'barriereA'
-const CARTES = {
-  ecuyer:   { n:'Écuyer au pavois', t:'u', c:2, txt:'dé pair', d:'Unité 2 / 5, Barrière.', cond:vs => vs.length === 1 && vs[0] % 2 === 0, u:{ n:'Écuyer', a:2, v:5, barriere:true } },
-  lanterne: { n:'Lanterne runique', t:'s', c:1, txt:'1 dé', d:'Soigne ton héros de 2 (de la valeur si le dé est pair).', cond:vs => vs.length === 1, f:(J, vs) => soin(J, vs[0] % 2 === 0 ? vs[0] : 2) },
-  serment:  { n:'Serment', t:'s', c:1, txt:'2 dés identiques', d:'Soigne ton héros de leur somme.', cond:vs => vs.length === 2 && egaux(vs), f:(J, vs) => soin(J, vs[0] + vs[1]) },
-  estocade: { n:'Estocade royale', t:'s', c:2, txt:'3 dés qui se suivent', d:'10 dégâts à une cible.', cond:vs => suite(vs, 3), cible:'ennemi', f:(J, vs, k) => degats(k, 10) },
-  gardien:  { n:'Gardien de la porte', t:'u', c:3, txt:'2 dés identiques', d:'Unité 3 / 7, Barrière. +1 PC quand il est attaqué.', cond:vs => vs.length === 2 && egaux(vs), u:{ n:'Gardien', a:3, v:7, barriere:true, gardien:true } },
-  banniere: { n:'Bannière de l’aube', t:'e', c:2, txt:'dé pair', d:'Tes unités Barrière ont +2 attaque.', cond:vs => vs.length === 1 && vs[0] % 2 === 0, f:J => { J.banniere = true; log(`${J.nom} lève la Bannière de l’aube.`); } },
-  contre:   { n:'Contre-attaque', t:'r', c:1, txt:'dé = 6', d:'Garde : la 1re unité qui t’attaque subit d’abord 6 dégâts.', cond:vs => vs.length === 1 && vs[0] === 6, f:J => { J.contre = true; log(`${J.nom} prépare une Contre-attaque.`); } },
-  releve:   { n:'Relève de la garde', t:'s', c:0, txt:'dé ≤ 2', d:'Rends toute sa vie à une de tes unités Barrière.', cond:vs => vs.length === 1 && vs[0] <= 2, cible:'barriereA', f:(J, vs, k) => { k.u.v = k.u.vmax; log(`${k.u.n} retrouve toute sa vie.`); } },
-  ronces:   { n:'Pousse de ronces', t:'u', c:1, txt:'dé ≤ 2', d:'Unité 0 / 4, Barrière, Épines 1.', cond:vs => vs.length === 1 && vs[0] <= 2, u:{ n:'Ronces', a:0, v:4, barriere:true, epines:1 } },
-  seve:     { n:'Sève guérisseuse', t:'s', c:1, txt:'dé ≤ 3', d:'Soigne 2 fois la valeur (héros ou unité).', cond:vs => vs.length === 1 && vs[0] <= 3, cible:'allie', f:(J, vs, k) => soinCible(k, vs[0] * 2) },
-  racines:  { n:'Racines entravantes', t:'s', c:2, txt:'3 dés qui se suivent', d:'7 dégâts. Une unité touchée est Entravée.', cond:vs => suite(vs, 3), cible:'ennemi', f:(J, vs, k) => { if (k.u) k.u.entrave = true; degats(k, 7); } },
-  purif:    { n:'Purification', t:'s', c:0, txt:'1 dé', d:'Retire Saignement et Handicap de ton héros.', cond:vs => vs.length === 1, f:J => { J.saigne = 0; J.handicap = 0; log(`${J.nom} se purifie.`); } },
-  hurlement:{ n:'Hurlement', t:'s', c:1, txt:'dé = 1', d:'+1 marqueur de Meute.', cond:vs => vs.length === 1 && vs[0] === 1, f:J => ajouteMeute(J, 1) },
-  faon:     { n:'Faon des clairières', t:'u', c:2, txt:'dé ≤ 3', d:'Unité 2 / 3. À son arrivée, soigne ton héros de 3.', cond:vs => vs.length === 1 && vs[0] <= 3, u:{ n:'Faon', a:2, v:3 }, f:J => soin(J, 3) },
-  lien:     { n:'Lien de la meute', t:'e', c:1, txt:'dé ≤ 2', d:'La Louve a +2 attaque. Sans Louve : +1 marqueur.', cond:vs => vs.length === 1 && vs[0] <= 2, f:J => { const l = J.front.find(u => u.louve); if (l) { l.a += 2; log('La Louve gagne +2 attaque.'); } else ajouteMeute(J, 1); } },
-  rosee:    { n:'Rosée', t:'s', c:0, txt:'dé = 1', d:'Pioche 1 carte.', cond:vs => vs.length === 1 && vs[0] === 1, f:J => pioche(J, 1) },
-  potion:   { n:'Potion de soin', t:'s', c:1, txt:'1 dé', d:'Soigne ton héros de la valeur + 2.', cond:vs => vs.length === 1, f:(J, vs) => soin(J, vs[0] + 2), g:1 },
-  milicien: { n:'Milicien', t:'u', c:1, txt:'dé ≤ 3', d:'Unité 2 / 2.', cond:vs => vs.length === 1 && vs[0] <= 3, u:{ n:'Milicien', a:2, v:2 }, g:1 },
-  chien:    { n:'Chien de garde', t:'u', c:2, txt:'1 dé', d:'Unité 2 / 3, Barrière.', cond:vs => vs.length === 1, u:{ n:'Chien', a:2, v:3, barriere:true }, g:1 },
-  pierre:   { n:'Pierre à aiguiser', t:'e', c:1, txt:'1 dé', d:'Une de tes unités : +2 attaque.', cond:vs => vs.length === 1, cible:'uniteA', f:(J, vs, k) => { k.u.a += 2; log(`${k.u.n} : +2 attaque.`); }, g:1 },
-  rond:     { n:'Bouclier rond', t:'s', c:0, txt:'dé pair', d:'Bouclier égal à la valeur du dé.', cond:vs => vs.length === 1 && vs[0] % 2 === 0, f:(J, vs) => { J.bouclier += vs[0]; log(`${J.nom} : Bouclier ${vs[0]}.`); }, g:1 },
-  torche:   { n:'Torche', t:'s', c:1, txt:'dé ≥ 4', d:'4 dégâts à une unité adverse.', cond:vs => vs.length === 1 && vs[0] >= 4, cible:'uniteE', f:(J, vs, k) => degats(k, 4), g:1 },
-  chance:   { n:'Coup de chance', t:'s', c:0, txt:'dé = 1', d:'Relance tes 2 dés libres les plus faibles.', cond:vs => vs.length === 1 && vs[0] === 1, f:J => { const l = J.des.filter(d => !d.pose).sort((a, b) => a.v - b.v).slice(0, 2); l.forEach(d => lance(J, d)); log(`${J.nom} relance ${l.length} dé(s).`); }, g:1 },
-  parchemin:{ n:'Parchemin d’étude', t:'s', c:1, txt:'dé impair', d:'Pioche 1 carte et gagne 1 PC.', cond:vs => vs.length === 1 && vs[0] % 2 === 1, f:J => { pioche(J, 1); J.pc = Math.min(6, J.pc + 1); }, g:1 },
-};
-const GUILDE = ['potion', 'milicien', 'chien', 'pierre', 'rond', 'torche', 'chance', 'parchemin'];
-const HEROS = {
-  aldric: { nom:'Sire Aldric', c:'#ffd27a', pv:45,
-    deck:['ecuyer', 'ecuyer', 'lanterne', 'serment', 'serment', 'estocade', 'estocade', 'gardien', 'gardien', 'banniere', 'contre', 'releve'],
-    passif:'Pureté : poser deux 6 dans le même tour donne un jeton qui annule la prochaine altération.',
-    garde:{ n:'Parade de fer', txt:'1 ou 2 dés', d:'Une paire : Bouclier = valeur × 2. Sinon : Bouclier = le plus haut dé.', cond:vs => vs.length === 1 || vs.length === 2,
-      f:(J, vs) => { const b = vs.length === 2 && vs[0] === vs[1] ? vs[0] * 2 : Math.max(...vs); J.gardeB += b; log(`${J.nom} se met en garde : Bouclier ${b}.`); } },
-    pouvoir:{ n:'Mur de lumière', txt:'deux paires (4 dés)', d:'Dégâts égaux à la somme de ta plus haute paire ; tes unités gagnent Barrière, un Bouclier égal à cette paire, et peuvent attaquer tout de suite.', cond:vs => vs.length === 4 && compte(vs)[0] === 2 && compte(vs)[1] === 2, cible:'ennemi',
-      f:(J, vs, k) => { degats(k, Math.max(...vs) * 2); const h = Math.max(...vs); J.front.forEach(u => { u.barriere = true; u.bouclier = (u.bouclier || 0) + h; u.pret = true; }); log(`Mur de lumière : tes unités ont Barrière et Bouclier ${h}.`); } },
-    ultime:{ n:'La Lame de l’Aube', txt:'brelan + paire (5 dés)', d:'18 dégâts à une cible et Handicap.', cond:vs => vs.length === 5 && compte(vs)[0] === 3 && compte(vs)[1] === 2, cible:'ennemi',
-      f:(J, vs, k) => { degats(k, 18); altere(adv(J), 'handicap'); } } },
-  pip: { nom:'Pip et sa louve', c:'#c58bff', pv:38,
-    deck:['ronces', 'ronces', 'seve', 'seve', 'racines', 'racines', 'purif', 'hurlement', 'faon', 'faon', 'lien', 'rosee'],
-    passif:'L’Appel de l’Alpha : chaque 6 lancé pose un marqueur de Meute. À 3, la Louve (4 / 7) arrive et attaque seule à la fin de chacun de tes tours.',
-    garde:{ n:'Écorce bénie', txt:'1 dé', d:'Un 1 ou un 2 : Épines 3. Sinon : Bouclier = la valeur.', cond:vs => vs.length === 1,
-      f:(J, vs) => { if (vs[0] <= 2) { J.gardeE += 3; log(`${J.nom} : Écorce bénie, Épines 3.`); } else { J.gardeB += vs[0]; log(`${J.nom} : Écorce bénie, Bouclier ${vs[0]}.`); } } },
-    pouvoir:{ n:'Appel de la Louve', txt:'4 dés de 4 ou 5', d:'8 dégâts à une cible, Bouclier 3 et +1 marqueur de Meute.', cond:vs => vs.length === 4 && vs.every(v => v === 4 || v === 5), cible:'ennemi',
-      f:(J, vs, k) => { degats(k, 8); J.bouclier += 3; ajouteMeute(J, 1); } },
-    ultime:{ n:'L’Éveil du Grand Arbre', txt:'5 dés de 3 ou moins', d:'Ton héros se soigne de 15 et tes unités retrouvent toute leur vie.', cond:vs => vs.length === 5 && vs.every(v => v <= 3),
-      f:J => { soin(J, 15); J.front.forEach(u => u.v = u.vmax); log('L’Éveil du Grand Arbre.'); } } },
-};
-// Frappe (attaque de base du jeu papier, pour tous) : 2, 3, 4 ou 5 dés identiques
-const FRAPPE = { n:'Frappe', txt:'2 à 5 dés identiques', d:'3 / 6 / 9 / 14 dégâts à une cible (2, 3, 4 ou 5 dés identiques).', cond:vs => vs.length >= 2 && egaux(vs), cible:'ennemi',
-  f:(J, vs, k) => degats(k, [0, 0, 3, 6, 9, 14][vs.length]) };
-const SALLES = [
-  { n:'La Cour de la caserne', d:'Les unités arrivent avec +1 vie.', id:'caserne' },
-  { n:'La Salle des échos', d:'La première carte de chaque tour coûte 1 PC de moins.', id:'echos' },
-  { n:'L’Autel du six', d:'Vendre un 6 rapporte 2 PC au lieu de 1.', id:'autel' },
-];
-
-// =============================================================== état
+// =============================================================================================== moteur
 let S = null;
 const adv = J => J === S.J ? S.O : S.J;
 const log = t => { S.log.unshift(t); };
 function joueur(id, ordi) {
   const h = HEROS[id];
-  const deck = melange([...h.deck, ...GUILDE]);
-  return { id, ordi, nom:h.nom, c:h.c, pv:h.pv, pvMax:h.pv, pc:1, deck, main:[], des:[], front:[], tours:0,
-    bouclier:0, gardeB:0, gardeE:0, contre:false, banniere:false, purete:0, handicap:0, saigne:0, meute:0, ultimeFait:false, six:0, relance:1, cartesJouees:0 };
+  return { id, ordi, nom:h.nom, c:h.c, pv:h.pv, pvMax:h.pv, pc:1, deck:melange([...h.deck, ...GUILDE]), main:[], des:[], front:[], tours:0,
+    sacs:[0, 1, 2, 3, 4].map(() => []), bouclier:0, gardeB:0, gardeE:0, purete:0, handicap:0, saigne:0, poison:0, meute:0, braise:0, relance:1 };
 }
 function melange(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
 function pioche(J, n) { for (let i = 0; i < n; i++) { if (!J.deck.length) break; if (J.main.length >= 7) { J.deck.pop(); continue; } J.main.push(J.deck.pop()); } }
-
-// Dés « équitables » : chaque dé tire sa face dans un sac de 6 ; le sac se remplit quand il est vide
+// Dés « équitables » : chaque dé a un sac de 6 faces mélangé ; il sort ses faces dans l'ordre et se remplit quand il est vide.
 function lance(J, d) {
-  if (!d.sac.length) d.sac.push(1, 2, 3, 4, 5, 6);
-  const i = Math.floor(Math.random() * d.sac.length);
-  d.v = d.sac.splice(i, 1)[0];
+  if (!d.sac.length) d.sac.push(...melange([1, 2, 3, 4, 5, 6]));
+  d.v = d.sac.shift(); d.mod = false;
   if (J.id === 'pip' && d.v === 6) ajouteMeute(J, 1);
 }
+function modifie(J, d, v) { d.v = v; d.mod = true; if (J.catalyseur && !S.fini) degats({ J:adv(J) }, 1); }
 function ajouteMeute(J, n) {
   if (J.id !== 'pip' || J.front.some(u => u.louve)) return;
-  J.meute = Math.min(3, J.meute + n);
-  log(`Meute : ${J.meute} sur 3.`);
-  if (J.meute >= 3 && J.front.length < 5) {
-    J.meute = 0;
-    invoque(J, { n:'La Louve', a:4, v:7, louve:true });
-    log('🐺 La Louve arrive sur la ligne de front !');
-  }
+  J.meute = Math.min(3, J.meute + n); log(`Meute : ${J.meute} sur 3.`);
+  if (J.meute >= 3 && J.front.length < 5) { J.meute = 0; invoque(J, { n:'La Louve', a:4, v:7, louve:true }); log('🐺 La Louve arrive sur la ligne de front !'); }
 }
-function invoque(J, base) {
+function invoque(J, base, key) {
   if (J.front.length >= 5) { log('Ligne de front pleine.'); return; }
-  const u = { ...base, id:Math.random().toString(36).slice(2), pret:false };
+  const u = { ...base, key, id:Math.random().toString(36).slice(2), pret:!!base.charge };
   if (S.salle.id === 'caserne') u.v += 1;
-  u.vmax = u.v;
-  J.front.push(u);
+  u.vmax = u.v; J.front.push(u);
 }
-function altere(J, quoi) {
+function renvoie(k) { k.J.front = k.J.front.filter(x => x !== k.u); if (k.u.key && k.J.main.length < 7) k.J.main.push(k.u.key); log(`${k.u.n} retourne dans la main.`); }
+function altere(J, quoi, n) {
   if (J.purete > 0) { J.purete--; log(`${J.nom} utilise un jeton de Pureté : ${quoi} annulé.`); return; }
   if (quoi === 'handicap') { J.handicap = 1; log(`${J.nom} reçoit Handicap.`); }
   if (quoi === 'saigne') { J.saigne = Math.min(3, J.saigne + 1); log(`${J.nom} saigne.`); }
+  if (quoi === 'poison') { J.poison += n; log(`${J.nom} reçoit Poison ${n}.`); }
 }
-const atk = (J, u) => u.a + (J.banniere && u.barriere ? 2 : 0);
-function soin(J, n) { const a = J.pv; J.pv = Math.min(J.pvMax, J.pv + n); log(`${J.nom} se soigne de ${J.pv - a}.`); }
+const atk = (J, u) => Math.max(0, u.a + (J.banniere && u.barriere ? 2 : 0) + (u.tmp || 0) + J.front.filter(x => x.tambour && x !== u).length);
+function soin(J, n) { const a = J.pv; J.pv = Math.min(J.pvMax, J.pv + n); if (J.pv > a) log(`${J.nom} se soigne de ${J.pv - a}.`); }
 function soinCible(k, n) { if (k.u) { k.u.v = Math.min(k.u.vmax, k.u.v + n); log(`${k.u.n} se soigne.`); } else soin(k.J, n); }
-// k = { J, u? } : la cible. ignore = dégâts qui passent Bouclier et Barrière
+// k = { J, u? } : la cible. ignore = passe Bouclier et Barrière (Instinct de la Louve)
 function degats(k, n, ignore) {
+  if (S.fini || n <= 0) return;
   if (k.u) {
+    if (!k.J.front.includes(k.u)) return;
     let r = n;
     if (!ignore && k.u.bouclier) { const b = Math.min(k.u.bouclier, r); k.u.bouclier -= b; r -= b; }
-    k.u.v -= r; log(`${k.u.n} subit ${r} dégât(s).`);
-    if (k.u.v <= 0) { k.J.front = k.J.front.filter(x => x !== k.u); log(`${k.u.n} tombe.`); }
+    k.u.v -= r; if (r) log(`${k.u.n} subit ${r} dégât(s).`);
+    if (k.u.v <= 0) {
+      if (k.J.cor) { k.J.cor = false; k.u.v = 1; log(`Cor de ralliement : ${k.u.n} reste debout à 1 vie.`); }
+      else { k.J.front = k.J.front.filter(x => x !== k.u); log(`${k.u.n} tombe.`); }
+    }
   } else {
     const J = k.J; let r = n;
     if (!ignore) {
+      if (J.esquive) { J.esquive = false; r = Math.floor(r / 2); log(`${J.nom} esquive : dégâts divisés par 2.`); }
       const g = Math.min(J.gardeB, r); J.gardeB -= g; r -= g;
       const b = Math.min(J.bouclier, r); J.bouclier -= b; r -= b;
       if (g + b) log(`Les boucliers de ${J.nom} absorbent ${g + b}.`);
     }
     J.pv -= r; if (r) log(`${J.nom} perd ${r} PV.`);
+    if (r > 1 && J.fournaise) { J.fournaise = false; const D = adv(J); log('Fournaise : l’adversaire subit la moitié des dégâts.'); D.pv -= Math.floor(r / 2); }
   }
   fin();
 }
-function fin() { if (S.fini) return; if (S.J.pv <= 0 || S.O.pv <= 0) { S.fini = S.J.pv > 0 ? 'gagne' : 'perdu'; } }
+function fin() { if (S.fini) return; if (S.J.pv <= 0 || S.O.pv <= 0) S.fini = S.J.pv > 0 ? 'gagne' : 'perdu'; }
 
-// =============================================================== tours
 function debutTour(J) {
-  J.tours++; J.gardeB = 0; J.gardeE = 0; J.contre = false; J.six = 0; J.relance = 1; J.cartesJouees = 0; J.pureteTour = false;
-  J.pc = Math.min(6, J.pc + (J.tours === 1 ? 0 : 1));
-  if (J.tours > 1) pioche(J, 1);
+  J.tours++; J.gardeB = 0; J.gardeE = 0; J.contre = J.piege = J.cor = J.fournaise = J.paillasse = J.esquive = false;
+  J.relance = 1 + (J.boussole ? 1 : 0); J.cartesJouees = 0; J.six = 0; J.pureteTour = false; J.transmu = false; J.dernierSort = null; J.gardeFaite = false;
+  if (J.tours > 1) { J.pc = Math.min(6, J.pc + 1); pioche(J, 1); }
   if (J.saigne) { log(`${J.nom} saigne : −${J.saigne * 2} PV.`); J.pv -= J.saigne * 2; fin(); }
+  if (J.poison) { log(`${J.nom} : Poison, −${J.poison} PV.`); J.pv -= J.poison; J.poison--; fin(); }
   let n = Math.min(5, J.tours + 2);
   if (J.handicap) { n--; J.handicap = 0; log(`Handicap : ${J.nom} lance un dé de moins.`); }
-  J.des = (J.sacs || (J.sacs = [0, 1, 2, 3, 4].map(() => []))).slice(0, n).map((sac, i) => ({ sac:J.sacs[i], v:0, pose:false, i }));
-  J.des.forEach(d => lance(J, d));
+  J.des = J.sacs.slice(0, n).map((sac, i) => ({ sac, v:0, pose:false, mod:false, i }));
+  if (J.oeuvre) { J.des.forEach(d => { d.v = J.oeuvre; }); log(`Grand œuvre : tous les dés de ${J.nom} montrent ${J.oeuvre}.`); J.oeuvre = 0; }
+  else J.des.forEach(d => lance(J, d));
   J.front.forEach(u => { u.pret = !u.entrave; u.entrave = false; });
   log(`— Tour ${J.tours} de ${J.nom} : ${J.des.map(d => d.v).join(' · ')}`);
 }
-function coutCarte(J, k) { let c = CARTES[k].c; if (S.salle.id === 'echos' && J.cartesJouees === 0) c = Math.max(0, c - 1); return c; }
-// toutes les façons de poser les dés choisis (vs) : renvoie true si c'est permis
-function permis(J, quoi, vs) {
+function coutCarte(J, k) {
+  const c = CARTES[k]; let n = c.c;
+  if (S.salle.id === 'echos' && J.cartesJouees === 0) n = Math.max(0, n - 1);
+  if (c.t === 'e' && J.forgeGratuite) n = 0;
+  return n;
+}
+function defDe(J, quoi) { const h = HEROS[J.id]; return quoi === 'frappe' ? FRAPPE : quoi === 'pouvoir' ? h.pouvoir : quoi === 'ultime' ? h.ultime : quoi === 'garde' ? h.garde : CARTES[quoi]; }
+function ciblesPossibles(J, type) {
+  const D = adv(J), vis = D.front.filter(u => !u.cachee);
+  if (type === 'ennemi') return [{ J:D }, ...vis.map(u => ({ J:D, u }))];
+  if (type === 'uniteE') return vis.map(u => ({ J:D, u }));
+  if (type === 'allie') return [{ J }, ...J.front.map(u => ({ J, u }))];
+  if (type === 'uniteA') return J.front.map(u => ({ J, u }));
+  if (type === 'barriereA') return J.front.filter(u => u.barriere).map(u => ({ J, u }));
+  return [];
+}
+function cibleValide(J, k, type) { if (k && (!k.u || k.J.front.includes(k.u))) return k; return cibleAuto(J, type); }
+function permis(J, quoi, vs, ds) {
   if (!vs.length) return false;
   const h = HEROS[J.id];
-  if (quoi === 'garde') return !J.gardeFaite && h.garde.cond(vs);
-  if (quoi === 'pouvoir') return h.pouvoir.cond(vs);
-  if (quoi === 'frappe') return FRAPPE.cond(vs);
-  if (quoi === 'ultime') return !J.ultimeFait && J.pc >= 3 && h.ultime.cond(vs);
   if (quoi === 'vendre') return true;
+  if (quoi === 'transmu') return J.id === 'zephine' && !J.transmu && vs.length === 1;
+  if (quoi === 'garde') return !J.gardeFaite && h.garde.cond(vs, ds);
+  if (quoi === 'pouvoir') return h.pouvoir.cond(vs, ds);
+  if (quoi === 'frappe') return FRAPPE.cond(vs);
+  if (quoi === 'ultime') return !J.ultimeFait && J.pc >= 3 && h.ultime.cond(vs, ds);
   const c = CARTES[quoi];
+  if (c.t === 's' && J.silence) return false;
   if (c.t === 'u' && J.front.length >= 5) return false;
-  if (c.cible === 'barriereA' && !J.front.some(u => u.barriere)) return false;
-  if (c.cible === 'uniteA' && !J.front.length) return false;
-  if (c.cible === 'uniteE' && !adv(J).front.length) return false;
-  return J.pc >= coutCarte(J, quoi) && c.cond(vs);
+  if (c.cible && c.cible !== 'de' && !ciblesPossibles(J, c.cible).length) return false;
+  if (c.cible === 'de' && !J.des.some(d => !d.pose && !(ds || []).includes(d))) return false;
+  return J.pc >= coutCarte(J, quoi) && c.cond(vs, ds);
 }
-// pose les dés choisis ; k = cible si besoin
 function pose(J, quoi, ds, k, indexMain) {
   const vs = vals(ds);
+  if (quoi === 'transmu') { J.transmu = true; const d = ds[0]; const a = d.v; modifie(J, d, opp(a)); log(`${J.nom} transmute un ${a} en ${d.v}.`); return; }
   ds.forEach(d => { d.pose = true; });
   const h = HEROS[J.id];
-  if (quoi === 'vendre') {
-    let g = 0; vs.forEach(v => g += (S.salle.id === 'autel' && v === 6) ? 2 : 1);
-    J.pc = Math.min(6, J.pc + g); log(`${J.nom} vend ${vs.length} dé(s) : +${g} PC.`); return;
-  }
-  vs.forEach(v => { if (v === 6) J.six++; });
+  if (quoi === 'vendre') { let g = 0; vs.forEach(v => g += (S.salle.id === 'autel' && v === 6) ? 2 : 1); J.pc = Math.min(6, J.pc + g); log(`${J.nom} vend ${vs.length} dé(s) : +${g} PC.`); return; }
+  const six = vs.filter(v => v === 6).length; J.six += six;
   if (J.id === 'aldric' && J.six >= 2 && !J.pureteTour && J.purete < 2) { J.purete++; J.pureteTour = true; log('✦ Deux 6 posés : Aldric gagne un jeton de Pureté.'); }
-  if (quoi === 'garde') { J.gardeFaite = true; h.garde.f(J, vs); return; }
-  if (quoi === 'pouvoir') { log(`${J.nom} : ${h.pouvoir.n} !`); h.pouvoir.f(J, vs, k); return; }
+  if (quoi === 'garde') { J.gardeFaite = true; h.garde.f(J, vs, k, ds); return; }
   if (quoi === 'frappe') { log(`${J.nom} : Frappe (${vs.join(', ')}) !`); FRAPPE.f(J, vs, k); return; }
-  if (quoi === 'ultime') { J.pc -= 3; J.ultimeFait = true; log(`${J.nom} : ULTIME, ${h.ultime.n} !`); h.ultime.f(J, vs, k); return; }
+  if (quoi === 'pouvoir') { log(`${J.nom} : ${h.pouvoir.n} !`); h.pouvoir.f(J, vs, k, ds); return; }
+  if (quoi === 'ultime') { J.pc -= 3; J.ultimeFait = true; log(`${J.nom} : ULTIME, ${h.ultime.n} !`); h.ultime.f(J, vs, k, ds); return; }
   const c = CARTES[quoi];
   J.pc -= coutCarte(J, quoi); J.cartesJouees++;
+  if (c.t === 'e' && J.forgeGratuite) J.forgeGratuite = false;
   J.main.splice(indexMain, 1);
   log(`${J.nom} joue ${c.n} (${vs.join(', ')}).`);
-  if (c.u) invoque(J, c.u);
-  if (c.f) c.f(J, vs, k);
+  if (J.id === 'maelle' && six) {
+    J.braise += six * (1 + J.front.filter(u => u.apprenti).length);
+    if (J.braise >= 3) { J.braise = 0; J.forgeGratuite = true; log('🔥 3 Braises : la prochaine carte Équipement de Maëlle ne coûte rien.'); }
+  }
+  if (c.u) invoque(J, c.u, quoi);
+  if (c.f) c.f(J, vs, k, ds);
+  if (c.t === 's' && quoi !== 'echo') J.dernierSort = { key:quoi, vs, k };
 }
-// attaque d'une unité
 function attaque(J, u, k) {
   const D = adv(J);
-  u.pret = false;
+  u.pret = false; u.cachee = false;
   if (D.contre) { D.contre = false; log('Contre-attaque : 6 dégâts d’abord !'); degats({ J, u }, 6); if (!J.front.includes(u)) return; }
+  if (D.piege) { D.piege = false; log('Piège à mâchoires !'); degats({ J, u }, 3); if (!J.front.includes(u)) return; u.entrave = true; }
+  if (D.paillasse) { D.paillasse = false; altere(J, 'poison', 3); }
   const a = atk(J, u);
   log(`${u.n} attaque ${k.u ? k.u.n : D.nom}.`);
   if (k.u) {
@@ -267,129 +231,146 @@ function attaque(J, u, k) {
     if (riposte > 0 && J.front.includes(u)) degats({ J, u }, riposte);
   } else {
     degats(k, a);
+    if (u.poisonneur) altere(D, 'poison', 2);
     if (D.gardeE && J.front.includes(u)) { log('Les Épines piquent !'); degats({ J, u }, D.gardeE); }
   }
 }
-const ciblesAttaque = D => D.front.some(u => u.barriere) ? D.front.filter(u => u.barriere).map(u => ({ J:D, u })) : [{ J:D }, ...D.front.map(u => ({ J:D, u }))];
+const ciblesAttaque = D => { const vis = D.front.filter(u => !u.cachee); return vis.some(u => u.barriere) ? vis.filter(u => u.barriere).map(u => ({ J:D, u })) : [{ J:D }, ...vis.map(u => ({ J:D, u }))]; };
 function attaqueLouve(J) {
   const l = J.front.find(u => u.louve); if (!l || !l.pret) return;
-  const D = adv(J);
-  const r = [1, 2, 3].map(() => 1 + Math.floor(Math.random() * 6));
-  const c = compte(r)[0];
+  const D = adv(J), r = [1, 2, 3].map(() => 1 + Math.floor(Math.random() * 6)), c = compte(r)[0];
   let n = c >= 3 ? 9 : c === 2 ? 5 : 2; n += r.filter(v => v === 6).length; n += l.a - 4;
-  log(`🐺 La Louve lance ${r.join(' · ')} : ${n} dégâts${c === 2 ? ', Instinct (ignore Barrière et Bouclier)' : ''}.`);
+  log(`🐺 La Louve lance ${r.join(' · ')} : ${n} dégâts${c === 2 ? ', Instinct' : ''}.`);
   l.pret = false;
   if (c === 2) degats({ J:D }, n, true);
-  else {
-    const bar = D.front.find(u => u.barriere);
-    degats(bar ? { J:D, u:bar } : { J:D }, n);
-    if (c >= 3) altere(D, 'saigne');
-  }
+  else { const bar = D.front.find(u => u.barriere && !u.cachee); degats(bar ? { J:D, u:bar } : { J:D }, n); if (c >= 3) altere(D, 'saigne'); }
 }
 function finTour(J) {
   if (J.id === 'pip') attaqueLouve(J);
-  J.gardeFaite = false;
-  J.des = [];
+  J.front.forEach(u => { u.tmp = 0; });
+  J.silence = false; J.gardeFaite = false; J.des = [];
+}
+// choix réservés au joueur humain (l'ordinateur décide tout seul)
+function choisirFace(J) {
+  if (J.ordi || S.auto) { const d = J.sacs[0]; if (d.length) { const i = d.indexOf(6); if (i > 0) [d[0], d[i]] = [d[i], d[0]]; } return; }
+  choix('Tracé parfait : quelle face pour ton dé 1 au prochain lancer ?', [1, 2, 3, 4, 5, 6].map(String), i => {
+    const sac = J.sacs[0], v = i + 1, p = sac.indexOf(v);
+    if (p >= 0) sac.splice(p, 1); sac.unshift(v); log(`Le prochain lancer du dé 1 donnera ${v}.`); rendu();
+  });
+}
+function choisirOeuvre(J) {
+  if (J.ordi || S.auto) { J.oeuvre = 6; log('Grand œuvre : au prochain tour, tous les dés montreront 6.'); return; }
+  choix('Grand œuvre : quelle valeur pour tous tes dés au prochain tour ?', [1, 2, 3, 4, 5, 6].map(String), i => { J.oeuvre = i + 1; log(`Grand œuvre : au prochain tour, tous tes dés montreront ${i + 1}.`); rendu(); });
 }
 
-// =============================================================== l'ordinateur
-function sousEnsembles(ds) { const r = []; const n = ds.length; for (let m = 1; m < (1 << n); m++) { const s = []; for (let i = 0; i < n; i++) if (m & (1 << i)) s.push(ds[i]); r.push(s); } return r; }
+// =============================================================================================== l'ordinateur
+function sousEnsembles(ds) { const r = [], n = ds.length; for (let m = 1; m < (1 << n); m++) { const s = []; for (let i = 0; i < n; i++) if (m & (1 << i)) s.push(ds[i]); r.push(s); } return r; }
+function interet(J, quoi, vs) {
+  const D = adv(J);
+  if (quoi === 'ultime') return J.id === 'pip' ? (J.pv < J.pvMax * .6 ? 120 : 0) : 120;
+  if (quoi === 'pouvoir') return J.id === 'zephine' ? 70 : 80;
+  if (quoi === 'frappe') return [0, 0, 25, 50, 70, 95][vs.length];
+  const c = CARTES[quoi];
+  if (c.u) return 30 + c.u.a + c.u.v + (c.u.barriere && !J.front.some(u => u.barriere) ? 15 : 0) + (c.u.charge ? 10 : 0);
+  return c.ia ? c.ia(J, vs) : 15;
+}
 function meilleurCoup(J) {
-  const libres = J.des.filter(d => !d.pose); const D = adv(J); let best = null;
-  const essai = (quoi, ds, score, im) => { if (permis(J, quoi, vals(ds)) && (!best || score > best.score)) best = { quoi, ds, score, im }; };
+  const libres = J.des.filter(d => !d.pose); let best = null;
+  const essai = (quoi, ds, score, im) => { if (score > (best ? best.score : -1) && permis(J, quoi, vals(ds), ds)) best = { quoi, ds, score, im }; };
   for (const ds of sousEnsembles(libres)) {
     const vs = vals(ds);
-    essai('ultime', ds, J.id === 'pip' ? (J.pv < J.pvMax * 0.6 ? 120 : 0) : 120);
-    essai('pouvoir', ds, 80);
-    essai('frappe', ds, [0, 0, 25, 50, 70, 95][ds.length]);
-    J.main.forEach((k, im) => {
-      const c = CARTES[k]; let s = 10 + ds.length * 2;
-      if (c.u) s = 30 + c.u.a + c.u.v + (c.u.barriere && !J.front.some(u => u.barriere) ? 15 : 0);
-      if (['estocade', 'racines'].includes(k)) s = 45;
-      if (['seve', 'potion', 'serment', 'lanterne'].includes(k)) s = J.pv < J.pvMax * 0.7 ? 40 : 5;
-      if (k === 'torche') s = D.front.length ? 35 : 0;
-      if (k === 'hurlement' || k === 'lien') s = 30;
-      if (['rosee', 'parchemin'].includes(k)) s = 22;
-      if (k === 'chance') s = 3;
-      essai(k, ds, s - ds.length, im);
-    });
+    essai('ultime', ds, interet(J, 'ultime', vs)); essai('pouvoir', ds, interet(J, 'pouvoir', vs)); essai('frappe', ds, interet(J, 'frappe', vs));
+    J.main.forEach((k, im) => essai(k, ds, interet(J, k, vs) - ds.length, im));
   }
   return best;
 }
 function cibleAuto(J, type) {
-  const D = adv(J);
-  if (type === 'ennemi') { const l = D.front.find(u => u.louve); return l && Math.random() < .3 ? { J:D, u:l } : { J:D }; }
-  if (type === 'uniteE') return { J:D, u:[...D.front].sort((a, b) => b.a - a.a)[0] };
-  if (type === 'allie') { const u = J.front.find(x => x.v < x.vmax); return J.pv < J.pvMax - 5 || !u ? { J } : { J, u }; }
-  if (type === 'uniteA') return { J, u:J.front[0] };
-  if (type === 'barriereA') return { J, u:J.front.find(x => x.barriere) };
+  const D = adv(J), l = ciblesPossibles(J, type);
+  if (!l.length) return null;
+  if (type === 'ennemi') { const u = l.find(x => x.u && (x.u.louve || x.u.a >= 6)); return u && Math.random() < .35 ? u : l[0]; }
+  if (type === 'uniteE') return [...l].sort((a, b) => atk(D, b.u) - atk(D, a.u))[0];
+  if (type === 'allie') { const u = J.front.find(x => x.v < x.vmax - 2); return J.pv < J.pvMax - 5 || !u ? { J } : { J, u }; }
+  if (type === 'uniteA') return [...l].sort((a, b) => (b.u.pret - a.u.pret) || (b.u.a - a.u.a))[0];
+  return l[0];
+}
+function transmutationAuto(J) {
+  if (J.id !== 'zephine' || J.transmu) return;
+  const avant = (meilleurCoup(J) || { score:0 }).score; let mieux = null;
+  J.des.filter(d => !d.pose).forEach(d => { const a = d.v; d.v = opp(a); const s = (meilleurCoup(J) || { score:0 }).score; d.v = a; if (s > avant + 8 && (!mieux || s > mieux.s)) mieux = { d, s }; });
+  if (mieux) pose(J, 'transmu', [mieux.d]);
 }
 function joueOrdi() { debutTour(S.O); if (!S.fini) joueAuto(S.O); }
 function joueAuto(J) {
-  // relance : on relance les dés qui ne servent pas au meilleur coup s'il n'est pas assez bon
+  transmutationAuto(J);
   let b = meilleurCoup(J);
-  if ((!b || b.score < 45) && J.relance) {
+  while ((!b || b.score < 45) && J.relance > 0) {
     const garder = b ? b.ds : [];
-    const aRelancer = J.des.filter(d => !garder.includes(d) && !(J.id === 'pip' && (d.v === 4 || d.v === 5)));
-    if (aRelancer.length) { aRelancer.forEach(d => lance(J, d)); J.relance = 0; log(`${J.nom} relance ${aRelancer.length} dé(s) : ${J.des.map(d => d.v).join(' · ')}`); }
+    const re = J.des.filter(d => !d.pose && !garder.includes(d) && !(J.id === 'pip' && (d.v === 4 || d.v === 5)));
+    if (!re.length) break;
+    re.forEach(d => lance(J, d)); J.relance--; log(`${J.nom} relance ${re.length} dé(s) : ${J.des.map(d => d.v).join(' · ')}`);
+    transmutationAuto(J); b = meilleurCoup(J);
   }
-  for (let garde = 0; garde < 8; garde++) {
+  for (let i = 0; i < 10; i++) {
+    transmutationAuto(J);
     b = meilleurCoup(J); if (!b || b.score < 8) break;
-    const def = b.quoi === 'frappe' ? FRAPPE : b.quoi === 'pouvoir' ? HEROS[J.id].pouvoir : b.quoi === 'ultime' ? HEROS[J.id].ultime : CARTES[b.quoi];
-    pose(J, b.quoi, b.ds, def && def.cible ? cibleAuto(J, def.cible) : null, b.im);
+    const def = defDe(J, b.quoi), t = def && def.cible;
+    let k = null;
+    if (t === 'de') { const autres = J.des.filter(d => !d.pose && !b.ds.includes(d)).sort((x, y) => x.v - y.v); k = { d:autres[0] }; }
+    else if (t) k = cibleAuto(J, t);
+    pose(J, b.quoi, b.ds, k, b.im);
     if (S.fini) return;
   }
-  // garde avec les dés qui restent, puis vente
-  const libres = J.des.filter(d => !d.pose).sort((a, b) => b.v - a.v);
-  if (libres.length) {
-    let g = J.id === 'pip' ? [libres.find(d => d.v <= 2) || libres[0]] : (libres.length > 1 ? libres.slice(0, 2) : libres);
-    if (J.id === 'aldric' && libres.length > 1) { const p = libres.find((d, i) => libres.findIndex(x => x.v === d.v) !== i); if (p) g = libres.filter(d => d.v === p.v).slice(0, 2); }
-    pose(J, 'garde', g);
-    const reste = J.des.filter(d => !d.pose); if (reste.length) pose(J, 'vendre', reste);
-  }
-  // attaques
-  J.front.filter(u => u.pret && !u.louve).forEach(u => { if (S.fini || !J.front.includes(u)) return; const c = ciblesAttaque(adv(J)); attaque(J, u, c.find(x => !x.u) || c[0]); });
+  // garde : le meilleur groupe de dés libres, puis vente du reste
+  const libres = J.des.filter(d => !d.pose), h = HEROS[J.id];
+  let g = null;
+  sousEnsembles(libres).forEach(ds => { if (ds.length <= 2 && h.garde.cond(vals(ds), ds)) { const v = h.garde.val(vals(ds), ds); if (!g || v > g.v) g = { ds, v }; } });
+  if (g && !J.gardeFaite) pose(J, 'garde', g.ds);
+  const reste = J.des.filter(d => !d.pose); if (reste.length) pose(J, 'vendre', reste);
+  J.front.filter(u => u.pret && !u.louve).forEach(u => { if (S.fini || !J.front.includes(u)) return; const c = ciblesAttaque(adv(J)); attaque(J, u, c.find(x => !x.u) || [...c].sort((a, b) => a.u.v - b.u.v)[0]); });
   finTour(J);
 }
+// partie entière jouée par l'ordinateur des deux côtés (simulations d'équilibrage)
+function simule(idJ, idO) {
+  nouvellePartie(idJ, idO, true);
+  for (let t = 0; t < 40 && !S.fini; t++) { joueAuto(S.J); if (S.fini) break; joueOrdi(); if (!S.fini) debutTour(S.J); }
+  return S.fini;
+}
 
-// =============================================================== interface
+// =============================================================================================== interface
 let sel = [], attaquant = null, ciblage = null;
-function nouvellePartie(id) {
-  const autre = id === 'aldric' ? 'pip' : 'aldric';
-  S = { J:joueur(id, false), O:joueur(autre, true), salle:SALLES[Math.floor(Math.random() * SALLES.length)], log:[], fini:null };
+function nouvellePartie(id, idO, auto) {
+  const autres = ORDRE.filter(x => x !== id);
+  idO = idO || autres[Math.floor(Math.random() * autres.length)];
+  S = { J:joueur(id, false), O:joueur(idO, true), salle:SALLES[Math.floor(Math.random() * SALLES.length)], log:[], fini:null, auto:!!auto };
   // le second joueur (l'ordinateur) compense : 1 PC et 1 carte de plus au départ
   pioche(S.J, 4); pioche(S.O, 5); S.O.pc = 2;
   log(`Salle : ${S.salle.n}. ${S.salle.d}`);
   sel = []; attaquant = null; ciblage = null;
-  debutTour(S.J); rendu();
+  debutTour(S.J);
+  if (!auto) rendu();
 }
 function finDeMonTour() {
   if (S.fini) return;
   const libres = S.J.des.filter(d => !d.pose);
   if (libres.length) pose(S.J, 'vendre', libres);
-  finTour(S.J); sel = []; attaquant = null; ciblage = null;
-  rendu();
+  finTour(S.J); sel = []; attaquant = null; ciblage = null; rendu();
   setTimeout(() => { joueOrdi(); if (!S.fini) debutTour(S.J); rendu(); }, 450);
 }
-function choisirDe(i) { if (S.fini || ciblage) return; const d = S.J.des[i]; if (d.pose) return; sel = sel.includes(d) ? sel.filter(x => x !== d) : [...sel, d]; attaquant = null; rendu(); }
-function cibleDe(def) { return def && def.cible; }
+function choisirDe(i) {
+  if (S.fini) return; const d = S.J.des[i]; if (d.pose) return;
+  if (ciblage && ciblage.type === 'de') { if (ciblage.ds.includes(d)) return; const c = ciblage; ciblage = null; pose(S.J, c.quoi, c.ds, { d }, c.im); sel = []; rendu(); return; }
+  if (ciblage) return;
+  sel = sel.includes(d) ? sel.filter(x => x !== d) : [...sel, d]; attaquant = null; rendu();
+}
 function vise(quoi, im) {
   if (S.fini) return;
-  const vs = vals(sel); if (!permis(S.J, quoi, vs)) { aide(quoi, im); return; }
-  const def = quoi === 'frappe' ? FRAPPE : quoi === 'pouvoir' ? HEROS[S.J.id].pouvoir : quoi === 'ultime' ? HEROS[S.J.id].ultime : CARTES[quoi];
-  const t = def && def.cible;
-  if (t) { ciblage = { quoi, ds:sel, im, type:t }; rendu(); return; }
+  if (!permis(S.J, quoi, vals(sel), sel)) { aide(quoi); return; }
+  const def = defDe(S.J, quoi), t = def && def.cible;
+  if (t && quoi !== 'garde') { ciblage = { quoi, ds:sel, im, type:t }; rendu(); return; }
   pose(S.J, quoi, sel, null, im); sel = []; rendu();
 }
 function estCible(k) {
-  if (ciblage) {
-    const t = ciblage.type, D = S.O, J = S.J;
-    if (t === 'ennemi') return k.J === D;
-    if (t === 'uniteE') return k.J === D && !!k.u;
-    if (t === 'allie') return k.J === J;
-    if (t === 'uniteA') return k.J === J && !!k.u;
-    if (t === 'barriereA') return k.J === J && k.u && k.u.barriere;
-  }
+  if (ciblage && ciblage.type !== 'de') return ciblesPossibles(S.J, ciblage.type).some(c => c.J === k.J && c.u === k.u);
   if (attaquant) return ciblesAttaque(S.O).some(c => c.J === k.J && c.u === k.u);
   return false;
 }
@@ -399,35 +380,44 @@ function touche(k) {
   if (attaquant && estCible(k)) { attaque(S.J, attaquant, k); attaquant = null; rendu(); return; }
   if (k.J === S.J && k.u && k.u.pret && !k.u.louve && !ciblage) { attaquant = attaquant === k.u ? null : k.u; sel = []; rendu(); }
 }
-function relancer() { if (!S.J.relance || !sel.length) return; sel.forEach(d => lance(S.J, d)); S.J.relance = 0; log(`Tu relances ${sel.length} dé(s) : ${S.J.des.map(d => d.v).join(' · ')}`); sel = []; rendu(); }
+function relancer() { if (!S.J.relance || !sel.length) return; sel.forEach(d => lance(S.J, d)); S.J.relance--; log(`Tu relances ${sel.length} dé(s) : ${S.J.des.map(d => d.v).join(' · ')}`); sel = []; rendu(); }
+function annuler() { sel = []; ciblage = null; attaquant = null; rendu(); }
 
-const esc = s => String(s);
 function barre(P, haut) {
   const ref = `{J:S.${haut ? 'O' : 'J'}}`;
   return `<div class="barre ${estCible({ J:P }) ? 'cible' : ''}" style="--c:${P.c}" onclick="touche(${ref})"><img src="${IMG(P.id)}" alt=""><div><div class="nom">${P.nom}${P.ordi ? ' · ordinateur' : ' · toi'}</div><div class="pastilles">
     <span class="p pv">❤ ${Math.max(0, P.pv)} / ${P.pvMax}</span><span class="p pc">◆ ${P.pc} PC</span>
-    ${P.gardeB ? `<span class="p g">🛡 Garde ${P.gardeB}</span>` : ''}${P.gardeE ? `<span class="p g">🌿 Épines ${P.gardeE}</span>` : ''}
-    ${P.bouclier ? `<span class="p g">🛡 Bouclier ${P.bouclier}</span>` : ''}${P.contre ? '<span class="p g">⚔ Contre-attaque</span>' : ''}
-    ${P.id === 'pip' && !P.front.some(u => u.louve) ? `<span class="p m">🐺 Meute ${P.meute}/3</span>` : ''}
+    ${P.gardeB ? `<span class="p g">🛡 Garde ${P.gardeB}</span>` : ''}${P.gardeE ? `<span class="p g">🌿 Épines ${P.gardeE}</span>` : ''}${P.esquive ? '<span class="p g">💨 Esquive</span>' : ''}
+    ${P.bouclier ? `<span class="p g">🛡 Bouclier ${P.bouclier}</span>` : ''}${P.contre ? '<span class="p g">⚔ Contre-attaque</span>' : ''}${P.piege ? '<span class="p g">🪤 Piège</span>' : ''}
+    ${P.cor ? '<span class="p g">📯 Cor</span>' : ''}${P.fournaise ? '<span class="p g">🔥 Fournaise</span>' : ''}${P.paillasse ? '<span class="p g">⚗ Paillasse</span>' : ''}
+    ${P.id === 'pip' && !P.front.some(u => u.louve) ? `<span class="p m">🐺 Meute ${P.meute}/3</span>` : ''}${P.id === 'maelle' ? `<span class="p m">🔥 Braises ${P.braise}/3${P.forgeGratuite ? ' · Équipement gratuit' : ''}</span>` : ''}
     ${P.purete ? `<span class="p pu">✦ Pureté ${P.purete}</span>` : ''}${P.handicap ? '<span class="p al">Handicap</span>' : ''}${P.saigne ? `<span class="p al">Saignement ${P.saigne}</span>` : ''}
+    ${P.poison ? `<span class="p al">Poison ${P.poison}</span>` : ''}${P.silence ? '<span class="p al">Silence</span>' : ''}${P.oeuvre ? `<span class="p pu">Grand œuvre : ${P.oeuvre}</span>` : ''}
     ${P.ultimeFait ? '<span class="p">Ultime utilisé</span>' : ''}<span class="p">🂠 ${P.main.length} en main</span></div></div></div>`;
 }
 function front(P, haut) {
   const cote = haut ? 'O' : 'J';
   return `<div class="front${P.front.length ? '' : ' vide'}">${P.front.map((u, i) => {
     const cls = [estCible({ J:P, u }) ? 'cible' : '', attaquant === u ? 'choisi' : '', !haut && u.pret && !u.louve ? 'pret' : '', !u.pret ? 'dort' : ''].join(' ');
-    const tags = [u.barriere ? 'Barrière' : '', u.epines ? `Épines ${u.epines}` : '', u.bouclier ? `🛡${u.bouclier}` : '', u.entrave ? 'Entravé' : '', u.louve ? 'seule' : ''].filter(Boolean).join(' · ');
+    const tags = [u.barriere ? 'Barrière' : '', u.cachee ? 'Cachée' : '', u.charge ? 'Charge' : '', u.epines ? `Épines ${u.epines}` : '', u.bouclier ? `🛡${u.bouclier}` : '', u.entrave ? 'Entravé' : '', u.louve ? 'seule' : ''].filter(Boolean).join(' · ');
     return `<div class="u ${cls}" onclick="touche({J:S.${cote},u:S.${cote}.front[${i}]})"><b>${u.n}</b><div class="tg">${tags}</div><div class="av"><span>⚔ ${atk(P, u)}</span><span>❤ ${u.v}</span></div></div>`;
   }).join('')}</div>`;
 }
 function act(quoi, titre, cout, txt) {
-  const ok = sel.length && permis(S.J, quoi, vals(sel));
+  const ok = sel.length && permis(S.J, quoi, vals(sel), sel);
   return `<button class="act ${ok ? 'ok' : sel.length ? 'non' : ''}" onclick="vise('${quoi}')"><b>${titre}</b>${cout} · ${txt}</button>`;
 }
+function sacTxt(J, d) {
+  if (!d.sac || d.extra) return '';
+  if (J.id === 'oria') return `ensuite : ${d.sac.length ? d.sac.slice(0, 2).join(', ') : 'sac neuf'}`;
+  return `sac : ${d.sac.length ? [...d.sac].sort().join(' ') : 'neuf au prochain'}`;
+}
 function rendu() {
+  if (!S || S.auto) return;
   const J = S.J, O = S.O, h = HEROS[J.id];
   let bandeau = '';
-  if (ciblage) bandeau = '🎯 Touche la cible (en vert).';
+  if (ciblage && ciblage.type === 'de') bandeau = '🎲 Touche le dé à retourner.';
+  else if (ciblage) bandeau = '🎯 Touche la cible (en vert).';
   else if (attaquant) bandeau = `⚔ ${attaquant.n} attaque : touche une cible en vert.`;
   else if (sel.length) bandeau = `Dés choisis : ${vals(sel).join(', ')}. Touche où les poser (en vert).`;
   else if (J.des.some(d => !d.pose)) bandeau = '1. Touche un ou plusieurs dés. 2. Touche où les poser.';
@@ -435,19 +425,20 @@ function rendu() {
   document.getElementById('app').innerHTML = `
   <div class="salle"><b>${S.salle.n}</b> · ${S.salle.d}</div>
   <div class="plateau">${barre(O, true)}${front(O, true)}<div class="milieu">— ligne de front —</div>${front(J, false)}${barre(J, false)}
-    <div class="des">${J.des.map((d, i) => `<div class="d ${sel.includes(d) ? 'sel' : ''} ${d.pose ? 'pose' : ''}" onclick="choisirDe(${i})"><img src="${FACE(J.id, d.v)}" alt="${d.v}"><div class="sac">sac : ${d.sac.length ? [...d.sac].sort().join(' ') : '(plein au prochain)'}</div></div>`).join('')}</div>
+    <div class="des">${J.des.map((d, i) => `<div class="d ${sel.includes(d) ? 'sel' : ''} ${d.pose ? 'pose' : ''} ${d.mod ? 'mod' : ''}" onclick="choisirDe(${i})"><img src="${FACE(J.id, d.v)}" alt="${d.v}"><div class="sac">${sacTxt(J, d)}</div></div>`).join('')}</div>
   </div>
-  <div class="bandeau">${bandeau}</div>
+  <div class="bandeau">${bandeau}${sel.length || ciblage || attaquant ? ' <a href="#" onclick="annuler();return false" style="color:#f3c96b">Annuler</a>' : ''}</div>
   <div class="actions">
+    ${act('frappe', 'Frappe', '0 PC', 'dés identiques')}
     ${act('garde', 'Garde', '0 PC', h.garde.txt)}
     ${act('pouvoir', 'Pouvoir', '0 PC', h.pouvoir.txt)}
     ${act('ultime', 'Ultime', '3 PC', J.ultimeFait ? 'déjà joué' : h.ultime.txt)}
+    ${h.action ? act('transmu', h.action.n, '0 PC', J.transmu ? 'déjà fait' : h.action.txt) : ''}
     ${act('vendre', 'Vendre', '+1 PC', 'par dé')}
-    ${act('frappe', 'Frappe', '0 PC', 'dés identiques')}
   </div>
-  <div class="main">${J.main.map((k, i) => { const c = CARTES[k]; const ok = sel.length && permis(J, k, vals(sel));
+  <div class="main">${J.main.map((k, i) => { const c = CARTES[k]; const ok = sel.length && permis(J, k, vals(sel), sel);
     return `<div class="c ${c.t}2 ${ok ? 'ok' : sel.length ? 'non' : ''}" onclick="vise('${k}', ${i})"><span class="cout">${coutCarte(J, k)}</span><div class="n">${c.n}</div><span class="cd">🎲 ${c.txt}</span><div>${c.d}</div></div>`; }).join('') || '<i style="color:#c9c1ea">Main vide</i>'}</div>
-  <div class="journal">${S.log.slice(0, 40).map(t => `<div>${esc(t)}</div>`).join('')}</div>
+  <div class="journal">${S.log.slice(0, 40).map(t => `<div>${t}</div>`).join('')}</div>
   <div class="bas">
     <button class="b0" onclick="regles()">❓ Règles</button>
     <button class="b1" onclick="relancer()" ${J.relance && sel.length ? '' : 'disabled style="opacity:.4"'}>🎲 Relancer (${J.relance})</button>
@@ -455,19 +446,24 @@ function rendu() {
   </div>`;
   if (S.fini) montrerFin();
 }
-function aide(quoi, im) {
+function aide(quoi) {
   const J = S.J, h = HEROS[J.id];
   let t = '';
   if (quoi === 'garde') t = `<b>${h.garde.n}</b> (0 PC, ${h.garde.txt}) : ${h.garde.d}${J.gardeFaite ? '<br><i>Déjà posée ce tour.</i>' : ''}`;
   else if (quoi === 'pouvoir') t = `<b>${h.pouvoir.n}</b> (0 PC, ${h.pouvoir.txt}) : ${h.pouvoir.d}`;
   else if (quoi === 'ultime') t = `<b>${h.ultime.n}</b> (3 PC, ${h.ultime.txt}, une fois par combat) : ${h.ultime.d}`;
   else if (quoi === 'frappe') t = `<b>Frappe</b> (0 PC, ${FRAPPE.txt}) : ${FRAPPE.d}`;
+  else if (quoi === 'transmu') t = `<b>${h.action.n}</b> (${h.action.txt}) : ${h.action.d}`;
   else if (quoi === 'vendre') t = 'Choisis d’abord un ou plusieurs dés, puis touche « Vendre » : chaque dé rapporte 1 PC.';
-  else { const c = CARTES[quoi]; t = `<b>${c.n}</b> : coûte <b>${coutCarte(J, quoi)} PC</b> et demande <b>${c.txt}</b>. ${c.d}`; }
+  else { const c = CARTES[quoi]; t = `<b>${c.n}</b> : coûte <b>${coutCarte(J, quoi)} PC</b> et demande <b>${c.txt}</b>. ${c.d}${c.t === 's' && J.silence ? '<br><i>Tu es réduit au Silence ce tour : pas de Sort.</i>' : ''}`; }
   fenetre(`<h2>Pas encore possible</h2><p>${t}</p><p style="color:#c9c1ea">Choisis d’abord les bons dés, puis touche cette case. Tu as ${J.pc} PC.</p><div class="choixh"><button onclick="fermer()">Compris</button></div>`);
 }
 function fenetre(html) { document.getElementById('fen').innerHTML = `<div class="fenetre" onclick="if(event.target===this)fermer()"><div>${html}</div></div>`; }
 function fermer() { document.getElementById('fen').innerHTML = ''; }
+function choix(titre, options, cb) {
+  window._cb = cb;
+  fenetre(`<h2>${titre}</h2><div class="grille6">${options.map((o, i) => `<button onclick="fermer();_cb(${i})">${o}</button>`).join('')}</div>`);
+}
 function regles() {
   const h = HEROS[S.J.id];
   fenetre(`<h2>Comment on joue</h2><ul>
@@ -477,20 +473,27 @@ function regles() {
   <li>Un dé qui ne sert à rien se <b>vend</b> : +1 PC. Les dés pas posés à la fin du tour sont vendus tout seuls.</li>
   <li>Tu gagnes +1 PC au début de chaque tour (6 au plus). Tu lances 3 dés au tour 1, 4 au tour 2, puis 5. Une relance par tour.</li>
   <li>Sous chaque dé, le <b>sac</b> montre les faces qui peuvent encore sortir : une face sortie ne revient qu’une fois les six sorties.</li>
-  <li>Tes <b>unités</b> attaquent à partir du tour suivant leur arrivée : touche ton unité (contour jaune), puis sa cible. Les unités <b>Barrière</b> doivent être attaquées d’abord par les unités.</li>
+  <li>Tes <b>unités</b> attaquent à partir du tour suivant leur arrivée : touche ton unité (contour jaune), puis sa cible. Les unités <b>Barrière</b> doivent être attaquées d’abord par les unités. Les unités <b>Cachées</b> ne peuvent pas être visées tant qu’elles n’ont pas attaqué.</li>
   <li>La <b>Garde</b> te protège pendant le tour de l’adversaire, puis disparaît.</li></ul>
-  <h2>${h.nom}</h2><p><b>Passif</b> : ${h.passif}</p><p><b>Garde · ${h.garde.n}</b> : ${h.garde.d}</p><p><b>Pouvoir · ${h.pouvoir.n}</b> (${h.pouvoir.txt}) : ${h.pouvoir.d}</p><p><b>Ultime · ${h.ultime.n}</b> (${h.ultime.txt}, 3 PC) : ${h.ultime.d}</p>
+  <h2>${h.nom}, ${h.titre} (${h.pv} PV)</h2><p><b>Passif</b> : ${h.passif}</p><p><b>Garde · ${h.garde.n}</b> (${h.garde.txt}) : ${h.garde.d}</p><p><b>Pouvoir · ${h.pouvoir.n}</b> (${h.pouvoir.txt}) : ${h.pouvoir.d}</p><p><b>Ultime · ${h.ultime.n}</b> (${h.ultime.txt}, 3 PC) : ${h.ultime.d}</p>
   <div class="choixh"><button onclick="fermer()">Jouer</button><button onclick="fermer();accueil()">Changer de héros</button></div>`);
 }
 function montrerFin() {
-  fenetre(`<h2>${S.fini === 'gagne' ? '🏆 Victoire !' : '💀 Défaite…'}</h2><p>${S.J.nom} ${S.fini === 'gagne' ? 'a gagné' : 'a perdu'} en ${S.J.tours} tours.</p><div class="choixh"><button onclick="fermer();nouvellePartie(S.J.id)">Rejouer</button><button onclick="fermer();accueil()">Changer de héros</button></div>`);
+  fenetre(`<h2>${S.fini === 'gagne' ? '🏆 Victoire !' : '💀 Défaite…'}</h2><p>${S.J.nom} contre ${S.O.nom} : ${S.fini === 'gagne' ? 'gagné' : 'perdu'} en ${S.J.tours} tours.</p><div class="choixh"><button onclick="fermer();nouvellePartie(S.J.id, S.O.id)">Rejouer</button><button onclick="fermer();accueil()">Changer de héros</button></div>`);
 }
+let monHeros = null;
 function accueil() {
-  fenetre(`<h2>Duel · prototype</h2><p>Choisis ton héros. L’ordinateur prend l’autre. La salle est tirée au hasard.</p>
-  <div class="choixh">${['aldric', 'pip'].map(id => `<button onclick="fermer();nouvellePartie('${id}');regles()"><img src="${IMG(id)}" alt="">${HEROS[id].nom}</button>`).join('')}</div>
+  fenetre(`<h2>Duel · prototype</h2><p>1. Choisis ton héros.</p>
+  <div class="heros6">${ORDRE.map(id => `<button onclick="monHeros='${id}';adversaire()"><img src="${IMG(id)}" alt="">${HEROS[id].nom}</button>`).join('')}</div>
   <p style="color:#c9c1ea;font-size:.85em">Prototype pour essayer les règles : dessins provisoires, chiffres à équilibrer.</p>`);
 }
-accueil();
+function adversaire() {
+  fenetre(`<h2>Duel · prototype</h2><p>2. Contre qui ? (l’ordinateur)</p>
+  <div class="heros6">${ORDRE.filter(id => id !== monHeros).map(id => `<button onclick="fermer();nouvellePartie(monHeros,'${id}');regles()"><img src="${IMG(id)}" alt="">${HEROS[id].nom}</button>`).join('')}
+  <button onclick="fermer();nouvellePartie(monHeros);regles()" style="display:flex;align-items:center;justify-content:center;font-size:2em;min-height:110px">🎲<br><span style="font-size:.4em">au hasard</span></button></div>`);
+}
+if (typeof document !== 'undefined' && document.getElementById('app')) accueil();
+
 </script>
 </body>
 </html>
