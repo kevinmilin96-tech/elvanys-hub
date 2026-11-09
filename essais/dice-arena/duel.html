@@ -71,6 +71,7 @@
   .fenetre > div { background:#2a2650; border-radius:16px; padding:14px 16px; max-width:520px; max-height:90vh; overflow:auto; }
   .fenetre h2 { color:var(--or); margin:.1em 0 .4em; font-size:1.2em; }
   .fenetre li { margin:.35em 0; }
+  .lignep { display:block; width:100%; text-align:left; background:#1d1b3a; color:#fff; border:1px solid #4b4580; border-radius:10px; padding:7px 9px; margin:4px 0; font-size:.88em; }
   .choixh { display:flex; gap:10px; justify-content:center; margin:12px 0; }
   .choixh button { background:#1d1b3a; color:#fff; border:2px solid #4b4580; border-radius:14px; padding:8px; width:150px; }
   .choixh img { width:110px; height:110px; border-radius:12px; object-fit:cover; display:block; margin:0 auto 6px; }
@@ -190,14 +191,14 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261109-204322';
+const VERSION = '20261109-204453';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); location.replace('duel.html?v=' + v); }
 }).catch(() => {});
 </script>
-<script src="cartes.js?v=20261109-204322"></script>
-<script src="donnees.js?v=20261109-204322"></script>
+<script src="cartes.js?v=20261109-204453"></script>
+<script src="donnees.js?v=20261109-204453"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -350,7 +351,7 @@ function pose(J, quoi, ds, k, indexMain) {
   if (quoi === 'frappe') { log(`${J.nom} : Frappe (${vs.join(', ')}) : ${FRAPPE.dg(vs)} dégâts.`); fx({ t:'tir', id:J.id, s:J === S.J ? 'J' : 'O', vers:k && ref(k), nom:'Frappe', vs, dg:FRAPPE.dg(vs), cible:k && (k.u ? k.u.n : k.J.nom) }); bilan(J, 'actions', `⚔ Frappe (${vs.join('·')}) : ${FRAPPE.dg(vs)} dégâts`); FRAPPE.f(J, vs, k); return; }
   if (quoi === 'technique') { log(`${J.nom} : Technique (${vs.join(', ')}) : ${[0, 0, 0, 4, 7, 10][vs.length]} dégâts.`); fx({ t:'tir', id:J.id, s:J === S.J ? 'J' : 'O', vers:k && ref(k), nom:'Technique', vs, dg:[0, 0, 0, 4, 7, 10][vs.length], cible:k && (k.u ? k.u.n : k.J.nom) }); bilan(J, 'actions', `⚔ Technique (${vs.join('·')}) : ${[0, 0, 0, 4, 7, 10][vs.length]} dégâts`); TECHNIQUE.f(J, vs, k); return; }
   if (quoi === 'pouvoir') { log(`${J.nom} : ${h.pouvoir.n} !`); bilan(J, 'actions', `✨ Pouvoir : ${h.pouvoir.n} (${vs.join('·')})`); fx({ t:'carte', key:'pouvoir', id:J.id, s:J === S.J ? 'J' : 'O', nom:h.pouvoir.n, txt:h.pouvoir.d, sorte:'Pouvoir', vers:k && k.J && ref(k), vs }); h.pouvoir.f(J, vs, k, ds); return; }
-  if (quoi === 'ultime') { J.pc -= 3; J.ultimeFait = true; log(`${J.nom} : ULTIME, ${h.ultime.n} !`); bilan(J, 'actions', `⚡ ULTIME : ${h.ultime.n}`); fx({ t:'ultime', s:J === S.J ? 'J' : 'O', id:J.id, nom:h.ultime.n, cit:h.cit, vers:k && k.J && ref(k) }); h.ultime.f(J, vs, k, ds); return; }
+  if (quoi === 'ultime') { J.pc -= 3; J.ultimeFait = true; log(`${J.nom} : ULTIME, ${h.ultime.n} !`); bilan(J, 'actions', `⚡ ULTIME : ${h.ultime.n}`); fx({ t:'ultime', s:J === S.J ? 'J' : 'O', id:J.id, nom:h.ultime.n, d:h.ultime.d, cit:h.cit, vers:k && k.J && ref(k) }); h.ultime.f(J, vs, k, ds); return; }
   const c = CARTES[quoi];
   const cout = coutCarte(J, quoi);
   J.pc -= cout; J.cartesJouees++;
@@ -800,9 +801,45 @@ function regles() {
   <li>Tes <b>unités</b> attaquent à partir du tour suivant leur arrivée : touche ton unité (contour jaune), puis sa cible. Les unités <b>Barrière</b> doivent être attaquées d’abord par les unités. Les unités <b>Cachées</b> ne peuvent pas être visées tant qu’elles n’ont pas attaqué.</li>
   <li>La <b>Garde</b> = ta défense : tu poses un dé et ton héros gagne un Bouclier (ou une autre protection selon le héros). Ce Bouclier absorbe les prochains dégâts que tu reçois pendant le tour de l’adversaire, puis disparaît. Exemple : Garde 4, l’adversaire frappe à 6, tu ne perds que 2 PV.</li><li>Tes <b>créatures</b> attaquent au tour suivant leur arrivée (sauf Charge) : touche-en une puis sa cible ; celles que tu ne fais pas attaquer frappent le héros adverse à « Fin du tour ». Le Bouclier et la Garde de l’adversaire absorbent leurs coups.</li><li>Une créature prête peut aussi se mettre <b>en défense</b> (touche-la) : elle n’attaque pas ce tour, mais elle protège ton héros comme une Barrière jusqu’à ton prochain tour : les créatures adverses doivent l’attaquer d’abord.</li></ul>
   <h2>${h.nom}, ${h.titre} (${h.pv} PV)</h2><p><b>Passif</b> : ${h.passif}</p><p><b>Garde · ${h.garde.n}</b> (${h.garde.txt}) : ${h.garde.d}</p><p><b>Pouvoir · ${h.pouvoir.n}</b> (${h.pouvoir.txt}) : ${h.pouvoir.d}</p><p><b>Ultime · ${h.ultime.n}</b> (jauge pleine, ${h.ultime.txt}, 3 PC) : ${h.ultime.d}</p>
-  <div class="choixh"><button onclick="fermer()">Jouer</button><button onclick="fermer();accueil()">Changer de héros</button></div>`);
+  <div class="choixh"><button onclick="fermer()">Jouer</button><button onclick="fermer();accueil()">Changer de héros</button></div><div class="choixh"><button onclick="mesParties()">📜 Mes parties</button></div>`);
+}
+// historique des parties, gardé sur le téléphone (les 50 dernières) : sert à l'équilibrage
+const HIST = 'guilde-parties';
+const parties = () => { try { return JSON.parse(localStorage.getItem(HIST) || '[]'); } catch (e) { return []; } };
+function enregistrePartie() {
+  if (!S || S.auto || S.enregistre) return; S.enregistre = true;
+  const p = { quand:new Date().toISOString(), version:VERSION, moi:S.J.id, ordi:S.O.id, salle:S.salle.n, resultat:S.fini, tours:S.J.tours,
+    pvMoi:Math.max(0, S.J.pv), pvOrdi:Math.max(0, S.O.pv), ultimeMoi:!!S.J.ultimeFait, ultimeOrdi:!!S.O.ultimeFait, journal:[...S.log].reverse() };
+  const l = parties(); l.unshift(p); localStorage.setItem(HIST, JSON.stringify(l.slice(0, 50)));
+}
+const DATE = iso => new Date(iso).toLocaleString('fr-FR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
+function texteParties(l, avecJournal) {
+  const lignes = l.map(p => `${DATE(p.quand)} · ${HEROS[p.moi].nom} contre ${HEROS[p.ordi].nom} · ${p.resultat === 'gagne' ? 'GAGNÉ' : 'PERDU'} en ${p.tours} tours · PV ${p.pvMoi} / ${p.pvOrdi} · ${p.salle} · v${p.version}${avecJournal ? '\n  ' + p.journal.join('\n  ') : ''}`);
+  return `La Guilde des Runes · mes parties (${l.length})\n` + lignes.join('\n');
+}
+function mesParties() {
+  const l = parties();
+  if (!l.length) { fenetre('<h2>📜 Mes parties</h2><p>Aucune partie terminée pour l’instant.</p><div class="choixh"><button onclick="accueil()">Retour</button></div>'); return; }
+  const g = l.filter(p => p.resultat === 'gagne').length, par = {};
+  l.forEach(p => { const k = HEROS[p.moi].nom + ' contre ' + HEROS[p.ordi].nom; par[k] = par[k] || [0, 0]; par[k][p.resultat === 'gagne' ? 0 : 1]++; });
+  fenetre(`<h2>📜 Mes parties (${l.length})</h2><p><b>${g}</b> gagnées, <b>${l.length - g}</b> perdues.</p>
+    <ul style="padding-left:1.1em;font-size:.9em">${Object.entries(par).map(([k, v]) => `<li>${k} : ${v[0]} gagnée${v[0] > 1 ? 's' : ''}, ${v[1]} perdue${v[1] > 1 ? 's' : ''}</li>`).join('')}</ul>
+    <div style="max-height:38vh;overflow:auto">${l.map((p, i) => `<button class="lignep" onclick="unePartie(${i})">${p.resultat === 'gagne' ? '🏆' : '💀'} ${DATE(p.quand)} · ${HEROS[p.moi].nom} – ${HEROS[p.ordi].nom} · ${p.tours} tour${p.tours > 1 ? "s" : ""} ›</button>`).join('')}</div>
+    <div class="choixh"><button onclick="copieParties(true)">📋 Copier tout (pour Claude)</button><button onclick="accueil()">Retour</button></div><p id="copie" style="color:#7dffb0;text-align:center"></p>`);
+}
+function unePartie(i) {
+  const p = parties()[i];
+  fenetre(`<h2>${p.resultat === 'gagne' ? '🏆' : '💀'} ${HEROS[p.moi].nom} contre ${HEROS[p.ordi].nom}</h2><p>${DATE(p.quand)} · ${p.tours} tour${p.tours > 1 ? "s" : ""} · ${p.salle}<br>PV à la fin : toi ${p.pvMoi}, ${HEROS[p.ordi].nom} ${p.pvOrdi}</p>
+    <div class="journal" style="max-height:50vh">${p.journal.map(t => `<div>${t}</div>`).join('')}</div>
+    <div class="choixh"><button onclick="copieParties(true, ${i})">📋 Copier</button><button onclick="mesParties()">Retour</button></div><p id="copie" style="color:#7dffb0;text-align:center"></p>`);
+}
+function copieParties(journal, i) {
+  const l = parties(), t = texteParties(i === undefined ? l : [l[i]], journal);
+  navigator.clipboard.writeText(t).then(() => { document.getElementById('copie').textContent = 'Copié ✓ : collez-le dans la discussion avec Claude.'; })
+    .catch(() => { document.getElementById('copie').textContent = 'Copie impossible sur ce téléphone.'; });
 }
 function montrerFin() {
+  enregistrePartie();
   arreteMusique(1.2);
   { const c = document.getElementById(S.fini === 'gagne' ? 'b-O' : 'b-J'); if (c) effetImage(S.fini === 'gagne' ? 'victoire' : 'defaite', document.getElementById('app'), 2.2); }
   son(S.fini === 'gagne' ? 'victoire' : 'defaite');
@@ -812,6 +849,7 @@ let monHeros = null;
 function accueil() {
   fenetre(`<h2>Duel · prototype</h2><p>1. Choisis ton héros.</p>
   <div class="heros6">${ORDRE.map(id => `<button onclick="monHeros='${id}';adversaire()"><img src="${IMG(id)}" alt="">${HEROS[id].nom}</button>`).join('')}</div>
+  <div class="choixh"><button onclick="mesParties()">📜 Mes parties (${parties().length})</button></div>
   <p style="color:#c9c1ea;font-size:.85em">Prototype pour essayer les règles : dessins provisoires, chiffres à équilibrer.</p>`);
 }
 function adversaire() {
@@ -1033,11 +1071,11 @@ async function joue1(e) {
     const ordi = e.s === 'O', d = document.createElement('div');
     if (e.t === 'ultime') {
       son('ultime'); const f = document.createElement('div'); f.className = 'eclair'; couche().appendChild(f); setTimeout(() => f.remove(), 1400 * fxVite);
-      d.className = 'fxcarte ultime'; d.innerHTML = `<img src="${IMG(e.id)}" alt=""><div class="sorte">⚡ ULTIME</div><div class="n">${e.nom}</div><div class="cit">${e.cit}</div>`;
+      d.className = 'fxcarte ultime'; d.innerHTML = `<img src="${IMG(e.id)}" alt=""><div class="sorte">⚡ ULTIME</div><div class="n">${e.nom}</div><div class="t">${e.d || ''}</div><div class="cit">${e.cit}</div>`;
     } else { son('carte'); d.className = 'fxcarte'; d.innerHTML = `<div class="sorte">${e.sorte}${e.cout !== undefined ? ` · ${e.cout} PC` : ''}</div><div class="n">${e.nom}</div><div class="t">${e.txt}</div>${e.vs ? `<div class="vs">🎲 ${e.vs.join(' · ')}</div>` : ''}`; }
     couche().appendChild(d);
     d.animate([{ transform:`translate(-50%, ${ordi ? '-160%' : '60%'}) scale(.4) rotate(${ordi ? -8 : 8}deg)`, opacity:0 }, { transform:'translate(-50%,-50%) scale(1) rotate(0)', opacity:1 }], { duration:280 * fxVite, easing:'ease-out', fill:'forwards' });
-    await dodo(e.t === 'ultime' ? 1700 : ordi ? 1250 : 650);
+    await dodo(e.t === 'ultime' ? 2600 : ordi ? 1250 : 650);
     const cible = el(e.vers); if (cible && e.vers && e.vers.s !== e.s) await mire(d, cible);
     const nomEff = e.t === 'ultime' || e.key === 'pouvoir' ? EFF_HEROS[e.id] : EFF_CARTE[e.key], ou = cible || el({ s:e.s });
     if (cible) { const b = centre(cible); await d.animate([{ transform:'translate(-50%,-50%) scale(1)', opacity:1 }, { transform:`translate(calc(-50% + ${b.x - innerWidth / 2}px), calc(-50% + ${b.y - innerHeight / 2}px)) scale(.25) rotate(20deg)`, opacity:.3 }], { duration:300 * fxVite, easing:'ease-in', fill:'forwards' }).finished.catch(() => {}); }
@@ -1077,6 +1115,7 @@ async function joue1(e) {
   if (e.t === 'tombe') { const c = el(e.c); if (!c) return; son('tombe'); effetImage('mort', c, 1); await c.animate([{ transform:'none', opacity:1 }, { transform:'translateY(14px) rotate(14deg) scale(.7)', opacity:0 }], { duration:450 * fxVite, fill:'forwards' }).finished.catch(() => {}); return; }
   if (e.t === 'garde') { const c = el({ s:e.s }); son('garde'); bandeauAction(e.s, `🛡 <b>${QUI(e.s)}</b> pose sa Garde <span class="vs">🎲 ${(e.vs || []).join(' · ')}</span> : <b>${e.quoi}</b> jusqu’au prochain tour`); effetImage('armure', c, .9); flotte(c, `🛡 ${e.quoi || e.nom}`, 'bleu'); if (c) { c.classList.remove('garde'); void c.offsetWidth; c.classList.add('garde'); } await dodo(450); return; }
   if (e.t === 'defense') { const c = el(e.c); if (!c) return; son('garde'); if (!effetImage('armure', c, .7)) effet('bouclier', c); flotte(c, '🛡 En défense', 'bleu'); await dodo(500); return; }
+  if (e.t === 'transforme') { const c = el(e.c); if (!c) return; effet('alchimie', c); flotte(c, e.txt, 'nom'); const av = c.querySelector('.av'); if (av) av.innerHTML = '<span>⚔ 1</span><span>❤ 1</span>'; await dodo(450); return; }
   if (e.t === 'pc') { const c = el({ s:e.s }); if (!c) return; bandeauAction(e.s, `◆ <b>${QUI(e.s)}</b> vend ${e.nb || 1} dé${(e.nb || 1) > 1 ? 's' : ''} : <b>+${e.n} PC</b>`, 1000); ton(1200, .15, 'sine', .1); ton(1600, .2, 'sine', .08, null, .08); effetImage('pc', c, .8); flotte(c, `+${e.n} PC`, 'bleu'); await dodo(350); return; }
   if (e.t === 'jauge') { const c = el({ s:e.s }); if (!c) return; ton(523, .4, 'triangle', .1); ton(784, .5, 'triangle', .1, null, .12); if (!effetImage('jauge', c, 1.2)) effet('lumiere', c); flotte(c, '⚡ Ultime prêt !', 'nom'); await dodo(700); return; }
   if (e.t === 'invoque') { const f = el({ s:e.s, uid:'x' }); son('louve'); effetImage('invocation', f, 1.1); flotte(f, `🐺 ${e.nom} arrive !`, 'nom'); await dodo(700); return; }
