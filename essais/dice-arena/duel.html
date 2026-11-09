@@ -79,6 +79,10 @@
   .main .c .cout { width:20px; height:20px; font-size:.95em; }
   .main .c .n { padding-right:20px; }
   .main .c .dd { margin-top:2px; }
+  .main .c.ok { box-shadow:0 0 0 3px #7dffb0, 0 0 18px 6px #7dffb0aa; animation:halo 1s ease-in-out infinite alternate; }
+  @keyframes halo { from { box-shadow:0 0 0 3px #7dffb0, 0 0 10px 2px #7dffb088; } to { box-shadow:0 0 0 3px #b9ffd6, 0 0 22px 8px #7dffb0cc; } }
+  .main .c.non { opacity:.5; }
+  .main .c.vue.non, .main .c.vue { opacity:1; }
   .main .c.vue { width:164px; height:auto; min-height:206px; font-size:.8em; overflow:visible; box-shadow:0 10px 26px #000c; }
   .main .c.vue .cout { width:26px; height:26px; }
   .main .c .jouer { margin-top:6px; background:#2b2117; color:#f3c96b; border-radius:8px; padding:4px 6px; text-align:center; font-weight:bold; }
@@ -233,10 +237,11 @@ function pose(J, quoi, ds, k, indexMain) {
   if (quoi === 'pouvoir') { log(`${J.nom} : ${h.pouvoir.n} !`); h.pouvoir.f(J, vs, k, ds); return; }
   if (quoi === 'ultime') { J.pc -= 3; J.ultimeFait = true; log(`${J.nom} : ULTIME, ${h.ultime.n} !`); h.ultime.f(J, vs, k, ds); return; }
   const c = CARTES[quoi];
-  J.pc -= coutCarte(J, quoi); J.cartesJouees++;
+  const cout = coutCarte(J, quoi);
+  J.pc -= cout; J.cartesJouees++;
   if (c.t === 'e' && J.forgeGratuite) J.forgeGratuite = false;
   J.main.splice(indexMain, 1);
-  log(`${J.nom} joue ${c.n} (${vs.join(', ')}).`);
+  log(`${J.nom} joue ${c.n} avec ${vs.length > 1 ? 'les dés' : 'le dé'} ${vs.join(', ')} · ${cout} PC (reste ${J.pc}).`);
   if (J.id === 'maelle' && six) {
     J.braise += six * (1 + J.front.filter(u => u.apprenti).length);
     if (J.braise >= 3) { J.braise = 0; J.forgeGratuite = true; log('🔥 3 Braises : la prochaine carte Équipement de Maëlle ne coûte rien.'); }
@@ -393,7 +398,7 @@ function mainEnEventail(J) {
   return J.main.map((k, i) => {
     const c = CARTES[k], ok = sel.length && permis(J, k, vals(sel), sel), vue = carteVue === i, d = i - mil;
     const style = vue ? 'left:calc(50% - 82px);transform:translateY(-170px);z-index:60'
-      : `left:calc(50% - 50px + ${d * pas}px);transform:translateY(${Math.round(d * d * 2)}px) rotate(${d * ang}deg);z-index:${i + 1}`;
+      : `left:calc(50% - 50px + ${d * pas}px);transform:translateY(${Math.round(d * d * 2) - (ok ? 18 : 0)}px) rotate(${d * ang}deg);z-index:${ok ? 40 + i : i + 1}`;
     const pied = vue ? `<div class="jouer">${ok ? '👆 Touche encore pour la jouer' : sel.length ? 'Ces dés ne conviennent pas' : 'Choisis d’abord tes dés'}</div>` : '';
     return `<div class="c ${c.t}2 ${ok ? 'ok' : sel.length ? 'non' : ''} ${vue ? 'vue' : ''}" style="${style}" onclick="toucheCarte(${i})"><span class="cout">${coutCarte(J, k)}</span><div class="n">${c.n}</div><span class="cd">🎲 ${c.txt}</span><div class="dd">${c.d}</div>${pied}</div>`;
   }).join('');
@@ -566,7 +571,29 @@ function aide(quoi) {
   else if (quoi === 'transmu') t = `<b>${h.action.n}</b> (${h.action.txt}) : ${h.action.d}`;
   else if (quoi === 'vendre') t = 'Choisis d’abord un ou plusieurs dés, puis touche « Vendre » : chaque dé rapporte 1 PC.';
   else { const c = CARTES[quoi]; t = `<b>${c.n}</b> : coûte <b>${coutCarte(J, quoi)} PC</b> et demande <b>${c.txt}</b>. ${c.d}${c.t === 's' && J.silence ? '<br><i>Tu es réduit au Silence ce tour : pas de Sort.</i>' : ''}`; }
-  fenetre(`<h2>Pas encore possible</h2><p>${t}</p><p style="color:#c9c1ea">Choisis d’abord les bons dés, puis touche cette case. Tu as ${J.pc} PC.</p><div class="choixh"><button onclick="fermer()">Compris</button></div>`);
+  fenetre(`<h2>Pas encore possible</h2><p>${t}</p><p style="color:#f3c96b"><b>${raison(quoi)}</b></p><div class="choixh"><button onclick="fermer()">Compris</button></div>`);
+}
+// pourquoi une action est refusée, en une phrase
+function raison(quoi) {
+  const J = S.J, vs = vals(sel), h = HEROS[J.id];
+  const des = vs.length ? `Tu as choisi ${vs.length > 1 ? 'les dés' : 'le dé'} ${vs.join(', ')}` : 'Tu n’as choisi aucun dé';
+  const c = CARTES[quoi];
+  if (c) {
+    const manque = coutCarte(J, quoi) - J.pc;
+    if (c.t === 's' && J.silence) return 'Tu es réduit au Silence ce tour : pas de Sort.';
+    if (c.t === 'u' && J.front.length >= 5) return 'Ta ligne de front est pleine (5 unités).';
+    if (manque > 0) return `Il te manque ${manque} PC (tu en as ${J.pc}).`;
+    if (!vs.length) return `Choisis d’abord ${/^(1 )?dé\b/.test(c.txt) ? 'un dé' : 'les dés'} : ${c.txt}.`;
+    if (!c.cond(vs, sel)) return `${des} : il faut ${c.txt}.`;
+    if (c.cible) return 'Il n’y a pas de cible possible pour cette carte.';
+    return '';
+  }
+  if (quoi === 'ultime') { if (J.ultimeFait) return 'Tu as déjà joué ton Ultime dans ce combat.'; if (J.jauge < JAUGE.max) return `Ta jauge d’Ultime n’est pas pleine (${J.jauge} / ${JAUGE.max}).`; if (J.pc < 3) return `Il te manque ${3 - J.pc} PC.`; return `${des} : il faut ${h.ultime.txt}.`; }
+  if (quoi === 'garde' && J.gardeFaite) return 'Ta Garde est déjà posée ce tour.';
+  if (quoi === 'pcRelance' || quoi === 'pcAjuste') { const n = quoi === 'pcRelance' ? 1 : coutAjuste(J); if (J.pc < n) return `Il te manque ${n - J.pc} PC.`; return 'Choisis un seul dé.'; }
+  if (quoi === 'pcSoins') return J.pc < 2 ? `Il te manque ${2 - J.pc} PC.` : 'Tu n’as aucune altération à retirer.';
+  if (quoi === 'transmu') return J.transmu ? 'Tu as déjà transmuté un dé ce tour.' : 'Choisis un seul dé.';
+  const def = defDe(J, quoi); return def ? `${des} : il faut ${def.txt}.` : '';
 }
 function fenetre(html) { document.getElementById('fen').innerHTML = `<div class="fenetre" onclick="if(event.target===this)fermer()"><div>${html}</div></div>`; }
 function fermer() { document.getElementById('fen').innerHTML = ''; }
