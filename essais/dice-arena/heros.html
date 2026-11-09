@@ -47,7 +47,7 @@
 <body>
 <main>
 <h1>La Guilde des Runes</h1>
-<p class="sous">Fiches de jeu des six héros · version 2 du 9 novembre : les six équilibrés par 6 000 parties simulées (chaque héros contre chacun des autres) · <a href="duel.html" style="color:#f3c96b">jouer le Duel</a></p>
+<p class="sous">Fiches de jeu des six héros · version 2.1 du 9 novembre (jauge d’Ultime) : les six équilibrés par 6 000 parties simulées (chaque héros contre chacun des autres) · <a href="duel.html" style="color:#f3c96b">jouer le Duel</a></p>
 
 <h2>Le socle du Duel (commun à tous)</h2>
 <div class="bloc">
@@ -68,7 +68,7 @@
   <li><b class="mot">La ligne de front</b> : 5 places de chaque côté pour tes unités (attaque / vie). Une unité attaque une fois par tour, à partir du tour suivant son arrivée. Elle frappe une unité ou le héros adverse, et les deux s'infligent leurs dégâts. Les unités <b>Barrière</b> doivent être attaquées en premier par les unités adverses ; les Sorts et les Pouvoirs, eux, choisissent librement leur cible.</li>
   <li><b class="mot">Qui paie quoi</b> : les dés ne coûtent rien. Ce sont les <b>cartes</b> qui coûtent des PC (le chiffre bleu) : pour en jouer une, il faut assez de PC ET un dé qui remplit sa condition. La Frappe, la Garde et le Pouvoir sont gratuits ; l'Ultime coûte 3 PC.</li>
   <li><b class="mot">Le second joueur</b> commence avec 2 PC et 5 cartes, pour compenser.</li>
-  <li><b class="mot">L'Ultime</b> : une combinaison difficile + 3 PC, une seule fois par combat.</li>
+  <li><b class="mot">L'Ultime et sa jauge ⚡</b> : la jauge gagne 1 point par dé posé (pas vendu) et 1 point tous les 5 dégâts subis ; à 20 points (vers le tour 5), l'Ultime se joue avec sa combinaison de 3 dés et 3 PC, une seule fois par combat. Il ne dépasse pas environ 40 % des PV adverses.</li>
   <li><b class="mot">La salle</b> : chaque Duel se joue dans une salle tirée au hasard, avec sa règle (exemple : « les 1 comptent comme des 6 »).</li>
   <li><b class="mot">Différence avec le jeu papier</b> : plus de lancer de défense au hasard. La Garde remplace la défense : tu choisis ta protection pendant ton tour, rien ne se joue à ta place.</li>
 </ol>
@@ -90,9 +90,9 @@
 
 <h2>Les 8 cartes de la Guilde (dans tous les decks)</h2>
 <div class="cartes" id="guilde"></div>
-<div class="q"><b class="mot">Décidé le 8 novembre</b> : la Garde remplace le lancer de défense ; l'Ultime se joue une fois par combat ; 36 à 46 PV, pour un Duel d'environ 10 minutes. Prochaine étape : un combat joué en images, tour par tour.</div>
+<div class="q"><b class="mot">Décidé le 8 novembre</b> : la Garde remplace le lancer de défense ; l'Ultime se joue une fois par combat, quand sa jauge est pleine ; 36 à 46 PV, pour un Duel d'environ 10 minutes. Prochaine étape : un combat joué en images, tour par tour.</div>
 </main>
-<script src="donnees.js?v=2"></script>
+<script src="donnees.js?v=3"></script>
 <script>
 // La page lit les mêmes données que le Duel (donnees.js) : elle ne peut plus prendre de retard sur le jeu.
 const T = { s:'Sort', u:'Unité', e:'Équipement', r:'Réaction' };
@@ -108,7 +108,7 @@ document.getElementById('heros').innerHTML = ORDRE.map(id => { const h = HEROS[i
   </div>
   <div class="corps">
     <p class="role">${h.role}</p>
-    <div class="kit">${kit('Passif', '', h.passif)}${kit('Garde', h.garde.n, `(${h.garde.txt}) ${h.garde.d}`)}${kit('Pouvoir', h.pouvoir.n, `(${h.pouvoir.txt}) ${h.pouvoir.d}`)}${kit('Ultime', h.ultime.n, `(${h.ultime.txt} + 3 PC) ${h.ultime.d}`)}${h.action ? kit('Action', h.action.n, `(${h.action.txt}) ${h.action.d}`) : ''}</div>
+    <div class="kit">${kit('Passif', '', h.passif)}${kit('Garde', h.garde.n, `(${h.garde.txt}) ${h.garde.d}`)}${kit('Pouvoir', h.pouvoir.n, `(${h.pouvoir.txt}) ${h.pouvoir.d}`)}${kit('Ultime', h.ultime.n, `(jauge pleine, ${h.ultime.txt} + 3 PC) ${h.ultime.d}`)}${h.action ? kit('Action', h.action.n, `(${h.action.txt}) ${h.action.d}`) : ''}</div>
     <div class="cartes">${parCarte(h.deck).map(([k, nb]) => carte(k, nb)).join('')}</div>
     <p class="papier">📜 ${h.papier}</p>
   </div>
