@@ -7,10 +7,10 @@ const CADRE_DE = k => { for (const h of ORDRE) if (HEROS[h].deck.includes(k)) re
 const ICONE_SORTE = { u:'⚔', s:'✦', e:'⚒', r:'⛓' };
 function carteGuilde(k, opt = {}) {
   const c = CARTES[k], h = opt.heros || CADRE_DE(k), z = ZONES, pc = (a, i) => a[i] + '%';
-  const cadre = `cadres/${h}.webp?v=1`, art = opt.art || (ARTS.includes(k) ? `cartes/${k}.webp?v=1` : `portraits/${HEROS[h] ? HEROS[h].ref || h : 'gorm'}.webp`);
+  const cadre = `cadres/${h}.webp?v=1`, art = opt.art || (ARTS.includes(k) ? `cartes/${k}.webp?v=1` : null);
   return `<div class="carteG" style="--w:${opt.w || 216}px">
     <img class="cg-cadre" src="${cadre}" alt="">
-    <div class="cg-art" style="left:${pc(z.fenetre, 0)};top:${pc(z.fenetre, 1)};width:${pc(z.fenetre, 2)};height:${pc(z.fenetre, 3)};background-image:url('${art}')"></div>
+    <div class="cg-art" style="left:${pc(z.fenetre, 0)};top:${pc(z.fenetre, 1)};width:${pc(z.fenetre, 2)};height:${pc(z.fenetre, 3)};${art ? `background-image:url('${art}')` : ''}">${art ? '' : `<span class="cg-vide">${ICONE_SORTE[c.t] || ''}<small>illustration à venir</small></span>`}</div>
     <div class="cg-nom" style="left:${pc(z.nom, 0)};top:${pc(z.nom, 1)};width:${pc(z.nom, 2)};height:${pc(z.nom, 3)}"><span>${c.n}</span></div>
     <div class="cg-cout" style="left:${pc(z.cout, 0)};top:${pc(z.cout, 1)}">${opt.cout !== undefined ? opt.cout : c.c}</div>
     <div class="cg-bande" style="left:${pc(z.bande, 0)};top:${pc(z.bande, 1)};width:${pc(z.bande, 2)};height:${pc(z.bande, 3)}">🎲 ${c.txt}</div>
@@ -24,6 +24,9 @@ const CSS_CARTE = `
 .carteG > * { position:absolute; box-sizing:border-box; }
 .cg-cadre { inset:0; width:100%; height:100%; pointer-events:none; }
 .cg-art { background-size:cover; background-position:center 30%; border-radius:1.5%; box-shadow:inset 0 0 0 1px #0006, inset 0 0 12px #0008; }
+.cg-art:not([style*='background-image']) { background:radial-gradient(circle at 50% 40%, #3a2a55, #160f24 75%); display:flex; align-items:center; justify-content:center; }
+.cg-vide { color:#ffffff30; font-size:22cqw; text-align:center; line-height:1; }
+.cg-vide small { display:block; font-size:4.5cqw; color:#ffffff55; margin-top:4%; font-style:italic; }
 .cg-nom { display:flex; align-items:center; justify-content:center; text-align:center; color:#f6ecff; font-weight:bold; font-size:6.2cqw; line-height:1; text-shadow:0 1px 0 #000, 0 0 6px #b58cff; padding:0 2%; }
 .cg-cout { transform:translate(-50%,-50%); width:13cqw; height:13cqw; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:9cqw; color:#fff; text-shadow:0 0 4px #2a7fc1, 0 2px 0 #000; }
 .cg-bande { display:flex; align-items:center; justify-content:center; color:#ffe9a8; font-weight:bold; font-size:5.2cqw; text-shadow:0 1px 0 #000; }
