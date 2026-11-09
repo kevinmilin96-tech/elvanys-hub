@@ -190,14 +190,14 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261109-203245';
+const VERSION = '20261109-204322';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); location.replace('duel.html?v=' + v); }
 }).catch(() => {});
 </script>
-<script src="cartes.js?v=20261109-203245"></script>
-<script src="donnees.js?v=20261109-203245"></script>
+<script src="cartes.js?v=20261109-204322"></script>
+<script src="donnees.js?v=20261109-204322"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -390,6 +390,20 @@ function attaque(J, u, k) {
 // une créature protège son héros si elle a Barrière ou si elle s'est mise EN DÉFENSE (jusqu'au prochain tour de son joueur)
 const protege = u => u.barriere || u.defense;
 const ciblesAttaque = D => { const vis = D.front.filter(u => !u.cachee); return vis.some(protege) ? vis.filter(protege).map(u => ({ J:D, u })) : [{ J:D }, ...vis.map(u => ({ J:D, u }))]; };
+// fiche d'une créature : ce qu'elle fait, ses mots-clés expliqués, son état
+const MOTS = { barriere:['Barrière', 'protège son héros : les créatures adverses doivent l’attaquer d’abord.'], cachee:['Cachée', 'on ne peut pas la viser tant qu’elle n’a pas attaqué.'],
+  charge:['Charge', 'peut attaquer dès son arrivée.'], defense:['En défense', 'n’attaque pas ce tour et protège son héros comme une Barrière.'], entrave:['Entravée', 'ne pourra pas attaquer au prochain tour.'] };
+function ficheUnite(P, u) {
+  const c = u.key && CARTES[u.key], art = typeof ARTS !== 'undefined' && ARTS.includes(u.louve ? 'louve' : u.key) ? `<img src="cartes/${u.louve ? 'louve' : u.key}.webp?v=1" style="width:100%;border-radius:10px;margin:4px 0" alt="">` : '';
+  const effet = u.louve ? 'La Louve de Pip. Elle attaque toute seule (ou quand on la touche) : elle lance 3 dés. Brelan = 9 dégâts + Saignement ; paire = 5 dégâts qui ignorent Barrière et Bouclier (Instinct) ; sinon 2 dégâts ; +1 par 6.'
+    : c ? c.d : '';
+  const mots = Object.keys(MOTS).filter(m => u[m]).map(m => `<li><b>${MOTS[m][0]}</b> : ${MOTS[m][1]}</li>`).join('');
+  const etat = P === S.J ? (u.defense ? '🛡 En défense jusqu’à ton prochain tour.' : u.pret ? '⚔ Prête : elle peut attaquer ce tour.' : '💤 Au repos : elle pourra attaquer à ton prochain tour.') : (u.defense ? '🛡 En défense : elle protège son héros.' : '');
+  fenetre(`<h2>${u.n} <span style="color:#c9c1ea;font-size:.7em">· ${P === S.J ? 'à toi' : 'à ' + P.nom}</span></h2>${art}
+    <p style="font-size:1.15em"><b style="color:#ff9a5a">⚔ ${atk(P, u)}</b> attaque · <b style="color:#7dffb0">❤ ${u.v}${u.vmax && u.vmax !== u.v ? ' / ' + u.vmax : ''}</b> vie${u.bouclier ? ` · <b style="color:#8fd3ff">🛡 ${u.bouclier}</b>` : ''}${u.epines ? ` · 🌿 Épines ${u.epines}` : ''}</p>
+    <p>${effet}</p>${mots ? `<ul style="padding-left:1.1em">${mots}</ul>` : ''}${etat ? `<p style="color:#f3c96b">${etat}</p>` : ''}
+    <div class="choixh"><button onclick="fermer()">Fermer</button></div>`);
+}
 function enDefense(J, u) { u.defense = true; u.pret = false; log(`🛡 ${u.n} se met en défense : elle protège ${J.nom}.`); fx({ t:'defense', c:ref({ J, u }) }); }
 function attaqueLouve(J) {
   const l = J.front.find(u => u.louve); if (!l || !l.pret) return;
@@ -605,9 +619,12 @@ function touche(k) {
   if (k.J === S.J && k.u && k.u.louve && k.u.pret && !ciblage && !S.J.aLancer) { attaquant = null; attaqueLouve(S.J); rendu(); return; }
   if (k.J === S.J && k.u && k.u.pret && !k.u.louve && !ciblage) {
     if (attaquant === k.u) { attaquant = null; rendu(); return; }
-    const u = k.u; choix(`${u.n} (⚔ ${atk(S.J, u)} · ❤ ${u.v}) : que fait-elle ?`, ['⚔ Attaquer', '🛡 Se mettre en défense'], i => {
-      if (i === 0) { attaquant = u; sel = []; } else { enDefense(S.J, u); attaquant = null; } rendu(); });
+    const u = k.u; choix(`${u.n} (⚔ ${atk(S.J, u)} · ❤ ${u.v}) : que fait-elle ?`, ['⚔ Attaquer', '🛡 Se mettre en défense', 'ℹ Voir sa fiche'], i => {
+      if (i === 0) { attaquant = u; sel = []; } else if (i === 1) { enDefense(S.J, u); attaquant = null; } else { ficheUnite(S.J, u); return; } rendu(); });
+    return;
   }
+  // toute autre créature (adverse, ou à moi mais pas prête) : sa fiche
+  if (k.u && !ciblage && !attaquant) ficheUnite(k.J, k.u);
 }
 // le lancer : les dés roulent ~0,8 s avant de montrer leur face (le résultat vient toujours du sac)
 let roule = false;
