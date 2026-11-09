@@ -196,14 +196,14 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261109-204548';
+const VERSION = '20261109-204731';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); location.replace('duel.html?v=' + v); }
 }).catch(() => {});
 </script>
-<script src="cartes.js?v=20261109-204548"></script>
-<script src="donnees.js?v=20261109-204548"></script>
+<script src="cartes.js?v=20261109-204731"></script>
+<script src="donnees.js?v=20261109-204731"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -1133,7 +1133,16 @@ async function joue1(e) {
   if (e.t === 'tombe') { const c = el(e.c); if (!c) return; son('tombe'); effetImage('mort', c, 1); await c.animate([{ transform:'none', opacity:1 }, { transform:'translateY(14px) rotate(14deg) scale(.7)', opacity:0 }], { duration:450 * fxVite, fill:'forwards' }).finished.catch(() => {}); return; }
   if (e.t === 'garde') { const c = el({ s:e.s }); son('garde'); bandeauAction(e.s, `🛡 <b>${QUI(e.s)}</b> pose sa Garde <span class="vs">🎲 ${(e.vs || []).join(' · ')}</span> : <b>${e.quoi}</b> jusqu’au prochain tour`); effetImage('armure', c, .9); flotte(c, `🛡 ${e.quoi || e.nom}`, 'bleu'); if (c) { c.classList.remove('garde'); void c.offsetWidth; c.classList.add('garde'); } await dodo(450); return; }
   if (e.t === 'defense') { const c = el(e.c); if (!c) return; son('garde'); if (!effetImage('armure', c, .7)) effet('bouclier', c); flotte(c, '🛡 En défense', 'bleu'); await dodo(500); return; }
-  if (e.t === 'transforme') { const c = el(e.c); if (!c) return; effet('alchimie', c); flotte(c, e.txt, 'nom'); const av = c.querySelector('.av'); if (av) av.innerHTML = '<span>⚔ 1</span><span>❤ 1</span>'; await dodo(450); return; }
+  if (e.t === 'transforme') {
+    const c = el(e.c); if (!c) return; son('ultime'); effet('alchimie', c, 1.2);
+    c.style.position = 'relative'; c.style.zIndex = 25;
+    c.animate([{ transform:'scale(1)', filter:'none' }, { transform:'scale(1.25)', filter:'hue-rotate(80deg) brightness(1.6)', offset:.25 }, { transform:'scale(.82)', filter:'hue-rotate(80deg) brightness(1.2)', offset:.8 }, { transform:'scale(.9)', filter:'none' }], { duration:2000 * fxVite, fill:'forwards', easing:'ease-in-out' });
+    const sp = c.querySelectorAll('.av span'); flotte(c, e.txt, 'nom');
+    await dodo(350);
+    defile(sp[0], e.a0 ?? nb(sp[0] && sp[0].textContent), 1, v => `⚔ ${v}`, 'r');
+    defile(sp[1], e.v0 ?? nb(sp[1] && sp[1].textContent), 1, v => `❤ ${v}`, 'r');
+    await dodo(1500); c.style.zIndex = ''; return;
+  }
   if (e.t === 'pc') { const c = el({ s:e.s }); if (!c) return; bandeauAction(e.s, `◆ <b>${QUI(e.s)}</b> vend ${e.nb || 1} dé${(e.nb || 1) > 1 ? 's' : ''} : <b>+${e.n} PC</b>`, 1000); ton(1200, .15, 'sine', .1); ton(1600, .2, 'sine', .08, null, .08); effetImage('pc', c, .8); flotte(c, `+${e.n} PC`, 'bleu'); await dodo(350); return; }
   if (e.t === 'jauge') { const c = el({ s:e.s }); if (!c) return; ton(523, .4, 'triangle', .1); ton(784, .5, 'triangle', .1, null, .12); if (!effetImage('jauge', c, 1.2)) effet('lumiere', c); flotte(c, '⚡ Ultime prêt !', 'nom'); await dodo(700); return; }
   if (e.t === 'invoque') { const f = el({ s:e.s, uid:'x' }); son('louve'); effetImage('invocation', f, 1.1); flotte(f, `🐺 ${e.nom} arrive !`, 'nom'); await dodo(700); return; }

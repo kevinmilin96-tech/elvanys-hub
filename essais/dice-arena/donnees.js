@@ -144,7 +144,7 @@ const HEROS = {
     pouvoir:{ n:'Grand œuvre', txt:'5 dés tous différents', d:'6 dégâts au héros adverse, et à ton prochain tour tous tes dés montrent la valeur de ton choix.', cond:vs => vs.length === 5 && compte(vs)[0] === 1,
       f:J => { degats({ J:adv(J) }, 6); choisirOeuvre(J); } },
     ultime:{ n:'La Pierre philosophale', txt:'3 dés dont la somme fait 12', d:'12 dégâts à une cible, Poison 4, et chaque unité adverse devient 1 / 1.', cond:vs => vs.length === 3 && somme(vs) === 12, cible:'ennemi',
-      f:(J, vs, k) => { const D = adv(J); degats(k, 12); altere(D, 'poison', 4); D.front.forEach(u => { u.a = 1; u.v = 1; u.vmax = 1; u.tmp = 0; if (typeof fx === 'function') fx({ t:'transforme', c:ref({ J:D, u }), txt:'⚗ 1 / 1' }); }); if (D.front.length) log(`⚗ Pierre philosophale : toutes les créatures de ${D.nom} deviennent 1 / 1.`); } } },
+      f:(J, vs, k) => { const D = adv(J); degats(k, 12); altere(D, 'poison', 4); D.front.forEach(u => { const a0 = atk(D, u), v0 = u.v; u.a = 1; u.v = 1; u.vmax = 1; u.tmp = 0; if (typeof fx === 'function') fx({ t:'transforme', c:ref({ J:D, u }), txt:'⚗ 1 / 1', a0, v0 }); }); if (D.front.length) log(`⚗ Pierre philosophale : toutes les créatures de ${D.nom} deviennent 1 / 1.`); } } },
 };
 const ORDRE = ['maelle', 'aldric', 'pip', 'oria', 'gorm', 'zephine'];
 // Jauge d'Ultime (09/11) : +parDe point par dé posé (pas vendu), +1 point tous les parDegats dégâts subis par le héros ; pleine à max.
