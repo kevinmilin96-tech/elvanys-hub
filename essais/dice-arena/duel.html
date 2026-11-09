@@ -92,6 +92,33 @@
   .d.roule img { animation:roule .28s linear infinite; }
   @keyframes roule { 0% { transform:rotate(0) translateY(0) scale(1); } 50% { transform:rotate(190deg) translateY(-10px) scale(1.08); } 100% { transform:rotate(360deg) translateY(0) scale(1); } }
   .lancer { display:block; width:100%; background:var(--or); color:#2b2117; border:none; border-radius:14px; padding:14px; font-size:1.15em; font-weight:bold; margin:6px 0; box-shadow:0 0 14px #f3c96b88; }
+  .vie { height:5px; background:#0008; border-radius:3px; margin:2px 0 1px; overflow:hidden; }
+  .vie i { display:block; height:100%; background:linear-gradient(90deg, #e5262c, #ff7a59); border-radius:3px; transition:width .5s ease; }
+  .sonbt { float:right; background:none; border:none; font-size:1.1em; padding:0 2px; line-height:1; }
+  body.fxon #app { pointer-events:none; }
+  #fxc { position:fixed; inset:0; pointer-events:none; z-index:20; overflow:hidden; }
+  .flotte { position:fixed; transform:translate(-50%,-50%); font-weight:bold; font-size:1.6em; color:#fff; text-shadow:0 2px 0 #000, 0 0 8px #000; white-space:nowrap;
+    animation:flotte 1.25s ease-out forwards; font-family:Georgia, serif; }
+  .flotte.rouge { color:#ff5a5a; } .flotte.gros { font-size:2.3em; } .flotte.bleu { color:#8fd3ff; font-size:1.3em; } .flotte.soin { color:#7dffb0; }
+  .flotte.vert { color:#a6ff4d; } .flotte.nom { color:#f3c96b; font-size:1.05em; }
+  @keyframes flotte { 0% { opacity:0; transform:translate(-50%,-30%) scale(.6); } 15% { opacity:1; transform:translate(-50%,-70%) scale(1.15); } 100% { opacity:0; transform:translate(-50%,-220%) scale(1); } }
+  .secoue { animation:secoue .4s; } .rouge { box-shadow:0 0 0 3px #ff3b3b, 0 0 22px #ff3b3b !important; } .vert { box-shadow:0 0 0 3px #a6ff4d, 0 0 18px #a6ff4d !important; }
+  @keyframes secoue { 0%,100% { transform:none; } 20% { transform:translateX(-7px) rotate(-1deg); } 40% { transform:translateX(6px); } 60% { transform:translateX(-4px); } 80% { transform:translateX(3px); } }
+  .brille { animation:brille .7s; } @keyframes brille { 0%,100% { box-shadow:none; } 40% { box-shadow:0 0 0 3px #7dffb0, 0 0 26px #7dffb0; } }
+  .garde { animation:garde .7s; } @keyframes garde { 0%,100% { box-shadow:none; } 40% { box-shadow:0 0 0 4px #8fd3ff, 0 0 26px #8fd3ff; } }
+  .fxcarte { position:fixed; left:50%; top:50%; width:190px; background:#f6efdc; color:#2b2117; border:3px solid #b89a5e; border-radius:14px; padding:10px 12px; box-shadow:0 14px 40px #000c, 0 0 30px #f3c96b88; text-align:center; }
+  .fxcarte .sorte { font-size:.75em; color:#7a5a2a; text-transform:uppercase; letter-spacing:.05em; }
+  .fxcarte .n { font-weight:bold; font-size:1.25em; margin:3px 0 5px; } .fxcarte .t { font-size:.82em; line-height:1.3; }
+  .fxcarte .vs { margin-top:6px; background:#2b2117; color:#f6efdc; border-radius:8px; display:inline-block; padding:1px 8px; }
+  .fxcarte.ultime { width:240px; background:radial-gradient(circle at 50% 30%, #fff3c4, #f3c96b); border-color:#fff; box-shadow:0 0 60px #ffd76a, 0 14px 40px #000c; }
+  .fxcarte.ultime img { width:90px; height:90px; border-radius:14px; object-fit:cover; border:3px solid #fff; display:block; margin:0 auto 4px; }
+  .fxcarte .cit { font-style:italic; font-size:.9em; margin-top:4px; }
+  .eclair { position:fixed; inset:0; background:radial-gradient(circle, #fff8 0%, #f3c96b55 40%, transparent 75%); animation:eclair 1.4s ease-out forwards; }
+  @keyframes eclair { 0% { opacity:0; } 10% { opacity:1; } 100% { opacity:0; } }
+  .boule { position:fixed; width:26px; height:26px; border-radius:50%; background:radial-gradient(circle, #fff, var(--c) 55%, transparent 72%); box-shadow:0 0 18px 6px var(--c); }
+  .annonce { position:fixed; left:0; right:0; top:42%; text-align:center; font-size:1.8em; font-weight:bold; color:#f3c96b; text-shadow:0 3px 0 #000, 0 0 20px #000;
+    background:linear-gradient(90deg, transparent, #000a 20%, #000a 80%, transparent); padding:14px 0; animation:annonce .9s ease-out; }
+  @keyframes annonce { 0% { opacity:0; transform:scale(1.4); } 30% { opacity:1; transform:scale(1); } 100% { opacity:1; } }
 </style>
 </head>
 <body>
@@ -100,18 +127,22 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261109-190213';
+const VERSION = '20261109-191644';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); location.replace('duel.html?v=' + v); }
 }).catch(() => {});
 </script>
-<script src="donnees.js?v=20261109-190213"></script>
+<script src="donnees.js?v=20261109-191644"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
 const adv = J => J === S.J ? S.O : S.J;
 const log = t => { S.log.unshift(t); };
+// Animations : le moteur note ce qui se passe (FX), l'écran le rejoue ensuite pas à pas. Rien pendant les simulations.
+let FX = [], fxOn = false, fxApres = [], fxVite = 1;
+const fx = e => { if (S && !S.auto) FX.push(e); };
+const ref = k => ({ s:k.J === S.J ? 'J' : 'O', uid:k.u ? k.u.id : null });
 function joueur(id, ordi) {
   const h = HEROS[id];
   return { id, ordi, nom:h.nom, c:h.c, pv:h.pv, pvMax:h.pv, pc:1, deck:melange([...h.deck, ...GUILDE]), main:[], des:[], front:[], tours:0,
@@ -136,6 +167,7 @@ function invoque(J, base, key) {
   const u = { ...base, key, id:Math.random().toString(36).slice(2), pret:!!base.charge };
   if (S.salle.id === 'caserne') u.v += 1;
   u.vmax = u.v; J.front.push(u);
+  if (base.louve) fx({ t:'invoque', s:J === S.J ? 'J' : 'O', nom:base.n });
 }
 function renvoie(k) { k.J.front = k.J.front.filter(x => x !== k.u); if (k.u.key && k.J.main.length < 7) k.J.main.push(k.u.key); log(`${k.u.n} retourne dans la main.`); }
 function altere(J, quoi, n) {
@@ -145,29 +177,32 @@ function altere(J, quoi, n) {
   if (quoi === 'poison') { J.poison += n; log(`${J.nom} reçoit Poison ${n}.`); }
 }
 const atk = (J, u) => Math.max(0, u.a + (J.banniere && u.barriere ? 2 : 0) + (u.tmp || 0) + J.front.filter(x => x.tambour && x !== u).length);
-function soin(J, n) { const a = J.pv; J.pv = Math.min(J.pvMax, J.pv + n); if (J.pv > a) log(`${J.nom} se soigne de ${J.pv - a}.`); }
-function soinCible(k, n) { if (k.u) { k.u.v = Math.min(k.u.vmax, k.u.v + n); log(`${k.u.n} se soigne.`); } else soin(k.J, n); }
+function soin(J, n) { const a = J.pv; J.pv = Math.min(J.pvMax, J.pv + n); if (J.pv > a) { log(`${J.nom} se soigne de ${J.pv - a}.`); fx({ t:'soin', c:ref({ J }), n:J.pv - a, pv:J.pv }); } }
+function soinCible(k, n) { if (k.u) { const a = k.u.v; k.u.v = Math.min(k.u.vmax, k.u.v + n); log(`${k.u.n} se soigne.`); if (k.u.v > a) fx({ t:'soin', c:ref(k), n:k.u.v - a, v:k.u.v }); } else soin(k.J, n); }
 // k = { J, u? } : la cible. ignore = passe Bouclier et Barrière (Instinct de la Louve)
 function degats(k, n, ignore) {
   if (S.fini || n <= 0) return;
   if (k.u) {
     if (!k.J.front.includes(k.u)) return;
     let r = n;
-    if (!ignore && k.u.bouclier) { const b = Math.min(k.u.bouclier, r); k.u.bouclier -= b; r -= b; }
+    let abs = 0;
+    if (!ignore && k.u.bouclier) { const b = Math.min(k.u.bouclier, r); k.u.bouclier -= b; r -= b; abs = b; }
     k.u.v -= r; if (r) log(`${k.u.n} subit ${r} dégât(s).`);
+    fx({ t:'degat', c:ref(k), n:r, abs, v:Math.max(0, k.u.v) });
     if (k.u.v <= 0) {
       if (k.J.cor) { k.J.cor = false; k.u.v = 1; log(`Cor de ralliement : ${k.u.n} reste debout à 1 vie.`); }
-      else { k.J.front = k.J.front.filter(x => x !== k.u); log(`${k.u.n} tombe.`); }
+      else { fx({ t:'tombe', c:ref(k) }); k.J.front = k.J.front.filter(x => x !== k.u); log(`${k.u.n} tombe.`); }
     }
   } else {
-    const J = k.J; let r = n;
+    const J = k.J; let r = n, abs = 0;
     if (!ignore) {
       if (J.esquive) { J.esquive = false; r = Math.floor(r / 2); log(`${J.nom} esquive : dégâts divisés par 2.`); }
       const g = Math.min(J.gardeB, r); J.gardeB -= g; r -= g;
       const b = Math.min(J.bouclier, r); J.bouclier -= b; r -= b;
-      if (g + b) log(`Les boucliers de ${J.nom} absorbent ${g + b}.`);
+      if (g + b) log(`Les boucliers de ${J.nom} absorbent ${g + b}.`); abs = g + b;
     }
     J.pv -= r; log(r ? `${J.nom} perd ${r} PV.` : `${J.nom} ne perd aucun PV.`);
+    fx({ t:'degat', c:ref(k), n:r, abs, pv:Math.max(0, J.pv) });
     if (r > 0) { J.degSubis = (J.degSubis || 0) + r; while (J.degSubis >= JAUGE.parDegats) { J.degSubis -= JAUGE.parDegats; remplit(J, 1); } }
     if (r > 1 && J.fournaise) { J.fournaise = false; const D = adv(J); log('Fournaise : l’adversaire subit la moitié des dégâts.'); D.pv -= Math.floor(r / 2); }
   }
@@ -180,8 +215,8 @@ function debutTour(J) {
   J.tours++; J.gardeB = 0; J.gardeE = 0; J.contre = J.piege = J.cor = J.fournaise = J.paillasse = J.esquive = false;
   J.relance = 1 + (J.boussole ? 1 : 0); J.cartesJouees = 0; J.six = 0; J.pureteTour = false; J.transmu = false; J.dernierSort = null; J.gardeFaite = false;
   if (J.tours > 1) { J.pc = Math.min(6, J.pc + 1); pioche(J, 1); }
-  if (J.saigne) { log(`${J.nom} saigne : −${J.saigne * 2} PV.`); J.pv -= J.saigne * 2; fin(); }
-  if (J.poison) { log(`${J.nom} : Poison, −${J.poison} PV.`); J.pv -= J.poison; J.poison--; fin(); }
+  if (J.saigne) { log(`${J.nom} saigne : −${J.saigne * 2} PV.`); J.pv -= J.saigne * 2; fx({ t:'degat', c:ref({ J }), n:J.saigne * 2, abs:0, pv:Math.max(0, J.pv), mot:'Saignement' }); fin(); }
+  if (J.poison) { log(`${J.nom} : Poison, −${J.poison} PV.`); J.pv -= J.poison; fx({ t:'degat', c:ref({ J }), n:J.poison, abs:0, pv:Math.max(0, J.pv), mot:'Poison', vert:true }); J.poison--; fin(); }
   let n = Math.min(5, J.tours + 2);
   if (J.handicap) { n--; J.handicap = 0; log(`Handicap : ${J.nom} lance un dé de moins.`); }
   J.des = J.sacs.slice(0, n).map((sac, i) => ({ sac, v:0, pose:false, mod:false, i }));
@@ -242,17 +277,18 @@ function pose(J, quoi, ds, k, indexMain) {
   const six = vs.filter(v => v === 6).length; J.six += six;
   if (quoi !== 'ultime') remplit(J, vs.length * JAUGE.parDe);
   if (J.id === 'aldric' && J.six >= 2 && !J.pureteTour && J.purete < 2) { J.purete++; J.pureteTour = true; log('✦ Deux 6 posés : Aldric gagne un jeton de Pureté.'); }
-  if (quoi === 'garde') { J.gardeFaite = true; h.garde.f(J, vs, k, ds); return; }
-  if (quoi === 'frappe') { log(`${J.nom} : Frappe (${vs.join(', ')}) : ${FRAPPE.dg(vs)} dégâts.`); FRAPPE.f(J, vs, k); return; }
-  if (quoi === 'technique') { log(`${J.nom} : Technique (${vs.join(', ')}) : ${[0, 0, 0, 4, 7, 10][vs.length]} dégâts.`); TECHNIQUE.f(J, vs, k); return; }
-  if (quoi === 'pouvoir') { log(`${J.nom} : ${h.pouvoir.n} !`); h.pouvoir.f(J, vs, k, ds); return; }
-  if (quoi === 'ultime') { J.pc -= 3; J.ultimeFait = true; log(`${J.nom} : ULTIME, ${h.ultime.n} !`); h.ultime.f(J, vs, k, ds); return; }
+  if (quoi === 'garde') { J.gardeFaite = true; fx({ t:'garde', s:J === S.J ? 'J' : 'O', nom:h.garde.n }); h.garde.f(J, vs, k, ds); return; }
+  if (quoi === 'frappe') { log(`${J.nom} : Frappe (${vs.join(', ')}) : ${FRAPPE.dg(vs)} dégâts.`); fx({ t:'tir', s:J === S.J ? 'J' : 'O', vers:k && ref(k), nom:'Frappe', vs }); FRAPPE.f(J, vs, k); return; }
+  if (quoi === 'technique') { log(`${J.nom} : Technique (${vs.join(', ')}) : ${[0, 0, 0, 4, 7, 10][vs.length]} dégâts.`); fx({ t:'tir', s:J === S.J ? 'J' : 'O', vers:k && ref(k), nom:'Technique', vs }); TECHNIQUE.f(J, vs, k); return; }
+  if (quoi === 'pouvoir') { log(`${J.nom} : ${h.pouvoir.n} !`); fx({ t:'carte', s:J === S.J ? 'J' : 'O', nom:h.pouvoir.n, txt:h.pouvoir.d, sorte:'Pouvoir', vers:k && k.J && ref(k), vs }); h.pouvoir.f(J, vs, k, ds); return; }
+  if (quoi === 'ultime') { J.pc -= 3; J.ultimeFait = true; log(`${J.nom} : ULTIME, ${h.ultime.n} !`); fx({ t:'ultime', s:J === S.J ? 'J' : 'O', id:J.id, nom:h.ultime.n, cit:h.cit, vers:k && k.J && ref(k) }); h.ultime.f(J, vs, k, ds); return; }
   const c = CARTES[quoi];
   const cout = coutCarte(J, quoi);
   J.pc -= cout; J.cartesJouees++;
   if (c.t === 'e' && J.forgeGratuite) J.forgeGratuite = false;
   J.main.splice(indexMain, 1);
   log(`${J.nom} joue ${c.n} avec ${vs.length > 1 ? 'les dés' : 'le dé'} ${vs.join(', ')} · ${cout} PC (reste ${J.pc}).`);
+  fx({ t:'carte', s:J === S.J ? 'J' : 'O', nom:c.n, txt:c.d, sorte:{ u:'Créature', s:'Sort', e:'Équipement', r:'Piège' }[c.t], cout, vers:k && k.J && ref(k), vs });
   if (J.id === 'maelle' && six) {
     J.braise += six * (1 + J.front.filter(u => u.apprenti).length);
     if (J.braise >= 3) { J.braise = 0; J.forgeGratuite = true; log('🔥 3 Braises : la prochaine carte Équipement de Maëlle ne coûte rien.'); }
@@ -269,6 +305,7 @@ function attaque(J, u, k) {
   if (D.paillasse) { D.paillasse = false; altere(J, 'poison', 3); }
   const a = atk(J, u);
   log(`${u.n} attaque ${k.u ? k.u.n : D.nom}.`);
+  fx({ t:'coup', de:ref({ J, u }), vers:ref(k) });
   if (k.u) {
     if (k.u.gardien) { D.pc = Math.min(6, D.pc + 1); log('Le Gardien rapporte 1 PC.'); }
     const riposte = atk(D, k.u) + (k.u.epines || 0);
@@ -286,6 +323,7 @@ function attaqueLouve(J) {
   const D = adv(J), r = [1, 2, 3].map(() => 1 + Math.floor(Math.random() * 6)), c = compte(r)[0];
   let n = c >= 3 ? 9 : c === 2 ? 5 : 2; n += r.filter(v => v === 6).length; n += l.a - 4;
   log(`🐺 La Louve lance ${r.join(' · ')} : ${n} dégâts${c === 2 ? ', Instinct' : ''}.`);
+  fx({ t:'louve', de:ref({ J, u:l }), r, n });
   l.pret = false;
   if (c === 2) degats({ J:D }, n, true);
   else { const bar = D.front.find(u => u.barriere && !u.cachee); degats(bar ? { J:D, u:bar } : { J:D }, n); if (c >= 3) altere(D, 'saigne'); }
@@ -361,7 +399,7 @@ function achatsAuto(J) {
     pose(J, 'pcAjuste', [mieux.d], { sens:mieux.sens });
   }
 }
-function joueOrdi() { debutTour(S.O); if (!S.fini) joueAuto(S.O); }
+function joueOrdi() { fx({ t:'tour', s:'O', nom:S.O.nom }); debutTour(S.O); if (!S.fini) joueAuto(S.O); }
 function joueAuto(J) {
   transmutationAuto(J);
   let b = meilleurCoup(J);
@@ -431,6 +469,7 @@ function nouvellePartie(id, idO, auto) {
   const autres = ORDRE.filter(x => x !== id);
   idO = idO || autres[Math.floor(Math.random() * autres.length)];
   S = { J:joueur(id, false), O:joueur(idO, true), salle:SALLES[Math.floor(Math.random() * SALLES.length)], log:[], fini:null, auto:!!auto };
+  FX = []; fxApres = []; fxOn = false;
   // le second joueur (l'ordinateur) compense : 2 PC et 1 carte de plus au départ (v2.4)
   pioche(S.J, 4); pioche(S.O, 5); S.O.pc = 3;
   log(`Salle : ${S.salle.n}. ${S.salle.d}`);
@@ -445,7 +484,8 @@ function finDeMonTour() {
   if (libres.length) pose(S.J, 'vendre', libres);
   attaquesRestantes(S.J); if (S.fini) { rendu(); return; }
   finTour(S.J); sel = []; attaquant = null; ciblage = null; rendu();
-  setTimeout(() => { joueOrdi(); if (!S.fini) debutTour(S.J); rendu(); }, 450);
+  fxApres.push(() => { joueOrdi(); if (!S.fini) { fx({ t:'tour', s:'J', nom:'toi' }); debutTour(S.J); } rendu(); });
+  rendu();
 }
 function choisirDe(i) {
   if (S.fini || S.J.aLancer || roule) return;
@@ -483,7 +523,7 @@ function rouler(ds, ensuite) {
   if (roule) return; roule = true;
   const imgs = [...document.querySelectorAll('.des .d')], idx = ds.map(d => S.J.des.indexOf(d));
   idx.forEach(i => { if (imgs[i]) { imgs[i].classList.remove('cache', 'sel'); imgs[i].classList.add('roule'); } });
-  let t = 0;
+  let t = 0; son('des');
   const it = setInterval(() => {
     idx.forEach(i => { const im = imgs[i] && imgs[i].querySelector('img'); if (im) im.src = FACE(S.J.id, 1 + Math.floor(Math.random() * 6)); });
     t += 70;
@@ -510,7 +550,7 @@ function annuler() { sel = []; ciblage = null; attaquant = null; rendu(); }
 
 function barre(P, haut) {
   const ref = `{J:S.${haut ? 'O' : 'J'}}`;
-  return `<div class="barre ${estCible({ J:P }) ? 'cible' : ''}" style="--c:${P.c}" onclick="touche(${ref})"><img src="${IMG(P.id)}" alt=""><div><div class="nom">${P.nom}${P.ordi ? ' · ordinateur' : ' · toi'}</div><div class="pastilles">
+  return `<div class="barre ${estCible({ J:P }) ? 'cible' : ''}" id="b-${haut ? 'O' : 'J'}" style="--c:${P.c}" onclick="touche(${ref})"><img src="${IMG(P.id)}" alt=""><div style="flex:1"><div class="nom">${P.nom}${P.ordi ? ' · ordinateur' : ' · toi'}</div><div class="vie"><i style="width:${Math.max(0, P.pv) / P.pvMax * 100}%"></i></div><div class="pastilles">
     <span class="p pv">❤ ${Math.max(0, P.pv)} / ${P.pvMax}</span><span class="p pc">◆ ${P.pc} PC</span>
     ${P.gardeB ? `<span class="p g">🛡 Garde ${P.gardeB}</span>` : ''}${P.gardeE ? `<span class="p g">🌿 Épines ${P.gardeE}</span>` : ''}${P.esquive ? '<span class="p g">💨 Esquive</span>' : ''}
     ${P.bouclier ? `<span class="p g">🛡 Bouclier ${P.bouclier}</span>` : ''}${P.contre ? '<span class="p g">⚔ Contre-attaque</span>' : ''}${P.piege ? '<span class="p g">🪤 Piège</span>' : ''}
@@ -522,10 +562,10 @@ function barre(P, haut) {
 }
 function front(P, haut) {
   const cote = haut ? 'O' : 'J';
-  return `<div class="front${P.front.length ? '' : ' vide'}">${P.front.map((u, i) => {
+  return `<div class="front${P.front.length ? '' : ' vide'}" id="f-${cote}">${P.front.map((u, i) => {
     const cls = [estCible({ J:P, u }) ? 'cible' : '', attaquant === u ? 'choisi' : '', !haut && u.pret ? 'pret' : '', !u.pret ? 'dort' : ''].join(' ');
     const tags = [u.barriere ? 'Barrière' : '', u.cachee ? 'Cachée' : '', u.charge ? 'Charge' : '', u.epines ? `Épines ${u.epines}` : '', u.bouclier ? `🛡${u.bouclier}` : '', u.entrave ? 'Entravé' : '', u.louve && haut ? 'Louve' : '', !haut ? (u.pret ? (u.louve ? '🐺 touche-la !' : '⚔ prête') : '💤 repos') : ''].filter(Boolean).join(' · ');
-    return `<div class="u ${cls}" onclick="touche({J:S.${cote},u:S.${cote}.front[${i}]})"><b>${u.n}</b><div class="tg">${tags}</div><div class="av"><span>⚔ ${atk(P, u)}</span><span>❤ ${u.v}</span></div></div>`;
+    return `<div class="u ${cls}" data-uid="${u.id}" onclick="touche({J:S.${cote},u:S.${cote}.front[${i}]})"><b>${u.n}</b><div class="tg">${tags}</div><div class="av"><span>⚔ ${atk(P, u)}</span><span>❤ ${u.v}</span></div></div>`;
   }).join('')}</div>`;
 }
 function actSoins() { const ok = permis(S.J, 'pcSoins', []); return `<button class="act ${ok ? 'ok' : 'non'}" onclick="vise('pcSoins')"><b>Premiers soins</b>2 PC · retire tes altérations</button>`; }
@@ -539,7 +579,12 @@ function sacTxt(J, d) {
   return `sac : ${d.sac.length ? [...d.sac].sort().join(' ') : 'neuf au prochain'}`;
 }
 function rendu() {
-  if (!S || S.auto) return;
+  if (!S || S.auto || fxOn) return;
+  if (FX.length) { joueFX(); return; }
+  dessine();
+  const f = fxApres.shift(); if (f && !S.fini) setTimeout(f, 350);
+}
+function dessine() {
   const J = S.J, O = S.O, h = HEROS[J.id];
   let bandeau = '';
   if (J.aLancer) bandeau = 'Ton tour commence : lance tes dés !';
@@ -552,7 +597,7 @@ function rendu() {
   else if (J.front.some(u => u.pret && !u.louve)) bandeau = '⚔ Tes créatures dorées peuvent attaquer : touche-en une puis sa cible. Sinon, elles attaquent le héros à « Fin du tour ».';
   else bandeau = 'Tous tes dés sont posés : touche « Fin du tour ».';
   document.getElementById('app').innerHTML = `
-  <div class="salle"><b>${S.salle.n}</b> · ${S.salle.d}</div>
+  <div class="salle"><b>${S.salle.n}</b> · ${S.salle.d}<button class="sonbt" onclick="basculeSon()">${sonOn ? '🔊' : '🔇'}</button></div>
   <div class="plateau">${barre(O, true)}${front(O, true)}<div class="milieu">— ligne de front —</div>${front(J, false)}${barre(J, false)}
     <div class="des" ontouchstart="glisseDebut(event)" ontouchend="glisseFin(event)">${J.des.map((d, i) => `<div class="d ${sel.includes(d) ? 'sel' : ''} ${d.pose ? 'pose' : ''} ${d.mod ? 'mod' : ''} ${J.aLancer ? 'cache' : ''}" onclick="choisirDe(${i})"><img src="${FACE(J.id, d.v || 1)}" alt="${d.v || '?'}"><div class="sac">${sacTxt(J, d)}</div></div>`).join('')}</div>
   </div>
@@ -643,6 +688,7 @@ function regles() {
   <div class="choixh"><button onclick="fermer()">Jouer</button><button onclick="fermer();accueil()">Changer de héros</button></div>`);
 }
 function montrerFin() {
+  son(S.fini === 'gagne' ? 'victoire' : 'defaite');
   fenetre(`<h2>${S.fini === 'gagne' ? '🏆 Victoire !' : '💀 Défaite…'}</h2><p>${S.J.nom} contre ${S.O.nom} : ${S.fini === 'gagne' ? 'gagné' : 'perdu'} en ${S.J.tours} tours.</p><div class="choixh"><button onclick="fermer();nouvellePartie(S.J.id, S.O.id)">Rejouer</button><button onclick="fermer();accueil()">Changer de héros</button></div>`);
 }
 let monHeros = null;
@@ -658,6 +704,123 @@ function adversaire() {
 }
 if (typeof document !== 'undefined' && document.getElementById('app')) accueil();
 
+// =============================================================================================== animations et sons
+// Les sons sont fabriqués par le téléphone (aucun fichier) ; 🔊 / 🔇 dans la barre de la salle.
+let sonOn = localStorage.getItem('guilde-son') !== '0', AC = null;
+function basculeSon() { sonOn = !sonOn; localStorage.setItem('guilde-son', sonOn ? '1' : '0'); if (sonOn) son('carte'); dessine(); }
+function ac() { if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return null; } } if (AC.state === 'suspended') AC.resume(); return AC; }
+function ton(f, d, type, vol, fin, depart) {
+  const a = ac(); if (!a) return; const t = a.currentTime + (depart || 0);
+  const o = a.createOscillator(), g = a.createGain(); o.type = type || 'sine'; o.frequency.setValueAtTime(f, t);
+  if (fin) o.frequency.exponentialRampToValueAtTime(fin, t + d);
+  g.gain.setValueAtTime(vol || .2, t); g.gain.exponentialRampToValueAtTime(.001, t + d);
+  o.connect(g).connect(a.destination); o.start(t); o.stop(t + d + .02);
+}
+function bruit(d, vol, f1, f2, depart) {
+  const a = ac(); if (!a) return; const t = a.currentTime + (depart || 0);
+  const b = a.createBuffer(1, Math.floor(a.sampleRate * d), a.sampleRate), x = b.getChannelData(0);
+  for (let i = 0; i < x.length; i++) x[i] = Math.random() * 2 - 1;
+  const s = a.createBufferSource(), fl = a.createBiquadFilter(), g = a.createGain(); s.buffer = b;
+  fl.type = 'bandpass'; fl.frequency.setValueAtTime(f1 || 800, t); if (f2) fl.frequency.exponentialRampToValueAtTime(f2, t + d);
+  g.gain.setValueAtTime(vol || .3, t); g.gain.exponentialRampToValueAtTime(.001, t + d);
+  s.connect(fl).connect(g).connect(a.destination); s.start(t);
+}
+function son(q) {
+  if (!sonOn) return;
+  if (q === 'coup') { bruit(.18, .5, 1200, 200); ton(120, .22, 'sine', .45, 50); }
+  else if (q === 'gros') { bruit(.35, .6, 900, 120); ton(90, .4, 'sine', .55, 35); }
+  else if (q === 'bouclier') { ton(1400, .25, 'triangle', .15, 900); ton(2100, .18, 'sine', .08); }
+  else if (q === 'soin') { [523, 659, 784, 1046].forEach((f, i) => ton(f, .25, 'sine', .12, null, i * .07)); }
+  else if (q === 'carte') { bruit(.22, .25, 400, 3000); }
+  else if (q === 'tir') { ton(300, .25, 'sawtooth', .08, 1200); bruit(.2, .15, 2000, 500); }
+  else if (q === 'des') { for (let i = 0; i < 7; i++) bruit(.04, .25, 2500 + Math.random() * 1500, null, i * .11); }
+  else if (q === 'tombe') { ton(400, .5, 'triangle', .2, 60); }
+  else if (q === 'garde') { ton(220, .35, 'square', .06, 330); ton(660, .3, 'sine', .1); }
+  else if (q === 'tour') { ton(392, .18, 'sine', .12); ton(523, .3, 'sine', .12, null, .12); }
+  else if (q === 'ultime') { [196, 262, 330, 392, 523].forEach((f, i) => ton(f, .9, 'sawtooth', .05, null, i * .06)); bruit(1, .4, 200, 60); }
+  else if (q === 'louve') { ton(300, .6, 'sawtooth', .07, 700); ton(700, .5, 'sine', .08, 450, .3); }
+  else if (q === 'victoire') { [523, 659, 784, 1046, 784, 1046].forEach((f, i) => ton(f, .3, 'triangle', .15, null, i * .13)); }
+  else if (q === 'defaite') { [392, 349, 311, 262].forEach((f, i) => ton(f, .45, 'triangle', .14, null, i * .22)); }
+  if (navigator.vibrate && (q === 'coup' || q === 'gros')) navigator.vibrate(q === 'gros' ? 60 : 25);
+}
+const dodo = ms => new Promise(r => setTimeout(r, ms * fxVite));
+const el = c => c && ((c.uid && document.querySelector(`[data-uid="${c.uid}"]`)) || document.getElementById((c.uid ? 'f-' : 'b-') + c.s) || document.getElementById('b-' + c.s));
+const centre = e => { const r = e.getBoundingClientRect(); return { x:r.left + r.width / 2, y:r.top + r.height / 2, r }; };
+function couche() { let c = document.getElementById('fxc'); if (!c) { c = document.createElement('div'); c.id = 'fxc'; document.body.appendChild(c); } return c; }
+function flotte(e, texte, cls) {
+  if (!e) return; const p = centre(e), d = document.createElement('div');
+  d.className = 'flotte ' + (cls || ''); d.textContent = texte; d.style.left = p.x + 'px'; d.style.top = p.y + 'px';
+  couche().appendChild(d); setTimeout(() => d.remove(), 1300);
+}
+function secoue(e, rouge) { if (!e) return; e.classList.remove('secoue', 'rouge', 'vert'); void e.offsetWidth; e.classList.add('secoue'); if (rouge) e.classList.add(rouge); }
+function majVie(c, ev) {
+  const e = el(c); if (!e) return;
+  if (ev.pv !== undefined && !c.uid) {
+    const P = c.s === 'J' ? S.J : S.O, pill = e.querySelector('.p.pv'), barre = e.querySelector('.vie i');
+    if (pill) pill.textContent = `❤ ${ev.pv} / ${P.pvMax}`; if (barre) barre.style.width = (ev.pv / P.pvMax * 100) + '%';
+  }
+  if (ev.v !== undefined && c.uid) { const s = e.querySelector('.av span:last-child'); if (s) s.textContent = `❤ ${ev.v}`; }
+}
+// un objet qui part d'un point et va frapper un autre (carte, boule de magie)
+async function vole(div, de, vers, ms) {
+  const a = centre(de), b = centre(vers); couche().appendChild(div);
+  div.style.left = a.x + 'px'; div.style.top = a.y + 'px';
+  const an = div.animate([{ transform:'translate(-50%,-50%) scale(.6)', opacity:.9 }, { transform:`translate(calc(-50% + ${b.x - a.x}px), calc(-50% + ${b.y - a.y}px)) scale(1)`, opacity:1 }],
+    { duration:ms * fxVite, easing:'cubic-bezier(.5,0,.9,.5)', fill:'forwards' });
+  await an.finished.catch(() => {}); div.remove();
+}
+async function joue1(e) {
+  if (e.t === 'tour') {
+    son('tour'); const d = document.createElement('div'); d.className = 'annonce'; d.textContent = e.s === 'O' ? `Tour de ${e.nom}` : 'À toi de jouer !';
+    couche().appendChild(d); await dodo(e.s === 'O' ? 900 : 700); d.remove(); return;
+  }
+  if (e.t === 'carte' || e.t === 'ultime') {
+    const ordi = e.s === 'O', d = document.createElement('div');
+    if (e.t === 'ultime') {
+      son('ultime'); const f = document.createElement('div'); f.className = 'eclair'; couche().appendChild(f); setTimeout(() => f.remove(), 1400 * fxVite);
+      d.className = 'fxcarte ultime'; d.innerHTML = `<img src="${IMG(e.id)}" alt=""><div class="sorte">⚡ ULTIME</div><div class="n">${e.nom}</div><div class="cit">${e.cit}</div>`;
+    } else { son('carte'); d.className = 'fxcarte'; d.innerHTML = `<div class="sorte">${e.sorte}${e.cout !== undefined ? ` · ${e.cout} PC` : ''}</div><div class="n">${e.nom}</div><div class="t">${e.txt}</div>${e.vs ? `<div class="vs">🎲 ${e.vs.join(' · ')}</div>` : ''}`; }
+    couche().appendChild(d);
+    d.animate([{ transform:`translate(-50%, ${ordi ? '-160%' : '60%'}) scale(.4) rotate(${ordi ? -8 : 8}deg)`, opacity:0 }, { transform:'translate(-50%,-50%) scale(1) rotate(0)', opacity:1 }], { duration:280 * fxVite, easing:'ease-out', fill:'forwards' });
+    await dodo(e.t === 'ultime' ? 1700 : ordi ? 1250 : 650);
+    const cible = el(e.vers);
+    if (cible) { const b = centre(cible); await d.animate([{ transform:'translate(-50%,-50%) scale(1)', opacity:1 }, { transform:`translate(calc(-50% + ${b.x - innerWidth / 2}px), calc(-50% + ${b.y - innerHeight / 2}px)) scale(.25) rotate(20deg)`, opacity:.3 }], { duration:300 * fxVite, easing:'ease-in', fill:'forwards' }).finished.catch(() => {}); }
+    else await d.animate([{ opacity:1 }, { opacity:0, transform:'translate(-50%,-50%) scale(1.15)' }], { duration:250 * fxVite, fill:'forwards' }).finished.catch(() => {});
+    d.remove(); return;
+  }
+  if (e.t === 'tir') {
+    const de = el({ s:e.s }), vers = el(e.vers) || el({ s:e.s === 'J' ? 'O' : 'J' }); if (!de || !vers) return;
+    son('tir'); flotte(de, `${e.nom} ${e.vs.join('·')}`, 'nom');
+    const b = document.createElement('div'); b.className = 'boule'; b.style.setProperty('--c', (e.s === 'J' ? S.J : S.O).c);
+    await vole(b, de, vers, 380); return;
+  }
+  if (e.t === 'coup' || e.t === 'louve') {
+    const de = el(e.de), vers = el(e.vers) || el({ s:e.de.s === 'J' ? 'O' : 'J' }); if (!de || !vers) return;
+    if (e.t === 'louve') { son('louve'); flotte(de, `🐺 ${e.r.join(' · ')}`, 'nom'); await dodo(500); }
+    const a = centre(de), b = centre(vers), dx = (b.x - a.x) * .8, dy = (b.y - a.y) * .8;
+    de.style.zIndex = 30; de.style.position = 'relative';
+    await de.animate([{ transform:'none' }, { transform:`translate(${dx * .15}px, ${-dy * .1}px) scale(1.1)`, offset:.3 }, { transform:`translate(${dx}px, ${dy}px) scale(1.15) rotate(-6deg)`, offset:.6 }, { transform:'none' }],
+      { duration:520 * fxVite, easing:'ease-in-out' }).finished.catch(() => {});
+    de.style.zIndex = ''; return;
+  }
+  if (e.t === 'degat') {
+    const c = el(e.c); if (!c) return;
+    if (e.abs) { son('bouclier'); flotte(c, `🛡 ${e.abs}`, 'bleu'); await dodo(e.n ? 250 : 450); }
+    if (e.n) { son(e.n >= 8 ? 'gros' : 'coup'); secoue(c, e.vert ? 'vert' : 'rouge'); flotte(c, `−${e.n}${e.mot ? ' ' + e.mot : ''}`, e.vert ? 'vert' : e.n >= 8 ? 'rouge gros' : 'rouge'); }
+    majVie(e.c, e); await dodo(e.n ? 480 : 200); return;
+  }
+  if (e.t === 'soin') { const c = el(e.c); son('soin'); flotte(c, `+${e.n}`, 'soin'); if (c) { c.classList.remove('brille'); void c.offsetWidth; c.classList.add('brille'); } majVie(e.c, e); await dodo(450); return; }
+  if (e.t === 'tombe') { const c = el(e.c); if (!c) return; son('tombe'); await c.animate([{ transform:'none', opacity:1 }, { transform:'translateY(14px) rotate(14deg) scale(.7)', opacity:0 }], { duration:450 * fxVite, fill:'forwards' }).finished.catch(() => {}); return; }
+  if (e.t === 'garde') { const c = el({ s:e.s }); son('garde'); flotte(c, `🛡 ${e.nom}`, 'bleu'); if (c) { c.classList.remove('garde'); void c.offsetWidth; c.classList.add('garde'); } await dodo(450); return; }
+  if (e.t === 'invoque') { const f = el({ s:e.s, uid:'x' }); son('louve'); flotte(f, `🐺 ${e.nom} arrive !`, 'nom'); await dodo(700); return; }
+}
+async function joueFX() {
+  fxOn = true; fxVite = 1; document.body.classList.add('fxon');
+  while (FX.length) { const e = FX.shift(); try { await joue1(e); } catch (x) { console.error(x); } }
+  fxOn = false; document.body.classList.remove('fxon'); rendu();
+}
+// toucher l'écran pendant les animations les accélère
+document.addEventListener('pointerdown', () => { if (fxOn) fxVite = .3; }, true);
 </script>
 </body>
 </html>
