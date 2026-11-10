@@ -31,6 +31,7 @@
 <script src="cartes.js?v=20261110-132113"></script>
 <script src="donnees.js?v=20261110-132113"></script>
 <script src="odyssee.js?v=20261110-132113"></script>
+<script src="chronique.js?v=20261110-132113"></script>
 <script>
 const log = () => {}, degats = () => {}, soin = () => {}, altere = () => {}, invoque = () => {}, adv = () => ({}), fin = () => {};
 let C = { a:null, b:null, modeB:'ordi', boss:'colosseracines' };
@@ -43,7 +44,7 @@ function dessine() {
   <h2>1. Ton héros</h2><div class="heros6">${ORDRE.map(id => `<button class="${C.a === id ? 'sel' : ''}" onclick="C.a='${id}';if(C.b===C.a)C.b=null;dessine()"><img src="${IMG(id)}" alt="">${HEROS[id].nom}</button>`).join('')}</div>
   <h2>2. Le second héros</h2><div class="modes"><button class="${C.modeB === 'ordi' ? 'sel' : ''}" onclick="C.modeB='ordi';dessine()">🤖 Un compagnon (ordinateur)</button><button class="${C.modeB === 'humain' ? 'sel' : ''}" onclick="C.modeB='humain';dessine()">📱 Un ami, sur ce téléphone</button></div>
   <div class="heros6">${ORDRE.map(id => `<button class="${C.b === id ? 'sel' : ''}" ${C.a === id ? 'disabled' : ''} onclick="C.b='${id}';dessine()"><img src="${IMG(id)}" alt="">${HEROS[id].nom}</button>`).join('')}</div>
-  <button class="go" ${C.a && C.b ? '' : 'disabled'} onclick="localStorage.setItem('guilde-campement', JSON.stringify(C));location.href='duel.html?campement=1'">🔥 Au feu de camp !</button>
+  <button class="go" ${C.a && C.b ? '' : 'disabled'} onclick="localStorage.setItem('guilde-campement', JSON.stringify(C));chronique([CHRON_CAMP.intro(HEROS[C.a].nom, HEROS[C.b].nom)], () => location.href='duel.html?campement=1')">🔥 Au feu de camp !</button>
   <button class="lien" onclick="location.href='menu.html'">⌂ Menu</button>`;
 }
 dessine();

@@ -295,6 +295,17 @@
   .tapis .d .sac { font-size:2.1cqw; line-height:1.1; color:#e9ffe9cc; text-shadow:0 1px 1px #000; }
   .tapis .d.cache::after { top:2cqw; font-size:6cqw; }
   /* plateau peint, retouches du 10/11 (2) : RIEN sur le portrait. À gauche : vie, PC, puis les états ; à droite : Ultime et cartes en main. */
+  /* le combat dans le décor du lieu (Odyssée, Campement) : le plateau peint laisse la place à la scène ; une image decor/lieu-<nom>.webp prend le dessus si elle existe */
+  .plateau.tapis.scene { background-color:#1a1020; background-size:cover; background-position:center; }
+  .scene.lieu-cendres { background-image:url('decor/lieu-cendres.webp?v=1'), linear-gradient(180deg, #3a1a1a 0%, #7a3a2a 28%, #4a4048 46%, #2a2a33 47%, #15151c 100%); }
+  .scene.lieu-lave { background-image:url('decor/lieu-lave.webp?v=1'), linear-gradient(180deg, #1a0505 0%, #5a1a0a 30%, #a8341a 46%, #2a0a0a 47%, #120404 100%); }
+  .scene.lieu-ruines { background-image:url('decor/lieu-ruines.webp?v=1'), linear-gradient(180deg, #1a0f2e 0%, #4a2a7a 32%, #3a2a4a 46%, #1d1626 47%, #0f0b16 100%); }
+  .scene.lieu-cratere { background-image:url('decor/lieu-cratere.webp?v=1'), radial-gradient(circle at 50% 52%, #f7a23a 0%, #a8341a 22%, #3a0a0a 55%, #1a0505 100%); }
+  .scene.lieu-brume { background-image:url('decor/lieu-brume.webp?v=1'), linear-gradient(180deg, #1a1f1a 0%, #4a5a4a 35%, #2a3a2a 46%, #16201a 47%, #0b100c 100%); }
+  .scene::after { content:''; position:absolute; left:0; right:0; top:46.5cqw; height:1.5cqw; background:linear-gradient(90deg, transparent, #ffffff33, transparent); pointer-events:none; }
+  .scene #b-O { width:34cqw; height:34cqw; left:33cqw; top:3cqw; } .scene #b-O img { border:3px solid #ffffff55; box-shadow:0 0 40px #000c, 0 0 0 6px #0006; }
+  .scene #b-J img { border:3px solid #f3c96b88; box-shadow:0 0 30px #000c; }
+  .scene .barre .nom { background:#0b0914e6; }
   .tapis .barre .pastilles { flex-direction:column; align-items:flex-end; flex-wrap:nowrap; gap:1.3cqw; width:33cqw; right:calc(100% + 1.5cqw); }
   .tapis #b-O .pastilles { top:3cqw; } .tapis #b-J .pastilles { top:auto; bottom:2cqw; }
   .tapis .pastilles .pg, .tapis .pastilles .pb { display:none; }
@@ -332,7 +343,7 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261110-140121';
+const VERSION = '20261110-143557';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); location.replace('duel.html?v=' + v); }
@@ -351,9 +362,10 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261110-140121"></script>
-<script src="donnees.js?v=20261110-140121"></script>
-<script src="odyssee.js?v=20261110-140121"></script>
+<script src="cartes.js?v=20261110-143557"></script>
+<script src="donnees.js?v=20261110-143557"></script>
+<script src="odyssee.js?v=20261110-143557"></script>
+<script src="chronique.js?v=20261110-140121"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -790,7 +802,7 @@ function partieOdyssee() {
 function prepareCombatOdyssee(run, cb, auto) {
   const h = HEROS[cb.ennemi]; if (h.phases) { h.garde = h.phases[0].garde; h.pouvoir = h.phases[0].pouvoir; }
   S = { J:joueur(run.heros, false, true), O:joueur(cb.ennemi, true), salle:SALLES[Math.floor(Math.random() * SALLES.length)], log:[], fini:null, auto:!!auto,
-    ody:{ id:cb.id, type:cb.type, titre:cb.type === 'boss' ? '👑 Le boss' : cb.type === 'elite' ? '💀 Élite' : `⚔ Monstres · niveau ${'I II III'.split(' ')[cb.niv - 1] || 'I'}`, defi:DEFIS.find(d => d.id === cb.defi) || null } };
+    lieu:cb.lieu || 'cendres', ody:{ id:cb.id, type:cb.type, titre:cb.type === 'boss' ? '👑 Le boss' : cb.type === 'elite' ? '💀 Élite' : `⚔ Monstres · niveau ${'I II III'.split(' ')[cb.niv - 1] || 'I'}`, defi:DEFIS.find(d => d.id === cb.defi) || null } };
   FX = []; fxApres = []; fxOn = false; if (!auto) arreteMusique();
   const J = S.J, O = S.O;
   J.deck = melange([...run.deck]); J.pv = run.pv; J.pvMax = run.pvMax; J.reliques = [...run.reliques]; J.benes = [...run.benes]; J.sacoche = [...run.sacoche];
@@ -887,7 +899,7 @@ function partieCampement() {
   const boss = HEROS[cfg.boss] ? cfg.boss : 'colosseracines', h = HEROS[boss]; if (h.phases) { h.garde = h.phases[0].garde; h.pouvoir = h.phases[0].pouvoir; }
   const A = joueur(cfg.a, false, false), B = joueur(cfg.b, cfg.modeB === 'ordi', cfg.modeB === 'ordi');
   A.qui = 'toi'; B.qui = cfg.modeB === 'ordi' ? 'compagnon' : 'joueur 2'; B.nomCourt = B.nom;
-  S = { J:A, O:joueur(boss, true), salle:SALLES[Math.floor(Math.random() * SALLES.length)], log:[], fini:null, auto:false, coop:true, equipe:[A, B], cohesion:COHESION.depart };
+  S = { J:A, O:joueur(boss, true), salle:SALLES[Math.floor(Math.random() * SALLES.length)], log:[], fini:null, auto:false, coop:true, equipe:[A, B], cohesion:COHESION.depart, lieu:'brume' };
   FX = []; fxApres = []; fxOn = false; arreteMusique();
   S.O.desMax = 5; (h.renforts || []).forEach(r => invoque(S.O, { ...r }));
   pioche(A, 4); pioche(B, 4); B.pc = 2;
@@ -1053,7 +1065,7 @@ document.addEventListener('click', e => {
 }, true);
 function barre(P, haut) {
   const ref = `{J:S.${haut ? 'O' : 'J'}}`;
-  return `<div class="barre ${estCible({ J:P }) ? 'cible' : ''} ${P.gardeB || P.bouclier ? 'protege' : ''}" data-bouclier="${(P.gardeB || 0) + (P.bouclier || 0)}" id="b-${haut ? 'O' : 'J'}" style="--c:${P.c}" onclick="touche(${ref})"><img src="${HEROS[P.id].img || IMG(P.id)}" alt=""><span class="bdg bg" ${P.gardeB ? '' : 'hidden'}>🛡 ${P.gardeB}</span><span class="bdg bb" ${P.bouclier ? '' : 'hidden'}>🛡 ${P.bouclier}</span><div style="flex:1"><div class="nom">${P.nom}${P.ordi ? ' · ordinateur' : ' · toi'}</div><div class="vie"><b style="width:${Math.max(0, P.pv) / P.pvMax * 100}%"></b><i style="width:${Math.max(0, P.pv) / P.pvMax * 100}%"></i></div><div class="pastilles">
+  return `<div class="barre ${estCible({ J:P }) ? 'cible' : ''} ${P.gardeB || P.bouclier ? 'protege' : ''}" data-bouclier="${(P.gardeB || 0) + (P.bouclier || 0)}" id="b-${haut ? 'O' : 'J'}" style="--c:${P.c}" onclick="touche(${ref})"><img src="${HEROS[P.id].img || IMG(P.id)}" alt=""><span class="bdg bg" ${P.gardeB ? '' : 'hidden'}>🛡 ${P.gardeB}</span><span class="bdg bb" ${P.bouclier ? '' : 'hidden'}>🛡 ${P.bouclier}</span><div style="flex:1"><div class="nom">${P.nom}${P.ordi ? (S.lieu ? ' · ' + (HEROS[P.id].titre || 'ennemi') : ' · ordinateur') : (P.qui && P.qui !== 'toi' ? ' · ' + P.qui : ' · toi')}</div><div class="vie"><b style="width:${Math.max(0, P.pv) / P.pvMax * 100}%"></b><i style="width:${Math.max(0, P.pv) / P.pvMax * 100}%"></i></div><div class="pastilles">
     <span data-k="pv" class="p pv">❤ ${Math.max(0, P.pv)} / ${P.pvMax}</span><span data-k="pc" class="p pc">◆ ${P.pc} PC</span>
     ${P.gardeB ? `<span data-k="garde" class="p g pg">🛡 Garde ${P.gardeB}</span>` : ''}${P.gardeE ? `<span data-k="epines" class="p g">🌿 Épines ${P.gardeE}</span>` : ''}${P.esquive ? '<span data-k="esquive" class="p g">💨 Esquive</span>' : ''}
     ${P.bouclier ? `<span data-k="bouclier" class="p g pb">🛡 Bouclier ${P.bouclier}</span>` : ''}${P.contre ? '<span data-k="contre" class="p g">⚔ Contre-attaque</span>' : ''}${P.piege ? '<span data-k="piege" class="p g">🪤 Piège</span>' : ''}
@@ -1111,7 +1123,7 @@ function dessine() {
   <div class="salle"><span class="st">${S.coop ? `<b>🔥 Le Campement</b> · ${J.ordi ? `${J.nom} (compagnon) joue…` : J.qui === 'toi' ? 'à toi' : `au tour de ${J.nom}`} · ${S.salle.n}` : S.ody ? `<b>${S.ody.titre}</b> · ${S.salle.n} : ${S.salle.d}${J.reliques.length ? ' <span class="rel">' + J.reliques.map(r => `<i title="${RELIQUES[r].n}" onclick="aideRelique('${r}')">${RELIQUES[r].e}</i>`).join('') + '</span>' : ''}` : `<b>${S.salle.n}</b> · ${S.salle.d}`}</span><span class="sons">
     <button class="sonbt ${sonOn ? '' : 'off'}" onclick="basculeSon()" aria-label="Bruitages" title="Bruitages"><svg viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/>${sonOn ? '<path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>' : '<path d="M16 9l5 6M21 9l-5 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>'}</svg></button>
     <button class="sonbt ${musOn ? '' : 'off'}" onclick="basculeMusique()" aria-label="Musique" title="Musique"><svg viewBox="0 0 24 24"><path d="M9 17V5l11-2v12" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="6.5" cy="17.5" r="2.8" fill="currentColor"/><circle cx="17.5" cy="15.5" r="2.8" fill="currentColor"/>${musOn ? '' : '<path d="M3 3l18 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>'}</svg></button></span></div>
-  <div class="plateau tapis">${barre(O, true)}${front(O, true)}<div class="milieu"><span>✦ ◆ ✦</span></div>${front(J, false)}${barre(J, false)}
+  <div class="plateau tapis ${S.lieu ? 'scene lieu-' + S.lieu : ''}">${barre(O, true)}${front(O, true)}<div class="milieu"><span>✦ ◆ ✦</span></div>${front(J, false)}${barre(J, false)}
     <div class="des" ontouchstart="glisseDebut(event)" ontouchend="glisseFin(event)">${J.des.map((d, i) => `<div class="d ${sel.includes(d) ? 'sel' : ''} ${d.pose ? 'pose' : ''} ${d.mod ? 'mod' : ''} ${J.aLancer ? 'cache' : ''} ${i === J.neuf && (J.aLancer || Date.now() < (J.neufJusque || 0)) ? 'neuf' : ''}" onclick="choisirDe(${i})"><img src="${FACE(J.id, d.v || 1)}" alt="${d.v || '?'}"><div class="sac">${i === J.neuf && (J.aLancer || Date.now() < (J.neufJusque || 0)) ? '✨ nouveau dé' : sacTxt(J, d)}</div></div>`).join('')}${[...Array(Math.max(0, 5 - J.des.length)).keys()].map(k => { const i = J.des.length + k, t = i - 1;
       return `<div class="d verrou"><div class="cad">🔒</div><div class="sac">${J.tours >= t ? 'Handicap ce tour' : 'dé n° ' + (i + 1) + '<br>au tour ' + t}</div></div>`; }).join('')}</div>
   </div>
@@ -1243,7 +1255,7 @@ function copieParties(journal, i) {
 function montrerFin() {
   if (S.ody) { finOdyssee(); return; }
   if (S.coop) { if (S.enregistre) return; S.enregistre = true; arreteMusique(1.2); son(S.fini === 'gagne' ? 'victoire' : 'defaite'); effetImage(S.fini === 'gagne' ? 'victoire' : 'defaite', document.getElementById('app'), 2.2);
-    fenetre(`<h2>${S.fini === 'gagne' ? '🏆 Le boss est tombé !' : '💀 Le campement est perdu…'}</h2><p>${S.equipe.map(h => `${h.nom} : ${h.aTerre ? 'à terre' : h.pv + ' PV'}`).join(' · ')} · ${S.O.nom} : ${Math.max(0, S.O.pv)} PV · ${S.equipe[0].tours} tours.</p><div class="choixh"><button onclick="location.href='campement.html'">🔥 Rejouer</button><button onclick="location.href='menu.html'">⌂ Menu</button></div>`); return; }
+    chronique([S.fini === 'gagne' ? CHRON_CAMP.victoire : CHRON_CAMP.defaite], () => fenetre(`<h2>${S.fini === 'gagne' ? '🏆 Le boss est tombé !' : '💀 Le campement est perdu…'}</h2><p>${S.equipe.map(h => `${h.nom} : ${h.aTerre ? 'à terre' : h.pv + ' PV'}`).join(' · ')} · ${S.O.nom} : ${Math.max(0, S.O.pv)} PV · ${S.equipe[0].tours} tours.</p><div class="choixh"><button onclick="location.href='campement.html'">🔥 Rejouer</button><button onclick="location.href='menu.html'">⌂ Menu</button></div>`)); return; }
   enregistrePartie();
   arreteMusique(1.2);
   { const c = document.getElementById(S.fini === 'gagne' ? 'b-O' : 'b-J'); if (c) effetImage(S.fini === 'gagne' ? 'victoire' : 'defaite', document.getElementById('app'), 2.2); }

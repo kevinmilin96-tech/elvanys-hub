@@ -312,7 +312,8 @@ const PRIX_CARTE = { c:50, r:80, e:120 };
 function lanceCombat(r, c) {
   const R = hasard(r); let ennemi = c.ennemi;
   if (ennemi === 'heros') { const autres = ORDRE.filter(h => h !== r.heros); ennemi = tire(R, autres); }
-  r.combat = { id:Math.random().toString(36).slice(2), x:c.x, y:c.y, type:c.t, ennemi, niv:c.niv || 1, renfort:c.renfort || null, defi:tire(R, DEFIS).id, resultat:null };
+  const lieu = c.t === 'boss' ? 'cratere' : c.t === 'elite' ? 'ruines' : (c.niv || 1) >= 3 ? 'lave' : 'cendres'; // le décor du combat
+  r.combat = { id:Math.random().toString(36).slice(2), x:c.x, y:c.y, type:c.t, ennemi, niv:c.niv || 1, renfort:c.renfort || null, defi:tire(R, DEFIS).id, lieu, resultat:null };
   return r.combat;
 }
 // après un combat gagné : or, fragment, clé, défi, tirage de cartes. Retourne ce qu'il y a à montrer.
