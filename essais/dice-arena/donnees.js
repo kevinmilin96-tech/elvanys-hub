@@ -178,8 +178,10 @@ const PROFILS = {
 const EQUILIBRE = { maelle:50, aldric:47, pip:50, oria:50, gorm:51, zephine:52 };
 const POOL_PLUS = { pip:['rosee'], oria:['raccourci', 'guetteur'] };
 const DECK_TAILLE = 21, DECK_MAX = 2;
-const deckBase = id => [...HEROS[id].deck, ...GUILDE];
-const poolDe = id => [...new Set([...HEROS[id].deck, ...(POOL_PLUS[id] || []), ...GUILDE])];
+const deckBase = id => HEROS[id].monstre ? [] : [...HEROS[id].deck, ...GUILDE];
+// la collection : les cartes rencontrées pendant les Odyssées (gardées sur le téléphone), utilisables dans l'éditeur de deck du Duel
+const collectionCartes = () => { try { return JSON.parse(localStorage.getItem('guilde-collection') || '[]').filter(k => CARTES[k]); } catch (e) { return []; } };
+const poolDe = id => [...new Set([...HEROS[id].deck, ...(POOL_PLUS[id] || []), ...GUILDE, ...collectionCartes()])];
 function deckValide(id, d) {
   if (!Array.isArray(d) || d.length !== DECK_TAILLE) return false; const pool = poolDe(id), n = {};
   return d.every(k => { n[k] = (n[k] || 0) + 1; return pool.includes(k) && n[k] <= DECK_MAX; });

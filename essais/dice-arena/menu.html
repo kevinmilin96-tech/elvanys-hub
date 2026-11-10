@@ -8,7 +8,7 @@
 <title>La Guilde des Runes</title>
 <script>
 // Même mécanisme que le Duel : une nouvelle version = rechargement tout seul à l'ouverture (publier.sh change VERSION).
-const VERSION = '20261110-125502';
+const VERSION = '20261110-132113';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-menu-' + v)) { sessionStorage.setItem('recharge-menu-' + v, '1'); location.replace('menu.html?v=' + v); }
@@ -93,9 +93,8 @@ fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.te
   <a class="lieu ouvert" href="duel.html" style="--fond:linear-gradient(135deg, #5b1e2e, #2a1238 70%);--bord:#ff7a59">
     <div class="ico">⚔️</div><div><h3>L’Arène des Duels</h3><p>Un héros contre un autre, face à l’ordinateur. Dés, cartes, créatures : le premier à zéro perd.</p></div><div class="go">›</div>
   </a>
-  <a class="lieu ferme" style="--fond:linear-gradient(135deg, #3a2a14, #1d1626 70%);--bord:#b7832a">
-    <div class="chantier">🔨 En construction</div>
-    <div class="ico">🏰</div><div><h3>L’Odyssée</h3><p>Les îles de la Guilde, une par région : donjons, rencontres et boss à vaincre.</p></div>
+  <a class="lieu" href="odyssee.html" style="--fond:linear-gradient(135deg, #3a2a14, #1d1626 70%);--bord:#b7832a">
+    <div class="ico">🏰</div><div><h3>L’Odyssée</h3><p>Seul sur l’île des Terres brûlées : explore case par case, fais grandir ton deck, vaincs le Titan de feu.</p></div><div class="go">›</div>
   </a>
   <a class="lieu ferme" style="--fond:linear-gradient(135deg, #123a4a, #161d38 70%);--bord:#5ff5e6">
     <div class="chantier">🔨 En construction</div>
@@ -115,7 +114,7 @@ fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.te
   <p class="bas">Prototype · dessins et chiffres encore en travail</p>
 </div>
 
-<script src="donnees.js?v=20261110-125502"></script>
+<script src="donnees.js?v=20261110-132113"></script>
 <script>
 // ciel étoilé + runes du portail (symboles, pas des lettres), aux couleurs des héros
 const ciel = document.getElementById('ciel');

@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="robots" content="noindex">
+<title>La Guilde des Runes · L’Odyssée</title>
+<style>
+  :root { --fond:#1d1b3a; --or:#f3c96b; --texte:#f1ecff; --doux:#c9c1ea; --ok:#7dffb0; --feu:#ff7a3a; }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body { margin:0; background:#15132b; color:var(--texte); font:15px/1.35 Georgia, 'Times New Roman', serif; user-select:none; }
+  #app { max-width:560px; margin:0 auto; min-height:100vh; padding:6px 6px 80px; }
+  button { font:inherit; cursor:pointer; }
+  h1 { color:var(--or); font-size:1.25em; margin:.3em 0; text-align:center; }
+  .entete { display:flex; gap:8px; align-items:center; background:#2a2650; border-radius:12px; padding:6px 8px; margin:4px 0; }
+  .entete img { width:52px; height:52px; border-radius:50%; object-fit:cover; border:2px solid var(--or); flex:none; }
+  .entete .st { flex:1; font-size:.86em; line-height:1.45; }
+  .entete b { color:var(--or); }
+  .p { display:inline-block; background:#0006; border-radius:10px; padding:1px 7px; margin:1px 2px 1px 0; }
+  .p.pv { background:#7a1f2a; } .p.or { background:#6b5212; } .p.vivres { background:#2a5d3a; } .p.vivres.zero { background:#8a1f1f; animation:cligne 1s infinite; }
+  @keyframes cligne { 50% { opacity:.5; } }
+  .rel i { font-style:normal; margin-right:3px; cursor:pointer; font-size:1.1em; }
+  .carte-ile { display:grid; grid-template-columns:repeat(7, 1fr); gap:3px; background:radial-gradient(circle at 50% 30%, #3b1d12, #1a0d10 70%); border:3px solid #7a4a22; border-radius:14px; padding:6px; margin:6px 0; box-shadow:inset 0 0 40px #000a; }
+  .k { aspect-ratio:1; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:1.35em; position:relative; background:#2b1a14; border:1px solid #3a2a22; }
+  .k.roche { background:#241611; border-color:#1a0d10; color:#3a2a22; }
+  .k.inconnue { background:#120b0d; border-color:#1a0d10; color:#3a2a30; font-size:.9em; }
+  .k.chemin { background:#4a3324; } .k.visite { background:#3a2a1f; }
+  .k.vu:not(.visite):not(.roche) { background:#4e3625; }
+  .k.fait::after { content:'✓'; position:absolute; right:2px; top:0; font-size:.5em; color:var(--ok); }
+  .k.ok { box-shadow:0 0 0 2px var(--ok), 0 0 10px var(--ok); cursor:pointer; animation:pulse 1.4s ease-in-out infinite; }
+  @keyframes pulse { 50% { box-shadow:0 0 0 2px var(--ok), 0 0 16px var(--ok); } }
+  .k.ici { background:#5a3a1a; border-color:var(--or); box-shadow:0 0 12px var(--or); }
+  .k.ici img { width:80%; height:80%; border-radius:50%; object-fit:cover; border:2px solid var(--or); }
+  .k .niv { position:absolute; left:3px; bottom:0; font-size:.45em; color:#ffd27a; font-weight:bold; }
+  .k.boss { background:#5a1a1a; border-color:#ff4a1a; } .k.porte { background:#3a2a4a; } .k.porte.fait { background:#2a4a3a; }
+  .k.mur { background:#3a3a3a; }
+  .legende { font-size:.78em; color:var(--doux); display:flex; flex-wrap:wrap; gap:4px 10px; padding:2px 4px; }
+  .bandeau { background:#2a2650; border-radius:10px; padding:7px 10px; margin:5px 0; font-size:.9em; min-height:2.2em; }
+  .bas { position:fixed; left:0; right:0; bottom:0; background:#15132bee; border-top:1px solid #4b4580; display:flex; gap:6px; padding:7px; justify-content:center; }
+  .bas button { background:#2a2650; color:#fff; border:2px solid #4b4580; border-radius:12px; padding:8px 6px; font-size:.86em; flex:1; max-width:140px; }
+  .fenetre { position:fixed; inset:0; background:#000c; z-index:10; display:flex; align-items:center; justify-content:center; padding:12px; }
+  .fenetre > div { background:#2a2650; border-radius:16px; padding:14px 16px; max-width:520px; width:100%; max-height:92vh; overflow:auto; }
+  .fenetre h2 { color:var(--or); margin:.1em 0 .4em; font-size:1.2em; }
+  .fenetre p { margin:.4em 0; }
+  .choixh { display:flex; gap:8px; justify-content:center; margin:10px 0; flex-wrap:wrap; }
+  .choixh button { background:#1d1b3a; color:#fff; border:2px solid #4b4580; border-radius:14px; padding:8px 10px; min-width:120px; flex:1; }
+  .choixh button.or { border-color:var(--or); color:var(--or); } .choixh button:disabled { opacity:.4; }
+  .choixv button { display:block; width:100%; text-align:left; background:#1d1b3a; color:#fff; border:2px solid #4b4580; border-radius:12px; padding:9px 11px; margin:6px 0; }
+  .choixv button:disabled { opacity:.4; } .choixv small { display:block; color:var(--doux); }
+  .heros6 { display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; margin:10px 0; }
+  .heros6 button { background:#1d1b3a; color:#fff; border:2px solid #4b4580; border-radius:12px; padding:6px; font-size:.85em; }
+  .heros6 img { width:100%; aspect-ratio:1; border-radius:9px; object-fit:cover; display:block; margin-bottom:4px; }
+  .cartes3 { display:flex; gap:6px; justify-content:center; flex-wrap:wrap; margin:8px 0; }
+  .c { width:118px; min-height:150px; background:#f6efdc; color:#2b2117; border-radius:10px; padding:5px 6px; font-size:.7em; line-height:1.2; border:3px solid #b89a5e; position:relative; cursor:pointer; text-align:center; }
+  .c.r { border-color:#2a7fc1; } .c.e { border-color:#9b4dff; background:#efe6ff; } .c.m { border-color:#333; background:#cfc9c9; }
+  .c .n { font-weight:bold; font-size:1.1em; margin:8px 0 4px; } .c .cout { position:absolute; left:-8px; top:-8px; width:24px; height:24px; border-radius:50%; background:#2a7fc1; color:#fff; font-weight:bold; display:flex; align-items:center; justify-content:center; border:2px solid #fff; }
+  .c .cd { display:block; background:#2b2117; color:#ffe9a8; border-radius:6px; padding:1px 4px; margin:3px 0; } .c .rar { position:absolute; right:4px; top:2px; font-size:.85em; color:#7a5a2a; }
+  .c .av { display:flex; justify-content:space-between; font-weight:bold; margin-top:4px; } .c.sel { box-shadow:0 0 0 3px var(--ok); }
+  .journal { font-size:.8em; color:var(--doux); max-height:40vh; overflow:auto; background:#1d1b3a; border-radius:8px; padding:6px 8px; } .journal div { border-bottom:1px solid #ffffff10; padding:2px 0; }
+  .score { font-size:1.6em; color:var(--or); text-align:center; margin:6px 0; }
+  table { width:100%; border-collapse:collapse; font-size:.86em; } td { padding:3px 4px; border-bottom:1px solid #ffffff18; } td:last-child { text-align:right; color:var(--or); }
+  #majbar { position:fixed; left:0; right:0; bottom:0; background:#f3c96b; color:#2b2117; padding:10px 14px; display:flex; gap:10px; align-items:center; z-index:50; font-size:.92em; }
+  #majbar button { margin-left:auto; background:#2b2117; color:#f3c96b; border:0; border-radius:10px; padding:8px 12px; font-weight:bold; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="fen"></div>
+<script>
+const VERSION = '20261110-125502';
+function verifieVersion() {
+  fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
+    v = (v || '').trim(); if (!v || v === VERSION || document.getElementById('majbar')) return;
+    const b = document.createElement('div'); b.id = 'majbar';
+    b.innerHTML = '<span><b>Nouvelle version du jeu</b><br>Ton Odyssée en cours est gardée.</span><button>Mettre à jour</button>';
+    b.querySelector('button').onclick = () => location.replace('odyssee.html?v=' + v);
+    document.body.appendChild(b);
+  }).catch(() => {});
+}
+setInterval(verifieVersion, 120000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
+</script>
+<script src="cartes.js?v=20261110-132113"></script>
+<script src="donnees.js?v=20261110-132113"></script>
+<script src="odyssee.js?v=20261110-132113"></script>
+<script>
+// le moteur du Duel n'est pas chargé ici : les cartes de l'Odyssée appellent degats/soin seulement en combat (dans duel.html)
+const log = () => {}, degats = () => {}, soin = () => {}, altere = () => {}, invoque = () => {}, adv = () => ({}), fin = () => {};
+document.head.insertAdjacentHTML('beforeend', '<style>' + (typeof CSS_CARTE !== 'undefined' ? CSS_CARTE : '') + '</style>');
+let R = null; // la partie en cours
+const sauve = () => ecrireOdyssee(R);
+const fenetre = html => { document.getElementById('fen').innerHTML = `<div class="fenetre"><div>${html}</div></div>`; };
+const fermer = () => { document.getElementById('fen').innerHTML = ''; };
+const NIV = ['', 'I', 'II', 'III'];
+
+// ----------------------------------------------------------------------------------------------- accueil
+function accueil() {
+  const r = lireOdyssee(), rec = lireRecords(), col = lireCollection();
+  if (r) { R = r; if (R.combat && !R.combat.resultat) { location.href = 'duel.html?odyssee=1'; return; } if (R.combat && R.combat.resultat) { dessine(); apresCombat(); return; } dessine(); return; }
+  document.getElementById('app').innerHTML = `<h1>🏰 L’Odyssée · les Terres brûlées</h1>
+  <p style="text-align:center;color:var(--doux);font-size:.9em">Une île tirée au sort, à explorer case par case. Le combat, c’est le Duel. Tes PV ne remontent pas tout seuls : sources, potions et marchand. 20 vivres pour fouiller. Deux fragments de rune ouvrent la porte du Titan de feu.</p>
+  <p style="text-align:center"><b style="color:var(--or)">Choisis ton héros</b></p>
+  <div class="heros6">${ORDRE.map(id => `<button onclick="commence('${id}')"><img src="${IMG(id)}" alt="">${HEROS[id].nom}<br><small style="color:var(--doux)">${Math.round(HEROS[id].pv * 1.8)} PV en Odyssée</small></button>`).join('')}</div>
+  <p style="text-align:center;font-size:.86em"><label><input type="checkbox" id="jour"> 🗓 L’île du jour (la même île pour tout le monde aujourd’hui)</label></p>
+  <div class="choixh"><button onclick="records()">🏆 Mes Odyssées (${rec.length})</button><button onclick="collection()">📚 Ma collection (${col.length})</button></div>
+  <div class="choixh"><button onclick="location.href='odyssee-regles.html'">📖 Les règles complètes</button><button onclick="location.href='menu.html'">⌂ Menu</button></div>`;
+}
+function commence(id) {
+  const jour = document.getElementById('jour') && document.getElementById('jour').checked;
+  R = nouvelleOdyssee(id, jour ? graineDuJour() : null); if (!R) { alert('Impossible de tirer une île : réessaie.'); return; }
+  sauve(); dessine();
+  fenetre(`<h2>⛵ Débarquement</h2><p>${HEROS[id].nom} pose le pied sur les Terres brûlées. Le ciel est rouge, la roche fume.</p>
+  <p>Touche une case <b style="color:var(--ok)">verte</b> pour avancer. Tu vois le <b>type</b> des cases voisines, jamais ce qu’elles cachent. Chaque case nouvelle coûte <b>1 vivre</b> ; revenir est gratuit.</p>
+  <p>Le chemin direct fait ${R.direct} cases. La porte 🚪 du Titan 👑 est tout en haut : il te faut <b>2 fragments de rune</b>, gardés par les 3 élites 💀 de l’île.</p>
+  <div class="choixh"><button class="or" onclick="fermer()">En route !</button></div>`);
+}
+
+// ----------------------------------------------------------------------------------------------- l'île
+function dessine() {
+  const r = R, h = HEROS[r.heros];
+  const ok = (x, y) => peutAller(r, x, y);
+  const cases = r.ile.map(l => l.map(c => {
+    const cls = ['k', c.t, c.vu ? 'vu' : 'inconnue', c.visite ? 'visite' : '', c.fait ? 'fait' : '', ok(c.x, c.y) ? 'ok' : '', r.pos.x === c.x && r.pos.y === c.y ? 'ici' : ''].join(' ');
+    if (r.pos.x === c.x && r.pos.y === c.y) return `<div class="${cls}"><img src="${IMG(r.heros)}" alt=""></div>`;
+    if (!c.vu) return `<div class="${cls}">?</div>`;
+    const ic = c.t === 'mur' && c.fait ? '💎' : SALLES_ODY[c.t].e;
+    return `<div class="${cls}" onclick="va(${c.x},${c.y})" title="${SALLES_ODY[c.t].n}">${c.t === 'roche' ? '' : ic}${c.t === 'monstre' && !c.fait ? `<span class="niv">${NIV[c.niv]}</span>` : ''}</div>`;
+  }).join('')).join('');
+  document.getElementById('app').innerHTML = `
+  <div class="entete"><img src="${IMG(r.heros)}" alt="" onclick="monDeck()"><div class="st"><b>${h.nom}</b> · ${r.deck.length} cartes
+    <br><span class="p pv">❤ ${r.pv} / ${r.pvMax}</span><span class="p or">💰 ${r.or}</span><span class="p vivres ${r.vivres ? '' : 'zero'}">🍞 ${r.vivres}</span><span class="p">🗝 ${r.cles}</span><span class="p">🔮 ${r.fragments}/2</span>
+    <br><span class="rel">${r.reliques.map(k => `<i onclick="info('${RELIQUES[k].e} ${RELIQUES[k].n}', '${RELIQUES[k].d.replace(/'/g, '’')}')">${RELIQUES[k].e}</i>`).join('')}${r.sacoche.map((k, i) => `<i onclick="sacocheIle(${i})">${SACOCHE[k].e}</i>`).join('')}${r.benes.map(k => `<i onclick="info('✨ ${BENEDICTIONS[k].n}', '${BENEDICTIONS[k].d.replace(/'/g, '’')}')">✨</i>`).join('')}${r.males.map(k => `<i onclick="info('🕯 ${MALEDICTIONS[k].n}', '${MALEDICTIONS[k].d.replace(/'/g, '’')}')">🕯</i>`).join('')}</span></div></div>
+  <div class="carte-ile">${cases}</div>
+  <div class="bandeau">${r.vivres ? 'Touche une case verte pour avancer.' : '<b style="color:#ff7a7a">Plus de vivres : chaque case nouvelle coûte 3 PV.</b>'} ${r.fragments >= 2 ? '<b style="color:var(--ok)">Tu as les 2 fragments : la porte 🚪 t’attend.</b>' : ''}</div>
+  <div class="legende"><span>⚔ monstres (I, II, III)</span><span>💀 élite</span><span>🗝 coffre</span><span>💧 source</span><span>🏪 marchand</span><span>❓ événement</span><span>🔥 autel</span><span>🧱 mur fissuré</span><span>🚪 porte</span><span>👑 boss</span><span>? inconnu</span></div>
+  <div class="bas"><button onclick="monDeck()">🂠 Deck</button><button onclick="journal()">📜 Journal</button><button onclick="reglesCourtes()">❓ Règles</button><button onclick="abandon()">⏏ Quitter</button></div>`;
+}
+function info(t, d) { fenetre(`<h2>${t}</h2><p>${d}</p><div class="choixh"><button onclick="fermer()">Compris</button></div>`); }
+function va(x, y) {
+  const res = deplace(R, x, y); if (!res) return;
+  if (res.mort) { sauve(); finPartie(false, 'Épuisé, sans vivres, le héros s’effondre dans la cendre.'); return; }
+  const c = res.c; sauve(); dessine();
+  if (c.t === 'monstre' || c.t === 'elite' || c.t === 'boss') { if (!c.fait) { combat(c); return; } }
+  if (c.t === 'porte') { if (ouvrePorte(R)) { sauve(); dessine(); fenetre(`<h2>🚪 La porte s’ouvre</h2><p>Les deux fragments s’assemblent dans la serrure runique. Tu bivouaques devant la porte : <b>+15 PV</b> (❤ ${R.pv} / ${R.pvMax}). Derrière, une chaleur de fournaise : le Titan t’attend. <b>Il ne se combat qu’une fois.</b></p><div class="choixh"><button onclick="fermer()">Je suis prêt</button></div>`); } else fenetre(`<h2>🚪 La porte du boss</h2><p>Deux serrures en forme de rune. Il te manque ${2 - R.fragments} fragment${2 - R.fragments > 1 ? 's' : ''} : ils sont gardés par les élites 💀 de l’île.</p><div class="choixh"><button onclick="fermer()">Compris</button></div>`); return; }
+  if (c.t === 'coffre' && !c.fait) { coffre(c); return; }
+  if (c.t === 'source' && !c.fait) { sourceFen(c); return; }
+  if (c.t === 'marchand') { marchand(c); return; }
+  if (c.t === 'evenement' && !c.fait) { evenement(c); return; }
+  if (c.t === 'autel' && !c.fait) { autel(c); return; }
+  if (c.t === 'mur' && !c.fait) { c.fait = true; const l = reliquesProposees(R, 2); sauve(); fenetre(`<h2>💎 La salle cachée</h2><p>Derrière le mur, une petite salle oubliée. Sur un socle, deux reliques : tu n’en emportes qu’une.</p><div class="choixv">${l.map(k => `<button onclick="prendRelique(R,'${k}');sauve();fermer();dessine()" ${R.reliques.length >= 3 ? 'disabled' : ''}>${RELIQUES[k].e} <b>${RELIQUES[k].n}</b><small>${RELIQUES[k].d}</small></button>`).join('')}</div>${R.reliques.length >= 3 ? '<p style="color:#ff7a7a">Tu portes déjà 3 reliques.</p>' : ''}<div class="choixh"><button onclick="fermer()">Laisser</button></div>`); return; }
+}
+function combat(c) {
+  const cb = lanceCombat(R, c); sauve();
+  const e = HEROS[cb.ennemi], d = DEFIS.find(x => x.id === cb.defi);
+  fenetre(`<h2>${c.t === 'boss' ? '👑' : c.t === 'elite' ? '💀' : '⚔'} ${e.nom}${c.t === 'monstre' ? ` · niveau ${NIV[cb.niv]}` : ''}</h2>
+  <p><i>${e.cit || ''}</i></p><p>${e.role || ''}${cb.renfort ? ` <b>Renfort d’élite</b> : ${{ pc:'+2 PC au départ', pv:'+6 PV', bouclier:'Bouclier 5 au départ' }[cb.renfort]}.` : ''}</p>
+  <p>🎯 <b>Défi · ${d.n}</b> : ${d.d} Réussi = +30 or.</p>
+  <p style="font-size:.86em;color:var(--doux)">Tu entres avec ❤ ${R.pv} / ${R.pvMax}${R.sacoche.length ? ' et ta sacoche : ' + R.sacoche.map(k => SACOCHE[k].e + ' ' + SACOCHE[k].n).join(', ') : ''}.</p>
+  <div class="choixh"><button class="or" onclick="location.href='duel.html?odyssee=1'">⚔ Au combat !</button></div>`);
+}
+// retour du Duel : récompenses, tirage de cartes
+function apresCombat() {
+  const cb = R.combat, res = cb.resultat; const out = recompenseCombat(R); sauve(); dessine();
+  if (!out.gagne) { finPartie(false, `${HEROS[cb.ennemi].nom} a eu raison de ${HEROS[R.heros].nom}.`); return; }
+  if (out.boss) { finPartie(true, 'Le Titan de feu s’effondre dans son cratère. L’île est libre.'); return; }
+  const suite = out.draft ? () => tirage(out.draft, 'Une carte parmi trois', () => { sauve(); dessine(); }) : () => { fermer(); dessine(); };
+  window._suite = suite;
+  fenetre(`<h2>🏆 ${out.ennemi} vaincu</h2><p>+${out.or} or${res.defiOk ? ' (défi réussi compris)' : ''}.${out.fragment ? ' <b>Un fragment de rune 🔮 et une clé 🗝 !</b>' : ''}${out.potion ? ' Et une potion de soin 🧪 dans sa besace.' : ''}</p><p>Il te reste ❤ ${R.pv} / ${R.pvMax}.</p><div class="choixh"><button class="or" onclick="fermer();_suite()">Continuer</button></div>`);
+}
+const carteHTML = (k, onclick, pied) => { const c = CARTES[k], r = rarete(k);
+  if (typeof CADRES_OK !== 'undefined' && CADRES_OK.includes(CADRE_DE(k))) return `<div onclick="${onclick || ''}" style="cursor:pointer">${carteGuilde(k, { w:118, pied:pied ? `<div class="cg-pied">${pied}</div>` : '' })}</div>`;
+  return `<div class="c ${r}" onclick="${onclick || ''}"><span class="cout">${c.c}</span><span class="rar">${RARETE[r]}</span><div class="n">${c.n}</div><span class="cd">🎲 ${c.txt}</span><div>${c.d}</div>${c.u ? `<div class="av"><span style="color:#b84a00">⚔ ${c.u.a}</span><span style="color:#1f6f2a">❤ ${c.u.v}</span></div>` : ''}${pied ? `<div style="margin-top:4px;font-weight:bold;color:#2a7fc1">${pied}</div>` : ''}</div>`; };
+function tirage(cartes, titre, apres, deux) {
+  window._apres = apres; window._tir = cartes; window._deux = deux ? 2 : 1; window._pris = [];
+  fenetre(`<h2>🂠 ${titre}</h2><p style="font-size:.88em;color:var(--doux)">Touche la carte que tu gardes${deux ? ' (deux au plus)' : ''}. Un deck trop gros se dilue : tu peux aussi ne rien prendre.</p>
+  <div class="cartes3">${cartes.map((k, i) => carteHTML(k, `prendsCarte(${i})`)).join('')}</div><div class="choixh"><button onclick="fermer();_apres()">Ne rien prendre</button></div>`);
+}
+function prendsCarte(i) { const k = window._tir[i]; gardeCarte(R, k); window._pris.push(k); sauve(); if (window._pris.length >= window._deux) { fermer(); window._apres(); } else { window._tir.splice(i, 1); tirage(window._tir, 'Encore une', window._apres, false); } }
+function coffre(c) {
+  if (R.cles < 1) { fenetre('<h2>🗝 Un coffre fermé</h2><p>Une serrure de fer. Les clés se gagnent sur les élites 💀 et dans certains événements. Tu pourras revenir.</p><div class="choixh"><button onclick="fermer()">Compris</button></div>'); return; }
+  const o = ouvreCoffre(R, c); sauve(); dessine();
+  if (o.relique) { fenetre(`<h2>🗝 Le coffre s’ouvre</h2><p>Dedans : ${RELIQUES[o.relique].e} <b>${RELIQUES[o.relique].n}</b>. ${RELIQUES[o.relique].d}</p><div class="choixh"><button class="or" onclick="fermer()">Formidable</button></div>`); return; }
+  tirage(o.draft, 'Le coffre : deux cartes parmi trois', () => { sauve(); dessine(); }, true);
+}
+function sourceFen(c) { const m = R.deck.find(k => rarete(k) === 'm');
+  fenetre(`<h2>💧 Une source</h2><p>Une eau claire qui sort de la roche tiède. Une seule fois.</p><div class="choixv"><button onclick="source(R,R.ile[${c.y}][${c.x}],'soin');sauve();fermer();dessine()">Boire : <b>+20 PV</b><small>❤ ${R.pv} → ${Math.min(R.pvMax, R.pv + 20)} / ${R.pvMax}</small></button><button ${m ? '' : 'disabled'} onclick="source(R,R.ile[${c.y}][${c.x}],'purifie');sauve();fermer();dessine()">Se purifier : retire une malédiction du deck<small>${m ? CARTES[m].n : 'aucune malédiction dans ton deck'}</small></button></div><div class="choixh"><button onclick="fermer()">Plus tard</button></div>`); }
+function marchand(c) {
+  const st = stockMarchand(R, c), p = n => prixMarchand(R, n), peut = n => R.or >= p(n);
+  const bt = (txt, prix, ok, action, small) => `<button ${ok && peut(prix) ? '' : 'disabled'} onclick="${action};sauve();marchand(R.ile[${c.y}][${c.x}])">${txt} <b style="float:right;color:var(--or)">${p(prix)} or</b>${small ? `<small>${small}</small>` : ''}</button>`;
+  fenetre(`<h2>🏪 Le marchand</h2><p>💰 ${R.or} or · sacoche ${R.sacoche.length}/2 · reliques ${R.reliques.length}/3${R.males.includes('cher') ? ' · <i>mauvaise réputation : +20 %</i>' : ''}</p>
+  <div class="cartes3">${st.cartes.map(k => carteHTML(k, peut(PRIX_CARTE[rarete(k)]) ? `achete(R,R.ile[${c.y}][${c.x}],'carte','${k}');sauve();marchand(R.ile[${c.y}][${c.x}])` : '', p(PRIX_CARTE[rarete(k)]) + ' or')).join('') || '<i>Plus de cartes.</i>'}</div>
+  <div class="choixv">
+    ${bt('🔥 Retirer une carte de mon deck', 60, st.retire, "fermer();retirerFen(R.ile[" + c.y + "][" + c.x + "])", 'une fois par visite')}
+    ${Object.keys(SACOCHE).map(k => bt(`${SACOCHE[k].e} ${SACOCHE[k].n}`, SACOCHE[k].prix, R.sacoche.length < 2, `achete(R,R.ile[${c.y}][${c.x}],'sacoche','${k}')`, SACOCHE[k].d)).join('')}
+    ${bt('❤ Vitalité : +5 PV max', 70, st.pvmax, `achete(R,R.ile[${c.y}][${c.x}],'pvmax')`, `encore ${st.pvmax} fois`)}
+    ${bt('🍞 5 vivres', 20, true, `achete(R,R.ile[${c.y}][${c.x}],'vivres')`)}
+    ${st.relique ? bt(`${RELIQUES[st.relique].e} ${RELIQUES[st.relique].n}`, RELIQUES[st.relique].prix, R.reliques.length < 3, `achete(R,R.ile[${c.y}][${c.x}],'relique')`, RELIQUES[st.relique].d) : ''}
+  </div><div class="choixh"><button onclick="fermer();dessine()">Repartir</button></div>`);
+}
+function retirerFen(c) { fenetre(`<h2>🔥 Retirer une carte</h2><p>Touche la carte à brûler (60 or).</p><div class="cartes3">${[...new Set(R.deck)].map(k => carteHTML(k, `achete(R,R.ile[${c.y}][${c.x}],'retirer','${k}');sauve();fermer();marchand(R.ile[${c.y}][${c.x}])`)).join('')}</div><div class="choixh"><button onclick="marchand(R.ile[${c.y}][${c.x}])">Annuler</button></div>`); }
+function evenement(c) {
+  const ev = EVENEMENTS.find(e => e.id === c.ev);
+  fenetre(`<h2>❓ ${ev.t}</h2><p>${ev.d}</p><div class="choixv">${ev.choix.map((ch, i) => `<button ${ch.cond && !ch.cond(R) ? 'disabled' : ''} onclick="evChoix(${c.x},${c.y},${i})">${ch.t}</button>`).join('')}</div>`);
+}
+function evChoix(x, y, i) {
+  const c = R.ile[y][x], o = evenementChoisit(R, c, i); if (!o) return; sauve(); dessine();
+  const fin = () => { fermer(); sauve(); dessine(); };
+  if (o.suite === 'relique') { fenetre(`<h2>${o.m}</h2><div class="choixv">${o.reliques.map(k => `<button ${R.reliques.length >= 3 ? 'disabled' : ''} onclick="prendRelique(R,'${k}');sauve();fermer();dessine()">${RELIQUES[k].e} <b>${RELIQUES[k].n}</b><small>${RELIQUES[k].d}</small></button>`).join('')}</div><div class="choixh"><button onclick="fermer()">Laisser</button></div>`); return; }
+  if (o.suite === 'draft') { tirage(o.cartes, o.m, fin); return; }
+  if (o.suite === 'retirer') { fenetre(`<h2>${o.m}</h2><div class="cartes3">${[...new Set(R.deck)].map(k => carteHTML(k, `retireCarte(R,'${k}');sauve();fermer();dessine()`)).join('')}</div><div class="choixh"><button onclick="fermer()">Finalement non</button></div>`); return; }
+  fenetre(`<h2>❓</h2><p>${o.m}</p><div class="choixh"><button onclick="fermer()">Continuer</button></div>`);
+}
+function autel(c) {
+  const o = autelOptions(R, c);
+  fenetre(`<h2>🔥 L’autel</h2><p>Trois bénédictions brillent. En échange, l’autel te marque d’une malédiction : <b>${MALEDICTIONS[o.male].n}</b> (${MALEDICTIONS[o.male].d})</p>
+  <div class="choixv">${o.benes.map(b => `<button onclick="autelChoisit(R,R.ile[${c.y}][${c.x}],'${b}');sauve();fermer();dessine()">✨ <b>${BENEDICTIONS[b].n}</b><small>${BENEDICTIONS[b].d}</small></button>`).join('')}</div>
+  <div class="choixh"><button onclick="fermer()">Passer son chemin</button></div>`);
+}
+function sacocheIle(i) { const k = R.sacoche[i]; if (k === 'soin') { fenetre(`<h2>🧪 Potion de soin</h2><p>La boire maintenant : +10 PV (❤ ${R.pv} → ${Math.min(R.pvMax, R.pv + 10)}).</p><div class="choixh"><button class="or" onclick="R.sacoche.splice(${i},1);R.pv=Math.min(R.pvMax,R.pv+10);R.journal.push('🧪 Potion bue sur la carte : +10 PV.');sauve();fermer();dessine()">Boire</button><button onclick="fermer()">Garder</button></div>`); } else info(SACOCHE[k].e + ' ' + SACOCHE[k].n, SACOCHE[k].d); }
+function monDeck() { const n = {}; R.deck.forEach(k => n[k] = (n[k] || 0) + 1); fenetre(`<h2>🂠 Mon deck (${R.deck.length} cartes)</h2><div class="cartes3">${Object.keys(n).map(k => carteHTML(k, '', n[k] > 1 ? '× ' + n[k] : '')).join('')}</div><div class="choixh"><button onclick="fermer()">Fermer</button></div>`); }
+function journal() { fenetre(`<h2>📜 Journal de l’île</h2><div class="journal">${[...R.journal].reverse().map(t => `<div>${t}</div>`).join('')}</div><div class="choixh"><button onclick="fermer()">Fermer</button></div>`); }
+function reglesCourtes() { fenetre(`<h2>❓ L’Odyssée en bref</h2><ul style="padding-left:1.1em;font-size:.9em">
+  <li>Touche une case verte pour avancer. Chaque case <b>nouvelle</b> coûte 1 vivre ; sans vivres, 3 PV.</li>
+  <li>Tes PV ne remontent pas entre les combats. Sources 💧 (+20), potions, marchand 🏪.</li>
+  <li>Chaque victoire : de l’or et <b>une carte parmi trois</b> pour ton deck. Les élites 💀 donnent un fragment 🔮 et une clé 🗝 (coffres).</li>
+  <li>2 fragments ouvrent la porte 🚪 du Titan 👑. Il ne se combat qu’une fois.</li>
+  <li>Les murs fissurés 🧱 s’ouvrent avec une bombe ou 3 vivres : une relique derrière.</li>
+  <li>Si tu tombes, la partie s’arrête ; tu gardes les cartes rencontrées dans ta collection (éditeur de deck de la Tour des héros).</li></ul>
+  <div class="choixh"><button onclick="location.href='odyssee-regles.html'">📖 Règles complètes</button><button onclick="fermer()">Fermer</button></div>`); }
+function abandon() { fenetre('<h2>⏏ Quitter</h2><p>Ton Odyssée est gardée sur ce téléphone : tu la reprendras là où tu es. Ou tu peux l’abandonner (comptée comme perdue).</p><div class="choixh"><button onclick="location.href=\'menu.html\'">⌂ Menu, je reprendrai</button><button onclick="finPartie(false, \'Abandon.\')">💀 Abandonner</button></div>'); }
+function finPartie(gagne, texte) {
+  const f = finOdysseeRun(R, gagne); R = null;
+  fenetre(`<h2>${gagne ? '🏆 L’île est libre !' : '💀 Fin de l’Odyssée'}</h2><p>${texte}</p><div class="score">${f.score} points</div>
+  <table><tr><td>Cases explorées</td><td>${f.cases}</td></tr><tr><td>Combats gagnés</td><td>${f.victoires} / ${f.combats}</td></tr><tr><td>Tours joués</td><td>${f.tours}</td></tr><tr><td>Défis réussis</td><td>${f.defis}</td></tr><tr><td>Or restant</td><td>${f.or}</td></tr><tr><td>Durée</td><td>${f.duree} min</td></tr></table>
+  <p>${f.ajoutees ? `📚 <b>${f.ajoutees}</b> carte${f.ajoutees > 1 ? 's' : ''} rejoi${f.ajoutees > 1 ? 'gnent' : 'nt'} ta collection : ${f.nouvelles.map(k => CARTES[k].n).join(', ')}.` : 'Aucune carte nouvelle pour la collection cette fois.'}</p>
+  <div class="choixh"><button class="or" onclick="fermer();accueil()">Nouvelle Odyssée</button><button onclick="location.href='menu.html'">⌂ Menu</button></div>`);
+}
+function records() { const l = lireRecords(); fenetre(`<h2>🏆 Mes Odyssées (${l.length})</h2>${l.length ? `<table>${l.map(r => `<tr><td>${r.gagne ? '🏆' : '💀'} ${new Date(r.quand).toLocaleDateString('fr-FR')} · ${HEROS[r.heros].nom} · ${r.cases} cases, ${r.victoires} victoires, ${r.duree} min</td><td>${r.score}</td></tr>`).join('')}</table>` : '<p>Aucune Odyssée finie.</p>'}<div class="choixh"><button onclick="fermer()">Fermer</button></div>`); }
+function collection() { const l = lireCollection(); fenetre(`<h2>📚 Ma collection (${l.length})</h2><p style="font-size:.86em;color:var(--doux)">Les cartes rencontrées en Odyssée. Elles s’ajoutent à l’éditeur de deck de la Tour des héros.</p><div class="cartes3">${l.map(k => carteHTML(k)).join('') || '<i>Rien encore : pars en Odyssée !</i>'}</div><div class="choixh"><button onclick="fermer()">Fermer</button></div>`); }
+accueil();
+</script>
+</body>
+</html>

@@ -128,6 +128,8 @@
   .vie i { position:relative; display:block; height:100%; background:linear-gradient(90deg, #e5262c, #ff7a59); border-radius:3px; transition:width .5s ease; }
   .salle { display:flex; align-items:center; gap:8px; } .salle .st { flex:1; }
   .sons { display:flex; gap:6px; flex:none; }
+  .rel i { font-style:normal; margin-left:4px; cursor:pointer; }
+  .actions.sacoche { grid-template-columns:repeat(2, 1fr); } .actions.sacoche .act { background:#2a3a2a; border-color:#5a8a5a; }
   .sonbt { width:34px; height:34px; border-radius:50%; border:1px solid #f3c96b88; background:radial-gradient(circle at 35% 30%, #3a3570, #1d1b3a); color:#f3c96b; padding:6px; display:grid; place-items:center; box-shadow:0 2px 6px #0008; }
   .sonbt svg { width:100%; height:100%; } .sonbt.off { color:#8a83b8; border-color:#4b4580; }
   body.fxon #app { pointer-events:none; }
@@ -325,7 +327,7 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261110-125502';
+const VERSION = '20261110-132113';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); location.replace('duel.html?v=' + v); }
@@ -344,8 +346,9 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261110-125502"></script>
-<script src="donnees.js?v=20261110-125502"></script>
+<script src="cartes.js?v=20261110-132113"></script>
+<script src="donnees.js?v=20261110-132113"></script>
+<script src="odyssee.js?v=20261110-132113"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -360,7 +363,7 @@ const ref = k => ({ s:k.J === S.J ? 'J' : 'O', uid:k.u ? k.u.id : null });
 function joueur(id, ordi, auto) {
   const h = HEROS[id];
   return { id, ordi, nom:h.nom, c:h.c, pv:h.pv, pvMax:h.pv, pc:1, deck:melange(ordi || auto ? deckBase(id) : deckDe(id)), main:[], des:[], front:[], tours:0,
-    sacs:[0, 1, 2, 3, 4].map(() => []), jauge:0, degSubis:0, bouclier:0, gardeB:0, gardeE:0, purete:0, handicap:0, saigne:0, poison:0, meute:0, braise:0, relance:1 };
+    sacs:[0, 1, 2, 3, 4].map(() => []), reliques:[], benes:[], sacoche:[], potionsUtilisees:0, jauge:0, degSubis:0, bouclier:0, gardeB:0, gardeE:0, purete:0, handicap:0, saigne:0, poison:0, meute:0, braise:0, relance:1 };
 }
 function melange(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
 function pioche(J, n) { for (let i = 0; i < n; i++) { if (!J.deck.length) break; if (J.main.length >= 7) { J.deck.pop(); continue; } J.main.push(J.deck.pop()); } }
@@ -380,6 +383,7 @@ function invoque(J, base, key) {
   if (J.front.length >= 5) { log('Ligne de front pleine.'); return; }
   const u = { ...base, key, id:Math.random().toString(36).slice(2), pret:!!base.charge };
   if (S.salle.id === 'caserne') u.v += 1;
+  if (J.reliques.includes('cor')) u.v += 1;
   u.vmax = u.v; J.front.push(u);
   if (base.louve) fx({ t:'invoque', s:J === S.J ? 'J' : 'O', nom:base.n });
 }
@@ -396,6 +400,11 @@ function soinCible(k, n) { if (k.u) { const a = k.u.v; k.u.v = Math.min(k.u.vmax
 // k = { J, u? } : la cible. ignore = passe Bouclier et Barrière (Instinct de la Louve)
 function degats(k, n, ignore) {
   if (S.fini || n <= 0) return;
+  if (S.ody) { // Odyssée : reliques du héros
+    if (S.acteur === S.J && k.J === S.O && S.J.reliques.includes('brassards')) n += 2;
+    if (k.J === S.J && !k.u && S.J.reliques.includes('armure')) n = Math.max(0, n - 1);
+    if (n <= 0) return;
+  }
   if (k.u) {
     if (!k.J.front.includes(k.u)) return;
     let r = n;
@@ -416,11 +425,20 @@ function degats(k, n, ignore) {
       if (g + b) log(`Les boucliers de ${J.nom} absorbent ${g + b}.`); abs = g + b; if (S.bilan && J === S.J) S.bilan.abs += g + b;
     }
     J.pv -= r; log(r ? `${J.nom} perd ${r} PV.` : `${J.nom} ne perd aucun PV.`);
+    if (HEROS[J.id].phases && J.pv > 0) phaseBoss(J);
     fx({ t:'degat', c:ref(k), n:r, abs, pv:Math.max(0, J.pv), garde:J.gardeB, bouclier:J.bouclier });
     if (r > 0) { J.degSubis = (J.degSubis || 0) + r; while (J.degSubis >= JAUGE.parDegats) { J.degSubis -= JAUGE.parDegats; remplit(J, 1); } }
     if (r > 1 && J.fournaise) { J.fournaise = false; const D = adv(J); log('Fournaise : l’adversaire subit la moitié des dégâts.'); D.pv -= Math.floor(r / 2); }
   }
   fin();
+}
+// le boss change de phase (Garde et Pouvoir) quand il passe sous 2/3 puis 1/3 de ses PV
+function phaseBoss(J) {
+  const h = HEROS[J.id], ph = h.phases; let p = 0;
+  for (let i = 0; i < ph.length; i++) if (J.pv <= J.pvMax * ph[i].seuil) p = i;
+  if (p === (J.phase || 0)) return;
+  J.phase = p; h.garde = ph[p].garde; h.pouvoir = ph[p].pouvoir;
+  log(`🔥 ${J.nom} entre en phase ${p + 1} : ${ph[p].pouvoir.n} !`); fx({ t:'annonce', txt:`🔥 Phase ${p + 1} : ${ph[p].pouvoir.n} !` });
 }
 function remplit(J, n) { if (J.ultimeFait || J.jauge >= JAUGE.max) return; J.jauge = Math.min(JAUGE.max, (J.jauge || 0) + n); if (J.jauge >= JAUGE.max) { J.jaugeTour = J.tours; log(`⚡ La jauge d’Ultime de ${J.nom} est pleine !`); fx({ t:'jauge', s:J === S.J ? 'J' : 'O' }); } }
 function fin() { if (S.fini) return; if (S.J.pv <= 0 || S.O.pv <= 0) S.fini = S.J.pv > 0 ? 'gagne' : 'perdu'; }
@@ -428,11 +446,11 @@ function fin() { if (S.fini) return; if (S.J.pv <= 0 || S.O.pv <= 0) S.fini = S.
 function debutTour(J) {
   if (J.gardeB > 0 || J.gardeE > 0) fx({ t:'finGarde', s:J === S.J ? 'J' : 'O', n:J.gardeB });
   J.tours++; J.gardeB = 0; J.gardeE = 0; J.contre = J.piege = J.cor = J.fournaise = J.paillasse = J.esquive = false;
-  J.relance = 1 + (J.boussole ? 1 : 0); J.cartesJouees = 0; J.six = 0; J.pureteTour = false; J.transmu = false; J.dernierSort = null; J.gardeFaite = false;
+  J.relance = 1 + (J.boussole ? 1 : 0) + (J.reliques.includes('oeil') ? 1 : 0) + (J.benes.includes('relance') ? 1 : 0); S.acteur = null; J.cartesJouees = 0; J.six = 0; J.pureteTour = false; J.transmu = false; J.dernierSort = null; J.gardeFaite = false;
   if (J.tours > 1) { J.pc = Math.min(6, J.pc + 1); pioche(J, 1); }
   if (J.saigne) { log(`${J.nom} saigne : −${J.saigne * 2} PV.`); J.pv -= J.saigne * 2; fx({ t:'degat', c:ref({ J }), n:J.saigne * 2, abs:0, pv:Math.max(0, J.pv), mot:'Saignement' }); fin(); }
   if (J.poison) { log(`${J.nom} : Poison, −${J.poison} PV.`); J.pv -= J.poison; fx({ t:'degat', c:ref({ J }), n:J.poison, abs:0, pv:Math.max(0, J.pv), mot:'Poison', vert:true }); J.poison--; fin(); }
-  let n = Math.min(5, J.tours + 2);
+  let n = Math.min(J.desMax || 5, J.tours + 2);
   const base = n; J.neuf = (J.tours > 1 && base > (J.nbBase || 0)) ? base - 1 : -1; if (J === S.J && J.neuf >= 0) fx({ t:'nouveauDe', n:base }); J.nbBase = base;
   if (J.handicap) { n--; J.handicap = 0; log(`Handicap : ${J.nom} lance un dé de moins.`); }
   J.des = J.sacs.slice(0, n).map((sac, i) => ({ sac, v:0, pose:false, mod:false, i }));
@@ -448,7 +466,9 @@ function coutCarte(J, k) {
   if (c.t === 'e' && J.forgeGratuite) n = 0;
   return n;
 }
-function defDe(J, quoi) { const h = HEROS[J.id]; return quoi === 'frappe' ? FRAPPE : quoi === 'technique' ? TECHNIQUE : quoi === 'pouvoir' ? h.pouvoir : quoi === 'ultime' ? h.ultime : quoi === 'garde' ? h.garde : CARTES[quoi]; }
+// les monstres de l'Odyssée ont leur propre Frappe (plus faible) ; les héros gardent la Frappe commune
+const frappeDe = J => HEROS[J.id].frappe || FRAPPE;
+function defDe(J, quoi) { const h = HEROS[J.id]; return quoi === 'frappe' ? frappeDe(J) : quoi === 'technique' ? TECHNIQUE : quoi === 'pouvoir' ? h.pouvoir : quoi === 'ultime' ? h.ultime : quoi === 'garde' ? h.garde : CARTES[quoi]; }
 function ciblesPossibles(J, type) {
   const D = adv(J), vis = D.front.filter(u => !u.cachee);
   if (type === 'ennemi') return [{ J:D }, ...vis.map(u => ({ J:D, u }))];
@@ -471,7 +491,7 @@ function permis(J, quoi, vs, ds) {
   if (quoi === 'pcAjuste') return vs.length === 1 && J.pc >= coutAjuste(J);
   if (quoi === 'garde') return !J.gardeFaite && h.garde.cond(vs, ds);
   if (quoi === 'pouvoir') return h.pouvoir.cond(vs, ds);
-  if (quoi === 'frappe') return FRAPPE.cond(vs);
+  if (quoi === 'frappe') return frappeDe(J).cond(vs);
   if (quoi === 'technique') return TECHNIQUE.cond(vs);
   if (quoi === 'ultime') return !J.ultimeFait && J.jauge >= JAUGE.max && J.pc >= 3 && h.ultime.cond(vs, ds);
   const c = CARTES[quoi];
@@ -482,21 +502,24 @@ function permis(J, quoi, vs, ds) {
   return J.pc >= coutCarte(J, quoi) && c.cond(vs, ds);
 }
 function pose(J, quoi, ds, k, indexMain) {
-  const vs = vals(ds);
+  const vs = vals(ds); S.acteur = J;
   if (quoi === 'pcRelance') { J.pc -= 1; const a = ds[0].v; lance(J, ds[0]); log(`${J.nom} paie 1 PC et relance un ${a} : ${ds[0].v}.`); return; }
   if (quoi === 'pcAjuste') { const c = coutAjuste(J); J.pc -= c; const a = ds[0].v, v = Math.max(1, Math.min(6, a + (k && k.sens || 1))); modifie(J, ds[0], v); log(`${J.nom} paie ${c} PC : ${a} devient ${v}.`); return; }
   if (quoi === 'pcSoins') { J.pc -= 2; J.poison = 0; J.saigne = 0; J.handicap = 0; log(`${J.nom} paie 2 PC : Premiers soins, plus aucune altération.`); return; }
   if (quoi === 'transmu') { J.transmu = true; const d = ds[0]; const a = d.v; modifie(J, d, opp(a)); log(`${J.nom} transmute un ${a} en ${d.v}.`); return; }
   ds.forEach(d => { d.pose = true; });
-  const h = HEROS[J.id];
+  const h = HEROS[J.id]; J.dernier = quoi;
+  if (quoi === 'garde' && vs.includes(6)) J.garde6 = true;
+  if (quoi === 'technique' && vs.length >= 4) J.tech4 = true;
   if (quoi === 'vendre') { let g = 0; vs.forEach(v => g += (S.salle.id === 'autel' && v === 6) ? 2 : 1); J.pc = Math.min(6, J.pc + g); log(`${J.nom} vend ${vs.length} dé(s) : +${g} PC.`); fx({ t:'pc', s:J === S.J ? 'J' : 'O', n:g, nb:vs.length }); return; }
   const six = vs.filter(v => v === 6).length; J.six += six;
   if (quoi !== 'ultime') remplit(J, vs.length * JAUGE.parDe);
   if (J.id === 'aldric' && J.six >= 2 && !J.pureteTour && J.purete < 2) { J.purete++; J.pureteTour = true; log('✦ Deux 6 posés : Aldric gagne un jeton de Pureté.'); }
   if (quoi === 'garde') { J.gardeFaite = true; const g0 = J.gardeB, e0 = J.gardeE, q0 = J.esquive; h.garde.f(J, vs, k, ds);
+    if (J.benes.includes('gardex2') && !J.gardeX2 && J.gardeB > g0) { J.gardeB += J.gardeB - g0; J.gardeX2 = true; log('Première parade : Garde doublée.'); }
     const quoiG = J.gardeB > g0 ? `Bouclier ${J.gardeB}` : J.gardeE > e0 ? `Épines ${J.gardeE}` : J.esquive && !q0 ? 'Esquive' : h.garde.n;
     fx({ t:'garde', s:J === S.J ? 'J' : 'O', nom:h.garde.n, quoi:quoiG, vs }); bilan(J, 'gardes', `Garde : ${quoiG}`); return; }
-  if (quoi === 'frappe') { log(`${J.nom} : Frappe (${vs.join(', ')}) : ${FRAPPE.dg(vs)} dégâts.`); fx({ t:'tir', id:J.id, s:J === S.J ? 'J' : 'O', vers:k && ref(k), nom:'Frappe', vs, dg:FRAPPE.dg(vs), cible:k && (k.u ? k.u.n : k.J.nom) }); bilan(J, 'actions', `⚔ Frappe (${vs.join('·')}) : ${FRAPPE.dg(vs)} dégâts`); FRAPPE.f(J, vs, k); return; }
+  if (quoi === 'frappe') { log(`${J.nom} : Frappe (${vs.join(', ')}) : ${frappeDe(J).dg(vs)} dégâts.`); fx({ t:'tir', id:J.id, s:J === S.J ? 'J' : 'O', vers:k && ref(k), nom:'Frappe', vs, dg:frappeDe(J).dg(vs), cible:k && (k.u ? k.u.n : k.J.nom) }); bilan(J, 'actions', `⚔ Frappe (${vs.join('·')}) : ${frappeDe(J).dg(vs)} dégâts`); frappeDe(J).f(J, vs, k); return; }
   if (quoi === 'technique') { log(`${J.nom} : Technique (${vs.join(', ')}) : ${[0, 0, 0, 4, 7, 10][vs.length]} dégâts.`); fx({ t:'tir', id:J.id, s:J === S.J ? 'J' : 'O', vers:k && ref(k), nom:'Technique', vs, dg:[0, 0, 0, 4, 7, 10][vs.length], cible:k && (k.u ? k.u.n : k.J.nom) }); bilan(J, 'actions', `⚔ Technique (${vs.join('·')}) : ${[0, 0, 0, 4, 7, 10][vs.length]} dégâts`); TECHNIQUE.f(J, vs, k); return; }
   if (quoi === 'pouvoir') { log(`${J.nom} : ${h.pouvoir.n} !`); bilan(J, 'actions', `✨ Pouvoir : ${h.pouvoir.n} (${vs.join('·')})`); fx({ t:'carte', key:'pouvoir', id:J.id, s:J === S.J ? 'J' : 'O', nom:h.pouvoir.n, txt:h.pouvoir.d, sorte:'Pouvoir', vers:k && k.J && ref(k), vs }); h.pouvoir.f(J, vs, k, ds); return; }
   if (quoi === 'ultime') { J.pc -= 3; J.ultimeFait = true; log(`${J.nom} : ULTIME, ${h.ultime.n} !`); bilan(J, 'actions', `⚡ ULTIME : ${h.ultime.n}`); fx({ t:'ultime', s:J === S.J ? 'J' : 'O', id:J.id, nom:h.ultime.n, d:h.ultime.d, cit:h.cit, vers:k && k.J && ref(k) }); h.ultime.f(J, vs, k, ds); return; }
@@ -520,7 +543,7 @@ function pose(J, quoi, ds, k, indexMain) {
   if (c.t === 's' && quoi !== 'echo') J.dernierSort = { key:quoi, vs, k };
 }
 function attaque(J, u, k) {
-  const D = adv(J);
+  const D = adv(J); S.acteur = J; J.dernier = 'creature';
   const embuscade = !!u.cachee; u.pret = false; u.cachee = false;
   if (D.contre) { D.contre = false; log('Contre-attaque : 6 dégâts d’abord !'); degats({ J, u }, 6); if (!J.front.includes(u)) return; }
   if (D.piege) { D.piege = false; log('Piège à mâchoires !'); degats({ J, u }, 3); if (!J.front.includes(u)) return; u.entrave = true; }
@@ -614,7 +637,7 @@ function interet(J, quoi, vs) {
   const D = adv(J);
   if (quoi === 'ultime') return J.id === 'pip' ? (J.pv < J.pvMax * .6 ? 120 : 0) : 120;
   if (quoi === 'pouvoir') return J.id === 'zephine' ? 70 : 80;
-  if (quoi === 'frappe') return 10 + FRAPPE.dg(vs) * 7;
+  if (quoi === 'frappe') return 10 + frappeDe(J).dg(vs) * 7;
   if (quoi === 'technique') return [0, 0, 0, 40, 60, 80][vs.length];
   const c = CARTES[quoi];
   if (c.u) return 30 + c.u.a + c.u.v + (c.u.barriere && !J.front.some(u => u.barriere) ? 15 : 0) + (c.u.charge ? 10 : 0);
@@ -744,6 +767,101 @@ function nouvellePartie(id, idO, auto) {
   debutTour(S.J);
   if (!auto) rendu();
 }
+// =============================================================================================== l'Odyssée : un combat de l'île
+// run.combat = { id, type:'monstre'|'elite'|'boss', ennemi, niv, renfort, defi } ; le résultat est écrit dans run.combat.resultat, l'île reprend la main.
+function partieOdyssee() {
+  const run = lireOdyssee();
+  if (!run || !run.combat) { location.href = 'odyssee.html'; return; }
+  const cb = run.combat;
+  // combat déjà commencé sur ce téléphone (rechargement de la page) : on le reprend là où il en était
+  try { const sv = JSON.parse(localStorage.getItem('guilde-combat') || 'null'); if (sv && sv.ody && sv.ody.id === cb.id && !sv.fini) { S = sv; FX = []; fxApres = []; fxOn = false; sel = []; attaquant = null; ciblage = null; if (HEROS[S.O.id].phases) { S.O.phase = 0; phaseBoss(S.O); } rendu(); regles(); return; } } catch (e) {}
+  prepareCombatOdyssee(run, cb, false);
+  rendu(); regles();
+}
+function prepareCombatOdyssee(run, cb, auto) {
+  const h = HEROS[cb.ennemi]; if (h.phases) { h.garde = h.phases[0].garde; h.pouvoir = h.phases[0].pouvoir; }
+  S = { J:joueur(run.heros, false, true), O:joueur(cb.ennemi, true), salle:SALLES[Math.floor(Math.random() * SALLES.length)], log:[], fini:null, auto:!!auto,
+    ody:{ id:cb.id, type:cb.type, titre:cb.type === 'boss' ? '👑 Le boss' : cb.type === 'elite' ? '💀 Élite' : `⚔ Monstres · niveau ${'I II III'.split(' ')[cb.niv - 1] || 'I'}`, defi:DEFIS.find(d => d.id === cb.defi) || null } };
+  FX = []; fxApres = []; fxOn = false; if (!auto) arreteMusique();
+  const J = S.J, O = S.O;
+  J.deck = melange([...run.deck]); J.pv = run.pv; J.pvMax = run.pvMax; J.reliques = [...run.reliques]; J.benes = [...run.benes]; J.sacoche = [...run.sacoche];
+  pioche(J, 4 + (J.reliques.includes('souvenir') ? 1 : 0) + (J.benes.includes('main') ? 1 : 0));
+  if (J.benes.includes('pcplus')) J.pc += 1;
+  // l'ennemi : un monstre (PV et créatures selon le niveau) ou un héros rival (avec son renfort d'élite)
+  const niv = cb.niv || 1;
+  if (h.monstre) { O.pv = O.pvMax = h.pv + (h.boss ? 0 : 5 * (niv - 1)); O.desMax = h.boss ? 5 : h.majeur ? 4 : Math.min(5, 2 + niv); (h.renforts || []).forEach(r => invoque(O, { ...r, a:r.a + (niv - 1) })); if (!h.ultime || h.ultime.txt === 'jamais') O.ultimeFait = true; O.pc = 2; }
+  // un héros rival en Odyssée : un duel plus court (60 % de ses PV), avec son renfort d'élite
+  else { pioche(O, 5); O.pc = 3; O.pv = O.pvMax = Math.round(h.pv * .5); if (cb.renfort === 'pc') O.pc += 2; if (cb.renfort === 'pv') { O.pv += 6; O.pvMax += 6; } if (cb.renfort === 'bouclier') O.bouclier = 5; }
+  log(`${S.ody.titre} : ${O.nom}. Salle : ${S.salle.n}. ${S.salle.d}`);
+  if (S.ody.defi) log(`🎯 Défi : ${S.ody.defi.n} — ${S.ody.defi.d}`);
+  sel = []; attaquant = null; ciblage = null;
+  debutTour(J);
+}
+function evalueDefi(J, d) {
+  if (!d || S.fini !== 'gagne') return false;
+  return d.id === 'expeditif' ? J.tours <= 4 : d.id === 'sangfroid' ? J.pc >= 3 : d.id === 'econome' ? !J.potionsUtilisees : d.id === 'chanceux' ? !!J.garde6 : d.id === 'demonstration' ? J.dernier === 'ultime' : d.id === 'stratege' ? !!J.tech4 : false;
+}
+// un combat de l'Odyssée joué par l'ordinateur des deux côtés (simulations) : potion de soin bue sous 12 PV
+function combatAuto(run, c) {
+  const cb = lanceCombat(run, c); prepareCombatOdyssee(run, cb, true);
+  for (let t = 0; t < 40 && !S.fini; t++) {
+    if (S.J.pv <= 12 && S.J.sacoche.includes('soin')) usePotion(S.J.sacoche.indexOf('soin'));
+    if (S.J.sacoche.includes('bombe') && S.O.pv <= 8) usePotion(S.J.sacoche.indexOf('bombe'));
+    if (S.fini) break; joueAuto(S.J); if (S.fini) break; joueOrdi(); if (!S.fini) debutTour(S.J);
+  }
+  cb.resultat = { gagne:S.fini === 'gagne', pv:Math.max(0, S.J.pv), tours:S.J.tours, defiOk:evalueDefi(S.J, S.ody.defi), sacoche:[...S.J.sacoche] };
+  run.pv = Math.max(0, S.J.pv); run.sacoche = [...S.J.sacoche];
+  return cb.resultat;
+}
+// une Odyssée entière jouée par l'ordinateur (pilote de odyssee.js) : pour l'équilibrage. Retourne un bilan.
+function simuleOdyssee(heros, graine) {
+  const run = nouvelleOdyssee(heros, graine); const vie = [], morts = [];
+  const bilan = (gagne, raison) => ({ gagne, raison, heros, cases:run.stats.cases, combats:run.stats.combats, victoires:run.stats.victoires, tours:run.stats.tours, pv:run.pv, pvMax:run.pvMax, or:run.or, vivres:run.vivres, deck:run.deck.length, reliques:run.reliques.length, defis:run.stats.defis, vie, fragments:run.fragments });
+  const rang = { c:0, r:1, e:2 }, meilleure = l => [...l].sort((a, b) => rang[rarete(b)] - rang[rarete(a)])[0];
+  for (let pas = 0; pas < 120; pas++) {
+    const c = caseA(run, run.pos.x, run.pos.y);
+    if ((c.t === 'monstre' || c.t === 'elite' || c.t === 'boss') && !c.fait) {
+      const res = combatAuto(run, c); vie.push({ t:c.t, ennemi:run.combat.ennemi, pv:run.pv, tours:res.tours, gagne:res.gagne });
+      const out = recompenseCombat(run); if (!out.gagne) return bilan(false, 'mort:' + c.t + ':' + vie[vie.length - 1].ennemi); if (out.boss) return bilan(true, 'boss');
+      if (out.draft && run.deck.length < 30) gardeCarte(run, meilleure(out.draft)); continue;
+    }
+    if (c.t === 'source' && !c.fait) source(run, c, 'soin');
+    if (c.t === 'marchand') { if (run.pv < run.pvMax * .6 && run.or >= 40 && run.sacoche.length < 2) achete(run, c, 'sacoche', 'soin'); if (run.or >= 70) achete(run, c, 'pvmax'); if (run.vivres < 4 && run.or >= 20) achete(run, c, 'vivres'); }
+    if (c.t === 'coffre' && !c.fait && run.cles) { const o = ouvreCoffre(run, c); if (o && o.draft) gardeCarte(run, meilleure(o.draft)); }
+    if (c.t === 'autel' && !c.fait) { const o = autelOptions(run, c); autelChoisit(run, c, o.benes[0]); }
+    if (c.t === 'evenement' && !c.fait) { const ev = EVENEMENTS.find(e => e.id === c.ev); const i = ev.choix.findIndex(ch => !ch.cond || ch.cond(run)); const o = evenementChoisit(run, c, i >= 0 ? i : 0); if (o && o.suite === 'draft' && o.cartes.length) gardeCarte(run, meilleure(o.cartes)); if (o && o.suite === 'relique' && o.reliques.length) prendRelique(run, o.reliques[0]); }
+    if (c.t === 'porte') { if (ouvrePorte(run)) { const r = deplace(run, run.bossPos.x, run.bossPos.y); if (!r) return bilan(false, 'bloque:boss'); continue; } }
+    if (run.sacoche.includes('soin') && run.pv <= run.pvMax * .4) { run.sacoche.splice(run.sacoche.indexOf('soin'), 1); run.pv = Math.min(run.pvMax, run.pv + 10); }
+    const chemin = prochaineCible(run); if (!chemin || !chemin.length) return bilan(false, 'bloque');
+    const [x, y] = chemin[0]; const r = deplace(run, x, y); if (!r) return bilan(false, 'bloque:' + caseA(run, x, y).t); if (r.mort) return bilan(false, 'epuise');
+  }
+  return bilan(false, 'trop long');
+}
+function usePotion(i) {
+  if (!S || S.fini || S.J.aLancer || (!S.auto && roule)) return;
+  const J = S.J, p = J.sacoche[i]; if (!p) return;
+  J.sacoche.splice(i, 1); J.potionsUtilisees++;
+  if (p === 'soin') soin(J, 10);
+  if (p === 'mana') { J.pc = Math.min(6, J.pc + 2); log(`${J.nom} boit une potion de mana : +2 PC.`); }
+  if (p === 'antidote') { J.poison = 0; J.saigne = 0; J.handicap = 0; log(`${J.nom} prend l’antidote : plus aucune altération.`); }
+  if (p === 'bombe') { S.acteur = J; log(`${J.nom} lance une bombe : 8 dégâts directs !`); fx({ t:'tir', id:J.id, s:'J', vers:ref({ J:S.O }), nom:'Bombe', vs:[], dg:8, cible:S.O.nom }); degats({ J:S.O }, 8, true); }
+  if (!S.auto) rendu();
+}
+function aideRelique(r) { fenetre(`<h2>${RELIQUES[r].e} ${RELIQUES[r].n}</h2><p>${RELIQUES[r].d}</p><div class="choixh"><button onclick="fermer()">Compris</button></div>`); }
+function finOdyssee() {
+  if (S.enregistre) return; S.enregistre = true;
+  arreteMusique(1.2); son(S.fini === 'gagne' ? 'victoire' : 'defaite');
+  { const c = document.getElementById('app'); if (c) effetImage(S.fini === 'gagne' ? 'victoire' : 'defaite', c, 2.2); }
+  const run = lireOdyssee(); const J = S.J, d = S.ody.defi;
+  const defiOk = evalueDefi(J, d);
+  if (run && run.combat && run.combat.id === S.ody.id) {
+    run.combat.resultat = { gagne:S.fini === 'gagne', pv:Math.max(0, J.pv), tours:J.tours, defiOk, sacoche:[...J.sacoche], journal:[...S.log].reverse().slice(-60) };
+    run.pv = Math.max(0, J.pv); run.sacoche = [...J.sacoche]; ecrireOdyssee(run);
+  }
+  localStorage.removeItem('guilde-combat');
+  fenetre(`<h2>${S.fini === 'gagne' ? '🏆 Victoire !' : '💀 Défaite…'}</h2><p>${J.nom} contre ${S.O.nom} : ${S.fini === 'gagne' ? 'gagné' : 'perdu'} en ${J.tours} tours.${d ? `<br>🎯 Défi « ${d.n} » : ${defiOk ? '<b style="color:#7dffb0">réussi, +30 or</b>' : 'raté'}.` : ''}</p>
+    <div class="choixh"><button onclick="location.href='odyssee.html'">${S.fini === 'gagne' ? '🗺 Continuer l’Odyssée' : '🗺 Voir jusqu’où tu es allé'}</button></div>`);
+}
 function finDeMonTour() {
   if (S.fini || roule) return;
   if (S.J.aLancer) { lancerMesDes(); return; }
@@ -856,7 +974,7 @@ document.addEventListener('click', e => {
 }, true);
 function barre(P, haut) {
   const ref = `{J:S.${haut ? 'O' : 'J'}}`;
-  return `<div class="barre ${estCible({ J:P }) ? 'cible' : ''} ${P.gardeB || P.bouclier ? 'protege' : ''}" data-bouclier="${(P.gardeB || 0) + (P.bouclier || 0)}" id="b-${haut ? 'O' : 'J'}" style="--c:${P.c}" onclick="touche(${ref})"><img src="${IMG(P.id)}" alt=""><span class="bdg bg" ${P.gardeB ? '' : 'hidden'}>🛡 ${P.gardeB}</span><span class="bdg bb" ${P.bouclier ? '' : 'hidden'}>🛡 ${P.bouclier}</span><div style="flex:1"><div class="nom">${P.nom}${P.ordi ? ' · ordinateur' : ' · toi'}</div><div class="vie"><b style="width:${Math.max(0, P.pv) / P.pvMax * 100}%"></b><i style="width:${Math.max(0, P.pv) / P.pvMax * 100}%"></i></div><div class="pastilles">
+  return `<div class="barre ${estCible({ J:P }) ? 'cible' : ''} ${P.gardeB || P.bouclier ? 'protege' : ''}" data-bouclier="${(P.gardeB || 0) + (P.bouclier || 0)}" id="b-${haut ? 'O' : 'J'}" style="--c:${P.c}" onclick="touche(${ref})"><img src="${HEROS[P.id].img || IMG(P.id)}" alt=""><span class="bdg bg" ${P.gardeB ? '' : 'hidden'}>🛡 ${P.gardeB}</span><span class="bdg bb" ${P.bouclier ? '' : 'hidden'}>🛡 ${P.bouclier}</span><div style="flex:1"><div class="nom">${P.nom}${P.ordi ? ' · ordinateur' : ' · toi'}</div><div class="vie"><b style="width:${Math.max(0, P.pv) / P.pvMax * 100}%"></b><i style="width:${Math.max(0, P.pv) / P.pvMax * 100}%"></i></div><div class="pastilles">
     <span data-k="pv" class="p pv">❤ ${Math.max(0, P.pv)} / ${P.pvMax}</span><span data-k="pc" class="p pc">◆ ${P.pc} PC</span>
     ${P.gardeB ? `<span data-k="garde" class="p g pg">🛡 Garde ${P.gardeB}</span>` : ''}${P.gardeE ? `<span data-k="epines" class="p g">🌿 Épines ${P.gardeE}</span>` : ''}${P.esquive ? '<span data-k="esquive" class="p g">💨 Esquive</span>' : ''}
     ${P.bouclier ? `<span data-k="bouclier" class="p g pb">🛡 Bouclier ${P.bouclier}</span>` : ''}${P.contre ? '<span data-k="contre" class="p g">⚔ Contre-attaque</span>' : ''}${P.piege ? '<span data-k="piege" class="p g">🪤 Piège</span>' : ''}
@@ -890,6 +1008,7 @@ function rendu() {
   if (!S || S.auto || fxOn) return;
   if (FX.length) { joueFX(); return; }
   dessine();
+  if (S.ody && !S.fini) localStorage.setItem('guilde-combat', JSON.stringify(S));
   const f = fxApres.shift(); if (f && !S.fini) setTimeout(f, 350);
 }
 function dessine() {
@@ -909,7 +1028,7 @@ function dessine() {
   else if (J.front.some(u => u.pret && !u.louve)) bandeau = '⚔ Touche une créature dorée : attaquer (puis sa cible) ou se mettre en défense. Sinon, elles attaquent le héros à « Fin du tour » (sauf les 👁 cachées, qui restent dans l’ombre).';
   else bandeau = 'Tous tes dés sont posés : touche « Fin du tour ».';
   document.getElementById('app').innerHTML = `
-  <div class="salle"><span class="st"><b>${S.salle.n}</b> · ${S.salle.d}</span><span class="sons">
+  <div class="salle"><span class="st">${S.ody ? `<b>${S.ody.titre}</b> · ${S.salle.n} : ${S.salle.d}${J.reliques.length ? ' <span class="rel">' + J.reliques.map(r => `<i title="${RELIQUES[r].n}" onclick="aideRelique('${r}')">${RELIQUES[r].e}</i>`).join('') + '</span>' : ''}` : `<b>${S.salle.n}</b> · ${S.salle.d}`}</span><span class="sons">
     <button class="sonbt ${sonOn ? '' : 'off'}" onclick="basculeSon()" aria-label="Bruitages" title="Bruitages"><svg viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/>${sonOn ? '<path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>' : '<path d="M16 9l5 6M21 9l-5 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>'}</svg></button>
     <button class="sonbt ${musOn ? '' : 'off'}" onclick="basculeMusique()" aria-label="Musique" title="Musique"><svg viewBox="0 0 24 24"><path d="M9 17V5l11-2v12" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="6.5" cy="17.5" r="2.8" fill="currentColor"/><circle cx="17.5" cy="15.5" r="2.8" fill="currentColor"/>${musOn ? '' : '<path d="M3 3l18 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>'}</svg></button></span></div>
   <div class="plateau tapis">${barre(O, true)}${front(O, true)}<div class="milieu"><span>✦ ◆ ✦</span></div>${front(J, false)}${barre(J, false)}
@@ -932,6 +1051,7 @@ function dessine() {
     ${act('pcAjuste', '+1 / −1', `${coutAjuste(J)} PC`, '1 dé')}
     ${actSoins()}
   </div>
+  ${S.ody && J.sacoche.length ? `<div class="actions pc sacoche">${J.sacoche.map((p, i) => `<button class="act ok" onclick="usePotion(${i})"><b>${SACOCHE[p].e} ${SACOCHE[p].n}</b>${SACOCHE[p].d.replace(/ \(.*\)\.?$/, '')}</button>`).join('')}</div>` : ''}
   <div class="main" onclick="if(event.target===this){carteVue=null;rendu();}">${mainEnEventail(J)}</div>
   <div class="journal">${S.log.slice(0, 40).map(t => `<div>${t}</div>`).join('')}</div>
   <div class="bas">
@@ -1001,7 +1121,8 @@ function regles() {
   <li>Tes <b>unités</b> attaquent à partir du tour suivant leur arrivée : touche ton unité (contour jaune), puis sa cible. Les unités <b>Barrière</b> doivent être attaquées d’abord par les unités. Les unités <b>Cachées</b> ne peuvent pas être visées tant qu’elles n’ont pas attaqué.</li>
   <li>La <b>Garde</b> = ta défense : tu poses un dé et ton héros gagne un Bouclier (ou une autre protection selon le héros). Ce Bouclier absorbe les prochains dégâts que tu reçois pendant le tour de l’adversaire, puis disparaît. Exemple : Garde 4, l’adversaire frappe à 6, tu ne perds que 2 PV.</li><li>Tes <b>créatures</b> attaquent au tour suivant leur arrivée (sauf Charge) : touche-en une puis sa cible ; celles que tu ne fais pas attaquer frappent le héros adverse à « Fin du tour », sauf les créatures 👁 Cachées, qui restent dans l’ombre tant que tu ne leur demandes pas d’attaquer. Le Bouclier et la Garde de l’adversaire absorbent leurs coups.</li><li>Une créature <b>Cachée</b> 👁 ne peut être ni attaquée ni visée tant qu’elle n’a pas attaqué ; sa première attaque depuis l’ombre est une <b>Embuscade</b> (+2 dégâts), puis elle se montre.</li><li>Une créature prête peut aussi se mettre <b>en défense</b> (touche-la) : elle n’attaque pas ce tour, mais elle protège ton héros comme une Barrière jusqu’à ton prochain tour : les créatures adverses doivent l’attaquer d’abord.</li></ul>
   <h2>${h.nom}, ${h.titre} (${h.pv} PV)</h2><p><b>Passif</b> : ${h.passif}</p><p><b>Garde · ${h.garde.n}</b> (${h.garde.txt}) : ${h.garde.d}</p><p><b>Pouvoir · ${h.pouvoir.n}</b> (${h.pouvoir.txt}) : ${h.pouvoir.d}</p><p><b>Ultime · ${h.ultime.n}</b> (jauge pleine, ${h.ultime.txt}, 3 PC) : ${h.ultime.d}</p>
-  <div class="choixh"><button onclick="fermer()">Jouer</button><button onclick="fermer();accueil()">Changer de héros</button></div><div class="choixh"><button onclick="mesParties()">📜 Mes parties</button><button onclick="location.href='menu.html'">⌂ Menu</button></div>`);
+  ${S.ody ? `<h2>${S.O.nom}, ${HEROS[S.O.id].titre || ''} (${S.O.pvMax} PV)</h2><p>${HEROS[S.O.id].role || ''}</p><p><b>Garde · ${HEROS[S.O.id].garde.n}</b> (${HEROS[S.O.id].garde.txt}) : ${HEROS[S.O.id].garde.d}</p><p><b>Pouvoir · ${HEROS[S.O.id].pouvoir.n}</b> (${HEROS[S.O.id].pouvoir.txt}) : ${HEROS[S.O.id].pouvoir.d}</p>${S.ody.defi ? `<p><b>🎯 Défi du combat · ${S.ody.defi.n}</b> : ${S.ody.defi.d} Réussi = +30 or.</p>` : ''}` : ''}
+  <div class="choixh"><button onclick="fermer()">Jouer</button>${S.ody ? '' : '<button onclick="fermer();accueil()">Changer de héros</button>'}</div><div class="choixh"><button onclick="mesParties()">📜 Mes parties</button>${S.ody ? `<button onclick="location.href='odyssee.html'">🗺 L’île</button>` : `<button onclick="location.href='menu.html'">⌂ Menu</button>`}</div>`);
 }
 // historique des parties, gardé sur le téléphone (les 50 dernières) : sert à l'équilibrage
 const HIST = 'guilde-parties';
@@ -1039,6 +1160,7 @@ function copieParties(journal, i) {
     .catch(() => { document.getElementById('copie').textContent = 'Copie impossible sur ce téléphone.'; });
 }
 function montrerFin() {
+  if (S.ody) { finOdyssee(); return; }
   enregistrePartie();
   arreteMusique(1.2);
   { const c = document.getElementById(S.fini === 'gagne' ? 'b-O' : 'b-J'); if (c) effetImage(S.fini === 'gagne' ? 'victoire' : 'defaite', document.getElementById('app'), 2.2); }
@@ -1057,7 +1179,7 @@ function adversaire() {
   <div class="heros6">${ORDRE.filter(id => id !== monHeros).map(id => `<button onclick="fermer();nouvellePartie(monHeros,'${id}');regles()"><img src="${IMG(id)}" alt="">${HEROS[id].nom}</button>`).join('')}
   <button onclick="fermer();nouvellePartie(monHeros);regles()" style="display:flex;align-items:center;justify-content:center;font-size:2em;min-height:110px">🎲<br><span style="font-size:.4em">au hasard</span></button></div>`);
 }
-if (typeof document !== 'undefined' && document.getElementById('app')) { const q = new URLSearchParams(location.search); if (q.get('parties')) mesParties(); else if (q.get('h') && HEROS[q.get('h')]) { monHeros = q.get('h'); adversaire(); } else accueil(); }
+if (typeof document !== 'undefined' && document.getElementById('app')) { const q = new URLSearchParams(location.search); if (q.get('odyssee')) setTimeout(partieOdyssee, 0); else if (q.get('parties')) mesParties(); else if (q.get('h') && HEROS[q.get('h')]) { monHeros = q.get('h'); adversaire(); } else accueil(); }
 
 // =============================================================================================== animations et sons
 // Les sons sont fabriqués par le téléphone (aucun fichier) ; 🔊 / 🔇 dans la barre de la salle.
@@ -1278,6 +1400,7 @@ async function joue1(e) {
     return;
   }
   if (e.t === 'finGarde') { const c = el({ s:e.s }); if (c) flotte(c, '🛡 Garde terminée', 'bleu'); await dodo(500); return; }
+  if (e.t === 'annonce') { son('tour'); const d = document.createElement('div'); d.className = 'annonce'; d.textContent = e.txt; couche().appendChild(d); await dodo(1100); d.remove(); return; }
   if (e.t === 'tour') {
     son('tour'); const d = document.createElement('div'); d.className = 'annonce'; d.textContent = e.s === 'O' ? `Tour de ${e.nom}` : 'À toi de jouer !';
     couche().appendChild(d); await dodo(e.s === 'O' ? 900 : 700); d.remove(); return;
@@ -1286,7 +1409,7 @@ async function joue1(e) {
     const ordi = e.s === 'O', d = document.createElement('div');
     if (e.t === 'ultime') {
       son('ultime'); const f = document.createElement('div'); f.className = 'eclair'; couche().appendChild(f); setTimeout(() => f.remove(), 1400 * fxVite);
-      d.className = 'fxcarte ultime'; d.innerHTML = `<img src="${IMG(e.id)}" alt=""><div class="sorte">⚡ ULTIME</div><div class="n">${e.nom}</div><div class="t">${e.d || ''}</div><div class="cit">${e.cit}</div>`;
+      d.className = 'fxcarte ultime'; d.innerHTML = `<img src="${HEROS[e.id].img || IMG(e.id)}" alt=""><div class="sorte">⚡ ULTIME</div><div class="n">${e.nom}</div><div class="t">${e.d || ''}</div><div class="cit">${e.cit}</div>`;
     } else { son('carte'); d.className = 'fxcarte'; d.innerHTML = `<div class="sorte">${e.sorte}${e.cout !== undefined ? ` · ${e.cout} PC` : ''}</div><div class="n">${e.nom}</div><div class="t">${e.txt}</div>${e.vs ? `<div class="vs">🎲 ${e.vs.join(' · ')}</div>` : ''}`; }
     couche().appendChild(d);
     d.animate([{ transform:`translate(-50%, ${ordi ? '-160%' : '60%'}) scale(.4) rotate(${ordi ? -8 : 8}deg)`, opacity:0 }, { transform:'translate(-50%,-50%) scale(1) rotate(0)', opacity:1 }], { duration:280 * fxVite, easing:'ease-out', fill:'forwards' });
