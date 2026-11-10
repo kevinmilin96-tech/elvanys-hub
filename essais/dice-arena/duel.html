@@ -129,6 +129,11 @@
   .salle { display:flex; align-items:center; gap:8px; } .salle .st { flex:1; }
   .sons { display:flex; gap:6px; flex:none; }
   .rel i { font-style:normal; margin-left:4px; cursor:pointer; }
+  .equipe { background:#2a2650; border-radius:12px; padding:6px 8px; margin:6px 0; display:grid; grid-template-columns:1fr 1fr; gap:6px; font-size:.8em; }
+  .eq { display:flex; gap:6px; align-items:center; background:#1d1b3a; border-radius:10px; padding:4px 6px; border:2px solid #4b4580; }
+  .eq.actif { border-color:var(--or); } .eq.terre { opacity:.5; } .eq img { width:36px; height:36px; border-radius:50%; object-fit:cover; }
+  .coh { grid-column:1 / -1; } .cohb { display:flex; gap:4px; margin-top:4px; } .cohb button { flex:1; font-size:.9em; background:#2a3a2a; color:#fff; border:1px solid #5a8a5a; border-radius:8px; padding:4px 3px; } .cohb button:disabled { opacity:.35; }
+  .compagnon .main, .compagnon .actions, .compagnon .bas .b1, .compagnon .bas .b2, .compagnon .bandeau { visibility:hidden; }
   .actions.sacoche { grid-template-columns:repeat(2, 1fr); } .actions.sacoche .act { background:#2a3a2a; border-color:#5a8a5a; }
   .sonbt { width:34px; height:34px; border-radius:50%; border:1px solid #f3c96b88; background:radial-gradient(circle at 35% 30%, #3a3570, #1d1b3a); color:#f3c96b; padding:6px; display:grid; place-items:center; box-shadow:0 2px 6px #0008; }
   .sonbt svg { width:100%; height:100%; } .sonbt.off { color:#8a83b8; border-color:#4b4580; }
@@ -327,7 +332,7 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261110-132113';
+const VERSION = '20261110-134418';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); location.replace('duel.html?v=' + v); }
@@ -346,9 +351,9 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261110-132113"></script>
-<script src="donnees.js?v=20261110-132113"></script>
-<script src="odyssee.js?v=20261110-132113"></script>
+<script src="cartes.js?v=20261110-134418"></script>
+<script src="donnees.js?v=20261110-134418"></script>
+<script src="odyssee.js?v=20261110-134418"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -441,7 +446,10 @@ function phaseBoss(J) {
   log(`🔥 ${J.nom} entre en phase ${p + 1} : ${ph[p].pouvoir.n} !`); fx({ t:'annonce', txt:`🔥 Phase ${p + 1} : ${ph[p].pouvoir.n} !` });
 }
 function remplit(J, n) { if (J.ultimeFait || J.jauge >= JAUGE.max) return; J.jauge = Math.min(JAUGE.max, (J.jauge || 0) + n); if (J.jauge >= JAUGE.max) { J.jaugeTour = J.tours; log(`⚡ La jauge d’Ultime de ${J.nom} est pleine !`); fx({ t:'jauge', s:J === S.J ? 'J' : 'O' }); } }
-function fin() { if (S.fini) return; if (S.J.pv <= 0 || S.O.pv <= 0) S.fini = S.J.pv > 0 ? 'gagne' : 'perdu'; }
+function fin() { if (S.fini) return;
+  if (S.coop) { S.equipe.forEach(h => { if (h.pv <= 0 && !h.aTerre) { h.aTerre = true; h.front = []; log(`💀 ${h.nom} est à terre !`); fx({ t:'annonce', txt:`💀 ${h.nom} est à terre !` }); } });
+    if (S.O.pv <= 0) S.fini = 'gagne'; else if (S.equipe.every(h => h.aTerre)) S.fini = 'perdu'; return; }
+  if (S.J.pv <= 0 || S.O.pv <= 0) S.fini = S.J.pv > 0 ? 'gagne' : 'perdu'; }
 
 function debutTour(J) {
   if (J.gardeB > 0 || J.gardeE > 0) fx({ t:'finGarde', s:J === S.J ? 'J' : 'O', n:J.gardeB });
@@ -509,6 +517,7 @@ function pose(J, quoi, ds, k, indexMain) {
   if (quoi === 'transmu') { J.transmu = true; const d = ds[0]; const a = d.v; modifie(J, d, opp(a)); log(`${J.nom} transmute un ${a} en ${d.v}.`); return; }
   ds.forEach(d => { d.pose = true; });
   const h = HEROS[J.id]; J.dernier = quoi;
+  if (S.coop && J !== S.O && vs.length >= 3 && S.cohesion < COHESION.max) { S.cohesion++; log(`🤝 Cohésion ${S.cohesion}/${COHESION.max}.`); }
   if (quoi === 'garde' && vs.includes(6)) J.garde6 = true;
   if (quoi === 'technique' && vs.length >= 4) J.tech4 = true;
   if (quoi === 'vendre') { let g = 0; vs.forEach(v => g += (S.salle.id === 'autel' && v === 6) ? 2 : 1); J.pc = Math.min(6, J.pc + g); log(`${J.nom} vend ${vs.length} dé(s) : +${g} PC.`); fx({ t:'pc', s:J === S.J ? 'J' : 'O', n:g, nb:vs.length }); return; }
@@ -683,7 +692,7 @@ function achatsAuto(J) {
 function joueOrdi() {
   fx({ t:'tour', s:'O', nom:S.O.nom });
   S.bilan = { actions:[], gardes:[], pv0:S.J.pv, pvO0:S.O.pv, abs:0, front0:S.J.front.length };
-  debutTour(S.O); if (!S.fini) joueAuto(S.O);
+  debutTour(S.O); if (S.coop) sbiresCamp(); if (!S.fini) joueAuto(S.O);
   const b = S.bilan; S.bilan = null;
   if (!S.fini) fx({ t:'recap', nom:S.O.nom, actions:b.actions, gardes:b.gardes, perdu:b.pv0 - S.J.pv, abs:b.abs, soinO:S.O.pv - b.pvO0, morts:b.front0 - S.J.front.length });
 }
@@ -869,8 +878,78 @@ function finDeMonTour() {
   if (libres.length) pose(S.J, 'vendre', libres);
   attaquesRestantes(S.J); if (S.fini) { rendu(); return; }
   finTour(S.J); sel = []; attaquant = null; ciblage = null; rendu();
-  fxApres.push(() => { joueOrdi(); if (!S.fini) { fx({ t:'tour', s:'J', nom:'toi' }); debutTour(S.J); } rendu(); });
+  fxApres.push(S.coop ? suiteCamp : () => { joueOrdi(); if (!S.fini) { fx({ t:'tour', s:'J', nom:'toi' }); debutTour(S.J); } rendu(); });
   rendu();
+}
+// =============================================================================================== le Campement : rotation héros 1 → héros 2 → boss
+function partieCampement() {
+  const cfg = lireCampement(); if (!cfg || !HEROS[cfg.a] || !HEROS[cfg.b]) { location.href = 'campement.html'; return; }
+  const boss = HEROS[cfg.boss] ? cfg.boss : 'colosseracines', h = HEROS[boss]; if (h.phases) { h.garde = h.phases[0].garde; h.pouvoir = h.phases[0].pouvoir; }
+  const A = joueur(cfg.a, false, false), B = joueur(cfg.b, cfg.modeB === 'ordi', cfg.modeB === 'ordi');
+  A.qui = 'toi'; B.qui = cfg.modeB === 'ordi' ? 'compagnon' : 'joueur 2'; B.nomCourt = B.nom;
+  S = { J:A, O:joueur(boss, true), salle:SALLES[Math.floor(Math.random() * SALLES.length)], log:[], fini:null, auto:false, coop:true, equipe:[A, B], cohesion:COHESION.depart };
+  FX = []; fxApres = []; fxOn = false; arreteMusique();
+  S.O.desMax = 5; (h.renforts || []).forEach(r => invoque(S.O, { ...r }));
+  pioche(A, 4); pioche(B, 4); B.pc = 2;
+  log(`🔥 Le Campement : ${A.nom} et ${B.nom} contre ${S.O.nom}. Salle : ${S.salle.n}. ${S.salle.d}`);
+  sel = []; attaquant = null; ciblage = null;
+  debutTour(A); rendu(); regles();
+}
+function sbiresCamp() {
+  const O = S.O, sb = HEROS[O.id].sbires; if (!sb || O.tours % sb.tous !== 0) return;
+  let n = 0; for (let i = 0; i < sb.nb; i++) if (O.front.length < 5) { invoque(O, { n:sb.n, a:sb.a, v:sb.v, barriere:!!sb.barriere }); n++; }
+  if (n) { log(`🌱 ${O.nom} appelle ${n} ${sb.n}${n > 1 ? 's' : ''}.`); fx({ t:'annonce', txt:`🌱 ${n} ${sb.n}${n > 1 ? 's' : ''} sortent du sol !` }); }
+}
+function suiteCamp() {
+  if (S.fini) { rendu(); return; }
+  const i = S.equipe.indexOf(S.J); let n = i + 1;
+  while (n < S.equipe.length && S.equipe[n].aTerre) n++;
+  if (n < S.equipe.length) {
+    const h = S.equipe[n]; S.J = h;
+    if (h.ordi) { fx({ t:'tour', s:'J', nom:h.nom }); debutTour(h); if (!S.fini) joueAuto(h); if (!S.fini) fxApres.push(suiteCamp); rendu(); return; }
+    fx({ t:'annonce', txt:`📱 Passe le téléphone à ${h.nom}` }); debutTour(h); sel = []; attaquant = null; ciblage = null; rendu(); return;
+  }
+  if (S.J.aTerre) S.J = S.equipe.find(x => !x.aTerre);
+  joueOrdi(); if (S.fini) { rendu(); return; }
+  const p = S.equipe.find(x => !x.aTerre); S.J = p; sel = []; attaquant = null; ciblage = null;
+  fx({ t:'tour', s:'J', nom:p.ordi ? p.nom : (p.qui === 'toi' ? 'toi' : p.nom) }); debutTour(p);
+  if (p.ordi) { if (!S.fini) joueAuto(p); if (!S.fini) fxApres.push(suiteCamp); }
+  rendu();
+}
+// Campement joué par l'ordinateur des deux côtés (équilibrage) : les deux héros en auto, cohésion dépensée simplement
+function simuleCamp(a, b, boss) {
+  localStorage.setItem('guilde-campement', JSON.stringify({ a, b, modeB:'ordi', boss:boss || 'colosseracines' }));
+  const cfg = lireCampement(); const bs = cfg.boss, h = HEROS[bs]; h.garde = h.phases[0].garde; h.pouvoir = h.phases[0].pouvoir;
+  const A = joueur(a, true, true), B = joueur(b, true, true); A.qui = 'toi'; B.qui = 'compagnon';
+  S = { J:A, O:joueur(bs, true), salle:SALLES[0], log:[], fini:null, auto:true, coop:true, equipe:[A, B], cohesion:COHESION.depart };
+  S.O.desMax = 5; (h.renforts || []).forEach(r => invoque(S.O, { ...r })); pioche(A, 4); pioche(B, 4); B.pc = 2;
+  debutTour(A);
+  for (let n = 0; n < 60 && !S.fini; n++) {
+    const t = S.equipe.find(x => x.aTerre); if (t && S.cohesion >= COHESION.relever) { S.cohesion -= COHESION.relever; t.aTerre = false; t.pv = 12; }
+    else if (S.cohesion >= 6) { S.cohesion -= COHESION.cri; S.equipe.forEach(x => { if (!x.aTerre) x.pc = Math.min(6, x.pc + 2); }); }
+    joueAuto(S.J); if (S.fini) break;
+    const i = S.equipe.indexOf(S.J); let k = i + 1; while (k < 2 && S.equipe[k].aTerre) k++;
+    if (k < 2) { S.J = S.equipe[k]; debutTour(S.J); continue; }
+    if (S.J.aTerre) S.J = S.equipe.find(x => !x.aTerre);
+    joueOrdi(); if (S.fini) break; S.J = S.equipe.find(x => !x.aTerre); debutTour(S.J);
+  }
+  return { gagne:S.fini === 'gagne', tours:A.tours, boss:Math.max(0, S.O.pv), a:Math.max(0, A.pv), b:Math.max(0, B.pv), racines:S.O.front.length };
+}
+function cohesionAct(q) {
+  if (!S || !S.coop || S.fini || roule) return;
+  const autre = S.equipe.find(h => h !== S.J);
+  if (q === 'relever') { const t = S.equipe.find(h => h.aTerre); if (!t || S.cohesion < COHESION.relever) return; S.cohesion -= COHESION.relever; t.aTerre = false; t.pv = 12; log(`🤝 ${t.nom} est relevé (12 PV).`); fx({ t:'annonce', txt:`🤝 ${t.nom} se relève !` }); }
+  if (q === 'cri') { if (S.cohesion < COHESION.cri) return; S.cohesion -= COHESION.cri; S.equipe.forEach(h => { if (!h.aTerre) h.pc = Math.min(6, h.pc + 2); }); log('🤝 Cri de ralliement : +2 PC chacun.'); }
+  if (q === 'soin') { if (S.cohesion < COHESION.soin || !autre || autre.aTerre) return; S.cohesion -= COHESION.soin; soin(autre, 6); log(`🤝 Soin partagé : ${autre.nom} +6 PV.`); }
+  rendu();
+}
+function equipeHTML() {
+  const J = S.J;
+  return `<div class="equipe">${S.equipe.map(h => `<div class="eq ${h === J ? 'actif' : ''} ${h.aTerre ? 'terre' : ''}"><img src="${IMG(h.id)}" alt=""><div><b>${h.nom}</b> <small>· ${h.qui}</small><br>${h.aTerre ? '💀 à terre' : `❤ ${h.pv}/${h.pvMax} · ◆ ${h.pc} PC · 🂠 ${h.main.length}`}</div></div>`).join('')}
+    <div class="coh"><b>🤝 Cohésion ${S.cohesion}/${COHESION.max}</b> <small>+1 quand un héros pose 3 dés ou plus</small><div class="cohb">
+      <button onclick="cohesionAct('relever')" ${S.equipe.some(h => h.aTerre) && S.cohesion >= COHESION.relever ? '' : 'disabled'}>Relever (${COHESION.relever})</button>
+      <button onclick="cohesionAct('cri')" ${S.cohesion >= COHESION.cri ? '' : 'disabled'}>Cri de ralliement (${COHESION.cri}) : +2 PC chacun</button>
+      <button onclick="cohesionAct('soin')" ${S.cohesion >= COHESION.soin && S.equipe.some(h => h !== J && !h.aTerre) ? '' : 'disabled'}>Soin partagé (${COHESION.soin}) : +6 PV à l’autre</button></div></div></div>`;
 }
 function choisirDe(i) {
   if (S.fini || S.J.aLancer || roule) return;
@@ -1027,14 +1106,16 @@ function dessine() {
   else if (J.front.some(u => u.pret && u.louve)) bandeau = '🐺 Touche la Louve : elle lance ses 3 dés et attaque. Sinon, elle attaque seule à « Fin du tour ».';
   else if (J.front.some(u => u.pret && !u.louve)) bandeau = '⚔ Touche une créature dorée : attaquer (puis sa cible) ou se mettre en défense. Sinon, elles attaquent le héros à « Fin du tour » (sauf les 👁 cachées, qui restent dans l’ombre).';
   else bandeau = 'Tous tes dés sont posés : touche « Fin du tour ».';
+  document.getElementById('app').classList.toggle('compagnon', !!(S.coop && J.ordi));
   document.getElementById('app').innerHTML = `
-  <div class="salle"><span class="st">${S.ody ? `<b>${S.ody.titre}</b> · ${S.salle.n} : ${S.salle.d}${J.reliques.length ? ' <span class="rel">' + J.reliques.map(r => `<i title="${RELIQUES[r].n}" onclick="aideRelique('${r}')">${RELIQUES[r].e}</i>`).join('') + '</span>' : ''}` : `<b>${S.salle.n}</b> · ${S.salle.d}`}</span><span class="sons">
+  <div class="salle"><span class="st">${S.coop ? `<b>🔥 Le Campement</b> · ${J.ordi ? `${J.nom} (compagnon) joue…` : J.qui === 'toi' ? 'à toi' : `au tour de ${J.nom}`} · ${S.salle.n}` : S.ody ? `<b>${S.ody.titre}</b> · ${S.salle.n} : ${S.salle.d}${J.reliques.length ? ' <span class="rel">' + J.reliques.map(r => `<i title="${RELIQUES[r].n}" onclick="aideRelique('${r}')">${RELIQUES[r].e}</i>`).join('') + '</span>' : ''}` : `<b>${S.salle.n}</b> · ${S.salle.d}`}</span><span class="sons">
     <button class="sonbt ${sonOn ? '' : 'off'}" onclick="basculeSon()" aria-label="Bruitages" title="Bruitages"><svg viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/>${sonOn ? '<path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>' : '<path d="M16 9l5 6M21 9l-5 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>'}</svg></button>
     <button class="sonbt ${musOn ? '' : 'off'}" onclick="basculeMusique()" aria-label="Musique" title="Musique"><svg viewBox="0 0 24 24"><path d="M9 17V5l11-2v12" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="6.5" cy="17.5" r="2.8" fill="currentColor"/><circle cx="17.5" cy="15.5" r="2.8" fill="currentColor"/>${musOn ? '' : '<path d="M3 3l18 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>'}</svg></button></span></div>
   <div class="plateau tapis">${barre(O, true)}${front(O, true)}<div class="milieu"><span>✦ ◆ ✦</span></div>${front(J, false)}${barre(J, false)}
     <div class="des" ontouchstart="glisseDebut(event)" ontouchend="glisseFin(event)">${J.des.map((d, i) => `<div class="d ${sel.includes(d) ? 'sel' : ''} ${d.pose ? 'pose' : ''} ${d.mod ? 'mod' : ''} ${J.aLancer ? 'cache' : ''} ${i === J.neuf && (J.aLancer || Date.now() < (J.neufJusque || 0)) ? 'neuf' : ''}" onclick="choisirDe(${i})"><img src="${FACE(J.id, d.v || 1)}" alt="${d.v || '?'}"><div class="sac">${i === J.neuf && (J.aLancer || Date.now() < (J.neufJusque || 0)) ? '✨ nouveau dé' : sacTxt(J, d)}</div></div>`).join('')}${[...Array(Math.max(0, 5 - J.des.length)).keys()].map(k => { const i = J.des.length + k, t = i - 1;
       return `<div class="d verrou"><div class="cad">🔒</div><div class="sac">${J.tours >= t ? 'Handicap ce tour' : 'dé n° ' + (i + 1) + '<br>au tour ' + t}</div></div>`; }).join('')}</div>
   </div>
+  ${S.coop ? equipeHTML() : ''}
   ${J.aLancer ? '<button class="lancer" onclick="lancerMesDes()">🎲 Lancer les dés <span style="font-weight:normal;font-size:.75em">(ou glisse le doigt vers le haut)</span></button>' : ''}
   <div class="bandeau" ${J.aLancer ? 'style="display:none"' : ''}>${bandeau}${sel.length || ciblage || attaquant ? ' <a href="#" onclick="annuler();return false" style="color:#f3c96b">Annuler</a>' : ''}</div>
   <div class="actions">
@@ -1121,8 +1202,8 @@ function regles() {
   <li>Tes <b>unités</b> attaquent à partir du tour suivant leur arrivée : touche ton unité (contour jaune), puis sa cible. Les unités <b>Barrière</b> doivent être attaquées d’abord par les unités. Les unités <b>Cachées</b> ne peuvent pas être visées tant qu’elles n’ont pas attaqué.</li>
   <li>La <b>Garde</b> = ta défense : tu poses un dé et ton héros gagne un Bouclier (ou une autre protection selon le héros). Ce Bouclier absorbe les prochains dégâts que tu reçois pendant le tour de l’adversaire, puis disparaît. Exemple : Garde 4, l’adversaire frappe à 6, tu ne perds que 2 PV.</li><li>Tes <b>créatures</b> attaquent au tour suivant leur arrivée (sauf Charge) : touche-en une puis sa cible ; celles que tu ne fais pas attaquer frappent le héros adverse à « Fin du tour », sauf les créatures 👁 Cachées, qui restent dans l’ombre tant que tu ne leur demandes pas d’attaquer. Le Bouclier et la Garde de l’adversaire absorbent leurs coups.</li><li>Une créature <b>Cachée</b> 👁 ne peut être ni attaquée ni visée tant qu’elle n’a pas attaqué ; sa première attaque depuis l’ombre est une <b>Embuscade</b> (+2 dégâts), puis elle se montre.</li><li>Une créature prête peut aussi se mettre <b>en défense</b> (touche-la) : elle n’attaque pas ce tour, mais elle protège ton héros comme une Barrière jusqu’à ton prochain tour : les créatures adverses doivent l’attaquer d’abord.</li></ul>
   <h2>${h.nom}, ${h.titre} (${h.pv} PV)</h2><p><b>Passif</b> : ${h.passif}</p><p><b>Garde · ${h.garde.n}</b> (${h.garde.txt}) : ${h.garde.d}</p><p><b>Pouvoir · ${h.pouvoir.n}</b> (${h.pouvoir.txt}) : ${h.pouvoir.d}</p><p><b>Ultime · ${h.ultime.n}</b> (jauge pleine, ${h.ultime.txt}, 3 PC) : ${h.ultime.d}</p>
-  ${S.ody ? `<h2>${S.O.nom}, ${HEROS[S.O.id].titre || ''} (${S.O.pvMax} PV)</h2><p>${HEROS[S.O.id].role || ''}</p><p><b>Garde · ${HEROS[S.O.id].garde.n}</b> (${HEROS[S.O.id].garde.txt}) : ${HEROS[S.O.id].garde.d}</p><p><b>Pouvoir · ${HEROS[S.O.id].pouvoir.n}</b> (${HEROS[S.O.id].pouvoir.txt}) : ${HEROS[S.O.id].pouvoir.d}</p>${S.ody.defi ? `<p><b>🎯 Défi du combat · ${S.ody.defi.n}</b> : ${S.ody.defi.d} Réussi = +30 or.</p>` : ''}` : ''}
-  <div class="choixh"><button onclick="fermer()">Jouer</button>${S.ody ? '' : '<button onclick="fermer();accueil()">Changer de héros</button>'}</div><div class="choixh"><button onclick="mesParties()">📜 Mes parties</button>${S.ody ? `<button onclick="location.href='odyssee.html'">🗺 L’île</button>` : `<button onclick="location.href='menu.html'">⌂ Menu</button>`}</div>`);
+  ${S.coop ? `<h2>🔥 Le Campement</h2><p>${S.equipe[0].nom} et ${S.equipe[1].nom} contre <b>${S.O.nom}</b> (${S.O.pvMax} PV). Chaque héros joue son tour, puis le boss frappe <b>le dernier qui a joué</b>. Tous les 2 tours, il appelle des Racines (Barrière). La <b>Cohésion</b> monte quand un héros pose 3 dés ou plus ; elle sert à relever un héros à terre (3), à crier le ralliement (2 : +2 PC chacun) ou à soigner l’autre (2 : +6 PV). Les deux à terre = défaite.</p>` : ''}${S.ody || S.coop ? `<h2>${S.O.nom}, ${HEROS[S.O.id].titre || ''} (${S.O.pvMax} PV)</h2><p>${HEROS[S.O.id].role || ''}</p><p><b>Garde · ${HEROS[S.O.id].garde.n}</b> (${HEROS[S.O.id].garde.txt}) : ${HEROS[S.O.id].garde.d}</p><p><b>Pouvoir · ${HEROS[S.O.id].pouvoir.n}</b> (${HEROS[S.O.id].pouvoir.txt}) : ${HEROS[S.O.id].pouvoir.d}</p>${S.ody && S.ody.defi ? `<p><b>🎯 Défi du combat · ${S.ody.defi.n}</b> : ${S.ody.defi.d} Réussi = +30 or.</p>` : ''}` : ''}
+  <div class="choixh"><button onclick="fermer()">Jouer</button>${S.ody ? '' : '<button onclick="fermer();accueil()">Changer de héros</button>'}</div><div class="choixh"><button onclick="mesParties()">📜 Mes parties</button>${S.ody ? `<button onclick="location.href='odyssee.html'">🗺 L’île</button>` : S.coop ? `<button onclick="location.href='campement.html'">🔥 Le campement</button>` : `<button onclick="location.href='menu.html'">⌂ Menu</button>`}</div>`);
 }
 // historique des parties, gardé sur le téléphone (les 50 dernières) : sert à l'équilibrage
 const HIST = 'guilde-parties';
@@ -1161,6 +1242,8 @@ function copieParties(journal, i) {
 }
 function montrerFin() {
   if (S.ody) { finOdyssee(); return; }
+  if (S.coop) { if (S.enregistre) return; S.enregistre = true; arreteMusique(1.2); son(S.fini === 'gagne' ? 'victoire' : 'defaite'); effetImage(S.fini === 'gagne' ? 'victoire' : 'defaite', document.getElementById('app'), 2.2);
+    fenetre(`<h2>${S.fini === 'gagne' ? '🏆 Le boss est tombé !' : '💀 Le campement est perdu…'}</h2><p>${S.equipe.map(h => `${h.nom} : ${h.aTerre ? 'à terre' : h.pv + ' PV'}`).join(' · ')} · ${S.O.nom} : ${Math.max(0, S.O.pv)} PV · ${S.equipe[0].tours} tours.</p><div class="choixh"><button onclick="location.href='campement.html'">🔥 Rejouer</button><button onclick="location.href='menu.html'">⌂ Menu</button></div>`); return; }
   enregistrePartie();
   arreteMusique(1.2);
   { const c = document.getElementById(S.fini === 'gagne' ? 'b-O' : 'b-J'); if (c) effetImage(S.fini === 'gagne' ? 'victoire' : 'defaite', document.getElementById('app'), 2.2); }
@@ -1179,7 +1262,7 @@ function adversaire() {
   <div class="heros6">${ORDRE.filter(id => id !== monHeros).map(id => `<button onclick="fermer();nouvellePartie(monHeros,'${id}');regles()"><img src="${IMG(id)}" alt="">${HEROS[id].nom}</button>`).join('')}
   <button onclick="fermer();nouvellePartie(monHeros);regles()" style="display:flex;align-items:center;justify-content:center;font-size:2em;min-height:110px">🎲<br><span style="font-size:.4em">au hasard</span></button></div>`);
 }
-if (typeof document !== 'undefined' && document.getElementById('app')) { const q = new URLSearchParams(location.search); if (q.get('odyssee')) setTimeout(partieOdyssee, 0); else if (q.get('parties')) mesParties(); else if (q.get('h') && HEROS[q.get('h')]) { monHeros = q.get('h'); adversaire(); } else accueil(); }
+if (typeof document !== 'undefined' && document.getElementById('app')) { const q = new URLSearchParams(location.search); if (q.get('odyssee')) setTimeout(partieOdyssee, 0); else if (q.get('campement')) setTimeout(partieCampement, 0); else if (q.get('parties')) mesParties(); else if (q.get('h') && HEROS[q.get('h')]) { monHeros = q.get('h'); adversaire(); } else accueil(); }
 
 // =============================================================================================== animations et sons
 // Les sons sont fabriqués par le téléphone (aucun fichier) ; 🔊 / 🔇 dans la barre de la salle.

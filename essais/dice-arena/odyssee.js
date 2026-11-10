@@ -79,7 +79,7 @@ function installeMonstres() {
   if (typeof HEROS === 'undefined') return;
   const tous = { ...MONSTRES, ...BOSS };
   Object.keys(tous).forEach(id => { if (HEROS[id]) return; const m = tous[id];
-    HEROS[id] = { ...m, monstre:true, deck:[], passif:m.role, frappe:FRAPPE_MONSTRE, img:PORTRAIT(m.emoji, m.c), ultime:m.ultime || { n:'—', txt:'jamais', d:'Ce monstre n’a pas d’Ultime.', cond:() => false },
+    HEROS[id] = { ...m, monstre:true, deck:[], passif:m.role, frappe:m.frappeForte ? FRAPPE : FRAPPE_MONSTRE, img:PORTRAIT(m.emoji, m.c), ultime:m.ultime || { n:'—', txt:'jamais', d:'Ce monstre n’a pas d’Ultime.', cond:() => false },
       garde:m.garde || (m.phases && m.phases[0].garde), pouvoir:m.pouvoir || (m.phases && m.phases[0].pouvoir) }; });
 }
 if (typeof HEROS !== 'undefined') installeMonstres();
@@ -406,3 +406,29 @@ function prochaineCible(r) {
   if (r.fragments >= 2) { const p = caseA(r, r.porte.x, r.porte.y); return vers(p); }
   return null;
 }
+
+// ----------------------------------------------------------------------------------------------- LE CAMPEMENT (10/11 soir) : deux héros contre un boss géant
+// Pas encore de serveur de partie : on joue à deux SUR LE MÊME TÉLÉPHONE (on se le passe), ou avec un compagnon joué par l'ordinateur.
+// Règles proposées par Claude (à valider) : le boss joue après les deux héros et se retourne contre le DERNIER qui l'a frappé ; tous les 2 tours il
+// appelle des sbires ; la COHÉSION (réserve commune, 4 au départ, 8 au plus) monte quand un héros pose 3 dés ou plus et se dépense :
+// 3 = relever un héros à terre (12 PV), 2 = cri de ralliement (+2 PC chacun), 2 = soin partagé (+6 PV à l'autre). Un héros à 0 PV est à terre
+// (ses créatures tombent) ; les deux à terre = défaite.
+const BOSS_CAMP = {
+  colosseracines: { nom:'Le Colosse des racines', titre:'le Primordial', emoji:'🌳', c:'#3f8a3a', pv:130, boss:true, frappeForte:true, role:'Un géant d’écorce. Ses racines reviennent sans cesse ; ses coups écrasent. Il se retourne contre le dernier qui l’a frappé.', cit:'« Vous avez réveillé la forêt. »',
+    sbires:{ n:'Racine', a:2, v:4, barriere:true, tous:2, nb:2 },
+    phases:[
+      { seuil:1, garde:{ n:'Écorce', txt:'1 dé', d:'Bouclier = la valeur du dé.', cond:vs => vs.length === 1, val:vs => vs[0], f:(J, vs) => { J.gardeB += vs[0]; log(`Le Colosse : Écorce, Bouclier ${vs[0]}.`); } },
+        pouvoir:{ n:'Coup de branche', txt:'2 dés identiques', d:'8 dégâts à une cible.', cond:vs => vs.length === 2 && vs[0] === vs[1], cible:'ennemi', f:(J, vs, k) => degats(k, 8) } },
+      { seuil:2 / 3, garde:{ n:'Écorce', txt:'1 dé', d:'Bouclier = la valeur du dé.', cond:vs => vs.length === 1, val:vs => vs[0], f:(J, vs) => { J.gardeB += vs[0]; log(`Le Colosse : Écorce, Bouclier ${vs[0]}.`); } },
+        pouvoir:{ n:'Fouet de racines', txt:'3 dés de 3 ou plus', d:'10 dégâts à une cible et les créatures du héros visé sont Entravées.', cond:vs => vs.length === 3 && vs.every(v => v >= 3), cible:'ennemi', f:(J, vs, k) => { degats(k, 10); adv(J).front.forEach(u => u.entrave = true); } } },
+      { seuil:1 / 3, garde:{ n:'Écorce épaisse', txt:'1 dé', d:'Bouclier = 2 × la valeur du dé.', cond:vs => vs.length === 1, val:vs => vs[0] * 2, f:(J, vs) => { J.gardeB += vs[0] * 2; log(`Le Colosse : Écorce épaisse, Bouclier ${vs[0] * 2}.`); } },
+        pouvoir:{ n:'Écrasement', txt:'2 dés de 4 ou plus', d:'14 dégâts à une cible.', cond:vs => vs.length === 2 && vs.every(v => v >= 4), cible:'ennemi', f:(J, vs, k) => degats(k, 14) } },
+    ],
+    ultime:{ n:'Réveil primordial', txt:'3 dés', d:'18 dégâts au héros visé et deux Racines de plus.', cond:vs => vs.length === 3, cible:'ennemi', f:(J, vs, k) => { degats({ J:adv(J) }, 18); for (let i = 0; i < 2; i++) invoque(J, { n:'Racine', a:2, v:4, barriere:true }); } },
+    renforts:[{ n:'Racine', a:2, v:4, barriere:true }, { n:'Racine', a:2, v:4, barriere:true }] },
+};
+const COHESION = { depart:4, max:8, relever:3, cri:2, soin:2 };
+Object.assign(BOSS, BOSS_CAMP);
+if (typeof HEROS !== 'undefined') installeMonstres();
+const CAMP_CLE = 'guilde-campement';
+function lireCampement() { try { return JSON.parse(localStorage.getItem(CAMP_CLE) || 'null'); } catch (e) { return null; } }
