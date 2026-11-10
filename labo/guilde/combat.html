@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>La Guilde des Runes · Un combat joué en images (v1)</title>
+<style>
+  :root { --fond:#1d1b3a; --or:#f3c96b; --texte:#f1ecff; --doux:#c9c1ea; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--fond); color:var(--texte); font:16px/1.5 Georgia, 'Times New Roman', serif; }
+  main { max-width:560px; margin:0 auto; padding:18px 12px 60px; }
+  h1 { color:var(--or); font-size:1.5em; text-align:center; margin:.2em 0; }
+  .sous { text-align:center; color:var(--doux); font-style:italic; margin:0 0 1em; }
+  .intro { background:#2a2650; border-radius:14px; padding:10px 14px; }
+  .etape { margin:26px 0; }
+  .etape h2 { color:var(--or); font-size:1.15em; margin:0 0 8px; }
+  .plateau { background:radial-gradient(circle at 50% 50%, #4a3a22, #2a2014 75%); border:3px solid #6b5232; border-radius:16px; padding:8px; }
+  .barre { display:flex; align-items:center; gap:8px; background:#0006; border-radius:12px; padding:6px 8px; }
+  .barre img.p { width:46px; height:46px; border-radius:10px; object-fit:cover; border:2px solid var(--c); }
+  .barre .nom { font-weight:bold; font-size:.95em; }
+  .barre .info { display:flex; flex-wrap:wrap; gap:4px; margin-top:2px; }
+  .pas { background:#0008; border-radius:12px; padding:0 8px; font-size:.8em; white-space:nowrap; }
+  .pas.pv { background:#7a1f2a; } .pas.pc { background:#2a7fc1; } .pas.g { background:#5d6b7a; } .pas.m { background:#6a3d9a; } .pas.pu { background:#b8932d; } .pas.h { background:#555; }
+  .front { display:flex; gap:6px; justify-content:center; min-height:76px; align-items:center; padding:6px 0; border-top:1px dashed #ffffff22; }
+  .front.vide::after { content:'ligne de front vide'; color:#ffffff55; font-size:.8em; font-style:italic; }
+  .u { width:86px; background:#f6efdc; color:#2b2117; border-radius:9px; padding:4px 5px; font-size:.72em; line-height:1.2; text-align:center; border:2px solid #b89a5e; position:relative; }
+  .u.neuf { box-shadow:0 0 0 3px #7dffb0; }
+  .u.touche { box-shadow:0 0 0 3px #ff5a5a; }
+  .u b { display:block; font-size:1.05em; }
+  .u .av { display:flex; justify-content:space-between; margin-top:3px; font-weight:bold; font-size:1.15em; }
+  .u .av span:first-child { color:#b84a00; } .u .av span:last-child { color:#1f6f2a; }
+  .u .tg { font-size:.9em; color:#7a5a2a; }
+  .milieu { text-align:center; font-size:.78em; color:#f3c96bcc; padding:2px 0; font-style:italic; }
+  .des { display:flex; flex-wrap:wrap; gap:6px; justify-content:center; margin:8px 0 2px; }
+  .d { width:74px; text-align:center; font-size:.68em; line-height:1.15; color:#fff; }
+  .d img { width:46px; height:46px; border-radius:8px; display:block; margin:0 auto 3px; box-shadow:0 2px 6px #0008; }
+  .d.vendu img { opacity:.45; } .d.relance img { outline:2px dashed #fff; outline-offset:2px; }
+  .texte { background:#2a2650; border-radius:12px; padding:9px 12px; margin-top:8px; }
+  .texte p { margin:.3em 0; }
+  .texte b { color:var(--or); }
+  .leçon { background:#3a2f12; border:1px solid var(--or); border-radius:12px; padding:10px 14px; margin-top:24px; }
+  .leçon li { margin:.3em 0; }
+  a { color:var(--or); }
+</style>
+</head>
+<body>
+<main>
+<h1>Un combat joué en images</h1>
+<p class="sous">Sire Aldric (toi) contre Pip et sa louve (l'ordinateur) · version 1 du 8 novembre</p>
+<div class="intro" style="background:#3a2f12;border:1px solid #f3c96b;margin-bottom:10px"><b style="color:#f3c96b">Version du 8 novembre.</b> Les chiffres ont changé le 9 novembre (Frappe ajoutée, Louve et Appel de la Louve plus faibles). Pour jouer avec les règles à jour : <a href="duel.html">le Duel jouable</a>.</div>
+<div class="intro">
+  <p><b style="color:var(--or)">La salle tirée au hasard : la Cour de la caserne.</b> Sa règle : les unités arrivent avec +1 vie.</p>
+  <p>Aldric a 45 PV, Pip 38. Chacun commence avec 1 PC. Dans la main d'Aldric : Écuyer au pavois, Estocade royale, Serment, Bouclier rond.</p>
+  <p>Les règles et les cartes sont sur la page des fiches : <a href="heros.html">fiches de jeu des héros</a>.</p>
+</div>
+<div id="etapes"></div>
+<div class="leçon">
+  <b style="color:var(--or)">Ce que montre ce combat</b>
+  <ul>
+    <li>Tout se décide après le lancer : on regarde ses dés, puis on choisit où les poser. La Louve est la seule à lancer pendant le tour de l'autre, et on la voit venir.</li>
+    <li>La Garde posée au tour 2 a absorbé les 12 dégâts de l'Appel de la Louve.</li>
+    <li>Les deux 6 d'Aldric ont donné un jeton de Pureté. Les 6 de Pip ont nourri la Meute et fait venir la Louve.</li>
+    <li>L'Ultime oblige à choisir : frapper fort, mais rester sans Garde au tour suivant.</li>
+    <li>Aucun dé n'est perdu : ceux qui ne servent à rien se vendent contre des PC.</li>
+  </ul>
+</div>
+</main>
+<script>
+const A = { id:'aldric', nom:'Sire Aldric', c:'#ffd27a' }, P = { id:'pip', nom:'Pip', c:'#c58bff' };
+const ronces = (vie, cls='') => ({ n:'Pousse de ronces', a:0, v:vie, t:'Barrière · Épines 1', cls });
+const ecuyer = (vie, cls='') => ({ n:'Écuyer au pavois', a:1, v:vie, t:'Barrière', cls });
+const louve = (vie, cls='') => ({ n:'La Louve', a:5, v:vie, t:'attaque seule', cls });
+const E = [
+ { titre:'Tour 1 · Aldric pose ses premiers dés',
+   haut:{ h:P, pv:38, pc:1, meute:0 }, fh:[], fb:[ecuyer(6,'neuf')],
+   bas:{ h:A, pv:45, pc:0, garde:'Garde : Bouclier 5' },
+   des:[[A,2,'Écuyer au pavois'],[A,2,'Garde'],[A,5,'Garde']],
+   texte:['Aldric reçoit +1 PC : il en a 2. Il lance 3 dés et obtient <b>2, 2 et 5</b>.',
+          'Il pose un 2 (un dé pair) sur l\'<b>Écuyer au pavois</b> et paie 2 PC. L\'Écuyer arrive en 1 / 5, plus 1 vie grâce à la salle : <b>1 / 6, Barrière</b>.',
+          'Il pose l\'autre 2 et le 5 sur sa Garde, la <b>Parade de fer</b>. Ce n\'est pas une paire, donc il obtient un Bouclier égal au plus haut dé : <b>Bouclier 5</b>.'] },
+ { titre:'Tour 1 · Pip répond',
+   haut:{ h:P, pv:38, pc:2, meute:1 }, fh:[ronces(5,'neuf')], fb:[ecuyer(6)],
+   bas:{ h:A, pv:45, pc:0, garde:'Garde : Bouclier 5' },
+   des:[[P,6,'vendu : +1 PC','vendu'],[P,1,'Rosée'],[P,2,'Pousse de ronces (relancé : 3 → 2)','relance']],
+   texte:['Pip a 2 PC. Elle lance <b>6, 1 et 3</b>. Le 6 pose aussitôt <b>un marqueur de Meute</b> (1 sur 3).',
+          'Elle relance le 3, qui donne un 2. Elle pose le 1 sur <b>Rosée</b> (0 PC) et pioche une carte, puis le 2 sur la <b>Pousse de ronces</b> (1 PC) : <b>0 / 5, Barrière, Épines 1</b>.',
+          'Le 6 ne sert à aucune de ses cartes : elle le <b>vend</b> pour 1 PC. Elle garde 2 PC pour la suite.'] },
+ { titre:'Tour 2 · Aldric renforce sa Garde',
+   haut:{ h:P, pv:38, pc:2, meute:1 }, fh:[ronces(4,'touche')], fb:[ecuyer(5,'touche')],
+   bas:{ h:A, pv:45, pc:3, garde:'Garde : Bouclier 12', pure:1 },
+   des:[[A,6,'Garde'],[A,6,'Garde'],[A,3,'vendu : +1 PC','vendu'],[A,4,'vendu : +1 PC','vendu']],
+   texte:['L\'ancien Bouclier est tombé à la fin du tour de Pip. Aldric a 1 PC et lance 4 dés : <b>6, 6, 3 et 4</b>.',
+          'Les deux 6 vont sur la Parade de fer. C\'est une paire : <b>Bouclier 12</b>. Et deux 6 posés dans le même tour lui donnent <b>un jeton de Pureté</b>.',
+          'Le 3 et le 4 ne servent pas ce tour-ci : il les vend. Il a maintenant <b>3 PC</b>, de quoi lancer son Ultime plus tard.',
+          'L\'Écuyer attaque. Il doit frapper la Pousse de ronces, qui a Barrière : elle perd 1 vie (0 / 4). Ses Épines renvoient 1 dégât : l\'Écuyer passe à 1 / 5.'] },
+ { titre:'Tour 2 · La Louve arrive',
+   haut:{ h:P, pv:38, pc:3, meute:3, garde:'Bouclier 5 (Pouvoir)' }, fh:[ronces(4), louve(9,'neuf')], fb:[ecuyer(5)],
+   bas:{ h:A, pv:45, pc:3, garde:'Garde : tout absorbé', pure:1 },
+   des:[[P,4,'Pouvoir'],[P,4,'Pouvoir'],[P,5,'Pouvoir'],[P,5,'Pouvoir (relancé : 6 → 5)','relance']],
+   texte:['Pip a 3 PC. Elle lance <b>4, 4, 5 et 6</b>. Le 6 pose <b>un 2e marqueur de Meute</b>.',
+          'Elle relance le 6, qui donne un 5. Les quatre dés de 4 ou 5 vont sur son Pouvoir, l\'<b>Appel de la Louve</b> : 12 dégâts à Aldric.',
+          'Le Bouclier 12 d\'Aldric <b>absorbe tout</b> : il garde ses 45 PV. Pip gagne Bouclier 5 et un <b>3e marqueur</b>.',
+          'La Meute est pleine : <b>la Louve arrive</b> sur la ligne de front, 5 / 8, plus 1 vie grâce à la salle (5 / 9).'] },
+ { titre:'Tour 3 · Aldric joue son Ultime',
+   haut:{ h:P, pv:25, pc:3, h2:'🐺 Louve en jeu · Handicap' }, fh:[ronces(3,'touche'), louve(9)], fb:[ecuyer(4,'touche')],
+   bas:{ h:A, pv:45, pc:1, garde:'Garde : aucune', pure:1 },
+   des:[[A,3,'Ultime'],[A,3,'Ultime'],[A,3,'Ultime'],[A,5,'Ultime'],[A,5,'Ultime']],
+   texte:['Aldric a 4 PC et lance 5 dés : <b>3, 3, 3, 5 et 5</b>. Un brelan et une paire : c\'est la combinaison de son Ultime, <b>la Lame de l\'Aube</b> (3 PC, une seule fois par combat).',
+          'Il doit choisir : abattre la Louve (9 vie) ou frapper Pip. Il frappe Pip : 18 dégâts, moins son Bouclier 5, soit <b>13 dégâts. Pip tombe à 25 PV</b> et reçoit <b>Handicap</b>.',
+          'Le prix à payer : ses 5 dés sont sur l\'Ultime, <b>il n\'a plus de Garde</b> pour le tour de Pip.',
+          'L\'Écuyer frappe de nouveau les ronces (0 / 3) et reprend 1 dégât des Épines (1 / 4).'] },
+ { titre:'Tour 3 · La Louve mord',
+   haut:{ h:P, pv:34, pc:5, h2:'🐺 Louve en jeu', garde:'Garde : Épines 3' }, fh:[ronces(3), louve(9)], fb:[ecuyer(4)],
+   bas:{ h:A, pv:37, pc:1, garde:'Garde : aucune', pure:1 },
+   des:[[P,2,'dé de la Louve'],[P,2,'dé de la Louve'],[P,6,'dé de la Louve'],[P,3,'Sève guérisseuse'],[P,2,'Garde'],[P,1,'vendu : +1 PC','vendu'],[P,5,'vendu : +1 PC','vendu']],
+   texte:['À cause du Handicap, Pip ne lance que <b>4 dés</b> au lieu de 5.',
+          'D\'abord, la Louve attaque seule avec ses 3 dés : <b>2, 2 et 6</b>. Deux identiques : 6 dégâts qui ignorent Barrière et Bouclier, plus 2 pour le 6. <b>8 dégâts : Aldric tombe à 37 PV.</b>',
+          'Pip, avec ses 4 dés (<b>3, 2, 1 et 5</b>), pose le 3 sur <b>Sève guérisseuse</b> (1 PC) : elle se soigne de 9 et remonte à <b>34 PV</b>. Le 2 va sur sa Garde, l\'Écorce bénie : <b>Épines 3</b>. Elle vend le 1 et le 5 : elle a 5 PC.',
+          'Le combat continue. Aldric n\'a plus d\'Ultime, mais il garde son jeton de Pureté et 3 cartes en main. Pip a la Louve, qui mordra à chaque tour tant qu\'elle reste debout.'] }
+];
+const barre = b => `<div class="barre" style="--c:${b.h.c}"><img class="p" src="portraits/${b.h.id}.webp" alt=""><div><div class="nom">${b.h.nom}</div><div class="info">
+  <span class="pas pv">❤ ${b.pv} PV</span><span class="pas pc">◆ ${b.pc} PC</span>
+  ${b.garde ? `<span class="pas g">🛡 ${b.garde}</span>` : ''}
+  ${b.meute !== undefined ? `<span class="pas m">🐺 Meute ${b.meute}/3</span>` : ''}
+  ${b.pure ? `<span class="pas pu">✦ Pureté ${b.pure}</span>` : ''}
+  ${b.h2 ? `<span class="pas h">${b.h2}</span>` : ''}</div></div></div>`;
+const front = l => `<div class="front${l.length ? '' : ' vide'}">${l.map(u => `<div class="u ${u.cls}"><b>${u.n}</b><span class="tg">${u.t}</span><div class="av"><span>⚔ ${u.a}</span><span>❤ ${u.v}</span></div></div>`).join('')}</div>`;
+document.getElementById('etapes').innerHTML = E.map((e, i) => `
+<section class="etape"><h2>${i + 1}. ${e.titre}</h2>
+<div class="plateau">${barre(e.haut)}${front(e.fh)}<div class="milieu">— ligne de front —</div>${front(e.fb)}${barre(e.bas)}
+<div class="des">${e.des.map(d => `<div class="d ${d[3] || ''}"><img src="faces-${d[0].id}/face-${d[1]}.webp" alt="${d[1]}">${d[2]}</div>`).join('')}</div></div>
+<div class="texte">${e.texte.map(t => `<p>${t}</p>`).join('')}</div></section>`).join('');
+</script>
+</body>
+</html>

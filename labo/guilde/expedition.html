@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="robots" content="noindex">
+<title>La Guilde des Runes · Les Expéditions</title>
+<style>
+  :root { --or:#f3c96b; --texte:#f1ecff; --doux:#c9c1ea; --ok:#7dffb0; --mer:#5ff5e6; }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body { margin:0; background:#101a2b; color:var(--texte); font:15px/1.35 Georgia, 'Times New Roman', serif; user-select:none; }
+  #app { max-width:560px; margin:0 auto; min-height:100vh; padding:8px 8px 30px; }
+  button { font:inherit; cursor:pointer; }
+  h1 { color:var(--mer); font-size:1.25em; margin:.3em 0; text-align:center; }
+  h2 { color:var(--or); font-size:1.05em; margin:.7em 0 .3em; }
+  p { margin:.4em 0; } .doux { color:var(--doux); font-size:.88em; }
+  .heros6 { display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; margin:6px 0; }
+  .heros6 button { background:#162238; color:#fff; border:2px solid #2f4a6b; border-radius:12px; padding:6px; font-size:.85em; }
+  .heros6 img { width:100%; aspect-ratio:1; border-radius:9px; object-fit:cover; display:block; margin-bottom:4px; }
+  .entete { display:flex; gap:8px; align-items:center; background:#162238; border-radius:12px; padding:6px 8px; margin:4px 0; font-size:.86em; }
+  .entete img { width:46px; height:46px; border-radius:50%; object-fit:cover; border:2px solid var(--or); }
+  .p { display:inline-block; background:#0006; border-radius:10px; padding:1px 7px; margin:1px 2px 1px 0; }
+  .route { display:flex; gap:4px; justify-content:space-between; margin:6px 0; }
+  .esc { flex:1; text-align:center; font-size:.72em; background:#162238; border-radius:8px; padding:4px 2px; border:2px solid #2f4a6b; }
+  .esc.faite { border-color:var(--ok); opacity:.7; } .esc.ici { border-color:var(--or); box-shadow:0 0 10px var(--or); } .esc b { display:block; font-size:1.5em; }
+  .champ.lieu-crique { background:linear-gradient(180deg, #06142a 0%, #1a4a7a 55%, #0b2a3a 56%, #06141f 100%); }
+  .champ.lieu-falaises { background:linear-gradient(180deg, #1a1f2e 0%, #4a5a6e 50%, #2a2f3a 51%, #15181f 100%); }
+  .champ.lieu-port { background:linear-gradient(180deg, #2a1f0a 0%, #b7832a 55%, #3a2a0a 56%, #1a1206 100%); }
+  .champ.lieu-foret { background:linear-gradient(180deg, #06160c 0%, #1f5a2a 55%, #0f2a14 56%, #06120a 100%); }
+  .champ.lieu-cratere { background:linear-gradient(180deg, #1a0505 0%, #a8341a 55%, #3a0a0a 56%, #1a0505 100%); }
+  .champ.lieu-nid { background:radial-gradient(circle at 50% 60%, #f7a23a 0%, #a8341a 30%, #2a0505 75%); }
+  .champ { background:radial-gradient(circle at 50% 20%, #1c2f4d, #0b1322 75%); border:2px solid #2f4a6b; border-radius:14px; padding:8px; margin:6px 0; }
+  .rang { display:flex; gap:5px; justify-content:center; min-height:96px; align-items:stretch; }
+  .u { width:78px; background:#f6efdc; color:#2b2117; border-radius:9px; padding:4px; font-size:.66em; line-height:1.15; text-align:center; border:2px solid #b89a5e; position:relative; transition:transform .15s; }
+  .u.ennemi { background:#3a2a2a; color:#ffe9e0; border-color:#b84a3a; } .u.heros { border-color:var(--or); background:#fff6dc; } .u.ennemi.heros { background:#4a2020; }
+  .u b { display:block; min-height:2.3em; } .u .av { display:flex; justify-content:space-between; font-weight:bold; font-size:1.25em; }
+  .u .av span:first-child { color:#b84a00; } .u .av span:last-child { color:#1f6f2a; } .u.ennemi .av span:first-child { color:#ff9a7a; } .u.ennemi .av span:last-child { color:#8df0a0; }
+  .u .tg { color:#7a5a2a; font-size:.9em; min-height:1.1em; } .u.ennemi .tg { color:#e0b0a0; }
+  .u.frappe { transform:translateY(-10px) scale(1.08); box-shadow:0 0 12px var(--or); } .u.touche { animation:tremble .35s; } .u.mort { opacity:.25; filter:grayscale(1); }
+  .u .de { position:absolute; right:-6px; top:-8px; width:22px; height:22px; border-radius:5px; background:#fff; color:#222; font-weight:bold; border:2px solid #222; display:flex; align-items:center; justify-content:center; font-size:1.1em; }
+  .u .dg { position:absolute; left:50%; top:30%; transform:translateX(-50%); color:#ff5a3a; font-weight:bold; font-size:1.8em; text-shadow:0 0 6px #000; animation:monte .8s forwards; }
+  @keyframes tremble { 25% { transform:translateX(-5px); } 75% { transform:translateX(5px); } }
+  @keyframes monte { to { transform:translate(-50%, -30px); opacity:0; } }
+  .milieu { text-align:center; color:var(--mer); margin:6px 0; letter-spacing:.3em; }
+  .journal { font-size:.8em; color:var(--doux); max-height:22vh; overflow:auto; background:#0b1322; border-radius:8px; padding:6px 8px; } .journal div { border-bottom:1px solid #ffffff10; padding:2px 0; }
+  .choixh { display:flex; gap:8px; justify-content:center; margin:10px 0; flex-wrap:wrap; }
+  .choixh button { background:#162238; color:#fff; border:2px solid #2f4a6b; border-radius:14px; padding:8px 10px; min-width:120px; flex:1; } .choixh button.or { border-color:var(--or); color:var(--or); }
+  .choixh button:disabled { opacity:.4; }
+  .recrue { display:flex; gap:6px; justify-content:center; flex-wrap:wrap; margin:6px 0; }
+  .recrue .u { width:100px; cursor:pointer; } .recrue .u .prix { color:#2a7fc1; font-weight:bold; margin-top:3px; }
+  .equipage .u { cursor:pointer; } .equipage .u.sel { box-shadow:0 0 0 3px var(--ok); }
+  .fenetre { position:fixed; inset:0; background:#000c; z-index:10; display:flex; align-items:center; justify-content:center; padding:12px; }
+  .fenetre > div { background:#162238; border-radius:16px; padding:14px 16px; max-width:520px; width:100%; max-height:92vh; overflow:auto; }
+  .fenetre h2 { margin-top:.1em; }
+  .vitesse { display:flex; gap:6px; justify-content:center; font-size:.85em; } .vitesse button { background:#0b1322; color:#fff; border:1px solid #2f4a6b; border-radius:8px; padding:3px 8px; } .vitesse button.sel { border-color:var(--mer); color:var(--mer); }
+  table { width:100%; border-collapse:collapse; font-size:.86em; } td { padding:3px 4px; border-bottom:1px solid #ffffff18; } td:last-child { text-align:right; color:var(--or); }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="fen"></div>
+<script src="cartes.js?v=20261110-132113"></script>
+<script src="donnees.js?v=20261110-132113"></script>
+<script src="odyssee.js?v=20261110-132113"></script>
+<script src="chronique.js?v=20261110-132113"></script>
+<script>
+// =============================================================================================== LES EXPÉDITIONS (10/11 soir) — l'auto-battler du navire volant
+// Proposé par Claude, à valider : on forme un ÉQUIPAGE (son héros + jusqu'à 4 créatures recrutées parmi les créatures des cartes du jeu) et on le regarde
+// combattre tout seul à chaque ESCALE (6 escales, la dernière = un boss). Les dés restent le hasard : chaque unité lance un dé par round
+// (6 = coup critique ×2, 1 = le coup rate), le héros lance 3 dés et frappe avec sa Frappe (2 dés identiques ou plus) ou sa Technique (suite),
+// sinon un coup simple. Les Barrières protègent, les Charges frappent en premier. Entre deux escales : la vie ne remonte pas (sauf au port),
+// on recrute avec l'or, on soigne, on améliore (+1 attaque). Les décisions du joueur = qui recruter et dans quel ORDRE placer l'équipage
+// (le premier de la rangée encaisse). Les mêmes données de héros et de créatures que le Duel (donnees.js, odyssee.js).
+const log = () => {}, degats = () => {}, soin = () => {}, altere = () => {}, invoque = () => {}, adv = () => ({}), fin = () => {};
+const CLE = 'guilde-expedition';
+const CREATURES = Object.keys(CARTES).filter(k => CARTES[k].u && rarete(k) !== 'm');
+const ESCALES = [
+  { n:'La Crique des gobelins', e:'🏴‍☠️', cle:'crique', ennemis:['gobelin', 'gobelin'], or:40 },
+  { n:'Les Falaises hurlantes', e:'🌬', cle:'falaises', ennemis:['loup', 'salamandre'], or:50 },
+  { n:'Le Port de Marennes', e:'⚓', cle:'port', port:true, or:0 },
+  { n:'La Forêt-racine', e:'🌲', cle:'foret', ennemis:['cultiste', 'golem'], or:60 },
+  { n:'Le Cratère', e:'🌋', cle:'cratere', ennemis:['elementaire', 'drake'], or:80 },
+  { n:'Le Nid du Titan', e:'👑', cle:'nid', ennemis:['titan'], boss:true, or:150 },
+];
+let E = null, vitesse = 1, enCours = false;
+const sauve = () => localStorage.setItem(CLE, JSON.stringify(E));
+const lire = () => { try { return JSON.parse(localStorage.getItem(CLE) || 'null'); } catch (e) { return null; } };
+const fenetre = html => { document.getElementById('fen').innerHTML = `<div class="fenetre"><div>${html}</div></div>`; };
+const fermer = () => { document.getElementById('fen').innerHTML = ''; };
+const d6 = () => 1 + Math.floor(Math.random() * 6);
+const dodo = ms => new Promise(ok => setTimeout(ok, ms / vitesse));
+// une unité de combat : { n, a, v, vmax, barriere, charge, heros, id, de }
+const uniteDeCarte = k => { const u = CARTES[k].u; return { n:u.n, a:u.a, v:u.v, vmax:u.v, barriere:!!u.barriere, charge:!!u.charge, key:k, id:Math.random().toString(36).slice(2) }; };
+const uniteHeros = (id, pvMul) => { const h = HEROS[id]; const pv = Math.round(h.pv * (pvMul || 1)); return { n:h.nom, a:3, v:pv, vmax:pv, heros:true, hid:id, id:Math.random().toString(36).slice(2) }; };
+
+// ----------------------------------------------------------------------------------------------- accueil
+function accueil() {
+  const e = lire(); if (e && !e.fini) { E = e; dessine(); return; }
+  document.getElementById('app').innerHTML = `<h1>⛵ Les Expéditions</h1>
+  <p class="doux" style="text-align:center">Le navire volant de la Guilde part pour six escales. Tu formes l’équipage et tu le regardes combattre : les dés décident des coups, toi tu décides qui embarque et dans quel ordre.</p>
+  <p class="doux">Chaque unité lance un dé par round : <b>6</b> = coup critique (×2), <b>1</b> = le coup rate. Le héros lance 3 dés : deux identiques = Frappe, une suite = Technique. Les <b>Barrières</b> encaissent d’abord, les <b>Charges</b> frappent en premier. Le premier de la rangée prend les coups. La vie ne remonte qu’au port ; l’or recrute et soigne.</p>
+  <h2>Ton capitaine</h2><div class="heros6">${ORDRE.map(id => `<button onclick="commence('${id}')"><img src="${IMG(id)}" alt="">${HEROS[id].nom}<br><small style="color:var(--doux)">${HEROS[id].pv} PV</small></button>`).join('')}</div>
+  <div class="choixh"><button onclick="records()">🏆 Mes expéditions</button><button onclick="location.href='menu.html'">⌂ Menu</button></div>`;
+}
+function commence(id) {
+  const h = HEROS[id];
+  // équipage de départ : le héros + les deux premières créatures de son deck
+  const cr = h.deck.filter(k => CARTES[k].u).slice(0, 2);
+  E = { heros:id, equipage:[uniteHeros(id), ...cr.map(uniteDeCarte)], or:60, escale:0, journal:[], fini:null, recrues:null, debut:Date.now(), victoires:0, lu:{}, bonus:null };
+  sauve(); dessine();
+}
+// la page de chronique de l'escale (avec son choix), une fois par escale ; au port, pas de combat : on repart après la page
+function pageEscale() {
+  const esc = ESCALES[E.escale]; if (!esc || (E.lu || {})[E.escale]) return false;
+  E.lu = E.lu || {}; E.lu[E.escale] = true;
+  chronique([CHRON_EXP[esc.cle]], () => { if (esc.port) { E.journal.push('⚓ Port de Marennes : l’équipage repart.'); E.escale++; E.recrues = null; } sauve(); dessine(); });
+  return true;
+}
+// ----------------------------------------------------------------------------------------------- l'écran
+function dessine(champ) {
+  if (!champ && pageEscale()) return;
+  const esc = ESCALES[E.escale];
+  document.getElementById('app').innerHTML = `
+  <div class="entete"><img src="${IMG(E.heros)}" alt=""><div><b>${HEROS[E.heros].nom}</b>, capitaine · <span class="p">💰 ${E.or}</span><span class="p">⚓ escale ${E.escale + 1}/6</span><br><span class="doux">${esc.e} ${esc.n}${esc.boss ? ' · le boss' : esc.port ? ' · un port sûr' : ''}</span></div></div>
+  <div class="route">${ESCALES.map((x, i) => `<div class="esc ${i < E.escale ? 'faite' : i === E.escale ? 'ici' : ''}"><b>${x.e}</b>${i + 1}</div>`).join('')}</div>
+  <div class="champ lieu-${esc.cle}">${champ || `<div class="rang" id="r-E">${esc.ennemis ? equipeEnnemie(esc).map(u => uniteHTML(u, true)).join('') : '<i class="doux">Le port : personne ne vous attend.</i>'}</div><div class="milieu">✦ ◆ ✦</div><div class="rang equipage" id="r-J">${E.equipage.map((u, i) => uniteHTML(u, false, i)).join('')}</div>`}</div>
+  ${champ ? '' : `<p class="doux" style="text-align:center">Touche deux unités de ton équipage pour les échanger de place : <b>le premier de la rangée encaisse</b>.</p>
+  <div class="choixh">${esc.port ? `<button class="or" onclick="port()">⚓ Accoster</button>` : `<button class="or" onclick="combat()">⚔ Lancer le combat</button>`}<button onclick="recruter()">🧭 Recruter (${E.or} or)</button></div>
+  <div class="choixh"><button onclick="journal()">📜 Journal</button><button onclick="abandon()">⏏ Quitter</button></div>`}`;
+}
+let selU = null;
+function uniteHTML(u, ennemi, i) {
+  const cls = ['u', ennemi ? 'ennemi' : '', u.heros ? 'heros' : '', u.v <= 0 ? 'mort' : '', selU === i ? 'sel' : ''].join(' ');
+  const tags = [u.barriere ? 'Barrière' : '', u.charge ? 'Charge' : '', u.heros ? '3 dés' : ''].filter(Boolean).join(' · ');
+  return `<div class="${cls}" data-id="${u.id}" ${ennemi ? '' : `onclick="choisit(${i})"`}><b>${u.n}</b><div class="tg">${tags}</div><div class="av"><span>⚔ ${u.a}</span><span>❤ ${Math.max(0, u.v)}</span></div></div>`;
+}
+function choisit(i) { if (enCours) return; if (selU === null) { selU = i; } else { const a = E.equipage[selU], b = E.equipage[i]; E.equipage[selU] = b; E.equipage[i] = a; selU = null; sauve(); } dessine(); }
+function equipeEnnemie(esc) {
+  const l = [], b = E.bonus || {};
+  esc.ennemis.forEach(id => { const m = HEROS[id]; const pvMul = esc.boss ? 1.2 : .8; let pv = Math.round(m.pv * pvMul) + (b.ennemisPV || 0) + (id === 'drake' ? (b.drakePV || 0) : 0) + (id === 'elementaire' ? (b.elementairePV || 0) : 0) - (esc.boss && E.titanFaible ? 5 : 0);
+    l.push({ n:m.nom, a:(esc.boss ? 5 : 3) + (b.ennemisA || 0), v:pv, vmax:pv, heros:true, hid:id, id:Math.random().toString(36).slice(2), emoji:m.emoji });
+    if (!b.sansRenforts) (m.renforts || []).forEach(r => l.push({ ...r, vmax:r.v, id:Math.random().toString(36).slice(2) })); });
+  if (b.renfortEnnemi) l.push({ ...b.renfortEnnemi, vmax:b.renfortEnnemi.v, id:Math.random().toString(36).slice(2) });
+  return l;
+}
+// les effets d'un choix sur l'équipage (recrue offerte, Charge au premier round) : appliqués au moment du combat
+function appliqueBonusEquipage() {
+  const b = E.bonus || {};
+  if (b.recrue && CARTES[b.recrue] && E.equipage.length < 5) { E.equipage.push(uniteDeCarte(b.recrue)); E.journal.push(`🧭 ${CARTES[b.recrue].u.n} rejoint l’équipage.`); }
+  if (b.recrueUnite && E.equipage.length < 5) { E.equipage.push({ ...b.recrueUnite, vmax:b.recrueUnite.v, id:Math.random().toString(36).slice(2) }); E.journal.push(`🧭 ${b.recrueUnite.n} rejoint l’équipage.`); }
+}
+// ----------------------------------------------------------------------------------------------- le combat automatique
+const vivants = l => l.filter(u => u.v > 0);
+function cible(adv) { const v = vivants(adv); if (!v.length) return null; const b = v.filter(u => u.barriere); return b.length ? b[0] : v[0]; }
+function coupHeros(u) { // 3 dés : deux identiques = Frappe (valeur + bonus), une suite = Technique, sinon le plus haut dé − 2
+  const ds = [d6(), d6(), d6()], s = [...ds].sort((a, b) => a - b);
+  if (s[0] === s[1] && s[1] === s[2]) return { dg:s[0] + 3, txt:`Frappe ×3 (${ds.join(' ')})`, ds };
+  if (s[0] === s[1] || s[1] === s[2]) return { dg:(s[0] === s[1] ? s[0] : s[1]), txt:`Frappe (${ds.join(' ')})`, ds };
+  if (s[1] === s[0] + 1 && s[2] === s[1] + 1) return { dg:4, txt:`Technique (${ds.join(' ')})`, ds };
+  return { dg:Math.max(1, s[2] - 2), txt:`coup simple (${ds.join(' ')})`, ds };
+}
+async function anime(u, cls, ms) { const el = document.querySelector(`[data-id="${u.id}"]`); if (!el) return; el.classList.add(cls); await dodo(ms || 350); el.classList.remove(cls); }
+function montreDe(u, v) { const el = document.querySelector(`[data-id="${u.id}"]`); if (!el) return; let d = el.querySelector('.de'); if (!d) { d = document.createElement('div'); d.className = 'de'; el.appendChild(d); } d.textContent = v; }
+function montreDg(u, n) { const el = document.querySelector(`[data-id="${u.id}"]`); if (!el) return; const d = document.createElement('div'); d.className = 'dg'; d.textContent = '−' + n; el.appendChild(d); setTimeout(() => d.remove(), 900 / vitesse); }
+function majVie(u) { const el = document.querySelector(`[data-id="${u.id}"]`); if (!el) return; el.querySelector('.av span:last-child').textContent = '❤ ' + Math.max(0, u.v); if (u.v <= 0) el.classList.add('mort'); }
+async function combat() {
+  if (enCours) return; enCours = true; selU = null;
+  appliqueBonusEquipage();
+  const esc = ESCALES[E.escale], ennemis = equipeEnnemie(esc), allies = E.equipage; const J = []; const chargeTous = !!(E.bonus && E.bonus.charge); let orBonus = (E.bonus && E.bonus.or) || 0; E.bonus = null;
+  const jl = t => { J.unshift(t); const j = document.getElementById('jc'); if (j) j.innerHTML = J.slice(0, 30).map(x => `<div>${x}</div>`).join(''); };
+  dessine(`<div class="rang" id="r-E">${ennemis.map(u => uniteHTML(u, true)).join('')}</div><div class="milieu">⚔ ${esc.n} ⚔</div><div class="rang" id="r-J">${allies.map(u => uniteHTML(u, false)).join('')}</div>
+    <div class="vitesse">Vitesse : <button class="${vitesse === 1 ? 'sel' : ''}" onclick="vitesse=1;majVit()">×1</button><button class="${vitesse === 2 ? 'sel' : ''}" onclick="vitesse=2;majVit()">×2</button><button class="${vitesse === 4 ? 'sel' : ''}" onclick="vitesse=4;majVit()">×4</button></div><div class="journal" id="jc"></div>`);
+  jl(`⚔ ${esc.n} : ${allies.map(u => u.n).join(', ')} contre ${ennemis.map(u => u.n).join(', ')}.`);
+  await dodo(600);
+  let rounds = 0;
+  for (let round = 1; round <= 12 && vivants(allies).length && vivants(ennemis).length; round++) { rounds = round;
+    jl(`— Round ${round}`);
+    // ordre : Charges d'abord, puis alternance allié / ennemi dans l'ordre des rangées
+    const ordre = [];
+    const a = vivants(allies), e = vivants(ennemis), n = Math.max(a.length, e.length);
+    for (let i = 0; i < n; i++) { if (a[i]) ordre.push({ u:a[i], camp:'J' }); if (e[i]) ordre.push({ u:e[i], camp:'E' }); }
+    ordre.sort((x, y) => ((y.u.charge || (chargeTous && y.camp === 'J' && round === 1)) ? 1 : 0) - ((x.u.charge || (chargeTous && x.camp === 'J' && round === 1)) ? 1 : 0));
+    for (const { u, camp } of ordre) {
+      if (u.v <= 0) continue; const adv = camp === 'J' ? ennemis : allies; const c = cible(adv); if (!c) break;
+      let dg, txt;
+      if (u.heros && camp === 'J') { const k = coupHeros(u); dg = k.dg; txt = k.txt; montreDe(u, k.ds[0]); }
+      else { const d = d6(); montreDe(u, d); dg = d === 6 ? u.a * 2 : d === 1 ? 0 : u.a; txt = d === 6 ? 'coup critique !' : d === 1 ? 'rate son coup' : `dé ${d}`; }
+      await anime(u, 'frappe', 300);
+      if (dg > 0) { c.v -= dg; montreDg(c, dg); majVie(c); await anime(c, 'touche', 300); jl(`${u.n} → ${c.n} : ${dg} (${txt})${c.v <= 0 ? ' — ' + c.n + ' tombe !' : ''}`); }
+      else jl(`${u.n} rate son coup.`);
+      if (!vivants(allies).length || !vivants(ennemis).length) break;
+      await dodo(220);
+    }
+  }
+  const gagne = vivants(ennemis).length === 0; enCours = false;
+  E.equipage = allies.filter(u => u.v > 0 || u.heros); const capitaine = E.equipage.find(u => u.heros);
+  if (!gagne || capitaine.v <= 0) { E.journal.push(`💀 ${esc.n} : l’équipage est vaincu.`); finExp(false, `L’équipage a été vaincu à ${esc.n}.`); return; }
+  E.victoires++; E.or = Math.max(0, E.or + esc.or + orBonus); E.journal.push(`🏆 ${esc.n} gagnée : +${esc.or + orBonus} or.`); E.escale++; sauve();
+  if (esc.boss) { finExp(true, 'Le Titan de feu est tombé : l’expédition est un triomphe !'); return; }
+  fenetre(`<h2>🏆 ${esc.n}</h2><p>Victoire en ${rounds} round${rounds > 1 ? 's' : ''} : +${esc.or + orBonus} or. Les créatures tombées restent à terre ; le capitaine garde ses ${capitaine.v} PV.</p><div class="choixh"><button class="or" onclick="fermer();dessine()">Cap sur la suite</button></div>`);
+}
+function majVit() { document.querySelectorAll('.vitesse button').forEach(b => b.classList.toggle('sel', +b.textContent.slice(1) === vitesse)); }
+// ----------------------------------------------------------------------------------------------- recruter, le port
+function recruter() {
+  if (!E.recrues) E.recrues = [...CREATURES].sort(() => Math.random() - .5).slice(0, 3);
+  const prix = k => 20 + CARTES[k].u.a * 6 + CARTES[k].u.v * 3;
+  fenetre(`<h2>🧭 Recruter</h2><p class="doux">💰 ${E.or} or · équipage ${E.equipage.length}/5. Les recrues changent à chaque escale.</p>
+  <div class="recrue">${E.recrues.map((k, i) => { const u = CARTES[k].u; return `<div class="u" onclick="embauche(${i})"><b>${u.n}</b><div class="tg">${[u.barriere ? 'Barrière' : '', u.charge ? 'Charge' : '', u.cachee ? 'Cachée' : ''].filter(Boolean).join(' · ')}</div><div class="av"><span>⚔ ${u.a}</span><span>❤ ${u.v}</span></div><div class="prix">${prix(k)} or</div></div>`; }).join('') || '<i>Plus personne à recruter ici.</i>'}</div>
+  <div class="choixh"><button ${E.or >= 30 ? '' : 'disabled'} onclick="soigne()">🧪 Soigner tout l’équipage de 8 (30 or)</button><button ${E.or >= 40 ? '' : 'disabled'} onclick="ameliore()">⚒ +1 attaque au capitaine (40 or)</button></div>
+  <div class="choixh"><button onclick="fermer();dessine()">Fermer</button></div>`);
+}
+function embauche(i) { const k = E.recrues[i]; const u = CARTES[k].u, p = 20 + u.a * 6 + u.v * 3; if (E.or < p || E.equipage.length >= 5) { fenetre(`<h2>🧭</h2><p>${E.equipage.length >= 5 ? 'L’équipage est au complet (5).' : 'Pas assez d’or.'}</p><div class="choixh"><button onclick="recruter()">Retour</button></div>`); return; } E.or -= p; E.recrues.splice(i, 1); E.equipage.push(uniteDeCarte(k)); E.journal.push(`🧭 ${u.n} embarque (${p} or).`); sauve(); recruter(); }
+function soigne() { if (E.or < 30) return; E.or -= 30; E.equipage.forEach(u => { u.v = Math.min(u.vmax, u.v + 8); }); E.journal.push('🧪 Tout l’équipage soigné de 8.'); sauve(); recruter(); }
+function ameliore() { if (E.or < 40) return; E.or -= 40; const c = E.equipage.find(u => u.heros); c.a++; E.journal.push(`⚒ ${c.n} : +1 attaque.`); sauve(); recruter(); }
+function port() { E.equipage.forEach(u => { u.v = u.vmax; }); E.or += 30; E.journal.push('⚓ Port de Marennes : équipage soigné, +30 or.'); E.escale++; E.recrues = null; sauve(); fenetre('<h2>⚓ Le Port de Marennes</h2><p>Un port tranquille au bord de l’estuaire. L’équipage se repose : <b>tout le monde est soigné</b>, et la Guilde vous verse 30 or. Les recrues du port sont fraîches.</p><div class="choixh"><button class="or" onclick="fermer();dessine()">Larguer les amarres</button></div>'); }
+function journal() { fenetre(`<h2>📜 Journal de bord</h2><div class="journal">${[...E.journal].reverse().map(t => `<div>${t}</div>`).join('') || '<i>Rien encore.</i>'}</div><div class="choixh"><button onclick="fermer()">Fermer</button></div>`); }
+function abandon() { fenetre('<h2>⏏ Quitter</h2><p>L’expédition est gardée sur ce téléphone. Ou on l’abandonne (comptée perdue).</p><div class="choixh"><button onclick="location.href=\'menu.html\'">⌂ Menu, je reprendrai</button><button onclick="finExp(false, \'Abandon.\')">💀 Abandonner</button></div>'); }
+function finExp(gagne, texte) {
+  const score = E.victoires * 100 + E.or + (gagne ? 300 : 0); const duree = Math.round((Date.now() - E.debut) / 60000);
+  const l = lireRec(); l.unshift({ quand:new Date().toISOString(), heros:E.heros, gagne, score, escales:E.escale + (gagne ? 0 : 1), duree }); localStorage.setItem(CLE + '-records', JSON.stringify(l.slice(0, 50)));
+  localStorage.removeItem(CLE); E = null;
+  fenetre(`<h2>${gagne ? '🏆 Triomphe !' : '💀 Fin de l’expédition'}</h2><p>${texte}</p><p style="font-size:1.5em;color:var(--or);text-align:center">${score} points</p><table><tr><td>Escales gagnées</td><td>${l[0].escales - (gagne ? 0 : 1)}</td></tr><tr><td>Durée</td><td>${duree} min</td></tr></table><div class="choixh"><button class="or" onclick="fermer();accueil()">Nouvelle expédition</button><button onclick="location.href='menu.html'">⌂ Menu</button></div>`);
+}
+const lireRec = () => { try { return JSON.parse(localStorage.getItem(CLE + '-records') || '[]'); } catch (e) { return []; } };
+function records() { const l = lireRec(); fenetre(`<h2>🏆 Mes expéditions (${l.length})</h2>${l.length ? `<table>${l.map(r => `<tr><td>${r.gagne ? '🏆' : '💀'} ${new Date(r.quand).toLocaleDateString('fr-FR')} · ${HEROS[r.heros].nom} · ${r.escales} escale${r.escales > 1 ? 's' : ''}</td><td>${r.score}</td></tr>`).join('')}</table>` : '<p>Aucune expédition finie.</p>'}<div class="choixh"><button onclick="fermer()">Fermer</button></div>`); }
+accueil();
+</script>
+</body>
+</html>

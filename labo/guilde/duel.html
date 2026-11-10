@@ -1,0 +1,1575 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="robots" content="noindex">
+<title>La Guilde des Runes · Duel (prototype, 6 héros)</title>
+<style>
+  :root { --fond:#1d1b3a; --or:#f3c96b; --texte:#f1ecff; --doux:#c9c1ea; --ok:#7dffb0; }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body { margin:0; background:#15132b; color:var(--texte); font:15px/1.35 Georgia, 'Times New Roman', serif; user-select:none; }
+  #app { max-width:560px; margin:0 auto; min-height:100vh; padding:6px 6px 90px; }
+  button { font:inherit; cursor:pointer; }
+  .barre { display:flex; align-items:center; gap:8px; background:#0006; border-radius:12px; padding:5px 7px; border:2px solid transparent; }
+  .barre { position:relative; }
+  .barre.protege { border-color:#8fd3ff; box-shadow:0 0 0 1px #8fd3ff, 0 0 14px #4aa8ffaa; }
+  .barre.protege::before { content:'🛡 ' attr(data-bouclier); position:absolute; left:2px; top:-9px; background:#2a5d8a; color:#fff; border:2px solid #8fd3ff; border-radius:10px; padding:0 6px; font-size:.78em; font-weight:bold; z-index:2; }
+  .barre.cible { border-color:var(--ok); box-shadow:0 0 10px var(--ok); }
+  .barre img { width:44px; height:44px; border-radius:9px; object-fit:cover; border:2px solid var(--c); flex:none; }
+  .barre .nom { font-weight:bold; font-size:.92em; }
+  .pastilles { display:flex; flex-wrap:wrap; gap:3px; margin-top:2px; }
+  .pastilles [data-k] { cursor:pointer; }
+  .p { background:#0008; border-radius:10px; padding:0 7px; font-size:.76em; white-space:nowrap; }
+  .p.pv { background:#7a1f2a; } .p.pc { background:#2a7fc1; } .p.g { background:#5d6b7a; } .p.m { background:#6a3d9a; } .p.pu { background:#b8932d; } .p.al { background:#7a3d1f; }
+  .plateau { background:radial-gradient(circle at 50% 50%, #4a3a22, #2a2014 80%); border:3px solid #6b5232; border-radius:16px; padding:6px; margin-top:4px; }
+  .front { display:flex; gap:4px; justify-content:center; min-height:44px; align-items:center; padding:2px 0; }
+  .front.vide::after { content:'ligne de front vide'; color:#ffffff55; font-size:.78em; font-style:italic; }
+  .u { width:72px; background:#f6efdc; color:#2b2117; border-radius:9px; padding:3px 4px; font-size:.66em; line-height:1.15; text-align:center; border:2px solid #b89a5e; }
+  .u b { display:block; font-size:1.05em; min-height:2.3em; }
+  .u .av { display:flex; justify-content:space-between; font-weight:bold; font-size:1.25em; margin-top:2px; }
+  .u .av span:first-child { color:#b84a00; } .u .av span:last-child { color:#1f6f2a; }
+  .u .tg { color:#7a5a2a; font-size:.92em; min-height:1.1em; }
+  .u.pret { box-shadow:0 0 0 2px #ffd27a; }
+  .u.choisi { box-shadow:0 0 0 3px #fff, 0 0 12px #fff; }
+  .u.cible { box-shadow:0 0 0 3px var(--ok), 0 0 12px var(--ok); }
+  .u.dort { opacity:.75; }
+  .u.mystere { background:radial-gradient(circle at 50% 35%, #4a2f7a, #160f24 75%); color:#cbb6ff; border-color:#8b5cf6; box-shadow:0 0 12px #8b5cf688; animation:brume 2.4s ease-in-out infinite; }
+  .u.mystere b { font-size:2em; min-height:1.15em; line-height:1.15; color:#e9dcff; text-shadow:0 0 10px #b04bff; } .u.mystere .tg { color:#cbb6ff; } .u.mystere .av span { color:#cbb6ff !important; }
+  @keyframes brume { 50% { box-shadow:0 0 18px #b04bffaa; } }
+  .u.cachee { background:linear-gradient(160deg, #3a2a55, #1d1626) !important; color:#e9dcff; border-color:#8b5cf6; box-shadow:0 0 10px #8b5cf688; } .u.cachee b, .u.cachee .tg { color:#e9dcff; }
+  .u.defense, .u.dort.defense { opacity:1; box-shadow:0 0 0 3px #8fd3ff, 0 0 12px #8fd3ff; }
+  .milieu { text-align:center; font-size:.75em; color:#f3c96bcc; font-style:italic; padding:2px 0; }
+  .salle { background:#2a2650; border-radius:10px; padding:5px 9px; margin:5px 0; font-size:.82em; }
+  .salle b { color:var(--or); }
+  .des { display:flex; gap:6px; justify-content:center; flex-wrap:wrap; margin:6px 0 2px; }
+  .d { text-align:center; width:58px; }
+  .d img { width:52px; height:52px; border-radius:9px; display:block; margin:0 auto; border:3px solid transparent; }
+  .d.sel img { border-color:#fff; box-shadow:0 0 10px #fff; }
+  .d.pose img { opacity:.25; }
+  .d .sac { font-size:.62em; color:var(--doux); letter-spacing:.02em; margin-top:1px; }
+  .actions { display:grid; grid-template-columns:repeat(3, 1fr); gap:5px; margin:6px 0; }
+  .actions.pc .act { min-height:40px; background:#1f2a4a; }
+  .act { background:#2a2650; color:var(--texte); border:2px solid #4b4580; border-radius:10px; padding:5px 3px; font-size:.74em; line-height:1.2; min-height:50px; }
+  .act { position:relative; }
+  .act .info { position:absolute; top:3px; right:4px; width:17px; height:17px; border-radius:50%; background:#4b4580; color:#f3c96b; font:bold 11px/17px Georgia, serif; font-style:italic; }
+  .act b { display:block; color:var(--or); font-size:1.1em; }
+  .act.ok { border-color:var(--ok); box-shadow:0 0 8px #7dffb066; }
+  .act.non { opacity:.45; }
+  .main { position:fixed; left:0; right:0; bottom:54px; height:66px; z-index:4; pointer-events:none; max-width:560px; margin:0 auto; }
+  .main > * { pointer-events:auto; }
+  #app { padding-bottom:132px !important; }
+  .c { min-width:0; background:#f6efdc; color:#2b2117; border-radius:10px; padding:6px 7px; font-size:.74em; line-height:1.25; border:2px solid #b89a5e; position:relative; }
+  .c.u2 { background:#e9f0dc; } .c.e2 { background:#e3e8f5; } .c.r2 { background:#f1e1e1; }
+  .c .n { font-weight:bold; font-size:1.05em; padding-right:24px; }
+  .c .cout { position:absolute; top:4px; right:4px; width:24px; height:24px; border-radius:50%; background:#2a7fc1; color:#fff; font-weight:bold; display:flex; align-items:center; justify-content:center; }
+  .c .cd { display:inline-block; background:#2b2117; color:#f6efdc; border-radius:6px; padding:0 5px; margin:2px 0; }
+  .c.ok { box-shadow:0 0 0 3px var(--ok), 0 0 10px var(--ok); }
+  .c.non { opacity:.55; }
+  .bas { position:fixed; left:0; right:0; bottom:0; background:#0d0c20ee; padding:7px; display:flex; gap:6px; justify-content:center; z-index:5; }
+  .bas button { border:none; border-radius:12px; padding:10px 12px; font-weight:bold; }
+  .b1 { background:#3a3570; color:#fff; } .b2 { background:var(--or); color:#2b2117; } .b0 { background:#2a2650; color:var(--doux); }
+  .bandeau { background:#3a2f12; border:1px solid var(--or); border-radius:10px; padding:6px 10px; margin:6px 0; font-size:.86em; text-align:center; }
+  .journal { background:#0006; border-radius:10px; padding:6px 9px; font-size:.78em; color:var(--doux); max-height:130px; overflow:auto; margin-top:6px; }
+  .journal div { margin:2px 0; }
+  .fenetre { position:fixed; inset:0; background:#000c; z-index:10; display:flex; align-items:center; justify-content:center; padding:14px; }
+  .fenetre > div { background:#2a2650; border-radius:16px; padding:14px 16px; max-width:520px; max-height:90vh; overflow:auto; }
+  .fenetre h2 { color:var(--or); margin:.1em 0 .4em; font-size:1.2em; }
+  .fenetre li { margin:.35em 0; }
+  .lignep { display:block; width:100%; text-align:left; background:#1d1b3a; color:#fff; border:1px solid #4b4580; border-radius:10px; padding:7px 9px; margin:4px 0; font-size:.88em; }
+  #majbar { position:fixed; left:8px; right:8px; top:8px; z-index:40; background:#2a7fc1; color:#fff; border-radius:14px; padding:9px 12px; display:flex; align-items:center; gap:10px; box-shadow:0 8px 24px #000a; font-size:.88em; }
+  #majbar span { flex:1; } #majbar button { background:#fff; color:#1d4f80; border:none; border-radius:10px; padding:8px 12px; font-weight:bold; }
+  .ordre { width:min(88vw, 380px); }
+  .ordre-tete { display:flex; align-items:center; gap:10px; padding:12px; margin:-4px -6px 12px; border-radius:14px; background:#1d1b3a center/cover; border:1px solid #4b4580; }
+  .ordre-tete > div { flex:1; } .ordre-nom { font-size:1.3em; font-weight:bold; color:var(--or); }
+  .ordre-stats { display:flex; flex-wrap:wrap; gap:5px; margin-top:4px; } .ordre-stats span { border-radius:10px; padding:1px 8px; font-size:.85em; font-weight:bold; }
+  .oa { background:#c2410c; } .ov { background:#1f7a35; } .oc { background:#5b2ab0; } .ob { background:#5d6b7a; }
+  .ordre-fiche { background:#2a2650; color:var(--or); border:1px solid #6b62b0; border-radius:10px; padding:6px 10px; font-weight:bold; }
+  .ordre-bt { display:flex; align-items:center; gap:12px; width:100%; text-align:left; color:#fff; border:none; border-radius:16px; padding:12px 14px; margin:8px 0; box-shadow:0 4px 0 #0006, inset 0 1px 0 #fff3; }
+  .ordre-bt:active { transform:translateY(2px); box-shadow:0 2px 0 #0006; }
+  .ordre-bt b { display:block; font-size:1.15em; } .ordre-bt small { display:block; opacity:.85; font-size:.82em; margin-top:2px; }
+  .ordre-bt .oi { font-size:1.9em; width:46px; height:46px; display:grid; place-items:center; border-radius:12px; background:#0003; flex:none; }
+  .ordre-bt.att { background:linear-gradient(135deg, #e5562c, #9a1f3a); } .ordre-bt.def { background:linear-gradient(135deg, #2a7fc1, #2a3f8a); }
+  .ordre-annule { display:block; margin:6px auto 0; background:none; border:none; color:var(--doux); text-decoration:underline; }
+  .choixh { display:flex; gap:10px; justify-content:center; margin:12px 0; }
+  .choixh button { background:#1d1b3a; color:#fff; border:2px solid #4b4580; border-radius:14px; padding:8px; width:150px; }
+  .choixh img { width:110px; height:110px; border-radius:12px; object-fit:cover; display:block; margin:0 auto 6px; }
+  .d.verrou .cad { width:52px; height:52px; margin:0 auto; border-radius:9px; border:2px dashed #ffffff33; display:grid; place-items:center; font-size:20px; opacity:.6; }
+  .d.verrou .sac { opacity:.6; }
+  .d.neuf img { animation:neuf 1.2s ease-in-out 4; border-color:#f3c96b; } .d.neuf .sac { color:#f3c96b; font-weight:bold; }
+  @keyframes neuf { 50% { box-shadow:0 0 0 3px #f3c96b, 0 0 22px #f3c96b; transform:scale(1.08); } }
+  .d.mod img { box-shadow:0 0 0 2px #ff6b6b; }
+  .heros6 { display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; margin:10px 0; }
+  .heros6 button { background:#1d1b3a; color:#fff; border:2px solid #4b4580; border-radius:12px; padding:6px; font-size:.85em; }
+  .heros6 img { width:100%; aspect-ratio:1; border-radius:9px; object-fit:cover; display:block; margin-bottom:4px; }
+  .grille6 { display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; margin:10px 0; }
+  .grille6 button { background:#f3c96b; color:#2b2117; border:none; border-radius:10px; padding:12px; font-size:1.3em; font-weight:bold; }
+  .main .c { position:absolute; bottom:-84px; width:100px; height:142px; padding:5px 6px; font-size:.62em; overflow:hidden; transform-origin:50% 130%;
+    transition:transform .18s ease, left .18s ease, width .18s, height .18s; box-shadow:0 5px 12px #0008; cursor:pointer; }
+  .main .c .cout { width:20px; height:20px; font-size:.95em; }
+  .main .c .n { padding-right:20px; }
+  .main .c .dd { margin-top:2px; }
+  .main .c.ok { box-shadow:0 0 0 3px #7dffb0, 0 0 18px 6px #7dffb0aa; animation:halo 1s ease-in-out infinite alternate; }
+  @keyframes halo { from { box-shadow:0 0 0 3px #7dffb0, 0 0 10px 2px #7dffb088; } to { box-shadow:0 0 0 3px #b9ffd6, 0 0 22px 8px #7dffb0cc; } }
+  .main .c.non { opacity:.5; }
+  .main .c.vue.non, .main .c.vue { opacity:1; }
+  .main .c.vue { width:164px; height:auto; min-height:206px; font-size:.8em; overflow:visible; box-shadow:0 10px 26px #000c; }
+  .main .c.vue .cout { width:26px; height:26px; }
+  .main .c .jouer { margin-top:6px; background:#2b2117; color:#f3c96b; border-radius:8px; padding:4px 6px; text-align:center; font-weight:bold; }
+  .d { position:relative; }
+  .d.cache img { filter:brightness(.3) blur(1px); }
+  .d.cache::after { content:'?'; position:absolute; top:9px; left:0; right:0; font-size:1.7em; font-weight:bold; color:#fff; pointer-events:none; }
+  .d.roule img { animation:roule .28s linear infinite; }
+  @keyframes roule { 0% { transform:rotate(0) translateY(0) scale(1); } 50% { transform:rotate(190deg) translateY(-10px) scale(1.08); } 100% { transform:rotate(360deg) translateY(0) scale(1); } }
+  .lancer { display:block; width:100%; background:var(--or); color:#2b2117; border:none; border-radius:14px; padding:14px; font-size:1.15em; font-weight:bold; margin:6px 0; box-shadow:0 0 14px #f3c96b88; }
+  .vie { height:5px; background:#0008; border-radius:3px; margin:2px 0 1px; overflow:hidden; }
+  .vie { position:relative; height:9px !important; }
+  .vie b { position:absolute; left:0; top:0; height:100%; background:#ffe27a; border-radius:3px; transition:width .9s .45s ease; }
+  .vie i { position:relative; display:block; height:100%; background:linear-gradient(90deg, #e5262c, #ff7a59); border-radius:3px; transition:width .5s ease; }
+  .salle { display:flex; align-items:center; gap:8px; } .salle .st { flex:1; }
+  .sons { display:flex; gap:6px; flex:none; }
+  .rel i { font-style:normal; margin-left:4px; cursor:pointer; }
+  .equipe { background:#2a2650; border-radius:12px; padding:6px 8px; margin:6px 0; display:grid; grid-template-columns:1fr 1fr; gap:6px; font-size:.8em; }
+  .eq { display:flex; gap:6px; align-items:center; background:#1d1b3a; border-radius:10px; padding:4px 6px; border:2px solid #4b4580; }
+  .eq.actif { border-color:var(--or); } .eq.terre { opacity:.5; } .eq img { width:36px; height:36px; border-radius:50%; object-fit:cover; }
+  .coh { grid-column:1 / -1; } .cohb { display:flex; gap:4px; margin-top:4px; } .cohb button { flex:1; font-size:.9em; background:#2a3a2a; color:#fff; border:1px solid #5a8a5a; border-radius:8px; padding:4px 3px; } .cohb button:disabled { opacity:.35; }
+  .compagnon .main, .compagnon .actions, .compagnon .bas .b1, .compagnon .bas .b2, .compagnon .bandeau { visibility:hidden; }
+  .actions.sacoche { grid-template-columns:repeat(2, 1fr); } .actions.sacoche .act { background:#2a3a2a; border-color:#5a8a5a; }
+  .sonbt { width:34px; height:34px; border-radius:50%; border:1px solid #f3c96b88; background:radial-gradient(circle at 35% 30%, #3a3570, #1d1b3a); color:#f3c96b; padding:6px; display:grid; place-items:center; box-shadow:0 2px 6px #0008; }
+  .sonbt svg { width:100%; height:100%; } .sonbt.off { color:#8a83b8; border-color:#4b4580; }
+  body.fxon #app { pointer-events:none; }
+  #fxc { position:fixed; inset:0; pointer-events:none; z-index:20; overflow:hidden; }
+  .flotte { position:fixed; transform:translate(-50%,-50%); font-weight:bold; font-size:1.6em; color:#fff; text-shadow:0 2px 0 #000, 0 0 8px #000; white-space:nowrap;
+    animation:flotte 1.9s ease-out forwards; font-family:Georgia, serif; }
+  .flotte.rouge { color:#ff5a5a; } .flotte.gros { font-size:2.3em; } .flotte.bleu { color:#8fd3ff; font-size:1.3em; } .flotte.bleu.gros { font-size:1.7em; } .flotte.soin { color:#7dffb0; }
+  .flotte.vert { color:#a6ff4d; } .flotte.nom { color:#f3c96b; font-size:1.05em; }
+  @keyframes flotte { 0% { opacity:0; transform:translate(-50%,-30%) scale(.6); } 15% { opacity:1; transform:translate(-50%,-70%) scale(1.15); } 100% { opacity:0; transform:translate(-50%,-220%) scale(1); } }
+  .pulse-r { animation:pulser .5s 2; } .pulse-v { animation:pulsev .5s 2; }
+  @keyframes pulser { 50% { transform:scale(1.35); background:#ff2b2b; box-shadow:0 0 12px #ff2b2b; } } @keyframes pulsev { 50% { transform:scale(1.3); background:#1f9a45; box-shadow:0 0 12px #7dffb0; } }
+  .p.pv, .u .av span { display:inline-block; }
+  .secoue { animation:secoue .4s; } .rouge { box-shadow:0 0 0 3px #ff3b3b, 0 0 22px #ff3b3b !important; } .vert { box-shadow:0 0 0 3px #a6ff4d, 0 0 18px #a6ff4d !important; }
+  @keyframes secoue { 0%,100% { transform:none; } 20% { transform:translateX(-7px) rotate(-1deg); } 40% { transform:translateX(6px); } 60% { transform:translateX(-4px); } 80% { transform:translateX(3px); } }
+  .brille { animation:brille .7s; } @keyframes brille { 0%,100% { box-shadow:none; } 40% { box-shadow:0 0 0 3px #7dffb0, 0 0 26px #7dffb0; } }
+  .garde { animation:garde .7s; } @keyframes garde { 0%,100% { box-shadow:none; } 40% { box-shadow:0 0 0 4px #8fd3ff, 0 0 26px #8fd3ff; } }
+  .fxcarte { position:fixed; left:50%; top:50%; width:190px; background:#f6efdc; color:#2b2117; border:3px solid #b89a5e; border-radius:14px; padding:10px 12px; box-shadow:0 14px 40px #000c, 0 0 30px #f3c96b88; text-align:center; }
+  .fxcarte .sorte { font-size:.75em; color:#7a5a2a; text-transform:uppercase; letter-spacing:.05em; }
+  .fxcarte .n { font-weight:bold; font-size:1.25em; margin:3px 0 5px; } .fxcarte .t { font-size:.82em; line-height:1.3; }
+  .fxcarte .vs { margin-top:6px; background:#2b2117; color:#f6efdc; border-radius:8px; display:inline-block; padding:1px 8px; }
+  .fxcarte.ultime { width:240px; background:radial-gradient(circle at 50% 30%, #fff3c4, #f3c96b); border-color:#fff; box-shadow:0 0 60px #ffd76a, 0 14px 40px #000c; }
+  .fxcarte.ultime img { width:90px; height:90px; border-radius:14px; object-fit:cover; border:3px solid #fff; display:block; margin:0 auto 4px; }
+  .fxcarte .cit { font-style:italic; font-size:.9em; margin-top:4px; }
+  .eclair { position:fixed; inset:0; background:radial-gradient(circle, #fff8 0%, #f3c96b55 40%, transparent 75%); animation:eclair 1.4s ease-out forwards; }
+  @keyframes eclair { 0% { opacity:0; } 10% { opacity:1; } 100% { opacity:0; } }
+  .boule { position:fixed; width:26px; height:26px; border-radius:50%; background:radial-gradient(circle, #fff, var(--c) 55%, transparent 72%); box-shadow:0 0 18px 6px var(--c); }
+  .annonce { position:fixed; left:0; right:0; top:42%; text-align:center; font-size:1.8em; font-weight:bold; color:#f3c96b; text-shadow:0 3px 0 #000, 0 0 20px #000;
+    background:linear-gradient(90deg, transparent, #000a 20%, #000a 80%, transparent); padding:14px 0; animation:annonce .9s ease-out; }
+  @keyframes annonce { 0% { opacity:0; transform:scale(1.4); } 30% { opacity:1; transform:scale(1); } 100% { opacity:1; } }
+  .eff { position:fixed; pointer-events:none; }
+  .main .c.neuve { background:none; border:none; padding:0; overflow:visible; box-shadow:none; }
+  .main .c.neuve.vue { min-height:0; width:164px; }
+  .main .c.neuve.ok { box-shadow:none; animation:none; } .main .c.neuve.ok .carteG { filter:drop-shadow(0 0 6px #7dffb0) drop-shadow(0 0 3px #7dffb0); }
+  .u.illu b, .u.illu .tg { text-shadow:0 1px 2px #000; color:#fff; } .u.illu .av span { text-shadow:0 1px 2px #000; filter:brightness(1.6); }
+  .eff i { position:absolute; font-style:normal; }
+  .effimg { position:absolute; inset:0; width:100%; height:100%; }
+  .griffe { fill:none; stroke:#fff; stroke-width:7; stroke-linecap:round; stroke-dasharray:110; stroke-dashoffset:110; filter:drop-shadow(0 0 4px #ff2b2b) drop-shadow(0 0 2px #900);
+    animation:trace .18s ease-out forwards, efface .5s .45s forwards; }
+  @keyframes trace { to { stroke-dashoffset:0; } } @keyframes efface { to { opacity:0; } }
+  .lame { stroke:#eaf6ff; stroke-width:5; stroke-linecap:round; stroke-dasharray:130; stroke-dashoffset:130; filter:drop-shadow(0 0 6px #9fd8ff); animation:trace .14s ease-out forwards, efface .4s .3s forwards; }
+  .ronce { fill:none; stroke:#3f8f2a; stroke-width:6; stroke-linecap:round; stroke-dasharray:200; stroke-dashoffset:200; filter:drop-shadow(0 0 3px #1b3d10); animation:trace .4s ease-out forwards, efface .5s .7s forwards; }
+  .vent { fill:none; stroke:#e8f7ff; stroke-width:4; stroke-linecap:round; stroke-dasharray:140; stroke-dashoffset:140; opacity:.9; animation:trace .2s ease-out forwards, efface .4s .35s forwards; }
+  .marteau { position:absolute; left:50%; top:50%; font-size:52px; transform-origin:80% 80%; animation:marteau .32s cubic-bezier(.6,0,1,.6) forwards, efface .3s .6s forwards; }
+  @keyframes marteau { from { transform:translate(-30%,-120%) rotate(-70deg); } to { transform:translate(-60%,-70%) rotate(15deg); } }
+  .onde { position:absolute; inset:25%; border-radius:50%; border:4px solid #fff; opacity:0; animation:onde .55s .15s ease-out forwards; }
+  .onde.or { border-color:#ffb43a; } .onde.blanc { border-color:#fff; } .onde.bleu { border-color:#7cc8ff; animation-delay:0s; } .onde.turq { border-color:#5ff5e6; }
+  @keyframes onde { 0% { opacity:1; transform:scale(.3); } 100% { opacity:0; transform:scale(1.6); } }
+  .etinc { left:50%; top:50%; width:6px; height:6px; border-radius:50%; background:#ffd36a; box-shadow:0 0 8px 2px #ff8a1f; opacity:0; animation:etinc .55s ease-out forwards; }
+  @keyframes etinc { 0% { opacity:1; transform:translate(-50%,-50%); } 100% { opacity:0; transform:translate(calc(-50% + var(--x)), calc(-50% + var(--y))) scale(.4); } }
+  .flamme { bottom:20%; width:16px; height:22px; border-radius:50% 50% 50% 50% / 60% 60% 40% 40%; background:radial-gradient(circle at 50% 70%, #fff3a0, #ff9a1f 45%, #e5262c 80%); opacity:0; animation:flamme .6s ease-out forwards; }
+  @keyframes flamme { 0% { opacity:1; transform:translate(0,0) scale(1); } 100% { opacity:0; transform:translate(var(--x), -60px) scale(.3); } }
+  .rayons { position:absolute; inset:0; background:conic-gradient(from 0deg, transparent 0 20deg, #ffe27aee 22deg 28deg, transparent 30deg 85deg, #ffe27aee 88deg 94deg, transparent 96deg 175deg, #ffe27aee 178deg 184deg, transparent 186deg 265deg, #ffe27aee 268deg 274deg, transparent 276deg);
+    border-radius:50%; -webkit-mask:radial-gradient(circle, #000 20%, transparent 70%); mask:radial-gradient(circle, #000 20%, transparent 70%); animation:rayons .8s ease-out forwards; }
+  @keyframes rayons { 0% { opacity:0; transform:scale(.3) rotate(0); } 30% { opacity:1; } 100% { opacity:0; transform:scale(1.3) rotate(40deg); } }
+  .feuille { bottom:15%; font-size:18px; opacity:0; animation:monte .8s ease-out forwards; }
+  @keyframes monte { 0% { opacity:0; transform:translateY(0) rotate(0); } 20% { opacity:1; } 100% { opacity:0; transform:translateY(-70px) rotate(90deg); } }
+  .fleche { position:absolute; left:50%; top:50%; font-size:46px; color:#f3e2b0; text-shadow:0 0 8px #5ff5e6; animation:fleche .25s ease-out forwards, efface .3s .6s forwards; }
+  @keyframes fleche { from { transform:translate(-160%,-10%) rotate(10deg); } to { transform:translate(-55%,-55%) rotate(10deg); } }
+  .etoile { left:50%; top:50%; color:#5ff5e6; font-size:20px; text-shadow:0 0 8px #5ff5e6; opacity:0; animation:etinc .7s ease-out forwards; }
+  .etoile.violet { color:#d59bff; text-shadow:0 0 8px #b04bff; }
+  .note { position:absolute; left:50%; top:50%; font-size:34px; color:#bfe6ff; text-shadow:0 0 10px #4aa8ff; animation:monte .8s ease-out forwards; }
+  .bulle { bottom:15%; border-radius:50%; background:radial-gradient(circle at 35% 35%, #eaffc8, #7fd13a 55%, #2f7a12); box-shadow:0 0 6px #9cff4d; opacity:0; animation:monte .8s ease-out forwards; }
+  .nuage { width:60px; height:40px; border-radius:50%; background:radial-gradient(circle, #d8d2e8cc, #8a80a855 60%, transparent 70%); opacity:0; animation:nuage .9s ease-out forwards; }
+  @keyframes nuage { 0% { opacity:0; transform:scale(.4); } 40% { opacity:1; } 100% { opacity:0; transform:scale(1.6); } }
+  .cercle { position:absolute; inset:12%; border-radius:50%; border:3px dashed #c47bff; box-shadow:0 0 14px #b04bff inset, 0 0 14px #b04bff; animation:cercle .8s ease-out forwards; }
+  .cercle.or { border-color:#f3c96b; box-shadow:0 0 14px #f3c96b inset, 0 0 14px #f3c96b; }
+  @keyframes cercle { 0% { opacity:0; transform:scale(.4) rotate(0); } 30% { opacity:1; } 100% { opacity:0; transform:scale(1.1) rotate(160deg); } }
+  .eclat { position:absolute; inset:20%; background:radial-gradient(circle, #fff, #fff8 30%, transparent 65%); clip-path:polygon(50% 0, 60% 38%, 100% 50%, 60% 62%, 50% 100%, 40% 62%, 0 50%, 40% 38%); animation:eclat .4s ease-out forwards; }
+  .eclat.or { background:radial-gradient(circle, #fff, #ffd76a 35%, transparent 65%); }
+  @keyframes eclat { 0% { opacity:1; transform:scale(.3) rotate(0); } 100% { opacity:0; transform:scale(1.4) rotate(30deg); } }
+  .hexa { position:absolute; left:50%; top:50%; font-size:56px; filter:drop-shadow(0 0 10px #8fd3ff); animation:hexa .7s ease-out forwards; }
+  @keyframes hexa { 0% { opacity:0; transform:translate(-50%,-50%) scale(.3); } 35% { opacity:1; transform:translate(-50%,-50%) scale(1.1); } 100% { opacity:0; transform:translate(-50%,-50%) scale(1); } }
+  .carteb { left:40%; top:40%; width:22px; height:32px; border-radius:4px; background:#f6efdc; border:2px solid #b89a5e; animation:carteb .7s ease-out forwards; }
+  @keyframes carteb { 0% { opacity:0; transform:translateY(20px) rotate(0); } 40% { opacity:1; } 100% { opacity:0; transform:translateY(-40px) rotate(var(--r)); } }
+  .piece { bottom:30%; color:#4aa8ff; font-size:20px; text-shadow:0 0 6px #fff; opacity:0; animation:monte .8s ease-out forwards; }
+  .fleche-haut { position:absolute; left:50%; top:50%; color:#f3c96b; font-size:34px; text-shadow:0 0 10px #f3c96b; animation:monte .7s ease-out forwards; }
+  .bandact { position:fixed; left:50%; top:8px; transform:translateX(-50%); width:min(94vw, 520px); background:#1d1b3aee; border:2px solid #f3c96b; border-radius:14px; padding:8px 12px;
+    color:#fff; font-size:.95em; text-align:center; box-shadow:0 6px 18px #000a; animation:bandin .25s ease-out; transition:opacity .35s, transform .35s; z-index:3; }
+  .bandact.ordi { border-color:#ff7a59; } .bandact.moi { border-color:#7dffb0; }
+  .bandact.part { opacity:0; transform:translate(-50%, -20px); }
+  .bandact .vs { background:#000a; border-radius:8px; padding:0 6px; white-space:nowrap; } .bandact .dg { color:#ff8a8a; font-weight:bold; white-space:nowrap; }
+  @keyframes bandin { from { opacity:0; transform:translate(-50%, -20px); } }
+  .mire { position:fixed; left:0; top:0; pointer-events:none; }
+  .mire line { stroke:#ff5a5a; stroke-width:3; stroke-dasharray:8 7; animation:defile .4s linear infinite; filter:drop-shadow(0 0 3px #ff2b2b); }
+  .mire circle { fill:none; stroke:#ff5a5a; stroke-width:3; animation:mire .5s ease-out; filter:drop-shadow(0 0 4px #ff2b2b); } .mire circle.c2 { fill:#ff5a5a88; }
+  @keyframes defile { to { stroke-dashoffset:-15; } } @keyframes mire { from { r:60; opacity:0; } }
+
+  /* ================= le plateau (09/11) : sol de pierre runique, deux camps, ligne de front lumineuse ================= */
+  .plateau { position:relative; padding:8px 6px; border:none; border-radius:20px; overflow:hidden;
+    background:
+      radial-gradient(ellipse at 50% 0%, #e5262c22, transparent 55%),
+      radial-gradient(ellipse at 50% 100%, #2a7fc133, transparent 55%),
+      radial-gradient(circle at 20% 30%, #ffffff08 0 2px, transparent 3px) 0 0/34px 34px,
+      radial-gradient(circle at 70% 60%, #00000022 0 3px, transparent 4px) 0 0/46px 46px,
+      linear-gradient(180deg, #3a2f46, #2a2236 48%, #2a2236 52%, #26303f);
+    box-shadow:inset 0 0 0 2px #f3c96b55, inset 0 0 0 5px #1a1426, inset 0 0 0 7px #b7832a88, inset 0 0 40px #000a, 0 10px 30px #000a; }
+  .plateau::before { content:''; position:absolute; inset:0; pointer-events:none; opacity:.35;
+    background:repeating-linear-gradient(90deg, transparent 0 58px, #00000033 58px 60px), repeating-linear-gradient(0deg, transparent 0 40px, #00000026 40px 42px); }
+  .plateau > * { position:relative; }
+  .milieu { height:22px; margin:2px 0; display:flex; align-items:center; justify-content:center; }
+  .milieu::before, .milieu::after { content:''; flex:1; height:2px; background:linear-gradient(90deg, transparent, #f3c96b, #c084fc); box-shadow:0 0 8px #c084fc; animation:lueur 3s ease-in-out infinite; }
+  .milieu::after { background:linear-gradient(270deg, transparent, #f3c96b, #c084fc); }
+  .milieu span { padding:0 8px; color:#f3c96b; font-size:.85em; letter-spacing:.3em; text-shadow:0 0 8px #f3c96b, 0 0 14px #c084fc; animation:lueur 3s ease-in-out infinite; }
+  @keyframes lueur { 50% { opacity:.55; } }
+  .front { gap:5px; min-height:94px; padding:0 8px; }
+  .front > .u, .front > .place { flex:0 1 66px; min-width:0; }
+  .front.vide::after { content:none; }
+  .place { width:66px; height:88px; border-radius:11px; border:2px dashed #ffffff1c; background:radial-gradient(circle, #ffffff08, transparent 70%); }
+  .place::after { content:'✦'; display:grid; place-items:center; height:100%; color:#ffffff14; font-size:20px; }
+  /* créatures : petites cartes, statistiques en pastilles comme sur les vraies cartes */
+  .u { position:relative; width:66px; height:88px; padding:5px 4px 0; border-radius:11px; border:2px solid #b7832a; font-size:.62em;
+    background:linear-gradient(170deg, #fbf3df, #e9dcbc); box-shadow:0 4px 10px #0008, inset 0 0 0 2px #fff6; display:flex; flex-direction:column; }
+  #f-O .u { border-color:#c4553a; } #f-J .u { border-color:#3aa0a8; }
+  .u b { min-height:0; font-size:1.08em; line-height:1.1; }
+  .u .tg { flex:1; font-size:.92em; }
+  .u .av { position:absolute; left:-6px; right:-6px; bottom:-7px; margin:0; }
+  .u .av span { width:24px; height:24px; border-radius:50%; display:grid; place-items:center; font-size:.95em; color:#fff !important; border:2px solid #fff9; box-shadow:0 2px 5px #000a; text-shadow:0 1px 1px #0008; }
+  .u .av span:first-child { background:radial-gradient(circle at 35% 30%, #ffb36a, #c2410c); }
+  .u .av span:last-child { background:radial-gradient(circle at 35% 30%, #8df0a0, #1f7a35); }
+  .u.pret { box-shadow:0 0 0 2px #ffd27a, 0 0 14px #ffd27a99, 0 4px 10px #0008; }
+  .u.illu { background-size:cover !important; }
+  .u.mystere { border-color:#8b5cf6 !important; }
+  /* héros : grand médaillon, barre de vie épaisse */
+  .barre { background:linear-gradient(90deg, #0b0918cc, #1d1b3acc); border:1px solid #ffffff14; border-radius:16px; padding:6px 8px; box-shadow:0 4px 14px #0007; }
+  .barre img { width:58px; height:58px; border-radius:50%; border:3px solid var(--c); box-shadow:0 0 0 2px #0008, 0 0 14px var(--c); }
+  .barre .nom { font-size:1em; }
+  .vie { height:11px !important; border-radius:6px; box-shadow:inset 0 1px 3px #000c; }
+  .vie i { background:linear-gradient(180deg, #ff6a5e, #c81e2a); border-radius:6px; }
+
+  /* ================= plateau peint « façon Hearthstone » (Gemini, 09/11) : 768 × 1376, tout est placé en cqw (1 cqw = 1 % de la largeur) =================
+     alcôve du haut : centre (50 ; 19,3) diamètre 26 · alcôve du bas : centre (50 ; 132,8) · aire de jeu 14,3 → 86 de large, ligne de runes à 78 · bac à dés : 152 → 168 */
+  .plateau.tapis { container-type:inline-size; aspect-ratio:768/1376; padding:0; border-radius:16px; background:#2a2014 url('decor/plateau-duel.webp?v=1') center/100% 100% no-repeat; box-shadow:0 10px 30px #000a; }
+  .plateau.tapis::before { content:none; }
+  .tapis > * { position:absolute !important; }
+  .tapis .milieu { display:none; }
+  .tapis .barre { left:37cqw; width:26cqw; height:26cqw; padding:0; border:none; background:none; box-shadow:none; display:block; border-radius:50%; }
+  .tapis #b-O { top:6.3cqw; } .tapis #b-J { top:119.8cqw; }
+  .tapis .barre img { position:absolute; inset:0; width:100%; height:100%; border-radius:50%; border:none; box-shadow:inset 0 0 0 2px #0006; }
+  .tapis .barre > div { position:static !important; }
+  .tapis .barre.cible img { box-shadow:0 0 0 4px var(--ok), 0 0 24px var(--ok); }
+  .tapis .barre.protege { box-shadow:0 0 0 3px #8fd3ff, 0 0 22px #4aa8ff; }
+  .tapis .barre .nom { position:absolute; left:50%; transform:translateX(-50%); white-space:nowrap; font-size:3.2cqw; padding:.2em .8em; border-radius:20px; background:#1d1626e6; border:1px solid #f3c96b88; color:#fff; z-index:2; }
+  .tapis #b-O .nom { top:calc(100% - 1cqw); } .tapis #b-J .nom { bottom:calc(100% - 1cqw); }
+  .tapis .barre .vie { position:absolute; left:16%; width:68%; bottom:5%; height:2.2cqw !important; z-index:2; border:1px solid #0008; }
+  .tapis #b-J .vie { bottom:auto; top:5%; }
+  .tapis .barre .pastilles { position:absolute; right:calc(100% + 2cqw); width:34cqw; display:flex; flex-wrap:wrap; justify-content:flex-end; gap:1cqw; margin:0; }
+  .tapis #b-O .pastilles { top:0; } .tapis #b-J .pastilles { bottom:0; }
+  .tapis .p { font-size:2.9cqw; box-shadow:0 1px 3px #000c; border:1px solid #ffffff22; }
+  .tapis .p:not(.pv):not(.pc):not(.g):not(.m):not(.pu):not(.al) { background:#1d1626e0; }
+  .tapis .barre.protege::before { left:-1cqw; top:-1cqw; font-size:3cqw; }
+  .tapis .front { left:4cqw; right:4cqw; height:38cqw; padding:0; gap:1.2cqw; align-items:center; }
+  .tapis #f-O { top:36cqw; } .tapis #f-J { top:80.5cqw; }
+  .tapis .front > .u, .tapis .front > .place { flex:0 0 17.4cqw; width:17.4cqw; height:24cqw; }
+  .tapis .place { border-color:#0000001a; background:#ffffff14; } .tapis .place::after { color:#00000018; }
+  .tapis .u { font-size:2.35cqw; }
+  .tapis .des { left:12cqw; right:12cqw; top:150.5cqw; height:20cqw; margin:0; gap:1.5cqw; align-items:center; flex-wrap:nowrap; }
+  .tapis .d { width:13.5cqw; } .tapis .d img, .tapis .d .cad { width:12cqw; height:12cqw; }
+  .tapis .d .sac { font-size:2.1cqw; line-height:1.1; color:#e9ffe9cc; text-shadow:0 1px 1px #000; }
+  .tapis .d.cache::after { top:2cqw; font-size:6cqw; }
+  /* plateau peint, retouches du 10/11 (2) : RIEN sur le portrait. À gauche : vie, PC, puis les états ; à droite : Ultime et cartes en main. */
+  /* le combat dans le décor du lieu (Odyssée, Campement) : le plateau peint laisse la place à la scène ; une image decor/lieu-<nom>.webp prend le dessus si elle existe */
+  .plateau.tapis.scene { background-color:#1a1020; background-size:cover; background-position:center; }
+  .scene.lieu-cendres { background-image:url('decor/lieu-cendres.webp?v=1'), linear-gradient(180deg, #3a1a1a 0%, #7a3a2a 28%, #4a4048 46%, #2a2a33 47%, #15151c 100%); }
+  .scene.lieu-lave { background-image:url('decor/lieu-lave.webp?v=1'), linear-gradient(180deg, #1a0505 0%, #5a1a0a 30%, #a8341a 46%, #2a0a0a 47%, #120404 100%); }
+  .scene.lieu-ruines { background-image:url('decor/lieu-ruines.webp?v=1'), linear-gradient(180deg, #1a0f2e 0%, #4a2a7a 32%, #3a2a4a 46%, #1d1626 47%, #0f0b16 100%); }
+  .scene.lieu-cratere { background-image:url('decor/lieu-cratere.webp?v=1'), radial-gradient(circle at 50% 52%, #f7a23a 0%, #a8341a 22%, #3a0a0a 55%, #1a0505 100%); }
+  .scene.lieu-brume { background-image:url('decor/lieu-brume.webp?v=1'), linear-gradient(180deg, #1a1f1a 0%, #4a5a4a 35%, #2a3a2a 46%, #16201a 47%, #0b100c 100%); }
+  .scene::after { content:''; position:absolute; left:0; right:0; top:46.5cqw; height:1.5cqw; background:linear-gradient(90deg, transparent, #ffffff33, transparent); pointer-events:none; }
+  .scene #b-O { width:34cqw; height:34cqw; left:33cqw; top:3cqw; } .scene #b-O img { border:3px solid #ffffff55; box-shadow:0 0 40px #000c, 0 0 0 6px #0006; }
+  .scene #b-J img { border:3px solid #f3c96b88; box-shadow:0 0 30px #000c; }
+  .scene .barre .nom { background:#0b0914e6; }
+  .tapis .barre .pastilles { flex-direction:column; align-items:flex-end; flex-wrap:nowrap; gap:1.3cqw; width:33cqw; right:calc(100% + 1.5cqw); }
+  .tapis #b-O .pastilles { top:3cqw; } .tapis #b-J .pastilles { top:auto; bottom:2cqw; }
+  .tapis .pastilles .pg, .tapis .pastilles .pb { display:none; }
+  .tapis .pastilles [data-k="pv"] { font-size:3.8cqw; font-weight:bold; padding:.15em .6em; border:2px solid #ffd0d0; background:radial-gradient(circle at 35% 30%, #ff6b6b, #a3162a); }
+  .tapis .pastilles [data-k="pc"] { font-size:3.4cqw; font-weight:bold; padding:.12em .55em; border:2px solid #cfe6ff; background:radial-gradient(circle at 35% 30%, #5fb0ff, #1d4f9a); }
+  .tapis .pastilles [data-k="ultime"], .tapis .pastilles [data-k="ultimefait"], .tapis .pastilles [data-k="main"] { position:absolute; left:64.5cqw; white-space:nowrap; font-size:2.9cqw; }
+  .tapis #b-O .pastilles [data-k="ultime"], .tapis #b-O .pastilles [data-k="ultimefait"] { top:0; } .tapis #b-O .pastilles [data-k="main"] { top:6.5cqw; }
+  .tapis #b-J .pastilles [data-k="ultime"], .tapis #b-J .pastilles [data-k="ultimefait"] { bottom:6.5cqw; } .tapis #b-J .pastilles [data-k="main"] { bottom:0; }
+  .tapis .p { font-size:2.9cqw; }
+  .tapis #b-J .nom { bottom:calc(100% - 1cqw); }
+  .tapis .front { gap:3cqw; left:5cqw; right:5cqw; justify-content:center; }
+  .tapis .front > .u, .tapis .front > .place { flex:0 0 15.6cqw; width:15.6cqw; height:22cqw; }
+  .tapis .u .av { left:-1.2cqw; right:-1.2cqw; bottom:-2cqw; }
+  .tapis .u .av span { width:6.4cqw; height:6.4cqw; font-size:2.6cqw; border-width:1.5px; }
+  /* créatures : la rangée reste DANS l'aire de jeu peinte (14,5 → 85,5 cqw) ; les cartes rétrécissent quand il y en a 4 ou 5 */
+  .tapis .front { left:14.5cqw !important; right:14.5cqw !important; gap:1.8cqw; justify-content:center; }
+  .tapis .front > .place { display:none; }
+  .tapis .front > .u { flex:0 1 15.6cqw; width:auto; min-width:0; height:22cqw; }
+  .tapis .u .av { left:-.6cqw; right:-.6cqw; }
+  .tapis .u b { overflow-wrap:anywhere; hyphens:auto; }
+  /* deux protections, deux badges : 🛡 Garde temporaire (pointillés) · 🛡 Bouclier permanent (plein) */
+  .bdg { position:absolute; z-index:4; font-weight:bold; color:#fff; border-radius:12px; padding:0 7px; font-size:.78em; box-shadow:0 2px 6px #000a; white-space:nowrap; }
+  .bdg[hidden] { display:none; }
+  .bdg.bg { background:#3a8fd055; border:2px dashed #cfeaff; color:#e9f6ff; text-shadow:0 1px 2px #000; }
+  .bdg.bb { background:linear-gradient(#5d7a99, #2f4a66); border:2px solid #dfe9f5; }
+  .barre .bdg.bg { left:2px; top:-9px; } .barre .bdg.bb { left:62px; top:-9px; }
+  .tapis .barre .bdg { font-size:3.7cqw; } .tapis .barre .bdg.bg { left:-2cqw; top:-1.5cqw; } .tapis .barre .bdg.bb { left:auto; right:-2cqw; top:-1.5cqw; }
+  .barre.protege::before { content:none !important; }
+  .tapis .pastilles .pg, .tapis .pastilles .pb { display:none; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="fen"></div>
+<script>
+// Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
+// Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
+const VERSION = '20261110-143557';
+fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
+  v = (v || '').trim();
+  if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); location.replace('duel.html?v=' + v); }
+}).catch(() => {});
+// Pendant qu'on joue : vérifie toutes les 2 minutes (et au retour sur l'appli) ; une nouvelle version = un bandeau « Mettre à jour »,
+// jamais de rechargement surprise au milieu d'une partie.
+function verifieVersion() {
+  fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
+    v = (v || '').trim(); if (!v || v === VERSION || document.getElementById('majbar')) return;
+    const b = document.createElement('div'); b.id = 'majbar';
+    b.innerHTML = '<span><b>Nouvelle version du jeu</b><br>La partie en cours sera perdue, l’historique est gardé.</span><button>Mettre à jour</button>';
+    b.querySelector('button').onclick = () => location.replace('duel.html?v=' + v);
+    document.body.appendChild(b);
+  }).catch(() => {});
+}
+setInterval(verifieVersion, 120000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
+</script>
+<script src="cartes.js?v=20261110-143557"></script>
+<script src="donnees.js?v=20261110-143557"></script>
+<script src="odyssee.js?v=20261110-143557"></script>
+<script src="chronique.js?v=20261110-140121"></script>
+<script>
+// =============================================================================================== moteur
+let S = null;
+const adv = J => J === S.J ? S.O : S.J;
+const log = t => { S.log.unshift(t); };
+// Animations : le moteur note ce qui se passe (FX), l'écran le rejoue ensuite pas à pas. Rien pendant les simulations.
+let FX = [], fxOn = false, fxApres = [], fxVite = 1;
+const fx = e => { if (S && !S.auto) FX.push(e); };
+// bilan du tour de l'ordinateur (montré à la fin de son tour)
+const bilan = (J, cle, txt) => { if (!S || S.auto || !S.bilan || J !== S.O) return; S.bilan[cle].push(txt); };
+const ref = k => ({ s:k.J === S.J ? 'J' : 'O', uid:k.u ? k.u.id : null });
+function joueur(id, ordi, auto) {
+  const h = HEROS[id];
+  return { id, ordi, nom:h.nom, c:h.c, pv:h.pv, pvMax:h.pv, pc:1, deck:melange(ordi || auto ? deckBase(id) : deckDe(id)), main:[], des:[], front:[], tours:0,
+    sacs:[0, 1, 2, 3, 4].map(() => []), reliques:[], benes:[], sacoche:[], potionsUtilisees:0, jauge:0, degSubis:0, bouclier:0, gardeB:0, gardeE:0, purete:0, handicap:0, saigne:0, poison:0, meute:0, braise:0, relance:1 };
+}
+function melange(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function pioche(J, n) { for (let i = 0; i < n; i++) { if (!J.deck.length) break; if (J.main.length >= 7) { J.deck.pop(); continue; } J.main.push(J.deck.pop()); } }
+// Dés « équitables » : chaque dé a un sac de 6 faces mélangé ; il sort ses faces dans l'ordre et se remplit quand il est vide.
+function lance(J, d) {
+  if (!d.sac.length) d.sac.push(...melange([1, 2, 3, 4, 5, 6]));
+  d.v = d.sac.shift(); d.mod = false;
+  if (J.id === 'pip' && d.v === 6) ajouteMeute(J, 1);
+}
+function modifie(J, d, v) { d.v = v; d.mod = true; if (J.catalyseur && !S.fini) degats({ J:adv(J) }, 1); }
+function ajouteMeute(J, n) {
+  if (J.id !== 'pip' || J.front.some(u => u.louve)) return;
+  J.meute = Math.min(3, J.meute + n); log(`Meute : ${J.meute} sur 3.`);
+  if (J.meute >= 3 && J.front.length < 5) { J.meute = 0; invoque(J, { n:'La Louve', a:4, v:7, louve:true }); log('🐺 La Louve arrive sur la ligne de front !'); }
+}
+function invoque(J, base, key) {
+  if (J.front.length >= 5) { log('Ligne de front pleine.'); return; }
+  const u = { ...base, key, id:Math.random().toString(36).slice(2), pret:!!base.charge };
+  if (S.salle.id === 'caserne') u.v += 1;
+  if (J.reliques.includes('cor')) u.v += 1;
+  u.vmax = u.v; J.front.push(u);
+  if (base.louve) fx({ t:'invoque', s:J === S.J ? 'J' : 'O', nom:base.n });
+}
+function renvoie(k) { k.J.front = k.J.front.filter(x => x !== k.u); if (k.u.key && k.J.main.length < 7) k.J.main.push(k.u.key); log(`${k.u.n} retourne dans la main.`); }
+function altere(J, quoi, n) {
+  if (J.purete > 0) { J.purete--; log(`${J.nom} utilise un jeton de Pureté : ${quoi} annulé.`); return; }
+  if (quoi === 'handicap') { J.handicap = 1; log(`${J.nom} reçoit Handicap.`); }
+  if (quoi === 'saigne') { J.saigne = Math.min(3, J.saigne + 1); log(`${J.nom} saigne.`); }
+  if (quoi === 'poison') { J.poison += n; log(`${J.nom} reçoit Poison ${n}.`); }
+}
+const atk = (J, u) => Math.max(0, u.a + (J.banniere && u.barriere ? 2 : 0) + (u.tmp || 0) + J.front.filter(x => x.tambour && x !== u).length);
+function soin(J, n) { const a = J.pv; J.pv = Math.min(J.pvMax, J.pv + n); if (J.pv > a) { log(`${J.nom} se soigne de ${J.pv - a}.`); fx({ t:'soin', c:ref({ J }), n:J.pv - a, pv:J.pv }); } }
+function soinCible(k, n) { if (k.u) { const a = k.u.v; k.u.v = Math.min(k.u.vmax, k.u.v + n); log(`${k.u.n} se soigne.`); if (k.u.v > a) fx({ t:'soin', c:ref(k), n:k.u.v - a, v:k.u.v }); } else soin(k.J, n); }
+// k = { J, u? } : la cible. ignore = passe Bouclier et Barrière (Instinct de la Louve)
+function degats(k, n, ignore) {
+  if (S.fini || n <= 0) return;
+  if (S.ody) { // Odyssée : reliques du héros
+    if (S.acteur === S.J && k.J === S.O && S.J.reliques.includes('brassards')) n += 2;
+    if (k.J === S.J && !k.u && S.J.reliques.includes('armure')) n = Math.max(0, n - 1);
+    if (n <= 0) return;
+  }
+  if (k.u) {
+    if (!k.J.front.includes(k.u)) return;
+    let r = n;
+    let abs = 0;
+    if (!ignore && k.u.bouclier) { const b = Math.min(k.u.bouclier, r); k.u.bouclier -= b; r -= b; abs = b; }
+    k.u.v -= r; if (r) log(`${k.u.n} subit ${r} dégât(s).`);
+    fx({ t:'degat', c:ref(k), n:r, abs, v:Math.max(0, k.u.v) });
+    if (k.u.v <= 0) {
+      if (k.J.cor) { k.J.cor = false; k.u.v = 1; log(`Cor de ralliement : ${k.u.n} reste debout à 1 vie.`); }
+      else { fx({ t:'tombe', c:ref(k) }); k.J.front = k.J.front.filter(x => x !== k.u); log(`${k.u.n} tombe.`); }
+    }
+  } else {
+    const J = k.J; let r = n, abs = 0;
+    if (!ignore) {
+      if (J.esquive) { J.esquive = false; r = Math.floor(r / 2); log(`${J.nom} esquive : dégâts divisés par 2.`); }
+      const g = Math.min(J.gardeB, r); J.gardeB -= g; r -= g;
+      const b = Math.min(J.bouclier, r); J.bouclier -= b; r -= b;
+      if (g + b) log(`Les boucliers de ${J.nom} absorbent ${g + b}.`); abs = g + b; if (S.bilan && J === S.J) S.bilan.abs += g + b;
+    }
+    J.pv -= r; log(r ? `${J.nom} perd ${r} PV.` : `${J.nom} ne perd aucun PV.`);
+    if (HEROS[J.id].phases && J.pv > 0) phaseBoss(J);
+    fx({ t:'degat', c:ref(k), n:r, abs, pv:Math.max(0, J.pv), garde:J.gardeB, bouclier:J.bouclier });
+    if (r > 0) { J.degSubis = (J.degSubis || 0) + r; while (J.degSubis >= JAUGE.parDegats) { J.degSubis -= JAUGE.parDegats; remplit(J, 1); } }
+    if (r > 1 && J.fournaise) { J.fournaise = false; const D = adv(J); log('Fournaise : l’adversaire subit la moitié des dégâts.'); D.pv -= Math.floor(r / 2); }
+  }
+  fin();
+}
+// le boss change de phase (Garde et Pouvoir) quand il passe sous 2/3 puis 1/3 de ses PV
+function phaseBoss(J) {
+  const h = HEROS[J.id], ph = h.phases; let p = 0;
+  for (let i = 0; i < ph.length; i++) if (J.pv <= J.pvMax * ph[i].seuil) p = i;
+  if (p === (J.phase || 0)) return;
+  J.phase = p; h.garde = ph[p].garde; h.pouvoir = ph[p].pouvoir;
+  log(`🔥 ${J.nom} entre en phase ${p + 1} : ${ph[p].pouvoir.n} !`); fx({ t:'annonce', txt:`🔥 Phase ${p + 1} : ${ph[p].pouvoir.n} !` });
+}
+function remplit(J, n) { if (J.ultimeFait || J.jauge >= JAUGE.max) return; J.jauge = Math.min(JAUGE.max, (J.jauge || 0) + n); if (J.jauge >= JAUGE.max) { J.jaugeTour = J.tours; log(`⚡ La jauge d’Ultime de ${J.nom} est pleine !`); fx({ t:'jauge', s:J === S.J ? 'J' : 'O' }); } }
+function fin() { if (S.fini) return;
+  if (S.coop) { S.equipe.forEach(h => { if (h.pv <= 0 && !h.aTerre) { h.aTerre = true; h.front = []; log(`💀 ${h.nom} est à terre !`); fx({ t:'annonce', txt:`💀 ${h.nom} est à terre !` }); } });
+    if (S.O.pv <= 0) S.fini = 'gagne'; else if (S.equipe.every(h => h.aTerre)) S.fini = 'perdu'; return; }
+  if (S.J.pv <= 0 || S.O.pv <= 0) S.fini = S.J.pv > 0 ? 'gagne' : 'perdu'; }
+
+function debutTour(J) {
+  if (J.gardeB > 0 || J.gardeE > 0) fx({ t:'finGarde', s:J === S.J ? 'J' : 'O', n:J.gardeB });
+  J.tours++; J.gardeB = 0; J.gardeE = 0; J.contre = J.piege = J.cor = J.fournaise = J.paillasse = J.esquive = false;
+  J.relance = 1 + (J.boussole ? 1 : 0) + (J.reliques.includes('oeil') ? 1 : 0) + (J.benes.includes('relance') ? 1 : 0); S.acteur = null; J.cartesJouees = 0; J.six = 0; J.pureteTour = false; J.transmu = false; J.dernierSort = null; J.gardeFaite = false;
+  if (J.tours > 1) { J.pc = Math.min(6, J.pc + 1); pioche(J, 1); }
+  if (J.saigne) { log(`${J.nom} saigne : −${J.saigne * 2} PV.`); J.pv -= J.saigne * 2; fx({ t:'degat', c:ref({ J }), n:J.saigne * 2, abs:0, pv:Math.max(0, J.pv), mot:'Saignement' }); fin(); }
+  if (J.poison) { log(`${J.nom} : Poison, −${J.poison} PV.`); J.pv -= J.poison; fx({ t:'degat', c:ref({ J }), n:J.poison, abs:0, pv:Math.max(0, J.pv), mot:'Poison', vert:true }); J.poison--; fin(); }
+  let n = Math.min(J.desMax || 5, J.tours + 2);
+  const base = n; J.neuf = (J.tours > 1 && base > (J.nbBase || 0)) ? base - 1 : -1; if (J === S.J && J.neuf >= 0) fx({ t:'nouveauDe', n:base }); J.nbBase = base;
+  if (J.handicap) { n--; J.handicap = 0; log(`Handicap : ${J.nom} lance un dé de moins.`); }
+  J.des = J.sacs.slice(0, n).map((sac, i) => ({ sac, v:0, pose:false, mod:false, i }));
+  if (J.oeuvre) { J.des.forEach(d => { d.v = J.oeuvre; }); log(`Grand œuvre : tous les dés de ${J.nom} montrent ${J.oeuvre}.`); J.oeuvre = 0; }
+  else if (!J.ordi && !S.auto) J.aLancer = true;
+  else J.des.forEach(d => lance(J, d));
+  J.front.forEach(u => { u.pret = !u.entrave; u.entrave = false; u.defense = false; });
+  log(J.aLancer ? `— Tour ${J.tours} de ${J.nom}` : `— Tour ${J.tours} de ${J.nom} : ${J.des.map(d => d.v).join(' · ')}`);
+}
+function coutCarte(J, k) {
+  const c = CARTES[k]; let n = c.c;
+  if (S.salle.id === 'echos' && J.cartesJouees === 0) n = Math.max(0, n - 1);
+  if (c.t === 'e' && J.forgeGratuite) n = 0;
+  return n;
+}
+// les monstres de l'Odyssée ont leur propre Frappe (plus faible) ; les héros gardent la Frappe commune
+const frappeDe = J => HEROS[J.id].frappe || FRAPPE;
+function defDe(J, quoi) { const h = HEROS[J.id]; return quoi === 'frappe' ? frappeDe(J) : quoi === 'technique' ? TECHNIQUE : quoi === 'pouvoir' ? h.pouvoir : quoi === 'ultime' ? h.ultime : quoi === 'garde' ? h.garde : CARTES[quoi]; }
+function ciblesPossibles(J, type) {
+  const D = adv(J), vis = D.front.filter(u => !u.cachee);
+  if (type === 'ennemi') return [{ J:D }, ...vis.map(u => ({ J:D, u }))];
+  if (type === 'uniteE') return vis.map(u => ({ J:D, u }));
+  if (type === 'allie') return [{ J }, ...J.front.map(u => ({ J, u }))];
+  if (type === 'uniteA') return J.front.map(u => ({ J, u }));
+  if (type === 'barriereA') return J.front.filter(u => u.barriere).map(u => ({ J, u }));
+  return [];
+}
+function cibleValide(J, k, type) { if (k && (!k.u || k.J.front.includes(k.u))) return k; return cibleAuto(J, type); }
+// Zéphine, l'alchimiste : son +1 / −1 ne coûte qu'1 PC (sa spécialité reste plus forte que celle des autres)
+const coutAjuste = J => J.id === 'zephine' ? 1 : 2;
+function permis(J, quoi, vs, ds) {
+  if (quoi === 'pcSoins') return J.pc >= 2 && !!(J.poison || J.saigne || J.handicap);
+  if (!vs.length) return false;
+  const h = HEROS[J.id];
+  if (quoi === 'vendre') return true;
+  if (quoi === 'transmu') return J.id === 'zephine' && !J.transmu && vs.length === 1;
+  if (quoi === 'pcRelance') return vs.length === 1 && J.pc >= 1;
+  if (quoi === 'pcAjuste') return vs.length === 1 && J.pc >= coutAjuste(J);
+  if (quoi === 'garde') return !J.gardeFaite && h.garde.cond(vs, ds);
+  if (quoi === 'pouvoir') return h.pouvoir.cond(vs, ds);
+  if (quoi === 'frappe') return frappeDe(J).cond(vs);
+  if (quoi === 'technique') return TECHNIQUE.cond(vs);
+  if (quoi === 'ultime') return !J.ultimeFait && J.jauge >= JAUGE.max && J.pc >= 3 && h.ultime.cond(vs, ds);
+  const c = CARTES[quoi];
+  if (c.t === 's' && J.silence) return false;
+  if (c.t === 'u' && J.front.length >= 5) return false;
+  if (c.cible && c.cible !== 'de' && !ciblesPossibles(J, c.cible).length) return false;
+  if (c.cible === 'de' && !J.des.some(d => !d.pose && !(ds || []).includes(d))) return false;
+  return J.pc >= coutCarte(J, quoi) && c.cond(vs, ds);
+}
+function pose(J, quoi, ds, k, indexMain) {
+  const vs = vals(ds); S.acteur = J;
+  if (quoi === 'pcRelance') { J.pc -= 1; const a = ds[0].v; lance(J, ds[0]); log(`${J.nom} paie 1 PC et relance un ${a} : ${ds[0].v}.`); return; }
+  if (quoi === 'pcAjuste') { const c = coutAjuste(J); J.pc -= c; const a = ds[0].v, v = Math.max(1, Math.min(6, a + (k && k.sens || 1))); modifie(J, ds[0], v); log(`${J.nom} paie ${c} PC : ${a} devient ${v}.`); return; }
+  if (quoi === 'pcSoins') { J.pc -= 2; J.poison = 0; J.saigne = 0; J.handicap = 0; log(`${J.nom} paie 2 PC : Premiers soins, plus aucune altération.`); return; }
+  if (quoi === 'transmu') { J.transmu = true; const d = ds[0]; const a = d.v; modifie(J, d, opp(a)); log(`${J.nom} transmute un ${a} en ${d.v}.`); return; }
+  ds.forEach(d => { d.pose = true; });
+  const h = HEROS[J.id]; J.dernier = quoi;
+  if (S.coop && J !== S.O && vs.length >= 3 && S.cohesion < COHESION.max) { S.cohesion++; log(`🤝 Cohésion ${S.cohesion}/${COHESION.max}.`); }
+  if (quoi === 'garde' && vs.includes(6)) J.garde6 = true;
+  if (quoi === 'technique' && vs.length >= 4) J.tech4 = true;
+  if (quoi === 'vendre') { let g = 0; vs.forEach(v => g += (S.salle.id === 'autel' && v === 6) ? 2 : 1); J.pc = Math.min(6, J.pc + g); log(`${J.nom} vend ${vs.length} dé(s) : +${g} PC.`); fx({ t:'pc', s:J === S.J ? 'J' : 'O', n:g, nb:vs.length }); return; }
+  const six = vs.filter(v => v === 6).length; J.six += six;
+  if (quoi !== 'ultime') remplit(J, vs.length * JAUGE.parDe);
+  if (J.id === 'aldric' && J.six >= 2 && !J.pureteTour && J.purete < 2) { J.purete++; J.pureteTour = true; log('✦ Deux 6 posés : Aldric gagne un jeton de Pureté.'); }
+  if (quoi === 'garde') { J.gardeFaite = true; const g0 = J.gardeB, e0 = J.gardeE, q0 = J.esquive; h.garde.f(J, vs, k, ds);
+    if (J.benes.includes('gardex2') && !J.gardeX2 && J.gardeB > g0) { J.gardeB += J.gardeB - g0; J.gardeX2 = true; log('Première parade : Garde doublée.'); }
+    const quoiG = J.gardeB > g0 ? `Bouclier ${J.gardeB}` : J.gardeE > e0 ? `Épines ${J.gardeE}` : J.esquive && !q0 ? 'Esquive' : h.garde.n;
+    fx({ t:'garde', s:J === S.J ? 'J' : 'O', nom:h.garde.n, quoi:quoiG, vs }); bilan(J, 'gardes', `Garde : ${quoiG}`); return; }
+  if (quoi === 'frappe') { log(`${J.nom} : Frappe (${vs.join(', ')}) : ${frappeDe(J).dg(vs)} dégâts.`); fx({ t:'tir', id:J.id, s:J === S.J ? 'J' : 'O', vers:k && ref(k), nom:'Frappe', vs, dg:frappeDe(J).dg(vs), cible:k && (k.u ? k.u.n : k.J.nom) }); bilan(J, 'actions', `⚔ Frappe (${vs.join('·')}) : ${frappeDe(J).dg(vs)} dégâts`); frappeDe(J).f(J, vs, k); return; }
+  if (quoi === 'technique') { log(`${J.nom} : Technique (${vs.join(', ')}) : ${[0, 0, 0, 4, 7, 10][vs.length]} dégâts.`); fx({ t:'tir', id:J.id, s:J === S.J ? 'J' : 'O', vers:k && ref(k), nom:'Technique', vs, dg:[0, 0, 0, 4, 7, 10][vs.length], cible:k && (k.u ? k.u.n : k.J.nom) }); bilan(J, 'actions', `⚔ Technique (${vs.join('·')}) : ${[0, 0, 0, 4, 7, 10][vs.length]} dégâts`); TECHNIQUE.f(J, vs, k); return; }
+  if (quoi === 'pouvoir') { log(`${J.nom} : ${h.pouvoir.n} !`); bilan(J, 'actions', `✨ Pouvoir : ${h.pouvoir.n} (${vs.join('·')})`); fx({ t:'carte', key:'pouvoir', id:J.id, s:J === S.J ? 'J' : 'O', nom:h.pouvoir.n, txt:h.pouvoir.d, sorte:'Pouvoir', vers:k && k.J && ref(k), vs }); h.pouvoir.f(J, vs, k, ds); return; }
+  if (quoi === 'ultime') { J.pc -= 3; J.ultimeFait = true; log(`${J.nom} : ULTIME, ${h.ultime.n} !`); bilan(J, 'actions', `⚡ ULTIME : ${h.ultime.n}`); fx({ t:'ultime', s:J === S.J ? 'J' : 'O', id:J.id, nom:h.ultime.n, d:h.ultime.d, cit:h.cit, vers:k && k.J && ref(k) }); h.ultime.f(J, vs, k, ds); return; }
+  const c = CARTES[quoi];
+  const cout = coutCarte(J, quoi);
+  J.pc -= cout; J.cartesJouees++;
+  if (c.t === 'e' && J.forgeGratuite) J.forgeGratuite = false;
+  J.main.splice(indexMain, 1);
+  log(`${J.nom} joue ${c.n} avec ${vs.length > 1 ? 'les dés' : 'le dé'} ${vs.join(', ')} · ${cout} PC (reste ${J.pc}).`);
+  const secret = !S.auto && J !== S.J && c.u && c.u.cachee;
+  if (secret) S.log[0] = `${J.nom} pose une créature cachée · ${cout} PC.`;
+  bilan(J, 'actions', secret ? '👁 une créature cachée' : `🂠 ${c.n}`);
+  if (secret) fx({ t:'carte', key:'cachee', s:'O', nom:'Créature cachée', txt:'Une créature arrive dans l’ombre : on ne sait pas laquelle.', sorte:'Créature', cout });
+  else fx({ t:'carte', key:quoi, s:J === S.J ? 'J' : 'O', nom:c.n, txt:c.d, sorte:{ u:'Créature', s:'Sort', e:'Équipement', r:'Piège' }[c.t], cout, vers:k && k.J && ref(k), vs });
+  if (J.id === 'maelle' && six) {
+    J.braise += six * (1 + J.front.filter(u => u.apprenti).length);
+    if (J.braise >= 3) { J.braise = 0; J.forgeGratuite = true; log('🔥 3 Braises : la prochaine carte Équipement de Maëlle ne coûte rien.'); }
+  }
+  if (c.u) invoque(J, c.u, quoi);
+  if (c.f) c.f(J, vs, k, ds);
+  if (c.t === 's' && quoi !== 'echo') J.dernierSort = { key:quoi, vs, k };
+}
+function attaque(J, u, k) {
+  const D = adv(J); S.acteur = J; J.dernier = 'creature';
+  const embuscade = !!u.cachee; u.pret = false; u.cachee = false;
+  if (D.contre) { D.contre = false; log('Contre-attaque : 6 dégâts d’abord !'); degats({ J, u }, 6); if (!J.front.includes(u)) return; }
+  if (D.piege) { D.piege = false; log('Piège à mâchoires !'); degats({ J, u }, 3); if (!J.front.includes(u)) return; u.entrave = true; }
+  if (D.paillasse) { D.paillasse = false; altere(J, 'poison', 3); }
+  const a = atk(J, u) + (embuscade ? 2 : 0);
+  log(`${u.n} attaque ${k.u ? k.u.n : D.nom}${embuscade ? ' : EMBUSCADE, +2 dégâts' : ''}.`);
+  fx({ t:'coup', de:ref({ J, u }), vers:ref(k), uk:u.louve ? 'louve' : u.key, nom:u.n, a, emb:embuscade, cible:k.u ? k.u.n : D.nom }); bilan(J, 'actions', `🐾 ${u.n} attaque ${k.u ? k.u.n : 'toi'} (${a})`);
+  if (k.u) {
+    if (k.u.gardien) { D.pc = Math.min(6, D.pc + 1); log('Le Gardien rapporte 1 PC.'); }
+    const riposte = atk(D, k.u) + (k.u.epines || 0);
+    degats(k, a);
+    if (riposte > 0 && J.front.includes(u)) degats({ J, u }, riposte);
+  } else {
+    degats(k, a);
+    if (u.poisonneur) altere(D, 'poison', 2);
+    if (D.gardeE && J.front.includes(u)) { log('Les Épines piquent !'); degats({ J, u }, D.gardeE); }
+  }
+}
+// une créature protège son héros si elle a Barrière ou si elle s'est mise EN DÉFENSE (jusqu'au prochain tour de son joueur)
+const protege = u => u.barriere || u.defense;
+const ciblesAttaque = D => { const vis = D.front.filter(u => !u.cachee); return vis.some(protege) ? vis.filter(protege).map(u => ({ J:D, u })) : [{ J:D }, ...vis.map(u => ({ J:D, u }))]; };
+// fiche d'une créature : ce qu'elle fait, ses mots-clés expliqués, son état
+const MOTS = { barriere:['Barrière', 'protège son héros : les créatures adverses doivent l’attaquer d’abord.'], cachee:['Cachée', 'on ne peut ni l’attaquer ni la viser tant qu’elle n’a pas attaqué. Sa première attaque depuis l’ombre est une EMBUSCADE : +2 dégâts. Ensuite elle se montre (les cartes qui « révèlent » la font sortir de l’ombre plus tôt).'],
+  charge:['Charge', 'peut attaquer dès son arrivée.'], defense:['En défense', 'n’attaque pas ce tour et protège son héros comme une Barrière.'], entrave:['Entravée', 'ne pourra pas attaquer au prochain tour.'] };
+function ficheUnite(P, u) {
+  if (P !== S.J && u.cachee) { fenetre('<h2>👁 Créature cachée</h2><p>On ne sait pas ce que c’est : ni son nom, ni son attaque, ni sa vie.</p><p>Tu ne peux ni l’attaquer ni la viser. Elle se montrera quand elle attaquera (avec une <b>Embuscade</b> : +2 dégâts), ou si tu joues une carte qui <b>révèle</b> les Cachées (Torche, Lanterne runique, Flèche de repérage).</p><div class="choixh"><button onclick="fermer()">Compris</button></div>'); return; }
+  const c = u.key && CARTES[u.key], art = typeof ARTS !== 'undefined' && ARTS.includes(u.louve ? 'louve' : u.key) ? `<img src="cartes/${u.louve ? 'louve' : u.key}.webp?v=1" style="width:100%;border-radius:10px;margin:4px 0" alt="">` : '';
+  const effet = u.louve ? 'La Louve de Pip. Elle attaque toute seule (ou quand on la touche) : elle lance 3 dés. Brelan = 9 dégâts + Saignement ; paire = 5 dégâts qui ignorent Barrière et Bouclier (Instinct) ; sinon 2 dégâts ; +1 par 6.'
+    : c ? c.d : '';
+  const mots = Object.keys(MOTS).filter(m => u[m]).map(m => `<li><b>${MOTS[m][0]}</b> : ${MOTS[m][1]}</li>`).join('');
+  const etat = P === S.J ? (u.defense ? '🛡 En défense jusqu’à ton prochain tour.' : u.pret ? '⚔ Prête : elle peut attaquer ce tour.' : '💤 Au repos : elle pourra attaquer à ton prochain tour.') : (u.defense ? '🛡 En défense : elle protège son héros.' : '');
+  fenetre(`<h2>${u.n} <span style="color:#c9c1ea;font-size:.7em">· ${P === S.J ? 'à toi' : 'à ' + P.nom}</span></h2>${art}
+    <p style="font-size:1.15em"><b style="color:#ff9a5a">⚔ ${atk(P, u)}</b> attaque · <b style="color:#7dffb0">❤ ${u.v}${u.vmax && u.vmax !== u.v ? ' / ' + u.vmax : ''}</b> vie${u.bouclier ? ` · <b style="color:#8fd3ff">🛡 ${u.bouclier}</b>` : ''}${u.epines ? ` · 🌿 Épines ${u.epines}` : ''}</p>
+    <p>${effet}</p>${mots ? `<ul style="padding-left:1.1em">${mots}</ul>` : ''}${etat ? `<p style="color:#f3c96b">${etat}</p>` : ''}
+    <div class="choixh"><button onclick="fermer()">Fermer</button></div>`);
+}
+// la fenêtre d'ordre d'une créature prête : attaquer, se mettre en défense, ou voir sa fiche
+function choixUnite(u) {
+  const a = atk(S.J, u) + (u.cachee ? 2 : 0), art = typeof ARTS !== 'undefined' && ARTS.includes(u.louve ? 'louve' : u.key) ? `cartes/${u.louve ? 'louve' : u.key}.webp?v=1` : '';
+  window._ordre = i => { fermer(); if (i === 0) { attaquant = u; sel = []; } else if (i === 1) { enDefense(S.J, u); attaquant = null; } else if (i === 2) { ficheUnite(S.J, u); return; } rendu(); };
+  fenetre(`<div class="ordre">
+    <div class="ordre-tete"${art ? ` style="background-image:linear-gradient(90deg,#1d1b3a 35%,#1d1b3a99),url('${art}')"` : ''}>
+      <div><div class="ordre-nom">${u.n}</div><div class="ordre-stats"><span class="oa">⚔ ${atk(S.J, u)}</span><span class="ov">❤ ${u.v}</span>${u.cachee ? '<span class="oc">👁 Cachée</span>' : ''}${u.barriere ? '<span class="ob">Barrière</span>' : ''}</div></div>
+      <button class="ordre-fiche" onclick="_ordre(2)">ℹ Fiche</button></div>
+    <button class="ordre-bt att" onclick="_ordre(0)"><span class="oi">⚔</span><span><b>Attaquer</b><small>${a} dégât${a > 1 ? 's' : ''}${u.cachee ? ' (Embuscade +2)' : ''} · tu choisis la cible</small></span></button>
+    <button class="ordre-bt def" onclick="_ordre(1)"><span class="oi">🛡</span><span><b>Se mettre en défense</b><small>n’attaque pas · protège ton héros jusqu’à ton prochain tour</small></span></button>
+    <button class="ordre-annule" onclick="fermer()">Annuler</button></div>`);
+}
+function enDefense(J, u) { u.defense = true; u.pret = false; log(`🛡 ${u.n} se met en défense : elle protège ${J.nom}.`); fx({ t:'defense', c:ref({ J, u }) }); }
+function attaqueLouve(J) {
+  const l = J.front.find(u => u.louve); if (!l || !l.pret) return;
+  const D = adv(J), r = [1, 2, 3].map(() => 1 + Math.floor(Math.random() * 6)), c = compte(r)[0];
+  let n = c >= 3 ? 9 : c === 2 ? 5 : 2; n += r.filter(v => v === 6).length; n += l.a - 4;
+  log(`🐺 La Louve lance ${r.join(' · ')} : ${n} dégâts${c === 2 ? ', Instinct' : ''}.`);
+  fx({ t:'louve', de:ref({ J, u:l }), r, n, cible:D.nom }); bilan(J, 'actions', `🐺 La Louve : ${n} dégâts`);
+  l.pret = false;
+  if (c === 2) degats({ J:D }, n, true);
+  else { const bar = D.front.find(u => protege(u) && !u.cachee); degats(bar ? { J:D, u:bar } : { J:D }, n); if (c >= 3) altere(D, 'saigne'); }
+}
+// les créatures prêtes qui n'ont pas encore attaqué frappent le héros adverse (ou la créature à Barrière qui le protège)
+function defensesAuto(J) {
+  if (!J.ordi && !S.auto) return; const D = adv(J);
+  if (J.front.some(protege) || !D.front.length || J.pv > J.pvMax * .45) return;
+  const u = J.front.filter(x => x.pret && !x.louve).sort((a, b) => b.v - a.v)[0]; if (u && atk(J, u) <= 3) enDefense(J, u);
+}
+function attaquesRestantes(J) {
+  // chez le joueur, une créature cachée reste dans l'ombre : elle n'attaque que si on le lui demande
+  J.front.filter(u => u.pret && !u.louve && (J.ordi || S.auto || !u.cachee)).forEach(u => { if (S.fini || !J.front.includes(u)) return; const c = ciblesAttaque(adv(J)); attaque(J, u, c.find(x => !x.u) || [...c].sort((a, b) => a.u.v - b.u.v)[0]); });
+}
+function finTour(J) {
+  if (J.id === 'pip') attaqueLouve(J);
+  J.front.forEach(u => { u.tmp = 0; });
+  J.silence = false; J.gardeFaite = false; J.des = [];
+}
+// choix réservés au joueur humain (l'ordinateur décide tout seul)
+function choisirFace(J) {
+  if (J.ordi || S.auto) { const d = J.sacs[0]; if (d.length) { const i = d.indexOf(6); if (i > 0) [d[0], d[i]] = [d[i], d[0]]; } return; }
+  choix('Tracé parfait : quelle face pour ton dé 1 au prochain lancer ?', [1, 2, 3, 4, 5, 6].map(String), i => {
+    const sac = J.sacs[0], v = i + 1, p = sac.indexOf(v);
+    if (p >= 0) sac.splice(p, 1); sac.unshift(v); log(`Le prochain lancer du dé 1 donnera ${v}.`); rendu();
+  });
+}
+function choisirOeuvre(J) {
+  if (J.ordi || S.auto) { J.oeuvre = 6; log('Grand œuvre : au prochain tour, tous les dés montreront 6.'); return; }
+  choix('Grand œuvre : quelle valeur pour tous tes dés au prochain tour ?', [1, 2, 3, 4, 5, 6].map(String), i => { J.oeuvre = i + 1; log(`Grand œuvre : au prochain tour, tous tes dés montreront ${i + 1}.`); rendu(); });
+}
+
+// =============================================================================================== l'ordinateur
+function sousEnsembles(ds) { const r = [], n = ds.length; for (let m = 1; m < (1 << n); m++) { const s = []; for (let i = 0; i < n; i++) if (m & (1 << i)) s.push(ds[i]); r.push(s); } return r; }
+function interet(J, quoi, vs) {
+  const D = adv(J);
+  if (quoi === 'ultime') return J.id === 'pip' ? (J.pv < J.pvMax * .6 ? 120 : 0) : 120;
+  if (quoi === 'pouvoir') return J.id === 'zephine' ? 70 : 80;
+  if (quoi === 'frappe') return 10 + frappeDe(J).dg(vs) * 7;
+  if (quoi === 'technique') return [0, 0, 0, 40, 60, 80][vs.length];
+  const c = CARTES[quoi];
+  if (c.u) return 30 + c.u.a + c.u.v + (c.u.barriere && !J.front.some(u => u.barriere) ? 15 : 0) + (c.u.charge ? 10 : 0);
+  return c.ia ? c.ia(J, vs) : 15;
+}
+function meilleurCoup(J) {
+  const libres = J.des.filter(d => !d.pose); let best = null;
+  const essai = (quoi, ds, score, im) => { if (score > (best ? best.score : -1) && permis(J, quoi, vals(ds), ds)) best = { quoi, ds, score, im }; };
+  for (const ds of sousEnsembles(libres)) {
+    const vs = vals(ds);
+    essai('ultime', ds, interet(J, 'ultime', vs)); essai('pouvoir', ds, interet(J, 'pouvoir', vs)); essai('frappe', ds, interet(J, 'frappe', vs)); essai('technique', ds, interet(J, 'technique', vs));
+    J.main.forEach((k, im) => essai(k, ds, interet(J, k, vs) - ds.length, im));
+  }
+  return best;
+}
+function cibleAuto(J, type) {
+  const D = adv(J), l = ciblesPossibles(J, type);
+  if (!l.length) return null;
+  if (type === 'ennemi') { const u = l.find(x => x.u && (x.u.louve || x.u.a >= 6)); return u && Math.random() < .35 ? u : l[0]; }
+  if (type === 'uniteE') return [...l].sort((a, b) => atk(D, b.u) - atk(D, a.u))[0];
+  if (type === 'allie') { const u = J.front.find(x => x.v < x.vmax - 2); return J.pv < J.pvMax - 5 || !u ? { J } : { J, u }; }
+  if (type === 'uniteA') return [...l].sort((a, b) => (b.u.pret - a.u.pret) || (b.u.a - a.u.a))[0];
+  return l[0];
+}
+function transmutationAuto(J) {
+  if (J.id !== 'zephine' || J.transmu) return;
+  const avant = (meilleurCoup(J) || { score:0 }).score; let mieux = null;
+  J.des.filter(d => !d.pose).forEach(d => { const a = d.v; d.v = opp(a); const s = (meilleurCoup(J) || { score:0 }).score; d.v = a; if (s > avant + 8 && (!mieux || s > mieux.s)) mieux = { d, s }; });
+  if (mieux) pose(J, 'transmu', [mieux.d]);
+}
+// achats de PC par l'ordinateur : Premiers soins si l'altération pèse ; ±1 si ça améliore nettement son meilleur coup
+function achatsAuto(J) {
+  if (J.pc >= 2 && (J.poison + J.saigne * 2 + (J.handicap ? 3 : 0)) >= 4) pose(J, 'pcSoins', []);
+  for (let n = 0; n < 2 && J.pc >= coutAjuste(J); n++) {
+    const avant = (meilleurCoup(J) || { score:0 }).score; let mieux = null;
+    J.des.filter(d => !d.pose).forEach(d => [-1, 1].forEach(sens => { const v = d.v + sens; if (v < 1 || v > 6) return; const a = d.v; d.v = v;
+      const pc = J.pc; J.pc -= coutAjuste(J); const s2 = (meilleurCoup(J) || { score:0 }).score; J.pc = pc; d.v = a;
+      if (s2 >= avant + 20 && (!mieux || s2 > mieux.s)) mieux = { d, sens, s:s2 }; }));
+    if (!mieux) break;
+    pose(J, 'pcAjuste', [mieux.d], { sens:mieux.sens });
+  }
+}
+function joueOrdi() {
+  fx({ t:'tour', s:'O', nom:S.O.nom });
+  S.bilan = { actions:[], gardes:[], pv0:S.J.pv, pvO0:S.O.pv, abs:0, front0:S.J.front.length };
+  debutTour(S.O); if (S.coop) sbiresCamp(); if (!S.fini) joueAuto(S.O);
+  const b = S.bilan; S.bilan = null;
+  if (!S.fini) fx({ t:'recap', nom:S.O.nom, actions:b.actions, gardes:b.gardes, perdu:b.pv0 - S.J.pv, abs:b.abs, soinO:S.O.pv - b.pvO0, morts:b.front0 - S.J.front.length });
+}
+function joueAuto(J) {
+  transmutationAuto(J);
+  let b = meilleurCoup(J);
+  while ((!b || b.score < 45) && J.relance > 0) {
+    const garder = b ? b.ds : [];
+    const re = J.des.filter(d => !d.pose && !garder.includes(d) && !(J.id === 'pip' && (d.v === 4 || d.v === 5)));
+    if (!re.length) break;
+    re.forEach(d => lance(J, d)); J.relance--; log(`${J.nom} relance ${re.length} dé(s) : ${J.des.map(d => d.v).join(' · ')}`);
+    transmutationAuto(J); b = meilleurCoup(J);
+  }
+  // relance payante : si le coup reste faible et qu'il reste des PC après
+  if ((!b || b.score < 45) && J.pc >= 3) {
+    const re = J.des.filter(d => !d.pose && !(b ? b.ds : []).includes(d)).sort((x, y) => x.v - y.v)[0];
+    if (re) { pose(J, 'pcRelance', [re]); b = meilleurCoup(J); }
+  }
+  achatsAuto(J);
+  for (let i = 0; i < 10; i++) {
+    transmutationAuto(J);
+    b = meilleurCoup(J); if (!b || b.score < 8) break;
+    const def = defDe(J, b.quoi), t = def && def.cible;
+    let k = null;
+    if (t === 'de') { const autres = J.des.filter(d => !d.pose && !b.ds.includes(d)).sort((x, y) => x.v - y.v); k = { d:autres[0] }; }
+    else if (t) k = cibleAuto(J, t);
+    pose(J, b.quoi, b.ds, k, b.im);
+    if (S.fini) return;
+  }
+  // garde : le meilleur groupe de dés libres, puis vente du reste
+  const libres = J.des.filter(d => !d.pose), h = HEROS[J.id];
+  let g = null;
+  sousEnsembles(libres).forEach(ds => { if (ds.length <= 2 && h.garde.cond(vals(ds), ds)) { const v = h.garde.val(vals(ds), ds); if (!g || v > g.v) g = { ds, v }; } });
+  if (g && !J.gardeFaite) pose(J, 'garde', g.ds);
+  const reste = J.des.filter(d => !d.pose); if (reste.length) pose(J, 'vendre', reste);
+  defensesAuto(J);
+  attaquesRestantes(J);
+  finTour(J);
+}
+// partie entière jouée par l'ordinateur des deux côtés (simulations d'équilibrage)
+function simule(idJ, idO) {
+  nouvellePartie(idJ, idO, true);
+  for (let t = 0; t < 40 && !S.fini; t++) { joueAuto(S.J); if (S.fini) break; joueOrdi(); if (!S.fini) debutTour(S.J); }
+  return S.fini;
+}
+
+// =============================================================================================== interface
+document.head.insertAdjacentHTML('beforeend', '<style>' + (typeof CSS_CARTE !== 'undefined' ? CSS_CARTE : '') + '</style>');
+let sel = [], attaquant = null, ciblage = null, carteVue = null;
+// une carte agrandie se range dès qu'on touche ailleurs que sur une carte de la main
+document.addEventListener('click', e => { if (carteVue !== null && !e.target.closest('.main .c')) { carteVue = null; rendu(); } });
+// la main en éventail : 1er toucher = la carte se soulève et s'agrandit ; 2e toucher = on la joue (si les dés choisis conviennent)
+function mainEnEventail(J) {
+  const n = J.main.length; if (!n) return '<i style="color:#c9c1ea;position:absolute;left:0;right:0;text-align:center;top:60px">Main vide</i>';
+  if (carteVue !== null && carteVue >= n) carteVue = null;
+  const mil = (n - 1) / 2, pas = n > 1 ? Math.min(54, 270 / (n - 1)) : 0, ang = n > 1 ? Math.min(4, 18 / (n - 1)) : 0;
+  return J.main.map((k, i) => {
+    const c = CARTES[k], ok = sel.length && permis(J, k, vals(sel), sel), vue = carteVue === i, d = i - mil;
+    const style = vue ? 'left:calc(50% - 82px);transform:translateY(-170px);z-index:60'
+      : `left:calc(50% - 50px + ${d * pas}px);transform:translateY(${Math.round(d * d * 2) - (ok ? 18 : 0)}px) rotate(${d * ang}deg);z-index:${ok ? 40 + i : i + 1}`;
+    const pied = vue ? `<div class="jouer">${ok ? '👆 Touche encore pour la jouer' : sel.length ? 'Ces dés ne conviennent pas' : 'Choisis d’abord tes dés'}</div>` : '';
+    if (typeof CADRES_OK !== 'undefined' && CADRES_OK.includes(CADRE_DE(k))) return `<div class="c neuve ${ok ? 'ok' : sel.length ? 'non' : ''} ${vue ? 'vue' : ''}" style="${style}" onclick="toucheCarte(${i})">${carteGuilde(k, { w:vue ? 164 : 100, cout:coutCarte(J, k), pied:vue ? `<div class="cg-pied">${ok ? '👆 Touche encore pour la jouer' : sel.length ? 'Ces dés ne conviennent pas' : 'Choisis d’abord tes dés'}</div>` : '' })}</div>`;
+    return `<div class="c ${c.t}2 ${ok ? 'ok' : sel.length ? 'non' : ''} ${vue ? 'vue' : ''}" style="${style}" onclick="toucheCarte(${i})"><span class="cout">${coutCarte(J, k)}</span><div class="n">${c.n}</div><span class="cd">🎲 ${c.txt}</span><div class="dd">${c.d}</div>${pied}</div>`;
+  }).join('');
+}
+function toucheCarte(i) {
+  if (S.fini || roule) return;
+  if (carteVue !== i) { carteVue = i; rendu(); return; }
+  const k = S.J.main[i];
+  if (sel.length && permis(S.J, k, vals(sel), sel)) { carteVue = null; vise(k, i); } else aide(k);
+}
+function nouvellePartie(id, idO, auto) {
+  const autres = ORDRE.filter(x => x !== id);
+  idO = idO || autres[Math.floor(Math.random() * autres.length)];
+  S = { J:joueur(id, false, !!auto), O:joueur(idO, true), salle:SALLES[Math.floor(Math.random() * SALLES.length)], log:[], fini:null, auto:!!auto };
+  FX = []; fxApres = []; fxOn = false; arreteMusique();
+  // le second joueur (l'ordinateur) compense : 2 PC et 1 carte de plus au départ (v2.4)
+  pioche(S.J, 4); pioche(S.O, 5); S.O.pc = 3;
+  log(`Salle : ${S.salle.n}. ${S.salle.d}`);
+  sel = []; attaquant = null; ciblage = null;
+  debutTour(S.J);
+  if (!auto) rendu();
+}
+// =============================================================================================== l'Odyssée : un combat de l'île
+// run.combat = { id, type:'monstre'|'elite'|'boss', ennemi, niv, renfort, defi } ; le résultat est écrit dans run.combat.resultat, l'île reprend la main.
+function partieOdyssee() {
+  const run = lireOdyssee();
+  if (!run || !run.combat) { location.href = 'odyssee.html'; return; }
+  const cb = run.combat;
+  // combat déjà commencé sur ce téléphone (rechargement de la page) : on le reprend là où il en était
+  try { const sv = JSON.parse(localStorage.getItem('guilde-combat') || 'null'); if (sv && sv.ody && sv.ody.id === cb.id && !sv.fini) { S = sv; FX = []; fxApres = []; fxOn = false; sel = []; attaquant = null; ciblage = null; if (HEROS[S.O.id].phases) { S.O.phase = 0; phaseBoss(S.O); } rendu(); regles(); return; } } catch (e) {}
+  prepareCombatOdyssee(run, cb, false);
+  rendu(); regles();
+}
+function prepareCombatOdyssee(run, cb, auto) {
+  const h = HEROS[cb.ennemi]; if (h.phases) { h.garde = h.phases[0].garde; h.pouvoir = h.phases[0].pouvoir; }
+  S = { J:joueur(run.heros, false, true), O:joueur(cb.ennemi, true), salle:SALLES[Math.floor(Math.random() * SALLES.length)], log:[], fini:null, auto:!!auto,
+    lieu:cb.lieu || 'cendres', ody:{ id:cb.id, type:cb.type, titre:cb.type === 'boss' ? '👑 Le boss' : cb.type === 'elite' ? '💀 Élite' : `⚔ Monstres · niveau ${'I II III'.split(' ')[cb.niv - 1] || 'I'}`, defi:DEFIS.find(d => d.id === cb.defi) || null } };
+  FX = []; fxApres = []; fxOn = false; if (!auto) arreteMusique();
+  const J = S.J, O = S.O;
+  J.deck = melange([...run.deck]); J.pv = run.pv; J.pvMax = run.pvMax; J.reliques = [...run.reliques]; J.benes = [...run.benes]; J.sacoche = [...run.sacoche];
+  pioche(J, 4 + (J.reliques.includes('souvenir') ? 1 : 0) + (J.benes.includes('main') ? 1 : 0));
+  if (J.benes.includes('pcplus')) J.pc += 1;
+  // l'ennemi : un monstre (PV et créatures selon le niveau) ou un héros rival (avec son renfort d'élite)
+  const niv = cb.niv || 1;
+  if (h.monstre) { O.pv = O.pvMax = h.pv + (h.boss ? 0 : 5 * (niv - 1)); O.desMax = h.boss ? 5 : h.majeur ? 4 : Math.min(5, 2 + niv); (h.renforts || []).forEach(r => invoque(O, { ...r, a:r.a + (niv - 1) })); if (!h.ultime || h.ultime.txt === 'jamais') O.ultimeFait = true; O.pc = 2; }
+  // un héros rival en Odyssée : un duel plus court (60 % de ses PV), avec son renfort d'élite
+  else { pioche(O, 5); O.pc = 3; O.pv = O.pvMax = Math.round(h.pv * .5); if (cb.renfort === 'pc') O.pc += 2; if (cb.renfort === 'pv') { O.pv += 6; O.pvMax += 6; } if (cb.renfort === 'bouclier') O.bouclier = 5; }
+  log(`${S.ody.titre} : ${O.nom}. Salle : ${S.salle.n}. ${S.salle.d}`);
+  if (S.ody.defi) log(`🎯 Défi : ${S.ody.defi.n} — ${S.ody.defi.d}`);
+  sel = []; attaquant = null; ciblage = null;
+  debutTour(J);
+}
+function evalueDefi(J, d) {
+  if (!d || S.fini !== 'gagne') return false;
+  return d.id === 'expeditif' ? J.tours <= 4 : d.id === 'sangfroid' ? J.pc >= 3 : d.id === 'econome' ? !J.potionsUtilisees : d.id === 'chanceux' ? !!J.garde6 : d.id === 'demonstration' ? J.dernier === 'ultime' : d.id === 'stratege' ? !!J.tech4 : false;
+}
+// un combat de l'Odyssée joué par l'ordinateur des deux côtés (simulations) : potion de soin bue sous 12 PV
+function combatAuto(run, c) {
+  const cb = lanceCombat(run, c); prepareCombatOdyssee(run, cb, true);
+  for (let t = 0; t < 40 && !S.fini; t++) {
+    if (S.J.pv <= 12 && S.J.sacoche.includes('soin')) usePotion(S.J.sacoche.indexOf('soin'));
+    if (S.J.sacoche.includes('bombe') && S.O.pv <= 8) usePotion(S.J.sacoche.indexOf('bombe'));
+    if (S.fini) break; joueAuto(S.J); if (S.fini) break; joueOrdi(); if (!S.fini) debutTour(S.J);
+  }
+  cb.resultat = { gagne:S.fini === 'gagne', pv:Math.max(0, S.J.pv), tours:S.J.tours, defiOk:evalueDefi(S.J, S.ody.defi), sacoche:[...S.J.sacoche] };
+  run.pv = Math.max(0, S.J.pv); run.sacoche = [...S.J.sacoche];
+  return cb.resultat;
+}
+// une Odyssée entière jouée par l'ordinateur (pilote de odyssee.js) : pour l'équilibrage. Retourne un bilan.
+function simuleOdyssee(heros, graine) {
+  const run = nouvelleOdyssee(heros, graine); const vie = [], morts = [];
+  const bilan = (gagne, raison) => ({ gagne, raison, heros, cases:run.stats.cases, combats:run.stats.combats, victoires:run.stats.victoires, tours:run.stats.tours, pv:run.pv, pvMax:run.pvMax, or:run.or, vivres:run.vivres, deck:run.deck.length, reliques:run.reliques.length, defis:run.stats.defis, vie, fragments:run.fragments });
+  const rang = { c:0, r:1, e:2 }, meilleure = l => [...l].sort((a, b) => rang[rarete(b)] - rang[rarete(a)])[0];
+  for (let pas = 0; pas < 120; pas++) {
+    const c = caseA(run, run.pos.x, run.pos.y);
+    if ((c.t === 'monstre' || c.t === 'elite' || c.t === 'boss') && !c.fait) {
+      const res = combatAuto(run, c); vie.push({ t:c.t, ennemi:run.combat.ennemi, pv:run.pv, tours:res.tours, gagne:res.gagne });
+      const out = recompenseCombat(run); if (!out.gagne) return bilan(false, 'mort:' + c.t + ':' + vie[vie.length - 1].ennemi); if (out.boss) return bilan(true, 'boss');
+      if (out.draft && run.deck.length < 30) gardeCarte(run, meilleure(out.draft)); continue;
+    }
+    if (c.t === 'source' && !c.fait) source(run, c, 'soin');
+    if (c.t === 'marchand') { if (run.pv < run.pvMax * .6 && run.or >= 40 && run.sacoche.length < 2) achete(run, c, 'sacoche', 'soin'); if (run.or >= 70) achete(run, c, 'pvmax'); if (run.vivres < 4 && run.or >= 20) achete(run, c, 'vivres'); }
+    if (c.t === 'coffre' && !c.fait && run.cles) { const o = ouvreCoffre(run, c); if (o && o.draft) gardeCarte(run, meilleure(o.draft)); }
+    if (c.t === 'autel' && !c.fait) { const o = autelOptions(run, c); autelChoisit(run, c, o.benes[0]); }
+    if (c.t === 'evenement' && !c.fait) { const ev = EVENEMENTS.find(e => e.id === c.ev); const i = ev.choix.findIndex(ch => !ch.cond || ch.cond(run)); const o = evenementChoisit(run, c, i >= 0 ? i : 0); if (o && o.suite === 'draft' && o.cartes.length) gardeCarte(run, meilleure(o.cartes)); if (o && o.suite === 'relique' && o.reliques.length) prendRelique(run, o.reliques[0]); }
+    if (c.t === 'porte') { if (ouvrePorte(run)) { const r = deplace(run, run.bossPos.x, run.bossPos.y); if (!r) return bilan(false, 'bloque:boss'); continue; } }
+    if (run.sacoche.includes('soin') && run.pv <= run.pvMax * .4) { run.sacoche.splice(run.sacoche.indexOf('soin'), 1); run.pv = Math.min(run.pvMax, run.pv + 10); }
+    const chemin = prochaineCible(run); if (!chemin || !chemin.length) return bilan(false, 'bloque');
+    const [x, y] = chemin[0]; const r = deplace(run, x, y); if (!r) return bilan(false, 'bloque:' + caseA(run, x, y).t); if (r.mort) return bilan(false, 'epuise');
+  }
+  return bilan(false, 'trop long');
+}
+function usePotion(i) {
+  if (!S || S.fini || S.J.aLancer || (!S.auto && roule)) return;
+  const J = S.J, p = J.sacoche[i]; if (!p) return;
+  J.sacoche.splice(i, 1); J.potionsUtilisees++;
+  if (p === 'soin') soin(J, 10);
+  if (p === 'mana') { J.pc = Math.min(6, J.pc + 2); log(`${J.nom} boit une potion de mana : +2 PC.`); }
+  if (p === 'antidote') { J.poison = 0; J.saigne = 0; J.handicap = 0; log(`${J.nom} prend l’antidote : plus aucune altération.`); }
+  if (p === 'bombe') { S.acteur = J; log(`${J.nom} lance une bombe : 8 dégâts directs !`); fx({ t:'tir', id:J.id, s:'J', vers:ref({ J:S.O }), nom:'Bombe', vs:[], dg:8, cible:S.O.nom }); degats({ J:S.O }, 8, true); }
+  if (!S.auto) rendu();
+}
+function aideRelique(r) { fenetre(`<h2>${RELIQUES[r].e} ${RELIQUES[r].n}</h2><p>${RELIQUES[r].d}</p><div class="choixh"><button onclick="fermer()">Compris</button></div>`); }
+function finOdyssee() {
+  if (S.enregistre) return; S.enregistre = true;
+  arreteMusique(1.2); son(S.fini === 'gagne' ? 'victoire' : 'defaite');
+  { const c = document.getElementById('app'); if (c) effetImage(S.fini === 'gagne' ? 'victoire' : 'defaite', c, 2.2); }
+  const run = lireOdyssee(); const J = S.J, d = S.ody.defi;
+  const defiOk = evalueDefi(J, d);
+  if (run && run.combat && run.combat.id === S.ody.id) {
+    run.combat.resultat = { gagne:S.fini === 'gagne', pv:Math.max(0, J.pv), tours:J.tours, defiOk, sacoche:[...J.sacoche], journal:[...S.log].reverse().slice(-60) };
+    run.pv = Math.max(0, J.pv); run.sacoche = [...J.sacoche]; ecrireOdyssee(run);
+  }
+  localStorage.removeItem('guilde-combat');
+  fenetre(`<h2>${S.fini === 'gagne' ? '🏆 Victoire !' : '💀 Défaite…'}</h2><p>${J.nom} contre ${S.O.nom} : ${S.fini === 'gagne' ? 'gagné' : 'perdu'} en ${J.tours} tours.${d ? `<br>🎯 Défi « ${d.n} » : ${defiOk ? '<b style="color:#7dffb0">réussi, +30 or</b>' : 'raté'}.` : ''}</p>
+    <div class="choixh"><button onclick="location.href='odyssee.html'">${S.fini === 'gagne' ? '🗺 Continuer l’Odyssée' : '🗺 Voir jusqu’où tu es allé'}</button></div>`);
+}
+function finDeMonTour() {
+  if (S.fini || roule) return;
+  if (S.J.aLancer) { lancerMesDes(); return; }
+  const libres = S.J.des.filter(d => !d.pose);
+  if (libres.length) pose(S.J, 'vendre', libres);
+  attaquesRestantes(S.J); if (S.fini) { rendu(); return; }
+  finTour(S.J); sel = []; attaquant = null; ciblage = null; rendu();
+  fxApres.push(S.coop ? suiteCamp : () => { joueOrdi(); if (!S.fini) { fx({ t:'tour', s:'J', nom:'toi' }); debutTour(S.J); } rendu(); });
+  rendu();
+}
+// =============================================================================================== le Campement : rotation héros 1 → héros 2 → boss
+function partieCampement() {
+  const cfg = lireCampement(); if (!cfg || !HEROS[cfg.a] || !HEROS[cfg.b]) { location.href = 'campement.html'; return; }
+  const boss = HEROS[cfg.boss] ? cfg.boss : 'colosseracines', h = HEROS[boss]; if (h.phases) { h.garde = h.phases[0].garde; h.pouvoir = h.phases[0].pouvoir; }
+  const A = joueur(cfg.a, false, false), B = joueur(cfg.b, cfg.modeB === 'ordi', cfg.modeB === 'ordi');
+  A.qui = 'toi'; B.qui = cfg.modeB === 'ordi' ? 'compagnon' : 'joueur 2'; B.nomCourt = B.nom;
+  S = { J:A, O:joueur(boss, true), salle:SALLES[Math.floor(Math.random() * SALLES.length)], log:[], fini:null, auto:false, coop:true, equipe:[A, B], cohesion:COHESION.depart, lieu:'brume' };
+  FX = []; fxApres = []; fxOn = false; arreteMusique();
+  S.O.desMax = 5; (h.renforts || []).forEach(r => invoque(S.O, { ...r }));
+  pioche(A, 4); pioche(B, 4); B.pc = 2;
+  log(`🔥 Le Campement : ${A.nom} et ${B.nom} contre ${S.O.nom}. Salle : ${S.salle.n}. ${S.salle.d}`);
+  sel = []; attaquant = null; ciblage = null;
+  debutTour(A); rendu(); regles();
+}
+function sbiresCamp() {
+  const O = S.O, sb = HEROS[O.id].sbires; if (!sb || O.tours % sb.tous !== 0) return;
+  let n = 0; for (let i = 0; i < sb.nb; i++) if (O.front.length < 5) { invoque(O, { n:sb.n, a:sb.a, v:sb.v, barriere:!!sb.barriere }); n++; }
+  if (n) { log(`🌱 ${O.nom} appelle ${n} ${sb.n}${n > 1 ? 's' : ''}.`); fx({ t:'annonce', txt:`🌱 ${n} ${sb.n}${n > 1 ? 's' : ''} sortent du sol !` }); }
+}
+function suiteCamp() {
+  if (S.fini) { rendu(); return; }
+  const i = S.equipe.indexOf(S.J); let n = i + 1;
+  while (n < S.equipe.length && S.equipe[n].aTerre) n++;
+  if (n < S.equipe.length) {
+    const h = S.equipe[n]; S.J = h;
+    if (h.ordi) { fx({ t:'tour', s:'J', nom:h.nom }); debutTour(h); if (!S.fini) joueAuto(h); if (!S.fini) fxApres.push(suiteCamp); rendu(); return; }
+    fx({ t:'annonce', txt:`📱 Passe le téléphone à ${h.nom}` }); debutTour(h); sel = []; attaquant = null; ciblage = null; rendu(); return;
+  }
+  if (S.J.aTerre) S.J = S.equipe.find(x => !x.aTerre);
+  joueOrdi(); if (S.fini) { rendu(); return; }
+  const p = S.equipe.find(x => !x.aTerre); S.J = p; sel = []; attaquant = null; ciblage = null;
+  fx({ t:'tour', s:'J', nom:p.ordi ? p.nom : (p.qui === 'toi' ? 'toi' : p.nom) }); debutTour(p);
+  if (p.ordi) { if (!S.fini) joueAuto(p); if (!S.fini) fxApres.push(suiteCamp); }
+  rendu();
+}
+// Campement joué par l'ordinateur des deux côtés (équilibrage) : les deux héros en auto, cohésion dépensée simplement
+function simuleCamp(a, b, boss) {
+  localStorage.setItem('guilde-campement', JSON.stringify({ a, b, modeB:'ordi', boss:boss || 'colosseracines' }));
+  const cfg = lireCampement(); const bs = cfg.boss, h = HEROS[bs]; h.garde = h.phases[0].garde; h.pouvoir = h.phases[0].pouvoir;
+  const A = joueur(a, true, true), B = joueur(b, true, true); A.qui = 'toi'; B.qui = 'compagnon';
+  S = { J:A, O:joueur(bs, true), salle:SALLES[0], log:[], fini:null, auto:true, coop:true, equipe:[A, B], cohesion:COHESION.depart };
+  S.O.desMax = 5; (h.renforts || []).forEach(r => invoque(S.O, { ...r })); pioche(A, 4); pioche(B, 4); B.pc = 2;
+  debutTour(A);
+  for (let n = 0; n < 60 && !S.fini; n++) {
+    const t = S.equipe.find(x => x.aTerre); if (t && S.cohesion >= COHESION.relever) { S.cohesion -= COHESION.relever; t.aTerre = false; t.pv = 12; }
+    else if (S.cohesion >= 6) { S.cohesion -= COHESION.cri; S.equipe.forEach(x => { if (!x.aTerre) x.pc = Math.min(6, x.pc + 2); }); }
+    joueAuto(S.J); if (S.fini) break;
+    const i = S.equipe.indexOf(S.J); let k = i + 1; while (k < 2 && S.equipe[k].aTerre) k++;
+    if (k < 2) { S.J = S.equipe[k]; debutTour(S.J); continue; }
+    if (S.J.aTerre) S.J = S.equipe.find(x => !x.aTerre);
+    joueOrdi(); if (S.fini) break; S.J = S.equipe.find(x => !x.aTerre); debutTour(S.J);
+  }
+  return { gagne:S.fini === 'gagne', tours:A.tours, boss:Math.max(0, S.O.pv), a:Math.max(0, A.pv), b:Math.max(0, B.pv), racines:S.O.front.length };
+}
+function cohesionAct(q) {
+  if (!S || !S.coop || S.fini || roule) return;
+  const autre = S.equipe.find(h => h !== S.J);
+  if (q === 'relever') { const t = S.equipe.find(h => h.aTerre); if (!t || S.cohesion < COHESION.relever) return; S.cohesion -= COHESION.relever; t.aTerre = false; t.pv = 12; log(`🤝 ${t.nom} est relevé (12 PV).`); fx({ t:'annonce', txt:`🤝 ${t.nom} se relève !` }); }
+  if (q === 'cri') { if (S.cohesion < COHESION.cri) return; S.cohesion -= COHESION.cri; S.equipe.forEach(h => { if (!h.aTerre) h.pc = Math.min(6, h.pc + 2); }); log('🤝 Cri de ralliement : +2 PC chacun.'); }
+  if (q === 'soin') { if (S.cohesion < COHESION.soin || !autre || autre.aTerre) return; S.cohesion -= COHESION.soin; soin(autre, 6); log(`🤝 Soin partagé : ${autre.nom} +6 PV.`); }
+  rendu();
+}
+function equipeHTML() {
+  const J = S.J;
+  return `<div class="equipe">${S.equipe.map(h => `<div class="eq ${h === J ? 'actif' : ''} ${h.aTerre ? 'terre' : ''}"><img src="${IMG(h.id)}" alt=""><div><b>${h.nom}</b> <small>· ${h.qui}</small><br>${h.aTerre ? '💀 à terre' : `❤ ${h.pv}/${h.pvMax} · ◆ ${h.pc} PC · 🂠 ${h.main.length}`}</div></div>`).join('')}
+    <div class="coh"><b>🤝 Cohésion ${S.cohesion}/${COHESION.max}</b> <small>+1 quand un héros pose 3 dés ou plus</small><div class="cohb">
+      <button onclick="cohesionAct('relever')" ${S.equipe.some(h => h.aTerre) && S.cohesion >= COHESION.relever ? '' : 'disabled'}>Relever (${COHESION.relever})</button>
+      <button onclick="cohesionAct('cri')" ${S.cohesion >= COHESION.cri ? '' : 'disabled'}>Cri de ralliement (${COHESION.cri}) : +2 PC chacun</button>
+      <button onclick="cohesionAct('soin')" ${S.cohesion >= COHESION.soin && S.equipe.some(h => h !== J && !h.aTerre) ? '' : 'disabled'}>Soin partagé (${COHESION.soin}) : +6 PV à l’autre</button></div></div></div>`;
+}
+function choisirDe(i) {
+  if (S.fini || S.J.aLancer || roule) return;
+  if (carteVue !== null && !ciblage) carteVue = null; const d = S.J.des[i]; if (d.pose) return;
+  if (ciblage && ciblage.type === 'de') { if (ciblage.ds.includes(d)) return; const c = ciblage; ciblage = null; pose(S.J, c.quoi, c.ds, { d }, c.im); sel = []; rendu(); return; }
+  if (ciblage) return;
+  sel = sel.includes(d) ? sel.filter(x => x !== d) : [...sel, d]; attaquant = null; rendu();
+}
+function vise(quoi, im) {
+  if (S.fini || roule) return;
+  if (S.J.aLancer) { lancerMesDes(); return; }
+  if (ciblage) { const c = ciblage; ciblage = null; if (c.quoi === quoi) { rendu(); return; } }
+  if (quoi === 'pcSoins') { if (permis(S.J, 'pcSoins', [])) { pose(S.J, 'pcSoins', []); rendu(); } else aide('pcSoins'); return; }
+  if (quoi === 'pcRelance' && permis(S.J, quoi, vals(sel), sel)) { const ds = sel; sel = []; rouler(ds, () => { pose(S.J, 'pcRelance', ds); rendu(); }); return; }
+  if (quoi === 'pcAjuste' && permis(S.J, quoi, vals(sel), sel)) { const d = sel; choix(`Ton ${d[0].v} devient…`, [d[0].v > 1 ? `${d[0].v - 1} (−1)` : '—', d[0].v < 6 ? `${d[0].v + 1} (+1)` : '—'], i => { if ((i === 0 && d[0].v === 1) || (i === 1 && d[0].v === 6)) return; pose(S.J, 'pcAjuste', d, { sens:i === 0 ? -1 : 1 }); sel = []; rendu(); }); return; }
+  if (!permis(S.J, quoi, vals(sel), sel)) { aide(quoi); return; }
+  const def = defDe(S.J, quoi), t = def && def.cible;
+  if (t && quoi !== 'garde') { ciblage = { quoi, ds:sel, im, type:t }; rendu(); return; }
+  pose(S.J, quoi, sel, null, im); sel = []; rendu();
+}
+function estCible(k) {
+  if (ciblage && ciblage.type !== 'de') return ciblesPossibles(S.J, ciblage.type).some(c => c.J === k.J && c.u === k.u);
+  if (attaquant) return ciblesAttaque(S.O).some(c => c.J === k.J && c.u === k.u);
+  return false;
+}
+function touche(k) {
+  if (S.fini) return;
+  if (ciblage && estCible(k)) { const c = ciblage; ciblage = null; if (c.ds.some(d => d.pose)) { sel = []; rendu(); return; } pose(S.J, c.quoi, c.ds, k, c.im); sel = []; rendu(); return; }
+  if (attaquant && estCible(k)) { attaque(S.J, attaquant, k); attaquant = null; rendu(); return; }
+  if (k.J === S.J && k.u && k.u.louve && k.u.pret && !ciblage && !S.J.aLancer) { attaquant = null; attaqueLouve(S.J); rendu(); return; }
+  if (k.J === S.J && k.u && k.u.pret && !k.u.louve && !ciblage) {
+    if (attaquant === k.u) { attaquant = null; rendu(); return; }
+    choixUnite(k.u); return;
+  }
+  // toute autre créature (adverse, ou à moi mais pas prête) : sa fiche
+  if (k.u && !ciblage && !attaquant) ficheUnite(k.J, k.u);
+}
+// le lancer : les dés roulent ~0,8 s avant de montrer leur face (le résultat vient toujours du sac)
+let roule = false;
+function rouler(ds, ensuite) {
+  if (roule) return; roule = true;
+  const imgs = [...document.querySelectorAll('.des .d')], idx = ds.map(d => S.J.des.indexOf(d));
+  idx.forEach(i => { if (imgs[i]) { imgs[i].classList.remove('cache', 'sel'); imgs[i].classList.add('roule'); } });
+  let t = 0; son('des');
+  const it = setInterval(() => {
+    idx.forEach(i => { const im = imgs[i] && imgs[i].querySelector('img'); if (im) im.src = FACE(S.J.id, 1 + Math.floor(Math.random() * 6)); });
+    t += 70;
+    if (t >= 840) { clearInterval(it); roule = false; if (navigator.vibrate) navigator.vibrate(25); ensuite(); }
+  }, 70);
+}
+function lancerMesDes() {
+  const J = S.J; if (!J.aLancer || roule) return;
+  demarreMusique();
+  rouler(J.des, () => { J.des.forEach(d => lance(J, d)); J.aLancer = false; if (J.neuf >= 0) { J.neufJusque = Date.now() + 3500; setTimeout(() => { if (!fxOn && S && S.J === J) dessine(); }, 3600); } log(`Tu lances : ${J.des.map(d => d.v).join(' · ')}`); rendu(); });
+}
+function relancer() {
+  const J = S.J; if (!J.relance || !sel.length || roule) return;
+  const ds = sel; sel = [];
+  rouler(ds, () => { ds.forEach(d => lance(J, d)); J.relance--; log(`Tu relances ${ds.length} dé(s) : ${J.des.map(d => d.v).join(' · ')}`); rendu(); });
+}
+// glisser le doigt vers le haut sur les dés : lancer (ou relancer les dés choisis)
+let glisseY = null;
+function glisseDebut(e) { glisseY = e.touches ? e.touches[0].clientY : null; }
+function glisseFin(e) {
+  if (glisseY === null) return; const y = e.changedTouches ? e.changedTouches[0].clientY : glisseY; const dy = y - glisseY; glisseY = null;
+  // le glissement ne sert qu'au premier lancer du tour (faire défiler la page ne doit jamais relancer des dés choisis)
+  if (dy < -40 && S.J.aLancer) lancerMesDes();
+}
+function annuler() { sel = []; ciblage = null; attaquant = null; rendu(); }
+
+// ce que veut dire chaque étiquette sous la barre de vie (on la touche pour savoir)
+const PASTILLES = {
+  pv:['❤ Points de vie', 'Quand ils tombent à 0, le héros perd la partie.'],
+  pc:['◆ PC (points de compétence)', '+1 au début de chaque tour (6 au plus), +1 par dé vendu. Ils paient les cartes, l’Ultime (3), les relances (1), le +1 / −1 et les Premiers soins.'],
+  garde:['🛡 Garde (temporaire, badge en pointillés)', 'Protection posée avec un dé, une fois par tour. Elle absorbe les dégâts reçus, puis DISPARAÎT au début du prochain tour de ce héros, même si elle n’a pas servi. Les coups usent d’abord la Garde, puis le Bouclier.'],
+  bouclier:['🛡 Bouclier (permanent, badge plein)', 'Absorbe les prochains dégâts reçus. Il RESTE tant qu’il n’est pas usé, sur plusieurs tours, et s’ajoute à la Garde.'],
+  epines:['🌿 Épines', 'Une créature qui attaque ce héros reçoit ces dégâts en retour.'],
+  esquive:['💨 Esquive', 'Les prochains dégâts reçus sont divisés par deux.'],
+  contre:['⚔ Contre-attaque', 'La 1re créature qui attaque ce héros reçoit d’abord 6 dégâts.'],
+  piege:['🪤 Piège à mâchoires', 'La 1re créature qui attaque reçoit 3 dégâts et ne pourra pas attaquer au tour suivant.'],
+  cor:['📯 Cor de ralliement', 'La 1re créature de ce héros qui devrait tomber reste à 1 vie.'],
+  fournaise:['🔥 Fournaise', 'La prochaine fois que ce héros est blessé, l’adversaire perd la moitié de ces dégâts.'],
+  paillasse:['⚗ Paillasse renversée', 'Dès qu’une créature attaque ce héros, le héros adverse reçoit Poison 3.'],
+  meute:['🐺 Meute', 'Chaque 6 lancé par Pip ajoute un marqueur. À 3, la Louve arrive sur la ligne de front.'],
+  braises:['🔥 Braises', 'Chaque 6 posé sur une carte de Maëlle donne une Braise. À 3, sa prochaine carte Équipement ne coûte rien.'],
+  purete:['✦ Pureté', 'Jeton d’Aldric : il annule la prochaine altération (Poison, Saignement, Handicap) qu’il devrait recevoir. Aldric en gagne un quand il pose deux 6 dans le même tour (2 au plus).'],
+  handicap:['Handicap', 'Ce héros lancera 1 dé de moins à son prochain tour.'],
+  saigne:['Saignement', 'Au début de chacun de ses tours, ce héros perd 2 PV par niveau (3 niveaux au plus). Premiers soins l’enlève.'],
+  poison:['Poison', 'Au début de son tour, ce héros perd autant de PV que le Poison, puis le Poison baisse de 1. Premiers soins l’enlève.'],
+  silence:['Silence', 'Ce héros ne peut pas jouer de carte Sort à ce tour.'],
+  oeuvre:['Grand œuvre', 'Au prochain tour de Zéphine, tous ses dés montreront cette valeur.'],
+  ultime:['⚡ Jauge d’Ultime', '+1 par dé posé (pas vendu), +1 tous les 5 dégâts reçus. Pleine (20), elle permet l’Ultime du héros : 3 PC + sa combinaison de dés, une fois par partie.'],
+  ultimefait:['Ultime utilisé', 'Ce héros a déjà lancé son Ultime : une seule fois par partie.'],
+  main:['🂠 Cartes en main', '+1 carte au début de chaque tour, 7 au plus.'],
+};
+// toucher une étiquette : son explication (sauf pendant qu'on vise : le toucher sert alors à viser le héros)
+document.addEventListener('click', e => {
+  const p = e.target.closest && e.target.closest('.pastilles [data-k]'); if (!p || ciblage || attaquant || fxOn) return;
+  const x = PASTILLES[p.dataset.k]; if (!x) return; e.stopPropagation();
+  fenetre(`<h2>${x[0]}</h2><p><b>${p.textContent.trim()}</b></p><p>${x[1]}</p><div class="choixh"><button onclick="fermer()">Compris</button></div>`);
+}, true);
+function barre(P, haut) {
+  const ref = `{J:S.${haut ? 'O' : 'J'}}`;
+  return `<div class="barre ${estCible({ J:P }) ? 'cible' : ''} ${P.gardeB || P.bouclier ? 'protege' : ''}" data-bouclier="${(P.gardeB || 0) + (P.bouclier || 0)}" id="b-${haut ? 'O' : 'J'}" style="--c:${P.c}" onclick="touche(${ref})"><img src="${HEROS[P.id].img || IMG(P.id)}" alt=""><span class="bdg bg" ${P.gardeB ? '' : 'hidden'}>🛡 ${P.gardeB}</span><span class="bdg bb" ${P.bouclier ? '' : 'hidden'}>🛡 ${P.bouclier}</span><div style="flex:1"><div class="nom">${P.nom}${P.ordi ? (S.lieu ? ' · ' + (HEROS[P.id].titre || 'ennemi') : ' · ordinateur') : (P.qui && P.qui !== 'toi' ? ' · ' + P.qui : ' · toi')}</div><div class="vie"><b style="width:${Math.max(0, P.pv) / P.pvMax * 100}%"></b><i style="width:${Math.max(0, P.pv) / P.pvMax * 100}%"></i></div><div class="pastilles">
+    <span data-k="pv" class="p pv">❤ ${Math.max(0, P.pv)} / ${P.pvMax}</span><span data-k="pc" class="p pc">◆ ${P.pc} PC</span>
+    ${P.gardeB ? `<span data-k="garde" class="p g pg">🛡 Garde ${P.gardeB}</span>` : ''}${P.gardeE ? `<span data-k="epines" class="p g">🌿 Épines ${P.gardeE}</span>` : ''}${P.esquive ? '<span data-k="esquive" class="p g">💨 Esquive</span>' : ''}
+    ${P.bouclier ? `<span data-k="bouclier" class="p g pb">🛡 Bouclier ${P.bouclier}</span>` : ''}${P.contre ? '<span data-k="contre" class="p g">⚔ Contre-attaque</span>' : ''}${P.piege ? '<span data-k="piege" class="p g">🪤 Piège</span>' : ''}
+    ${P.cor ? '<span data-k="cor" class="p g">📯 Cor</span>' : ''}${P.fournaise ? '<span data-k="fournaise" class="p g">🔥 Fournaise</span>' : ''}${P.paillasse ? '<span data-k="paillasse" class="p g">⚗ Paillasse</span>' : ''}
+    ${P.id === 'pip' && !P.front.some(u => u.louve) ? `<span data-k="meute" class="p m">🐺 Meute ${P.meute}/3</span>` : ''}${P.id === 'maelle' ? `<span data-k="braises" class="p m">🔥 Braises ${P.braise}/3${P.forgeGratuite ? ' · Équipement gratuit' : ''}</span>` : ''}
+    ${P.purete ? `<span data-k="purete" class="p pu">✦ Pureté ${P.purete}</span>` : ''}${P.handicap ? '<span data-k="handicap" class="p al">Handicap</span>' : ''}${P.saigne ? `<span data-k="saigne" class="p al">Saignement ${P.saigne}</span>` : ''}
+    ${P.poison ? `<span data-k="poison" class="p al">Poison ${P.poison}</span>` : ''}${P.silence ? '<span data-k="silence" class="p al">Silence</span>' : ''}${P.oeuvre ? `<span data-k="oeuvre" class="p pu">Grand œuvre : ${P.oeuvre}</span>` : ''}
+    ${P.ultimeFait ? '<span data-k="ultimefait" class="p">Ultime utilisé</span>' : `<span data-k="ultime" class="p ${P.jauge >= JAUGE.max ? 'pu' : ''}">⚡ Ultime ${P.jauge}/${JAUGE.max}</span>`}<span data-k="main" class="p">🂠 ${P.main.length} en main</span></div></div></div>`;
+}
+function front(P, haut) {
+  const cote = haut ? 'O' : 'J';
+  return `<div class="front${P.front.length ? '' : ' vide'}" id="f-${cote}">${P.front.map((u, i) => {
+    const cls = [u.cachee ? 'cachee' : '', u.defense ? 'defense' : '', estCible({ J:P, u }) ? 'cible' : '', attaquant === u ? 'choisi' : '', !haut && u.pret ? 'pret' : '', !u.pret ? 'dort' : ''].join(' ');
+    const tags = [u.barriere ? 'Barrière' : '', u.cachee ? '👁 Cachée' : '', u.charge ? 'Charge' : '', u.epines ? `Épines ${u.epines}` : '', u.bouclier ? `🛡${u.bouclier}` : '', u.entrave ? 'Entravé' : '', u.defense ? '🛡 en défense' : '', u.louve && haut ? 'Louve' : '', !haut ? (u.pret ? (u.louve ? '🐺 touche-la !' : '⚔ prête') : '💤 repos') : ''].filter(Boolean).join(' · ');
+    if (haut && u.cachee) return `<div class="u mystere ${estCible({ J:P, u }) ? 'cible' : ''}" data-uid="${u.id}" onclick="touche({J:S.${cote},u:S.${cote}.front[${i}]})"><b>?</b><div class="tg">👁 Cachée</div><div class="av"><span>⚔ ?</span><span>❤ ?</span></div></div>`;
+    const art = u.louve ? 'louve' : u.key, img = typeof ARTS !== 'undefined' && ARTS.includes(art) ? ` style="background:linear-gradient(#0000 30%, #000c 85%), url('cartes/${art}.webp?v=1') center 30%/cover;color:#fff"` : '';
+    return `<div class="u ${cls}${img ? ' illu' : ''}" data-uid="${u.id}"${img} onclick="touche({J:S.${cote},u:S.${cote}.front[${i}]})"><b>${u.n}</b><div class="tg">${tags}</div><div class="av"><span>⚔ ${atk(P, u)}</span><span>❤ ${u.v}</span></div></div>`;
+  }).join('')}${'<div class="place"></div>'.repeat(Math.max(0, 5 - P.front.length))}</div>`;
+}
+function actSoins() { const ok = permis(S.J, 'pcSoins', []); return `<button class="act ${ok ? 'ok' : 'non'}" onclick="vise('pcSoins')"><span class="info" onclick="event.stopPropagation();aide('pcSoins', true)">i</span><b>Premiers soins</b>2 PC · retire tes altérations</button>`; }
+function act(quoi, titre, cout, txt) {
+  const ok = sel.length && permis(S.J, quoi, vals(sel), sel);
+  return `<button class="act ${ok ? 'ok' : sel.length ? 'non' : ''}" onclick="vise('${quoi}')"><span class="info" onclick="event.stopPropagation();aide('${quoi}', true)">i</span><b>${titre}</b>${cout} · ${txt}</button>`;
+}
+function sacTxt(J, d) {
+  if (!d.sac || d.extra) return '';
+  if (J.id === 'oria') return `ensuite : ${d.sac.length ? d.sac.slice(0, 2).join(', ') : 'sac neuf'}`;
+  return `sac : ${d.sac.length ? [...d.sac].sort().join(' ') : 'neuf au prochain'}`;
+}
+function rendu() {
+  if (!S || S.auto || fxOn) return;
+  if (FX.length) { joueFX(); return; }
+  dessine();
+  if (S.ody && !S.fini) localStorage.setItem('guilde-combat', JSON.stringify(S));
+  const f = fxApres.shift(); if (f && !S.fini) setTimeout(f, 350);
+}
+function dessine() {
+  const J = S.J, O = S.O, h = HEROS[J.id];
+  let bandeau = '';
+  if (J.aLancer) bandeau = 'Ton tour commence : lance tes dés !';
+  else if (ciblage && ciblage.type === 'de') bandeau = '🎲 Touche le dé à retourner.';
+  else if (ciblage) {
+    const q = ciblage.quoi, vs = vals(ciblage.ds), d = q === 'frappe' ? `Frappe (${vs.join(', ')}) : ${FRAPPE.dg(vs)} dégâts` : q === 'technique' ? `Technique (${vs.join(', ')}) : ${[0, 0, 0, 4, 7, 10][vs.length]} dégâts`
+      : q === 'pouvoir' ? `${h.pouvoir.n} : ${h.pouvoir.d}` : q === 'ultime' ? `${h.ultime.n} : ${h.ultime.d}` : CARTES[q] ? `${CARTES[q].n} : ${CARTES[q].d}` : '';
+    bandeau = `🎯 ${d}<br>Touche la cible (en vert).`;
+  }
+  else if (attaquant) bandeau = `⚔ ${attaquant.n} attaque : touche une cible en vert.`;
+  else if (sel.length) bandeau = `Dés choisis : ${vals(sel).join(', ')}. Touche où les poser (en vert).`;
+  else if (J.des.some(d => !d.pose)) bandeau = '1. Touche un ou plusieurs dés. 2. Touche où les poser.';
+  else if (J.front.some(u => u.pret && u.louve)) bandeau = '🐺 Touche la Louve : elle lance ses 3 dés et attaque. Sinon, elle attaque seule à « Fin du tour ».';
+  else if (J.front.some(u => u.pret && !u.louve)) bandeau = '⚔ Touche une créature dorée : attaquer (puis sa cible) ou se mettre en défense. Sinon, elles attaquent le héros à « Fin du tour » (sauf les 👁 cachées, qui restent dans l’ombre).';
+  else bandeau = 'Tous tes dés sont posés : touche « Fin du tour ».';
+  document.getElementById('app').classList.toggle('compagnon', !!(S.coop && J.ordi));
+  document.getElementById('app').innerHTML = `
+  <div class="salle"><span class="st">${S.coop ? `<b>🔥 Le Campement</b> · ${J.ordi ? `${J.nom} (compagnon) joue…` : J.qui === 'toi' ? 'à toi' : `au tour de ${J.nom}`} · ${S.salle.n}` : S.ody ? `<b>${S.ody.titre}</b> · ${S.salle.n} : ${S.salle.d}${J.reliques.length ? ' <span class="rel">' + J.reliques.map(r => `<i title="${RELIQUES[r].n}" onclick="aideRelique('${r}')">${RELIQUES[r].e}</i>`).join('') + '</span>' : ''}` : `<b>${S.salle.n}</b> · ${S.salle.d}`}</span><span class="sons">
+    <button class="sonbt ${sonOn ? '' : 'off'}" onclick="basculeSon()" aria-label="Bruitages" title="Bruitages"><svg viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/>${sonOn ? '<path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>' : '<path d="M16 9l5 6M21 9l-5 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>'}</svg></button>
+    <button class="sonbt ${musOn ? '' : 'off'}" onclick="basculeMusique()" aria-label="Musique" title="Musique"><svg viewBox="0 0 24 24"><path d="M9 17V5l11-2v12" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="6.5" cy="17.5" r="2.8" fill="currentColor"/><circle cx="17.5" cy="15.5" r="2.8" fill="currentColor"/>${musOn ? '' : '<path d="M3 3l18 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>'}</svg></button></span></div>
+  <div class="plateau tapis ${S.lieu ? 'scene lieu-' + S.lieu : ''}">${barre(O, true)}${front(O, true)}<div class="milieu"><span>✦ ◆ ✦</span></div>${front(J, false)}${barre(J, false)}
+    <div class="des" ontouchstart="glisseDebut(event)" ontouchend="glisseFin(event)">${J.des.map((d, i) => `<div class="d ${sel.includes(d) ? 'sel' : ''} ${d.pose ? 'pose' : ''} ${d.mod ? 'mod' : ''} ${J.aLancer ? 'cache' : ''} ${i === J.neuf && (J.aLancer || Date.now() < (J.neufJusque || 0)) ? 'neuf' : ''}" onclick="choisirDe(${i})"><img src="${FACE(J.id, d.v || 1)}" alt="${d.v || '?'}"><div class="sac">${i === J.neuf && (J.aLancer || Date.now() < (J.neufJusque || 0)) ? '✨ nouveau dé' : sacTxt(J, d)}</div></div>`).join('')}${[...Array(Math.max(0, 5 - J.des.length)).keys()].map(k => { const i = J.des.length + k, t = i - 1;
+      return `<div class="d verrou"><div class="cad">🔒</div><div class="sac">${J.tours >= t ? 'Handicap ce tour' : 'dé n° ' + (i + 1) + '<br>au tour ' + t}</div></div>`; }).join('')}</div>
+  </div>
+  ${S.coop ? equipeHTML() : ''}
+  ${J.aLancer ? '<button class="lancer" onclick="lancerMesDes()">🎲 Lancer les dés <span style="font-weight:normal;font-size:.75em">(ou glisse le doigt vers le haut)</span></button>' : ''}
+  <div class="bandeau" ${J.aLancer ? 'style="display:none"' : ''}>${bandeau}${sel.length || ciblage || attaquant ? ' <a href="#" onclick="annuler();return false" style="color:#f3c96b">Annuler</a>' : ''}</div>
+  <div class="actions">
+    ${act('frappe', '⚔ Frappe', '0 PC', '2 dés identiques ou +')}
+    ${act('technique', '⚔ Technique', '0 PC', '3 dés qui se suivent ou +')}
+    ${act('garde', '🛡 Garde', '0 PC', h.garde.txt + ' · bloque les coups')}
+    ${act('pouvoir', 'Pouvoir', '0 PC', h.pouvoir.txt)}
+    ${act('ultime', 'Ultime', '3 PC', J.ultimeFait ? 'déjà joué' : J.jauge < JAUGE.max ? `jauge ${J.jauge}/${JAUGE.max}` : h.ultime.txt)}
+    ${h.action ? act('transmu', h.action.n, '0 PC', J.transmu ? 'déjà fait' : h.action.txt) : ''}
+    ${act('vendre', 'Vendre', '+1 PC', 'par dé')}
+  </div>
+  <div class="actions pc">
+    ${act('pcRelance', 'Relancer', '1 PC', '1 dé')}
+    ${act('pcAjuste', '+1 / −1', `${coutAjuste(J)} PC`, '1 dé')}
+    ${actSoins()}
+  </div>
+  ${S.ody && J.sacoche.length ? `<div class="actions pc sacoche">${J.sacoche.map((p, i) => `<button class="act ok" onclick="usePotion(${i})"><b>${SACOCHE[p].e} ${SACOCHE[p].n}</b>${SACOCHE[p].d.replace(/ \(.*\)\.?$/, '')}</button>`).join('')}</div>` : ''}
+  <div class="main" onclick="if(event.target===this){carteVue=null;rendu();}">${mainEnEventail(J)}</div>
+  <div class="journal">${S.log.slice(0, 40).map(t => `<div>${t}</div>`).join('')}</div>
+  <div class="bas">
+    <button class="b0" onclick="regles()">❓ Règles</button>
+    <button class="b1" onclick="relancer()" ${J.relance && sel.length ? '' : 'disabled style="opacity:.4"'}>🎲 Relancer (${J.relance})</button>
+    <button class="b2" onclick="finDeMonTour()">Fin du tour ▶</button>
+  </div>`;
+  if (S.fini) montrerFin();
+}
+function aide(quoi, info) {
+  const J = S.J, h = HEROS[J.id];
+  let t = '';
+  if (quoi === 'garde') t = `<b>${h.garde.n}</b> (0 PC, ${h.garde.txt}) : ${h.garde.d}${J.gardeFaite ? '<br><i>Déjà posée ce tour.</i>' : ''}`;
+  else if (quoi === 'pouvoir') t = `<b>${h.pouvoir.n}</b> (0 PC, ${h.pouvoir.txt}) : ${h.pouvoir.d}`;
+  else if (quoi === 'ultime') t = `<b>${h.ultime.n}</b> (jauge pleine + 3 PC + ${h.ultime.txt}, une fois par combat) : ${h.ultime.d}<br><i>Jauge : ${J.jauge} / ${JAUGE.max}. Elle gagne 1 point par dé posé (pas vendu) et 1 point tous les 5 dégâts que tu subis.</i>`;
+  else if (quoi === 'frappe') t = `<b>Frappe</b> (0 PC, ${FRAPPE.txt}) : ${FRAPPE.d}`;
+  else if (quoi === 'technique') t = `<b>Technique</b> (0 PC, ${TECHNIQUE.txt}) : ${TECHNIQUE.d}`;
+  else if (quoi === 'pcRelance') t = '<b>Relancer un dé</b> (1 PC) : choisis un dé, il est relancé. Tu peux le faire plusieurs fois, 1 PC à chaque fois.';
+  else if (quoi === 'pcAjuste') t = '<b>+1 ou −1</b> (2 PC) : choisis un dé, puis ajoute ou retire 1 (un 5 devient 6 ou 4).';
+  else if (quoi === 'pcSoins') t = '<b>Premiers soins</b> (2 PC) : retire Poison, Saignement et Handicap. Utile seulement si tu en as.';
+  else if (quoi === 'transmu') t = `<b>${h.action.n}</b> (${h.action.txt}) : ${h.action.d}`;
+  else if (quoi === 'vendre') t = 'Choisis d’abord un ou plusieurs dés, puis touche « Vendre » : chaque dé rapporte 1 PC.';
+  else { const c = CARTES[quoi]; t = `<b>${c.n}</b> : coûte <b>${coutCarte(J, quoi)} PC</b> et demande <b>${c.txt}</b>. ${c.d}${c.t === 's' && J.silence ? '<br><i>Tu es réduit au Silence ce tour : pas de Sort.</i>' : ''}`; }
+  fenetre(`<h2>${info ? 'Comment ça marche' : 'Pas encore possible'}</h2><p>${t}</p>${info ? '' : `<p style="color:#f3c96b"><b>${raison(quoi)}</b></p>`}<div class="choixh"><button onclick="fermer()">Compris</button></div>`);
+}
+// pourquoi une action est refusée, en une phrase
+function raison(quoi) {
+  const J = S.J, vs = vals(sel), h = HEROS[J.id];
+  const des = vs.length ? `Tu as choisi ${vs.length > 1 ? 'les dés' : 'le dé'} ${vs.join(', ')}` : 'Tu n’as choisi aucun dé';
+  const c = CARTES[quoi];
+  if (c) {
+    const manque = coutCarte(J, quoi) - J.pc;
+    if (c.t === 's' && J.silence) return 'Tu es réduit au Silence ce tour : pas de Sort.';
+    if (c.t === 'u' && J.front.length >= 5) return 'Ta ligne de front est pleine (5 unités).';
+    if (manque > 0) return `Il te manque ${manque} PC (tu en as ${J.pc}).`;
+    if (!vs.length) return `Choisis d’abord ${/^(1 )?dé( |$)/.test(c.txt) ? 'un dé' : 'les dés'} : ${c.txt}.`;
+    if (!c.cond(vs, sel)) return `${des} : il faut ${c.txt}.`;
+    if (c.cible) return 'Il n’y a pas de cible possible pour cette carte.';
+    return '';
+  }
+  if (quoi === 'ultime') { if (J.ultimeFait) return 'Tu as déjà joué ton Ultime dans ce combat.'; if (J.jauge < JAUGE.max) return `Ta jauge d’Ultime n’est pas pleine (${J.jauge} / ${JAUGE.max}).`; if (J.pc < 3) return `Il te manque ${3 - J.pc} PC.`; return `${des} : il faut ${h.ultime.txt}.`; }
+  if (quoi === 'garde' && J.gardeFaite) return 'Ta Garde est déjà posée ce tour.';
+  if (quoi === 'pcRelance' || quoi === 'pcAjuste') { const n = quoi === 'pcRelance' ? 1 : coutAjuste(J); if (J.pc < n) return `Il te manque ${n - J.pc} PC.`; return 'Choisis un seul dé.'; }
+  if (quoi === 'pcSoins') return J.pc < 2 ? `Il te manque ${2 - J.pc} PC.` : 'Tu n’as aucune altération à retirer.';
+  if (quoi === 'transmu') return J.transmu ? 'Tu as déjà transmuté un dé ce tour.' : 'Choisis un seul dé.';
+  const def = defDe(J, quoi); return def ? `${des} : il faut ${def.txt}.` : '';
+}
+function fenetre(html) { document.getElementById('fen').innerHTML = `<div class="fenetre" onclick="if(event.target===this)fermer()"><div>${html}</div></div>`; }
+function fermer() { document.getElementById('fen').innerHTML = ''; }
+function choix(titre, options, cb) {
+  window._cb = cb;
+  fenetre(`<h2>${titre}</h2><div class="grille6">${options.map((o, i) => `<button onclick="fermer();_cb(${i})">${o}</button>`).join('')}</div>`);
+}
+function regles() {
+  const h = HEROS[S.J.id];
+  fenetre(`<h2>Comment on joue</h2><ul>
+  <li><b>Les dés ne coûtent rien.</b> Ce sont les <b>cartes</b> qui coûtent des PC (le chiffre bleu). Pour jouer une carte, il faut <b>les deux</b> : assez de PC, et un dé qui remplit sa condition.</li>
+  <li><b>Les dés</b> : tu lances 3 dés au tour 1, 4 au tour 2, puis 5 à partir du tour 3 (les emplacements 🔒 montrent quand ils arrivent). Chaque dé a son <b>sac</b> de 6 faces mélangées : il sort chaque face une fois avant que le sac se remplisse (« sac : 1 3 4 » = les faces qui restent).</li>
+  <li>La <b>Frappe</b>, commune à tous : 2 dés identiques ou plus. Dégâts = la valeur du dé + un bonus (paire +0, 3 dés +3, 4 dés +6, 5 dés +10) : deux 6 = 6, trois 4 = 7, cinq 6 = 16. Gratuite.</li>
+  <li>La <b>Technique</b>, commune à tous : 3, 4 ou 5 dés qui se suivent (par exemple 2-3-4) font 4, 7 ou 10 dégâts. Gratuite.</li>
+  <li>La <b>Garde</b> et le <b>Pouvoir</b> de ton héros sont gratuits : il suffit des bons dés.</li>
+  <li>L’<b>Ultime</b> : sa <b>jauge ⚡</b> gagne 1 point par dé posé (pas vendu) et 1 point tous les 5 dégâts que tu subis. Pleine, l’Ultime se joue avec ses 3 dés et 3 PC, une fois par combat.</li>
+  <li><b>Acheter avec ses PC</b> (comme dans le jeu papier) : 1 PC = relancer un dé ; 2 PC = +1 ou −1 sur un dé ; 2 PC = Premiers soins (retire tes altérations).</li>
+  <li>Un dé qui ne sert à rien se <b>vend</b> : +1 PC. Les dés pas posés à la fin du tour sont vendus tout seuls.</li>
+  <li>Tu gagnes +1 PC au début de chaque tour (6 au plus). Tu lances 3 dés au tour 1, 4 au tour 2, puis 5. Une relance par tour.</li>
+  <li>Sous chaque dé, le <b>sac</b> montre les faces qui peuvent encore sortir : une face sortie ne revient qu’une fois les six sorties.</li>
+  <li>Tes <b>unités</b> attaquent à partir du tour suivant leur arrivée : touche ton unité (contour jaune), puis sa cible. Les unités <b>Barrière</b> doivent être attaquées d’abord par les unités. Les unités <b>Cachées</b> ne peuvent pas être visées tant qu’elles n’ont pas attaqué.</li>
+  <li>La <b>Garde</b> = ta défense : tu poses un dé et ton héros gagne un Bouclier (ou une autre protection selon le héros). Ce Bouclier absorbe les prochains dégâts que tu reçois pendant le tour de l’adversaire, puis disparaît. Exemple : Garde 4, l’adversaire frappe à 6, tu ne perds que 2 PV.</li><li>Tes <b>créatures</b> attaquent au tour suivant leur arrivée (sauf Charge) : touche-en une puis sa cible ; celles que tu ne fais pas attaquer frappent le héros adverse à « Fin du tour », sauf les créatures 👁 Cachées, qui restent dans l’ombre tant que tu ne leur demandes pas d’attaquer. Le Bouclier et la Garde de l’adversaire absorbent leurs coups.</li><li>Une créature <b>Cachée</b> 👁 ne peut être ni attaquée ni visée tant qu’elle n’a pas attaqué ; sa première attaque depuis l’ombre est une <b>Embuscade</b> (+2 dégâts), puis elle se montre.</li><li>Une créature prête peut aussi se mettre <b>en défense</b> (touche-la) : elle n’attaque pas ce tour, mais elle protège ton héros comme une Barrière jusqu’à ton prochain tour : les créatures adverses doivent l’attaquer d’abord.</li></ul>
+  <h2>${h.nom}, ${h.titre} (${h.pv} PV)</h2><p><b>Passif</b> : ${h.passif}</p><p><b>Garde · ${h.garde.n}</b> (${h.garde.txt}) : ${h.garde.d}</p><p><b>Pouvoir · ${h.pouvoir.n}</b> (${h.pouvoir.txt}) : ${h.pouvoir.d}</p><p><b>Ultime · ${h.ultime.n}</b> (jauge pleine, ${h.ultime.txt}, 3 PC) : ${h.ultime.d}</p>
+  ${S.coop ? `<h2>🔥 Le Campement</h2><p>${S.equipe[0].nom} et ${S.equipe[1].nom} contre <b>${S.O.nom}</b> (${S.O.pvMax} PV). Chaque héros joue son tour, puis le boss frappe <b>le dernier qui a joué</b>. Tous les 2 tours, il appelle des Racines (Barrière). La <b>Cohésion</b> monte quand un héros pose 3 dés ou plus ; elle sert à relever un héros à terre (3), à crier le ralliement (2 : +2 PC chacun) ou à soigner l’autre (2 : +6 PV). Les deux à terre = défaite.</p>` : ''}${S.ody || S.coop ? `<h2>${S.O.nom}, ${HEROS[S.O.id].titre || ''} (${S.O.pvMax} PV)</h2><p>${HEROS[S.O.id].role || ''}</p><p><b>Garde · ${HEROS[S.O.id].garde.n}</b> (${HEROS[S.O.id].garde.txt}) : ${HEROS[S.O.id].garde.d}</p><p><b>Pouvoir · ${HEROS[S.O.id].pouvoir.n}</b> (${HEROS[S.O.id].pouvoir.txt}) : ${HEROS[S.O.id].pouvoir.d}</p>${S.ody && S.ody.defi ? `<p><b>🎯 Défi du combat · ${S.ody.defi.n}</b> : ${S.ody.defi.d} Réussi = +30 or.</p>` : ''}` : ''}
+  <div class="choixh"><button onclick="fermer()">Jouer</button>${S.ody ? '' : '<button onclick="fermer();accueil()">Changer de héros</button>'}</div><div class="choixh"><button onclick="mesParties()">📜 Mes parties</button>${S.ody ? `<button onclick="location.href='odyssee.html'">🗺 L’île</button>` : S.coop ? `<button onclick="location.href='campement.html'">🔥 Le campement</button>` : `<button onclick="location.href='menu.html'">⌂ Menu</button>`}</div>`);
+}
+// historique des parties, gardé sur le téléphone (les 50 dernières) : sert à l'équilibrage
+const HIST = 'guilde-parties';
+const parties = () => { try { return JSON.parse(localStorage.getItem(HIST) || '[]'); } catch (e) { return []; } };
+function enregistrePartie() {
+  if (!S || S.auto || S.enregistre) return; S.enregistre = true;
+  const p = { quand:new Date().toISOString(), version:VERSION, moi:S.J.id, ordi:S.O.id, salle:S.salle.n, resultat:S.fini, tours:S.J.tours,
+    pvMoi:Math.max(0, S.J.pv), pvOrdi:Math.max(0, S.O.pv), ultimeMoi:!!S.J.ultimeFait, ultimeOrdi:!!S.O.ultimeFait, journal:[...S.log].reverse() };
+  const l = parties(); l.unshift(p); localStorage.setItem(HIST, JSON.stringify(l.slice(0, 50)));
+}
+const DATE = iso => new Date(iso).toLocaleString('fr-FR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
+function texteParties(l, avecJournal) {
+  const lignes = l.map(p => `${DATE(p.quand)} · ${HEROS[p.moi].nom} contre ${HEROS[p.ordi].nom} · ${p.resultat === 'gagne' ? 'GAGNÉ' : 'PERDU'} en ${p.tours} tours · PV ${p.pvMoi} / ${p.pvOrdi} · ${p.salle} · v${p.version}${avecJournal ? '\n  ' + p.journal.join('\n  ') : ''}`);
+  return `La Guilde des Runes · mes parties (${l.length})\n` + lignes.join('\n');
+}
+function mesParties() {
+  const l = parties();
+  if (!l.length) { fenetre('<h2>📜 Mes parties</h2><p>Aucune partie terminée pour l’instant.</p><div class="choixh"><button onclick="accueil()">Retour</button></div>'); return; }
+  const g = l.filter(p => p.resultat === 'gagne').length, par = {};
+  l.forEach(p => { const k = HEROS[p.moi].nom + ' contre ' + HEROS[p.ordi].nom; par[k] = par[k] || [0, 0]; par[k][p.resultat === 'gagne' ? 0 : 1]++; });
+  fenetre(`<h2>📜 Mes parties (${l.length})</h2><p><b>${g}</b> gagnées, <b>${l.length - g}</b> perdues.</p>
+    <ul style="padding-left:1.1em;font-size:.9em">${Object.entries(par).map(([k, v]) => `<li>${k} : ${v[0]} gagnée${v[0] > 1 ? 's' : ''}, ${v[1]} perdue${v[1] > 1 ? 's' : ''}</li>`).join('')}</ul>
+    <div style="max-height:38vh;overflow:auto">${l.map((p, i) => `<button class="lignep" onclick="unePartie(${i})">${p.resultat === 'gagne' ? '🏆' : '💀'} ${DATE(p.quand)} · ${HEROS[p.moi].nom} – ${HEROS[p.ordi].nom} · ${p.tours} tour${p.tours > 1 ? "s" : ""} ›</button>`).join('')}</div>
+    <div class="choixh"><button onclick="copieParties(true)">📋 Copier tout (pour Claude)</button><button onclick="accueil()">Retour</button></div><p id="copie" style="color:#7dffb0;text-align:center"></p>`);
+}
+function unePartie(i) {
+  const p = parties()[i];
+  fenetre(`<h2>${p.resultat === 'gagne' ? '🏆' : '💀'} ${HEROS[p.moi].nom} contre ${HEROS[p.ordi].nom}</h2><p>${DATE(p.quand)} · ${p.tours} tour${p.tours > 1 ? "s" : ""} · ${p.salle}<br>PV à la fin : toi ${p.pvMoi}, ${HEROS[p.ordi].nom} ${p.pvOrdi}</p>
+    <div class="journal" style="max-height:50vh">${p.journal.map(t => `<div>${t}</div>`).join('')}</div>
+    <div class="choixh"><button onclick="copieParties(true, ${i})">📋 Copier</button><button onclick="mesParties()">Retour</button></div><p id="copie" style="color:#7dffb0;text-align:center"></p>`);
+}
+function copieParties(journal, i) {
+  const l = parties(), t = texteParties(i === undefined ? l : [l[i]], journal);
+  navigator.clipboard.writeText(t).then(() => { document.getElementById('copie').textContent = 'Copié ✓ : collez-le dans la discussion avec Claude.'; })
+    .catch(() => { document.getElementById('copie').textContent = 'Copie impossible sur ce téléphone.'; });
+}
+function montrerFin() {
+  if (S.ody) { finOdyssee(); return; }
+  if (S.coop) { if (S.enregistre) return; S.enregistre = true; arreteMusique(1.2); son(S.fini === 'gagne' ? 'victoire' : 'defaite'); effetImage(S.fini === 'gagne' ? 'victoire' : 'defaite', document.getElementById('app'), 2.2);
+    chronique([S.fini === 'gagne' ? CHRON_CAMP.victoire : CHRON_CAMP.defaite], () => fenetre(`<h2>${S.fini === 'gagne' ? '🏆 Le boss est tombé !' : '💀 Le campement est perdu…'}</h2><p>${S.equipe.map(h => `${h.nom} : ${h.aTerre ? 'à terre' : h.pv + ' PV'}`).join(' · ')} · ${S.O.nom} : ${Math.max(0, S.O.pv)} PV · ${S.equipe[0].tours} tours.</p><div class="choixh"><button onclick="location.href='campement.html'">🔥 Rejouer</button><button onclick="location.href='menu.html'">⌂ Menu</button></div>`)); return; }
+  enregistrePartie();
+  arreteMusique(1.2);
+  { const c = document.getElementById(S.fini === 'gagne' ? 'b-O' : 'b-J'); if (c) effetImage(S.fini === 'gagne' ? 'victoire' : 'defaite', document.getElementById('app'), 2.2); }
+  son(S.fini === 'gagne' ? 'victoire' : 'defaite');
+  fenetre(`<h2>${S.fini === 'gagne' ? '🏆 Victoire !' : '💀 Défaite…'}</h2><p>${S.J.nom} contre ${S.O.nom} : ${S.fini === 'gagne' ? 'gagné' : 'perdu'} en ${S.J.tours} tours.</p><div class="choixh"><button onclick="fermer();nouvellePartie(S.J.id, S.O.id)">Rejouer</button><button onclick="fermer();accueil()">Changer de héros</button></div>`);
+}
+let monHeros = null;
+function accueil() {
+  fenetre(`<h2>Duel · prototype</h2><p>1. Choisis ton héros.</p>
+  <div class="heros6">${ORDRE.map(id => `<button onclick="monHeros='${id}';adversaire()"><img src="${IMG(id)}" alt="">${HEROS[id].nom}</button>`).join('')}</div>
+  <div class="choixh"><button onclick="mesParties()">📜 Mes parties (${parties().length})</button><button onclick="location.href='menu.html'">⌂ Menu</button></div>
+  <p style="color:#c9c1ea;font-size:.85em">Prototype pour essayer les règles : dessins provisoires, chiffres à équilibrer.</p>`);
+}
+function adversaire() {
+  fenetre(`<h2>Duel · prototype</h2><p>2. Contre qui ? (l’ordinateur)</p>
+  <div class="heros6">${ORDRE.filter(id => id !== monHeros).map(id => `<button onclick="fermer();nouvellePartie(monHeros,'${id}');regles()"><img src="${IMG(id)}" alt="">${HEROS[id].nom}</button>`).join('')}
+  <button onclick="fermer();nouvellePartie(monHeros);regles()" style="display:flex;align-items:center;justify-content:center;font-size:2em;min-height:110px">🎲<br><span style="font-size:.4em">au hasard</span></button></div>`);
+}
+if (typeof document !== 'undefined' && document.getElementById('app')) { const q = new URLSearchParams(location.search); if (q.get('odyssee')) setTimeout(partieOdyssee, 0); else if (q.get('campement')) setTimeout(partieCampement, 0); else if (q.get('parties')) mesParties(); else if (q.get('h') && HEROS[q.get('h')]) { monHeros = q.get('h'); adversaire(); } else accueil(); }
+
+// =============================================================================================== animations et sons
+// Les sons sont fabriqués par le téléphone (aucun fichier) ; 🔊 / 🔇 dans la barre de la salle.
+let sonOn = localStorage.getItem('guilde-son') !== '0', AC = null;
+// sons enregistrés (fabriqués par ~/creation/sources/musique/guilde/fabrique.py) : musique de combat en boucle, bruit des dés
+let musOn = localStorage.getItem('guilde-musique') !== '0', BUF = {}, musique = null;
+function charge(nom) { const a = ac(); if (!a) return Promise.resolve(null); if (BUF[nom]) return BUF[nom];
+  return BUF[nom] = fetch(`sons/${nom}.mp3?v=1`).then(r => r.arrayBuffer()).then(b => new Promise((ok, ko) => a.decodeAudioData(b, ok, ko))).catch(() => null); }
+function joueBuf(nom, vol) { const a = ac(); if (!a) return; charge(nom).then(b => { if (!b) return; const s = a.createBufferSource(), g = a.createGain(); s.buffer = b; g.gain.value = vol || 1; s.connect(g).connect(a.destination); s.start(); }); }
+function demarreMusique() {
+  if (!musOn || musique || !S || S.auto || S.fini) return; const a = ac(); if (!a) return;
+  musique = { arret:false };
+  charge('combat').then(b => { if (!b || !musique || musique.arret || musique.src) return;
+    const src = a.createBufferSource(), g = a.createGain(); src.buffer = b; src.loop = true; src.loopStart = .05; src.loopEnd = Math.min(b.duration, 40.05);
+    g.gain.setValueAtTime(0, a.currentTime); g.gain.linearRampToValueAtTime(.32, a.currentTime + 2); src.connect(g).connect(a.destination); src.start(0, .05); musique.src = src; musique.g = g; });
+}
+function arreteMusique(fondu) {
+  if (!musique) return; const m = musique; musique = null; m.arret = true; const a = ac();
+  if (m.src && a) { m.g.gain.cancelScheduledValues(a.currentTime); m.g.gain.setValueAtTime(m.g.gain.value, a.currentTime); m.g.gain.linearRampToValueAtTime(0, a.currentTime + (fondu || .4)); m.src.stop(a.currentTime + (fondu || .4) + .05); }
+}
+function basculeMusique() { musOn = !musOn; localStorage.setItem('guilde-musique', musOn ? '1' : '0'); if (musOn) demarreMusique(); else arreteMusique(); dessine(); }
+function basculeSon() { sonOn = !sonOn; localStorage.setItem('guilde-son', sonOn ? '1' : '0'); if (sonOn) son('carte'); dessine(); }
+function ac() { if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return null; } } if (AC.state === 'suspended') AC.resume(); return AC; }
+function ton(f, d, type, vol, fin, depart) {
+  const a = ac(); if (!a) return; const t = a.currentTime + (depart || 0);
+  const o = a.createOscillator(), g = a.createGain(); o.type = type || 'sine'; o.frequency.setValueAtTime(f, t);
+  if (fin) o.frequency.exponentialRampToValueAtTime(fin, t + d);
+  g.gain.setValueAtTime(vol || .2, t); g.gain.exponentialRampToValueAtTime(.001, t + d);
+  o.connect(g).connect(a.destination); o.start(t); o.stop(t + d + .02);
+}
+function bruit(d, vol, f1, f2, depart) {
+  const a = ac(); if (!a) return; const t = a.currentTime + (depart || 0);
+  const b = a.createBuffer(1, Math.floor(a.sampleRate * d), a.sampleRate), x = b.getChannelData(0);
+  for (let i = 0; i < x.length; i++) x[i] = Math.random() * 2 - 1;
+  const s = a.createBufferSource(), fl = a.createBiquadFilter(), g = a.createGain(); s.buffer = b;
+  fl.type = 'bandpass'; fl.frequency.setValueAtTime(f1 || 800, t); if (f2) fl.frequency.exponentialRampToValueAtTime(f2, t + d);
+  g.gain.setValueAtTime(vol || .3, t); g.gain.exponentialRampToValueAtTime(.001, t + d);
+  s.connect(fl).connect(g).connect(a.destination); s.start(t);
+}
+function son(q) {
+  if (!sonOn) return;
+  if (q === 'coup') { bruit(.18, .5, 1200, 200); ton(120, .22, 'sine', .45, 50); }
+  else if (q === 'gros') { bruit(.35, .6, 900, 120); ton(90, .4, 'sine', .55, 35); }
+  else if (q === 'bouclier') { ton(1400, .25, 'triangle', .15, 900); ton(2100, .18, 'sine', .08); }
+  else if (q === 'soin') { [523, 659, 784, 1046].forEach((f, i) => ton(f, .25, 'sine', .12, null, i * .07)); }
+  else if (q === 'carte') { bruit(.22, .25, 400, 3000); }
+  else if (q === 'tir') { ton(300, .25, 'sawtooth', .08, 1200); bruit(.2, .15, 2000, 500); }
+  else if (q === 'des') joueBuf(Math.random() < .5 ? 'des1' : 'des2', 1);
+  else if (q === 'tombe') { ton(400, .5, 'triangle', .2, 60); }
+  else if (q === 'garde') { ton(220, .35, 'square', .06, 330); ton(660, .3, 'sine', .1); }
+  else if (q === 'tour') { ton(392, .18, 'sine', .12); ton(523, .3, 'sine', .12, null, .12); }
+  else if (q === 'ultime') { [196, 262, 330, 392, 523].forEach((f, i) => ton(f, .9, 'sawtooth', .05, null, i * .06)); bruit(1, .4, 200, 60); }
+  else if (q === 'griffe') { bruit(.13, .45, 5000, 900); bruit(.06, .25, 1800); }
+  else if (q === 'louve') { ton(300, .6, 'sawtooth', .07, 700); ton(700, .5, 'sine', .08, 450, .3); }
+  else if (q === 'victoire') { [523, 659, 784, 1046, 784, 1046].forEach((f, i) => ton(f, .3, 'triangle', .15, null, i * .13)); }
+  else if (q === 'defaite') { [392, 349, 311, 262].forEach((f, i) => ton(f, .45, 'triangle', .14, null, i * .22)); }
+  if (navigator.vibrate && (q === 'coup' || q === 'gros')) navigator.vibrate(q === 'gros' ? 60 : 25);
+}
+const dodo = ms => new Promise(r => setTimeout(r, ms * fxVite));
+const el = c => c && ((c.uid && document.querySelector(`[data-uid="${c.uid}"]`)) || document.getElementById((c.uid ? 'f-' : 'b-') + c.s) || document.getElementById('b-' + c.s));
+const centre = e => { const r = e.getBoundingClientRect(); return { x:r.left + r.width / 2, y:r.top + r.height / 2, r }; };
+function couche() { let c = document.getElementById('fxc'); if (!c) { c = document.createElement('div'); c.id = 'fxc'; document.body.appendChild(c); } return c; }
+function flotte(e, texte, cls) {
+  if (!e) return; const p = centre(e), d = document.createElement('div');
+  d.className = 'flotte ' + (cls || ''); d.textContent = texte; d.style.left = p.x + 'px'; d.style.top = p.y + 'px';
+  couche().appendChild(d); setTimeout(() => d.remove(), 2000);
+}
+function secoue(e, rouge) { if (!e) return; e.classList.remove('secoue', 'rouge', 'vert'); void e.offsetWidth; e.classList.add('secoue'); if (rouge) e.classList.add(rouge); }
+// un nombre qui défile de l'ancienne à la nouvelle valeur (compte à rebours), avec la pastille qui pulse
+function defile(elt, de, a, fmt, couleur) {
+  if (!elt || de === a) { if (elt) elt.textContent = fmt(a); return; }
+  const t0 = performance.now(), dur = Math.min(1400, 180 + Math.abs(a - de) * 90) * fxVite;
+  elt.classList.remove('pulse-r', 'pulse-v'); void elt.offsetWidth; elt.classList.add(couleur === 'v' ? 'pulse-v' : 'pulse-r');
+  let der = de; const pas = () => { const k = Math.min(1, (performance.now() - t0) / dur), v = Math.round(de + (a - de) * k);
+    if (v !== der) { der = v; elt.textContent = fmt(v); if (sonOn) ton(couleur === 'v' ? 700 + v * 6 : 260 + v * 6, .04, 'square', .025); }
+    if (k < 1) requestAnimationFrame(pas); else elt.textContent = fmt(a); };
+  requestAnimationFrame(pas);
+}
+const nb = t => { const m = /(-?\d+)/.exec(t || ''); return m ? +m[1] : 0; };
+function majVie(c, ev) {
+  const e = el(c); if (!e || e.classList.contains('mystere')) return;
+  if (ev.pv !== undefined && !c.uid) {
+    const P = c.s === 'J' ? S.J : S.O, pill = e.querySelector('.p.pv'), barre = e.querySelector('.vie i');
+    const avant = pill ? nb(pill.textContent) : ev.pv, fant = e.querySelector('.vie b');
+    defile(pill, avant, ev.pv, v => `❤ ${v} / ${P.pvMax}`, ev.pv > avant ? 'v' : 'r');
+    if (barre) barre.style.width = (ev.pv / P.pvMax * 100) + '%'; if (fant) fant.style.width = (ev.pv / P.pvMax * 100) + '%';
+  }
+  if (ev.garde !== undefined && !c.uid) {
+    const tot = (ev.garde || 0) + (ev.bouclier || 0), pg = e.querySelector('.pg'), pb = e.querySelector('.pb');
+    if (pg) { if (ev.garde) pg.textContent = `🛡 Garde ${ev.garde}`; else pg.style.opacity = .3; }
+    const bg = e.querySelector('.bdg.bg'), bb = e.querySelector('.bdg.bb');
+    if (bg) { bg.textContent = `🛡 ${ev.garde || 0}`; bg.hidden = !ev.garde; } if (bb) { bb.textContent = `🛡 ${ev.bouclier || 0}`; bb.hidden = !ev.bouclier; }
+    if (pb) { if (ev.bouclier) pb.textContent = `🛡 Bouclier ${ev.bouclier}`; else pb.style.opacity = .3; }
+    e.dataset.bouclier = tot; if (!tot) e.classList.remove('protege');
+  }
+  if (ev.v !== undefined && c.uid) { const s = e.querySelector('.av span:last-child'); if (s) { const avant = nb(s.textContent); defile(s, avant, ev.v, v => `❤ ${v}`, ev.v > avant ? 'v' : 'r'); } }
+}
+// un objet qui part d'un point et va frapper un autre (carte, boule de magie)
+async function vole(div, de, vers, ms) {
+  const a = centre(de), b = centre(vers); couche().appendChild(div);
+  div.style.left = a.x + 'px'; div.style.top = a.y + 'px';
+  const an = div.animate([{ transform:'translate(-50%,-50%) scale(.6)', opacity:.9 }, { transform:`translate(calc(-50% + ${b.x - a.x}px), calc(-50% + ${b.y - a.y}px)) scale(1)`, opacity:1 }],
+    { duration:ms * fxVite, easing:'cubic-bezier(.5,0,.9,.5)', fill:'forwards' });
+  await an.finished.catch(() => {}); div.remove();
+}
+// ---------------------------------------------------------------- effets d'impact (un par carte, par créature et par héros)
+// Dessinés par le téléphone (SVG, dégradés, particules) au centre de la cible, pendant ~0,6 s.
+function boite(cible, taille) {
+  const p = centre(cible), d = document.createElement('div'); d.className = 'eff';
+  const t = taille || 120; d.style.cssText = `left:${p.x - t / 2}px;top:${p.y - t / 2}px;width:${t}px;height:${t}px`;
+  couche().appendChild(d); setTimeout(() => d.remove(), 1600); return d;
+}
+function particules(d, n, cls, fn) { for (let i = 0; i < n; i++) { const s = document.createElement('i'); s.className = cls; fn(s, i); d.appendChild(s); } }
+const SVG = (w, inner) => `<svg viewBox="0 0 100 100" width="${w}" height="${w}" style="overflow:visible">${inner}</svg>`;
+const EFFETS = {
+  // trois griffures qui se dessinent l'une après l'autre (la Louve, les bêtes)
+  griffes: (c, f = 1) => { const d = boite(c, 130 * f); d.innerHTML = SVG(130 * f, [0, 1, 2].map(i => `<path class="griffe" style="animation-delay:${i * .09}s" d="M${22 + i * 20} 12 Q${36 + i * 20} 52 ${30 + i * 20} 92"/>`).join('')); son('coup'); },
+  griffe: c => { const d = boite(c, 100); d.innerHTML = SVG(100, '<path class="griffe" d="M20 20 Q55 45 82 84"/>'); },
+  // coup de marteau : marteau qui s'abat, onde de choc, gerbe d'étincelles
+  marteau: (c, f = 1) => { const d = boite(c, 150 * f); d.innerHTML = `<div class="marteau">🔨</div><div class="onde or"></div>`;
+    particules(d, 14, 'etinc', (s, i) => { const a = Math.random() * 6.28, r = 40 + Math.random() * 50 * f; s.style.setProperty('--x', Math.cos(a) * r + 'px'); s.style.setProperty('--y', Math.sin(a) * r + 'px'); s.style.animationDelay = '.18s'; }); },
+  etincelles: c => { const d = boite(c, 120); particules(d, 18, 'etinc', s => { const a = Math.random() * 6.28, r = 25 + Math.random() * 45; s.style.setProperty('--x', Math.cos(a) * r + 'px'); s.style.setProperty('--y', Math.sin(a) * r - 20 + 'px'); s.style.animationDelay = Math.random() * .2 + 's'; }); },
+  feu: c => { const d = boite(c, 120); particules(d, 16, 'flamme', s => { s.style.setProperty('--x', (Math.random() * 60 - 30) + 'px'); s.style.left = 30 + Math.random() * 40 + '%'; s.style.animationDelay = Math.random() * .3 + 's'; }); },
+  // lumière d'Aldric : rayons dorés en croix + éclat
+  lumiere: (c, f = 1) => { const d = boite(c, 160 * f); d.innerHTML = `<div class="rayons"></div><div class="eclat or"></div><div class="onde or"></div>`; },
+  estoc: c => { const d = boite(c, 140); d.innerHTML = SVG(140, '<path class="lame" d="M-10 50 L110 50"/>') + '<div class="onde blanc"></div>'; },
+  // Pip : ronces qui s'enroulent, feuilles qui montent
+  ronces: c => { const d = boite(c, 130); d.innerHTML = SVG(130, '<path class="ronce" d="M10 90 C 30 40, 70 90, 50 50 S 80 10, 92 30"/><path class="ronce" style="animation-delay:.1s" d="M90 92 C 60 60, 20 80, 40 40 S 20 10, 8 22"/>'); },
+  feuilles: c => { const d = boite(c, 110); particules(d, 10, 'feuille', s => { s.textContent = ['🍃', '🌿', '✿'][Math.floor(Math.random() * 3)]; s.style.left = Math.random() * 80 + '%'; s.style.animationDelay = Math.random() * .35 + 's'; }); },
+  // Oria : flèche plantée, étoiles turquoise
+  fleche: c => { const d = boite(c, 120); d.innerHTML = '<div class="fleche">➶</div><div class="onde turq"></div>'; },
+  etoiles: (c, f = 1) => { const d = boite(c, 140 * f); particules(d, 9, 'etoile', s => { const a = Math.random() * 6.28, r = 30 + Math.random() * 40 * f; s.textContent = '✦'; s.style.setProperty('--x', Math.cos(a) * r + 'px'); s.style.setProperty('--y', Math.sin(a) * r + 'px'); }); },
+  // Gorm : ondes sonores bleues, rafale de vent
+  ondes: (c, f = 1) => { const d = boite(c, 160 * f); d.innerHTML = [0, 1, 2].map(i => `<div class="onde bleu" style="animation-delay:${i * .13}s"></div>`).join('') + '<div class="note">♪</div>'; },
+  vent: c => { const d = boite(c, 150); d.innerHTML = SVG(150, [0, 1, 2].map(i => `<path class="vent" style="animation-delay:${i * .08}s" d="M-5 ${30 + i * 20} Q 50 ${10 + i * 20} 105 ${35 + i * 20}"/>`).join('')); },
+  // Zéphine : bulles de poison, brume, éclat violet
+  poison: (c, f = 1) => { const d = boite(c, 120 * f); particules(d, 12, 'bulle', s => { const t = 8 + Math.random() * 14; s.style.width = s.style.height = t + 'px'; s.style.left = 15 + Math.random() * 70 + '%'; s.style.animationDelay = Math.random() * .35 + 's'; }); },
+  brume: c => { const d = boite(c, 160); particules(d, 7, 'nuage', s => { s.style.left = Math.random() * 60 + '%'; s.style.top = 20 + Math.random() * 40 + '%'; s.style.animationDelay = Math.random() * .2 + 's'; }); },
+  alchimie: c => { const d = boite(c, 120); d.innerHTML = '<div class="cercle"></div>'; particules(d, 8, 'etoile violet', s => { const a = Math.random() * 6.28; s.textContent = '✧'; s.style.setProperty('--x', Math.cos(a) * 45 + 'px'); s.style.setProperty('--y', Math.sin(a) * 45 + 'px'); }); },
+  // communs
+  impact: c => { const d = boite(c, 110); d.innerHTML = '<div class="eclat"></div><div class="onde blanc"></div>'; },
+  bouclier: c => { const d = boite(c, 120); d.innerHTML = '<div class="hexa">🛡</div>'; },
+  soin: c => EFFETS.feuilles(c),
+  pioche: c => { const d = boite(c, 110); particules(d, 3, 'carteb', (s, i) => { s.style.setProperty('--r', (i - 1) * 18 + 'deg'); s.style.animationDelay = i * .08 + 's'; }); },
+  pieces: c => { const d = boite(c, 110); particules(d, 5, 'piece', s => { s.textContent = '◆'; s.style.left = 20 + Math.random() * 60 + '%'; s.style.animationDelay = Math.random() * .25 + 's'; }); },
+  renfort: c => { const d = boite(c, 120); d.innerHTML = '<div class="onde or"></div><div class="fleche-haut">▲</div>'; },
+  invoque: c => { const d = boite(c, 140); d.innerHTML = '<div class="cercle or"></div>'; },
+};
+// quelle animation pour quelle carte : [sur la cible, sur moi]
+const EFF_CARTE = {
+  estocade:'estoc', lanterne:'lumiere', serment:'lumiere', releve:'lumiere', banniere:'renfort', contre:'bouclier', ecuyer:'invoque', gardien:'invoque',
+  ronces:'ronces', seve:'feuilles', racines:'ronces', purif:'feuilles', hurlement:'ondes', faon:'feuilles', lien:'griffe', rosee:'pioche',
+  marteau:'marteau', lame:'etincelles', apprenti:'invoque', plastron:'renfort', etincelles:'etincelles', golem:'invoque', retremper:'feu', fournaise:'feu',
+  longuevue:'pioche', raccourci:'etoiles', fleche:'fleche', guetteur:'invoque', tresor:'pioche', boussole:'etoiles', eclaireuse:'invoque', piege:'bouclier', detour:'etoiles', vol:'pieces',
+  grave:'ondes', aigue:'ondes', echo:'ondes', tambour:'invoque', flute:'invoque', colosse:'invoque', trancheV:'vent', cor:'bouclier',
+  fiole:'alchimie', soufre:'poison', distil:'alchimie', precipite:'alchimie', homoncule:'invoque', brume:'brume', catalyseur:'alchimie', paillasse:'poison',
+  potion:'soin', milicien:'invoque', chien:'invoque', pierre:'etincelles', rond:'bouclier', torche:'feu', chance:'etoiles', parchemin:'pioche',
+};
+// Frappe, Technique, Pouvoir et Ultime : l'impact prend la couleur du héros
+const EFF_HEROS = { maelle:'marteau', aldric:'lumiere', pip:'griffes', oria:'etoiles', gorm:'ondes', zephine:'poison' };
+// attaque d'une créature
+const EFF_UNITE = { louve:'griffes', golem:'marteau', colosse:'marteau', homoncule:'poison', faon:'griffe', chien:'griffes', ronces:'ronces', ecuyer:'estoc', gardien:'estoc', milicien:'estoc', guetteur:'fleche', eclaireuse:'fleche', tambour:'ondes', flute:'ondes', apprenti:'etincelles' };
+// effets dessinés par Gemini (images sans fond dans effets/), animés ici ; ils remplacent les effets dessinés par le téléphone
+const IMG_EFF = { griffes:['griffe1', 'griffe2', 'griffe3'] };
+Object.values(IMG_EFF).flat().forEach(n => { const i = new Image(); i.src = `effets/${n}.webp?v=1`; });
+// une image qui se « déchire » d'un coin à l'autre (clip-path qui avance le long de la griffure)
+const DECHIRE = (de, a) => [{ clipPath:`polygon(${de - 100}% -100%, ${de + 200}% 200%, 300% -100%)` }, { clipPath:`polygon(${a - 100}% -100%, ${a + 200}% 200%, 300% -100%)` }];
+EFFETS.griffes = (c, f = 1) => {
+  const d = boite(c, 175 * f);
+  IMG_EFF.griffes.forEach((n, i) => {
+    const im = document.createElement('img'); im.src = `effets/${n}.webp?v=1`; im.className = 'effimg'; d.appendChild(im);
+    const t0 = i * 120 * fxVite;
+    im.animate(DECHIRE(100, -100), { duration:150 * fxVite, delay:t0, easing:'cubic-bezier(.2,.7,.3,1)', fill:'both' });
+    im.animate([{ transform:'scale(1.3)', filter:'brightness(2.2)' }, { transform:'scale(1)', filter:'brightness(1)' }], { duration:260 * fxVite, delay:t0, easing:'ease-out', fill:'both' });
+    im.animate([{ opacity:1 }, { opacity:0 }], { duration:380 * fxVite, delay:t0 + 650 * fxVite, fill:'forwards' });
+    setTimeout(() => son('griffe'), t0);
+  });
+};
+// Images d'effets de Gemini qui arrivent au fil de l'eau : chaque nom listé ici est utilisé dès que effets/<nom>.webp existe ;
+// sinon l'effet dessiné par le téléphone reste. Façon de l'animer : eclat (jaillit puis s'efface), monte (s'élève), tourne (cercle).
+const ANIM_IMG = { degat:'eclat', 'gros-degat':'eclat', coeur:'monte', armure:'eclat', 'armure-casse':'eclat', 'poison-tic':'monte', pc:'monte', jauge:'monte', mort:'monte', victoire:'eclat', defaite:'eclat',
+  lame:'eclat', impact:'eclat', lumiere:'tourne', etincelles:'eclat', etoiles:'tourne', ondes:'eclat', vent:'eclat', poison:'monte', brume:'eclat', alchimie:'tourne', bouclier:'eclat', soin:'monte', invocation:'tourne', marteau:'eclat', fleche:'eclat', ronces:'tourne' };
+const IMG_OK = {};
+Object.keys(ANIM_IMG).forEach(n => { const i = new Image(); i.onload = () => { IMG_OK[n] = true; }; i.src = `effets/${n}.webp?v=1`; });
+const ALIAS_IMG = { invoque:'invocation', bouclier:'armure', 'gros-degat':'degat', feuilles:'soin' };
+function effetImage(nom, cible, f = 1) {
+  if (!IMG_OK[nom] && ALIAS_IMG[nom] && IMG_OK[ALIAS_IMG[nom]]) { if (nom === 'gros-degat') f *= 1.35; nom = ALIAS_IMG[nom]; }
+  if (!IMG_OK[nom] || !cible) return false;
+  const d = boite(cible, 170 * f), im = document.createElement('img'); im.src = `effets/${nom}.webp?v=1`; im.className = 'effimg'; d.appendChild(im);
+  const k = ANIM_IMG[nom], v = fxVite;
+  if (k === 'eclat') im.animate([{ transform:'scale(.3)', opacity:0, filter:'brightness(2.5)' }, { transform:'scale(1.12)', opacity:1, filter:'brightness(1.4)', offset:.25 }, { transform:'scale(1)', opacity:1, filter:'brightness(1)', offset:.55 }, { transform:'scale(1.05)', opacity:0 }], { duration:900 * v, easing:'ease-out', fill:'forwards' });
+  else if (k === 'monte') im.animate([{ transform:'translateY(25%) scale(.6)', opacity:0 }, { transform:'translateY(0) scale(1)', opacity:1, offset:.3 }, { transform:'translateY(-35%) scale(1.05)', opacity:0 }], { duration:1000 * v, easing:'ease-out', fill:'forwards' });
+  else im.animate([{ transform:'scale(.4) rotate(-40deg)', opacity:0 }, { transform:'scale(1) rotate(0)', opacity:1, offset:.35 }, { transform:'scale(1.15) rotate(50deg)', opacity:0 }], { duration:1000 * v, easing:'ease-out', fill:'forwards' });
+  return true;
+}
+function effet(nom, cible, f) {
+  if (effetImage(nom, cible, f)) return; if (!cible || !EFFETS[nom]) return; try { EFFETS[nom](cible, f); } catch (e) {} }
+
+// bandeau d'action en haut de l'écran : qui fait quoi à qui
+function bandeauAction(s, html, ms) {
+  const d = document.createElement('div'); d.className = 'bandact ' + (s === 'O' ? 'ordi' : 'moi'); d.innerHTML = html; couche().appendChild(d);
+  setTimeout(() => d.classList.add('part'), (ms || 1400) * fxVite); setTimeout(() => d.remove(), ((ms || 1400) + 400) * fxVite);
+}
+const QUI = s => s === 'O' ? S.O.nom : 'Toi';
+// visée : ligne en pointillés de l'attaquant à la cible + mire rouge sur la cible
+async function mire(de, vers) {
+  if (!de || !vers) return; const a = centre(de), b = centre(vers);
+  const sv = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); sv.setAttribute('class', 'mire'); sv.setAttribute('width', innerWidth); sv.setAttribute('height', innerHeight);
+  sv.innerHTML = `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}"/><circle cx="${b.x}" cy="${b.y}" r="24"/><circle class="c2" cx="${b.x}" cy="${b.y}" r="8"/>`;
+  couche().appendChild(sv); await dodo(520); sv.remove();
+}
+async function joue1(e) {
+  if (e.t === 'recap') {
+    const l = [...e.actions.map(x => `<li>${x}</li>`), ...e.gardes.map(x => `<li>🛡 ${x}</li>`)].join('') || '<li>Rien de spécial.</li>';
+    const pv = e.perdu > 0 ? `<b style="color:#ff7a7a">Tu as perdu ${e.perdu} ❤</b>` : e.perdu < 0 ? `<b style="color:#7dffb0">Tu as regagné ${-e.perdu} ❤</b>` : '<b style="color:#7dffb0">Tu n’as perdu aucun ❤</b>';
+    await new Promise(ok => { fenetre(`<h2>Fin du tour de ${e.nom}</h2><ul style="padding-left:1.1em;margin:.3em 0">${l}</ul><p>${pv}${e.abs ? `<br>🛡 Ta Garde a bloqué <b>${e.abs}</b> dégât${e.abs > 1 ? 's' : ''}.` : ''}${e.morts > 0 ? `<br>💀 ${e.morts} de tes créatures est tombée.` : ''}${e.soinO > 0 ? `<br>💚 ${e.nom} s’est soignée de ${e.soinO}.` : ''}</p><div class="choixh"><button id="amoi">À moi ! ▶</button></div>`);
+      document.getElementById('amoi').onclick = () => { fermer(); ok(); }; });
+    return;
+  }
+  if (e.t === 'finGarde') { const c = el({ s:e.s }); if (c) flotte(c, '🛡 Garde terminée', 'bleu'); await dodo(500); return; }
+  if (e.t === 'annonce') { son('tour'); const d = document.createElement('div'); d.className = 'annonce'; d.textContent = e.txt; couche().appendChild(d); await dodo(1100); d.remove(); return; }
+  if (e.t === 'tour') {
+    son('tour'); const d = document.createElement('div'); d.className = 'annonce'; d.textContent = e.s === 'O' ? `Tour de ${e.nom}` : 'À toi de jouer !';
+    couche().appendChild(d); await dodo(e.s === 'O' ? 900 : 700); d.remove(); return;
+  }
+  if (e.t === 'carte' || e.t === 'ultime') {
+    const ordi = e.s === 'O', d = document.createElement('div');
+    if (e.t === 'ultime') {
+      son('ultime'); const f = document.createElement('div'); f.className = 'eclair'; couche().appendChild(f); setTimeout(() => f.remove(), 1400 * fxVite);
+      d.className = 'fxcarte ultime'; d.innerHTML = `<img src="${HEROS[e.id].img || IMG(e.id)}" alt=""><div class="sorte">⚡ ULTIME</div><div class="n">${e.nom}</div><div class="t">${e.d || ''}</div><div class="cit">${e.cit}</div>`;
+    } else { son('carte'); d.className = 'fxcarte'; d.innerHTML = `<div class="sorte">${e.sorte}${e.cout !== undefined ? ` · ${e.cout} PC` : ''}</div><div class="n">${e.nom}</div><div class="t">${e.txt}</div>${e.vs ? `<div class="vs">🎲 ${e.vs.join(' · ')}</div>` : ''}`; }
+    couche().appendChild(d);
+    d.animate([{ transform:`translate(-50%, ${ordi ? '-160%' : '60%'}) scale(.4) rotate(${ordi ? -8 : 8}deg)`, opacity:0 }, { transform:'translate(-50%,-50%) scale(1) rotate(0)', opacity:1 }], { duration:280 * fxVite, easing:'ease-out', fill:'forwards' });
+    await dodo(e.t === 'ultime' ? 2600 : ordi ? 1250 : 650);
+    const cible = el(e.vers); if (cible && e.vers && e.vers.s !== e.s) await mire(d, cible);
+    const nomEff = e.t === 'ultime' || e.key === 'pouvoir' ? EFF_HEROS[e.id] : EFF_CARTE[e.key], ou = cible || el({ s:e.s });
+    if (cible) { const b = centre(cible); await d.animate([{ transform:'translate(-50%,-50%) scale(1)', opacity:1 }, { transform:`translate(calc(-50% + ${b.x - innerWidth / 2}px), calc(-50% + ${b.y - innerHeight / 2}px)) scale(.25) rotate(20deg)`, opacity:.3 }], { duration:300 * fxVite, easing:'ease-in', fill:'forwards' }).finished.catch(() => {}); }
+    else await d.animate([{ opacity:1 }, { opacity:0, transform:'translate(-50%,-50%) scale(1.15)' }], { duration:250 * fxVite, fill:'forwards' }).finished.catch(() => {});
+    d.remove(); effet(nomEff || 'impact', ou, e.t === 'ultime' ? 1.6 : e.key === 'pouvoir' ? 1.25 : 1); await dodo(e.t === 'ultime' ? 650 : 420); return;
+  }
+  if (e.t === 'tir') {
+    const de = el({ s:e.s }), vers = el(e.vers) || el({ s:e.s === 'J' ? 'O' : 'J' }); if (!de || !vers) return;
+    bandeauAction(e.s, `<b>${QUI(e.s)}</b> · ${e.nom} <span class="vs">🎲 ${e.vs.join(' · ')}</span> → <b>${e.cible === S.J.nom ? 'toi' : e.cible || ''}</b> : <span class="dg">${e.dg} dégâts</span>`);
+    await mire(de, vers);
+    son('tir'); flotte(de, `${e.nom} ${e.vs.join('·')}`, 'nom');
+    const b = document.createElement('div'); b.className = 'boule'; b.style.setProperty('--c', (e.s === 'J' ? S.J : S.O).c);
+    await vole(b, de, vers, 380); effet(EFF_HEROS[e.id] || 'impact', vers, e.vs.length >= 4 ? 1.3 : 1); await dodo(300); return;
+  }
+  if (e.t === 'coup' || e.t === 'louve') {
+    const de = el(e.de), vers = el(e.vers) || el({ s:e.de.s === 'J' ? 'O' : 'J' }); if (!de || !vers) return;
+    bandeauAction(e.de.s, e.t === 'louve' ? `🐺 <b>La Louve</b> bondit → <b>${e.cible === S.J.nom ? 'toi' : e.cible}</b> : <span class="dg">${e.n} dégâts</span>` : `🐾 <b>${e.nom}</b>${e.emb ? ' <b style="color:#c084fc">EMBUSCADE !</b>' : ''} attaque → <b>${e.cible === S.J.nom ? 'toi' : e.cible}</b> : <span class="dg">${e.a} dégâts</span>`);
+    await mire(de, vers);
+    if (e.t === 'louve') { son('louve'); flotte(de, `🐺 ${e.r.join(' · ')}`, 'nom'); await dodo(500); }
+    const a = centre(de), b = centre(vers), dx = (b.x - a.x) * .8, dy = (b.y - a.y) * .8;
+    de.style.zIndex = 30; de.style.position = 'relative';
+    setTimeout(() => effet(EFF_UNITE[e.t === 'louve' ? 'louve' : e.uk] || 'griffe', vers), 300 * fxVite);
+    await de.animate([{ transform:'none' }, { transform:`translate(${dx * .15}px, ${-dy * .1}px) scale(1.1)`, offset:.3 }, { transform:`translate(${dx}px, ${dy}px) scale(1.15) rotate(-6deg)`, offset:.6 }, { transform:'none' }],
+      { duration:520 * fxVite, easing:'ease-in-out' }).finished.catch(() => {});
+    de.style.zIndex = ''; return;
+  }
+  if (e.t === 'degat') {
+    const c = el(e.c); if (!c) return;
+    if (e.abs) {
+      son('bouclier'); effetImage('armure-casse', c, .9); flotte(c, e.n ? `🛡 −${e.abs} sur la Garde` : `🛡 BLOQUÉ ! (−${e.abs} Garde)`, e.n ? 'bleu' : 'bleu gros');
+      majVie(e.c, { garde:e.garde, bouclier:e.bouclier }); await dodo(e.n ? 650 : 900);
+    }
+    if (e.n) { effetImage(e.vert ? 'poison-tic' : e.n >= 8 ? 'gros-degat' : 'degat', c, e.n >= 8 ? 1.4 : .9); if (e.n >= 8) document.getElementById('app').animate([{ transform:'none' }, { transform:'translate(-6px,4px)' }, { transform:'translate(5px,-5px)' }, { transform:'translate(-3px,2px)' }, { transform:'none' }], { duration:380 }); son(e.n >= 8 ? 'gros' : 'coup'); secoue(c, e.vert ? 'vert' : 'rouge'); flotte(c, `−${e.n} ❤${e.mot ? ' ' + e.mot : ''}`, e.vert ? 'vert' : e.n >= 8 ? 'rouge gros' : 'rouge'); }
+    majVie(e.c, e); await dodo(e.n ? Math.min(1300, 380 + e.n * 80) : 200); return;
+  }
+  if (e.t === 'soin') { const c = el(e.c); son('soin'); effetImage('coeur', c, .9); flotte(c, `+${e.n}`, 'soin'); if (c) { c.classList.remove('brille'); void c.offsetWidth; c.classList.add('brille'); } majVie(e.c, e); await dodo(450); return; }
+  if (e.t === 'tombe') { const c = el(e.c); if (!c) return; son('tombe'); effetImage('mort', c, 1); await c.animate([{ transform:'none', opacity:1 }, { transform:'translateY(14px) rotate(14deg) scale(.7)', opacity:0 }], { duration:450 * fxVite, fill:'forwards' }).finished.catch(() => {}); return; }
+  if (e.t === 'garde') { const c = el({ s:e.s }); son('garde'); bandeauAction(e.s, `🛡 <b>${QUI(e.s)}</b> pose sa Garde <span class="vs">🎲 ${(e.vs || []).join(' · ')}</span> : <b>${e.quoi}</b> jusqu’au prochain tour`); effetImage('armure', c, .9); flotte(c, `🛡 ${e.quoi || e.nom}`, 'bleu'); if (c) { c.classList.remove('garde'); void c.offsetWidth; c.classList.add('garde'); } await dodo(450); return; }
+  if (e.t === 'defense') { const c = el(e.c); if (!c) return; son('garde'); if (!effetImage('armure', c, .7)) effet('bouclier', c); flotte(c, '🛡 En défense', 'bleu'); await dodo(500); return; }
+  if (e.t === 'transforme') {
+    const c = el(e.c); if (!c || c.classList.contains('mystere')) return; son('ultime'); effet('alchimie', c, 1.2);
+    c.style.position = 'relative'; c.style.zIndex = 25;
+    c.animate([{ transform:'scale(1)', filter:'none' }, { transform:'scale(1.25)', filter:'hue-rotate(80deg) brightness(1.6)', offset:.25 }, { transform:'scale(.82)', filter:'hue-rotate(80deg) brightness(1.2)', offset:.8 }, { transform:'scale(.9)', filter:'none' }], { duration:2000 * fxVite, fill:'forwards', easing:'ease-in-out' });
+    const sp = c.querySelectorAll('.av span'); flotte(c, e.txt, 'nom');
+    await dodo(350);
+    defile(sp[0], e.a0 ?? nb(sp[0] && sp[0].textContent), 1, v => `⚔ ${v}`, 'r');
+    defile(sp[1], e.v0 ?? nb(sp[1] && sp[1].textContent), 1, v => `❤ ${v}`, 'r');
+    await dodo(1500); c.style.zIndex = ''; return;
+  }
+  if (e.t === 'nouveauDe') { son('tour'); const d = document.createElement('div'); d.className = 'annonce'; d.innerHTML = `🎲 Nouveau dé !<div style="font-size:.55em;color:#fff">Tu lances maintenant ${e.n} dés${e.n >= 5 ? ' (le maximum)' : ''}</div>`; couche().appendChild(d); await dodo(1300); d.remove(); return; }
+  if (e.t === 'pc') { const c = el({ s:e.s }); if (!c) return; bandeauAction(e.s, `◆ <b>${QUI(e.s)}</b> vend ${e.nb || 1} dé${(e.nb || 1) > 1 ? 's' : ''} : <b>+${e.n} PC</b>`, 1000); ton(1200, .15, 'sine', .1); ton(1600, .2, 'sine', .08, null, .08); effetImage('pc', c, .8); flotte(c, `+${e.n} PC`, 'bleu'); await dodo(350); return; }
+  if (e.t === 'jauge') { const c = el({ s:e.s }); if (!c) return; ton(523, .4, 'triangle', .1); ton(784, .5, 'triangle', .1, null, .12); if (!effetImage('jauge', c, 1.2)) effet('lumiere', c); flotte(c, '⚡ Ultime prêt !', 'nom'); await dodo(700); return; }
+  if (e.t === 'invoque') { const f = el({ s:e.s, uid:'x' }); son('louve'); effetImage('invocation', f, 1.1); flotte(f, `🐺 ${e.nom} arrive !`, 'nom'); await dodo(700); return; }
+}
+async function joueFX() {
+  fxOn = true; fxVite = 1.4; document.body.classList.add('fxon');
+  while (FX.length) { const e = FX.shift(); try { await joue1(e); } catch (x) { console.error(x); } }
+  fxOn = false; document.body.classList.remove('fxon'); rendu();
+}
+// toucher l'écran pendant les animations les accélère
+document.addEventListener('pointerdown', () => { if (fxOn) fxVite = .3; }, true);
+</script>
+</body>
+</html>

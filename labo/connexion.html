@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Connexion · le laboratoire</title>
+<style>
+  :root { --or:#f3c96b; --texte:#f1ecff; --doux:#c9c1ea; --ok:#7dffb0; }
+  * { box-sizing:border-box; }
+  body { margin:0; min-height:100vh; background:radial-gradient(circle at 50% 0%, #2a2260 0%, #120f24 60%); color:var(--texte); font:16px/1.45 Georgia, 'Times New Roman', serif; display:flex; align-items:center; justify-content:center; padding:16px; }
+  form { width:100%; max-width:380px; background:#1d1b3acc; border:2px solid #4b4580; border-radius:18px; padding:20px; box-shadow:0 6px 24px #0008; }
+  h1 { margin:0 0 4px; font-size:1.3em; color:var(--or); text-align:center; }
+  .sous { text-align:center; color:var(--doux); font-size:.9em; margin:0 0 16px; }
+  label { display:block; font-size:.88em; color:var(--doux); margin:10px 0 4px; }
+  input { width:100%; padding:11px 12px; border-radius:12px; border:2px solid #4b4580; background:#120f24; color:#fff; font:inherit; }
+  input:focus { outline:none; border-color:var(--or); }
+  button { width:100%; margin-top:16px; padding:12px; border:0; border-radius:14px; background:linear-gradient(135deg,#f3c96b,#b7832a); color:#1d1626; font:inherit; font-weight:bold; cursor:pointer; }
+  button:disabled { opacity:.5; }
+  #msg { min-height:1.3em; margin-top:12px; text-align:center; color:#ffb3b3; font-size:.9em; }
+  a { color:var(--doux); display:block; text-align:center; margin-top:14px; font-size:.88em; }
+  .cache { display:none; }
+</style>
+</head>
+<body>
+<form id="f" autocomplete="on">
+  <h1>Connexion</h1>
+  <p class="sous">Compte du foyer (Hop-là)</p>
+  <div id="etape1">
+    <label for="id">Identifiant (ex. prenom.nom) ou e-mail</label>
+    <input id="id" name="username" autocomplete="username" required>
+    <label for="pw">Mot de passe</label>
+    <input id="pw" name="password" type="password" autocomplete="current-password" required>
+  </div>
+  <div id="etape2" class="cache">
+    <label for="code">Code reçu par e-mail</label>
+    <input id="code" inputmode="numeric" autocomplete="one-time-code">
+  </div>
+  <button id="b" type="submit">Se connecter</button>
+  <div id="msg"></div>
+  <a href="/">‹ Retour au laboratoire</a>
+</form>
+<script>
+// Petite porte d'entrée du laboratoire (10/11/2026) : la même connexion que le Hub (POST /api/hub/login), sans le Hub.
+// La session est rangée là où Hop-là la cherche (localStorage « hub_session_perso »), puis on repart vers la page demandée.
+const ENT = location.hostname.split('.')[0].replace(/-hub$/, '');
+const CLE = 'hub_session_' + ENT;
+const retour = (() => { const r = new URLSearchParams(location.search).get('retour') || '/hopla/index.html'; return /^\/[a-z0-9/_.-]*$/i.test(r) ? r : '/'; })();
+const appareil = (() => { let d = localStorage.getItem('labo_appareil'); if (!d) { d = Array.from(crypto.getRandomValues(new Uint8Array(16)), (b) => b.toString(16).padStart(2, '0')).join(''); localStorage.setItem('labo_appareil', d); } return d; })();
+let ticket = null;
+const msg = (t) => { document.getElementById('msg').textContent = t || ''; };
+const ouvre = (token) => { localStorage.setItem(CLE, token); location.replace(retour); };
+if (localStorage.getItem(CLE) && !new URLSearchParams(location.search).has('changer')) location.replace(retour);
+document.getElementById('f').addEventListener('submit', async (ev) => {
+  ev.preventDefault(); msg(''); const b = document.getElementById('b'); b.disabled = true;
+  try {
+    let r;
+    if (!ticket) r = await fetch('/api/hub/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: document.getElementById('id').value.trim(), password: document.getElementById('pw').value, device: appareil }) });
+    else r = await fetch('/api/hub/login/code', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ticket, code: document.getElementById('code').value.trim(), device: appareil }) });
+    const d = await r.json().catch(() => ({}));
+    if (r.ok && d.token) { ouvre(d.token); return; }
+    if (r.ok && d.ticket) { ticket = d.ticket; document.getElementById('etape1').classList.add('cache'); document.getElementById('etape2').classList.remove('cache'); document.getElementById('code').focus(); msg(d.message || 'Un code vient de vous être envoyé par e-mail.'); return; }
+    msg(d.message || 'Connexion impossible.');
+  } catch (_) { msg('Pas de réponse du serveur. Réessayez dans un instant.'); }
+  b.disabled = false;
+});
+</script>
+</body>
+</html>

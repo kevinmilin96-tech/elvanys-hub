@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#120f24">
+<title>La Guilde des Runes · La Tour des héros</title>
+<style>
+  :root { --or:#f3c96b; --texte:#f1ecff; --doux:#c9c1ea; --c:#8b5cf6; }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body { margin:0; color:var(--texte); font:15px/1.4 Georgia, 'Times New Roman', serif;
+    background:radial-gradient(ellipse at 50% -10%, color-mix(in srgb, var(--c) 35%, #120f24), #120f24 60%) fixed, #120f24; transition:background .4s; }
+  main { max-width:620px; margin:0 auto; padding:12px 12px 70px; }
+  .haut { display:flex; align-items:center; gap:8px; }
+  .haut a { color:var(--doux); text-decoration:none; font-size:.9em; background:#221d42; border:1px solid #4b4580; border-radius:20px; padding:5px 12px; }
+  .haut h1 { flex:1; margin:0; text-align:center; color:var(--or); font-size:1.35em; }
+  /* --- la grille de sélection --- */
+  .grille { display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; margin:12px 0 14px; }
+  .case { position:relative; border-radius:14px; overflow:hidden; aspect-ratio:1; border:2px solid #ffffff22; background:#000; cursor:pointer; padding:0;
+    box-shadow:0 4px 12px #0009; transition:transform .2s, box-shadow .2s; }
+  .case img { width:100%; height:100%; object-fit:cover; display:block; filter:saturate(.75) brightness(.8); transition:filter .2s, transform .3s; }
+  .case span { position:absolute; left:0; right:0; bottom:0; padding:14px 4px 5px; background:linear-gradient(transparent, #000d); color:#fff; font-weight:bold; font-size:.92em; text-align:center; }
+  .case.choisi { border-color:var(--hc); box-shadow:0 0 0 2px var(--hc), 0 0 22px var(--hc); transform:translateY(-3px) scale(1.03); }
+  .case.choisi img { filter:none; transform:scale(1.06); }
+  /* --- la fiche --- */
+  .fiche { border-radius:20px; overflow:hidden; background:#1d1b3aee; border:2px solid var(--c); box-shadow:0 10px 30px #000a; animation:arrive .35s ease-out; }
+  @keyframes arrive { from { opacity:0; transform:translateY(12px); } }
+  .banniere { position:relative; display:flex; gap:12px; align-items:flex-end; padding:14px; min-height:170px;
+    background:linear-gradient(90deg, #120f24f2 30%, #120f2433), var(--img) right center/cover; }
+  .banniere img { width:110px; height:110px; border-radius:50%; object-fit:cover; border:3px solid var(--c); box-shadow:0 0 22px var(--c); flex:none; }
+  .banniere h2 { margin:0; font-size:1.6em; color:#fff; } .banniere .titre { color:var(--c); font-weight:bold; text-transform:uppercase; letter-spacing:.06em; font-size:.78em; }
+  .banniere .cit { margin:.3em 0 0; font-style:italic; color:var(--doux); }
+  .corps { padding:12px 14px 16px; }
+  .role { margin:.2em 0 .8em; }
+  .chips { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px; }
+  .chips span { background:#0007; border:1px solid #ffffff22; border-radius:20px; padding:2px 10px; font-size:.86em; }
+  .chips .pv { background:#7a1f2a; } .chips .eq { background:#2a5d3a; } .chips .st { background:color-mix(in srgb, var(--c) 45%, #000); }
+  .stats { display:grid; gap:6px; margin:6px 0 14px; }
+  .stat { display:grid; grid-template-columns:86px 1fr 18px; align-items:center; gap:8px; font-size:.88em; }
+  .barre { height:10px; border-radius:6px; background:#0008; overflow:hidden; box-shadow:inset 0 1px 3px #000; }
+  .barre i { display:block; height:100%; border-radius:6px; background:linear-gradient(90deg, color-mix(in srgb, var(--c) 60%, #fff), var(--c)); animation:remplit .7s ease-out; }
+  @keyframes remplit { from { width:0 !important; } }
+  h3 { color:var(--or); margin:16px 0 8px; font-size:1.08em; display:flex; align-items:center; gap:8px; }
+  h3 small { color:var(--doux); font-weight:normal; font-size:.8em; }
+  .des { display:flex; gap:6px; justify-content:space-between; }
+  .des img { width:15%; aspect-ratio:1; border-radius:10px; box-shadow:0 3px 8px #000a; }
+  .kit { display:grid; gap:8px; }
+  .kit div { background:#120f24aa; border-left:4px solid var(--c); border-radius:10px; padding:8px 10px; font-size:.9em; }
+  .kit b { display:block; color:var(--c); font-size:.76em; letter-spacing:.07em; text-transform:uppercase; }
+  .kit em { font-style:normal; color:#fff; font-weight:bold; }
+  /* --- le deck --- */
+  .deck { display:grid; grid-template-columns:repeat(auto-fill, 98px); justify-content:center; gap:12px 10px; }
+  .cg { position:relative; }
+  .cg .nb { position:absolute; top:-6px; left:-6px; z-index:5; background:var(--or); color:#2b2117; font-weight:bold; border-radius:12px; padding:0 7px; font-size:.85em; box-shadow:0 2px 5px #000a; }
+  .simple { background:#f6efdc; color:#2b2117; border-radius:10px; padding:7px; font-size:.72em; line-height:1.25; border:2px solid #b89a5e; aspect-ratio:864/1216; overflow:hidden; position:relative; }
+  .simple .n { font-weight:bold; font-size:1.1em; padding-right:20px; } .simple .co { position:absolute; top:5px; right:5px; width:20px; height:20px; border-radius:50%; background:#2a7fc1; color:#fff; display:grid; place-items:center; font-weight:bold; }
+  .simple .t { color:#7a5a2a; font-size:.85em; text-transform:uppercase; } .simple .d { background:#2b2117; color:#f6efdc; border-radius:5px; padding:0 4px; display:inline-block; margin:3px 0; }
+  .simple.u2 { background:#e9f0dc; } .simple.e2 { background:#e3e8f5; } .simple.r2 { background:#f1e1e1; }
+  .boutons { display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
+  .bt { flex:1; border:none; border-radius:14px; padding:12px; font:inherit; font-weight:bold; cursor:pointer; }
+  .bt.or { background:linear-gradient(#f6d77e, #c8902f); color:#2a1a08; box-shadow:0 3px 0 #7a5418; }
+  .bt.sombre { background:#2a2650; color:var(--texte); border:1px solid #4b4580; }
+  .editeur .ligne { display:flex; align-items:center; gap:10px; background:#120f24aa; border-radius:12px; padding:6px; margin:6px 0; }
+  .editeur .ligne .cg { width:74px; flex:none; }
+  .editeur .ligne .info { flex:1; font-size:.85em; } .editeur .ligne .info b { display:block; font-size:1.05em; }
+  .compte { display:flex; align-items:center; gap:6px; }
+  .compte button { width:34px; height:34px; border-radius:50%; border:none; font-size:1.2em; font-weight:bold; background:#2a2650; color:#fff; }
+  .compte button:disabled { opacity:.3; } .compte span { min-width:18px; text-align:center; font-weight:bold; font-size:1.1em; }
+  .total { position:sticky; top:0; z-index:9; background:#120f24ee; border-radius:12px; padding:8px 12px; margin:6px 0; display:flex; align-items:center; gap:8px; border:1px solid #4b4580; }
+  .total .n { font-weight:bold; font-size:1.1em; } .total .ok { color:#7dffb0; } .total .ko { color:#ffb36a; }
+  details { background:#1d1b3aee; border-radius:14px; padding:10px 14px; margin-top:16px; border:1px solid #4b4580; }
+  details summary { color:var(--or); font-weight:bold; cursor:pointer; }
+  details li { margin:.3em 0; font-size:.92em; }
+</style>
+</head>
+<body>
+<main>
+  <div class="haut"><a href="menu.html">‹ Menu</a><h1>La Tour des héros</h1><a href="duel.html">⚔ Duel</a></div>
+  <div class="grille" id="grille"></div>
+  <div id="fiche"></div>
+  <details><summary>📜 Les règles communes du Duel</summary><ol>
+    <li><b>But</b> : faire tomber à 0 les points de vie du héros adverse.</li>
+    <li><b>Le deck</b> : 21 cartes (celles du héros et celles de la Guilde, 2 exemplaires au plus). 4 cartes en main au départ, +1 par tour, 7 au plus.</li>
+    <li><b>Les dés</b> : 3 au tour 1, 4 au tour 2, puis 5. Chaque dé a son sac de 6 faces : une face sortie ne revient qu’une fois les six sorties. Une relance gratuite par tour.</li>
+    <li><b>Les PC</b> : 1 au départ, +1 par tour, 6 au plus, +1 par dé vendu. Ils paient les cartes, l’Ultime (3), une relance (1), le +1 / −1 (2) et les Premiers soins (2).</li>
+    <li><b>Poser ses dés</b> : sur une carte (son coût en PC + sa condition de dés), sur la Frappe (dés identiques : valeur + bonus), la Technique (dés qui se suivent : 4 / 7 / 10), la Garde (se protéger jusqu’au prochain tour), le Pouvoir du héros, ou les vendre.</li>
+    <li><b>Les créatures</b> attaquent au tour suivant leur arrivée ; on peut les mettre en défense. Barrière : protège le héros. Cachée : ni attaquable ni visable avant sa première attaque (Embuscade +2).</li>
+    <li><b>L’Ultime</b> : jauge de 20 (+1 par dé posé, +1 tous les 5 dégâts reçus), puis 3 PC et sa combinaison de dés, une fois par partie.</li>
+    <li><b>Le second joueur</b> commence avec 3 PC et une carte de plus.</li>
+  </ol></details>
+</main>
+<script src="donnees.js?v=20261110-143557"></script>
+<script src="odyssee.js?v=20261110-143557"></script>
+<script src="cartes.js?v=20261110-143557"></script>
+<script>
+document.head.insertAdjacentHTML('beforeend', '<style>' + CSS_CARTE + '</style>');
+const SORTE = { u:'Créature', s:'Sort', e:'Équipement', r:'Piège' };
+let actuel = new URLSearchParams(location.search).get('h'); if (!HEROS[actuel]) actuel = localStorage.getItem('guilde-tour') || ORDRE[0];
+let edition = null;   // deck en cours de modification
+const compter = d => { const n = {}; d.forEach(k => n[k] = (n[k] || 0) + 1); return n; };
+const ordreCartes = (id, ks) => ks.sort((a, b) => (HEROS[id].deck.includes(b) - HEROS[id].deck.includes(a)) || (CARTES[a].c - CARTES[b].c) || CARTES[a].n.localeCompare(CARTES[b].n));
+function vignette(id, k, w = 98) {   // la carte : cadre en cristal si le héros l'a déjà, sinon carte simple
+  const h = CADRE_DE(k);
+  if (CADRES_OK.includes(h)) return carteGuilde(k, { w });
+  const c = CARTES[k]; return `<div class="simple ${c.t}2" style="width:${w}px;font-size:${w < 90 ? '.55em' : '.72em'}"><span class="co">${c.c}</span><div class="n">${c.n}</div><div class="t">${SORTE[c.t]}</div><div class="d">🎲 ${c.txt}</div><div>${c.d}</div></div>`;
+}
+function parties(id) { try { const l = JSON.parse(localStorage.getItem('guilde-parties') || '[]').filter(p => p.moi === id); return [l.length, l.filter(p => p.resultat === 'gagne').length]; } catch (e) { return [0, 0]; } }
+function grille() {
+  document.getElementById('grille').innerHTML = ORDRE.map(id => `<button class="case ${id === actuel ? 'choisi' : ''}" style="--hc:${HEROS[id].c}" onclick="choisir('${id}')"><img src="portraits/${id}.webp" alt=""><span>${HEROS[id].nom}</span></button>`).join('');
+}
+function choisir(id) { if (edition && !confirm('Quitter la modification du deck sans l’enregistrer ?')) return; edition = null; actuel = id; localStorage.setItem('guilde-tour', id); history.replaceState(null, '', '?h=' + id); grille(); fiche(); }
+function fiche() {
+  const id = actuel, h = HEROS[id], P = PROFILS[id], [joue, gagne] = parties(id), perso = localStorage.getItem('guilde-deck-' + id) && deckValide(id, deckDe(id));
+  document.documentElement.style.setProperty('--c', h.c);
+  const deck = compter(deckDe(id));
+  document.getElementById('fiche').innerHTML = `<div class="fiche" style="--img:url('portraits/${id}.webp')">
+    <div class="banniere"><img src="portraits/${id}.webp" alt=""><div><div class="titre">${h.titre}</div><h2>${h.nom}</h2><p class="cit">${h.cit}</p></div></div>
+    <div class="corps">
+      <p class="role">${h.role}</p>
+      <div class="chips"><span class="pv">❤ ${h.pv} PV</span><span class="st">${P.style}</span><span class="eq">⚖ ${EQUILIBRE[id]} % de victoires (simulations)</span><span>🎮 Tes parties : ${joue ? `${gagne} gagnée${gagne > 1 ? 's' : ''} sur ${joue}` : 'aucune'}</span></div>
+      <div class="stats">${Object.entries(P).filter(([k]) => k !== 'style').map(([k, v]) => `<div class="stat"><span>${k}</span><div class="barre"><i style="width:${v * 20}%"></i></div><b>${v}</b></div>`).join('')}</div>
+      <h3>🎲 Ses dés <small>les 6 faces</small></h3>
+      <div class="des">${[1, 2, 3, 4, 5, 6].map(v => `<img src="${FACE(id, v)}" alt="${v}">`).join('')}</div>
+      <h3>✨ Ses compétences</h3>
+      <div class="kit">
+        <div><b>Passif</b>${h.passif}</div>
+        <div><b>Garde · ${h.garde.n}</b><em>${h.garde.txt}</em> : ${h.garde.d}</div>
+        <div><b>Pouvoir · ${h.pouvoir.n}</b><em>${h.pouvoir.txt}</em> : ${h.pouvoir.d}</div>
+        <div><b>Ultime · ${h.ultime.n}</b><em>jauge pleine + 3 PC + ${h.ultime.txt}</em> : ${h.ultime.d}</div>
+        ${h.action ? `<div><b>Action · ${h.action.n}</b><em>${h.action.txt}</em> : ${h.action.d}</div>` : ''}
+      </div>
+      <h3>🂠 ${perso ? 'Ton deck' : 'Son deck de base'} <small>${DECK_TAILLE} cartes</small></h3>
+      <div id="deckzone">${edition ? '' : `<div class="deck">${ordreCartes(id, Object.keys(deck)).map(k => `<div class="cg">${deck[k] > 1 ? `<span class="nb">×${deck[k]}</span>` : ''}${vignette(id, k)}</div>`).join('')}</div>`}</div>
+      <div class="boutons" id="bts">${edition ? '' : `<button class="bt sombre" onclick="editer()">✏️ Modifier mon deck</button>${perso ? '<button class="bt sombre" onclick="deBase()">↺ Deck de base</button>' : ''}<button class="bt or" onclick="location.href='duel.html?h=${id}'">⚔ Jouer avec ${h.nom}</button>`}</div>
+    </div></div>`;
+  if (edition) dessineEditeur();
+}
+function editer() { edition = deckDe(actuel).slice(); fiche(); document.getElementById('deckzone').scrollIntoView({ behavior:'smooth', block:'start' }); }
+function deBase() { if (!confirm('Revenir au deck de base de ce héros ?')) return; localStorage.removeItem('guilde-deck-' + actuel); fiche(); }
+function change(k, d) { if (d > 0) edition.push(k); else { const i = edition.lastIndexOf(k); if (i >= 0) edition.splice(i, 1); } dessineEditeur(); }
+function dessineEditeur() {
+  const id = actuel, n = compter(edition), ok = edition.length === DECK_TAILLE;
+  const groupe = (titre, ks) => `<h3>${titre}</h3>` + ordreCartes(id, ks).map(k => { const c = CARTES[k], x = n[k] || 0;
+    return `<div class="ligne"><div class="cg">${vignette(id, k, 74)}</div><div class="info"><b>${c.n}</b>${SORTE[c.t]} · ${c.c} PC · 🎲 ${c.txt}<br>${c.d}</div>
+      <div class="compte"><button onclick="change('${k}', -1)" ${x ? '' : 'disabled'}>−</button><span>${x}</span><button onclick="change('${k}', 1)" ${x >= DECK_MAX || edition.length >= DECK_TAILLE ? 'disabled' : ''}>+</button></div></div>`; }).join('');
+  const pool = poolDe(id), duHeros = pool.filter(k => !GUILDE.includes(k)), guilde = pool.filter(k => GUILDE.includes(k));
+  document.getElementById('deckzone').innerHTML = `<div class="editeur"><div class="total"><span class="n ${ok ? 'ok' : 'ko'}">${edition.length} / ${DECK_TAILLE}</span><span style="flex:1;font-size:.85em;color:var(--doux)">${ok ? 'Ton deck est complet.' : edition.length < DECK_TAILLE ? `Ajoute ${DECK_TAILLE - edition.length} carte${DECK_TAILLE - edition.length > 1 ? 's' : ''}.` : ''} 2 exemplaires au plus.</span></div>
+    ${groupe(`Les cartes de ${HEROS[id].nom}`, duHeros)}${groupe('Les cartes de la Guilde', guilde)}</div>`;
+  document.getElementById('bts').innerHTML = `<button class="bt sombre" onclick="edition=null;fiche()">Annuler</button><button class="bt or" onclick="enregistre()" ${ok ? '' : 'disabled style="opacity:.45"'}>✔ Enregistrer mon deck</button>`;
+}
+function enregistre() { if (!deckValide(actuel, edition)) return; localStorage.setItem('guilde-deck-' + actuel, JSON.stringify(edition)); edition = null; fiche(); }
+grille(); fiche();
+</script>
+</body>
+</html>
