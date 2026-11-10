@@ -253,7 +253,7 @@ function genereIle(graine, R0) {
     }));
     // événements distincts
     const evs = brasse(R, EVENEMENTS.map(e => e.id)); let iev = 0; cases.forEach(l => l.forEach(c => { if (c.t === 'evenement') c.ev = evs[iev++ % evs.length]; }));
-    cases[dep.y][dep.x].vu = cases[dep.y][dep.x].visite = true; voisins(dep.x, dep.y).forEach(([a, b]) => { cases[b][a].vu = true; });
+    cases[dep.y][dep.x].vu = cases[dep.y][dep.x].visite = true; voisins(dep.x, dep.y).forEach(([a, b]) => { cases[b][a].vu = true; voisins(a, b).forEach(([e, f]) => { cases[f][e].vu = true; }); }); // on voit à 2 cases au débarquement
     return { cases, dep, porte:{ x:porte.x, y:porte.y }, boss:{ x:boss.x, y:boss.y }, direct:dp, essai };
   }
   return null;

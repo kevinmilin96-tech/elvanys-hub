@@ -332,7 +332,7 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261110-134418';
+const VERSION = '20261110-140121';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); location.replace('duel.html?v=' + v); }
@@ -351,9 +351,9 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261110-134418"></script>
-<script src="donnees.js?v=20261110-134418"></script>
-<script src="odyssee.js?v=20261110-134418"></script>
+<script src="cartes.js?v=20261110-140121"></script>
+<script src="donnees.js?v=20261110-140121"></script>
+<script src="odyssee.js?v=20261110-140121"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;

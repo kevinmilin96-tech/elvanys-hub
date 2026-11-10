@@ -20,7 +20,28 @@
   .p.pv { background:#7a1f2a; } .p.or { background:#6b5212; } .p.vivres { background:#2a5d3a; } .p.vivres.zero { background:#8a1f1f; animation:cligne 1s infinite; }
   @keyframes cligne { 50% { opacity:.5; } }
   .rel i { font-style:normal; margin-right:3px; cursor:pointer; font-size:1.1em; }
-  .carte-ile { display:grid; grid-template-columns:repeat(7, 1fr); gap:3px; background:radial-gradient(circle at 50% 30%, #3b1d12, #1a0d10 70%); border:3px solid #7a4a22; border-radius:14px; padding:6px; margin:6px 0; box-shadow:inset 0 0 40px #000a; }
+  svg.ile { width:100%; aspect-ratio:7 / 9; display:block; background:radial-gradient(circle at 50% 35%, #161a2e, #07070e 72%); border-radius:14px; border:2px solid #3a3160; box-shadow:inset 0 0 50px #000; margin:6px 0; }
+  .mur { fill:none; stroke:#ece6d2; stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round; }
+  .mur2 { fill:none; stroke:#8f8774; stroke-width:1; stroke-linecap:round; opacity:.75; }
+  .cel.neuf .mur, .cel.neuf .mur2 { stroke-dasharray:1; stroke-dashoffset:1; animation:trace .75s ease-out forwards; }
+  @keyframes trace { to { stroke-dashoffset:0; } }
+  .pierre { fill:#cfc7ad; opacity:.7; } .cel.neuf .pierre { opacity:0; animation:pop .4s .5s forwards; } @keyframes pop { to { opacity:.7; } }
+  .sol { fill:none; stroke:#ffffff1c; stroke-width:1; }
+  .ico { font-size:22px; text-anchor:middle; pointer-events:none; fill:#f1ecff; } .ico.fait { opacity:.3; } .cel.neuf .ico { opacity:0; animation:pop .4s .6s forwards; }
+  .niv { font-size:9px; fill:#ffd27a; font-weight:bold; pointer-events:none; }
+  .cel.ok .cible { fill:#7dffb0; opacity:.9; animation:pulse2 1.3s ease-in-out infinite; } .cible { fill:none; }
+  @keyframes pulse2 { 50% { opacity:.35; } }
+  .cel.ok { cursor:pointer; } .cel.ok .ico { filter:drop-shadow(0 0 4px #7dffb0); }
+  .cel.ok .pointe { fill:#7dffb0; opacity:.8; animation:pulse2 1.3s ease-in-out infinite; } .pointe { fill:none; }
+  #heros { transition:transform .24s linear; }
+  #heros .halo { fill:url(#lum); } #heros .cadre { fill:none; stroke:#f3c96b; stroke-width:2; }
+  .bulles { background:#2a2650; border-radius:12px; padding:6px 8px; margin:5px 0; min-height:52px; display:flex; flex-direction:column; gap:4px; }
+  .bulle { display:flex; gap:8px; align-items:flex-start; font-size:.86em; line-height:1.3; opacity:0; animation:monte .35s forwards; }
+  .bulle.corbeau { flex-direction:row-reverse; text-align:right; } @keyframes monte { from { transform:translateY(8px); } to { opacity:1; transform:none; } }
+  .bulle img, .bulle .avatar { width:34px; height:34px; border-radius:50%; object-fit:cover; border:2px solid var(--or); flex:none; }
+  .bulle .avatar { display:flex; align-items:center; justify-content:center; background:#1d1b3a; font-size:1.3em; border-color:#8b5cf6; }
+  .bulle span { background:#1d1b3a; border-radius:10px; padding:5px 8px; } .bulle b { color:var(--or); font-size:.85em; display:block; }
+  .carte-ile { display:none; grid-template-columns:repeat(7, 1fr); gap:3px; background:radial-gradient(circle at 50% 30%, #3b1d12, #1a0d10 70%); border:3px solid #7a4a22; border-radius:14px; padding:6px; margin:6px 0; box-shadow:inset 0 0 40px #000a; }
   .k { aspect-ratio:1; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:1.35em; position:relative; background:#2b1a14; border:1px solid #3a2a22; }
   .k.roche { background:#241611; border-color:#1a0d10; color:#3a2a22; }
   .k.inconnue { background:#120b0d; border-color:#1a0d10; color:#3a2a30; font-size:.9em; }
@@ -80,9 +101,9 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261110-134418"></script>
-<script src="donnees.js?v=20261110-134418"></script>
-<script src="odyssee.js?v=20261110-134418"></script>
+<script src="cartes.js?v=20261110-140121"></script>
+<script src="donnees.js?v=20261110-140121"></script>
+<script src="odyssee.js?v=20261110-140121"></script>
 <script>
 // le moteur du Duel n'est pas chargé ici : les cartes de l'Odyssée appellent degats/soin seulement en combat (dans duel.html)
 const log = () => {}, degats = () => {}, soin = () => {}, altere = () => {}, invoque = () => {}, adv = () => ({}), fin = () => {};
@@ -96,7 +117,7 @@ const NIV = ['', 'I', 'II', 'III'];
 // ----------------------------------------------------------------------------------------------- accueil
 function accueil() {
   const r = lireOdyssee(), rec = lireRecords(), col = lireCollection();
-  if (r) { R = r; if (R.combat && !R.combat.resultat) { location.href = 'duel.html?odyssee=1'; return; } if (R.combat && R.combat.resultat) { dessine(); apresCombat(); return; } dessine(); return; }
+  if (r) { R = r; dejaDessine = new Set(); R.ile.flat().forEach(c => { if (c.vu) dejaDessine.add(c.x + ',' + c.y); }); if (R.combat && !R.combat.resultat) { location.href = 'duel.html?odyssee=1'; return; } if (R.combat && R.combat.resultat) { dessine(); apresCombat(); return; } dessine(); return; }
   document.getElementById('app').innerHTML = `<h1>🏰 L’Odyssée · les Terres brûlées</h1>
   <p style="text-align:center;color:var(--doux);font-size:.9em">Une île tirée au sort, à explorer case par case. Le combat, c’est le Duel. Tes PV ne remontent pas tout seuls : sources, potions et marchand. 20 vivres pour fouiller. Deux fragments de rune ouvrent la porte du Titan de feu.</p>
   <p style="text-align:center"><b style="color:var(--or)">Choisis ton héros</b></p>
@@ -108,9 +129,9 @@ function accueil() {
 function commence(id) {
   const jour = document.getElementById('jour') && document.getElementById('jour').checked;
   R = nouvelleOdyssee(id, jour ? graineDuJour() : null); if (!R) { alert('Impossible de tirer une île : réessaie.'); return; }
-  sauve(); dessine();
+  dejaDessine = new Set(); bulles = []; sauve(); dessine(); dialogue('depart');
   fenetre(`<h2>⛵ Débarquement</h2><p>${HEROS[id].nom} pose le pied sur les Terres brûlées. Le ciel est rouge, la roche fume.</p>
-  <p>Touche une case <b style="color:var(--ok)">verte</b> pour avancer. Tu vois le <b>type</b> des cases voisines, jamais ce qu’elles cachent. Chaque case nouvelle coûte <b>1 vivre</b> ; revenir est gratuit.</p>
+  <p>Touche une salle <b style="color:var(--ok)">verte</b> : le héros y marche et l’île se dessine devant lui. Tu vois le <b>type</b> des salles voisines, jamais ce qu’elles cachent. Chaque case nouvelle coûte <b>1 vivre</b> ; revenir est gratuit.</p>
   <p>Le chemin direct fait ${R.direct} cases. La porte 🚪 du Titan 👑 est tout en haut : il te faut <b>2 fragments de rune</b>, gardés par les 3 élites 💀 de l’île.</p>
   <div class="choixh"><button class="or" onclick="fermer()">En route !</button></div>`);
 }
@@ -127,28 +148,155 @@ function dessine() {
     return `<div class="${cls}" onclick="va(${c.x},${c.y})" title="${SALLES_ODY[c.t].n}">${c.t === 'roche' ? '' : ic}${c.t === 'monstre' && !c.fait ? `<span class="niv">${NIV[c.niv]}</span>` : ''}</div>`;
   }).join('')).join('');
   document.getElementById('app').innerHTML = `
-  <div class="entete"><img src="${IMG(r.heros)}" alt="" onclick="monDeck()"><div class="st"><b>${h.nom}</b> · ${r.deck.length} cartes
-    <br><span class="p pv">❤ ${r.pv} / ${r.pvMax}</span><span class="p or">💰 ${r.or}</span><span class="p vivres ${r.vivres ? '' : 'zero'}">🍞 ${r.vivres}</span><span class="p">🗝 ${r.cles}</span><span class="p">🔮 ${r.fragments}/2</span>
-    <br><span class="rel">${r.reliques.map(k => `<i onclick="info('${RELIQUES[k].e} ${RELIQUES[k].n}', '${RELIQUES[k].d.replace(/'/g, '’')}')">${RELIQUES[k].e}</i>`).join('')}${r.sacoche.map((k, i) => `<i onclick="sacocheIle(${i})">${SACOCHE[k].e}</i>`).join('')}${r.benes.map(k => `<i onclick="info('✨ ${BENEDICTIONS[k].n}', '${BENEDICTIONS[k].d.replace(/'/g, '’')}')">✨</i>`).join('')}${r.males.map(k => `<i onclick="info('🕯 ${MALEDICTIONS[k].n}', '${MALEDICTIONS[k].d.replace(/'/g, '’')}')">🕯</i>`).join('')}</span></div></div>
-  <div class="carte-ile">${cases}</div>
-  <div class="bandeau">${r.vivres ? 'Touche une case verte pour avancer.' : '<b style="color:#ff7a7a">Plus de vivres : chaque case nouvelle coûte 3 PV.</b>'} ${r.fragments >= 2 ? '<b style="color:var(--ok)">Tu as les 2 fragments : la porte 🚪 t’attend.</b>' : ''}</div>
-  <div class="legende"><span>⚔ monstres (I, II, III)</span><span>💀 élite</span><span>🗝 coffre</span><span>💧 source</span><span>🏪 marchand</span><span>❓ événement</span><span>🔥 autel</span><span>🧱 mur fissuré</span><span>🚪 porte</span><span>👑 boss</span><span>? inconnu</span></div>
+  <div id="entete">${enteteHTML()}</div>
+  ${carteSVG()}
+  <div class="bulles" id="bulles">${bullesHTML()}</div>
+  <div class="bandeau">${r.vivres ? 'Touche une salle verte : le héros y va.' : '<b style="color:#ff7a7a">Plus de vivres : chaque case nouvelle coûte 3 PV.</b>'} ${r.fragments >= 2 ? '<b style="color:var(--ok)">Tu as les 2 fragments : la porte 🚪 t’attend.</b>' : ''}</div>
+  <div class="legende"><span>⚔ monstres (I, II, III)</span><span>💀 élite</span><span>🗝 coffre</span><span>💧 source</span><span>🏪 marchand</span><span>❓ événement</span><span>🔥 autel</span><span>🧱 mur fissuré</span><span>🚪 porte</span><span>👑 boss</span></div>
   <div class="bas"><button onclick="monDeck()">🂠 Deck</button><button onclick="journal()">📜 Journal</button><button onclick="reglesCourtes()">❓ Règles</button><button onclick="abandon()">⏏ Quitter</button></div>`;
 }
-function info(t, d) { fenetre(`<h2>${t}</h2><p>${d}</p><div class="choixh"><button onclick="fermer()">Compris</button></div>`); }
-function va(x, y) {
-  const res = deplace(R, x, y); if (!res) return;
-  if (res.mort) { sauve(); finPartie(false, 'Épuisé, sans vivres, le héros s’effondre dans la cendre.'); return; }
-  const c = res.c; sauve(); dessine();
-  if (c.t === 'monstre' || c.t === 'elite' || c.t === 'boss') { if (!c.fait) { combat(c); return; } }
-  if (c.t === 'porte') { if (ouvrePorte(R)) { sauve(); dessine(); fenetre(`<h2>🚪 La porte s’ouvre</h2><p>Les deux fragments s’assemblent dans la serrure runique. Tu bivouaques devant la porte : <b>+15 PV</b> (❤ ${R.pv} / ${R.pvMax}). Derrière, une chaleur de fournaise : le Titan t’attend. <b>Il ne se combat qu’une fois.</b></p><div class="choixh"><button onclick="fermer()">Je suis prêt</button></div>`); } else fenetre(`<h2>🚪 La porte du boss</h2><p>Deux serrures en forme de rune. Il te manque ${2 - R.fragments} fragment${2 - R.fragments > 1 ? 's' : ''} : ils sont gardés par les élites 💀 de l’île.</p><div class="choixh"><button onclick="fermer()">Compris</button></div>`); return; }
-  if (c.t === 'coffre' && !c.fait) { coffre(c); return; }
-  if (c.t === 'source' && !c.fait) { sourceFen(c); return; }
-  if (c.t === 'marchand') { marchand(c); return; }
-  if (c.t === 'evenement' && !c.fait) { evenement(c); return; }
-  if (c.t === 'autel' && !c.fait) { autel(c); return; }
-  if (c.t === 'mur' && !c.fait) { c.fait = true; const l = reliquesProposees(R, 2); sauve(); fenetre(`<h2>💎 La salle cachée</h2><p>Derrière le mur, une petite salle oubliée. Sur un socle, deux reliques : tu n’en emportes qu’une.</p><div class="choixv">${l.map(k => `<button onclick="prendRelique(R,'${k}');sauve();fermer();dessine()" ${R.reliques.length >= 3 ? 'disabled' : ''}>${RELIQUES[k].e} <b>${RELIQUES[k].n}</b><small>${RELIQUES[k].d}</small></button>`).join('')}</div>${R.reliques.length >= 3 ? '<p style="color:#ff7a7a">Tu portes déjà 3 reliques.</p>' : ''}<div class="choixh"><button onclick="fermer()">Laisser</button></div>`); return; }
+function enteteHTML() {
+  const r = R, h = HEROS[r.heros];
+  return `<div class="entete"><img src="${IMG(r.heros)}" alt="" onclick="monDeck()"><div class="st"><b>${h.nom}</b> · ${r.deck.length} cartes
+    <br><span class="p pv">❤ ${r.pv} / ${r.pvMax}</span><span class="p or">💰 ${r.or}</span><span class="p vivres ${r.vivres ? '' : 'zero'}">🍞 ${r.vivres}</span><span class="p">🗝 ${r.cles}</span><span class="p">🔮 ${r.fragments}/2</span>
+    <br><span class="rel">${r.reliques.map(k => `<i onclick="info('${RELIQUES[k].e} ${RELIQUES[k].n}', '${RELIQUES[k].d.replace(/'/g, '’')}')">${RELIQUES[k].e}</i>`).join('')}${r.sacoche.map((k, i) => `<i onclick="sacocheIle(${i})">${SACOCHE[k].e}</i>`).join('')}${r.benes.map(k => `<i onclick="info('✨ ${BENEDICTIONS[k].n}', '${BENEDICTIONS[k].d.replace(/'/g, '’')}')">✨</i>`).join('')}${r.males.map(k => `<i onclick="info('🕯 ${MALEDICTIONS[k].n}', '${MALEDICTIONS[k].d.replace(/'/g, '’')}')">🕯</i>`).join('')}</span></div></div>`;
 }
+// =============================================================================================== la carte à l'encre (10/11 soir, idée de l'utilisateur d'après une vidéo)
+// L'île se dessine au fur et à mesure : murs tracés à main levée autour des cases praticables, ouvertures sombres vers l'inconnu,
+// le héros = un halo de lanterne qui MARCHE jusqu'à la salle touchée (par les cases déjà visitées). Les règles (cases, vivres, brouillard) ne changent pas.
+const CEL = 60, VBW = ILE_W * CEL, VBH = ILE_H * CEL;
+let dejaDessine = new Set(), enMarche = false, distV = {};
+const dodo = ms => new Promise(ok => setTimeout(ok, ms));
+function gigue(x, y, k, amp) { const h = hachage(`${R.graine}:${x}:${y}:${k}`); return ((h % 1000) / 1000 - .5) * (amp || 7); }
+function traitMur(x1, y1, x2, y2, seed) {
+  const pts = []; for (let i = 0; i <= 5; i++) { const t = i / 5, b = i > 0 && i < 5; pts.push([x1 + (x2 - x1) * t + (b ? gigue(x1 + i, y1, seed) : 0), y1 + (y2 - y1) * t + (b ? gigue(x2, y2 + i, seed + 3) : 0)]); }
+  return 'M' + pts.map(p => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join('L');
+}
+function pierres(x1, y1, x2, y2, seed) { let out = ''; for (let i = 1; i < 5; i++) { const t = i / 5; out += `<circle class="pierre" cx="${(x1 + (x2 - x1) * t + gigue(x1 + i, y1, seed + 11, 10)).toFixed(1)}" cy="${(y1 + (y2 - y1) * t + gigue(x2 + i, y2, seed + 13, 10)).toFixed(1)}" r="${(1.2 + Math.abs(gigue(x1, y1 + i, seed + 17, 2))).toFixed(1)}"/>`; } return out; }
+function calculeDist() { const marche = c => c.visite; distV = bfs(R.ile, R.pos, marche).dist; }
+function peutCible(c) {
+  if (!c.vu || c.t === 'roche' || (c.x === R.pos.x && c.y === R.pos.y)) return false;
+  if (c.t === 'boss') { const p = caseA(R, R.porte.x, R.porte.y); if (!p.fait) return false; }
+  if (c.t === 'mur' && !c.fait && !(R.sacoche.includes('bombe') || R.vivres >= 3)) return false;
+  if (c.visite) return distV[c.x + ',' + c.y] !== undefined;
+  return voisins(c.x, c.y).some(([a, b]) => { const v = caseA(R, a, b); return v.visite && distV[a + ',' + b] !== undefined; });
+}
+function celluleSVG(c, neuf) {
+  if (!c.vu || c.t === 'roche') return '';
+  const x = c.x * CEL, y = c.y * CEL, m = 4;
+  const seg = [[0, -1, [x + m, y + m, x + CEL - m, y + m]], [1, 0, [x + CEL - m, y + m, x + CEL - m, y + CEL - m]], [0, 1, [x + m, y + CEL - m, x + CEL - m, y + CEL - m]], [-1, 0, [x + m, y + m, x + m, y + CEL - m]]];
+  let murs = '';
+  seg.forEach(([dx, dy, s], i) => { const v = caseA(R, c.x + dx, c.y + dy) || { t:'roche', vu:true }; if (v.t === 'roche' && v.vu) murs += `<path class="mur" pathLength="1" d="${traitMur(...s, i)}"/><path class="mur2" pathLength="1" d="${traitMur(s[0], s[1] + (dy ? dy * 4 : 0), s[2] + (dx ? dx * 4 : 0), s[3] + (dy ? dy * 4 : 0), i + 7).replace(/^M/, 'M')}"/>${pierres(...s, i)}`; });
+  const sol = c.visite ? `<path class="sol" d="M${x + 10},${y + CEL - 10} L${x + CEL - 10},${y + 10} M${x + 24},${y + CEL - 8} L${x + CEL - 8},${y + 24}"/>` : '';
+  const salle = c.t !== 'chemin' && c.t !== 'depart';
+  const ico = c.t === 'mur' && c.fait ? '💎' : SALLES_ODY[c.t].e;
+  const icone = salle ? `<text class="ico ${c.fait ? 'fait' : ''}" x="${x + CEL / 2}" y="${y + CEL / 2 + 8}">${ico}</text>` : (c.t === 'depart' ? `<text class="ico fait" x="${x + CEL / 2}" y="${y + CEL / 2 + 8}">⛵</text>` : '');
+  const niv = c.t === 'monstre' && !c.fait ? `<text class="niv" x="${x + CEL - 9}" y="${y + CEL - 7}">${NIV[c.niv]}</text>` : '';
+  const pointe = !salle ? `<circle class="pointe" cx="${x + CEL / 2}" cy="${y + CEL / 2}" r="4"/>` : `<circle class="cible" cx="${x + CEL / 2}" cy="${y + 11}" r="3"/>`;
+  return `<g class="cel ${c.visite ? 'visite' : ''} ${neuf ? 'neuf' : ''} ${peutCible(c) ? 'ok' : ''}" data-k="${c.x},${c.y}" onclick="marcheVers(${c.x},${c.y})"><rect x="${x}" y="${y}" width="${CEL}" height="${CEL}" fill="transparent"/>${sol}${murs}${pointe}${icone}${niv}</g>`;
+}
+function herosSVG() { const x = R.pos.x * CEL + CEL / 2, y = R.pos.y * CEL + CEL / 2; return `<g id="heros" style="transform:translate(${x}px,${y}px)"><circle class="halo" r="62"/><circle class="cadre" r="17"/><image href="${IMG(R.heros)}" x="-16" y="-16" width="32" height="32" clip-path="url(#rond)"/></g>`; }
+// la caméra : cadre la partie découverte de l'île (au moins 4 × 5 cases, marge d'une case) et s'élargit en douceur
+let vue = null;
+function vueCible() {
+  const v = R.ile.flat().filter(c => c.vu && c.t !== 'roche'); const xs = v.map(c => c.x), ys = v.map(c => c.y);
+  let x0 = Math.min(...xs) - 1, x1 = Math.max(...xs) + 2, y0 = Math.min(...ys) - 1, y1 = Math.max(...ys) + 2;
+  let w = Math.max(4, x1 - x0), h = Math.max(5, y1 - y0);
+  if (w / h > 7 / 9) h = w * 9 / 7; else w = h * 7 / 9;
+  const cx = (Math.min(...xs) + Math.max(...xs) + 1) / 2, cy = (Math.min(...ys) + Math.max(...ys) + 1) / 2;
+  let X = cx - w / 2, Y = cy - h / 2; X = Math.max(Math.min(X, ILE_W - w), Math.min(0, X)); Y = Math.max(Math.min(Y, ILE_H - h), Math.min(0, Y));
+  if (w >= ILE_W && h >= ILE_H) { X = (ILE_W - w) / 2; Y = (ILE_H - h) / 2; }
+  return { x:X * CEL, y:Y * CEL, w:w * CEL, h:h * CEL };
+}
+function camera(anime) {
+  const svg = document.querySelector('svg.ile'); if (!svg) return; const c = vueCible();
+  if (!anime || !vue) { vue = c; svg.setAttribute('viewBox', `${c.x} ${c.y} ${c.w} ${c.h}`); return; }
+  const d = { ...vue }, t0 = performance.now(); const pas = now => { const k = Math.min(1, (now - t0) / 450), e = k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+    const v = { x:d.x + (c.x - d.x) * e, y:d.y + (c.y - d.y) * e, w:d.w + (c.w - d.w) * e, h:d.h + (c.h - d.h) * e }; svg.setAttribute('viewBox', `${v.x} ${v.y} ${v.w} ${v.h}`); if (k < 1) requestAnimationFrame(pas); else vue = c; };
+  requestAnimationFrame(pas);
+}
+function carteSVG() {
+  calculeDist(); const c = vueCible(); vue = c;
+  const cels = R.ile.flat().map(c => { const k = c.x + ',' + c.y; const neuf = c.vu && !dejaDessine.has(k); if (c.vu) dejaDessine.add(k); return celluleSVG(c, neuf); }).join('');
+  return `<svg class="ile" viewBox="${c.x} ${c.y} ${c.w} ${c.h}" preserveAspectRatio="xMidYMid meet"><defs><radialGradient id="lum"><stop offset="0" stop-color="#ffe9a8" stop-opacity=".55"/><stop offset=".45" stop-color="#f3c96b" stop-opacity=".18"/><stop offset="1" stop-color="#f3c96b" stop-opacity="0"/></radialGradient><clipPath id="rond"><circle r="16"/></clipPath></defs><g id="cels">${cels}</g>${herosSVG()}</svg>`;
+}
+// révèle ce qui vient d'apparaître pendant la marche (sans tout redessiner), et redessine les voisins dont un mur a pu apparaître
+function revele() {
+  const g = document.getElementById('cels'); if (!g) return; calculeDist();
+  const neufs = R.ile.flat().filter(c => c.vu && !dejaDessine.has(c.x + ',' + c.y));
+  neufs.forEach(c => { dejaDessine.add(c.x + ',' + c.y); const html = celluleSVG(c, true); if (html) g.insertAdjacentHTML('beforeend', html);
+    voisins(c.x, c.y).forEach(([a, b]) => { const v = caseA(R, a, b), el = g.querySelector(`[data-k="${a},${b}"]`); if (el && v.vu && v.t !== 'roche') el.outerHTML = celluleSVG(v, false); }); });
+  camera(true);
+  g.querySelectorAll('.cel').forEach(el => { const [a, b] = el.dataset.k.split(',').map(Number); el.classList.toggle('ok', peutCible(caseA(R, a, b))); el.classList.toggle('visite', !!caseA(R, a, b).visite); });
+  const e = document.getElementById('entete'); if (e) e.innerHTML = enteteHTML();
+}
+function placeHeros() { const h = document.getElementById('heros'); if (h) h.style.transform = `translate(${R.pos.x * CEL + CEL / 2}px,${R.pos.y * CEL + CEL / 2}px)`; }
+function cheminVers(c) {
+  const { prev } = bfs(R.ile, R.pos, v => v.visite || v === c);
+  const chemin = []; let k = c.x + ',' + c.y; if (prev[k] === undefined && !(c.x === R.pos.x && c.y === R.pos.y)) return null;
+  while (prev[k]) { chemin.unshift(k.split(',').map(Number)); k = prev[k]; } return chemin;
+}
+async function marcheVers(x, y) {
+  const c = caseA(R, x, y); if (!c || enMarche || !peutCible(c)) return;
+  const chemin = cheminVers(c); if (!chemin) return; enMarche = true;
+  for (const [a, b] of chemin) {
+    const res = deplace(R, a, b); if (!res) break;
+    placeHeros(); revele(); if (document.getElementById('cels')) document.getElementById('cels').querySelectorAll('.cel.ok').forEach(el => el.classList.remove('ok'));
+    await dodo(260);
+    if (res.mort) { enMarche = false; sauve(); finPartie(false, 'Épuisé, sans vivres, le héros s’effondre dans la cendre.'); return; }
+  }
+  enMarche = false; sauve(); dessine(); arrive(caseA(R, R.pos.x, R.pos.y));
+}
+function va(x, y) { return marcheVers(x, y); }
+// =============================================================================================== les voix : le héros et Plume, le corbeau messager de la Guilde
+// Proposé par Claude (à valider) : ton drôle et taquin, Plume râle et a toujours faim ; le héros répond dans son caractère.
+const PLUME = {
+  depart:['Bon. Une île, du feu, des monstres. Et pas une miette de pain depuis le navire.', 'Si on se perd, je précise que c’est toi qui tiens la carte.', 'Croâ. On dit que le Titan n’aime pas les visiteurs. Ni les corbeaux.'],
+  monstre:['Il y a quelque chose là-dedans. Je dis ça, je dis rien. Je vole, moi.', 'Ça sent le gobelin. Ou tes chaussettes.', 'Tu passes devant. Toujours. C’est le contrat.'],
+  elite:['Oh. Celui-là, il a l’air de connaître les règles.', 'Un fragment de rune, qu’ils disaient. Facile, qu’ils disaient.', 'Je vais me poser un peu plus loin. Beaucoup plus loin.'],
+  victoire:['Je t’avais dit que tu y arriverais. Dans ma tête.', 'Bravo. Tu veux un ver de terre ? Non ? Plus pour moi.', 'Croâ ! Et l’or, on le partage ?'],
+  coffre_ferme:['Fermé. Évidemment. Qui laisse un coffre ouvert sur une île à monstres ?', 'Il te faudrait une clé. Ou un marteau. Ou un ami cambrioleur.'],
+  coffre:['Oooh. Ça brille. C’est à moi ? Non ? Bon.', 'Un vrai coffre avec un vrai trésor. Je commence à aimer cette île.'],
+  source:['De l’eau ! Enfin quelque chose de gratuit sur cette île.', 'Bois. Et laisse-m’en un peu, j’ai le gosier en cendre.'],
+  marchand:['Un marchand, ici ? Soit c’est un fou, soit c’est un génie.', 'Regarde ses prix avant de sortir ta bourse. Je l’ai vu sourire.'],
+  evenement:['Hum. Je ne sens pas cette affaire.', 'Quoi que tu décides, je dirai que c’était mon idée si ça marche.'],
+  autel:['Un autel. Les autels donnent toujours quelque chose. Ils prennent toujours quelque chose aussi.', 'Croâ. Si tu meurs maudit, je garde tes bottes.'],
+  mur:['Ce mur sonne creux. Tu as une bombe ? Ou des bras ?', 'Derrière, il y a sûrement un trésor. Ou un autre mur. Les deux, c’est l’aventure.'],
+  porte_fermee:['Deux serrures en forme de rune. Les élites ont les fragments. Tu les as vues, les élites ? Elles sont grandes.', 'On ne force pas une porte de Titan. Enfin, toi, tu peux essayer.'],
+  porte:['La porte s’ouvre… Tu vas vraiment entrer ? Bon. Je te regarde d’ici.', 'Dernier conseil : frappe fort, et plus souvent que lui.'],
+  vivres_bas:['Il reste peu de vivres. Je le dis sans rapport avec ma propre faim. Enfin si.', 'On fouille encore, ou on fonce ? Décide, j’ai les pattes gelées.'],
+  vivres_zero:['Plus rien à manger. Chaque pas va te coûter. Moi je vole, je rappelle.', 'Croâ… on aurait dû acheter du pain.'],
+  mort:['Bon. Je retourne à la Guilde dire que tu as été très courageux. Très.', 'Il reviendra. Ils reviennent toujours. Croâ.'],
+  boss_vaincu:['Tu… tu l’as eu. Je n’ai jamais douté. Jamais. Enfin presque.', 'L’île est libre ! Et moi j’ai faim. Les deux sont importants.'],
+};
+const HEROS_VOIX = {
+  maelle:['Ce qui est forgé ne casse pas. Toi non plus, si tu te tais.', 'Avance, Plume. L’enclume n’attend pas.', 'Je frappe, tu comptes les coups.'],
+  aldric:['Tant que la lanterne brille, personne ne passe. Toi compris.', 'Courage, mon ami à plumes. Je passe devant.', 'Un chevalier ne recule pas. Il contourne, parfois.'],
+  pip:['La forêt me parle, Plume. Elle dit que tu parles trop.', 'Chut. Écoute l’île.', 'Ma louve t’aurait déjà mangé, tu sais.'],
+  oria:['Tout est sur ma carte. Sauf ce que je n’ai pas encore dessiné.', 'Par là. Enfin, à peu près par là.', 'Un cartographe ne se perd jamais. Il explore.'],
+  gorm:['Mon cor fera trembler ce Titan. Et tes plumes.', 'On avance au pas de charge, l’oiseau !', 'Moins de mots, plus de monstres.'],
+  zephine:['Fascinant. Je me demande ce que ça donne en fiole.', 'Ne touche à rien, Plume. Surtout pas aux flacons verts.', 'La chimie règle tout. Même les corbeaux.'],
+};
+let bulles = [];
+function bullesHTML() { return bulles.map(b => `<div class="bulle ${b.qui === 'plume' ? 'corbeau' : ''}">${b.qui === 'plume' ? '<div class="avatar">🐦‍⬛</div>' : `<img src="${IMG(R.heros)}" alt="">`}<span><b>${b.qui === 'plume' ? 'Plume' : HEROS[R.heros].nom}</b>${b.t}</span></div>`).join(''); }
+function dialogue(sit, reponse) {
+  const l = PLUME[sit]; if (!l) return; const t = l[Math.floor(Math.random() * l.length)];
+  bulles = [{ qui:'plume', t }]; const z = document.getElementById('bulles'); if (z) z.innerHTML = bullesHTML();
+  if (reponse === false) return;
+  setTimeout(() => { const v = HEROS_VOIX[R.heros] || []; if (!v.length || !R) return; bulles.push({ qui:'heros', t:v[Math.floor(Math.random() * v.length)] }); const z2 = document.getElementById('bulles'); if (z2) z2.innerHTML = bullesHTML(); }, 1100);
+}
+function arrive(c) {
+  if (R.vivres === 0) dialogue('vivres_zero', false); else if (R.vivres <= 5 && Math.random() < .5) dialogue('vivres_bas', false);
+  if (c.t === 'monstre' || c.t === 'elite' || c.t === 'boss') { if (!c.fait) { dialogue(c.t === 'elite' ? 'elite' : 'monstre'); combat(c); return; } }
+  if (c.t === 'porte') { if (ouvrePorte(R)) { sauve(); dessine(); dialogue('porte'); fenetre(`<h2>🚪 La porte s’ouvre</h2><p>Les deux fragments s’assemblent dans la serrure runique. Tu bivouaques devant la porte : <b>+15 PV</b> (❤ ${R.pv} / ${R.pvMax}). Derrière, une chaleur de fournaise : le Titan t’attend. <b>Il ne se combat qu’une fois.</b></p><div class="choixh"><button onclick="fermer()">Je suis prêt</button></div>`); } else { dialogue('porte_fermee'); fenetre(`<h2>🚪 La porte du boss</h2><p>Deux serrures en forme de rune. Il te manque ${2 - R.fragments} fragment${2 - R.fragments > 1 ? 's' : ''} : ils sont gardés par les élites 💀 de l’île.</p><div class="choixh"><button onclick="fermer()">Compris</button></div>`); } return; }
+  if (c.t === 'coffre' && !c.fait) { dialogue(R.cles ? 'coffre' : 'coffre_ferme'); coffre(c); return; }
+  if (c.t === 'source' && !c.fait) { dialogue('source'); sourceFen(c); return; }
+  if (c.t === 'marchand') { dialogue('marchand'); marchand(c); return; }
+  if (c.t === 'evenement' && !c.fait) { dialogue('evenement'); evenement(c); return; }
+  if (c.t === 'autel' && !c.fait) { dialogue('autel'); autel(c); return; }
+  if (c.t === 'mur' && !c.fait) { dialogue('mur'); c.fait = true; const l = reliquesProposees(R, 2); sauve(); fenetre(`<h2>💎 La salle cachée</h2><p>Derrière le mur, une petite salle oubliée. Sur un socle, deux reliques : tu n’en emportes qu’une.</p><div class="choixv">${l.map(k => `<button onclick="prendRelique(R,'${k}');sauve();fermer();dessine()" ${R.reliques.length >= 3 ? 'disabled' : ''}>${RELIQUES[k].e} <b>${RELIQUES[k].n}</b><small>${RELIQUES[k].d}</small></button>`).join('')}</div>${R.reliques.length >= 3 ? '<p style="color:#ff7a7a">Tu portes déjà 3 reliques.</p>' : ''}<div class="choixh"><button onclick="fermer()">Laisser</button></div>`); return; }
+}
+function info(t, d) { fenetre(`<h2>${t}</h2><p>${d}</p><div class="choixh"><button onclick="fermer()">Compris</button></div>`); }
 function combat(c) {
   const cb = lanceCombat(R, c); sauve();
   const e = HEROS[cb.ennemi], d = DEFIS.find(x => x.id === cb.defi);
@@ -161,8 +309,9 @@ function combat(c) {
 // retour du Duel : récompenses, tirage de cartes
 function apresCombat() {
   const cb = R.combat, res = cb.resultat; const out = recompenseCombat(R); sauve(); dessine();
-  if (!out.gagne) { finPartie(false, `${HEROS[cb.ennemi].nom} a eu raison de ${HEROS[R.heros].nom}.`); return; }
-  if (out.boss) { finPartie(true, 'Le Titan de feu s’effondre dans son cratère. L’île est libre.'); return; }
+  if (!out.gagne) { dialogue('mort', false); finPartie(false, `${HEROS[cb.ennemi].nom} a eu raison de ${HEROS[R.heros].nom}.`); return; }
+  if (out.boss) { dialogue('boss_vaincu', false); finPartie(true, 'Le Titan de feu s’effondre dans son cratère. L’île est libre.'); return; }
+  dialogue('victoire');
   const suite = out.draft ? () => tirage(out.draft, 'Une carte parmi trois', () => { sauve(); dessine(); }) : () => { fermer(); dessine(); };
   window._suite = suite;
   fenetre(`<h2>🏆 ${out.ennemi} vaincu</h2><p>+${out.or} or${res.defiOk ? ' (défi réussi compris)' : ''}.${out.fragment ? ' <b>Un fragment de rune 🔮 et une clé 🗝 !</b>' : ''}${out.potion ? ' Et une potion de soin 🧪 dans sa besace.' : ''}</p><p>Il te reste ❤ ${R.pv} / ${R.pvMax}.</p><div class="choixh"><button class="or" onclick="fermer();_suite()">Continuer</button></div>`);
