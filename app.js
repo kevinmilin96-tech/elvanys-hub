@@ -1264,6 +1264,7 @@
   function refreshMe() {
     return api('GET', '/api/hub/me').then(function (r) {
       if (r.status === 200) {
+        if (r.data.token) setSession(r.data.token); // 11/11 : session glissante de 7 jours
         if (!account) enter(r.data.account, r.data.pending || 0, false);
         else { account = r.data.account; setBadge(r.data.pending || 0); }
       } else if (r.status === 401 || r.status === 403) {
