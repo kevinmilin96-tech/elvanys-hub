@@ -8,13 +8,18 @@
   /* Outil de placement (11/11) : l'utilisateur fait glisser chaque élément sur le plateau définitif, puis copie les positions
      (en % de l'image) pour que Claude les recopie dans duel.html. Rien n'est envoyé : tout reste sur le téléphone. */
   * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-  html, body { margin:0; height:100%; background:#15132b; color:#fff; font:14px/1.3 Georgia, serif; overflow:hidden; touch-action:none; }
+  html, body { margin:0; height:100%; background:#15132b; color:#fff; font:14px/1.3 Georgia, serif; overflow:hidden; }
   .ecran { height:100dvh; display:flex; flex-direction:column; }
   .haut { padding:6px 8px; font-size:12px; background:#1d1626; }
   .haut b { color:#f3c96b; }
-  .plateau { position:relative; flex:1; min-height:0; margin:0 auto; aspect-ratio:768/1376; max-width:100%; background:url('decor/plateau-duel-definitif.webp?v=1') center/100% 100% no-repeat; container-type:size; }
+  .vue { flex:1; min-height:0; overflow:auto; touch-action:pan-x pan-y; }
+  .plateau { position:relative; height:100%; margin:0 auto; aspect-ratio:768/1376; background:url('decor/plateau-duel-definitif.webp?v=1') center/100% 100% no-repeat; container-type:size; }
   .el { position:absolute; transform:translate(-50%, -50%); touch-action:none; cursor:grab; }
-  .el.actif { outline:2px dashed #7dffb0; outline-offset:2px; border-radius:50%; }
+  .el.actif, .el.choisi { outline:2px dashed #7dffb0; outline-offset:2px; }
+  .el::before { content:''; position:absolute; left:50%; top:50%; width:6px; height:6px; margin:-3px 0 0 -3px; border-radius:50%; background:#ff3b3b; box-shadow:0 0 0 1px #fff; z-index:2; pointer-events:none; }
+  .fleches { display:grid; grid-template-columns:repeat(5, 1fr); gap:4px; }
+  .fleches button { padding:7px 0; font-size:15px; }
+  #choix { font-size:12px; color:#f3c96b; text-align:center; }
   .med { width:var(--m); height:var(--m); background:center/contain no-repeat; }
   .por { width:var(--p); height:var(--p); border-radius:50%; background:center/cover no-repeat; }
   .por::after { content:''; position:absolute; inset:-21%; background:url('ui/cadre.webp?v=1') center/contain no-repeat; }
@@ -34,8 +39,11 @@
 <body>
 <div class="ecran">
   <div class="haut"><b>Placer les éléments</b> · fais glisser chaque élément à sa place, règle les tailles, puis « Copier mes réglages » et colle-les à Claude.</div>
-  <div class="plateau" id="pl"></div>
+  <div class="vue" id="vue"><div class="plateau" id="pl"></div></div>
   <div class="bas">
+    <label>Zoom <input type="range" id="tz" min="1" max="6" step="0.5" value="1"><span id="vz">×1</span></label>
+    <div id="choix">Touche un élément pour le régler aux flèches.</div>
+    <div class="fleches"><button onclick="pousse(-1,0)">◀</button><button onclick="pousse(0,-1)">▲</button><button onclick="pousse(0,1)">▼</button><button onclick="pousse(1,0)">▶</button><button onclick="centrer()">🎯</button></div>
     <label>Médaillons <input type="range" id="tm" min="7" max="14" step="0.1"><span id="vm"></span></label>
     <label>Portraits <input type="range" id="tp" min="12" max="24" step="0.1"><span id="vp"></span></label>
     <div class="bt"><button onclick="reinit()">Tout remettre</button><button class="ok" onclick="copier()">Copier mes réglages</button></div>
@@ -74,14 +82,22 @@ function dessine() {
   }
   tm.value = R.taille_medaillon; vm.textContent = R.taille_medaillon; tp.value = R.taille_portrait; vp.textContent = R.taille_portrait;
 }
-let cour = null;
-function debut(ev) { ev.preventDefault(); cour = ev.currentTarget; cour.classList.add('actif'); cour.setPointerCapture(ev.pointerId); cour.onpointermove = bouge; cour.onpointerup = fin; }
+let cour = null, choisi = null;
+const NOMS = { frappe:'Frappe', technique:'Technique', garde:'Garde', pouvoir:'Pouvoir', transmu:'Transmuter', equipe:'Équipe', de_premier:'1er dé', de_dernier:'dernier dé', portrait_haut:'portrait du haut', portrait_bas:'portrait du bas', coeur_haut:'cœur du haut', bouclier_haut:'bouclier du haut', etiquettes_haut:'étiquettes du haut', coeur_bas:'cœur du bas', bouclier_bas:'bouclier du bas', etiquettes_bas:'étiquettes du bas' };
+function choisir(e) { document.querySelectorAll('.el.choisi').forEach(x => x.classList.remove('choisi')); choisi = e; e.classList.add('choisi'); choix.textContent = `Choisi : ${NOMS[e.dataset.k]} (${R[e.dataset.k].join(' ; ')})`; }
+// flèches : 0,1 % de l'image par toucher
+function pousse(dx, dy) { if (!choisi) { choix.textContent = 'Touche d’abord un élément.'; return; } const k = choisi.dataset.k; R[k] = [+(R[k][0] + dx * .1).toFixed(2), +(R[k][1] + dy * .1).toFixed(2)]; choisi.style.left = R[k][0] + '%'; choisi.style.top = R[k][1] + '%'; localStorage.setItem(CLE, JSON.stringify(R)); choisir(choisi); }
+// zoom : le plateau grandit dans la vue, qu'on fait défiler au doigt à côté des éléments
+function zoom(z) { const vue = document.getElementById('vue'); pl.style.height = (vue.clientHeight * z) + 'px'; vz.textContent = '×' + z; centrer(); }
+function centrer() { if (!choisi) return; const vue = document.getElementById('vue'), r = pl.getBoundingClientRect(), k = R[choisi.dataset.k]; vue.scrollLeft = r.width * k[0] / 100 - vue.clientWidth / 2; vue.scrollTop = r.height * k[1] / 100 - vue.clientHeight / 2; }
+function debut(ev) { ev.preventDefault(); cour = ev.currentTarget; choisir(cour); cour.classList.add('actif'); cour.setPointerCapture(ev.pointerId); cour.onpointermove = bouge; cour.onpointerup = fin; }
 function bouge(ev) {
   const r = pl.getBoundingClientRect(), k = cour.dataset.k;
   const x = Math.max(0, Math.min(100, (ev.clientX - r.left) / r.width * 100)), y = Math.max(0, Math.min(100, (ev.clientY - r.top) / r.height * 100));
   R[k] = [+x.toFixed(2), +y.toFixed(2)]; cour.style.left = x + '%'; cour.style.top = y + '%';
 }
 function fin() { cour.classList.remove('actif'); cour.onpointermove = null; cour = null; localStorage.setItem(CLE, JSON.stringify(R)); }
+tz.oninput = () => zoom(+tz.value);
 tm.oninput = () => { R.taille_medaillon = +tm.value; vm.textContent = tm.value; pl.style.setProperty('--m', tm.value + 'cqw'); localStorage.setItem(CLE, JSON.stringify(R)); };
 tp.oninput = () => { R.taille_portrait = +tp.value; vp.textContent = tp.value; pl.style.setProperty('--p', tp.value + 'cqw'); localStorage.setItem(CLE, JSON.stringify(R)); };
 function reinit() { R = JSON.parse(JSON.stringify(DEFAUT)); localStorage.removeItem(CLE); dessine(); msg.textContent = 'Positions de départ remises.'; }
