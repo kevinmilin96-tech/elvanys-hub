@@ -601,7 +601,7 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261111-205352';
+const VERSION = '20261111-210717';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); location.replace('duel.html?v=' + v); }
@@ -1017,6 +1017,20 @@ let sel = [], attaquant = null, ciblage = null, carteVue = null;
 document.addEventListener('click', e => { if (carteVue !== null && !e.target.closest('.main .c')) { carteVue = null; rendu(); } });
 // la main en éventail : 1er toucher = la carte se soulève et s'agrandit ; 2e toucher = on la joue (si les dés choisis conviennent)
 const ZONE_MAIN = { x1:25, y1:83.5, x2:82, y2:97.5 };  // zone des cartes en main (placée par l'utilisateur dans placer.html)
+// 11/11 : pourquoi une carte ne peut pas être jouée (au lieu de « Ces dés ne conviennent pas » pour tout)
+function raisonCarte(J, k) {
+  const c = CARTES[k], vs = vals(sel), cout = coutCarte(J, k);
+  if (!sel.length) return 'Choisis d’abord tes dés';
+  if (c.t === 's' && J.silence) return 'Silence : pas de Sort ce tour';
+  if (c.t === 'u' && J.front.length >= 5) return 'Ton plateau est plein (5 créatures)';
+  if (c.cible === 'uniteA' && !J.front.length) return 'Il te faut une de tes créatures sur le plateau';
+  if (c.cible === 'barriereA' && !J.front.some(u => u.barriere)) return 'Il te faut une de tes créatures à Barrière';
+  if (c.cible === 'uniteE' && !ciblesPossibles(J, 'uniteE').length) return 'Aucune créature adverse à viser';
+  if (c.cible === 'de' && !J.des.some(d => !d.pose && !sel.includes(d))) return 'Il te faut un autre dé libre';
+  if (!c.cond(vs, sel)) return vs.length > 1 && /1 dé|dé [≤≥=]|dé pair|dé impair/.test(c.txt) ? 'Choisis un seul dé' : `Il faut : ${c.txt}`;
+  if (J.pc < cout) return `Il te manque ${cout - J.pc} PC`;
+  return 'Impossible pour le moment';
+}
 function mainEnEventail(J) {
   const n = J.main.length; if (!n) return '<i style="color:#c9c1ea;position:absolute;left:0;right:0;text-align:center;top:60px">Main vide</i>';
   if (carteVue !== null && carteVue >= n) carteVue = null;
@@ -1029,8 +1043,8 @@ function mainEnEventail(J) {
     const c = CARTES[k], ok = sel.length && permis(J, k, vals(sel), sel), vue = carteVue === i, d = i - mil;
     const style = vue ? `left:calc(50% - 82px);bottom:${Math.round(zh)}px;z-index:60`
       : `left:calc(50% - ${CW / 2}px + ${d * pas}px);width:${CW}px;height:${CH}px;font-size:${FS}em;transform:translateY(${Math.round(d * d * 1.2) - (ok ? 8 : 0)}px) rotate(${d * ang}deg);z-index:${ok ? 40 + i : i + 1}`;
-    const pied = vue ? `<div class="jouer">${ok ? '👆 Touche encore pour la jouer' : sel.length ? 'Ces dés ne conviennent pas' : 'Choisis d’abord tes dés'}</div>` : '';
-    if (typeof CADRES_OK !== 'undefined' && CADRES_OK.includes(CADRE_DE(k))) return `<div class="c neuve ${ok ? 'ok' : sel.length ? 'non' : ''} ${vue ? 'vue' : ''}" style="${style}" onclick="toucheCarte(${i})">${carteGuilde(k, { w:vue ? 164 : CW, cout:coutCarte(J, k), pied:vue ? `<div class="cg-pied">${ok ? '👆 Touche encore pour la jouer' : sel.length ? 'Ces dés ne conviennent pas' : 'Choisis d’abord tes dés'}</div>` : '' })}</div>`;
+    const pied = vue ? `<div class="jouer">${ok ? '👆 Touche encore pour la jouer' : raisonCarte(J, k)}</div>` : '';
+    if (typeof CADRES_OK !== 'undefined' && CADRES_OK.includes(CADRE_DE(k))) return `<div class="c neuve ${ok ? 'ok' : sel.length ? 'non' : ''} ${vue ? 'vue' : ''}" style="${style}" onclick="toucheCarte(${i})">${carteGuilde(k, { w:vue ? 164 : CW, cout:coutCarte(J, k), pied:vue ? `<div class="cg-pied">${ok ? '👆 Touche encore pour la jouer' : raisonCarte(J, k)}</div>` : '' })}</div>`;
     return `<div class="c ${c.t}2 ${ok ? 'ok' : sel.length ? 'non' : ''} ${vue ? 'vue' : ''}" style="${style}" onclick="toucheCarte(${i})"><span class="cout">${coutCarte(J, k)}</span><div class="n">${c.n}</div><span class="cd">🎲 ${c.txt}</span><div class="dd">${c.d}</div>${pied}</div>`;
   }).join('');
 }
