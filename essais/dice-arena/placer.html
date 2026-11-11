@@ -22,7 +22,7 @@
   #choix { font-size:12px; color:#f3c96b; text-align:center; }
   .med { width:var(--m); height:var(--m); background:center/contain no-repeat; }
   .por { width:var(--p); height:var(--p); border-radius:50%; background:center/cover no-repeat; }
-  .por::after { content:''; position:absolute; inset:-21%; background:url('ui/cadre.webp?v=1') center/contain no-repeat; }
+  .por::after { content:''; position:absolute; inset:-36.6%; background:url('ui/cadre.webp?v=1') center/contain no-repeat; }
   .de { width:7cqw; height:7cqw; background:url('faces-zephine/face-5.webp') center/contain no-repeat; }
   .coeur { width:11cqw; height:10cqw; background:url('ui/coeur.webp?v=1') center/contain no-repeat; display:grid; place-items:center; font:bold 3.6cqw Georgia; text-shadow:0 1px 2px #000; }
   .bouc { width:7.6cqw; height:8.6cqw; background:url('ui/bouclier.webp?v=1') center/contain no-repeat; display:grid; place-items:center; font:bold 3.2cqw Georgia; text-shadow:0 1px 2px #000; }
@@ -44,6 +44,7 @@
     <label>Zoom <input type="range" id="tz" min="1" max="6" step="0.5" value="1"><span id="vz">×1</span></label>
     <div id="choix">Touche un élément pour le régler aux flèches.</div>
     <div class="fleches"><button onclick="pousse(-1,0)">◀</button><button onclick="pousse(0,-1)">▲</button><button onclick="pousse(0,1)">▼</button><button onclick="pousse(1,0)">▶</button><button onclick="centrer()">🎯</button></div>
+    <div class="fleches" style="grid-template-columns:1fr 1fr 2fr"><button onclick="taille(-1)">－ taille</button><button onclick="taille(1)">＋ taille</button><button onclick="taille(0)">taille d’origine</button></div>
     <label>Médaillons <input type="range" id="tm" min="7" max="14" step="0.1"><span id="vm"></span></label>
     <label>Portraits <input type="range" id="tp" min="12" max="24" step="0.1"><span id="vp"></span></label>
     <div class="bt"><button onclick="reinit()">Tout remettre</button><button class="ok" onclick="copier()">Copier mes réglages</button></div>
@@ -52,14 +53,7 @@
 </div>
 <script>
 // positions de départ = celles du jeu (en % de la largeur pour x, de la hauteur pour y)
-const DEFAUT = {
-  taille_medaillon:11.2, taille_portrait:17.3,
-  frappe:[11.6, 25.1], technique:[11.6, 32.9], garde:[11.6, 40.6], pouvoir:[11.6, 48.2], transmu:[11.6, 56.0], equipe:[11.6, 63.8],
-  de_premier:[89.45, 27.8], de_dernier:[89.45, 61.6],
-  portrait_haut:[50, 10.1], portrait_bas:[50, 76.1],
-  coeur_haut:[16.15, 15.85], bouclier_haut:[26.95, 15.85], etiquettes_haut:[79.3, 15.85],
-  coeur_bas:[16.15, 74.65], bouclier_bas:[26.95, 74.65], etiquettes_bas:[79.3, 74.65],
-};
+const DEFAUT = {"taille_medaillon":11.2,"taille_portrait":16.9,"frappe":[11.01,25.03],"technique":[11.05,32.8],"garde":[11.09,40.47],"pouvoir":[11.09,48.07],"transmu":[11.08,55.71],"equipe":[11.08,63.55],"de_premier":[89.73,27.42],"de_dernier":[89.45,61.6],"portrait_haut":[50.17,10.03],"portrait_bas":[50.28,76.27],"coeur_haut":[16.15,15.85],"bouclier_haut":[26.95,15.85],"etiquettes_haut":[79.3,15.85],"coeur_bas":[16.15,74.65],"bouclier_bas":[26.95,74.65],"etiquettes_bas":[79.3,74.65],"tailles":{}};
 const CLE = 'guilde-placement';
 let R = JSON.parse(localStorage.getItem(CLE) || 'null') || JSON.parse(JSON.stringify(DEFAUT));
 const pl = document.getElementById('pl');
@@ -78,14 +72,18 @@ function dessine() {
     const e = document.createElement('div'); e.className = 'el ' + cls; e.dataset.k = k;
     if (img) e.style.backgroundImage = `url('${img}')`; if (txt) e.innerHTML = txt;
     e.style.left = R[k][0] + '%'; e.style.top = R[k][1] + '%';
-    e.addEventListener('pointerdown', debut); pl.appendChild(e);
+    e.addEventListener('pointerdown', debut); pl.appendChild(e); appliqueTaille(e);
   }
   tm.value = R.taille_medaillon; vm.textContent = R.taille_medaillon; tp.value = R.taille_portrait; vp.textContent = R.taille_portrait;
 }
 let cour = null, choisi = null;
 const NOMS = { frappe:'Frappe', technique:'Technique', garde:'Garde', pouvoir:'Pouvoir', transmu:'Transmuter', equipe:'Équipe', de_premier:'1er dé', de_dernier:'dernier dé', portrait_haut:'portrait du haut', portrait_bas:'portrait du bas', coeur_haut:'cœur du haut', bouclier_haut:'bouclier du haut', etiquettes_haut:'étiquettes du haut', coeur_bas:'cœur du bas', bouclier_bas:'bouclier du bas', etiquettes_bas:'étiquettes du bas' };
-function choisir(e) { document.querySelectorAll('.el.choisi').forEach(x => x.classList.remove('choisi')); choisi = e; e.classList.add('choisi'); choix.textContent = `Choisi : ${NOMS[e.dataset.k]} (${R[e.dataset.k].join(' ; ')})`; }
+function choisir(e) { document.querySelectorAll('.el.choisi').forEach(x => x.classList.remove('choisi')); choisi = e; e.classList.add('choisi'); choix.textContent = `Choisi : ${NOMS[e.dataset.k]} (${R[e.dataset.k].join(' ; ')}) · taille ${(R.tailles || {})[e.dataset.k] || 100} %`; }
 // flèches : 0,1 % de l'image par toucher
+// taille propre à l'élément choisi (en % de sa taille de départ), gardée dans R.tailles
+function appliqueTaille(e) { const t = (R.tailles || {})[e.dataset.k]; e.style.transform = `translate(-50%, -50%) scale(${(t || 100) / 100})`; }
+function taille(sens) { if (!choisi) { choix.textContent = 'Touche d’abord un élément.'; return; } R.tailles = R.tailles || {}; const k = choisi.dataset.k;
+  R.tailles[k] = sens ? Math.max(30, Math.min(300, (R.tailles[k] || 100) + sens * 2)) : 100; appliqueTaille(choisi); localStorage.setItem(CLE, JSON.stringify(R)); choisir(choisi); }
 function pousse(dx, dy) { if (!choisi) { choix.textContent = 'Touche d’abord un élément.'; return; } const k = choisi.dataset.k; R[k] = [+(R[k][0] + dx * .1).toFixed(2), +(R[k][1] + dy * .1).toFixed(2)]; choisi.style.left = R[k][0] + '%'; choisi.style.top = R[k][1] + '%'; localStorage.setItem(CLE, JSON.stringify(R)); choisir(choisi); }
 // zoom : le plateau grandit dans la vue, qu'on fait défiler au doigt à côté des éléments
 function zoom(z) { const vue = document.getElementById('vue'); pl.style.height = (vue.clientHeight * z) + 'px'; vz.textContent = '×' + z; centrer(); }
