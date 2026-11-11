@@ -491,6 +491,11 @@
   .plateau.tapis.unique:not(.scene) #b-O .p:not(.pv) { overflow:visible; font-size:2.1cqw; width:12cqw; margin-left:-.5cqw; }
   .unique:not(.scene) .des .d { position:relative; }
   .unique:not(.scene) .d.cache::after { position:absolute; inset:0; top:0; transform:none; display:grid; place-items:center; font-size:4.2cqw; line-height:1; }
+  /* 11/11 ~20 h 05 : bouclier À CÔTÉ du cœur (plus sur le cercle) ; médaillons un peu plus grands pour couvrir tout le rond peint */
+  .unique .barre .bdg.bg, .unique .barre .bdg.bb { left:-17.5cqw; top:12.5cqw; width:7.6cqw; height:8.6cqw; opacity:1; filter:drop-shadow(0 2px 3px #000) drop-shadow(0 0 2px #000); }
+  .unique #b-O .bdg.bg, .unique #b-O .bdg.bb { top:9.5cqw; left:-19cqw; }
+  .unique .barre .bdg.bg:not([hidden]) + .bdg.bb { left:-25cqw; top:12.5cqw; }
+  .unique .colG .ic { width:10.4cqw; height:10.4cqw; margin:-.5cqw 0 0 -.5cqw; }
 </style>
 </head>
 <body>
