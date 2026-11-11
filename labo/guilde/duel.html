@@ -335,6 +335,162 @@
   .tapis .barre .bdg { font-size:3.7cqw; } .tapis .barre .bdg.bg { left:-2cqw; top:-1.5cqw; } .tapis .barre .bdg.bb { left:auto; right:-2cqw; top:-1.5cqw; }
   .barre.protege::before { content:none !important; }
   .tapis .pastilles .pg, .tapis .pastilles .pb { display:none; }
+
+  /* ================= ÉCRAN UNIQUE (11/11, idée de l'utilisateur) : tout tient sur l'écran du téléphone, sans faire défiler.
+     Plateau = toute la hauteur entre l'en-tête et la barre du bas (container-type:size → cqw = 1 % de la largeur, cqh = 1 % de la hauteur).
+     Gauche : les actions en icônes · droite : le bac des dés vertical · centre : créatures et consigne · bas : la main. ================= */
+  html:has(.plateau.unique), body:has(.plateau.unique) { height:100%; overflow:hidden; overscroll-behavior:none; }
+  #app:has(> .plateau.unique) { height:100dvh; min-height:0 !important; display:flex; flex-direction:column; padding:0 0 54px !important; overflow:hidden; }
+  #app:has(> .plateau.unique) > .salle { flex:none; margin:0; border-radius:0; padding:4px 8px; }
+  .plateau.tapis.unique { flex:1; min-height:0; aspect-ratio:auto; container-type:size; border-radius:0; background-size:100% 100%; overflow:visible; }
+  .plateau.tapis.unique.scene { background-size:cover; }
+  .unique .barre { left:39.5cqw; width:21cqw; height:21cqw; }
+  .unique #b-O { top:4.5cqh; } .unique #b-J { top:63.5cqh; }
+  .unique .barre > img { z-index:1; }
+  .unique .anneau { position:absolute; left:-5cqw; top:-5cqw; width:31cqw; height:31cqw; z-index:2; pointer-events:none; overflow:visible; }
+  .unique .barre .vie { display:none; }
+  .unique .barre .nom { font-size:3cqw; top:calc(100% + 5cqw) !important; bottom:auto !important; z-index:3; }
+  .unique .barre .pastilles { left:calc(100% + 6cqw); right:auto; top:0 !important; bottom:auto !important; width:17cqw; align-items:flex-start; gap:1cqw; z-index:3; }
+  .unique .pastilles [data-k="pv"] { position:absolute; right:calc(100% + 30cqw); top:7cqw; font-size:3.8cqw; }
+  .unique .pastilles [data-k="pc"], .unique .pastilles [data-k="ultime"], .unique .pastilles [data-k="ultimefait"] { display:none; }
+  .unique .pastilles [data-k="main"] { position:static; font-size:2.6cqw; }
+  .unique .p { font-size:2.6cqw; white-space:nowrap; }
+  .unique .barre .bdg { font-size:3.2cqw; } .unique .barre .bdg.bg { left:-17cqw; top:14cqw; } .unique .barre .bdg.bb { left:-17cqw; right:auto; top:19cqw; }
+  .unique .barre.cible img { box-shadow:0 0 0 4px var(--ok), 0 0 24px var(--ok); }
+  /* créatures : entre la colonne des actions et le bac des dés */
+  .unique .front { left:17cqw !important; right:18cqw !important; height:20cqw; gap:1.4cqw; }
+  .unique #f-O { top:29cqh; } .unique #f-J { top:47.5cqh; }
+  .unique .front > .u { flex:0 1 13cqw; height:18.5cqw; font-size:2.1cqw; }
+  .unique .u .av span { width:5.6cqw; height:5.6cqw; font-size:2.4cqw; }
+  /* consigne sur la ligne de runes ; bouton Lancer au même endroit */
+  .unique .bandeau { left:16cqw; right:17cqw; top:44.5cqh; transform:translateY(-50%); margin:0; padding:2px 6px; font-size:2.9cqw; line-height:1.25; background:#1d1626e6; border:1px solid #f3c96b77; border-radius:12px; z-index:5; max-height:9cqh; overflow:hidden; }
+  .unique .lancer { left:20cqw; right:21cqw; top:44.5cqh; transform:translateY(-50%); width:auto; margin:0; padding:3cqw; font-size:4.2cqw; z-index:5; }
+  /* colonne des actions (gauche) */
+  .unique .colG { left:1.2cqw; top:19cqh; display:flex; flex-direction:column; gap:1cqh; z-index:4; }
+  .ic { position:relative; width:12.5cqw; height:12.5cqw; border-radius:50%; padding:0; display:grid; place-items:center; color:#fff; background:radial-gradient(circle at 35% 30%, #4a3a6a, #1d1626); border:2px solid #f3c96b99; box-shadow:0 2px 6px #000c; }
+  .ic .sy { font-size:5.4cqw; line-height:1; letter-spacing:-.15em; }
+  .ic small { position:absolute; top:calc(100% - 1.6cqw); left:50%; transform:translateX(-50%); font-size:2.2cqw; white-space:nowrap; background:#1d1626e6; border-radius:6px; padding:0 4px; pointer-events:none; }
+  .ic.ok { border-color:#7dffb0; box-shadow:0 0 0 2px #7dffb0, 0 0 14px #7dffb0; }
+  .ic.non { opacity:.4; }
+  .ic.pleine { border-color:#ffd866; box-shadow:0 0 0 2px #ffd866, 0 0 16px #ffd866; animation:halo 1s ease-in-out infinite alternate; }
+  .ic.fait { opacity:.35; }
+  /* bac des dés vertical (droite) */
+  .unique .des { left:auto; right:1.2cqw; top:18cqh; width:15.5cqw; height:auto; padding:1.6cqw 1cqw; margin:0; display:flex; flex-direction:column; flex-wrap:nowrap; align-items:center; gap:.9cqh;
+    border-radius:10px; background:linear-gradient(90deg, #14381f, #1f5a32 50%, #14381f); border:3px solid #6b4a2a; box-shadow:inset 0 0 10px #000a, 0 3px 8px #000c; z-index:4; }
+  .scene.unique .des { background:linear-gradient(90deg, #14381fdd, #1f5a32dd 50%, #14381fdd); }
+  .unique .d { width:12.5cqw; }
+  .unique .d img, .unique .d .cad { width:11.5cqw; height:11.5cqw; border-width:2px; }
+  .unique .d .sac { font-size:2cqw; margin-top:.4cqw; }
+  .sacp { display:grid; grid-template-columns:repeat(3, 1fr); gap:.4cqw; justify-items:center; }
+  .sacp i { width:3.3cqw; height:3.3cqw; border-radius:50%; font:bold 2.2cqw/3.3cqw sans-serif; font-style:normal; text-align:center; background:#e9ffe9; color:#123; }
+  .sacp i.u { background:#ffffff22; color:#ffffff55; }
+  .sacoria { font-size:2cqw; }
+  .unique .d.cache::after { top:2.5cqw; font-size:6cqw; }
+  /* la main en éventail, posée sur le bas du plateau */
+  /* la main posée EN ENTIER dans le bac du bas (cartes de 80 px, toucher = la carte en grand) */
+  .unique .main { left:0; right:0; bottom:0; height:122px; max-width:none; z-index:6; }
+  .unique .main .c { bottom:4px; width:80px; height:114px; font-size:.5em; transform-origin:50% 100%; }
+  .unique .main .c.vue { width:164px; height:auto; min-height:206px; font-size:.8em; }
+  .bas { max-width:560px; margin:0 auto; height:54px; z-index:8; }
+  .bas .b0 { width:46px; padding:0; font-size:18px; }
+  .bas .b1 { flex:1; } .bas .b2 { flex:1.3; }
+  .unique .barre.ultpret::after { content:'⚡ Ultime prêt : touche-moi'; position:absolute; left:50%; top:-4.5cqw; transform:translateX(-50%); white-space:nowrap; font-size:2.6cqw; color:#1d1626; background:#ffd866; border-radius:10px; padding:0 6px; z-index:4; animation:halo 1s ease-in-out infinite alternate; }
+  #b-O.ultpret::after { content:'⚡ Ultime prêt'; top:-6.5cqw; bottom:auto; }
+  .unique .barre.ultpret > img { box-shadow:0 0 0 3px #ffd866, 0 0 22px #ffd866; }
+  .transbt { position:relative; width:12cqw; height:9cqw; border-radius:8px; border:2px solid #7dd99a; background:radial-gradient(circle at 35% 30%, #2f6b45, #123222); color:#fff; font-size:4.5cqw; line-height:1; padding:0; }
+  .transbt small { display:block; font-size:1.8cqw; }
+  .transbt { height:auto; background:none; border:none; } .transbt img { width:11cqw; height:11cqw; display:block; margin:0 auto; filter:drop-shadow(0 2px 3px #000a); } .transbt.ok { box-shadow:none; } .transbt.ok img { filter:drop-shadow(0 0 4px #7dffb0) drop-shadow(0 0 8px #7dffb0); }
+  .transbt.ok { box-shadow:0 0 0 2px #7dffb0, 0 0 12px #7dffb0; } .transbt.fait { opacity:.4; }
+  .bas .b0 sup { font-size:10px; }
+  /* ===== habillage peint (planche d'interface Gemini, 11/11) ===== */
+  .unique .barre { left:41cqw; width:18cqw; height:18cqw; }
+  .unique #b-O { top:5.5cqh; } .unique #b-J { top:64cqh; }
+  .unique .barre > img:first-child { z-index:1; }
+  .unique .barre .cadre { position:absolute; left:-6.5cqw; top:-6.5cqw; width:31cqw; height:31cqw; z-index:2; pointer-events:none; border:none !important; box-shadow:none !important; border-radius:0 !important; filter:drop-shadow(0 3px 5px #000a); }
+  .unique .anneau { left:-6.5cqw; top:-6.5cqw; width:31cqw; height:31cqw; z-index:3; }
+  .unique .barre .nom { top:calc(100% + 7cqw) !important; }
+  .unique .barre .pastilles { left:calc(100% + 8.5cqw); }
+  .unique .pastilles [data-k="pv"] { right:calc(100% + 32cqw); top:5cqw; width:11cqw; height:10cqw; padding:0; border:none !important; display:grid; place-items:center; font:bold 3.6cqw Georgia, serif; color:#fff; text-shadow:0 1px 2px #000, 0 0 4px #000; background:url('ui/coeur.webp?v=1') center/contain no-repeat !important; box-shadow:none !important; }
+  .unique .barre .bdg { width:8cqw; height:9cqw; padding:0; border:none; display:grid; place-items:center; font:bold 3.2cqw Georgia, serif; color:#fff; text-shadow:0 1px 2px #000; background:url('ui/bouclier.webp?v=1') center/contain no-repeat; box-shadow:none; }
+  .unique .barre .bdg.bg { left:-19cqw; top:13cqw; opacity:.85; } .unique .barre .bdg.bb { left:-19cqw; top:13cqw; }
+  .unique .barre .bdg.bg:not([hidden]) + .bdg.bb { left:-27cqw; }
+  .unique .barre .bdg[hidden] { display:none; }
+  .ic { background:center/contain no-repeat; border:none; box-shadow:none; filter:drop-shadow(0 2px 4px #000c); }
+  .ic.ok { box-shadow:none; filter:drop-shadow(0 0 4px #7dffb0) drop-shadow(0 0 8px #7dffb0); }
+  .ic.non { opacity:.45; filter:grayscale(.6) drop-shadow(0 2px 4px #000c); }
+  .ic small { background:#1d1626e6; color:#f3e3b8; }
+  /* ===== plateau peint v2 (Gemini, 11/11) : tout est calé sur ses emplacements mesurés (en % de l'image) =====
+     alcôves : centre x 50 %, haut y 10,8 %, bas y 74 %, trou 22,5 % de la largeur · ronds à gauche : x 8,6 %, y 27 / 34 / 41 / 48 / 55,4 %, 10 % de large
+     bac des dés : x 85 → 98 %, y 23 → 56 % · aire de jeu : x 12 → 90 %, y 18 → 70 %, runes à 43,4 % · bas : y 82 → 97 % (la main) */
+  .plateau.tapis.unique:not(.scene) { background:#2a2014 url('decor/plateau-duel-final.webp?v=1') center/100% 100% no-repeat; }
+  .unique .barre { left:40.8cqw; width:18.4cqw; height:18.4cqw; }
+  .unique #b-O { top:calc(10.8cqh - 9.2cqw); } .unique #b-J { top:calc(74cqh - 9.2cqw); }
+  .unique .barre .cadre, .unique .anneau { left:-6.8cqw; top:-6.8cqw; width:32cqw; height:32cqw; }
+  .unique #b-O .nom { top:calc(100% + 6.5cqw) !important; } .unique #b-J .nom { display:none; }
+  .unique .colG { left:0; top:0; display:block; }
+  .unique .colG .ic { position:absolute; left:3.4cqw; width:10.4cqw; height:10.4cqw; }
+  .unique .colG .ic small { display:none; }
+  .unique .colG .r1 { top:calc(27cqh - 5.2cqw); } .unique .colG .r2 { top:calc(34cqh - 5.2cqw); } .unique .colG .r3 { top:calc(41cqh - 5.2cqw); } .unique .colG .r4 { top:calc(48cqh - 5.2cqw); } .unique .colG .r5 { top:calc(55.4cqh - 5.2cqw); }
+  .plateau.tapis.unique:not(.scene) .des { left:85.4cqw; right:auto; top:23.6cqh; width:12.2cqw; height:32cqh; padding:.8cqh 0; background:none; border:none; box-shadow:none; gap:.25cqh; justify-content:space-around; }
+  .unique:not(.scene) .d { width:11cqw; }
+  .unique:not(.scene) .d img, .unique:not(.scene) .d .cad { width:7.4cqw; height:7.4cqw; }
+  .unique:not(.scene) .d .sac { margin-top:.2cqw; }
+  .unique:not(.scene) .sacp { grid-template-columns:repeat(6, 1fr); gap:.15cqw; }
+  .unique:not(.scene) .sacp i { width:1.7cqw; height:1.7cqw; font-size:0; }
+  .unique:not(.scene) .transbt img { width:7cqw; height:7cqw; } .unique:not(.scene) .transbt small { display:none; }
+  .unique .front { left:16cqw !important; right:16.5cqw !important; }
+  .unique #f-O { top:25cqh; } .unique #f-J { top:47cqh; }
+  .unique .bandeau { left:15cqw; right:16cqw; top:43.4cqh; }
+  .unique .lancer { top:43.4cqh; }
+  .unique .barre .pastilles { left:calc(100% + 8cqw); }
+  .unique .pastilles [data-k="pv"] { right:calc(100% + 31cqw); top:3cqw; }
+  /* ===== plateau FINAL (Gemini, 11/11 soir), emplacements mesurés : alcôves y 10,6 % et 71 % · 6 ronds x 10,4 %, y 26,3 / 33,1 / 39,9 / 46,7 / 53,4 / 60,4 %
+     · bac x 85,7 → 96,9 %, y 23,1 → 52,6 % · runes 41,5 % · aire de jeu x 14 → 86 %, y 16 → 68 % ===== */
+  .unique #b-O { top:calc(10.6cqh - 9.2cqw); } .unique #b-J { top:calc(71cqh - 9.2cqw); }
+  .unique .colG .ic { left:5.2cqw; }
+  .unique .colG .r1 { top:calc(26.3cqh - 5.2cqw); } .unique .colG .r2 { top:calc(33.1cqh - 5.2cqw); } .unique .colG .r3 { top:calc(39.9cqh - 5.2cqw); }
+  .unique .colG .r4 { top:calc(46.7cqh - 5.2cqw); } .unique .colG .r5 { top:calc(53.4cqh - 5.2cqw); } .unique .colG .r6 { top:calc(60.4cqh - 5.2cqw); }
+  .plateau.tapis.unique:not(.scene) .des { left:85.7cqw; top:23.4cqh; width:11.2cqw; height:29cqh; }
+  .unique:not(.scene) .d img, .unique:not(.scene) .d .cad { width:7.6cqw; height:7.6cqw; }
+  .unique #f-O { top:22.5cqh; } .unique #f-J { top:45.5cqh; }
+  .unique .bandeau, .unique .lancer { top:41.5cqh; }
+  /* ===== 11/11 soir : retours de l'utilisateur ===== */
+  .unique:not(.scene) .d .sac { display:none; }
+  .unique:not(.scene) .d.neuf .sac, .unique:not(.scene) .d.verrou .sac { display:block; font-size:1.8cqw; }
+  .unique .ultplein { animation:lueur 1.2s ease-in-out infinite; }
+  /* étiquettes de l'adversaire posées sur ses deux rubans peints (x 65 → 78 %, y 8,8 % et 12 %) */
+  .plateau.tapis.unique:not(.scene) #b-O .pastilles { left:auto; right:auto; top:auto; position:absolute; inset:auto; }
+  .plateau.tapis.unique:not(.scene) #b-O .pastilles { left:25cqw; top:calc(-10.6cqh + 9.2cqw + 9.6cqh); width:14cqw; gap:.95cqh; align-items:center; }
+  .plateau.tapis.unique:not(.scene) #b-O .p:not(.pv) { background:none !important; border:none !important; box-shadow:none !important; color:#f3e3b8; font-size:2.3cqw; padding:0; text-shadow:0 1px 2px #000; }
+  .unique .bandeau small { font-size:2.5cqw; color:#f3e3b8; }
+  /* ===== 11/11 soir (2) : alignement au pixel sur le plateau final (mesures dans l'image 768 × 1376) =====
+     ronds : centre x 10,4 %, y 26,3 / 33,1 / 39,8 / 46,6 / 53,6 / 60,5 %, diamètre ≈ 9,4 % · bac vert : x 86,7 → 94,4 %, y 24,2 → 52,4 %, 6 cases
+     rubans du haut : x 65,8 → 76,8 %, centres y 8,65 % et 12,6 % */
+  .unique .colG .ic { left:5.6cqw; width:9.6cqw; height:9.6cqw; }
+  .unique .colG .r1 { top:calc(26.3cqh - 4.8cqw); } .unique .colG .r2 { top:calc(33.1cqh - 4.8cqw); } .unique .colG .r3 { top:calc(39.8cqh - 4.8cqw); }
+  .unique .colG .r4 { top:calc(46.6cqh - 4.8cqw); } .unique .colG .r5 { top:calc(53.6cqh - 4.8cqw); } .unique .colG .r6 { top:calc(60.5cqh - 4.8cqw); }
+  .plateau.tapis.unique:not(.scene) .des { left:86.7cqw; top:24.2cqh; width:7.7cqw; height:28.2cqh; padding:0; display:grid; grid-template-rows:repeat(6, 1fr); gap:0; justify-items:center; align-items:center; }
+  .unique:not(.scene) .des .d { width:7.7cqw; height:100%; display:grid; place-items:center; }
+  .unique:not(.scene) .d img, .unique:not(.scene) .d .cad { width:6.6cqw; height:6.6cqw; margin:0; }
+  .unique:not(.scene) .d .sac, .unique:not(.scene) .d.verrou .sac, .unique:not(.scene) .d.neuf .sac { display:none; }
+  .unique:not(.scene) .d.verrou .cad { font-size:3.2cqw; border-width:1px; }
+  .unique:not(.scene) .d.cache::after { top:50%; transform:translateY(-50%); font-size:4.5cqw; }
+  .plateau.tapis.unique:not(.scene) #b-O .pastilles { left:25cqw; width:11cqw; top:calc(-1.95cqh + 7.65cqw); gap:calc(3.95cqh - 3.1cqw); }
+  .plateau.tapis.unique:not(.scene) #b-O .p:not(.pv) { font-size:2.2cqw; line-height:3.1cqw; height:3.1cqw; width:11cqw; text-align:center; overflow:hidden; white-space:nowrap; }
+  .unique .barre .bdg.bg, .unique .barre .bdg.bb { left:-4.5cqw; top:-4cqw; z-index:5; }
+  .unique .barre .bdg.bg:not([hidden]) + .bdg.bb { left:-4.5cqw; top:3cqw; }
+  /* centres mesurés rond par rond (ils dérivent vers la gauche en descendant) */
+  .unique .colG .ic { width:9.4cqw; height:9.4cqw; }
+  .unique .colG .r1 { left:calc(10.8cqw - 4.7cqw); top:calc(26.7cqh - 4.7cqw); }
+  .unique .colG .r2 { left:calc(10.3cqw - 4.7cqw); top:calc(33.5cqh - 4.7cqw); }
+  .unique .colG .r3 { left:calc(9.9cqw - 4.7cqw); top:calc(40.3cqh - 4.7cqw); }
+  .unique .colG .r4 { left:calc(9.5cqw - 4.7cqw); top:calc(47.1cqh - 4.7cqw); }
+  .unique .colG .r5 { left:calc(9.0cqw - 4.7cqw); top:calc(54.0cqh - 4.7cqw); }
+  .unique .colG .r6 { left:calc(8.7cqw - 4.7cqw); top:calc(61.0cqh - 4.7cqw); }
+  .plateau.tapis.unique:not(.scene) #b-O .pastilles { top:calc(0.45cqh + 7.65cqw); }
+  .plateau.tapis.unique:not(.scene) #b-O .p:not(.pv) { overflow:visible; font-size:2.1cqw; width:12cqw; margin-left:-.5cqw; }
+  .unique:not(.scene) .des .d { position:relative; }
+  .unique:not(.scene) .d.cache::after { position:absolute; inset:0; top:0; transform:none; display:grid; place-items:center; font-size:4.2cqw; line-height:1; }
 </style>
 </head>
 <body>
@@ -343,7 +499,7 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261110-143557';
+const VERSION = '20261111-200236';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); location.replace('duel.html?v=' + v); }
@@ -363,7 +519,7 @@ setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
 <script src="cartes.js?v=20261110-143557"></script>
-<script src="donnees.js?v=20261110-143557"></script>
+<script src="donnees.js?v=20261111-200236"></script>
 <script src="odyssee.js?v=20261110-143557"></script>
 <script src="chronique.js?v=20261110-140121"></script>
 <script>
@@ -466,7 +622,7 @@ function fin() { if (S.fini) return;
 function debutTour(J) {
   if (J.gardeB > 0 || J.gardeE > 0) fx({ t:'finGarde', s:J === S.J ? 'J' : 'O', n:J.gardeB });
   J.tours++; J.gardeB = 0; J.gardeE = 0; J.contre = J.piege = J.cor = J.fournaise = J.paillasse = J.esquive = false;
-  J.relance = 1 + (J.boussole ? 1 : 0) + (J.reliques.includes('oeil') ? 1 : 0) + (J.benes.includes('relance') ? 1 : 0); S.acteur = null; J.cartesJouees = 0; J.six = 0; J.pureteTour = false; J.transmu = false; J.dernierSort = null; J.gardeFaite = false;
+  J.relance = 2 + (J.boussole ? 1 : 0) + (J.reliques.includes('oeil') ? 1 : 0) + (J.benes.includes('relance') ? 1 : 0); S.acteur = null; J.cartesJouees = 0; J.six = 0; J.pureteTour = false; J.transmu = false; J.dernierSort = null; J.gardeFaite = false;
   if (J.tours > 1) { J.pc = Math.min(6, J.pc + 1); pioche(J, 1); }
   if (J.saigne) { log(`${J.nom} saigne : −${J.saigne * 2} PV.`); J.pv -= J.saigne * 2; fx({ t:'degat', c:ref({ J }), n:J.saigne * 2, abs:0, pv:Math.max(0, J.pv), mot:'Saignement' }); fin(); }
   if (J.poison) { log(`${J.nom} : Poison, −${J.poison} PV.`); J.pv -= J.poison; fx({ t:'degat', c:ref({ J }), n:J.poison, abs:0, pv:Math.max(0, J.pv), mot:'Poison', vert:true }); J.poison--; fin(); }
@@ -502,13 +658,13 @@ function cibleValide(J, k, type) { if (k && (!k.u || k.J.front.includes(k.u))) r
 // Zéphine, l'alchimiste : son +1 / −1 ne coûte qu'1 PC (sa spécialité reste plus forte que celle des autres)
 const coutAjuste = J => J.id === 'zephine' ? 1 : 2;
 function permis(J, quoi, vs, ds) {
-  if (quoi === 'pcSoins') return J.pc >= 2 && !!(J.poison || J.saigne || J.handicap);
+  if (quoi === 'pcSoins') return false;
   if (!vs.length) return false;
   const h = HEROS[J.id];
   if (quoi === 'vendre') return true;
   if (quoi === 'transmu') return J.id === 'zephine' && !J.transmu && vs.length === 1;
   if (quoi === 'pcRelance') return vs.length === 1 && J.pc >= 1;
-  if (quoi === 'pcAjuste') return vs.length === 1 && J.pc >= coutAjuste(J);
+  if (quoi === 'pcAjuste') return false;
   if (quoi === 'garde') return !J.gardeFaite && h.garde.cond(vs, ds);
   if (quoi === 'pouvoir') return h.pouvoir.cond(vs, ds);
   if (quoi === 'frappe') return frappeDe(J).cond(vs);
@@ -690,17 +846,8 @@ function transmutationAuto(J) {
   if (mieux) pose(J, 'transmu', [mieux.d]);
 }
 // achats de PC par l'ordinateur : Premiers soins si l'altération pèse ; ±1 si ça améliore nettement son meilleur coup
-function achatsAuto(J) {
-  if (J.pc >= 2 && (J.poison + J.saigne * 2 + (J.handicap ? 3 : 0)) >= 4) pose(J, 'pcSoins', []);
-  for (let n = 0; n < 2 && J.pc >= coutAjuste(J); n++) {
-    const avant = (meilleurCoup(J) || { score:0 }).score; let mieux = null;
-    J.des.filter(d => !d.pose).forEach(d => [-1, 1].forEach(sens => { const v = d.v + sens; if (v < 1 || v > 6) return; const a = d.v; d.v = v;
-      const pc = J.pc; J.pc -= coutAjuste(J); const s2 = (meilleurCoup(J) || { score:0 }).score; J.pc = pc; d.v = a;
-      if (s2 >= avant + 20 && (!mieux || s2 > mieux.s)) mieux = { d, sens, s:s2 }; }));
-    if (!mieux) break;
-    pose(J, 'pcAjuste', [mieux.d], { sens:mieux.sens });
-  }
-}
+// 11/11 : plus d'achats « ±1 » ni « Premiers soins » en PC (ce sont maintenant des cartes de la Guilde) ; seule la relance se paie
+function achatsAuto(J) { }
 function joueOrdi() {
   fx({ t:'tour', s:'O', nom:S.O.nom });
   S.bilan = { actions:[], gardes:[], pv0:S.J.pv, pvO0:S.O.pv, abs:0, front0:S.J.front.length };
@@ -729,7 +876,8 @@ function joueAuto(J) {
     b = meilleurCoup(J); if (!b || b.score < 8) break;
     const def = defDe(J, b.quoi), t = def && def.cible;
     let k = null;
-    if (t === 'de') { const autres = J.des.filter(d => !d.pose && !b.ds.includes(d)).sort((x, y) => x.v - y.v); k = { d:autres[0] }; }
+    if (t === 'de' && b.quoi === 'ajuste' && J._ajuste && !J._ajuste.d.pose && !b.ds.includes(J._ajuste.d)) k = { d:J._ajuste.d, sens:J._ajuste.sens };
+    else if (t === 'de') { const autres = J.des.filter(d => !d.pose && !b.ds.includes(d)).sort((x, y) => x.v - y.v); k = { d:autres[0] }; }
     else if (t) k = cibleAuto(J, t);
     pose(J, b.quoi, b.ds, k, b.im);
     if (S.fini) return;
@@ -760,13 +908,13 @@ document.addEventListener('click', e => { if (carteVue !== null && !e.target.clo
 function mainEnEventail(J) {
   const n = J.main.length; if (!n) return '<i style="color:#c9c1ea;position:absolute;left:0;right:0;text-align:center;top:60px">Main vide</i>';
   if (carteVue !== null && carteVue >= n) carteVue = null;
-  const mil = (n - 1) / 2, pas = n > 1 ? Math.min(54, 270 / (n - 1)) : 0, ang = n > 1 ? Math.min(4, 18 / (n - 1)) : 0;
+  const mil = (n - 1) / 2, pas = n > 1 ? Math.min(46, 240 / (n - 1)) : 0, ang = n > 1 ? Math.min(4, 18 / (n - 1)) : 0;
   return J.main.map((k, i) => {
     const c = CARTES[k], ok = sel.length && permis(J, k, vals(sel), sel), vue = carteVue === i, d = i - mil;
-    const style = vue ? 'left:calc(50% - 82px);transform:translateY(-170px);z-index:60'
-      : `left:calc(50% - 50px + ${d * pas}px);transform:translateY(${Math.round(d * d * 2) - (ok ? 18 : 0)}px) rotate(${d * ang}deg);z-index:${ok ? 40 + i : i + 1}`;
+    const style = vue ? 'left:calc(50% - 82px);transform:translateY(-110px);z-index:60'
+      : `left:calc(50% - 40px + ${d * pas}px);transform:translateY(${Math.round(d * d * 2) - (ok ? 14 : 0)}px) rotate(${d * ang}deg);z-index:${ok ? 40 + i : i + 1}`;
     const pied = vue ? `<div class="jouer">${ok ? '👆 Touche encore pour la jouer' : sel.length ? 'Ces dés ne conviennent pas' : 'Choisis d’abord tes dés'}</div>` : '';
-    if (typeof CADRES_OK !== 'undefined' && CADRES_OK.includes(CADRE_DE(k))) return `<div class="c neuve ${ok ? 'ok' : sel.length ? 'non' : ''} ${vue ? 'vue' : ''}" style="${style}" onclick="toucheCarte(${i})">${carteGuilde(k, { w:vue ? 164 : 100, cout:coutCarte(J, k), pied:vue ? `<div class="cg-pied">${ok ? '👆 Touche encore pour la jouer' : sel.length ? 'Ces dés ne conviennent pas' : 'Choisis d’abord tes dés'}</div>` : '' })}</div>`;
+    if (typeof CADRES_OK !== 'undefined' && CADRES_OK.includes(CADRE_DE(k))) return `<div class="c neuve ${ok ? 'ok' : sel.length ? 'non' : ''} ${vue ? 'vue' : ''}" style="${style}" onclick="toucheCarte(${i})">${carteGuilde(k, { w:vue ? 164 : 80, cout:coutCarte(J, k), pied:vue ? `<div class="cg-pied">${ok ? '👆 Touche encore pour la jouer' : sel.length ? 'Ces dés ne conviennent pas' : 'Choisis d’abord tes dés'}</div>` : '' })}</div>`;
     return `<div class="c ${c.t}2 ${ok ? 'ok' : sel.length ? 'non' : ''} ${vue ? 'vue' : ''}" style="${style}" onclick="toucheCarte(${i})"><span class="cout">${coutCarte(J, k)}</span><div class="n">${c.n}</div><span class="cd">🎲 ${c.txt}</span><div class="dd">${c.d}</div>${pied}</div>`;
   }).join('');
 }
@@ -966,7 +1114,9 @@ function equipeHTML() {
 function choisirDe(i) {
   if (S.fini || S.J.aLancer || roule) return;
   if (carteVue !== null && !ciblage) carteVue = null; const d = S.J.des[i]; if (d.pose) return;
-  if (ciblage && ciblage.type === 'de') { if (ciblage.ds.includes(d)) return; const c = ciblage; ciblage = null; pose(S.J, c.quoi, c.ds, { d }, c.im); sel = []; rendu(); return; }
+  if (ciblage && ciblage.type === 'de') { if (ciblage.ds.includes(d)) return; const c = ciblage; ciblage = null;
+    if (c.quoi === 'ajuste') { choix(`Ton ${d.v} devient…`, [d.v > 1 ? `${d.v - 1} (−1)` : '—', d.v < 6 ? `${d.v + 1} (+1)` : '—'], i => { if ((i === 0 && d.v === 1) || (i === 1 && d.v === 6)) { rendu(); return; } pose(S.J, c.quoi, c.ds, { d, sens:i ? 1 : -1 }, c.im); sel = []; rendu(); }); return; }
+    pose(S.J, c.quoi, c.ds, { d }, c.im); sel = []; rendu(); return; }
   if (ciblage) return;
   sel = sel.includes(d) ? sel.filter(x => x !== d) : [...sel, d]; attaquant = null; rendu();
 }
@@ -991,6 +1141,9 @@ function touche(k) {
   if (S.fini) return;
   if (ciblage && estCible(k)) { const c = ciblage; ciblage = null; if (c.ds.some(d => d.pose)) { sel = []; rendu(); return; } pose(S.J, c.quoi, c.ds, k, c.im); sel = []; rendu(); return; }
   if (attaquant && estCible(k)) { attaque(S.J, attaquant, k); attaquant = null; rendu(); return; }
+  // 11/11 : toucher SON portrait = l'Ultime (avec les dés choisis) ou son explication
+  if (k.J === S.J && !k.u && !ciblage && !attaquant && !S.J.aLancer && !S.coop) { vise('ultime'); return; }
+  if (k.J === S.J && !k.u && !ciblage && !attaquant && !S.J.aLancer && S.coop && S.J.qui === 'toi') { vise('ultime'); return; }
   if (k.J === S.J && k.u && k.u.louve && k.u.pret && !ciblage && !S.J.aLancer) { attaquant = null; attaqueLouve(S.J); rendu(); return; }
   if (k.J === S.J && k.u && k.u.pret && !k.u.louve && !ciblage) {
     if (attaquant === k.u) { attaquant = null; rendu(); return; }
@@ -1017,10 +1170,13 @@ function lancerMesDes() {
   demarreMusique();
   rouler(J.des, () => { J.des.forEach(d => lance(J, d)); J.aLancer = false; if (J.neuf >= 0) { J.neufJusque = Date.now() + 3500; setTimeout(() => { if (!fxOn && S && S.J === J) dessine(); }, 3600); } log(`Tu lances : ${J.des.map(d => d.v).join(' · ')}`); rendu(); });
 }
+// 11/11 : d'abord les relances gratuites du tour ; ensuite chaque dé relancé coûte 1 PC
 function relancer() {
-  const J = S.J; if (!J.relance || !sel.length || roule) return;
-  const ds = sel; sel = [];
-  rouler(ds, () => { ds.forEach(d => lance(J, d)); J.relance--; log(`Tu relances ${ds.length} dé(s) : ${J.des.map(d => d.v).join(' · ')}`); rendu(); });
+  const J = S.J; if (!sel.length || roule) return;
+  if (!J.relance && J.pc < sel.length) { aide('pcRelance'); return; }
+  const ds = sel, paye = !J.relance; sel = [];
+  rouler(ds, () => { ds.forEach(d => lance(J, d)); if (paye) J.pc -= ds.length; else J.relance--;
+    log(paye ? `${J.nom} paie ${ds.length} PC et relance ${ds.length} dé(s) : ${J.des.map(d => d.v).join(' · ')}` : `Tu relances ${ds.length} dé(s) : ${J.des.map(d => d.v).join(' · ')}`); rendu(); });
 }
 // glisser le doigt vers le haut sur les dés : lancer (ou relancer les dés choisis)
 let glisseY = null;
@@ -1065,8 +1221,8 @@ document.addEventListener('click', e => {
 }, true);
 function barre(P, haut) {
   const ref = `{J:S.${haut ? 'O' : 'J'}}`;
-  return `<div class="barre ${estCible({ J:P }) ? 'cible' : ''} ${P.gardeB || P.bouclier ? 'protege' : ''}" data-bouclier="${(P.gardeB || 0) + (P.bouclier || 0)}" id="b-${haut ? 'O' : 'J'}" style="--c:${P.c}" onclick="touche(${ref})"><img src="${HEROS[P.id].img || IMG(P.id)}" alt=""><span class="bdg bg" ${P.gardeB ? '' : 'hidden'}>🛡 ${P.gardeB}</span><span class="bdg bb" ${P.bouclier ? '' : 'hidden'}>🛡 ${P.bouclier}</span><div style="flex:1"><div class="nom">${P.nom}${P.ordi ? (S.lieu ? ' · ' + (HEROS[P.id].titre || 'ennemi') : ' · ordinateur') : (P.qui && P.qui !== 'toi' ? ' · ' + P.qui : ' · toi')}</div><div class="vie"><b style="width:${Math.max(0, P.pv) / P.pvMax * 100}%"></b><i style="width:${Math.max(0, P.pv) / P.pvMax * 100}%"></i></div><div class="pastilles">
-    <span data-k="pv" class="p pv">❤ ${Math.max(0, P.pv)} / ${P.pvMax}</span><span data-k="pc" class="p pc">◆ ${P.pc} PC</span>
+  return `<div class="barre ${estCible({ J:P }) ? 'cible' : ''} ${!P.ultimeFait && P.jauge >= JAUGE.max ? 'ultpret' : ''} ${P.gardeB || P.bouclier ? 'protege' : ''}" data-bouclier="${(P.gardeB || 0) + (P.bouclier || 0)}" id="b-${haut ? 'O' : 'J'}" style="--c:${P.c}" onclick="touche(${ref})"><img src="${HEROS[P.id].img || IMG(P.id)}" alt=""><img class="cadre" src="ui/cadre.webp?v=1" alt="">${anneauDe(P)}<span class="bdg bg" ${P.gardeB ? '' : 'hidden'}>${P.gardeB}</span><span class="bdg bb" ${P.bouclier ? '' : 'hidden'}>${P.bouclier}</span><div style="flex:1"><div class="nom">${P.nom}${P.ordi ? (S.lieu ? ' · ' + (HEROS[P.id].titre || 'ennemi') : ' · ordinateur') : (P.qui && P.qui !== 'toi' ? ' · ' + P.qui : ' · toi')}</div><div class="vie"><b style="width:${Math.max(0, P.pv) / P.pvMax * 100}%"></b><i style="width:${Math.max(0, P.pv) / P.pvMax * 100}%"></i></div><div class="pastilles">
+    <span data-k="pv" class="p pv">${Math.max(0, P.pv)}</span><span data-k="pc" class="p pc">◆ ${P.pc} PC</span>
     ${P.gardeB ? `<span data-k="garde" class="p g pg">🛡 Garde ${P.gardeB}</span>` : ''}${P.gardeE ? `<span data-k="epines" class="p g">🌿 Épines ${P.gardeE}</span>` : ''}${P.esquive ? '<span data-k="esquive" class="p g">💨 Esquive</span>' : ''}
     ${P.bouclier ? `<span data-k="bouclier" class="p g pb">🛡 Bouclier ${P.bouclier}</span>` : ''}${P.contre ? '<span data-k="contre" class="p g">⚔ Contre-attaque</span>' : ''}${P.piege ? '<span data-k="piege" class="p g">🪤 Piège</span>' : ''}
     ${P.cor ? '<span data-k="cor" class="p g">📯 Cor</span>' : ''}${P.fournaise ? '<span data-k="fournaise" class="p g">🔥 Fournaise</span>' : ''}${P.paillasse ? '<span data-k="paillasse" class="p g">⚗ Paillasse</span>' : ''}
@@ -1106,14 +1262,14 @@ function dessine() {
   const J = S.J, O = S.O, h = HEROS[J.id];
   let bandeau = '';
   if (J.aLancer) bandeau = 'Ton tour commence : lance tes dés !';
-  else if (ciblage && ciblage.type === 'de') bandeau = '🎲 Touche le dé à retourner.';
+  else if (ciblage && ciblage.type === 'de') bandeau = ciblage.quoi === 'ajuste' ? '🎲 Touche le dé à ajuster.' : '🎲 Touche le dé à retourner.';
   else if (ciblage) {
     const q = ciblage.quoi, vs = vals(ciblage.ds), d = q === 'frappe' ? `Frappe (${vs.join(', ')}) : ${FRAPPE.dg(vs)} dégâts` : q === 'technique' ? `Technique (${vs.join(', ')}) : ${[0, 0, 0, 4, 7, 10][vs.length]} dégâts`
       : q === 'pouvoir' ? `${h.pouvoir.n} : ${h.pouvoir.d}` : q === 'ultime' ? `${h.ultime.n} : ${h.ultime.d}` : CARTES[q] ? `${CARTES[q].n} : ${CARTES[q].d}` : '';
     bandeau = `🎯 ${d}<br>Touche la cible (en vert).`;
   }
   else if (attaquant) bandeau = `⚔ ${attaquant.n} attaque : touche une cible en vert.`;
-  else if (sel.length) bandeau = `Dés choisis : ${vals(sel).join(', ')}. Touche où les poser (en vert).`;
+  else if (sel.length) bandeau = `Dés choisis : ${vals(sel).join(', ')}. Touche où les poser (en vert).${sel.length === 1 && sel[0].sac && !sel[0].extra && J.id !== 'oria' ? `<br><small>🎲 Ce dé peut encore faire : ${sel[0].sac.length ? [...sel[0].sac].sort().join(' · ') : 'tout (sac neuf)'}</small>` : ''}`;
   else if (J.des.some(d => !d.pose)) bandeau = '1. Touche un ou plusieurs dés. 2. Touche où les poser.';
   else if (J.front.some(u => u.pret && u.louve)) bandeau = '🐺 Touche la Louve : elle lance ses 3 dés et attaque. Sinon, elle attaque seule à « Fin du tour ».';
   else if (J.front.some(u => u.pret && !u.louve)) bandeau = '⚔ Touche une créature dorée : attaquer (puis sa cible) ou se mettre en défense. Sinon, elles attaquent le héros à « Fin du tour » (sauf les 👁 cachées, qui restent dans l’ombre).';
@@ -1123,37 +1279,65 @@ function dessine() {
   <div class="salle"><span class="st">${S.coop ? `<b>🔥 Le Campement</b> · ${J.ordi ? `${J.nom} (compagnon) joue…` : J.qui === 'toi' ? 'à toi' : `au tour de ${J.nom}`} · ${S.salle.n}` : S.ody ? `<b>${S.ody.titre}</b> · ${S.salle.n} : ${S.salle.d}${J.reliques.length ? ' <span class="rel">' + J.reliques.map(r => `<i title="${RELIQUES[r].n}" onclick="aideRelique('${r}')">${RELIQUES[r].e}</i>`).join('') + '</span>' : ''}` : `<b>${S.salle.n}</b> · ${S.salle.d}`}</span><span class="sons">
     <button class="sonbt ${sonOn ? '' : 'off'}" onclick="basculeSon()" aria-label="Bruitages" title="Bruitages"><svg viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/>${sonOn ? '<path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>' : '<path d="M16 9l5 6M21 9l-5 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>'}</svg></button>
     <button class="sonbt ${musOn ? '' : 'off'}" onclick="basculeMusique()" aria-label="Musique" title="Musique"><svg viewBox="0 0 24 24"><path d="M9 17V5l11-2v12" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="6.5" cy="17.5" r="2.8" fill="currentColor"/><circle cx="17.5" cy="15.5" r="2.8" fill="currentColor"/>${musOn ? '' : '<path d="M3 3l18 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>'}</svg></button></span></div>
-  <div class="plateau tapis ${S.lieu ? 'scene lieu-' + S.lieu : ''}">${barre(O, true)}${front(O, true)}<div class="milieu"><span>✦ ◆ ✦</span></div>${front(J, false)}${barre(J, false)}
-    <div class="des" ontouchstart="glisseDebut(event)" ontouchend="glisseFin(event)">${J.des.map((d, i) => `<div class="d ${sel.includes(d) ? 'sel' : ''} ${d.pose ? 'pose' : ''} ${d.mod ? 'mod' : ''} ${J.aLancer ? 'cache' : ''} ${i === J.neuf && (J.aLancer || Date.now() < (J.neufJusque || 0)) ? 'neuf' : ''}" onclick="choisirDe(${i})"><img src="${FACE(J.id, d.v || 1)}" alt="${d.v || '?'}"><div class="sac">${i === J.neuf && (J.aLancer || Date.now() < (J.neufJusque || 0)) ? '✨ nouveau dé' : sacTxt(J, d)}</div></div>`).join('')}${[...Array(Math.max(0, 5 - J.des.length)).keys()].map(k => { const i = J.des.length + k, t = i - 1;
-      return `<div class="d verrou"><div class="cad">🔒</div><div class="sac">${J.tours >= t ? 'Handicap ce tour' : 'dé n° ' + (i + 1) + '<br>au tour ' + t}</div></div>`; }).join('')}</div>
+  <div class="plateau tapis unique ${S.lieu ? 'scene lieu-' + S.lieu : ''}">${barre(O, true)}${front(O, true)}${front(J, false)}${barre(J, false)}
+    ${colonneActions(J, h)}
+    <div class="des" ontouchstart="glisseDebut(event)" ontouchend="glisseFin(event)">${J.des.map((d, i) => `<div class="d ${sel.includes(d) ? 'sel' : ''} ${d.pose ? 'pose' : ''} ${d.mod ? 'mod' : ''} ${J.aLancer ? 'cache' : ''} ${i === J.neuf && (J.aLancer || Date.now() < (J.neufJusque || 0)) ? 'neuf' : ''}" onclick="choisirDe(${i})"><img src="${FACE(J.id, d.v || 1)}" alt="${d.v || '?'}"><div class="sac">${i === J.neuf && (J.aLancer || Date.now() < (J.neufJusque || 0)) ? '✨ neuf' : sacPastilles(J, d)}</div></div>`).join('')}${[...Array(Math.max(0, 5 - J.des.length)).keys()].map(k => { const i = J.des.length + k, t = i - 1;
+      return `<div class="d verrou"><div class="cad">🔒</div><div class="sac">${J.tours >= t ? 'Handicap' : 'tour ' + t}</div></div>`; }).join('')}</div>
+    ${J.aLancer ? '<button class="lancer" onclick="lancerMesDes()">🎲 Lancer les dés</button>' : `<div class="bandeau">${bandeau}${sel.length || ciblage || attaquant ? ' <a href="#" onclick="annuler();return false" style="color:#f3c96b">Annuler</a>' : ''}</div>`}
+    <div class="main" onclick="if(event.target===this){carteVue=null;rendu();}">${mainEnEventail(J)}</div>
   </div>
-  ${S.coop ? equipeHTML() : ''}
-  ${J.aLancer ? '<button class="lancer" onclick="lancerMesDes()">🎲 Lancer les dés <span style="font-weight:normal;font-size:.75em">(ou glisse le doigt vers le haut)</span></button>' : ''}
-  <div class="bandeau" ${J.aLancer ? 'style="display:none"' : ''}>${bandeau}${sel.length || ciblage || attaquant ? ' <a href="#" onclick="annuler();return false" style="color:#f3c96b">Annuler</a>' : ''}</div>
-  <div class="actions">
-    ${act('frappe', '⚔ Frappe', '0 PC', '2 dés identiques ou +')}
-    ${act('technique', '⚔ Technique', '0 PC', '3 dés qui se suivent ou +')}
-    ${act('garde', '🛡 Garde', '0 PC', h.garde.txt + ' · bloque les coups')}
-    ${act('pouvoir', 'Pouvoir', '0 PC', h.pouvoir.txt)}
-    ${act('ultime', 'Ultime', '3 PC', J.ultimeFait ? 'déjà joué' : J.jauge < JAUGE.max ? `jauge ${J.jauge}/${JAUGE.max}` : h.ultime.txt)}
-    ${h.action ? act('transmu', h.action.n, '0 PC', J.transmu ? 'déjà fait' : h.action.txt) : ''}
-    ${act('vendre', 'Vendre', '+1 PC', 'par dé')}
-  </div>
-  <div class="actions pc">
-    ${act('pcRelance', 'Relancer', '1 PC', '1 dé')}
-    ${act('pcAjuste', '+1 / −1', `${coutAjuste(J)} PC`, '1 dé')}
-    ${actSoins()}
-  </div>
-  ${S.ody && J.sacoche.length ? `<div class="actions pc sacoche">${J.sacoche.map((p, i) => `<button class="act ok" onclick="usePotion(${i})"><b>${SACOCHE[p].e} ${SACOCHE[p].n}</b>${SACOCHE[p].d.replace(/ \(.*\)\.?$/, '')}</button>`).join('')}</div>` : ''}
-  <div class="main" onclick="if(event.target===this){carteVue=null;rendu();}">${mainEnEventail(J)}</div>
-  <div class="journal">${S.log.slice(0, 40).map(t => `<div>${t}</div>`).join('')}</div>
   <div class="bas">
-    <button class="b0" onclick="regles()">❓ Règles</button>
-    <button class="b1" onclick="relancer()" ${J.relance && sel.length ? '' : 'disabled style="opacity:.4"'}>🎲 Relancer (${J.relance})</button>
+    <button class="b0" onclick="regles()" aria-label="Règles">❓</button>
+    <button class="b0" onclick="voirJournal()" aria-label="Journal">📜</button>
+    ${S.ody && J.sacoche.length ? `<button class="b0" onclick="voirSacoche()" aria-label="Sacoche">🎒<sup>${J.sacoche.length}</sup></button>` : ''}
+    <button class="b1" onclick="relancer()" ${sel.length && (J.relance || J.pc >= sel.length) ? '' : 'disabled style="opacity:.4"'}>🎲 Relancer ${J.relance ? `(${J.relance})` : '· 1 PC/dé'}</button>
     <button class="b2" onclick="finDeMonTour()">Fin du tour ▶</button>
   </div>`;
   if (S.fini) montrerFin();
 }
+// ================= écran unique (11/11) : actions en icônes à gauche, dés à droite, anneaux autour des portraits =================
+const ICONES = { frappe:['⚔', 'Frappe'], technique:['⚔⚔', 'Technique'], garde:['🛡', 'Garde'], pouvoir:['✦', 'Pouvoir'], ultime:['⚡', 'Ultime'], transmu:['⚗', ''], vendre:['◆', 'Vendre'] };
+function icone(quoi, lib, J, extra) {
+  const ok = sel.length && permis(J, quoi, vals(sel), sel), [sym, nom] = ICONES[quoi];
+  return `<button class="ic ${ok ? 'ok' : sel.length ? 'non' : ''} ${extra || ''}" style="background-image:url(ui/${quoi}.webp?v=2)" onclick="vise('${quoi}')" aria-label="${lib || nom}"><small>${lib || nom}</small></button>`;
+}
+function colonneActions(J, h) {
+  return `<div class="colG">${icone('frappe', '', J, 'r1')}${icone('technique', '', J, 'r2')}${icone('garde', '', J, 'r3')}${icone('pouvoir', '', J, 'r4')}${h.action ? icone('transmu', h.action.n, J, 'r5' + (J.transmu ? ' fait' : '')) : ''}
+    ${S.coop ? '<button class="ic r6" style="background-image:url(ui/equipe.webp?v=2)" onclick="voirEquipe()" aria-label="Équipe"><small>Équipe</small></button>' : ''}</div>`;
+}
+function voirSacoche() {
+  const J = S.J;
+  fenetre(`<h2>🎒 Ta sacoche</h2><div class="actions">${J.sacoche.map((p, i) => `<button class="act ok" onclick="fermer();usePotion(${i})"><b>${SACOCHE[p].e} ${SACOCHE[p].n}</b>${SACOCHE[p].d.replace(/ \(.*\)\.?$/, '')}</button>`).join('')}</div><div class="choixh"><button onclick="fermer()">Fermer</button></div>`);
+}
+function voirJournal() { fenetre(`<h2>📜 Journal du combat</h2><div class="journal" style="max-height:60vh">${S.log.slice(0, 80).map(t => `<div>${t}</div>`).join('')}</div><div class="choixh"><button onclick="fermer()">Fermer</button></div>`); }
+function voirEquipe() { fenetre(`<h2>🤝 L’équipe</h2>${equipeHTML()}<div class="choixh"><button onclick="fermer()">Fermer</button></div>`); }
+// le sac de faces en pastilles 1 à 6 : pâle = déjà sortie, à revenir au prochain sac
+function sacPastilles(J, d) {
+  if (!d.sac || d.extra) return '';
+  if (J.id === 'oria') return `<span class="sacoria">ensuite : ${d.sac.length ? d.sac.slice(0, 2).join(', ') : 'neuf'}</span>`;
+  if (!d.sac.length) return '<span class="sacoria">sac neuf</span>';
+  return `<span class="sacp">${[1, 2, 3, 4, 5, 6].map(f => `<i class="${d.sac.includes(f) ? '' : 'u'}">${f}</i>`).join('')}</span>`;
+}
+// anneaux autour du portrait : rouge = vie, trait bleu = Garde + Bouclier, or en 20 segments = Ultime, losanges = PC
+function anneauSVG(pv, max, prot, jauge, pc, fait) {
+  // 11/11 soir : anneaux redessinés pour épouser le cadre peint (ui/cadre.webp) : bande sombre r 29 → 34 = la VIE ; anneau d'or r 34 → 39 = l'ULTIME
+  // (les segments gagnés s'allument) ; les pierres runiques (r 40 → 49) ne sont jamais recouvertes. PC = cristaux peints sous le cadre.
+  const C = 50, arc = (r, a0, a1) => { const q = a => [C + r * Math.sin(a * 2 * Math.PI), C - r * Math.cos(a * 2 * Math.PI)], [x0, y0] = q(a0), [x1, y1] = q(a1); return `M${x0.toFixed(2)} ${y0.toFixed(2)}A${r} ${r} 0 ${a1 - a0 > .5 ? 1 : 0} 1 ${x1.toFixed(2)} ${y1.toFixed(2)}`; };
+  const f = Math.max(0, Math.min(1, pv / max)), id = 'a' + Math.random().toString(36).slice(2, 7);
+  let g = `<defs><linearGradient id="${id}v" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff9a8a"/><stop offset=".45" stop-color="#e5262c"/><stop offset="1" stop-color="#8e0f1a"/></linearGradient>
+    <filter id="${id}l" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation=".9" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>`;
+  g += `<circle cx="50" cy="50" r="31.6" fill="none" stroke="#120407" stroke-opacity=".75" stroke-width="4.6"/>`;
+  if (f > 0) g += `<path class="rv" d="${arc(31.6, 0, Math.min(f, .9999))}" fill="none" stroke="url(#${id}v)" stroke-width="4" stroke-linecap="${f >= .999 ? 'butt' : 'round'}" filter="url(#${id}l)"/>`
+    + `<path d="${arc(30.4, 0, Math.min(f, .9999))}" fill="none" stroke="#ffd0c8" stroke-opacity=".55" stroke-width=".6"/>`;
+  if (prot) g += `<path d="${arc(33.6, 0, Math.min(.9999, prot / max))}" fill="none" stroke="#bff0ff" stroke-width="1.3" filter="url(#${id}l)"/>`;
+  for (let k = 0; k < JAUGE.max; k++) if (fait || k < jauge) g += `<path d="${arc(36.4, k / JAUGE.max + .007, (k + 1) / JAUGE.max - .007)}" fill="none" stroke="${fait ? '#9a8ab8' : '#fff4b0'}" stroke-opacity="${fait ? .5 : .95}" stroke-width="2.6" filter="url(#${id}l)"/>`;
+  if (!fait && jauge >= JAUGE.max) g += `<circle class="ultplein" cx="50" cy="50" r="36.4" fill="none" stroke="#ffe680" stroke-width="3.2" filter="url(#${id}l)"/>`;
+  const n = Math.min(pc, 8); let gem = '';
+  for (let k = 0; k < n; k++) { const a = .5 + (k - (n - 1) / 2) * .062, x = C + 46 * Math.sin(a * 2 * Math.PI), y = C - 46 * Math.cos(a * 2 * Math.PI);
+    gem += `<image href="ui/cristal.webp?v=1" x="${(x - 4.2).toFixed(2)}" y="${(y - 4.2).toFixed(2)}" width="8.4" height="8.4"/>`; }
+  return `<svg class="anneau" viewBox="0 0 100 100" aria-hidden="true">${g}${gem}</svg>`;
+}
+function anneauDe(P, pv) { return anneauSVG(pv === undefined ? Math.max(0, P.pv) : pv, P.pvMax, (P.gardeB || 0) + (P.bouclier || 0), P.jauge, P.pc, P.ultimeFait); }
 function aide(quoi, info) {
   const J = S.J, h = HEROS[J.id];
   let t = '';
@@ -1162,7 +1346,7 @@ function aide(quoi, info) {
   else if (quoi === 'ultime') t = `<b>${h.ultime.n}</b> (jauge pleine + 3 PC + ${h.ultime.txt}, une fois par combat) : ${h.ultime.d}<br><i>Jauge : ${J.jauge} / ${JAUGE.max}. Elle gagne 1 point par dé posé (pas vendu) et 1 point tous les 5 dégâts que tu subis.</i>`;
   else if (quoi === 'frappe') t = `<b>Frappe</b> (0 PC, ${FRAPPE.txt}) : ${FRAPPE.d}`;
   else if (quoi === 'technique') t = `<b>Technique</b> (0 PC, ${TECHNIQUE.txt}) : ${TECHNIQUE.d}`;
-  else if (quoi === 'pcRelance') t = '<b>Relancer un dé</b> (1 PC) : choisis un dé, il est relancé. Tu peux le faire plusieurs fois, 1 PC à chaque fois.';
+  else if (quoi === 'pcRelance') t = '<b>Relancer</b> (bouton en bas) : choisis des dés puis touche « Relancer ». D’abord tes relances gratuites du tour ; ensuite chaque dé relancé coûte 1 PC.';
   else if (quoi === 'pcAjuste') t = '<b>+1 ou −1</b> (2 PC) : choisis un dé, puis ajoute ou retire 1 (un 5 devient 6 ou 4).';
   else if (quoi === 'pcSoins') t = '<b>Premiers soins</b> (2 PC) : retire Poison, Saignement et Handicap. Utile seulement si tu en as.';
   else if (quoi === 'transmu') t = `<b>${h.action.n}</b> (${h.action.txt}) : ${h.action.d}`;
@@ -1206,10 +1390,12 @@ function regles() {
   <li>La <b>Frappe</b>, commune à tous : 2 dés identiques ou plus. Dégâts = la valeur du dé + un bonus (paire +0, 3 dés +3, 4 dés +6, 5 dés +10) : deux 6 = 6, trois 4 = 7, cinq 6 = 16. Gratuite.</li>
   <li>La <b>Technique</b>, commune à tous : 3, 4 ou 5 dés qui se suivent (par exemple 2-3-4) font 4, 7 ou 10 dégâts. Gratuite.</li>
   <li>La <b>Garde</b> et le <b>Pouvoir</b> de ton héros sont gratuits : il suffit des bons dés.</li>
-  <li>L’<b>Ultime</b> : sa <b>jauge ⚡</b> gagne 1 point par dé posé (pas vendu) et 1 point tous les 5 dégâts que tu subis. Pleine, l’Ultime se joue avec ses 3 dés et 3 PC, une fois par combat.</li>
-  <li><b>Acheter avec ses PC</b> (comme dans le jeu papier) : 1 PC = relancer un dé ; 2 PC = +1 ou −1 sur un dé ; 2 PC = Premiers soins (retire tes altérations).</li>
-  <li>Un dé qui ne sert à rien se <b>vend</b> : +1 PC. Les dés pas posés à la fin du tour sont vendus tout seuls.</li>
-  <li>Tu gagnes +1 PC au début de chaque tour (6 au plus). Tu lances 3 dés au tour 1, 4 au tour 2, puis 5. Une relance par tour.</li>
+  <li>L’<b>Ultime</b> : sa <b>jauge ⚡</b> gagne 1 point par dé posé (pas vendu) et 1 point tous les 5 dégâts que tu subis. Pleine (l’anneau doré de ton portrait est complet et brille), l’Ultime se joue avec ses dés et 3 PC, une fois par combat : choisis les dés, puis <b>touche ton portrait</b>.</li>
+  <li><b>Relancer</b> (bouton en bas) : choisis des dés puis touche « Relancer ». Tu as <b>2 relances gratuites</b> par tour ; ensuite, chaque dé relancé coûte 1 PC.</li>
+  <li>Les dés <b>pas posés</b> à la fin du tour sont vendus tout seuls : +1 PC chacun.</li>
+  <li>« +1 / −1 sur un dé » et « Premiers soins » sont maintenant des <b>cartes de la Guilde</b> (Pierre d’ajustement, Premiers soins).</li>
+  <li>Tu gagnes +1 PC au début de chaque tour (6 au plus). Tu lances 3 dés au tour 1, 4 au tour 2, puis 5.</li>
+  <li><b>Ton portrait</b> : l’anneau rouge = ta vie, le trait bleu = ta Garde ou ton Bouclier, l’anneau doré en 20 segments = ta jauge d’Ultime, les losanges bleus = tes PC.</li>
   <li>Sous chaque dé, le <b>sac</b> montre les faces qui peuvent encore sortir : une face sortie ne revient qu’une fois les six sorties.</li>
   <li>Tes <b>unités</b> attaquent à partir du tour suivant leur arrivée : touche ton unité (contour jaune), puis sa cible. Les unités <b>Barrière</b> doivent être attaquées d’abord par les unités. Les unités <b>Cachées</b> ne peuvent pas être visées tant qu’elles n’ont pas attaqué.</li>
   <li>La <b>Garde</b> = ta défense : tu poses un dé et ton héros gagne un Bouclier (ou une autre protection selon le héros). Ce Bouclier absorbe les prochains dégâts que tu reçois pendant le tour de l’adversaire, puis disparaît. Exemple : Garde 4, l’adversaire frappe à 6, tu ne perds que 2 PV.</li><li>Tes <b>créatures</b> attaquent au tour suivant leur arrivée (sauf Charge) : touche-en une puis sa cible ; celles que tu ne fais pas attaquer frappent le héros adverse à « Fin du tour », sauf les créatures 👁 Cachées, qui restent dans l’ombre tant que tu ne leur demandes pas d’attaquer. Le Bouclier et la Garde de l’adversaire absorbent leurs coups.</li><li>Une créature <b>Cachée</b> 👁 ne peut être ni attaquée ni visée tant qu’elle n’a pas attaqué ; sa première attaque depuis l’ombre est une <b>Embuscade</b> (+2 dégâts), puis elle se montre.</li><li>Une créature prête peut aussi se mettre <b>en défense</b> (touche-la) : elle n’attaque pas ce tour, mais elle protège ton héros comme une Barrière jusqu’à ton prochain tour : les créatures adverses doivent l’attaquer d’abord.</li></ul>
@@ -1359,14 +1545,15 @@ function majVie(c, ev) {
   if (ev.pv !== undefined && !c.uid) {
     const P = c.s === 'J' ? S.J : S.O, pill = e.querySelector('.p.pv'), barre = e.querySelector('.vie i');
     const avant = pill ? nb(pill.textContent) : ev.pv, fant = e.querySelector('.vie b');
-    defile(pill, avant, ev.pv, v => `❤ ${v} / ${P.pvMax}`, ev.pv > avant ? 'v' : 'r');
+    defile(pill, avant, ev.pv, v => `${v}`, ev.pv > avant ? 'v' : 'r');
+    { const an = e.querySelector('.anneau'); if (an) an.outerHTML = anneauDe(P, ev.pv); }
     if (barre) barre.style.width = (ev.pv / P.pvMax * 100) + '%'; if (fant) fant.style.width = (ev.pv / P.pvMax * 100) + '%';
   }
   if (ev.garde !== undefined && !c.uid) {
     const tot = (ev.garde || 0) + (ev.bouclier || 0), pg = e.querySelector('.pg'), pb = e.querySelector('.pb');
     if (pg) { if (ev.garde) pg.textContent = `🛡 Garde ${ev.garde}`; else pg.style.opacity = .3; }
     const bg = e.querySelector('.bdg.bg'), bb = e.querySelector('.bdg.bb');
-    if (bg) { bg.textContent = `🛡 ${ev.garde || 0}`; bg.hidden = !ev.garde; } if (bb) { bb.textContent = `🛡 ${ev.bouclier || 0}`; bb.hidden = !ev.bouclier; }
+    if (bg) { bg.textContent = `${ev.garde || 0}`; bg.hidden = !ev.garde; } if (bb) { bb.textContent = `${ev.bouclier || 0}`; bb.hidden = !ev.bouclier; }
     if (pb) { if (ev.bouclier) pb.textContent = `🛡 Bouclier ${ev.bouclier}`; else pb.style.opacity = .3; }
     e.dataset.bouclier = tot; if (!tot) e.classList.remove('protege');
   }

@@ -78,6 +78,14 @@ const CARTES = {
   catalyseur:{ n:'Catalyseur', t:'e', c:2, txt:'dé pair', d:'Chaque fois que tu modifies un dé, 1 dégât au héros adverse.', cond:vs => un(vs) && pair(vs[0]), f:J => { J.catalyseur = true; log(`${J.nom} installe le Catalyseur.`); }, ia:J => J.catalyseur ? 0 : 24 },
   paillasse:{ n:'Paillasse renversée', t:'r', c:1, txt:'dé ≤ 2', d:'Garde : dès qu’une unité t’attaque, le héros adverse reçoit Poison 3.', cond:vs => un(vs) && vs[0] <= 2, f:J => { J.paillasse = true; }, ia:J => adv(J).front.length ? 20 : 2 },
   // ---- la Guilde (tous)
+  // Duel grand public (11/11) : les anciens achats en PC « +1 / −1 » et « Premiers soins » deviennent des cartes de la Guilde
+  ajuste:   { n:'Pierre d’ajustement', t:'s', c:0, txt:'1 dé', d:'Un autre de tes dés gagne +1 ou −1 (tu choisis).', cond:un, cible:'de', f:(J, vs, k) => { const a = k.d.v, v = Math.max(1, Math.min(6, a + (k.sens || 1))); modifie(J, k.d, v); log(`${J.nom} ajuste un dé : ${a} devient ${v}.`); },
+    // l'ordinateur la joue si changer un autre dé de ±1 améliore nettement son meilleur coup (il retient le dé et le sens)
+    ia:(J, vs, ds) => { if (typeof meilleurCoup !== 'function' || J._dansAjuste) return 0; J._dansAjuste = true; const pris = ds && ds[0]; const libres = J.des.filter(d => !d.pose && d !== pris); if (pris) pris.pose = true;
+      const avant = (meilleurCoup(J) || { score:0 }).score; let mieux = null;
+      libres.forEach(d => [-1, 1].forEach(sens => { const v = d.v + sens; if (v < 1 || v > 6) return; const a = d.v; d.v = v; const sc = (meilleurCoup(J) || { score:0 }).score; d.v = a; if (sc >= avant + 15 && (!mieux || sc > mieux.sc)) mieux = { d, sens, sc }; }));
+      if (pris) pris.pose = false; J._dansAjuste = false; J._ajuste = mieux; return mieux ? 20 + (mieux.sc - avant) / 2 : 0; } },
+  soins:    { n:'Premiers soins', t:'s', c:1, txt:'1 dé', d:'Retire Poison, Saignement et Handicap de ton héros, puis le soigne de 2.', cond:un, f:J => { J.poison = 0; J.saigne = 0; J.handicap = 0; soin(J, 2); log(`${J.nom} : Premiers soins, plus aucune altération.`); }, ia:J => (J.poison + J.saigne * 2 + (J.handicap ? 3 : 0)) >= 4 ? 40 : 0 },
   cape:     { n:'Cape d’ombre', t:'e', c:1, txt:'dé ≤ 3', d:'Une de tes unités devient Cachée et gagne +1 attaque.', cond:vs => un(vs) && vs[0] <= 3, cible:'uniteA', f:(J, vs, k) => { if (k && k.u) { k.u.cachee = true; k.u.a += 1; log(`${k.u.n} se fond dans l’ombre.`); } }, ia:J => J.front.some(u => !u.cachee && !u.louve) ? 20 : 0 },
   lynx:     { n:'Lynx des fourrés', t:'u', c:2, txt:'dé ≤ 3', d:'Unité 3 / 2, Cachée.', cond:vs => un(vs) && vs[0] <= 3, u:{ n:'Lynx des fourrés', a:3, v:2, cachee:true } },
   renard:   { n:'Renard du col', t:'u', c:1, txt:'1 dé', d:'Unité 2 / 3, Cachée.', cond:un, u:{ n:'Renard du col', a:2, v:3, cachee:true } },
@@ -90,7 +98,7 @@ const CARTES = {
   chance:   { n:'Coup de chance', t:'s', c:0, txt:'dé = 1', d:'Relance tes 2 dés libres les plus faibles.', cond:vs => un(vs) && vs[0] === 1, f:J => { const l = J.des.filter(d => !d.pose).sort((a, b) => a.v - b.v).slice(0, 2); l.forEach(d => lance(J, d)); log(`${J.nom} relance ${l.length} dé(s).`); }, ia:() => 4 },
   parchemin:{ n:'Parchemin d’étude', t:'s', c:1, txt:'dé impair', d:'Pioche 1 carte et gagne 1 PC.', cond:vs => un(vs) && !pair(vs[0]), f:J => { pioche(J, 1); J.pc = Math.min(6, J.pc + 1); }, ia:() => 22 },
 };
-const GUILDE = ['potion', 'milicien', 'chien', 'pierre', 'rond', 'torche', 'chance', 'parchemin', 'cape'];
+const GUILDE = ['potion', 'soins', 'chien', 'pierre', 'rond', 'torche', 'ajuste', 'parchemin', 'cape'];  // 11/11 : soins à la place du Milicien, ajuste à la place de Coup de chance
 
 // ------------------------------------------------------------------------------------------- héros (données)
 const HEROS = {
@@ -99,7 +107,7 @@ const HEROS = {
     passif:'Métal chaud : chaque 6 posé sur une de tes cartes donne 1 Braise. À 3 Braises, ta prochaine carte Équipement ne coûte rien.',
     garde:{ n:'Enclume', txt:'1 dé', d:'Bouclier égal à la valeur, +2 si c’est un 5 ou un 6.', cond:un, val:vs => vs[0] + (vs[0] >= 5 ? 2 : 0),
       f:(J, vs) => { const b = vs[0] + (vs[0] >= 5 ? 2 : 0); J.gardeB += b; log(`${J.nom} : Enclume, Bouclier ${b}.`); } },
-    pouvoir:{ n:'Coup d’enclume', txt:'3 dés identiques', d:'Dégâts égaux à leur somme moins 2.', cond:vs => vs.length === 3 && egaux(vs), cible:'ennemi', f:(J, vs, k) => degats(k, somme(vs) - 2) },
+    pouvoir:{ n:'Coup d’enclume', txt:'3 dés identiques', d:'Dégâts égaux à leur somme.', cond:vs => vs.length === 3 && egaux(vs), cible:'ennemi', f:(J, vs, k) => degats(k, somme(vs)) },
     ultime:{ n:'Le Grand Martelage', txt:'3 dés de 4 ou plus', d:'16 dégâts à une cible ; tes unités gagnent +2 attaque.', cond:vs => vs.length === 3 && vs.every(v => v >= 4), cible:'ennemi',
       f:(J, vs, k) => { degats(k, 16); J.front.forEach(u => u.a += 2); } } },
   aldric: { cit:'« Tant que la flamme brille, personne ne passe. »', role:'Protège : murs d’unités Barrière, boucliers, soins. Aime les paires.', papier:'Repris de Gilgamesh : Parade de fer, Mur de lumière, le jeton de Pureté et l’Ultime qui sonne l’adversaire.', nom:'Sire Aldric', titre:'le chevalier-lanterne', c:'#ffd27a', pv:44,
@@ -107,8 +115,8 @@ const HEROS = {
     passif:'Pureté : poser deux 6 dans le même tour donne un jeton (2 au plus) qui annule la prochaine altération.',
     garde:{ n:'Parade de fer', txt:'1 ou 2 dés', d:'Une paire : Bouclier = valeur × 2. Sinon : le plus haut dé.', cond:vs => vs.length <= 2, val:vs => vs.length === 2 && egaux(vs) ? vs[0] * 2 : Math.max(...vs),
       f:(J, vs) => { const b = vs.length === 2 && egaux(vs) ? vs[0] * 2 : Math.max(...vs); J.gardeB += b; log(`${J.nom} : Parade de fer, Bouclier ${b}.`); } },
-    pouvoir:{ n:'Mur de lumière', txt:'deux paires (4 dés)', d:'Dégâts = 2 × ta plus haute paire ; tes unités gagnent Barrière, un Bouclier de cette valeur et peuvent attaquer tout de suite.', cond:vs => vs.length === 4 && compte(vs)[0] === 2 && compte(vs)[1] === 2, cible:'ennemi',
-      f:(J, vs, k) => { const h = Math.max(...vs); degats(k, h * 2); J.front.forEach(u => { u.barriere = true; u.bouclier = (u.bouclier || 0) + h; u.pret = true; }); } },
+    pouvoir:{ n:'Mur de lumière', txt:'deux paires (4 dés)', d:'Dégâts = 2 × ta plus haute paire + 1 ; tes unités gagnent Barrière, un Bouclier de cette valeur et peuvent attaquer tout de suite.', cond:vs => vs.length === 4 && compte(vs)[0] === 2 && compte(vs)[1] === 2, cible:'ennemi',
+      f:(J, vs, k) => { const h = Math.max(...vs); degats(k, h * 2 + 1); J.front.forEach(u => { u.barriere = true; u.bouclier = (u.bouclier || 0) + h; u.pret = true; }); } },
     ultime:{ n:'La Lame de l’Aube', txt:'3 dés identiques', d:'16 dégâts à une cible et Handicap.', cond:vs => vs.length === 3 && egaux(vs), cible:'ennemi',
       f:(J, vs, k) => { degats(k, 16); altere(adv(J), 'handicap'); } } },
   pip: { cit:'« La forêt répond à qui l’écoute. »', role:'Soigne, bloque avec les ronces et appelle sa louve. Ses cartes aiment les petits dés (1 à 3).', papier:'Reprise de la Druidesse : la Jauge de Meute, la Louve et ses 3 dés, Sève vitale, Racines entravantes, Écorce bénie, Purification.', nom:'Pip', titre:'la druidesse et sa louve', c:'#c58bff', pv:35,
@@ -125,8 +133,8 @@ const HEROS = {
     passif:'Œil du cartographe : tu vois les 2 prochaines faces de chacun de tes dés.',
     garde:{ n:'Repli', txt:'1 dé', d:'Dé impair : Esquive (les prochains dégâts sont divisés par 2). Dé pair : Bouclier = la valeur.', cond:un, val:vs => pair(vs[0]) ? vs[0] : 6,
       f:(J, vs) => { if (pair(vs[0])) { J.gardeB += vs[0]; log(`${J.nom} : Repli, Bouclier ${vs[0]}.`); } else { J.esquive = true; log(`${J.nom} : Repli, Esquive.`); } } },
-    pouvoir:{ n:'Tracé parfait', txt:'4 dés qui se suivent', d:'Choisis la prochaine face d’un de tes dés, pioche 2 cartes et inflige 10 dégâts.', cond:vs => suite(vs, 4), cible:'ennemi',
-      f:(J, vs, k) => { degats(k, 10); pioche(J, 2); choisirFace(J); } },
+    pouvoir:{ n:'Tracé parfait', txt:'4 dés qui se suivent', d:'Choisis la prochaine face d’un de tes dés, pioche 2 cartes et inflige 12 dégâts.', cond:vs => suite(vs, 4), cible:'ennemi',
+      f:(J, vs, k) => { degats(k, 12); pioche(J, 2); choisirFace(J); } },
     ultime:{ n:'La Carte du monde', txt:'3 dés qui se suivent', d:'15 dégâts à une cible et Silence (pas de Sort au prochain tour adverse).', cond:vs => suite(vs, 3), cible:'ennemi',
       f:(J, vs, k) => { degats(k, 15); adv(J).silence = true; log(`${adv(J).nom} est réduit au Silence.`); } } },
   gorm: { cit:'« Un souffle, et toute la guilde se lève. »', role:'Soutien : renforce toutes ses unités d’un coup. Joue sur les dés pairs ou impairs.', papier:'Repris de Grom : Cri de guerre plus fort quand on a moins de PV, Peau épaisse et son Retour, Tranche-chair devenu Tranche-vent.', nom:'Gorm', titre:'le sonneur de cor', c:'#4f8bff', pv:49,
@@ -138,7 +146,7 @@ const HEROS = {
       f:J => { const b = J.pv < adv(J).pv ? 4 : 2; degats({ J:adv(J) }, 10); J.front.forEach(u => { u.tmp = (u.tmp || 0) + b; u.pret = true; }); log(`Chant de guerre : +${b} attaque à tes unités.`); } },
     ultime:{ n:'Le Grand Souffle', txt:'3 dés tous pairs ou tous impairs', d:'14 dégâts au héros adverse et 4 à chacune de ses unités.', cond:vs => vs.length === 3 && (vs.every(pair) || vs.every(v => !pair(v))),
       f:J => { const D = adv(J); [...D.front].forEach(u => degats({ J:D, u }, 4)); degats({ J:D }, 14); } } },
-  zephine: { cit:'« Rien ne se perd, tout se transforme. »', role:'Transforme les dés et empoisonne. Aime tous les dés, à condition de les changer.', papier:'Repris de Blanche et de Fez : le Handicap de Vol acrobatique devient la Brume aveuglante ; l’esquive et le camouflage deviennent la Fumée.', nom:'Zéphine', titre:'l’alchimiste', c:'#ff4040', pv:44,
+  zephine: { cit:'« Rien ne se perd, tout se transforme. »', role:'Transforme les dés et empoisonne. Aime tous les dés, à condition de les changer.', papier:'Repris de Blanche et de Fez : le Handicap de Vol acrobatique devient la Brume aveuglante ; l’esquive et le camouflage deviennent la Fumée.', nom:'Zéphine', titre:'l’alchimiste', c:'#ff4040', pv:41,
     deck:['fiole', 'fiole', 'soufre', 'soufre', 'distil', 'precipite', 'homoncule', 'homoncule', 'brume', 'catalyseur', 'paillasse', 'soufre'],
     passif:'Transmutation : une fois par tour, gratuitement, retourne un dé sur sa face opposée (1↔6, 2↔5, 3↔4). Et son +1 / −1 ne coûte qu’1 PC au lieu de 2.',
     action:{ n:'Transmuter', txt:'1 dé, 1 fois par tour', d:'Retourne ce dé sur sa face opposée.' },

@@ -24,6 +24,16 @@
 <h1>Prompts Gemini de l'interface</h1>
 <p class="sous">La Guilde des Runes · version 2 du 9 novembre (portail runique) · une image par prompt, dans une discussion Gemini à part</p>
 
+<div class="bloc plan" style="border:2px solid #f3c96b">
+<h2>📌 Où on en est (11/11 au soir)</h2>
+<ul>
+  <li>✅ <b>Le plateau final est reçu et dans le jeu</b> (retouche 8 bis : bac des dés dans le cadre, rubans du bas retirés, 6 ronds). <b>Plus aucun prompt de plateau à faire.</b></li>
+  <li>✅ <b>N° 7, la planche d’interface</b> : reçue, découpée, déjà dans le jeu (médaillons, cœur, bouclier, cadre du portrait).</li>
+  <li>✅ <b>N° 5, l’ancien plateau</b> : plus besoin.</li>
+  <li>le jeu utilise <b>le plateau final</b> (capture : <a href="https://demo-hub.elvanys.fr/planches/guilde-plateau-v2-dans-le-jeu-11-11.png">le plateau v2 dans le jeu</a>).</li>
+  <li>Plus tard : 1, 1 bis, 2 (portail et monde de la Guilde), 3 et 4 (îles de l’Odyssée), 6 (décors et pages de chronique).</li>
+</ul>
+</div>
 <div class="bloc plan">
 <h2>L'idée des écrans (version 2, 9 novembre)</h2>
 <ul>
@@ -78,13 +88,42 @@ Painted stylized fantasy illustration, generous readable shapes, soft outlines, 
 </main>
 <script>
 const P = [
+ { t:'✅ REÇU ET DANS LE JEU (11/11 soir) · 8 bis. Retouche de votre plateau du 11/11 soir (bac des dés dans le cadre, rubans du bas retirés)', j:'Joignez VOTRE dernier plateau (sans la boîte du bas, 5 ronds) : https://demo-hub.elvanys.fr/essais/dice-arena/decor/plateau-duel-v3.jpg — Fichier attendu : plateau-duel-final.jpg',
+   x:`Edit the attached image. Keep EXACTLY everything else, pixel for pixel: same framing, same size, same camera angle, same two alcoves, same five sockets on the left, same play area and line of runes, same wooden floor at the bottom, same props. Make ONLY these two changes:
+1. The dark green felt dice tray on the right edge must not look like a separate wooden box laid on top of the board. Keep it at EXACTLY the same place and size, but sink it INTO the carved wooden frame: the frame of the play area continues around it with the same carved gold trim, the tray becomes a recessed channel carved in the frame (flush with the frame surface, no outer box walls, no box corners, no drop shadow under it).
+2. Remove the two dark ribbons on the right of the BOTTOM alcove; in their place, show the carved stone and wood of the frame and the small glowing rune stones that were partly hidden behind them. Keep the two ribbons of the TOP alcove.
+No text, no letters, no numbers, no logo, no signature, no watermark.` },
+ { t:'✅ PLUS BESOIN · 8. Le plateau final refait de zéro (la retouche 8 bis a marché)', j:'Joignez VOTRE DERNIÈRE image de plateau (celle avec 6 ronds et le bac des dés pris dans le cadre ; téléchargez l’image elle-même, pas une capture d’écran). Fichier attendu : plateau-duel-final.jpg. Mise en page voulue (votre 1er essai dans le vrai jeu) : https://demo-hub.elvanys.fr/planches/guilde-plateau-v2-dans-le-jeu-11-11.png',
+   x:`Using the attached image as the reference for EVERYTHING (same digital painted style, same carved wood, stone and gold frame, same two round hero alcoves, same central play area with its line of glowing runes, same warm and magical colors, same corner props), paint the FINAL version of this mobile game board, vertical 9:16, filling the whole image, with this exact layout (percentages of the image width and height):
+- TOP alcove: round, dark and EMPTY inside, gold rim, centered at 50 % of the width and 11 % of the height, about 32 % of the width wide; two small dark ribbons on its right side.
+- BOTTOM alcove: identical, centered at 50 % of the width and 74 % of the height; NO ribbons next to it.
+- LEFT border: exactly FIVE round sockets (not six), each about 10 % of the width wide, centered at 8.6 % of the width and at 27 %, 34 %, 41 %, 48 % and 55 % of the height; plain recessed stone with a thin gold rim, EMPTY inside, part of the carved frame, with mossy roots and a few violet flowers around them.
+- RIGHT border: the dark green felt DICE TRAY built INTO the wooden frame (a long recessed channel carved in the frame, same gold trim as the play area, no separate box), from 84 % to 98 % of the width and from 22 % to 66 % of the height, with SIX faint square slots evenly spaced, EMPTY.
+- CENTER: the play area from 14 % to 84 % of the width and from 19 % to 66 % of the height, calm and EMPTY, the line of glowing runes at 43 % of the height, warm red-orange tint above and cool turquoise tint below.
+- BOTTOM, from 82 % to 100 % of the height: NO box, NO tray, NO rim: only plain dark wooden planks of the table with a soft shadow (the cards in hand will lie there). Keep the curved horn at the bottom left and the candle, flasks and rune stones at the bottom right, between 66 % and 82 % of the height, never in the middle.
+- Corners: the forge anvil top left, the hanging lantern and a few rune stones top right.
+Everything that receives game elements (alcoves, sockets, tray, play area, bottom planks) stays completely EMPTY. No dice, no cards, no characters, no icons. No text, no letters, no numbers, no logo, no signature, no watermark.` },
  { t:'1. L’écran titre : le portail runique', j:'Joignez le portrait final de Gorm (modèle de style).',
    x:`Using the attached image only as a strict style reference (same digital painted style, same soft outlines, same warm golden light with cool magical highlights, same level of detail), paint the TITLE SCREEN of a mobile fantasy card-and-dice game, tall vertical 9:16 format. In the center, a large round magic portal: a swirling halo of soft glowing clouds and mist spiraling inward toward a bright luminous heart, with hints of a colorful fantasy land visible deep inside. All around the halo, dozens of floating glowing runes of many different shapes and colors drift and orbit in rings: orange anvils, violet three-pointed leaves, golden three-tongued flames, turquoise four-pointed stars, blue triple wave lines, ruby red teardrops with an eye, and blue rising-sun runes; they must not look like letters or numbers. The portal floats above ancient mossy stone ruins on a hilltop at twilight, with a deep violet and gold sky and a few stars. Leave the top fifth of the image calm (sky only) for the game title, and the bottom quarter calm (ruins and soft mist only) for a large Start button. Epic, luminous and colorful, generous shapes, visible brush texture. No text, no letters, no numbers, no logo, no signature, no watermark.` },
  { t:'1 bis. Retouche du portail : retirer les runes et le mot START', j:'Joignez VOTRE image du portail (celle avec les runes et « START »), pas le portrait.',
    x:`Edit the attached image. Keep EXACTLY everything else the same: the same night sky with stars, the same glowing swirling cloud portal with the castle and the green land inside, the same mossy stone ruins, the same mountains and mist, the same colors, light and painting style, the same framing. Change only two things: 1) completely REMOVE every glowing rune symbol around the portal (all the anvils, leaves, flames, stars, waves, drops and sun symbols), and paint over them with the same sky, clouds and soft glow of the portal, so the portal is surrounded only by sky and soft light; 2) completely REMOVE the word START at the bottom and paint over it with the same mist and ruins. No text, no letters, no symbols, no logo, no signature, no watermark.` },
  { t:'2. Le monde de la Guilde : les lieux des modes', j:'Joignez le portrait final de Gorm (modèle de style).',
    x:`Using the attached image only as a strict style reference (same digital painted style, same soft outlines, same warm golden light with cool magical highlights, same level of detail), paint the MAIN HUB of a mobile fantasy card-and-dice game, tall vertical 9:16 format, seen from slightly above like a colorful storybook map. A vibrant, magical floating land with lush hills, glowing rune stones, waterfalls falling into the clouds and winding paths. Around a central plaza with a softly glowing rune portal, place FIVE clearly separated landmarks, well spaced so each can be tapped: a round stone dueling arena with glowing rune circles on its floor (upper left); a dark ruined dungeon gate carved into a cliff, with torches (upper right); a wooden flying airship with patched sails docked at a cliff edge (middle right); a tall slender library tower whose windows glow with floating cards (middle left); and, at the bottom, a small camp with a campfire and two empty banners, half hidden in soft mist. Above each landmark leave a little empty sky or ground for a label. Bright, colorful, joyful and epic, generous shapes, visible brush texture, readable on a phone. No text, no letters, no numbers, no logo, no signature, no watermark.` },
- { t:'5. Le plateau du Duel, façon Hearthstone', j:'Joignez le portrait final de Gorm (modèle de style).',
+ { t:'✅ REÇU ET INTÉGRÉ (11/11) · 7. La planche d’interface : médaillons d’action, cœur, cristal, bouclier, cadre du portrait', j:'Joignez votre plateau v2 (modèle de style) : https://demo-hub.elvanys.fr/essais/dice-arena/decor/plateau-duel-v2-essai1.jpg — Fichier attendu : interface-kit.jpg (Claude découpe chaque pièce).',
+   x:`Using the attached image only as a STYLE reference (same digital painted style, same carved stone, wood and gold, same warm golden light with violet and turquoise magic), paint a GAME UI KIT SHEET on a PLAIN PURE WHITE background, square format 1:1. Every element is SEPARATE, with a lot of white space around it, nothing touching, no shadow on the background, seen straight from the front, flat on the sheet. Arrange them in a clean grid:
+ROW 1 and ROW 2: EIGHT round ACTION MEDALLIONS, all exactly the same size and the same frame (a round carved grey stone disc with a thin gold rim, slightly domed), each with ONE engraved, glowing symbol in the middle, big and readable at small size:
+ 1. a single sword (strike), golden glow;
+ 2. three small swords in a rising row (combo), golden glow;
+ 3. a round shield (guard), cool blue glow;
+ 4. a four-pointed magic star (power), violet glow;
+ 5. a lightning bolt (ultimate), bright gold glow;
+ 6. an alchemy flask (special action), green glow;
+ 7. a faceted blue crystal (energy), blue glow;
+ 8. two clasped hands (team), warm glow.
+ROW 3: a glossy RUBY HEART gem with a small gold setting (life); a faceted BLUE CRYSTAL diamond shape with a small gold setting (energy points); a small steel and gold SHIELD badge (armor); a small blank dark violet RIBBON banner with gold edges (label).
+ROW 4: one large ornate ROUND PORTRAIT FRAME: a thick gold and carved stone ring with small rune stones set around it like a crown, the center completely EMPTY and pure white (a hero portrait goes there), the ring itself left fairly plain and dark in its middle band (the game draws its life and power gauges there).
+Symbols only, no text, no letters, no numbers, no logo, no signature, no watermark.` },
+ { t:'✅ FAIT, PLUS BESOIN · 5. L’ancien plateau du Duel (remplacé par le plateau final, prompt 8)', j:'Joignez le portrait final de Gorm (modèle de style).',
    x:`Using the attached image only as a strict style reference (same digital painted style, same soft outlines, same warm golden light with cool magical highlights, same level of detail), paint a richly detailed GAME BOARD for a mobile fantasy card-and-dice duel, in the spirit of classic digital card game boards (a handcrafted tabletop diorama), vertical 9:16 format, seen from above with a very slight perspective, filling the whole image.
 Layout, from top to bottom:
 - at the TOP CENTER, a round carved stone alcove with a gold rim, EMPTY inside, for the opponent hero portrait;
