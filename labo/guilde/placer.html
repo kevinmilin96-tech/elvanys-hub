@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Placer les éléments du plateau · La Guilde des Runes</title>
+<style>
+  /* Outil de placement (11/11) : l'utilisateur fait glisser chaque élément sur le plateau définitif, puis copie les positions
+     (en % de l'image) pour que Claude les recopie dans duel.html. Rien n'est envoyé : tout reste sur le téléphone. */
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html, body { margin:0; height:100%; background:#15132b; color:#fff; font:14px/1.3 Georgia, serif; overflow:hidden; touch-action:none; }
+  .ecran { height:100dvh; display:flex; flex-direction:column; }
+  .haut { padding:6px 8px; font-size:12px; background:#1d1626; }
+  .haut b { color:#f3c96b; }
+  .plateau { position:relative; flex:1; min-height:0; margin:0 auto; aspect-ratio:768/1376; max-width:100%; background:url('decor/plateau-duel-definitif.webp?v=1') center/100% 100% no-repeat; container-type:size; }
+  .el { position:absolute; transform:translate(-50%, -50%); touch-action:none; cursor:grab; }
+  .el.actif { outline:2px dashed #7dffb0; outline-offset:2px; border-radius:50%; }
+  .med { width:var(--m); height:var(--m); background:center/contain no-repeat; }
+  .por { width:var(--p); height:var(--p); border-radius:50%; background:center/cover no-repeat; }
+  .por::after { content:''; position:absolute; inset:-21%; background:url('ui/cadre.webp?v=1') center/contain no-repeat; }
+  .de { width:7cqw; height:7cqw; background:url('faces-zephine/face-5.webp') center/contain no-repeat; }
+  .coeur { width:11cqw; height:10cqw; background:url('ui/coeur.webp?v=1') center/contain no-repeat; display:grid; place-items:center; font:bold 3.6cqw Georgia; text-shadow:0 1px 2px #000; }
+  .bouc { width:7.6cqw; height:8.6cqw; background:url('ui/bouclier.webp?v=1') center/contain no-repeat; display:grid; place-items:center; font:bold 3.2cqw Georgia; text-shadow:0 1px 2px #000; }
+  .etq { padding:2px 6px; font-size:2.6cqw; color:#f6e7c1; text-shadow:0 1px 2px #000; text-align:center; white-space:nowrap; border:1px dashed #ffffff55; border-radius:6px; }
+  .bas { padding:6px 8px; background:#1d1626; display:grid; gap:4px; }
+  .bas label { display:flex; align-items:center; gap:8px; font-size:12px; }
+  .bas input[type=range] { flex:1; }
+  .bas .bt { display:flex; gap:6px; }
+  .bas button { flex:1; border:none; border-radius:10px; padding:9px; font:bold 13px Georgia; background:#3a3570; color:#fff; }
+  .bas button.ok { background:#f3c96b; color:#1d1626; }
+  #msg { font-size:12px; color:#7dffb0; min-height:15px; text-align:center; }
+</style>
+</head>
+<body>
+<div class="ecran">
+  <div class="haut"><b>Placer les éléments</b> · fais glisser chaque élément à sa place, règle les tailles, puis « Copier mes réglages » et colle-les à Claude.</div>
+  <div class="plateau" id="pl"></div>
+  <div class="bas">
+    <label>Médaillons <input type="range" id="tm" min="7" max="14" step="0.1"><span id="vm"></span></label>
+    <label>Portraits <input type="range" id="tp" min="12" max="24" step="0.1"><span id="vp"></span></label>
+    <div class="bt"><button onclick="reinit()">Tout remettre</button><button class="ok" onclick="copier()">Copier mes réglages</button></div>
+    <div id="msg"></div>
+  </div>
+</div>
+<script>
+// positions de départ = celles du jeu (en % de la largeur pour x, de la hauteur pour y)
+const DEFAUT = {
+  taille_medaillon:11.2, taille_portrait:17.3,
+  frappe:[11.6, 25.1], technique:[11.6, 32.9], garde:[11.6, 40.6], pouvoir:[11.6, 48.2], transmu:[11.6, 56.0], equipe:[11.6, 63.8],
+  de_premier:[89.45, 27.8], de_dernier:[89.45, 61.6],
+  portrait_haut:[50, 10.1], portrait_bas:[50, 76.1],
+  coeur_haut:[16.15, 15.85], bouclier_haut:[26.95, 15.85], etiquettes_haut:[79.3, 15.85],
+  coeur_bas:[16.15, 74.65], bouclier_bas:[26.95, 74.65], etiquettes_bas:[79.3, 74.65],
+};
+const CLE = 'guilde-placement';
+let R = JSON.parse(localStorage.getItem(CLE) || 'null') || JSON.parse(JSON.stringify(DEFAUT));
+const pl = document.getElementById('pl');
+const ELEMENTS = [
+  ['frappe', 'med', 'ui/frappe.webp?v=2'], ['technique', 'med', 'ui/technique.webp?v=2'], ['garde', 'med', 'ui/garde.webp?v=2'],
+  ['pouvoir', 'med', 'ui/pouvoir.webp?v=2'], ['transmu', 'med', 'ui/transmu.webp?v=2'], ['equipe', 'med', 'ui/equipe.webp?v=2'],
+  ['de_premier', 'de'], ['de_dernier', 'de'],
+  ['portrait_haut', 'por', 'portraits/maelle.webp'], ['portrait_bas', 'por', 'portraits/zephine.webp'],
+  ['coeur_haut', 'coeur', '', '20'], ['bouclier_haut', 'bouc', '', '6'], ['etiquettes_haut', 'etq', '', '🔥 Braises 0/3<br>🂠 5 en main'],
+  ['coeur_bas', 'coeur', '', '30'], ['bouclier_bas', 'bouc', '', '6'], ['etiquettes_bas', 'etq', '', '🂠 4 en main'],
+];
+function dessine() {
+  pl.innerHTML = '';
+  pl.style.setProperty('--m', R.taille_medaillon + 'cqw'); pl.style.setProperty('--p', R.taille_portrait + 'cqw');
+  for (const [k, cls, img, txt] of ELEMENTS) {
+    const e = document.createElement('div'); e.className = 'el ' + cls; e.dataset.k = k;
+    if (img) e.style.backgroundImage = `url('${img}')`; if (txt) e.innerHTML = txt;
+    e.style.left = R[k][0] + '%'; e.style.top = R[k][1] + '%';
+    e.addEventListener('pointerdown', debut); pl.appendChild(e);
+  }
+  tm.value = R.taille_medaillon; vm.textContent = R.taille_medaillon; tp.value = R.taille_portrait; vp.textContent = R.taille_portrait;
+}
+let cour = null;
+function debut(ev) { ev.preventDefault(); cour = ev.currentTarget; cour.classList.add('actif'); cour.setPointerCapture(ev.pointerId); cour.onpointermove = bouge; cour.onpointerup = fin; }
+function bouge(ev) {
+  const r = pl.getBoundingClientRect(), k = cour.dataset.k;
+  const x = Math.max(0, Math.min(100, (ev.clientX - r.left) / r.width * 100)), y = Math.max(0, Math.min(100, (ev.clientY - r.top) / r.height * 100));
+  R[k] = [+x.toFixed(2), +y.toFixed(2)]; cour.style.left = x + '%'; cour.style.top = y + '%';
+}
+function fin() { cour.classList.remove('actif'); cour.onpointermove = null; cour = null; localStorage.setItem(CLE, JSON.stringify(R)); }
+tm.oninput = () => { R.taille_medaillon = +tm.value; vm.textContent = tm.value; pl.style.setProperty('--m', tm.value + 'cqw'); localStorage.setItem(CLE, JSON.stringify(R)); };
+tp.oninput = () => { R.taille_portrait = +tp.value; vp.textContent = tp.value; pl.style.setProperty('--p', tp.value + 'cqw'); localStorage.setItem(CLE, JSON.stringify(R)); };
+function reinit() { R = JSON.parse(JSON.stringify(DEFAUT)); localStorage.removeItem(CLE); dessine(); msg.textContent = 'Positions de départ remises.'; }
+function copier() {
+  const t = 'PLACEMENT GUILDE ' + JSON.stringify(R);
+  (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => { msg.textContent = 'Copié ✓ : colle-le dans la discussion avec Claude.'; })
+    .catch(() => { prompt('Copie ce texte et colle-le à Claude :', t); });
+}
+dessine();
+</script>
+</body>
+</html>
