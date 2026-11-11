@@ -335,6 +335,62 @@
   .tapis .barre .bdg { font-size:3.7cqw; } .tapis .barre .bdg.bg { left:-2cqw; top:-1.5cqw; } .tapis .barre .bdg.bb { left:auto; right:-2cqw; top:-1.5cqw; }
   .barre.protege::before { content:none !important; }
   .tapis .pastilles .pg, .tapis .pastilles .pb { display:none; }
+
+  /* ================= ÉCRAN UNIQUE (11/11, idée de l'utilisateur) : tout tient sur l'écran du téléphone, sans faire défiler.
+     Plateau = toute la hauteur entre l'en-tête et la barre du bas (container-type:size → cqw = 1 % de la largeur, cqh = 1 % de la hauteur).
+     Gauche : les actions en icônes · droite : le bac des dés vertical · centre : créatures et consigne · bas : la main. ================= */
+  html, body { height:100%; overflow:hidden; overscroll-behavior:none; }
+  #app { height:100dvh; min-height:0 !important; display:flex; flex-direction:column; padding:0 0 54px !important; overflow:hidden; }
+  #app > .salle { flex:none; margin:0; border-radius:0; padding:4px 8px; }
+  .plateau.tapis.unique { flex:1; min-height:0; aspect-ratio:auto; container-type:size; border-radius:0; background-size:100% 100%; overflow:visible; }
+  .plateau.tapis.unique.scene { background-size:cover; }
+  .unique .barre { left:39.5cqw; width:21cqw; height:21cqw; }
+  .unique #b-O { top:4.5cqh; } .unique #b-J { top:63.5cqh; }
+  .unique .barre > img { z-index:1; }
+  .unique .anneau { position:absolute; left:-5cqw; top:-5cqw; width:31cqw; height:31cqw; z-index:2; pointer-events:none; overflow:visible; }
+  .unique .barre .vie { display:none; }
+  .unique .barre .nom { font-size:3cqw; top:calc(100% + 5cqw) !important; bottom:auto !important; z-index:3; }
+  .unique .barre .pastilles { left:calc(100% + 6cqw); right:auto; top:0 !important; bottom:auto !important; width:17cqw; align-items:flex-start; gap:1cqw; z-index:3; }
+  .unique .pastilles [data-k="pv"] { position:absolute; right:calc(100% + 30cqw); top:7cqw; font-size:3.8cqw; }
+  .unique .pastilles [data-k="pc"], .unique .pastilles [data-k="ultime"], .unique .pastilles [data-k="ultimefait"] { display:none; }
+  .unique .pastilles [data-k="main"] { position:static; font-size:2.6cqw; }
+  .unique .p { font-size:2.6cqw; white-space:nowrap; }
+  .unique .barre .bdg { font-size:3.2cqw; } .unique .barre .bdg.bg { left:-17cqw; top:14cqw; } .unique .barre .bdg.bb { left:-17cqw; right:auto; top:19cqw; }
+  .unique .barre.cible img { box-shadow:0 0 0 4px var(--ok), 0 0 24px var(--ok); }
+  /* créatures : entre la colonne des actions et le bac des dés */
+  .unique .front { left:17cqw !important; right:18cqw !important; height:20cqw; gap:1.4cqw; }
+  .unique #f-O { top:29cqh; } .unique #f-J { top:47.5cqh; }
+  .unique .front > .u { flex:0 1 13cqw; height:18.5cqw; font-size:2.1cqw; }
+  .unique .u .av span { width:5.6cqw; height:5.6cqw; font-size:2.4cqw; }
+  /* consigne sur la ligne de runes ; bouton Lancer au même endroit */
+  .unique .bandeau { left:16cqw; right:17cqw; top:44.5cqh; transform:translateY(-50%); margin:0; padding:2px 6px; font-size:2.9cqw; line-height:1.25; background:#1d1626e6; border:1px solid #f3c96b77; border-radius:12px; z-index:5; max-height:9cqh; overflow:hidden; }
+  .unique .lancer { left:20cqw; right:21cqw; top:44.5cqh; transform:translateY(-50%); width:auto; margin:0; padding:3cqw; font-size:4.2cqw; z-index:5; }
+  /* colonne des actions (gauche) */
+  .unique .colG { left:1.2cqw; top:19cqh; display:flex; flex-direction:column; gap:1cqh; z-index:4; }
+  .ic { position:relative; width:12.5cqw; height:12.5cqw; border-radius:50%; padding:0; display:grid; place-items:center; color:#fff; background:radial-gradient(circle at 35% 30%, #4a3a6a, #1d1626); border:2px solid #f3c96b99; box-shadow:0 2px 6px #000c; }
+  .ic .sy { font-size:5.4cqw; line-height:1; letter-spacing:-.15em; }
+  .ic small { position:absolute; top:calc(100% - 1.6cqw); left:50%; transform:translateX(-50%); font-size:2.2cqw; white-space:nowrap; background:#1d1626e6; border-radius:6px; padding:0 4px; pointer-events:none; }
+  .ic.ok { border-color:#7dffb0; box-shadow:0 0 0 2px #7dffb0, 0 0 14px #7dffb0; }
+  .ic.non { opacity:.4; }
+  .ic.pleine { border-color:#ffd866; box-shadow:0 0 0 2px #ffd866, 0 0 16px #ffd866; animation:halo 1s ease-in-out infinite alternate; }
+  .ic.fait { opacity:.35; }
+  /* bac des dés vertical (droite) */
+  .unique .des { left:auto; right:1.2cqw; top:18cqh; width:15.5cqw; height:auto; padding:1.6cqw 1cqw; margin:0; display:flex; flex-direction:column; flex-wrap:nowrap; align-items:center; gap:.9cqh;
+    border-radius:10px; background:linear-gradient(90deg, #14381f, #1f5a32 50%, #14381f); border:3px solid #6b4a2a; box-shadow:inset 0 0 10px #000a, 0 3px 8px #000c; z-index:4; }
+  .scene.unique .des { background:linear-gradient(90deg, #14381fdd, #1f5a32dd 50%, #14381fdd); }
+  .unique .d { width:12.5cqw; }
+  .unique .d img, .unique .d .cad { width:11.5cqw; height:11.5cqw; border-width:2px; }
+  .unique .d .sac { font-size:2cqw; margin-top:.4cqw; }
+  .sacp { display:grid; grid-template-columns:repeat(3, 1fr); gap:.4cqw; justify-items:center; }
+  .sacp i { width:3.3cqw; height:3.3cqw; border-radius:50%; font:bold 2.2cqw/3.3cqw sans-serif; font-style:normal; text-align:center; background:#e9ffe9; color:#123; }
+  .sacp i.u { background:#ffffff22; color:#ffffff55; }
+  .sacoria { font-size:2cqw; }
+  .unique .d.cache::after { top:2.5cqw; font-size:6cqw; }
+  /* la main en éventail, posée sur le bas du plateau */
+  .unique .main { left:0; right:0; bottom:0; height:12cqh; max-width:none; z-index:6; }
+  .bas { max-width:560px; margin:0 auto; height:54px; z-index:8; }
+  .bas .b0 { width:46px; padding:0; font-size:18px; }
+  .bas .b1 { flex:1; } .bas .b2 { flex:1.3; }
 </style>
 </head>
 <body>
@@ -1065,8 +1121,8 @@ document.addEventListener('click', e => {
 }, true);
 function barre(P, haut) {
   const ref = `{J:S.${haut ? 'O' : 'J'}}`;
-  return `<div class="barre ${estCible({ J:P }) ? 'cible' : ''} ${P.gardeB || P.bouclier ? 'protege' : ''}" data-bouclier="${(P.gardeB || 0) + (P.bouclier || 0)}" id="b-${haut ? 'O' : 'J'}" style="--c:${P.c}" onclick="touche(${ref})"><img src="${HEROS[P.id].img || IMG(P.id)}" alt=""><span class="bdg bg" ${P.gardeB ? '' : 'hidden'}>🛡 ${P.gardeB}</span><span class="bdg bb" ${P.bouclier ? '' : 'hidden'}>🛡 ${P.bouclier}</span><div style="flex:1"><div class="nom">${P.nom}${P.ordi ? (S.lieu ? ' · ' + (HEROS[P.id].titre || 'ennemi') : ' · ordinateur') : (P.qui && P.qui !== 'toi' ? ' · ' + P.qui : ' · toi')}</div><div class="vie"><b style="width:${Math.max(0, P.pv) / P.pvMax * 100}%"></b><i style="width:${Math.max(0, P.pv) / P.pvMax * 100}%"></i></div><div class="pastilles">
-    <span data-k="pv" class="p pv">❤ ${Math.max(0, P.pv)} / ${P.pvMax}</span><span data-k="pc" class="p pc">◆ ${P.pc} PC</span>
+  return `<div class="barre ${estCible({ J:P }) ? 'cible' : ''} ${P.gardeB || P.bouclier ? 'protege' : ''}" data-bouclier="${(P.gardeB || 0) + (P.bouclier || 0)}" id="b-${haut ? 'O' : 'J'}" style="--c:${P.c}" onclick="touche(${ref})"><img src="${HEROS[P.id].img || IMG(P.id)}" alt="">${anneauDe(P)}<span class="bdg bg" ${P.gardeB ? '' : 'hidden'}>🛡 ${P.gardeB}</span><span class="bdg bb" ${P.bouclier ? '' : 'hidden'}>🛡 ${P.bouclier}</span><div style="flex:1"><div class="nom">${P.nom}${P.ordi ? (S.lieu ? ' · ' + (HEROS[P.id].titre || 'ennemi') : ' · ordinateur') : (P.qui && P.qui !== 'toi' ? ' · ' + P.qui : ' · toi')}</div><div class="vie"><b style="width:${Math.max(0, P.pv) / P.pvMax * 100}%"></b><i style="width:${Math.max(0, P.pv) / P.pvMax * 100}%"></i></div><div class="pastilles">
+    <span data-k="pv" class="p pv">❤ ${Math.max(0, P.pv)}</span><span data-k="pc" class="p pc">◆ ${P.pc} PC</span>
     ${P.gardeB ? `<span data-k="garde" class="p g pg">🛡 Garde ${P.gardeB}</span>` : ''}${P.gardeE ? `<span data-k="epines" class="p g">🌿 Épines ${P.gardeE}</span>` : ''}${P.esquive ? '<span data-k="esquive" class="p g">💨 Esquive</span>' : ''}
     ${P.bouclier ? `<span data-k="bouclier" class="p g pb">🛡 Bouclier ${P.bouclier}</span>` : ''}${P.contre ? '<span data-k="contre" class="p g">⚔ Contre-attaque</span>' : ''}${P.piege ? '<span data-k="piege" class="p g">🪤 Piège</span>' : ''}
     ${P.cor ? '<span data-k="cor" class="p g">📯 Cor</span>' : ''}${P.fournaise ? '<span data-k="fournaise" class="p g">🔥 Fournaise</span>' : ''}${P.paillasse ? '<span data-k="paillasse" class="p g">⚗ Paillasse</span>' : ''}
@@ -1123,37 +1179,65 @@ function dessine() {
   <div class="salle"><span class="st">${S.coop ? `<b>🔥 Le Campement</b> · ${J.ordi ? `${J.nom} (compagnon) joue…` : J.qui === 'toi' ? 'à toi' : `au tour de ${J.nom}`} · ${S.salle.n}` : S.ody ? `<b>${S.ody.titre}</b> · ${S.salle.n} : ${S.salle.d}${J.reliques.length ? ' <span class="rel">' + J.reliques.map(r => `<i title="${RELIQUES[r].n}" onclick="aideRelique('${r}')">${RELIQUES[r].e}</i>`).join('') + '</span>' : ''}` : `<b>${S.salle.n}</b> · ${S.salle.d}`}</span><span class="sons">
     <button class="sonbt ${sonOn ? '' : 'off'}" onclick="basculeSon()" aria-label="Bruitages" title="Bruitages"><svg viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/>${sonOn ? '<path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>' : '<path d="M16 9l5 6M21 9l-5 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>'}</svg></button>
     <button class="sonbt ${musOn ? '' : 'off'}" onclick="basculeMusique()" aria-label="Musique" title="Musique"><svg viewBox="0 0 24 24"><path d="M9 17V5l11-2v12" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="6.5" cy="17.5" r="2.8" fill="currentColor"/><circle cx="17.5" cy="15.5" r="2.8" fill="currentColor"/>${musOn ? '' : '<path d="M3 3l18 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>'}</svg></button></span></div>
-  <div class="plateau tapis ${S.lieu ? 'scene lieu-' + S.lieu : ''}">${barre(O, true)}${front(O, true)}<div class="milieu"><span>✦ ◆ ✦</span></div>${front(J, false)}${barre(J, false)}
-    <div class="des" ontouchstart="glisseDebut(event)" ontouchend="glisseFin(event)">${J.des.map((d, i) => `<div class="d ${sel.includes(d) ? 'sel' : ''} ${d.pose ? 'pose' : ''} ${d.mod ? 'mod' : ''} ${J.aLancer ? 'cache' : ''} ${i === J.neuf && (J.aLancer || Date.now() < (J.neufJusque || 0)) ? 'neuf' : ''}" onclick="choisirDe(${i})"><img src="${FACE(J.id, d.v || 1)}" alt="${d.v || '?'}"><div class="sac">${i === J.neuf && (J.aLancer || Date.now() < (J.neufJusque || 0)) ? '✨ nouveau dé' : sacTxt(J, d)}</div></div>`).join('')}${[...Array(Math.max(0, 5 - J.des.length)).keys()].map(k => { const i = J.des.length + k, t = i - 1;
-      return `<div class="d verrou"><div class="cad">🔒</div><div class="sac">${J.tours >= t ? 'Handicap ce tour' : 'dé n° ' + (i + 1) + '<br>au tour ' + t}</div></div>`; }).join('')}</div>
+  <div class="plateau tapis unique ${S.lieu ? 'scene lieu-' + S.lieu : ''}">${barre(O, true)}${front(O, true)}${front(J, false)}${barre(J, false)}
+    ${colonneActions(J, h)}
+    <div class="des" ontouchstart="glisseDebut(event)" ontouchend="glisseFin(event)">${J.des.map((d, i) => `<div class="d ${sel.includes(d) ? 'sel' : ''} ${d.pose ? 'pose' : ''} ${d.mod ? 'mod' : ''} ${J.aLancer ? 'cache' : ''} ${i === J.neuf && (J.aLancer || Date.now() < (J.neufJusque || 0)) ? 'neuf' : ''}" onclick="choisirDe(${i})"><img src="${FACE(J.id, d.v || 1)}" alt="${d.v || '?'}"><div class="sac">${i === J.neuf && (J.aLancer || Date.now() < (J.neufJusque || 0)) ? '✨ neuf' : sacPastilles(J, d)}</div></div>`).join('')}${[...Array(Math.max(0, 5 - J.des.length)).keys()].map(k => { const i = J.des.length + k, t = i - 1;
+      return `<div class="d verrou"><div class="cad">🔒</div><div class="sac">${J.tours >= t ? 'Handicap' : 'tour ' + t}</div></div>`; }).join('')}</div>
+    ${J.aLancer ? '<button class="lancer" onclick="lancerMesDes()">🎲 Lancer les dés</button>' : `<div class="bandeau">${bandeau}${sel.length || ciblage || attaquant ? ' <a href="#" onclick="annuler();return false" style="color:#f3c96b">Annuler</a>' : ''}</div>`}
+    <div class="main" onclick="if(event.target===this){carteVue=null;rendu();}">${mainEnEventail(J)}</div>
   </div>
-  ${S.coop ? equipeHTML() : ''}
-  ${J.aLancer ? '<button class="lancer" onclick="lancerMesDes()">🎲 Lancer les dés <span style="font-weight:normal;font-size:.75em">(ou glisse le doigt vers le haut)</span></button>' : ''}
-  <div class="bandeau" ${J.aLancer ? 'style="display:none"' : ''}>${bandeau}${sel.length || ciblage || attaquant ? ' <a href="#" onclick="annuler();return false" style="color:#f3c96b">Annuler</a>' : ''}</div>
-  <div class="actions">
-    ${act('frappe', '⚔ Frappe', '0 PC', '2 dés identiques ou +')}
-    ${act('technique', '⚔ Technique', '0 PC', '3 dés qui se suivent ou +')}
-    ${act('garde', '🛡 Garde', '0 PC', h.garde.txt + ' · bloque les coups')}
-    ${act('pouvoir', 'Pouvoir', '0 PC', h.pouvoir.txt)}
-    ${act('ultime', 'Ultime', '3 PC', J.ultimeFait ? 'déjà joué' : J.jauge < JAUGE.max ? `jauge ${J.jauge}/${JAUGE.max}` : h.ultime.txt)}
-    ${h.action ? act('transmu', h.action.n, '0 PC', J.transmu ? 'déjà fait' : h.action.txt) : ''}
-    ${act('vendre', 'Vendre', '+1 PC', 'par dé')}
-  </div>
-  <div class="actions pc">
-    ${act('pcRelance', 'Relancer', '1 PC', '1 dé')}
-    ${act('pcAjuste', '+1 / −1', `${coutAjuste(J)} PC`, '1 dé')}
-    ${actSoins()}
-  </div>
-  ${S.ody && J.sacoche.length ? `<div class="actions pc sacoche">${J.sacoche.map((p, i) => `<button class="act ok" onclick="usePotion(${i})"><b>${SACOCHE[p].e} ${SACOCHE[p].n}</b>${SACOCHE[p].d.replace(/ \(.*\)\.?$/, '')}</button>`).join('')}</div>` : ''}
-  <div class="main" onclick="if(event.target===this){carteVue=null;rendu();}">${mainEnEventail(J)}</div>
-  <div class="journal">${S.log.slice(0, 40).map(t => `<div>${t}</div>`).join('')}</div>
   <div class="bas">
-    <button class="b0" onclick="regles()">❓ Règles</button>
+    <button class="b0" onclick="regles()" aria-label="Règles">❓</button>
+    <button class="b0" onclick="voirJournal()" aria-label="Journal">📜</button>
     <button class="b1" onclick="relancer()" ${J.relance && sel.length ? '' : 'disabled style="opacity:.4"'}>🎲 Relancer (${J.relance})</button>
     <button class="b2" onclick="finDeMonTour()">Fin du tour ▶</button>
   </div>`;
   if (S.fini) montrerFin();
 }
+// ================= écran unique (11/11) : actions en icônes à gauche, dés à droite, anneaux autour des portraits =================
+const ICONES = { frappe:['⚔', 'Frappe'], technique:['⚔⚔', 'Technique'], garde:['🛡', 'Garde'], pouvoir:['✦', 'Pouvoir'], ultime:['⚡', 'Ultime'], transmu:['⚗', ''], vendre:['◆', 'Vendre'] };
+function icone(quoi, lib, J, extra) {
+  const ok = sel.length && permis(J, quoi, vals(sel), sel), [sym, nom] = ICONES[quoi];
+  return `<button class="ic ${ok ? 'ok' : sel.length ? 'non' : ''} ${extra || ''}" onclick="vise('${quoi}')" aria-label="${lib || nom}"><span class="sy">${sym}</span><small>${lib || nom}</small></button>`;
+}
+function colonneActions(J, h) {
+  const pleine = !J.ultimeFait && J.jauge >= JAUGE.max;
+  const plus = (J.pc >= 1 && J.des.some(d => !d.pose)) || (S.ody && J.sacoche.length);
+  return `<div class="colG">${icone('frappe', '', J)}${icone('technique', '', J)}${icone('garde', '', J)}${icone('pouvoir', '', J)}${icone('ultime', J.ultimeFait ? 'Fait' : '', J, pleine ? 'pleine' : J.ultimeFait ? 'fait' : '')}${h.action ? icone('transmu', h.action.n, J) : ''}
+    <button class="ic plus ${sel.length && permis(J, 'vendre', vals(sel), sel) ? 'ok' : ''}" onclick="menuPC()" aria-label="Vendre et PC"><span class="sy">◆</span><small>PC · plus</small></button>
+    ${S.coop ? '<button class="ic" onclick="voirEquipe()" aria-label="Équipe"><span class="sy">🤝</span><small>Équipe</small></button>' : ''}</div>`;
+}
+function menuPC() {
+  const J = S.J, b = (quoi, titre, txt, ok) => `<button class="act ${ok ? 'ok' : 'non'}" onclick="fermer();vise('${quoi}')"><b>${titre}</b>${txt}</button>`;
+  const v = vals(sel), ok = q => sel.length && permis(J, q, v, sel);
+  fenetre(`<h2>◆ Vendre et dépenser des PC</h2><p style="font-size:.85em">Tu as <b>${J.pc} PC</b>. ${sel.length ? `Dés choisis : <b>${v.join(', ')}</b>.` : 'Choisis d’abord un ou plusieurs dés dans le bac, à droite.'}</p>
+    <div class="actions">${b('vendre', 'Vendre', '+1 PC par dé', ok('vendre'))}${b('pcRelance', 'Relancer', '1 PC · 1 dé', ok('pcRelance'))}${b('pcAjuste', '+1 / −1', `${coutAjuste(J)} PC · 1 dé`, ok('pcAjuste'))}${b('pcSoins', 'Premiers soins', '2 PC · retire tes altérations', permis(J, 'pcSoins', []))}</div>
+    ${S.ody && J.sacoche.length ? `<h3>Ta sacoche</h3><div class="actions">${J.sacoche.map((p, i) => `<button class="act ok" onclick="fermer();usePotion(${i})"><b>${SACOCHE[p].e} ${SACOCHE[p].n}</b>${SACOCHE[p].d.replace(/ \(.*\)\.?$/, '')}</button>`).join('')}</div>` : ''}
+    <div class="choixh"><button onclick="fermer()">Fermer</button></div>`);
+}
+function voirJournal() { fenetre(`<h2>📜 Journal du combat</h2><div class="journal" style="max-height:60vh">${S.log.slice(0, 80).map(t => `<div>${t}</div>`).join('')}</div><div class="choixh"><button onclick="fermer()">Fermer</button></div>`); }
+function voirEquipe() { fenetre(`<h2>🤝 L’équipe</h2>${equipeHTML()}<div class="choixh"><button onclick="fermer()">Fermer</button></div>`); }
+// le sac de faces en pastilles 1 à 6 : pâle = déjà sortie, à revenir au prochain sac
+function sacPastilles(J, d) {
+  if (!d.sac || d.extra) return '';
+  if (J.id === 'oria') return `<span class="sacoria">ensuite : ${d.sac.length ? d.sac.slice(0, 2).join(', ') : 'neuf'}</span>`;
+  if (!d.sac.length) return '<span class="sacoria">sac neuf</span>';
+  return `<span class="sacp">${[1, 2, 3, 4, 5, 6].map(f => `<i class="${d.sac.includes(f) ? '' : 'u'}">${f}</i>`).join('')}</span>`;
+}
+// anneaux autour du portrait : rouge = vie, trait bleu = Garde + Bouclier, or en 20 segments = Ultime, losanges = PC
+function anneauSVG(pv, max, prot, jauge, pc, fait) {
+  const C = 50, arc = (r, a0, a1) => { const q = a => [C + r * Math.sin(a * 2 * Math.PI), C - r * Math.cos(a * 2 * Math.PI)], [x0, y0] = q(a0), [x1, y1] = q(a1); return `M${x0.toFixed(2)} ${y0.toFixed(2)}A${r} ${r} 0 ${a1 - a0 > .5 ? 1 : 0} 1 ${x1.toFixed(2)} ${y1.toFixed(2)}`; };
+  const f = Math.max(0, Math.min(1, pv / max));
+  let g = `<circle cx="50" cy="50" r="44" fill="none" stroke="#3a0d12" stroke-width="5.5"/>`;
+  if (f > 0) g += `<path class="rv" d="${arc(44, 0, Math.min(f, .9999))}" fill="none" stroke="#e5262c" stroke-width="5.5" stroke-linecap="${f >= .999 ? 'butt' : 'round'}"/>`;
+  if (prot) g += `<path d="${arc(49, 0, Math.min(.9999, prot / max))}" fill="none" stroke="#8fd3ff" stroke-width="2.2"/>`;
+  for (let k = 0; k < JAUGE.max; k++) g += `<path d="${arc(37.8, k / JAUGE.max + .006, (k + 1) / JAUGE.max - .006)}" fill="none" stroke="${fait ? '#6b5a8a' : k < jauge ? '#ffd866' : '#2a2135'}" stroke-width="5"/>`;
+  const n = Math.min(pc, 8);
+  for (let k = 0; k < n; k++) { const a = .5 + (k - (n - 1) / 2) * .055, x = C + 44 * Math.sin(a * 2 * Math.PI), y = C - 44 * Math.cos(a * 2 * Math.PI);
+    g += `<path d="M${x.toFixed(2)} ${(y - 4.5).toFixed(2)}L${(x + 3.4).toFixed(2)} ${y.toFixed(2)}L${x.toFixed(2)} ${(y + 4.5).toFixed(2)}L${(x - 3.4).toFixed(2)} ${y.toFixed(2)}Z" fill="#5fb0ff" stroke="#e6f3ff" stroke-width=".9"/>`; }
+  return `<svg class="anneau" viewBox="0 0 100 100" aria-hidden="true">${g}</svg>`;
+}
+function anneauDe(P, pv) { return anneauSVG(pv === undefined ? Math.max(0, P.pv) : pv, P.pvMax, (P.gardeB || 0) + (P.bouclier || 0), P.jauge, P.pc, P.ultimeFait); }
 function aide(quoi, info) {
   const J = S.J, h = HEROS[J.id];
   let t = '';
@@ -1359,7 +1443,8 @@ function majVie(c, ev) {
   if (ev.pv !== undefined && !c.uid) {
     const P = c.s === 'J' ? S.J : S.O, pill = e.querySelector('.p.pv'), barre = e.querySelector('.vie i');
     const avant = pill ? nb(pill.textContent) : ev.pv, fant = e.querySelector('.vie b');
-    defile(pill, avant, ev.pv, v => `❤ ${v} / ${P.pvMax}`, ev.pv > avant ? 'v' : 'r');
+    defile(pill, avant, ev.pv, v => `❤ ${v}`, ev.pv > avant ? 'v' : 'r');
+    { const an = e.querySelector('.anneau'); if (an) an.outerHTML = anneauDe(P, ev.pv); }
     if (barre) barre.style.width = (ev.pv / P.pvMax * 100) + '%'; if (fant) fant.style.width = (ev.pv / P.pvMax * 100) + '%';
   }
   if (ev.garde !== undefined && !c.uid) {
