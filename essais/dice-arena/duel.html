@@ -552,6 +552,23 @@
   .plateau.tapis.unique:not(.scene) #b-J .bdg.bg, .plateau.tapis.unique:not(.scene) #b-J .bdg.bb { top:calc(-1.45cqh + 4.35cqw); }
   .plateau.tapis.unique:not(.scene) .barre .bdg.bg:not([hidden]) + .bdg.bb { left:-8cqw; }
   .plateau.tapis.unique:not(.scene) #b-O .p:not(.pv), .plateau.tapis.unique:not(.scene) #b-J .p:not(.pv) { background:none !important; border:none !important; padding:0; font-size:2.6cqw; }
+  .unique .colG .r1 { left:calc(11.6cqw - 5.6cqw); top:calc(25.1cqh - 5.6cqw); }
+  .unique .colG .r2 { left:calc(11.6cqw - 5.6cqw); top:calc(32.9cqh - 5.6cqw); }
+  .unique .colG .r3 { left:calc(11.6cqw - 5.6cqw); top:calc(40.6cqh - 5.6cqw); }
+  .unique .colG .r4 { left:calc(11.6cqw - 5.6cqw); top:calc(48.2cqh - 5.6cqw); }
+  .unique .colG .r5 { left:calc(11.6cqw - 5.6cqw); top:calc(56.0cqh - 5.6cqw); }
+  .unique .colG .r6 { left:calc(11.6cqw - 5.6cqw); top:calc(63.8cqh - 5.6cqw); }
+  /* vie et bouclier centrés ensemble dans le panneau de gauche ; étiquettes centrées dans le panneau de droite */
+  .plateau.tapis.unique:not(.scene) .pastilles [data-k="pv"] { left:-48.5cqw; }
+  .plateau.tapis.unique:not(.scene) .barre .bdg.bg, .plateau.tapis.unique:not(.scene) .barre .bdg.bb { left:-27.6cqw; }
+  .plateau.tapis.unique:not(.scene) .barre .bdg.bg:not([hidden]) + .bdg.bb { left:-20cqw; }
+  .plateau.tapis.unique:not(.scene) .barre .pastilles { left:24.25cqw; width:27.4cqw; align-items:center; align-content:center; justify-content:center; text-align:center; }
+  .plateau.tapis.unique:not(.scene) #b-O .pastilles, .plateau.tapis.unique:not(.scene) #b-J .pastilles { left:24.25cqw; width:27.4cqw; transform:none; align-items:center; text-align:center; }
+  /* cœur seul : centré dans le panneau ; cœur + bouclier : côte à côte, centrés ensemble */
+  .plateau.tapis.unique:not(.scene) .pastilles [data-k="pv"] { left:-50.4cqw; }
+  .plateau.tapis.unique:not(.scene) .barre:has(.bdg:not([hidden])) .pastilles [data-k="pv"] { left:-54.95cqw; }
+  .plateau.tapis.unique:not(.scene) .barre .bdg.bg, .plateau.tapis.unique:not(.scene) .barre .bdg.bb { left:-18.2cqw; }
+  .plateau.tapis.unique:not(.scene) .barre .bdg.bg:not([hidden]) + .bdg.bb { left:-10cqw; }
 </style>
 </head>
 <body>
@@ -560,7 +577,7 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261111-202706';
+const VERSION = '20261111-203319';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); location.replace('duel.html?v=' + v); }
