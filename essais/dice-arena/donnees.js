@@ -146,7 +146,7 @@ const HEROS = {
       f:J => { const b = J.pv < adv(J).pv ? 4 : 2; degats({ J:adv(J) }, 10); J.front.forEach(u => { u.tmp = (u.tmp || 0) + b; u.pret = true; }); log(`Chant de guerre : +${b} attaque à tes unités.`); } },
     ultime:{ n:'Le Grand Souffle', txt:'3 dés tous pairs ou tous impairs', d:'14 dégâts au héros adverse et 4 à chacune de ses unités.', cond:vs => vs.length === 3 && (vs.every(pair) || vs.every(v => !pair(v))),
       f:J => { const D = adv(J); [...D.front].forEach(u => degats({ J:D, u }, 4)); degats({ J:D }, 14); } } },
-  zephine: { cit:'« Rien ne se perd, tout se transforme. »', role:'Transforme les dés et empoisonne. Aime tous les dés, à condition de les changer.', papier:'Repris de Blanche et de Fez : le Handicap de Vol acrobatique devient la Brume aveuglante ; l’esquive et le camouflage deviennent la Fumée.', nom:'Zéphine', titre:'l’alchimiste', c:'#ff4040', pv:44,
+  zephine: { cit:'« Rien ne se perd, tout se transforme. »', role:'Transforme les dés et empoisonne. Aime tous les dés, à condition de les changer.', papier:'Repris de Blanche et de Fez : le Handicap de Vol acrobatique devient la Brume aveuglante ; l’esquive et le camouflage deviennent la Fumée.', nom:'Zéphine', titre:'l’alchimiste', c:'#ff4040', pv:41,
     deck:['fiole', 'fiole', 'soufre', 'soufre', 'distil', 'precipite', 'homoncule', 'homoncule', 'brume', 'catalyseur', 'paillasse', 'soufre'],
     passif:'Transmutation : une fois par tour, gratuitement, retourne un dé sur sa face opposée (1↔6, 2↔5, 3↔4). Et son +1 / −1 ne coûte qu’1 PC au lieu de 2.',
     action:{ n:'Transmuter', txt:'1 dé, 1 fois par tour', d:'Retourne ce dé sur sa face opposée.' },

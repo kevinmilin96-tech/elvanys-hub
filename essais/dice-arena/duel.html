@@ -339,9 +339,9 @@
   /* ================= ÉCRAN UNIQUE (11/11, idée de l'utilisateur) : tout tient sur l'écran du téléphone, sans faire défiler.
      Plateau = toute la hauteur entre l'en-tête et la barre du bas (container-type:size → cqw = 1 % de la largeur, cqh = 1 % de la hauteur).
      Gauche : les actions en icônes · droite : le bac des dés vertical · centre : créatures et consigne · bas : la main. ================= */
-  html, body { height:100%; overflow:hidden; overscroll-behavior:none; }
-  #app { height:100dvh; min-height:0 !important; display:flex; flex-direction:column; padding:0 0 54px !important; overflow:hidden; }
-  #app > .salle { flex:none; margin:0; border-radius:0; padding:4px 8px; }
+  html:has(.plateau.unique), body:has(.plateau.unique) { height:100%; overflow:hidden; overscroll-behavior:none; }
+  #app:has(> .plateau.unique) { height:100dvh; min-height:0 !important; display:flex; flex-direction:column; padding:0 0 54px !important; overflow:hidden; }
+  #app:has(> .plateau.unique) > .salle { flex:none; margin:0; border-radius:0; padding:4px 8px; }
   .plateau.tapis.unique { flex:1; min-height:0; aspect-ratio:auto; container-type:size; border-radius:0; background-size:100% 100%; overflow:visible; }
   .plateau.tapis.unique.scene { background-size:cover; }
   .unique .barre { left:39.5cqw; width:21cqw; height:21cqw; }
@@ -422,7 +422,7 @@
   /* ===== plateau peint v2 (Gemini, 11/11) : tout est calé sur ses emplacements mesurés (en % de l'image) =====
      alcôves : centre x 50 %, haut y 10,8 %, bas y 74 %, trou 22,5 % de la largeur · ronds à gauche : x 8,6 %, y 27 / 34 / 41 / 48 / 55,4 %, 10 % de large
      bac des dés : x 85 → 98 %, y 23 → 56 % · aire de jeu : x 12 → 90 %, y 18 → 70 %, runes à 43,4 % · bas : y 82 → 97 % (la main) */
-  .plateau.tapis.unique:not(.scene) { background:#2a2014 url('decor/plateau-duel-v2.webp?v=2') center/100% 100% no-repeat; }
+  .plateau.tapis.unique:not(.scene) { background:#2a2014 url('decor/plateau-duel-final.webp?v=1') center/100% 100% no-repeat; }
   .unique .barre { left:40.8cqw; width:18.4cqw; height:18.4cqw; }
   .unique #b-O { top:calc(10.8cqh - 9.2cqw); } .unique #b-J { top:calc(74cqh - 9.2cqw); }
   .unique .barre .cadre, .unique .anneau { left:-6.8cqw; top:-6.8cqw; width:32cqw; height:32cqw; }
@@ -444,6 +444,16 @@
   .unique .lancer { top:43.4cqh; }
   .unique .barre .pastilles { left:calc(100% + 8cqw); }
   .unique .pastilles [data-k="pv"] { right:calc(100% + 31cqw); top:3cqw; }
+  /* ===== plateau FINAL (Gemini, 11/11 soir), emplacements mesurés : alcôves y 10,6 % et 71 % · 6 ronds x 10,4 %, y 26,3 / 33,1 / 39,9 / 46,7 / 53,4 / 60,4 %
+     · bac x 85,7 → 96,9 %, y 23,1 → 52,6 % · runes 41,5 % · aire de jeu x 14 → 86 %, y 16 → 68 % ===== */
+  .unique #b-O { top:calc(10.6cqh - 9.2cqw); } .unique #b-J { top:calc(71cqh - 9.2cqw); }
+  .unique .colG .ic { left:5.2cqw; }
+  .unique .colG .r1 { top:calc(26.3cqh - 5.2cqw); } .unique .colG .r2 { top:calc(33.1cqh - 5.2cqw); } .unique .colG .r3 { top:calc(39.9cqh - 5.2cqw); }
+  .unique .colG .r4 { top:calc(46.7cqh - 5.2cqw); } .unique .colG .r5 { top:calc(53.4cqh - 5.2cqw); } .unique .colG .r6 { top:calc(60.4cqh - 5.2cqw); }
+  .plateau.tapis.unique:not(.scene) .des { left:85.7cqw; top:23.4cqh; width:11.2cqw; height:29cqh; }
+  .unique:not(.scene) .d img, .unique:not(.scene) .d .cad { width:7.6cqw; height:7.6cqw; }
+  .unique #f-O { top:22.5cqh; } .unique #f-J { top:45.5cqh; }
+  .unique .bandeau, .unique .lancer { top:41.5cqh; }
 </style>
 </head>
 <body>
@@ -1234,7 +1244,7 @@ function dessine() {
     <button class="sonbt ${musOn ? '' : 'off'}" onclick="basculeMusique()" aria-label="Musique" title="Musique"><svg viewBox="0 0 24 24"><path d="M9 17V5l11-2v12" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="6.5" cy="17.5" r="2.8" fill="currentColor"/><circle cx="17.5" cy="15.5" r="2.8" fill="currentColor"/>${musOn ? '' : '<path d="M3 3l18 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>'}</svg></button></span></div>
   <div class="plateau tapis unique ${S.lieu ? 'scene lieu-' + S.lieu : ''}">${barre(O, true)}${front(O, true)}${front(J, false)}${barre(J, false)}
     ${colonneActions(J, h)}
-    <div class="des" ontouchstart="glisseDebut(event)" ontouchend="glisseFin(event)">${h.action ? `<button class="transbt ${sel.length && permis(J, 'transmu', vals(sel), sel) ? 'ok' : ''} ${J.transmu ? 'fait' : ''}" onclick="event.stopPropagation();vise('transmu')" aria-label="${h.action.n}"><img src="ui/transmu.webp?v=1" alt=""><small>${J.transmu ? 'fait' : h.action.n}</small></button>` : ''}${J.des.map((d, i) => `<div class="d ${sel.includes(d) ? 'sel' : ''} ${d.pose ? 'pose' : ''} ${d.mod ? 'mod' : ''} ${J.aLancer ? 'cache' : ''} ${i === J.neuf && (J.aLancer || Date.now() < (J.neufJusque || 0)) ? 'neuf' : ''}" onclick="choisirDe(${i})"><img src="${FACE(J.id, d.v || 1)}" alt="${d.v || '?'}"><div class="sac">${i === J.neuf && (J.aLancer || Date.now() < (J.neufJusque || 0)) ? '✨ neuf' : sacPastilles(J, d)}</div></div>`).join('')}${[...Array(Math.max(0, 5 - J.des.length)).keys()].map(k => { const i = J.des.length + k, t = i - 1;
+    <div class="des" ontouchstart="glisseDebut(event)" ontouchend="glisseFin(event)">${J.des.map((d, i) => `<div class="d ${sel.includes(d) ? 'sel' : ''} ${d.pose ? 'pose' : ''} ${d.mod ? 'mod' : ''} ${J.aLancer ? 'cache' : ''} ${i === J.neuf && (J.aLancer || Date.now() < (J.neufJusque || 0)) ? 'neuf' : ''}" onclick="choisirDe(${i})"><img src="${FACE(J.id, d.v || 1)}" alt="${d.v || '?'}"><div class="sac">${i === J.neuf && (J.aLancer || Date.now() < (J.neufJusque || 0)) ? '✨ neuf' : sacPastilles(J, d)}</div></div>`).join('')}${[...Array(Math.max(0, 5 - J.des.length)).keys()].map(k => { const i = J.des.length + k, t = i - 1;
       return `<div class="d verrou"><div class="cad">🔒</div><div class="sac">${J.tours >= t ? 'Handicap' : 'tour ' + t}</div></div>`; }).join('')}</div>
     ${J.aLancer ? '<button class="lancer" onclick="lancerMesDes()">🎲 Lancer les dés</button>' : `<div class="bandeau">${bandeau}${sel.length || ciblage || attaquant ? ' <a href="#" onclick="annuler();return false" style="color:#f3c96b">Annuler</a>' : ''}</div>`}
     <div class="main" onclick="if(event.target===this){carteVue=null;rendu();}">${mainEnEventail(J)}</div>
@@ -1255,8 +1265,8 @@ function icone(quoi, lib, J, extra) {
   return `<button class="ic ${ok ? 'ok' : sel.length ? 'non' : ''} ${extra || ''}" style="background-image:url(ui/${quoi}.webp?v=1)" onclick="vise('${quoi}')" aria-label="${lib || nom}"><small>${lib || nom}</small></button>`;
 }
 function colonneActions(J, h) {
-  return `<div class="colG">${icone('frappe', '', J, 'r1')}${icone('technique', '', J, 'r2')}${icone('garde', '', J, 'r3')}${icone('pouvoir', '', J, 'r4')}
-    ${S.coop ? '<button class="ic r5" style="background-image:url(ui/equipe.webp?v=1)" onclick="voirEquipe()" aria-label="Équipe"><small>Équipe</small></button>' : ''}</div>`;
+  return `<div class="colG">${icone('frappe', '', J, 'r1')}${icone('technique', '', J, 'r2')}${icone('garde', '', J, 'r3')}${icone('pouvoir', '', J, 'r4')}${h.action ? icone('transmu', h.action.n, J, 'r5' + (J.transmu ? ' fait' : '')) : ''}
+    ${S.coop ? '<button class="ic r6" style="background-image:url(ui/equipe.webp?v=1)" onclick="voirEquipe()" aria-label="Équipe"><small>Équipe</small></button>' : ''}</div>`;
 }
 function voirSacoche() {
   const J = S.J;
