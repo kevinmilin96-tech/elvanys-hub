@@ -422,7 +422,7 @@
   /* ===== plateau peint v2 (Gemini, 11/11) : tout est calé sur ses emplacements mesurés (en % de l'image) =====
      alcôves : centre x 50 %, haut y 10,8 %, bas y 74 %, trou 22,5 % de la largeur · ronds à gauche : x 8,6 %, y 27 / 34 / 41 / 48 / 55,4 %, 10 % de large
      bac des dés : x 85 → 98 %, y 23 → 56 % · aire de jeu : x 12 → 90 %, y 18 → 70 %, runes à 43,4 % · bas : y 82 → 97 % (la main) */
-  .plateau.tapis.unique:not(.scene) { background:#2a2014 url('decor/plateau-duel-sans-rubans.webp?v=1') center/100% 100% no-repeat; }
+  .plateau.tapis.unique:not(.scene) { background:#2a2014 url('decor/plateau-duel-definitif.webp?v=1') center/100% 100% no-repeat; }
   .unique .barre { left:40.8cqw; width:18.4cqw; height:18.4cqw; }
   .unique #b-O { top:calc(10.8cqh - 9.2cqw); } .unique #b-J { top:calc(74cqh - 9.2cqw); }
   .unique .barre .cadre, .unique .anneau { left:-6.8cqw; top:-6.8cqw; width:32cqw; height:32cqw; }
@@ -518,6 +518,40 @@
   .unique .colG .r5 { left:calc(9.1cqw - 5.5cqw); top:calc(54.0cqh - 5.5cqw); }
   .unique .colG .r6 { left:calc(8.7cqw - 5.5cqw); top:calc(61.0cqh - 5.5cqw); }
   .plateau.tapis.unique:not(.scene) .des { grid-template-rows:repeat(6, 1fr); }
+  /* ===== PLATEAU DÉFINITIF (Gemini, 11/11 ~20 h 25), mesuré au pixel =====
+     alcôves : centre x 50 %, y 10,1 % (haut) et 76,1 % (bas), trou 20,8 % de la largeur · panneaux : x 6,2 → 35,2 % et 64,6 → 94 %, y 11,5 → 20,2 % (haut) et 69,5 → 79,8 % (bas)
+     ronds : x 10,9 %, y 25,1 / 32,9 / 40,6 / 48,2 / 55,5 / 63,3 % · bac : x 85,7 → 93,2 %, y 23,6 → 65,8 % (sans cases) · aire de jeu x 19 → 80,7 %, y 22 → 66,8 %, runes 44,7 % · planches du bas dès 84 % */
+  .plateau.tapis.unique:not(.scene) .barre { left:41.35cqw; width:17.3cqw; height:17.3cqw; }
+  .plateau.tapis.unique:not(.scene) #b-O { top:calc(10.1cqh - 8.65cqw); } .plateau.tapis.unique:not(.scene) #b-J { top:calc(76.1cqh - 8.65cqw); }
+  .plateau.tapis.unique:not(.scene) .barre .cadre, .plateau.tapis.unique:not(.scene) .anneau { left:-6.35cqw; top:-6.35cqw; width:30cqw; height:30cqw; }
+  .plateau.tapis.unique:not(.scene) #b-O .nom { top:calc(100% + 6.3cqw) !important; font-size:2.6cqw; }
+  .unique .colG .ic { width:11.2cqw; height:11.2cqw; }
+  .unique .colG .r1 { left:calc(10.9cqw - 5.6cqw); top:calc(25.1cqh - 5.6cqw); }
+  .unique .colG .r2 { left:calc(10.9cqw - 5.6cqw); top:calc(32.9cqh - 5.6cqw); }
+  .unique .colG .r3 { left:calc(10.9cqw - 5.6cqw); top:calc(40.6cqh - 5.6cqw); }
+  .unique .colG .r4 { left:calc(10.9cqw - 5.6cqw); top:calc(48.2cqh - 5.6cqw); }
+  .unique .colG .r5 { left:calc(10.9cqw - 5.6cqw); top:calc(55.5cqh - 5.6cqw); }
+  .unique .colG .r6 { left:calc(10.9cqw - 5.6cqw); top:calc(63.3cqh - 5.6cqw); }
+  .plateau.tapis.unique:not(.scene) .des { left:85.7cqw; top:23.6cqh; width:7.5cqw; height:42.2cqh; grid-template-rows:repeat(5, 1fr); }
+  .unique:not(.scene) .des .d { width:7.5cqw; }
+  .unique:not(.scene) .d img, .unique:not(.scene) .d .cad { width:6.8cqw; height:6.8cqw; }
+  .unique:not(.scene) .front { left:20cqw !important; right:20.5cqw !important; }
+  .unique:not(.scene) #f-O { top:24.5cqh; } .unique:not(.scene) #f-J { top:47.5cqh; }
+  .unique:not(.scene) .bandeau, .unique:not(.scene) .lancer { top:44.7cqh; left:19.5cqw; right:19.8cqw; }
+  /* panneau de DROITE = étiquettes ; panneau de GAUCHE = cœur de vie + bouclier */
+  .plateau.tapis.unique:not(.scene) .barre .pastilles { position:absolute; transform:none; left:24.25cqw; right:auto; width:27.4cqw; height:6.7cqh; display:flex; flex-direction:column; flex-wrap:wrap; align-content:center; justify-content:center; align-items:flex-start; gap:.5cqh 2cqw; }
+  .plateau.tapis.unique:not(.scene) #b-O .pastilles { top:calc(2.4cqh + 8.65cqw) !important; }
+  .plateau.tapis.unique:not(.scene) #b-J .pastilles { top:calc(-5.6cqh + 8.65cqw) !important; bottom:auto !important; }
+  .plateau.tapis.unique:not(.scene) .barre .p:not(.pv) { background:none !important; border:none !important; box-shadow:none !important; color:#f6e7c1; font-size:2.5cqw; line-height:1.2; padding:0; width:auto; margin:0; height:auto; text-align:left; overflow:visible; text-shadow:0 1px 2px #000, 0 0 3px #000; }
+  .plateau.tapis.unique:not(.scene) .pastilles [data-k="main"] { position:static; }
+  .plateau.tapis.unique:not(.scene) .pastilles [data-k="pv"] { position:absolute; left:-50.4cqw; right:auto; width:11cqw; height:10cqw; }
+  .plateau.tapis.unique:not(.scene) #b-O .pastilles [data-k="pv"] { top:calc(3.35cqh - 5cqw); }
+  .plateau.tapis.unique:not(.scene) #b-J .pastilles [data-k="pv"] { top:calc(4.15cqh - 5cqw); }
+  .plateau.tapis.unique:not(.scene) .barre .bdg.bg, .plateau.tapis.unique:not(.scene) .barre .bdg.bb { left:-15.5cqw; width:7.6cqw; height:8.6cqw; }
+  .plateau.tapis.unique:not(.scene) #b-O .bdg.bg, .plateau.tapis.unique:not(.scene) #b-O .bdg.bb { top:calc(5.75cqh + 4.35cqw); }
+  .plateau.tapis.unique:not(.scene) #b-J .bdg.bg, .plateau.tapis.unique:not(.scene) #b-J .bdg.bb { top:calc(-1.45cqh + 4.35cqw); }
+  .plateau.tapis.unique:not(.scene) .barre .bdg.bg:not([hidden]) + .bdg.bb { left:-8cqw; }
+  .plateau.tapis.unique:not(.scene) #b-O .p:not(.pv), .plateau.tapis.unique:not(.scene) #b-J .p:not(.pv) { background:none !important; border:none !important; padding:0; font-size:2.6cqw; }
 </style>
 </head>
 <body>
@@ -526,7 +560,7 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261111-201207';
+const VERSION = '20261111-202706';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); location.replace('duel.html?v=' + v); }
