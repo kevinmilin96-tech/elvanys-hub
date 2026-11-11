@@ -463,6 +463,34 @@
   .plateau.tapis.unique:not(.scene) #b-O .pastilles { left:25cqw; top:calc(-10.6cqh + 9.2cqw + 9.6cqh); width:14cqw; gap:.95cqh; align-items:center; }
   .plateau.tapis.unique:not(.scene) #b-O .p:not(.pv) { background:none !important; border:none !important; box-shadow:none !important; color:#f3e3b8; font-size:2.3cqw; padding:0; text-shadow:0 1px 2px #000; }
   .unique .bandeau small { font-size:2.5cqw; color:#f3e3b8; }
+  /* ===== 11/11 soir (2) : alignement au pixel sur le plateau final (mesures dans l'image 768 × 1376) =====
+     ronds : centre x 10,4 %, y 26,3 / 33,1 / 39,8 / 46,6 / 53,6 / 60,5 %, diamètre ≈ 9,4 % · bac vert : x 86,7 → 94,4 %, y 24,2 → 52,4 %, 6 cases
+     rubans du haut : x 65,8 → 76,8 %, centres y 8,65 % et 12,6 % */
+  .unique .colG .ic { left:5.6cqw; width:9.6cqw; height:9.6cqw; }
+  .unique .colG .r1 { top:calc(26.3cqh - 4.8cqw); } .unique .colG .r2 { top:calc(33.1cqh - 4.8cqw); } .unique .colG .r3 { top:calc(39.8cqh - 4.8cqw); }
+  .unique .colG .r4 { top:calc(46.6cqh - 4.8cqw); } .unique .colG .r5 { top:calc(53.6cqh - 4.8cqw); } .unique .colG .r6 { top:calc(60.5cqh - 4.8cqw); }
+  .plateau.tapis.unique:not(.scene) .des { left:86.7cqw; top:24.2cqh; width:7.7cqw; height:28.2cqh; padding:0; display:grid; grid-template-rows:repeat(6, 1fr); gap:0; justify-items:center; align-items:center; }
+  .unique:not(.scene) .des .d { width:7.7cqw; height:100%; display:grid; place-items:center; }
+  .unique:not(.scene) .d img, .unique:not(.scene) .d .cad { width:6.6cqw; height:6.6cqw; margin:0; }
+  .unique:not(.scene) .d .sac, .unique:not(.scene) .d.verrou .sac, .unique:not(.scene) .d.neuf .sac { display:none; }
+  .unique:not(.scene) .d.verrou .cad { font-size:3.2cqw; border-width:1px; }
+  .unique:not(.scene) .d.cache::after { top:50%; transform:translateY(-50%); font-size:4.5cqw; }
+  .plateau.tapis.unique:not(.scene) #b-O .pastilles { left:25cqw; width:11cqw; top:calc(-1.95cqh + 7.65cqw); gap:calc(3.95cqh - 3.1cqw); }
+  .plateau.tapis.unique:not(.scene) #b-O .p:not(.pv) { font-size:2.2cqw; line-height:3.1cqw; height:3.1cqw; width:11cqw; text-align:center; overflow:hidden; white-space:nowrap; }
+  .unique .barre .bdg.bg, .unique .barre .bdg.bb { left:-4.5cqw; top:-4cqw; z-index:5; }
+  .unique .barre .bdg.bg:not([hidden]) + .bdg.bb { left:-4.5cqw; top:3cqw; }
+  /* centres mesurés rond par rond (ils dérivent vers la gauche en descendant) */
+  .unique .colG .ic { width:9.4cqw; height:9.4cqw; }
+  .unique .colG .r1 { left:calc(10.8cqw - 4.7cqw); top:calc(26.7cqh - 4.7cqw); }
+  .unique .colG .r2 { left:calc(10.3cqw - 4.7cqw); top:calc(33.5cqh - 4.7cqw); }
+  .unique .colG .r3 { left:calc(9.9cqw - 4.7cqw); top:calc(40.3cqh - 4.7cqw); }
+  .unique .colG .r4 { left:calc(9.5cqw - 4.7cqw); top:calc(47.1cqh - 4.7cqw); }
+  .unique .colG .r5 { left:calc(9.0cqw - 4.7cqw); top:calc(54.0cqh - 4.7cqw); }
+  .unique .colG .r6 { left:calc(8.7cqw - 4.7cqw); top:calc(61.0cqh - 4.7cqw); }
+  .plateau.tapis.unique:not(.scene) #b-O .pastilles { top:calc(0.45cqh + 7.65cqw); }
+  .plateau.tapis.unique:not(.scene) #b-O .p:not(.pv) { overflow:visible; font-size:2.1cqw; width:12cqw; margin-left:-.5cqw; }
+  .unique:not(.scene) .des .d { position:relative; }
+  .unique:not(.scene) .d.cache::after { position:absolute; inset:0; top:0; transform:none; display:grid; place-items:center; font-size:4.2cqw; line-height:1; }
 </style>
 </head>
 <body>
@@ -1271,11 +1299,11 @@ function dessine() {
 const ICONES = { frappe:['⚔', 'Frappe'], technique:['⚔⚔', 'Technique'], garde:['🛡', 'Garde'], pouvoir:['✦', 'Pouvoir'], ultime:['⚡', 'Ultime'], transmu:['⚗', ''], vendre:['◆', 'Vendre'] };
 function icone(quoi, lib, J, extra) {
   const ok = sel.length && permis(J, quoi, vals(sel), sel), [sym, nom] = ICONES[quoi];
-  return `<button class="ic ${ok ? 'ok' : sel.length ? 'non' : ''} ${extra || ''}" style="background-image:url(ui/${quoi}.webp?v=1)" onclick="vise('${quoi}')" aria-label="${lib || nom}"><small>${lib || nom}</small></button>`;
+  return `<button class="ic ${ok ? 'ok' : sel.length ? 'non' : ''} ${extra || ''}" style="background-image:url(ui/${quoi}.webp?v=2)" onclick="vise('${quoi}')" aria-label="${lib || nom}"><small>${lib || nom}</small></button>`;
 }
 function colonneActions(J, h) {
   return `<div class="colG">${icone('frappe', '', J, 'r1')}${icone('technique', '', J, 'r2')}${icone('garde', '', J, 'r3')}${icone('pouvoir', '', J, 'r4')}${h.action ? icone('transmu', h.action.n, J, 'r5' + (J.transmu ? ' fait' : '')) : ''}
-    ${S.coop ? '<button class="ic r6" style="background-image:url(ui/equipe.webp?v=1)" onclick="voirEquipe()" aria-label="Équipe"><small>Équipe</small></button>' : ''}</div>`;
+    ${S.coop ? '<button class="ic r6" style="background-image:url(ui/equipe.webp?v=2)" onclick="voirEquipe()" aria-label="Équipe"><small>Équipe</small></button>' : ''}</div>`;
 }
 function voirSacoche() {
   const J = S.J;
