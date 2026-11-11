@@ -569,6 +569,24 @@
   .plateau.tapis.unique:not(.scene) .barre:has(.bdg:not([hidden])) .pastilles [data-k="pv"] { left:-54.95cqw; }
   .plateau.tapis.unique:not(.scene) .barre .bdg.bg, .plateau.tapis.unique:not(.scene) .barre .bdg.bb { left:-18.2cqw; }
   .plateau.tapis.unique:not(.scene) .barre .bdg.bg:not([hidden]) + .bdg.bb { left:-10cqw; }
+  /* ===== PLACEMENT FAIT PAR L'UTILISATEUR (page placer.html, 11/11 ~20 h 40), recopié tel quel ===== */
+  .unique .colG .ic { width:11.2cqw; height:11.2cqw; margin:0; }
+  .unique .colG .r1 { left:calc(11.01cqw - 5.6cqw); top:calc(25.03cqh - 5.6cqw); }
+  .unique .colG .r2 { left:calc(11.05cqw - 5.6cqw); top:calc(32.8cqh - 5.6cqw); }
+  .unique .colG .r3 { left:calc(11.09cqw - 5.6cqw); top:calc(40.47cqh - 5.6cqw); }
+  .unique .colG .r4 { left:calc(11.09cqw - 5.6cqw); top:calc(48.07cqh - 5.6cqw); }
+  .unique .colG .r5 { left:calc(11.08cqw - 5.6cqw); top:calc(55.71cqh - 5.6cqw); }
+  .unique .colG .r6 { left:calc(11.08cqw - 5.6cqw); top:calc(63.55cqh - 5.6cqw); }
+  .plateau.tapis.unique:not(.scene) .des { left:85.84cqw; top:23.15cqh; width:7.5cqw; height:42.73cqh; }
+  .plateau.tapis.unique:not(.scene) .barre { width:16.9cqw; height:16.9cqw; }
+  .plateau.tapis.unique:not(.scene) #b-O { left:41.72cqw; top:calc(10.03cqh - 8.45cqw); }
+  .plateau.tapis.unique:not(.scene) #b-J { left:41.83cqw; top:calc(76.27cqh - 8.45cqw); }
+  .plateau.tapis.unique:not(.scene) .barre .cadre, .plateau.tapis.unique:not(.scene) .anneau { left:-6.2cqw; top:-6.2cqw; width:29.29cqw; height:29.29cqw; }
+  .plateau.tapis.unique:not(.scene) #b-O .pastilles { left:23.88cqw; top:calc(2.47cqh + 8.45cqw) !important; }
+  .plateau.tapis.unique:not(.scene) #b-J .pastilles { left:23.77cqw; top:calc(-5.77cqh + 8.45cqw) !important; }
+  .plateau.tapis.unique:not(.scene) #b-O .bdg.bg, .plateau.tapis.unique:not(.scene) #b-O .bdg.bb { left:-18.57cqw; top:calc(5.82cqh + 4.15cqw); }
+  .plateau.tapis.unique:not(.scene) #b-J .bdg.bg, .plateau.tapis.unique:not(.scene) #b-J .bdg.bb { left:-18.68cqw; top:calc(-1.62cqh + 4.15cqw); }
+  .plateau.tapis.unique:not(.scene) #b-O .nom { top:calc(100% + 6.2cqw) !important; }
 </style>
 </head>
 <body>
@@ -577,7 +595,7 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261111-203319';
+const VERSION = '20261111-204149';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); location.replace('duel.html?v=' + v); }
