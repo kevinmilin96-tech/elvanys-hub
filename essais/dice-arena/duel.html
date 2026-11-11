@@ -487,7 +487,7 @@
   .unique .colG .r4 { left:calc(9.5cqw - 4.7cqw); top:calc(47.1cqh - 4.7cqw); }
   .unique .colG .r5 { left:calc(9.0cqw - 4.7cqw); top:calc(54.0cqh - 4.7cqw); }
   .unique .colG .r6 { left:calc(8.7cqw - 4.7cqw); top:calc(61.0cqh - 4.7cqw); }
-  .plateau.tapis.unique:not(.scene) #b-O .pastilles { top:calc(0.45cqh + 7.65cqw); }
+  .plateau.tapis.unique:not(.scene) #b-O .pastilles { transform:translateY(2.4cqh); }
   .plateau.tapis.unique:not(.scene) #b-O .p:not(.pv) { overflow:visible; font-size:2.1cqw; width:12cqw; margin-left:-.5cqw; }
   .unique:not(.scene) .des .d { position:relative; }
   .unique:not(.scene) .d.cache::after { position:absolute; inset:0; top:0; transform:none; display:grid; place-items:center; font-size:4.2cqw; line-height:1; }
@@ -499,7 +499,7 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261111-200236';
+const VERSION = '20261111-200359';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); location.replace('duel.html?v=' + v); }
