@@ -10,11 +10,17 @@
   audio { width:100%; } button { margin-top:6px; border:none; border-radius:10px; padding:8px 12px; background:#3a3570; color:#fff; font:bold 14px Georgia; }
 </style></head><body><main>
 <h1>🎵 Les musiques d’ambiance</h1>
-<p>Chaque morceau est joué <b>en boucle</b>. « Écouter le raccord » saute aux 10 dernières secondes : on entend la fin repartir sur le début (c’est là que l’ancienne musique cassait).</p>
+<p>11/11 : flûte et clochettes remplacées, chaque morceau en deux versions, <b>ocarina</b> ou <b>flûte de pan</b>. Chaque morceau est joué <b>en boucle</b>. « Écouter le raccord » saute aux 10 dernières secondes : on entend la fin repartir sur le début (c’est là que l’ancienne musique cassait).</p>
 <div class="m"><h2>Ancienne · Combat (40 s)</h2><p>Celle qui est dans le jeu aujourd’hui.</p><audio id="a0" src="sons/combat.mp3" controls loop></audio><button onclick="raccord('a0')">Écouter le raccord</button></div>
-<div class="m"><h2>1 · Combat v2 (2 min 20)</h2><p>Ré mineur, harpe, cordes, tambour, flûte. En 5 parties : intro douce, combat, accalmie avec clochettes, combat plus fort, retour au calme.</p><audio id="a1" src="sons/combat2.mp3" controls loop></audio><button onclick="raccord('a1')">Écouter le raccord</button></div>
-<div class="m"><h2>2 · Exploration (2 min 40)</h2><p>La mineur, lent, sans tambour : harpe en arpèges, nappes, flûte lointaine, clochettes. Pour la carte de l’Odyssée et les pages de chronique.</p><audio id="a2" src="sons/exploration.mp3" controls loop></audio><button onclick="raccord('a2')">Écouter le raccord</button></div>
-<div class="m"><h2>3 · Campement / taverne (2 min)</h2><p>Sol majeur, plus vif et joyeux : cordes pincées, flûte folklorique, petites percussions. Pour le Campement, le menu ou le port.</p><audio id="a3" src="sons/campement.mp3" controls loop></audio><button onclick="raccord('a3')">Écouter le raccord</button></div>
+<div class="m"><h2>1 · Combat v2 (2 min 20)</h2><p>Harpe, cordes, tambour ; la mélodie à l’ocarina ou à la flûte de pan (plus de flûte ni de clochettes). Intro douce, combat, accalmie, combat plus fort, retour au calme.</p>
+<p><b>Ocarina</b></p><audio id="combat2-o" src="sons/combat2-ocarina.mp3?v=2" controls loop></audio><button onclick="raccord('combat2-o')">Écouter le raccord</button>
+<p><b>Flûte de pan</b></p><audio id="combat2-p" src="sons/combat2-pan.mp3?v=2" controls loop></audio><button onclick="raccord('combat2-p')">Écouter le raccord</button></div>
+<div class="m"><h2>2 · Exploration (2 min 40)</h2><p>Lent, sans tambour : harpe en arpèges, nappes, mélodie lointaine. Pour la carte de l’Odyssée.</p>
+<p><b>Ocarina</b></p><audio id="exploration-o" src="sons/exploration-ocarina.mp3?v=2" controls loop></audio><button onclick="raccord('exploration-o')">Écouter le raccord</button>
+<p><b>Flûte de pan</b></p><audio id="exploration-p" src="sons/exploration-pan.mp3?v=2" controls loop></audio><button onclick="raccord('exploration-p')">Écouter le raccord</button></div>
+<div class="m"><h2>3 · Campement / taverne (2 min)</h2><p>Plus vif et joyeux : cordes pincées, petites percussions, air folklorique.</p>
+<p><b>Ocarina</b></p><audio id="campement-o" src="sons/campement-ocarina.mp3?v=2" controls loop></audio><button onclick="raccord('campement-o')">Écouter le raccord</button>
+<p><b>Flûte de pan</b></p><audio id="campement-p" src="sons/campement-pan.mp3?v=2" controls loop></audio><button onclick="raccord('campement-p')">Écouter le raccord</button></div>
 <script>
 function raccord(id) { document.querySelectorAll('audio').forEach(a => { if (a.id !== id) a.pause(); }); const a = document.getElementById(id); const go = () => { a.currentTime = Math.max(0, a.duration - 10); a.play(); }; if (isNaN(a.duration)) a.addEventListener('loadedmetadata', go, { once:true }); else go(); }
 </script>
