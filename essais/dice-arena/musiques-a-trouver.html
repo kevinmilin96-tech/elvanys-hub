@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Les musiques à trouver · La Guilde des Runes</title>
+<style>
+  /* Liste à cocher des musiques à trouver (11/11) : l'utilisateur cherche dans les bibliothèques libres, coche, note le lien, puis copie son bilan pour Claude. */
+  body { margin:0; background:#15132b; color:#efe9ff; font:15px/1.5 Georgia, serif; }
+  main { max-width:680px; margin:0 auto; padding:16px 14px 50px; }
+  h1 { color:#f3c96b; font-size:1.4em; margin:.2em 0; } h2 { color:#f3c96b; font-size:1.1em; margin:1.4em 0 .3em; }
+  .m { background:#221d3d; border:1px solid #4b4580; border-radius:12px; padding:9px 12px; margin:9px 0; }
+  .m.ok { border-color:#7dffb0; background:#1d3326; }
+  .m label { display:flex; gap:10px; align-items:flex-start; font-weight:bold; color:#fff; }
+  .m input[type=checkbox] { width:22px; height:22px; flex:none; margin-top:2px; }
+  .m p { margin:4px 0 4px 32px; color:#c9c1ea; font-size:.92em; }
+  .m code { background:#0006; border-radius:6px; padding:0 5px; color:#f3e3b8; font-size:.9em; }
+  .m input[type=text] { margin:4px 0 2px 32px; width:calc(100% - 34px); box-sizing:border-box; border-radius:8px; border:1px solid #4b4580; background:#15132b; color:#fff; padding:6px; font:14px Georgia; }
+  .lib a { color:#7dd8ff; } .bt { position:sticky; bottom:0; background:#15132bee; padding:10px 0; display:flex; gap:8px; }
+  .bt button { flex:1; border:none; border-radius:10px; padding:11px; font:bold 14px Georgia; background:#f3c96b; color:#1d1626; }
+  #compte { color:#7dffb0; text-align:center; }
+</style></head><body><main>
+<h1>🎵 Les musiques à trouver</h1>
+<p><b>14 musiques</b> (dont 2 très courtes, victoire et défaite) et <b>3 ambiances</b> (bruits de fond). Pour chacune : coche quand tu l’as trouvée et colle le lien de la page (pour que je vérifie la licence). Tout est gardé sur ton téléphone. À la fin : « Copier mon bilan » et colle-le à Claude.</p>
+<div class="m lib">Où chercher : <a href="https://opengameart.org/art-search-advanced?field_art_type_tid%5B%5D=12" target="_blank">OpenGameArt (musique)</a> · <a href="https://pixabay.com/music/" target="_blank">Pixabay Music</a> · <a href="https://incompetech.com/music/royalty-free/music.html" target="_blank">Incompetech</a> · <a href="https://itch.io/game-assets/free/tag-music" target="_blank">itch.io (gratuit)</a> · <a href="https://freesound.org/" target="_blank">Freesound (ambiances)</a>. Préférer <b>CC0</b> ou <b>Pixabay</b> ; ajouter <code>loop</code> ou <code>seamless</code> aux recherches.</div>
+<p id="compte"></p>
+<div id="liste"></div>
+<div class="bt"><button onclick="copier()">Copier mon bilan</button></div>
+<script>
+const L = [
+  ['Les menus', [
+    ['titre', 'Écran titre (le portail runique)', 'Mystérieux et magique, qui donne envie d’entrer. 1-2 min, en boucle.', 'mystical fantasy main theme, magic portal, ethereal'],
+    ['menu', 'Le monde de la Guilde (menu des lieux)', 'Chaleureux, aventure qui commence, pas trop fort. 2 min, en boucle.', 'fantasy village theme, adventure begins, warm medieval'],
+    ['heros', 'La Tour des héros (choix du héros)', 'Calme et héroïque, on prend son temps. 1-2 min, en boucle.', 'heroic calm fantasy, character select, noble'],
+  ]],
+  ['Les combats', [
+    ['duel', 'Duel (combat normal)', 'Rythmé mais pas stressant, on réfléchit pendant. 2-3 min, en boucle.', 'fantasy battle loop, medieval combat, tabletop'],
+    ['elite', 'Combat contre une élite ou un héros rival', 'Plus tendu, plus de tambours. 2 min, en boucle.', 'intense fantasy battle, rival duel, drums'],
+    ['boss', 'Boss (Titan de feu, Colosse des racines)', 'Épique, grandiose, chœurs ou cuivres. 2-3 min, en boucle.', 'epic boss battle fantasy, orchestral, choir'],
+    ['victoire', 'Victoire (très court)', 'Fanfare joyeuse. 5 à 10 secondes, sans boucle.', 'victory fanfare short, win jingle fantasy'],
+    ['defaite', 'Défaite (très court)', 'Triste mais pas déprimant. 5 à 10 secondes, sans boucle.', 'defeat jingle short, game over fantasy soft'],
+  ]],
+  ['L’Odyssée', [
+    ['carte', 'La carte de l’île (exploration)', 'Mystérieux, lent, on avance dans la brume. 2-3 min, en boucle.', 'fantasy exploration ambient, mysterious dungeon map, slow'],
+    ['recit', 'Les pages de chronique (récit)', 'Comme un conte qu’on lit. 1-2 min, en boucle.', 'fantasy storytelling, fairy tale, music box, harp'],
+    ['marchand', 'Le marchand, le port, la taverne', 'Joyeux et folklorique. 1-2 min, en boucle.', 'medieval tavern music, folk, lute, merchant'],
+  ]],
+  ['Les autres modes', [
+    ['campement', 'Le Campement (jeu à deux contre un boss)', 'Feu de camp, amitié, un peu de tension. 2 min, en boucle.', 'campfire fantasy, cooperative, warm celtic'],
+    ['expeditions', 'Les Expéditions (le navire volant)', 'Aventure en mer, entraînant. 2 min, en boucle.', 'sea shanty instrumental, sailing adventure, airship fantasy'],
+    ['tuto', 'Le tutoriel (avec Corbin)', 'Léger et amusant. 1-2 min, en boucle.', 'playful fantasy tutorial, light whimsical, cheerful'],
+  ]],
+  ['Les ambiances (bruits de fond, sous la musique)', [
+    ['feu', 'Feu de camp qui crépite', 'Pour le Campement. 1 min, en boucle.', 'campfire crackling loop'],
+    ['vent', 'Vent et brume', 'Pour la carte de l’Odyssée. 1 min, en boucle.', 'wind ambience loop, foggy'],
+    ['mer', 'Vagues et vent du large', 'Pour les Expéditions. 1 min, en boucle.', 'ocean waves wind loop'],
+  ]],
+];
+const CLE = 'guilde-musiques', R = JSON.parse(localStorage.getItem(CLE) || '{}');
+function dessine() {
+  let html = '', n = 0, ok = 0;
+  for (const [titre, items] of L) { html += `<h2>${titre}</h2>`;
+    for (const [k, nom, desc, mots] of items) { n++; const r = R[k] || {}; if (r.ok) ok++;
+      html += `<div class="m ${r.ok ? 'ok' : ''}"><label><input type="checkbox" ${r.ok ? 'checked' : ''} onchange="maj('${k}','ok',this.checked)">${nom}</label><p>${desc}</p><p>Chercher : <code>${mots}</code></p><input type="text" placeholder="Lien de la page trouvée (et le nom du morceau)" value="${(r.lien || '').replace(/"/g, '&quot;')}" onchange="maj('${k}','lien',this.value)"></div>`; } }
+  document.getElementById('liste').innerHTML = html; document.getElementById('compte').textContent = `${ok} sur ${n} trouvées`;
+}
+function maj(k, champ, v) { R[k] = R[k] || {}; R[k][champ] = v; localStorage.setItem(CLE, JSON.stringify(R)); dessine(); }
+function copier() {
+  let t = 'MUSIQUES GUILDE\n'; for (const [, items] of L) for (const [k, nom] of items) { const r = R[k] || {}; t += `${r.ok ? '✅' : '⬜'} ${nom}${r.lien ? ' : ' + r.lien : ''}\n`; }
+  (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => alert('Copié : colle-le dans la discussion avec Claude.')).catch(() => prompt('Copie ce texte :', t));
+}
+dessine();
+</script>
+</main></body></html>
