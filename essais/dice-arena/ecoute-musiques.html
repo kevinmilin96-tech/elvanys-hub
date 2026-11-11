@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Musiques d'ambiance · La Guilde des Runes</title>
+<style>
+  /* Page d'écoute des musiques (11/11) : l'utilisateur choisit ce qu'il garde. */
+  body { margin:0; background:#15132b; color:#efe9ff; font:16px/1.5 Georgia, serif; }
+  main { max-width:620px; margin:0 auto; padding:18px 14px 40px; }
+  h1 { color:#f3c96b; font-size:1.4em; } .m { background:#221d3d; border:1px solid #4b4580; border-radius:12px; padding:10px 12px; margin:12px 0; }
+  .m h2 { margin:0 0 4px; font-size:1.05em; color:#7dffb0; } .m p { margin:4px 0 8px; color:#c9c1ea; font-size:.92em; }
+  audio { width:100%; } button { margin-top:6px; border:none; border-radius:10px; padding:8px 12px; background:#3a3570; color:#fff; font:bold 14px Georgia; }
+</style></head><body><main>
+<h1>🎵 Les musiques d’ambiance</h1>
+<p>Chaque morceau est joué <b>en boucle</b>. « Écouter le raccord » saute aux 10 dernières secondes : on entend la fin repartir sur le début (c’est là que l’ancienne musique cassait).</p>
+<div class="m"><h2>Ancienne · Combat (40 s)</h2><p>Celle qui est dans le jeu aujourd’hui.</p><audio id="a0" src="sons/combat.mp3" controls loop></audio><button onclick="raccord('a0')">Écouter le raccord</button></div>
+<div class="m"><h2>1 · Combat v2 (2 min 20)</h2><p>Ré mineur, harpe, cordes, tambour, flûte. En 5 parties : intro douce, combat, accalmie avec clochettes, combat plus fort, retour au calme.</p><audio id="a1" src="sons/combat2.mp3" controls loop></audio><button onclick="raccord('a1')">Écouter le raccord</button></div>
+<div class="m"><h2>2 · Exploration (2 min 40)</h2><p>La mineur, lent, sans tambour : harpe en arpèges, nappes, flûte lointaine, clochettes. Pour la carte de l’Odyssée et les pages de chronique.</p><audio id="a2" src="sons/exploration.mp3" controls loop></audio><button onclick="raccord('a2')">Écouter le raccord</button></div>
+<div class="m"><h2>3 · Campement / taverne (2 min)</h2><p>Sol majeur, plus vif et joyeux : cordes pincées, flûte folklorique, petites percussions. Pour le Campement, le menu ou le port.</p><audio id="a3" src="sons/campement.mp3" controls loop></audio><button onclick="raccord('a3')">Écouter le raccord</button></div>
+<script>
+function raccord(id) { document.querySelectorAll('audio').forEach(a => { if (a.id !== id) a.pause(); }); const a = document.getElementById(id); const go = () => { a.currentTime = Math.max(0, a.duration - 10); a.play(); }; if (isNaN(a.duration)) a.addEventListener('loadedmetadata', go, { once:true }); else go(); }
+</script>
+</main></body></html>
