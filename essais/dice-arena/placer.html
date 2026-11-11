@@ -26,6 +26,8 @@
   .de { width:7cqw; height:7cqw; background:url('faces-zephine/face-5.webp') center/contain no-repeat; }
   .coeur { width:11cqw; height:10cqw; background:url('ui/coeur.webp?v=1') center/contain no-repeat; display:grid; place-items:center; font:bold 3.6cqw Georgia; text-shadow:0 1px 2px #000; }
   .bouc { width:7.6cqw; height:8.6cqw; background:url('ui/bouclier.webp?v=1') center/contain no-repeat; display:grid; place-items:center; font:bold 3.2cqw Georgia; text-shadow:0 1px 2px #000; }
+  .coin { width:8cqw; height:8cqw; display:grid; place-items:center; font-size:6cqw; color:#7dffb0; text-shadow:0 0 3px #000; }
+  .zone { position:absolute; border:2px dashed #7dffb0; background:#7dffb022; pointer-events:none; display:grid; place-items:center; font-size:3cqw; color:#e9ffe9; text-shadow:0 1px 2px #000; }
   .etq { padding:2px 6px; font-size:2.6cqw; color:#f6e7c1; text-shadow:0 1px 2px #000; text-align:center; white-space:nowrap; border:1px dashed #ffffff55; border-radius:6px; }
   .bas { padding:6px 8px; background:#1d1626; display:grid; gap:4px; }
   .bas label { display:flex; align-items:center; gap:8px; font-size:12px; }
@@ -53,7 +55,7 @@
 </div>
 <script>
 // positions de départ = celles du jeu (en % de la largeur pour x, de la hauteur pour y)
-const DEFAUT = {"taille_medaillon":11.2,"taille_portrait":16.9,"frappe":[11.01,25.03],"technique":[11.05,32.8],"garde":[11.09,40.47],"pouvoir":[11.09,48.07],"transmu":[11.08,55.71],"equipe":[11.08,63.55],"de_premier":[89.73,27.42],"de_dernier":[89.45,61.6],"portrait_haut":[50.17,10.03],"portrait_bas":[50.28,76.27],"coeur_haut":[16.15,15.85],"bouclier_haut":[26.95,15.85],"etiquettes_haut":[79.3,15.85],"coeur_bas":[16.15,74.65],"bouclier_bas":[26.95,74.65],"etiquettes_bas":[79.3,74.65],"tailles":{}};
+const DEFAUT = {"taille_medaillon":11.2,"taille_portrait":16.9,"frappe":[11.01,25.03],"technique":[11.05,32.8],"garde":[11.09,40.47],"pouvoir":[11.09,48.07],"transmu":[11.08,55.71],"equipe":[11.08,63.55],"de_premier":[89.73,27.42],"de_dernier":[89.45,61.6],"portrait_haut":[50.17,10.03],"portrait_bas":[50.28,76.27],"coeur_haut":[16.15,15.85],"bouclier_haut":[26.95,15.85],"etiquettes_haut":[79.3,15.85],"coeur_bas":[16.15,74.65],"bouclier_bas":[26.95,74.65],"etiquettes_bas":[79.3,74.65],"main_haut_gauche":[25,83.5],"main_bas_droit":[82,97.5],"tailles":{}};
 const CLE = 'guilde-placement';
 let R = JSON.parse(localStorage.getItem(CLE) || 'null') || JSON.parse(JSON.stringify(DEFAUT));
 const pl = document.getElementById('pl');
@@ -63,10 +65,14 @@ const ELEMENTS = [
   ['de_premier', 'de'], ['de_dernier', 'de'],
   ['portrait_haut', 'por', 'portraits/maelle.webp'], ['portrait_bas', 'por', 'portraits/zephine.webp'],
   ['coeur_haut', 'coeur', '', '20'], ['bouclier_haut', 'bouc', '', '6'], ['etiquettes_haut', 'etq', '', '🔥 Braises 0/3<br>🂠 5 en main'],
+  ['main_haut_gauche', 'coin', '', '◤'], ['main_bas_droit', 'coin', '', '◢'],
   ['coeur_bas', 'coeur', '', '30'], ['bouclier_bas', 'bouc', '', '6'], ['etiquettes_bas', 'etq', '', '🂠 4 en main'],
 ];
+function zone() { let z = document.getElementById('zm'); if (!z) { z = document.createElement('div'); z.id = 'zm'; z.className = 'zone'; z.textContent = 'cartes en main'; pl.prepend(z); }
+  const a = R.main_haut_gauche || [25, 83.5], b = R.main_bas_droit || [82, 97.5]; z.style.left = a[0] + '%'; z.style.top = a[1] + '%'; z.style.width = (b[0] - a[0]) + '%'; z.style.height = (b[1] - a[1]) + '%'; }
 function dessine() {
   pl.innerHTML = '';
+  if (!R.main_haut_gauche) { R.main_haut_gauche = [25, 83.5]; R.main_bas_droit = [82, 97.5]; }
   pl.style.setProperty('--m', R.taille_medaillon + 'cqw'); pl.style.setProperty('--p', R.taille_portrait + 'cqw');
   for (const [k, cls, img, txt] of ELEMENTS) {
     const e = document.createElement('div'); e.className = 'el ' + cls; e.dataset.k = k;
@@ -74,17 +80,18 @@ function dessine() {
     e.style.left = R[k][0] + '%'; e.style.top = R[k][1] + '%';
     e.addEventListener('pointerdown', debut); pl.appendChild(e); appliqueTaille(e);
   }
+  zone();
   tm.value = R.taille_medaillon; vm.textContent = R.taille_medaillon; tp.value = R.taille_portrait; vp.textContent = R.taille_portrait;
 }
 let cour = null, choisi = null;
-const NOMS = { frappe:'Frappe', technique:'Technique', garde:'Garde', pouvoir:'Pouvoir', transmu:'Transmuter', equipe:'Équipe', de_premier:'1er dé', de_dernier:'dernier dé', portrait_haut:'portrait du haut', portrait_bas:'portrait du bas', coeur_haut:'cœur du haut', bouclier_haut:'bouclier du haut', etiquettes_haut:'étiquettes du haut', coeur_bas:'cœur du bas', bouclier_bas:'bouclier du bas', etiquettes_bas:'étiquettes du bas' };
+const NOMS = { frappe:'Frappe', technique:'Technique', garde:'Garde', pouvoir:'Pouvoir', transmu:'Transmuter', equipe:'Équipe', de_premier:'1er dé', de_dernier:'dernier dé', portrait_haut:'portrait du haut', portrait_bas:'portrait du bas', coeur_haut:'cœur du haut', bouclier_haut:'bouclier du haut', etiquettes_haut:'étiquettes du haut', coeur_bas:'cœur du bas', bouclier_bas:'bouclier du bas', etiquettes_bas:'étiquettes du bas', main_haut_gauche:'coin haut-gauche des cartes', main_bas_droit:'coin bas-droit des cartes' };
 function choisir(e) { document.querySelectorAll('.el.choisi').forEach(x => x.classList.remove('choisi')); choisi = e; e.classList.add('choisi'); choix.textContent = `Choisi : ${NOMS[e.dataset.k]} (${R[e.dataset.k].join(' ; ')}) · taille ${(R.tailles || {})[e.dataset.k] || 100} %`; }
 // flèches : 0,1 % de l'image par toucher
 // taille propre à l'élément choisi (en % de sa taille de départ), gardée dans R.tailles
 function appliqueTaille(e) { const t = (R.tailles || {})[e.dataset.k]; e.style.transform = `translate(-50%, -50%) scale(${(t || 100) / 100})`; }
 function taille(sens) { if (!choisi) { choix.textContent = 'Touche d’abord un élément.'; return; } R.tailles = R.tailles || {}; const k = choisi.dataset.k;
   R.tailles[k] = sens ? Math.max(30, Math.min(300, (R.tailles[k] || 100) + sens * 2)) : 100; appliqueTaille(choisi); localStorage.setItem(CLE, JSON.stringify(R)); choisir(choisi); }
-function pousse(dx, dy) { if (!choisi) { choix.textContent = 'Touche d’abord un élément.'; return; } const k = choisi.dataset.k; R[k] = [+(R[k][0] + dx * .1).toFixed(2), +(R[k][1] + dy * .1).toFixed(2)]; choisi.style.left = R[k][0] + '%'; choisi.style.top = R[k][1] + '%'; localStorage.setItem(CLE, JSON.stringify(R)); choisir(choisi); }
+function pousse(dx, dy) { if (!choisi) { choix.textContent = 'Touche d’abord un élément.'; return; } const k = choisi.dataset.k; R[k] = [+(R[k][0] + dx * .1).toFixed(2), +(R[k][1] + dy * .1).toFixed(2)]; choisi.style.left = R[k][0] + '%'; choisi.style.top = R[k][1] + '%'; zone(); localStorage.setItem(CLE, JSON.stringify(R)); choisir(choisi); }
 // zoom : le plateau grandit dans la vue, qu'on fait défiler au doigt à côté des éléments
 function zoom(z) { const vue = document.getElementById('vue'); pl.style.height = (vue.clientHeight * z) + 'px'; vz.textContent = '×' + z; centrer(); }
 function centrer() { if (!choisi) return; const vue = document.getElementById('vue'), r = pl.getBoundingClientRect(), k = R[choisi.dataset.k]; vue.scrollLeft = r.width * k[0] / 100 - vue.clientWidth / 2; vue.scrollTop = r.height * k[1] / 100 - vue.clientHeight / 2; }
@@ -92,7 +99,7 @@ function debut(ev) { ev.preventDefault(); cour = ev.currentTarget; choisir(cour)
 function bouge(ev) {
   const r = pl.getBoundingClientRect(), k = cour.dataset.k;
   const x = Math.max(0, Math.min(100, (ev.clientX - r.left) / r.width * 100)), y = Math.max(0, Math.min(100, (ev.clientY - r.top) / r.height * 100));
-  R[k] = [+x.toFixed(2), +y.toFixed(2)]; cour.style.left = x + '%'; cour.style.top = y + '%';
+  R[k] = [+x.toFixed(2), +y.toFixed(2)]; cour.style.left = x + '%'; cour.style.top = y + '%'; zone();
 }
 function fin() { cour.classList.remove('actif'); cour.onpointermove = null; cour = null; localStorage.setItem(CLE, JSON.stringify(R)); }
 tz.oninput = () => zoom(+tz.value);

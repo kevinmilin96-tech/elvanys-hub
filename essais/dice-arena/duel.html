@@ -587,6 +587,10 @@
   .plateau.tapis.unique:not(.scene) #b-O .bdg.bg, .plateau.tapis.unique:not(.scene) #b-O .bdg.bb { left:-18.57cqw; top:calc(5.82cqh + 4.15cqw); }
   .plateau.tapis.unique:not(.scene) #b-J .bdg.bg, .plateau.tapis.unique:not(.scene) #b-J .bdg.bb { left:-18.68cqw; top:calc(-1.62cqh + 4.15cqw); }
   .plateau.tapis.unique:not(.scene) #b-O .nom { top:calc(100% + 6.2cqw) !important; }
+  /* la main dans sa zone (style posé par mainEnEventail) */
+  .plateau.tapis.unique .main { right:auto; bottom:auto; overflow:visible; }
+  .plateau.tapis.unique .main .c:not(.vue) { bottom:0; }
+  .plateau.tapis.unique .main .c.vue { width:164px; height:auto; min-height:206px; font-size:.8em; }
 </style>
 </head>
 <body>
@@ -595,7 +599,7 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261111-204149';
+const VERSION = '20261111-204409';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); location.replace('duel.html?v=' + v); }
@@ -1001,16 +1005,21 @@ let sel = [], attaquant = null, ciblage = null, carteVue = null;
 // une carte agrandie se range dès qu'on touche ailleurs que sur une carte de la main
 document.addEventListener('click', e => { if (carteVue !== null && !e.target.closest('.main .c')) { carteVue = null; rendu(); } });
 // la main en éventail : 1er toucher = la carte se soulève et s'agrandit ; 2e toucher = on la joue (si les dés choisis conviennent)
+const ZONE_MAIN = { x1:25, y1:83.5, x2:82, y2:97.5 };  // zone des cartes en main (placée par l'utilisateur dans placer.html)
 function mainEnEventail(J) {
   const n = J.main.length; if (!n) return '<i style="color:#c9c1ea;position:absolute;left:0;right:0;text-align:center;top:60px">Main vide</i>';
   if (carteVue !== null && carteVue >= n) carteVue = null;
-  const mil = (n - 1) / 2, pas = n > 1 ? Math.min(46, 240 / (n - 1)) : 0, ang = n > 1 ? Math.min(4, 18 / (n - 1)) : 0;
+  // 11/11 : la main tient DANS sa zone du plateau (ZONE_MAIN, en % du plateau, réglable par la page placer.html) : taille des cartes = hauteur de la zone
+  const pl = document.querySelector('.plateau.unique'), PW = pl ? pl.clientWidth : Math.min(innerWidth, 560), PH = pl ? pl.clientHeight : innerHeight - 90;
+  const Z = ZONE_MAIN, zw = (Z.x2 - Z.x1) / 100 * PW, zh = (Z.y2 - Z.y1) / 100 * PH;
+  const CH = Math.max(60, Math.min(150, zh * .96)), CW = Math.round(CH * .7), FS = (CW / 80 * .5).toFixed(3);
+  const mil = (n - 1) / 2, pas = n > 1 ? Math.min(CW * .82, (zw - CW) / (n - 1)) : 0, ang = n > 1 ? Math.min(4, 14 / (n - 1)) : 0;
   return J.main.map((k, i) => {
     const c = CARTES[k], ok = sel.length && permis(J, k, vals(sel), sel), vue = carteVue === i, d = i - mil;
-    const style = vue ? 'left:calc(50% - 82px);transform:translateY(-110px);z-index:60'
-      : `left:calc(50% - 40px + ${d * pas}px);transform:translateY(${Math.round(d * d * 2) - (ok ? 14 : 0)}px) rotate(${d * ang}deg);z-index:${ok ? 40 + i : i + 1}`;
+    const style = vue ? `left:calc(50% - 82px);bottom:${Math.round(zh)}px;z-index:60`
+      : `left:calc(50% - ${CW / 2}px + ${d * pas}px);width:${CW}px;height:${CH}px;font-size:${FS}em;transform:translateY(${Math.round(d * d * 1.2) - (ok ? 8 : 0)}px) rotate(${d * ang}deg);z-index:${ok ? 40 + i : i + 1}`;
     const pied = vue ? `<div class="jouer">${ok ? '👆 Touche encore pour la jouer' : sel.length ? 'Ces dés ne conviennent pas' : 'Choisis d’abord tes dés'}</div>` : '';
-    if (typeof CADRES_OK !== 'undefined' && CADRES_OK.includes(CADRE_DE(k))) return `<div class="c neuve ${ok ? 'ok' : sel.length ? 'non' : ''} ${vue ? 'vue' : ''}" style="${style}" onclick="toucheCarte(${i})">${carteGuilde(k, { w:vue ? 164 : 80, cout:coutCarte(J, k), pied:vue ? `<div class="cg-pied">${ok ? '👆 Touche encore pour la jouer' : sel.length ? 'Ces dés ne conviennent pas' : 'Choisis d’abord tes dés'}</div>` : '' })}</div>`;
+    if (typeof CADRES_OK !== 'undefined' && CADRES_OK.includes(CADRE_DE(k))) return `<div class="c neuve ${ok ? 'ok' : sel.length ? 'non' : ''} ${vue ? 'vue' : ''}" style="${style}" onclick="toucheCarte(${i})">${carteGuilde(k, { w:vue ? 164 : CW, cout:coutCarte(J, k), pied:vue ? `<div class="cg-pied">${ok ? '👆 Touche encore pour la jouer' : sel.length ? 'Ces dés ne conviennent pas' : 'Choisis d’abord tes dés'}</div>` : '' })}</div>`;
     return `<div class="c ${c.t}2 ${ok ? 'ok' : sel.length ? 'non' : ''} ${vue ? 'vue' : ''}" style="${style}" onclick="toucheCarte(${i})"><span class="cout">${coutCarte(J, k)}</span><div class="n">${c.n}</div><span class="cd">🎲 ${c.txt}</span><div class="dd">${c.d}</div>${pied}</div>`;
   }).join('');
 }
@@ -1380,7 +1389,7 @@ function dessine() {
     <div class="des" ontouchstart="glisseDebut(event)" ontouchend="glisseFin(event)">${J.des.map((d, i) => `<div class="d ${sel.includes(d) ? 'sel' : ''} ${d.pose ? 'pose' : ''} ${d.mod ? 'mod' : ''} ${J.aLancer ? 'cache' : ''} ${i === J.neuf && (J.aLancer || Date.now() < (J.neufJusque || 0)) ? 'neuf' : ''}" onclick="choisirDe(${i})"><img src="${FACE(J.id, d.v || 1)}" alt="${d.v || '?'}"><div class="sac">${i === J.neuf && (J.aLancer || Date.now() < (J.neufJusque || 0)) ? '✨ neuf' : sacPastilles(J, d)}</div></div>`).join('')}${[...Array(Math.max(0, 5 - J.des.length)).keys()].map(k => { const i = J.des.length + k, t = i - 1;
       return `<div class="d verrou"><div class="cad">🔒</div><div class="sac">${J.tours >= t ? 'Handicap' : 'tour ' + t}</div></div>`; }).join('')}</div>
     ${J.aLancer ? '<button class="lancer" onclick="lancerMesDes()">🎲 Lancer les dés</button>' : `<div class="bandeau">${bandeau}${sel.length || ciblage || attaquant ? ' <a href="#" onclick="annuler();return false" style="color:#f3c96b">Annuler</a>' : ''}</div>`}
-    <div class="main" onclick="if(event.target===this){carteVue=null;rendu();}">${mainEnEventail(J)}</div>
+    <div class="main" style="left:${ZONE_MAIN.x1}%;width:${ZONE_MAIN.x2 - ZONE_MAIN.x1}%;top:${ZONE_MAIN.y1}%;height:${ZONE_MAIN.y2 - ZONE_MAIN.y1}%" onclick="if(event.target===this){carteVue=null;rendu();}">${mainEnEventail(J)}</div>
   </div>
   <div class="bas">
     <button class="b0" onclick="regles()" aria-label="Règles">❓</button>
