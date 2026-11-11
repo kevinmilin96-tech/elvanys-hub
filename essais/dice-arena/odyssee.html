@@ -264,9 +264,9 @@ async function marcheVers(x, y) {
   enMarche = false; sauve(); dessine(); arrive(caseA(R, R.pos.x, R.pos.y));
 }
 function va(x, y) { return marcheVers(x, y); }
-// =============================================================================================== les voix : le héros et Plume, le corbeau messager de la Guilde
-// Proposé par Claude (à valider) : ton drôle et taquin, Plume râle et a toujours faim ; le héros répond dans son caractère.
-const PLUME = {
+// =============================================================================================== les voix : le héros et Corbin, le corbeau messager de la Guilde
+// Proposé par Claude (à valider) : ton drôle et taquin, Corbin râle et a toujours faim ; le héros répond dans son caractère.
+const CORBIN = {
   depart:['Bon. Une île, du feu, des monstres. Et pas une miette de pain depuis le navire.', 'Si on se perd, je précise que c’est toi qui tiens la carte.', 'Croâ. On dit que le Titan n’aime pas les visiteurs. Ni les corbeaux.'],
   monstre:['Il y a quelque chose là-dedans. Je dis ça, je dis rien. Je vole, moi.', 'Ça sent le gobelin. Ou tes chaussettes.', 'Tu passes devant. Toujours. C’est le contrat.'],
   elite:['Oh. Celui-là, il a l’air de connaître les règles.', 'Un fragment de rune, qu’ils disaient. Facile, qu’ils disaient.', 'Je vais me poser un peu plus loin. Beaucoup plus loin.'],
@@ -286,17 +286,17 @@ const PLUME = {
   boss_vaincu:['Tu… tu l’as eu. Je n’ai jamais douté. Jamais. Enfin presque.', 'L’île est libre ! Et moi j’ai faim. Les deux sont importants.'],
 };
 const HEROS_VOIX = {
-  maelle:['Ce qui est forgé ne casse pas. Toi non plus, si tu te tais.', 'Avance, Plume. L’enclume n’attend pas.', 'Je frappe, tu comptes les coups.'],
+  maelle:['Ce qui est forgé ne casse pas. Toi non plus, si tu te tais.', 'Avance, Corbin. L’enclume n’attend pas.', 'Je frappe, tu comptes les coups.'],
   aldric:['Tant que la lanterne brille, personne ne passe. Toi compris.', 'Courage, mon ami à plumes. Je passe devant.', 'Un chevalier ne recule pas. Il contourne, parfois.'],
-  pip:['La forêt me parle, Plume. Elle dit que tu parles trop.', 'Chut. Écoute l’île.', 'Ma louve t’aurait déjà mangé, tu sais.'],
+  pip:['La forêt me parle, Corbin. Elle dit que tu parles trop.', 'Chut. Écoute l’île.', 'Ma louve t’aurait déjà mangé, tu sais.'],
   oria:['Tout est sur ma carte. Sauf ce que je n’ai pas encore dessiné.', 'Par là. Enfin, à peu près par là.', 'Un cartographe ne se perd jamais. Il explore.'],
   gorm:['Mon cor fera trembler ce Titan. Et tes plumes.', 'On avance au pas de charge, l’oiseau !', 'Moins de mots, plus de monstres.'],
-  zephine:['Fascinant. Je me demande ce que ça donne en fiole.', 'Ne touche à rien, Plume. Surtout pas aux flacons verts.', 'La chimie règle tout. Même les corbeaux.'],
+  zephine:['Fascinant. Je me demande ce que ça donne en fiole.', 'Ne touche à rien, Corbin. Surtout pas aux flacons verts.', 'La chimie règle tout. Même les corbeaux.'],
 };
 let bulles = [];
-function bullesHTML() { return bulles.map(b => `<div class="bulle ${b.qui === 'plume' ? 'corbeau' : ''}">${b.qui === 'plume' ? '<div class="avatar">🐦‍⬛</div>' : `<img src="${IMG(R.heros)}" alt="">`}<span><b>${b.qui === 'plume' ? 'Plume' : HEROS[R.heros].nom}</b>${b.t}</span></div>`).join(''); }
+function bullesHTML() { return bulles.map(b => `<div class="bulle ${b.qui === 'plume' ? 'corbeau' : ''}">${b.qui === 'plume' ? '<div class="avatar">🐦‍⬛</div>' : `<img src="${IMG(R.heros)}" alt="">`}<span><b>${b.qui === 'plume' ? 'Corbin' : HEROS[R.heros].nom}</b>${b.t}</span></div>`).join(''); }
 function dialogue(sit, reponse) {
-  const l = PLUME[sit]; if (!l) return; const t = l[Math.floor(Math.random() * l.length)];
+  const l = CORBIN[sit]; if (!l) return; const t = l[Math.floor(Math.random() * l.length)];
   bulles = [{ qui:'plume', t }]; const z = document.getElementById('bulles'); if (z) z.innerHTML = bullesHTML();
   if (reponse === false) return;
   setTimeout(() => { const v = HEROS_VOIX[R.heros] || []; if (!v.length || !R) return; bulles.push({ qui:'heros', t:v[Math.floor(Math.random() * v.length)] }); const z2 = document.getElementById('bulles'); if (z2) z2.innerHTML = bullesHTML(); }, 1100);

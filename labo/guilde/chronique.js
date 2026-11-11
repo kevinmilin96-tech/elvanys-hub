@@ -107,7 +107,7 @@ const CHRON_EXP = {
     { t:'Se poser et attendre qu’ils viennent', d:'Combat normal, mais l’équipage est prêt : +2 PV à chacun.', f:() => { E.equipage.forEach(u => { u.v = Math.min(u.vmax, u.v + 2); }); } } ] }),
   nid: ({ sur:'Expédition · Escale 6', titre:'Le Nid du Titan', illu:{ cle:'titan-feu', fond:'feu', sym:'👑' }, texte:[
     'Au fond du cratère, un nid de roche fondue. Le Titan de feu dort là, et le navire volant n’a plus de ciel où fuir.',
-    'Tout l’équipage se tait. Même Plume.' ], choix:[
+    'Tout l’équipage se tait. Même Corbin.' ], choix:[
     { t:'Sonner la charge', d:'Toutes vos unités frappent les premières au premier round.', f:() => { E.bonus = { ...(E.bonus || {}), charge:true }; } },
     { t:'Former le mur de boucliers', d:'Vos unités Barrière gagnent +3 PV. Les autres attendent derrière.', f:() => { E.equipage.forEach(u => { if (u.barriere) { u.v += 3; u.vmax += 3; } }); } } ] }),
 };
