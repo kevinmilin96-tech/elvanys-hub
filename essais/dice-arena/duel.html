@@ -395,7 +395,7 @@
   .bas .b0 { width:46px; padding:0; font-size:18px; }
   .bas .b1 { flex:1; } .bas .b2 { flex:1.3; }
   .unique .barre.ultpret::after { content:'⚡ Ultime prêt : touche-moi'; position:absolute; left:50%; top:-4.5cqw; transform:translateX(-50%); white-space:nowrap; font-size:2.6cqw; color:#1d1626; background:#ffd866; border-radius:10px; padding:0 6px; z-index:4; animation:halo 1s ease-in-out infinite alternate; }
-  #b-O.ultpret::after { content:'⚡ Ultime prêt'; top:auto; bottom:-11cqw; }
+  #b-O.ultpret::after { content:'⚡ Ultime prêt'; top:-6.5cqw; bottom:auto; }
   .unique .barre.ultpret > img { box-shadow:0 0 0 3px #ffd866, 0 0 22px #ffd866; }
   .transbt { position:relative; width:12cqw; height:9cqw; border-radius:8px; border:2px solid #7dd99a; background:radial-gradient(circle at 35% 30%, #2f6b45, #123222); color:#fff; font-size:4.5cqw; line-height:1; padding:0; }
   .transbt small { display:block; font-size:1.8cqw; }
@@ -454,6 +454,15 @@
   .unique:not(.scene) .d img, .unique:not(.scene) .d .cad { width:7.6cqw; height:7.6cqw; }
   .unique #f-O { top:22.5cqh; } .unique #f-J { top:45.5cqh; }
   .unique .bandeau, .unique .lancer { top:41.5cqh; }
+  /* ===== 11/11 soir : retours de l'utilisateur ===== */
+  .unique:not(.scene) .d .sac { display:none; }
+  .unique:not(.scene) .d.neuf .sac, .unique:not(.scene) .d.verrou .sac { display:block; font-size:1.8cqw; }
+  .unique .ultplein { animation:lueur 1.2s ease-in-out infinite; }
+  /* étiquettes de l'adversaire posées sur ses deux rubans peints (x 65 → 78 %, y 8,8 % et 12 %) */
+  .plateau.tapis.unique:not(.scene) #b-O .pastilles { left:auto; right:auto; top:auto; position:absolute; inset:auto; }
+  .plateau.tapis.unique:not(.scene) #b-O .pastilles { left:25cqw; top:calc(-10.6cqh + 9.2cqw + 9.6cqh); width:14cqw; gap:.95cqh; align-items:center; }
+  .plateau.tapis.unique:not(.scene) #b-O .p:not(.pv) { background:none !important; border:none !important; box-shadow:none !important; color:#f3e3b8; font-size:2.3cqw; padding:0; text-shadow:0 1px 2px #000; }
+  .unique .bandeau small { font-size:2.5cqw; color:#f3e3b8; }
 </style>
 </head>
 <body>
@@ -1232,7 +1241,7 @@ function dessine() {
     bandeau = `🎯 ${d}<br>Touche la cible (en vert).`;
   }
   else if (attaquant) bandeau = `⚔ ${attaquant.n} attaque : touche une cible en vert.`;
-  else if (sel.length) bandeau = `Dés choisis : ${vals(sel).join(', ')}. Touche où les poser (en vert).`;
+  else if (sel.length) bandeau = `Dés choisis : ${vals(sel).join(', ')}. Touche où les poser (en vert).${sel.length === 1 && sel[0].sac && !sel[0].extra && J.id !== 'oria' ? `<br><small>🎲 Ce dé peut encore faire : ${sel[0].sac.length ? [...sel[0].sac].sort().join(' · ') : 'tout (sac neuf)'}</small>` : ''}`;
   else if (J.des.some(d => !d.pose)) bandeau = '1. Touche un ou plusieurs dés. 2. Touche où les poser.';
   else if (J.front.some(u => u.pret && u.louve)) bandeau = '🐺 Touche la Louve : elle lance ses 3 dés et attaque. Sinon, elle attaque seule à « Fin du tour ».';
   else if (J.front.some(u => u.pret && !u.louve)) bandeau = '⚔ Touche une créature dorée : attaquer (puis sa cible) ou se mettre en défense. Sinon, elles attaquent le héros à « Fin du tour » (sauf les 👁 cachées, qui restent dans l’ombre).';
@@ -1283,16 +1292,22 @@ function sacPastilles(J, d) {
 }
 // anneaux autour du portrait : rouge = vie, trait bleu = Garde + Bouclier, or en 20 segments = Ultime, losanges = PC
 function anneauSVG(pv, max, prot, jauge, pc, fait) {
+  // 11/11 soir : anneaux redessinés pour épouser le cadre peint (ui/cadre.webp) : bande sombre r 29 → 34 = la VIE ; anneau d'or r 34 → 39 = l'ULTIME
+  // (les segments gagnés s'allument) ; les pierres runiques (r 40 → 49) ne sont jamais recouvertes. PC = cristaux peints sous le cadre.
   const C = 50, arc = (r, a0, a1) => { const q = a => [C + r * Math.sin(a * 2 * Math.PI), C - r * Math.cos(a * 2 * Math.PI)], [x0, y0] = q(a0), [x1, y1] = q(a1); return `M${x0.toFixed(2)} ${y0.toFixed(2)}A${r} ${r} 0 ${a1 - a0 > .5 ? 1 : 0} 1 ${x1.toFixed(2)} ${y1.toFixed(2)}`; };
-  const f = Math.max(0, Math.min(1, pv / max));
-  let g = `<circle cx="50" cy="50" r="32" fill="none" stroke="#3a0d12" stroke-width="4.6"/>`;
-  if (f > 0) g += `<path class="rv" d="${arc(32, 0, Math.min(f, .9999))}" fill="none" stroke="#e5262c" stroke-width="4.6" stroke-linecap="${f >= .999 ? 'butt' : 'round'}"/>`;
-  if (prot) g += `<path d="${arc(35.4, 0, Math.min(.9999, prot / max))}" fill="none" stroke="#8fd3ff" stroke-width="2"/>`;
-  for (let k = 0; k < JAUGE.max; k++) g += `<path d="${arc(43, k / JAUGE.max + .008, (k + 1) / JAUGE.max - .008)}" fill="none" stroke="${fait ? '#6b5a8a' : k < jauge ? '#ffd866' : '#1d1626cc'}" stroke-width="3.4"/>`;
-  const n = Math.min(pc, 8);
-  for (let k = 0; k < n; k++) { const a = .5 + (k - (n - 1) / 2) * .06, x = C + 47 * Math.sin(a * 2 * Math.PI), y = C - 47 * Math.cos(a * 2 * Math.PI);
-    g += `<path d="M${x.toFixed(2)} ${(y - 4.5).toFixed(2)}L${(x + 3.4).toFixed(2)} ${y.toFixed(2)}L${x.toFixed(2)} ${(y + 4.5).toFixed(2)}L${(x - 3.4).toFixed(2)} ${y.toFixed(2)}Z" fill="#5fb0ff" stroke="#e6f3ff" stroke-width=".9"/>`; }
-  return `<svg class="anneau" viewBox="0 0 100 100" aria-hidden="true">${g}</svg>`;
+  const f = Math.max(0, Math.min(1, pv / max)), id = 'a' + Math.random().toString(36).slice(2, 7);
+  let g = `<defs><linearGradient id="${id}v" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff9a8a"/><stop offset=".45" stop-color="#e5262c"/><stop offset="1" stop-color="#8e0f1a"/></linearGradient>
+    <filter id="${id}l" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation=".9" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>`;
+  g += `<circle cx="50" cy="50" r="31.6" fill="none" stroke="#120407" stroke-opacity=".75" stroke-width="4.6"/>`;
+  if (f > 0) g += `<path class="rv" d="${arc(31.6, 0, Math.min(f, .9999))}" fill="none" stroke="url(#${id}v)" stroke-width="4" stroke-linecap="${f >= .999 ? 'butt' : 'round'}" filter="url(#${id}l)"/>`
+    + `<path d="${arc(30.4, 0, Math.min(f, .9999))}" fill="none" stroke="#ffd0c8" stroke-opacity=".55" stroke-width=".6"/>`;
+  if (prot) g += `<path d="${arc(33.6, 0, Math.min(.9999, prot / max))}" fill="none" stroke="#bff0ff" stroke-width="1.3" filter="url(#${id}l)"/>`;
+  for (let k = 0; k < JAUGE.max; k++) if (fait || k < jauge) g += `<path d="${arc(36.4, k / JAUGE.max + .007, (k + 1) / JAUGE.max - .007)}" fill="none" stroke="${fait ? '#9a8ab8' : '#fff4b0'}" stroke-opacity="${fait ? .5 : .95}" stroke-width="2.6" filter="url(#${id}l)"/>`;
+  if (!fait && jauge >= JAUGE.max) g += `<circle class="ultplein" cx="50" cy="50" r="36.4" fill="none" stroke="#ffe680" stroke-width="3.2" filter="url(#${id}l)"/>`;
+  const n = Math.min(pc, 8); let gem = '';
+  for (let k = 0; k < n; k++) { const a = .5 + (k - (n - 1) / 2) * .062, x = C + 46 * Math.sin(a * 2 * Math.PI), y = C - 46 * Math.cos(a * 2 * Math.PI);
+    gem += `<image href="ui/cristal.webp?v=1" x="${(x - 4.2).toFixed(2)}" y="${(y - 4.2).toFixed(2)}" width="8.4" height="8.4"/>`; }
+  return `<svg class="anneau" viewBox="0 0 100 100" aria-hidden="true">${g}${gem}</svg>`;
 }
 function anneauDe(P, pv) { return anneauSVG(pv === undefined ? Math.max(0, P.pv) : pv, P.pvMax, (P.gardeB || 0) + (P.bouclier || 0), P.jauge, P.pc, P.ultimeFait); }
 function aide(quoi, info) {
