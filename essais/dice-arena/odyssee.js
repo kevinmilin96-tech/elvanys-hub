@@ -132,11 +132,13 @@ if (typeof CARTES !== 'undefined') Object.keys(CARTES_ODYSSEE).forEach(k => { if
 const rarete = k => { const c = CARTES[k]; return c.r || (c.c <= 1 ? 'c' : c.c === 2 ? 'r' : 'e'); };
 const RARETE = { c:'Commune', r:'Rare', e:'Épique', m:'Malédiction' };
 // toutes les cartes qu'on peut tirer (jamais les malédictions)
-const cartesTirables = () => Object.keys(CARTES).filter(k => rarete(k) !== 'm');
+// 10/11 (décision de l'utilisateur) : tirage et marchand = toutes les cartes, SAUF celles qui ne marchent qu'avec un autre héros
+const CARTES_LIEES = { apprenti:'maelle', hurlement:'pip', lien:'pip' };
+const cartesTirables = heros => Object.keys(CARTES).filter(k => rarete(k) !== 'm' && (!CARTES_LIEES[k] || !heros || CARTES_LIEES[k] === heros));
 // tirage de 3 cartes : plus la source est riche (0 monstre, 1 élite, 2 coffre), plus les rares sortent
-function draft(R, richesse, deja) {
+function draft(R, richesse, deja, heros) {
   const poids = [{ c:70, r:25, e:5 }, { c:40, r:45, e:15 }, { c:20, r:50, e:30 }][richesse] || { c:70, r:25, e:5 };
-  const tirables = cartesTirables(), out = [];
+  const tirables = cartesTirables(heros), out = [];
   for (let n = 0; n < 60 && out.length < 3; n++) {
     const x = R() * 100, r = x < poids.c ? 'c' : x < poids.c + poids.r ? 'r' : 'e';
     const l = tirables.filter(k => rarete(k) === r && !out.includes(k) && (deja || []).filter(d => d === k).length < 2);
@@ -150,7 +152,7 @@ function draft(R, richesse, deja) {
 const EVENEMENTS = [
   { id:'voyageur', t:'Un voyageur blessé', d:'Adossé à un rocher tiède, un voyageur de la Guilde vous fait signe. « Une potion, par pitié… je vous revaudrai ça. »', choix:[
     { t:'Lui donner une potion de soin (si tu en as)', cond:r => r.sacoche.includes('soin'), e:{ sacoche:'-soin', relique:true }, m:'Il vous tend une relique de sa besace : « Elle m’a porté chance. »' },
-    { t:'Partager vos vivres (−3 vivres)', e:{ vivres:-3, or:40 }, m:'Reconnaissant, il vous glisse 40 pièces d’or.' },
+    { t:'Partager votre huile (−3 huile)', e:{ vivres:-3, or:40 }, m:'Reconnaissant, il vous glisse 40 pièces d’or.' },
     { t:'Fouiller ses affaires', e:{ or:30, malediction:true }, m:'30 pièces… et une malédiction murmurée dans votre dos.' } ] },
   { id:'autelbrise', t:'Un autel brisé', d:'Les restes d’un autel runique. Une rune brille encore faiblement entre les pierres.', choix:[
     { t:'Toucher la rune', e:{ carte:'draft1' }, m:'La rune se grave dans votre mémoire : une carte à choisir.' },
@@ -161,11 +163,11 @@ const EVENEMENTS = [
     { t:'Tirer le fil de loin', e:{ or:20 }, m:'Le coffre saute en l’air. Il reste 20 pièces éparpillées.' },
     { t:'Laisser', e:{}, m:'Trop risqué.' } ] },
   { id:'marchandambulant', t:'Un colporteur pressé', d:'Un colporteur et sa mule descendent vers la côte. « Je brade avant de partir ! »', choix:[
-    { t:'Acheter 6 vivres (20 or)', cond:r => r.or >= 20, e:{ or:-20, vivres:6 }, m:'Six rations de pain noir.' },
+    { t:'Acheter 6 doses d’huile (20 or)', cond:r => r.or >= 20, e:{ or:-20, vivres:6 }, m:'Une fiole d’huile claire : la lanterne reprend vie.' },
     { t:'Acheter une bombe (25 or)', cond:r => r.or >= 25, e:{ or:-25, sacoche:'bombe' }, m:'« Faites gaffe avec ça. »' },
     { t:'Non merci', e:{}, m:'Il hausse les épaules et repart.' } ] },
   { id:'sourcechaude', t:'Une source chaude', d:'De la vapeur monte d’un bassin de pierre. L’eau sent le soufre, mais elle est bonne.', choix:[
-    { t:'Se baigner', e:{ pv:10, vivres:-1 }, m:'+10 PV. Vous repartez détendu (−1 vivre, le temps passe).' },
+    { t:'Se baigner', e:{ pv:10, vivres:-1 }, m:'+10 PV. Vous repartez détendu (−1 huile, la lanterne a brûlé pendant ce temps).' },
     { t:'Remplir la gourde : +1 potion de soin', e:{ sacoche:'soin' }, m:'L’eau garde ses vertus en flacon.' } ] },
   { id:'cartographe', t:'La carte d’un disparu', d:'Un squelette serre une carte de l’île, à moitié brûlée. Oria l’aurait adorée.', choix:[
     { t:'La lire', e:{ revele:true }, m:'Vous reconnaissez les environs : les cases voisines se dévoilent plus loin.' },
@@ -179,16 +181,16 @@ const EVENEMENTS = [
     { t:'Ne rien donner', e:{}, m:'La statue reste froide.' } ] },
   { id:'nidbraise', t:'Un nid de braises', d:'Des œufs de salamandre couvent dans la cendre chaude. Leur coquille vaut de l’or.', choix:[
     { t:'Prendre un œuf', e:{ or:45, malediction:true }, m:'45 or… mais la mère vous a vu : Mauvaise réputation sur toute l’île.' },
-    { t:'Réchauffer vos mains et repartir', e:{ vivres:2 }, m:'La chaleur vous redonne du cœur : +2 vivres.' } ] },
+    { t:'Raviver la lanterne au feu et repartir', e:{ vivres:2 }, m:'La mèche se ranime : +2 huile.' } ] },
   { id:'pontbrule', t:'Le pont brûlé', d:'Le pont de cordes est à moitié brûlé. On peut traverser vite… ou tailler un chemin dans la roche.', choix:[
-    { t:'Traverser en courant', e:{ pv:-5, vivres:1 }, m:'Une corde cède, vous vous rattrapez de justesse (−5 PV). Le raccourci vous fait gagner 1 vivre.' },
-    { t:'Contourner (−2 vivres)', e:{ vivres:-2 }, m:'Long, mais sûr.' } ] },
+    { t:'Traverser en courant', e:{ pv:-5, vivres:1 }, m:'Une corde cède, vous vous rattrapez de justesse (−5 PV). Le raccourci vous fait économiser 1 huile.' },
+    { t:'Contourner (−2 huile)', e:{ vivres:-2 }, m:'Long, mais sûr.' } ] },
   { id:'ermite', t:'L’ermite du cratère', d:'Un vieil homme au regard clair vous observe. « Je peux affûter ton arme, ou ton esprit. »', choix:[
     { t:'Affûter l’arme (une relique au choix de l’ermite)', e:{ relique:true }, m:'Il vous tend un objet poli par des années de cendre.' },
     { t:'Affûter l’esprit (une carte épique)', e:{ carte:'epique' }, m:'Il vous enseigne une rune oubliée.' } ] },
   { id:'echo', t:'L’écho du Titan', d:'Le sol tremble. Au loin, un rugissement de fournaise. Vous sentez la peur… ou la rage.', choix:[
     { t:'La rage : +4 PV max', e:{ pvMax:4, pv:4 }, m:'Votre cœur bat plus fort.' },
-    { t:'La prudence : +3 vivres', e:{ vivres:3 }, m:'Vous rationnez avec soin.' } ] },
+    { t:'La prudence : +3 huile', e:{ vivres:3 }, m:'Vous baissez la mèche pour économiser l’huile.' } ] },
 ];
 
 // ----------------------------------------------------------------------------------------------- l'île (grille 7 × 9, tirée au sort d'après la graine)
@@ -300,8 +302,8 @@ function peutAller(r, x, y) {
 function deplace(r, x, y) {
   const c = caseA(r, x, y); if (!peutAller(r, x, y)) return null;
   const neuve = !c.visite;
-  if (c.t === 'mur' && !c.fait) { if (r.sacoche.includes('bombe')) { r.sacoche.splice(r.sacoche.indexOf('bombe'), 1); r.journal.push('💣 La bombe ouvre le mur fissuré.'); } else { r.vivres -= 3; r.journal.push('🧱 Trois vivres pour creuser le mur fissuré.'); } }
-  if (neuve) { if (r.vivres > 0) r.vivres--; else { r.pv -= 3; r.journal.push('🍞 Plus de vivres : −3 PV.'); } r.stats.cases++; }
+  if (c.t === 'mur' && !c.fait) { if (r.sacoche.includes('bombe')) { r.sacoche.splice(r.sacoche.indexOf('bombe'), 1); r.journal.push('💣 La bombe ouvre le mur fissuré.'); } else { r.vivres -= 3; r.journal.push('🧱 Trois doses d’huile pour creuser le mur fissuré.'); } }
+  if (neuve) { if (r.vivres > 0) r.vivres--; else { r.pv -= 3; r.journal.push('🪔 Lanterne éteinte : vous avancez dans le noir, −3 PV.'); } r.stats.cases++; }
   r.pos = { x, y }; c.visite = true; c.vu = true; voisins(x, y).forEach(([a, b]) => { caseA(r, a, b).vu = true; });
   if (r.pv <= 0) return { c, mort:true };
   return { c, neuve };
@@ -328,7 +330,7 @@ function recompenseCombat(r) {
   const out = { gagne:true, or, defiOk:res.defiOk, ennemi:HEROS[cb.ennemi].nom, type:cb.type };
   if (cb.type === 'elite') { r.fragments++; r.cles++; out.fragment = true; if (r.sacoche.length < 2) { r.sacoche.push('soin'); out.potion = true; } }
   if (cb.type === 'boss') { out.boss = true; r.journal.push(`👑 Le Titan de feu est tombé ! +${or} or.`); return out; }
-  out.draft = draft(hasard(r), cb.type === 'elite' ? 1 : 0, r.deck);
+  out.draft = draft(hasard(r), cb.type === 'elite' ? 1 : 0, r.deck, r.heros);
   r.journal.push(`🏆 ${out.ennemi} vaincu : +${or} or${out.fragment ? ', un fragment de rune et une clé' : ''}.`);
   return out;
 }
@@ -336,7 +338,7 @@ function gardeCarte(r, k) { if (!k) return; r.deck.push(k); if (!r.stats.cartesV
 function retireCarte(r, k) { const i = r.deck.indexOf(k); if (i >= 0) { r.deck.splice(i, 1); r.journal.push(`🔥 ${CARTES[k].n} quitte ton deck.`); } }
 // la boutique d'une case marchand : fabriquée à la première visite, gardée
 function stockMarchand(r, c) {
-  if (!c.stock) { const R = hasard(r); const cartes = []; for (let n = 0; n < 40 && cartes.length < 5; n++) { const d = draft(R, 1, []); d.forEach(k => { if (cartes.length < 5 && !cartes.includes(k)) cartes.push(k); }); }
+  if (!c.stock) { const R = hasard(r); const cartes = []; for (let n = 0; n < 40 && cartes.length < 5; n++) { const d = draft(R, 1, [], r.heros); d.forEach(k => { if (cartes.length < 5 && !cartes.includes(k)) cartes.push(k); }); }
     const rel = Object.keys(RELIQUES).filter(k => !r.reliques.includes(k)); c.stock = { cartes, relique:rel.length ? tire(R, rel) : null, retire:1, pvmax:2 }; }
   return c.stock;
 }
@@ -346,7 +348,7 @@ function achete(r, c, quoi, k) {
   if (quoi === 'retirer') { const p = prix(60); if (r.or < p || !st.retire || !r.deck.includes(k)) return false; r.or -= p; st.retire = 0; retireCarte(r, k); return true; }
   if (quoi === 'sacoche') { const p = prix(SACOCHE[k].prix); if (r.or < p || r.sacoche.length >= 2) return false; r.or -= p; r.sacoche.push(k); r.journal.push(`🏪 ${SACOCHE[k].n} achetée.`); return true; }
   if (quoi === 'pvmax') { const p = prix(70); if (r.or < p || !st.pvmax) return false; r.or -= p; st.pvmax--; r.pvMax += 5; r.pv += 5; r.journal.push('🏪 Vitalité : +5 PV max.'); return true; }
-  if (quoi === 'vivres') { const p = prix(20); if (r.or < p) return false; r.or -= p; r.vivres += 5; r.journal.push('🏪 +5 vivres.'); return true; }
+  if (quoi === 'vivres') { const p = prix(20); if (r.or < p) return false; r.or -= p; r.vivres += 5; r.journal.push('🏪 +5 huile pour la lanterne.'); return true; }
   if (quoi === 'relique') { if (!st.relique || r.reliques.length >= 3) return false; const p = prix(RELIQUES[st.relique].prix); if (r.or < p) return false; r.or -= p; r.reliques.push(st.relique); r.journal.push(`🏪 ${RELIQUES[st.relique].n} achetée.`); st.relique = null; return true; }
   return false;
 }
@@ -369,8 +371,8 @@ function evenementChoisit(r, c, i) {
   if (e.malediction) donneMalediction(r, tire(hasard(r), Object.keys(MALEDICTIONS)));
   if (e.benediction) { const l = Object.keys(BENEDICTIONS).filter(b => !r.benes.includes(b)); if (l.length) donneBenediction(r, tire(hasard(r), l)); }
   if (e.relique) { out.suite = 'relique'; out.reliques = reliquesProposees(r, 2); }
-  if (e.carte === 'draft1') { out.suite = 'draft'; out.cartes = draft(hasard(r), 1, r.deck); }
-  if (e.carte === 'epique') { out.suite = 'draft'; out.cartes = draft(hasard(r), 2, r.deck).filter(k => rarete(k) === 'e').slice(0, 3); if (!out.cartes.length) out.cartes = draft(hasard(r), 2, r.deck); }
+  if (e.carte === 'draft1') { out.suite = 'draft'; out.cartes = draft(hasard(r), 1, r.deck, r.heros); }
+  if (e.carte === 'epique') { out.suite = 'draft'; out.cartes = draft(hasard(r), 2, r.deck, r.heros).filter(k => rarete(k) === 'e').slice(0, 3); if (!out.cartes.length) out.cartes = draft(hasard(r), 2, r.deck); }
   if (e.retirer) out.suite = 'retirer';
   if (e.revele) { for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) { const k = caseA(r, r.pos.x + dx, r.pos.y + dy); if (k && Math.abs(dx) + Math.abs(dy) <= 2) k.vu = true; } }
   r.journal.push(`❓ ${ev.t} : ${ch.t}.`);
@@ -378,7 +380,7 @@ function evenementChoisit(r, c, i) {
 }
 function ouvreCoffre(r, c) { if (c.fait || r.cles < 1) return null; r.cles--; c.fait = true; const R = hasard(r); const rel = Object.keys(RELIQUES).filter(k => !r.reliques.includes(k));
   if (rel.length && r.reliques.length < 3 && R() < .5) { const k = tire(R, rel); r.reliques.push(k); r.journal.push(`🗝 Le coffre contenait ${RELIQUES[k].n}.`); return { relique:k }; }
-  r.journal.push('🗝 Le coffre contenait des cartes rares.'); return { draft:draft(R, 2, r.deck), deux:true }; }
+  r.journal.push('🗝 Le coffre contenait des cartes rares.'); return { draft:draft(R, 2, r.deck, r.heros), deux:true }; }
 function ouvrePorte(r) { const p = caseA(r, r.porte.x, r.porte.y); if (p.fait) return true; if (r.fragments >= 2) { p.fait = true; const a = r.pv; r.pv = Math.min(r.pvMax, r.pv + 15); r.journal.push(`🚪 Les deux fragments s’assemblent : la porte s’ouvre. Bivouac devant la porte : +${r.pv - a} PV.`); return true; } return false; }
 // fin de l'Odyssée : score, collection, record
 function finOdysseeRun(r, gagne) {
@@ -428,7 +430,7 @@ const BOSS_CAMP = {
     ultime:{ n:'Réveil primordial', txt:'3 dés', d:'18 dégâts au héros visé et deux Racines de plus.', cond:vs => vs.length === 3, cible:'ennemi', f:(J, vs, k) => { degats({ J:adv(J) }, 18); for (let i = 0; i < 2; i++) invoque(J, { n:'Racine', a:2, v:4, barriere:true }); } },
     renforts:[{ n:'Racine', a:2, v:4, barriere:true }, { n:'Racine', a:2, v:4, barriere:true }] },
 };
-const COHESION = { depart:4, max:8, relever:3, cri:2, soin:2 };
+const COHESION = { depart:4, max:8, relever:3, cri:2, soin:2, concertee:3 };  // 10/11 : Frappe concertée = 4 dégâts à CHAQUE créature du boss (les racines)
 Object.assign(BOSS, BOSS_CAMP);
 if (typeof HEROS !== 'undefined') installeMonstres();
 const CAMP_CLE = 'guilde-campement';

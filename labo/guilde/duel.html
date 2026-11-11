@@ -601,7 +601,7 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261111-204651';
+const VERSION = '20261111-205352';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); location.replace('duel.html?v=' + v); }
@@ -621,8 +621,8 @@ setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
 <script src="cartes.js?v=20261110-143557"></script>
-<script src="donnees.js?v=20261111-200236"></script>
-<script src="odyssee.js?v=20261110-143557"></script>
+<script src="donnees.js?v=20261111-205352"></script>
+<script src="odyssee.js?v=20261111-205352"></script>
 <script src="chronique.js?v=20261110-140121"></script>
 <script>
 // =============================================================================================== moteur
@@ -749,6 +749,9 @@ const frappeDe = J => HEROS[J.id].frappe || FRAPPE;
 function defDe(J, quoi) { const h = HEROS[J.id]; return quoi === 'frappe' ? frappeDe(J) : quoi === 'technique' ? TECHNIQUE : quoi === 'pouvoir' ? h.pouvoir : quoi === 'ultime' ? h.ultime : quoi === 'garde' ? h.garde : CARTES[quoi]; }
 function ciblesPossibles(J, type) {
   const D = adv(J), vis = D.front.filter(u => !u.cachee);
+  // 10/11 (décision de l'utilisateur) : une créature EN DÉFENSE prend TOUT ce qui vise son camp (Frappe, Technique, Pouvoir, sorts à cible)
+  const def = vis.filter(u => u.defense);
+  if ((type === 'ennemi' || type === 'uniteE') && def.length) return def.map(u => ({ J:D, u }));
   if (type === 'ennemi') return [{ J:D }, ...vis.map(u => ({ J:D, u }))];
   if (type === 'uniteE') return vis.map(u => ({ J:D, u }));
   if (type === 'allie') return [{ J }, ...J.front.map(u => ({ J, u }))];
@@ -843,10 +846,10 @@ function attaque(J, u, k) {
 }
 // une créature protège son héros si elle a Barrière ou si elle s'est mise EN DÉFENSE (jusqu'au prochain tour de son joueur)
 const protege = u => u.barriere || u.defense;
-const ciblesAttaque = D => { const vis = D.front.filter(u => !u.cachee); return vis.some(protege) ? vis.filter(protege).map(u => ({ J:D, u })) : [{ J:D }, ...vis.map(u => ({ J:D, u }))]; };
+const ciblesAttaque = D => { const vis = D.front.filter(u => !u.cachee); if (vis.some(u => u.defense)) return vis.filter(u => u.defense).map(u => ({ J:D, u })); return vis.some(protege) ? vis.filter(protege).map(u => ({ J:D, u })) : [{ J:D }, ...vis.map(u => ({ J:D, u }))]; };
 // fiche d'une créature : ce qu'elle fait, ses mots-clés expliqués, son état
-const MOTS = { barriere:['Barrière', 'protège son héros : les créatures adverses doivent l’attaquer d’abord.'], cachee:['Cachée', 'on ne peut ni l’attaquer ni la viser tant qu’elle n’a pas attaqué. Sa première attaque depuis l’ombre est une EMBUSCADE : +2 dégâts. Ensuite elle se montre (les cartes qui « révèlent » la font sortir de l’ombre plus tôt).'],
-  charge:['Charge', 'peut attaquer dès son arrivée.'], defense:['En défense', 'n’attaque pas ce tour et protège son héros comme une Barrière.'], entrave:['Entravée', 'ne pourra pas attaquer au prochain tour.'] };
+const MOTS = { barriere:['Barrière', 'les CRÉATURES adverses doivent l’attaquer d’abord. Attention : les Frappes, Techniques, Pouvoirs et sorts passent par-dessus (seule une créature EN DÉFENSE les arrête).'], cachee:['Cachée', 'on ne peut ni l’attaquer ni la viser tant qu’elle n’a pas attaqué. Sa première attaque depuis l’ombre est une EMBUSCADE : +2 dégâts. Ensuite elle se montre (les cartes qui « révèlent » la font sortir de l’ombre plus tôt).'],
+  charge:['Charge', 'peut attaquer dès son arrivée.'], defense:['En défense', 'n’attaque pas ce tour ; jusqu’à ton prochain tour, elle prend TOUS les coups qui visent ton camp : attaques des créatures, Frappes, Techniques, Pouvoirs et sorts.'], entrave:['Entravée', 'ne pourra pas attaquer au prochain tour.'] };
 function ficheUnite(P, u) {
   if (P !== S.J && u.cachee) { fenetre('<h2>👁 Créature cachée</h2><p>On ne sait pas ce que c’est : ni son nom, ni son attaque, ni sa vie.</p><p>Tu ne peux ni l’attaquer ni la viser. Elle se montrera quand elle attaquera (avec une <b>Embuscade</b> : +2 dégâts), ou si tu joues une carte qui <b>révèle</b> les Cachées (Torche, Lanterne runique, Flèche de repérage).</p><div class="choixh"><button onclick="fermer()">Compris</button></div>'); return; }
   const c = u.key && CARTES[u.key], art = typeof ARTS !== 'undefined' && ARTS.includes(u.louve ? 'louve' : u.key) ? `<img src="cartes/${u.louve ? 'louve' : u.key}.webp?v=1" style="width:100%;border-radius:10px;margin:4px 0" alt="">` : '';
@@ -924,7 +927,10 @@ function interet(J, quoi, vs) {
 }
 function meilleurCoup(J) {
   const libres = J.des.filter(d => !d.pose); let best = null;
-  const essai = (quoi, ds, score, im) => { if (score > (best ? best.score : -1) && permis(J, quoi, vals(ds), ds)) best = { quoi, ds, score, im }; };
+  // Campement (10/11) : le compagnon ordinateur FRAPPE (Frappe, Technique, Pouvoir, cartes qui visent l'ennemi) plutôt que de jouer du soutien
+  const comp = S.coop && J !== S.O && J.ordi;
+  const pousse = (quoi, score) => { if (!comp) return score; if (['frappe', 'technique', 'pouvoir', 'ultime'].includes(quoi)) return score * 1.15; const c = CARTES[quoi]; return c && (c.cible === 'ennemi' || c.cible === 'uniteE') ? score * 1.15 : c && c.u ? score : score * .85; };
+  const essai = (quoi, ds, score, im) => { score = pousse(quoi, score); if (score > (best ? best.score : -1) && permis(J, quoi, vals(ds), ds)) best = { quoi, ds, score, im }; };
   for (const ds of sousEnsembles(libres)) {
     const vs = vals(ds);
     essai('ultime', ds, interet(J, 'ultime', vs)); essai('pouvoir', ds, interet(J, 'pouvoir', vs)); essai('frappe', ds, interet(J, 'frappe', vs)); essai('technique', ds, interet(J, 'technique', vs));
@@ -957,7 +963,10 @@ function joueOrdi() {
   const b = S.bilan; S.bilan = null;
   if (!S.fini) fx({ t:'recap', nom:S.O.nom, actions:b.actions, gardes:b.gardes, perdu:b.pv0 - S.J.pv, abs:b.abs, soinO:S.O.pv - b.pvO0, morts:b.front0 - S.J.front.length });
 }
+// Campement : le compagnon (ou la simulation) lance la Frappe concertée quand le boss a au moins 3 créatures et qu'il reste de quoi relever un héros
+function concerteeAuto(J) { if (!S.coop || J === S.O || !(J.ordi || S.auto) || S.O.front.length < 3 || S.cohesion < COHESION.concertee + COHESION.relever) return; S.cohesion -= COHESION.concertee; log(`🤝 ${J.nom} lance la Frappe concertée : 4 dégâts à chaque créature du boss !`); fx({ t:'annonce', txt:'🤝 Frappe concertée !' }); [...S.O.front].forEach(u => degats({ J:S.O, u }, 4)); }
 function joueAuto(J) {
+  concerteeAuto(J);
   transmutationAuto(J);
   let b = meilleurCoup(J);
   while ((!b || b.score < 45) && J.relance > 0) {
@@ -1207,6 +1216,7 @@ function cohesionAct(q) {
   const autre = S.equipe.find(h => h !== S.J);
   if (q === 'relever') { const t = S.equipe.find(h => h.aTerre); if (!t || S.cohesion < COHESION.relever) return; S.cohesion -= COHESION.relever; t.aTerre = false; t.pv = 12; log(`🤝 ${t.nom} est relevé (12 PV).`); fx({ t:'annonce', txt:`🤝 ${t.nom} se relève !` }); }
   if (q === 'cri') { if (S.cohesion < COHESION.cri) return; S.cohesion -= COHESION.cri; S.equipe.forEach(h => { if (!h.aTerre) h.pc = Math.min(6, h.pc + 2); }); log('🤝 Cri de ralliement : +2 PC chacun.'); }
+  if (q === 'concertee') { if (S.cohesion < COHESION.concertee || !S.O.front.length) return; S.cohesion -= COHESION.concertee; log('🤝 Frappe concertée : 4 dégâts à chaque créature du boss !'); fx({ t:'annonce', txt:'🤝 Frappe concertée !' }); [...S.O.front].forEach(u => degats({ J:S.O, u }, 4)); }
   if (q === 'soin') { if (S.cohesion < COHESION.soin || !autre || autre.aTerre) return; S.cohesion -= COHESION.soin; soin(autre, 6); log(`🤝 Soin partagé : ${autre.nom} +6 PV.`); }
   rendu();
 }
@@ -1216,6 +1226,7 @@ function equipeHTML() {
     <div class="coh"><b>🤝 Cohésion ${S.cohesion}/${COHESION.max}</b> <small>+1 quand un héros pose 3 dés ou plus</small><div class="cohb">
       <button onclick="cohesionAct('relever')" ${S.equipe.some(h => h.aTerre) && S.cohesion >= COHESION.relever ? '' : 'disabled'}>Relever (${COHESION.relever})</button>
       <button onclick="cohesionAct('cri')" ${S.cohesion >= COHESION.cri ? '' : 'disabled'}>Cri de ralliement (${COHESION.cri}) : +2 PC chacun</button>
+      <button onclick="cohesionAct('concertee')" ${S.cohesion >= COHESION.concertee && S.O.front.length ? '' : 'disabled'}>Frappe concertée (${COHESION.concertee}) : 4 dégâts à chaque racine</button>
       <button onclick="cohesionAct('soin')" ${S.cohesion >= COHESION.soin && S.equipe.some(h => h !== J && !h.aTerre) ? '' : 'disabled'}>Soin partagé (${COHESION.soin}) : +6 PV à l’autre</button></div></div></div>`;
 }
 function choisirDe(i) {
@@ -1369,7 +1380,7 @@ function dessine() {
   const J = S.J, O = S.O, h = HEROS[J.id];
   let bandeau = '';
   if (J.aLancer) bandeau = 'Ton tour commence : lance tes dés !';
-  else if (ciblage && ciblage.type === 'de') bandeau = ciblage.quoi === 'ajuste' ? '🎲 Touche le dé à ajuster.' : '🎲 Touche le dé à retourner.';
+  else if (ciblage && ciblage.type === 'de') bandeau = ciblage.quoi === 'ajuste' ? '🎲 Touche le dé à ajuster.' : ciblage.quoi === 'retremper' ? '🎲 Touche le dé qui gagne +2.' : '🎲 Touche le dé à retourner.';
   else if (ciblage) {
     const q = ciblage.quoi, vs = vals(ciblage.ds), d = q === 'frappe' ? `Frappe (${vs.join(', ')}) : ${FRAPPE.dg(vs)} dégâts` : q === 'technique' ? `Technique (${vs.join(', ')}) : ${[0, 0, 0, 4, 7, 10][vs.length]} dégâts`
       : q === 'pouvoir' ? `${h.pouvoir.n} : ${h.pouvoir.d}` : q === 'ultime' ? `${h.ultime.n} : ${h.ultime.d}` : CARTES[q] ? `${CARTES[q].n} : ${CARTES[q].d}` : '';

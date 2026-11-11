@@ -102,8 +102,8 @@ setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
 <script src="cartes.js?v=20261110-143557"></script>
-<script src="donnees.js?v=20261111-200236"></script>
-<script src="odyssee.js?v=20261110-143557"></script>
+<script src="donnees.js?v=20261111-205352"></script>
+<script src="odyssee.js?v=20261111-205352"></script>
 <script src="chronique.js?v=20261110-140121"></script>
 <script>
 // le moteur du Duel n'est pas chargé ici : les cartes de l'Odyssée appellent degats/soin seulement en combat (dans duel.html)
@@ -120,7 +120,7 @@ function accueil() {
   const r = lireOdyssee(), rec = lireRecords(), col = lireCollection();
   if (r) { R = r; dejaDessine = new Set(); R.ile.flat().forEach(c => { if (c.vu) dejaDessine.add(c.x + ',' + c.y); }); if (R.combat && !R.combat.resultat) { location.href = 'duel.html?odyssee=1'; return; } if (R.combat && R.combat.resultat) { dessine(); apresCombat(); return; } dessine(); return; }
   document.getElementById('app').innerHTML = `<h1>🏰 L’Odyssée · les Terres brûlées</h1>
-  <p style="text-align:center;color:var(--doux);font-size:.9em">Une île tirée au sort, à explorer case par case. Le combat, c’est le Duel. Tes PV ne remontent pas tout seuls : sources, potions et marchand. 20 vivres pour fouiller. Deux fragments de rune ouvrent la porte du Titan de feu.</p>
+  <p style="text-align:center;color:var(--doux);font-size:.9em">Une île tirée au sort, à explorer case par case. Le combat, c’est le Duel. Tes PV ne remontent pas tout seuls : sources, potions et marchand. Une lanterne de 20 doses d’huile pour fouiller. Deux fragments de rune ouvrent la porte du Titan de feu.</p>
   <p style="text-align:center"><b style="color:var(--or)">Choisis ton héros</b></p>
   <div class="heros6">${ORDRE.map(id => `<button onclick="commence('${id}')"><img src="${IMG(id)}" alt="">${HEROS[id].nom}<br><small style="color:var(--doux)">${Math.round(HEROS[id].pv * 1.8)} PV en Odyssée</small></button>`).join('')}</div>
   <p style="text-align:center;font-size:.86em"><label><input type="checkbox" id="jour"> 🗓 L’île du jour (la même île pour tout le monde aujourd’hui)</label></p>
@@ -132,7 +132,7 @@ function commence(id) {
   R = nouvelleOdyssee(id, jour ? graineDuJour() : null); if (!R) { alert('Impossible de tirer une île : réessaie.'); return; }
   dejaDessine = new Set(); bulles = []; sauve(); dessine();
   chronique([CHRON_ODY.arrivee(HEROS[id].nom)], () => { dialogue('depart'); fenetre(`<h2>⛵ Débarquement</h2><p>${HEROS[id].nom} pose le pied sur les Terres brûlées. Le ciel est rouge, la roche fume.</p>
-  <p>Touche une salle <b style="color:var(--ok)">verte</b> : le héros y marche et l’île se dessine devant lui. Tu vois le <b>type</b> des salles voisines, jamais ce qu’elles cachent. Chaque case nouvelle coûte <b>1 vivre</b> ; revenir est gratuit.</p>
+  <p>Touche une salle <b style="color:var(--ok)">verte</b> : le héros y marche et l’île se dessine devant lui. Tu vois le <b>type</b> des salles voisines, jamais ce qu’elles cachent. Touche-la une première fois pour voir le trajet et son coût, une seconde fois pour y aller. Chaque case nouvelle brûle <b>1 dose d’huile 🪔</b> (la lumière autour du héros rétrécit quand la lanterne se vide) ; revenir est gratuit.</p>
   <p>Le chemin direct fait ${R.direct} cases. La porte 🚪 du Titan 👑 est tout en haut : il te faut <b>2 fragments de rune</b>, gardés par les 3 élites 💀 de l’île.</p>
   <div class="choixh"><button class="or" onclick="fermer()">En route !</button></div>`); });
 }
@@ -152,14 +152,14 @@ function dessine() {
   <div id="entete">${enteteHTML()}</div>
   ${carteSVG()}
   <div class="bulles" id="bulles">${bullesHTML()}</div>
-  <div class="bandeau">${r.vivres ? 'Touche une salle verte : le héros y va.' : '<b style="color:#ff7a7a">Plus de vivres : chaque case nouvelle coûte 3 PV.</b>'} ${r.fragments >= 2 ? '<b style="color:var(--ok)">Tu as les 2 fragments : la porte 🚪 t’attend.</b>' : ''}</div>
+  <div class="bandeau">${r.vivres ? 'Touche une salle verte pour voir le trajet, puis touche-la encore : le héros y va.' : '<b style="color:#ff7a7a">Lanterne éteinte : chaque case nouvelle coûte 3 PV.</b>'} ${r.fragments >= 2 ? '<b style="color:var(--ok)">Tu as les 2 fragments : la porte 🚪 t’attend.</b>' : ''}</div>
   <div class="legende"><span>⚔ monstres (I, II, III)</span><span>💀 élite</span><span>🗝 coffre</span><span>💧 source</span><span>🏪 marchand</span><span>❓ événement</span><span>🔥 autel</span><span>🧱 mur fissuré</span><span>🚪 porte</span><span>👑 boss</span></div>
   <div class="bas"><button onclick="monDeck()">🂠 Deck</button><button onclick="journal()">📜 Journal</button><button onclick="reglesCourtes()">❓ Règles</button><button onclick="abandon()">⏏ Quitter</button></div>`;
 }
 function enteteHTML() {
   const r = R, h = HEROS[r.heros];
   return `<div class="entete"><img src="${IMG(r.heros)}" alt="" onclick="monDeck()"><div class="st"><b>${h.nom}</b> · ${r.deck.length} cartes
-    <br><span class="p pv">❤ ${r.pv} / ${r.pvMax}</span><span class="p or">💰 ${r.or}</span><span class="p vivres ${r.vivres ? '' : 'zero'}">🍞 ${r.vivres}</span><span class="p">🗝 ${r.cles}</span><span class="p">🔮 ${r.fragments}/2</span>
+    <br><span class="p pv">❤ ${r.pv} / ${r.pvMax}</span><span class="p or">💰 ${r.or}</span><span class="p vivres ${r.vivres ? '' : 'zero'}" title="Huile de la lanterne">🪔 ${r.vivres}</span><span class="p">🗝 ${r.cles}</span><span class="p">🔮 ${r.fragments}/2</span>
     <br><span class="rel">${r.reliques.map(k => `<i onclick="info('${RELIQUES[k].e} ${RELIQUES[k].n}', '${RELIQUES[k].d.replace(/'/g, '’')}')">${RELIQUES[k].e}</i>`).join('')}${r.sacoche.map((k, i) => `<i onclick="sacocheIle(${i})">${SACOCHE[k].e}</i>`).join('')}${r.benes.map(k => `<i onclick="info('✨ ${BENEDICTIONS[k].n}', '${BENEDICTIONS[k].d.replace(/'/g, '’')}')">✨</i>`).join('')}${r.males.map(k => `<i onclick="info('🕯 ${MALEDICTIONS[k].n}', '${MALEDICTIONS[k].d.replace(/'/g, '’')}')">🕯</i>`).join('')}</span></div></div>`;
 }
 // =============================================================================================== la carte à l'encre (10/11 soir, idée de l'utilisateur d'après une vidéo)
@@ -196,7 +196,9 @@ function celluleSVG(c, neuf) {
   const pointe = !salle ? `<circle class="pointe" cx="${x + CEL / 2}" cy="${y + CEL / 2}" r="4"/>` : `<circle class="cible" cx="${x + CEL / 2}" cy="${y + 11}" r="3"/>`;
   return `<g class="cel ${c.visite ? 'visite' : ''} ${neuf ? 'neuf' : ''} ${peutCible(c) ? 'ok' : ''}" data-k="${c.x},${c.y}" onclick="marcheVers(${c.x},${c.y})"><rect x="${x}" y="${y}" width="${CEL}" height="${CEL}" fill="transparent"/>${sol}${murs}${pointe}${icone}${niv}</g>`;
 }
-function herosSVG() { const x = R.pos.x * CEL + CEL / 2, y = R.pos.y * CEL + CEL / 2; return `<g id="heros" style="transform:translate(${x}px,${y}px)"><circle class="halo" r="62"/><circle class="cadre" r="17"/><image href="${IMG(R.heros)}" x="-16" y="-16" width="32" height="32" clip-path="url(#rond)"/></g>`; }
+// 10/11 : la lumière de la lanterne rétrécit avec l'huile (62 pleine, 26 éteinte)
+const haloR = () => Math.round(26 + 36 * Math.min(1, (R.vivres || 0) / VIVRES_DEPART));
+function herosSVG() { const x = R.pos.x * CEL + CEL / 2, y = R.pos.y * CEL + CEL / 2; return `<g id="heros" style="transform:translate(${x}px,${y}px)"><circle class="halo" r="${haloR()}"/><circle class="cadre" r="17"/><image href="${IMG(R.heros)}" x="-16" y="-16" width="32" height="32" clip-path="url(#rond)"/></g>`; }
 // la caméra : cadre la partie découverte de l'île (au moins 4 × 5 cases, marge d'une case) et s'élargit en douceur
 let vue = null;
 function vueCible() {
@@ -231,20 +233,33 @@ function revele() {
   g.querySelectorAll('.cel').forEach(el => { const [a, b] = el.dataset.k.split(',').map(Number); el.classList.toggle('ok', peutCible(caseA(R, a, b))); el.classList.toggle('visite', !!caseA(R, a, b).visite); });
   const e = document.getElementById('entete'); if (e) e.innerHTML = enteteHTML();
 }
-function placeHeros() { const h = document.getElementById('heros'); if (h) h.style.transform = `translate(${R.pos.x * CEL + CEL / 2}px,${R.pos.y * CEL + CEL / 2}px)`; }
+function placeHeros() { const h = document.getElementById('heros'); if (h) { h.style.transform = `translate(${R.pos.x * CEL + CEL / 2}px,${R.pos.y * CEL + CEL / 2}px)`; const l = h.querySelector('.halo'); if (l) l.setAttribute('r', haloR()); } }
 function cheminVers(c) {
   const { prev } = bfs(R.ile, R.pos, v => v.visite || v === c);
   const chemin = []; let k = c.x + ',' + c.y; if (prev[k] === undefined && !(c.x === R.pos.x && c.y === R.pos.y)) return null;
   while (prev[k]) { chemin.unshift(k.split(',').map(Number)); k = prev[k]; } return chemin;
 }
+// 10/11 : DEUX TOUCHERS : le 1er dessine le trajet en pointillés avec son coût, le 2e (sur la même salle) fait marcher le héros
+let destination = null;
+function montreTrajet(c, chemin) {
+  const g = document.getElementById('cels'); if (!g) return; const old = document.getElementById('trajet'); if (old) old.remove();
+  const pts = [[R.pos.x, R.pos.y], ...chemin].map(([a, b]) => `${a * CEL + CEL / 2},${b * CEL + CEL / 2}`).join(' ');
+  const neuves = chemin.filter(([a, b]) => !caseA(R, a, b).visite).length, mur = c.t === 'mur' && !c.fait && !R.sacoche.includes('bombe') ? 3 : 0;
+  g.insertAdjacentHTML('beforeend', `<g id="trajet" style="pointer-events:none"><polyline points="${pts}" fill="none" stroke="#ffe9a8" stroke-width="4" stroke-dasharray="7 7" stroke-linecap="round"/><circle cx="${c.x * CEL + CEL / 2}" cy="${c.y * CEL + CEL / 2}" r="24" fill="none" stroke="#7dffb0" stroke-width="3"/></g>`);
+  const cout = neuves + mur, b = document.querySelector('.bandeau');
+  if (b) b.innerHTML = `${SALLES_ODY[c.t].e} ${SALLES_ODY[c.t].n} · ${cout ? `🪔 ${cout} dose${cout > 1 ? 's' : ''} d’huile${R.vivres < cout ? ' <b style="color:#ff7a7a">(pas assez : 3 PV par case dans le noir)</b>' : ''}` : 'gratuit (déjà exploré)'} · <b>touche encore la salle pour y aller</b>`;
+}
 async function marcheVers(x, y) {
   const c = caseA(R, x, y); if (!c || enMarche || !peutCible(c)) return;
-  const chemin = cheminVers(c); if (!chemin) return; enMarche = true;
+  const chemin = cheminVers(c); if (!chemin) return;
+  if (!destination || destination.x !== x || destination.y !== y) { destination = { x, y }; montreTrajet(c, chemin); return; }
+  destination = null; { const t = document.getElementById('trajet'); if (t) t.remove(); }
+  enMarche = true;
   for (const [a, b] of chemin) {
     const res = deplace(R, a, b); if (!res) break;
     placeHeros(); revele(); if (document.getElementById('cels')) document.getElementById('cels').querySelectorAll('.cel.ok').forEach(el => el.classList.remove('ok'));
     await dodo(260);
-    if (res.mort) { enMarche = false; sauve(); finPartie(false, 'Épuisé, sans vivres, le héros s’effondre dans la cendre.'); return; }
+    if (res.mort) { enMarche = false; sauve(); finPartie(false, 'La lanterne éteinte, épuisé, le héros s’effondre dans la cendre.'); return; }
   }
   enMarche = false; sauve(); dessine(); arrive(caseA(R, R.pos.x, R.pos.y));
 }
@@ -265,8 +280,8 @@ const PLUME = {
   mur:['Ce mur sonne creux. Tu as une bombe ? Ou des bras ?', 'Derrière, il y a sûrement un trésor. Ou un autre mur. Les deux, c’est l’aventure.'],
   porte_fermee:['Deux serrures en forme de rune. Les élites ont les fragments. Tu les as vues, les élites ? Elles sont grandes.', 'On ne force pas une porte de Titan. Enfin, toi, tu peux essayer.'],
   porte:['La porte s’ouvre… Tu vas vraiment entrer ? Bon. Je te regarde d’ici.', 'Dernier conseil : frappe fort, et plus souvent que lui.'],
-  vivres_bas:['Il reste peu de vivres. Je le dis sans rapport avec ma propre faim. Enfin si.', 'On fouille encore, ou on fonce ? Décide, j’ai les pattes gelées.'],
-  vivres_zero:['Plus rien à manger. Chaque pas va te coûter. Moi je vole, je rappelle.', 'Croâ… on aurait dû acheter du pain.'],
+  vivres_bas:['La lanterne baisse. Je n’aime pas le noir. Enfin, je l’aime, mais pas ici.', 'On fouille encore, ou on fonce ? Décide, la mèche fume déjà.'],
+  vivres_zero:['Plus d’huile. Chaque pas dans le noir va te coûter. Moi je vois la nuit, je rappelle.', 'Croâ… on aurait dû acheter de l’huile.'],
   mort:['Bon. Je retourne à la Guilde dire que tu as été très courageux. Très.', 'Il reviendra. Ils reviennent toujours. Croâ.'],
   boss_vaincu:['Tu… tu l’as eu. Je n’ai jamais douté. Jamais. Enfin presque.', 'L’île est libre ! Et moi j’ai faim. Les deux sont importants.'],
 };
@@ -345,7 +360,7 @@ function marchand(c) {
     ${bt('🔥 Retirer une carte de mon deck', 60, st.retire, "fermer();retirerFen(R.ile[" + c.y + "][" + c.x + "])", 'une fois par visite')}
     ${Object.keys(SACOCHE).map(k => bt(`${SACOCHE[k].e} ${SACOCHE[k].n}`, SACOCHE[k].prix, R.sacoche.length < 2, `achete(R,R.ile[${c.y}][${c.x}],'sacoche','${k}')`, SACOCHE[k].d)).join('')}
     ${bt('❤ Vitalité : +5 PV max', 70, st.pvmax, `achete(R,R.ile[${c.y}][${c.x}],'pvmax')`, `encore ${st.pvmax} fois`)}
-    ${bt('🍞 5 vivres', 20, true, `achete(R,R.ile[${c.y}][${c.x}],'vivres')`)}
+    ${bt('🪔 5 huile', 20, true, `achete(R,R.ile[${c.y}][${c.x}],'vivres')`)}
     ${st.relique ? bt(`${RELIQUES[st.relique].e} ${RELIQUES[st.relique].n}`, RELIQUES[st.relique].prix, R.reliques.length < 3, `achete(R,R.ile[${c.y}][${c.x}],'relique')`, RELIQUES[st.relique].d) : ''}
   </div><div class="choixh"><button onclick="fermer();dessine()">Repartir</button></div>`);
 }
@@ -372,11 +387,11 @@ function sacocheIle(i) { const k = R.sacoche[i]; if (k === 'soin') { fenetre(`<h
 function monDeck() { const n = {}; R.deck.forEach(k => n[k] = (n[k] || 0) + 1); fenetre(`<h2>🂠 Mon deck (${R.deck.length} cartes)</h2><div class="cartes3">${Object.keys(n).map(k => carteHTML(k, '', n[k] > 1 ? '× ' + n[k] : '')).join('')}</div><div class="choixh"><button onclick="fermer()">Fermer</button></div>`); }
 function journal() { fenetre(`<h2>📜 Journal de l’île</h2><div class="journal">${[...R.journal].reverse().map(t => `<div>${t}</div>`).join('')}</div><div class="choixh"><button onclick="fermer()">Fermer</button></div>`); }
 function reglesCourtes() { fenetre(`<h2>❓ L’Odyssée en bref</h2><ul style="padding-left:1.1em;font-size:.9em">
-  <li>Touche une case verte pour avancer. Chaque case <b>nouvelle</b> coûte 1 vivre ; sans vivres, 3 PV.</li>
+  <li>Touche une case verte : le trajet s’affiche avec son coût ; touche-la encore pour y aller. Chaque case <b>nouvelle</b> brûle 1 dose d’huile 🪔 ; lanterne vide = on avance dans le noir, 3 PV par case.</li>
   <li>Tes PV ne remontent pas entre les combats. Sources 💧 (+20), potions, marchand 🏪.</li>
   <li>Chaque victoire : de l’or et <b>une carte parmi trois</b> pour ton deck. Les élites 💀 donnent un fragment 🔮 et une clé 🗝 (coffres).</li>
   <li>2 fragments ouvrent la porte 🚪 du Titan 👑. Il ne se combat qu’une fois.</li>
-  <li>Les murs fissurés 🧱 s’ouvrent avec une bombe ou 3 vivres : une relique derrière.</li>
+  <li>Les murs fissurés 🧱 s’ouvrent avec une bombe ou 3 doses d’huile : une relique derrière.</li>
   <li>Si tu tombes, la partie s’arrête ; tu gardes les cartes rencontrées dans ta collection (éditeur de deck de la Tour des héros).</li></ul>
   <div class="choixh"><button onclick="location.href='odyssee-regles.html'">📖 Règles complètes</button><button onclick="fermer()">Fermer</button></div>`); }
 function abandon() { fenetre('<h2>⏏ Quitter</h2><p>Ton Odyssée est gardée sur ce téléphone : tu la reprendras là où tu es. Ou tu peux l’abandonner (comptée comme perdue).</p><div class="choixh"><button onclick="location.href=\'menu.html\'">⌂ Menu, je reprendrai</button><button onclick="finPartie(false, \'Abandon.\')">💀 Abandonner</button></div>'); }
