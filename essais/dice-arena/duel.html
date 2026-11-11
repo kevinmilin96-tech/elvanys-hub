@@ -387,7 +387,10 @@
   .sacoria { font-size:2cqw; }
   .unique .d.cache::after { top:2.5cqw; font-size:6cqw; }
   /* la main en éventail, posée sur le bas du plateau */
-  .unique .main { left:0; right:0; bottom:0; height:12cqh; max-width:none; z-index:6; }
+  /* la main posée EN ENTIER dans le bac du bas (cartes de 80 px, toucher = la carte en grand) */
+  .unique .main { left:0; right:0; bottom:0; height:122px; max-width:none; z-index:6; }
+  .unique .main .c { bottom:4px; width:80px; height:114px; font-size:.5em; transform-origin:50% 100%; }
+  .unique .main .c.vue { width:164px; height:auto; min-height:206px; font-size:.8em; }
   .bas { max-width:560px; margin:0 auto; height:54px; z-index:8; }
   .bas .b0 { width:46px; padding:0; font-size:18px; }
   .bas .b1 { flex:1; } .bas .b2 { flex:1.3; }
@@ -816,13 +819,13 @@ document.addEventListener('click', e => { if (carteVue !== null && !e.target.clo
 function mainEnEventail(J) {
   const n = J.main.length; if (!n) return '<i style="color:#c9c1ea;position:absolute;left:0;right:0;text-align:center;top:60px">Main vide</i>';
   if (carteVue !== null && carteVue >= n) carteVue = null;
-  const mil = (n - 1) / 2, pas = n > 1 ? Math.min(54, 270 / (n - 1)) : 0, ang = n > 1 ? Math.min(4, 18 / (n - 1)) : 0;
+  const mil = (n - 1) / 2, pas = n > 1 ? Math.min(46, 240 / (n - 1)) : 0, ang = n > 1 ? Math.min(4, 18 / (n - 1)) : 0;
   return J.main.map((k, i) => {
     const c = CARTES[k], ok = sel.length && permis(J, k, vals(sel), sel), vue = carteVue === i, d = i - mil;
-    const style = vue ? 'left:calc(50% - 82px);transform:translateY(-170px);z-index:60'
-      : `left:calc(50% - 50px + ${d * pas}px);transform:translateY(${Math.round(d * d * 2) - (ok ? 18 : 0)}px) rotate(${d * ang}deg);z-index:${ok ? 40 + i : i + 1}`;
+    const style = vue ? 'left:calc(50% - 82px);transform:translateY(-110px);z-index:60'
+      : `left:calc(50% - 40px + ${d * pas}px);transform:translateY(${Math.round(d * d * 2) - (ok ? 14 : 0)}px) rotate(${d * ang}deg);z-index:${ok ? 40 + i : i + 1}`;
     const pied = vue ? `<div class="jouer">${ok ? '👆 Touche encore pour la jouer' : sel.length ? 'Ces dés ne conviennent pas' : 'Choisis d’abord tes dés'}</div>` : '';
-    if (typeof CADRES_OK !== 'undefined' && CADRES_OK.includes(CADRE_DE(k))) return `<div class="c neuve ${ok ? 'ok' : sel.length ? 'non' : ''} ${vue ? 'vue' : ''}" style="${style}" onclick="toucheCarte(${i})">${carteGuilde(k, { w:vue ? 164 : 100, cout:coutCarte(J, k), pied:vue ? `<div class="cg-pied">${ok ? '👆 Touche encore pour la jouer' : sel.length ? 'Ces dés ne conviennent pas' : 'Choisis d’abord tes dés'}</div>` : '' })}</div>`;
+    if (typeof CADRES_OK !== 'undefined' && CADRES_OK.includes(CADRE_DE(k))) return `<div class="c neuve ${ok ? 'ok' : sel.length ? 'non' : ''} ${vue ? 'vue' : ''}" style="${style}" onclick="toucheCarte(${i})">${carteGuilde(k, { w:vue ? 164 : 80, cout:coutCarte(J, k), pied:vue ? `<div class="cg-pied">${ok ? '👆 Touche encore pour la jouer' : sel.length ? 'Ces dés ne conviennent pas' : 'Choisis d’abord tes dés'}</div>` : '' })}</div>`;
     return `<div class="c ${c.t}2 ${ok ? 'ok' : sel.length ? 'non' : ''} ${vue ? 'vue' : ''}" style="${style}" onclick="toucheCarte(${i})"><span class="cout">${coutCarte(J, k)}</span><div class="n">${c.n}</div><span class="cd">🎲 ${c.txt}</span><div class="dd">${c.d}</div>${pied}</div>`;
   }).join('');
 }
