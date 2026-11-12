@@ -219,11 +219,13 @@ function braiseTitan(D) { D.braiseT = (D.braiseT || 0) + 1; log(`🔥 Braise ${D
 const FRAPPE_MONSTRE = { n:'Griffes', txt:'2 à 5 dés identiques', d:'Dégâts = la moitié du dé (arrondie au-dessus) + 2 par dé au-delà de la paire.', cond:vs => vs.length >= 2 && vs.every(v => v === vs[0]), cible:'ennemi',
   dg:vs => Math.ceil(vs[0] / 2) + (vs.length - 2) * 2, f:(J, vs, k) => degats(k, FRAPPE_MONSTRE.dg(vs)) };
 // Ajoute monstres et boss au dictionnaire des héros, pour que le moteur du Duel les joue sans rien savoir d'eux.
+// 12/11 nuit : portraits peints reçus (fichier portraits/m-<id>.webp) ; tant qu'un monstre n'y est pas, il garde son émoji dans un rond
+const PORTRAITS_RECUS = [];
 function installeMonstres() {
   if (typeof HEROS === 'undefined') return;
   const tous = { ...MONSTRES, ...BOSS };
   Object.keys(tous).forEach(id => { if (HEROS[id]) return; const m = tous[id];
-    HEROS[id] = { ...m, monstre:true, deck:[], passif:m.role, frappe:m.frappeForte ? FRAPPE : FRAPPE_MONSTRE, img:PORTRAIT(m.emoji, m.c), ultime:m.ultime || { n:'—', txt:'jamais', d:'Ce monstre n’a pas d’Ultime.', cond:() => false },
+    HEROS[id] = { ...m, monstre:true, deck:[], passif:m.role, frappe:m.frappeForte ? FRAPPE : FRAPPE_MONSTRE, img:PORTRAITS_RECUS.includes(id) ? `portraits/m-${id}.webp?v=1` : PORTRAIT(m.emoji, m.c), ultime:m.ultime || { n:'—', txt:'jamais', d:'Ce monstre n’a pas d’Ultime.', cond:() => false },
       garde:m.garde || (m.phases && m.phases[0].garde), pouvoir:m.pouvoir || (m.phases && m.phases[0].pouvoir) }; });
 }
 if (typeof HEROS !== 'undefined') installeMonstres();
@@ -614,7 +616,7 @@ const BOSS_CAMP = {
 // 12/11 nuit : deux boss de plus pour le Campement (prototype). « Chaque héros » = les héros encore debout de l'équipe.
 const debout = () => (S && S.equipe ? S.equipe.filter(h => !h.aTerre && h.pv > 0) : []);
 Object.assign(BOSS_CAMP, {
-  kraken: { nom:'Le Kraken des brumes', titre:'l’Abyssal', emoji:'🐙', c:'#3a6a8a', pv:125, boss:true, frappeForte:true, lieu:'brume', role:'Un monstre des profondeurs remonté dans la brume. Ses tentacules font Barrière et repoussent sans cesse ; ses vagues frappent les deux héros.', cit:'« Glouuurb. »',
+  kraken: { nom:'Le Kraken des brumes', titre:'l’Abyssal', emoji:'🐙', c:'#3a6a8a', pv:150, boss:true, frappeForte:true, lieu:'brume', role:'Un monstre des profondeurs remonté dans la brume. Ses tentacules font Barrière et repoussent sans cesse ; ses vagues frappent les deux héros.', cit:'« Glouuurb. »',
     sbires:{ n:'Tentacule', a:2, v:5, barriere:true, tous:2, nb:1 },
     phases:[
       { seuil:1, garde:{ n:'Peau visqueuse', txt:'1 dé', d:'Bouclier = la valeur du dé.', cond:vs => vs.length === 1, val:vs => vs[0], f:(J, vs) => { J.gardeB += vs[0]; log(`Le Kraken : Peau visqueuse, Bouclier ${vs[0]}.`); } },
@@ -626,17 +628,17 @@ Object.assign(BOSS_CAMP, {
     ],
     ultime:{ n:'Maelström', txt:'3 dés', d:'10 dégâts à chaque héros et deux Tentacules de plus.', cond:vs => vs.length === 3, cible:'ennemi', f:J => { debout().forEach(h => degats({ J:h }, 10)); for (let i = 0; i < 2; i++) invoque(J, { n:'Tentacule', a:2, v:5, barriere:true }); } },
     renforts:[{ n:'Tentacule', a:2, v:5, barriere:true }] },
-  ignaros: { nom:'Ignaros, le dragon ancien', titre:'le Dernier Feu', emoji:'🐲', c:'#d9442a', pv:120, boss:true, frappeForte:true, lieu:'cratere', role:'Le plus vieux dragon de la Guilde. Ses Braises s’accumulent sur chaque héros (3 = explosion) et ses dragonnets éclosent tous les 3 tours.', cit:'« J’étais là avant vos runes. »',
-    sbires:{ n:'Dragonnet', a:3, v:3, charge:true, tous:3, nb:1 },
+  ignaros: { nom:'Ignaros, le dragon ancien', titre:'le Dernier Feu', emoji:'🐲', c:'#d9442a', pv:190, boss:true, frappeForte:true, lieu:'cratere', role:'Le plus vieux dragon de la Guilde. Ses Braises s’accumulent sur chaque héros (3 = explosion) et un dragonnet éclôt tous les 2 tours.', cit:'« J’étais là avant vos runes. »',
+    sbires:{ n:'Dragonnet', a:3, v:4, charge:true, tous:2, nb:1 },
     phases:[
       { seuil:1, garde:{ n:'Écailles', txt:'1 dé', d:'Bouclier = la valeur du dé + 1.', cond:vs => vs.length === 1, val:vs => vs[0] + 1, f:(J, vs) => { J.gardeB += vs[0] + 1; log(`Ignaros : Écailles, Bouclier ${vs[0] + 1}.`); } },
-        pouvoir:{ n:'Griffes ardentes', txt:'2 dés identiques', d:'7 dégâts à une cible et 1 Braise sur le héros visé.', cond:vs => vs.length === 2 && vs[0] === vs[1], cible:'ennemi', f:(J, vs, k) => { degats(k, 7); if (k && k.J && !k.u) braiseTitan(k.J); } } },
+        pouvoir:{ n:'Griffes ardentes', txt:'2 dés identiques', d:'9 dégâts à une cible et 1 Braise sur le héros visé.', cond:vs => vs.length === 2 && vs[0] === vs[1], cible:'ennemi', f:(J, vs, k) => { degats(k, 9); if (k && k.J && !k.u) braiseTitan(k.J); } } },
       { seuil:2 / 3, garde:{ n:'Écailles', txt:'1 dé', d:'Bouclier = la valeur du dé + 1.', cond:vs => vs.length === 1, val:vs => vs[0] + 1, f:(J, vs) => { J.gardeB += vs[0] + 1; log(`Ignaros : Écailles, Bouclier ${vs[0] + 1}.`); } },
-        pouvoir:{ n:'Souffle de feu', txt:'3 dés de 3 ou plus', d:'5 dégâts et 1 Braise à CHAQUE héros.', cond:vs => vs.length === 3 && vs.every(v => v >= 3), cible:'ennemi', f:() => debout().forEach(h => { degats({ J:h }, 5); braiseTitan(h); }) } },
+        pouvoir:{ n:'Souffle de feu', txt:'3 dés de 3 ou plus', d:'7 dégâts et 1 Braise à CHAQUE héros.', cond:vs => vs.length === 3 && vs.every(v => v >= 3), cible:'ennemi', f:() => debout().forEach(h => { degats({ J:h }, 7); braiseTitan(h); }) } },
       { seuil:1 / 3, garde:{ n:'Cœur de magma', txt:'1 dé', d:'Bouclier = 2 × la valeur du dé.', cond:vs => vs.length === 1, val:vs => vs[0] * 2, f:(J, vs) => { J.gardeB += vs[0] * 2; log(`Ignaros : Cœur de magma, Bouclier ${vs[0] * 2}.`); } },
-        pouvoir:{ n:'Fureur', txt:'2 dés de 5 ou plus', d:'12 dégâts et 1 Braise sur le héros visé.', cond:vs => vs.length === 2 && vs.every(v => v >= 5), cible:'ennemi', f:(J, vs, k) => { degats(k, 12); if (k && k.J && !k.u) braiseTitan(k.J); } } },
+        pouvoir:{ n:'Fureur', txt:'2 dés de 5 ou plus', d:'15 dégâts et 1 Braise sur le héros visé.', cond:vs => vs.length === 2 && vs.every(v => v >= 5), cible:'ennemi', f:(J, vs, k) => { degats(k, 15); if (k && k.J && !k.u) braiseTitan(k.J); } } },
     ],
-    ultime:{ n:'Embrasement', txt:'3 dés', d:'8 dégâts et 1 Braise à chaque héros.', cond:vs => vs.length === 3, cible:'ennemi', f:() => debout().forEach(h => { degats({ J:h }, 8); braiseTitan(h); }) },
+    ultime:{ n:'Embrasement', txt:'3 dés', d:'10 dégâts et 1 Braise à chaque héros.', cond:vs => vs.length === 3, cible:'ennemi', f:() => debout().forEach(h => { degats({ J:h }, 10); braiseTitan(h); }) },
     renforts:[] },
 });
 const COHESION = { depart:4, max:8, relever:3, cri:2, soin:2, concertee:3 };  // 10/11 : Frappe concertée = 4 dégâts à CHAQUE créature du boss (les racines)

@@ -1,7 +1,7 @@
 // =============================================================================================== DUEL À DEUX sur le même téléphone (12/11 nuit)
 // duel.html?deux=1 : chaque joueur choisit son héros, puis on se passe le téléphone. Le joueur dont c'est le tour est TOUJOURS en bas :
 // à la fin d'un tour, les deux camps s'échangent (S.J ↔ S.O) derrière un écran « Passe le téléphone » qui cache la main.
-// Aucun changement de règle : le second joueur a 3 PC et une carte de plus au départ, comme contre l'ordinateur.
+// Aucun changement de règle : le second joueur a 4 PC et une carte de plus au départ, comme contre l'ordinateur.
 
 let deuxChoix = [];
 function deuxAccueil() {

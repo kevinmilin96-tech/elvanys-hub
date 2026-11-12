@@ -609,7 +609,7 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261112-222247';
+const VERSION = '20261112-225408';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); location.replace('duel.html?v=' + v); }
@@ -628,10 +628,10 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261112-222247"></script>
-<script src="donnees.js?v=20261112-222247"></script>
-<script src="odyssee.js?v=20261112-222247"></script>
-<script src="chronique.js?v=20261112-222247"></script>
+<script src="cartes.js?v=20261112-225408"></script>
+<script src="donnees.js?v=20261112-225408"></script>
+<script src="odyssee.js?v=20261112-225408"></script>
+<script src="chronique.js?v=20261112-225408"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -1082,7 +1082,7 @@ function nouvellePartie(id, idO, auto) {
   S = { J:joueur(id, false, !!auto), O:joueur(idO, true), salle:SALLES[Math.floor(Math.random() * SALLES.length)], log:[], fini:null, auto:!!auto };
   FX = []; fxApres = []; fxOn = false; arreteMusique();
   // le second joueur (l'ordinateur) compense : 2 PC et 1 carte de plus au départ (v2.4)
-  pioche(S.J, 4); pioche(S.O, 5); S.O.pc = 3;
+  pioche(S.J, 4); pioche(S.O, 5); S.O.pc = typeof PC_SECOND === 'number' ? PC_SECOND : 4; // 12/11 nuit : 4 PC (au lieu de 3) : celui qui commence gagnait 56 %, maintenant 52 %
   log(`Salle : ${S.salle.n}. ${S.salle.d}`);
   sel = []; attaquant = null; ciblage = null;
   debutTour(S.J);
@@ -1919,7 +1919,7 @@ async function joueFX() {
 // toucher l'écran pendant les animations les accélère
 document.addEventListener('pointerdown', () => { if (fxOn) fxVite = .3; }, true);
 </script>
-<script src="tuto.js?v=20261112-222247"></script>
-<script src="deux.js?v=20261112-222247"></script>
+<script src="tuto.js?v=20261112-225408"></script>
+<script src="deux.js?v=20261112-225408"></script>
 </body>
 </html>

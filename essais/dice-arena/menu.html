@@ -8,7 +8,7 @@
 <title>La Guilde des Runes</title>
 <script>
 // Même mécanisme que le Duel : une nouvelle version = rechargement tout seul à l'ouverture (publier.sh change VERSION).
-const VERSION = '20261112-222247';
+const VERSION = '20261112-225408';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-menu-' + v)) { sessionStorage.setItem('recharge-menu-' + v, '1'); location.replace('menu.html?v=' + v); }
@@ -70,7 +70,7 @@ fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.te
   .chantier { position:absolute; top:8px; right:8px; font-size:.68em; font-weight:bold; color:#2a1a08; padding:3px 9px; border-radius:20px;
     background:repeating-linear-gradient(45deg, #f3c96b 0 8px, #e0b04f 8px 16px); box-shadow:0 0 0 1px #2a1a0855; z-index:1; }
   .lieu.ferme h3 { padding-right:110px; }
-  .petits { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:6px; }
+  .petits { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-top:6px; }
   .petits a { display:block; padding:12px; border-radius:14px; background:#221d42; border:1px solid #4b4580; color:#fff; text-decoration:none; text-align:center; font-size:.92em; }
   .bas { text-align:center; color:#8a83b8; font-size:.78em; margin-top:18px; }
   /* ---------- 12/11 nuit : le menu en PORTAILS (carrousel d'arches ; l'illustration est posée DANS l'arche, le nom écrit sur sa plaque) ---------- */
@@ -141,13 +141,14 @@ fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.te
   <p class="desc" id="desc"></p>
   <div class="petits">
     <a href="duel.html?parties=1">📜 Mes parties</a>
+    <a href="a-valider.html">📝 Pages à valider</a>
     <a href="https://demo-hub.elvanys.fr/">⌂ Retour au Hub</a>
   </div>
   <p class="bas">Prototype · images provisoires en attendant les peintures</p>
 </div>
 <div id="flash"></div>
 
-<script src="donnees.js?v=20261112-222247"></script>
+<script src="donnees.js?v=20261112-225408"></script>
 <script>
 // ciel étoilé + runes du portail (symboles, pas des lettres), aux couleurs des héros
 const ciel = document.getElementById('ciel');
