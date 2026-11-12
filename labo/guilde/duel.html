@@ -305,6 +305,10 @@
   .scene.lieu-glace { background-image:url('decor/lieu-glace.webp?v=1'), linear-gradient(180deg, #08142a 0%, #1f4a7a 32%, #6fc3ef 46%, #0e2a48 47%, #050d1a 100%); }
   .scene.lieu-cristal { background-image:url('decor/lieu-cristal.webp?v=1'), linear-gradient(180deg, #120a2e 0%, #3a3a8a 32%, #7fd3ff 46%, #1d1a44 47%, #0b0a1a 100%); }
   .scene.lieu-sommet { background-image:url('decor/lieu-sommet.webp?v=1'), radial-gradient(circle at 50% 52%, #e8f6ff 0%, #7fd3ff 22%, #1f3a6a 55%, #070d1d 100%); }
+  .scene.lieu-vide { background-image:url('decor/lieu-vide.webp?v=1'), linear-gradient(180deg, #05020d 0%, #2a0f4a 32%, #5a2a8a 46%, #1a0a2e 47%, #05020d 100%); }
+  .scene.lieu-faille { background-image:url('decor/lieu-faille.webp?v=1'), linear-gradient(180deg, #0a0414 0%, #3a1060 30%, #c084fc 46%, #2a0a44 47%, #070210 100%); }
+  .scene.lieu-ruinesv { background-image:url('decor/lieu-ruinesv.webp?v=1'), linear-gradient(180deg, #0f0b1e 0%, #3a3256 32%, #6a5a8a 46%, #1d1830 47%, #08060f 100%); }
+  .scene.lieu-trone { background-image:url('decor/lieu-trone.webp?v=1'), radial-gradient(circle at 50% 52%, #f3c96b 0%, #a855f7 18%, #2a0a44 52%, #030108 100%); }
   .scene.lieu-brume { background-image:url('decor/lieu-brume.webp?v=1'), linear-gradient(180deg, #1a1f1a 0%, #4a5a4a 35%, #2a3a2a 46%, #16201a 47%, #0b100c 100%); }
   .scene::after { content:''; position:absolute; left:0; right:0; top:46.5cqw; height:1.5cqw; background:linear-gradient(90deg, transparent, #ffffff33, transparent); pointer-events:none; }
   .scene #b-O { width:34cqw; height:34cqw; left:33cqw; top:3cqw; } .scene #b-O img { border:3px solid #ffffff55; box-shadow:0 0 40px #000c, 0 0 0 6px #0006; }
@@ -605,7 +609,7 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261112-220214';
+const VERSION = '20261112-222247';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); location.replace('duel.html?v=' + v); }
@@ -624,10 +628,10 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261112-220214"></script>
-<script src="donnees.js?v=20261112-220214"></script>
-<script src="odyssee.js?v=20261112-220214"></script>
-<script src="chronique.js?v=20261110-140121"></script>
+<script src="cartes.js?v=20261112-222247"></script>
+<script src="donnees.js?v=20261112-222247"></script>
+<script src="odyssee.js?v=20261112-222247"></script>
+<script src="chronique.js?v=20261112-222247"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -1104,6 +1108,7 @@ function prepareCombatOdyssee(run, cb, auto) {
   J.deck = melange([...run.deck]); J.pv = run.pv; J.pvMax = run.pvMax; J.reliques = [...run.reliques]; J.benes = [...run.benes]; J.sacoche = [...run.sacoche];
   pioche(J, 4 + (J.reliques.includes('souvenir') ? 1 : 0) + (J.benes.includes('main') ? 1 : 0));
   if (J.benes.includes('pcplus')) J.pc += 1;
+  if (J.reliques.includes('etoile')) { J.pc = Math.min(6, J.pc + 1); log('🌟 Étoile captive : +1 PC.'); }
   if (J.reliques.includes('fourrure')) { J.bouclier = (J.bouclier || 0) + 3; log('🧥 Manteau de fourrure : Bouclier 3.'); }
   // l'ennemi : un monstre (PV et créatures selon le niveau) ou un héros rival (avec son renfort d'élite)
   const niv = cb.niv || 1;
@@ -1196,7 +1201,7 @@ function partieCampement() {
   const boss = HEROS[cfg.boss] ? cfg.boss : 'colosseracines', h = HEROS[boss]; if (h.phases) { h.garde = h.phases[0].garde; h.pouvoir = h.phases[0].pouvoir; }
   const A = joueur(cfg.a, false, false), B = joueur(cfg.b, cfg.modeB === 'ordi', cfg.modeB === 'ordi');
   A.qui = 'toi'; B.qui = cfg.modeB === 'ordi' ? 'compagnon' : 'joueur 2'; B.nomCourt = B.nom;
-  S = { J:A, O:joueur(boss, true), salle:SALLES[Math.floor(Math.random() * SALLES.length)], log:[], fini:null, auto:false, coop:true, equipe:[A, B], cohesion:COHESION.depart, lieu:'brume' };
+  S = { J:A, O:joueur(boss, true), salle:SALLES[Math.floor(Math.random() * SALLES.length)], log:[], fini:null, auto:false, coop:true, equipe:[A, B], cohesion:COHESION.depart, lieu:h.lieu || 'brume' };
   FX = []; fxApres = []; fxOn = false; arreteMusique();
   S.O.desMax = 5; (h.renforts || []).forEach(r => invoque(S.O, { ...r }));
   pioche(A, 4); pioche(B, 4); B.pc = 2;
@@ -1206,7 +1211,7 @@ function partieCampement() {
 }
 function sbiresCamp() {
   const O = S.O, sb = HEROS[O.id].sbires; if (!sb || O.tours % sb.tous !== 0) return;
-  let n = 0; for (let i = 0; i < sb.nb; i++) if (O.front.length < 5) { invoque(O, { n:sb.n, a:sb.a, v:sb.v, barriere:!!sb.barriere }); n++; }
+  let n = 0; for (let i = 0; i < sb.nb; i++) if (O.front.length < 5) { invoque(O, { n:sb.n, a:sb.a, v:sb.v, barriere:!!sb.barriere, charge:!!sb.charge }); n++; }
   if (n) { log(`🌱 ${O.nom} appelle ${n} ${sb.n}${n > 1 ? 's' : ''}.`); fx({ t:'annonce', txt:`🌱 ${n} ${sb.n}${n > 1 ? 's' : ''} sortent du sol !` }); }
 }
 function suiteCamp() {
@@ -1377,7 +1382,7 @@ function barre(P, haut) {
     ${P.gardeB ? `<span data-k="garde" class="p g pg">🛡 Garde ${P.gardeB}</span>` : ''}${P.gardeE ? `<span data-k="epines" class="p g">🌿 Épines ${P.gardeE}</span>` : ''}${P.esquive ? '<span data-k="esquive" class="p g">💨 Esquive</span>' : ''}
     ${P.bouclier ? `<span data-k="bouclier" class="p g pb">🛡 Bouclier ${P.bouclier}</span>` : ''}${P.contre ? '<span data-k="contre" class="p g">⚔ Contre-attaque</span>' : ''}${P.piege ? '<span data-k="piege" class="p g">🪤 Piège</span>' : ''}
     ${P.cor ? '<span data-k="cor" class="p g">📯 Cor</span>' : ''}${P.fournaise ? '<span data-k="fournaise" class="p g">🔥 Fournaise</span>' : ''}${P.paillasse ? '<span data-k="paillasse" class="p g">⚗ Paillasse</span>' : ''}
-    ${P.id === 'pip' && !P.front.some(u => u.louve) ? `<span data-k="meute" class="p m">🐺 Meute ${P.meute}/3</span>` : ''}${P.braiseT ? `<span data-k="braiset" class="p al">🔥 Braises ${P.braiseT}/3</span>` : ''}${P.givre ? `<span data-k="givre" class="p al">❄ Givre ${P.givre}/${(P.reliques || []).includes('braise') ? 4 : 3}</span>` : ''}${P.id === 'maelle' ? `<span data-k="braises" class="p m">🔥 Braises ${P.braise}/3${P.forgeGratuite ? ' · Équipement gratuit' : ''}</span>` : ''}
+    ${P.id === 'pip' && !P.front.some(u => u.louve) ? `<span data-k="meute" class="p m">🐺 Meute ${P.meute}/3</span>` : ''}${P.braiseT ? `<span data-k="braiset" class="p al">🔥 Braises ${P.braiseT}/3</span>` : ''}${P.corruption ? `<span data-k="corruption" class="p al">🟣 Corruption ${P.corruption}/${(P.reliques || []).includes('sel') ? 4 : 3}</span>` : ''}${P.givre ? `<span data-k="givre" class="p al">❄ Givre ${P.givre}/${(P.reliques || []).includes('braise') ? 4 : 3}</span>` : ''}${P.id === 'maelle' ? `<span data-k="braises" class="p m">🔥 Braises ${P.braise}/3${P.forgeGratuite ? ' · Équipement gratuit' : ''}</span>` : ''}
     ${P.purete ? `<span data-k="purete" class="p pu">✦ Pureté ${P.purete}</span>` : ''}${P.handicap ? '<span data-k="handicap" class="p al">Handicap</span>' : ''}${P.saigne ? `<span data-k="saigne" class="p al">Saignement ${P.saigne}</span>` : ''}
     ${P.poison ? `<span data-k="poison" class="p al">Poison ${P.poison}</span>` : ''}${P.silence ? '<span data-k="silence" class="p al">Silence</span>' : ''}${P.oeuvre ? `<span data-k="oeuvre" class="p pu">Grand œuvre : ${P.oeuvre}</span>` : ''}
     ${P.ultimeFait ? '<span data-k="ultimefait" class="p">Ultime utilisé</span>' : `<span data-k="ultime" class="p ${P.jauge >= JAUGE.max ? 'pu' : ''}">⚡ Ultime ${P.jauge}/${JAUGE.max}</span>`}<span data-k="main" class="p">🂠 ${P.main.length} en main</span></div></div></div>`;
@@ -1597,7 +1602,7 @@ function copieParties(journal, i) {
 function montrerFin() {
   if (S.ody) { finOdyssee(); return; }
   if (S.coop) { if (S.enregistre) return; S.enregistre = true; arreteMusique(1.2); son(S.fini === 'gagne' ? 'victoire' : 'defaite'); effetImage(S.fini === 'gagne' ? 'victoire' : 'defaite', document.getElementById('app'), 2.2);
-    chronique([S.fini === 'gagne' ? CHRON_CAMP.victoire : CHRON_CAMP.defaite], () => fenetre(`<h2>${S.fini === 'gagne' ? '🏆 Le boss est tombé !' : '💀 Le campement est perdu…'}</h2><p>${S.equipe.map(h => `${h.nom} : ${h.aTerre ? 'à terre' : h.pv + ' PV'}`).join(' · ')} · ${S.O.nom} : ${Math.max(0, S.O.pv)} PV · ${S.equipe[0].tours} tours.</p><div class="choixh"><button onclick="location.href='campement.html'">🔥 Rejouer</button><button onclick="location.href='menu.html'">⌂ Menu</button></div>`)); return; }
+    chronique([(CHRON_CAMP_B[S.O.id] || CHRON_CAMP)[S.fini === 'gagne' ? 'victoire' : 'defaite']], () => fenetre(`<h2>${S.fini === 'gagne' ? '🏆 Le boss est tombé !' : '💀 Le campement est perdu…'}</h2><p>${S.equipe.map(h => `${h.nom} : ${h.aTerre ? 'à terre' : h.pv + ' PV'}`).join(' · ')} · ${S.O.nom} : ${Math.max(0, S.O.pv)} PV · ${S.equipe[0].tours} tours.</p><div class="choixh"><button onclick="location.href='campement.html'">🔥 Rejouer</button><button onclick="location.href='menu.html'">⌂ Menu</button></div>`)); return; }
   enregistrePartie();
   arreteMusique(1.2);
   { const c = document.getElementById(S.fini === 'gagne' ? 'b-O' : 'b-J'); if (c) effetImage(S.fini === 'gagne' ? 'victoire' : 'defaite', document.getElementById('app'), 2.2); }
@@ -1616,7 +1621,7 @@ function adversaire() {
   <div class="heros6">${ORDRE.filter(id => id !== monHeros).map(id => `<button onclick="fermer();nouvellePartie(monHeros,'${id}');regles()"><img src="${IMG(id)}" alt="">${HEROS[id].nom}</button>`).join('')}
   <button onclick="fermer();nouvellePartie(monHeros);regles()" style="display:flex;align-items:center;justify-content:center;font-size:2em;min-height:110px">🎲<br><span style="font-size:.4em">au hasard</span></button></div>`);
 }
-if (typeof document !== 'undefined' && document.getElementById('app')) { const q = new URLSearchParams(location.search); if (q.get('tuto')) addEventListener('load', () => partieTuto()); else if (q.get('odyssee')) setTimeout(partieOdyssee, 0); else if (q.get('campement')) setTimeout(partieCampement, 0); else if (q.get('parties')) mesParties(); else if (q.get('h') && HEROS[q.get('h')]) { monHeros = q.get('h'); adversaire(); } else accueil(); }
+if (typeof document !== 'undefined' && document.getElementById('app')) { const q = new URLSearchParams(location.search); if (q.get('tuto')) addEventListener('load', () => partieTuto()); else if (q.get('deux')) addEventListener('load', () => deuxAccueil()); else if (q.get('odyssee')) setTimeout(partieOdyssee, 0); else if (q.get('campement')) setTimeout(partieCampement, 0); else if (q.get('parties')) mesParties(); else if (q.get('h') && HEROS[q.get('h')]) { monHeros = q.get('h'); adversaire(); } else accueil(); }
 
 // =============================================================================================== animations et sons
 // Les sons sont fabriqués par le téléphone (aucun fichier) ; 🔊 / 🔇 dans la barre de la salle.
@@ -1914,6 +1919,7 @@ async function joueFX() {
 // toucher l'écran pendant les animations les accélère
 document.addEventListener('pointerdown', () => { if (fxOn) fxVite = .3; }, true);
 </script>
-<script src="tuto.js?v=20261112-220214"></script>
+<script src="tuto.js?v=20261112-222247"></script>
+<script src="deux.js?v=20261112-222247"></script>
 </body>
 </html>

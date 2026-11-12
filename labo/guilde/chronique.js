@@ -22,7 +22,7 @@ const CHRON_CSS = `
 .chron .num { position:absolute; right:14px; bottom:6px; font-size:.7em; color:#7a5a2a; }
 `;
 if (typeof document !== 'undefined') document.head.insertAdjacentHTML('beforeend', '<style>' + CHRON_CSS + '</style>');
-const ILLU_FOND = { givre:'linear-gradient(160deg, #06142a, #3a6aa8 55%, #e8f6ff)', aurore:'linear-gradient(160deg, #0b1a2e, #1f7a6a 45%, #8b5cf6 75%, #f3c96b)', feu:'linear-gradient(160deg, #3a0a0a, #a8341a 55%, #f7a23a)', cendre:'linear-gradient(160deg, #2a2a33, #6b5a4a 60%, #c9a56b)', vide:'linear-gradient(160deg, #0b0520, #4a1a8a 60%, #c084fc)', mer:'linear-gradient(160deg, #06142a, #1a4a7a 60%, #5ff5e6)', foret:'linear-gradient(160deg, #06160c, #1f5a2a 60%, #8df0a0)', brume:'linear-gradient(160deg, #1a1f1a, #4a5a4a 60%, #c9d4c9)', or:'linear-gradient(160deg, #3a2a0a, #b7832a 60%, #ffe9a8)', pierre:'linear-gradient(160deg, #1a1a22, #4a4a5a 60%, #a8a8b8)' };
+const ILLU_FOND = { vide2:'linear-gradient(160deg, #030108, #3a1060 55%, #c084fc)', givre:'linear-gradient(160deg, #06142a, #3a6aa8 55%, #e8f6ff)', aurore:'linear-gradient(160deg, #0b1a2e, #1f7a6a 45%, #8b5cf6 75%, #f3c96b)', feu:'linear-gradient(160deg, #3a0a0a, #a8341a 55%, #f7a23a)', cendre:'linear-gradient(160deg, #2a2a33, #6b5a4a 60%, #c9a56b)', vide:'linear-gradient(160deg, #0b0520, #4a1a8a 60%, #c084fc)', mer:'linear-gradient(160deg, #06142a, #1a4a7a 60%, #5ff5e6)', foret:'linear-gradient(160deg, #06160c, #1f5a2a 60%, #8df0a0)', brume:'linear-gradient(160deg, #1a1f1a, #4a5a4a 60%, #c9d4c9)', or:'linear-gradient(160deg, #3a2a0a, #b7832a 60%, #ffe9a8)', pierre:'linear-gradient(160deg, #1a1a22, #4a4a5a 60%, #a8a8b8)' };
 // Montre une suite de pages. page = { sur, titre, illu:{ cle, fond, sym }, texte:[...], cit, choix:[{ t, d, ok?, f }], bouton }
 // apres(resultat) est appelé à la fin ; un choix appelle son f() puis passe à la page suivante.
 let chronPages = [], chronI = 0, chronApres = null;
@@ -102,6 +102,35 @@ const CHRON_GIVRE = {
     'Mais la Guilde garde la mémoire de ceux qui partent : les cartes rencontrées restent dans la collection. Le navire du nord repassera. Il repasse toujours.' ],
     cit:'« Ils reviennent toujours. Même du froid. »' }),
 };
+
+// ----------------------------------------------------------------------------------------------- ACTE III : l'Abîme du Vide (12/11 nuit, textes neufs de Claude, à valider)
+const CHRON_ABIME = {
+  arrivee: h => ({ sur:'L’Odyssée · Acte III', titre:'L’Abîme du Vide', illu:{ cle:'abime', fond:'vide2', sym:'🌀' }, texte:[
+    `La boussole a mené le navire au bord du monde. Ici, la mer ne finit pas : elle tombe. ${h} saute sur une île brisée qui flotte au-dessus d’un gouffre sans fond, et le navire recule aussitôt, comme s’il avait peur.`,
+    'Des veines violettes courent dans la roche. Des morceaux d’île dérivent en silence. Tout en haut, un trône vide attend, et pourtant quelqu’un y est assis : on l’appelle le Roi sans visage.',
+    'Le Vide ne frappe pas comme le feu ou le froid. Il ronge. Il s’installe dans la tête, il fait taire les sorts, il se nourrit de ce qu’il prend. Trois gardiens portent encore les fragments de la rune. Ce sont peut-être les derniers.' ],
+    cit:'« Le Vide n’a pas faim. Il est la faim. »' }),
+  elite: ({ sur:'Chronique de l’île', titre:'Ceux qui sont restés', illu:{ cle:'restes', fond:'vide2', sym:'💀' }, texte:[
+    'Sur un rocher, une bannière de la Guilde, déchirée. Ceux qui sont venus avant vous ne sont pas tous repartis : certains sont restés, et le Vide les a gardés.',
+    'Les élites de l’Abîme tiennent les fragments de la rune. Deux suffisent pour le trône. Le troisième, prenez-le si vous l’osez.' ],
+    cit:'« On ne vainc pas le Vide. On se souvient de qui on est, assez longtemps pour passer. »' }),
+  porte: ({ sur:'Chronique de l’île', titre:'Les marches du trône', illu:{ cle:'marches', fond:'vide2', sym:'🚪' }, texte:[
+    'Les fragments s’assemblent et une porte apparaît là où il n’y avait rien : un simple cadre de pierre ouvert sur des marches qui montent dans le noir.',
+    'Vous allumez la lanterne une dernière fois. Corbin, pour une fois, ne dit rien. Il se serre contre votre cou.' ],
+    cit:'« Garde ta lumière allumée. Là-haut, c’est tout ce qui te restera. »' }),
+  boss: h => ({ sur:'L’Odyssée · Acte III', titre:'Le Roi sans visage', illu:{ cle:'roi', fond:'vide2', sym:'👑' }, texte:[
+    'Il se lève de son trône sans un bruit. Sous la couronne, il n’y a rien : un ovale de nuit où tournent des étoiles éteintes.',
+    `Chaque coup qu’il porte corrompt ${h}. À trois, le Vide dévore : des dégâts, le Silence (plus de Sort au tour suivant), et le Roi s’en nourrit. Il appelle sa cour d’ombres, puis, quand il faiblit, il vole tout ce qui reste.` ],
+    cit:'« Je n’ai pas de visage. J’aurai le tien. »' }),
+  victoire: h => ({ sur:'L’Odyssée · Acte III', titre:'La lumière revient', illu:{ cle:'lumiere', fond:'or', sym:'🏆' }, texte:[
+    `La couronne tombe et roule jusqu’aux pieds de ${h}. Le trône se fend, et par la fissure monte une lumière dorée : celle des runes, revenue d’on ne sait où.`,
+    'L’île cesse de dériver. Les trois îles de l’Odyssée sont libres. À la Guilde, on racontera cette histoire longtemps, et Corbin, qui l’a vécue, la racontera plus longtemps encore. En l’arrangeant un peu.' ],
+    cit:'« Ce qui a un visage peut être vaincu. Ce qui n’en a pas aussi, apparemment. »' }),
+  defaite: h => ({ sur:'L’Odyssée · Acte III', titre:'Le silence', illu:{ cle:'silence', fond:'vide2', sym:'🕯' }, texte:[
+    `${h} tombe sans un bruit, et le Vide referme sa main. La lanterne roule au bord du gouffre, sa flamme vacille… et ne s’éteint pas.`,
+    'Tant qu’une lumière brille, la Guilde peut revenir. Les cartes rencontrées restent dans la collection. Le navire attendra au bord du monde.' ],
+    cit:'« Ils reviennent toujours. Même du rien. »' }),
+};
 // ----------------------------------------------------------------------------------------------- les textes des Expéditions (le navire volant)
 // choix : f() modifie l'expédition et peut renvoyer { texte } (page de suite). Effets possibles : E.or, soin, ennemis plus faibles / plus forts (E.bonus).
 const CHRON_EXP = {
@@ -150,3 +179,25 @@ const CHRON_CAMP = {
   victoire: ({ sur:'Le Campement', titre:'Le géant abattu', illu:{ cle:'colosse-abattu', fond:'foret', sym:'🏆' }, texte:[ 'Le Colosse s’écroule dans un fracas de branches. Autour du feu, la brume se dissipe. On ne parle pas tout de suite : on respire.', 'La Guilde se souviendra de cette nuit.' ] }),
   defaite: ({ sur:'Le Campement', titre:'Le feu s’éteint', illu:{ cle:'feu-eteint', fond:'brume', sym:'🕯' }, texte:[ 'Les racines recouvrent le camp. Le feu s’éteint sous la brume. Mais la forêt n’a pas tout pris : demain, d’autres héros allumeront un feu au même endroit.' ] }),
 };
+// 12/11 nuit : les histoires des deux nouveaux boss du Campement (le Colosse garde celles d'au-dessus)
+const CHRON_CAMP_B = {
+  kraken:{
+    intro:(a, b) => ({ sur:'Le Campement', titre:'Quelque chose dans la brume', illu:{ cle:'kraken', fond:'mer', sym:'🐙' }, texte:[
+      `${a} et ${b} ont allumé un feu sur la grève, au pied des falaises. La brume roule depuis la mer, si épaisse qu’on ne voit plus les vagues. On les entend, pourtant. Et autre chose.`,
+      'Un tentacule grand comme un mât se pose sur le sable, tout doucement. Puis un deuxième. Le Kraken des brumes est remonté des profondeurs : ses tentacules protègent son corps et repoussent sans cesse, et ses vagues frappent tout le monde à la fois.',
+      'Deux héros, un feu, une réserve de Cohésion. Couper les tentacules, ou viser la tête ?' ],
+      cit:'« Glouuurb. »' }),
+    victoire:({ sur:'Le Campement', titre:'Retour aux abysses', illu:{ cle:'kraken-fuit', fond:'mer', sym:'🏆' }, texte:[ 'Le Kraken lâche prise et glisse dans la mer en emportant la brume avec lui. Sur la grève, il ne reste qu’une odeur d’algue et deux héros trempés.', 'La Guilde ajoutera une ligne à son livre des monstres : « Le Kraken des brumes. Vaincu. Mouillé, mais vaincu. »' ], cit:'« La mer reprend ce qu’elle prête. »' }),
+    defaite:({ sur:'Le Campement', titre:'La marée', illu:{ cle:'maree', fond:'mer', sym:'🕯' }, texte:[ 'La marée monte et éteint le feu. Les tentacules se retirent, satisfaits. Demain, d’autres héros allumeront un feu plus haut sur la plage.' ], cit:'« Ils reviennent toujours. »' }),
+  },
+  ignaros:{
+    intro:(a, b) => ({ sur:'Le Campement', titre:'Le Dernier Feu', illu:{ cle:'ignaros', fond:'feu', sym:'🐲' }, texte:[
+      `${a} et ${b} n’ont pas eu besoin d’allumer de feu : il y en a déjà un, immense, au fond du ravin. Il respire.`,
+      'Ignaros est le plus vieux dragon que la Guilde connaisse. Il dormait sur ses œufs depuis avant les runes. Ses griffes posent des Braises qui explosent à la troisième, son souffle brûle les deux héros à la fois, et tous les trois tours un dragonnet éclôt.',
+      'On dit qu’on ne le tue pas : on le convainc de se rendormir. Fort. Très fort.' ],
+      cit:'« J’étais là avant vos runes. »' }),
+    victoire:({ sur:'Le Campement', titre:'Le dragon se rendort', illu:{ cle:'ignaros-dort', fond:'or', sym:'🏆' }, texte:[ 'Ignaros pose sa tête sur ses œufs, ferme un œil, puis l’autre. Le ravin s’assombrit. Les héros reculent sur la pointe des pieds.', 'À la Guilde, personne ne les croira. Corbin, si : il a tout vu, de très loin.' ], cit:'« Dors. On repassera. Peut-être. »' }),
+    defaite:({ sur:'Le Campement', titre:'Les cendres', illu:{ cle:'cendres-ravin', fond:'cendre', sym:'🕯' }, texte:[ 'Le souffle du dragon balaie le camp. Il ne reste que des cendres tièdes, et un dragonnet qui joue avec un bouclier tordu.' ], cit:'« Ils reviennent toujours. »' }),
+  },
+};
+

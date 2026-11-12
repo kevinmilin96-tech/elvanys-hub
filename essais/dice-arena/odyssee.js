@@ -144,6 +144,74 @@ const ILES = {
     lieux:{ monstre:'neige', fort:'glace', elite:'cristal', boss:'sommet' }, evenements:['voyageur', 'autelbrise', 'marchandambulant', 'cartographe', 'statue', 'ermite', 'lacgele', 'cabane', 'aurore', 'traineau'] },
 };
 const ILE = r => ILES[(r && r.acte) || 'brulees'] || ILES.brulees;
+
+// ================================================================== ACTE III · L'ABÎME DU VIDE (12/11 nuit, prototype à valider)
+// Mécanique de l'île : la CORRUPTION 🟣. Certains coups corrompent le héros ; à 3 (4 avec le Talisman de sel), le Vide le dévore :
+// 4 dégâts, SILENCE (pas de Sort à son prochain tour) et l'ennemi qui l'a corrompu regagne 4 PV.
+function corrompt(D, n) {
+  if (!D || !D.pv) return; const seuil = (D.reliques || []).includes('sel') ? 4 : 3, A = adv(D);
+  D.corruption = (D.corruption || 0) + (n || 1); log(`🟣 Corruption ${Math.min(D.corruption, seuil)}/${seuil} sur ${D.nom}.`);
+  if (D.corruption >= seuil) { D.corruption = 0; log(`🟣 Le Vide dévore ${D.nom} : 4 dégâts, Silence, et ${A.nom} se nourrit (+4 PV) !`); degats({ J:D }, 4, true); D.silence = true; if (A && A.pv > 0) A.pv = Math.min(A.pvMax, A.pv + 4); }
+}
+Object.assign(MONSTRES, {
+  ombre:       { nom:'Ombre rampante', titre:'la chuchoteuse', emoji:'👤', c:'#6b4a9a', pv:17, ile:'abime', role:'Faible, mais elle corrompt à chaque coup.', cit:'« … viens… »',
+    garde:{ n:'Se fondre', txt:'1 dé impair', d:'Esquive : le prochain coup reçu est divisé par deux.', cond:vs => vs.length === 1 && vs[0] % 2 === 1, val:() => 4, f:J => { J.esquive = true; log(`${J.nom} se fond dans le noir : Esquive.`); } },
+    pouvoir:{ n:'Murmure', txt:'2 dés identiques', d:'3 dégâts au héros et 1 Corruption.', cond:vs => vs.length === 2 && vs[0] === vs[1], cible:'ennemi', f:J => { degats({ J:adv(J) }, 3); corrompt(adv(J)); } },
+    renforts:[] },
+  rongeur:     { nom:'Rongeur du Vide', titre:'la nuée', emoji:'🦇', c:'#4a3a6a', pv:16, ile:'abime', role:'Arrive en nuée : deux petites chauves-souris l’accompagnent.', cit:'« Skriii ! »',
+    garde:{ n:'Nuée', txt:'1 dé', d:'Bouclier 3.', cond:vs => vs.length === 1, val:() => 3, f:J => { J.gardeB += 3; log(`${J.nom} : Nuée, Bouclier 3.`); } },
+    pouvoir:{ n:'Morsures', txt:'3 dés de 2 ou plus', d:'5 dégâts à une cible.', cond:vs => vs.length === 3 && vs.every(v => v >= 2), cible:'ennemi', f:(J, vs, k) => degats(k, 5) },
+    renforts:[{ n:'Chauve-souris', a:1, v:2, charge:true }, { n:'Chauve-souris', a:1, v:2, charge:true }] },
+  oeil:        { nom:'Œil flottant', titre:'le guetteur', emoji:'👁️', c:'#a855f7', pv:18, ile:'abime', role:'Son regard vide les PC et corrompt.', cit:'« Je te vois. »',
+    garde:{ n:'Paupière', txt:'1 dé pair', d:'Bouclier = la valeur du dé.', cond:vs => vs.length === 1 && vs[0] % 2 === 0, val:vs => vs[0], f:(J, vs) => { J.gardeB += vs[0]; log(`${J.nom} : Paupière, Bouclier ${vs[0]}.`); } },
+    pouvoir:{ n:'Regard du néant', txt:'2 dés pairs', d:'4 dégâts, le héros perd 1 PC, et 1 Corruption.', cond:vs => vs.length === 2 && vs.every(v => v % 2 === 0), cible:'ennemi', f:J => { const D = adv(J); degats({ J:D }, 4); if (D.pc > 0) D.pc--; corrompt(D); } },
+    renforts:[] },
+  chevalier:   { nom:'Chevalier déchu', titre:'le serment brisé', emoji:'🛡️', c:'#5a5a7a', pv:21, ile:'abime', role:'Ancien héros de la Guilde : il pare et frappe fort.', cit:'« J’ai juré, autrefois. »',
+    garde:{ n:'Parade', txt:'1 dé', d:'Bouclier = la valeur du dé + 2.', cond:vs => vs.length === 1, val:vs => vs[0] + 2, f:(J, vs) => { J.gardeB += vs[0] + 2; log(`${J.nom} : Parade, Bouclier ${vs[0] + 2}.`); } },
+    pouvoir:{ n:'Lame noire', txt:'2 dés identiques de 4 ou plus', d:'8 dégâts à une cible et 1 Corruption au héros.', cond:vs => vs.length === 2 && vs[0] === vs[1] && vs[0] >= 4, cible:'ennemi', f:(J, vs, k) => { degats(k, 8); corrompt(adv(J)); } },
+    renforts:[] },
+  tisseuse:    { nom:'Tisseuse de vide', titre:'l’araignée d’étoiles', emoji:'🕷️', c:'#7a3aa8', pv:16, ile:'abime', role:'Tisse des Toiles qui font Barrière et entravent.', cit:'« Reste. Encore un peu. »',
+    garde:{ n:'Cocon', txt:'1 dé', d:'Bouclier 4.', cond:vs => vs.length === 1, val:() => 4, f:J => { J.gardeB += 4; log(`${J.nom} : Cocon, Bouclier 4.`); } },
+    pouvoir:{ n:'Toile', txt:'dé = 6, ou 2 dés identiques', d:'Une Toile 0 / 6 Barrière (deux au plus), sinon 5 dégâts et 1 Corruption.', cond:vs => (vs.length === 1 && vs[0] === 6) || (vs.length === 2 && vs[0] === vs[1]), cible:'ennemi',
+      f:(J, vs, k) => { if (J.front.filter(u => u.barriere).length < 2) invoque(J, { n:'Toile', a:0, v:6, barriere:true }); else { degats(k, 5); corrompt(adv(J)); } } },
+    renforts:[{ n:'Toile', a:0, v:6, barriere:true }] },
+  colossevide:{ nom:'Colosse du Vide', titre:'le trou noir', emoji:'🌑', c:'#3a1a5a', pv:22, ile:'abime', role:'Le plus dangereux : il aspire la vie, et sa jauge pleine déchire tout.', cit:'« … »',
+    garde:{ n:'Horizon', txt:'1 dé', d:'Bouclier = la valeur du dé.', cond:vs => vs.length === 1, val:vs => vs[0], f:(J, vs) => { J.gardeB += vs[0]; log(`${J.nom} : Horizon, Bouclier ${vs[0]}.`); } },
+    pouvoir:{ n:'Aspiration', txt:'3 dés de 4 ou plus', d:'7 dégâts au héros, il en regagne autant, et 1 Corruption.', cond:vs => vs.length === 3 && vs.every(v => v >= 4), cible:'ennemi', f:J => { const D = adv(J), a = D.pv; degats({ J:D }, 7); J.pv = Math.min(J.pvMax, J.pv + Math.max(0, a - D.pv)); corrompt(D); } },
+    ultime:{ n:'Effondrement', txt:'3 dés', d:'12 dégâts au héros et 2 Corruption.', cond:vs => vs.length === 3, cible:'ennemi', f:J => { degats({ J:adv(J) }, 12); corrompt(adv(J), 2); } },
+    renforts:[] },
+  // --- les élites de l'Abîme
+  heraut:      { nom:'Le Héraut du Vide', titre:'la voix du roi', emoji:'🎺', c:'#9b5cf6', pv:24, majeur:true, ile:'abime', role:'Il appelle des Ombres et corrompt de loin.', cit:'« Le roi vous attend. Tous. »',
+    garde:{ n:'Manteau d’étoiles', txt:'1 dé', d:'Bouclier = la valeur du dé + 1.', cond:vs => vs.length === 1, val:vs => vs[0] + 1, f:(J, vs) => { J.gardeB += vs[0] + 1; log(`${J.nom} : Manteau d’étoiles, Bouclier ${vs[0] + 1}.`); } },
+    pouvoir:{ n:'Appel', txt:'2 dés identiques', d:'Une Ombre 2 / 3 Charge (3 au plus), sinon 6 dégâts et 1 Corruption.', cond:vs => vs.length === 2 && vs[0] === vs[1], cible:'ennemi',
+      f:(J, vs, k) => { if (J.front.length < 3) invoque(J, { n:'Ombre', a:2, v:3, charge:true }); else { degats(k, 6); corrompt(adv(J)); } } },
+    renforts:[{ n:'Ombre', a:2, v:3 }] },
+  miroir:      { nom:'Le Miroir brisé', titre:'ton reflet', emoji:'🪞', c:'#c9b8ff', pv:22, majeur:true, ile:'abime', role:'Il renvoie les coups : Épines à chaque Garde.', cit:'« Frappe-moi. Tu te frappes. »',
+    garde:{ n:'Reflet', txt:'1 ou 2 dés', d:'Bouclier = la somme, et Épines 3.', cond:vs => vs.length <= 2, val:vs => somme(vs) + 3, f:(J, vs) => { J.gardeB += somme(vs); J.gardeE += 3; log(`${J.nom} : Reflet, Bouclier ${somme(vs)} et Épines 3.`); } },
+    pouvoir:{ n:'Éclat', txt:'3 dés de 3 ou plus', d:'7 dégâts à une cible et 1 Corruption au héros.', cond:vs => vs.length === 3 && vs.every(v => v >= 3), cible:'ennemi', f:(J, vs, k) => { degats(k, 7); corrompt(adv(J)); } },
+    renforts:[] },
+  gardien:     { nom:'Le Gardien des runes mortes', titre:'l’oublié', emoji:'🗿', c:'#6a5a8a', pv:27, majeur:true, ile:'abime', role:'Deux Runes mortes Barrière le protègent ; il écrase lentement.', cit:'« … »',
+    garde:{ n:'Pierre ancienne', txt:'1 dé', d:'Bouclier = la valeur du dé + 2.', cond:vs => vs.length === 1, val:vs => vs[0] + 2, f:(J, vs) => { J.gardeB += vs[0] + 2; log(`${J.nom} : Pierre ancienne, Bouclier ${vs[0] + 2}.`); } },
+    pouvoir:{ n:'Écrasement', txt:'2 dés identiques de 4 ou plus', d:'9 dégâts à une cible.', cond:vs => vs.length === 2 && vs[0] === vs[1] && vs[0] >= 4, cible:'ennemi', f:(J, vs, k) => degats(k, 9) },
+    renforts:[{ n:'Rune morte', a:1, v:6, barriere:true }, { n:'Rune morte', a:1, v:6, barriere:true }] },
+});
+// le gardien de l'acte III : le Roi sans visage, 3 phases ; à la 3e, il vole les couleurs (Corruption 2 par coup)
+Object.assign(BOSS, {
+  roi: { nom:'Le Roi sans visage', titre:'le maître du Vide', emoji:'👑', c:'#a855f7', pv:62, boss:true, ile:'abime', role:'Trois phases. Sa Corruption te réduit au Silence et le nourrit.', cit:'« Je n’ai pas de visage. J’aurai le tien. »',
+    phases:[
+      { seuil:1, garde:{ n:'Couronne d’ombre', txt:'1 dé', d:'Bouclier = la valeur du dé.', cond:vs => vs.length === 1, val:vs => vs[0], f:(J, vs) => { J.gardeB += vs[0]; log(`Le Roi : Couronne d’ombre, Bouclier ${vs[0]}.`); } },
+        pouvoir:{ n:'Sceptre du néant', txt:'2 dés identiques', d:'7 dégâts et 1 Corruption.', cond:vs => vs.length === 2 && vs[0] === vs[1], cible:'ennemi', f:(J, vs, k) => { degats(k, 7); corrompt(adv(J)); } } },
+      { seuil:2 / 3, garde:{ n:'Couronne d’ombre', txt:'1 dé', d:'Bouclier = la valeur du dé.', cond:vs => vs.length === 1, val:vs => vs[0], f:(J, vs) => { J.gardeB += vs[0]; log(`Le Roi : Couronne d’ombre, Bouclier ${vs[0]}.`); } },
+        pouvoir:{ n:'Cour des ombres', txt:'3 dés de 3 ou plus', d:'Deux Ombres 2 / 3 arrivent, et 5 dégâts au héros.', cond:vs => vs.length === 3 && vs.every(v => v >= 3), cible:'ennemi', f:J => { invoque(J, { n:'Ombre', a:2, v:3 }); invoque(J, { n:'Ombre', a:2, v:3 }); degats({ J:adv(J) }, 5); } } },
+      { seuil:1 / 3, garde:{ n:'Manteau de néant', txt:'1 dé', d:'Bouclier = 2 × la valeur du dé.', cond:vs => vs.length === 1, val:vs => vs[0] * 2, f:(J, vs) => { J.gardeB += vs[0] * 2; log(`Le Roi : Manteau de néant, Bouclier ${vs[0] * 2}.`); } },
+        pouvoir:{ n:'Sans visage', txt:'2 dés de 5 ou plus', d:'10 dégâts et 2 Corruption.', cond:vs => vs.length === 2 && vs.every(v => v >= 5), cible:'ennemi', f:(J, vs, k) => { degats(k, 10); corrompt(adv(J), 2); } } },
+    ],
+    ultime:{ n:'Le grand Vide', txt:'3 dés', d:'12 dégâts au héros, et le Vide le dévore tout de suite.', cond:vs => vs.length === 3, cible:'ennemi', f:J => { const D = adv(J); degats({ J:D }, 12); corrompt(D, 9); } },
+    renforts:[] },
+});
+ILES.abime = { acte:'Acte III', nom:'l’Abîme du Vide', court:'Abîme du Vide', boss:'roi', bossNom:'Le Roi sans visage',
+  pools:[['ombre', 'rongeur', 'oeil'], ['rongeur', 'oeil', 'chevalier', 'tisseuse'], ['chevalier', 'tisseuse', 'colossevide']], elites:['heraut', 'miroir', 'gardien'],
+  lieux:{ monstre:'vide', fort:'faille', elite:'ruinesv', boss:'trone' }, evenements:['voyageur', 'autelbrise', 'marchandambulant', 'cartographe', 'statue', 'ermite', 'reflet', 'pontetoiles', 'voix', 'bibliotheque'] };
 const ACTES_CLE = 'guilde-actes';
 const actesFaits = () => { try { return JSON.parse(localStorage.getItem(ACTES_CLE) || '{}'); } catch (e) { return {}; } };
 function braiseTitan(D) { D.braiseT = (D.braiseT || 0) + 1; log(`🔥 Braise ${D.braiseT}/3 sur ${D.nom}.`); if (D.braiseT >= 3) { D.braiseT = 0; log('🔥 Les Braises explosent : 6 dégâts !'); degats({ J:D }, 6, true); } }
@@ -163,6 +231,8 @@ if (typeof HEROS !== 'undefined') installeMonstres();
 // ----------------------------------------------------------------------------------------------- reliques, sacoche, bénédictions, malédictions
 const RELIQUES = {
   fourrure:  { n:'Manteau de fourrure', e:'🧥', d:'Tu commences chaque combat avec Bouclier 3.', prix:110, ile:'givre' },
+  sel:       { n:'Talisman de sel', e:'🧂', d:'La Corruption ne te dévore qu’à 4 au lieu de 3.', prix:100, ile:'abime' },
+  etoile:    { n:'Étoile captive', e:'🌟', d:'+1 PC au début de chaque combat.', prix:110, ile:'abime' },
   braise:    { n:'Braise éternelle', e:'🕯', d:'Le Givre ne te gèle qu’à 4 au lieu de 3.', prix:100, ile:'givre' },
   brassards: { n:'Brassards de la Guilde', e:'💪', d:'+2 dégâts sur chaque attaque de ton héros et de tes créatures.', prix:120 },
   armure:    { n:'Armure de Marennes', e:'🛡', d:'−1 sur chaque coup reçu par ton héros.', prix:120 },
@@ -228,6 +298,21 @@ function draft(R, richesse, deja, heros) {
 // ----------------------------------------------------------------------------------------------- les événements (une courte histoire, 2 ou 3 choix)
 // effet : { or, pv, vivres, pvMax, carte:'draft'|clé, relique:true, cle, malediction:true, benediction:true, sacoche:'soin'… }
 const EVENEMENTS = [
+  // --- ceux de l'Abîme du Vide (12/11 nuit)
+  { id:'reflet', ile:'abime', t:'Le reflet', d:'Une flaque d’encre immobile. Votre reflet vous sourit… une seconde trop tard.', choix:[
+    { t:'Lui tendre la main (une carte épique)', e:{ carte:'epique', malediction:true }, m:'Il vous donne quelque chose. Et garde quelque chose de vous.' },
+    { t:'Briser le reflet', e:{ pv:-4, or:30 }, m:'L’encre éclate (−4 PV). Au fond : 30 pièces d’or.' },
+    { t:'Passer sans regarder', e:{}, m:'Le reflet vous suit des yeux.' } ] },
+  { id:'pontetoiles', ile:'abime', t:'Le pont d’étoiles', d:'Un pont fait d’étoiles accrochées les unes aux autres enjambe le néant. Certaines clignotent.', choix:[
+    { t:'Traverser vite (+2 huile, −5 PV)', e:{ vivres:2, pv:-5 }, m:'Une étoile s’éteint sous votre pied. Vous vous rattrapez de justesse.' },
+    { t:'Cueillir une étoile (une relique)', e:{ relique:true, vivres:-2 }, m:'Elle est chaude dans la main. Le détour vous coûte 2 huile.' } ] },
+  { id:'voix', ile:'abime', t:'La voix', d:'Quelqu’un vous appelle par votre nom, depuis le noir. C’est la voix de Corbin. Corbin est sur votre épaule.', choix:[
+    { t:'Répondre', e:{ benediction:true, malediction:true }, m:'La voix rit. Vous repartez plus fort… et plus lourd.' },
+    { t:'Se boucher les oreilles et avancer (+6 PV max)', e:{ pvMax:6, pv:6 }, m:'Corbin : « C’était pas moi. Je te jure. »' } ] },
+  { id:'bibliotheque', ile:'abime', t:'La bibliothèque engloutie', d:'Des rayonnages flottent dans le vide, chargés de livres de la Guilde que personne n’a jamais écrits.', choix:[
+    { t:'Lire (une carte à choisir)', e:{ carte:'draft1' }, m:'Les pages se tournent toutes seules.' },
+    { t:'Brûler un livre pour la lanterne (+4 huile)', e:{ vivres:4 }, m:'Il brûle d’une flamme violette.' },
+    { t:'Y laisser une carte de ton deck', e:{ retirer:true }, m:'Elle trouve sa place sur une étagère.' } ] },
   // --- ceux de l'île du Givre (12/11 nuit)
   { id:'lacgele', ile:'givre', t:'Le lac gelé', d:'Un lac pris par la glace coupe le chemin. La glace craque doucement sous le vent.', choix:[
     { t:'Traverser sur la glace', e:{ pv:-6, vivres:2 }, m:'Crac ! Un pied dans l’eau glacée (−6 PV), mais le raccourci vous fait économiser 2 huile.' },
@@ -526,6 +611,34 @@ const BOSS_CAMP = {
     ultime:{ n:'Réveil primordial', txt:'3 dés', d:'18 dégâts au héros visé et deux Racines de plus.', cond:vs => vs.length === 3, cible:'ennemi', f:(J, vs, k) => { degats({ J:adv(J) }, 18); for (let i = 0; i < 2; i++) invoque(J, { n:'Racine', a:2, v:4, barriere:true }); } },
     renforts:[{ n:'Racine', a:2, v:4, barriere:true }, { n:'Racine', a:2, v:4, barriere:true }] },
 };
+// 12/11 nuit : deux boss de plus pour le Campement (prototype). « Chaque héros » = les héros encore debout de l'équipe.
+const debout = () => (S && S.equipe ? S.equipe.filter(h => !h.aTerre && h.pv > 0) : []);
+Object.assign(BOSS_CAMP, {
+  kraken: { nom:'Le Kraken des brumes', titre:'l’Abyssal', emoji:'🐙', c:'#3a6a8a', pv:125, boss:true, frappeForte:true, lieu:'brume', role:'Un monstre des profondeurs remonté dans la brume. Ses tentacules font Barrière et repoussent sans cesse ; ses vagues frappent les deux héros.', cit:'« Glouuurb. »',
+    sbires:{ n:'Tentacule', a:2, v:5, barriere:true, tous:2, nb:1 },
+    phases:[
+      { seuil:1, garde:{ n:'Peau visqueuse', txt:'1 dé', d:'Bouclier = la valeur du dé.', cond:vs => vs.length === 1, val:vs => vs[0], f:(J, vs) => { J.gardeB += vs[0]; log(`Le Kraken : Peau visqueuse, Bouclier ${vs[0]}.`); } },
+        pouvoir:{ n:'Étreinte', txt:'2 dés identiques', d:'6 dégâts à une cible et Handicap au héros visé.', cond:vs => vs.length === 2 && vs[0] === vs[1], cible:'ennemi', f:(J, vs, k) => { degats(k, 6); if (k && k.J && !k.u) altere(k.J, 'handicap'); } } },
+      { seuil:2 / 3, garde:{ n:'Encre', txt:'1 dé', d:'Esquive : le prochain coup reçu est divisé par deux.', cond:vs => vs.length === 1, val:() => 5, f:J => { J.esquive = true; log('Le Kraken crache son encre : Esquive.'); } },
+        pouvoir:{ n:'Vague de brume', txt:'3 dés de 3 ou plus', d:'6 dégâts à CHAQUE héros.', cond:vs => vs.length === 3 && vs.every(v => v >= 3), cible:'ennemi', f:() => debout().forEach(h => degats({ J:h }, 6)) } },
+      { seuil:1 / 3, garde:{ n:'Carapace d’abysses', txt:'1 dé', d:'Bouclier = 2 × la valeur du dé.', cond:vs => vs.length === 1, val:vs => vs[0] * 2, f:(J, vs) => { J.gardeB += vs[0] * 2; log(`Le Kraken : Carapace d’abysses, Bouclier ${vs[0] * 2}.`); } },
+        pouvoir:{ n:'Gouffre', txt:'2 dés de 4 ou plus', d:'13 dégâts à une cible.', cond:vs => vs.length === 2 && vs.every(v => v >= 4), cible:'ennemi', f:(J, vs, k) => degats(k, 13) } },
+    ],
+    ultime:{ n:'Maelström', txt:'3 dés', d:'10 dégâts à chaque héros et deux Tentacules de plus.', cond:vs => vs.length === 3, cible:'ennemi', f:J => { debout().forEach(h => degats({ J:h }, 10)); for (let i = 0; i < 2; i++) invoque(J, { n:'Tentacule', a:2, v:5, barriere:true }); } },
+    renforts:[{ n:'Tentacule', a:2, v:5, barriere:true }] },
+  ignaros: { nom:'Ignaros, le dragon ancien', titre:'le Dernier Feu', emoji:'🐲', c:'#d9442a', pv:120, boss:true, frappeForte:true, lieu:'cratere', role:'Le plus vieux dragon de la Guilde. Ses Braises s’accumulent sur chaque héros (3 = explosion) et ses dragonnets éclosent tous les 3 tours.', cit:'« J’étais là avant vos runes. »',
+    sbires:{ n:'Dragonnet', a:3, v:3, charge:true, tous:3, nb:1 },
+    phases:[
+      { seuil:1, garde:{ n:'Écailles', txt:'1 dé', d:'Bouclier = la valeur du dé + 1.', cond:vs => vs.length === 1, val:vs => vs[0] + 1, f:(J, vs) => { J.gardeB += vs[0] + 1; log(`Ignaros : Écailles, Bouclier ${vs[0] + 1}.`); } },
+        pouvoir:{ n:'Griffes ardentes', txt:'2 dés identiques', d:'7 dégâts à une cible et 1 Braise sur le héros visé.', cond:vs => vs.length === 2 && vs[0] === vs[1], cible:'ennemi', f:(J, vs, k) => { degats(k, 7); if (k && k.J && !k.u) braiseTitan(k.J); } } },
+      { seuil:2 / 3, garde:{ n:'Écailles', txt:'1 dé', d:'Bouclier = la valeur du dé + 1.', cond:vs => vs.length === 1, val:vs => vs[0] + 1, f:(J, vs) => { J.gardeB += vs[0] + 1; log(`Ignaros : Écailles, Bouclier ${vs[0] + 1}.`); } },
+        pouvoir:{ n:'Souffle de feu', txt:'3 dés de 3 ou plus', d:'5 dégâts et 1 Braise à CHAQUE héros.', cond:vs => vs.length === 3 && vs.every(v => v >= 3), cible:'ennemi', f:() => debout().forEach(h => { degats({ J:h }, 5); braiseTitan(h); }) } },
+      { seuil:1 / 3, garde:{ n:'Cœur de magma', txt:'1 dé', d:'Bouclier = 2 × la valeur du dé.', cond:vs => vs.length === 1, val:vs => vs[0] * 2, f:(J, vs) => { J.gardeB += vs[0] * 2; log(`Ignaros : Cœur de magma, Bouclier ${vs[0] * 2}.`); } },
+        pouvoir:{ n:'Fureur', txt:'2 dés de 5 ou plus', d:'12 dégâts et 1 Braise sur le héros visé.', cond:vs => vs.length === 2 && vs.every(v => v >= 5), cible:'ennemi', f:(J, vs, k) => { degats(k, 12); if (k && k.J && !k.u) braiseTitan(k.J); } } },
+    ],
+    ultime:{ n:'Embrasement', txt:'3 dés', d:'8 dégâts et 1 Braise à chaque héros.', cond:vs => vs.length === 3, cible:'ennemi', f:() => debout().forEach(h => { degats({ J:h }, 8); braiseTitan(h); }) },
+    renforts:[] },
+});
 const COHESION = { depart:4, max:8, relever:3, cri:2, soin:2, concertee:3 };  // 10/11 : Frappe concertée = 4 dégâts à CHAQUE créature du boss (les racines)
 Object.assign(BOSS, BOSS_CAMP);
 if (typeof HEROS !== 'undefined') installeMonstres();
