@@ -8,7 +8,7 @@
 <title>La Guilde des Runes</title>
 <script>
 // Même mécanisme que le Duel : une nouvelle version = rechargement tout seul à l'ouverture (publier.sh change VERSION).
-const VERSION = '20261112-212257';
+const VERSION = '20261112-215310';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-menu-' + v)) { sessionStorage.setItem('recharge-menu-' + v, '1'); location.replace('menu.html?v=' + v); }
@@ -73,6 +73,51 @@ fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.te
   .petits { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:6px; }
   .petits a { display:block; padding:12px; border-radius:14px; background:#221d42; border:1px solid #4b4580; color:#fff; text-decoration:none; text-align:center; font-size:.92em; }
   .bas { text-align:center; color:#8a83b8; font-size:.78em; margin-top:18px; }
+  /* ---------- 12/11 nuit : le menu en PORTAILS (carrousel d'arches ; l'illustration est posée DANS l'arche, le nom écrit sur sa plaque) ---------- */
+  #monde { position:relative; min-height:100vh; overflow:hidden; background:radial-gradient(ellipse at 50% 108%, #3b2a5c 0%, #1a1433 45%, #0d0a1c 100%); max-width:none; padding:18px 0 30px; }
+  #monde > *:not(.ciel) { position:relative; }
+  #monde .entete, #monde .petits, #monde .bas, #monde .desc { max-width:520px; margin-left:auto; margin-right:auto; padding:0 14px; }
+  .retour { display:none; margin:4px auto 0; padding:7px 18px; border-radius:20px; border:1px solid #6b5fb0; background:#221d42cc; color:var(--texte); font:inherit; font-size:.9em; }
+  .retour.vu { display:block; }
+  .carrousel { --w:min(72vw, 330px, calc(60vh * .67)); display:flex; gap:4vw; overflow-x:auto; scroll-snap-type:x mandatory; padding:22px calc(50% - var(--w) / 2) 8px; scrollbar-width:none; transition:opacity .35s; }
+  .carrousel::-webkit-scrollbar { display:none; }
+  .carrousel.cache { opacity:0; }
+  .porte { flex:none; width:var(--w); aspect-ratio:848/1264; position:relative; scroll-snap-align:center; container-type:inline-size; cursor:pointer; transform-origin:50% 60%; transition:transform .15s linear, filter .2s; }
+  .porte .dedans { position:absolute; left:23.4%; top:16.4%; width:53.2%; height:65.2%; border-radius:50% 50% 0 0 / 30% 30% 0 0; overflow:hidden; background:#140f2a; }
+  .porte .dedans img { width:100%; height:100%; object-fit:cover; display:block; }
+  .porte .arche { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; filter:drop-shadow(0 10px 18px #000c); }
+  .porte .plaque { position:absolute; left:16%; width:68%; top:83.6%; height:9%; display:flex; align-items:center; justify-content:center; text-align:center; line-height:1;
+    font-size:7.2cqw; font-weight:bold; color:#2b2346; text-shadow:0 1px 0 #ffffffaa; letter-spacing:.01em; }
+  .porte .plaque.long { font-size:5.6cqw; }
+  .porte.centre .dedans { box-shadow:inset 0 0 30px #c084fc66; }
+  .porte.centre .halo { opacity:1; }
+  .porte .halo { position:absolute; left:18%; right:18%; top:12%; bottom:14%; border-radius:50% 50% 12% 12%; background:radial-gradient(ellipse, #c084fc55, transparent 70%); filter:blur(14px); opacity:0; transition:opacity .4s; z-index:-1; animation:respire 3.2s ease-in-out infinite; }
+  .porte.ferme .dedans > *:not(.verrou) { filter:grayscale(.7) brightness(.55) blur(1px); }
+  .verrou { position:absolute; left:50%; top:50%; transform:translate(-50%, -50%); width:34cqw; height:34cqw; border-radius:50%; display:grid; place-items:center; font-size:17cqw;
+    background:radial-gradient(circle at 40% 35%, #4b4580, #1d1838); box-shadow:0 0 0 2px #f3c96b88, 0 6px 16px #000c; }
+  .bandeau { position:absolute; left:50%; top:76%; transform:translateX(-50%); white-space:nowrap; font-size:4.6cqw; font-weight:bold; color:#2a1a08; padding:3px 10px; border-radius:20px;
+    background:linear-gradient(#f6d77e, #c8902f); box-shadow:0 2px 6px #000a; z-index:2; }
+  .porte.entre { transition:transform .75s cubic-bezier(.6,0,.9,.4), opacity .75s; transform:scale(3.2) !important; opacity:0; z-index:5; }
+  #flash { position:fixed; inset:0; pointer-events:none; background:radial-gradient(circle, #fff 0%, #e9d5ff 30%, #7c3aed 70%, transparent 100%); opacity:0; z-index:9; }
+  #flash.go { animation:flash .8s ease-in forwards; }
+  @keyframes flash { 60% { opacity:.9; } 100% { opacity:1; } }
+  #propTuto { position:fixed; inset:0; z-index:20; display:grid; place-items:center; background:#05030ccc; padding:20px; animation:monteT .4s ease-out; }
+  #propTuto > div { max-width:360px; text-align:center; background:linear-gradient(#2a2260, #171433); border:2px solid #f3c96b88; border-radius:22px; padding:18px; box-shadow:0 10px 40px #000; }
+  #propTuto h3 { margin:.2em 0; color:var(--or); } #propTuto p { color:var(--doux); line-height:1.4; }
+  #propTuto button { font:inherit; font-weight:bold; border:0; border-radius:24px; padding:12px 22px; background:linear-gradient(#f6d77e, #c8902f); color:#2a1a08; box-shadow:0 0 18px #f3c96b88; }
+  #propTuto a { display:block; margin-top:12px; color:#c9c1ea; font-size:.85em; }
+  @keyframes monteT { from { opacity:0; } }
+  .points { display:flex; justify-content:center; gap:7px; margin:6px 0 2px; }
+  .points i { width:8px; height:8px; border-radius:50%; background:#4b4580; transition:all .2s; }
+  .points i.on { background:var(--or); width:20px; border-radius:5px; }
+  .desc { text-align:center; color:var(--doux); font-style:italic; min-height:3.2em; font-size:.95em; line-height:1.4; margin-top:6px; }
+  /* illustrations PROVISOIRES dessinées en code (remplacées dès que la peinture arrive) */
+  .pro { position:absolute; inset:0; display:grid; place-items:center; overflow:hidden; }
+  .pro b { font-size:34cqw; filter:drop-shadow(0 0 12px var(--g)); animation:flotter 3s ease-in-out infinite; }
+  .pro::before { content:''; position:absolute; inset:-20%; background:var(--fond); }
+  .pro::after { content:''; position:absolute; inset:0; background:radial-gradient(circle at 50% 45%, var(--g) 0%, transparent 55%); opacity:.45; animation:respire 3.2s ease-in-out infinite; }
+  .pro b { position:relative; z-index:1; }
+  .pro .et { position:absolute; width:3px; height:3px; border-radius:50%; background:#fff; opacity:.7; animation:scint 2.6s ease-in-out infinite; z-index:1; }
 </style>
 </head>
 <body>
@@ -87,32 +132,22 @@ fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.te
 </div>
 
 <div id="monde">
-  <div class="entete"><h2>Le monde de la Guilde</h2><p>Choisis où aller, aventurier.</p></div>
+  <div class="ciel" id="ciel2"></div>
+  <div class="entete"><h2 id="eTitre">Le monde de la Guilde</h2><p id="eSous">Glisse, puis touche un portail pour y entrer.</p></div>
   <div class="heros" id="heros"></div>
-
-  <a class="lieu ouvert" href="duel.html" style="--fond:linear-gradient(135deg, #5b1e2e, #2a1238 70%);--bord:#ff7a59">
-    <div class="ico">⚔️</div><div><h3>L’Arène des Duels</h3><p>Un héros contre un autre, face à l’ordinateur. Dés, cartes, créatures : le premier à zéro perd.</p></div><div class="go">›</div>
-  </a>
-  <a class="lieu" href="odyssee.html" style="--fond:linear-gradient(135deg, #3a2a14, #1d1626 70%);--bord:#b7832a">
-    <div class="ico">🏰</div><div><h3>L’Odyssée</h3><p>Seul sur l’île des Terres brûlées : explore case par case, fais grandir ton deck, vaincs le Titan de feu.</p></div><div class="go">›</div>
-  </a>
-  <a class="lieu" href="expedition.html" style="--fond:linear-gradient(135deg, #123a4a, #161d38 70%);--bord:#5ff5e6">
-    <div class="ico">⛵</div><div><h3>Les Expéditions</h3><p>Le navire volant : forme ton équipage, six escales, et regarde-le combattre tout seul (premier essai).</p></div><div class="go">›</div>
-  </a>
-  <a class="lieu" href="campement.html" style="--fond:linear-gradient(135deg, #1e3a1e, #1a1630 70%);--bord:#7dffb0">
-    <div class="ico">🔥</div><div><h3>Le Campement</h3><p>Deux héros contre un boss géant : à deux sur ce téléphone, ou avec un compagnon (premier essai, sans partie en ligne).</p></div><div class="go">›</div>
-  </a>
-  <a class="lieu" href="heros.html" style="--fond:linear-gradient(135deg, #2a2260, #171433 70%);--bord:#8b5cf6">
-    <div class="ico">📚</div><div><h3>La Tour des héros</h3><p>Les six héros, leurs pouvoirs, leurs dés et leurs cartes.</p></div><div class="go">›</div>
-  </a>
+  <button class="retour" id="retour" onclick="history.back()">‹ Retour</button>
+  <div class="carrousel" id="car"></div>
+  <div class="points" id="points"></div>
+  <p class="desc" id="desc"></p>
   <div class="petits">
     <a href="duel.html?parties=1">📜 Mes parties</a>
     <a href="https://demo-hub.elvanys.fr/">⌂ Retour au Hub</a>
   </div>
-  <p class="bas">Prototype · dessins et chiffres encore en travail</p>
+  <p class="bas">Prototype · images provisoires en attendant les peintures</p>
 </div>
+<div id="flash"></div>
 
-<script src="donnees.js?v=20261112-212257"></script>
+<script src="donnees.js?v=20261112-215310"></script>
 <script>
 // ciel étoilé + runes du portail (symboles, pas des lettres), aux couleurs des héros
 const ciel = document.getElementById('ciel');
@@ -126,14 +161,105 @@ function anneau(id, n) {
 anneau('a1', 14); anneau('a2', 20);
 // les six héros du monde
 document.getElementById('heros').innerHTML = (typeof ORDRE !== 'undefined' ? ORDRE : []).map((id, i) => `<img src="portraits/${id}.webp" alt="${HEROS[id].nom}" style="--c:${HEROS[id].c};animation-delay:${i * .25}s">`).join('');
+const c2 = document.getElementById('ciel2');
+for (let i = 0; i < 50; i++) { const s = document.createElement('i'); s.style.left = Math.random() * 100 + '%'; s.style.top = Math.random() * 70 + '%'; s.style.animationDelay = Math.random() * 3 + 's'; c2.appendChild(s); }
+
+// ------------------------------------------------------------------ le menu en portails (12/11 nuit)
+// une porte : nom (sur la plaque), desc (sous le carrousel), img (peinture reçue) OU pro (dessin provisoire), puis
+//   vers = un étage, href = une page, ferme = verrouillée (texte), avenir = portail mystère « À venir »
+const PRO = { // dessins provisoires : [émoji, fond, lueur]
+  arene:['⚔️', 'linear-gradient(180deg, #f59e0b 0%, #b45309 35%, #7c2d12 62%, #e7c48a 63%, #c99a5b 100%)', '#ffd27a'],
+  odyssee:['⛵', 'linear-gradient(180deg, #2b1d4a 0%, #a8432c 45%, #1c2b4a 58%, #0f1a33 100%)', '#ff9f5a'],
+  expeditions:['🪽', 'linear-gradient(180deg, #ffd89b 0%, #f7a76c 40%, #7cc8ff 100%)', '#fff3c4'],
+  campement:['🔥', 'linear-gradient(180deg, #0d1f17 0%, #1f3b2b 55%, #3a2a14 100%)', '#ffb347'],
+  tour:['📚', 'linear-gradient(180deg, #0f0c29 0%, #302b63 60%, #24243e 100%)', '#c084fc'],
+  ordinateur:['🗿', 'linear-gradient(180deg, #3b82f6 0%, #1e3a8a 50%, #c99a5b 51%, #8a6538 100%)', '#7cc8ff'],
+  tuto:['🐦‍⬛', 'linear-gradient(180deg, #ffe7a8 0%, #f4c27a 45%, #7aa36b 46%, #4d7a43 100%)', '#fff3c4'],
+  abime:['🌀', 'radial-gradient(circle at 50% 70%, #6d28d9 0%, #1e0b3a 50%, #05020d 100%)', '#a855f7'],
+};
+const ETAGES = {
+  '':{ titre:'Le monde de la Guilde', sous:'Glisse, puis touche un portail pour y entrer.', portes:[
+    { nom:'L’Arène', pro:'arene', vers:'arene', desc:'Les Duels : un héros contre un autre. Dés, cartes, créatures : le premier à zéro perd.' },
+    { nom:'L’Odyssée', pro:'odyssee', vers:'odyssee', desc:'Seul sur une île : explore case par case, fais grandir ton deck, vaincs le gardien de l’île.' },
+    { nom:'Expéditions', pro:'expeditions', href:'expedition.html', desc:'Le navire volant : forme ton équipage, six escales, et regarde-le combattre tout seul (premier essai).' },
+    { nom:'Le Campement', pro:'campement', href:'campement.html', desc:'Deux héros contre un boss géant : à deux sur ce téléphone, ou avec un compagnon (premier essai).' },
+    { nom:'Tour des héros', pro:'tour', href:'heros.html', desc:'Les six héros, leurs pouvoirs, leurs dés et leurs cartes. Prépare ton deck.' },
+  ] },
+  arene:{ titre:'L’Arène des Duels', sous:'Contre qui veux-tu te battre ?', portes:[
+    { nom:'Contre l’ordinateur', pro:'ordinateur', href:'duel.html', desc:'Choisis ton héros et affronte l’automate de la Guilde.' },
+    { nom:'Contre un proche', avenir:true, desc:'Bientôt : à deux sur le même téléphone, chacun son tour.' },
+    { nom:'Le tutoriel', pro:'tuto', href:'duel.html?tuto=1', desc:'Un premier duel guidé par Corbin, avec Gorm (5 minutes). À la clé : Zéphine et le cadre de Diplômé.' },
+  ] },
+  odyssee:{ titre:'L’Odyssée', sous:'Quelle île veux-tu explorer ?', portes:[
+    { nom:'Terres brûlées', img:'menu-recu/ody-terres-brulees.webp', href:'odyssee.html', desc:'Acte I · L’île de cendre et de lave, gardée par le Titan de feu.' },
+    { nom:'Île du Givre', img:'menu-recu/ody-givre.webp', ferme:'Acte II', desc:'Acte II · Des falaises de glace sous l’aurore. Elle s’ouvrira bientôt.' },
+    { nom:'L’Abîme du Vide', pro:'abime', ferme:'Acte III', desc:'Acte III · Une île brisée au-dessus du néant. Plus tard…' },
+  ] },
+};
+const car = document.getElementById('car');
+let courant = '';
+function dessin(p) {
+  if (p.avenir) return '<img src="menu-recu/mystere.webp" alt="">';
+  if (p.img) return `<img src="${p.img}" alt="">`;
+  const [e, fond, g] = PRO[p.pro]; let et = '';
+  for (let i = 0; i < 9; i++) et += `<i class="et" style="left:${(i * 37) % 100}%;top:${(i * 23) % 60}%;animation-delay:${i * .3}s"></i>`;
+  return `<div class="pro" style="--fond:${fond};--g:${g}">${et}<b>${e}</b></div>`;
+}
+function montre(id) {
+  const E = ETAGES[id] || ETAGES['']; courant = ETAGES[id] ? id : '';
+  document.getElementById('eTitre').textContent = E.titre; document.getElementById('eSous').textContent = E.sous;
+  document.getElementById('retour').classList.toggle('vu', !!courant);
+  document.getElementById('heros').style.display = courant ? 'none' : '';
+  car.innerHTML = E.portes.map((p, i) => `<div class="porte ${p.ferme ? 'ferme' : ''}" data-i="${i}">
+    <div class="halo"></div><div class="dedans">${dessin(p)}${p.ferme ? '<div class="verrou">🔒</div>' : ''}</div>
+    <img class="arche" src="menu-recu/arche-vide.webp?v=1" alt="">
+    ${p.ferme ? `<span class="bandeau">${p.ferme}</span>` : p.avenir ? '<span class="bandeau">À venir</span>' : ''}
+    <div class="plaque ${p.nom.length > 13 ? 'long' : ''}">${p.nom}</div></div>`).join('');
+  document.getElementById('points').innerHTML = E.portes.map(() => '<i></i>').join('');
+  car.querySelectorAll('.porte').forEach(el => el.onclick = () => touche(+el.dataset.i));
+  const garde = +(sessionStorage.getItem('guilde-porte-' + courant) || 0);
+  car.classList.add('cache');
+  requestAnimationFrame(() => { centre(garde, false); echelle(); car.classList.remove('cache'); });
+}
+function centre(i, doux) { const el = car.children[i]; if (el) car.scrollTo({ left:el.offsetLeft + el.offsetWidth / 2 - car.clientWidth / 2, behavior:doux ? 'smooth' : 'instant' }); }
+function auCentre() { const m = car.scrollLeft + car.clientWidth / 2; let best = 0, d = 1e9; [...car.children].forEach((el, i) => { const x = Math.abs(el.offsetLeft + el.offsetWidth / 2 - m); if (x < d) { d = x; best = i; } }); return best; }
+function echelle() {
+  const m = car.scrollLeft + car.clientWidth / 2, c = auCentre(), E = ETAGES[courant];
+  [...car.children].forEach((el, i) => { const d = Math.min(1, Math.abs(el.offsetLeft + el.offsetWidth / 2 - m) / el.offsetWidth); el.style.transform = `scale(${1 - .2 * d})`; el.style.filter = `brightness(${1 - .35 * d})`; el.classList.toggle('centre', i === c); });
+  document.querySelectorAll('#points i').forEach((p, i) => p.classList.toggle('on', i === c));
+  document.getElementById('desc').textContent = E.portes[c] ? E.portes[c].desc : '';
+  sessionStorage.setItem('guilde-porte-' + courant, c);
+}
+car.addEventListener('scroll', () => requestAnimationFrame(echelle), { passive:true });
+function touche(i) {
+  const p = ETAGES[courant].portes[i];
+  if (i !== auCentre()) return centre(i, true);
+  if (p.ferme || p.avenir) { const el = car.children[i]; el.animate([{ translate:'0' }, { translate:'-8px' }, { translate:'8px' }, { translate:'0' }], { duration:300 }); return; }
+  souffle(); car.children[i].classList.add('entre'); document.getElementById('flash').classList.add('go');
+  setTimeout(() => {
+    if (p.href) { location.href = p.href; return; }
+    document.getElementById('flash').classList.remove('go'); location.hash = p.vers;
+  }, 750);
+}
+// 12/11 : au premier passage, Corbin propose le tutoriel (avec « passer »)
+function proposeTuto() {
+  if (localStorage.getItem('guilde-tuto') === 'fait' || localStorage.getItem('guilde-tuto-vu')) return;
+  const d = document.createElement('div'); d.id = 'propTuto';
+  d.innerHTML = `<div><div style="font-size:42px">🐦‍⬛</div><h3>Croâ ! Première visite ?</h3><p>Moi c’est Corbin. Je te montre comment on se bat à la Guilde : <b>un duel guidé de 5 minutes</b> avec Gorm. À la fin, <b>Zéphine</b> rejoint la Guilde.</p>
+    <button onclick="location.href='duel.html?tuto=1'">🎓 Faire le tutoriel</button><a href="#" onclick="localStorage.setItem('guilde-tuto-vu','1');this.closest('#propTuto').remove();return false">Passer (je le ferai plus tard depuis l’Arène)</a></div>`;
+  document.body.appendChild(d);
+}
+// la flèche « retour » du téléphone ramène à l'étage d'avant
+window.addEventListener('hashchange', () => montre(location.hash.slice(1)));
+window.addEventListener('pageshow', e => { if (e.persisted) { document.getElementById('flash').classList.remove('go'); montre(location.hash.slice(1)); } });
 // on entre : petit souffle magique, on plonge dans le portail
 function souffle() { try { const a = new (window.AudioContext || window.webkitAudioContext)(), t = a.currentTime, o = a.createOscillator(), g = a.createGain();
   o.type = 'sine'; o.frequency.setValueAtTime(220, t); o.frequency.exponentialRampToValueAtTime(880, t + .9); g.gain.setValueAtTime(.12, t); g.gain.exponentialRampToValueAtTime(.001, t + 1.1);
   o.connect(g).connect(a.destination); o.start(t); o.stop(t + 1.2); } catch (e) {} }
 function entrer() { const t = document.getElementById('titre'); if (t.classList.contains('part')) return; souffle(); t.classList.add('part'); sessionStorage.setItem('guilde-entre', '1');
-  setTimeout(() => { t.remove(); document.getElementById('monde').classList.add('vu'); }, 1000); }
+  setTimeout(() => { t.remove(); document.getElementById('monde').classList.add('vu'); montre(location.hash.slice(1)); proposeTuto(); }, 1000); }
 // déjà entré pendant cette visite (retour du Duel) : on va droit au monde
-if (sessionStorage.getItem('guilde-entre')) { document.getElementById('titre').remove(); document.getElementById('monde').classList.add('vu'); }
+if (sessionStorage.getItem('guilde-entre')) { document.getElementById('titre').remove(); document.getElementById('monde').classList.add('vu'); montre(location.hash.slice(1)); }
 </script>
 </body>
 </html>

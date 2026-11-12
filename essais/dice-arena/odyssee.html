@@ -88,6 +88,8 @@
 <div id="app"></div>
 <div id="fen"></div>
 <script>
+const ZOK = () => localStorage.getItem('guilde-tuto') === 'fait'; // Zéphine : débloquée par le tutoriel (12/11)
+
 const VERSION = '20261110-125502';
 function verifieVersion() {
   fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
@@ -101,9 +103,9 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261112-212257"></script>
-<script src="donnees.js?v=20261112-212257"></script>
-<script src="odyssee.js?v=20261112-212257"></script>
+<script src="cartes.js?v=20261112-215310"></script>
+<script src="donnees.js?v=20261112-215310"></script>
+<script src="odyssee.js?v=20261112-215310"></script>
 <script src="chronique.js?v=20261110-140121"></script>
 <script>
 // le moteur du Duel n'est pas chargé ici : les cartes de l'Odyssée appellent degats/soin seulement en combat (dans duel.html)
@@ -122,7 +124,7 @@ function accueil() {
   document.getElementById('app').innerHTML = `<h1>🏰 L’Odyssée · les Terres brûlées</h1>
   <p style="text-align:center;color:var(--doux);font-size:.9em">Une île tirée au sort, à explorer case par case. Le combat, c’est le Duel. Tes PV ne remontent pas tout seuls : sources, potions et marchand. Une lanterne de 20 doses d’huile pour fouiller. Deux fragments de rune ouvrent la porte du Titan de feu.</p>
   <p style="text-align:center"><b style="color:var(--or)">Choisis ton héros</b></p>
-  <div class="heros6">${ORDRE.map(id => `<button onclick="commence('${id}')"><img src="${IMG(id)}" alt="">${HEROS[id].nom}<br><small style="color:var(--doux)">${Math.round(HEROS[id].pv * 1.8)} PV en Odyssée</small></button>`).join('')}</div>
+  <div class="heros6">${ORDRE.map(id => id === 'zephine' && !ZOK() ? `<button onclick="location.href='duel.html?tuto=1'" style="opacity:.55"><img src="${IMG(id)}" alt="" style="filter:grayscale(1)">🔒 ${HEROS[id].nom}<br><small style="color:var(--doux)">Fais le tutoriel</small></button>` : `<button onclick="commence('${id}')"><img src="${IMG(id)}" alt="">${HEROS[id].nom}<br><small style="color:var(--doux)">${Math.round(HEROS[id].pv * 1.8)} PV en Odyssée</small></button>`).join('')}</div>
   <p style="text-align:center;font-size:.86em"><label><input type="checkbox" id="jour"> 🗓 L’île du jour (la même île pour tout le monde aujourd’hui)</label></p>
   <div class="choixh"><button onclick="records()">🏆 Mes Odyssées (${rec.length})</button><button onclick="collection()">📚 Ma collection (${col.length})</button></div>
   <div class="choixh"><button onclick="location.href='odyssee-regles.html'">📖 Les règles complètes</button><button onclick="location.href='menu.html'">⌂ Menu</button></div>`;

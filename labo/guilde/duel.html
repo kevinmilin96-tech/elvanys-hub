@@ -601,7 +601,7 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261112-212257';
+const VERSION = '20261112-215310';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); location.replace('duel.html?v=' + v); }
@@ -620,9 +620,9 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261112-212257"></script>
-<script src="donnees.js?v=20261112-212257"></script>
-<script src="odyssee.js?v=20261112-212257"></script>
+<script src="cartes.js?v=20261112-215310"></script>
+<script src="donnees.js?v=20261112-215310"></script>
+<script src="odyssee.js?v=20261112-215310"></script>
 <script src="chronique.js?v=20261110-140121"></script>
 <script>
 // =============================================================================================== moteur
@@ -934,9 +934,22 @@ function meilleurCoup(J) {
   for (const ds of sousEnsembles(libres)) {
     const vs = vals(ds);
     essai('ultime', ds, interet(J, 'ultime', vs)); essai('pouvoir', ds, interet(J, 'pouvoir', vs)); essai('frappe', ds, interet(J, 'frappe', vs)); essai('technique', ds, interet(J, 'technique', vs));
-    J.main.forEach((k, im) => essai(k, ds, interet(J, k, vs) - ds.length, im));
+    J.main.forEach((k, im) => { essai(k, ds, interet(J, k, vs) - ds.length, im); essaiVente(k, ds, vs, im); });
   }
   return best;
+  // 12/11 nuit : l'ordinateur VEND des dés pendant son tour pour payer une carte (comme le joueur) ; il vend les plus petits
+  // (un 6 d’abord dans l’Autel du six) et paie 12 points de score par dé vendu (réglage choisi au simulateur, 12/11), pour ne pas brader un bon lancer
+  function essaiVente(k, ds, vs, im) {
+    const pen = typeof VENTE_PEN === "number" ? VENTE_PEN : 12; if (pen < 0) return;
+    const cout = coutCarte(J, k), manque = cout - J.pc; if (manque <= 0 || cout > 6) return;
+    const autres = libres.filter(d => !ds.includes(d)).sort((x, y) => ((S.salle.id === 'autel' && y.v === 6) - (S.salle.id === 'autel' && x.v === 6)) || (x.v - y.v));
+    const vend = []; let g = 0; for (const d of autres) { if (g >= manque) break; vend.push(d); g += (S.salle.id === 'autel' && d.v === 6) ? 2 : 1; }
+    if (g < manque) return;
+    const c = CARTES[k]; if (c.cible === 'de' && !autres.some(d => !vend.includes(d))) return;
+    const pc0 = J.pc; J.pc = Math.min(6, pc0 + g); const ok = permis(J, k, vs, ds); J.pc = pc0; if (!ok) return;
+    const score = pousse(k, interet(J, k, vs) - ds.length - pen * vend.length);
+    if (score > (best ? best.score : -1)) best = { quoi:k, ds, score, im, vend };
+  }
 }
 function cibleAuto(J, type) {
   const D = adv(J), l = ciblesPossibles(J, type);
@@ -990,6 +1003,7 @@ function joueAuto(J) {
     if (t === 'de' && b.quoi === 'ajuste' && J._ajuste && !J._ajuste.d.pose && !b.ds.includes(J._ajuste.d)) k = { d:J._ajuste.d, sens:J._ajuste.sens };
     else if (t === 'de') { const autres = J.des.filter(d => !d.pose && !b.ds.includes(d)).sort((x, y) => x.v - y.v); k = { d:autres[0] }; }
     else if (t) k = cibleAuto(J, t);
+    if (b.vend) { pose(J, 'vendre', b.vend); if (k && k.d && b.vend.includes(k.d)) k = { d:J.des.find(d => !d.pose && !b.ds.includes(d)) }; }
     pose(J, b.quoi, b.ds, k, b.im);
     if (S.fini) return;
   }
@@ -1588,7 +1602,7 @@ function montrerFin() {
 let monHeros = null;
 function accueil() {
   fenetre(`<h2>Duel · prototype</h2><p>1. Choisis ton héros.</p>
-  <div class="heros6">${ORDRE.map(id => `<button onclick="monHeros='${id}';adversaire()"><img src="${IMG(id)}" alt="">${HEROS[id].nom}</button>`).join('')}</div>
+  <div class="heros6">${ORDRE.map(id => id === 'zephine' && localStorage.getItem('guilde-tuto') !== 'fait' ? `<button onclick="typeof tutoVerrou === 'function' ? tutoVerrou() : location.href='duel.html?tuto=1'" style="opacity:.55;position:relative"><img src="${IMG(id)}" alt="" style="filter:grayscale(1)">🔒 ${HEROS[id].nom}<br><small>Fais le tutoriel</small></button>` : `<button onclick="monHeros='${id}';adversaire()"><img src="${IMG(id)}" alt="">${HEROS[id].nom}</button>`).join('')}</div>
   <div class="choixh"><button onclick="mesParties()">📜 Mes parties (${parties().length})</button><button onclick="location.href='menu.html'">⌂ Menu</button></div>
   <p style="color:#c9c1ea;font-size:.85em">Prototype pour essayer les règles : dessins provisoires, chiffres à équilibrer.</p>`);
 }
@@ -1597,7 +1611,7 @@ function adversaire() {
   <div class="heros6">${ORDRE.filter(id => id !== monHeros).map(id => `<button onclick="fermer();nouvellePartie(monHeros,'${id}');regles()"><img src="${IMG(id)}" alt="">${HEROS[id].nom}</button>`).join('')}
   <button onclick="fermer();nouvellePartie(monHeros);regles()" style="display:flex;align-items:center;justify-content:center;font-size:2em;min-height:110px">🎲<br><span style="font-size:.4em">au hasard</span></button></div>`);
 }
-if (typeof document !== 'undefined' && document.getElementById('app')) { const q = new URLSearchParams(location.search); if (q.get('odyssee')) setTimeout(partieOdyssee, 0); else if (q.get('campement')) setTimeout(partieCampement, 0); else if (q.get('parties')) mesParties(); else if (q.get('h') && HEROS[q.get('h')]) { monHeros = q.get('h'); adversaire(); } else accueil(); }
+if (typeof document !== 'undefined' && document.getElementById('app')) { const q = new URLSearchParams(location.search); if (q.get('tuto')) addEventListener('load', () => partieTuto()); else if (q.get('odyssee')) setTimeout(partieOdyssee, 0); else if (q.get('campement')) setTimeout(partieCampement, 0); else if (q.get('parties')) mesParties(); else if (q.get('h') && HEROS[q.get('h')]) { monHeros = q.get('h'); adversaire(); } else accueil(); }
 
 // =============================================================================================== animations et sons
 // Les sons sont fabriqués par le téléphone (aucun fichier) ; 🔊 / 🔇 dans la barre de la salle.
@@ -1895,5 +1909,6 @@ async function joueFX() {
 // toucher l'écran pendant les animations les accélère
 document.addEventListener('pointerdown', () => { if (fxOn) fxVite = .3; }, true);
 </script>
+<script src="tuto.js?v=20261112-215310"></script>
 </body>
 </html>
