@@ -70,6 +70,82 @@ const BOSS = {
     ultime:{ n:'Éruption', txt:'3 dés', d:'16 dégâts au héros.', cond:vs => vs.length === 3, cible:'ennemi', f:(J, vs, k) => degats({ J:adv(J) }, 16) },
     renforts:[] },
 };
+// ================================================================== ACTE II · L'ÎLE DU GIVRE (12/11 nuit, prototype à valider)
+// Mécanique de l'île : le GIVRE ❄. Certains coups posent du Givre sur le héros ; à 3 (4 avec la Braise éternelle), il est GELÉ :
+// 5 dégâts et un dé de moins au prochain tour (Handicap). Même principe que les Braises du Titan, pour que ce soit lisible.
+function givre(D, n) {
+  if (!D || !D.pv) return; const seuil = (D.reliques || []).includes('braise') ? 4 : 3;
+  D.givre = (D.givre || 0) + (n || 1); log(`❄ Givre ${Math.min(D.givre, seuil)}/${seuil} sur ${D.nom}.`);
+  if (D.givre >= seuil) { D.givre = 0; log(`❄ ${D.nom} est GELÉ : 5 dégâts et un dé de moins au prochain tour !`); degats({ J:D }, 5, true); altere(D, 'handicap'); }
+}
+Object.assign(MONSTRES, {
+  lutin:       { nom:'Lutin du givre', titre:'le farceur', emoji:'🧝', c:'#5aa9d6', pv:15, ile:'givre', role:'Vole des PC et pose du Givre. Faible seul.', cit:'« Hi hi ! Ça pique, hein ? »',
+    garde:{ n:'Pirouette', txt:'1 dé', d:'Bouclier = la moitié du dé (arrondi au-dessus).', cond:vs => vs.length === 1, val:vs => Math.ceil(vs[0] / 2), f:(J, vs) => { const b = Math.ceil(vs[0] / 2); J.gardeB += b; log(`${J.nom} : Pirouette, Bouclier ${b}.`); } },
+    pouvoir:{ n:'Boule de neige', txt:'2 dés identiques', d:'3 dégâts, vole 1 PC et 1 Givre au héros.', cond:vs => vs.length === 2 && vs[0] === vs[1], cible:'ennemi', f:(J, vs, k) => { degats(k, 3); const D = adv(J); if (D.pc > 0) { D.pc--; J.pc = Math.min(6, J.pc + 1); log(`${J.nom} vole 1 PC.`); } givre(D); } },
+    renforts:[] },
+  loupblanc:   { nom:'Loup blanc', titre:'le chasseur', emoji:'🐺', c:'#c9d6e3', pv:16, ile:'givre', role:'Rapide, mord avec le froid. Chasse avec un louveteau.', cit:'« … »',
+    garde:{ n:'Fourrure épaisse', txt:'1 dé pair', d:'Bouclier = la valeur du dé.', cond:vs => vs.length === 1 && vs[0] % 2 === 0, val:vs => vs[0], f:(J, vs) => { J.gardeB += vs[0]; log(`${J.nom} : Fourrure épaisse, Bouclier ${vs[0]}.`); } },
+    pouvoir:{ n:'Morsure glacée', txt:'3 dés de 3 ou plus', d:'6 dégâts à une cible et 1 Givre au héros.', cond:vs => vs.length === 3 && vs.every(v => v >= 3), cible:'ennemi', f:(J, vs, k) => { degats(k, 6); givre(adv(J)); } },
+    renforts:[{ n:'Louveteau blanc', a:2, v:3 }] },
+  esprit:      { nom:'Esprit du blizzard', titre:'le hurleur', emoji:'👻', c:'#a8c8ff', pv:16, ile:'givre', role:'Insaisissable : esquive, et son souffle glace.', cit:'« Hoouuuu… »',
+    garde:{ n:'Tourbillon', txt:'1 dé impair', d:'Esquive : le prochain coup reçu est divisé par deux.', cond:vs => vs.length === 1 && vs[0] % 2 === 1, val:() => 4, f:J => { J.esquive = true; log(`${J.nom} se dissout dans la neige : Esquive.`); } },
+    pouvoir:{ n:'Souffle gelé', txt:'2 dés impairs', d:'4 dégâts au héros et 1 Givre.', cond:vs => vs.length === 2 && vs.every(v => v % 2 === 1), cible:'ennemi', f:J => { degats({ J:adv(J) }, 4); givre(adv(J)); } },
+    renforts:[] },
+  ours:        { nom:'Ours des glaces', titre:'le colosse blanc', emoji:'🐻‍❄️', c:'#dfe9f2', pv:20, ile:'givre', role:'Lent et costaud : gros bouclier et coups lourds.', cit:'« GRRAOOO ! »',
+    garde:{ n:'Dos rond', txt:'1 dé', d:'Bouclier = la valeur du dé + 2.', cond:vs => vs.length === 1, val:vs => vs[0] + 2, f:(J, vs) => { J.gardeB += vs[0] + 2; log(`${J.nom} : Dos rond, Bouclier ${vs[0] + 2}.`); } },
+    pouvoir:{ n:'Coup de patte', txt:'2 dés identiques de 4 ou plus', d:'8 dégâts à une cible.', cond:vs => vs.length === 2 && vs[0] === vs[1] && vs[0] >= 4, cible:'ennemi', f:(J, vs, k) => degats(k, 8) },
+    renforts:[] },
+  chaman:      { nom:'Chaman du froid', titre:'le sculpteur de glace', emoji:'🧙‍♂️', c:'#4a7ac9', pv:14, ile:'givre', role:'Fait pousser des Stalagmites qui font Barrière.', cit:'« La glace obéit. »',
+    garde:{ n:'Mur de neige', txt:'1 dé', d:'Bouclier 4.', cond:vs => vs.length === 1, val:() => 4, f:J => { J.gardeB += 4; log(`${J.nom} : Mur de neige, Bouclier 4.`); } },
+    pouvoir:{ n:'Stalagmite', txt:'dé = 6, ou 2 dés identiques', d:'Une Stalagmite 1 / 5 Barrière (2 au plus), sinon 6 dégâts et 1 Givre.', cond:vs => (vs.length === 1 && vs[0] === 6) || (vs.length === 2 && vs[0] === vs[1]), cible:'ennemi',
+      f:(J, vs, k) => { if (J.front.filter(u => u.barriere).length < 2) invoque(J, { n:'Stalagmite', a:1, v:5, barriere:true }); else { degats(k, 6); givre(adv(J)); } } },
+    renforts:[{ n:'Stalagmite', a:1, v:5, barriere:true }] },
+  golemglace:  { nom:'Golem de glace', titre:'le cœur gelé', emoji:'🧊', c:'#7fd3ff', pv:22, ile:'givre', role:'Le plus dangereux : chaque coup pose du Givre, et une Avalanche quand sa jauge est pleine.', cit:'« … »',
+    garde:{ n:'Carapace de glace', txt:'1 dé', d:'Bouclier = la valeur du dé.', cond:vs => vs.length === 1, val:vs => vs[0], f:(J, vs) => { J.gardeB += vs[0]; log(`${J.nom} : Carapace de glace, Bouclier ${vs[0]}.`); } },
+    pouvoir:{ n:'Poing de givre', txt:'3 dés de 4 ou plus', d:'8 dégâts à une cible et 1 Givre au héros.', cond:vs => vs.length === 3 && vs.every(v => v >= 4), cible:'ennemi', f:(J, vs, k) => { degats(k, 8); givre(adv(J)); } },
+    ultime:{ n:'Avalanche', txt:'3 dés', d:'12 dégâts au héros et 2 Givre.', cond:vs => vs.length === 3, cible:'ennemi', f:J => { degats({ J:adv(J) }, 12); givre(adv(J), 2); } },
+    renforts:[] },
+  // --- les élites du Givre
+  yeti:        { nom:'Le Yéti', titre:'la légende des cimes', emoji:'🦍', c:'#e8f1f8', pv:24, majeur:true, ile:'givre', role:'Frappe très fort, et plus il a mal, plus il cogne.', cit:'« HOUUUAAAA ! »',
+    garde:{ n:'Pelage de neige', txt:'1 dé', d:'Bouclier = la valeur du dé + 1.', cond:vs => vs.length === 1, val:vs => vs[0] + 1, f:(J, vs) => { J.gardeB += vs[0] + 1; log(`${J.nom} : Pelage de neige, Bouclier ${vs[0] + 1}.`); } },
+    pouvoir:{ n:'Martèlement', txt:'2 dés identiques', d:'7 dégâts à une cible (10 si le Yéti a moins de la moitié de ses PV).', cond:vs => vs.length === 2 && vs[0] === vs[1], cible:'ennemi', f:(J, vs, k) => degats(k, J.pv < J.pvMax / 2 ? 10 : 7) },
+    renforts:[] },
+  harpie:      { nom:'Harpie des neiges', titre:'la reine des vents', emoji:'🦅', c:'#9fb8d9', pv:22, majeur:true, ile:'givre', role:'Esquive sans cesse ; ses serres posent du Givre.', cit:'« Kriiiii ! »',
+    garde:{ n:'Coup d’aile', txt:'1 dé pair', d:'Esquive : le prochain coup reçu est divisé par deux.', cond:vs => vs.length === 1 && vs[0] % 2 === 0, val:() => 5, f:J => { J.esquive = true; log(`${J.nom} s’envole : Esquive.`); } },
+    pouvoir:{ n:'Serres de glace', txt:'3 dés de 3 ou plus', d:'7 dégâts à une cible et 1 Givre au héros.', cond:vs => vs.length === 3 && vs.every(v => v >= 3), cible:'ennemi', f:(J, vs, k) => { degats(k, 7); givre(adv(J)); } },
+    ultime:{ n:'Blizzard', txt:'3 dés', d:'10 dégâts au héros et 2 Givre.', cond:vs => vs.length === 3, cible:'ennemi', f:J => { degats({ J:adv(J) }, 10); givre(adv(J), 2); } },
+    renforts:[] },
+  sentinelle:  { nom:'Sentinelle de cristal', titre:'la gardienne immobile', emoji:'💎', c:'#6fe3ff', pv:26, majeur:true, ile:'givre', role:'Deux Éclats de cristal Barrière la protègent ; ses rayons glacent.', cit:'« … »',
+    garde:{ n:'Prisme', txt:'1 dé', d:'Bouclier = la valeur du dé + 2.', cond:vs => vs.length === 1, val:vs => vs[0] + 2, f:(J, vs) => { J.gardeB += vs[0] + 2; log(`${J.nom} : Prisme, Bouclier ${vs[0] + 2}.`); } },
+    pouvoir:{ n:'Rayon gelé', txt:'2 dés identiques de 4 ou plus', d:'8 dégâts à une cible et 1 Givre au héros.', cond:vs => vs.length === 2 && vs[0] === vs[1] && vs[0] >= 4, cible:'ennemi', f:(J, vs, k) => { degats(k, 8); givre(adv(J)); } },
+    renforts:[{ n:'Éclat de cristal', a:1, v:6, barriere:true }, { n:'Éclat de cristal', a:1, v:6, barriere:true }] },
+});
+// la gardienne de l'île : la Vouivre des glaces (la vouivre est un dragon-serpent des légendes de France), 3 phases comme le Titan
+Object.assign(BOSS, {
+  vouivre: { nom:'La Vouivre des glaces', titre:'la gardienne du nord', emoji:'🐉', c:'#7fd3ff', pv:54, boss:true, ile:'givre', role:'Trois phases. Chaque morsure pose du Givre : à trois, tu es gelé.', cit:'« Ici, même le feu a froid. »',
+    phases:[
+      { seuil:1, garde:{ n:'Écailles de glace', txt:'1 dé', d:'Bouclier = la valeur du dé.', cond:vs => vs.length === 1, val:vs => vs[0], f:(J, vs) => { J.gardeB += vs[0]; log(`La Vouivre : Écailles de glace, Bouclier ${vs[0]}.`); } },
+        pouvoir:{ n:'Morsure de givre', txt:'2 dés identiques', d:'7 dégâts et 1 Givre sur le héros.', cond:vs => vs.length === 2 && vs[0] === vs[1], cible:'ennemi', f:(J, vs, k) => { degats(k, 7); givre(adv(J)); } } },
+      { seuil:2 / 3, garde:{ n:'Écailles de glace', txt:'1 dé', d:'Bouclier = la valeur du dé.', cond:vs => vs.length === 1, val:vs => vs[0], f:(J, vs) => { J.gardeB += vs[0]; log(`La Vouivre : Écailles de glace, Bouclier ${vs[0]}.`); } },
+        pouvoir:{ n:'Souffle polaire', txt:'3 dés de 3 ou plus', d:'7 dégâts au héros, 3 à chacune de ses créatures, et 1 Givre.', cond:vs => vs.length === 3 && vs.every(v => v >= 3), cible:'ennemi', f:J => { const D = adv(J); [...D.front].forEach(u => degats({ J:D, u }, 3)); degats({ J:D }, 7); givre(D); } } },
+      { seuil:1 / 3, garde:{ n:'Cœur de glace', txt:'1 dé', d:'Bouclier = 2 × la valeur du dé.', cond:vs => vs.length === 1, val:vs => vs[0] * 2, f:(J, vs) => { J.gardeB += vs[0] * 2; log(`La Vouivre : Cœur de glace, Bouclier ${vs[0] * 2}.`); } },
+        pouvoir:{ n:'Tempête blanche', txt:'2 dés de 5 ou plus', d:'11 dégâts et 2 Givre sur le héros.', cond:vs => vs.length === 2 && vs.every(v => v >= 5), cible:'ennemi', f:(J, vs, k) => { degats(k, 11); givre(adv(J), 2); } } },
+    ],
+    ultime:{ n:'Hiver éternel', txt:'3 dés', d:'12 dégâts au héros et il est gelé tout de suite.', cond:vs => vs.length === 3, cible:'ennemi', f:J => { const D = adv(J); degats({ J:D }, 12); givre(D, 9); } },
+    renforts:[] },
+});
+// les îles de l'Odyssée : ce qui change d'un acte à l'autre (monstres, élites, boss, décors des combats, textes)
+const ILES = {
+  brulees:{ acte:'Acte I', nom:'les Terres brûlées', court:'Terres brûlées', boss:'titan', bossNom:'Le Titan de feu',
+    pools:[['gobelin', 'loup', 'salamandre'], ['loup', 'golem', 'salamandre', 'cultiste'], ['golem', 'cultiste', 'elementaire']], elites:['chefgobelin', 'drake', 'colosse'],
+    lieux:{ monstre:'cendres', fort:'lave', elite:'ruines', boss:'cratere' }, evenements:null },
+  givre:{ acte:'Acte II', nom:'l’île du Givre', court:'Île du Givre', boss:'vouivre', bossNom:'La Vouivre des glaces',
+    pools:[['lutin', 'loupblanc', 'esprit'], ['loupblanc', 'ours', 'esprit', 'chaman'], ['ours', 'chaman', 'golemglace']], elites:['yeti', 'harpie', 'sentinelle'],
+    lieux:{ monstre:'neige', fort:'glace', elite:'cristal', boss:'sommet' }, evenements:['voyageur', 'autelbrise', 'marchandambulant', 'cartographe', 'statue', 'ermite', 'lacgele', 'cabane', 'aurore', 'traineau'] },
+};
+const ILE = r => ILES[(r && r.acte) || 'brulees'] || ILES.brulees;
+const ACTES_CLE = 'guilde-actes';
+const actesFaits = () => { try { return JSON.parse(localStorage.getItem(ACTES_CLE) || '{}'); } catch (e) { return {}; } };
 function braiseTitan(D) { D.braiseT = (D.braiseT || 0) + 1; log(`🔥 Braise ${D.braiseT}/3 sur ${D.nom}.`); if (D.braiseT >= 3) { D.braiseT = 0; log('🔥 Les Braises explosent : 6 dégâts !'); degats({ J:D }, 6, true); } }
 // la Frappe des monstres : plus faible que celle des héros (la moitié du dé, +2 par dé au-delà de la paire)
 const FRAPPE_MONSTRE = { n:'Griffes', txt:'2 à 5 dés identiques', d:'Dégâts = la moitié du dé (arrondie au-dessus) + 2 par dé au-delà de la paire.', cond:vs => vs.length >= 2 && vs.every(v => v === vs[0]), cible:'ennemi',
@@ -86,6 +162,8 @@ if (typeof HEROS !== 'undefined') installeMonstres();
 
 // ----------------------------------------------------------------------------------------------- reliques, sacoche, bénédictions, malédictions
 const RELIQUES = {
+  fourrure:  { n:'Manteau de fourrure', e:'🧥', d:'Tu commences chaque combat avec Bouclier 3.', prix:110, ile:'givre' },
+  braise:    { n:'Braise éternelle', e:'🕯', d:'Le Givre ne te gèle qu’à 4 au lieu de 3.', prix:100, ile:'givre' },
   brassards: { n:'Brassards de la Guilde', e:'💪', d:'+2 dégâts sur chaque attaque de ton héros et de tes créatures.', prix:120 },
   armure:    { n:'Armure de Marennes', e:'🛡', d:'−1 sur chaque coup reçu par ton héros.', prix:120 },
   oeil:      { n:'Œil de l’ombre', e:'👁', d:'Une relance gratuite de plus à chaque tour.', prix:110 },
@@ -150,6 +228,20 @@ function draft(R, richesse, deja, heros) {
 // ----------------------------------------------------------------------------------------------- les événements (une courte histoire, 2 ou 3 choix)
 // effet : { or, pv, vivres, pvMax, carte:'draft'|clé, relique:true, cle, malediction:true, benediction:true, sacoche:'soin'… }
 const EVENEMENTS = [
+  // --- ceux de l'île du Givre (12/11 nuit)
+  { id:'lacgele', ile:'givre', t:'Le lac gelé', d:'Un lac pris par la glace coupe le chemin. La glace craque doucement sous le vent.', choix:[
+    { t:'Traverser sur la glace', e:{ pv:-6, vivres:2 }, m:'Crac ! Un pied dans l’eau glacée (−6 PV), mais le raccourci vous fait économiser 2 huile.' },
+    { t:'Faire le tour par la rive (−2 huile)', e:{ vivres:-2 }, m:'Long, froid, mais sûr.' } ] },
+  { id:'cabane', ile:'givre', t:'La cabane du trappeur', d:'Une cabane de rondins, la cheminée encore tiède. Personne. Une marmite, un coffre, une peau d’ours.', choix:[
+    { t:'Se réchauffer au feu', e:{ pv:8, vivres:-1 }, m:'+8 PV. La lanterne a brûlé pendant ce temps (−1 huile).' },
+    { t:'Ouvrir le coffre', e:{ or:35 }, m:'35 pièces d’or et un mot : « Laissez-en pour le suivant. » Oups.' },
+    { t:'Emprunter la peau d’ours (une relique au choix)', e:{ relique:true, malediction:true }, m:'Bien chaud… mais voler un trappeur porte malheur.' } ] },
+  { id:'aurore', ile:'givre', t:'L’aurore', d:'Le ciel se met à danser : vert, violet, or. Le froid semble reculer un instant.', choix:[
+    { t:'Contempler (une bénédiction)', e:{ benediction:true, vivres:-1 }, m:'Quelque chose en vous s’allume. (−1 huile, le temps a filé.)' },
+    { t:'En profiter pour avancer (+3 huile)', e:{ vivres:3 }, m:'Sous la lumière de l’aurore, la lanterne peut attendre.' } ] },
+  { id:'traineau', ile:'givre', t:'Un traîneau renversé', d:'Un traîneau de la Guilde, couché dans la neige. Les chiens sont partis, la cargaison est là.', choix:[
+    { t:'Fouiller la cargaison (une carte à choisir)', e:{ carte:'draft1' }, m:'Des parchemins de la Guilde, à peine mouillés.' },
+    { t:'Récupérer l’huile de réserve (+5 huile)', e:{ vivres:5 }, m:'Deux fioles intactes.' } ] },
   { id:'voyageur', t:'Un voyageur blessé', d:'Adossé à un rocher tiède, un voyageur de la Guilde vous fait signe. « Une potion, par pitié… je vous revaudrai ça. »', choix:[
     { t:'Lui donner une potion de soin (si tu en as)', cond:r => r.sacoche.includes('soin'), e:{ sacoche:'-soin', relique:true }, m:'Il vous tend une relique de sa besace : « Elle m’a porté chance. »' },
     { t:'Partager votre huile (−3 huile)', e:{ vivres:-3, or:40 }, m:'Reconnaissant, il vous glisse 40 pièces d’or.' },
@@ -206,7 +298,8 @@ function bfs(cases, dep, marche) {
   while (file.length) { const [x, y] = file.shift(); for (const [a, b] of voisins(x, y)) { const k = a + ',' + b; if (dist[k] !== undefined || !marche(cases[b][a])) continue; dist[k] = dist[x + ',' + y] + 1; prev[k] = x + ',' + y; file.push([a, b]); } }
   return { dist, prev };
 }
-function genereIle(graine, R0) {
+function genereIle(graine, R0, acte) {
+  const I = ILES[acte] || ILES.brulees;
   for (let essai = 0; essai < 400; essai++) {
     const R = rngDe(graine + '#' + essai);
     const cases = Array.from({ length:ILE_H }, (_, y) => Array.from({ length:ILE_W }, (_, x) => ({ x, y, t:'roche', vu:false, visite:false, fait:false })));
@@ -248,13 +341,13 @@ function genereIle(graine, R0) {
     const elites = brasse(R, ['heros', 'heros', 'monstre']); let ie = 0;
     const autres = typeof ORDRE !== 'undefined' ? ORDRE : ['maelle', 'aldric', 'pip', 'oria', 'gorm', 'zephine'];
     cases.forEach(l => l.forEach(c => {
-      if (c.t === 'monstre') { c.niv = d(c) <= 4 ? 1 : d(c) <= 8 ? 2 : 3; const pool = c.niv === 1 ? ['gobelin', 'loup', 'salamandre'] : c.niv === 2 ? ['loup', 'golem', 'salamandre', 'cultiste'] : ['golem', 'cultiste', 'elementaire']; c.ennemi = tire(R, pool); }
-      if (c.t === 'elite') { const s = elites[ie++ % 3]; c.niv = 2; if (s === 'monstre') c.ennemi = tire(R, ['chefgobelin', 'drake', 'colosse']); else { c.ennemi = 'heros'; c.renfort = tire(R, ['pc', 'pv', 'bouclier']); } }
+      if (c.t === 'monstre') { c.niv = d(c) <= 4 ? 1 : d(c) <= 8 ? 2 : 3; const pool = I.pools[c.niv - 1]; c.ennemi = tire(R, pool); }
+      if (c.t === 'elite') { const s = elites[ie++ % 3]; c.niv = 2; if (s === 'monstre') c.ennemi = tire(R, I.elites); else { c.ennemi = 'heros'; c.renfort = tire(R, ['pc', 'pv', 'bouclier']); } }
       if (c.t === 'evenement') c.ev = null;
-      if (c.t === 'boss') { c.ennemi = 'titan'; c.niv = 1; }
+      if (c.t === 'boss') { c.ennemi = I.boss; c.niv = 1; }
     }));
     // événements distincts
-    const evs = brasse(R, EVENEMENTS.map(e => e.id)); let iev = 0; cases.forEach(l => l.forEach(c => { if (c.t === 'evenement') c.ev = evs[iev++ % evs.length]; }));
+    const evs = brasse(R, EVENEMENTS.filter(e => I.evenements ? I.evenements.includes(e.id) : !e.ile).map(e => e.id)); let iev = 0; cases.forEach(l => l.forEach(c => { if (c.t === 'evenement') c.ev = evs[iev++ % evs.length]; }));
     cases[dep.y][dep.x].vu = cases[dep.y][dep.x].visite = true; voisins(dep.x, dep.y).forEach(([a, b]) => { cases[b][a].vu = true; voisins(a, b).forEach(([e, f]) => { cases[f][e].vu = true; }); }); // on voit à 2 cases au débarquement
     return { cases, dep, porte:{ x:porte.x, y:porte.y }, boss:{ x:boss.x, y:boss.y }, direct:dp, essai };
   }
@@ -277,13 +370,14 @@ function ecrireOdyssee(r) { if (r) localStorage.setItem(ODY_CLE, JSON.stringify(
 function lireCollection() { try { return JSON.parse(localStorage.getItem(COLLECTION_CLE) || '[]'); } catch (e) { return []; } }
 function ajouteCollection(cles) { const c = lireCollection(); let n = 0; cles.forEach(k => { if (!c.includes(k) && CARTES[k] && rarete(k) !== 'm') { c.push(k); n++; } }); localStorage.setItem(COLLECTION_CLE, JSON.stringify(c)); return n; }
 function lireRecords() { try { return JSON.parse(localStorage.getItem(RECORDS_CLE) || '[]'); } catch (e) { return []; } }
-function nouvelleOdyssee(heros, graine) {
+function nouvelleOdyssee(heros, graine, acte) {
+  acte = ILES[acte] ? acte : 'brulees';
   graine = graine || ('ile-' + Math.random().toString(36).slice(2, 8));
-  const ile = genereIle(graine); if (!ile) return null;
+  const ile = genereIle(graine, null, acte); if (!ile) return null;
   const h = HEROS[heros], pv = Math.round(h.pv * 1.8); // en Odyssée le héros a 1,8 × ses PV du Duel (le papier disait 75 pour 44) : il enchaîne 5 à 6 combats sans soin automatique
-  return { v:1, heros, graine, ile:ile.cases, pos:{ ...ile.dep }, porte:ile.porte, bossPos:ile.boss, direct:ile.direct, debut:Date.now(),
+  return { v:1, heros, graine, acte, ile:ile.cases, pos:{ ...ile.dep }, porte:ile.porte, bossPos:ile.boss, direct:ile.direct, debut:Date.now(),
     pv, pvMax:pv, or:OR_DEPART, vivres:VIVRES_DEPART, deck:deckBase(heros), reliques:[], sacoche:['soin'], benes:[], males:[], fragments:0, cles:0,
-    stats:{ cases:1, combats:0, victoires:0, tours:0, defis:0, cartesVues:[] }, combat:null, journal:[`Débarquement sur les Terres brûlées (${h.nom}).`] };
+    stats:{ cases:1, combats:0, victoires:0, tours:0, defis:0, cartesVues:[] }, combat:null, journal:[`Débarquement sur ${ILES[acte].nom} (${h.nom}).`] };
 }
 // la vie, bornée ; le deck effectif en combat = run.deck (les malédictions y sont déjà)
 const pvMaxEffectif = r => r.pvMax;
@@ -314,7 +408,7 @@ const PRIX_CARTE = { c:50, r:80, e:120 };
 function lanceCombat(r, c) {
   const R = hasard(r); let ennemi = c.ennemi;
   if (ennemi === 'heros') { const autres = ORDRE.filter(h => h !== r.heros); ennemi = tire(R, autres); }
-  const lieu = c.t === 'boss' ? 'cratere' : c.t === 'elite' ? 'ruines' : (c.niv || 1) >= 3 ? 'lave' : 'cendres'; // le décor du combat
+  const L = ILE(r).lieux, lieu = c.t === 'boss' ? L.boss : c.t === 'elite' ? L.elite : (c.niv || 1) >= 3 ? L.fort : L.monstre; // le décor du combat
   r.combat = { id:Math.random().toString(36).slice(2), x:c.x, y:c.y, type:c.t, ennemi, niv:c.niv || 1, renfort:c.renfort || null, defi:tire(R, DEFIS).id, lieu, resultat:null };
   return r.combat;
 }
@@ -329,7 +423,7 @@ function recompenseCombat(r) {
   r.or += or;
   const out = { gagne:true, or, defiOk:res.defiOk, ennemi:HEROS[cb.ennemi].nom, type:cb.type };
   if (cb.type === 'elite') { r.fragments++; r.cles++; out.fragment = true; if (r.sacoche.length < 2) { r.sacoche.push('soin'); out.potion = true; } }
-  if (cb.type === 'boss') { out.boss = true; r.journal.push(`👑 Le Titan de feu est tombé ! +${or} or.`); return out; }
+  if (cb.type === 'boss') { out.boss = true; r.journal.push(`👑 ${ILE(r).bossNom} est tombé${r.acte === 'givre' ? 'e' : ''} ! +${or} or.`); return out; }
   out.draft = draft(hasard(r), cb.type === 'elite' ? 1 : 0, r.deck, r.heros);
   r.journal.push(`🏆 ${out.ennemi} vaincu : +${or} or${out.fragment ? ', un fragment de rune et une clé' : ''}.`);
   return out;
@@ -339,7 +433,7 @@ function retireCarte(r, k) { const i = r.deck.indexOf(k); if (i >= 0) { r.deck.s
 // la boutique d'une case marchand : fabriquée à la première visite, gardée
 function stockMarchand(r, c) {
   if (!c.stock) { const R = hasard(r); const cartes = []; for (let n = 0; n < 40 && cartes.length < 5; n++) { const d = draft(R, 1, [], r.heros); d.forEach(k => { if (cartes.length < 5 && !cartes.includes(k)) cartes.push(k); }); }
-    const rel = Object.keys(RELIQUES).filter(k => !r.reliques.includes(k)); c.stock = { cartes, relique:rel.length ? tire(R, rel) : null, retire:1, pvmax:2 }; }
+    const rel = reliquesIle(r).filter(k => !r.reliques.includes(k)); c.stock = { cartes, relique:rel.length ? tire(R, rel) : null, retire:1, pvmax:2 }; }
   return c.stock;
 }
 function achete(r, c, quoi, k) {
@@ -358,7 +452,8 @@ function donneBenediction(r, b) { if (r.benes.includes(b)) return; r.benes.push(
 function donneMalediction(r, m) { r.males.push(m); const M = MALEDICTIONS[m]; if (M.carte) r.deck.push(M.carte); if (m === 'frele') { r.pvMax = Math.max(10, r.pvMax - 5); r.pv = Math.min(r.pv, r.pvMax); } r.journal.push(`🕯 Malédiction : ${M.n}.`); }
 function autelChoisit(r, c, b) { const o = autelOptions(r, c); if (!o.benes.includes(b)) return false; donneBenediction(r, b); donneMalediction(r, o.male); c.fait = true; return true; }
 function source(r, c, option) { if (c.fait) return false; c.fait = true; if (option === 'soin') { const a = r.pv; r.pv = Math.min(r.pvMax, r.pv + 20); r.journal.push(`💧 La source rend ${r.pv - a} PV.`); } else { const k = r.deck.find(x => rarete(x) === 'm'); if (k) retireCarte(r, k); } return true; }
-function reliquesProposees(r, n) { const R = hasard(r); return brasse(R, Object.keys(RELIQUES).filter(k => !r.reliques.includes(k))).slice(0, n || 2); }
+const reliquesIle = r => Object.keys(RELIQUES).filter(k => !RELIQUES[k].ile || RELIQUES[k].ile === (r.acte || 'brulees'));
+function reliquesProposees(r, n) { const R = hasard(r); return brasse(R, reliquesIle(r).filter(k => !r.reliques.includes(k))).slice(0, n || 2); }
 function prendRelique(r, k) { if (r.reliques.includes(k) || r.reliques.length >= 3) return false; r.reliques.push(k); r.journal.push(`💎 ${RELIQUES[k].n} !`); return true; }
 // un événement : applique le choix ; retourne { m (message), suite:'relique'|'draft'|'retirer'|null, cartes? }
 function evenementChoisit(r, c, i) {
@@ -378,7 +473,7 @@ function evenementChoisit(r, c, i) {
   r.journal.push(`❓ ${ev.t} : ${ch.t}.`);
   return out;
 }
-function ouvreCoffre(r, c) { if (c.fait || r.cles < 1) return null; r.cles--; c.fait = true; const R = hasard(r); const rel = Object.keys(RELIQUES).filter(k => !r.reliques.includes(k));
+function ouvreCoffre(r, c) { if (c.fait || r.cles < 1) return null; r.cles--; c.fait = true; const R = hasard(r); const rel = reliquesIle(r).filter(k => !r.reliques.includes(k));
   if (rel.length && r.reliques.length < 3 && R() < .5) { const k = tire(R, rel); r.reliques.push(k); r.journal.push(`🗝 Le coffre contenait ${RELIQUES[k].n}.`); return { relique:k }; }
   r.journal.push('🗝 Le coffre contenait des cartes rares.'); return { draft:draft(R, 2, r.deck, r.heros), deux:true }; }
 function ouvrePorte(r) { const p = caseA(r, r.porte.x, r.porte.y); if (p.fait) return true; if (r.fragments >= 2) { p.fait = true; const a = r.pv; r.pv = Math.min(r.pvMax, r.pv + 15); r.journal.push(`🚪 Les deux fragments s’assemblent : la porte s’ouvre. Bivouac devant la porte : +${r.pv - a} PV.`); return true; } return false; }
@@ -388,7 +483,8 @@ function finOdysseeRun(r, gagne) {
   const score = r.stats.victoires * 50 + r.stats.cases * 5 + r.or + (gagne ? 300 : 0) + r.stats.defis * 30 - r.stats.tours * 2;
   const base = deckBase(r.heros), nouvelles = r.deck.filter(k => !base.includes(k) && rarete(k) !== 'm');
   const ajoutees = typeof localStorage !== 'undefined' ? ajouteCollection([...new Set([...nouvelles, ...r.stats.cartesVues])]) : 0;
-  const rec = { quand:new Date().toISOString(), heros:r.heros, gagne, score, cases:r.stats.cases, combats:r.stats.combats, victoires:r.stats.victoires, tours:r.stats.tours, defis:r.stats.defis, or:r.or, duree, graine:r.graine, pv:r.pv };
+  if (gagne && typeof localStorage !== 'undefined') { const a = actesFaits(); a[r.acte || 'brulees'] = true; localStorage.setItem(ACTES_CLE, JSON.stringify(a)); }
+  const rec = { quand:new Date().toISOString(), acte:r.acte || 'brulees', heros:r.heros, gagne, score, cases:r.stats.cases, combats:r.stats.combats, victoires:r.stats.victoires, tours:r.stats.tours, defis:r.stats.defis, or:r.or, duree, graine:r.graine, pv:r.pv };
   if (typeof localStorage !== 'undefined') { const l = lireRecords(); l.unshift(rec); localStorage.setItem(RECORDS_CLE, JSON.stringify(l.slice(0, 50))); ecrireOdyssee(null); }
   return { ...rec, ajoutees, nouvelles };
 }

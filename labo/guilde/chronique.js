@@ -22,7 +22,7 @@ const CHRON_CSS = `
 .chron .num { position:absolute; right:14px; bottom:6px; font-size:.7em; color:#7a5a2a; }
 `;
 if (typeof document !== 'undefined') document.head.insertAdjacentHTML('beforeend', '<style>' + CHRON_CSS + '</style>');
-const ILLU_FOND = { feu:'linear-gradient(160deg, #3a0a0a, #a8341a 55%, #f7a23a)', cendre:'linear-gradient(160deg, #2a2a33, #6b5a4a 60%, #c9a56b)', vide:'linear-gradient(160deg, #0b0520, #4a1a8a 60%, #c084fc)', mer:'linear-gradient(160deg, #06142a, #1a4a7a 60%, #5ff5e6)', foret:'linear-gradient(160deg, #06160c, #1f5a2a 60%, #8df0a0)', brume:'linear-gradient(160deg, #1a1f1a, #4a5a4a 60%, #c9d4c9)', or:'linear-gradient(160deg, #3a2a0a, #b7832a 60%, #ffe9a8)', pierre:'linear-gradient(160deg, #1a1a22, #4a4a5a 60%, #a8a8b8)' };
+const ILLU_FOND = { givre:'linear-gradient(160deg, #06142a, #3a6aa8 55%, #e8f6ff)', aurore:'linear-gradient(160deg, #0b1a2e, #1f7a6a 45%, #8b5cf6 75%, #f3c96b)', feu:'linear-gradient(160deg, #3a0a0a, #a8341a 55%, #f7a23a)', cendre:'linear-gradient(160deg, #2a2a33, #6b5a4a 60%, #c9a56b)', vide:'linear-gradient(160deg, #0b0520, #4a1a8a 60%, #c084fc)', mer:'linear-gradient(160deg, #06142a, #1a4a7a 60%, #5ff5e6)', foret:'linear-gradient(160deg, #06160c, #1f5a2a 60%, #8df0a0)', brume:'linear-gradient(160deg, #1a1f1a, #4a5a4a 60%, #c9d4c9)', or:'linear-gradient(160deg, #3a2a0a, #b7832a 60%, #ffe9a8)', pierre:'linear-gradient(160deg, #1a1a22, #4a4a5a 60%, #a8a8b8)' };
 // Montre une suite de pages. page = { sur, titre, illu:{ cle, fond, sym }, texte:[...], cit, choix:[{ t, d, ok?, f }], bouton }
 // apres(resultat) est appelé à la fin ; un choix appelle son f() puis passe à la page suivante.
 let chronPages = [], chronI = 0, chronApres = null;
@@ -72,6 +72,35 @@ const CHRON_ODY = {
     `${h} tombe dans la cendre tiède. L’île referme son brouillard, les braises s’éteignent une à une.`,
     'Mais la Guilde n’oublie personne : les cartes rencontrées restent dans la collection, et le navire repassera. Il repasse toujours.' ],
     cit:'« Ils reviennent toujours. »' }),
+};
+
+// ----------------------------------------------------------------------------------------------- ACTE II : l'île du Givre (12/11 nuit, textes neufs de Claude, à valider)
+const CHRON_GIVRE = {
+  arrivee: h => ({ sur:'L’Odyssée · Acte II', titre:'L’île du Givre', illu:{ cle:'ile-givre', fond:'givre', sym:'❄️' }, texte:[
+    `Depuis la chute du Titan, la boussole de la Guilde ne montre plus qu’une direction : le nord. Le navire dépose ${h} sur une grève de glace bleue, et la mer gèle déjà derrière lui.`,
+    'Ici, rien ne brûle. Les falaises sont de cristal, les pins ploient sous la neige et, chaque nuit, une aurore danse au-dessus d’un château de glace perché tout en haut de l’île. Les anciens l’appellent le Nid de la Vouivre.',
+    'Le froid ne pardonne pas : il s’accroche, il s’accumule, il gèle. La lanterne et son huile valent ici plus que l’or. Et trois gardiens tiennent, comme sur l’autre île, les fragments de la rune du seuil.' ],
+    cit:'« Ici, même le feu a froid. »' }),
+  elite: ({ sur:'Chronique de l’île', titre:'Des traces dans la neige', illu:{ cle:'traces-neige', fond:'givre', sym:'💀' }, texte:[
+    'Des empreintes énormes, fraîches, qui tournent autour de vous et repartent vers les cimes. Quelque chose vous a observé pendant que vous dormiez.',
+    'Les élites du Givre gardent les fragments de la rune. Il en faut deux pour ouvrir la porte du Nid. Choisissez vos combats : le froid use plus vite que les coups.' ],
+    cit:'« Dans la neige, les forts laissent des traces. Les plus forts n’en laissent pas. »' }),
+  porte: ({ sur:'Chronique de l’île', titre:'Le Nid de la Vouivre', illu:{ cle:'nid-vouivre', fond:'aurore', sym:'🚪' }, texte:[
+    'Les deux fragments s’assemblent et la porte de glace se fend en deux, sans un bruit. Derrière, un escalier de cristal monte vers le sommet, sous l’aurore.',
+    'Vous allumez un dernier feu, tout petit, à l’abri du vent. Là-haut, quelque chose respire lentement, et chaque souffle fait tomber de la neige.' ],
+    cit:'« Réchauffe-toi tant que tu peux. Là-haut, il n’y aura plus de feu. »' }),
+  boss: h => ({ sur:'L’Odyssée · Acte II', titre:'La Vouivre des glaces', illu:{ cle:'vouivre', fond:'givre', sym:'🐉' }, texte:[
+    'Les légendes de la Guilde parlaient d’un serpent ailé. Elles étaient loin du compte. La Vouivre déroule son corps de glace sur tout le sommet, et ses yeux brillent comme deux étoiles froides.',
+    `Chacune de ses morsures dépose du givre sur ${h}. À trois, le froid prend tout : on est gelé, un dé de moins au tour suivant. Plus elle faiblit, plus la tempête se lève.` ],
+    cit:'« Je garde ce nid depuis que la mer est mer. Toi, tu ne garderas même pas tes doigts. »' }),
+  victoire: h => ({ sur:'L’Odyssée · Acte II', titre:'Le dégel', illu:{ cle:'degel', fond:'aurore', sym:'🏆' }, texte:[
+    `La Vouivre se couche dans la neige et, doucement, la glace du sommet se met à goutter. ${h} entend, pour la première fois sur cette île, le bruit d’un ruisseau.`,
+    'Les cartes trouvées rejoignent la collection de la Guilde. Au loin, sous l’aurore, la boussole s’affole : elle montre maintenant un point noir au milieu de l’océan, là où les cartes ne montrent rien. On l’appelle l’Abîme du Vide.' ],
+    cit:'« Le froid ne se combat pas. Il se traverse. »' }),
+  defaite: h => ({ sur:'L’Odyssée · Acte II', titre:'La neige', illu:{ cle:'neige-tombe', fond:'givre', sym:'🕯' }, texte:[
+    `${h} s’agenouille dans la neige. Le vent recouvre les traces en quelques minutes, comme si personne n’était jamais passé.`,
+    'Mais la Guilde garde la mémoire de ceux qui partent : les cartes rencontrées restent dans la collection. Le navire du nord repassera. Il repasse toujours.' ],
+    cit:'« Ils reviennent toujours. Même du froid. »' }),
 };
 // ----------------------------------------------------------------------------------------------- les textes des Expéditions (le navire volant)
 // choix : f() modifie l'expédition et peut renvoyer { texte } (page de suite). Effets possibles : E.or, soin, ennemis plus faibles / plus forts (E.bonus).

@@ -301,6 +301,10 @@
   .scene.lieu-lave { background-image:url('decor/lieu-lave.webp?v=1'), linear-gradient(180deg, #1a0505 0%, #5a1a0a 30%, #a8341a 46%, #2a0a0a 47%, #120404 100%); }
   .scene.lieu-ruines { background-image:url('decor/lieu-ruines.webp?v=1'), linear-gradient(180deg, #1a0f2e 0%, #4a2a7a 32%, #3a2a4a 46%, #1d1626 47%, #0f0b16 100%); }
   .scene.lieu-cratere { background-image:url('decor/lieu-cratere.webp?v=1'), radial-gradient(circle at 50% 52%, #f7a23a 0%, #a8341a 22%, #3a0a0a 55%, #1a0505 100%); }
+  .scene.lieu-neige { background-image:url('decor/lieu-neige.webp?v=1'), linear-gradient(180deg, #1a2a44 0%, #5f86b3 30%, #c9dbea 46%, #8aa6c2 47%, #2a3a52 100%); }
+  .scene.lieu-glace { background-image:url('decor/lieu-glace.webp?v=1'), linear-gradient(180deg, #08142a 0%, #1f4a7a 32%, #6fc3ef 46%, #0e2a48 47%, #050d1a 100%); }
+  .scene.lieu-cristal { background-image:url('decor/lieu-cristal.webp?v=1'), linear-gradient(180deg, #120a2e 0%, #3a3a8a 32%, #7fd3ff 46%, #1d1a44 47%, #0b0a1a 100%); }
+  .scene.lieu-sommet { background-image:url('decor/lieu-sommet.webp?v=1'), radial-gradient(circle at 50% 52%, #e8f6ff 0%, #7fd3ff 22%, #1f3a6a 55%, #070d1d 100%); }
   .scene.lieu-brume { background-image:url('decor/lieu-brume.webp?v=1'), linear-gradient(180deg, #1a1f1a 0%, #4a5a4a 35%, #2a3a2a 46%, #16201a 47%, #0b100c 100%); }
   .scene::after { content:''; position:absolute; left:0; right:0; top:46.5cqw; height:1.5cqw; background:linear-gradient(90deg, transparent, #ffffff33, transparent); pointer-events:none; }
   .scene #b-O { width:34cqw; height:34cqw; left:33cqw; top:3cqw; } .scene #b-O img { border:3px solid #ffffff55; box-shadow:0 0 40px #000c, 0 0 0 6px #0006; }
@@ -601,7 +605,7 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261112-215310';
+const VERSION = '20261112-220214';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); location.replace('duel.html?v=' + v); }
@@ -620,9 +624,9 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261112-215310"></script>
-<script src="donnees.js?v=20261112-215310"></script>
-<script src="odyssee.js?v=20261112-215310"></script>
+<script src="cartes.js?v=20261112-220214"></script>
+<script src="donnees.js?v=20261112-220214"></script>
+<script src="odyssee.js?v=20261112-220214"></script>
 <script src="chronique.js?v=20261110-140121"></script>
 <script>
 // =============================================================================================== moteur
@@ -1100,6 +1104,7 @@ function prepareCombatOdyssee(run, cb, auto) {
   J.deck = melange([...run.deck]); J.pv = run.pv; J.pvMax = run.pvMax; J.reliques = [...run.reliques]; J.benes = [...run.benes]; J.sacoche = [...run.sacoche];
   pioche(J, 4 + (J.reliques.includes('souvenir') ? 1 : 0) + (J.benes.includes('main') ? 1 : 0));
   if (J.benes.includes('pcplus')) J.pc += 1;
+  if (J.reliques.includes('fourrure')) { J.bouclier = (J.bouclier || 0) + 3; log('🧥 Manteau de fourrure : Bouclier 3.'); }
   // l'ennemi : un monstre (PV et créatures selon le niveau) ou un héros rival (avec son renfort d'élite)
   const niv = cb.niv || 1;
   if (h.monstre) { O.pv = O.pvMax = h.pv + (h.boss ? 0 : 5 * (niv - 1)); O.desMax = h.boss ? 5 : h.majeur ? 4 : Math.min(5, 2 + niv); (h.renforts || []).forEach(r => invoque(O, { ...r, a:r.a + (niv - 1) })); if (!h.ultime || h.ultime.txt === 'jamais') O.ultimeFait = true; O.pc = 2; }
@@ -1127,8 +1132,8 @@ function combatAuto(run, c) {
   return cb.resultat;
 }
 // une Odyssée entière jouée par l'ordinateur (pilote de odyssee.js) : pour l'équilibrage. Retourne un bilan.
-function simuleOdyssee(heros, graine) {
-  const run = nouvelleOdyssee(heros, graine); const vie = [], morts = [];
+function simuleOdyssee(heros, graine, acte) {
+  const run = nouvelleOdyssee(heros, graine, acte); const vie = [], morts = [];
   const bilan = (gagne, raison) => ({ gagne, raison, heros, cases:run.stats.cases, combats:run.stats.combats, victoires:run.stats.victoires, tours:run.stats.tours, pv:run.pv, pvMax:run.pvMax, or:run.or, vivres:run.vivres, deck:run.deck.length, reliques:run.reliques.length, defis:run.stats.defis, vie, fragments:run.fragments });
   const rang = { c:0, r:1, e:2 }, meilleure = l => [...l].sort((a, b) => rang[rarete(b)] - rang[rarete(a)])[0];
   for (let pas = 0; pas < 120; pas++) {
@@ -1372,7 +1377,7 @@ function barre(P, haut) {
     ${P.gardeB ? `<span data-k="garde" class="p g pg">🛡 Garde ${P.gardeB}</span>` : ''}${P.gardeE ? `<span data-k="epines" class="p g">🌿 Épines ${P.gardeE}</span>` : ''}${P.esquive ? '<span data-k="esquive" class="p g">💨 Esquive</span>' : ''}
     ${P.bouclier ? `<span data-k="bouclier" class="p g pb">🛡 Bouclier ${P.bouclier}</span>` : ''}${P.contre ? '<span data-k="contre" class="p g">⚔ Contre-attaque</span>' : ''}${P.piege ? '<span data-k="piege" class="p g">🪤 Piège</span>' : ''}
     ${P.cor ? '<span data-k="cor" class="p g">📯 Cor</span>' : ''}${P.fournaise ? '<span data-k="fournaise" class="p g">🔥 Fournaise</span>' : ''}${P.paillasse ? '<span data-k="paillasse" class="p g">⚗ Paillasse</span>' : ''}
-    ${P.id === 'pip' && !P.front.some(u => u.louve) ? `<span data-k="meute" class="p m">🐺 Meute ${P.meute}/3</span>` : ''}${P.id === 'maelle' ? `<span data-k="braises" class="p m">🔥 Braises ${P.braise}/3${P.forgeGratuite ? ' · Équipement gratuit' : ''}</span>` : ''}
+    ${P.id === 'pip' && !P.front.some(u => u.louve) ? `<span data-k="meute" class="p m">🐺 Meute ${P.meute}/3</span>` : ''}${P.braiseT ? `<span data-k="braiset" class="p al">🔥 Braises ${P.braiseT}/3</span>` : ''}${P.givre ? `<span data-k="givre" class="p al">❄ Givre ${P.givre}/${(P.reliques || []).includes('braise') ? 4 : 3}</span>` : ''}${P.id === 'maelle' ? `<span data-k="braises" class="p m">🔥 Braises ${P.braise}/3${P.forgeGratuite ? ' · Équipement gratuit' : ''}</span>` : ''}
     ${P.purete ? `<span data-k="purete" class="p pu">✦ Pureté ${P.purete}</span>` : ''}${P.handicap ? '<span data-k="handicap" class="p al">Handicap</span>' : ''}${P.saigne ? `<span data-k="saigne" class="p al">Saignement ${P.saigne}</span>` : ''}
     ${P.poison ? `<span data-k="poison" class="p al">Poison ${P.poison}</span>` : ''}${P.silence ? '<span data-k="silence" class="p al">Silence</span>' : ''}${P.oeuvre ? `<span data-k="oeuvre" class="p pu">Grand œuvre : ${P.oeuvre}</span>` : ''}
     ${P.ultimeFait ? '<span data-k="ultimefait" class="p">Ultime utilisé</span>' : `<span data-k="ultime" class="p ${P.jauge >= JAUGE.max ? 'pu' : ''}">⚡ Ultime ${P.jauge}/${JAUGE.max}</span>`}<span data-k="main" class="p">🂠 ${P.main.length} en main</span></div></div></div>`;
@@ -1909,6 +1914,6 @@ async function joueFX() {
 // toucher l'écran pendant les animations les accélère
 document.addEventListener('pointerdown', () => { if (fxOn) fxVite = .3; }, true);
 </script>
-<script src="tuto.js?v=20261112-215310"></script>
+<script src="tuto.js?v=20261112-220214"></script>
 </body>
 </html>

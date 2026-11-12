@@ -72,12 +72,52 @@
   details { background:#1d1b3aee; border-radius:14px; padding:10px 14px; margin-top:16px; border:1px solid #4b4580; }
   details summary { color:var(--or); font-weight:bold; cursor:pointer; }
   details li { margin:.3em 0; font-size:.92em; }
+  /* ---------- 12/11 nuit : la fiche en LIVRE OUVERT (provisoire en code, en attendant l'image « livre ») + bande de portraits à cadenas ---------- */
+  .bande { display:flex; gap:10px; overflow-x:auto; padding:10px 4px 12px; margin:6px 0 4px; scrollbar-width:none; }
+  .bande::-webkit-scrollbar { display:none; }
+  .bande button { flex:none; position:relative; width:64px; padding:0; border:0; background:none; color:var(--texte); font:inherit; font-size:.72em; cursor:pointer; }
+  .bande img { width:64px; height:64px; border-radius:50%; object-fit:cover; display:block; border:2px solid #ffffff33; box-shadow:0 3px 8px #000a; filter:saturate(.7) brightness(.8); transition:all .25s; }
+  .bande button.choisi img { border-color:var(--hc); box-shadow:0 0 0 2px var(--hc), 0 0 18px var(--hc); filter:none; transform:translateY(-3px) scale(1.06); }
+  .bande button.verrou img { filter:grayscale(1) brightness(.5); }
+  .bande .cad { position:absolute; left:50%; top:32px; transform:translate(-50%, -50%); font-size:22px; filter:drop-shadow(0 2px 3px #000); }
+  .bande small { display:block; text-align:center; margin-top:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .livre { position:relative; display:grid; grid-template-columns:1fr 1fr; padding:9px 7px 11px; border-radius:14px; perspective:1400px;
+    background:linear-gradient(135deg, #6b3f1f, #3d2210); box-shadow:0 12px 30px #000c, inset 0 0 0 2px #a8743a; }
+  .livre::after { content:''; position:absolute; left:50%; top:6px; bottom:6px; width:10px; transform:translateX(-50%); background:linear-gradient(90deg, #0000, #0006, #0000); pointer-events:none; }
+  .page { color:#2b2117; font-size:.8em; line-height:1.35; padding:12px 10px 14px; min-width:0;
+    background:linear-gradient(90deg, #efe0bb, #fbf3dc 18%, #f6ebcf 82%, #ead9b0); }
+  .page.g { border-radius:8px 2px 2px 8px; box-shadow:inset -16px 0 18px -12px #0007; }
+  .page.d { border-radius:2px 8px 8px 2px; box-shadow:inset 16px 0 18px -12px #0007; transform-origin:0 50%; }
+  .page.d.tourne { animation:tourne .55s ease-out; }
+  @keyframes tourne { from { transform:rotateY(-80deg); filter:brightness(.7); } }
+  .page .encre { color:color-mix(in srgb, var(--c) 70%, #000); }
+  .page .portrait { display:block; width:76%; aspect-ratio:1; margin:0 auto 6px; border-radius:50%; object-fit:cover; border:3px solid var(--c); box-shadow:0 0 0 3px #c8902f, 0 4px 12px #0006; }
+  .page h2 { margin:0; text-align:center; font-size:1.55em; color:#2b2117; }
+  .page .titre { text-align:center; font-weight:bold; text-transform:uppercase; letter-spacing:.06em; font-size:.82em; }
+  .page .cit { text-align:center; font-style:italic; color:#5c4a33; margin:.4em 0 .6em; }
+  .page .chips span { background:#2b211712; border:1px solid #2b211733; color:#2b2117; }
+  .page .chips .pv { background:#7a1f2a; color:#fff; } .page .chips .eq { background:#2a5d3a; color:#fff; } .page .chips .st { background:color-mix(in srgb, var(--c) 55%, #000); color:#fff; }
+  .page .stat { grid-template-columns:64px 1fr 12px; font-size:.95em; }
+  .page .barre { background:#2b211722; box-shadow:inset 0 1px 2px #0004; }
+  .page h3 { color:color-mix(in srgb, var(--c) 70%, #000); margin:10px 0 6px; font-size:1.05em; border-bottom:1px solid #2b211733; padding-bottom:2px; }
+  .page h3:first-child { margin-top:0; }
+  .page .des { display:grid; grid-template-columns:repeat(3, 1fr); gap:5px; }
+  .page .des img { width:100%; }
+  .page .kit { gap:6px; }
+  .page .kit div { background:#2b21170d; border-left:3px solid var(--c); color:#2b2117; padding:5px 7px; font-size:.95em; }
+  .page .kit b { color:color-mix(in srgb, var(--c) 70%, #000); }
+  .page .kit em { color:#2b2117; }
+  .page .role { font-size:.95em; margin:.3em 0 .5em; }
+  .sceau { position:absolute; inset:0; z-index:3; display:grid; place-items:center; border-radius:14px; background:#05030cb8; text-align:center; padding:20px; }
+  .sceau div { background:#2a2260; border:2px solid #f3c96b88; border-radius:18px; padding:16px; max-width:280px; box-shadow:0 8px 24px #000; }
+  .sceau .gros { display:block; font-size:2.2em; }
+  .suite { margin-top:14px; border-radius:16px; padding:10px 12px 14px; background:#1d1b3aee; border:2px solid var(--c); }
 </style>
 </head>
 <body>
 <main>
   <div class="haut"><a href="menu.html">‹ Menu</a><h1>La Tour des héros</h1><a href="duel.html">⚔ Duel</a></div>
-  <div class="grille" id="grille"></div>
+  <div class="bande" id="grille"></div>
   <div id="fiche"></div>
   <details><summary>📜 Les règles communes du Duel</summary><ol>
     <li><b>But</b> : faire tomber à 0 les points de vie du héros adverse.</li>
@@ -90,9 +130,9 @@
     <li><b>Le second joueur</b> commence avec 3 PC et une carte de plus.</li>
   </ol></details>
 </main>
-<script src="donnees.js?v=20261112-215310"></script>
-<script src="odyssee.js?v=20261112-215310"></script>
-<script src="cartes.js?v=20261112-215310"></script>
+<script src="donnees.js?v=20261112-220214"></script>
+<script src="odyssee.js?v=20261112-220214"></script>
+<script src="cartes.js?v=20261112-220214"></script>
 <script>
 document.head.insertAdjacentHTML('beforeend', '<style>' + CSS_CARTE + '</style>');
 const SORTE = { u:'Créature', s:'Sort', e:'Équipement', r:'Piège' };
@@ -106,21 +146,27 @@ function vignette(id, k, w = 98) {   // la carte : cadre en cristal si le héros
   const c = CARTES[k]; return `<div class="simple ${c.t}2" style="width:${w}px;font-size:${w < 90 ? '.55em' : '.72em'}"><span class="co">${c.c}</span><div class="n">${c.n}</div><div class="t">${SORTE[c.t]}</div><div class="d">🎲 ${c.txt}</div><div>${c.d}</div></div>`;
 }
 function parties(id) { try { const l = JSON.parse(localStorage.getItem('guilde-parties') || '[]').filter(p => p.moi === id); return [l.length, l.filter(p => p.resultat === 'gagne').length]; } catch (e) { return [0, 0]; } }
+const ZOK = () => localStorage.getItem('guilde-tuto') === 'fait'; // Zéphine : débloquée par le tutoriel (12/11)
+const verrouille = id => id === 'zephine' && !ZOK();
 function grille() {
-  document.getElementById('grille').innerHTML = ORDRE.map(id => `<button class="case ${id === actuel ? 'choisi' : ''}" style="--hc:${HEROS[id].c}" onclick="choisir('${id}')"><img src="portraits/${id}.webp" alt=""><span>${HEROS[id].nom}</span></button>`).join('');
+  document.getElementById('grille').innerHTML = ORDRE.map(id => `<button class="${id === actuel ? 'choisi' : ''} ${verrouille(id) ? 'verrou' : ''}" style="--hc:${HEROS[id].c}" onclick="choisir('${id}')"><img src="portraits/${id}.webp" alt="">${verrouille(id) ? '<span class="cad">🔒</span>' : ''}<small>${HEROS[id].nom}</small></button>`).join('');
+  const b = document.querySelector('.bande .choisi'); if (b) b.scrollIntoView({ inline:'center', block:'nearest' });
 }
 function choisir(id) { if (edition && !confirm('Quitter la modification du deck sans l’enregistrer ?')) return; edition = null; actuel = id; localStorage.setItem('guilde-tour', id); history.replaceState(null, '', '?h=' + id); grille(); fiche(); }
 function fiche() {
   const id = actuel, h = HEROS[id], P = PROFILS[id], [joue, gagne] = parties(id), perso = localStorage.getItem('guilde-deck-' + id) && deckValide(id, deckDe(id));
   document.documentElement.style.setProperty('--c', h.c);
   const deck = compter(deckDe(id));
-  document.getElementById('fiche').innerHTML = `<div class="fiche" style="--img:url('portraits/${id}.webp')">
-    <div class="banniere"><img src="portraits/${id}.webp" alt=""><div><div class="titre">${h.titre}</div><h2>${h.nom}</h2><p class="cit">${h.cit}</p></div></div>
-    <div class="corps">
+  document.getElementById('fiche').innerHTML = `<div class="livre">
+    <div class="page g">
+      <img class="portrait" src="portraits/${id}.webp" alt="">
+      <div class="titre encre">${h.titre}</div><h2>${h.nom}</h2><p class="cit">${h.cit}</p>
+      <div class="chips"><span class="pv">❤ ${h.pv} PV</span><span class="st">${P.style}</span><span class="eq">⚖ ${EQUILIBRE[id]} %</span><span>🎮 ${joue ? `${gagne}/${joue} gagnées` : 'pas encore joué'}</span></div>
       <p class="role">${h.role}</p>
-      <div class="chips"><span class="pv">❤ ${h.pv} PV</span><span class="st">${P.style}</span><span class="eq">⚖ ${EQUILIBRE[id]} % de victoires (simulations)</span><span>🎮 Tes parties : ${joue ? `${gagne} gagnée${gagne > 1 ? 's' : ''} sur ${joue}` : 'aucune'}</span></div>
       <div class="stats">${Object.entries(P).filter(([k]) => k !== 'style').map(([k, v]) => `<div class="stat"><span>${k}</span><div class="barre"><i style="width:${v * 20}%"></i></div><b>${v}</b></div>`).join('')}</div>
-      <h3>🎲 Ses dés <small>les 6 faces</small></h3>
+    </div>
+    <div class="page d tourne">
+      <h3>🎲 Ses dés</h3>
       <div class="des">${[1, 2, 3, 4, 5, 6].map(v => `<img src="${FACE(id, v)}" alt="${v}">`).join('')}</div>
       <h3>✨ Ses compétences</h3>
       <div class="kit">
@@ -130,10 +176,14 @@ function fiche() {
         <div><b>Ultime · ${h.ultime.n}</b><em>jauge pleine + 3 PC + ${h.ultime.txt}</em> : ${h.ultime.d}</div>
         ${h.action ? `<div><b>Action · ${h.action.n}</b><em>${h.action.txt}</em> : ${h.action.d}</div>` : ''}
       </div>
+    </div>
+    ${verrouille(id) ? `<div class="sceau"><div><span class="gros">🔒</span><p>${h.nom} rejoint la Guilde quand tu as fini le <b>tutoriel</b> : un duel guidé de 5 minutes.</p><button class="bt or" onclick="location.href='duel.html?tuto=1'">🎓 Faire le tutoriel</button></div></div>` : ''}
+  </div>
+  <div class="suite">
       <h3>🂠 ${perso ? 'Ton deck' : 'Son deck de base'} <small>${DECK_TAILLE} cartes</small></h3>
       <div id="deckzone">${edition ? '' : `<div class="deck">${ordreCartes(id, Object.keys(deck)).map(k => `<div class="cg">${deck[k] > 1 ? `<span class="nb">×${deck[k]}</span>` : ''}${vignette(id, k)}</div>`).join('')}</div>`}</div>
-      <div class="boutons" id="bts">${edition ? '' : `<button class="bt sombre" onclick="editer()">✏️ Modifier mon deck</button>${perso ? '<button class="bt sombre" onclick="deBase()">↺ Deck de base</button>' : ''}<button class="bt or" onclick="location.href='duel.html?h=${id}'">⚔ Jouer avec ${h.nom}</button>`}</div>
-    </div></div>`;
+      <div class="boutons" id="bts">${edition || verrouille(id) ? '' : `<button class="bt sombre" onclick="editer()">✏️ Modifier mon deck</button>${perso ? '<button class="bt sombre" onclick="deBase()">↺ Deck de base</button>' : ''}<button class="bt or" onclick="location.href='duel.html?h=${id}'">⚔ Jouer avec ${h.nom}</button>`}</div>
+    </div>`;
   if (edition) dessineEditeur();
 }
 function editer() { edition = deckDe(actuel).slice(); fiche(); document.getElementById('deckzone').scrollIntoView({ behavior:'smooth', block:'start' }); }
