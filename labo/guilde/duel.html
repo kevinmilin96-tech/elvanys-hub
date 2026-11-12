@@ -601,7 +601,7 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261112-211900';
+const VERSION = '20261112-212136';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); location.replace('duel.html?v=' + v); }
@@ -620,9 +620,9 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261112-211900"></script>
-<script src="donnees.js?v=20261112-211900"></script>
-<script src="odyssee.js?v=20261112-211900"></script>
+<script src="cartes.js?v=20261112-212136"></script>
+<script src="donnees.js?v=20261112-212136"></script>
+<script src="odyssee.js?v=20261112-212136"></script>
 <script src="chronique.js?v=20261110-140121"></script>
 <script>
 // =============================================================================================== moteur
@@ -766,7 +766,7 @@ function permis(J, quoi, vs, ds) {
   if (quoi === 'pcSoins') return false;
   if (!vs.length) return false;
   const h = HEROS[J.id];
-  if (quoi === 'vendre') return true;
+  if (quoi === 'vendre') return J.pc < 6; // 12/11 : vente pendant le tour ; inutile à 6 PC (le plafond)
   if (quoi === 'transmu') return J.id === 'zephine' && !J.transmu && vs.length === 1;
   if (quoi === 'pcRelance') return vs.length === 1 && J.pc >= 1;
   if (quoi === 'pcAjuste') return false;
@@ -1421,6 +1421,7 @@ function dessine() {
   <div class="bas">
     <button class="b0" onclick="regles()" aria-label="Règles">❓</button>
     <button class="b0" onclick="voirJournal()" aria-label="Journal">📜</button>
+    ${S.coop ? '<button class="b0" onclick="voirEquipe()" aria-label="Équipe">👥</button>' : ''}
     ${S.ody && J.sacoche.length ? `<button class="b0" onclick="voirSacoche()" aria-label="Sacoche">🎒<sup>${J.sacoche.length}</sup></button>` : ''}
     <button class="b1" onclick="relancer()" ${sel.length && (J.relance || J.pc >= sel.length) ? '' : 'disabled style="opacity:.4"'}>🎲 Relancer ${J.relance ? `(${J.relance})` : '· 1 PC/dé'}</button>
     <button class="b2" onclick="finDeMonTour()">Fin du tour ▶</button>
@@ -1431,11 +1432,11 @@ function dessine() {
 const ICONES = { frappe:['⚔', 'Frappe'], technique:['⚔⚔', 'Technique'], garde:['🛡', 'Garde'], pouvoir:['✦', 'Pouvoir'], ultime:['⚡', 'Ultime'], transmu:['⚗', ''], vendre:['◆', 'Vendre'] };
 function icone(quoi, lib, J, extra) {
   const ok = sel.length && permis(J, quoi, vals(sel), sel), [sym, nom] = ICONES[quoi];
-  return `<button class="ic ${ok ? 'ok' : sel.length ? 'non' : ''} ${extra || ''}" style="background-image:url(ui/${quoi}.webp?v=2)" onclick="vise('${quoi}')" aria-label="${lib || nom}"><small>${lib || nom}</small></button>`;
+  return `<button class="ic ${ok ? 'ok' : sel.length ? 'non' : ''} ${extra || ''}" style="background-image:url(ui/${quoi === 'vendre' ? 'pc' : quoi}.webp?v=2)" onclick="vise('${quoi}')" aria-label="${lib || nom}"><small>${lib || nom}</small></button>`;
 }
 function colonneActions(J, h) {
   return `<div class="colG">${icone('frappe', '', J, 'r1')}${icone('technique', '', J, 'r2')}${icone('garde', '', J, 'r3')}${icone('pouvoir', '', J, 'r4')}${h.action ? icone('transmu', h.action.n, J, 'r5' + (J.transmu ? ' fait' : '')) : ''}
-    ${S.coop ? '<button class="ic r6" style="background-image:url(ui/equipe.webp?v=2)" onclick="voirEquipe()" aria-label="Équipe"><small>Équipe</small></button>' : ''}</div>`;
+    ${icone('vendre', 'Vendre', J, 'r6 vendre')}</div>`; // 12/11 (décision de l'utilisateur) : vendre un dé PENDANT le tour (+1 PC tout de suite) ; Équipe passe en bas
 }
 function voirSacoche() {
   const J = S.J;
@@ -1485,7 +1486,7 @@ function aide(quoi, info) {
   else if (quoi === 'pcAjuste') t = '<b>+1 ou −1</b> (2 PC) : choisis un dé, puis ajoute ou retire 1 (un 5 devient 6 ou 4).';
   else if (quoi === 'pcSoins') t = '<b>Premiers soins</b> (2 PC) : retire Poison, Saignement et Handicap. Utile seulement si tu en as.';
   else if (quoi === 'transmu') t = `<b>${h.action.n}</b> (${h.action.txt}) : ${h.action.d}`;
-  else if (quoi === 'vendre') t = 'Choisis d’abord un ou plusieurs dés, puis touche « Vendre » : chaque dé rapporte 1 PC.';
+  else if (quoi === 'vendre') t = '<b>Vendre</b> (le cristal bleu, à gauche) : choisis un ou plusieurs dés, puis touche le cristal : <b>+1 PC par dé, tout de suite</b> (6 PC au plus). Pratique pour payer une carte ce tour-ci. Un dé vendu est perdu pour le tour : il ne se relance plus. Les dés pas posés à « Fin du tour » sont vendus tout seuls.';
   else { const c = CARTES[quoi]; t = `<b>${c.n}</b> : coûte <b>${coutCarte(J, quoi)} PC</b> et demande <b>${c.txt}</b>. ${c.d}${c.t === 's' && J.silence ? '<br><i>Tu es réduit au Silence ce tour : pas de Sort.</i>' : ''}`; }
   fenetre(`<h2>${info ? 'Comment ça marche' : 'Pas encore possible'}</h2><p>${t}</p>${info ? '' : `<p style="color:#f3c96b"><b>${raison(quoi)}</b></p>`}<div class="choixh"><button onclick="fermer()">Compris</button></div>`);
 }
@@ -1509,6 +1510,7 @@ function raison(quoi) {
   if (quoi === 'pcRelance' || quoi === 'pcAjuste') { const n = quoi === 'pcRelance' ? 1 : coutAjuste(J); if (J.pc < n) return `Il te manque ${n - J.pc} PC.`; return 'Choisis un seul dé.'; }
   if (quoi === 'pcSoins') return J.pc < 2 ? `Il te manque ${2 - J.pc} PC.` : 'Tu n’as aucune altération à retirer.';
   if (quoi === 'transmu') return J.transmu ? 'Tu as déjà transmuté un dé ce tour.' : 'Choisis un seul dé.';
+  if (quoi === 'vendre') return 'Tu as déjà 6 PC, le maximum : vendre ne rapporterait rien.';
   const def = defDe(J, quoi); return def ? `${des} : il faut ${def.txt}.` : '';
 }
 function fenetre(html) { document.getElementById('fen').innerHTML = `<div class="fenetre" onclick="if(event.target===this)fermer()"><div>${html}</div></div>`; }
@@ -1527,7 +1529,7 @@ function regles() {
   <li>La <b>Garde</b> et le <b>Pouvoir</b> de ton héros sont gratuits : il suffit des bons dés.</li>
   <li>L’<b>Ultime</b> : sa <b>jauge ⚡</b> gagne 1 point par dé posé (pas vendu) et 1 point tous les 5 dégâts que tu subis. Pleine (l’anneau doré de ton portrait est complet et brille), l’Ultime se joue avec ses dés et 3 PC, une fois par combat : choisis les dés, puis <b>touche ton portrait</b>.</li>
   <li><b>Relancer</b> (bouton en bas) : choisis des dés puis touche « Relancer ». Tu as <b>2 relances gratuites</b> par tour ; ensuite, chaque dé relancé coûte 1 PC.</li>
-  <li>Les dés <b>pas posés</b> à la fin du tour sont vendus tout seuls : +1 PC chacun.</li>
+  <li><b>Vendre</b> : pendant ton tour, choisis des dés puis touche le cristal bleu (à gauche) : <b>+1 PC par dé, tout de suite</b>, pour payer une carte ce tour-ci. Les dés <b>pas posés</b> à la fin du tour sont vendus tout seuls.</li>
   <li>« +1 / −1 sur un dé » et « Premiers soins » sont maintenant des <b>cartes de la Guilde</b> (Pierre d’ajustement, Premiers soins).</li>
   <li>Tu gagnes +1 PC au début de chaque tour (6 au plus). Tu lances 3 dés au tour 1, 4 au tour 2, puis 5.</li>
   <li><b>Ton portrait</b> : l’anneau rouge = ta vie, le trait bleu = ta Garde ou ton Bouclier, l’anneau doré en 20 segments = ta jauge d’Ultime, les losanges bleus = tes PC.</li>
