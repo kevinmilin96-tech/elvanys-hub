@@ -2,7 +2,7 @@
 // Zones mesurées sur le cadre (en % de 864 × 1216) : nom, pierre du coût, fenêtre de l'illustration, bande des dés, effet, losange du bas.
 const ZONES = { nom:[11.6, 8.6, 64.2, 6.3], cout:[85.9, 11.5], fenetre:[12.7, 16.3, 75.2, 39.5], bande:[11.6, 57.6, 77, 5.1], effet:[12.5, 65.4, 75.5, 23.8], bas:[49.8, 93.3] };
 // images déjà reçues (à compléter à chaque image de Gemini) : cadres des héros, illustrations des cartes
-const CADRES_OK = ['pip'], ARTS = ['louve', 'seve'];
+const CADRES_OK = ['pip', 'maelle', 'aldric', 'oria', 'gorm', 'zephine', 'guilde'], ARTS = ['louve', 'seve'];
 const CADRE_DE = k => { for (const h of ORDRE) if (HEROS[h].deck.includes(k)) return h; return 'guilde'; };
 const ICONE_SORTE = { u:'⚔', s:'✦', e:'⚒', r:'⛓' };
 function carteGuilde(k, opt = {}) {
@@ -28,7 +28,7 @@ const CSS_CARTE = `
 .cg-vide { color:#ffffff30; font-size:22cqw; text-align:center; line-height:1; }
 .cg-vide small { display:block; font-size:4.5cqw; color:#ffffff55; margin-top:4%; font-style:italic; }
 .cg-nom { display:flex; align-items:center; justify-content:center; text-align:center; color:#f6ecff; font-weight:bold; font-size:6.2cqw; line-height:1; text-shadow:0 1px 0 #000, 0 0 6px #b58cff; padding:0 2%; }
-.cg-cout { transform:translate(-50%,-50%); width:13cqw; height:13cqw; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:9cqw; color:#fff; text-shadow:0 0 4px #2a7fc1, 0 2px 0 #000; }
+.cg-cout { transform:translate(-50%,-50%); width:12cqw; height:12cqw; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:8.5cqw; color:#fff; text-shadow:0 0 4px #2a7fc1, 0 2px 0 #000; background:radial-gradient(circle, #10162ae6 0%, #10162ad0 62%, #10162a00 72%); } /* 12/11 : disque sombre sous le chiffre, lisible même quand la pierre de Gemini est pleine */
 .cg-bande { display:flex; align-items:center; justify-content:center; color:#ffe9a8; font-weight:bold; font-size:5.2cqw; text-shadow:0 1px 0 #000; }
 .cg-effet { display:flex; align-items:center; justify-content:center; text-align:center; color:#efe6ff; font-size:5.4cqw; line-height:1.25; padding:3% 4%; }
 .cg-sorte { transform:translate(-50%,-50%); color:#fff; font-size:5cqw; text-shadow:0 0 4px #000; }
