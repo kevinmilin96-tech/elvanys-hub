@@ -107,11 +107,12 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261113-204046"></script>
-<script src="donnees.js?v=20261113-204046"></script>
-<script src="odyssee.js?v=20261113-204046"></script>
-<script src="pantheon.js?v=20261113-204046"></script>
-<script src="chronique.js?v=20261113-204046"></script>
+<script src="cartes.js?v=20261113-210453"></script>
+<script src="musique.js?v=20261113-210453"></script>
+<script src="donnees.js?v=20261113-210453"></script>
+<script src="odyssee.js?v=20261113-210453"></script>
+<script src="pantheon.js?v=20261113-210453"></script>
+<script src="chronique.js?v=20261113-210453"></script>
 <script>
 // le moteur du Duel n'est pas chargé ici : les cartes de l'Odyssée appellent degats/soin seulement en combat (dans duel.html)
 const log = () => {}, degats = () => {}, soin = () => {}, altere = () => {}, invoque = () => {}, adv = () => ({}), fin = () => {};
@@ -343,7 +344,7 @@ function arrive(c) {
   if (c.t === 'porte') { if (ouvrePorte(R)) { sauve(); dessine(); dialogue('porte'); chronique([CH().porte], () => fenetre(`<h2>🚪 La porte s’ouvre</h2><p>Les deux fragments s’assemblent dans la serrure runique. Tu bivouaques devant la porte : <b>+15 PV</b> (❤ ${R.pv} / ${R.pvMax}). Derrière, une chaleur de fournaise : le Titan t’attend. <b>Il ne se combat qu’une fois.</b></p><div class="choixh"><button onclick="fermer()">Je suis prêt</button></div>`)); } else { dialogue('porte_fermee'); fenetre(`<h2>🚪 La porte du boss</h2><p>Deux serrures en forme de rune. Il te manque ${2 - R.fragments} fragment${2 - R.fragments > 1 ? 's' : ''} : ils sont gardés par les élites 💀 de l’île.</p><div class="choixh"><button onclick="fermer()">Compris</button></div>`); } return; }
   if (c.t === 'coffre' && !c.fait) { dialogue(R.cles ? 'coffre' : 'coffre_ferme'); coffre(c); return; }
   if (c.t === 'source' && !c.fait) { dialogue('source'); sourceFen(c); return; }
-  if (c.t === 'marchand') { dialogue('marchand'); marchand(c); return; }
+  if (c.t === 'marchand') { dialogue('marchand'); GM.temporaire('marchand'); marchand(c); return; }
   if (c.t === 'evenement' && !c.fait) { dialogue('evenement'); evenement(c); return; }
   if (c.t === 'autel' && !c.fait) { dialogue('autel'); autel(c); return; }
   if (c.t === 'feu' && !c.fait) { feuFen(c); return; }
@@ -488,6 +489,9 @@ function finPartie(gagne, texte) {
 function records() { const l = lireRecords(); fenetre(`<h2>🏆 Mes Odyssées (${l.length})</h2>${l.length ? `<table>${l.map(r => `<tr><td>${r.gagne ? '🏆' : '💀'} ${new Date(r.quand).toLocaleDateString('fr-FR')} · ${HEROS[r.heros].nom} · ${r.cases} cases, ${r.victoires} victoires, ${r.duree} min</td><td>${r.score}</td></tr>`).join('')}</table>` : '<p>Aucune Odyssée finie.</p>'}<div class="choixh"><button onclick="fermer()">Fermer</button></div>`); }
 function collection() { const l = lireCollection(); fenetre(`<h2>📚 Ma collection (${l.length})</h2><p style="font-size:.86em;color:var(--doux)">Les cartes rencontrées en Odyssée. Elles s’ajoutent à l’éditeur de deck de la Tour des héros.</p><div class="cartes3">${l.map(k => carteHTML(k)).join('') || '<i>Rien encore : pars en Odyssée !</i>'}</div><div class="choixh"><button onclick="fermer()">Fermer</button></div>`); }
 accueil();
+// 13/11 soir : musique de la carte (Terres brûlées : folk médiéval ; Givre et Abîme : la vallée des vents) ; le marchand a la sienne jusqu'à la fermeture de sa fenêtre
+{ const ile = new URLSearchParams(location.search).get('ile'); GM.musique(ile === 'givre' || ile === 'abime' ? 'vent' : 'carte'); GM.bouton();
+  const fen = document.getElementById('fen'); if (fen) new MutationObserver(() => { if (!fen.textContent.trim()) GM.retour(); }).observe(fen, { childList:true }); }
 </script>
 </body>
 </html>

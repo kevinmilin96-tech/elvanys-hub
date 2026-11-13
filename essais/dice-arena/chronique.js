@@ -26,7 +26,9 @@ const ILLU_FOND = { vide2:'linear-gradient(160deg, #030108, #3a1060 55%, #c084fc
 // Montre une suite de pages. page = { sur, titre, illu:{ cle, fond, sym }, texte:[...], cit, choix:[{ t, d, ok?, f }], bouton }
 // apres(resultat) est appelé à la fin ; un choix appelle son f() puis passe à la page suivante.
 let chronPages = [], chronI = 0, chronApres = null;
-function chronique(pages, apres) { chronPages = pages.filter(Boolean); chronI = 0; chronApres = apres; if (!chronPages.length) { if (apres) apres(); return; } chronMontre(); }
+function chronique(pages, apres) { chronPages = pages.filter(Boolean); chronI = 0; chronApres = apres; if (!chronPages.length) { if (apres) apres(); return; }
+  // 13/11 soir : musique du récit (les escales des Expéditions : la harpe du large) le temps des pages
+  if (typeof GM !== 'undefined') GM.temporaire(/^Expédition/.test(chronPages[0].sur || '') ? 'mer' : 'recit'); chronMontre(); }
 function chronMontre() {
   const p = chronPages[chronI]; let z = document.getElementById('chron'); if (!z) { z = document.createElement('div'); z.id = 'chron'; z.className = 'chron'; document.body.appendChild(z); }
   const il = p.illu || {}; const img = il.cle ? `decor/chron-${il.cle}.webp` : null;
@@ -42,7 +44,7 @@ function chronChoix(i) { const p = chronPages[chronI], c = p.choix[i]; if (!c ||
 function chronSuite() {
   const pg = document.getElementById('chronPage'); chronI++;
   if (chronI < chronPages.length) { if (pg) { pg.classList.add('part'); setTimeout(chronMontre, 380); } else chronMontre(); return; }
-  const z = document.getElementById('chron'); if (pg) pg.classList.add('part'); setTimeout(() => { if (z) z.remove(); if (chronApres) { const a = chronApres; chronApres = null; a(); } }, 380);
+  const z = document.getElementById('chron'); if (pg) pg.classList.add('part'); if (typeof GM !== 'undefined') GM.retour(); setTimeout(() => { if (z) z.remove(); if (chronApres) { const a = chronApres; chronApres = null; a(); } }, 380);
 }
 
 // ----------------------------------------------------------------------------------------------- les textes de l'Odyssée (les Terres brûlées)

@@ -609,7 +609,7 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261113-204046';
+const VERSION = '20261113-210453';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); location.replace('duel.html?v=' + v); }
@@ -628,10 +628,11 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261113-204046"></script>
-<script src="donnees.js?v=20261113-204046"></script>
-<script src="odyssee.js?v=20261113-204046"></script>
-<script src="chronique.js?v=20261113-204046"></script>
+<script src="cartes.js?v=20261113-210453"></script>
+<script src="musique.js?v=20261113-210453"></script>
+<script src="donnees.js?v=20261113-210453"></script>
+<script src="odyssee.js?v=20261113-210453"></script>
+<script src="chronique.js?v=20261113-210453"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -1184,7 +1185,7 @@ function usePotion(i) {
 function aideRelique(r) { fenetre(`<h2>${RELIQUES[r].e} ${RELIQUES[r].n}</h2><p>${RELIQUES[r].d}</p><div class="choixh"><button onclick="fermer()">Compris</button></div>`); }
 function finOdyssee() {
   if (S.enregistre) return; S.enregistre = true;
-  arreteMusique(1.2); son(S.fini === 'gagne' ? 'victoire' : 'defaite');
+  jingleFin(); son(S.fini === 'gagne' ? 'victoire' : 'defaite');
   { const c = document.getElementById('app'); if (c) effetImage(S.fini === 'gagne' ? 'victoire' : 'defaite', c, 2.2); }
   const run = lireOdyssee(); const J = S.J, d = S.ody.defi;
   const defiOk = evalueDefi(J, d);
@@ -1426,6 +1427,7 @@ function rendu() {
   const f = fxApres.shift(); if (f && !S.fini) setTimeout(f, 350);
 }
 function dessine() {
+  if (S && !S.fini && !S.auto && typeof GM !== 'undefined') demarreMusique(); // 13/11 soir : la musique dès que la partie s'affiche
   const J = S.J, O = S.O, h = HEROS[J.id];
   let bandeau = '';
   if (J.aLancer) bandeau = 'Ton tour commence : lance tes dés !';
@@ -1622,7 +1624,7 @@ function montrerFin() {
   if (S.coop) { if (S.enregistre) return; S.enregistre = true; if (S.fini === 'gagne' && S.choix) { try { const v = JSON.parse(localStorage.getItem('guilde-invasion') || '{}'); v[S.choix] = (v[S.choix] || 0) + 1; localStorage.setItem('guilde-invasion', JSON.stringify(v)); } catch (e) {} } arreteMusique(1.2); son(S.fini === 'gagne' ? 'victoire' : 'defaite'); effetImage(S.fini === 'gagne' ? 'victoire' : 'defaite', document.getElementById('app'), 2.2);
     chronique([(CHRON_CAMP_B[S.O.id] || CHRON_CAMP)[S.fini === 'gagne' ? 'victoire' : 'defaite']], () => fenetre(`<h2>${S.fini === 'gagne' ? '🏆 Le boss est tombé !' : '💀 Le campement est perdu…'}</h2><p>${S.equipe.map(h => `${h.nom} : ${h.aTerre ? 'à terre' : h.pv + ' PV'}`).join(' · ')} · ${S.O.nom} : ${Math.max(0, S.O.pv)} PV · ${S.equipe[0].tours} tours.</p><div class="choixh"><button onclick="location.href='campement.html'">🔥 Rejouer</button><button onclick="location.href='menu.html'">⌂ Menu</button></div>`)); return; }
   enregistrePartie();
-  arreteMusique(1.2);
+  jingleFin();
   { const c = document.getElementById(S.fini === 'gagne' ? 'b-O' : 'b-J'); if (c) effetImage(S.fini === 'gagne' ? 'victoire' : 'defaite', document.getElementById('app'), 2.2); }
   son(S.fini === 'gagne' ? 'victoire' : 'defaite');
   fenetre(`<h2>${S.fini === 'gagne' ? '🏆 Victoire !' : '💀 Défaite…'}</h2><p>${S.J.nom} contre ${S.O.nom} : ${S.fini === 'gagne' ? 'gagné' : 'perdu'} en ${S.J.tours} tours.</p><div class="choixh"><button onclick="fermer();nouvellePartie(S.J.id, S.O.id)">Rejouer</button><button onclick="fermer();accueil()">Changer de héros</button></div>`);
@@ -1650,18 +1652,12 @@ let musOn = localStorage.getItem('guilde-musique') !== '0', BUF = {}, musique = 
 function charge(nom) { const a = ac(); if (!a) return Promise.resolve(null); if (BUF[nom]) return BUF[nom];
   return BUF[nom] = fetch(`sons/${nom}.mp3?v=1`).then(r => r.arrayBuffer()).then(b => new Promise((ok, ko) => a.decodeAudioData(b, ok, ko))).catch(() => null); }
 function joueBuf(nom, vol) { const a = ac(); if (!a) return; charge(nom).then(b => { if (!b) return; const s = a.createBufferSource(), g = a.createGain(); s.buffer = b; g.gain.value = vol || 1; s.connect(g).connect(a.destination); s.start(); }); }
-function demarreMusique() {
-  if (!musOn || musique || !S || S.auto || S.fini) return; const a = ac(); if (!a) return;
-  musique = { arret:false };
-  charge('combat').then(b => { if (!b || !musique || musique.arret || musique.src) return;
-    const src = a.createBufferSource(), g = a.createGain(); src.buffer = b; src.loop = true; src.loopStart = .05; src.loopEnd = Math.min(b.duration, 40.05);
-    g.gain.setValueAtTime(0, a.currentTime); g.gain.linearRampToValueAtTime(.32, a.currentTime + 2); src.connect(g).connect(a.destination); src.start(0, .05); musique.src = src; musique.g = g; });
-}
-function arreteMusique(fondu) {
-  if (!musique) return; const m = musique; musique = null; m.arret = true; const a = ac();
-  if (m.src && a) { m.g.gain.cancelScheduledValues(a.currentTime); m.g.gain.setValueAtTime(m.g.gain.value, a.currentTime); m.g.gain.linearRampToValueAtTime(0, a.currentTime + (fondu || .4)); m.src.stop(a.currentTime + (fondu || .4) + .05); }
-}
-function basculeMusique() { musOn = !musOn; localStorage.setItem('guilde-musique', musOn ? '1' : '0'); if (musOn) demarreMusique(); else arreteMusique(); dessine(); }
+// 13/11 soir : les musiques choisies par l'utilisateur, jouées par le lecteur commun (musique.js) selon le combat
+function choixMusique() { if (S.tuto) return 'tuto'; if (S.coop) return 'boss'; const t = S.ody && S.ody.type; return t === 'boss' ? 'boss' : t === 'elite' ? 'elite' : 'duel'; }
+function demarreMusique() { if (!S || S.auto || S.fini) return; GM.musique(choixMusique()); }
+function arreteMusique(fondu) { GM.stop(fondu); }
+function jingleFin() { if (S && S.fini) GM.jingle(S.fini === 'gagne' ? 'victoire' : 'defaite'); }
+function basculeMusique() { musOn = GM.bascule(); if (musOn) demarreMusique(); dessine(); }
 function basculeSon() { sonOn = !sonOn; localStorage.setItem('guilde-son', sonOn ? '1' : '0'); if (sonOn) son('carte'); dessine(); }
 function ac() { if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return null; } } if (AC.state === 'suspended') AC.resume(); return AC; }
 function ton(f, d, type, vol, fin, depart) {
@@ -1941,13 +1937,13 @@ async function joueFX() {
 // toucher l'écran pendant les animations les accélère
 document.addEventListener('pointerdown', () => { if (fxOn) fxVite = .3; }, true);
 </script>
-<script src="pantheon.js?v=20261113-204046"></script>
-<script src="tuto.js?v=20261113-204046"></script>
-<script src="deux.js?v=20261113-204046"></script>
-<script src="invasion.js?v=20261113-204046"></script>
-<script src="enigme-table.js?v=20261113-204046"></script>
-<script src="forge.js?v=20261113-204046"></script>
-<script src="semaine.js?v=20261113-204046"></script>
-<script src="enigme.js?v=20261113-204046"></script>
+<script src="pantheon.js?v=20261113-210453"></script>
+<script src="tuto.js?v=20261113-210453"></script>
+<script src="deux.js?v=20261113-210453"></script>
+<script src="invasion.js?v=20261113-210453"></script>
+<script src="enigme-table.js?v=20261113-210453"></script>
+<script src="forge.js?v=20261113-210453"></script>
+<script src="semaine.js?v=20261113-210453"></script>
+<script src="enigme.js?v=20261113-210453"></script>
 </body>
 </html>

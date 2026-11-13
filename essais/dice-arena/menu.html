@@ -8,7 +8,7 @@
 <title>La Guilde des Runes</title>
 <script>
 // Même mécanisme que le Duel : une nouvelle version = rechargement tout seul à l'ouverture (publier.sh change VERSION).
-const VERSION = '20261113-204046';
+const VERSION = '20261113-210453';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-menu-' + v)) { sessionStorage.setItem('recharge-menu-' + v, '1'); location.replace('menu.html?v=' + v); }
@@ -175,8 +175,9 @@ fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.te
 </div>
 <div id="flash"></div>
 
-<script src="semaine.js?v=20261113-204046"></script>
-<script src="donnees.js?v=20261113-204046"></script>
+<script src="semaine.js?v=20261113-210453"></script>
+<script src="musique.js?v=20261113-210453"></script>
+<script src="donnees.js?v=20261113-210453"></script>
 <script>
 // ciel étoilé + runes du portail (symboles, pas des lettres), aux couleurs des héros
 const ciel = document.getElementById('ciel');
@@ -314,10 +315,12 @@ window.addEventListener('pageshow', e => { if (e.persisted) { document.getElemen
 function souffle() { try { const a = new (window.AudioContext || window.webkitAudioContext)(), t = a.currentTime, o = a.createOscillator(), g = a.createGain();
   o.type = 'sine'; o.frequency.setValueAtTime(220, t); o.frequency.exponentialRampToValueAtTime(880, t + .9); g.gain.setValueAtTime(.12, t); g.gain.exponentialRampToValueAtTime(.001, t + 1.1);
   o.connect(g).connect(a.destination); o.start(t); o.stop(t + 1.2); } catch (e) {} }
-function entrer() { const t = document.getElementById('titre'); if (t.classList.contains('part')) return; souffle(); t.classList.add('part'); sessionStorage.setItem('guilde-entre', '1');
+function entrer() { const t = document.getElementById('titre'); if (t.classList.contains('part')) return; souffle(); t.classList.add('part'); sessionStorage.setItem('guilde-entre', '1'); GM.musique('menu');
   setTimeout(() => { t.remove(); document.getElementById('monde').classList.add('vu'); montre(location.hash.slice(1)); proposeTuto(); }, 1000); }
 // déjà entré pendant cette visite (retour du Duel) : on va droit au monde
 if (sessionStorage.getItem('guilde-entre')) { document.getElementById('titre').remove(); document.getElementById('monde').classList.add('vu'); montre(location.hash.slice(1)); }
+// 13/11 soir : musique (titre sur l'écran du portail, puis le monde de la Guilde)
+GM.musique(document.getElementById('titre') ? 'titre' : 'menu'); GM.bouton();
 </script>
 </body>
 </html>
