@@ -24,4 +24,5 @@
 <script>
 function raccord(id) { document.querySelectorAll('audio').forEach(a => { if (a.id !== id) a.pause(); }); const a = document.getElementById(id); const go = () => { a.currentTime = Math.max(0, a.duration - 10); a.play(); }; if (isNaN(a.duration)) a.addEventListener('loadedmetadata', go, { once:true }); else go(); }
 </script>
-</main></body></html>
+</main><script src="musique.js?v=1"></script>
+</body></html>

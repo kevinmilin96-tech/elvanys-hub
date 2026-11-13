@@ -27,4 +27,5 @@ document.querySelectorAll('.m').forEach(m => { const k = m.dataset.k, v = sv[k],
     localStorage.setItem(CLE, JSON.stringify(sv)); m.classList.toggle('fait', !!(sv[k] || sv[k + ' (lien)'])); }); });
 function copier() { const l = [...document.querySelectorAll('.m')].map(m => { const k = m.dataset.k, v = sv[k] && !/^http/.test(sv[k]) ? sv[k] : '', u = sv[k + ' (lien)'] || (/^http/.test(sv[k] || '') ? sv[k] : ''); return `${k} : ${v || '—'}${u ? ' · lien : ' + u : ''}`; });
   const t = 'BRUITAGES GUILDE\n' + l.join('\n'); navigator.clipboard.writeText(t).then(() => alert('Bilan copié : colle-le dans le message pour Claude.')).catch(() => prompt('Copie ce texte :', t)); }
-</script></body></html>
+</script><script src="musique.js?v=1"></script>
+</body></html>

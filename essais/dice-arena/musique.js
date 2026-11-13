@@ -118,5 +118,16 @@ const GM = (() => {
     setTimeout(() => { if (dernierSon < t) api.son('clic'); }, 40); }, true);
   addEventListener('DOMContentLoaded', () => { const fen = document.getElementById('fen'); if (!fen) return; let plein = !!fen.textContent.trim();
     new MutationObserver(() => { const p = !!fen.textContent.trim(); if (p !== plein) { plein = p; const t = Date.now(); setTimeout(() => { if (dernierSon < t || !p) api.son(p ? 'ouvrir' : 'fermer'); }, 30); } }).observe(fen, { childList:true, subtree:true }); });
+  // 13/11 soir (remarque de l'utilisateur : « les deux-points en début de ligne ») : typographie française, espace INSÉCABLE avant : ; ! ? »
+  // et après « dans tout texte affiché (y compris écrit à la volée : bulles, fenêtres, chroniques) ; jamais dans le code, les champs ou les styles
+  const NB = '\u00a0', SAUTE = /^(SCRIPT|STYLE|TEXTAREA|INPUT|CODE|PRE)$/;
+  function insecables(racine) {
+    if (!racine) return; const w = document.createTreeWalker(racine, NodeFilter.SHOW_TEXT); let n;
+    while ((n = w.nextNode())) { const p = n.parentNode; if (p && SAUTE.test(p.nodeName)) continue;
+      const t = n.data, u = t.replace(/[ \t]+([:;!?»])/g, NB + '$1').replace(/«[ \t]+/g, '«' + NB); if (u !== t) n.data = u; }
+  }
+  addEventListener('DOMContentLoaded', () => { insecables(document.body);
+    new MutationObserver(ms => ms.forEach(x => { if (x.type === 'characterData') { const p = x.target.parentNode; if (p) insecables(p); } else x.addedNodes.forEach(a => insecables(a.nodeType === 3 ? a.parentNode : a)); }))
+      .observe(document.body, { childList:true, subtree:true, characterData:true }); });
   return api;
 })();

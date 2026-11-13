@@ -225,5 +225,6 @@ const lireRec = () => { try { return JSON.parse(localStorage.getItem(CLE + '-rec
 function records() { const l = lireRec(); fenetre(`<h2>🏆 Mes expéditions (${l.length})</h2>${l.length ? `<table>${l.map(r => `<tr><td>${r.gagne ? '🏆' : '💀'} ${new Date(r.quand).toLocaleDateString('fr-FR')} · ${HEROS[r.heros].nom} · ${r.escales} escale${r.escales > 1 ? 's' : ''}</td><td>${r.score}</td></tr>`).join('')}</table>` : '<p>Aucune expédition finie.</p>'}<div class="choixh"><button onclick="fermer()">Fermer</button></div>`); }
 accueil();
 </script>
+<script src="musique.js?v=1"></script>
 </body>
 </html>

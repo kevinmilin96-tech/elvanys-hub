@@ -8,7 +8,7 @@
 <title>La Guilde des Runes</title>
 <script>
 // Même mécanisme que le Duel : une nouvelle version = rechargement tout seul à l'ouverture (publier.sh change VERSION).
-const VERSION = '20261113-215322';
+const VERSION = '20261113-215620';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-menu-' + v)) { sessionStorage.setItem('recharge-menu-' + v, '1'); location.replace('menu.html?v=' + v); }
@@ -188,9 +188,9 @@ fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.te
 </div>
 <div id="flash"></div>
 
-<script src="semaine.js?v=20261113-215322"></script>
-<script src="musique.js?v=20261113-215322"></script>
-<script src="donnees.js?v=20261113-215322"></script>
+<script src="semaine.js?v=20261113-215620"></script>
+<script src="musique.js?v=20261113-215620"></script>
+<script src="donnees.js?v=20261113-215620"></script>
 <script>
 // ciel étoilé + runes du portail (symboles, pas des lettres), aux couleurs des héros
 const ciel = document.getElementById('ciel');
@@ -282,7 +282,7 @@ function montre(id) {
   document.getElementById('retour').classList.toggle('vu', !!courant);
   document.getElementById('heros').style.display = courant ? 'none' : '';
   car.innerHTML = E.portes.map((p, i) => `<div class="porte ${p.ferme ? 'ferme' : ''}" data-i="${i}">
-    <div class="halo"></div><div class="dedans ${p.avenir ? 'tourne' : ''}">${dessin(p)}${p.ferme ? '<div class="verrou"><img src="menu-recu/cadenas.webp?v=1" alt="Verrouillé"></div>' : ''}</div>
+    <div class="halo"></div><div class="dedans ${p.avenir ? 'tourne' : ''}">${dessin(p)}${p.ferme ? '<div class="verrou"><img src="menu-recu/cadenas.webp?v=2" alt="Verrouillé"></div>' : ''}</div>
     <img class="arche" src="menu-recu/arche-vide.webp?v=1" alt=""><img class="runes" src="menu-recu/fx-runes.webp?v=1" alt=""><div class="reflet"></div>
     ${p.ferme ? `<span class="bandeau">${p.ferme}</span>` : p.avenir ? '<span class="bandeau">À venir</span>' : ''}
     <div class="plaque ${p.nom.length > 13 ? 'long' : ''}">${p.nom}</div></div>`).join('');
