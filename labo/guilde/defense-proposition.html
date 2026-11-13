@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>La Défense de la porte · règles à valider</title>
+<style>
+body{font-family:Georgia,serif;background:#16112a;color:#efe6cf;margin:0;padding:4vw;line-height:1.5}
+h1{color:#f3c96b;font-size:1.4em}h2{color:#f3c96b;margin-top:1.5em;font-size:1.15em}
+.b{background:#241b3f;border:1px solid #4a3a73;border-radius:12px;padding:3vw 4vw;margin:3vw 0}
+.c{background:#2f2650;border-left:3px solid #f3c96b;padding:2vw 3vw;margin:2vw 0;font-size:.95em}
+table{border-collapse:collapse;margin:2vw 0}td,th{border:1px solid #4a3a73;padding:1.2vw 2.4vw;text-align:center}
+.plateau{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5vw;max-width:70vw;margin:3vw auto}
+.plateau div{aspect-ratio:1;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:5vw}
+.route{background:#3a2a14;border:1px dashed #c9893f}.case{background:#1f3b2b;border:1px solid #5fb84a}
+.porte{grid-column:1/4;aspect-ratio:auto!important;padding:2vw;background:#5a3a1a;border:2px solid #f3c96b;font-size:4vw!important}
+ul{padding-left:1.2em}li{margin:.35em 0}.t{font-size:.85em;opacity:.8}
+</style></head><body>
+<h1>🏰 La Défense de la porte · version d’essai</h1>
+<p class="t">Proposition du 13/11, d’après la R&amp;D (dés qu’on fusionne façon Random Dice, défense de tour façon Legion TD). Rien n’est codé avant ton accord. Version réduite pour essayer : 6 vagues, 1 boss, 2 héros (Maëlle et Gorm).</p>
+
+<div class="c">En une phrase : <b>les monstres descendent trois chemins vers la porte de la Guilde. Chaque tour, tu lances tes 5 dés et tu choisis : en faire des tours qui restent (et qui fusionnent), ou t’en servir tout de suite comme au Duel (Frappe, Technique, Pouvoir, cartes).</b></div>
+
+<h2>1. Le plateau (téléphone en portrait)</h2>
+<div class="plateau">
+  <div class="route">👺</div><div class="route"></div><div class="route">🐗</div>
+  <div class="route"></div><div class="route">👺</div><div class="route"></div>
+  <div class="route"></div><div class="route"></div><div class="route"></div>
+  <div class="case">🎲3</div><div class="case">🎲3</div><div class="case"></div>
+  <div class="case"></div><div class="case">🎲5</div><div class="case">🎲1</div>
+  <div class="case">🎲2</div><div class="case"></div><div class="case"></div>
+  <div class="porte">🚪 La porte de la Guilde · 20 PV</div>
+</div>
+<ul>
+<li><b>En haut, les 3 chemins</b> (marron) : les monstres apparaissent en haut et descendent d’une case à chaque fin de tour. 4 cases de chemin avant les remparts.</li>
+<li><b>En bas, les remparts</b> : 3 colonnes × 3 rangées = 9 cases pour tes tours (vert).</li>
+<li>Un monstre qui sort du chemin frappe <b>la porte</b> et disparaît. La porte a 20 PV. Si elle tombe, c’est perdu.</li>
+</ul>
+
+<h2>2. Ton tour</h2>
+<ol>
+<li><b>Lance tes 5 dés</b>, 2 relances gratuites (comme au Duel).</li>
+<li><b>Utilise tes dés</b>, dans l’ordre que tu veux :
+<ul>
+<li><b>Bâtir</b> : pose un dé sur une case libre des remparts : il devient une <b>tour</b> de cette valeur, qui reste d’un tour à l’autre.</li>
+<li><b>Fusionner</b> : glisse une tour (ou un dé de ta main) sur une tour <b>voisine de même valeur</b> : elles deviennent une seule tour de valeur +1. Deux 1 → un 2, deux 2 → un 3… Ça libère une case et ça ne coûte rien.</li>
+<li><b>Deux 6 → une RUNE</b> : la tour la plus forte, propre à ton héros (voir plus bas).</li>
+<li><b>Frapper tout de suite</b>, exactement comme au Duel : Frappe (dés identiques), Technique (suite), Pouvoir et Ultime de ton héros, sur un monstre du chemin.</li>
+<li><b>Jouer une carte</b> de ta main (PC + dé demandé), par exemple le Marteau de forge sur un monstre.</li>
+<li><b>Vendre</b> un dé : +1 PC.</li>
+</ul></li>
+<li><b>Déplacer une tour</b> d’une case (une fois par tour), pour préparer une fusion.</li>
+<li><b>Fin du tour</b> : chaque tour tire sur le monstre le plus avancé de sa colonne ; puis les monstres avancent d’une case.</li>
+</ol>
+<div class="c">Le vrai dilemme : <b>bâtir</b> (fort plus tard, et il faut de la place) ou <b>frapper</b> (fort maintenant). Et quand les 9 cases sont pleines, il faut fusionner pour respirer.</div>
+
+<h2>3. La puissance d’une tour</h2>
+<p>Pour que fusionner soit toujours une bonne affaire, la puissance <b>double</b> à chaque niveau :</p>
+<table><tr><th>Tour</th><td>1</td><td>2</td><td>3</td><td>4</td><td>5</td><td>6</td><td>Rune</td></tr>
+<tr><th>Dégâts par tir</th><td>1</td><td>2</td><td>4</td><td>8</td><td>16</td><td>32</td><td>spéciale</td></tr></table>
+<p class="t">Deux tours de 3 (4 + 4 = 8) deviennent une tour de 4 (8) : rien de perdu, et une case libérée. Un 6 tiré directement est donc précieux (32) : c’est la chance du lancer ; les PV des monstres seront réglés au simulateur.</p>
+
+<h2>4. Les deux héros de l’essai</h2>
+<div class="b"><b>🔨 Maëlle, la forgeronne</b>
+<ul>
+<li><b>Métal chaud</b> (passif) : ses tours de 5 et de 6 tirent +2.</li>
+<li><b>Pouvoir</b> (3 dés identiques) : dégâts égaux à leur somme sur un monstre.</li>
+<li><b>Ultime</b> (3 dés de 4 ou plus, jauge pleine, 3 PC) : 16 dégâts à un monstre et toutes ses tours tirent deux fois ce tour.</li>
+<li><b>Rune : l’Enclume runique</b> : frappe 32 TOUS les monstres de sa colonne.</li>
+</ul></div>
+<div class="b"><b>📯 Gorm, le sonneur de cor</b>
+<ul>
+<li><b>Écho du cor</b> (passif) : chaque fusion donne +2 aux tours voisines jusqu’à la fin du tour.</li>
+<li><b>Pouvoir</b> (4 dés tous pairs ou tous impairs) : 10 dégâts à un monstre et toutes ses tours +2 ce tour.</li>
+<li><b>Ultime</b> (3 dés tous pairs ou tous impairs, jauge pleine, 3 PC) : 14 dégâts au monstre de tête de chaque chemin.</li>
+<li><b>Rune : le Grand Cor</b> : tire 32, et donne +8 à toutes les tours voisines.</li>
+</ul></div>
+<p class="t">La jauge d’Ultime se remplit à chaque monstre tué. Les cartes : celles du héros qui frappent ou aident (Marteau, Étincelles, Lame trempée sur une tour, Note aiguë…), adaptées aux monstres et aux tours. Plus tard : les 4 autres héros (Aldric protège la porte, Oria tire dans les colonnes voisines, Pip et sa Louve, Zéphine qui enflamme).</p>
+
+<h2>5. Les vagues</h2>
+<ul>
+<li><b>6 vagues</b>, de plus en plus fournies ; entre deux vagues, un tour de répit et Corbin qui commente.</li>
+<li>Les monstres : <b>Gobelin</b> (peu de PV, rapide : avance de 2 cases), <b>Sanglier</b> (beaucoup de PV, lent), <b>Porte-bouclier</b> (chaque tir sur lui fait 3 de moins), <b>Chauve-souris</b> (vole : passe au-dessus de la première tour de sa colonne).</li>
+<li><b>Vague 6 : le Titan de feu</b> (le boss de l’Odyssée) : beaucoup de PV, et chaque tour il <b>fait fondre</b> la tour la plus faible de sa colonne (elle perd 1 niveau).</li>
+<li>Victoire = la porte tient jusqu’à la chute du Titan. Score = PV de la porte restants + vagues sans dégâts. Trophée au Panthéon.</li>
+</ul>
+
+<h2>6. Ce qui ne change pas</h2>
+<ul><li>Les dés à 6 faces, les 2 relances, les PC, la vente d’un dé, Frappe et Technique, Pouvoir, Ultime, les cartes, la jauge, Corbin.</li>
+<li>Tout en tour par tour : rien ne bouge tant que tu n’as pas touché « Fin du tour ». Aucun serveur.</li></ul>
+
+<h2>7. Plus tard (pas dans l’essai)</h2>
+<ul><li>Les 4 autres héros et leurs Runes ; 10 vagues et 2 boss ; la Défense à deux sur le même téléphone (une colonne chacun, fusion entre alliés) ; « ton équipe de dés » à améliorer d’une partie à l’autre.</li></ul>
+<p><a href="a-valider.html" style="color:#7cc8ff">← Pages à valider</a></p>
+</body></html>
