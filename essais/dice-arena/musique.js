@@ -81,6 +81,7 @@ const GM = (() => {
         #gm-param .l>span{flex:1} #gm-param input[type=range]{width:100%;accent-color:#f3c96b;margin:4px 0 0}
         #gm-param .t{min-width:76px;border:none;border-radius:20px;padding:7px 12px;font:bold 14px Georgia;background:#3a3570;color:#fff} #gm-param .t.on{background:#f3c96b;color:#2a1a08}
         #gm-param .a{display:block;margin:12px 0 0;padding:11px;border-radius:12px;background:#2a2650;border:1px solid #4b4580;color:#fff;text-decoration:none;text-align:center}
+        #gm-param button.a{width:100%;font:15px Georgia;cursor:pointer} #gm-param .a.q{background:#4a1b24;border-color:#a3404a}
         #gm-param .f{display:block;width:100%;margin-top:12px;padding:10px;border:none;border-radius:12px;background:#f3c96b;color:#2a1a08;font:bold 15px Georgia}`; document.head.appendChild(st); }
       const sonOn = () => localStorage.getItem('guilde-son') !== '0', rapide = () => localStorage.getItem('guilde-vitesse') === 'rapide';
       z = document.createElement('div'); z.id = 'gm-param';
@@ -88,6 +89,7 @@ const GM = (() => {
         <div class="l"><span>🎵 Musique<input type="range" min="0" max="100" value="${Math.round(volM() * 100)}" data-v="guilde-vol-musique"></span><button class="t ${actif ? 'on' : ''}" data-k="m">${actif ? 'Allumée' : 'Éteinte'}</button></div>
         <div class="l"><span>🔊 Bruitages<input type="range" min="0" max="100" value="${Math.round(volS() * 100)}" data-v="guilde-vol-sons"></span><button class="t ${sonOn() ? 'on' : ''}" data-k="s">${sonOn() ? 'Allumés' : 'Éteints'}</button></div>
         <div class="l"><span>⚡ Vitesse des animations</span><button class="t on" data-k="v">${rapide() ? 'Rapide' : 'Normale'}</button></div>
+        ${window.GM_QUITTER ? `<button class="a q" data-k="q">🚪 ${window.GM_QUITTER.t}</button>` : ''}
         <a class="a" href="duel.html?tuto=1">🎓 Rejouer le tutoriel</a>
         <button class="f" data-k="x">Fermer</button></div>`; };
       dessine(); document.body.appendChild(z);
@@ -95,6 +97,7 @@ const GM = (() => {
         if (e.target === z) { z.remove(); return; }
         const k = e.target.dataset && e.target.dataset.k; if (!k) return;
         if (k === 'x') { z.remove(); return; }
+        if (k === 'q') { z.remove(); window.GM_QUITTER.f(); return; } // 14/11 : quitter une partie en cours (posé par la page du combat)
         if (k === 'm') api.bascule();
         if (k === 's') { localStorage.setItem('guilde-son', sonOn() ? '0' : '1'); api.son('ok'); }
         if (k === 'v') localStorage.setItem('guilde-vitesse', rapide() ? 'normale' : 'rapide');

@@ -622,7 +622,7 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261113-230830';
+const VERSION = '20261113-231047';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -641,11 +641,11 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261113-230830"></script>
-<script src="musique.js?v=20261113-230830"></script>
-<script src="donnees.js?v=20261113-230830"></script>
-<script src="odyssee.js?v=20261113-230830"></script>
-<script src="chronique.js?v=20261113-230830"></script>
+<script src="cartes.js?v=20261113-231047"></script>
+<script src="musique.js?v=20261113-231047"></script>
+<script src="donnees.js?v=20261113-231047"></script>
+<script src="odyssee.js?v=20261113-231047"></script>
+<script src="chronique.js?v=20261113-231047"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -1507,8 +1507,7 @@ function dessine() {
   document.getElementById('app').classList.toggle('compagnon', !!(S.coop && J.ordi));
   document.getElementById('app').innerHTML = `
   <div class="salle"><span class="st">${S.coop ? `<b>⚔️ L’Invasion</b> · ${J.ordi ? `${J.nom} (compagnon) joue…` : J.qui === 'toi' ? 'à toi' : `au tour de ${J.nom}`} · ${S.salle.n}` : S.ody ? `<b>${S.ody.titre}</b> · ${S.salle.n} : ${S.salle.d}${J.reliques.length ? ' <span class="rel">' + J.reliques.map(r => `<i title="${RELIQUES[r].n}" onclick="aideRelique('${r}')">${RELIQUES[r].e}</i>`).join('') + '</span>' : ''}` : `<b>${S.salle.n}</b> · ${S.salle.d}`}</span><span class="sons">
-    <button class="sonbt ${sonOn ? '' : 'off'}" onclick="basculeSon()" aria-label="Bruitages" title="Bruitages"><svg viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/>${sonOn ? '<path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>' : '<path d="M16 9l5 6M21 9l-5 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>'}</svg></button>
-    <button class="sonbt ${musOn ? '' : 'off'}" onclick="basculeMusique()" aria-label="Musique" title="Musique"><svg viewBox="0 0 24 24"><path d="M9 17V5l11-2v12" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="6.5" cy="17.5" r="2.8" fill="currentColor"/><circle cx="17.5" cy="15.5" r="2.8" fill="currentColor"/>${musOn ? '' : '<path d="M3 3l18 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>'}</svg></button></span></div>
+    <button class="sonbt" onclick="GM.parametres()" aria-label="Paramètres" title="Paramètres" style="font-size:18px;line-height:1">⚙️</button></span></div>
   <div class="plateau tapis unique ${S.lieu ? 'avecLieu' : ''}">${S.lieu ? `<div class="champLieu lieu-${S.lieu}"></div>` : ''}${barre(O, true)}${front(O, true)}${front(J, false)}${barre(J, false)}
     ${colonneActions(J, h)}
     <div class="des" ontouchstart="glisseDebut(event)" ontouchend="glisseFin(event)">${J.des.map((d, i) => `<div class="d ${sel.includes(d) ? 'sel' : ''} ${d.pose ? 'pose' : ''} ${d.mod ? 'mod' : ''} ${J.aLancer ? 'cache' : ''} ${i === J.neuf && (J.aLancer || Date.now() < (J.neufJusque || 0)) ? 'neuf' : ''}" onclick="choisirDe(${i})"><img src="${FACE(J.id, d.v || 1)}" alt="${d.v || '?'}">${d.sp && !J.aLancer && typeof FACES_FORGE !== 'undefined' ? `<span class="spf">${FACES_FORGE[d.sp].e}</span>` : ''}<div class="sac">${i === J.neuf && (J.aLancer || Date.now() < (J.neufJusque || 0)) ? '✨ neuf' : sacPastilles(J, d)}</div></div>`).join('')}${[...Array(Math.max(0, 5 - J.des.length)).keys()].map(k => { const i = J.des.length + k, t = i - 1;
@@ -1728,6 +1727,13 @@ function choixMusique() { if (S.tuto) return 'tuto'; if (S.coop) return 'boss'; 
 function demarreMusique() { if (!S || S.auto || S.fini) return; GM.musique(choixMusique()); }
 function arreteMusique(fondu) { GM.stop(fondu); }
 function jingleFin() { if (S && S.fini) GM.jingle(S.fini === 'gagne' ? 'victoire' : 'defaite'); }
+// 14/11 (l'utilisateur : « je ne peux pas quitter ») : le ⚙️ du combat ouvre les Paramètres, avec « Quitter »
+window.GM_QUITTER = { get t() { return S && S.ody ? 'Quitter (le combat t’attendra)' : 'Quitter la partie'; }, f:() => quitterPartie() };
+function quitterPartie() {
+  const ou = !S ? 'menu.html' : S.ody ? 'menu.html' : S.tuto ? 'menu.html' : S.coop ? 'menu.html' : 'menu.html#arene';
+  if (!S || S.fini || S.ody) { location.href = ou; return; } // l'Odyssée garde le combat : on le reprend en revenant
+  fenetre(`<h2>Quitter la partie ?</h2><p>La partie en cours sera perdue.</p><div class="choixh"><button onclick="fermer()">Continuer</button><button onclick="location.href='${ou}'">🚪 Quitter</button></div>`);
+}
 function basculeMusique() { musOn = GM.bascule(); if (musOn) demarreMusique(); dessine(); }
 function basculeSon() { sonOn = !sonOn; localStorage.setItem('guilde-son', sonOn ? '1' : '0'); if (sonOn) son('carte'); dessine(); }
 function ac() { if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return null; } } if (AC.state === 'suspended') AC.resume(); return AC; }
@@ -2015,14 +2021,14 @@ async function joueFX() {
 // toucher l'écran pendant les animations les accélère
 document.addEventListener('pointerdown', () => { if (fxOn && !(S && S.tuto)) fxVite = .5; }, true); // 14/11 : plus d'accélération dans le tutoriel
 </script>
-<script src="profil.js?v=20261113-230830"></script>
-<script src="pantheon.js?v=20261113-230830"></script>
-<script src="tuto.js?v=20261113-230830"></script>
-<script src="deux.js?v=20261113-230830"></script>
-<script src="invasion.js?v=20261113-230830"></script>
-<script src="enigme-table.js?v=20261113-230830"></script>
-<script src="forge.js?v=20261113-230830"></script>
-<script src="semaine.js?v=20261113-230830"></script>
-<script src="enigme.js?v=20261113-230830"></script>
+<script src="profil.js?v=20261113-231047"></script>
+<script src="pantheon.js?v=20261113-231047"></script>
+<script src="tuto.js?v=20261113-231047"></script>
+<script src="deux.js?v=20261113-231047"></script>
+<script src="invasion.js?v=20261113-231047"></script>
+<script src="enigme-table.js?v=20261113-231047"></script>
+<script src="forge.js?v=20261113-231047"></script>
+<script src="semaine.js?v=20261113-231047"></script>
+<script src="enigme.js?v=20261113-231047"></script>
 </body>
 </html>
