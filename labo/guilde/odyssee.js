@@ -136,10 +136,10 @@ Object.assign(BOSS, {
 });
 // les îles de l'Odyssée : ce qui change d'un acte à l'autre (monstres, élites, boss, décors des combats, textes)
 const ILES = {
-  brulees:{ dur:1.1, acte:'Acte I', nom:'les Terres brûlées', court:'Terres brûlées', boss:'titan', bossNom:'Le Titan de feu',
+  brulees:{ dur:1, acte:'Acte I', nom:'les Terres brûlées', court:'Terres brûlées', boss:'titan', bossNom:'Le Titan de feu',
     pools:[['gobelin', 'loup', 'salamandre'], ['loup', 'golem', 'salamandre', 'cultiste'], ['golem', 'cultiste', 'elementaire']], elites:['chefgobelin', 'drake', 'colosse'],
     lieux:{ monstre:'cendres', fort:'lave', elite:'ruines', boss:'cratere' }, evenements:null },
-  givre:{ dur:1.12, acte:'Acte II', nom:'l’île du Givre', court:'Île du Givre', boss:'vouivre', bossNom:'La Vouivre des glaces',
+  givre:{ dur:1.04, acte:'Acte II', nom:'l’île du Givre', court:'Île du Givre', boss:'vouivre', bossNom:'La Vouivre des glaces',
     pools:[['lutin', 'loupblanc', 'esprit'], ['loupblanc', 'ours', 'esprit', 'chaman'], ['ours', 'chaman', 'golemglace']], elites:['yeti', 'harpie', 'sentinelle'],
     lieux:{ monstre:'neige', fort:'glace', elite:'cristal', boss:'sommet' }, evenements:['voyageur', 'autelbrise', 'marchandambulant', 'cartographe', 'statue', 'ermite', 'lacgele', 'cabane', 'aurore', 'traineau'] },
 };
@@ -209,7 +209,7 @@ Object.assign(BOSS, {
     ultime:{ n:'Le grand Vide', txt:'3 dés', d:'12 dégâts au héros, et le Vide le dévore tout de suite.', cond:vs => vs.length === 3, cible:'ennemi', f:J => { const D = adv(J); degats({ J:D }, 12); corrompt(D, 9); } },
     renforts:[] },
 });
-ILES.abime = { dur:1.15, acte:'Acte III', nom:'l’Abîme du Vide', court:'Abîme du Vide', boss:'roi', bossNom:'Le Roi sans visage',
+ILES.abime = { dur:1.1, acte:'Acte III', nom:'l’Abîme du Vide', court:'Abîme du Vide', boss:'roi', bossNom:'Le Roi sans visage',
   pools:[['ombre', 'rongeur', 'oeil'], ['rongeur', 'oeil', 'chevalier', 'tisseuse'], ['chevalier', 'tisseuse', 'colossevide']], elites:['heraut', 'miroir', 'gardien'],
   lieux:{ monstre:'vide', fort:'faille', elite:'ruinesv', boss:'trone' }, evenements:['voyageur', 'autelbrise', 'marchandambulant', 'cartographe', 'statue', 'ermite', 'reflet', 'pontetoiles', 'voix', 'bibliotheque'] };
 
@@ -246,6 +246,23 @@ function feuDeCamp(r, c, option) {
 const NEMESIS_CLE = 'guilde-nemesis';
 const lireNemesis = () => { try { return JSON.parse(localStorage.getItem(NEMESIS_CLE) || '{}'); } catch (e) { return {}; } };
 function ecrireNemesis(N) { if (typeof localStorage !== 'undefined') localStorage.setItem(NEMESIS_CLE, JSON.stringify(N)); }
+
+// ================================================================== 13/11 : les OMBRES MAJEURES et l'ANOMALIE (livre papier, pages 16-18) — combats de monstres et d'élites seulement
+const OMBRES = [null,
+  { n:'Égide du Vide', d:'L’ennemi ignore toutes les altérations (Poison, Saignement, Handicap…).' },
+  { n:'Voile d’invisibilité', d:'L’ennemi ne prend aucun dégât avant son premier tour.' },
+  { n:'Drain de vitalité', d:'L’ennemi se soigne de la moitié des dégâts qu’il inflige à ton héros.' },
+  { n:'Frénésie des ténèbres', d:'L’ennemi fait +3 dégâts, mais perd 5 PV à la fin de chacun de ses tours.' },
+  { n:'Peau de l’Abîme', d:'L’ennemi réduit chaque dégât reçu de 3.' },
+  { n:'Double menace', d:'L’ennemi lance un dé de plus.' },
+];
+const ANOMALIE = [null, '+2 PC au départ', '+5 dégâts sur ses attaques', '+20 PV'];
+function tireOmbre(r, cb) {
+  if (cb.nemesis || cb.type === 'boss') return;
+  const R = hasard(r), d = () => 1 + Math.floor(R() * 6), j = d();
+  if (j === 6) { cb.ombre = d(); return; }
+  if (j === 4) { cb.anomalie = 1; while (cb.anomalie < 3 && d() === 4) cb.anomalie++; }
+}
 const ACTES_CLE = 'guilde-actes';
 const actesFaits = () => { try { return JSON.parse(localStorage.getItem(ACTES_CLE) || '{}'); } catch (e) { return {}; } };
 function braiseTitan(D) { D.braiseT = (D.braiseT || 0) + 1; log(`🔥 Braise ${D.braiseT}/3 sur ${D.nom}.`); if (D.braiseT >= 3) { D.braiseT = 0; log('🔥 Les Braises explosent : 6 dégâts !'); degats({ J:D }, 6, true); } }
@@ -491,11 +508,13 @@ function ecrireOdyssee(r) { if (r) localStorage.setItem(ODY_CLE, JSON.stringify(
 function lireCollection() { try { return JSON.parse(localStorage.getItem(COLLECTION_CLE) || '[]'); } catch (e) { return []; } }
 function ajouteCollection(cles) { const c = lireCollection(); let n = 0; cles.forEach(k => { if (!c.includes(k) && CARTES[k] && rarete(k) !== 'm') { c.push(k); n++; } }); localStorage.setItem(COLLECTION_CLE, JSON.stringify(c)); return n; }
 function lireRecords() { try { return JSON.parse(localStorage.getItem(RECORDS_CLE) || '[]'); } catch (e) { return []; } }
+// 13/11 : PV de départ en Odyssée héros par héros (1,8 × les PV du Duel au départ ; réglé au simulateur sur les trois îles)
+const ODY_PV = { maelle:1.95, aldric:2, pip:1.6, oria:1.85, gorm:2.5, zephine:1.95 };
 function nouvelleOdyssee(heros, graine, acte, niveau) {
   acte = ILES[acte] ? acte : 'brulees';
   graine = graine || ('ile-' + Math.random().toString(36).slice(2, 8));
   const ile = genereIle(graine, null, acte); if (!ile) return null;
-  const h = HEROS[heros], pv = Math.round(h.pv * 1.8); // en Odyssée le héros a 1,8 × ses PV du Duel (le papier disait 75 pour 44) : il enchaîne 5 à 6 combats sans soin automatique
+  const h = HEROS[heros], pv = Math.round(h.pv * (ODY_PV[heros] || 1.8)); // en Odyssée le héros a 1,8 × ses PV du Duel (le papier disait 75 pour 44) : il enchaîne 5 à 6 combats sans soin automatique
   const run = { v:1, heros, graine, acte, asc:Math.max(0, Math.min(10, niveau || 0)), ile:ile.cases, pos:{ ...ile.dep }, porte:ile.porte, bossPos:ile.boss, direct:ile.direct, debut:Date.now(),
     pv, pvMax:pv, or:OR_DEPART, vivres:VIVRES_DEPART, deck:deckBase(heros), reliques:[], sacoche:['soin'], benes:[], males:[], fragments:0, cles:0,
     stats:{ cases:1, combats:0, victoires:0, tours:0, defis:0, cartesVues:[] }, combat:null, journal:[`Débarquement sur ${ILES[acte].nom} (${h.nom})${niveau ? ` · Ascension ${niveau}` : ''}.`] };
@@ -538,6 +557,7 @@ function lanceCombat(r, c) {
   if (ennemi === 'heros') { const autres = ORDRE.filter(h => h !== r.heros); ennemi = tire(R, autres); }
   const L = ILE(r).lieux, lieu = c.t === 'boss' ? L.boss : c.t === 'elite' ? L.elite : (c.niv || 1) >= 3 ? L.fort : L.monstre; // le décor du combat
   r.combat = { id:Math.random().toString(36).slice(2), x:c.x, y:c.y, type:c.t, ennemi, niv:c.niv || 1, nemesis:c.nemesis ? c.nemNiv || 1 : 0, renfort:c.renfort || null, defi:tire(R, DEFIS).id, lieu, resultat:null };
+  tireOmbre(r, r.combat);
   return r.combat;
 }
 // après un combat gagné : or, fragment, clé, défi, tirage de cartes. Retourne ce qu'il y a à montrer.
@@ -558,8 +578,10 @@ function recompenseCombat(r) {
   r.or += or;
   const out = { gagne:true, or, defiOk:res.defiOk, ennemi:HEROS[cb.ennemi].nom, type:cb.type, nemesisVaincue };
   if (cb.type === 'elite') { r.fragments++; r.cles++; out.fragment = true; if (r.sacoche.length < 2) { r.sacoche.push('soin'); out.potion = true; } }
+  if (cb.ombre) { r.or += 40; out.or += 40; out.ombre = OMBRES[cb.ombre].n; r.journal.push(`🌑 Ombre majeure (${OMBRES[cb.ombre].n}) vaincue : double butin !`); }
+  if (cb.anomalie) { const g = cb.anomalie === 3 ? 80 : 10 * cb.anomalie; r.or += g; out.or += g; out.anomalie = cb.anomalie; r.journal.push(`🌀 Anomalie (niveau ${cb.anomalie}) vaincue : +${g} or.`); }
   if (cb.type === 'boss') { out.boss = true; r.journal.push(`👑 ${ILE(r).bossNom} est tombé${r.acte === 'givre' ? 'e' : ''} ! +${or} or.`); return out; }
-  out.draft = draft(hasard(r), cb.type === 'elite' ? 1 : 0, r.deck, r.heros); if (asc(r, 7)) out.draft = out.draft.slice(0, 2);
+  out.draft = draft(hasard(r), cb.type === 'elite' ? 1 : 0, r.deck, r.heros); if (asc(r, 7)) out.draft = out.draft.slice(0, 2); if (cb.ombre) out.draft2 = draft(hasard(r), 1, r.deck, r.heros); if (cb.anomalie === 3) out.garde2 = true;
   r.journal.push(`🏆 ${out.ennemi} vaincu : +${or} or${out.fragment ? ', un fragment de rune et une clé' : ''}.`);
   return out;
 }

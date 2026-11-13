@@ -18,12 +18,12 @@ const RECRUES = {
   chien:     { n:'Chien de garde', fam:'garde', role:'rempart', a:2, v:5, barriere:true, t:1 },
   guetteur:  { n:'Guetteur', fam:'garde', role:'rempart', a:2, v:7, barriere:true, t:2 },
   gardien:   { n:'Gardien de la porte', fam:'garde', role:'rempart', a:3, v:9, barriere:true, t:3, gros:true },
-  eclaireuse:{ n:'Éclaireuse', fam:'ombre', role:'lame', a:3, v:4, t:1 },
-  renard:    { n:'Renard du col', fam:'ombre', role:'lame', a:3, v:3, t:1 },
-  lynx:      { n:'Lynx des fourrés', fam:'ombre', role:'lame', a:4, v:3, t:2 },
-  homoncule: { n:'Homoncule', fam:'ombre', role:'tireur', a:2, v:4, poison:1, t:2, d:'Poison : sa cible perd 1 PV par round.' },
+  eclaireuse:{ n:'Éclaireuse', fam:'ombre', role:'lame', a:3, v:5, t:1 },
+  renard:    { n:'Renard du col', fam:'ombre', role:'lame', a:3, v:4, t:1 },
+  lynx:      { n:'Lynx des fourrés', fam:'ombre', role:'lame', a:4, v:4, t:2 },
+  homoncule: { n:'Homoncule', fam:'ombre', role:'tireur', a:2, v:5, poison:1, t:2, d:'Poison : sa cible perd 1 PV par round.' },
   milicien:  { n:'Milicien', fam:'clan', role:'lame', a:2, v:4, t:1 },
-  tambour:   { n:'Tambour de clan', fam:'clan', role:'soutien', a:1, v:4, tambour:true, t:1, d:'Les autres membres de l’équipage ont +1 attaque.' },
+  tambour:   { n:'Tambour de clan', fam:'clan', role:'soutien', a:1, v:4, tambour:true, t:1, d:'Les autres membres de l’équipage ont +1 attaque (plusieurs Tambours ne s’additionnent pas).' },
   flute:     { n:'Joueuse de flûte', fam:'clan', role:'tireur', a:2, v:3, t:1 },
   colosse:   { n:'Colosse des collines', fam:'clan', role:'lame', a:5, v:8, charge:true, t:3, gros:true },
   faon:      { n:'Faon des clairières', fam:'clairiere', role:'soutien', a:1, v:3, soigneur:2, t:1, d:'Soigne de 2 l’allié le plus blessé à chaque round.' },
@@ -40,10 +40,10 @@ const prixRecrue = k => RECRUES[k].gros ? 4 : 3;
 const CAPITAINES = {
   maelle: { n:'La forge du bord', d:'La Forge compte une recrue de plus ; chaque victoire donne +1 attaque à la recrue de devant la plus faible.' },
   aldric: { n:'Serment', d:'Deux fois par combat, une recrue qui devrait tomber reste à 1 PV.' },
-  pip:    { n:'La meute', d:'La Louve (3 / 5, Ombre) rejoint l’équipage gratuitement à l’escale 3 ; l’Ombre compte une recrue de plus.' },
+  pip:    { n:'La meute', d:'La Louve (3 / 6, Ombre) rejoint l’équipage gratuitement à l’escale 3 ; l’Ombre compte une recrue de plus.' },
   oria:   { n:'Les éclaireurs', d:'Les Tireurs gagnent +1 attaque ; le recruteur montre une recrue de plus.' },
-  gorm:   { n:'Cor de guerre', d:'Au round 1, tout l’équipage a +1 attaque ; le Clan compte une recrue de plus.' },
-  zephine:{ n:'Transmutation', d:'À chaque passage au port, change jusqu’à deux recrues contre d’autres de même prix (même étoile).' },
+  gorm:   { n:'Cor de guerre', d:'Au round 1, tout l’équipage a +1 attaque.' },
+  zephine:{ n:'Transmutation', d:'À chaque passage au port, change jusqu’à deux recrues contre d’autres de même prix et de ta famille la plus nombreuse (même étoile).' },
 };
 const ESCALES2 = [
   { n:'La Crique des gobelins', e:'🏴‍☠️', cle:'crique', type:'monstres' },
@@ -54,7 +54,7 @@ const ESCALES2 = [
   { n:'Le Nid du Titan', e:'👑', cle:'nid', type:'boss' },
 ];
 // les monstres de chaque escale (une rangée devant, une derrière) ; DUR_EXP règle la difficulté au simulateur
-const DUR_EXP = [1.1, 1, 1.2, 1, 1.4, 1.45]; // réglé au simulateur le 13/11
+const DUR_EXP = [1.1, 1, 1.2, 1, 1.5, 1.55]; // réglé au simulateur le 13/11
 const MONSTRES_EXP = [
   { av:[['Gobelin', 3, 7], ['Gobelin chef', 3, 9]], ar:[['Gobelin lanceur', 2, 5, 'tireur']] },
   null,
@@ -132,7 +132,10 @@ function relance(X) { if (X.or < 1) return false; X.or--; nouvelleOffre(X); X.ge
 function deplace(X, id, vers) { const p = ouEst(X, id); if (!p) return false; const a = aEn(X, p), b = aEn(X, vers); poseA(X, vers, a); poseA(X, p, b); return true; }
 function transmute(X, id) {
   if (X.heros !== 'zephine' || !X.transmuOk) return null; if (X.transmuOk === true) X.transmuOk = 2; const p = ouEst(X, id); const u = p && aEn(X, p); if (!u || u.key === 'capitaine') return null;
-  const R = hasardX(X), choix = Object.keys(RECRUES).filter(k => k !== u.key && prixRecrue(k) === prixRecrue(u.key));
+  // 13/11 : la recrue transmutée rejoint la famille la plus nombreuse du plateau (sinon une recrue de même prix au hasard)
+  const fam = compteFamilles(X, X.plateau), top = Object.keys(fam).sort((a, b) => fam[b] - fam[a])[0];
+  const R = hasardX(X), memePrix = Object.keys(RECRUES).filter(k => k !== u.key && prixRecrue(k) === prixRecrue(u.key)), deLaFam = memePrix.filter(k => top && RECRUES[k].fam === top && RECRUES[k].fam !== u.fam);
+  const choix = deLaFam.length ? deLaFam : memePrix;
   const n = nouvelleRecrue(tire(R, choix), u.star); poseA(X, p, n); X.transmuOk = X.transmuOk - 1 || false; X.journal.push(`⚗ Transmutation : ${u.n} devient ${n.n}.`); fusionne(X); return n;
 }
 
@@ -141,7 +144,7 @@ function compteFamilles(X, plateau) {
   const c = {}; [...plateau.av, ...plateau.ar].filter(u => u && u.fam).forEach(u => { c[u.fam] = (c[u.fam] || 0) + 1; });
   if (X.heros === 'maelle') c.forge = (c.forge || 0) + ((c.forge || 0) >= 2 ? 1 : 0); // le capitaine aide à passer de 2 à 4, pas de 1 à 2
   if (X.heros === 'pip') c.ombre = (c.ombre || 0) + ((c.ombre || 0) >= 2 ? 1 : 0); // le capitaine aide à passer de 2 à 4, pas de 1 à 2
-  if (X.heros === 'gorm') c.clan = (c.clan || 0) + ((c.clan || 0) >= 2 ? 1 : 0); // le capitaine aide à passer de 2 à 4, pas de 1 à 2
+  // 13/11 : Gorm n'a plus le +1 de famille (le Clan était déjà le plus fort) ; il garde le Cor de guerre
   return c;
 }
 const palier = n => n >= 4 ? 2 : n >= 2 ? 1 : 0;
@@ -151,7 +154,7 @@ const palier = n => n >= 4 ? 2 : n >= 2 ? 1 : 0;
 function combattants(camp, cote) {
   const fam = camp.X ? compteFamilles(camp.X, camp.plateau) : {}, cap = camp.heros, out = [];
   const clan = palier(fam.clan || 0), garde = palier(fam.garde || 0), ombre = palier(fam.ombre || 0);
-  const tambours = [...camp.plateau.av, ...camp.plateau.ar].filter(u => u && u.key === 'tambour').length;
+  const tambours = Math.min(1, [...camp.plateau.av, ...camp.plateau.ar].filter(u => u && u.key === 'tambour').length); // 13/11 : les Tambours ne s'additionnent pas
   ['av', 'ar'].forEach(r => camp.plateau[r].forEach((u, i) => { if (!u) return;
     const base = RECRUES[u.key] || {};
     const c = { ...u, cote, rang:r, pos:i, vmax:0, poisonSur:0, mort:false };
@@ -259,7 +262,7 @@ function joueEscale(X, R) {
   // le port : pièces + intérêts, nouvelle offre (sauf si gelée), Louve de Pip à l'escale 3
   const interet = Math.min(3, Math.floor(X.or / 5)); X.or += 8 + interet; res.gain = 8 + interet + (res.gagne ? 0 : 2); res.interet = interet;
   if (!X.gel) nouvelleOffre(X); X.gel = false; X.transmuOk = true;
-  if (X.heros === 'pip' && X.escale === 2 && !toutes(X).some(u => u.key === 'louve')) { const p = placeLibre(X, 'av'); if (p) { poseA(X, p, { id:uid(), key:'louve', n:'La Louve', fam:'ombre', role:'lame', a:3, v:5, star:0, bonusA:0, bonusV:0 }); res.louve = true; X.journal.push('🐺 La Louve rejoint l’équipage !'); } }
+  if (X.heros === 'pip' && X.escale === 2 && !toutes(X).some(u => u.key === 'louve')) { const p = placeLibre(X, 'av'); if (p) { poseA(X, p, { id:uid(), key:'louve', n:'La Louve', fam:'ombre', role:'lame', a:3, v:6, star:0, bonusA:0, bonusV:0 }); res.louve = true; X.journal.push('🐺 La Louve rejoint l’équipage !'); } }
   return res;
 }
 

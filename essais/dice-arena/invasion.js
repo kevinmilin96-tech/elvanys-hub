@@ -113,3 +113,23 @@ joueAuto = function (J) { if (S && S.coop && S.seve !== undefined && J !== S.O &
 // l'étiquette de la Sève sur le boss
 const _barreReveil = barre;
 barre = function (P, haut) { const h = _barreReveil(P, haut); return S && S.seve !== undefined && P === S.O ? h.replace('<span data-k="pv"', `<span data-k="seve" class="p ${S.seve <= 24 ? 'al' : 'g'}">🌳 Sève ${S.seve} %</span><span data-k="pv"`) : h; };
+
+// =============================================================================================== 13/11 : les OMBRES MAJEURES et l'ANOMALIE (Odyssée)
+const _degatsOmbre = degats;
+degats = function (k, n, ignore) {
+  if (S && S.O && k && !S.fini && n > 0) {
+    const O = S.O;
+    if (k.J === O && !k.u && O.voile) { log('🌑 Voile d’invisibilité : aucun dégât avant son premier tour.'); return; }
+    if (k.J === O && !k.u && O.ombre === 5) { n = Math.max(0, n - 3); if (!n) { log('🌑 Peau de l’Abîme : tout est absorbé.'); return; } }
+    if (S.acteur === O && k.J !== O) { if (O.ombre === 4) n += 3; if ((O.anomalie || 0) >= 2) n += 5; }
+  }
+  const drain = S && S.O && S.O.ombre === 3 && S.acteur === S.O && k && k.J && k.J !== S.O && !k.u, avant = drain ? k.J.pv : 0;
+  _degatsOmbre(k, n, ignore);
+  if (drain && !S.fini) { const r = avant - k.J.pv; if (r > 1) { const g = Math.floor(r / 2); S.O.pv = Math.min(S.O.pvMax, S.O.pv + g); log(`🌑 Drain de vitalité : ${S.O.nom} regagne ${g} PV.`); } }
+};
+const _debutTourOmbre = debutTour;
+debutTour = function (J) { if (S && J === S.O && S.O.voile) { S.O.voile = false; log('🌑 Le Voile d’invisibilité se déchire.'); } _debutTourOmbre(J); };
+const _finTourOmbre = finTour;
+finTour = function (J) { _finTourOmbre(J); if (S && J === S.O && S.O.ombre === 4 && !S.fini) { S.O.pv -= 5; log(`🌑 Frénésie : ${S.O.nom} perd 5 PV.`); fin(); } };
+const _barreOmbre = barre;
+barre = function (P, haut) { const h = _barreOmbre(P, haut); if (!(S && P === S.O && (P.ombre || P.anomalie))) return h; const t = `${P.ombre ? `<span data-k="ombre" class="p al">🌑 ${OMBRES[P.ombre].n}${P.voile ? ' (actif)' : ''}</span>` : ''}${P.anomalie ? `<span data-k="anomalie" class="p al">🌀 Anomalie ${P.anomalie}</span>` : ''}`; return h.replace('<span data-k="pv"', t + '<span data-k="pv"'); };

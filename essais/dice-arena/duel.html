@@ -609,7 +609,7 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261113-065111';
+const VERSION = '20261113-071331';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); location.replace('duel.html?v=' + v); }
@@ -628,10 +628,10 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261113-065111"></script>
-<script src="donnees.js?v=20261113-065111"></script>
-<script src="odyssee.js?v=20261113-065111"></script>
-<script src="chronique.js?v=20261113-065111"></script>
+<script src="cartes.js?v=20261113-071331"></script>
+<script src="donnees.js?v=20261113-071331"></script>
+<script src="odyssee.js?v=20261113-071331"></script>
+<script src="chronique.js?v=20261113-071331"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -1082,6 +1082,7 @@ function nouvellePartie(id, idO, auto) {
   S = { J:joueur(id, false, !!auto), O:joueur(idO, true), salle:SALLES[Math.floor(Math.random() * SALLES.length)], log:[], fini:null, auto:!!auto };
   FX = []; fxApres = []; fxOn = false; arreteMusique();
   // le second joueur (l'ordinateur) compense : 2 PC et 1 carte de plus au départ (v2.4)
+  if (idO === 'roi') { S.O.pv = S.O.pvMax = 42; const h = HEROS.roi; h.garde = h.phases[0].garde; h.pouvoir = h.phases[0].pouvoir; } // 13/11 : le défi du Panthéon, 42 PV en Duel (62 dans l'Odyssée), réglé au simulateur
   pioche(S.J, 4); pioche(S.O, 5); S.O.pc = typeof PC_SECOND === 'number' ? PC_SECOND : 4; // 12/11 nuit : 4 PC (au lieu de 3) : celui qui commence gagnait 56 %, maintenant 52 %
   log(`Salle : ${S.salle.n}. ${S.salle.d}`);
   sel = []; attaquant = null; ciblage = null;
@@ -1118,6 +1119,8 @@ function prepareCombatOdyssee(run, cb, auto) {
   // 13/11 : la difficulté monte d'île en île (coefficient sur les PV des ennemis, réglé au simulateur)
   { const dur = (typeof ILES !== 'undefined' && ILES[run.acte || 'brulees'] && ILES[run.acte || 'brulees'].dur) || 1; if (typeof DUR_TEST === 'number') O.pvMax = Math.round(O.pvMax * DUR_TEST); else O.pvMax = Math.round(O.pvMax * dur);
     // l'Ascension : +10 % à tous, +15 % aux élites (2), +15 % au gardien (5), un dé de plus (9)
+    if (cb.ombre) { O.ombre = cb.ombre; if (cb.ombre === 1) O.purete = 99; if (cb.ombre === 2) O.voile = true; if (cb.ombre === 6) O.desMax = Math.min(5, (O.desMax || 5) + 1); log(`🌑 Ombre majeure : ${OMBRES[cb.ombre].n} — ${OMBRES[cb.ombre].d}`); }
+    if (cb.anomalie) { O.anomalie = cb.anomalie; O.pc += 2; if (cb.anomalie >= 3) O.pvMax += 20; log(`🌀 Anomalie ${cb.anomalie} : ${ANOMALIE.slice(1, cb.anomalie + 1).join(', ')}.`); }
     if (cb.nemesis) { O.pvMax = Math.round(O.pvMax * (1 + .15 * cb.nemesis)); O.pc += cb.nemesis; log(`😈 ${O.nom} est ta Némésis (niveau ${cb.nemesis}) : plus forte que les autres élites.`); }
     const A = run.asc || 0; if (A >= 1) O.pvMax = Math.round(O.pvMax * 1.1); if (A >= 2 && cb.type === 'elite') O.pvMax = Math.round(O.pvMax * 1.15); if (A >= 5 && cb.type === 'boss') O.pvMax = Math.round(O.pvMax * 1.15); if (A >= 9) O.desMax = Math.min(5, (O.desMax || 5) + 1);
     O.pv = O.pvMax; }
@@ -1935,9 +1938,9 @@ async function joueFX() {
 // toucher l'écran pendant les animations les accélère
 document.addEventListener('pointerdown', () => { if (fxOn) fxVite = .3; }, true);
 </script>
-<script src="pantheon.js?v=20261113-065111"></script>
-<script src="tuto.js?v=20261113-065111"></script>
-<script src="deux.js?v=20261113-065111"></script>
-<script src="invasion.js?v=20261113-065111"></script>
+<script src="pantheon.js?v=20261113-071331"></script>
+<script src="tuto.js?v=20261113-071331"></script>
+<script src="deux.js?v=20261113-071331"></script>
+<script src="invasion.js?v=20261113-071331"></script>
 </body>
 </html>
