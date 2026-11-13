@@ -61,7 +61,7 @@ const DEFAUT = {"taille_medaillon":11.2,"taille_portrait":16.9,"frappe":[11.01,2
 // 14/11 : ?plateau=<île> = la même page sur le plateau peint d'une île de l'Odyssée (réglages gardés à part ; en plus, la zone centrale à placer)
 const PLATEAU = (new URLSearchParams(location.search).get('plateau') || '').replace(/[^a-z]/g, '');
 const CLE = 'guilde-placement' + (PLATEAU ? '-' + PLATEAU : '');
-if (PLATEAU) { document.getElementById('pl').style.backgroundImage = `url('decor/plateau-${PLATEAU}.webp?v=2')`; DEFAUT.champ_haut_gauche = [19, 22]; DEFAUT.champ_bas_droit = [81, 67];
+if (PLATEAU) { document.getElementById('pl').style.backgroundImage = `url('decor/plateau-${PLATEAU}.webp?v=4')`; DEFAUT.champ_haut_gauche = [19, 22]; DEFAUT.champ_bas_droit = [81, 67];
   document.querySelector('.haut b').textContent = 'Placer les éléments · plateau ' + PLATEAU; }
 let R = JSON.parse(localStorage.getItem(CLE) || 'null') || JSON.parse(JSON.stringify(DEFAUT));
 const pl = document.getElementById('pl');

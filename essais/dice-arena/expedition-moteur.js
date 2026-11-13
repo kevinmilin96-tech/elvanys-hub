@@ -5,11 +5,11 @@
 // Ce fichier ne touche pas à l'écran : expedition.html rejoue les événements du combat. Le simulateur appelle simuleExpedition().
 
 // ----------------------------------------------------------------------------------------------- les recrues
-// role : rempart (devant, Barrière) · lame (devant) · tireur (frappe depuis derrière) · soutien (agit depuis derrière)
+// role : rempart (devant, Barrière) · lame (devant) · tireur (frappe depuis derrière) · soutien (agit ET frappe depuis derrière, depuis le 14/11)
 const FAMILLES = {
   garde:   { n:'La Garde', e:'🛡', d2:'+3 PV et Épines 1 à tous les Gardes', d4:'+6 PV et Épines 2 à tous les Gardes' },
   ombre:   { n:'L’Ombre', e:'🌑', d2:'leur 1re attaque fait double dégât', d4:'elles esquivent aussi le 1er coup reçu' },
-  clan:    { n:'Le Clan', e:'📯', d2:'+1 attaque à tout l’équipage', d4:'+2 attaque à tout l’équipage' },
+  clan:    { n:'Le Clan', e:'📯', d2:'+1 attaque à tout l’équipage (sauf les Soutiens)', d4:'+1 attaque à tout l’équipage, Soutiens compris' },
   clairiere:{ n:'La Clairière', e:'🌿', d2:'3 PV soignés à tous à la fin de chaque round', d4:'6 PV soignés à tous' },
   forge:   { n:'La Forge', e:'⚒', d2:'après chaque escale gagnée, +1 attaque définitive à une Forge', d4:'+1 attaque et +2 PV définitifs à toutes les Forges' },
 };
@@ -158,7 +158,8 @@ function combattants(camp, cote) {
   ['av', 'ar'].forEach(r => camp.plateau[r].forEach((u, i) => { if (!u) return;
     const base = RECRUES[u.key] || {};
     const c = { ...u, cote, rang:r, pos:i, vmax:0, poisonSur:0, mort:false };
-    c.a = u.a + (u.bonusA || 0) + (clan ? clan : 0) + (u.key !== 'tambour' ? tambours : 0) + (cap === 'oria' && u.role === 'tireur' ? 1 : 0);
+    // 14/11 : les Soutiens frappent avec LEUR attaque seulement (les bonus d'attaque du Clan et des Tambours vont aux autres : sinon le Clan de Gorm passait de 49 à 81 %)
+    c.a = u.a + (u.bonusA || 0) + (u.role === 'soutien' ? (clan >= 2 ? 1 : 0) : (clan ? 1 : 0) + tambours) + (cap === 'oria' && u.role === 'tireur' ? 1 : 0);
     c.v = u.v + (u.bonusV || 0) + (u.fam === 'garde' ? [0, 3, 6][garde] : 0);
     c.barriere = !!(base.barriere || u.barriere); c.charge = !!(base.charge || u.charge); c.epines = (base.epines || 0) + (u.fam === 'garde' ? garde : 0);
     c.poison = base.poison || 0; c.soigneur = base.soigneur || 0; c.soinTous = base.soinTous || 0;
@@ -182,7 +183,8 @@ function combatExp(campJ, campE, R) {
     if (C.serment && u.key !== 'capitaine' && (C.sermentFait || 0) < 2) { C.sermentFait = (C.sermentFait || 0) + 1; u.v = 1; ev.push({ t:'serment', id:u.id }); return; }
     u.mort = true; ev.push({ t:'mort', id:u.id });
   };
-  const peutFrapper = u => u.rang === 'av' || u.tireur || u.role === 'capitaine';
+  // 14/11 (choix de l'utilisateur, comme dans les autobattlers) : les Soutiens frappent aussi depuis derrière, en plus de leur pouvoir
+  const peutFrapper = u => u.rang === 'av' || u.tireur || u.role === 'capitaine' || u.role === 'soutien';
   for (let round = 1; round <= 25; round++) {
     if (!vivants(J).length || !vivants(E).length) break;
     ev.push({ t:'round', n:round });
@@ -195,7 +197,7 @@ function combatExp(campJ, campE, R) {
       // les soins des Soutiens
       if (u.soigneur) { const b = vivants(A).filter(x => x.v < x.vmax).sort((x, y) => (x.v / x.vmax) - (y.v / y.vmax))[0]; if (b) { const n = Math.min(u.soigneur, b.vmax - b.v); b.v += n; ev.push({ t:'soin', id:b.id, n, src:u.id }); } }
       if (u.soinTous) vivants(A).forEach(b => { if (b.v < b.vmax) { b.v = Math.min(b.vmax, b.v + u.soinTous); ev.push({ t:'soin', id:b.id, n:u.soinTous, src:u.id }); } });
-      if (!peutFrapper(u) || (u.role === 'soutien' && u.rang === 'ar')) continue;
+      if (!peutFrapper(u)) continue;
       const c = cible(D); if (!c) break;
       let dg, de, txt = '';
       if (u.role === 'capitaine') {

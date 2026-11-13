@@ -319,7 +319,7 @@
   @keyframes souffleLave { 0%, 100% { opacity:.15; } 50% { opacity:1; } }
   .animIle i { position:absolute; bottom:-2%; border-radius:50%; background:#ffd27a; box-shadow:0 0 6px 2px #ff7a1a, 0 0 12px 4px #ff4d0088; animation:braise linear infinite; opacity:0; }
   @keyframes braise { 0% { transform:translate(0, 0); opacity:0; } 8% { opacity:1; } 70% { opacity:.8; } 100% { transform:translate(var(--dx), -105cqh); opacity:0; } }
-  .plateau.tapis.unique.ile-givre:not(.scene) { background-image:url('decor/plateau-givre.webp?v=1'); }
+  .plateau.tapis.unique.ile-givre:not(.scene) { background-image:url('decor/plateau-givre.webp?v=4'); }
   .plateau.tapis.unique.ile-abime:not(.scene) { background-image:url('decor/plateau-abime.webp?v=1'); }
   /* Givre : neige qui tombe, aurore qui ondule */
   .animIle.givre i { top:-2%; bottom:auto; background:#fff; box-shadow:0 0 4px 1px #cfeaff; animation-name:neige; }
@@ -646,7 +646,7 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261113-234631';
+const VERSION = '20261113-235249';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -665,11 +665,11 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261113-234631"></script>
-<script src="musique.js?v=20261113-234631"></script>
-<script src="donnees.js?v=20261113-234631"></script>
-<script src="odyssee.js?v=20261113-234631"></script>
-<script src="chronique.js?v=20261113-234631"></script>
+<script src="cartes.js?v=20261113-235249"></script>
+<script src="musique.js?v=20261113-235249"></script>
+<script src="donnees.js?v=20261113-235249"></script>
+<script src="odyssee.js?v=20261113-235249"></script>
+<script src="chronique.js?v=20261113-235249"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -2093,14 +2093,14 @@ async function joueFX() {
 // toucher l'écran pendant les animations les accélère
 document.addEventListener('pointerdown', () => { if (fxOn && !(S && S.tuto)) fxVite = .5; }, true); // 14/11 : plus d'accélération dans le tutoriel
 </script>
-<script src="profil.js?v=20261113-234631"></script>
-<script src="pantheon.js?v=20261113-234631"></script>
-<script src="tuto.js?v=20261113-234631"></script>
-<script src="deux.js?v=20261113-234631"></script>
-<script src="invasion.js?v=20261113-234631"></script>
-<script src="enigme-table.js?v=20261113-234631"></script>
-<script src="forge.js?v=20261113-234631"></script>
-<script src="semaine.js?v=20261113-234631"></script>
-<script src="enigme.js?v=20261113-234631"></script>
+<script src="profil.js?v=20261113-235249"></script>
+<script src="pantheon.js?v=20261113-235249"></script>
+<script src="tuto.js?v=20261113-235249"></script>
+<script src="deux.js?v=20261113-235249"></script>
+<script src="invasion.js?v=20261113-235249"></script>
+<script src="enigme-table.js?v=20261113-235249"></script>
+<script src="forge.js?v=20261113-235249"></script>
+<script src="semaine.js?v=20261113-235249"></script>
+<script src="enigme.js?v=20261113-235249"></script>
 </body>
 </html>

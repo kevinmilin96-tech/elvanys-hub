@@ -41,12 +41,12 @@ function chroniqueEscale(apres) {
 // 14/11 (l'utilisateur : « je ne peux pas cliquer sur les créatures, ni sur les étiquettes ; plus sympa que des cases jaunes ; sur une page ») :
 // de vraies cartes (illustration en fond, ce que fait la carte en un mot), une FICHE au toucher, tout l'écran du port sans défilement.
 const ART_EXP = { chien:'chien-garde' }; // illustrations : cartes/<clé>.webp (même nom que la carte du Duel, sauf exceptions)
-const ROLE_COURT = { rempart:'🛡 garde', lame:'⚔ mêlée', tireur:'🏹 tire', soutien:'✚ aide', capitaine:'🎲 3 dés' };
+const ROLE_COURT = { rempart:'🛡 garde', lame:'⚔ mêlée', tireur:'🏹 tire', soutien:'✚ aide + frappe', capitaine:'🎲 3 dés' };
 const ROLE_LONG = {
   rempart:'🛡 <b>Rempart</b> : se place DEVANT et prend les coups. Il attaque aussi, au corps à corps.',
   lame:'⚔ <b>Lame</b> : attaque au corps à corps depuis le DEVANT. Placée derrière, elle attend que le devant tombe pour avancer.',
   tireur:'🏹 <b>Tireur</b> : tire de loin, DERRIÈRE (ou devant). Il frappe chaque round, même protégé par le devant.',
-  soutien:'✚ <b>Soutien</b> : <b>n’attaque pas</b>. Il aide l’équipage depuis DERRIÈRE (bonus, soins).',
+  soutien:'✚ <b>Soutien</b> : depuis DERRIÈRE, il aide l’équipage (bonus, soins) ET frappe avec sa petite attaque. Les bonus d’attaque du Clan et des Tambours sont pour les autres (sauf le Clan à 4).',
   capitaine:'🎲 <b>Capitaine</b> : lance 3 dés à chaque round et frappe avec le meilleur. S’il tombe, le combat continue sans lui.' };
 const ETIQ = { 'Barrière':'Les ennemis doivent le frapper avant les autres.', 'Charge':'Frappe en premier, avant tout le monde.', 'Poison':'Sa cible perd 1 PV à chaque round.',
   'Soin':'Soigne de 2 l’allié le plus blessé à chaque round.', 'Soin à tous':'Soigne de 1 tout l’équipage à chaque round.', '+1 atq':'Tous les autres membres de l’équipage ont +1 attaque (plusieurs Tambours ne s’additionnent pas).',
@@ -61,7 +61,7 @@ function uniteHTML(u, opt) {
   const clic = opt && opt.clic ? `onclick="toucheUnite('${u.id}', event)"` : `onclick="ficheUnite('${u.id}', event)"`;
   return `<div class="u carte ${cap ? 'capitaine' : ''} ${ennemi ? 'ennemi' : ''} ${u.role === 'soutien' ? 'soutien' : ''} ${sel === u.id ? 'sel' : ''}" data-id="${u.id}" ${clic} style="${art ? `background-image:url('${art}')` : ''}">
     ${art ? '' : `<span class="sansart">${ennemi ? '👹' : '❔'}</span>`}<span class="nm">${u.n}${u.star ? ` <span class="st">${'★'.repeat(u.star)}</span>` : ''}</span>${fam ? `<span class="fm">${fam}</span>` : ''}
-    <span class="rl">${ROLE_COURT[u.role] || ''}${u.role === 'soutien' ? ' · n’attaque pas' : ''}${tags.length ? '<br>' + tags.join(' · ') : ''}</span>
+    <span class="rl">${ROLE_COURT[u.role] || ''}${tags.length ? '<br>' + tags.join(' · ') : ''}</span>
     <div class="av"><span>⚔ ${a}</span><span>❤ ${v}</span></div></div>`;
 }
 // la fiche d'une unité (au port, en combat, chez le recruteur)
@@ -99,7 +99,7 @@ function port() {
   ${famillesHTML()}
   <div class="champ">
     <div class="etiq">DEVANT · prennent les coups</div><div class="rangee">${[0, 1, 2].map(i => slotHTML('av', i)).join('')}</div>
-    <div class="etiq">DERRIÈRE · 🏹 tirent, ✚ aident (n’attaquent pas)</div><div class="rangee">${[0, 1, 2].map(i => slotHTML('ar', i)).join('')}</div>
+    <div class="etiq">DERRIÈRE · 🏹 tirent, ✚ aident et frappent un peu</div><div class="rangee">${[0, 1, 2].map(i => slotHTML('ar', i)).join('')}</div>
   </div>
   <div class="etiq">LA CALE · ne combat pas</div><div class="cale">${[0, 1, 2].map(i => slotHTML('cale', i)).join('')}</div>
   ${selU ? `<div class="feuille">${ficheHTML(selU, RECRUES[selU.key])}<p class="ok">👉 Touche une place pour la déplacer.</p></div><div class="actions">${selU.key !== 'capitaine' ? `<button onclick="vendre()">💰 Vendre (+${selU.star ? 1 + selU.star * 2 : 1})</button>` : ''}${X.heros === 'zephine' && X.transmuOk && selU.key !== 'capitaine' ? '<button onclick="transmuter()">⚗ Transmuter</button>' : ''}<button onclick="sel=null;port()">Annuler</button></div>` : ''}
@@ -124,7 +124,7 @@ function vendre() { if (sel && vend(X, sel)) { sel = null; sauve(); port(); } }
 function transmuter() { const n = transmute(X, sel); sel = null; sauve(); port(); if (n) fenetre(`<h2>⚗ Transmutation</h2><p>Ta recrue devient <b>${n.n}</b>.</p><div class="choixh"><button onclick="fermer()">OK</button></div>`); }
 function aideExp() { fenetre(`<h2>❓ Le port</h2><ul style="padding-left:1.1em">
   <li><b>Recruter</b> : touche une recrue du recruteur. 3 pareilles fusionnent en une ★ (doublée) ; 3 ★ font une ★★.</li>
-  <li><b>Placer</b> : touche une recrue puis une place. Devant : Remparts (Barrière) et Lames. Derrière : Tireurs (ils frappent de loin) et Soutiens (ils soignent). Une Lame derrière attend que le devant tombe.</li>
+  <li><b>Placer</b> : touche une recrue puis une place. Devant : Remparts (Barrière) et Lames. Derrière : Tireurs (ils frappent de loin) et Soutiens (ils aident et frappent un peu). Une Lame derrière attend que le devant tombe.</li>
   <li><b>Les familles</b> (en haut) : 2 ou 4 recrues de la même famille sur le plateau donnent un bonus. Touche-les pour le voir.</li>
   <li><b>L’or</b> : +8 après chaque escale, +1 par tranche de 5 gardées (3 au plus). Relancer : 1. Geler : garder la même offre.</li>
   <li><b>Les cœurs</b> : perdre une escale coûte un cœur ; on continue. Le boss se rejoue tant qu’il reste un cœur.</li></ul><div class="choixh"><button onclick="fermer()">OK</button></div>`); }
