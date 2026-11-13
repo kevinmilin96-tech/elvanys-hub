@@ -608,6 +608,7 @@
   #conf .n { font-size:2em; font-weight:bold; color:#ff8a6a; text-shadow:0 2px 0 #000; margin:2px 0; }
   #conf .l { font-size:.85em; color:#c9c1ea; margin:2px 0; } #conf .l.v { color:#ffd0c4; font-weight:bold; }
   #conf .b { display:flex; gap:8px; margin-top:10px; } #conf .b button { flex:1; border:none; border-radius:12px; padding:11px; font:bold 15px Georgia, serif; }
+  #conf .n.soin { color:#7dffb0; } #conf .l.soin { color:#c8ffd9; }
   #conf .ok { background:#f3c96b; color:#2a1a08; } #conf .non { background:#3a3570; color:#fff; }
 </style>
 </head>
@@ -617,7 +618,7 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261113-221415';
+const VERSION = '20261113-221856';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -636,11 +637,11 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261113-221415"></script>
-<script src="musique.js?v=20261113-221415"></script>
-<script src="donnees.js?v=20261113-221415"></script>
-<script src="odyssee.js?v=20261113-221415"></script>
-<script src="chronique.js?v=20261113-221415"></script>
+<script src="cartes.js?v=20261113-221856"></script>
+<script src="musique.js?v=20261113-221856"></script>
+<script src="donnees.js?v=20261113-221856"></script>
+<script src="odyssee.js?v=20261113-221856"></script>
+<script src="chronique.js?v=20261113-221856"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -1310,11 +1311,18 @@ function vise(quoi, im) {
   if (!permis(S.J, quoi, vals(sel), sel)) { aide(quoi); return; }
   const def = defDe(S.J, quoi), t = def && def.cible;
   if (t && quoi !== 'garde') { ciblage = { quoi, ds:sel, im, type:t }; rendu(); return; }
+  if (CARTES[quoi] && soinPrevu(quoi, vals(sel)) !== null) { ciblage = { quoi, ds:sel, im, type:'soin', choisi:{ J:S.J } }; montreConfirme(); return; }
   pose(S.J, quoi, sel, null, im); sel = []; rendu();
 }
 // 13/11 soir : LA VALIDATION D'UNE ATTAQUE. Après le choix de la cible, une fenêtre montre ce qui va se passer (dégâts prévus,
 // protection de la cible) ; l'attaque ne part qu'avec « Valider ».
+// 14/11 (demande de l'utilisateur) : les SOINS aussi sont montrés avant d'être joués (combien, jusqu'où, combien perdus)
+const SOIN_PREVU = { potion:vs => vs[0] + 2, serment:vs => vs[0] + (vs[1] || 0), lanterne:vs => vs[0] % 2 === 0 ? vs[0] : 2, seve:vs => 2 * vs[0], soins:() => 2, gourde:() => 4 };
+const soinPrevu = (quoi, vs) => SOIN_PREVU[quoi] ? SOIN_PREVU[quoi](vs) : null;
 function prevision(J, quoi, vs, k) {
+  { const sp = soinPrevu(quoi, vs), c = CARTES[quoi] || {};
+    if (sp !== null) { const cur = k.u ? k.u.v : k.J.pv, max = k.u ? k.u.vmax : k.J.pvMax, gain = Math.max(0, Math.min(sp, max - cur));
+      return { soin:true, n:sp, gain, apres:cur + gain, max, perdu:sp - gain, nom:c.n || quoi, d:c.d || '', lignes:[] }; } }
   const def = defDe(J, quoi) || CARTES[quoi] || {}; let n = null, exact = true;
   if (quoi === 'frappe' && def.dg) n = def.dg(vs);
   else if (quoi === 'technique') n = techDg(vs);
@@ -1329,19 +1337,23 @@ function prevision(J, quoi, vs, k) {
 function montreConfirme() {
   const c = ciblage; if (!c || !c.choisi) return; const k = c.choisi, P = prevision(S.J, c.quoi, vals(c.ds), k), cible = k.u ? k.u.n : k.J.nom;
   let z = document.getElementById('conf'); if (!z) { z = document.createElement('div'); z.id = 'conf'; document.body.appendChild(z); }
-  z.innerHTML = `<div class="t">⚔ ${P.nom} sur <b>${cible}</b></div>
+  if (P.soin) z.innerHTML = `<div class="t">💚 ${P.nom} sur <b>${k.u ? cible : (k.J === S.J ? 'toi' : cible)}</b></div><div class="n soin">+${P.n} PV</div>
+    ${P.gain ? `<div class="l v soin">❤ Tu remontes à ${P.apres} / ${P.max}</div>` : `<div class="l v">Tu es déjà au maximum (${P.max}) : ce soin ne servirait à rien</div>`}${P.perdu && P.gain ? `<div class="l">${P.perdu} point${P.perdu > 1 ? 's' : ''} perdu${P.perdu > 1 ? 's' : ''} : tu es presque au maximum</div>` : ''}
+    <div class="b"><button class="non" onclick="changeCible()">${c.type === 'soin' ? 'Annuler' : 'Changer de cible'}</button><button class="ok" onclick="valideCible()">Valider</button></div>`;
+  else z.innerHTML = `<div class="t">⚔ ${P.nom} sur <b>${cible}</b></div>
     ${P.n !== null ? `<div class="n">${P.exact ? '' : '≈ '}${P.n} dégât${P.n > 1 ? 's' : ''}</div>${P.lignes.map(l => `<div class="l">${l}</div>`).join('')}${P.lignes.length ? `<div class="l v">❤ ${cible} perdra ${P.vie} PV</div>` : ''}` : `<div class="l">${P.d}</div>`}
     <div class="b"><button class="non" onclick="changeCible()">Changer de cible</button><button class="ok" onclick="valideCible()">Valider</button></div>`;
   rendu();
   setTimeout(() => { if (S && S.tuto && typeof tutoMaj === 'function') tutoMaj(); }, 280); // le tutoriel remesure le bouton une fois la fenêtre en place
 }
 function enleveConfirme() { const z = document.getElementById('conf'); if (z) z.remove(); }
-function changeCible() { if (ciblage) ciblage.choisi = null; enleveConfirme(); rendu(); }
+function changeCible() { if (ciblage) { if (ciblage.type === 'soin') ciblage = null; else ciblage.choisi = null; } enleveConfirme(); rendu(); }
 function valideCible() {
   const c = ciblage; enleveConfirme(); if (!c || !c.choisi) return; ciblage = null;
   if (c.ds.some(d => d.pose)) { sel = []; rendu(); return; } pose(S.J, c.quoi, c.ds, c.choisi, c.im); sel = []; rendu();
 }
 function estCible(k) {
+  if (ciblage && ciblage.type === 'soin') return false;
   if (ciblage && ciblage.type !== 'de') return ciblesPossibles(S.J, ciblage.type).some(c => c.J === k.J && c.u === k.u);
   if (attaquant) return ciblesAttaque(S.O).some(c => c.J === k.J && c.u === k.u);
   return false;
@@ -1474,6 +1486,7 @@ function dessine() {
   let bandeau = '';
   if (J.aLancer) bandeau = 'Ton tour commence : lance tes dés !';
   else if (ciblage && ciblage.type === 'de') bandeau = ciblage.quoi === 'ajuste' ? '🎲 Touche le dé à ajuster.' : ciblage.quoi === 'retremper' ? '🎲 Touche le dé qui gagne +2.' : '🎲 Touche le dé à retourner.';
+  else if (ciblage && ciblage.type === 'soin') bandeau = '💚 Regarde le soin, puis « Valider ».';
   else if (ciblage) {
     const q = ciblage.quoi, vs = vals(ciblage.ds), d = q === 'frappe' ? `Frappe (${vs.join(', ')}) : ${FRAPPE.dg(vs)} dégâts` : q === 'technique' ? `Technique (${vs.join(', ')}) : ${techDg(vs)} dégâts`
       : q === 'pouvoir' ? `${h.pouvoir.n} : ${h.pouvoir.d}` : q === 'ultime' ? `${h.ultime.n} : ${h.ultime.d}` : CARTES[q] ? `${CARTES[q].n} : ${CARTES[q].d}` : '';
@@ -1981,13 +1994,13 @@ async function joueFX() {
 // toucher l'écran pendant les animations les accélère
 document.addEventListener('pointerdown', () => { if (fxOn) fxVite = .3; }, true);
 </script>
-<script src="pantheon.js?v=20261113-221415"></script>
-<script src="tuto.js?v=20261113-221415"></script>
-<script src="deux.js?v=20261113-221415"></script>
-<script src="invasion.js?v=20261113-221415"></script>
-<script src="enigme-table.js?v=20261113-221415"></script>
-<script src="forge.js?v=20261113-221415"></script>
-<script src="semaine.js?v=20261113-221415"></script>
-<script src="enigme.js?v=20261113-221415"></script>
+<script src="pantheon.js?v=20261113-221856"></script>
+<script src="tuto.js?v=20261113-221856"></script>
+<script src="deux.js?v=20261113-221856"></script>
+<script src="invasion.js?v=20261113-221856"></script>
+<script src="enigme-table.js?v=20261113-221856"></script>
+<script src="forge.js?v=20261113-221856"></script>
+<script src="semaine.js?v=20261113-221856"></script>
+<script src="enigme.js?v=20261113-221856"></script>
 </body>
 </html>
