@@ -607,21 +607,6 @@
   .plateau.tapis.unique:not(.scene) #b-O .bdg.bg, .plateau.tapis.unique:not(.scene) #b-O .bdg.bb { left:-18.57cqw; top:calc(5.82cqh + 4.15cqw); }
   .plateau.tapis.unique:not(.scene) #b-J .bdg.bg, .plateau.tapis.unique:not(.scene) #b-J .bdg.bb { left:-18.68cqw; top:calc(-1.62cqh + 4.15cqw); }
   .plateau.tapis.unique:not(.scene) #b-O .nom { top:calc(100% + 6.2cqw) !important; }
-  /* ===== 14/11 : PLATEAU DES TERRES BRÛLÉES (Gemini v2), emplacements mesurés sur l'image (portrait du haut y 14,5 %, 6 ronds x 14,5 % de y 31 à 62,5 %, champ x 22,5-77,5 % y 27,5-64,5 %, dés x 87 % y 29-63,5 %, panneaux décalés de 4 % vers le centre) ===== */
-  .unique.ile-brulees .colG .r1 { left:calc(14.5cqw - 5.6cqw); top:calc(31.00cqh - 5.6cqw); }
-  .unique.ile-brulees .colG .r2 { left:calc(14.5cqw - 5.6cqw); top:calc(37.30cqh - 5.6cqw); }
-  .unique.ile-brulees .colG .r3 { left:calc(14.5cqw - 5.6cqw); top:calc(43.60cqh - 5.6cqw); }
-  .unique.ile-brulees .colG .r4 { left:calc(14.5cqw - 5.6cqw); top:calc(49.90cqh - 5.6cqw); }
-  .unique.ile-brulees .colG .r5 { left:calc(14.5cqw - 5.6cqw); top:calc(56.20cqh - 5.6cqw); }
-  .unique.ile-brulees .colG .r6 { left:calc(14.5cqw - 5.6cqw); top:calc(62.50cqh - 5.6cqw); }
-  .plateau.tapis.unique.ile-brulees:not(.scene) .des { left:83.3cqw; top:28.6cqh; width:7.5cqw; height:35.2cqh; }
-  .plateau.tapis.unique.ile-brulees:not(.scene) #b-O { top:calc(14.5cqh - 8.45cqw); } .plateau.tapis.unique.ile-brulees:not(.scene) #b-J { top:calc(75.6cqh - 8.45cqw); }
-  .plateau.tapis.unique.ile-brulees:not(.scene) #b-O .pastilles, .plateau.tapis.unique.ile-brulees:not(.scene) #b-J .pastilles { left:19.9cqw; }
-  .plateau.tapis.unique.ile-brulees:not(.scene) .pastilles [data-k="pv"] { left:-42.4cqw; } .plateau.tapis.unique.ile-brulees:not(.scene) .barre:has(.bdg:not([hidden])) .pastilles [data-k="pv"] { left:-46.95cqw; }
-  .plateau.tapis.unique.ile-brulees:not(.scene) #b-O .bdg.bg, .plateau.tapis.unique.ile-brulees:not(.scene) #b-O .bdg.bb, .plateau.tapis.unique.ile-brulees:not(.scene) #b-J .bdg.bg, .plateau.tapis.unique.ile-brulees:not(.scene) #b-J .bdg.bb { left:-14.6cqw; }
-  .unique.ile-brulees .front { left:23.5cqw !important; right:23.5cqw !important; }
-  .unique.ile-brulees #f-O { top:29cqh; } .unique.ile-brulees #f-J { top:49cqh; }
-  .unique.ile-brulees .bandeau, .unique.ile-brulees .lancer { top:46cqh; left:23cqw; right:23cqw; }
   /* la main dans sa zone (style posé par mainEnEventail) */
   .plateau.tapis.unique .main { right:auto; bottom:auto; overflow:visible; }
   .plateau.tapis.unique .main .c:not(.vue) { bottom:0; }
@@ -645,7 +630,7 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261113-231728';
+const VERSION = '20261113-232039';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -664,11 +649,11 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261113-231728"></script>
-<script src="musique.js?v=20261113-231728"></script>
-<script src="donnees.js?v=20261113-231728"></script>
-<script src="odyssee.js?v=20261113-231728"></script>
-<script src="chronique.js?v=20261113-231728"></script>
+<script src="cartes.js?v=20261113-232039"></script>
+<script src="musique.js?v=20261113-232039"></script>
+<script src="donnees.js?v=20261113-232039"></script>
+<script src="odyssee.js?v=20261113-232039"></script>
+<script src="chronique.js?v=20261113-232039"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -1099,7 +1084,7 @@ function mainEnEventail(J) {
   if (carteVue !== null && carteVue >= n) carteVue = null;
   // 11/11 : la main tient DANS sa zone du plateau (ZONE_MAIN, en % du plateau, réglable par la page placer.html) : taille des cartes = hauteur de la zone
   const pl = document.querySelector('.plateau.unique'), PW = pl ? pl.clientWidth : Math.min(innerWidth, 560), PH = pl ? pl.clientHeight : innerHeight - 90;
-  const Z = ZONE_MAIN, zw = (Z.x2 - Z.x1) / 100 * PW, zh = (Z.y2 - Z.y1) / 100 * PH;
+  const Z = zoneMain(), zw = (Z.x2 - Z.x1) / 100 * PW, zh = (Z.y2 - Z.y1) / 100 * PH;
   const CH = Math.max(60, Math.min(150, zh * .96)), CW = Math.round(CH * .7), FS = (CW / 80 * .5).toFixed(3);
   const mil = (n - 1) / 2, pas = n > 1 ? Math.min(CW * .82, (zw - CW) / (n - 1)) : 0, ang = n > 1 ? Math.min(4, 14 / (n - 1)) : 0;
   return J.main.map((k, i) => {
@@ -1536,7 +1521,7 @@ function dessine() {
     <div class="des" ontouchstart="glisseDebut(event)" ontouchend="glisseFin(event)">${J.des.map((d, i) => `<div class="d ${sel.includes(d) ? 'sel' : ''} ${d.pose ? 'pose' : ''} ${d.mod ? 'mod' : ''} ${J.aLancer ? 'cache' : ''} ${i === J.neuf && (J.aLancer || Date.now() < (J.neufJusque || 0)) ? 'neuf' : ''}" onclick="choisirDe(${i})"><img src="${FACE(J.id, d.v || 1)}" alt="${d.v || '?'}">${d.sp && !J.aLancer && typeof FACES_FORGE !== 'undefined' ? `<span class="spf">${FACES_FORGE[d.sp].e}</span>` : ''}<div class="sac">${i === J.neuf && (J.aLancer || Date.now() < (J.neufJusque || 0)) ? '✨ neuf' : sacPastilles(J, d)}</div></div>`).join('')}${[...Array(Math.max(0, 5 - J.des.length)).keys()].map(k => { const i = J.des.length + k, t = i - 1;
       return `<div class="d verrou"><div class="cad">🔒</div><div class="sac">${J.tours >= t ? 'Handicap' : 'tour ' + t}</div></div>`; }).join('')}</div>
     ${J.aLancer ? '<button class="lancer" onclick="lancerMesDes()">🎲 Lancer les dés</button>' : `<div class="bandeau">${bandeau}${sel.length || ciblage || attaquant ? ' <a href="#" onclick="annuler();return false" style="color:#f3c96b">Annuler</a>' : ''}</div>`}
-    <div class="main" style="left:${ZONE_MAIN.x1}%;width:${ZONE_MAIN.x2 - ZONE_MAIN.x1}%;top:${ZONE_MAIN.y1}%;height:${ZONE_MAIN.y2 - ZONE_MAIN.y1}%" onclick="if(event.target===this){carteVue=null;rendu();}">${mainEnEventail(J)}</div>
+    <div class="main" style="left:${zoneMain().x1}%;width:${zoneMain().x2 - zoneMain().x1}%;top:${zoneMain().y1}%;height:${zoneMain().y2 - zoneMain().y1}%" onclick="if(event.target===this){carteVue=null;rendu();}">${mainEnEventail(J)}</div>
   </div>
   <div class="bas">
     <button class="b0" onclick="regles()" aria-label="Règles">❓</button>
@@ -1759,7 +1744,35 @@ function quitterPartie() {
 }
 // 14/11 : un plateau peint par île de l'Odyssée (decor/plateau-<île>.webp), même disposition que celui du Duel, et une couche ANIMÉE
 // (braises qui montent, lave qui respire…). Le décalage des animations suit l'horloge : redessiner l'écran ne les fait pas repartir de zéro.
-const PLATEAUX_ILE = { brulees:1 }; // îles dont le plateau est reçu (givre, abime : à venir)
+const PLATEAUX_ILE = { brulees:1 };
+// 14/11 : l'interface de chaque plateau d'île est PLACÉE PAR L'UTILISATEUR (placer.html?plateau=<île> → « PLACEMENT <ÎLE> {…} »), recopiée ici telle quelle.
+// Tant qu'une île n'a pas son placement, c'est celui du Duel qui sert. Le CSS est fabriqué à partir de ces chiffres (cssPlacement).
+const PLACEMENTS_ILE = {};
+function zoneMain() { const R = S && plateauIle() && PLACEMENTS_ILE[plateauIle()]; return R && R.main_haut_gauche ? { x1:R.main_haut_gauche[0], y1:R.main_haut_gauche[1], x2:R.main_bas_droit[0], y2:R.main_bas_droit[1] } : ZONE_MAIN; }
+function cssPlacement(ile, R) {
+  const P = `.plateau.tapis.unique.ile-${ile}:not(.scene)`, Q = `.unique.ile-${ile}`, m = R.taille_medaillon, p = R.taille_portrait, f = n => +n.toFixed(2);
+  const ic = ['frappe', 'technique', 'garde', 'pouvoir', 'transmu', 'equipe'].map((k, i) => `${Q} .colG .r${i + 1} { left:calc(${R[k][0]}cqw - ${f(m / 2)}cqw); top:calc(${R[k][1]}cqh - ${f(m / 2)}cqw); }`).join('\n');
+  const cote = (id, por, etq, coeur, bouc) => { const bl = por[0] - p / 2, pl = etq[0] - bl - 13.7;
+    return `${P} #${id} { left:${f(bl)}cqw; top:calc(${por[1]}cqh - ${f(p / 2)}cqw); }
+${P} #${id} .pastilles { left:${f(pl)}cqw !important; top:calc(${f(etq[1] - por[1] - 3.35)}cqh + ${f(p / 2)}cqw) !important; }
+${P} #${id} .pastilles [data-k="pv"] { left:${f(coeur[0] - 5.5 - bl - pl + 4.55)}cqw !important; top:calc(${f(coeur[1] - etq[1] + 3.35)}cqh - 5cqw) !important; }
+${P} #${id}:has(.bdg:not([hidden])) .pastilles [data-k="pv"] { left:${f(coeur[0] - 5.5 - bl - pl)}cqw !important; }
+${P} #${id} .bdg.bg, ${P} #${id} .bdg.bb { left:${f(bouc[0] - 3.8 - bl)}cqw; top:calc(${f(bouc[1] - por[1])}cqh + ${f(p / 2 - 4.3)}cqw); }
+${P} #${id} .bdg.bg:not([hidden]) + .bdg.bb { left:${f(bouc[0] - 3.8 - bl + 8.2)}cqw; }`; };
+  const dp = R.de_premier, dd = R.de_dernier;
+  let css = `${Q} .colG .ic { width:${m}cqw; height:${m}cqw; }\n${ic}
+${P} .des { left:${f(dp[0] - 3.89)}cqw; top:${f(dp[1] - 4.27)}cqh; height:${f(dd[1] - dp[1] + 8.55)}cqh; }
+${P} .barre { width:${p}cqw; height:${p}cqw; }
+${P} .barre .cadre, ${P} .anneau { left:-${f(p * .3669)}cqw; top:-${f(p * .3669)}cqw; width:${f(p * 1.733)}cqw; height:${f(p * 1.733)}cqw; }
+${cote('b-O', R.portrait_haut, R.etiquettes_haut, R.coeur_haut, R.bouclier_haut)}
+${cote('b-J', R.portrait_bas, R.etiquettes_bas, R.coeur_bas, R.bouclier_bas)}`;
+  if (R.champ_haut_gauche) { const a = R.champ_haut_gauche, b = R.champ_bas_droit, mil = (a[1] + b[1]) / 2;
+    css += `\n${Q} .front { left:${f(a[0] + .5)}cqw !important; right:${f(100 - b[0] + .5)}cqw !important; }
+${Q} #f-O { top:${f(a[1] + 2.5)}cqh; } ${Q} #f-J { top:${f(mil + 3)}cqh; }
+${Q} .bandeau, ${Q} .lancer { top:${f(mil)}cqh; left:${f(a[0] + .5)}cqw; right:${f(100 - b[0] + .5)}cqw; }`; }
+  return css;
+}
+if (typeof document !== 'undefined') { const st = document.createElement('style'); st.id = 'placements-iles'; st.textContent = Object.entries(PLACEMENTS_ILE).map(([k, R]) => cssPlacement(k, R)).join('\n'); document.head.appendChild(st); } // îles dont le plateau est reçu (givre, abime : à venir)
 const plateauIle = () => S && S.ody && PLATEAUX_ILE[S.ile || 'brulees'] ? (S.ile || 'brulees') : null;
 const BRAISES = [...Array(26)].map((_, i) => ({ x:(i * 37 + 11) % 97 + 1.5, d:5 + (i * 7) % 6, t:(i * 1.37) % 9, s:2 + (i * 5) % 4, dx:((i * 13) % 9) - 4 }));
 function animIle(ile) {
@@ -2054,14 +2067,14 @@ async function joueFX() {
 // toucher l'écran pendant les animations les accélère
 document.addEventListener('pointerdown', () => { if (fxOn && !(S && S.tuto)) fxVite = .5; }, true); // 14/11 : plus d'accélération dans le tutoriel
 </script>
-<script src="profil.js?v=20261113-231728"></script>
-<script src="pantheon.js?v=20261113-231728"></script>
-<script src="tuto.js?v=20261113-231728"></script>
-<script src="deux.js?v=20261113-231728"></script>
-<script src="invasion.js?v=20261113-231728"></script>
-<script src="enigme-table.js?v=20261113-231728"></script>
-<script src="forge.js?v=20261113-231728"></script>
-<script src="semaine.js?v=20261113-231728"></script>
-<script src="enigme.js?v=20261113-231728"></script>
+<script src="profil.js?v=20261113-232039"></script>
+<script src="pantheon.js?v=20261113-232039"></script>
+<script src="tuto.js?v=20261113-232039"></script>
+<script src="deux.js?v=20261113-232039"></script>
+<script src="invasion.js?v=20261113-232039"></script>
+<script src="enigme-table.js?v=20261113-232039"></script>
+<script src="forge.js?v=20261113-232039"></script>
+<script src="semaine.js?v=20261113-232039"></script>
+<script src="enigme.js?v=20261113-232039"></script>
 </body>
 </html>
