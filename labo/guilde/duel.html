@@ -401,7 +401,7 @@
   .unique .main .c.vue { width:164px; height:auto; min-height:206px; font-size:.8em; }
   .bas { max-width:560px; margin:0 auto; height:54px; z-index:8; }
   .bas .b0 { width:46px; padding:0; font-size:18px; }
-  .bas .b1 { flex:1; } .bas .b2 { flex:1.3; }
+  .bas .b1 { flex:1; white-space:nowrap; } .bas .b2 { flex:1.3; } .bas .b1 .nb { font-size:.78em; opacity:.85; } /* 13/11 soir : « Relancer (2) » sur une seule ligne */
   .unique .barre.ultpret::after { content:'⚡ Ultime prêt : touche-moi'; position:absolute; left:50%; top:-4.5cqw; transform:translateX(-50%); white-space:nowrap; font-size:2.6cqw; color:#1d1626; background:#ffd866; border-radius:10px; padding:0 6px; z-index:4; animation:halo 1s ease-in-out infinite alternate; }
   #b-O.ultpret::after { content:'⚡ Ultime prêt'; top:-6.5cqw; bottom:auto; }
   .unique .barre.ultpret > img { box-shadow:0 0 0 3px #ffd866, 0 0 22px #ffd866; }
@@ -609,7 +609,7 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261113-213437';
+const VERSION = '20261113-213638';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); location.replace('duel.html?v=' + v); }
@@ -628,11 +628,11 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261113-213437"></script>
-<script src="musique.js?v=20261113-213437"></script>
-<script src="donnees.js?v=20261113-213437"></script>
-<script src="odyssee.js?v=20261113-213437"></script>
-<script src="chronique.js?v=20261113-213437"></script>
+<script src="cartes.js?v=20261113-213638"></script>
+<script src="musique.js?v=20261113-213638"></script>
+<script src="donnees.js?v=20261113-213638"></script>
+<script src="odyssee.js?v=20261113-213638"></script>
+<script src="chronique.js?v=20261113-213638"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -1461,7 +1461,7 @@ function dessine() {
     ${S.coop ? '<button class="b0" onclick="voirEquipe()" aria-label="Équipe">👥</button>' : ''}
     ${S.ody && J.sacoche.length ? `<button class="b0" onclick="voirSacoche()" aria-label="Sacoche">🎒<sup>${J.sacoche.length}</sup></button>` : ''}
     ${S.ody && !J.sacrifie && J.pv > 10 && J.pc < 6 ? '<button class="b0" onclick="sacrifice()" aria-label="Sacrifice" title="Sacrifice : −10 PV, +2 PC">🩸</button>' : ''}
-    <button class="b1" onclick="relancer()" ${sel.length && (J.relance || J.pc >= sel.length) ? '' : 'disabled style="opacity:.4"'}>🎲 Relancer ${J.relance ? `(${J.relance})` : '· 1 PC/dé'}</button>
+    <button class="b1" onclick="relancer()" ${sel.length && (J.relance || J.pc >= sel.length) ? '' : 'disabled style="opacity:.4"'}>🎲 Relancer <small class="nb">${J.relance ? `(${J.relance})` : '· 1 PC/dé'}</small></button>
     <button class="b2" onclick="finDeMonTour()">Fin du tour ▶</button>
   </div>`;
   if (S.fini) montrerFin();
@@ -1939,13 +1939,13 @@ async function joueFX() {
 // toucher l'écran pendant les animations les accélère
 document.addEventListener('pointerdown', () => { if (fxOn) fxVite = .3; }, true);
 </script>
-<script src="pantheon.js?v=20261113-213437"></script>
-<script src="tuto.js?v=20261113-213437"></script>
-<script src="deux.js?v=20261113-213437"></script>
-<script src="invasion.js?v=20261113-213437"></script>
-<script src="enigme-table.js?v=20261113-213437"></script>
-<script src="forge.js?v=20261113-213437"></script>
-<script src="semaine.js?v=20261113-213437"></script>
-<script src="enigme.js?v=20261113-213437"></script>
+<script src="pantheon.js?v=20261113-213638"></script>
+<script src="tuto.js?v=20261113-213638"></script>
+<script src="deux.js?v=20261113-213638"></script>
+<script src="invasion.js?v=20261113-213638"></script>
+<script src="enigme-table.js?v=20261113-213638"></script>
+<script src="forge.js?v=20261113-213638"></script>
+<script src="semaine.js?v=20261113-213638"></script>
+<script src="enigme.js?v=20261113-213638"></script>
 </body>
 </html>
