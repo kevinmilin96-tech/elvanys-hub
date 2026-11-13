@@ -8,7 +8,7 @@
 <title>La Guilde des Runes</title>
 <script>
 // Même mécanisme que le Duel : une nouvelle version = rechargement tout seul à l'ouverture (publier.sh change VERSION).
-const VERSION = '20261113-214357';
+const VERSION = '20261113-214523';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-menu-' + v)) { sessionStorage.setItem('recharge-menu-' + v, '1'); location.replace('menu.html?v=' + v); }
@@ -144,6 +144,19 @@ fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.te
   #monde { background:linear-gradient(#0d0a1c33, #0d0a1c66), url('menu-recu/fond-menu.webp?v=1') center bottom/cover no-repeat, #0d0a1c; }
   #monde .ciel { opacity:.25; }
   .porte .verrou img { width:70%; display:block; filter:drop-shadow(0 4px 8px #000c); }
+
+  /* 13/11 soir (demande de l'utilisateur : « je ne veux pas scroller ») : le monde tient en entier dans l'écran du téléphone */
+  #monde { height:100vh; height:100dvh; min-height:0; box-sizing:border-box; display:flex; flex-direction:column; padding:10px 0 calc(8px + env(safe-area-inset-bottom)); }
+  #monde > * { flex:none; }
+  #monde .entete h2 { font-size:1.45em; } #monde .entete p { font-size:.85em; }
+  #monde .heros { margin:8px 0 0; } #monde .heros img { width:42px; height:42px; }
+  #monde .carrousel { flex:1 1 auto; min-height:0; align-items:center; padding-top:4px; padding-bottom:0; --w:min(70vw, 330px, calc((100dvh - 300px) / 1.49)); }
+  #monde .points { margin-top:2px; }
+  #monde .desc { min-height:2.8em; font-size:.86em; line-height:1.3; margin:4px auto 6px; }
+  #monde .petits { grid-template-columns:repeat(4, 1fr); gap:6px; margin-top:0; }
+  #monde .petits a { padding:7px 3px; font-size:.7em; line-height:1.2; border-radius:12px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; }
+  #monde .petits a b { font-size:1.5em; font-weight:normal; }
+  #monde .bas { display:none; }
 </style>
 </head>
 <body>
@@ -166,18 +179,18 @@ fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.te
   <div class="points" id="points"></div>
   <p class="desc" id="desc"></p>
   <div class="petits">
-    <a href="duel.html?parties=1">📜 Mes parties</a>
-    <a href="a-valider.html">📝 Pages à valider</a>
-    <a href="#attente">🧪 En attente</a>
-    <a href="https://demo-hub.elvanys.fr/">⌂ Retour au Hub</a>
+    <a href="duel.html?parties=1"><b>📜</b>Mes parties</a>
+    <a href="a-valider.html"><b>📝</b>À valider</a>
+    <a href="#attente"><b>🧪</b>En attente</a>
+    <a href="https://demo-hub.elvanys.fr/"><b>⌂</b>Retour au Hub</a>
   </div>
   <p class="bas">Prototype · images provisoires en attendant les peintures</p>
 </div>
 <div id="flash"></div>
 
-<script src="semaine.js?v=20261113-214357"></script>
-<script src="musique.js?v=20261113-214357"></script>
-<script src="donnees.js?v=20261113-214357"></script>
+<script src="semaine.js?v=20261113-214523"></script>
+<script src="musique.js?v=20261113-214523"></script>
+<script src="donnees.js?v=20261113-214523"></script>
 <script>
 // ciel étoilé + runes du portail (symboles, pas des lettres), aux couleurs des héros
 const ciel = document.getElementById('ciel');
@@ -320,7 +333,7 @@ function entrer() { const t = document.getElementById('titre'); if (t.classList.
 // déjà entré pendant cette visite (retour du Duel) : on va droit au monde
 if (sessionStorage.getItem('guilde-entre')) { document.getElementById('titre').remove(); document.getElementById('monde').classList.add('vu'); montre(location.hash.slice(1)); }
 // 13/11 soir : musique (titre sur l'écran du portail, puis le monde de la Guilde)
-GM.musique(document.getElementById('titre') ? 'titre' : 'menu'); GM.bouton();
+GM.musique(document.getElementById('titre') ? 'titre' : 'menu'); GM.bouton({ haut:true });
 </script>
 </body>
 </html>

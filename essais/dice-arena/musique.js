@@ -69,12 +69,13 @@ const GM = (() => {
       const b = document.getElementById('gm-bouton'); if (b) b.classList.toggle('off', !actif);
       return actif;
     },
-    bouton() {
+    bouton(o = {}) {
       if (document.getElementById('gm-bouton')) return;
       const st = document.createElement('style');
       st.textContent = '#gm-bouton{position:fixed;right:10px;bottom:calc(10px + env(safe-area-inset-bottom));z-index:900;width:38px;height:38px;border-radius:50%;border:1px solid #f3c96b88;background:#15132bcc;color:#f3c96b;font-size:18px;line-height:36px;text-align:center;padding:0;cursor:pointer}#gm-bouton.off{opacity:.55}#gm-bouton.off::after{content:"";position:absolute;left:8px;right:8px;top:18px;height:2px;background:#f3c96b;transform:rotate(-45deg)}';
       document.head.appendChild(st);
       const b = document.createElement('button'); b.id = 'gm-bouton'; b.type = 'button'; b.title = 'Musique'; b.setAttribute('aria-label', 'Musique'); b.textContent = '🎵';
+      if (o.haut) { b.style.bottom = 'auto'; b.style.top = 'calc(10px + env(safe-area-inset-top))'; } // le menu : en haut à droite, pour ne cacher aucun bouton
       if (!actif) b.classList.add('off'); b.onclick = e => { e.stopPropagation(); api.bascule(); };
       (document.body || document.documentElement).appendChild(b);
     },
