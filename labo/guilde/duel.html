@@ -618,7 +618,7 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261113-222227';
+const VERSION = '20261113-223124';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -637,11 +637,11 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261113-222227"></script>
-<script src="musique.js?v=20261113-222227"></script>
-<script src="donnees.js?v=20261113-222227"></script>
-<script src="odyssee.js?v=20261113-222227"></script>
-<script src="chronique.js?v=20261113-222227"></script>
+<script src="cartes.js?v=20261113-223124"></script>
+<script src="musique.js?v=20261113-223124"></script>
+<script src="donnees.js?v=20261113-223124"></script>
+<script src="odyssee.js?v=20261113-223124"></script>
+<script src="chronique.js?v=20261113-223124"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -1519,7 +1519,7 @@ function dessine() {
     <button class="b1" onclick="relancer()" ${sel.length && (J.relance || J.pc >= sel.length) ? '' : 'disabled style="opacity:.4"'}>🎲 Relancer <small class="nb">${J.relance ? `(${J.relance})` : '· 1 PC/dé'}</small></button>
     <button class="b2" onclick="finDeMonTour()">Fin du tour ▶</button>
   </div>`;
-  if (S.fini) montrerFin();
+  if (S.fini && !S.finPrevue) { S.finPrevue = true; setTimeout(montrerFin, 2200); } // 14/11 : 2,2 s pour voir les derniers dégâts avant la fenêtre de fin
 }
 // ================= écran unique (11/11) : actions en icônes à gauche, dés à droite, anneaux autour des portraits =================
 const ICONES = { frappe:['⚔', 'Frappe'], technique:['⚔⚔', 'Technique'], garde:['🛡', 'Garde'], pouvoir:['✦', 'Pouvoir'], ultime:['⚡', 'Ultime'], transmu:['⚗', ''], vendre:['◆', 'Vendre'] };
@@ -1897,9 +1897,14 @@ function effet(nom, cible, f) {
   if (effetImage(nom, cible, f)) return; if (!cible || !EFFETS[nom]) return; try { EFFETS[nom](cible, f); } catch (e) {} }
 
 // bandeau d'action en haut de l'écran : qui fait quoi à qui
-function bandeauAction(s, html, ms) {
+// 14/11 : un seul bandeau à la fois ; le suivant attend que le précédent ait été lisible (temps qui ne dépend PAS du toucher accélérateur)
+let bandeauPrec = null;
+async function bandeauAction(s, html, ms) {
+  const base = localStorage.getItem('guilde-vitesse') === 'rapide' ? .8 : 1.3, lu = (ms || 1300) * base;
+  if (bandeauPrec) { const reste = bandeauPrec.t + lu - performance.now(); if (reste > 0) await new Promise(r => setTimeout(r, reste)); const v = bandeauPrec.d; v.classList.add('part'); setTimeout(() => v.remove(), 400); }
   const d = document.createElement('div'); d.className = 'bandact ' + (s === 'O' ? 'ordi' : 'moi'); d.innerHTML = html; couche().appendChild(d);
-  setTimeout(() => d.classList.add('part'), (ms || 1400) * fxVite); setTimeout(() => d.remove(), ((ms || 1400) + 400) * fxVite);
+  const moi = bandeauPrec = { d, t:performance.now() };
+  setTimeout(() => { if (bandeauPrec === moi) { d.classList.add('part'); setTimeout(() => d.remove(), 400); bandeauPrec = null; } }, lu + 1600);
 }
 const QUI = s => s === 'O' ? S.O.nom : 'Toi';
 // visée : ligne en pointillés de l'attaquant à la cible + mire rouge sur la cible
@@ -1940,7 +1945,7 @@ async function joue1(e) {
   }
   if (e.t === 'tir') {
     const de = el({ s:e.s }), vers = el(e.vers) || el({ s:e.s === 'J' ? 'O' : 'J' }); if (!de || !vers) return;
-    bandeauAction(e.s, `<b>${QUI(e.s)}</b> · ${e.nom} <span class="vs">🎲 ${e.vs.join(' · ')}</span> → <b>${e.cible === S.J.nom ? 'toi' : e.cible || ''}</b> : <span class="dg">${e.dg} dégâts</span>`);
+    await bandeauAction(e.s, `<b>${QUI(e.s)}</b> · ${e.nom} <span class="vs">🎲 ${e.vs.join(' · ')}</span> → <b>${e.cible === S.J.nom ? 'toi' : e.cible || ''}</b> : <span class="dg">${e.dg} dégâts</span>`);
     await mire(de, vers);
     son('tir'); flotte(de, `${e.nom} ${e.vs.join('·')}`, 'nom');
     const b = document.createElement('div'); b.className = 'boule'; b.style.setProperty('--c', (e.s === 'J' ? S.J : S.O).c);
@@ -1948,7 +1953,7 @@ async function joue1(e) {
   }
   if (e.t === 'coup' || e.t === 'louve') {
     const de = el(e.de), vers = el(e.vers) || el({ s:e.de.s === 'J' ? 'O' : 'J' }); if (!de || !vers) return;
-    bandeauAction(e.de.s, e.t === 'louve' ? `🐺 <b>La Louve</b> bondit → <b>${e.cible === S.J.nom ? 'toi' : e.cible}</b> : <span class="dg">${e.n} dégâts</span>` : `🐾 <b>${e.nom}</b>${e.emb ? ' <b style="color:#c084fc">EMBUSCADE !</b>' : ''} attaque → <b>${e.cible === S.J.nom ? 'toi' : e.cible}</b> : <span class="dg">${e.a} dégâts</span>`);
+    await bandeauAction(e.de.s, e.t === 'louve' ? `🐺 <b>La Louve</b> bondit → <b>${e.cible === S.J.nom ? 'toi' : e.cible}</b> : <span class="dg">${e.n} dégâts</span>` : `🐾 <b>${e.nom}</b>${e.emb ? ' <b style="color:#c084fc">EMBUSCADE !</b>' : ''} attaque → <b>${e.cible === S.J.nom ? 'toi' : e.cible}</b> : <span class="dg">${e.a} dégâts</span>`);
     await mire(de, vers);
     if (e.t === 'louve') { son('louve'); flotte(de, `🐺 ${e.r.join(' · ')}`, 'nom'); await dodo(500); }
     const a = centre(de), b = centre(vers), dx = (b.x - a.x) * .8, dy = (b.y - a.y) * .8;
@@ -1969,7 +1974,7 @@ async function joue1(e) {
   }
   if (e.t === 'soin') { const c = el(e.c); son('soin'); effetImage('coeur', c, .9); flotte(c, `+${e.n}`, 'soin'); if (c) { c.classList.remove('brille'); void c.offsetWidth; c.classList.add('brille'); } majVie(e.c, e); await dodo(450); return; }
   if (e.t === 'tombe') { const c = el(e.c); if (!c) return; son('tombe'); effetImage('mort', c, 1); await c.animate([{ transform:'none', opacity:1 }, { transform:'translateY(14px) rotate(14deg) scale(.7)', opacity:0 }], { duration:450 * fxVite, fill:'forwards' }).finished.catch(() => {}); return; }
-  if (e.t === 'garde') { const c = el({ s:e.s }); son('garde'); bandeauAction(e.s, `🛡 <b>${QUI(e.s)}</b> pose sa Garde <span class="vs">🎲 ${(e.vs || []).join(' · ')}</span> : <b>${e.quoi}</b> jusqu’au prochain tour`); effetImage('armure', c, .9); flotte(c, `🛡 ${e.quoi || e.nom}`, 'bleu'); if (c) { c.classList.remove('garde'); void c.offsetWidth; c.classList.add('garde'); } await dodo(450); return; }
+  if (e.t === 'garde') { const c = el({ s:e.s }); son('garde'); await bandeauAction(e.s, `🛡 <b>${QUI(e.s)}</b> pose sa Garde <span class="vs">🎲 ${(e.vs || []).join(' · ')}</span> : <b>${e.quoi}</b> jusqu’au prochain tour`); effetImage('armure', c, .9); flotte(c, `🛡 ${e.quoi || e.nom}`, 'bleu'); if (c) { c.classList.remove('garde'); void c.offsetWidth; c.classList.add('garde'); } await dodo(450); return; }
   if (e.t === 'defense') { const c = el(e.c); if (!c) return; son('garde'); if (!effetImage('armure', c, .7)) effet('bouclier', c); flotte(c, '🛡 En défense', 'bleu'); await dodo(500); return; }
   if (e.t === 'transforme') {
     const c = el(e.c); if (!c || c.classList.contains('mystere')) return; son('ultime'); effet('alchimie', c, 1.2);
@@ -1982,7 +1987,7 @@ async function joue1(e) {
     await dodo(1500); c.style.zIndex = ''; return;
   }
   if (e.t === 'nouveauDe') { son('tour'); const d = document.createElement('div'); d.className = 'annonce'; d.innerHTML = `🎲 Nouveau dé !<div style="font-size:.55em;color:#fff">Tu lances maintenant ${e.n} dés${e.n >= 5 ? ' (le maximum)' : ''}</div>`; couche().appendChild(d); await dodo(1300); d.remove(); return; }
-  if (e.t === 'pc') { const c = el({ s:e.s }); if (!c) return; bandeauAction(e.s, `◆ <b>${QUI(e.s)}</b> vend ${e.nb || 1} dé${(e.nb || 1) > 1 ? 's' : ''} : <b>+${e.n} PC</b>`, 1000); son('vendre'); effetImage('pc', c, .8); flotte(c, `+${e.n} PC`, 'bleu'); await dodo(350); return; }
+  if (e.t === 'pc') { const c = el({ s:e.s }); if (!c) return; await bandeauAction(e.s, `◆ <b>${QUI(e.s)}</b> vend ${e.nb || 1} dé${(e.nb || 1) > 1 ? 's' : ''} : <b>+${e.n} PC</b>`, 1000); son('vendre'); effetImage('pc', c, .8); flotte(c, `+${e.n} PC`, 'bleu'); await dodo(350); return; }
   if (e.t === 'jauge') { const c = el({ s:e.s }); if (!c) return; ton(523, .4, 'triangle', .1); ton(784, .5, 'triangle', .1, null, .12); if (!effetImage('jauge', c, 1.2)) effet('lumiere', c); flotte(c, '⚡ Ultime prêt !', 'nom'); await dodo(700); return; }
   if (e.t === 'invoque') { const f = el({ s:e.s, uid:'x' }); son(/louve/i.test(e.nom || '') ? 'louve' : 'magie'); effetImage('invocation', f, 1.1); flotte(f, `🐺 ${e.nom} arrive !`, 'nom'); await dodo(700); return; }
 }
@@ -1992,15 +1997,15 @@ async function joueFX() {
   fxOn = false; document.body.classList.remove('fxon'); rendu();
 }
 // toucher l'écran pendant les animations les accélère
-document.addEventListener('pointerdown', () => { if (fxOn) fxVite = .3; }, true);
+document.addEventListener('pointerdown', () => { if (fxOn && !(S && S.tuto)) fxVite = .5; }, true); // 14/11 : plus d'accélération dans le tutoriel
 </script>
-<script src="pantheon.js?v=20261113-222227"></script>
-<script src="tuto.js?v=20261113-222227"></script>
-<script src="deux.js?v=20261113-222227"></script>
-<script src="invasion.js?v=20261113-222227"></script>
-<script src="enigme-table.js?v=20261113-222227"></script>
-<script src="forge.js?v=20261113-222227"></script>
-<script src="semaine.js?v=20261113-222227"></script>
-<script src="enigme.js?v=20261113-222227"></script>
+<script src="pantheon.js?v=20261113-223124"></script>
+<script src="tuto.js?v=20261113-223124"></script>
+<script src="deux.js?v=20261113-223124"></script>
+<script src="invasion.js?v=20261113-223124"></script>
+<script src="enigme-table.js?v=20261113-223124"></script>
+<script src="forge.js?v=20261113-223124"></script>
+<script src="semaine.js?v=20261113-223124"></script>
+<script src="enigme.js?v=20261113-223124"></script>
 </body>
 </html>

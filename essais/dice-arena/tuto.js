@@ -30,12 +30,15 @@ debutTour = function (J) {
 };
 
 // ---------------------------------------------------------------- le script : une étape = une bulle, un élément à toucher (cible), une condition pour passer (ok)
+// 14/11 : on montre LES dés à toucher (pas toute la colonne) : liste d'éléments, entourés d'or, la main sur le premier pas encore choisi
+const desVises = vs => () => { const els = [...document.querySelectorAll('.des .d')], reste = [...vs], r = [];
+  S.J.des.forEach((d, i) => { if (d.pose || !els[i]) return; const k = reste.indexOf(d.v); if (k >= 0) { reste.splice(k, 1); r.push(els[i]); } }); return r.length ? r : null; };
 const nbPoses = () => S.J.des.filter(d => d.pose).length;
 const tambour = () => S.J.front.find(u => u.tambour);
 const ETAPES = [
   { t:1, c:'Miaou ! Bienvenue à la Guilde. Moi, c’est Moustache, chat d’aventure. Oui, l’oreille ébréchée, c’est une longue histoire. Toi, tu es Gorm, le sonneur de cor. En face : le Chef gobelin et son Chien de garde.', g:'Hé, le matou. Je sais qui je suis.' },
   { t:1, c:'On commence : touche le gros bouton « Lancer les dés ». Non, pas moi. Je ne me lance pas. Le bouton.', cible:'.lancer', ok:() => !S.J.aLancer },
-  { t:1, c:'Tes dés sont arrivés dans ton bac à dés, là, à droite. Deux 4 ! Une paire, ça fait une FRAPPE. Touche les deux 4.', cible:'.des', ok:() => sel.length === 2 && vals(sel).every(v => v === 4) || nbPoses() >= 2 },
+  { t:1, c:'Tes dés sont arrivés dans ton bac à dés, là, à droite. Deux 4 ! Une paire, ça fait une FRAPPE. Touche les deux 4.', cible:desVises([4, 4]), ok:() => sel.length === 2 && vals(sel).every(v => v === 4) || nbPoses() >= 2 },
   { t:1, c:'Maintenant l’épée, à gauche : c’est la Frappe. Elle brille en vert quand tes dés conviennent.', cible:'.ic.r1', ok:() => (ciblage && ciblage.quoi === 'frappe') || nbPoses() >= 2 },
   { t:1, c:'Vise le Chef : touche son portrait, en haut. La Frappe passe toujours par-dessus les créatures.', cible:'#b-O', ok:() => (ciblage && ciblage.choisi) || nbPoses() >= 2 },
   { t:1, c:'Avant d’attaquer, le jeu te montre ce que tu vas faire : 4 dégâts. Si ça te va, touche « Valider ».', cible:'#conf .ok', ok:() => nbPoses() >= 2 },
@@ -43,15 +46,15 @@ const ETAPES = [
   { t:1, c:'Il te reste un dé. Touche « Fin du tour » : les dés pas posés sont VENDUS tout seuls, 1 PC chacun. C’est comme ça qu’on gagne ses points de compétence.', g:'Je garde la monnaie.', cible:'.b2', ok:() => S.J.tours >= 2 },
   { t:2, c:'Aïe. Le Chef a riposté : ton anneau rouge a baissé. On va éviter que ça recommence.', g:'Une égratignure.' },
   { t:2, c:'Lance tes dés. Tu en as 4 maintenant : un de plus à chaque tour, jusqu’à 5.', cible:'.lancer', ok:() => !S.J.aLancer },
-  { t:2, c:'Pas de paire. Pas grave : tu as 2 RELANCES gratuites par tour. Touche le 2 et le 1 : on garde le 3 et le 6.', cible:'.des', ok:() => (sel.length === 2 && vals(sel).sort().join() === '1,2') || S.J.relance < 2 },
+  { t:2, c:'Pas de paire. Pas grave : tu as 2 RELANCES gratuites par tour. Touche le 2 et le 1 : on garde le 3 et le 6.', cible:desVises([2, 1]), ok:() => (sel.length === 2 && vals(sel).sort().join() === '1,2') || S.J.relance < 2 },
   { t:2, c:'Et maintenant « Relancer », en bas.', cible:'.b1', ok:() => S.J.relance < 2 },
   { t:2, c:'Ce bouclier, à gauche, c’est ta GARDE. Chaque héros a la sienne. Celle de Gorm, la Peau épaisse : chaque dé IMPAIR (1, 3, 5) devient du bouclier. Un 2 ou un 4 ne donne rien. Un 6 donne des ÉPINES : celui qui te frappe se pique.', cible:'.ic.r3' },
-  { t:2, c:'Touche le 3 dans ton bac à dés, à droite. Garde tes deux 5 : ils frapperont juste après.', cible:'.des', ok:() => (sel.length === 1 && sel[0].v === 3) || S.J.gardeFaite },
+  { t:2, c:'Touche le 3 dans ton bac à dés, à droite. Garde tes deux 5 : ils frapperont juste après.', cible:desVises([3]), ok:() => (sel.length === 1 && sel[0].v === 3) || S.J.gardeFaite },
   { t:2, c:'Puis le bouclier : ton 3 devient 3 de bouclier.', cible:'.ic.r3', ok:() => S.J.gardeFaite },
   { t:2, c:'Le bouclier est posé à côté de ton cœur : il prendra les coups à ta place. Et tes deux 5 forment une paire : FRAPPE ! (les deux 5, puis l’épée). Puis « Fin du tour ».', libre:true, ok:() => S.J.tours >= 3 },
-  { t:3, c:'Regarde en bas : ta MAIN. Chaque carte coûte des PC (le chiffre dans le coin) et demande un dé. Le Tambour de clan veut un dé PAIR.', g:'Mon tambour ! Enfin quelqu’un de sérieux.' },
+  { t:3, c:'Tu te souviens des PC, gagnés en vendant tes dés ? Tu en as assez maintenant pour jouer une carte : le Tambour de clan, là, coûte 2 PC et demande un dé PAIR.', g:'Mon tambour ! Enfin quelqu’un de sérieux.', cible:() => document.querySelector('.main .c:last-child') },
   { t:3, c:'Lance d’abord tes dés.', cible:'.lancer', ok:() => !S.J.aLancer },
-  { t:3, c:'Touche le 2.', cible:'.des', ok:() => (sel.length === 1 && sel[0].v % 2 === 0) || !!tambour() },
+  { t:3, c:'Touche le 2.', cible:desVises([2]), ok:() => (sel.length === 1 && sel[0].v % 2 === 0) || !!tambour() },
   { t:3, c:'Puis la carte du Tambour : elle s’agrandit. Touche-la encore pour la jouer.', cible:() => document.querySelector('.main .c.vue') || document.querySelector('.main'), ok:() => !!tambour() },
   { t:3, c:'Ton Tambour arrive sur le plateau. Il DORT ce tour (💤) : une créature attaque à partir du tour suivant. Joue le reste comme tu veux, puis « Fin du tour ».', libre:true, ok:() => S.J.tours >= 4 },
   { t:4, c:'Lance tes dés. (Tu peux aussi jouer tes créatures avant ou après : ça ne change rien.)', cible:'.lancer', ok:() => !S.J.aLancer },
@@ -59,12 +62,12 @@ const ETAPES = [
   { t:4, c:'Le Chien de garde a une BARRIÈRE : les créatures doivent l’attaquer d’abord. Touche-le. (Les Frappes, elles, passent par-dessus. Les règles, c’est pour les chiens. Pardon, Chien.)', cible:'#f-O', ok:() => !attaquant || !tambour() || !tambour().pret },
   { t:4, c:'Astuce : en touchant ta créature, tu peux aussi la mettre EN DÉFENSE : elle prend alors tous les coups visés vers toi. À toi de jouer ce tour, puis « Fin du tour ».', libre:true, ok:() => S.J.tours >= 5 },
   { t:5, c:'Lance. J’ai un pressentiment.', cible:'.lancer', ok:() => !S.J.aLancer },
-  { t:5, c:'2, 4, 6, 2 : quatre dés PAIRS. C’est ton POUVOIR, le Chant de guerre ! Touche ces quatre dés.', cible:'.des', ok:() => (sel.length === 4 && vals(sel).every(v => v % 2 === 0)) || S.J.dernier === 'pouvoir' },
+  { t:5, c:'2, 4, 6, 2 : quatre dés PAIRS. C’est ton POUVOIR, le Chant de guerre ! Touche ces quatre dés.', cible:desVises([2, 4, 6, 2]), ok:() => (sel.length === 4 && vals(sel).every(v => v % 2 === 0)) || S.J.dernier === 'pouvoir' },
   { t:5, c:'Puis l’étoile, à gauche : le Pouvoir.', cible:'.ic.r4', ok:() => S.J.dernier === 'pouvoir' || nbPoses() >= 4 },
   { t:5, c:'10 dégâts, et tes créatures gagnent de l’attaque ce tour ! Finis ton tour comme tu veux.', g:'BWOOOOM !', libre:true, ok:() => S.J.tours >= 6 },
   { t:6, c:'Regarde l’anneau doré autour de ton portrait : il est PLEIN. Il se remplit à chaque dé posé et quand tu prends des coups. Plein + 3 PC = ULTIME, une fois par combat.', g:'Enfin. Le Grand Souffle.' },
   { t:6, c:'Lance.', cible:'.lancer', ok:() => !S.J.aLancer },
-  { t:6, c:'Ton Ultime veut 3 dés tous impairs. Touche le 1, le 3 et le 5.', cible:'.des', ok:() => (sel.length === 3 && vals(sel).every(v => v % 2 === 1)) || S.J.ultimeFait },
+  { t:6, c:'Ton Ultime veut 3 dés tous impairs. Touche le 1, le 3 et le 5.', cible:desVises([1, 3, 5]), ok:() => (sel.length === 3 && vals(sel).every(v => v % 2 === 1)) || S.J.ultimeFait },
   { t:6, c:'Et maintenant… touche ton propre portrait, Gorm. Oui, toi.', cible:'#b-J', ok:() => S.J.ultimeFait },
   { t:6, c:'Voilà, tu sais tout ce qu’il faut. À toi de finir le travail. Moi, je vais grignoter un truc.', g:'Laisse-moi faire.', libre:true, ok:() => false },
 ];
@@ -97,6 +100,7 @@ function projecteurEl() {
       #projo .boutonsT a { color:#e9e3ff; font-size:.82em; text-shadow:0 1px 3px #000; }
       #projo.libre .bulleT { pointer-events:none; } #projo.libre .boutonsT a, #projo.libre .boutonsT button { pointer-events:auto; } #projo.libre .ligneT { opacity:.9; font-size:.86em; padding:6px 9px; }
       @keyframes entreT { from { opacity:0; transform:translateY(8px); } }
+      .des .d.tutoVise { outline:3px solid #f3c96b; outline-offset:2px; border-radius:8px; box-shadow:0 0 16px 4px #f3c96bcc; }
       .barre.diplome img:first-child { box-shadow:0 0 0 3px #f3c96b, 0 0 14px #f3c96b; }
       .barre.diplome::after { content:'🎓'; position:absolute; font-size:16px; left:2px; top:2px; z-index:3; filter:drop-shadow(0 1px 2px #000); }`;
     document.head.appendChild(st);
@@ -107,16 +111,24 @@ function projecteurEl() {
 function projecteur(el, html, o = {}) {
   const p = projecteurEl(); p.classList.remove('cache'); p.classList.toggle('libre', !!o.libre); p.classList.toggle('seul', !el);
   const W = innerWidth, H = innerHeight, m = 6;
-  let r = el ? el.getBoundingClientRect() : { left:W / 2, top:H / 2, right:W / 2, bottom:H / 2, width:0, height:0 };
+  const liste = Array.isArray(el) ? el : null;
+  if (liste) { const rs = liste.map(x => x.getBoundingClientRect()); el = liste[0];
+    var rUnion = { left:Math.min(...rs.map(x => x.left)), top:Math.min(...rs.map(x => x.top)), right:Math.max(...rs.map(x => x.right)), bottom:Math.max(...rs.map(x => x.bottom)) };
+    liste.forEach(x => x.classList.add('tutoVise')); }
+  let r = liste ? rUnion : el ? el.getBoundingClientRect() : { left:W / 2, top:H / 2, right:W / 2, bottom:H / 2, width:0, height:0 };
   const L = Math.max(0, r.left - m), T = Math.max(0, r.top - m), R = Math.min(W, r.right + m), B = Math.min(H, r.bottom + m);
   const [h, b, g, d] = p.querySelectorAll('.pv');
   if (el) { Object.assign(h.style, { left:'0', top:'0', width:W + 'px', height:T + 'px' }); Object.assign(b.style, { left:'0', top:B + 'px', width:W + 'px', height:(H - B) + 'px' });
     Object.assign(g.style, { left:'0', top:T + 'px', width:L + 'px', height:(B - T) + 'px' }); Object.assign(d.style, { left:R + 'px', top:T + 'px', width:(W - R) + 'px', height:(B - T) + 'px' }); }
   else { Object.assign(h.style, { left:'0', top:'0', width:W + 'px', height:H + 'px' }); [b, g, d].forEach(x => Object.assign(x.style, { width:'0', height:'0' })); }
   Object.assign(p.querySelector('.anneauP').style, { left:L + 'px', top:T + 'px', width:(R - L) + 'px', height:(B - T) + 'px', pointerEvents:o.regarde ? 'auto' : 'none' });
-  // 14/11 : la main au coin en bas à droite de la cible (elle ne cache plus le texte d'un bouton)
-  const main1 = p.querySelector('.main1'), large = R - L > 90;
-  Object.assign(main1.style, { left:Math.min(W - 44, large ? R - 26 : (L + R) / 2 + 6) + 'px', top:Math.min(H - 44, large ? B - 24 : B - 14) + 'px' });
+  // 14/11 (2) : la main ne se pose JAMAIS sur ce qu'elle montre : juste dessous (👆), ou juste au-dessus (👇) si la cible est en bas de l'écran
+  const main1 = p.querySelector('.main1');
+  const poseMain = (l, t, r, b) => { const dessous = b + 44 < H - 4; main1.textContent = dessous ? '👆' : '👇';
+    Object.assign(main1.style, { left:Math.max(4, Math.min(W - 44, (l + r) / 2 - 17)) + 'px', top:(dessous ? b + 2 : Math.max(4, t - 44)) + 'px' }); };
+  if (liste) { const vise = liste.find(x => !x.classList.contains('sel')) || liste[liste.length - 1], rv = vise.getBoundingClientRect(); // un dé : la main à sa gauche
+    main1.textContent = '👉'; Object.assign(main1.style, { left:Math.max(4, rv.left - 42) + 'px', top:(rv.top + rv.height / 2 - 20) + 'px' }); }
+  else poseMain(L, T, R, B);
   const bu = p.querySelector('.bulleT'); if (bu.dataset.h !== html) { bu.innerHTML = html; bu.dataset.h = html; } // 13/11 soir : la bulle ne « repope » plus à chaque toucher
   // la bulle se met du côté où il y a de la place
   const haut = el ? (T + B) / 2 > H * .5 : false;
@@ -124,7 +136,7 @@ function projecteur(el, html, o = {}) {
   if (o.libre) { bu.style.top = '8px'; bu.style.bottom = ''; }
   // 14/11 : étape « regarde » : la main montre « Suivant » (qui pulse), pas la zone en lumière
   const sb = bu.querySelector('.boutonsT button'); if (sb) sb.classList.toggle('pulse', !!o.regarde);
-  if (o.regarde && sb) { const r2 = sb.getBoundingClientRect(); Object.assign(main1.style, { left:Math.min(W - 44, r2.right - 30) + 'px', top:Math.min(H - 44, r2.bottom - 18) + 'px' }); }
+  if (o.regarde && sb) { const r2 = sb.getBoundingClientRect(); poseMain(r2.left, r2.top, r2.right, r2.bottom); }
 }
 function projecteurCache() { const p = document.getElementById('projo'); if (p) p.classList.add('cache'); }
 
