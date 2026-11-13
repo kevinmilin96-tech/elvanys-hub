@@ -39,7 +39,7 @@ const ETAPES = [
   { t:1, c:'Maintenant l’épée, à gauche : c’est la Frappe. Elle brille en vert quand tes dés conviennent.', cible:'.ic.r1', ok:() => (ciblage && ciblage.quoi === 'frappe') || nbPoses() >= 2 },
   { t:1, c:'Vise le Chef : touche son portrait, en haut. La Frappe passe toujours par-dessus les créatures.', cible:'#b-O', ok:() => (ciblage && ciblage.choisi) || nbPoses() >= 2 },
   { t:1, c:'Avant d’attaquer, le jeu te montre ce que tu vas faire : 4 dégâts. Si ça te va, touche « Valider ».', cible:'#conf .ok', ok:() => nbPoses() >= 2 },
-  { t:1, c:'Bien tapé ! Regarde la carte en lumière : le chiffre dans le rond, en haut à droite, c’est son coût en PC. Les PC, ce sont tes POINTS DE COMPÉTENCE : il en faut pour jouer tes cartes.', cible:() => [...document.querySelectorAll('.main .c')].pop() },
+  { t:1, c:'Bien tapé ! Regarde le rond en lumière, en haut à droite de ta carte : c’est son coût en PC. Les PC, ce sont tes POINTS DE COMPÉTENCE : il en faut pour jouer tes cartes.', cible:() => { const c = [...document.querySelectorAll('.main .c')].pop(); return c && (c.querySelector('.cg-cout') || c); } },
   { t:1, c:'Il te reste un dé. Touche « Fin du tour » : les dés pas posés sont VENDUS tout seuls, 1 PC chacun. C’est comme ça qu’on gagne ses points de compétence.', g:'Je garde la monnaie.', cible:'.b2', ok:() => S.J.tours >= 2 },
   { t:2, c:'Aïe. Le Chef a riposté : ton anneau rouge a baissé. On va éviter que ça recommence.', g:'Une égratignure.' },
   { t:2, c:'Lance tes dés. Tu en as 4 maintenant : un de plus à chaque tour, jusqu’à 5.', cible:'.lancer', ok:() => !S.J.aLancer },
@@ -112,7 +112,7 @@ function projecteur(el, html, o = {}) {
   if (el) { Object.assign(h.style, { left:'0', top:'0', width:W + 'px', height:T + 'px' }); Object.assign(b.style, { left:'0', top:B + 'px', width:W + 'px', height:(H - B) + 'px' });
     Object.assign(g.style, { left:'0', top:T + 'px', width:L + 'px', height:(B - T) + 'px' }); Object.assign(d.style, { left:R + 'px', top:T + 'px', width:(W - R) + 'px', height:(B - T) + 'px' }); }
   else { Object.assign(h.style, { left:'0', top:'0', width:W + 'px', height:H + 'px' }); [b, g, d].forEach(x => Object.assign(x.style, { width:'0', height:'0' })); }
-  Object.assign(p.querySelector('.anneauP').style, { left:L + 'px', top:T + 'px', width:(R - L) + 'px', height:(B - T) + 'px' });
+  Object.assign(p.querySelector('.anneauP').style, { left:L + 'px', top:T + 'px', width:(R - L) + 'px', height:(B - T) + 'px', pointerEvents:o.regarde ? 'auto' : 'none' });
   Object.assign(p.querySelector('.main1').style, { left:Math.min(W - 44, (L + R) / 2 + 6) + 'px', top:Math.min(H - 44, B - 14) + 'px' });
   const bu = p.querySelector('.bulleT'); if (bu.dataset.h !== html) { bu.innerHTML = html; bu.dataset.h = html; } // 13/11 soir : la bulle ne « repope » plus à chaque toucher
   // la bulle se met du côté où il y a de la place
@@ -141,7 +141,7 @@ function tutoMaj() {
   const el = e.cible ? (typeof e.cible === 'function' ? e.cible() : document.querySelector(e.cible)) : null;
   if (e.cible && !el) { projecteurCache(); return; }
   if (T.miaou !== T.i) { T.miaou = T.i; if (typeof GM !== 'undefined' && Date.now() - (window.__miaou || 0) > 25000) { window.__miaou = Date.now(); GM.son('miaou'); } } // miaulement : seulement quand l'étape change
-  projecteur(el, bulleTuto(e), { libre:e.libre });
+  projecteur(el, bulleTuto(e), { libre:e.libre, regarde:!e.ok && !e.libre }); // étape « regarde » (bouton Suivant) : la zone en lumière ne réagit pas au toucher
 }
 // on éclaire à chaque dessin de l'écran
 const _dessineTuto = dessine;
