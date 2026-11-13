@@ -17,7 +17,7 @@
   .el { position:absolute; transform:translate(-50%, -50%); touch-action:none; cursor:grab; }
   .el.actif, .el.choisi { outline:2px dashed #7dffb0; outline-offset:2px; }
   .el::before { content:''; position:absolute; left:50%; top:50%; width:6px; height:6px; margin:-3px 0 0 -3px; border-radius:50%; background:#ff3b3b; box-shadow:0 0 0 1px #fff; z-index:2; pointer-events:none; }
-  .fleches { display:grid; grid-template-columns:repeat(5, 1fr); gap:4px; }
+  .fleches { display:grid; grid-template-columns:repeat(6, 1fr); gap:4px; }
   .fleches button { padding:7px 0; font-size:15px; }
   #choix { font-size:12px; color:#f3c96b; text-align:center; }
   .med { width:var(--m); height:var(--m); background:center/contain no-repeat; }
@@ -45,7 +45,7 @@
   <div class="bas">
     <label>Zoom <input type="range" id="tz" min="1" max="6" step="0.5" value="1"><span id="vz">×1</span></label>
     <div id="choix">Touche un élément pour le régler aux flèches.</div>
-    <div class="fleches"><button onclick="pousse(-1,0)">◀</button><button onclick="pousse(0,-1)">▲</button><button onclick="pousse(0,1)">▼</button><button onclick="pousse(1,0)">▶</button><button onclick="centrer()">🎯</button></div>
+    <div class="fleches"><button onclick="pousse(-1,0)">◀</button><button onclick="pousse(0,-1)">▲</button><button onclick="pousse(0,1)">▼</button><button onclick="pousse(1,0)">▶</button><button onclick="centrer()">🎯</button><button onclick="changePas(this)" style="font-size:12px">pas 0,1</button></div>
     <div class="fleches" style="grid-template-columns:1fr 1fr 2fr"><button onclick="taille(-1)">－ taille</button><button onclick="taille(1)">＋ taille</button><button onclick="taille(0)">taille d’origine</button></div>
     <label>Médaillons <input type="range" id="tm" min="7" max="14" step="0.1"><span id="vm"></span></label>
     <label>Portraits <input type="range" id="tp" min="12" max="24" step="0.1"><span id="vp"></span></label>
@@ -101,15 +101,19 @@ function choisir(e) { document.querySelectorAll('.el.choisi').forEach(x => x.cla
 function appliqueTaille(e) { const t = (R.tailles || {})[e.dataset.k]; e.style.transform = `translate(-50%, -50%) scale(${(t || 100) / 100})`; }
 function taille(sens) { if (!choisi) { choix.textContent = 'Touche d’abord un élément.'; return; } R.tailles = R.tailles || {}; const k = choisi.dataset.k;
   R.tailles[k] = sens ? Math.max(30, Math.min(300, (R.tailles[k] || 100) + sens * 2)) : 100; appliqueTaille(choisi); localStorage.setItem(CLE, JSON.stringify(R)); choisir(choisi); }
-function pousse(dx, dy) { if (!choisi) { choix.textContent = 'Touche d’abord un élément.'; return; } const k = choisi.dataset.k; R[k] = [+(R[k][0] + dx * .1).toFixed(2), +(R[k][1] + dy * .1).toFixed(2)]; choisi.style.left = R[k][0] + '%'; choisi.style.top = R[k][1] + '%'; zone(); zoneChamp(); localStorage.setItem(CLE, JSON.stringify(R)); choisir(choisi); }
+function pousse(dx, dy) { if (!choisi) { choix.textContent = 'Touche d’abord un élément.'; return; } const k = choisi.dataset.k; R[k] = [+(R[k][0] + dx * pas).toFixed(2), +(R[k][1] + dy * pas).toFixed(2)]; memeColonne(k); choisi.style.left = R[k][0] + '%'; choisi.style.top = R[k][1] + '%'; zone(); zoneChamp(); localStorage.setItem(CLE, JSON.stringify(R)); choisir(choisi); }
 // zoom : le plateau grandit dans la vue, qu'on fait défiler au doigt à côté des éléments
 function zoom(z) { const vue = document.getElementById('vue'); pl.style.height = (vue.clientHeight * z) + 'px'; vz.textContent = '×' + z; centrer(); }
 function centrer() { if (!choisi) return; const vue = document.getElementById('vue'), r = pl.getBoundingClientRect(), k = R[choisi.dataset.k]; vue.scrollLeft = r.width * k[0] / 100 - vue.clientWidth / 2; vue.scrollTop = r.height * k[1] / 100 - vue.clientHeight / 2; }
 function debut(ev) { ev.preventDefault(); cour = ev.currentTarget; choisir(cour); cour.classList.add('actif'); cour.setPointerCapture(ev.pointerId); cour.onpointermove = bouge; cour.onpointerup = fin; }
+// 14/11 : les dés forment UNE colonne : déplacer l'un de gauche à droite déplace l'autre (le jeu n'utilise qu'une position x)
+function memeColonne(k) { const o = { de_premier:'de_dernier', de_dernier:'de_premier' }[k]; if (!o) return; R[o] = [R[k][0], R[o][1]]; const e = pl.querySelector(`[data-k="${o}"]`); if (e) e.style.left = R[o][0] + '%'; }
+let pas = .1;
+function changePas(b) { pas = pas === .1 ? .01 : .1; b.textContent = 'pas ' + String(pas).replace('.', ','); }
 function bouge(ev) {
   const r = pl.getBoundingClientRect(), k = cour.dataset.k;
   const x = Math.max(0, Math.min(100, (ev.clientX - r.left) / r.width * 100)), y = Math.max(0, Math.min(100, (ev.clientY - r.top) / r.height * 100));
-  R[k] = [+x.toFixed(2), +y.toFixed(2)]; cour.style.left = x + '%'; cour.style.top = y + '%'; zone(); zoneChamp();
+  R[k] = [+x.toFixed(2), +y.toFixed(2)]; cour.style.left = x + '%'; cour.style.top = y + '%'; zone(); zoneChamp(); memeColonne(k);
 }
 function fin() { cour.classList.remove('actif'); cour.onpointermove = null; cour = null; localStorage.setItem(CLE, JSON.stringify(R)); }
 tz.oninput = () => zoom(+tz.value);
