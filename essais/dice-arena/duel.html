@@ -609,7 +609,7 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261113-214523';
+const VERSION = '20261113-214707';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -628,11 +628,11 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261113-214523"></script>
-<script src="musique.js?v=20261113-214523"></script>
-<script src="donnees.js?v=20261113-214523"></script>
-<script src="odyssee.js?v=20261113-214523"></script>
-<script src="chronique.js?v=20261113-214523"></script>
+<script src="cartes.js?v=20261113-214707"></script>
+<script src="musique.js?v=20261113-214707"></script>
+<script src="donnees.js?v=20261113-214707"></script>
+<script src="odyssee.js?v=20261113-214707"></script>
+<script src="chronique.js?v=20261113-214707"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -1681,7 +1681,7 @@ function bruit(d, vol, f1, f2, depart) {
   s.connect(fl).connect(g).connect(a.destination); s.start(t);
 }
 function son(q) {
-  if (!sonOn) return;
+  sonOn = localStorage.getItem('guilde-son') !== '0'; if (!sonOn) return;
   // 13/11 soir : les bruitages choisis par l'utilisateur passent par le lecteur commun (musique.js) ; sinon l'ancien son fabriqué
   if (typeof GM !== 'undefined' && GM.aSon(q)) { GM.son(q); if (navigator.vibrate && (q === 'coup' || q === 'gros')) navigator.vibrate(q === 'gros' ? 60 : 25); return; }
   if (q === 'coup') { bruit(.18, .5, 1200, 200); ton(120, .22, 'sine', .45, 50); }
@@ -1936,20 +1936,20 @@ async function joue1(e) {
   if (e.t === 'invoque') { const f = el({ s:e.s, uid:'x' }); son(/louve/i.test(e.nom || '') ? 'louve' : 'magie'); effetImage('invocation', f, 1.1); flotte(f, `🐺 ${e.nom} arrive !`, 'nom'); await dodo(700); return; }
 }
 async function joueFX() {
-  fxOn = true; fxVite = 1.4; document.body.classList.add('fxon');
+  fxOn = true; fxVite = localStorage.getItem('guilde-vitesse') === 'rapide' ? .7 : 1.4; // 13/11 soir : réglage « Vitesse des animations » document.body.classList.add('fxon');
   while (FX.length) { const e = FX.shift(); try { await joue1(e); } catch (x) { console.error(x); } }
   fxOn = false; document.body.classList.remove('fxon'); rendu();
 }
 // toucher l'écran pendant les animations les accélère
 document.addEventListener('pointerdown', () => { if (fxOn) fxVite = .3; }, true);
 </script>
-<script src="pantheon.js?v=20261113-214523"></script>
-<script src="tuto.js?v=20261113-214523"></script>
-<script src="deux.js?v=20261113-214523"></script>
-<script src="invasion.js?v=20261113-214523"></script>
-<script src="enigme-table.js?v=20261113-214523"></script>
-<script src="forge.js?v=20261113-214523"></script>
-<script src="semaine.js?v=20261113-214523"></script>
-<script src="enigme.js?v=20261113-214523"></script>
+<script src="pantheon.js?v=20261113-214707"></script>
+<script src="tuto.js?v=20261113-214707"></script>
+<script src="deux.js?v=20261113-214707"></script>
+<script src="invasion.js?v=20261113-214707"></script>
+<script src="enigme-table.js?v=20261113-214707"></script>
+<script src="forge.js?v=20261113-214707"></script>
+<script src="semaine.js?v=20261113-214707"></script>
+<script src="enigme.js?v=20261113-214707"></script>
 </body>
 </html>
