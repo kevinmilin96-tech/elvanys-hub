@@ -77,7 +77,7 @@
   .fenetre h2 { color:var(--or); margin:.1em 0 .4em; font-size:1.2em; }
   .fenetre li { margin:.35em 0; }
   .lignep { display:block; width:100%; text-align:left; background:#1d1b3a; color:#fff; border:1px solid #4b4580; border-radius:10px; padding:7px 9px; margin:4px 0; font-size:.88em; }
-  #majbar { position:fixed; left:8px; right:8px; top:8px; z-index:40; background:#2a7fc1; color:#fff; border-radius:14px; padding:9px 12px; display:flex; align-items:center; gap:10px; box-shadow:0 8px 24px #000a; font-size:.88em; }
+  #majbar { position:fixed; left:8px; right:8px; top:8px; z-index:90; background:#2a7fc1; color:#fff; border-radius:14px; padding:9px 12px; display:flex; align-items:center; gap:10px; box-shadow:0 8px 24px #000a; font-size:.88em; }
   #majbar span { flex:1; } #majbar button { background:#fff; color:#1d4f80; border:none; border-radius:10px; padding:8px 12px; font-weight:bold; }
   .ordre { width:min(88vw, 380px); }
   .ordre-tete { display:flex; align-items:center; gap:10px; padding:12px; margin:-4px -6px 12px; border-radius:14px; background:#1d1b3a center/cover; border:1px solid #4b4580; }
@@ -609,10 +609,10 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261113-214021';
+const VERSION = '20261113-214129';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
-  if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); location.replace('duel.html?v=' + v); }
+  if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
 }).catch(() => {});
 // Pendant qu'on joue : vérifie toutes les 2 minutes (et au retour sur l'appli) ; une nouvelle version = un bandeau « Mettre à jour »,
 // jamais de rechargement surprise au milieu d'une partie.
@@ -621,18 +621,18 @@ function verifieVersion() {
     v = (v || '').trim(); if (!v || v === VERSION || document.getElementById('majbar')) return;
     const b = document.createElement('div'); b.id = 'majbar';
     b.innerHTML = '<span><b>Nouvelle version du jeu</b><br>La partie en cours sera perdue, l’historique est gardé.</span><button>Mettre à jour</button>';
-    b.querySelector('button').onclick = () => location.replace('duel.html?v=' + v);
+    b.querySelector('button').onclick = () => { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); }; // 13/11 soir : on reste dans le même mode (tutoriel…)
     document.body.appendChild(b);
   }).catch(() => {});
 }
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261113-214021"></script>
-<script src="musique.js?v=20261113-214021"></script>
-<script src="donnees.js?v=20261113-214021"></script>
-<script src="odyssee.js?v=20261113-214021"></script>
-<script src="chronique.js?v=20261113-214021"></script>
+<script src="cartes.js?v=20261113-214129"></script>
+<script src="musique.js?v=20261113-214129"></script>
+<script src="donnees.js?v=20261113-214129"></script>
+<script src="odyssee.js?v=20261113-214129"></script>
+<script src="chronique.js?v=20261113-214129"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -1939,13 +1939,13 @@ async function joueFX() {
 // toucher l'écran pendant les animations les accélère
 document.addEventListener('pointerdown', () => { if (fxOn) fxVite = .3; }, true);
 </script>
-<script src="pantheon.js?v=20261113-214021"></script>
-<script src="tuto.js?v=20261113-214021"></script>
-<script src="deux.js?v=20261113-214021"></script>
-<script src="invasion.js?v=20261113-214021"></script>
-<script src="enigme-table.js?v=20261113-214021"></script>
-<script src="forge.js?v=20261113-214021"></script>
-<script src="semaine.js?v=20261113-214021"></script>
-<script src="enigme.js?v=20261113-214021"></script>
+<script src="pantheon.js?v=20261113-214129"></script>
+<script src="tuto.js?v=20261113-214129"></script>
+<script src="deux.js?v=20261113-214129"></script>
+<script src="invasion.js?v=20261113-214129"></script>
+<script src="enigme-table.js?v=20261113-214129"></script>
+<script src="forge.js?v=20261113-214129"></script>
+<script src="semaine.js?v=20261113-214129"></script>
+<script src="enigme.js?v=20261113-214129"></script>
 </body>
 </html>

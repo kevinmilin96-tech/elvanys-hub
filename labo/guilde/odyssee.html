@@ -100,19 +100,19 @@ function verifieVersion() {
     v = (v || '').trim(); if (!v || v === VERSION || document.getElementById('majbar')) return;
     const b = document.createElement('div'); b.id = 'majbar';
     b.innerHTML = '<span><b>Nouvelle version du jeu</b><br>Ton Odyssée en cours est gardée.</span><button>Mettre à jour</button>';
-    b.querySelector('button').onclick = () => location.replace('odyssee.html?v=' + v);
+    b.querySelector('button').onclick = () => { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('odyssee.html?' + q); };
     document.body.appendChild(b);
   }).catch(() => {});
 }
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261113-214021"></script>
-<script src="musique.js?v=20261113-214021"></script>
-<script src="donnees.js?v=20261113-214021"></script>
-<script src="odyssee.js?v=20261113-214021"></script>
-<script src="pantheon.js?v=20261113-214021"></script>
-<script src="chronique.js?v=20261113-214021"></script>
+<script src="cartes.js?v=20261113-214129"></script>
+<script src="musique.js?v=20261113-214129"></script>
+<script src="donnees.js?v=20261113-214129"></script>
+<script src="odyssee.js?v=20261113-214129"></script>
+<script src="pantheon.js?v=20261113-214129"></script>
+<script src="chronique.js?v=20261113-214129"></script>
 <script>
 // le moteur du Duel n'est pas chargé ici : les cartes de l'Odyssée appellent degats/soin seulement en combat (dans duel.html)
 const log = () => {}, degats = () => {}, soin = () => {}, altere = () => {}, invoque = () => {}, adv = () => ({}), fin = () => {};
