@@ -112,6 +112,19 @@
   .sceau div { background:#2a2260; border:2px solid #f3c96b88; border-radius:18px; padding:16px; max-width:280px; box-shadow:0 8px 24px #000; }
   .sceau .gros { display:block; font-size:2.2em; }
   .suite { margin-top:14px; border-radius:16px; padding:10px 12px 14px; background:#1d1b3aee; border:2px solid var(--c); }
+  /* ---------- 13/11 : images Gemini (fond de la Tour, livre en cadre étirable, cadenas) ---------- */
+  body { background:linear-gradient(#120f2488, #120f24cc), url('menu-recu/fond-tour.webp?v=1') center top/cover fixed, #120f24; }
+  #fiche { container-type:inline-size; }
+  #fiche .livre { --u:calc(100cqw / 1122); padding:0; border-radius:0; box-shadow:none; background:none; filter:drop-shadow(0 12px 22px #000c);
+    border-style:solid; border-color:transparent; border-width:calc(180 * var(--u)) calc(170 * var(--u)) calc(226 * var(--u)) calc(170 * var(--u));
+    border-image:url('menu-recu/livre.webp?v=1') 180 170 226 170 fill stretch; column-gap:calc(40 * var(--u)); }
+  #fiche .livre::after { display:none; }
+  #fiche .page { background:none; box-shadow:none; border-radius:0; padding:0 2px; margin-top:calc(-95 * var(--u)); }
+  #fiche .page.g { margin-left:calc(-45 * var(--u)); }
+  #fiche .page.d { margin-right:calc(-25 * var(--u)); }
+  #fiche .sceau { inset:calc(-180 * var(--u)) calc(-170 * var(--u)) calc(-226 * var(--u)); }
+  .bande .cad img, .sceau .gros img { display:block; }
+  .bande .cad img { width:28px; } .sceau .gros img { width:64px; margin:0 auto 6px; }
 </style>
 </head>
 <body>
@@ -130,9 +143,9 @@
     <li><b>Le second joueur</b> commence avec 4 PC et une carte de plus.</li>
   </ol></details>
 </main>
-<script src="donnees.js?v=20261113-132703"></script>
-<script src="odyssee.js?v=20261113-132703"></script>
-<script src="cartes.js?v=20261113-132703"></script>
+<script src="donnees.js?v=20261113-133216"></script>
+<script src="odyssee.js?v=20261113-133216"></script>
+<script src="cartes.js?v=20261113-133216"></script>
 <script>
 document.head.insertAdjacentHTML('beforeend', '<style>' + CSS_CARTE + '</style>');
 const SORTE = { u:'Créature', s:'Sort', e:'Équipement', r:'Piège' };
@@ -149,7 +162,7 @@ function parties(id) { try { const l = JSON.parse(localStorage.getItem('guilde-p
 const ZOK = () => localStorage.getItem('guilde-tuto') === 'fait'; // Zéphine : débloquée par le tutoriel (12/11)
 const verrouille = id => id === 'zephine' && !ZOK();
 function grille() {
-  document.getElementById('grille').innerHTML = ORDRE.map(id => `<button class="${id === actuel ? 'choisi' : ''} ${verrouille(id) ? 'verrou' : ''}" style="--hc:${HEROS[id].c}" onclick="choisir('${id}')"><img src="portraits/${id}.webp" alt="">${verrouille(id) ? '<span class="cad">🔒</span>' : ''}<small>${HEROS[id].nom}</small></button>`).join('');
+  document.getElementById('grille').innerHTML = ORDRE.map(id => `<button class="${id === actuel ? 'choisi' : ''} ${verrouille(id) ? 'verrou' : ''}" style="--hc:${HEROS[id].c}" onclick="choisir('${id}')"><img src="portraits/${id}.webp" alt="">${verrouille(id) ? '<span class="cad"><img src="menu-recu/cadenas.webp?v=1" alt="Verrouillé"></span>' : ''}<small>${HEROS[id].nom}</small></button>`).join('');
   const b = document.querySelector('.bande .choisi'); if (b) b.scrollIntoView({ inline:'center', block:'nearest' });
 }
 function choisir(id) { if (edition && !confirm('Quitter la modification du deck sans l’enregistrer ?')) return; edition = null; actuel = id; localStorage.setItem('guilde-tour', id); history.replaceState(null, '', '?h=' + id); grille(); fiche(); }
@@ -177,7 +190,7 @@ function fiche() {
         ${h.action ? `<div><b>Action · ${h.action.n}</b><em>${h.action.txt}</em> : ${h.action.d}</div>` : ''}
       </div>
     </div>
-    ${verrouille(id) ? `<div class="sceau"><div><span class="gros">🔒</span><p>${h.nom} rejoint la Guilde quand tu as fini le <b>tutoriel</b> : un duel guidé de 5 minutes.</p><button class="bt or" onclick="location.href='duel.html?tuto=1'">🎓 Faire le tutoriel</button></div></div>` : ''}
+    ${verrouille(id) ? `<div class="sceau"><div><span class="gros"><img src="menu-recu/cadenas.webp?v=1" alt="Verrouillé"></span><p>${h.nom} rejoint la Guilde quand tu as fini le <b>tutoriel</b> : un duel guidé de 5 minutes.</p><button class="bt or" onclick="location.href='duel.html?tuto=1'">🎓 Faire le tutoriel</button></div></div>` : ''}
   </div>
   <div class="suite">
       <h3>🂠 ${perso ? 'Ton deck' : 'Son deck de base'} <small>${DECK_TAILLE} cartes</small></h3>
