@@ -107,11 +107,11 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261113-134353"></script>
-<script src="donnees.js?v=20261113-134353"></script>
-<script src="odyssee.js?v=20261113-134353"></script>
-<script src="pantheon.js?v=20261113-134353"></script>
-<script src="chronique.js?v=20261113-134353"></script>
+<script src="cartes.js?v=20261113-134913"></script>
+<script src="donnees.js?v=20261113-134913"></script>
+<script src="odyssee.js?v=20261113-134913"></script>
+<script src="pantheon.js?v=20261113-134913"></script>
+<script src="chronique.js?v=20261113-134913"></script>
 <script>
 // le moteur du Duel n'est pas chargé ici : les cartes de l'Odyssée appellent degats/soin seulement en combat (dans duel.html)
 const log = () => {}, degats = () => {}, soin = () => {}, altere = () => {}, invoque = () => {}, adv = () => ({}), fin = () => {};
@@ -327,7 +327,7 @@ const HEROS_VOIX = {
   zephine:['Fascinant. Je me demande ce que ça donne en fiole.', 'Ne touche à rien, Moustache. Surtout pas aux flacons verts.', 'La chimie règle tout. Même les chats.'],
 };
 let bulles = [];
-function bullesHTML() { return bulles.map(b => `<div class="bulle ${b.qui === 'plume' ? 'corbeau' : ''}">${b.qui === 'plume' ? '<div class="avatar">🐱</div>' : `<img src="${IMG(R.heros)}" alt="">`}<span><b>${b.qui === 'plume' ? 'Moustache' : HEROS[R.heros].nom}</b>${b.t}</span></div>`).join(''); }
+function bullesHTML() { return bulles.map(b => `<div class="bulle ${b.qui === 'plume' ? 'corbeau' : ''}">${b.qui === 'plume' ? '<img src="ui/moustache.webp?v=1" alt="Moustache" style="border-color:#14b8a6">' : `<img src="${IMG(R.heros)}" alt="">`}<span><b>${b.qui === 'plume' ? 'Moustache' : HEROS[R.heros].nom}</b>${b.t}</span></div>`).join(''); }
 function dialogue(sit, reponse) {
   const l = (acteDe() === 'givre' && CORBIN_GIVRE[sit]) || (acteDe() === 'abime' && CORBIN_ABIME[sit]) || CORBIN[sit]; if (!l) return; const t = l[Math.floor(Math.random() * l.length)];
   bulles = [{ qui:'plume', t }]; const z = document.getElementById('bulles'); if (z) z.innerHTML = bullesHTML();
