@@ -73,10 +73,10 @@
 <body>
 <div id="app"></div>
 <div id="fen"></div>
-<script src="cartes.js?v=20261113-212057"></script>
-<script src="musique.js?v=20261113-212057"></script>
-<script src="donnees.js?v=20261113-212057"></script>
-<script src="defense-moteur.js?v=20261113-212057"></script>
+<script src="cartes.js?v=20261113-212813"></script>
+<script src="musique.js?v=20261113-212813"></script>
+<script src="donnees.js?v=20261113-212813"></script>
+<script src="defense-moteur.js?v=20261113-212813"></script>
 <script>
 // =============================================================================================== LA DÉFENSE DE LA PORTE · l'ÉCRAN (13/11)
 // Règles : defense-proposition.html (validées le 13/11). Moteur : defense-moteur.js.
@@ -141,6 +141,8 @@ function bouton(q, titre, sous) { const ok = !attente && sel.length && permisD(D
   return `<button class="${ok ? 'ok' : ''} ${at ? 'attente' : ''}" ${ok || at ? '' : 'disabled'} onclick="agir('${q}')">${titre}<br><small>${sous}</small></button>`; }
 function joueFx() {
   const fx = D.fx; D.fx = [];
+  // 13/11 soir : bruitages (une fois par tour, pas un par coup)
+  if (fx.some(f => f.t === 'touche')) GM.son('monstre-touche'); if (fx.some(f => f.t === 'porte')) setTimeout(() => GM.son('porte-frappee'), 250); if (fx.some(f => f.t === 'fond')) GM.son('titan-pas');
   fx.forEach(f => {
     if (f.t === 'touche') { const e = app.querySelector(`[data-m="${f.id}"]`); if (e) { e.style.animation = 'tremble .35s'; const s = document.createElement('span'); s.className = 'dg'; s.textContent = '−' + f.n; e.appendChild(s); } }
     if (f.t === 'tir') { const e = app.querySelector(`[data-c="${f.c}"]`); if (e) e.classList.add('tire'); }

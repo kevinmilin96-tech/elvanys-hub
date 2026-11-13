@@ -623,7 +623,9 @@ function stockMarchand(r, c) {
     const rel = reliquesIle(r).filter(k => !r.reliques.includes(k)); c.stock = { cartes, relique:rel.length ? tire(R, rel) : null, retire:1, pvmax:2 }; }
   return c.stock;
 }
-function achete(r, c, quoi, k) {
+// 13/11 soir : le bruit de la bourse quand un achat réussit (le jeu dans le navigateur seulement)
+function achete(r, c, quoi, k) { const ok = acheteSansSon(r, c, quoi, k); if (ok && typeof GM !== 'undefined') GM.son('marchand'); return ok; }
+function acheteSansSon(r, c, quoi, k) {
   const st = stockMarchand(r, c); const prix = n => prixMarchand(r, n);
   if (quoi === 'carte') { const p = prix(PRIX_CARTE[rarete(k)]); if (r.or < p || !st.cartes.includes(k)) return false; r.or -= p; st.cartes.splice(st.cartes.indexOf(k), 1); gardeCarte(r, k); return true; }
   if (quoi === 'retirer') { const p = prix(60); if (r.or < p || !st.retire || !r.deck.includes(k)) return false; r.or -= p; st.retire = 0; retireCarte(r, k); return true; }

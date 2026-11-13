@@ -609,7 +609,7 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261113-212057';
+const VERSION = '20261113-212813';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); location.replace('duel.html?v=' + v); }
@@ -628,11 +628,11 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261113-212057"></script>
-<script src="musique.js?v=20261113-212057"></script>
-<script src="donnees.js?v=20261113-212057"></script>
-<script src="odyssee.js?v=20261113-212057"></script>
-<script src="chronique.js?v=20261113-212057"></script>
+<script src="cartes.js?v=20261113-212813"></script>
+<script src="musique.js?v=20261113-212813"></script>
+<script src="donnees.js?v=20261113-212813"></script>
+<script src="odyssee.js?v=20261113-212813"></script>
+<script src="chronique.js?v=20261113-212813"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -1679,7 +1679,6 @@ function bruit(d, vol, f1, f2, depart) {
 function son(q) {
   if (!sonOn) return;
   // 13/11 soir : les bruitages choisis par l'utilisateur passent par le lecteur commun (musique.js) ; sinon l'ancien son fabriqué
-  if (q === 'defaite') return; // la défaite a son jingle de musique (aucun bruitage choisi)
   if (typeof GM !== 'undefined' && GM.aSon(q) && q !== 'des') { GM.son(q); if (navigator.vibrate && (q === 'coup' || q === 'gros')) navigator.vibrate(q === 'gros' ? 60 : 25); return; }
   if (q === 'coup') { bruit(.18, .5, 1200, 200); ton(120, .22, 'sine', .45, 50); }
   else if (q === 'gros') { bruit(.35, .6, 900, 120); ton(90, .4, 'sine', .55, 35); }
@@ -1940,13 +1939,13 @@ async function joueFX() {
 // toucher l'écran pendant les animations les accélère
 document.addEventListener('pointerdown', () => { if (fxOn) fxVite = .3; }, true);
 </script>
-<script src="pantheon.js?v=20261113-212057"></script>
-<script src="tuto.js?v=20261113-212057"></script>
-<script src="deux.js?v=20261113-212057"></script>
-<script src="invasion.js?v=20261113-212057"></script>
-<script src="enigme-table.js?v=20261113-212057"></script>
-<script src="forge.js?v=20261113-212057"></script>
-<script src="semaine.js?v=20261113-212057"></script>
-<script src="enigme.js?v=20261113-212057"></script>
+<script src="pantheon.js?v=20261113-212813"></script>
+<script src="tuto.js?v=20261113-212813"></script>
+<script src="deux.js?v=20261113-212813"></script>
+<script src="invasion.js?v=20261113-212813"></script>
+<script src="enigme-table.js?v=20261113-212813"></script>
+<script src="forge.js?v=20261113-212813"></script>
+<script src="semaine.js?v=20261113-212813"></script>
+<script src="enigme.js?v=20261113-212813"></script>
 </body>
 </html>
