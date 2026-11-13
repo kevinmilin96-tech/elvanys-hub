@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Les voix des personnages · essai · La Guilde des Runes</title>
+<style>
+body{margin:0;background:#15132b;color:#efe9ff;font:16px/1.45 Georgia,serif}main{max-width:620px;margin:0 auto;padding:14px 12px 90px}
+h1{color:#f3c96b;font-size:1.35em;margin:.3em 0}p.doux{color:#c9c1ea;font-size:.92em}
+.bulle{display:flex;gap:10px;align-items:flex-start;background:#fbf6e9;color:#2a2140;border-radius:16px;padding:10px 12px;min-height:84px;box-shadow:0 6px 18px #000a;margin:12px 0;cursor:pointer}
+.bulle img{width:52px;height:52px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 2px #f3c96b;flex:none}.bulle b{color:#6a4fb0;display:block}
+.bulle.gorm{background:#e7efff}
+.voix{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}
+.voix button,.ph button{border:none;border-radius:12px;padding:10px;font:bold 14px Georgia;background:#f3c96b;color:#2a1a08}
+.voix button.gorm{background:#9fc3ff}
+.ph{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}.ph button{background:#2a2650;color:#fff;border:1px solid #4b4580;font-weight:normal;font-size:13px;padding:7px 10px}.ph button.on{border-color:#f3c96b;color:#f3c96b}
+.choix{background:#221d3d;border-radius:12px;padding:10px 12px;margin-top:14px}.choix label{display:block;margin:4px 0}
+textarea{width:100%;box-sizing:border-box;border-radius:8px;border:1px solid #4b4580;background:#15132b;color:#fff;padding:6px;font:14px Georgia;min-height:60px}
+.bt{position:fixed;left:0;right:0;bottom:0;background:#15132bee;padding:10px;display:flex;justify-content:center}.bt button{max-width:620px;width:100%;border:none;border-radius:10px;padding:12px;font:bold 15px Georgia;background:#f3c96b;color:#1d1626}
+</style></head><body><main>
+<h1>🗣️ Les voix des personnages (essai)</h1>
+<p class="doux">Comme dans Animal Crossing : ce n'est pas une vraie voix qui lit, c'est un petit babillage fabriqué par le téléphone, au rythme du texte. Choisis une phrase, puis touche une voix. Toucher la bulle coupe la voix. Rien n'est encore branché dans le jeu.</p>
+<div class="ph" id="phrases"></div>
+<div class="bulle" id="bulle" onclick="if (voixArret) voixArret()"><img id="av" src="ui/moustache.webp?v=1" alt=""><div><b id="qui">Moustache</b><span id="txt">Touche une voix pour l'entendre.</span></div></div>
+<div class="voix" id="voix"></div>
+<div class="choix"><b>Ton avis</b>
+  <div id="radios"></div>
+  <textarea id="note" placeholder="Une remarque ? (trop aigu, trop rapide, agaçant à la longue…)"></textarea>
+</div>
+</main>
+<div class="bt"><button onclick="copier()">Copier mon avis</button></div>
+<script src="voix.js?v=1"></script>
+<script>
+const PHRASES = [
+  'Miaou ! Bienvenue à la Guilde. Moi, c’est Moustache, chat d’aventure.',
+  'On commence : touche le gros bouton « Lancer les dés ». Non, pas moi. Je ne me lance pas. Le bouton.',
+  'Deux 4 ! Une paire, ça fait une FRAPPE. Touche les deux 4.',
+  'Tu as vu ce monstre ? Moi non plus. Je dormais.',
+  'Un marchand, ici ? Soit c’est un fou, soit c’est un génie.',
+];
+const GORM = 'Hé, le matou. Je sais qui je suis.';
+let phrase = 0;
+const $ = id => document.getElementById(id);
+function dessinePhrases() { $('phrases').innerHTML = PHRASES.map((p, i) => `<button class="${i === phrase ? 'on' : ''}" onclick="phrase=${i};dessinePhrases()">${i + 1}. ${p.slice(0, 26)}…</button>`).join(''); }
+function dit(cle) {
+  const g = cle === 'gorm', t = g ? GORM : PHRASES[phrase];
+  $('bulle').classList.toggle('gorm', g); $('av').src = g ? 'portraits/gorm.webp' : 'ui/moustache.webp?v=1'; $('qui').textContent = g ? 'Gorm' : 'Moustache';
+  parle(t, cle, n => { $('txt').textContent = t.slice(0, n); });
+}
+$('voix').innerHTML = Object.keys(VOIX).map(k => `<button class="${k === 'gorm' ? 'gorm' : ''}" onclick="dit('${k}')">▶ ${VOIX[k].n}</button>`).join('');
+$('radios').innerHTML = Object.keys(VOIX).filter(k => k !== 'gorm').map(k => `<label><input type="radio" name="v" value="${k}"> ${VOIX[k].n}</label>`).join('') + '<label><input type="radio" name="v" value="aucune"> Aucune : je préfère sans voix</label>';
+dessinePhrases();
+function copier() {
+  const v = (document.querySelector('input[name=v]:checked') || {}).value || '—';
+  const t = `VOIX GUILDE\nMoustache : ${v}\nRemarque : ${$('note').value.trim() || '—'}`;
+  navigator.clipboard.writeText(t).then(() => alert('Avis copié : colle-le dans le message pour Claude.')).catch(() => prompt('Copie ce texte :', t));
+}
+</script>
+<script src="musique.js?v=1"></script>
+</body></html>
