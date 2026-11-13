@@ -34,8 +34,8 @@ const nbPoses = () => S.J.des.filter(d => d.pose).length;
 const tambour = () => S.J.front.find(u => u.tambour);
 const ETAPES = [
   { t:1, c:'Miaou ! Bienvenue à la Guilde. Moi, c’est Moustache, chat d’aventure. Oui, l’oreille ébréchée, c’est une longue histoire. Toi, tu es Gorm, le sonneur de cor. En face : le Chef gobelin et son Chien de garde.', g:'Hé, le matou. Je sais qui je suis.' },
-  { t:1, c:'Ça, en bas à droite, c’est ton bac à dés. Touche « Lancer ». Non, pas moi. Je ne me lance pas. Le bouton.', cible:'.lancer', ok:() => !S.J.aLancer },
-  { t:1, c:'Deux 4 ! Une paire, ça fait une FRAPPE. Touche les deux 4.', cible:'.des', ok:() => sel.length === 2 && vals(sel).every(v => v === 4) || nbPoses() >= 2 },
+  { t:1, c:'On commence : touche le gros bouton « Lancer les dés ». Non, pas moi. Je ne me lance pas. Le bouton.', cible:'.lancer', ok:() => !S.J.aLancer },
+  { t:1, c:'Tes dés sont arrivés dans ton bac à dés, là, à droite. Deux 4 ! Une paire, ça fait une FRAPPE. Touche les deux 4.', cible:'.des', ok:() => sel.length === 2 && vals(sel).every(v => v === 4) || nbPoses() >= 2 },
   { t:1, c:'Maintenant l’épée, à gauche : c’est la Frappe. Elle brille en vert quand tes dés conviennent.', cible:'.ic.r1', ok:() => (ciblage && ciblage.quoi === 'frappe') || nbPoses() >= 2 },
   { t:1, c:'Vise le Chef : touche son portrait, en haut. La Frappe passe toujours par-dessus les créatures.', cible:'#b-O', ok:() => nbPoses() >= 2 },
   { t:1, c:'Bien tapé ! Il te reste un dé. Touche « Fin du tour » : les dés pas posés sont VENDUS tout seuls, 1 PC chacun. Les PC, c’est l’argent des cartes.', g:'Je garde la monnaie.', cible:'.b2', ok:() => S.J.tours >= 2 },
