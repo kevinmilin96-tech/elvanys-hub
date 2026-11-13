@@ -8,7 +8,7 @@
 <title>La Guilde des Runes</title>
 <script>
 // Même mécanisme que le Duel : une nouvelle version = rechargement tout seul à l'ouverture (publier.sh change VERSION).
-const VERSION = '20261113-134913';
+const VERSION = '20261113-175210';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-menu-' + v)) { sessionStorage.setItem('recharge-menu-' + v, '1'); location.replace('menu.html?v=' + v); }
@@ -70,7 +70,7 @@ fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.te
   .chantier { position:absolute; top:8px; right:8px; font-size:.68em; font-weight:bold; color:#2a1a08; padding:3px 9px; border-radius:20px;
     background:repeating-linear-gradient(45deg, #f3c96b 0 8px, #e0b04f 8px 16px); box-shadow:0 0 0 1px #2a1a0855; z-index:1; }
   .lieu.ferme h3 { padding-right:110px; }
-  .petits { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-top:6px; }
+  .petits { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:6px; }
   .petits a { display:block; padding:12px; border-radius:14px; background:#221d42; border:1px solid #4b4580; color:#fff; text-decoration:none; text-align:center; font-size:.92em; }
   .bas { text-align:center; color:#8a83b8; font-size:.78em; margin-top:18px; }
   /* ---------- 12/11 nuit : le menu en PORTAILS (carrousel d'arches ; l'illustration est posée DANS l'arche, le nom écrit sur sa plaque) ---------- */
@@ -168,14 +168,15 @@ fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.te
   <div class="petits">
     <a href="duel.html?parties=1">📜 Mes parties</a>
     <a href="a-valider.html">📝 Pages à valider</a>
+    <a href="#attente">🧪 En attente</a>
     <a href="/">⌂ Retour au laboratoire</a>
   </div>
   <p class="bas">Prototype · images provisoires en attendant les peintures</p>
 </div>
 <div id="flash"></div>
 
-<script src="semaine.js?v=20261113-134913"></script>
-<script src="donnees.js?v=20261113-134913"></script>
+<script src="semaine.js?v=20261113-175210"></script>
+<script src="donnees.js?v=20261113-175210"></script>
 <script>
 // ciel étoilé + runes du portail (symboles, pas des lettres), aux couleurs des héros
 const ciel = document.getElementById('ciel');
@@ -215,24 +216,28 @@ const ABIME_OK = (() => { try { return !!JSON.parse(localStorage.getItem('guilde
 const ETAGES = {
   '':{ titre:'Le monde de la Guilde', sous:'Glisse, puis touche un portail pour y entrer.', portes:[
     { nom:'L’Arène', pro:'arene', vers:'arene', desc:'Les Duels : un héros contre un autre. Dés, cartes, créatures : le premier à zéro perd.' },
-    { nom:'Défense de la porte', pro:'defense', href:'defense.html', desc:'Les monstres descendent vers la porte de la Guilde : tes dés deviennent des tours, deux tours identiques fusionnent, deux 6 éveillent une Rune. (Version d’essai.)' },
-    { nom:'L’énigme du jour', pro:'enigme', href:'duel.html?enigme=1', desc:'Tes dés sont lancés, ta main est prête : trouve le coup parfait qui fait tomber l’adversaire en un seul tour. Une nouvelle chaque jour, de plus en plus dure du lundi au dimanche.' },
     { nom:'L’Odyssée', pro:'odyssee', vers:'odyssee', desc:'Seul sur une île : explore case par case, fais grandir ton deck, vaincs le gardien de l’île.' },
     { nom:'Expéditions', pro:'expeditions', href:'expedition.html', desc:'Le navire volant (v2) : recrute, fusionne, place tes deux rangées, et regarde ton équipage affronter monstres et navires rivaux.' },
     { nom:'L’Invasion', pro:'campement', vers:'invasion', desc:'À deux (sur ce téléphone ou avec un compagnon) contre les vagues de ton livre : l’Éveil de l’Abîme, le Réveil des Primordiaux, et les grands boss.' },
-    { nom:'Le Panthéon', pro:'pantheon', href:'pantheon.html', desc:'Le Tableau d’honneur, tes titres, les récompenses du défi Brise-Miroir et tes trophées de tous les modes.' },
     { nom:'Tour des héros', pro:'tour', href:'heros.html', desc:'Les six héros, leurs pouvoirs, leurs dés et leurs cartes. Prépare ton deck.' },
   ] },
   arene:{ titre:'L’Arène des Duels', sous:'Contre qui veux-tu te battre ?', portes:[
     { nom:'Contre l’ordinateur', pro:'ordinateur', href:'duel.html', desc:'Choisis ton héros et affronte l’automate de la Guilde.' },
-    { nom:'Le Duel de la semaine', pro:'semaine', href:'duel.html?semaine=1', desc:`Cette semaine : « ${regleDeLaSemaine().n} ». ${regleDeLaSemaine().d} Gagne pour le Sceau de la semaine.` },
-    { nom:'Contre un proche', pro:'proche', href:'duel.html?deux=1', desc:'À deux sur le même téléphone : chacun son héros, on se passe le téléphone à chaque tour.' },
     { nom:'Le tutoriel', pro:'tuto', href:'duel.html?tuto=1', desc:'Un premier duel guidé par Moustache, avec Gorm (5 minutes). À la clé : Zéphine et le cadre de Diplômé.' },
   ] },
   invasion:{ titre:'L’Invasion', sous:'Quel front veux-tu tenir ?', portes:[
     { nom:'Acte I · L’Éveil', pro:'abime', href:'campement.html?boss=eveil', desc:'La Meute corrompue, les Gardes jumeaux à abattre dans le même tour, le Nécromancien du Vide.' },
     { nom:'Acte II · Le Réveil', pro:'campement', href:'campement.html?boss=reveil', desc:'Les Éclaireurs de silex, le Colosse des racines, le Titan primordial, et la Sève de l’Arbre-Monde à garder en vie.' },
     { nom:'Les grands boss', pro:'expeditions', href:'campement.html', desc:'Le Colosse des racines, le Kraken des brumes, Ignaros le dragon ancien : un seul boss, géant.' },
+  ] },
+  // 13/11 : BOUSSOLE DU JEU (Boussole-du-jeu.md) : cœur = Tutoriel, Duel, Odyssée, Invasion, Expéditions + Tour des héros ;
+  // les autres modes sont rangés ici, cachés du 1er étage, rien n'est effacé (lien « 🧪 En attente » en bas du menu).
+  attente:{ titre:'En attente', sous:'Ces modes existent mais attendent leur tour : la boussole du jeu les garde de côté.', portes:[
+    { nom:'Défense de la porte', pro:'defense', href:'defense.html', desc:'Les monstres descendent vers la porte de la Guilde : tes dés deviennent des tours, deux tours identiques fusionnent, deux 6 éveillent une Rune. (Version d’essai.)' },
+    { nom:'L’énigme du jour', pro:'enigme', href:'duel.html?enigme=1', desc:'Tes dés sont lancés, ta main est prête : trouve le coup parfait qui fait tomber l’adversaire en un seul tour. Une nouvelle chaque jour, de plus en plus dure du lundi au dimanche.' },
+    { nom:'Le Panthéon', pro:'pantheon', href:'pantheon.html', desc:'Le Tableau d’honneur, tes titres, les récompenses du défi Brise-Miroir et tes trophées de tous les modes.' },
+    { nom:'Le Duel de la semaine', pro:'semaine', href:'duel.html?semaine=1', desc:`Cette semaine : « ${regleDeLaSemaine().n} ». ${regleDeLaSemaine().d} Gagne pour le Sceau de la semaine.` },
+    { nom:'Contre un proche', pro:'proche', href:'duel.html?deux=1', desc:'À deux sur le même téléphone : chacun son héros, on se passe le téléphone à chaque tour.' },
   ] },
   odyssee:{ titre:'L’Odyssée', sous:'Quelle île veux-tu explorer ?', portes:[
     { nom:'Terres brûlées', fx:'lave', img:'menu-recu/ody-terres-brulees.webp', href:'odyssee.html', desc:'Acte I · L’île de cendre et de lave, gardée par le Titan de feu.' },
