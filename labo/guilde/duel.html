@@ -618,7 +618,7 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261113-223656';
+const VERSION = '20261113-223946';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -637,11 +637,11 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261113-223656"></script>
-<script src="musique.js?v=20261113-223656"></script>
-<script src="donnees.js?v=20261113-223656"></script>
-<script src="odyssee.js?v=20261113-223656"></script>
-<script src="chronique.js?v=20261113-223656"></script>
+<script src="cartes.js?v=20261113-223946"></script>
+<script src="musique.js?v=20261113-223946"></script>
+<script src="donnees.js?v=20261113-223946"></script>
+<script src="odyssee.js?v=20261113-223946"></script>
+<script src="chronique.js?v=20261113-223946"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -1210,14 +1210,16 @@ function finOdyssee() {
   fenetre(`<h2>${S.fini === 'gagne' ? '🏆 Victoire !' : '💀 Défaite…'}</h2><p>${J.nom} contre ${S.O.nom} : ${S.fini === 'gagne' ? 'gagné' : 'perdu'} en ${J.tours} tours.${d ? `<br>🎯 Défi « ${d.n} » : ${defiOk ? '<b style="color:#7dffb0">réussi, +30 or</b>' : 'raté'}.` : ''}</p>
     <div class="choixh"><button onclick="location.href='odyssee.html'">${S.fini === 'gagne' ? '🗺 Continuer l’Odyssée' : '🗺 Voir jusqu’où tu es allé'}</button></div>`);
 }
+let finTourDe = null; // 14/11 : « Fin du tour » touché plusieurs fois très vite = l'ordinateur jouait plusieurs fois et la partie se cassait → une seule fin de tour à la fois
 function finDeMonTour() {
-  if (S.fini || roule) return;
+  if (S.fini || roule || finTourDe === S || (fxOn && !S.J.aLancer)) return;
   if (S.J.aLancer) { lancerMesDes(); return; }
   const libres = S.J.des.filter(d => !d.pose);
   if (libres.length) pose(S.J, 'vendre', libres);
   attaquesRestantes(S.J); if (S.fini) { rendu(); return; }
   finTour(S.J); sel = []; attaquant = null; ciblage = null; rendu();
-  fxApres.push(S.coop ? suiteCamp : () => { joueOrdi(); if (!S.fini) { fx({ t:'tour', s:'J', nom:'toi' }); debutTour(S.J); } rendu(); });
+  finTourDe = S; const ceS = S;
+  fxApres.push(S.coop ? () => { if (finTourDe === ceS) finTourDe = null; suiteCamp(); } : () => { if (finTourDe === ceS) finTourDe = null; joueOrdi(); if (!S.fini) { fx({ t:'tour', s:'J', nom:'toi' }); debutTour(S.J); } rendu(); });
   rendu();
 }
 // =============================================================================================== le Campement : rotation héros 1 → héros 2 → boss
@@ -1999,13 +2001,13 @@ async function joueFX() {
 // toucher l'écran pendant les animations les accélère
 document.addEventListener('pointerdown', () => { if (fxOn && !(S && S.tuto)) fxVite = .5; }, true); // 14/11 : plus d'accélération dans le tutoriel
 </script>
-<script src="pantheon.js?v=20261113-223656"></script>
-<script src="tuto.js?v=20261113-223656"></script>
-<script src="deux.js?v=20261113-223656"></script>
-<script src="invasion.js?v=20261113-223656"></script>
-<script src="enigme-table.js?v=20261113-223656"></script>
-<script src="forge.js?v=20261113-223656"></script>
-<script src="semaine.js?v=20261113-223656"></script>
-<script src="enigme.js?v=20261113-223656"></script>
+<script src="pantheon.js?v=20261113-223946"></script>
+<script src="tuto.js?v=20261113-223946"></script>
+<script src="deux.js?v=20261113-223946"></script>
+<script src="invasion.js?v=20261113-223946"></script>
+<script src="enigme-table.js?v=20261113-223946"></script>
+<script src="forge.js?v=20261113-223946"></script>
+<script src="semaine.js?v=20261113-223946"></script>
+<script src="enigme.js?v=20261113-223946"></script>
 </body>
 </html>
