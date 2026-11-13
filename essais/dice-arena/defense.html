@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="robots" content="noindex">
+<title>La Guilde des Runes · La Défense de la porte</title>
+<style>
+  :root { --or:#f3c96b; --texte:#f1ecff; --doux:#c9c1ea; --ok:#7dffb0; --rouge:#ff6a5a; }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body { margin:0; background:#120f1f; color:var(--texte); font:15px/1.3 Georgia, 'Times New Roman', serif; user-select:none; }
+  #app { max-width:520px; margin:0 auto; min-height:100vh; padding:6px 8px 20px; }
+  button { font:inherit; cursor:pointer; }
+  h1 { color:var(--or); font-size:1.2em; margin:.3em 0; text-align:center; }
+  h2 { color:var(--or); font-size:1.05em; margin:.6em 0 .3em; }
+  .doux { color:var(--doux); font-size:.86em; }
+  .heros { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:10px 0; }
+  .heros button { background:#1e1838; color:#fff; border:2px solid #3e3370; border-radius:14px; padding:8px; text-align:left; font-size:.82em; }
+  .heros img { width:100%; aspect-ratio:1; object-fit:cover; border-radius:10px; display:block; margin-bottom:5px; }
+  .heros b { color:var(--or); font-size:1.15em; }
+  .entete { display:flex; gap:6px; align-items:center; background:#1e1838; border-radius:12px; padding:5px 7px; font-size:.82em; }
+  .entete img { width:40px; height:40px; border-radius:50%; object-fit:cover; border:2px solid var(--or); }
+  .entete .bloc { flex:1; }
+  .barre { height:9px; background:#0007; border-radius:6px; overflow:hidden; margin-top:2px; } .barre i { display:block; height:100%; background:linear-gradient(90deg, #c0392b, #f39c12); transition:width .4s; }
+  .jauge i { background:linear-gradient(90deg, #6b2bd9, #f3c96b); }
+  .p { display:inline-block; background:#0006; border-radius:9px; padding:1px 6px; margin-right:3px; }
+  .chemin { display:grid; grid-template-columns:repeat(3, 1fr); gap:4px; margin:6px 0 3px; background:linear-gradient(180deg, #2a1d10, #3a2a14); border-radius:12px; padding:5px; }
+  .cc { height:52px; border-radius:8px; background:#0003; border:1px dashed #c9893f55; display:flex; flex-wrap:wrap; gap:2px; align-items:center; justify-content:center; position:relative; }
+  .mo { min-width:44px; height:44px; background:#2a1414; border:2px solid #b84a3a; border-radius:9px; display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:.62em; position:relative; padding:1px 2px; }
+  .mo .e { font-size:2em; line-height:1; } .mo .pv { color:#ffd0c0; font-weight:bold; }
+  .mo.boss { border-color:var(--or); background:#3a1a08; min-width:60px; } .mo.boss .e { font-size:2.4em; }
+  .mo.cible { box-shadow:0 0 0 3px var(--or), 0 0 14px var(--or); }
+  .mo .vit { position:absolute; top:-6px; right:-5px; font-size:1.1em; }
+  .rempart { display:grid; grid-template-columns:repeat(3, 1fr); gap:5px; background:linear-gradient(180deg, #1f3b2b, #14281d); border-radius:12px; padding:6px; }
+  .rc { aspect-ratio:1.5; border-radius:10px; background:#0004; border:2px solid #5fb84a55; display:flex; align-items:center; justify-content:center; position:relative; }
+  .rc.vide.ok { border-color:var(--ok); box-shadow:inset 0 0 12px #7dffb066; }
+  .rc img { width:58%; aspect-ratio:1; object-fit:contain; filter:drop-shadow(0 2px 3px #000a); }
+  .rc .pw { position:absolute; bottom:2px; right:5px; font-weight:bold; color:var(--or); font-size:.8em; text-shadow:0 0 4px #000; }
+  .rc .bn { position:absolute; top:2px; left:5px; font-size:.7em; color:var(--ok); }
+  .rc.sel { border-color:var(--or); box-shadow:0 0 12px var(--or); } .rc.ok { border-color:var(--ok); }
+  .rc.rune { background:radial-gradient(circle, #6b2bd9aa, #1e0b3a); border-color:#c084fc; } .rc.rune .glyphe { font-size:2.2em; animation:pulse 1.6s infinite; }
+  @keyframes pulse { 50% { transform:scale(1.12); filter:drop-shadow(0 0 8px #c084fc); } }
+  .porte { text-align:center; margin:4px 0; background:linear-gradient(180deg, #5a3a1a, #3a2410); border:2px solid var(--or); border-radius:10px; padding:3px; font-size:.85em; }
+  .porte.touche { animation:tremble .4s; }
+  .msg { min-height:2.4em; text-align:center; font-size:.85em; color:var(--doux); margin:5px 0; }
+  .msg.err { color:var(--rouge); }
+  .des { display:flex; gap:6px; justify-content:center; margin:4px 0; }
+  .de { width:52px; height:52px; border-radius:10px; background:#0005; border:2px solid #3e3370; padding:3px; position:relative; }
+  .de img { width:100%; height:100%; object-fit:contain; } .de.sel { border-color:var(--or); transform:translateY(-6px); box-shadow:0 0 10px var(--or); } .de.pose { opacity:.18; }
+  .de.cible { border-color:var(--ok); box-shadow:0 0 10px var(--ok); }
+  .acts { display:grid; grid-template-columns:repeat(4, 1fr); gap:5px; margin:5px 0; }
+  .acts button { background:#1e1838; color:#fff; border:2px solid #3e3370; border-radius:11px; padding:5px 2px; font-size:.74em; line-height:1.1; }
+  .acts button.ok { border-color:var(--ok); color:var(--ok); } .acts button.attente { border-color:var(--or); color:var(--or); }
+  .acts button:disabled { opacity:.35; }
+  .acts .fin { grid-column:span 2; background:linear-gradient(180deg, #f3c96b, #c8902f); color:#2b1d0a; border-color:#f3c96b; font-weight:bold; font-size:.9em; }
+  .main { display:flex; gap:5px; overflow-x:auto; padding:3px 0 6px; }
+  .carte { flex:0 0 31%; background:#f6efdc; color:#2b2117; border-radius:9px; border:2px solid #b89a5e; padding:4px 5px; font-size:.66em; line-height:1.15; position:relative; }
+  .carte b { display:block; font-size:1.12em; } .carte .c { position:absolute; top:-6px; right:-5px; background:#2a7fc1; color:#fff; border-radius:50%; width:20px; height:20px; display:flex; align-items:center; justify-content:center; font-weight:bold; }
+  .carte .tx { color:#7a5a2a; } .carte.ok { border-color:#2a9f4a; box-shadow:0 0 8px #2a9f4a; } .carte.attente { border-color:var(--or); box-shadow:0 0 10px var(--or); }
+  .bas { display:flex; gap:6px; justify-content:center; margin-top:6px; } .bas button { background:#1e1838; color:var(--doux); border:1px solid #3e3370; border-radius:10px; padding:4px 10px; font-size:.8em; }
+  .dg { position:absolute; left:50%; top:20%; transform:translateX(-50%); color:#ff5a3a; font-weight:bold; font-size:1.25em; text-shadow:0 0 5px #000; animation:monte .9s forwards; pointer-events:none; z-index:3; }
+  .tire { animation:tir .35s; } @keyframes tir { 50% { transform:translateY(-5px) scale(1.06); filter:brightness(1.6); } }
+  @keyframes tremble { 25% { transform:translateX(-5px); } 75% { transform:translateX(5px); } }
+  @keyframes monte { to { transform:translate(-50%, -26px); opacity:0; } }
+  .fenetre { position:fixed; inset:0; background:#000c; z-index:10; display:flex; align-items:center; justify-content:center; padding:12px; }
+  .fenetre > div { background:#1e1838; border:1px solid #3e3370; border-radius:16px; padding:14px 16px; max-width:500px; width:100%; max-height:92vh; overflow:auto; }
+  .choixh { display:flex; gap:8px; justify-content:center; margin:10px 0 2px; flex-wrap:wrap; }
+  .choixh button { background:#120f1f; color:#fff; border:2px solid #3e3370; border-radius:13px; padding:8px 12px; flex:1; min-width:110px; } .choixh button.or { border-color:var(--or); color:var(--or); }
+  .corbin { font-style:italic; color:#e8dcc0; background:#0005; border-radius:10px; padding:6px 9px; margin:5px 0; font-size:.85em; }
+  .journal { font-size:.8em; color:var(--doux); max-height:55vh; overflow:auto; } .journal div { border-bottom:1px solid #ffffff12; padding:2px 0; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="fen"></div>
+<script src="cartes.js?v=20261113-112356"></script>
+<script src="donnees.js?v=20261113-112356"></script>
+<script src="defense-moteur.js?v=20261113-112356"></script>
+<script>
+// =============================================================================================== LA DÉFENSE DE LA PORTE · l'ÉCRAN (13/11)
+// Règles : defense-proposition.html (validées le 13/11). Moteur : defense-moteur.js.
+let D = null, sel = [], selTour = -1, attente = null, msg = '', err = false;
+const app = document.getElementById('app'), fen = document.getElementById('fen');
+const fenetre = h => { fen.innerHTML = `<div class="fenetre" onclick="if(event.target===this)fermer()"><div>${h}</div></div>`; };
+const fermer = () => { fen.innerHTML = ''; };
+const CORBIN = {
+  1:'Croâ. Des gobelins. Rien de grave. Enfin, pas encore.', 2:'Des sangliers, maintenant. Garde-moi un morceau.', 3:'Des chauves-souris ! Elles volent par-dessus ta tour de devant. Sournoises. J’aime bien.',
+  4:'Ça se corse. Tu as pensé à fusionner, au moins ?', 5:'Ils sont nombreux. Moi, je surveille d’en haut. Courage.', 6:'LE TITAN. S’il touche la porte, c’est fini. Il fait fondre tes tours : tape fort, tape vite.' };
+
+function accueil() {
+  D = null;
+  app.innerHTML = `<h1>🏰 La Défense de la porte</h1>
+  <p class="doux" style="text-align:center">Les monstres descendent trois chemins vers la porte de la Guilde. Tes dés deviennent des tours… ou des coups tout de suite. Deux tours identiques qui se touchent fusionnent ; deux 6 éveillent une Rune.</p>
+  <div class="heros">${['maelle', 'gorm'].map(h => `<button onclick="demarre('${h}')"><img src="${IMG(h)}" alt=""><b>${HEROS[h].nom}</b><br>${DHEROS[h].passif}<br><br>✨ Rune : ${DHEROS[h].rune.n}<br><small>${DHEROS[h].rune.d}</small></button>`).join('')}</div>
+  <p class="doux" style="text-align:center">Version d’essai : 6 vagues, le Titan de feu, Maëlle et Gorm. Les autres héros viendront.</p>
+  ${records()}
+  <div class="choixh"><button onclick="regles()">📜 Les règles</button><button onclick="location.href='menu.html'">⌂ Menu</button></div>`;
+}
+const REC = 'guilde-defense';
+const lesRecords = () => { try { return JSON.parse(localStorage.getItem(REC) || '[]'); } catch (e) { return []; } };
+function records() { const r = lesRecords(); if (!r.length) return ''; const g = r.filter(x => x.gagne); return `<p class="doux" style="text-align:center">🏆 ${g.length} victoire${g.length > 1 ? 's' : ''} sur ${r.length} partie${r.length > 1 ? 's' : ''}${g.length ? ` · meilleur score ${Math.max(...g.map(x => x.score))}` : ''}</p>`; }
+function demarre(h) { D = nouvelleDefense(h); sel = []; selTour = -1; attente = null; dis('Lance… c’est déjà fait. Choisis des dés : bâtis une tour (touche une case verte) ou frappe un monstre.'); vagueAnnonce(); rendu(); }
+function dis(t, e) { msg = t; err = !!e; }
+function vagueAnnonce() { const v = D.fx.find(f => f.t === 'vague'); if (v && CORBIN[v.n]) setTimeout(() => fenetre(`<h2>🌊 Vague ${v.n} sur ${VAGUES.length}</h2><div class="corbin">Corbin : « ${CORBIN[v.n]} »</div><div class="choixh"><button class="or" onclick="fermer()">À la porte !</button></div>`), 450); }
+
+// ---------------------------------------------------------------- le dessin
+function rendu() {
+  if (!D) return accueil();
+  const H = DHEROS[D.heros], vs = sel.map(d => d.v);
+  const tete = new Set([0, 1, 2].map(col => (teteD(D, col) || {}).id));
+  const chemin = []; for (let r = 0; r < DEF.chemin; r++) for (let col = 0; col < 3; col++) chemin.push({ r, col });
+  const besoinMonstre = attente && attente.cible === 'monstre', besoinTour = attente && attente.cible === 'tour', besoinDe = attente && attente.cible === 'de';
+  const un = sel.length === 1 ? sel[0] : null;
+  app.innerHTML = `
+  <div class="entete"><img src="${IMG(D.heros)}" alt="">
+    <div class="bloc">🚪 Porte <b>${D.porte}</b>/${D.porteMax}<div class="barre"><i style="width:${D.porte / D.porteMax * 100}%"></i></div></div>
+    <div class="bloc">⚡ Ultime ${D.ultimeFait ? '✔' : `${D.jauge}/${DEF.jaugeMax}`}<div class="barre jauge"><i style="width:${D.ultimeFait ? 100 : D.jauge / DEF.jaugeMax * 100}%"></i></div></div>
+    <div style="text-align:right"><span class="p">🌊 ${Math.min(D.vague + 1, VAGUES.length)}/${VAGUES.length}</span><br><span class="p">◆ ${D.pc} PC</span></div></div>
+  <div class="chemin">${chemin.map(({ r, col }) => `<div class="cc">${D.monstres.filter(m => m.row === r && m.col === col).map(m => { const M = MONSTRES[m.t];
+      return `<div class="mo ${M.boss ? 'boss' : ''} ${besoinMonstre ? 'cible' : ''}" data-m="${m.id}" onclick="toucheMonstre(${m.id})"><span class="e">${M.e}</span><span class="pv">${m.pv}</span>${M.vit > 1 ? '<span class="vit">💨</span>' : M.vol ? '<span class="vit">🪽</span>' : M.armure ? '<span class="vit">🛡</span>' : ''}${tete.has(m.id) && !M.boss ? '' : ''}</div>`; }).join('')}</div>`).join('')}</div>
+  <div class="rempart">${D.rempart.map((t, c) => { const okVide = !t && un && !attente && D.pc >= DEF.coutBatir; const okFus = t && !t.rune && ((un && un.v === t.v && !attente) || (selTour >= 0 && selTour !== c && voisinsD(selTour).includes(c) && D.rempart[selTour] && D.rempart[selTour].v === t.v && !D.rempart[selTour].rune));
+      const okDep = !t && selTour >= 0 && !D.deplace && voisinsD(selTour).includes(c);
+      if (!t) return `<div class="rc vide ${okVide || okDep ? 'ok' : ''}" data-c="${c}" onclick="toucheCase(${c})"></div>`;
+      return `<div class="rc ${t.rune ? 'rune' : ''} ${selTour === c ? 'sel' : ''} ${okFus || besoinTour ? 'ok' : ''}" data-c="${c}" onclick="toucheCase(${c})">${t.rune ? '<span class="glyphe">ᚱ</span>' : `<img src="${FACE(D.heros, t.v)}" alt="${t.v}">`}<span class="pw">${puissanceTour(D, c, t)}</span>${t.bonus ? `<span class="bn">+${t.bonus}</span>` : ''}</div>`; }).join('')}</div>
+  <div class="porte" id="porte">🚪 La porte de la Guilde</div>
+  <div class="msg ${err ? 'err' : ''}">${msg}</div>
+  <div class="des">${D.des.map((d, i) => `<div class="de ${d.pose ? 'pose' : ''} ${sel.includes(d) ? 'sel' : ''} ${besoinDe && !d.pose && !sel.includes(d) ? 'cible' : ''}" onclick="toucheDe(${i})"><img src="${FACE(D.heros, d.v)}" alt="${d.v}"></div>`).join('')}</div>
+  <div class="acts">
+    ${bouton('frappe', '⚔ Frappe', 'dés identiques')}${bouton('technique', '⚔⚔ Technique', 'suite')}${bouton('pouvoir', '✦ Pouvoir', H.pouvoir.txt)}${bouton('ultime', '⚡ Ultime', H.ultime.txt)}
+    <button class="${sel.length && !attente ? 'ok' : ''}" ${sel.length && !attente ? '' : 'disabled'} onclick="agir('vendre')">◆ Vendre<br><small>+1 PC / dé</small></button>
+    <button ${D.relance && sel.length && !attente ? '' : 'disabled'} onclick="relance()">🎲 Relancer<br><small>${D.relance} restante${D.relance > 1 ? 's' : ''}</small></button>
+    <button class="fin" onclick="finTour()">Fin du tour ▶</button></div>
+  <div class="main">${D.main.map((k, i) => { const c = DCARTES[k]; const ok = !attente && sel.length && permisD(D, i, sel);
+      return `<div class="carte ${ok ? 'ok' : ''} ${attente && attente.quoi === i ? 'attente' : ''}" onclick="toucheCarte(${i})"><span class="c">${c.c}</span><b>${c.n}</b><span class="tx">${c.txt}</span><br>${c.d}</div>`; }).join('')}</div>
+  <div class="bas"><button onclick="regles()">📜 Règles</button><button onclick="journal()">📖 Journal</button>${attente || sel.length || selTour >= 0 ? '<button onclick="annule()">✖ Annuler</button>' : ''}<button onclick="quitter()">⌂ Quitter</button></div>`;
+  joueFx();
+  if (D.fini) setTimeout(fin, 700);
+}
+function bouton(q, titre, sous) { const ok = !attente && sel.length && permisD(D, q, sel); const at = attente && attente.quoi === q;
+  return `<button class="${ok ? 'ok' : ''} ${at ? 'attente' : ''}" ${ok || at ? '' : 'disabled'} onclick="agir('${q}')">${titre}<br><small>${sous}</small></button>`; }
+function joueFx() {
+  const fx = D.fx; D.fx = [];
+  fx.forEach(f => {
+    if (f.t === 'touche') { const e = app.querySelector(`[data-m="${f.id}"]`); if (e) { e.style.animation = 'tremble .35s'; const s = document.createElement('span'); s.className = 'dg'; s.textContent = '−' + f.n; e.appendChild(s); } }
+    if (f.t === 'tir') { const e = app.querySelector(`[data-c="${f.c}"]`); if (e) e.classList.add('tire'); }
+    if (f.t === 'porte') { const e = document.getElementById('porte'); if (e) { e.classList.add('touche'); e.textContent = `🚪 La porte encaisse −${f.n} !`; } }
+  });
+}
+
+// ---------------------------------------------------------------- les gestes
+function toucheDe(i) {
+  const d = D.des[i]; if (d.pose) return;
+  if (attente && attente.cible === 'de') { if (sel.includes(d)) return; if (attente.quoi !== undefined && D.main[attente.quoi] === 'ajuste') { choixSens(d); return; } finit({ d }); return; }
+  if (attente) return;
+  selTour = -1; sel = sel.includes(d) ? sel.filter(x => x !== d) : [...sel, d];
+  dis(sel.length === 1 ? `Un ${d.v} : touche une case verte pour bâtir (${DEF.coutBatir} PC), une tour de ${d.v} pour fusionner, ou une action en vert.` : sel.length ? 'Les actions en vert acceptent ces dés.' : '');
+  rendu();
+}
+function toucheCase(c) {
+  const t = D.rempart[c];
+  if (attente) { if (attente.cible === 'tour' && t) finit({ t }); return; }
+  if (sel.length === 1) { const e = batirD(D, sel[0], c); if (e) dis(e, true); else { sel = []; dis(t ? 'Fusion !' : 'Tour bâtie.'); } rendu(); return; }
+  if (selTour >= 0 && selTour !== c) {
+    const a = selTour; selTour = -1;
+    const e = t ? fusionD(D, a, c) : deplacerD(D, a, c);
+    if (e) dis(e, true); else dis(t ? (D.rempart[c].rune ? `✨ La Rune ${DHEROS[D.heros].rune.n} !` : 'Fusion !') : 'Tour déplacée.'); rendu(); return;
+  }
+  if (t) { selTour = selTour === c ? -1 : c; sel = [];
+    dis(selTour >= 0 ? `${t.rune ? `Rune ${DHEROS[D.heros].rune.n} : ${DHEROS[D.heros].rune.d}` : `Tour de ${t.v} : tire ${puissanceTour(D, c, t)} sur le monstre le plus avancé de sa colonne.`} Touche une tour voisine identique pour fusionner${D.deplace ? '' : ', ou une case libre voisine pour la déplacer'}.` : ''); rendu(); return; }
+  dis('Choisis d’abord UN dé, puis cette case pour bâtir.'); rendu();
+}
+function toucheMonstre(id) {
+  const m = D.monstres.find(x => x.id === id); if (!m) return;
+  if (attente && attente.cible === 'monstre') { finit({ m }); return; }
+  const M = MONSTRES[m.t]; dis(`${M.e} ${M.n} : ${m.pv}/${m.pvMax} PV. ${M.d} Frappe la porte : −${M.dg >= 99 ? 'tout' : M.dg}.`); rendu();
+}
+function agir(q) {
+  if (attente && attente.quoi === q) { annule(); return; }
+  if (!sel.length) return;
+  const e0 = permisD(D, q, sel); if (!e0) { dis('Ces dés ne conviennent pas.', true); rendu(); return; }
+  const cible = cibleDe(D, q);
+  if (!cible) { const e = agitD(D, q, sel, {}); sel = []; dis(e || ''); if (e) err = true; rendu(); return; }
+  attente = { quoi:q, cible }; dis(cible === 'monstre' ? 'Touche un monstre.' : cible === 'tour' ? 'Touche une de tes tours.' : 'Touche un autre de tes dés.'); rendu();
+}
+function toucheCarte(i) {
+  const k = D.main[i], c = DCARTES[k];
+  if (attente && attente.quoi === i) { annule(); return; }
+  if (!sel.length || attente) { dis(`${c.n} (${c.c} PC, ${c.txt}) : ${c.d} Choisis d’abord le dé.`); rendu(); return; }
+  if (!permisD(D, i, sel)) { dis(D.pc < c.c ? `Il faut ${c.c} PC.` : `Il faut : ${c.txt}.`, true); rendu(); return; }
+  agir(i);
+}
+function choixSens(d) { fenetre(`<h2>Pierre d’ajustement</h2><p>Le ${d.v} devient…</p><div class="choixh">${d.v > 1 ? `<button onclick="fermer();finit({ d:D.des[${d.i}], sens:-1 })">${d.v - 1}</button>` : ''}${d.v < 6 ? `<button onclick="fermer();finit({ d:D.des[${d.i}], sens:1 })">${d.v + 1}</button>` : ''}</div>`); }
+function finit(k) { const q = attente.quoi; attente = null; const e = agitD(D, q, sel, k); if (e) dis(e, true); else { sel = []; dis(''); } rendu(); }
+function annule() { attente = null; sel = []; selTour = -1; dis(''); rendu(); }
+function relance() { const e = relancerD(D, sel); sel = []; dis(e || 'Relancé.', !!e); rendu(); }
+function finTour() {
+  if (D.fini) return; const reste = libresD(D).length;
+  if (reste && !confirm(`Il te reste ${reste} dé${reste > 1 ? 's' : ''} : ${reste > 1 ? 'ils seront vendus' : 'il sera vendu'} (+1 PC chacun). Finir le tour ?`)) return;
+  sel = []; selTour = -1; attente = null;
+  const p0 = D.porte; finTourD(D); dis(D.porte < p0 ? `Aïe : la porte a perdu ${p0 - D.porte} PV.` : 'Tes tours ont tiré. À toi.');
+  rendu(); vagueAnnonce();
+}
+function fin() {
+  if (fen.innerHTML) return;
+  const g = D.fini === 'gagne', sc = scoreD(D), r = lesRecords();
+  if (!D.enregistre) { D.enregistre = true; r.push({ heros:D.heros, gagne:g, porte:D.porte, score:g ? sc : 0, vague:D.vague, quand:new Date().toISOString() }); try { localStorage.setItem(REC, JSON.stringify(r.slice(-50))); } catch (e) {} }
+  fenetre(`<h2>${g ? '🏆 La porte a tenu !' : '💥 La porte est tombée…'}</h2>
+    <p>${g ? `Le Titan de feu est tombé. Porte : ${D.porte}/${D.porteMax} PV · vagues sans dégâts : ${D.sansDegats} · monstres abattus : ${D.kills}.<br><b>Score : ${sc}</b>` : `Vague ${Math.min(D.vague + 1, VAGUES.length)} sur ${VAGUES.length} · monstres abattus : ${D.kills}.`}</p>
+    <div class="corbin">Corbin : « ${g ? 'Pas mal. La porte est encore là, moi aussi. Tout le monde est content.' : 'Bon. On reconstruit la porte et on recommence ? Moi, je ne porte rien.'} »</div>
+    <div class="choixh"><button class="or" onclick="fermer();demarre('${D.heros}')">↺ Rejouer</button><button onclick="fermer();accueil()">Changer de héros</button><button onclick="location.href='menu.html'">⌂ Menu</button></div>`);
+}
+function journal() { fenetre(`<h2>📖 Journal</h2><div class="journal">${D.log.map(t => `<div>${t}</div>`).join('')}</div><div class="choixh"><button onclick="fermer()">Fermer</button></div>`); }
+function quitter() { if (D && !D.fini && !confirm('Quitter la partie ?')) return; location.href = 'menu.html'; }
+function regles() {
+  fenetre(`<h2>📜 La Défense de la porte</h2>
+  <p>Les monstres descendent les 3 chemins. À la fin de chaque tour, <b>tes tours tirent</b> sur le monstre le plus avancé de leur colonne, puis <b>les monstres avancent</b>. Celui qui sort du chemin frappe la porte.</p>
+  <p><b>Ton tour :</b> 5 dés, 2 relances. Avec tes dés :</p>
+  <ul style="padding-left:1.1em;margin:.3em 0">
+  <li><b>Bâtir</b> (${DEF.coutBatir} PC) : un dé, puis une case verte : la tour garde la face du dé. Sa force double à chaque niveau : 1, 2, 4, 8, 16, 32.</li>
+  <li><b>Fusionner</b> : un dé sur une tour de même valeur (${DEF.coutBatir} PC), ou une tour sur sa voisine identique (gratuit) : valeur +1. <b>Deux 6 = une Rune.</b></li>
+  <li><b>Déplacer</b> une tour d’une case (une fois par tour) : touche-la, puis une case libre voisine.</li>
+  <li><b>Frapper</b> tout de suite : Frappe, Technique, Pouvoir, Ultime, comme au Duel ; ou une <b>carte</b>.</li>
+  <li><b>Vendre</b> : +1 PC par dé. Les dés pas utilisés sont vendus à la fin du tour.</li></ul>
+  <p>Monstres : 👺 Gobelin (💨 avance de 2), 🐗 Sanglier (solide), 🛡 Porte-bouclier (−3 à chaque tir de tour), 🦇 Chauve-souris (🪽 ta tour de devant ne la voit pas), 🌋 le Titan (vague 6 : avance une case tous les 2 tours, fait fondre ta tour la plus faible de sa colonne ; s’il touche la porte, elle tombe).</p>
+  <p class="doux">Règles complètes : <a href="defense-proposition.html" style="color:#7cc8ff">la page de la proposition</a>.</p>
+  <div class="choixh"><button onclick="fermer()">Compris</button></div>`);
+}
+accueil();
+</script>
+</body>
+</html>

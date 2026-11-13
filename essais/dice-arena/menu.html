@@ -8,7 +8,7 @@
 <title>La Guilde des Runes</title>
 <script>
 // Même mécanisme que le Duel : une nouvelle version = rechargement tout seul à l'ouverture (publier.sh change VERSION).
-const VERSION = '20261113-102705';
+const VERSION = '20261113-112356';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-menu-' + v)) { sessionStorage.setItem('recharge-menu-' + v, '1'); location.replace('menu.html?v=' + v); }
@@ -170,7 +170,7 @@ fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.te
 </div>
 <div id="flash"></div>
 
-<script src="donnees.js?v=20261113-102705"></script>
+<script src="donnees.js?v=20261113-112356"></script>
 <script>
 // ciel étoilé + runes du portail (symboles, pas des lettres), aux couleurs des héros
 const ciel = document.getElementById('ciel');
@@ -200,6 +200,7 @@ const PRO = { // dessins provisoires : [émoji, fond, lueur]
   tuto:['🐦‍⬛', 'linear-gradient(180deg, #ffe7a8 0%, #f4c27a 45%, #7aa36b 46%, #4d7a43 100%)', '#fff3c4'],
   proche:['🤝', 'linear-gradient(180deg, #3a2414 0%, #7a4a24 45%, #c9893f 46%, #6b3f1f 100%)', '#ffd27a'],
   pantheon:['🏛', 'linear-gradient(180deg, #1a1433 0%, #3a2a5c 50%, #c8902f 100%)', '#f3c96b'],
+  defense:['🏰', 'linear-gradient(180deg, #2a1d10 0%, #5a3a1a 45%, #1f3b2b 46%, #14281d 100%)', '#7dffb0'],
   enigme:['🧩', 'linear-gradient(180deg, #14213d 0%, #2b3a67 50%, #e9c46a 100%)', '#ffe08a'],
   abime:['🌀', 'radial-gradient(circle at 50% 70%, #6d28d9 0%, #1e0b3a 50%, #05020d 100%)', '#a855f7'],
 };
@@ -208,6 +209,7 @@ const ABIME_OK = (() => { try { return !!JSON.parse(localStorage.getItem('guilde
 const ETAGES = {
   '':{ titre:'Le monde de la Guilde', sous:'Glisse, puis touche un portail pour y entrer.', portes:[
     { nom:'L’Arène', pro:'arene', vers:'arene', desc:'Les Duels : un héros contre un autre. Dés, cartes, créatures : le premier à zéro perd.' },
+    { nom:'Défense de la porte', pro:'defense', href:'defense.html', desc:'Les monstres descendent vers la porte de la Guilde : tes dés deviennent des tours, deux tours identiques fusionnent, deux 6 éveillent une Rune. (Version d’essai.)' },
     { nom:'L’énigme du jour', pro:'enigme', href:'duel.html?enigme=1', desc:'Tes dés sont lancés, ta main est prête : trouve le coup parfait qui fait tomber l’adversaire en un seul tour. Une nouvelle chaque jour, de plus en plus dure du lundi au dimanche.' },
     { nom:'L’Odyssée', pro:'odyssee', vers:'odyssee', desc:'Seul sur une île : explore case par case, fais grandir ton deck, vaincs le gardien de l’île.' },
     { nom:'Expéditions', pro:'expeditions', href:'expedition.html', desc:'Le navire volant (v2) : recrute, fusionne, place tes deux rangées, et regarde ton équipage affronter monstres et navires rivaux.' },
