@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="robots" content="noindex">
-<title>La Guilde des Runes · Le Campement</title>
+<title>La Guilde des Runes · L’Invasion</title>
 <style>
   :root { --or:#f3c96b; --texte:#f1ecff; --doux:#c9c1ea; --ok:#7dffb0; }
   * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
@@ -28,26 +28,27 @@
 </head>
 <body>
 <div id="app"></div>
-<script src="cartes.js?v=20261113-062339"></script>
-<script src="donnees.js?v=20261113-062339"></script>
-<script src="odyssee.js?v=20261113-062339"></script>
-<script src="chronique.js?v=20261113-062339"></script>
+<script src="cartes.js?v=20261113-063039"></script>
+<script src="donnees.js?v=20261113-063039"></script>
+<script src="odyssee.js?v=20261113-063039"></script>
+<script src="chronique.js?v=20261113-063039"></script>
 <script>
 const ZOK = () => localStorage.getItem('guilde-tuto') === 'fait'; // Zéphine : débloquée par le tutoriel (12/11)
 
 const log = () => {}, degats = () => {}, soin = () => {}, altere = () => {}, invoque = () => {}, adv = () => ({}), fin = () => {};
 let C = { a:null, b:null, modeB:'ordi', boss:'colosseracines' };
+{ const b = new URLSearchParams(location.search).get('boss'); if (b && HEROS[b]) C.boss = b; }
 function dessine() {
   const b = HEROS[C.boss];
-  document.getElementById('app').innerHTML = `<h1>🔥 Le Campement</h1>
-  <p class="doux" style="text-align:center">Deux héros de la Guilde autour d’un feu de camp, dans la brume. Un boss géant s’avance. Il faudra se serrer les coudes.</p>
+  document.getElementById('app').innerHTML = `<h1>⚔️ L’Invasion</h1>
+  <p class="doux" style="text-align:center">Deux héros de la Guilde tiennent le front ensemble : les actes de l’Invasion (plusieurs vagues à la suite) ou un grand boss. Il faudra se serrer les coudes.</p>
   <h2>Le boss</h2>${Object.keys(BOSS_CAMP).map(k => { const x = HEROS[k]; return `<div class="boss ${C.boss === k ? 'sel' : ''}" onclick="C.boss='${k}';dessine()" style="cursor:pointer;${C.boss === k ? 'outline:3px solid #7dffb0;' : 'opacity:.75;'}"><div class="e">${x.emoji}</div><div><b>${x.nom}</b>, ${x.titre} · ${x.pv} PV<small>${x.role}</small></div></div>`; }).join('')}
   <p class="doux">Pas encore de partie en ligne : on joue <b>à deux sur ce téléphone</b> (on se le passe à chaque tour), ou avec un <b>compagnon joué par l’ordinateur</b>. Le boss joue après les deux héros et se retourne contre le dernier qui l’a frappé. La <b>Cohésion</b> (réserve commune) permet de relever un héros à terre, de crier le ralliement ou de soigner l’autre.</p>
   <h2>1. Ton héros</h2><div class="heros6">${ORDRE.map(id => id === 'zephine' && !ZOK() ? `<button disabled style="opacity:.5"><img src="${IMG(id)}" alt="" style="filter:grayscale(1)">🔒 ${HEROS[id].nom}</button>` : `<button class="${C.a === id ? 'sel' : ''}" onclick="C.a='${id}';if(C.b===C.a)C.b=null;dessine()"><img src="${IMG(id)}" alt="">${HEROS[id].nom}</button>`).join('')}</div>
   <h2>2. Le second héros</h2><div class="modes"><button class="${C.modeB === 'ordi' ? 'sel' : ''}" onclick="C.modeB='ordi';dessine()">🤖 Un compagnon (ordinateur)</button><button class="${C.modeB === 'humain' ? 'sel' : ''}" onclick="C.modeB='humain';dessine()">📱 Un ami, sur ce téléphone</button></div>
   <div class="heros6">${ORDRE.map(id => `<button class="${C.b === id ? 'sel' : ''}" ${C.a === id || (id === 'zephine' && !ZOK()) ? 'disabled' : ''} onclick="C.b='${id}';dessine()"><img src="${IMG(id)}" alt="">${HEROS[id].nom}</button>`).join('')}</div>
   <button class="go" ${C.a && C.b ? '' : 'disabled'} onclick="localStorage.setItem('guilde-campement', JSON.stringify(C));chronique([(CHRON_CAMP_B[C.boss] || CHRON_CAMP).intro(HEROS[C.a].nom, HEROS[C.b].nom)], () => location.href='duel.html?campement=1')">🔥 Au feu de camp !</button>
-  <button class="lien" onclick="location.href='menu.html'">⌂ Menu</button>`;
+  <button class="lien" onclick="location.href='menu.html#invasion'">⌂ Menu</button>`;
 }
 dessine();
 </script>

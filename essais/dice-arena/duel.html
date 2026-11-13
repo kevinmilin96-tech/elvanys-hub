@@ -609,7 +609,7 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261113-062339';
+const VERSION = '20261113-063039';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); location.replace('duel.html?v=' + v); }
@@ -628,10 +628,10 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261113-062339"></script>
-<script src="donnees.js?v=20261113-062339"></script>
-<script src="odyssee.js?v=20261113-062339"></script>
-<script src="chronique.js?v=20261113-062339"></script>
+<script src="cartes.js?v=20261113-063039"></script>
+<script src="donnees.js?v=20261113-063039"></script>
+<script src="odyssee.js?v=20261113-063039"></script>
+<script src="chronique.js?v=20261113-063039"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -1206,11 +1206,11 @@ function partieCampement() {
   const boss = HEROS[cfg.boss] ? cfg.boss : 'colosseracines', h = HEROS[boss]; if (h.phases) { h.garde = h.phases[0].garde; h.pouvoir = h.phases[0].pouvoir; }
   const A = joueur(cfg.a, false, false), B = joueur(cfg.b, cfg.modeB === 'ordi', cfg.modeB === 'ordi');
   A.qui = 'toi'; B.qui = cfg.modeB === 'ordi' ? 'compagnon' : 'joueur 2'; B.nomCourt = B.nom;
-  S = { J:A, O:joueur(h.vagues ? h.vagues[0] : boss, true), salle:SALLES[Math.floor(Math.random() * SALLES.length)], log:[], fini:null, auto:false, coop:true, equipe:[A, B], cohesion:COHESION.depart, lieu:h.lieu || 'brume', vagues:h.vagues || null, vague:0 };
+  S = { J:A, O:joueur(h.vagues ? h.vagues[0] : boss, true), salle:SALLES[Math.floor(Math.random() * SALLES.length)], log:[], fini:null, auto:false, coop:true, equipe:[A, B], cohesion:COHESION.depart, lieu:h.lieu || 'brume', vagues:h.vagues || null, vague:0, seve:h.seve ? 100 : undefined };
   FX = []; fxApres = []; fxOn = false; arreteMusique();
   S.O.desMax = 5; (h.renforts || []).forEach(r => invoque(S.O, { ...r }));
   pioche(A, 4); pioche(B, 4); B.pc = 2;
-  log(`🔥 Le Campement : ${A.nom} et ${B.nom} contre ${S.O.nom}. Salle : ${S.salle.n}. ${S.salle.d}`);
+  log(`⚔️ L’Invasion : ${A.nom} et ${B.nom} contre ${S.O.nom}. Salle : ${S.salle.n}. ${S.salle.d}`);
   sel = []; attaquant = null; ciblage = null;
   debutTour(A); rendu(); regles();
 }
@@ -1240,7 +1240,7 @@ function simuleCamp(a, b, boss) {
   localStorage.setItem('guilde-campement', JSON.stringify({ a, b, modeB:'ordi', boss:boss || 'colosseracines' }));
   const cfg = lireCampement(); const bs = cfg.boss, h = HEROS[bs]; h.garde = h.phases[0].garde; h.pouvoir = h.phases[0].pouvoir;
   const A = joueur(a, true, true), B = joueur(b, true, true); A.qui = 'toi'; B.qui = 'compagnon';
-  S = { J:A, O:joueur(h.vagues ? h.vagues[0] : bs, true), salle:SALLES[0], log:[], fini:null, auto:true, coop:true, equipe:[A, B], cohesion:COHESION.depart, vagues:h.vagues || null, vague:0 };
+  S = { J:A, O:joueur(h.vagues ? h.vagues[0] : bs, true), salle:SALLES[0], log:[], fini:null, auto:true, coop:true, equipe:[A, B], cohesion:COHESION.depart, vagues:h.vagues || null, vague:0, seve:h.seve ? 100 : undefined };
   S.O.desMax = 5; (h.renforts || []).forEach(r => invoque(S.O, { ...r })); pioche(A, 4); pioche(B, 4); B.pc = 2;
   debutTour(A);
   for (let n = 0; n < 60 && !S.fini; n++) {
@@ -1437,7 +1437,7 @@ function dessine() {
   else bandeau = 'Tous tes dés sont posés : touche « Fin du tour ».';
   document.getElementById('app').classList.toggle('compagnon', !!(S.coop && J.ordi));
   document.getElementById('app').innerHTML = `
-  <div class="salle"><span class="st">${S.coop ? `<b>🔥 Le Campement</b> · ${J.ordi ? `${J.nom} (compagnon) joue…` : J.qui === 'toi' ? 'à toi' : `au tour de ${J.nom}`} · ${S.salle.n}` : S.ody ? `<b>${S.ody.titre}</b> · ${S.salle.n} : ${S.salle.d}${J.reliques.length ? ' <span class="rel">' + J.reliques.map(r => `<i title="${RELIQUES[r].n}" onclick="aideRelique('${r}')">${RELIQUES[r].e}</i>`).join('') + '</span>' : ''}` : `<b>${S.salle.n}</b> · ${S.salle.d}`}</span><span class="sons">
+  <div class="salle"><span class="st">${S.coop ? `<b>⚔️ L’Invasion</b> · ${J.ordi ? `${J.nom} (compagnon) joue…` : J.qui === 'toi' ? 'à toi' : `au tour de ${J.nom}`} · ${S.salle.n}` : S.ody ? `<b>${S.ody.titre}</b> · ${S.salle.n} : ${S.salle.d}${J.reliques.length ? ' <span class="rel">' + J.reliques.map(r => `<i title="${RELIQUES[r].n}" onclick="aideRelique('${r}')">${RELIQUES[r].e}</i>`).join('') + '</span>' : ''}` : `<b>${S.salle.n}</b> · ${S.salle.d}`}</span><span class="sons">
     <button class="sonbt ${sonOn ? '' : 'off'}" onclick="basculeSon()" aria-label="Bruitages" title="Bruitages"><svg viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/>${sonOn ? '<path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>' : '<path d="M16 9l5 6M21 9l-5 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>'}</svg></button>
     <button class="sonbt ${musOn ? '' : 'off'}" onclick="basculeMusique()" aria-label="Musique" title="Musique"><svg viewBox="0 0 24 24"><path d="M9 17V5l11-2v12" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="6.5" cy="17.5" r="2.8" fill="currentColor"/><circle cx="17.5" cy="15.5" r="2.8" fill="currentColor"/>${musOn ? '' : '<path d="M3 3l18 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>'}</svg></button></span></div>
   <div class="plateau tapis unique ${S.lieu ? 'scene lieu-' + S.lieu : ''}">${barre(O, true)}${front(O, true)}${front(J, false)}${barre(J, false)}
@@ -1566,7 +1566,7 @@ function regles() {
   <li>Tes <b>unités</b> attaquent à partir du tour suivant leur arrivée : touche ton unité (contour jaune), puis sa cible. Les unités <b>Barrière</b> doivent être attaquées d’abord par les unités. Les unités <b>Cachées</b> ne peuvent pas être visées tant qu’elles n’ont pas attaqué.</li>
   <li>La <b>Garde</b> = ta défense : tu poses un dé et ton héros gagne un Bouclier (ou une autre protection selon le héros). Ce Bouclier absorbe les prochains dégâts que tu reçois pendant le tour de l’adversaire, puis disparaît. Exemple : Garde 4, l’adversaire frappe à 6, tu ne perds que 2 PV.</li><li>Tes <b>créatures</b> attaquent au tour suivant leur arrivée (sauf Charge) : touche-en une puis sa cible ; celles que tu ne fais pas attaquer frappent le héros adverse à « Fin du tour », sauf les créatures 👁 Cachées, qui restent dans l’ombre tant que tu ne leur demandes pas d’attaquer. Le Bouclier et la Garde de l’adversaire absorbent leurs coups.</li><li>Une créature <b>Cachée</b> 👁 ne peut être ni attaquée ni visée tant qu’elle n’a pas attaqué ; sa première attaque depuis l’ombre est une <b>Embuscade</b> (+2 dégâts), puis elle se montre.</li><li>Une créature prête peut aussi se mettre <b>en défense</b> (touche-la) : elle n’attaque pas ce tour, mais elle protège ton héros comme une Barrière jusqu’à ton prochain tour : les créatures adverses doivent l’attaquer d’abord.</li></ul>
   <h2>${h.nom}, ${h.titre} (${h.pv} PV)</h2><p><b>Passif</b> : ${h.passif}</p><p><b>Garde · ${h.garde.n}</b> (${h.garde.txt}) : ${h.garde.d}</p><p><b>Pouvoir · ${h.pouvoir.n}</b> (${h.pouvoir.txt}) : ${h.pouvoir.d}</p><p><b>Ultime · ${h.ultime.n}</b> (jauge pleine, ${h.ultime.txt}, 3 PC) : ${h.ultime.d}</p>
-  ${S.coop ? `<h2>🔥 Le Campement</h2><p>${S.equipe[0].nom} et ${S.equipe[1].nom} contre <b>${S.O.nom}</b> (${S.O.pvMax} PV). Chaque héros joue son tour, puis le boss frappe <b>le dernier qui a joué</b>. Tous les 2 tours, il appelle des Racines (Barrière). La <b>Cohésion</b> monte quand un héros pose 3 dés ou plus ; elle sert à relever un héros à terre (3), à crier le ralliement (2 : +2 PC chacun) ou à soigner l’autre (2 : +6 PV). Les deux à terre = défaite.</p>` : ''}${S.ody || S.coop ? `<h2>${S.O.nom}, ${HEROS[S.O.id].titre || ''} (${S.O.pvMax} PV)</h2><p>${HEROS[S.O.id].role || ''}</p><p><b>Garde · ${HEROS[S.O.id].garde.n}</b> (${HEROS[S.O.id].garde.txt}) : ${HEROS[S.O.id].garde.d}</p><p><b>Pouvoir · ${HEROS[S.O.id].pouvoir.n}</b> (${HEROS[S.O.id].pouvoir.txt}) : ${HEROS[S.O.id].pouvoir.d}</p>${S.ody && S.ody.defi ? `<p><b>🎯 Défi du combat · ${S.ody.defi.n}</b> : ${S.ody.defi.d} Réussi = +30 or.</p>` : ''}` : ''}
+  ${S.coop ? `<h2>⚔️ L’Invasion</h2><p>${S.equipe[0].nom} et ${S.equipe[1].nom} contre <b>${S.O.nom}</b> (${S.O.pvMax} PV). Chaque héros joue son tour, puis le boss frappe <b>le dernier qui a joué</b>. Tous les 2 tours, il appelle des Racines (Barrière). La <b>Cohésion</b> monte quand un héros pose 3 dés ou plus ; elle sert à relever un héros à terre (3), à crier le ralliement (2 : +2 PC chacun) ou à soigner l’autre (2 : +6 PV). Les deux à terre = défaite.</p>` : ''}${S.ody || S.coop ? `<h2>${S.O.nom}, ${HEROS[S.O.id].titre || ''} (${S.O.pvMax} PV)</h2><p>${HEROS[S.O.id].role || ''}</p><p><b>Garde · ${HEROS[S.O.id].garde.n}</b> (${HEROS[S.O.id].garde.txt}) : ${HEROS[S.O.id].garde.d}</p><p><b>Pouvoir · ${HEROS[S.O.id].pouvoir.n}</b> (${HEROS[S.O.id].pouvoir.txt}) : ${HEROS[S.O.id].pouvoir.d}</p>${S.ody && S.ody.defi ? `<p><b>🎯 Défi du combat · ${S.ody.defi.n}</b> : ${S.ody.defi.d} Réussi = +30 or.</p>` : ''}` : ''}
   <div class="choixh"><button onclick="fermer()">Jouer</button>${S.ody ? '' : '<button onclick="fermer();accueil()">Changer de héros</button>'}</div><div class="choixh"><button onclick="mesParties()">📜 Mes parties</button>${S.ody ? `<button onclick="location.href='odyssee.html'">🗺 L’île</button>` : S.coop ? `<button onclick="location.href='campement.html'">🔥 Le campement</button>` : `<button onclick="location.href='menu.html'">⌂ Menu</button>`}</div>`);
 }
 // historique des parties, gardé sur le téléphone (les 50 dernières) : sert à l'équilibrage
@@ -1924,8 +1924,8 @@ async function joueFX() {
 // toucher l'écran pendant les animations les accélère
 document.addEventListener('pointerdown', () => { if (fxOn) fxVite = .3; }, true);
 </script>
-<script src="tuto.js?v=20261113-062339"></script>
-<script src="deux.js?v=20261113-062339"></script>
-<script src="invasion.js?v=20261113-062339"></script>
+<script src="tuto.js?v=20261113-063039"></script>
+<script src="deux.js?v=20261113-063039"></script>
+<script src="invasion.js?v=20261113-063039"></script>
 </body>
 </html>

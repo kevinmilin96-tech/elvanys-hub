@@ -68,3 +68,48 @@ barre = function (P, haut) {
   if (S && S.vagues && P === S.O) plus += `<span data-k="vague" class="p">🌊 Vague ${S.vague + 1}/${S.vagues.length}</span>`;
   return plus ? h.replace('<span data-k="pv"', plus + '<span data-k="pv"') : h;
 };
+
+// =============================================================================================== ACTE II « LE RÉVEIL DES PRIMORDIAUX » (13/11, livre papier pages 39-47)
+const estH = (P, k) => !!(P && HEROS[P.id] && HEROS[P.id][k]);
+// Peau de granit (Titan : −3, −4 quand l'Arbre est contaminé) et Lien de terre (Colosse : −3 tant qu'une Micro-racine vit) ; une racine qui meurt = choc de 5, et elle repousse une fois
+const _degatsReveil = degats;
+degats = function (k, n, ignore) {
+  if (S && !S.fini && k && k.J === S.O && !k.u && n > 0) {
+    if (estH(S.O, 'granit')) { const r = 3 + (S.seve !== undefined && S.seve <= 49 ? 1 : 0); n = Math.max(0, n - r); log(`Peau de granit : −${r}.`); if (!n) return; }
+    if (estH(S.O, 'racines') && S.O.front.some(u => u.n === 'Micro-racine')) { n = Math.max(0, n - 3); log('Lien de terre : −3 (une Micro-racine tient encore).'); if (!n) return; }
+  }
+  const racine = k && k.u && k.u.n === 'Micro-racine' && S && S.O && k.J === S.O ? k.u : null;
+  _degatsReveil(k, n, ignore);
+  if (racine && !S.O.front.includes(racine) && !S.fini) {
+    log('🌱 La Micro-racine se brise : choc de Sève, 5 dégâts au Colosse !'); _degatsReveil({ J:S.O }, 5, true);
+    if (!racine.repoussee && !S.fini) { invoque(S.O, { n:'Micro-racine', a:0, v:5, barriere:true }); const u = S.O.front[S.O.front.length - 1]; if (u) u.repoussee = true; log('🌱 Elle repousse avec 5 PV.'); }
+  }
+};
+// la Poussière de pierre : le prochain soin perd 2 PV par pile (6 au plus), puis elle retombe
+const _soinReveil = soin;
+soin = function (J, n) { if (J && J.poussiere) { const r = J.poussiere * 2; J.poussiere = 0; n -= r; log(`🪨 Poussière : le soin perd ${r}.`); if (n <= 0) return; } return _soinReveil(J, n); };
+// début des tours : la Sève (tour du Titan), l'Appel de la pierre, l'Agonie de l'Arbre, l'Étreinte (une seule relance)
+const _debutTourReveil = debutTour;
+debutTour = function (J) {
+  _debutTourReveil(J);
+  if (!S || S.fini) return;
+  if (J === S.O && estH(S.O, 'stase')) {
+    seve(-5);
+    if (!S.fini && !S.O.front.length) { invoque(S.O, { n:'Éclaireur de silex', a:3, v:12 }); log('⛰ Appel de la pierre : un Éclaireur de silex surgit.'); }
+  }
+  if (J !== S.O && S.seve !== undefined && S.seve <= 24 && !J.aTerre) { log(`🌳 Agonie de l’Arbre : ${J.nom} perd 1 PV.`); J.pv -= 1; fin(); }
+  if (J.entrave1) { J.relance = Math.min(J.relance, 1); J.entrave1 = false; log(`${J.nom} est pris dans l’Étreinte : une seule relance.`); }
+};
+// soigner l'Arbre : 2 PC → +10 % de Sève (le héros dont c'est le tour)
+function soigneArbre(J) { J = J || S.J; if (!S || S.seve === undefined || S.fini || J.pc < 2 || S.seve >= 100) return; J.pc -= 2; log(`🌳 ${J.nom} soigne l’Arbre-Monde (2 PC).`); seve(10); fx({ t:'annonce', txt:`🌳 Sève +10 % (${S.seve} %)` }); rendu(); }
+const _equipeHTMLReveil = equipeHTML;
+equipeHTML = function () {
+  const h = _equipeHTMLReveil(); if (!S || S.seve === undefined) return h;
+  return h + `<div class="coh"><b>🌳 Sève de l’Arbre-Monde : ${S.seve} %</b> <small>à 0 %, le monde est pétrifié</small><div class="cohb"><button onclick="fermer();soigneArbre()" ${S.J.pc >= 2 && S.seve < 100 ? '' : 'disabled'}>Soigner l’Arbre : 2 PC → +10 %</button></div></div>`;
+};
+// le compagnon (et le simulateur) soigne l'Arbre quand la Sève baisse trop
+const _joueAutoReveil = joueAuto;
+joueAuto = function (J) { if (S && S.coop && S.seve !== undefined && J !== S.O && S.seve <= 45 && J.pc >= 2 && !S.fini) { J.pc -= 2; seve(10); log(`🌳 ${J.nom} soigne l’Arbre-Monde.`); } return _joueAutoReveil(J); };
+// l'étiquette de la Sève sur le boss
+const _barreReveil = barre;
+barre = function (P, haut) { const h = _barreReveil(P, haut); return S && S.seve !== undefined && P === S.O ? h.replace('<span data-k="pv"', `<span data-k="seve" class="p ${S.seve <= 24 ? 'al' : 'g'}">🌳 Sève ${S.seve} %</span><span data-k="pv"`) : h; };

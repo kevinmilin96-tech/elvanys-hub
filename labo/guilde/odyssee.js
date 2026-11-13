@@ -717,6 +717,42 @@ Object.assign(BOSS, VAGUES_EVEIL);
 BOSS_CAMP.eveil = { nom:'L’Éveil de l’Abîme', titre:'Invasion · Acte I (3 vagues)', emoji:'🌀', c:'#7a3aa8', pv:280, boss:true, vagues:['meute', 'duo', 'necro'],
   role:'Le livre papier : trois vagues à la suite. La Meute corrompue (Souillure, vol de PC), les Gardes jumeaux à abattre DANS LE MÊME TOUR, puis le Nécromancien du Vide.', cit:'« La marque du Vide s’étend. »',
   phases:VAGUES_EVEIL.meute.phases, ultime:VAGUES_EVEIL.meute.ultime, renforts:[] };
+// ================================================================== 13/11 : INVASION, ACTE II « LE RÉVEIL DES PRIMORDIAUX » (livre papier, pages 39-47)
+// La JAUGE DE SÈVE de l'Arbre-Monde (100 %) : −5 % au début de chaque tour du Titan, −10 % sur l'Onde de stase ; à 0 % le monde est pétrifié (défaite).
+// Chaque héros peut soigner l'Arbre : 2 PC → +10 %. La corruption de l'Arbre aggrave le combat (≤ 49 % : le Titan réduit encore les dégâts de 1 ; ≤ 24 % : 1 dégât à chaque héros au début de son tour).
+const VAGUES_REVEIL = {
+  eclaireurs: { nom:'Les Éclaireurs de silex', titre:'deux sentinelles de pierre', emoji:'🗿', c:'#8a7a6a', pv:56, boss:true, ile:'invasion', role:'Deux Éclaireurs de 28 PV (l’un tombe à la moitié). Leur Poussière de pierre réduit vos prochains soins.', cit:'« Immobile. Éternel. »',
+    phases:[
+      { seuil:1, garde:{ n:'Croûte de silex', txt:'1 dé', d:'Bouclier = la valeur du dé.', cond:vs => vs.length === 1, val:vs => vs[0], f:(J, vs) => { J.gardeB += vs[0]; log(`Les Éclaireurs : Croûte de silex, Bouclier ${vs[0]}.`); } },
+        pouvoir:{ n:'Lance-pierre', txt:'3 dés identiques', d:'10 dégâts, Handicap et Poussière (prochain soin −2).', cond:vs => vs.length === 3 && vs[0] === vs[1] && vs[1] === vs[2], cible:'ennemi', f:(J, vs, k) => { degats(k, 10); if (k && k.J && !k.u) { altere(k.J, 'handicap'); poussiere(k.J); } } } },
+      { seuil:1 / 2, garde:{ n:'Croûte de silex', txt:'1 dé', d:'Bouclier = la valeur du dé.', cond:vs => vs.length === 1, val:vs => vs[0], f:(J, vs) => { J.gardeB += vs[0]; } },
+        pouvoir:{ n:'Lacération', txt:'2 dés identiques', d:'6 dégâts et Poussière (le dernier Éclaireur).', cond:vs => vs.length === 2 && vs[0] === vs[1], cible:'ennemi', f:(J, vs, k) => { degats(k, 6); if (k && k.J && !k.u) poussiere(k.J); } } },
+    ],
+    ultime:{ n:'—', txt:'jamais', d:'Pas d’Ultime.', cond:() => false }, renforts:[] },
+  colosse2: { nom:'Le Colosse des racines', titre:'l’Étreinte des profondeurs', emoji:'🌳', c:'#3f8a3a', pv:55, boss:true, racines:true, ile:'invasion', role:'Lien de terre : tant qu’une Micro-racine vit, il réduit chaque coup de 3. Une racine qui meurt lui inflige un choc de 5 et repousse une fois avec 5 PV.', cit:'« Les racines tiennent le monde. »',
+    phases:[
+      { seuil:1, garde:{ n:'Écorce', txt:'1 dé', d:'Bouclier = la valeur du dé.', cond:vs => vs.length === 1, val:vs => vs[0], f:(J, vs) => { J.gardeB += vs[0]; log(`Le Colosse : Écorce, Bouclier ${vs[0]}.`); } },
+        pouvoir:{ n:'Coup de branche', txt:'2 dés identiques', d:'8 dégâts ; chaque 6 fait Saigner.', cond:vs => vs.length === 2 && vs[0] === vs[1], cible:'ennemi', f:(J, vs, k) => { degats(k, 8); if (k && k.J && !k.u) vs.filter(v => v === 6).forEach(() => altere(k.J, 'saigne')); } } } ],
+    ultime:{ n:'Étreinte', txt:'3 dés identiques', d:'12 dégâts, une seule relance et pas de PC au prochain tour du héros visé.', cond:vs => vs.length === 3 && vs[0] === vs[1] && vs[1] === vs[2], cible:'ennemi', f:(J, vs, k) => { const D = k && k.J && !k.u ? k.J : adv(J); degats({ J:D }, 12); D.entrave1 = true; D.sansPC = true; } },
+    renforts:[{ n:'Micro-racine', a:0, v:10, barriere:true }, { n:'Micro-racine', a:0, v:10, barriere:true }] },
+  titanp: { nom:'Le Titan primordial', titre:'le Jugement de pierre', emoji:'⛰️', c:'#7a5ad9', pv:160, boss:true, granit:true, stase:true, ile:'invasion', role:'Peau de granit (−3 à chaque coup). Au début de chacun de ses tours, l’Arbre perd 5 % de Sève ; seul, il appelle un Éclaireur de silex.', cit:'« Le monde sera une statue. Parfaite. Immobile. »',
+    phases:[
+      { seuil:1, garde:{ n:'Peau de granit', txt:'1 dé', d:'Bouclier = la valeur du dé.', cond:vs => vs.length === 1, val:vs => vs[0], f:(J, vs) => { J.gardeB += vs[0]; log(`Le Titan : Peau de granit, Bouclier ${vs[0]}.`); } },
+        pouvoir:{ n:'Éclat de quartz', txt:'2 dés identiques', d:'7 dégâts.', cond:vs => vs.length === 2 && vs[0] === vs[1], cible:'ennemi', f:(J, vs, k) => degats(k, 7) } },
+      { seuil:2 / 3, garde:{ n:'Peau de granit', txt:'1 dé', d:'Bouclier = la valeur du dé.', cond:vs => vs.length === 1, val:vs => vs[0], f:(J, vs) => { J.gardeB += vs[0]; } },
+        pouvoir:{ n:'Onde de stase', txt:'4 dés de 4 ou 5', d:'10 dégâts et l’Arbre perd 10 % de Sève.', cond:vs => vs.length === 4 && vs.every(v => v === 4 || v === 5), cible:'ennemi', f:(J, vs, k) => { degats(k, 10); seve(-10); } } },
+      { seuil:1 / 3, garde:{ n:'Granit vivant', txt:'1 dé', d:'Bouclier = 2 × la valeur du dé.', cond:vs => vs.length === 1, val:vs => vs[0] * 2, f:(J, vs) => { J.gardeB += vs[0] * 2; } },
+        pouvoir:{ n:'Écrasement', txt:'3 dés identiques ou plus', d:'10 dégâts (13 avec 4 dés, 15 avec 5).', cond:vs => vs.length >= 3 && vs.every(v => v === vs[0]), cible:'ennemi', f:(J, vs, k) => degats(k, [0, 0, 0, 10, 13, 15][vs.length]) } },
+    ],
+    ultime:{ n:'Colère de Gaïa', txt:'3 dés', d:'20 dégâts au héros visé et Handicap.', cond:vs => vs.length === 3, cible:'ennemi', f:(J, vs, k) => { const D = k && k.J && !k.u ? k.J : adv(J); degats({ J:D }, 20); altere(D, 'handicap'); } },
+    renforts:[] },
+};
+function poussiere(D) { if (!D) return; D.poussiere = Math.min(3, (D.poussiere || 0) + 1); log(`🪨 Poussière de pierre sur ${D.nom} : prochain soin −${D.poussiere * 2}.`); }
+function seve(n) { if (!S || S.seve === undefined || S.fini) return; S.seve = Math.max(0, Math.min(100, S.seve + n)); log(`🌳 Sève de l’Arbre-Monde : ${S.seve} %.`); if (S.seve <= 0) { log('🌳 L’Arbre-Monde est pétrifié…'); S.fini = 'perdu'; } }
+Object.assign(BOSS, VAGUES_REVEIL);
+BOSS_CAMP.reveil = { nom:'Le Réveil des Primordiaux', titre:'Invasion · Acte II (3 vagues)', emoji:'🌳', c:'#7a5ad9', pv:271, boss:true, vagues:['eclaireurs', 'colosse2', 'titanp'], seve:true,
+  role:'Le livre papier : les Éclaireurs de silex, le Colosse des racines et ses Micro-racines, puis le Titan primordial. Et la jauge de Sève de l’Arbre-Monde : à 0 %, le monde est pétrifié.', cit:'« La sève se change en quartz. »',
+  phases:VAGUES_REVEIL.eclaireurs.phases, ultime:VAGUES_REVEIL.eclaireurs.ultime, renforts:[] };
 const COHESION = { depart:4, max:8, relever:3, cri:2, soin:2, concertee:3 };  // 10/11 : Frappe concertée = 4 dégâts à CHAQUE créature du boss (les racines)
 Object.assign(BOSS, BOSS_CAMP);
 if (typeof HEROS !== 'undefined') installeMonstres();

@@ -8,7 +8,7 @@
 <title>La Guilde des Runes</title>
 <script>
 // Même mécanisme que le Duel : une nouvelle version = rechargement tout seul à l'ouverture (publier.sh change VERSION).
-const VERSION = '20261113-062339';
+const VERSION = '20261113-063039';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-menu-' + v)) { sessionStorage.setItem('recharge-menu-' + v, '1'); location.replace('menu.html?v=' + v); }
@@ -148,7 +148,7 @@ fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.te
 </div>
 <div id="flash"></div>
 
-<script src="donnees.js?v=20261113-062339"></script>
+<script src="donnees.js?v=20261113-063039"></script>
 <script>
 // ciel étoilé + runes du portail (symboles, pas des lettres), aux couleurs des héros
 const ciel = document.getElementById('ciel');
@@ -186,13 +186,18 @@ const ETAGES = {
     { nom:'L’Arène', pro:'arene', vers:'arene', desc:'Les Duels : un héros contre un autre. Dés, cartes, créatures : le premier à zéro perd.' },
     { nom:'L’Odyssée', pro:'odyssee', vers:'odyssee', desc:'Seul sur une île : explore case par case, fais grandir ton deck, vaincs le gardien de l’île.' },
     { nom:'Expéditions', pro:'expeditions', href:'expedition.html', desc:'Le navire volant (v2) : recrute, fusionne, place tes deux rangées, et regarde ton équipage affronter monstres et navires rivaux.' },
-    { nom:'Le Campement', pro:'campement', href:'campement.html', desc:'Deux héros contre un boss géant : à deux sur ce téléphone, ou avec un compagnon (premier essai).' },
+    { nom:'L’Invasion', pro:'campement', vers:'invasion', desc:'À deux (sur ce téléphone ou avec un compagnon) contre les vagues de ton livre : l’Éveil de l’Abîme, le Réveil des Primordiaux, et les grands boss.' },
     { nom:'Tour des héros', pro:'tour', href:'heros.html', desc:'Les six héros, leurs pouvoirs, leurs dés et leurs cartes. Prépare ton deck.' },
   ] },
   arene:{ titre:'L’Arène des Duels', sous:'Contre qui veux-tu te battre ?', portes:[
     { nom:'Contre l’ordinateur', pro:'ordinateur', href:'duel.html', desc:'Choisis ton héros et affronte l’automate de la Guilde.' },
     { nom:'Contre un proche', pro:'proche', href:'duel.html?deux=1', desc:'À deux sur le même téléphone : chacun son héros, on se passe le téléphone à chaque tour.' },
     { nom:'Le tutoriel', pro:'tuto', href:'duel.html?tuto=1', desc:'Un premier duel guidé par Corbin, avec Gorm (5 minutes). À la clé : Zéphine et le cadre de Diplômé.' },
+  ] },
+  invasion:{ titre:'L’Invasion', sous:'Quel front veux-tu tenir ?', portes:[
+    { nom:'Acte I · L’Éveil', pro:'abime', href:'campement.html?boss=eveil', desc:'La Meute corrompue, les Gardes jumeaux à abattre dans le même tour, le Nécromancien du Vide.' },
+    { nom:'Acte II · Le Réveil', pro:'campement', href:'campement.html?boss=reveil', desc:'Les Éclaireurs de silex, le Colosse des racines, le Titan primordial, et la Sève de l’Arbre-Monde à garder en vie.' },
+    { nom:'Les grands boss', pro:'expeditions', href:'campement.html', desc:'Le Colosse des racines, le Kraken des brumes, Ignaros le dragon ancien : un seul boss, géant.' },
   ] },
   odyssee:{ titre:'L’Odyssée', sous:'Quelle île veux-tu explorer ?', portes:[
     { nom:'Terres brûlées', img:'menu-recu/ody-terres-brulees.webp', href:'odyssee.html', desc:'Acte I · L’île de cendre et de lave, gardée par le Titan de feu.' },

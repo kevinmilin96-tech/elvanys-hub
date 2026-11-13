@@ -187,6 +187,15 @@ const CHRON_CAMP = {
 };
 // 12/11 nuit : les histoires des deux nouveaux boss du Campement (le Colosse garde celles d'au-dessus)
 const CHRON_CAMP_B = {
+  reveil:{
+    intro:(a, b) => ({ sur:'Invasion · Acte II', titre:'Le Réveil des Primordiaux', illu:{ cle:'reveil', fond:'foret', sym:'🌳' }, texte:[
+      'L’Arbre-Monde, la source de toute vie, est en train de se figer. Sa sève ne coule plus : elle se change en quartz violet.',
+      'Les Titans de pierre, anciens gardiens de l’équilibre, se sont réveillés avec une conviction terrifiante : la vie est trop fragile, trop désordonnée. Pour « protéger » le monde, ils veulent en faire une statue. Éternelle. Immobile.',
+      `${a} et ${b} descendent vers les racines de l’Arbre, sous un ciel violet électrique. Il faudra garder la Sève en vie jusqu’au bout : à zéro, le monde est pétrifié.` ],
+      cit:'« Le monde sera une statue. Parfaite. Immobile. »' }),
+    victoire:({ sur:'Invasion · Acte II', titre:'La sève coule à nouveau', illu:{ cle:'reveil-fin', fond:'foret', sym:'🏆' }, texte:[ 'Le Titan primordial se fige lui-même, pris dans son propre quartz. Une goutte de sève, puis une autre, puis un ruisseau : l’Arbre-Monde respire.', 'Les feuilles se mettent à trembler dans le vent. C’est le plus beau bruit du monde.' ], cit:'« La vie est désordonnée. C’est pour ça qu’elle gagne. »' }),
+    defaite:({ sur:'Invasion · Acte II', titre:'La statue', illu:{ cle:'petrifie', fond:'vide', sym:'🕯' }, texte:[ 'Le quartz monte le long du tronc, jusqu’aux dernières feuilles. Le silence tombe sur la forêt. Mais une graine, quelque part, a roulé hors de portée des Titans.' ], cit:'« Ils reviennent toujours. »' }),
+  },
   eveil:{
     intro:(a, b) => ({ sur:'Invasion · Acte I', titre:'L’Éveil de l’Abîme', illu:{ cle:'eveil', fond:'vide', sym:'🌀' }, texte:[
       'Une déchirure s’est ouverte dans le voile du monde. Le Seigneur du Vide a envoyé son avant-garde : ce n’est pas une guerre, c’est une infection. Ceux qu’elle touche deviennent des Corrompus.',
