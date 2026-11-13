@@ -8,7 +8,7 @@
 <title>La Guilde des Runes</title>
 <script>
 // Même mécanisme que le Duel : une nouvelle version = rechargement tout seul à l'ouverture (publier.sh change VERSION).
-const VERSION = '20261113-210622';
+const VERSION = '20261113-211841';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-menu-' + v)) { sessionStorage.setItem('recharge-menu-' + v, '1'); location.replace('menu.html?v=' + v); }
@@ -175,9 +175,9 @@ fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.te
 </div>
 <div id="flash"></div>
 
-<script src="semaine.js?v=20261113-210622"></script>
-<script src="musique.js?v=20261113-210622"></script>
-<script src="donnees.js?v=20261113-210622"></script>
+<script src="semaine.js?v=20261113-211841"></script>
+<script src="musique.js?v=20261113-211841"></script>
+<script src="donnees.js?v=20261113-211841"></script>
 <script>
 // ciel étoilé + runes du portail (symboles, pas des lettres), aux couleurs des héros
 const ciel = document.getElementById('ciel');
@@ -294,7 +294,7 @@ function touche(i) {
   if (i !== auCentre()) return centre(i, true);
   if (p.ferme && p.essai) p = { ...p, href:p.essai };
   else if (p.ferme || p.avenir) { const el = car.children[i]; el.animate([{ translate:'0' }, { translate:'-8px' }, { translate:'8px' }, { translate:'0' }], { duration:300 }); return; }
-  souffle(); car.children[i].classList.add('entre'); document.getElementById('flash').classList.add('go');
+  if (!GM.son('portail')) souffle(); car.children[i].classList.add('entre'); document.getElementById('flash').classList.add('go');
   setTimeout(() => {
     if (p.href) { location.href = p.href; return; }
     document.getElementById('flash').classList.remove('go'); location.hash = p.vers;

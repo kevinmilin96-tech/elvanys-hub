@@ -30,6 +30,7 @@ function chronique(pages, apres) { chronPages = pages.filter(Boolean); chronI = 
   // 13/11 soir : musique du récit (les escales des Expéditions : la harpe du large) le temps des pages
   if (typeof GM !== 'undefined') GM.temporaire(/^Expédition/.test(chronPages[0].sur || '') ? 'mer' : 'recit'); chronMontre(); }
 function chronMontre() {
+  if (typeof GM !== 'undefined') GM.son('livre'); // 13/11 soir
   const p = chronPages[chronI]; let z = document.getElementById('chron'); if (!z) { z = document.createElement('div'); z.id = 'chron'; z.className = 'chron'; document.body.appendChild(z); }
   const il = p.illu || {}; const img = il.cle ? `decor/chron-${il.cle}.webp` : null;
   z.innerHTML = `<div class="page" id="chronPage"><div class="coin a"></div><div class="coin b"></div><div class="coin c"></div><div class="coin d"></div>

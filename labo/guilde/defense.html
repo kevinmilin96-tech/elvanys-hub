@@ -73,10 +73,10 @@
 <body>
 <div id="app"></div>
 <div id="fen"></div>
-<script src="cartes.js?v=20261113-210622"></script>
-<script src="musique.js?v=20261113-210622"></script>
-<script src="donnees.js?v=20261113-210622"></script>
-<script src="defense-moteur.js?v=20261113-210622"></script>
+<script src="cartes.js?v=20261113-211841"></script>
+<script src="musique.js?v=20261113-211841"></script>
+<script src="donnees.js?v=20261113-211841"></script>
+<script src="defense-moteur.js?v=20261113-211841"></script>
 <script>
 // =============================================================================================== LA DÉFENSE DE LA PORTE · l'ÉCRAN (13/11)
 // Règles : defense-proposition.html (validées le 13/11). Moteur : defense-moteur.js.
@@ -102,7 +102,7 @@ const lesRecords = () => { try { return JSON.parse(localStorage.getItem(REC) || 
 function records() { const r = lesRecords(); if (!r.length) return ''; const g = r.filter(x => x.gagne); return `<p class="doux" style="text-align:center">🏆 ${g.length} victoire${g.length > 1 ? 's' : ''} sur ${r.length} partie${r.length > 1 ? 's' : ''}${g.length ? ` · meilleur score ${Math.max(...g.map(x => x.score))}` : ''}</p>`; }
 function demarre(h) { D = nouvelleDefense(h); sel = []; selTour = -1; attente = null; dis('Lance… c’est déjà fait. Choisis des dés : bâtis une tour (touche une case verte) ou frappe un monstre.'); vagueAnnonce(); rendu(); }
 function dis(t, e) { msg = t; err = !!e; }
-function vagueAnnonce() { const v = D.fx.find(f => f.t === 'vague'); if (v && CORBIN[v.n]) setTimeout(() => fenetre(`<h2>🌊 Vague ${v.n} sur ${VAGUES.length}</h2><div class="corbin">Moustache : « ${CORBIN[v.n]} »</div><div class="choixh"><button class="or" onclick="fermer()">À la porte !</button></div>`), 450); }
+function vagueAnnonce() { const v = D.fx.find(f => f.t === 'vague'); if (v) GM.son('vague'); if (v && CORBIN[v.n]) setTimeout(() => fenetre(`<h2>🌊 Vague ${v.n} sur ${VAGUES.length}</h2><div class="corbin">Moustache : « ${CORBIN[v.n]} »</div><div class="choixh"><button class="or" onclick="fermer()">À la porte !</button></div>`), 450); }
 
 // ---------------------------------------------------------------- le dessin
 function rendu() {
@@ -160,10 +160,11 @@ function toucheDe(i) {
 function toucheCase(c) {
   const t = D.rempart[c];
   if (attente) { if (attente.cible === 'tour' && t) finit({ t }); return; }
-  if (sel.length === 1) { const e = batirD(D, sel[0], c); if (e) dis(e, true); else { sel = []; dis(t ? 'Fusion !' : 'Tour bâtie.'); } rendu(); return; }
+  if (sel.length === 1) { const e = batirD(D, sel[0], c); if (e) dis(e, true); else { sel = []; GM.son(t ? (D.rempart[c].rune ? 'rune' : 'tour-fusion') : 'tour-batir'); dis(t ? 'Fusion !' : 'Tour bâtie.'); } rendu(); return; }
   if (selTour >= 0 && selTour !== c) {
     const a = selTour; selTour = -1;
     const e = t ? fusionD(D, a, c) : deplacerD(D, a, c);
+    if (!e && t) GM.son(D.rempart[c].rune ? 'rune' : 'tour-fusion');
     if (e) dis(e, true); else dis(t ? (D.rempart[c].rune ? `✨ La Rune ${DHEROS[D.heros].rune.n} !` : 'Fusion !') : 'Tour déplacée.'); rendu(); return;
   }
   if (t) { selTour = selTour === c ? -1 : c; sel = [];

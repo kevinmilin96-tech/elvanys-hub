@@ -609,7 +609,7 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261113-210622';
+const VERSION = '20261113-211841';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); location.replace('duel.html?v=' + v); }
@@ -628,11 +628,11 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261113-210622"></script>
-<script src="musique.js?v=20261113-210622"></script>
-<script src="donnees.js?v=20261113-210622"></script>
-<script src="odyssee.js?v=20261113-210622"></script>
-<script src="chronique.js?v=20261113-210622"></script>
+<script src="cartes.js?v=20261113-211841"></script>
+<script src="musique.js?v=20261113-211841"></script>
+<script src="donnees.js?v=20261113-211841"></script>
+<script src="odyssee.js?v=20261113-211841"></script>
+<script src="chronique.js?v=20261113-211841"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -724,7 +724,7 @@ function phaseBoss(J) {
   J.phase = p; h.garde = ph[p].garde; h.pouvoir = ph[p].pouvoir;
   log(`🔥 ${J.nom} entre en phase ${p + 1} : ${ph[p].pouvoir.n} !`); fx({ t:'annonce', txt:`🔥 Phase ${p + 1} : ${ph[p].pouvoir.n} !` });
 }
-function remplit(J, n) { if (J.ultimeFait || J.jauge >= JAUGE.max) return; J.jauge = Math.min(JAUGE.max, (J.jauge || 0) + n); if (J.jauge >= JAUGE.max) { J.jaugeTour = J.tours; log(`⚡ La jauge d’Ultime de ${J.nom} est pleine !`); fx({ t:'jauge', s:J === S.J ? 'J' : 'O' }); } }
+function remplit(J, n) { if (J.ultimeFait || J.jauge >= JAUGE.max) return; J.jauge = Math.min(JAUGE.max, (J.jauge || 0) + n); if (J.jauge >= JAUGE.max) { J.jaugeTour = J.tours; if (typeof S !== 'undefined' && S && J === S.J && !S.auto) son('jauge'); log(`⚡ La jauge d’Ultime de ${J.nom} est pleine !`); fx({ t:'jauge', s:J === S.J ? 'J' : 'O' }); } }
 function fin() { if (S.fini) return;
   if (S.coop) { S.equipe.forEach(h => { if (h.pv <= 0 && !h.aTerre) { h.aTerre = true; h.front = []; log(`💀 ${h.nom} est à terre !`); fx({ t:'annonce', txt:`💀 ${h.nom} est à terre !` }); } });
     if (S.O.pv <= 0) S.fini = 'gagne'; else if (S.equipe.every(h => h.aTerre)) S.fini = 'perdu'; return; }
@@ -792,7 +792,7 @@ function permis(J, quoi, vs, ds) {
   return J.pc >= coutCarte(J, quoi) && c.cond(vs, ds);
 }
 function pose(J, quoi, ds, k, indexMain) {
-  const vs = vals(ds); S.acteur = J;
+  const vs = vals(ds); S.acteur = J; if (J === S.J && !S.auto && !J.ordi && quoi !== 'pcRelance') son('poser');
   if (quoi === 'pcRelance') { J.pc -= 1; const a = ds[0].v; lance(J, ds[0]); log(`${J.nom} paie 1 PC et relance un ${a} : ${ds[0].v}.`); return; }
   if (quoi === 'pcAjuste') { const c = coutAjuste(J); J.pc -= c; const a = ds[0].v, v = Math.max(1, Math.min(6, a + (k && k.sens || 1))); modifie(J, ds[0], v); log(`${J.nom} paie ${c} PC : ${a} devient ${v}.`); return; }
   if (quoi === 'pcSoins') { J.pc -= 2; J.poison = 0; J.souillure = 0; J.saigne = 0; J.handicap = 0; log(`${J.nom} paie 2 PC : Premiers soins, plus aucune altération.`); return; }
@@ -1073,9 +1073,9 @@ function mainEnEventail(J) {
 }
 function toucheCarte(i) {
   if (S.fini || roule) return;
-  if (carteVue !== i) { carteVue = i; rendu(); return; }
+  if (carteVue !== i) { carteVue = i; son('agrandir'); rendu(); return; }
   const k = S.J.main[i];
-  if (sel.length && permis(S.J, k, vals(sel), sel)) { carteVue = null; vise(k, i); } else aide(k);
+  if (sel.length && permis(S.J, k, vals(sel), sel)) { carteVue = null; vise(k, i); } else { son('erreur'); aide(k); }
 }
 function nouvellePartie(id, idO, auto) {
   const autres = ORDRE.filter(x => x !== id);
@@ -1286,7 +1286,7 @@ function choisirDe(i) {
     if (c.quoi === 'ajuste') { choix(`Ton ${d.v} devient…`, [d.v > 1 ? `${d.v - 1} (−1)` : '—', d.v < 6 ? `${d.v + 1} (+1)` : '—'], i => { if ((i === 0 && d.v === 1) || (i === 1 && d.v === 6)) { rendu(); return; } pose(S.J, c.quoi, c.ds, { d, sens:i ? 1 : -1 }, c.im); sel = []; rendu(); }); return; }
     pose(S.J, c.quoi, c.ds, { d }, c.im); sel = []; rendu(); return; }
   if (ciblage) return;
-  sel = sel.includes(d) ? sel.filter(x => x !== d) : [...sel, d]; attaquant = null; rendu();
+  if (!sel.includes(d)) son('choisir'); sel = sel.includes(d) ? sel.filter(x => x !== d) : [...sel, d]; attaquant = null; rendu();
 }
 function vise(quoi, im) {
   if (S.fini || roule) return;
@@ -1342,7 +1342,7 @@ function lancerMesDes() {
 function relancer() {
   const J = S.J; if (!sel.length || roule) return;
   if (!J.relance && J.pc < sel.length) { aide('pcRelance'); return; }
-  const ds = sel, paye = !J.relance; sel = [];
+  const ds = sel, paye = !J.relance; sel = []; son('relance');
   rouler(ds, () => { ds.forEach(d => lance(J, d)); if (paye) J.pc -= ds.length; else J.relance--;
     log(paye ? `${J.nom} paie ${ds.length} PC et relance ${ds.length} dé(s) : ${J.des.map(d => d.v).join(' · ')}` : `Tu relances ${ds.length} dé(s) : ${J.des.map(d => d.v).join(' · ')}`); rendu(); });
 }
@@ -1678,6 +1678,9 @@ function bruit(d, vol, f1, f2, depart) {
 }
 function son(q) {
   if (!sonOn) return;
+  // 13/11 soir : les bruitages choisis par l'utilisateur passent par le lecteur commun (musique.js) ; sinon l'ancien son fabriqué
+  if (q === 'defaite') return; // la défaite a son jingle de musique (aucun bruitage choisi)
+  if (typeof GM !== 'undefined' && GM.aSon(q) && q !== 'des') { GM.son(q); if (navigator.vibrate && (q === 'coup' || q === 'gros')) navigator.vibrate(q === 'gros' ? 60 : 25); return; }
   if (q === 'coup') { bruit(.18, .5, 1200, 200); ton(120, .22, 'sine', .45, 50); }
   else if (q === 'gros') { bruit(.35, .6, 900, 120); ton(90, .4, 'sine', .55, 35); }
   else if (q === 'bouclier') { ton(1400, .25, 'triangle', .15, 900); ton(2100, .18, 'sine', .08); }
@@ -1871,7 +1874,7 @@ async function joue1(e) {
     if (e.t === 'ultime') {
       son('ultime'); const f = document.createElement('div'); f.className = 'eclair'; couche().appendChild(f); setTimeout(() => f.remove(), 1400 * fxVite);
       d.className = 'fxcarte ultime'; d.innerHTML = `<img src="${HEROS[e.id].img || IMG(e.id)}" alt=""><div class="sorte">⚡ ULTIME</div><div class="n">${e.nom}</div><div class="t">${e.d || ''}</div><div class="cit">${e.cit}</div>`;
-    } else { son('carte'); d.className = 'fxcarte'; d.innerHTML = `<div class="sorte">${e.sorte}${e.cout !== undefined ? ` · ${e.cout} PC` : ''}</div><div class="n">${e.nom}</div><div class="t">${e.txt}</div>${e.vs ? `<div class="vs">🎲 ${e.vs.join(' · ')}</div>` : ''}`; }
+    } else { son(/Pouvoir|Sort/.test(e.sorte || '') ? 'magie' : 'carte'); d.className = 'fxcarte'; d.innerHTML = `<div class="sorte">${e.sorte}${e.cout !== undefined ? ` · ${e.cout} PC` : ''}</div><div class="n">${e.nom}</div><div class="t">${e.txt}</div>${e.vs ? `<div class="vs">🎲 ${e.vs.join(' · ')}</div>` : ''}`; }
     couche().appendChild(d);
     d.animate([{ transform:`translate(-50%, ${ordi ? '-160%' : '60%'}) scale(.4) rotate(${ordi ? -8 : 8}deg)`, opacity:0 }, { transform:'translate(-50%,-50%) scale(1) rotate(0)', opacity:1 }], { duration:280 * fxVite, easing:'ease-out', fill:'forwards' });
     await dodo(e.t === 'ultime' ? 2600 : ordi ? 1250 : 650);
@@ -1907,7 +1910,7 @@ async function joue1(e) {
       son('bouclier'); effetImage('armure-casse', c, .9); flotte(c, e.n ? `🛡 −${e.abs} sur la Garde` : `🛡 BLOQUÉ ! (−${e.abs} Garde)`, e.n ? 'bleu' : 'bleu gros');
       majVie(e.c, { garde:e.garde, bouclier:e.bouclier }); await dodo(e.n ? 650 : 900);
     }
-    if (e.n) { effetImage(e.vert ? 'poison-tic' : e.n >= 8 ? 'gros-degat' : 'degat', c, e.n >= 8 ? 1.4 : .9); if (e.n >= 8) document.getElementById('app').animate([{ transform:'none' }, { transform:'translate(-6px,4px)' }, { transform:'translate(5px,-5px)' }, { transform:'translate(-3px,2px)' }, { transform:'none' }], { duration:380 }); son(e.n >= 8 ? 'gros' : 'coup'); secoue(c, e.vert ? 'vert' : 'rouge'); flotte(c, `−${e.n} ❤${e.mot ? ' ' + e.mot : ''}`, e.vert ? 'vert' : e.n >= 8 ? 'rouge gros' : 'rouge'); }
+    if (e.n) { effetImage(e.vert ? 'poison-tic' : e.n >= 8 ? 'gros-degat' : 'degat', c, e.n >= 8 ? 1.4 : .9); if (e.n >= 8) document.getElementById('app').animate([{ transform:'none' }, { transform:'translate(-6px,4px)' }, { transform:'translate(5px,-5px)' }, { transform:'translate(-3px,2px)' }, { transform:'none' }], { duration:380 }); son(e.vert ? 'poison' : e.n >= 8 ? 'gros' : 'coup'); secoue(c, e.vert ? 'vert' : 'rouge'); flotte(c, `−${e.n} ❤${e.mot ? ' ' + e.mot : ''}`, e.vert ? 'vert' : e.n >= 8 ? 'rouge gros' : 'rouge'); }
     majVie(e.c, e); await dodo(e.n ? Math.min(1300, 380 + e.n * 80) : 200); return;
   }
   if (e.t === 'soin') { const c = el(e.c); son('soin'); effetImage('coeur', c, .9); flotte(c, `+${e.n}`, 'soin'); if (c) { c.classList.remove('brille'); void c.offsetWidth; c.classList.add('brille'); } majVie(e.c, e); await dodo(450); return; }
@@ -1927,7 +1930,7 @@ async function joue1(e) {
   if (e.t === 'nouveauDe') { son('tour'); const d = document.createElement('div'); d.className = 'annonce'; d.innerHTML = `🎲 Nouveau dé !<div style="font-size:.55em;color:#fff">Tu lances maintenant ${e.n} dés${e.n >= 5 ? ' (le maximum)' : ''}</div>`; couche().appendChild(d); await dodo(1300); d.remove(); return; }
   if (e.t === 'pc') { const c = el({ s:e.s }); if (!c) return; bandeauAction(e.s, `◆ <b>${QUI(e.s)}</b> vend ${e.nb || 1} dé${(e.nb || 1) > 1 ? 's' : ''} : <b>+${e.n} PC</b>`, 1000); son('vendre'); effetImage('pc', c, .8); flotte(c, `+${e.n} PC`, 'bleu'); await dodo(350); return; }
   if (e.t === 'jauge') { const c = el({ s:e.s }); if (!c) return; ton(523, .4, 'triangle', .1); ton(784, .5, 'triangle', .1, null, .12); if (!effetImage('jauge', c, 1.2)) effet('lumiere', c); flotte(c, '⚡ Ultime prêt !', 'nom'); await dodo(700); return; }
-  if (e.t === 'invoque') { const f = el({ s:e.s, uid:'x' }); son('louve'); effetImage('invocation', f, 1.1); flotte(f, `🐺 ${e.nom} arrive !`, 'nom'); await dodo(700); return; }
+  if (e.t === 'invoque') { const f = el({ s:e.s, uid:'x' }); son(/louve/i.test(e.nom || '') ? 'louve' : 'magie'); effetImage('invocation', f, 1.1); flotte(f, `🐺 ${e.nom} arrive !`, 'nom'); await dodo(700); return; }
 }
 async function joueFX() {
   fxOn = true; fxVite = 1.4; document.body.classList.add('fxon');
@@ -1937,13 +1940,13 @@ async function joueFX() {
 // toucher l'écran pendant les animations les accélère
 document.addEventListener('pointerdown', () => { if (fxOn) fxVite = .3; }, true);
 </script>
-<script src="pantheon.js?v=20261113-210622"></script>
-<script src="tuto.js?v=20261113-210622"></script>
-<script src="deux.js?v=20261113-210622"></script>
-<script src="invasion.js?v=20261113-210622"></script>
-<script src="enigme-table.js?v=20261113-210622"></script>
-<script src="forge.js?v=20261113-210622"></script>
-<script src="semaine.js?v=20261113-210622"></script>
-<script src="enigme.js?v=20261113-210622"></script>
+<script src="pantheon.js?v=20261113-211841"></script>
+<script src="tuto.js?v=20261113-211841"></script>
+<script src="deux.js?v=20261113-211841"></script>
+<script src="invasion.js?v=20261113-211841"></script>
+<script src="enigme-table.js?v=20261113-211841"></script>
+<script src="forge.js?v=20261113-211841"></script>
+<script src="semaine.js?v=20261113-211841"></script>
+<script src="enigme.js?v=20261113-211841"></script>
 </body>
 </html>

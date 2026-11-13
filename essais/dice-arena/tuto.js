@@ -121,6 +121,7 @@ function projecteurCache() { const p = document.getElementById('projo'); if (p) 
 
 // ---------------------------------------------------------------- le moteur du tutoriel
 function bulleTuto(e) {
+  if (typeof GM !== 'undefined' && Date.now() - (window.__miaou || 0) > 25000) { window.__miaou = Date.now(); GM.son('miaou'); } // 13/11 soir
   const moustache = `<div class="ligneT"><img class="av" src="ui/moustache.webp?v=1" alt="Moustache"><div><b>Moustache</b>${e.c}</div></div>`;
   const gorm = e.g ? `<div class="ligneT gorm"><img class="av" src="${IMG('gorm')}" alt=""><div><b>Gorm</b>${e.g}</div></div>` : '';
   const suite = !e.ok ? '<button onclick="tutoSuivant()">Suivant ›</button>' : '<span></span>';

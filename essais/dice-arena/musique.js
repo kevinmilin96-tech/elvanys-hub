@@ -36,14 +36,28 @@ const GM = (() => {
     if (document.hidden) { [cur, amb].forEach(p => { if (p) try { p.a.pause(); } catch (e) {} }); }
     else joueVoulu();
   });
+  // 13/11 soir : LES BRUITAGES choisis par l'utilisateur (ecoute-bruitages.html : Kenney CC0 et Mixkit), un seul endroit pour tout le jeu
+  const SONS = { coup:'mk-coup-2', gros:'mk-gros-coup-3', bouclier:'mk-bouclier-1', garde:'mk-bouclier-1', 'bouclier-casse':'mk-bouclier-casse-2', griffe:'mk-griffe-1',
+    tombe:'mk-tombe-3', tir:'mk-tir-1', soin:'mk-soin-3', magie:'mk-magie-1', poison:'mk-poison-2', ultime:'mk-ultime-3', jauge:'mk-jauge-2', louve:'mk-louve-2',
+    vague:'mk-vague-1', portail:'mk-portail-1', miaou:'mk-corbin-3', victoire:'mk-victoire-4',
+    carte:'card-shove-1', pioche:'card-slide-3', melange:'card-shuffle', agrandir:'cards-pack-take-out-1', vendre:'chips-stack-1',
+    relance:'dice-shake-2', choisir:'dice-grab-1', poser:'die-throw-1', 'tour-batir':'impactplank-medium-000', 'tour-fusion':'glass-002', rune:'impactbell-heavy-000',
+    porte:'dooropen-2', pas:'footstep04', livre:'bookflip2', erreur:'error-006', ok:'confirmation-002' };
+  const VOL_SON = { pas:.5, choisir:.6, livre:.7, ok:.6, erreur:.6, miaou:.8, poser:.7 };
+  let sonActif = localStorage.getItem('guilde-son') !== '0'; const BUFS = {};
+  function tampon(f) { const c = ac(); if (!c) return Promise.resolve(null); return BUFS[f] || (BUFS[f] = fetch(`sons/fx/${f}.mp3?v=1`).then(r => r.arrayBuffer()).then(b => new Promise((ok, ko) => c.decodeAudioData(b, ok, ko))).catch(() => null)); }
   const api = {
     get actif() { return actif; },
+    aSon(cle) { return !!SONS[cle]; },
+    son(cle, vol) { sonActif = localStorage.getItem('guilde-son') !== '0'; const f = SONS[cle]; if (!f || !sonActif || document.hidden) return false; const c = ac(); if (!c) return false;
+      tampon(f).then(b => { if (!b) return; const s = c.createBufferSource(), g = c.createGain(); s.buffer = b; g.gain.value = vol || VOL_SON[cle] || .85; s.connect(g).connect(c.destination); s.start(); }); return true; },
+    precharge(...cles) { cles.forEach(k => SONS[k] && tampon(SONS[k])); },
     musique(cle) { voulu = cle; pile = []; if (cur && cur.cle === cle && !cur.a.paused) return; joueVoulu(); },
     ambiance(cle) { ambVoulue = cle || null; if (!ambVoulue) { eteins(amb, 1.2); amb = null; return; } joueVoulu(); },
     temporaire(cle) { if (voulu === cle) return; pile.push(voulu); voulu = cle; joueVoulu(); },
     retour() { if (!pile.length) return; voulu = pile.pop(); if (!voulu) { eteins(cur, 1.2); cur = null; return; } joueVoulu(); },
     jingle(cle) { voulu = null; pile = []; eteins(cur, .8); cur = null; eteins(amb, .8); amb = null; ambVoulue = null;
-      if (!actif || document.hidden) return; const p = piste(cle, false); p.vol = VOL[cle] || .6; setTimeout(() => { demarre(p); p.a.onended = () => eteins(p, .1); }, 500); },
+      if (!actif || document.hidden) return; const p = piste(cle, false); p.vol = VOL[cle] || .6; setTimeout(() => { demarre(p); p.a.onended = () => eteins(p, .1); }, cle === 'victoire' ? 2500 : 500); },
     stop(sec) { voulu = null; pile = []; eteins(cur, sec || .6); cur = null; },
     bascule() {
       actif = !actif; localStorage.setItem('guilde-musique', actif ? '1' : '0');
