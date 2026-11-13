@@ -1,6 +1,6 @@
 // =============================================================================================== le TUTORIEL (12/11 nuit)
 // Proposition v2 validée le 11/11 (tuto-proposition.html) : UN duel guidé, Gorm contre le Chef gobelin et son Chien de garde,
-// Corbin le corbeau explique, Gorm répond. Une nouveauté par tour, des dés arrangés pour les premiers tours.
+// Moustache, le chat roux de la Guilde, explique, Gorm répond. Une nouveauté par tour, des dés arrangés pour les premiers tours.
 // Le PROJECTEUR (réutilisable) : l'écran s'assombrit, seul l'élément utile reste touchable, une main montre où toucher.
 // Récompense : cadre « Diplômé de la Guilde » (provisoire en code) + Zéphine débloquée.
 // Chargé par duel.html ; ne fait rien hors du tutoriel (sauf le petit 🎓 du diplômé sur son portrait).
@@ -33,8 +33,8 @@ debutTour = function (J) {
 const nbPoses = () => S.J.des.filter(d => d.pose).length;
 const tambour = () => S.J.front.find(u => u.tambour);
 const ETAPES = [
-  { t:1, c:'Croâ ! Bienvenue à la Guilde. Moi, c’est Corbin. Toi, tu es Gorm, le sonneur de cor. En face : le Chef gobelin et son Chien de garde.', g:'Hé, l’oiseau. Je sais qui je suis.' },
-  { t:1, c:'Ça, en bas à droite, c’est ton bac à dés. Touche « Lancer ». Non, pas moi. Le bouton.', cible:'.lancer', ok:() => !S.J.aLancer },
+  { t:1, c:'Miaou ! Bienvenue à la Guilde. Moi, c’est Moustache, chat d’aventure. Oui, l’oreille ébréchée, c’est une longue histoire. Toi, tu es Gorm, le sonneur de cor. En face : le Chef gobelin et son Chien de garde.', g:'Hé, le matou. Je sais qui je suis.' },
+  { t:1, c:'Ça, en bas à droite, c’est ton bac à dés. Touche « Lancer ». Non, pas moi. Je ne me lance pas. Le bouton.', cible:'.lancer', ok:() => !S.J.aLancer },
   { t:1, c:'Deux 4 ! Une paire, ça fait une FRAPPE. Touche les deux 4.', cible:'.des', ok:() => sel.length === 2 && vals(sel).every(v => v === 4) || nbPoses() >= 2 },
   { t:1, c:'Maintenant l’épée, à gauche : c’est la Frappe. Elle brille en vert quand tes dés conviennent.', cible:'.ic.r1', ok:() => (ciblage && ciblage.quoi === 'frappe') || nbPoses() >= 2 },
   { t:1, c:'Vise le Chef : touche son portrait, en haut. La Frappe passe toujours par-dessus les créatures.', cible:'#b-O', ok:() => nbPoses() >= 2 },
@@ -121,10 +121,10 @@ function projecteurCache() { const p = document.getElementById('projo'); if (p) 
 
 // ---------------------------------------------------------------- le moteur du tutoriel
 function bulleTuto(e) {
-  const corbin = `<div class="ligneT"><div class="av">🐦‍⬛</div><div><b>Corbin</b>${e.c}</div></div>`;
+  const moustache = `<div class="ligneT"><div class="av">🐱</div><div><b>Moustache</b>${e.c}</div></div>`;
   const gorm = e.g ? `<div class="ligneT gorm"><img class="av" src="${IMG('gorm')}" alt=""><div><b>Gorm</b>${e.g}</div></div>` : '';
   const suite = !e.ok ? '<button onclick="tutoSuivant()">Suivant ›</button>' : '<span></span>';
-  return corbin + gorm + `<div class="boutonsT"><a href="#" onclick="tutoPasser();return false">Passer le tutoriel</a>${suite}</div>`;
+  return moustache + gorm + `<div class="boutonsT"><a href="#" onclick="tutoPasser();return false">Passer le tutoriel</a>${suite}</div>`;
 }
 function tutoSuivant() { if (!S || !S.tuto) return; S.tuto.i++; tutoMaj(); }
 function tutoMaj() {
@@ -172,19 +172,19 @@ montrerFin = function () {
     son('victoire'); effetImage('victoire', document.getElementById('app'), 2.2);
     fenetre(`<h2>🎓 Diplômé de la Guilde !</h2>
       <div style="display:flex;justify-content:center;margin:10px 0"><img src="${IMG('gorm')}" alt="" style="width:96px;height:96px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 4px #f3c96b,0 0 26px #f3c96b"></div>
-      <p><b>Corbin :</b> « Bravo. Je l’avais dit. Dans ma tête. »</p>
+      <p><b>Moustache :</b> « Bravo. Je l’avais dit. Dans ma tête. Entre deux siestes. »</p>
       ${deja ? '<p>Tu connais déjà la maison : merci d’être revenu !</p>' : `<p>Tu reçois le <b>cadre de Diplômé</b> autour de ton portrait (🎓).</p>
       <p style="display:flex;gap:10px;align-items:center"><img src="${IMG('zephine')}" alt="" style="width:56px;height:56px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 2px ${HEROS.zephine.c}"> <span><b>Zéphine l’alchimiste</b> rejoint la Guilde ! Elle transforme les dés : la plus difficile à jouer.</span></p>`}
       <div class="choixh"><button onclick="location.href='duel.html'">⚔ Un vrai duel</button><button onclick="location.href='menu.html'">⌂ Menu</button></div>`);
   } else {
     son('defaite');
-    fenetre(`<h2>💀 Le Chef a gagné cette fois</h2><p><b>Corbin :</b> « Bon. On dira que c’était un échauffement. On recommence ? »</p>
+    fenetre(`<h2>💀 Le Chef a gagné cette fois</h2><p><b>Moustache :</b> « Bon. On dira que c’était un échauffement. Moi aussi, je rate des souris. On recommence ? »</p>
       <div class="choixh"><button onclick="fermer();partieTuto()">Recommencer</button><button onclick="location.href='menu.html'">⌂ Menu</button></div>`);
   }
 };
 // Zéphine verrouillée : on propose le tutoriel
 function tutoVerrou() {
-  fenetre(`<h2>🔒 Zéphine l’alchimiste</h2><p>Zéphine rejoint la Guilde quand tu as fini le <b>tutoriel</b> (un duel guidé de 5 minutes avec Gorm et Corbin).</p>
+  fenetre(`<h2>🔒 Zéphine l’alchimiste</h2><p>Zéphine rejoint la Guilde quand tu as fini le <b>tutoriel</b> (un duel guidé de 5 minutes avec Gorm et Moustache).</p>
     <div class="choixh"><button onclick="location.href='duel.html?tuto=1'">🎓 Faire le tutoriel</button><button onclick="accueil()">Retour</button></div>`);
 }
 // pendant les animations, les dés qui roulent et les fenêtres (résumé du tour adverse, aides), le projecteur s'efface

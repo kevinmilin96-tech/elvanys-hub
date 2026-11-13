@@ -8,7 +8,7 @@
 <title>La Guilde des Runes</title>
 <script>
 // Même mécanisme que le Duel : une nouvelle version = rechargement tout seul à l'ouverture (publier.sh change VERSION).
-const VERSION = '20261113-134009';
+const VERSION = '20261113-134353';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-menu-' + v)) { sessionStorage.setItem('recharge-menu-' + v, '1'); location.replace('menu.html?v=' + v); }
@@ -174,8 +174,8 @@ fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.te
 </div>
 <div id="flash"></div>
 
-<script src="semaine.js?v=20261113-134009"></script>
-<script src="donnees.js?v=20261113-134009"></script>
+<script src="semaine.js?v=20261113-134353"></script>
+<script src="donnees.js?v=20261113-134353"></script>
 <script>
 // ciel étoilé + runes du portail (symboles, pas des lettres), aux couleurs des héros
 const ciel = document.getElementById('ciel');
@@ -202,7 +202,7 @@ const PRO = { // dessins provisoires : [émoji, fond, lueur]
   campement:['🔥', 'linear-gradient(180deg, #0d1f17 0%, #1f3b2b 55%, #3a2a14 100%)', '#ffb347'],
   tour:['📚', 'linear-gradient(180deg, #0f0c29 0%, #302b63 60%, #24243e 100%)', '#c084fc'],
   ordinateur:['🗿', 'linear-gradient(180deg, #3b82f6 0%, #1e3a8a 50%, #c99a5b 51%, #8a6538 100%)', '#7cc8ff'],
-  tuto:['🐦‍⬛', 'linear-gradient(180deg, #ffe7a8 0%, #f4c27a 45%, #7aa36b 46%, #4d7a43 100%)', '#fff3c4'],
+  tuto:['🐱', 'linear-gradient(180deg, #ffe7a8 0%, #f4c27a 45%, #7aa36b 46%, #4d7a43 100%)', '#fff3c4'],
   proche:['🤝', 'linear-gradient(180deg, #3a2414 0%, #7a4a24 45%, #c9893f 46%, #6b3f1f 100%)', '#ffd27a'],
   pantheon:['🏛', 'linear-gradient(180deg, #1a1433 0%, #3a2a5c 50%, #c8902f 100%)', '#f3c96b'],
   defense:['🏰', 'linear-gradient(180deg, #2a1d10 0%, #5a3a1a 45%, #1f3b2b 46%, #14281d 100%)', '#7dffb0'],
@@ -227,7 +227,7 @@ const ETAGES = {
     { nom:'Contre l’ordinateur', pro:'ordinateur', href:'duel.html', desc:'Choisis ton héros et affronte l’automate de la Guilde.' },
     { nom:'Le Duel de la semaine', pro:'semaine', href:'duel.html?semaine=1', desc:`Cette semaine : « ${regleDeLaSemaine().n} ». ${regleDeLaSemaine().d} Gagne pour le Sceau de la semaine.` },
     { nom:'Contre un proche', pro:'proche', href:'duel.html?deux=1', desc:'À deux sur le même téléphone : chacun son héros, on se passe le téléphone à chaque tour.' },
-    { nom:'Le tutoriel', pro:'tuto', href:'duel.html?tuto=1', desc:'Un premier duel guidé par Corbin, avec Gorm (5 minutes). À la clé : Zéphine et le cadre de Diplômé.' },
+    { nom:'Le tutoriel', pro:'tuto', href:'duel.html?tuto=1', desc:'Un premier duel guidé par Moustache, avec Gorm (5 minutes). À la clé : Zéphine et le cadre de Diplômé.' },
   ] },
   invasion:{ titre:'L’Invasion', sous:'Quel front veux-tu tenir ?', portes:[
     { nom:'Acte I · L’Éveil', pro:'abime', href:'campement.html?boss=eveil', desc:'La Meute corrompue, les Gardes jumeaux à abattre dans le même tour, le Nécromancien du Vide.' },
@@ -290,11 +290,11 @@ function touche(i) {
     document.getElementById('flash').classList.remove('go'); location.hash = p.vers;
   }, 750);
 }
-// 12/11 : au premier passage, Corbin propose le tutoriel (avec « passer »)
+// 12/11 : au premier passage, Moustache (ex-Corbin, 13/11) propose le tutoriel (avec « passer »)
 function proposeTuto() {
   if (localStorage.getItem('guilde-tuto') === 'fait' || localStorage.getItem('guilde-tuto-vu')) return;
   const d = document.createElement('div'); d.id = 'propTuto';
-  d.innerHTML = `<div><div style="font-size:42px">🐦‍⬛</div><h3>Croâ ! Première visite ?</h3><p>Moi c’est Corbin. Je te montre comment on se bat à la Guilde : <b>un duel guidé de 5 minutes</b> avec Gorm. À la fin, <b>Zéphine</b> rejoint la Guilde.</p>
+  d.innerHTML = `<div><div style="font-size:42px">🐱</div><h3>Miaou ! Première visite ?</h3><p>Moi c’est Moustache, chat d’aventure. Je te montre comment on se bat à la Guilde : <b>un duel guidé de 5 minutes</b> avec Gorm. À la fin, <b>Zéphine</b> rejoint la Guilde.</p>
     <button onclick="location.href='duel.html?tuto=1'">🎓 Faire le tutoriel</button><a href="#" onclick="localStorage.setItem('guilde-tuto-vu','1');this.closest('#propTuto').remove();return false">Passer (je le ferai plus tard depuis l’Arène)</a></div>`;
   document.body.appendChild(d);
 }

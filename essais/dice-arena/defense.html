@@ -73,9 +73,9 @@
 <body>
 <div id="app"></div>
 <div id="fen"></div>
-<script src="cartes.js?v=20261113-134009"></script>
-<script src="donnees.js?v=20261113-134009"></script>
-<script src="defense-moteur.js?v=20261113-134009"></script>
+<script src="cartes.js?v=20261113-134353"></script>
+<script src="donnees.js?v=20261113-134353"></script>
+<script src="defense-moteur.js?v=20261113-134353"></script>
 <script>
 // =============================================================================================== LA DÉFENSE DE LA PORTE · l'ÉCRAN (13/11)
 // Règles : defense-proposition.html (validées le 13/11). Moteur : defense-moteur.js.
@@ -84,8 +84,8 @@ const app = document.getElementById('app'), fen = document.getElementById('fen')
 const fenetre = h => { fen.innerHTML = `<div class="fenetre" onclick="if(event.target===this)fermer()"><div>${h}</div></div>`; };
 const fermer = () => { fen.innerHTML = ''; };
 const CORBIN = {
-  1:'Croâ. Des gobelins. Rien de grave. Enfin, pas encore.', 2:'Des sangliers, maintenant. Garde-moi un morceau.', 3:'Des chauves-souris ! Elles volent par-dessus ta tour de devant. Sournoises. J’aime bien.',
-  4:'Ça se corse. Tu as pensé à fusionner, au moins ?', 5:'Ils sont nombreux. Moi, je surveille d’en haut. Courage.', 6:'LE TITAN. S’il touche la porte, c’est fini. Il fait fondre tes tours : tape fort, tape vite.' };
+  1:'Miaou. Des gobelins. Rien de grave. Enfin, pas encore.', 2:'Des sangliers, maintenant. Garde-moi un morceau.', 3:'Des chauves-souris ! Elles volent par-dessus ta tour de devant. Sournoises. J’aime bien.',
+  4:'Ça se corse. Tu as pensé à fusionner, au moins ?', 5:'Ils sont nombreux. Moi, je surveille depuis le rempart. Le coussin du rempart. Courage.', 6:'LE TITAN. S’il touche la porte, c’est fini. Il fait fondre tes tours : tape fort, tape vite.' };
 
 function accueil() {
   D = null;
@@ -101,7 +101,7 @@ const lesRecords = () => { try { return JSON.parse(localStorage.getItem(REC) || 
 function records() { const r = lesRecords(); if (!r.length) return ''; const g = r.filter(x => x.gagne); return `<p class="doux" style="text-align:center">🏆 ${g.length} victoire${g.length > 1 ? 's' : ''} sur ${r.length} partie${r.length > 1 ? 's' : ''}${g.length ? ` · meilleur score ${Math.max(...g.map(x => x.score))}` : ''}</p>`; }
 function demarre(h) { D = nouvelleDefense(h); sel = []; selTour = -1; attente = null; dis('Lance… c’est déjà fait. Choisis des dés : bâtis une tour (touche une case verte) ou frappe un monstre.'); vagueAnnonce(); rendu(); }
 function dis(t, e) { msg = t; err = !!e; }
-function vagueAnnonce() { const v = D.fx.find(f => f.t === 'vague'); if (v && CORBIN[v.n]) setTimeout(() => fenetre(`<h2>🌊 Vague ${v.n} sur ${VAGUES.length}</h2><div class="corbin">Corbin : « ${CORBIN[v.n]} »</div><div class="choixh"><button class="or" onclick="fermer()">À la porte !</button></div>`), 450); }
+function vagueAnnonce() { const v = D.fx.find(f => f.t === 'vague'); if (v && CORBIN[v.n]) setTimeout(() => fenetre(`<h2>🌊 Vague ${v.n} sur ${VAGUES.length}</h2><div class="corbin">Moustache : « ${CORBIN[v.n]} »</div><div class="choixh"><button class="or" onclick="fermer()">À la porte !</button></div>`), 450); }
 
 // ---------------------------------------------------------------- le dessin
 function rendu() {
@@ -206,7 +206,7 @@ function fin() {
   if (!D.enregistre) { D.enregistre = true; r.push({ heros:D.heros, gagne:g, porte:D.porte, score:g ? sc : 0, vague:D.vague, quand:new Date().toISOString() }); try { localStorage.setItem(REC, JSON.stringify(r.slice(-50))); } catch (e) {} }
   fenetre(`<h2>${g ? '🏆 La porte a tenu !' : '💥 La porte est tombée…'}</h2>
     <p>${g ? `Le Titan de feu est tombé. Porte : ${D.porte}/${D.porteMax} PV · vagues sans dégâts : ${D.sansDegats} · monstres abattus : ${D.kills}.<br><b>Score : ${sc}</b>` : `Vague ${Math.min(D.vague + 1, VAGUES.length)} sur ${VAGUES.length} · monstres abattus : ${D.kills}.`}</p>
-    <div class="corbin">Corbin : « ${g ? 'Pas mal. La porte est encore là, moi aussi. Tout le monde est content.' : 'Bon. On reconstruit la porte et on recommence ? Moi, je ne porte rien.'} »</div>
+    <div class="corbin">Moustache : « ${g ? 'Pas mal. La porte est encore là, mon coussin aussi. Tout le monde est content.' : 'Bon. On reconstruit la porte et on recommence ? Moi, je ne porte rien. Je suis un chat.'} »</div>
     <div class="choixh"><button class="or" onclick="fermer();demarre('${D.heros}')">↺ Rejouer</button><button onclick="fermer();accueil()">Changer de héros</button><button onclick="location.href='menu.html'">⌂ Menu</button></div>`);
 }
 function journal() { fenetre(`<h2>📖 Journal</h2><div class="journal">${D.log.map(t => `<div>${t}</div>`).join('')}</div><div class="choixh"><button onclick="fermer()">Fermer</button></div>`); }

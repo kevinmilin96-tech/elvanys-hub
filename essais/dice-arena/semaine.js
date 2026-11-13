@@ -5,14 +5,14 @@
 // Chargé par duel.html (et menu.html / pantheon.html pour le nom de la règle) ; ne change rien hors du Duel de la semaine.
 
 const REGLES_SEMAINE = [
-  { id:'sem-relance', n:'Une seule relance, mais riche', d:'1 relance gratuite au lieu de 2, et +1 PC à chaque tour.', corbin:'Une seule relance ? Pense avant de lancer. Moi, je pense toujours. Enfin, souvent.' },
+  { id:'sem-relance', n:'Une seule relance, mais riche', d:'1 relance gratuite au lieu de 2, et +1 PC à chaque tour.', corbin:'Une seule relance ? Pense avant de lancer. Moi, je pense toujours. Enfin, entre deux siestes.' },
   { id:'sem-pairs', n:'La fête des pairs', d:'Une Frappe faite avec des dés pairs fait +2.', corbin:'Les pairs font la fête. Les impairs boudent dans leur coin.' },
   { id:'sem-suites', n:'Suites généreuses', d:'Une suite de 3 dés compte comme une suite de 4 : la Technique fait 7 au lieu de 4.', corbin:'1-2-3, et hop, 7 dégâts. C’est presque de la triche. J’adore.' },
   { id:'sem-marche', n:'Le marché noir', d:'Vendre un dé rapporte 2 PC au lieu de 1.', corbin:'Psst. Tu veux vendre un dé ? Je connais un gars. Il paie double.' },
   { id:'sem-charge', n:'Créatures pressées', d:'Toutes les créatures ont Charge : elles attaquent dès leur arrivée.', corbin:'Personne ne dort cette semaine. Pas même les créatures. Surtout pas les créatures.' },
   { id:'echos', n:'Les soldes de la Guilde', d:'La première carte de chaque tour coûte 1 PC de moins.', corbin:'Les soldes ! La première carte de chaque tour est moins chère. Profites-en, moi je n’ai pas de poches.' },
-  { id:'sem-orage', n:'L’orage d’Ultime', d:'La jauge d’Ultime se remplit deux fois plus vite.', corbin:'Ça sent l’orage. Les Ultimes vont pleuvoir. Mets-toi à l’abri. Sous moi, par exemple.' },
-  { id:'sem-boucliers', n:'Boucliers épais', d:'Chaque Garde donne +2 de Bouclier.', corbin:'Tout le monde a forgé des boucliers. Les duels vont durer. Pense à grignoter.' },
+  { id:'sem-orage', n:'L’orage d’Ultime', d:'La jauge d’Ultime se remplit deux fois plus vite.', corbin:'Ça sent l’orage. Les Ultimes vont pleuvoir. Mets-toi à l’abri. Sous un meuble, par exemple. C’est ce que je fais.' },
+  { id:'sem-boucliers', n:'Boucliers épais', d:'Chaque Garde donne +2 de Bouclier.', corbin:'Tout le monde a forgé des boucliers. Les duels vont durer. Pense à grignoter. Moi, je grignote déjà.' },
 ];
 // la semaine = le lundi de la date ; le rang de la règle tourne de 3 en 3 (8 règles : on les voit toutes en 8 semaines, jamais deux fois de suite)
 function lundiDe(d) { const x = new Date(d); x.setHours(12, 0, 0, 0); x.setDate(x.getDate() - (x.getDay() + 6) % 7); return x; }
@@ -51,7 +51,7 @@ if (typeof nouvellePartie === 'function') {
     if (S && S.semaine && !S.sceauVu) {
       S.sceauVu = true;
       if (S.fini === 'gagne') { const m = lesSceaux(), neuf = !m[S.semaine]; if (neuf) { m[S.semaine] = { regle:regleDeLaSemaine().n, heros:S.J.id }; try { localStorage.setItem(SCEAUX_CLE, JSON.stringify(m)); } catch (e) {} }
-        _finSem(); if (neuf) setTimeout(() => fenetre(`<h2>🔏 Le Sceau de la semaine !</h2><p>« ${regleDeLaSemaine().n} » rejoint ta collection : ${Object.keys(lesSceaux()).length} sceau${Object.keys(lesSceaux()).length > 1 ? 'x' : ''} au Panthéon.</p><div class="corbin" style="font-style:italic">Corbin : « Un sceau de plus. Tu vas finir par en faire une collection. Oh, attends. »</div><div class="choixh"><button onclick="fermer();nouvellePartie(S.J.id, S.O.id)">Rejouer</button><button onclick="location.href='pantheon.html'">🏛 Le Panthéon</button></div>`), 2600);
+        _finSem(); if (neuf) setTimeout(() => fenetre(`<h2>🔏 Le Sceau de la semaine !</h2><p>« ${regleDeLaSemaine().n} » rejoint ta collection : ${Object.keys(lesSceaux()).length} sceau${Object.keys(lesSceaux()).length > 1 ? 'x' : ''} au Panthéon.</p><div class="corbin" style="font-style:italic">Moustache : « Un sceau de plus. Tu vas finir par en faire une collection. Oh, attends. »</div><div class="choixh"><button onclick="fermer();nouvellePartie(S.J.id, S.O.id)">Rejouer</button><button onclick="location.href='pantheon.html'">🏛 Le Panthéon</button></div>`), 2600);
         return; }
     }
     _finSem();
@@ -60,6 +60,6 @@ if (typeof nouvellePartie === 'function') {
   window.partieSemaine = function () {
     SEMAINE_ACTIVE = true; const r = regleDeLaSemaine(), m = lesSceaux();
     accueil();
-    fenetre(`<h2>🗓️ Le Duel de la semaine</h2><p><b>${r.n}</b> : ${r.d}</p><p class="doux">La règle vaut pour toi ET pour l’ordinateur, jusqu’à dimanche soir. Gagne un duel pour le Sceau de la semaine${m[r.semaine] ? ' (déjà gagné ✅)' : ''}.</p><p style="font-style:italic">Corbin : « ${r.corbin} »</p><div class="choixh"><button onclick="fermer()">Choisir mon héros</button></div>`);
+    fenetre(`<h2>🗓️ Le Duel de la semaine</h2><p><b>${r.n}</b> : ${r.d}</p><p class="doux">La règle vaut pour toi ET pour l’ordinateur, jusqu’à dimanche soir. Gagne un duel pour le Sceau de la semaine${m[r.semaine] ? ' (déjà gagné ✅)' : ''}.</p><p style="font-style:italic">Moustache : « ${r.corbin} »</p><div class="choixh"><button onclick="fermer()">Choisir mon héros</button></div>`);
   };
 }

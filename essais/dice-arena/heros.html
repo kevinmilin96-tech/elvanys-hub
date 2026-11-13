@@ -118,13 +118,15 @@
   #fiche .livre { display:block; position:relative; aspect-ratio:1122/726; padding:0; border-radius:0; box-shadow:none; perspective:none;
     background:url('menu-recu/livre.webp?v=1') center/100% 100% no-repeat; filter:drop-shadow(0 12px 22px #000c); margin:4px 0 6px; }
   #fiche .livre::after { display:none; }
-  #fiche .feuille { position:absolute; top:8.5%; height:58%; overflow:hidden; color:#2b2117; }
+  #fiche .feuille { position:absolute; top:8.5%; height:61%; overflow:hidden; color:#2b2117; }
   #fiche .feuille.g { left:12%; width:35.5%; display:grid; place-items:center; }
   #fiche .feuille.g img { width:100%; height:100%; object-fit:cover; border-radius:6px; box-shadow:inset 0 0 0 2px #0002, 0 2px 6px #0004;
     -webkit-mask:radial-gradient(ellipse 75% 75% at 50% 50%, #000 70%, #0000 100%); mask:radial-gradient(ellipse 75% 75% at 50% 50%, #000 70%, #0000 100%); }
-  #fiche .feuille.d { left:51.5%; width:35.5%; display:flex; flex-direction:column; align-items:center; text-align:center; gap:1.2cqw; padding-top:1cqw; }
+  #fiche .feuille.d { left:51.5%; width:34%; display:flex; flex-direction:column; align-items:center; text-align:center; gap:1.2cqw; padding-top:1cqw; }
   #fiche .feuille.d .titre { font-size:2.5cqw; } #fiche .feuille.d h2 { font-size:5.4cqw; line-height:1; margin:0; }
-  #fiche .feuille.d .cit { font-size:2.6cqw; margin:0; line-height:1.25; }
+  #fiche .feuille.d .hist { font-size:2.35cqw; margin:0; line-height:1.3; text-align:left; hyphens:auto; }
+  #fiche .feuille.d .bts { display:flex; gap:1.5cqw; margin-top:auto; padding-bottom:.5cqw; }
+  #fiche .feuille.d .bt { font-size:2.7cqw; padding:1.2cqw 2.2cqw; white-space:nowrap; }
   #fiche .feuille.d .bt { font-size:3cqw; padding:1.4cqw 3cqw; margin:0; border-radius:20px; }
   #fiche .feuille.d .bt.det { background:#2b6f80; color:#fff; box-shadow:0 2px 0 #17414c; border:0; }
   #fiche .feuille.d.tourne { animation:apparait .4s ease-out; } @keyframes apparait { from { opacity:0; transform:translateX(6px); } }
@@ -154,9 +156,9 @@
     <li><b>Le second joueur</b> commence avec 4 PC et une carte de plus.</li>
   </ol></details>
 </main>
-<script src="donnees.js?v=20261113-134009"></script>
-<script src="odyssee.js?v=20261113-134009"></script>
-<script src="cartes.js?v=20261113-134009"></script>
+<script src="donnees.js?v=20261113-134353"></script>
+<script src="odyssee.js?v=20261113-134353"></script>
+<script src="cartes.js?v=20261113-134353"></script>
 <script>
 document.head.insertAdjacentHTML('beforeend', '<style>' + CSS_CARTE + '</style>');
 const SORTE = { u:'Créature', s:'Sort', e:'Équipement', r:'Piège' };
@@ -184,13 +186,14 @@ function fiche() {
   const deck = compter(deckDe(id));
   document.getElementById('fiche').innerHTML = `<div class="livre">
     <div class="feuille g"><img src="portraits/${id}.webp" alt="${h.nom}"></div>
-    <div class="feuille d tourne"><div class="titre encre">${h.titre}</div><h2>${h.nom}</h2><p class="cit">${h.cit}</p>
-      <button class="bt det" onclick="details = !details; fiche()">${details ? 'Fermer' : 'Détails'}</button>
-      ${verrouille(id) ? '' : `<button class="bt or" onclick="location.href='duel.html?h=${id}'">⚔ Jouer avec</button>`}</div>
+    <div class="feuille d tourne"><div class="titre encre">${h.titre}</div><h2>${h.nom}</h2><p class="hist">${h.hist}</p>
+      <div class="bts"><button class="bt det" onclick="details = !details; fiche()">${details ? 'Fermer' : 'Détails'}</button>
+      ${verrouille(id) ? '' : `<button class="bt or" onclick="location.href='duel.html?h=${id}'">⚔ Jouer</button>`}</div></div>
     ${verrouille(id) ? `<div class="sceau"><div><span class="gros"><img src="menu-recu/cadenas.webp?v=1" alt="Verrouillé"></span><p>${h.nom} rejoint la Guilde quand tu as fini le <b>tutoriel</b> : un duel guidé de 5 minutes.</p><button class="bt or" onclick="location.href='duel.html?tuto=1'">🎓 Faire le tutoriel</button></div></div>` : ''}
   </div>
   ${details ? `<div class="details">
     <div class="page g">
+      <p class="cit">${h.cit}</p>
       <div class="chips"><span class="pv">❤ ${h.pv} PV</span><span class="st">${P.style}</span><span class="eq">⚖ ${EQUILIBRE[id]} %</span><span>🎮 ${joue ? `${gagne}/${joue} gagnées` : 'pas encore joué'}</span></div>
       <p class="role">${h.role}</p>
       <div class="stats">${Object.entries(P).filter(([k]) => k !== 'style').map(([k, v]) => `<div class="stat"><span>${k}</span><div class="barre"><i style="width:${v * 20}%"></i></div><b>${v}</b></div>`).join('')}</div>

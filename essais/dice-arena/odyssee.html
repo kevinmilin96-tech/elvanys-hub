@@ -107,11 +107,11 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261113-134009"></script>
-<script src="donnees.js?v=20261113-134009"></script>
-<script src="odyssee.js?v=20261113-134009"></script>
-<script src="pantheon.js?v=20261113-134009"></script>
-<script src="chronique.js?v=20261113-134009"></script>
+<script src="cartes.js?v=20261113-134353"></script>
+<script src="donnees.js?v=20261113-134353"></script>
+<script src="odyssee.js?v=20261113-134353"></script>
+<script src="pantheon.js?v=20261113-134353"></script>
+<script src="chronique.js?v=20261113-134353"></script>
 <script>
 // le moteur du Duel n'est pas chargé ici : les cartes de l'Odyssée appellent degats/soin seulement en combat (dans duel.html)
 const log = () => {}, degats = () => {}, soin = () => {}, altere = () => {}, invoque = () => {}, adv = () => ({}), fin = () => {};
@@ -129,15 +129,15 @@ const acteDe = () => (R && R.acte) || ACTE_URL;
 let ASC_CHOIX = 0;
 const CH = () => ({ givre:CHRON_GIVRE, abime:CHRON_ABIME }[acteDe()] || CHRON_ODY);
 const CORBIN_ABIME = {
-  depart:['Je… je n’aime pas ici. Je le dis tout de suite, comme ça c’est dit.', 'Pas un bruit. Pas un ver de terre. Rien. C’est pire que le froid.', 'Un roi sans visage. Comment on sait s’il est content ?'],
+  depart:['Je… je n’aime pas ici. Je le dis tout de suite, comme ça c’est dit.', 'Pas un bruit. Pas une souris. Rien. C’est pire que le froid.', 'Un roi sans visage. Comment on sait s’il est content ?'],
   porte_fermee:['Deux serrures dans une porte qui n’existe pas. Logique.', 'Les élites ont les fragments. L’une d’elles a ta tête, je te préviens.'],
-  boss_vaincu:['On… on a gagné ? Contre le RIEN ? Je vais le raconter pendant cent ans.', 'La lumière revient ! Croâ ! CROÂ !'],
-  vivres_bas:['La lanterne baisse. Ici, c’est vraiment la seule lumière. Vraiment.', 'Si elle s’éteint, je te pince. Pour qu’on sache qu’on existe encore.'],
+  boss_vaincu:['On… on a gagné ? Contre le RIEN ? Je vais le raconter pendant cent ans.', 'La lumière revient ! Miaou ! MIAOU !'],
+  vivres_bas:['La lanterne baisse. Ici, c’est vraiment la seule lumière. Vraiment.', 'Si elle s’éteint, je te griffe. Gentiment. Pour qu’on sache qu’on existe encore.'],
 };
 const CORBIN_GIVRE = {
-  depart:['Brrr. Je retire tout ce que j’ai dit sur les Terres brûlées. Il faisait bon, là-bas.', 'De la neige jusqu’aux genoux. Enfin, jusqu’à MES genoux.', 'Une Vouivre. Évidemment. Pourquoi pas un gentil hérisson, pour une fois ?'],
+  depart:['Brrr. Je retire tout ce que j’ai dit sur les Terres brûlées. Il faisait bon, là-bas.', 'De la neige jusqu’aux genoux. Enfin, jusqu’à MES genoux. Et j’ai des petites pattes.', 'Une Vouivre. Évidemment. Pourquoi pas une gentille souris, pour une fois ?'],
   porte_fermee:['Deux serrures gelées. Les élites ont les fragments. Le Yéti a l’air… très grand.', 'On ne force pas une porte de glace. Elle te force, elle.'],
-  boss_vaincu:['Elle fond ! Elle FOND ! Je savais que la chaleur de mon amitié suffirait.', 'L’île dégèle. Moi aussi. Croâ.'],
+  boss_vaincu:['Elle fond ! Elle FOND ! Je savais que la chaleur de mon amitié suffirait.', 'L’île dégèle. Mes coussinets aussi. Miaou.'],
   vivres_bas:['La lanterne baisse, et ici le noir est glacé. Je déteste deux fois plus.', 'Plus d’huile, plus de chaleur. On se dépêche ?'],
 };
 function accueil() {
@@ -297,37 +297,37 @@ async function marcheVers(x, y) {
   enMarche = false; sauve(); dessine(); arrive(caseA(R, R.pos.x, R.pos.y));
 }
 function va(x, y) { return marcheVers(x, y); }
-// =============================================================================================== les voix : le héros et Corbin, le corbeau messager de la Guilde
-// Proposé par Claude (à valider) : ton drôle et taquin, Corbin râle et a toujours faim ; le héros répond dans son caractère.
+// =============================================================================================== les voix : le héros et Moustache, le chat roux de la Guilde (ex-Corbin, 13/11)
+// Ton drôle et taquin : Moustache, chat d’aventure un peu cabossé, râle, fait la sieste et a toujours faim ; le héros répond dans son caractère.
 const CORBIN = {
-  depart:['Bon. Une île, du feu, des monstres. Et pas une miette de pain depuis le navire.', 'Si on se perd, je précise que c’est toi qui tiens la carte.', 'Croâ. On dit que le Titan n’aime pas les visiteurs. Ni les corbeaux.'],
-  monstre:['Il y a quelque chose là-dedans. Je dis ça, je dis rien. Je vole, moi.', 'Ça sent le gobelin. Ou tes chaussettes.', 'Tu passes devant. Toujours. C’est le contrat.'],
-  elite:['Oh. Celui-là, il a l’air de connaître les règles.', 'Un fragment de rune, qu’ils disaient. Facile, qu’ils disaient.', 'Je vais me poser un peu plus loin. Beaucoup plus loin.'],
-  victoire:['Je t’avais dit que tu y arriverais. Dans ma tête.', 'Bravo. Tu veux un ver de terre ? Non ? Plus pour moi.', 'Croâ ! Et l’or, on le partage ?'],
+  depart:['Bon. Une île, du feu, des monstres. Et pas une sardine depuis le navire.', 'Si on se perd, je précise que c’est toi qui tiens la carte.', 'Miaou. On dit que le Titan n’aime pas les visiteurs. Ni les chats. Personne n’aime les chats. Sauf moi.'],
+  monstre:['Il y a quelque chose là-dedans. Je dis ça, je dis rien. Je reste derrière, moi.', 'Ça sent le gobelin. Ou tes chaussettes.', 'Tu passes devant. Toujours. C’est le contrat.'],
+  elite:['Oh. Celui-là, il a l’air de connaître les règles.', 'Un fragment de rune, qu’ils disaient. Facile, qu’ils disaient.', 'Je vais faire une sieste un peu plus loin. Beaucoup plus loin.'],
+  victoire:['Je t’avais dit que tu y arriverais. Dans ma tête.', 'Bravo. Tu veux une sardine ? Non ? Plus pour moi.', 'Miaou ! Et l’or, on le partage ?'],
   coffre_ferme:['Fermé. Évidemment. Qui laisse un coffre ouvert sur une île à monstres ?', 'Il te faudrait une clé. Ou un marteau. Ou un ami cambrioleur.'],
   coffre:['Oooh. Ça brille. C’est à moi ? Non ? Bon.', 'Un vrai coffre avec un vrai trésor. Je commence à aimer cette île.'],
-  source:['De l’eau ! Enfin quelque chose de gratuit sur cette île.', 'Bois. Et laisse-m’en un peu, j’ai le gosier en cendre.'],
+  source:['De l’eau ! Enfin quelque chose de gratuit sur cette île.', 'Bois. Moi je n’y touche pas, l’eau et moi, on est fâchés.'],
   marchand:['Un marchand, ici ? Soit c’est un fou, soit c’est un génie.', 'Regarde ses prix avant de sortir ta bourse. Je l’ai vu sourire.'],
   evenement:['Hum. Je ne sens pas cette affaire.', 'Quoi que tu décides, je dirai que c’était mon idée si ça marche.'],
-  autel:['Un autel. Les autels donnent toujours quelque chose. Ils prennent toujours quelque chose aussi.', 'Croâ. Si tu meurs maudit, je garde tes bottes.'],
+  autel:['Un autel. Les autels donnent toujours quelque chose. Ils prennent toujours quelque chose aussi.', 'Miaou. Si tu meurs maudit, je garde tes bottes. Pour dormir dedans.'],
   mur:['Ce mur sonne creux. Tu as une bombe ? Ou des bras ?', 'Derrière, il y a sûrement un trésor. Ou un autre mur. Les deux, c’est l’aventure.'],
   porte_fermee:['Deux serrures en forme de rune. Les élites ont les fragments. Tu les as vues, les élites ? Elles sont grandes.', 'On ne force pas une porte de Titan. Enfin, toi, tu peux essayer.'],
   porte:['La porte s’ouvre… Tu vas vraiment entrer ? Bon. Je te regarde d’ici.', 'Dernier conseil : frappe fort, et plus souvent que lui.'],
-  vivres_bas:['La lanterne baisse. Je n’aime pas le noir. Enfin, je l’aime, mais pas ici.', 'On fouille encore, ou on fonce ? Décide, la mèche fume déjà.'],
-  vivres_zero:['Plus d’huile. Chaque pas dans le noir va te coûter. Moi je vois la nuit, je rappelle.', 'Croâ… on aurait dû acheter de l’huile.'],
-  mort:['Bon. Je retourne à la Guilde dire que tu as été très courageux. Très.', 'Il reviendra. Ils reviennent toujours. Croâ.'],
-  boss_vaincu:['Tu… tu l’as eu. Je n’ai jamais douté. Jamais. Enfin presque.', 'L’île est libre ! Et moi j’ai faim. Les deux sont importants.'],
+  vivres_bas:['La lanterne baisse. Je vois dans le noir. Mais pas ici. Ici, le noir est bizarre.', 'On fouille encore, ou on fonce ? Décide, la mèche fume déjà.'],
+  vivres_zero:['Plus d’huile. Chaque pas dans le noir va te coûter. Moi je vois la nuit, je te rappelle. Toi, non.', 'Miaou… on aurait dû acheter de l’huile.'],
+  mort:['Bon. Je retourne à la Guilde dire que tu as été très courageux. Très.', 'Il reviendra. Ils reviennent toujours. Comme moi à l’heure de la gamelle.'],
+  boss_vaincu:['Tu… tu l’as eu. Je n’ai jamais douté. Jamais. Enfin presque.', 'L’île est libre ! Et moi j’ai faim. Les deux sont importants. Surtout le deuxième.'],
 };
 const HEROS_VOIX = {
-  maelle:['Ce qui est forgé ne casse pas. Toi non plus, si tu te tais.', 'Avance, Corbin. L’enclume n’attend pas.', 'Je frappe, tu comptes les coups.'],
-  aldric:['Tant que la lanterne brille, personne ne passe. Toi compris.', 'Courage, mon ami à plumes. Je passe devant.', 'Un chevalier ne recule pas. Il contourne, parfois.'],
-  pip:['La forêt me parle, Corbin. Elle dit que tu parles trop.', 'Chut. Écoute l’île.', 'Ma louve t’aurait déjà mangé, tu sais.'],
+  maelle:['Ce qui est forgé ne casse pas. Toi non plus, si tu te tais.', 'Avance, Moustache. L’enclume n’attend pas.', 'Je frappe, tu comptes les coups.'],
+  aldric:['Tant que la lanterne brille, personne ne passe. Toi compris.', 'Courage, mon ami à moustaches. Je passe devant.', 'Un chevalier ne recule pas. Il contourne, parfois.'],
+  pip:['La forêt me parle, Moustache. Elle dit que tu parles trop.', 'Chut. Écoute l’île.', 'Ma louve t’aurait déjà mangé, tu sais.'],
   oria:['Tout est sur ma carte. Sauf ce que je n’ai pas encore dessiné.', 'Par là. Enfin, à peu près par là.', 'Un cartographe ne se perd jamais. Il explore.'],
-  gorm:['Mon cor fera trembler ce Titan. Et tes plumes.', 'On avance au pas de charge, l’oiseau !', 'Moins de mots, plus de monstres.'],
-  zephine:['Fascinant. Je me demande ce que ça donne en fiole.', 'Ne touche à rien, Corbin. Surtout pas aux flacons verts.', 'La chimie règle tout. Même les corbeaux.'],
+  gorm:['Mon cor fera trembler ce Titan. Et tes moustaches.', 'On avance au pas de charge, le matou !', 'Moins de mots, plus de monstres.'],
+  zephine:['Fascinant. Je me demande ce que ça donne en fiole.', 'Ne touche à rien, Moustache. Surtout pas aux flacons verts.', 'La chimie règle tout. Même les chats.'],
 };
 let bulles = [];
-function bullesHTML() { return bulles.map(b => `<div class="bulle ${b.qui === 'plume' ? 'corbeau' : ''}">${b.qui === 'plume' ? '<div class="avatar">🐦‍⬛</div>' : `<img src="${IMG(R.heros)}" alt="">`}<span><b>${b.qui === 'plume' ? 'Corbin' : HEROS[R.heros].nom}</b>${b.t}</span></div>`).join(''); }
+function bullesHTML() { return bulles.map(b => `<div class="bulle ${b.qui === 'plume' ? 'corbeau' : ''}">${b.qui === 'plume' ? '<div class="avatar">🐱</div>' : `<img src="${IMG(R.heros)}" alt="">`}<span><b>${b.qui === 'plume' ? 'Moustache' : HEROS[R.heros].nom}</b>${b.t}</span></div>`).join(''); }
 function dialogue(sit, reponse) {
   const l = (acteDe() === 'givre' && CORBIN_GIVRE[sit]) || (acteDe() === 'abime' && CORBIN_ABIME[sit]) || CORBIN[sit]; if (!l) return; const t = l[Math.floor(Math.random() * l.length)];
   bulles = [{ qui:'plume', t }]; const z = document.getElementById('bulles'); if (z) z.innerHTML = bullesHTML();
@@ -404,7 +404,7 @@ function forgeFen(c, msg) {
     return `<span onclick="FORGE_CHOIX={de:${de},face:${f}};forgeFen(${k})" style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;margin:2px;border-radius:7px;cursor:pointer;font-weight:bold;background:${sp ? '#3a2a14' : '#2a2450'};border:2px solid ${sel ? '#7dffb0' : sp ? '#f3c96b' : '#4b4580'};${sel ? 'box-shadow:0 0 8px #7dffb0' : ''}">${sp ? FACES_FORGE[sp].e : f}</span>`; };
   const etape = ch.de < 0 ? '1. Touche la face d’un dé que tu veux remplacer.' : `2. Le ${ch.face} du dé n° ${ch.de + 1} deviendra :`;
   fenetre(`<h2>⚒ La Forge runique</h2>
-  ${c.nb ? '' : '<p style="font-style:italic">Corbin : « Une forge qui marche toute seule. Ne touche pas l’enclume. Moi, je l’ai touchée. Une fois. »</p>'}
+  ${c.nb ? '' : '<p style="font-style:italic">Moustache : « Une forge qui marche toute seule. Ne touche pas l’enclume. Moi, je l’ai touchée. Une fois. Regarde ma moustache. »</p>'}
   <p>${c.nb ? `Une deuxième face ? <b>${FORGE_PRIX} or</b> (tu as 💰 ${R.or}).` : 'Remplace <b>une face</b> d’un de tes dés par une face spéciale, pour toute cette Odyssée. Gratuit.'}</p>
   ${msg ? `<p style="color:#ff7a7a">${msg}</p>` : ''}
   <div style="text-align:center">${[0, 1, 2, 3, 4].map(de => `<div><small style="color:var(--doux)">dé ${de + 1}</small> ${[1, 2, 3, 4, 5, 6].map(f => face(de, f)).join('')}</div>`).join('')}</div>
@@ -419,14 +419,14 @@ function forgeOk(x, y, code) {
   if (c.fait) { fenetre(`<h2>⚒ La Forge refroidit</h2><p>Tes deux faces sont forgées. Elles sortiront de tes dés jusqu’à la fin de l’Odyssée.</p><div class="choixh"><button onclick="fermer()">Repartir</button></div>`); return; }
   forgeFen(c);
 }
-// 13/11 : le sac de Corbin (Stop ou Encore)
+// 13/11 : le sac de Moustache (Stop ou Encore)
 function sacFen(c, dernier) {
   const S2 = c.sac || { pot:0, m:0, des:[] }, k = `R.ile[${c.y}][${c.x}]`;
   const des = S2.des.map((v, i) => `<span style="display:inline-block;width:30px;height:30px;line-height:30px;margin:2px;border-radius:7px;background:${v === 1 ? '#5a1a1a' : v === 6 ? '#1d3326' : '#2a2450'};border:2px solid ${v === 1 ? '#ff6a5a' : v === 6 ? '#7dffb0' : '#4b4580'};font-weight:bold;${i === S2.des.length - 1 && dernier ? 'animation:tremble .4s' : ''}">${v === 1 ? '💀' : v}</span>`).join('');
-  if (c.fait && S2.explose) { fenetre(`<h2>💥 Le sac explose !</h2><div style="text-align:center">${des}</div><p>Deux malédictions : les ${S2.pot} or s’envolent, et tu perds ${SAC.degats} PV (❤ ${R.pv}).</p><p style="font-style:italic">Corbin : « Ah. Bon. Moi, je me serais arrêté. Probablement. »</p><div class="choixh"><button onclick="fermer();dessine()">Repartir</button></div>`); return; }
-  if (c.fait) { fenetre(`<h2>🎲 Le sac de Corbin</h2><div style="text-align:center">${des}</div><p>Tu ranges <b>${S2.pot} or</b> dans ta bourse (💰 ${R.or}).</p><p style="font-style:italic">Corbin : « Sage. Ennuyeux, mais sage. »</p><div class="choixh"><button onclick="fermer();dessine()">Repartir</button></div>`); return; }
-  fenetre(`<h2>🎲 Le sac de Corbin</h2>
-  ${S2.des.length ? `<div style="text-align:center">${des}</div>` : `<p style="font-style:italic">Corbin : « Un petit jeu ? Tu tires un dé à la fois. Chaque dé de 2 à 6, c’est de l’or. Un 1, c’est une malédiction 💀. Deux malédictions et… boum. Un 6 efface une malédiction. Tu t’arrêtes quand tu veux. »</p>`}
+  if (c.fait && S2.explose) { fenetre(`<h2>💥 Le sac explose !</h2><div style="text-align:center">${des}</div><p>Deux malédictions : les ${S2.pot} or s’envolent, et tu perds ${SAC.degats} PV (❤ ${R.pv}).</p><p style="font-style:italic">Moustache : « Ah. Bon. Moi, je me serais arrêté. Probablement. »</p><div class="choixh"><button onclick="fermer();dessine()">Repartir</button></div>`); return; }
+  if (c.fait) { fenetre(`<h2>🎲 Le sac de Moustache</h2><div style="text-align:center">${des}</div><p>Tu ranges <b>${S2.pot} or</b> dans ta bourse (💰 ${R.or}).</p><p style="font-style:italic">Moustache : « Sage. Ennuyeux, mais sage. »</p><div class="choixh"><button onclick="fermer();dessine()">Repartir</button></div>`); return; }
+  fenetre(`<h2>🎲 Le sac de Moustache</h2>
+  ${S2.des.length ? `<div style="text-align:center">${des}</div>` : `<p style="font-style:italic">Moustache : « Un petit jeu ? Tu tires un dé à la fois. Chaque dé de 2 à 6, c’est de l’or. Un 1, c’est une malédiction 💀. Deux malédictions et… boum. Un 6 efface une malédiction. Tu t’arrêtes quand tu veux. »</p>`}
   <p style="text-align:center;font-size:1.15em">Pot : <b style="color:var(--or)">${S2.pot} or</b> · Malédictions : <b style="color:${S2.m ? '#ff6a5a' : 'inherit'}">${'💀'.repeat(S2.m)}${'○'.repeat(SAC.malediction - S2.m)}</b></p>
   <p style="font-size:.85em;color:var(--doux);text-align:center">${S2.m ? 'Encore une 💀 et le sac explose : pot perdu et −' + SAC.degats + ' PV.' : 'Rien à craindre… pour l’instant.'}</p>
   <div class="choixh"><button class="or" onclick="sacTire(R,${k});sauve();sacFen(${k},true);dessine()">🎲 Encore !</button><button ${S2.pot ? '' : 'disabled'} onclick="sacStop(R,${k});sauve();sacFen(${k});dessine()">✋ Stop (+${S2.pot} or)</button></div>

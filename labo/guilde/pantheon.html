@@ -29,10 +29,10 @@
   <p class="intro">« Ici, la Guilde grave le nom de ceux qui ont tenu jusqu’au bout. »</p>
   <div id="app"></div>
 </main>
-<script src="cartes.js?v=20261113-134009"></script>
-<script src="donnees.js?v=20261113-134009"></script>
-<script src="odyssee.js?v=20261113-134009"></script>
-<script src="pantheon.js?v=20261113-134009"></script>
+<script src="cartes.js?v=20261113-134353"></script>
+<script src="donnees.js?v=20261113-134353"></script>
+<script src="odyssee.js?v=20261113-134353"></script>
+<script src="pantheon.js?v=20261113-134353"></script>
 <script>
 const log = () => {};
 const J = (cle, def) => { try { return JSON.parse(localStorage.getItem(cle) || 'null') || def; } catch (e) { return def; } };
@@ -44,7 +44,7 @@ function dessine() {
   const eniDim = eniOk.filter(k => new Date(k + 'T12:00:00').getDay() === 0).length, eniPremier = eniOk.filter(k => eni[k].essais === 1).length;
   let eniSerieMax = 0, eniS = 0, eniAvant = null; eniOk.forEach(k => { const d = new Date(k + 'T12:00:00'); eniS = eniAvant && (d - eniAvant) / 864e5 === 1 ? eniS + 1 : 1; eniAvant = d; eniSerieMax = Math.max(eniSerieMax, eniS); });
   const titres = [
-    [localStorage.getItem('guilde-tuto') === 'fait', '🎓', 'Diplômé de la Guilde', 'Finir le tutoriel avec Corbin.'],
+    [localStorage.getItem('guilde-tuto') === 'fait', '🎓', 'Diplômé de la Guilde', 'Finir le tutoriel avec Moustache.'],
     [!!localStorage.getItem('guilde-odyssee-finie'), '🌟', 'Héros de l’Odyssée', 'Libérer les trois îles de l’Odyssée.'],
     [Object.keys(P.heros).length > 0, '🌑', 'Briseur de Néant', 'Le titre de chaque héros inscrit au Tableau d’honneur.'],
     [exp.some(r => r.parfait), '🌊', 'Traversée parfaite', 'Vaincre le Titan des Expéditions sans perdre un cœur.'],

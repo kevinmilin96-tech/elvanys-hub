@@ -1,7 +1,7 @@
 // =============================================================================================== L'ÉNIGME DU JOUR (13/11)
 // Décisions de l'utilisateur (boîtes, 13/11) : dés déjà lancés et FIGÉS (pas de relance) ; une énigme NEUVE chaque jour,
 // fabriquée par le jeu à partir de la date et VÉRIFIÉE par un solveur ; difficulté qui monte du lundi (1) au dimanche (7) ;
-// essais illimités, indice de Corbin après 2 échecs, solution après 5 ; série de jours réussis + trophée au Panthéon,
+// essais illimités, indice de Moustache après 2 échecs, solution après 5 ; série de jours réussis + trophée au Panthéon,
 // aucun avantage en combat. La même énigme pour tout le monde le même jour (graine = la date), rien sur un serveur.
 // But : faire tomber le héros adverse PENDANT CE TOUR. Ses PV = le maximum de dégâts possible : il faut trouver le coup parfait.
 // Héros des énigmes : Maëlle, Aldric, Oria, Gorm (Pip : la Louve lance ses propres dés ; Zéphine : se débloque au tutoriel).
@@ -185,10 +185,10 @@ function eniCache(iso) {
 function partieEnigme(iso) {
   const auj = eniIso(new Date());
   if (!iso || iso === '1' || iso > auj) iso = auj;
-  document.getElementById('app').innerHTML = '<div style="padding:30vh 8vw;text-align:center;color:#e8dcc0;font-size:5vw">🪶 Corbin prépare l’énigme…</div>';
+  document.getElementById('app').innerHTML = '<div style="padding:30vh 8vw;text-align:center;color:#e8dcc0;font-size:5vw">🐾 Moustache prépare l’énigme…</div>';
   setTimeout(() => {
     const p = eniCache(iso);
-    if (!p) { fenetre('<h2>Pas d’énigme aujourd’hui</h2><p>Corbin n’a rien trouvé de bon. Reviens demain !</p><div class="choixh"><button onclick="location.href=\'menu.html\'">⌂ Menu</button></div>'); return; }
+    if (!p) { fenetre('<h2>Pas d’énigme aujourd’hui</h2><p>Moustache n’a rien trouvé de bon. Il a dormi toute la nuit. Reviens demain !</p><div class="choixh"><button onclick="location.href=\'menu.html\'">⌂ Menu</button></div>'); return; }
     ENI = { p, iso }; eniAccueil();
   }, 30);
 }
@@ -221,15 +221,15 @@ function eniResultat() {
   if (gagne) {
     effetImage('victoire', document.getElementById('app'), 2.2);
     fenetre(`<h2>🏆 Énigme résolue !</h2><p>${x.essais > 1 ? `En ${x.essais} essais.` : 'Du premier coup !'} 🔥 Série : <b>${eniSerie()}</b> jour(s).</p>
-      <p style="font-style:italic">Corbin : « ${['Pas mal, pour quelqu’un sans plumes.', 'Croâ ! Je l’aurais trouvé aussi. Plus tard. Peut-être.', 'Propre. Net. Presque élégant.', 'Tu vois ? Réfléchir, ça ne fait pas mal.'][x.essais % 4]} »</p>
+      <p style="font-style:italic">Moustache : « ${['Pas mal, pour quelqu’un sans moustaches.', 'Miaou ! Je l’aurais trouvé aussi. Après ma sieste. Peut-être.', 'Propre. Net. Presque élégant.', 'Tu vois ? Réfléchir, ça ne fait pas mal.'][x.essais % 4]} »</p>
       <div class="choixh"><button onclick="eniAccueil()">🧩 Les autres jours</button><button onclick="location.href='menu.html'">⌂ Menu</button></div>`);
     return;
   }
   const reste = Math.max(0, S.O.pv);
   let aide = '';
   if (x.essais >= 5) aide = `<p><b>La solution :</b></p><ol style="text-align:left;font-size:3.4vw">${eniSolutionTexte(ENI.p).map(l => `<li>${l}</li>`).join('')}</ol>`;
-  else if (x.essais >= 2) aide = `<p style="font-style:italic">Corbin : « Psst. Moi, je commencerais par : <b>${eniDit(ENI.p.etat, ENI.p.sol[0])}</b>. Mais je dis ça, je dis rien. »</p>`;
-  else aide = '<p style="font-style:italic">Corbin : « Raté. Regarde bien tes cartes : il y a peut-être un ordre qui change tout. »</p>';
+  else if (x.essais >= 2) aide = `<p style="font-style:italic">Moustache : « Psst. Moi, je commencerais par : <b>${eniDit(ENI.p.etat, ENI.p.sol[0])}</b>. Mais je dis ça, je dis rien. »</p>`;
+  else aide = '<p style="font-style:italic">Moustache : « Raté. Regarde bien tes cartes : il y a peut-être un ordre qui change tout. »</p>';
   fenetre(`<h2>💨 Raté… il lui reste ${reste} PV</h2><p>Essai ${x.essais}.${x.essais < 2 ? ' Un indice arrive au 2e essai raté.' : x.essais < 5 ? ` La solution arrive au 5e essai raté.` : ''}</p>${aide}
     <div class="choixh"><button onclick="eniDemarre()">↺ Recommencer</button><button onclick="eniAccueil()">🧩 L’énigme</button></div>`);
 }

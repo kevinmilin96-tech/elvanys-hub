@@ -107,9 +107,9 @@ const CHRON_GIVRE = {
 // la page de fin de l'Odyssée (13/11, décision de l'utilisateur), montrée la première fois que l'acte III est gagné
 const CHRON_FIN = h => ({ sur:'L’Odyssée', titre:'Ce qu’on racontera', illu:{ cle:'fin-odyssee', fond:'or', sym:'🌟' }, texte:[
   `Trois îles. Le feu des Terres brûlées, le froid du Givre, le silence de l’Abîme. ${h} est rentré à la Guilde par la grande porte, et pour une fois, personne n’a rien demandé : on a juste ouvert le livre des héros à une page blanche.`,
-  'Corbin a raconté l’histoire trois fois le premier soir. À la troisième, il avait vaincu le Roi sans visage tout seul, d’un coup de bec. Personne ne l’a contredit.',
+  'Moustache a raconté l’histoire trois fois le premier soir. À la troisième, il avait vaincu le Roi sans visage tout seul, d’un coup de patte. Personne ne l’a contredit.',
   'Les îles, elles, ne sont pas finies : elles attendent ceux qui veulent monter plus haut. L’Ascension commence.' ],
-  cit:'« Héros de l’Odyssée. Ça sonne bien. Corbin, l’assistant du héros de l’Odyssée, ça sonne bien aussi. »' });
+  cit:'« Héros de l’Odyssée. Ça sonne bien. Moustache, le chat du héros de l’Odyssée, ça sonne bien aussi. »' });
 const CHRON_ABIME = {
   arrivee: h => ({ sur:'L’Odyssée · Acte III', titre:'L’Abîme du Vide', illu:{ cle:'abime', fond:'vide2', sym:'🌀' }, texte:[
     `La boussole a mené le navire au bord du monde. Ici, la mer ne finit pas : elle tombe. ${h} saute sur une île brisée qui flotte au-dessus d’un gouffre sans fond, et le navire recule aussitôt, comme s’il avait peur.`,
@@ -122,7 +122,7 @@ const CHRON_ABIME = {
     cit:'« On ne vainc pas le Vide. On se souvient de qui on est, assez longtemps pour passer. »' }),
   porte: ({ sur:'Chronique de l’île', titre:'Les marches du trône', illu:{ cle:'marches', fond:'vide2', sym:'🚪' }, texte:[
     'Les fragments s’assemblent et une porte apparaît là où il n’y avait rien : un simple cadre de pierre ouvert sur des marches qui montent dans le noir.',
-    'Vous allumez la lanterne une dernière fois. Corbin, pour une fois, ne dit rien. Il se serre contre votre cou.' ],
+    'Vous allumez la lanterne une dernière fois. Moustache, pour une fois, ne dit rien. Il se roule en boule contre votre cou et ronronne.' ],
     cit:'« Garde ta lumière allumée. Là-haut, c’est tout ce qui te restera. »' }),
   boss: h => ({ sur:'L’Odyssée · Acte III', titre:'Le Roi sans visage', illu:{ cle:'roi', fond:'vide2', sym:'👑' }, texte:[
     'Il se lève de son trône sans un bruit. Sous la couronne, il n’y a rien : un ovale de nuit où tournent des étoiles éteintes.',
@@ -130,7 +130,7 @@ const CHRON_ABIME = {
     cit:'« Je n’ai pas de visage. J’aurai le tien. »' }),
   victoire: h => ({ sur:'L’Odyssée · Acte III', titre:'La lumière revient', illu:{ cle:'lumiere', fond:'or', sym:'🏆' }, texte:[
     `La couronne tombe et roule jusqu’aux pieds de ${h}. Le trône se fend, et par la fissure monte une lumière dorée : celle des runes, revenue d’on ne sait où.`,
-    'L’île cesse de dériver. Les trois îles de l’Odyssée sont libres. À la Guilde, on racontera cette histoire longtemps, et Corbin, qui l’a vécue, la racontera plus longtemps encore. En l’arrangeant un peu.' ],
+    'L’île cesse de dériver. Les trois îles de l’Odyssée sont libres. À la Guilde, on racontera cette histoire longtemps, et Moustache, qui l’a vécue, la racontera plus longtemps encore. En l’arrangeant un peu.' ],
     cit:'« Ce qui a un visage peut être vaincu. Ce qui n’en a pas aussi, apparemment. »' }),
   defaite: h => ({ sur:'L’Odyssée · Acte III', titre:'Le silence', illu:{ cle:'silence', fond:'vide2', sym:'🕯' }, texte:[
     `${h} tombe sans un bruit, et le Vide referme sa main. La lanterne roule au bord du gouffre, sa flamme vacille… et ne s’éteint pas.`,
@@ -171,7 +171,7 @@ const CHRON_EXP = {
     { t:'Se poser et attendre qu’ils viennent', d:'Combat normal, mais l’équipage est prêt : +2 PV à chacun.', f:() => { E.equipage.forEach(u => { u.v = Math.min(u.vmax, u.v + 2); }); } } ] }),
   nid: ({ sur:'Expédition · Escale 6', titre:'Le Nid du Titan', illu:{ cle:'titan-feu', fond:'feu', sym:'👑' }, texte:[
     'Au fond du cratère, un nid de roche fondue. Le Titan de feu dort là, et le navire volant n’a plus de ciel où fuir.',
-    'Tout l’équipage se tait. Même Corbin.' ], choix:[
+    'Tout l’équipage se tait. Même Moustache.' ], choix:[
     { t:'Sonner la charge', d:'Toutes vos unités frappent les premières au premier round.', f:() => { E.bonus = { ...(E.bonus || {}), charge:true }; } },
     { t:'Former le mur de boucliers', d:'Vos unités Barrière gagnent +3 PV. Les autres attendent derrière.', f:() => { E.equipage.forEach(u => { if (u.barriere) { u.v += 3; u.vmax += 3; } }); } } ] }),
 };
@@ -220,7 +220,7 @@ const CHRON_CAMP_B = {
       'Ignaros est le plus vieux dragon que la Guilde connaisse. Il dormait sur ses œufs depuis avant les runes. Ses griffes posent des Braises qui explosent à la troisième, son souffle brûle les deux héros à la fois, et tous les trois tours un dragonnet éclôt.',
       'On dit qu’on ne le tue pas : on le convainc de se rendormir. Fort. Très fort.' ],
       cit:'« J’étais là avant vos runes. »' }),
-    victoire:({ sur:'Le Campement', titre:'Le dragon se rendort', illu:{ cle:'ignaros-dort', fond:'or', sym:'🏆' }, texte:[ 'Ignaros pose sa tête sur ses œufs, ferme un œil, puis l’autre. Le ravin s’assombrit. Les héros reculent sur la pointe des pieds.', 'À la Guilde, personne ne les croira. Corbin, si : il a tout vu, de très loin.' ], cit:'« Dors. On repassera. Peut-être. »' }),
+    victoire:({ sur:'Le Campement', titre:'Le dragon se rendort', illu:{ cle:'ignaros-dort', fond:'or', sym:'🏆' }, texte:[ 'Ignaros pose sa tête sur ses œufs, ferme un œil, puis l’autre. Le ravin s’assombrit. Les héros reculent sur la pointe des pieds.', 'À la Guilde, personne ne les croira. Moustache, si : il a tout vu, de très loin.' ], cit:'« Dors. On repassera. Peut-être. »' }),
     defaite:({ sur:'Le Campement', titre:'Les cendres', illu:{ cle:'cendres-ravin', fond:'cendre', sym:'🕯' }, texte:[ 'Le souffle du dragon balaie le camp. Il ne reste que des cendres tièdes, et un dragonnet qui joue avec un bouclier tordu.' ], cit:'« Ils reviennent toujours. »' }),
   },
 };
