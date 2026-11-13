@@ -103,6 +103,7 @@ function projecteurEl() {
       #projo .boutonsT button { font:inherit; border:0; border-radius:20px; padding:8px 18px; font-weight:bold; background:linear-gradient(#f6d77e, #c8902f); color:#2a1a08; box-shadow:0 3px 8px #000a; }
       #projo .boutonsT a { color:#e9e3ff; font-size:.82em; text-shadow:0 1px 3px #000; }
       #projo.libre .bulleT { pointer-events:none; } #projo.libre .boutonsT a, #projo.libre .boutonsT button { pointer-events:auto; } #projo.libre .ligneT { opacity:.9; font-size:.86em; padding:6px 9px; }
+      #projo .bulleT.deja .ligneT { animation:none; }
       @keyframes entreT { from { opacity:0; transform:translateY(8px); } }
       .des .d.tutoVise { outline:3px solid #f3c96b; outline-offset:2px; border-radius:8px; box-shadow:0 0 16px 4px #f3c96bcc; }
       .barre.diplome img:first-child { box-shadow:0 0 0 3px #f3c96b, 0 0 14px #f3c96b; }
@@ -133,7 +134,7 @@ function projecteur(el, html, o = {}) {
   if (liste) { const vise = liste.find(x => !x.classList.contains('sel')) || liste[liste.length - 1], rv = vise.getBoundingClientRect(); // un dé : la main à sa gauche
     main1.textContent = '👉'; Object.assign(main1.style, { left:Math.max(4, rv.left - 42) + 'px', top:(rv.top + rv.height / 2 - 20) + 'px' }); }
   else poseMain(L, T, R, B);
-  const bu = p.querySelector('.bulleT'); if (bu.dataset.h !== html) { bu.innerHTML = html; bu.dataset.h = html; } // 13/11 soir : la bulle ne « repope » plus à chaque toucher
+  const bu = p.querySelector('.bulleT'); if (bu.dataset.h !== html) { bu.innerHTML = html; bu.dataset.h = html; bu.classList.remove('deja'); } else bu.classList.add('deja'); // 14/11 : même texte après une animation = la bulle revient sans « repop » (sinon on croit à une nouvelle consigne) // 13/11 soir : la bulle ne « repope » plus à chaque toucher
   // la bulle se met du côté où il y a de la place
   const haut = el ? (T + B) / 2 > H * .5 : false;
   bu.style.top = haut || !el ? (o.libre ? '8px' : (el ? '10px' : '22%')) : ''; bu.style.bottom = haut || !el ? '' : '10px';
