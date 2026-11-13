@@ -609,7 +609,7 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261113-212813';
+const VERSION = '20261113-213000';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); location.replace('duel.html?v=' + v); }
@@ -628,11 +628,11 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261113-212813"></script>
-<script src="musique.js?v=20261113-212813"></script>
-<script src="donnees.js?v=20261113-212813"></script>
-<script src="odyssee.js?v=20261113-212813"></script>
-<script src="chronique.js?v=20261113-212813"></script>
+<script src="cartes.js?v=20261113-213000"></script>
+<script src="musique.js?v=20261113-213000"></script>
+<script src="donnees.js?v=20261113-213000"></script>
+<script src="odyssee.js?v=20261113-213000"></script>
+<script src="chronique.js?v=20261113-213000"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -1679,7 +1679,7 @@ function bruit(d, vol, f1, f2, depart) {
 function son(q) {
   if (!sonOn) return;
   // 13/11 soir : les bruitages choisis par l'utilisateur passent par le lecteur commun (musique.js) ; sinon l'ancien son fabriqué
-  if (typeof GM !== 'undefined' && GM.aSon(q) && q !== 'des') { GM.son(q); if (navigator.vibrate && (q === 'coup' || q === 'gros')) navigator.vibrate(q === 'gros' ? 60 : 25); return; }
+  if (typeof GM !== 'undefined' && GM.aSon(q)) { GM.son(q); if (navigator.vibrate && (q === 'coup' || q === 'gros')) navigator.vibrate(q === 'gros' ? 60 : 25); return; }
   if (q === 'coup') { bruit(.18, .5, 1200, 200); ton(120, .22, 'sine', .45, 50); }
   else if (q === 'gros') { bruit(.35, .6, 900, 120); ton(90, .4, 'sine', .55, 35); }
   else if (q === 'bouclier') { ton(1400, .25, 'triangle', .15, 900); ton(2100, .18, 'sine', .08); }
@@ -1906,7 +1906,7 @@ async function joue1(e) {
   if (e.t === 'degat') {
     const c = el(e.c); if (!c) return;
     if (e.abs) {
-      son('bouclier'); effetImage('armure-casse', c, .9); flotte(c, e.n ? `🛡 −${e.abs} sur la Garde` : `🛡 BLOQUÉ ! (−${e.abs} Garde)`, e.n ? 'bleu' : 'bleu gros');
+      son(e.n && !e.garde && !e.bouclier ? 'bouclier-casse' : 'bouclier'); effetImage('armure-casse', c, .9); flotte(c, e.n ? `🛡 −${e.abs} sur la Garde` : `🛡 BLOQUÉ ! (−${e.abs} Garde)`, e.n ? 'bleu' : 'bleu gros');
       majVie(e.c, { garde:e.garde, bouclier:e.bouclier }); await dodo(e.n ? 650 : 900);
     }
     if (e.n) { effetImage(e.vert ? 'poison-tic' : e.n >= 8 ? 'gros-degat' : 'degat', c, e.n >= 8 ? 1.4 : .9); if (e.n >= 8) document.getElementById('app').animate([{ transform:'none' }, { transform:'translate(-6px,4px)' }, { transform:'translate(5px,-5px)' }, { transform:'translate(-3px,2px)' }, { transform:'none' }], { duration:380 }); son(e.vert ? 'poison' : e.n >= 8 ? 'gros' : 'coup'); secoue(c, e.vert ? 'vert' : 'rouge'); flotte(c, `−${e.n} ❤${e.mot ? ' ' + e.mot : ''}`, e.vert ? 'vert' : e.n >= 8 ? 'rouge gros' : 'rouge'); }
@@ -1939,13 +1939,13 @@ async function joueFX() {
 // toucher l'écran pendant les animations les accélère
 document.addEventListener('pointerdown', () => { if (fxOn) fxVite = .3; }, true);
 </script>
-<script src="pantheon.js?v=20261113-212813"></script>
-<script src="tuto.js?v=20261113-212813"></script>
-<script src="deux.js?v=20261113-212813"></script>
-<script src="invasion.js?v=20261113-212813"></script>
-<script src="enigme-table.js?v=20261113-212813"></script>
-<script src="forge.js?v=20261113-212813"></script>
-<script src="semaine.js?v=20261113-212813"></script>
-<script src="enigme.js?v=20261113-212813"></script>
+<script src="pantheon.js?v=20261113-213000"></script>
+<script src="tuto.js?v=20261113-213000"></script>
+<script src="deux.js?v=20261113-213000"></script>
+<script src="invasion.js?v=20261113-213000"></script>
+<script src="enigme-table.js?v=20261113-213000"></script>
+<script src="forge.js?v=20261113-213000"></script>
+<script src="semaine.js?v=20261113-213000"></script>
+<script src="enigme.js?v=20261113-213000"></script>
 </body>
 </html>

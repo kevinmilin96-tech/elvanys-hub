@@ -45,7 +45,7 @@ const GM = (() => {
     porte:'dooropen-2', pas:'footstep04', livre:'bookflip2', erreur:'error-006', ok:'confirmation-002',
     // 13/11 soir, 2e bilan : les moments qui n'avaient pas de son
     'porte-frappee':'mk-porte-frappee-3', 'titan-pas':'impactmining-003', 'monstre-touche':'mk-monstre-touche-3', coffre:'mk-coffre-3', marchand:'mk-marchand-3',
-    clic:'mk-clic-1', ouvrir:'mk-ouvrir-1', fermer:'mk-fermer-1', defaite:'mk-defaite-6' };
+    des:'oga-des-1', clic:'mk-clic-1', ouvrir:'mk-ouvrir-1', fermer:'mk-fermer-1', defaite:'mk-defaite-6' };
   const VOL_SON = { pas:.5, choisir:.6, livre:.7, ok:.6, erreur:.6, miaou:.8, poser:.7, clic:.4, ouvrir:.55, fermer:.5, 'monstre-touche':.6 };
   let dernierSon = 0;
   let sonActif = localStorage.getItem('guilde-son') !== '0'; const BUFS = {};
