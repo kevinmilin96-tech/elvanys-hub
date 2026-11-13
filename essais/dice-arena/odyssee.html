@@ -107,11 +107,11 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261113-123859"></script>
-<script src="donnees.js?v=20261113-123859"></script>
-<script src="odyssee.js?v=20261113-123859"></script>
-<script src="pantheon.js?v=20261113-123859"></script>
-<script src="chronique.js?v=20261113-123859"></script>
+<script src="cartes.js?v=20261113-125342"></script>
+<script src="donnees.js?v=20261113-125342"></script>
+<script src="odyssee.js?v=20261113-125342"></script>
+<script src="pantheon.js?v=20261113-125342"></script>
+<script src="chronique.js?v=20261113-125342"></script>
 <script>
 // le moteur du Duel n'est pas chargé ici : les cartes de l'Odyssée appellent degats/soin seulement en combat (dans duel.html)
 const log = () => {}, degats = () => {}, soin = () => {}, altere = () => {}, invoque = () => {}, adv = () => ({}), fin = () => {};
@@ -348,6 +348,7 @@ function arrive(c) {
   if (c.t === 'autel' && !c.fait) { dialogue('autel'); autel(c); return; }
   if (c.t === 'feu' && !c.fait) { feuFen(c); return; }
   if (c.t === 'sac' && !c.fait) { sacFen(c); return; }
+  if (c.t === 'forge' && !c.fait) { forgeFen(c); return; }
   if (c.t === 'mur' && !c.fait) { dialogue('mur'); c.fait = true; const l = reliquesProposees(R, 2); sauve(); fenetre(`<h2>💎 La salle cachée</h2><p>Derrière le mur, une petite salle oubliée. Sur un socle, deux reliques : tu n’en emportes qu’une.</p><div class="choixv">${l.map(k => `<button onclick="prendRelique(R,'${k}');sauve();fermer();dessine()" ${R.reliques.length >= 3 ? 'disabled' : ''}>${RELIQUES[k].e} <b>${RELIQUES[k].n}</b><small>${RELIQUES[k].d}</small></button>`).join('')}</div>${R.reliques.length >= 3 ? '<p style="color:#ff7a7a">Tu portes déjà 3 reliques.</p>' : ''}<div class="choixh"><button onclick="fermer()">Laisser</button></div>`); return; }
 }
 function info(t, d) { fenetre(`<h2>${t}</h2><p>${d}</p><div class="choixh"><button onclick="fermer()">Compris</button></div>`); }
@@ -395,6 +396,29 @@ function feuFen(c) {
     <button onclick="feuRetirer(${c.x},${c.y})">Brûler une carte<small>ton deck s’allège</small></button></div><div class="choixh"><button onclick="fermer()">Plus tard</button></div>`);
 }
 function feuRetirer(x, y) { fenetre(`<h2>🏕 Brûler une carte</h2><div class="cartes3">${[...new Set(R.deck)].map(k => carteHTML(k, `retireCarte(R,'${k}');feuDeCamp(R,R.ile[${y}][${x}],'retirer');sauve();fermer();dessine()`)).join('')}</div><div class="choixh"><button onclick="feuFen(R.ile[${y}][${x}])">Retour</button></div>`); }
+// 13/11 : la Forge des dés : 1) un dé, 2) la face à remplacer, 3) la face spéciale ; une 2e face pour 40 or
+let FORGE_CHOIX = { de:-1, face:0 };
+function forgeFen(c, msg) {
+  const k = `R.ile[${c.y}][${c.x}]`, offre = forgeOffre(R, c), fg = R.forge || [{}, {}, {}, {}, {}], ch = FORGE_CHOIX;
+  const face = (de, f) => { const sp = fg[de] && fg[de][f]; const sel = ch.de === de && ch.face === f;
+    return `<span onclick="FORGE_CHOIX={de:${de},face:${f}};forgeFen(${k})" style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;margin:2px;border-radius:7px;cursor:pointer;font-weight:bold;background:${sp ? '#3a2a14' : '#2a2450'};border:2px solid ${sel ? '#7dffb0' : sp ? '#f3c96b' : '#4b4580'};${sel ? 'box-shadow:0 0 8px #7dffb0' : ''}">${sp ? FACES_FORGE[sp].e : f}</span>`; };
+  const etape = ch.de < 0 ? '1. Touche la face d’un dé que tu veux remplacer.' : `2. Le ${ch.face} du dé n° ${ch.de + 1} deviendra :`;
+  fenetre(`<h2>⚒ La Forge runique</h2>
+  ${c.nb ? '' : '<p style="font-style:italic">Corbin : « Une forge qui marche toute seule. Ne touche pas l’enclume. Moi, je l’ai touchée. Une fois. »</p>'}
+  <p>${c.nb ? `Une deuxième face ? <b>${FORGE_PRIX} or</b> (tu as 💰 ${R.or}).` : 'Remplace <b>une face</b> d’un de tes dés par une face spéciale, pour toute cette Odyssée. Gratuit.'}</p>
+  ${msg ? `<p style="color:#ff7a7a">${msg}</p>` : ''}
+  <div style="text-align:center">${[0, 1, 2, 3, 4].map(de => `<div><small style="color:var(--doux)">dé ${de + 1}</small> ${[1, 2, 3, 4, 5, 6].map(f => face(de, f)).join('')}</div>`).join('')}</div>
+  <p><b>${etape}</b></p>
+  <div class="choixv">${offre.map(code => `<button ${ch.de < 0 || (c.nb && R.or < FORGE_PRIX) ? 'disabled' : ''} onclick="forgeOk(${c.x},${c.y},'${code}')">${FACES_FORGE[code].e} <b>${FACES_FORGE[code].n}</b><small>${FACES_FORGE[code].d}</small></button>`).join('')}</div>
+  <div class="choixh"><button onclick="FORGE_CHOIX={de:-1,face:0};${c.nb ? `${k}.fait=true;sauve();` : ''}fermer();dessine()">${c.nb ? 'Partir' : 'Plus tard'}</button></div>`);
+}
+function forgeOk(x, y, code) {
+  const c = R.ile[y][x], e = forgeApplique(R, c, FORGE_CHOIX.de, FORGE_CHOIX.face, code);
+  FORGE_CHOIX = { de:-1, face:0 }; sauve(); dessine();
+  if (e) { forgeFen(c, e); return; }
+  if (c.fait) { fenetre(`<h2>⚒ La Forge refroidit</h2><p>Tes deux faces sont forgées. Elles sortiront de tes dés jusqu’à la fin de l’Odyssée.</p><div class="choixh"><button onclick="fermer()">Repartir</button></div>`); return; }
+  forgeFen(c);
+}
 // 13/11 : le sac de Corbin (Stop ou Encore)
 function sacFen(c, dernier) {
   const S2 = c.sac || { pot:0, m:0, des:[] }, k = `R.ile[${c.y}][${c.x}]`;

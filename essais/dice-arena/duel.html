@@ -609,7 +609,7 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261113-123859';
+const VERSION = '20261113-125342';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); location.replace('duel.html?v=' + v); }
@@ -628,10 +628,10 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261113-123859"></script>
-<script src="donnees.js?v=20261113-123859"></script>
-<script src="odyssee.js?v=20261113-123859"></script>
-<script src="chronique.js?v=20261113-123859"></script>
+<script src="cartes.js?v=20261113-125342"></script>
+<script src="donnees.js?v=20261113-125342"></script>
+<script src="odyssee.js?v=20261113-125342"></script>
+<script src="chronique.js?v=20261113-125342"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -1190,7 +1190,7 @@ function finOdyssee() {
   const defiOk = evalueDefi(J, d);
   if (run && run.combat && run.combat.id === S.ody.id) {
     run.combat.resultat = { gagne:S.fini === 'gagne', pv:Math.max(0, J.pv), tours:J.tours, defiOk, sacoche:[...J.sacoche], journal:[...S.log].reverse().slice(-60) };
-    run.pv = Math.max(0, J.pv); run.sacoche = [...J.sacoche]; ecrireOdyssee(run);
+    run.pv = Math.max(0, J.pv); run.sacoche = [...J.sacoche]; if (J.orForge) run.or = (run.or || 0) + J.orForge; ecrireOdyssee(run);
   }
   localStorage.removeItem('guilde-combat');
   fenetre(`<h2>${S.fini === 'gagne' ? '🏆 Victoire !' : '💀 Défaite…'}</h2><p>${J.nom} contre ${S.O.nom} : ${S.fini === 'gagne' ? 'gagné' : 'perdu'} en ${J.tours} tours.${d ? `<br>🎯 Défi « ${d.n} » : ${defiOk ? '<b style="color:#7dffb0">réussi, +30 or</b>' : 'raté'}.` : ''}</p>
@@ -1448,7 +1448,7 @@ function dessine() {
     <button class="sonbt ${musOn ? '' : 'off'}" onclick="basculeMusique()" aria-label="Musique" title="Musique"><svg viewBox="0 0 24 24"><path d="M9 17V5l11-2v12" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="6.5" cy="17.5" r="2.8" fill="currentColor"/><circle cx="17.5" cy="15.5" r="2.8" fill="currentColor"/>${musOn ? '' : '<path d="M3 3l18 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>'}</svg></button></span></div>
   <div class="plateau tapis unique ${S.lieu ? 'scene lieu-' + S.lieu : ''}">${barre(O, true)}${front(O, true)}${front(J, false)}${barre(J, false)}
     ${colonneActions(J, h)}
-    <div class="des" ontouchstart="glisseDebut(event)" ontouchend="glisseFin(event)">${J.des.map((d, i) => `<div class="d ${sel.includes(d) ? 'sel' : ''} ${d.pose ? 'pose' : ''} ${d.mod ? 'mod' : ''} ${J.aLancer ? 'cache' : ''} ${i === J.neuf && (J.aLancer || Date.now() < (J.neufJusque || 0)) ? 'neuf' : ''}" onclick="choisirDe(${i})"><img src="${FACE(J.id, d.v || 1)}" alt="${d.v || '?'}"><div class="sac">${i === J.neuf && (J.aLancer || Date.now() < (J.neufJusque || 0)) ? '✨ neuf' : sacPastilles(J, d)}</div></div>`).join('')}${[...Array(Math.max(0, 5 - J.des.length)).keys()].map(k => { const i = J.des.length + k, t = i - 1;
+    <div class="des" ontouchstart="glisseDebut(event)" ontouchend="glisseFin(event)">${J.des.map((d, i) => `<div class="d ${sel.includes(d) ? 'sel' : ''} ${d.pose ? 'pose' : ''} ${d.mod ? 'mod' : ''} ${J.aLancer ? 'cache' : ''} ${i === J.neuf && (J.aLancer || Date.now() < (J.neufJusque || 0)) ? 'neuf' : ''}" onclick="choisirDe(${i})"><img src="${FACE(J.id, d.v || 1)}" alt="${d.v || '?'}">${d.sp && !J.aLancer && typeof FACES_FORGE !== 'undefined' ? `<span class="spf">${FACES_FORGE[d.sp].e}</span>` : ''}<div class="sac">${i === J.neuf && (J.aLancer || Date.now() < (J.neufJusque || 0)) ? '✨ neuf' : sacPastilles(J, d)}</div></div>`).join('')}${[...Array(Math.max(0, 5 - J.des.length)).keys()].map(k => { const i = J.des.length + k, t = i - 1;
       return `<div class="d verrou"><div class="cad">🔒</div><div class="sac">${J.tours >= t ? 'Handicap' : 'tour ' + t}</div></div>`; }).join('')}</div>
     ${J.aLancer ? '<button class="lancer" onclick="lancerMesDes()">🎲 Lancer les dés</button>' : `<div class="bandeau">${bandeau}${sel.length || ciblage || attaquant ? ' <a href="#" onclick="annuler();return false" style="color:#f3c96b">Annuler</a>' : ''}</div>`}
     <div class="main" style="left:${ZONE_MAIN.x1}%;width:${ZONE_MAIN.x2 - ZONE_MAIN.x1}%;top:${ZONE_MAIN.y1}%;height:${ZONE_MAIN.y2 - ZONE_MAIN.y1}%" onclick="if(event.target===this){carteVue=null;rendu();}">${mainEnEventail(J)}</div>
@@ -1491,7 +1491,7 @@ function sacPastilles(J, d) {
   if (!d.sac || d.extra) return '';
   if (J.id === 'oria') return `<span class="sacoria">ensuite : ${d.sac.length ? d.sac.slice(0, 2).join(', ') : 'neuf'}</span>`;
   if (!d.sac.length) return '<span class="sacoria">sac neuf</span>';
-  return `<span class="sacp">${[1, 2, 3, 4, 5, 6].map(f => `<i class="${d.sac.includes(f) ? '' : 'u'}">${f}</i>`).join('')}</span>`;
+  const fg = typeof forgeDe === 'function' ? forgeDe(J, d) : null; return `<span class="sacp">${[1, 2, 3, 4, 5, 6].map(f => `<i class="${d.sac.includes(f) ? '' : 'u'}">${fg && fg[f] ? FACES_FORGE[fg[f]].e : f}</i>`).join('')}</span>`;
 }
 // anneaux autour du portrait : rouge = vie, trait bleu = Garde + Bouclier, or en 20 segments = Ultime, losanges = PC
 function anneauSVG(pv, max, prot, jauge, pc, fait, avant) {
@@ -1941,12 +1941,13 @@ async function joueFX() {
 // toucher l'écran pendant les animations les accélère
 document.addEventListener('pointerdown', () => { if (fxOn) fxVite = .3; }, true);
 </script>
-<script src="pantheon.js?v=20261113-123859"></script>
-<script src="tuto.js?v=20261113-123859"></script>
-<script src="deux.js?v=20261113-123859"></script>
-<script src="invasion.js?v=20261113-123859"></script>
-<script src="enigme-table.js?v=20261113-123859"></script>
-<script src="semaine.js?v=20261113-123859"></script>
-<script src="enigme.js?v=20261113-123859"></script>
+<script src="pantheon.js?v=20261113-125342"></script>
+<script src="tuto.js?v=20261113-125342"></script>
+<script src="deux.js?v=20261113-125342"></script>
+<script src="invasion.js?v=20261113-125342"></script>
+<script src="enigme-table.js?v=20261113-125342"></script>
+<script src="forge.js?v=20261113-125342"></script>
+<script src="semaine.js?v=20261113-125342"></script>
+<script src="enigme.js?v=20261113-125342"></script>
 </body>
 </html>

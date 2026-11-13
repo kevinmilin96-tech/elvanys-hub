@@ -243,6 +243,24 @@ function sacTire(r, c) {
   return v;
 }
 function sacStop(r, c) { if (c.fait || !c.sac) return; c.fait = true; r.or += c.sac.pot; r.journal.push(`🎲 Le sac de Corbin : +${c.sac.pot} or.`); }
+// 13/11 : LA FORGE DES DÉS (idée n° 2 de la R&D, forge-proposition.html validée) : remplacer UNE face d'un dé par une face spéciale,
+// pour toute l'Odyssée en cours. run.forge[dé][face] = code. Une face spéciale vaut toujours un chiffre (+ un bonus quand elle sort).
+const FACES_FORGE = {
+  soleil:{ e:'☀', n:'Soleil', v:6, d:'vaut 6, et +1 PC quand il sort.' },
+  ecu:{ e:'🛡', n:'Écu', v:3, d:'vaut 3, et +2 de Bouclier quand il sort.' },
+  joker:{ e:'✦', n:'Joker', v:6, d:'quand il sort, tu choisis sa valeur (touche le dé).' },
+  braise:{ e:'🔥', n:'Braise', v:5, d:'vaut 5 ; dans une Frappe ou une Technique, +2 dégâts.' },
+  piece:{ e:'🪙', n:'Pièce', v:2, d:'vaut 2, et +5 or quand il sort.' },
+};
+const FORGE_PRIX = 40;
+function forgeOffre(r, c) { if (!c.offre) { const l = Object.keys(FACES_FORGE).sort(() => Math.random() - .5); c.offre = l.slice(0, r.heros === 'maelle' ? 4 : 3); } return c.offre; }
+function forgeApplique(r, c, de, face, code) {
+  if (c.fait || !FACES_FORGE[code] || de < 0 || de > 4 || face < 1 || face > 6) return 'Choix impossible.';
+  if (c.nb && r.or < FORGE_PRIX) return `Il faut ${FORGE_PRIX} or pour une deuxième face.`;
+  if (c.nb) r.or -= FORGE_PRIX;
+  r.forge = r.forge || [{}, {}, {}, {}, {}]; r.forge[de][face] = code; c.nb = (c.nb || 0) + 1; if (c.nb >= 2) c.fait = true;
+  r.journal.push(`⚒ Forge : le ${face} du dé n° ${de + 1} devient ${FACES_FORGE[code].e} ${FACES_FORGE[code].n}.`);
+}
 // le feu de camp : se reposer (+30 % des PV), raviver la lanterne (+6 huile) ou retirer une carte (l'écran s'en occupe)
 function feuDeCamp(r, c, option) {
   if (c.fait) return false; c.fait = true;
@@ -440,7 +458,7 @@ const ILE_W = 7, ILE_H = 9;
 const SALLES_ODY = {
   roche:{ e:'', n:'Roche' }, chemin:{ e:'·', n:'Chemin' }, depart:{ e:'⛵', n:'Le débarcadère' }, monstre:{ e:'⚔', n:'Monstres' }, elite:{ e:'💀', n:'Élite' },
   coffre:{ e:'🗝', n:'Coffre' }, source:{ e:'💧', n:'Source' }, marchand:{ e:'🏪', n:'Marchand' }, evenement:{ e:'❓', n:'Événement' }, autel:{ e:'🔥', n:'Autel' },
-  mur:{ e:'🧱', n:'Mur fissuré' }, feu:{ e:'🏕', n:'Feu de camp' }, sac:{ e:'🎲', n:'Le sac de Corbin' }, porte:{ e:'🚪', n:'La porte du boss' }, boss:{ e:'👑', n:'Le Titan de feu' },
+  mur:{ e:'🧱', n:'Mur fissuré' }, feu:{ e:'🏕', n:'Feu de camp' }, sac:{ e:'🎲', n:'Le sac de Corbin' }, forge:{ e:'⚒', n:'Forge runique' }, porte:{ e:'🚪', n:'La porte du boss' }, boss:{ e:'👑', n:'Le Titan de feu' },
 };
 const voisins = (x, y) => [[x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]].filter(([a, b]) => a >= 0 && a < ILE_W && b >= 0 && b < ILE_H);
 function bfs(cases, dep, marche) {
@@ -480,7 +498,7 @@ function genereIle(graine, R0, acte) {
     const prend = (t, cond) => { const i = reste.findIndex(c => !cond || cond(c)); if (i < 0) return null; const c = reste.splice(i, 1)[0]; pose(c, t); return c; };
     const d = c => dist[c.x + ',' + c.y];
     prend('elite'); prend('elite');
-    prend('marchand', c => d(c) >= 3 && d(c) <= 8); prend('coffre'); prend('coffre'); prend('source'); prend('source', c => d(c) >= 6); prend('autel'); prend('feu', c => d(c) >= 5); prend('sac', c => d(c) >= 2);
+    prend('marchand', c => d(c) >= 3 && d(c) <= 8); prend('coffre'); prend('coffre'); prend('source'); prend('source', c => d(c) >= 6); prend('autel'); prend('feu', c => d(c) >= 5); prend('sac', c => d(c) >= 2); prend('forge', c => d(c) >= 3);
     prend('evenement'); prend('evenement'); prend('evenement');
     // monstres ailleurs : 40 % du reste
     reste.forEach(c => { if (R() < .4) pose(c, 'monstre'); });
