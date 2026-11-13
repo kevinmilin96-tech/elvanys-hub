@@ -8,7 +8,7 @@
 <title>La Guilde des Runes</title>
 <script>
 // Même mécanisme que le Duel : une nouvelle version = rechargement tout seul à l'ouverture (publier.sh change VERSION).
-const VERSION = '20261112-225408';
+const VERSION = '20261113-060831';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-menu-' + v)) { sessionStorage.setItem('recharge-menu-' + v, '1'); location.replace('menu.html?v=' + v); }
@@ -148,7 +148,7 @@ fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.te
 </div>
 <div id="flash"></div>
 
-<script src="donnees.js?v=20261112-225408"></script>
+<script src="donnees.js?v=20261113-060831"></script>
 <script>
 // ciel étoilé + runes du portail (symboles, pas des lettres), aux couleurs des héros
 const ciel = document.getElementById('ciel');
@@ -185,7 +185,7 @@ const ETAGES = {
   '':{ titre:'Le monde de la Guilde', sous:'Glisse, puis touche un portail pour y entrer.', portes:[
     { nom:'L’Arène', pro:'arene', vers:'arene', desc:'Les Duels : un héros contre un autre. Dés, cartes, créatures : le premier à zéro perd.' },
     { nom:'L’Odyssée', pro:'odyssee', vers:'odyssee', desc:'Seul sur une île : explore case par case, fais grandir ton deck, vaincs le gardien de l’île.' },
-    { nom:'Expéditions', pro:'expeditions', href:'expedition.html', desc:'Le navire volant : forme ton équipage, six escales, et regarde-le combattre tout seul (premier essai).' },
+    { nom:'Expéditions', pro:'expeditions', href:'expedition.html', desc:'Le navire volant (v2) : recrute, fusionne, place tes deux rangées, et regarde ton équipage affronter monstres et navires rivaux.' },
     { nom:'Le Campement', pro:'campement', href:'campement.html', desc:'Deux héros contre un boss géant : à deux sur ce téléphone, ou avec un compagnon (premier essai).' },
     { nom:'Tour des héros', pro:'tour', href:'heros.html', desc:'Les six héros, leurs pouvoirs, leurs dés et leurs cartes. Prépare ton deck.' },
   ] },

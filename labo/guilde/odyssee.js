@@ -136,10 +136,10 @@ Object.assign(BOSS, {
 });
 // les îles de l'Odyssée : ce qui change d'un acte à l'autre (monstres, élites, boss, décors des combats, textes)
 const ILES = {
-  brulees:{ acte:'Acte I', nom:'les Terres brûlées', court:'Terres brûlées', boss:'titan', bossNom:'Le Titan de feu',
+  brulees:{ dur:.95, acte:'Acte I', nom:'les Terres brûlées', court:'Terres brûlées', boss:'titan', bossNom:'Le Titan de feu',
     pools:[['gobelin', 'loup', 'salamandre'], ['loup', 'golem', 'salamandre', 'cultiste'], ['golem', 'cultiste', 'elementaire']], elites:['chefgobelin', 'drake', 'colosse'],
     lieux:{ monstre:'cendres', fort:'lave', elite:'ruines', boss:'cratere' }, evenements:null },
-  givre:{ acte:'Acte II', nom:'l’île du Givre', court:'Île du Givre', boss:'vouivre', bossNom:'La Vouivre des glaces',
+  givre:{ dur:1.12, acte:'Acte II', nom:'l’île du Givre', court:'Île du Givre', boss:'vouivre', bossNom:'La Vouivre des glaces',
     pools:[['lutin', 'loupblanc', 'esprit'], ['loupblanc', 'ours', 'esprit', 'chaman'], ['ours', 'chaman', 'golemglace']], elites:['yeti', 'harpie', 'sentinelle'],
     lieux:{ monstre:'neige', fort:'glace', elite:'cristal', boss:'sommet' }, evenements:['voyageur', 'autelbrise', 'marchandambulant', 'cartographe', 'statue', 'ermite', 'lacgele', 'cabane', 'aurore', 'traineau'] },
 };
@@ -209,7 +209,7 @@ Object.assign(BOSS, {
     ultime:{ n:'Le grand Vide', txt:'3 dés', d:'12 dégâts au héros, et le Vide le dévore tout de suite.', cond:vs => vs.length === 3, cible:'ennemi', f:J => { const D = adv(J); degats({ J:D }, 12); corrompt(D, 9); } },
     renforts:[] },
 });
-ILES.abime = { acte:'Acte III', nom:'l’Abîme du Vide', court:'Abîme du Vide', boss:'roi', bossNom:'Le Roi sans visage',
+ILES.abime = { dur:1.25, acte:'Acte III', nom:'l’Abîme du Vide', court:'Abîme du Vide', boss:'roi', bossNom:'Le Roi sans visage',
   pools:[['ombre', 'rongeur', 'oeil'], ['rongeur', 'oeil', 'chevalier', 'tisseuse'], ['chevalier', 'tisseuse', 'colossevide']], elites:['heraut', 'miroir', 'gardien'],
   lieux:{ monstre:'vide', fort:'faille', elite:'ruinesv', boss:'trone' }, evenements:['voyageur', 'autelbrise', 'marchandambulant', 'cartographe', 'statue', 'ermite', 'reflet', 'pontetoiles', 'voix', 'bibliotheque'] };
 const ACTES_CLE = 'guilde-actes';
