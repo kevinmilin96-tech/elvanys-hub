@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>La Guilde des Runes · Mon profil</title>
+<style>
+  :root { --or:#f3c96b; --texte:#f1ecff; --doux:#c9c1ea; }
+  * { box-sizing:border-box; }
+  body { margin:0; color:var(--texte); font:15px/1.45 Georgia, 'Times New Roman', serif; background:radial-gradient(ellipse at 50% -10%, #3a2a5c, #120f24 60%) fixed, #120f24; }
+  main { max-width:620px; margin:0 auto; padding:12px 12px 50px; }
+  .haut { display:flex; align-items:center; gap:8px; } .haut a { color:var(--doux); text-decoration:none; font-size:.9em; background:#221d42; border:1px solid #4b4580; border-radius:20px; padding:5px 12px; }
+  h1 { flex:1; margin:0; text-align:center; color:var(--or); font-size:1.4em; }
+  h2 { color:var(--or); font-size:1.08em; margin:18px 0 8px; border-bottom:1px solid #4b4580; padding-bottom:3px; }
+  .aide { color:var(--doux); font-size:.86em; margin:0 0 8px; }
+  .carte { display:flex; flex-direction:column; align-items:center; gap:6px; background:#1d1b3aee; border:1px solid #4b4580; border-radius:16px; padding:16px 10px 12px; margin-top:12px; }
+  .port { position:relative; width:110px; height:110px; }
+  .port img { width:110px; height:110px; border-radius:50%; object-fit:cover; display:block; box-shadow:0 0 0 3px #4b4580; transition:box-shadow .3s; }
+  .port .em { position:absolute; left:-4px; top:-4px; font-size:28px; filter:drop-shadow(0 2px 3px #000); }
+  .carte .nom { font-size:1.25em; font-weight:bold; } .carte .tit { color:var(--or); font-size:.92em; min-height:1.2em; }
+  .carte .h { color:var(--doux); font-size:.78em; }
+  input { font:inherit; width:100%; padding:9px 12px; border-radius:12px; border:1px solid #4b4580; background:#120f24; color:var(--texte); }
+  .grille { display:grid; grid-template-columns:repeat(4, 1fr); gap:8px; }
+  .cad { display:flex; flex-direction:column; align-items:center; gap:4px; background:#1d1b3aee; border:2px solid #4b4580; border-radius:12px; padding:8px 4px; font:inherit; color:var(--texte); font-size:.72em; text-align:center; }
+  .cad .rond { width:44px; height:44px; border-radius:50%; background:#2a2140; display:grid; place-items:center; font-size:20px; }
+  .cad.choisi { border-color:var(--or); background:#3a2f12; } .cad:disabled { opacity:.4; }
+  .ligne { display:flex; gap:10px; align-items:center; background:#1d1b3aee; border:2px solid #4b4580; border-radius:12px; padding:8px 10px; margin:6px 0; width:100%; font:inherit; color:var(--texte); text-align:left; }
+  .ligne .e { font-size:1.6em; width:38px; text-align:center; flex:none; } .ligne:disabled { opacity:.45; } .ligne small { display:block; color:var(--doux); }
+  .ligne.choisi { border-color:var(--or); background:#3a2f12; }
+  .tro { display:grid; grid-template-columns:1fr 1fr; gap:8px; } .tro div { background:#1d1b3aee; border:1px solid #4b4580; border-radius:12px; padding:8px; font-size:.86em; } .tro b { color:var(--or); display:block; font-size:1.05em; }
+  .lien { display:block; text-align:center; margin-top:10px; color:var(--or); }
+</style>
+</head>
+<body>
+<main>
+  <div class="haut"><a href="menu.html">‹ Menu</a><h1>👤 Mon profil</h1><a href="pantheon.html">Panthéon</a></div>
+  <div id="app"></div>
+</main>
+<script src="cartes.js?v=20261113-225946"></script>
+<script src="musique.js?v=20261113-225946"></script>
+<script src="donnees.js?v=20261113-225946"></script>
+<script src="odyssee.js?v=20261113-225946"></script>
+<script src="profil.js?v=20261113-225946"></script>
+<script src="pantheon.js?v=20261113-225946"></script>
+<script>
+const log = () => {};
+// héros de l'aperçu : le dernier joué (on peut en changer en touchant le portrait, pour voir le cadre sur chacun)
+const parties = JL('guilde-parties', []);
+let apercu = (parties.length && parties[parties.length - 1].moi) || 'gorm'; if (!HEROS[apercu]) apercu = 'gorm';
+function suivant() { const L = ORDRE.filter(id => id !== 'zephine' || localStorage.getItem('guilde-tuto') === 'fait'); apercu = L[(L.indexOf(apercu) + 1) % L.length]; dessine(); }
+function choisir(quoi, k) { const p = lireProfil(); p[quoi] = k; ecrireProfil(p); if (typeof GM !== 'undefined') GM.son('clic'); dessine(); }
+function nom(v) { const p = lireProfil(); p.nom = v; ecrireProfil(p); document.getElementById('nomv').textContent = v.trim() || 'Toi'; }
+function dessine() {
+  const p = lireProfil(), T = titresGuilde(), c = p.cadre !== 'aucun' && titreDe(p.cadre), t = p.titre && titreDe(p.titre), nb = T.filter(x => x[4]).length;
+  document.getElementById('app').innerHTML = `
+  <div class="carte">
+    <div class="port" onclick="suivant()"><img src="${IMG(apercu)}" alt="" style="${c ? `box-shadow:0 0 0 4px ${c[5]}, 0 0 22px ${c[5]}` : ''}">${c ? `<span class="em">${c[1]}</span>` : ''}</div>
+    <div class="nom" id="nomv">${p.nom || 'Toi'}</div><div class="tit">${t ? `${t[1]} ${t[2]}` : ''}</div>
+    <div class="h">C’est ainsi que tu apparais en combat · touche le portrait pour essayer un autre héros</div>
+  </div>
+  <h2>✏️ Mon nom</h2>
+  <input maxlength="18" placeholder="Ton nom d’aventurier (sinon : « Toi »)" value="${(p.nom || '').replace(/"/g, '&quot;')}" oninput="nom(this.value)">
+  <h2>🖼 Mon cadre</h2>
+  <p class="aide">Il entoure le portrait de ton héros pendant les combats, quel que soit le héros. Chaque titre gagné débloque son cadre.</p>
+  <div class="grille">
+    <button class="cad ${p.cadre === 'aucun' ? 'choisi' : ''}" onclick="choisir('cadre','aucun')"><span class="rond" style="box-shadow:0 0 0 2px #4b4580">—</span>Aucun</button>
+    ${T.map(x => `<button class="cad ${p.cadre === x[0] ? 'choisi' : ''}" ${x[4] ? '' : 'disabled'} onclick="choisir('cadre','${x[0]}')"><span class="rond" style="box-shadow:0 0 0 3px ${x[5]}, 0 0 10px ${x[5]}">${x[4] ? x[1] : '🔒'}</span>${x[2]}</button>`).join('')}
+  </div>
+  <h2>🎖 Mon titre · ${nb} sur ${T.length}</h2>
+  <p class="aide">Il s’affiche sous ton nom pendant les combats. Les titres verrouillés disent comment les gagner.</p>
+  <button class="ligne ${!p.titre ? 'choisi' : ''}" onclick="choisir('titre',null)"><div class="e">—</div><div><b>Pas de titre</b></div></button>
+  ${T.map(x => `<button class="ligne ${p.titre === x[0] ? 'choisi' : ''}" ${x[4] ? '' : 'disabled'} onclick="choisir('titre','${x[0]}')"><div class="e">${x[4] ? x[1] : '🔒'}</div><div><b>${x[2]}</b><small>${x[3]}</small></div></button>`).join('')}
+  <h2>🏆 Mes trophées</h2>
+  ${tropheesHTML()}
+  <a class="lien" href="pantheon.html">🏛 Le Panthéon : Tableau d’honneur et récompenses ›</a>`;
+}
+dessine();
+GM.musique('menu'); GM.bouton();
+</script>
+</body>
+</html>

@@ -25,34 +25,21 @@
 </head>
 <body>
 <main>
-  <div class="haut"><a href="menu.html">‹ Menu</a><h1>🏛 Le Panthéon</h1><a href="heros.html">Tour</a></div>
+  <div class="haut"><a href="menu.html">‹ Menu</a><h1>🏛 Le Panthéon</h1><a href="profil.html">Profil</a></div>
   <p class="intro">« Ici, la Guilde grave le nom de ceux qui ont tenu jusqu’au bout. »</p>
   <div id="app"></div>
 </main>
-<script src="cartes.js?v=20261113-225340"></script>
-<script src="musique.js?v=20261113-225340"></script>
-<script src="donnees.js?v=20261113-225340"></script>
-<script src="odyssee.js?v=20261113-225340"></script>
-<script src="pantheon.js?v=20261113-225340"></script>
+<script src="cartes.js?v=20261113-225946"></script>
+<script src="musique.js?v=20261113-225946"></script>
+<script src="donnees.js?v=20261113-225946"></script>
+<script src="odyssee.js?v=20261113-225946"></script>
+<script src="profil.js?v=20261113-225946"></script>
+<script src="pantheon.js?v=20261113-225946"></script>
 <script>
 const log = () => {};
 const J = (cle, def) => { try { return JSON.parse(localStorage.getItem(cle) || 'null') || def; } catch (e) { return def; } };
 function dessine() {
-  const P = lirePantheon(), parties = J('guilde-parties', []), actes = J('guilde-actes', {}), asc = J('guilde-ascension', {}), exp = J('guilde-expedition2-records', []), inv = J('guilde-invasion', {});
-  const v = id => parties.filter(p => p.moi === id && p.resultat === 'gagne').length;
-  // 13/11 : l'énigme du jour (guilde-enigmes = { 'AAAA-MM-JJ': { ok, essais } })
-  const eni = J('guilde-enigmes', {}), eniOk = Object.keys(eni).filter(k => eni[k].ok).sort();
-  const eniDim = eniOk.filter(k => new Date(k + 'T12:00:00').getDay() === 0).length, eniPremier = eniOk.filter(k => eni[k].essais === 1).length;
-  let eniSerieMax = 0, eniS = 0, eniAvant = null; eniOk.forEach(k => { const d = new Date(k + 'T12:00:00'); eniS = eniAvant && (d - eniAvant) / 864e5 === 1 ? eniS + 1 : 1; eniAvant = d; eniSerieMax = Math.max(eniSerieMax, eniS); });
-  const titres = [
-    [localStorage.getItem('guilde-tuto') === 'fait', '🎓', 'Diplômé de la Guilde', 'Finir le tutoriel avec Moustache.'],
-    [!!localStorage.getItem('guilde-odyssee-finie'), '🌟', 'Héros de l’Odyssée', 'Libérer les trois îles de l’Odyssée.'],
-    [Object.keys(P.heros).length > 0, '🌑', 'Briseur de Néant', 'Le titre de chaque héros inscrit au Tableau d’honneur.'],
-    [exp.some(r => r.parfait), '🌊', 'Traversée parfaite', 'Vaincre le Titan des Expéditions sans perdre un cœur.'],
-    [!!(inv.eveil && inv.reveil), '⚔️', 'Rempart de la Guilde', 'Gagner les deux actes de l’Invasion.'],
-    [Object.keys(J('guilde-sceaux', {})).length >= 10, '🔏', 'Gardien des sceaux', 'Gagner 10 Sceaux de la semaine (un par semaine, au Duel de la semaine).'],
-    [eniDim > 0, '🧩', 'Sphinx de la Guilde', 'Résoudre une énigme du dimanche (la plus redoutable de la semaine).'],
-  ];
+  const P = lirePantheon(), titres = titresGuilde().map(t => [t[4], t[1], t[2], t[3]]); // 14/11 : titres et trophées décrits une seule fois dans profil.js
   document.getElementById('app').innerHTML = `
   <h2>📜 Le Tableau d’honneur</h2>
   <p style="color:var(--doux);font-size:.88em">Un héros y est inscrit quand il termine l’Odyssée (l’Abîme du Vide). Il gagne +5 PV pour toutes ses Odyssées suivantes.</p>
@@ -64,16 +51,7 @@ function dessine() {
   ${Object.keys(RECOMPENSES).map(k => `<div class="ligne ${P.recompenses.includes(k) ? '' : 'non'}"><div class="e">${P.recompenses.includes(k) ? RECOMPENSES[k].e : '🔒'}</div><div><b>${RECOMPENSES[k].n}</b><small>${RECOMPENSES[k].d}</small></div></div>`).join('')}
   <div class="ligne ${roiDebloque() ? '' : 'non'}"><div class="e">${roiDebloque() ? '👑' : '🔒'}</div><div><b>Le défi du Roi sans visage</b><small>Dans l’Arène, affronte le Roi sans visage en Duel (débloqué par la première inscription au Tableau d’honneur).</small></div></div>
   <h2>🏆 Les trophées</h2>
-  <div class="tro">
-    <div><b>⚔️ L’Arène</b>${parties.filter(p => p.resultat === 'gagne').length} duels gagnés sur ${parties.length}<br><small>${ORDRE.filter(id => v(id)).map(id => `${HEROS[id].nom} ${v(id)}`).join(' · ') || '—'}</small></div>
-    <div><b>🏰 L’Odyssée</b>${['brulees', 'givre', 'abime'].map(a => `${a === 'brulees' ? 'Terres brûlées' : a === 'givre' ? 'Givre' : 'Abîme'} ${actes[a] ? '✅' : '⬜'}${asc[a] ? ` ⛰${asc[a]}` : ''}`).join('<br>')}</div>
-    <div><b>⛵ Les Expéditions</b>${exp.filter(r => r.gagne).length} gagnée${exp.filter(r => r.gagne).length > 1 ? 's' : ''} sur ${exp.length}<br><small>meilleur score : ${exp.length ? Math.max(...exp.map(r => r.score)) : '—'}</small></div>
-    <div><b>😈 Les Némésis</b>${+(localStorage.getItem('guilde-nemesis-vaincues') || 0)} vaincue${+(localStorage.getItem('guilde-nemesis-vaincues') || 0) > 1 ? 's' : ''}<br><small>${Object.entries(J('guilde-nemesis', {})).map(([h, n]) => `${HEROS[h].nom} ← ${HEROS[n.rival].nom} (niv. ${n.niv})`).join(' · ') || 'aucune en cours'}</small></div>
-    <div><b>🏰 La Défense de la porte</b>${J('guilde-defense', []).filter(x => x.gagne).length} victoire${J('guilde-defense', []).filter(x => x.gagne).length > 1 ? 's' : ''} sur ${J('guilde-defense', []).length}<br><small>meilleur score : ${Math.max(0, ...J('guilde-defense', []).map(x => x.score)) || '—'}</small></div>
-    <div><b>🔏 Les Sceaux de la semaine</b>${Object.keys(J('guilde-sceaux', {})).length} sceau${Object.keys(J('guilde-sceaux', {})).length > 1 ? 'x' : ''}<br><small>${Object.entries(J('guilde-sceaux', {})).sort().reverse().slice(0, 6).map(([k, v]) => `${k.slice(8, 10)}/${k.slice(5, 7)} ${v.regle}`).join(' · ') || 'aucun pour l’instant'}</small></div>
-    <div><b>🧩 L’énigme du jour</b>${eniOk.length} résolue${eniOk.length > 1 ? 's' : ''} · ${eniPremier} du premier coup<br><small>meilleure série : ${eniSerieMax} jour${eniSerieMax > 1 ? 's' : ''} · dimanches : ${eniDim}</small></div>
-    <div><b>🛡 L’Invasion</b>Acte I ${inv.eveil ? '✅' : '⬜'} · Acte II ${inv.reveil ? '✅' : '⬜'}<br><small>grands boss : ${['colosseracines', 'kraken', 'ignaros'].filter(k => inv[k]).map(k => HEROS[k].nom.split(',')[0]).join(', ') || '—'}</small></div>
-  </div>`;
+  ${tropheesHTML()}`;
 }
 dessine();
 // 13/11 soir : musique

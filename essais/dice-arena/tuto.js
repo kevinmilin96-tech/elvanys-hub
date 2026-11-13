@@ -175,7 +175,7 @@ function tutoMaj() {
 const _dessineTuto = dessine;
 dessine = function () { _dessineTuto(); diplomeBadge(); if (S && S.tuto) setTimeout(tutoMaj, 30); };
 addEventListener('resize', () => { if (S && S.tuto) tutoMaj(); });
-function diplomeBadge() { if (TUTO_FAIT()) { const b = document.getElementById('b-J'); if (b) b.classList.add('diplome'); } }
+function diplomeBadge() { if (typeof appliqueProfil === 'function') appliqueProfil(); } // 14/11 : le cadre (et le nom, le titre) viennent de « Mon profil » (profil.js)
 
 function partieTuto() {
   installeTuto();
