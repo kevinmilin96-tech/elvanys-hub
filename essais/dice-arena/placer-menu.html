@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="robots" content="noindex">
+<title>Placer le menu en portails · La Guilde des Runes</title>
+<style>
+  /* 13/11 : comme placer.html (le plateau), mais pour le MENU EN PORTAILS. L'utilisateur règle au curseur l'intérieur de l'arche
+     (où se pose l'illustration), la plaque du nom et la taille des portails, puis copie « PLACEMENT MENU {…} » pour Claude. Rien n'est envoyé. */
+  * { box-sizing:border-box; }
+  html, body { margin:0; background:#120f24; color:#fff; font:14px/1.3 Georgia, serif; }
+  .haut { padding:8px 10px; font-size:12.5px; background:#1d1626; } .haut b { color:#f3c96b; }
+  .scene { display:flex; justify-content:center; align-items:center; gap:3vw; padding:14px 0; overflow:hidden; background:radial-gradient(ellipse at 50% 108%, #3b2a5c 0%, #1a1433 45%, #0d0a1c 100%); }
+  .porte { flex:none; position:relative; aspect-ratio:848/1264; container-type:inline-size; }
+  .porte.cote { transform:scale(.8); filter:brightness(.65); }
+  .dedans { position:absolute; overflow:hidden; border-radius:50% 50% 0 0 / 30% 30% 0 0; background:#140f2a; outline:2px dashed #7dffb0; }
+  .dedans img { width:100%; height:100%; object-fit:cover; display:block; }
+  .arche { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
+  .plaque { position:absolute; display:flex; align-items:center; justify-content:center; text-align:center; font-weight:bold; color:#2b2346; line-height:1; outline:1px dashed #ff9a3c; }
+  .bas { padding:8px 10px; background:#1d1626; display:grid; gap:6px; }
+  .bas label { display:grid; grid-template-columns:150px 1fr 44px; align-items:center; gap:8px; font-size:12px; }
+  .bas output { text-align:right; color:#f3c96b; }
+  h3 { margin:6px 0 0; color:#f3c96b; font-size:13px; }
+  .bt { display:flex; gap:6px; } .bt button { flex:1; border:none; border-radius:10px; padding:10px; font:bold 13px Georgia; background:#3a3570; color:#fff; } .bt button.ok { background:#f3c96b; color:#1d1626; }
+  #msg { font-size:12px; color:#7dffb0; min-height:15px; text-align:center; }
+  textarea { width:100%; height:70px; font-size:11px; background:#0b0918; color:#c9c1ea; border:1px solid #4b4580; border-radius:8px; }
+</style>
+</head>
+<body>
+<div class="haut"><b>Le menu en portails</b> : règle les curseurs jusqu’à ce que l’illustration remplisse bien l’intérieur de l’arche (le pointillé vert) et que le nom tienne sur la plaque (le pointillé orange). Puis « Copier mes réglages » et colle-les-moi.</div>
+<div class="scene" id="scene"></div>
+<div class="bas" id="bas"></div>
+<script>
+// les réglages actuels du menu (menu.html), en % de l'image de l'arche
+const R0 = { largeur:72, ecart:4, inG:23.4, inH:16.4, inL:53.2, inHt:65.2, plG:16, plH:83.6, plL:68, plHt:9, police:7.2 };
+const R = Object.assign({}, R0, JSON.parse(localStorage.getItem('placement-menu') || '{}'));
+const CURSEURS = [
+  ['Les portails', null], ['largeur', 'Largeur d’un portail (% de l’écran)', 40, 90, 1], ['ecart', 'Écart entre portails', 0, 12, .5],
+  ['L’intérieur (illustration)', null], ['inG', 'Bord gauche', 0, 50, .2], ['inH', 'Haut', 0, 50, .2], ['inL', 'Largeur', 20, 90, .2], ['inHt', 'Hauteur', 20, 95, .2],
+  ['La plaque (le nom)', null], ['plG', 'Bord gauche', 0, 50, .2], ['plH', 'Haut', 60, 98, .2], ['plL', 'Largeur', 20, 100, .2], ['plHt', 'Hauteur', 3, 20, .2], ['police', 'Taille du texte', 3, 12, .1],
+];
+const porte = (cote, nom, img) => `<div class="porte ${cote ? 'cote' : ''}" style="width:min(${R.largeur}vw, 330px)">
+  <div class="dedans" style="left:${R.inG}%;top:${R.inH}%;width:${R.inL}%;height:${R.inHt}%"><img src="${img}" alt=""></div>
+  <img class="arche" src="menu-recu/arche-vide.webp?v=1" alt="">
+  <div class="plaque" style="left:${R.plG}%;top:${R.plH}%;width:${R.plL}%;height:${R.plHt}%;font-size:${R.police}cqw">${nom}</div></div>`;
+function dessine() {
+  document.getElementById('scene').style.gap = R.ecart + 'vw';
+  document.getElementById('scene').innerHTML = porte(true, 'Île du Givre', 'menu-recu/ody-givre.webp') + porte(false, 'Terres brûlées', 'menu-recu/ody-terres-brulees.webp') + porte(true, 'L’Abîme', 'menu-recu/mystere.webp');
+}
+document.getElementById('bas').innerHTML = CURSEURS.map(([k, t, a, b, p]) => t === null ? `<h3>${k}</h3>` : `<label>${t}<input type="range" min="${a}" max="${b}" step="${p}" value="${R[k]}" oninput="R['${k}']=+this.value;this.nextElementSibling.value=this.value;localStorage.setItem('placement-menu', JSON.stringify(R));dessine()"><output>${R[k]}</output></label>`).join('')
+  + `<div class="bt"><button onclick="localStorage.removeItem('placement-menu');location.reload()">↺ Revenir à l’actuel</button><button class="ok" onclick="copier()">📋 Copier mes réglages</button></div><div id="msg"></div><textarea id="txt" readonly></textarea>`;
+function copier() { const t = 'PLACEMENT MENU ' + JSON.stringify(R); document.getElementById('txt').value = t; (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => { document.getElementById('msg').textContent = '✅ Copié : colle-le dans la discussion avec Claude.'; }).catch(() => { document.getElementById('txt').select(); document.getElementById('msg').textContent = 'Sélectionne le texte ci-dessous et copie-le.'; }); }
+dessine();
+</script>
+</body>
+</html>
