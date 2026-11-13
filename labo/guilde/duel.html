@@ -646,7 +646,7 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261113-232803';
+const VERSION = '20261113-233342';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -665,11 +665,11 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261113-232803"></script>
-<script src="musique.js?v=20261113-232803"></script>
-<script src="donnees.js?v=20261113-232803"></script>
-<script src="odyssee.js?v=20261113-232803"></script>
-<script src="chronique.js?v=20261113-232803"></script>
+<script src="cartes.js?v=20261113-233342"></script>
+<script src="musique.js?v=20261113-233342"></script>
+<script src="donnees.js?v=20261113-233342"></script>
+<script src="odyssee.js?v=20261113-233342"></script>
+<script src="chronique.js?v=20261113-233342"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -1763,11 +1763,15 @@ function quitterPartie() {
 const PLATEAUX_ILE = { brulees:1, givre:1, abime:1 }; // îles dont le plateau est reçu
 // 14/11 : l'interface de chaque plateau d'île est PLACÉE PAR L'UTILISATEUR (placer.html?plateau=<île> → « PLACEMENT <ÎLE> {…} »), recopiée ici telle quelle.
 // Tant qu'une île n'a pas son placement, c'est celui du Duel qui sert. Le CSS est fabriqué à partir de ces chiffres (cssPlacement).
-const PLACEMENTS_ILE = {};
+const PLACEMENTS_ILE = {
+  // PLACEMENT BRULEES de l'utilisateur (14/11 ~0 h 15), recopié tel quel
+  brulees:{"taille_medaillon":11.5,"taille_portrait":16.9,"frappe":[14.52,31.02],"technique":[14.42,37.3],"garde":[14.56,43.61],"pouvoir":[14.51,49.97],"transmu":[14.47,56.21],"equipe":[14.44,62.5],"de_premier":[86.74,34.95],"de_dernier":[86.77,56.38],"portrait_haut":[50.38,14.41],"portrait_bas":[50.08,74.56],"coeur_haut":[17.8,19.69],"bouclier_haut":[27.7,19.94],"etiquettes_haut":[78.18,19.96],"coeur_bas":[17.28,72.9],"bouclier_bas":[27.92,72.79],"etiquettes_bas":[76.71,72.76],"main_haut_gauche":[25.89,84.67],"main_bas_droit":[85.56,96.52],"tailles":{"portrait_haut":106,"portrait_bas":96,"cadre_bas":88,"equipe":86,"transmu":86,"pouvoir":86,"garde":86,"technique":86,"frappe":86},"champ_haut_gauche":[23.67,28.49],"champ_bas_droit":[76.79,64.49],"cadre_haut":[50.16,14.99],"cadre_bas":[50.16,74.97]},
+};
 function zoneMain() { const R = S && plateauIle() && PLACEMENTS_ILE[plateauIle()]; return R && R.main_haut_gauche ? { x1:R.main_haut_gauche[0], y1:R.main_haut_gauche[1], x2:R.main_bas_droit[0], y2:R.main_bas_droit[1] } : ZONE_MAIN; }
 function cssPlacement(ile, R) {
   const P = `.plateau.tapis.unique.ile-${ile}:not(.scene)`, Q = `.unique.ile-${ile}`, m = R.taille_medaillon, p = R.taille_portrait, f = n => +n.toFixed(2);
-  const ic = ['frappe', 'technique', 'garde', 'pouvoir', 'transmu', 'equipe'].map((k, i) => `${Q} .colG .r${i + 1} { left:calc(${R[k][0]}cqw - ${f(m / 2)}cqw); top:calc(${R[k][1]}cqh - ${f(m / 2)}cqw); }`).join('\n');
+  const TT = k => ((R.tailles || {})[k] || 100) / 100;
+  const ic = ['frappe', 'technique', 'garde', 'pouvoir', 'transmu', 'equipe'].map((k, i) => { const mm = m * TT(k); return `${Q} .colG .r${i + 1} { left:calc(${R[k][0]}cqw - ${f(mm / 2)}cqw); top:calc(${R[k][1]}cqh - ${f(mm / 2)}cqw); width:${f(mm)}cqw; height:${f(mm)}cqw; }`; }).join('\n');
   const T = k => ((R.tailles || {})[k] || 100) / 100;
   // 14/11 : portrait et cadre séparés (chacun sa place et sa taille) ; les anneaux de vie et d'Ultime suivent le cadre
   const cote = (id, por, etq, coeur, bouc, cad, kp, kc) => { const p = R.taille_portrait * T(kp), bl = por[0] - p / 2, pl = etq[0] - bl - 13.7, cs = R.taille_portrait * 1.732 * T(kc), c = cad || por;
@@ -2088,14 +2092,14 @@ async function joueFX() {
 // toucher l'écran pendant les animations les accélère
 document.addEventListener('pointerdown', () => { if (fxOn && !(S && S.tuto)) fxVite = .5; }, true); // 14/11 : plus d'accélération dans le tutoriel
 </script>
-<script src="profil.js?v=20261113-232803"></script>
-<script src="pantheon.js?v=20261113-232803"></script>
-<script src="tuto.js?v=20261113-232803"></script>
-<script src="deux.js?v=20261113-232803"></script>
-<script src="invasion.js?v=20261113-232803"></script>
-<script src="enigme-table.js?v=20261113-232803"></script>
-<script src="forge.js?v=20261113-232803"></script>
-<script src="semaine.js?v=20261113-232803"></script>
-<script src="enigme.js?v=20261113-232803"></script>
+<script src="profil.js?v=20261113-233342"></script>
+<script src="pantheon.js?v=20261113-233342"></script>
+<script src="tuto.js?v=20261113-233342"></script>
+<script src="deux.js?v=20261113-233342"></script>
+<script src="invasion.js?v=20261113-233342"></script>
+<script src="enigme-table.js?v=20261113-233342"></script>
+<script src="forge.js?v=20261113-233342"></script>
+<script src="semaine.js?v=20261113-233342"></script>
+<script src="enigme.js?v=20261113-233342"></script>
 </body>
 </html>
