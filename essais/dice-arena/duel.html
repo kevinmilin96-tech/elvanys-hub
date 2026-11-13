@@ -609,7 +609,7 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261113-060831';
+const VERSION = '20261113-061115';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); location.replace('duel.html?v=' + v); }
@@ -628,10 +628,10 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261113-060831"></script>
-<script src="donnees.js?v=20261113-060831"></script>
-<script src="odyssee.js?v=20261113-060831"></script>
-<script src="chronique.js?v=20261113-060831"></script>
+<script src="cartes.js?v=20261113-061115"></script>
+<script src="donnees.js?v=20261113-061115"></script>
+<script src="odyssee.js?v=20261113-061115"></script>
+<script src="chronique.js?v=20261113-061115"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -1116,7 +1116,10 @@ function prepareCombatOdyssee(run, cb, auto) {
   // un héros rival en Odyssée : un duel plus court (60 % de ses PV), avec son renfort d'élite
   else { pioche(O, 5); O.pc = 3; O.pv = O.pvMax = Math.round(h.pv * .5); if (cb.renfort === 'pc') O.pc += 2; if (cb.renfort === 'pv') { O.pv += 6; O.pvMax += 6; } if (cb.renfort === 'bouclier') O.bouclier = 5; }
   // 13/11 : la difficulté monte d'île en île (coefficient sur les PV des ennemis, réglé au simulateur)
-  { const dur = (typeof ILES !== 'undefined' && ILES[run.acte || 'brulees'] && ILES[run.acte || 'brulees'].dur) || 1; if (typeof DUR_TEST === 'number') O.pvMax = Math.round(O.pvMax * DUR_TEST); else O.pvMax = Math.round(O.pvMax * dur); O.pv = O.pvMax; }
+  { const dur = (typeof ILES !== 'undefined' && ILES[run.acte || 'brulees'] && ILES[run.acte || 'brulees'].dur) || 1; if (typeof DUR_TEST === 'number') O.pvMax = Math.round(O.pvMax * DUR_TEST); else O.pvMax = Math.round(O.pvMax * dur);
+    // l'Ascension : +10 % à tous, +15 % aux élites (2), +15 % au gardien (5), un dé de plus (9)
+    const A = run.asc || 0; if (A >= 1) O.pvMax = Math.round(O.pvMax * 1.1); if (A >= 2 && cb.type === 'elite') O.pvMax = Math.round(O.pvMax * 1.15); if (A >= 5 && cb.type === 'boss') O.pvMax = Math.round(O.pvMax * 1.15); if (A >= 9) O.desMax = Math.min(5, (O.desMax || 5) + 1);
+    O.pv = O.pvMax; }
   log(`${S.ody.titre} : ${O.nom}. Salle : ${S.salle.n}. ${S.salle.d}`);
   if (S.ody.defi) log(`🎯 Défi : ${S.ody.defi.n} — ${S.ody.defi.d}`);
   sel = []; attaquant = null; ciblage = null;
@@ -1921,7 +1924,7 @@ async function joueFX() {
 // toucher l'écran pendant les animations les accélère
 document.addEventListener('pointerdown', () => { if (fxOn) fxVite = .3; }, true);
 </script>
-<script src="tuto.js?v=20261113-060831"></script>
-<script src="deux.js?v=20261113-060831"></script>
+<script src="tuto.js?v=20261113-061115"></script>
+<script src="deux.js?v=20261113-061115"></script>
 </body>
 </html>

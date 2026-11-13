@@ -104,6 +104,12 @@ const CHRON_GIVRE = {
 };
 
 // ----------------------------------------------------------------------------------------------- ACTE III : l'Abîme du Vide (12/11 nuit, textes neufs de Claude, à valider)
+// la page de fin de l'Odyssée (13/11, décision de l'utilisateur), montrée la première fois que l'acte III est gagné
+const CHRON_FIN = h => ({ sur:'L’Odyssée', titre:'Ce qu’on racontera', illu:{ cle:'fin-odyssee', fond:'or', sym:'🌟' }, texte:[
+  `Trois îles. Le feu des Terres brûlées, le froid du Givre, le silence de l’Abîme. ${h} est rentré à la Guilde par la grande porte, et pour une fois, personne n’a rien demandé : on a juste ouvert le livre des héros à une page blanche.`,
+  'Corbin a raconté l’histoire trois fois le premier soir. À la troisième, il avait vaincu le Roi sans visage tout seul, d’un coup de bec. Personne ne l’a contredit.',
+  'Les îles, elles, ne sont pas finies : elles attendent ceux qui veulent monter plus haut. L’Ascension commence.' ],
+  cit:'« Héros de l’Odyssée. Ça sonne bien. Corbin, l’assistant du héros de l’Odyssée, ça sonne bien aussi. »' });
 const CHRON_ABIME = {
   arrivee: h => ({ sur:'L’Odyssée · Acte III', titre:'L’Abîme du Vide', illu:{ cle:'abime', fond:'vide2', sym:'🌀' }, texte:[
     `La boussole a mené le navire au bord du monde. Ici, la mer ne finit pas : elle tombe. ${h} saute sur une île brisée qui flotte au-dessus d’un gouffre sans fond, et le navire recule aussitôt, comme s’il avait peur.`,

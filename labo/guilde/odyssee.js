@@ -136,7 +136,7 @@ Object.assign(BOSS, {
 });
 // les îles de l'Odyssée : ce qui change d'un acte à l'autre (monstres, élites, boss, décors des combats, textes)
 const ILES = {
-  brulees:{ dur:.95, acte:'Acte I', nom:'les Terres brûlées', court:'Terres brûlées', boss:'titan', bossNom:'Le Titan de feu',
+  brulees:{ dur:1.1, acte:'Acte I', nom:'les Terres brûlées', court:'Terres brûlées', boss:'titan', bossNom:'Le Titan de feu',
     pools:[['gobelin', 'loup', 'salamandre'], ['loup', 'golem', 'salamandre', 'cultiste'], ['golem', 'cultiste', 'elementaire']], elites:['chefgobelin', 'drake', 'colosse'],
     lieux:{ monstre:'cendres', fort:'lave', elite:'ruines', boss:'cratere' }, evenements:null },
   givre:{ dur:1.12, acte:'Acte II', nom:'l’île du Givre', court:'Île du Givre', boss:'vouivre', bossNom:'La Vouivre des glaces',
@@ -209,9 +209,36 @@ Object.assign(BOSS, {
     ultime:{ n:'Le grand Vide', txt:'3 dés', d:'12 dégâts au héros, et le Vide le dévore tout de suite.', cond:vs => vs.length === 3, cible:'ennemi', f:J => { const D = adv(J); degats({ J:D }, 12); corrompt(D, 9); } },
     renforts:[] },
 });
-ILES.abime = { dur:1.25, acte:'Acte III', nom:'l’Abîme du Vide', court:'Abîme du Vide', boss:'roi', bossNom:'Le Roi sans visage',
+ILES.abime = { dur:1.15, acte:'Acte III', nom:'l’Abîme du Vide', court:'Abîme du Vide', boss:'roi', bossNom:'Le Roi sans visage',
   pools:[['ombre', 'rongeur', 'oeil'], ['rongeur', 'oeil', 'chevalier', 'tisseuse'], ['chevalier', 'tisseuse', 'colossevide']], elites:['heraut', 'miroir', 'gardien'],
   lieux:{ monstre:'vide', fort:'faille', elite:'ruinesv', boss:'trone' }, evenements:['voyageur', 'autelbrise', 'marchandambulant', 'cartographe', 'statue', 'ermite', 'reflet', 'pontetoiles', 'voix', 'bibliotheque'] };
+
+// ================================================================== 13/11 : le MODE ASCENSION (décision de l'utilisateur) : chaque victoire sur une île débloque le cran suivant
+// pour cette île (10 au plus). Les crans s'ajoutent les uns aux autres.
+const ASCENSION = [
+  null,
+  { n:'Des ennemis plus coriaces', d:'Tous les ennemis ont 10 % de PV en plus.' },
+  { n:'Des élites redoutables', d:'Les élites ont encore 15 % de PV en plus.' },
+  { n:'La lanterne à moitié vide', d:'Tu pars avec 4 doses d’huile de moins.' },
+  { n:'Des sources tièdes', d:'Les sources rendent 15 PV au lieu de 20.' },
+  { n:'Un gardien en colère', d:'Le gardien de l’île a encore 15 % de PV en plus.' },
+  { n:'Un butin maigre', d:'Les combats rapportent 20 % d’or en moins.' },
+  { n:'Moins de choix', d:'Après un combat, 2 cartes au choix au lieu de 3.' },
+  { n:'Le mauvais œil', d:'Tu pars avec une malédiction.' },
+  { n:'Des ennemis nombreux', d:'Les monstres lancent un dé de plus (5 au plus).' },
+  { n:'Le dernier souffle', d:'Ton héros a 10 % de PV en moins.' },
+];
+const ASC_CLE = 'guilde-ascension';
+const ascMax = acte => { try { return (JSON.parse(localStorage.getItem(ASC_CLE) || '{}')[acte || 'brulees']) || 0; } catch (e) { return 0; } };
+const asc = (r, n) => (r && r.asc || 0) >= n;
+// le feu de camp : se reposer (+30 % des PV), raviver la lanterne (+6 huile) ou retirer une carte (l'écran s'en occupe)
+function feuDeCamp(r, c, option) {
+  if (c.fait) return false; c.fait = true;
+  if (option === 'repos') { const a = r.pv; r.pv = Math.min(r.pvMax, r.pv + Math.round(r.pvMax * .3)); r.journal.push(`🏕 Au coin du feu : +${r.pv - a} PV.`); }
+  if (option === 'huile') { r.vivres += 6; r.journal.push('🏕 La lanterne se ravive au feu : +6 huile.'); }
+  if (option === 'retirer') r.journal.push('🏕 Une carte brûle dans le feu de camp.');
+  return true;
+}
 const ACTES_CLE = 'guilde-actes';
 const actesFaits = () => { try { return JSON.parse(localStorage.getItem(ACTES_CLE) || '{}'); } catch (e) { return {}; } };
 function braiseTitan(D) { D.braiseT = (D.braiseT || 0) + 1; log(`🔥 Braise ${D.braiseT}/3 sur ${D.nom}.`); if (D.braiseT >= 3) { D.braiseT = 0; log('🔥 Les Braises explosent : 6 dégâts !'); degats({ J:D }, 6, true); } }
@@ -377,7 +404,7 @@ const ILE_W = 7, ILE_H = 9;
 const SALLES_ODY = {
   roche:{ e:'', n:'Roche' }, chemin:{ e:'·', n:'Chemin' }, depart:{ e:'⛵', n:'Le débarcadère' }, monstre:{ e:'⚔', n:'Monstres' }, elite:{ e:'💀', n:'Élite' },
   coffre:{ e:'🗝', n:'Coffre' }, source:{ e:'💧', n:'Source' }, marchand:{ e:'🏪', n:'Marchand' }, evenement:{ e:'❓', n:'Événement' }, autel:{ e:'🔥', n:'Autel' },
-  mur:{ e:'🧱', n:'Mur fissuré' }, porte:{ e:'🚪', n:'La porte du boss' }, boss:{ e:'👑', n:'Le Titan de feu' },
+  mur:{ e:'🧱', n:'Mur fissuré' }, feu:{ e:'🏕', n:'Feu de camp' }, porte:{ e:'🚪', n:'La porte du boss' }, boss:{ e:'👑', n:'Le Titan de feu' },
 };
 const voisins = (x, y) => [[x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]].filter(([a, b]) => a >= 0 && a < ILE_W && b >= 0 && b < ILE_H);
 function bfs(cases, dep, marche) {
@@ -417,7 +444,7 @@ function genereIle(graine, R0, acte) {
     const prend = (t, cond) => { const i = reste.findIndex(c => !cond || cond(c)); if (i < 0) return null; const c = reste.splice(i, 1)[0]; pose(c, t); return c; };
     const d = c => dist[c.x + ',' + c.y];
     prend('elite'); prend('elite');
-    prend('marchand', c => d(c) >= 3 && d(c) <= 8); prend('coffre'); prend('coffre'); prend('source'); prend('source', c => d(c) >= 6); prend('autel');
+    prend('marchand', c => d(c) >= 3 && d(c) <= 8); prend('coffre'); prend('coffre'); prend('source'); prend('source', c => d(c) >= 6); prend('autel'); prend('feu', c => d(c) >= 5);
     prend('evenement'); prend('evenement'); prend('evenement');
     // monstres ailleurs : 40 % du reste
     reste.forEach(c => { if (R() < .4) pose(c, 'monstre'); });
@@ -457,14 +484,18 @@ function ecrireOdyssee(r) { if (r) localStorage.setItem(ODY_CLE, JSON.stringify(
 function lireCollection() { try { return JSON.parse(localStorage.getItem(COLLECTION_CLE) || '[]'); } catch (e) { return []; } }
 function ajouteCollection(cles) { const c = lireCollection(); let n = 0; cles.forEach(k => { if (!c.includes(k) && CARTES[k] && rarete(k) !== 'm') { c.push(k); n++; } }); localStorage.setItem(COLLECTION_CLE, JSON.stringify(c)); return n; }
 function lireRecords() { try { return JSON.parse(localStorage.getItem(RECORDS_CLE) || '[]'); } catch (e) { return []; } }
-function nouvelleOdyssee(heros, graine, acte) {
+function nouvelleOdyssee(heros, graine, acte, niveau) {
   acte = ILES[acte] ? acte : 'brulees';
   graine = graine || ('ile-' + Math.random().toString(36).slice(2, 8));
   const ile = genereIle(graine, null, acte); if (!ile) return null;
   const h = HEROS[heros], pv = Math.round(h.pv * 1.8); // en Odyssée le héros a 1,8 × ses PV du Duel (le papier disait 75 pour 44) : il enchaîne 5 à 6 combats sans soin automatique
-  return { v:1, heros, graine, acte, ile:ile.cases, pos:{ ...ile.dep }, porte:ile.porte, bossPos:ile.boss, direct:ile.direct, debut:Date.now(),
+  const run = { v:1, heros, graine, acte, asc:Math.max(0, Math.min(10, niveau || 0)), ile:ile.cases, pos:{ ...ile.dep }, porte:ile.porte, bossPos:ile.boss, direct:ile.direct, debut:Date.now(),
     pv, pvMax:pv, or:OR_DEPART, vivres:VIVRES_DEPART, deck:deckBase(heros), reliques:[], sacoche:['soin'], benes:[], males:[], fragments:0, cles:0,
-    stats:{ cases:1, combats:0, victoires:0, tours:0, defis:0, cartesVues:[] }, combat:null, journal:[`Débarquement sur ${ILES[acte].nom} (${h.nom}).`] };
+    stats:{ cases:1, combats:0, victoires:0, tours:0, defis:0, cartesVues:[] }, combat:null, journal:[`Débarquement sur ${ILES[acte].nom} (${h.nom})${niveau ? ` · Ascension ${niveau}` : ''}.`] };
+  if (asc(run, 3)) run.vivres -= 4;
+  if (asc(run, 8)) donneMalediction(run, Object.keys(MALEDICTIONS)[0]);
+  if (asc(run, 10)) { run.pvMax = Math.round(run.pvMax * .9); run.pv = run.pvMax; }
+  return run;
 }
 // la vie, bornée ; le deck effectif en combat = run.deck (les malédictions y sont déjà)
 const pvMaxEffectif = r => r.pvMax;
@@ -507,11 +538,12 @@ function recompenseCombat(r) {
   c.fait = true; r.stats.victoires++;
   let or = cb.type === 'boss' ? 150 : cb.type === 'elite' ? 80 : 40;
   if (r.reliques.includes('bourse')) or += 10; if (r.benes.includes('bourse')) or += 15; if (res.defiOk) { or += 30; r.stats.defis++; }
+  if (asc(r, 6)) or = Math.round(or * .8);
   r.or += or;
   const out = { gagne:true, or, defiOk:res.defiOk, ennemi:HEROS[cb.ennemi].nom, type:cb.type };
   if (cb.type === 'elite') { r.fragments++; r.cles++; out.fragment = true; if (r.sacoche.length < 2) { r.sacoche.push('soin'); out.potion = true; } }
   if (cb.type === 'boss') { out.boss = true; r.journal.push(`👑 ${ILE(r).bossNom} est tombé${r.acte === 'givre' ? 'e' : ''} ! +${or} or.`); return out; }
-  out.draft = draft(hasard(r), cb.type === 'elite' ? 1 : 0, r.deck, r.heros);
+  out.draft = draft(hasard(r), cb.type === 'elite' ? 1 : 0, r.deck, r.heros); if (asc(r, 7)) out.draft = out.draft.slice(0, 2);
   r.journal.push(`🏆 ${out.ennemi} vaincu : +${or} or${out.fragment ? ', un fragment de rune et une clé' : ''}.`);
   return out;
 }
@@ -538,7 +570,7 @@ function autelOptions(r, c) { if (!c.offre) { const R = hasard(r); c.offre = { b
 function donneBenediction(r, b) { if (r.benes.includes(b)) return; r.benes.push(b); if (b === 'vie') { r.pvMax += 6; r.pv += 6; } r.journal.push(`✨ Bénédiction : ${BENEDICTIONS[b].n}.`); }
 function donneMalediction(r, m) { r.males.push(m); const M = MALEDICTIONS[m]; if (M.carte) r.deck.push(M.carte); if (m === 'frele') { r.pvMax = Math.max(10, r.pvMax - 5); r.pv = Math.min(r.pv, r.pvMax); } r.journal.push(`🕯 Malédiction : ${M.n}.`); }
 function autelChoisit(r, c, b) { const o = autelOptions(r, c); if (!o.benes.includes(b)) return false; donneBenediction(r, b); donneMalediction(r, o.male); c.fait = true; return true; }
-function source(r, c, option) { if (c.fait) return false; c.fait = true; if (option === 'soin') { const a = r.pv; r.pv = Math.min(r.pvMax, r.pv + 20); r.journal.push(`💧 La source rend ${r.pv - a} PV.`); } else { const k = r.deck.find(x => rarete(x) === 'm'); if (k) retireCarte(r, k); } return true; }
+function source(r, c, option) { if (c.fait) return false; c.fait = true; if (option === 'soin') { const a = r.pv; r.pv = Math.min(r.pvMax, r.pv + (asc(r, 4) ? 15 : 20)); r.journal.push(`💧 La source rend ${r.pv - a} PV.`); } else { const k = r.deck.find(x => rarete(x) === 'm'); if (k) retireCarte(r, k); } return true; }
 const reliquesIle = r => Object.keys(RELIQUES).filter(k => !RELIQUES[k].ile || RELIQUES[k].ile === (r.acte || 'brulees'));
 function reliquesProposees(r, n) { const R = hasard(r); return brasse(R, reliquesIle(r).filter(k => !r.reliques.includes(k))).slice(0, n || 2); }
 function prendRelique(r, k) { if (r.reliques.includes(k) || r.reliques.length >= 3) return false; r.reliques.push(k); r.journal.push(`💎 ${RELIQUES[k].n} !`); return true; }
@@ -571,9 +603,15 @@ function finOdysseeRun(r, gagne) {
   const base = deckBase(r.heros), nouvelles = r.deck.filter(k => !base.includes(k) && rarete(k) !== 'm');
   const ajoutees = typeof localStorage !== 'undefined' ? ajouteCollection([...new Set([...nouvelles, ...r.stats.cartesVues])]) : 0;
   if (gagne && typeof localStorage !== 'undefined') { const a = actesFaits(); a[r.acte || 'brulees'] = true; localStorage.setItem(ACTES_CLE, JSON.stringify(a)); }
-  const rec = { quand:new Date().toISOString(), acte:r.acte || 'brulees', heros:r.heros, gagne, score, cases:r.stats.cases, combats:r.stats.combats, victoires:r.stats.victoires, tours:r.stats.tours, defis:r.stats.defis, or:r.or, duree, graine:r.graine, pv:r.pv };
+  let ascNouveau = 0, premiereFin = false;
+  if (gagne && typeof localStorage !== 'undefined') {
+    const A = JSON.parse(localStorage.getItem(ASC_CLE) || '{}'), k = r.acte || 'brulees', n = Math.min(10, (r.asc || 0) + 1);
+    if (n > (A[k] || 0)) { A[k] = n; ascNouveau = n; localStorage.setItem(ASC_CLE, JSON.stringify(A)); }
+    if (k === 'abime' && !localStorage.getItem('guilde-odyssee-finie')) { localStorage.setItem('guilde-odyssee-finie', '1'); premiereFin = true; }
+  }
+  const rec = { quand:new Date().toISOString(), acte:r.acte || 'brulees', asc:r.asc || 0, heros:r.heros, gagne, score, cases:r.stats.cases, combats:r.stats.combats, victoires:r.stats.victoires, tours:r.stats.tours, defis:r.stats.defis, or:r.or, duree, graine:r.graine, pv:r.pv };
   if (typeof localStorage !== 'undefined') { const l = lireRecords(); l.unshift(rec); localStorage.setItem(RECORDS_CLE, JSON.stringify(l.slice(0, 50))); ecrireOdyssee(null); }
-  return { ...rec, ajoutees, nouvelles };
+  return { ...rec, ajoutees, nouvelles, ascNouveau, premiereFin };
 }
 
 // ----------------------------------------------------------------------------------------------- pilote automatique (simulations d'équilibrage : l'ordinateur explore l'île)
