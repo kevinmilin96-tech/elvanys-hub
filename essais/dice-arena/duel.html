@@ -609,7 +609,7 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261113-071331';
+const VERSION = '20261113-102301';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); location.replace('duel.html?v=' + v); }
@@ -628,10 +628,10 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261113-071331"></script>
-<script src="donnees.js?v=20261113-071331"></script>
-<script src="odyssee.js?v=20261113-071331"></script>
-<script src="chronique.js?v=20261113-071331"></script>
+<script src="cartes.js?v=20261113-102301"></script>
+<script src="donnees.js?v=20261113-102301"></script>
+<script src="odyssee.js?v=20261113-102301"></script>
+<script src="chronique.js?v=20261113-102301"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -1640,7 +1640,7 @@ function adversaire() {
   <button onclick="fermer();nouvellePartie(monHeros);regles()" style="display:flex;align-items:center;justify-content:center;font-size:2em;min-height:110px">🎲<br><span style="font-size:.4em">au hasard</span></button></div>
   ${typeof roiDebloque === 'function' && roiDebloque() ? `<div class="choixh"><button onclick="fermer();nouvellePartie(monHeros,'roi');regles()" style="border-color:#a855f7">👑 Défier le Roi sans visage (Panthéon)</button></div>` : ''}`);
 }
-if (typeof document !== 'undefined' && document.getElementById('app')) { const q = new URLSearchParams(location.search); if (q.get('tuto')) addEventListener('load', () => partieTuto()); else if (q.get('deux')) addEventListener('load', () => deuxAccueil()); else if (q.get('odyssee')) setTimeout(partieOdyssee, 0); else if (q.get('campement')) setTimeout(partieCampement, 0); else if (q.get('parties')) mesParties(); else if (q.get('h') && HEROS[q.get('h')]) { monHeros = q.get('h'); adversaire(); } else accueil(); }
+if (typeof document !== 'undefined' && document.getElementById('app')) { const q = new URLSearchParams(location.search); if (q.get('tuto')) addEventListener('load', () => partieTuto()); else if (q.get('enigme')) addEventListener('load', () => partieEnigme(q.get('enigme'))); else if (q.get('deux')) addEventListener('load', () => deuxAccueil()); else if (q.get('odyssee')) setTimeout(partieOdyssee, 0); else if (q.get('campement')) setTimeout(partieCampement, 0); else if (q.get('parties')) mesParties(); else if (q.get('h') && HEROS[q.get('h')]) { monHeros = q.get('h'); adversaire(); } else accueil(); }
 
 // =============================================================================================== animations et sons
 // Les sons sont fabriqués par le téléphone (aucun fichier) ; 🔊 / 🔇 dans la barre de la salle.
@@ -1938,9 +1938,11 @@ async function joueFX() {
 // toucher l'écran pendant les animations les accélère
 document.addEventListener('pointerdown', () => { if (fxOn) fxVite = .3; }, true);
 </script>
-<script src="pantheon.js?v=20261113-071331"></script>
-<script src="tuto.js?v=20261113-071331"></script>
-<script src="deux.js?v=20261113-071331"></script>
-<script src="invasion.js?v=20261113-071331"></script>
+<script src="pantheon.js?v=20261113-102301"></script>
+<script src="tuto.js?v=20261113-102301"></script>
+<script src="deux.js?v=20261113-102301"></script>
+<script src="invasion.js?v=20261113-102301"></script>
+<script src="enigme-table.js?v=20261113-102301"></script>
+<script src="enigme.js?v=20261113-102301"></script>
 </body>
 </html>
