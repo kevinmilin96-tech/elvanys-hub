@@ -9,7 +9,11 @@ const VOIX = {
   moustache2: { n:'Moustache · très aigu',        src:'siwis', r:2.5,  v:.16, pas:.05,  g:1 },
   moustache3: { n:'Moustache · plus doux',        src:'siwis', r:1.6,  v:.08, pas:.065, g:1 },
   moustache4: { n:'Moustache · voix d’homme',     src:'tom',   r:2.0,  v:.12, pas:.055, g:1.1 },
-  gorm:       { n:'Gorm · grave',                 src:'tom',   r:1.05, v:.06, pas:.075, g:1.2 },
+  // 14/11 : « Gorm · grave » (tom ×1,05) refusé par l'utilisateur (« ça ne va pas ») → 4 essais, babillage rapide mais plus grave que Moustache
+  gorm:       { n:'Gorm · bourru',                src:'tom',   r:1.45, v:.08, pas:.06,  g:1.2 },
+  gorm2:      { n:'Gorm · grave et rapide',       src:'tom',   r:1.3,  v:.06, pas:.048, g:1.25 },
+  gorm3:      { n:'Gorm · grondement',            src:'tom',   r:.85,  v:.05, pas:.05,  g:1.35 },
+  gorm4:      { n:'Gorm · voix douce plus grave', src:'siwis', r:1.2,  v:.07, pas:.06,  g:1.15 },
 };
 const VX_BUF = {}; let VX = null, voixArret = null;
 function voixCtx() { if (!VX) { try { VX = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return null; } } if (VX.state === 'suspended') VX.resume(); return VX; }

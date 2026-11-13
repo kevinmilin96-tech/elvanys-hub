@@ -26,7 +26,7 @@ textarea{width:100%;box-sizing:border-box;border-radius:8px;border:1px solid #4b
 </div>
 </main>
 <div class="bt"><button onclick="copier()">Copier mon avis</button></div>
-<script src="voix.js?v=2"></script>
+<script src="voix.js?v=3"></script>
 <script>
 const PHRASES = [
   'Miaou ! Bienvenue à la Guilde. Moi, c’est Moustache, chat d’aventure.',
@@ -40,16 +40,17 @@ let phrase = 0;
 const $ = id => document.getElementById(id);
 function dessinePhrases() { $('phrases').innerHTML = PHRASES.map((p, i) => `<button class="${i === phrase ? 'on' : ''}" onclick="phrase=${i};dessinePhrases()">${i + 1}. ${p.slice(0, 26)}…</button>`).join(''); }
 function dit(cle) {
-  const g = cle === 'gorm', t = g ? GORM : PHRASES[phrase];
+  const g = cle.startsWith('gorm'), t = g ? GORM : PHRASES[phrase];
   $('bulle').classList.toggle('gorm', g); $('av').src = g ? 'portraits/gorm.webp' : 'ui/moustache.webp?v=1'; $('qui').textContent = g ? 'Gorm' : 'Moustache';
   parle(t, cle, n => { $('txt').textContent = t.slice(0, n); });
 }
-$('voix').innerHTML = Object.keys(VOIX).map(k => `<button class="${k === 'gorm' ? 'gorm' : ''}" onclick="dit('${k}')">▶ ${VOIX[k].n}</button>`).join('');
-$('radios').innerHTML = Object.keys(VOIX).filter(k => k !== 'gorm').map(k => `<label><input type="radio" name="v" value="${k}"> ${VOIX[k].n}</label>`).join('') + '<label><input type="radio" name="v" value="aucune"> Aucune : je préfère sans voix</label>';
+$('voix').innerHTML = Object.keys(VOIX).map(k => `<button class="${k.startsWith('gorm') ? 'gorm' : ''}" onclick="dit('${k}')">▶ ${VOIX[k].n}</button>`).join('');
+$('radios').innerHTML = '<p style="margin:6px 0 2px">Moustache</p>' + Object.keys(VOIX).filter(k => !k.startsWith('gorm')).map(k => `<label><input type="radio" name="v" value="${k}"${k === 'moustache' ? ' checked' : ''}> ${VOIX[k].n}</label>`).join('') + '<label><input type="radio" name="v" value="aucune"> Aucune : je préfère sans voix</label>'
+  + '<p style="margin:10px 0 2px">Gorm</p>' + Object.keys(VOIX).filter(k => k.startsWith('gorm')).map(k => `<label><input type="radio" name="g" value="${k}"> ${VOIX[k].n}</label>`).join('') + '<label><input type="radio" name="g" value="aucune"> Aucune ne va</label>';
 dessinePhrases();
 function copier() {
-  const v = (document.querySelector('input[name=v]:checked') || {}).value || '—';
-  const t = `VOIX GUILDE\nMoustache : ${v}\nRemarque : ${$('note').value.trim() || '—'}`;
+  const v = (document.querySelector('input[name=v]:checked') || {}).value || '—', g = (document.querySelector('input[name=g]:checked') || {}).value || '—';
+  const t = `VOIX GUILDE\nMoustache : ${v}\nGorm : ${g}\nRemarque : ${$('note').value.trim() || '—'}`;
   navigator.clipboard.writeText(t).then(() => alert('Avis copié : colle-le dans le message pour Claude.')).catch(() => prompt('Copie ce texte :', t));
 }
 </script>
