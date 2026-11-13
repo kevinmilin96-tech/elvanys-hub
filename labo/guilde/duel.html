@@ -609,7 +609,7 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261113-063341';
+const VERSION = '20261113-063712';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); location.replace('duel.html?v=' + v); }
@@ -628,10 +628,10 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261113-063341"></script>
-<script src="donnees.js?v=20261113-063341"></script>
-<script src="odyssee.js?v=20261113-063341"></script>
-<script src="chronique.js?v=20261113-063341"></script>
+<script src="cartes.js?v=20261113-063712"></script>
+<script src="donnees.js?v=20261113-063712"></script>
+<script src="odyssee.js?v=20261113-063712"></script>
+<script src="chronique.js?v=20261113-063712"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -1118,6 +1118,7 @@ function prepareCombatOdyssee(run, cb, auto) {
   // 13/11 : la difficulté monte d'île en île (coefficient sur les PV des ennemis, réglé au simulateur)
   { const dur = (typeof ILES !== 'undefined' && ILES[run.acte || 'brulees'] && ILES[run.acte || 'brulees'].dur) || 1; if (typeof DUR_TEST === 'number') O.pvMax = Math.round(O.pvMax * DUR_TEST); else O.pvMax = Math.round(O.pvMax * dur);
     // l'Ascension : +10 % à tous, +15 % aux élites (2), +15 % au gardien (5), un dé de plus (9)
+    if (cb.nemesis) { O.pvMax = Math.round(O.pvMax * (1 + .15 * cb.nemesis)); O.pc += cb.nemesis; log(`😈 ${O.nom} est ta Némésis (niveau ${cb.nemesis}) : plus forte que les autres élites.`); }
     const A = run.asc || 0; if (A >= 1) O.pvMax = Math.round(O.pvMax * 1.1); if (A >= 2 && cb.type === 'elite') O.pvMax = Math.round(O.pvMax * 1.15); if (A >= 5 && cb.type === 'boss') O.pvMax = Math.round(O.pvMax * 1.15); if (A >= 9) O.desMax = Math.min(5, (O.desMax || 5) + 1);
     O.pv = O.pvMax; }
   log(`${S.ody.titre} : ${O.nom}. Salle : ${S.salle.n}. ${S.salle.d}`);
@@ -1144,6 +1145,7 @@ function combatAuto(run, c) {
 }
 // une Odyssée entière jouée par l'ordinateur (pilote de odyssee.js) : pour l'équilibrage. Retourne un bilan.
 function simuleOdyssee(heros, graine, acte) {
+  localStorage.removeItem('guilde-nemesis'); // le simulateur ne garde pas de Némésis d'une Odyssée à l'autre
   const run = nouvelleOdyssee(heros, graine, acte); const vie = [], morts = [];
   const bilan = (gagne, raison) => ({ gagne, raison, heros, cases:run.stats.cases, combats:run.stats.combats, victoires:run.stats.victoires, tours:run.stats.tours, pv:run.pv, pvMax:run.pvMax, or:run.or, vivres:run.vivres, deck:run.deck.length, reliques:run.reliques.length, defis:run.stats.defis, vie, fragments:run.fragments });
   const rang = { c:0, r:1, e:2 }, meilleure = l => [...l].sort((a, b) => rang[rarete(b)] - rang[rarete(a)])[0];
@@ -1453,6 +1455,7 @@ function dessine() {
     <button class="b0" onclick="voirJournal()" aria-label="Journal">📜</button>
     ${S.coop ? '<button class="b0" onclick="voirEquipe()" aria-label="Équipe">👥</button>' : ''}
     ${S.ody && J.sacoche.length ? `<button class="b0" onclick="voirSacoche()" aria-label="Sacoche">🎒<sup>${J.sacoche.length}</sup></button>` : ''}
+    ${S.ody && !J.sacrifie && J.pv > 10 && J.pc < 6 ? '<button class="b0" onclick="sacrifice()" aria-label="Sacrifice" title="Sacrifice : −10 PV, +2 PC">🩸</button>' : ''}
     <button class="b1" onclick="relancer()" ${sel.length && (J.relance || J.pc >= sel.length) ? '' : 'disabled style="opacity:.4"'}>🎲 Relancer ${J.relance ? `(${J.relance})` : '· 1 PC/dé'}</button>
     <button class="b2" onclick="finDeMonTour()">Fin du tour ▶</button>
   </div>`;
@@ -1468,6 +1471,12 @@ function colonneActions(J, h) {
   return `<div class="colG">${icone('frappe', '', J, 'r1')}${icone('technique', '', J, 'r2')}${icone('garde', '', J, 'r3')}${icone('pouvoir', '', J, 'r4')}${h.action ? icone('transmu', h.action.n, J, 'r5' + (J.transmu ? ' fait' : '')) : ''}
     ${icone('vendre', 'Vendre', J, 'r6 vendre')}</div>`; // 12/11 (décision de l'utilisateur) : vendre un dé PENDANT le tour (+1 PC tout de suite) ; Équipe passe en bas
 }
+// le Sacrifice (livre) : une fois par combat de l'Odyssée, −10 PV pour +2 PC
+function sacrifice() {
+  const J = S.J; if (!S.ody || J.sacrifie || J.pv <= 10 || S.fini || fxOn) return;
+  fenetre(`<h2>🩸 Sacrifice</h2><p>Perdre <b>10 PV</b> (❤ ${J.pv} → ${J.pv - 10}) pour gagner <b>+2 PC</b> tout de suite (◆ ${J.pc} → ${Math.min(6, J.pc + 2)}). Une fois par combat.</p><div class="choixh"><button onclick="fermer()">Non</button><button class="or" onclick="fermer();sacrificeOk()">Je me sacrifie</button></div>`);
+}
+function sacrificeOk() { const J = S.J; J.sacrifie = true; J.pv -= 10; J.pc = Math.min(6, J.pc + 2); log(`🩸 ${J.nom} se sacrifie : −10 PV, +2 PC.`); fx({ t:'degat', c:ref({ J }), n:10, abs:0, pv:J.pv, mot:'Sacrifice' }); fx({ t:'pc', s:'J', n:2, nb:0 }); rendu(); }
 function voirSacoche() {
   const J = S.J;
   fenetre(`<h2>🎒 Ta sacoche</h2><div class="actions">${J.sacoche.map((p, i) => `<button class="act ok" onclick="fermer();usePotion(${i})"><b>${SACOCHE[p].e} ${SACOCHE[p].n}</b>${SACOCHE[p].d.replace(/ \(.*\)\.?$/, '')}</button>`).join('')}</div><div class="choixh"><button onclick="fermer()">Fermer</button></div>`);
@@ -1926,9 +1935,9 @@ async function joueFX() {
 // toucher l'écran pendant les animations les accélère
 document.addEventListener('pointerdown', () => { if (fxOn) fxVite = .3; }, true);
 </script>
-<script src="pantheon.js?v=20261113-063341"></script>
-<script src="tuto.js?v=20261113-063341"></script>
-<script src="deux.js?v=20261113-063341"></script>
-<script src="invasion.js?v=20261113-063341"></script>
+<script src="pantheon.js?v=20261113-063712"></script>
+<script src="tuto.js?v=20261113-063712"></script>
+<script src="deux.js?v=20261113-063712"></script>
+<script src="invasion.js?v=20261113-063712"></script>
 </body>
 </html>

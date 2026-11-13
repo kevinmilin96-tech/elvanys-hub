@@ -106,11 +106,11 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261113-063341"></script>
-<script src="donnees.js?v=20261113-063341"></script>
-<script src="odyssee.js?v=20261113-063341"></script>
-<script src="pantheon.js?v=20261113-063341"></script>
-<script src="chronique.js?v=20261113-063341"></script>
+<script src="cartes.js?v=20261113-063712"></script>
+<script src="donnees.js?v=20261113-063712"></script>
+<script src="odyssee.js?v=20261113-063712"></script>
+<script src="pantheon.js?v=20261113-063712"></script>
+<script src="chronique.js?v=20261113-063712"></script>
 <script>
 // le moteur du Duel n'est pas chargé ici : les cartes de l'Odyssée appellent degats/soin seulement en combat (dans duel.html)
 const log = () => {}, degats = () => {}, soin = () => {}, altere = () => {}, invoque = () => {}, adv = () => ({}), fin = () => {};
@@ -177,7 +177,7 @@ function dessine() {
     const cls = ['k', c.t, c.vu ? 'vu' : 'inconnue', c.visite ? 'visite' : '', c.fait ? 'fait' : '', ok(c.x, c.y) ? 'ok' : '', r.pos.x === c.x && r.pos.y === c.y ? 'ici' : ''].join(' ');
     if (r.pos.x === c.x && r.pos.y === c.y) return `<div class="${cls}"><img src="${IMG(r.heros)}" alt=""></div>`;
     if (!c.vu) return `<div class="${cls}">?</div>`;
-    const ic = c.t === 'mur' && c.fait ? '💎' : SALLES_ODY[c.t].e;
+    const ic = c.t === 'mur' && c.fait ? '💎' : c.nemesis && !c.fait ? '😈' : SALLES_ODY[c.t].e;
     return `<div class="${cls}" onclick="va(${c.x},${c.y})" title="${SALLES_ODY[c.t].n}">${c.t === 'roche' ? '' : ic}${c.t === 'monstre' && !c.fait ? `<span class="niv">${NIV[c.niv]}</span>` : ''}</div>`;
   }).join('')).join('');
   document.getElementById('app').innerHTML = `
@@ -222,7 +222,7 @@ function celluleSVG(c, neuf) {
   seg.forEach(([dx, dy, s], i) => { const v = caseA(R, c.x + dx, c.y + dy) || { t:'roche', vu:true }; if (v.t === 'roche' && v.vu) murs += `<path class="mur" pathLength="1" d="${traitMur(...s, i)}"/><path class="mur2" pathLength="1" d="${traitMur(s[0], s[1] + (dy ? dy * 4 : 0), s[2] + (dx ? dx * 4 : 0), s[3] + (dy ? dy * 4 : 0), i + 7).replace(/^M/, 'M')}"/>${pierres(...s, i)}`; });
   const sol = c.visite ? `<path class="sol" d="M${x + 10},${y + CEL - 10} L${x + CEL - 10},${y + 10} M${x + 24},${y + CEL - 8} L${x + CEL - 8},${y + 24}"/>` : '';
   const salle = c.t !== 'chemin' && c.t !== 'depart';
-  const ico = c.t === 'mur' && c.fait ? '💎' : SALLES_ODY[c.t].e;
+  const ico = c.t === 'mur' && c.fait ? '💎' : c.nemesis && !c.fait ? '😈' : SALLES_ODY[c.t].e;
   const icone = salle ? `<text class="ico ${c.fait ? 'fait' : ''}" x="${x + CEL / 2}" y="${y + CEL / 2 + 8}">${ico}</text>` : (c.t === 'depart' ? `<text class="ico fait" x="${x + CEL / 2}" y="${y + CEL / 2 + 8}">⛵</text>` : '');
   const niv = c.t === 'monstre' && !c.fait ? `<text class="niv" x="${x + CEL - 9}" y="${y + CEL - 7}">${NIV[c.niv]}</text>` : '';
   const pointe = !salle ? `<circle class="pointe" cx="${x + CEL / 2}" cy="${y + CEL / 2}" r="4"/>` : `<circle class="cible" cx="${x + CEL / 2}" cy="${y + 11}" r="3"/>`;
@@ -335,6 +335,7 @@ function dialogue(sit, reponse) {
 }
 function arrive(c) {
   if (R.vivres === 0) dialogue('vivres_zero', false); else if (R.vivres <= 5 && Math.random() < .5) dialogue('vivres_bas', false);
+  if (c.t === 'elite' && c.nemesis && !c.fait && !c.nemVu) { c.nemVu = true; sauve(); fenetre(`<div style="text-align:center"><img src="${IMG(c.nemesis)}" alt="" style="width:100px;height:100px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 3px #e5262c,0 0 26px #e5262c"><h2>😈 Ta Némésis</h2><p><b>${HEROS[c.nemesis].nom}</b> t’a déjà vaincu et t’attendait (niveau ${c.nemNiv || 1} : plus redoutable qu’une élite).</p><p><i>« Encore toi ? Cette fois, je ne te laisserai pas repartir. »</i></p><p>La vaincre : +60 or, une relique au choix, et la Némésis s’efface.</p></div><div class="choixh"><button class="or" onclick="fermer();combat(R.ile[${c.y}][${c.x}])">⚔ Affronter</button></div>`); return; }
   if (c.t === 'boss' && !c.fait) { chronique([CH().boss(HEROS[R.heros].nom)], () => combat(c)); return; }
   if (c.t === 'elite' && !c.fait && !(R.chron && R.chron.elite)) { R.chron = { ...(R.chron || {}), elite:true }; sauve(); chronique([CH().elite], () => { dialogue('elite'); combat(c); }); return; }
   if (c.t === 'monstre' || c.t === 'elite') { if (!c.fait) { dialogue(c.t === 'elite' ? 'elite' : 'monstre'); combat(c); return; } }
@@ -360,11 +361,12 @@ function combat(c) {
 // retour du Duel : récompenses, tirage de cartes
 function apresCombat() {
   const cb = R.combat, res = cb.resultat; const out = recompenseCombat(R); sauve(); dessine();
-  if (!out.gagne) { dialogue('mort', false); finPartie(false, `${HEROS[cb.ennemi].nom} a eu raison de ${HEROS[R.heros].nom}.`); return; }
+  if (!out.gagne) { dialogue('mort', false); finPartie(false, `${HEROS[cb.ennemi].nom} a eu raison de ${HEROS[R.heros].nom}.${out.nemesis ? ` 😈 ${HEROS[cb.ennemi].nom} devient la Némésis de ${HEROS[R.heros].nom} (niveau ${out.nemesis.niv}) : rendez-vous à sa prochaine Odyssée.` : ''}`); return; }
   if (out.boss) { dialogue('boss_vaincu', false); finPartie(true, { givre:'La Vouivre se couche dans la neige et le sommet se met à fondre. L’île est libre.', abime:'La couronne tombe et la lumière des runes remonte du gouffre. L’Odyssée est terminée.' }[R.acte] || 'Le Titan de feu s’effondre dans son cratère. L’île est libre.'); return; }
   dialogue('victoire');
   const suite = out.draft ? () => tirage(out.draft, 'Une carte parmi trois', () => { sauve(); dessine(); }) : () => { fermer(); dessine(); };
-  window._suite = suite;
+  window._suite2 = suite;
+  window._suite = out.nemesisVaincue ? () => { const l = reliquesProposees(R, 2); fenetre(`<h2>😈 Némésis vaincue !</h2><p>+60 or. Choisis une relique :</p><div class="choixv">${l.map(k => `<button onclick="prendRelique(R,'${k}');sauve();fermer();window._suite2()">${RELIQUES[k].e} <b>${RELIQUES[k].n}</b><small>${RELIQUES[k].d}</small></button>`).join('')}</div>`); } : suite;
   fenetre(`<h2>🏆 ${out.ennemi} vaincu</h2><p>+${out.or} or${res.defiOk ? ' (défi réussi compris)' : ''}.${out.fragment ? ' <b>Un fragment de rune 🔮 et une clé 🗝 !</b>' : ''}${out.potion ? ' Et une potion de soin 🧪 dans sa besace.' : ''}</p><p>Il te reste ❤ ${R.pv} / ${R.pvMax}.</p><div class="choixh"><button class="or" onclick="fermer();_suite()">Continuer</button></div>`);
 }
 const carteHTML = (k, onclick, pied) => { const c = CARTES[k], r = rarete(k);

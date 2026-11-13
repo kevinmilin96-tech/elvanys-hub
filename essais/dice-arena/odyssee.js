@@ -239,6 +239,13 @@ function feuDeCamp(r, c, option) {
   if (option === 'retirer') r.journal.push('🏕 Une carte brûle dans le feu de camp.');
   return true;
 }
+
+// ================================================================== 13/11 : la NÉMÉSIS (inspirée de la table des Némésis du livre) et le SACRIFICE (livre : −10 PV → +2 PC)
+// Un héros rival qui tue ton héros pendant une Odyssée devient sa Némésis : à la prochaine Odyssée de ce héros, il l'attend parmi les élites (😈),
+// plus fort à chaque victoire (+15 % de PV par niveau, 3 au plus). Le vaincre : +60 or, une relique au choix, et la Némésis s'efface.
+const NEMESIS_CLE = 'guilde-nemesis';
+const lireNemesis = () => { try { return JSON.parse(localStorage.getItem(NEMESIS_CLE) || '{}'); } catch (e) { return {}; } };
+function ecrireNemesis(N) { if (typeof localStorage !== 'undefined') localStorage.setItem(NEMESIS_CLE, JSON.stringify(N)); }
 const ACTES_CLE = 'guilde-actes';
 const actesFaits = () => { try { return JSON.parse(localStorage.getItem(ACTES_CLE) || '{}'); } catch (e) { return {}; } };
 function braiseTitan(D) { D.braiseT = (D.braiseT || 0) + 1; log(`🔥 Braise ${D.braiseT}/3 sur ${D.nom}.`); if (D.braiseT >= 3) { D.braiseT = 0; log('🔥 Les Braises explosent : 6 dégâts !'); degats({ J:D }, 6, true); } }
@@ -496,6 +503,8 @@ function nouvelleOdyssee(heros, graine, acte, niveau) {
   if (asc(run, 8)) donneMalediction(run, Object.keys(MALEDICTIONS)[0]);
   if (asc(run, 10)) { run.pvMax = Math.round(run.pvMax * .9); run.pv = run.pvMax; }
   if (typeof pantheonDepart === 'function') pantheonDepart(run);
+  const nem = typeof localStorage !== 'undefined' ? lireNemesis()[heros] : null;
+  if (nem && HEROS[nem.rival]) { const el = run.ile.flat().filter(c => c.t === 'elite'); const c = el.find(x => x.ennemi === 'heros') || el[0]; if (c) { c.nemesis = nem.rival; c.nemNiv = nem.niv; c.ennemi = nem.rival; run.journal.push(`😈 ${HEROS[nem.rival].nom}, ta Némésis, est sur l’île.`); } }
   return run;
 }
 // la vie, bornée ; le deck effectif en combat = run.deck (les malédictions y sont déjà)
@@ -528,21 +537,26 @@ function lanceCombat(r, c) {
   const R = hasard(r); let ennemi = c.ennemi;
   if (ennemi === 'heros') { const autres = ORDRE.filter(h => h !== r.heros); ennemi = tire(R, autres); }
   const L = ILE(r).lieux, lieu = c.t === 'boss' ? L.boss : c.t === 'elite' ? L.elite : (c.niv || 1) >= 3 ? L.fort : L.monstre; // le décor du combat
-  r.combat = { id:Math.random().toString(36).slice(2), x:c.x, y:c.y, type:c.t, ennemi, niv:c.niv || 1, renfort:c.renfort || null, defi:tire(R, DEFIS).id, lieu, resultat:null };
+  r.combat = { id:Math.random().toString(36).slice(2), x:c.x, y:c.y, type:c.t, ennemi, niv:c.niv || 1, nemesis:c.nemesis ? c.nemNiv || 1 : 0, renfort:c.renfort || null, defi:tire(R, DEFIS).id, lieu, resultat:null };
   return r.combat;
 }
 // après un combat gagné : or, fragment, clé, défi, tirage de cartes. Retourne ce qu'il y a à montrer.
 function recompenseCombat(r) {
   const cb = r.combat, res = cb.resultat, c = caseA(r, cb.x, cb.y); if (!res) return null;
   r.stats.combats++; r.stats.tours += res.tours; r.combat = null;
-  if (!res.gagne) { r.journal.push(`💀 ${HEROS[cb.ennemi].nom} a eu raison de toi.`); return { gagne:false }; }
+  if (!res.gagne) { r.journal.push(`💀 ${HEROS[cb.ennemi].nom} a eu raison de toi.`);
+    let nemesis = null;
+    if (typeof ORDRE !== 'undefined' && ORDRE.includes(cb.ennemi) && typeof localStorage !== 'undefined') { const N = lireNemesis(), avant = N[r.heros]; N[r.heros] = { rival:cb.ennemi, niv:avant && avant.rival === cb.ennemi ? Math.min(3, avant.niv + 1) : 1 }; ecrireNemesis(N); nemesis = N[r.heros]; }
+    return { gagne:false, nemesis }; }
   c.fait = true; r.stats.victoires++;
   if (cb.ennemi === 'miroir') r.stats.miroir = true;
+  let nemesisVaincue = false;
+  if (cb.nemesis) { nemesisVaincue = true; r.or += 60; r.stats.nemesis = (r.stats.nemesis || 0) + 1; r.journal.push(`😈 Ta Némésis ${HEROS[cb.ennemi].nom} est vaincue : +60 or et une relique !`); if (typeof localStorage !== 'undefined') { const N = lireNemesis(); delete N[r.heros]; ecrireNemesis(N); const v = +(localStorage.getItem('guilde-nemesis-vaincues') || 0); localStorage.setItem('guilde-nemesis-vaincues', v + 1); } }
   let or = cb.type === 'boss' ? 150 : cb.type === 'elite' ? 80 : 40;
   if (r.reliques.includes('bourse')) or += 10; if (r.benes.includes('bourse')) or += 15; if (res.defiOk) { or += 30; r.stats.defis++; }
   if (asc(r, 6)) or = Math.round(or * .8);
   r.or += or;
-  const out = { gagne:true, or, defiOk:res.defiOk, ennemi:HEROS[cb.ennemi].nom, type:cb.type };
+  const out = { gagne:true, or, defiOk:res.defiOk, ennemi:HEROS[cb.ennemi].nom, type:cb.type, nemesisVaincue };
   if (cb.type === 'elite') { r.fragments++; r.cles++; out.fragment = true; if (r.sacoche.length < 2) { r.sacoche.push('soin'); out.potion = true; } }
   if (cb.type === 'boss') { out.boss = true; r.journal.push(`👑 ${ILE(r).bossNom} est tombé${r.acte === 'givre' ? 'e' : ''} ! +${or} or.`); return out; }
   out.draft = draft(hasard(r), cb.type === 'elite' ? 1 : 0, r.deck, r.heros); if (asc(r, 7)) out.draft = out.draft.slice(0, 2);
