@@ -152,7 +152,7 @@ function partieTuto() {
   S = { J, O, salle:{ n:'La cour d’entraînement', d:'Rien de spécial ici : on apprend.', id:'cour' }, log:[], fini:null, auto:false, tuto:{ i:0, file:[] } };
   FX = []; fxApres = []; fxOn = false; arreteMusique();
   O.pv = O.pvMax = HEROS.tutochef.pv; O.desMax = 3; O.ultimeFait = true; O.pc = 0;
-  invoque(O, { n:'Chien de garde', a:1, v:6, barriere:true });
+  invoque(O, { n:'Chien de garde', a:1, v:6, barriere:true }, 'chien-garde'); // 13/11 soir : son image (cartes/chien-garde.webp)
   pioche(J, 4);
   log('Tutoriel : Gorm contre le Chef gobelin, dans la cour d’entraînement de la Guilde.');
   sel = []; attaquant = null; ciblage = null;
