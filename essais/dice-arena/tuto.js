@@ -84,7 +84,7 @@ function projecteurEl() {
       #projo.seul .anneauP, #projo.seul .main1 { display:none; }
       #projo .anneauP { position:fixed; border-radius:14px; box-shadow:0 0 0 3px #f3c96b, 0 0 22px 6px #f3c96baa; animation:pulseP 1.2s ease-in-out infinite; transition:all .25s; }
       @keyframes pulseP { 50% { box-shadow:0 0 0 5px #fff6d6, 0 0 30px 10px #f3c96bcc; } }
-      #projo .main1 { position:fixed; font-size:34px; filter:drop-shadow(0 3px 4px #000); animation:tape 1s ease-in-out infinite; transition:left .25s, top .25s; }
+      #projo .main1 { position:fixed; z-index:3; pointer-events:none; font-size:34px; filter:drop-shadow(0 3px 4px #000); animation:tape 1s ease-in-out infinite; transition:left .25s, top .25s; }
       @keyframes tape { 50% { transform:translate(-4px, -8px) scale(.92); } }
       #projo .bulleT { position:fixed; left:50%; transform:translateX(-50%); width:min(94vw, 460px); pointer-events:auto; display:flex; flex-direction:column; gap:6px; }
       #projo .ligneT { display:flex; gap:8px; align-items:flex-start; background:#fbf6e9; color:#2a2140; border-radius:16px; padding:9px 11px; box-shadow:0 6px 18px #000a; font-size:.95em; line-height:1.35; animation:entreT .3s ease-out; }
@@ -92,6 +92,7 @@ function projecteurEl() {
       #projo .ligneT b { display:block; font-size:.82em; color:#6b5fb0; }
       #projo .av { width:40px; height:40px; flex:none; border-radius:50%; display:grid; place-items:center; font-size:24px; background:#2a2140; box-shadow:0 0 0 2px #f3c96b; object-fit:cover; }
       #projo .boutonsT { display:flex; justify-content:space-between; align-items:center; gap:8px; }
+      #projo .boutonsT button.pulse { animation:pulseT 1.2s ease-in-out infinite; } @keyframes pulseT { 50% { transform:scale(1.08); box-shadow:0 0 0 4px #f3c96b88, 0 3px 8px #000a; } }
       #projo .boutonsT button { font:inherit; border:0; border-radius:20px; padding:8px 18px; font-weight:bold; background:linear-gradient(#f6d77e, #c8902f); color:#2a1a08; box-shadow:0 3px 8px #000a; }
       #projo .boutonsT a { color:#e9e3ff; font-size:.82em; text-shadow:0 1px 3px #000; }
       #projo.libre .bulleT { pointer-events:none; } #projo.libre .boutonsT a, #projo.libre .boutonsT button { pointer-events:auto; } #projo.libre .ligneT { opacity:.9; font-size:.86em; padding:6px 9px; }
@@ -113,12 +114,17 @@ function projecteur(el, html, o = {}) {
     Object.assign(g.style, { left:'0', top:T + 'px', width:L + 'px', height:(B - T) + 'px' }); Object.assign(d.style, { left:R + 'px', top:T + 'px', width:(W - R) + 'px', height:(B - T) + 'px' }); }
   else { Object.assign(h.style, { left:'0', top:'0', width:W + 'px', height:H + 'px' }); [b, g, d].forEach(x => Object.assign(x.style, { width:'0', height:'0' })); }
   Object.assign(p.querySelector('.anneauP').style, { left:L + 'px', top:T + 'px', width:(R - L) + 'px', height:(B - T) + 'px', pointerEvents:o.regarde ? 'auto' : 'none' });
-  Object.assign(p.querySelector('.main1').style, { left:Math.min(W - 44, (L + R) / 2 + 6) + 'px', top:Math.min(H - 44, B - 14) + 'px' });
+  // 14/11 : la main au coin en bas à droite de la cible (elle ne cache plus le texte d'un bouton)
+  const main1 = p.querySelector('.main1'), large = R - L > 90;
+  Object.assign(main1.style, { left:Math.min(W - 44, large ? R - 26 : (L + R) / 2 + 6) + 'px', top:Math.min(H - 44, large ? B - 24 : B - 14) + 'px' });
   const bu = p.querySelector('.bulleT'); if (bu.dataset.h !== html) { bu.innerHTML = html; bu.dataset.h = html; } // 13/11 soir : la bulle ne « repope » plus à chaque toucher
   // la bulle se met du côté où il y a de la place
   const haut = el ? (T + B) / 2 > H * .5 : false;
   bu.style.top = haut || !el ? (o.libre ? '8px' : (el ? '10px' : '22%')) : ''; bu.style.bottom = haut || !el ? '' : '10px';
   if (o.libre) { bu.style.top = '8px'; bu.style.bottom = ''; }
+  // 14/11 : étape « regarde » : la main montre « Suivant » (qui pulse), pas la zone en lumière
+  const sb = bu.querySelector('.boutonsT button'); if (sb) sb.classList.toggle('pulse', !!o.regarde);
+  if (o.regarde && sb) { const r2 = sb.getBoundingClientRect(); Object.assign(main1.style, { left:Math.min(W - 44, r2.right - 30) + 'px', top:Math.min(H - 44, r2.bottom - 18) + 'px' }); }
 }
 function projecteurCache() { const p = document.getElementById('projo'); if (p) p.classList.add('cache'); }
 
