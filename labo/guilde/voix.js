@@ -13,7 +13,7 @@ const VOIX = {
 };
 const VX_BUF = {}; let VX = null, voixArret = null;
 function voixCtx() { if (!VX) { try { VX = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return null; } } if (VX.state === 'suspended') VX.resume(); return VX; }
-const lettreSimple = c => c.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+const lettreSimple = c => c.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 function chargeVoix(src) {
   const a = voixCtx(); if (!a) return Promise.resolve({});
   if (VX_BUF[src]) return VX_BUF[src];
