@@ -609,7 +609,7 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261113-122920';
+const VERSION = '20261113-123215';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); location.replace('duel.html?v=' + v); }
@@ -628,10 +628,10 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261113-122920"></script>
-<script src="donnees.js?v=20261113-122920"></script>
-<script src="odyssee.js?v=20261113-122920"></script>
-<script src="chronique.js?v=20261113-122920"></script>
+<script src="cartes.js?v=20261113-123215"></script>
+<script src="donnees.js?v=20261113-123215"></script>
+<script src="odyssee.js?v=20261113-123215"></script>
+<script src="chronique.js?v=20261113-123215"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -733,7 +733,7 @@ function debutTour(J) {
   if (J.gardeB > 0 || J.gardeE > 0) fx({ t:'finGarde', s:J === S.J ? 'J' : 'O', n:J.gardeB });
   J.tours++; J.gardeB = 0; J.gardeE = 0; J.contre = J.piege = J.cor = J.fournaise = J.paillasse = J.esquive = false;
   J.relance = 2 + (J.boussole ? 1 : 0) + (J.reliques.includes('oeil') ? 1 : 0) + (J.benes.includes('relance') ? 1 : 0); S.acteur = null; J.cartesJouees = 0; J.six = 0; J.pureteTour = false; J.transmu = false; J.dernierSort = null; J.gardeFaite = false;
-  if (J.tours > 1) { J.pc = Math.min(6, J.pc + 1); pioche(J, 1); }
+  if (J.tours > 1) { J.pc = Math.min(6, J.pc + 1); pioche(J, 1); if (J === S.J && !S.auto && !J.ordi) son('pioche'); }
   if (J.saigne) { log(`${J.nom} saigne : −${J.saigne * 2} PV.`); J.pv -= J.saigne * 2; fx({ t:'degat', c:ref({ J }), n:J.saigne * 2, abs:0, pv:Math.max(0, J.pv), mot:'Saignement' }); fin(); }
   if (J.poison) { log(`${J.nom} : Poison, −${J.poison} PV.`); J.pv -= J.poison; fx({ t:'degat', c:ref({ J }), n:J.poison, abs:0, pv:Math.max(0, J.pv), mot:'Poison', vert:true }); J.poison--; fin(); }
   let n = Math.min(J.desMax || 5, J.tours + 2);
@@ -1087,7 +1087,7 @@ function nouvellePartie(id, idO, auto) {
   log(`Salle : ${S.salle.n}. ${S.salle.d}`);
   sel = []; attaquant = null; ciblage = null;
   debutTour(S.J);
-  if (!auto) rendu();
+  if (!auto) { rendu(); son('melange'); }
 }
 // =============================================================================================== l'Odyssée : un combat de l'île
 // run.combat = { id, type:'monstre'|'elite'|'boss', ennemi, niv, renfort, defi } ; le résultat est écrit dans run.combat.resultat, l'île reprend la main.
@@ -1686,7 +1686,10 @@ function son(q) {
   else if (q === 'gros') { bruit(.35, .6, 900, 120); ton(90, .4, 'sine', .55, 35); }
   else if (q === 'bouclier') { ton(1400, .25, 'triangle', .15, 900); ton(2100, .18, 'sine', .08); }
   else if (q === 'soin') { [523, 659, 784, 1046].forEach((f, i) => ton(f, .25, 'sine', .12, null, i * .07)); }
-  else if (q === 'carte') { bruit(.22, .25, 400, 3000); }
+  else if (q === 'carte') joueBuf('fx/card-shove-1', .9); // 13/11 : bruitages choisis par l'utilisateur (ecoute-bruitages.html, Kenney CC0)
+  else if (q === 'pioche') joueBuf('fx/card-slide-3', .8);
+  else if (q === 'melange') joueBuf('fx/card-shuffle', .8);
+  else if (q === 'vendre') joueBuf('fx/chips-stack-1', .9);
   else if (q === 'tir') { ton(300, .25, 'sawtooth', .08, 1200); bruit(.2, .15, 2000, 500); }
   else if (q === 'des') joueBuf(Math.random() < .5 ? 'des1' : 'des2', 1);
   else if (q === 'tombe') { ton(400, .5, 'triangle', .2, 60); }
@@ -1926,7 +1929,7 @@ async function joue1(e) {
     await dodo(1500); c.style.zIndex = ''; return;
   }
   if (e.t === 'nouveauDe') { son('tour'); const d = document.createElement('div'); d.className = 'annonce'; d.innerHTML = `🎲 Nouveau dé !<div style="font-size:.55em;color:#fff">Tu lances maintenant ${e.n} dés${e.n >= 5 ? ' (le maximum)' : ''}</div>`; couche().appendChild(d); await dodo(1300); d.remove(); return; }
-  if (e.t === 'pc') { const c = el({ s:e.s }); if (!c) return; bandeauAction(e.s, `◆ <b>${QUI(e.s)}</b> vend ${e.nb || 1} dé${(e.nb || 1) > 1 ? 's' : ''} : <b>+${e.n} PC</b>`, 1000); ton(1200, .15, 'sine', .1); ton(1600, .2, 'sine', .08, null, .08); effetImage('pc', c, .8); flotte(c, `+${e.n} PC`, 'bleu'); await dodo(350); return; }
+  if (e.t === 'pc') { const c = el({ s:e.s }); if (!c) return; bandeauAction(e.s, `◆ <b>${QUI(e.s)}</b> vend ${e.nb || 1} dé${(e.nb || 1) > 1 ? 's' : ''} : <b>+${e.n} PC</b>`, 1000); son('vendre'); effetImage('pc', c, .8); flotte(c, `+${e.n} PC`, 'bleu'); await dodo(350); return; }
   if (e.t === 'jauge') { const c = el({ s:e.s }); if (!c) return; ton(523, .4, 'triangle', .1); ton(784, .5, 'triangle', .1, null, .12); if (!effetImage('jauge', c, 1.2)) effet('lumiere', c); flotte(c, '⚡ Ultime prêt !', 'nom'); await dodo(700); return; }
   if (e.t === 'invoque') { const f = el({ s:e.s, uid:'x' }); son('louve'); effetImage('invocation', f, 1.1); flotte(f, `🐺 ${e.nom} arrive !`, 'nom'); await dodo(700); return; }
 }
@@ -1938,12 +1941,12 @@ async function joueFX() {
 // toucher l'écran pendant les animations les accélère
 document.addEventListener('pointerdown', () => { if (fxOn) fxVite = .3; }, true);
 </script>
-<script src="pantheon.js?v=20261113-122920"></script>
-<script src="tuto.js?v=20261113-122920"></script>
-<script src="deux.js?v=20261113-122920"></script>
-<script src="invasion.js?v=20261113-122920"></script>
-<script src="enigme-table.js?v=20261113-122920"></script>
-<script src="semaine.js?v=20261113-122920"></script>
-<script src="enigme.js?v=20261113-122920"></script>
+<script src="pantheon.js?v=20261113-123215"></script>
+<script src="tuto.js?v=20261113-123215"></script>
+<script src="deux.js?v=20261113-123215"></script>
+<script src="invasion.js?v=20261113-123215"></script>
+<script src="enigme-table.js?v=20261113-123215"></script>
+<script src="semaine.js?v=20261113-123215"></script>
+<script src="enigme.js?v=20261113-123215"></script>
 </body>
 </html>
