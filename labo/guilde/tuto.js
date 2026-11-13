@@ -36,6 +36,7 @@ const desVises = vs => () => { const els = [...document.querySelectorAll('.des .
 // 14/11 : le Tambour encore jouable ? (sinon le tutoriel passe à la suite au lieu de bloquer)
 const peutTambour = () => S.J.main.includes('tambour') && S.J.pc >= 2 && S.J.des.some(d => !d.pose && d.v % 2 === 0);
 const carteTambour = () => document.querySelectorAll('.main .c')[S.J.main.indexOf('tambour')];
+const cinqLibres = () => S.J.des.filter(d => !d.pose && d.v === 5).length;
 const nbPoses = () => S.J.des.filter(d => d.pose).length;
 const tambour = () => S.J.front.find(u => u.tambour);
 const ETAPES = [
@@ -55,7 +56,11 @@ const ETAPES = [
   { t:2, c:'Ce bouclier, à gauche, c’est ta GARDE. Chaque héros a la sienne. Celle de Gorm, la Peau épaisse : chaque dé IMPAIR (1, 3, 5) devient du bouclier. Un 2 ou un 4 ne donne rien. Un 6 donne des ÉPINES : celui qui te frappe se pique.', cible:'.ic.r3' },
   { t:2, c:'Touche le 3 dans ton bac à dés, à droite. Garde tes deux 5 : ils frapperont juste après.', cible:desVises([3]), ok:() => (sel.length === 1 && sel[0].v === 3) || S.J.gardeFaite },
   { t:2, c:'Puis le bouclier : ton 3 devient 3 de bouclier.', cible:'.ic.r3', ok:() => S.J.gardeFaite },
-  { t:2, c:'Le bouclier est posé à côté de ton cœur : il prendra les coups à ta place. Et tes deux 5 forment une paire : FRAPPE ! (les deux 5, puis l’épée). Puis « Fin du tour ».', libre:true, ok:() => S.J.tours >= 3 },
+  { t:2, c:'Le bouclier est posé à côté de ton cœur : il prendra les coups à ta place. Maintenant tes deux 5 : une paire, donc une FRAPPE ! Touche-les.', cible:desVises([5, 5]), ok:() => (sel.length === 2 && vals(sel).every(v => v === 5)) || cinqLibres() < 2 },
+  { t:2, c:'L’épée, comme au premier tour.', cible:'.ic.r1', ok:() => (ciblage && ciblage.quoi === 'frappe') || cinqLibres() < 2 },
+  { t:2, c:'Vise le Chef. S’il a un bouclier, lui aussi, il encaissera une partie du coup.', cible:'#b-O', ok:() => (ciblage && ciblage.choisi) || cinqLibres() < 2 },
+  { t:2, c:'Regarde ce qui va se passer, puis « Valider ».', cible:'#conf .ok', ok:() => cinqLibres() < 2 },
+  { t:2, c:'Bien joué ! Le dé qui reste sera vendu. Touche « Fin du tour ».', cible:'.b2', ok:() => S.J.tours >= 3 },
   { t:3, c:'Tu te souviens des PC, gagnés en vendant tes dés ? Tu en as assez maintenant pour jouer une carte : le Tambour de clan, là, coûte 2 PC et demande un dé PAIR.', g:'Mon tambour ! Enfin quelqu’un de sérieux.', cible:() => document.querySelector('.main .c:last-child') },
   { t:3, c:'Lance d’abord tes dés.', cible:'.lancer', ok:() => !S.J.aLancer },
   { t:3, c:'Touche le 2.', cible:desVises([2]), ok:() => (sel.length === 1 && sel[0].v % 2 === 0) || !!tambour() || !peutTambour() },
