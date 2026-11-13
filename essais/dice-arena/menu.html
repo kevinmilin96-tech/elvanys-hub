@@ -8,7 +8,7 @@
 <title>La Guilde des Runes</title>
 <script>
 // Même mécanisme que le Duel : une nouvelle version = rechargement tout seul à l'ouverture (publier.sh change VERSION).
-const VERSION = '20261113-215040';
+const VERSION = '20261113-215322';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-menu-' + v)) { sessionStorage.setItem('recharge-menu-' + v, '1'); location.replace('menu.html?v=' + v); }
@@ -188,9 +188,9 @@ fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.te
 </div>
 <div id="flash"></div>
 
-<script src="semaine.js?v=20261113-215040"></script>
-<script src="musique.js?v=20261113-215040"></script>
-<script src="donnees.js?v=20261113-215040"></script>
+<script src="semaine.js?v=20261113-215322"></script>
+<script src="musique.js?v=20261113-215322"></script>
+<script src="donnees.js?v=20261113-215322"></script>
 <script>
 // ciel étoilé + runes du portail (symboles, pas des lettres), aux couleurs des héros
 const ciel = document.getElementById('ciel');
@@ -309,7 +309,7 @@ function touche(i) {
   else if (p.ferme || p.avenir) { const el = car.children[i]; el.animate([{ translate:'0' }, { translate:'-8px' }, { translate:'8px' }, { translate:'0' }], { duration:300 }); return; }
   if (!GM.son('portail')) souffle(); car.children[i].classList.add('entre'); document.getElementById('flash').classList.add('go');
   setTimeout(() => {
-    if (p.href) { location.href = p.href; return; }
+    if (p.href) { sessionStorage.setItem('guilde-dans-mode', '1'); location.href = p.href; return; }
     document.getElementById('flash').classList.remove('go'); location.hash = p.vers;
   }, 750);
 }
@@ -331,7 +331,11 @@ function souffle() { try { const a = new (window.AudioContext || window.webkitAu
 function entrer() { const t = document.getElementById('titre'); if (t.classList.contains('part')) return; souffle(); t.classList.add('part'); sessionStorage.setItem('guilde-entre', '1'); GM.musique('menu');
   setTimeout(() => { t.remove(); document.getElementById('monde').classList.add('vu'); montre(location.hash.slice(1)); proposeTuto(); }, 1000); }
 // déjà entré pendant cette visite (retour du Duel) : on va droit au monde
-if (sessionStorage.getItem('guilde-entre')) { document.getElementById('titre').remove(); document.getElementById('monde').classList.add('vu'); montre(location.hash.slice(1)); }
+// 13/11 soir (demande de l'utilisateur) : le portail « Toucher pour entrer » à CHAQUE ouverture du jeu ; on le saute seulement
+// quand on revient d'un mode (Duel, Odyssée, Tour…) parti de ce menu.
+const revientDUnMode = sessionStorage.getItem('guilde-dans-mode'); sessionStorage.removeItem('guilde-dans-mode');
+addEventListener('click', e => { const a = e.target.closest && e.target.closest('#monde a'); if (a && !/^\/$|demo-hub/.test(a.getAttribute('href') || '') && !(a.getAttribute('href') || '').startsWith('#')) sessionStorage.setItem('guilde-dans-mode', '1'); }, true);
+if (revientDUnMode) { document.getElementById('titre').remove(); document.getElementById('monde').classList.add('vu'); montre(location.hash.slice(1)); }
 // 13/11 soir : musique (titre sur l'écran du portail, puis le monde de la Guilde)
 GM.musique(document.getElementById('titre') ? 'titre' : 'menu'); GM.bouton({ haut:true });
 </script>
