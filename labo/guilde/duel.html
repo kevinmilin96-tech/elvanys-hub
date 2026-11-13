@@ -311,7 +311,7 @@
   .champLieu.lieu-trone { background-image:url('decor/lieu-trone.webp?v=1'), radial-gradient(circle at 50% 52%, #f3c96b 0%, #a855f7 18%, #2a0a44 52%, #030108 100%); }
   .champLieu.lieu-brume { background-image:url('decor/lieu-brume.webp?v=1'), linear-gradient(180deg, #1a1f1a 0%, #4a5a4a 35%, #2a3a2a 46%, #16201a 47%, #0b100c 100%); }
   /* 14/11 (choix de l'utilisateur) : Odyssée, Invasion… se jouent sur le MÊME plateau peint que le Duel ; le décor du lieu remplit seulement la zone centrale */
-  .plateau.tapis.unique.ile-brulees:not(.scene) { background-image:url('decor/plateau-brulees.webp?v=1'); }
+  .plateau.tapis.unique.ile-brulees:not(.scene) { background-image:url('decor/plateau-brulees.webp?v=2'); }
   .animIle { position:absolute; inset:0; pointer-events:none; z-index:0; overflow:hidden; border-radius:inherit; }
   .animIle .souffle { position:absolute; inset:0; mix-blend-mode:screen; animation:souffleLave 4.6s ease-in-out infinite;
     background:radial-gradient(ellipse 30% 14% at 12% 20%, #ff6a0055, transparent 70%), radial-gradient(ellipse 26% 12% at 88% 58%, #ff4d0055, transparent 70%), radial-gradient(ellipse 40% 10% at 50% 72%, #ff7a1a44, transparent 70%), radial-gradient(ellipse 50% 12% at 50% 96%, #ff5a0055, transparent 70%); }
@@ -607,6 +607,21 @@
   .plateau.tapis.unique:not(.scene) #b-O .bdg.bg, .plateau.tapis.unique:not(.scene) #b-O .bdg.bb { left:-18.57cqw; top:calc(5.82cqh + 4.15cqw); }
   .plateau.tapis.unique:not(.scene) #b-J .bdg.bg, .plateau.tapis.unique:not(.scene) #b-J .bdg.bb { left:-18.68cqw; top:calc(-1.62cqh + 4.15cqw); }
   .plateau.tapis.unique:not(.scene) #b-O .nom { top:calc(100% + 6.2cqw) !important; }
+  /* ===== 14/11 : PLATEAU DES TERRES BRÛLÉES (Gemini v2), emplacements mesurés sur l'image (portrait du haut y 14,5 %, 6 ronds x 14,5 % de y 31 à 62,5 %, champ x 22,5-77,5 % y 27,5-64,5 %, dés x 87 % y 29-63,5 %, panneaux décalés de 4 % vers le centre) ===== */
+  .unique.ile-brulees .colG .r1 { left:calc(14.5cqw - 5.6cqw); top:calc(31.00cqh - 5.6cqw); }
+  .unique.ile-brulees .colG .r2 { left:calc(14.5cqw - 5.6cqw); top:calc(37.30cqh - 5.6cqw); }
+  .unique.ile-brulees .colG .r3 { left:calc(14.5cqw - 5.6cqw); top:calc(43.60cqh - 5.6cqw); }
+  .unique.ile-brulees .colG .r4 { left:calc(14.5cqw - 5.6cqw); top:calc(49.90cqh - 5.6cqw); }
+  .unique.ile-brulees .colG .r5 { left:calc(14.5cqw - 5.6cqw); top:calc(56.20cqh - 5.6cqw); }
+  .unique.ile-brulees .colG .r6 { left:calc(14.5cqw - 5.6cqw); top:calc(62.50cqh - 5.6cqw); }
+  .plateau.tapis.unique.ile-brulees:not(.scene) .des { left:83.3cqw; top:28.6cqh; width:7.5cqw; height:35.2cqh; }
+  .plateau.tapis.unique.ile-brulees:not(.scene) #b-O { top:calc(14.5cqh - 8.45cqw); } .plateau.tapis.unique.ile-brulees:not(.scene) #b-J { top:calc(75.6cqh - 8.45cqw); }
+  .plateau.tapis.unique.ile-brulees:not(.scene) #b-O .pastilles, .plateau.tapis.unique.ile-brulees:not(.scene) #b-J .pastilles { left:19.9cqw; }
+  .plateau.tapis.unique.ile-brulees:not(.scene) .pastilles [data-k="pv"] { left:-42.4cqw; } .plateau.tapis.unique.ile-brulees:not(.scene) .barre:has(.bdg:not([hidden])) .pastilles [data-k="pv"] { left:-46.95cqw; }
+  .plateau.tapis.unique.ile-brulees:not(.scene) #b-O .bdg.bg, .plateau.tapis.unique.ile-brulees:not(.scene) #b-O .bdg.bb, .plateau.tapis.unique.ile-brulees:not(.scene) #b-J .bdg.bg, .plateau.tapis.unique.ile-brulees:not(.scene) #b-J .bdg.bb { left:-14.6cqw; }
+  .unique.ile-brulees .front { left:23.5cqw !important; right:23.5cqw !important; }
+  .unique.ile-brulees #f-O { top:29cqh; } .unique.ile-brulees #f-J { top:49cqh; }
+  .unique.ile-brulees .bandeau, .unique.ile-brulees .lancer { top:46cqh; left:23cqw; right:23cqw; }
   /* la main dans sa zone (style posé par mainEnEventail) */
   .plateau.tapis.unique .main { right:auto; bottom:auto; overflow:visible; }
   .plateau.tapis.unique .main .c:not(.vue) { bottom:0; }
@@ -630,7 +645,7 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261113-231317';
+const VERSION = '20261113-231728';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -649,11 +664,11 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261113-231317"></script>
-<script src="musique.js?v=20261113-231317"></script>
-<script src="donnees.js?v=20261113-231317"></script>
-<script src="odyssee.js?v=20261113-231317"></script>
-<script src="chronique.js?v=20261113-231317"></script>
+<script src="cartes.js?v=20261113-231728"></script>
+<script src="musique.js?v=20261113-231728"></script>
+<script src="donnees.js?v=20261113-231728"></script>
+<script src="odyssee.js?v=20261113-231728"></script>
+<script src="chronique.js?v=20261113-231728"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -2039,14 +2054,14 @@ async function joueFX() {
 // toucher l'écran pendant les animations les accélère
 document.addEventListener('pointerdown', () => { if (fxOn && !(S && S.tuto)) fxVite = .5; }, true); // 14/11 : plus d'accélération dans le tutoriel
 </script>
-<script src="profil.js?v=20261113-231317"></script>
-<script src="pantheon.js?v=20261113-231317"></script>
-<script src="tuto.js?v=20261113-231317"></script>
-<script src="deux.js?v=20261113-231317"></script>
-<script src="invasion.js?v=20261113-231317"></script>
-<script src="enigme-table.js?v=20261113-231317"></script>
-<script src="forge.js?v=20261113-231317"></script>
-<script src="semaine.js?v=20261113-231317"></script>
-<script src="enigme.js?v=20261113-231317"></script>
+<script src="profil.js?v=20261113-231728"></script>
+<script src="pantheon.js?v=20261113-231728"></script>
+<script src="tuto.js?v=20261113-231728"></script>
+<script src="deux.js?v=20261113-231728"></script>
+<script src="invasion.js?v=20261113-231728"></script>
+<script src="enigme-table.js?v=20261113-231728"></script>
+<script src="forge.js?v=20261113-231728"></script>
+<script src="semaine.js?v=20261113-231728"></script>
+<script src="enigme.js?v=20261113-231728"></script>
 </body>
 </html>
