@@ -319,6 +319,22 @@
   @keyframes souffleLave { 0%, 100% { opacity:.15; } 50% { opacity:1; } }
   .animIle i { position:absolute; bottom:-2%; border-radius:50%; background:#ffd27a; box-shadow:0 0 6px 2px #ff7a1a, 0 0 12px 4px #ff4d0088; animation:braise linear infinite; opacity:0; }
   @keyframes braise { 0% { transform:translate(0, 0); opacity:0; } 8% { opacity:1; } 70% { opacity:.8; } 100% { transform:translate(var(--dx), -105cqh); opacity:0; } }
+  .plateau.tapis.unique.ile-givre:not(.scene) { background-image:url('decor/plateau-givre.webp?v=1'); }
+  .plateau.tapis.unique.ile-abime:not(.scene) { background-image:url('decor/plateau-abime.webp?v=1'); }
+  /* Givre : neige qui tombe, aurore qui ondule */
+  .animIle.givre i { top:-2%; bottom:auto; background:#fff; box-shadow:0 0 4px 1px #cfeaff; animation-name:neige; }
+  @keyframes neige { 0% { transform:translate(0, 0); opacity:0; } 10% { opacity:.9; } 90% { opacity:.8; } 100% { transform:translate(var(--dx), 104cqh); opacity:0; } }
+  .animIle .aurore { position:absolute; left:-10%; right:-10%; top:0; height:30%; mix-blend-mode:screen; animation:aurore 9s ease-in-out infinite;
+    background:radial-gradient(ellipse 40% 50% at 30% 30%, #3dffb033, transparent 70%), radial-gradient(ellipse 35% 45% at 75% 25%, #a46bff2e, transparent 70%); }
+  .animIle .aurore.a2 { top:30%; height:40%; animation-duration:13s; background:radial-gradient(ellipse 30% 40% at 60% 40%, #3dffb022, transparent 70%), radial-gradient(ellipse 25% 35% at 35% 55%, #7fd3ff26, transparent 70%); }
+  @keyframes aurore { 0%, 100% { transform:translateX(-4%) scaleY(1); opacity:.4; } 50% { transform:translateX(4%) scaleY(1.15); opacity:1; } }
+  /* Abîme : étoiles qui scintillent, brume violette qui passe */
+  .animIle.abime i { bottom:auto; background:#fff; box-shadow:0 0 6px 2px #c084fc; animation-name:scintille; animation-timing-function:ease-in-out; }
+  @keyframes scintille { 0%, 100% { opacity:0; transform:scale(.4); } 50% { opacity:1; transform:scale(1.2); } }
+  .animIle .brume { position:absolute; inset:-10%; mix-blend-mode:screen; animation:brume 8s ease-in-out infinite;
+    background:radial-gradient(ellipse 30% 20% at 15% 30%, #a855f73a, transparent 70%), radial-gradient(ellipse 25% 18% at 88% 60%, #c084fc33, transparent 70%), radial-gradient(ellipse 40% 15% at 50% 92%, #7c3aed33, transparent 70%); }
+  .animIle .brume.b2 { animation-duration:11s; animation-direction:reverse; }
+  @keyframes brume { 0%, 100% { transform:translateX(-5%); opacity:.35; } 50% { transform:translateX(5%); opacity:1; } }
   .champLieu { position:absolute; left:19.3%; top:22%; width:61.5%; height:44.8%; background-color:#1a1020; background-size:cover; background-position:center; border-radius:1.4cqw; box-shadow:inset 0 0 3cqw #000c, 0 0 0 .4cqw #0006; pointer-events:none; z-index:0; }
   .scene::after { content:''; position:absolute; left:0; right:0; top:46.5cqw; height:1.5cqw; background:linear-gradient(90deg, transparent, #ffffff33, transparent); pointer-events:none; }
   .scene #b-O { width:34cqw; height:34cqw; left:33cqw; top:3cqw; } .scene #b-O img { border:3px solid #ffffff55; box-shadow:0 0 40px #000c, 0 0 0 6px #0006; }
@@ -630,7 +646,7 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261113-232039';
+const VERSION = '20261113-232427';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -649,11 +665,11 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261113-232039"></script>
-<script src="musique.js?v=20261113-232039"></script>
-<script src="donnees.js?v=20261113-232039"></script>
-<script src="odyssee.js?v=20261113-232039"></script>
-<script src="chronique.js?v=20261113-232039"></script>
+<script src="cartes.js?v=20261113-232427"></script>
+<script src="musique.js?v=20261113-232427"></script>
+<script src="donnees.js?v=20261113-232427"></script>
+<script src="odyssee.js?v=20261113-232427"></script>
+<script src="chronique.js?v=20261113-232427"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -1744,7 +1760,7 @@ function quitterPartie() {
 }
 // 14/11 : un plateau peint par île de l'Odyssée (decor/plateau-<île>.webp), même disposition que celui du Duel, et une couche ANIMÉE
 // (braises qui montent, lave qui respire…). Le décalage des animations suit l'horloge : redessiner l'écran ne les fait pas repartir de zéro.
-const PLATEAUX_ILE = { brulees:1 };
+const PLATEAUX_ILE = { brulees:1, givre:1, abime:1 }; // îles dont le plateau est reçu
 // 14/11 : l'interface de chaque plateau d'île est PLACÉE PAR L'UTILISATEUR (placer.html?plateau=<île> → « PLACEMENT <ÎLE> {…} »), recopiée ici telle quelle.
 // Tant qu'une île n'a pas son placement, c'est celui du Duel qui sert. Le CSS est fabriqué à partir de ces chiffres (cssPlacement).
 const PLACEMENTS_ILE = {};
@@ -1778,6 +1794,8 @@ const BRAISES = [...Array(26)].map((_, i) => ({ x:(i * 37 + 11) % 97 + 1.5, d:5 
 function animIle(ile) {
   const ph = T => `-${((Date.now() / 1000) % T).toFixed(2)}s`;
   if (ile === 'brulees') return `<div class="animIle brulees"><div class="souffle" style="animation-delay:${ph(4.6)}"></div><div class="souffle s2" style="animation-delay:${ph(7.3)}"></div>${BRAISES.map(b => `<i style="left:${b.x}%;width:${b.s}px;height:${b.s}px;--dx:${b.dx}cqw;animation-duration:${b.d}s;animation-delay:-${(((Date.now() / 1000) + b.t) % b.d).toFixed(2)}s"></i>`).join('')}</div>`;
+  if (ile === 'givre') return `<div class="animIle givre"><div class="aurore" style="animation-delay:${ph(9)}"></div><div class="aurore a2" style="animation-delay:${ph(13)}"></div>${BRAISES.map(b => `<i style="left:${b.x}%;width:${b.s + 1}px;height:${b.s + 1}px;--dx:${b.dx}cqw;animation-duration:${b.d + 4}s;animation-delay:-${(((Date.now() / 1000) + b.t) % (b.d + 4)).toFixed(2)}s"></i>`).join('')}</div>`;
+  if (ile === 'abime') return `<div class="animIle abime"><div class="brume" style="animation-delay:${ph(8)}"></div><div class="brume b2" style="animation-delay:${ph(11)}"></div>${BRAISES.map((b, k) => `<i style="left:${b.x}%;top:${(k * 53 + 7) % 96}%;width:${b.s}px;height:${b.s}px;animation-duration:${2 + b.d / 3}s;animation-delay:-${(((Date.now() / 1000) + b.t) % (2 + b.d / 3)).toFixed(2)}s"></i>`).join('')}</div>`;
   return '';
 }
 function basculeMusique() { musOn = GM.bascule(); if (musOn) demarreMusique(); dessine(); }
@@ -2067,14 +2085,14 @@ async function joueFX() {
 // toucher l'écran pendant les animations les accélère
 document.addEventListener('pointerdown', () => { if (fxOn && !(S && S.tuto)) fxVite = .5; }, true); // 14/11 : plus d'accélération dans le tutoriel
 </script>
-<script src="profil.js?v=20261113-232039"></script>
-<script src="pantheon.js?v=20261113-232039"></script>
-<script src="tuto.js?v=20261113-232039"></script>
-<script src="deux.js?v=20261113-232039"></script>
-<script src="invasion.js?v=20261113-232039"></script>
-<script src="enigme-table.js?v=20261113-232039"></script>
-<script src="forge.js?v=20261113-232039"></script>
-<script src="semaine.js?v=20261113-232039"></script>
-<script src="enigme.js?v=20261113-232039"></script>
+<script src="profil.js?v=20261113-232427"></script>
+<script src="pantheon.js?v=20261113-232427"></script>
+<script src="tuto.js?v=20261113-232427"></script>
+<script src="deux.js?v=20261113-232427"></script>
+<script src="invasion.js?v=20261113-232427"></script>
+<script src="enigme-table.js?v=20261113-232427"></script>
+<script src="forge.js?v=20261113-232427"></script>
+<script src="semaine.js?v=20261113-232427"></script>
+<script src="enigme.js?v=20261113-232427"></script>
 </body>
 </html>
