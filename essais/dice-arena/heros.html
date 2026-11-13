@@ -112,17 +112,28 @@
   .sceau div { background:#2a2260; border:2px solid #f3c96b88; border-radius:18px; padding:16px; max-width:280px; box-shadow:0 8px 24px #000; }
   .sceau .gros { display:block; font-size:2.2em; }
   .suite { margin-top:14px; border-radius:16px; padding:10px 12px 14px; background:#1d1b3aee; border:2px solid var(--c); }
-  /* ---------- 13/11 : images Gemini (fond de la Tour, livre en cadre étirable, cadenas) ---------- */
+  /* ---------- 13/11 : images Gemini (fond de la Tour, livre à sa forme d'origine comme l'inspiration, cadenas) ---------- */
   body { background:linear-gradient(#120f2488, #120f24cc), url('menu-recu/fond-tour.webp?v=1') center top/cover fixed, #120f24; }
   #fiche { container-type:inline-size; }
-  #fiche .livre { --u:calc(100cqw / 1122); padding:0; border-radius:0; box-shadow:none; background:none; filter:drop-shadow(0 12px 22px #000c);
-    border-style:solid; border-color:transparent; border-width:calc(180 * var(--u)) calc(170 * var(--u)) calc(226 * var(--u)) calc(170 * var(--u));
-    border-image:url('menu-recu/livre.webp?v=1') 180 170 226 170 fill stretch; column-gap:calc(40 * var(--u)); }
+  #fiche .livre { display:block; position:relative; aspect-ratio:1122/726; padding:0; border-radius:0; box-shadow:none; perspective:none;
+    background:url('menu-recu/livre.webp?v=1') center/100% 100% no-repeat; filter:drop-shadow(0 12px 22px #000c); margin:4px 0 6px; }
   #fiche .livre::after { display:none; }
-  #fiche .page { background:none; box-shadow:none; border-radius:0; padding:0 2px; margin-top:calc(-95 * var(--u)); }
-  #fiche .page.g { margin-left:calc(-45 * var(--u)); }
-  #fiche .page.d { margin-right:calc(-25 * var(--u)); }
-  #fiche .sceau { inset:calc(-180 * var(--u)) calc(-170 * var(--u)) calc(-226 * var(--u)); }
+  #fiche .feuille { position:absolute; top:8.5%; height:58%; overflow:hidden; color:#2b2117; }
+  #fiche .feuille.g { left:12%; width:35.5%; display:grid; place-items:center; }
+  #fiche .feuille.g img { width:100%; height:100%; object-fit:cover; border-radius:6px; box-shadow:inset 0 0 0 2px #0002, 0 2px 6px #0004;
+    -webkit-mask:radial-gradient(ellipse 75% 75% at 50% 50%, #000 70%, #0000 100%); mask:radial-gradient(ellipse 75% 75% at 50% 50%, #000 70%, #0000 100%); }
+  #fiche .feuille.d { left:51.5%; width:35.5%; display:flex; flex-direction:column; align-items:center; text-align:center; gap:1.2cqw; padding-top:1cqw; }
+  #fiche .feuille.d .titre { font-size:2.5cqw; } #fiche .feuille.d h2 { font-size:5.4cqw; line-height:1; margin:0; }
+  #fiche .feuille.d .cit { font-size:2.6cqw; margin:0; line-height:1.25; }
+  #fiche .feuille.d .bt { font-size:3cqw; padding:1.4cqw 3cqw; margin:0; border-radius:20px; }
+  #fiche .feuille.d .bt.det { background:#2b6f80; color:#fff; box-shadow:0 2px 0 #17414c; border:0; }
+  #fiche .feuille.d.tourne { animation:apparait .4s ease-out; } @keyframes apparait { from { opacity:0; transform:translateX(6px); } }
+  #fiche .details { background:linear-gradient(#f6ebcf, #ead9b0); color:#2b2117; border-radius:16px; padding:10px 12px; box-shadow:0 8px 22px #000a, inset 0 0 0 2px #b89a5e; animation:arrive .3s ease-out; }
+  #fiche .details .page { background:none; box-shadow:none; padding:4px 0; font-size:.9em; }
+  #fiche .sceau { inset:0; border-radius:10px; padding:6px; }
+  #fiche .sceau div { padding:8px 12px; font-size:.82em; max-width:250px; } #fiche .sceau p { margin:4px 0 8px; }
+  #fiche .sceau .gros img { width:38px; margin-bottom:0; } #fiche .sceau .bt { padding:7px 14px; }
+  #fiche .details .des { grid-template-columns:repeat(6, 1fr); gap:4px; }
   .bande .cad img, .sceau .gros img { display:block; }
   .bande .cad img { width:28px; } .sceau .gros img { width:64px; margin:0 auto 6px; }
 </style>
@@ -143,14 +154,15 @@
     <li><b>Le second joueur</b> commence avec 4 PC et une carte de plus.</li>
   </ol></details>
 </main>
-<script src="donnees.js?v=20261113-133216"></script>
-<script src="odyssee.js?v=20261113-133216"></script>
-<script src="cartes.js?v=20261113-133216"></script>
+<script src="donnees.js?v=20261113-134009"></script>
+<script src="odyssee.js?v=20261113-134009"></script>
+<script src="cartes.js?v=20261113-134009"></script>
 <script>
 document.head.insertAdjacentHTML('beforeend', '<style>' + CSS_CARTE + '</style>');
 const SORTE = { u:'Créature', s:'Sort', e:'Équipement', r:'Piège' };
 let actuel = new URLSearchParams(location.search).get('h'); if (!HEROS[actuel]) actuel = localStorage.getItem('guilde-tour') || ORDRE[0];
 let edition = null;   // deck en cours de modification
+let details = false;  // 13/11 : le livre montre l'essentiel, « Détails » ouvre le reste
 const compter = d => { const n = {}; d.forEach(k => n[k] = (n[k] || 0) + 1); return n; };
 const ordreCartes = (id, ks) => ks.sort((a, b) => (HEROS[id].deck.includes(b) - HEROS[id].deck.includes(a)) || (CARTES[a].c - CARTES[b].c) || CARTES[a].n.localeCompare(CARTES[b].n));
 function vignette(id, k, w = 98) {   // la carte : cadre en cristal si le héros l'a déjà, sinon carte simple
@@ -171,14 +183,19 @@ function fiche() {
   document.documentElement.style.setProperty('--c', h.c);
   const deck = compter(deckDe(id));
   document.getElementById('fiche').innerHTML = `<div class="livre">
+    <div class="feuille g"><img src="portraits/${id}.webp" alt="${h.nom}"></div>
+    <div class="feuille d tourne"><div class="titre encre">${h.titre}</div><h2>${h.nom}</h2><p class="cit">${h.cit}</p>
+      <button class="bt det" onclick="details = !details; fiche()">${details ? 'Fermer' : 'Détails'}</button>
+      ${verrouille(id) ? '' : `<button class="bt or" onclick="location.href='duel.html?h=${id}'">⚔ Jouer avec</button>`}</div>
+    ${verrouille(id) ? `<div class="sceau"><div><span class="gros"><img src="menu-recu/cadenas.webp?v=1" alt="Verrouillé"></span><p>${h.nom} rejoint la Guilde quand tu as fini le <b>tutoriel</b> : un duel guidé de 5 minutes.</p><button class="bt or" onclick="location.href='duel.html?tuto=1'">🎓 Faire le tutoriel</button></div></div>` : ''}
+  </div>
+  ${details ? `<div class="details">
     <div class="page g">
-      <img class="portrait" src="portraits/${id}.webp" alt="">
-      <div class="titre encre">${h.titre}</div><h2>${h.nom}</h2><p class="cit">${h.cit}</p>
       <div class="chips"><span class="pv">❤ ${h.pv} PV</span><span class="st">${P.style}</span><span class="eq">⚖ ${EQUILIBRE[id]} %</span><span>🎮 ${joue ? `${gagne}/${joue} gagnées` : 'pas encore joué'}</span></div>
       <p class="role">${h.role}</p>
       <div class="stats">${Object.entries(P).filter(([k]) => k !== 'style').map(([k, v]) => `<div class="stat"><span>${k}</span><div class="barre"><i style="width:${v * 20}%"></i></div><b>${v}</b></div>`).join('')}</div>
     </div>
-    <div class="page d tourne">
+    <div class="page d">
       <h3>🎲 Ses dés</h3>
       <div class="des">${[1, 2, 3, 4, 5, 6].map(v => `<img src="${FACE(id, v)}" alt="${v}">`).join('')}</div>
       <h3>✨ Ses compétences</h3>
@@ -190,8 +207,7 @@ function fiche() {
         ${h.action ? `<div><b>Action · ${h.action.n}</b><em>${h.action.txt}</em> : ${h.action.d}</div>` : ''}
       </div>
     </div>
-    ${verrouille(id) ? `<div class="sceau"><div><span class="gros"><img src="menu-recu/cadenas.webp?v=1" alt="Verrouillé"></span><p>${h.nom} rejoint la Guilde quand tu as fini le <b>tutoriel</b> : un duel guidé de 5 minutes.</p><button class="bt or" onclick="location.href='duel.html?tuto=1'">🎓 Faire le tutoriel</button></div></div>` : ''}
-  </div>
+</div>` : ''}
   <div class="suite">
       <h3>🂠 ${perso ? 'Ton deck' : 'Son deck de base'} <small>${DECK_TAILLE} cartes</small></h3>
       <div id="deckzone">${edition ? '' : `<div class="deck">${ordreCartes(id, Object.keys(deck)).map(k => `<div class="cg">${deck[k] > 1 ? `<span class="nb">×${deck[k]}</span>` : ''}${vignette(id, k)}</div>`).join('')}</div>`}</div>
