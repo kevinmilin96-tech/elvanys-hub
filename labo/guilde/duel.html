@@ -297,19 +297,21 @@
   /* plateau peint, retouches du 10/11 (2) : RIEN sur le portrait. À gauche : vie, PC, puis les états ; à droite : Ultime et cartes en main. */
   /* le combat dans le décor du lieu (Odyssée, Campement) : le plateau peint laisse la place à la scène ; une image decor/lieu-<nom>.webp prend le dessus si elle existe */
   .plateau.tapis.scene { background-color:#1a1020; background-size:cover; background-position:center; }
-  .scene.lieu-cendres { background-image:url('decor/lieu-cendres.webp?v=1'), linear-gradient(180deg, #3a1a1a 0%, #7a3a2a 28%, #4a4048 46%, #2a2a33 47%, #15151c 100%); }
-  .scene.lieu-lave { background-image:url('decor/lieu-lave.webp?v=1'), linear-gradient(180deg, #1a0505 0%, #5a1a0a 30%, #a8341a 46%, #2a0a0a 47%, #120404 100%); }
-  .scene.lieu-ruines { background-image:url('decor/lieu-ruines.webp?v=1'), linear-gradient(180deg, #1a0f2e 0%, #4a2a7a 32%, #3a2a4a 46%, #1d1626 47%, #0f0b16 100%); }
-  .scene.lieu-cratere { background-image:url('decor/lieu-cratere.webp?v=1'), radial-gradient(circle at 50% 52%, #f7a23a 0%, #a8341a 22%, #3a0a0a 55%, #1a0505 100%); }
-  .scene.lieu-neige { background-image:url('decor/lieu-neige.webp?v=1'), linear-gradient(180deg, #1a2a44 0%, #5f86b3 30%, #c9dbea 46%, #8aa6c2 47%, #2a3a52 100%); }
-  .scene.lieu-glace { background-image:url('decor/lieu-glace.webp?v=1'), linear-gradient(180deg, #08142a 0%, #1f4a7a 32%, #6fc3ef 46%, #0e2a48 47%, #050d1a 100%); }
-  .scene.lieu-cristal { background-image:url('decor/lieu-cristal.webp?v=1'), linear-gradient(180deg, #120a2e 0%, #3a3a8a 32%, #7fd3ff 46%, #1d1a44 47%, #0b0a1a 100%); }
-  .scene.lieu-sommet { background-image:url('decor/lieu-sommet.webp?v=1'), radial-gradient(circle at 50% 52%, #e8f6ff 0%, #7fd3ff 22%, #1f3a6a 55%, #070d1d 100%); }
-  .scene.lieu-vide { background-image:url('decor/lieu-vide.webp?v=1'), linear-gradient(180deg, #05020d 0%, #2a0f4a 32%, #5a2a8a 46%, #1a0a2e 47%, #05020d 100%); }
-  .scene.lieu-faille { background-image:url('decor/lieu-faille.webp?v=1'), linear-gradient(180deg, #0a0414 0%, #3a1060 30%, #c084fc 46%, #2a0a44 47%, #070210 100%); }
-  .scene.lieu-ruinesv { background-image:url('decor/lieu-ruinesv.webp?v=1'), linear-gradient(180deg, #0f0b1e 0%, #3a3256 32%, #6a5a8a 46%, #1d1830 47%, #08060f 100%); }
-  .scene.lieu-trone { background-image:url('decor/lieu-trone.webp?v=1'), radial-gradient(circle at 50% 52%, #f3c96b 0%, #a855f7 18%, #2a0a44 52%, #030108 100%); }
-  .scene.lieu-brume { background-image:url('decor/lieu-brume.webp?v=1'), linear-gradient(180deg, #1a1f1a 0%, #4a5a4a 35%, #2a3a2a 46%, #16201a 47%, #0b100c 100%); }
+  .champLieu.lieu-cendres { background-image:url('decor/lieu-cendres.webp?v=1'), linear-gradient(180deg, #3a1a1a 0%, #7a3a2a 28%, #4a4048 46%, #2a2a33 47%, #15151c 100%); }
+  .champLieu.lieu-lave { background-image:url('decor/lieu-lave.webp?v=1'), linear-gradient(180deg, #1a0505 0%, #5a1a0a 30%, #a8341a 46%, #2a0a0a 47%, #120404 100%); }
+  .champLieu.lieu-ruines { background-image:url('decor/lieu-ruines.webp?v=1'), linear-gradient(180deg, #1a0f2e 0%, #4a2a7a 32%, #3a2a4a 46%, #1d1626 47%, #0f0b16 100%); }
+  .champLieu.lieu-cratere { background-image:url('decor/lieu-cratere.webp?v=1'), radial-gradient(circle at 50% 52%, #f7a23a 0%, #a8341a 22%, #3a0a0a 55%, #1a0505 100%); }
+  .champLieu.lieu-neige { background-image:url('decor/lieu-neige.webp?v=1'), linear-gradient(180deg, #1a2a44 0%, #5f86b3 30%, #c9dbea 46%, #8aa6c2 47%, #2a3a52 100%); }
+  .champLieu.lieu-glace { background-image:url('decor/lieu-glace.webp?v=1'), linear-gradient(180deg, #08142a 0%, #1f4a7a 32%, #6fc3ef 46%, #0e2a48 47%, #050d1a 100%); }
+  .champLieu.lieu-cristal { background-image:url('decor/lieu-cristal.webp?v=1'), linear-gradient(180deg, #120a2e 0%, #3a3a8a 32%, #7fd3ff 46%, #1d1a44 47%, #0b0a1a 100%); }
+  .champLieu.lieu-sommet { background-image:url('decor/lieu-sommet.webp?v=1'), radial-gradient(circle at 50% 52%, #e8f6ff 0%, #7fd3ff 22%, #1f3a6a 55%, #070d1d 100%); }
+  .champLieu.lieu-vide { background-image:url('decor/lieu-vide.webp?v=1'), linear-gradient(180deg, #05020d 0%, #2a0f4a 32%, #5a2a8a 46%, #1a0a2e 47%, #05020d 100%); }
+  .champLieu.lieu-faille { background-image:url('decor/lieu-faille.webp?v=1'), linear-gradient(180deg, #0a0414 0%, #3a1060 30%, #c084fc 46%, #2a0a44 47%, #070210 100%); }
+  .champLieu.lieu-ruinesv { background-image:url('decor/lieu-ruinesv.webp?v=1'), linear-gradient(180deg, #0f0b1e 0%, #3a3256 32%, #6a5a8a 46%, #1d1830 47%, #08060f 100%); }
+  .champLieu.lieu-trone { background-image:url('decor/lieu-trone.webp?v=1'), radial-gradient(circle at 50% 52%, #f3c96b 0%, #a855f7 18%, #2a0a44 52%, #030108 100%); }
+  .champLieu.lieu-brume { background-image:url('decor/lieu-brume.webp?v=1'), linear-gradient(180deg, #1a1f1a 0%, #4a5a4a 35%, #2a3a2a 46%, #16201a 47%, #0b100c 100%); }
+  /* 14/11 (choix de l'utilisateur) : Odyssée, Invasion… se jouent sur le MÊME plateau peint que le Duel ; le décor du lieu remplit seulement la zone centrale */
+  .champLieu { position:absolute; left:19.3%; top:22%; width:61.5%; height:44.8%; background-color:#1a1020; background-size:cover; background-position:center; border-radius:1.4cqw; box-shadow:inset 0 0 3cqw #000c, 0 0 0 .4cqw #0006; pointer-events:none; z-index:0; }
   .scene::after { content:''; position:absolute; left:0; right:0; top:46.5cqw; height:1.5cqw; background:linear-gradient(90deg, transparent, #ffffff33, transparent); pointer-events:none; }
   .scene #b-O { width:34cqw; height:34cqw; left:33cqw; top:3cqw; } .scene #b-O img { border:3px solid #ffffff55; box-shadow:0 0 40px #000c, 0 0 0 6px #0006; }
   .scene #b-J img { border:3px solid #f3c96b88; box-shadow:0 0 30px #000c; }
@@ -410,6 +412,8 @@
   .transbt { height:auto; background:none; border:none; } .transbt img { width:11cqw; height:11cqw; display:block; margin:0 auto; filter:drop-shadow(0 2px 3px #000a); } .transbt.ok { box-shadow:none; } .transbt.ok img { filter:drop-shadow(0 0 4px #7dffb0) drop-shadow(0 0 8px #7dffb0); }
   .transbt.ok { box-shadow:0 0 0 2px #7dffb0, 0 0 12px #7dffb0; } .transbt.fait { opacity:.4; }
   .bas .b0 sup { font-size:10px; }
+  .bas .b2 { white-space:nowrap; min-width:0; } /* 14/11 : avec les boutons de l'Odyssée (🎒, 🩸), « Fin du tour » n'est plus écrasé */
+  .bas:has(.b0:nth-of-type(3)) .b0 { width:40px; } .bas:has(.b0:nth-of-type(3)) .b1 { flex:.8; } .bas:has(.b0:nth-of-type(3)) .b1 .mot { display:none; }
   /* ===== habillage peint (planche d'interface Gemini, 11/11) ===== */
   .unique .barre { left:41cqw; width:18cqw; height:18cqw; }
   .unique #b-O { top:5.5cqh; } .unique #b-J { top:64cqh; }
@@ -618,7 +622,7 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261113-230146';
+const VERSION = '20261113-230441';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -637,11 +641,11 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261113-230146"></script>
-<script src="musique.js?v=20261113-230146"></script>
-<script src="donnees.js?v=20261113-230146"></script>
-<script src="odyssee.js?v=20261113-230146"></script>
-<script src="chronique.js?v=20261113-230146"></script>
+<script src="cartes.js?v=20261113-230441"></script>
+<script src="musique.js?v=20261113-230441"></script>
+<script src="donnees.js?v=20261113-230441"></script>
+<script src="odyssee.js?v=20261113-230441"></script>
+<script src="chronique.js?v=20261113-230441"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -1505,7 +1509,7 @@ function dessine() {
   <div class="salle"><span class="st">${S.coop ? `<b>⚔️ L’Invasion</b> · ${J.ordi ? `${J.nom} (compagnon) joue…` : J.qui === 'toi' ? 'à toi' : `au tour de ${J.nom}`} · ${S.salle.n}` : S.ody ? `<b>${S.ody.titre}</b> · ${S.salle.n} : ${S.salle.d}${J.reliques.length ? ' <span class="rel">' + J.reliques.map(r => `<i title="${RELIQUES[r].n}" onclick="aideRelique('${r}')">${RELIQUES[r].e}</i>`).join('') + '</span>' : ''}` : `<b>${S.salle.n}</b> · ${S.salle.d}`}</span><span class="sons">
     <button class="sonbt ${sonOn ? '' : 'off'}" onclick="basculeSon()" aria-label="Bruitages" title="Bruitages"><svg viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/>${sonOn ? '<path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>' : '<path d="M16 9l5 6M21 9l-5 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>'}</svg></button>
     <button class="sonbt ${musOn ? '' : 'off'}" onclick="basculeMusique()" aria-label="Musique" title="Musique"><svg viewBox="0 0 24 24"><path d="M9 17V5l11-2v12" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="6.5" cy="17.5" r="2.8" fill="currentColor"/><circle cx="17.5" cy="15.5" r="2.8" fill="currentColor"/>${musOn ? '' : '<path d="M3 3l18 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>'}</svg></button></span></div>
-  <div class="plateau tapis unique ${S.lieu ? 'scene lieu-' + S.lieu : ''}">${barre(O, true)}${front(O, true)}${front(J, false)}${barre(J, false)}
+  <div class="plateau tapis unique ${S.lieu ? 'avecLieu' : ''}">${S.lieu ? `<div class="champLieu lieu-${S.lieu}"></div>` : ''}${barre(O, true)}${front(O, true)}${front(J, false)}${barre(J, false)}
     ${colonneActions(J, h)}
     <div class="des" ontouchstart="glisseDebut(event)" ontouchend="glisseFin(event)">${J.des.map((d, i) => `<div class="d ${sel.includes(d) ? 'sel' : ''} ${d.pose ? 'pose' : ''} ${d.mod ? 'mod' : ''} ${J.aLancer ? 'cache' : ''} ${i === J.neuf && (J.aLancer || Date.now() < (J.neufJusque || 0)) ? 'neuf' : ''}" onclick="choisirDe(${i})"><img src="${FACE(J.id, d.v || 1)}" alt="${d.v || '?'}">${d.sp && !J.aLancer && typeof FACES_FORGE !== 'undefined' ? `<span class="spf">${FACES_FORGE[d.sp].e}</span>` : ''}<div class="sac">${i === J.neuf && (J.aLancer || Date.now() < (J.neufJusque || 0)) ? '✨ neuf' : sacPastilles(J, d)}</div></div>`).join('')}${[...Array(Math.max(0, 5 - J.des.length)).keys()].map(k => { const i = J.des.length + k, t = i - 1;
       return `<div class="d verrou"><div class="cad">🔒</div><div class="sac">${J.tours >= t ? 'Handicap' : 'tour ' + t}</div></div>`; }).join('')}</div>
@@ -1518,7 +1522,7 @@ function dessine() {
     ${S.coop ? '<button class="b0" onclick="voirEquipe()" aria-label="Équipe">👥</button>' : ''}
     ${S.ody && J.sacoche.length ? `<button class="b0" onclick="voirSacoche()" aria-label="Sacoche">🎒<sup>${J.sacoche.length}</sup></button>` : ''}
     ${S.ody && !J.sacrifie && J.pv > 10 && J.pc < 6 ? '<button class="b0" onclick="sacrifice()" aria-label="Sacrifice" title="Sacrifice : −10 PV, +2 PC">🩸</button>' : ''}
-    <button class="b1" onclick="relancer()" ${sel.length && (J.relance || J.pc >= sel.length) ? '' : 'disabled style="opacity:.4"'}>🎲 Relancer <small class="nb">${J.relance ? `(${J.relance})` : '· 1 PC/dé'}</small></button>
+    <button class="b1" onclick="relancer()" ${sel.length && (J.relance || J.pc >= sel.length) ? '' : 'disabled style="opacity:.4"'}>🎲<span class="mot"> Relancer</span> <small class="nb">${J.relance ? `(${J.relance})` : '· 1 PC/dé'}</small></button>
     <button class="b2" onclick="finDeMonTour()">Fin du tour ▶</button>
   </div>`;
   if (S.fini && !S.finPrevue) { S.finPrevue = true; setTimeout(montrerFin, 2200); } // 14/11 : 2,2 s pour voir les derniers dégâts avant la fenêtre de fin
@@ -2001,14 +2005,14 @@ async function joueFX() {
 // toucher l'écran pendant les animations les accélère
 document.addEventListener('pointerdown', () => { if (fxOn && !(S && S.tuto)) fxVite = .5; }, true); // 14/11 : plus d'accélération dans le tutoriel
 </script>
-<script src="profil.js?v=20261113-230146"></script>
-<script src="pantheon.js?v=20261113-230146"></script>
-<script src="tuto.js?v=20261113-230146"></script>
-<script src="deux.js?v=20261113-230146"></script>
-<script src="invasion.js?v=20261113-230146"></script>
-<script src="enigme-table.js?v=20261113-230146"></script>
-<script src="forge.js?v=20261113-230146"></script>
-<script src="semaine.js?v=20261113-230146"></script>
-<script src="enigme.js?v=20261113-230146"></script>
+<script src="profil.js?v=20261113-230441"></script>
+<script src="pantheon.js?v=20261113-230441"></script>
+<script src="tuto.js?v=20261113-230441"></script>
+<script src="deux.js?v=20261113-230441"></script>
+<script src="invasion.js?v=20261113-230441"></script>
+<script src="enigme-table.js?v=20261113-230441"></script>
+<script src="forge.js?v=20261113-230441"></script>
+<script src="semaine.js?v=20261113-230441"></script>
+<script src="enigme.js?v=20261113-230441"></script>
 </body>
 </html>
