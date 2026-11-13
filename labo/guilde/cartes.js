@@ -14,7 +14,7 @@ function carteGuilde(k, opt = {}) {
     <div class="cg-nom" style="left:${pc(z.nom, 0)};top:${pc(z.nom, 1)};width:${pc(z.nom, 2)};height:${pc(z.nom, 3)}"><span>${c.n}</span></div>
     <div class="cg-cout" style="left:${pc(z.cout, 0)};top:${pc(z.cout, 1)}">${opt.cout !== undefined ? opt.cout : c.c}</div>
     <div class="cg-bande" style="left:${pc(z.bande, 0)};top:${pc(z.bande, 1)};width:${pc(z.bande, 2)};height:${pc(z.bande, 3)}">🎲 ${c.txt}</div>
-    <div class="cg-effet" style="left:${pc(z.effet, 0)};top:${pc(z.effet, 1)};width:${pc(z.effet, 2)};height:${pc(z.effet, 3)}">${c.d}</div>
+    <div class="cg-effet${c.d.length > 120 ? ' tlong' : c.d.length > 95 ? ' long' : ''}" style="left:${pc(z.effet, 0)};top:${pc(z.effet, 1)};width:${pc(z.effet, 2)};height:${pc(z.effet, 3)}">${c.d}</div>
     <div class="cg-sorte" style="left:${pc(z.bas, 0)};top:${pc(z.bas, 1)}">${ICONE_SORTE[c.t] || ''}</div>
     ${opt.pied || ''}${c.u ? `<div class="cg-atk">⚔ ${c.u.a}</div><div class="cg-vie">❤ ${c.u.v}</div>` : ''}
   </div>`;
@@ -30,6 +30,7 @@ const CSS_CARTE = `
 .cg-nom { display:flex; align-items:center; justify-content:center; text-align:center; color:#f6ecff; font-weight:bold; font-size:6.2cqw; line-height:1; text-shadow:0 1px 0 #000, 0 0 6px #b58cff; padding:0 2%; }
 .cg-cout { transform:translate(-50%,-50%); width:12cqw; height:12cqw; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:8.5cqw; color:#fff; text-shadow:0 0 4px #2a7fc1, 0 2px 0 #000; background:radial-gradient(circle, #10162ae6 0%, #10162ad0 62%, #10162a00 72%); } /* 12/11 : disque sombre sous le chiffre, lisible même quand la pierre de Gemini est pleine */
 .cg-bande { display:flex; align-items:center; justify-content:center; color:#ffe9a8; font-weight:bold; font-size:5.2cqw; text-shadow:0 1px 0 #000; }
+.cg-effet.long { font-size:4.7cqw; } .cg-effet.tlong { font-size:4.1cqw; line-height:1.18; } /* 14/11 : les longs textes ne débordent plus */
 .cg-effet { display:flex; align-items:center; justify-content:center; text-align:center; color:#efe6ff; font-size:5.4cqw; line-height:1.25; padding:3% 4%; }
 .cg-sorte { transform:translate(-50%,-50%); color:#fff; font-size:5cqw; text-shadow:0 0 4px #000; }
 .cg-atk, .cg-vie { bottom:3%; width:15cqw; height:15cqw; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:5.6cqw; color:#fff; border:2px solid #fff8; box-shadow:0 2px 6px #000a; }
