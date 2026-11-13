@@ -622,7 +622,7 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261113-230441';
+const VERSION = '20261113-230551';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -641,11 +641,11 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261113-230441"></script>
-<script src="musique.js?v=20261113-230441"></script>
-<script src="donnees.js?v=20261113-230441"></script>
-<script src="odyssee.js?v=20261113-230441"></script>
-<script src="chronique.js?v=20261113-230441"></script>
+<script src="cartes.js?v=20261113-230551"></script>
+<script src="musique.js?v=20261113-230551"></script>
+<script src="donnees.js?v=20261113-230551"></script>
+<script src="odyssee.js?v=20261113-230551"></script>
+<script src="chronique.js?v=20261113-230551"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -1114,9 +1114,9 @@ function partieOdyssee() {
   if (!run || !run.combat) { location.href = 'odyssee.html'; return; }
   const cb = run.combat;
   // combat déjà commencé sur ce téléphone (rechargement de la page) : on le reprend là où il en était
-  try { const sv = JSON.parse(localStorage.getItem('guilde-combat') || 'null'); if (sv && sv.ody && sv.ody.id === cb.id && !sv.fini) { S = sv; FX = []; fxApres = []; fxOn = false; sel = []; attaquant = null; ciblage = null; if (HEROS[S.O.id].phases) { S.O.phase = 0; phaseBoss(S.O); } rendu(); regles(); return; } } catch (e) {}
+  try { const sv = JSON.parse(localStorage.getItem('guilde-combat') || 'null'); if (sv && sv.ody && sv.ody.id === cb.id && !sv.fini) { S = sv; FX = []; fxApres = []; fxOn = false; sel = []; attaquant = null; ciblage = null; if (HEROS[S.O.id].phases) { S.O.phase = 0; phaseBoss(S.O); } rendu(); regles(true); return; } } catch (e) {}
   prepareCombatOdyssee(run, cb, false);
-  rendu(); regles();
+  rendu(); regles(true);
 }
 function prepareCombatOdyssee(run, cb, auto) {
   const h = HEROS[cb.ennemi]; if (h.phases) { h.garde = h.phases[0].garde; h.pouvoir = h.phases[0].pouvoir; }
@@ -1238,7 +1238,7 @@ function partieCampement() {
   pioche(A, 4); pioche(B, 4); B.pc = 2;
   log(`⚔️ L’Invasion : ${A.nom} et ${B.nom} contre ${S.O.nom}. Salle : ${S.salle.n}. ${S.salle.d}`);
   sel = []; attaquant = null; ciblage = null;
-  debutTour(A); rendu(); regles();
+  debutTour(A); rendu(); regles(true);
 }
 function sbiresCamp() {
   const O = S.O, sb = HEROS[O.id].sbires; if (!sb || O.tours % sb.tous !== 0) return;
@@ -1624,7 +1624,17 @@ function choix(titre, options, cb) {
   window._cb = cb;
   fenetre(`<h2>${titre}</h2><div class="grille6">${options.map((o, i) => `<button onclick="fermer();_cb(${i})">${o}</button>`).join('')}</div>`);
 }
-function regles() {
+// 14/11 (l'utilisateur : « le comment on joue prend trop de place ») : au début d'une partie, un RAPPEL court ; le ❓ ouvre les règles complètes
+function rappelDebut() {
+  const h = HEROS[S.J.id];
+  fenetre(`<h2>⚔ ${h.nom} contre ${S.O.nom}</h2>
+  <p style="margin:.3em 0">🛡 <b>Garde</b> (${h.garde.txt}) · ✦ <b>Pouvoir</b> (${h.pouvoir.txt}) · ⚡ <b>Ultime</b> (jauge pleine, ${h.ultime.txt}, 3 PC)</p>
+  ${S.coop ? `<p style="margin:.3em 0;font-size:.9em">Le boss frappe <b>le dernier héros qui a joué</b>.</p>` : ''}
+  <p style="margin:.3em 0;font-size:.85em;color:#c9c1ea">Tout est expliqué dans ❓, en bas à gauche.</p>
+  <div class="choixh"><button onclick="fermer()">Jouer ▶</button><button onclick="fermer();regles()">❓ Toutes les règles</button></div>`);
+}
+function regles(court) {
+  if (court) return rappelDebut();
   const h = HEROS[S.J.id];
   fenetre(`<h2>Comment on joue</h2><ul>
   <li><b>Les dés ne coûtent rien.</b> Ce sont les <b>cartes</b> qui coûtent des PC (le chiffre bleu). Pour jouer une carte, il faut <b>les deux</b> : assez de PC, et un dé qui remplit sa condition.</li>
@@ -1699,9 +1709,9 @@ function accueil() {
 }
 function adversaire() {
   fenetre(`<h2>Duel · prototype</h2><p>2. Contre qui ? (l’ordinateur)</p>
-  <div class="heros6">${ORDRE.filter(id => id !== monHeros).map(id => `<button onclick="fermer();nouvellePartie(monHeros,'${id}');regles()"><img src="${IMG(id)}" alt="">${HEROS[id].nom}</button>`).join('')}
-  <button onclick="fermer();nouvellePartie(monHeros);regles()" style="display:flex;align-items:center;justify-content:center;font-size:2em;min-height:110px">🎲<br><span style="font-size:.4em">au hasard</span></button></div>
-  ${typeof roiDebloque === 'function' && roiDebloque() ? `<div class="choixh"><button onclick="fermer();nouvellePartie(monHeros,'roi');regles()" style="border-color:#a855f7">👑 Défier le Roi sans visage (Panthéon)</button></div>` : ''}`);
+  <div class="heros6">${ORDRE.filter(id => id !== monHeros).map(id => `<button onclick="fermer();nouvellePartie(monHeros,'${id}');regles(true)"><img src="${IMG(id)}" alt="">${HEROS[id].nom}</button>`).join('')}
+  <button onclick="fermer();nouvellePartie(monHeros);regles(true)" style="display:flex;align-items:center;justify-content:center;font-size:2em;min-height:110px">🎲<br><span style="font-size:.4em">au hasard</span></button></div>
+  ${typeof roiDebloque === 'function' && roiDebloque() ? `<div class="choixh"><button onclick="fermer();nouvellePartie(monHeros,'roi');regles(true)" style="border-color:#a855f7">👑 Défier le Roi sans visage (Panthéon)</button></div>` : ''}`);
 }
 if (typeof document !== 'undefined' && document.getElementById('app')) { const q = new URLSearchParams(location.search); if (q.get('tuto')) addEventListener('load', () => partieTuto()); else if (q.get('enigme')) addEventListener('load', () => partieEnigme(q.get('enigme'))); else if (q.get('semaine')) addEventListener('load', () => partieSemaine()); else if (q.get('deux')) addEventListener('load', () => deuxAccueil()); else if (q.get('odyssee')) setTimeout(partieOdyssee, 0); else if (q.get('campement')) setTimeout(partieCampement, 0); else if (q.get('parties')) mesParties(); else if (q.get('h') && HEROS[q.get('h')]) { monHeros = q.get('h'); adversaire(); } else accueil(); }
 
@@ -2005,14 +2015,14 @@ async function joueFX() {
 // toucher l'écran pendant les animations les accélère
 document.addEventListener('pointerdown', () => { if (fxOn && !(S && S.tuto)) fxVite = .5; }, true); // 14/11 : plus d'accélération dans le tutoriel
 </script>
-<script src="profil.js?v=20261113-230441"></script>
-<script src="pantheon.js?v=20261113-230441"></script>
-<script src="tuto.js?v=20261113-230441"></script>
-<script src="deux.js?v=20261113-230441"></script>
-<script src="invasion.js?v=20261113-230441"></script>
-<script src="enigme-table.js?v=20261113-230441"></script>
-<script src="forge.js?v=20261113-230441"></script>
-<script src="semaine.js?v=20261113-230441"></script>
-<script src="enigme.js?v=20261113-230441"></script>
+<script src="profil.js?v=20261113-230551"></script>
+<script src="pantheon.js?v=20261113-230551"></script>
+<script src="tuto.js?v=20261113-230551"></script>
+<script src="deux.js?v=20261113-230551"></script>
+<script src="invasion.js?v=20261113-230551"></script>
+<script src="enigme-table.js?v=20261113-230551"></script>
+<script src="forge.js?v=20261113-230551"></script>
+<script src="semaine.js?v=20261113-230551"></script>
+<script src="enigme.js?v=20261113-230551"></script>
 </body>
 </html>
