@@ -8,7 +8,7 @@
 <title>La Guilde des Runes</title>
 <script>
 // Même mécanisme que le Duel : une nouvelle version = rechargement tout seul à l'ouverture (publier.sh change VERSION).
-const VERSION = '20261113-063832';
+const VERSION = '20261113-064825';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-menu-' + v)) { sessionStorage.setItem('recharge-menu-' + v, '1'); location.replace('menu.html?v=' + v); }
@@ -79,16 +79,16 @@ fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.te
   #monde .entete, #monde .petits, #monde .bas, #monde .desc { max-width:520px; margin-left:auto; margin-right:auto; padding:0 14px; }
   .retour { display:none; margin:4px auto 0; padding:7px 18px; border-radius:20px; border:1px solid #6b5fb0; background:#221d42cc; color:var(--texte); font:inherit; font-size:.9em; }
   .retour.vu { display:block; }
-  .carrousel { --w:min(72vw, 330px, calc(60vh * .67)); display:flex; gap:4vw; overflow-x:auto; scroll-snap-type:x mandatory; padding:22px calc(50% - var(--w) / 2) 8px; scrollbar-width:none; transition:opacity .35s; }
+  .carrousel { --w:min(70vw, 330px, calc(60vh * .67)); display:flex; gap:0vw; /* PLACEMENT MENU de l'utilisateur, 13/11 */ overflow-x:auto; scroll-snap-type:x mandatory; padding:22px calc(50% - var(--w) / 2) 8px; scrollbar-width:none; transition:opacity .35s; }
   .carrousel::-webkit-scrollbar { display:none; }
   .carrousel.cache { opacity:0; }
   .porte { flex:none; width:var(--w); aspect-ratio:848/1264; position:relative; scroll-snap-align:center; container-type:inline-size; cursor:pointer; transform-origin:50% 60%; transition:transform .15s linear, filter .2s; }
-  .porte .dedans { position:absolute; left:23.4%; top:16.4%; width:53.2%; height:65.2%; border-radius:50% 50% 0 0 / 30% 30% 0 0; overflow:hidden; background:#140f2a; }
+  .porte .dedans { position:absolute; left:23%; top:16%; width:53.8%; height:68%; border-radius:50% 50% 0 0 / 30% 30% 0 0; overflow:hidden; background:#140f2a; }
   .porte .dedans img { width:100%; height:100%; object-fit:cover; display:block; }
   .porte .arche { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; filter:drop-shadow(0 10px 18px #000c); }
-  .porte .plaque { position:absolute; left:16%; width:68%; top:83.6%; height:9%; display:flex; align-items:center; justify-content:center; text-align:center; line-height:1;
-    font-size:7.2cqw; font-weight:bold; color:#2b2346; text-shadow:0 1px 0 #ffffffaa; letter-spacing:.01em; }
-  .porte .plaque.long { font-size:5.6cqw; }
+  .porte .plaque { position:absolute; left:16.2%; width:68%; top:85%; height:9.2%; display:flex; align-items:center; justify-content:center; text-align:center; line-height:1;
+    font-size:7.8cqw; font-weight:bold; color:#2b2346; text-shadow:0 1px 0 #ffffffaa; letter-spacing:.01em; }
+  .porte .plaque.long { font-size:6.1cqw; }
   .porte.centre .dedans { box-shadow:inset 0 0 30px #c084fc66; }
   .porte.centre .halo { opacity:1; }
   .porte .halo { position:absolute; left:18%; right:18%; top:12%; bottom:14%; border-radius:50% 50% 12% 12%; background:radial-gradient(ellipse, #c084fc55, transparent 70%); filter:blur(14px); opacity:0; transition:opacity .4s; z-index:-1; animation:respire 3.2s ease-in-out infinite; }
@@ -148,7 +148,7 @@ fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.te
 </div>
 <div id="flash"></div>
 
-<script src="donnees.js?v=20261113-063832"></script>
+<script src="donnees.js?v=20261113-064825"></script>
 <script>
 // ciel étoilé + runes du portail (symboles, pas des lettres), aux couleurs des héros
 const ciel = document.getElementById('ciel');
