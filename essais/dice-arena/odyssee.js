@@ -679,6 +679,44 @@ Object.assign(BOSS_CAMP, {
     ultime:{ n:'Embrasement', txt:'3 dés', d:'10 dégâts et 1 Braise à chaque héros.', cond:vs => vs.length === 3, cible:'ennemi', f:() => debout().forEach(h => { degats({ J:h }, 10); braiseTitan(h); }) },
     renforts:[] },
 });
+// ================================================================== 13/11 : INVASION, ACTE I « L'ÉVEIL DE L'ABÎME » (d'après le livre papier, pages 30-35)
+// Trois vagues à la suite : la Meute corrompue (3 Gobelins = une Nuée), les Gardes corrompus jumeaux (Lien d'ombre), le Nécromancien du Vide.
+// Mécanique globale : la SOUILLURE (au début de son tour, le héros perd 1 PV par pile ; 6 au plus ; Premiers soins et Purification la retirent).
+function souille(D, n) { if (!D || D.aTerre || D.pv <= 0) return; D.souillure = Math.min(6, (D.souillure || 0) + (n || 1)); log(`🟢 Souillure ${D.souillure} sur ${D.nom}.`); }
+function volePC(J, D, n) { const v = Math.min(n, D.pc || 0); if (v) { D.pc -= v; log(`${J.nom} vole ${v} PC à ${D.nom}.`); } return v; }
+const VAGUES_EVEIL = {
+  meute: { nom:'La Meute corrompue', titre:'3 Gobelins, une Nuée', emoji:'👺', c:'#7a3aa8', pv:60, boss:true, ile:'invasion', role:'Trois Gobelins corrompus qui attaquent comme un seul monstre ; chacun tombe tous les 20 PV. Ils volent des PC et posent la Souillure.', cit:'« Hé hé hé… »',
+    phases:[
+      { seuil:1, garde:{ n:'Nuée', txt:'1 dé', d:'Bouclier = la moitié du dé.', cond:vs => vs.length === 1, val:vs => Math.ceil(vs[0] / 2), f:(J, vs) => { J.gardeB += Math.ceil(vs[0] / 2); log(`La Meute : Nuée, Bouclier ${Math.ceil(vs[0] / 2)}.`); } },
+        pouvoir:{ n:'Morsure grave', txt:'3 dés identiques', d:'10 dégâts et 2 Souillures ; chaque 6 vole 1 PC.', cond:vs => vs.length === 3 && vs[0] === vs[1] && vs[1] === vs[2], cible:'ennemi', f:(J, vs, k) => { degats(k, 10); if (k && k.J && !k.u) { souille(k.J, 2); volePC(J, k.J, vs.filter(v => v === 6).length); } } } },
+      { seuil:2 / 3, garde:{ n:'Nuée', txt:'1 dé', d:'Bouclier = la moitié du dé.', cond:vs => vs.length === 1, val:vs => Math.ceil(vs[0] / 2), f:(J, vs) => { J.gardeB += Math.ceil(vs[0] / 2); } },
+        pouvoir:{ n:'Morsure', txt:'2 dés identiques', d:'5 dégâts et 1 Souillure (deux Gobelins encore debout) ; chaque 6 vole 1 PC.', cond:vs => vs.length === 2 && vs[0] === vs[1], cible:'ennemi', f:(J, vs, k) => { degats(k, 5); if (k && k.J && !k.u) { souille(k.J, 1); volePC(J, k.J, vs.filter(v => v === 6).length); } } } },
+      { seuil:1 / 3, garde:{ n:'Nuée', txt:'1 dé', d:'Bouclier = la moitié du dé.', cond:vs => vs.length === 1, val:vs => Math.ceil(vs[0] / 2), f:(J, vs) => { J.gardeB += Math.ceil(vs[0] / 2); } },
+        pouvoir:{ n:'Dernière morsure', txt:'2 dés identiques', d:'5 dégâts et 1 Souillure (le dernier Gobelin) ; il récupère 5 PV par PC volé.', cond:vs => vs.length === 2 && vs[0] === vs[1], cible:'ennemi', f:(J, vs, k) => { degats(k, 5); if (k && k.J && !k.u) { souille(k.J, 1); const v = volePC(J, k.J, 1); if (v) J.pv = Math.min(Math.ceil(J.pvMax / 3), J.pv + 5 * v); } } } },
+    ],
+    ultime:{ n:'—', txt:'jamais', d:'La Meute n’a pas d’Ultime.', cond:() => false }, renforts:[] },
+  duo: { nom:'Les Gardes corrompus', titre:'le Duo d’acier', emoji:'🛡️', c:'#4a4a6a', pv:90, boss:true, jumeaux:true, ile:'invasion', role:'Deux Gardes de 45 PV liés par une chaîne d’ombre : les dégâts se partagent, un dé de bouclier retire 2 dégâts sur 4-5-6, et celui qui tombe se relève avec 20 PV si son jumeau est encore debout à la fin du tour. Il faut les abattre DANS LE MÊME TOUR.', cit:'« Nous sommes un. »',
+    phases:[ { seuil:1, garde:{ n:'Boucliers liés', txt:'1 dé', d:'Bouclier = la valeur du dé.', cond:vs => vs.length === 1, val:vs => vs[0], f:(J, vs) => { J.gardeB += vs[0]; log(`Les Gardes : Boucliers liés, Bouclier ${vs[0]}.`); } },
+      pouvoir:{ n:'Brise-Garde', txt:'3 dés identiques', d:'10 dégâts et Handicap (un dé de moins au prochain tour).', cond:vs => vs.length === 3 && vs[0] === vs[1] && vs[1] === vs[2], cible:'ennemi', f:(J, vs, k) => { degats(k, 10); if (k && k.J && !k.u) altere(k.J, 'handicap'); } } } ],
+    ultime:{ n:'Poids de l’Abîme', txt:'2 dés identiques', d:'6 dégâts et le héros ne gagne pas de PC à son prochain tour.', cond:vs => vs.length === 2 && vs[0] === vs[1], cible:'ennemi', f:(J, vs, k) => { degats({ J:adv(J) }, 6); adv(J).sansPC = true; } }, renforts:[] },
+  necro: { nom:'Le Nécromancien du Vide', titre:'le Maître de l’Abîme', emoji:'💀', c:'#6b2bd9', pv:130, boss:true, necro:true, ile:'invasion', role:'Son aura retire 2 PV à chaque soin, il invoque des Débris du Vide et vide vos PC. Il ne meurt jamais seul.', cit:'« Le monde ne sera plus qu’un écho. »',
+    sbires:{ n:'Débris du Vide', a:2, v:3, tous:2, nb:1 },
+    phases:[
+      { seuil:1, garde:{ n:'Voile d’âmes', txt:'1 dé', d:'Bouclier = la valeur du dé.', cond:vs => vs.length === 1, val:vs => vs[0], f:(J, vs) => { J.gardeB += vs[0]; log(`Le Nécromancien : Voile d’âmes, Bouclier ${vs[0]}.`); } },
+        pouvoir:{ n:'Explosion d’âmes', txt:'2 dés identiques', d:'7 dégâts et 1 Souillure.', cond:vs => vs.length === 2 && vs[0] === vs[1], cible:'ennemi', f:(J, vs, k) => { degats(k, 7); if (k && k.J && !k.u) souille(k.J); } } },
+      { seuil:2 / 3, garde:{ n:'Voile d’âmes', txt:'1 dé', d:'Bouclier = la valeur du dé.', cond:vs => vs.length === 1, val:vs => vs[0], f:(J, vs) => { J.gardeB += vs[0]; } },
+        pouvoir:{ n:'Révélation de l’Abîme', txt:'3 dés de 3 ou plus', d:'Deux Débris du Vide, 5 dégâts à chaque héros, et chacun perd tous ses PC.', cond:vs => vs.length === 3 && vs.every(v => v >= 3), cible:'ennemi', f:J => { invoque(J, { n:'Débris du Vide', a:2, v:3 }); invoque(J, { n:'Débris du Vide', a:2, v:3 }); debout().forEach(h => { degats({ J:h }, 5); h.pc = 0; }); log('Le Nécromancien vide vos PC !'); } } },
+      { seuil:1 / 3, garde:{ n:'Rituel', txt:'1 dé', d:'Bouclier = 2 × la valeur du dé.', cond:vs => vs.length === 1, val:vs => vs[0] * 2, f:(J, vs) => { J.gardeB += vs[0] * 2; } },
+        pouvoir:{ n:'Moisson', txt:'2 dés de 4 ou plus', d:'12 dégâts et 2 Souillures.', cond:vs => vs.length === 2 && vs.every(v => v >= 4), cible:'ennemi', f:(J, vs, k) => { degats(k, 12); if (k && k.J && !k.u) souille(k.J, 2); } } },
+    ],
+    ultime:{ n:'Il ne meurt jamais seul', txt:'3 dés', d:'10 dégâts à chaque héros et 2 Souillures.', cond:vs => vs.length === 3, cible:'ennemi', f:() => debout().forEach(h => { degats({ J:h }, 10); souille(h, 2); }) },
+    renforts:[] },
+};
+Object.assign(BOSS, VAGUES_EVEIL);
+// l'entrée du menu du Campement : l'Acte I de l'Invasion = les trois vagues à la suite
+BOSS_CAMP.eveil = { nom:'L’Éveil de l’Abîme', titre:'Invasion · Acte I (3 vagues)', emoji:'🌀', c:'#7a3aa8', pv:280, boss:true, vagues:['meute', 'duo', 'necro'],
+  role:'Le livre papier : trois vagues à la suite. La Meute corrompue (Souillure, vol de PC), les Gardes jumeaux à abattre DANS LE MÊME TOUR, puis le Nécromancien du Vide.', cit:'« La marque du Vide s’étend. »',
+  phases:VAGUES_EVEIL.meute.phases, ultime:VAGUES_EVEIL.meute.ultime, renforts:[] };
 const COHESION = { depart:4, max:8, relever:3, cri:2, soin:2, concertee:3 };  // 10/11 : Frappe concertée = 4 dégâts à CHAQUE créature du boss (les racines)
 Object.assign(BOSS, BOSS_CAMP);
 if (typeof HEROS !== 'undefined') installeMonstres();

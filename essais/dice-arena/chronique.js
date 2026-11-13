@@ -187,6 +187,15 @@ const CHRON_CAMP = {
 };
 // 12/11 nuit : les histoires des deux nouveaux boss du Campement (le Colosse garde celles d'au-dessus)
 const CHRON_CAMP_B = {
+  eveil:{
+    intro:(a, b) => ({ sur:'Invasion · Acte I', titre:'L’Éveil de l’Abîme', illu:{ cle:'eveil', fond:'vide', sym:'🌀' }, texte:[
+      'Une déchirure s’est ouverte dans le voile du monde. Le Seigneur du Vide a envoyé son avant-garde : ce n’est pas une guerre, c’est une infection. Ceux qu’elle touche deviennent des Corrompus.',
+      `${a} et ${b} tiennent la route des terres fertiles. D’abord la Meute : des gobelins dont la chair a fusionné avec des cristaux violets, qui mordent, souillent et volent. Puis les Remparts brisés : deux anciens Gardes du royaume, relevés par le Vide et liés par une chaîne d’ombre. Il faudra les abattre ensemble, dans le même souffle, sinon l’un relèvera l’autre.`,
+      'Et derrière eux, descendu du ciel dans un éclair violet, le Nécromancien. S’il termine son rituel, le monde ne sera plus qu’un écho silencieux.' ],
+      cit:'« Si vous n’en achevez qu’un, l’autre le relèvera. »' }),
+    victoire:({ sur:'Invasion · Acte I', titre:'La déchirure se referme', illu:{ cle:'eveil-fin', fond:'or', sym:'🏆' }, texte:[ 'Le Nécromancien s’effondre et, avec lui, la lumière violette s’éteint dans les yeux des Corrompus. La déchirure du ciel se referme lentement, comme une plaie qui guérit.', 'Les terres fertiles sont sauves. Pour l’instant : au loin, sous la terre, quelque chose de très ancien vient de se retourner dans son sommeil. Les Primordiaux.' ], cit:'« L’Abîme a été repoussé. Pas vaincu. »' }),
+    defaite:({ sur:'Invasion · Acte I', titre:'Un écho silencieux', illu:{ cle:'eveil-defaite', fond:'vide', sym:'🕯' }, texte:[ 'Le rituel s’achève. Le monde ne s’éteint pas d’un coup : il se tait, peu à peu. Mais la Guilde a d’autres héros, et la déchirure n’est pas encore assez grande pour tout avaler.' ], cit:'« Ils reviennent toujours. »' }),
+  },
   kraken:{
     intro:(a, b) => ({ sur:'Le Campement', titre:'Quelque chose dans la brume', illu:{ cle:'kraken', fond:'mer', sym:'🐙' }, texte:[
       `${a} et ${b} ont allumé un feu sur la grève, au pied des falaises. La brume roule depuis la mer, si épaisse qu’on ne voit plus les vagues. On les entend, pourtant. Et autre chose.`,

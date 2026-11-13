@@ -609,7 +609,7 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261113-061251';
+const VERSION = '20261113-062314';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); location.replace('duel.html?v=' + v); }
@@ -628,10 +628,10 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261113-061251"></script>
-<script src="donnees.js?v=20261113-061251"></script>
-<script src="odyssee.js?v=20261113-061251"></script>
-<script src="chronique.js?v=20261113-061251"></script>
+<script src="cartes.js?v=20261113-062314"></script>
+<script src="donnees.js?v=20261113-062314"></script>
+<script src="odyssee.js?v=20261113-062314"></script>
+<script src="chronique.js?v=20261113-062314"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -794,7 +794,7 @@ function pose(J, quoi, ds, k, indexMain) {
   const vs = vals(ds); S.acteur = J;
   if (quoi === 'pcRelance') { J.pc -= 1; const a = ds[0].v; lance(J, ds[0]); log(`${J.nom} paie 1 PC et relance un ${a} : ${ds[0].v}.`); return; }
   if (quoi === 'pcAjuste') { const c = coutAjuste(J); J.pc -= c; const a = ds[0].v, v = Math.max(1, Math.min(6, a + (k && k.sens || 1))); modifie(J, ds[0], v); log(`${J.nom} paie ${c} PC : ${a} devient ${v}.`); return; }
-  if (quoi === 'pcSoins') { J.pc -= 2; J.poison = 0; J.saigne = 0; J.handicap = 0; log(`${J.nom} paie 2 PC : Premiers soins, plus aucune altération.`); return; }
+  if (quoi === 'pcSoins') { J.pc -= 2; J.poison = 0; J.souillure = 0; J.saigne = 0; J.handicap = 0; log(`${J.nom} paie 2 PC : Premiers soins, plus aucune altération.`); return; }
   if (quoi === 'transmu') { J.transmu = true; const d = ds[0]; const a = d.v; modifie(J, d, opp(a)); log(`${J.nom} transmute un ${a} en ${d.v}.`); return; }
   ds.forEach(d => { d.pose = true; });
   const h = HEROS[J.id]; J.dernier = quoi;
@@ -1171,7 +1171,7 @@ function usePotion(i) {
   J.sacoche.splice(i, 1); J.potionsUtilisees++;
   if (p === 'soin') soin(J, 10);
   if (p === 'mana') { J.pc = Math.min(6, J.pc + 2); log(`${J.nom} boit une potion de mana : +2 PC.`); }
-  if (p === 'antidote') { J.poison = 0; J.saigne = 0; J.handicap = 0; log(`${J.nom} prend l’antidote : plus aucune altération.`); }
+  if (p === 'antidote') { J.poison = 0; J.souillure = 0; J.saigne = 0; J.handicap = 0; log(`${J.nom} prend l’antidote : plus aucune altération.`); }
   if (p === 'bombe') { S.acteur = J; log(`${J.nom} lance une bombe : 8 dégâts directs !`); fx({ t:'tir', id:J.id, s:'J', vers:ref({ J:S.O }), nom:'Bombe', vs:[], dg:8, cible:S.O.nom }); degats({ J:S.O }, 8, true); }
   if (!S.auto) rendu();
 }
@@ -1206,7 +1206,7 @@ function partieCampement() {
   const boss = HEROS[cfg.boss] ? cfg.boss : 'colosseracines', h = HEROS[boss]; if (h.phases) { h.garde = h.phases[0].garde; h.pouvoir = h.phases[0].pouvoir; }
   const A = joueur(cfg.a, false, false), B = joueur(cfg.b, cfg.modeB === 'ordi', cfg.modeB === 'ordi');
   A.qui = 'toi'; B.qui = cfg.modeB === 'ordi' ? 'compagnon' : 'joueur 2'; B.nomCourt = B.nom;
-  S = { J:A, O:joueur(boss, true), salle:SALLES[Math.floor(Math.random() * SALLES.length)], log:[], fini:null, auto:false, coop:true, equipe:[A, B], cohesion:COHESION.depart, lieu:h.lieu || 'brume' };
+  S = { J:A, O:joueur(h.vagues ? h.vagues[0] : boss, true), salle:SALLES[Math.floor(Math.random() * SALLES.length)], log:[], fini:null, auto:false, coop:true, equipe:[A, B], cohesion:COHESION.depart, lieu:h.lieu || 'brume', vagues:h.vagues || null, vague:0 };
   FX = []; fxApres = []; fxOn = false; arreteMusique();
   S.O.desMax = 5; (h.renforts || []).forEach(r => invoque(S.O, { ...r }));
   pioche(A, 4); pioche(B, 4); B.pc = 2;
@@ -1240,7 +1240,7 @@ function simuleCamp(a, b, boss) {
   localStorage.setItem('guilde-campement', JSON.stringify({ a, b, modeB:'ordi', boss:boss || 'colosseracines' }));
   const cfg = lireCampement(); const bs = cfg.boss, h = HEROS[bs]; h.garde = h.phases[0].garde; h.pouvoir = h.phases[0].pouvoir;
   const A = joueur(a, true, true), B = joueur(b, true, true); A.qui = 'toi'; B.qui = 'compagnon';
-  S = { J:A, O:joueur(bs, true), salle:SALLES[0], log:[], fini:null, auto:true, coop:true, equipe:[A, B], cohesion:COHESION.depart };
+  S = { J:A, O:joueur(h.vagues ? h.vagues[0] : bs, true), salle:SALLES[0], log:[], fini:null, auto:true, coop:true, equipe:[A, B], cohesion:COHESION.depart, vagues:h.vagues || null, vague:0 };
   S.O.desMax = 5; (h.renforts || []).forEach(r => invoque(S.O, { ...r })); pioche(A, 4); pioche(B, 4); B.pc = 2;
   debutTour(A);
   for (let n = 0; n < 60 && !S.fini; n++) {
@@ -1252,7 +1252,7 @@ function simuleCamp(a, b, boss) {
     if (S.J.aTerre) S.J = S.equipe.find(x => !x.aTerre);
     joueOrdi(); if (S.fini) break; S.J = S.equipe.find(x => !x.aTerre); debutTour(S.J);
   }
-  return { gagne:S.fini === 'gagne', tours:A.tours, boss:Math.max(0, S.O.pv), a:Math.max(0, A.pv), b:Math.max(0, B.pv), racines:S.O.front.length };
+  return { gagne:S.fini === 'gagne', vague:(S.vague || 0) + 1, tours:A.tours, boss:Math.max(0, S.O.pv), a:Math.max(0, A.pv), b:Math.max(0, B.pv), racines:S.O.front.length };
 }
 function cohesionAct(q) {
   if (!S || !S.coop || S.fini || roule) return;
@@ -1924,7 +1924,8 @@ async function joueFX() {
 // toucher l'écran pendant les animations les accélère
 document.addEventListener('pointerdown', () => { if (fxOn) fxVite = .3; }, true);
 </script>
-<script src="tuto.js?v=20261113-061251"></script>
-<script src="deux.js?v=20261113-061251"></script>
+<script src="tuto.js?v=20261113-062314"></script>
+<script src="deux.js?v=20261113-062314"></script>
+<script src="invasion.js?v=20261113-062314"></script>
 </body>
 </html>
