@@ -8,7 +8,7 @@
 <title>La Guilde des Runes</title>
 <script>
 // Même mécanisme que le Duel : une nouvelle version = rechargement tout seul à l'ouverture (publier.sh change VERSION).
-const VERSION = '20261113-063039';
+const VERSION = '20261113-063341';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-menu-' + v)) { sessionStorage.setItem('recharge-menu-' + v, '1'); location.replace('menu.html?v=' + v); }
@@ -148,7 +148,7 @@ fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.te
 </div>
 <div id="flash"></div>
 
-<script src="donnees.js?v=20261113-063039"></script>
+<script src="donnees.js?v=20261113-063341"></script>
 <script>
 // ciel étoilé + runes du portail (symboles, pas des lettres), aux couleurs des héros
 const ciel = document.getElementById('ciel');
@@ -177,6 +177,7 @@ const PRO = { // dessins provisoires : [émoji, fond, lueur]
   ordinateur:['🗿', 'linear-gradient(180deg, #3b82f6 0%, #1e3a8a 50%, #c99a5b 51%, #8a6538 100%)', '#7cc8ff'],
   tuto:['🐦‍⬛', 'linear-gradient(180deg, #ffe7a8 0%, #f4c27a 45%, #7aa36b 46%, #4d7a43 100%)', '#fff3c4'],
   proche:['🤝', 'linear-gradient(180deg, #3a2414 0%, #7a4a24 45%, #c9893f 46%, #6b3f1f 100%)', '#ffd27a'],
+  pantheon:['🏛', 'linear-gradient(180deg, #1a1433 0%, #3a2a5c 50%, #c8902f 100%)', '#f3c96b'],
   abime:['🌀', 'radial-gradient(circle at 50% 70%, #6d28d9 0%, #1e0b3a 50%, #05020d 100%)', '#a855f7'],
 };
 const GIVRE_OK = (() => { try { return !!JSON.parse(localStorage.getItem('guilde-actes') || '{}').brulees; } catch (e) { return false; } })();
@@ -187,6 +188,7 @@ const ETAGES = {
     { nom:'L’Odyssée', pro:'odyssee', vers:'odyssee', desc:'Seul sur une île : explore case par case, fais grandir ton deck, vaincs le gardien de l’île.' },
     { nom:'Expéditions', pro:'expeditions', href:'expedition.html', desc:'Le navire volant (v2) : recrute, fusionne, place tes deux rangées, et regarde ton équipage affronter monstres et navires rivaux.' },
     { nom:'L’Invasion', pro:'campement', vers:'invasion', desc:'À deux (sur ce téléphone ou avec un compagnon) contre les vagues de ton livre : l’Éveil de l’Abîme, le Réveil des Primordiaux, et les grands boss.' },
+    { nom:'Le Panthéon', pro:'pantheon', href:'pantheon.html', desc:'Le Tableau d’honneur, tes titres, les récompenses du défi Brise-Miroir et tes trophées de tous les modes.' },
     { nom:'Tour des héros', pro:'tour', href:'heros.html', desc:'Les six héros, leurs pouvoirs, leurs dés et leurs cartes. Prépare ton deck.' },
   ] },
   arene:{ titre:'L’Arène des Duels', sous:'Contre qui veux-tu te battre ?', portes:[

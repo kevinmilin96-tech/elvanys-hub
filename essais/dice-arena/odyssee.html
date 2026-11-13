@@ -106,10 +106,11 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261113-063039"></script>
-<script src="donnees.js?v=20261113-063039"></script>
-<script src="odyssee.js?v=20261113-063039"></script>
-<script src="chronique.js?v=20261113-063039"></script>
+<script src="cartes.js?v=20261113-063341"></script>
+<script src="donnees.js?v=20261113-063341"></script>
+<script src="odyssee.js?v=20261113-063341"></script>
+<script src="pantheon.js?v=20261113-063341"></script>
+<script src="chronique.js?v=20261113-063341"></script>
 <script>
 // le moteur du Duel n'est pas chargé ici : les cartes de l'Odyssée appellent degats/soin seulement en combat (dans duel.html)
 const log = () => {}, degats = () => {}, soin = () => {}, altere = () => {}, invoque = () => {}, adv = () => ({}), fin = () => {};
@@ -437,7 +438,7 @@ function reglesCourtes() { fenetre(`<h2>❓ L’Odyssée en bref</h2><ul style="
 function abandon() { fenetre('<h2>⏏ Quitter</h2><p>Ton Odyssée est gardée sur ce téléphone : tu la reprendras là où tu es. Ou tu peux l’abandonner (comptée comme perdue).</p><div class="choixh"><button onclick="location.href=\'menu.html\'">⌂ Menu, je reprendrai</button><button onclick="finPartie(false, \'Abandon.\')">💀 Abandonner</button></div>'); }
 function finPartie(gagne, texte) {
   const nom = HEROS[R.heros].nom, C = CH(), f = finOdysseeRun(R, gagne); R = null;
-  chronique([gagne ? C.victoire(nom) : C.defaite(nom), f.premiereFin ? CHRON_FIN(nom) : null], () => fenetre(`<h2>${gagne ? '🏆 L’île est libre !' : '💀 Fin de l’Odyssée'}</h2><p>${texte}</p>${f.premiereFin ? '<p style="text-align:center;font-size:1.1em">🌟 Tu reçois le titre <b style="color:var(--or)">Héros de l’Odyssée</b> !</p>' : ''}${f.ascNouveau ? `<p style="text-align:center">⛰ <b>Ascension ${f.ascNouveau}</b> débloquée sur cette île : ${ASCENSION[f.ascNouveau].n}.</p>` : ''}<div class="score">${f.score} points</div>
+  chronique([gagne ? C.victoire(nom) : C.defaite(nom), f.premiereFin ? CHRON_FIN(nom) : null], () => fenetre(`<h2>${gagne ? '🏆 L’île est libre !' : '💀 Fin de l’Odyssée'}</h2><p>${texte}</p>${f.premiereFin ? '<p style="text-align:center;font-size:1.1em">🌟 Tu reçois le titre <b style="color:var(--or)">Héros de l’Odyssée</b> !</p>' : ''}${f.ascNouveau ? `<p style="text-align:center">⛰ <b>Ascension ${f.ascNouveau}</b> débloquée sur cette île : ${ASCENSION[f.ascNouveau].n}.</p>` : ''}${f.inscrit === 'nouveau' ? `<p style="text-align:center">🏛 <b>${nom}</b> est inscrit au <b>Panthéon des Légendes</b> : titre « Briseur de Néant » et +5 PV pour ses prochaines Odyssées. Le Roi sans visage t’attend maintenant dans l’Arène.</p>` : ''}${f.briseMiroir ? `<p style="text-align:center">🪞 <b>Défi Brise-Miroir réussi !</b> Choisis une récompense pour toujours :</p><div class="choixv">${recompensesRestantes().map(k => `<button onclick="choisirRecompense('${k}');this.parentNode.innerHTML='✅ ${RECOMPENSES[k].n} : ${RECOMPENSES[k].d.replace(/'/g, '’')}'">${RECOMPENSES[k].e} <b>${RECOMPENSES[k].n}</b><small>${RECOMPENSES[k].d}</small></button>`).join('')}</div>` : ''}<div class="score">${f.score} points</div>
   <table><tr><td>Cases explorées</td><td>${f.cases}</td></tr><tr><td>Combats gagnés</td><td>${f.victoires} / ${f.combats}</td></tr><tr><td>Tours joués</td><td>${f.tours}</td></tr><tr><td>Défis réussis</td><td>${f.defis}</td></tr><tr><td>Or restant</td><td>${f.or}</td></tr><tr><td>Durée</td><td>${f.duree} min</td></tr></table>
   <p>${f.ajoutees ? `📚 <b>${f.ajoutees}</b> carte${f.ajoutees > 1 ? 's' : ''} rejoi${f.ajoutees > 1 ? 'gnent' : 'nt'} ta collection : ${f.nouvelles.map(k => CARTES[k].n).join(', ')}.` : 'Aucune carte nouvelle pour la collection cette fois.'}</p>
   <div class="choixh"><button class="or" onclick="fermer();accueil()">Nouvelle Odyssée</button><button onclick="location.href='menu.html'">⌂ Menu</button></div>`));

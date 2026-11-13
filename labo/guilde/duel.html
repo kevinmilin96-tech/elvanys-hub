@@ -609,7 +609,7 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261113-063039';
+const VERSION = '20261113-063341';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); location.replace('duel.html?v=' + v); }
@@ -628,10 +628,10 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261113-063039"></script>
-<script src="donnees.js?v=20261113-063039"></script>
-<script src="odyssee.js?v=20261113-063039"></script>
-<script src="chronique.js?v=20261113-063039"></script>
+<script src="cartes.js?v=20261113-063341"></script>
+<script src="donnees.js?v=20261113-063341"></script>
+<script src="odyssee.js?v=20261113-063341"></script>
+<script src="chronique.js?v=20261113-063341"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -1124,6 +1124,7 @@ function prepareCombatOdyssee(run, cb, auto) {
   if (S.ody.defi) log(`🎯 Défi : ${S.ody.defi.n} — ${S.ody.defi.d}`);
   sel = []; attaquant = null; ciblage = null;
   debutTour(J);
+  if (run.maitrise) { J.relance += 3; run.maitrise = false; log('🎲 Maîtrise des dés : 3 relances gratuites de plus.'); if (!auto && typeof ecrireOdyssee === 'function') ecrireOdyssee(run); }
 }
 function evalueDefi(J, d) {
   if (!d || S.fini !== 'gagne') return false;
@@ -1206,7 +1207,7 @@ function partieCampement() {
   const boss = HEROS[cfg.boss] ? cfg.boss : 'colosseracines', h = HEROS[boss]; if (h.phases) { h.garde = h.phases[0].garde; h.pouvoir = h.phases[0].pouvoir; }
   const A = joueur(cfg.a, false, false), B = joueur(cfg.b, cfg.modeB === 'ordi', cfg.modeB === 'ordi');
   A.qui = 'toi'; B.qui = cfg.modeB === 'ordi' ? 'compagnon' : 'joueur 2'; B.nomCourt = B.nom;
-  S = { J:A, O:joueur(h.vagues ? h.vagues[0] : boss, true), salle:SALLES[Math.floor(Math.random() * SALLES.length)], log:[], fini:null, auto:false, coop:true, equipe:[A, B], cohesion:COHESION.depart, lieu:h.lieu || 'brume', vagues:h.vagues || null, vague:0, seve:h.seve ? 100 : undefined };
+  S = { J:A, O:joueur(h.vagues ? h.vagues[0] : boss, true), choix:boss, salle:SALLES[Math.floor(Math.random() * SALLES.length)], log:[], fini:null, auto:false, coop:true, equipe:[A, B], cohesion:COHESION.depart, lieu:h.lieu || 'brume', vagues:h.vagues || null, vague:0, seve:h.seve ? 100 : undefined };
   FX = []; fxApres = []; fxOn = false; arreteMusique();
   S.O.desMax = 5; (h.renforts || []).forEach(r => invoque(S.O, { ...r }));
   pioche(A, 4); pioche(B, 4); B.pc = 2;
@@ -1606,7 +1607,7 @@ function copieParties(journal, i) {
 }
 function montrerFin() {
   if (S.ody) { finOdyssee(); return; }
-  if (S.coop) { if (S.enregistre) return; S.enregistre = true; arreteMusique(1.2); son(S.fini === 'gagne' ? 'victoire' : 'defaite'); effetImage(S.fini === 'gagne' ? 'victoire' : 'defaite', document.getElementById('app'), 2.2);
+  if (S.coop) { if (S.enregistre) return; S.enregistre = true; if (S.fini === 'gagne' && S.choix) { try { const v = JSON.parse(localStorage.getItem('guilde-invasion') || '{}'); v[S.choix] = (v[S.choix] || 0) + 1; localStorage.setItem('guilde-invasion', JSON.stringify(v)); } catch (e) {} } arreteMusique(1.2); son(S.fini === 'gagne' ? 'victoire' : 'defaite'); effetImage(S.fini === 'gagne' ? 'victoire' : 'defaite', document.getElementById('app'), 2.2);
     chronique([(CHRON_CAMP_B[S.O.id] || CHRON_CAMP)[S.fini === 'gagne' ? 'victoire' : 'defaite']], () => fenetre(`<h2>${S.fini === 'gagne' ? '🏆 Le boss est tombé !' : '💀 Le campement est perdu…'}</h2><p>${S.equipe.map(h => `${h.nom} : ${h.aTerre ? 'à terre' : h.pv + ' PV'}`).join(' · ')} · ${S.O.nom} : ${Math.max(0, S.O.pv)} PV · ${S.equipe[0].tours} tours.</p><div class="choixh"><button onclick="location.href='campement.html'">🔥 Rejouer</button><button onclick="location.href='menu.html'">⌂ Menu</button></div>`)); return; }
   enregistrePartie();
   arreteMusique(1.2);
@@ -1624,7 +1625,8 @@ function accueil() {
 function adversaire() {
   fenetre(`<h2>Duel · prototype</h2><p>2. Contre qui ? (l’ordinateur)</p>
   <div class="heros6">${ORDRE.filter(id => id !== monHeros).map(id => `<button onclick="fermer();nouvellePartie(monHeros,'${id}');regles()"><img src="${IMG(id)}" alt="">${HEROS[id].nom}</button>`).join('')}
-  <button onclick="fermer();nouvellePartie(monHeros);regles()" style="display:flex;align-items:center;justify-content:center;font-size:2em;min-height:110px">🎲<br><span style="font-size:.4em">au hasard</span></button></div>`);
+  <button onclick="fermer();nouvellePartie(monHeros);regles()" style="display:flex;align-items:center;justify-content:center;font-size:2em;min-height:110px">🎲<br><span style="font-size:.4em">au hasard</span></button></div>
+  ${typeof roiDebloque === 'function' && roiDebloque() ? `<div class="choixh"><button onclick="fermer();nouvellePartie(monHeros,'roi');regles()" style="border-color:#a855f7">👑 Défier le Roi sans visage (Panthéon)</button></div>` : ''}`);
 }
 if (typeof document !== 'undefined' && document.getElementById('app')) { const q = new URLSearchParams(location.search); if (q.get('tuto')) addEventListener('load', () => partieTuto()); else if (q.get('deux')) addEventListener('load', () => deuxAccueil()); else if (q.get('odyssee')) setTimeout(partieOdyssee, 0); else if (q.get('campement')) setTimeout(partieCampement, 0); else if (q.get('parties')) mesParties(); else if (q.get('h') && HEROS[q.get('h')]) { monHeros = q.get('h'); adversaire(); } else accueil(); }
 
@@ -1924,8 +1926,9 @@ async function joueFX() {
 // toucher l'écran pendant les animations les accélère
 document.addEventListener('pointerdown', () => { if (fxOn) fxVite = .3; }, true);
 </script>
-<script src="tuto.js?v=20261113-063039"></script>
-<script src="deux.js?v=20261113-063039"></script>
-<script src="invasion.js?v=20261113-063039"></script>
+<script src="pantheon.js?v=20261113-063341"></script>
+<script src="tuto.js?v=20261113-063341"></script>
+<script src="deux.js?v=20261113-063341"></script>
+<script src="invasion.js?v=20261113-063341"></script>
 </body>
 </html>

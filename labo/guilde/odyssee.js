@@ -495,6 +495,7 @@ function nouvelleOdyssee(heros, graine, acte, niveau) {
   if (asc(run, 3)) run.vivres -= 4;
   if (asc(run, 8)) donneMalediction(run, Object.keys(MALEDICTIONS)[0]);
   if (asc(run, 10)) { run.pvMax = Math.round(run.pvMax * .9); run.pv = run.pvMax; }
+  if (typeof pantheonDepart === 'function') pantheonDepart(run);
   return run;
 }
 // la vie, bornée ; le deck effectif en combat = run.deck (les malédictions y sont déjà)
@@ -536,6 +537,7 @@ function recompenseCombat(r) {
   r.stats.combats++; r.stats.tours += res.tours; r.combat = null;
   if (!res.gagne) { r.journal.push(`💀 ${HEROS[cb.ennemi].nom} a eu raison de toi.`); return { gagne:false }; }
   c.fait = true; r.stats.victoires++;
+  if (cb.ennemi === 'miroir') r.stats.miroir = true;
   let or = cb.type === 'boss' ? 150 : cb.type === 'elite' ? 80 : 40;
   if (r.reliques.includes('bourse')) or += 10; if (r.benes.includes('bourse')) or += 15; if (res.defiOk) { or += 30; r.stats.defis++; }
   if (asc(r, 6)) or = Math.round(or * .8);
@@ -565,6 +567,9 @@ function achete(r, c, quoi, k) {
   if (quoi === 'relique') { if (!st.relique || r.reliques.length >= 3) return false; const p = prix(RELIQUES[st.relique].prix); if (r.or < p) return false; r.or -= p; r.reliques.push(st.relique); r.journal.push(`🏪 ${RELIQUES[st.relique].n} achetée.`); st.relique = null; return true; }
   return false;
 }
+// le Savoir ancestral du Panthéon : 10 or rendus sur le premier achat de l'Odyssée
+const _acheteOdy = achete;
+achete = function (r, c, quoi, k) { const or0 = r.or, ok = _acheteOdy(r, c, quoi, k); if (ok && r.remise && r.or < or0) { const g = Math.min(r.remise, or0 - r.or); r.or += g; r.remise = 0; r.journal.push(`📜 Savoir ancestral : ${g} or de remise.`); } return ok; };
 // l'autel : 3 bénédictions proposées, une malédiction tirée en échange
 function autelOptions(r, c) { if (!c.offre) { const R = hasard(r); c.offre = { benes:brasse(R, Object.keys(BENEDICTIONS).filter(b => !r.benes.includes(b))).slice(0, 3), male:tire(R, Object.keys(MALEDICTIONS)) }; } return c.offre; }
 function donneBenediction(r, b) { if (r.benes.includes(b)) return; r.benes.push(b); if (b === 'vie') { r.pvMax += 6; r.pv += 6; } r.journal.push(`✨ Bénédiction : ${BENEDICTIONS[b].n}.`); }
@@ -603,15 +608,16 @@ function finOdysseeRun(r, gagne) {
   const base = deckBase(r.heros), nouvelles = r.deck.filter(k => !base.includes(k) && rarete(k) !== 'm');
   const ajoutees = typeof localStorage !== 'undefined' ? ajouteCollection([...new Set([...nouvelles, ...r.stats.cartesVues])]) : 0;
   if (gagne && typeof localStorage !== 'undefined') { const a = actesFaits(); a[r.acte || 'brulees'] = true; localStorage.setItem(ACTES_CLE, JSON.stringify(a)); }
-  let ascNouveau = 0, premiereFin = false;
+  let ascNouveau = 0, premiereFin = false, inscrit = null, briseMiroir = false;
   if (gagne && typeof localStorage !== 'undefined') {
     const A = JSON.parse(localStorage.getItem(ASC_CLE) || '{}'), k = r.acte || 'brulees', n = Math.min(10, (r.asc || 0) + 1);
     if (n > (A[k] || 0)) { A[k] = n; ascNouveau = n; localStorage.setItem(ASC_CLE, JSON.stringify(A)); }
     if (k === 'abime' && !localStorage.getItem('guilde-odyssee-finie')) { localStorage.setItem('guilde-odyssee-finie', '1'); premiereFin = true; }
+    if (k === 'abime' && typeof inscrirePantheon === 'function') { inscrit = inscrirePantheon(r.heros, r.asc || 0) ? 'nouveau' : 'encore'; briseMiroir = !!r.stats.miroir && recompensesRestantes().length > 0; }
   }
   const rec = { quand:new Date().toISOString(), acte:r.acte || 'brulees', asc:r.asc || 0, heros:r.heros, gagne, score, cases:r.stats.cases, combats:r.stats.combats, victoires:r.stats.victoires, tours:r.stats.tours, defis:r.stats.defis, or:r.or, duree, graine:r.graine, pv:r.pv };
   if (typeof localStorage !== 'undefined') { const l = lireRecords(); l.unshift(rec); localStorage.setItem(RECORDS_CLE, JSON.stringify(l.slice(0, 50))); ecrireOdyssee(null); }
-  return { ...rec, ajoutees, nouvelles, ascNouveau, premiereFin };
+  return { ...rec, ajoutees, nouvelles, ascNouveau, premiereFin, inscrit, briseMiroir };
 }
 
 // ----------------------------------------------------------------------------------------------- pilote automatique (simulations d'équilibrage : l'ordinateur explore l'île)

@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>La Guilde des Runes · Le Panthéon</title>
+<style>
+  :root { --or:#f3c96b; --texte:#f1ecff; --doux:#c9c1ea; }
+  * { box-sizing:border-box; }
+  body { margin:0; color:var(--texte); font:15px/1.45 Georgia, 'Times New Roman', serif; background:radial-gradient(ellipse at 50% -10%, #3a2a5c, #120f24 60%) fixed, #120f24; }
+  main { max-width:620px; margin:0 auto; padding:12px 12px 50px; }
+  .haut { display:flex; align-items:center; gap:8px; } .haut a { color:var(--doux); text-decoration:none; font-size:.9em; background:#221d42; border:1px solid #4b4580; border-radius:20px; padding:5px 12px; }
+  h1 { flex:1; margin:0; text-align:center; color:var(--or); font-size:1.4em; }
+  .intro { text-align:center; color:var(--doux); font-style:italic; margin:6px 0 12px; }
+  h2 { color:var(--or); font-size:1.08em; margin:18px 0 8px; border-bottom:1px solid #4b4580; padding-bottom:3px; }
+  .honneur { display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; }
+  .hh { text-align:center; font-size:.82em; } .hh img { width:76px; height:76px; border-radius:50%; object-fit:cover; display:block; margin:0 auto 4px; }
+  .hh.ok img { box-shadow:0 0 0 3px var(--or), 0 0 18px var(--or); } .hh.non img { filter:grayscale(1) brightness(.45); }
+  .hh b { display:block; } .hh small { color:var(--doux); }
+  .ligne { display:flex; gap:10px; align-items:center; background:#1d1b3aee; border:1px solid #4b4580; border-radius:12px; padding:8px 10px; margin:6px 0; }
+  .ligne .e { font-size:1.6em; width:38px; text-align:center; flex:none; } .ligne.non { opacity:.45; } .ligne small { display:block; color:var(--doux); }
+  .tro { display:grid; grid-template-columns:1fr 1fr; gap:8px; } .tro div { background:#1d1b3aee; border:1px solid #4b4580; border-radius:12px; padding:8px; font-size:.86em; } .tro b { color:var(--or); display:block; font-size:1.05em; }
+</style>
+</head>
+<body>
+<main>
+  <div class="haut"><a href="menu.html">‹ Menu</a><h1>🏛 Le Panthéon</h1><a href="heros.html">Tour</a></div>
+  <p class="intro">« Ici, la Guilde grave le nom de ceux qui ont tenu jusqu’au bout. »</p>
+  <div id="app"></div>
+</main>
+<script src="cartes.js?v=20261113-063341"></script>
+<script src="donnees.js?v=20261113-063341"></script>
+<script src="odyssee.js?v=20261113-063341"></script>
+<script src="pantheon.js?v=20261113-063341"></script>
+<script>
+const log = () => {};
+const J = (cle, def) => { try { return JSON.parse(localStorage.getItem(cle) || 'null') || def; } catch (e) { return def; } };
+function dessine() {
+  const P = lirePantheon(), parties = J('guilde-parties', []), actes = J('guilde-actes', {}), asc = J('guilde-ascension', {}), exp = J('guilde-expedition2-records', []), inv = J('guilde-invasion', {});
+  const v = id => parties.filter(p => p.moi === id && p.resultat === 'gagne').length;
+  const titres = [
+    [localStorage.getItem('guilde-tuto') === 'fait', '🎓', 'Diplômé de la Guilde', 'Finir le tutoriel avec Corbin.'],
+    [!!localStorage.getItem('guilde-odyssee-finie'), '🌟', 'Héros de l’Odyssée', 'Libérer les trois îles de l’Odyssée.'],
+    [Object.keys(P.heros).length > 0, '🌑', 'Briseur de Néant', 'Le titre de chaque héros inscrit au Tableau d’honneur.'],
+    [exp.some(r => r.parfait), '🌊', 'Traversée parfaite', 'Vaincre le Titan des Expéditions sans perdre un cœur.'],
+    [!!(inv.eveil && inv.reveil), '⚔️', 'Rempart de la Guilde', 'Gagner les deux actes de l’Invasion.'],
+  ];
+  document.getElementById('app').innerHTML = `
+  <h2>📜 Le Tableau d’honneur</h2>
+  <p style="color:var(--doux);font-size:.88em">Un héros y est inscrit quand il termine l’Odyssée (l’Abîme du Vide). Il gagne +5 PV pour toutes ses Odyssées suivantes.</p>
+  <div class="honneur">${ORDRE.map(id => { const h = P.heros[id]; return `<div class="hh ${h ? 'ok' : 'non'}"><img src="portraits/${id}.webp" alt=""><b>${HEROS[id].nom}</b><small>${h ? `inscrit le ${new Date(h.quand).toLocaleDateString('fr-FR')}${h.ascMax ? ` · Ascension ${h.ascMax}` : ''}` : 'pas encore'}</small></div>`; }).join('')}</div>
+  <h2>🎖 Les titres</h2>
+  ${titres.map(([ok, e, n, d]) => `<div class="ligne ${ok ? '' : 'non'}"><div class="e">${ok ? e : '🔒'}</div><div><b>${n}</b><small>${d}</small></div></div>`).join('')}
+  <h2>🪞 Les récompenses du défi Brise-Miroir</h2>
+  <p style="color:var(--doux);font-size:.88em">Vaincre le Miroir brisé pendant une Odyssée que tu termines : tu choisis l’une de ces récompenses, pour toujours.</p>
+  ${Object.keys(RECOMPENSES).map(k => `<div class="ligne ${P.recompenses.includes(k) ? '' : 'non'}"><div class="e">${P.recompenses.includes(k) ? RECOMPENSES[k].e : '🔒'}</div><div><b>${RECOMPENSES[k].n}</b><small>${RECOMPENSES[k].d}</small></div></div>`).join('')}
+  <div class="ligne ${roiDebloque() ? '' : 'non'}"><div class="e">${roiDebloque() ? '👑' : '🔒'}</div><div><b>Le défi du Roi sans visage</b><small>Dans l’Arène, affronte le Roi sans visage en Duel (débloqué par la première inscription au Tableau d’honneur).</small></div></div>
+  <h2>🏆 Les trophées</h2>
+  <div class="tro">
+    <div><b>⚔️ L’Arène</b>${parties.filter(p => p.resultat === 'gagne').length} duels gagnés sur ${parties.length}<br><small>${ORDRE.filter(id => v(id)).map(id => `${HEROS[id].nom} ${v(id)}`).join(' · ') || '—'}</small></div>
+    <div><b>🏰 L’Odyssée</b>${['brulees', 'givre', 'abime'].map(a => `${a === 'brulees' ? 'Terres brûlées' : a === 'givre' ? 'Givre' : 'Abîme'} ${actes[a] ? '✅' : '⬜'}${asc[a] ? ` ⛰${asc[a]}` : ''}`).join('<br>')}</div>
+    <div><b>⛵ Les Expéditions</b>${exp.filter(r => r.gagne).length} gagnée${exp.filter(r => r.gagne).length > 1 ? 's' : ''} sur ${exp.length}<br><small>meilleur score : ${exp.length ? Math.max(...exp.map(r => r.score)) : '—'}</small></div>
+    <div><b>🛡 L’Invasion</b>Acte I ${inv.eveil ? '✅' : '⬜'} · Acte II ${inv.reveil ? '✅' : '⬜'}<br><small>grands boss : ${['colosseracines', 'kraken', 'ignaros'].filter(k => inv[k]).map(k => HEROS[k].nom.split(',')[0]).join(', ') || '—'}</small></div>
+  </div>`;
+}
+dessine();
+</script>
+</body>
+</html>
