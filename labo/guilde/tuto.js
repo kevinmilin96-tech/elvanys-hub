@@ -33,6 +33,9 @@ debutTour = function (J) {
 // 14/11 : on montre LES dés à toucher (pas toute la colonne) : liste d'éléments, entourés d'or, la main sur le premier pas encore choisi
 const desVises = vs => () => { const els = [...document.querySelectorAll('.des .d')], reste = [...vs], r = [];
   S.J.des.forEach((d, i) => { if (d.pose || !els[i]) return; const k = reste.indexOf(d.v); if (k >= 0) { reste.splice(k, 1); r.push(els[i]); } }); return r.length ? r : null; };
+// 14/11 : le Tambour encore jouable ? (sinon le tutoriel passe à la suite au lieu de bloquer)
+const peutTambour = () => S.J.main.includes('tambour') && S.J.pc >= 2 && S.J.des.some(d => !d.pose && d.v % 2 === 0);
+const carteTambour = () => document.querySelectorAll('.main .c')[S.J.main.indexOf('tambour')];
 const nbPoses = () => S.J.des.filter(d => d.pose).length;
 const tambour = () => S.J.front.find(u => u.tambour);
 const ETAPES = [
@@ -45,6 +48,7 @@ const ETAPES = [
   { t:1, c:'Bien tapé ! Regarde le rond en lumière, en haut à droite de ta carte : c’est son coût en PC. Les PC, ce sont tes POINTS DE COMPÉTENCE : il en faut pour jouer tes cartes.', cible:() => { const c = [...document.querySelectorAll('.main .c')].pop(); return c && (c.querySelector('.cg-cout') || c); } },
   { t:1, c:'Il te reste un dé. Touche « Fin du tour » : les dés pas posés sont VENDUS tout seuls, 1 PC chacun. C’est comme ça qu’on gagne ses points de compétence.', g:'Je garde la monnaie.', cible:'.b2', ok:() => S.J.tours >= 2 },
   { t:2, c:'Aïe. Le Chef a riposté : ton anneau rouge a baissé. On va éviter que ça recommence.', g:'Une égratignure.' },
+  { t:2, c:'Tu vois les traits DORÉS qui s’allument autour de ton portrait ? C’est ta jauge d’ULTIME : elle se remplit à chaque dé posé et quand tu prends des coups. Quand elle sera pleine, je te montrerai. Patience.', cible:'#b-J' },
   { t:2, c:'Lance tes dés. Tu en as 4 maintenant : un de plus à chaque tour, jusqu’à 5.', cible:'.lancer', ok:() => !S.J.aLancer },
   { t:2, c:'Pas de paire. Pas grave : tu as 2 RELANCES gratuites par tour. Touche le 2 et le 1 : on garde le 3 et le 6.', cible:desVises([2, 1]), ok:() => (sel.length === 2 && vals(sel).sort().join() === '1,2') || S.J.relance < 2 },
   { t:2, c:'Et maintenant « Relancer », en bas.', cible:'.b1', ok:() => S.J.relance < 2 },
@@ -54,9 +58,9 @@ const ETAPES = [
   { t:2, c:'Le bouclier est posé à côté de ton cœur : il prendra les coups à ta place. Et tes deux 5 forment une paire : FRAPPE ! (les deux 5, puis l’épée). Puis « Fin du tour ».', libre:true, ok:() => S.J.tours >= 3 },
   { t:3, c:'Tu te souviens des PC, gagnés en vendant tes dés ? Tu en as assez maintenant pour jouer une carte : le Tambour de clan, là, coûte 2 PC et demande un dé PAIR.', g:'Mon tambour ! Enfin quelqu’un de sérieux.', cible:() => document.querySelector('.main .c:last-child') },
   { t:3, c:'Lance d’abord tes dés.', cible:'.lancer', ok:() => !S.J.aLancer },
-  { t:3, c:'Touche le 2.', cible:desVises([2]), ok:() => (sel.length === 1 && sel[0].v % 2 === 0) || !!tambour() },
-  { t:3, c:'Puis la carte du Tambour : elle s’agrandit. Touche-la encore pour la jouer.', cible:() => document.querySelector('.main .c.vue') || document.querySelector('.main'), ok:() => !!tambour() },
-  { t:3, c:'Ton Tambour arrive sur le plateau. Il DORT ce tour (💤) : une créature attaque à partir du tour suivant. Joue le reste comme tu veux, puis « Fin du tour ».', libre:true, ok:() => S.J.tours >= 4 },
+  { t:3, c:'Touche le 2.', cible:desVises([2]), ok:() => (sel.length === 1 && sel[0].v % 2 === 0) || !!tambour() || !peutTambour() },
+  { t:3, c:'Puis la carte du Tambour : elle s’agrandit. Touche-la encore pour la jouer.', cible:() => carteTambour(), ok:() => !!tambour() || !peutTambour() },
+  { t:3, c:() => tambour() ? 'Ton Tambour arrive sur le plateau. Il DORT ce tour (💤) : une créature attaque à partir du tour suivant. Joue le reste comme tu veux, puis « Fin du tour ».' : 'Tu as joué autre chose ? Pas grave, le Tambour attendra. Finis ton tour comme tu veux, puis « Fin du tour ».', libre:true, ok:() => S.J.tours >= 4 },
   { t:4, c:'Lance tes dés. (Tu peux aussi jouer tes créatures avant ou après : ça ne change rien.)', cible:'.lancer', ok:() => !S.J.aLancer },
   { t:4, c:'Le Tambour est réveillé : contour doré. Touche-le pour attaquer.', cible:'#f-J', ok:() => !!attaquant || !tambour() || !tambour().pret },
   { t:4, c:'Le Chien de garde a une BARRIÈRE : les créatures doivent l’attaquer d’abord. Touche-le. (Les Frappes, elles, passent par-dessus. Les règles, c’est pour les chiens. Pardon, Chien.)', cible:'#f-O', ok:() => !attaquant || !tambour() || !tambour().pret },
@@ -142,7 +146,7 @@ function projecteurCache() { const p = document.getElementById('projo'); if (p) 
 
 // ---------------------------------------------------------------- le moteur du tutoriel
 function bulleTuto(e) {
-  const moustache = `<div class="ligneT"><img class="av" src="ui/moustache.webp?v=1" alt="Moustache"><div><b>Moustache</b>${e.c}</div></div>`;
+  const moustache = `<div class="ligneT"><img class="av" src="ui/moustache.webp?v=1" alt="Moustache"><div><b>Moustache</b>${typeof e.c === 'function' ? e.c() : e.c}</div></div>`;
   const gorm = e.g ? `<div class="ligneT gorm"><img class="av" src="${IMG('gorm')}" alt=""><div><b>Gorm</b>${e.g}</div></div>` : '';
   const suite = !e.ok ? '<button onclick="tutoSuivant()">Suivant ›</button>' : '<span></span>';
   return moustache + gorm + `<div class="boutonsT"><a href="#" onclick="tutoPasser();return false">Passer le tutoriel</a>${suite}</div>`;
