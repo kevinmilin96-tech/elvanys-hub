@@ -617,7 +617,7 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261113-220818';
+const VERSION = '20261113-221333';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -636,11 +636,11 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261113-220818"></script>
-<script src="musique.js?v=20261113-220818"></script>
-<script src="donnees.js?v=20261113-220818"></script>
-<script src="odyssee.js?v=20261113-220818"></script>
-<script src="chronique.js?v=20261113-220818"></script>
+<script src="cartes.js?v=20261113-221333"></script>
+<script src="musique.js?v=20261113-221333"></script>
+<script src="donnees.js?v=20261113-221333"></script>
+<script src="odyssee.js?v=20261113-221333"></script>
+<script src="chronique.js?v=20261113-221333"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -1333,6 +1333,7 @@ function montreConfirme() {
     ${P.n !== null ? `<div class="n">${P.exact ? '' : '≈ '}${P.n} dégât${P.n > 1 ? 's' : ''}</div>${P.lignes.map(l => `<div class="l">${l}</div>`).join('')}${P.lignes.length ? `<div class="l v">❤ ${cible} perdra ${P.vie} PV</div>` : ''}` : `<div class="l">${P.d}</div>`}
     <div class="b"><button class="non" onclick="changeCible()">Changer de cible</button><button class="ok" onclick="valideCible()">Valider</button></div>`;
   rendu();
+  setTimeout(() => { if (S && S.tuto && typeof tutoMaj === 'function') tutoMaj(); }, 280); // le tutoriel remesure le bouton une fois la fenêtre en place
 }
 function enleveConfirme() { const z = document.getElementById('conf'); if (z) z.remove(); }
 function changeCible() { if (ciblage) ciblage.choisi = null; enleveConfirme(); rendu(); }
@@ -1980,13 +1981,13 @@ async function joueFX() {
 // toucher l'écran pendant les animations les accélère
 document.addEventListener('pointerdown', () => { if (fxOn) fxVite = .3; }, true);
 </script>
-<script src="pantheon.js?v=20261113-220818"></script>
-<script src="tuto.js?v=20261113-220818"></script>
-<script src="deux.js?v=20261113-220818"></script>
-<script src="invasion.js?v=20261113-220818"></script>
-<script src="enigme-table.js?v=20261113-220818"></script>
-<script src="forge.js?v=20261113-220818"></script>
-<script src="semaine.js?v=20261113-220818"></script>
-<script src="enigme.js?v=20261113-220818"></script>
+<script src="pantheon.js?v=20261113-221333"></script>
+<script src="tuto.js?v=20261113-221333"></script>
+<script src="deux.js?v=20261113-221333"></script>
+<script src="invasion.js?v=20261113-221333"></script>
+<script src="enigme-table.js?v=20261113-221333"></script>
+<script src="forge.js?v=20261113-221333"></script>
+<script src="semaine.js?v=20261113-221333"></script>
+<script src="enigme.js?v=20261113-221333"></script>
 </body>
 </html>

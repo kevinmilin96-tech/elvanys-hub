@@ -16,7 +16,7 @@ textarea{width:100%;box-sizing:border-box;border-radius:8px;border:1px solid #4b
 .bt{position:fixed;left:0;right:0;bottom:0;background:#15132bee;padding:10px;display:flex;justify-content:center}.bt button{max-width:620px;width:100%;border:none;border-radius:10px;padding:12px;font:bold 15px Georgia;background:#f3c96b;color:#1d1626}
 </style></head><body><main>
 <h1>🗣️ Les voix des personnages (essai)</h1>
-<p class="doux">Comme dans Animal Crossing : ce n'est pas une vraie voix qui lit, c'est un petit babillage fabriqué par le téléphone, au rythme du texte. Choisis une phrase, puis touche une voix. Toucher la bulle coupe la voix. Rien n'est encore branché dans le jeu.</p>
+<p class="doux">Version 2 (14/11), comme dans Animal Crossing : une VRAIE voix prononce une petite syllabe par lettre (« ba », « ka », « o »…), enchaînées très vite et rendues plus aiguës, au rythme du texte. Choisis une phrase, puis touche une voix. Toucher la bulle coupe la voix. Rien n'est encore branché dans le jeu.</p>
 <div class="ph" id="phrases"></div>
 <div class="bulle" id="bulle" onclick="if (voixArret) voixArret()"><img id="av" src="ui/moustache.webp?v=1" alt=""><div><b id="qui">Moustache</b><span id="txt">Touche une voix pour l'entendre.</span></div></div>
 <div class="voix" id="voix"></div>
@@ -26,7 +26,7 @@ textarea{width:100%;box-sizing:border-box;border-radius:8px;border:1px solid #4b
 </div>
 </main>
 <div class="bt"><button onclick="copier()">Copier mon avis</button></div>
-<script src="voix.js?v=1"></script>
+<script src="voix.js?v=2"></script>
 <script>
 const PHRASES = [
   'Miaou ! Bienvenue à la Guilde. Moi, c’est Moustache, chat d’aventure.',
