@@ -609,7 +609,7 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261113-120812';
+const VERSION = '20261113-122128';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); location.replace('duel.html?v=' + v); }
@@ -628,10 +628,10 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261113-120812"></script>
-<script src="donnees.js?v=20261113-120812"></script>
-<script src="odyssee.js?v=20261113-120812"></script>
-<script src="chronique.js?v=20261113-120812"></script>
+<script src="cartes.js?v=20261113-122128"></script>
+<script src="donnees.js?v=20261113-122128"></script>
+<script src="odyssee.js?v=20261113-122128"></script>
+<script src="chronique.js?v=20261113-122128"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -664,7 +664,7 @@ function ajouteMeute(J, n) {
 }
 function invoque(J, base, key) {
   if (J.front.length >= 5) { log('Ligne de front pleine.'); return; }
-  const u = { ...base, key, id:Math.random().toString(36).slice(2), pret:!!base.charge };
+  const u = { ...base, key, id:Math.random().toString(36).slice(2), pret:!!base.charge || S.salle.id === 'sem-charge' };
   if (S.salle.id === 'caserne') u.v += 1;
   if (J.reliques.includes('cor')) u.v += 1;
   u.vmax = u.v; J.front.push(u);
@@ -801,7 +801,7 @@ function pose(J, quoi, ds, k, indexMain) {
   if (S.coop && J !== S.O && vs.length >= 3 && S.cohesion < COHESION.max) { S.cohesion++; log(`🤝 Cohésion ${S.cohesion}/${COHESION.max}.`); }
   if (quoi === 'garde' && vs.includes(6)) J.garde6 = true;
   if (quoi === 'technique' && vs.length >= 4) J.tech4 = true;
-  if (quoi === 'vendre') { let g = 0; vs.forEach(v => g += (S.salle.id === 'autel' && v === 6) ? 2 : 1); J.pc = Math.min(6, J.pc + g); log(`${J.nom} vend ${vs.length} dé(s) : +${g} PC.`); fx({ t:'pc', s:J === S.J ? 'J' : 'O', n:g, nb:vs.length }); return; }
+  if (quoi === 'vendre') { let g = 0; vs.forEach(v => g += ((S.salle.id === 'autel' && v === 6) || S.salle.id === 'sem-marche') ? 2 : 1); J.pc = Math.min(6, J.pc + g); log(`${J.nom} vend ${vs.length} dé(s) : +${g} PC.`); fx({ t:'pc', s:J === S.J ? 'J' : 'O', n:g, nb:vs.length }); return; }
   const six = vs.filter(v => v === 6).length; J.six += six;
   if (quoi !== 'ultime') remplit(J, vs.length * JAUGE.parDe);
   if (J.id === 'aldric' && J.six >= 2 && !J.pureteTour && J.purete < 2) { J.purete++; J.pureteTour = true; log('✦ Deux 6 posés : Aldric gagne un jeton de Pureté.'); }
@@ -810,7 +810,7 @@ function pose(J, quoi, ds, k, indexMain) {
     const quoiG = J.gardeB > g0 ? `Bouclier ${J.gardeB}` : J.gardeE > e0 ? `Épines ${J.gardeE}` : J.esquive && !q0 ? 'Esquive' : h.garde.n;
     fx({ t:'garde', s:J === S.J ? 'J' : 'O', nom:h.garde.n, quoi:quoiG, vs }); bilan(J, 'gardes', `Garde : ${quoiG}`); return; }
   if (quoi === 'frappe') { log(`${J.nom} : Frappe (${vs.join(', ')}) : ${frappeDe(J).dg(vs)} dégâts.`); fx({ t:'tir', id:J.id, s:J === S.J ? 'J' : 'O', vers:k && ref(k), nom:'Frappe', vs, dg:frappeDe(J).dg(vs), cible:k && (k.u ? k.u.n : k.J.nom) }); bilan(J, 'actions', `⚔ Frappe (${vs.join('·')}) : ${frappeDe(J).dg(vs)} dégâts`); frappeDe(J).f(J, vs, k); return; }
-  if (quoi === 'technique') { log(`${J.nom} : Technique (${vs.join(', ')}) : ${[0, 0, 0, 4, 7, 10][vs.length]} dégâts.`); fx({ t:'tir', id:J.id, s:J === S.J ? 'J' : 'O', vers:k && ref(k), nom:'Technique', vs, dg:[0, 0, 0, 4, 7, 10][vs.length], cible:k && (k.u ? k.u.n : k.J.nom) }); bilan(J, 'actions', `⚔ Technique (${vs.join('·')}) : ${[0, 0, 0, 4, 7, 10][vs.length]} dégâts`); TECHNIQUE.f(J, vs, k); return; }
+  if (quoi === 'technique') { log(`${J.nom} : Technique (${vs.join(', ')}) : ${techDg(vs)} dégâts.`); fx({ t:'tir', id:J.id, s:J === S.J ? 'J' : 'O', vers:k && ref(k), nom:'Technique', vs, dg:techDg(vs), cible:k && (k.u ? k.u.n : k.J.nom) }); bilan(J, 'actions', `⚔ Technique (${vs.join('·')}) : ${techDg(vs)} dégâts`); TECHNIQUE.f(J, vs, k); return; }
   if (quoi === 'pouvoir') { log(`${J.nom} : ${h.pouvoir.n} !`); bilan(J, 'actions', `✨ Pouvoir : ${h.pouvoir.n} (${vs.join('·')})`); fx({ t:'carte', key:'pouvoir', id:J.id, s:J === S.J ? 'J' : 'O', nom:h.pouvoir.n, txt:h.pouvoir.d, sorte:'Pouvoir', vers:k && k.J && ref(k), vs }); h.pouvoir.f(J, vs, k, ds); return; }
   if (quoi === 'ultime') { J.pc -= 3; J.ultimeFait = true; log(`${J.nom} : ULTIME, ${h.ultime.n} !`); bilan(J, 'actions', `⚡ ULTIME : ${h.ultime.n}`); fx({ t:'ultime', s:J === S.J ? 'J' : 'O', id:J.id, nom:h.ultime.n, d:h.ultime.d, cit:h.cit, vers:k && k.J && ref(k) }); h.ultime.f(J, vs, k, ds); return; }
   const c = CARTES[quoi];
@@ -1431,7 +1431,7 @@ function dessine() {
   if (J.aLancer) bandeau = 'Ton tour commence : lance tes dés !';
   else if (ciblage && ciblage.type === 'de') bandeau = ciblage.quoi === 'ajuste' ? '🎲 Touche le dé à ajuster.' : ciblage.quoi === 'retremper' ? '🎲 Touche le dé qui gagne +2.' : '🎲 Touche le dé à retourner.';
   else if (ciblage) {
-    const q = ciblage.quoi, vs = vals(ciblage.ds), d = q === 'frappe' ? `Frappe (${vs.join(', ')}) : ${FRAPPE.dg(vs)} dégâts` : q === 'technique' ? `Technique (${vs.join(', ')}) : ${[0, 0, 0, 4, 7, 10][vs.length]} dégâts`
+    const q = ciblage.quoi, vs = vals(ciblage.ds), d = q === 'frappe' ? `Frappe (${vs.join(', ')}) : ${FRAPPE.dg(vs)} dégâts` : q === 'technique' ? `Technique (${vs.join(', ')}) : ${techDg(vs)} dégâts`
       : q === 'pouvoir' ? `${h.pouvoir.n} : ${h.pouvoir.d}` : q === 'ultime' ? `${h.ultime.n} : ${h.ultime.d}` : CARTES[q] ? `${CARTES[q].n} : ${CARTES[q].d}` : '';
     bandeau = `🎯 ${d}<br>Touche la cible (en vert).`;
   }
@@ -1640,7 +1640,7 @@ function adversaire() {
   <button onclick="fermer();nouvellePartie(monHeros);regles()" style="display:flex;align-items:center;justify-content:center;font-size:2em;min-height:110px">🎲<br><span style="font-size:.4em">au hasard</span></button></div>
   ${typeof roiDebloque === 'function' && roiDebloque() ? `<div class="choixh"><button onclick="fermer();nouvellePartie(monHeros,'roi');regles()" style="border-color:#a855f7">👑 Défier le Roi sans visage (Panthéon)</button></div>` : ''}`);
 }
-if (typeof document !== 'undefined' && document.getElementById('app')) { const q = new URLSearchParams(location.search); if (q.get('tuto')) addEventListener('load', () => partieTuto()); else if (q.get('enigme')) addEventListener('load', () => partieEnigme(q.get('enigme'))); else if (q.get('deux')) addEventListener('load', () => deuxAccueil()); else if (q.get('odyssee')) setTimeout(partieOdyssee, 0); else if (q.get('campement')) setTimeout(partieCampement, 0); else if (q.get('parties')) mesParties(); else if (q.get('h') && HEROS[q.get('h')]) { monHeros = q.get('h'); adversaire(); } else accueil(); }
+if (typeof document !== 'undefined' && document.getElementById('app')) { const q = new URLSearchParams(location.search); if (q.get('tuto')) addEventListener('load', () => partieTuto()); else if (q.get('enigme')) addEventListener('load', () => partieEnigme(q.get('enigme'))); else if (q.get('semaine')) addEventListener('load', () => partieSemaine()); else if (q.get('deux')) addEventListener('load', () => deuxAccueil()); else if (q.get('odyssee')) setTimeout(partieOdyssee, 0); else if (q.get('campement')) setTimeout(partieCampement, 0); else if (q.get('parties')) mesParties(); else if (q.get('h') && HEROS[q.get('h')]) { monHeros = q.get('h'); adversaire(); } else accueil(); }
 
 // =============================================================================================== animations et sons
 // Les sons sont fabriqués par le téléphone (aucun fichier) ; 🔊 / 🔇 dans la barre de la salle.
@@ -1938,11 +1938,12 @@ async function joueFX() {
 // toucher l'écran pendant les animations les accélère
 document.addEventListener('pointerdown', () => { if (fxOn) fxVite = .3; }, true);
 </script>
-<script src="pantheon.js?v=20261113-120812"></script>
-<script src="tuto.js?v=20261113-120812"></script>
-<script src="deux.js?v=20261113-120812"></script>
-<script src="invasion.js?v=20261113-120812"></script>
-<script src="enigme-table.js?v=20261113-120812"></script>
-<script src="enigme.js?v=20261113-120812"></script>
+<script src="pantheon.js?v=20261113-122128"></script>
+<script src="tuto.js?v=20261113-122128"></script>
+<script src="deux.js?v=20261113-122128"></script>
+<script src="invasion.js?v=20261113-122128"></script>
+<script src="enigme-table.js?v=20261113-122128"></script>
+<script src="semaine.js?v=20261113-122128"></script>
+<script src="enigme.js?v=20261113-122128"></script>
 </body>
 </html>

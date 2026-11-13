@@ -8,7 +8,7 @@
 <title>La Guilde des Runes</title>
 <script>
 // Même mécanisme que le Duel : une nouvelle version = rechargement tout seul à l'ouverture (publier.sh change VERSION).
-const VERSION = '20261113-120812';
+const VERSION = '20261113-122128';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-menu-' + v)) { sessionStorage.setItem('recharge-menu-' + v, '1'); location.replace('menu.html?v=' + v); }
@@ -170,7 +170,8 @@ fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.te
 </div>
 <div id="flash"></div>
 
-<script src="donnees.js?v=20261113-120812"></script>
+<script src="semaine.js?v=20261113-122128"></script>
+<script src="donnees.js?v=20261113-122128"></script>
 <script>
 // ciel étoilé + runes du portail (symboles, pas des lettres), aux couleurs des héros
 const ciel = document.getElementById('ciel');
@@ -201,6 +202,7 @@ const PRO = { // dessins provisoires : [émoji, fond, lueur]
   proche:['🤝', 'linear-gradient(180deg, #3a2414 0%, #7a4a24 45%, #c9893f 46%, #6b3f1f 100%)', '#ffd27a'],
   pantheon:['🏛', 'linear-gradient(180deg, #1a1433 0%, #3a2a5c 50%, #c8902f 100%)', '#f3c96b'],
   defense:['🏰', 'linear-gradient(180deg, #2a1d10 0%, #5a3a1a 45%, #1f3b2b 46%, #14281d 100%)', '#7dffb0'],
+  semaine:['🗓️', 'linear-gradient(180deg, #3a1f5c 0%, #7a3a8a 45%, #e7c48a 46%, #c99a5b 100%)', '#f3c96b'],
   enigme:['🧩', 'linear-gradient(180deg, #14213d 0%, #2b3a67 50%, #e9c46a 100%)', '#ffe08a'],
   abime:['🌀', 'radial-gradient(circle at 50% 70%, #6d28d9 0%, #1e0b3a 50%, #05020d 100%)', '#a855f7'],
 };
@@ -219,6 +221,7 @@ const ETAGES = {
   ] },
   arene:{ titre:'L’Arène des Duels', sous:'Contre qui veux-tu te battre ?', portes:[
     { nom:'Contre l’ordinateur', pro:'ordinateur', href:'duel.html', desc:'Choisis ton héros et affronte l’automate de la Guilde.' },
+    { nom:'Le Duel de la semaine', pro:'semaine', href:'duel.html?semaine=1', desc:`Cette semaine : « ${regleDeLaSemaine().n} ». ${regleDeLaSemaine().d} Gagne pour le Sceau de la semaine.` },
     { nom:'Contre un proche', pro:'proche', href:'duel.html?deux=1', desc:'À deux sur le même téléphone : chacun son héros, on se passe le téléphone à chaque tour.' },
     { nom:'Le tutoriel', pro:'tuto', href:'duel.html?tuto=1', desc:'Un premier duel guidé par Corbin, avec Gorm (5 minutes). À la clé : Zéphine et le cadre de Diplômé.' },
   ] },

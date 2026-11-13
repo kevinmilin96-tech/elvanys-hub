@@ -29,10 +29,10 @@
   <p class="intro">« Ici, la Guilde grave le nom de ceux qui ont tenu jusqu’au bout. »</p>
   <div id="app"></div>
 </main>
-<script src="cartes.js?v=20261113-120812"></script>
-<script src="donnees.js?v=20261113-120812"></script>
-<script src="odyssee.js?v=20261113-120812"></script>
-<script src="pantheon.js?v=20261113-120812"></script>
+<script src="cartes.js?v=20261113-122128"></script>
+<script src="donnees.js?v=20261113-122128"></script>
+<script src="odyssee.js?v=20261113-122128"></script>
+<script src="pantheon.js?v=20261113-122128"></script>
 <script>
 const log = () => {};
 const J = (cle, def) => { try { return JSON.parse(localStorage.getItem(cle) || 'null') || def; } catch (e) { return def; } };
@@ -49,6 +49,7 @@ function dessine() {
     [Object.keys(P.heros).length > 0, '🌑', 'Briseur de Néant', 'Le titre de chaque héros inscrit au Tableau d’honneur.'],
     [exp.some(r => r.parfait), '🌊', 'Traversée parfaite', 'Vaincre le Titan des Expéditions sans perdre un cœur.'],
     [!!(inv.eveil && inv.reveil), '⚔️', 'Rempart de la Guilde', 'Gagner les deux actes de l’Invasion.'],
+    [Object.keys(J('guilde-sceaux', {})).length >= 10, '🔏', 'Gardien des sceaux', 'Gagner 10 Sceaux de la semaine (un par semaine, au Duel de la semaine).'],
     [eniDim > 0, '🧩', 'Sphinx de la Guilde', 'Résoudre une énigme du dimanche (la plus redoutable de la semaine).'],
   ];
   document.getElementById('app').innerHTML = `
@@ -68,6 +69,7 @@ function dessine() {
     <div><b>⛵ Les Expéditions</b>${exp.filter(r => r.gagne).length} gagnée${exp.filter(r => r.gagne).length > 1 ? 's' : ''} sur ${exp.length}<br><small>meilleur score : ${exp.length ? Math.max(...exp.map(r => r.score)) : '—'}</small></div>
     <div><b>😈 Les Némésis</b>${+(localStorage.getItem('guilde-nemesis-vaincues') || 0)} vaincue${+(localStorage.getItem('guilde-nemesis-vaincues') || 0) > 1 ? 's' : ''}<br><small>${Object.entries(J('guilde-nemesis', {})).map(([h, n]) => `${HEROS[h].nom} ← ${HEROS[n.rival].nom} (niv. ${n.niv})`).join(' · ') || 'aucune en cours'}</small></div>
     <div><b>🏰 La Défense de la porte</b>${J('guilde-defense', []).filter(x => x.gagne).length} victoire${J('guilde-defense', []).filter(x => x.gagne).length > 1 ? 's' : ''} sur ${J('guilde-defense', []).length}<br><small>meilleur score : ${Math.max(0, ...J('guilde-defense', []).map(x => x.score)) || '—'}</small></div>
+    <div><b>🔏 Les Sceaux de la semaine</b>${Object.keys(J('guilde-sceaux', {})).length} sceau${Object.keys(J('guilde-sceaux', {})).length > 1 ? 'x' : ''}<br><small>${Object.entries(J('guilde-sceaux', {})).sort().reverse().slice(0, 6).map(([k, v]) => `${k.slice(8, 10)}/${k.slice(5, 7)} ${v.regle}`).join(' · ') || 'aucun pour l’instant'}</small></div>
     <div><b>🧩 L’énigme du jour</b>${eniOk.length} résolue${eniOk.length > 1 ? 's' : ''} · ${eniPremier} du premier coup<br><small>meilleure série : ${eniSerieMax} jour${eniSerieMax > 1 ? 's' : ''} · dimanches : ${eniDim}</small></div>
     <div><b>🛡 L’Invasion</b>Acte I ${inv.eveil ? '✅' : '⬜'} · Acte II ${inv.reveil ? '✅' : '⬜'}<br><small>grands boss : ${['colosseracines', 'kraken', 'ignaros'].filter(k => inv[k]).map(k => HEROS[k].nom.split(',')[0]).join(', ') || '—'}</small></div>
   </div>`;

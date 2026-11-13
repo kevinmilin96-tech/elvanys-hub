@@ -166,7 +166,9 @@ const FRAPPE = { n:'Frappe', txt:'2 à 5 dés identiques', d:'Dégâts = la vale
   f:(J, vs, k) => degats(k, FRAPPE.dg(vs)) };
 // Technique (09/11, choix de l'utilisateur : la « petite suite » du plateau papier) : commune à tous.
 const TECHNIQUE = { n:'Technique', txt:'3 à 5 dés qui se suivent', d:'4 / 7 / 10 dégâts à une cible (suite de 3, 4 ou 5 dés, par exemple 2-3-4).', cond:vs => vs.length >= 3 && suite(vs, vs.length), cible:'ennemi',
-  f:(J, vs, k) => degats(k, [0, 0, 0, 4, 7, 10][vs.length]) };
+  f:(J, vs, k) => degats(k, techDg(vs)) };
+// 13/11 : dégâts de la Technique (la règle de la semaine « Suites généreuses » fait compter une suite de 3 comme une suite de 4)
+const techDg = vs => (typeof S !== 'undefined' && S && S.salle && S.salle.id === 'sem-suites' && vs.length === 3) ? 7 : [0, 0, 0, 4, 7, 10][vs.length];
 const SALLES = [
   { n:'La Cour de la caserne', d:'Les unités arrivent avec +1 vie.', id:'caserne' },
   { n:'La Salle des échos', d:'La première carte de chaque tour coûte 1 PC de moins.', id:'echos' },
