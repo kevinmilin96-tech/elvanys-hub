@@ -38,18 +38,48 @@ function chroniqueEscale(apres) {
 }
 
 // ----------------------------------------------------------------------------------------------- le port
+// 14/11 (l'utilisateur : « je ne peux pas cliquer sur les créatures, ni sur les étiquettes ; plus sympa que des cases jaunes ; sur une page ») :
+// de vraies cartes (illustration en fond, ce que fait la carte en un mot), une FICHE au toucher, tout l'écran du port sans défilement.
+const ART_EXP = { chien:'chien-garde' }; // illustrations : cartes/<clé>.webp (même nom que la carte du Duel, sauf exceptions)
+const ROLE_COURT = { rempart:'🛡 garde', lame:'⚔ mêlée', tireur:'🏹 tire', soutien:'✚ aide', capitaine:'🎲 3 dés' };
+const ROLE_LONG = {
+  rempart:'🛡 <b>Rempart</b> : se place DEVANT et prend les coups. Il attaque aussi, au corps à corps.',
+  lame:'⚔ <b>Lame</b> : attaque au corps à corps depuis le DEVANT. Placée derrière, elle attend que le devant tombe pour avancer.',
+  tireur:'🏹 <b>Tireur</b> : tire de loin, DERRIÈRE (ou devant). Il frappe chaque round, même protégé par le devant.',
+  soutien:'✚ <b>Soutien</b> : <b>n’attaque pas</b>. Il aide l’équipage depuis DERRIÈRE (bonus, soins).',
+  capitaine:'🎲 <b>Capitaine</b> : lance 3 dés à chaque round et frappe avec le meilleur. S’il tombe, le combat continue sans lui.' };
+const ETIQ = { 'Barrière':'Les ennemis doivent le frapper avant les autres.', 'Charge':'Frappe en premier, avant tout le monde.', 'Poison':'Sa cible perd 1 PV à chaque round.',
+  'Soin':'Soigne de 2 l’allié le plus blessé à chaque round.', 'Soin à tous':'Soigne de 1 tout l’équipage à chaque round.', '+1 atq':'Tous les autres membres de l’équipage ont +1 attaque (plusieurs Tambours ne s’additionnent pas).',
+  'Épines':'Qui le frappe perd 1 PV.' };
+function etiquettes(u) { const r = RECRUES[u.key] || {};
+  return [u.barriere || r.barriere ? 'Barrière' : '', r.charge || u.charge ? 'Charge' : '', r.poison ? 'Poison' : '', r.soigneur ? 'Soin' : '', r.soinTous ? 'Soin à tous' : '', r.tambour ? '+1 atq' : '', r.epines ? 'Épines' : ''].filter(Boolean); }
 function uniteHTML(u, opt) {
   if (!u) return '';
-  const r = RECRUES[u.key], cap = u.key === 'capitaine', fam = u.fam ? FAMILLES[u.fam].e : '';
-  const tags = [u.barriere || (r && r.barriere) ? 'Barrière' : '', (r && r.charge) || u.charge ? 'Charge' : '', r && r.poison ? 'Poison' : '', r && r.soigneur ? 'Soin' : '', r && r.soinTous ? 'Soin à tous' : '', r && r.tambour ? '+1 atq' : '', r && r.epines ? 'Épines' : ''].filter(Boolean).join(' · ');
-  const a = u.a + (u.bonusA || 0), v = u.v + (u.bonusV || 0);
-  return `<div class="u ${cap ? 'capitaine' : ''} ${opt && opt.ennemi ? 'ennemi' : ''} ${sel === u.id ? 'sel' : ''}" data-id="${u.id}" ${opt && opt.clic ? `onclick="toucheUnite('${u.id}', event)"` : ''}>
-    ${cap ? `<img class="por" src="${IMG(u.hid)}" alt="">` : ''}<b>${u.n}${u.star ? ` <span class="st">${'★'.repeat(u.star)}</span>` : ''}</b>
-    <div class="tg">${cap ? '3 dés' : `${fam} ${ROLES[u.role] || ''}`}${tags ? '<br>' + tags : ''}</div><div class="av"><span>⚔ ${a}</span><span>❤ ${v}</span></div></div>`;
+  const cap = u.key === 'capitaine', fam = u.fam && FAMILLES[u.fam] ? FAMILLES[u.fam].e : '', tags = etiquettes(u);
+  const a = u.a + (u.bonusA || 0), v = u.v + (u.bonusV || 0), ennemi = opt && opt.ennemi;
+  const art = cap ? IMG(u.hid) : u.key === 'm' ? '' : `cartes/${ART_EXP[u.key] || u.key}.webp`;
+  const clic = opt && opt.clic ? `onclick="toucheUnite('${u.id}', event)"` : `onclick="ficheUnite('${u.id}', event)"`;
+  return `<div class="u carte ${cap ? 'capitaine' : ''} ${ennemi ? 'ennemi' : ''} ${u.role === 'soutien' ? 'soutien' : ''} ${sel === u.id ? 'sel' : ''}" data-id="${u.id}" ${clic} style="${art ? `background-image:url('${art}')` : ''}">
+    ${art ? '' : `<span class="sansart">${ennemi ? '👹' : '❔'}</span>`}<span class="nm">${u.n}${u.star ? ` <span class="st">${'★'.repeat(u.star)}</span>` : ''}</span>${fam ? `<span class="fm">${fam}</span>` : ''}
+    <span class="rl">${ROLE_COURT[u.role] || ''}${u.role === 'soutien' ? ' · n’attaque pas' : ''}${tags.length ? '<br>' + tags.join(' · ') : ''}</span>
+    <div class="av"><span>⚔ ${a}</span><span>❤ ${v}</span></div></div>`;
 }
+// la fiche d'une unité (au port, en combat, chez le recruteur)
+function ficheHTML(u, r) {
+  const cap = u.key === 'capitaine', tags = etiquettes(u), art = cap ? IMG(u.hid) : u.key === 'm' ? '' : `cartes/${ART_EXP[u.key] || u.key}.webp`;
+  return `<div class="fiche">${art ? `<img src="${art}" alt="">` : ''}<div><h2>${u.n}${u.star ? ` <span class="st">${'★'.repeat(u.star)}</span>` : ''}</h2>
+    <p class="doux">${u.fam && FAMILLES[u.fam] ? `${FAMILLES[u.fam].e} ${FAMILLES[u.fam].n} · ` : ''}⚔ ${u.a + (u.bonusA || 0)} · ❤ ${u.v + (u.bonusV || 0)}</p></div></div>
+    <p>${ROLE_LONG[u.role] || (u.tireur ? ROLE_LONG.tireur : ROLE_LONG.lame)}</p>
+    ${cap && CAPITAINES[u.hid] ? `<p>🧭 <b>${CAPITAINES[u.hid].n}</b> : ${CAPITAINES[u.hid].d}</p>` : ''}
+    ${tags.map(t => `<p>🏷 <b>${t}</b> : ${ETIQ[t] || ''}</p>`).join('')}${r && r.d && !tags.length ? `<p>${r.d}</p>` : ''}
+    ${u.star ? `<p class="doux">★ = trois recrues pareilles fusionnées : attaque et vie doublées.</p>` : ''}`;
+}
+let ficheDe = {};
+function ficheUnite(id, e) { if (e) e.stopPropagation(); const u = ficheDe[id] || (X && toutes(X).find(x => x.id === id)); if (!u) return;
+  fenetre(`${ficheHTML(u, RECRUES[u.key])}<div class="choixh"><button onclick="fermer()">Fermer</button></div>`); }
 function famillesHTML(P) {
   const c = compteFamilles(X, P || X.plateau);
-  return `<div class="fams">${Object.keys(FAMILLES).map(f => { const n = c[f] || 0, p = palier(n); return `<span class="p${p}" onclick="infoFam('${f}')">${FAMILLES[f].e} ${n}/${p >= 1 ? 4 : 2}</span>`; }).join('')}</div>`;
+  return `<div class="fams">${Object.keys(FAMILLES).map(f => { const n = c[f] || 0, p = palier(n); return `<span class="p${p}" onclick="infoFam('${f}')">${FAMILLES[f].e} ${n}/${p >= 1 ? 4 : 2} ⓘ</span>`; }).join('')}</div>`;
 }
 function infoFam(f) { const F = FAMILLES[f], n = compteFamilles(X, X.plateau)[f] || 0;
   fenetre(`<h2>${F.e} ${F.n}</h2><p>Sur le plateau : <b>${n}</b> (la cale ne compte pas).</p><p>${n >= 2 ? '✅' : '⬜'} <b>À 2</b> : ${F.d2}</p><p>${n >= 4 ? '✅' : '⬜'} <b>À 4</b> : ${F.d4}</p>
@@ -68,21 +98,21 @@ function port() {
   <p class="prochain">Prochaine escale : <b>${esc.e} ${esc.n}</b> · ${esc.type === 'fantome' ? '👻 un navire rival (un autre capitaine)' : esc.type === 'boss' ? '👑 le boss' : '⚔ des monstres'}</p>
   ${famillesHTML()}
   <div class="champ">
-    <div class="etiq">DEVANT · ils prennent les coups</div><div class="rangee">${[0, 1, 2].map(i => slotHTML('av', i)).join('')}</div>
-    <div class="etiq">DERRIÈRE · Tireurs et Soutiens (les Lames y attendent)</div><div class="rangee">${[0, 1, 2].map(i => slotHTML('ar', i)).join('')}</div>
+    <div class="etiq">DEVANT · prennent les coups</div><div class="rangee">${[0, 1, 2].map(i => slotHTML('av', i)).join('')}</div>
+    <div class="etiq">DERRIÈRE · 🏹 tirent, ✚ aident (n’attaquent pas)</div><div class="rangee">${[0, 1, 2].map(i => slotHTML('ar', i)).join('')}</div>
   </div>
-  <div class="etiq">LA CALE · ne combat pas (pour garder une recrue en attendant une fusion)</div><div class="cale">${[0, 1, 2].map(i => slotHTML('cale', i)).join('')}</div>
-  ${selU ? `<div class="actions"><span class="doux">${selU.n} : touche une place pour la déplacer.</span>${selU.key !== 'capitaine' ? `<button onclick="vendre()">💰 Vendre (+${selU.star ? 1 + selU.star * 2 : 1})</button>` : ''}${X.heros === 'zephine' && X.transmuOk && selU.key !== 'capitaine' ? '<button onclick="transmuter()">⚗ Transmuter</button>' : ''}<button onclick="sel=null;port()">Annuler</button></div>` : ''}
-  <h2>🧭 Le recruteur <small class="doux">(3 pièces, grosses 4 · 3 pareilles = ★)</small></h2>
+  <div class="etiq">LA CALE · ne combat pas</div><div class="cale">${[0, 1, 2].map(i => slotHTML('cale', i)).join('')}</div>
+  ${selU ? `<div class="feuille">${ficheHTML(selU, RECRUES[selU.key])}<p class="ok">👉 Touche une place pour la déplacer.</p></div><div class="actions">${selU.key !== 'capitaine' ? `<button onclick="vendre()">💰 Vendre (+${selU.star ? 1 + selU.star * 2 : 1})</button>` : ''}${X.heros === 'zephine' && X.transmuOk && selU.key !== 'capitaine' ? '<button onclick="transmuter()">⚗ Transmuter</button>' : ''}<button onclick="sel=null;port()">Annuler</button></div>` : ''}
+  <div class="etiq">🧭 LE RECRUTEUR · 3 💰 (les grosses 4) · 3 pareilles = ★ · touche pour voir</div>
   <div class="boutique ${X.offre.length > 4 ? 'cinq' : ''}">${X.offre.map((k, i) => { if (!k) return '<div class="offre vide"></div>'; const r = RECRUES[k];
-    return `<div class="offre ${paires(k) ? 'paire' : ''}" onclick="voirRecrue(${i})"><span class="prix">${prixRecrue(k)}</span><b>${r.n}</b><div>${FAMILLES[r.fam].e} ${ROLES[r.role]}</div><div class="av" style="display:flex;justify-content:space-between;font-weight:bold"><span>⚔${r.a}</span><span>❤${r.v}</span></div></div>`; }).join('')}</div>
+    return `<div class="offre carte ${paires(k) ? 'paire' : ''} ${r.role === 'soutien' ? 'soutien' : ''}" onclick="voirRecrue(${i})" style="background-image:url('cartes/${ART_EXP[k] || k}.webp')"><span class="prix">${prixRecrue(k)}</span><span class="nm">${r.n}</span><span class="fm">${FAMILLES[r.fam].e}</span><span class="rl">${ROLE_COURT[r.role]}</span><div class="av"><span>⚔ ${r.a}</span><span>❤ ${r.v}</span></div></div>`; }).join('')}</div>
   <div class="actions"><button onclick="relancer()" ${X.or >= 1 ? '' : 'disabled'}>🔄 Relancer (1)</button><button class="${X.gel ? 'on' : ''}" onclick="X.gel=!X.gel;sauve();port()">❄ ${X.gel ? 'Offre gelée' : 'Geler l’offre'}</button><button onclick="aideExp()">❓ Aide</button></div>
   <button class="go" onclick="partir()">⚔ Partir pour l’escale ${X.escale + 1}</button>
   <div class="choixh"><button onclick="journalExp()">📜 Journal</button><button onclick="quitter()">⏏ Quitter</button></div>`;
 }
 function voirRecrue(i) {
   const k = X.offre[i]; if (!k) return; const r = RECRUES[k], n = toutes(X).filter(u => u.key === k && u.star === 0).length;
-  fenetre(`<h2>${r.n}${r.neuf ? ' <small class="doux">(nouvelle)</small>' : ''}</h2><p>${FAMILLES[r.fam].e} ${FAMILLES[r.fam].n} · ${ROLES[r.role]} · ⚔ ${r.a} · ❤ ${r.v}${r.barriere ? ' · Barrière' : ''}${r.charge ? ' · Charge (frappe en premier)' : ''}</p>${r.d ? `<p>${r.d}</p>` : ''}
+  fenetre(`${ficheHTML({ key:k, n:r.n, fam:r.fam, role:r.role, a:r.a, v:r.v, star:0 }, r)}
     ${n ? `<p style="color:var(--ok)">Tu en as déjà ${n} : ${n === 2 ? 'en l’achetant, les trois fusionnent en une recrue ★ !' : 'encore deux pour une ★.'}</p>` : ''}
     <div class="choixh"><button onclick="fermer()">Fermer</button><button class="or" ${X.or >= prixRecrue(k) ? '' : 'disabled'} onclick="acheter(${i})">Recruter (${prixRecrue(k)} 💰)</button></div>`);
 }
@@ -115,6 +145,7 @@ async function partir() {
   const res = joueEscale(X, hasardX(X)); sauve();
   // les unités du combat portent les mêmes identifiants que celles du plateau : on dessine l'état d'avant
   const A = res.adv.camp.plateau, noms = {}; [...avant.plateau.av, ...avant.plateau.ar, ...A.av, ...A.ar].filter(Boolean).forEach(u => { noms[u.id] = u.n; });
+  ficheDe = {}; [...avant.plateau.av, ...avant.plateau.ar, ...A.av, ...A.ar].filter(Boolean).forEach(u => { ficheDe[u.id] = u; });
   app().innerHTML = `<div class="entete"><div style="flex:1;text-align:center"><b>${esc.e} ${res.adv.nom}</b>${res.adv.fantome ? `<br><span class="doux">capitaine rival : ${HEROS[res.adv.fantome].nom} · ${CAPITAINES[res.adv.fantome].n}</span>` : ''}</div></div>
   <div class="champ lieu-${esc.cle}">${rangees(A, true)}<div class="milieu">⚔ ✦ ⚔</div>${rangees(avant.plateau, false)}
   <div class="vitesse">Vitesse : ${[1, 2, 4].map(v => `<button class="${vitesse === v ? 'sel' : ''}" onclick="vitesse=${v};document.querySelectorAll('.vitesse button').forEach(b=>b.classList.toggle('sel', b.textContent==='×${v}'))">×${v}</button>`).join('')}</div></div>
