@@ -22,6 +22,7 @@
   #choix { font-size:12px; color:#f3c96b; text-align:center; }
   .med { width:var(--m); height:var(--m); background:center/contain no-repeat; }
   .por { width:var(--p); height:var(--p); border-radius:50%; background:center/cover no-repeat; }
+  .anneauP { width:calc(var(--p) * 1.732); height:calc(var(--p) * 1.732); pointer-events:none; } .anneauP svg { width:100%; height:100%; display:block; } .anneauP svg * { pointer-events:visibleStroke; } /* 14/11 : anneaux de vie et d'Ultime, à part ; on l'attrape par ses anneaux */
   .cadreP { width:calc(var(--p) * 1.732); height:calc(var(--p) * 1.732); background:url('ui/cadre.webp?v=1') center/contain no-repeat; } /* 14/11 : le cadre est un élément à part (avant : collé au portrait) */
   .de { width:7cqw; height:7cqw; background:url('faces-zephine/face-5.webp') center/contain no-repeat; }
   .coeur { width:11cqw; height:10cqw; background:url('ui/coeur.webp?v=1') center/contain no-repeat; display:grid; place-items:center; font:bold 3.6cqw Georgia; text-shadow:0 1px 2px #000; }
@@ -44,6 +45,7 @@
   <div class="vue" id="vue"><div class="plateau" id="pl"></div></div>
   <div class="bas">
     <label>Zoom <input type="range" id="tz" min="1" max="6" step="0.5" value="1"><span id="vz">×1</span></label>
+    <select id="liste" onchange="choisirListe(this)" style="font:13px Georgia;padding:6px;border-radius:8px;background:#2a2650;color:#fff;border:1px solid #4b4580"></select>
     <div id="choix">Touche un élément pour le régler aux flèches.</div>
     <div class="fleches"><button onclick="pousse(-1,0)">◀</button><button onclick="pousse(0,-1)">▲</button><button onclick="pousse(0,1)">▼</button><button onclick="pousse(1,0)">▶</button><button onclick="centrer()">🎯</button><button onclick="changePas(this)" style="font-size:12px">pas 0,1</button></div>
     <div class="fleches" style="grid-template-columns:1fr 1fr 2fr"><button onclick="taille(-1)">－ taille</button><button onclick="taille(1)">＋ taille</button><button onclick="taille(0)">taille d’origine</button></div>
@@ -64,7 +66,7 @@ if (PLATEAU) { document.getElementById('pl').style.backgroundImage = `url('decor
 let R = JSON.parse(localStorage.getItem(CLE) || 'null') || JSON.parse(JSON.stringify(DEFAUT));
 const pl = document.getElementById('pl');
 const ELEMENTS = [
-  ['cadre_haut', 'cadreP'], ['cadre_bas', 'cadreP'],
+  ['cadre_haut', 'cadreP'], ['cadre_bas', 'cadreP'], ['anneau_haut', 'anneauP'], ['anneau_bas', 'anneauP'],
   ['frappe', 'med', 'ui/frappe.webp?v=2'], ['technique', 'med', 'ui/technique.webp?v=2'], ['garde', 'med', 'ui/garde.webp?v=2'],
   ['pouvoir', 'med', 'ui/pouvoir.webp?v=2'], ['transmu', 'med', 'ui/transmu.webp?v=2'], ['equipe', 'med', 'ui/equipe.webp?v=2'],
   ['de_premier', 'de'], ['de_dernier', 'de'],
@@ -78,8 +80,14 @@ function zone() { let z = document.getElementById('zm'); if (!z) { z = document.
   const a = R.main_haut_gauche || [25, 83.5], b = R.main_bas_droit || [82, 97.5]; z.style.left = a[0] + '%'; z.style.top = a[1] + '%'; z.style.width = (b[0] - a[0]) + '%'; z.style.height = (b[1] - a[1]) + '%'; }
 function zoneChamp() { if (!PLATEAU) return; let z = document.getElementById('zc'); if (!z) { z = document.createElement('div'); z.id = 'zc'; z.className = 'zone'; z.style.borderColor = '#f3c96b'; z.style.background = '#f3c96b18'; z.textContent = 'zone centrale (créatures)'; pl.prepend(z); }
   const a = R.champ_haut_gauche, b = R.champ_bas_droit; z.style.left = a[0] + '%'; z.style.top = a[1] + '%'; z.style.width = (b[0] - a[0]) + '%'; z.style.height = (b[1] - a[1]) + '%'; }
+const ANNEAU_SVG = (() => { const arc = (r, a0, a1) => { const q = a => [50 + r * Math.sin(a * 2 * Math.PI), 50 - r * Math.cos(a * 2 * Math.PI)], [x0, y0] = q(a0), [x1, y1] = q(a1); return `M${x0.toFixed(2)} ${y0.toFixed(2)}A${r} ${r} 0 ${a1 - a0 > .5 ? 1 : 0} 1 ${x1.toFixed(2)} ${y1.toFixed(2)}`; };
+  let g = '<circle cx="50" cy="50" r="31.6" fill="none" stroke="#120407" stroke-opacity=".75" stroke-width="4.6"/>' + `<path d="${arc(31.6, 0, .7)}" fill="none" stroke="#e5262c" stroke-width="4" stroke-linecap="round"/>`;
+  for (let k = 0; k < 20; k++) if (k < 12) g += `<path d="${arc(36.4, k / 20 + .007, (k + 1) / 20 - .007)}" fill="none" stroke="#fff4b0" stroke-width="2.6"/>`;
+  return `<svg viewBox="0 0 100 100">${g}</svg>`; })();
+function choisirListe(sel) { const e = pl.querySelector('[data-k="' + sel.value + '"]'); if (e) { choisir(e); centrer(); } sel.value = ''; }
 function dessine() {
   pl.innerHTML = '';
+  if (!R.anneau_haut) R.anneau_haut = [...(R.cadre_haut || R.portrait_haut)]; if (!R.anneau_bas) R.anneau_bas = [...(R.cadre_bas || R.portrait_bas)];
   if (!R.cadre_haut) R.cadre_haut = [...R.portrait_haut]; if (!R.cadre_bas) R.cadre_bas = [...R.portrait_bas];
   if (PLATEAU && !R.champ_haut_gauche) { R.champ_haut_gauche = [19, 22]; R.champ_bas_droit = [81, 67]; }
   if (!R.main_haut_gauche) { R.main_haut_gauche = [25, 83.5]; R.main_bas_droit = [82, 97.5]; }
@@ -87,14 +95,16 @@ function dessine() {
   for (const [k, cls, img, txt] of ELEMENTS) {
     const e = document.createElement('div'); e.className = 'el ' + cls; e.dataset.k = k;
     if (img) e.style.backgroundImage = `url('${img}')`; if (txt) e.innerHTML = txt;
+    if (cls === 'anneauP') e.innerHTML = ANNEAU_SVG;
     e.style.left = R[k][0] + '%'; e.style.top = R[k][1] + '%';
     e.addEventListener('pointerdown', debut); pl.appendChild(e); appliqueTaille(e);
   }
+  liste.innerHTML = '<option value="">Choisir un élément par son nom…</option>' + ELEMENTS.map(([k]) => `<option value="${k}">${NOMS[k] || k}</option>`).join('');
   zone(); zoneChamp();
   tm.value = R.taille_medaillon; vm.textContent = R.taille_medaillon; tp.value = R.taille_portrait; vp.textContent = R.taille_portrait;
 }
 let cour = null, choisi = null;
-const NOMS = { cadre_haut:'cadre du portrait du haut', cadre_bas:'cadre du portrait du bas', champ_haut_gauche:'coin haut gauche de la zone centrale', champ_bas_droit:'coin bas droit de la zone centrale', frappe:'Frappe', technique:'Technique', garde:'Garde', pouvoir:'Pouvoir', transmu:'Transmuter', equipe:'Équipe', de_premier:'1er dé', de_dernier:'dernier dé', portrait_haut:'portrait du haut', portrait_bas:'portrait du bas', coeur_haut:'cœur du haut', bouclier_haut:'bouclier du haut', etiquettes_haut:'étiquettes du haut', coeur_bas:'cœur du bas', bouclier_bas:'bouclier du bas', etiquettes_bas:'étiquettes du bas', main_haut_gauche:'coin haut-gauche des cartes', main_bas_droit:'coin bas-droit des cartes' };
+const NOMS = { anneau_haut:'anneaux vie + Ultime du haut', anneau_bas:'anneaux vie + Ultime du bas', cadre_haut:'cadre du portrait du haut', cadre_bas:'cadre du portrait du bas', champ_haut_gauche:'coin haut gauche de la zone centrale', champ_bas_droit:'coin bas droit de la zone centrale', frappe:'Frappe', technique:'Technique', garde:'Garde', pouvoir:'Pouvoir', transmu:'Transmuter', equipe:'Équipe', de_premier:'1er dé', de_dernier:'dernier dé', portrait_haut:'portrait du haut', portrait_bas:'portrait du bas', coeur_haut:'cœur du haut', bouclier_haut:'bouclier du haut', etiquettes_haut:'étiquettes du haut', coeur_bas:'cœur du bas', bouclier_bas:'bouclier du bas', etiquettes_bas:'étiquettes du bas', main_haut_gauche:'coin haut-gauche des cartes', main_bas_droit:'coin bas-droit des cartes' };
 function choisir(e) { document.querySelectorAll('.el.choisi').forEach(x => x.classList.remove('choisi')); choisi = e; e.classList.add('choisi'); choix.textContent = `Choisi : ${NOMS[e.dataset.k]} (${R[e.dataset.k].join(' ; ')}) · taille ${(R.tailles || {})[e.dataset.k] || 100} %`; }
 // flèches : 0,1 % de l'image par toucher
 // taille propre à l'élément choisi (en % de sa taille de départ), gardée dans R.tailles
