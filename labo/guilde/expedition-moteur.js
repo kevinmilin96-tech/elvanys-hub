@@ -165,6 +165,10 @@ function combattants(camp, cote) {
 }
 function combatExp(campJ, campE, R) {
   const J = combattants(campJ, 'J'), E = combattants(campE, 'E'), ev = [];
+  const pr = (campJ.X && campJ.X.prochain) || {};
+  if (pr.charge) J.liste.forEach(u => { if (u.rang === 'av') u.charge = true; });
+  if (pr.atq) J.liste.forEach(u => { u.a += pr.atq; });
+  if (pr.ennemis) E.liste.forEach(u => { u.v = u.vmax = Math.max(1, Math.round(u.v * pr.ennemis)); });
   const vivants = C => C.liste.filter(u => !u.mort);
   const front = C => vivants(C).filter(u => u.rang === 'av');
   // si le devant est vide, les Lames et Remparts de derrière avancent
@@ -238,7 +242,7 @@ function adversaire(X) {
 // ----------------------------------------------------------------------------------------------- une escale : combat + suite (or, cœurs, Forge, Louve)
 function joueEscale(X, R) {
   const adv = adversaire(X), res = combatExp({ heros:X.heros, plateau:X.plateau, X }, adv.camp, R || hasardX(X));
-  const esc = ESCALES2[X.escale]; res.adv = adv;
+  const esc = ESCALES2[X.escale]; res.adv = adv; X.prochain = null;
   if (res.gagne) {
     X.victoires++; X.journal.push(`🏆 ${esc.n} : victoire.`);
     const fam = compteFamilles(X, X.plateau), forges = surPlateau(X).filter(u => u.fam === 'forge');
@@ -295,3 +299,19 @@ function simuleExpedition(heros, graine) {
   for (let pas = 0; pas < 12 && !X.fini; pas++) { pilotePort(X); joueEscale(X, hasardX(X)); }
   return { gagne:X.fini === 'gagne', coeurs:X.coeurs, escale:X.escale, victoires:X.victoires, fusions:toutes(X).filter(u => u.star).length, fam:compteFamilles(X, X.plateau) };
 }
+
+// ----------------------------------------------------------------------------------------------- les choix des pages d'escale (13/11, à l'échelle de la v2)
+const CHOIX_EXP2 = {
+  crique:   [{ t:'Débarquer en force, torches allumées', d:'Le butin des gobelins : +2 pièces tout de suite.', f:X => { X.or += 2; } },
+             { t:'Se faufiler par les rochers à la nuit', d:'Les gobelins dorment à moitié : 20 % de PV en moins.', f:X => { X.prochain = { ennemis:.8 }; } }],
+  falaises: [{ t:'Hisser toutes les voiles', d:'On fonce sur le navire rival : la rangée de devant a Charge (frappe en premier).', f:X => { X.prochain = { charge:true }; } },
+             { t:'Longer la falaise, prudemment', d:'Un nid de mouettes plein de pièces perdues : +2 pièces.', f:X => { X.or += 2; } }],
+  port:     [{ t:'Passer à la caserne du port', d:'Un Milicien s’engage gratuitement (s’il reste une place).', f:X => { const p = placeLibre(X, 'av'); if (p) { poseA(X, p, nouvelleRecrue('milicien', 0)); fusionne(X); } } },
+             { t:'Une soirée à la taverne', d:'Les marins paient leur tournée : +3 pièces.', f:X => { X.or += 3; } }],
+  foret:    [{ t:'Demander l’aide des racines', d:'La forêt choisit ton camp : tout l’équipage +1 attaque pour ce combat.', f:X => { X.prochain = { atq:1 }; } },
+             { t:'Cueillir les fruits de la forêt', d:'Ils se vendent bien au port : +2 pièces.', f:X => { X.or += 2; } }],
+  cratere:  [{ t:'Contourner la coulée de lave', d:'Les monstres s’épuisent à vous suivre : 15 % de PV en moins, mais −2 pièces de matériel brûlé.', f:X => { X.prochain = { ennemis:.85 }; X.or = Math.max(0, X.or - 2); } },
+             { t:'Foncer à travers la fumée', d:'Surprise totale : tout l’équipage +1 attaque pour ce combat.', f:X => { X.prochain = { atq:1 }; } }],
+  nid:      [{ t:'Graver les runes de la Guilde sur le pont', d:'Tout l’équipage +1 attaque contre le Titan.', f:X => { X.prochain = { atq:1 }; } },
+             { t:'Attendre que le Titan s’endorme', d:'Il se réveille engourdi : 10 % de PV en moins.', f:X => { X.prochain = { ennemis:.9 }; } }],
+};

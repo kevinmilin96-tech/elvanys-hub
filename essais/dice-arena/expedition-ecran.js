@@ -32,7 +32,7 @@ function chroniqueEscale(apres) {
   const esc = ESCALES2[X.escale]; X.lu = X.lu || {};
   if (!esc || X.lu[X.escale] || typeof CHRON_EXP === 'undefined' || !CHRON_EXP[esc.cle]) { apres(); return; }
   X.lu[X.escale] = true; sauve();
-  const p = { ...CHRON_EXP[esc.cle], choix:null };
+  const p = { ...CHRON_EXP[esc.cle], choix:(CHOIX_EXP2[esc.cle] || []).map(c => ({ t:c.t, d:c.d, f:() => { c.f(X); X.journal.push(`🧭 ${c.t}.`); sauve(); } })) };
   if (esc.type === 'fantome') p.texte = [...p.texte, 'Mais à l’horizon, une autre voile de la Guilde : un capitaine rival veut la même route. Il faudra passer par son équipage.'];
   chronique([p], apres);
 }
