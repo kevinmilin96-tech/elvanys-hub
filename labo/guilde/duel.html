@@ -609,7 +609,7 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261113-214243';
+const VERSION = '20261113-214357';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -628,11 +628,11 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261113-214243"></script>
-<script src="musique.js?v=20261113-214243"></script>
-<script src="donnees.js?v=20261113-214243"></script>
-<script src="odyssee.js?v=20261113-214243"></script>
-<script src="chronique.js?v=20261113-214243"></script>
+<script src="cartes.js?v=20261113-214357"></script>
+<script src="musique.js?v=20261113-214357"></script>
+<script src="donnees.js?v=20261113-214357"></script>
+<script src="odyssee.js?v=20261113-214357"></script>
+<script src="chronique.js?v=20261113-214357"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -771,6 +771,8 @@ function ciblesPossibles(J, type) {
 function cibleValide(J, k, type) { if (k && (!k.u || k.J.front.includes(k.u))) return k; return cibleAuto(J, type); }
 // Zéphine, l'alchimiste : son +1 / −1 ne coûte qu'1 PC (sa spécialité reste plus forte que celle des autres)
 const coutAjuste = J => J.id === 'zephine' ? 1 : 2;
+const ECHO_NON = ['distil', 'precipite', 'fiole', 'chance', 'retremper'];
+function echoPossible(J) { return !!(J.dernierSort && !ECHO_NON.includes(J.dernierSort.key)); }
 function permis(J, quoi, vs, ds) {
   if (quoi === 'pcSoins') return false;
   if (!vs.length) return false;
@@ -789,6 +791,7 @@ function permis(J, quoi, vs, ds) {
   if (c.t === 'u' && J.front.length >= 5) return false;
   if (c.cible && c.cible !== 'de' && !ciblesPossibles(J, c.cible).length) return false;
   if (c.cible === 'de' && !J.des.some(d => !d.pose && !(ds || []).includes(d))) return false;
+  if (quoi === 'echo' && !echoPossible(J)) return false; // 13/11 soir : Écho sans Sort à rejouer partait dans le vide
   return J.pc >= coutCarte(J, quoi) && c.cond(vs, ds);
 }
 function pose(J, quoi, ds, k, indexMain) {
@@ -1050,6 +1053,7 @@ function raisonCarte(J, k) {
   if (c.cible === 'barriereA' && !J.front.some(u => u.barriere)) return 'Il te faut une de tes créatures à Barrière';
   if (c.cible === 'uniteE' && !ciblesPossibles(J, 'uniteE').length) return 'Aucune créature adverse à viser';
   if (c.cible === 'de' && !J.des.some(d => !d.pose && !sel.includes(d))) return 'Il te faut un autre dé libre';
+  if (k === 'echo' && !echoPossible(J)) return J.dernierSort ? `Écho ne peut pas rejouer ${CARTES[J.dernierSort.key].n}` : 'Joue d’abord un Sort ce tour-ci (une créature ne compte pas) : Écho le rejouera';
   if (!c.cond(vs, sel)) return vs.length > 1 && /1 dé|dé [≤≥=]|dé pair|dé impair/.test(c.txt) ? 'Choisis un seul dé' : `Il faut : ${c.txt}`;
   if (J.pc < cout) return `Il te manque ${cout - J.pc} PC`;
   return 'Impossible pour le moment';
@@ -1939,13 +1943,13 @@ async function joueFX() {
 // toucher l'écran pendant les animations les accélère
 document.addEventListener('pointerdown', () => { if (fxOn) fxVite = .3; }, true);
 </script>
-<script src="pantheon.js?v=20261113-214243"></script>
-<script src="tuto.js?v=20261113-214243"></script>
-<script src="deux.js?v=20261113-214243"></script>
-<script src="invasion.js?v=20261113-214243"></script>
-<script src="enigme-table.js?v=20261113-214243"></script>
-<script src="forge.js?v=20261113-214243"></script>
-<script src="semaine.js?v=20261113-214243"></script>
-<script src="enigme.js?v=20261113-214243"></script>
+<script src="pantheon.js?v=20261113-214357"></script>
+<script src="tuto.js?v=20261113-214357"></script>
+<script src="deux.js?v=20261113-214357"></script>
+<script src="invasion.js?v=20261113-214357"></script>
+<script src="enigme-table.js?v=20261113-214357"></script>
+<script src="forge.js?v=20261113-214357"></script>
+<script src="semaine.js?v=20261113-214357"></script>
+<script src="enigme.js?v=20261113-214357"></script>
 </body>
 </html>
