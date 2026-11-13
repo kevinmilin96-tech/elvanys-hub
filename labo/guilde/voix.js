@@ -14,6 +14,8 @@ const VOIX = {
   gorm2:      { n:'Gorm · grave et rapide',       src:'tom',   r:1.3,  v:.06, pas:.048, g:1.25 },
   gorm3:      { n:'Gorm · grondement',            src:'tom',   r:.85,  v:.05, pas:.05,  g:1.35 },
   gorm4:      { n:'Gorm · voix douce plus grave', src:'siwis', r:1.2,  v:.07, pas:.06,  g:1.15 },
+  // 14/11 : la toute première voix (v1, fabriquée par le téléphone, sans enregistrement), remise pour comparer (demande de l'utilisateur)
+  gorm5:      { n:'Gorm · 1re version (fabriquée)', synth:true, f:150, v:.10, d:.095, onde:'sawtooth', souffle:.30, glisse:0, g:1.8 },
 };
 const VX_BUF = {}; let VX = null, voixArret = null;
 function voixCtx() { if (!VX) { try { VX = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return null; } } if (VX.state === 'suspended') VX.resume(); return VX; }
@@ -27,6 +29,7 @@ function chargeVoix(src) {
 // dit le texte avec la voix ; ecrit(i) est appelé pour écrire la bulle au même rythme ; renvoie une promesse
 async function parle(texte, cle, ecrit, vol = .45) {
   if (voixArret) voixArret(); const a = voixCtx(), voix = VOIX[cle] || VOIX.moustache; if (!a) { if (ecrit) ecrit(texte.length); return; }
+  if (voix.synth) return parleSynth(texte, voix, ecrit, vol);
   const bufs = await chargeVoix(voix.src), lettres = [...texte], question = /\?\s*$/.test(texte.trim()), temps = [];
   let t = a.currentTime + .05; const total = lettres.filter(c => /[a-z]/i.test(lettreSimple(c))).length; let k = 0;
   const sortie = a.createGain(); sortie.gain.value = vol * (voix.g || 1); sortie.connect(a.destination);
@@ -50,4 +53,30 @@ async function parle(texte, cle, ecrit, vol = .45) {
     voixArret = () => { arret = true; voixArret = null; try { sortie.disconnect(); } catch (e) {} if (ecrit) ecrit(lettres.length); ok(); };
     requestAnimationFrame(boucle);
   });
+}
+
+// ---------------------------------------------------------------- la v1 (13/11) : babillage fabriqué (formants des voyelles + souffle des consonnes)
+const FORMANTS = { a:[800, 1200], e:[450, 1900], i:[300, 2300], o:[480, 850], u:[320, 800], y:[300, 1700] };
+const VOYELLE = c => { c = lettreSimple(c); return 'aeiouy'.includes(c) ? c : null; };
+function parleSynth(texte, voix, ecrit, vol) {
+  const a = VX, sortie = a.createGain(); sortie.gain.value = vol * (voix.g || 1); sortie.connect(a.destination);
+  const syllabe = (c, t, f) => { const fo = FORMANTS[c] || FORMANTS.a, o = a.createOscillator(), g = a.createGain();
+    o.type = voix.onde; o.frequency.setValueAtTime(f * (1 + voix.glisse * .5), t); o.frequency.exponentialRampToValueAtTime(f, t + voix.d * .6);
+    fo.forEach((ff, i) => { const bp = a.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = ff; bp.Q.value = 6; const gg = a.createGain(); gg.gain.value = i ? .55 : 1; o.connect(bp).connect(gg).connect(g); });
+    g.connect(sortie); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(1, t + .008); g.gain.setValueAtTime(1, t + voix.d * .65); g.gain.linearRampToValueAtTime(0, t + voix.d);
+    o.start(t); o.stop(t + voix.d + .02); };
+  const souffle = t => { const n = Math.floor(a.sampleRate * .03), b = a.createBuffer(1, n, a.sampleRate), d = b.getChannelData(0); for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / n);
+    const s = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain(); s.buffer = b; f.type = 'highpass'; f.frequency.value = 1800; g.gain.value = voix.souffle; s.connect(f).connect(g).connect(sortie); s.start(t); };
+  let t = a.currentTime + .05; const lettres = [...texte], fin = /[?]/.test(texte.trim().slice(-1)) ? 1 : -1, temps = []; let syl = 0; const nbSyl = Math.max(1, lettres.filter(VOYELLE).length);
+  lettres.forEach((c, i) => { const v = VOYELLE(c);
+    if (v) { const p = syl / nbSyl; syllabe(v, t, voix.f * (1 + (Math.random() - .5) * voix.v + (p > .75 ? fin * .12 * (p - .75) * 4 : 0))); syl++; temps.push([i, t]); t += voix.d; }
+    else if (/[a-z]/i.test(lettreSimple(c))) { if (Math.random() < .5) souffle(t); temps.push([i, t]); t += voix.d * .25; }
+    else if (/[.!?…]/.test(c)) { temps.push([i, t]); t += voix.d * 3; }
+    else if (/[,;:]/.test(c)) { temps.push([i, t]); t += voix.d * 1.6; }
+    else { temps.push([i, t]); t += voix.d * .3; } });
+  return new Promise(ok => { let arret = false;
+    const boucle = () => { if (arret) return; const now = a.currentTime; let k = 0; while (k < temps.length && temps[k][1] <= now) k++;
+      if (ecrit) ecrit(k >= temps.length ? lettres.length : temps[k][0]); if (now < t + .05 && k < temps.length) requestAnimationFrame(boucle); else { voixArret = null; ok(); } };
+    voixArret = () => { arret = true; voixArret = null; try { sortie.disconnect(); } catch (e) {} if (ecrit) ecrit(lettres.length); ok(); };
+    requestAnimationFrame(boucle); });
 }
