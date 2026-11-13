@@ -85,6 +85,7 @@
   table { width:100%; border-collapse:collapse; font-size:.86em; } td { padding:3px 4px; border-bottom:1px solid #ffffff18; } td:last-child { text-align:right; color:var(--or); }
   #majbar { position:fixed; left:0; right:0; bottom:0; background:#f3c96b; color:#2b2117; padding:10px 14px; display:flex; gap:10px; align-items:center; z-index:50; font-size:.92em; }
   #majbar button { margin-left:auto; background:#2b2117; color:#f3c96b; border:0; border-radius:10px; padding:8px 12px; font-weight:bold; }
+  @keyframes tremble { 25% { transform:translateX(-4px); } 75% { transform:translateX(4px); } }
 </style>
 </head>
 <body>
@@ -106,11 +107,11 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261113-122420"></script>
-<script src="donnees.js?v=20261113-122420"></script>
-<script src="odyssee.js?v=20261113-122420"></script>
-<script src="pantheon.js?v=20261113-122420"></script>
-<script src="chronique.js?v=20261113-122420"></script>
+<script src="cartes.js?v=20261113-122920"></script>
+<script src="donnees.js?v=20261113-122920"></script>
+<script src="odyssee.js?v=20261113-122920"></script>
+<script src="pantheon.js?v=20261113-122920"></script>
+<script src="chronique.js?v=20261113-122920"></script>
 <script>
 // le moteur du Duel n'est pas chargé ici : les cartes de l'Odyssée appellent degats/soin seulement en combat (dans duel.html)
 const log = () => {}, degats = () => {}, soin = () => {}, altere = () => {}, invoque = () => {}, adv = () => ({}), fin = () => {};
@@ -346,6 +347,7 @@ function arrive(c) {
   if (c.t === 'evenement' && !c.fait) { dialogue('evenement'); evenement(c); return; }
   if (c.t === 'autel' && !c.fait) { dialogue('autel'); autel(c); return; }
   if (c.t === 'feu' && !c.fait) { feuFen(c); return; }
+  if (c.t === 'sac' && !c.fait) { sacFen(c); return; }
   if (c.t === 'mur' && !c.fait) { dialogue('mur'); c.fait = true; const l = reliquesProposees(R, 2); sauve(); fenetre(`<h2>💎 La salle cachée</h2><p>Derrière le mur, une petite salle oubliée. Sur un socle, deux reliques : tu n’en emportes qu’une.</p><div class="choixv">${l.map(k => `<button onclick="prendRelique(R,'${k}');sauve();fermer();dessine()" ${R.reliques.length >= 3 ? 'disabled' : ''}>${RELIQUES[k].e} <b>${RELIQUES[k].n}</b><small>${RELIQUES[k].d}</small></button>`).join('')}</div>${R.reliques.length >= 3 ? '<p style="color:#ff7a7a">Tu portes déjà 3 reliques.</p>' : ''}<div class="choixh"><button onclick="fermer()">Laisser</button></div>`); return; }
 }
 function info(t, d) { fenetre(`<h2>${t}</h2><p>${d}</p><div class="choixh"><button onclick="fermer()">Compris</button></div>`); }
@@ -393,6 +395,19 @@ function feuFen(c) {
     <button onclick="feuRetirer(${c.x},${c.y})">Brûler une carte<small>ton deck s’allège</small></button></div><div class="choixh"><button onclick="fermer()">Plus tard</button></div>`);
 }
 function feuRetirer(x, y) { fenetre(`<h2>🏕 Brûler une carte</h2><div class="cartes3">${[...new Set(R.deck)].map(k => carteHTML(k, `retireCarte(R,'${k}');feuDeCamp(R,R.ile[${y}][${x}],'retirer');sauve();fermer();dessine()`)).join('')}</div><div class="choixh"><button onclick="feuFen(R.ile[${y}][${x}])">Retour</button></div>`); }
+// 13/11 : le sac de Corbin (Stop ou Encore)
+function sacFen(c, dernier) {
+  const S2 = c.sac || { pot:0, m:0, des:[] }, k = `R.ile[${c.y}][${c.x}]`;
+  const des = S2.des.map((v, i) => `<span style="display:inline-block;width:30px;height:30px;line-height:30px;margin:2px;border-radius:7px;background:${v === 1 ? '#5a1a1a' : v === 6 ? '#1d3326' : '#2a2450'};border:2px solid ${v === 1 ? '#ff6a5a' : v === 6 ? '#7dffb0' : '#4b4580'};font-weight:bold;${i === S2.des.length - 1 && dernier ? 'animation:tremble .4s' : ''}">${v === 1 ? '💀' : v}</span>`).join('');
+  if (c.fait && S2.explose) { fenetre(`<h2>💥 Le sac explose !</h2><div style="text-align:center">${des}</div><p>Deux malédictions : les ${S2.pot} or s’envolent, et tu perds ${SAC.degats} PV (❤ ${R.pv}).</p><p style="font-style:italic">Corbin : « Ah. Bon. Moi, je me serais arrêté. Probablement. »</p><div class="choixh"><button onclick="fermer();dessine()">Repartir</button></div>`); return; }
+  if (c.fait) { fenetre(`<h2>🎲 Le sac de Corbin</h2><div style="text-align:center">${des}</div><p>Tu ranges <b>${S2.pot} or</b> dans ta bourse (💰 ${R.or}).</p><p style="font-style:italic">Corbin : « Sage. Ennuyeux, mais sage. »</p><div class="choixh"><button onclick="fermer();dessine()">Repartir</button></div>`); return; }
+  fenetre(`<h2>🎲 Le sac de Corbin</h2>
+  ${S2.des.length ? `<div style="text-align:center">${des}</div>` : `<p style="font-style:italic">Corbin : « Un petit jeu ? Tu tires un dé à la fois. Chaque dé de 2 à 6, c’est de l’or. Un 1, c’est une malédiction 💀. Deux malédictions et… boum. Un 6 efface une malédiction. Tu t’arrêtes quand tu veux. »</p>`}
+  <p style="text-align:center;font-size:1.15em">Pot : <b style="color:var(--or)">${S2.pot} or</b> · Malédictions : <b style="color:${S2.m ? '#ff6a5a' : 'inherit'}">${'💀'.repeat(S2.m)}${'○'.repeat(SAC.malediction - S2.m)}</b></p>
+  <p style="font-size:.85em;color:var(--doux);text-align:center">${S2.m ? 'Encore une 💀 et le sac explose : pot perdu et −' + SAC.degats + ' PV.' : 'Rien à craindre… pour l’instant.'}</p>
+  <div class="choixh"><button class="or" onclick="sacTire(R,${k});sauve();sacFen(${k},true);dessine()">🎲 Encore !</button><button ${S2.pot ? '' : 'disabled'} onclick="sacStop(R,${k});sauve();sacFen(${k});dessine()">✋ Stop (+${S2.pot} or)</button></div>
+  ${S2.des.length ? '' : '<div class="choixh"><button onclick="fermer()">Plus tard</button></div>'}`);
+}
 function sourceFen(c) { const m = R.deck.find(k => rarete(k) === 'm');
   fenetre(`<h2>💧 Une source</h2><p>Une eau claire qui sort de la roche tiède. Une seule fois.</p><div class="choixv"><button onclick="source(R,R.ile[${c.y}][${c.x}],'soin');sauve();fermer();dessine()">Boire : <b>+20 PV</b><small>❤ ${R.pv} → ${Math.min(R.pvMax, R.pv + 20)} / ${R.pvMax}</small></button><button ${m ? '' : 'disabled'} onclick="source(R,R.ile[${c.y}][${c.x}],'purifie');sauve();fermer();dessine()">Se purifier : retire une malédiction du deck<small>${m ? CARTES[m].n : 'aucune malédiction dans ton deck'}</small></button></div><div class="choixh"><button onclick="fermer()">Plus tard</button></div>`); }
 function marchand(c) {

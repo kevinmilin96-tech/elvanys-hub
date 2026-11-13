@@ -231,6 +231,18 @@ const ASCENSION = [
 const ASC_CLE = 'guilde-ascension';
 const ascMax = acte => { try { return (JSON.parse(localStorage.getItem(ASC_CLE) || '{}')[acte || 'brulees']) || 0; } catch (e) { return 0; } };
 const asc = (r, n) => (r && r.asc || 0) >= n;
+// 13/11 : LE SAC DE CORBIN (Stop ou Encore, idée n° 4 de la R&D) : on tire un dé à la fois ; 2 à 6 = autant d'or dans le pot ;
+// un 1 = 💀 malédiction ; un 6 efface une malédiction ; 2 malédictions = le sac explose (pot perdu, −5 PV). S'arrêter = garder le pot. Une fois par salle.
+// (Réglé au simulateur : s'arrêter vers 20 or rapporte ~16 or en moyenne, le sac explose 1 fois sur 4.) Idée notée : en faire un mode à part entière plus tard.
+const SAC = { malediction:2, degats:5 };
+function sacTire(r, c) {
+  if (c.fait) return null; c.sac = c.sac || { pot:0, m:0, des:[] };
+  const v = 1 + Math.floor(Math.random() * 6), S2 = c.sac; S2.des.push(v);
+  if (v === 1) S2.m++; else { S2.pot += v; if (v === 6 && S2.m > 0) S2.m--; }
+  if (S2.m >= SAC.malediction) { c.fait = true; S2.explose = true; r.pv = Math.max(1, r.pv - SAC.degats); r.journal.push(`🎲 Le sac de Corbin explose : ${S2.pot} or perdus, −${SAC.degats} PV.`); }
+  return v;
+}
+function sacStop(r, c) { if (c.fait || !c.sac) return; c.fait = true; r.or += c.sac.pot; r.journal.push(`🎲 Le sac de Corbin : +${c.sac.pot} or.`); }
 // le feu de camp : se reposer (+30 % des PV), raviver la lanterne (+6 huile) ou retirer une carte (l'écran s'en occupe)
 function feuDeCamp(r, c, option) {
   if (c.fait) return false; c.fait = true;
@@ -428,7 +440,7 @@ const ILE_W = 7, ILE_H = 9;
 const SALLES_ODY = {
   roche:{ e:'', n:'Roche' }, chemin:{ e:'·', n:'Chemin' }, depart:{ e:'⛵', n:'Le débarcadère' }, monstre:{ e:'⚔', n:'Monstres' }, elite:{ e:'💀', n:'Élite' },
   coffre:{ e:'🗝', n:'Coffre' }, source:{ e:'💧', n:'Source' }, marchand:{ e:'🏪', n:'Marchand' }, evenement:{ e:'❓', n:'Événement' }, autel:{ e:'🔥', n:'Autel' },
-  mur:{ e:'🧱', n:'Mur fissuré' }, feu:{ e:'🏕', n:'Feu de camp' }, porte:{ e:'🚪', n:'La porte du boss' }, boss:{ e:'👑', n:'Le Titan de feu' },
+  mur:{ e:'🧱', n:'Mur fissuré' }, feu:{ e:'🏕', n:'Feu de camp' }, sac:{ e:'🎲', n:'Le sac de Corbin' }, porte:{ e:'🚪', n:'La porte du boss' }, boss:{ e:'👑', n:'Le Titan de feu' },
 };
 const voisins = (x, y) => [[x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]].filter(([a, b]) => a >= 0 && a < ILE_W && b >= 0 && b < ILE_H);
 function bfs(cases, dep, marche) {
@@ -468,7 +480,7 @@ function genereIle(graine, R0, acte) {
     const prend = (t, cond) => { const i = reste.findIndex(c => !cond || cond(c)); if (i < 0) return null; const c = reste.splice(i, 1)[0]; pose(c, t); return c; };
     const d = c => dist[c.x + ',' + c.y];
     prend('elite'); prend('elite');
-    prend('marchand', c => d(c) >= 3 && d(c) <= 8); prend('coffre'); prend('coffre'); prend('source'); prend('source', c => d(c) >= 6); prend('autel'); prend('feu', c => d(c) >= 5);
+    prend('marchand', c => d(c) >= 3 && d(c) <= 8); prend('coffre'); prend('coffre'); prend('source'); prend('source', c => d(c) >= 6); prend('autel'); prend('feu', c => d(c) >= 5); prend('sac', c => d(c) >= 2);
     prend('evenement'); prend('evenement'); prend('evenement');
     // monstres ailleurs : 40 % du reste
     reste.forEach(c => { if (R() < .4) pose(c, 'monstre'); });
