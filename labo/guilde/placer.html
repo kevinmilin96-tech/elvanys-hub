@@ -22,7 +22,7 @@
   #choix { font-size:12px; color:#f3c96b; text-align:center; }
   .med { width:var(--m); height:var(--m); background:center/contain no-repeat; }
   .por { width:var(--p); height:var(--p); border-radius:50%; background:center/cover no-repeat; }
-  .por::after { content:''; position:absolute; inset:-36.6%; background:url('ui/cadre.webp?v=1') center/contain no-repeat; }
+  .cadreP { width:calc(var(--p) * 1.732); height:calc(var(--p) * 1.732); background:url('ui/cadre.webp?v=1') center/contain no-repeat; } /* 14/11 : le cadre est un élément à part (avant : collé au portrait) */
   .de { width:7cqw; height:7cqw; background:url('faces-zephine/face-5.webp') center/contain no-repeat; }
   .coeur { width:11cqw; height:10cqw; background:url('ui/coeur.webp?v=1') center/contain no-repeat; display:grid; place-items:center; font:bold 3.6cqw Georgia; text-shadow:0 1px 2px #000; }
   .bouc { width:7.6cqw; height:8.6cqw; background:url('ui/bouclier.webp?v=1') center/contain no-repeat; display:grid; place-items:center; font:bold 3.2cqw Georgia; text-shadow:0 1px 2px #000; }
@@ -64,6 +64,7 @@ if (PLATEAU) { document.getElementById('pl').style.backgroundImage = `url('decor
 let R = JSON.parse(localStorage.getItem(CLE) || 'null') || JSON.parse(JSON.stringify(DEFAUT));
 const pl = document.getElementById('pl');
 const ELEMENTS = [
+  ['cadre_haut', 'cadreP'], ['cadre_bas', 'cadreP'],
   ['frappe', 'med', 'ui/frappe.webp?v=2'], ['technique', 'med', 'ui/technique.webp?v=2'], ['garde', 'med', 'ui/garde.webp?v=2'],
   ['pouvoir', 'med', 'ui/pouvoir.webp?v=2'], ['transmu', 'med', 'ui/transmu.webp?v=2'], ['equipe', 'med', 'ui/equipe.webp?v=2'],
   ['de_premier', 'de'], ['de_dernier', 'de'],
@@ -79,6 +80,7 @@ function zoneChamp() { if (!PLATEAU) return; let z = document.getElementById('zc
   const a = R.champ_haut_gauche, b = R.champ_bas_droit; z.style.left = a[0] + '%'; z.style.top = a[1] + '%'; z.style.width = (b[0] - a[0]) + '%'; z.style.height = (b[1] - a[1]) + '%'; }
 function dessine() {
   pl.innerHTML = '';
+  if (!R.cadre_haut) R.cadre_haut = [...R.portrait_haut]; if (!R.cadre_bas) R.cadre_bas = [...R.portrait_bas];
   if (PLATEAU && !R.champ_haut_gauche) { R.champ_haut_gauche = [19, 22]; R.champ_bas_droit = [81, 67]; }
   if (!R.main_haut_gauche) { R.main_haut_gauche = [25, 83.5]; R.main_bas_droit = [82, 97.5]; }
   pl.style.setProperty('--m', R.taille_medaillon + 'cqw'); pl.style.setProperty('--p', R.taille_portrait + 'cqw');
@@ -92,7 +94,7 @@ function dessine() {
   tm.value = R.taille_medaillon; vm.textContent = R.taille_medaillon; tp.value = R.taille_portrait; vp.textContent = R.taille_portrait;
 }
 let cour = null, choisi = null;
-const NOMS = { champ_haut_gauche:'coin haut gauche de la zone centrale', champ_bas_droit:'coin bas droit de la zone centrale', frappe:'Frappe', technique:'Technique', garde:'Garde', pouvoir:'Pouvoir', transmu:'Transmuter', equipe:'Équipe', de_premier:'1er dé', de_dernier:'dernier dé', portrait_haut:'portrait du haut', portrait_bas:'portrait du bas', coeur_haut:'cœur du haut', bouclier_haut:'bouclier du haut', etiquettes_haut:'étiquettes du haut', coeur_bas:'cœur du bas', bouclier_bas:'bouclier du bas', etiquettes_bas:'étiquettes du bas', main_haut_gauche:'coin haut-gauche des cartes', main_bas_droit:'coin bas-droit des cartes' };
+const NOMS = { cadre_haut:'cadre du portrait du haut', cadre_bas:'cadre du portrait du bas', champ_haut_gauche:'coin haut gauche de la zone centrale', champ_bas_droit:'coin bas droit de la zone centrale', frappe:'Frappe', technique:'Technique', garde:'Garde', pouvoir:'Pouvoir', transmu:'Transmuter', equipe:'Équipe', de_premier:'1er dé', de_dernier:'dernier dé', portrait_haut:'portrait du haut', portrait_bas:'portrait du bas', coeur_haut:'cœur du haut', bouclier_haut:'bouclier du haut', etiquettes_haut:'étiquettes du haut', coeur_bas:'cœur du bas', bouclier_bas:'bouclier du bas', etiquettes_bas:'étiquettes du bas', main_haut_gauche:'coin haut-gauche des cartes', main_bas_droit:'coin bas-droit des cartes' };
 function choisir(e) { document.querySelectorAll('.el.choisi').forEach(x => x.classList.remove('choisi')); choisi = e; e.classList.add('choisi'); choix.textContent = `Choisi : ${NOMS[e.dataset.k]} (${R[e.dataset.k].join(' ; ')}) · taille ${(R.tailles || {})[e.dataset.k] || 100} %`; }
 // flèches : 0,1 % de l'image par toucher
 // taille propre à l'élément choisi (en % de sa taille de départ), gardée dans R.tailles

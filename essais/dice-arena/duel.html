@@ -646,7 +646,7 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261113-232427';
+const VERSION = '20261113-232552';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -665,11 +665,11 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261113-232427"></script>
-<script src="musique.js?v=20261113-232427"></script>
-<script src="donnees.js?v=20261113-232427"></script>
-<script src="odyssee.js?v=20261113-232427"></script>
-<script src="chronique.js?v=20261113-232427"></script>
+<script src="cartes.js?v=20261113-232552"></script>
+<script src="musique.js?v=20261113-232552"></script>
+<script src="donnees.js?v=20261113-232552"></script>
+<script src="odyssee.js?v=20261113-232552"></script>
+<script src="chronique.js?v=20261113-232552"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -1768,8 +1768,11 @@ function zoneMain() { const R = S && plateauIle() && PLACEMENTS_ILE[plateauIle()
 function cssPlacement(ile, R) {
   const P = `.plateau.tapis.unique.ile-${ile}:not(.scene)`, Q = `.unique.ile-${ile}`, m = R.taille_medaillon, p = R.taille_portrait, f = n => +n.toFixed(2);
   const ic = ['frappe', 'technique', 'garde', 'pouvoir', 'transmu', 'equipe'].map((k, i) => `${Q} .colG .r${i + 1} { left:calc(${R[k][0]}cqw - ${f(m / 2)}cqw); top:calc(${R[k][1]}cqh - ${f(m / 2)}cqw); }`).join('\n');
-  const cote = (id, por, etq, coeur, bouc) => { const bl = por[0] - p / 2, pl = etq[0] - bl - 13.7;
-    return `${P} #${id} { left:${f(bl)}cqw; top:calc(${por[1]}cqh - ${f(p / 2)}cqw); }
+  const T = k => ((R.tailles || {})[k] || 100) / 100;
+  // 14/11 : portrait et cadre séparés (chacun sa place et sa taille) ; les anneaux de vie et d'Ultime suivent le cadre
+  const cote = (id, por, etq, coeur, bouc, cad, kp, kc) => { const p = R.taille_portrait * T(kp), bl = por[0] - p / 2, pl = etq[0] - bl - 13.7, cs = R.taille_portrait * 1.732 * T(kc), c = cad || por;
+    return `${P} #${id} { left:${f(bl)}cqw; top:calc(${por[1]}cqh - ${f(p / 2)}cqw); width:${f(p)}cqw; height:${f(p)}cqw; }
+${P} #${id} .cadre, ${P} #${id} .anneau { left:${f(c[0] - cs / 2 - bl)}cqw; top:calc(${f(c[1] - por[1])}cqh + ${f(p / 2 - cs / 2)}cqw); width:${f(cs)}cqw; height:${f(cs)}cqw; }
 ${P} #${id} .pastilles { left:${f(pl)}cqw !important; top:calc(${f(etq[1] - por[1] - 3.35)}cqh + ${f(p / 2)}cqw) !important; }
 ${P} #${id} .pastilles [data-k="pv"] { left:${f(coeur[0] - 5.5 - bl - pl + 4.55)}cqw !important; top:calc(${f(coeur[1] - etq[1] + 3.35)}cqh - 5cqw) !important; }
 ${P} #${id}:has(.bdg:not([hidden])) .pastilles [data-k="pv"] { left:${f(coeur[0] - 5.5 - bl - pl)}cqw !important; }
@@ -1780,8 +1783,8 @@ ${P} #${id} .bdg.bg:not([hidden]) + .bdg.bb { left:${f(bouc[0] - 3.8 - bl + 8.2)
 ${P} .des { left:${f(dp[0] - 3.89)}cqw; top:${f(dp[1] - 4.27)}cqh; height:${f(dd[1] - dp[1] + 8.55)}cqh; }
 ${P} .barre { width:${p}cqw; height:${p}cqw; }
 ${P} .barre .cadre, ${P} .anneau { left:-${f(p * .3669)}cqw; top:-${f(p * .3669)}cqw; width:${f(p * 1.733)}cqw; height:${f(p * 1.733)}cqw; }
-${cote('b-O', R.portrait_haut, R.etiquettes_haut, R.coeur_haut, R.bouclier_haut)}
-${cote('b-J', R.portrait_bas, R.etiquettes_bas, R.coeur_bas, R.bouclier_bas)}`;
+${cote('b-O', R.portrait_haut, R.etiquettes_haut, R.coeur_haut, R.bouclier_haut, R.cadre_haut, 'portrait_haut', 'cadre_haut')}
+${cote('b-J', R.portrait_bas, R.etiquettes_bas, R.coeur_bas, R.bouclier_bas, R.cadre_bas, 'portrait_bas', 'cadre_bas')}`;
   if (R.champ_haut_gauche) { const a = R.champ_haut_gauche, b = R.champ_bas_droit, mil = (a[1] + b[1]) / 2;
     css += `\n${Q} .front { left:${f(a[0] + .5)}cqw !important; right:${f(100 - b[0] + .5)}cqw !important; }
 ${Q} #f-O { top:${f(a[1] + 2.5)}cqh; } ${Q} #f-J { top:${f(mil + 3)}cqh; }
@@ -2085,14 +2088,14 @@ async function joueFX() {
 // toucher l'écran pendant les animations les accélère
 document.addEventListener('pointerdown', () => { if (fxOn && !(S && S.tuto)) fxVite = .5; }, true); // 14/11 : plus d'accélération dans le tutoriel
 </script>
-<script src="profil.js?v=20261113-232427"></script>
-<script src="pantheon.js?v=20261113-232427"></script>
-<script src="tuto.js?v=20261113-232427"></script>
-<script src="deux.js?v=20261113-232427"></script>
-<script src="invasion.js?v=20261113-232427"></script>
-<script src="enigme-table.js?v=20261113-232427"></script>
-<script src="forge.js?v=20261113-232427"></script>
-<script src="semaine.js?v=20261113-232427"></script>
-<script src="enigme.js?v=20261113-232427"></script>
+<script src="profil.js?v=20261113-232552"></script>
+<script src="pantheon.js?v=20261113-232552"></script>
+<script src="tuto.js?v=20261113-232552"></script>
+<script src="deux.js?v=20261113-232552"></script>
+<script src="invasion.js?v=20261113-232552"></script>
+<script src="enigme-table.js?v=20261113-232552"></script>
+<script src="forge.js?v=20261113-232552"></script>
+<script src="semaine.js?v=20261113-232552"></script>
+<script src="enigme.js?v=20261113-232552"></script>
 </body>
 </html>
