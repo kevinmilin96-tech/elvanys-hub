@@ -8,7 +8,7 @@
 <title>La Guilde des Runes</title>
 <script>
 // Même mécanisme que le Duel : une nouvelle version = rechargement tout seul à l'ouverture (publier.sh change VERSION).
-const VERSION = '20261113-064825';
+const VERSION = '20261113-065111';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-menu-' + v)) { sessionStorage.setItem('recharge-menu-' + v, '1'); location.replace('menu.html?v=' + v); }
@@ -118,6 +118,28 @@ fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.te
   .pro::after { content:''; position:absolute; inset:0; background:radial-gradient(circle at 50% 45%, var(--g) 0%, transparent 55%); opacity:.45; animation:respire 3.2s ease-in-out infinite; }
   .pro b { position:relative; z-index:1; }
   .pro .et { position:absolute; width:3px; height:3px; border-radius:50%; background:#fff; opacity:.7; animation:scint 2.6s ease-in-out infinite; z-index:1; }
+  /* ---------- 13/11 : reflets et animations des portails (calques tirés des images : seuls certains traits brillent, l'image n'est pas retouchée) ---------- */
+  .porte .runes { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; mix-blend-mode:screen; opacity:0; filter:drop-shadow(0 0 3px #7cc8ff) drop-shadow(0 0 7px #4aa8ff); }
+  .porte.centre .runes { animation:runes 3.4s ease-in-out infinite; }
+  @keyframes runes { 0%, 100% { opacity:.25; } 50% { opacity:1; } }
+  .porte .reflet { position:absolute; inset:0; pointer-events:none; -webkit-mask:url('menu-recu/arche-vide.webp?v=1') center/100% 100% no-repeat; mask:url('menu-recu/arche-vide.webp?v=1') center/100% 100% no-repeat; overflow:hidden; }
+  .porte .reflet::before { content:''; position:absolute; top:-20%; bottom:-20%; width:35%; left:-60%; transform:skewX(-18deg); background:linear-gradient(90deg, transparent, #ffffff55 45%, #ffffffaa 50%, #ffffff55 55%, transparent); opacity:0; }
+  .porte.centre .reflet::before { animation:reflet 6s ease-in-out 1s infinite; }
+  @keyframes reflet { 0% { left:-60%; opacity:0; } 8% { opacity:1; } 30% { left:130%; opacity:1; } 31%, 100% { left:130%; opacity:0; } }
+  .dedans .fx { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; pointer-events:none; mix-blend-mode:screen; }
+  .dedans .fx.lave { animation:lave 2.6s ease-in-out infinite; filter:brightness(1.3) drop-shadow(0 0 4px #ff6a1a); }
+  @keyframes lave { 0%, 100% { opacity:.35; } 45% { opacity:1; } 60% { opacity:.7; } }
+  .dedans .fx.aurore { animation:aurore 7s ease-in-out infinite; filter:brightness(1.4) blur(.5px); transform-origin:50% 0; }
+  @keyframes aurore { 0%, 100% { opacity:.3; transform:translateX(0) scaleY(1); } 50% { opacity:1; transform:translateX(3%) scaleY(1.06); } }
+  .dedans.tourne > img:first-child { transform:scale(1.35); animation:tourne 30s linear infinite; }
+  @keyframes tourne { to { transform:scale(1.35) rotate(360deg); } }
+  .dedans .lueur { position:absolute; left:50%; top:45%; width:40%; aspect-ratio:1; transform:translate(-50%, -50%); border-radius:50%; background:radial-gradient(circle, #fff7d6cc, #f3c96b44 45%, transparent 70%); animation:respire 3.2s ease-in-out infinite; pointer-events:none; }
+  .particules { position:absolute; inset:0; pointer-events:none; overflow:hidden; }
+  .particules i { position:absolute; border-radius:50%; }
+  .particules.etincelles i { width:3px; height:3px; background:#ffb347; box-shadow:0 0 6px #ff7a1a; bottom:-5%; animation:monteP linear infinite; }
+  @keyframes monteP { 0% { transform:translate(0, 0); opacity:0; } 15% { opacity:1; } 100% { transform:translate(var(--dx), -110cqw); opacity:0; } }
+  .particules.neige i { width:4px; height:4px; background:#fff; opacity:.9; top:-5%; animation:tombe linear infinite; }
+  @keyframes tombe { 0% { transform:translate(0, 0); } 100% { transform:translate(var(--dx), 150cqw); } }
 </style>
 </head>
 <body>
@@ -148,7 +170,7 @@ fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.te
 </div>
 <div id="flash"></div>
 
-<script src="donnees.js?v=20261113-064825"></script>
+<script src="donnees.js?v=20261113-065111"></script>
 <script>
 // ciel étoilé + runes du portail (symboles, pas des lettres), aux couleurs des héros
 const ciel = document.getElementById('ciel');
@@ -202,18 +224,19 @@ const ETAGES = {
     { nom:'Les grands boss', pro:'expeditions', href:'campement.html', desc:'Le Colosse des racines, le Kraken des brumes, Ignaros le dragon ancien : un seul boss, géant.' },
   ] },
   odyssee:{ titre:'L’Odyssée', sous:'Quelle île veux-tu explorer ?', portes:[
-    { nom:'Terres brûlées', img:'menu-recu/ody-terres-brulees.webp', href:'odyssee.html', desc:'Acte I · L’île de cendre et de lave, gardée par le Titan de feu.' },
-    GIVRE_OK ? { nom:'Île du Givre', img:'menu-recu/ody-givre.webp', href:'odyssee.html?ile=givre', desc:'Acte II · Des falaises de glace sous l’aurore, gardées par la Vouivre des glaces.' }
-      : { nom:'Île du Givre', img:'menu-recu/ody-givre.webp', ferme:'Acte II', essai:'odyssee.html?ile=givre', desc:'Acte II · S’ouvre quand tu as vaincu le Titan de feu. (Prototype : touche pour l’essayer quand même.)' },
+    { nom:'Terres brûlées', fx:'lave', img:'menu-recu/ody-terres-brulees.webp', href:'odyssee.html', desc:'Acte I · L’île de cendre et de lave, gardée par le Titan de feu.' },
+    GIVRE_OK ? { nom:'Île du Givre', fx:'aurore', img:'menu-recu/ody-givre.webp', href:'odyssee.html?ile=givre', desc:'Acte II · Des falaises de glace sous l’aurore, gardées par la Vouivre des glaces.' }
+      : { nom:'Île du Givre', fx:'aurore', img:'menu-recu/ody-givre.webp', ferme:'Acte II', essai:'odyssee.html?ile=givre', desc:'Acte II · S’ouvre quand tu as vaincu le Titan de feu. (Prototype : touche pour l’essayer quand même.)' },
     ABIME_OK ? { nom:'L’Abîme du Vide', pro:'abime', href:'odyssee.html?ile=abime', desc:'Acte III · Une île brisée au-dessus du néant, et le Roi sans visage.' }
       : { nom:'L’Abîme du Vide', pro:'abime', ferme:'Acte III', essai:'odyssee.html?ile=abime', desc:'Acte III · S’ouvre quand tu as vaincu la Vouivre des glaces. (Prototype : touche pour l’essayer quand même.)' },
   ] },
 };
 const car = document.getElementById('car');
 let courant = '';
+function particules(sorte, n) { let h = ''; for (let i = 0; i < n; i++) h += `<i style="left:${(i * 37 + 11) % 100}%;--dx:${(i % 2 ? 1 : -1) * (4 + i % 5 * 3)}cqw;animation-duration:${3 + (i * 7) % 5}s;animation-delay:${-(i * 1.3) % 6}s"></i>`; return `<div class="particules ${sorte}">${h}</div>`; }
 function dessin(p) {
-  if (p.avenir) return '<img src="menu-recu/mystere.webp" alt="">';
-  if (p.img) return `<img src="${p.img}" alt="">`;
+  if (p.avenir) return '<img src="menu-recu/mystere.webp" alt=""><div class="lueur"></div>';
+  if (p.img) return `<img src="${p.img}" alt="">${p.fx === 'lave' ? '<img class="fx lave" src="menu-recu/fx-lave.webp?v=1" alt="">' + particules('etincelles', 10) : p.fx === 'aurore' ? '<img class="fx aurore" src="menu-recu/fx-aurore.webp?v=1" alt="">' + particules('neige', 14) : ''}`;
   const [e, fond, g] = PRO[p.pro]; let et = '';
   for (let i = 0; i < 9; i++) et += `<i class="et" style="left:${(i * 37) % 100}%;top:${(i * 23) % 60}%;animation-delay:${i * .3}s"></i>`;
   return `<div class="pro" style="--fond:${fond};--g:${g}">${et}<b>${e}</b></div>`;
@@ -225,8 +248,8 @@ function montre(id) {
   document.getElementById('retour').classList.toggle('vu', !!courant);
   document.getElementById('heros').style.display = courant ? 'none' : '';
   car.innerHTML = E.portes.map((p, i) => `<div class="porte ${p.ferme ? 'ferme' : ''}" data-i="${i}">
-    <div class="halo"></div><div class="dedans">${dessin(p)}${p.ferme ? '<div class="verrou">🔒</div>' : ''}</div>
-    <img class="arche" src="menu-recu/arche-vide.webp?v=1" alt="">
+    <div class="halo"></div><div class="dedans ${p.avenir ? 'tourne' : ''}">${dessin(p)}${p.ferme ? '<div class="verrou">🔒</div>' : ''}</div>
+    <img class="arche" src="menu-recu/arche-vide.webp?v=1" alt=""><img class="runes" src="menu-recu/fx-runes.webp?v=1" alt=""><div class="reflet"></div>
     ${p.ferme ? `<span class="bandeau">${p.ferme}</span>` : p.avenir ? '<span class="bandeau">À venir</span>' : ''}
     <div class="plaque ${p.nom.length > 13 ? 'long' : ''}">${p.nom}</div></div>`).join('');
   document.getElementById('points').innerHTML = E.portes.map(() => '<i></i>').join('');
