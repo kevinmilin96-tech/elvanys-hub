@@ -112,7 +112,7 @@ function projecteur(el, html, o = {}) {
   else { Object.assign(h.style, { left:'0', top:'0', width:W + 'px', height:H + 'px' }); [b, g, d].forEach(x => Object.assign(x.style, { width:'0', height:'0' })); }
   Object.assign(p.querySelector('.anneauP').style, { left:L + 'px', top:T + 'px', width:(R - L) + 'px', height:(B - T) + 'px' });
   Object.assign(p.querySelector('.main1').style, { left:Math.min(W - 44, (L + R) / 2 + 6) + 'px', top:Math.min(H - 44, B - 14) + 'px' });
-  const bu = p.querySelector('.bulleT'); bu.innerHTML = html;
+  const bu = p.querySelector('.bulleT'); if (bu.dataset.h !== html) { bu.innerHTML = html; bu.dataset.h = html; } // 13/11 soir : la bulle ne « repope » plus à chaque toucher
   // la bulle se met du côté où il y a de la place
   const haut = el ? (T + B) / 2 > H * .5 : false;
   bu.style.top = haut || !el ? (o.libre ? '8px' : (el ? '10px' : '22%')) : ''; bu.style.bottom = haut || !el ? '' : '10px';
@@ -122,7 +122,6 @@ function projecteurCache() { const p = document.getElementById('projo'); if (p) 
 
 // ---------------------------------------------------------------- le moteur du tutoriel
 function bulleTuto(e) {
-  if (typeof GM !== 'undefined' && Date.now() - (window.__miaou || 0) > 25000) { window.__miaou = Date.now(); GM.son('miaou'); } // 13/11 soir
   const moustache = `<div class="ligneT"><img class="av" src="ui/moustache.webp?v=1" alt="Moustache"><div><b>Moustache</b>${e.c}</div></div>`;
   const gorm = e.g ? `<div class="ligneT gorm"><img class="av" src="${IMG('gorm')}" alt=""><div><b>Gorm</b>${e.g}</div></div>` : '';
   const suite = !e.ok ? '<button onclick="tutoSuivant()">Suivant ›</button>' : '<span></span>';
@@ -139,6 +138,7 @@ function tutoMaj() {
   if (!e || J.tours < e.t || S.acteur === S.O) { projecteurCache(); return; }
   const el = e.cible ? (typeof e.cible === 'function' ? e.cible() : document.querySelector(e.cible)) : null;
   if (e.cible && !el) { projecteurCache(); return; }
+  if (T.miaou !== T.i) { T.miaou = T.i; if (typeof GM !== 'undefined' && Date.now() - (window.__miaou || 0) > 25000) { window.__miaou = Date.now(); GM.son('miaou'); } } // miaulement : seulement quand l'étape change
   projecteur(el, bulleTuto(e), { libre:e.libre });
 }
 // on éclaire à chaque dessin de l'écran
