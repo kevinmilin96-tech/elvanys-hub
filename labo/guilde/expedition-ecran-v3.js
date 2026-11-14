@@ -189,10 +189,10 @@ async function deU(id, de) {
   const u = ficheDe[id] || {}, ds = Array.isArray(de) ? de : [de], cap = u.key === 'capitaine';
   const face = v => cap ? `<img src="faces-${u.hid}/face-${v}.webp" alt="${v}">` : deSVG(v, !!u.key && u.key === 'm');
   const d = document.createElement('div'); d.className = 'lance'; el.appendChild(d); GM.son('relance');
-  for (let t = 0; t < 4; t++) { d.innerHTML = ds.map(() => face(1 + Math.floor(Math.random() * 6))).join(''); d.classList.toggle('roule', t % 2 === 0); await dodo(70); }
+  for (let t = 0; t < 7; t++) { d.innerHTML = ds.map(() => face(1 + Math.floor(Math.random() * 6))).join(''); d.classList.toggle('roule', t % 2 === 0); await dodo(90); }
   d.classList.remove('roule'); d.innerHTML = ds.map(face).join('');
   if (!cap && de === 6) d.insertAdjacentHTML('beforeend', '<b class="crit">critique !</b>'); if (!cap && de === 1) d.insertAdjacentHTML('beforeend', '<b class="crit rate">raté</b>');
-  setTimeout(() => d.remove(), 1400 / vitesse);
+  GM.son('poser'); await dodo(550); setTimeout(() => d.remove(), 1200 / vitesse);
 }
 async function anim(id, cls, ms) { const el = elU(id); if (!el) return; el.classList.add(cls); await dodo(ms || 300); el.classList.remove(cls); }
 // 14/11 (choix de l'utilisateur, « A · Ordres du capitaine ») : avant chaque escale, le capitaine lance ses 3 dés (2 relances)
@@ -225,7 +225,7 @@ function dessineOrdres(roule) {
     <p class="doux">${!OD.lance ? 'Lance tes 3 dés, puis pose chacun sur une recrue : il lui donne un bonus pour ce combat.' : OD.sel !== null ? '👉 Touche la recrue qui reçoit ce dé.' : poses < 3 ? 'Touche un dé, puis une recrue. Tu peux aussi relancer les dés pas encore posés.' : 'Tous tes ordres sont donnés !'}</p>
     <div class="dords">${[0, 1, 2].map(de).join('')}</div>
     <div class="legord"><span>⚀⚁ 1-2 : <b>+3 ❤</b></span><span>⚂⚃ 3-4 : <b>+2 ⚔</b></span><span>⚄⚅ 5-6 : <b>coup sûr</b> (1er coup critique)</span></div>
-    ${combo ? `<p class="combo">✨ ${combo.t}</p>` : OD.lance ? '<p class="doux" style="text-align:center;font-size:.8em">Une paire, un brelan ou une suite donnent un bonus à tout l’équipage.</p>' : ''}
+    ${combo ? `<p class="combo">✨ ${combo.t}${poses < 3 ? '<br><small>seulement si tu poses tes 3 dés</small>' : ' ✔'}</p>` : OD.lance ? '<p class="doux" style="text-align:center;font-size:.8em">Une paire, un brelan ou une suite donnent un bonus à tout l’équipage, si tu poses tes 3 dés.</p>' : ''}
     <div class="rords">${crew.map(carteO).join('')}</div>
     <div class="choixh">${!OD.lance ? '<button class="or" onclick="lancerOrdres()">🎲 Lancer les dés</button>' : `<button ${OD.relances && (OD.sel !== null || poses < 3) ? '' : 'disabled'} onclick="lancerOrdres()">🔄 Relancer ${OD.sel !== null ? 'ce dé' : 'les dés libres'} (${OD.relances})</button><button class="or" onclick="valideOrdres()">⚔ Au combat !</button>`}</div>
   </div>`;
@@ -234,7 +234,7 @@ function valideOrdres() {
   const poses = OD.sur.filter(Boolean).length;
   if (poses < 3 && !confirm(`Il te reste ${3 - poses} dé${poses === 2 ? '' : 's'} pas posé${poses === 2 ? '' : 's'} : ${poses === 2 ? 'il sera perdu' : 'ils seront perdus'}. Partir quand même ?`)) return;
   const u = {}; OD.sur.forEach((id, i) => { if (!id) return; const b = BONUS_DE(OD.des[i]), o = u[id] || (u[id] = {}); if (b.a) o.a = (o.a || 0) + b.a; if (b.v) o.v = (o.v || 0) + b.v; if (b.sur) o.sur = true; });
-  const c = comboOrdres(OD.des); X.ordres = { u, tous:c ? { a:c.a || 0, v:c.v || 0 } : null };
+  const c = poses === 3 ? comboOrdres(OD.des) : null; X.ordres = { u, tous:c ? { a:c.a || 0, v:c.v || 0 } : null };
   X.journal.push(`🎲 Ordres du capitaine : ${OD.des.join(' · ')}${c ? ' (' + c.t + ')' : ''}.`); sauve(); OD = null; partir();
 }
 function partirOk() {
