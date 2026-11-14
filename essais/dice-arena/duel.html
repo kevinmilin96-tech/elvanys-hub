@@ -321,6 +321,7 @@
   @keyframes braise { 0% { transform:translate(0, 0); opacity:0; } 8% { opacity:1; } 70% { opacity:.8; } 100% { transform:translate(var(--dx), -105cqh); opacity:0; } }
   .plateau.tapis.unique.ile-givre:not(.scene) { background-image:url('decor/plateau-givre.webp?v=4'); }
   .plateau.tapis.unique.ile-abime:not(.scene) { background-image:url('decor/plateau-abime.webp?v=3'); }
+  .plateau.tapis.unique.ile-invasion:not(.scene) { background-image:url('decor/plateau-invasion.webp?v=1'); }
   /* Givre : neige qui tombe, aurore qui ondule */
   .animIle.givre i { top:-2%; bottom:auto; background:#fff; box-shadow:0 0 4px 1px #cfeaff; animation-name:neige; }
   @keyframes neige { 0% { transform:translate(0, 0); opacity:0; } 10% { opacity:.9; } 90% { opacity:.8; } 100% { transform:translate(var(--dx), 104cqh); opacity:0; } }
@@ -683,7 +684,7 @@
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
 // 14/11 : l'Odyssée sans fin a ses propres emplacements (odyssee.js lit SANSFIN)
 const SANSFIN = new URLSearchParams(location.search).get('sansfin') === '1', EPREUVE_PAGE = new URLSearchParams(location.search).get('epreuve') === '1', ODY_PAGE = EPREUVE_PAGE ? 'epreuves.html' : 'odyssee.html' + (SANSFIN ? '?sansfin=1' : '');
-const VERSION = '20261114-222822';
+const VERSION = '20261114-223725';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -702,16 +703,16 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261114-222822"></script>
-<script src="musique.js?v=20261114-222822"></script>
-<script src="rang.js?v=20261114-222822"></script>
-<script src="heros-etoiles.js?v=20261114-222822"></script>
-<script src="donnees.js?v=20261114-222822"></script>
-<script src="odyssee.js?v=20261114-222822"></script>
-<script src="bestiaire.js?v=20261114-222822"></script>
-<script src="aventure.js?v=20261114-222822"></script>
-<script src="odyssee-sansfin.js?v=20261114-222822"></script>
-<script src="chronique.js?v=20261114-222822"></script>
+<script src="cartes.js?v=20261114-223725"></script>
+<script src="musique.js?v=20261114-223725"></script>
+<script src="rang.js?v=20261114-223725"></script>
+<script src="heros-etoiles.js?v=20261114-223725"></script>
+<script src="donnees.js?v=20261114-223725"></script>
+<script src="odyssee.js?v=20261114-223725"></script>
+<script src="bestiaire.js?v=20261114-223725"></script>
+<script src="aventure.js?v=20261114-223725"></script>
+<script src="odyssee-sansfin.js?v=20261114-223725"></script>
+<script src="chronique.js?v=20261114-223725"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -747,7 +748,7 @@ function ajouteMeute(J, n) {
   if (J.meute >= 3 && J.front.length < 5) { J.meute = 0; invoque(J, { n:'La Louve', a:4, v:7, louve:true }); log('🐺 La Louve arrive sur la ligne de front !'); }
 }
 // 14/11 (l'utilisateur : « Louveteau n'a pas d'image ») : les renforts des monstres prennent le portrait du monstre le plus proche
-const RENFORT_IMG = { 'Louveteau':'m-loup', 'Louveteau blanc':'m-loupblanc', 'Flammèche':'m-salamandre', 'Gobelin':'m-gobelin', 'Éclat de scories':'m-golem', 'Éclat de basalte':'m-golem', 'Stalagmite':'m-golemglace', 'Éclat de cristal':'m-golemglace' };
+const RENFORT_IMG = { 'Racine':'u-racine', 'Micro-racine':'u-microracine', 'Tentacule':'u-tentacule', 'Débris du Vide':'u-debris', 'Éclaireur de silex':'u-eclaireur', 'Dragonnet':'u-dragonnet', 'Louveteau':'m-loup', 'Louveteau blanc':'m-loupblanc', 'Flammèche':'m-salamandre', 'Gobelin':'m-gobelin', 'Éclat de scories':'m-golem', 'Éclat de basalte':'m-golem', 'Stalagmite':'m-golemglace', 'Éclat de cristal':'m-golemglace' };
 function invoque(J, base, key) {
   if (J.front.length >= 5) { log('Ligne de front pleine.'); return; }
   const u = { ...base, key, id:Math.random().toString(36).slice(2), pret:!!base.charge || S.salle.id === 'sem-charge' };
@@ -1923,10 +1924,12 @@ function quitterPartie() {
 }
 // 14/11 : un plateau peint par île de l'Odyssée (decor/plateau-<île>.webp), même disposition que celui du Duel, et une couche ANIMÉE
 // (braises qui montent, lave qui respire…). Le décalage des animations suit l'horloge : redessiner l'écran ne les fait pas repartir de zéro.
-const PLATEAUX_ILE = { brulees:1, givre:1, abime:1 }; // îles dont le plateau est reçu
+const PLATEAUX_ILE = { brulees:1, givre:1, abime:1, invasion:1 }; // îles dont le plateau est reçu (14/11 nuit : + l'Invasion et le Campement)
 // 14/11 : l'interface de chaque plateau d'île est PLACÉE PAR L'UTILISATEUR (placer.html?plateau=<île> → « PLACEMENT <ÎLE> {…} »), recopiée ici telle quelle.
 // Tant qu'une île n'a pas son placement, c'est celui du Duel qui sert. Le CSS est fabriqué à partir de ces chiffres (cssPlacement).
 const PLACEMENTS_ILE = {
+  // 14/11 nuit : plateau de l'Invasion reçu ; en attendant le PLACEMENT INVASION de l'utilisateur (placer.html?plateau=invasion), celui de l'Abîme (même disposition)
+  get invasion() { return this.abime; },
   // PLACEMENT ABIME de l'utilisateur (plateau v3, 14/11 ~12 h 50), recopié tel quel
   abime:{"taille_medaillon":11.2,"taille_portrait":16.9,"frappe":[15.52,29.04],"technique":[15.48,36.85],"garde":[15.51,44.7],"pouvoir":[15.55,52.71],"transmu":[15.57,60.64],"equipe":[15.65,68.59],"de_premier":[84.82,35.31],"de_dernier":[84.82,62.94],"portrait_haut":[50.06,14.43],"portrait_bas":[50.08,79.28],"coeur_haut":[17.82,19.13],"bouclier_haut":[28.45,19],"etiquettes_haut":[76.86,19.42],"coeur_bas":[17.29,79.68],"bouclier_bas":[28.01,79.71],"etiquettes_bas":[77.94,79.42],"main_haut_gauche":[22.2,88.4],"main_bas_droit":[77.85,95.87],"tailles":{"transmu":84,"equipe":84,"pouvoir":84,"garde":84,"technique":84,"frappe":84,"cadre_haut":66,"portrait_haut":62,"anneau_haut":60,"cadre_bas":62,"anneau_bas":56,"portrait_bas":58},"champ_haut_gauche":[23.73,27.05],"champ_bas_droit":[76.77,72.75],"anneau_haut":[50.08,14.4],"anneau_bas":[50.08,79.27],"cadre_haut":[50.11,14.65],"cadre_bas":[50.23,79.51]},
   // PLACEMENT GIVRE de l'utilisateur (plateau v4, 14/11 ~12 h 45), recopié tel quel
@@ -1966,13 +1969,14 @@ ${Q} .bandeau, ${Q} .lancer { top:${f(mil)}cqh; left:${f(a[0] + .5)}cqw; right:$
   return css;
 }
 if (typeof document !== 'undefined') { const st = document.createElement('style'); st.id = 'placements-iles'; st.textContent = Object.entries(PLACEMENTS_ILE).map(([k, R]) => cssPlacement(k, R)).join('\n'); document.head.appendChild(st); } // îles dont le plateau est reçu (givre, abime : à venir)
-const plateauIle = () => S && S.ody && PLATEAUX_ILE[S.ile || 'brulees'] ? (S.ile || 'brulees') : null;
+const plateauIle = () => S && S.coop ? 'invasion' : S && S.ody && PLATEAUX_ILE[S.ile || 'brulees'] ? (S.ile || 'brulees') : null;
 const BRAISES = [...Array(26)].map((_, i) => ({ x:(i * 37 + 11) % 97 + 1.5, d:5 + (i * 7) % 6, t:(i * 1.37) % 9, s:2 + (i * 5) % 4, dx:((i * 13) % 9) - 4 }));
 function animIle(ile) {
   const ph = T => `-${((Date.now() / 1000) % T).toFixed(2)}s`;
   if (ile === 'brulees') return `<div class="animIle brulees"><div class="souffle" style="animation-delay:${ph(4.6)}"></div><div class="souffle s2" style="animation-delay:${ph(7.3)}"></div>${BRAISES.map(b => `<i style="left:${b.x}%;width:${b.s}px;height:${b.s}px;--dx:${b.dx}cqw;animation-duration:${b.d}s;animation-delay:-${(((Date.now() / 1000) + b.t) % b.d).toFixed(2)}s"></i>`).join('')}</div>`;
   if (ile === 'givre') return `<div class="animIle givre"><div class="aurore" style="animation-delay:${ph(9)}"></div><div class="aurore a2" style="animation-delay:${ph(13)}"></div>${BRAISES.map(b => `<i style="left:${b.x}%;width:${b.s + 1}px;height:${b.s + 1}px;--dx:${b.dx}cqw;animation-duration:${b.d + 4}s;animation-delay:-${(((Date.now() / 1000) + b.t) % (b.d + 4)).toFixed(2)}s"></i>`).join('')}</div>`;
   if (ile === 'abime') return `<div class="animIle abime"><div class="brume" style="animation-delay:${ph(8)}"></div><div class="brume b2" style="animation-delay:${ph(11)}"></div>${BRAISES.map((b, k) => `<i style="left:${b.x}%;top:${(k * 53 + 7) % 96}%;width:${b.s}px;height:${b.s}px;animation-duration:${2 + b.d / 3}s;animation-delay:-${(((Date.now() / 1000) + b.t) % (2 + b.d / 3)).toFixed(2)}s"></i>`).join('')}</div>`;
+  if (ile === 'invasion') return animIle('abime').replace('animIle abime', 'animIle abime invasion');
   return '';
 }
 function basculeMusique() { musOn = GM.bascule(); if (musOn) demarreMusique(); dessine(); }
@@ -2292,14 +2296,14 @@ async function joueFX() {
 // toucher l'écran pendant les animations les accélère
 document.addEventListener('pointerdown', () => { if (fxOn && !(S && S.tuto)) fxVite = .5; }, true); // 14/11 : plus d'accélération dans le tutoriel
 </script>
-<script src="profil.js?v=20261114-222822"></script>
-<script src="pantheon.js?v=20261114-222822"></script>
-<script src="tuto.js?v=20261114-222822"></script>
-<script src="deux.js?v=20261114-222822"></script>
-<script src="invasion.js?v=20261114-222822"></script>
-<script src="enigme-table.js?v=20261114-222822"></script>
-<script src="forge.js?v=20261114-222822"></script>
-<script src="semaine.js?v=20261114-222822"></script>
-<script src="enigme.js?v=20261114-222822"></script>
+<script src="profil.js?v=20261114-223725"></script>
+<script src="pantheon.js?v=20261114-223725"></script>
+<script src="tuto.js?v=20261114-223725"></script>
+<script src="deux.js?v=20261114-223725"></script>
+<script src="invasion.js?v=20261114-223725"></script>
+<script src="enigme-table.js?v=20261114-223725"></script>
+<script src="forge.js?v=20261114-223725"></script>
+<script src="semaine.js?v=20261114-223725"></script>
+<script src="enigme.js?v=20261114-223725"></script>
 </body>
 </html>
