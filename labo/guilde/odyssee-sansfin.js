@@ -6,6 +6,8 @@
 const SF_DIR = [[0, -1], [1, 0], [0, 1], [-1, 0]]; // nord, est, sud, ouest
 const SF_FORMES = { droit:[1, 0, 1, 0], virage:[1, 1, 0, 0], te:[1, 1, 0, 1], croix:[1, 1, 1, 1], salle:[0, 0, 1, 0] };
 const SF_NOM_FORME = { droit:'couloir droit', virage:'virage', te:'carrefour en T', croix:'grand carrefour', salle:'salle en cul-de-sac' };
+// 14/11 (l'utilisateur) : les événements qui dévoilent la carte ne servent à rien quand c'est le joueur qui la construit
+const SF_SANS_EVENEMENT = ['cartographe'];
 const SF_COURT = { droit:'droit', virage:'virage', te:'T', croix:'carrefour', salle:'impasse' };
 const tourne = (o, n) => { let r = o.slice(); for (let i = 0; i < ((n % 4) + 4) % 4; i++) r = [r[3], r[0], r[1], r[2]]; return r; };
 // la pioche : 40 tuiles (contenus de l'Odyssée), formes au hasard (les salles fortes plutôt en cul-de-sac ou en T)
@@ -75,7 +77,7 @@ function sfPose(r, i, n, x, y) {
   S.poses++;
   if (t.t === 'monstre') { c.niv = S.poses <= 6 ? 1 : S.poses <= 14 ? 2 : 3; c.ennemi = tire(R, I.pools[c.niv - 1]); }
   if (t.t === 'elite') { c.niv = 2; const s = ['heros', 'monstre', 'heros'][S.elites++ % 3]; if (s === 'monstre') c.ennemi = tire(R, I.elites); else { c.ennemi = 'heros'; c.renfort = tire(R, ['pc', 'pv', 'bouclier']); } }
-  if (t.t === 'evenement') { const deja = r.ile.flat().map(k => k.ev).filter(Boolean), l = EVENEMENTS.filter(e => (I.evenements ? I.evenements.includes(e.id) : !e.ile) && !deja.includes(e.id)); c.ev = (l.length ? tire(R, l) : tire(R, EVENEMENTS.filter(e => !e.ile))).id; }
+  if (t.t === 'evenement') { const deja = r.ile.flat().map(k => k.ev).filter(Boolean), l = EVENEMENTS.filter(e => (I.evenements ? I.evenements.includes(e.id) : !e.ile) && !deja.includes(e.id) && !SF_SANS_EVENEMENT.includes(e.id)); c.ev = (l.length ? tire(R, l) : tire(R, EVENEMENTS.filter(e => !e.ile))).id; }
   if (t.t === 'boss') { c.ennemi = I.boss; c.niv = 1; S.bossFait = true; }
   if (t.t === 'marchand') S.dernierMarchand = S.poses;
   S.offre.splice(i, 1); sfOffre(r);

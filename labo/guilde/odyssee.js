@@ -672,7 +672,8 @@ function evenementChoisit(r, c, i) {
   if (e.carte === 'draft1') { out.suite = 'draft'; out.cartes = draft(hasard(r), 1, r.deck, r.heros); }
   if (e.carte === 'epique') { out.suite = 'draft'; out.cartes = draft(hasard(r), 2, r.deck, r.heros).filter(k => rarete(k) === 'e').slice(0, 3); if (!out.cartes.length) out.cartes = draft(hasard(r), 2, r.deck); }
   if (e.retirer) out.suite = 'retirer';
-  if (e.revele) { for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) { const k = caseA(r, r.pos.x + dx, r.pos.y + dy); if (k && Math.abs(dx) + Math.abs(dy) <= 2) k.vu = true; } }
+  if (e.revele && r.sansfin) { r.or += 25; r.journal.push('🗺 Ici, c’est toi qui dessines l’île : la carte se revend 25 or.'); }
+  else if (e.revele) { for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) { const k = caseA(r, r.pos.x + dx, r.pos.y + dy); if (k && Math.abs(dx) + Math.abs(dy) <= 2) k.vu = true; } }
   r.journal.push(`❓ ${ev.t} : ${ch.t}.`);
   return out;
 }
