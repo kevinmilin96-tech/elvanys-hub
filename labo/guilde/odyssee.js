@@ -463,7 +463,7 @@ const SALLES_ODY = {
 const voisins = (x, y) => [[x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]].filter(([a, b]) => a >= 0 && a < ILE_W && b >= 0 && b < ILE_H);
 function bfs(cases, dep, marche) {
   const dist = {}; dist[dep.x + ',' + dep.y] = 0; const file = [[dep.x, dep.y]], prev = {};
-  while (file.length) { const [x, y] = file.shift(); for (const [a, b] of voisins(x, y)) { const k = a + ',' + b; if (dist[k] !== undefined || !marche(cases[b][a])) continue; dist[k] = dist[x + ',' + y] + 1; prev[k] = x + ',' + y; file.push([a, b]); } }
+  while (file.length) { const [x, y] = file.shift(); for (const [a, b] of voisins(x, y)) { const k = a + ',' + b; if (dist[k] !== undefined || !marche(cases[b][a]) || (typeof relies === 'function' && !relies(cases, x, y, a, b))) continue; dist[k] = dist[x + ',' + y] + 1; prev[k] = x + ',' + y; file.push([a, b]); } }
   return { dist, prev };
 }
 function genereIle(graine, R0, acte) {
@@ -571,7 +571,8 @@ const hasard = r => { r.tirage = (r.tirage || 0) + 1; return rngDe(r.graine + '/
 function peutAller(r, x, y) {
   const c = caseA(r, x, y); if (!c || c.t === 'roche' || !c.vu) return false;
   if (Math.abs(x - r.pos.x) + Math.abs(y - r.pos.y) !== 1) return false;
-  if (c.t === 'boss') { const p = caseA(r, r.porte.x, r.porte.y); if (!p.fait) return false; }
+  if (c.t === 'boss' && r.porte) { const p = caseA(r, r.porte.x, r.porte.y); if (!p.fait) return false; }
+  if (typeof relies === 'function' && !relies(r.ile, r.pos.x, r.pos.y, x, y)) return false;
   if (c.t === 'mur' && !c.fait) return r.sacoche.includes('bombe') || r.vivres >= 3;
   return true;
 }
@@ -581,7 +582,7 @@ function deplace(r, x, y) {
   const neuve = !c.visite;
   if (c.t === 'mur' && !c.fait) { if (r.sacoche.includes('bombe')) { r.sacoche.splice(r.sacoche.indexOf('bombe'), 1); r.journal.push('💣 La bombe ouvre le mur fissuré.'); } else { r.vivres -= 3; r.journal.push('🧱 Trois doses d’huile pour creuser le mur fissuré.'); } }
   if (neuve) { if (r.vivres > 0) r.vivres--; else { r.pv -= 3; r.journal.push('🪔 Lanterne éteinte : vous avancez dans le noir, −3 PV.'); } r.stats.cases++; }
-  r.pos = { x, y }; c.visite = true; c.vu = true; voisins(x, y).forEach(([a, b]) => { caseA(r, a, b).vu = true; });
+  r.pos = { x, y }; c.visite = true; c.vu = true; if (!r.sansfin) voisins(x, y).forEach(([a, b]) => { caseA(r, a, b).vu = true; });
   if (r.pv <= 0) return { c, mort:true };
   return { c, neuve };
 }

@@ -114,6 +114,14 @@
   body.abime .brume { fill:#2a1f3d; } body.abime .bord { fill:#120a1f; stroke:#120a1f; } body.abime #hach rect { fill:#3b2d52; } body.abime #hach line { stroke:#1d1330; }
   body.abime .ico { fill:#f1e8ff !important; } body.abime .niv { fill:#ffb3c7 !important; }
   .brume { opacity:.97 !important; }
+  /* 14/11 : l'Odyssée sans fin */
+  #pioche { text-align:center; margin-bottom:76px; } .sfent { font-size:.9em; margin-bottom:6px; }
+  .sftuiles { display:flex; gap:8px; justify-content:center; } .sft { background:#1b1838; border:2px solid #4b4580; border-radius:12px; padding:5px; color:#fff; font:inherit; width:31%; display:flex; flex-direction:column; align-items:center; gap:3px; }
+  .sft small { font-size:.7em; line-height:1.15; } .sft.sel { border-color:#7dffb0; box-shadow:0 0 12px #7dffb0aa; transform:translateY(-3px); }
+  .sfroche { fill:#3b2716; } .sfbord { fill:#1e140b; stroke:#1e140b; stroke-width:5; stroke-linejoin:round; } .sfsol { fill:#c9b48c; }
+  body.givre .sfsol { fill:#c4d2d8; } body.abime .sfsol { fill:#bcaecb; }
+  .sfbt { display:flex; gap:8px; justify-content:center; margin-top:6px; } .sfbt button { background:#2a2350; color:#fff; border:1px solid #4b4580; border-radius:10px; padding:6px 12px; font:inherit; font-size:.88em; } .sfbt button:disabled { opacity:.4; }
+  .sfcible { fill:#7dffb033; stroke:#15803d; stroke-width:3; stroke-dasharray:6 4; animation:pulse2 1.3s ease-in-out infinite; }
 </style>
 </head>
 <body>
@@ -122,7 +130,7 @@
 <script>
 const ZOK = () => localStorage.getItem('guilde-tuto') === 'fait'; // Zéphine : débloquée par le tutoriel (12/11)
 
-const VERSION = '20261114-183346';
+const VERSION = '20261114-184435';
 function verifieVersion() {
   fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
     v = (v || '').trim(); if (!v || v === VERSION || document.getElementById('majbar')) return;
@@ -135,13 +143,14 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261114-183346"></script>
-<script src="musique.js?v=20261114-183346"></script>
-<script src="donnees.js?v=20261114-183346"></script>
-<script src="guide.js?v=2"></script>
-<script src="odyssee.js?v=20261114-183346"></script>
-<script src="pantheon.js?v=20261114-183346"></script>
-<script src="chronique.js?v=20261114-183346"></script>
+<script src="cartes.js?v=20261114-184435"></script>
+<script src="musique.js?v=20261114-184435"></script>
+<script src="donnees.js?v=20261114-184435"></script>
+<script src="guide.js?v=20261114-184435"></script>
+<script src="odyssee.js?v=20261114-184435"></script>
+<script src="odyssee-sansfin.js?v=20261114-184435"></script>
+<script src="pantheon.js?v=20261114-184435"></script>
+<script src="chronique.js?v=20261114-184435"></script>
 <script>
 // le moteur du Duel n'est pas chargé ici : les cartes de l'Odyssée appellent degats/soin seulement en combat (dans duel.html)
 const log = () => {}, degats = () => {}, soin = () => {}, altere = () => {}, invoque = () => {}, adv = () => ({}), fin = () => {};
@@ -164,7 +173,7 @@ const NIV = ['', 'I', 'II', 'III'];
 
 // ----------------------------------------------------------------------------------------------- accueil
 // 12/11 nuit : plusieurs îles (actes). odyssee.html?ile=givre ; l'île du Givre s'ouvre après la victoire contre le Titan (?essai=1 pour l'essayer avant, prototype)
-const Q = new URLSearchParams(location.search), ACTE_URL = ILES[Q.get('ile')] ? Q.get('ile') : 'brulees';
+const Q = new URLSearchParams(location.search), ACTE_URL = ILES[Q.get('ile')] ? Q.get('ile') : 'brulees', SANSFIN = Q.get('sansfin') === '1';
 const acteDe = () => (R && R.acte) || ACTE_URL;
 let ASC_CHOIX = 0;
 const CH = () => ({ givre:CHRON_GIVRE, abime:CHRON_ABIME }[acteDe()] || CHRON_ODY);
@@ -218,7 +227,7 @@ function ecran() {
   if (ACTE_URL === 'givre' && !actesFaits().brulees && !Q.get('essai')) {
     document.getElementById('app').innerHTML = `<h1>❄️ L’Odyssée · l’île du Givre</h1><p style="text-align:center">🔒 L’acte II s’ouvre quand tu as vaincu <b>le Titan de feu</b> (acte I, les Terres brûlées), avec n’importe quel héros.</p>
     <div class="choixh"><button onclick="location.href='odyssee.html'">🌋 Aller aux Terres brûlées</button><button onclick="location.href='odyssee.html?ile=givre&essai=1'">🧪 L’essayer quand même (prototype)</button></div><div class="choixh"><button onclick="location.href='menu.html#odyssee'">⌂ Menu</button></div>`; return; }
-  document.getElementById('app').innerHTML = `<h1>${{ givre:'❄️ L’Odyssée · l’île du Givre', abime:'🌀 L’Odyssée · l’Abîme du Vide' }[ACTE_URL] || '🏰 L’Odyssée · les Terres brûlées'}</h1>
+  document.getElementById('app').innerHTML = `<h1>${{ givre:'❄️ L’Odyssée · l’île du Givre', abime:'🌀 L’Odyssée · l’Abîme du Vide' }[ACTE_URL] || '🏰 L’Odyssée · les Terres brûlées'}${SANSFIN ? ' · 🧩 sans fin' : ''}</h1>${SANSFIN ? '<p style="text-align:center;color:var(--or);font-size:.9em">L’île se construit tuile par tuile : à chaque pas, tu choisis une tuile parmi 3 et tu la raccordes au donjon.</p>' : ''}
   <p style="text-align:center;color:var(--doux);font-size:.9em">Une île tirée au sort, à explorer case par case. Le combat, c’est le Duel. Tes PV ne remontent pas tout seuls : sources, potions et marchand. Une lanterne de 20 doses d’huile pour fouiller. Deux fragments de rune ouvrent la porte ${{ givre:"de la Vouivre des glaces. Ici, le Givre ❄ s’accumule sur toi : à trois, tu es gelé", abime:"du Roi sans visage. Ici, la Corruption 🟣 s’accumule : à trois, le Vide te dévore (Silence) et nourrit l’ennemi" }[ACTE_URL] || "du Titan de feu"}.</p>
   ${ascMax(ACTE_URL) ? `<p style="text-align:center;font-size:.9em">⛰ <b style="color:var(--or)">Ascension</b> : ${Array.from({ length:ascMax(ACTE_URL) + 1 }, (_, n) => `<button class="asc ${ASC_CHOIX === n ? 'on' : ''}" onclick="ASC_CHOIX=${n};ecran()">${n || 'normal'}</button>`).join(' ')}${ASC_CHOIX ? `<br><small style="color:var(--doux)">${Array.from({ length:ASC_CHOIX }, (_, i) => ASCENSION[i + 1].n).join(' · ')}</small>` : ''}</p>` : ''}
   <p style="text-align:center"><b style="color:var(--or)">Choisis ton héros</b></p>
@@ -229,11 +238,11 @@ function ecran() {
 }
 function commence(id) {
   const jour = document.getElementById('jour') && document.getElementById('jour').checked;
-  R = nouvelleOdyssee(id, jour ? graineDuJour() + (ACTE_URL !== 'brulees' ? '-' + ACTE_URL : '') : null, ACTE_URL, ASC_CHOIX); if (!R) { alert('Impossible de tirer une île : réessaie.'); return; }
+  R = SANSFIN ? nouvelleSansFin(id, ACTE_URL, ASC_CHOIX) : nouvelleOdyssee(id, jour ? graineDuJour() + (ACTE_URL !== 'brulees' ? '-' + ACTE_URL : '') : null, ACTE_URL, ASC_CHOIX); if (!R) { alert('Impossible de tirer une île : réessaie.'); return; }
   dejaDessine = new Set(); bulles = []; sauve(); dessine();
   chronique([CH().arrivee(HEROS[id].nom)], () => { dialogue('depart'); fenetre(`<h2>⛵ Débarquement</h2><p>${HEROS[id].nom} pose le pied sur ${ILE(R).nom}. ${{ givre:'La glace craque, le vent mord, l’aurore danse au-dessus du château de glace.', abime:'Le silence est total. Sous tes pieds, le gouffre ; au-dessus, un trône.' }[R.acte] || 'Le ciel est rouge, la roche fume.'}</p>
-  <p>Touche une salle <b style="color:var(--ok)">verte</b> : le héros y marche et l’île se dessine devant lui. Tu vois le <b>type</b> des salles voisines, jamais ce qu’elles cachent. Touche-la une première fois pour voir le trajet et son coût, une seconde fois pour y aller. Chaque case nouvelle brûle <b>1 dose d’huile 🪔</b> (la lumière autour du héros rétrécit quand la lanterne se vide) ; revenir est gratuit.</p>
-  <p>Le chemin direct fait ${R.direct} cases. La porte 🚪 ${{ givre:'de la Vouivre', abime:'du Roi' }[R.acte] || 'du Titan'} 👑 est tout en haut : il te faut <b>2 fragments de rune</b>, gardés par les 3 élites 💀 de l’île.</p>
+  ${R.sansfin ? `<p>Ici, l’île n’existe pas encore : <b>tu la construis</b>. Sous la carte, 3 tuiles t’attendent. Touche-en une, tourne-la avec ⟳, puis touche une case <b style="color:var(--ok)">verte</b> : les couloirs doivent se raccorder, comme à Carcassonne. Ton héros y entre (1 dose d’huile 🪔).</p><p>Bats <b>2 élites</b> 💀 pour gagner 2 fragments de rune : la tuile du boss 👑 apparaîtra alors dans ta pioche, et tu choisiras où ouvrir sa porte.</p>` : `<p>Touche une salle <b style="color:var(--ok)">verte</b> : le héros y marche et l’île se dessine devant lui. Tu vois le <b>type</b> des salles voisines, jamais ce qu’elles cachent. Touche-la une première fois pour voir le trajet et son coût, une seconde fois pour y aller. Chaque case nouvelle brûle <b>1 dose d’huile 🪔</b> (la lumière autour du héros rétrécit quand la lanterne se vide) ; revenir est gratuit.</p>
+  <p>Le chemin direct fait ${R.direct} cases. La porte 🚪 ${{ givre:'de la Vouivre', abime:'du Roi' }[R.acte] || 'du Titan'} 👑 est tout en haut : il te faut <b>2 fragments de rune</b>, gardés par les 3 élites 💀 de l’île.</p>`}
   <div class="choixh"><button class="or" onclick="fermer()">En route !</button></div>`); });
 }
 
@@ -256,7 +265,45 @@ function dessine() {
   <div class="bandeau">${r.vivres ? 'Touche une salle verte pour voir le trajet, puis touche-la encore : le héros y va.' : '<b style="color:#ff7a7a">Lanterne éteinte : chaque case nouvelle coûte 3 PV.</b>'} ${r.fragments >= 2 ? '<b style="color:var(--ok)">Tu as les 2 fragments : la porte 🚪 t’attend.</b>' : ''}</div>
   <div class="legende"><span>⚔ monstres (I, II, III)</span><span>💀 élite</span><span>🗝 coffre</span><span>💧 source</span><span>🏪 marchand</span><span>❓ événement</span><span>🔥 autel</span><span>🏕 feu de camp</span><span>🧱 mur fissuré</span><span>🚪 porte</span><span>👑 boss</span></div>
   <div class="bas"><button onclick="monDeck()">🂠 Deck</button><button onclick="journal()">📜 Journal</button><button onclick="reglesCourtes()">❓ Règles</button><button onclick="abandon()">⏏ Quitter</button></div>`;
-  Guide.lance('odyssee', GUIDE_ODY);
+  if (r.sansfin) sfEcran(); else Guide.lance('odyssee', GUIDE_ODY);
+}
+// =============================================================================================== l'Odyssée sans fin : la pioche sous la carte (14/11)
+let sfSel = null, sfRot = 0;
+function tuileSVG(t, n, taille) {
+  const o = tourne(SF_FORMES[t.f], n), L = 9, salle = t.f === 'salle' || t.t !== 'chemin';
+  let d = salle ? 'M14,14h20v20h-20z' : 'M15,15h18v18h-18z';
+  if (o[0]) d += `M${24 - L},0h${2 * L}v24h${-2 * L}z`; if (o[2]) d += `M${24 - L},24h${2 * L}v24h${-2 * L}z`;
+  if (o[1]) d += `M24,${24 - L}h24v${2 * L}h-24z`; if (o[3]) d += `M0,${24 - L}h24v${2 * L}h-24z`;
+  const e = t.t === 'chemin' ? '' : t.t === 'boss' ? '👑' : SALLES_ODY[t.t].e;
+  return `<svg viewBox="0 0 48 48" width="${taille}" height="${taille}"><rect width="48" height="48" rx="6" class="sfroche"/><path d="${d}" class="sfbord"/><path d="${d}" class="sfsol"/>${e ? `<text x="24" y="31" text-anchor="middle" font-size="16">${e}</text>` : ''}</svg>`;
+}
+function sfEcran() {
+  const S = R.sansfin; sfOffre(R);
+  if (sfBloque(R) && !S.eboulement) { S.eboulement = true; sauve(); }
+  const b = document.querySelector('.bandeau'); if (!b) return;
+  b.id = 'pioche';
+  b.innerHTML = `<div class="sfent">${S.eboulement ? '🪨 <b>Éboulement</b> : plus aucune sortie ne colle. Ta tuile se pose où tu veux, à côté du donjon.' : sfSel === null ? '🧩 Choisis une tuile, puis une case <b style="color:#7dffb0">verte</b>.' : '⟳ tourne la tuile, puis touche une case <b style="color:#7dffb0">verte</b> sur la carte.'}</div>
+    <div class="sftuiles">${S.offre.map((t, i) => `<button class="sft ${sfSel === i ? 'sel' : ''}" onclick="sfChoisit(${i})">${tuileSVG(t, sfSel === i ? sfRot : 0, 58)}<small>${t.t === 'chemin' ? SF_NOM_FORME[t.f] : t.t === 'boss' ? 'la porte du boss' : SALLES_ODY[t.t].n}</small></button>`).join('')}</div>
+    <div class="sfbt"><button ${sfSel === null ? 'disabled' : ''} onclick="sfRot = (sfRot + 1) % 4; sfEcran(); sfCibles()">⟳ Tourner</button><button ${R.vivres >= 1 ? '' : 'disabled'} onclick="if (sfRepioche(R)) { sfSel = null; sauve(); dessine(); }">🔄 Repiocher (1 🪔)</button></div>`;
+  sfCibles();
+  Guide.lance('odyssee-sansfin', [
+    [null, 'L’Odyssée sans fin : ici, l’île <b>n’existe pas encore</b>. C’est toi qui la construis, tuile par tuile.'],
+    ['#pioche', 'Tes <b>3 tuiles</b>. Choisis-en une : un couloir tranquille, un monstre pour l’or, un coffre… Puis tourne-la avec ⟳.'],
+    ['svg.ile', 'Touche une case <b>verte</b> pour la poser : les couloirs doivent se raccorder. Ton héros y entre aussitôt (1 huile 🪔). Bats 2 élites 💀 et la porte du boss 👑 viendra dans ta pioche. Bonne construction, miaou !'],
+  ]);
+}
+function sfChoisit(i) { sfRot = sfSel === i ? (sfRot + 1) % 4 : 0; sfSel = i; GM.son('choisir'); sfEcran(); }
+function sfCibles() {
+  const g = document.getElementById('cels'); if (!g) return; const old = document.getElementById('sfcibles'); if (old) old.remove();
+  if (sfSel === null || !R.sansfin.offre[sfSel]) return;
+  const P = sfPlaces(R, R.sansfin.offre[sfSel], sfRot, !!R.sansfin.eboulement);
+  g.insertAdjacentHTML('beforeend', `<g id="sfcibles" style="pointer-events:none">${P.map(p => `<rect class="sfcible" x="${p.x * CEL + 4}" y="${p.y * CEL + 4}" width="${CEL - 8}" height="${CEL - 8}" rx="8"/>`).join('')}</g>`);
+  if (!P.length) { const e = document.querySelector('#pioche .sfent'); if (e) e.innerHTML = '🚫 Dans ce sens, cette tuile ne colle nulle part : tourne-la ⟳ ou choisis-en une autre.'; }
+}
+async function sfPoser(x, y) {
+  const c = sfPose(R, sfSel, sfRot, x, y); if (!c) { GM.son('erreur'); return; }
+  GM.son('tour-batir'); sfSel = null; sfRot = 0; sauve(); dessine();
+  destination = { x, y }; await marcheVers(x, y);
 }
 // 14/11 : le guide de Moustache au premier passage sur l'île
 const GUIDE_ODY = [
@@ -288,10 +335,10 @@ function pierres(x1, y1, x2, y2, seed) { let out = ''; for (let i = 1; i < 5; i+
 function calculeDist() { const marche = c => c.visite; distV = bfs(R.ile, R.pos, marche).dist; }
 function peutCible(c) {
   if (!c.vu || c.t === 'roche' || (c.x === R.pos.x && c.y === R.pos.y)) return false;
-  if (c.t === 'boss') { const p = caseA(R, R.porte.x, R.porte.y); if (!p.fait) return false; }
+  if (c.t === 'boss' && R.porte) { const p = caseA(R, R.porte.x, R.porte.y); if (!p.fait) return false; }
   if (c.t === 'mur' && !c.fait && !(R.sacoche.includes('bombe') || R.vivres >= 3)) return false;
   if (c.visite) return distV[c.x + ',' + c.y] !== undefined;
-  return voisins(c.x, c.y).some(([a, b]) => { const v = caseA(R, a, b); return v.visite && distV[a + ',' + b] !== undefined; });
+  return voisins(c.x, c.y).some(([a, b]) => { const v = caseA(R, a, b); return v.visite && distV[a + ',' + b] !== undefined && (typeof relies !== 'function' || relies(R.ile, a, b, c.x, c.y)); });
 }
 // 14/11 (l'utilisateur, d'après un plan de donjon de jeu de rôle) : la carte devient un PLAN SUR PARCHEMIN : salles dallées à quadrillage,
 // couloirs étroits, roche hachurée autour, et une brume qui se dissipe sur ce qu'on découvre. Les règles ne changent pas.
@@ -301,7 +348,7 @@ function formeSol(c) {
   const x = c.x * CEL, y = c.y * CEL, cx = x + CEL / 2, cy = y + CEL / 2, L = 11, salle = c.t !== 'chemin';
   let d = salle ? rectD(x + 6, y + 6, CEL - 12, CEL - 12) : rectD(cx - L, cy - L, 2 * L, 2 * L);
   [[1, 0], [-1, 0], [0, 1], [0, -1]].forEach(([dx, dy]) => {
-    if (!ouvert(caseA(R, c.x + dx, c.y + dy))) return;
+    if (c.ouv ? !c.ouv[[[0, -1], [1, 0], [0, 1], [-1, 0]].findIndex(([a, b]) => a === dx && b === dy)] : !ouvert(caseA(R, c.x + dx, c.y + dy))) return;
     if (dx === 1) d += rectD(cx, cy - L, CEL / 2 + 1, 2 * L); if (dx === -1) d += rectD(x - 1, cy - L, CEL / 2 + 1, 2 * L);
     if (dy === 1) d += rectD(cx - L, cy, 2 * L, CEL / 2 + 1); if (dy === -1) d += rectD(cx - L, y - 1, 2 * L, CEL / 2 + 1);
   });
@@ -360,7 +407,7 @@ function toucheCarte(e) {
   if (Date.now() - dernierToucher < 250) return; dernierToucher = Date.now();
   const svg = e.currentTarget, m = svg.getScreenCTM(); if (!m) return; const pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY;
   const q = pt.matrixTransform(m.inverse()), x = Math.floor(q.x / CEL), y = Math.floor(q.y / CEL);
-  if (x >= 0 && y >= 0 && x < ILE_W && y < ILE_H) marcheVers(x, y);
+  if (x >= 0 && y >= 0 && x < ILE_W && y < ILE_H) { if (R.sansfin && sfSel !== null && !enMarche) sfPoser(x, y); else marcheVers(x, y); }
 }
 // 14/11 (l'utilisateur : « sur l'île gelée, on dirait un château dans le désert ») : le plan prend les couleurs de chaque île
 const TEINTE_PAPIER = { brulees:'0 0 0 0 .50  0 0 0 0 .30  0 0 0 0 .16  0 0 0 -1.6 1.05', givre:'0 0 0 0 .32  0 0 0 0 .45  0 0 0 0 .60  0 0 0 -1.6 1.05', abime:'0 0 0 0 .30  0 0 0 0 .16  0 0 0 0 .42  0 0 0 -1.6 1.05' };
@@ -369,7 +416,7 @@ function carteSVG() {
   const toutes = R.ile.flat();
   const cels = toutes.map(c => { const k = c.x + ',' + c.y; const neuf = c.vu && !dejaDessine.has(k); if (c.vu) dejaDessine.add(k); return celluleSVG(c, neuf); }).join('');
   const P = toutes.map(c => planCase(c, false));
-  const brume = toutes.filter(c => !c.vu).map(c => `<circle id="m-${c.x}-${c.y}" class="brume" cx="${c.x * CEL + CEL / 2}" cy="${c.y * CEL + CEL / 2}" r="${CEL * .62}"/>`).join('');
+  const brume = toutes.filter(c => !c.vu).map(c => `<circle id="m-${c.x}-${c.y}" class="brume" cx="${c.x * CEL + CEL / 2}" cy="${c.y * CEL + CEL / 2}" r="${CEL * (R.sansfin ? .48 : .62)}"/>`).join('');
   const M = 3 * CEL;
   return `<svg class="ile" viewBox="${c.x} ${c.y} ${c.w} ${c.h}" preserveAspectRatio="xMidYMid meet" onpointerdown="posDoigt=[event.clientX,event.clientY]" onpointerup="toucheCarte(event)"><defs><radialGradient id="lum"><stop offset="0" stop-color="#ffe9a8" stop-opacity=".55"/><stop offset=".45" stop-color="#f3c96b" stop-opacity=".18"/><stop offset="1" stop-color="#f3c96b" stop-opacity="0"/></radialGradient><clipPath id="rond"><circle r="16"/></clipPath>
     <filter id="papier" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".012" numOctaves="4" seed="7"/><feColorMatrix values="${TEINTE_PAPIER[R.acte] || TEINTE_PAPIER.brulees}"/><feComposite in2="SourceGraphic" operator="in"/><feBlend in2="SourceGraphic" mode="multiply"/></filter>

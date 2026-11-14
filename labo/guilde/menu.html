@@ -8,7 +8,7 @@
 <title>La Guilde des Runes</title>
 <script>
 // Même mécanisme que le Duel : une nouvelle version = rechargement tout seul à l'ouverture (publier.sh change VERSION).
-const VERSION = '20261114-183346';
+const VERSION = '20261114-184435';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-menu-' + v)) { sessionStorage.setItem('recharge-menu-' + v, '1'); location.replace('menu.html?v=' + v); }
@@ -189,9 +189,9 @@ fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.te
 </div>
 <div id="flash"></div>
 
-<script src="semaine.js?v=20261114-183346"></script>
-<script src="musique.js?v=20261114-183346"></script>
-<script src="donnees.js?v=20261114-183346"></script>
+<script src="semaine.js?v=20261114-184435"></script>
+<script src="musique.js?v=20261114-184435"></script>
+<script src="donnees.js?v=20261114-184435"></script>
 <script>
 // ciel étoilé + runes du portail (symboles, pas des lettres), aux couleurs des héros
 const ciel = document.getElementById('ciel');
@@ -270,6 +270,7 @@ const ETAGES = {
       : { nom:'Île du Givre', fx:'aurore', img:'menu-recu/ody-givre.webp', ferme:'Acte II', essai:'odyssee.html?ile=givre', desc:'Acte II · S’ouvre quand tu as vaincu le Titan de feu. (Prototype : touche pour l’essayer quand même.)' },
     ABIME_OK ? { nom:'L’Abîme du Vide', pro:'abime', href:'odyssee.html?ile=abime', desc:'Acte III · Une île brisée au-dessus du néant, et le Roi sans visage.' }
       : { nom:'L’Abîme du Vide', pro:'abime', ferme:'Acte III', essai:'odyssee.html?ile=abime', desc:'Acte III · S’ouvre quand tu as vaincu la Vouivre des glaces. (Prototype : touche pour l’essayer quand même.)' },
+    { nom:'L’Odyssée sans fin', fx:'lave', img:'menu-recu/ody-terres-brulees.webp', href:'odyssee.html?sansfin=1', desc:'L’île se construit devant toi, tuile par tuile, façon Carcassonne : tu choisis ta route et tes risques.' },
   ] },
 };
 const car = document.getElementById('car');
