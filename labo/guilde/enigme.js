@@ -115,6 +115,22 @@ function eniFabrique(iso, depuis) {
   const P = { des:[3, 3, 4, 4, 4, 5, 5][niv - 1], main:[2, 3, 3, 4, 4, 5, 5][niv - 1], pc:[2, 3, 3, 4, 4, 5, 5][niv - 1], dmin:[5, 6, 8, 9, 11, 12, 14][niv - 1], coups:[1, 2, 2, 2, 3, 3, 4][niv - 1], ecart:[0, 1, 2, 3, 3, 4, 5][niv - 1] };
   // ENI_TABLE (enigme-table.js) : pour chaque jour, le bon essai, ses PV et sa solution, trouvés d'avance → le téléphone ne calcule rien
   const connu = !depuis && typeof ENI_TABLE === 'object' ? ENI_TABLE[iso] : null;
+  // 14/11 nuit (l'utilisateur : « chaque énigme doit utiliser simplement les cartes dont elle a besoin ») : la situation est FIGÉE dans la table (x) ;
+  // rien n'est tiré au hasard ni pioché dans un deck, et ajouter des cartes au jeu ne peut plus la changer
+  if (connu && connu.x) {
+    const x = connu.x; nouvellePartie(x.h, x.o, true);
+    S.salle = { id:'aucune', n:'', d:'' }; S.log = []; S.auto = true;
+    const J = S.J, O = S.O;
+    J.tours = x.t; J.relance = 0; J.aLancer = false; J.deck = []; J.meute = 0;
+    J.des = x.d.map((v, i) => ({ sac:[], v, pose:false, mod:false, i }));
+    J.main = [...x.c]; J.pc = x.pc; J.jauge = x.j;
+    J.front = x.a.map((n, i) => ({ ...ENI_ALLIES.find(u => u.n === n), id:'a' + i, pret:true })); J.front.forEach(u => u.vmax = u.v);
+    O.front = x.g.map((n, i) => ({ ...ENI_GARDES.find(u => u.n === n), id:'o' + i, pret:false })); O.front.forEach(u => u.vmax = u.v);
+    if (x.df && O.front.length) O.front[0].defense = true;
+    O.gardeB = x.gb; O.bouclier = 0; O.main = []; O.deck = [];
+    const etat = structuredClone(S); etat.O.pv = connu.m; etat.auto = false; etat.log = [];
+    return { iso, niv, essai:connu.e, etat, sol:connu.s, max:connu.m, noeuds:0 };
+  }
   const d0 = depuis || (connu && connu.e) || 0;
   for (let essai = d0; essai < d0 + 400; essai++) {
     const r = eniRng(eniHash(iso + '#' + essai)), tire = a => a[Math.floor(r() * a.length)];
@@ -178,7 +194,7 @@ const eniReussies = () => Object.values(eniMem()).filter(x => x.ok).length;
 // ---------------------------------------------------------------- l'écran
 let ENI = null; // { p, iso } l'énigme en cours
 function eniCache(iso) {
-  const v = 'v3'; // à changer si la fabrique change (sinon l'ancienne énigme du jour reste gardée)
+  const v = 'v4'; // à changer si la fabrique change (sinon l'ancienne énigme du jour reste gardée)
   try { const c = JSON.parse(localStorage.getItem('guilde-enigme-cache') || 'null'); if (c && c.iso === iso && c.v === v) return c.p; } catch (e) {}
   const p = eniFabrique(iso); if (p) try { localStorage.setItem('guilde-enigme-cache', JSON.stringify({ iso, v, p })); } catch (e) {}
   return p;
