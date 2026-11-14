@@ -5,6 +5,17 @@
 // GM.temporaire(clé) / GM.retour() : une musique le temps d'une page (chronique, marchand) puis on revient
 // GM.jingle(clé) : victoire / défaite, une fois · GM.stop(s) · GM.bascule() · GM.bouton() : petit 🎵 en bas à droite
 // Le navigateur interdit le son avant le premier toucher : on le lance au premier toucher. Coupé quand l'appli passe en arrière-plan.
+// 14/11 : MISE À JOUR AUTOMATIQUE. Le téléphone gardait parfois l'ancienne page (bonus des dés invisibles, images manquantes) :
+// à l'ouverture d'une page, si version.txt annonce une version plus récente que celle des scripts chargés, on recharge
+// la page avec une adresse neuve (?v=…) une seule fois. Une partie en cours est gardée sur le téléphone, rien ne se perd.
+(() => { try {
+  const moi = document.currentScript && (document.currentScript.src.match(/[?&]v=([^&]+)/) || [])[1]; if (!moi) return;
+  fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
+    v = (v || '').trim(); if (!v || v === moi || v < moi || sessionStorage.getItem('guilde-maj-' + v)) return;
+    sessionStorage.setItem('guilde-maj-' + v, '1'); const q = new URLSearchParams(location.search); q.set('v', v);
+    location.replace(location.pathname + '?' + q + location.hash);
+  }).catch(() => {});
+} catch (e) {} })();
 const GM = (() => {
   const VOL = { titre:.5, menu:.45, heros:.45, duel:.4, elite:.42, boss:.45, carte:.45, recit:.45, marchand:.45, campement:.45, expeditions:.45, tuto:.45, mer:.45, victoire:.6, defaite:.6, feu:.5, vent:.45 };
   const volM = () => +(localStorage.getItem('guilde-vol-musique') || 100) / 100, volS = () => +(localStorage.getItem('guilde-vol-sons') || 100) / 100;
