@@ -646,7 +646,7 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261114-123606';
+const VERSION = '20261114-124612';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -665,11 +665,11 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261114-123606"></script>
-<script src="musique.js?v=20261114-123606"></script>
-<script src="donnees.js?v=20261114-123606"></script>
-<script src="odyssee.js?v=20261114-123606"></script>
-<script src="chronique.js?v=20261114-123606"></script>
+<script src="cartes.js?v=20261114-124612"></script>
+<script src="musique.js?v=20261114-124612"></script>
+<script src="donnees.js?v=20261114-124612"></script>
+<script src="odyssee.js?v=20261114-124612"></script>
+<script src="chronique.js?v=20261114-124612"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -1764,6 +1764,8 @@ const PLATEAUX_ILE = { brulees:1, givre:1, abime:1 }; // îles dont le plateau e
 // 14/11 : l'interface de chaque plateau d'île est PLACÉE PAR L'UTILISATEUR (placer.html?plateau=<île> → « PLACEMENT <ÎLE> {…} »), recopiée ici telle quelle.
 // Tant qu'une île n'a pas son placement, c'est celui du Duel qui sert. Le CSS est fabriqué à partir de ces chiffres (cssPlacement).
 const PLACEMENTS_ILE = {
+  // PLACEMENT GIVRE de l'utilisateur (plateau v4, 14/11 ~12 h 45), recopié tel quel
+  givre:{"taille_medaillon":11.2,"taille_portrait":16.9,"frappe":[12.04,31.33],"technique":[12.05,38.74],"garde":[12.06,46.18],"pouvoir":[12.04,53.54],"transmu":[12.06,60.92],"equipe":[12.09,68.31],"de_premier":[88.61,38.94],"de_dernier":[88.61,60.49],"portrait_haut":[50.02,17.4],"portrait_bas":[49.96,79.31],"coeur_haut":[17.5,20.97],"bouclier_haut":[28.34,20.55],"etiquettes_haut":[77.84,20.83],"coeur_bas":[17.71,79.14],"bouclier_bas":[27.54,78.82],"etiquettes_bas":[77.83,78.92],"main_haut_gauche":[25.17,89.28],"main_bas_droit":[69.13,97.61],"tailles":{"equipe":86,"transmu":86,"pouvoir":86,"garde":86,"technique":86,"frappe":86,"cadre_haut":82,"portrait_haut":72,"anneau_haut":76,"cadre_bas":82,"portrait_bas":76,"anneau_bas":76},"champ_haut_gauche":[20.4,28.96],"champ_bas_droit":[80.47,71.77],"anneau_haut":[50,17.45],"anneau_bas":[49.98,79.27],"cadre_haut":[50.02,17.77],"cadre_bas":[50.02,79.51]},
   // PLACEMENT BRULEES de l'utilisateur sur le plateau v3 (14/11 ~12 h 35), recopié tel quel
   brulees:{"taille_medaillon":11.5,"taille_portrait":16.9,"frappe":[12.06,32.34],"technique":[12.06,39.17],"garde":[12,45.96],"pouvoir":[12.11,52.35],"transmu":[12,58.74],"equipe":[12.06,64.8],"de_premier":[87.64,35.48],"de_dernier":[87.64,57.94],"portrait_haut":[49.81,13.89],"portrait_bas":[49.96,75.42],"coeur_haut":[14.54,20.39],"bouclier_haut":[24.75,20.28],"etiquettes_haut":[81.13,19.95],"coeur_bas":[15.45,76.24],"bouclier_bas":[25.03,76.09],"etiquettes_bas":[80.56,74.82],"main_haut_gauche":[25.89,84.67],"main_bas_droit":[85.56,96.52],"tailles":{"portrait_haut":70,"portrait_bas":70,"cadre_bas":72,"equipe":86,"transmu":86,"pouvoir":86,"garde":86,"technique":86,"frappe":86,"cadre_haut":76,"anneau_haut":68,"anneau_bas":66,"etiquettes_haut":90},"champ_haut_gauche":[23.67,28.49],"champ_bas_droit":[76.47,64.86],"cadre_haut":[49.88,14.16],"cadre_bas":[49.98,75.68],"anneau_haut":[49.66,13.93],"anneau_bas":[49.9,75.42]},
   // PLACEMENT BRULEES de l'utilisateur (14/11 ~0 h 15) : fait sur le plateau v2 ; MIS DE CÔTÉ le 14/11 midi (plateau v3 reçu, à replacer)
@@ -2095,14 +2097,14 @@ async function joueFX() {
 // toucher l'écran pendant les animations les accélère
 document.addEventListener('pointerdown', () => { if (fxOn && !(S && S.tuto)) fxVite = .5; }, true); // 14/11 : plus d'accélération dans le tutoriel
 </script>
-<script src="profil.js?v=20261114-123606"></script>
-<script src="pantheon.js?v=20261114-123606"></script>
-<script src="tuto.js?v=20261114-123606"></script>
-<script src="deux.js?v=20261114-123606"></script>
-<script src="invasion.js?v=20261114-123606"></script>
-<script src="enigme-table.js?v=20261114-123606"></script>
-<script src="forge.js?v=20261114-123606"></script>
-<script src="semaine.js?v=20261114-123606"></script>
-<script src="enigme.js?v=20261114-123606"></script>
+<script src="profil.js?v=20261114-124612"></script>
+<script src="pantheon.js?v=20261114-124612"></script>
+<script src="tuto.js?v=20261114-124612"></script>
+<script src="deux.js?v=20261114-124612"></script>
+<script src="invasion.js?v=20261114-124612"></script>
+<script src="enigme-table.js?v=20261114-124612"></script>
+<script src="forge.js?v=20261114-124612"></script>
+<script src="semaine.js?v=20261114-124612"></script>
+<script src="enigme.js?v=20261114-124612"></script>
 </body>
 </html>
