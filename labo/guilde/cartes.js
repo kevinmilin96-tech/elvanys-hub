@@ -1,3 +1,5 @@
+// 14/11 (l'utilisateur a lu « dé ≥ 4 » comme « 4 ou moins ») : on écrit en toutes lettres « dé de 4 ou + » / « dé de 2 ou − »
+const txtLisible = t => String(t || '').replace(/dé ≥ (\d)/g, 'dé de $1 ou +').replace(/dé ≤ (\d)/g, 'dé de $1 ou −').replace(/≥ ?(\d)/g, '$1 ou +').replace(/≤ ?(\d)/g, '$1 ou −');
 // Dessin d'une carte de la Guilde des Runes (09/11) : cadre en cristal du héros (Gemini, sans texte) + textes posés par l'appli.
 // Zones mesurées sur le cadre (en % de 864 × 1216) : nom, pierre du coût, fenêtre de l'illustration, bande des dés, effet, losange du bas.
 const ZONES = { nom:[11.6, 8.6, 64.2, 6.3], cout:[85.9, 11.5], fenetre:[12.7, 16.3, 75.2, 39.5], bande:[11.6, 57.6, 77, 5.1], effet:[12.5, 65.4, 75.5, 23.8], bas:[49.8, 93.3] };
@@ -14,7 +16,7 @@ function carteGuilde(k, opt = {}) {
     <div class="cg-art" style="left:${pc(z.fenetre, 0)};top:${pc(z.fenetre, 1)};width:${pc(z.fenetre, 2)};height:${pc(z.fenetre, 3)};${art ? `background-image:url('${art}')` : ''}">${art ? '' : `<span class="cg-vide">${ICONE_SORTE[c.t] || ''}<small>illustration à venir</small></span>`}</div>
     <div class="cg-nom" style="left:${pc(z.nom, 0)};top:${pc(z.nom, 1)};width:${pc(z.nom, 2)};height:${pc(z.nom, 3)}"><span>${c.n}</span></div>
     <div class="cg-cout" style="left:${pc(z.cout, 0)};top:${pc(z.cout, 1)}">${opt.cout !== undefined ? opt.cout : c.c}</div>
-    <div class="cg-bande${((NOM_SORTE[c.t] || '') + c.txt).length > 24 ? ' long' : ''}" style="left:${pc(z.bande, 0)};top:${pc(z.bande, 1)};width:${pc(z.bande, 2)};height:${pc(z.bande, 3)}">${NOM_SORTE[c.t] ? `<b class="cg-type">${ICONE_SORTE[c.t]} ${NOM_SORTE[c.t]}</b> · ` : ''}🎲 ${c.txt}</div>
+    <div class="cg-bande${((NOM_SORTE[c.t] || '') + txtLisible(c.txt)).length > 24 ? ' long' : ''}" style="left:${pc(z.bande, 0)};top:${pc(z.bande, 1)};width:${pc(z.bande, 2)};height:${pc(z.bande, 3)}">${NOM_SORTE[c.t] ? `<b class="cg-type">${ICONE_SORTE[c.t]} ${NOM_SORTE[c.t]}</b> · ` : ''}🎲 ${txtLisible(c.txt)}</div>
     <div class="cg-effet${c.d.length > 120 ? ' tlong' : c.d.length > 95 ? ' long' : ''}" style="left:${pc(z.effet, 0)};top:${pc(z.effet, 1)};width:${pc(z.effet, 2)};height:${pc(z.effet, 3)}">${c.d}</div>
     <div class="cg-sorte" style="left:${pc(z.bas, 0)};top:${pc(z.bas, 1)}">${ICONE_SORTE[c.t] || ''}</div>
     ${opt.pied || ''}${c.u ? `<div class="cg-atk">⚔ ${c.u.a}</div><div class="cg-vie">❤ ${c.u.v}</div>` : ''}
