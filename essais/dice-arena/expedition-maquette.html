@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="robots" content="noindex">
+<title>Expéditions · maquette de mise en page</title>
+<style>
+  /* 14/11 : MAQUETTE (rien n'est jouable). Un seul écran sans défilement, façon jeux mobiles : les ennemis arrivent en haut,
+     le navire et l'équipage en bas, le recruteur en tiroir tout en bas. Le bouton « Simuler une victoire » montre l'animation d'avance. */
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html, body { margin:0; height:100%; overflow:hidden; font:14px/1.2 Georgia, serif; color:#fff; background:#1b1640; user-select:none; }
+  .ecran { position:relative; height:100dvh; max-width:520px; margin:0 auto; overflow:hidden; display:flex; flex-direction:column; }
+  /* le ciel qui défile */
+  .ciel { position:absolute; inset:0; background:linear-gradient(#5b4a9a, #9c7fc4 45%, #e0b6c8 75%, #f2d0a8); z-index:0; }
+  .nuages { position:absolute; left:0; right:0; top:-100%; height:300%; z-index:1; opacity:.9;
+    background:
+      radial-gradient(ellipse 22% 5% at 12% 10%, #fff8 60%, transparent 62%), radial-gradient(ellipse 26% 6% at 85% 22%, #fff7 60%, transparent 62%),
+      radial-gradient(ellipse 20% 4% at 20% 40%, #fff6 60%, transparent 62%), radial-gradient(ellipse 28% 6% at 90% 55%, #fff7 60%, transparent 62%),
+      radial-gradient(ellipse 22% 5% at 8% 72%, #fff8 60%, transparent 62%), radial-gradient(ellipse 25% 5% at 80% 88%, #fff6 60%, transparent 62%);
+    background-size:100% 33.34%; }
+  .nuages.avance { animation:defile 2.4s cubic-bezier(.45,0,.3,1); }
+  @keyframes defile { to { transform:translateY(33.34%); } }
+  .ecran > *:not(.ciel):not(.nuages) { position:relative; z-index:2; }
+  /* haut */
+  .barre { display:flex; align-items:center; gap:8px; padding:6px 10px; background:#140f2ecc; }
+  .barre img { width:34px; height:34px; border-radius:50%; border:2px solid #f3c96b; object-fit:cover; }
+  .barre .p { background:#0008; border-radius:10px; padding:2px 8px; } .barre .vide { flex:1; }
+  .barre .rond { width:34px; height:34px; border-radius:50%; background:#0008; display:grid; place-items:center; font-size:18px; }
+  .route { display:flex; align-items:center; justify-content:center; padding:6px 0 0; }
+  .route i { width:24px; height:24px; border-radius:50%; background:#140f2ecc; border:2px solid #ffffff55; display:grid; place-items:center; font-style:normal; font-size:12px; }
+  .route i.faite { background:#15803d; border-color:#7dffb0; } .route i.ici { border-color:#f3c96b; box-shadow:0 0 10px #f3c96b; transform:scale(1.2); }
+  .route b { width:18px; height:3px; background:#ffffff55; }
+  .titre { text-align:center; font-size:13px; text-shadow:0 1px 3px #000; margin:4px 0 0; } .titre small { display:block; opacity:.85; font-size:11px; }
+  /* les ennemis */
+  .ennemis { flex:0 0 22%; display:flex; align-items:center; justify-content:center; gap:10px; }
+  .ennemis.arrive .m { animation:arrive .9s both; } .ennemis.arrive .m:nth-child(2) { animation-delay:.15s; } .ennemis.arrive .m:nth-child(3) { animation-delay:.3s; }
+  @keyframes arrive { from { transform:translateY(-140px) scale(.6); opacity:0; } }
+  .m { width:76px; text-align:center; }
+  .m img { width:68px; height:68px; border-radius:50%; object-fit:cover; border:3px solid #b91c1c; box-shadow:0 0 14px #b91c1caa; background:#000; }
+  .m .st { display:flex; justify-content:center; gap:3px; margin-top:-8px; } .m .st span { background:#7a1f1f; border-radius:8px; padding:0 5px; font-size:11px; } .m .st span.v { background:#15803d; }
+  /* le navire */
+  .zone-navire { flex:1; min-height:0; display:flex; justify-content:center; align-items:flex-start; }
+  .navire { position:relative; height:100%; aspect-ratio:896 / 1200; max-width:100%; background:url('decor/pont-expedition.webp?v=1') center/100% 100% no-repeat; -webkit-mask-image:linear-gradient(90deg, transparent, #000 9%, #000 91%, transparent); mask-image:linear-gradient(90deg, transparent, #000 9%, #000 91%, transparent); }
+  .place { position:absolute; display:grid; place-items:center; }
+  .place .c { width:92%; height:96%; border-radius:8px; overflow:hidden; position:relative; box-shadow:0 2px 6px #000a; }
+  .place img { width:100%; height:100%; object-fit:cover; display:block; }
+  .place .st { position:absolute; left:2px; right:2px; bottom:2px; display:flex; justify-content:space-between; } .place .st span { background:#7a1f1f; border-radius:8px; padding:0 4px; font-size:10px; } .place .st span.v { background:#15803d; }
+  .place .nm { position:absolute; top:1px; left:0; right:0; text-align:center; font-size:9px; text-shadow:0 1px 2px #000, 0 0 4px #000; }
+  .navire .et { position:absolute; left:0; right:0; text-align:center; font-size:9px; letter-spacing:.1em; color:#fff3d6; text-shadow:0 1px 2px #000, 0 0 5px #000; }
+  /* le tiroir du recruteur */
+  .tiroir { background:#140f2ef0; border-top:2px solid #f3c96b88; border-radius:16px 16px 0 0; padding:6px 8px 8px; margin-top:6px; }
+  .tiroir .et { font-size:10.5px; color:#f3e3c0; text-align:center; margin-bottom:4px; }
+  .offres { display:grid; grid-template-columns:repeat(5, 1fr); gap:5px; }
+  .offre { aspect-ratio:3 / 4; border-radius:8px; border:2px solid #b89a5e; position:relative; overflow:hidden; background:#000; }
+  .offre img { width:100%; height:100%; object-fit:cover; } .offre .prix { position:absolute; top:2px; right:2px; background:#d4a017; color:#2b1d0a; border-radius:50%; width:18px; height:18px; display:grid; place-items:center; font-weight:bold; font-size:11px; }
+  .bas { display:flex; gap:6px; margin-top:6px; align-items:stretch; }
+  .bas button { background:#2a2350; color:#fff; border:1px solid #4b4580; border-radius:12px; font:13px Georgia; padding:8px 10px; }
+  .bas .go { flex:1; background:linear-gradient(#f7d77f, #d9a93a); color:#2b1d0a; font-weight:bold; font-size:16px; border:0; }
+  .bulle { position:absolute; left:50%; top:38%; transform:translate(-50%, -50%); background:#140f2ef0; border:2px solid #f3c96b; border-radius:14px; padding:10px 14px; text-align:center; z-index:5; display:none; }
+</style>
+</head>
+<body>
+<div class="ecran">
+  <div class="ciel"></div><div class="nuages" id="nuages"></div>
+  <div class="barre"><img src="portraits/oria.webp" alt=""><span class="p">💰 12</span><span class="p">❤❤❤</span><span class="vide"></span><span class="rond">📜</span><span class="rond">⚙️</span></div>
+  <div class="route" id="route"></div>
+  <div class="titre" id="titre"></div>
+  <div class="ennemis" id="ennemis"></div>
+  <div class="zone-navire"><div class="navire" id="navire"></div></div>
+  <div class="tiroir">
+    <div class="et">🧭 Le recruteur · touche une recrue pour la voir, fais-la glisser sur le pont</div>
+    <div class="offres">
+      <div class="offre"><img src="cartes/milicien.webp" alt=""><span class="prix">3</span></div>
+      <div class="offre"><img src="cartes/renard.webp" alt=""><span class="prix">3</span></div>
+      <div class="offre"><img src="cartes/tambour.webp" alt=""><span class="prix">3</span></div>
+      <div class="offre"><img src="cartes/faon.webp" alt=""><span class="prix">3</span></div>
+      <div class="offre"><img src="cartes/ecuyer.webp" alt=""><span class="prix">3</span></div>
+    </div>
+    <div class="bas"><button>🔄 1</button><button>❄</button><button class="go" onclick="victoire()">⚔ Partir · <small>(simuler une victoire)</small></button></div>
+  </div>
+  <div class="bulle" id="bulle"></div>
+</div>
+<script>
+const ESC = [['🏴‍☠️', 'La Crique des gobelins', 'des monstres', ['m-gobelin', 'm-chefgobelin', 'm-gobelin']], ['👻', 'Le navire fantôme', 'un capitaine rival', ['m-esprit', 'm-ombre', 'm-esprit']], ['⚓', 'Le port', 'repos et recrues', []],
+  ['👻', 'Les falaises', 'un capitaine rival', ['m-harpie', 'm-loup', 'm-harpie']], ['🌋', 'Le cratère', 'des monstres', ['m-salamandre', 'm-drake', 'm-elementaire']], ['👑', 'Le nid du Titan', 'le boss', ['m-colosse']]];
+let n = 0;
+function dessine() {
+  document.getElementById('route').innerHTML = ESC.map((e, i) => `${i ? '<b></b>' : ''}<i class="${i < n ? 'faite' : i === n ? 'ici' : ''}">${i < n ? '✓' : e[0]}</i>`).join('');
+  const e = ESC[n]; document.getElementById('titre').innerHTML = `Escale ${n + 1} · <b>${e[1]}</b><small>${e[2]}</small>`;
+  document.getElementById('ennemis').innerHTML = e[3].length ? e[3].map(k => `<div class="m"><img src="portraits/${k}.webp" alt=""><div class="st"><span>⚔3</span><span class="v">❤8</span></div></div>`).join('') : '<div class="titre">⚓ Pas de combat : on se repose</div>';
+}
+async function victoire() {
+  const b = document.getElementById('bulle'), en = document.getElementById('ennemis'), nu = document.getElementById('nuages');
+  b.innerHTML = '⚔ Victoire !'; b.style.display = 'block'; await new Promise(r => setTimeout(r, 800)); b.style.display = 'none';
+  en.style.transition = 'opacity .4s'; en.style.opacity = 0; await new Promise(r => setTimeout(r, 400));
+  nu.classList.remove('avance'); void nu.offsetWidth; nu.classList.add('avance');
+  b.innerHTML = '⛵ Le navire vogue vers l’escale suivante…'; b.style.display = 'block';
+  await new Promise(r => setTimeout(r, 2400)); b.style.display = 'none';
+  n = (n + 1) % ESC.length; dessine(); en.style.opacity = 1; en.classList.remove('arrive'); void en.offsetWidth; en.classList.add('arrive');
+}
+const COL = [[13.4, 34.8], [39.3, 60.7], [65.1, 86.5]], RANG = [[12.5, 28.3], [32.1, 47.9]], CALE = [[21.8, 37.9], [41.5, 58.3], [62.2, 77.8]];
+const EQ = { '0,1':['portraits/oria.webp', 'Oria', 3, 25], '0,2':['cartes/ecuyer.webp', 'Écuyer', 2, 6], '1,0':['cartes/flute.webp', 'Flûte', 2, 3], 'c,0':['cartes/faon.webp', 'Faon', 1, 3] };
+const carte = u => u ? `<div class="c"><img src="${u[0]}" alt=""><span class="nm">${u[1]}</span><div class="st"><span>⚔${u[2]}</span><span class="v">❤${u[3]}</span></div></div>` : '';
+let h = '<div class="et" style="top:9.2%">DEVANT · prennent les coups</div><div class="et" style="top:29.2%">DERRIÈRE · tirent et aident</div><div class="et" style="top:51%">📦 LA CALE · ne combat pas</div>';
+RANG.forEach((r, i) => COL.forEach((c, j) => { h += `<div class="place" style="left:${c[0]}%;width:${c[1] - c[0]}%;top:${r[0]}%;height:${r[1] - r[0]}%">${carte(EQ[i + ',' + j])}</div>`; }));
+CALE.forEach((c, j) => { h += `<div class="place" style="left:${c[0]}%;width:${c[1] - c[0]}%;top:56%;height:14%">${carte(EQ['c,' + j])}</div>`; });
+document.getElementById('navire').innerHTML = h;
+dessine();
+</script>
+</body>
+</html>
