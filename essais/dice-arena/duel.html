@@ -654,6 +654,9 @@
   #conf .b { display:flex; gap:8px; margin-top:10px; } #conf .b button { flex:1; border:none; border-radius:12px; padding:11px; font:bold 15px Georgia, serif; }
   #conf .n.soin { color:#7dffb0; } #conf .l.soin { color:#c8ffd9; }
   #conf .ok { background:#f3c96b; color:#2a1a08; } #conf .non { background:#3a3570; color:#fff; }
+  .onde-choc { position:fixed; width:30px; height:30px; margin:-15px 0 0 -15px; border-radius:50%; border:6px solid #ffd27a; box-shadow:0 0 18px #ff9d2e, inset 0 0 12px #ffb43a; pointer-events:none; z-index:60; animation:ondechoc .7s ease-out forwards; }
+  @keyframes ondechoc { from { transform:scale(.4); opacity:1; } to { transform:scale(9); opacity:0; border-width:1px; } }
+  .flash-choc { position:fixed; inset:0; background:radial-gradient(circle, #fff6 0%, #fff0 60%); pointer-events:none; z-index:59; animation:efface .35s forwards; }
 </style>
 </head>
 <body>
@@ -664,7 +667,7 @@
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
 // 14/11 : l'Odyssée sans fin a ses propres emplacements (odyssee.js lit SANSFIN)
 const SANSFIN = new URLSearchParams(location.search).get('sansfin') === '1', ODY_PAGE = 'odyssee.html' + (SANSFIN ? '?sansfin=1' : '');
-const VERSION = '20261114-192344';
+const VERSION = '20261114-192459';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -683,11 +686,11 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261114-192344"></script>
-<script src="musique.js?v=20261114-192344"></script>
-<script src="donnees.js?v=20261114-192344"></script>
-<script src="odyssee.js?v=20261114-192344"></script>
-<script src="chronique.js?v=20261114-192344"></script>
+<script src="cartes.js?v=20261114-192459"></script>
+<script src="musique.js?v=20261114-192459"></script>
+<script src="donnees.js?v=20261114-192459"></script>
+<script src="odyssee.js?v=20261114-192459"></script>
+<script src="chronique.js?v=20261114-192459"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -2047,6 +2050,25 @@ function effetImage(nom, cible, f = 1) {
   if (!IMG_OK[nom] || !cible) return false;
   const d = boite(cible, 170 * f), im = document.createElement('img'); im.src = `effets/${nom}.webp?v=1`; im.className = 'effimg'; d.appendChild(im);
   const k = ANIM_IMG[nom], v = fxVite;
+  // 14/11 (l'utilisateur : « un marteau qui apparaît, prend son élan en arrière et percute la tête de la cible, avec une grande onde de choc ») :
+  if (nom === 'marteau') {
+    im.style.transformOrigin = '75% 85%'; im.style.width = '135%'; im.style.height = '135%'; im.style.margin = '-17%';
+    im.animate([
+      { transform:'translate(18%, -55%) rotate(10deg) scale(.6)', opacity:0 },
+      { transform:'translate(18%, -60%) rotate(0deg) scale(1)', opacity:1, offset:.22 },
+      { transform:'translate(30%, -75%) rotate(-55deg) scale(1.05)', opacity:1, offset:.55 },    // l'élan en arrière
+      { transform:'translate(0%, -15%) rotate(28deg) scale(1.1)', opacity:1, offset:.68 },       // le coup sur la tête
+      { transform:'translate(0%, -12%) rotate(24deg) scale(1.05)', opacity:1, offset:.85 },
+      { transform:'translate(0%, -12%) rotate(24deg) scale(1)', opacity:0 }], { duration:1050 * v, easing:'ease-in-out', fill:'both' });
+    setTimeout(() => { // l'impact : flash, ondes de choc, étincelles, secousse
+      son('gros'); const p = centre(cible), c = couche();
+      [0, 1, 2].forEach(i => { const o = document.createElement('div'); o.className = 'onde-choc'; o.style.cssText = `left:${p.x}px;top:${p.y}px;animation-delay:${i * 90 * v}ms`; c.appendChild(o); setTimeout(() => o.remove(), 1200); });
+      const fl = document.createElement('div'); fl.className = 'flash-choc'; c.appendChild(fl); setTimeout(() => fl.remove(), 400);
+      const e = boite(cible, 200 * f); particules(e, 18, 'etinc', s2 => { const a = Math.random() * 6.28, r = 50 + Math.random() * 70 * f; s2.style.setProperty('--x', Math.cos(a) * r + 'px'); s2.style.setProperty('--y', Math.sin(a) * r + 'px'); });
+      secoue(document.querySelector('.unique') || document.body);
+    }, 700 * v);
+    return true;
+  }
   if (k === 'eclat') im.animate([{ transform:'scale(.3)', opacity:0, filter:'brightness(2.5)' }, { transform:'scale(1.12)', opacity:1, filter:'brightness(1.4)', offset:.25 }, { transform:'scale(1)', opacity:1, filter:'brightness(1)', offset:.55 }, { transform:'scale(1.05)', opacity:0 }], { duration:900 * v, easing:'ease-out', fill:'forwards' });
   else if (k === 'monte') im.animate([{ transform:'translateY(25%) scale(.6)', opacity:0 }, { transform:'translateY(0) scale(1)', opacity:1, offset:.3 }, { transform:'translateY(-35%) scale(1.05)', opacity:0 }], { duration:1000 * v, easing:'ease-out', fill:'forwards' });
   else im.animate([{ transform:'scale(.4) rotate(-40deg)', opacity:0 }, { transform:'scale(1) rotate(0)', opacity:1, offset:.35 }, { transform:'scale(1.15) rotate(50deg)', opacity:0 }], { duration:1000 * v, easing:'ease-out', fill:'forwards' });
@@ -2160,14 +2182,14 @@ async function joueFX() {
 // toucher l'écran pendant les animations les accélère
 document.addEventListener('pointerdown', () => { if (fxOn && !(S && S.tuto)) fxVite = .5; }, true); // 14/11 : plus d'accélération dans le tutoriel
 </script>
-<script src="profil.js?v=20261114-192344"></script>
-<script src="pantheon.js?v=20261114-192344"></script>
-<script src="tuto.js?v=20261114-192344"></script>
-<script src="deux.js?v=20261114-192344"></script>
-<script src="invasion.js?v=20261114-192344"></script>
-<script src="enigme-table.js?v=20261114-192344"></script>
-<script src="forge.js?v=20261114-192344"></script>
-<script src="semaine.js?v=20261114-192344"></script>
-<script src="enigme.js?v=20261114-192344"></script>
+<script src="profil.js?v=20261114-192459"></script>
+<script src="pantheon.js?v=20261114-192459"></script>
+<script src="tuto.js?v=20261114-192459"></script>
+<script src="deux.js?v=20261114-192459"></script>
+<script src="invasion.js?v=20261114-192459"></script>
+<script src="enigme-table.js?v=20261114-192459"></script>
+<script src="forge.js?v=20261114-192459"></script>
+<script src="semaine.js?v=20261114-192459"></script>
+<script src="enigme.js?v=20261114-192459"></script>
 </body>
 </html>
