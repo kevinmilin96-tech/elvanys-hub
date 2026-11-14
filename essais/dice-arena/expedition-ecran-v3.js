@@ -258,6 +258,10 @@ async function partir() {
   const J = []; const jl = t => { J.unshift(t); const j = document.getElementById('jc'); if (j) j.innerHTML = J.slice(0, 2).map(x => `<div>${x}</div>`).join(''); };
   await dodo(500);
   for (const e of res.ev) {
+    if (e.t === 'depart') { e.l.forEach(x => { const el = elU(x.id); if (!el) return; const sp = el.querySelectorAll('.av span'), b = el.querySelector('.pvb');
+      const a0 = +(sp[0] && sp[0].textContent.replace(/\D/g, '')), v0 = +(sp[1] && sp[1].textContent.replace(/\D/g, ''));
+      if (sp[0]) { sp[0].textContent = '⚔ ' + x.a; if (x.a > a0) sp[0].classList.add('monte'); } if (sp[1]) { sp[1].textContent = '❤ ' + x.v; if (x.v > v0) sp[1].classList.add('monte'); }
+      if (b) b.dataset.max = x.v; if (x.o || x.sur) el.insertAdjacentHTML('beforeend', `<span class="ordre">🎲${x.sur ? ' coup sûr' : ''}</span>`); }); await dodo(500); continue; }
     if (e.t === 'round') { jl(`— Round ${e.n}`); await dodo(250); continue; }
     if (e.t === 'coup') { if (e.de) await deU(e.src, e.de); await coupFx(e); await dodo(260); jl(`${noms[e.src]} → ${noms[e.id]} : ${e.dg > 0 ? e.dg : 'raté'}${e.txt ? ' (' + e.txt + ')' : ''}`); await dodo(150); continue; }
     if (e.t === 'esquive') { if (e.de) await deU(e.src, e.de); await anim(e.src, 'frappe', 220); await anim(e.id, 'esq', 300); jl(`${noms[e.id]} esquive (Ombre).`); continue; }

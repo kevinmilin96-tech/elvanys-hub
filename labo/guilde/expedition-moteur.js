@@ -176,6 +176,8 @@ function combatExp(campJ, campE, R) {
   // 14/11 : les ordres du capitaine (les dés posés sur les recrues avant l'escale) : +PV, +attaque, coup sûr ; et le bonus de la combinaison
   const od = campJ.X && campJ.X.ordres;
   if (od) { J.liste.forEach(u => { const o = od.u[u.id] || {}, t = od.tous || {}, a = (o.a || 0) + (t.a || 0), v = (o.v || 0) + (t.v || 0); u.a += a; u.v += v; u.vmax += v; if (o.sur) u.coupSur = true; }); }
+  // 14/11 : l'écran affiche les forces réelles au début du combat (familles, ordres, Tambours… compris)
+  ev.push({ t:'depart', l:[...J.liste, ...E.liste].map(u => ({ id:u.id, a:u.a + (u.tambourBonus || 0), v:u.v, sur:!!u.coupSur, o:od && od.u[u.id] ? 1 : 0 })) });
   const vivants = C => C.liste.filter(u => !u.mort);
   const front = C => vivants(C).filter(u => u.rang === 'av');
   // si le devant est vide, les Lames et Remparts de derrière avancent
