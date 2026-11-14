@@ -131,6 +131,7 @@
   body:not(.givre):not(.abime) .ico { fill:#fff3dc !important; filter:drop-shadow(0 1px 2px #000) !important; } body:not(.givre):not(.abime) .niv { fill:#ffd27a !important; }
   .apercu { opacity:.92; } .sfapercu-cadre { fill:none; stroke:#f3c96b; stroke-width:3; animation:pulse2 1.1s ease-in-out infinite; }
   .sfbt button.or { background:#f3c96b; color:#2b1d0a; border:0; font-weight:bold; }
+  body.sansfin .legende { display:none; } body.sansfin svg.ile { max-height:calc(100dvh - 440px); min-height:250px; width:auto; max-width:100%; margin-left:auto; margin-right:auto; } body.sansfin #pioche { margin-bottom:8px; } body.sansfin .bulles { margin-bottom:76px; } body.sansfin .entete { padding:4px 8px; }
 </style>
 </head>
 <body>
@@ -139,7 +140,7 @@
 <script>
 const ZOK = () => localStorage.getItem('guilde-tuto') === 'fait'; // Zéphine : débloquée par le tutoriel (12/11)
 
-const VERSION = '20261114-191022';
+const VERSION = '20261114-191409';
 function verifieVersion() {
   fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
     v = (v || '').trim(); if (!v || v === VERSION || document.getElementById('majbar')) return;
@@ -152,14 +153,14 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261114-191022"></script>
-<script src="musique.js?v=20261114-191022"></script>
-<script src="donnees.js?v=20261114-191022"></script>
-<script src="guide.js?v=20261114-191022"></script>
-<script src="odyssee.js?v=20261114-191022"></script>
-<script src="odyssee-sansfin.js?v=20261114-191022"></script>
-<script src="pantheon.js?v=20261114-191022"></script>
-<script src="chronique.js?v=20261114-191022"></script>
+<script src="cartes.js?v=20261114-191409"></script>
+<script src="musique.js?v=20261114-191409"></script>
+<script src="donnees.js?v=20261114-191409"></script>
+<script src="guide.js?v=20261114-191409"></script>
+<script src="odyssee.js?v=20261114-191409"></script>
+<script src="odyssee-sansfin.js?v=20261114-191409"></script>
+<script src="pantheon.js?v=20261114-191409"></script>
+<script src="chronique.js?v=20261114-191409"></script>
 <script>
 // le moteur du Duel n'est pas chargé ici : les cartes de l'Odyssée appellent degats/soin seulement en combat (dans duel.html)
 const log = () => {}, degats = () => {}, soin = () => {}, altere = () => {}, invoque = () => {}, adv = () => ({}), fin = () => {};
@@ -292,9 +293,9 @@ function sfEcran() {
   const S = R.sansfin; sfOffre(R);
   if (sfBloque(R) && !S.eboulement) { S.eboulement = true; sauve(); }
   const b = document.querySelector('.bandeau'); if (!b) return;
-  b.id = 'pioche';
+  b.id = 'pioche'; document.body.classList.add('sansfin'); { const m = document.querySelector('svg.ile'); if (m && m.nextElementSibling !== b) m.after(b); } // la pioche juste sous la carte
   b.innerHTML = `<div class="sfent">${S.eboulement ? '🪨 <b>Éboulement</b> : plus aucune sortie ne colle. Ta tuile se pose où tu veux, à côté du donjon.' : sfSel === null ? '🧩 Choisis une tuile, puis une case <b style="color:#7dffb0">verte</b>.' : sfCase ? '👀 Regarde la tuile sur la carte : ⟳ pour la tourner, puis ✔ pour la poser.' : 'Touche une case <b style="color:#7dffb0">verte</b> sur la carte : la tuile s’y affichera avant d’être posée.'}</div>
-    <div class="sftuiles">${S.offre.map((t, i) => `<button class="sft ${sfSel === i ? 'sel' : ''}" onclick="sfChoisit(${i})">${tuileSVG(t, sfSel === i ? sfRot : 0, 58)}<small>${t.t === 'chemin' ? SF_NOM_FORME[t.f] : t.t === 'boss' ? 'la porte du boss' : SALLES_ODY[t.t].n}</small></button>`).join('')}</div>
+    <div class="sftuiles">${S.offre.map((t, i) => `<button class="sft ${sfSel === i ? 'sel' : ''}" onclick="sfChoisit(${i})">${tuileSVG(t, sfSel === i ? sfRot : 0, 58)}<small>${t.t === 'chemin' ? 'couloir' : t.t === 'boss' ? 'porte du boss' : SALLES_ODY[t.t].n} · <b>${SF_COURT[t.f]}</b></small></button>`).join('')}</div>
     <div class="sfbt">${sfCase ? `<button onclick="sfTourne()">⟳ Tourner</button><button class="or" onclick="sfPoser()">✔ Poser ici</button><button onclick="sfCase = null; sfEcran()">✖ Annuler</button>`
       : `<button ${sfSel === null ? 'disabled' : ''} onclick="sfRot = (sfRot + 1) % 4; sfEcran()">⟳ Tourner</button><button ${R.vivres >= 1 ? '' : 'disabled'} onclick="if (sfRepioche(R)) { sfSel = null; sfCase = null; sauve(); dessine(); }">🔄 Repiocher (1 🪔)</button>`}</div>`;
   sfCibles();

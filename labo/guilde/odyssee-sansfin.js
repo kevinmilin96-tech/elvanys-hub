@@ -6,6 +6,7 @@
 const SF_DIR = [[0, -1], [1, 0], [0, 1], [-1, 0]]; // nord, est, sud, ouest
 const SF_FORMES = { droit:[1, 0, 1, 0], virage:[1, 1, 0, 0], te:[1, 1, 0, 1], croix:[1, 1, 1, 1], salle:[0, 0, 1, 0] };
 const SF_NOM_FORME = { droit:'couloir droit', virage:'virage', te:'carrefour en T', croix:'grand carrefour', salle:'salle en cul-de-sac' };
+const SF_COURT = { droit:'droit', virage:'virage', te:'T', croix:'carrefour', salle:'impasse' };
 const tourne = (o, n) => { let r = o.slice(); for (let i = 0; i < ((n % 4) + 4) % 4; i++) r = [r[3], r[0], r[1], r[2]]; return r; };
 // la pioche : 40 tuiles (contenus de l'Odyssée), formes au hasard (les salles fortes plutôt en cul-de-sac ou en T)
 function sfSac(R) {
@@ -43,8 +44,17 @@ function sfPlaces(r, tuile, n, libre) {
     if (c.pose) return; let lien = 0, ok = true, voisin = false;
     SF_DIR.forEach(([dx, dy], i) => { const v = caseA(r, c.x + dx, c.y + dy); if (!v || !v.pose) return; voisin = true; const a = o[i], b = v.ouv[(i + 2) % 4];
       if (a && b) lien++; else if (a !== b && !libre) ok = false; });
+    // 14/11 (l'utilisateur : « l'impasse, on ne pourra jamais la mettre si on ne peut pas aller à deux endroits ») :
+    // une pose qui fermerait la DERNIÈRE sortie ouverte du donjon est refusée (sauf la porte du boss)
+    if (ok && (lien || (libre && voisin)) && tuile.t !== 'boss' && sfSortiesApres(r, c, o) === 0) ok = false;
     if (ok && (lien || (libre && voisin))) out.push({ x:c.x, y:c.y });
   })); return out;
+}
+// combien de sorties ouvertes (vers une case vide de l'île) resteraient si on posait une tuile de sorties o sur la case c
+function sfSortiesApres(r, c, o) {
+  let n = 0; const vide = (x, y) => { const v = caseA(r, x, y); return v && !v.pose && !(x === c.x && y === c.y); };
+  r.ile.forEach(l => l.forEach(t => { if (!t.pose) return; SF_DIR.forEach(([dx, dy], i) => { if (t.ouv[i] && vide(t.x + dx, t.y + dy)) n++; }); }));
+  SF_DIR.forEach(([dx, dy], i) => { if (o[i] && vide(c.x + dx, c.y + dy)) n++; }); return n;
 }
 // une sortie ouverte reste-t-elle quelque part ? (sinon, éboulement : la prochaine tuile se pose librement)
 const sfBloque = r => !r.sansfin.offre.some(t => [0, 1, 2, 3].some(n => sfPlaces(r, t, n).length));
