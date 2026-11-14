@@ -54,7 +54,7 @@ const ESCALES2 = [
   { n:'Le Nid du Titan', e:'👑', cle:'nid', type:'boss' },
 ];
 // les monstres de chaque escale (une rangée devant, une derrière) ; DUR_EXP règle la difficulté au simulateur
-const DUR_EXP = [1.4, 1.3, 1.6, 1.3, 2, 2.15]; // réglé au simulateur le 14/11 (avec les ordres du capitaine ; avant : 1.1, 1, 1.2, 1, 1.5, 1.55)
+const DUR_EXP = [1.35, 1.25, 1.55, 1.25, 1.9, 2.05]; // réglé au simulateur le 14/11 (avec les ordres du capitaine ; avant : 1.1, 1, 1.2, 1, 1.5, 1.55)
 const MONSTRES_EXP = [
   { av:[['Gobelin', 3, 7], ['Gobelin chef', 3, 9]], ar:[['Gobelin lanceur', 2, 5, 'tireur']] },
   null,
@@ -189,7 +189,8 @@ function combatExp(campJ, campE, R) {
     u.mort = true; ev.push({ t:'mort', id:u.id });
   };
   // 14/11 (choix de l'utilisateur, comme dans les autobattlers) : les Soutiens frappent aussi depuis derrière, en plus de leur pouvoir
-  const peutFrapper = u => u.rang === 'av' || u.tireur || u.role === 'capitaine' || u.role === 'soutien';
+  // 14/11 (l'utilisateur : « on ne bloque pas le joueur, il place qui il veut où il veut ») : tout le monde frappe ; une Lame ou un Rempart de derrière frappe à moitié
+  const peutFrapper = u => true;
   for (let round = 1; round <= 25; round++) {
     if (!vivants(J).length || !vivants(E).length) break;
     ev.push({ t:'round', n:round });
@@ -211,7 +212,7 @@ function combatExp(campJ, campE, R) {
         if (u.coupSur && !u.coupSurFait) { u.coupSurFait = true; dg += 3; txt += ' + coup sûr'; }
         dg += u.a - 3; de = ds; if (u.rang === 'ar') { dg = Math.ceil(dg / 2); txt += ' (de derrière : moitié)'; }
       } else {
-        de = 1 + Math.floor(R() * 6); if (u.coupSur && !u.coupSurFait) { u.coupSurFait = true; de = 6; } dg = de === 6 ? u.a * 2 : de === 1 ? 0 : u.a; txt = de === 6 ? 'critique' : de === 1 ? 'raté' : '';
+        de = 1 + Math.floor(R() * 6); if (u.coupSur && !u.coupSurFait) { u.coupSurFait = true; de = 6; } dg = de === 6 ? u.a * 2 : de === 1 ? 0 : u.a; txt = de === 6 ? 'critique' : de === 1 ? 'raté' : ''; if (dg > 0 && u.rang === 'ar' && !u.tireur && u.role !== 'soutien') { dg = Math.ceil(dg / 2); txt += (txt ? ' · ' : '') + 'de derrière : moitié'; }
       }
       if (A.cor && round === 1 && dg > 0) dg += 1;
       if (u.embuscade && !u.embuscadeFaite && dg > 0) { dg *= 2; u.embuscadeFaite = true; txt = 'Embuscade !'; }
