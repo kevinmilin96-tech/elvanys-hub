@@ -71,6 +71,11 @@
   .choixh button.or { border-color:var(--or); color:var(--or); } .choixh button:disabled { opacity:.4; }
   .choixv button { display:block; width:100%; text-align:left; background:#1d1b3a; color:#fff; border:2px solid #4b4580; border-radius:12px; padding:9px 11px; margin:6px 0; }
   .choixv button:disabled { opacity:.4; } .choixv small { display:block; color:var(--doux); }
+  .slot { background:#1d1b3a; border:2px solid #4b4580; border-radius:14px; padding:8px 10px; margin:8px 0; }
+  .slot.vide { text-align:center; border-style:dashed; } .slot.vide p { color:var(--doux); margin:4px 0 8px; } .slot.vide button { background:#1d1b3a; color:var(--or); border:2px solid var(--or); border-radius:14px; padding:8px 18px; } .slot.vide button small { color:var(--doux); }
+  .slot .sn { color:var(--or); font-weight:bold; font-size:.85em; margin-bottom:4px; }
+  .slot .sl { display:flex; gap:10px; align-items:center; font-size:.9em; line-height:1.5; } .slot .sl img { width:56px; height:56px; border-radius:50%; object-fit:cover; border:2px solid var(--or); flex:none; }
+  .slot .choixh { margin:6px 0 0; } .slot small { color:var(--doux); }
   .heros6 { display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; margin:10px 0; }
   .heros6 button { background:#1d1b3a; color:#fff; border:2px solid #4b4580; border-radius:12px; padding:6px; font-size:.85em; }
   .heros6 img { width:100%; aspect-ratio:1; border-radius:9px; object-fit:cover; display:block; margin-bottom:4px; }
@@ -107,12 +112,12 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261114-080112"></script>
-<script src="musique.js?v=20261114-080112"></script>
-<script src="donnees.js?v=20261114-080112"></script>
-<script src="odyssee.js?v=20261114-080112"></script>
-<script src="pantheon.js?v=20261114-080112"></script>
-<script src="chronique.js?v=20261114-080112"></script>
+<script src="cartes.js?v=20261114-092559"></script>
+<script src="musique.js?v=20261114-092559"></script>
+<script src="donnees.js?v=20261114-092559"></script>
+<script src="odyssee.js?v=20261114-092559"></script>
+<script src="pantheon.js?v=20261114-092559"></script>
+<script src="chronique.js?v=20261114-092559"></script>
 <script>
 // le moteur du Duel n'est pas chargé ici : les cartes de l'Odyssée appellent degats/soin seulement en combat (dans duel.html)
 const log = () => {}, degats = () => {}, soin = () => {}, altere = () => {}, invoque = () => {}, adv = () => ({}), fin = () => {};
@@ -141,9 +146,35 @@ const CORBIN_GIVRE = {
   boss_vaincu:['Elle fond ! Elle FOND ! Je savais que la chaleur de mon amitié suffirait.', 'L’île dégèle. Mes coussinets aussi. Miaou.'],
   vivres_bas:['La lanterne baisse, et ici le noir est glacé. Je déteste deux fois plus.', 'Plus d’huile, plus de chaleur. On se dépêche ?'],
 };
+// 14/11 : 3 EMPLACEMENTS de sauvegarde (demande de l'utilisateur) : continuer, recommencer ou effacer chaque partie.
+// On revient seul dans la partie seulement au retour d'un combat ; sinon l'écran des emplacements s'ouvre.
+function reprendre(r) { R = r; dejaDessine = new Set(); R.ile.flat().forEach(c => { if (c.vu) dejaDessine.add(c.x + ',' + c.y); }); if (R.combat && !R.combat.resultat) { location.href = 'duel.html?odyssee=1'; return; } if (R.combat && R.combat.resultat) { dessine(); apresCombat(); return; } dessine(); }
+const ilDYa = t => { if (!t) return ''; const m = Math.round((Date.now() - t) / 60000); return m < 2 ? 'à l’instant' : m < 60 ? `il y a ${m} min` : m < 1440 ? `il y a ${Math.round(m / 60)} h` : `il y a ${Math.round(m / 1440)} jour${m >= 2880 ? 's' : ''}`; };
+function emplacements() {
+  document.body.classList.remove('givre', 'abime');
+  const cartes = Array.from({ length:ODY_SLOTS }, (_, i) => {
+    const n = i + 1, r = lireSlot(n);
+    if (!r) return `<div class="slot vide"><div class="sn">Emplacement ${n}</div><p>Vide</p><button class="or" onclick="choisirSlot(${n});ecran()">✨ Nouvelle Odyssée<br><small>${ILES[ACTE_URL].court}</small></button></div>`;
+    const I = ILES[r.acte || 'brulees'] || ILES.brulees, vues = r.ile.flat().filter(c => c.visite).length;
+    return `<div class="slot"><div class="sn">Emplacement ${n}</div><div class="sl"><img src="${IMG(r.heros)}" alt=""><div><b>${HEROS[r.heros].nom}</b> · ${I.court}${r.asc ? ` · ⛰ ${r.asc}` : ''}<br><span class="p pv">❤ ${r.pv} / ${r.pvMax}</span><span class="p">🔮 ${r.fragments}/2</span><span class="p">🗺 ${vues} case${vues > 1 ? 's' : ''}</span><br><small>Joué ${ilDYa(r.maj || r.debut)}</small></div></div>
+    <div class="choixh"><button class="or" onclick="choisirSlot(${n});reprendre(lireSlot(${n}))">▶ Continuer</button></div>
+    <div class="choixh"><button onclick="recommencer(${n})">🔄 Recommencer</button><button onclick="effacer(${n})">🗑 Effacer</button></div></div>`;
+  }).join('');
+  document.getElementById('app').innerHTML = `<h1>🏰 L’Odyssée</h1><p style="text-align:center;color:var(--doux);font-size:.9em">Trois emplacements pour trois parties. Continue une partie, ou recommence-la de zéro.</p>${cartes}
+  <div class="choixh"><button onclick="records()">🏆 Mes Odyssées (${lireRecords().length})</button><button onclick="collection()">📚 Ma collection (${lireCollection().length})</button></div>
+  <div class="choixh"><button onclick="location.href='menu.html'">⌂ Menu</button></div>`;
+}
+function recommencer(n) { const r = lireSlot(n); fenetre(`<h2>🔄 Recommencer ?</h2><p>La partie de <b>${HEROS[r.heros].nom}</b> (emplacement ${n}) sera effacée et tu choisiras un héros pour une île neuve. Elle ne compte pas comme une défaite. Les cartes déjà gagnées restent dans ta collection.</p><div class="choixh"><button class="or" onclick="effacerSlot(${n});choisirSlot(${n});fermer();ecran()">Oui, recommencer</button><button onclick="fermer()">Non</button></div>`); }
+function effacer(n) { const r = lireSlot(n); fenetre(`<h2>🗑 Effacer ?</h2><p>La partie de <b>${HEROS[r.heros].nom}</b> (emplacement ${n}) sera effacée pour de bon. Elle ne compte pas comme une défaite.</p><div class="choixh"><button onclick="effacerSlot(${n});fermer();emplacements()">Oui, effacer</button><button class="or" onclick="fermer()">Non</button></div>`); }
 function accueil() {
+  const r = lireOdyssee();
+  if (r && r.combat) { reprendre(r); return; }
+  emplacements();
+}
+// le choix du héros pour l'emplacement actif (vide)
+function ecran() {
   const r = lireOdyssee(), rec = lireRecords(), col = lireCollection();
-  if (r) { R = r; dejaDessine = new Set(); R.ile.flat().forEach(c => { if (c.vu) dejaDessine.add(c.x + ',' + c.y); }); if (R.combat && !R.combat.resultat) { location.href = 'duel.html?odyssee=1'; return; } if (R.combat && R.combat.resultat) { dessine(); apresCombat(); return; } dessine(); return; }
+  if (r) { reprendre(r); return; }
   document.body.classList.toggle('givre', ACTE_URL === 'givre'); document.body.classList.toggle('abime', ACTE_URL === 'abime');
   if (ACTE_URL === 'abime' && !actesFaits().givre && !Q.get('essai')) {
     document.getElementById('app').innerHTML = `<h1>🌀 L’Odyssée · l’Abîme du Vide</h1><p style="text-align:center">🔒 L’acte III s’ouvre quand tu as vaincu <b>la Vouivre des glaces</b> (acte II, l’île du Givre).</p>
@@ -153,12 +184,12 @@ function accueil() {
     <div class="choixh"><button onclick="location.href='odyssee.html'">🌋 Aller aux Terres brûlées</button><button onclick="location.href='odyssee.html?ile=givre&essai=1'">🧪 L’essayer quand même (prototype)</button></div><div class="choixh"><button onclick="location.href='menu.html#odyssee'">⌂ Menu</button></div>`; return; }
   document.getElementById('app').innerHTML = `<h1>${{ givre:'❄️ L’Odyssée · l’île du Givre', abime:'🌀 L’Odyssée · l’Abîme du Vide' }[ACTE_URL] || '🏰 L’Odyssée · les Terres brûlées'}</h1>
   <p style="text-align:center;color:var(--doux);font-size:.9em">Une île tirée au sort, à explorer case par case. Le combat, c’est le Duel. Tes PV ne remontent pas tout seuls : sources, potions et marchand. Une lanterne de 20 doses d’huile pour fouiller. Deux fragments de rune ouvrent la porte ${{ givre:"de la Vouivre des glaces. Ici, le Givre ❄ s’accumule sur toi : à trois, tu es gelé", abime:"du Roi sans visage. Ici, la Corruption 🟣 s’accumule : à trois, le Vide te dévore (Silence) et nourrit l’ennemi" }[ACTE_URL] || "du Titan de feu"}.</p>
-  ${ascMax(ACTE_URL) ? `<p style="text-align:center;font-size:.9em">⛰ <b style="color:var(--or)">Ascension</b> : ${Array.from({ length:ascMax(ACTE_URL) + 1 }, (_, n) => `<button class="asc ${ASC_CHOIX === n ? 'on' : ''}" onclick="ASC_CHOIX=${n};accueil()">${n || 'normal'}</button>`).join(' ')}${ASC_CHOIX ? `<br><small style="color:var(--doux)">${Array.from({ length:ASC_CHOIX }, (_, i) => ASCENSION[i + 1].n).join(' · ')}</small>` : ''}</p>` : ''}
+  ${ascMax(ACTE_URL) ? `<p style="text-align:center;font-size:.9em">⛰ <b style="color:var(--or)">Ascension</b> : ${Array.from({ length:ascMax(ACTE_URL) + 1 }, (_, n) => `<button class="asc ${ASC_CHOIX === n ? 'on' : ''}" onclick="ASC_CHOIX=${n};ecran()">${n || 'normal'}</button>`).join(' ')}${ASC_CHOIX ? `<br><small style="color:var(--doux)">${Array.from({ length:ASC_CHOIX }, (_, i) => ASCENSION[i + 1].n).join(' · ')}</small>` : ''}</p>` : ''}
   <p style="text-align:center"><b style="color:var(--or)">Choisis ton héros</b></p>
   <div class="heros6">${ORDRE.map(id => id === 'zephine' && !ZOK() ? `<button onclick="location.href='duel.html?tuto=1'" style="opacity:.55"><img src="${IMG(id)}" alt="" style="filter:grayscale(1)">🔒 ${HEROS[id].nom}<br><small style="color:var(--doux)">Fais le tutoriel</small></button>` : `<button onclick="commence('${id}')"><img src="${IMG(id)}" alt="">${HEROS[id].nom}<br><small style="color:var(--doux)">${Math.round(HEROS[id].pv * (ODY_PV[id] || 1.8))} PV en Odyssée</small></button>`).join('')}</div>
   <p style="text-align:center;font-size:.86em"><label><input type="checkbox" id="jour"> 🗓 L’île du jour (la même île pour tout le monde aujourd’hui)</label></p>
   <div class="choixh"><button onclick="records()">🏆 Mes Odyssées (${rec.length})</button><button onclick="collection()">📚 Ma collection (${col.length})</button></div>
-  <div class="choixh"><button onclick="location.href='odyssee-regles.html'">📖 Les règles complètes</button><button onclick="location.href='menu.html'">⌂ Menu</button></div>`;
+  <div class="choixh"><button onclick="location.href='odyssee-regles.html'">📖 Les règles complètes</button><button onclick="emplacements()">← Emplacements</button></div>`;
 }
 function commence(id) {
   const jour = document.getElementById('jour') && document.getElementById('jour').checked;
@@ -478,13 +509,13 @@ function reglesCourtes() { fenetre(`<h2>❓ L’Odyssée en bref</h2><ul style="
   <li>Les murs fissurés 🧱 s’ouvrent avec une bombe ou 3 doses d’huile : une relique derrière.</li>
   <li>Si tu tombes, la partie s’arrête ; tu gardes les cartes rencontrées dans ta collection (éditeur de deck de la Tour des héros).</li></ul>
   <div class="choixh"><button onclick="location.href='odyssee-regles.html'">📖 Règles complètes</button><button onclick="fermer()">Fermer</button></div>`); }
-function abandon() { fenetre('<h2>⏏ Quitter</h2><p>Ton Odyssée est gardée sur ce téléphone : tu la reprendras là où tu es. Ou tu peux l’abandonner (comptée comme perdue).</p><div class="choixh"><button onclick="location.href=\'menu.html\'">⌂ Menu, je reprendrai</button><button onclick="finPartie(false, \'Abandon.\')">💀 Abandonner</button></div>'); }
+function abandon() { fenetre(`<h2>⏏ Quitter</h2><p>Ton Odyssée est gardée dans l’emplacement ${slotActif()} : tu la reprendras là où tu es. Ou tu peux l’abandonner (comptée comme perdue).</p><div class="choixh"><button onclick="fermer();emplacements()">💾 Emplacements</button><button onclick="location.href='menu.html'">⌂ Menu, je reprendrai</button><button onclick="finPartie(false, 'Abandon.')">💀 Abandonner</button></div>`); }
 function finPartie(gagne, texte) {
   const nom = HEROS[R.heros].nom, C = CH(), f = finOdysseeRun(R, gagne); R = null;
   chronique([gagne ? C.victoire(nom) : C.defaite(nom), f.premiereFin ? CHRON_FIN(nom) : null], () => fenetre(`<h2>${gagne ? '🏆 L’île est libre !' : '💀 Fin de l’Odyssée'}</h2><p>${texte}</p>${f.premiereFin ? '<p style="text-align:center;font-size:1.1em">🌟 Tu reçois le titre <b style="color:var(--or)">Héros de l’Odyssée</b> !</p>' : ''}${f.ascNouveau ? `<p style="text-align:center">⛰ <b>Ascension ${f.ascNouveau}</b> débloquée sur cette île : ${ASCENSION[f.ascNouveau].n}.</p>` : ''}${f.inscrit === 'nouveau' ? `<p style="text-align:center">🏛 <b>${nom}</b> est inscrit au <b>Panthéon des Légendes</b> : titre « Briseur de Néant » et +5 PV pour ses prochaines Odyssées. Le Roi sans visage t’attend maintenant dans l’Arène.</p>` : ''}${f.briseMiroir ? `<p style="text-align:center">🪞 <b>Défi Brise-Miroir réussi !</b> Choisis une récompense pour toujours :</p><div class="choixv">${recompensesRestantes().map(k => `<button onclick="choisirRecompense('${k}');this.parentNode.innerHTML='✅ ${RECOMPENSES[k].n} : ${RECOMPENSES[k].d.replace(/'/g, '’')}'">${RECOMPENSES[k].e} <b>${RECOMPENSES[k].n}</b><small>${RECOMPENSES[k].d}</small></button>`).join('')}</div>` : ''}<div class="score">${f.score} points</div>
   <table><tr><td>Cases explorées</td><td>${f.cases}</td></tr><tr><td>Combats gagnés</td><td>${f.victoires} / ${f.combats}</td></tr><tr><td>Tours joués</td><td>${f.tours}</td></tr><tr><td>Défis réussis</td><td>${f.defis}</td></tr><tr><td>Or restant</td><td>${f.or}</td></tr><tr><td>Durée</td><td>${f.duree} min</td></tr></table>
   <p>${f.ajoutees ? `📚 <b>${f.ajoutees}</b> carte${f.ajoutees > 1 ? 's' : ''} rejoi${f.ajoutees > 1 ? 'gnent' : 'nt'} ta collection : ${f.nouvelles.map(k => CARTES[k].n).join(', ')}.` : 'Aucune carte nouvelle pour la collection cette fois.'}</p>
-  <div class="choixh"><button class="or" onclick="fermer();accueil()">Nouvelle Odyssée</button><button onclick="location.href='menu.html'">⌂ Menu</button></div>`));
+  <div class="choixh"><button class="or" onclick="fermer();emplacements()">💾 Emplacements</button><button onclick="location.href='menu.html'">⌂ Menu</button></div>`));
 }
 function records() { const l = lireRecords(); fenetre(`<h2>🏆 Mes Odyssées (${l.length})</h2>${l.length ? `<table>${l.map(r => `<tr><td>${r.gagne ? '🏆' : '💀'} ${new Date(r.quand).toLocaleDateString('fr-FR')} · ${HEROS[r.heros].nom} · ${r.cases} cases, ${r.victoires} victoires, ${r.duree} min</td><td>${r.score}</td></tr>`).join('')}</table>` : '<p>Aucune Odyssée finie.</p>'}<div class="choixh"><button onclick="fermer()">Fermer</button></div>`); }
 function collection() { const l = lireCollection(); fenetre(`<h2>📚 Ma collection (${l.length})</h2><p style="font-size:.86em;color:var(--doux)">Les cartes rencontrées en Odyssée. Elles s’ajoutent à l’éditeur de deck de la Tour des héros.</p><div class="cartes3">${l.map(k => carteHTML(k)).join('') || '<i>Rien encore : pars en Odyssée !</i>'}</div><div class="choixh"><button onclick="fermer()">Fermer</button></div>`); }

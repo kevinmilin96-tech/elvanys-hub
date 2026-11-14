@@ -523,7 +523,8 @@ function genereIle(graine, R0, acte) {
 }
 
 // ----------------------------------------------------------------------------------------------- la partie (sauvée sur le téléphone à chaque case)
-const ODY_CLE = 'guilde-odyssee', COLLECTION_CLE = 'guilde-collection', RECORDS_CLE = 'guilde-odyssee-records';
+// 14/11 (demande de l'utilisateur) : 3 EMPLACEMENTS de sauvegarde. L'emplacement 1 garde l'ancienne clé (aucune partie perdue).
+const ODY_CLE = 'guilde-odyssee', ODY_SLOTS = 3, ODY_SLOT_CLE = 'guilde-odyssee-emplacement', COLLECTION_CLE = 'guilde-collection', RECORDS_CLE = 'guilde-odyssee-records';
 const VIVRES_DEPART = 20, OR_DEPART = 30;
 const DEFIS = [
   { id:'expeditif', n:'Expéditif', d:'Vaincre en 4 tours ou moins.' },
@@ -533,8 +534,13 @@ const DEFIS = [
   { id:'demonstration', n:'Démonstration', d:'Achever l’ennemi avec ton Ultime.' },
   { id:'stratege', n:'Stratège', d:'Réussir une Technique de 4 dés ou plus.' },
 ];
-function lireOdyssee() { try { return JSON.parse(localStorage.getItem(ODY_CLE) || 'null'); } catch (e) { return null; } }
-function ecrireOdyssee(r) { if (r) localStorage.setItem(ODY_CLE, JSON.stringify(r)); else localStorage.removeItem(ODY_CLE); }
+const odyCle = n => n > 1 ? ODY_CLE + '-' + n : ODY_CLE;
+function slotActif() { const n = +(typeof localStorage !== 'undefined' && localStorage.getItem(ODY_SLOT_CLE)) || 1; return n >= 1 && n <= ODY_SLOTS ? n : 1; }
+function choisirSlot(n) { localStorage.setItem(ODY_SLOT_CLE, String(n)); }
+function lireSlot(n) { try { return JSON.parse(localStorage.getItem(odyCle(n)) || 'null'); } catch (e) { return null; } }
+function effacerSlot(n) { localStorage.removeItem(odyCle(n)); }
+function lireOdyssee() { return lireSlot(slotActif()); }
+function ecrireOdyssee(r) { const k = odyCle(slotActif()); if (r) { r.maj = Date.now(); localStorage.setItem(k, JSON.stringify(r)); } else localStorage.removeItem(k); }
 function lireCollection() { try { return JSON.parse(localStorage.getItem(COLLECTION_CLE) || '[]'); } catch (e) { return []; } }
 function ajouteCollection(cles) { const c = lireCollection(); let n = 0; cles.forEach(k => { if (!c.includes(k) && CARTES[k] && rarete(k) !== 'm') { c.push(k); n++; } }); localStorage.setItem(COLLECTION_CLE, JSON.stringify(c)); return n; }
 function lireRecords() { try { return JSON.parse(localStorage.getItem(RECORDS_CLE) || '[]'); } catch (e) { return []; } }
