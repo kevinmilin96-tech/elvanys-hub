@@ -662,7 +662,7 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261114-144954';
+const VERSION = '20261114-145612';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -681,11 +681,11 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261114-144954"></script>
-<script src="musique.js?v=20261114-144954"></script>
-<script src="donnees.js?v=20261114-144954"></script>
-<script src="odyssee.js?v=20261114-144954"></script>
-<script src="chronique.js?v=20261114-144954"></script>
+<script src="cartes.js?v=20261114-145612"></script>
+<script src="musique.js?v=20261114-145612"></script>
+<script src="donnees.js?v=20261114-145612"></script>
+<script src="odyssee.js?v=20261114-145612"></script>
+<script src="chronique.js?v=20261114-145612"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -742,7 +742,7 @@ function soinCible(k, n) { if (k.u) { const a = k.u.v; k.u.v = Math.min(k.u.vmax
 function degats(k, n, ignore) {
   if (S.fini || n <= 0) return;
   if (S.ody) { // Odyssée : reliques du héros
-    if (S.acteur === S.J && k.J === S.O && S.J.reliques.includes('brassards')) n += 2;
+    if (S.acteur === S.J && k.J === S.O && S.J.reliques.includes('brassards')) { n += 2; log('💪 Brassards de la Guilde : +2 dégâts.'); }
     if (k.J === S.J && !k.u && S.J.reliques.includes('armure')) n = Math.max(0, n - 1);
     if (n <= 0) return;
   }
@@ -1376,9 +1376,12 @@ function prevision(J, quoi, vs, k) {
   const def = defDe(J, quoi) || CARTES[quoi] || {}; let n = null, exact = true;
   if (quoi === 'frappe' && def.dg) n = def.dg(vs);
   else if (quoi === 'technique') n = techDg(vs);
+  else if (/égaux à leur somme/.test(def.d || '')) n = vs.reduce((x, y) => x + y, 0); // 14/11 : le Coup d'enclume de Maëlle (somme des dés) est annoncé
   else { const m = (def.d || '').match(/(\d+)\s*dégâts?/); if (m) { n = +m[1]; exact = false; } }
-  if (n !== null && S.ody && J === S.J && k.J === S.O && J.reliques && J.reliques.includes('brassards')) n += 2;
-  const lignes = []; let vie = n;
+  const lignes = [];
+  // 14/11 (l'utilisateur : « trois 2 = 6, elle a infligé 8, pourquoi ? ») : le bonus des Brassards est DIT
+  if (n !== null && S.ody && J === S.J && k.J === S.O && J.reliques && J.reliques.includes('brassards')) { lignes.push(`💪 Brassards de la Guilde : ${n} + 2`); n += 2; }
+  let vie = n;
   if (n !== null && k.u) { if (k.u.bouclier) { lignes.push(`🛡 Son bouclier absorbe d’abord ${Math.min(k.u.bouclier, n)}`); vie = Math.max(0, n - k.u.bouclier); } }
   else if (n !== null) { const C = k.J; if (C.esquive) { lignes.push('💨 Esquive : dégâts divisés par 2'); vie = Math.floor(vie / 2); }
     const p = (C.gardeB || 0) + (C.bouclier || 0); if (p) { lignes.push(`🛡 Sa protection (${p}) absorbe d’abord ${Math.min(p, vie)}`); vie = Math.max(0, vie - p); } }
@@ -2129,14 +2132,14 @@ async function joueFX() {
 // toucher l'écran pendant les animations les accélère
 document.addEventListener('pointerdown', () => { if (fxOn && !(S && S.tuto)) fxVite = .5; }, true); // 14/11 : plus d'accélération dans le tutoriel
 </script>
-<script src="profil.js?v=20261114-144954"></script>
-<script src="pantheon.js?v=20261114-144954"></script>
-<script src="tuto.js?v=20261114-144954"></script>
-<script src="deux.js?v=20261114-144954"></script>
-<script src="invasion.js?v=20261114-144954"></script>
-<script src="enigme-table.js?v=20261114-144954"></script>
-<script src="forge.js?v=20261114-144954"></script>
-<script src="semaine.js?v=20261114-144954"></script>
-<script src="enigme.js?v=20261114-144954"></script>
+<script src="profil.js?v=20261114-145612"></script>
+<script src="pantheon.js?v=20261114-145612"></script>
+<script src="tuto.js?v=20261114-145612"></script>
+<script src="deux.js?v=20261114-145612"></script>
+<script src="invasion.js?v=20261114-145612"></script>
+<script src="enigme-table.js?v=20261114-145612"></script>
+<script src="forge.js?v=20261114-145612"></script>
+<script src="semaine.js?v=20261114-145612"></script>
+<script src="enigme.js?v=20261114-145612"></script>
 </body>
 </html>
