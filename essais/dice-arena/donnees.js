@@ -112,7 +112,7 @@ const HEROS = {
     pouvoir:{ n:'Coup d’enclume', txt:'3 dés identiques', d:'Dégâts égaux à leur somme.', cond:vs => vs.length === 3 && egaux(vs), cible:'ennemi', f:(J, vs, k) => degats(k, somme(vs)) },
     ultime:{ n:'Le Grand Martelage', txt:'3 dés de 4 ou plus', d:'16 dégâts à une cible ; tes unités gagnent +2 attaque.', cond:vs => vs.length === 3 && vs.every(v => v >= 4), cible:'ennemi',
       f:(J, vs, k) => { degats(k, 16); J.front.forEach(u => u.a += 2); } } },
-  aldric: { hist:'Dernier chevalier de la Lanterne, il garde la porte de la Guilde jour et nuit. On dit que sa flamme ne s’est jamais éteinte, même sous l’orage.', cit:'« Tant que la flamme brille, personne ne passe. »', role:'Protège : murs d’unités Barrière, boucliers, soins. Aime les paires.', papier:'Repris de Gilgamesh : Parade de fer, Mur de lumière, le jeton de Pureté et l’Ultime qui sonne l’adversaire.', nom:'Sire Aldric', titre:'le chevalier-lanterne', c:'#ffd27a', pv:44,
+  aldric: { hist:'Dernier chevalier de la Lanterne, il garde la porte de la Guilde jour et nuit. On dit que sa flamme ne s’est jamais éteinte, même sous l’orage.', cit:'« Tant que la flamme brille, personne ne passe. »', role:'Protège : murs d’unités Barrière, boucliers, soins. Aime les paires.', papier:'Repris de Gilgamesh : Parade de fer, Mur de lumière, le jeton de Pureté et l’Ultime qui sonne l’adversaire.', nom:'Sire Aldric', titre:'le chevalier-lanterne', c:'#ffd27a', pv:47,
     deck:['ecuyer', 'ecuyer', 'lanterne', 'serment', 'serment', 'estocade', 'estocade', 'gardien', 'gardien', 'banniere', 'contre', 'releve'],
     passif:'Pureté : poser deux 6 dans le même tour donne un jeton (2 au plus) qui annule la prochaine altération.',
     garde:{ n:'Parade de fer', txt:'1 ou 2 dés', d:'Une paire : Bouclier = valeur × 2. Sinon : le plus haut dé.', cond:vs => vs.length <= 2, val:vs => vs.length === 2 && egaux(vs) ? vs[0] * 2 : Math.max(...vs),
@@ -148,7 +148,7 @@ const HEROS = {
       f:J => { const b = J.pv < adv(J).pv ? 4 : 2; degats({ J:adv(J) }, 10); J.front.forEach(u => { u.tmp = (u.tmp || 0) + b; u.pret = true; }); log(`Chant de guerre : +${b} attaque à tes unités.`); } },
     ultime:{ n:'Le Grand Souffle', txt:'3 dés tous pairs ou tous impairs', d:'14 dégâts au héros adverse et 4 à chacune de ses unités.', cond:vs => vs.length === 3 && (vs.every(pair) || vs.every(v => !pair(v))),
       f:J => { const D = adv(J); [...D.front].forEach(u => degats({ J:D, u }, 4)); degats({ J:D }, 14); } } },
-  zephine: { hist:'Alchimiste un peu folle, elle transforme tout ce qu’elle touche : le plomb, les potions… et parfois même ses propres dés.', cit:'« Rien ne se perd, tout se transforme. »', role:'Transforme les dés et empoisonne. Aime tous les dés, à condition de les changer.', papier:'Repris de Blanche et de Fez : le Handicap de Vol acrobatique devient la Brume aveuglante ; l’esquive et le camouflage deviennent la Fumée.', nom:'Zéphine', titre:'l’alchimiste', c:'#ff4040', pv:41,
+  zephine: { hist:'Alchimiste un peu folle, elle transforme tout ce qu’elle touche : le plomb, les potions… et parfois même ses propres dés.', cit:'« Rien ne se perd, tout se transforme. »', role:'Transforme les dés et empoisonne. Aime tous les dés, à condition de les changer.', papier:'Repris de Blanche et de Fez : le Handicap de Vol acrobatique devient la Brume aveuglante ; l’esquive et le camouflage deviennent la Fumée.', nom:'Zéphine', titre:'l’alchimiste', c:'#ff4040', pv:44,
     deck:['fiole', 'fiole', 'soufre', 'soufre', 'distil', 'precipite', 'homoncule', 'homoncule', 'brume', 'catalyseur', 'paillasse', 'soufre'],
     passif:'Transmutation : une fois par tour, gratuitement, retourne un dé sur sa face opposée (1↔6, 2↔5, 3↔4). Et son +1 / −1 ne coûte qu’1 PC au lieu de 2.',
     action:{ n:'Transmuter', txt:'1 dé, 1 fois par tour', d:'Retourne ce dé sur sa face opposée.' },
@@ -275,8 +275,8 @@ Object.assign(CARTES, {
   gu_tour:    { n:'Tour de guet', t:'u', c:2, txt:'2 dés pairs', d:'Unité 2 / 8, Barrière.', cond:vs => vs.length === 2 && vs.every(pair), u:{ n:'Tour de guet', a:2, v:8, barriere:true } },
 });
 // le deck de 30 : 3 cartes neuves de plus par héros, 6 de plus pour la Guilde
-// 14/11 nuit, après le simulateur (Gorm 60 %, Aldric et Zéphine 44 %) : Géant, Charge de cavalerie et Mercure sortent du deck de base (à trouver)
-const NEUVES_BASE = { maelle:['m_soufflet', 'm_rivets', 'm_automate'], aldric:['a_rempart', 'a_priere', 'a_paladin'], pip:['p_champi', 'p_hibou', 'p_ours'],
+// 14/11 nuit, après le simulateur (Gorm 60 %, Aldric et Zéphine 44 % ; puis Maëlle 57 % : Soufflet sorti ; Aldric 44 → 47 PV, Zéphine 41 → 44 PV) : Géant, Charge de cavalerie et Mercure sortent du deck de base (à trouver)
+const NEUVES_BASE = { maelle:['lame', 'm_rivets', 'm_automate'], aldric:['a_rempart', 'a_priere', 'a_paladin'], pip:['p_champi', 'p_hibou', 'p_ours'],
   oria:['o_fumee', 'o_dague', 'o_faucon'], gorm:['g_cornemuse', 'g_barde', 'cor'], zephine:['z_nuee', 'z_acide', 'z_golem'] };
 Object.entries(NEUVES_BASE).forEach(([h, l]) => { if (HEROS[h] && HEROS[h].deck.length < 15) HEROS[h].deck.push(...l); });
 if (!GUILDE.includes('gu_epee')) GUILDE.push('gu_epee', 'gu_milice', 'gu_pain', 'gu_carnet', 'gu_lance', 'gu_filet');
