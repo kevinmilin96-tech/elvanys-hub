@@ -26,7 +26,7 @@
   .cadreP { width:calc(var(--p) * 1.732); height:calc(var(--p) * 1.732); background:url('ui/cadre.webp?v=1') center/contain no-repeat; } /* 14/11 : le cadre est un élément à part (avant : collé au portrait) */
   .de { width:7cqw; height:7cqw; background:url('faces-zephine/face-5.webp') center/contain no-repeat; }
   .coeur { width:11cqw; height:10cqw; background:url('ui/coeur.webp?v=1') center/contain no-repeat; display:grid; place-items:center; font:bold 3.6cqw Georgia; text-shadow:0 1px 2px #000; }
-  .bouc { width:7.6cqw; height:8.6cqw; background:url('ui/bouclier.webp?v=1') center/contain no-repeat; display:grid; place-items:center; font:bold 3.2cqw Georgia; text-shadow:0 1px 2px #000; }
+  .bouc { width:7.6cqw; height:8.6cqw; background:url('ui/equip/icone-bouclier.webp?v=1') center/contain no-repeat; display:grid; place-items:center; font:bold 3.2cqw Georgia; text-shadow:0 1px 2px #000; }
   .coin { width:8cqw; height:8cqw; display:grid; place-items:center; font-size:6cqw; color:#7dffb0; text-shadow:0 0 3px #000; }
   .zone { position:absolute; border:2px dashed #7dffb0; background:#7dffb022; pointer-events:none; display:grid; place-items:center; font-size:3cqw; color:#e9ffe9; text-shadow:0 1px 2px #000; }
   .etq { padding:2px 6px; font-size:2.6cqw; color:#f6e7c1; text-shadow:0 1px 2px #000; text-align:center; white-space:nowrap; border:1px dashed #ffffff55; border-radius:6px; }
@@ -37,6 +37,7 @@
   .bas button { flex:1; border:none; border-radius:10px; padding:9px; font:bold 13px Georgia; background:#3a3570; color:#fff; }
   .bas button.ok { background:#f3c96b; color:#1d1626; }
   #msg { font-size:12px; color:#7dffb0; min-height:15px; text-align:center; }
+  .bouc.gardeP { background-image:url('ui/equip/icone-garde.webp?v=1'); } /* 14/11 nuit : la Garde (temporaire) a sa place à elle */
 </style>
 </head>
 <body>
@@ -71,10 +72,10 @@ const ELEMENTS = [
   ['pouvoir', 'med', 'ui/pouvoir.webp?v=2'], ['transmu', 'med', 'ui/transmu.webp?v=2'], ['equipe', 'med', 'ui/equipe.webp?v=2'],
   ['de_premier', 'de'], ['de_dernier', 'de'],
   ['portrait_haut', 'por', 'portraits/maelle.webp'], ['portrait_bas', 'por', 'portraits/zephine.webp'],
-  ['coeur_haut', 'coeur', '', '20'], ['bouclier_haut', 'bouc', '', '6'], ['etiquettes_haut', 'etq', '', '🔥 Braises 0/3<br>🂠 5 en main'],
+  ['coeur_haut', 'coeur', '', '20'], ['bouclier_haut', 'bouc', '', '6'], ['garde_haut', 'bouc gardeP', '', '4'], ['etiquettes_haut', 'etq', '', '🔥 Braises 0/3<br>🂠 5 en main'],
   ['main_haut_gauche', 'coin', '', '◤'], ['main_bas_droit', 'coin', '', '◢'],
   ...(PLATEAU ? [['champ_haut_gauche', 'coin', '', '◸'], ['champ_bas_droit', 'coin', '', '◿']] : []),
-  ['coeur_bas', 'coeur', '', '30'], ['bouclier_bas', 'bouc', '', '6'], ['etiquettes_bas', 'etq', '', '🂠 4 en main'],
+  ['coeur_bas', 'coeur', '', '30'], ['bouclier_bas', 'bouc', '', '6'], ['garde_bas', 'bouc gardeP', '', '4'], ['etiquettes_bas', 'etq', '', '🂠 4 en main'],
   // 14/11 nuit : les effets, un par un (6 par joueur) : chacun s'affiche « icône + nom » à sa place
   ...['haut', 'bas'].flatMap(c => ['⚔ Contre-attaque 6', '🔥 Fournaise', '🪤 Piège', '💨 Esquive', '🌿 Épines 2', '☠ Poison 3'].map((t, i) => [`effet_${c}_${i + 1}`, 'etq', '', `${i + 1} · ${t}`])),
 ];
@@ -93,6 +94,7 @@ function dessine() {
   if (!R.cadre_haut) R.cadre_haut = [...R.portrait_haut]; if (!R.cadre_bas) R.cadre_bas = [...R.portrait_bas];
   if (PLATEAU && !R.champ_haut_gauche) { R.champ_haut_gauche = [19, 22]; R.champ_bas_droit = [81, 67]; }
   if (!R.main_haut_gauche) { R.main_haut_gauche = [25, 83.5]; R.main_bas_droit = [82, 97.5]; }
+  for (const c of ['haut', 'bas']) if (!R['garde_' + c] && R['bouclier_' + c]) R['garde_' + c] = [+(R['bouclier_' + c][0] - 8).toFixed(2), R['bouclier_' + c][1]];
   // places des effets par défaut : sous (en haut) ou au-dessus (en bas) du cadre des étiquettes, sur deux colonnes
   for (const c of ['haut', 'bas']) for (let i = 0; i < 6; i++) { const k = `effet_${c}_${i + 1}`; if (R[k]) continue; const b = R['etiquettes_' + c] || [79.3, c === 'haut' ? 15.85 : 74.65], sens = c === 'haut' ? 1 : -1; R[k] = [+(b[0] + (i % 2 ? 7 : -7)).toFixed(2), +(b[1] + sens * (7 + Math.floor(i / 2) * 3.4)).toFixed(2)]; }
   pl.style.setProperty('--m', R.taille_medaillon + 'cqw'); pl.style.setProperty('--p', R.taille_portrait + 'cqw');
@@ -108,7 +110,7 @@ function dessine() {
   tm.value = R.taille_medaillon; vm.textContent = R.taille_medaillon; tp.value = R.taille_portrait; vp.textContent = R.taille_portrait;
 }
 let cour = null, choisi = null;
-const NOMS = { ...Object.fromEntries(['haut', 'bas'].flatMap(c => [1, 2, 3, 4, 5, 6].map(i => [`effet_${c}_${i}`, `effet ${i} du ${c}`]))), anneau_haut:'anneaux vie + Ultime du haut', anneau_bas:'anneaux vie + Ultime du bas', cadre_haut:'cadre du portrait du haut', cadre_bas:'cadre du portrait du bas', champ_haut_gauche:'coin haut gauche de la zone centrale', champ_bas_droit:'coin bas droit de la zone centrale', frappe:'Frappe', technique:'Technique', garde:'Garde', pouvoir:'Pouvoir', transmu:'Transmuter', equipe:'Équipe', de_premier:'1er dé', de_dernier:'dernier dé', portrait_haut:'portrait du haut', portrait_bas:'portrait du bas', coeur_haut:'cœur du haut', bouclier_haut:'bouclier du haut', etiquettes_haut:'étiquettes du haut', coeur_bas:'cœur du bas', bouclier_bas:'bouclier du bas', etiquettes_bas:'étiquettes du bas', main_haut_gauche:'coin haut-gauche des cartes', main_bas_droit:'coin bas-droit des cartes' };
+const NOMS = { garde_haut:'Garde du haut (bouclier temporaire, bulle bleue)', garde_bas:'Garde du bas (bouclier temporaire, bulle bleue)', ...Object.fromEntries(['haut', 'bas'].flatMap(c => [1, 2, 3, 4, 5, 6].map(i => [`effet_${c}_${i}`, `effet ${i} du ${c}`]))), anneau_haut:'anneaux vie + Ultime du haut', anneau_bas:'anneaux vie + Ultime du bas', cadre_haut:'cadre du portrait du haut', cadre_bas:'cadre du portrait du bas', champ_haut_gauche:'coin haut gauche de la zone centrale', champ_bas_droit:'coin bas droit de la zone centrale', frappe:'Frappe', technique:'Technique', garde:'Garde', pouvoir:'Pouvoir', transmu:'Transmuter', equipe:'Équipe', de_premier:'1er dé', de_dernier:'dernier dé', portrait_haut:'portrait du haut', portrait_bas:'portrait du bas', coeur_haut:'cœur du haut', bouclier_haut:'Bouclier du haut (permanent, écu doré)', etiquettes_haut:'étiquettes du haut', coeur_bas:'cœur du bas', bouclier_bas:'Bouclier du bas (permanent, écu doré)', etiquettes_bas:'étiquettes du bas', main_haut_gauche:'coin haut-gauche des cartes', main_bas_droit:'coin bas-droit des cartes' };
 function choisir(e) { document.querySelectorAll('.el.choisi').forEach(x => x.classList.remove('choisi')); choisi = e; e.classList.add('choisi'); choix.textContent = `Choisi : ${NOMS[e.dataset.k]} (${R[e.dataset.k].join(' ; ')}) · taille ${(R.tailles || {})[e.dataset.k] || 100} %`; }
 // flèches : 0,1 % de l'image par toucher
 // taille propre à l'élément choisi (en % de sa taille de départ), gardée dans R.tailles

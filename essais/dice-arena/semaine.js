@@ -62,6 +62,6 @@ if (typeof nouvellePartie === 'function') {
   window.partieSemaine = function () {
     SEMAINE_ACTIVE = true; const r = regleDeLaSemaine(), m = lesSceaux();
     accueil();
-    fenetre(`<h2>🗓️ Le Duel de la semaine</h2><p><b>${r.n}</b> : ${r.d}</p><p class="doux">La règle vaut pour toi ET pour l’ordinateur, jusqu’à dimanche soir. Gagne un duel pour le Sceau de la semaine${m[r.semaine] ? ' (déjà gagné ✅)' : ''}.</p><p style="font-style:italic">Moustache : « ${r.corbin} »</p><div class="choixh"><button onclick="fermer()">Choisir mon héros</button></div>`);
+    fenetre(`<h2>🗓️ Le Duel de la semaine</h2><p><b>${r.n}</b> : ${r.d}</p><p class="doux">La règle vaut pour toi ET pour l’ordinateur, jusqu’à dimanche soir. Gagne un duel pour le Sceau de la semaine${m[r.semaine] ? ' (déjà gagné ✅)' : ''}.</p><p style="font-style:italic">Moustache : « ${r.corbin} »</p><div class="choixh"><button onclick="accueil()">Choisir mon héros</button></div>`);
   };
 }

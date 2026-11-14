@@ -687,7 +687,7 @@
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
 // 14/11 : l'Odyssée sans fin a ses propres emplacements (odyssee.js lit SANSFIN)
 const SANSFIN = new URLSearchParams(location.search).get('sansfin') === '1', EPREUVE_PAGE = new URLSearchParams(location.search).get('epreuve') === '1', ODY_PAGE = EPREUVE_PAGE ? 'epreuves.html' : 'odyssee.html' + (SANSFIN ? '?sansfin=1' : '');
-const VERSION = '20261114-233654';
+const VERSION = '20261114-234148';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -706,16 +706,16 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261114-233654"></script>
-<script src="musique.js?v=20261114-233654"></script>
-<script src="rang.js?v=20261114-233654"></script>
-<script src="heros-etoiles.js?v=20261114-233654"></script>
-<script src="donnees.js?v=20261114-233654"></script>
-<script src="odyssee.js?v=20261114-233654"></script>
-<script src="bestiaire.js?v=20261114-233654"></script>
-<script src="aventure.js?v=20261114-233654"></script>
-<script src="odyssee-sansfin.js?v=20261114-233654"></script>
-<script src="chronique.js?v=20261114-233654"></script>
+<script src="cartes.js?v=20261114-234148"></script>
+<script src="musique.js?v=20261114-234148"></script>
+<script src="rang.js?v=20261114-234148"></script>
+<script src="heros-etoiles.js?v=20261114-234148"></script>
+<script src="donnees.js?v=20261114-234148"></script>
+<script src="odyssee.js?v=20261114-234148"></script>
+<script src="bestiaire.js?v=20261114-234148"></script>
+<script src="aventure.js?v=20261114-234148"></script>
+<script src="odyssee-sansfin.js?v=20261114-234148"></script>
+<script src="chronique.js?v=20261114-234148"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -1779,7 +1779,9 @@ function anneauSVG(pv, max, prot, jauge, pc, fait, avant, haut) {
   // 14/11 (l'utilisateur : « on ne voit pas mes PC à cause des cartes ») : les cristaux du joueur du bas passent EN HAUT de son anneau ; ceux de l'adversaire restent en bas
   // 14/11 nuit (l'utilisateur : « les PC à gauche et à droite, pas en haut sur l'icône du cadre ») : deux colonnes, une de chaque côté du portrait
   const n = Math.min(pc, 8); let gem = '';
-  for (let k = 0; k < n; k++) { const cote = k % 2 ? .75 : .25, nb = cote === .25 ? Math.ceil(n / 2) : Math.floor(n / 2), rang = Math.floor(k / 2), a = cote + (cote === .25 ? 1 : -1) * (rang - (nb - 1) / 2) * .062, x = C + 46 * Math.sin(a * 2 * Math.PI), y = C - 46 * Math.cos(a * 2 * Math.PI);
+  // puis (l'utilisateur) : dans l'ordre d'une horloge, 1 h, 11 h, 2 h, 10 h, 4 h, 8 h, 5 h, 7 h
+  const HEURES = [1, 11, 2, 10, 4, 8, 5, 7];
+  for (let k = 0; k < n; k++) { const a = HEURES[k] / 12, x = C + 46 * Math.sin(a * 2 * Math.PI), y = C - 46 * Math.cos(a * 2 * Math.PI);
     gem += `<image href="ui/cristal.webp?v=1" x="${(x - 4.2).toFixed(2)}" y="${(y - 4.2).toFixed(2)}" width="8.4" height="8.4"/>`; }
   return `<svg class="anneau" viewBox="0 0 100 100" aria-hidden="true">${g}${gem}</svg>`;
 }
@@ -1970,7 +1972,8 @@ function cssPlacement(ile, R) {
   const ic = ['frappe', 'technique', 'garde', 'pouvoir', 'transmu', 'equipe'].map((k, i) => { const mm = m * TT(k); return `${Q} .colG .r${i + 1} { left:calc(${R[k][0]}cqw - ${f(mm / 2)}cqw); top:calc(${R[k][1]}cqh - ${f(mm / 2)}cqw); width:${f(mm)}cqw; height:${f(mm)}cqw; }`; }).join('\n');
   const T = k => ((R.tailles || {})[k] || 100) / 100;
   // 14/11 : portrait et cadre séparés (chacun sa place et sa taille) ; les anneaux de vie et d'Ultime suivent le cadre
-  const cote = (id, por, etq, coeur, bouc, cad, kp, kc, ann, ka) => { const p = R.taille_portrait * T(kp), bl = por[0] - p / 2, pl = etq[0] - bl - 13.7, cs = R.taille_portrait * 1.732 * T(kc), c = cad || por, an = ann || c, tA = R.taille_portrait * 1.732 * (ann ? T(ka) : T(kc));
+  // 14/11 nuit : garde = place de la Garde (bouclier temporaire), à part du Bouclier
+  const cote = (id, por, etq, coeur, bouc, cad, kp, kc, ann, ka, garde) => { const p = R.taille_portrait * T(kp), bl = por[0] - p / 2, pl = etq[0] - bl - 13.7, cs = R.taille_portrait * 1.732 * T(kc), c = cad || por, an = ann || c, tA = R.taille_portrait * 1.732 * (ann ? T(ka) : T(kc));
     return `${P} #${id} { left:${f(bl)}cqw; top:calc(${por[1]}cqh - ${f(p / 2)}cqw); width:${f(p)}cqw; height:${f(p)}cqw; }
 ${P} #${id} .cadre { left:${f(c[0] - cs / 2 - bl)}cqw; top:calc(${f(c[1] - por[1])}cqh + ${f(p / 2 - cs / 2)}cqw); width:${f(cs)}cqw; height:${f(cs)}cqw; }
 ${P} #${id} .anneau { left:${f(an[0] - tA / 2 - bl)}cqw; top:calc(${f(an[1] - por[1])}cqh + ${f(p / 2 - tA / 2)}cqw); width:${f(tA)}cqw; height:${f(tA)}cqw; }
@@ -1978,14 +1981,16 @@ ${P} #${id} .pastilles { width:27.4cqw !important; left:${f(pl)}cqw !important; 
 ${P} #${id} .pastilles [data-k="pv"] { left:${f(coeur[0] - 5.5 - bl - pl + 4.55)}cqw !important; top:calc(${f(coeur[1] - etq[1] + 3.35)}cqh - 5cqw) !important; }
 ${P} #${id}:has(.bdg:not([hidden])) .pastilles [data-k="pv"] { left:${f(coeur[0] - 5.5 - bl - pl)}cqw !important; }
 ${P} #${id} .bdg.bg, ${P} #${id} .bdg.bb { left:${f(bouc[0] - 3.8 - bl)}cqw; top:calc(${f(bouc[1] - por[1])}cqh + ${f(p / 2 - 4.3)}cqw); }
-${P} #${id} .bdg.bg:not([hidden]) + .bdg.bb { left:${f(bouc[0] - 3.8 - bl + 8.2)}cqw; }`; };
+${P} #${id} .bdg.bg:not([hidden]) + .bdg.bb { left:${f(bouc[0] - 3.8 - bl + 8.2)}cqw; }${garde ? `
+${P} #${id} .bdg.bg { left:${f(garde[0] - 3.8 - bl)}cqw; top:calc(${f(garde[1] - por[1])}cqh + ${f(p / 2 - 4.3)}cqw); }
+${P} #${id} .bdg.bg:not([hidden]) + .bdg.bb, ${P} #${id} .bdg.bg:not([hidden]) ~ .bdg.bb { left:${f(bouc[0] - 3.8 - bl)}cqw; transform:none; }` : ''}`; };
   const dp = R.de_premier, dd = R.de_dernier;
   let css = `${Q} .colG .ic { width:${m}cqw; height:${m}cqw; }\n${ic}
 ${P} .des { left:${f(dp[0] - 3.89)}cqw; top:${f(dp[1] - 4.27)}cqh; height:${f(dd[1] - dp[1] + 8.55)}cqh; }
 ${P} .barre { width:${p}cqw; height:${p}cqw; }
 ${P} .barre .cadre, ${P} .anneau { left:-${f(p * .3669)}cqw; top:-${f(p * .3669)}cqw; width:${f(p * 1.733)}cqw; height:${f(p * 1.733)}cqw; }
-${cote('b-O', R.portrait_haut, R.etiquettes_haut, R.coeur_haut, R.bouclier_haut, R.cadre_haut, 'portrait_haut', 'cadre_haut', R.anneau_haut, 'anneau_haut')}
-${cote('b-J', R.portrait_bas, R.etiquettes_bas, R.coeur_bas, R.bouclier_bas, R.cadre_bas, 'portrait_bas', 'cadre_bas', R.anneau_bas, 'anneau_bas')}`;
+${cote('b-O', R.portrait_haut, R.etiquettes_haut, R.coeur_haut, R.bouclier_haut, R.cadre_haut, 'portrait_haut', 'cadre_haut', R.anneau_haut, 'anneau_haut', R.garde_haut)}
+${cote('b-J', R.portrait_bas, R.etiquettes_bas, R.coeur_bas, R.bouclier_bas, R.cadre_bas, 'portrait_bas', 'cadre_bas', R.anneau_bas, 'anneau_bas', R.garde_bas)}`;
   if (R.champ_haut_gauche) { const a = R.champ_haut_gauche, b = R.champ_bas_droit, mil = (a[1] + b[1]) / 2;
     css += `\n${Q} .front { left:${f(a[0] + .5)}cqw !important; right:${f(100 - b[0] + .5)}cqw !important; }
 ${Q} #f-O { top:${f(a[1] + .6)}cqh; } ${Q} #f-J { top:calc(${f(b[1] - .8)}cqh - 19cqw); } /* 14/11 : les créatures collées aux bords du champ, le texte du milieu entre les deux */
@@ -2320,14 +2325,14 @@ async function joueFX() {
 // toucher l'écran pendant les animations les accélère
 document.addEventListener('pointerdown', () => { if (fxOn && !(S && S.tuto)) fxVite = .5; }, true); // 14/11 : plus d'accélération dans le tutoriel
 </script>
-<script src="profil.js?v=20261114-233654"></script>
-<script src="pantheon.js?v=20261114-233654"></script>
-<script src="tuto.js?v=20261114-233654"></script>
-<script src="deux.js?v=20261114-233654"></script>
-<script src="invasion.js?v=20261114-233654"></script>
-<script src="enigme-table.js?v=20261114-233654"></script>
-<script src="forge.js?v=20261114-233654"></script>
-<script src="semaine.js?v=20261114-233654"></script>
-<script src="enigme.js?v=20261114-233654"></script>
+<script src="profil.js?v=20261114-234148"></script>
+<script src="pantheon.js?v=20261114-234148"></script>
+<script src="tuto.js?v=20261114-234148"></script>
+<script src="deux.js?v=20261114-234148"></script>
+<script src="invasion.js?v=20261114-234148"></script>
+<script src="enigme-table.js?v=20261114-234148"></script>
+<script src="forge.js?v=20261114-234148"></script>
+<script src="semaine.js?v=20261114-234148"></script>
+<script src="enigme.js?v=20261114-234148"></script>
 </body>
 </html>
