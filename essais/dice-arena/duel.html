@@ -646,7 +646,7 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261114-141114';
+const VERSION = '20261114-141346';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -665,11 +665,11 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261114-141114"></script>
-<script src="musique.js?v=20261114-141114"></script>
-<script src="donnees.js?v=20261114-141114"></script>
-<script src="odyssee.js?v=20261114-141114"></script>
-<script src="chronique.js?v=20261114-141114"></script>
+<script src="cartes.js?v=20261114-141346"></script>
+<script src="musique.js?v=20261114-141346"></script>
+<script src="donnees.js?v=20261114-141346"></script>
+<script src="odyssee.js?v=20261114-141346"></script>
+<script src="chronique.js?v=20261114-141346"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -1651,9 +1651,13 @@ function choix(titre, options, cb) {
 function rappelDebut() {
   const h = HEROS[S.J.id];
   fenetre(`<h2>⚔ ${h.nom} contre ${S.O.nom}</h2>
-  <p style="margin:.3em 0">🛡 <b>Garde</b> (${h.garde.txt}) · ✦ <b>Pouvoir</b> (${h.pouvoir.txt}) · ⚡ <b>Ultime</b> (jauge pleine, ${h.ultime.txt}, 3 PC)</p>
+  <p style="margin:.2em 0 .5em">Le premier à 0 ❤ perd. <b>Ton tour en 3 gestes :</b></p>
+  <ol style="margin:0 0 .4em;padding-left:1.3em;line-height:1.45">
+  <li><b>Tes dés sont lancés.</b> Tu peux en relancer (2 fois, bouton 🎲 Relancer).</li>
+  <li><b>Touche des dés, puis une action</b> (colonne de gauche) :<br>⚔ <b>Frappe</b> : 2 dés pareils ou plus<br>🛡 <b>Garde</b> : ${h.garde.txt}<br>✦ <b>Pouvoir</b> : ${h.pouvoir.txt}<br>⚡ <b>Ultime</b> : quand l’anneau doré est plein, ${h.ultime.txt}, 3 PC</li>
+  <li><b>Une carte ?</b> Il faut un dé qui remplit sa condition et assez de PC (chiffre bleu). Puis <b>Fin du tour ▶</b>.</li></ol>
   ${S.coop ? `<p style="margin:.3em 0;font-size:.9em">Le boss frappe <b>le dernier héros qui a joué</b>.</p>` : ''}
-  <p style="margin:.3em 0;font-size:.85em;color:#c9c1ea">Tout est expliqué dans ❓, en bas à gauche.</p>
+  <p style="margin:.3em 0;font-size:.85em;color:#c9c1ea">Les règles complètes : le bouton <b style="color:#ff6b6b">❓</b> tout en bas à gauche de l’écran.</p>
   <div class="choixh"><button onclick="fermer()">Jouer ▶</button><button onclick="fermer();regles()">❓ Toutes les règles</button></div>`);
 }
 function regles(court) {
@@ -2099,14 +2103,14 @@ async function joueFX() {
 // toucher l'écran pendant les animations les accélère
 document.addEventListener('pointerdown', () => { if (fxOn && !(S && S.tuto)) fxVite = .5; }, true); // 14/11 : plus d'accélération dans le tutoriel
 </script>
-<script src="profil.js?v=20261114-141114"></script>
-<script src="pantheon.js?v=20261114-141114"></script>
-<script src="tuto.js?v=20261114-141114"></script>
-<script src="deux.js?v=20261114-141114"></script>
-<script src="invasion.js?v=20261114-141114"></script>
-<script src="enigme-table.js?v=20261114-141114"></script>
-<script src="forge.js?v=20261114-141114"></script>
-<script src="semaine.js?v=20261114-141114"></script>
-<script src="enigme.js?v=20261114-141114"></script>
+<script src="profil.js?v=20261114-141346"></script>
+<script src="pantheon.js?v=20261114-141346"></script>
+<script src="tuto.js?v=20261114-141346"></script>
+<script src="deux.js?v=20261114-141346"></script>
+<script src="invasion.js?v=20261114-141346"></script>
+<script src="enigme-table.js?v=20261114-141346"></script>
+<script src="forge.js?v=20261114-141346"></script>
+<script src="semaine.js?v=20261114-141346"></script>
+<script src="enigme.js?v=20261114-141346"></script>
 </body>
 </html>
