@@ -151,7 +151,7 @@
 <script>
 const ZOK = () => localStorage.getItem('guilde-tuto') === 'fait'; // Zéphine : débloquée par le tutoriel (12/11)
 
-const VERSION = '20261114-210447';
+const VERSION = '20261114-210548';
 function verifieVersion() {
   fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
     v = (v || '').trim(); if (!v || v === VERSION || document.getElementById('majbar')) return;
@@ -164,16 +164,16 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261114-210447"></script>
-<script src="musique.js?v=20261114-210447"></script>
-<script src="rang.js?v=20261114-210447"></script>
-<script src="donnees.js?v=20261114-210447"></script>
-<script src="guide.js?v=20261114-210447"></script>
-<script src="odyssee.js?v=20261114-210447"></script>
-<script src="aventure.js?v=20261114-210447"></script>
-<script src="odyssee-sansfin.js?v=20261114-210447"></script>
-<script src="pantheon.js?v=20261114-210447"></script>
-<script src="chronique.js?v=20261114-210447"></script>
+<script src="cartes.js?v=20261114-210548"></script>
+<script src="musique.js?v=20261114-210548"></script>
+<script src="rang.js?v=20261114-210548"></script>
+<script src="donnees.js?v=20261114-210548"></script>
+<script src="guide.js?v=20261114-210548"></script>
+<script src="odyssee.js?v=20261114-210548"></script>
+<script src="aventure.js?v=20261114-210548"></script>
+<script src="odyssee-sansfin.js?v=20261114-210548"></script>
+<script src="pantheon.js?v=20261114-210548"></script>
+<script src="chronique.js?v=20261114-210548"></script>
 <script>
 // le moteur du Duel n'est pas chargé ici : les cartes de l'Odyssée appellent degats/soin seulement en combat (dans duel.html)
 const log = () => {}, degats = () => {}, soin = () => {}, altere = () => {}, invoque = () => {}, adv = () => ({}), fin = () => {};
@@ -293,7 +293,7 @@ function dessine() {
   <div class="bandeau">${r.vivres ? 'Touche une salle verte pour voir le trajet, puis touche-la encore : le héros y va.' : '<b style="color:#ff7a7a">Lanterne éteinte : chaque case nouvelle coûte 3 PV.</b>'} ${r.fragments >= 2 ? '<b style="color:var(--ok)">Tu as les 2 fragments : la porte 🚪 t’attend.</b>' : ''}</div>
   <div class="legende"><span>⚔ monstres (I, II, III)</span><span>💀 élite</span><span>🗝 coffre</span><span>💧 source</span><span>🏪 marchand</span><span>❓ événement</span><span>🔥 autel</span><span>🏕 feu de camp</span><span>🧱 mur fissuré</span><span>🚪 porte</span><span>👑 boss</span></div>
   <div class="bas"><button onclick="monDeck()">🂠 Deck</button><button onclick="journal()">📜 Journal</button><button onclick="reglesCourtes()">❓ Règles</button><button onclick="abandon()">⏏ Quitter</button></div>`;
-  if (r.sansfin) sfEcran(); else Guide.lance('odyssee', GUIDE_ODY);
+  if (r.sansfin) sfEcran(); else if (r.aventure && localStorage.getItem('guilde-guide-odyssee')) Guide.lance('aventure', GUIDE_AV); else Guide.lance('odyssee', r.aventure ? [...GUIDE_ODY, ...GUIDE_AV] : GUIDE_ODY);
 }
 // =============================================================================================== l'Odyssée sans fin : la pioche sous la carte (14/11)
 let sfSel = null, sfRot = 0, sfCase = null;
@@ -423,6 +423,12 @@ function descendre() { sfEtageSuivant(R); sfSel = null; sfRot = 0; sfCase = null
 function remonter() { fermer(); finPartie(true, `Tu remontes de l’étage ${R.sansfin.etage} avec ton butin. Une belle descente !`); }
 function tresorCartes(r) { const R2 = hasard(r), l = brasse(R2, cartesTirables(r.heros).filter(k => rarete(k) === 'e')).slice(0, 3); return l.length === 3 ? l : draft(R2, 2, r.deck, r.heros); }
 function fontaine(r, c) { if (c.fait) return; c.fait = true; const a = r.pv; r.pv = r.pvMax; const m = tire(hasard(r), Object.keys(MALEDICTIONS)); donneMalediction(r, m); r.journal.push(`⛲ La fontaine maudite : +${r.pv - a} PV.`); }
+// 14/11 nuit : le guide de la Grande aventure
+const GUIDE_AV = [
+  [null, 'C’est la <b>Grande aventure</b> : trois îles à la suite. Ton héros garde son deck d’une île à l’autre et devient plus fort à chaque île libérée.'],
+  ['.entete', 'Ici : le <b>chapitre</b>, le <b>niveau</b> de ton héros et son <b>équipement</b> 🎒. Touche-les pour voir tes objets : on en trouve sur les élites et les boss.'],
+  [null, 'Et si tu tombes, pas de panique : tu recommences l’île avec ce que tu avais en arrivant. Moi, je ne tombe jamais. Je retombe sur mes pattes.'],
+];
 // 14/11 : le guide de Moustache au premier passage sur l'île
 const GUIDE_ODY = [
   [null, 'Bienvenue sur l’île, aventurier ! Elle est cachée dans la brume : tu la découvres <b>case par case</b>. Au bout, un boss t’attend derrière une porte scellée.'],
