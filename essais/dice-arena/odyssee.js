@@ -58,14 +58,14 @@ const MONSTRES = {
 };
 // Le boss : le Titan de feu, 70 PV, 3 phases (il change d'attaques sous 2/3 puis 1/3 de ses PV). Chaque Jet de magma pose une Braise sur le héros : 3 Braises = 6 dégâts.
 const BOSS = {
-  titan: { nom:'Le Titan de feu', titre:'le gardien du seuil', emoji:'🔥', c:'#ff6a1a', pv:45, boss:true, role:'Trois phases. Ses Braises s’accumulent sur toi : à trois, elles explosent.', cit:'« Nul ne franchit le seuil sans brûler. »',
+  titan: { nom:'Le Titan de feu', titre:'le gardien du seuil', emoji:'🔥', c:'#ff6a1a', pv:45, boss:true, role:'Trois phases. Ses Brûlures s’accumulent sur toi : à trois, elles explosent (6 dégâts).', cit:'« Nul ne franchit le seuil sans brûler. »',
     phases:[
       { seuil:1, garde:{ n:'Peau de magma', txt:'1 dé', d:'Bouclier = la valeur du dé.', cond:vs => vs.length === 1, val:vs => vs[0], f:(J, vs) => { J.gardeB += vs[0]; log(`Le Titan : Peau de magma, Bouclier ${vs[0]}.`); } },
-        pouvoir:{ n:'Poing de magma', txt:'2 dés identiques', d:'7 dégâts et 1 Braise sur le héros.', cond:vs => vs.length === 2 && vs[0] === vs[1], cible:'ennemi', f:(J, vs, k) => { degats(k, 7); braiseTitan(adv(J)); } } },
+        pouvoir:{ n:'Poing de magma', txt:'2 dés identiques', d:'7 dégâts et 1 Brûlure sur le héros.', cond:vs => vs.length === 2 && vs[0] === vs[1], cible:'ennemi', f:(J, vs, k) => { degats(k, 7); braiseTitan(adv(J)); } } },
       { seuil:2 / 3, garde:{ n:'Peau de magma', txt:'1 dé', d:'Bouclier = la valeur du dé.', cond:vs => vs.length === 1, val:vs => vs[0], f:(J, vs) => { J.gardeB += vs[0]; log(`Le Titan : Peau de magma, Bouclier ${vs[0]}.`); } },
-        pouvoir:{ n:'Souffle de fournaise', txt:'3 dés de 3 ou plus', d:'9 dégâts et 1 Braise sur le héros.', cond:vs => vs.length === 3 && vs.every(v => v >= 3), cible:'ennemi', f:(J, vs, k) => { degats(k, 9); braiseTitan(adv(J)); } } },
+        pouvoir:{ n:'Souffle de fournaise', txt:'3 dés de 3 ou plus', d:'9 dégâts et 1 Brûlure sur le héros.', cond:vs => vs.length === 3 && vs.every(v => v >= 3), cible:'ennemi', f:(J, vs, k) => { degats(k, 9); braiseTitan(adv(J)); } } },
       { seuil:1 / 3, garde:{ n:'Carapace en fusion', txt:'1 dé', d:'Bouclier = 2 × la valeur du dé.', cond:vs => vs.length === 1, val:vs => vs[0] * 2, f:(J, vs) => { J.gardeB += vs[0] * 2; log(`Le Titan : Carapace en fusion, Bouclier ${vs[0] * 2}.`); } },
-        pouvoir:{ n:'Écrasement', txt:'2 dés de 5 ou plus', d:'12 dégâts et 1 Braise sur le héros.', cond:vs => vs.length === 2 && vs.every(v => v >= 5), cible:'ennemi', f:(J, vs, k) => { degats(k, 12); braiseTitan(adv(J)); } } },
+        pouvoir:{ n:'Écrasement', txt:'2 dés de 5 ou plus', d:'12 dégâts et 1 Brûlure sur le héros.', cond:vs => vs.length === 2 && vs.every(v => v >= 5), cible:'ennemi', f:(J, vs, k) => { degats(k, 12); braiseTitan(adv(J)); } } },
     ],
     ultime:{ n:'Éruption', txt:'3 dés', d:'16 dégâts au héros.', cond:vs => vs.length === 3, cible:'ennemi', f:(J, vs, k) => degats({ J:adv(J) }, 16) },
     renforts:[] },
@@ -295,7 +295,7 @@ function tireOmbre(r, cb) {
 }
 const ACTES_CLE = 'guilde-actes';
 const actesFaits = () => { try { return JSON.parse(localStorage.getItem(ACTES_CLE) || '{}'); } catch (e) { return {}; } };
-function braiseTitan(D) { D.braiseT = (D.braiseT || 0) + 1; log(`🔥 Braise ${D.braiseT}/3 sur ${D.nom}.`); if (D.braiseT >= 3) { D.braiseT = 0; log('🔥 Les Braises explosent : 6 dégâts !'); degats({ J:D }, 6, true); } }
+function braiseTitan(D) { D.braiseT = (D.braiseT || 0) + 1; log(`♨ Brûlure ${D.braiseT}/3 sur ${D.nom}.`); if (D.braiseT >= 3) { D.braiseT = 0; log('♨ Les Brûlures explosent : 6 dégâts !'); degats({ J:D }, 6, true); } }
 // la Frappe des monstres : plus faible que celle des héros (la moitié du dé, +2 par dé au-delà de la paire)
 const FRAPPE_MONSTRE = { n:'Griffes', txt:'2 à 5 dés identiques', d:'Dégâts = la moitié du dé (arrondie au-dessus) + 2 par dé au-delà de la paire.', cond:vs => vs.length >= 2 && vs.every(v => v === vs[0]), cible:'ennemi',
   dg:vs => Math.ceil(vs[0] / 2) + (vs.length - 2) * 2, f:(J, vs, k) => degats(k, FRAPPE_MONSTRE.dg(vs)) };
@@ -750,11 +750,11 @@ Object.assign(BOSS_CAMP, {
     sbires:{ n:'Dragonnet', a:3, v:4, charge:true, tous:2, nb:1 },
     phases:[
       { seuil:1, garde:{ n:'Écailles', txt:'1 dé', d:'Bouclier = la valeur du dé + 1.', cond:vs => vs.length === 1, val:vs => vs[0] + 1, f:(J, vs) => { J.gardeB += vs[0] + 1; log(`Ignaros : Écailles, Bouclier ${vs[0] + 1}.`); } },
-        pouvoir:{ n:'Griffes ardentes', txt:'2 dés identiques', d:'9 dégâts à une cible et 1 Braise sur le héros visé.', cond:vs => vs.length === 2 && vs[0] === vs[1], cible:'ennemi', f:(J, vs, k) => { degats(k, 9); if (k && k.J && !k.u) braiseTitan(k.J); } } },
+        pouvoir:{ n:'Griffes ardentes', txt:'2 dés identiques', d:'9 dégâts à une cible et 1 Brûlure sur le héros visé.', cond:vs => vs.length === 2 && vs[0] === vs[1], cible:'ennemi', f:(J, vs, k) => { degats(k, 9); if (k && k.J && !k.u) braiseTitan(k.J); } } },
       { seuil:2 / 3, garde:{ n:'Écailles', txt:'1 dé', d:'Bouclier = la valeur du dé + 1.', cond:vs => vs.length === 1, val:vs => vs[0] + 1, f:(J, vs) => { J.gardeB += vs[0] + 1; log(`Ignaros : Écailles, Bouclier ${vs[0] + 1}.`); } },
-        pouvoir:{ n:'Souffle de feu', txt:'3 dés de 3 ou plus', d:'7 dégâts et 1 Braise à CHAQUE héros.', cond:vs => vs.length === 3 && vs.every(v => v >= 3), cible:'ennemi', f:() => debout().forEach(h => { degats({ J:h }, 7); braiseTitan(h); }) } },
+        pouvoir:{ n:'Souffle de feu', txt:'3 dés de 3 ou plus', d:'7 dégâts et 1 Brûlure à CHAQUE héros.', cond:vs => vs.length === 3 && vs.every(v => v >= 3), cible:'ennemi', f:() => debout().forEach(h => { degats({ J:h }, 7); braiseTitan(h); }) } },
       { seuil:1 / 3, garde:{ n:'Cœur de magma', txt:'1 dé', d:'Bouclier = 2 × la valeur du dé.', cond:vs => vs.length === 1, val:vs => vs[0] * 2, f:(J, vs) => { J.gardeB += vs[0] * 2; log(`Ignaros : Cœur de magma, Bouclier ${vs[0] * 2}.`); } },
-        pouvoir:{ n:'Fureur', txt:'2 dés de 5 ou plus', d:'15 dégâts et 1 Braise sur le héros visé.', cond:vs => vs.length === 2 && vs.every(v => v >= 5), cible:'ennemi', f:(J, vs, k) => { degats(k, 15); if (k && k.J && !k.u) braiseTitan(k.J); } } },
+        pouvoir:{ n:'Fureur', txt:'2 dés de 5 ou plus', d:'15 dégâts et 1 Brûlure sur le héros visé.', cond:vs => vs.length === 2 && vs.every(v => v >= 5), cible:'ennemi', f:(J, vs, k) => { degats(k, 15); if (k && k.J && !k.u) braiseTitan(k.J); } } },
     ],
     ultime:{ n:'Embrasement', txt:'3 dés', d:'10 dégâts et 1 Braise à chaque héros.', cond:vs => vs.length === 3, cible:'ennemi', f:() => debout().forEach(h => { degats({ J:h }, 10); braiseTitan(h); }) },
     renforts:[] },
