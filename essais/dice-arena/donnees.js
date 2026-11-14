@@ -42,7 +42,7 @@ const CARTES = {
   // ---- Maëlle
   marteau:  { n:'Marteau de forge', t:'s', c:2, txt:'dé = 6', d:'10 dégâts à une cible.', cond:vs => un(vs) && vs[0] === 6, cible:'ennemi', f:(J, vs, k) => degats(k, 10), ia:() => 50 },
   lame:     { n:'Lame trempée', t:'e', c:1, txt:'dé ≥ 4', d:'Une de tes unités gagne + la valeur du dé en attaque.', cond:vs => un(vs) && vs[0] >= 4, cible:'uniteA', f:(J, vs, k) => { k.u.a += vs[0]; log(`${k.u.n} : +${vs[0]} attaque.`); }, ia:(J, vs) => J.front.length ? 20 + vs[0] * 3 : 0 },
-  apprenti: { n:'Apprenti du soufflet', t:'u', c:2, txt:'1 dé', d:'Unité 2 / 3. Chaque 6 posé sur tes cartes donne 1 Braise de plus.', cond:un, u:{ n:'Apprenti', a:2, v:3, apprenti:true } },
+  apprenti: { n:'Apprenti du soufflet', t:'u', c:2, txt:'1 dé', d:'Unité 2 / 3. Chaque carte jouée avec un 6 donne 1 Braise de plus.', cond:un, u:{ n:'Apprenti', a:2, v:3, apprenti:true } },
   plastron: { n:'Plastron rivé', t:'e', c:2, txt:'dé ≥ 5', d:'Une de tes unités : +5 vie et Barrière.', cond:vs => un(vs) && vs[0] >= 5, cible:'uniteA', f:(J, vs, k) => { k.u.v += 5; k.u.vmax += 5; k.u.barriere = true; log(`${k.u.n} : +5 vie et Barrière.`); }, ia:J => J.front.length ? 30 : 0 },
   etincelles:{ n:'Étincelles', t:'s', c:0, txt:'dé ≤ 2', d:'2 dégâts à chaque unité adverse.', cond:vs => un(vs) && vs[0] <= 2, f:J => { [...adv(J).front].forEach(u => degats({ J:adv(J), u }, 2)); }, ia:J => adv(J).front.length * 12 },
   golem:    { n:'Golem de bronze', t:'u', c:4, txt:'dé = 6', d:'Unité 5 / 8, Barrière.', cond:vs => un(vs) && vs[0] === 6, u:{ n:'Golem', a:5, v:8, barriere:true } },
@@ -104,7 +104,7 @@ const GUILDE = ['potion', 'soins', 'chien', 'pierre', 'rond', 'torche', 'ajuste'
 const HEROS = {
   maelle: { hist:'Fille d’un forgeron des montagnes, elle a forgé son premier marteau à dix ans. Aucune arme de la Guilde ne reste cassée longtemps.', cit:'« Ce qui est forgé ne casse pas. »', role:'Frappe fort et équipe ses unités. Aime les gros dés (5 et 6).', papier:'Repris du jeu papier : les gros coups de Grom (Tranche-chair) et le « Retour » de Peau épaisse, devenu la Fournaise.', nom:'Maëlle', titre:'la forgeronne', c:'#ff8a2a', pv:44,
     deck:['marteau', 'marteau', 'lame', 'apprenti', 'apprenti', 'plastron', 'etincelles', 'etincelles', 'golem', 'golem', 'retremper', 'fournaise'],
-    passif:'Métal chaud : chaque 6 posé sur une de tes cartes donne 1 Braise. À 3 Braises, ta prochaine carte Équipement ne coûte rien.',
+    passif:'Métal chaud : chaque fois que tu joues une CARTE avec un dé de 6, tu gagnes 1 Braise. À 3 Braises, ta prochaine carte Équipement ne coûte rien.',
     garde:{ n:'Enclume', txt:'1 dé', d:'Bouclier égal à la valeur, +2 si c’est un 5 ou un 6.', cond:un, val:vs => vs[0] + (vs[0] >= 5 ? 2 : 0),
       f:(J, vs) => { const b = vs[0] + (vs[0] >= 5 ? 2 : 0); J.gardeB += b; log(`${J.nom} : Enclume, Bouclier ${b}.`); } },
     pouvoir:{ n:'Coup d’enclume', txt:'3 dés identiques', d:'Dégâts égaux à leur somme.', cond:vs => vs.length === 3 && egaux(vs), cible:'ennemi', f:(J, vs, k) => degats(k, somme(vs)) },
