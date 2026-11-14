@@ -117,12 +117,12 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261114-150545"></script>
-<script src="musique.js?v=20261114-150545"></script>
-<script src="donnees.js?v=20261114-150545"></script>
-<script src="odyssee.js?v=20261114-150545"></script>
-<script src="pantheon.js?v=20261114-150545"></script>
-<script src="chronique.js?v=20261114-150545"></script>
+<script src="cartes.js?v=20261114-150852"></script>
+<script src="musique.js?v=20261114-150852"></script>
+<script src="donnees.js?v=20261114-150852"></script>
+<script src="odyssee.js?v=20261114-150852"></script>
+<script src="pantheon.js?v=20261114-150852"></script>
+<script src="chronique.js?v=20261114-150852"></script>
 <script>
 // le moteur du Duel n'est pas chargé ici : les cartes de l'Odyssée appellent degats/soin seulement en combat (dans duel.html)
 const log = () => {}, degats = () => {}, soin = () => {}, altere = () => {}, invoque = () => {}, adv = () => ({}), fin = () => {};
@@ -131,6 +131,14 @@ let R = null; // la partie en cours
 const sauve = () => ecrireOdyssee(R);
 // 14/11 (l'utilisateur : « quand on doit payer, on ne voit pas ce qu'on a ») : chaque fenêtre rappelle l'or, la vie, l'huile et les clés
 const bourse = () => R ? `<div class="bourse"><span>💰 <b>${R.or}</b> or</span><span>❤ ${R.pv}/${R.pvMax}</span><span>🪔 ${R.vivres}</span><span>🗝 ${R.cles}</span></div>` : '';
+// 14/11 (l'utilisateur : « je ne peux pas sélectionner les reliques, c'est grisé ») : on porte 3 reliques au plus ;
+// à la 4e, on CHOISIT laquelle laisser au lieu d'un bouton grisé sans explication
+function reliqueOuEchange(k, suite) {
+  const fin = () => { sauve(); fermer(); if (suite && typeof window[suite] === 'function') window[suite](); };
+  if (R.reliques.length < 3) { prendRelique(R, k); fin(); return; }
+  window._echange = (vieille) => { if (vieille) { R.reliques = R.reliques.filter(x => x !== vieille); R.journal.push(`💎 ${RELIQUES[vieille].n} laissée pour ${RELIQUES[k].n}.`); prendRelique(R, k); } fin(); };
+  fenetre(`<h2>🎒 Ton sac est plein</h2><p>Tu portes déjà 3 reliques, le maximum. Pour prendre <b>${RELIQUES[k].e} ${RELIQUES[k].n}</b>, laisses-en une :</p><div class="choixv">${R.reliques.map(v => `<button onclick="_echange('${v}')">${RELIQUES[v].e} <b>Laisser ${RELIQUES[v].n}</b><small>${RELIQUES[v].d}</small></button>`).join('')}<button onclick="_echange(null)">Garder mes 3 reliques</button></div>`);
+}
 const fenetre = html => { document.getElementById('fen').innerHTML = `<div class="fenetre"><div>${bourse()}${html}</div></div>`; };
 const fermer = () => { document.getElementById('fen').innerHTML = ''; };
 const NIV = ['', 'I', 'II', 'III'];
@@ -390,7 +398,7 @@ function arrive(c) {
   if (c.t === 'feu' && !c.fait) { feuFen(c); return; }
   if (c.t === 'sac' && !c.fait) { sacFen(c); return; }
   if (c.t === 'forge' && !c.fait) { forgeFen(c); return; }
-  if (c.t === 'mur' && !c.fait) { dialogue('mur'); c.fait = true; const l = reliquesProposees(R, 2); sauve(); fenetre(`<h2>💎 La salle cachée</h2><p>Derrière le mur, une petite salle oubliée. Sur un socle, deux reliques : tu n’en emportes qu’une.</p><div class="choixv">${l.map(k => `<button onclick="prendRelique(R,'${k}');sauve();fermer();dessine()" ${R.reliques.length >= 3 ? 'disabled' : ''}>${RELIQUES[k].e} <b>${RELIQUES[k].n}</b><small>${RELIQUES[k].d}</small></button>`).join('')}</div>${R.reliques.length >= 3 ? '<p style="color:#ff7a7a">Tu portes déjà 3 reliques.</p>' : ''}<div class="choixh"><button onclick="fermer()">Laisser</button></div>`); return; }
+  if (c.t === 'mur' && !c.fait) { dialogue('mur'); c.fait = true; const l = reliquesProposees(R, 2); sauve(); fenetre(`<h2>💎 La salle cachée</h2><p>Derrière le mur, une petite salle oubliée. Sur un socle, deux reliques : tu n’en emportes qu’une.</p><div class="choixv">${l.map(k => `<button onclick="reliqueOuEchange('${k}', 'dessine')" ${R.reliques.length >= 3 ? 'disabled' : ''}>${RELIQUES[k].e} <b>${RELIQUES[k].n}</b><small>${RELIQUES[k].d}</small></button>`).join('')}</div>${R.reliques.length >= 3 ? '<p style="color:#ff7a7a">Tu portes déjà 3 reliques.</p>' : ''}<div class="choixh"><button onclick="fermer()">Laisser</button></div>`); return; }
 }
 function info(t, d) { fenetre(`<h2>${t}</h2><p>${d}</p><div class="choixh"><button onclick="fermer()">Compris</button></div>`); }
 function combat(c) {
@@ -411,7 +419,7 @@ function apresCombat() {
   dialogue('victoire');
   const suite = out.draft ? () => tirage(out.draft, out.garde2 ? 'Anomalie : garde-en deux !' : out.draft2 ? 'Double butin : une première carte' : 'Une carte parmi trois', out.draft2 ? () => tirage(out.draft2, 'Double butin : une seconde carte', () => { sauve(); dessine(); }) : () => { sauve(); dessine(); }, out.garde2) : () => { fermer(); dessine(); };
   window._suite2 = suite;
-  window._suite = out.nemesisVaincue ? () => { const l = reliquesProposees(R, 2); fenetre(`<h2>😈 Némésis vaincue !</h2><p>+60 or. Choisis une relique :</p><div class="choixv">${l.map(k => `<button onclick="prendRelique(R,'${k}');sauve();fermer();window._suite2()">${RELIQUES[k].e} <b>${RELIQUES[k].n}</b><small>${RELIQUES[k].d}</small></button>`).join('')}</div>`); } : suite;
+  window._suite = out.nemesisVaincue ? () => { const l = reliquesProposees(R, 2); fenetre(`<h2>😈 Némésis vaincue !</h2><p>+60 or. Choisis une relique :</p><div class="choixv">${l.map(k => `<button onclick="reliqueOuEchange('${k}', '_suite2')">${RELIQUES[k].e} <b>${RELIQUES[k].n}</b><small>${RELIQUES[k].d}</small></button>`).join('')}</div>`); } : suite;
   fenetre(`<h2>🏆 ${out.ennemi} vaincu</h2><p>+${out.or} or${res.defiOk ? ' (défi réussi compris)' : ''}.${out.fragment ? ' <b>Un fragment de rune 🔮 et une clé 🗝 !</b>' : ''}${out.potion ? ' Et une potion de soin 🧪 dans sa besace.' : ''}</p><p>Il te reste ❤ ${R.pv} / ${R.pvMax}.</p><div class="choixh"><button class="or" onclick="fermer();_suite()">Continuer</button></div>`);
 }
 const carteHTML = (k, onclick, pied) => { const c = CARTES[k], r = rarete(k);
@@ -485,7 +493,7 @@ function marchand(c) {
     ${Object.keys(SACOCHE).map(k => bt(`${SACOCHE[k].e} ${SACOCHE[k].n}`, SACOCHE[k].prix, R.sacoche.length < 2, `achete(R,R.ile[${c.y}][${c.x}],'sacoche','${k}')`, SACOCHE[k].d)).join('')}
     ${bt('❤ Vitalité : +5 PV max', 70, st.pvmax, `achete(R,R.ile[${c.y}][${c.x}],'pvmax')`, `encore ${st.pvmax} fois`)}
     ${bt('🪔 5 huile', 20, true, `achete(R,R.ile[${c.y}][${c.x}],'vivres')`)}
-    ${st.relique ? bt(`${RELIQUES[st.relique].e} ${RELIQUES[st.relique].n}`, RELIQUES[st.relique].prix, R.reliques.length < 3, `achete(R,R.ile[${c.y}][${c.x}],'relique')`, RELIQUES[st.relique].d) : ''}
+    ${st.relique ? bt(`${RELIQUES[st.relique].e} ${RELIQUES[st.relique].n}`, RELIQUES[st.relique].prix, R.reliques.length < 3, `achete(R,R.ile[${c.y}][${c.x}],'relique')`, RELIQUES[st.relique].d + (R.reliques.length >= 3 ? ' (Ton sac est plein : 3 reliques au plus.)' : '')) : ''}
   </div><div class="choixh"><button onclick="fermer();dessine()">Repartir</button></div>`);
 }
 function retirerFen(c) { fenetre(`<h2>🔥 Retirer une carte</h2><p>Touche la carte à brûler (60 or).</p><div class="cartes3">${[...new Set(R.deck)].map(k => carteHTML(k, `achete(R,R.ile[${c.y}][${c.x}],'retirer','${k}');sauve();fermer();marchand(R.ile[${c.y}][${c.x}])`)).join('')}</div><div class="choixh"><button onclick="marchand(R.ile[${c.y}][${c.x}])">Annuler</button></div>`); }
@@ -496,7 +504,7 @@ function evenement(c) {
 function evChoix(x, y, i) {
   const c = R.ile[y][x], o = evenementChoisit(R, c, i); if (!o) return; sauve(); dessine();
   const fin = () => { fermer(); sauve(); dessine(); };
-  if (o.suite === 'relique') { fenetre(`<h2>${o.m}</h2><div class="choixv">${o.reliques.map(k => `<button ${R.reliques.length >= 3 ? 'disabled' : ''} onclick="prendRelique(R,'${k}');sauve();fermer();dessine()">${RELIQUES[k].e} <b>${RELIQUES[k].n}</b><small>${RELIQUES[k].d}</small></button>`).join('')}</div><div class="choixh"><button onclick="fermer()">Laisser</button></div>`); return; }
+  if (o.suite === 'relique') { fenetre(`<h2>${o.m}</h2><div class="choixv">${o.reliques.map(k => `<button onclick="reliqueOuEchange('${k}', 'dessine')">${RELIQUES[k].e} <b>${RELIQUES[k].n}</b><small>${RELIQUES[k].d}</small></button>`).join('')}</div><div class="choixh"><button onclick="fermer()">Laisser</button></div>`); return; }
   if (o.suite === 'draft') { tirage(o.cartes, o.m, fin); return; }
   if (o.suite === 'retirer') { fenetre(`<h2>${o.m}</h2><div class="cartes3">${[...new Set(R.deck)].map(k => carteHTML(k, `retireCarte(R,'${k}');sauve();fermer();dessine()`)).join('')}</div><div class="choixh"><button onclick="fermer()">Finalement non</button></div>`); return; }
   fenetre(`<h2>❓</h2><p>${o.m}</p><div class="choixh"><button onclick="fermer()">Continuer</button></div>`);
