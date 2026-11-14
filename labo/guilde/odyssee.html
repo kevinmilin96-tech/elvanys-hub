@@ -151,7 +151,7 @@
 <script>
 const ZOK = () => localStorage.getItem('guilde-tuto') === 'fait'; // Zéphine : débloquée par le tutoriel (12/11)
 
-const VERSION = '20261114-210916';
+const VERSION = '20261114-211205';
 function verifieVersion() {
   fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
     v = (v || '').trim(); if (!v || v === VERSION || document.getElementById('majbar')) return;
@@ -164,16 +164,16 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261114-210916"></script>
-<script src="musique.js?v=20261114-210916"></script>
-<script src="rang.js?v=20261114-210916"></script>
-<script src="donnees.js?v=20261114-210916"></script>
-<script src="guide.js?v=20261114-210916"></script>
-<script src="odyssee.js?v=20261114-210916"></script>
-<script src="aventure.js?v=20261114-210916"></script>
-<script src="odyssee-sansfin.js?v=20261114-210916"></script>
-<script src="pantheon.js?v=20261114-210916"></script>
-<script src="chronique.js?v=20261114-210916"></script>
+<script src="cartes.js?v=20261114-211205"></script>
+<script src="musique.js?v=20261114-211205"></script>
+<script src="rang.js?v=20261114-211205"></script>
+<script src="donnees.js?v=20261114-211205"></script>
+<script src="guide.js?v=20261114-211205"></script>
+<script src="odyssee.js?v=20261114-211205"></script>
+<script src="aventure.js?v=20261114-211205"></script>
+<script src="odyssee-sansfin.js?v=20261114-211205"></script>
+<script src="pantheon.js?v=20261114-211205"></script>
+<script src="chronique.js?v=20261114-211205"></script>
 <script>
 // le moteur du Duel n'est pas chargé ici : les cartes de l'Odyssée appellent degats/soin seulement en combat (dans duel.html)
 const log = () => {}, degats = () => {}, soin = () => {}, altere = () => {}, invoque = () => {}, adv = () => ({}), fin = () => {};
@@ -417,7 +417,7 @@ function finEtage() {
   const S = R.sansfin, b = bilanEtage(R), suiv = ILES[acteEtage(R, S.etage + 1)].nom; sauve(); dessine();
   fenetre(`<h2>👑 Étage ${S.etage} libéré !</h2><p>${ILE(R).bossNom} est tombé${R.acte === 'givre' ? 'e' : ''}.</p>
   ${b.prime ? `<p>🎯 Prime « ${b.prime.n} » : ${b.ok ? `<b style="color:var(--ok)">remplie</b>, +${PRIME_OR} or et ${PRIME_XP} XP !` : 'manquée.'}</p>` : ''}
-  <p>Sous le trône, un escalier descend vers <b>${suiv}</b>. Tu gardes ton deck, tes reliques, ta sacoche et ton or ; une source t’attend en bas (+25 % de PV) et +8 huile.${(S.etage) % 3 === 0 ? ' <b>Attention</b> : on recommence le tour des îles, les ennemis auront +25 % de vie.' : ''}</p>
+  <p>Sous le trône, un escalier descend vers <b>${suiv}</b>. Tu gardes ton deck, tes reliques, ta sacoche et ton or ; une source t’attend en bas (+40 % de PV) et +8 huile.${(S.etage) % 3 === 0 ? ' <b>Attention</b> : on recommence le tour des îles, les ennemis auront +25 % de vie.' : ''}</p>
   <p style="font-size:.88em;color:var(--doux)">❤ ${R.pv} / ${R.pvMax} · 💰 ${R.or} · 🪔 ${R.vivres} · record : étage ${recordEtage()}</p>
   <div class="choixv"><button class="or" onclick="descendre()">🪜 Descendre à l’étage ${S.etage + 1}<small>${suiv}</small></button><button onclick="remonter()">🏁 Remonter avec mon score<small>la partie s’arrête ici, en victoire</small></button></div>`);
 }

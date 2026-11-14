@@ -83,7 +83,7 @@ function sfPose(r, i, n, x, y) {
     SF_DIR.forEach(([dx, dy], k) => { const v = caseA(r, x + dx, y + dy); if (v && v.pose) { c.ouv[k] = 1; v.ouv[(k + 2) % 4] = 1; } }); S.eboulement = false; }
   S.poses++; typeof guildeEvt === 'function' && guildeEvt('tuile', 1);
   if (S.regle === 'cendres' && r.pv > 1) { r.pv--; } // règle du jour : −1 PV par tuile posée
-  if (t.t === 'monstre') { c.niv = S.poses <= 6 ? 1 : S.poses <= 14 ? 2 : 3; c.ennemi = tire(R, I.pools[c.niv - 1]); }
+  if (t.t === 'monstre') { c.niv = S.poses <= 10 ? 1 : S.poses <= 22 ? 2 : 3; /* 14/11 nuit : 6 / 14 avant (simulateur : 1er étage passé 18 % seulement) */ c.ennemi = tire(R, I.pools[c.niv - 1]); }
   if (t.t === 'elite') { c.niv = 2; const s = ['heros', 'monstre', 'heros'][S.elites++ % 3]; if (s === 'monstre') c.ennemi = tire(R, I.elites); else { c.ennemi = 'heros'; c.renfort = tire(R, ['pc', 'pv', 'bouclier']); } }
   if (t.t === 'evenement') { const deja = r.ile.flat().map(k => k.ev).filter(Boolean), l = EVENEMENTS.filter(e => (I.evenements ? I.evenements.includes(e.id) : !e.ile) && !deja.includes(e.id) && !SF_SANS_EVENEMENT.includes(e.id)); c.ev = (l.length ? tire(R, l) : tire(R, EVENEMENTS.filter(e => !e.ile))).id; }
   if (t.t === 'boss') { c.ennemi = I.boss; c.niv = 1; S.bossFait = true; }
@@ -150,7 +150,7 @@ function sfEtageSuivant(r) {
   const N = 31; ILE_W = N; ILE_H = N;
   r.ile = Array.from({ length:N }, (_, y) => Array.from({ length:N }, (_, x) => ({ x, y, t:'roche', vu:false, visite:false, fait:false })));
   const dep = { x:15, y:15 }; Object.assign(r.ile[dep.y][dep.x], { t:'depart', vu:true, visite:true, ouv:[1, 1, 1, 1], pose:true }); r.pos = { ...dep };
-  const soin = Math.round(r.pvMax * .25), a = r.pv; r.pv = Math.min(r.pvMax, r.pv + soin); r.vivres += 8; r.fragments = 0;
+  const soin = Math.round(r.pvMax * .4), a = r.pv; r.pv = Math.min(r.pvMax, r.pv + soin); r.vivres += 8; r.fragments = 0;
   Object.assign(S, { offre:[], poses:1, elites:0, bossFait:false, dernierMarchand:0, eboulement:false, attente:null, prime:null, debutEtage:{ victoires:r.stats.victoires, poses:1 } });
   S.pioche = sfSac(Object.assign(hasard(r), { regle:S.regle })); S.primes = primesOffre(r);
   r.journal.push(`🪜 Étage ${S.etage} : ${ILES[r.acte].nom}${forceEtage(r) ? ` (ennemis +${25 * forceEtage(r)} % de vie)` : ''}. Au pied de l’escalier, une source : +${r.pv - a} PV ; +8 huile.`);
