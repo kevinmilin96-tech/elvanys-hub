@@ -675,7 +675,7 @@
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
 // 14/11 : l'Odyssée sans fin a ses propres emplacements (odyssee.js lit SANSFIN)
 const SANSFIN = new URLSearchParams(location.search).get('sansfin') === '1', ODY_PAGE = 'odyssee.html' + (SANSFIN ? '?sansfin=1' : '');
-const VERSION = '20261114-201607';
+const VERSION = '20261114-201832';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -694,11 +694,11 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261114-201607"></script>
-<script src="musique.js?v=20261114-201607"></script>
-<script src="donnees.js?v=20261114-201607"></script>
-<script src="odyssee.js?v=20261114-201607"></script>
-<script src="chronique.js?v=20261114-201607"></script>
+<script src="cartes.js?v=20261114-201832"></script>
+<script src="musique.js?v=20261114-201832"></script>
+<script src="donnees.js?v=20261114-201832"></script>
+<script src="odyssee.js?v=20261114-201832"></script>
+<script src="chronique.js?v=20261114-201832"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -1741,7 +1741,7 @@ function regles(court) {
   <li>La <b>Frappe</b>, commune à tous : 2 dés identiques ou plus. Dégâts = la valeur du dé + un bonus (paire +0, 3 dés +3, 4 dés +6, 5 dés +10) : deux 6 = 6, trois 4 = 7, cinq 6 = 16. Gratuite.</li>
   <li>La <b>Technique</b>, commune à tous : 3, 4 ou 5 dés qui se suivent (par exemple 2-3-4) font 4, 7 ou 10 dégâts. Gratuite.</li>
   <li><b>La riposte</b> : quand une de tes créatures en attaque une autre, elle reçoit en retour l’attaque de sa cible (et ses Épines). Les actions de ton héros (Frappe, Technique, Pouvoir, Ultime) et les sorts, eux, ne déclenchent <b>pas</b> de riposte.</li>
-  <li>La <b>Garde</b> et le <b>Pouvoir</b> de ton héros sont gratuits : il suffit des bons dés.</li>
+  <li>La <b>Garde</b> et le <b>Pouvoir</b> de ton héros sont gratuits : il suffit des bons dés. La Garde se pose <b>une fois par tour</b> ; le Pouvoir se rejoue <b>autant de fois que tes dés le permettent</b> (les ennemis aussi : un monstre qui sort trois 6 peut lancer trois fois un pouvoir « dé = 6 »).</li>
   <li>L’<b>Ultime</b> : sa <b>jauge ⚡</b> gagne 1 point par dé posé (pas vendu) et 1 point tous les 5 dégâts que tu subis. Pleine (l’anneau doré de ton portrait est complet et brille), l’Ultime se joue avec ses dés et 3 PC, une fois par combat : choisis les dés, puis <b>touche ton portrait</b>.</li>
   <li><b>Relancer</b> (bouton en bas) : choisis des dés puis touche « Relancer ». Tu as <b>2 relances gratuites</b> par tour ; ensuite, chaque dé relancé coûte 1 PC.</li>
   <li><b>Vendre</b> : pendant ton tour, choisis des dés puis touche le cristal bleu (à gauche) : <b>+1 PC par dé, tout de suite</b>, pour payer une carte ce tour-ci. Les dés <b>pas posés</b> à la fin du tour sont vendus tout seuls.</li>
@@ -2197,14 +2197,14 @@ async function joueFX() {
 // toucher l'écran pendant les animations les accélère
 document.addEventListener('pointerdown', () => { if (fxOn && !(S && S.tuto)) fxVite = .5; }, true); // 14/11 : plus d'accélération dans le tutoriel
 </script>
-<script src="profil.js?v=20261114-201607"></script>
-<script src="pantheon.js?v=20261114-201607"></script>
-<script src="tuto.js?v=20261114-201607"></script>
-<script src="deux.js?v=20261114-201607"></script>
-<script src="invasion.js?v=20261114-201607"></script>
-<script src="enigme-table.js?v=20261114-201607"></script>
-<script src="forge.js?v=20261114-201607"></script>
-<script src="semaine.js?v=20261114-201607"></script>
-<script src="enigme.js?v=20261114-201607"></script>
+<script src="profil.js?v=20261114-201832"></script>
+<script src="pantheon.js?v=20261114-201832"></script>
+<script src="tuto.js?v=20261114-201832"></script>
+<script src="deux.js?v=20261114-201832"></script>
+<script src="invasion.js?v=20261114-201832"></script>
+<script src="enigme-table.js?v=20261114-201832"></script>
+<script src="forge.js?v=20261114-201832"></script>
+<script src="semaine.js?v=20261114-201832"></script>
+<script src="enigme.js?v=20261114-201832"></script>
 </body>
 </html>
