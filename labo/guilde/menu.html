@@ -8,7 +8,7 @@
 <title>La Guilde des Runes</title>
 <script>
 // Même mécanisme que le Duel : une nouvelle version = rechargement tout seul à l'ouverture (publier.sh change VERSION).
-const VERSION = '20261114-184435';
+const VERSION = '20261114-185418';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-menu-' + v)) { sessionStorage.setItem('recharge-menu-' + v, '1'); location.replace('menu.html?v=' + v); }
@@ -157,6 +157,9 @@ fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.te
   #monde .petits a { padding:7px 3px; font-size:.7em; line-height:1.2; border-radius:12px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; }
   #monde .petits a b { font-size:1.5em; font-weight:normal; }
   #monde .bas { display:none; }
+  .desarene { position:absolute; left:50%; top:40%; transform:translate(-50%, -50%); display:flex; gap:4%; width:46%; justify-content:center; pointer-events:none; }
+  .desarene img { width:42% !important; height:auto !important; border-radius:14%; filter:drop-shadow(0 0 10px #7fd3ffcc) drop-shadow(0 6px 6px #000a); animation:flotte 3s ease-in-out infinite; } .desarene img + img { animation-delay:-1.5s; }
+  @keyframes flotte { 50% { transform:translateY(-8%) rotate(6deg); } }
 </style>
 </head>
 <body>
@@ -189,9 +192,9 @@ fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.te
 </div>
 <div id="flash"></div>
 
-<script src="semaine.js?v=20261114-184435"></script>
-<script src="musique.js?v=20261114-184435"></script>
-<script src="donnees.js?v=20261114-184435"></script>
+<script src="semaine.js?v=20261114-185418"></script>
+<script src="musique.js?v=20261114-185418"></script>
+<script src="donnees.js?v=20261114-185418"></script>
 <script>
 // ciel étoilé + runes du portail (symboles, pas des lettres), aux couleurs des héros
 const ciel = document.getElementById('ciel');
@@ -279,6 +282,8 @@ function particules(sorte, n) { let h = ''; for (let i = 0; i < n; i++) h += `<i
 function dessin(p) {
   if (p.avenir) return '<img src="menu-recu/mystere.webp" alt=""><div class="lueur"></div>';
   if (p.img) return `<img src="${p.img}" alt="">${p.fx === 'lave' ? '<img class="fx lave" src="menu-recu/fx-lave.webp?v=1" alt="">' + particules('etincelles', 10) : p.fx === 'aurore' ? '<img class="fx aurore" src="menu-recu/fx-aurore.webp?v=1" alt="">' + particules('neige', 14) : ''}`;
+  // 14/11 : l'Arène repeinte sans dés ; le jeu pose deux VRAIS dés de héros au-dessus du piédestal (Gemini ne sait pas peindre nos dés)
+  if (p.pro === 'arene' && !p.sansImg) return `<img src="menu-recu/mode-arene.webp?v=2" alt=""><div class="desarene"><img src="faces-maelle/face-6.webp" alt=""><img src="faces-gorm/face-5.webp" alt=""></div>`;
   if (PRO_IMG[p.pro] && !p.sansImg) return `<img src="menu-recu/${PRO_IMG[p.pro]}.webp?v=1" alt="">`;
   const [e, fond, g] = PRO[p.pro]; let et = '';
   for (let i = 0; i < 9; i++) et += `<i class="et" style="left:${(i * 37) % 100}%;top:${(i * 23) % 60}%;animation-delay:${i * .3}s"></i>`;

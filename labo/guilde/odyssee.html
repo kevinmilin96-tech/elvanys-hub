@@ -122,6 +122,13 @@
   body.givre .sfsol { fill:#c4d2d8; } body.abime .sfsol { fill:#bcaecb; }
   .sfbt { display:flex; gap:8px; justify-content:center; margin-top:6px; } .sfbt button { background:#2a2350; color:#fff; border:1px solid #4b4580; border-radius:10px; padding:6px 12px; font:inherit; font-size:.88em; } .sfbt button:disabled { opacity:.4; }
   .sfcible { fill:#7dffb033; stroke:#15803d; stroke-width:3; stroke-dasharray:6 4; animation:pulse2 1.3s ease-in-out infinite; }
+  /* 14/11 : Terres brûlées habillées par Gemini (sol des salles, roche) */
+  body:not(.givre):not(.abime) .dalle .fond { fill:url(#solimg); } body:not(.givre):not(.abime) .dalle .grille { display:none; }
+  body:not(.givre):not(.abime) .dalle:not(.visite) { filter:brightness(.72); }
+  body:not(.givre):not(.abime) .parch, body:not(.givre):not(.abime) .roc { fill:url(#rocimg); }
+  body:not(.givre):not(.abime) .brume { fill:#1c1310; } body:not(.givre):not(.abime) svg.ile { background:#1c1310 !important; border-color:#7a3b12 !important; }
+  body:not(.givre):not(.abime) .bord { fill:#120b07; stroke:#120b07; }
+  body:not(.givre):not(.abime) .ico { fill:#fff3dc !important; filter:drop-shadow(0 1px 2px #000) !important; } body:not(.givre):not(.abime) .niv { fill:#ffd27a !important; }
 </style>
 </head>
 <body>
@@ -130,7 +137,7 @@
 <script>
 const ZOK = () => localStorage.getItem('guilde-tuto') === 'fait'; // Zéphine : débloquée par le tutoriel (12/11)
 
-const VERSION = '20261114-184435';
+const VERSION = '20261114-185418';
 function verifieVersion() {
   fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
     v = (v || '').trim(); if (!v || v === VERSION || document.getElementById('majbar')) return;
@@ -143,14 +150,14 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261114-184435"></script>
-<script src="musique.js?v=20261114-184435"></script>
-<script src="donnees.js?v=20261114-184435"></script>
-<script src="guide.js?v=20261114-184435"></script>
-<script src="odyssee.js?v=20261114-184435"></script>
-<script src="odyssee-sansfin.js?v=20261114-184435"></script>
-<script src="pantheon.js?v=20261114-184435"></script>
-<script src="chronique.js?v=20261114-184435"></script>
+<script src="cartes.js?v=20261114-185418"></script>
+<script src="musique.js?v=20261114-185418"></script>
+<script src="donnees.js?v=20261114-185418"></script>
+<script src="guide.js?v=20261114-185418"></script>
+<script src="odyssee.js?v=20261114-185418"></script>
+<script src="odyssee-sansfin.js?v=20261114-185418"></script>
+<script src="pantheon.js?v=20261114-185418"></script>
+<script src="chronique.js?v=20261114-185418"></script>
 <script>
 // le moteur du Duel n'est pas chargé ici : les cartes de l'Odyssée appellent degats/soin seulement en combat (dans duel.html)
 const log = () => {}, degats = () => {}, soin = () => {}, altere = () => {}, invoque = () => {}, adv = () => ({}), fin = () => {};
@@ -422,7 +429,7 @@ function carteSVG() {
     <filter id="papier" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".012" numOctaves="4" seed="7"/><feColorMatrix values="${TEINTE_PAPIER[R.acte] || TEINTE_PAPIER.brulees}"/><feComposite in2="SourceGraphic" operator="in"/><feBlend in2="SourceGraphic" mode="multiply"/></filter>
     <filter id="flou" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="9"/></filter>
     <pattern id="hach" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(35)"><rect width="9" height="9" fill="#bfa77a"/><line x1="0" y1="0" x2="0" y2="9" stroke="#6b5233" stroke-width="2"/></pattern>
-    <pattern id="quad" width="15" height="15" patternUnits="userSpaceOnUse"><path d="M15,0V15H0" fill="none" stroke="#4a3620" stroke-opacity=".28" stroke-width="1"/></pattern></defs>
+    <pattern id="solimg" width="120" height="120" patternUnits="userSpaceOnUse"><image href="decor/tuile-sol-brulees.webp?v=1" width="120" height="120"/></pattern><pattern id="rocimg" width="150" height="150" patternUnits="userSpaceOnUse"><image href="decor/tuile-roche-brulees.webp?v=1" width="150" height="150"/></pattern><pattern id="quad" width="15" height="15" patternUnits="userSpaceOnUse"><path d="M15,0V15H0" fill="none" stroke="#4a3620" stroke-opacity=".28" stroke-width="1"/></pattern></defs>
     <rect x="${-M}" y="${-M}" width="${VBW + 2 * M}" height="${VBH + 2 * M}" class="parch" filter="url(#papier)"/>
     <g id="roches">${P.map(p => p.roche).join('')}</g><g id="bords">${P.map(p => p.bord).join('')}</g><g id="sols">${P.map(p => p.sol).join('')}</g>
     <g id="brume" filter="url(#flou)">${brume}</g>
