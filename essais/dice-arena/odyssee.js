@@ -34,7 +34,7 @@ const MONSTRES = {
     renforts:[] },
   cultiste:    { nom:'Cultiste du feu', titre:'l’illuminé', emoji:'🧙', c:'#9b2a6b', pv:14, role:'Invoque des flammèches, frappe fort sur un 6.', cit:'« Le feu purifie tout ! »',
     garde:{ n:'Voile de fumée', txt:'1 dé impair', d:'Bouclier 4.', cond:vs => vs.length === 1 && vs[0] % 2 === 1, val:() => 4, f:J => { J.gardeB += 4; log(`${J.nom} : Voile de fumée, Bouclier 4.`); } },
-    pouvoir:{ n:'Appel des flammes', txt:'dé = 6', d:'8 dégâts à une cible, ou une Flammèche 2 / 2 Charge si la ligne est vide.', cond:vs => vs.length === 1 && vs[0] === 6, cible:'ennemi', f:(J, vs, k) => { if (!J.front.length) invoque(J, { n:'Flammèche', a:2, v:2, charge:true }); else degats(k, 8); } },
+    pouvoir:{ n:'Appel des flammes', txt:'dé = 6', d:'8 dégâts à une cible, ou une Flammèche 2 / 2 Charge si la ligne est vide.', cond:vs => vs.length === 1 && vs[0] === 6, cible:'ennemi', f:(J, vs, k) => { if (!J.front.length) { log('🔥 Sa ligne est vide : il invoque une Flammèche à la place des 8 dégâts (elle a la Charge, elle attaque tout de suite).'); invoque(J, { n:'Flammèche', a:2, v:2, charge:true }); } else { log('🔥 Il a déjà une créature : 8 dégâts à la place de la Flammèche.'); degats(k, 8); } } },
     renforts:[{ n:'Flammèche', a:2, v:2, charge:true }] },
   elementaire: { nom:'Élémentaire de lave', titre:'le brûlant', emoji:'🌋', c:'#ff4a1a', pv:20, role:'Le plus dangereux : gros dégâts, et une Coulée quand sa jauge est pleine.', cit:'« … »',
     garde:{ n:'Croûte', txt:'1 dé', d:'Bouclier = la valeur du dé.', cond:vs => vs.length === 1, val:vs => vs[0], f:(J, vs) => { J.gardeB += vs[0]; log(`${J.nom} : Croûte, Bouclier ${vs[0]}.`); } },
