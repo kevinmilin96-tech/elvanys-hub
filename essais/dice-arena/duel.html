@@ -661,7 +661,7 @@
   .barre .ultbtn { position:absolute; left:50%; top:100%; transform:translate(-50%, 4px); z-index:8; white-space:nowrap; background:linear-gradient(#ffe27a, #e8a21f); color:#2b1d0a; font:bold 3.2cqw/1.2 Georgia, serif; padding:1.1cqw 2.6cqw; border-radius:99px; box-shadow:0 0 12px #ffd23acc, 0 2px 6px #000a; animation:ultpulse 1.2s ease-in-out infinite; cursor:pointer; }
   .barre .ultbtn.manque { background:#3a2f12; color:#ffd27a; box-shadow:0 0 8px #ffd23a66; animation:none; }
   @keyframes ultpulse { 50% { transform:translate(-50%, 4px) scale(1.08); box-shadow:0 0 22px #ffd23a, 0 2px 6px #000a; } }
-  .barre .etats { position:absolute !important; left:150% !important; right:auto !important; top:-15% !important; bottom:auto !important; width:auto !important; display:flex !important; flex-direction:column !important; gap:5px; z-index:30; background:none !important; padding:0 !important; }
+  .barre .etats { position:absolute !important; left:150% !important; right:auto !important; top:-15% !important; bottom:auto !important; width:auto !important; display:flex !important; flex-direction:column !important; gap:5px; z-index:5; background:none !important; padding:0 !important; }
   .barre .etat { position:relative; width:32px; height:32px; border-radius:50%; background:radial-gradient(#3a2f5a, #15132b); border:2px solid #f3c96b; display:grid; place-items:center; font-size:17px; box-shadow:0 0 10px #f3c96b88; animation:etatbrille 1.6s ease-in-out infinite; cursor:pointer; }
   .barre .etat b { position:absolute; right:-6px; bottom:-5px; background:#b91c1c; color:#fff; border-radius:99px; font:bold 11px/1 Georgia, serif; padding:2px 4px; }
   @keyframes etatbrille { 50% { box-shadow:0 0 18px #f3c96bcc; } }
@@ -680,7 +680,7 @@
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
 // 14/11 : l'Odyssée sans fin a ses propres emplacements (odyssee.js lit SANSFIN)
 const SANSFIN = new URLSearchParams(location.search).get('sansfin') === '1', ODY_PAGE = 'odyssee.html' + (SANSFIN ? '?sansfin=1' : '');
-const VERSION = '20261114-202014';
+const VERSION = '20261114-202125';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -699,11 +699,11 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261114-202014"></script>
-<script src="musique.js?v=20261114-202014"></script>
-<script src="donnees.js?v=20261114-202014"></script>
-<script src="odyssee.js?v=20261114-202014"></script>
-<script src="chronique.js?v=20261114-202014"></script>
+<script src="cartes.js?v=20261114-202125"></script>
+<script src="musique.js?v=20261114-202125"></script>
+<script src="donnees.js?v=20261114-202125"></script>
+<script src="odyssee.js?v=20261114-202125"></script>
+<script src="chronique.js?v=20261114-202125"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -2215,14 +2215,14 @@ async function joueFX() {
 // toucher l'écran pendant les animations les accélère
 document.addEventListener('pointerdown', () => { if (fxOn && !(S && S.tuto)) fxVite = .5; }, true); // 14/11 : plus d'accélération dans le tutoriel
 </script>
-<script src="profil.js?v=20261114-202014"></script>
-<script src="pantheon.js?v=20261114-202014"></script>
-<script src="tuto.js?v=20261114-202014"></script>
-<script src="deux.js?v=20261114-202014"></script>
-<script src="invasion.js?v=20261114-202014"></script>
-<script src="enigme-table.js?v=20261114-202014"></script>
-<script src="forge.js?v=20261114-202014"></script>
-<script src="semaine.js?v=20261114-202014"></script>
-<script src="enigme.js?v=20261114-202014"></script>
+<script src="profil.js?v=20261114-202125"></script>
+<script src="pantheon.js?v=20261114-202125"></script>
+<script src="tuto.js?v=20261114-202125"></script>
+<script src="deux.js?v=20261114-202125"></script>
+<script src="invasion.js?v=20261114-202125"></script>
+<script src="enigme-table.js?v=20261114-202125"></script>
+<script src="forge.js?v=20261114-202125"></script>
+<script src="semaine.js?v=20261114-202125"></script>
+<script src="enigme.js?v=20261114-202125"></script>
 </body>
 </html>
