@@ -75,6 +75,8 @@ const ELEMENTS = [
   ['main_haut_gauche', 'coin', '', '◤'], ['main_bas_droit', 'coin', '', '◢'],
   ...(PLATEAU ? [['champ_haut_gauche', 'coin', '', '◸'], ['champ_bas_droit', 'coin', '', '◿']] : []),
   ['coeur_bas', 'coeur', '', '30'], ['bouclier_bas', 'bouc', '', '6'], ['etiquettes_bas', 'etq', '', '🂠 4 en main'],
+  // 14/11 nuit : les effets, un par un (6 par joueur) : chacun s'affiche « icône + nom » à sa place
+  ...['haut', 'bas'].flatMap(c => ['⚔ Contre-attaque 6', '🔥 Fournaise', '🪤 Piège', '💨 Esquive', '🌿 Épines 2', '☠ Poison 3'].map((t, i) => [`effet_${c}_${i + 1}`, 'etq', '', `${i + 1} · ${t}`])),
 ];
 function zone() { let z = document.getElementById('zm'); if (!z) { z = document.createElement('div'); z.id = 'zm'; z.className = 'zone'; z.textContent = 'cartes en main'; pl.prepend(z); }
   const a = R.main_haut_gauche || [25, 83.5], b = R.main_bas_droit || [82, 97.5]; z.style.left = a[0] + '%'; z.style.top = a[1] + '%'; z.style.width = (b[0] - a[0]) + '%'; z.style.height = (b[1] - a[1]) + '%'; }
@@ -91,6 +93,8 @@ function dessine() {
   if (!R.cadre_haut) R.cadre_haut = [...R.portrait_haut]; if (!R.cadre_bas) R.cadre_bas = [...R.portrait_bas];
   if (PLATEAU && !R.champ_haut_gauche) { R.champ_haut_gauche = [19, 22]; R.champ_bas_droit = [81, 67]; }
   if (!R.main_haut_gauche) { R.main_haut_gauche = [25, 83.5]; R.main_bas_droit = [82, 97.5]; }
+  // places des effets par défaut : sous (en haut) ou au-dessus (en bas) du cadre des étiquettes, sur deux colonnes
+  for (const c of ['haut', 'bas']) for (let i = 0; i < 6; i++) { const k = `effet_${c}_${i + 1}`; if (R[k]) continue; const b = R['etiquettes_' + c] || [79.3, c === 'haut' ? 15.85 : 74.65], sens = c === 'haut' ? 1 : -1; R[k] = [+(b[0] + (i % 2 ? 7 : -7)).toFixed(2), +(b[1] + sens * (7 + Math.floor(i / 2) * 3.4)).toFixed(2)]; }
   pl.style.setProperty('--m', R.taille_medaillon + 'cqw'); pl.style.setProperty('--p', R.taille_portrait + 'cqw');
   for (const [k, cls, img, txt] of ELEMENTS) {
     const e = document.createElement('div'); e.className = 'el ' + cls; e.dataset.k = k;
@@ -104,7 +108,7 @@ function dessine() {
   tm.value = R.taille_medaillon; vm.textContent = R.taille_medaillon; tp.value = R.taille_portrait; vp.textContent = R.taille_portrait;
 }
 let cour = null, choisi = null;
-const NOMS = { anneau_haut:'anneaux vie + Ultime du haut', anneau_bas:'anneaux vie + Ultime du bas', cadre_haut:'cadre du portrait du haut', cadre_bas:'cadre du portrait du bas', champ_haut_gauche:'coin haut gauche de la zone centrale', champ_bas_droit:'coin bas droit de la zone centrale', frappe:'Frappe', technique:'Technique', garde:'Garde', pouvoir:'Pouvoir', transmu:'Transmuter', equipe:'Équipe', de_premier:'1er dé', de_dernier:'dernier dé', portrait_haut:'portrait du haut', portrait_bas:'portrait du bas', coeur_haut:'cœur du haut', bouclier_haut:'bouclier du haut', etiquettes_haut:'étiquettes du haut', coeur_bas:'cœur du bas', bouclier_bas:'bouclier du bas', etiquettes_bas:'étiquettes du bas', main_haut_gauche:'coin haut-gauche des cartes', main_bas_droit:'coin bas-droit des cartes' };
+const NOMS = { ...Object.fromEntries(['haut', 'bas'].flatMap(c => [1, 2, 3, 4, 5, 6].map(i => [`effet_${c}_${i}`, `effet ${i} du ${c}`]))), anneau_haut:'anneaux vie + Ultime du haut', anneau_bas:'anneaux vie + Ultime du bas', cadre_haut:'cadre du portrait du haut', cadre_bas:'cadre du portrait du bas', champ_haut_gauche:'coin haut gauche de la zone centrale', champ_bas_droit:'coin bas droit de la zone centrale', frappe:'Frappe', technique:'Technique', garde:'Garde', pouvoir:'Pouvoir', transmu:'Transmuter', equipe:'Équipe', de_premier:'1er dé', de_dernier:'dernier dé', portrait_haut:'portrait du haut', portrait_bas:'portrait du bas', coeur_haut:'cœur du haut', bouclier_haut:'bouclier du haut', etiquettes_haut:'étiquettes du haut', coeur_bas:'cœur du bas', bouclier_bas:'bouclier du bas', etiquettes_bas:'étiquettes du bas', main_haut_gauche:'coin haut-gauche des cartes', main_bas_droit:'coin bas-droit des cartes' };
 function choisir(e) { document.querySelectorAll('.el.choisi').forEach(x => x.classList.remove('choisi')); choisi = e; e.classList.add('choisi'); choix.textContent = `Choisi : ${NOMS[e.dataset.k]} (${R[e.dataset.k].join(' ; ')}) · taille ${(R.tailles || {})[e.dataset.k] || 100} %`; }
 // flèches : 0,1 % de l'image par toucher
 // taille propre à l'élément choisi (en % de sa taille de départ), gardée dans R.tailles

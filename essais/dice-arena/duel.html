@@ -674,6 +674,9 @@
   .icopb { width:1.35em; height:1.35em; vertical-align:-.35em; margin-right:2px; } /* 14/11 nuit : icônes Gemini de la Garde (temporaire) et du Bouclier (permanent) */
   /* 14/11 nuit : Garde et Bouclier côte à côte (avant, le Bouclier recouvrait la Garde) */
   .unique #b-J .bdg.bg:not([hidden]) ~ .bdg.bb, .unique #b-O .bdg.bg:not([hidden]) ~ .bdg.bb { transform:translateX(8.5cqw); }
+  .effets { position:absolute; inset:0; pointer-events:none; z-index:5; } .effets .effet { position:absolute; transform:translate(-50%, -50%); pointer-events:auto; white-space:nowrap; font:bold 2.4cqw Georgia, serif; color:#f6e7c1; text-shadow:0 1px 2px #000; background:#15102aea; border:1px solid #f3c96b88; border-radius:8px; padding:.3cqw 1.2cqw; box-shadow:0 2px 6px #000a; }
+  /* 14/11 nuit : ces effets sont maintenant des étiquettes placées (effetsHTML) : plus de lignes dans le cadre de droite (elles le faisaient déborder) */
+  .unique .pastilles :is([data-k="contre"], [data-k="piege"], [data-k="fournaise"], [data-k="paillasse"], [data-k="esquive"], [data-k="cor"], [data-k="epines"], [data-k="poison"], [data-k="saigne"], [data-k="handicap"], [data-k="silence"]) { display:none !important; }
 </style>
 </head>
 <body>
@@ -684,7 +687,7 @@
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
 // 14/11 : l'Odyssée sans fin a ses propres emplacements (odyssee.js lit SANSFIN)
 const SANSFIN = new URLSearchParams(location.search).get('sansfin') === '1', EPREUVE_PAGE = new URLSearchParams(location.search).get('epreuve') === '1', ODY_PAGE = EPREUVE_PAGE ? 'epreuves.html' : 'odyssee.html' + (SANSFIN ? '?sansfin=1' : '');
-const VERSION = '20261114-233318';
+const VERSION = '20261114-233654';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -703,16 +706,16 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261114-233318"></script>
-<script src="musique.js?v=20261114-233318"></script>
-<script src="rang.js?v=20261114-233318"></script>
-<script src="heros-etoiles.js?v=20261114-233318"></script>
-<script src="donnees.js?v=20261114-233318"></script>
-<script src="odyssee.js?v=20261114-233318"></script>
-<script src="bestiaire.js?v=20261114-233318"></script>
-<script src="aventure.js?v=20261114-233318"></script>
-<script src="odyssee-sansfin.js?v=20261114-233318"></script>
-<script src="chronique.js?v=20261114-233318"></script>
+<script src="cartes.js?v=20261114-233654"></script>
+<script src="musique.js?v=20261114-233654"></script>
+<script src="rang.js?v=20261114-233654"></script>
+<script src="heros-etoiles.js?v=20261114-233654"></script>
+<script src="donnees.js?v=20261114-233654"></script>
+<script src="odyssee.js?v=20261114-233654"></script>
+<script src="bestiaire.js?v=20261114-233654"></script>
+<script src="aventure.js?v=20261114-233654"></script>
+<script src="odyssee-sansfin.js?v=20261114-233654"></script>
+<script src="chronique.js?v=20261114-233654"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -1616,7 +1619,27 @@ document.addEventListener('click', e => {
   fenetre(`<h2>${x[0]}</h2><p><b>${p.textContent.trim()}</b></p><p>${x[1]}</p><div class="choixh"><button onclick="fermer()">Compris</button></div>`);
 }, true);
 // 14/11 (l'utilisateur : « la Contre-attaque, je ne la vois nulle part ») : les protections et réactions actives en icônes autour du portrait
+// 14/11 nuit (l'utilisateur : « mets les noms, et plusieurs effets que je place un par un dans les cadres ; à 3 ou 4 ça déborde ») :
+// chaque effet = une étiquette « icône + nom », posée à sa place (effet_haut_1…6 / effet_bas_1…6 de la page de placement)
+function effetsListe(P) {
+  return [P.contre && ['contre', '⚔', 'Contre-attaque 6'], P.piege && ['piege', '🪤', 'Piège'], P.fournaise && ['fournaise', '🔥', 'Fournaise'], P.paillasse && ['paillasse', '⚗', 'Paillasse'],
+    P.esquive && ['esquive', '💨', 'Esquive'], P.cor && ['cor', '📯', 'Cor'], P.gardeE && ['epines', '🌿', `Épines ${P.gardeE}`], P.poison && ['poison', '☠', `Poison ${P.poison}`],
+    P.saigne && ['saigne', '🩸', `Saignement ${P.saigne}`], P.handicap && ['handicap', '🎲', 'Handicap'], P.silence && ['silence', '🤐', 'Silence']].filter(Boolean);
+}
+const ETQ_DEFAUT = { haut:[79.3, 15.85], bas:[79.3, 74.65] };
+function placeEffet(R, c, i) {
+  if (R && R[`effet_${c}_${i + 1}`]) return R[`effet_${c}_${i + 1}`];
+  const b = (R && R['etiquettes_' + c]) || ETQ_DEFAUT[c], ligne = Math.floor(i / 2), sens = c === 'haut' ? 1 : -1;
+  return [b[0] + (i % 2 ? 7 : -7), b[1] + sens * (7 + ligne * 3.4)];
+}
+function effetsHTML() {
+  if (!S || !S.J || !S.O) return ''; const R = (typeof plateauIle === 'function' && plateauIle() && PLACEMENTS_ILE[plateauIle()]) || (typeof PLACEMENT_DUEL !== 'undefined' ? PLACEMENT_DUEL : null);
+  const h = [['haut', S.O], ['bas', S.J]].map(([c, P]) => { const l = effetsListe(P); if (l.length > 6) l.splice(5, l.length - 5, ['plus', '➕', `${l.length - 5} autres`]);
+    return l.map(([k, e, t], i) => { const [x, y] = placeEffet(R, c, i); return `<span data-k="${k}" class="effet" style="left:${x}cqw;top:${y}cqh">${e} ${t}</span>`; }).join(''); }).join('');
+  return h ? `<div class="etats effets">${h}</div>` : '';
+}
 function etatsHTML(P) {
+  return ''; // 14/11 nuit : remplacé par effetsHTML (étiquettes placées dans les cadres)
   const l = [P.contre ? ['contre', '⚔', '6'] : null, P.piege ? ['piege', '🪤', ''] : null, P.fournaise ? ['fournaise', '🔥', ''] : null, P.paillasse ? ['paillasse', '⚗', ''] : null,
     P.esquive ? ['esquive', '💨', ''] : null, P.cor ? ['cor', '📯', ''] : null, P.gardeE ? ['epines', '🌿', P.gardeE] : null].filter(Boolean);
   return l.length ? `<span class="etats">${l.map(([k, e, n]) => `<span data-k="${k}" class="etat">${e}${n !== '' ? `<b>${n}</b>` : ''}</span>`).join('')}</span>` : '';
@@ -1688,7 +1711,7 @@ function dessine() {
   document.getElementById('app').innerHTML = `
   <div class="salle"><span class="st">${S.coop ? `<b>⚔️ L’Invasion</b> · ${J.ordi ? `${J.nom} (compagnon) joue…` : J.qui === 'toi' ? 'à toi' : `au tour de ${J.nom}`} · ${S.salle.n}` : S.ody ? `<b>${S.ody.titre}</b> · ${S.salle.n} : ${S.salle.d}${J.reliques.length ? ' <span class="rel">' + J.reliques.map(r => `<i title="${RELIQUES[r].n}" onclick="aideRelique('${r}')">${RELIQUES[r].e}</i>`).join('') + '</span>' : ''}` : `<b>${S.salle.n}</b> · ${S.salle.d}`}</span><span class="sons">
     <button class="sonbt" onclick="GM.parametres()" aria-label="Paramètres" title="Paramètres" style="font-size:18px;line-height:1">⚙️</button></span></div>
-  <div class="plateau tapis unique ${S.lieu ? 'avecLieu' : ''} ${plateauIle() ? 'ile-' + plateauIle() : ''}">${plateauIle() ? animIle(plateauIle()) : S.lieu ? `<div class="champLieu lieu-${S.lieu}"></div>` : ''}${barre(O, true)}${front(O, true)}${front(J, false)}${barre(J, false)}
+  <div class="plateau tapis unique ${S.lieu ? 'avecLieu' : ''} ${plateauIle() ? 'ile-' + plateauIle() : ''}">${effetsHTML()}${plateauIle() ? animIle(plateauIle()) : S.lieu ? `<div class="champLieu lieu-${S.lieu}"></div>` : ''}${barre(O, true)}${front(O, true)}${front(J, false)}${barre(J, false)}
     ${colonneActions(J, h)}
     <div class="des" ontouchstart="glisseDebut(event)" ontouchend="glisseFin(event)">${J.des.map((d, i) => `<div class="d ${sel.includes(d) ? 'sel' : ''} ${d.pose ? 'pose' : ''} ${d.mod ? 'mod' : ''} ${J.aLancer ? 'cache' : ''} ${i === J.neuf && (J.aLancer || Date.now() < (J.neufJusque || 0)) ? 'neuf' : ''}" onclick="choisirDe(${i})"><img src="${FACE(J.id, d.v || 1)}" alt="${d.v || '?'}">${d.sp && !J.aLancer && typeof FACES_FORGE !== 'undefined' ? `<span class="spf">${FACES_FORGE[d.sp].e}</span>` : ''}<div class="sac">${i === J.neuf && (J.aLancer || Date.now() < (J.neufJusque || 0)) ? '✨ neuf' : sacPastilles(J, d)}</div></div>`).join('')}${[...Array(Math.max(0, 5 - J.des.length)).keys()].map(k => { const i = J.des.length + k, t = i - 1;
       return `<div class="d verrou"><div class="cad">🔒</div><div class="sac">${J.tours >= t ? 'Handicap' : 'tour ' + t}</div></div>`; }).join('')}</div>
@@ -2297,14 +2320,14 @@ async function joueFX() {
 // toucher l'écran pendant les animations les accélère
 document.addEventListener('pointerdown', () => { if (fxOn && !(S && S.tuto)) fxVite = .5; }, true); // 14/11 : plus d'accélération dans le tutoriel
 </script>
-<script src="profil.js?v=20261114-233318"></script>
-<script src="pantheon.js?v=20261114-233318"></script>
-<script src="tuto.js?v=20261114-233318"></script>
-<script src="deux.js?v=20261114-233318"></script>
-<script src="invasion.js?v=20261114-233318"></script>
-<script src="enigme-table.js?v=20261114-233318"></script>
-<script src="forge.js?v=20261114-233318"></script>
-<script src="semaine.js?v=20261114-233318"></script>
-<script src="enigme.js?v=20261114-233318"></script>
+<script src="profil.js?v=20261114-233654"></script>
+<script src="pantheon.js?v=20261114-233654"></script>
+<script src="tuto.js?v=20261114-233654"></script>
+<script src="deux.js?v=20261114-233654"></script>
+<script src="invasion.js?v=20261114-233654"></script>
+<script src="enigme-table.js?v=20261114-233654"></script>
+<script src="forge.js?v=20261114-233654"></script>
+<script src="semaine.js?v=20261114-233654"></script>
+<script src="enigme.js?v=20261114-233654"></script>
 </body>
 </html>
