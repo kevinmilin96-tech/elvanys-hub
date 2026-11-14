@@ -197,3 +197,21 @@ if (typeof document !== 'undefined') {
   document.head.appendChild(st);
   appliquePeau(); syncRecompenses();
 }
+
+// =============================================================================================== LE BUTIN DU CAMPEMENT (14/11 nuit, comme les récompenses « pendant ton absence » d'AFK Arena)
+// Il se remplit tout seul : par heure, 8 XP et un demi éclat de Guilde, plus vite quand on monte dans la Tour des épreuves (+5 % par étage passé) ;
+// 12 heures au plus (au-delà, plus rien ne s'ajoute : il faut passer le ramasser). On le ramasse depuis le menu.
+const BUTIN_CLE = 'guilde-butin', BUTIN_MAX_H = 12;
+function butinCalcule() {
+  const b = RJ(BUTIN_CLE, null); if (!b) { localStorage.setItem(BUTIN_CLE, JSON.stringify({ depuis:Date.now() })); return { h:0, xp:0, eclats:0 }; }
+  const etages = Math.max(0, (RJ('guilde-tour-epreuves', {}).etage || 1) - 1), vit = 1 + .05 * etages;
+  const h = Math.min(BUTIN_MAX_H, (Date.now() - b.depuis) / 36e5); return { h, xp:Math.floor(h * 8 * vit), eclats:Math.floor(h * .5 * vit), vit };
+}
+function butinRamasse() {
+  const g = butinCalcule(); if (g.xp < 1 && g.eclats < 1) return g;
+  localStorage.setItem(BUTIN_CLE, JSON.stringify({ depuis:Date.now() }));
+  if (g.xp) gagneXP(g.xp, 'Butin du campement'); if (g.eclats && typeof donneLibres === 'function') donneLibres(g.eclats); return g;
+}
+function butinHTML() { const g = butinCalcule(), plein = g.h >= BUTIN_MAX_H;
+  return `<button class="butin ${plein ? 'plein' : ''}" onclick="butinRamasse(); const rm = document.getElementById('rangmenu'); if (rm) rm.innerHTML = bandeauRangHTML() + butinHTML(); else this.outerHTML = butinHTML();">🎁 Butin du campement : <b>${g.xp} XP · 💠 ${g.eclats}</b>${plein ? ' · plein !' : ` · ${Math.floor(g.h)} h / ${BUTIN_MAX_H} h`}</button>`; }
+if (typeof document !== 'undefined') { const st = document.createElement('style'); st.textContent = `.butin { display:block; width:100%; margin-top:5px; font:12.5px Georgia, serif; color:#f1ecff; background:#1d1838e6; border:1px solid #4b4580; border-radius:12px; padding:5px 8px; } .butin b { color:#f3c96b; } .butin.plein { border-color:#f3c96b; box-shadow:0 0 12px #f3c96b88; animation:butinP 1.6s ease-in-out infinite; } @keyframes butinP { 50% { box-shadow:0 0 2px #f3c96b44; } }`; document.head.appendChild(st); }
