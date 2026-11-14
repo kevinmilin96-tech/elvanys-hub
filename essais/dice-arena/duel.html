@@ -662,7 +662,7 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261114-153744';
+const VERSION = '20261114-154359';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -681,11 +681,11 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261114-153744"></script>
-<script src="musique.js?v=20261114-153744"></script>
-<script src="donnees.js?v=20261114-153744"></script>
-<script src="odyssee.js?v=20261114-153744"></script>
-<script src="chronique.js?v=20261114-153744"></script>
+<script src="cartes.js?v=20261114-154359"></script>
+<script src="musique.js?v=20261114-154359"></script>
+<script src="donnees.js?v=20261114-154359"></script>
+<script src="odyssee.js?v=20261114-154359"></script>
+<script src="chronique.js?v=20261114-154359"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -888,7 +888,7 @@ function pose(J, quoi, ds, k, indexMain) {
   else fx({ t:'carte', key:quoi, s:J === S.J ? 'J' : 'O', nom:c.n, txt:c.d, sorte:{ u:'Créature', s:'Sort', e:'Équipement', r:'Piège' }[c.t], cout, vers:k && k.J && ref(k), vs });
   if (J.id === 'maelle' && six) {
     J.braise += six * (1 + J.front.filter(u => u.apprenti).length);
-    if (J.braise >= 3) { J.braise = 0; J.forgeGratuite = true; log('🔥 3 Braises : la prochaine carte Équipement de Maëlle ne coûte rien.'); }
+    if (J.braise >= 3) { J.braise = 0; J.forgeGratuite = true; log('🔥 3 Braises : la prochaine carte Équipement de Maëlle (Lame trempée, Plastron rivé) coûte 0 PC.'); }
   }
   if (c.u) invoque(J, c.u, quoi);
   if (c.f) c.f(J, vs, k, ds);
@@ -1496,7 +1496,7 @@ const PASTILLES = {
   fournaise:['🔥 Fournaise', 'La prochaine fois que ce héros est blessé, l’adversaire perd la moitié de ces dégâts.'],
   paillasse:['⚗ Paillasse renversée', 'Dès qu’une créature attaque ce héros, le héros adverse reçoit Poison 3.'],
   meute:['🐺 Meute', 'Chaque 6 lancé par Pip ajoute un marqueur. À 3, la Louve arrive sur la ligne de front.'],
-  braises:['🔥 Braises (pouvoir de Maëlle)', 'Chaque fois que Maëlle joue une CARTE avec un dé de 6 (exemple : Marteau de forge, ou Apprenti joué avec un 6), elle gagne une Braise. Les 6 de la Frappe, de la Technique, de la Garde, du Pouvoir et de l’Ultime ne comptent pas. À 3 Braises, sa prochaine carte Équipement (celles à bordure orange : Plastron, Golem…) ne coûte aucun PC.'],
+  braises:['🔥 Braises (pouvoir de Maëlle)', 'Chaque fois que Maëlle joue une CARTE avec un dé de 6 (exemple : Marteau de forge, ou Apprenti joué avec un 6), elle gagne une Braise. Les 6 de la Frappe, de la Technique, de la Garde, du Pouvoir et de l’Ultime ne comptent pas. À 3 Braises, sa prochaine carte ÉQUIPEMENT (dans son deck : Lame trempée et Plastron rivé) coûte 0 PC ; il faut toujours un dé qui remplit sa condition. Les autres cartes (sorts, créatures) gardent leur prix.'],
   braiset:['♨ Brûlures (le Titan de feu)', 'Chaque coup de feu du Titan pose une Brûlure sur toi. À 3 Brûlures, elles explosent : 6 dégâts, puis on repart de 0.'],
   purete:['✦ Pureté', 'Jeton d’Aldric : il annule la prochaine altération (Poison, Saignement, Handicap) qu’il devrait recevoir. Aldric en gagne un quand il pose deux 6 dans le même tour (2 au plus).'],
   handicap:['Handicap', 'Ce héros lancera 1 dé de moins à son prochain tour.'],
@@ -1521,7 +1521,7 @@ function barre(P, haut) {
     ${P.gardeB ? `<span data-k="garde" class="p g pg">🛡 Garde ${P.gardeB}</span>` : ''}${P.gardeE ? `<span data-k="epines" class="p g">🌿 Épines ${P.gardeE}</span>` : ''}${P.esquive ? '<span data-k="esquive" class="p g">💨 Esquive</span>' : ''}
     ${P.bouclier ? `<span data-k="bouclier" class="p g pb">🛡 Bouclier ${P.bouclier}</span>` : ''}${P.contre ? '<span data-k="contre" class="p g">⚔ Contre-attaque</span>' : ''}${P.piege ? '<span data-k="piege" class="p g">🪤 Piège</span>' : ''}
     ${P.cor ? '<span data-k="cor" class="p g">📯 Cor</span>' : ''}${P.fournaise ? '<span data-k="fournaise" class="p g">🔥 Fournaise</span>' : ''}${P.paillasse ? '<span data-k="paillasse" class="p g">⚗ Paillasse</span>' : ''}
-    ${P.id === 'pip' && !P.front.some(u => u.louve) ? `<span data-k="meute" class="p m">🐺 Meute ${P.meute}/3</span>` : ''}${P.braiseT ? `<span data-k="braiset" class="p al">♨ Brûlures ${P.braiseT}/3</span>` : ''}${P.corruption ? `<span data-k="corruption" class="p al">🟣 Corruption ${P.corruption}/${(P.reliques || []).includes('sel') ? 4 : 3}</span>` : ''}${P.givre ? `<span data-k="givre" class="p al">❄ Givre ${P.givre}/${(P.reliques || []).includes('braise') ? 4 : 3}</span>` : ''}${P.id === 'maelle' ? `<span data-k="braises" class="p m">🔥 Braises ${P.braise}/3${P.forgeGratuite ? ' · Équipement gratuit' : ''}</span>` : ''}
+    ${P.id === 'pip' && !P.front.some(u => u.louve) ? `<span data-k="meute" class="p m">🐺 Meute ${P.meute}/3</span>` : ''}${P.braiseT ? `<span data-k="braiset" class="p al">♨ Brûlures ${P.braiseT}/3</span>` : ''}${P.corruption ? `<span data-k="corruption" class="p al">🟣 Corruption ${P.corruption}/${(P.reliques || []).includes('sel') ? 4 : 3}</span>` : ''}${P.givre ? `<span data-k="givre" class="p al">❄ Givre ${P.givre}/${(P.reliques || []).includes('braise') ? 4 : 3}</span>` : ''}${P.id === 'maelle' ? `<span data-k="braises" class="p m">🔥 Braises ${P.braise}/3${P.forgeGratuite ? ' · prochain Équipement à 0 PC' : ''}</span>` : ''}
     ${P.purete ? `<span data-k="purete" class="p pu">✦ Pureté ${P.purete}</span>` : ''}${P.handicap ? '<span data-k="handicap" class="p al">Handicap</span>' : ''}${P.saigne ? `<span data-k="saigne" class="p al">Saignement ${P.saigne}</span>` : ''}
     ${P.poison ? `<span data-k="poison" class="p al">Poison ${P.poison}</span>` : ''}${P.silence ? '<span data-k="silence" class="p al">Silence</span>' : ''}${P.oeuvre ? `<span data-k="oeuvre" class="p pu">Grand œuvre : ${P.oeuvre}</span>` : ''}
     ${P.ultimeFait ? '<span data-k="ultimefait" class="p">Ultime utilisé</span>' : `<span data-k="ultime" class="p ${P.jauge >= JAUGE.max ? 'pu' : ''}">⚡ Ultime ${P.jauge}/${JAUGE.max}</span>`}<span data-k="main" class="p">🂠 ${P.main.length} en main</span></div></div></div>`;
@@ -2156,14 +2156,14 @@ async function joueFX() {
 // toucher l'écran pendant les animations les accélère
 document.addEventListener('pointerdown', () => { if (fxOn && !(S && S.tuto)) fxVite = .5; }, true); // 14/11 : plus d'accélération dans le tutoriel
 </script>
-<script src="profil.js?v=20261114-153744"></script>
-<script src="pantheon.js?v=20261114-153744"></script>
-<script src="tuto.js?v=20261114-153744"></script>
-<script src="deux.js?v=20261114-153744"></script>
-<script src="invasion.js?v=20261114-153744"></script>
-<script src="enigme-table.js?v=20261114-153744"></script>
-<script src="forge.js?v=20261114-153744"></script>
-<script src="semaine.js?v=20261114-153744"></script>
-<script src="enigme.js?v=20261114-153744"></script>
+<script src="profil.js?v=20261114-154359"></script>
+<script src="pantheon.js?v=20261114-154359"></script>
+<script src="tuto.js?v=20261114-154359"></script>
+<script src="deux.js?v=20261114-154359"></script>
+<script src="invasion.js?v=20261114-154359"></script>
+<script src="enigme-table.js?v=20261114-154359"></script>
+<script src="forge.js?v=20261114-154359"></script>
+<script src="semaine.js?v=20261114-154359"></script>
+<script src="enigme.js?v=20261114-154359"></script>
 </body>
 </html>
