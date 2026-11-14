@@ -24,7 +24,15 @@ const GM = (() => {
     p.iv = setInterval(() => { i++; try { p.a.volume = Math.max(0, Math.min(1, de + (cible - de) * i / n)); } catch (e) {} if (i >= n) clearInterval(p.iv); }, 50);
   }
   function eteins(p, sec) { if (!p) return; fondu(p, 0, sec); setTimeout(() => { try { p.a.pause(); p.a.removeAttribute('src'); p.a.load(); } catch (e) {} }, sec * 1000 + 150); }
-  function demarre(p) { const r = p.a.play(); if (r && r.then) r.then(() => fondu(p, p.vol * volM(), 1.5)).catch(() => {}); else fondu(p, p.vol * volM(), 1.5); }
+  // 14/11 (demande de l'utilisateur) : la carte de musique du téléphone (écran verrouillé, volet) montre Moustache et le nom du jeu, plus le logo de Chrome
+  const ICONES = [96, 192, 512].map(n => ({ src:new URL(`icone-${n}.png?v=1`, location.href).href, sizes:`${n}x${n}`, type:'image/png' }));
+  function carteTelephone() {
+    if (!('mediaSession' in navigator) || typeof MediaMetadata === 'undefined') return;
+    const mode = document.title.replace(/^La Guilde des Runes\s*·?\s*/, '').replace(/\s*\(.*\)\s*$/, '') || 'Menu';
+    try { navigator.mediaSession.metadata = new MediaMetadata({ title:mode, artist:'La Guilde des Runes', album:'La Guilde des Runes', artwork:ICONES }); } catch (e) {}
+  }
+  if (!document.querySelector('link[rel="icon"]')) document.head.insertAdjacentHTML('beforeend', '<link rel="icon" href="icone-96.png?v=1"><link rel="apple-touch-icon" href="icone-192.png?v=1">');
+  function demarre(p) { carteTelephone(); const r = p.a.play(); if (r && r.then) r.then(() => fondu(p, p.vol * volM(), 1.5)).catch(() => {}); else fondu(p, p.vol * volM(), 1.5); }
   function joueVoulu() {
     if (!actif || document.hidden) return;
     if (voulu && (!cur || cur.cle !== voulu || cur.a.paused)) { if (!cur || cur.cle !== voulu) { eteins(cur, 1.2); cur = piste(voulu, true); } demarre(cur); }
