@@ -20,9 +20,14 @@
   .p.pv { background:#7a1f2a; } .p.or { background:#6b5212; } .p.vivres { background:#2a5d3a; } .p.vivres.zero { background:#8a1f1f; animation:cligne 1s infinite; }
   @keyframes cligne { 50% { opacity:.5; } }
   .rel i { font-style:normal; margin-right:3px; cursor:pointer; font-size:1.1em; }
+  .bourse { display:flex; gap:6px; flex-wrap:wrap; justify-content:center; font-size:.82em; margin:-4px 0 8px; } .bourse span { background:#0006; border-radius:10px; padding:2px 8px; } .bourse b { color:var(--or); }
   svg.ile { width:100%; aspect-ratio:7 / 9; display:block; background:radial-gradient(circle at 50% 35%, #161a2e, #07070e 72%); border-radius:14px; border:2px solid #3a3160; box-shadow:inset 0 0 50px #000; margin:6px 0; }
   body.abime svg.ile { background:radial-gradient(circle at 50% 35%, #2a1048, #050210 72%); border-color:#a855f7; } body.abime .mur { stroke:#e9d5ff; }
   body.givre svg.ile { background:radial-gradient(circle at 50% 35%, #1d3352, #070b16 72%); border-color:#7fd3ff; } body.givre .mur { stroke:#e8f6ff; }
+  /* 14/11 (l'utilisateur : « la carte qui se dessine, un peu d'ambiance au lieu d'un fond tout noir ») : l'illustration de l'île en fond, assombrie */
+  svg.ile { background:radial-gradient(ellipse at 50% 45%, #0a0b16c4 0%, #07070ee6 70%, #050509 100%), url('menu-recu/ody-terres-brulees.webp?v=1') center/cover !important; }
+  body.givre svg.ile { background:radial-gradient(ellipse at 50% 45%, #0a1426c4 0%, #070b16e6 70%, #04070d 100%), url('menu-recu/ody-givre.webp?v=1') center/cover !important; }
+  body.abime svg.ile { background:radial-gradient(ellipse at 50% 45%, #1a0a30c4 0%, #050210e6 70%, #030108 100%), url('menu-recu/ody-abime.webp?v=1') center/cover !important; }
   button.asc { background:#2a2650; color:#fff; border:1px solid #6b5fb0; border-radius:10px; padding:3px 9px; font:inherit; } button.asc.on { border-color:var(--or); color:var(--or); }
   .mur { fill:none; stroke:#ece6d2; stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round; }
   .mur2 { fill:none; stroke:#8f8774; stroke-width:1; stroke-linecap:round; opacity:.75; }
@@ -112,19 +117,21 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261114-150255"></script>
-<script src="musique.js?v=20261114-150255"></script>
-<script src="donnees.js?v=20261114-150255"></script>
-<script src="odyssee.js?v=20261114-150255"></script>
-<script src="pantheon.js?v=20261114-150255"></script>
-<script src="chronique.js?v=20261114-150255"></script>
+<script src="cartes.js?v=20261114-150442"></script>
+<script src="musique.js?v=20261114-150442"></script>
+<script src="donnees.js?v=20261114-150442"></script>
+<script src="odyssee.js?v=20261114-150442"></script>
+<script src="pantheon.js?v=20261114-150442"></script>
+<script src="chronique.js?v=20261114-150442"></script>
 <script>
 // le moteur du Duel n'est pas chargé ici : les cartes de l'Odyssée appellent degats/soin seulement en combat (dans duel.html)
 const log = () => {}, degats = () => {}, soin = () => {}, altere = () => {}, invoque = () => {}, adv = () => ({}), fin = () => {};
 document.head.insertAdjacentHTML('beforeend', '<style>' + (typeof CSS_CARTE !== 'undefined' ? CSS_CARTE : '') + '</style>');
 let R = null; // la partie en cours
 const sauve = () => ecrireOdyssee(R);
-const fenetre = html => { document.getElementById('fen').innerHTML = `<div class="fenetre"><div>${html}</div></div>`; };
+// 14/11 (l'utilisateur : « quand on doit payer, on ne voit pas ce qu'on a ») : chaque fenêtre rappelle l'or, la vie, l'huile et les clés
+const bourse = () => R ? `<div class="bourse"><span>💰 <b>${R.or}</b> or</span><span>❤ ${R.pv}/${R.pvMax}</span><span>🪔 ${R.vivres}</span><span>🗝 ${R.cles}</span></div>` : '';
+const fenetre = html => { document.getElementById('fen').innerHTML = `<div class="fenetre"><div>${bourse()}${html}</div></div>`; };
 const fermer = () => { document.getElementById('fen').innerHTML = ''; };
 const NIV = ['', 'I', 'II', 'III'];
 
