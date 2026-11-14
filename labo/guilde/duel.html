@@ -680,7 +680,7 @@
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
 // 14/11 : l'Odyssée sans fin a ses propres emplacements (odyssee.js lit SANSFIN)
 const SANSFIN = new URLSearchParams(location.search).get('sansfin') === '1', ODY_PAGE = 'odyssee.html' + (SANSFIN ? '?sansfin=1' : '');
-const VERSION = '20261114-210227';
+const VERSION = '20261114-210447';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -699,13 +699,13 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261114-210227"></script>
-<script src="musique.js?v=20261114-210227"></script>
-<script src="rang.js?v=20261114-210227"></script>
-<script src="donnees.js?v=20261114-210227"></script>
-<script src="odyssee.js?v=20261114-210227"></script>
-<script src="aventure.js?v=20261114-210227"></script>
-<script src="chronique.js?v=20261114-210227"></script>
+<script src="cartes.js?v=20261114-210447"></script>
+<script src="musique.js?v=20261114-210447"></script>
+<script src="rang.js?v=20261114-210447"></script>
+<script src="donnees.js?v=20261114-210447"></script>
+<script src="odyssee.js?v=20261114-210447"></script>
+<script src="aventure.js?v=20261114-210447"></script>
+<script src="chronique.js?v=20261114-210447"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -1243,16 +1243,17 @@ function combatAuto(run, c) {
   return cb.resultat;
 }
 // une Odyssée entière jouée par l'ordinateur (pilote de odyssee.js) : pour l'équilibrage. Retourne un bilan.
-function simuleOdyssee(heros, graine, acte) {
+function simuleOdyssee(heros, graine, acte, run0) {
   localStorage.removeItem('guilde-nemesis'); // le simulateur ne garde pas de Némésis d'une Odyssée à l'autre
-  const run = nouvelleOdyssee(heros, graine, acte); const vie = [], morts = [];
+  const run = run0 || nouvelleOdyssee(heros, graine, acte); const vie = [], morts = [];
   const bilan = (gagne, raison) => ({ gagne, raison, heros, cases:run.stats.cases, combats:run.stats.combats, victoires:run.stats.victoires, tours:run.stats.tours, pv:run.pv, pvMax:run.pvMax, or:run.or, vivres:run.vivres, deck:run.deck.length, reliques:run.reliques.length, defis:run.stats.defis, vie, fragments:run.fragments });
   const rang = { c:0, r:1, e:2 }, meilleure = l => [...l].sort((a, b) => rang[rarete(b)] - rang[rarete(a)])[0];
   for (let pas = 0; pas < 120; pas++) {
     const c = caseA(run, run.pos.x, run.pos.y);
     if ((c.t === 'monstre' || c.t === 'elite' || c.t === 'boss') && !c.fait) {
       const res = combatAuto(run, c); vie.push({ t:c.t, ennemi:run.combat.ennemi, pv:run.pv, tours:res.tours, gagne:res.gagne });
-      const out = recompenseCombat(run); if (!out.gagne) return bilan(false, 'mort:' + c.t + ':' + vie[vie.length - 1].ennemi); if (out.boss) return bilan(true, 'boss');
+      const out = recompenseCombat(run); if (out.equip && run.aventure && !run.aventure.equip[EQUIP[out.equip][0]]) equipe(run, out.equip);
+      if (!out.gagne) return bilan(false, 'mort:' + c.t + ':' + vie[vie.length - 1].ennemi); if (out.boss) return bilan(true, 'boss');
       if (out.draft && run.deck.length < 30) gardeCarte(run, meilleure(out.draft)); continue;
     }
     if (c.t === 'source' && !c.fait) source(run, c, 'soin');
@@ -1266,6 +1267,19 @@ function simuleOdyssee(heros, graine, acte) {
     const [x, y] = chemin[0]; const r = deplace(run, x, y); if (!r) return bilan(false, 'bloque:' + caseA(run, x, y).t); if (r.mort) return bilan(false, 'epuise');
   }
   return bilan(false, 'trop long');
+}
+// 14/11 nuit : la Grande aventure jouée par l'ordinateur (3 îles à la suite, secondes chances comptées), pour l'équilibrage
+function simuleAventure(heros, essaisMax = 3) {
+  let run = nouvelleAventure(heros); const ch = []; let essais = 0;
+  for (let i = 0; i < 12; i++) {
+    const b = simuleOdyssee(heros, null, run.acte, run); ch.push({ acte:run.acte, gagne:b.gagne, raison:b.raison, pv:b.pv });
+    if (!b.gagne) { if (essais >= essaisMax) return { fini:false, chapitre:run.aventure.chapitre, essais, ch }; essais++; run = recommenceIle(run); continue; }
+    if (run.aventure.chapitre >= 3) return { fini:true, chapitre:3, essais, ch, niveau:run.aventure.niveau, equip:Object.values(run.aventure.equip).filter(Boolean).length };
+    const l = equipTrouve(run, 2); const k = l.find(x => !run.aventure.equip[EQUIP[x][0]]) || l[0]; if (k) equipe(run, k);
+    niveauSuivant(run, brasse(Math.random, Object.keys(BONUS_NIV))[0]); if (run.reliques.length > 1) run.reliques = [run.reliques[0]];
+    run = ileSuivante(run);
+  }
+  return { fini:false, chapitre:run.aventure.chapitre, essais, ch };
 }
 function usePotion(i) {
   if (!S || S.fini || S.J.aLancer || (!S.auto && roule)) return;
@@ -2225,14 +2239,14 @@ async function joueFX() {
 // toucher l'écran pendant les animations les accélère
 document.addEventListener('pointerdown', () => { if (fxOn && !(S && S.tuto)) fxVite = .5; }, true); // 14/11 : plus d'accélération dans le tutoriel
 </script>
-<script src="profil.js?v=20261114-210227"></script>
-<script src="pantheon.js?v=20261114-210227"></script>
-<script src="tuto.js?v=20261114-210227"></script>
-<script src="deux.js?v=20261114-210227"></script>
-<script src="invasion.js?v=20261114-210227"></script>
-<script src="enigme-table.js?v=20261114-210227"></script>
-<script src="forge.js?v=20261114-210227"></script>
-<script src="semaine.js?v=20261114-210227"></script>
-<script src="enigme.js?v=20261114-210227"></script>
+<script src="profil.js?v=20261114-210447"></script>
+<script src="pantheon.js?v=20261114-210447"></script>
+<script src="tuto.js?v=20261114-210447"></script>
+<script src="deux.js?v=20261114-210447"></script>
+<script src="invasion.js?v=20261114-210447"></script>
+<script src="enigme-table.js?v=20261114-210447"></script>
+<script src="forge.js?v=20261114-210447"></script>
+<script src="semaine.js?v=20261114-210447"></script>
+<script src="enigme.js?v=20261114-210447"></script>
 </body>
 </html>
