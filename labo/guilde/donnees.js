@@ -193,7 +193,7 @@ const DECK_TAILLE = 21, DECK_MAX = 2;
 const deckBase = id => HEROS[id].monstre ? [] : [...HEROS[id].deck, ...GUILDE];
 // la collection : les cartes rencontrées pendant les Odyssées (gardées sur le téléphone), utilisables dans l'éditeur de deck du Duel
 const collectionCartes = () => { try { return JSON.parse(localStorage.getItem('guilde-collection') || '[]').filter(k => CARTES[k]); } catch (e) { return []; } };
-const poolDe = id => [...new Set([...HEROS[id].deck, ...(POOL_PLUS[id] || []), ...GUILDE, ...collectionCartes()])];
+const poolDe = id => [...new Set([...HEROS[id].deck, ...(POOL_PLUS[id] || []), ...GUILDE, ...collectionCartes().filter(k => !CARTES[k].heros || CARTES[k].heros === id)])];
 function deckValide(id, d) {
   if (!Array.isArray(d) || d.length !== DECK_TAILLE) return false; const pool = poolDe(id), n = {};
   return d.every(k => { n[k] = (n[k] || 0) + 1; return pool.includes(k) && n[k] <= DECK_MAX; });
@@ -203,3 +203,18 @@ function deckDe(id) {
   return deckBase(id);
 }
 
+
+// =============================================================================================== 14/11 nuit : les CARTES NOUVELLES du Rang de la Guilde
+// Une par héros + une de la Guilde, gagnées aux rangs 5, 9, 13, 16, 19, 22 et 26 (rang.js, ROUTE). Épiques. Elles entrent alors dans la
+// collection (éditeur de deck de la Tour des héros) et peuvent sortir aux tirages de l'Odyssée. heros = réservée à ce héros.
+Object.assign(CARTES, {
+  n_maelle: { n:'Coup de l’enclume', t:'s', c:2, r:'e', nouv:true, heros:'maelle', txt:'2 dés de 5 ou +', d:'Dégâts égaux à leur somme à une cible (10 à 12).', cond:vs => vs.length === 2 && vs.every(v => v >= 5), cible:'ennemi', f:(J, vs, k) => degats(k, somme(vs)), ia:() => 50 },
+  n_pip:    { n:'Louve blanche', t:'u', c:3, r:'e', nouv:true, heros:'pip', txt:'dé ≤ 2', d:'Unité 3 / 7, Barrière. À son arrivée, +1 marqueur de Meute.', cond:vs => un(vs) && vs[0] <= 2, u:{ n:'Louve blanche', a:3, v:7, barriere:true }, f:J => ajouteMeute(J, 1) },
+  n_oria:   { n:'Carnet du cartographe', t:'s', c:1, r:'e', nouv:true, heros:'oria', txt:'2 dés qui se suivent', d:'Pioche 2 cartes et gagne une relance.', cond:vs => suite(vs, 2), f:J => { pioche(J, 2); J.relance++; log(`${J.nom} gagne une relance.`); }, ia:J => J.main.length < 5 ? 30 : 12 },
+  n_aldric: { n:'Aube protectrice', t:'s', c:2, r:'e', nouv:true, heros:'aldric', txt:'2 dés pairs', d:'Ton héros gagne un Bouclier égal à leur somme.', cond:vs => vs.length === 2 && vs.every(pair), f:(J, vs) => { J.bouclier = (J.bouclier || 0) + somme(vs); log(`${J.nom} : Bouclier +${somme(vs)}.`); }, ia:J => J.pv < J.pvMax * .8 ? 34 : 14 },
+  n_gorm:   { n:'Chant des ancêtres', t:'s', c:2, r:'e', nouv:true, heros:'gorm', txt:'dé pair', d:'Toutes tes créatures gagnent +2 attaque, pour toute la partie.', cond:vs => un(vs) && pair(vs[0]), f:J => { J.front.forEach(u => { u.a += 2; }); log('Chant des ancêtres : tes créatures ont +2 attaque.'); }, ia:J => J.front.length * 14 },
+  n_zephine:{ n:'Élixir explosif', t:'s', c:1, r:'e', nouv:true, heros:'zephine', txt:'2 dés qui font 7', d:'Poison 4 sur le héros adverse et 3 dégâts à chaque créature adverse.', cond:vs => vs.length === 2 && somme(vs) === 7, f:J => { altere(adv(J), 'poison', 4); [...adv(J).front].forEach(u => degats({ J:adv(J), u }, 3)); }, ia:J => 26 + adv(J).front.length * 10 },
+  n_guilde: { n:'Rune d’éveil', t:'s', c:0, r:'e', nouv:true, txt:'dé = 6', d:'+2 PC.', cond:vs => un(vs) && vs[0] === 6, f:J => { J.pc = Math.min(6, J.pc + 2); log(`${J.nom} : +2 PC (Rune d’éveil).`); }, ia:J => J.pc <= 3 ? 26 : 6 },
+});
+// une carte nouvelle n'est utilisable qu'une fois gagnée, et seulement par son héros
+const carteOuverte = (k, id) => { const c = CARTES[k]; if (!c) return false; if (c.heros && id && c.heros !== id) return false; if (!c.nouv) return true; try { return JSON.parse(localStorage.getItem('guilde-collection') || '[]').includes(k); } catch (e) { return false; } };

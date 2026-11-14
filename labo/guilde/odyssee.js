@@ -365,7 +365,7 @@ const RARETE = { c:'Commune', r:'Rare', e:'Épique', m:'Malédiction' };
 // toutes les cartes qu'on peut tirer (jamais les malédictions)
 // 10/11 (décision de l'utilisateur) : tirage et marchand = toutes les cartes, SAUF celles qui ne marchent qu'avec un autre héros
 const CARTES_LIEES = { apprenti:'maelle', hurlement:'pip', lien:'pip' };
-const cartesTirables = heros => Object.keys(CARTES).filter(k => rarete(k) !== 'm' && (!CARTES_LIEES[k] || !heros || CARTES_LIEES[k] === heros));
+const cartesTirables = heros => Object.keys(CARTES).filter(k => rarete(k) !== 'm' && (!CARTES_LIEES[k] || !heros || CARTES_LIEES[k] === heros) && (typeof carteOuverte !== 'function' || carteOuverte(k, heros)));
 // tirage de 3 cartes : plus la source est riche (0 monstre, 1 élite, 2 coffre), plus les rares sortent
 function draft(R, richesse, deja, heros) {
   const poids = [{ c:70, r:25, e:5 }, { c:40, r:45, e:15 }, { c:20, r:50, e:30 }][richesse] || { c:70, r:25, e:5 };

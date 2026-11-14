@@ -44,13 +44,13 @@
   <div class="haut"><a href="menu.html">‹ Menu</a><h1>👤 Mon profil</h1><a href="pantheon.html">Panthéon</a></div>
   <div id="app"></div>
 </main>
-<script src="cartes.js?v=20261114-205752"></script>
-<script src="musique.js?v=20261114-205752"></script>
-<script src="rang.js?v=20261114-205752"></script>
-<script src="donnees.js?v=20261114-205752"></script>
-<script src="odyssee.js?v=20261114-205752"></script>
-<script src="profil.js?v=20261114-205752"></script>
-<script src="pantheon.js?v=20261114-205752"></script>
+<script src="cartes.js?v=20261114-210227"></script>
+<script src="musique.js?v=20261114-210227"></script>
+<script src="rang.js?v=20261114-210227"></script>
+<script src="donnees.js?v=20261114-210227"></script>
+<script src="odyssee.js?v=20261114-210227"></script>
+<script src="profil.js?v=20261114-210227"></script>
+<script src="pantheon.js?v=20261114-210227"></script>
 <script>
 const log = () => {};
 // héros de l'aperçu : le dernier joué (on peut en changer en touchant le portrait, pour voir le cadre sur chacun)
@@ -97,7 +97,7 @@ function rangHTML() {
   <h2>📜 Quêtes du jour</h2><p class="aide">Elles changent chaque jour à minuit. 🔄 : changer une quête (une fois par jour).</p>${Q.j.map((q, k) => ligneQ(q, true, k)).join('')}
   <h2>🗓️ Quêtes de la semaine</h2><p class="aide">Elles changent chaque lundi.</p>${Q.s.map(q => ligneQ(q, false)).join('')}
   <h2>🎁 La route des récompenses</h2><p class="aide">Une récompense à chaque rang. Les titres et leurs cadres se choisissent plus bas ; les dés juste dessous.</p>
-  <details ${i.rang < 6 ? 'open' : ''}><summary>Voir les 30 rangs</summary><div class="route">${Object.entries(ROUTE).map(([n, x]) => `<div class="etape ${+n <= i.rang ? 'ok' : ''}"><span class="num">${+n <= i.rang ? '✅' : n}</span><span class="e">${x[2]}</span><div><b>${x[3]}</b> <em>${GENRE[x[0]]}</em><small>${x[4]}</small></div></div>`).join('')}</div></details>
+  <details ${i.rang < 6 ? 'open' : ''}><summary>Voir les 30 rangs</summary><div class="route">${Object.entries(ROUTE).map(([n, x]) => `<div class="etape ${+n <= i.rang ? 'ok' : ''}"><span class="num">${+n <= i.rang ? '✅' : n}</span><span class="e">${x[2]}</span><div>${x[0] === 'carte' && CARTES[x[1]] ? `<b>${CARTES[x[1]].n}</b> <em>Carte${CARTES[x[1]].heros ? ' de ' + HEROS[CARTES[x[1]].heros].nom : ' de la Guilde'}</em><small>${CARTES[x[1]].d} (🎲 ${CARTES[x[1]].txt}, ${CARTES[x[1]].c} PC)</small>` : `<b>${x[3]}</b> <em>${GENRE[x[0]]}</em><small>${x[4]}</small>`}</div></div>`).join('')}</div></details>
   <h2>🎲 L’apparence de mes dés</h2><p class="aide">Pour le plaisir des yeux : aucun avantage en jeu.</p><div class="grille">${peaux}</div>`;
 }
 dessine();

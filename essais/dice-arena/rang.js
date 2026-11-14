@@ -129,7 +129,14 @@ function gagneXP(xp, raison) {
   if (!xp || typeof localStorage === 'undefined') return;
   const d = lireRang(), avant = d.info.rang; d.xp += xp; d.journal.unshift({ q:Date.now(), xp, raison }); d.journal = d.journal.slice(0, 40); ecrireRang(d);
   const apres = rangDe(d.xp).rang; annonceRang(`+${xp} XP · ${raison}`);
-  for (let r = avant + 1; r <= apres; r++) { const x = ROUTE[r]; annonceRang(`🏆 Rang ${r} de la Guilde !${x ? ` ${x[2]} ${x[3]}` : ''}`, true); }
+  for (let r = avant + 1; r <= apres; r++) { const x = ROUTE[r]; annonceRang(`🏆 Rang ${r} de la Guilde !${x ? ` ${x[2]} ${x[3]}${x[0] === 'carte' && typeof CARTES !== 'undefined' && CARTES[x[1]] ? ' : ' + CARTES[x[1]].n : ''}` : ''}`, true); }
+  if (apres > avant) syncRecompenses();
+}
+// les cartes gagnées avec le Rang entrent dans la collection (aussi au chargement, si le rang était déjà atteint)
+function syncRecompenses() {
+  try { const col = JSON.parse(localStorage.getItem('guilde-collection') || '[]'); let n = 0;
+    recompensesGagnees().filter(x => x.genre === 'carte').forEach(x => { if (!col.includes(x.cle)) { col.push(x.cle); n++; } });
+    if (n) localStorage.setItem('guilde-collection', JSON.stringify(col)); } catch (e) {}
 }
 function guildeEvt(type, n = 1, info = {}) {
   if (typeof localStorage === 'undefined') return;
@@ -183,5 +190,5 @@ if (typeof document !== 'undefined') {
   .bandeau-rang b { color:#f3c96b; white-space:nowrap; } .bandeau-rang small { color:#c9c1ea; white-space:nowrap; font-size:.85em; } .bandeau-rang em { font-style:normal; white-space:nowrap; color:#f3c96b; }
   .barre-rang { flex:1; min-width:40px; height:8px; background:#0d0b1f; border-radius:6px; overflow:hidden; } .barre-rang i { display:block; height:100%; background:linear-gradient(90deg, #c78a2c, #f3c96b); border-radius:6px; }`;
   document.head.appendChild(st);
-  appliquePeau();
+  appliquePeau(); syncRecompenses();
 }
