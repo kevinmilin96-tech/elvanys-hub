@@ -57,7 +57,7 @@ function uniteHTML(u, opt) {
   if (!u) return '';
   const cap = u.key === 'capitaine', fam = u.fam && FAMILLES[u.fam] ? FAMILLES[u.fam].e : '', tags = etiquettes(u);
   const a = u.a + (u.bonusA || 0), v = u.v + (u.bonusV || 0), ennemi = opt && opt.ennemi;
-  const art = cap ? IMG(u.hid) : u.key === 'm' ? '' : `cartes/${ART_EXP[u.key] || u.key}.webp`;
+  const art = cap ? IMG(u.hid) : u.key === 'm' ? '' : `cartes/${ART_EXP[u.key] || u.key}.webp?v=2`;
   const clic = opt && opt.clic ? `onclick="toucheUnite('${u.id}', event)"` : `onclick="ficheUnite('${u.id}', event)"`;
   return `<div class="u carte ${cap ? 'capitaine' : ''} ${ennemi ? 'ennemi' : ''} ${u.role === 'soutien' ? 'soutien' : ''} ${sel === u.id ? 'sel' : ''}" data-id="${u.id}" ${clic} style="${art ? `background-image:url('${art}')` : ''}">
     ${art ? '' : `<span class="sansart">${ennemi ? '👹' : '❔'}</span>`}<span class="nm">${u.n}${u.star ? ` <span class="st">${'★'.repeat(u.star)}</span>` : ''}</span>${fam ? `<span class="fm">${fam}</span>` : ''}
@@ -66,7 +66,7 @@ function uniteHTML(u, opt) {
 }
 // la fiche d'une unité (au port, en combat, chez le recruteur)
 function ficheHTML(u, r) {
-  const cap = u.key === 'capitaine', tags = etiquettes(u), art = cap ? IMG(u.hid) : u.key === 'm' ? '' : `cartes/${ART_EXP[u.key] || u.key}.webp`;
+  const cap = u.key === 'capitaine', tags = etiquettes(u), art = cap ? IMG(u.hid) : u.key === 'm' ? '' : `cartes/${ART_EXP[u.key] || u.key}.webp?v=2`;
   return `<div class="fiche">${art ? `<img src="${art}" alt="">` : ''}<div><h2>${u.n}${u.star ? ` <span class="st">${'★'.repeat(u.star)}</span>` : ''}</h2>
     <p class="doux">${u.fam && FAMILLES[u.fam] ? `${FAMILLES[u.fam].e} ${FAMILLES[u.fam].n} · ` : ''}⚔ ${u.a + (u.bonusA || 0)} · ❤ ${u.v + (u.bonusV || 0)}</p></div></div>
     <p>${ROLE_LONG[u.role] || (u.tireur ? ROLE_LONG.tireur : ROLE_LONG.lame)}</p>
@@ -105,7 +105,7 @@ function port() {
   ${selU ? `<div class="feuille">${ficheHTML(selU, RECRUES[selU.key])}<p class="ok">👉 Touche une place pour la déplacer.</p></div><div class="actions">${selU.key !== 'capitaine' ? `<button onclick="vendre()">💰 Vendre (+${selU.star ? 1 + selU.star * 2 : 1})</button>` : ''}${X.heros === 'zephine' && X.transmuOk && selU.key !== 'capitaine' ? '<button onclick="transmuter()">⚗ Transmuter</button>' : ''}<button onclick="sel=null;port()">Annuler</button></div>` : ''}
   <div class="tiroir ${tiroir ? '' : 'ferme'}"><div class="poignee" onclick="tiroir=!tiroir;port()">🧭 LE RECRUTEUR · 3 💰 · 3 pareilles = ★ <b>${tiroir ? '▼' : '▲'}</b></div>
   <div class="contenu"><div class="boutique ${X.offre.length > 4 ? 'cinq' : ''}">${X.offre.map((k, i) => { if (!k) return '<div class="offre vide"></div>'; const r = RECRUES[k];
-    return `<div class="offre carte ${paires(k) ? 'paire' : ''} ${r.role === 'soutien' ? 'soutien' : ''}" onclick="voirRecrue(${i})" style="background-image:url('cartes/${ART_EXP[k] || k}.webp')"><span class="prix">${prixRecrue(k)}</span><span class="nm">${r.n}</span><span class="fm">${FAMILLES[r.fam].e}</span><span class="rl">${ROLE_COURT[r.role]}</span><div class="av"><span>⚔ ${r.a}</span><span>❤ ${r.v}</span></div></div>`; }).join('')}</div>
+    return `<div class="offre carte ${paires(k) ? 'paire' : ''} ${r.role === 'soutien' ? 'soutien' : ''}" onclick="voirRecrue(${i})" style="background-image:url('cartes/${ART_EXP[k] || k}.webp?v=2')"><span class="prix">${prixRecrue(k)}</span><span class="nm">${r.n}</span><span class="fm">${FAMILLES[r.fam].e}</span><span class="rl">${ROLE_COURT[r.role]}</span><div class="av"><span>⚔ ${r.a}</span><span>❤ ${r.v}</span></div></div>`; }).join('')}</div>
   <div class="actions"><button onclick="relancer()" ${X.or >= 1 ? '' : 'disabled'}>🔄 Relancer (1)</button><button class="${X.gel ? 'on' : ''}" onclick="X.gel=!X.gel;sauve();port()">❄ ${X.gel ? 'Offre gelée' : 'Geler l’offre'}</button><button onclick="aideExp()">❓ Aide</button></div></div>
   <button class="go" onclick="partirOk()">⚔ Partir pour l’escale ${X.escale + 1}</button></div>`;
   if (!localStorage.getItem('guilde-exp-guide')) guidePort(false);
@@ -135,7 +135,7 @@ function aideExp() { fenetre(`<h2>❓ Le port</h2><ul style="padding-left:1.1em"
 // sur la proue ; chaque unité est un médaillon (la fiche complète s'ouvre au toucher).
 const PORTRAIT_M = { 'Gobelin':'m-gobelin', 'Gobelin chef':'m-chefgobelin', 'Gobelin lanceur':'m-gobelin', 'Loup de braise':'m-loup', 'Louveteau':'m-loup', 'Salamandre':'m-salamandre',
   'Élémentaire de lave':'m-elementaire', 'Golem de scories':'m-golem', 'Drake de cendre':'m-drake', 'Flammèche':'m-salamandre', 'Le Titan de feu':'m-titan', 'Cultiste du feu':'m-cultiste' };
-const artU = u => u.key === 'capitaine' ? IMG(u.hid) : u.key === 'm' ? (PORTRAIT_M[u.n] ? `portraits/${PORTRAIT_M[u.n]}.webp` : '') : `cartes/${ART_EXP[u.key] || u.key}.webp`;
+const artU = u => u.key === 'capitaine' ? IMG(u.hid) : u.key === 'm' ? (PORTRAIT_M[u.n] ? `portraits/${PORTRAIT_M[u.n]}.webp` : '') : `cartes/${ART_EXP[u.key] || u.key}.webp?v=2`;
 // où se tiennent les ennemis sur chaque décor (en % de l'écran : haut de la rangée du fond, haut de la rangée de devant, décalage horizontal)
 // 14/11 : les plateaux vus du dessus (s'il y en a un pour l'escale, il remplace le décor en perspective) : [rangée du fond, rangée de devant] des ennemis, puis de l'équipage
 const PLATEAUX_EXP = { crique:{ enn:[10, 26], equ:[62, 78] }, falaises:{ enn:[11, 26], equ:[63, 79] }, port:{ enn:[13, 29], equ:[63, 79] }, foret:{ enn:[11, 26], equ:[64, 80] }, cratere:{ enn:[10, 26], equ:[63, 79] }, nid:{ enn:[13, 29], equ:[65, 81] } };
