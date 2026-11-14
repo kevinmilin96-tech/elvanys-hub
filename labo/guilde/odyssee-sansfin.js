@@ -20,7 +20,9 @@ function sfSac(R) {
 }
 function nouvelleSansFin(heros, acte, niveau) {
   const r = nouvelleOdyssee(heros, null, acte, niveau); if (!r) return null;
-  const cases = Array.from({ length:ILE_H }, (_, y) => Array.from({ length:ILE_W }, (_, x) => ({ x, y, t:'roche', vu:false, visite:false, fait:false })));
+  // 14/11 (l'utilisateur : « si on décide d'aller complètement à droite, il faut pouvoir, la carte ne doit pas être limitée ») : 31 × 31 cases
+  const N = 31; ILE_W = N; ILE_H = N;
+  const cases = Array.from({ length:N }, (_, y) => Array.from({ length:N }, (_, x) => ({ x, y, t:'roche', vu:false, visite:false, fait:false })));
   // 14/11 (l'utilisateur : « un T vers le sud ne sert à rien, il faut pouvoir tourner autour comme à Kingdomino ») : on part du CENTRE, sorties dans les 4 directions
   const dep = { x:Math.floor(ILE_W / 2), y:Math.floor(ILE_H / 2) }; Object.assign(cases[dep.y][dep.x], { t:'depart', vu:true, visite:true, ouv:[1, 1, 1, 1], pose:true });
   r.ile = cases; r.pos = { ...dep }; r.porte = null; r.bossPos = null; r.direct = null;

@@ -141,7 +141,7 @@
 <script>
 const ZOK = () => localStorage.getItem('guilde-tuto') === 'fait'; // Zéphine : débloquée par le tutoriel (12/11)
 
-const VERSION = '20261114-193024';
+const VERSION = '20261114-193241';
 function verifieVersion() {
   fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
     v = (v || '').trim(); if (!v || v === VERSION || document.getElementById('majbar')) return;
@@ -154,14 +154,14 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261114-193024"></script>
-<script src="musique.js?v=20261114-193024"></script>
-<script src="donnees.js?v=20261114-193024"></script>
-<script src="guide.js?v=20261114-193024"></script>
-<script src="odyssee.js?v=20261114-193024"></script>
-<script src="odyssee-sansfin.js?v=20261114-193024"></script>
-<script src="pantheon.js?v=20261114-193024"></script>
-<script src="chronique.js?v=20261114-193024"></script>
+<script src="cartes.js?v=20261114-193241"></script>
+<script src="musique.js?v=20261114-193241"></script>
+<script src="donnees.js?v=20261114-193241"></script>
+<script src="guide.js?v=20261114-193241"></script>
+<script src="odyssee.js?v=20261114-193241"></script>
+<script src="odyssee-sansfin.js?v=20261114-193241"></script>
+<script src="pantheon.js?v=20261114-193241"></script>
+<script src="chronique.js?v=20261114-193241"></script>
 <script>
 // le moteur du Duel n'est pas chargé ici : les cartes de l'Odyssée appellent degats/soin seulement en combat (dans duel.html)
 const log = () => {}, degats = () => {}, soin = () => {}, altere = () => {}, invoque = () => {}, adv = () => ({}), fin = () => {};
@@ -343,7 +343,7 @@ function enteteHTML() {
 // =============================================================================================== la carte à l'encre (10/11 soir, idée de l'utilisateur d'après une vidéo)
 // L'île se dessine au fur et à mesure : murs tracés à main levée autour des cases praticables, ouvertures sombres vers l'inconnu,
 // le héros = un halo de lanterne qui MARCHE jusqu'à la salle touchée (par les cases déjà visitées). Les règles (cases, vivres, brouillard) ne changent pas.
-const CEL = 60, VBW = ILE_W * CEL, VBH = ILE_H * CEL;
+const CEL = 60; let VBW = ILE_W * CEL, VBH = ILE_H * CEL;
 let dejaDessine = new Set(), enMarche = false, distV = {};
 const dodo = ms => new Promise(ok => setTimeout(ok, ms));
 function gigue(x, y, k, amp) { const h = hachage(`${R.graine}:${x}:${y}:${k}`); return ((h % 1000) / 1000 - .5) * (amp || 7); }
@@ -432,11 +432,12 @@ function toucheCarte(e) {
 // 14/11 (l'utilisateur : « sur l'île gelée, on dirait un château dans le désert ») : le plan prend les couleurs de chaque île
 const TEINTE_PAPIER = { brulees:'0 0 0 0 .50  0 0 0 0 .30  0 0 0 0 .16  0 0 0 -1.6 1.05', givre:'0 0 0 0 .32  0 0 0 0 .45  0 0 0 0 .60  0 0 0 -1.6 1.05', abime:'0 0 0 0 .30  0 0 0 0 .16  0 0 0 0 .42  0 0 0 -1.6 1.05' };
 function carteSVG() {
+  fixeDims(R); VBW = ILE_W * CEL; VBH = ILE_H * CEL;
   calculeDist(); const c = vueCible(); vue = c;
   const toutes = R.ile.flat();
   const cels = toutes.map(c => { const k = c.x + ',' + c.y; const neuf = c.vu && !dejaDessine.has(k); if (c.vu) dejaDessine.add(k); return celluleSVG(c, neuf); }).join('');
   const P = toutes.map(c => planCase(c, false));
-  const brume = toutes.filter(c => !c.vu).map(c => `<circle id="m-${c.x}-${c.y}" class="brume" cx="${c.x * CEL + CEL / 2}" cy="${c.y * CEL + CEL / 2}" r="${CEL * (R.sansfin ? .48 : .62)}"/>`).join('');
+  const brume = R.sansfin ? '' : toutes.filter(c => !c.vu).map(c => `<circle id="m-${c.x}-${c.y}" class="brume" cx="${c.x * CEL + CEL / 2}" cy="${c.y * CEL + CEL / 2}" r="${CEL * (R.sansfin ? .48 : .62)}"/>`).join('');
   const M = 3 * CEL;
   return `<svg class="ile" viewBox="${c.x} ${c.y} ${c.w} ${c.h}" preserveAspectRatio="xMidYMid meet" onpointerdown="posDoigt=[event.clientX,event.clientY]" onpointerup="toucheCarte(event)"><defs><radialGradient id="lum"><stop offset="0" stop-color="#ffe9a8" stop-opacity=".55"/><stop offset=".45" stop-color="#f3c96b" stop-opacity=".18"/><stop offset="1" stop-color="#f3c96b" stop-opacity="0"/></radialGradient><clipPath id="rond"><circle r="16"/></clipPath>
     <filter id="papier" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".012" numOctaves="4" seed="7"/><feColorMatrix values="${TEINTE_PAPIER[R.acte] || TEINTE_PAPIER.brulees}"/><feComposite in2="SourceGraphic" operator="in"/><feBlend in2="SourceGraphic" mode="multiply"/></filter>

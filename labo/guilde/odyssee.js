@@ -454,7 +454,8 @@ const EVENEMENTS = [
 ];
 
 // ----------------------------------------------------------------------------------------------- l'île (grille 7 × 9, tirée au sort d'après la graine)
-const ILE_W = 7, ILE_H = 9;
+let ILE_W = 7, ILE_H = 9; // 14/11 : « let » : l'Odyssée sans fin a une île bien plus grande (fixeDims)
+function fixeDims(r) { if (r && r.ile && r.ile.length) { ILE_W = r.ile[0].length; ILE_H = r.ile.length; } }
 const SALLES_ODY = {
   roche:{ e:'', n:'Roche' }, chemin:{ e:'·', n:'Chemin' }, depart:{ e:'⛵', n:'Le débarcadère' }, monstre:{ e:'⚔', n:'Monstres' }, elite:{ e:'💀', n:'Élite' },
   coffre:{ e:'🗝', n:'Coffre' }, source:{ e:'💧', n:'Source' }, marchand:{ e:'🏪', n:'Marchand' }, evenement:{ e:'❓', n:'Événement' }, autel:{ e:'🔥', n:'Autel' },
@@ -467,6 +468,7 @@ function bfs(cases, dep, marche) {
   return { dist, prev };
 }
 function genereIle(graine, R0, acte) {
+  ILE_W = 7; ILE_H = 9; // l'île de l'histoire garde sa taille (l'Odyssée sans fin l'agrandit ensuite)
   const I = ILES[acte] || ILES.brulees;
   for (let essai = 0; essai < 400; essai++) {
     const R = rngDe(graine + '#' + essai);
