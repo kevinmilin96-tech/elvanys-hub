@@ -275,7 +275,8 @@ Object.assign(CARTES, {
   gu_tour:    { n:'Tour de guet', t:'u', c:2, txt:'2 dés pairs', d:'Unité 2 / 8, Barrière.', cond:vs => vs.length === 2 && vs.every(pair), u:{ n:'Tour de guet', a:2, v:8, barriere:true } },
 });
 // le deck de 30 : 3 cartes neuves de plus par héros, 6 de plus pour la Guilde
-const NEUVES_BASE = { maelle:['m_soufflet', 'm_rivets', 'm_automate'], aldric:['a_rempart', 'a_priere', 'a_charge'], pip:['p_champi', 'p_hibou', 'p_ours'],
-  oria:['o_fumee', 'o_dague', 'o_faucon'], gorm:['g_cornemuse', 'g_barde', 'g_geant'], zephine:['z_mercure', 'z_acide', 'z_golem'] };
-Object.entries(NEUVES_BASE).forEach(([h, l]) => { if (HEROS[h] && !HEROS[h].deck.includes(l[0])) HEROS[h].deck.push(...l); });
+// 14/11 nuit, après le simulateur (Gorm 60 %, Aldric et Zéphine 44 %) : Géant, Charge de cavalerie et Mercure sortent du deck de base (à trouver)
+const NEUVES_BASE = { maelle:['m_soufflet', 'm_rivets', 'm_automate'], aldric:['a_rempart', 'a_priere', 'a_paladin'], pip:['p_champi', 'p_hibou', 'p_ours'],
+  oria:['o_fumee', 'o_dague', 'o_faucon'], gorm:['g_cornemuse', 'g_barde', 'cor'], zephine:['z_nuee', 'z_acide', 'z_golem'] };
+Object.entries(NEUVES_BASE).forEach(([h, l]) => { if (HEROS[h] && HEROS[h].deck.length < 15) HEROS[h].deck.push(...l); });
 if (!GUILDE.includes('gu_epee')) GUILDE.push('gu_epee', 'gu_milice', 'gu_pain', 'gu_carnet', 'gu_lance', 'gu_filet');

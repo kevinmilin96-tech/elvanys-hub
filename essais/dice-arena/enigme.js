@@ -124,7 +124,8 @@ function eniFabrique(iso, depuis) {
     const J = S.J, O = S.O;
     J.tours = P.des - 2; J.relance = 0; J.aLancer = false; J.deck = []; J.meute = 0;
     J.des = Array.from({ length:P.des }, (_, i) => ({ sac:[], v:1 + Math.floor(r() * 6), pose:false, mod:false, i }));
-    const pot = [...new Set([...HEROS[h].deck, ...GUILDE])].filter(k => !ENI_EXCLU.includes(k));
+    // 14/11 nuit : les cartes ajoutées au deck de 30 (préfixes m_, a_, p_, o_, g_, z_, gu_) n'entrent PAS dans l'énigme : ses mains et ses solutions sont calculées d'avance avec les anciennes cartes
+    const pot = [...new Set([...HEROS[h].deck, ...GUILDE])].filter(k => !ENI_EXCLU.includes(k) && !/^(m|a|p|o|g|z|gu|n)_/.test(k));
     J.main = []; while (J.main.length < P.main) J.main.push(tire(pot));
     J.pc = 1 + Math.floor(r() * P.pc);
     J.jauge = niv >= 4 && r() < .45 ? JAUGE.max : Math.floor(r() * 12);
