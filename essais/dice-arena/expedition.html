@@ -148,19 +148,22 @@
   .scene .brouillard.monte { opacity:1; }
   .scene .cap { position:absolute; left:50%; top:46%; transform:translate(-50%, -50%); background:#101a2bee; border:2px solid var(--or); border-radius:14px; padding:10px 16px; z-index:4; width:max-content; max-width:86%; text-align:center; animation:pop2 .4s both; }
   @keyframes pop2 { from { opacity:0; transform:translate(-50%, -40%); } }
+  /* 14/11 : la fiche d'une recrue défile toute seule (sans emporter le décor) et ne passe plus sous les boutons */
+  .feuille { bottom:62px !important; max-height:calc(100dvh - 140px) !important; overscroll-behavior:contain; touch-action:pan-y; -webkit-overflow-scrolling:touch; border-radius:16px; }
+  .feuille + .actions { padding-right:56px !important; }
 </style>
 </head>
 <body>
 <div id="app"></div>
 <div id="fen"></div>
-<script src="cartes.js?v=20261114-172204"></script>
-<script src="musique.js?v=20261114-172204"></script>
-<script src="donnees.js?v=20261114-172204"></script>
-<script src="odyssee.js?v=20261114-172204"></script>
-<script src="chronique.js?v=20261114-172204"></script>
-<script src="expedition-moteur.js?v=20261114-172204"></script>
+<script src="cartes.js?v=20261114-172449"></script>
+<script src="musique.js?v=20261114-172449"></script>
+<script src="donnees.js?v=20261114-172449"></script>
+<script src="odyssee.js?v=20261114-172449"></script>
+<script src="chronique.js?v=20261114-172449"></script>
+<script src="expedition-moteur.js?v=20261114-172449"></script>
 <script src="guide.js?v=1"></script>
-<script src="expedition-ecran.js?v=20261114-172204"></script>
+<script src="expedition-ecran.js?v=20261114-172449"></script>
 <script>// 13/11 soir : musique
 GM.musique('expeditions'); GM.bouton();
 </script>
