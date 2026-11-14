@@ -189,7 +189,7 @@ const PROFILS = {
 };
 const EQUILIBRE = { maelle:50, aldric:47, pip:50, oria:50, gorm:51, zephine:52 };
 const POOL_PLUS = { pip:['rosee'], oria:['raccourci', 'guetteur'] };
-const DECK_TAILLE = 21, DECK_MAX = 2;
+const DECK_TAILLE = 30, DECK_MAX = 2; // 14/11 nuit : 21 → 30 (cartes nouvelles, fin de donnees.js)
 const deckBase = id => HEROS[id].monstre ? [] : [...HEROS[id].deck, ...GUILDE];
 // la collection : les cartes rencontrées pendant les Odyssées (gardées sur le téléphone), utilisables dans l'éditeur de deck du Duel
 const collectionCartes = () => { try { return JSON.parse(localStorage.getItem('guilde-collection') || '[]').filter(k => CARTES[k]); } catch (e) { return []; } };
@@ -218,3 +218,64 @@ Object.assign(CARTES, {
 });
 // une carte nouvelle n'est utilisable qu'une fois gagnée, et seulement par son héros
 const carteOuverte = (k, id) => { const c = CARTES[k]; if (!c) return false; if (c.heros && id && c.heros !== id) return false; if (!c.nouv) return true; try { return JSON.parse(localStorage.getItem('guilde-collection') || '[]').includes(k); } catch (e) { return false; } };
+
+// =============================================================================================== 40 CARTES NOUVELLES ET LE DECK DE 30 (14/11 nuit, carte blanche)
+// Demande de l'utilisateur : « un build de 30-40 cartes comme Hearthstone, avec des cartes communes et des cartes spécifiques ».
+// Choix de Claude : le deck passe de 21 à 30 cartes (15 du héros + 15 de la Guilde, 2 exemplaires au plus).
+// Par héros, 5 cartes neuves : les 3 premières entrent dans son deck de base, les 2 dernières se TROUVENT (tirages de l'Odyssée, coffres,
+// marchand) puis rejoignent la collection (éditeur de deck de la Tour des héros). La Guilde : 10 neuves, 6 dans le deck de base, 4 à trouver.
+// heros = carte réservée à ce héros. Tout repose sur les mécaniques existantes (Barrière, Cachée, Charge, Épines, Poison, Entrave…).
+Object.assign(CARTES, {
+  // ---- Maëlle (la forge, les 6, les créatures)
+  m_soufflet: { n:'Soufflet de forge', t:'s', c:1, heros:'maelle', txt:'dé de 4 ou +', d:'Un autre de tes dés libres devient un 6.', cond:vs => un(vs) && vs[0] >= 4, cible:'de', f:(J, vs, k) => { if (k && k.d) { modifie(J, k.d, 6); log(`${J.nom} attise la forge : un dé devient 6.`); } }, ia:J => J.des.some(d => !d.pose && d.v < 5) ? 22 : 0 },
+  m_rivets:   { n:'Rivets d’acier', t:'e', c:1, heros:'maelle', txt:'dé pair', d:'Toutes tes créatures gagnent +2 vie.', cond:vs => un(vs) && pair(vs[0]), f:J => { J.front.forEach(u => { u.v += 2; u.vmax += 2; }); log('Rivets d’acier : tes créatures +2 vie.'); }, ia:J => J.front.length * 10 },
+  m_automate: { n:'Automate de bronze', t:'u', c:3, heros:'maelle', txt:'2 dés identiques', d:'Unité 4 / 5, Charge.', cond:vs => vs.length === 2 && egaux(vs), u:{ n:'Automate', a:4, v:5, charge:true } },
+  m_lingot:   { n:'Lingot rougi', t:'s', c:1, heros:'maelle', txt:'dé = 6', d:'6 dégâts à une cible ; si c’est une créature, 2 dégâts au héros adverse aussi.', cond:vs => un(vs) && vs[0] === 6, cible:'ennemi', f:(J, vs, k) => { degats(k, 6); if (k.u) degats({ J:adv(J) }, 2); }, ia:() => 40 },
+  m_oeuvre:   { n:'Chef-d’œuvre', t:'e', c:3, heros:'maelle', txt:'3 dés identiques', d:'Une de tes créatures gagne +4 attaque, +4 vie et Barrière.', cond:vs => vs.length === 3 && egaux(vs), cible:'uniteA', f:(J, vs, k) => { k.u.a += 4; k.u.v += 4; k.u.vmax += 4; k.u.barriere = true; log(`${k.u.n} devient un chef-d’œuvre : +4 / +4, Barrière.`); }, ia:J => J.front.length ? 45 : 0 },
+  // ---- Aldric (Barrière, soins, suites)
+  a_rempart:  { n:'Rempart vivant', t:'u', c:2, heros:'aldric', txt:'dé ≤ 3', d:'Unité 1 / 7, Barrière.', cond:vs => un(vs) && vs[0] <= 3, u:{ n:'Rempart', a:1, v:7, barriere:true } },
+  a_priere:   { n:'Prière de l’aube', t:'s', c:1, heros:'aldric', txt:'2 dés pairs', d:'Soigne de 3 ton héros et chacune de tes créatures.', cond:vs => vs.length === 2 && vs.every(pair), f:J => { soin(J, 3); J.front.forEach(u => soinCible({ J, u }, 3)); }, ia:J => (J.pv < J.pvMax * .8 ? 26 : 8) + J.front.filter(u => u.v < u.vmax).length * 6 },
+  a_charge:   { n:'Charge de cavalerie', t:'s', c:2, heros:'aldric', txt:'4 dés qui se suivent', d:'13 dégâts à une cible.', cond:vs => suite(vs, 4), cible:'ennemi', f:(J, vs, k) => degats(k, 13), ia:() => 62 },
+  a_paladin:  { n:'Paladin juré', t:'u', c:3, heros:'aldric', txt:'3 dés qui se suivent', d:'Unité 4 / 6, Barrière.', cond:vs => suite(vs, 3), u:{ n:'Paladin', a:4, v:6, barriere:true } },
+  a_jugement: { n:'Jugement', t:'s', c:2, heros:'aldric', txt:'dé = 6', d:'Dégâts égaux au tiers des PV que ton héros a perdus (12 au plus).', cond:vs => un(vs) && vs[0] === 6, cible:'ennemi', f:(J, vs, k) => degats(k, Math.min(12, Math.floor((J.pvMax - J.pv) / 3))), ia:J => Math.min(12, Math.floor((J.pvMax - J.pv) / 3)) * 5 },
+  // ---- Pip (la forêt, la meute, les petits dés)
+  p_champi:   { n:'Cercle de champignons', t:'s', c:1, heros:'pip', txt:'dé = 1', d:'Poison 3 sur le héros adverse.', cond:vs => un(vs) && vs[0] === 1, f:J => altere(adv(J), 'poison', 3), ia:() => 28 },
+  p_hibou:    { n:'Hibou des bois', t:'u', c:1, heros:'pip', txt:'dé ≤ 2', d:'Unité 1 / 3, Cachée. À son arrivée, pioche 1 carte.', cond:vs => un(vs) && vs[0] <= 2, u:{ n:'Hibou', a:1, v:3, cachee:true }, f:J => pioche(J, 1) },
+  p_ours:     { n:'Ours des mousses', t:'u', c:3, heros:'pip', txt:'2 dés ≤ 3', d:'Unité 4 / 7.', cond:vs => vs.length === 2 && vs.every(v => v <= 3), u:{ n:'Ours', a:4, v:7 } },
+  p_source:   { n:'Source sacrée', t:'s', c:2, heros:'pip', txt:'3 dés ≤ 3', d:'Soigne ton héros de 8 et retire ses altérations.', cond:vs => vs.length === 3 && vs.every(v => v <= 3), f:J => { J.poison = 0; J.saigne = 0; J.handicap = 0; soin(J, 8); }, ia:J => J.pv < J.pvMax * .7 ? 44 : 6 },
+  p_chenes:   { n:'Réveil des chênes', t:'s', c:3, heros:'pip', txt:'4 dés', d:'Deux Ronces 0 / 4 (Barrière, Épines 1) poussent, et tes créatures gagnent +2 attaque.', cond:vs => vs.length === 4, f:J => { invoque(J, { n:'Ronces', a:0, v:4, barriere:true, epines:1 }); invoque(J, { n:'Ronces', a:0, v:4, barriere:true, epines:1 }); J.front.forEach(u => { u.a += 2; }); log('Les chênes se réveillent.'); }, ia:() => 50 },
+  // ---- Oria (l'exploratrice, Cachée, impairs)
+  o_fumee:    { n:'Fumigène', t:'s', c:1, heros:'oria', txt:'dé impair', d:'Toutes tes créatures deviennent Cachées.', cond:vs => un(vs) && !pair(vs[0]), f:J => { J.front.forEach(u => { u.cachee = true; }); log('Fumigène : tes créatures disparaissent.'); }, ia:J => J.front.filter(u => !u.cachee).length * 10 },
+  o_dague:    { n:'Dague de lancer', t:'s', c:0, heros:'oria', txt:'dé = 5', d:'3 dégâts à une cible.', cond:vs => un(vs) && vs[0] === 5, cible:'ennemi', f:(J, vs, k) => degats(k, 3), ia:() => 24 },
+  o_faucon:   { n:'Faucon messager', t:'u', c:2, heros:'oria', txt:'dé impair', d:'Unité 3 / 2, Charge.', cond:vs => un(vs) && !pair(vs[0]), u:{ n:'Faucon', a:3, v:2, charge:true } },
+  o_secret:   { n:'Passage secret', t:'s', c:1, heros:'oria', txt:'2 dés impairs', d:'Gagne 2 relances.', cond:vs => vs.length === 2 && vs.every(v => !pair(v)), f:J => { J.relance += 2; log(`${J.nom} gagne 2 relances.`); }, ia:() => 10 },
+  o_embuscade:{ n:'Grande embuscade', t:'s', c:3, heros:'oria', txt:'3 dés impairs', d:'8 dégâts au héros adverse, Garde et Bouclier ignorés.', cond:vs => vs.length === 3 && vs.every(v => !pair(v)), f:J => degats({ J:adv(J) }, 8, true), ia:() => 55 },
+  // ---- Gorm (le chant, les créatures, les dés identiques)
+  g_cornemuse:{ n:'Cornemuse', t:'s', c:1, heros:'gorm', txt:'2 dés identiques', d:'Tes créatures gagnent +1 attaque et +1 vie pour la partie.', cond:vs => vs.length === 2 && egaux(vs), f:J => { J.front.forEach(u => { u.a += 1; u.v += 1; u.vmax += 1; }); log('Cornemuse : tes créatures +1 / +1.'); }, ia:J => J.front.length * 12 },
+  g_barde:    { n:'Barde itinérant', t:'u', c:2, heros:'gorm', txt:'dé pair', d:'Unité 2 / 4. À son arrivée, pioche 1 carte.', cond:vs => un(vs) && pair(vs[0]), u:{ n:'Barde', a:2, v:4 }, f:J => pioche(J, 1) },
+  g_geant:    { n:'Géant des sommets', t:'u', c:4, heros:'gorm', txt:'3 dés identiques', d:'Unité 6 / 10, Barrière.', cond:vs => vs.length === 3 && egaux(vs), u:{ n:'Géant', a:6, v:10, barriere:true } },
+  g_ballade:  { n:'Ballade héroïque', t:'s', c:2, heros:'gorm', txt:'4 dés pairs', d:'Toutes tes créatures peuvent attaquer à nouveau ce tour.', cond:vs => vs.length === 4 && vs.every(pair), f:J => { J.front.forEach(u => { u.pret = true; }); log('Ballade héroïque : tout le monde repart à l’attaque !'); }, ia:J => J.front.length * 15 },
+  g_choeur:   { n:'Chœur de la montagne', t:'s', c:3, heros:'gorm', txt:'5 dés', d:'3 dégâts au héros adverse pour chacune de tes créatures.', cond:vs => vs.length === 5, f:J => { const n = J.front.length; if (n) degats({ J:adv(J) }, 3 * n); }, ia:J => J.front.length * 16 },
+  // ---- Zéphine (l'alchimie, les dés modifiés, le poison)
+  z_mercure:  { n:'Mercure', t:'s', c:0, heros:'zephine', txt:'1 dé', d:'Un autre de tes dés libres prend la valeur de celui-ci.', cond:un, cible:'de', f:(J, vs, k) => { if (k && k.d) modifie(J, k.d, vs[0]); }, ia:() => 8 },
+  z_acide:    { n:'Fiole d’acide', t:'s', c:1, heros:'zephine', txt:'1 dé modifié', d:'6 dégâts à une cible.', cond:(vs, ds) => un(vs) && ds && ds[0] && ds[0].mod, cible:'ennemi', f:(J, vs, k) => degats(k, 6), ia:() => 38 },
+  z_golem:    { n:'Golem de chair', t:'u', c:3, heros:'zephine', txt:'2 dés qui font 7', d:'Unité 3 / 6. Ses attaques sur le héros donnent Poison 2.', cond:vs => vs.length === 2 && somme(vs) === 7, u:{ n:'Golem de chair', a:3, v:6, poisonneur:true } },
+  z_nuee:     { n:'Nuée toxique', t:'s', c:2, heros:'zephine', txt:'3 dés impairs', d:'Poison 2 sur le héros adverse et 2 dégâts à chaque créature adverse.', cond:vs => vs.length === 3 && vs.every(v => !pair(v)), f:J => { altere(adv(J), 'poison', 2); [...adv(J).front].forEach(u => degats({ J:adv(J), u }, 2)); }, ia:J => 24 + adv(J).front.length * 8 },
+  z_elixir:   { n:'Élixir de vie', t:'s', c:2, heros:'zephine', txt:'2 dés modifiés', d:'Soigne ton héros de 10.', cond:(vs, ds) => vs.length === 2 && ds && ds.every(d => d.mod), f:J => soin(J, 10), ia:J => J.pv < J.pvMax * .7 ? 46 : 5 },
+  // ---- la Guilde (tous)
+  gu_epee:    { n:'Épée courte', t:'s', c:1, txt:'dé de 3 ou +', d:'3 dégâts à une cible.', cond:vs => un(vs) && vs[0] >= 3, cible:'ennemi', f:(J, vs, k) => degats(k, 3), ia:() => 20 },
+  gu_milice:  { n:'Milicienne', t:'u', c:1, txt:'dé ≤ 3', d:'Unité 2 / 3.', cond:vs => un(vs) && vs[0] <= 3, u:{ n:'Milicienne', a:2, v:3 } },
+  gu_pain:    { n:'Pain de route', t:'s', c:0, txt:'dé ≤ 2', d:'Soigne ton héros de 3.', cond:vs => un(vs) && vs[0] <= 2, f:J => soin(J, 3), ia:J => J.pv < J.pvMax * .9 ? 18 : 2 },
+  gu_carnet:  { n:'Carnet de route', t:'s', c:1, txt:'dé pair', d:'Pioche 1 carte et soigne ton héros de 2.', cond:vs => un(vs) && pair(vs[0]), f:J => { pioche(J, 1); soin(J, 2); }, ia:() => 18 },
+  gu_lance:   { n:'Lance de garde', t:'e', c:1, txt:'dé pair', d:'Une de tes créatures gagne +1 attaque et Barrière.', cond:vs => un(vs) && pair(vs[0]), cible:'uniteA', f:(J, vs, k) => { k.u.a += 1; k.u.barriere = true; log(`${k.u.n} : +1 attaque et Barrière.`); }, ia:J => J.front.length ? 18 : 0 },
+  gu_filet:   { n:'Filet', t:'s', c:1, txt:'dé ≤ 3', d:'Une créature adverse est Entravée : elle n’attaquera pas à son prochain tour.', cond:vs => un(vs) && vs[0] <= 3, cible:'uniteE', f:(J, vs, k) => { k.u.entrave = true; log(`${k.u.n} est prise dans le filet.`); }, ia:J => adv(J).front.length ? 16 + Math.max(...adv(J).front.map(u => u.a)) * 3 : 0 },
+  gu_bombe:   { n:'Bombe de la Guilde', t:'s', c:2, txt:'2 dés identiques', d:'5 dégâts à chaque créature adverse.', cond:vs => vs.length === 2 && egaux(vs), f:J => { [...adv(J).front].forEach(u => degats({ J:adv(J), u }, 5)); }, ia:J => adv(J).front.length * 18 },
+  gu_griffon: { n:'Griffon', t:'u', c:3, txt:'2 dés de 5 ou +', d:'Unité 5 / 5, Charge.', cond:vs => vs.length === 2 && vs.every(v => v >= 5), u:{ n:'Griffon', a:5, v:5, charge:true } },
+  gu_force:   { n:'Élixir de force', t:'s', c:1, txt:'dé = 6', d:'+2 PC et pioche 1 carte.', cond:vs => un(vs) && vs[0] === 6, f:J => { J.pc = Math.min(6, J.pc + 2); pioche(J, 1); }, ia:J => J.pc <= 3 ? 26 : 8 },
+  gu_tour:    { n:'Tour de guet', t:'u', c:2, txt:'2 dés pairs', d:'Unité 2 / 8, Barrière.', cond:vs => vs.length === 2 && vs.every(pair), u:{ n:'Tour de guet', a:2, v:8, barriere:true } },
+});
+// le deck de 30 : 3 cartes neuves de plus par héros, 6 de plus pour la Guilde
+const NEUVES_BASE = { maelle:['m_soufflet', 'm_rivets', 'm_automate'], aldric:['a_rempart', 'a_priere', 'a_charge'], pip:['p_champi', 'p_hibou', 'p_ours'],
+  oria:['o_fumee', 'o_dague', 'o_faucon'], gorm:['g_cornemuse', 'g_barde', 'g_geant'], zephine:['z_mercure', 'z_acide', 'z_golem'] };
+Object.entries(NEUVES_BASE).forEach(([h, l]) => { if (HEROS[h] && !HEROS[h].deck.includes(l[0])) HEROS[h].deck.push(...l); });
+if (!GUILDE.includes('gu_epee')) GUILDE.push('gu_epee', 'gu_milice', 'gu_pain', 'gu_carnet', 'gu_lance', 'gu_filet');

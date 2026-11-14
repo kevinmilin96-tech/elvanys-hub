@@ -103,3 +103,6 @@ function equipeCombat(J, O, run, log) {
 }
 // au camp : améliorer une carte (elle coûte 1 PC de moins pour toute l'aventure ; une par camp)
 function ameliore(r, k) { const A = r.aventure; A.ameliore = A.ameliore || []; if (!CARTES[k] || CARTES[k].c < 1 || A.ameliore.includes(k)) return false; A.ameliore.push(k); r.journal.push(`⭐ ${CARTES[k].n} améliorée : 1 PC de moins.`); return true; }
+
+// 14/11 nuit : les icônes peintes par Gemini (ui/equip/eq-<clé>.webp)
+const eqImg = (k, px = 34) => `<img src="ui/equip/eq-${k}.webp?v=1" alt="" style="width:${px}px;height:${px}px;object-fit:contain;vertical-align:middle">`;

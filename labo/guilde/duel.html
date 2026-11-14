@@ -456,7 +456,7 @@
   .unique .barre .pastilles { left:calc(100% + 8.5cqw); }
   .unique .pastilles [data-k="pv"] { right:calc(100% + 32cqw); top:5cqw; width:11cqw; height:10cqw; padding:0; border:none !important; display:grid; place-items:center; font:bold 3.6cqw Georgia, serif; color:#fff; text-shadow:0 1px 2px #000, 0 0 4px #000; background:url('ui/coeur.webp?v=1') center/contain no-repeat !important; box-shadow:none !important; }
   .unique .barre .bdg { width:8cqw; height:9cqw; padding:0; border:none; display:grid; place-items:center; font:bold 3.2cqw Georgia, serif; color:#fff; text-shadow:0 1px 2px #000; background:url('ui/bouclier.webp?v=1') center/contain no-repeat; box-shadow:none; }
-  .unique .barre .bdg.bg { left:-19cqw; top:13cqw; opacity:.85; } .unique .barre .bdg.bb { left:-19cqw; top:13cqw; }
+  .unique .barre .bdg.bg { left:-19cqw; top:13cqw; background-image:url('ui/equip/icone-garde.webp?v=1'); width:9cqw; } .unique .barre .bdg.bb { left:-19cqw; top:13cqw; background-image:url('ui/equip/icone-bouclier.webp?v=1'); } /* 14/11 nuit : icônes Gemini, Garde ≠ Bouclier */
   .unique .barre .bdg.bg:not([hidden]) + .bdg.bb { left:-27cqw; }
   .unique .barre .bdg[hidden] { display:none; }
   .ic { background:center/contain no-repeat; border:none; box-shadow:none; filter:drop-shadow(0 2px 4px #000c); }
@@ -670,6 +670,9 @@
   .des .deO { width:9cqw; height:9cqw; margin:0 auto; border-radius:18%; box-shadow:0 0 10px #ff4a2e99; transition:opacity .3s, transform .3s; }
   .des .deO img, .des .deO svg { width:100%; height:100%; display:block; border-radius:18%; } .des .deO img { outline:2px solid #ff6b5a; }
   .des .deO.utilise { opacity:.3; transform:scale(.85); filter:grayscale(.6); } .des .deO.roule { animation:deroule .5s ease-out; } @keyframes deroule { from { transform:rotate(-200deg) scale(.6); } }
+  .icopb { width:1.35em; height:1.35em; vertical-align:-.35em; margin-right:2px; } /* 14/11 nuit : icônes Gemini de la Garde (temporaire) et du Bouclier (permanent) */
+  /* 14/11 nuit : Garde et Bouclier côte à côte (avant, le Bouclier recouvrait la Garde) */
+  .unique #b-J .bdg.bg:not([hidden]) ~ .bdg.bb, .unique #b-O .bdg.bg:not([hidden]) ~ .bdg.bb { transform:translateX(8.5cqw); }
 </style>
 </head>
 <body>
@@ -680,7 +683,7 @@
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
 // 14/11 : l'Odyssée sans fin a ses propres emplacements (odyssee.js lit SANSFIN)
 const SANSFIN = new URLSearchParams(location.search).get('sansfin') === '1', ODY_PAGE = 'odyssee.html' + (SANSFIN ? '?sansfin=1' : '');
-const VERSION = '20261114-212829';
+const VERSION = '20261114-213644';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -699,15 +702,15 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261114-212829"></script>
-<script src="musique.js?v=20261114-212829"></script>
-<script src="rang.js?v=20261114-212829"></script>
-<script src="donnees.js?v=20261114-212829"></script>
-<script src="odyssee.js?v=20261114-212829"></script>
-<script src="bestiaire.js?v=20261114-212829"></script>
-<script src="aventure.js?v=20261114-212829"></script>
-<script src="odyssee-sansfin.js?v=20261114-212829"></script>
-<script src="chronique.js?v=20261114-212829"></script>
+<script src="cartes.js?v=20261114-213644"></script>
+<script src="musique.js?v=20261114-213644"></script>
+<script src="rang.js?v=20261114-213644"></script>
+<script src="donnees.js?v=20261114-213644"></script>
+<script src="odyssee.js?v=20261114-213644"></script>
+<script src="bestiaire.js?v=20261114-213644"></script>
+<script src="aventure.js?v=20261114-213644"></script>
+<script src="odyssee-sansfin.js?v=20261114-213644"></script>
+<script src="chronique.js?v=20261114-213644"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -1617,8 +1620,8 @@ function barre(P, haut) {
   const ref = `{J:S.${haut ? 'O' : 'J'}}`;
   return `<div class="barre ${estCible({ J:P }) ? 'cible' : ''} ${!P.ultimeFait && P.jauge >= JAUGE.max ? 'ultpret' : ''} ${P.gardeB || P.bouclier ? 'protege' : ''}" data-bouclier="${(P.gardeB || 0) + (P.bouclier || 0)}" id="b-${haut ? 'O' : 'J'}" style="--c:${P.c}" onclick="touche(${ref})"><img src="${HEROS[P.id].img || IMG(P.id)}" alt=""><img class="cadre" src="ui/cadre.webp?v=1" alt="">${anneauDe(P)}${etatsHTML(P)}${!haut && !P.ultimeFait && P.jauge >= JAUGE.max && !S.J.aLancer ? `<span class="ultbtn ${P.pc >= 3 ? '' : 'manque'}" onclick="event.stopPropagation(); vise('ultime')">⚡ ULTIME PRÊT${P.pc >= 3 ? '' : ' · 3 PC'}</span>` : ''}<span class="bdg bg" ${P.gardeB ? '' : 'hidden'}>${P.gardeB}</span><span class="bdg bb" ${P.bouclier ? '' : 'hidden'}>${P.bouclier}</span><div style="flex:1"><div class="nom">${P.nom}<small class="sous">${P.ordi ? (S.lieu ? (HEROS[P.id].titre || 'ennemi') : 'ordinateur') : (P.qui && P.qui !== 'toi' ? P.qui : '')}</small></div><div class="vie"><b style="width:${Math.max(0, P.pv) / P.pvMax * 100}%"></b><i style="width:${Math.max(0, P.pv) / P.pvMax * 100}%"></i></div><div class="pastilles">
     <span data-k="pv" class="p pv">${Math.max(0, P.pv)}</span><span data-k="pc" class="p pc">◆ ${P.pc} PC</span>
-    ${P.gardeB ? `<span data-k="garde" class="p g pg">🛡 Garde ${P.gardeB}</span>` : ''}${P.gardeE ? `<span data-k="epines" class="p g">🌿 Épines ${P.gardeE}</span>` : ''}${P.esquive ? '<span data-k="esquive" class="p g">💨 Esquive</span>' : ''}
-    ${P.bouclier ? `<span data-k="bouclier" class="p g pb">🛡 Bouclier ${P.bouclier}</span>` : ''}${P.contre ? '<span data-k="contre" class="p g">⚔ Contre-attaque : 6 à la 1re créature</span>' : ''}${P.piege ? '<span data-k="piege" class="p g">🪤 Piège</span>' : ''}
+    ${P.gardeB ? `<span data-k="garde" class="p g pg"><img class="icopb" src="ui/equip/icone-garde.webp?v=1" alt="">Garde ${P.gardeB}</span>` : ''}${P.gardeE ? `<span data-k="epines" class="p g">🌿 Épines ${P.gardeE}</span>` : ''}${P.esquive ? '<span data-k="esquive" class="p g">💨 Esquive</span>' : ''}
+    ${P.bouclier ? `<span data-k="bouclier" class="p g pb"><img class="icopb" src="ui/equip/icone-bouclier.webp?v=1" alt="">Bouclier ${P.bouclier}</span>` : ''}${P.contre ? '<span data-k="contre" class="p g">⚔ Contre-attaque : 6 à la 1re créature</span>' : ''}${P.piege ? '<span data-k="piege" class="p g">🪤 Piège</span>' : ''}
     ${P.cor ? '<span data-k="cor" class="p g">📯 Cor</span>' : ''}${P.fournaise ? '<span data-k="fournaise" class="p g">🔥 Fournaise</span>' : ''}${P.paillasse ? '<span data-k="paillasse" class="p g">⚗ Paillasse</span>' : ''}
     ${P.id === 'pip' && !P.front.some(u => u.louve) ? `<span data-k="meute" class="p m">🐺 Meute ${P.meute}/3</span>` : ''}${P.braiseT ? `<span data-k="braiset" class="p al">♨ Brûlures ${P.braiseT}/3</span>` : ''}${P.corruption ? `<span data-k="corruption" class="p al">🟣 Corruption ${P.corruption}/${(P.reliques || []).includes('sel') ? 4 : 3}</span>` : ''}${P.givre ? `<span data-k="givre" class="p al">❄ Givre ${P.givre}/${(P.reliques || []).includes('braise') ? 4 : 3}</span>` : ''}${P.id === 'maelle' ? `<span data-k="braises" class="p m">🔥 Braises ${P.braise}/3${P.forgeGratuite ? ' · prochain Équipement à 0 PC' : ''}</span>` : ''}
     ${P.purete ? `<span data-k="purete" class="p pu">✦ Pureté ${P.purete}</span>` : ''}${P.handicap ? '<span data-k="handicap" class="p al">Handicap</span>' : ''}${P.saigne ? `<span data-k="saigne" class="p al">Saignement ${P.saigne}</span>` : ''}
@@ -2285,14 +2288,14 @@ async function joueFX() {
 // toucher l'écran pendant les animations les accélère
 document.addEventListener('pointerdown', () => { if (fxOn && !(S && S.tuto)) fxVite = .5; }, true); // 14/11 : plus d'accélération dans le tutoriel
 </script>
-<script src="profil.js?v=20261114-212829"></script>
-<script src="pantheon.js?v=20261114-212829"></script>
-<script src="tuto.js?v=20261114-212829"></script>
-<script src="deux.js?v=20261114-212829"></script>
-<script src="invasion.js?v=20261114-212829"></script>
-<script src="enigme-table.js?v=20261114-212829"></script>
-<script src="forge.js?v=20261114-212829"></script>
-<script src="semaine.js?v=20261114-212829"></script>
-<script src="enigme.js?v=20261114-212829"></script>
+<script src="profil.js?v=20261114-213644"></script>
+<script src="pantheon.js?v=20261114-213644"></script>
+<script src="tuto.js?v=20261114-213644"></script>
+<script src="deux.js?v=20261114-213644"></script>
+<script src="invasion.js?v=20261114-213644"></script>
+<script src="enigme-table.js?v=20261114-213644"></script>
+<script src="forge.js?v=20261114-213644"></script>
+<script src="semaine.js?v=20261114-213644"></script>
+<script src="enigme.js?v=20261114-213644"></script>
 </body>
 </html>

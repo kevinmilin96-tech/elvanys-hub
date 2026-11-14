@@ -151,7 +151,7 @@
 <script>
 const ZOK = () => localStorage.getItem('guilde-tuto') === 'fait'; // Zéphine : débloquée par le tutoriel (12/11)
 
-const VERSION = '20261114-212829';
+const VERSION = '20261114-213644';
 function verifieVersion() {
   fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
     v = (v || '').trim(); if (!v || v === VERSION || document.getElementById('majbar')) return;
@@ -164,17 +164,17 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261114-212829"></script>
-<script src="musique.js?v=20261114-212829"></script>
-<script src="rang.js?v=20261114-212829"></script>
-<script src="donnees.js?v=20261114-212829"></script>
-<script src="guide.js?v=20261114-212829"></script>
-<script src="odyssee.js?v=20261114-212829"></script>
-<script src="bestiaire.js?v=20261114-212829"></script>
-<script src="aventure.js?v=20261114-212829"></script>
-<script src="odyssee-sansfin.js?v=20261114-212829"></script>
-<script src="pantheon.js?v=20261114-212829"></script>
-<script src="chronique.js?v=20261114-212829"></script>
+<script src="cartes.js?v=20261114-213644"></script>
+<script src="musique.js?v=20261114-213644"></script>
+<script src="rang.js?v=20261114-213644"></script>
+<script src="donnees.js?v=20261114-213644"></script>
+<script src="guide.js?v=20261114-213644"></script>
+<script src="odyssee.js?v=20261114-213644"></script>
+<script src="bestiaire.js?v=20261114-213644"></script>
+<script src="aventure.js?v=20261114-213644"></script>
+<script src="odyssee-sansfin.js?v=20261114-213644"></script>
+<script src="pantheon.js?v=20261114-213644"></script>
+<script src="chronique.js?v=20261114-213644"></script>
 <script>
 // le moteur du Duel n'est pas chargé ici : les cartes de l'Odyssée appellent degats/soin seulement en combat (dans duel.html)
 const log = () => {}, degats = () => {}, soin = () => {}, altere = () => {}, invoque = () => {}, adv = () => ({}), fin = () => {};
@@ -347,11 +347,11 @@ async function sfPoser() {
   GM.son('tour-batir'); sfSel = null; sfRot = 0; sfCase = null; R.sansfin.attente = { x, y }; sauve(); dessine();
 }
 // =============================================================================================== 14/11 nuit : la Grande aventure (aventure.js)
-const eqHTML = k => k ? `${EQUIP[k][1]} <b>${EQUIP[k][2]}</b><small>${EQUIP[k][3]}</small>` : '<small>vide</small>';
+const eqHTML = k => k ? `${eqImg(k)} <b>${EQUIP[k][2]}</b><small>${EQUIP[k][3]}</small>` : '<small>vide</small>';
 function equipFen() {
   const A = R.aventure; if (!A) return;
   fenetre(`<h2>🎒 Mon équipement</h2><p style="font-size:.88em;color:var(--doux)">${HEROS[R.heros].nom} · niveau ${A.niveau} · chapitre ${A.chapitre} sur 3${A.essais ? ` · ${A.essais} seconde${A.essais > 1 ? 's' : ''} chance${A.essais > 1 ? 's' : ''}` : ''}</p>
-  <div class="slots">${Object.keys(EMPLACEMENTS).map(pl => `<div class="slot"><small>${EMPLACEMENTS[pl]}</small><span class="e">${A.equip[pl] ? EQUIP[A.equip[pl]][1] : '·'}</span>${A.equip[pl] ? `<b>${EQUIP[A.equip[pl]][2]}</b><small>${EQUIP[A.equip[pl]][3]}</small>` : '<small>vide</small>'}</div>`).join('')}</div>
+  <div class="slots">${Object.keys(EMPLACEMENTS).map(pl => `<div class="slot"><small>${EMPLACEMENTS[pl]}</small><span class="e">${A.equip[pl] ? eqImg(A.equip[pl], 44) : '·'}</span>${A.equip[pl] ? `<b>${EQUIP[A.equip[pl]][2]}</b><small>${EQUIP[A.equip[pl]][3]}</small>` : '<small>vide</small>'}</div>`).join('')}</div>
   <p><b>🎒 Le sac</b> (${A.sac.length}/${SAC_EQUIP}) ${A.sac.length ? '· touche un objet pour l’équiper' : ''}</p>
   <div class="choixv">${A.sac.map(k => `<button onclick="equipe(R,'${k}');sauve();dessine();equipFen()">${eqHTML(k)}</button>`).join('') || '<p style="color:var(--doux)">Vide. L’équipement se trouve sur les élites 💀 et les boss 👑.</p>'}</div>
   ${(A.ameliore || []).length ? `<p><b>⭐ Cartes améliorées</b> (−1 PC) : ${A.ameliore.map(k => CARTES[k].n).join(', ')}</p>` : ''}
@@ -443,7 +443,7 @@ const GUIDE_ODY = [
 ];
 function enteteHTML() {
   const r = R, h = HEROS[r.heros];
-  return `<div class="entete"><img src="${IMG(r.heros)}" alt="" onclick="monDeck()"><div class="st"><b>${h.nom}</b> · ${r.deck.length} cartes${r.asc ? ` · ⛰ Ascension ${r.asc}` : ''}${r.aventure ? ` · <span onclick="equipFen()" style="color:var(--or);cursor:pointer">🗺 ch. ${r.aventure.chapitre}/3 · niv. ${r.aventure.niveau} · 🎒 ${Object.values(r.aventure.equip).filter(Boolean).map(k => EQUIP[k][1]).join('') || 'équipement'}</span>` : ''}
+  return `<div class="entete"><img src="${IMG(r.heros)}" alt="" onclick="monDeck()"><div class="st"><b>${h.nom}</b> · ${r.deck.length} cartes${r.asc ? ` · ⛰ Ascension ${r.asc}` : ''}${r.aventure ? ` · <span onclick="equipFen()" style="color:var(--or);cursor:pointer">🗺 ch. ${r.aventure.chapitre}/3 · niv. ${r.aventure.niveau} · 🎒 ${Object.values(r.aventure.equip).filter(Boolean).map(k => eqImg(k, 18)).join('') || 'équipement'}</span>` : ''}
     <br><span class="p pv">❤ ${r.pv} / ${r.pvMax}</span><span class="p or">💰 ${r.or}</span><span class="p vivres ${r.vivres ? '' : 'zero'}" title="Huile de la lanterne">🪔 ${r.vivres}</span><span class="p">🗝 ${r.cles}</span><span class="p">🔮 ${r.fragments}/2</span>
     <br><span class="rel">${r.reliques.map(k => `<i onclick="info('${RELIQUES[k].e} ${RELIQUES[k].n}', '${RELIQUES[k].d.replace(/'/g, '’')}')">${RELIQUES[k].e}</i>`).join('')}${r.sacoche.map((k, i) => `<i onclick="sacocheIle(${i})">${SACOCHE[k].e}</i>`).join('')}${r.benes.map(k => `<i onclick="info('✨ ${BENEDICTIONS[k].n}', '${BENEDICTIONS[k].d.replace(/'/g, '’')}')">✨</i>`).join('')}${r.males.map(k => `<i onclick="info('🕯 ${MALEDICTIONS[k].n}', '${MALEDICTIONS[k].d.replace(/'/g, '’')}')">🕯</i>`).join('')}</span></div></div>`;
 }
