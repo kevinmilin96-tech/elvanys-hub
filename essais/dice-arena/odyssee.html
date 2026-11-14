@@ -137,7 +137,7 @@
 <script>
 const ZOK = () => localStorage.getItem('guilde-tuto') === 'fait'; // Zéphine : débloquée par le tutoriel (12/11)
 
-const VERSION = '20261114-185856';
+const VERSION = '20261114-190210';
 function verifieVersion() {
   fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
     v = (v || '').trim(); if (!v || v === VERSION || document.getElementById('majbar')) return;
@@ -150,14 +150,14 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261114-185856"></script>
-<script src="musique.js?v=20261114-185856"></script>
-<script src="donnees.js?v=20261114-185856"></script>
-<script src="guide.js?v=20261114-185856"></script>
-<script src="odyssee.js?v=20261114-185856"></script>
-<script src="odyssee-sansfin.js?v=20261114-185856"></script>
-<script src="pantheon.js?v=20261114-185856"></script>
-<script src="chronique.js?v=20261114-185856"></script>
+<script src="cartes.js?v=20261114-190210"></script>
+<script src="musique.js?v=20261114-190210"></script>
+<script src="donnees.js?v=20261114-190210"></script>
+<script src="guide.js?v=20261114-190210"></script>
+<script src="odyssee.js?v=20261114-190210"></script>
+<script src="odyssee-sansfin.js?v=20261114-190210"></script>
+<script src="pantheon.js?v=20261114-190210"></script>
+<script src="chronique.js?v=20261114-190210"></script>
 <script>
 // le moteur du Duel n'est pas chargé ici : les cartes de l'Odyssée appellent degats/soin seulement en combat (dans duel.html)
 const log = () => {}, degats = () => {}, soin = () => {}, altere = () => {}, invoque = () => {}, adv = () => ({}), fin = () => {};
@@ -198,19 +198,19 @@ const CORBIN_GIVRE = {
 };
 // 14/11 : 3 EMPLACEMENTS de sauvegarde (demande de l'utilisateur) : continuer, recommencer ou effacer chaque partie.
 // On revient seul dans la partie seulement au retour d'un combat ; sinon l'écran des emplacements s'ouvre.
-function reprendre(r) { R = r; dejaDessine = new Set(); R.ile.flat().forEach(c => { if (c.vu) dejaDessine.add(c.x + ',' + c.y); }); if (R.combat && !R.combat.resultat) { location.href = 'duel.html?odyssee=1'; return; } if (R.combat && R.combat.resultat) { dessine(); apresCombat(); return; } dessine(); }
+function reprendre(r) { R = r; dejaDessine = new Set(); R.ile.flat().forEach(c => { if (c.vu) dejaDessine.add(c.x + ',' + c.y); }); if (R.combat && !R.combat.resultat) { location.href = 'duel.html?odyssee=1' + (SANSFIN ? '&sansfin=1' : ''); return; } if (R.combat && R.combat.resultat) { dessine(); apresCombat(); return; } dessine(); }
 const ilDYa = t => { if (!t) return ''; const m = Math.round((Date.now() - t) / 60000); return m < 2 ? 'à l’instant' : m < 60 ? `il y a ${m} min` : m < 1440 ? `il y a ${Math.round(m / 60)} h` : `il y a ${Math.round(m / 1440)} jour${m >= 2880 ? 's' : ''}`; };
 function emplacements() {
   document.body.classList.remove('givre', 'abime');
   const cartes = Array.from({ length:ODY_SLOTS }, (_, i) => {
     const n = i + 1, r = lireSlot(n);
-    if (!r) return `<div class="slot vide"><div class="sn">Emplacement ${n}</div><p>Vide</p><button class="or" onclick="choisirSlot(${n});ecran()">✨ Nouvelle Odyssée<br><small>${ILES[ACTE_URL].court}</small></button></div>`;
+    if (!r) return `<div class="slot vide"><div class="sn">Emplacement ${n}</div><p>Vide</p><button class="or" onclick="choisirSlot(${n});ecran()">✨ Nouvelle Odyssée${SANSFIN ? ' sans fin' : ''}<br><small>${ILES[ACTE_URL].court}</small></button></div>`;
     const I = ILES[r.acte || 'brulees'] || ILES.brulees, vues = r.ile.flat().filter(c => c.visite).length;
     return `<div class="slot"><div class="sn">Emplacement ${n}</div><div class="sl"><img src="${IMG(r.heros)}" alt=""><div><b>${HEROS[r.heros].nom}</b> · ${I.court}${r.asc ? ` · ⛰ ${r.asc}` : ''}<br><span class="p pv">❤ ${r.pv} / ${r.pvMax}</span><span class="p">🔮 ${r.fragments}/2</span><span class="p">🗺 ${vues} case${vues > 1 ? 's' : ''}</span><br><small>Joué ${ilDYa(r.maj || r.debut)}${r.combat && !r.combat.resultat ? ` · <b style="color:#ffb347">⚔ combat en cours${HEROS[r.combat.ennemi] ? ' contre ' + HEROS[r.combat.ennemi].nom : ''}</b>` : ''}</small></div></div>
     <div class="choixh"><button class="or" onclick="choisirSlot(${n});reprendre(lireSlot(${n}))">▶ Continuer</button></div>
     <div class="choixh"><button onclick="recommencer(${n})">🔄 Recommencer</button><button onclick="effacer(${n})">🗑 Effacer</button></div></div>`;
   }).join('');
-  document.getElementById('app').innerHTML = `<h1>🏰 L’Odyssée</h1><p style="text-align:center;color:var(--doux);font-size:.9em">Trois emplacements pour trois parties. Continue une partie, ou recommence-la de zéro.</p>${cartes}
+  document.getElementById('app').innerHTML = `<h1>${SANSFIN ? '🧩 L’Odyssée sans fin' : '🏰 L’Odyssée'}</h1><p style="text-align:center;color:var(--doux);font-size:.9em">Trois emplacements pour trois parties. Continue une partie, ou recommence-la de zéro.</p>${cartes}
   <div class="choixh"><button onclick="records()">🏆 Mes Odyssées (${lireRecords().length})</button><button onclick="collection()">📚 Ma collection (${lireCollection().length})</button></div>
   <div class="choixh"><button onclick="location.href='menu.html'">⌂ Menu</button></div>`;
 }
@@ -540,7 +540,7 @@ function combat(c) {
   <p>🎯 <b>Défi · ${d.n}</b> : ${d.d} Réussi = +30 or.</p>
   ${cb.ombre ? `<p style="color:#c084fc">🌑 <b>Ombre majeure · ${OMBRES[cb.ombre].n}</b> : ${OMBRES[cb.ombre].d} Vaincue = double butin (+40 or et deux cartes).</p>` : ''}${cb.anomalie ? `<p style="color:#ff9a7a">🌀 <b>Anomalie ${'4'.repeat(cb.anomalie)}</b> : ${ANOMALIE.slice(1, cb.anomalie + 1).join(', ')}. ${cb.anomalie === 3 ? 'Vaincue = +80 or et deux cartes à garder toutes les deux !' : `Vaincue = +${10 * cb.anomalie} or.`}</p>` : ''}
   <p style="font-size:.86em;color:var(--doux)">Tu entres avec ❤ ${R.pv} / ${R.pvMax}${R.sacoche.length ? ' et ta sacoche : ' + R.sacoche.map(k => SACOCHE[k].e + ' ' + SACOCHE[k].n).join(', ') : ''}.</p>
-  <div class="choixh"><button class="or" onclick="location.href='duel.html?odyssee=1'">⚔ Au combat !</button></div>`);
+  <div class="choixh"><button class="or" onclick="location.href='duel.html?odyssee=1${SANSFIN ? '&sansfin=1' : ''}'">⚔ Au combat !</button></div>`);
 }
 // retour du Duel : récompenses, tirage de cartes
 function apresCombat() {

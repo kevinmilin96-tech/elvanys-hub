@@ -8,7 +8,7 @@
 <title>La Guilde des Runes</title>
 <script>
 // Même mécanisme que le Duel : une nouvelle version = rechargement tout seul à l'ouverture (publier.sh change VERSION).
-const VERSION = '20261114-185856';
+const VERSION = '20261114-190210';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-menu-' + v)) { sessionStorage.setItem('recharge-menu-' + v, '1'); location.replace('menu.html?v=' + v); }
@@ -192,9 +192,9 @@ fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.te
 </div>
 <div id="flash"></div>
 
-<script src="semaine.js?v=20261114-185856"></script>
-<script src="musique.js?v=20261114-185856"></script>
-<script src="donnees.js?v=20261114-185856"></script>
+<script src="semaine.js?v=20261114-190210"></script>
+<script src="musique.js?v=20261114-190210"></script>
+<script src="donnees.js?v=20261114-190210"></script>
 <script>
 // ciel étoilé + runes du portail (symboles, pas des lettres), aux couleurs des héros
 const ciel = document.getElementById('ciel');
@@ -283,7 +283,7 @@ function dessin(p) {
   if (p.avenir) return '<img src="menu-recu/mystere.webp" alt=""><div class="lueur"></div>';
   if (p.img) return `<img src="${p.img}" alt="">${p.fx === 'lave' ? '<img class="fx lave" src="menu-recu/fx-lave.webp?v=1" alt="">' + particules('etincelles', 10) : p.fx === 'aurore' ? '<img class="fx aurore" src="menu-recu/fx-aurore.webp?v=1" alt="">' + particules('neige', 14) : ''}`;
   // 14/11 : l'Arène repeinte sans dés ; le jeu pose deux VRAIS dés de héros au-dessus du piédestal (Gemini ne sait pas peindre nos dés)
-  if (p.pro === 'arene' && !p.sansImg) return `<img src="menu-recu/mode-arene.webp?v=2" alt="">`; // 14/11 : sans les dés posés par-dessus (« pas terrible »)
+  if (p.pro === 'arene' && !p.sansImg) return `<img src="menu-recu/mode-arene.webp?v=3" alt="">`; // 14/11 : sans les dés posés par-dessus (« pas terrible »)
   if (PRO_IMG[p.pro] && !p.sansImg) return `<img src="menu-recu/${PRO_IMG[p.pro]}.webp?v=1" alt="">`;
   const [e, fond, g] = PRO[p.pro]; let et = '';
   for (let i = 0; i < 9; i++) et += `<i class="et" style="left:${(i * 37) % 100}%;top:${(i * 23) % 60}%;animation-delay:${i * .3}s"></i>`;

@@ -662,7 +662,9 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261114-185856';
+// 14/11 : l'Odyssée sans fin a ses propres emplacements (odyssee.js lit SANSFIN)
+const SANSFIN = new URLSearchParams(location.search).get('sansfin') === '1', ODY_PAGE = 'odyssee.html' + (SANSFIN ? '?sansfin=1' : '');
+const VERSION = '20261114-190210';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -681,11 +683,11 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261114-185856"></script>
-<script src="musique.js?v=20261114-185856"></script>
-<script src="donnees.js?v=20261114-185856"></script>
-<script src="odyssee.js?v=20261114-185856"></script>
-<script src="chronique.js?v=20261114-185856"></script>
+<script src="cartes.js?v=20261114-190210"></script>
+<script src="musique.js?v=20261114-190210"></script>
+<script src="donnees.js?v=20261114-190210"></script>
+<script src="odyssee.js?v=20261114-190210"></script>
+<script src="chronique.js?v=20261114-190210"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -1156,7 +1158,7 @@ function nouvellePartie(id, idO, auto) {
 // run.combat = { id, type:'monstre'|'elite'|'boss', ennemi, niv, renfort, defi } ; le résultat est écrit dans run.combat.resultat, l'île reprend la main.
 function partieOdyssee() {
   const run = lireOdyssee();
-  if (!run || !run.combat) { location.href = 'odyssee.html'; return; }
+  if (!run || !run.combat) { location.href = ODY_PAGE; return; }
   const cb = run.combat;
   // combat déjà commencé sur ce téléphone (rechargement de la page) : on le reprend là où il en était
   try { const sv = JSON.parse(localStorage.getItem('guilde-combat') || 'null'); if (sv && sv.ody && sv.ody.id === cb.id && !sv.fini) { S = sv; FX = []; fxApres = []; fxOn = false; sel = []; attaquant = null; ciblage = null; if (HEROS[S.O.id].phases) { S.O.phase = 0; phaseBoss(S.O); } rendu(); regles(true); return; } } catch (e) {}
@@ -1257,7 +1259,7 @@ function finOdyssee() {
   }
   localStorage.removeItem('guilde-combat');
   fenetre(`<h2>${S.fini === 'gagne' ? '🏆 Victoire !' : '💀 Défaite…'}</h2><p>${J.nom} contre ${S.O.nom} : ${S.fini === 'gagne' ? 'gagné' : 'perdu'} en ${J.tours} tours.${d ? `<br>🎯 Défi « ${d.n} » : ${defiOk ? '<b style="color:#7dffb0">réussi, +30 or</b>' : 'raté'}.` : ''}</p>
-    <div class="choixh"><button onclick="location.href='odyssee.html'">${S.fini === 'gagne' ? '🗺 Continuer l’Odyssée' : '🗺 Voir jusqu’où tu es allé'}</button></div>`);
+    <div class="choixh"><button onclick="location.href=ODY_PAGE">${S.fini === 'gagne' ? '🗺 Continuer l’Odyssée' : '🗺 Voir jusqu’où tu es allé'}</button></div>`);
 }
 let finTourDe = null; // 14/11 : « Fin du tour » touché plusieurs fois très vite = l'ordinateur jouait plusieurs fois et la partie se cassait → une seule fin de tour à la fois
 // 14/11 (l'utilisateur : « bloqué, Fin du tour ne marche pas, 3 fois ») : (1) toute erreur s'AFFICHE (bandeau rouge + journal) pour qu'on la trouve ;
@@ -1809,7 +1811,7 @@ function jingleFin() { if (S && S.fini) GM.jingle(S.fini === 'gagne' ? 'victoire
 // 14/11 (l'utilisateur : « je ne peux pas quitter ») : le ⚙️ du combat ouvre les Paramètres, avec « Quitter »
 window.GM_QUITTER = { get t() { return S && S.ody ? 'Quitter (combat gardé)' : 'Quitter la partie'; }, f:() => quitterPartie() };
 function quitterPartie() {
-  const ou = !S ? 'menu.html' : S.ody ? 'odyssee.html' : S.tuto ? 'menu.html' : S.coop ? 'menu.html' : 'menu.html#arene';
+  const ou = !S ? 'menu.html' : S.ody ? ODY_PAGE : S.tuto ? 'menu.html' : S.coop ? 'menu.html' : 'menu.html#arene';
   if (!S || S.fini || S.ody) { location.href = ou; return; } // l'Odyssée garde le combat : on le reprend en revenant
   fenetre(`<h2>Quitter la partie ?</h2><p>La partie en cours sera perdue.</p><div class="choixh"><button onclick="fermer()">Continuer</button><button onclick="location.href='${ou}'">🚪 Quitter</button></div>`);
 }
@@ -2156,14 +2158,14 @@ async function joueFX() {
 // toucher l'écran pendant les animations les accélère
 document.addEventListener('pointerdown', () => { if (fxOn && !(S && S.tuto)) fxVite = .5; }, true); // 14/11 : plus d'accélération dans le tutoriel
 </script>
-<script src="profil.js?v=20261114-185856"></script>
-<script src="pantheon.js?v=20261114-185856"></script>
-<script src="tuto.js?v=20261114-185856"></script>
-<script src="deux.js?v=20261114-185856"></script>
-<script src="invasion.js?v=20261114-185856"></script>
-<script src="enigme-table.js?v=20261114-185856"></script>
-<script src="forge.js?v=20261114-185856"></script>
-<script src="semaine.js?v=20261114-185856"></script>
-<script src="enigme.js?v=20261114-185856"></script>
+<script src="profil.js?v=20261114-190210"></script>
+<script src="pantheon.js?v=20261114-190210"></script>
+<script src="tuto.js?v=20261114-190210"></script>
+<script src="deux.js?v=20261114-190210"></script>
+<script src="invasion.js?v=20261114-190210"></script>
+<script src="enigme-table.js?v=20261114-190210"></script>
+<script src="forge.js?v=20261114-190210"></script>
+<script src="semaine.js?v=20261114-190210"></script>
+<script src="enigme.js?v=20261114-190210"></script>
 </body>
 </html>

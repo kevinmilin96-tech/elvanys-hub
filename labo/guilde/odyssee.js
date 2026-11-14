@@ -534,9 +534,11 @@ const DEFIS = [
   { id:'demonstration', n:'Démonstration', d:'Achever l’ennemi avec ton Ultime.' },
   { id:'stratege', n:'Stratège', d:'Réussir une Technique de 4 dés ou plus.' },
 ];
-const odyCle = n => n > 1 ? ODY_CLE + '-' + n : ODY_CLE;
-function slotActif() { const n = +(typeof localStorage !== 'undefined' && localStorage.getItem(ODY_SLOT_CLE)) || 1; return n >= 1 && n <= ODY_SLOTS ? n : 1; }
-function choisirSlot(n) { localStorage.setItem(ODY_SLOT_CLE, String(n)); }
+// 14/11 (l'utilisateur : « dans l'Odyssée sans fin, j'ai une sauvegarde du Givre ») : l'Odyssée sans fin a ses 3 emplacements à elle
+const sansFinPage = () => typeof SANSFIN !== 'undefined' && SANSFIN;
+const odyCle = n => { const b = sansFinPage() ? ODY_CLE + '-sansfin' : ODY_CLE; return n > 1 ? b + '-' + n : b; };
+function slotActif() { const n = +(typeof localStorage !== 'undefined' && localStorage.getItem(ODY_SLOT_CLE + (sansFinPage() ? '-sansfin' : ''))) || 1; return n >= 1 && n <= ODY_SLOTS ? n : 1; }
+function choisirSlot(n) { localStorage.setItem(ODY_SLOT_CLE + (sansFinPage() ? '-sansfin' : ''), String(n)); }
 function lireSlot(n) { try { return JSON.parse(localStorage.getItem(odyCle(n)) || 'null'); } catch (e) { return null; } }
 function effacerSlot(n) { localStorage.removeItem(odyCle(n)); }
 function lireOdyssee() { return lireSlot(slotActif()); }
