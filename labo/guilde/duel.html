@@ -664,7 +664,7 @@
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
 // 14/11 : l'Odyssée sans fin a ses propres emplacements (odyssee.js lit SANSFIN)
 const SANSFIN = new URLSearchParams(location.search).get('sansfin') === '1', ODY_PAGE = 'odyssee.html' + (SANSFIN ? '?sansfin=1' : '');
-const VERSION = '20261114-192212';
+const VERSION = '20261114-192344';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -683,11 +683,11 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261114-192212"></script>
-<script src="musique.js?v=20261114-192212"></script>
-<script src="donnees.js?v=20261114-192212"></script>
-<script src="odyssee.js?v=20261114-192212"></script>
-<script src="chronique.js?v=20261114-192212"></script>
+<script src="cartes.js?v=20261114-192344"></script>
+<script src="musique.js?v=20261114-192344"></script>
+<script src="donnees.js?v=20261114-192344"></script>
+<script src="odyssee.js?v=20261114-192344"></script>
+<script src="chronique.js?v=20261114-192344"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -1536,7 +1536,7 @@ function front(P, haut) {
     const cls = [u.cachee ? 'cachee' : '', u.defense ? 'defense' : '', estCible({ J:P, u }) ? 'cible' : '', attaquant === u ? 'choisi' : '', !haut && u.pret ? 'pret' : '', !u.pret ? 'dort' : ''].join(' ');
     const tags = [u.defense ? '🛡 EN DÉFENSE' : '', u.barriere ? 'Barrière' : '', u.cachee ? '👁 Cachée' : '', u.charge ? 'Charge' : '', u.epines ? `Épines ${u.epines}` : '', u.bouclier ? `🛡${u.bouclier}` : '', u.entrave ? 'Entravé' : '', u.louve && haut ? 'Louve' : '', !haut ? (u.pret ? (u.louve ? '🐺 touche-la !' : '⚔ prête') : '💤 repos') : ''].filter(Boolean).join(' · ');
     if (haut && u.cachee) return `<div class="u mystere ${estCible({ J:P, u }) ? 'cible' : ''}" data-uid="${u.id}" onclick="touche({J:S.${cote},u:S.${cote}.front[${i}]})"><b>?</b><div class="tg">👁 Cachée</div><div class="av"><span>⚔ ?</span><span>❤ ?</span></div></div>`;
-    const art = u.louve ? 'louve' : u.key, img = typeof ARTS !== 'undefined' && ARTS.includes(art) ? ` style="background:linear-gradient(#0000 30%, #000c 85%), url('cartes/${art}.webp?v=1') center 30%/cover;color:#fff"` : '';
+    const art = u.louve ? 'louve' : u.key, img = typeof ARTS !== 'undefined' && ARTS.includes(art) ? ` style="background:linear-gradient(#0000 30%, #000c 85%), url('cartes/${art}.webp?v=1') center 30%/cover;color:#fff"` : RENFORT_IMG[u.n] ? ` style="background:linear-gradient(#0000 30%, #000c 85%), url('portraits/${RENFORT_IMG[u.n]}.webp') center 25%/cover;color:#fff"` : '';
     return `<div class="u ${cls}${img ? ' illu' : ''}" data-uid="${u.id}"${img} onclick="touche({J:S.${cote},u:S.${cote}.front[${i}]})"><b class="${u.n.length > 9 ? 'long' : ''}">${u.n}</b><div class="tg">${tags}</div><div class="av"><span class="${atk(P, u) >= 10 ? 'n2' : ''}">⚔ ${atk(P, u)}</span><span class="${u.v >= 10 ? 'n2' : ''}">❤ ${u.v}</span></div></div>`;
   }).join('')}${'<div class="place"></div>'.repeat(Math.max(0, 5 - P.front.length))}</div>`;
 }
@@ -1857,7 +1857,7 @@ ${cote('b-O', R.portrait_haut, R.etiquettes_haut, R.coeur_haut, R.bouclier_haut,
 ${cote('b-J', R.portrait_bas, R.etiquettes_bas, R.coeur_bas, R.bouclier_bas, R.cadre_bas, 'portrait_bas', 'cadre_bas', R.anneau_bas, 'anneau_bas')}`;
   if (R.champ_haut_gauche) { const a = R.champ_haut_gauche, b = R.champ_bas_droit, mil = (a[1] + b[1]) / 2;
     css += `\n${Q} .front { left:${f(a[0] + .5)}cqw !important; right:${f(100 - b[0] + .5)}cqw !important; }
-${Q} #f-O { top:${f(a[1] + 2.5)}cqh; } ${Q} #f-J { top:${f(mil + 3)}cqh; }
+${Q} #f-O { top:${f(a[1] + .6)}cqh; } ${Q} #f-J { top:calc(${f(b[1] - .8)}cqh - 19cqw); } /* 14/11 : les créatures collées aux bords du champ, le texte du milieu entre les deux */
 ${Q} .bandeau, ${Q} .lancer { top:${f(mil)}cqh; left:${f(a[0] + .5)}cqw; right:${f(100 - b[0] + .5)}cqw; }`; }
   return css;
 }
@@ -2160,14 +2160,14 @@ async function joueFX() {
 // toucher l'écran pendant les animations les accélère
 document.addEventListener('pointerdown', () => { if (fxOn && !(S && S.tuto)) fxVite = .5; }, true); // 14/11 : plus d'accélération dans le tutoriel
 </script>
-<script src="profil.js?v=20261114-192212"></script>
-<script src="pantheon.js?v=20261114-192212"></script>
-<script src="tuto.js?v=20261114-192212"></script>
-<script src="deux.js?v=20261114-192212"></script>
-<script src="invasion.js?v=20261114-192212"></script>
-<script src="enigme-table.js?v=20261114-192212"></script>
-<script src="forge.js?v=20261114-192212"></script>
-<script src="semaine.js?v=20261114-192212"></script>
-<script src="enigme.js?v=20261114-192212"></script>
+<script src="profil.js?v=20261114-192344"></script>
+<script src="pantheon.js?v=20261114-192344"></script>
+<script src="tuto.js?v=20261114-192344"></script>
+<script src="deux.js?v=20261114-192344"></script>
+<script src="invasion.js?v=20261114-192344"></script>
+<script src="enigme-table.js?v=20261114-192344"></script>
+<script src="forge.js?v=20261114-192344"></script>
+<script src="semaine.js?v=20261114-192344"></script>
+<script src="enigme.js?v=20261114-192344"></script>
 </body>
 </html>
