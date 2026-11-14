@@ -120,6 +120,8 @@
   .sft small { font-size:.7em; line-height:1.15; } .sft.sel { border-color:#7dffb0; box-shadow:0 0 12px #7dffb0aa; transform:translateY(-3px); }
   .sfroche { fill:#3b2716; } .sfbord { fill:#1e140b; stroke:#1e140b; stroke-width:5; stroke-linejoin:round; } .sfsol { fill:#c9b48c; }
   body.givre .sfsol { fill:#c4d2d8; } body.abime .sfsol { fill:#bcaecb; }
+  .modeav { display:flex; gap:8px; margin:8px auto; max-width:560px; } .modeav button { flex:1; background:#221d42; color:#fff; border:2px solid #4b4580; border-radius:14px; padding:8px; font:inherit; font-size:.9em; text-align:left; } .modeav button.on { border-color:var(--or); background:#3a2f12; } .modeav small { display:block; color:var(--doux); font-size:.8em; margin-top:2px; }
+  .slots { display:flex; gap:6px; } .slot { flex:1; background:#221d42; border:2px solid #4b4580; border-radius:12px; padding:8px 4px; text-align:center; font-size:.8em; } .slot .e { font-size:1.8em; display:block; } .slot small { color:var(--doux); display:block; }
   .sfinfo { display:flex; gap:6px; justify-content:center; flex-wrap:wrap; margin-bottom:5px; } .sfinfo span { background:#2a2350; border:1px solid #4b4580; border-radius:10px; padding:2px 8px; font-size:.78em; color:#f3c96b; }
   .sfbt { display:flex; gap:8px; justify-content:center; margin-top:6px; } .sfbt button { background:#2a2350; color:#fff; border:1px solid #4b4580; border-radius:10px; padding:6px 12px; font:inherit; font-size:.88em; } .sfbt button:disabled { opacity:.4; }
   .sfcible { fill:#7dffb033; stroke:#15803d; stroke-width:3; stroke-dasharray:6 4; animation:pulse2 1.3s ease-in-out infinite; }
@@ -149,7 +151,7 @@
 <script>
 const ZOK = () => localStorage.getItem('guilde-tuto') === 'fait'; // Zéphine : débloquée par le tutoriel (12/11)
 
-const VERSION = '20261114-205148';
+const VERSION = '20261114-205752';
 function verifieVersion() {
   fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
     v = (v || '').trim(); if (!v || v === VERSION || document.getElementById('majbar')) return;
@@ -162,15 +164,16 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261114-205148"></script>
-<script src="musique.js?v=20261114-205148"></script>
-<script src="rang.js?v=20261114-205148"></script>
-<script src="donnees.js?v=20261114-205148"></script>
-<script src="guide.js?v=20261114-205148"></script>
-<script src="odyssee.js?v=20261114-205148"></script>
-<script src="odyssee-sansfin.js?v=20261114-205148"></script>
-<script src="pantheon.js?v=20261114-205148"></script>
-<script src="chronique.js?v=20261114-205148"></script>
+<script src="cartes.js?v=20261114-205752"></script>
+<script src="musique.js?v=20261114-205752"></script>
+<script src="rang.js?v=20261114-205752"></script>
+<script src="donnees.js?v=20261114-205752"></script>
+<script src="guide.js?v=20261114-205752"></script>
+<script src="odyssee.js?v=20261114-205752"></script>
+<script src="aventure.js?v=20261114-205752"></script>
+<script src="odyssee-sansfin.js?v=20261114-205752"></script>
+<script src="pantheon.js?v=20261114-205752"></script>
+<script src="chronique.js?v=20261114-205752"></script>
 <script>
 // le moteur du Duel n'est pas chargé ici : les cartes de l'Odyssée appellent degats/soin seulement en combat (dans duel.html)
 const log = () => {}, degats = () => {}, soin = () => {}, altere = () => {}, invoque = () => {}, adv = () => ({}), fin = () => {};
@@ -249,16 +252,20 @@ function ecran() {
     <div class="choixh"><button onclick="location.href='odyssee.html'">🌋 Aller aux Terres brûlées</button><button onclick="location.href='odyssee.html?ile=givre&essai=1'">🧪 L’essayer quand même (prototype)</button></div><div class="choixh"><button onclick="location.href='menu.html#odyssee'">⌂ Menu</button></div>`; return; }
   document.getElementById('app').innerHTML = `<h1>${{ givre:'❄️ L’Odyssée · l’île du Givre', abime:'🌀 L’Odyssée · l’Abîme du Vide' }[ACTE_URL] || '🏰 L’Odyssée · les Terres brûlées'}${SANSFIN ? ' · 🧩 sans fin' : ''}</h1>${SANSFIN ? '<p style="text-align:center;color:var(--or);font-size:.9em">L’île se construit tuile par tuile : à chaque pas, tu choisis une tuile parmi 3 et tu la raccordes au donjon.</p>' : ''}
   <p style="text-align:center;color:var(--doux);font-size:.9em">Une île tirée au sort, à explorer case par case. Le combat, c’est le Duel. Tes PV ne remontent pas tout seuls : sources, potions et marchand. Une lanterne de 20 doses d’huile pour fouiller. Deux fragments de rune ouvrent la porte ${{ givre:"de la Vouivre des glaces. Ici, le Givre ❄ s’accumule sur toi : à trois, tu es gelé", abime:"du Roi sans visage. Ici, la Corruption 🟣 s’accumule : à trois, le Vide te dévore (Silence) et nourrit l’ennemi" }[ACTE_URL] || "du Titan de feu"}.</p>
-  ${ascMax(ACTE_URL) ? `<p style="text-align:center;font-size:.9em">⛰ <b style="color:var(--or)">Ascension</b> : ${Array.from({ length:ascMax(ACTE_URL) + 1 }, (_, n) => `<button class="asc ${ASC_CHOIX === n ? 'on' : ''}" onclick="ASC_CHOIX=${n};ecran()">${n || 'normal'}</button>`).join(' ')}${ASC_CHOIX ? `<br><small style="color:var(--doux)">${Array.from({ length:ASC_CHOIX }, (_, i) => ASCENSION[i + 1].n).join(' · ')}</small>` : ''}</p>` : ''}
+  ${ascMax(ACTE_URL) && (SANSFIN || !MODE_AV) ? `<p style="text-align:center;font-size:.9em">⛰ <b style="color:var(--or)">Ascension</b> : ${Array.from({ length:ascMax(ACTE_URL) + 1 }, (_, n) => `<button class="asc ${ASC_CHOIX === n ? 'on' : ''}" onclick="ASC_CHOIX=${n};ecran()">${n || 'normal'}</button>`).join(' ')}${ASC_CHOIX ? `<br><small style="color:var(--doux)">${Array.from({ length:ASC_CHOIX }, (_, i) => ASCENSION[i + 1].n).join(' · ')}</small>` : ''}</p>` : ''}
+  ${SANSFIN ? '' : `<div class="modeav"><button class="${MODE_AV ? 'on' : ''}" onclick="choixModeAv(true)">🗺 <b>La Grande aventure</b><small>les 3 îles à la suite : ton héros garde son deck, monte de niveau et trouve de l’équipement</small></button><button class="${MODE_AV ? '' : 'on'}" onclick="choixModeAv(false)">🏝 <b>Une île seule</b><small>une partie, l’île du jour, l’Ascension</small></button></div>`}
   <p style="text-align:center"><b style="color:var(--or)">Choisis ton héros</b></p>
   <div class="heros6">${ORDRE.map(id => id === 'zephine' && !ZOK() ? `<button onclick="location.href='duel.html?tuto=1'" style="opacity:.55"><img src="${IMG(id)}" alt="" style="filter:grayscale(1)">🔒 ${HEROS[id].nom}<br><small style="color:var(--doux)">Fais le tutoriel</small></button>` : `<button onclick="commence('${id}')"><img src="${IMG(id)}" alt="">${HEROS[id].nom}<br><small style="color:var(--doux)">${Math.round(HEROS[id].pv * (ODY_PV[id] || 1.8))} PV en Odyssée</small></button>`).join('')}</div>
-  <p style="text-align:center;font-size:.86em"><label><input type="checkbox" id="jour"> 🗓 L’île du jour (la même île pour tout le monde aujourd’hui)</label></p>
+  ${SANSFIN || !MODE_AV ? `<p style="text-align:center;font-size:.86em"><label><input type="checkbox" id="jour"> 🗓 L’île du jour (la même île pour tout le monde aujourd’hui)</label></p>` : ''}
   <div class="choixh"><button onclick="records()">🏆 Mes Odyssées (${rec.length})</button><button onclick="collection()">📚 Ma collection (${col.length})</button></div>
   <div class="choixh"><button onclick="location.href='odyssee-regles.html'">📖 Les règles complètes</button><button onclick="emplacements()">← Emplacements</button></div>`;
 }
+// 14/11 nuit : la Grande aventure ou une île seule (choix gardé sur le téléphone)
+let MODE_AV = localStorage.getItem('guilde-mode-av') !== 'ile';
+function choixModeAv(v) { MODE_AV = v; localStorage.setItem('guilde-mode-av', v ? 'av' : 'ile'); ecran(); }
 function commence(id) {
   const jour = document.getElementById('jour') && document.getElementById('jour').checked;
-  R = SANSFIN ? nouvelleSansFin(id, ACTE_URL, ASC_CHOIX) : nouvelleOdyssee(id, jour ? graineDuJour() + (ACTE_URL !== 'brulees' ? '-' + ACTE_URL : '') : null, ACTE_URL, ASC_CHOIX); if (!R) { alert('Impossible de tirer une île : réessaie.'); return; }
+  R = !SANSFIN && MODE_AV ? nouvelleAventure(id) : SANSFIN ? nouvelleSansFin(id, ACTE_URL, ASC_CHOIX) : nouvelleOdyssee(id, jour ? graineDuJour() + (ACTE_URL !== 'brulees' ? '-' + ACTE_URL : '') : null, ACTE_URL, ASC_CHOIX); if (!R) { alert('Impossible de tirer une île : réessaie.'); return; }
   dejaDessine = new Set(); bulles = []; sauve(); dessine();
   chronique([CH().arrivee(HEROS[id].nom)], () => { dialogue('depart'); fenetre(`<h2>⛵ Débarquement</h2><p>${HEROS[id].nom} pose le pied sur ${ILE(R).nom}. ${{ givre:'La glace craque, le vent mord, l’aurore danse au-dessus du château de glace.', abime:'Le silence est total. Sous tes pieds, le gouffre ; au-dessus, un trône.' }[R.acte] || 'Le ciel est rouge, la roche fume.'}</p>
   ${R.sansfin ? `<p>Ici, l’île n’existe pas encore : <b>tu la construis</b>. Sous la carte, 3 tuiles t’attendent. Touche-en une, tourne-la avec ⟳, puis touche une case <b style="color:var(--ok)">verte</b> : ses couloirs doivent se raccorder à ceux du donjon. Ton héros y entre (1 dose d’huile 🪔).</p><p>Bats <b>2 élites</b> 💀 pour gagner 2 fragments de rune : la tuile du boss 👑 apparaîtra alors dans ta pioche, et tu choisiras où ouvrir sa porte.</p>` : `<p>Touche une salle <b style="color:var(--ok)">verte</b> : le héros y marche et l’île se dessine devant lui. Tu vois le <b>type</b> des salles voisines, jamais ce qu’elles cachent. Touche-la une première fois pour voir le trajet et son coût, une seconde fois pour y aller. Chaque case nouvelle brûle <b>1 dose d’huile 🪔</b> (la lumière autour du héros rétrécit quand la lanterne se vide) ; revenir est gratuit.</p>
@@ -338,6 +345,63 @@ async function sfPoser() {
   // 14/11 (l'utilisateur : « ce n'est pas moi qui choisis d'aller au combat ») : le héros n'entre plus tout seul ; on l'envoie quand on veut
   GM.son('tour-batir'); sfSel = null; sfRot = 0; sfCase = null; R.sansfin.attente = { x, y }; sauve(); dessine();
 }
+// =============================================================================================== 14/11 nuit : la Grande aventure (aventure.js)
+const eqHTML = k => k ? `${EQUIP[k][1]} <b>${EQUIP[k][2]}</b><small>${EQUIP[k][3]}</small>` : '<small>vide</small>';
+function equipFen() {
+  const A = R.aventure; if (!A) return;
+  fenetre(`<h2>🎒 Mon équipement</h2><p style="font-size:.88em;color:var(--doux)">${HEROS[R.heros].nom} · niveau ${A.niveau} · chapitre ${A.chapitre} sur 3${A.essais ? ` · ${A.essais} seconde${A.essais > 1 ? 's' : ''} chance${A.essais > 1 ? 's' : ''}` : ''}</p>
+  <div class="slots">${Object.keys(EMPLACEMENTS).map(pl => `<div class="slot"><small>${EMPLACEMENTS[pl]}</small><span class="e">${A.equip[pl] ? EQUIP[A.equip[pl]][1] : '·'}</span>${A.equip[pl] ? `<b>${EQUIP[A.equip[pl]][2]}</b><small>${EQUIP[A.equip[pl]][3]}</small>` : '<small>vide</small>'}</div>`).join('')}</div>
+  <p><b>🎒 Le sac</b> (${A.sac.length}/${SAC_EQUIP}) ${A.sac.length ? '· touche un objet pour l’équiper' : ''}</p>
+  <div class="choixv">${A.sac.map(k => `<button onclick="equipe(R,'${k}');sauve();dessine();equipFen()">${eqHTML(k)}</button>`).join('') || '<p style="color:var(--doux)">Vide. L’équipement se trouve sur les élites 💀 et les boss 👑.</p>'}</div>
+  ${A.bonus.length ? `<p><b>⭐ Mes bonus de niveau</b> : ${A.bonus.map(b => `${BONUS_NIV[b][0]} ${BONUS_NIV[b][1]}`).join(' · ')}</p>` : ''}
+  <div class="choixh"><button onclick="fermer()">Fermer</button></div>`);
+}
+// un équipement trouvé : l'équiper, le ranger, ou le laisser
+function equipTrouveFen(k, apres) {
+  const A = R.aventure, pl = EQUIP[k][0], ancien = A.equip[pl]; window._apresEq = apres || (() => { fermer(); dessine(); });
+  GM.son('coffre');
+  fenetre(`<h2>🎒 Un équipement !</h2><div class="choixv"><button disabled style="opacity:1">${eqHTML(k)}</button></div>
+  <p style="font-size:.88em">${EMPLACEMENTS[pl]} : ${ancien ? `tu portes déjà ${EQUIP[ancien][1]} ${EQUIP[ancien][2]} (il irait dans le sac).` : 'rien pour l’instant.'}</p>
+  <div class="choixh"><button class="or" onclick="equipe(R,'${k}');sauve();fermer();_apresEq()">Équiper</button>${A.sac.length < SAC_EQUIP ? `<button onclick="auSac(R,'${k}');sauve();fermer();_apresEq()">Au sac</button>` : ''}<button onclick="fermer();_apresEq()">Laisser</button></div>`);
+}
+// l'île est libérée : le butin du boss, le niveau, la relique gardée, le camp
+function campAventure() {
+  const A = R.aventure, l = equipTrouve(R, 2), suiv = ILES[ACTES_AV[A.chapitre]].nom; sauve(); dessine();
+  chronique([CH().victoire(HEROS[R.heros].nom)], () => fenetre(`<h2>👑 Chapitre ${A.chapitre} terminé !</h2><p>${ILE(R).bossNom} est tombé${R.acte === 'givre' ? 'e' : ''}. ${ILE(R).nom} est libre.</p><p>Dans son trésor, de l’équipement : <b>prends-en un</b>.</p>
+  <div class="choixv">${l.map(k => `<button onclick="equipTrouveFen('${k}', campNiveau)">${eqHTML(k)}</button>`).join('') || '<p>Tu as déjà tout l’équipement possible !</p>'}</div>
+  <div class="choixh"><button onclick="campNiveau()">Rien, merci</button></div>`));
+}
+function campNiveau() {
+  const A = R.aventure, b = brasse(hasard(R), Object.keys(BONUS_NIV)).slice(0, 2);
+  fenetre(`<h2>⭐ Niveau ${A.niveau + 1} !</h2><p>${HEROS[R.heros].nom} gagne <b>+${PV_NIVEAU} PV max</b> et toute sa vie revient. Choisis un bonus, gardé pour toute l’aventure :</p>
+  <div class="choixv">${b.map(k => `<button onclick="niveauSuivant(R,'${k}');sauve();campRelique()">${BONUS_NIV[k][0]} <b>${BONUS_NIV[k][1]}</b><small>${BONUS_NIV[k][2]}</small></button>`).join('')}</div>`);
+}
+function campRelique() {
+  if (R.reliques.length <= 1) return campFeu();
+  fenetre(`<h2>💎 Une seule relique voyage</h2><p>Le bateau est petit : choisis la relique que tu emportes sur l’île suivante.</p>
+  <div class="choixv">${R.reliques.map(k => `<button onclick="R.reliques=['${k}'];sauve();campFeu()">${RELIQUES[k].e} <b>${RELIQUES[k].n}</b><small>${RELIQUES[k].d}</small></button>`).join('')}</div>`);
+}
+function campFeu(fait) {
+  const A = R.aventure, suiv = ILES[ACTES_AV[A.chapitre]].nom;
+  fenetre(`<h2>🏕 Le camp de la Guilde</h2><p>Avant de lever l’ancre pour <b>${suiv}</b> : ❤ ${R.pvMax} PV · ${R.deck.length} cartes · niveau ${A.niveau}. L’or ne voyage pas (tu repartiras avec 30), les faces forgées et l’équipement, si.</p>
+  <div class="choixv">${fait ? '' : `<button onclick="campRetirer()">🔥 Brûler une carte de mon deck<small>une seule, gratuite</small></button>`}<button onclick="equipFen()">🎒 Voir mon équipement</button></div>
+  <div class="choixh"><button class="or" onclick="partirIle()">⛵ Partir pour ${suiv}</button></div>`);
+}
+function campRetirer() { fenetre(`<h2>🔥 Brûler une carte</h2><div class="cartes3">${[...new Set(R.deck)].map(k => carteHTML(k, `retireCarte(R,'${k}');sauve();campFeu(true)`)).join('')}</div><div class="choixh"><button onclick="campFeu()">Retour</button></div>`); }
+function partirIle() {
+  const R2 = ileSuivante(R); if (!R2) return; R = R2; dejaDessine = new Set(); bulles = []; sauve(); fermer(); dessine();
+  const c = caseA(R, R.pos.x, R.pos.y), A = R.aventure;
+  chronique([CH().arrivee(HEROS[R.heros].nom)], () => { dialogue('depart'); fenetre(`<h2>⛵ Chapitre ${A.chapitre} · ${ILE(R).nom}</h2><p>${HEROS[R.heros].nom} (niveau ${A.niveau}) débarque avec ${R.deck.length} cartes, ❤ ${R.pv} PV et son équipement.</p><p>Sur le quai, une petite <b>forge runique</b> t’attend : une face de dé à forger, gratuite, pour toute l’aventure.</p>
+  <div class="choixh"><button class="or" onclick="forgeFen(R.ile[${c.y}][${c.x}])">⚒ Forger une face</button><button onclick="fermer()">En route !</button></div>`); });
+}
+// le héros est tombé : seconde chance (l'île en cours, avec ce qu'il avait en y arrivant) ou abandon
+function mortAventure(texte) {
+  const A = R.aventure; sauve();
+  fenetre(`<h2>💀 ${HEROS[R.heros].nom} est tombé${R.heros === 'maelle' || R.heros === 'oria' || R.heros === 'pip' || R.heros === 'zephine' ? 'e' : ''}…</h2><p>${texte}</p>
+  <p>L’aventure n’est pas perdue : tu peux <b>recommencer ${ILE(R).nom}</b> (une île neuve) avec le deck, le niveau et l’équipement que tu avais en y arrivant. Ce que tu as gagné sur cette île est perdu.</p>
+  <div class="choixv"><button class="or" onclick="secondeChance()">🔄 Recommencer le chapitre ${A.chapitre}</button><button onclick="R.aventure.fini=true;finPartie(false, '${texte.replace(/'/g, '’')} L’aventure s’arrête au chapitre ${A.chapitre}.')">🏳 Abandonner l’aventure</button></div>`);
+}
+function secondeChance() { R = recommenceIle(R); dejaDessine = new Set(); bulles = []; sauve(); fermer(); dessine(); chronique([CH().arrivee(HEROS[R.heros].nom)], () => { dialogue('depart'); fenetre(`<h2>🔄 Seconde chance</h2><p>${HEROS[R.heros].nom} rembarque pour ${ILE(R).nom}. Cette fois, ce sera la bonne.</p><div class="choixh"><button class="or" onclick="fermer()">En route !</button></div>`); }); }
 // 14/11 nuit : les étages et les primes du sans fin
 function primeFen(apres) {
   const S = R.sansfin; window._apresPrime = apres || (() => { fermer(); dessine(); });
@@ -370,7 +434,7 @@ const GUIDE_ODY = [
 ];
 function enteteHTML() {
   const r = R, h = HEROS[r.heros];
-  return `<div class="entete"><img src="${IMG(r.heros)}" alt="" onclick="monDeck()"><div class="st"><b>${h.nom}</b> · ${r.deck.length} cartes${r.asc ? ` · ⛰ Ascension ${r.asc}` : ''}
+  return `<div class="entete"><img src="${IMG(r.heros)}" alt="" onclick="monDeck()"><div class="st"><b>${h.nom}</b> · ${r.deck.length} cartes${r.asc ? ` · ⛰ Ascension ${r.asc}` : ''}${r.aventure ? ` · <span onclick="equipFen()" style="color:var(--or);cursor:pointer">🗺 ch. ${r.aventure.chapitre}/3 · niv. ${r.aventure.niveau} · 🎒 ${Object.values(r.aventure.equip).filter(Boolean).map(k => EQUIP[k][1]).join('') || 'équipement'}</span>` : ''}
     <br><span class="p pv">❤ ${r.pv} / ${r.pvMax}</span><span class="p or">💰 ${r.or}</span><span class="p vivres ${r.vivres ? '' : 'zero'}" title="Huile de la lanterne">🪔 ${r.vivres}</span><span class="p">🗝 ${r.cles}</span><span class="p">🔮 ${r.fragments}/2</span>
     <br><span class="rel">${r.reliques.map(k => `<i onclick="info('${RELIQUES[k].e} ${RELIQUES[k].n}', '${RELIQUES[k].d.replace(/'/g, '’')}')">${RELIQUES[k].e}</i>`).join('')}${r.sacoche.map((k, i) => `<i onclick="sacocheIle(${i})">${SACOCHE[k].e}</i>`).join('')}${r.benes.map(k => `<i onclick="info('✨ ${BENEDICTIONS[k].n}', '${BENEDICTIONS[k].d.replace(/'/g, '’')}')">✨</i>`).join('')}${r.males.map(k => `<i onclick="info('🕯 ${MALEDICTIONS[k].n}', '${MALEDICTIONS[k].d.replace(/'/g, '’')}')">🕯</i>`).join('')}</span></div></div>`;
 }
@@ -603,8 +667,8 @@ function apresCombat() {
   if (out.boss) { dialogue('boss_vaincu', false); finPartie(true, { givre:'La Vouivre se couche dans la neige et le sommet se met à fondre. L’île est libre.', abime:'La couronne tombe et la lumière des runes remonte du gouffre. L’Odyssée est terminée.' }[R.acte] || 'Le Titan de feu s’effondre dans son cratère. L’île est libre.'); return; }
   dialogue('victoire');
   const suite = out.draft ? () => tirage(out.draft, out.garde2 ? 'Anomalie : garde-en deux !' : out.draft2 ? 'Double butin : une première carte' : 'Une carte parmi trois', out.draft2 ? () => tirage(out.draft2, 'Double butin : une seconde carte', () => { sauve(); dessine(); }) : () => { sauve(); dessine(); }, out.garde2) : () => { fermer(); dessine(); };
-  window._suite2 = suite;
-  window._suite = out.mimique ? () => { const l = reliquesProposees(R, 2); fenetre(`<h2>🗝 Le coffre piège est vaincu</h2><p>Dans sa gueule, il gardait deux reliques. Choisis-en une :</p><div class="choixv">${l.map(k => `<button onclick="reliqueOuEchange('${k}', '_suite2')">${RELIQUES[k].e} <b>${RELIQUES[k].n}</b><small>${RELIQUES[k].d}</small></button>`).join('')}</div><div class="choixh"><button onclick="fermer();_suite2()">Laisser</button></div>`); } : out.nemesisVaincue ? () => { const l = reliquesProposees(R, 2); fenetre(`<h2>😈 Némésis vaincue !</h2><p>+60 or. Choisis une relique :</p><div class="choixv">${l.map(k => `<button onclick="reliqueOuEchange('${k}', '_suite2')">${RELIQUES[k].e} <b>${RELIQUES[k].n}</b><small>${RELIQUES[k].d}</small></button>`).join('')}</div>`); } : suite;
+  window._suite2 = out.equip && R.aventure ? () => equipTrouveFen(out.equip, suite) : suite; // 14/11 nuit : une élite peut laisser un équipement
+  window._suite = out.mimique ? () => { const l = reliquesProposees(R, 2); fenetre(`<h2>🗝 Le coffre piège est vaincu</h2><p>Dans sa gueule, il gardait deux reliques. Choisis-en une :</p><div class="choixv">${l.map(k => `<button onclick="reliqueOuEchange('${k}', '_suite2')">${RELIQUES[k].e} <b>${RELIQUES[k].n}</b><small>${RELIQUES[k].d}</small></button>`).join('')}</div><div class="choixh"><button onclick="fermer();_suite2()">Laisser</button></div>`); } : out.nemesisVaincue ? () => { const l = reliquesProposees(R, 2); fenetre(`<h2>😈 Némésis vaincue !</h2><p>+60 or. Choisis une relique :</p><div class="choixv">${l.map(k => `<button onclick="reliqueOuEchange('${k}', '_suite2')">${RELIQUES[k].e} <b>${RELIQUES[k].n}</b><small>${RELIQUES[k].d}</small></button>`).join('')}</div>`); } : window._suite2;
   fenetre(`<h2>🏆 ${out.ennemi} vaincu</h2><p>+${out.or} or${res.defiOk ? ' (défi réussi compris)' : ''}.${out.fragment ? ' <b>Un fragment de rune 🔮 et une clé 🗝 !</b>' : ''}${out.potion ? ' Et une potion de soin 🧪 dans sa besace.' : ''}</p><p>Il te reste ❤ ${R.pv} / ${R.pvMax}.</p><div class="choixh"><button class="or" onclick="fermer();_suite()">Continuer</button></div>`);
 }
 const carteHTML = (k, onclick, pied) => { const c = CARTES[k], r = rarete(k);
@@ -713,15 +777,16 @@ function reglesCourtes() { fenetre(`<h2>❓ L’Odyssée en bref</h2><ul style="
   <li>Les murs fissurés 🧱 s’ouvrent avec une bombe ou 3 doses d’huile : une relique derrière.</li>
   <li>Si tu tombes, la partie s’arrête ; tu gardes les cartes rencontrées dans ta collection (éditeur de deck de la Tour des héros).</li></ul>
   <div class="choixh"><button onclick="location.href='odyssee-regles.html'">📖 Règles complètes</button><button onclick="fermer()">Fermer</button></div>`); }
-function abandon() { fenetre(`<h2>⏏ Quitter</h2><p>Ton Odyssée est gardée dans l’emplacement ${slotActif()} : tu la reprendras là où tu es. Ou tu peux l’abandonner (comptée comme perdue).</p><div class="choixh"><button onclick="fermer();emplacements()">💾 Emplacements</button><button onclick="location.href='menu.html'">⌂ Menu, je reprendrai</button><button onclick="finPartie(false, 'Abandon.')">💀 Abandonner</button></div>`); }
+function abandon() { fenetre(`<h2>⏏ Quitter</h2><p>Ton Odyssée est gardée dans l’emplacement ${slotActif()} : tu la reprendras là où tu es. Ou tu peux l’abandonner (comptée comme perdue).</p><div class="choixh"><button onclick="fermer();emplacements()">💾 Emplacements</button><button onclick="location.href='menu.html'">⌂ Menu, je reprendrai</button><button onclick="if (R.aventure) R.aventure.fini = true; finPartie(false, 'Abandon.')">💀 Abandonner</button></div>`); }
 function finPartie(gagne, texte) {
+  if (R && R.aventure && !R.aventure.fini && !(gagne && R.aventure.chapitre >= 3)) return gagne ? campAventure() : mortAventure(texte); // 14/11 nuit : la Grande aventure continue
   const nom = HEROS[R.heros].nom, C = CH(), f = finOdysseeRun(R, gagne); R = null;
   chronique([gagne ? C.victoire(nom) : C.defaite(nom), f.premiereFin ? CHRON_FIN(nom) : null], () => fenetre(`<h2>${gagne ? '🏆 L’île est libre !' : '💀 Fin de l’Odyssée'}</h2><p>${texte}</p>${f.premiereFin ? '<p style="text-align:center;font-size:1.1em">🌟 Tu reçois le titre <b style="color:var(--or)">Héros de l’Odyssée</b> !</p>' : ''}${f.ascNouveau ? `<p style="text-align:center">⛰ <b>Ascension ${f.ascNouveau}</b> débloquée sur cette île : ${ASCENSION[f.ascNouveau].n}.</p>` : ''}${f.inscrit === 'nouveau' ? `<p style="text-align:center">🏛 <b>${nom}</b> est inscrit au <b>Panthéon des Légendes</b> : titre « Briseur de Néant » et +5 PV pour ses prochaines Odyssées. Le Roi sans visage t’attend maintenant dans l’Arène.</p>` : ''}${f.briseMiroir ? `<p style="text-align:center">🪞 <b>Défi Brise-Miroir réussi !</b> Choisis une récompense pour toujours :</p><div class="choixv">${recompensesRestantes().map(k => `<button onclick="choisirRecompense('${k}');this.parentNode.innerHTML='✅ ${RECOMPENSES[k].n} : ${RECOMPENSES[k].d.replace(/'/g, '’')}'">${RECOMPENSES[k].e} <b>${RECOMPENSES[k].n}</b><small>${RECOMPENSES[k].d}</small></button>`).join('')}</div>` : ''}<div class="score">${f.score} points</div>
   <table>${f.sansfin ? `<tr><td>🪜 Étage atteint</td><td>${f.etage}</td></tr>` : ''}<tr><td>Cases explorées</td><td>${f.cases}</td></tr><tr><td>Combats gagnés</td><td>${f.victoires} / ${f.combats}</td></tr><tr><td>Tours joués</td><td>${f.tours}</td></tr><tr><td>Défis réussis</td><td>${f.defis}</td></tr><tr><td>Or restant</td><td>${f.or}</td></tr><tr><td>Durée</td><td>${f.duree} min</td></tr></table>
   <p>${f.ajoutees ? `📚 <b>${f.ajoutees}</b> carte${f.ajoutees > 1 ? 's' : ''} rejoi${f.ajoutees > 1 ? 'gnent' : 'nt'} ta collection : ${f.nouvelles.map(k => CARTES[k].n).join(', ')}.` : 'Aucune carte nouvelle pour la collection cette fois.'}</p>
   <div class="choixh"><button class="or" onclick="fermer();emplacements()">💾 Emplacements</button><button onclick="location.href='menu.html'">⌂ Menu</button></div>`));
 }
-function records() { const l = lireRecords(); fenetre(`<h2>🏆 Mes Odyssées (${l.length})</h2>${l.length ? `<table>${l.map(r => `<tr><td>${r.gagne ? '🏆' : '💀'} ${new Date(r.quand).toLocaleDateString('fr-FR')} · ${HEROS[r.heros].nom}${r.sansfin ? ` · 🧩 étage ${r.etage || 1}` : ''} · ${r.cases} cases, ${r.victoires} victoires, ${r.duree} min</td><td>${r.score}</td></tr>`).join('')}</table>` : '<p>Aucune Odyssée finie.</p>'}<div class="choixh"><button onclick="fermer()">Fermer</button></div>`); }
+function records() { const l = lireRecords(); fenetre(`<h2>🏆 Mes Odyssées (${l.length})</h2>${l.length ? `<table>${l.map(r => `<tr><td>${r.gagne ? '🏆' : '💀'} ${new Date(r.quand).toLocaleDateString('fr-FR')} · ${HEROS[r.heros].nom}${r.sansfin ? ` · 🧩 étage ${r.etage || 1}` : ''}${r.aventure ? ` · 🗺 aventure, ch. ${r.aventure.chapitre} (niv. ${r.aventure.niveau})` : ''} · ${r.cases} cases, ${r.victoires} victoires, ${r.duree} min</td><td>${r.score}</td></tr>`).join('')}</table>` : '<p>Aucune Odyssée finie.</p>'}<div class="choixh"><button onclick="fermer()">Fermer</button></div>`); }
 function collection() { const l = lireCollection(); fenetre(`<h2>📚 Ma collection (${l.length})</h2><p style="font-size:.86em;color:var(--doux)">Les cartes rencontrées en Odyssée. Elles s’ajoutent à l’éditeur de deck de la Tour des héros.</p><div class="cartes3">${l.map(k => carteHTML(k)).join('') || '<i>Rien encore : pars en Odyssée !</i>'}</div><div class="choixh"><button onclick="fermer()">Fermer</button></div>`); }
 accueil();
 // 13/11 soir : musique de la carte (Terres brûlées : folk médiéval ; Givre et Abîme : la vallée des vents) ; le marchand a la sienne jusqu'à la fermeture de sa fenêtre

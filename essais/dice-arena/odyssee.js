@@ -624,7 +624,7 @@ function recompenseCombat(r) {
   if (cb.grandDefi && res.defiOk) or += 60;
   r.or += or;
   if (typeof guildeEvt === 'function' && !r.simu) { guildeEvt(cb.type === 'boss' ? 'boss' : cb.type === 'elite' ? 'elite' : 'salle', 1); guildeEvt('or', or); } // 14/11 nuit : Rang
-  const out = { gagne:true, or, defiOk:res.defiOk, ennemi:HEROS[cb.ennemi].nom, type:cb.type, nemesisVaincue }; if (cb.mimique) out.mimique = true; if (cb.grandDefi) out.grandDefi = !!res.defiOk;
+  const out = { gagne:true, or, defiOk:res.defiOk, ennemi:HEROS[cb.ennemi].nom, type:cb.type, nemesisVaincue }; if (cb.mimique) out.mimique = true; if (cb.grandDefi) out.grandDefi = !!res.defiOk; if (typeof equipVictoire === 'function') equipVictoire(r, out);
   if (cb.type === 'elite') { r.fragments++; r.cles++; out.fragment = true; if (r.sacoche.length < 2) { r.sacoche.push('soin'); out.potion = true; } }
   if (cb.ombre) { r.or += 40; out.or += 40; out.ombre = OMBRES[cb.ombre].n; r.journal.push(`🌑 Ombre majeure (${OMBRES[cb.ombre].n}) vaincue : double butin !`); }
   if (cb.anomalie) { const g = cb.anomalie === 3 ? 80 : 10 * cb.anomalie; r.or += g; out.or += g; out.anomalie = cb.anomalie; r.journal.push(`🌀 Anomalie (niveau ${cb.anomalie}) vaincue : +${g} or.`); }
@@ -706,7 +706,7 @@ function finOdysseeRun(r, gagne) {
     if (k === 'abime' && !localStorage.getItem('guilde-odyssee-finie')) { localStorage.setItem('guilde-odyssee-finie', '1'); premiereFin = true; }
     if (k === 'abime' && typeof inscrirePantheon === 'function') { inscrit = inscrirePantheon(r.heros, r.asc || 0) ? 'nouveau' : 'encore'; briseMiroir = !!r.stats.miroir && recompensesRestantes().length > 0; }
   }
-  const rec = { quand:new Date().toISOString(), acte:r.acte || 'brulees', asc:r.asc || 0, heros:r.heros, gagne, score, cases:r.stats.cases, combats:r.stats.combats, victoires:r.stats.victoires, tours:r.stats.tours, defis:r.stats.defis, or:r.or, duree, graine:r.graine, pv:r.pv, etage, sansfin:!!r.sansfin, regle:r.sansfin ? r.sansfin.regle : null };
+  const rec = { quand:new Date().toISOString(), acte:r.acte || 'brulees', asc:r.asc || 0, heros:r.heros, gagne, score, cases:r.stats.cases, combats:r.stats.combats, victoires:r.stats.victoires, tours:r.stats.tours, defis:r.stats.defis, or:r.or, duree, graine:r.graine, pv:r.pv, etage, sansfin:!!r.sansfin, regle:r.sansfin ? r.sansfin.regle : null, aventure:r.aventure ? { chapitre:r.aventure.chapitre, niveau:r.aventure.niveau } : null };
   if (typeof localStorage !== 'undefined') { const l = lireRecords(); l.unshift(rec); localStorage.setItem(RECORDS_CLE, JSON.stringify(l.slice(0, 50))); ecrireOdyssee(null); }
   return { ...rec, ajoutees, nouvelles:neuves, ascNouveau, premiereFin, inscrit, briseMiroir };
 }

@@ -8,7 +8,7 @@
 <title>La Guilde des Runes</title>
 <script>
 // Même mécanisme que le Duel : une nouvelle version = rechargement tout seul à l'ouverture (publier.sh change VERSION).
-const VERSION = '20261114-205148';
+const VERSION = '20261114-205752';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-menu-' + v)) { sessionStorage.setItem('recharge-menu-' + v, '1'); location.replace('menu.html?v=' + v); }
@@ -193,10 +193,10 @@ fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.te
 </div>
 <div id="flash"></div>
 
-<script src="semaine.js?v=20261114-205148"></script>
-<script src="musique.js?v=20261114-205148"></script>
-<script src="rang.js?v=20261114-205148"></script>
-<script src="donnees.js?v=20261114-205148"></script>
+<script src="semaine.js?v=20261114-205752"></script>
+<script src="musique.js?v=20261114-205752"></script>
+<script src="rang.js?v=20261114-205752"></script>
+<script src="donnees.js?v=20261114-205752"></script>
 <script>
 // ciel étoilé + runes du portail (symboles, pas des lettres), aux couleurs des héros
 const ciel = document.getElementById('ciel');
@@ -270,12 +270,12 @@ const ETAGES = {
     { nom:'Contre un proche', pro:'proche', href:'duel.html?deux=1', desc:'À deux sur le même téléphone : chacun son héros, on se passe le téléphone à chaque tour.' },
   ] },
   odyssee:{ titre:'L’Odyssée', sous:'Quelle île veux-tu explorer ?', portes:[
-    { nom:'Terres brûlées', fx:'lave', img:'menu-recu/ody-terres-brulees.webp', href:'odyssee.html', desc:'Acte I · L’île de cendre et de lave, gardée par le Titan de feu.' },
+    { nom:'Terres brûlées', fx:'lave', img:'menu-recu/ody-terres-brulees.webp', href:'odyssee.html', desc:'Acte I · L’île de cendre et de lave, gardée par le Titan de feu. C’est ici que commence la Grande aventure : les 3 îles à la suite, avec niveaux et équipement.' },
     GIVRE_OK ? { nom:'Île du Givre', fx:'aurore', img:'menu-recu/ody-givre.webp', href:'odyssee.html?ile=givre', desc:'Acte II · Des falaises de glace sous l’aurore, gardées par la Vouivre des glaces.' }
       : { nom:'Île du Givre', fx:'aurore', img:'menu-recu/ody-givre.webp', ferme:'Acte II', essai:'odyssee.html?ile=givre', desc:'Acte II · S’ouvre quand tu as vaincu le Titan de feu. (Prototype : touche pour l’essayer quand même.)' },
     ABIME_OK ? { nom:'L’Abîme du Vide', pro:'abime', href:'odyssee.html?ile=abime', desc:'Acte III · Une île brisée au-dessus du néant, et le Roi sans visage.' }
       : { nom:'L’Abîme du Vide', pro:'abime', ferme:'Acte III', essai:'odyssee.html?ile=abime', desc:'Acte III · S’ouvre quand tu as vaincu la Vouivre des glaces. (Prototype : touche pour l’essayer quand même.)' },
-    { nom:'L’Odyssée sans fin', img:'menu-recu/ody-sansfin.webp?v=1', href:'odyssee.html?sansfin=1', desc:'L’île se construit devant toi, tuile par tuile : tu choisis ta route et tes risques.' },
+    { nom:'L’Odyssée sans fin', img:'menu-recu/ody-sansfin.webp?v=1', href:'odyssee.html?sansfin=1', desc:'L’île se construit devant toi, tuile par tuile. Après le boss, on descend d’un étage ; une règle nouvelle chaque jour.' },
   ] },
 };
 const car = document.getElementById('car');
