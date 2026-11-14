@@ -112,12 +112,12 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261114-144518"></script>
-<script src="musique.js?v=20261114-144518"></script>
-<script src="donnees.js?v=20261114-144518"></script>
-<script src="odyssee.js?v=20261114-144518"></script>
-<script src="pantheon.js?v=20261114-144518"></script>
-<script src="chronique.js?v=20261114-144518"></script>
+<script src="cartes.js?v=20261114-144638"></script>
+<script src="musique.js?v=20261114-144638"></script>
+<script src="donnees.js?v=20261114-144638"></script>
+<script src="odyssee.js?v=20261114-144638"></script>
+<script src="pantheon.js?v=20261114-144638"></script>
+<script src="chronique.js?v=20261114-144638"></script>
 <script>
 // le moteur du Duel n'est pas chargé ici : les cartes de l'Odyssée appellent degats/soin seulement en combat (dans duel.html)
 const log = () => {}, degats = () => {}, soin = () => {}, altere = () => {}, invoque = () => {}, adv = () => ({}), fin = () => {};
@@ -156,7 +156,7 @@ function emplacements() {
     const n = i + 1, r = lireSlot(n);
     if (!r) return `<div class="slot vide"><div class="sn">Emplacement ${n}</div><p>Vide</p><button class="or" onclick="choisirSlot(${n});ecran()">✨ Nouvelle Odyssée<br><small>${ILES[ACTE_URL].court}</small></button></div>`;
     const I = ILES[r.acte || 'brulees'] || ILES.brulees, vues = r.ile.flat().filter(c => c.visite).length;
-    return `<div class="slot"><div class="sn">Emplacement ${n}</div><div class="sl"><img src="${IMG(r.heros)}" alt=""><div><b>${HEROS[r.heros].nom}</b> · ${I.court}${r.asc ? ` · ⛰ ${r.asc}` : ''}<br><span class="p pv">❤ ${r.pv} / ${r.pvMax}</span><span class="p">🔮 ${r.fragments}/2</span><span class="p">🗺 ${vues} case${vues > 1 ? 's' : ''}</span><br><small>Joué ${ilDYa(r.maj || r.debut)}</small></div></div>
+    return `<div class="slot"><div class="sn">Emplacement ${n}</div><div class="sl"><img src="${IMG(r.heros)}" alt=""><div><b>${HEROS[r.heros].nom}</b> · ${I.court}${r.asc ? ` · ⛰ ${r.asc}` : ''}<br><span class="p pv">❤ ${r.pv} / ${r.pvMax}</span><span class="p">🔮 ${r.fragments}/2</span><span class="p">🗺 ${vues} case${vues > 1 ? 's' : ''}</span><br><small>Joué ${ilDYa(r.maj || r.debut)}${r.combat && !r.combat.resultat ? ` · <b style="color:#ffb347">⚔ combat en cours${HEROS[r.combat.ennemi] ? ' contre ' + HEROS[r.combat.ennemi].nom : ''}</b>` : ''}</small></div></div>
     <div class="choixh"><button class="or" onclick="choisirSlot(${n});reprendre(lireSlot(${n}))">▶ Continuer</button></div>
     <div class="choixh"><button onclick="recommencer(${n})">🔄 Recommencer</button><button onclick="effacer(${n})">🗑 Effacer</button></div></div>`;
   }).join('');
@@ -168,7 +168,9 @@ function recommencer(n) { const r = lireSlot(n); fenetre(`<h2>🔄 Recommencer ?
 function effacer(n) { const r = lireSlot(n); fenetre(`<h2>🗑 Effacer ?</h2><p>La partie de <b>${HEROS[r.heros].nom}</b> (emplacement ${n}) sera effacée pour de bon. Elle ne compte pas comme une défaite.</p><div class="choixh"><button onclick="effacerSlot(${n});fermer();emplacements()">Oui, effacer</button><button class="or" onclick="fermer()">Non</button></div>`); }
 function accueil() {
   const r = lireOdyssee();
-  if (r && r.combat) { reprendre(r); return; }
+  // 14/11 (l'utilisateur : « je ne peux pas recommencer ni quitter le combat ») : on ne revient seul que pour FINIR un combat terminé ;
+  // un combat en cours attend dans son emplacement (« Continuer » y retourne)
+  if (r && r.combat && r.combat.resultat) { reprendre(r); return; }
   emplacements();
 }
 // le choix du héros pour l'emplacement actif (vide)

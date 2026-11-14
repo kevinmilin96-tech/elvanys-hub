@@ -661,7 +661,7 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261114-144518';
+const VERSION = '20261114-144638';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -680,11 +680,11 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261114-144518"></script>
-<script src="musique.js?v=20261114-144518"></script>
-<script src="donnees.js?v=20261114-144518"></script>
-<script src="odyssee.js?v=20261114-144518"></script>
-<script src="chronique.js?v=20261114-144518"></script>
+<script src="cartes.js?v=20261114-144638"></script>
+<script src="musique.js?v=20261114-144638"></script>
+<script src="donnees.js?v=20261114-144638"></script>
+<script src="odyssee.js?v=20261114-144638"></script>
+<script src="chronique.js?v=20261114-144638"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -1781,9 +1781,9 @@ function demarreMusique() { if (!S || S.auto || S.fini) return; GM.musique(choix
 function arreteMusique(fondu) { GM.stop(fondu); }
 function jingleFin() { if (S && S.fini) GM.jingle(S.fini === 'gagne' ? 'victoire' : 'defaite'); }
 // 14/11 (l'utilisateur : « je ne peux pas quitter ») : le ⚙️ du combat ouvre les Paramètres, avec « Quitter »
-window.GM_QUITTER = { get t() { return S && S.ody ? 'Quitter (le combat t’attendra)' : 'Quitter la partie'; }, f:() => quitterPartie() };
+window.GM_QUITTER = { get t() { return S && S.ody ? 'Quitter : mes emplacements (le combat est gardé)' : 'Quitter la partie'; }, f:() => quitterPartie() };
 function quitterPartie() {
-  const ou = !S ? 'menu.html' : S.ody ? 'menu.html' : S.tuto ? 'menu.html' : S.coop ? 'menu.html' : 'menu.html#arene';
+  const ou = !S ? 'menu.html' : S.ody ? 'odyssee.html' : S.tuto ? 'menu.html' : S.coop ? 'menu.html' : 'menu.html#arene';
   if (!S || S.fini || S.ody) { location.href = ou; return; } // l'Odyssée garde le combat : on le reprend en revenant
   fenetre(`<h2>Quitter la partie ?</h2><p>La partie en cours sera perdue.</p><div class="choixh"><button onclick="fermer()">Continuer</button><button onclick="location.href='${ou}'">🚪 Quitter</button></div>`);
 }
@@ -2128,14 +2128,14 @@ async function joueFX() {
 // toucher l'écran pendant les animations les accélère
 document.addEventListener('pointerdown', () => { if (fxOn && !(S && S.tuto)) fxVite = .5; }, true); // 14/11 : plus d'accélération dans le tutoriel
 </script>
-<script src="profil.js?v=20261114-144518"></script>
-<script src="pantheon.js?v=20261114-144518"></script>
-<script src="tuto.js?v=20261114-144518"></script>
-<script src="deux.js?v=20261114-144518"></script>
-<script src="invasion.js?v=20261114-144518"></script>
-<script src="enigme-table.js?v=20261114-144518"></script>
-<script src="forge.js?v=20261114-144518"></script>
-<script src="semaine.js?v=20261114-144518"></script>
-<script src="enigme.js?v=20261114-144518"></script>
+<script src="profil.js?v=20261114-144638"></script>
+<script src="pantheon.js?v=20261114-144638"></script>
+<script src="tuto.js?v=20261114-144638"></script>
+<script src="deux.js?v=20261114-144638"></script>
+<script src="invasion.js?v=20261114-144638"></script>
+<script src="enigme-table.js?v=20261114-144638"></script>
+<script src="forge.js?v=20261114-144638"></script>
+<script src="semaine.js?v=20261114-144638"></script>
+<script src="enigme.js?v=20261114-144638"></script>
 </body>
 </html>
