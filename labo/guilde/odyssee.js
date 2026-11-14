@@ -301,7 +301,7 @@ const FRAPPE_MONSTRE = { n:'Griffes', txt:'2 à 5 dés identiques', d:'Dégâts 
   dg:vs => Math.ceil(vs[0] / 2) + (vs.length - 2) * 2, f:(J, vs, k) => degats(k, FRAPPE_MONSTRE.dg(vs)) };
 // Ajoute monstres et boss au dictionnaire des héros, pour que le moteur du Duel les joue sans rien savoir d'eux.
 // 12/11 nuit : portraits peints reçus (fichier portraits/m-<id>.webp) ; tant qu'un monstre n'y est pas, il garde son émoji dans un rond
-const PORTRAITS_RECUS = ['chefgobelin'];  // 13/11 soir : portraits Gemini reçus (portraits/m-<id>.webp)
+const PORTRAITS_RECUS = ['chefgobelin', 'gobelin', 'loup', 'golem', 'salamandre', 'cultiste', 'elementaire', 'drake', 'colosse']; // 14/11 : les 8 ennemis de l'acte I reçus ;  // 13/11 soir : portraits Gemini reçus (portraits/m-<id>.webp)
 function installeMonstres() {
   if (typeof HEROS === 'undefined') return;
   const tous = { ...MONSTRES, ...BOSS };
