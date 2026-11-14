@@ -42,6 +42,14 @@
   @keyframes pulse { 50% { transform:scale(1.12); filter:drop-shadow(0 0 8px #c084fc); } }
   .porte { text-align:center; margin:4px 0; background:linear-gradient(180deg, #5a3a1a, #3a2410); border:2px solid var(--or); border-radius:10px; padding:3px; font-size:.85em; }
   .porte.touche { animation:tremble .4s; }
+  /* 14/11 : plateau peint */
+  .plateauD { position:relative; width:min(100%, calc((100dvh - 330px) * .558)); min-width:250px; aspect-ratio:768/1376; margin:5px auto; background:url('decor/fond-defense.webp?v=1') center/100% 100% no-repeat; border-radius:10px; }
+  .plateauD .cc { position:absolute; height:auto; border:0; background:none; border-radius:6px; }
+  .plateauD .rc { position:absolute; aspect-ratio:auto; background:none; }
+  .plateauD .rc:not(.ok):not(.sel):not(.rune) { border-color:transparent; }
+  .plateauD .rc.rune { background:radial-gradient(circle, #6b2bd988, transparent 70%); }
+  .plateauD .mo { min-width:34px; height:34px; padding:0 1px; } .plateauD .mo img.e { width:24px; height:24px; } .plateauD .mo.boss img.e { width:32px; height:32px; } .plateauD .mo.boss { min-width:42px; height:42px; }
+  .porteD { position:absolute; transform:translate(-50%, -50%); margin:0; padding:1px 8px; font-size:.75em; background:#3a2410dd; white-space:nowrap; }
   .msg { min-height:2.4em; text-align:center; font-size:.85em; color:var(--doux); margin:5px 0; }
   .msg.err { color:var(--rouge); }
   .des { display:flex; gap:6px; justify-content:center; margin:4px 0; }
@@ -73,10 +81,10 @@
 <body>
 <div id="app"></div>
 <div id="fen"></div>
-<script src="cartes.js?v=20261114-133815"></script>
-<script src="musique.js?v=20261114-133815"></script>
-<script src="donnees.js?v=20261114-133815"></script>
-<script src="defense-moteur.js?v=20261114-133815"></script>
+<script src="cartes.js?v=20261114-134133"></script>
+<script src="musique.js?v=20261114-134133"></script>
+<script src="donnees.js?v=20261114-134133"></script>
+<script src="defense-moteur.js?v=20261114-134133"></script>
 <script>
 // =============================================================================================== LA DÉFENSE DE LA PORTE · l'ÉCRAN (13/11)
 // Règles : defense-proposition.html (validées le 13/11). Moteur : defense-moteur.js.
@@ -108,6 +116,10 @@ function vagueAnnonce() { const v = D.fx.find(f => f.t === 'vague'); if (v) GM.s
 // 14/11 : images Gemini reçues (sans image, l'émoji reste) ; Gobelin, Chauve-souris et Rune du Cor à refaire
 const IMG_D = { chauve:'portraits/d-chauve.webp?v=1', gobelin:'portraits/d-gobelin.webp?v=1', sanglier:'portraits/d-sanglier.webp?v=1', bouclier:'portraits/d-bouclier.webp?v=1', titan:'portraits/m-titan.webp?v=1' };
 const RUNE_IMG = { maelle:'portraits/rune-enclume.webp?v=2', gorm:'portraits/rune-cor.webp?v=1' };
+// 14/11 : le fond peint de la Défense (decor/fond-defense.webp) ; chemins, dalles et porte placés par l'utilisateur (placer-defense.html → « PLACEMENT DEFENSE {…} », recopié ici tel quel)
+const PD = {"chemin_haut":3,"chemin_bas":47,"largeur_chemin":17,"voies":[22,50,79],"dalles":[[18,57.5],[50,57.5],[82,57.5],[17,68.5],[50,68.5],[83,68.5],[16,80.5],[50,80.5],[84,80.5]],"dalle":[18,8],"porte":[50,95]}; // valeurs de départ de Claude, EN ATTENDANT le placement de l'utilisateur
+const posCC = (r, col) => { const h = (PD.chemin_bas - PD.chemin_haut) / 4; return `left:${PD.voies[col] - PD.largeur_chemin / 2}%;width:${PD.largeur_chemin}%;top:${PD.chemin_haut + r * h}%;height:${h}%`; };
+const posRC = c => { const d = PD.dalles[c]; return `left:${d[0] - PD.dalle[0] / 2}%;width:${PD.dalle[0]}%;top:${d[1] - PD.dalle[1] / 2}%;height:${PD.dalle[1]}%`; };
 function rendu() {
   if (!D) return accueil();
   const H = DHEROS[D.heros], vs = sel.map(d => d.v);
@@ -120,13 +132,13 @@ function rendu() {
     <div class="bloc">🚪 Porte <b>${D.porte}</b>/${D.porteMax}<div class="barre"><i style="width:${D.porte / D.porteMax * 100}%"></i></div></div>
     <div class="bloc">⚡ Ultime ${D.ultimeFait ? '✔' : `${D.jauge}/${DEF.jaugeMax}`}<div class="barre jauge"><i style="width:${D.ultimeFait ? 100 : D.jauge / DEF.jaugeMax * 100}%"></i></div></div>
     <div style="text-align:right"><span class="p">🌊 ${Math.min(D.vague + 1, VAGUES.length)}/${VAGUES.length}</span><br><span class="p">◆ ${D.pc} PC</span></div></div>
-  <div class="chemin">${chemin.map(({ r, col }) => `<div class="cc">${D.monstres.filter(m => m.row === r && m.col === col).map(m => { const M = MONSTRES[m.t];
+  ${PD ? '<div class="plateauD">' : ''}<div class="${PD ? 'cheminD' : 'chemin'}">${chemin.map(({ r, col }) => `<div class="cc" style="${PD ? posCC(r, col) : ''}">${D.monstres.filter(m => m.row === r && m.col === col).map(m => { const M = MONSTRES[m.t];
       return `<div class="mo ${M.boss ? 'boss' : ''} ${besoinMonstre ? 'cible' : ''}" data-m="${m.id}" onclick="toucheMonstre(${m.id})">${IMG_D[m.t] ? `<img class="e" src="${IMG_D[m.t]}" alt="">` : `<span class="e">${M.e}</span>`}<span class="pv">${m.pv}</span>${M.vit > 1 ? '<span class="vit">💨</span>' : M.vol ? '<span class="vit">🪽</span>' : M.armure ? '<span class="vit">🛡</span>' : ''}${tete.has(m.id) && !M.boss ? '' : ''}</div>`; }).join('')}</div>`).join('')}</div>
-  <div class="rempart">${D.rempart.map((t, c) => { const okVide = !t && un && !attente && D.pc >= DEF.coutBatir; const okFus = t && !t.rune && ((un && un.v === t.v && !attente) || (selTour >= 0 && selTour !== c && voisinsD(selTour).includes(c) && D.rempart[selTour] && D.rempart[selTour].v === t.v && !D.rempart[selTour].rune));
+  <div class="${PD ? 'rempartD' : 'rempart'}">${D.rempart.map((t, c) => { const okVide = !t && un && !attente && D.pc >= DEF.coutBatir; const okFus = t && !t.rune && ((un && un.v === t.v && !attente) || (selTour >= 0 && selTour !== c && voisinsD(selTour).includes(c) && D.rempart[selTour] && D.rempart[selTour].v === t.v && !D.rempart[selTour].rune));
       const okDep = !t && selTour >= 0 && !D.deplace && voisinsD(selTour).includes(c);
-      if (!t) return `<div class="rc vide ${okVide || okDep ? 'ok' : ''}" data-c="${c}" onclick="toucheCase(${c})"></div>`;
-      return `<div class="rc ${t.rune ? 'rune' : ''} ${selTour === c ? 'sel' : ''} ${okFus || besoinTour ? 'ok' : ''}" data-c="${c}" onclick="toucheCase(${c})">${t.rune ? (RUNE_IMG[D.heros] ? `<img class="runeimg" src="${RUNE_IMG[D.heros]}" alt="">` : '<span class="glyphe">ᚱ</span>') : `<img class="tourimg" src="tours/tour-${D.heros}-${t.v <= 2 ? 1 : t.v <= 4 ? 2 : 3}.webp?v=1" alt="Tour de ${t.v}"><img class="tourde" src="${FACE(D.heros, t.v)}" alt="${t.v}">`}<span class="pw">${puissanceTour(D, c, t)}</span>${t.bonus ? `<span class="bn">+${t.bonus}</span>` : ''}</div>`; }).join('')}</div>
-  <div class="porte" id="porte">🚪 La porte de la Guilde</div>
+      if (!t) return `<div class="rc vide ${okVide || okDep ? 'ok' : ''}" data-c="${c}" style="${PD ? posRC(c) : ''}" onclick="toucheCase(${c})"></div>`;
+      return `<div class="rc ${t.rune ? 'rune' : ''} ${selTour === c ? 'sel' : ''} ${okFus || besoinTour ? 'ok' : ''}" data-c="${c}" style="${PD ? posRC(c) : ''}" onclick="toucheCase(${c})">${t.rune ? (RUNE_IMG[D.heros] ? `<img class="runeimg" src="${RUNE_IMG[D.heros]}" alt="">` : '<span class="glyphe">ᚱ</span>') : `<img class="tourimg" src="tours/tour-${D.heros}-${t.v <= 2 ? 1 : t.v <= 4 ? 2 : 3}.webp?v=1" alt="Tour de ${t.v}"><img class="tourde" src="${FACE(D.heros, t.v)}" alt="${t.v}">`}<span class="pw">${puissanceTour(D, c, t)}</span>${t.bonus ? `<span class="bn">+${t.bonus}</span>` : ''}</div>`; }).join('')}</div>
+  ${PD ? `<div class="porte porteD" id="porte" style="left:${PD.porte[0]}%;top:${PD.porte[1]}%">🚪 ${D.porte}/${D.porteMax}</div></div>` : '<div class="porte" id="porte">🚪 La porte de la Guilde</div>'}
   <div class="msg ${err ? 'err' : ''}">${msg}</div>
   <div class="des">${D.des.map((d, i) => `<div class="de ${d.pose ? 'pose' : ''} ${sel.includes(d) ? 'sel' : ''} ${besoinDe && !d.pose && !sel.includes(d) ? 'cible' : ''}" onclick="toucheDe(${i})"><img src="${FACE(D.heros, d.v)}" alt="${d.v}"></div>`).join('')}</div>
   <div class="acts">
