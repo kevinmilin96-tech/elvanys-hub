@@ -68,7 +68,8 @@ function sfPose(r, i, n, x, y) {
   const c = caseA(r, x, y), I = ILE(r), R = hasard(r);
   Object.assign(c, { t:t.t, pose:true, vu:true, ouv:tourne(SF_FORMES[t.f], n), forme:t.f });
   if (libre) { // l'éboulement ouvre le passage vers la voisine posée
-    SF_DIR.forEach(([dx, dy], k) => { const v = caseA(r, x + dx, y + dy); if (v && v.pose && !c.ouv[k]) { c.ouv[k] = 1; v.ouv[(k + 2) % 4] = 1; } }); S.eboulement = false; }
+    // 14/11 (bug vu par l'utilisateur : impasse posée face au mur d'une voisine = case inaccessible) : on ouvre le passage DES DEUX CÔTÉS avec chaque voisine posée
+    SF_DIR.forEach(([dx, dy], k) => { const v = caseA(r, x + dx, y + dy); if (v && v.pose) { c.ouv[k] = 1; v.ouv[(k + 2) % 4] = 1; } }); S.eboulement = false; }
   S.poses++;
   if (t.t === 'monstre') { c.niv = S.poses <= 6 ? 1 : S.poses <= 14 ? 2 : 3; c.ennemi = tire(R, I.pools[c.niv - 1]); }
   if (t.t === 'elite') { c.niv = 2; const s = ['heros', 'monstre', 'heros'][S.elites++ % 3]; if (s === 'monstre') c.ennemi = tire(R, I.elites); else { c.ennemi = 'heros'; c.renfort = tire(R, ['pc', 'pv', 'bouclier']); } }
@@ -80,3 +81,12 @@ function sfPose(r, i, n, x, y) {
 }
 // tout repiocher contre 1 huile
 function sfRepioche(r) { const S = r.sansfin; if (r.vivres < 1) return false; r.vivres--; S.pioche.push(...S.offre.filter(t => t.t !== 'boss')); S.offre = []; sfOffre(r); r.journal.push('🔄 Tu repioches les 3 tuiles (−1 huile).'); return true; }
+
+// 14/11 : réparation d'une tuile en attente que le héros ne peut pas atteindre (parties touchées par l'ancien bug de l'éboulement)
+function sfRepare(r) {
+  const a = r.sansfin && r.sansfin.attente; if (!a) return false; const c = caseA(r, a.x, a.y); if (!c || c.visite) return false;
+  const ok = SF_DIR.some(([dx, dy], k) => { const v = caseA(r, a.x + dx, a.y + dy); return v && v.pose && v.visite && c.ouv[k] && v.ouv[(k + 2) % 4]; });
+  if (ok) return false;
+  const k = SF_DIR.findIndex(([dx, dy]) => { const v = caseA(r, a.x + dx, a.y + dy); return v && v.pose && v.visite; }); if (k < 0) return false;
+  const [dx, dy] = SF_DIR[k], v = caseA(r, a.x + dx, a.y + dy); c.ouv[k] = 1; v.ouv[(k + 2) % 4] = 1; r.journal.push('🪨 Un passage s’ouvre vers la tuile posée.'); return true;
+}
