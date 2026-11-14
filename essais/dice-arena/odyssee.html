@@ -151,7 +151,7 @@
 <script>
 const ZOK = () => localStorage.getItem('guilde-tuto') === 'fait'; // Zéphine : débloquée par le tutoriel (12/11)
 
-const VERSION = '20261114-213644';
+const VERSION = '20261114-214031';
 function verifieVersion() {
   fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
     v = (v || '').trim(); if (!v || v === VERSION || document.getElementById('majbar')) return;
@@ -164,17 +164,18 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261114-213644"></script>
-<script src="musique.js?v=20261114-213644"></script>
-<script src="rang.js?v=20261114-213644"></script>
-<script src="donnees.js?v=20261114-213644"></script>
-<script src="guide.js?v=20261114-213644"></script>
-<script src="odyssee.js?v=20261114-213644"></script>
-<script src="bestiaire.js?v=20261114-213644"></script>
-<script src="aventure.js?v=20261114-213644"></script>
-<script src="odyssee-sansfin.js?v=20261114-213644"></script>
-<script src="pantheon.js?v=20261114-213644"></script>
-<script src="chronique.js?v=20261114-213644"></script>
+<script src="cartes.js?v=20261114-214031"></script>
+<script src="musique.js?v=20261114-214031"></script>
+<script src="rang.js?v=20261114-214031"></script>
+<script src="heros-etoiles.js?v=20261114-214031"></script>
+<script src="donnees.js?v=20261114-214031"></script>
+<script src="guide.js?v=20261114-214031"></script>
+<script src="odyssee.js?v=20261114-214031"></script>
+<script src="bestiaire.js?v=20261114-214031"></script>
+<script src="aventure.js?v=20261114-214031"></script>
+<script src="odyssee-sansfin.js?v=20261114-214031"></script>
+<script src="pantheon.js?v=20261114-214031"></script>
+<script src="chronique.js?v=20261114-214031"></script>
 <script>
 // le moteur du Duel n'est pas chargé ici : les cartes de l'Odyssée appellent degats/soin seulement en combat (dans duel.html)
 const log = () => {}, degats = () => {}, soin = () => {}, altere = () => {}, invoque = () => {}, adv = () => ({}), fin = () => {};
@@ -347,7 +348,7 @@ async function sfPoser() {
   GM.son('tour-batir'); sfSel = null; sfRot = 0; sfCase = null; R.sansfin.attente = { x, y }; sauve(); dessine();
 }
 // =============================================================================================== 14/11 nuit : la Grande aventure (aventure.js)
-const eqHTML = k => k ? `${eqImg(k)} <b>${EQUIP[k][2]}</b><small>${EQUIP[k][3]}</small>` : '<small>vide</small>';
+const eqHTML = k => k ? `${eqImg(k)} <b>${EQUIP[k][2]}</b><small>${typeof descEquip === 'function' ? descEquip(k) : EQUIP[k][3]}</small>` : '<small>vide</small>';
 function equipFen() {
   const A = R.aventure; if (!A) return;
   fenetre(`<h2>🎒 Mon équipement</h2><p style="font-size:.88em;color:var(--doux)">${HEROS[R.heros].nom} · niveau ${A.niveau} · chapitre ${A.chapitre} sur 3${A.essais ? ` · ${A.essais} seconde${A.essais > 1 ? 's' : ''} chance${A.essais > 1 ? 's' : ''}` : ''}</p>
@@ -678,7 +679,7 @@ function apresCombat() {
   const suite = out.draft ? () => tirage(out.draft, out.garde2 ? 'Anomalie : garde-en deux !' : out.draft2 ? 'Double butin : une première carte' : 'Une carte parmi trois', out.draft2 ? () => tirage(out.draft2, 'Double butin : une seconde carte', () => { sauve(); dessine(); }) : () => { sauve(); dessine(); }, out.garde2) : () => { fermer(); dessine(); };
   window._suite2 = out.equip && R.aventure ? () => equipTrouveFen(out.equip, suite) : suite; // 14/11 nuit : une élite peut laisser un équipement
   window._suite = out.mimique ? () => { const l = reliquesProposees(R, 2); fenetre(`<h2>🗝 Le coffre piège est vaincu</h2><p>Dans sa gueule, il gardait deux reliques. Choisis-en une :</p><div class="choixv">${l.map(k => `<button onclick="reliqueOuEchange('${k}', '_suite2')">${RELIQUES[k].e} <b>${RELIQUES[k].n}</b><small>${RELIQUES[k].d}</small></button>`).join('')}</div><div class="choixh"><button onclick="fermer();_suite2()">Laisser</button></div>`); } : out.nemesisVaincue ? () => { const l = reliquesProposees(R, 2); fenetre(`<h2>😈 Némésis vaincue !</h2><p>+60 or. Choisis une relique :</p><div class="choixv">${l.map(k => `<button onclick="reliqueOuEchange('${k}', '_suite2')">${RELIQUES[k].e} <b>${RELIQUES[k].n}</b><small>${RELIQUES[k].d}</small></button>`).join('')}</div>`); } : window._suite2;
-  fenetre(`<h2>🏆 ${out.ennemi} vaincu</h2><p>+${out.or} or${res.defiOk ? ' (défi réussi compris)' : ''}.${out.fragment ? ' <b>Un fragment de rune 🔮 et une clé 🗝 !</b>' : ''}${out.potion ? ' Et une potion de soin 🧪 dans sa besace.' : ''}</p><p>Il te reste ❤ ${R.pv} / ${R.pvMax}.</p><div class="choixh"><button class="or" onclick="fermer();_suite()">Continuer</button></div>`);
+  fenetre(`<h2>🏆 ${out.ennemi} vaincu</h2><p>+${out.or} or${res.defiOk ? ' (défi réussi compris)' : ''}.${out.fragment ? ' <b>Un fragment de rune 🔮 et une clé 🗝 !</b>' : ''}${out.potion ? ' Et une potion de soin 🧪 dans sa besace.' : ''}${out.equipArm ? `</p><p>🎒 Il laisse tomber ${eqImg(out.equipArm, 26)} <b>${EQUIP[out.equipArm][2]}</b> : rangé dans ton armurerie (Tour des héros).` : ''}</p><p>Il te reste ❤ ${R.pv} / ${R.pvMax}.</p><div class="choixh"><button class="or" onclick="fermer();_suite()">Continuer</button></div>`);
 }
 const carteHTML = (k, onclick, pied) => { const c = CARTES[k], r = rarete(k);
   if (typeof CADRES_OK !== 'undefined' && CADRES_OK.includes(CADRE_DE(k))) return `<div onclick="${onclick || ''}" style="cursor:pointer">${carteGuilde(k, { w:118, pied:pied ? `<div class="cg-pied">${pied}</div>` : '' })}</div>`;

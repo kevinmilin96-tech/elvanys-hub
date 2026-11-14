@@ -130,7 +130,7 @@ function gagneXP(xp, raison) {
   const d = lireRang(), avant = d.info.rang; d.xp += xp; d.journal.unshift({ q:Date.now(), xp, raison }); d.journal = d.journal.slice(0, 40); ecrireRang(d);
   const apres = rangDe(d.xp).rang; annonceRang(`+${xp} XP · ${raison}`);
   for (let r = avant + 1; r <= apres; r++) { const x = ROUTE[r]; annonceRang(`🏆 Rang ${r} de la Guilde !${x ? ` ${x[2]} ${x[3]}${x[0] === 'carte' && typeof CARTES !== 'undefined' && CARTES[x[1]] ? ' : ' + CARTES[x[1]].n : ''}` : ''}`, true); }
-  if (apres > avant) syncRecompenses();
+  if (apres > avant) { syncRecompenses(); if (typeof donneLibres === 'function') donneLibres(ECLATS_RANG * (apres - avant)); }
 }
 // les cartes gagnées avec le Rang entrent dans la collection (aussi au chargement, si le rang était déjà atteint)
 function syncRecompenses() {
@@ -141,6 +141,7 @@ function syncRecompenses() {
 function guildeEvt(type, n = 1, info = {}) {
   if (typeof localStorage === 'undefined') return;
   try {
+    if (info.heros && typeof ECLATS_EVT !== 'undefined' && ECLATS_EVT[type]) donneEclats(info.heros, ECLATS_EVT[type]); // 14/11 nuit : éclats du héros
     if (XP_EVT[type]) gagneXP(XP_EVT[type] * (type === 'salle' || type === 'defense_vague' ? n : 1), NOM_EVT[type]);
     const Q = lireQuetes(); let fini = [];
     [['j', true], ['s', false]].forEach(([k, jour]) => Q[k].forEach(q => {
@@ -150,7 +151,7 @@ function guildeEvt(type, n = 1, info = {}) {
       if (q.prog >= d[3]) { q.prog = d[3]; q.fait = true; fini.push([texteQuete(q, jour), jour]); }
     }));
     localStorage.setItem(QUETES_CLE, JSON.stringify(Q));
-    fini.forEach(([t, jour]) => { annonceRang(`📜 Quête accomplie : ${t}`, true); gagneXP(jour ? 40 : 150, jour ? NOM_EVT.quete_jour : NOM_EVT.quete_semaine); });
+    fini.forEach(([t, jour]) => { annonceRang(`📜 Quête accomplie : ${t}`, true); gagneXP(jour ? 40 : 150, jour ? NOM_EVT.quete_jour : NOM_EVT.quete_semaine); if (typeof donneLibres === 'function') donneLibres(jour ? ECLATS_QUETE.jour : ECLATS_QUETE.semaine); });
   } catch (e) { console.error(e); }
 }
 

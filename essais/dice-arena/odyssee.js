@@ -550,7 +550,7 @@ function ajouteCollection(cles) { const c = lireCollection(); let n = 0; cles.fo
 function lireRecords() { try { return JSON.parse(localStorage.getItem(RECORDS_CLE) || '[]'); } catch (e) { return []; } }
 // 13/11 : PV de départ en Odyssée héros par héros (1,8 × les PV du Duel au départ ; réglé au simulateur sur les trois îles)
 const ODY_PV = { maelle:1.95, aldric:2, pip:1.6, oria:1.85, gorm:2.5, zephine:1.95 };
-function nouvelleOdyssee(heros, graine, acte, niveau) {
+function nouvelleOdyssee(heros, graine, acte, niveau, avent) {
   acte = ILES[acte] ? acte : 'brulees';
   graine = graine || ('ile-' + Math.random().toString(36).slice(2, 8));
   const ile = genereIle(graine, null, acte); if (!ile) return null;
@@ -562,6 +562,11 @@ function nouvelleOdyssee(heros, graine, acte, niveau) {
   if (asc(run, 8)) donneMalediction(run, Object.keys(MALEDICTIONS)[0]);
   if (asc(run, 10)) { run.pvMax = Math.round(run.pvMax * .9); run.pv = run.pvMax; }
   if (typeof pantheonDepart === 'function') pantheonDepart(run);
+  // 14/11 nuit : les étoiles et l'équipement du héros (heros-etoiles.js) ; la Grande aventure gère son équipement elle-même
+  if (!avent && typeof bonusHerosPvE === 'function' && typeof localStorage !== 'undefined') { const b = bonusHerosPvE(heros); if (b.pv) { run.pvMax += b.pv; run.pv += b.pv; }
+    run.equipH = equipHeros(heros); if (run.equipH.armure === 'heaume') { run.pvMax += valEquip('heaume'); run.pv += valEquip('heaume'); }
+    if (run.equipH.armure === 'cape') run.vivres += valEquip('cape');
+    if (b.pv || Object.values(run.equipH).some(Boolean)) run.journal.push(`⭐ ${NIVEAUX_H[niveauHeros(heros)]}${Object.values(run.equipH).filter(Boolean).length ? ' · équipement : ' + Object.values(run.equipH).filter(Boolean).map(k => EQUIP[k][2]).join(', ') : ''}.`); }
   // 14/11 nuit : bonus de départ gagnés avec le Rang de la Guilde (route des récompenses, rang.js)
   if (typeof bonusDepart === 'function' && typeof localStorage !== 'undefined') { const b = bonusDepart(); run.vivres += b.huile; run.or += b.or; run.pvMax += b.pv; run.pv += b.pv; if (b.potion && run.sacoche.length < 2) run.sacoche.push('soin'); run.relanceRang = b.relance; if (b.huile || b.or || b.pv || b.potion || b.relance) run.journal.push('🏆 Bonus de ton Rang de la Guilde : ' + [b.huile && `+${b.huile} huile`, b.or && `+${b.or} or`, b.pv && `+${b.pv} PV max`, b.potion && 'une potion de soin', b.relance && 'une relance de plus par combat'].filter(Boolean).join(', ') + '.'); }
   const nem = typeof localStorage !== 'undefined' ? lireNemesis()[heros] : null;
@@ -623,7 +628,7 @@ function recompenseCombat(r) {
   const rgl = r.sansfin && r.sansfin.regle; if (rgl === 'cendres') or *= 2; if (rgl === 'horde' && cb.type === 'monstre') or += 15;
   if (cb.grandDefi && res.defiOk) or += 60;
   r.or += or;
-  if (typeof guildeEvt === 'function' && !r.simu) { guildeEvt(cb.type === 'boss' ? 'boss' : cb.type === 'elite' ? 'elite' : 'salle', 1); guildeEvt('or', or); } // 14/11 nuit : Rang
+  if (typeof guildeEvt === 'function' && !r.simu) { guildeEvt(cb.type === 'boss' ? 'boss' : cb.type === 'elite' ? 'elite' : 'salle', 1, { heros:r.heros }); guildeEvt('or', or); } // 14/11 nuit : Rang
   const out = { gagne:true, or, defiOk:res.defiOk, ennemi:HEROS[cb.ennemi].nom, type:cb.type, nemesisVaincue }; if (cb.mimique) out.mimique = true; if (cb.grandDefi) out.grandDefi = !!res.defiOk; if (typeof equipVictoire === 'function') equipVictoire(r, out);
   if (cb.type === 'elite') { r.fragments++; r.cles++; out.fragment = true; if (r.sacoche.length < 2) { r.sacoche.push('soin'); out.potion = true; } }
   if (cb.ombre) { r.or += 40; out.or += 40; out.ombre = OMBRES[cb.ombre].n; r.journal.push(`🌑 Ombre majeure (${OMBRES[cb.ombre].n}) vaincue : double butin !`); }

@@ -154,7 +154,7 @@ function sfEtageSuivant(r) {
   Object.assign(S, { offre:[], poses:1, elites:0, bossFait:false, dernierMarchand:0, eboulement:false, attente:null, prime:null, debutEtage:{ victoires:r.stats.victoires, poses:1 } });
   S.pioche = sfSac(Object.assign(hasard(r), { regle:S.regle })); S.primes = primesOffre(r);
   r.journal.push(`🪜 Étage ${S.etage} : ${ILES[r.acte].nom}${forceEtage(r) ? ` (ennemis +${25 * forceEtage(r)} % de vie)` : ''}. Au pied de l’escalier, une source : +${r.pv - a} PV ; +8 huile.`);
-  if (typeof guildeEvt === 'function') { guildeEvt('etage', 1); guildeEvt('etage_atteint', S.etage); }
+  if (typeof guildeEvt === 'function') { guildeEvt('etage', 1, { heros:r.heros }); guildeEvt('etage_atteint', S.etage); }
   sfOffre(r); return r;
 }
 // ce que montre la pioche (la Nuit noire cache le contenu)

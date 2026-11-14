@@ -138,6 +138,12 @@
   #fiche .details .des { grid-template-columns:repeat(6, 1fr); gap:4px; }
   .bande .cad img, .sceau .gros img { display:block; }
   .bande .cad img { width:28px; } .sceau .gros img { width:64px; margin:0 auto 6px; }
+  .etoiles .et-l { display:flex; gap:6px; justify-content:center; font-size:1.7em; margin:4px 0; } .etoiles .et-l span { color:#4b4580; } .etoiles .et-l span.on { color:#f3c96b; text-shadow:0 0 8px #f3c96b; } .etoiles .et-l span.pr.on { color:#ff8af0; text-shadow:0 0 8px #ff8af0; }
+  .etoiles .et-b small { color:var(--doux); } .barre-rang.gros { display:block; height:12px; margin:4px 0; }
+  .et-bonus { list-style:none; padding:0; font-size:.85em; } .et-bonus li { opacity:.55; margin:3px 0; } .et-bonus li.on { opacity:1; }
+  .slots { display:flex; gap:6px; } .slot { flex:1; background:#1d1b3aee; border:2px solid #4b4580; border-radius:12px; padding:6px 4px; color:inherit; font:inherit; font-size:.78em; display:flex; flex-direction:column; align-items:center; gap:2px; } .slot.sel { border-color:#f3c96b; } .slot small { color:var(--doux); } .slot .vide { opacity:.5; padding:14px 0; }
+  .arm { display:grid; grid-template-columns:repeat(3, 1fr); gap:6px; margin-top:6px; } .obj { background:#1d1b3aee; border:1px solid #4b4580; border-radius:10px; color:inherit; font:inherit; font-size:.72em; padding:5px 3px; display:flex; flex-direction:column; align-items:center; gap:2px; } .obj small { color:var(--doux); }
+  .etb { position:absolute; bottom:-2px; left:50%; transform:translateX(-50%); font-size:.62em; color:#f3c96b; text-shadow:0 1px 2px #000; white-space:nowrap; }
 </style>
 </head>
 <body>
@@ -156,12 +162,14 @@
     <li><b>Le second joueur</b> commence avec 4 PC et une carte de plus.</li>
   </ol></details>
 </main>
-<script src="guide.js?v=20261114-213644"></script>
-<script src="musique.js?v=20261114-213644"></script>
-<script src="rang.js?v=20261114-213644"></script>
-<script src="donnees.js?v=20261114-213644"></script>
-<script src="odyssee.js?v=20261114-213644"></script>
-<script src="cartes.js?v=20261114-213644"></script>
+<script src="guide.js?v=20261114-214031"></script>
+<script src="musique.js?v=20261114-214031"></script>
+<script src="rang.js?v=20261114-214031"></script>
+<script src="heros-etoiles.js?v=20261114-214031"></script>
+<script src="donnees.js?v=20261114-214031"></script>
+<script src="odyssee.js?v=20261114-214031"></script>
+<script src="aventure.js?v=20261114-214031"></script>
+<script src="cartes.js?v=20261114-214031"></script>
 <script>
 document.head.insertAdjacentHTML('beforeend', '<style>' + CSS_CARTE + '</style>');
 const SORTE = { u:'Créature', s:'Sort', e:'Équipement', r:'Piège' };
@@ -179,7 +187,7 @@ function parties(id) { try { const l = JSON.parse(localStorage.getItem('guilde-p
 const ZOK = () => localStorage.getItem('guilde-tuto') === 'fait'; // Zéphine : débloquée par le tutoriel (12/11)
 const verrouille = id => id === 'zephine' && !ZOK();
 function grille() {
-  document.getElementById('grille').innerHTML = ORDRE.map(id => `<button class="${id === actuel ? 'choisi' : ''} ${verrouille(id) ? 'verrou' : ''}" style="--hc:${HEROS[id].c}" onclick="choisir('${id}')"><img src="portraits/${id}.webp" alt="">${verrouille(id) ? '<span class="cad"><img src="menu-recu/cadenas.webp?v=2" alt="Verrouillé"></span>' : ''}<small>${HEROS[id].nom}</small></button>`).join('');
+  document.getElementById('grille').innerHTML = ORDRE.map(id => `<button class="${id === actuel ? 'choisi' : ''} ${verrouille(id) ? 'verrou' : ''}" style="--hc:${HEROS[id].c}" onclick="choisir('${id}')"><img src="portraits/${id}.webp" alt="">${niveauHeros(id) ? `<span class="etb">${etoilesTxt(niveauHeros(id))}</span>` : ''}${verrouille(id) ? '<span class="cad"><img src="menu-recu/cadenas.webp?v=2" alt="Verrouillé"></span>' : ''}<small>${HEROS[id].nom}</small></button>`).join('');
   const b = document.querySelector('.bande .choisi'); if (b) b.scrollIntoView({ inline:'center', block:'nearest' });
 }
 function choisir(id) { if (edition && !confirm('Quitter la modification du deck sans l’enregistrer ?')) return; edition = null; actuel = id; localStorage.setItem('guilde-tour', id); history.replaceState(null, '', '?h=' + id); grille(); fiche(); }
@@ -214,12 +222,31 @@ function fiche() {
       </div>
     </div>
 </div>` : ''}
+  ${verrouille(id) ? '' : etoilesHTML(id)}
   <div class="suite">
       <h3>🂠 ${perso ? 'Ton deck' : 'Son deck de base'} <small>${DECK_TAILLE} cartes</small></h3>
       <div id="deckzone">${edition ? '' : `<div class="deck">${ordreCartes(id, Object.keys(deck)).map(k => `<div class="cg">${deck[k] > 1 ? `<span class="nb">×${deck[k]}</span>` : ''}${vignette(id, k)}</div>`).join('')}</div>`}</div>
       <div class="boutons" id="bts">${edition || verrouille(id) ? '' : `<button class="bt sombre" onclick="editer()">✏️ Modifier mon deck</button>${perso ? '<button class="bt sombre" onclick="deBase()">↺ Deck de base</button>' : ''}<button class="bt or" onclick="location.href='duel.html?h=${id}'">⚔ Jouer avec ${h.nom}</button>`}</div>
     </div>`;
   if (edition) dessineEditeur();
+}
+// 14/11 nuit : étoiles, prestige et équipement du héros (heros-etoiles.js)
+let choixPl = null;
+function etoilesHTML(id) {
+  const D = lireEtoiles(), h = D.heros[id] || { e:0, n:0 }, cout = COUT_NIV[h.n], eq = equipHeros(id);
+  const arm = Object.keys(D.armurerie).filter(k => D.armurerie[k] && EQUIP[k] && (!choixPl || EQUIP[k][0] === choixPl));
+  return `<div class="suite etoiles">
+    <h3>⭐ ${NIVEAUX_H[h.n]} <small>contre les monstres seulement : l’Arène reste équitable</small></h3>
+    <div class="et-l">${[1, 2, 3, 4, 5, 6].map(n => `<span class="${h.n >= n ? 'on' : ''} ${n > 3 ? 'pr' : ''}" title="${NIVEAUX_H[n]}">${n > 3 ? '✦' : '★'}</span>`).join('')}</div>
+    ${h.n < 6 ? `<div class="et-b"><span class="barre-rang gros"><i style="width:${Math.min(100, Math.round(h.e / cout * 100))}%"></i></span><small>✨ ${h.e} / ${cout} éclats pour ${NIVEAUX_H[h.n + 1]}</small></div>
+    <div class="boutons">${h.e >= cout ? `<button class="bt or" onclick="promouvoir('${id}');GM.son('victoire');fiche()">⬆ Passer à ${NIVEAUX_H[h.n + 1]}</button>` : ''}${D.libres ? `<button class="bt sombre" onclick="verseLibres('${id}', ${Math.min(D.libres, Math.max(1, cout - h.e))});fiche()">💠 Verser ${Math.min(D.libres, Math.max(1, cout - h.e))} éclats de Guilde (tu en as ${D.libres})</button>` : ''}</div>` : '<p class="role">Prestige 3 : le plus haut niveau.</p>'}
+    <ul class="et-bonus">${BONUS_NIVH.slice(1).map((b, i) => `<li class="${h.n >= i + 1 ? 'on' : ''}">${h.n >= i + 1 ? '✅' : '🔒'} <b>${NIVEAUX_H[i + 1]}</b> : ${b[0]} ${b[1]}</li>`).join('')}</ul>
+    <p class="role">Les éclats se gagnent en jouant avec ${HEROS[id].nom} : duel gagné 2, élite 2, boss 5, escale 1, Titan 5, étage du sans fin 3. Les quêtes et les rangs de la Guilde donnent des éclats de Guilde 💠, à verser sur le héros de ton choix.</p>
+    <h3>🎒 Son équipement <small>Odyssée, Grande aventure, sans fin</small></h3>
+    <div class="slots">${Object.keys(EMPLACEMENTS).map(pl => `<button class="slot ${choixPl === pl ? 'sel' : ''}" onclick="choixPl = choixPl === '${pl}' ? null : '${pl}';fiche()"><small>${EMPLACEMENTS[pl]}</small>${eq[pl] ? `${eqImg(eq[pl], 46)}<b>${EQUIP[eq[pl]][2]} ${'★'.repeat(niveauEquip(eq[pl]))}</b><small>${descEquip(eq[pl])}</small>` : '<span class="vide">vide</span>'}</button>`).join('')}</div>
+    ${choixPl ? `<p class="role">Touche un objet de l’armurerie pour l’équiper (${EMPLACEMENTS[choixPl]}).</p>${eq[choixPl] ? `<div class="boutons"><button class="bt sombre" onclick="equipeHeros('${id}','${choixPl}',null);fiche()">Retirer</button></div>` : ''}` : '<p class="role">Touche un emplacement pour le changer.</p>'}
+    <div class="arm">${arm.length ? arm.map(k => `<button class="obj" onclick="${choixPl ? `equipeHeros('${id}','${choixPl}','${k}');fiche()` : `choixPl='${EQUIP[k][0]}';fiche()`}">${eqImg(k, 40)}<b>${EQUIP[k][2]}</b><small>${fusionTxt(k)}</small></button>`).join('') : '<p class="role">Ton armurerie est vide : l’équipement se trouve sur les élites 💀 et les boss 👑 de l’Odyssée. Trois objets identiques fusionnent en ★★.</p>'}</div>
+  </div>`;
 }
 function editer() { edition = deckDe(actuel).slice(); fiche(); document.getElementById('deckzone').scrollIntoView({ behavior:'smooth', block:'start' }); }
 function deBase() { if (!confirm('Revenir au deck de base de ce héros ?')) return; localStorage.removeItem('guilde-deck-' + actuel); fiche(); }

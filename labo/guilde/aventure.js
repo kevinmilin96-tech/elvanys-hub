@@ -34,20 +34,25 @@ const BONUS_NIV = {
 const PV_NIVEAU = 8, ACTES_AV = ['brulees', 'givre', 'abime'];
 const equipDispo = () => Object.keys(EQUIP).filter(k => !EQUIP[k][4] || (typeof lireRang === 'function' && lireRang().info.rang >= EQUIP[k][4]));
 const nbBonus = (r, k) => (r.aventure ? r.aventure.bonus.filter(b => b === k).length : 0);
-const porte = (r, k) => !!(r.aventure && Object.values(r.aventure.equip).includes(k));
+// 14/11 nuit : l'équipement porté = celui de l'aventure, sinon celui du héros (île seule, sans fin) ; sa force dépend de ses étoiles (heros-etoiles.js)
+const equipRun = r => (r && r.aventure ? r.aventure.equip : r && r.equipH) || {};
+const porte = (r, k) => Object.values(equipRun(r)).includes(k);
+const V = k => typeof valEquip === 'function' ? valEquip(k) : { hache:2, lame:10, arc:5, marteau:1, cuir:4, cape:6, cotte:7, heaume:12, trefle:1, bourse:12, griffe:4, anneau:1 }[k];
 
 // ----------------------------------------------------------------------------------------------- la campagne
 // l'état du héros qui passe d'une île à l'autre
 function etatHeros(r) { return JSON.parse(JSON.stringify({ deck:r.deck, pvMax:r.pvMax, reliques:r.reliques, sacoche:r.sacoche, benes:r.benes, males:r.males, forge:r.forge || null, aventure:{ ...r.aventure, retour:null } })); }
 // une île de l'aventure, avec l'état du héros (rien = début de l'aventure)
 function ileAventure(heros, acte, etat) {
-  const r = nouvelleOdyssee(heros, null, acte, 0); if (!r) return null;
+  const r = nouvelleOdyssee(heros, null, acte, 0, true); if (!r) return null;
   if (etat) { Object.assign(r, { deck:etat.deck, pvMax:etat.pvMax, pv:etat.pvMax, reliques:etat.reliques, sacoche:etat.sacoche, benes:etat.benes, males:etat.males, forge:etat.forge }); r.aventure = etat.aventure; }
-  else r.aventure = { chapitre:1, niveau:1, equip:{ arme:null, armure:null, talisman:null }, sac:[], bonus:[], ameliore:[], essais:0, debut:Date.now() };
+  else { r.aventure = { chapitre:1, niveau:1, equip:{ arme:null, armure:null, talisman:null }, sac:[], bonus:[], ameliore:[], essais:0, debut:Date.now() };
+    // 14/11 nuit : l'aventure part avec l'équipement du héros (son profil, armurerie) ; heros-etoiles.js
+    if (typeof equipHeros === 'function' && typeof localStorage !== 'undefined') { const eh = equipHeros(heros); r.aventure.equip = { ...eh }; if (eh.armure === 'heaume') r.pvMax += valEquip('heaume'); const b = bonusHerosPvE(heros); r.pvMax += b.pv; r.pv = r.pvMax; } }
   r.aventure.chapitre = ACTES_AV.indexOf(acte) + 1;
   // ce qui se gagne en arrivant sur l'île
   const A = r.aventure; let plus = [];
-  if (porte(r, 'cape')) { r.vivres += 6; plus.push('+6 huile (Cape de voyage)'); }
+  if (porte(r, 'cape')) { const v = V('cape'); r.vivres += v; plus.push(`+${v} huile (Cape de voyage)`); }
   if (nbBonus(r, 'huile')) { r.vivres += 5 * nbBonus(r, 'huile'); plus.push(`+${5 * nbBonus(r, 'huile')} huile`); }
   if (nbBonus(r, 'or')) { r.or += 30 * nbBonus(r, 'or'); plus.push(`+${30 * nbBonus(r, 'or')} or`); }
   r.journal.unshift(`🗺 Grande aventure · chapitre ${A.chapitre} sur 3 · ${HEROS[heros].nom} niveau ${A.niveau}${plus.length ? ' · ' + plus.join(', ') : ''}.`);
@@ -64,8 +69,8 @@ function ileSuivante(r) { const i = ACTES_AV.indexOf(r.acte); if (i >= 2) return
 function equipe(r, k) {
   const A = r.aventure, e = EQUIP[k]; if (!e) return false; const pl = e[0], ancien = A.equip[pl];
   A.sac = A.sac.filter(x => x !== k);
-  if (ancien) { if (ancien === 'heaume') { r.pvMax -= 12; r.pv = Math.min(r.pv, r.pvMax); } A.sac.push(ancien); }
-  A.equip[pl] = k; if (k === 'heaume') { r.pvMax += 12; r.pv += 12; }
+  if (ancien) { if (ancien === 'heaume') { r.pvMax -= V('heaume'); r.pv = Math.min(r.pv, r.pvMax); } A.sac.push(ancien); }
+  A.equip[pl] = k; if (k === 'heaume') { r.pvMax += V('heaume'); r.pv += V('heaume'); }
   r.journal.push(`${e[1]} ${e[2]} équipé${ancien ? ` (${EQUIP[ancien][2]} au sac)` : ''}.`);
   while (A.sac.length > SAC_EQUIP) A.sac.shift();
   return true;
@@ -79,27 +84,32 @@ function equipTrouve(r, n) {
 }
 // après un combat gagné : effets de l'équipement (appelé par recompenseCombat)
 function equipVictoire(r, out) {
-  if (!r.aventure) return;
-  if (porte(r, 'bourse')) { r.or += 12; out.or += 12; }
-  if (porte(r, 'griffe')) { const a = r.pv; r.pv = Math.min(r.pvMax, r.pv + 4); if (r.pv > a) r.journal.push(`🐾 Griffe de Moustache : +${r.pv - a} PV.`); }
-  // une élite peut laisser tomber un équipement (une chance sur deux)
-  if (out.type === 'elite' && Math.random() < .5) { const l = equipTrouve(r, 1); if (l.length) out.equip = l[0]; }
+  if (porte(r, 'bourse')) { r.or += V('bourse'); out.or += V('bourse'); }
+  if (porte(r, 'griffe')) { const a = r.pv; r.pv = Math.min(r.pvMax, r.pv + V('griffe')); if (r.pv > a) r.journal.push(`🐾 Griffe de Moustache : +${r.pv - a} PV.`); }
+  // une élite peut laisser tomber un équipement (aventure : une chance sur deux ; ailleurs : une sur trois, rangée dans l'armurerie)
+  if (out.type === 'elite' && Math.random() < (r.aventure ? .5 : .34)) {
+    if (r.aventure) { const l = equipTrouve(r, 1); if (l.length) { out.equip = l[0]; if (typeof armurerieAjoute === 'function' && !r.simu) armurerieAjoute(l[0], true); } }
+    else { const k = brasse(hasard(r), equipDispo())[0]; if (k) { out.equipArm = k; if (typeof armurerieAjoute === 'function') armurerieAjoute(k, true); } } }
 }
 // en combat : appelé par duel.html juste après la préparation de l'ennemi
 function equipeCombat(J, O, run, log) {
-  if (!run || !run.aventure) return;
-  const A = run.aventure, eq = k => Object.values(A.equip).includes(k), L = [];
+  if (!run) return;
+  const A = run.aventure || { bonus:[], ameliore:[] }, eq = k => porte(run, k), L = [];
   J.ameliorees = [...(A.ameliore || [])];
-  if (eq('hache')) { J.pc = Math.min(6, J.pc + 2); L.push('🪓 Hache : +2 PC'); }
-  if (eq('anneau')) { J.pc = Math.min(6, J.pc + 1); L.push('💍 Anneau des runes : +1 PC'); }
+  // les étoiles du héros (heros-etoiles.js) : seulement contre les monstres
+  if (typeof bonusHerosPvE === 'function' && typeof localStorage !== 'undefined' && !run.simu) { const b = bonusHerosPvE(run.heros);
+    if (b.bouclier) { J.bouclier = (J.bouclier || 0) + b.bouclier; L.push(`⭐ Bouclier ${b.bouclier}`); } if (b.pc) { J.pc = Math.min(6, J.pc + b.pc); L.push(`⭐ +${b.pc} PC`); }
+    if (b.relance) { J.relanceRang = (J.relanceRang || 0) + b.relance; L.push('⭐ +1 relance par tour'); } if (b.main && typeof pioche === 'function') { pioche(J, b.main); L.push('⭐ +1 carte'); } }
+  if (eq('hache')) { J.pc = Math.min(6, J.pc + V('hache')); L.push(`🪓 Hache : +${V('hache')} PC`); }
+  if (eq('anneau')) { J.pc = Math.min(6, J.pc + V('anneau')); L.push(`💍 Anneau des runes : +${V('anneau')} PC`); }
   if (nbBonus(run, 'pc')) { J.pc = Math.min(6, J.pc + nbBonus(run, 'pc')); L.push(`◆ Esprit vif : +${nbBonus(run, 'pc')} PC`); }
-  if (eq('cuir')) { J.bouclier = (J.bouclier || 0) + 4; L.push('🦺 Armure de cuir : Bouclier 4'); }
-  if (eq('cotte')) { J.bouclier = (J.bouclier || 0) + 7; L.push('🥋 Cotte de mailles : Bouclier 7'); }
-  const relances = (eq('trefle') ? 1 : 0) + nbBonus(run, 'relance'); if (relances) { J.relanceRang = (J.relanceRang || 0) + relances; L.push(`🎲 +${relances} relance${relances > 1 ? 's' : ''} à chaque tour`); }
-  const mains = (eq('marteau') ? 1 : 0) + nbBonus(run, 'main'); if (mains && typeof pioche === 'function') { pioche(J, mains); L.push(`🂠 +${mains} carte${mains > 1 ? 's' : ''} en main`); }
-  if (eq('lame')) { O.pvMax = Math.round(O.pvMax * .9); O.pv = Math.min(O.pv, O.pvMax); L.push('🗡 Lame affûtée : l’ennemi −10 % de vie'); }
-  if (eq('arc')) { O.pv = Math.max(1, O.pv - 5); L.push('🏹 Arc long : 5 dégâts'); }
-  if (L.length && log) log(`🎒 Ton équipement · ${L.join(' · ')}.`);
+  if (eq('cuir')) { J.bouclier = (J.bouclier || 0) + V('cuir'); L.push(`🦺 Armure de cuir : Bouclier ${V('cuir')}`); }
+  if (eq('cotte')) { J.bouclier = (J.bouclier || 0) + V('cotte'); L.push(`🥋 Cotte de mailles : Bouclier ${V('cotte')}`); }
+  const relances = (eq('trefle') ? V('trefle') : 0) + nbBonus(run, 'relance'); if (relances) { J.relanceRang = (J.relanceRang || 0) + relances; L.push(`🎲 +${relances} relance${relances > 1 ? 's' : ''} à chaque tour`); }
+  const mains = (eq('marteau') ? V('marteau') : 0) + nbBonus(run, 'main'); if (mains && typeof pioche === 'function') { pioche(J, mains); L.push(`🂠 +${mains} carte${mains > 1 ? 's' : ''} en main`); }
+  if (eq('lame')) { O.pvMax = Math.round(O.pvMax * (1 - V('lame') / 100)); O.pv = Math.min(O.pv, O.pvMax); L.push(`🗡 Lame affûtée : l’ennemi −${V('lame')} % de vie`); }
+  if (eq('arc')) { O.pv = Math.max(1, O.pv - V('arc')); L.push(`🏹 Arc long : ${V('arc')} dégâts`); }
+  if (L.length && log) log(`🎒 Ton équipement et tes étoiles · ${L.join(' · ')}.`);
 }
 // au camp : améliorer une carte (elle coûte 1 PC de moins pour toute l'aventure ; une par camp)
 function ameliore(r, k) { const A = r.aventure; A.ameliore = A.ameliore || []; if (!CARTES[k] || CARTES[k].c < 1 || A.ameliore.includes(k)) return false; A.ameliore.push(k); r.journal.push(`⭐ ${CARTES[k].n} améliorée : 1 PC de moins.`); return true; }
