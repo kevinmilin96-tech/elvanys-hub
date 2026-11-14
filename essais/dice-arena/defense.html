@@ -27,7 +27,7 @@
   .chemin { display:grid; grid-template-columns:repeat(3, 1fr); gap:4px; margin:6px 0 3px; background:linear-gradient(180deg, #2a1d10, #3a2a14); border-radius:12px; padding:5px; }
   .cc { height:52px; border-radius:8px; background:#0003; border:1px dashed #c9893f55; display:flex; flex-wrap:wrap; gap:2px; align-items:center; justify-content:center; position:relative; }
   .mo { min-width:44px; height:44px; background:#2a1414; border:2px solid #b84a3a; border-radius:9px; display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:.62em; position:relative; padding:1px 2px; }
-  .mo .e { font-size:2em; line-height:1; } .mo img.e { width:30px; height:30px; border-radius:50%; object-fit:cover; } .mo.boss img.e { width:42px; height:42px; } .rc img.runeimg { width:86%; height:86%; object-fit:contain; border-radius:8px; animation:pulse 1.6s infinite; } .mo .pv { color:#ffd0c0; font-weight:bold; }
+  .mo .e { font-size:2em; line-height:1; } .mo img.e { width:30px; height:30px; border-radius:50%; object-fit:cover; } .mo.boss img.e { width:42px; height:42px; } .rc img.tourimg { width:64%; aspect-ratio:1; margin-top:-26%; position:relative; z-index:1; filter:drop-shadow(0 4px 3px #000b); } .rc img.tourde { position:absolute; left:3px; bottom:3px; width:26%; z-index:2; border-radius:5px; box-shadow:0 1px 3px #000; } .rc img.runeimg { width:86%; height:86%; object-fit:contain; border-radius:8px; animation:pulse 1.6s infinite; } .mo .pv { color:#ffd0c0; font-weight:bold; }
   .mo.boss { border-color:var(--or); background:#3a1a08; min-width:60px; } .mo.boss .e { font-size:2.4em; }
   .mo.cible { box-shadow:0 0 0 3px var(--or), 0 0 14px var(--or); }
   .mo .vit { position:absolute; top:-6px; right:-5px; font-size:1.1em; }
@@ -73,10 +73,10 @@
 <body>
 <div id="app"></div>
 <div id="fen"></div>
-<script src="cartes.js?v=20261114-133206"></script>
-<script src="musique.js?v=20261114-133206"></script>
-<script src="donnees.js?v=20261114-133206"></script>
-<script src="defense-moteur.js?v=20261114-133206"></script>
+<script src="cartes.js?v=20261114-133656"></script>
+<script src="musique.js?v=20261114-133656"></script>
+<script src="donnees.js?v=20261114-133656"></script>
+<script src="defense-moteur.js?v=20261114-133656"></script>
 <script>
 // =============================================================================================== LA DÉFENSE DE LA PORTE · l'ÉCRAN (13/11)
 // Règles : defense-proposition.html (validées le 13/11). Moteur : defense-moteur.js.
@@ -125,7 +125,7 @@ function rendu() {
   <div class="rempart">${D.rempart.map((t, c) => { const okVide = !t && un && !attente && D.pc >= DEF.coutBatir; const okFus = t && !t.rune && ((un && un.v === t.v && !attente) || (selTour >= 0 && selTour !== c && voisinsD(selTour).includes(c) && D.rempart[selTour] && D.rempart[selTour].v === t.v && !D.rempart[selTour].rune));
       const okDep = !t && selTour >= 0 && !D.deplace && voisinsD(selTour).includes(c);
       if (!t) return `<div class="rc vide ${okVide || okDep ? 'ok' : ''}" data-c="${c}" onclick="toucheCase(${c})"></div>`;
-      return `<div class="rc ${t.rune ? 'rune' : ''} ${selTour === c ? 'sel' : ''} ${okFus || besoinTour ? 'ok' : ''}" data-c="${c}" onclick="toucheCase(${c})">${t.rune ? (RUNE_IMG[D.heros] ? `<img class="runeimg" src="${RUNE_IMG[D.heros]}" alt="">` : '<span class="glyphe">ᚱ</span>') : `<img src="${FACE(D.heros, t.v)}" alt="${t.v}">`}<span class="pw">${puissanceTour(D, c, t)}</span>${t.bonus ? `<span class="bn">+${t.bonus}</span>` : ''}</div>`; }).join('')}</div>
+      return `<div class="rc ${t.rune ? 'rune' : ''} ${selTour === c ? 'sel' : ''} ${okFus || besoinTour ? 'ok' : ''}" data-c="${c}" onclick="toucheCase(${c})">${t.rune ? (RUNE_IMG[D.heros] ? `<img class="runeimg" src="${RUNE_IMG[D.heros]}" alt="">` : '<span class="glyphe">ᚱ</span>') : `<img class="tourimg" src="tours/tour-${D.heros}-${t.v <= 2 ? 1 : t.v <= 4 ? 2 : 3}.webp?v=1" alt="Tour de ${t.v}"><img class="tourde" src="${FACE(D.heros, t.v)}" alt="${t.v}">`}<span class="pw">${puissanceTour(D, c, t)}</span>${t.bonus ? `<span class="bn">+${t.bonus}</span>` : ''}</div>`; }).join('')}</div>
   <div class="porte" id="porte">🚪 La porte de la Guilde</div>
   <div class="msg ${err ? 'err' : ''}">${msg}</div>
   <div class="des">${D.des.map((d, i) => `<div class="de ${d.pose ? 'pose' : ''} ${sel.includes(d) ? 'sel' : ''} ${besoinDe && !d.pose && !sel.includes(d) ? 'cible' : ''}" onclick="toucheDe(${i})"><img src="${FACE(D.heros, d.v)}" alt="${d.v}"></div>`).join('')}</div>
