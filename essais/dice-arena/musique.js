@@ -99,6 +99,7 @@ const GM = (() => {
         <div class="l"><span>⚡ Vitesse des animations</span><button class="t on" data-k="v">${rapide() ? 'Rapide' : 'Normale'}</button></div>
         ${window.GM_QUITTER ? `<button class="a q" data-k="q">🚪 ${window.GM_QUITTER.t}</button>` : ''}
         <a class="a" href="duel.html?tuto=1">🎓 Rejouer le tutoriel</a>
+        <a class="a" href="#" onclick="Object.keys(localStorage).filter(k => k.startsWith('guilde-guide-') || k === 'guilde-exp-guide').forEach(k => localStorage.removeItem(k)); this.textContent = '🐱 C’est fait : Moustache vous guidera à nouveau'; return false">🐱 Revoir les guides de Moustache</a>
         <button class="f" data-k="x">Fermer</button></div>`; };
       dessine(); document.body.appendChild(z);
       z.addEventListener('click', e => {
