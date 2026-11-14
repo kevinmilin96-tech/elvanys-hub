@@ -136,6 +136,9 @@ const PORTRAIT_M = { 'Gobelin':'m-gobelin', 'Gobelin chef':'m-chefgobelin', 'Gob
   'Élémentaire de lave':'m-elementaire', 'Golem de scories':'m-golem', 'Drake de cendre':'m-drake', 'Flammèche':'m-salamandre', 'Le Titan de feu':'m-titan', 'Cultiste du feu':'m-cultiste' };
 const artU = u => u.key === 'capitaine' ? IMG(u.hid) : u.key === 'm' ? (PORTRAIT_M[u.n] ? `portraits/${PORTRAIT_M[u.n]}.webp` : '') : `cartes/${ART_EXP[u.key] || u.key}.webp`;
 // où se tiennent les ennemis sur chaque décor (en % de l'écran : haut de la rangée du fond, haut de la rangée de devant, décalage horizontal)
+// 14/11 : les plateaux vus du dessus (s'il y en a un pour l'escale, il remplace le décor en perspective) : [rangée du fond, rangée de devant] des ennemis, puis de l'équipage
+const PLATEAUX_EXP = { crique:{ enn:[11, 26], equ:[63, 78] } };
+const fondEscale = cle => PLATEAUX_EXP[cle] ? `decor/plateau-${cle}.webp?v=1` : `decor/escale-${cle}.webp?v=1`;
 const LIEU_ENN = { crique:[29, 41, 0], falaises:[27, 39, 14], port:[28, 39, 0], foret:[20, 31, 4], cratere:[25, 36, 0], nid:[18, 29, 0] };
 function medHTML(u, ennemi) {
   if (!u) return '<div class="med vide"></div>';
@@ -156,12 +159,12 @@ async function partir() {
   // les unités du combat portent les mêmes identifiants que celles du plateau : on dessine l'état d'avant
   const A = res.adv.camp.plateau, noms = {}; [...avant.plateau.av, ...avant.plateau.ar, ...A.av, ...A.ar].filter(Boolean).forEach(u => { noms[u.id] = u.n; });
   ficheDe = {}; [...avant.plateau.av, ...avant.plateau.ar, ...A.av, ...A.ar].filter(Boolean).forEach(u => { ficheDe[u.id] = u; });
-  const L = LIEU_ENN[esc.cle] || [25, 36, 0];
-  app().innerHTML = `<div class="scene" id="scene" style="background-image:url('decor/escale-${esc.cle}.webp?v=1')">
+  const PL = PLATEAUX_EXP[esc.cle], L = PL ? [PL.enn[0], PL.enn[1], 0] : (LIEU_ENN[esc.cle] || [25, 36, 0]), Q = PL ? PL.equ : [63, 77];
+  app().innerHTML = `<div class="scene ${PL ? 'plat' : ''}" id="scene" style="background-image:url('${fondEscale(esc.cle)}')">
     <div class="haut"><b>${esc.e} ${res.adv.nom}</b>${res.adv.fantome ? `<br><span class="doux">capitaine rival : ${HEROS[res.adv.fantome].nom} · ${CAPITAINES[res.adv.fantome].n}</span>` : ''}
     <div class="vitesse">${[1, 2, 4].map(v => `<button class="${vitesse === v ? 'sel' : ''}" onclick="vitesse=${v};document.querySelectorAll('.vitesse button').forEach(b=>b.classList.toggle('sel', b.textContent==='×${v}'))">×${v}</button>`).join('')}</div></div>
     ${ligneMed(A, 'ar', true, L[0], L[2])}${ligneMed(A, 'av', true, L[1], L[2])}
-    ${ligneMed(avant.plateau, 'av', false, 63, 0)}${ligneMed(avant.plateau, 'ar', false, 77, 0)}
+    ${ligneMed(avant.plateau, 'av', false, Q[0], 0)}${ligneMed(avant.plateau, 'ar', false, Q[1], 0)}
     <div class="journal" id="jc"></div></div>`;
   const J = []; const jl = t => { J.unshift(t); const j = document.getElementById('jc'); if (j) j.innerHTML = J.slice(0, 2).map(x => `<div>${x}</div>`).join(''); };
   await dodo(500);
@@ -190,9 +193,9 @@ async function voyage() {
   const pause = ms => new Promise(r => setTimeout(r, ms));
   sc.querySelectorAll('.lignemed, .journal, .haut').forEach(e => e.classList.add('part'));
   sc.insertAdjacentHTML('beforeend', `<div class="brouillard"></div><div class="cap">⛵ En route vers <b>${suiv.e} ${suiv.n}</b>…</div>`);
-  new Image().src = `decor/escale-${suiv.cle}.webp?v=1`;
+  new Image().src = fondEscale(suiv.cle);
   await pause(350); sc.classList.add('avance'); sc.querySelector('.brouillard').classList.add('monte');
-  await pause(1600); sc.style.backgroundImage = `url('decor/escale-${suiv.cle}.webp?v=1')`; sc.classList.remove('avance'); sc.classList.add('arrive');
+  await pause(1600); sc.style.backgroundImage = `url('${fondEscale(suiv.cle)}')`; sc.classList.toggle('plat', !!PLATEAUX_EXP[suiv.cle]); sc.classList.remove('avance'); sc.classList.add('arrive');
   sc.querySelector('.brouillard').classList.remove('monte');
   await pause(2000); chroniqueEscale(() => port());
 }

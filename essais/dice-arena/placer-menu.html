@@ -53,6 +53,6 @@ document.getElementById('bas').innerHTML = CURSEURS.map(([k, t, a, b, p]) => t =
 function copier() { const t = 'PLACEMENT MENU ' + JSON.stringify(R); document.getElementById('txt').value = t; (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => { document.getElementById('msg').textContent = '✅ Copié : colle-le dans la discussion avec Claude.'; }).catch(() => { document.getElementById('txt').select(); document.getElementById('msg').textContent = 'Sélectionne le texte ci-dessous et copie-le.'; }); }
 dessine();
 </script>
-<script src="musique.js?v=20261114-164041"></script>
+<script src="musique.js?v=20261114-164759"></script>
 </body>
 </html>
