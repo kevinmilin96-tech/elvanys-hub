@@ -151,7 +151,7 @@
 <script>
 const ZOK = () => localStorage.getItem('guilde-tuto') === 'fait'; // Zéphine : débloquée par le tutoriel (12/11)
 
-const VERSION = '20261114-210548';
+const VERSION = '20261114-210720';
 function verifieVersion() {
   fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
     v = (v || '').trim(); if (!v || v === VERSION || document.getElementById('majbar')) return;
@@ -164,16 +164,16 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261114-210548"></script>
-<script src="musique.js?v=20261114-210548"></script>
-<script src="rang.js?v=20261114-210548"></script>
-<script src="donnees.js?v=20261114-210548"></script>
-<script src="guide.js?v=20261114-210548"></script>
-<script src="odyssee.js?v=20261114-210548"></script>
-<script src="aventure.js?v=20261114-210548"></script>
-<script src="odyssee-sansfin.js?v=20261114-210548"></script>
-<script src="pantheon.js?v=20261114-210548"></script>
-<script src="chronique.js?v=20261114-210548"></script>
+<script src="cartes.js?v=20261114-210720"></script>
+<script src="musique.js?v=20261114-210720"></script>
+<script src="rang.js?v=20261114-210720"></script>
+<script src="donnees.js?v=20261114-210720"></script>
+<script src="guide.js?v=20261114-210720"></script>
+<script src="odyssee.js?v=20261114-210720"></script>
+<script src="aventure.js?v=20261114-210720"></script>
+<script src="odyssee-sansfin.js?v=20261114-210720"></script>
+<script src="pantheon.js?v=20261114-210720"></script>
+<script src="chronique.js?v=20261114-210720"></script>
 <script>
 // le moteur du Duel n'est pas chargé ici : les cartes de l'Odyssée appellent degats/soin seulement en combat (dans duel.html)
 const log = () => {}, degats = () => {}, soin = () => {}, altere = () => {}, invoque = () => {}, adv = () => ({}), fin = () => {};
@@ -353,6 +353,7 @@ function equipFen() {
   <div class="slots">${Object.keys(EMPLACEMENTS).map(pl => `<div class="slot"><small>${EMPLACEMENTS[pl]}</small><span class="e">${A.equip[pl] ? EQUIP[A.equip[pl]][1] : '·'}</span>${A.equip[pl] ? `<b>${EQUIP[A.equip[pl]][2]}</b><small>${EQUIP[A.equip[pl]][3]}</small>` : '<small>vide</small>'}</div>`).join('')}</div>
   <p><b>🎒 Le sac</b> (${A.sac.length}/${SAC_EQUIP}) ${A.sac.length ? '· touche un objet pour l’équiper' : ''}</p>
   <div class="choixv">${A.sac.map(k => `<button onclick="equipe(R,'${k}');sauve();dessine();equipFen()">${eqHTML(k)}</button>`).join('') || '<p style="color:var(--doux)">Vide. L’équipement se trouve sur les élites 💀 et les boss 👑.</p>'}</div>
+  ${(A.ameliore || []).length ? `<p><b>⭐ Cartes améliorées</b> (−1 PC) : ${A.ameliore.map(k => CARTES[k].n).join(', ')}</p>` : ''}
   ${A.bonus.length ? `<p><b>⭐ Mes bonus de niveau</b> : ${A.bonus.map(b => `${BONUS_NIV[b][0]} ${BONUS_NIV[b][1]}`).join(' · ')}</p>` : ''}
   <div class="choixh"><button onclick="fermer()">Fermer</button></div>`);
 }
@@ -384,10 +385,11 @@ function campRelique() {
 function campFeu(fait) {
   const A = R.aventure, suiv = ILES[ACTES_AV[A.chapitre]].nom;
   fenetre(`<h2>🏕 Le camp de la Guilde</h2><p>Avant de lever l’ancre pour <b>${suiv}</b> : ❤ ${R.pvMax} PV · ${R.deck.length} cartes · niveau ${A.niveau}. L’or ne voyage pas (tu repartiras avec 30), les faces forgées et l’équipement, si.</p>
-  <div class="choixv">${fait ? '' : `<button onclick="campRetirer()">🔥 Brûler une carte de mon deck<small>une seule, gratuite</small></button>`}<button onclick="equipFen()">🎒 Voir mon équipement</button></div>
+  <div class="choixv">${fait || A.bruleCamp === A.chapitre ? '' : `<button onclick="campRetirer()">🔥 Brûler une carte de mon deck<small>une seule, gratuite</small></button>`}${A.amelioreCamp === A.chapitre ? '' : `<button onclick="campAmeliorer()">⭐ Améliorer une carte<small>elle coûtera 1 PC de moins jusqu’à la fin de l’aventure</small></button>`}<button onclick="equipFen()">🎒 Voir mon équipement</button></div>
   <div class="choixh"><button class="or" onclick="partirIle()">⛵ Partir pour ${suiv}</button></div>`);
 }
-function campRetirer() { fenetre(`<h2>🔥 Brûler une carte</h2><div class="cartes3">${[...new Set(R.deck)].map(k => carteHTML(k, `retireCarte(R,'${k}');sauve();campFeu(true)`)).join('')}</div><div class="choixh"><button onclick="campFeu()">Retour</button></div>`); }
+function campAmeliorer() { const A = R.aventure, l = [...new Set(R.deck)].filter(k => CARTES[k].c >= 1 && !(A.ameliore || []).includes(k)); fenetre(`<h2>⭐ Améliorer une carte</h2><p style="font-size:.88em;color:var(--doux)">Elle coûtera 1 PC de moins, pour toute l’aventure (tous ses exemplaires).</p><div class="cartes3">${l.map(k => carteHTML(k, `ameliore(R,'${k}');R.aventure.amelioreCamp=R.aventure.chapitre;sauve();campFeu()`)).join('')}</div><div class="choixh"><button onclick="campFeu()">Retour</button></div>`); }
+function campRetirer() { fenetre(`<h2>🔥 Brûler une carte</h2><div class="cartes3">${[...new Set(R.deck)].map(k => carteHTML(k, `retireCarte(R,'${k}');R.aventure.bruleCamp=R.aventure.chapitre;sauve();campFeu()`)).join('')}</div><div class="choixh"><button onclick="campFeu()">Retour</button></div>`); }
 function partirIle() {
   const R2 = ileSuivante(R); if (!R2) return; R = R2; dejaDessine = new Set(); bulles = []; sauve(); fermer(); dessine();
   const c = caseA(R, R.pos.x, R.pos.y), A = R.aventure;

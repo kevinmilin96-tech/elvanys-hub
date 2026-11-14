@@ -680,7 +680,7 @@
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
 // 14/11 : l'Odyssée sans fin a ses propres emplacements (odyssee.js lit SANSFIN)
 const SANSFIN = new URLSearchParams(location.search).get('sansfin') === '1', ODY_PAGE = 'odyssee.html' + (SANSFIN ? '?sansfin=1' : '');
-const VERSION = '20261114-210548';
+const VERSION = '20261114-210720';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -699,13 +699,13 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261114-210548"></script>
-<script src="musique.js?v=20261114-210548"></script>
-<script src="rang.js?v=20261114-210548"></script>
-<script src="donnees.js?v=20261114-210548"></script>
-<script src="odyssee.js?v=20261114-210548"></script>
-<script src="aventure.js?v=20261114-210548"></script>
-<script src="chronique.js?v=20261114-210548"></script>
+<script src="cartes.js?v=20261114-210720"></script>
+<script src="musique.js?v=20261114-210720"></script>
+<script src="rang.js?v=20261114-210720"></script>
+<script src="donnees.js?v=20261114-210720"></script>
+<script src="odyssee.js?v=20261114-210720"></script>
+<script src="aventure.js?v=20261114-210720"></script>
+<script src="chronique.js?v=20261114-210720"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -831,6 +831,7 @@ function coutCarte(J, k) {
   const c = CARTES[k]; let n = c.c;
   if (S.salle.id === 'echos' && J.cartesJouees === 0) n = Math.max(0, n - 1);
   if (c.t === 'e' && J.forgeGratuite) n = 0;
+  if (J.ameliorees && J.ameliorees.includes(k)) n = Math.max(0, n - 1); // 14/11 nuit : carte améliorée au camp de la Grande aventure
   return n;
 }
 // les monstres de l'Odyssée ont leur propre Frappe (plus faible) ; les héros gardent la Frappe commune
@@ -2239,14 +2240,14 @@ async function joueFX() {
 // toucher l'écran pendant les animations les accélère
 document.addEventListener('pointerdown', () => { if (fxOn && !(S && S.tuto)) fxVite = .5; }, true); // 14/11 : plus d'accélération dans le tutoriel
 </script>
-<script src="profil.js?v=20261114-210548"></script>
-<script src="pantheon.js?v=20261114-210548"></script>
-<script src="tuto.js?v=20261114-210548"></script>
-<script src="deux.js?v=20261114-210548"></script>
-<script src="invasion.js?v=20261114-210548"></script>
-<script src="enigme-table.js?v=20261114-210548"></script>
-<script src="forge.js?v=20261114-210548"></script>
-<script src="semaine.js?v=20261114-210548"></script>
-<script src="enigme.js?v=20261114-210548"></script>
+<script src="profil.js?v=20261114-210720"></script>
+<script src="pantheon.js?v=20261114-210720"></script>
+<script src="tuto.js?v=20261114-210720"></script>
+<script src="deux.js?v=20261114-210720"></script>
+<script src="invasion.js?v=20261114-210720"></script>
+<script src="enigme-table.js?v=20261114-210720"></script>
+<script src="forge.js?v=20261114-210720"></script>
+<script src="semaine.js?v=20261114-210720"></script>
+<script src="enigme.js?v=20261114-210720"></script>
 </body>
 </html>

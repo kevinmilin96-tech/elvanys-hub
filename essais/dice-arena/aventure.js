@@ -43,7 +43,7 @@ function etatHeros(r) { return JSON.parse(JSON.stringify({ deck:r.deck, pvMax:r.
 function ileAventure(heros, acte, etat) {
   const r = nouvelleOdyssee(heros, null, acte, 0); if (!r) return null;
   if (etat) { Object.assign(r, { deck:etat.deck, pvMax:etat.pvMax, pv:etat.pvMax, reliques:etat.reliques, sacoche:etat.sacoche, benes:etat.benes, males:etat.males, forge:etat.forge }); r.aventure = etat.aventure; }
-  else r.aventure = { chapitre:1, niveau:1, equip:{ arme:null, armure:null, talisman:null }, sac:[], bonus:[], essais:0, debut:Date.now() };
+  else r.aventure = { chapitre:1, niveau:1, equip:{ arme:null, armure:null, talisman:null }, sac:[], bonus:[], ameliore:[], essais:0, debut:Date.now() };
   r.aventure.chapitre = ACTES_AV.indexOf(acte) + 1;
   // ce qui se gagne en arrivant sur l'île
   const A = r.aventure; let plus = [];
@@ -89,6 +89,7 @@ function equipVictoire(r, out) {
 function equipeCombat(J, O, run, log) {
   if (!run || !run.aventure) return;
   const A = run.aventure, eq = k => Object.values(A.equip).includes(k), L = [];
+  J.ameliorees = [...(A.ameliore || [])];
   if (eq('hache')) { J.pc = Math.min(6, J.pc + 2); L.push('🪓 Hache : +2 PC'); }
   if (eq('anneau')) { J.pc = Math.min(6, J.pc + 1); L.push('💍 Anneau des runes : +1 PC'); }
   if (nbBonus(run, 'pc')) { J.pc = Math.min(6, J.pc + nbBonus(run, 'pc')); L.push(`◆ Esprit vif : +${nbBonus(run, 'pc')} PC`); }
@@ -100,3 +101,5 @@ function equipeCombat(J, O, run, log) {
   if (eq('arc')) { O.pv = Math.max(1, O.pv - 5); L.push('🏹 Arc long : 5 dégâts'); }
   if (L.length && log) log(`🎒 Ton équipement · ${L.join(' · ')}.`);
 }
+// au camp : améliorer une carte (elle coûte 1 PC de moins pour toute l'aventure ; une par camp)
+function ameliore(r, k) { const A = r.aventure; A.ameliore = A.ameliore || []; if (!CARTES[k] || CARTES[k].c < 1 || A.ameliore.includes(k)) return false; A.ameliore.push(k); r.journal.push(`⭐ ${CARTES[k].n} améliorée : 1 PC de moins.`); return true; }
