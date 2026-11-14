@@ -137,7 +137,7 @@ const PORTRAIT_M = { 'Gobelin':'m-gobelin', 'Gobelin chef':'m-chefgobelin', 'Gob
 const artU = u => u.key === 'capitaine' ? IMG(u.hid) : u.key === 'm' ? (PORTRAIT_M[u.n] ? `portraits/${PORTRAIT_M[u.n]}.webp` : '') : `cartes/${ART_EXP[u.key] || u.key}.webp`;
 // où se tiennent les ennemis sur chaque décor (en % de l'écran : haut de la rangée du fond, haut de la rangée de devant, décalage horizontal)
 // 14/11 : les plateaux vus du dessus (s'il y en a un pour l'escale, il remplace le décor en perspective) : [rangée du fond, rangée de devant] des ennemis, puis de l'équipage
-const PLATEAUX_EXP = { crique:{ enn:[11, 26], equ:[63, 78] } };
+const PLATEAUX_EXP = { crique:{ enn:[11, 26], equ:[63, 78] }, falaises:{ enn:[13, 26], equ:[65, 79] }, port:{ enn:[15, 28], equ:[64, 78] }, foret:{ enn:[12, 24], equ:[67, 80] }, cratere:{ enn:[11, 25], equ:[64, 78] }, nid:{ enn:[16, 30], equ:[68, 81] } };
 const fondEscale = cle => PLATEAUX_EXP[cle] ? `decor/plateau-${cle}.webp?v=1` : `decor/escale-${cle}.webp?v=1`;
 const LIEU_ENN = { crique:[29, 41, 0], falaises:[27, 39, 14], port:[28, 39, 0], foret:[20, 31, 4], cratere:[25, 36, 0], nid:[18, 29, 0] };
 function medHTML(u, ennemi) {
