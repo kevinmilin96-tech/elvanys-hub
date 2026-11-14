@@ -133,6 +133,13 @@
   .sfbt button.or { background:#f3c96b; color:#2b1d0a; border:0; font-weight:bold; }
   body.sansfin .legende { display:none; } body.sansfin svg.ile { max-height:calc(100dvh - 370px); min-height:250px; width:auto; max-width:100%; margin-left:auto; margin-right:auto; } body.sansfin #pioche { margin-bottom:8px; } body.sansfin .bulles { margin-bottom:76px; min-height:0; } body.sansfin .bulles:empty { display:none; } body.sansfin .entete { padding:4px 8px; }
   .sftuiles.attente { opacity:.4; pointer-events:none; }
+  /* 14/11 (l'utilisateur : « je peux toujours faire défiler ; tout doit tenir sur la même page ») : le sans fin en colonne qui remplit l'écran */
+  body.sansfin { overflow:hidden; } body.sansfin #app { display:flex; flex-direction:column; height:calc(100dvh - 62px); overflow:hidden; }
+  body.sansfin #app > * { flex:none; } body.sansfin svg.ile { flex:1 1 0 !important; min-height:0 !important; max-height:none !important; height:auto !important; width:100% !important; aspect-ratio:auto !important; margin:4px 0 !important; }
+  body.sansfin .bulles { max-height:46px; min-height:0 !important; overflow:hidden; margin:4px 0 0 !important; padding:3px 6px; } body.sansfin .bulles .bulle:not(:last-child) { display:none; }
+  body.sansfin .bulles .bulle { font-size:.78em; } body.sansfin .bulles .bulle img, body.sansfin .bulles .bulle .avatar { width:26px; height:26px; }
+  body.sansfin #pioche { padding:6px 8px; } body.sansfin .sfent { font-size:.82em; margin-bottom:4px; } body.sansfin .sft small { font-size:.66em; }
+  .ico.fait { opacity:.62 !important; }
 </style>
 </head>
 <body>
@@ -141,7 +148,7 @@
 <script>
 const ZOK = () => localStorage.getItem('guilde-tuto') === 'fait'; // Zéphine : débloquée par le tutoriel (12/11)
 
-const VERSION = '20261114-194542';
+const VERSION = '20261114-194740';
 function verifieVersion() {
   fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
     v = (v || '').trim(); if (!v || v === VERSION || document.getElementById('majbar')) return;
@@ -154,14 +161,14 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261114-194542"></script>
-<script src="musique.js?v=20261114-194542"></script>
-<script src="donnees.js?v=20261114-194542"></script>
-<script src="guide.js?v=20261114-194542"></script>
-<script src="odyssee.js?v=20261114-194542"></script>
-<script src="odyssee-sansfin.js?v=20261114-194542"></script>
-<script src="pantheon.js?v=20261114-194542"></script>
-<script src="chronique.js?v=20261114-194542"></script>
+<script src="cartes.js?v=20261114-194740"></script>
+<script src="musique.js?v=20261114-194740"></script>
+<script src="donnees.js?v=20261114-194740"></script>
+<script src="guide.js?v=20261114-194740"></script>
+<script src="odyssee.js?v=20261114-194740"></script>
+<script src="odyssee-sansfin.js?v=20261114-194740"></script>
+<script src="pantheon.js?v=20261114-194740"></script>
+<script src="chronique.js?v=20261114-194740"></script>
 <script>
 // le moteur du Duel n'est pas chargé ici : les cartes de l'Odyssée appellent degats/soin seulement en combat (dans duel.html)
 const log = () => {}, degats = () => {}, soin = () => {}, altere = () => {}, invoque = () => {}, adv = () => ({}), fin = () => {};
