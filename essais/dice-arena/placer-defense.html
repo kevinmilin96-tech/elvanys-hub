@@ -12,7 +12,7 @@
   .ecran { height:100dvh; display:flex; flex-direction:column; }
   .haut { padding:6px 8px; font-size:12px; background:#1d1626; } .haut b { color:#f3c96b; }
   .vue { flex:1; min-height:0; overflow:auto; }
-  .plateau { position:relative; height:100%; margin:0 auto; aspect-ratio:768/1376; background:url('decor/fond-defense.webp?v=1') center/100% 100% no-repeat; }
+  .plateau { position:relative; height:100%; margin:0 auto; aspect-ratio:768/1376; background:url('decor/fond-defense.webp?v=2') center/100% 100% no-repeat; }
   .z { position:absolute; pointer-events:none; }
   .voie { border:2px dashed #ffb347; background:#ffb34722; border-radius:8px; }
   .voie i { position:absolute; left:0; right:0; border-top:1px dashed #ffb347aa; }
@@ -50,11 +50,11 @@
 <script>
 // Tout en % de l'image (x de 0 à 100 sur la largeur, y de 0 à 100 sur la hauteur). Valeurs de départ mesurées à l'œil sur decor/fond-defense.webp.
 const DEFAUT = {
-  chemin_haut:3, chemin_bas:47, largeur_chemin:17, voies:[22, 50, 79],
-  dalles:[[18, 57.5], [50, 57.5], [82, 57.5], [17, 68.5], [50, 68.5], [83, 68.5], [16, 80.5], [50, 80.5], [84, 80.5]], dalle:[18, 8],
-  porte:[50, 95],
+  chemin_haut:0, chemin_bas:49, largeur_chemin:15, voies:[18, 50, 82],
+  dalles:[[18, 61], [50, 61], [82, 61], [18, 74.5], [50, 74.5], [82, 74.5], [18, 88], [50, 88], [82, 88]], dalle:[17, 9.6],
+  porte:[50, 98],
 };
-const CLE = 'guilde-placement-defense';
+const CLE = 'guilde-placement-defense-v2'; // fond v2 (vu du dessus) : on repart des nouvelles valeurs
 let R = (() => { try { return { ...JSON.parse(JSON.stringify(DEFAUT)), ...JSON.parse(localStorage.getItem(CLE) || '{}') }; } catch (e) { return JSON.parse(JSON.stringify(DEFAUT)); } })();
 const sauve = () => localStorage.setItem(CLE, JSON.stringify(R));
 const pl = document.getElementById('pl'); let choisi = null, PAS = .1;

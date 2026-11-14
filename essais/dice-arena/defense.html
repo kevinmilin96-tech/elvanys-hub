@@ -27,7 +27,7 @@
   .chemin { display:grid; grid-template-columns:repeat(3, 1fr); gap:4px; margin:6px 0 3px; background:linear-gradient(180deg, #2a1d10, #3a2a14); border-radius:12px; padding:5px; }
   .cc { height:52px; border-radius:8px; background:#0003; border:1px dashed #c9893f55; display:flex; flex-wrap:wrap; gap:2px; align-items:center; justify-content:center; position:relative; }
   .mo { min-width:44px; height:44px; background:#2a1414; border:2px solid #b84a3a; border-radius:9px; display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:.62em; position:relative; padding:1px 2px; }
-  .mo .e { font-size:2em; line-height:1; } .mo img.e { width:30px; height:30px; border-radius:50%; object-fit:cover; } .mo.boss img.e { width:42px; height:42px; } .rc img.tourimg { width:64%; aspect-ratio:1; margin-top:-26%; position:relative; z-index:1; filter:drop-shadow(0 4px 3px #000b); } .rc img.tourde { position:absolute; left:3px; bottom:3px; width:26%; z-index:2; border-radius:5px; box-shadow:0 1px 3px #000; } .rc img.runeimg { width:86%; height:86%; object-fit:contain; border-radius:8px; animation:pulse 1.6s infinite; } .mo .pv { color:#ffd0c0; font-weight:bold; }
+  .mo .e { font-size:2em; line-height:1; } .mo img.e { width:30px; height:30px; border-radius:50%; object-fit:cover; } .mo.boss img.e { width:42px; height:42px; } .rc img.canon { width:96%; aspect-ratio:1; transform-origin:50% 57%; transition:transform .18s ease-out; filter:drop-shadow(0 3px 2px #000b); } .rc img.canon.recul { scale:.9; } .rc img.tourimg { width:64%; aspect-ratio:1; margin-top:-26%; position:relative; z-index:1; filter:drop-shadow(0 4px 3px #000b); } .rc img.tourde { position:absolute; left:3px; bottom:3px; width:26%; z-index:2; border-radius:5px; box-shadow:0 1px 3px #000; } .rc img.runeimg { width:86%; height:86%; object-fit:contain; border-radius:8px; animation:pulse 1.6s infinite; } .mo .pv { color:#ffd0c0; font-weight:bold; }
   .mo.boss { border-color:var(--or); background:#3a1a08; min-width:60px; } .mo.boss .e { font-size:2.4em; }
   .mo.cible { box-shadow:0 0 0 3px var(--or), 0 0 14px var(--or); }
   .mo .vit { position:absolute; top:-6px; right:-5px; font-size:1.1em; }
@@ -43,7 +43,7 @@
   .porte { text-align:center; margin:4px 0; background:linear-gradient(180deg, #5a3a1a, #3a2410); border:2px solid var(--or); border-radius:10px; padding:3px; font-size:.85em; }
   .porte.touche { animation:tremble .4s; }
   /* 14/11 : plateau peint */
-  .plateauD { position:relative; width:min(100%, calc((100dvh - 330px) * .558)); min-width:250px; aspect-ratio:768/1376; margin:5px auto; background:url('decor/fond-defense.webp?v=1') center/100% 100% no-repeat; border-radius:10px; }
+  .plateauD { position:relative; width:min(100%, calc((100dvh - 330px) * .558)); min-width:250px; aspect-ratio:768/1376; margin:5px auto; background:url('decor/fond-defense.webp?v=2') center/100% 100% no-repeat; border-radius:10px; }
   .plateauD .cc { position:absolute; height:auto; border:0; background:none; border-radius:6px; }
   .plateauD .rc { position:absolute; aspect-ratio:auto; background:none; }
   .plateauD .rc:not(.ok):not(.sel):not(.rune) { border-color:transparent; }
@@ -86,10 +86,10 @@
 <body>
 <div id="app"></div>
 <div id="fen"></div>
-<script src="cartes.js?v=20261114-134550"></script>
-<script src="musique.js?v=20261114-134550"></script>
-<script src="donnees.js?v=20261114-134550"></script>
-<script src="defense-moteur.js?v=20261114-134550"></script>
+<script src="cartes.js?v=20261114-135151"></script>
+<script src="musique.js?v=20261114-135151"></script>
+<script src="donnees.js?v=20261114-135151"></script>
+<script src="defense-moteur.js?v=20261114-135151"></script>
 <script>
 // =============================================================================================== LA DÉFENSE DE LA PORTE · l'ÉCRAN (13/11)
 // Règles : defense-proposition.html (validées le 13/11). Moteur : defense-moteur.js.
@@ -122,7 +122,8 @@ function vagueAnnonce() { const v = D.fx.find(f => f.t === 'vague'); if (v) GM.s
 const IMG_D = { chauve:'portraits/d-chauve.webp?v=1', gobelin:'portraits/d-gobelin.webp?v=1', sanglier:'portraits/d-sanglier.webp?v=1', bouclier:'portraits/d-bouclier.webp?v=1', titan:'portraits/m-titan.webp?v=1' };
 const RUNE_IMG = { maelle:'portraits/rune-enclume.webp?v=2', gorm:'portraits/rune-cor.webp?v=1' };
 // 14/11 : le fond peint de la Défense (decor/fond-defense.webp) ; chemins, dalles et porte placés par l'utilisateur (placer-defense.html → « PLACEMENT DEFENSE {…} », recopié ici tel quel)
-const PD = {"chemin_haut":3,"chemin_bas":47,"largeur_chemin":17,"voies":[22,50,79],"dalles":[[18,57.5],[50,57.5],[82,57.5],[17,68.5],[50,68.5],[83,68.5],[16,80.5],[50,80.5],[84,80.5]],"dalle":[18,8],"porte":[50,95]}; // valeurs de départ de Claude, EN ATTENDANT le placement de l'utilisateur
+const PD = {"chemin_haut":0,"chemin_bas":49,"largeur_chemin":15,"voies":[18,50,82],"dalles":[[18,61],[50,61],[82,61],[18,74.5],[50,74.5],[82,74.5],[18,88],[50,88],[82,88]],"dalle":[17,9.6],"porte":[50,98]}; // fond v2 (vu du dessus) : valeurs mesurées par Claude, EN ATTENDANT le placement de l'utilisateur
+const ANGLE = {}; // 14/11 : l'angle de chaque canon (il garde la direction de son dernier tir)
 const posCC = (r, col) => { const h = (PD.chemin_bas - PD.chemin_haut) / 4; return `left:${PD.voies[col] - PD.largeur_chemin / 2}%;width:${PD.largeur_chemin}%;top:${PD.chemin_haut + r * h}%;height:${h}%`; };
 const posRC = c => { const d = PD.dalles[c]; return `left:${d[0] - PD.dalle[0] / 2}%;width:${PD.dalle[0]}%;top:${d[1] - PD.dalle[1] / 2}%;height:${PD.dalle[1]}%`; };
 function rendu() {
@@ -142,7 +143,7 @@ function rendu() {
   <div class="${PD ? 'rempartD' : 'rempart'}">${D.rempart.map((t, c) => { const okVide = !t && un && !attente && D.pc >= DEF.coutBatir; const okFus = t && !t.rune && ((un && un.v === t.v && !attente) || (selTour >= 0 && selTour !== c && voisinsD(selTour).includes(c) && D.rempart[selTour] && D.rempart[selTour].v === t.v && !D.rempart[selTour].rune));
       const okDep = !t && selTour >= 0 && !D.deplace && voisinsD(selTour).includes(c);
       if (!t) return `<div class="rc vide ${okVide || okDep ? 'ok' : ''}" data-c="${c}" style="${PD ? posRC(c) : ''}" onclick="toucheCase(${c})"></div>`;
-      return `<div class="rc ${t.rune ? 'rune' : ''} ${selTour === c ? 'sel' : ''} ${okFus || besoinTour ? 'ok' : ''}" data-c="${c}" style="${PD ? posRC(c) : ''}" onclick="toucheCase(${c})">${t.rune ? (RUNE_IMG[D.heros] ? `<img class="runeimg" src="${RUNE_IMG[D.heros]}" alt="">` : '<span class="glyphe">ᚱ</span>') : `<img class="tourimg" src="tours/tour-${D.heros}-${t.v <= 2 ? 1 : t.v <= 4 ? 2 : 3}.webp?v=1" alt="Tour de ${t.v}"><img class="tourde" src="${FACE(D.heros, t.v)}" alt="${t.v}">`}<span class="pw">${puissanceTour(D, c, t)}</span>${t.bonus ? `<span class="bn">+${t.bonus}</span>` : ''}</div>`; }).join('')}</div>
+      return `<div class="rc ${t.rune ? 'rune' : ''} ${selTour === c ? 'sel' : ''} ${okFus || besoinTour ? 'ok' : ''}" data-c="${c}" style="${PD ? posRC(c) : ''}" onclick="toucheCase(${c})">${t.rune ? (RUNE_IMG[D.heros] ? `<img class="runeimg" src="${RUNE_IMG[D.heros]}" alt="">` : '<span class="glyphe">ᚱ</span>') : `<img class="canon" src="tours/canon-${D.heros}-${t.v <= 2 ? 1 : t.v <= 4 ? 2 : 3}.webp?v=2" alt="Canon de ${t.v}" style="transform:rotate(${ANGLE[c] || 0}deg)"><img class="tourde" src="${FACE(D.heros, t.v)}" alt="${t.v}">`}<span class="pw">${puissanceTour(D, c, t)}</span>${t.bonus ? `<span class="bn">+${t.bonus}</span>` : ''}</div>`; }).join('')}</div>
   ${PD ? `<div class="porte porteD" id="porte" style="left:${PD.porte[0]}%;top:${PD.porte[1]}%">🚪 ${D.porte}/${D.porteMax}</div></div>` : '<div class="porte" id="porte">🚪 La porte de la Guilde</div>'}
   <div class="msg ${err ? 'err' : ''}">${msg}</div>
   <div class="des">${D.des.map((d, i) => `<div class="de ${d.pose ? 'pose' : ''} ${sel.includes(d) ? 'sel' : ''} ${besoinDe && !d.pose && !sel.includes(d) ? 'cible' : ''}" onclick="toucheDe(${i})"><img src="${FACE(D.heros, d.v)}" alt="${d.v}"></div>`).join('')}</div>
@@ -242,7 +243,12 @@ function animeTirs(pvAvant, ensuite) {
   tirs.forEach((t, k) => setTimeout(() => {
     const tour = app.querySelector(`[data-c="${t.c}"]`); if (!tour) return;
     tour.classList.remove('tire'); void tour.offsetWidth; tour.classList.add('tire'); if (k % 2 === 0) GM.son('tir', .5);
-    const [x0, y0] = centre(tour), y0h = y0 - tour.getBoundingClientRect().height * .35;
+    const can = tour.querySelector('img.canon'), cible0 = app.querySelector(`[data-m="${(t.touches[0] || t).id}"]`);
+    let [x0, y0] = centre(tour), y0h = y0;
+    if (can && cible0) { const [xc, yc] = centre(cible0), a = Math.atan2(xc - x0, -(yc - y0)) * 180 / Math.PI; ANGLE[t.c] = Math.round(a); can.style.transform = `rotate(${ANGLE[t.c]}deg)`;
+      const L = tour.getBoundingClientRect().width * .32; x0 += Math.sin(a * Math.PI / 180) * L; y0h = y0 - Math.cos(a * Math.PI / 180) * L;
+      setTimeout(() => { can.classList.add('recul'); setTimeout(() => can.classList.remove('recul'), 120); }, 1); }
+    else y0h = y0 - tour.getBoundingClientRect().height * .35;
     (t.touches.length ? t.touches : [{ id:t.id }]).forEach(h => {
       const m = app.querySelector(`[data-m="${h.id}"]`); if (!m) return; const [x1, y1] = centre(m);
       const b = document.createElement('div'); b.className = 'projectile' + (t.rune ? ' rune' : '');
