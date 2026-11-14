@@ -686,7 +686,10 @@ function finOdysseeRun(r, gagne) {
   const duree = Math.round((Date.now() - r.debut) / 60000);
   const score = r.stats.victoires * 50 + r.stats.cases * 5 + r.or + (gagne ? 300 : 0) + r.stats.defis * 30 - r.stats.tours * 2;
   const base = deckBase(r.heros), nouvelles = r.deck.filter(k => !base.includes(k) && rarete(k) !== 'm');
+  // 14/11 (vu par l'utilisateur : « 10 cartes » puis 13 noms, avec des doublons) : on liste seulement les cartes vraiment nouvelles dans la collection, une fois chacune
+  const avant = typeof localStorage !== 'undefined' ? lireCollection() : [];
   const ajoutees = typeof localStorage !== 'undefined' ? ajouteCollection([...new Set([...nouvelles, ...r.stats.cartesVues])]) : 0;
+  const neuves = typeof localStorage !== 'undefined' ? lireCollection().filter(k => !avant.includes(k)) : [];
   if (gagne && typeof localStorage !== 'undefined') { const a = actesFaits(); a[r.acte || 'brulees'] = true; localStorage.setItem(ACTES_CLE, JSON.stringify(a)); }
   let ascNouveau = 0, premiereFin = false, inscrit = null, briseMiroir = false;
   if (gagne && typeof localStorage !== 'undefined') {
@@ -697,7 +700,7 @@ function finOdysseeRun(r, gagne) {
   }
   const rec = { quand:new Date().toISOString(), acte:r.acte || 'brulees', asc:r.asc || 0, heros:r.heros, gagne, score, cases:r.stats.cases, combats:r.stats.combats, victoires:r.stats.victoires, tours:r.stats.tours, defis:r.stats.defis, or:r.or, duree, graine:r.graine, pv:r.pv };
   if (typeof localStorage !== 'undefined') { const l = lireRecords(); l.unshift(rec); localStorage.setItem(RECORDS_CLE, JSON.stringify(l.slice(0, 50))); ecrireOdyssee(null); }
-  return { ...rec, ajoutees, nouvelles, ascNouveau, premiereFin, inscrit, briseMiroir };
+  return { ...rec, ajoutees, nouvelles:neuves, ascNouveau, premiereFin, inscrit, briseMiroir };
 }
 
 // ----------------------------------------------------------------------------------------------- pilote automatique (simulations d'équilibrage : l'ordinateur explore l'île)
