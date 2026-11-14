@@ -30,7 +30,7 @@ const CARTES = {
   estocade: { n:'Estocade royale', t:'s', c:2, txt:'3 dés qui se suivent', d:'9 dégâts à une cible.', cond:vs => suite(vs, 3), cible:'ennemi', f:(J, vs, k) => degats(k, 9), ia:() => 45 },
   gardien:  { n:'Gardien de la porte', t:'u', c:3, txt:'2 dés identiques', d:'Unité 3 / 7, Barrière. +1 PC quand il est attaqué.', cond:vs => vs.length === 2 && egaux(vs), u:{ n:'Gardien', a:3, v:7, barriere:true, gardien:true } },
   banniere: { n:'Bannière de l’aube', t:'e', c:2, txt:'dé pair', d:'Tes unités Barrière ont +2 attaque.', cond:vs => un(vs) && pair(vs[0]), f:J => { J.banniere = true; log(`${J.nom} lève la Bannière de l’aube.`); }, ia:J => J.banniere ? 0 : 12 + 8 * J.front.filter(u => u.barriere).length },
-  contre:   { n:'Contre-attaque', t:'r', c:1, txt:'dé = 6', d:'Garde : la 1re unité qui t’attaque subit d’abord 6 dégâts.', cond:vs => un(vs) && vs[0] === 6, f:J => { J.contre = true; }, ia:J => adv(J).front.length ? 26 : 2 },
+  contre:   { n:'Contre-attaque', t:'r', c:1, txt:'dé = 6', d:'Garde : la 1re CRÉATURE qui t’attaque subit d’abord 6 dégâts (pas le héros adverse). Dure jusqu’à ton prochain tour.', cond:vs => un(vs) && vs[0] === 6, f:J => { J.contre = true; }, ia:J => adv(J).front.length ? 26 : 2 },
   releve:   { n:'Relève de la garde', t:'s', c:0, txt:'dé ≤ 2', d:'Rends toute sa vie à une de tes unités Barrière.', cond:vs => un(vs) && vs[0] <= 2, cible:'barriereA', f:(J, vs, k) => { k.u.v = k.u.vmax; log(`${k.u.n} retrouve toute sa vie.`); }, ia:J => J.front.some(u => u.barriere && u.v < u.vmax - 2) ? 22 : 0 },
   // ---- Pip
   ronces:   { n:'Pousse de ronces', t:'u', c:1, txt:'dé ≤ 2', d:'Unité 0 / 4, Barrière, Épines 1.', cond:vs => un(vs) && vs[0] <= 2, u:{ n:'Ronces', a:0, v:4, barriere:true, epines:1 } },
