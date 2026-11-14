@@ -10,8 +10,8 @@ const SF_COURT = { droit:'droit', virage:'virage', te:'T', croix:'carrefour', sa
 const tourne = (o, n) => { let r = o.slice(); for (let i = 0; i < ((n % 4) + 4) % 4; i++) r = [r[3], r[0], r[1], r[2]]; return r; };
 // la pioche : 40 tuiles (contenus de l'Odyssée), formes au hasard (les salles fortes plutôt en cul-de-sac ou en T)
 function sfSac(R) {
-  const contenus = [...Array(12).fill('monstre'), ...Array(3).fill('elite'), ...Array(3).fill('coffre'), ...Array(3).fill('source'), 'marchand', 'feu', 'feu', 'autel',
-    ...Array(5).fill('evenement'), 'sac', 'forge', ...Array(8).fill('chemin')];
+  const contenus = [...Array(12).fill('monstre'), ...Array(3).fill('elite'), ...Array(3).fill('coffre'), ...Array(3).fill('source'), 'marchand', 'marchand', 'marchand', 'feu', 'feu', 'autel',
+    ...Array(5).fill('evenement'), 'sac', 'forge', ...Array(6).fill('chemin')]; // 14/11 : 3 marchands (l'utilisateur avait 400 or sans rien pouvoir acheter)
   return brasse(R, contenus).map(t => {
     const r = R(), f = t === 'chemin' ? (r < .35 ? 'droit' : r < .7 ? 'virage' : r < .9 ? 'te' : 'croix')
       : (r < .3 ? 'salle' : r < .55 ? 'te' : r < .8 ? 'virage' : r < .92 ? 'droit' : 'croix');
@@ -39,6 +39,8 @@ function relies(cases, x, y, a, b) {
 function sfOffre(r) {
   const S = r.sansfin; while (S.offre.length < 3) { if (!S.pioche.length) S.pioche = sfSac(hasard(r)); S.offre.push(S.pioche.shift()); }
   if (r.fragments >= 2 && !S.offre.some(t => t.t === 'boss') && !S.bossFait) S.offre[2] = { t:'boss', f:'salle', id:'boss' };
+  // un marchand se présente si on n'en a pas croisé depuis 10 tuiles
+  const dernier = S.dernierMarchand || 0; if (S.poses - dernier >= 10 && !S.offre.some(t => t.t === 'marchand')) { S.offre[1] = { t:'marchand', f:'te', id:'m' + S.poses }; S.dernierMarchand = S.poses; }
 }
 // où cette tuile (tournée de n quarts) peut-elle se poser ? cases vides, raccordées par au moins une sortie, sans contredire une voisine
 function sfPlaces(r, tuile, n, libre) {
@@ -75,6 +77,7 @@ function sfPose(r, i, n, x, y) {
   if (t.t === 'elite') { c.niv = 2; const s = ['heros', 'monstre', 'heros'][S.elites++ % 3]; if (s === 'monstre') c.ennemi = tire(R, I.elites); else { c.ennemi = 'heros'; c.renfort = tire(R, ['pc', 'pv', 'bouclier']); } }
   if (t.t === 'evenement') { const deja = r.ile.flat().map(k => k.ev).filter(Boolean), l = EVENEMENTS.filter(e => (I.evenements ? I.evenements.includes(e.id) : !e.ile) && !deja.includes(e.id)); c.ev = (l.length ? tire(R, l) : tire(R, EVENEMENTS.filter(e => !e.ile))).id; }
   if (t.t === 'boss') { c.ennemi = I.boss; c.niv = 1; S.bossFait = true; }
+  if (t.t === 'marchand') S.dernierMarchand = S.poses;
   S.offre.splice(i, 1); sfOffre(r);
   r.journal.push(`🧩 ${SF_NOM_FORME[t.f]}${t.t !== 'chemin' ? ' · ' + SALLES_ODY[t.t].n : ''} posé.`);
   return c;
