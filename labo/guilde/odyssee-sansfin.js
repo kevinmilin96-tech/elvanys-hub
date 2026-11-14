@@ -86,7 +86,7 @@ function sfPose(r, i, n, x, y) {
   if (t.t === 'monstre') { c.niv = S.poses <= 10 ? 1 : S.poses <= 22 ? 2 : 3; /* 14/11 nuit : 6 / 14 avant (simulateur : 1er étage passé 18 % seulement) */ c.ennemi = tire(R, I.pools[c.niv - 1]); }
   if (t.t === 'elite') { c.niv = 2; const s = ['heros', 'monstre', 'heros'][S.elites++ % 3]; if (s === 'monstre') c.ennemi = tire(R, I.elites); else { c.ennemi = 'heros'; c.renfort = tire(R, ['pc', 'pv', 'bouclier']); } }
   if (t.t === 'evenement') { const deja = r.ile.flat().map(k => k.ev).filter(Boolean), l = EVENEMENTS.filter(e => (I.evenements ? I.evenements.includes(e.id) : !e.ile) && !deja.includes(e.id) && !SF_SANS_EVENEMENT.includes(e.id)); c.ev = (l.length ? tire(R, l) : tire(R, EVENEMENTS.filter(e => !e.ile))).id; }
-  if (t.t === 'boss') { c.ennemi = I.boss; c.niv = 1; S.bossFait = true; }
+  if (t.t === 'boss') { c.ennemi = I.boss2 && R() < .5 ? I.boss2 : I.boss; c.niv = 1; S.bossFait = true; S.bossId = c.ennemi; } // 14/11 nuit : un boss sur deux est le second boss de l'île (bestiaire.js)
   // 14/11 nuit : les salles rares. Le coffre piège cache un monstre fort ; la salle du défi, un combat à contrainte ; le trésor et la fontaine se règlent à l'écran
   if (t.t === 'mimique') { c.niv = 3; c.ennemi = tire(R, I.elites); }
   if (t.t === 'defi') { c.niv = 2; c.ennemi = tire(R, I.pools[1]); }

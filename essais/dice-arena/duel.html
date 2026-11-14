@@ -680,7 +680,7 @@
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
 // 14/11 : l'Odyssée sans fin a ses propres emplacements (odyssee.js lit SANSFIN)
 const SANSFIN = new URLSearchParams(location.search).get('sansfin') === '1', ODY_PAGE = 'odyssee.html' + (SANSFIN ? '?sansfin=1' : '');
-const VERSION = '20261114-211205';
+const VERSION = '20261114-212829';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -699,14 +699,15 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261114-211205"></script>
-<script src="musique.js?v=20261114-211205"></script>
-<script src="rang.js?v=20261114-211205"></script>
-<script src="donnees.js?v=20261114-211205"></script>
-<script src="odyssee.js?v=20261114-211205"></script>
-<script src="aventure.js?v=20261114-211205"></script>
-<script src="odyssee-sansfin.js?v=20261114-211205"></script>
-<script src="chronique.js?v=20261114-211205"></script>
+<script src="cartes.js?v=20261114-212829"></script>
+<script src="musique.js?v=20261114-212829"></script>
+<script src="rang.js?v=20261114-212829"></script>
+<script src="donnees.js?v=20261114-212829"></script>
+<script src="odyssee.js?v=20261114-212829"></script>
+<script src="bestiaire.js?v=20261114-212829"></script>
+<script src="aventure.js?v=20261114-212829"></script>
+<script src="odyssee-sansfin.js?v=20261114-212829"></script>
+<script src="chronique.js?v=20261114-212829"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -788,7 +789,9 @@ function degats(k, n, ignore) {
       const b = Math.min(J.bouclier, r); J.bouclier -= b; r -= b;
       if (g + b) log(`Les boucliers de ${J.nom} absorbent ${g + b}.`); abs = g + b; if (S.bilan && J === S.J) S.bilan.abs += g + b;
     }
+    const pt = typeof particularite === 'function' && particularite(J); if (pt && pt.recoit) r = Math.max(0, pt.recoit(J, r));
     J.pv -= r; log(r ? `${J.nom} perd ${r} PV.` : `${J.nom} ne perd aucun PV.`);
+    if (pt && pt.apres) pt.apres(J, r);
     if (HEROS[J.id].phases && J.pv > 0) phaseBoss(J);
     fx({ t:'degat', c:ref(k), n:r, abs, pv:Math.max(0, J.pv), garde:J.gardeB, bouclier:J.bouclier });
     if (r > 0) { J.degSubis = (J.degSubis || 0) + r; while (J.degSubis >= JAUGE.parDegats) { J.degSubis -= JAUGE.parDegats; remplit(J, 1); } }
@@ -818,6 +821,7 @@ function debutTour(J) {
   if (J.tours > 1) { J.pc = Math.min(6, J.pc + 1); pioche(J, 1); if (J === S.J && !S.auto && !J.ordi) son('pioche'); }
   if (J.saigne) { log(`${J.nom} saigne : −${J.saigne * 2} PV.`); J.pv -= J.saigne * 2; fx({ t:'degat', c:ref({ J }), n:J.saigne * 2, abs:0, pv:Math.max(0, J.pv), mot:'Saignement' }); fin(); }
   if (J.poison) { log(`${J.nom} : Poison, −${J.poison} PV.`); J.pv -= J.poison; fx({ t:'degat', c:ref({ J }), n:J.poison, abs:0, pv:Math.max(0, J.pv), mot:'Poison', vert:true }); J.poison--; fin(); }
+  { const pt = typeof particularite === 'function' && particularite(J); if (pt && pt.debut && J.pv > 0 && !S.fini) pt.debut(J); } // 14/11 nuit : la particularité du monstre (bestiaire.js)
   let n = Math.min(J.desMax || 5, J.tours + 2);
   const base = n; J.neuf = (J.tours > 1 && base > (J.nbBase || 0)) ? base - 1 : -1; if (J === S.J && J.neuf >= 0) fx({ t:'nouveauDe', n:base }); J.nbBase = base;
   if (J.handicap) { n--; J.handicap = 0; log(`Handicap : ${J.nom} lance un dé de moins.`); }
@@ -2281,14 +2285,14 @@ async function joueFX() {
 // toucher l'écran pendant les animations les accélère
 document.addEventListener('pointerdown', () => { if (fxOn && !(S && S.tuto)) fxVite = .5; }, true); // 14/11 : plus d'accélération dans le tutoriel
 </script>
-<script src="profil.js?v=20261114-211205"></script>
-<script src="pantheon.js?v=20261114-211205"></script>
-<script src="tuto.js?v=20261114-211205"></script>
-<script src="deux.js?v=20261114-211205"></script>
-<script src="invasion.js?v=20261114-211205"></script>
-<script src="enigme-table.js?v=20261114-211205"></script>
-<script src="forge.js?v=20261114-211205"></script>
-<script src="semaine.js?v=20261114-211205"></script>
-<script src="enigme.js?v=20261114-211205"></script>
+<script src="profil.js?v=20261114-212829"></script>
+<script src="pantheon.js?v=20261114-212829"></script>
+<script src="tuto.js?v=20261114-212829"></script>
+<script src="deux.js?v=20261114-212829"></script>
+<script src="invasion.js?v=20261114-212829"></script>
+<script src="enigme-table.js?v=20261114-212829"></script>
+<script src="forge.js?v=20261114-212829"></script>
+<script src="semaine.js?v=20261114-212829"></script>
+<script src="enigme.js?v=20261114-212829"></script>
 </body>
 </html>
