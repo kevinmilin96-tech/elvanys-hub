@@ -665,6 +665,11 @@
   .barre .etat { position:relative; width:32px; height:32px; border-radius:50%; background:radial-gradient(#3a2f5a, #15132b); border:2px solid #f3c96b; display:grid; place-items:center; font-size:17px; box-shadow:0 0 10px #f3c96b88; animation:etatbrille 1.6s ease-in-out infinite; cursor:pointer; }
   .barre .etat b { position:absolute; right:-6px; bottom:-5px; background:#b91c1c; color:#fff; border-radius:99px; font:bold 11px/1 Georgia, serif; padding:2px 4px; }
   @keyframes etatbrille { 50% { box-shadow:0 0 18px #f3c96bcc; } }
+  /* 14/11 : les dés de l'ennemi pendant son tour, dans la colonne de droite */
+  .des.desennemi { gap:1.2cqh !important; } .des .desetiq { font-size:2.3cqw; color:#ff9d8a; text-align:center; text-shadow:0 1px 2px #000; line-height:1.1; }
+  .des .deO { width:9cqw; height:9cqw; margin:0 auto; border-radius:18%; box-shadow:0 0 10px #ff4a2e99; transition:opacity .3s, transform .3s; }
+  .des .deO img, .des .deO svg { width:100%; height:100%; display:block; border-radius:18%; } .des .deO img { outline:2px solid #ff6b5a; }
+  .des .deO.utilise { opacity:.3; transform:scale(.85); filter:grayscale(.6); } .des .deO.roule { animation:deroule .5s ease-out; } @keyframes deroule { from { transform:rotate(-200deg) scale(.6); } }
 </style>
 </head>
 <body>
@@ -675,7 +680,7 @@
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
 // 14/11 : l'Odyssée sans fin a ses propres emplacements (odyssee.js lit SANSFIN)
 const SANSFIN = new URLSearchParams(location.search).get('sansfin') === '1', ODY_PAGE = 'odyssee.html' + (SANSFIN ? '?sansfin=1' : '');
-const VERSION = '20261114-201832';
+const VERSION = '20261114-202014';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -694,11 +699,11 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261114-201832"></script>
-<script src="musique.js?v=20261114-201832"></script>
-<script src="donnees.js?v=20261114-201832"></script>
-<script src="odyssee.js?v=20261114-201832"></script>
-<script src="chronique.js?v=20261114-201832"></script>
+<script src="cartes.js?v=20261114-202014"></script>
+<script src="musique.js?v=20261114-202014"></script>
+<script src="donnees.js?v=20261114-202014"></script>
+<script src="odyssee.js?v=20261114-202014"></script>
+<script src="chronique.js?v=20261114-202014"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -867,6 +872,9 @@ function permis(J, quoi, vs, ds) {
   if (quoi === 'echo' && !echoPossible(J)) return false; // 13/11 soir : Écho sans Sort à rejouer partait dans le vide
   return J.pc >= coutCarte(J, quoi) && c.cond(vs, ds);
 }
+// 14/11 (l'utilisateur : « je veux voir les dés de l'ennemi : la colonne de droite est inutile pendant son tour ») :
+// on note l'état de ses dés (lancés, relancés, posés) dans la file d'animations ; joue1 les dessine dans la colonne de droite
+function desO(quoi) { if (S && S.O && !S.coop) fx({ t:'desO', quoi:quoi || '', v:S.O.des.map(d => d.v), p:S.O.des.map(d => !!d.pose), id:S.O.id }); }
 function pose(J, quoi, ds, k, indexMain) {
   const vs = vals(ds); S.acteur = J; if (J === S.J && !S.auto && !J.ordi && quoi !== 'pcRelance') son('poser');
   if (quoi === 'pcRelance') { J.pc -= 1; const a = ds[0].v; lance(J, ds[0]); log(`${J.nom} paie 1 PC et relance un ${a} : ${ds[0].v}.`); return; }
@@ -874,6 +882,7 @@ function pose(J, quoi, ds, k, indexMain) {
   if (quoi === 'pcSoins') { J.pc -= 2; J.poison = 0; J.souillure = 0; J.saigne = 0; J.handicap = 0; log(`${J.nom} paie 2 PC : Premiers soins, plus aucune altération.`); return; }
   if (quoi === 'transmu') { J.transmu = true; const d = ds[0]; const a = d.v; modifie(J, d, opp(a)); log(`${J.nom} transmute un ${a} en ${d.v}.`); return; }
   ds.forEach(d => { d.pose = true; });
+  if (J === S.O && !S.coop) desO();
   const h = HEROS[J.id]; J.dernier = quoi;
   if (S.coop && J !== S.O && vs.length >= 3 && S.cohesion < COHESION.max) { S.cohesion++; log(`🤝 Cohésion ${S.cohesion}/${COHESION.max}.`); }
   if (quoi === 'garde' && vs.includes(6)) J.garde6 = true;
@@ -1057,7 +1066,7 @@ function achatsAuto(J) { }
 function joueOrdi() {
   fx({ t:'tour', s:'O', nom:S.O.nom });
   S.bilan = { actions:[], gardes:[], pv0:S.J.pv, pvO0:S.O.pv, abs:0, front0:S.J.front.length };
-  debutTour(S.O); if (S.coop) sbiresCamp(); if (!S.fini) joueAuto(S.O);
+  debutTour(S.O); if (!S.coop) desO(); if (S.coop) sbiresCamp(); if (!S.fini) joueAuto(S.O);
   const b = S.bilan; S.bilan = null;
   if (!S.fini) fx({ t:'recap', nom:S.O.nom, actions:b.actions, gardes:b.gardes, perdu:b.pv0 - S.J.pv, abs:b.abs, soinO:S.O.pv - b.pvO0, morts:b.front0 - S.J.front.length });
 }
@@ -1071,7 +1080,7 @@ function joueAuto(J) {
     const garder = b ? b.ds : [];
     const re = J.des.filter(d => !d.pose && !garder.includes(d) && !(J.id === 'pip' && (d.v === 4 || d.v === 5)));
     if (!re.length) break;
-    re.forEach(d => lance(J, d)); J.relance--; log(`${J.nom} relance ${re.length} dé(s) : ${J.des.map(d => d.v).join(' · ')}`);
+    re.forEach(d => lance(J, d)); J.relance--; log(`${J.nom} relance ${re.length} dé(s) : ${J.des.map(d => d.v).join(' · ')}`); if (J === S.O && !S.coop) desO('relance');
     transmutationAuto(J); b = meilleurCoup(J);
   }
   // relance payante : si le coup reste faible et qu'il reste des PC après
@@ -2111,6 +2120,15 @@ async function mire(de, vers) {
   couche().appendChild(sv); await dodo(520); sv.remove();
 }
 async function joue1(e) {
+  if (e.t === 'desO') {
+    const z = document.querySelector('.des'); if (!z) return;
+    const faces = ['maelle', 'aldric', 'pip', 'oria', 'gorm', 'zephine'].includes(e.id) ? e.id : null;
+    const PIP = { 1:[[50,50]], 2:[[28,28],[72,72]], 3:[[25,25],[50,50],[75,75]], 4:[[28,28],[72,28],[28,72],[72,72]], 5:[[25,25],[75,25],[50,50],[25,75],[75,75]], 6:[[28,22],[72,22],[28,50],[72,50],[28,78],[72,78]] };
+    const de = v => faces ? `<img src="faces-${faces}/face-${v}.webp" alt="${v}">` : `<svg viewBox="0 0 100 100"><rect x="5" y="5" width="90" height="90" rx="18" fill="#3a1414" stroke="#ff6b5a" stroke-width="6"/>${PIP[v].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="9" fill="#ffd9d0"/>`).join('')}</svg>`;
+    z.classList.add('desennemi');
+    z.innerHTML = `<div class="desetiq">Dés de l’ennemi</div>` + e.v.map((v, i) => `<div class="deO ${e.p[i] ? 'utilise' : ''} ${e.quoi === 'relance' && !e.p[i] ? 'roule' : ''}">${de(v)}</div>`).join('');
+    await dodo(e.quoi === 'relance' ? 650 : 450); return;
+  }
   if (e.t === 'recap') {
     const l = [...e.actions.map(x => `<li>${x}</li>`), ...e.gardes.map(x => `<li>🛡 ${x}</li>`)].join('') || '<li>Rien de spécial.</li>';
     const pv = e.perdu > 0 ? `<b style="color:#ff7a7a">Tu as perdu ${e.perdu} ❤</b>` : e.perdu < 0 ? `<b style="color:#7dffb0">Tu as regagné ${-e.perdu} ❤</b>` : '<b style="color:#7dffb0">Tu n’as perdu aucun ❤</b>';
@@ -2197,14 +2215,14 @@ async function joueFX() {
 // toucher l'écran pendant les animations les accélère
 document.addEventListener('pointerdown', () => { if (fxOn && !(S && S.tuto)) fxVite = .5; }, true); // 14/11 : plus d'accélération dans le tutoriel
 </script>
-<script src="profil.js?v=20261114-201832"></script>
-<script src="pantheon.js?v=20261114-201832"></script>
-<script src="tuto.js?v=20261114-201832"></script>
-<script src="deux.js?v=20261114-201832"></script>
-<script src="invasion.js?v=20261114-201832"></script>
-<script src="enigme-table.js?v=20261114-201832"></script>
-<script src="forge.js?v=20261114-201832"></script>
-<script src="semaine.js?v=20261114-201832"></script>
-<script src="enigme.js?v=20261114-201832"></script>
+<script src="profil.js?v=20261114-202014"></script>
+<script src="pantheon.js?v=20261114-202014"></script>
+<script src="tuto.js?v=20261114-202014"></script>
+<script src="deux.js?v=20261114-202014"></script>
+<script src="invasion.js?v=20261114-202014"></script>
+<script src="enigme-table.js?v=20261114-202014"></script>
+<script src="forge.js?v=20261114-202014"></script>
+<script src="semaine.js?v=20261114-202014"></script>
+<script src="enigme.js?v=20261114-202014"></script>
 </body>
 </html>
