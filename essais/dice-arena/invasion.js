@@ -120,7 +120,7 @@ degats = function (k, n, ignore) {
   if (S && S.O && k && !S.fini && n > 0) {
     const O = S.O;
     if (k.J === O && !k.u && O.voile) { log('🌑 Voile d’invisibilité : aucun dégât avant son premier tour.'); return; }
-    if (k.J === O && !k.u && O.ombre === 5) { n = Math.max(0, n - 3); if (!n) { log('🌑 Peau de l’Abîme : tout est absorbé.'); return; } }
+    if (k.J === O && !k.u && O.ombre === 5) { const n0 = n; n = Math.max(0, n - 3); if (!n) { log('🌑 Peau de l’Abîme : tout est absorbé.'); return; } log(`🌑 Peau de l’Abîme : ${n0} dégâts réduits à ${n} (−3).`); }
     if (S.acteur === O && k.J !== O) { if (O.ombre === 4) n += 3; if ((O.anomalie || 0) >= 2) n += 5; }
   }
   const drain = S && S.O && S.O.ombre === 3 && S.acteur === S.O && k && k.J && k.J !== S.O && !k.u, avant = drain ? k.J.pv : 0;
