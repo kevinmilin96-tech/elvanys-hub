@@ -684,7 +684,7 @@
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
 // 14/11 : l'Odyssée sans fin a ses propres emplacements (odyssee.js lit SANSFIN)
 const SANSFIN = new URLSearchParams(location.search).get('sansfin') === '1', EPREUVE_PAGE = new URLSearchParams(location.search).get('epreuve') === '1', ODY_PAGE = EPREUVE_PAGE ? 'epreuves.html' : 'odyssee.html' + (SANSFIN ? '?sansfin=1' : '');
-const VERSION = '20261114-233142';
+const VERSION = '20261114-233318';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -703,16 +703,16 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261114-233142"></script>
-<script src="musique.js?v=20261114-233142"></script>
-<script src="rang.js?v=20261114-233142"></script>
-<script src="heros-etoiles.js?v=20261114-233142"></script>
-<script src="donnees.js?v=20261114-233142"></script>
-<script src="odyssee.js?v=20261114-233142"></script>
-<script src="bestiaire.js?v=20261114-233142"></script>
-<script src="aventure.js?v=20261114-233142"></script>
-<script src="odyssee-sansfin.js?v=20261114-233142"></script>
-<script src="chronique.js?v=20261114-233142"></script>
+<script src="cartes.js?v=20261114-233318"></script>
+<script src="musique.js?v=20261114-233318"></script>
+<script src="rang.js?v=20261114-233318"></script>
+<script src="heros-etoiles.js?v=20261114-233318"></script>
+<script src="donnees.js?v=20261114-233318"></script>
+<script src="odyssee.js?v=20261114-233318"></script>
+<script src="bestiaire.js?v=20261114-233318"></script>
+<script src="aventure.js?v=20261114-233318"></script>
+<script src="odyssee-sansfin.js?v=20261114-233318"></script>
+<script src="chronique.js?v=20261114-233318"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -1754,8 +1754,9 @@ function anneauSVG(pv, max, prot, jauge, pc, fait, avant, haut) {
   for (let k = 0; k < JAUGE.max; k++) if (fait || k < jauge) g += `<path d="${arc(36.4, k / JAUGE.max + .007, (k + 1) / JAUGE.max - .007)}" fill="none" stroke="${fait ? '#9a8ab8' : '#fff4b0'}" stroke-opacity="${fait ? .5 : .95}" stroke-width="2.6" filter="url(#${id}l)"/>`;
   if (!fait && jauge >= JAUGE.max) g += `<circle class="ultplein" cx="50" cy="50" r="36.4" fill="none" stroke="#ffe680" stroke-width="3.2" filter="url(#${id}l)"/>`;
   // 14/11 (l'utilisateur : « on ne voit pas mes PC à cause des cartes ») : les cristaux du joueur du bas passent EN HAUT de son anneau ; ceux de l'adversaire restent en bas
-  const n = Math.min(pc, 8), mid = haut ? .5 : 0; let gem = '';
-  for (let k = 0; k < n; k++) { const a = mid + (k - (n - 1) / 2) * .062, x = C + 46 * Math.sin(a * 2 * Math.PI), y = C - 46 * Math.cos(a * 2 * Math.PI);
+  // 14/11 nuit (l'utilisateur : « les PC à gauche et à droite, pas en haut sur l'icône du cadre ») : deux colonnes, une de chaque côté du portrait
+  const n = Math.min(pc, 8); let gem = '';
+  for (let k = 0; k < n; k++) { const cote = k % 2 ? .75 : .25, nb = cote === .25 ? Math.ceil(n / 2) : Math.floor(n / 2), rang = Math.floor(k / 2), a = cote + (cote === .25 ? 1 : -1) * (rang - (nb - 1) / 2) * .062, x = C + 46 * Math.sin(a * 2 * Math.PI), y = C - 46 * Math.cos(a * 2 * Math.PI);
     gem += `<image href="ui/cristal.webp?v=1" x="${(x - 4.2).toFixed(2)}" y="${(y - 4.2).toFixed(2)}" width="8.4" height="8.4"/>`; }
   return `<svg class="anneau" viewBox="0 0 100 100" aria-hidden="true">${g}${gem}</svg>`;
 }
@@ -2296,14 +2297,14 @@ async function joueFX() {
 // toucher l'écran pendant les animations les accélère
 document.addEventListener('pointerdown', () => { if (fxOn && !(S && S.tuto)) fxVite = .5; }, true); // 14/11 : plus d'accélération dans le tutoriel
 </script>
-<script src="profil.js?v=20261114-233142"></script>
-<script src="pantheon.js?v=20261114-233142"></script>
-<script src="tuto.js?v=20261114-233142"></script>
-<script src="deux.js?v=20261114-233142"></script>
-<script src="invasion.js?v=20261114-233142"></script>
-<script src="enigme-table.js?v=20261114-233142"></script>
-<script src="forge.js?v=20261114-233142"></script>
-<script src="semaine.js?v=20261114-233142"></script>
-<script src="enigme.js?v=20261114-233142"></script>
+<script src="profil.js?v=20261114-233318"></script>
+<script src="pantheon.js?v=20261114-233318"></script>
+<script src="tuto.js?v=20261114-233318"></script>
+<script src="deux.js?v=20261114-233318"></script>
+<script src="invasion.js?v=20261114-233318"></script>
+<script src="enigme-table.js?v=20261114-233318"></script>
+<script src="forge.js?v=20261114-233318"></script>
+<script src="semaine.js?v=20261114-233318"></script>
+<script src="enigme.js?v=20261114-233318"></script>
 </body>
 </html>
