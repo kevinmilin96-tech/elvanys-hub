@@ -662,7 +662,7 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261114-151945';
+const VERSION = '20261114-152316';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -681,11 +681,11 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261114-151945"></script>
-<script src="musique.js?v=20261114-151945"></script>
-<script src="donnees.js?v=20261114-151945"></script>
-<script src="odyssee.js?v=20261114-151945"></script>
-<script src="chronique.js?v=20261114-151945"></script>
+<script src="cartes.js?v=20261114-152316"></script>
+<script src="musique.js?v=20261114-152316"></script>
+<script src="donnees.js?v=20261114-152316"></script>
+<script src="odyssee.js?v=20261114-152316"></script>
+<script src="chronique.js?v=20261114-152316"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -1260,7 +1260,26 @@ function finOdyssee() {
     <div class="choixh"><button onclick="location.href='odyssee.html'">${S.fini === 'gagne' ? '🗺 Continuer l’Odyssée' : '🗺 Voir jusqu’où tu es allé'}</button></div>`);
 }
 let finTourDe = null; // 14/11 : « Fin du tour » touché plusieurs fois très vite = l'ordinateur jouait plusieurs fois et la partie se cassait → une seule fin de tour à la fois
+// 14/11 (l'utilisateur : « bloqué, Fin du tour ne marche pas, 3 fois ») : (1) toute erreur s'AFFICHE (bandeau rouge + journal) pour qu'on la trouve ;
+// (2) un 2e appui sur « Fin du tour » quand le jeu est bloqué depuis plus de 3 s force la suite du tour
+function signaleErreur(x) {
+  const m = (x && (x.message || x.reason && x.reason.message || x.reason)) || String(x), l = x && x.error && x.error.stack ? x.error.stack.split('\n')[1] || '' : (x && x.stack ? x.stack.split('\n')[1] || '' : '');
+  try { if (S && S.log) S.log.unshift(`⚠ Erreur du jeu : ${m} ${l.trim()}`); } catch (e) {}
+  let z = document.getElementById('erreurJeu'); if (!z) { z = document.createElement('div'); z.id = 'erreurJeu'; z.style.cssText = 'position:fixed;left:8px;right:8px;top:8px;z-index:99;background:#8e1b1b;color:#fff;border-radius:12px;padding:8px 10px;font:13px Georgia;box-shadow:0 4px 16px #000a'; z.onclick = () => z.remove(); document.body.appendChild(z); }
+  z.innerHTML = `⚠ <b>Erreur du jeu</b> (fais une capture pour Claude, puis touche ici) :<br><small>${String(m).replace(/</g, '&lt;')}<br>${String(l).replace(/</g, '&lt;')}</small>`;
+}
+window.addEventListener('error', e => signaleErreur(e)); window.addEventListener('unhandledrejection', e => signaleErreur(e));
+let blocageDepuis = 0;
 function finDeMonTour() {
+  if (!S.fini && !roule && (finTourDe === S || (fxOn && !S.J.aLancer))) {
+    if (!blocageDepuis) blocageDepuis = Date.now();
+    else if (Date.now() - blocageDepuis > 3000) { // déblocage forcé
+      blocageDepuis = 0; S.log.unshift('🔧 Le jeu était bloqué : la suite du tour est forcée.');
+      FX = []; fxOn = false; document.body.classList.remove('fxon'); finTourDe = null; const g = fxApres.shift(); fxApres = [];
+      try { if (g) g(); else if (!S.J.aLancer) { joueOrdi(); if (!S.fini) debutTour(S.J); } } catch (x) { signaleErreur(x); }
+      rendu(); }
+    return; }
+  blocageDepuis = 0;
   if (S.fini || roule || finTourDe === S || (fxOn && !S.J.aLancer)) return;
   if (S.J.aLancer) { lancerMesDes(); return; }
   const libres = S.J.des.filter(d => !d.pose);
@@ -1532,7 +1551,7 @@ function rendu() {
   // 14/11 : si le dessin ou l'enregistrement échoue (mémoire du téléphone pleine…), la suite du tour part QUAND MÊME (avant : « Fin du tour » restait bloqué)
   try { dessine(); } catch (x) { console.error(x); }
   try { if (S.ody && !S.fini) localStorage.setItem('guilde-combat', JSON.stringify(S)); } catch (x) { console.error(x); }
-  const f = fxApres.shift(); if (f && !S.fini) setTimeout(f, 350);
+  const f = fxApres.shift(); if (f && !S.fini) setTimeout(() => { try { f(); } catch (x) { signaleErreur(x); finTourDe = null; } }, 350);
 }
 // 14/11 (l'utilisateur : « le titre sur le portrait cache la vie et l'Ultime ») : sur l'écran unique, le nom (et le titre du profil)
 // passe en haut du panneau de droite, au-dessus de « N en main » ; il suit donc aussi les placements des îles
@@ -2130,20 +2149,20 @@ async function joueFX() {
   fxOn = true; fxVite = localStorage.getItem('guilde-vitesse') === 'rapide' ? .7 : 1.4; // 13/11 soir : réglage « Vitesse des animations » document.body.classList.add('fxon');
   // 14/11 (l'utilisateur : « je n'arrive pas à appuyer sur Fin du tour ») : une animation qui ne finirait jamais bloquait tout le combat ;
   // chaque animation a maintenant 7 s au plus, puis le jeu continue
-  while (FX.length) { const e = FX.shift(); try { await Promise.race([joue1(e), new Promise(r => setTimeout(r, 7000))]); } catch (x) { console.error(x); } }
+  while (FX.length) { const e = FX.shift(); try { await Promise.race([joue1(e), new Promise(r => setTimeout(r, 7000))]); } catch (x) { console.error(x); signaleErreur(x); } }
   fxOn = false; document.body.classList.remove('fxon'); rendu();
 }
 // toucher l'écran pendant les animations les accélère
 document.addEventListener('pointerdown', () => { if (fxOn && !(S && S.tuto)) fxVite = .5; }, true); // 14/11 : plus d'accélération dans le tutoriel
 </script>
-<script src="profil.js?v=20261114-151945"></script>
-<script src="pantheon.js?v=20261114-151945"></script>
-<script src="tuto.js?v=20261114-151945"></script>
-<script src="deux.js?v=20261114-151945"></script>
-<script src="invasion.js?v=20261114-151945"></script>
-<script src="enigme-table.js?v=20261114-151945"></script>
-<script src="forge.js?v=20261114-151945"></script>
-<script src="semaine.js?v=20261114-151945"></script>
-<script src="enigme.js?v=20261114-151945"></script>
+<script src="profil.js?v=20261114-152316"></script>
+<script src="pantheon.js?v=20261114-152316"></script>
+<script src="tuto.js?v=20261114-152316"></script>
+<script src="deux.js?v=20261114-152316"></script>
+<script src="invasion.js?v=20261114-152316"></script>
+<script src="enigme-table.js?v=20261114-152316"></script>
+<script src="forge.js?v=20261114-152316"></script>
+<script src="semaine.js?v=20261114-152316"></script>
+<script src="enigme.js?v=20261114-152316"></script>
 </body>
 </html>
