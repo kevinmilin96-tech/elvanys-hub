@@ -8,7 +8,7 @@
 <title>La Guilde des Runes</title>
 <script>
 // Même mécanisme que le Duel : une nouvelle version = rechargement tout seul à l'ouverture (publier.sh change VERSION).
-const VERSION = '20261114-171020';
+const VERSION = '20261114-171122';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-menu-' + v)) { sessionStorage.setItem('recharge-menu-' + v, '1'); location.replace('menu.html?v=' + v); }
@@ -188,9 +188,9 @@ fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.te
 </div>
 <div id="flash"></div>
 
-<script src="semaine.js?v=20261114-171020"></script>
-<script src="musique.js?v=20261114-171020"></script>
-<script src="donnees.js?v=20261114-171020"></script>
+<script src="semaine.js?v=20261114-171122"></script>
+<script src="musique.js?v=20261114-171122"></script>
+<script src="donnees.js?v=20261114-171122"></script>
 <script>
 // ciel étoilé + runes du portail (symboles, pas des lettres), aux couleurs des héros
 const ciel = document.getElementById('ciel');
@@ -232,6 +232,8 @@ const PRO_IMG = { arene:'mode-arene', odyssee:'mode-odyssee', expeditions:'mode-
   ordinateur:'arene-ordinateur', tuto:'arene-tuto', proche:'arene-proche', abime:'ody-abime',
   invasion:'mode-invasion', inv1:'inv-acte1', inv2:'inv-acte2', invboss:'inv-boss', pantheon:'mode-pantheon', defense:'mode-defense', enigme:'mode-enigme', semaine:'mode-semaine' }; // 14/11 : portails de l'Invasion et du Panthéon reçus
 const GIVRE_OK = (() => { try { return !!JSON.parse(localStorage.getItem('guilde-actes') || '{}').brulees; } catch (e) { return false; } })();
+// 14/11 (l'utilisateur : « j'ai accès aux deux autres modes sans avoir fini l'acte I ») : l'Invasion s'ouvre acte par acte
+const INV = (() => { try { return JSON.parse(localStorage.getItem('guilde-invasion') || '{}'); } catch (e) { return {}; } })();
 const ABIME_OK = (() => { try { return !!JSON.parse(localStorage.getItem('guilde-actes') || '{}').givre; } catch (e) { return false; } })();
 const ETAGES = {
   '':{ titre:'Le monde de la Guilde', sous:'Glisse, puis touche un portail pour y entrer.', portes:[
@@ -247,8 +249,10 @@ const ETAGES = {
   ] },
   invasion:{ titre:'L’Invasion', sous:'Quel front veux-tu tenir ?', portes:[
     { nom:'Acte I · L’Éveil', pro:'inv1', href:'campement.html?boss=eveil', desc:'La Meute corrompue, les Gardes jumeaux à abattre dans le même tour, le Nécromancien du Vide.' },
-    { nom:'Acte II · Le Réveil', pro:'inv2', href:'campement.html?boss=reveil', desc:'Les Éclaireurs de silex, le Colosse des racines, le Titan primordial, et la Sève de l’Arbre-Monde à garder en vie.' },
-    { nom:'Les grands boss', pro:'invboss', href:'campement.html', desc:'Le Colosse des racines, le Kraken des brumes, Ignaros le dragon ancien : un seul boss, géant.' },
+    INV.eveil ? { nom:'Acte II · Le Réveil', pro:'inv2', href:'campement.html?boss=reveil', desc:'Les Éclaireurs de silex, le Colosse des racines, le Titan primordial, et la Sève de l’Arbre-Monde à garder en vie.' }
+      : { nom:'Acte II · Le Réveil', pro:'inv2', ferme:'Acte II', essai:'campement.html?boss=reveil', desc:'S’ouvre quand tu as gagné l’Acte I. (Touche pour l’essayer quand même.)' },
+    INV.reveil ? { nom:'Les grands boss', pro:'invboss', href:'campement.html', desc:'Le Colosse des racines, le Kraken des brumes, Ignaros le dragon ancien : un seul boss, géant.' }
+      : { nom:'Les grands boss', pro:'invboss', ferme:'Grands boss', essai:'campement.html', desc:'S’ouvrent quand tu as gagné l’Acte II. (Touche pour les essayer quand même.)' },
   ] },
   // 13/11 : BOUSSOLE DU JEU (Boussole-du-jeu.md) : cœur = Tutoriel, Duel, Odyssée, Invasion, Expéditions + Tour des héros ;
   // les autres modes sont rangés ici, cachés du 1er étage, rien n'est effacé (lien « 🧪 En attente » en bas du menu).
