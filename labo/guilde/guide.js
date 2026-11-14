@@ -17,7 +17,10 @@
   document.head.appendChild(st);
   let cle = null, etapes = [], n = 0, fini = null;
   const nettoie = () => { document.querySelectorAll('.guide-on').forEach(e => e.classList.remove('guide-on')); const g = document.getElementById('guide'); if (g) g.remove(); };
+  // 14/11 : on attend que les pages de récit (#chron) et les fenêtres (#fen, .fenetre) soient fermées, sinon le guide montre des zones cachées
+  const occupe = () => { if (document.getElementById('chron')) return true; return !!document.querySelector('#fen .fenetre, .fenetre:not(#guide *)'); };
   function montre() {
+    if (n === 0 && occupe()) { setTimeout(montre, 600); return; }
     nettoie();
     while (n < etapes.length && etapes[n][0] && !document.querySelector(etapes[n][0])) n++;
     if (n >= etapes.length) { localStorage.setItem('guilde-guide-' + cle, '1'); if (fini) fini(); return; }
