@@ -137,7 +137,7 @@
 <script>
 const ZOK = () => localStorage.getItem('guilde-tuto') === 'fait'; // Zéphine : débloquée par le tutoriel (12/11)
 
-const VERSION = '20261114-190210';
+const VERSION = '20261114-190512';
 function verifieVersion() {
   fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
     v = (v || '').trim(); if (!v || v === VERSION || document.getElementById('majbar')) return;
@@ -150,14 +150,14 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261114-190210"></script>
-<script src="musique.js?v=20261114-190210"></script>
-<script src="donnees.js?v=20261114-190210"></script>
-<script src="guide.js?v=20261114-190210"></script>
-<script src="odyssee.js?v=20261114-190210"></script>
-<script src="odyssee-sansfin.js?v=20261114-190210"></script>
-<script src="pantheon.js?v=20261114-190210"></script>
-<script src="chronique.js?v=20261114-190210"></script>
+<script src="cartes.js?v=20261114-190512"></script>
+<script src="musique.js?v=20261114-190512"></script>
+<script src="donnees.js?v=20261114-190512"></script>
+<script src="guide.js?v=20261114-190512"></script>
+<script src="odyssee.js?v=20261114-190512"></script>
+<script src="odyssee-sansfin.js?v=20261114-190512"></script>
+<script src="pantheon.js?v=20261114-190512"></script>
+<script src="chronique.js?v=20261114-190512"></script>
 <script>
 // le moteur du Duel n'est pas chargé ici : les cartes de l'Odyssée appellent degats/soin seulement en combat (dans duel.html)
 const log = () => {}, degats = () => {}, soin = () => {}, altere = () => {}, invoque = () => {}, adv = () => ({}), fin = () => {};
@@ -248,7 +248,7 @@ function commence(id) {
   R = SANSFIN ? nouvelleSansFin(id, ACTE_URL, ASC_CHOIX) : nouvelleOdyssee(id, jour ? graineDuJour() + (ACTE_URL !== 'brulees' ? '-' + ACTE_URL : '') : null, ACTE_URL, ASC_CHOIX); if (!R) { alert('Impossible de tirer une île : réessaie.'); return; }
   dejaDessine = new Set(); bulles = []; sauve(); dessine();
   chronique([CH().arrivee(HEROS[id].nom)], () => { dialogue('depart'); fenetre(`<h2>⛵ Débarquement</h2><p>${HEROS[id].nom} pose le pied sur ${ILE(R).nom}. ${{ givre:'La glace craque, le vent mord, l’aurore danse au-dessus du château de glace.', abime:'Le silence est total. Sous tes pieds, le gouffre ; au-dessus, un trône.' }[R.acte] || 'Le ciel est rouge, la roche fume.'}</p>
-  ${R.sansfin ? `<p>Ici, l’île n’existe pas encore : <b>tu la construis</b>. Sous la carte, 3 tuiles t’attendent. Touche-en une, tourne-la avec ⟳, puis touche une case <b style="color:var(--ok)">verte</b> : les couloirs doivent se raccorder, comme à Carcassonne. Ton héros y entre (1 dose d’huile 🪔).</p><p>Bats <b>2 élites</b> 💀 pour gagner 2 fragments de rune : la tuile du boss 👑 apparaîtra alors dans ta pioche, et tu choisiras où ouvrir sa porte.</p>` : `<p>Touche une salle <b style="color:var(--ok)">verte</b> : le héros y marche et l’île se dessine devant lui. Tu vois le <b>type</b> des salles voisines, jamais ce qu’elles cachent. Touche-la une première fois pour voir le trajet et son coût, une seconde fois pour y aller. Chaque case nouvelle brûle <b>1 dose d’huile 🪔</b> (la lumière autour du héros rétrécit quand la lanterne se vide) ; revenir est gratuit.</p>
+  ${R.sansfin ? `<p>Ici, l’île n’existe pas encore : <b>tu la construis</b>. Sous la carte, 3 tuiles t’attendent. Touche-en une, tourne-la avec ⟳, puis touche une case <b style="color:var(--ok)">verte</b> : ses couloirs doivent se raccorder à ceux du donjon. Ton héros y entre (1 dose d’huile 🪔).</p><p>Bats <b>2 élites</b> 💀 pour gagner 2 fragments de rune : la tuile du boss 👑 apparaîtra alors dans ta pioche, et tu choisiras où ouvrir sa porte.</p>` : `<p>Touche une salle <b style="color:var(--ok)">verte</b> : le héros y marche et l’île se dessine devant lui. Tu vois le <b>type</b> des salles voisines, jamais ce qu’elles cachent. Touche-la une première fois pour voir le trajet et son coût, une seconde fois pour y aller. Chaque case nouvelle brûle <b>1 dose d’huile 🪔</b> (la lumière autour du héros rétrécit quand la lanterne se vide) ; revenir est gratuit.</p>
   <p>Le chemin direct fait ${R.direct} cases. La porte 🚪 ${{ givre:'de la Vouivre', abime:'du Roi' }[R.acte] || 'du Titan'} 👑 est tout en haut : il te faut <b>2 fragments de rune</b>, gardés par les 3 élites 💀 de l’île.</p>`}
   <div class="choixh"><button class="or" onclick="fermer()">En route !</button></div>`); });
 }
