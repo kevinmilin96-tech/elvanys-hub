@@ -21,7 +21,8 @@ function sfSac(R) {
 function nouvelleSansFin(heros, acte, niveau) {
   const r = nouvelleOdyssee(heros, null, acte, niveau); if (!r) return null;
   const cases = Array.from({ length:ILE_H }, (_, y) => Array.from({ length:ILE_W }, (_, x) => ({ x, y, t:'roche', vu:false, visite:false, fait:false })));
-  const dep = { x:3, y:ILE_H - 1 }; Object.assign(cases[dep.y][dep.x], { t:'depart', vu:true, visite:true, ouv:[1, 0, 0, 0], pose:true });
+  // 14/11 (l'utilisateur : « un T vers le sud ne sert à rien, il faut pouvoir tourner autour comme à Kingdomino ») : on part du CENTRE, sorties dans les 4 directions
+  const dep = { x:Math.floor(ILE_W / 2), y:Math.floor(ILE_H / 2) }; Object.assign(cases[dep.y][dep.x], { t:'depart', vu:true, visite:true, ouv:[1, 1, 1, 1], pose:true });
   r.ile = cases; r.pos = { ...dep }; r.porte = null; r.bossPos = null; r.direct = null;
   r.sansfin = { pioche:sfSac(hasard(r)), offre:[], poses:1, elites:0 };
   r.journal = [`🧩 Odyssée sans fin sur ${ILES[r.acte].nom} (${HEROS[heros].nom}) : l’île se construit tuile par tuile.`];
