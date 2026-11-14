@@ -122,6 +122,8 @@
   .entete .ic { font-size:1.25em; background:#0006; border-radius:50%; width:36px; height:36px; display:grid; place-items:center; flex:none; cursor:pointer; } .entete > div { flex:1; }
   #app { padding-bottom:calc(var(--h) * 1.15 + 120px); }
   .tiroir { position:fixed; left:50%; transform:translateX(-50%); bottom:0; width:min(100%, 560px); z-index:6; background:#101a2bf2; border-top:2px solid #f3c96b88; border-radius:16px 16px 0 0; padding:0 8px 6px; box-shadow:0 -6px 18px #0009; }
+  /* le bouton ⚙ (en bas à droite) ne cache plus « Partir » */
+  #gm-bouton { bottom:auto !important; top:calc(10px + env(safe-area-inset-top)); right:auto !important; left:10px; }
   .tiroir .poignee { text-align:center; font-size:.72em; color:#f3e3c0; padding:6px 0 4px; letter-spacing:.06em; cursor:pointer; } .tiroir .poignee b { color:var(--or); margin-left:4px; }
   .tiroir.ferme .contenu { display:none; } .tiroir .go { margin:4px 0 2px; }
   .scene { position:fixed; inset:0; background:#000 center bottom / cover no-repeat; overflow:hidden; }
