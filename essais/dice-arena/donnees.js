@@ -1,3 +1,5 @@
+// 14/11 (l'utilisateur : « la créature cachée, je ne la vois pas, la carte qui révèle n'a rien révélé ») : la révélation se dit dans le journal
+function reveleCachees(J) { const l = (adv(J).front || []).filter(u => u.cachee); l.forEach(u => { u.cachee = false; }); if (typeof log === 'function') log(l.length ? `👁 Révélé : ${l.map(u => u.n).join(', ')}.` : '👁 Aucune créature cachée à révéler.'); }
 // La Guilde des Runes · DONNÉES des héros et des cartes (partagées par le Duel et la page des fiches ; plus tard PvE, coopération, auto-battler).
 // Chiffres de référence : ~/perso/dice-arena/Equilibrage-personnages.md — à tenir à jour à CHAQUE changement.
 // =====================================================================================================
@@ -23,7 +25,7 @@ const opp = v => 7 - v;
 const CARTES = {
   // ---- Aldric
   ecuyer:   { n:'Écuyer au pavois', t:'u', c:2, txt:'dé pair', d:'Unité 2 / 5, Barrière.', cond:vs => un(vs) && pair(vs[0]), u:{ n:'Écuyer', a:2, v:5, barriere:true } },
-  lanterne: { n:'Lanterne runique', t:'s', c:1, txt:'1 dé', d:'Révèle les unités Cachées ; soigne ton héros de 2 (de la valeur si le dé est pair).', cond:un, f:(J, vs) => { adv(J).front.forEach(u => u.cachee = false); soin(J, pair(vs[0]) ? vs[0] : 2); }, ia:J => J.pv < J.pvMax * .7 ? 30 : 6 },
+  lanterne: { n:'Lanterne runique', t:'s', c:1, txt:'1 dé', d:'Révèle les unités Cachées ; soigne ton héros de 2 (de la valeur si le dé est pair).', cond:un, f:(J, vs) => { reveleCachees(J); soin(J, pair(vs[0]) ? vs[0] : 2); }, ia:J => J.pv < J.pvMax * .7 ? 30 : 6 },
   serment:  { n:'Serment', t:'s', c:1, txt:'2 dés identiques', d:'Soigne ton héros de leur somme.', cond:vs => vs.length === 2 && egaux(vs), f:(J, vs) => soin(J, somme(vs)), ia:J => J.pv < J.pvMax * .7 ? 38 : 4 },
   estocade: { n:'Estocade royale', t:'s', c:2, txt:'3 dés qui se suivent', d:'9 dégâts à une cible.', cond:vs => suite(vs, 3), cible:'ennemi', f:(J, vs, k) => degats(k, 9), ia:() => 45 },
   gardien:  { n:'Gardien de la porte', t:'u', c:3, txt:'2 dés identiques', d:'Unité 3 / 7, Barrière. +1 PC quand il est attaqué.', cond:vs => vs.length === 2 && egaux(vs), u:{ n:'Gardien', a:3, v:7, barriere:true, gardien:true } },
@@ -51,7 +53,7 @@ const CARTES = {
   // ---- Oria
   longuevue:{ n:'Longue-vue', t:'s', c:0, txt:'1 dé', d:'Pioche 1 carte. (Tu vois déjà les prochaines faces de tes dés.)', cond:un, f:J => pioche(J, 1), ia:() => 18 },
   raccourci:{ n:'Raccourci', t:'s', c:1, txt:'dé impair', d:'Relance un de tes dés libres, même si ta relance est déjà utilisée.', cond:vs => un(vs) && !pair(vs[0]), f:J => { J.relance++; log(`${J.nom} gagne une relance.`); }, ia:() => 6 },
-  fleche:   { n:'Flèche de repérage', t:'s', c:1, txt:'dé impair', d:'7 dégâts à une cible et révèle les unités Cachées.', cond:vs => un(vs) && !pair(vs[0]), cible:'ennemi', f:(J, vs, k) => { adv(J).front.forEach(u => u.cachee = false); degats(k, 7); }, ia:() => 36 },
+  fleche:   { n:'Flèche de repérage', t:'s', c:1, txt:'dé impair', d:'7 dégâts à une cible et révèle les unités Cachées.', cond:vs => un(vs) && !pair(vs[0]), cible:'ennemi', f:(J, vs, k) => { reveleCachees(J); degats(k, 7); }, ia:() => 36 },
   guetteur: { n:'Guetteur du col', t:'u', c:2, txt:'dé pair', d:'Unité 2 / 6, Barrière.', cond:vs => un(vs) && pair(vs[0]), u:{ n:'Guetteur', a:2, v:6, barriere:true } },
   tresor:   { n:'Carte au trésor', t:'s', c:1, txt:'dé ≤ 3', d:'Pioche 2 cartes.', cond:vs => un(vs) && vs[0] <= 3, f:J => pioche(J, 2), ia:J => J.main.length < 5 ? 28 : 8 },
   boussole: { n:'Boussole runique', t:'e', c:2, txt:'2 dés qui se suivent', d:'Une relance de plus à chacun de tes tours.', cond:vs => suite(vs, 2), f:J => { J.boussole = true; log(`${J.nom} sort sa Boussole runique.`); }, ia:J => J.boussole ? 0 : 24 },
@@ -86,7 +88,7 @@ const CARTES = {
       libres.forEach(d => [-1, 1].forEach(sens => { const v = d.v + sens; if (v < 1 || v > 6) return; const a = d.v; d.v = v; const sc = (meilleurCoup(J) || { score:0 }).score; d.v = a; if (sc >= avant + 15 && (!mieux || sc > mieux.sc)) mieux = { d, sens, sc }; }));
       if (pris) pris.pose = false; J._dansAjuste = false; J._ajuste = mieux; return mieux ? 20 + (mieux.sc - avant) / 2 : 0; } },
   soins:    { n:'Premiers soins', t:'s', c:1, txt:'1 dé', d:'Retire Poison, Saignement et Handicap de ton héros, puis le soigne de 2.', cond:un, f:J => { J.poison = 0; J.souillure = 0; J.saigne = 0; J.handicap = 0; soin(J, 2); log(`${J.nom} : Premiers soins, plus aucune altération.`); }, ia:J => (J.poison + J.saigne * 2 + (J.handicap ? 3 : 0)) >= 4 ? 40 : 0 },
-  cape:     { n:'Cape d’ombre', t:'e', c:1, txt:'dé ≤ 3', d:'Une de tes unités devient Cachée et gagne +1 attaque.', cond:vs => un(vs) && vs[0] <= 3, cible:'uniteA', f:(J, vs, k) => { if (k && k.u) { k.u.cachee = true; k.u.a += 1; log(`${k.u.n} se fond dans l’ombre.`); } }, ia:J => J.front.some(u => !u.cachee && !u.louve) ? 20 : 0 },
+  cape:     { n:'Cape d’ombre', t:'e', c:1, txt:'dé ≤ 3', d:'Une de tes unités devient Cachée et gagne +1 attaque.', cond:vs => un(vs) && vs[0] <= 3, cible:'uniteA', f:(J, vs, k) => { if (k && k.u) { k.u.cachee = true; k.u.a += 1; log(`🌑 ${k.u.n} devient Cachée (+1 attaque) : l’adversaire ne la voit plus (carte « ? »), sa prochaine attaque fera +2 (Embuscade) et la révélera.`); } }, ia:J => J.front.some(u => !u.cachee && !u.louve) ? 20 : 0 },
   lynx:     { n:'Lynx des fourrés', t:'u', c:2, txt:'dé ≤ 3', d:'Unité 3 / 2, Cachée.', cond:vs => un(vs) && vs[0] <= 3, u:{ n:'Lynx des fourrés', a:3, v:2, cachee:true } },
   renard:   { n:'Renard du col', t:'u', c:1, txt:'1 dé', d:'Unité 2 / 3, Cachée.', cond:un, u:{ n:'Renard du col', a:2, v:3, cachee:true } },
   potion:   { n:'Potion de soin', t:'s', c:1, txt:'1 dé', d:'Soigne ton héros de la valeur + 2.', cond:un, f:(J, vs) => soin(J, vs[0] + 2), ia:J => J.pv < J.pvMax * .7 ? 30 : 4 },
@@ -94,7 +96,7 @@ const CARTES = {
   chien:    { n:'Chien de garde', t:'u', c:2, txt:'1 dé', d:'Unité 2 / 3, Barrière.', cond:un, u:{ n:'Chien', a:2, v:3, barriere:true } },
   pierre:   { n:'Pierre à aiguiser', t:'e', c:1, txt:'1 dé', d:'Une de tes unités : +2 attaque.', cond:un, cible:'uniteA', f:(J, vs, k) => { k.u.a += 2; log(`${k.u.n} : +2 attaque.`); }, ia:J => J.front.length ? 20 : 0 },
   rond:     { n:'Bouclier rond', t:'s', c:0, txt:'dé pair', d:'Bouclier = la valeur du dé. Il s’ajoute à ta Garde et reste jusqu’à être usé, même après ton tour.', cond:vs => un(vs) && pair(vs[0]), f:(J, vs) => { J.bouclier += vs[0]; log(`${J.nom} : Bouclier ${vs[0]}.`); }, ia:(J, vs) => 6 + vs[0] * 2 },
-  torche:   { n:'Torche', t:'s', c:1, txt:'dé ≥ 4', d:'4 dégâts à une créature adverse (pas au héros) et révèle les Cachées.', cond:vs => un(vs) && vs[0] >= 4, cible:'uniteE', f:(J, vs, k) => { adv(J).front.forEach(u => u.cachee = false); degats(k, 4); }, ia:J => adv(J).front.length ? 34 : 0 },
+  torche:   { n:'Torche', t:'s', c:1, txt:'dé ≥ 4', d:'4 dégâts à une créature adverse (pas au héros) et révèle les Cachées.', cond:vs => un(vs) && vs[0] >= 4, cible:'uniteE', f:(J, vs, k) => { reveleCachees(J); degats(k, 4); }, ia:J => adv(J).front.length ? 34 : 0 },
   chance:   { n:'Coup de chance', t:'s', c:0, txt:'dé = 1', d:'Relance tes 2 dés libres les plus faibles.', cond:vs => un(vs) && vs[0] === 1, f:J => { const l = J.des.filter(d => !d.pose).sort((a, b) => a.v - b.v).slice(0, 2); l.forEach(d => lance(J, d)); log(`${J.nom} relance ${l.length} dé(s).`); }, ia:() => 4 },
   parchemin:{ n:'Parchemin d’étude', t:'s', c:1, txt:'dé impair', d:'Pioche 1 carte et gagne 1 PC.', cond:vs => un(vs) && !pair(vs[0]), f:J => { pioche(J, 1); J.pc = Math.min(6, J.pc + 1); }, ia:() => 22 },
 };
