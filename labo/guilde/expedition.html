@@ -148,18 +148,27 @@
   .scene .brouillard.monte { opacity:1; }
   .scene .cap { position:absolute; left:50%; top:46%; transform:translate(-50%, -50%); background:#101a2bee; border:2px solid var(--or); border-radius:14px; padding:10px 16px; z-index:4; width:max-content; max-width:86%; text-align:center; animation:pop2 .4s both; }
   @keyframes pop2 { from { opacity:0; transform:translate(-50%, -40%); } }
+  /* 14/11 : le guide de Moustache au premier passage au port */
+  #guide .voile { position:fixed; inset:0; z-index:20; pointer-events:auto; }
+  .guide-on { position:relative; z-index:21 !important; box-shadow:0 0 0 4px #f3c96b, 0 0 0 9999px #000b !important; border-radius:14px; pointer-events:none; }
+  .tiroir.guide-on { position:fixed; }
+  #guide .bulleg { position:fixed; left:50%; transform:translateX(-50%); width:min(94%, 520px); z-index:22; display:flex; gap:10px; align-items:flex-start; background:#162238; border:2px solid var(--or); border-radius:16px; padding:10px 12px; box-shadow:0 8px 24px #000c; font-size:.92em; }
+  #guide .bulleg.enbas { bottom:14px; } #guide .bulleg.enhaut { top:14px; } #guide.centre .bulleg { top:50%; transform:translate(-50%, -50%); }
+  #guide .bulleg img { width:54px; height:54px; border-radius:50%; object-fit:cover; border:2px solid var(--or); flex:none; }
+  #guide .bulleg p { margin:0 0 8px; line-height:1.35; } #guide .bg { display:flex; gap:8px; justify-content:flex-end; }
+  #guide .bg button { background:#0b1322; color:#fff; border:1px solid #2f4a6b; border-radius:10px; padding:6px 12px; font:inherit; } #guide .bg button.or { background:var(--or); color:#2b1d0a; border:0; font-weight:bold; }
 </style>
 </head>
 <body>
 <div id="app"></div>
 <div id="fen"></div>
-<script src="cartes.js?v=20261114-171421"></script>
-<script src="musique.js?v=20261114-171421"></script>
-<script src="donnees.js?v=20261114-171421"></script>
-<script src="odyssee.js?v=20261114-171421"></script>
-<script src="chronique.js?v=20261114-171421"></script>
-<script src="expedition-moteur.js?v=20261114-171421"></script>
-<script src="expedition-ecran.js?v=20261114-171421"></script>
+<script src="cartes.js?v=20261114-171716"></script>
+<script src="musique.js?v=20261114-171716"></script>
+<script src="donnees.js?v=20261114-171716"></script>
+<script src="odyssee.js?v=20261114-171716"></script>
+<script src="chronique.js?v=20261114-171716"></script>
+<script src="expedition-moteur.js?v=20261114-171716"></script>
+<script src="expedition-ecran.js?v=20261114-171716"></script>
 <script>// 13/11 soir : musique
 GM.musique('expeditions'); GM.bouton();
 </script>
