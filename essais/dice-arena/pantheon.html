@@ -29,13 +29,14 @@
   <p class="intro">« Ici, la Guilde grave le nom de ceux qui ont tenu jusqu’au bout. »</p>
   <div id="app"></div>
 </main>
-<script src="cartes.js?v=20261114-132235"></script>
-<script src="musique.js?v=20261114-132235"></script>
-<script src="donnees.js?v=20261114-132235"></script>
-<script src="odyssee.js?v=20261114-132235"></script>
-<script src="profil.js?v=20261114-132235"></script>
-<script src="pantheon.js?v=20261114-132235"></script>
+<script src="cartes.js?v=20261114-132833"></script>
+<script src="musique.js?v=20261114-132833"></script>
+<script src="donnees.js?v=20261114-132833"></script>
+<script src="odyssee.js?v=20261114-132833"></script>
+<script src="profil.js?v=20261114-132833"></script>
+<script src="pantheon.js?v=20261114-132833"></script>
 <script>
+const BENE_IMG = { neant:'portraits/bene-neant.webp?v=1', savoir:'portraits/bene-savoir.webp?v=1' }; // 14/11 : images reçues ; Maîtrise des dés à refaire
 const log = () => {};
 const J = (cle, def) => { try { return JSON.parse(localStorage.getItem(cle) || 'null') || def; } catch (e) { return def; } };
 function dessine() {
@@ -48,7 +49,7 @@ function dessine() {
   ${titres.map(([ok, e, n, d]) => `<div class="ligne ${ok ? '' : 'non'}"><div class="e">${ok ? e : '🔒'}</div><div><b>${n}</b><small>${d}</small></div></div>`).join('')}
   <h2>🪞 Les récompenses du défi Brise-Miroir</h2>
   <p style="color:var(--doux);font-size:.88em">Vaincre le Miroir brisé pendant une Odyssée que tu termines : tu choisis l’une de ces récompenses, pour toujours.</p>
-  ${Object.keys(RECOMPENSES).map(k => `<div class="ligne ${P.recompenses.includes(k) ? '' : 'non'}"><div class="e">${P.recompenses.includes(k) ? RECOMPENSES[k].e : '🔒'}</div><div><b>${RECOMPENSES[k].n}</b><small>${RECOMPENSES[k].d}</small></div></div>`).join('')}
+  ${Object.keys(RECOMPENSES).map(k => `<div class="ligne ${P.recompenses.includes(k) ? '' : 'non'}"><div class="e">${P.recompenses.includes(k) ? (BENE_IMG[k] ? `<img src="${BENE_IMG[k]}" alt="" style="width:2em;height:2em;object-fit:contain">` : RECOMPENSES[k].e) : '🔒'}</div><div><b>${RECOMPENSES[k].n}</b><small>${RECOMPENSES[k].d}</small></div></div>`).join('')}
   <div class="ligne ${roiDebloque() ? '' : 'non'}"><div class="e">${roiDebloque() ? '👑' : '🔒'}</div><div><b>Le défi du Roi sans visage</b><small>Dans l’Arène, affronte le Roi sans visage en Duel (débloqué par la première inscription au Tableau d’honneur).</small></div></div>
   <h2>🏆 Les trophées</h2>
   ${tropheesHTML()}`;
