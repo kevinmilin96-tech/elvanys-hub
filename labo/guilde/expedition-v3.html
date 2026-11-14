@@ -151,6 +151,18 @@
   /* 14/11 : la fiche d'une recrue défile toute seule (sans emporter le décor) et ne passe plus sous les boutons */
   .feuille { bottom:62px !important; max-height:42dvh !important; overscroll-behavior:contain; touch-action:pan-y; -webkit-overflow-scrolling:touch; border-radius:16px; }
   .feuille + .actions { padding-right:56px !important; }
+  /* 14/11 : effets du combat des Expéditions */
+  .fxe { position:fixed; transform:translate(-50%, -50%); pointer-events:none; z-index:30; animation:fxpop .5s ease-out forwards; }
+  .fxe.fleche { animation:none; filter:drop-shadow(0 0 6px #fff8); }
+  @keyframes fxpop { 0% { transform:translate(-50%, -50%) scale(.3); opacity:0; } 25% { transform:translate(-50%, -50%) scale(1.15); opacity:1; } 100% { transform:translate(-50%, -50%) scale(1); opacity:0; } }
+  .med .pvb { width:80%; height:5px; margin:3px auto 0; background:#0009; border-radius:3px; overflow:hidden; border:1px solid #0008; }
+  .med .pvb i { display:block; height:100%; background:#3fd06a; transition:width .35s, background .35s; }
+  .med .dg { font-size:2.6em !important; top:5% !important; color:#ff4a2e; text-shadow:0 0 4px #000, 0 2px 0 #000, 0 0 12px #ff3b1f; z-index:6; }
+  .med .dg.gros { font-size:3.4em !important; color:#ffd23a; }
+  .med .dg.rate { font-size:1.5em !important; color:#ddd; text-shadow:0 1px 3px #000; }
+  .med .dg.poison { color:#7dff5a; }
+  .med .sv { font-size:2.2em !important; top:5% !important; z-index:6; }
+  .med.mort { animation:tombe .6s ease-in forwards; } @keyframes tombe { to { transform:translateY(14px) rotate(-14deg) scale(.85); opacity:.25; filter:grayscale(1); } }
 </style>
 </head>
 <body>

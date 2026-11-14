@@ -145,12 +145,42 @@ function medHTML(u, ennemi) {
   if (!u) return '<div class="med vide"></div>';
   const art = artU(u), a = u.a + (u.bonusA || 0), v = u.v + (u.bonusV || 0);
   return `<div class="u med ${ennemi ? 'ennemi' : ''} ${u.key === 'capitaine' ? 'capitaine' : ''} ${u.boss ? 'boss' : ''}" data-id="${u.id}" onclick="ficheUnite('${u.id}', event)">
-    <div class="rond" style="${art ? `background-image:url('${art}')` : ''}">${art ? '' : '👹'}</div><span class="nm">${u.n}${u.star ? ' ' + '★'.repeat(u.star) : ''}</span><div class="av"><span>⚔ ${a}</span><span>❤ ${v}</span></div></div>`;
+    <div class="rond" style="${art ? `background-image:url('${art}')` : ''}">${art ? '' : '👹'}</div><div class="pvb" data-max="${v}"><i style="width:100%"></i></div><span class="nm">${u.n}${u.star ? ' ' + '★'.repeat(u.star) : ''}</span><div class="av"><span>⚔ ${a}</span><span>❤ ${v}</span></div></div>`;
 }
 function ligneMed(P, r, ennemi, top, dx) { return `<div class="lignemed" style="top:${top}%;left:${dx}%">${[0, 1, 2].map(i => medHTML(P[r][i], ennemi)).join('')}</div>`; }
 const elU = id => document.querySelector(`[data-id="${id}"]`);
 function flotteU(id, txt, cls) { const el = elU(id); if (!el) return; const d = document.createElement('div'); d.className = cls || 'dg'; d.textContent = txt; el.appendChild(d); setTimeout(() => d.remove(), 900 / vitesse); }
-function vieU(id, v) { const el = elU(id); if (!el) return; const s = el.querySelector('.av span:last-child'); if (s) s.textContent = '❤ ' + Math.max(0, v); }
+function vieU(id, v) { const el = elU(id); if (!el) return; const s = el.querySelector('.av span:last-child'); if (s) s.textContent = '❤ ' + Math.max(0, v);
+  const b = el.querySelector('.pvb'); if (b) { const m = +b.dataset.max || 1, i = b.querySelector('i'); i.style.width = Math.max(0, Math.min(100, v / m * 100)) + '%'; i.style.background = v / m > .5 ? '#3fd06a' : v / m > .25 ? '#f0b429' : '#e5452e'; } }
+// 14/11 (l'utilisateur : « pas d'animation, pas de griffure, pas de perte de vie, des pions qui tremblent sans bruit ») : les effets du combat
+const centre = el => { const r = el.getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.width / 2]; };
+function fxPose(x, y, img, taille, ms, cls) {
+  const d = document.createElement('img'); d.src = 'effets/' + img + '.webp'; d.className = 'fxe ' + (cls || ''); d.style.cssText = `left:${x}px;top:${y}px;width:${taille}px;height:${taille}px;animation-duration:${ms / vitesse}ms`;
+  document.body.appendChild(d); setTimeout(() => d.remove(), ms / vitesse + 50);
+}
+async function coupFx(e) {
+  const a = elU(e.src), c = elU(e.id); if (!a || !c) return;
+  const u = ficheDe[e.src] || {}, tireur = u.role === 'tireur' || u.tireur, [ax, ay] = centre(a), [cx, cy] = centre(c);
+  if (tireur) { // la flèche file vers la cible
+    GM.son('tir'); const f = document.createElement('img'); f.src = 'effets/fleche.webp'; f.className = 'fxe fleche';
+    const ang = Math.atan2(cy - ay, cx - ax) * 180 / Math.PI; f.style.cssText = `left:${ax}px;top:${ay}px;width:56px;height:56px;transform:translate(-50%,-50%) rotate(${ang + 45}deg)`;
+    document.body.appendChild(f); a.animate([{ transform:'scale(1)' }, { transform:'scale(1.12)' }, { transform:'scale(1)' }], { duration:300 / vitesse });
+    f.animate([{ left:ax + 'px', top:ay + 'px' }, { left:cx + 'px', top:cy + 'px' }], { duration:320 / vitesse, easing:'ease-in', fill:'forwards' });
+    await dodo(320); f.remove();
+  } else { // l'attaquant bondit vers sa cible
+    const dx = (cx - ax) * .55, dy = (cy - ay) * .55;
+    a.style.zIndex = 5; a.animate([{ transform:'none' }, { transform:`translate(${dx}px,${dy}px) scale(1.15)`, offset:.55 }, { transform:'none' }], { duration:420 / vitesse, easing:'ease-in-out' });
+    await dodo(230); setTimeout(() => { a.style.zIndex = ''; }, 300 / vitesse);
+  }
+  if (e.dg > 0) {
+    const gros = e.dg >= 6; GM.son(tireur ? 'monstre-touche' : gros ? 'gros' : 'griffe');
+    fxPose(cx, cy, tireur ? 'impact' : 'griffe' + (1 + Math.floor(Math.random() * 3)), gros ? 120 : 92, 520);
+    const r = c.querySelector('.rond'); if (r) r.animate([{ filter:'none' }, { filter:'brightness(1.8) sepia(1) hue-rotate(-40deg) saturate(5)' }, { filter:'none' }], { duration:380 / vitesse });
+    c.animate([{ transform:'none' }, { transform:'translateX(-7px) rotate(-4deg)' }, { transform:'translateX(7px) rotate(4deg)' }, { transform:'none' }], { duration:320 / vitesse });
+    vieU(e.id, e.v); flotteU(e.id, '−' + e.dg, 'dg' + (gros ? ' gros' : ''));
+  } else { GM.son('bouclier'); flotteU(e.id, 'raté', 'dg rate'); }
+}
+
 function deU(id, de) { const el = elU(id); if (!el) return; let d = el.querySelector('.de'); if (!d) { d = document.createElement('div'); d.className = 'de'; el.appendChild(d); } d.textContent = Array.isArray(de) ? de.join('') : de; }
 async function anim(id, cls, ms) { const el = elU(id); if (!el) return; el.classList.add(cls); await dodo(ms || 300); el.classList.remove(cls); }
 async function partir() {
@@ -171,12 +201,12 @@ async function partir() {
   await dodo(500);
   for (const e of res.ev) {
     if (e.t === 'round') { jl(`— Round ${e.n}`); await dodo(250); continue; }
-    if (e.t === 'coup') { if (e.de) deU(e.src, e.de); await anim(e.src, 'frappe', 260); if (e.dg > 0) { vieU(e.id, e.v); flotteU(e.id, '−' + e.dg); await anim(e.id, 'touche', 260); } jl(`${noms[e.src]} → ${noms[e.id]} : ${e.dg > 0 ? e.dg : 'raté'}${e.txt ? ' (' + e.txt + ')' : ''}`); await dodo(150); continue; }
+    if (e.t === 'coup') { if (e.de) deU(e.src, e.de); await coupFx(e); await dodo(260); jl(`${noms[e.src]} → ${noms[e.id]} : ${e.dg > 0 ? e.dg : 'raté'}${e.txt ? ' (' + e.txt + ')' : ''}`); await dodo(150); continue; }
     if (e.t === 'esquive') { await anim(e.src, 'frappe', 220); await anim(e.id, 'esq', 300); jl(`${noms[e.id]} esquive (Ombre).`); continue; }
-    if (e.t === 'soin') { flotteU(e.id, '+' + e.n, 'sv'); const el = elU(e.id); if (el) { const s = el.querySelector('.av span:last-child'); if (s) s.textContent = '❤ ' + (Math.max(0, +s.textContent.replace(/\D/g, '')) + e.n); } await dodo(120); continue; }
+    if (e.t === 'soin') { flotteU(e.id, '+' + e.n, 'sv'); GM.son('soin'); const el = elU(e.id); if (el) { fxPose(...centre(el), 'soin', 80, 600); const s = el.querySelector('.av span:last-child'); if (s) vieU(e.id, Math.max(0, +s.textContent.replace(/\D/g, '')) + e.n); } await dodo(220); continue; }
     if (e.t === 'epines') { vieU(e.id, e.v); flotteU(e.id, '−' + e.n); jl(`${noms[e.id]} se pique aux Épines (−${e.n}).`); await dodo(150); continue; }
-    if (e.t === 'poison') { vieU(e.id, e.v); flotteU(e.id, '−' + e.n); jl(`${noms[e.id]} : Poison −${e.n}.`); await dodo(150); continue; }
-    if (e.t === 'mort') { const el = elU(e.id); if (el) el.classList.add('mort'); jl(`💀 ${noms[e.id]} tombe.`); await dodo(200); continue; }
+    if (e.t === 'poison') { vieU(e.id, e.v); flotteU(e.id, '−' + e.n, 'dg poison'); GM.son('poison'); { const el = elU(e.id); if (el) fxPose(...centre(el), 'poison-tic', 70, 500); } jl(`${noms[e.id]} : Poison −${e.n}.`); await dodo(150); continue; }
+    if (e.t === 'mort') { const el = elU(e.id); if (el) { fxPose(...centre(el), 'mort', 90, 800); el.classList.add('mort'); } GM.son('tombe'); jl(`💀 ${noms[e.id]} tombe.`); await dodo(450); continue; }
     if (e.t === 'serment') { flotteU(e.id, '🛡 Serment', 'sv'); jl(`🛡 Serment d’Aldric : ${noms[e.id]} reste debout à 1 PV !`); await dodo(400); continue; }
     if (e.t === 'avance') { jl(`${noms[e.id]} avance au premier rang.`); continue; }
   }
