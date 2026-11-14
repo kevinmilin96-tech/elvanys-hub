@@ -5,16 +5,26 @@
 // GM.temporaire(clé) / GM.retour() : une musique le temps d'une page (chronique, marchand) puis on revient
 // GM.jingle(clé) : victoire / défaite, une fois · GM.stop(s) · GM.bascule() · GM.bouton() : petit 🎵 en bas à droite
 // Le navigateur interdit le son avant le premier toucher : on le lance au premier toucher. Coupé quand l'appli passe en arrière-plan.
-// 14/11 : MISE À JOUR AUTOMATIQUE. Le téléphone gardait parfois l'ancienne page (bonus des dés invisibles, images manquantes) :
-// à l'ouverture d'une page, si version.txt annonce une version plus récente que celle des scripts chargés, on recharge
-// la page avec une adresse neuve (?v=…) une seule fois. Une partie en cours est gardée sur le téléphone, rien ne se perd.
+// 14/11 (l'utilisateur : « un système de mise à jour comme toutes les applications : Mettre à jour ou Plus tard ») :
+// chaque page vérifie version.txt (à l'ouverture, toutes les 2 min, au retour dans l'appli) ; si une version plus récente existe,
+// un bandeau propose « Mettre à jour » (recharge la page avec une adresse neuve) ou « Plus tard ». Les parties en cours sont gardées.
+// Duel, menu et Odyssée ont déjà leur propre bandeau (verifieVersion) : on ne double pas.
 (() => { try {
   const moi = document.currentScript && (document.currentScript.src.match(/[?&]v=([^&]+)/) || [])[1]; if (!moi) return;
-  fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
-    v = (v || '').trim(); if (!v || v === moi || v < moi || sessionStorage.getItem('guilde-maj-' + v)) return;
-    sessionStorage.setItem('guilde-maj-' + v, '1'); const q = new URLSearchParams(location.search); q.set('v', v);
-    location.replace(location.pathname + '?' + q + location.hash);
-  }).catch(() => {});
+  let plusTard = null;
+  const verifie = () => { if (typeof window.verifieVersion === 'function' || document.getElementById('majbar')) return;
+    fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
+      v = (v || '').trim(); if (!v || v <= moi || v === plusTard || document.getElementById('majbar')) return;
+      const b = document.createElement('div'); b.id = 'majbar';
+      b.style.cssText = 'position:fixed;left:50%;transform:translateX(-50%);top:8px;z-index:999;width:min(94%,520px);display:flex;gap:8px;align-items:center;background:#1b1838;color:#fff;border:2px solid #f3c96b;border-radius:14px;padding:8px 10px;box-shadow:0 6px 18px #000c;font:14px/1.3 Georgia,serif';
+      b.innerHTML = '<span style="flex:1">✨ <b style="color:#f3c96b">Nouvelle version du jeu</b><br><small>Ta partie en cours est gardée.</small></span><button style="background:#2a2350;color:#fff;border:1px solid #4b4580;border-radius:10px;padding:6px 10px;font:inherit">Plus tard</button><button style="background:#f3c96b;color:#2b1d0a;border:0;border-radius:10px;padding:6px 10px;font:inherit;font-weight:bold">Mettre à jour</button>';
+      const [tard, maj] = b.querySelectorAll('button');
+      tard.onclick = () => { plusTard = v; b.remove(); };
+      maj.onclick = () => { const q = new URLSearchParams(location.search); q.set('v', v); location.replace(location.pathname + '?' + q + location.hash); };
+      document.body.appendChild(b);
+    }).catch(() => {}); };
+  addEventListener('load', () => setTimeout(verifie, 1500)); setInterval(verifie, 120000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) verifie(); });
 } catch (e) {} })();
 const GM = (() => {
   const VOL = { titre:.5, menu:.45, heros:.45, duel:.4, elite:.42, boss:.45, carte:.45, recit:.45, marchand:.45, campement:.45, expeditions:.45, tuto:.45, mer:.45, victoire:.6, defaite:.6, feu:.5, vent:.45 };
