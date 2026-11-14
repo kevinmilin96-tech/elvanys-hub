@@ -73,10 +73,10 @@
 <body>
 <div id="app"></div>
 <div id="fen"></div>
-<script src="cartes.js?v=20261114-132833"></script>
-<script src="musique.js?v=20261114-132833"></script>
-<script src="donnees.js?v=20261114-132833"></script>
-<script src="defense-moteur.js?v=20261114-132833"></script>
+<script src="cartes.js?v=20261114-133206"></script>
+<script src="musique.js?v=20261114-133206"></script>
+<script src="donnees.js?v=20261114-133206"></script>
+<script src="defense-moteur.js?v=20261114-133206"></script>
 <script>
 // =============================================================================================== LA DÉFENSE DE LA PORTE · l'ÉCRAN (13/11)
 // Règles : defense-proposition.html (validées le 13/11). Moteur : defense-moteur.js.
@@ -106,7 +106,7 @@ function vagueAnnonce() { const v = D.fx.find(f => f.t === 'vague'); if (v) GM.s
 
 // ---------------------------------------------------------------- le dessin
 // 14/11 : images Gemini reçues (sans image, l'émoji reste) ; Gobelin, Chauve-souris et Rune du Cor à refaire
-const IMG_D = { gobelin:'portraits/d-gobelin.webp?v=1', sanglier:'portraits/d-sanglier.webp?v=1', bouclier:'portraits/d-bouclier.webp?v=1', titan:'portraits/m-titan.webp?v=1' };
+const IMG_D = { chauve:'portraits/d-chauve.webp?v=1', gobelin:'portraits/d-gobelin.webp?v=1', sanglier:'portraits/d-sanglier.webp?v=1', bouclier:'portraits/d-bouclier.webp?v=1', titan:'portraits/m-titan.webp?v=1' };
 const RUNE_IMG = { maelle:'portraits/rune-enclume.webp?v=2', gorm:'portraits/rune-cor.webp?v=1' };
 function rendu() {
   if (!D) return accueil();
