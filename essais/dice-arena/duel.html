@@ -664,7 +664,7 @@
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
 // 14/11 : l'Odyssée sans fin a ses propres emplacements (odyssee.js lit SANSFIN)
 const SANSFIN = new URLSearchParams(location.search).get('sansfin') === '1', ODY_PAGE = 'odyssee.html' + (SANSFIN ? '?sansfin=1' : '');
-const VERSION = '20261114-192137';
+const VERSION = '20261114-192212';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -683,11 +683,11 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261114-192137"></script>
-<script src="musique.js?v=20261114-192137"></script>
-<script src="donnees.js?v=20261114-192137"></script>
-<script src="odyssee.js?v=20261114-192137"></script>
-<script src="chronique.js?v=20261114-192137"></script>
+<script src="cartes.js?v=20261114-192212"></script>
+<script src="musique.js?v=20261114-192212"></script>
+<script src="donnees.js?v=20261114-192212"></script>
+<script src="odyssee.js?v=20261114-192212"></script>
+<script src="chronique.js?v=20261114-192212"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -2160,14 +2160,14 @@ async function joueFX() {
 // toucher l'écran pendant les animations les accélère
 document.addEventListener('pointerdown', () => { if (fxOn && !(S && S.tuto)) fxVite = .5; }, true); // 14/11 : plus d'accélération dans le tutoriel
 </script>
-<script src="profil.js?v=20261114-192137"></script>
-<script src="pantheon.js?v=20261114-192137"></script>
-<script src="tuto.js?v=20261114-192137"></script>
-<script src="deux.js?v=20261114-192137"></script>
-<script src="invasion.js?v=20261114-192137"></script>
-<script src="enigme-table.js?v=20261114-192137"></script>
-<script src="forge.js?v=20261114-192137"></script>
-<script src="semaine.js?v=20261114-192137"></script>
-<script src="enigme.js?v=20261114-192137"></script>
+<script src="profil.js?v=20261114-192212"></script>
+<script src="pantheon.js?v=20261114-192212"></script>
+<script src="tuto.js?v=20261114-192212"></script>
+<script src="deux.js?v=20261114-192212"></script>
+<script src="invasion.js?v=20261114-192212"></script>
+<script src="enigme-table.js?v=20261114-192212"></script>
+<script src="forge.js?v=20261114-192212"></script>
+<script src="semaine.js?v=20261114-192212"></script>
+<script src="enigme.js?v=20261114-192212"></script>
 </body>
 </html>
