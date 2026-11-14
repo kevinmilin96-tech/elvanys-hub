@@ -89,7 +89,7 @@ const GM = (() => {
         #gm-param .l>span{flex:1} #gm-param input[type=range]{width:100%;accent-color:#f3c96b;margin:4px 0 0}
         #gm-param .t{min-width:76px;border:none;border-radius:20px;padding:7px 12px;font:bold 14px Georgia;background:#3a3570;color:#fff} #gm-param .t.on{background:#f3c96b;color:#2a1a08}
         #gm-param .a{display:block;margin:12px 0 0;padding:11px;border-radius:12px;background:#2a2650;border:1px solid #4b4580;color:#fff;text-decoration:none;text-align:center}
-        #gm-param button.a{width:100%;font:15px Georgia;cursor:pointer} #gm-param .a.q{background:#4a1b24;border-color:#a3404a}
+        #gm-param button.a{width:100%;font:15px Georgia;cursor:pointer;white-space:normal;overflow-wrap:break-word} #gm-param .a.q{background:#4a1b24;border-color:#a3404a}
         #gm-param .f{display:block;width:100%;margin-top:12px;padding:10px;border:none;border-radius:12px;background:#f3c96b;color:#2a1a08;font:bold 15px Georgia}`; document.head.appendChild(st); }
       const sonOn = () => localStorage.getItem('guilde-son') !== '0', rapide = () => localStorage.getItem('guilde-vitesse') === 'rapide';
       z = document.createElement('div'); z.id = 'gm-param';
