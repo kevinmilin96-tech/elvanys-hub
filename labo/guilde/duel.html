@@ -680,7 +680,7 @@
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
 // 14/11 : l'Odyssée sans fin a ses propres emplacements (odyssee.js lit SANSFIN)
 const SANSFIN = new URLSearchParams(location.search).get('sansfin') === '1', ODY_PAGE = 'odyssee.html' + (SANSFIN ? '?sansfin=1' : '');
-const VERSION = '20261114-204624';
+const VERSION = '20261114-205148';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -699,12 +699,12 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261114-204624"></script>
-<script src="musique.js?v=20261114-204624"></script>
-<script src="rang.js?v=20261114-204624"></script>
-<script src="donnees.js?v=20261114-204624"></script>
-<script src="odyssee.js?v=20261114-204624"></script>
-<script src="chronique.js?v=20261114-204624"></script>
+<script src="cartes.js?v=20261114-205148"></script>
+<script src="musique.js?v=20261114-205148"></script>
+<script src="rang.js?v=20261114-205148"></script>
+<script src="donnees.js?v=20261114-205148"></script>
+<script src="odyssee.js?v=20261114-205148"></script>
+<script src="chronique.js?v=20261114-205148"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -1211,12 +1211,17 @@ function prepareCombatOdyssee(run, cb, auto) {
     if (cb.anomalie) { O.anomalie = cb.anomalie; O.pc += 2; if (cb.anomalie >= 3) O.pvMax += 20; log(`🌀 Anomalie ${cb.anomalie} : ${ANOMALIE.slice(1, cb.anomalie + 1).join(', ')}.`); }
     if (cb.nemesis) { O.pvMax = Math.round(O.pvMax * (1 + .15 * cb.nemesis)); O.pc += cb.nemesis; log(`😈 ${O.nom} est ta Némésis (niveau ${cb.nemesis}) : plus forte que les autres élites.`); }
     const A = run.asc || 0; if (A >= 1) O.pvMax = Math.round(O.pvMax * 1.1); if (A >= 2 && cb.type === 'elite') O.pvMax = Math.round(O.pvMax * 1.15); if (A >= 5 && cb.type === 'boss') O.pvMax = Math.round(O.pvMax * 1.15); if (A >= 9) O.desMax = Math.min(5, (O.desMax || 5) + 1);
+    // 14/11 nuit : sans fin, chaque tour complet des trois îles donne +25 % de vie aux ennemis ; le coffre piège est un monstre fort
+    if (run.sansfin) { const f = Math.floor(((run.sansfin.etage || 1) - 1) / 3); if (f) { O.pvMax = Math.round(O.pvMax * (1 + .25 * f)); log(`🪜 Étage ${run.sansfin.etage} : ennemis +${25 * f} % de vie.`); } }
+    if (cb.mimique) { O.pvMax = Math.round(O.pvMax * 1.2); log('🗝 Le coffre avait des dents : c’était un monstre déguisé !'); }
+    if (cb.grandDefi) log('🎯 Salle du défi : réussis le défi pour +90 or et une carte plus rare.');
     O.pv = O.pvMax; }
   log(`${S.ody.titre} : ${O.nom}. Salle : ${S.salle.n}. ${S.salle.d}`);
   if (S.ody.defi) log(`🎯 Défi : ${S.ody.defi.n} — ${S.ody.defi.d}`);
   sel = []; attaquant = null; ciblage = null;
   debutTour(J);
-  if (run.relanceRang) { J.relanceRang = run.relanceRang; log('🏆 Main sûre (Rang de la Guilde) : une relance gratuite de plus à chaque tour.'); }
+  if (run.relanceJour) { J.relanceRang = (J.relanceRang || 0) + run.relanceJour; log('🎲 Dés chanceux (règle du jour) : une relance gratuite de plus à chaque tour.'); }
+  if (run.relanceRang) { J.relanceRang = (J.relanceRang || 0) + run.relanceRang; log('🏆 Main sûre (Rang de la Guilde) : une relance gratuite de plus à chaque tour.'); }
   if (run.maitrise) { J.relance += 3; run.maitrise = false; log('🎲 Maîtrise des dés : 3 relances gratuites de plus.'); if (!auto && typeof ecrireOdyssee === 'function') ecrireOdyssee(run); }
 }
 function evalueDefi(J, d) {
@@ -2218,14 +2223,14 @@ async function joueFX() {
 // toucher l'écran pendant les animations les accélère
 document.addEventListener('pointerdown', () => { if (fxOn && !(S && S.tuto)) fxVite = .5; }, true); // 14/11 : plus d'accélération dans le tutoriel
 </script>
-<script src="profil.js?v=20261114-204624"></script>
-<script src="pantheon.js?v=20261114-204624"></script>
-<script src="tuto.js?v=20261114-204624"></script>
-<script src="deux.js?v=20261114-204624"></script>
-<script src="invasion.js?v=20261114-204624"></script>
-<script src="enigme-table.js?v=20261114-204624"></script>
-<script src="forge.js?v=20261114-204624"></script>
-<script src="semaine.js?v=20261114-204624"></script>
-<script src="enigme.js?v=20261114-204624"></script>
+<script src="profil.js?v=20261114-205148"></script>
+<script src="pantheon.js?v=20261114-205148"></script>
+<script src="tuto.js?v=20261114-205148"></script>
+<script src="deux.js?v=20261114-205148"></script>
+<script src="invasion.js?v=20261114-205148"></script>
+<script src="enigme-table.js?v=20261114-205148"></script>
+<script src="forge.js?v=20261114-205148"></script>
+<script src="semaine.js?v=20261114-205148"></script>
+<script src="enigme.js?v=20261114-205148"></script>
 </body>
 </html>

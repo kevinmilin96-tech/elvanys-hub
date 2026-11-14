@@ -120,6 +120,7 @@
   .sft small { font-size:.7em; line-height:1.15; } .sft.sel { border-color:#7dffb0; box-shadow:0 0 12px #7dffb0aa; transform:translateY(-3px); }
   .sfroche { fill:#3b2716; } .sfbord { fill:#1e140b; stroke:#1e140b; stroke-width:5; stroke-linejoin:round; } .sfsol { fill:#c9b48c; }
   body.givre .sfsol { fill:#c4d2d8; } body.abime .sfsol { fill:#bcaecb; }
+  .sfinfo { display:flex; gap:6px; justify-content:center; flex-wrap:wrap; margin-bottom:5px; } .sfinfo span { background:#2a2350; border:1px solid #4b4580; border-radius:10px; padding:2px 8px; font-size:.78em; color:#f3c96b; }
   .sfbt { display:flex; gap:8px; justify-content:center; margin-top:6px; } .sfbt button { background:#2a2350; color:#fff; border:1px solid #4b4580; border-radius:10px; padding:6px 12px; font:inherit; font-size:.88em; } .sfbt button:disabled { opacity:.4; }
   .sfcible { fill:#7dffb033; stroke:#15803d; stroke-width:3; stroke-dasharray:6 4; animation:pulse2 1.3s ease-in-out infinite; }
   /* 14/11 : Terres brûlées habillées par Gemini (sol des salles, roche) */
@@ -148,7 +149,7 @@
 <script>
 const ZOK = () => localStorage.getItem('guilde-tuto') === 'fait'; // Zéphine : débloquée par le tutoriel (12/11)
 
-const VERSION = '20261114-204624';
+const VERSION = '20261114-205148';
 function verifieVersion() {
   fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
     v = (v || '').trim(); if (!v || v === VERSION || document.getElementById('majbar')) return;
@@ -161,15 +162,15 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261114-204624"></script>
-<script src="musique.js?v=20261114-204624"></script>
-<script src="rang.js?v=20261114-204624"></script>
-<script src="donnees.js?v=20261114-204624"></script>
-<script src="guide.js?v=20261114-204624"></script>
-<script src="odyssee.js?v=20261114-204624"></script>
-<script src="odyssee-sansfin.js?v=20261114-204624"></script>
-<script src="pantheon.js?v=20261114-204624"></script>
-<script src="chronique.js?v=20261114-204624"></script>
+<script src="cartes.js?v=20261114-205148"></script>
+<script src="musique.js?v=20261114-205148"></script>
+<script src="rang.js?v=20261114-205148"></script>
+<script src="donnees.js?v=20261114-205148"></script>
+<script src="guide.js?v=20261114-205148"></script>
+<script src="odyssee.js?v=20261114-205148"></script>
+<script src="odyssee-sansfin.js?v=20261114-205148"></script>
+<script src="pantheon.js?v=20261114-205148"></script>
+<script src="chronique.js?v=20261114-205148"></script>
 <script>
 // le moteur du Duel n'est pas chargé ici : les cartes de l'Odyssée appellent degats/soin seulement en combat (dans duel.html)
 const log = () => {}, degats = () => {}, soin = () => {}, altere = () => {}, invoque = () => {}, adv = () => ({}), fin = () => {};
@@ -262,7 +263,8 @@ function commence(id) {
   chronique([CH().arrivee(HEROS[id].nom)], () => { dialogue('depart'); fenetre(`<h2>⛵ Débarquement</h2><p>${HEROS[id].nom} pose le pied sur ${ILE(R).nom}. ${{ givre:'La glace craque, le vent mord, l’aurore danse au-dessus du château de glace.', abime:'Le silence est total. Sous tes pieds, le gouffre ; au-dessus, un trône.' }[R.acte] || 'Le ciel est rouge, la roche fume.'}</p>
   ${R.sansfin ? `<p>Ici, l’île n’existe pas encore : <b>tu la construis</b>. Sous la carte, 3 tuiles t’attendent. Touche-en une, tourne-la avec ⟳, puis touche une case <b style="color:var(--ok)">verte</b> : ses couloirs doivent se raccorder à ceux du donjon. Ton héros y entre (1 dose d’huile 🪔).</p><p>Bats <b>2 élites</b> 💀 pour gagner 2 fragments de rune : la tuile du boss 👑 apparaîtra alors dans ta pioche, et tu choisiras où ouvrir sa porte.</p>` : `<p>Touche une salle <b style="color:var(--ok)">verte</b> : le héros y marche et l’île se dessine devant lui. Tu vois le <b>type</b> des salles voisines, jamais ce qu’elles cachent. Touche-la une première fois pour voir le trajet et son coût, une seconde fois pour y aller. Chaque case nouvelle brûle <b>1 dose d’huile 🪔</b> (la lumière autour du héros rétrécit quand la lanterne se vide) ; revenir est gratuit.</p>
   <p>Le chemin direct fait ${R.direct} cases. La porte 🚪 ${{ givre:'de la Vouivre', abime:'du Roi' }[R.acte] || 'du Titan'} 👑 est tout en haut : il te faut <b>2 fragments de rune</b>, gardés par les 3 élites 💀 de l’île.</p>`}
-  <div class="choixh"><button class="or" onclick="fermer()">En route !</button></div>`); });
+  ${R.sansfin && regleSF(R) ? `<p>${regleSF(R).e} <b>Règle du jour : ${regleSF(R).n}</b>. ${regleSF(R).d}</p><p>Après le boss, tu pourras <b>descendre à l’étage suivant</b>. Jusqu’où iras-tu ?</p>` : ''}
+  <div class="choixh"><button class="or" onclick="fermer();${R.sansfin ? 'primeFen()' : ''}">En route !</button></div>`); });
 }
 
 // ----------------------------------------------------------------------------------------------- l'île
@@ -306,10 +308,12 @@ function sfEcran() {
   if (sfBloque(R) && !S.eboulement) { S.eboulement = true; sauve(); }
   const b = document.querySelector('.bandeau'); if (!b) return;
   b.id = 'pioche'; document.body.classList.add('sansfin'); { const m = document.querySelector('svg.ile'); if (m && m.nextElementSibling !== b) m.after(b); } // la pioche juste sous la carte
-  b.innerHTML = attend ? `<div class="sfent">🚶 Ta tuile est posée. <b>Touche-la</b> sur la carte quand tu es prêt : une fois pour voir le chemin, une fois pour y aller. Ensuite, tu pourras poser la suivante.</div><div class="sftuiles attente">${S.offre.map(t => `<div class="sft">${tuileSVG(t, 0, 58)}<small>${t.t === 'chemin' ? 'couloir' : t.t === 'boss' ? 'porte du boss' : SALLES_ODY[t.t].n} · <b>${SF_COURT[t.f]}</b></small></div>`).join('')}</div>` : `<div class="sfent">${S.eboulement ? '🪨 <b>Éboulement</b> : plus aucune sortie ne colle. Ta tuile se pose où tu veux, à côté du donjon.' : sfSel === null ? '🧩 Choisis une tuile, puis une case <b style="color:#7dffb0">verte</b>.' : sfCase ? '👀 Regarde la tuile sur la carte : ⟳ pour la tourner, puis ✔ pour la poser.' : 'Touche une case <b style="color:#7dffb0">verte</b> sur la carte : la tuile s’y affichera avant d’être posée.'}</div>
-    <div class="sftuiles">${S.offre.map((t, i) => `<button class="sft ${sfSel === i ? 'sel' : ''}" onclick="sfChoisit(${i})">${tuileSVG(t, sfSel === i ? sfRot : 0, 58)}<small>${t.t === 'chemin' ? 'couloir' : t.t === 'boss' ? 'porte du boss' : SALLES_ODY[t.t].n} · <b>${SF_COURT[t.f]}</b></small></button>`).join('')}</div>
+  const rg = regleSF(R), pr = S.prime && PRIMES_SF.find(x => x.id === S.prime);
+  const ligneSF = `<div class="sfinfo"><span onclick="etageFen()">🪜 Étage ${S.etage || 1}</span>${rg ? `<span onclick="info('${rg.e} ${rg.n}', '${rg.d.replace(/'/g, '’')}')">${rg.e} ${rg.n}</span>` : ''}${pr ? `<span onclick="info('🎯 Prime : ${pr.n}', '${pr.d.replace(/'/g, '’')} Remplie : +${PRIME_OR} or et ${PRIME_XP} XP.')">🎯 ${pr.n}</span>` : ''}</div>`;
+  b.innerHTML = ligneSF + (attend ? `<div class="sfent">🚶 Ta tuile est posée. <b>Touche-la</b> sur la carte quand tu es prêt : une fois pour voir le chemin, une fois pour y aller. Ensuite, tu pourras poser la suivante.</div><div class="sftuiles attente">${S.offre.map(t => `<div class="sft">${tuileSVG(sfVu(R, t), 0, 58)}<small>${t.t === 'chemin' ? 'couloir' : t.t === 'boss' ? 'porte du boss' : SALLES_ODY[sfVu(R, t).t].n} · <b>${SF_COURT[t.f]}</b></small></div>`).join('')}</div>` : `<div class="sfent">${S.eboulement ? '🪨 <b>Éboulement</b> : plus aucune sortie ne colle. Ta tuile se pose où tu veux, à côté du donjon.' : sfSel === null ? '🧩 Choisis une tuile, puis une case <b style="color:#7dffb0">verte</b>.' : sfCase ? '👀 Regarde la tuile sur la carte : ⟳ pour la tourner, puis ✔ pour la poser.' : 'Touche une case <b style="color:#7dffb0">verte</b> sur la carte : la tuile s’y affichera avant d’être posée.'}</div>
+    <div class="sftuiles">${S.offre.map((t, i) => `<button class="sft ${sfSel === i ? 'sel' : ''}" onclick="sfChoisit(${i})">${tuileSVG(sfVu(R, t), sfSel === i ? sfRot : 0, 58)}<small>${t.t === 'chemin' ? 'couloir' : t.t === 'boss' ? 'porte du boss' : SALLES_ODY[sfVu(R, t).t].n} · <b>${SF_COURT[t.f]}</b></small></button>`).join('')}</div>
     <div class="sfbt">${sfCase ? `<button onclick="sfTourne()">⟳ Tourner</button><button class="or" onclick="sfPoser()">✔ Poser ici</button><button onclick="sfCase = null; sfEcran()">✖ Annuler</button>`
-      : `<button ${sfSel === null ? 'disabled' : ''} onclick="sfRot = (sfRot + 1) % 4; sfEcran()">⟳ Tourner</button><button ${R.vivres >= 1 ? '' : 'disabled'} onclick="if (sfRepioche(R)) { sfSel = null; sfCase = null; sauve(); dessine(); }">🔄 Repiocher (1 🪔)</button>`}</div>`;
+      : `<button ${sfSel === null ? 'disabled' : ''} onclick="sfRot = (sfRot + 1) % 4; sfEcran()">⟳ Tourner</button><button ${R.vivres >= 1 ? '' : 'disabled'} onclick="if (sfRepioche(R)) { sfSel = null; sfCase = null; sauve(); dessine(); }">🔄 Repiocher (1 🪔)</button>`}</div>`);
   sfCibles();
   Guide.lance('odyssee-sansfin', [
     [null, 'L’Odyssée sans fin : ici, l’île <b>n’existe pas encore</b>. C’est toi qui la construis, tuile par tuile.'],
@@ -325,7 +329,7 @@ function sfCibles() {
   if (sfSel === null || !R.sansfin.offre[sfSel]) return;
   const vu = new Set(), P = []; [0, 1, 2, 3].forEach(n => sfPlaces(R, R.sansfin.offre[sfSel], n, !!R.sansfin.eboulement).forEach(p => { const k = p.x + ',' + p.y; if (!vu.has(k)) { vu.add(k); P.push(p); } }));
   g.insertAdjacentHTML('beforeend', `<g id="sfcibles" style="pointer-events:none">${P.map(p => `<rect class="sfcible" x="${p.x * CEL + 4}" y="${p.y * CEL + 4}" width="${CEL - 8}" height="${CEL - 8}" rx="8"/>`).join('')}</g>`);
-  if (sfCase) g.insertAdjacentHTML('beforeend', `<g id="sfapercu" style="pointer-events:none"><svg x="${sfCase.x * CEL}" y="${sfCase.y * CEL}" width="${CEL}" height="${CEL}" viewBox="0 0 48 48" class="apercu">${tuileSVG(R.sansfin.offre[sfSel], sfRot, 48).replace(/^<svg[^>]*>|<\/svg>$/g, '')}</svg><rect x="${sfCase.x * CEL + 1}" y="${sfCase.y * CEL + 1}" width="${CEL - 2}" height="${CEL - 2}" rx="6" class="sfapercu-cadre"/></g>`);
+  if (sfCase) g.insertAdjacentHTML('beforeend', `<g id="sfapercu" style="pointer-events:none"><svg x="${sfCase.x * CEL}" y="${sfCase.y * CEL}" width="${CEL}" height="${CEL}" viewBox="0 0 48 48" class="apercu">${tuileSVG(sfVu(R, R.sansfin.offre[sfSel]), sfRot, 48).replace(/^<svg[^>]*>|<\/svg>$/g, '')}</svg><rect x="${sfCase.x * CEL + 1}" y="${sfCase.y * CEL + 1}" width="${CEL - 2}" height="${CEL - 2}" rx="6" class="sfapercu-cadre"/></g>`);
   if (!P.length) { const e = document.querySelector('#pioche .sfent'); if (e) e.innerHTML = '🚫 Cette tuile ne colle nulle part : choisis-en une autre (ou repioche).'; }
 }
 async function sfPoser() {
@@ -334,6 +338,27 @@ async function sfPoser() {
   // 14/11 (l'utilisateur : « ce n'est pas moi qui choisis d'aller au combat ») : le héros n'entre plus tout seul ; on l'envoie quand on veut
   GM.son('tour-batir'); sfSel = null; sfRot = 0; sfCase = null; R.sansfin.attente = { x, y }; sauve(); dessine();
 }
+// 14/11 nuit : les étages et les primes du sans fin
+function primeFen(apres) {
+  const S = R.sansfin; window._apresPrime = apres || (() => { fermer(); dessine(); });
+  fenetre(`<h2>🎯 La prime de l’étage ${S.etage}</h2><p>Un contrat t’attend au panneau de la Guilde. Choisis-en un : s’il est rempli quand le boss de l’étage tombe, il rapporte <b>+${PRIME_OR} or</b> et <b>${PRIME_XP} XP</b>.</p>
+  <div class="choixv">${S.primes.map(id => { const p = PRIMES_SF.find(x => x.id === id); return `<button onclick="choisitPrime(R,'${id}');sauve();fermer();_apresPrime()">${p.e} <b>${p.n}</b><small>${p.d}</small></button>`; }).join('')}</div>
+  <div class="choixh"><button onclick="fermer();_apresPrime()">Sans prime</button></div>`);
+}
+function etageFen() { const S = R.sansfin, f = forceEtage(R); info(`🪜 Étage ${S.etage}`, `Tu es sur ${ILE(R).nom}${f ? ` : les ennemis ont +${25 * f} % de vie` : ''}. Après le boss, tu peux descendre à l’étage suivant (Givre, puis Abîme, puis on recommence plus fort) ou remonter avec ton score. Record : étage ${recordEtage()}.`); }
+const recordEtage = () => Math.max(1, ...lireRecords().filter(x => x.sansfin).map(x => x.etage || 1));
+function finEtage() {
+  const S = R.sansfin, b = bilanEtage(R), suiv = ILES[acteEtage(R, S.etage + 1)].nom; sauve(); dessine();
+  fenetre(`<h2>👑 Étage ${S.etage} libéré !</h2><p>${ILE(R).bossNom} est tombé${R.acte === 'givre' ? 'e' : ''}.</p>
+  ${b.prime ? `<p>🎯 Prime « ${b.prime.n} » : ${b.ok ? `<b style="color:var(--ok)">remplie</b>, +${PRIME_OR} or et ${PRIME_XP} XP !` : 'manquée.'}</p>` : ''}
+  <p>Sous le trône, un escalier descend vers <b>${suiv}</b>. Tu gardes ton deck, tes reliques, ta sacoche et ton or ; une source t’attend en bas (+25 % de PV) et +8 huile.${(S.etage) % 3 === 0 ? ' <b>Attention</b> : on recommence le tour des îles, les ennemis auront +25 % de vie.' : ''}</p>
+  <p style="font-size:.88em;color:var(--doux)">❤ ${R.pv} / ${R.pvMax} · 💰 ${R.or} · 🪔 ${R.vivres} · record : étage ${recordEtage()}</p>
+  <div class="choixv"><button class="or" onclick="descendre()">🪜 Descendre à l’étage ${S.etage + 1}<small>${suiv}</small></button><button onclick="remonter()">🏁 Remonter avec mon score<small>la partie s’arrête ici, en victoire</small></button></div>`);
+}
+function descendre() { sfEtageSuivant(R); sfSel = null; sfRot = 0; sfCase = null; dejaDessine = new Set(); sauve(); fermer(); dessine(); primeFen(); }
+function remonter() { fermer(); finPartie(true, `Tu remontes de l’étage ${R.sansfin.etage} avec ton butin. Une belle descente !`); }
+function tresorCartes(r) { const R2 = hasard(r), l = brasse(R2, cartesTirables(r.heros).filter(k => rarete(k) === 'e')).slice(0, 3); return l.length === 3 ? l : draft(R2, 2, r.deck, r.heros); }
+function fontaine(r, c) { if (c.fait) return; c.fait = true; const a = r.pv; r.pv = r.pvMax; const m = tire(hasard(r), Object.keys(MALEDICTIONS)); donneMalediction(r, m); r.journal.push(`⛲ La fontaine maudite : +${r.pv - a} PV.`); }
 // 14/11 : le guide de Moustache au premier passage sur l'île
 const GUIDE_ODY = [
   [null, 'Bienvenue sur l’île, aventurier ! Elle est cachée dans la brume : tu la découvres <b>case par case</b>. Au bout, un boss t’attend derrière une porte scellée.'],
@@ -542,6 +567,11 @@ function arrive(c) {
   if (c.t === 'elite' && c.nemesis && !c.fait && !c.nemVu) { c.nemVu = true; sauve(); fenetre(`<div style="text-align:center"><img src="${IMG(c.nemesis)}" alt="" style="width:100px;height:100px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 3px #e5262c,0 0 26px #e5262c"><h2>😈 Ta Némésis</h2><p><b>${HEROS[c.nemesis].nom}</b> t’a déjà vaincu et t’attendait (niveau ${c.nemNiv || 1} : plus redoutable qu’une élite).</p><p><i>« Encore toi ? Cette fois, je ne te laisserai pas repartir. »</i></p><p>La vaincre : +60 or, une relique au choix, et la Némésis s’efface.</p></div><div class="choixh"><button class="or" onclick="fermer();combat(R.ile[${c.y}][${c.x}])">⚔ Affronter</button></div>`); return; }
   if (c.t === 'boss' && !c.fait) { chronique([CH().boss(HEROS[R.heros].nom)], () => combat(c)); return; }
   if (c.t === 'elite' && !c.fait && !(R.chron && R.chron.elite)) { R.chron = { ...(R.chron || {}), elite:true }; sauve(); chronique([CH().elite], () => { dialogue('elite'); combat(c); }); return; }
+  // 14/11 nuit : les salles rares du sans fin
+  if (c.t === 'mimique' && !c.fait) { GM.son('coffre'); fenetre(`<h2>🗝 Un coffre…</h2><p>Tu t’approches, la serrure claque toute seule. Le couvercle s’ouvre sur une rangée de <b>dents</b> !</p><p style="font-style:italic">Moustache : « Je… je n’ai rien dit. Je n’ai RIEN dit. »</p><p>C’est un <b>coffre piège</b> : un monstre fort déguisé. Vaincu, il te laisse choisir une relique.</p><div class="choixh"><button class="or" onclick="fermer();combat(R.ile[${c.y}][${c.x}])">⚔ Se battre</button></div>`); return; }
+  if (c.t === 'defi' && !c.fait) { fenetre(`<h2>🎯 La salle du défi</h2><p>Une arène taillée dans la roche. Au sol, une inscription : « Ici, on gagne avec panache. »</p><p>Le combat a un <b>défi</b> : s’il est réussi, il rapporte <b>+90 or</b> (au lieu de 30) et une carte plus rare.</p><div class="choixh"><button class="or" onclick="fermer();combat(R.ile[${c.y}][${c.x}])">⚔ Relever le défi</button></div>`); return; }
+  if (c.t === 'tresor' && !c.fait) { c.fait = true; sauve(); GM.son('coffre'); tirage(tresorCartes(R), '👑 Trésor légendaire : une carte parmi trois', () => { sauve(); dessine(); }); return; }
+  if (c.t === 'fontaine' && !c.fait) { fenetre(`<h2>⛲ La fontaine maudite</h2><p>Une eau noire et tiède, qui sent la menthe et le fer. Boire te soigne <b>entièrement</b> (❤ ${R.pv} → ${R.pvMax}), mais une <b>malédiction</b> au hasard rejoint ton deck.</p><div class="choixv"><button onclick="fontaine(R,R.ile[${c.y}][${c.x}]);sauve();fermer();dessine()">Boire <small>PV au maximum, une malédiction</small></button><button onclick="fermer()">Ne pas boire</button></div>`); return; }
   if (c.t === 'monstre' || c.t === 'elite') { if (!c.fait) { dialogue(c.t === 'elite' ? 'elite' : 'monstre'); combat(c); return; } }
   if (c.t === 'porte') { if (ouvrePorte(R)) { GM.son('porte'); sauve(); dessine(); dialogue('porte'); chronique([CH().porte], () => fenetre(`<h2>🚪 La porte s’ouvre</h2><p>Les deux fragments s’assemblent dans la serrure runique. Tu bivouaques devant la porte : <b>+15 PV</b> (❤ ${R.pv} / ${R.pvMax}). Derrière, une chaleur de fournaise : le Titan t’attend. <b>Il ne se combat qu’une fois.</b></p><div class="choixh"><button onclick="fermer()">Je suis prêt</button></div>`)); } else { dialogue('porte_fermee'); fenetre(`<h2>🚪 La porte du boss</h2><p>Deux serrures en forme de rune. Il te manque ${2 - R.fragments} fragment${2 - R.fragments > 1 ? 's' : ''} : ils sont gardés par les élites 💀 de l’île.</p><div class="choixh"><button onclick="fermer()">Compris</button></div>`); } return; }
   if (c.t === 'coffre' && !c.fait) { if (R.cles) GM.son('coffre'); dialogue(R.cles ? 'coffre' : 'coffre_ferme'); coffre(c); return; }
@@ -569,11 +599,12 @@ function combat(c) {
 function apresCombat() {
   const cb = R.combat, res = cb.resultat; const out = recompenseCombat(R); sauve(); dessine();
   if (!out.gagne) { dialogue('mort', false); finPartie(false, `${HEROS[cb.ennemi].nom} a eu raison de ${HEROS[R.heros].nom}.${out.nemesis ? ` 😈 ${HEROS[cb.ennemi].nom} devient la Némésis de ${HEROS[R.heros].nom} (niveau ${out.nemesis.niv}) : rendez-vous à sa prochaine Odyssée.` : ''}`); return; }
+  if (out.boss && R.sansfin) { dialogue('boss_vaincu', false); finEtage(); return; }
   if (out.boss) { dialogue('boss_vaincu', false); finPartie(true, { givre:'La Vouivre se couche dans la neige et le sommet se met à fondre. L’île est libre.', abime:'La couronne tombe et la lumière des runes remonte du gouffre. L’Odyssée est terminée.' }[R.acte] || 'Le Titan de feu s’effondre dans son cratère. L’île est libre.'); return; }
   dialogue('victoire');
   const suite = out.draft ? () => tirage(out.draft, out.garde2 ? 'Anomalie : garde-en deux !' : out.draft2 ? 'Double butin : une première carte' : 'Une carte parmi trois', out.draft2 ? () => tirage(out.draft2, 'Double butin : une seconde carte', () => { sauve(); dessine(); }) : () => { sauve(); dessine(); }, out.garde2) : () => { fermer(); dessine(); };
   window._suite2 = suite;
-  window._suite = out.nemesisVaincue ? () => { const l = reliquesProposees(R, 2); fenetre(`<h2>😈 Némésis vaincue !</h2><p>+60 or. Choisis une relique :</p><div class="choixv">${l.map(k => `<button onclick="reliqueOuEchange('${k}', '_suite2')">${RELIQUES[k].e} <b>${RELIQUES[k].n}</b><small>${RELIQUES[k].d}</small></button>`).join('')}</div>`); } : suite;
+  window._suite = out.mimique ? () => { const l = reliquesProposees(R, 2); fenetre(`<h2>🗝 Le coffre piège est vaincu</h2><p>Dans sa gueule, il gardait deux reliques. Choisis-en une :</p><div class="choixv">${l.map(k => `<button onclick="reliqueOuEchange('${k}', '_suite2')">${RELIQUES[k].e} <b>${RELIQUES[k].n}</b><small>${RELIQUES[k].d}</small></button>`).join('')}</div><div class="choixh"><button onclick="fermer();_suite2()">Laisser</button></div>`); } : out.nemesisVaincue ? () => { const l = reliquesProposees(R, 2); fenetre(`<h2>😈 Némésis vaincue !</h2><p>+60 or. Choisis une relique :</p><div class="choixv">${l.map(k => `<button onclick="reliqueOuEchange('${k}', '_suite2')">${RELIQUES[k].e} <b>${RELIQUES[k].n}</b><small>${RELIQUES[k].d}</small></button>`).join('')}</div>`); } : suite;
   fenetre(`<h2>🏆 ${out.ennemi} vaincu</h2><p>+${out.or} or${res.defiOk ? ' (défi réussi compris)' : ''}.${out.fragment ? ' <b>Un fragment de rune 🔮 et une clé 🗝 !</b>' : ''}${out.potion ? ' Et une potion de soin 🧪 dans sa besace.' : ''}</p><p>Il te reste ❤ ${R.pv} / ${R.pvMax}.</p><div class="choixh"><button class="or" onclick="fermer();_suite()">Continuer</button></div>`);
 }
 const carteHTML = (k, onclick, pied) => { const c = CARTES[k], r = rarete(k);
@@ -686,11 +717,11 @@ function abandon() { fenetre(`<h2>⏏ Quitter</h2><p>Ton Odyssée est gardée da
 function finPartie(gagne, texte) {
   const nom = HEROS[R.heros].nom, C = CH(), f = finOdysseeRun(R, gagne); R = null;
   chronique([gagne ? C.victoire(nom) : C.defaite(nom), f.premiereFin ? CHRON_FIN(nom) : null], () => fenetre(`<h2>${gagne ? '🏆 L’île est libre !' : '💀 Fin de l’Odyssée'}</h2><p>${texte}</p>${f.premiereFin ? '<p style="text-align:center;font-size:1.1em">🌟 Tu reçois le titre <b style="color:var(--or)">Héros de l’Odyssée</b> !</p>' : ''}${f.ascNouveau ? `<p style="text-align:center">⛰ <b>Ascension ${f.ascNouveau}</b> débloquée sur cette île : ${ASCENSION[f.ascNouveau].n}.</p>` : ''}${f.inscrit === 'nouveau' ? `<p style="text-align:center">🏛 <b>${nom}</b> est inscrit au <b>Panthéon des Légendes</b> : titre « Briseur de Néant » et +5 PV pour ses prochaines Odyssées. Le Roi sans visage t’attend maintenant dans l’Arène.</p>` : ''}${f.briseMiroir ? `<p style="text-align:center">🪞 <b>Défi Brise-Miroir réussi !</b> Choisis une récompense pour toujours :</p><div class="choixv">${recompensesRestantes().map(k => `<button onclick="choisirRecompense('${k}');this.parentNode.innerHTML='✅ ${RECOMPENSES[k].n} : ${RECOMPENSES[k].d.replace(/'/g, '’')}'">${RECOMPENSES[k].e} <b>${RECOMPENSES[k].n}</b><small>${RECOMPENSES[k].d}</small></button>`).join('')}</div>` : ''}<div class="score">${f.score} points</div>
-  <table><tr><td>Cases explorées</td><td>${f.cases}</td></tr><tr><td>Combats gagnés</td><td>${f.victoires} / ${f.combats}</td></tr><tr><td>Tours joués</td><td>${f.tours}</td></tr><tr><td>Défis réussis</td><td>${f.defis}</td></tr><tr><td>Or restant</td><td>${f.or}</td></tr><tr><td>Durée</td><td>${f.duree} min</td></tr></table>
+  <table>${f.sansfin ? `<tr><td>🪜 Étage atteint</td><td>${f.etage}</td></tr>` : ''}<tr><td>Cases explorées</td><td>${f.cases}</td></tr><tr><td>Combats gagnés</td><td>${f.victoires} / ${f.combats}</td></tr><tr><td>Tours joués</td><td>${f.tours}</td></tr><tr><td>Défis réussis</td><td>${f.defis}</td></tr><tr><td>Or restant</td><td>${f.or}</td></tr><tr><td>Durée</td><td>${f.duree} min</td></tr></table>
   <p>${f.ajoutees ? `📚 <b>${f.ajoutees}</b> carte${f.ajoutees > 1 ? 's' : ''} rejoi${f.ajoutees > 1 ? 'gnent' : 'nt'} ta collection : ${f.nouvelles.map(k => CARTES[k].n).join(', ')}.` : 'Aucune carte nouvelle pour la collection cette fois.'}</p>
   <div class="choixh"><button class="or" onclick="fermer();emplacements()">💾 Emplacements</button><button onclick="location.href='menu.html'">⌂ Menu</button></div>`));
 }
-function records() { const l = lireRecords(); fenetre(`<h2>🏆 Mes Odyssées (${l.length})</h2>${l.length ? `<table>${l.map(r => `<tr><td>${r.gagne ? '🏆' : '💀'} ${new Date(r.quand).toLocaleDateString('fr-FR')} · ${HEROS[r.heros].nom} · ${r.cases} cases, ${r.victoires} victoires, ${r.duree} min</td><td>${r.score}</td></tr>`).join('')}</table>` : '<p>Aucune Odyssée finie.</p>'}<div class="choixh"><button onclick="fermer()">Fermer</button></div>`); }
+function records() { const l = lireRecords(); fenetre(`<h2>🏆 Mes Odyssées (${l.length})</h2>${l.length ? `<table>${l.map(r => `<tr><td>${r.gagne ? '🏆' : '💀'} ${new Date(r.quand).toLocaleDateString('fr-FR')} · ${HEROS[r.heros].nom}${r.sansfin ? ` · 🧩 étage ${r.etage || 1}` : ''} · ${r.cases} cases, ${r.victoires} victoires, ${r.duree} min</td><td>${r.score}</td></tr>`).join('')}</table>` : '<p>Aucune Odyssée finie.</p>'}<div class="choixh"><button onclick="fermer()">Fermer</button></div>`); }
 function collection() { const l = lireCollection(); fenetre(`<h2>📚 Ma collection (${l.length})</h2><p style="font-size:.86em;color:var(--doux)">Les cartes rencontrées en Odyssée. Elles s’ajoutent à l’éditeur de deck de la Tour des héros.</p><div class="cartes3">${l.map(k => carteHTML(k)).join('') || '<i>Rien encore : pars en Odyssée !</i>'}</div><div class="choixh"><button onclick="fermer()">Fermer</button></div>`); }
 accueil();
 // 13/11 soir : musique de la carte (Terres brûlées : folk médiéval ; Givre et Abîme : la vallée des vents) ; le marchand a la sienne jusqu'à la fermeture de sa fenêtre

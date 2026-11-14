@@ -459,7 +459,7 @@ function fixeDims(r) { if (r && r.ile && r.ile.length) { ILE_W = r.ile[0].length
 const SALLES_ODY = {
   roche:{ e:'', n:'Roche' }, chemin:{ e:'·', n:'Chemin' }, depart:{ e:'⛵', n:'Le débarcadère' }, monstre:{ e:'⚔', n:'Monstres' }, elite:{ e:'💀', n:'Élite' },
   coffre:{ e:'🗝', n:'Coffre' }, source:{ e:'💧', n:'Source' }, marchand:{ e:'🏪', n:'Marchand' }, evenement:{ e:'❓', n:'Événement' }, autel:{ e:'🔥', n:'Autel' },
-  mur:{ e:'🧱', n:'Mur fissuré' }, feu:{ e:'🏕', n:'Feu de camp' }, sac:{ e:'🎲', n:'Le sac de Moustache' }, forge:{ e:'⚒', n:'Forge runique' }, porte:{ e:'🚪', n:'La porte du boss' }, boss:{ e:'👑', n:'Le Titan de feu' },
+  mur:{ e:'🧱', n:'Mur fissuré' }, feu:{ e:'🏕', n:'Feu de camp' }, sac:{ e:'🎲', n:'Le sac de Moustache' }, forge:{ e:'⚒', n:'Forge runique' }, mimique:{ e:'🗝', n:'Coffre' }, defi:{ e:'🎯', n:'Salle du défi' }, tresor:{ e:'👑', n:'Trésor légendaire' }, fontaine:{ e:'⛲', n:'Fontaine maudite' }, mystere:{ e:'❔', n:'?' }, porte:{ e:'🚪', n:'La porte du boss' }, boss:{ e:'👑', n:'Le Titan de feu' },
 };
 const voisins = (x, y) => [[x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]].filter(([a, b]) => a >= 0 && a < ILE_W && b >= 0 && b < ILE_H);
 function bfs(cases, dep, marche) {
@@ -587,6 +587,7 @@ function deplace(r, x, y) {
   const c = caseA(r, x, y); if (!peutAller(r, x, y)) return null;
   const neuve = !c.visite;
   if (c.t === 'mur' && !c.fait) { if (r.sacoche.includes('bombe')) { r.sacoche.splice(r.sacoche.indexOf('bombe'), 1); r.journal.push('💣 La bombe ouvre le mur fissuré.'); } else { r.vivres -= 3; r.journal.push('🧱 Trois doses d’huile pour creuser le mur fissuré.'); } }
+  if (neuve && r.sansfin && r.sansfin.regle === 'lanterne' && r.vivres > 0) r.vivres--; // règle du jour : 2 huiles par tuile nouvelle
   if (neuve) { if (r.vivres > 0) r.vivres--; else { r.pv -= 3; r.journal.push('🪔 Lanterne éteinte : vous avancez dans le noir, −3 PV.'); } r.stats.cases++; }
   r.pos = { x, y }; c.visite = true; c.vu = true; if (!r.sansfin) voisins(x, y).forEach(([a, b]) => { caseA(r, a, b).vu = true; });
   if (r.pv <= 0) return { c, mort:true };
@@ -599,7 +600,7 @@ function lanceCombat(r, c) {
   const R = hasard(r); let ennemi = c.ennemi;
   if (ennemi === 'heros') { const autres = ORDRE.filter(h => h !== r.heros); ennemi = tire(R, autres); }
   const L = ILE(r).lieux, lieu = c.t === 'boss' ? L.boss : c.t === 'elite' ? L.elite : (c.niv || 1) >= 3 ? L.fort : L.monstre; // le décor du combat
-  r.combat = { id:Math.random().toString(36).slice(2), x:c.x, y:c.y, type:c.t, ennemi, niv:c.niv || 1, nemesis:c.nemesis ? c.nemNiv || 1 : 0, renfort:c.renfort || null, defi:tire(R, DEFIS).id, lieu, resultat:null };
+  r.combat = { id:Math.random().toString(36).slice(2), x:c.x, y:c.y, type:c.t === 'mimique' || c.t === 'defi' ? 'monstre' : c.t, mimique:c.t === 'mimique', grandDefi:c.t === 'defi', ennemi, niv:c.niv || 1, nemesis:c.nemesis ? c.nemNiv || 1 : 0, renfort:c.renfort || null, defi:tire(R, DEFIS).id, lieu, resultat:null };
   tireOmbre(r, r.combat);
   return r.combat;
 }
@@ -618,14 +619,17 @@ function recompenseCombat(r) {
   let or = cb.type === 'boss' ? 150 : cb.type === 'elite' ? 80 : 40;
   if (r.reliques.includes('bourse')) or += 10; if (r.benes.includes('bourse')) or += 15; if (res.defiOk) { or += 30; r.stats.defis++; }
   if (asc(r, 6)) or = Math.round(or * .8);
+  // 14/11 nuit : règles du jour et salles rares du sans fin
+  const rgl = r.sansfin && r.sansfin.regle; if (rgl === 'cendres') or *= 2; if (rgl === 'horde' && cb.type === 'monstre') or += 15;
+  if (cb.grandDefi && res.defiOk) or += 60;
   r.or += or;
   if (typeof guildeEvt === 'function' && !r.simu) { guildeEvt(cb.type === 'boss' ? 'boss' : cb.type === 'elite' ? 'elite' : 'salle', 1); guildeEvt('or', or); } // 14/11 nuit : Rang
-  const out = { gagne:true, or, defiOk:res.defiOk, ennemi:HEROS[cb.ennemi].nom, type:cb.type, nemesisVaincue };
+  const out = { gagne:true, or, defiOk:res.defiOk, ennemi:HEROS[cb.ennemi].nom, type:cb.type, nemesisVaincue }; if (cb.mimique) out.mimique = true; if (cb.grandDefi) out.grandDefi = !!res.defiOk;
   if (cb.type === 'elite') { r.fragments++; r.cles++; out.fragment = true; if (r.sacoche.length < 2) { r.sacoche.push('soin'); out.potion = true; } }
   if (cb.ombre) { r.or += 40; out.or += 40; out.ombre = OMBRES[cb.ombre].n; r.journal.push(`🌑 Ombre majeure (${OMBRES[cb.ombre].n}) vaincue : double butin !`); }
   if (cb.anomalie) { const g = cb.anomalie === 3 ? 80 : 10 * cb.anomalie; r.or += g; out.or += g; out.anomalie = cb.anomalie; r.journal.push(`🌀 Anomalie (niveau ${cb.anomalie}) vaincue : +${g} or.`); }
   if (cb.type === 'boss') { out.boss = true; r.journal.push(`👑 ${ILE(r).bossNom} est tombé${r.acte === 'givre' ? 'e' : ''} ! +${or} or.`); return out; }
-  out.draft = draft(hasard(r), cb.type === 'elite' ? 1 : 0, r.deck, r.heros); if (asc(r, 7)) out.draft = out.draft.slice(0, 2); if (cb.ombre) out.draft2 = draft(hasard(r), 1, r.deck, r.heros); if (cb.anomalie === 3) out.garde2 = true;
+  out.draft = draft(hasard(r), cb.type === 'elite' || out.grandDefi ? (out.grandDefi ? 2 : 1) : 0, r.deck, r.heros); if (asc(r, 7)) out.draft = out.draft.slice(0, 2); if (cb.ombre) out.draft2 = draft(hasard(r), 1, r.deck, r.heros); if (cb.anomalie === 3) out.garde2 = true;
   r.journal.push(`🏆 ${out.ennemi} vaincu : +${or} or${out.fragment ? ', un fragment de rune et une clé' : ''}.`);
   return out;
 }
@@ -651,7 +655,7 @@ function acheteSansSon(r, c, quoi, k) {
 }
 // le Savoir ancestral du Panthéon : 10 or rendus sur le premier achat de l'Odyssée
 const _acheteOdy = achete;
-achete = function (r, c, quoi, k) { const or0 = r.or, ok = _acheteOdy(r, c, quoi, k); if (ok && r.remise && r.or < or0) { const g = Math.min(r.remise, or0 - r.or); r.or += g; r.remise = 0; r.journal.push(`📜 Savoir ancestral : ${g} or de remise.`); } return ok; };
+achete = function (r, c, quoi, k) { const or0 = r.or, ok = _acheteOdy(r, c, quoi, k); if (ok && c) c.achete = true; if (ok && r.remise && r.or < or0) { const g = Math.min(r.remise, or0 - r.or); r.or += g; r.remise = 0; r.journal.push(`📜 Savoir ancestral : ${g} or de remise.`); } return ok; };
 // l'autel : 3 bénédictions proposées, une malédiction tirée en échange
 function autelOptions(r, c) { if (!c.offre) { const R = hasard(r); c.offre = { benes:brasse(R, Object.keys(BENEDICTIONS).filter(b => !r.benes.includes(b))).slice(0, 3), male:tire(R, Object.keys(MALEDICTIONS)) }; } return c.offre; }
 function donneBenediction(r, b) { if (r.benes.includes(b)) return; r.benes.push(b); if (b === 'vie') { r.pvMax += 6; r.pv += 6; } r.journal.push(`✨ Bénédiction : ${BENEDICTIONS[b].n}.`); }
@@ -680,14 +684,15 @@ function evenementChoisit(r, c, i) {
   r.journal.push(`❓ ${ev.t} : ${ch.t}.`);
   return out;
 }
-function ouvreCoffre(r, c) { if (c.fait || r.cles < 1) return null; r.cles--; c.fait = true; const R = hasard(r); const rel = reliquesIle(r).filter(k => !r.reliques.includes(k));
+function ouvreCoffre(r, c) { const fievre = r.sansfin && r.sansfin.regle === 'fievre'; if (c.fait || (r.cles < 1 && !fievre)) return null; if (!fievre) r.cles--; c.fait = true; const R = hasard(r); const rel = reliquesIle(r).filter(k => !r.reliques.includes(k));
   if (rel.length && r.reliques.length < 3 && R() < .5) { const k = tire(R, rel); r.reliques.push(k); r.journal.push(`🗝 Le coffre contenait ${RELIQUES[k].n}.`); return { relique:k }; }
   r.journal.push('🗝 Le coffre contenait des cartes rares.'); return { draft:draft(R, 2, r.deck, r.heros), deux:true }; }
 function ouvrePorte(r) { const p = caseA(r, r.porte.x, r.porte.y); if (p.fait) return true; if (r.fragments >= 2) { p.fait = true; const a = r.pv; r.pv = Math.min(r.pvMax, r.pv + 15); r.journal.push(`🚪 Les deux fragments s’assemblent : la porte s’ouvre. Bivouac devant la porte : +${r.pv - a} PV.`); return true; } return false; }
 // fin de l'Odyssée : score, collection, record
 function finOdysseeRun(r, gagne) {
   const duree = Math.round((Date.now() - r.debut) / 60000);
-  const score = r.stats.victoires * 50 + r.stats.cases * 5 + r.or + (gagne ? 300 : 0) + r.stats.defis * 30 - r.stats.tours * 2;
+  const etage = r.sansfin ? r.sansfin.etage || 1 : 0;
+  const score = r.stats.victoires * 50 + r.stats.cases * 5 + r.or + (gagne ? 300 : 0) + r.stats.defis * 30 - r.stats.tours * 2 + Math.max(0, etage - 1) * 500;
   const base = deckBase(r.heros), nouvelles = r.deck.filter(k => !base.includes(k) && rarete(k) !== 'm');
   // 14/11 (vu par l'utilisateur : « 10 cartes » puis 13 noms, avec des doublons) : on liste seulement les cartes vraiment nouvelles dans la collection, une fois chacune
   const avant = typeof localStorage !== 'undefined' ? lireCollection() : [];
@@ -701,7 +706,7 @@ function finOdysseeRun(r, gagne) {
     if (k === 'abime' && !localStorage.getItem('guilde-odyssee-finie')) { localStorage.setItem('guilde-odyssee-finie', '1'); premiereFin = true; }
     if (k === 'abime' && typeof inscrirePantheon === 'function') { inscrit = inscrirePantheon(r.heros, r.asc || 0) ? 'nouveau' : 'encore'; briseMiroir = !!r.stats.miroir && recompensesRestantes().length > 0; }
   }
-  const rec = { quand:new Date().toISOString(), acte:r.acte || 'brulees', asc:r.asc || 0, heros:r.heros, gagne, score, cases:r.stats.cases, combats:r.stats.combats, victoires:r.stats.victoires, tours:r.stats.tours, defis:r.stats.defis, or:r.or, duree, graine:r.graine, pv:r.pv };
+  const rec = { quand:new Date().toISOString(), acte:r.acte || 'brulees', asc:r.asc || 0, heros:r.heros, gagne, score, cases:r.stats.cases, combats:r.stats.combats, victoires:r.stats.victoires, tours:r.stats.tours, defis:r.stats.defis, or:r.or, duree, graine:r.graine, pv:r.pv, etage, sansfin:!!r.sansfin, regle:r.sansfin ? r.sansfin.regle : null };
   if (typeof localStorage !== 'undefined') { const l = lireRecords(); l.unshift(rec); localStorage.setItem(RECORDS_CLE, JSON.stringify(l.slice(0, 50))); ecrireOdyssee(null); }
   return { ...rec, ajoutees, nouvelles:neuves, ascNouveau, premiereFin, inscrit, briseMiroir };
 }

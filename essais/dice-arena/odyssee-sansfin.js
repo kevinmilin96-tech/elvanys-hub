@@ -13,7 +13,11 @@ const tourne = (o, n) => { let r = o.slice(); for (let i = 0; i < ((n % 4) + 4) 
 // la pioche : 40 tuiles (contenus de l'Odyssée), formes au hasard (les salles fortes plutôt en cul-de-sac ou en T)
 function sfSac(R) {
   const contenus = [...Array(12).fill('monstre'), ...Array(3).fill('elite'), ...Array(3).fill('coffre'), ...Array(3).fill('source'), 'marchand', 'marchand', 'marchand', 'feu', 'feu', 'autel',
-    ...Array(5).fill('evenement'), 'sac', 'forge', ...Array(6).fill('chemin')]; // 14/11 : 3 marchands (l'utilisateur avait 400 or sans rien pouvoir acheter)
+    ...Array(5).fill('evenement'), 'sac', 'forge', ...Array(6).fill('chemin'),
+    'mimique', 'defi', 'tresor', 'fontaine']; // 14/11 : 3 marchands (l'utilisateur avait 400 or sans rien pouvoir acheter) ; 14/11 nuit : les 4 salles rares
+  const rg = R.regle; // règle du jour de la partie
+  if (rg === 'fievre') for (let i = 0, n = 0; i < contenus.length && n < 2; i++) if (contenus[i] === 'source') { contenus[i] = 'chemin'; n++; }
+  if (rg === 'horde') contenus.push(...Array(6).fill('monstre'));
   return brasse(R, contenus).map(t => {
     const r = R(), f = t === 'chemin' ? (r < .35 ? 'droit' : r < .7 ? 'virage' : r < .9 ? 'te' : 'croix')
       : (r < .3 ? 'salle' : r < .55 ? 'te' : r < .8 ? 'virage' : r < .92 ? 'droit' : 'croix');
@@ -28,8 +32,11 @@ function nouvelleSansFin(heros, acte, niveau) {
   // 14/11 (l'utilisateur : « un T vers le sud ne sert à rien, il faut pouvoir tourner autour comme à Kingdomino ») : on part du CENTRE, sorties dans les 4 directions
   const dep = { x:Math.floor(ILE_W / 2), y:Math.floor(ILE_H / 2) }; Object.assign(cases[dep.y][dep.x], { t:'depart', vu:true, visite:true, ouv:[1, 1, 1, 1], pose:true });
   r.ile = cases; r.pos = { ...dep }; r.porte = null; r.bossPos = null; r.direct = null;
-  r.sansfin = { pioche:sfSac(hasard(r)), offre:[], poses:1, elites:0 };
-  r.journal = [`🧩 Odyssée sans fin sur ${ILES[r.acte].nom} (${HEROS[heros].nom}) : l’île se construit tuile par tuile.`];
+  const regle = regleDuJour();
+  r.sansfin = { pioche:[], offre:[], poses:1, elites:0, etage:1, acte1:r.acte, regle:regle.id, primes:primesOffre(r), prime:null, debutEtage:{ victoires:0, poses:1 } };
+  r.sansfin.pioche = sfSac(Object.assign(hasard(r), { regle:regle.id }));
+  if (regle.id === 'des') r.relanceJour = 1;
+  r.journal = [`🧩 Odyssée sans fin sur ${ILES[r.acte].nom} (${HEROS[heros].nom}) : l’île se construit tuile par tuile.`, `${regle.e} Règle du jour : ${regle.n}. ${regle.d}`];
   sfOffre(r); return r;
 }
 // les tuiles déjà posées sont reliées si leurs sorties se font face
@@ -39,7 +46,7 @@ function relies(cases, x, y, a, b) {
 }
 // 3 tuiles visibles ; dès 2 fragments, la tuile du boss est toujours parmi elles
 function sfOffre(r) {
-  const S = r.sansfin; while (S.offre.length < 3) { if (!S.pioche.length) S.pioche = sfSac(hasard(r)); S.offre.push(S.pioche.shift()); }
+  const S = r.sansfin; while (S.offre.length < (S.regle === 'lanterne' ? 4 : 3)) { if (!S.pioche.length) S.pioche = sfSac(Object.assign(hasard(r), { regle:S.regle })); S.offre.push(S.pioche.shift()); }
   if (r.fragments >= 2 && !S.offre.some(t => t.t === 'boss') && !S.bossFait) S.offre[2] = { t:'boss', f:'salle', id:'boss' };
   // un marchand se présente si on n'en a pas croisé depuis 10 tuiles
   const dernier = S.dernierMarchand || 0; if (S.poses - dernier >= 10 && !S.offre.some(t => t.t === 'marchand')) { S.offre[1] = { t:'marchand', f:'te', id:'m' + S.poses }; S.dernierMarchand = S.poses; }
@@ -75,10 +82,14 @@ function sfPose(r, i, n, x, y) {
     // 14/11 (bug vu par l'utilisateur : impasse posée face au mur d'une voisine = case inaccessible) : on ouvre le passage DES DEUX CÔTÉS avec chaque voisine posée
     SF_DIR.forEach(([dx, dy], k) => { const v = caseA(r, x + dx, y + dy); if (v && v.pose) { c.ouv[k] = 1; v.ouv[(k + 2) % 4] = 1; } }); S.eboulement = false; }
   S.poses++; typeof guildeEvt === 'function' && guildeEvt('tuile', 1);
+  if (S.regle === 'cendres' && r.pv > 1) { r.pv--; } // règle du jour : −1 PV par tuile posée
   if (t.t === 'monstre') { c.niv = S.poses <= 6 ? 1 : S.poses <= 14 ? 2 : 3; c.ennemi = tire(R, I.pools[c.niv - 1]); }
   if (t.t === 'elite') { c.niv = 2; const s = ['heros', 'monstre', 'heros'][S.elites++ % 3]; if (s === 'monstre') c.ennemi = tire(R, I.elites); else { c.ennemi = 'heros'; c.renfort = tire(R, ['pc', 'pv', 'bouclier']); } }
   if (t.t === 'evenement') { const deja = r.ile.flat().map(k => k.ev).filter(Boolean), l = EVENEMENTS.filter(e => (I.evenements ? I.evenements.includes(e.id) : !e.ile) && !deja.includes(e.id) && !SF_SANS_EVENEMENT.includes(e.id)); c.ev = (l.length ? tire(R, l) : tire(R, EVENEMENTS.filter(e => !e.ile))).id; }
   if (t.t === 'boss') { c.ennemi = I.boss; c.niv = 1; S.bossFait = true; }
+  // 14/11 nuit : les salles rares. Le coffre piège cache un monstre fort ; la salle du défi, un combat à contrainte ; le trésor et la fontaine se règlent à l'écran
+  if (t.t === 'mimique') { c.niv = 3; c.ennemi = tire(R, I.elites); }
+  if (t.t === 'defi') { c.niv = 2; c.ennemi = tire(R, I.pools[1]); }
   if (t.t === 'marchand') S.dernierMarchand = S.poses;
   S.offre.splice(i, 1); sfOffre(r);
   r.journal.push(`🧩 ${SF_NOM_FORME[t.f]}${t.t !== 'chemin' ? ' · ' + SALLES_ODY[t.t].n : ''} posé.`);
@@ -95,3 +106,56 @@ function sfRepare(r) {
   const k = SF_DIR.findIndex(([dx, dy]) => { const v = caseA(r, a.x + dx, a.y + dy); return v && v.pose && v.visite; }); if (k < 0) return false;
   const [dx, dy] = SF_DIR[k], v = caseA(r, a.x + dx, a.y + dy); c.ouv[k] = 1; v.ouv[(k + 2) % 4] = 1; r.journal.push('🪨 Un passage s’ouvre vers la tuile posée.'); return true;
 }
+
+// =============================================================================================== 14/11 nuit : les étages, les règles du jour, les primes
+// (plan « Pourquoi revenir », partie 6, validé par l'utilisateur ; détails choisis par Claude, notés dans a-valider-nuit.html)
+const REGLES_SF = [
+  { id:'cendres', e:'🔥', n:'Cendres brûlantes', d:'Chaque tuile posée coûte 1 PV, mais l’or des combats est doublé.' },
+  { id:'nuit', e:'🌑', n:'Nuit noire', d:'Tu ne vois pas le contenu des tuiles avant de les poser (seulement leurs couloirs).' },
+  { id:'fievre', e:'🪙', n:'Fièvre de l’or', d:'Les coffres s’ouvrent sans clé, mais il y a moins de sources.' },
+  { id:'horde', e:'⚔', n:'Horde', d:'Six monstres de plus dans la pioche ; chaque monstre vaincu rapporte 15 or de plus.' },
+  { id:'lanterne', e:'🕯', n:'Lanterne fragile', d:'Chaque tuile nouvelle coûte 2 huiles, mais tu vois 4 tuiles au lieu de 3.' },
+  { id:'des', e:'🎲', n:'Dés chanceux', d:'Une relance gratuite de plus à chaque tour de combat.' },
+];
+// la même règle pour tout le monde le même jour
+function regleDuJour(d = new Date()) { const k = `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`; let h = 7; for (const ch of k) h = (h * 31 + ch.charCodeAt(0)) % 9973; return REGLES_SF[h % REGLES_SF.length]; }
+const regleSF = r => REGLES_SF.find(x => x.id === (r.sansfin && r.sansfin.regle));
+// l'île de chaque étage : on part de l'île choisie, puis Givre, Abîme… et à chaque tour complet, les ennemis ont +25 % de vie
+const ACTES_SF = ['brulees', 'givre', 'abime'];
+const acteEtage = (r, n) => ACTES_SF[(ACTES_SF.indexOf(r.sansfin.acte1 || 'brulees') + n - 1) % 3];
+const forceEtage = r => r.sansfin ? Math.floor(((r.sansfin.etage || 1) - 1) / 3) : 0;
+// les primes : un contrat par étage, choisi parmi 3 ; vérifié quand le boss de l'étage tombe
+const PRIMES_SF = [
+  { id:'chasseur', e:'🏹', n:'Chasseur', d:'Gagne 7 combats sur cet étage (boss compris).', ok:r => r.stats.victoires - r.sansfin.debutEtage.victoires >= 7 },
+  { id:'coffres', e:'🗝', n:'Pilleur', d:'Ouvre 2 coffres sur cet étage.', ok:r => r.ile.flat().filter(c => c.t === 'coffre' && c.fait).length >= 2 },
+  { id:'sansfeu', e:'🧊', n:'Sans repos', d:'Bats le boss sans t’arrêter à un feu de camp.', ok:r => !r.ile.flat().some(c => c.t === 'feu' && c.fait) },
+  { id:'econome', e:'💰', n:'Économe', d:'Bats le boss avec 200 or ou plus en poche.', ok:r => r.or >= 200 },
+  { id:'rapide', e:'⚡', n:'Éclair', d:'Bats le boss en posant 30 tuiles ou moins.', ok:r => r.sansfin.poses - r.sansfin.debutEtage.poses <= 30 },
+  { id:'intact', e:'❤', n:'Intact', d:'Bats le boss avec plus de la moitié de tes PV.', ok:r => r.pv > r.pvMax / 2 },
+  { id:'sans_marchand', e:'🙅', n:'Débrouillard', d:'Bats le boss sans rien acheter au marchand.', ok:r => !r.ile.flat().some(c => c.t === 'marchand' && c.achete) },
+];
+const PRIME_OR = 70, PRIME_XP = 100;
+function primesOffre(r) { const R = hasard(r); return brasse(R, PRIMES_SF.map(p => p.id)).slice(0, 3); }
+function choisitPrime(r, id) { const S = r.sansfin; if (!S.primes.includes(id)) return false; S.prime = id; const p = PRIMES_SF.find(x => x.id === id); r.journal.push(`🎯 Prime de l’étage ${S.etage} : ${p.n} (${p.d})`); return true; }
+// le boss de l'étage est tombé : la prime est-elle remplie ?
+function bilanEtage(r) {
+  const S = r.sansfin, p = S.prime && PRIMES_SF.find(x => x.id === S.prime), ok = !!(p && p.ok(r));
+  if (ok) { r.or += PRIME_OR; r.journal.push(`🎯 Prime « ${p.n} » remplie : +${PRIME_OR} or.`); if (typeof gagneXP === 'function') gagneXP(PRIME_XP, 'Prime remplie'); }
+  else if (p) r.journal.push(`🎯 Prime « ${p.n} » manquée.`);
+  return { prime:p, ok };
+}
+// descendre : une île neuve, on garde deck, reliques, sacoche, or, vie (avec un soin au pied de l'escalier)
+function sfEtageSuivant(r) {
+  const S = r.sansfin; S.etage++; r.acte = acteEtage(r, S.etage);
+  const N = 31; ILE_W = N; ILE_H = N;
+  r.ile = Array.from({ length:N }, (_, y) => Array.from({ length:N }, (_, x) => ({ x, y, t:'roche', vu:false, visite:false, fait:false })));
+  const dep = { x:15, y:15 }; Object.assign(r.ile[dep.y][dep.x], { t:'depart', vu:true, visite:true, ouv:[1, 1, 1, 1], pose:true }); r.pos = { ...dep };
+  const soin = Math.round(r.pvMax * .25), a = r.pv; r.pv = Math.min(r.pvMax, r.pv + soin); r.vivres += 8; r.fragments = 0;
+  Object.assign(S, { offre:[], poses:1, elites:0, bossFait:false, dernierMarchand:0, eboulement:false, attente:null, prime:null, debutEtage:{ victoires:r.stats.victoires, poses:1 } });
+  S.pioche = sfSac(Object.assign(hasard(r), { regle:S.regle })); S.primes = primesOffre(r);
+  r.journal.push(`🪜 Étage ${S.etage} : ${ILES[r.acte].nom}${forceEtage(r) ? ` (ennemis +${25 * forceEtage(r)} % de vie)` : ''}. Au pied de l’escalier, une source : +${r.pv - a} PV ; +8 huile.`);
+  if (typeof guildeEvt === 'function') { guildeEvt('etage', 1); guildeEvt('etage_atteint', S.etage); }
+  sfOffre(r); return r;
+}
+// ce que montre la pioche (la Nuit noire cache le contenu)
+const sfVu = (r, t) => r.sansfin && r.sansfin.regle === 'nuit' && t.t !== 'boss' && t.t !== 'chemin' ? { ...t, t:'mystere' } : t;
