@@ -284,9 +284,8 @@ async function voyage() {
   sc.insertAdjacentHTML('beforeend', `<div class="brouillard"></div><div class="cap">⛵ En route vers <b>${suiv.e} ${suiv.n}</b>…</div>`);
   new Image().src = fondEscale(suiv.cle);
   await pause(350); sc.classList.add('avance'); sc.querySelector('.brouillard').classList.add('monte');
-  await pause(1600); sc.style.backgroundImage = `url('${fondEscale(suiv.cle)}')`; sc.classList.toggle('plat', !!PLATEAUX_EXP[suiv.cle]); sc.classList.remove('avance'); sc.classList.add('arrive');
-  sc.querySelector('.brouillard').classList.remove('monte');
-  await pause(2000); chroniqueEscale(() => port());
+  // on reste dans la brume jusqu'à la page de récit : le décor de l'escale suivante ne se découvre qu'au combat (pas de surprise gâchée)
+  await pause(2200); chroniqueEscale(() => port());
 }
 // 14/11 (l'utilisateur : « il faut expliquer quoi faire quand on lance l'expédition ») : Moustache guide le premier passage au port,
 // une zone à la fois (le reste de l'écran est assombri). Revoir : bouton « Aide ».
