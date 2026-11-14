@@ -26,6 +26,14 @@
   addEventListener('load', () => setTimeout(verifie, 1500)); setInterval(verifie, 120000);
   document.addEventListener('visibilitychange', () => { if (!document.hidden) verifie(); });
 } catch (e) {} })();
+// 14/11 (l'utilisateur : « on peut bouger l'arrière-plan derrière la narration ») : quand une fenêtre ou une page de récit est ouverte,
+// la page derrière ne défile plus (seule la fenêtre défile si son texte est long).
+(() => { try {
+  const st = document.createElement('style'); st.textContent = 'html.bloque, html.bloque body { overflow:hidden !important; overscroll-behavior:none; } .fenetre, .fenetre > div, #chron { overscroll-behavior:contain; }';
+  document.head.appendChild(st);
+  const maj = () => document.documentElement.classList.toggle('bloque', !!document.querySelector('.fenetre, #chron, #guide'));
+  addEventListener('DOMContentLoaded', () => { maj(); new MutationObserver(maj).observe(document.body, { childList:true, subtree:true }); });
+} catch (e) {} })();
 const GM = (() => {
   const VOL = { titre:.5, menu:.45, heros:.45, duel:.4, elite:.42, boss:.45, carte:.45, recit:.45, marchand:.45, campement:.45, expeditions:.45, tuto:.45, mer:.45, victoire:.6, defaite:.6, feu:.5, vent:.45 };
   const volM = () => +(localStorage.getItem('guilde-vol-musique') || 100) / 100, volS = () => +(localStorage.getItem('guilde-vol-sons') || 100) / 100;
