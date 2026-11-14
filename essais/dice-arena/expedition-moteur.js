@@ -38,11 +38,11 @@ const RECRUES = {
 const ROLES = { rempart:'🛡 Rempart', lame:'⚔ Lame', tireur:'🏹 Tireur', soutien:'✚ Soutien' };
 const prixRecrue = k => RECRUES[k].gros ? 4 : 3;
 const CAPITAINES = {
-  maelle: { n:'La forge du bord', d:'La Forge compte une recrue de plus ; chaque victoire donne +1 attaque à la recrue de devant la plus faible.' },
-  aldric: { n:'Serment', d:'Deux fois par combat, une recrue qui devrait tomber reste à 1 PV.' },
+  maelle: { n:'La forge du bord', d:'La Forge compte une recrue de plus ; chaque victoire donne +1 attaque et +2 PV à la recrue de devant la plus faible.' },
+  aldric: { n:'Serment', d:'Une fois par combat, une recrue qui devrait tomber reste à 1 PV.' },
   pip:    { n:'La meute', d:'La Louve (3 / 6, Ombre) rejoint l’équipage gratuitement à l’escale 3 ; l’Ombre compte une recrue de plus.' },
-  oria:   { n:'Les éclaireurs', d:'Les Tireurs gagnent +1 attaque ; le recruteur montre une recrue de plus.' },
-  gorm:   { n:'Cor de guerre', d:'Au round 1, tout l’équipage a +1 attaque.' },
+  oria:   { n:'Les éclaireurs', d:'Les Tireurs gagnent +2 attaque ; le recruteur montre une recrue de plus.' },
+  gorm:   { n:'Cor de guerre', d:'Pendant les 3 premiers rounds, tout l’équipage a +1 attaque.' },
   zephine:{ n:'Transmutation', d:'À chaque passage au port, change jusqu’à deux recrues contre d’autres de même prix et de ta famille la plus nombreuse (même étoile).' },
 };
 const ESCALES2 = [
@@ -159,7 +159,7 @@ function combattants(camp, cote) {
     const base = RECRUES[u.key] || {};
     const c = { ...u, cote, rang:r, pos:i, vmax:0, poisonSur:0, mort:false };
     // 14/11 : les Soutiens frappent avec LEUR attaque seulement (les bonus d'attaque du Clan et des Tambours vont aux autres : sinon le Clan de Gorm passait de 49 à 81 %)
-    c.a = u.a + (u.bonusA || 0) + (u.role === 'soutien' ? (clan >= 2 ? 1 : 0) : (clan ? 1 : 0) + tambours) + (cap === 'oria' && u.role === 'tireur' ? 1 : 0);
+    c.a = u.a + (u.bonusA || 0) + (u.role === 'soutien' ? (clan >= 2 ? 1 : 0) : (clan ? 1 : 0) + tambours) + (cap === 'oria' && u.role === 'tireur' ? (globalThis.ORIA_TIR || 2) : 0);
     c.v = u.v + (u.bonusV || 0) + (u.fam === 'garde' ? [0, 3, 6][garde] : 0);
     c.barriere = !!(base.barriere || u.barriere); c.charge = !!(base.charge || u.charge); c.epines = (base.epines || 0) + (u.fam === 'garde' ? garde : 0);
     c.poison = base.poison || 0; c.soigneur = base.soigneur || 0; c.soinTous = base.soinTous || 0;
@@ -185,7 +185,7 @@ function combatExp(campJ, campE, R) {
   const cible = C => { avance(C); const f = front(C), l = f.length ? f : vivants(C); if (!l.length) return null; const b = l.filter(u => u.barriere); return (b.length ? b : l)[Math.floor(R() * (b.length || l.length))]; };
   const tue = (C, u) => {
     if (u.v > 0) return;
-    if (C.serment && u.key !== 'capitaine' && (C.sermentFait || 0) < 2) { C.sermentFait = (C.sermentFait || 0) + 1; u.v = 1; ev.push({ t:'serment', id:u.id }); return; }
+    if (C.serment && u.key !== 'capitaine' && (C.sermentFait || 0) < (C.sermentMax || 1)) { C.sermentFait = (C.sermentFait || 0) + 1; u.v = 1; ev.push({ t:'serment', id:u.id }); return; }
     u.mort = true; ev.push({ t:'mort', id:u.id });
   };
   // 14/11 (choix de l'utilisateur, comme dans les autobattlers) : les Soutiens frappent aussi depuis derrière, en plus de leur pouvoir
@@ -214,7 +214,7 @@ function combatExp(campJ, campE, R) {
       } else {
         de = 1 + Math.floor(R() * 6); if (u.coupSur && !u.coupSurFait) { u.coupSurFait = true; de = 6; } dg = de === 6 ? u.a * 2 : de === 1 ? 0 : u.a; txt = de === 6 ? 'critique' : de === 1 ? 'raté' : ''; if (dg > 0 && u.rang === 'ar' && !u.tireur && u.role !== 'soutien') { dg = Math.ceil(dg / 2); txt += (txt ? ' · ' : '') + 'de derrière : moitié'; }
       }
-      if (A.cor && round === 1 && dg > 0) dg += 1;
+      if (A.cor && round <= (A.corRounds || 3) && dg > 0) dg += (A.corBonus || 1);
       if (u.embuscade && !u.embuscadeFaite && dg > 0) { dg *= 2; u.embuscadeFaite = true; txt = 'Embuscade !'; }
       if (dg > 0 && c.esquive && !c.esquiveFaite) { c.esquiveFaite = true; ev.push({ t:'esquive', src:u.id, id:c.id, de }); continue; }
       c.v -= dg; ev.push({ t:'coup', src:u.id, id:c.id, dg, de, txt, v:c.v });
@@ -260,7 +260,7 @@ function joueEscale(X, R) {
     const fam = compteFamilles(X, X.plateau), forges = surPlateau(X).filter(u => u.fam === 'forge');
     if (palier(fam.forge || 0) === 1 && forges.length) { const f = forges.sort((a, b) => a.a - b.a)[0]; f.bonusA++; res.forge = `${f.n} +1 attaque`; }
     if (palier(fam.forge || 0) === 2) { forges.forEach(f => { f.bonusA++; f.bonusV += 2; }); res.forge = 'toutes les Forges +1 attaque et +2 PV'; }
-    if (X.heros === 'maelle') { const d = X.plateau.av.filter(u => u && u.key !== 'capitaine').sort((a, b) => (a.a + a.bonusA) - (b.a + b.bonusA))[0]; if (d) { d.bonusA++; res.maelle = `${d.n} +1 attaque`; } }
+    if (X.heros === 'maelle') { const d = X.plateau.av.filter(u => u && u.key !== 'capitaine').sort((a, b) => (a.a + a.bonusA) - (b.a + b.bonusA))[0]; if (d) { d.bonusA++; d.bonusV = (d.bonusV || 0) + (globalThis.MAELLE_PV ?? 2); res.maelle = `${d.n} +1 attaque, +${globalThis.MAELLE_PV ?? 2} PV`; } }
     if (esc.type === 'boss') { X.fini = 'gagne'; return res; }
     X.escale++;
   } else {
