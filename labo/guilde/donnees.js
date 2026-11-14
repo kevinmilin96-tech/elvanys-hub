@@ -187,7 +187,7 @@ const PROFILS = {
   gorm:   { Attaque:4, Défense:3, Soin:1, Contrôle:2, Difficulté:3, style:'Soutien' },
   zephine:{ Attaque:3, Défense:2, Soin:1, Contrôle:4, Difficulté:5, style:'Alchimiste' },
 };
-const EQUILIBRE = { maelle:50, aldric:47, pip:50, oria:50, gorm:51, zephine:52 };
+const EQUILIBRE = { maelle:52, aldric:53, pip:47, oria:50, gorm:53, zephine:46 }; // 14/11 nuit : deck de 30, simulateur 60 duels par paire
 const POOL_PLUS = { pip:['rosee'], oria:['raccourci', 'guetteur'] };
 const DECK_TAILLE = 30, DECK_MAX = 2; // 14/11 nuit : 21 → 30 (cartes nouvelles, fin de donnees.js)
 const deckBase = id => HEROS[id].monstre ? [] : [...HEROS[id].deck, ...GUILDE];

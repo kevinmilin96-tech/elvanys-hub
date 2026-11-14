@@ -151,7 +151,7 @@
 <script>
 const ZOK = () => localStorage.getItem('guilde-tuto') === 'fait'; // Zéphine : débloquée par le tutoriel (12/11)
 
-const VERSION = '20261114-222307';
+const VERSION = '20261114-222822';
 function verifieVersion() {
   fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
     v = (v || '').trim(); if (!v || v === VERSION || document.getElementById('majbar')) return;
@@ -164,18 +164,18 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261114-222307"></script>
-<script src="musique.js?v=20261114-222307"></script>
-<script src="rang.js?v=20261114-222307"></script>
-<script src="heros-etoiles.js?v=20261114-222307"></script>
-<script src="donnees.js?v=20261114-222307"></script>
-<script src="guide.js?v=20261114-222307"></script>
-<script src="odyssee.js?v=20261114-222307"></script>
-<script src="bestiaire.js?v=20261114-222307"></script>
-<script src="aventure.js?v=20261114-222307"></script>
-<script src="odyssee-sansfin.js?v=20261114-222307"></script>
-<script src="pantheon.js?v=20261114-222307"></script>
-<script src="chronique.js?v=20261114-222307"></script>
+<script src="cartes.js?v=20261114-222822"></script>
+<script src="musique.js?v=20261114-222822"></script>
+<script src="rang.js?v=20261114-222822"></script>
+<script src="heros-etoiles.js?v=20261114-222822"></script>
+<script src="donnees.js?v=20261114-222822"></script>
+<script src="guide.js?v=20261114-222822"></script>
+<script src="odyssee.js?v=20261114-222822"></script>
+<script src="bestiaire.js?v=20261114-222822"></script>
+<script src="aventure.js?v=20261114-222822"></script>
+<script src="odyssee-sansfin.js?v=20261114-222822"></script>
+<script src="pantheon.js?v=20261114-222822"></script>
+<script src="chronique.js?v=20261114-222822"></script>
 <script>
 // le moteur du Duel n'est pas chargé ici : les cartes de l'Odyssée appellent degats/soin seulement en combat (dans duel.html)
 const log = () => {}, degats = () => {}, soin = () => {}, altere = () => {}, invoque = () => {}, adv = () => ({}), fin = () => {};
