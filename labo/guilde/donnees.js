@@ -138,7 +138,7 @@ const HEROS = {
     ultime:{ n:'La Carte du monde', txt:'3 dés qui se suivent', d:'15 dégâts à une cible et Silence (pas de Sort au prochain tour adverse).', cond:vs => suite(vs, 3), cible:'ennemi',
       f:(J, vs, k) => { degats(k, 15); adv(J).silence = true; log(`${adv(J).nom} est réduit au Silence.`); } } },
   gorm: { hist:'Ce géant au cœur tendre sonne le grand cor de la Guilde. Quand il souffle, même les plus fatigués se relèvent.', cit:'« Un souffle, et toute la guilde se lève. »', role:'Soutien : renforce toutes ses unités d’un coup. Joue sur les dés pairs ou impairs.', papier:'Repris de Grom : Cri de guerre plus fort quand on a moins de PV, Peau épaisse et son Retour, Tranche-chair devenu Tranche-vent.', nom:'Gorm', titre:'le sonneur de cor', c:'#4f8bff', pv:49,
-    deck:['grave', 'grave', 'aigue', 'aigue', 'echo', 'tambour', 'tambour', 'flute', 'colosse', 'trancheV', 'trancheV', 'cor'],
+    deck:['grave', 'flute', 'aigue', 'aigue', 'echo', 'tambour', 'tambour', 'flute', 'colosse', 'trancheV', 'trancheV', 'cor'], // 14/11 : une Note grave → une 2e Joueuse de flûte (5 créatures au lieu de 4 ; l'utilisateur : « que des améliorations, pas de créature »)
     passif:'Second souffle : quand tes PV sont plus bas que ceux de l’adversaire, ton Pouvoir donne +2 attaque de plus.',
     garde:{ n:'Peau épaisse', txt:'1 ou 2 dés', d:'Bouclier = somme des dés impairs ; chaque 6 donne Épines 2.', cond:vs => vs.length <= 2, val:vs => somme(vs.filter(v => !pair(v))) + 2 * vs.filter(v => v === 6).length,
       f:(J, vs) => { const b = somme(vs.filter(v => !pair(v))), e = 2 * vs.filter(v => v === 6).length; J.gardeB += b; J.gardeE += e; log(`${J.nom} : Peau épaisse${b ? `, Bouclier ${b}` : ''}${e ? `, Épines ${e}` : ''}.`); } },
