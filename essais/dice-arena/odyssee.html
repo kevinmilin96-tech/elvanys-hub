@@ -129,6 +129,8 @@
   body:not(.givre):not(.abime) .brume { fill:#1c1310; } body:not(.givre):not(.abime) svg.ile { background:#1c1310 !important; border-color:#7a3b12 !important; }
   body:not(.givre):not(.abime) .bord { fill:#120b07; stroke:#120b07; }
   body:not(.givre):not(.abime) .ico { fill:#fff3dc !important; filter:drop-shadow(0 1px 2px #000) !important; } body:not(.givre):not(.abime) .niv { fill:#ffd27a !important; }
+  .apercu { opacity:.92; } .sfapercu-cadre { fill:none; stroke:#f3c96b; stroke-width:3; animation:pulse2 1.1s ease-in-out infinite; }
+  .sfbt button.or { background:#f3c96b; color:#2b1d0a; border:0; font-weight:bold; }
 </style>
 </head>
 <body>
@@ -137,7 +139,7 @@
 <script>
 const ZOK = () => localStorage.getItem('guilde-tuto') === 'fait'; // Zéphine : débloquée par le tutoriel (12/11)
 
-const VERSION = '20261114-190512';
+const VERSION = '20261114-190750';
 function verifieVersion() {
   fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
     v = (v || '').trim(); if (!v || v === VERSION || document.getElementById('majbar')) return;
@@ -150,14 +152,14 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261114-190512"></script>
-<script src="musique.js?v=20261114-190512"></script>
-<script src="donnees.js?v=20261114-190512"></script>
-<script src="guide.js?v=20261114-190512"></script>
-<script src="odyssee.js?v=20261114-190512"></script>
-<script src="odyssee-sansfin.js?v=20261114-190512"></script>
-<script src="pantheon.js?v=20261114-190512"></script>
-<script src="chronique.js?v=20261114-190512"></script>
+<script src="cartes.js?v=20261114-190750"></script>
+<script src="musique.js?v=20261114-190750"></script>
+<script src="donnees.js?v=20261114-190750"></script>
+<script src="guide.js?v=20261114-190750"></script>
+<script src="odyssee.js?v=20261114-190750"></script>
+<script src="odyssee-sansfin.js?v=20261114-190750"></script>
+<script src="pantheon.js?v=20261114-190750"></script>
+<script src="chronique.js?v=20261114-190750"></script>
 <script>
 // le moteur du Duel n'est pas chargé ici : les cartes de l'Odyssée appellent degats/soin seulement en combat (dans duel.html)
 const log = () => {}, degats = () => {}, soin = () => {}, altere = () => {}, invoque = () => {}, adv = () => ({}), fin = () => {};
@@ -275,7 +277,9 @@ function dessine() {
   if (r.sansfin) sfEcran(); else Guide.lance('odyssee', GUIDE_ODY);
 }
 // =============================================================================================== l'Odyssée sans fin : la pioche sous la carte (14/11)
-let sfSel = null, sfRot = 0;
+let sfSel = null, sfRot = 0, sfCase = null;
+// les sens (0-3) où la tuile choisie colle à la case (x, y)
+const sfSens = (x, y) => [0, 1, 2, 3].filter(n => sfPlaces(R, R.sansfin.offre[sfSel], n, !!R.sansfin.eboulement).some(p => p.x === x && p.y === y));
 function tuileSVG(t, n, taille) {
   const o = tourne(SF_FORMES[t.f], n), L = 9, salle = t.f === 'salle' || t.t !== 'chemin';
   let d = salle ? 'M14,14h20v20h-20z' : 'M15,15h18v18h-18z';
@@ -289,9 +293,10 @@ function sfEcran() {
   if (sfBloque(R) && !S.eboulement) { S.eboulement = true; sauve(); }
   const b = document.querySelector('.bandeau'); if (!b) return;
   b.id = 'pioche';
-  b.innerHTML = `<div class="sfent">${S.eboulement ? '🪨 <b>Éboulement</b> : plus aucune sortie ne colle. Ta tuile se pose où tu veux, à côté du donjon.' : sfSel === null ? '🧩 Choisis une tuile, puis une case <b style="color:#7dffb0">verte</b>.' : '⟳ tourne la tuile, puis touche une case <b style="color:#7dffb0">verte</b> sur la carte.'}</div>
+  b.innerHTML = `<div class="sfent">${S.eboulement ? '🪨 <b>Éboulement</b> : plus aucune sortie ne colle. Ta tuile se pose où tu veux, à côté du donjon.' : sfSel === null ? '🧩 Choisis une tuile, puis une case <b style="color:#7dffb0">verte</b>.' : sfCase ? '👀 Regarde la tuile sur la carte : ⟳ pour la tourner, puis ✔ pour la poser.' : 'Touche une case <b style="color:#7dffb0">verte</b> sur la carte : la tuile s’y affichera avant d’être posée.'}</div>
     <div class="sftuiles">${S.offre.map((t, i) => `<button class="sft ${sfSel === i ? 'sel' : ''}" onclick="sfChoisit(${i})">${tuileSVG(t, sfSel === i ? sfRot : 0, 58)}<small>${t.t === 'chemin' ? SF_NOM_FORME[t.f] : t.t === 'boss' ? 'la porte du boss' : SALLES_ODY[t.t].n}</small></button>`).join('')}</div>
-    <div class="sfbt"><button ${sfSel === null ? 'disabled' : ''} onclick="sfRot = (sfRot + 1) % 4; sfEcran(); sfCibles()">⟳ Tourner</button><button ${R.vivres >= 1 ? '' : 'disabled'} onclick="if (sfRepioche(R)) { sfSel = null; sauve(); dessine(); }">🔄 Repiocher (1 🪔)</button></div>`;
+    <div class="sfbt">${sfCase ? `<button onclick="sfTourne()">⟳ Tourner</button><button class="or" onclick="sfPoser()">✔ Poser ici</button><button onclick="sfCase = null; sfEcran()">✖ Annuler</button>`
+      : `<button ${sfSel === null ? 'disabled' : ''} onclick="sfRot = (sfRot + 1) % 4; sfEcran()">⟳ Tourner</button><button ${R.vivres >= 1 ? '' : 'disabled'} onclick="if (sfRepioche(R)) { sfSel = null; sfCase = null; sauve(); dessine(); }">🔄 Repiocher (1 🪔)</button>`}</div>`;
   sfCibles();
   Guide.lance('odyssee-sansfin', [
     [null, 'L’Odyssée sans fin : ici, l’île <b>n’existe pas encore</b>. C’est toi qui la construis, tuile par tuile.'],
@@ -299,17 +304,22 @@ function sfEcran() {
     ['svg.ile', 'Touche une case <b>verte</b> pour la poser : les couloirs doivent se raccorder. Ton héros y entre aussitôt (1 huile 🪔). Bats 2 élites 💀 et la porte du boss 👑 viendra dans ta pioche. Bonne construction, miaou !'],
   ]);
 }
-function sfChoisit(i) { sfRot = sfSel === i ? (sfRot + 1) % 4 : 0; sfSel = i; GM.son('choisir'); sfEcran(); }
+function sfChoisit(i) { if (sfSel !== i) { sfRot = 0; sfCase = null; } sfSel = i; GM.son('choisir'); sfEcran(); }
+function sfTourne() { const l = sfSens(sfCase.x, sfCase.y); if (!l.length) return; sfRot = l[(l.indexOf(sfRot) + 1) % l.length]; GM.son('choisir'); sfEcran(); }
+function sfVise(x, y) { const l = sfSens(x, y); if (!l.length) { GM.son('erreur'); return; } sfCase = { x, y }; sfRot = l.includes(sfRot) ? sfRot : l[0]; GM.son('choisir'); sfEcran(); }
 function sfCibles() {
-  const g = document.getElementById('cels'); if (!g) return; const old = document.getElementById('sfcibles'); if (old) old.remove();
+  const g = document.getElementById('cels'); if (!g) return; ['sfcibles', 'sfapercu'].forEach(i => { const o = document.getElementById(i); if (o) o.remove(); });
   if (sfSel === null || !R.sansfin.offre[sfSel]) return;
-  const P = sfPlaces(R, R.sansfin.offre[sfSel], sfRot, !!R.sansfin.eboulement);
+  const vu = new Set(), P = []; [0, 1, 2, 3].forEach(n => sfPlaces(R, R.sansfin.offre[sfSel], n, !!R.sansfin.eboulement).forEach(p => { const k = p.x + ',' + p.y; if (!vu.has(k)) { vu.add(k); P.push(p); } }));
   g.insertAdjacentHTML('beforeend', `<g id="sfcibles" style="pointer-events:none">${P.map(p => `<rect class="sfcible" x="${p.x * CEL + 4}" y="${p.y * CEL + 4}" width="${CEL - 8}" height="${CEL - 8}" rx="8"/>`).join('')}</g>`);
-  if (!P.length) { const e = document.querySelector('#pioche .sfent'); if (e) e.innerHTML = '🚫 Dans ce sens, cette tuile ne colle nulle part : tourne-la ⟳ ou choisis-en une autre.'; }
+  if (sfCase) g.insertAdjacentHTML('beforeend', `<g id="sfapercu" style="pointer-events:none"><svg x="${sfCase.x * CEL}" y="${sfCase.y * CEL}" width="${CEL}" height="${CEL}" viewBox="0 0 48 48" class="apercu">${tuileSVG(R.sansfin.offre[sfSel], sfRot, 48).replace(/^<svg[^>]*>|<\/svg>$/g, '')}</svg><rect x="${sfCase.x * CEL + 1}" y="${sfCase.y * CEL + 1}" width="${CEL - 2}" height="${CEL - 2}" rx="6" class="sfapercu-cadre"/></g>`);
+  if (!P.length) { const e = document.querySelector('#pioche .sfent'); if (e) e.innerHTML = '🚫 Cette tuile ne colle nulle part : choisis-en une autre (ou repioche).'; }
 }
-async function sfPoser(x, y) {
+async function sfPoser() {
+  if (!sfCase) return; const { x, y } = sfCase;
   const c = sfPose(R, sfSel, sfRot, x, y); if (!c) { GM.son('erreur'); return; }
-  GM.son('tour-batir'); sfSel = null; sfRot = 0; sauve(); dessine();
+  GM.son('tour-batir'); sfSel = null; sfRot = 0; sfCase = null; sauve(); dessine();
+  enMarche = true; await dodo(1100); enMarche = false; // on laisse le temps de voir la tuile posée
   destination = { x, y }; await marcheVers(x, y);
 }
 // 14/11 : le guide de Moustache au premier passage sur l'île
@@ -414,7 +424,7 @@ function toucheCarte(e) {
   if (Date.now() - dernierToucher < 250) return; dernierToucher = Date.now();
   const svg = e.currentTarget, m = svg.getScreenCTM(); if (!m) return; const pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY;
   const q = pt.matrixTransform(m.inverse()), x = Math.floor(q.x / CEL), y = Math.floor(q.y / CEL);
-  if (x >= 0 && y >= 0 && x < ILE_W && y < ILE_H) { if (R.sansfin && sfSel !== null && !enMarche) sfPoser(x, y); else marcheVers(x, y); }
+  if (x >= 0 && y >= 0 && x < ILE_W && y < ILE_H) { if (R.sansfin && sfSel !== null && !enMarche) sfVise(x, y); else marcheVers(x, y); }
 }
 // 14/11 (l'utilisateur : « sur l'île gelée, on dirait un château dans le désert ») : le plan prend les couleurs de chaque île
 const TEINTE_PAPIER = { brulees:'0 0 0 0 .50  0 0 0 0 .30  0 0 0 0 .16  0 0 0 -1.6 1.05', givre:'0 0 0 0 .32  0 0 0 0 .45  0 0 0 0 .60  0 0 0 -1.6 1.05', abime:'0 0 0 0 .30  0 0 0 0 .16  0 0 0 0 .42  0 0 0 -1.6 1.05' };
