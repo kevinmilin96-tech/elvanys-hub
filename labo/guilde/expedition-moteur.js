@@ -54,7 +54,7 @@ const ESCALES2 = [
   { n:'Le Nid du Titan', e:'👑', cle:'nid', type:'boss' },
 ];
 // les monstres de chaque escale (une rangée devant, une derrière) ; DUR_EXP règle la difficulté au simulateur
-const DUR_EXP = [1.1, 1, 1.2, 1, 1.5, 1.55]; // réglé au simulateur le 13/11
+const DUR_EXP = [1.4, 1.3, 1.6, 1.3, 2, 2.15]; // réglé au simulateur le 14/11 (avec les ordres du capitaine ; avant : 1.1, 1, 1.2, 1, 1.5, 1.55)
 const MONSTRES_EXP = [
   { av:[['Gobelin', 3, 7], ['Gobelin chef', 3, 9]], ar:[['Gobelin lanceur', 2, 5, 'tireur']] },
   null,
@@ -305,9 +305,22 @@ function rangePlateau(X) {
   X.plateau = P; X.cale = [0, 1, 2].map(i => cale[i] || null);
 }
 // une expédition entière jouée par le pilote (simulateur d'équilibrage)
+// 14/11 : le pilote donne aussi les ordres du capitaine (comme un joueur raisonnable) : relance les dés faibles, 5-6 sur la meilleure
+// Lame de devant, 3-4 sur les attaquants, 1-2 sur le Rempart de devant (ou le capitaine). Sert à l'équilibrage.
+function piloteOrdres(X, R) {
+  const d = () => 1 + Math.floor(R() * 6); let ds = [d(), d(), d()];
+  for (let k = 0; k < 2; k++) ds = ds.map(v => v <= 2 && R() < .7 ? d() : v);
+  const crew = [...X.plateau.av.map(u => u && { u, av:true }), ...X.plateau.ar.map(u => u && { u, av:false })].filter(Boolean); if (!crew.length) { X.ordres = null; return; }
+  const att = x => (x.u.a + (x.u.bonusA || 0)) * (x.av || x.u.role === 'tireur' ? 1 : .3), u = {};
+  [...ds].sort((a, b) => b - a).forEach(v => { const b = v <= 2 ? { v:3 } : v <= 4 ? { a:2 } : { sur:true };
+    const cible = v <= 2 ? (crew.find(x => x.av && (x.u.role === 'rempart' || x.u.key === 'capitaine')) || crew[0]) : [...crew].sort((x, y) => att(y) - att(x))[0];
+    const o = u[cible.u.id] || (u[cible.u.id] = {}); if (b.a) o.a = (o.a || 0) + b.a; if (b.v) o.v = (o.v || 0) + b.v; if (b.sur) o.sur = true; });
+  const s = [...ds].sort((a, b) => a - b), c = s[0] === s[2] ? { a:2 } : s[0] === s[1] || s[1] === s[2] ? { a:1 } : s[1] === s[0] + 1 && s[2] === s[1] + 1 ? { v:3 } : null;
+  X.ordres = { u, tous:c ? { a:c.a || 0, v:c.v || 0 } : null };
+}
 function simuleExpedition(heros, graine) {
   const X = nouvelleExpedition(heros, graine);
-  for (let pas = 0; pas < 12 && !X.fini; pas++) { pilotePort(X); joueEscale(X, hasardX(X)); }
+  for (let pas = 0; pas < 12 && !X.fini; pas++) { pilotePort(X); piloteOrdres(X, hasardX(X)); joueEscale(X, hasardX(X)); }
   return { gagne:X.fini === 'gagne', coeurs:X.coeurs, escale:X.escale, victoires:X.victoires, fusions:toutes(X).filter(u => u.star).length, fam:compteFamilles(X, X.plateau) };
 }
 
