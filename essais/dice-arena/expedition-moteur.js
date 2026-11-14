@@ -308,15 +308,15 @@ function simuleExpedition(heros, graine) {
 // ----------------------------------------------------------------------------------------------- les choix des pages d'escale (13/11, à l'échelle de la v2)
 const CHOIX_EXP2 = {
   crique:   [{ t:'Débarquer en force, torches allumées', d:'Le butin des gobelins : +2 pièces tout de suite.', f:X => { X.or += 2; } },
-             { t:'Se faufiler par les rochers à la nuit', d:'Les gobelins dorment à moitié : 20 % de PV en moins.', f:X => { X.prochain = { ennemis:.8 }; } }],
+             { t:'Se faufiler par les rochers à la nuit', d:'Les gobelins dorment à moitié : au prochain combat, ils ont 20 % de PV en moins.', f:X => { X.prochain = { ennemis:.8 }; } }],
   falaises: [{ t:'Hisser toutes les voiles', d:'On fonce sur le navire rival : la rangée de devant a Charge (frappe en premier).', f:X => { X.prochain = { charge:true }; } },
              { t:'Longer la falaise, prudemment', d:'Un nid de mouettes plein de pièces perdues : +2 pièces.', f:X => { X.or += 2; } }],
   port:     [{ t:'Passer à la caserne du port', d:'Un Milicien s’engage gratuitement (s’il reste une place).', f:X => { const p = placeLibre(X, 'av'); if (p) { poseA(X, p, nouvelleRecrue('milicien', 0)); fusionne(X); } } },
              { t:'Une soirée à la taverne', d:'Les marins paient leur tournée : +3 pièces.', f:X => { X.or += 3; } }],
   foret:    [{ t:'Demander l’aide des racines', d:'La forêt choisit ton camp : tout l’équipage +1 attaque pour ce combat.', f:X => { X.prochain = { atq:1 }; } },
              { t:'Cueillir les fruits de la forêt', d:'Ils se vendent bien au port : +2 pièces.', f:X => { X.or += 2; } }],
-  cratere:  [{ t:'Contourner la coulée de lave', d:'Les monstres s’épuisent à vous suivre : 15 % de PV en moins, mais −2 pièces de matériel brûlé.', f:X => { X.prochain = { ennemis:.85 }; X.or = Math.max(0, X.or - 2); } },
+  cratere:  [{ t:'Contourner la coulée de lave', d:'Les monstres s’épuisent à vous suivre : ils ont 15 % de PV en moins au prochain combat, mais tu perds 2 pièces de matériel brûlé.', f:X => { X.prochain = { ennemis:.85 }; X.or = Math.max(0, X.or - 2); } },
              { t:'Foncer à travers la fumée', d:'Surprise totale : tout l’équipage +1 attaque pour ce combat.', f:X => { X.prochain = { atq:1 }; } }],
   nid:      [{ t:'Graver les runes de la Guilde sur le pont', d:'Tout l’équipage +1 attaque contre le Titan.', f:X => { X.prochain = { atq:1 }; } },
-             { t:'Attendre que le Titan s’endorme', d:'Il se réveille engourdi : 10 % de PV en moins.', f:X => { X.prochain = { ennemis:.9 }; } }],
+             { t:'Attendre que le Titan s’endorme', d:'Il se réveille engourdi : le Titan a 10 % de PV en moins.', f:X => { X.prochain = { ennemis:.9 }; } }],
 };
