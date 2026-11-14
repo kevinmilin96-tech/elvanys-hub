@@ -8,7 +8,7 @@
 <title>La Guilde des Runes</title>
 <script>
 // Même mécanisme que le Duel : une nouvelle version = rechargement tout seul à l'ouverture (publier.sh change VERSION).
-const VERSION = '20261114-171201';
+const VERSION = '20261114-171241';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-menu-' + v)) { sessionStorage.setItem('recharge-menu-' + v, '1'); location.replace('menu.html?v=' + v); }
@@ -182,15 +182,16 @@ fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.te
     <a href="duel.html?parties=1"><b>📜</b>Mes parties</a>
     <a href="a-valider.html"><b>📝</b>À valider</a>
     <a href="#attente"><b>🧪</b>En attente</a>
+    <a href="#" id="versmenu" style="display:none" onclick="location.hash = ''; return false"><b>🏰</b>Menu</a>
     <a href="/"><b>⌂</b>Laboratoire</a>
   </div>
   <p class="bas">Prototype · images provisoires en attendant les peintures</p>
 </div>
 <div id="flash"></div>
 
-<script src="semaine.js?v=20261114-171201"></script>
-<script src="musique.js?v=20261114-171201"></script>
-<script src="donnees.js?v=20261114-171201"></script>
+<script src="semaine.js?v=20261114-171241"></script>
+<script src="musique.js?v=20261114-171241"></script>
+<script src="donnees.js?v=20261114-171241"></script>
 <script>
 // ciel étoilé + runes du portail (symboles, pas des lettres), aux couleurs des héros
 const ciel = document.getElementById('ciel');
@@ -287,6 +288,7 @@ function montre(id) {
   document.getElementById('eTitre').textContent = E.titre; document.getElementById('eSous').textContent = E.sous;
   if (!courant && localStorage.getItem('guilde-odyssee-finie')) document.getElementById('eSous').innerHTML = '🌟 <b style="color:var(--or)">Héros de l’Odyssée</b> · ' + E.sous;
   document.getElementById('retour').classList.toggle('vu', !!courant);
+  { const m = document.getElementById('versmenu'); if (m) m.style.display = courant ? '' : 'none'; }
   document.getElementById('heros').style.display = courant ? 'none' : '';
   car.innerHTML = E.portes.map((p, i) => `<div class="porte ${p.ferme ? 'ferme' : ''}" data-i="${i}">
     <div class="halo"></div><div class="dedans ${p.avenir ? 'tourne' : ''}">${dessin(p)}${p.ferme ? '<div class="verrou"><img src="menu-recu/cadenas.webp?v=2" alt="Verrouillé"></div>' : ''}</div>
