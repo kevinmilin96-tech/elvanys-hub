@@ -667,7 +667,7 @@
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
 // 14/11 : l'Odyssée sans fin a ses propres emplacements (odyssee.js lit SANSFIN)
 const SANSFIN = new URLSearchParams(location.search).get('sansfin') === '1', ODY_PAGE = 'odyssee.html' + (SANSFIN ? '?sansfin=1' : '');
-const VERSION = '20261114-193506';
+const VERSION = '20261114-194438';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -686,11 +686,11 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261114-193506"></script>
-<script src="musique.js?v=20261114-193506"></script>
-<script src="donnees.js?v=20261114-193506"></script>
-<script src="odyssee.js?v=20261114-193506"></script>
-<script src="chronique.js?v=20261114-193506"></script>
+<script src="cartes.js?v=20261114-194438"></script>
+<script src="musique.js?v=20261114-194438"></script>
+<script src="donnees.js?v=20261114-194438"></script>
+<script src="odyssee.js?v=20261114-194438"></script>
+<script src="chronique.js?v=20261114-194438"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -1576,7 +1576,7 @@ function dessine() {
     const q = ciblage.quoi, vs = vals(ciblage.ds), d = q === 'frappe' ? `Frappe (${vs.join(', ')}) : ${FRAPPE.dg(vs)} dégâts` : q === 'technique' ? `Technique (${vs.join(', ')}) : ${techDg(vs)} dégâts`
       : q === 'pouvoir' ? `${h.pouvoir.n} : ${h.pouvoir.d}` : q === 'ultime' ? `${h.ultime.n} : ${h.ultime.d}` : CARTES[q] ? `${CARTES[q].n} : ${CARTES[q].d}` : '';
     { const defA = adv(J).front.filter(u => u.defense && !u.cachee); // 14/11 (l'utilisateur : « je ne peux plus attaquer le héros en face ») : on dit POURQUOI
-      bandeau = `🎯 ${d}<br>${defA.length ? `🛡 ${defA.map(u => u.n).join(', ')} ${defA.length > 1 ? 'sont' : 'est'} <b>en défense</b> : ${defA.length > 1 ? 'ils prennent' : 'il prend'} tous tes coups jusqu’à son prochain tour. Touche ${defA.length > 1 ? 'l’une d’elles' : 'la créature'} (en vert).` : (q === 'frappe' || q === 'technique' || ciblage.type === 'ennemi' ? 'Touche la cible en vert : le héros (son cadre brille) ou une créature.' : 'Touche la cible (en vert).')}`; }
+      bandeau = `🎯 ${d}<br>${defA.length ? `🛡 ${defA.map(u => u.n).join(', ')} ${defA.length > 1 ? 'sont' : 'est'} <b>en défense</b> : ${defA.length > 1 ? 'ils prennent' : 'il prend'} tous tes coups jusqu’à son prochain tour. Touche ${defA.length > 1 ? 'l’une d’elles' : 'la créature'} (en vert).` : (q === 'frappe' || q === 'technique' || ciblage.type === 'ennemi' ? 'Touche la cible en vert : le héros (son cadre brille) ou une créature.' + (q === 'frappe' || q === 'technique' ? '<br><small>Ton héros frappe avec ses dés : la créature touchée ne riposte pas (seules les créatures se rendent les coups entre elles).</small>' : '') : 'Touche la cible (en vert).')}`; }
   }
   else if (attaquant) bandeau = `⚔ ${attaquant.n} attaque : touche une cible en vert.`;
   else if (sel.length) bandeau = `Dés choisis : ${vals(sel).join(', ')}. Touche maintenant une action ou une carte qui s’allume en vert.${sel.length === 1 && sel[0].sac && !sel[0].extra && J.id !== 'oria' ? `<br><small>🎲 Ce dé peut encore faire : ${sel[0].sac.length ? [...sel[0].sac].sort().join(' · ') : 'tout (sac neuf)'}</small>` : ''}`;
@@ -1726,6 +1726,7 @@ function regles(court) {
   <li><b>Les dés</b> : tu lances 3 dés au tour 1, 4 au tour 2, puis 5 à partir du tour 3 (les emplacements 🔒 montrent quand ils arrivent). Chaque dé a son <b>sac</b> de 6 faces mélangées : il sort chaque face une fois avant que le sac se remplisse (« sac : 1 3 4 » = les faces qui restent).</li>
   <li>La <b>Frappe</b>, commune à tous : 2 dés identiques ou plus. Dégâts = la valeur du dé + un bonus (paire +0, 3 dés +3, 4 dés +6, 5 dés +10) : deux 6 = 6, trois 4 = 7, cinq 6 = 16. Gratuite.</li>
   <li>La <b>Technique</b>, commune à tous : 3, 4 ou 5 dés qui se suivent (par exemple 2-3-4) font 4, 7 ou 10 dégâts. Gratuite.</li>
+  <li><b>La riposte</b> : quand une de tes créatures en attaque une autre, elle reçoit en retour l’attaque de sa cible (et ses Épines). Les actions de ton héros (Frappe, Technique, Pouvoir, Ultime) et les sorts, eux, ne déclenchent <b>pas</b> de riposte.</li>
   <li>La <b>Garde</b> et le <b>Pouvoir</b> de ton héros sont gratuits : il suffit des bons dés.</li>
   <li>L’<b>Ultime</b> : sa <b>jauge ⚡</b> gagne 1 point par dé posé (pas vendu) et 1 point tous les 5 dégâts que tu subis. Pleine (l’anneau doré de ton portrait est complet et brille), l’Ultime se joue avec ses dés et 3 PC, une fois par combat : choisis les dés, puis <b>touche ton portrait</b>.</li>
   <li><b>Relancer</b> (bouton en bas) : choisis des dés puis touche « Relancer ». Tu as <b>2 relances gratuites</b> par tour ; ensuite, chaque dé relancé coûte 1 PC.</li>
@@ -2182,14 +2183,14 @@ async function joueFX() {
 // toucher l'écran pendant les animations les accélère
 document.addEventListener('pointerdown', () => { if (fxOn && !(S && S.tuto)) fxVite = .5; }, true); // 14/11 : plus d'accélération dans le tutoriel
 </script>
-<script src="profil.js?v=20261114-193506"></script>
-<script src="pantheon.js?v=20261114-193506"></script>
-<script src="tuto.js?v=20261114-193506"></script>
-<script src="deux.js?v=20261114-193506"></script>
-<script src="invasion.js?v=20261114-193506"></script>
-<script src="enigme-table.js?v=20261114-193506"></script>
-<script src="forge.js?v=20261114-193506"></script>
-<script src="semaine.js?v=20261114-193506"></script>
-<script src="enigme.js?v=20261114-193506"></script>
+<script src="profil.js?v=20261114-194438"></script>
+<script src="pantheon.js?v=20261114-194438"></script>
+<script src="tuto.js?v=20261114-194438"></script>
+<script src="deux.js?v=20261114-194438"></script>
+<script src="invasion.js?v=20261114-194438"></script>
+<script src="enigme-table.js?v=20261114-194438"></script>
+<script src="forge.js?v=20261114-194438"></script>
+<script src="semaine.js?v=20261114-194438"></script>
+<script src="enigme.js?v=20261114-194438"></script>
 </body>
 </html>
