@@ -111,18 +111,24 @@
   .entete { margin:2px 0; padding:4px 8px; } .entete img { width:38px; height:38px; }
   .boutique { margin:4px 0; } .go { margin:4px 0; padding:10px; } .actions { margin:4px 0; } .actions button { padding:5px 9px; }
   .u.carte { font-size:.66em; }
+  /* 14/11 : le pont du navire volant (Gemini) en fond, assombri pour garder le texte lisible ; cases à moitié transparentes */
+  body { background:linear-gradient(#0b1220d0, #0b122040 22%, #0b122030 60%, #0b1220b0 85%), url('decor/fond-expedition.webp?v=1') center top / cover fixed #101a2b; }
+  .slot { background:#0b132255; backdrop-filter:blur(1px); border-color:#c9a56a99; }
+  .cale { background:#2a160b88; border:2px solid #6b4a2a; }
+  .champ { background:#0b132226 !important; border-color:#c9a56a66 !important; }
+  .etiq { color:#f3e3c0; text-shadow:0 1px 3px #000; }
 </style>
 </head>
 <body>
 <div id="app"></div>
 <div id="fen"></div>
-<script src="cartes.js?v=20261114-160041"></script>
-<script src="musique.js?v=20261114-160041"></script>
-<script src="donnees.js?v=20261114-160041"></script>
-<script src="odyssee.js?v=20261114-160041"></script>
-<script src="chronique.js?v=20261114-160041"></script>
-<script src="expedition-moteur.js?v=20261114-160041"></script>
-<script src="expedition-ecran.js?v=20261114-160041"></script>
+<script src="cartes.js?v=20261114-160350"></script>
+<script src="musique.js?v=20261114-160350"></script>
+<script src="donnees.js?v=20261114-160350"></script>
+<script src="odyssee.js?v=20261114-160350"></script>
+<script src="chronique.js?v=20261114-160350"></script>
+<script src="expedition-moteur.js?v=20261114-160350"></script>
+<script src="expedition-ecran.js?v=20261114-160350"></script>
 <script>// 13/11 soir : musique
 GM.musique('expeditions'); GM.bouton();
 </script>
