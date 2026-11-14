@@ -662,7 +662,7 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261114-150442';
+const VERSION = '20261114-150545';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -681,11 +681,11 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261114-150442"></script>
-<script src="musique.js?v=20261114-150442"></script>
-<script src="donnees.js?v=20261114-150442"></script>
-<script src="odyssee.js?v=20261114-150442"></script>
-<script src="chronique.js?v=20261114-150442"></script>
+<script src="cartes.js?v=20261114-150545"></script>
+<script src="musique.js?v=20261114-150545"></script>
+<script src="donnees.js?v=20261114-150545"></script>
+<script src="odyssee.js?v=20261114-150545"></script>
+<script src="chronique.js?v=20261114-150545"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -769,7 +769,8 @@ function degats(k, n, ignore) {
     if (HEROS[J.id].phases && J.pv > 0) phaseBoss(J);
     fx({ t:'degat', c:ref(k), n:r, abs, pv:Math.max(0, J.pv), garde:J.gardeB, bouclier:J.bouclier });
     if (r > 0) { J.degSubis = (J.degSubis || 0) + r; while (J.degSubis >= JAUGE.parDegats) { J.degSubis -= JAUGE.parDegats; remplit(J, 1); } }
-    if (r > 1 && J.fournaise) { J.fournaise = false; const D = adv(J); log('Fournaise : l’adversaire subit la moitié des dégâts.'); D.pv -= Math.floor(r / 2); }
+    // 14/11 (l'utilisateur : « Fournaise n'a pas fonctionné ») : avant, les PV étaient retirés en silence ; maintenant de vrais dégâts (journal, effet, fin de partie)
+    if (r > 1 && J.fournaise) { J.fournaise = false; const D = adv(J), m = Math.floor(r / 2); log(`🔥 Fournaise : ${J.nom} a perdu ${r} PV, ${D.nom} en perd la moitié (${m}).`); fx({ t:'annonce', txt:'🔥 Fournaise !' }); degats({ J:D }, m, true); }
   }
   fin();
 }
@@ -2132,14 +2133,14 @@ async function joueFX() {
 // toucher l'écran pendant les animations les accélère
 document.addEventListener('pointerdown', () => { if (fxOn && !(S && S.tuto)) fxVite = .5; }, true); // 14/11 : plus d'accélération dans le tutoriel
 </script>
-<script src="profil.js?v=20261114-150442"></script>
-<script src="pantheon.js?v=20261114-150442"></script>
-<script src="tuto.js?v=20261114-150442"></script>
-<script src="deux.js?v=20261114-150442"></script>
-<script src="invasion.js?v=20261114-150442"></script>
-<script src="enigme-table.js?v=20261114-150442"></script>
-<script src="forge.js?v=20261114-150442"></script>
-<script src="semaine.js?v=20261114-150442"></script>
-<script src="enigme.js?v=20261114-150442"></script>
+<script src="profil.js?v=20261114-150545"></script>
+<script src="pantheon.js?v=20261114-150545"></script>
+<script src="tuto.js?v=20261114-150545"></script>
+<script src="deux.js?v=20261114-150545"></script>
+<script src="invasion.js?v=20261114-150545"></script>
+<script src="enigme-table.js?v=20261114-150545"></script>
+<script src="forge.js?v=20261114-150545"></script>
+<script src="semaine.js?v=20261114-150545"></script>
+<script src="enigme.js?v=20261114-150545"></script>
 </body>
 </html>
