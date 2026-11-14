@@ -96,6 +96,16 @@
   #majbar { position:fixed; left:0; right:0; bottom:0; background:#f3c96b; color:#2b2117; padding:10px 14px; display:flex; gap:10px; align-items:center; z-index:50; font-size:.92em; }
   #majbar button { margin-left:auto; background:#2b2117; color:#f3c96b; border:0; border-radius:10px; padding:8px 12px; font-weight:bold; }
   @keyframes tremble { 25% { transform:translateX(-4px); } 75% { transform:translateX(4px); } }
+  /* 14/11 : plan sur parchemin */
+  svg.ile { background:#cdb88c !important; border:3px solid #6b4a2a !important; box-shadow:inset 0 0 40px #5a3d1c88, 0 0 0 1px #00000080 !important; }
+  .roc { fill:url(#hach); } .bord { fill:#3b2716; stroke:#3b2716; stroke-width:9; stroke-linejoin:round; }
+  .dalle .fond { fill:#c9b48c; } .dalle .grille { fill:url(#quad); } .dalle:not(.visite) .fond { fill:#b6a17a; }
+  body.givre .dalle .fond { fill:#c4d2d8; } body.givre .dalle:not(.visite) .fond { fill:#a9b9c1; }
+  body.abime .dalle .fond { fill:#bcaecb; } body.abime .dalle:not(.visite) .fond { fill:#a495b4; }
+  .neuf { animation:apparait .7s ease-out both; } @keyframes apparait { from { opacity:0; } }
+  .brume { fill:#e6d7b2; opacity:.9; transition:opacity 1.3s ease-out, r 1.3s ease-out; } .brume.part { opacity:0; r:5px; }
+  .ico { fill:#2b1d0a !important; filter:drop-shadow(0 1px 1px #0006); } .niv { fill:#8a1f1f !important; font-size:10px !important; }
+  .cel.ok .cible, .cel.ok .pointe { fill:#15803d !important; } .cel.ok .ico { filter:drop-shadow(0 0 4px #15803d) !important; }
 </style>
 </head>
 <body>
@@ -117,12 +127,12 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261114-160350"></script>
-<script src="musique.js?v=20261114-160350"></script>
-<script src="donnees.js?v=20261114-160350"></script>
-<script src="odyssee.js?v=20261114-160350"></script>
-<script src="pantheon.js?v=20261114-160350"></script>
-<script src="chronique.js?v=20261114-160350"></script>
+<script src="cartes.js?v=20261114-160741"></script>
+<script src="musique.js?v=20261114-160741"></script>
+<script src="donnees.js?v=20261114-160741"></script>
+<script src="odyssee.js?v=20261114-160741"></script>
+<script src="pantheon.js?v=20261114-160741"></script>
+<script src="chronique.js?v=20261114-160741"></script>
 <script>
 // le moteur du Duel n'est pas chargé ici : les cartes de l'Odyssée appellent degats/soin seulement en combat (dans duel.html)
 const log = () => {}, degats = () => {}, soin = () => {}, altere = () => {}, invoque = () => {}, adv = () => ({}), fin = () => {};
@@ -264,19 +274,42 @@ function peutCible(c) {
   if (c.visite) return distV[c.x + ',' + c.y] !== undefined;
   return voisins(c.x, c.y).some(([a, b]) => { const v = caseA(R, a, b); return v.visite && distV[a + ',' + b] !== undefined; });
 }
+// 14/11 (l'utilisateur, d'après un plan de donjon de jeu de rôle) : la carte devient un PLAN SUR PARCHEMIN : salles dallées à quadrillage,
+// couloirs étroits, roche hachurée autour, et une brume qui se dissipe sur ce qu'on découvre. Les règles ne changent pas.
+const ouvert = v => !!v && !(v.t === 'roche' && v.vu);
+function rectD(x, y, w, h) { return `M${x},${y}h${w}v${h}h${-w}z`; }
+function formeSol(c) {
+  const x = c.x * CEL, y = c.y * CEL, cx = x + CEL / 2, cy = y + CEL / 2, L = 11, salle = c.t !== 'chemin';
+  let d = salle ? rectD(x + 6, y + 6, CEL - 12, CEL - 12) : rectD(cx - L, cy - L, 2 * L, 2 * L);
+  [[1, 0], [-1, 0], [0, 1], [0, -1]].forEach(([dx, dy]) => {
+    if (!ouvert(caseA(R, c.x + dx, c.y + dy))) return;
+    if (dx === 1) d += rectD(cx, cy - L, CEL / 2 + 1, 2 * L); if (dx === -1) d += rectD(x - 1, cy - L, CEL / 2 + 1, 2 * L);
+    if (dy === 1) d += rectD(cx - L, cy, 2 * L, CEL / 2 + 1); if (dy === -1) d += rectD(cx - L, y - 1, 2 * L, CEL / 2 + 1);
+  });
+  return d;
+}
+function planCase(c, neuf) {
+  const k = c.x + '-' + c.y;
+  if (!c.vu) return { roche:'', bord:'', sol:'' };
+  if (c.t === 'roche') return { roche:`<rect id="r-${k}" class="roc ${neuf ? 'neuf' : ''}" x="${c.x * CEL}" y="${c.y * CEL}" width="${CEL}" height="${CEL}"/>`, bord:'', sol:'' };
+  const d = formeSol(c);
+  return { roche:'', bord:`<path id="o-${k}" class="bord ${neuf ? 'neuf' : ''}" d="${d}"/>`, sol:`<g id="s-${k}" class="dalle ${c.visite ? 'visite' : ''} ${neuf ? 'neuf' : ''}"><path class="fond" d="${d}"/><path class="grille" d="${d}"/></g>` };
+}
+function poseCase(c, neuf) {
+  const k = c.x + '-' + c.y, P = planCase(c, neuf);
+  [['roches', 'r', P.roche], ['bords', 'o', P.bord], ['sols', 's', P.sol]].forEach(([g, p, html]) => {
+    const el = document.getElementById(p + '-' + k); if (el) el.remove(); if (html) document.getElementById(g).insertAdjacentHTML('beforeend', html); });
+  const m = document.getElementById('m-' + k); if (m && c.vu) { m.classList.add('part'); setTimeout(() => m.remove(), 1400); }
+}
 function celluleSVG(c, neuf) {
   if (!c.vu || c.t === 'roche') return '';
-  const x = c.x * CEL, y = c.y * CEL, m = 4;
-  const seg = [[0, -1, [x + m, y + m, x + CEL - m, y + m]], [1, 0, [x + CEL - m, y + m, x + CEL - m, y + CEL - m]], [0, 1, [x + m, y + CEL - m, x + CEL - m, y + CEL - m]], [-1, 0, [x + m, y + m, x + m, y + CEL - m]]];
-  let murs = '';
-  seg.forEach(([dx, dy, s], i) => { const v = caseA(R, c.x + dx, c.y + dy) || { t:'roche', vu:true }; if (v.t === 'roche' && v.vu) murs += `<path class="mur" pathLength="1" d="${traitMur(...s, i)}"/><path class="mur2" pathLength="1" d="${traitMur(s[0], s[1] + (dy ? dy * 4 : 0), s[2] + (dx ? dx * 4 : 0), s[3] + (dy ? dy * 4 : 0), i + 7).replace(/^M/, 'M')}"/>${pierres(...s, i)}`; });
-  const sol = c.visite ? `<path class="sol" d="M${x + 10},${y + CEL - 10} L${x + CEL - 10},${y + 10} M${x + 24},${y + CEL - 8} L${x + CEL - 8},${y + 24}"/>` : '';
+  const x = c.x * CEL, y = c.y * CEL;
   const salle = c.t !== 'chemin' && c.t !== 'depart';
   const ico = c.t === 'mur' && c.fait ? '💎' : c.nemesis && !c.fait ? '😈' : SALLES_ODY[c.t].e;
   const icone = salle ? `<text class="ico ${c.fait ? 'fait' : ''}" x="${x + CEL / 2}" y="${y + CEL / 2 + 8}">${ico}</text>` : (c.t === 'depart' ? `<text class="ico fait" x="${x + CEL / 2}" y="${y + CEL / 2 + 8}">⛵</text>` : '');
-  const niv = c.t === 'monstre' && !c.fait ? `<text class="niv" x="${x + CEL - 9}" y="${y + CEL - 7}">${NIV[c.niv]}</text>` : '';
-  const pointe = !salle ? `<circle class="pointe" cx="${x + CEL / 2}" cy="${y + CEL / 2}" r="4"/>` : `<circle class="cible" cx="${x + CEL / 2}" cy="${y + 11}" r="3"/>`;
-  return `<g class="cel ${c.visite ? 'visite' : ''} ${neuf ? 'neuf' : ''} ${peutCible(c) ? 'ok' : ''}" data-k="${c.x},${c.y}" onclick="marcheVers(${c.x},${c.y})"><rect x="${x}" y="${y}" width="${CEL}" height="${CEL}" fill="transparent"/>${sol}${murs}${pointe}${icone}${niv}</g>`;
+  const niv = c.t === 'monstre' && !c.fait ? `<text class="niv" x="${x + CEL - 11}" y="${y + CEL - 9}">${NIV[c.niv]}</text>` : '';
+  const pointe = !salle ? `<circle class="pointe" cx="${x + CEL / 2}" cy="${y + CEL / 2}" r="4"/>` : `<circle class="cible" cx="${x + CEL / 2}" cy="${y + 13}" r="3"/>`;
+  return `<g class="cel ${c.visite ? 'visite' : ''} ${neuf ? 'neuf' : ''} ${peutCible(c) ? 'ok' : ''}" data-k="${c.x},${c.y}" onclick="marcheVers(${c.x},${c.y})"><rect x="${x}" y="${y}" width="${CEL}" height="${CEL}" fill="transparent"/>${pointe}${icone}${niv}</g>`;
 }
 // 10/11 : la lumière de la lanterne rétrécit avec l'huile (62 pleine, 26 éteinte)
 const haloR = () => Math.round(26 + 36 * Math.min(1, (R.vivres || 0) / VIVRES_DEPART));
@@ -302,15 +335,28 @@ function camera(anime) {
 }
 function carteSVG() {
   calculeDist(); const c = vueCible(); vue = c;
-  const cels = R.ile.flat().map(c => { const k = c.x + ',' + c.y; const neuf = c.vu && !dejaDessine.has(k); if (c.vu) dejaDessine.add(k); return celluleSVG(c, neuf); }).join('');
-  return `<svg class="ile" viewBox="${c.x} ${c.y} ${c.w} ${c.h}" preserveAspectRatio="xMidYMid meet"><defs><radialGradient id="lum"><stop offset="0" stop-color="#ffe9a8" stop-opacity=".55"/><stop offset=".45" stop-color="#f3c96b" stop-opacity=".18"/><stop offset="1" stop-color="#f3c96b" stop-opacity="0"/></radialGradient><clipPath id="rond"><circle r="16"/></clipPath></defs><g id="cels">${cels}</g>${herosSVG()}</svg>`;
+  const toutes = R.ile.flat();
+  const cels = toutes.map(c => { const k = c.x + ',' + c.y; const neuf = c.vu && !dejaDessine.has(k); if (c.vu) dejaDessine.add(k); return celluleSVG(c, neuf); }).join('');
+  const P = toutes.map(c => planCase(c, false));
+  const brume = toutes.filter(c => !c.vu).map(c => `<circle id="m-${c.x}-${c.y}" class="brume" cx="${c.x * CEL + CEL / 2}" cy="${c.y * CEL + CEL / 2}" r="${CEL * .62}"/>`).join('');
+  const M = 3 * CEL;
+  return `<svg class="ile" viewBox="${c.x} ${c.y} ${c.w} ${c.h}" preserveAspectRatio="xMidYMid meet"><defs><radialGradient id="lum"><stop offset="0" stop-color="#ffe9a8" stop-opacity=".55"/><stop offset=".45" stop-color="#f3c96b" stop-opacity=".18"/><stop offset="1" stop-color="#f3c96b" stop-opacity="0"/></radialGradient><clipPath id="rond"><circle r="16"/></clipPath>
+    <filter id="papier" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".012" numOctaves="4" seed="7"/><feColorMatrix values="0 0 0 0 .52  0 0 0 0 .40  0 0 0 0 .22  0 0 0 -1.6 1.05"/><feComposite in2="SourceGraphic" operator="in"/><feBlend in2="SourceGraphic" mode="multiply"/></filter>
+    <filter id="flou" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="9"/></filter>
+    <pattern id="hach" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(35)"><rect width="9" height="9" fill="#bfa77a"/><line x1="0" y1="0" x2="0" y2="9" stroke="#6b5233" stroke-width="2"/></pattern>
+    <pattern id="quad" width="15" height="15" patternUnits="userSpaceOnUse"><path d="M15,0V15H0" fill="none" stroke="#4a3620" stroke-opacity=".28" stroke-width="1"/></pattern></defs>
+    <rect x="${-M}" y="${-M}" width="${VBW + 2 * M}" height="${VBH + 2 * M}" fill="#d6bf90" filter="url(#papier)"/>
+    <g id="roches">${P.map(p => p.roche).join('')}</g><g id="bords">${P.map(p => p.bord).join('')}</g><g id="sols">${P.map(p => p.sol).join('')}</g>
+    <g id="brume" filter="url(#flou)">${brume}</g>
+    <g id="cels">${cels}</g>${herosSVG()}</svg>`;
 }
 // révèle ce qui vient d'apparaître pendant la marche (sans tout redessiner), et redessine les voisins dont un mur a pu apparaître
 function revele() {
   const g = document.getElementById('cels'); if (!g) return; calculeDist();
   const neufs = R.ile.flat().filter(c => c.vu && !dejaDessine.has(c.x + ',' + c.y));
-  neufs.forEach(c => { dejaDessine.add(c.x + ',' + c.y); const html = celluleSVG(c, true); if (html) g.insertAdjacentHTML('beforeend', html);
-    voisins(c.x, c.y).forEach(([a, b]) => { const v = caseA(R, a, b), el = g.querySelector(`[data-k="${a},${b}"]`); if (el && v.vu && v.t !== 'roche') el.outerHTML = celluleSVG(v, false); }); });
+  neufs.forEach(c => { dejaDessine.add(c.x + ',' + c.y); poseCase(c, true); const html = celluleSVG(c, true); if (html) g.insertAdjacentHTML('beforeend', html);
+    voisins(c.x, c.y).forEach(([a, b]) => { const v = caseA(R, a, b); if (!v || !v.vu || v.t === 'roche' || !dejaDessine.has(a + ',' + b)) return; poseCase(v, false); const el = g.querySelector(`[data-k="${a},${b}"]`); if (el) el.outerHTML = celluleSVG(v, false); }); });
+  R.ile.flat().forEach(c => { const s2 = document.getElementById('s-' + c.x + '-' + c.y); if (s2) s2.classList.toggle('visite', !!c.visite); });
   camera(true);
   g.querySelectorAll('.cel').forEach(el => { const [a, b] = el.dataset.k.split(',').map(Number); el.classList.toggle('ok', peutCible(caseA(R, a, b))); el.classList.toggle('visite', !!caseA(R, a, b).visite); });
   const e = document.getElementById('entete'); if (e) e.innerHTML = enteteHTML();
@@ -327,7 +373,7 @@ function montreTrajet(c, chemin) {
   const g = document.getElementById('cels'); if (!g) return; const old = document.getElementById('trajet'); if (old) old.remove();
   const pts = [[R.pos.x, R.pos.y], ...chemin].map(([a, b]) => `${a * CEL + CEL / 2},${b * CEL + CEL / 2}`).join(' ');
   const neuves = chemin.filter(([a, b]) => !caseA(R, a, b).visite).length, mur = c.t === 'mur' && !c.fait && !R.sacoche.includes('bombe') ? 3 : 0;
-  g.insertAdjacentHTML('beforeend', `<g id="trajet" style="pointer-events:none"><polyline points="${pts}" fill="none" stroke="#ffe9a8" stroke-width="4" stroke-dasharray="7 7" stroke-linecap="round"/><circle cx="${c.x * CEL + CEL / 2}" cy="${c.y * CEL + CEL / 2}" r="24" fill="none" stroke="#7dffb0" stroke-width="3"/></g>`);
+  g.insertAdjacentHTML('beforeend', `<g id="trajet" style="pointer-events:none"><polyline points="${pts}" fill="none" stroke="#8a1f1f" stroke-width="4" stroke-dasharray="7 7" stroke-linecap="round"/><circle cx="${c.x * CEL + CEL / 2}" cy="${c.y * CEL + CEL / 2}" r="24" fill="none" stroke="#15803d" stroke-width="3"/></g>`);
   const cout = neuves + mur, b = document.querySelector('.bandeau');
   if (b) b.innerHTML = `${SALLES_ODY[c.t].e} ${SALLES_ODY[c.t].n} · ${cout ? `🪔 ${cout} dose${cout > 1 ? 's' : ''} d’huile${R.vivres < cout ? ' <b style="color:#ff7a7a">(pas assez : 3 PV par case dans le noir)</b>' : ''}` : 'gratuit (déjà exploré)'} · <b>touche encore la salle pour y aller</b>`;
 }
