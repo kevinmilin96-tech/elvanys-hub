@@ -239,7 +239,7 @@ function valideOrdres() {
 }
 function partirOk() {
   const esc = ESCALES2[X.escale], n = surPlateau(X).length;
-  fenetre(`<h2>⚔ Partir pour ${esc.e} ${esc.n} ?</h2><p>Ton équipage : <b>${n} recrue${n > 1 ? 's' : ''}</b> sur le pont${X.or >= 3 ? ` · il te reste <b>${X.or} 💰</b> à dépenser chez le recruteur` : ''}.</p><p class="doux">Une fois parti, le combat se joue tout seul.</p><div class="choixh"><button onclick="fermer()">Pas encore</button><button class="or" onclick="fermer();ordres()">⚔ On y va !</button></div>`);
+  fenetre(`<h2>⚔ Partir pour ${esc.e} ${esc.n} ?</h2><p>Ton équipage : <b>${n} recrue${n > 1 ? 's' : ''}</b> sur le pont${X.or ? ` · il te reste <b>${X.or} 💰</b>` : ''}.</p>${X.or ? '<p class="doux">Ton or est gardé pour la prochaine escale, et il rapporte : +1 💰 par tranche de 5 pièces gardées (3 au plus), en plus des 8 💰 gagnées après chaque escale.</p>' : ''}<p class="doux">Une fois parti, le combat se joue tout seul.</p><div class="choixh"><button onclick="fermer()">Pas encore</button><button class="or" onclick="fermer();ordres()">⚔ On y va !</button></div>`);
 }
 async function partir() {
   if (enCours) return; enCours = true; sel = null;
