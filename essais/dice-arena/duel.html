@@ -664,7 +664,7 @@
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
 // 14/11 : l'Odyssée sans fin a ses propres emplacements (odyssee.js lit SANSFIN)
 const SANSFIN = new URLSearchParams(location.search).get('sansfin') === '1', ODY_PAGE = 'odyssee.html' + (SANSFIN ? '?sansfin=1' : '');
-const VERSION = '20261114-191602';
+const VERSION = '20261114-192137';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -683,11 +683,11 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261114-191602"></script>
-<script src="musique.js?v=20261114-191602"></script>
-<script src="donnees.js?v=20261114-191602"></script>
-<script src="odyssee.js?v=20261114-191602"></script>
-<script src="chronique.js?v=20261114-191602"></script>
+<script src="cartes.js?v=20261114-192137"></script>
+<script src="musique.js?v=20261114-192137"></script>
+<script src="donnees.js?v=20261114-192137"></script>
+<script src="odyssee.js?v=20261114-192137"></script>
+<script src="chronique.js?v=20261114-192137"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -722,6 +722,8 @@ function ajouteMeute(J, n) {
   J.meute = Math.min(3, J.meute + n); log(`Meute : ${J.meute} sur 3.`);
   if (J.meute >= 3 && J.front.length < 5) { J.meute = 0; invoque(J, { n:'La Louve', a:4, v:7, louve:true }); log('🐺 La Louve arrive sur la ligne de front !'); }
 }
+// 14/11 (l'utilisateur : « Louveteau n'a pas d'image ») : les renforts des monstres prennent le portrait du monstre le plus proche
+const RENFORT_IMG = { 'Louveteau':'m-loup', 'Louveteau blanc':'m-loupblanc', 'Flammèche':'m-salamandre', 'Gobelin':'m-gobelin', 'Éclat de scories':'m-golem', 'Éclat de basalte':'m-golem', 'Stalagmite':'m-golemglace', 'Éclat de cristal':'m-golemglace' };
 function invoque(J, base, key) {
   if (J.front.length >= 5) { log('Ligne de front pleine.'); return; }
   const u = { ...base, key, id:Math.random().toString(36).slice(2), pret:!!base.charge || S.salle.id === 'sem-charge' };
@@ -924,7 +926,7 @@ const MOTS = { barriere:['Barrière', 'les CRÉATURES adverses doivent l’attaq
   charge:['Charge', 'peut attaquer dès son arrivée.'], defense:['En défense', 'n’attaque pas ce tour ; jusqu’à ton prochain tour, elle prend TOUS les coups qui visent ton camp : attaques des créatures, Frappes, Techniques, Pouvoirs et sorts.'], entrave:['Entravée', 'ne pourra pas attaquer au prochain tour.'] };
 function ficheUnite(P, u) {
   if (P !== S.J && u.cachee) { fenetre('<h2>👁 Créature cachée</h2><p>On ne sait pas ce que c’est : ni son nom, ni son attaque, ni sa vie.</p><p>Tu ne peux ni l’attaquer ni la viser. Elle se montrera quand elle attaquera (avec une <b>Embuscade</b> : +2 dégâts), ou si tu joues une carte qui <b>révèle</b> les Cachées (Torche, Lanterne runique, Flèche de repérage).</p><div class="choixh"><button onclick="fermer()">Compris</button></div>'); return; }
-  const c = u.key && CARTES[u.key], art = typeof ARTS !== 'undefined' && ARTS.includes(u.louve ? 'louve' : u.key) ? `<img src="cartes/${u.louve ? 'louve' : u.key}.webp?v=1" style="width:100%;border-radius:10px;margin:4px 0" alt="">` : '';
+  const c = u.key && CARTES[u.key], art = typeof ARTS !== 'undefined' && ARTS.includes(u.louve ? 'louve' : u.key) ? `<img src="cartes/${u.louve ? 'louve' : u.key}.webp?v=1" style="width:100%;border-radius:10px;margin:4px 0" alt="">` : RENFORT_IMG[u.n] ? `<img src="portraits/${RENFORT_IMG[u.n]}.webp" style="width:100%;border-radius:10px;margin:4px 0" alt="">` : '';
   const effet = u.louve ? 'La Louve de Pip. Elle attaque toute seule (ou quand on la touche) : elle lance 3 dés. Brelan = 9 dégâts + Saignement ; paire = 5 dégâts qui ignorent Barrière et Bouclier (Instinct) ; sinon 2 dégâts ; +1 par 6.'
     : c ? c.d : '';
   const mots = Object.keys(MOTS).filter(m => u[m]).map(m => `<li><b>${MOTS[m][0]}</b> : ${MOTS[m][1]}</li>`).join('');
@@ -936,7 +938,7 @@ function ficheUnite(P, u) {
 }
 // la fenêtre d'ordre d'une créature prête : attaquer, se mettre en défense, ou voir sa fiche
 function choixUnite(u) {
-  const a = atk(S.J, u) + (u.cachee ? 2 : 0), art = typeof ARTS !== 'undefined' && ARTS.includes(u.louve ? 'louve' : u.key) ? `cartes/${u.louve ? 'louve' : u.key}.webp?v=1` : '';
+  const a = atk(S.J, u) + (u.cachee ? 2 : 0), art = typeof ARTS !== 'undefined' && ARTS.includes(u.louve ? 'louve' : u.key) ? `cartes/${u.louve ? 'louve' : u.key}.webp?v=1` : RENFORT_IMG[u.n] ? `portraits/${RENFORT_IMG[u.n]}.webp` : '';
   window._ordre = i => { fermer(); if (i === 0) { attaquant = u; sel = []; } else if (i === 1) { enDefense(S.J, u); attaquant = null; } else if (i === 2) { ficheUnite(S.J, u); return; } rendu(); };
   fenetre(`<div class="ordre">
     <div class="ordre-tete"${art ? ` style="background-image:linear-gradient(90deg,#1d1b3a 35%,#1d1b3a99),url('${art}')"` : ''}>
@@ -2158,14 +2160,14 @@ async function joueFX() {
 // toucher l'écran pendant les animations les accélère
 document.addEventListener('pointerdown', () => { if (fxOn && !(S && S.tuto)) fxVite = .5; }, true); // 14/11 : plus d'accélération dans le tutoriel
 </script>
-<script src="profil.js?v=20261114-191602"></script>
-<script src="pantheon.js?v=20261114-191602"></script>
-<script src="tuto.js?v=20261114-191602"></script>
-<script src="deux.js?v=20261114-191602"></script>
-<script src="invasion.js?v=20261114-191602"></script>
-<script src="enigme-table.js?v=20261114-191602"></script>
-<script src="forge.js?v=20261114-191602"></script>
-<script src="semaine.js?v=20261114-191602"></script>
-<script src="enigme.js?v=20261114-191602"></script>
+<script src="profil.js?v=20261114-192137"></script>
+<script src="pantheon.js?v=20261114-192137"></script>
+<script src="tuto.js?v=20261114-192137"></script>
+<script src="deux.js?v=20261114-192137"></script>
+<script src="invasion.js?v=20261114-192137"></script>
+<script src="enigme-table.js?v=20261114-192137"></script>
+<script src="forge.js?v=20261114-192137"></script>
+<script src="semaine.js?v=20261114-192137"></script>
+<script src="enigme.js?v=20261114-192137"></script>
 </body>
 </html>
