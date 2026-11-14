@@ -3,7 +3,7 @@
 // Le combat : le moteur (expedition-moteur.js) calcule tout, l'écran rejoue les événements avec les animations.
 const log = () => {}, degats = () => {}, soin = () => {}, altere = () => {}, invoque = () => {}, adv = () => ({}), fin = () => {};
 const CLE = 'guilde-expedition2';
-let X = null, sel = null, vitesse = 1, enCours = false;
+let X = null, sel = null, vitesse = 1, enCours = false, tiroir = true;
 const sauve = () => localStorage.setItem(CLE, JSON.stringify(X));
 const lire = () => { try { const x = JSON.parse(localStorage.getItem(CLE) || 'null'); return x && x.v === 2 ? x : null; } catch (e) { return null; } };
 const fenetre = html => { document.getElementById('fen').innerHTML = `<div class="fenetre"><div>${html}</div></div>`; };
@@ -93,7 +93,7 @@ function port() {
   const esc = ESCALES2[X.escale], selU = sel && aEn(X, ouEst(X, sel) || { r:'cale', i:9 });
   const paires = k => toutes(X).filter(u => u.key === k && u.star === 0).length >= 2;
   app().innerHTML = `
-  <div class="entete"><img src="${IMG(X.heros)}" alt=""><div><b>${HEROS[X.heros].nom}</b>, capitaine · <span class="p">💰 ${X.or}</span> <span class="p coeurs">${'❤'.repeat(X.coeurs)}${'🖤'.repeat(3 - X.coeurs)}</span><br><span class="doux">${CAPITAINES[X.heros].n}</span></div></div>
+  <div class="entete"><img src="${IMG(X.heros)}" alt=""><div><b>${HEROS[X.heros].nom}</b>, capitaine · <span class="p">💰 ${X.or}</span> <span class="p coeurs">${'❤'.repeat(X.coeurs)}${'🖤'.repeat(3 - X.coeurs)}</span><br><span class="doux">${CAPITAINES[X.heros].n}</span></div><span class="ic" onclick="journalExp()">📜</span><span class="ic" onclick="quitter()">⏏</span></div>
   <div class="route">${ESCALES2.map((x, i) => `<div class="esc ${i < X.escale ? 'faite' : i === X.escale ? 'ici' : ''}"><b>${x.type === 'fantome' ? '👻' : x.e}</b>${i + 1}</div>`).join('')}</div>
   <p class="prochain">Prochaine escale : <b>${esc.e} ${esc.n}</b> · ${esc.type === 'fantome' ? '👻 un navire rival (un autre capitaine)' : esc.type === 'boss' ? '👑 le boss' : '⚔ des monstres'}</p>
   ${famillesHTML()}
@@ -103,12 +103,12 @@ function port() {
   </div>
   <div class="etiq">LA CALE · ne combat pas</div><div class="cale">${[0, 1, 2].map(i => slotHTML('cale', i)).join('')}</div>
   ${selU ? `<div class="feuille">${ficheHTML(selU, RECRUES[selU.key])}<p class="ok">👉 Touche une place pour la déplacer.</p></div><div class="actions">${selU.key !== 'capitaine' ? `<button onclick="vendre()">💰 Vendre (+${selU.star ? 1 + selU.star * 2 : 1})</button>` : ''}${X.heros === 'zephine' && X.transmuOk && selU.key !== 'capitaine' ? '<button onclick="transmuter()">⚗ Transmuter</button>' : ''}<button onclick="sel=null;port()">Annuler</button></div>` : ''}
-  <div class="etiq">🧭 LE RECRUTEUR · 3 💰 (les grosses 4) · 3 pareilles = ★ · touche pour voir</div>
-  <div class="boutique ${X.offre.length > 4 ? 'cinq' : ''}">${X.offre.map((k, i) => { if (!k) return '<div class="offre vide"></div>'; const r = RECRUES[k];
+  <div class="tiroir ${tiroir ? '' : 'ferme'}"><div class="poignee" onclick="tiroir=!tiroir;port()">🧭 LE RECRUTEUR · 3 💰 · 3 pareilles = ★ <b>${tiroir ? '▼' : '▲'}</b></div>
+  <div class="contenu"><div class="boutique ${X.offre.length > 4 ? 'cinq' : ''}">${X.offre.map((k, i) => { if (!k) return '<div class="offre vide"></div>'; const r = RECRUES[k];
     return `<div class="offre carte ${paires(k) ? 'paire' : ''} ${r.role === 'soutien' ? 'soutien' : ''}" onclick="voirRecrue(${i})" style="background-image:url('cartes/${ART_EXP[k] || k}.webp')"><span class="prix">${prixRecrue(k)}</span><span class="nm">${r.n}</span><span class="fm">${FAMILLES[r.fam].e}</span><span class="rl">${ROLE_COURT[r.role]}</span><div class="av"><span>⚔ ${r.a}</span><span>❤ ${r.v}</span></div></div>`; }).join('')}</div>
-  <div class="actions"><button onclick="relancer()" ${X.or >= 1 ? '' : 'disabled'}>🔄 Relancer (1)</button><button class="${X.gel ? 'on' : ''}" onclick="X.gel=!X.gel;sauve();port()">❄ ${X.gel ? 'Offre gelée' : 'Geler l’offre'}</button><button onclick="aideExp()">❓ Aide</button></div>
-  <button class="go" onclick="partir()">⚔ Partir pour l’escale ${X.escale + 1}</button>
-  <div class="choixh"><button onclick="journalExp()">📜 Journal</button><button onclick="quitter()">⏏ Quitter</button></div>`;
+  <div class="actions"><button onclick="relancer()" ${X.or >= 1 ? '' : 'disabled'}>🔄 Relancer (1)</button><button class="${X.gel ? 'on' : ''}" onclick="X.gel=!X.gel;sauve();port()">❄ ${X.gel ? 'Offre gelée' : 'Geler l’offre'}</button><button onclick="aideExp()">❓ Aide</button></div></div>
+  <button class="go" onclick="partir()">⚔ Partir pour l’escale ${X.escale + 1}</button></div>`;
+  document.body.style.setProperty('--decor', `url('decor/escale-${esc.cle}.webp?v=1')`);
 }
 function voirRecrue(i) {
   const k = X.offre[i]; if (!k) return; const r = RECRUES[k], n = toutes(X).filter(u => u.key === k && u.star === 0).length;
@@ -130,10 +130,23 @@ function aideExp() { fenetre(`<h2>❓ Le port</h2><ul style="padding-left:1.1em"
   <li><b>Les cœurs</b> : perdre une escale coûte un cœur ; on continue. Le boss se rejoue tant qu’il reste un cœur.</li></ul><div class="choixh"><button onclick="fermer()">OK</button></div>`); }
 
 // ----------------------------------------------------------------------------------------------- le combat rejoué
-function rangees(P, ennemi) {
-  const r = (rr) => `<div class="rangee">${[0, 1, 2].map(i => `<div class="slot" style="border-style:solid;border-color:#0000">${uniteHTML(P[rr][i], { ennemi })}</div>`).join('')}</div>`;
-  return ennemi ? r('ar') + r('av') : r('av') + r('ar');
+// 14/11 (décision de l'utilisateur) : le combat se regarde de haut en bas sur le décor de l'escale (Gemini) : les ennemis sur le lieu, l'équipage
+// sur la proue ; chaque unité est un médaillon (la fiche complète s'ouvre au toucher).
+const PORTRAIT_M = { 'Gobelin':'m-gobelin', 'Gobelin chef':'m-chefgobelin', 'Gobelin lanceur':'m-gobelin', 'Loup de braise':'m-loup', 'Louveteau':'m-loup', 'Salamandre':'m-salamandre',
+  'Élémentaire de lave':'m-elementaire', 'Golem de scories':'m-golem', 'Drake de cendre':'m-drake', 'Flammèche':'m-salamandre', 'Le Titan de feu':'m-titan', 'Cultiste du feu':'m-cultiste' };
+const artU = u => u.key === 'capitaine' ? IMG(u.hid) : u.key === 'm' ? (PORTRAIT_M[u.n] ? `portraits/${PORTRAIT_M[u.n]}.webp` : '') : `cartes/${ART_EXP[u.key] || u.key}.webp`;
+// où se tiennent les ennemis sur chaque décor (en % de l'écran : haut de la rangée du fond, haut de la rangée de devant, décalage horizontal)
+// 14/11 : les plateaux vus du dessus (s'il y en a un pour l'escale, il remplace le décor en perspective) : [rangée du fond, rangée de devant] des ennemis, puis de l'équipage
+const PLATEAUX_EXP = { crique:{ enn:[11, 26], equ:[63, 78] }, falaises:{ enn:[13, 26], equ:[65, 79] }, port:{ enn:[15, 28], equ:[64, 78] }, foret:{ enn:[12, 24], equ:[67, 80] }, cratere:{ enn:[11, 25], equ:[64, 78] }, nid:{ enn:[16, 30], equ:[68, 81] } };
+const fondEscale = cle => PLATEAUX_EXP[cle] ? `decor/plateau-${cle}.webp?v=1` : `decor/escale-${cle}.webp?v=1`;
+const LIEU_ENN = { crique:[29, 41, 0], falaises:[27, 39, 14], port:[28, 39, 0], foret:[20, 31, 4], cratere:[25, 36, 0], nid:[18, 29, 0] };
+function medHTML(u, ennemi) {
+  if (!u) return '<div class="med vide"></div>';
+  const art = artU(u), a = u.a + (u.bonusA || 0), v = u.v + (u.bonusV || 0);
+  return `<div class="u med ${ennemi ? 'ennemi' : ''} ${u.key === 'capitaine' ? 'capitaine' : ''} ${u.boss ? 'boss' : ''}" data-id="${u.id}" onclick="ficheUnite('${u.id}', event)">
+    <div class="rond" style="${art ? `background-image:url('${art}')` : ''}">${art ? '' : '👹'}</div><span class="nm">${u.n}${u.star ? ' ' + '★'.repeat(u.star) : ''}</span><div class="av"><span>⚔ ${a}</span><span>❤ ${v}</span></div></div>`;
 }
+function ligneMed(P, r, ennemi, top, dx) { return `<div class="lignemed" style="top:${top}%;left:${dx}%">${[0, 1, 2].map(i => medHTML(P[r][i], ennemi)).join('')}</div>`; }
 const elU = id => document.querySelector(`[data-id="${id}"]`);
 function flotteU(id, txt, cls) { const el = elU(id); if (!el) return; const d = document.createElement('div'); d.className = cls || 'dg'; d.textContent = txt; el.appendChild(d); setTimeout(() => d.remove(), 900 / vitesse); }
 function vieU(id, v) { const el = elU(id); if (!el) return; const s = el.querySelector('.av span:last-child'); if (s) s.textContent = '❤ ' + Math.max(0, v); }
@@ -146,11 +159,14 @@ async function partir() {
   // les unités du combat portent les mêmes identifiants que celles du plateau : on dessine l'état d'avant
   const A = res.adv.camp.plateau, noms = {}; [...avant.plateau.av, ...avant.plateau.ar, ...A.av, ...A.ar].filter(Boolean).forEach(u => { noms[u.id] = u.n; });
   ficheDe = {}; [...avant.plateau.av, ...avant.plateau.ar, ...A.av, ...A.ar].filter(Boolean).forEach(u => { ficheDe[u.id] = u; });
-  app().innerHTML = `<div class="entete"><div style="flex:1;text-align:center"><b>${esc.e} ${res.adv.nom}</b>${res.adv.fantome ? `<br><span class="doux">capitaine rival : ${HEROS[res.adv.fantome].nom} · ${CAPITAINES[res.adv.fantome].n}</span>` : ''}</div></div>
-  <div class="champ lieu-${esc.cle}">${rangees(A, true)}<div class="milieu">⚔ ✦ ⚔</div>${rangees(avant.plateau, false)}
-  <div class="vitesse">Vitesse : ${[1, 2, 4].map(v => `<button class="${vitesse === v ? 'sel' : ''}" onclick="vitesse=${v};document.querySelectorAll('.vitesse button').forEach(b=>b.classList.toggle('sel', b.textContent==='×${v}'))">×${v}</button>`).join('')}</div></div>
-  <div class="journal" id="jc"></div>`;
-  const J = []; const jl = t => { J.unshift(t); const j = document.getElementById('jc'); if (j) j.innerHTML = J.slice(0, 40).map(x => `<div>${x}</div>`).join(''); };
+  const PL = PLATEAUX_EXP[esc.cle], L = PL ? [PL.enn[0], PL.enn[1], 0] : (LIEU_ENN[esc.cle] || [25, 36, 0]), Q = PL ? PL.equ : [63, 77];
+  app().innerHTML = `<div class="scene ${PL ? 'plat' : ''}" id="scene" style="background-image:url('${fondEscale(esc.cle)}')">
+    <div class="haut"><b>${esc.e} ${res.adv.nom}</b>${res.adv.fantome ? `<br><span class="doux">capitaine rival : ${HEROS[res.adv.fantome].nom} · ${CAPITAINES[res.adv.fantome].n}</span>` : ''}
+    <div class="vitesse">${[1, 2, 4].map(v => `<button class="${vitesse === v ? 'sel' : ''}" onclick="vitesse=${v};document.querySelectorAll('.vitesse button').forEach(b=>b.classList.toggle('sel', b.textContent==='×${v}'))">×${v}</button>`).join('')}</div></div>
+    ${ligneMed(A, 'ar', true, L[0], L[2])}${ligneMed(A, 'av', true, L[1], L[2])}
+    ${ligneMed(avant.plateau, 'av', false, Q[0], 0)}${ligneMed(avant.plateau, 'ar', false, Q[1], 0)}
+    <div class="journal" id="jc"></div></div>`;
+  const J = []; const jl = t => { J.unshift(t); const j = document.getElementById('jc'); if (j) j.innerHTML = J.slice(0, 2).map(x => `<div>${x}</div>`).join(''); };
   await dodo(500);
   for (const e of res.ev) {
     if (e.t === 'round') { jl(`— Round ${e.n}`); await dodo(250); continue; }
@@ -167,9 +183,22 @@ async function partir() {
   const g = res.gagne;
   const lignes = [g ? '🏆 <b>Victoire !</b>' : '💔 <b>Défaite</b> : un cœur de moins.', res.forge ? `⚒ Forge : ${res.forge}.` : '', res.maelle ? `⚒ La forge du bord : ${res.maelle}.` : '', res.louve ? '🐺 La Louve rejoint l’équipage !' : '', !X.fini && res.gain ? `💰 +${res.gain} pièces${res.interet ? ` (dont ${res.interet} d’intérêts)` : ''}.` : ''].filter(Boolean).map(t => `<p>${t}</p>`).join('');
   if (X.fini) { setTimeout(() => finExp(), 600 / vitesse); return; }
-  fenetre(`<h2>${g ? '🏆' : '💔'} ${esc.n}</h2>${lignes}<p class="doux">Les recrues tombées se relèvent au port : chaque combat commence à pleine vie.</p><div class="choixh"><button class="or" onclick="fermer();chroniqueEscale(() => port())">⚓ Au port</button></div>`);
+  fenetre(`<h2>${g ? '🏆' : '💔'} ${esc.n}</h2>${lignes}<p class="doux">Les recrues tombées se relèvent au port : chaque combat commence à pleine vie.</p><div class="choixh"><button class="or" onclick="fermer();voyage()">⛵ Lever l’ancre</button></div>`);
 }
 
+// 14/11 : le voyage entre deux escales : le décor glisse vers le bas, les nuages passent, l'escale suivante descend du haut
+async function voyage() {
+  const sc = document.getElementById('scene'), suiv = ESCALES2[X.escale];
+  if (!sc || !suiv) { chroniqueEscale(() => port()); return; }
+  const pause = ms => new Promise(r => setTimeout(r, ms));
+  sc.querySelectorAll('.lignemed, .journal, .haut').forEach(e => e.classList.add('part'));
+  sc.insertAdjacentHTML('beforeend', `<div class="brouillard"></div><div class="cap">⛵ En route vers <b>${suiv.e} ${suiv.n}</b>…</div>`);
+  new Image().src = fondEscale(suiv.cle);
+  await pause(350); sc.classList.add('avance'); sc.querySelector('.brouillard').classList.add('monte');
+  await pause(1600); sc.style.backgroundImage = `url('${fondEscale(suiv.cle)}')`; sc.classList.toggle('plat', !!PLATEAUX_EXP[suiv.cle]); sc.classList.remove('avance'); sc.classList.add('arrive');
+  sc.querySelector('.brouillard').classList.remove('monte');
+  await pause(2000); chroniqueEscale(() => port());
+}
 // ----------------------------------------------------------------------------------------------- fin, journal, records
 function finExp() {
   const gagne = X.fini === 'gagne', parfait = gagne && X.coeurs === 3, score = X.victoires * 100 + X.coeurs * 100 + X.or + (gagne ? 300 : 0) + (parfait ? 200 : 0);
