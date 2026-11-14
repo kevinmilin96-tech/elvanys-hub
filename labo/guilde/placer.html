@@ -81,8 +81,8 @@ function zone() { let z = document.getElementById('zm'); if (!z) { z = document.
 function zoneChamp() { if (!PLATEAU) return; let z = document.getElementById('zc'); if (!z) { z = document.createElement('div'); z.id = 'zc'; z.className = 'zone'; z.style.borderColor = '#f3c96b'; z.style.background = '#f3c96b18'; z.textContent = 'zone centrale (créatures)'; pl.prepend(z); }
   const a = R.champ_haut_gauche, b = R.champ_bas_droit; z.style.left = a[0] + '%'; z.style.top = a[1] + '%'; z.style.width = (b[0] - a[0]) + '%'; z.style.height = (b[1] - a[1]) + '%'; }
 const ANNEAU_SVG = (() => { const arc = (r, a0, a1) => { const q = a => [50 + r * Math.sin(a * 2 * Math.PI), 50 - r * Math.cos(a * 2 * Math.PI)], [x0, y0] = q(a0), [x1, y1] = q(a1); return `M${x0.toFixed(2)} ${y0.toFixed(2)}A${r} ${r} 0 ${a1 - a0 > .5 ? 1 : 0} 1 ${x1.toFixed(2)} ${y1.toFixed(2)}`; };
-  let g = '<circle cx="50" cy="50" r="31.6" fill="none" stroke="#120407" stroke-opacity=".75" stroke-width="4.6"/>' + `<path d="${arc(31.6, 0, .7)}" fill="none" stroke="#e5262c" stroke-width="4" stroke-linecap="round"/>`;
-  for (let k = 0; k < 20; k++) if (k < 12) g += `<path d="${arc(36.4, k / 20 + .007, (k + 1) / 20 - .007)}" fill="none" stroke="#fff4b0" stroke-width="2.6"/>`;
+  let g = '<circle cx="50" cy="50" r="31.6" fill="none" stroke="#120407" stroke-opacity=".75" stroke-width="4.6"/>' + `<path d="${arc(31.6, 0, .9999)}" fill="none" stroke="#e5262c" stroke-width="4"/>`; // 14/11 : vie et Ultime PLEINS (demande de l'utilisateur)
+  for (let k = 0; k < 20; k++) g += `<path d="${arc(36.4, k / 20 + .007, (k + 1) / 20 - .007)}" fill="none" stroke="#fff4b0" stroke-width="2.6"/>`;
   return `<svg viewBox="0 0 100 100">${g}</svg>`; })();
 function choisirListe(sel) { const e = pl.querySelector('[data-k="' + sel.value + '"]'); if (e) { choisir(e); centrer(); } sel.value = ''; }
 function dessine() {
