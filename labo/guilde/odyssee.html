@@ -127,12 +127,13 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261114-171716"></script>
-<script src="musique.js?v=20261114-171716"></script>
-<script src="donnees.js?v=20261114-171716"></script>
-<script src="odyssee.js?v=20261114-171716"></script>
-<script src="pantheon.js?v=20261114-171716"></script>
-<script src="chronique.js?v=20261114-171716"></script>
+<script src="cartes.js?v=20261114-172012"></script>
+<script src="musique.js?v=20261114-172012"></script>
+<script src="donnees.js?v=20261114-172012"></script>
+<script src="guide.js?v=1"></script>
+<script src="odyssee.js?v=20261114-172012"></script>
+<script src="pantheon.js?v=20261114-172012"></script>
+<script src="chronique.js?v=20261114-172012"></script>
 <script>
 // le moteur du Duel n'est pas chargé ici : les cartes de l'Odyssée appellent degats/soin seulement en combat (dans duel.html)
 const log = () => {}, degats = () => {}, soin = () => {}, altere = () => {}, invoque = () => {}, adv = () => ({}), fin = () => {};
@@ -247,7 +248,17 @@ function dessine() {
   <div class="bandeau">${r.vivres ? 'Touche une salle verte pour voir le trajet, puis touche-la encore : le héros y va.' : '<b style="color:#ff7a7a">Lanterne éteinte : chaque case nouvelle coûte 3 PV.</b>'} ${r.fragments >= 2 ? '<b style="color:var(--ok)">Tu as les 2 fragments : la porte 🚪 t’attend.</b>' : ''}</div>
   <div class="legende"><span>⚔ monstres (I, II, III)</span><span>💀 élite</span><span>🗝 coffre</span><span>💧 source</span><span>🏪 marchand</span><span>❓ événement</span><span>🔥 autel</span><span>🏕 feu de camp</span><span>🧱 mur fissuré</span><span>🚪 porte</span><span>👑 boss</span></div>
   <div class="bas"><button onclick="monDeck()">🂠 Deck</button><button onclick="journal()">📜 Journal</button><button onclick="reglesCourtes()">❓ Règles</button><button onclick="abandon()">⏏ Quitter</button></div>`;
+  Guide.lance('odyssee', GUIDE_ODY);
 }
+// 14/11 : le guide de Moustache au premier passage sur l'île
+const GUIDE_ODY = [
+  [null, 'Bienvenue sur l’île, aventurier ! Elle est cachée dans la brume : tu la découvres <b>case par case</b>. Au bout, un boss t’attend derrière une porte scellée.'],
+  ['svg.ile', 'Voici la carte. Les salles <b>en vert</b> sont celles où tu peux aller. Touche-en une : le trajet s’affiche avec son coût. Touche-la <b>encore</b> : ton héros y marche.'],
+  ['.entete', 'Tes réserves. ❤ ta vie (elle ne remonte pas toute seule !), 💰 ton or pour le marchand, 🪔 <b>l’huile de ta lanterne</b> : chaque case nouvelle en coûte 1. Sans huile, chaque case nouvelle coûte 3 PV. 🗝 ouvre les coffres, 🔮 les fragments.'],
+  ['.legende', 'Les salles. ⚔ monstres, 💀 élites : bats <b>2 élites</b> pour gagner 2 fragments 🔮 et ouvrir la porte du boss. Le reste t’aide : sources, marchand, feu de camp, coffres…'],
+  ['.bulles', 'Ici, ton héros et moi, on commente l’aventure. Je donne souvent de bons conseils. Souvent.'],
+  ['.bas', '🂠 ton deck (les cartes gagnées en route), 📜 le journal, ❓ les règles. Et ⏏ pour quitter : la partie est gardée. Bonne exploration, miaou !'],
+];
 function enteteHTML() {
   const r = R, h = HEROS[r.heros];
   return `<div class="entete"><img src="${IMG(r.heros)}" alt="" onclick="monDeck()"><div class="st"><b>${h.nom}</b> · ${r.deck.length} cartes${r.asc ? ` · ⛰ Ascension ${r.asc}` : ''}

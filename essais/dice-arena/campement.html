@@ -28,11 +28,12 @@
 </head>
 <body>
 <div id="app"></div>
-<script src="cartes.js?v=20261114-171716"></script>
-<script src="musique.js?v=20261114-171716"></script>
-<script src="donnees.js?v=20261114-171716"></script>
-<script src="odyssee.js?v=20261114-171716"></script>
-<script src="chronique.js?v=20261114-171716"></script>
+<script src="guide.js?v=1"></script>
+<script src="cartes.js?v=20261114-172012"></script>
+<script src="musique.js?v=20261114-172012"></script>
+<script src="donnees.js?v=20261114-172012"></script>
+<script src="odyssee.js?v=20261114-172012"></script>
+<script src="chronique.js?v=20261114-172012"></script>
 <script>
 const ZOK = () => localStorage.getItem('guilde-tuto') === 'fait'; // Zéphine : débloquée par le tutoriel (12/11)
 
@@ -52,6 +53,14 @@ function dessine() {
   <button class="lien" onclick="location.href='menu.html#invasion'">⌂ Menu</button>`;
 }
 dessine();
+// 14/11 : le guide de Moustache
+Guide.lance('invasion', [
+  [null, 'L’Invasion, c’est à <b>deux héros</b> contre les vagues d’ennemis. Vous jouez chacun votre tour, puis l’ennemi frappe celui qui l’a touché en dernier.'],
+  ['.boss', 'D’abord, choisis le front : un acte de l’Invasion (plusieurs vagues à la suite) ou un grand boss.'],
+  ['.heros6', 'Ensuite, <b>ton héros</b>. Chacun a ses dés, ses cartes et son style.'],
+  ['.modes', 'Le second héros : un <b>compagnon joué par l’ordinateur</b>, ou un ami à qui tu passes le téléphone à chaque tour.'],
+  ['.go', 'Au combat, gardez un œil sur la <b>Cohésion</b> : une réserve commune pour relever un allié, pousser un cri ou soigner. Au feu de camp, miaou !'],
+]);
 // 13/11 soir : musique
 GM.musique('campement'); GM.ambiance('feu'); GM.bouton();
 </script>

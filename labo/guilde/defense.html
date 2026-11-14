@@ -104,10 +104,11 @@
 <body>
 <div id="app"></div>
 <div id="fen"></div>
-<script src="cartes.js?v=20261114-171716"></script>
-<script src="musique.js?v=20261114-171716"></script>
-<script src="donnees.js?v=20261114-171716"></script>
-<script src="defense-moteur.js?v=20261114-171716"></script>
+<script src="guide.js?v=1"></script>
+<script src="cartes.js?v=20261114-172012"></script>
+<script src="musique.js?v=20261114-172012"></script>
+<script src="donnees.js?v=20261114-172012"></script>
+<script src="defense-moteur.js?v=20261114-172012"></script>
 <script>
 // =============================================================================================== LA DÉFENSE DE LA PORTE · l'ÉCRAN (13/11)
 // Règles : defense-proposition.html (validées le 13/11). Moteur : defense-moteur.js.
@@ -210,8 +211,17 @@ function rendu() {
       return `<div class="carte ${ok ? 'ok' : ''} ${attente && attente.quoi === i ? 'attente' : ''}" onclick="toucheCarte(${i})"><span class="c">${c.c}</span><b>${c.n}</b><span class="tx">${c.txt}</span><br>${c.d}</div>`; }).join('')}</div>
   <div class="bas"><button onclick="regles()">📜 Règles</button><button onclick="journal()">📖 Journal</button>${attente || sel.length || selTour >= 0 ? '<button onclick="annule()">✖ Annuler</button>' : ''}<button onclick="quitter()">⌂ Quitter</button></div>`;
   joueFx();
-  if (D.fini) setTimeout(fin, 700);
+  if (D.fini) setTimeout(fin, 700); else Guide.lance('defense', GUIDE_DEF);
 }
+// 14/11 : le guide de Moustache à la première partie
+const GUIDE_DEF = [
+  [null, 'Les monstres arrivent par vagues pour enfoncer la <b>porte</b> de la Guilde. Tiens bon pendant les 6 vagues, jusqu’au Titan de feu !'],
+  ['.entete', 'En haut : 🚪 la vie de la porte (à zéro, c’est perdu), ⚡ ta jauge d’Ultime, 🌊 la vague en cours et ◆ tes <b>PC</b>, qui paient tout ce que tu construis.'],
+  ['.bandeV', 'Ici, la <b>prochaine vague</b> : qui arrive et quand. Touche-la pour voir les monstres. Prépare-toi en avance !'],
+  ['.des', 'Tes dés du tour. Touche un dé pour le choisir. Un dé posé sur une <b>case vide du rempart</b> devient un canon (1 PC) qui tire tout seul à chaque tour. Un dé sur un chemin pose un <b>piège</b>.'],
+  ['.acts', 'Ou bien tu frappes toi-même : dés identiques = <b>Frappe</b>, une suite = <b>Technique</b>, sur tout un chemin. ◆ Vendre un dé donne 1 PC. Puis <b>Fin du tour</b> : les monstres avancent.'],
+  ['.main', 'Tes cartes : choisis d’abord un dé, puis touche une carte en vert pour la jouer. Deux canons pareils côte à côte fusionnent, et deux 6 font une Rune. Bonne garde, miaou !'],
+];
 function bouton(q, titre, sous) { const ok = !attente && sel.length && permisD(D, q, sel); const at = attente && attente.quoi === q;
   return `<button class="${ok ? 'ok' : ''} ${at ? 'attente' : ''}" ${ok || at ? '' : 'disabled'} onclick="agir('${q}')">${titre}<br><small>${sous}</small></button>`; }
 function joueFx() {

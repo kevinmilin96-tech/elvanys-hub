@@ -156,10 +156,11 @@
     <li><b>Le second joueur</b> commence avec 4 PC et une carte de plus.</li>
   </ol></details>
 </main>
-<script src="musique.js?v=20261114-171716"></script>
-<script src="donnees.js?v=20261114-171716"></script>
-<script src="odyssee.js?v=20261114-171716"></script>
-<script src="cartes.js?v=20261114-171716"></script>
+<script src="guide.js?v=1"></script>
+<script src="musique.js?v=20261114-172012"></script>
+<script src="donnees.js?v=20261114-172012"></script>
+<script src="odyssee.js?v=20261114-172012"></script>
+<script src="cartes.js?v=20261114-172012"></script>
 <script>
 document.head.insertAdjacentHTML('beforeend', '<style>' + CSS_CARTE + '</style>');
 const SORTE = { u:'Créature', s:'Sort', e:'Équipement', r:'Piège' };
@@ -234,6 +235,13 @@ function dessineEditeur() {
 }
 function enregistre() { if (!deckValide(actuel, edition)) return; localStorage.setItem('guilde-deck-' + actuel, JSON.stringify(edition)); edition = null; fiche(); }
 grille(); fiche();
+// 14/11 : le guide de Moustache
+Guide.lance('tour', [
+  [null, 'La Tour des héros : ici, tu fais connaissance avec les héros de la Guilde, et tu prépares leurs cartes.'],
+  ['#grille', 'Touche un portrait pour ouvrir la page de ce héros. Ceux qui ont un cadenas se débloquent en jouant.'],
+  ['#fiche', 'Le livre : son histoire, sa vie, ses dés. « Détails » ouvre tout le reste : pouvoirs, Ultime, passif.'],
+  ['#bts', '« Modifier mon deck » : choisis les cartes que ton héros emporte au combat. Un deck compte toujours le même nombre de cartes. Bonne lecture, miaou !'],
+]);
 // 13/11 soir : musique
 GM.musique('heros'); GM.bouton();
 </script>

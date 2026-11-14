@@ -108,7 +108,7 @@ function port() {
     return `<div class="offre carte ${paires(k) ? 'paire' : ''} ${r.role === 'soutien' ? 'soutien' : ''}" onclick="voirRecrue(${i})" style="background-image:url('cartes/${ART_EXP[k] || k}.webp')"><span class="prix">${prixRecrue(k)}</span><span class="nm">${r.n}</span><span class="fm">${FAMILLES[r.fam].e}</span><span class="rl">${ROLE_COURT[r.role]}</span><div class="av"><span>⚔ ${r.a}</span><span>❤ ${r.v}</span></div></div>`; }).join('')}</div>
   <div class="actions"><button onclick="relancer()" ${X.or >= 1 ? '' : 'disabled'}>🔄 Relancer (1)</button><button class="${X.gel ? 'on' : ''}" onclick="X.gel=!X.gel;sauve();port()">❄ ${X.gel ? 'Offre gelée' : 'Geler l’offre'}</button><button onclick="aideExp()">❓ Aide</button></div></div>
   <button class="go" onclick="partir()">⚔ Partir pour l’escale ${X.escale + 1}</button></div>`;
-  if (!localStorage.getItem('guilde-exp-guide')) setTimeout(() => guidePort(0), 400);
+  if (!localStorage.getItem('guilde-exp-guide')) guidePort(false);
   document.body.style.setProperty('--decor', `url('decor/escale-${esc.cle}.webp?v=1')`);
 }
 function voirRecrue(i) {
@@ -128,7 +128,7 @@ function aideExp() { fenetre(`<h2>❓ Le port</h2><ul style="padding-left:1.1em"
   <li><b>Placer</b> : touche une recrue puis une place. Devant : Remparts (Barrière) et Lames. Derrière : Tireurs (ils frappent de loin) et Soutiens (ils aident et frappent un peu). Une Lame derrière attend que le devant tombe.</li>
   <li><b>Les familles</b> (en haut) : 2 ou 4 recrues de la même famille sur le plateau donnent un bonus. Touche-les pour le voir.</li>
   <li><b>L’or</b> : +8 après chaque escale, +1 par tranche de 5 gardées (3 au plus). Relancer : 1. Geler : garder la même offre.</li>
-  <li><b>Les cœurs</b> : perdre une escale coûte un cœur ; on continue. Le boss se rejoue tant qu’il reste un cœur.</li></ul><div class="choixh"><button onclick="fermer();guidePort(0)">🐱 Revoir le guide</button><button class="or" onclick="fermer()">OK</button></div>`); }
+  <li><b>Les cœurs</b> : perdre une escale coûte un cœur ; on continue. Le boss se rejoue tant qu’il reste un cœur.</li></ul><div class="choixh"><button onclick="fermer();guidePort(true)">🐱 Revoir le guide</button><button class="or" onclick="fermer()">OK</button></div>`); }
 
 // ----------------------------------------------------------------------------------------------- le combat rejoué
 // 14/11 (décision de l'utilisateur) : le combat se regarde de haut en bas sur le décor de l'escale (Gemini) : les ennemis sur le lieu, l'équipage
@@ -210,14 +210,9 @@ const GUIDE_PORT = [
   ['.fams', '<b>Les familles</b> : 2 ou 4 recrues de la même famille donnent un bonus. Touche une pastille pour le voir. Et 3 recrues pareilles fusionnent en une plus forte ★ !'],
   ['.go', 'Quand ton équipage est prêt : <b>Partir</b> ! Le combat se joue tout seul, aux dés : tu regardes, et tu reviens au port te renforcer. Bonne traversée, miaou !'],
 ];
-function guidePort(n) {
-  document.querySelectorAll('.guide-on').forEach(e => e.classList.remove('guide-on')); const old = document.getElementById('guide'); if (old) old.remove();
-  if (n >= GUIDE_PORT.length) { localStorage.setItem('guilde-exp-guide', '1'); return; }
-  const [sel, txt] = GUIDE_PORT[n], el = sel && document.querySelector(sel);
-  if (sel === '.tiroir' && !tiroir) { tiroir = true; port(); }
-  if (el) { el.classList.add('guide-on'); el.scrollIntoView({ block:'center', behavior:'smooth' }); }
-  const r = el ? el.getBoundingClientRect() : null, haut = r && r.top > innerHeight / 2;
-  document.body.insertAdjacentHTML('beforeend', `<div id="guide" class="${el ? '' : 'centre'}"><div class="voile" ${el ? '' : 'style="background:#000b"'}></div><div class="bulleg ${!el ? "" : haut ? "enhaut" : "enbas"}"><img src="ui/moustache.webp" alt=""><div><p>${txt}</p><div class="bg"><button onclick="guidePort(99)">Passer</button><button class="or" onclick="guidePort(${n + 1})">${n === GUIDE_PORT.length - 1 ? 'C’est parti !' : 'Suivant ›'}</button></div></div></div></div>`);
+function guidePort(force) {
+  if (!tiroir) { tiroir = true; port(); }
+  Guide.lance('expedition', GUIDE_PORT, force !== false, () => localStorage.setItem('guilde-exp-guide', '1'));
 }
 // ----------------------------------------------------------------------------------------------- fin, journal, records
 function finExp() {
