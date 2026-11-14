@@ -21,6 +21,7 @@
   .ligne { display:flex; gap:10px; align-items:center; background:#1d1b3aee; border:1px solid #4b4580; border-radius:12px; padding:8px 10px; margin:6px 0; }
   .ligne .e { font-size:1.6em; width:38px; text-align:center; flex:none; } .ligne.non { opacity:.45; } .ligne small { display:block; color:var(--doux); }
   .tro { display:grid; grid-template-columns:1fr 1fr; gap:8px; } .tro div { background:#1d1b3aee; border:1px solid #4b4580; border-radius:12px; padding:8px; font-size:.86em; } .tro b { color:var(--or); display:block; font-size:1.05em; }
+.maitrise { position:relative; display:inline-block; width:2.4em; height:2.4em; } .maitrise > img { width:100%; height:100%; } .maitrise i { position:absolute; inset:0; animation:orbite 6s linear infinite; transform:rotate(var(--a)); } .maitrise i img { position:absolute; left:36%; top:-6%; width:28%; height:28%; border-radius:15%; } @keyframes orbite { from { transform:rotate(var(--a)); } to { transform:rotate(calc(var(--a) + 360deg)); } }
 </style>
 </head>
 <body>
@@ -29,14 +30,14 @@
   <p class="intro">« Ici, la Guilde grave le nom de ceux qui ont tenu jusqu’au bout. »</p>
   <div id="app"></div>
 </main>
-<script src="cartes.js?v=20261114-133656"></script>
-<script src="musique.js?v=20261114-133656"></script>
-<script src="donnees.js?v=20261114-133656"></script>
-<script src="odyssee.js?v=20261114-133656"></script>
-<script src="profil.js?v=20261114-133656"></script>
-<script src="pantheon.js?v=20261114-133656"></script>
+<script src="cartes.js?v=20261114-133815"></script>
+<script src="musique.js?v=20261114-133815"></script>
+<script src="donnees.js?v=20261114-133815"></script>
+<script src="odyssee.js?v=20261114-133815"></script>
+<script src="profil.js?v=20261114-133815"></script>
+<script src="pantheon.js?v=20261114-133815"></script>
 <script>
-const BENE_IMG = { neant:'portraits/bene-neant.webp?v=1', savoir:'portraits/bene-savoir.webp?v=1' }; // 14/11 : images reçues ; Maîtrise des dés à refaire
+const BENE_IMG = { neant:'portraits/bene-neant.webp?v=1', savoir:'portraits/bene-savoir.webp?v=1', maitrise:'portraits/bene-maitrise.webp?v=1' }; // 14/11 : images reçues ; la Maîtrise = tourbillon peint + 3 vraies faces de dé posées par le jeu
 const log = () => {};
 const J = (cle, def) => { try { return JSON.parse(localStorage.getItem(cle) || 'null') || def; } catch (e) { return def; } };
 function dessine() {
@@ -49,7 +50,7 @@ function dessine() {
   ${titres.map(([ok, e, n, d]) => `<div class="ligne ${ok ? '' : 'non'}"><div class="e">${ok ? e : '🔒'}</div><div><b>${n}</b><small>${d}</small></div></div>`).join('')}
   <h2>🪞 Les récompenses du défi Brise-Miroir</h2>
   <p style="color:var(--doux);font-size:.88em">Vaincre le Miroir brisé pendant une Odyssée que tu termines : tu choisis l’une de ces récompenses, pour toujours.</p>
-  ${Object.keys(RECOMPENSES).map(k => `<div class="ligne ${P.recompenses.includes(k) ? '' : 'non'}"><div class="e">${P.recompenses.includes(k) ? (BENE_IMG[k] ? `<img src="${BENE_IMG[k]}" alt="" style="width:2em;height:2em;object-fit:contain">` : RECOMPENSES[k].e) : '🔒'}</div><div><b>${RECOMPENSES[k].n}</b><small>${RECOMPENSES[k].d}</small></div></div>`).join('')}
+  ${Object.keys(RECOMPENSES).map(k => `<div class="ligne ${P.recompenses.includes(k) ? '' : 'non'}"><div class="e">${P.recompenses.includes(k) ? (k === 'maitrise' ? `<span class="maitrise"><img src="${BENE_IMG[k]}" alt=""><i style="--a:0deg"><img src="faces-gorm/face-6.webp" alt=""></i><i style="--a:120deg"><img src="faces-maelle/face-6.webp" alt=""></i><i style="--a:240deg"><img src="faces-pip/face-6.webp" alt=""></i></span>` : BENE_IMG[k] ? `<img src="${BENE_IMG[k]}" alt="" style="width:2em;height:2em;object-fit:contain">` : RECOMPENSES[k].e) : '🔒'}</div><div><b>${RECOMPENSES[k].n}</b><small>${RECOMPENSES[k].d}</small></div></div>`).join('')}
   <div class="ligne ${roiDebloque() ? '' : 'non'}"><div class="e">${roiDebloque() ? '👑' : '🔒'}</div><div><b>Le défi du Roi sans visage</b><small>Dans l’Arène, affronte le Roi sans visage en Duel (débloqué par la première inscription au Tableau d’honneur).</small></div></div>
   <h2>🏆 Les trophées</h2>
   ${tropheesHTML()}`;

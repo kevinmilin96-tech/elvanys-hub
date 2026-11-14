@@ -23,6 +23,8 @@ function regleDeLaSemaine(d) {
   return Object.assign({ semaine:isoJour(l) }, r);
 }
 const SCEAUX_CLE = 'guilde-sceaux';
+// 14/11 : le Sceau peint par Gemini a un creux vide ; le jeu y pose la VRAIE face 6 du dé du héros (Gemini n'arrive pas à peindre nos dés)
+const sceauHTML = (heros, px) => `<span style="position:relative;display:inline-block;width:${px}px;height:${px}px;vertical-align:middle"><img src="portraits/sceau-semaine.webp?v=1" alt="" style="width:100%;height:100%"><img src="faces-${heros || 'gorm'}/face-6.webp" alt="" style="position:absolute;left:29%;top:29%;width:42%;height:42%;border-radius:12%"></span>`;
 const lesSceaux = () => { try { return JSON.parse(localStorage.getItem(SCEAUX_CLE) || '{}'); } catch (e) { return {}; } };
 
 // ---------------------------------------------------------------- branchements dans le Duel (seulement quand S.semaine est posé)
@@ -51,7 +53,7 @@ if (typeof nouvellePartie === 'function') {
     if (S && S.semaine && !S.sceauVu) {
       S.sceauVu = true;
       if (S.fini === 'gagne') { const m = lesSceaux(), neuf = !m[S.semaine]; if (neuf) { m[S.semaine] = { regle:regleDeLaSemaine().n, heros:S.J.id }; try { localStorage.setItem(SCEAUX_CLE, JSON.stringify(m)); } catch (e) {} }
-        _finSem(); if (neuf) setTimeout(() => fenetre(`<h2>🔏 Le Sceau de la semaine !</h2><p>« ${regleDeLaSemaine().n} » rejoint ta collection : ${Object.keys(lesSceaux()).length} sceau${Object.keys(lesSceaux()).length > 1 ? 'x' : ''} au Panthéon.</p><div class="corbin" style="font-style:italic">Moustache : « Un sceau de plus. Tu vas finir par en faire une collection. Oh, attends. »</div><div class="choixh"><button onclick="fermer();nouvellePartie(S.J.id, S.O.id)">Rejouer</button><button onclick="location.href='pantheon.html'">🏛 Le Panthéon</button></div>`), 2600);
+        _finSem(); if (neuf) setTimeout(() => fenetre(`<div style="text-align:center">${sceauHTML(S.J.id, 120)}</div><h2>🔏 Le Sceau de la semaine !</h2><p>« ${regleDeLaSemaine().n} » rejoint ta collection : ${Object.keys(lesSceaux()).length} sceau${Object.keys(lesSceaux()).length > 1 ? 'x' : ''} au Panthéon.</p><div class="corbin" style="font-style:italic">Moustache : « Un sceau de plus. Tu vas finir par en faire une collection. Oh, attends. »</div><div class="choixh"><button onclick="fermer();nouvellePartie(S.J.id, S.O.id)">Rejouer</button><button onclick="location.href='pantheon.html'">🏛 Le Panthéon</button></div>`), 2600);
         return; }
     }
     _finSem();
