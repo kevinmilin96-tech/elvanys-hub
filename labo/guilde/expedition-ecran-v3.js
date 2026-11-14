@@ -107,7 +107,7 @@ function port() {
   <div class="contenu"><div class="boutique ${X.offre.length > 4 ? 'cinq' : ''}">${X.offre.map((k, i) => { if (!k) return '<div class="offre vide"></div>'; const r = RECRUES[k];
     return `<div class="offre carte ${paires(k) ? 'paire' : ''} ${r.role === 'soutien' ? 'soutien' : ''}" onclick="voirRecrue(${i})" style="background-image:url('cartes/${ART_EXP[k] || k}.webp')"><span class="prix">${prixRecrue(k)}</span><span class="nm">${r.n}</span><span class="fm">${FAMILLES[r.fam].e}</span><span class="rl">${ROLE_COURT[r.role]}</span><div class="av"><span>⚔ ${r.a}</span><span>❤ ${r.v}</span></div></div>`; }).join('')}</div>
   <div class="actions"><button onclick="relancer()" ${X.or >= 1 ? '' : 'disabled'}>🔄 Relancer (1)</button><button class="${X.gel ? 'on' : ''}" onclick="X.gel=!X.gel;sauve();port()">❄ ${X.gel ? 'Offre gelée' : 'Geler l’offre'}</button><button onclick="aideExp()">❓ Aide</button></div></div>
-  <button class="go" onclick="partir()">⚔ Partir pour l’escale ${X.escale + 1}</button></div>`;
+  <button class="go" onclick="partirOk()">⚔ Partir pour l’escale ${X.escale + 1}</button></div>`;
   if (!localStorage.getItem('guilde-exp-guide')) guidePort(false);
   document.body.style.setProperty('--decor', `url('decor/escale-${esc.cle}.webp?v=1')`);
 }
@@ -138,7 +138,7 @@ const PORTRAIT_M = { 'Gobelin':'m-gobelin', 'Gobelin chef':'m-chefgobelin', 'Gob
 const artU = u => u.key === 'capitaine' ? IMG(u.hid) : u.key === 'm' ? (PORTRAIT_M[u.n] ? `portraits/${PORTRAIT_M[u.n]}.webp` : '') : `cartes/${ART_EXP[u.key] || u.key}.webp`;
 // où se tiennent les ennemis sur chaque décor (en % de l'écran : haut de la rangée du fond, haut de la rangée de devant, décalage horizontal)
 // 14/11 : les plateaux vus du dessus (s'il y en a un pour l'escale, il remplace le décor en perspective) : [rangée du fond, rangée de devant] des ennemis, puis de l'équipage
-const PLATEAUX_EXP = { crique:{ enn:[11, 26], equ:[63, 78] }, falaises:{ enn:[13, 26], equ:[65, 79] }, port:{ enn:[15, 28], equ:[64, 78] }, foret:{ enn:[12, 24], equ:[67, 80] }, cratere:{ enn:[11, 25], equ:[64, 78] }, nid:{ enn:[16, 30], equ:[68, 81] } };
+const PLATEAUX_EXP = { crique:{ enn:[10, 26], equ:[62, 78] }, falaises:{ enn:[11, 26], equ:[63, 79] }, port:{ enn:[13, 29], equ:[63, 79] }, foret:{ enn:[11, 26], equ:[64, 80] }, cratere:{ enn:[10, 26], equ:[63, 79] }, nid:{ enn:[13, 29], equ:[65, 81] } };
 const fondEscale = cle => PLATEAUX_EXP[cle] ? `decor/plateau-${cle}.webp?v=1` : `decor/escale-${cle}.webp?v=1`;
 const LIEU_ENN = { crique:[29, 41, 0], falaises:[27, 39, 14], port:[28, 39, 0], foret:[20, 31, 4], cratere:[25, 36, 0], nid:[18, 29, 0] };
 function medHTML(u, ennemi) {
@@ -181,8 +181,24 @@ async function coupFx(e) {
   } else { GM.son('bouclier'); flotteU(e.id, 'raté', 'dg rate'); }
 }
 
-function deU(id, de) { const el = elU(id); if (!el) return; let d = el.querySelector('.de'); if (!d) { d = document.createElement('div'); d.className = 'de'; el.appendChild(d); } d.textContent = Array.isArray(de) ? de.join('') : de; }
+// 14/11 : le dé lancé par l'attaquant se voit vraiment (il roule, puis montre sa face) ; capitaine = ses 3 dés de héros, recrues et monstres = un dé à points
+const PIPS = { 1:[[50,50]], 2:[[28,28],[72,72]], 3:[[25,25],[50,50],[75,75]], 4:[[28,28],[72,28],[28,72],[72,72]], 5:[[25,25],[75,25],[50,50],[25,75],[75,75]], 6:[[28,22],[72,22],[28,50],[72,50],[28,78],[72,78]] };
+const deSVG = (n, rouge) => `<svg viewBox="0 0 100 100"><rect x="4" y="4" width="92" height="92" rx="18" fill="${rouge ? '#ffe3dc' : '#fff8e6'}" stroke="#2b1d0a" stroke-width="6"/>${PIPS[n].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="9" fill="${n === 6 ? '#c2410c' : '#2b1d0a'}"/>`).join('')}</svg>`;
+async function deU(id, de) {
+  const el = elU(id); if (!el) return; el.querySelectorAll('.lance').forEach(x => x.remove());
+  const u = ficheDe[id] || {}, ds = Array.isArray(de) ? de : [de], cap = u.key === 'capitaine';
+  const face = v => cap ? `<img src="faces-${u.hid}/face-${v}.webp" alt="${v}">` : deSVG(v, !!u.key && u.key === 'm');
+  const d = document.createElement('div'); d.className = 'lance'; el.appendChild(d); GM.son('relance');
+  for (let t = 0; t < 4; t++) { d.innerHTML = ds.map(() => face(1 + Math.floor(Math.random() * 6))).join(''); d.classList.toggle('roule', t % 2 === 0); await dodo(70); }
+  d.classList.remove('roule'); d.innerHTML = ds.map(face).join('');
+  if (!cap && de === 6) d.insertAdjacentHTML('beforeend', '<b class="crit">critique !</b>'); if (!cap && de === 1) d.insertAdjacentHTML('beforeend', '<b class="crit rate">raté</b>');
+  setTimeout(() => d.remove(), 1400 / vitesse);
+}
 async function anim(id, cls, ms) { const el = elU(id); if (!el) return; el.classList.add(cls); await dodo(ms || 300); el.classList.remove(cls); }
+function partirOk() {
+  const esc = ESCALES2[X.escale], n = surPlateau(X).length;
+  fenetre(`<h2>⚔ Partir pour ${esc.e} ${esc.n} ?</h2><p>Ton équipage : <b>${n} recrue${n > 1 ? 's' : ''}</b> sur le pont${X.or >= 3 ? ` · il te reste <b>${X.or} 💰</b> à dépenser chez le recruteur` : ''}.</p><p class="doux">Une fois parti, le combat se joue tout seul.</p><div class="choixh"><button onclick="fermer()">Pas encore</button><button class="or" onclick="fermer();partir()">⚔ On y va !</button></div>`);
+}
 async function partir() {
   if (enCours) return; enCours = true; sel = null;
   const esc = ESCALES2[X.escale], avant = JSON.parse(JSON.stringify(X));
@@ -201,8 +217,8 @@ async function partir() {
   await dodo(500);
   for (const e of res.ev) {
     if (e.t === 'round') { jl(`— Round ${e.n}`); await dodo(250); continue; }
-    if (e.t === 'coup') { if (e.de) deU(e.src, e.de); await coupFx(e); await dodo(260); jl(`${noms[e.src]} → ${noms[e.id]} : ${e.dg > 0 ? e.dg : 'raté'}${e.txt ? ' (' + e.txt + ')' : ''}`); await dodo(150); continue; }
-    if (e.t === 'esquive') { await anim(e.src, 'frappe', 220); await anim(e.id, 'esq', 300); jl(`${noms[e.id]} esquive (Ombre).`); continue; }
+    if (e.t === 'coup') { if (e.de) await deU(e.src, e.de); await coupFx(e); await dodo(260); jl(`${noms[e.src]} → ${noms[e.id]} : ${e.dg > 0 ? e.dg : 'raté'}${e.txt ? ' (' + e.txt + ')' : ''}`); await dodo(150); continue; }
+    if (e.t === 'esquive') { if (e.de) await deU(e.src, e.de); await anim(e.src, 'frappe', 220); await anim(e.id, 'esq', 300); jl(`${noms[e.id]} esquive (Ombre).`); continue; }
     if (e.t === 'soin') { flotteU(e.id, '+' + e.n, 'sv'); GM.son('soin'); const el = elU(e.id); if (el) { fxPose(...centre(el), 'soin', 80, 600); const s = el.querySelector('.av span:last-child'); if (s) vieU(e.id, Math.max(0, +s.textContent.replace(/\D/g, '')) + e.n); } await dodo(220); continue; }
     if (e.t === 'epines') { vieU(e.id, e.v); flotteU(e.id, '−' + e.n); jl(`${noms[e.id]} se pique aux Épines (−${e.n}).`); await dodo(150); continue; }
     if (e.t === 'poison') { vieU(e.id, e.v); flotteU(e.id, '−' + e.n, 'dg poison'); GM.son('poison'); { const el = elU(e.id); if (el) fxPose(...centre(el), 'poison-tic', 70, 500); } jl(`${noms[e.id]} : Poison −${e.n}.`); await dodo(150); continue; }

@@ -130,7 +130,7 @@
   .scene .haut { position:absolute; left:0; right:0; top:0; padding:8px 10px 18px; text-align:center; background:linear-gradient(#000c, #0000); font-size:.92em; z-index:3; }
   .scene .vitesse { margin-top:4px; }
   .lignemed { position:absolute; left:0; right:0; display:flex; justify-content:center; gap:4vw; z-index:2; transition:opacity .4s; }
-  .med { width:min(19vw, 88px); background:none !important; border:0 !important; padding:0; box-shadow:none !important; color:#fff; text-align:center; font-size:.7em; position:relative; transition:transform .2s; }
+  .med { width:min(16vw, 74px); background:none !important; border:0 !important; padding:0; box-shadow:none !important; color:#fff; text-align:center; font-size:.7em; position:relative; transition:transform .2s; }
   .med.vide { visibility:hidden; }
   .med .rond { width:100%; aspect-ratio:1; border-radius:50%; background:#2a2140 center/cover no-repeat; border:3px solid #f3c96b; box-shadow:0 4px 12px #000c, 0 0 10px #f3c96baa; display:grid; place-items:center; font-size:2em; }
   .med.ennemi .rond { border-color:#e0442e; box-shadow:0 4px 12px #000c, 0 0 12px #e0442ecc; } .med.boss { width:min(34vw, 150px); } .med.boss .rond { border-width:4px; }
@@ -163,19 +163,27 @@
   .med .dg.poison { color:#7dff5a; }
   .med .sv { font-size:2.2em !important; top:5% !important; z-index:6; }
   .med.mort { animation:tombe .6s ease-in forwards; } @keyframes tombe { to { transform:translateY(14px) rotate(-14deg) scale(.85); opacity:.25; filter:grayscale(1); } }
+  /* 14/11 : le dé qui roule au-dessus du pion */
+  .med .lance { position:absolute; left:50%; top:-12%; transform:translateX(-50%); display:flex; gap:2px; z-index:7; filter:drop-shadow(0 2px 3px #000c); }
+  .med .lance svg, .med .lance img { width:30px; height:30px; display:block; } .med .lance img { border-radius:6px; }
+  .med .lance.roule { transform:translateX(-50%) rotate(14deg) scale(1.1); }
+  .med .lance .crit { position:absolute; top:100%; left:50%; transform:translateX(-50%); white-space:nowrap; font-size:.95em; color:#ffd23a; text-shadow:0 1px 2px #000, 0 0 6px #000; } .med .lance .crit.rate { color:#ddd; }
+  .med .de { display:none !important; }
+  .med .av { flex-wrap:nowrap; } .med .av span { white-space:nowrap; font-size:1em !important; padding:0 4px !important; min-width:0 !important; line-height:1.35; }
+  .med .nm { font-size:.95em; }
 </style>
 </head>
 <body>
 <div id="app"></div>
 <div id="fen"></div>
-<script src="cartes.js?v=20261114-172738"></script>
-<script src="musique.js?v=20261114-172738"></script>
-<script src="donnees.js?v=20261114-172738"></script>
-<script src="odyssee.js?v=20261114-172738"></script>
-<script src="chronique.js?v=20261114-172738"></script>
-<script src="expedition-moteur.js?v=20261114-172738"></script>
+<script src="cartes.js?v=20261114-173428"></script>
+<script src="musique.js?v=20261114-173428"></script>
+<script src="donnees.js?v=20261114-173428"></script>
+<script src="odyssee.js?v=20261114-173428"></script>
+<script src="chronique.js?v=20261114-173428"></script>
+<script src="expedition-moteur.js?v=20261114-173428"></script>
 <script src="guide.js?v=1"></script>
-<script src="expedition-ecran.js?v=20261114-172738"></script>
+<script src="expedition-ecran.js?v=20261114-173428"></script>
 <script>// 13/11 soir : musique
 GM.musique('expeditions'); GM.bouton();
 </script>
