@@ -562,6 +562,8 @@ function nouvelleOdyssee(heros, graine, acte, niveau) {
   if (asc(run, 8)) donneMalediction(run, Object.keys(MALEDICTIONS)[0]);
   if (asc(run, 10)) { run.pvMax = Math.round(run.pvMax * .9); run.pv = run.pvMax; }
   if (typeof pantheonDepart === 'function') pantheonDepart(run);
+  // 14/11 nuit : bonus de départ gagnés avec le Rang de la Guilde (route des récompenses, rang.js)
+  if (typeof bonusDepart === 'function' && typeof localStorage !== 'undefined') { const b = bonusDepart(); run.vivres += b.huile; run.or += b.or; run.pvMax += b.pv; run.pv += b.pv; if (b.potion && run.sacoche.length < 2) run.sacoche.push('soin'); run.relanceRang = b.relance; if (b.huile || b.or || b.pv || b.potion || b.relance) run.journal.push('🏆 Bonus de ton Rang de la Guilde : ' + [b.huile && `+${b.huile} huile`, b.or && `+${b.or} or`, b.pv && `+${b.pv} PV max`, b.potion && 'une potion de soin', b.relance && 'une relance de plus par combat'].filter(Boolean).join(', ') + '.'); }
   const nem = typeof localStorage !== 'undefined' ? lireNemesis()[heros] : null;
   if (nem && HEROS[nem.rival]) { const el = run.ile.flat().filter(c => c.t === 'elite'); const c = el.find(x => x.ennemi === 'heros') || el[0]; if (c) { c.nemesis = nem.rival; c.nemNiv = nem.niv; c.ennemi = nem.rival; run.journal.push(`😈 ${HEROS[nem.rival].nom}, ta Némésis, est sur l’île.`); } }
   return run;
@@ -617,6 +619,7 @@ function recompenseCombat(r) {
   if (r.reliques.includes('bourse')) or += 10; if (r.benes.includes('bourse')) or += 15; if (res.defiOk) { or += 30; r.stats.defis++; }
   if (asc(r, 6)) or = Math.round(or * .8);
   r.or += or;
+  if (typeof guildeEvt === 'function' && !r.simu) { guildeEvt(cb.type === 'boss' ? 'boss' : cb.type === 'elite' ? 'elite' : 'salle', 1); guildeEvt('or', or); } // 14/11 nuit : Rang
   const out = { gagne:true, or, defiOk:res.defiOk, ennemi:HEROS[cb.ennemi].nom, type:cb.type, nemesisVaincue };
   if (cb.type === 'elite') { r.fragments++; r.cles++; out.fragment = true; if (r.sacoche.length < 2) { r.sacoche.push('soin'); out.potion = true; } }
   if (cb.ombre) { r.or += 40; out.or += 40; out.ombre = OMBRES[cb.ombre].n; r.journal.push(`🌑 Ombre majeure (${OMBRES[cb.ombre].n}) vaincue : double butin !`); }

@@ -29,6 +29,13 @@
   .ligne .e { font-size:1.6em; width:38px; text-align:center; flex:none; } .ligne:disabled { opacity:.45; } .ligne small { display:block; color:var(--doux); }
   .ligne.choisi { border-color:var(--or); background:#3a2f12; }
   .tro { display:grid; grid-template-columns:1fr 1fr; gap:8px; } .tro div { background:#1d1b3aee; border:1px solid #4b4580; border-radius:12px; padding:8px; font-size:.86em; } .tro b { color:var(--or); display:block; font-size:1.05em; }
+  .rangbloc { background:#1d1b3aee; border:1px solid #4b4580; border-radius:14px; padding:10px 12px; } .rangbloc small { color:var(--doux); }
+  .barre-rang.gros { display:block; height:14px; margin-bottom:4px; }
+  .quete { display:flex; gap:8px; align-items:center; background:#1d1b3aee; border:1px solid #4b4580; border-radius:12px; padding:8px 10px; margin:6px 0; } .quete > div { flex:1; } .quete b { display:block; font-weight:normal; } .quete .barre-rang { display:block; margin:4px 0 2px; } .quete small { color:var(--doux); font-size:.8em; }
+  .quete.faite { border-color:#7dffb0; opacity:.8; } .chg { background:#2a2350; color:#fff; border:1px solid #4b4580; border-radius:10px; padding:6px 9px; font-size:1.1em; }
+  details summary { cursor:pointer; color:var(--or); margin:6px 0; } .jr { font-size:.85em; padding:2px 0; } .jr small { color:var(--doux); }
+  .route { display:flex; flex-direction:column; gap:5px; } .etape { display:flex; gap:8px; align-items:center; background:#1d1b3aee; border:1px solid #4b4580; border-radius:10px; padding:6px 8px; opacity:.6; } .etape.ok { opacity:1; border-color:#f3c96b88; }
+  .etape .num { width:28px; text-align:center; color:var(--or); font-weight:bold; flex:none; } .etape .e { font-size:1.4em; width:30px; text-align:center; flex:none; } .etape small { display:block; color:var(--doux); font-size:.8em; } .etape em { font-size:.75em; color:var(--or); font-style:normal; }
   .lien { display:block; text-align:center; margin-top:10px; color:var(--or); }
 </style>
 </head>
@@ -37,12 +44,13 @@
   <div class="haut"><a href="menu.html">‹ Menu</a><h1>👤 Mon profil</h1><a href="pantheon.html">Panthéon</a></div>
   <div id="app"></div>
 </main>
-<script src="cartes.js?v=20261114-203714"></script>
-<script src="musique.js?v=20261114-203714"></script>
-<script src="donnees.js?v=20261114-203714"></script>
-<script src="odyssee.js?v=20261114-203714"></script>
-<script src="profil.js?v=20261114-203714"></script>
-<script src="pantheon.js?v=20261114-203714"></script>
+<script src="cartes.js?v=20261114-204624"></script>
+<script src="musique.js?v=20261114-204624"></script>
+<script src="rang.js?v=20261114-204624"></script>
+<script src="donnees.js?v=20261114-204624"></script>
+<script src="odyssee.js?v=20261114-204624"></script>
+<script src="profil.js?v=20261114-204624"></script>
+<script src="pantheon.js?v=20261114-204624"></script>
 <script>
 const log = () => {};
 // héros de l'aperçu : le dernier joué (on peut en changer en touchant le portrait, pour voir le cadre sur chacun)
@@ -59,6 +67,7 @@ function dessine() {
     <div class="nom" id="nomv">${p.nom || 'Toi'}</div><div class="tit">${t ? `${t[1]} ${t[2]}` : ''}</div>
     <div class="h">C’est ainsi que tu apparais en combat · touche le portrait pour essayer un autre héros</div>
   </div>
+  ${typeof lireRang === 'function' ? rangHTML() : ''}
   <h2>✏️ Mon nom</h2>
   <input maxlength="18" placeholder="Ton nom d’aventurier (sinon : « Toi »)" value="${(p.nom || '').replace(/"/g, '&quot;')}" oninput="nom(this.value)">
   <h2>🖼 Mon cadre</h2>
@@ -75,7 +84,24 @@ function dessine() {
   ${tropheesHTML()}
   <a class="lien" href="pantheon.html">🏛 Le Panthéon : Tableau d’honneur et récompenses ›</a>`;
 }
+// 14/11 nuit : le Rang de la Guilde, les quêtes, la route des récompenses, l'apparence des dés
+const GENRE = { titre:'Titre', des:'Dés', depart:'Odyssée', carte:'Carte', equip:'Équipement' };
+function rangHTML() {
+  const d = lireRang(), i = d.info, Q = lireQuetes();
+  const ligneQ = (q, jour, idx) => { const def = defQuete(q, jour); return `<div class="quete ${q.fait ? 'faite' : ''}"><div><b>${q.fait ? '✅' : '📜'} ${texteQuete(q, jour)}</b><span class="barre-rang"><i style="width:${Math.round(q.prog / def[3] * 100)}%"></i></span><small>${q.prog} / ${def[3]} · +${jour ? 40 : 150} XP</small></div>${jour && !Q.change && !q.fait ? `<button class="chg" onclick="if (changeQuete(${idx})) dessine()">🔄</button>` : ''}</div>`; };
+  const peaux = Object.entries(PEAUX_DES).map(([k, x]) => { const ok = rgPeauOk(k); return `<button class="cad ${d.peau === k ? 'choisi' : ''}" ${ok ? '' : 'disabled'} onclick="choisirPeau('${k}');dessine()"><span class="rond" style="background:none"><img src="faces-${apercu}/face-6.webp" alt="" style="width:40px;height:40px;border-radius:8px;filter:${x[1] || 'none'};opacity:${ok ? 1 : .45}"></span>${ok ? x[0] : '🔒 ' + x[0]}</button>`; }).join('');
+  return `<h2 id="rang">🏆 Rang de la Guilde · ${i.rang}${i.rang >= RANG_MAX ? ' (le plus haut)' : ''}</h2>
+  <div class="rangbloc"><span class="barre-rang gros"><i style="width:${i.besoin ? Math.round(i.dans / i.besoin * 100) : 100}%"></i></span><small>${i.besoin ? `${i.dans} / ${i.besoin} XP pour le rang ${i.rang + 1}` : 'Tu as atteint le plus haut rang.'} · ${d.xp} XP en tout</small>
+  <p class="aide">Chaque partie rapporte de l’expérience, même perdue : duel gagné 30 (perdu 10), salle vidée 5, élite 20, boss 60, escale 15, Titan 60, acte de l’Invasion 50, vague tenue 10, énigme 20, quête du jour 40, quête de la semaine 150.</p>
+  ${d.journal.length ? `<details><summary>Mes derniers gains</summary>${d.journal.slice(0, 12).map(j => `<div class="jr">+${j.xp} · ${j.raison} <small>${new Date(j.q).toLocaleString('fr-FR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' })}</small></div>`).join('')}</details>` : ''}</div>
+  <h2>📜 Quêtes du jour</h2><p class="aide">Elles changent chaque jour à minuit. 🔄 : changer une quête (une fois par jour).</p>${Q.j.map((q, k) => ligneQ(q, true, k)).join('')}
+  <h2>🗓️ Quêtes de la semaine</h2><p class="aide">Elles changent chaque lundi.</p>${Q.s.map(q => ligneQ(q, false)).join('')}
+  <h2>🎁 La route des récompenses</h2><p class="aide">Une récompense à chaque rang. Les titres et leurs cadres se choisissent plus bas ; les dés juste dessous.</p>
+  <details ${i.rang < 6 ? 'open' : ''}><summary>Voir les 30 rangs</summary><div class="route">${Object.entries(ROUTE).map(([n, x]) => `<div class="etape ${+n <= i.rang ? 'ok' : ''}"><span class="num">${+n <= i.rang ? '✅' : n}</span><span class="e">${x[2]}</span><div><b>${x[3]}</b> <em>${GENRE[x[0]]}</em><small>${x[4]}</small></div></div>`).join('')}</div></details>
+  <h2>🎲 L’apparence de mes dés</h2><p class="aide">Pour le plaisir des yeux : aucun avantage en jeu.</p><div class="grille">${peaux}</div>`;
+}
 dessine();
+if (location.hash === '#rang') setTimeout(() => { const e = document.getElementById('rang'); if (e) e.scrollIntoView(); }, 50);
 GM.musique('menu'); GM.bouton();
 </script>
 </body>

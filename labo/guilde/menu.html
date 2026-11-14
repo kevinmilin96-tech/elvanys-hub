@@ -8,7 +8,7 @@
 <title>La Guilde des Runes</title>
 <script>
 // Même mécanisme que le Duel : une nouvelle version = rechargement tout seul à l'ouverture (publier.sh change VERSION).
-const VERSION = '20261114-203714';
+const VERSION = '20261114-204624';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-menu-' + v)) { sessionStorage.setItem('recharge-menu-' + v, '1'); location.replace('menu.html?v=' + v); }
@@ -176,6 +176,7 @@ fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.te
 <div id="monde">
   <div class="ciel" id="ciel2"></div>
   <div class="entete"><h2 id="eTitre">Le monde de la Guilde</h2><p id="eSous">Glisse, puis touche un portail pour y entrer.</p></div>
+  <div id="rangmenu" style="max-width:520px;margin:6px auto 0;padding:0 14px;width:100%;box-sizing:border-box"></div>
   <div class="heros" id="heros"></div>
   <button class="retour" id="retour" onclick="location.hash = ''">‹ Retour</button>
   <div class="carrousel" id="car"></div>
@@ -192,9 +193,10 @@ fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.te
 </div>
 <div id="flash"></div>
 
-<script src="semaine.js?v=20261114-203714"></script>
-<script src="musique.js?v=20261114-203714"></script>
-<script src="donnees.js?v=20261114-203714"></script>
+<script src="semaine.js?v=20261114-204624"></script>
+<script src="musique.js?v=20261114-204624"></script>
+<script src="rang.js?v=20261114-204624"></script>
+<script src="donnees.js?v=20261114-204624"></script>
 <script>
 // ciel étoilé + runes du portail (symboles, pas des lettres), aux couleurs des héros
 const ciel = document.getElementById('ciel');
@@ -353,6 +355,8 @@ addEventListener('click', e => { const a = e.target.closest && e.target.closest(
 if (revientDUnMode) { document.getElementById('titre').remove(); document.getElementById('monde').classList.add('vu'); montre(location.hash.slice(1)); }
 // 13/11 soir : musique (titre sur l'écran du portail, puis le monde de la Guilde)
 GM.musique(document.getElementById('titre') ? 'titre' : 'menu'); GM.bouton({ haut:true });
+// 14/11 nuit : le Rang de la Guilde et les quêtes, sous le titre
+{ const rm = document.getElementById('rangmenu'); if (rm && typeof bandeauRangHTML === 'function') { rm.innerHTML = bandeauRangHTML(); rm.querySelector('a').onclick = () => { try { sessionStorage.setItem('guilde-dans-mode', '1'); } catch (e) {} }; } }
 // 14/11 : bouton « Mon profil », en haut à gauche (le ⚙️ est en haut à droite)
 { const pb = document.createElement('a'); pb.id = 'profil-bouton'; pb.href = 'profil.html'; pb.title = 'Mon profil'; pb.setAttribute('aria-label', 'Mon profil'); pb.textContent = '👤';
   pb.style.cssText = 'position:fixed;left:10px;top:calc(10px + env(safe-area-inset-top));z-index:900;width:38px;height:38px;border-radius:50%;border:1px solid #f3c96b88;background:#15132bcc;color:#f3c96b;font-size:18px;line-height:36px;text-align:center;text-decoration:none';

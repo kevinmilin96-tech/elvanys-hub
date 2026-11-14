@@ -74,7 +74,7 @@ function sfPose(r, i, n, x, y) {
   if (libre) { // l'éboulement ouvre le passage vers la voisine posée
     // 14/11 (bug vu par l'utilisateur : impasse posée face au mur d'une voisine = case inaccessible) : on ouvre le passage DES DEUX CÔTÉS avec chaque voisine posée
     SF_DIR.forEach(([dx, dy], k) => { const v = caseA(r, x + dx, y + dy); if (v && v.pose) { c.ouv[k] = 1; v.ouv[(k + 2) % 4] = 1; } }); S.eboulement = false; }
-  S.poses++;
+  S.poses++; typeof guildeEvt === 'function' && guildeEvt('tuile', 1);
   if (t.t === 'monstre') { c.niv = S.poses <= 6 ? 1 : S.poses <= 14 ? 2 : 3; c.ennemi = tire(R, I.pools[c.niv - 1]); }
   if (t.t === 'elite') { c.niv = 2; const s = ['heros', 'monstre', 'heros'][S.elites++ % 3]; if (s === 'monstre') c.ennemi = tire(R, I.elites); else { c.ennemi = 'heros'; c.renfort = tire(R, ['pc', 'pv', 'bouclier']); } }
   if (t.t === 'evenement') { const deja = r.ile.flat().map(k => k.ev).filter(Boolean), l = EVENEMENTS.filter(e => (I.evenements ? I.evenements.includes(e.id) : !e.ile) && !deja.includes(e.id) && !SF_SANS_EVENEMENT.includes(e.id)); c.ev = (l.length ? tire(R, l) : tire(R, EVENEMENTS.filter(e => !e.ile))).id; }

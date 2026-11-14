@@ -279,7 +279,7 @@ async function partir() {
     if (e.t === 'avance') { jl(`${noms[e.id]} avance au premier rang.`); continue; }
   }
   enCours = false;
-  const g = res.gagne;
+  const g = res.gagne; if (g) typeof guildeEvt === 'function' && guildeEvt('escale', 1);
   const lignes = [g ? '🏆 <b>Victoire !</b>' : '💔 <b>Défaite</b> : un cœur de moins.', res.forge ? `⚒ Forge : ${res.forge}.` : '', res.maelle ? `⚒ La forge du bord : ${res.maelle}.` : '', res.louve ? '🐺 La Louve rejoint l’équipage !' : '', !X.fini && res.gain ? `💰 +${res.gain} pièces${res.interet ? ` (dont ${res.interet} d’intérêts)` : ''}.` : ''].filter(Boolean).map(t => `<p>${t}</p>`).join('');
   if (X.fini) { setTimeout(() => finExp(), 600 / vitesse); return; }
   fenetre(`<h2>${g ? '🏆' : '💔'} ${esc.n}</h2>${lignes}<p class="doux">Les recrues tombées se relèvent au port : chaque combat commence à pleine vie.</p><div class="choixh"><button class="or" onclick="fermer();voyage()">⛵ Lever l’ancre</button></div>`);
@@ -315,7 +315,7 @@ function guidePort(force) {
 function finExp() {
   const gagne = X.fini === 'gagne', parfait = gagne && X.coeurs === 3, score = Math.round((X.victoires * 100 + X.coeurs * 100 + X.or + (gagne ? 300 : 0) + (parfait ? 200 : 0)) * ((DIFF_EXP[X.diff] || DIFF_EXP.normal).pts));
   const l = lireRec(); l.unshift({ quand:new Date().toISOString(), heros:X.heros, diff:X.diff || 'normal', gagne, parfait, score, escales:X.victoires, coeurs:X.coeurs, duree:Math.round((Date.now() - X.debut) / 60000) });
-  localStorage.setItem(CLE + '-records', JSON.stringify(l.slice(0, 50))); localStorage.removeItem(CLE);
+  localStorage.setItem(CLE + '-records', JSON.stringify(l.slice(0, 50))); localStorage.removeItem(CLE); if (gagne) typeof guildeEvt === 'function' && guildeEvt('titan', 1);
   const h = HEROS[X.heros].nom; X = null;
   fenetre(`<h2>${parfait ? '🌟 Traversée parfaite !' : gagne ? '🏆 Le Titan est tombé !' : '💀 Le navire rentre au port'}</h2><p>${gagne ? `L’équipage de ${h} a vaincu le Nid du Titan${parfait ? ' sans perdre un seul cœur' : ''}.` : `Plus de cœurs : l’équipage de ${h} rentre à la Guilde.`}</p>
   <p style="font-size:1.5em;color:var(--or);text-align:center">${score} points</p><div class="choixh"><button class="or" onclick="fermer();accueil()">⛵ Nouvelle expédition</button><button onclick="location.href='menu.html'">⌂ Menu</button></div>`);

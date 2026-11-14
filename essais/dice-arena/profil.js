@@ -17,6 +17,8 @@ function titresGuilde() {
     ['rempart',   '⚔️', 'Rempart de la Guilde', 'Gagner les deux actes de l’Invasion.', !!(inv.eveil && inv.reveil), '#ff6b5a'],
     ['sceaux',    '🔏', 'Gardien des sceaux', 'Gagner 10 Sceaux de la semaine (Duel de la semaine).', Object.keys(JL('guilde-sceaux', {})).length >= 10, '#d08a4a'],
     ['sphinx',    '🧩', 'Sphinx de la Guilde', 'Résoudre une énigme du dimanche (la plus redoutable de la semaine).', eniDim > 0, '#9be37a'],
+    // 14/11 nuit : les titres du Rang de la Guilde (rang.js)
+    ...(typeof ROUTE !== 'undefined' ? Object.entries(ROUTE).filter(([, x]) => x[0] === 'titre').map(([n, x]) => [x[1], x[2], x[3], `Atteindre le rang ${n} de la Guilde.`, rgRecompense('titre', x[1]), COULEUR_TITRE_RANG[x[1]] || '#f3c96b']) : []),
   ];
 }
 function lireProfil() {

@@ -215,7 +215,7 @@ function eniResultat() {
   const m = eniMem(), x = m[ENI.iso] || { ok:false, essais:0 };
   if (!x.ok) x.essais = (x.essais || 0) + 1;
   const gagne = S.fini === 'gagne' || S.O.pv <= 0;
-  if (gagne && !x.ok) x.ok = true;
+  if (gagne && !x.ok) { x.ok = true; typeof guildeEvt === 'function' && guildeEvt('enigme', 1); }
   m[ENI.iso] = x; eniEcrit(m);
   arreteMusique(.8); son(gagne ? 'victoire' : 'defaite');
   if (gagne) {

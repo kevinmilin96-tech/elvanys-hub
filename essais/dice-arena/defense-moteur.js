@@ -206,7 +206,7 @@ function apparitionsD(D) {
   const cols = melangeD([0, 1, 2], D.rng);
   (V[D.pas] || []).forEach((t, i) => { const M = MONSTRES[t]; const pv = M.boss ? M.pv : Math.round(M.pv * DEF.hpBase * Math.pow(DEF.hpVague, D.vague)); /* le boss a des PV fixes */ D.monstres.push({ id:++DID, t, pv, pvMax:pv, col:cols[i % 3], row:0 }); });
   D.pas++;
-  if (D.pas >= V.length) { if (!D.degatsVague) D.sansDegats++; D.vague++; D.pas = 0; D.repit = DEF.repit; if (D.vague < VAGUES.length) D.choix = tirageBonus(D); }
+  if (D.pas >= V.length) { if (!D.degatsVague) D.sansDegats++; D.vague++; if (typeof guildeEvt === 'function') guildeEvt('defense_vague', 1); D.pas = 0; D.repit = DEF.repit; if (D.vague < VAGUES.length) D.choix = tirageBonus(D); }
 }
 function finTourD(D) {
   if (D.fini) return;

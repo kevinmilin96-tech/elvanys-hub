@@ -680,7 +680,7 @@
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
 // 14/11 : l'Odyssée sans fin a ses propres emplacements (odyssee.js lit SANSFIN)
 const SANSFIN = new URLSearchParams(location.search).get('sansfin') === '1', ODY_PAGE = 'odyssee.html' + (SANSFIN ? '?sansfin=1' : '');
-const VERSION = '20261114-203714';
+const VERSION = '20261114-204624';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -699,11 +699,12 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261114-203714"></script>
-<script src="musique.js?v=20261114-203714"></script>
-<script src="donnees.js?v=20261114-203714"></script>
-<script src="odyssee.js?v=20261114-203714"></script>
-<script src="chronique.js?v=20261114-203714"></script>
+<script src="cartes.js?v=20261114-204624"></script>
+<script src="musique.js?v=20261114-204624"></script>
+<script src="rang.js?v=20261114-204624"></script>
+<script src="donnees.js?v=20261114-204624"></script>
+<script src="odyssee.js?v=20261114-204624"></script>
+<script src="chronique.js?v=20261114-204624"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -811,7 +812,7 @@ function fin() { if (S.fini) return;
 function debutTour(J) {
   if (J.gardeB > 0 || J.gardeE > 0) fx({ t:'finGarde', s:J === S.J ? 'J' : 'O', n:J.gardeB });
   J.tours++; J.gardeB = 0; J.gardeE = 0; J.contre = J.piege = J.cor = J.fournaise = J.paillasse = J.esquive = false;
-  J.relance = 2 + (J.boussole ? 1 : 0) + (J.reliques.includes('oeil') ? 1 : 0) + (J.benes.includes('relance') ? 1 : 0); S.acteur = null; J.cartesJouees = 0; J.six = 0; J.pureteTour = false; J.transmu = false; J.dernierSort = null; J.gardeFaite = false;
+  J.relance = 2 + (J.relanceRang || 0) + (J.boussole ? 1 : 0) + (J.reliques.includes('oeil') ? 1 : 0) + (J.benes.includes('relance') ? 1 : 0); S.acteur = null; J.cartesJouees = 0; J.six = 0; J.pureteTour = false; J.transmu = false; J.dernierSort = null; J.gardeFaite = false;
   if (J.tours > 1) { J.pc = Math.min(6, J.pc + 1); pioche(J, 1); if (J === S.J && !S.auto && !J.ordi) son('pioche'); }
   if (J.saigne) { log(`${J.nom} saigne : −${J.saigne * 2} PV.`); J.pv -= J.saigne * 2; fx({ t:'degat', c:ref({ J }), n:J.saigne * 2, abs:0, pv:Math.max(0, J.pv), mot:'Saignement' }); fin(); }
   if (J.poison) { log(`${J.nom} : Poison, −${J.poison} PV.`); J.pv -= J.poison; fx({ t:'degat', c:ref({ J }), n:J.poison, abs:0, pv:Math.max(0, J.pv), mot:'Poison', vert:true }); J.poison--; fin(); }
@@ -901,7 +902,7 @@ function pose(J, quoi, ds, k, indexMain) {
   if (quoi === 'ultime') { J.pc -= 3; J.ultimeFait = true; log(`${J.nom} : ULTIME, ${h.ultime.n} !`); bilan(J, 'actions', `⚡ ULTIME : ${h.ultime.n}`); fx({ t:'ultime', s:J === S.J ? 'J' : 'O', id:J.id, nom:h.ultime.n, d:h.ultime.d, cit:h.cit, vers:k && k.J && ref(k) }); h.ultime.f(J, vs, k, ds); return; }
   const c = CARTES[quoi];
   const cout = coutCarte(J, quoi);
-  J.pc -= cout; J.cartesJouees++;
+  J.pc -= cout; J.cartesJouees++; if (J === S.J && !S.auto) typeof guildeEvt === 'function' && guildeEvt('carte', 1);
   if (c.t === 'e' && J.forgeGratuite) J.forgeGratuite = false;
   J.main.splice(indexMain, 1);
   log(`${J.nom} joue ${c.n} avec ${vs.length > 1 ? 'les dés' : 'le dé'} ${vs.join(', ')} · ${cout} PC (reste ${J.pc}).`);
@@ -1215,6 +1216,7 @@ function prepareCombatOdyssee(run, cb, auto) {
   if (S.ody.defi) log(`🎯 Défi : ${S.ody.defi.n} — ${S.ody.defi.d}`);
   sel = []; attaquant = null; ciblage = null;
   debutTour(J);
+  if (run.relanceRang) { J.relanceRang = run.relanceRang; log('🏆 Main sûre (Rang de la Guilde) : une relance gratuite de plus à chaque tour.'); }
   if (run.maitrise) { J.relance += 3; run.maitrise = false; log('🎲 Maîtrise des dés : 3 relances gratuites de plus.'); if (!auto && typeof ecrireOdyssee === 'function') ecrireOdyssee(run); }
 }
 function evalueDefi(J, d) {
@@ -1772,6 +1774,7 @@ function enregistrePartie() {
   const p = { quand:new Date().toISOString(), version:VERSION, moi:S.J.id, ordi:S.O.id, salle:S.salle.n, resultat:S.fini, tours:S.J.tours,
     pvMoi:Math.max(0, S.J.pv), pvOrdi:Math.max(0, S.O.pv), ultimeMoi:!!S.J.ultimeFait, ultimeOrdi:!!S.O.ultimeFait, journal:[...S.log].reverse() };
   const l = parties(); l.unshift(p); localStorage.setItem(HIST, JSON.stringify(l.slice(0, 50)));
+  if (!S.deux && !S.tuto) typeof guildeEvt === 'function' && guildeEvt(S.fini === 'gagne' ? 'duel_gagne' : 'duel_perdu', 1, { heros:S.J.id }); // 14/11 nuit : Rang de la Guilde
 }
 const DATE = iso => new Date(iso).toLocaleString('fr-FR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
 function texteParties(l, avecJournal) {
@@ -1801,7 +1804,7 @@ function copieParties(journal, i) {
 }
 function montrerFin() {
   if (S.ody) { finOdyssee(); return; }
-  if (S.coop) { if (S.enregistre) return; S.enregistre = true; if (S.fini === 'gagne' && S.choix) { try { const v = JSON.parse(localStorage.getItem('guilde-invasion') || '{}'); v[S.choix] = (v[S.choix] || 0) + 1; localStorage.setItem('guilde-invasion', JSON.stringify(v)); } catch (e) {} } arreteMusique(1.2); son(S.fini === 'gagne' ? 'victoire' : 'defaite'); effetImage(S.fini === 'gagne' ? 'victoire' : 'defaite', document.getElementById('app'), 2.2);
+  if (S.coop) { if (S.enregistre) return; S.enregistre = true; if (S.fini === 'gagne') typeof guildeEvt === 'function' && guildeEvt('invasion_acte', 1); if (S.fini === 'gagne' && S.choix) { try { const v = JSON.parse(localStorage.getItem('guilde-invasion') || '{}'); v[S.choix] = (v[S.choix] || 0) + 1; localStorage.setItem('guilde-invasion', JSON.stringify(v)); } catch (e) {} } arreteMusique(1.2); son(S.fini === 'gagne' ? 'victoire' : 'defaite'); effetImage(S.fini === 'gagne' ? 'victoire' : 'defaite', document.getElementById('app'), 2.2);
     chronique([(CHRON_CAMP_B[S.O.id] || CHRON_CAMP)[S.fini === 'gagne' ? 'victoire' : 'defaite']], () => fenetre(`<h2>${S.fini === 'gagne' ? '🏆 Le boss est tombé !' : '💀 Le campement est perdu…'}</h2><p>${S.equipe.map(h => `${h.nom} : ${h.aTerre ? 'à terre' : h.pv + ' PV'}`).join(' · ')} · ${S.O.nom} : ${Math.max(0, S.O.pv)} PV · ${S.equipe[0].tours} tours.</p><div class="choixh"><button onclick="location.href='campement.html'">🔥 Rejouer</button><button onclick="location.href='menu.html'">⌂ Menu</button></div>`)); return; }
   enregistrePartie();
   jingleFin();
@@ -2215,14 +2218,14 @@ async function joueFX() {
 // toucher l'écran pendant les animations les accélère
 document.addEventListener('pointerdown', () => { if (fxOn && !(S && S.tuto)) fxVite = .5; }, true); // 14/11 : plus d'accélération dans le tutoriel
 </script>
-<script src="profil.js?v=20261114-203714"></script>
-<script src="pantheon.js?v=20261114-203714"></script>
-<script src="tuto.js?v=20261114-203714"></script>
-<script src="deux.js?v=20261114-203714"></script>
-<script src="invasion.js?v=20261114-203714"></script>
-<script src="enigme-table.js?v=20261114-203714"></script>
-<script src="forge.js?v=20261114-203714"></script>
-<script src="semaine.js?v=20261114-203714"></script>
-<script src="enigme.js?v=20261114-203714"></script>
+<script src="profil.js?v=20261114-204624"></script>
+<script src="pantheon.js?v=20261114-204624"></script>
+<script src="tuto.js?v=20261114-204624"></script>
+<script src="deux.js?v=20261114-204624"></script>
+<script src="invasion.js?v=20261114-204624"></script>
+<script src="enigme-table.js?v=20261114-204624"></script>
+<script src="forge.js?v=20261114-204624"></script>
+<script src="semaine.js?v=20261114-204624"></script>
+<script src="enigme.js?v=20261114-204624"></script>
 </body>
 </html>
