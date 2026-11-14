@@ -86,10 +86,10 @@
 <body>
 <div id="app"></div>
 <div id="fen"></div>
-<script src="cartes.js?v=20261114-135151"></script>
-<script src="musique.js?v=20261114-135151"></script>
-<script src="donnees.js?v=20261114-135151"></script>
-<script src="defense-moteur.js?v=20261114-135151"></script>
+<script src="cartes.js?v=20261114-135510"></script>
+<script src="musique.js?v=20261114-135510"></script>
+<script src="donnees.js?v=20261114-135510"></script>
+<script src="defense-moteur.js?v=20261114-135510"></script>
 <script>
 // =============================================================================================== LA DÉFENSE DE LA PORTE · l'ÉCRAN (13/11)
 // Règles : defense-proposition.html (validées le 13/11). Moteur : defense-moteur.js.
@@ -122,7 +122,7 @@ function vagueAnnonce() { const v = D.fx.find(f => f.t === 'vague'); if (v) GM.s
 const IMG_D = { chauve:'portraits/d-chauve.webp?v=1', gobelin:'portraits/d-gobelin.webp?v=1', sanglier:'portraits/d-sanglier.webp?v=1', bouclier:'portraits/d-bouclier.webp?v=1', titan:'portraits/m-titan.webp?v=1' };
 const RUNE_IMG = { maelle:'portraits/rune-enclume.webp?v=2', gorm:'portraits/rune-cor.webp?v=1' };
 // 14/11 : le fond peint de la Défense (decor/fond-defense.webp) ; chemins, dalles et porte placés par l'utilisateur (placer-defense.html → « PLACEMENT DEFENSE {…} », recopié ici tel quel)
-const PD = {"chemin_haut":0,"chemin_bas":49,"largeur_chemin":15,"voies":[18,50,82],"dalles":[[18,61],[50,61],[82,61],[18,74.5],[50,74.5],[82,74.5],[18,88],[50,88],[82,88]],"dalle":[17,9.6],"porte":[50,98]}; // fond v2 (vu du dessus) : valeurs mesurées par Claude, EN ATTENDANT le placement de l'utilisateur
+const PD = {"chemin_haut":0,"chemin_bas":49,"largeur_chemin":18,"voies":[18,50,82],"dalles":[[18,61],[50,61],[82,61],[18,74.5],[50,74.5],[82,74.5],[18,88],[50,88],[82,88]],"dalle":[19.5,10.2],"porte":[50,98]}; // PLACEMENT DEFENSE de l'utilisateur (14/11 ~16 h 15), recopié tel quel
 const ANGLE = {}; // 14/11 : l'angle de chaque canon (il garde la direction de son dernier tir)
 const posCC = (r, col) => { const h = (PD.chemin_bas - PD.chemin_haut) / 4; return `left:${PD.voies[col] - PD.largeur_chemin / 2}%;width:${PD.largeur_chemin}%;top:${PD.chemin_haut + r * h}%;height:${h}%`; };
 const posRC = c => { const d = PD.dalles[c]; return `left:${d[0] - PD.dalle[0] / 2}%;width:${PD.dalle[0]}%;top:${d[1] - PD.dalle[1] / 2}%;height:${PD.dalle[1]}%`; };
