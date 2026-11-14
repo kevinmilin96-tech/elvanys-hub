@@ -488,7 +488,12 @@
   .unique .lancer { top:43.4cqh; }
   .unique .barre .pastilles { left:calc(100% + 8cqw); }
   .unique .pastilles > .nom { position:static !important; transform:none !important; display:block !important; background:none !important; border:none !important; padding:0 !important; font-size:2.7cqw !important; line-height:1.25; white-space:normal; color:#fff; text-shadow:0 1px 3px #000; margin-bottom:.6cqw; }
-  .unique .pastilles > .nom small { display:block; }
+  .unique .pastilles > .nom small { display:block; font-size:.82em; opacity:.9; }
+  /* 14/11 (l'utilisateur : « les textes trop grands dépassent des cadres ») : le panneau de droite garde sa largeur ; le nom passe à la ligne, « N en main » dessous */
+  .unique .barre .pastilles { width:21cqw !important; flex-direction:column !important; align-items:center !important; text-align:center; flex-wrap:nowrap !important; }
+  .unique .pastilles > .nom { width:100%; font-size:2.5cqw !important; overflow-wrap:break-word; }
+  .unique .pastilles .p { max-width:100%; white-space:normal !important; }
+  .barre .nom small.sous::before { content:' · '; } .unique .pastilles > .nom small.sous::before { content:''; }
   .unique .pastilles [data-k="pv"] { right:calc(100% + 31cqw); top:3cqw; }
   /* ===== plateau FINAL (Gemini, 11/11 soir), emplacements mesurés : alcôves y 10,6 % et 71 % · 6 ronds x 10,4 %, y 26,3 / 33,1 / 39,9 / 46,7 / 53,4 / 60,4 %
      · bac x 85,7 → 96,9 %, y 23,1 → 52,6 % · runes 41,5 % · aire de jeu x 14 → 86 %, y 16 → 68 % ===== */
@@ -656,7 +661,7 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261114-144225';
+const VERSION = '20261114-144518';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -675,11 +680,11 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261114-144225"></script>
-<script src="musique.js?v=20261114-144225"></script>
-<script src="donnees.js?v=20261114-144225"></script>
-<script src="odyssee.js?v=20261114-144225"></script>
-<script src="chronique.js?v=20261114-144225"></script>
+<script src="cartes.js?v=20261114-144518"></script>
+<script src="musique.js?v=20261114-144518"></script>
+<script src="donnees.js?v=20261114-144518"></script>
+<script src="odyssee.js?v=20261114-144518"></script>
+<script src="chronique.js?v=20261114-144518"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -1486,7 +1491,7 @@ document.addEventListener('click', e => {
 }, true);
 function barre(P, haut) {
   const ref = `{J:S.${haut ? 'O' : 'J'}}`;
-  return `<div class="barre ${estCible({ J:P }) ? 'cible' : ''} ${!P.ultimeFait && P.jauge >= JAUGE.max ? 'ultpret' : ''} ${P.gardeB || P.bouclier ? 'protege' : ''}" data-bouclier="${(P.gardeB || 0) + (P.bouclier || 0)}" id="b-${haut ? 'O' : 'J'}" style="--c:${P.c}" onclick="touche(${ref})"><img src="${HEROS[P.id].img || IMG(P.id)}" alt=""><img class="cadre" src="ui/cadre.webp?v=1" alt="">${anneauDe(P)}<span class="bdg bg" ${P.gardeB ? '' : 'hidden'}>${P.gardeB}</span><span class="bdg bb" ${P.bouclier ? '' : 'hidden'}>${P.bouclier}</span><div style="flex:1"><div class="nom">${P.nom}${P.ordi ? (S.lieu ? ' · ' + (HEROS[P.id].titre || 'ennemi') : ' · ordinateur') : (P.qui && P.qui !== 'toi' ? ' · ' + P.qui : ' · toi')}</div><div class="vie"><b style="width:${Math.max(0, P.pv) / P.pvMax * 100}%"></b><i style="width:${Math.max(0, P.pv) / P.pvMax * 100}%"></i></div><div class="pastilles">
+  return `<div class="barre ${estCible({ J:P }) ? 'cible' : ''} ${!P.ultimeFait && P.jauge >= JAUGE.max ? 'ultpret' : ''} ${P.gardeB || P.bouclier ? 'protege' : ''}" data-bouclier="${(P.gardeB || 0) + (P.bouclier || 0)}" id="b-${haut ? 'O' : 'J'}" style="--c:${P.c}" onclick="touche(${ref})"><img src="${HEROS[P.id].img || IMG(P.id)}" alt=""><img class="cadre" src="ui/cadre.webp?v=1" alt="">${anneauDe(P)}<span class="bdg bg" ${P.gardeB ? '' : 'hidden'}>${P.gardeB}</span><span class="bdg bb" ${P.bouclier ? '' : 'hidden'}>${P.bouclier}</span><div style="flex:1"><div class="nom">${P.nom}<small class="sous">${P.ordi ? (S.lieu ? (HEROS[P.id].titre || 'ennemi') : 'ordinateur') : (P.qui && P.qui !== 'toi' ? P.qui : 'toi')}</small></div><div class="vie"><b style="width:${Math.max(0, P.pv) / P.pvMax * 100}%"></b><i style="width:${Math.max(0, P.pv) / P.pvMax * 100}%"></i></div><div class="pastilles">
     <span data-k="pv" class="p pv">${Math.max(0, P.pv)}</span><span data-k="pc" class="p pc">◆ ${P.pc} PC</span>
     ${P.gardeB ? `<span data-k="garde" class="p g pg">🛡 Garde ${P.gardeB}</span>` : ''}${P.gardeE ? `<span data-k="epines" class="p g">🌿 Épines ${P.gardeE}</span>` : ''}${P.esquive ? '<span data-k="esquive" class="p g">💨 Esquive</span>' : ''}
     ${P.bouclier ? `<span data-k="bouclier" class="p g pb">🛡 Bouclier ${P.bouclier}</span>` : ''}${P.contre ? '<span data-k="contre" class="p g">⚔ Contre-attaque</span>' : ''}${P.piege ? '<span data-k="piege" class="p g">🪤 Piège</span>' : ''}
@@ -1808,7 +1813,7 @@ function cssPlacement(ile, R) {
     return `${P} #${id} { left:${f(bl)}cqw; top:calc(${por[1]}cqh - ${f(p / 2)}cqw); width:${f(p)}cqw; height:${f(p)}cqw; }
 ${P} #${id} .cadre { left:${f(c[0] - cs / 2 - bl)}cqw; top:calc(${f(c[1] - por[1])}cqh + ${f(p / 2 - cs / 2)}cqw); width:${f(cs)}cqw; height:${f(cs)}cqw; }
 ${P} #${id} .anneau { left:${f(an[0] - tA / 2 - bl)}cqw; top:calc(${f(an[1] - por[1])}cqh + ${f(p / 2 - tA / 2)}cqw); width:${f(tA)}cqw; height:${f(tA)}cqw; }
-${P} #${id} .pastilles { left:${f(pl)}cqw !important; top:calc(${f(etq[1] - por[1] - 3.35)}cqh + ${f(p / 2)}cqw) !important; }
+${P} #${id} .pastilles { width:27.4cqw !important; left:${f(pl)}cqw !important; top:calc(${f(etq[1] - por[1] - 3.35)}cqh + ${f(p / 2)}cqw) !important; }
 ${P} #${id} .pastilles [data-k="pv"] { left:${f(coeur[0] - 5.5 - bl - pl + 4.55)}cqw !important; top:calc(${f(coeur[1] - etq[1] + 3.35)}cqh - 5cqw) !important; }
 ${P} #${id}:has(.bdg:not([hidden])) .pastilles [data-k="pv"] { left:${f(coeur[0] - 5.5 - bl - pl)}cqw !important; }
 ${P} #${id} .bdg.bg, ${P} #${id} .bdg.bb { left:${f(bouc[0] - 3.8 - bl)}cqw; top:calc(${f(bouc[1] - por[1])}cqh + ${f(p / 2 - 4.3)}cqw); }
@@ -2123,14 +2128,14 @@ async function joueFX() {
 // toucher l'écran pendant les animations les accélère
 document.addEventListener('pointerdown', () => { if (fxOn && !(S && S.tuto)) fxVite = .5; }, true); // 14/11 : plus d'accélération dans le tutoriel
 </script>
-<script src="profil.js?v=20261114-144225"></script>
-<script src="pantheon.js?v=20261114-144225"></script>
-<script src="tuto.js?v=20261114-144225"></script>
-<script src="deux.js?v=20261114-144225"></script>
-<script src="invasion.js?v=20261114-144225"></script>
-<script src="enigme-table.js?v=20261114-144225"></script>
-<script src="forge.js?v=20261114-144225"></script>
-<script src="semaine.js?v=20261114-144225"></script>
-<script src="enigme.js?v=20261114-144225"></script>
+<script src="profil.js?v=20261114-144518"></script>
+<script src="pantheon.js?v=20261114-144518"></script>
+<script src="tuto.js?v=20261114-144518"></script>
+<script src="deux.js?v=20261114-144518"></script>
+<script src="invasion.js?v=20261114-144518"></script>
+<script src="enigme-table.js?v=20261114-144518"></script>
+<script src="forge.js?v=20261114-144518"></script>
+<script src="semaine.js?v=20261114-144518"></script>
+<script src="enigme.js?v=20261114-144518"></script>
 </body>
 </html>
