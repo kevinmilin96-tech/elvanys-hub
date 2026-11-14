@@ -479,6 +479,8 @@
   .unique .bandeau { left:15cqw; right:16cqw; top:43.4cqh; }
   .unique .lancer { top:43.4cqh; }
   .unique .barre .pastilles { left:calc(100% + 8cqw); }
+  .unique .pastilles > .nom { position:static !important; transform:none !important; display:block !important; background:none !important; border:none !important; padding:0 !important; font-size:2.7cqw !important; line-height:1.25; white-space:normal; color:#fff; text-shadow:0 1px 3px #000; margin-bottom:.6cqw; }
+  .unique .pastilles > .nom small { display:block; }
   .unique .pastilles [data-k="pv"] { right:calc(100% + 31cqw); top:3cqw; }
   /* ===== plateau FINAL (Gemini, 11/11 soir), emplacements mesurés : alcôves y 10,6 % et 71 % · 6 ronds x 10,4 %, y 26,3 / 33,1 / 39,9 / 46,7 / 53,4 / 60,4 %
      · bac x 85,7 → 96,9 %, y 23,1 → 52,6 % · runes 41,5 % · aire de jeu x 14 → 86 %, y 16 → 68 % ===== */
@@ -646,7 +648,7 @@
 <script>
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
-const VERSION = '20261114-141346';
+const VERSION = '20261114-143126';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -665,11 +667,11 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261114-141346"></script>
-<script src="musique.js?v=20261114-141346"></script>
-<script src="donnees.js?v=20261114-141346"></script>
-<script src="odyssee.js?v=20261114-141346"></script>
-<script src="chronique.js?v=20261114-141346"></script>
+<script src="cartes.js?v=20261114-143126"></script>
+<script src="musique.js?v=20261114-143126"></script>
+<script src="donnees.js?v=20261114-143126"></script>
+<script src="odyssee.js?v=20261114-143126"></script>
+<script src="chronique.js?v=20261114-143126"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -1509,6 +1511,9 @@ function rendu() {
   if (S.ody && !S.fini) localStorage.setItem('guilde-combat', JSON.stringify(S));
   const f = fxApres.shift(); if (f && !S.fini) setTimeout(f, 350);
 }
+// 14/11 (l'utilisateur : « le titre sur le portrait cache la vie et l'Ultime ») : sur l'écran unique, le nom (et le titre du profil)
+// passe en haut du panneau de droite, au-dessus de « N en main » ; il suit donc aussi les placements des îles
+function nomsDansPanneau() { if (!document.querySelector('.plateau.unique')) return; document.querySelectorAll('.unique .barre').forEach(b => { const n = b.querySelector(':scope > div > .nom'), p = b.querySelector('.pastilles'); if (n && p) p.prepend(n); }); }
 function dessine() {
   if (!ciblage || !ciblage.choisi) enleveConfirme();
   if (S && !S.fini && !S.auto && typeof GM !== 'undefined') demarreMusique(); // 13/11 soir : la musique dès que la partie s'affiche
@@ -1549,6 +1554,7 @@ function dessine() {
     <button class="b2" onclick="finDeMonTour()">Fin du tour ▶</button>
   </div>`;
   if (S.fini && !S.finPrevue) { S.finPrevue = true; setTimeout(montrerFin, 2200); } // 14/11 : 2,2 s pour voir les derniers dégâts avant la fenêtre de fin
+  nomsDansPanneau();
 }
 // ================= écran unique (11/11) : actions en icônes à gauche, dés à droite, anneaux autour des portraits =================
 const ICONES = { frappe:['⚔', 'Frappe'], technique:['⚔⚔', 'Technique'], garde:['🛡', 'Garde'], pouvoir:['✦', 'Pouvoir'], ultime:['⚡', 'Ultime'], transmu:['⚗', ''], vendre:['◆', 'Vendre'] };
@@ -2103,14 +2109,14 @@ async function joueFX() {
 // toucher l'écran pendant les animations les accélère
 document.addEventListener('pointerdown', () => { if (fxOn && !(S && S.tuto)) fxVite = .5; }, true); // 14/11 : plus d'accélération dans le tutoriel
 </script>
-<script src="profil.js?v=20261114-141346"></script>
-<script src="pantheon.js?v=20261114-141346"></script>
-<script src="tuto.js?v=20261114-141346"></script>
-<script src="deux.js?v=20261114-141346"></script>
-<script src="invasion.js?v=20261114-141346"></script>
-<script src="enigme-table.js?v=20261114-141346"></script>
-<script src="forge.js?v=20261114-141346"></script>
-<script src="semaine.js?v=20261114-141346"></script>
-<script src="enigme.js?v=20261114-141346"></script>
+<script src="profil.js?v=20261114-143126"></script>
+<script src="pantheon.js?v=20261114-143126"></script>
+<script src="tuto.js?v=20261114-143126"></script>
+<script src="deux.js?v=20261114-143126"></script>
+<script src="invasion.js?v=20261114-143126"></script>
+<script src="enigme-table.js?v=20261114-143126"></script>
+<script src="forge.js?v=20261114-143126"></script>
+<script src="semaine.js?v=20261114-143126"></script>
+<script src="enigme.js?v=20261114-143126"></script>
 </body>
 </html>
