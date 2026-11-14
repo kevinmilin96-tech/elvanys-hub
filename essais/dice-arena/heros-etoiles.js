@@ -10,7 +10,7 @@ const COUT_NIV = [10, 20, 30, 40, 50, 60]; // éclats pour passer du niveau n au
 const BONUS_NIVH = [null, ['❤', '+6 PV max'], ['🛡', 'Bouclier 2 au début de chaque combat'], ['◆', '+1 PC au début de chaque combat'],
   ['❤', '+10 PV max de plus'], ['🎲', 'une relance gratuite de plus à chaque tour'], ['🂠', 'une carte de plus en main au début de chaque combat']];
 // ce que rapporte chaque moment fort au héros joué (appelé par guildeEvt de rang.js)
-const ECLATS_EVT = { duel_gagne:2, elite:2, boss:5, escale:1, titan:5, etage:3 };
+const ECLATS_EVT = { duel_gagne:2, elite:2, boss:5, escale:1, titan:5, etage:3, tour_etage:2 };
 const ECLATS_QUETE = { jour:3, semaine:10 }, ECLATS_RANG = 5;
 // la force des objets selon leur niveau (★, ★★, ★★★)
 const EQUIP_VAL = { hache:[2, 3, 4], lame:[10, 15, 20], arc:[5, 8, 11], marteau:[1, 1, 2], cuir:[4, 6, 8], cape:[6, 9, 12], cotte:[7, 10, 13], heaume:[12, 18, 24], trefle:[1, 1, 2], bourse:[12, 18, 24], griffe:[4, 6, 8], anneau:[1, 1, 2] };

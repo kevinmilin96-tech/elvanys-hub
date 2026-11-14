@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>La Guilde des Runes · Les épreuves</title>
+<style>
+  :root { --or:#f3c96b; --texte:#f1ecff; --doux:#c9c1ea; --ok:#7dffb0; }
+  * { box-sizing:border-box; }
+  body { margin:0; color:var(--texte); font:15px/1.45 Georgia, 'Times New Roman', serif; background:radial-gradient(ellipse at 50% -10%, #3a2a5c, #120f24 60%) fixed, #120f24; }
+  main { max-width:620px; margin:0 auto; padding:12px 12px 60px; }
+  .haut { display:flex; align-items:center; gap:8px; } .haut a { color:var(--doux); text-decoration:none; font-size:.9em; background:#221d42; border:1px solid #4b4580; border-radius:20px; padding:5px 12px; }
+  h1 { flex:1; margin:0; text-align:center; color:var(--or); font-size:1.35em; }
+  .onglets { display:flex; gap:6px; margin:12px 0; } .onglets button { flex:1; font:inherit; color:var(--texte); background:#221d42; border:2px solid #4b4580; border-radius:12px; padding:8px; } .onglets button.on { border-color:var(--or); background:#3a2f12; }
+  .aide { color:var(--doux); font-size:.86em; margin:4px 0 10px; }
+  .grand { display:flex; gap:12px; align-items:center; background:#1d1b3aee; border:2px solid var(--or); border-radius:16px; padding:12px; }
+  .grand img { width:86px; height:86px; border-radius:50%; object-fit:cover; box-shadow:0 0 0 3px var(--c, #f3c96b); flex:none; }
+  .grand b { color:var(--or); font-size:1.1em; } .grand small { display:block; color:var(--doux); }
+  .part { background:#2f2650; border-left:3px solid var(--or); padding:6px 10px; margin:8px 0; font-size:.88em; }
+  .liste { display:flex; flex-direction:column; gap:5px; margin:10px 0; } .ligne { display:flex; gap:8px; align-items:center; background:#1d1b3aee; border:1px solid #4b4580; border-radius:12px; padding:5px 8px; font-size:.86em; opacity:.85; }
+  .ligne img { width:36px; height:36px; border-radius:50%; object-fit:cover; } .ligne .n { color:var(--or); width:3.2em; flex:none; } .ligne.boss { border-color:#ff7a5a; }
+  .heros { display:grid; grid-template-columns:repeat(3, 1fr); gap:6px; margin:10px 0; }
+  .heros button { font:inherit; color:var(--texte); background:#221d42; border:2px solid #4b4580; border-radius:12px; padding:6px 2px; font-size:.78em; }
+  .heros button.on { border-color:var(--or); background:#3a2f12; } .heros img { width:54px; height:54px; border-radius:50%; object-fit:cover; display:block; margin:0 auto 2px; } .heros button:disabled { opacity:.4; }
+  .go { display:block; width:100%; font:bold 1.05em Georgia, serif; padding:12px; border-radius:14px; border:0; background:var(--or); color:#2b1d0a; margin-top:8px; } .go:disabled { opacity:.45; }
+  .paliers { display:flex; gap:6px; } .paliers div { flex:1; text-align:center; background:#1d1b3aee; border:1px solid #4b4580; border-radius:12px; padding:6px; font-size:.8em; } .paliers div.ok { border-color:var(--ok); color:var(--ok); }
+  .res { background:#14322a; border:1px solid var(--ok); border-radius:12px; padding:10px; margin:10px 0; }
+  .res.perdu { background:#3a1414; border-color:#ff7a7a; }
+</style>
+</head>
+<body>
+<main>
+  <div class="haut"><a href="menu.html">‹ Menu</a><h1>🏯 Les épreuves</h1><a href="heros.html">Héros</a></div>
+  <div class="onglets"><button id="o-tour" onclick="onglet('tour')">🏯 La Tour</button><button id="o-chasse" onclick="onglet('chasse')">🎯 La Chasse</button></div>
+  <div id="app"></div>
+</main>
+<script src="cartes.js?v=20261114-214514"></script>
+<script src="musique.js?v=20261114-214514"></script>
+<script src="rang.js?v=20261114-214514"></script>
+<script src="heros-etoiles.js?v=20261114-214514"></script>
+<script src="donnees.js?v=20261114-214514"></script>
+<script src="odyssee.js?v=20261114-214514"></script>
+<script src="bestiaire.js?v=20261114-214514"></script>
+<script src="aventure.js?v=20261114-214514"></script>
+<script>
+// =============================================================================================== LES ÉPREUVES (14/11 nuit, carte blanche ; inspiré de la Tour du roi et des chasses d'AFK Arena)
+// LA TOUR : des étages fixes (les mêmes pour tout le monde), un combat chacun, de plus en plus forts ; un boss tous les 5 étages (les 6 boss
+// à tour de rôle, nouveaux compris). Un échec ne coûte rien : on réessaie, avec le même héros ou un autre. Chaque étage passé : XP + éclats ;
+// tous les 5 : un objet pour l'armurerie et des éclats de Guilde. Les étoiles et l'équipement du héros comptent ici.
+// LA CHASSE : le boss de la semaine (999 PV) ; 8 tours pour lui faire le plus de dégâts ; 2 essais par jour ; 3 paliers de récompenses par semaine.
+const EPREUVE_PAGE = true;
+const TOUR_CLE = 'guilde-tour-epreuves', CHASSE_CLE = 'guilde-chasse';
+const BOSS_TOUR = ['titan', 'hydre', 'vouivre', 'hiver', 'roi', 'devoreur'];
+const ZOK = () => localStorage.getItem('guilde-tuto') === 'fait';
+const lireTour = () => Object.assign({ etage:1, records:{} }, RJ(TOUR_CLE, {}));
+const forceEtage2 = n => +(1 + .035 * (n - 1)).toFixed(2);
+// l'ennemi d'un étage : toujours le même (graine), l'île change tous les 5 étages
+function etageTour(n) {
+  const acte = ['brulees', 'givre', 'abime'][Math.floor((n - 1) / 5) % 3], I = ILES[acte], R = rngDe('tour-' + n), pos = (n - 1) % 5;
+  if (pos === 4) return { n, acte, t:'boss', ennemi:BOSS_TOUR[(Math.floor(n / 5) - 1) % 6], niv:1, force:forceEtage2(n) };
+  if (pos === 3) return { n, acte, t:'elite', ennemi:tire(R, I.elites), niv:2, force:forceEtage2(n) };
+  const niv = pos === 0 ? 1 : pos === 1 ? 2 : 3; return { n, acte, t:'monstre', ennemi:tire(R, I.pools[niv - 1]), niv, force:forceEtage2(n) };
+}
+// la Chasse de la semaine
+const bossSemaine = () => BOSS_TOUR[[...semaineCle()].reduce((a, c) => a + c.charCodeAt(0), 0) % 6];
+const PALIERS = [[40, 4, 30], [80, 8, 60], [130, 15, 100]]; // [dégâts, éclats de Guilde, XP]
+function lireChasse() { const c = Object.assign({ semaine:'', meilleur:0, paliers:[], essais:{} }, RJ(CHASSE_CLE, {})); if (c.semaine !== semaineCle()) { c.semaine = semaineCle(); c.meilleur = 0; c.paliers = []; } return c; }
+const essaisRestants = c => 2 - (c.essais[rgJourCle()] || 0);
+
+let ONG = location.hash === '#chasse' ? 'chasse' : 'tour', HEROS_CHOISI = localStorage.getItem('guilde-epreuve-heros') || 'gorm', RESULTAT = '';
+function onglet(o) { ONG = o; location.hash = o; dessine(); }
+function choixHeros(id) { HEROS_CHOISI = id; localStorage.setItem('guilde-epreuve-heros', id); dessine(); }
+const portrait = id => HEROS[id].img || IMG(id);
+function herosHTML() {
+  return `<div class="heros">${ORDRE.map(id => { const off = id === 'zephine' && !ZOK(), n = niveauHeros(id);
+    return `<button class="${HEROS_CHOISI === id ? 'on' : ''}" ${off ? 'disabled' : ''} onclick="choixHeros('${id}')"><img src="${IMG(id)}" alt="">${HEROS[id].nom}<br><small style="color:var(--or)">${off ? '🔒 tutoriel' : NIVEAUX_H[n]}</small></button>`; }).join('')}</div>`;
+}
+function ligneEnnemi(e, grand) {
+  const h = HEROS[e.ennemi], typ = e.t === 'boss' ? '👑 Boss' : e.t === 'elite' ? '💀 Élite' : `⚔ Niveau ${'I II III'.split(' ')[e.niv - 1]}`;
+  if (grand) return `<div class="grand" style="--c:${h.c}"><img src="${portrait(e.ennemi)}" alt=""><div><small>Étage ${e.n} · ${ILES[e.acte].court} · ${typ}</small><b>${h.nom}</b><small>${h.titre || ''} · ennemis ×${e.force} de vie</small></div></div>${h.part ? `<div class="part">⚡ <b>${h.part.n}</b> : ${h.part.d}</div>` : `<div class="part">${h.role || ''}</div>`}`;
+  return `<div class="ligne ${e.t === 'boss' ? 'boss' : ''}"><span class="n">${e.n}</span><img src="${portrait(e.ennemi)}" alt=""><span>${typ} · <b>${h.nom}</b>${h.part ? ` <small style="color:var(--doux)">(${h.part.n})</small>` : ''}</span></div>`;
+}
+function dessine() {
+  document.getElementById('o-tour').classList.toggle('on', ONG === 'tour'); document.getElementById('o-chasse').classList.toggle('on', ONG === 'chasse');
+  const app = document.getElementById('app');
+  if (ONG === 'tour') {
+    const T = lireTour(), e = etageTour(T.etage), rec = T.records[HEROS_CHOISI] || 0;
+    app.innerHTML = `${RESULTAT}<p class="aide">Monte étage par étage. Chaque combat est fixe (le même pour tout le monde) et de plus en plus dur ; un boss tous les 5 étages. Perdre ne coûte rien : réessaie, avec un autre héros si tu veux. Tes étoiles et ton équipement comptent ici.</p>
+    <h3 style="color:var(--or);margin:6px 0">🏯 Étage ${T.etage}${T.etage > 1 ? ` <small style="color:var(--doux)">(${T.etage - 1} passé${T.etage > 2 ? 's' : ''})</small>` : ''}</h3>
+    ${ligneEnnemi(e, true)}
+    <p class="aide">Récompense : 15 XP et 2 éclats du héros${e.t === 'boss' ? ' · <b style="color:var(--or)">boss : un objet pour l’armurerie et 5 éclats de Guilde</b>' : ''}.</p>
+    ${herosHTML()}
+    <button class="go" onclick="combatTour()">⚔ Combattre l’étage ${T.etage} avec ${HEROS[HEROS_CHOISI].nom}</button>
+    <h3 style="color:var(--or);margin:14px 0 4px">👀 Plus haut</h3><div class="liste">${[1, 2, 3, 4, 5].map(k => ligneEnnemi(etageTour(T.etage + k))).join('')}</div>
+    <p class="aide">Record de ${HEROS[HEROS_CHOISI].nom} : étage ${rec || '—'}.</p>`;
+  } else {
+    const C = lireChasse(), b = bossSemaine(), h = HEROS[b], r = essaisRestants(C);
+    app.innerHTML = `${RESULTAT}<p class="aide">Le boss de la semaine a 999 PV : tu ne le battras pas. Le but : lui faire <b>le plus de dégâts possible en 8 tours</b>. Deux essais par jour ; ton meilleur score de la semaine débloque les paliers.</p>
+    ${ligneEnnemi({ n:'—', acte:h.ile || 'brulees', t:'boss', ennemi:b, niv:1, force:1 }, true).replace('Étage — · ', 'Cette semaine · ').replace(' · ennemis ×1 de vie', '')}
+    <div class="paliers">${PALIERS.map(([d, e, x], i) => `<div class="${C.paliers.includes(i) ? 'ok' : ''}">${C.paliers.includes(i) ? '✅' : '🎯'} ${d} dégâts<br><small>💠 ${e} · ${x} XP</small></div>`).join('')}</div>
+    <p style="text-align:center">Meilleur cette semaine : <b style="color:var(--or)">${C.meilleur}</b> dégâts · essais aujourd’hui : <b>${Math.max(0, r)}</b> / 2</p>
+    ${herosHTML()}
+    <button class="go" ${r > 0 ? '' : 'disabled'} onclick="combatChasse()">${r > 0 ? `🎯 Chasser avec ${HEROS[HEROS_CHOISI].nom}` : 'Reviens demain'}</button>`;
+  }
+}
+// lancer un combat : une « Odyssée » d'un seul combat (le moteur du Duel la joue, les étoiles et l'équipement du héros s'appliquent)
+function lance(e, epreuve) {
+  const run = nouvelleOdyssee(HEROS_CHOISI, 'epreuve-' + Date.now(), e.acte, 0); if (!run) return;
+  run.epreuve = epreuve; const c = { x:-1, y:-1, t:e.t, ennemi:e.ennemi, niv:e.niv }; lanceCombat(run, c); ecrireOdyssee(run);
+  sessionStorage.setItem('guilde-dans-mode', '1'); location.href = 'duel.html?odyssee=1&epreuve=1';
+}
+function combatTour() { const T = lireTour(), e = etageTour(T.etage); lance(e, { type:'tour', etage:T.etage, force:e.force }); }
+function combatChasse() { const C = lireChasse(); if (essaisRestants(C) <= 0) return; C.essais[rgJourCle()] = (C.essais[rgJourCle()] || 0) + 1; localStorage.setItem(CHASSE_CLE, JSON.stringify(C));
+  const b = bossSemaine(); lance({ acte:HEROS[b].ile || 'brulees', t:'boss', ennemi:b, niv:1 }, { type:'chasse', chasse:8 }); }
+// au retour du combat : le résultat
+function retour() {
+  const run = lireOdyssee(); if (!run || !run.combat || !run.combat.resultat || !run.epreuve) return;
+  const res = run.combat.resultat, E = run.epreuve, h = HEROS[run.heros].nom; ecrireOdyssee(null);
+  if (E.type === 'tour') {
+    const T = lireTour();
+    if (res.gagne && E.etage === T.etage) {
+      T.etage++; T.records[run.heros] = Math.max(T.records[run.heros] || 0, E.etage); localStorage.setItem(TOUR_CLE, JSON.stringify(T));
+      guildeEvt('tour_etage', 1, { heros:run.heros }); let plus = '';
+      if (E.etage % 5 === 0) { const k = brasse(Math.random, equipDispo())[0]; if (k) { armurerieAjoute(k); plus = ` Le boss laisse tomber ${eqImg(k, 26)} <b>${EQUIP[k][2]}</b> (armurerie).`; } donneLibres(5); }
+      RESULTAT = `<div class="res">🏆 <b>Étage ${E.etage} passé</b> avec ${h} ! +15 XP, +2 éclats.${plus}</div>`;
+    } else RESULTAT = `<div class="res perdu">💀 ${h} est tombé à l’étage ${E.etage}. Rien n’est perdu : réessaie, ou change de héros.</div>`;
+  } else {
+    const C = lireChasse(), d = res.degats || 0; C.meilleur = Math.max(C.meilleur, d); let gains = [];
+    PALIERS.forEach(([s, e, x], i) => { if (C.meilleur >= s && !C.paliers.includes(i)) { C.paliers.push(i); donneLibres(e); gagneXP(x, 'Palier de la Chasse'); gains.push(`${s} dégâts`); } });
+    localStorage.setItem(CHASSE_CLE, JSON.stringify(C)); guildeEvt('chasse', d);
+    RESULTAT = `<div class="res">🎯 <b>${d} dégâts</b> avec ${h}.${gains.length ? ` Palier${gains.length > 1 ? 's' : ''} atteint${gains.length > 1 ? 's' : ''} : ${gains.join(', ')} !` : ''}</div>`;
+  }
+}
+retour(); dessine();
+if (typeof GM !== 'undefined') { GM.musique('menu'); GM.bouton(); }
+</script>
+</body>
+</html>

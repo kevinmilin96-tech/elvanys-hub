@@ -682,8 +682,8 @@
 // Version de la page : à chaque mise en ligne, outils/publier.sh change VERSION et version.txt.
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
 // 14/11 : l'Odyssée sans fin a ses propres emplacements (odyssee.js lit SANSFIN)
-const SANSFIN = new URLSearchParams(location.search).get('sansfin') === '1', ODY_PAGE = 'odyssee.html' + (SANSFIN ? '?sansfin=1' : '');
-const VERSION = '20261114-214119';
+const SANSFIN = new URLSearchParams(location.search).get('sansfin') === '1', EPREUVE_PAGE = new URLSearchParams(location.search).get('epreuve') === '1', ODY_PAGE = EPREUVE_PAGE ? 'epreuves.html' : 'odyssee.html' + (SANSFIN ? '?sansfin=1' : '');
+const VERSION = '20261114-214514';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -702,16 +702,16 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261114-214119"></script>
-<script src="musique.js?v=20261114-214119"></script>
-<script src="rang.js?v=20261114-214119"></script>
-<script src="heros-etoiles.js?v=20261114-214119"></script>
-<script src="donnees.js?v=20261114-214119"></script>
-<script src="odyssee.js?v=20261114-214119"></script>
-<script src="bestiaire.js?v=20261114-214119"></script>
-<script src="aventure.js?v=20261114-214119"></script>
-<script src="odyssee-sansfin.js?v=20261114-214119"></script>
-<script src="chronique.js?v=20261114-214119"></script>
+<script src="cartes.js?v=20261114-214514"></script>
+<script src="musique.js?v=20261114-214514"></script>
+<script src="rang.js?v=20261114-214514"></script>
+<script src="heros-etoiles.js?v=20261114-214514"></script>
+<script src="donnees.js?v=20261114-214514"></script>
+<script src="odyssee.js?v=20261114-214514"></script>
+<script src="bestiaire.js?v=20261114-214514"></script>
+<script src="aventure.js?v=20261114-214514"></script>
+<script src="odyssee-sansfin.js?v=20261114-214514"></script>
+<script src="chronique.js?v=20261114-214514"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -819,6 +819,7 @@ function fin() { if (S.fini) return;
   if (S.J.pv <= 0 || S.O.pv <= 0) S.fini = S.J.pv > 0 ? 'gagne' : 'perdu'; }
 
 function debutTour(J) {
+  if (S.chasse && J === S.J && J.tours >= S.chasse && !S.fini) { S.fini = 'gagne'; log(`🎯 Fin de la chasse : ${S.O.pvMax - Math.max(0, S.O.pv)} dégâts infligés.`); return; } // 14/11 nuit : la Chasse au boss (epreuves.html)
   if (J.gardeB > 0 || J.gardeE > 0) fx({ t:'finGarde', s:J === S.J ? 'J' : 'O', n:J.gardeB });
   J.tours++; J.gardeB = 0; J.gardeE = 0; J.contre = J.piege = J.cor = J.fournaise = J.paillasse = J.esquive = false;
   J.relance = 2 + (J.relanceRang || 0) + (J.boussole ? 1 : 0) + (J.reliques.includes('oeil') ? 1 : 0) + (J.benes.includes('relance') ? 1 : 0); S.acteur = null; J.cartesJouees = 0; J.six = 0; J.pureteTour = false; J.transmu = false; J.dernierSort = null; J.gardeFaite = false;
@@ -1224,6 +1225,8 @@ function prepareCombatOdyssee(run, cb, auto) {
     const A = run.asc || 0; if (A >= 1) O.pvMax = Math.round(O.pvMax * 1.1); if (A >= 2 && cb.type === 'elite') O.pvMax = Math.round(O.pvMax * 1.15); if (A >= 5 && cb.type === 'boss') O.pvMax = Math.round(O.pvMax * 1.15); if (A >= 9) O.desMax = Math.min(5, (O.desMax || 5) + 1);
     // 14/11 nuit : sans fin, chaque tour complet des trois îles donne +25 % de vie aux ennemis ; le coffre piège est un monstre fort
     if (run.sansfin) { const f = Math.floor(((run.sansfin.etage || 1) - 1) / 3); if (f) { O.pvMax = Math.round(O.pvMax * (1 + .25 * f)); log(`🪜 Étage ${run.sansfin.etage} : ennemis +${25 * f} % de vie.`); } }
+    if (run.epreuve && run.epreuve.force) { O.pvMax = Math.round(O.pvMax * run.epreuve.force); }
+    if (run.epreuve && run.epreuve.chasse) { O.pvMax = 999; S.chasse = run.epreuve.chasse; log(`🎯 Chasse : fais le plus de dégâts possible en ${run.epreuve.chasse} tours.`); }
     if (cb.mimique) { O.pvMax = Math.round(O.pvMax * 1.2); log('🗝 Le coffre avait des dents : c’était un monstre déguisé !'); }
     if (cb.grandDefi) log('🎯 Salle du défi : réussis le défi pour +90 or et une carte plus rare.');
     O.pv = O.pvMax; }
@@ -1349,12 +1352,12 @@ function finOdyssee() {
   const run = lireOdyssee(); const J = S.J, d = S.ody.defi;
   const defiOk = evalueDefi(J, d);
   if (run && run.combat && run.combat.id === S.ody.id) {
-    run.combat.resultat = { gagne:S.fini === 'gagne', pv:Math.max(0, J.pv), tours:J.tours, defiOk, sacoche:[...J.sacoche], journal:[...S.log].reverse().slice(-60) };
+    run.combat.resultat = { gagne:S.fini === 'gagne', degats:S.O.pvMax - Math.max(0, S.O.pv), pv:Math.max(0, J.pv), tours:J.tours, defiOk, sacoche:[...J.sacoche], journal:[...S.log].reverse().slice(-60) };
     run.pv = Math.max(0, J.pv); run.sacoche = [...J.sacoche]; if (J.orForge) run.or = (run.or || 0) + J.orForge; ecrireOdyssee(run);
   }
   localStorage.removeItem('guilde-combat');
   fenetre(`<h2>${S.fini === 'gagne' ? '🏆 Victoire !' : '💀 Défaite…'}</h2><p>${J.nom} contre ${S.O.nom} : ${S.fini === 'gagne' ? 'gagné' : 'perdu'} en ${J.tours} tours.${d ? `<br>🎯 Défi « ${d.n} » : ${defiOk ? '<b style="color:#7dffb0">réussi, +30 or</b>' : 'raté'}.` : ''}</p>
-    <div class="choixh"><button onclick="location.href=ODY_PAGE">${S.fini === 'gagne' ? '🗺 Continuer l’Odyssée' : '🗺 Voir jusqu’où tu es allé'}</button></div>`);
+    <div class="choixh"><button onclick="location.href=ODY_PAGE">${EPREUVE_PAGE ? '🏯 Retour aux épreuves' : S.fini === 'gagne' ? '🗺 Continuer l’Odyssée' : '🗺 Voir jusqu’où tu es allé'}</button></div>`);
 }
 let finTourDe = null; // 14/11 : « Fin du tour » touché plusieurs fois très vite = l'ordinateur jouait plusieurs fois et la partie se cassait → une seule fin de tour à la fois
 // 14/11 (l'utilisateur : « bloqué, Fin du tour ne marche pas, 3 fois ») : (1) toute erreur s'AFFICHE (bandeau rouge + journal) pour qu'on la trouve ;
@@ -2289,14 +2292,14 @@ async function joueFX() {
 // toucher l'écran pendant les animations les accélère
 document.addEventListener('pointerdown', () => { if (fxOn && !(S && S.tuto)) fxVite = .5; }, true); // 14/11 : plus d'accélération dans le tutoriel
 </script>
-<script src="profil.js?v=20261114-214119"></script>
-<script src="pantheon.js?v=20261114-214119"></script>
-<script src="tuto.js?v=20261114-214119"></script>
-<script src="deux.js?v=20261114-214119"></script>
-<script src="invasion.js?v=20261114-214119"></script>
-<script src="enigme-table.js?v=20261114-214119"></script>
-<script src="forge.js?v=20261114-214119"></script>
-<script src="semaine.js?v=20261114-214119"></script>
-<script src="enigme.js?v=20261114-214119"></script>
+<script src="profil.js?v=20261114-214514"></script>
+<script src="pantheon.js?v=20261114-214514"></script>
+<script src="tuto.js?v=20261114-214514"></script>
+<script src="deux.js?v=20261114-214514"></script>
+<script src="invasion.js?v=20261114-214514"></script>
+<script src="enigme-table.js?v=20261114-214514"></script>
+<script src="forge.js?v=20261114-214514"></script>
+<script src="semaine.js?v=20261114-214514"></script>
+<script src="enigme.js?v=20261114-214514"></script>
 </body>
 </html>

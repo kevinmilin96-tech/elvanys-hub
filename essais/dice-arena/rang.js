@@ -13,9 +13,10 @@ const XP_EVT = {
   invasion_acte:50, defense_vague:10,     // Invasion, Défense de la porte
   enigme:20,                              // énigme du jour résolue
   etage:40,                               // sans fin : descendre d'un étage
+  tour_etage:15,                          // Tour des épreuves : un étage passé (14/11 nuit)
 };
 const NOM_EVT = { duel_gagne:'Duel gagné', duel_perdu:'Duel joué', salle:'Salle vidée', elite:'Élite vaincue', boss:'Boss vaincu', escale:'Escale gagnée', titan:'Titan vaincu',
-  invasion_acte:'Acte de l’Invasion', defense_vague:'Vague tenue', enigme:'Énigme résolue', etage:'Nouvel étage', quete_jour:'Quête du jour', quete_semaine:'Quête de la semaine' };
+  invasion_acte:'Acte de l’Invasion', defense_vague:'Vague tenue', enigme:'Énigme résolue', etage:'Nouvel étage', tour_etage:'Étage de la Tour', chasse:'Chasse au boss', quete_jour:'Quête du jour', quete_semaine:'Quête de la semaine' };
 
 // XP pour passer du rang r au rang r+1 : 200, 250, 300… (rang 30 ≈ 27 000 XP ≈ deux mois de jeu régulier)
 const XP_RANG = r => 150 + 50 * r, RANG_MAX = 30;
@@ -87,6 +88,7 @@ const QUETES_JOUR = [
   ['dv', 'Tiens 4 vagues dans la Défense de la porte', 'defense_vague', 4],
   ['or', 'Gagne 200 or dans l’Odyssée', 'or', 200],
   ['ca', 'Joue 15 cartes, tous modes confondus', 'carte', 15],
+  ['to2', 'Passe 2 étages de la Tour des épreuves', 'tour_etage', 2],
 ];
 const QUETES_SEMAINE = [
   ['el3', 'Bats 3 élites', 'elite', 3],
@@ -98,6 +100,8 @@ const QUETES_SEMAINE = [
   ['et3', 'Descends à l’étage 3 du sans fin', 'etage_atteint', 3, 'max'],
   ['sa40', 'Vide 40 salles dans l’Odyssée', 'salle', 40],
   ['dv15', 'Tiens 15 vagues dans la Défense de la porte', 'defense_vague', 15],
+  ['ch100', 'Inflige 100 dégâts au boss de la Chasse', 'chasse', 100, 'max'],
+  ['to5', 'Passe 5 étages de la Tour des épreuves', 'tour_etage', 5],
 ];
 const rgJourCle = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 function semaineCle(d = new Date()) { const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); const j = t.getUTCDay() || 7; t.setUTCDate(t.getUTCDate() + 4 - j); const a = new Date(Date.UTC(t.getUTCFullYear(), 0, 1)); return `${t.getUTCFullYear()}-S${Math.ceil(((t - a) / 864e5 + 1) / 7)}`; }

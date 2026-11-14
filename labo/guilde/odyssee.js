@@ -538,7 +538,7 @@ const DEFIS = [
 ];
 // 14/11 (l'utilisateur : « dans l'Odyssée sans fin, j'ai une sauvegarde du Givre ») : l'Odyssée sans fin a ses 3 emplacements à elle
 const sansFinPage = () => typeof SANSFIN !== 'undefined' && SANSFIN;
-const odyCle = n => { const b = sansFinPage() ? ODY_CLE + '-sansfin' : ODY_CLE; return n > 1 ? b + '-' + n : b; };
+const odyCle = n => { if (typeof EPREUVE_PAGE !== 'undefined' && EPREUVE_PAGE) return 'guilde-epreuve-run'; const b = sansFinPage() ? ODY_CLE + '-sansfin' : ODY_CLE; return n > 1 ? b + '-' + n : b; }; // 14/11 nuit : la Tour des épreuves et la Chasse ont leur propre partie
 function slotActif() { const n = +(typeof localStorage !== 'undefined' && localStorage.getItem(ODY_SLOT_CLE + (sansFinPage() ? '-sansfin' : ''))) || 1; return n >= 1 && n <= ODY_SLOTS ? n : 1; }
 function choisirSlot(n) { localStorage.setItem(ODY_SLOT_CLE + (sansFinPage() ? '-sansfin' : ''), String(n)); }
 function lireSlot(n) { try { return JSON.parse(localStorage.getItem(odyCle(n)) || 'null'); } catch (e) { return null; } }

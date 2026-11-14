@@ -8,7 +8,7 @@
 <title>La Guilde des Runes</title>
 <script>
 // Même mécanisme que le Duel : une nouvelle version = rechargement tout seul à l'ouverture (publier.sh change VERSION).
-const VERSION = '20261114-214119';
+const VERSION = '20261114-214514';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-menu-' + v)) { sessionStorage.setItem('recharge-menu-' + v, '1'); location.replace('menu.html?v=' + v); }
@@ -193,11 +193,11 @@ fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.te
 </div>
 <div id="flash"></div>
 
-<script src="semaine.js?v=20261114-214119"></script>
-<script src="musique.js?v=20261114-214119"></script>
-<script src="rang.js?v=20261114-214119"></script>
-<script src="heros-etoiles.js?v=20261114-214119"></script>
-<script src="donnees.js?v=20261114-214119"></script>
+<script src="semaine.js?v=20261114-214514"></script>
+<script src="musique.js?v=20261114-214514"></script>
+<script src="rang.js?v=20261114-214514"></script>
+<script src="heros-etoiles.js?v=20261114-214514"></script>
+<script src="donnees.js?v=20261114-214514"></script>
 <script>
 // ciel étoilé + runes du portail (symboles, pas des lettres), aux couleurs des héros
 const ciel = document.getElementById('ciel');
@@ -218,6 +218,7 @@ for (let i = 0; i < 50; i++) { const s = document.createElement('i'); s.style.le
 // une porte : nom (sur la plaque), desc (sous le carrousel), img (peinture reçue) OU pro (dessin provisoire), puis
 //   vers = un étage, href = une page, ferme = verrouillée (texte), avenir = portail mystère « À venir »
 const PRO = { // dessins provisoires : [émoji, fond, lueur]
+  epreuves:['🏯', 'linear-gradient(180deg, #1a1030 0%, #5a2a6a 45%, #c2411e 75%, #2a1a0a 100%)', '#ff9f5a'],
   arene:['⚔️', 'linear-gradient(180deg, #f59e0b 0%, #b45309 35%, #7c2d12 62%, #e7c48a 63%, #c99a5b 100%)', '#ffd27a'],
   odyssee:['⛵', 'linear-gradient(180deg, #2b1d4a 0%, #a8432c 45%, #1c2b4a 58%, #0f1a33 100%)', '#ff9f5a'],
   expeditions:['🪽', 'linear-gradient(180deg, #ffd89b 0%, #f7a76c 40%, #7cc8ff 100%)', '#fff3c4'],
@@ -248,6 +249,7 @@ const ETAGES = {
     { nom:'L’Odyssée', pro:'odyssee', vers:'odyssee', desc:'Seul sur une île : explore case par case, fais grandir ton deck, vaincs le gardien de l’île.' },
     { nom:'Expéditions', pro:'expeditions', href:'expedition.html', desc:'Le navire volant : recrute ton équipage, donne tes ordres aux dés, et vogue d’escale en escale jusqu’au Nid du Titan.' },
     { nom:'L’Invasion', pro:'invasion', vers:'invasion', desc:'À deux (sur ce téléphone ou avec un compagnon) contre les vagues de ton livre : l’Éveil de l’Abîme, le Réveil des Primordiaux, et les grands boss.' },
+    { nom:'Les épreuves', pro:'epreuves', href:'epreuves.html', desc:'La Tour des épreuves : monte étage par étage, un boss tous les cinq. Et la Chasse au boss de la semaine : 8 tours pour lui faire le plus de mal possible.' },
     { nom:'Tour des héros', pro:'tour', href:'heros.html', desc:'Les six héros, leurs pouvoirs, leurs dés et leurs cartes. Prépare ton deck.' },
   ] },
   arene:{ titre:'L’Arène des Duels', sous:'Contre qui veux-tu te battre ?', portes:[
