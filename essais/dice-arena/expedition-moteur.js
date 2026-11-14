@@ -173,6 +173,9 @@ function combatExp(campJ, campE, R) {
   if (pr.charge) J.liste.forEach(u => { if (u.rang === 'av') u.charge = true; });
   if (pr.atq) J.liste.forEach(u => { u.a += pr.atq; });
   if (pr.ennemis) E.liste.forEach(u => { u.v = u.vmax = Math.max(1, Math.round(u.v * pr.ennemis)); });
+  // 14/11 : les ordres du capitaine (les dés posés sur les recrues avant l'escale) : +PV, +attaque, coup sûr ; et le bonus de la combinaison
+  const od = campJ.X && campJ.X.ordres;
+  if (od) { J.liste.forEach(u => { const o = od.u[u.id] || {}, t = od.tous || {}, a = (o.a || 0) + (t.a || 0), v = (o.v || 0) + (t.v || 0); u.a += a; u.v += v; u.vmax += v; if (o.sur) u.coupSur = true; }); }
   const vivants = C => C.liste.filter(u => !u.mort);
   const front = C => vivants(C).filter(u => u.rang === 'av');
   // si le devant est vide, les Lames et Remparts de derrière avancent
@@ -203,9 +206,10 @@ function combatExp(campJ, campE, R) {
       if (u.role === 'capitaine') {
         const ds = [1, 2, 3].map(() => 1 + Math.floor(R() * 6)), s = [...ds].sort((a, b) => a - b);
         if (s[0] === s[2]) { dg = s[0] + 3; txt = 'Frappe ×3'; } else if (s[0] === s[1] || s[1] === s[2]) { dg = s[1]; txt = 'Frappe'; } else if (s[1] === s[0] + 1 && s[2] === s[1] + 1) { dg = 4; txt = 'Technique'; } else { dg = Math.max(1, s[2] - 2); txt = 'coup simple'; }
+        if (u.coupSur && !u.coupSurFait) { u.coupSurFait = true; dg += 3; txt += ' + coup sûr'; }
         dg += u.a - 3; de = ds; if (u.rang === 'ar') { dg = Math.ceil(dg / 2); txt += ' (de derrière : moitié)'; }
       } else {
-        de = 1 + Math.floor(R() * 6); dg = de === 6 ? u.a * 2 : de === 1 ? 0 : u.a; txt = de === 6 ? 'critique' : de === 1 ? 'raté' : '';
+        de = 1 + Math.floor(R() * 6); if (u.coupSur && !u.coupSurFait) { u.coupSurFait = true; de = 6; } dg = de === 6 ? u.a * 2 : de === 1 ? 0 : u.a; txt = de === 6 ? 'critique' : de === 1 ? 'raté' : '';
       }
       if (A.cor && round === 1 && dg > 0) dg += 1;
       if (u.embuscade && !u.embuscadeFaite && dg > 0) { dg *= 2; u.embuscadeFaite = true; txt = 'Embuscade !'; }
@@ -247,7 +251,7 @@ function adversaire(X) {
 // ----------------------------------------------------------------------------------------------- une escale : combat + suite (or, cœurs, Forge, Louve)
 function joueEscale(X, R) {
   const adv = adversaire(X), res = combatExp({ heros:X.heros, plateau:X.plateau, X }, adv.camp, R || hasardX(X));
-  const esc = ESCALES2[X.escale]; res.adv = adv; X.prochain = null;
+  const esc = ESCALES2[X.escale]; res.adv = adv; X.prochain = null; X.ordres = null;
   if (res.gagne) {
     X.victoires++; X.journal.push(`🏆 ${esc.n} : victoire.`);
     const fam = compteFamilles(X, X.plateau), forges = surPlateau(X).filter(u => u.fam === 'forge');

@@ -171,19 +171,31 @@
   .med .de { display:none !important; }
   .med .av { flex-wrap:nowrap; } .med .av span { white-space:nowrap; font-size:1em !important; padding:0 4px !important; min-width:0 !important; line-height:1.35; }
   .med .nm { font-size:.95em; }
+  /* 14/11 : les ordres du capitaine */
+  .ordres { padding:8px 4px 20px; } .ordres h2 { text-align:center; margin:.3em 0; color:var(--or); } .ordres > .doux { text-align:center; min-height:2.6em; }
+  .dords { display:flex; justify-content:center; gap:14px; margin:8px 0; }
+  .dord { width:78px; text-align:center; cursor:pointer; transition:transform .15s; } .dord img, .dord span { width:72px; height:72px; display:grid; place-items:center; margin:0 auto; border-radius:14px; box-shadow:0 4px 10px #000a; }
+  .dord span { background:#2a2350; border:2px dashed #6b5fb0; font-size:2em; color:#aaa; } .dord small { display:block; color:#ffe9b0; font-size:.78em; margin-top:3px; }
+  .dord.sel { transform:translateY(-8px) scale(1.08); } .dord.sel img { box-shadow:0 0 0 3px var(--ok), 0 0 16px var(--ok); } .dord.pose { opacity:.45; } .dord.roule img { transform:rotate(18deg); }
+  .legord { display:flex; flex-wrap:wrap; gap:4px 10px; justify-content:center; font-size:.76em; color:var(--doux); margin:4px 0; } .legord b { color:#fff; }
+  .combo { text-align:center; color:var(--or); font-weight:bold; margin:6px 0; animation:combo .5s both; } @keyframes combo { from { opacity:0; transform:scale(.7); } }
+  .rords { display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; margin:10px 0; }
+  .rord { background:#162238; border:2px solid #2f4a6b; border-radius:12px; padding:6px 4px; text-align:center; font-size:.76em; position:relative; } .rord.cible { border-color:var(--ok); box-shadow:0 0 10px #7dffb055; cursor:pointer; }
+  .rord .rond { width:52px; height:52px; border-radius:50%; background:center/cover; margin:0 auto 3px; border:2px solid var(--or); } .rord b { display:block; } .rord span { color:var(--doux); }
+  .rord img.mini { width:24px; height:24px; border-radius:5px; margin:3px 1px 0; } .rord em { display:block; color:#7dffb0; font-style:normal; font-weight:bold; }
 </style>
 </head>
 <body>
 <div id="app"></div>
 <div id="fen"></div>
-<script src="cartes.js?v=20261114-173428"></script>
-<script src="musique.js?v=20261114-173428"></script>
-<script src="donnees.js?v=20261114-173428"></script>
-<script src="odyssee.js?v=20261114-173428"></script>
-<script src="chronique.js?v=20261114-173428"></script>
-<script src="expedition-moteur.js?v=20261114-173428"></script>
+<script src="cartes.js?v=20261114-173956"></script>
+<script src="musique.js?v=20261114-173956"></script>
+<script src="donnees.js?v=20261114-173956"></script>
+<script src="odyssee.js?v=20261114-173956"></script>
+<script src="chronique.js?v=20261114-173956"></script>
+<script src="expedition-moteur.js?v=20261114-173956"></script>
 <script src="guide.js?v=1"></script>
-<script src="expedition-ecran.js?v=20261114-173428"></script>
+<script src="expedition-ecran.js?v=20261114-173956"></script>
 <script>// 13/11 soir : musique
 GM.musique('expeditions'); GM.bouton();
 </script>

@@ -195,9 +195,51 @@ async function deU(id, de) {
   setTimeout(() => d.remove(), 1400 / vitesse);
 }
 async function anim(id, cls, ms) { const el = elU(id); if (!el) return; el.classList.add(cls); await dodo(ms || 300); el.classList.remove(cls); }
+// 14/11 (choix de l'utilisateur, « A · Ordres du capitaine ») : avant chaque escale, le capitaine lance ses 3 dés (2 relances)
+// et pose chaque dé sur une recrue : 1-2 = +3 PV, 3-4 = +2 attaque, 5-6 = coup sûr (son premier coup est un critique).
+// Paire = tout l'équipage +1 attaque, brelan = +2 attaque, suite = +3 PV à tous.
+let OD = null;
+const BONUS_DE = v => v <= 2 ? { v:3, t:'+3 ❤', n:'Armure' } : v <= 4 ? { a:2, t:'+2 ⚔', n:'Rage' } : { sur:true, t:'coup sûr', n:'Coup sûr' };
+function comboOrdres(ds) { const s = [...ds].sort((a, b) => a - b);
+  if (s[0] === s[2]) return { a:2, t:'Brelan : tout l’équipage +2 ⚔' };
+  if (s[0] === s[1] || s[1] === s[2]) return { a:1, t:'Paire : tout l’équipage +1 ⚔' };
+  if (s[1] === s[0] + 1 && s[2] === s[1] + 1) return { v:3, t:'Suite : tout l’équipage +3 ❤' };
+  return null; }
+function ordres() { OD = { des:[0, 0, 0], sur:[null, null, null], sel:null, relances:2, lance:false }; dessineOrdres(); }
+async function lancerOrdres() {
+  const quoi = OD.lance ? OD.des.map((v, i) => OD.sel === i || (OD.sel === null && OD.sur[i] === null) ? i : -1).filter(i => i >= 0) : [0, 1, 2];
+  if (OD.lance) { if (!OD.relances || !quoi.length) return; OD.relances--; }
+  OD.lance = true; GM.son('relance');
+  for (let t = 0; t < 6; t++) { quoi.forEach(i => { OD.des[i] = 1 + Math.floor(Math.random() * 6); }); dessineOrdres(true); await new Promise(r => setTimeout(r, 70)); }
+  OD.sel = null; GM.son('poser'); dessineOrdres();
+}
+function toucheDeOrdre(i) { if (!OD.lance) return; OD.sel = OD.sel === i ? null : i; GM.son('choisir'); dessineOrdres(); }
+function toucheRecrueOrdre(id) { if (OD.sel === null) return; OD.sur[OD.sel] = id; OD.sel = null; GM.son('poser'); dessineOrdres(); }
+function dessineOrdres(roule) {
+  const H = X.heros, crew = surPlateau(X), combo = OD.lance ? comboOrdres(OD.des) : null, poses = OD.sur.filter(Boolean).length;
+  const de = i => `<div class="dord ${OD.sel === i ? 'sel' : ''} ${OD.sur[i] ? 'pose' : ''} ${roule ? 'roule' : ''}" onclick="toucheDeOrdre(${i})">${OD.lance ? `<img src="faces-${H}/face-${OD.des[i]}.webp" alt="${OD.des[i]}"><small>${BONUS_DE(OD.des[i]).t}</small>` : '<span>?</span>'}</div>`;
+  const carteO = u => { const idx = OD.sur.map((x, i) => x === u.id ? i : -1).filter(i => i >= 0);
+    return `<div class="rord ${OD.sel !== null ? 'cible' : ''}" onclick="toucheRecrueOrdre('${u.id}')"><div class="rond" style="background-image:url('${artU(u)}')"></div><b>${u.n}</b><span>⚔ ${u.a + (u.bonusA || 0)} · ❤ ${u.v + (u.bonusV || 0)}</span>${idx.map(i => `<img class="mini" src="faces-${H}/face-${OD.des[i]}.webp" alt="">`).join('')}${idx.length ? `<em>${idx.map(i => BONUS_DE(OD.des[i]).t).join(' · ')}</em>` : ''}</div>`; };
+  app().innerHTML = `<div class="ordres">
+    <h2>🎲 Les ordres du capitaine</h2>
+    <p class="doux">${!OD.lance ? 'Lance tes 3 dés, puis pose chacun sur une recrue : il lui donne un bonus pour ce combat.' : OD.sel !== null ? '👉 Touche la recrue qui reçoit ce dé.' : poses < 3 ? 'Touche un dé, puis une recrue. Tu peux aussi relancer les dés pas encore posés.' : 'Tous tes ordres sont donnés !'}</p>
+    <div class="dords">${[0, 1, 2].map(de).join('')}</div>
+    <div class="legord"><span>⚀⚁ 1-2 : <b>+3 ❤</b></span><span>⚂⚃ 3-4 : <b>+2 ⚔</b></span><span>⚄⚅ 5-6 : <b>coup sûr</b> (1er coup critique)</span></div>
+    ${combo ? `<p class="combo">✨ ${combo.t}</p>` : OD.lance ? '<p class="doux" style="text-align:center;font-size:.8em">Une paire, un brelan ou une suite donnent un bonus à tout l’équipage.</p>' : ''}
+    <div class="rords">${crew.map(carteO).join('')}</div>
+    <div class="choixh">${!OD.lance ? '<button class="or" onclick="lancerOrdres()">🎲 Lancer les dés</button>' : `<button ${OD.relances && (OD.sel !== null || poses < 3) ? '' : 'disabled'} onclick="lancerOrdres()">🔄 Relancer ${OD.sel !== null ? 'ce dé' : 'les dés libres'} (${OD.relances})</button><button class="or" onclick="valideOrdres()">⚔ Au combat !</button>`}</div>
+  </div>`;
+}
+function valideOrdres() {
+  const poses = OD.sur.filter(Boolean).length;
+  if (poses < 3 && !confirm(`Il te reste ${3 - poses} dé${poses === 2 ? '' : 's'} pas posé${poses === 2 ? '' : 's'} : ${poses === 2 ? 'il sera perdu' : 'ils seront perdus'}. Partir quand même ?`)) return;
+  const u = {}; OD.sur.forEach((id, i) => { if (!id) return; const b = BONUS_DE(OD.des[i]), o = u[id] || (u[id] = {}); if (b.a) o.a = (o.a || 0) + b.a; if (b.v) o.v = (o.v || 0) + b.v; if (b.sur) o.sur = true; });
+  const c = comboOrdres(OD.des); X.ordres = { u, tous:c ? { a:c.a || 0, v:c.v || 0 } : null };
+  X.journal.push(`🎲 Ordres du capitaine : ${OD.des.join(' · ')}${c ? ' (' + c.t + ')' : ''}.`); sauve(); OD = null; partir();
+}
 function partirOk() {
   const esc = ESCALES2[X.escale], n = surPlateau(X).length;
-  fenetre(`<h2>⚔ Partir pour ${esc.e} ${esc.n} ?</h2><p>Ton équipage : <b>${n} recrue${n > 1 ? 's' : ''}</b> sur le pont${X.or >= 3 ? ` · il te reste <b>${X.or} 💰</b> à dépenser chez le recruteur` : ''}.</p><p class="doux">Une fois parti, le combat se joue tout seul.</p><div class="choixh"><button onclick="fermer()">Pas encore</button><button class="or" onclick="fermer();partir()">⚔ On y va !</button></div>`);
+  fenetre(`<h2>⚔ Partir pour ${esc.e} ${esc.n} ?</h2><p>Ton équipage : <b>${n} recrue${n > 1 ? 's' : ''}</b> sur le pont${X.or >= 3 ? ` · il te reste <b>${X.or} 💰</b> à dépenser chez le recruteur` : ''}.</p><p class="doux">Une fois parti, le combat se joue tout seul.</p><div class="choixh"><button onclick="fermer()">Pas encore</button><button class="or" onclick="fermer();ordres()">⚔ On y va !</button></div>`);
 }
 async function partir() {
   if (enCours) return; enCours = true; sel = null;
