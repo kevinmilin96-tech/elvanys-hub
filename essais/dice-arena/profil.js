@@ -39,6 +39,7 @@ function appliqueProfil() {
 if (typeof document !== 'undefined') { const st = document.createElement('style'); st.textContent = `
   .barre.cadreP img:first-child { box-shadow:0 0 0 3px var(--cc), 0 0 16px var(--cc); }
   .barre.cadreP::after { content:attr(data-e); position:absolute; font-size:16px; left:2px; top:2px; z-index:3; filter:drop-shadow(0 1px 2px #000); }
+  .unique .barre.cadreP::after { display:none; } /* 14/11 : plus d'émoji sur le portrait (le titre est dans le panneau de droite) */
   .unique #b-J .nom.nomP { display:block !important; top:auto !important; bottom:calc(100% - 1.5cqw) !important; font-size:2.8cqw; }
   .nom.nomP small { color:#f3c96b; font-size:.85em; }`; document.head.appendChild(st); }
 
