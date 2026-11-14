@@ -54,6 +54,9 @@ const ESCALES2 = [
   { n:'Le Nid du Titan', e:'👑', cle:'nid', type:'boss' },
 ];
 // les monstres de chaque escale (une rangée devant, une derrière) ; DUR_EXP règle la difficulté au simulateur
+const DIFF_EXP = { facile:{ n:'Facile', e:'🌱', pv:.85, pts:.7 }, normal:{ n:'Normal', e:'⚔', pv:1, pts:1 }, difficile:{ n:'Difficile', e:'💀', pv:1.15, pts:1.5 } };
+// la prise en main de chaque capitaine (indication pour le joueur, ne change pas la difficulté)
+const PRISE_EXP = { maelle:'simple', aldric:'simple', gorm:'simple', oria:'moyenne', pip:'technique', zephine:'technique' };
 const DUR_EXP = [1.35, 1.25, 1.55, 1.25, 1.9, 2.05]; // réglé au simulateur le 14/11 (avec les ordres du capitaine ; avant : 1.1, 1, 1.2, 1, 1.5, 1.55)
 const MONSTRES_EXP = [
   { av:[['Gobelin', 3, 7], ['Gobelin chef', 3, 9]], ar:[['Gobelin lanceur', 2, 5, 'tireur']] },
@@ -173,6 +176,8 @@ function combatExp(campJ, campE, R) {
   if (pr.charge) J.liste.forEach(u => { if (u.rang === 'av') u.charge = true; });
   if (pr.atq) J.liste.forEach(u => { u.a += pr.atq; });
   if (pr.ennemis) E.liste.forEach(u => { u.v = u.vmax = Math.max(1, Math.round(u.v * pr.ennemis)); });
+  // 14/11 (choix de l'utilisateur) : la difficulté choisie au départ (Facile / Normal / Difficile) change la vie des ennemis
+  { const k = DIFF_EXP[(campJ.X && campJ.X.diff) || 'normal'] || DIFF_EXP.normal; if (k.pv !== 1) E.liste.forEach(u => { u.v = u.vmax = Math.max(1, Math.round(u.v * k.pv)); }); }
   // 14/11 : les ordres du capitaine (les dés posés sur les recrues avant l'escale) : +PV, +attaque, coup sûr ; et le bonus de la combinaison
   const od = campJ.X && campJ.X.ordres;
   if (od) { J.liste.forEach(u => { const o = od.u[u.id] || {}, t = od.tous || {}, a = (o.a || 0) + (t.a || 0), v = (o.v || 0) + (t.v || 0); u.a += a; u.v += v; u.vmax += v; if (o.sur) u.coupSur = true; }); }
@@ -320,7 +325,7 @@ function piloteOrdres(X, R) {
   X.ordres = { u, tous:c ? { a:c.a || 0, v:c.v || 0 } : null };
 }
 function simuleExpedition(heros, graine) {
-  const X = nouvelleExpedition(heros, graine);
+  const X = nouvelleExpedition(heros, graine); if (globalThis.DIFF_SIM) X.diff = globalThis.DIFF_SIM;
   for (let pas = 0; pas < 12 && !X.fini; pas++) { pilotePort(X); piloteOrdres(X, hasardX(X)); joueEscale(X, hasardX(X)); }
   return { gagne:X.fini === 'gagne', coeurs:X.coeurs, escale:X.escale, victoires:X.victoires, fusions:toutes(X).filter(u => u.star).length, fam:compteFamilles(X, X.plateau) };
 }

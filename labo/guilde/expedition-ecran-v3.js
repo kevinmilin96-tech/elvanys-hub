@@ -18,15 +18,20 @@ function accueil() {
   <p class="doux" style="text-align:center">Le navire volant de la Guilde part pour six escales. Au port, tu recrutes et tu places ton équipage sur deux rangées ; à chaque escale, il combat tout seul aux dés. Trois cœurs : trois défaites et c’est fini.</p>
   <h2>Ton capitaine</h2><div class="heros6">${ORDRE.map(id => id === 'zephine' && localStorage.getItem('guilde-tuto') !== 'fait'
     ? `<button disabled style="opacity:.5"><img src="${IMG(id)}" alt="" style="filter:grayscale(1)">🔒 ${HEROS[id].nom}</button>`
-    : `<button onclick="choixCapitaine('${id}')"><img src="${IMG(id)}" alt="">${HEROS[id].nom}<br><small style="color:var(--or)">${CAPITAINES[id].n}</small></button>`).join('')}</div>
+    : `<button onclick="choixCapitaine('${id}')"><img src="${IMG(id)}" alt="">${HEROS[id].nom}<br><small style="color:var(--or)">${CAPITAINES[id].n}</small><br><small class="prise ${PRISE_EXP[id]}">${PRISE_TXT[PRISE_EXP[id]]}</small></button>`).join('')}</div>
   <div class="choixh"><button onclick="location.href='expeditions-v2-regles.html'">📖 Les règles</button><button onclick="records()">🏆 Mes expéditions</button><button onclick="location.href='menu.html'">⌂ Menu</button></div>`;
 }
 function choixCapitaine(id) {
   fenetre(`<div style="text-align:center"><img src="${IMG(id)}" alt="" style="width:90px;height:90px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 3px var(--or)"><h2>${HEROS[id].nom}, capitaine</h2>
-    <p><b style="color:var(--or)">${CAPITAINES[id].n}</b> : ${CAPITAINES[id].d}</p></div>
+    <p><b style="color:var(--or)">${CAPITAINES[id].n}</b> : ${CAPITAINES[id].d}</p><p class="prise ${PRISE_EXP[id]}">${PRISE_TXT[PRISE_EXP[id]]} · ${PRISE_DIT[PRISE_EXP[id]]}</p></div>
+    <p style="text-align:center;margin:.6em 0 .2em"><b>Difficulté</b></p>
+    <div class="diffs">${Object.entries(DIFF_EXP).map(([k, d]) => `<button class="${diffChoisie === k ? 'sel' : ''}" onclick="diffChoisie='${k}';localStorage.setItem('guilde-exp-diff','${k}');choixCapitaine('${id}')">${d.e} ${d.n}<br><small>${k === 'facile' ? 'ennemis moins solides · points ×0,7' : k === 'difficile' ? 'ennemis plus solides · points ×1,5' : 'l’équilibre prévu'}</small></button>`).join('')}</div>
     <div class="choixh"><button onclick="fermer()">Autre capitaine</button><button class="or" onclick="fermer();depart('${id}')">⛵ Larguer les amarres</button></div>`);
 }
-function depart(id) { X = nouvelleExpedition(id); sel = null; sauve(); chroniqueEscale(() => port()); }
+let diffChoisie = localStorage.getItem('guilde-exp-diff') || 'normal';
+const PRISE_TXT = { simple:'🟢 Prise en main simple', moyenne:'🟡 Prise en main moyenne', technique:'🔴 Prise en main technique' };
+const PRISE_DIT = { simple:'son pouvoir marche tout seul', moyenne:'il faut miser sur ses Tireurs', technique:'il faut bien construire son équipage' };
+function depart(id) { X = nouvelleExpedition(id); X.diff = diffChoisie; sel = null; sauve(); chroniqueEscale(() => port()); }
 // la page de l'escale qui vient (texte seulement : les choix de la v1 jouaient sur l'ancien or)
 function chroniqueEscale(apres) {
   const esc = ESCALES2[X.escale]; X.lu = X.lu || {};
@@ -308,8 +313,8 @@ function guidePort(force) {
 }
 // ----------------------------------------------------------------------------------------------- fin, journal, records
 function finExp() {
-  const gagne = X.fini === 'gagne', parfait = gagne && X.coeurs === 3, score = X.victoires * 100 + X.coeurs * 100 + X.or + (gagne ? 300 : 0) + (parfait ? 200 : 0);
-  const l = lireRec(); l.unshift({ quand:new Date().toISOString(), heros:X.heros, gagne, parfait, score, escales:X.victoires, coeurs:X.coeurs, duree:Math.round((Date.now() - X.debut) / 60000) });
+  const gagne = X.fini === 'gagne', parfait = gagne && X.coeurs === 3, score = Math.round((X.victoires * 100 + X.coeurs * 100 + X.or + (gagne ? 300 : 0) + (parfait ? 200 : 0)) * ((DIFF_EXP[X.diff] || DIFF_EXP.normal).pts));
+  const l = lireRec(); l.unshift({ quand:new Date().toISOString(), heros:X.heros, diff:X.diff || 'normal', gagne, parfait, score, escales:X.victoires, coeurs:X.coeurs, duree:Math.round((Date.now() - X.debut) / 60000) });
   localStorage.setItem(CLE + '-records', JSON.stringify(l.slice(0, 50))); localStorage.removeItem(CLE);
   const h = HEROS[X.heros].nom; X = null;
   fenetre(`<h2>${parfait ? '🌟 Traversée parfaite !' : gagne ? '🏆 Le Titan est tombé !' : '💀 Le navire rentre au port'}</h2><p>${gagne ? `L’équipage de ${h} a vaincu le Nid du Titan${parfait ? ' sans perdre un seul cœur' : ''}.` : `Plus de cœurs : l’équipage de ${h} rentre à la Guilde.`}</p>
@@ -318,5 +323,5 @@ function finExp() {
 function journalExp() { fenetre(`<h2>📜 Journal de bord</h2><div class="journal">${[...X.journal].reverse().map(t => `<div>${t}</div>`).join('')}</div><div class="choixh"><button onclick="fermer()">Fermer</button></div>`); }
 function quitter() { fenetre('<h2>⏏ Quitter</h2><p>L’expédition est gardée sur ce téléphone. Ou on l’abandonne (comptée perdue).</p><div class="choixh"><button onclick="location.href=\'menu.html\'">⌂ Menu, je reprendrai</button><button onclick="X.fini=\'perdu\';X.coeurs=0;fermer();finExp()">Abandonner</button><button class="or" onclick="localStorage.removeItem(CLE);X=null;fermer();accueil()">🔄 Recommencer (sans la compter)</button></div>'); }
 const lireRec = () => { try { return JSON.parse(localStorage.getItem(CLE + '-records') || '[]'); } catch (e) { return []; } };
-function records() { const l = lireRec(); fenetre(`<h2>🏆 Mes expéditions (${l.length})</h2>${l.length ? `<table>${l.map(r => `<tr><td>${r.parfait ? '🌟' : r.gagne ? '🏆' : '💀'} ${new Date(r.quand).toLocaleDateString('fr-FR')} · ${HEROS[r.heros].nom} · ${r.escales} victoire${r.escales > 1 ? 's' : ''}</td><td>${r.score}</td></tr>`).join('')}</table>` : '<p>Aucune encore.</p>'}<div class="choixh"><button onclick="fermer()">Fermer</button></div>`); }
+function records() { const l = lireRec(); fenetre(`<h2>🏆 Mes expéditions (${l.length})</h2>${l.length ? `<table>${l.map(r => `<tr><td>${r.parfait ? '🌟' : r.gagne ? '🏆' : '💀'} ${new Date(r.quand).toLocaleDateString('fr-FR')} · ${HEROS[r.heros].nom}${r.diff && r.diff !== 'normal' ? ' · ' + DIFF_EXP[r.diff].e + ' ' + DIFF_EXP[r.diff].n : ''} · ${r.escales} victoire${r.escales > 1 ? 's' : ''}</td><td>${r.score}</td></tr>`).join('')}</table>` : '<p>Aucune encore.</p>'}<div class="choixh"><button onclick="fermer()">Fermer</button></div>`); }
 if (document.getElementById('app')) accueil();
