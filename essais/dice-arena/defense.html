@@ -68,6 +68,11 @@
   .bas { display:flex; gap:6px; justify-content:center; margin-top:6px; } .bas button { background:#1e1838; color:var(--doux); border:1px solid #3e3370; border-radius:10px; padding:4px 10px; font-size:.8em; }
   .dg { position:absolute; left:50%; top:20%; transform:translateX(-50%); color:#ff5a3a; font-weight:bold; font-size:1.25em; text-shadow:0 0 5px #000; animation:monte .9s forwards; pointer-events:none; z-index:3; }
   .tire { animation:tir .35s; } @keyframes tir { 50% { transform:translateY(-5px) scale(1.06); filter:brightness(1.6); } }
+  .projectile { position:fixed; width:16px; height:16px; margin:-8px 0 0 -8px; border-radius:50%; background:radial-gradient(circle, #fff 0 25%, var(--c1) 45%, var(--c2) 75%, transparent 76%); box-shadow:0 0 10px var(--c1), 0 0 18px var(--c2); z-index:31; pointer-events:none; }
+  .projectile.rune { width:24px; height:24px; margin:-12px 0 0 -12px; }
+  .eclat { position:fixed; width:34px; height:34px; margin:-17px 0 0 -17px; border-radius:50%; border:3px solid var(--c1); box-shadow:0 0 12px var(--c1); z-index:31; pointer-events:none; animation:eclat .4s ease-out forwards; }
+  @keyframes eclat { from { transform:scale(.3); opacity:1; } to { transform:scale(1.4); opacity:0; } }
+  .mo.meurt { animation:meurt .45s ease-in forwards !important; } @keyframes meurt { to { transform:scale(.2) rotate(25deg); opacity:0; filter:brightness(2); } }
   @keyframes tremble { 25% { transform:translateX(-5px); } 75% { transform:translateX(5px); } }
   @keyframes monte { to { transform:translate(-50%, -26px); opacity:0; } }
   .fenetre { position:fixed; inset:0; background:#000c; z-index:10; display:flex; align-items:center; justify-content:center; padding:12px; }
@@ -81,10 +86,10 @@
 <body>
 <div id="app"></div>
 <div id="fen"></div>
-<script src="cartes.js?v=20261114-134133"></script>
-<script src="musique.js?v=20261114-134133"></script>
-<script src="donnees.js?v=20261114-134133"></script>
-<script src="defense-moteur.js?v=20261114-134133"></script>
+<script src="cartes.js?v=20261114-134331"></script>
+<script src="musique.js?v=20261114-134331"></script>
+<script src="donnees.js?v=20261114-134331"></script>
+<script src="defense-moteur.js?v=20261114-134331"></script>
 <script>
 // =============================================================================================== LA DÉFENSE DE LA PORTE · l'ÉCRAN (13/11)
 // Règles : defense-proposition.html (validées le 13/11). Moteur : defense-moteur.js.
@@ -216,8 +221,40 @@ function finTour() {
   if (D.fini) return; const reste = libresD(D).length;
   if (reste && !confirm(`Il te reste ${reste} dé${reste > 1 ? 's' : ''} : ${reste > 1 ? 'ils seront vendus' : 'il sera vendu'} (+1 PC chacun). Finir le tour ?`)) return;
   sel = []; selTour = -1; attente = null;
-  const p0 = D.porte; finTourD(D); dis(D.porte < p0 ? `Aïe : la porte a perdu ${p0 - D.porte} PV.` : 'Tes tours ont tiré. À toi.');
-  rendu(); vagueAnnonce();
+  const p0 = D.porte, pvAvant = Object.fromEntries(D.monstres.map(m => [m.id, m.pv])); finTourD(D);
+  // 14/11 (demande de l'utilisateur) : les tours TIRENT à l'écran, une par une, avant que les monstres n'avancent
+  animeTirs(pvAvant, () => { dis(D.porte < p0 ? `Aïe : la porte a perdu ${p0 - D.porte} PV.` : 'Tes tours ont tiré. À toi.'); rendu(); vagueAnnonce(); });
+}
+// Les tirs se jouent sur l'écran d'avant (les monstres n'ont pas encore bougé) : un projectile part de la tour vers le monstre,
+// le monstre tremble et montre ses dégâts, ou disparaît s'il tombe. Ensuite seulement, le nouvel état (avance, nouvelle vague).
+let enAnim = false;
+function animeTirs(pvAvant, ensuite) {
+  const fx = D.fx, tirs = [];
+  for (let i = 0; i < fx.length; i++) if (fx[i].t === 'tir') { const t = fx[i], touches = [];
+    for (let j = i + 1; j < fx.length && fx[j].t === 'touche'; j++) touches.push(fx[j]);
+    tirs.push({ ...t, touches }); }
+  D.fx = fx.filter(f => f.t !== 'tir' && !(f.t === 'touche' && tirs.some(t => t.touches.includes(f))));
+  if (!tirs.length) { ensuite(); return; }
+  enAnim = true; const voile = document.createElement('div'); voile.style.cssText = 'position:fixed;inset:0;z-index:30'; document.body.appendChild(voile);
+  const vite = localStorage.getItem('guilde-vitesse') === 'rapide' ? .6 : 1, pas = Math.max(110, Math.min(380, 2600 / tirs.length)) * vite, vol = 260 * vite;
+  const couleur = D.heros === 'maelle' ? ['#ffb347', '#ff5a1a'] : ['#7dffd4', '#14b8a6'], recu = {};
+  const centre = e => { const r = e.getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; };
+  tirs.forEach((t, k) => setTimeout(() => {
+    const tour = app.querySelector(`[data-c="${t.c}"]`); if (!tour) return;
+    tour.classList.remove('tire'); void tour.offsetWidth; tour.classList.add('tire'); if (k % 2 === 0) GM.son('tir', .5);
+    const [x0, y0] = centre(tour), y0h = y0 - tour.getBoundingClientRect().height * .35;
+    (t.touches.length ? t.touches : [{ id:t.id }]).forEach(h => {
+      const m = app.querySelector(`[data-m="${h.id}"]`); if (!m) return; const [x1, y1] = centre(m);
+      const b = document.createElement('div'); b.className = 'projectile' + (t.rune ? ' rune' : '');
+      b.style.cssText = `left:${x0}px;top:${y0h}px;--c1:${couleur[0]};--c2:${couleur[1]};transition:transform ${vol}ms cubic-bezier(.3,.1,.6,1)`;
+      document.body.appendChild(b); requestAnimationFrame(() => requestAnimationFrame(() => { b.style.transform = `translate(${x1 - x0}px, ${y1 - y0h}px)`; }));
+      setTimeout(() => { b.remove(); const eclat = document.createElement('div'); eclat.className = 'eclat'; eclat.style.cssText = `left:${x1}px;top:${y1}px;--c1:${couleur[0]}`; document.body.appendChild(eclat); setTimeout(() => eclat.remove(), 400);
+        if (h.n) { m.style.animation = 'none'; void m.offsetWidth; m.style.animation = 'tremble .3s'; const d = document.createElement('span'); d.className = 'dg'; d.textContent = '−' + h.n; m.appendChild(d); }
+        recu[h.id] = (recu[h.id] || 0) + (h.n || 0); if (pvAvant[h.id] !== undefined && recu[h.id] >= pvAvant[h.id]) m.classList.add('meurt'); }, vol);
+    });
+  }, k * pas));
+  const total = (tirs.length - 1) * pas + vol + 450;
+  setTimeout(() => { voile.remove(); enAnim = false; ensuite(); }, total);
 }
 function fin() {
   if (fen.innerHTML) return;
