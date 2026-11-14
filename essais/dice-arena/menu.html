@@ -8,7 +8,7 @@
 <title>La Guilde des Runes</title>
 <script>
 // Même mécanisme que le Duel : une nouvelle version = rechargement tout seul à l'ouverture (publier.sh change VERSION).
-const VERSION = '20261114-171122';
+const VERSION = '20261114-171201';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-menu-' + v)) { sessionStorage.setItem('recharge-menu-' + v, '1'); location.replace('menu.html?v=' + v); }
@@ -174,7 +174,7 @@ fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.te
   <div class="ciel" id="ciel2"></div>
   <div class="entete"><h2 id="eTitre">Le monde de la Guilde</h2><p id="eSous">Glisse, puis touche un portail pour y entrer.</p></div>
   <div class="heros" id="heros"></div>
-  <button class="retour" id="retour" onclick="history.back()">‹ Retour</button>
+  <button class="retour" id="retour" onclick="location.hash = ''">‹ Retour</button>
   <div class="carrousel" id="car"></div>
   <div class="points" id="points"></div>
   <p class="desc" id="desc"></p>
@@ -188,9 +188,9 @@ fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.te
 </div>
 <div id="flash"></div>
 
-<script src="semaine.js?v=20261114-171122"></script>
-<script src="musique.js?v=20261114-171122"></script>
-<script src="donnees.js?v=20261114-171122"></script>
+<script src="semaine.js?v=20261114-171201"></script>
+<script src="musique.js?v=20261114-171201"></script>
+<script src="donnees.js?v=20261114-171201"></script>
 <script>
 // ciel étoilé + runes du portail (symboles, pas des lettres), aux couleurs des héros
 const ciel = document.getElementById('ciel');
