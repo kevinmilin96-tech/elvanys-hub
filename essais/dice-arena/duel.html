@@ -661,6 +661,10 @@
   .barre .ultbtn { position:absolute; left:50%; top:100%; transform:translate(-50%, 4px); z-index:8; white-space:nowrap; background:linear-gradient(#ffe27a, #e8a21f); color:#2b1d0a; font:bold 3.2cqw/1.2 Georgia, serif; padding:1.1cqw 2.6cqw; border-radius:99px; box-shadow:0 0 12px #ffd23acc, 0 2px 6px #000a; animation:ultpulse 1.2s ease-in-out infinite; cursor:pointer; }
   .barre .ultbtn.manque { background:#3a2f12; color:#ffd27a; box-shadow:0 0 8px #ffd23a66; animation:none; }
   @keyframes ultpulse { 50% { transform:translate(-50%, 4px) scale(1.08); box-shadow:0 0 22px #ffd23a, 0 2px 6px #000a; } }
+  .barre .etats { position:absolute !important; left:150% !important; right:auto !important; top:-15% !important; bottom:auto !important; width:auto !important; display:flex !important; flex-direction:column !important; gap:5px; z-index:30; background:none !important; padding:0 !important; }
+  .barre .etat { position:relative; width:32px; height:32px; border-radius:50%; background:radial-gradient(#3a2f5a, #15132b); border:2px solid #f3c96b; display:grid; place-items:center; font-size:17px; box-shadow:0 0 10px #f3c96b88; animation:etatbrille 1.6s ease-in-out infinite; cursor:pointer; }
+  .barre .etat b { position:absolute; right:-6px; bottom:-5px; background:#b91c1c; color:#fff; border-radius:99px; font:bold 11px/1 Georgia, serif; padding:2px 4px; }
+  @keyframes etatbrille { 50% { box-shadow:0 0 18px #f3c96bcc; } }
 </style>
 </head>
 <body>
@@ -671,7 +675,7 @@
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
 // 14/11 : l'Odyssée sans fin a ses propres emplacements (odyssee.js lit SANSFIN)
 const SANSFIN = new URLSearchParams(location.search).get('sansfin') === '1', ODY_PAGE = 'odyssee.html' + (SANSFIN ? '?sansfin=1' : '');
-const VERSION = '20261114-201257';
+const VERSION = '20261114-201607';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -690,11 +694,11 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261114-201257"></script>
-<script src="musique.js?v=20261114-201257"></script>
-<script src="donnees.js?v=20261114-201257"></script>
-<script src="odyssee.js?v=20261114-201257"></script>
-<script src="chronique.js?v=20261114-201257"></script>
+<script src="cartes.js?v=20261114-201607"></script>
+<script src="musique.js?v=20261114-201607"></script>
+<script src="donnees.js?v=20261114-201607"></script>
+<script src="odyssee.js?v=20261114-201607"></script>
+<script src="chronique.js?v=20261114-201607"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -1521,13 +1525,19 @@ const PASTILLES = {
 };
 // toucher une étiquette : son explication (sauf pendant qu'on vise : le toucher sert alors à viser le héros)
 document.addEventListener('click', e => {
-  const p = e.target.closest && e.target.closest('.pastilles [data-k]'); if (!p || ciblage || attaquant || fxOn) return;
+  const p = e.target.closest && e.target.closest('.pastilles [data-k], .etats [data-k]'); if (!p || ciblage || attaquant || fxOn) return;
   const x = PASTILLES[p.dataset.k]; if (!x) return; e.stopPropagation();
   fenetre(`<h2>${x[0]}</h2><p><b>${p.textContent.trim()}</b></p><p>${x[1]}</p><div class="choixh"><button onclick="fermer()">Compris</button></div>`);
 }, true);
+// 14/11 (l'utilisateur : « la Contre-attaque, je ne la vois nulle part ») : les protections et réactions actives en icônes autour du portrait
+function etatsHTML(P) {
+  const l = [P.contre ? ['contre', '⚔', '6'] : null, P.piege ? ['piege', '🪤', ''] : null, P.fournaise ? ['fournaise', '🔥', ''] : null, P.paillasse ? ['paillasse', '⚗', ''] : null,
+    P.esquive ? ['esquive', '💨', ''] : null, P.cor ? ['cor', '📯', ''] : null, P.gardeE ? ['epines', '🌿', P.gardeE] : null].filter(Boolean);
+  return l.length ? `<span class="etats">${l.map(([k, e, n]) => `<span data-k="${k}" class="etat">${e}${n !== '' ? `<b>${n}</b>` : ''}</span>`).join('')}</span>` : '';
+}
 function barre(P, haut) {
   const ref = `{J:S.${haut ? 'O' : 'J'}}`;
-  return `<div class="barre ${estCible({ J:P }) ? 'cible' : ''} ${!P.ultimeFait && P.jauge >= JAUGE.max ? 'ultpret' : ''} ${P.gardeB || P.bouclier ? 'protege' : ''}" data-bouclier="${(P.gardeB || 0) + (P.bouclier || 0)}" id="b-${haut ? 'O' : 'J'}" style="--c:${P.c}" onclick="touche(${ref})"><img src="${HEROS[P.id].img || IMG(P.id)}" alt=""><img class="cadre" src="ui/cadre.webp?v=1" alt="">${anneauDe(P)}${!haut && !P.ultimeFait && P.jauge >= JAUGE.max && !S.J.aLancer ? `<span class="ultbtn ${P.pc >= 3 ? '' : 'manque'}" onclick="event.stopPropagation(); vise('ultime')">⚡ ULTIME PRÊT${P.pc >= 3 ? '' : ' · 3 PC'}</span>` : ''}<span class="bdg bg" ${P.gardeB ? '' : 'hidden'}>${P.gardeB}</span><span class="bdg bb" ${P.bouclier ? '' : 'hidden'}>${P.bouclier}</span><div style="flex:1"><div class="nom">${P.nom}<small class="sous">${P.ordi ? (S.lieu ? (HEROS[P.id].titre || 'ennemi') : 'ordinateur') : (P.qui && P.qui !== 'toi' ? P.qui : '')}</small></div><div class="vie"><b style="width:${Math.max(0, P.pv) / P.pvMax * 100}%"></b><i style="width:${Math.max(0, P.pv) / P.pvMax * 100}%"></i></div><div class="pastilles">
+  return `<div class="barre ${estCible({ J:P }) ? 'cible' : ''} ${!P.ultimeFait && P.jauge >= JAUGE.max ? 'ultpret' : ''} ${P.gardeB || P.bouclier ? 'protege' : ''}" data-bouclier="${(P.gardeB || 0) + (P.bouclier || 0)}" id="b-${haut ? 'O' : 'J'}" style="--c:${P.c}" onclick="touche(${ref})"><img src="${HEROS[P.id].img || IMG(P.id)}" alt=""><img class="cadre" src="ui/cadre.webp?v=1" alt="">${anneauDe(P)}${etatsHTML(P)}${!haut && !P.ultimeFait && P.jauge >= JAUGE.max && !S.J.aLancer ? `<span class="ultbtn ${P.pc >= 3 ? '' : 'manque'}" onclick="event.stopPropagation(); vise('ultime')">⚡ ULTIME PRÊT${P.pc >= 3 ? '' : ' · 3 PC'}</span>` : ''}<span class="bdg bg" ${P.gardeB ? '' : 'hidden'}>${P.gardeB}</span><span class="bdg bb" ${P.bouclier ? '' : 'hidden'}>${P.bouclier}</span><div style="flex:1"><div class="nom">${P.nom}<small class="sous">${P.ordi ? (S.lieu ? (HEROS[P.id].titre || 'ennemi') : 'ordinateur') : (P.qui && P.qui !== 'toi' ? P.qui : '')}</small></div><div class="vie"><b style="width:${Math.max(0, P.pv) / P.pvMax * 100}%"></b><i style="width:${Math.max(0, P.pv) / P.pvMax * 100}%"></i></div><div class="pastilles">
     <span data-k="pv" class="p pv">${Math.max(0, P.pv)}</span><span data-k="pc" class="p pc">◆ ${P.pc} PC</span>
     ${P.gardeB ? `<span data-k="garde" class="p g pg">🛡 Garde ${P.gardeB}</span>` : ''}${P.gardeE ? `<span data-k="epines" class="p g">🌿 Épines ${P.gardeE}</span>` : ''}${P.esquive ? '<span data-k="esquive" class="p g">💨 Esquive</span>' : ''}
     ${P.bouclier ? `<span data-k="bouclier" class="p g pb">🛡 Bouclier ${P.bouclier}</span>` : ''}${P.contre ? '<span data-k="contre" class="p g">⚔ Contre-attaque : 6 à la 1re créature</span>' : ''}${P.piege ? '<span data-k="piege" class="p g">🪤 Piège</span>' : ''}
@@ -2187,14 +2197,14 @@ async function joueFX() {
 // toucher l'écran pendant les animations les accélère
 document.addEventListener('pointerdown', () => { if (fxOn && !(S && S.tuto)) fxVite = .5; }, true); // 14/11 : plus d'accélération dans le tutoriel
 </script>
-<script src="profil.js?v=20261114-201257"></script>
-<script src="pantheon.js?v=20261114-201257"></script>
-<script src="tuto.js?v=20261114-201257"></script>
-<script src="deux.js?v=20261114-201257"></script>
-<script src="invasion.js?v=20261114-201257"></script>
-<script src="enigme-table.js?v=20261114-201257"></script>
-<script src="forge.js?v=20261114-201257"></script>
-<script src="semaine.js?v=20261114-201257"></script>
-<script src="enigme.js?v=20261114-201257"></script>
+<script src="profil.js?v=20261114-201607"></script>
+<script src="pantheon.js?v=20261114-201607"></script>
+<script src="tuto.js?v=20261114-201607"></script>
+<script src="deux.js?v=20261114-201607"></script>
+<script src="invasion.js?v=20261114-201607"></script>
+<script src="enigme-table.js?v=20261114-201607"></script>
+<script src="forge.js?v=20261114-201607"></script>
+<script src="semaine.js?v=20261114-201607"></script>
+<script src="enigme.js?v=20261114-201607"></script>
 </body>
 </html>
