@@ -148,7 +148,7 @@
 <script>
 const ZOK = () => localStorage.getItem('guilde-tuto') === 'fait'; // Zéphine : débloquée par le tutoriel (12/11)
 
-const VERSION = '20261114-202125';
+const VERSION = '20261114-202728';
 function verifieVersion() {
   fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
     v = (v || '').trim(); if (!v || v === VERSION || document.getElementById('majbar')) return;
@@ -161,14 +161,14 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261114-202125"></script>
-<script src="musique.js?v=20261114-202125"></script>
-<script src="donnees.js?v=20261114-202125"></script>
-<script src="guide.js?v=20261114-202125"></script>
-<script src="odyssee.js?v=20261114-202125"></script>
-<script src="odyssee-sansfin.js?v=20261114-202125"></script>
-<script src="pantheon.js?v=20261114-202125"></script>
-<script src="chronique.js?v=20261114-202125"></script>
+<script src="cartes.js?v=20261114-202728"></script>
+<script src="musique.js?v=20261114-202728"></script>
+<script src="donnees.js?v=20261114-202728"></script>
+<script src="guide.js?v=20261114-202728"></script>
+<script src="odyssee.js?v=20261114-202728"></script>
+<script src="odyssee-sansfin.js?v=20261114-202728"></script>
+<script src="pantheon.js?v=20261114-202728"></script>
+<script src="chronique.js?v=20261114-202728"></script>
 <script>
 // le moteur du Duel n'est pas chargé ici : les cartes de l'Odyssée appellent degats/soin seulement en combat (dans duel.html)
 const log = () => {}, degats = () => {}, soin = () => {}, altere = () => {}, invoque = () => {}, adv = () => ({}), fin = () => {};
@@ -638,15 +638,17 @@ function sourceFen(c) { const m = R.deck.find(k => rarete(k) === 'm');
   fenetre(`<h2>💧 Une source</h2><p>Une eau claire qui sort de la roche tiède. Une seule fois.</p><div class="choixv"><button onclick="source(R,R.ile[${c.y}][${c.x}],'soin');sauve();fermer();dessine()">Boire : <b>+20 PV</b><small>❤ ${R.pv} → ${Math.min(R.pvMax, R.pv + 20)} / ${R.pvMax}</small></button><button ${m ? '' : 'disabled'} onclick="source(R,R.ile[${c.y}][${c.x}],'purifie');sauve();fermer();dessine()">Se purifier : retire une malédiction du deck<small>${m ? CARTES[m].n : 'aucune malédiction dans ton deck'}</small></button></div><div class="choixh"><button onclick="fermer()">Plus tard</button></div>`); }
 function marchand(c) {
   const st = stockMarchand(R, c), p = n => prixMarchand(R, n), peut = n => R.or >= p(n);
-  const bt = (txt, prix, ok, action, small) => `<button ${ok && peut(prix) ? '' : 'disabled'} onclick="${action};sauve();marchand(R.ile[${c.y}][${c.x}])">${txt} <b style="float:right;color:var(--or)">${p(prix)} or</b>${small ? `<small>${small}</small>` : ''}</button>`;
-  fenetre(`<h2>🏪 Le marchand</h2><p>💰 ${R.or} or · sacoche ${R.sacoche.length}/2 · reliques ${R.reliques.length}/3${R.males.includes('cher') ? ' · <i>mauvaise réputation : +20 %</i>' : ''}</p>
+  // 14/11 (l'utilisateur : « pourquoi j'ai des items grisés ? ») : un bouton grisé dit toujours pourquoi
+  const bt = (txt, prix, ok, action, small, pourquoi) => { const raison = !ok ? (pourquoi || '') : !peut(prix) ? `Il te manque ${p(prix) - R.or} or.` : '';
+    return `<button ${raison || !ok ? 'disabled' : ''} onclick="${action};sauve();marchand(R.ile[${c.y}][${c.x}])">${txt} <b style="float:right;color:var(--or)">${p(prix)} or</b>${small ? `<small>${small}</small>` : ''}${raison ? `<small style="color:#ff9a7a">🔒 ${raison}</small>` : ''}</button>`; };
+  fenetre(`<h2>🏪 Le marchand</h2><p>💰 ${R.or} or · sacoche ${R.sacoche.length}/2${R.sacoche.length ? ' (' + R.sacoche.map(k => SACOCHE[k].e).join(' ') + ')' : ''} · reliques ${R.reliques.length}/3${R.males.includes('cher') ? ' · <i>mauvaise réputation : +20 %</i>' : ''}</p>
   <div class="cartes3">${st.cartes.map(k => carteHTML(k, peut(PRIX_CARTE[rarete(k)]) ? `achete(R,R.ile[${c.y}][${c.x}],'carte','${k}');sauve();marchand(R.ile[${c.y}][${c.x}])` : '', p(PRIX_CARTE[rarete(k)]) + ' or')).join('') || '<i>Plus de cartes.</i>'}</div>
   <div class="choixv">
-    ${bt('🔥 Retirer une carte de mon deck', 60, st.retire, "fermer();retirerFen(R.ile[" + c.y + "][" + c.x + "])", 'une fois par visite')}
-    ${Object.keys(SACOCHE).map(k => bt(`${SACOCHE[k].e} ${SACOCHE[k].n}`, SACOCHE[k].prix, R.sacoche.length < 2, `achete(R,R.ile[${c.y}][${c.x}],'sacoche','${k}')`, SACOCHE[k].d)).join('')}
-    ${bt('❤ Vitalité : +5 PV max', 70, st.pvmax, `achete(R,R.ile[${c.y}][${c.x}],'pvmax')`, `encore ${st.pvmax} fois`)}
+    ${bt('🔥 Retirer une carte de mon deck', 60, st.retire, "fermer();retirerFen(R.ile[" + c.y + "][" + c.x + "])", 'une fois par visite', 'Déjà fait à cette visite.')}
+    ${Object.keys(SACOCHE).map(k => bt(`${SACOCHE[k].e} ${SACOCHE[k].n}`, SACOCHE[k].prix, R.sacoche.length < 2, `achete(R,R.ile[${c.y}][${c.x}],'sacoche','${k}')`, SACOCHE[k].d, 'Ta sacoche est pleine (2 objets au plus) : utilise un objet en combat, ou bois ta potion de soin en la touchant en haut de l’écran.')).join('')}
+    ${bt('❤ Vitalité : +5 PV max', 70, st.pvmax, `achete(R,R.ile[${c.y}][${c.x}],'pvmax')`, `encore ${st.pvmax} fois`, 'Plus de Vitalité chez ce marchand.')}
     ${bt('🪔 5 huile', 20, true, `achete(R,R.ile[${c.y}][${c.x}],'vivres')`)}
-    ${st.relique ? bt(`${RELIQUES[st.relique].e} ${RELIQUES[st.relique].n}`, RELIQUES[st.relique].prix, R.reliques.length < 3, `achete(R,R.ile[${c.y}][${c.x}],'relique')`, RELIQUES[st.relique].d + (R.reliques.length >= 3 ? ' (Ton sac est plein : 3 reliques au plus.)' : '')) : ''}
+    ${st.relique ? bt(`${RELIQUES[st.relique].e} ${RELIQUES[st.relique].n}`, RELIQUES[st.relique].prix, R.reliques.length < 3, `achete(R,R.ile[${c.y}][${c.x}],'relique')`, RELIQUES[st.relique].d, 'Tu portes déjà 3 reliques (3 au plus).') : ''}
   </div><div class="choixh"><button onclick="fermer();dessine()">Repartir</button></div>`);
 }
 function retirerFen(c) { fenetre(`<h2>🔥 Retirer une carte</h2><p>Touche la carte à brûler (60 or).</p><div class="cartes3">${[...new Set(R.deck)].map(k => carteHTML(k, `achete(R,R.ile[${c.y}][${c.x}],'retirer','${k}');sauve();fermer();marchand(R.ile[${c.y}][${c.x}])`)).join('')}</div><div class="choixh"><button onclick="marchand(R.ile[${c.y}][${c.x}])">Annuler</button></div>`); }
