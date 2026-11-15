@@ -26,7 +26,7 @@ function descenteGardee() { try { const p = JSON.parse(localStorage.getItem(CLE_
   .salles button .e { font-size:9cqw; text-align:center; } .salles button b { font-size:4.2cqw; color:var(--or); } .salles button small { display:block; color:var(--doux); font-size:3cqw; }
   .salles button.boss { border-color:#ff7a4a; background:#3a1a12; }
   .sac { display:flex; flex-wrap:wrap; gap:1.4cqw; justify-content:center; margin:2cqw 0; }
-  .sac span { background:#1d1934; border:1px solid #4b4580; border-radius:2cqw; padding:.6cqw 1.6cqw; font-size:3.2cqw; }
+  .sac span { background:#1d1934; border:1px solid #4b4580; border-radius:2cqw; padding:.6cqw 1.6cqw; font-size:3.2cqw; cursor:pointer; } .sac span small { font-size:2.6cqw; color:var(--doux); }
   .ressources { display:flex; justify-content:space-around; font-size:3.8cqw; margin:2cqw 0; } .ressources b { color:var(--or); }
   .etal { display:grid; gap:2cqw; } .etal button { display:grid; grid-template-columns:10cqw 1fr auto; gap:2cqw; align-items:center; text-align:left; border-radius:3cqw; padding:2.4cqw; border:1.5px solid #4b4580; background:#221d42; }
   .etal button .e { font-size:7cqw; text-align:center; } .etal button b { color:var(--texte); font-size:3.6cqw; } .etal button small { display:block; color:var(--doux); font-size:2.9cqw; } .etal button .p { color:var(--or); font-weight:bold; font-size:3.8cqw; }
@@ -60,7 +60,7 @@ function descenteAccueil() {
   $('jeu').innerHTML = `<div class="dsc">
     <div class="haut"><a href="#" onclick="S=null;DR=null;accueil();return false">‹ Crypte</a><span class="titre"></span><button onclick="descenteRegles()">❓ Règles</button></div>
     <h1>🗺️ La Descente</h1>
-    <p class="sous">Trois étages de cryptes. À chaque étape, <b>tu choisis ta salle</b> : combat, élite, marchand, feu de camp, événement, trésor… puis le boss de l’étage. Ta vie ne remonte pas toute seule !</p>
+    <p class="sous">Trois étages de cryptes : <b>des combats obligatoires</b> (combat ou élite, à toi de voir), des <b>haltes</b> au choix (marchand, feu de camp, événement, trésor), puis le boss de l’étage. Ta vie ne remonte presque pas toute seule !</p>
     <div class="heros">${Object.entries(HER).map(([k, h]) => `<button class="${choixH === k ? 'on' : ''}" ${k === 'zephine' && !ZEPH_OK() ? 'disabled' : ''} onclick="choixH='${k}';descenteAccueil()"><img src="portraits/${k}.webp" alt="">${h.n}${k === 'zephine' && !ZEPH_OK() ? '<br>🔒 tutoriel' : ''}</button>`).join('')}</div>
     <div class="pv-h">⚡ <b>${C.POUVOIRS[choixH].n}</b> : ${C.POUVOIRS[choixH].d}<br>✨ ${texteBonus(choixH)}</div>
     <h3 style="color:var(--or);margin:3cqw 0 1.5cqw">🔮 Ta breloque <small style="color:var(--doux);font-weight:normal">(gagnées sur les boss, elles restent)</small></h3>
@@ -70,7 +70,7 @@ function descenteAccueil() {
     <div class="choix">
       ${descenteGardee() ? `<button onclick="reprendDescente()" style="border-color:var(--ok);color:var(--ok);background:#163a2a">▶ Reprendre ta descente<small>${HER[descenteGardee().heros].n} · étage ${descenteGardee().etage} · ❤ ${descenteGardee().S ? descenteGardee().S.pv : descenteGardee().pv}</small></button>` : ''}
       <button onclick="lanceDescente(true)">📅 La descente du jour<small>La même pour tout le monde aujourd’hui (salles, monstres, marchand). ${(E.jours || {})[jour()] ? `Ton record du jour : ${E.jours[jour()].score} ${'★'.repeat(E.jours[jour()].etoiles)}${E.jours[jour()].etage ? ' · étage ' + E.jours[jour()].etage : ''}` : 'Pas encore tentée.'}${descenteGardee() ? ' (ta descente en cours sera abandonnée)' : ''}</small></button>
-      <button class="b2" onclick="lanceDescente(false)">🗺️ Une descente au hasard<small>${descenteGardee() ? 'Attention : ta descente en cours sera abandonnée.' : '3 étages · 6 salles + le boss par étage.'}</small></button>
+      <button class="b2" onclick="lanceDescente(false)">🗺️ Une descente au hasard<small>${descenteGardee() ? 'Attention : ta descente en cours sera abandonnée.' : '3 étages · 5 combats, 3 haltes et un boss par étage.'}</small></button>
     </div>
     <p class="record">Meilleur score : ${E.meilleur} · ${E.victoires} victoire${E.victoires > 1 ? 's' : ''} sur ${E.parties} · étage le plus profond : ${E.etageMax || '—'}</p>
   </div>`;
@@ -128,8 +128,10 @@ function descenteEcran() {
 }
 function sacHTML() {
   const o = Object.entries(DR.obj).filter(([k, n]) => n && D.OBJETS[k]);
-  return o.length ? `<div class="sac">${o.map(([k, n]) => `<span onclick="bulle('${D.OBJETS[k].n}')" title="${D.OBJETS[k].d}">${icoObj(k)}${n > 1 ? '×' + n : ''}</span>`).join('')}</div>` : '';
+  // 15/11 soir (l'utilisateur : « une description courte de ce que fait l'objet ») : icône + ce qu'il fait en quelques mots ; toucher = le détail
+  return o.length ? `<div class="sac">${o.map(([k, n]) => `<span onclick="infoObjet('${k}')">${icoObj(k)}${n > 1 ? '×' + n : ''} <small>${D.OBJETS[k].c || D.OBJETS[k].n}</small></span>`).join('')}</div>` : '';
 }
+function infoObjet(k) { const O = D.OBJETS[k]; fenetre(`<h2>${icoObj(k)} ${O.n}</h2><p style="text-align:center">${O.d}</p>${DR && DR.obj[k] > 1 ? `<p style="text-align:center;color:var(--doux)">Tu en as ${DR.obj[k]} : l’effet s’additionne.</p>` : ''}<button class="go" onclick="fenetre('')">Compris</button>`); }
 function allerSalle(k) {
   const t = DR.choix[k]; if (!D.choisir(DR, k)) return;
   son(t === 'boss' ? 'vague' : 'choisir');
@@ -174,7 +176,7 @@ function descenteRegles() {
   fenetre(`<h2>🗺️ La Descente</h2>
     <div class="moust"><img src="ui/moustache.webp" alt=""><p>« Trois étages, un boss à chaque fond d’étage. Et ta vie ne remonte pas toute seule. Choisis bien ton chemin. Miaou. »</p></div>
     <ol>
-      <li><b>À chaque étape, choisis ta salle</b> parmi 2 ou 3 : ⚔ combat, ★ élite (plus dur, objet rare), 🛒 marchand, 🔥 feu de camp, ❓ événement, 💰 trésor. Au bout de 6 salles : le ♛ <b>boss</b> de l’étage.</li>
+      <li><b>Les combats sont obligatoires</b> : 5 par étage. À chaque combat, tu choisis ⚔ <b>combat</b> ou ★ <b>élite</b> (plus dur, mais un objet rare au choix). Après deux combats, une <b>halte</b> : 🛒 marchand, 🔥 feu de camp, ❓ événement ou 💰 trésor (3 au choix). Puis le ♛ <b>boss</b> de l’étage.</li>
       <li><b>Les combats</b> sont des cryptes en plus petit (même règles : pose tes dés sur les sceaux). Une salle est gagnée quand ses colonnes sont vides.</li>
       <li><b>🪙 L’or</b> tombe des monstres : dépense-le chez le marchand. Les <b>objets</b> durent toute la descente.</li>
       <li><b>Dés de couleur</b> : de temps en temps un dé brille. Il sert comme un dé normal, OU pour son effet (bouton « Effet ») : ❤ rouge soigne de sa valeur, ⚡ bleu brise un sceau de ton pouvoir, 🔻 orange affaiblit le monstre le plus fort, 🛡 gris donne du bouclier.</li>
