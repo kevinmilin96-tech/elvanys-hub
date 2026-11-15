@@ -97,12 +97,12 @@
 <body>
 <div id="app"></div>
 <div id="fen"></div>
-<script src="musique.js?v=20261115-164442"></script>
-<script src="rang.js?v=20261115-164442"></script>
-<script src="heros-etoiles.js?v=20261115-164442"></script>
-<script src="progression-modes.js?v=20261115-164442"></script>
-<script src="aventuriers.js?v=20261115-164442"></script>
-<script src="chroniques-moteur.js?v=20261115-164442"></script>
+<script src="musique.js?v=20261115-165551"></script>
+<script src="rang.js?v=20261115-165551"></script>
+<script src="heros-etoiles.js?v=20261115-165551"></script>
+<script src="progression-modes.js?v=20261115-165551"></script>
+<script src="aventuriers.js?v=20261115-165551"></script>
+<script src="chroniques-moteur.js?v=20261115-165551"></script>
 <script>
 // =============================================================================================== LES CHRONIQUES DE LA GUILDE v2 (15/11, écran « façon HeroQuest »)
 // Une grande carte qui défile : les salles restent dans le noir jusqu'à ce qu'on ouvre leur porte ; les couloirs se dévoilent en avançant ;
@@ -178,8 +178,11 @@ setInterval(async () => {
   if (!L || envoi || occupe || document.hidden) return;
   try { const { statut, d } = await api('GET', `${API}/${L.code}?v=${L.version}`); if (statut === 200 && !d.pareil) recoit(d); } catch (e) {}
 }, 2000);
-async function creerSalle() {
-  const nom = (prompt('Ton prénom (ou pseudo) pour tes amis :', localStorage.getItem('guilde-pseudo') || '') || '').trim().slice(0, 24); if (!nom) return;
+async function creerSalle(nomDonne) {
+  if (!nomDonne) { fenetre(`<h2>🌐 Créer une partie à distance</h2><p style="color:var(--doux)">Ton prénom (ou pseudo), que tes amis verront :</p>
+      <input id="fNom2" maxlength="24" value="${(localStorage.getItem('guilde-pseudo') || '').replace(/"/g, '')}" style="width:100%;font:1.1em Georgia;padding:10px;border-radius:12px;border:2px solid #7cd4ff;background:#14122a;color:var(--texte)">
+      <button class="go" onclick="const n=($('fNom2').value||'').trim();if(!n){bulle('Ton prénom ?',true);return}fenetre('');creerSalle(n)">Créer la salle</button><button class="sec" onclick="fenetre('')">Annuler</button>`); return; }
+  const nom = String(nomDonne).trim().slice(0, 24); if (!nom) return;
   localStorage.setItem('guilde-pseudo', nom);
   S = K.nouvelle(equipeChoisie(), 'chron-' + Date.now(), scenChoisi); pointDePassage(); actif = 0; sel = null; centrer = true;
   const moi = { id:'j' + Math.random().toString(36).slice(2, 10), nom };
@@ -194,9 +197,25 @@ async function creerSalle() {
       <button class="go" onclick="fenetre('');equipeEnLigne()">Voir qui joue quoi</button>`, false);
   } catch (e) { bulle('Pas de réseau.', true); S = null; }
 }
+// 16/11 nuit (l'utilisateur : « je ne peux pas sélectionner Rejoindre avec un code ») : la petite fenêtre du navigateur (prompt) est bloquée sur certains
+// téléphones ; on demande le code et le prénom dans une vraie fenêtre du jeu
+function rejoindreForm() {
+  fenetre(`<h2>🔑 Rejoindre une partie</h2><p style="color:var(--doux)">Le code de la salle (4 lettres), donné par ton ami :</p>
+    <input id="fCode" maxlength="4" autocomplete="off" style="width:100%;font:bold 1.6em Georgia;text-align:center;letter-spacing:.3em;text-transform:uppercase;padding:10px;border-radius:12px;border:2px solid var(--or);background:#14122a;color:var(--texte)">
+    <p style="color:var(--doux);margin-top:12px">Ton prénom (ou pseudo) :</p>
+    <input id="fNom" maxlength="24" value="${(localStorage.getItem('guilde-pseudo') || '').replace(/"/g, '')}" style="width:100%;font:1.1em Georgia;padding:10px;border-radius:12px;border:2px solid #45457a;background:#14122a;color:var(--texte)">
+    <button class="go" onclick="rejoindreValide()">Rejoindre</button><button class="sec" onclick="fenetre('')">Annuler</button>`);
+  setTimeout(() => { const i = $('fCode'); if (i) i.focus(); }, 100);
+}
+function rejoindreValide() {
+  const code = ($('fCode').value || '').toUpperCase().replace(/[^A-Z]/g, ''), nom = ($('fNom').value || '').trim().slice(0, 24);
+  if (code.length < 4) { bulle('Le code a 4 lettres', true); return; } if (!nom) { bulle('Ton prénom ?', true); return; }
+  localStorage.setItem('guilde-pseudo', nom); fenetre(''); rejoindre(code, { id:'j' + Math.random().toString(36).slice(2, 9), nom });
+}
 async function rejoindre(code, moi) {
-  code = (code || prompt('Le code de la salle (4 lettres) :') || '').toUpperCase().replace(/[^A-Z]/g, ''); if (code.length < 4) return;
-  if (!moi) { const nom = (prompt('Ton prénom (ou pseudo) :', localStorage.getItem('guilde-pseudo') || '') || '').trim().slice(0, 24); if (!nom) return; localStorage.setItem('guilde-pseudo', nom); moi = { id:'j' + Math.random().toString(36).slice(2, 10), nom }; }
+  if (!code) return rejoindreForm();
+  code = String(code).toUpperCase().replace(/[^A-Z]/g, ''); if (code.length < 4) return;
+  if (!moi) { const nom = (localStorage.getItem('guilde-pseudo') || 'Joueur').trim().slice(0, 24); if (!nom) return; localStorage.setItem('guilde-pseudo', nom); moi = { id:'j' + Math.random().toString(36).slice(2, 10), nom }; }
   try { const { statut, d } = await api('GET', `${API}/${code}`);
     if (statut !== 200) { bulle(d.message || 'Code inconnu.', true); return; }
     L = { code, version:d.version, joueurs:d.joueurs || [], moi, dernier:'' }; S = d.etat; actif = 0; sel = null; centrer = true;
@@ -439,9 +458,14 @@ function finPartie() {
     try { const D = JSON.parse(localStorage.getItem(CLE) || '{}'); D.horloger = (D.horloger || 0) + 1; if (S.sablier > 0) D.gardiens = true; localStorage.setItem(CLE, JSON.stringify(D)); } catch (e) {} }
   else { try { GM.jingle('defaite'); } catch (e) {} }
   const campagne = gagne ? campagneGagnee() : '';
+  // 16/11 : l'or et les pièces d'équipement trouvés vont dans la Forge des héros (si l'équipe a des héros d'aventure)
+  let butin = '';
+  if (S.heros.some(z => z.av) && typeof avGagne === 'function' && !S.butinFait) { S.butinFait = true;
+    const or = (S.orAv || 0) + (gagne ? 25 : 5), g = avGagne(or, (S.equipTrouve || 0) + (gagne ? 1 : 0), gagne);
+    butin = `<p style="text-align:center">⚒ Pour la Forge des héros : 🪙 +${or} or${g.length ? ` · ${g.map(p => `<b style="color:${EQ_RARE[p.r].c}">${EQ_CASES.find(c => c.k === p.slot).e} ${p.nom}</b>`).join(', ')}` : ''}</p>`; }
   fenetre(gagne ? `<h2>${SCT().gagne[0]}</h2><div class="moust"><img src="ui/moustache.webp" alt=""><div class="lu">${SCT().gagne[1]}</div></div>
       <p style="text-align:center">Score : <b style="color:var(--or)">${S.score}</b> · ${S.tours} tours · ⌛ ${S.sablier} grains${S.sablier > 0 ? '<br>🏅 Titre « <b>Gardiens du temps</b> » : le sablier n’est jamais tombé à zéro !' : ''}</p>
-      <p style="text-align:center">✨ Chaque héros gagne des éclats et de l’XP${objet ? ` · 🎒 <b>${objet}</b> rejoint l’armurerie` : ''}.</p>${campagne}<button class="${campagne ? 'sec' : 'go'}" onclick="fin()">Retour à la Guilde</button>`
+      <p style="text-align:center">✨ Chaque héros gagne des éclats et de l’XP${objet ? ` · 🎒 <b>${objet}</b> rejoint l’armurerie` : ''}.</p>${butin}${campagne}<button class="${campagne ? 'sec' : 'go'}" onclick="fin()">Retour à la Guilde</button>`
     : `<h2>❄ Figés…</h2><div class="moust"><img src="ui/moustache.webp" alt=""><div class="lu">« Figés. Tous. Comme des statues. Très jolies, d’ailleurs. L’Horloger vous remonte comme des jouets… On réessaie ? »</div></div>
       <button class="go" onclick="recommence()">↺ Repartir de la dernière porte ouverte</button><button class="sec" onclick="fin()">Abandonner</button>`, false);
 }
@@ -525,7 +549,7 @@ const nomChoix = k => k.startsWith('av:') ? ((avTrouve(k.slice(3)) || {}).nom ||
 function versMoteur(k) {
   if (!k.startsWith('av:')) return k;
   const a = avTrouve(k.slice(3)); if (!a) return null; const s = avStats(a);
-  return { voie:a.voie, nom:a.nom, pv:s.pv, faces:s.faces, desPlus:s.desPlus, talents:s.talents, av:a.id, c:a.couleur, portrait:avPortrait(a) };
+  return { voie:a.voie, nom:a.nom, pv:s.pv, faces:s.faces, desPlus:s.desPlus, talents:s.talents, av:a.id, c:a.couleur, portrait:avPortrait(a), att:s.att || 0, def:s.def || 0, agi:s.agi || 0 };
 }
 const equipeChoisie = () => choisis.map(versMoteur).filter(Boolean);
 function basculeHeros(k) { if (choisis.includes(k)) choisis = choisis.filter(x => x !== k); else if (choisis.length < 4) choisis.push(k); else { bulle('4 héros au plus', true); return; } son('choisir'); accueil(); }
@@ -544,6 +568,6 @@ function reprend() { const g = gardee(); if (!g) return; S = g; actif = Math.max
 if (typeof GM !== 'undefined') { try { GM.musique('exploration'); GM.bouton(); } catch (e) {} }
 accueil();
 </script>
-<script src="chroniques-aventures.js?v=20261115-164442"></script>
+<script src="chroniques-aventures.js?v=20261115-165551"></script>
 </body>
 </html>

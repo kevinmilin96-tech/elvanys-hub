@@ -238,7 +238,7 @@ function nouvelle(heros, s, scen, opts = {}) {
   scen = SCEN[scen] ? scen : 'horloger';
   // un héros = le nom d'une voie (« maelle »…) ou un HÉROS D'AVENTURE { voie, nom, pv, faces, desPlus, av, c } (aventuriers.js)
   const fait = h => typeof h === 'string' ? { id:h, pv:HEROS_C[h].pv, pvmax:HEROS_C[h].pv, objet:null, bouclier:0 }
-    : { id:h.voie, nom:h.nom, av:h.av, c:h.c, portrait:h.portrait, faces:h.faces, talents:h.talents || [], desPlus:h.desPlus || 0, pv:h.pv, pvmax:h.pv, objet:null, bouclier:0 };
+    : { id:h.voie, nom:h.nom, av:h.av, c:h.c, portrait:h.portrait, faces:h.faces, talents:h.talents || [], desPlus:h.desPlus || 0, pv:h.pv, pvmax:h.pv, objet:null, bouclier:0, att:h.att || 0, def:h.def || 0, agi:h.agi || 0 }; // 16/11 : l'équipement (aventuriers.js)
   const S = { heros:heros.map(fait), scen, sablier:SCEN[scen].sablier, rs:graine(s), graine:s,
     livre:false, journal:[], seq:0, fin:null, score:0, tours:0, rouagesTrouves:0, etape:'jeu' };
   const R = { w:W, h:H, murs:{}, salle:{}, obj:{}, portes:{}, monstres:[], tour:0, vuSalle:{}, vu:{}, rouagesPoses:0, boss:null, bronze:false, leviersTour:{} };
@@ -313,6 +313,7 @@ const reveille = (S, m) => visible(S, m.x, m.y) && (!S.R.salle[cle(m.x, m.y)] ||
 // ------------------------------------------------------------------ le tour du groupe
 function debutTour(S) {
   const R = S.R; R.tour++; S.tours++;
+  S.heros.forEach(h => { if (h.def && !h.aTerre) h.bouclier = Math.max(h.bouclier || 0, h.def); }); // 🛡 la Défense de l'équipement
   S.heros.forEach(h => {
     let n = HEROS_C[h.id].des + (h.desPlus || 0) + (h.objet === 'cle' ? 1 : 0) - (S.sablier <= 0 ? 1 : 0);
     h.des = []; if (h.aTerre) n = 0;
@@ -324,7 +325,7 @@ function debutTour(S) {
   if (R.boss) R.boss.it = R.boss.repos ? 'remonte' : 'frappe';
 }
 function atteignables(S, h, v) {
-  const R = S.R, pasMax = v + (h.id === 'oria' ? 2 : 0) + (a_t(h, 'eclaireur') ? 1 : 0) - (h.porte ? 1 : 0), res = {}, file = [[h.x, h.y, 0]], vu = { [cle(h.x, h.y)]:1 };
+  const R = S.R, pasMax = v + (h.agi || 0) + (h.id === 'oria' ? 2 : 0) + (a_t(h, 'eclaireur') ? 1 : 0) - (h.porte ? 1 : 0), res = {}, file = [[h.x, h.y, 0]], vu = { [cle(h.x, h.y)]:1 };
   while (file.length) { const [x, y, d] = file.shift(); if (d >= pasMax) continue;
     // on s'arrête en entrant dans une salle pas encore vue (comme à HeroQuest : on découvre en entrant)
     const ici = R.salle[cle(x, y)]; if (d > 0 && ici && !R.vuSalle[ici]) continue;
@@ -362,8 +363,9 @@ function frapper(S, hi, idDe, mid, k) {
   const m = mid === 'boss' ? R.boss : R.monstres.find(z => z.id === mid); if (!d || !m) return 'Rien à frapper.';
   const portee = h.id === 'zephine' ? 2 : 1;
   if (dist(h, m) > portee) return portee > 1 ? 'Trop loin (2 cases au plus).' : 'Il faut être à côté du monstre.';
-  const s = m.sceaux[k]; if (!s || !accepte(s, d.v, m.sceaux)) return 'Ce dé ne va pas sur ce sceau.';
-  prendDe(h, idDe); pose(s, d.v);
+  const s = m.sceaux[k], vA = d.v + (s && (s.t === 'min' || s.t === 'tot') ? h.att || 0 : 0); // ⚔ l'Attaque de l'équipement compte sur les sceaux « ≥ » et « Σ »
+  if (!s || !accepte(s, vA, m.sceaux)) return 'Ce dé ne va pas sur ce sceau.';
+  prendDe(h, idDe); pose(s, vA);
   if ((h.id === 'maelle' && d.v === 6) || (a_t(h, 'brute') && d.v >= 5)) { const s2 = m.sceaux.find(z => !z.ok); if (s2) { brise(s2); log(S, '🔨 Coup de forge : deux sceaux d’un coup !'); } }
   R.frappeurs = R.frappeurs || {}; R.frappeurs[m.id] = (R.frappeurs[m.id] || []); if (!R.frappeurs[m.id].includes(hi)) R.frappeurs[m.id].push(hi);
   return { ok:true, ev:verifieMonstre(S, m) };
@@ -444,8 +446,9 @@ function fouilleMeuble(S, hi, idDe, x, y, o) {
     case 'rouage': { h.porte = true; S.rouagesTrouves++; const sc = SCEN[S.scen || 'horloger']; log(S, `${sc.objet.e} ${nom} trouve ${sc.objet.n === 'rouage' ? 'un ROUAGE' : 'une BRAISE ÉTERNELLE'} dans ${MEUBLE_N[o.t] || 'le meuble'} ! À porter jusqu’à ${sc.axe}.`); break; }
     case 'potion': case 'parchemin': case 'fumee': (h.sac = h.sac || []).push(o.cache); log(S, `🎒 ${nom} met ${SAC[o.cache].n.toLowerCase()} dans son sac (trouvée dans ${MEUBLE_N[o.t]}).`); break;
     case 'grains': S.sablier += 3; log(S, `⌛ Un petit sablier dans ${MEUBLE_N[o.t]} : +3 grains !`); break;
-    case 'or': S.score += 50; log(S, `💰 Des pièces d’or dans ${MEUBLE_N[o.t]} : +50.`); break;
-    case 'objet': { if (h.objet) { S.score += 30; ev.quoi = 'or'; log(S, `💰 Un petit trésor dans ${MEUBLE_N[o.t]} : +30.`); break; }
+    case 'or': S.score += 50; S.orAv = (S.orAv || 0) + 8; log(S, `💰 Des pièces d’or dans ${MEUBLE_N[o.t]} : +50 points${S.heros.some(z => z.av) ? ', +8 or pour la Forge' : ''}.`); break;
+    case 'objet': { if (h.av && hasard(S) < .6) { S.equipTrouve = (S.equipTrouve || 0) + 1; ev.quoi = 'equip'; log(S, `🗡 ${nom} trouve une PIÈCE D’ÉQUIPEMENT dans ${MEUBLE_N[o.t]} ! (elle t’attend dans la Forge des héros)`); break; }
+      if (h.objet) { S.score += 30; ev.quoi = 'or'; log(S, `💰 Un petit trésor dans ${MEUBLE_N[o.t]} : +30.`); break; }
       const k = ['bouclier', 'cle', 'lunettes'][Math.floor(hasard(S) * 3)]; h.objet = k; ev.objet = k; log(S, `🎁 ${nom} trouve ${OBJETS[k].n} : ${OBJETS[k].d}`); break; }
     case 'piege': if (a_t(h, 'chanceux')) { log(S, `🍀 ${nm(h)} évite le piège caché dans ${MEUBLE_N[o.t]}.`); break; } blesseHeros(S, h, 2); log(S, `⚠ ${Le} était piégé : ${nom} −2 PV.`); break;
     case 'monstre': { const p = [[1, 0], [-1, 0], [0, 1], [0, -1]].map(([dx, dy]) => [x + dx, y + dy]).find(([a, b]) => libre(S, a, b) && !herosEn(S, a, b));
