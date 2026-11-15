@@ -67,6 +67,9 @@ const SCEN = {
     phases:['Le Ressort', 'Le Carillon', 'La Dernière Heure'] },
   brulees: { n:'Les Terres brûlées (essai sur la carte peinte)', boss:'titan', renfort:'salamandre', objet:{ n:'braise éternelle', e:'🔥' }, axe:'le grand brasier', axeE:'🔥', sablier:28,
     phases:['Les Flammes', 'La Fumée', 'L’Éruption'], image:'decor/carte-brulees.webp', vue:5 },
+  // 15/11 soir : LE LABYRINTHE DES RUNES, un donjon TIRÉ AU HASARD à chaque partie (salles, couloirs, meubles, monstres, pièges) : on rejoue sans fin
+  labyrinthe: { n:'Le Labyrinthe des Runes (donjon au hasard)', boss:'titan', renfort:'gobelin', objet:{ n:'fragment de rune', e:'✦' }, axe:'l’autel des runes', axeE:'✦', sablier:30,
+    phases:['Le Réveil', 'La Colère', 'Le Dernier Souffle'], vue:5, hasard:true },
 };
 // la carte peinte, calée par l'utilisateur le 15/11 (28 × 36 ; . sol · # mur · ~ obstacle)
 const GRILLE_BRULEES = ["############################","####..#####~####~#####~~~~##","#.......##~~#########..~~~~#","#.......########.###.....~~#","#.......#####..#.###......~#","#.......##.......###.......#","#.......##...##...##.......#","#.......##...##...##......##","#.......###......###.....###","########.####..####..#######","####..###.###..###..########","##.....##..##..###..#......#","#..........##..###.........#","#..........................#","#......##..##..###..#......#","##.....##.......##..#......#","###...###........#..########","########..#......#..########","#######..##......#..##.....#","##......###......#.........#","#.......####....#####......#","#.......#...#..#~~~........#","#.......#...#..~....~......#","#.......#...#..#....~......#","##.....##...#..............#","#########......#.....#######","#########...#..##...########","#.......#####..#####.......#","#.......#####..#####.......#","#..........................#","#..........................#","#.......#####..######......#","#.......#####..######......#","#.......#############.....##","############################","############################"];
@@ -96,6 +99,65 @@ function construitCarte(S, R) {
   B.pieges.forEach(([x, y]) => R.obj[cle(x, y)] = { t:'piege', cache:true });
   B.monstres.forEach(([b, x, y]) => ajouteMonstre(S, b, x, y));
   B.depart.forEach(([x, y], i) => { if (S.heros[i]) { S.heros[i].x = x; S.heros[i].y = y; } });
+}
+// ------------------------------------------------------------------ LE LABYRINTHE DES RUNES : un donjon au hasard (15/11 soir)
+// 26 × 30 : 8 salles posées sans se toucher, reliées par des couloirs (plus 2 raccourcis pour faire des boucles) ; départ dans une salle,
+// l'autel des runes dans la salle la plus loin ; 14 meubles (4 cachent un fragment, il en faut 3) ; 13 monstres ; 5 pièges dans les couloirs.
+function construitLabyrinthe(S, R) {
+  const W2 = 26, H2 = 30, G = Array.from({ length:H2 }, () => Array(W2).fill('#')), rnd = n => Math.floor(hasard(S) * n);
+  R.w = W2; R.h = H2;
+  const salles = [];
+  for (let essai = 0; essai < 400 && salles.length < 8; essai++) {
+    const w = 4 + rnd(4), h = 3 + rnd(4), x = 1 + rnd(W2 - w - 2), y = 1 + rnd(H2 - h - 2);
+    if (salles.some(s => x < s.x + s.w + 2 && x + w + 2 > s.x && y < s.y + s.h + 2 && y + h + 2 > s.y)) continue;
+    salles.push({ x, y, w, h, cx:x + Math.floor(w / 2), cy:y + Math.floor(h / 2) });
+  }
+  salles.sort((a, b) => b.cy - a.cy); // la première salle est en bas : le départ
+  salles.forEach(s => { for (let y = s.y; y < s.y + s.h; y++) for (let x = s.x; x < s.x + s.w; x++) G[y][x] = '.'; });
+  const couloir = (a, b) => { let x = a.cx, y = a.cy; const hFirst = hasard(S) < .5;
+    const pasX = () => { while (x !== b.cx) { x += Math.sign(b.cx - x); G[y][x] = '.'; } }, pasY = () => { while (y !== b.cy) { y += Math.sign(b.cy - y); G[y][x] = '.'; } };
+    if (hFirst) { pasX(); pasY(); } else { pasY(); pasX(); } };
+  for (let i = 1; i < salles.length; i++) { const prec = salles.slice(0, i).sort((a, b) => Math.abs(a.cx - salles[i].cx) + Math.abs(a.cy - salles[i].cy) - Math.abs(b.cx - salles[i].cx) - Math.abs(b.cy - salles[i].cy))[0]; couloir(prec, salles[i]); }
+  for (let k = 0; k < 2; k++) couloir(salles[rnd(salles.length)], salles[rnd(salles.length)]);
+  const dans = (s, x, y) => x >= s.x && x < s.x + s.w && y >= s.y && y < s.y + s.h;
+  const sol = (x, y) => x >= 0 && y >= 0 && x < W2 && y < H2 && G[y][x] === '.';
+  // distances depuis le départ (pour l'autel et pour vérifier qu'un meuble ne bouche rien)
+  const D0 = salles[0];
+  const distances = () => { const D = {}, f = [[D0.cx, D0.cy]]; D[D0.cx + ',' + D0.cy] = 0; while (f.length) { const [x, y] = f.shift(); for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const nx = x + dx, ny = y + dy, k = nx + ',' + ny; if (D[k] == null && sol(nx, ny)) { D[k] = D[x + ',' + y] + 1; f.push([nx, ny]); } } } return D; };
+  let D = distances();
+  const fin = salles.slice(1).sort((a, b) => (D[b.cx + ',' + b.cy] || 0) - (D[a.cx + ',' + a.cy] || 0))[0];
+  const nbSol = () => { let n = 0; for (let y = 0; y < H2; y++) for (let x = 0; x < W2; x++) if (G[y][x] === '.') n++; return n; };
+  // les meubles : contre un mur, dans une salle (pas celle du départ), sans couper le passage
+  const sortes = ['coffre', 'armoire', 'tonneaux', 'tombeau', 'etabli', 'etagere', 'bureau', 'autel', 'cristaux', 'fontaine'];
+  const meubles = [];
+  for (let essai = 0; essai < 300 && meubles.length < 14; essai++) {
+    const s = salles[1 + rnd(salles.length - 1)], x = s.x + rnd(s.w), y = s.y + rnd(s.h);
+    if (G[y][x] !== '.' || (s === fin && x === fin.cx && y === fin.cy)) continue;
+    const contreMur = [[1, 0], [-1, 0], [0, 1], [0, -1]].filter(([dx, dy]) => !sol(x + dx, y + dy)).length >= 1;
+    if (!contreMur || meubles.some(m => Math.abs(m[0] - x) + Math.abs(m[1] - y) < 2)) continue;
+    G[y][x] = 'M'; const avant = Object.keys(D).length; const D2 = distances();
+    if (Object.keys(D2).length < nbSol()) { G[y][x] = '.'; continue; } // il bouchait un passage
+    D = D2; meubles.push([x, y, sortes[rnd(sortes.length)]]);
+  }
+  for (let y = 0; y < H2; y++) for (let x = 0; x < W2; x++) if (G[y][x] === '#') R.murs[cle(x, y)] = '#';
+  const tirage = ['potion', 'grains', 'objet', 'piege', 'monstre', 'parchemin', 'or', 'fumee', 'rien'];
+  const caches = meubles.map((m, i) => i).sort(() => hasard(S) - .5).slice(0, 4);
+  meubles.forEach(([x, y, t2], i) => { R.murs[cle(x, y)] = 'M'; R.obj[cle(x, y)] = { t:t2, meuble:true, fouille:false, cache:caches.includes(i) ? 'rouage' : tirage[rnd(tirage.length)] }; });
+  R.murs[cle(fin.cx, fin.cy)] = 'A'; R.axe = [fin.cx, fin.cy]; R.bronze = true;
+  // les pièges : dans les couloirs (hors salles)
+  const couloirs = []; for (let y = 0; y < H2; y++) for (let x = 0; x < W2; x++) if (G[y][x] === '.' && !salles.some(s => dans(s, x, y))) couloirs.push([x, y]);
+  for (let i = 0; i < 5 && couloirs.length; i++) { const [x, y] = couloirs.splice(rnd(couloirs.length), 1)[0]; R.obj[cle(x, y)] = { t:'piege', cache:true }; }
+  // les monstres : dans les salles (pas le départ), plus forts près de l'autel
+  const faibles = ['gobelin', 'loup', 'scarabee', 'rouagelin', 'page', 'coucou'], forts = ['salamandre', 'golem', 'gardien', 'elementaire', 'archiviste'];
+  for (let i = 0; i < 13; i++) {
+    const s = salles[1 + rnd(salles.length - 1)]; let x, y, k = 0;
+    do { x = s.x + rnd(s.w); y = s.y + rnd(s.h); } while (k++ < 20 && (G[y][x] !== '.' || R.monstres.some(m => m.x === x && m.y === y) || (x === fin.cx && y === fin.cy)));
+    if (G[y][x] !== '.') continue;
+    const loin = (D[x + ',' + y] || 0) > 22;
+    ajouteMonstre(S, loin && hasard(S) < .6 ? forts[rnd(forts.length)] : faibles[rnd(faibles.length)], x, y);
+  }
+  [[0, 0], [1, 0], [0, 1], [1, 1]].forEach(([dx, dy], i) => { if (S.heros[i]) { S.heros[i].x = Math.min(D0.x + D0.w - 1, D0.cx - 1 + dx); S.heros[i].y = Math.min(D0.y + D0.h - 1, D0.cy - 1 + dy); } });
+  S.salles = salles.length;
 }
 // le brouillard « à vue » (carte peinte) : on voit les cases à moins de N cases, si aucun mur ne cache la ligne de vue
 function voirAVue(S) {
@@ -143,15 +205,17 @@ function sceauxBoss(S, k) {
   const L = PHASES[k].s(), n = S.nbHeros || S.heros.length;
   if (n <= 1) L.splice(-2, 2); else if (n === 2) L.pop(); else if (n >= 4) L.push(sceau('min', 4));
   if (k === 2 && S.livre) L.pop();
+  if (S.scen === 'labyrinthe' && n <= 1 && L.length > 2) L.pop(); // seul dans un grand labyrinthe : un sceau de moins
   return L;
 }
 function adapte(S) {
   const R = S.R, n = Math.max(1, Math.min(4, S.heros.length)), A = ADAPTE[n];
   S.nbHeros = n; S.dureeLevier = A.levier; S.sablier += A.sablier;
+  if (S.scen === 'labyrinthe') { S.sablier += [0, 20, 10, 0, 0][n]; if (n <= 2) R.monstres = R.monstres.filter(() => hasard(S) < .7); } // un donjon plus grand : plus de temps aux petits groupes
   if (A.garde < 1) R.monstres = R.monstres.filter(m => hasard(S) < A.garde);
   if (A.renfort) { // à 4 : quelques monstres de plus, posés dans des couloirs (cases de sol hors salle, loin du départ)
     const libres = []; for (let y = 0; y < R.h; y++) for (let x = 0; x < R.w; x++) { const c = cle(x, y); if (!R.murs[c] && !R.salle[c] && !R.portes[c] && !R.obj[c] && !S.heros.some(h => dist(h, { x, y }) < 8) && !R.monstres.some(m => m.x === x && m.y === y)) libres.push([x, y]); }
-    const sorte = S.scen === 'brulees' ? ['loup', 'gobelin', 'salamandre'] : ['rouagelin', 'coucou', 'rouagelin'];
+    const sorte = S.scen === 'brulees' ? ['loup', 'gobelin', 'salamandre'] : S.scen === 'labyrinthe' ? ['gobelin', 'loup', 'page'] : ['rouagelin', 'coucou', 'rouagelin'];
     for (let i = 0; i < A.renfort && libres.length; i++) { const [x, y] = libres.splice(Math.floor(hasard(S) * libres.length), 1)[0]; ajouteMonstre(S, sorte[i % sorte.length], x, y); }
   }
 }
@@ -166,6 +230,7 @@ function nouvelle(heros, s, scen) {
     livre:false, journal:[], seq:0, fin:null, score:0, tours:0, rouagesTrouves:0, etape:'jeu' };
   const R = { w:W, h:H, murs:{}, salle:{}, obj:{}, portes:{}, monstres:[], tour:0, vuSalle:{}, vu:{}, rouagesPoses:0, boss:null, bronze:false, leviersTour:{} };
   S.R = R;
+  if (scen === 'labyrinthe') { construitLabyrinthe(S, R); adapte(S); voir(S); log(S, '✦ Le Labyrinthe des Runes : un donjon jamais vu. Trouvez 3 fragments de rune dans les meubles et portez-les à l’autel, tout au fond.'); debutTour(S); return S; }
   if (scen === 'brulees') { construitCarte(S, R); adapte(S); voir(S); log(S, '🔥 Les Terres brûlées : trouvez 3 braises éternelles en fouillant les meubles et portez-les au grand brasier.'); debutTour(S); return S; }
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) R.murs[cle(x, y)] = '#';
   const creuse = ([x0, y0, w, h], id) => { for (let y = y0; y < y0 + h; y++) for (let x = x0; x < x0 + w; x++) { delete R.murs[cle(x, y)]; if (id) R.salle[cle(x, y)] = id; } };
@@ -215,7 +280,7 @@ const dist = (a, b) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
 function revele(S, id) { const R = S.R; if (R.vuSalle[id]) return false; R.vuSalle[id] = true;
   const [x0, y0, w, h] = SALLES[id].r; for (let y = y0 - 1; y <= y0 + h; y++) for (let x = x0 - 1; x <= x0 + w; x++) R.vu[cle(x, y)] = 1; return true; }
 function voir(S) {
-  if (SCEN[S.scen || 'horloger'].image) return voirAVue(S);
+  if (SCEN[S.scen || 'horloger'].image || SCEN[S.scen || 'horloger'].hasard) return voirAVue(S);
   const R = S.R; let neuves = [];
   S.heros.forEach(h => {
     const ici = R.salle[cle(h.x, h.y)]; if (ici && revele(S, ici)) neuves.push(ici);
@@ -368,7 +433,7 @@ function fouilleMeuble(S, hi, idDe, x, y, o) {
       const k = ['bouclier', 'cle', 'lunettes'][Math.floor(hasard(S) * 3)]; h.objet = k; ev.objet = k; log(S, `🎁 ${nom} trouve ${OBJETS[k].n} : ${OBJETS[k].d}`); break; }
     case 'piege': if (a_t(h, 'chanceux')) { log(S, `🍀 ${nm(h)} évite le piège caché dans ${MEUBLE_N[o.t]}.`); break; } blesseHeros(S, h, 2); log(S, `⚠ ${Le} était piégé : ${nom} −2 PV.`); break;
     case 'monstre': { const p = [[1, 0], [-1, 0], [0, 1], [0, -1]].map(([dx, dy]) => [x + dx, y + dy]).find(([a, b]) => libre(S, a, b) && !herosEn(S, a, b));
-      if (p) { const m = ajouteMonstre(S, S.scen === 'brulees' ? 'gobelin' : 'rouagelin', p[0], p[1]); m.it = 'frappe'; R.vu[cle(p[0], p[1])] = 1; } log(S, `👹 Un Rouagelin jaillit de ${MEUBLE_N[o.t]} !`); break; }
+      if (p) { const m = ajouteMonstre(S, S.scen === 'horloger' || !S.scen ? 'rouagelin' : 'gobelin', p[0], p[1]); m.it = 'frappe'; R.vu[cle(p[0], p[1])] = 1; } log(S, `👹 Un Rouagelin jaillit de ${MEUBLE_N[o.t]} !`); break; }
     default: log(S, `🔍 ${nom} fouille ${MEUBLE_N[o.t]}… de la poussière, rien d’autre.`);
   }
   return { ok:true, ev:[ev] };
@@ -378,7 +443,7 @@ function reveilBoss(S) {
   const pos = [[ax, ay - 1], [ax + 1, ay], [ax - 1, ay], [ax, ay + 1]].find(([x, y]) => libre(S, x, y) && !herosEn(S, x, y)) || [ax + 2, ay];
   const sc = SCEN[S.scen || 'horloger'], Bb = BETES[sc.boss];
   R.boss = { id:'boss', b:sc.boss, n:Bb.n, img:Bb.img, x:pos[0], y:pos[1], att:(S.nbHeros || 4) <= 2 ? 2 : 3, phase:0, sceaux:sceauxBoss(S, 0), repos:false, it:'frappe' };
-  log(S, S.scen === 'brulees' ? '🔥 Les trois braises rallument le grand brasier… LE TITAN DE FEU en sort, furieux !' : '⏰ Les trois rouages tournent… L’HORLOGER se réveille, furieux !');
+  log(S, S.scen === 'labyrinthe' ? '✦ Les trois fragments s’emboîtent sur l’autel… le sol tremble : LE TITAN DES RUNES se réveille !' : S.scen === 'brulees' ? '🔥 Les trois braises rallument le grand brasier… LE TITAN DE FEU en sort, furieux !' : '⏰ Les trois rouages tournent… L’HORLOGER se réveille, furieux !');
 }
 function repousse(S, m, h, n) { for (let i = 0; i < n; i++) { const dx = Math.sign(m.x - h.x), dy = Math.sign(m.y - h.y); const nx = m.x + (Math.abs(m.x - h.x) >= Math.abs(m.y - h.y) ? dx || 1 : 0), ny = m.y + (Math.abs(m.x - h.x) < Math.abs(m.y - h.y) ? dy || 1 : 0); if (libre(S, nx, ny, m) && !herosEn(S, nx, ny)) { m.x = nx; m.y = ny; } } }
 function blesseHeros(S, h, n) {
