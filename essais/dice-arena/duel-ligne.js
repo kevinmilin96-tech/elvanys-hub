@@ -139,6 +139,9 @@ function dlAffiche() {
   document.getElementById('app').style.visibility = '';
   { const b = document.querySelector('#app .bandeau'); if (b) b.textContent = `⏳ ${J.qui} joue : regarde son tour en direct.`; // pas de consigne pour moi
     const bas = document.querySelector('#app .bas'); if (bas) bas.style.visibility = 'hidden'; }
+  // 15/11 soir (l'utilisateur : « elle devrait voir les dés comme un ennemi ») : pendant son tour, le bac montre SES dés (ses faces), pas les miens
+  { const bac = document.querySelector('#app .des');
+    if (bac) bac.innerHTML = `<div class="dl-qui">🎲 ${J.qui}</div>` + J.des.map(d => `<div class="d ${d.pose ? 'pose' : ''} ${J.aLancer ? 'cache' : ''} dl-ennemi"><img src="${FACE(J.id, d.v || 1)}" alt="${J.aLancer ? '?' : d.v}"><div class="sac">${J.aLancer ? '' : d.pose ? 'posé' : ''}</div></div>`).join(''); }
   let z = document.getElementById('dlDirect');
   if (!z) { z = document.createElement('div'); z.id = 'dlDirect'; document.body.appendChild(z); }
   z.innerHTML = `<div class="dl-band"><b>⏳ Tour de ${J.qui}</b> <small style="color:#ff6b6b">● en direct</small>
@@ -178,6 +181,7 @@ rendu = function () {
   .dl-fil{max-height:38vh;overflow:auto;text-align:left;background:#0004;border-radius:10px;padding:6px 10px;margin:8px 0;font-size:.9em}
   #dlDirect{position:fixed;inset:0;z-index:40;background:transparent}#dlDirect .dl-band{position:absolute;left:8px;right:8px;top:8px;background:#161d2cee;border:2px solid #f3c96b;border-radius:14px;padding:6px 10px;font:14px Georgia;color:#fff;box-shadow:0 4px 16px #000a}
   #dlDirect .dl-band button{float:right;background:#0006;color:#fff;border:1px solid #fff4;border-radius:10px;padding:2px 10px}#dlDirect .dl-der{font-size:.88em;margin-top:3px}#dlDirect .dl-der .neuf{color:#f3c96b;animation:dlNeuf .8s}
+  #app .des .dl-ennemi{filter:drop-shadow(0 0 6px #ff4b4b)}#app .des .dl-qui{font:bold 11px Georgia;color:#ffb3b3;text-align:center;text-shadow:0 1px 2px #000}
   .dl-fil div{padding:3px 0;border-bottom:1px solid #ffffff14}.dl-fil .neuf{color:#f3c96b;animation:dlNeuf .8s}
   @keyframes dlNeuf{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}`;
   document.head.appendChild(st); })();
