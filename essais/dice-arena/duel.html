@@ -707,7 +707,7 @@ function verifieVersion() {
   fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
     v = (v || '').trim(); if (!v || v === VERSION || document.getElementById('majbar')) return;
     const b = document.createElement('div'); b.id = 'majbar';
-    b.innerHTML = '<span><b>Nouvelle version du jeu</b><br>La partie en cours sera perdue, l’historique est gardé.</span><button>Mettre à jour</button>';
+    b.innerHTML = `<span><b>Nouvelle version du jeu</b><br>${S && S.ligne ? 'Le duel est gardé : il reprend juste après, à ta place.' : 'La partie en cours sera perdue, l’historique est gardé.'}</span><button>Mettre à jour</button>`; // 15/11 soir : le duel à distance reprend
     b.querySelector('button').onclick = () => { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); }; // 13/11 soir : on reste dans le même mode (tutoriel…)
     document.body.appendChild(b);
   }).catch(() => {});
