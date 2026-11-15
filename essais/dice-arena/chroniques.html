@@ -70,6 +70,7 @@
   .fen .sec { display:block; width:100%; padding:10px; border-radius:14px; border:1px solid #45457a; background:#1c1c36; color:var(--texte); margin-top:8px; text-align:left; }
   .fen .sec small { display:block; color:var(--doux); }
   .lu { background:#2a2440; border-left:4px solid #c084fc; padding:8px 12px; border-radius:0 10px 10px 0; font-style:italic; margin:8px 0; }
+  @keyframes apparait { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
   .moust { display:flex; gap:10px; align-items:flex-start; } .moust img { width:58px; height:58px; border-radius:50%; object-fit:cover; flex:none; border:2px solid var(--or); }
   .sceaux { display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; margin:10px 0; }
   .sx { height:46px; border-radius:10px; border:1.5px solid #6a5ea0; background:#2a2448; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:17px; }
@@ -424,7 +425,7 @@ function chapitre() {
   S = K.nouvelle(eq, 'camp-' + c.debut + '-' + c.chap, ch.scen); S.campagne = c.chap;
   S.heros.forEach((h, i) => { h.pvmax += 2 * c.chap; h.pv += 2 * c.chap; if (c.sacs[i]) h.sac = c.sacs[i].slice(); });
   pointDePassage(); actif = 0; sel = null; centrer = true; son('portail'); dessine();
-  fenetre(`<h2>${ch.titre}</h2><div class="moust"><img src="ui/moustache.webp" alt=""><div class="lu">${ch.avant}</div></div><div class="moust"><img src="ui/moustache.webp" alt=""><div class="lu">${SCT().entree()}</div></div><button class="go" onclick="fenetre('')">On y va !</button>`, false);
+  dialogue(ch.titre, [ch.avant, SCT().entree()]);
 }
 // après une victoire de campagne : on garde les sacs, on passe au chapitre suivant
 function campagneGagnee() {
@@ -478,9 +479,16 @@ function versMoteur(k) {
 }
 const equipeChoisie = () => choisis.map(versMoteur).filter(Boolean);
 function basculeHeros(k) { if (choisis.includes(k)) choisis = choisis.filter(x => x !== k); else if (choisis.length < 4) choisis.push(k); else { bulle('4 héros au plus', true); return; } son('choisir'); accueil(); }
+// 15/11 soir (l'utilisateur : « un petit bouton Suivant pour faire apparaître le deuxième message au lieu de tout d'un coup ») : Moustache parle message par message
+let DLG = null;
+function dialogue(titre, lignes, k = 0) {
+  DLG = { titre, lignes }; const der = k >= lignes.length - 1;
+  fenetre(`<h2>${titre}</h2>${lignes.slice(0, k + 1).map((l, i) => `<div class="moust" style="${i < k ? 'opacity:.55' : 'animation:apparait .35s'}"><img src="ui/moustache.webp" alt=""><div class="lu">${l}</div></div>`).join('')}
+    <button class="go" onclick="${der ? `fenetre('')` : `son('choisir');dialogue(DLG.titre, DLG.lignes, ${k + 1})`}">${der ? 'On y va !' : 'Suivant ▶'}</button>`, false);
+}
 function commence() {
   if (!choisis.length) return; S = K.nouvelle(equipeChoisie(), 'chron-' + Date.now(), scenChoisi); pointDePassage(); actif = 0; sel = null; centrer = true; son('portail'); dessine();
-  fenetre(`<h2>${SCT().titre}</h2><div class="moust"><img src="ui/moustache.webp" alt=""><div class="lu">${SCT().ouverture}</div></div><div class="moust"><img src="ui/moustache.webp" alt=""><div class="lu">${SCT().entree()}</div></div><button class="go" onclick="fenetre('')">On y va !</button>`, false);
+  dialogue(SCT().titre, [SCT().ouverture, SCT().entree()]);
 }
 function reprend() { const g = gardee(); if (!g) return; S = g; actif = Math.max(0, S.heros.findIndex(z => !z.aTerre)); sel = null; centrer = true; dessine(); }
 if (typeof GM !== 'undefined') { try { GM.musique('exploration'); GM.bouton(); } catch (e) {} }
