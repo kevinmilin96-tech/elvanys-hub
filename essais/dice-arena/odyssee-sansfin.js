@@ -36,7 +36,7 @@ function nouvelleSansFin(heros, acte, niveau) {
   r.sansfin = { pioche:[], offre:[], poses:1, elites:0, etage:1, acte1:r.acte, regle:regle.id, primes:primesOffre(r), prime:null, debutEtage:{ victoires:0, poses:1 } };
   r.sansfin.pioche = sfSac(Object.assign(hasard(r), { regle:regle.id }));
   if (regle.id === 'des') r.relanceJour = 1;
-  r.journal = [`🧩 Odyssée sans fin sur ${ILES[r.acte].nom} (${HEROS[heros].nom}) : l’île se construit tuile par tuile.`, `${regle.e} Règle du jour : ${regle.n}. ${regle.d}`];
+  r.journal = [`🧩 Odyssée sans fin sur ${ILES[r.acte].nom} (${odyNom(r)}) : l’île se construit tuile par tuile.`, `${regle.e} Règle du jour : ${regle.n}. ${regle.d}`];
   sfOffre(r); return r;
 }
 // les tuiles déjà posées sont reliées si leurs sorties se font face
@@ -154,7 +154,7 @@ function sfEtageSuivant(r) {
   Object.assign(S, { offre:[], poses:1, elites:0, bossFait:false, dernierMarchand:0, eboulement:false, attente:null, prime:null, debutEtage:{ victoires:r.stats.victoires, poses:1 } });
   S.pioche = sfSac(Object.assign(hasard(r), { regle:S.regle })); S.primes = primesOffre(r);
   r.journal.push(`🪜 Étage ${S.etage} : ${ILES[r.acte].nom}${forceEtage(r) ? ` (ennemis +${25 * forceEtage(r)} % de vie)` : ''}. Au pied de l’escalier, une source : +${r.pv - a} PV ; +8 huile.`);
-  if (typeof guildeEvt === 'function') { guildeEvt('etage', 1, { heros:r.heros }); guildeEvt('etage_atteint', S.etage); }
+  if (typeof guildeEvt === 'function') { guildeEvt('etage', 1, { heros:odyProg(r), voie:r.heros }); guildeEvt('etage_atteint', S.etage); }
   sfOffre(r); return r;
 }
 // ce que montre la pioche (la Nuit noire cache le contenu)

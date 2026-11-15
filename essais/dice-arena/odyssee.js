@@ -252,12 +252,12 @@ const FACES_FORGE = {
   braise:{ e:'🔥', n:'Braise', v:5, d:'vaut 5 ; dans une Frappe ou une Technique, +2 dégâts.' },
   piece:{ e:'🪙', n:'Pièce', v:2, d:'vaut 2, et +5 or quand il sort.' },
 };
-const FORGE_PRIX = 40;
+const FORGE_PRIX_ODY = 40; // 15/11 soir : renommé (heros-etoiles.js a aussi un FORGE_PRIX depuis 19 h 56 : la page de l'Odyssée ne se chargeait plus)
 function forgeOffre(r, c) { if (!c.offre) { const l = Object.keys(FACES_FORGE).sort(() => Math.random() - .5); c.offre = l.slice(0, r.heros === 'maelle' ? 4 : 3); } return c.offre; }
 function forgeApplique(r, c, de, face, code) {
   if (c.fait || !FACES_FORGE[code] || de < 0 || de > 4 || face < 1 || face > 6) return 'Choix impossible.';
-  if (c.nb && r.or < FORGE_PRIX) return `Il faut ${FORGE_PRIX} or pour une deuxième face.`;
-  if (c.nb) r.or -= FORGE_PRIX;
+  if (c.nb && r.or < FORGE_PRIX_ODY) return `Il faut ${FORGE_PRIX_ODY} or pour une deuxième face.`;
+  if (c.nb) r.or -= FORGE_PRIX_ODY;
   r.forge = r.forge || [{}, {}, {}, {}, {}]; r.forge[de][face] = code; c.nb = (c.nb || 0) + 1; if (c.nb >= 2) c.fait = true;
   r.journal.push(`⚒ Forge : le ${face} du dé n° ${de + 1} devient ${FACES_FORGE[code].e} ${FACES_FORGE[code].n}.`);
 }
@@ -576,9 +576,10 @@ function genereRoute(graine, acte) {
 }
 function nouvelleRoute(heros, niveau) {
   const r = nouvelleOdyssee(heros, null, 'brulees', niveau); if (!r) return null;
+  heros = r.heros; // 15/11 soir : un héros d'aventure 'av:<id>' → sa voie
   const g = genereRoute(r.graine, 'brulees');
   r.ile = g.cases; r.pos = { ...g.dep }; r.porte = null; r.bossPos = g.boss; r.direct = ROUTE_ETAPES; r.route = { etape:0 };
-  r.journal = [`🛤 La Route du Titan (${HEROS[heros].nom}) : tout le chemin se voit, à toi de choisir ta route jusqu’au Titan.`, ...r.journal.slice(1).filter(l => !/Némésis/.test(l))];
+  r.journal = [`🛤 La Route du Titan (${odyNom(r)}) : tout le chemin se voit, à toi de choisir ta route jusqu’au Titan.`, ...r.journal.slice(1).filter(l => !/Némésis/.test(l))];
   const nem = typeof localStorage !== 'undefined' ? lireNemesis()[heros] : null;
   if (nem && HEROS[nem.rival]) { const c = r.ile.flat().find(x => x.t === 'elite'); if (c) { c.nemesis = nem.rival; c.nemNiv = nem.niv; c.ennemi = nem.rival; r.journal.push(`😈 ${HEROS[nem.rival].nom}, ta Némésis, t’attend sur la route.`); } }
   return r;
@@ -612,24 +613,37 @@ function ajouteCollection(cles) { const c = lireCollection(); let n = 0; cles.fo
 function lireRecords() { try { return JSON.parse(localStorage.getItem(RECORDS_CLE) || '[]'); } catch (e) { return []; } }
 // 13/11 : PV de départ en Odyssée héros par héros (1,8 × les PV du Duel au départ ; réglé au simulateur sur les trois îles)
 const ODY_PV = { maelle:1.95, aldric:2, pip:1.6, oria:1.85, gorm:2.5, zephine:1.95 };
+// 15/11 soir : LES HÉROS D'AVENTURE (heros-aventure.js). Un choix 'av:<id>' joue la VOIE du héros (heros = sa voie, mêmes dés,
+// même deck, mêmes règles) ; run.av garde son id : sa PROGRESSION (odyProg) et son NOM / PORTRAIT (odyNom, odyImg) sont les siens.
+// Héros supprimé entre-temps (ou heros-aventure.js absent) → le héros de base de sa voie.
+function odyHeros(k) {
+  if (typeof k === 'string' && k.startsWith('av:')) { const i = typeof haInfo === 'function' ? haInfo(k) : null; return i ? { voie:i.voie, av:i.id, nom:i.nom } : { voie:'maelle', av:null, nom:HEROS.maelle.nom }; }
+  return { voie:k, av:null, nom:HEROS[k] ? HEROS[k].nom : k };
+}
+const odyAvInfo = r => r && r.av && typeof haInfo === 'function' ? haInfo('av:' + r.av) : null;
+const odyProg = r => odyAvInfo(r) ? r.av : r.heros;                  // l'id de progression (heros-etoiles.js)
+const odyNom = r => odyAvInfo(r) ? odyAvInfo(r).nom : HEROS[r.heros].nom;
+const odyChoix = r => odyAvInfo(r) ? 'av:' + r.av : r.heros;            // pour relancer une partie avec le même héros
+const odyImg = r => { const i = odyAvInfo(r); return i ? { src:i.img, sec:i.sec } : { src:`portraits/${r.heros}.webp`, sec:`portraits/${r.heros}.webp` }; };
 function nouvelleOdyssee(heros, graine, acte, niveau, avent) {
+  const HA_ = odyHeros(heros); heros = HA_.voie; // 15/11 soir : héros d'aventure → sa voie
   acte = ILES[acte] ? acte : 'brulees';
   graine = graine || ('ile-' + Math.random().toString(36).slice(2, 8));
   const ile = genereIle(graine, null, acte); if (!ile) return null;
   const h = HEROS[heros], pv = Math.round(h.pv * (ODY_PV[heros] || 1.8)); // en Odyssée le héros a 1,8 × ses PV du Duel (le papier disait 75 pour 44) : il enchaîne 5 à 6 combats sans soin automatique
-  const run = { v:1, heros, graine, acte, asc:Math.max(0, Math.min(10, niveau || 0)), ile:ile.cases, pos:{ ...ile.dep }, porte:ile.porte, bossPos:ile.boss, direct:ile.direct, debut:Date.now(),
+  const run = { v:1, heros, av:HA_.av, graine, acte, asc:Math.max(0, Math.min(10, niveau || 0)), ile:ile.cases, pos:{ ...ile.dep }, porte:ile.porte, bossPos:ile.boss, direct:ile.direct, debut:Date.now(),
     pv, pvMax:pv, or:OR_DEPART, vivres:VIVRES_DEPART, deck:deckBase(heros), reliques:[], sacoche:['soin'], benes:[], males:[], fragments:0, cles:0,
-    stats:{ cases:1, combats:0, victoires:0, tours:0, defis:0, cartesVues:[] }, combat:null, journal:[`Débarquement sur ${ILES[acte].nom} (${h.nom})${niveau ? ` · Ascension ${niveau}` : ''}.`] };
+    stats:{ cases:1, combats:0, victoires:0, tours:0, defis:0, cartesVues:[] }, combat:null, journal:[`Débarquement sur ${ILES[acte].nom} (${HA_.nom})${niveau ? ` · Ascension ${niveau}` : ''}.`] };
   if (asc(run, 3)) run.vivres -= 4;
   if (asc(run, 8)) donneMalediction(run, Object.keys(MALEDICTIONS)[0]);
   if (asc(run, 10)) { run.pvMax = Math.round(run.pvMax * .9); run.pv = run.pvMax; }
   if (typeof pantheonDepart === 'function') pantheonDepart(run);
   // 14/11 nuit : les étoiles et l'équipement du héros (heros-etoiles.js) ; la Grande aventure gère son équipement elle-même
   // 15/11 soir : le suivi des ennemis (run.fs) n'est PAS encore activé ici : à mesurer d'abord au simulateur (la Défense a montré qu'un suivi mal réglé rend un mode impossible)
-  if (!avent && typeof bonusHerosPvE === 'function' && typeof localStorage !== 'undefined') { const b = bonusHerosPvE(heros); if (b.pv) { run.pvMax += b.pv; run.pv += b.pv; }
-    run.equipH = equipHeros(heros); if (run.equipH.armure === 'heaume') { run.pvMax += valEquip('heaume'); run.pv += valEquip('heaume'); }
+  if (!avent && typeof bonusHerosPvE === 'function' && typeof localStorage !== 'undefined') { const b = bonusHerosPvE(run.av || heros); if (b.pv) { run.pvMax += b.pv; run.pv += b.pv; }
+    run.equipH = equipHeros(run.av || heros); if (run.equipH.armure === 'heaume') { run.pvMax += valEquip('heaume'); run.pv += valEquip('heaume'); }
     if (run.equipH.armure === 'cape') run.vivres += valEquip('cape');
-    if (b.pv || Object.values(run.equipH).some(Boolean)) run.journal.push(`⭐ ${NIVEAUX_H[niveauHeros(heros)]}${Object.values(run.equipH).filter(Boolean).length ? ' · équipement : ' + Object.values(run.equipH).filter(Boolean).map(k => EQUIP[k][2]).join(', ') : ''}.`); }
+    if (b.pv || Object.values(run.equipH).some(Boolean)) run.journal.push(`⭐ ${NIVEAUX_H[niveauHeros(run.av || heros)]}${Object.values(run.equipH).filter(Boolean).length ? ' · équipement : ' + Object.values(run.equipH).filter(Boolean).map(k => EQUIP[k][2]).join(', ') : ''}.`); }
   // 14/11 nuit : bonus de départ gagnés avec le Rang de la Guilde (route des récompenses, rang.js)
   if (typeof bonusDepart === 'function' && typeof localStorage !== 'undefined') { const b = bonusDepart(); run.vivres += b.huile; run.or += b.or; run.pvMax += b.pv; run.pv += b.pv; if (b.potion && run.sacoche.length < 2) run.sacoche.push('soin'); run.relanceRang = b.relance; if (b.huile || b.or || b.pv || b.potion || b.relance) run.journal.push('🏆 Bonus de ton Rang de la Guilde : ' + [b.huile && `+${b.huile} huile`, b.or && `+${b.or} or`, b.pv && `+${b.pv} PV max`, b.potion && 'une potion de soin', b.relance && 'une relance de plus par combat'].filter(Boolean).join(', ') + '.'); }
   const nem = typeof localStorage !== 'undefined' ? lireNemesis()[heros] : null;
@@ -693,7 +707,7 @@ function recompenseCombat(r) {
   const rgl = r.sansfin && r.sansfin.regle; if (rgl === 'cendres') or *= 2; if (rgl === 'horde' && cb.type === 'monstre') or += 15;
   if (cb.grandDefi && res.defiOk) or += 60;
   r.or += or;
-  if (typeof guildeEvt === 'function' && !r.simu) { guildeEvt(cb.type === 'boss' ? 'boss' : cb.type === 'elite' ? 'elite' : 'salle', 1, { heros:r.heros }); guildeEvt('or', or); } // 14/11 nuit : Rang
+  if (typeof guildeEvt === 'function' && !r.simu) { guildeEvt(cb.type === 'boss' ? 'boss' : cb.type === 'elite' ? 'elite' : 'salle', 1, { heros:odyProg(r), voie:r.heros }); guildeEvt('or', or); } // 14/11 nuit : Rang
   const out = { gagne:true, or, defiOk:res.defiOk, ennemi:HEROS[cb.ennemi].nom, type:cb.type, nemesisVaincue }; if (cb.mimique) out.mimique = true; if (cb.grandDefi) out.grandDefi = !!res.defiOk; if (typeof equipVictoire === 'function') equipVictoire(r, out);
   if (cb.type === 'elite') { r.fragments++; r.cles++; out.fragment = true; if (r.sacoche.length < 2) { r.sacoche.push('soin'); out.potion = true; } }
   if (cb.ombre) { r.or += 40; out.or += 40; out.ombre = OMBRES[cb.ombre].n; r.journal.push(`🌑 Ombre majeure (${OMBRES[cb.ombre].n}) vaincue : double butin !`); }
@@ -776,7 +790,7 @@ function finOdysseeRun(r, gagne) {
     if (k === 'abime' && !localStorage.getItem('guilde-odyssee-finie')) { localStorage.setItem('guilde-odyssee-finie', '1'); premiereFin = true; }
     if (k === 'abime' && typeof inscrirePantheon === 'function') { inscrit = inscrirePantheon(r.heros, r.asc || 0) ? 'nouveau' : 'encore'; briseMiroir = !!r.stats.miroir && recompensesRestantes().length > 0; }
   }
-  const rec = { quand:new Date().toISOString(), acte:r.acte || 'brulees', asc:r.asc || 0, heros:r.heros, gagne, score, cases:r.stats.cases, combats:r.stats.combats, victoires:r.stats.victoires, tours:r.stats.tours, defis:r.stats.defis, or:r.or, duree, graine:r.graine, pv:r.pv, etage, sansfin:!!r.sansfin, route:!!r.route, regle:r.sansfin ? r.sansfin.regle : null, aventure:r.aventure ? { chapitre:r.aventure.chapitre, niveau:r.aventure.niveau } : null };
+  const rec = { quand:new Date().toISOString(), acte:r.acte || 'brulees', asc:r.asc || 0, heros:r.heros, av:r.av || null, gagne, score, cases:r.stats.cases, combats:r.stats.combats, victoires:r.stats.victoires, tours:r.stats.tours, defis:r.stats.defis, or:r.or, duree, graine:r.graine, pv:r.pv, etage, sansfin:!!r.sansfin, route:!!r.route, regle:r.sansfin ? r.sansfin.regle : null, aventure:r.aventure ? { chapitre:r.aventure.chapitre, niveau:r.aventure.niveau } : null };
   if (typeof localStorage !== 'undefined') { const l = lireRecords(); l.unshift(rec); localStorage.setItem(RECORDS_CLE, JSON.stringify(l.slice(0, 50))); ecrireOdyssee(null); }
   return { ...rec, ajoutees, nouvelles:neuves, ascNouveau, premiereFin, inscrit, briseMiroir };
 }
