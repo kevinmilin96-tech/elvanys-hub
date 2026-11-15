@@ -98,14 +98,14 @@
 <body>
 <div id="app"></div>
 <div id="fen"></div>
-<script src="musique.js?v=20261115-171900"></script>
-<script src="rang.js?v=20261115-171900"></script>
+<script src="musique.js?v=20261115-173647"></script>
+<script src="rang.js?v=20261115-173647"></script>
 <script>window.AMIS_SANS_BOUTON = true;</script>
-<script src="amis.js?v=20261115-170430"></script>
-<script src="heros-etoiles.js?v=20261115-171900"></script>
-<script src="progression-modes.js?v=20261115-171900"></script>
-<script src="aventuriers.js?v=20261115-171900"></script>
-<script src="chroniques-moteur.js?v=20261115-171900"></script>
+<script src="amis.js?v=20261115-173647"></script>
+<script src="heros-etoiles.js?v=20261115-173647"></script>
+<script src="progression-modes.js?v=20261115-173647"></script>
+<script src="aventuriers.js?v=20261115-173647"></script>
+<script src="chroniques-moteur.js?v=20261115-173647"></script>
 <script>
 // =============================================================================================== LES CHRONIQUES DE LA GUILDE v2 (15/11, écran « façon HeroQuest »)
 // Une grande carte qui défile : les salles restent dans le noir jusqu'à ce qu'on ouvre leur porte ; les couloirs se dévoilent en avançant ;
@@ -678,6 +678,6 @@ accueil();
 { const s = new URLSearchParams(location.search).get('salle'); if (s) { history.replaceState(null, '', location.pathname); const c = (typeof AMIS !== 'undefined' && AMIS.carte) || null, nom = (c && c.pseudo) || localStorage.getItem('guilde-pseudo');
     if (nom) rejoindre(s, { id:'j' + Math.random().toString(36).slice(2, 10), nom }); else { rejoindreForm(); setTimeout(() => { const i = $('fCode'); if (i) i.value = s; }, 150); } } }
 </script>
-<script src="chroniques-aventures.js?v=20261115-171900"></script>
+<script src="chroniques-aventures.js?v=20261115-173647"></script>
 </body>
 </html>

@@ -98,12 +98,14 @@
 <body>
 <div id="app"></div>
 <div id="fen"></div>
-<script src="musique.js?v=20261115-171900"></script>
-<script src="rang.js?v=20261115-171900"></script>
-<script src="heros-etoiles.js?v=20261115-171900"></script>
-<script src="progression-modes.js?v=20261115-171900"></script>
-<script src="aventuriers.js?v=20261115-171900"></script>
-<script src="chroniques-moteur.js?v=20261115-171900"></script>
+<script src="musique.js?v=20261115-173647"></script>
+<script src="rang.js?v=20261115-173647"></script>
+<script>window.AMIS_SANS_BOUTON = true;</script>
+<script src="amis.js?v=20261115-173647"></script>
+<script src="heros-etoiles.js?v=20261115-173647"></script>
+<script src="progression-modes.js?v=20261115-173647"></script>
+<script src="aventuriers.js?v=20261115-173647"></script>
+<script src="chroniques-moteur.js?v=20261115-173647"></script>
 <script>
 // =============================================================================================== LES CHRONIQUES DE LA GUILDE v2 (15/11, écran « façon HeroQuest »)
 // Une grande carte qui défile : les salles restent dans le noir jusqu'à ce qu'on ouvre leur porte ; les couloirs se dévoilent en avançant ;
@@ -558,6 +560,7 @@ function accueil() {
     <button class="gros" ${choisis.length ? '' : 'disabled'} onclick="commence()">⚔ Commencer avec ${choisis.length} héros<small>${choisis.map(nomChoix).join(', ') || 'choisis au moins un héros'}</small></button>
     <h3 style="color:var(--or);text-align:center;margin:5cqw 0 1cqw">🌐 Chacun chez soi</h3>
     <button class="gros" style="background:#14223a;border-color:#7cd4ff;color:#7cd4ff" onclick="creerSalle()">🌐 Créer une partie à distance<small>Une salle d’attente : tu choisis le scénario, chacun ajoute son héros depuis son téléphone, tu lances pour tout le monde.</small></button>
+    <button class="gros" style="background:#14223a;border-color:#7cd4ff;color:#7cd4ff" onclick="amisFenetre()">👥 Mes amis<small>Vois qui est en ligne, rejoins sa salle ou invite-le dans la tienne.</small></button>
     <button class="gros" style="background:#1c1c36;border-color:#45457a;color:var(--texte)" onclick="rejoindre()">🔑 Rejoindre avec un code<small>Un ami t’a donné un code de salle.</small></button>
     ${(() => { try { const s = JSON.parse(localStorage.getItem(SALLE) || 'null'); return s ? `<button class="gros" style="background:#14322a;border-color:var(--ok);color:var(--ok)" onclick='rejoindre(${JSON.stringify(s.code)}, ${JSON.stringify(s.moi)})'>↩ Revenir dans la salle ${s.code}<small>en tant que ${s.moi.nom}</small></button>` : ''; } catch (e) { return ''; } })()}
     <p style="text-align:center;margin-top:4cqw"><a href="chroniques-v1.html" style="color:var(--doux);font-size:3cqw">l’ancienne version (salles séparées)</a></p>
@@ -627,6 +630,8 @@ function salleAttente() {
     <p class="sous">Code à donner à tes amis : <b style="color:var(--or);font-size:1.6em;letter-spacing:.15em">${L.code}</b><br>(perso.elvanys.fr/guilde → Les Chroniques → 🔑 Rejoindre avec un code)</p>
     <h3 style="color:var(--or);margin:3cqw 0 1.5cqw">👥 Les joueurs</h3>
     <p style="margin:0 0 2cqw">${L.joueurs.map(j => `${j.id === LOB.hote ? '👑 ' : '🙂 '}<b>${j.nom}</b>${j.id === L.moi.id ? ' (toi)' : ''}`).join(' · ')}</p>
+    ${(() => { const E = typeof AMIS !== 'undefined' && AMIS.etat, enL = E ? E.amis.filter(x => x.enLigne && x.salle !== L.code) : [];
+      return `<button class="gros" style="background:#14223a;border-color:#7cd4ff;color:#7cd4ff;margin-top:2cqw" onclick="amisFenetre()">👥 Inviter des amis<small>${!E ? 'Crée ta carte de joueur pour voir tes amis en ligne.' : enL.length ? `${enL.length} ami${enL.length > 1 ? 's' : ''} en ligne : ${enL.map(x => amisEsc(x.pseudo)).join(', ')}` : 'Aucun ami en ligne pour l’instant (le code de la salle marche aussi).'}</small></button>`; })()}
     <h3 style="color:var(--or);margin:3cqw 0 1.5cqw">📖 Le scénario${hote ? '' : ' <small style="color:var(--doux);font-weight:normal">(choisi par l’hôte)</small>'}</h3>
     ${hote ? `<div class="choixH" style="grid-template-columns:1fr 1fr">${Object.entries(SCX_TXT).map(([k, s]) => `<button class="${LOB.camp == null && LOB.scen === k ? 'on' : ''}" onclick="choixScenLobby('${k}')" style="font-size:3.4cqw">${s.titre}<small>${s.duree}</small></button>`).join('')}
       ${c ? `<button class="${LOB.camp === c.chap ? 'on' : ''}" onclick="choixScenLobby('${CHAPITRES[c.chap].scen}', ${c.chap})" style="font-size:3.4cqw">📜 Campagne · ${CHAPITRES[c.chap].titre}<small>la suite de ta campagne</small></button>`
@@ -669,7 +674,10 @@ function commence() {
 function reprend() { const g = gardee(); if (!g) return; S = g; actif = Math.max(0, S.heros.findIndex(z => !z.aTerre)); sel = null; centrer = true; dessine(); }
 if (typeof GM !== 'undefined') { try { GM.musique('exploration'); GM.bouton(); } catch (e) {} }
 accueil();
+// 15/11 : arrivée par une invitation d'un ami (« Rejoindre » dans la fenêtre des amis ou le bandeau d'invitation)
+{ const s = new URLSearchParams(location.search).get('salle'); if (s) { history.replaceState(null, '', location.pathname); const c = (typeof AMIS !== 'undefined' && AMIS.carte) || null, nom = (c && c.pseudo) || localStorage.getItem('guilde-pseudo');
+    if (nom) rejoindre(s, { id:'j' + Math.random().toString(36).slice(2, 10), nom }); else { rejoindreForm(); setTimeout(() => { const i = $('fCode'); if (i) i.value = s; }, 150); } } }
 </script>
-<script src="chroniques-aventures.js?v=20261115-171900"></script>
+<script src="chroniques-aventures.js?v=20261115-173647"></script>
 </body>
 </html>
