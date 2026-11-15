@@ -118,15 +118,58 @@ function dlRecoit(d) {
 function dlAffiche() {
   if (!S) return;
   if (S.fini) { document.getElementById('app').style.visibility = ''; fermer(); dessine(); rendu(); montrerFin(); return; }
-  if (dlMonTour()) { fermer(); document.getElementById('app').style.visibility = ''; dessine(); rendu(); if (S.deuxResume) dlToast(S.deuxResume); if (typeof GM !== 'undefined') try { GM.son('portail'); } catch (e) {} return; }
+  if (dlMonTour()) {
+    const cle = S.J.joueur + ':' + S.J.tours;
+    if (S.tourLogDe !== cle) { // 15/11 soir : un nouveau tour commence pour moi : le résumé de ce que l'ami a fait
+      const lignes = S.tourLog0 != null ? S.log.slice(0, Math.max(0, S.log.length - S.tourLog0)).reverse() : [];
+      S.tourLog0 = S.log.length; S.tourLogDe = cle;
+      if (lignes.length && !S.fini) { dlResume(lignes); return; }
+    }
+    fermer(); document.getElementById('app').style.visibility = ''; dessine(); rendu(); if (typeof GM !== 'undefined') try { GM.son('portail'); } catch (e) {} return; }
   // pendant le tour de l'ami : rien du jeu n'est visible (ses cartes restent secrètes)
   const J = S.J, M = S.O; document.getElementById('app').style.visibility = 'hidden';
-  fenetre(`<div style="text-align:center"><img src="${IMG(J.id)}" alt="" style="width:100px;height:100px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 4px ${J.c},0 0 30px ${J.c}">
-    <h2>⏳ Tour de ${J.qui}</h2><p>${J.nom} · ❤ ${Math.max(0, J.pv)} PV</p>
-    <p style="color:#c9c1ea">Toi : ${M.nom} · ❤ ${Math.max(0, M.pv)} PV · ◆ ${M.pc} PC</p>
-    <p style="color:#c9c1ea;font-size:.9em">La partie revient toute seule quand ${J.qui} a fini son tour.</p>
+  const lignes = S.tourLog0 != null ? S.log.slice(0, Math.max(0, S.log.length - S.tourLog0)) : [];
+  const nouv = lignes.length - (dlVu || 0); dlVu = lignes.length;
+  if (M.pv < (dlPvVu == null ? M.pv : dlPvVu)) { try { son('coup'); } catch (e) {} }
+  dlPvVu = M.pv;
+  fenetre(`<div style="text-align:center">
+    <div class="dl-face">${dlCarteH(J, J.qui)}<b style="font-size:1.4em;color:#f3c96b">⚔</b>${dlCarteH(M, 'Toi')}</div>
+    <h2 style="margin:6px 0">⏳ Tour de ${J.qui} <small style="color:#ff6b6b;font-size:.6em">● en direct</small></h2>
+    <div class="dl-fil">${lignes.length ? lignes.slice(0, 8).map((t, i) => `<div class="${i < nouv ? 'neuf' : ''}">${t}</div>`).join('') : `<div style="color:#c9c1ea">${J.qui} réfléchit…</div>`}</div>
+    <p style="color:#c9c1ea;font-size:.85em">Ses cartes restent secrètes. La partie revient toute seule quand ${J.qui} a fini son tour.</p>
     <div class="choixh"><button onclick="if(confirm('Quitter le duel ? (tu pourras revenir dans la salle)'))location.href='menu.html#enligne'">⌂ Menu</button></div></div>`, false);
 }
+// 15/11 soir (l'utilisateur : « on ne voit pas l'écran en direct, on se retrouve à avoir perdu toute la vie sans rien voir ») :
+// pendant mon tour, la partie part au serveur après chaque action (au plus toutes les 1,2 s) ; l'ami voit le fil des actions et les deux vies.
+let dlVu = 0, dlPvVu = null, dlDirectT = null;
+function dlCarteH(H, qui) {
+  const pct = Math.max(0, Math.min(100, 100 * H.pv / (H.pvMax || H.pv || 1)));
+  return `<div class="dl-h"><img src="${IMG(H.id)}" alt="" style="box-shadow:0 0 0 3px ${H.c}"><small>${qui}</small><b>${H.nom}</b>
+    <div class="dl-pv"><i style="width:${pct}%"></i></div><span>❤ ${Math.max(0, H.pv)}${H.bouclier ? ` · 🛡 ${H.bouclier}` : ''}</span></div>`;
+}
+function dlResume(lignes) {
+  dlVu = 0; dlPvVu = null; const J = S.J, A = S.O;
+  document.getElementById('app').style.visibility = 'hidden';
+  fenetre(`<div style="text-align:center">
+    <div class="dl-face">${dlCarteH(A, A.qui)}<b style="font-size:1.4em;color:#f3c96b">⚔</b>${dlCarteH(J, 'Toi')}</div>
+    <h2 style="margin:6px 0">📜 Pendant le tour de ${A.qui}</h2>
+    <div class="dl-fil">${lignes.map(t => `<div>${t}</div>`).join('')}</div>
+    <div class="choixh"><button class="or" onclick="fermer();document.getElementById('app').style.visibility='';dessine();rendu();try{GM.son('portail')}catch(e){}">À moi de jouer</button></div></div>`, false);
+}
+function dlDirect() {
+  if (dlDirectT) return;
+  dlDirectT = setTimeout(() => { dlDirectT = null; if (S && S.ligne && DL && dlMonTour() && !S.fini) dlPousse(); }, 1200);
+}
+const _renduLigne = rendu;
+rendu = function () { _renduLigne(); if (S && S.ligne && DL && !S.fini && dlMonTour()) dlDirect(); };
+(function () { if (typeof document === 'undefined') return; const st = document.createElement('style');
+  st.textContent = `.dl-face{display:flex;align-items:center;justify-content:center;gap:10px}.dl-h{display:flex;flex-direction:column;align-items:center;width:42%}
+  .dl-h img{width:64px;height:64px;border-radius:50%;object-fit:cover}.dl-h small{color:#c9c1ea;font-size:.75em;margin-top:4px}.dl-h b{font-size:.95em}
+  .dl-h span{font-size:.85em}.dl-pv{width:100%;height:8px;border-radius:4px;background:#0006;overflow:hidden;margin:3px 0}.dl-pv i{display:block;height:100%;background:linear-gradient(90deg,#e5262c,#ff8a65);transition:width .6s}
+  .dl-fil{max-height:38vh;overflow:auto;text-align:left;background:#0004;border-radius:10px;padding:6px 10px;margin:8px 0;font-size:.9em}
+  .dl-fil div{padding:3px 0;border-bottom:1px solid #ffffff14}.dl-fil .neuf{color:#f3c96b;animation:dlNeuf .8s}
+  @keyframes dlNeuf{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}`;
+  document.head.appendChild(st); })();
 // la fin du tour : deux.js échange les camps puis appelle deuxPasse ; à distance, on envoie la partie et on attend
 const _deuxPasseLigne = deuxPasse;
 deuxPasse = function (premier) { if (!S || !S.ligne) return _deuxPasseLigne(premier); dlPousse().then(dlAffiche); };
