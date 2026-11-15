@@ -128,7 +128,7 @@ function fhFusion(id, slot, r) { const n = fusionnePiece(slot, r); if (n) { fhSo
 function fhForgeron(id) {
   const s = avSac(); let deja = {}; try { deja = JSON.parse(localStorage.getItem('guilde-forgeron-achats') || '{}'); } catch (e) {}
   fhFen(`<h2>⚒ Le forgeron</h2><p class="doux" style="text-align:center">« Trois pièces aujourd’hui, pas une de plus. Demain, autre chose. » · 🪙 ${s.or}</p>
-    ${forgeronStock().map((x, i) => fhPiece(x, deja[x.id] ? '<small>vendu</small>' : `<button ${s.or < x.prix ? 'disabled style="opacity:.4"' : ''} onclick="fhAchete('${id}',${i})">${x.prix} 🪙</button>`)).join('')}
+    ${forgeronStock(id).map((x, i) => fhPiece(x, deja[x.id] ? '<small>vendu</small>' : `<button ${s.or < x.prix ? 'disabled style="opacity:.4"' : ''} onclick="fhAchete('${id}',${i})">${x.prix} 🪙</button>`)).join('')}
     <button class="fh-bt or" style="width:100%;margin-top:10px" onclick="fhFen('')">Fermer</button>`);
 }
-function fhAchete(id, i) { const r = forgeronAchete(i); if (r === 'ok') { fhSon('tour-fusion'); fhBulle('Acheté : dans le coffre !'); FH.apres(); fhForgeron(id); } else fhBulle(r); }
+function fhAchete(id, i) { const r = forgeronAchete(i, id); if (r === 'ok') { fhSon('tour-fusion'); fhBulle('Acheté : dans le coffre !'); FH.apres(); fhForgeron(id); } else fhBulle(r); }
