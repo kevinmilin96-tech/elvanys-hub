@@ -90,7 +90,7 @@ function construitCarte(S, R) {
   for (let y = 0; y < H2 - 1; y++) for (let x = 0; x < W2; x++) for (const dx of [1, -1]) if (sol(x, y) && sol(x + dx, y + 1) && !sol(x + dx, y) && !sol(x, y + 1) && x + dx >= 0 && x + dx < W2) G[y][x + dx] = '.';
   B.murs.forEach(([x, y]) => G[y][x] = '#'); B.obstacles.forEach(([x, y]) => G[y][x] = '~');
   for (let y = 0; y < H2; y++) for (let x = 0; x < W2; x++) if (G[y][x] !== '.') R.murs[cle(x, y)] = G[y][x];
-  const tirage = ['potion', 'grains', 'objet', 'piege', 'monstre', 'rien', 'or'];
+  const tirage = ['potion', 'grains', 'objet', 'piege', 'monstre', 'parchemin', 'or', 'fumee', 'rien'];
   B.meubles.forEach(([x, y, t2]) => { R.murs[cle(x, y)] = 'M'; R.obj[cle(x, y)] = { t:t2, meuble:true, fouille:false, cache:B.caches.includes(cle(x, y)) ? 'rouage' : tirage[Math.floor(hasard(S) * tirage.length)] }; });
   R.murs[cle(...B.axe)] = 'A'; R.axe = B.axe.slice(); R.bronze = true;
   B.pieges.forEach(([x, y]) => R.obj[cle(x, y)] = { t:'piege', cache:true });
@@ -135,22 +135,43 @@ const OBJETS = { bouclier:{ n:'Bouclier de bronze', d:'Bouclier 3 à chaque fois
 const MEUBLE_N = { coffre:'le coffre', armoire:'l’armoire', tonneaux:'les tonneaux', tombeau:'le tombeau', etabli:'l’établi', cheminee:'la cheminée', lit:'le lit de camp', tente:'la tente', etagere:'l’étagère', bureau:'le bureau', banc:'le banc', autel:'l’autel', fontaine:'la fontaine', cristaux:'les cristaux' };
 const cle = (x, y) => x + ',' + y;
 
+// ------------------------------------------------------------------ la difficulté selon le NOMBRE DE HÉROS (15/11 : seul, l'Horloger était impossible ; à 4, trop facile)
+// 1 héros : environ la moitié des monstres, sablier +15, leviers baissés 8 tours ; 2 : 70 % des monstres ; 3 : 85 % ; 4 : tous, et 3 de plus dans les couloirs.
+const ADAPTE = { 1:{ garde:.5, sablier:15, levier:8 }, 2:{ garde:.7, sablier:8, levier:5 }, 3:{ garde:.85, sablier:3, levier:3 }, 4:{ garde:1, sablier:0, levier:2, renfort:3 } };
+// les sceaux d'une phase du boss, selon le nombre de héros : seul −2 sceaux, à deux −1, à quatre +1 (« 4 ou plus »)
+function sceauxBoss(S, k) {
+  const L = PHASES[k].s(), n = S.nbHeros || S.heros.length;
+  if (n <= 1) L.splice(-2, 2); else if (n === 2) L.pop(); else if (n >= 4) L.push(sceau('min', 4));
+  if (k === 2 && S.livre) L.pop();
+  return L;
+}
+function adapte(S) {
+  const R = S.R, n = Math.max(1, Math.min(4, S.heros.length)), A = ADAPTE[n];
+  S.nbHeros = n; S.dureeLevier = A.levier; S.sablier += A.sablier;
+  if (A.garde < 1) R.monstres = R.monstres.filter(m => hasard(S) < A.garde);
+  if (A.renfort) { // à 4 : quelques monstres de plus, posés dans des couloirs (cases de sol hors salle, loin du départ)
+    const libres = []; for (let y = 0; y < R.h; y++) for (let x = 0; x < R.w; x++) { const c = cle(x, y); if (!R.murs[c] && !R.salle[c] && !R.portes[c] && !R.obj[c] && !S.heros.some(h => dist(h, { x, y }) < 8) && !R.monstres.some(m => m.x === x && m.y === y)) libres.push([x, y]); }
+    const sorte = S.scen === 'brulees' ? ['loup', 'gobelin', 'salamandre'] : ['rouagelin', 'coucou', 'rouagelin'];
+    for (let i = 0; i < A.renfort && libres.length; i++) { const [x, y] = libres.splice(Math.floor(hasard(S) * libres.length), 1)[0]; ajouteMonstre(S, sorte[i % sorte.length], x, y); }
+  }
+}
+
 // ------------------------------------------------------------------ une partie
 function nouvelle(heros, s, scen) {
   scen = SCEN[scen] ? scen : 'horloger';
   // un héros = le nom d'une voie (« maelle »…) ou un HÉROS D'AVENTURE { voie, nom, pv, faces, desPlus, av, c } (aventuriers.js)
   const fait = h => typeof h === 'string' ? { id:h, pv:HEROS_C[h].pv, pvmax:HEROS_C[h].pv, objet:null, bouclier:0 }
-    : { id:h.voie, nom:h.nom, av:h.av, c:h.c, portrait:h.portrait, faces:h.faces, desPlus:h.desPlus || 0, pv:h.pv, pvmax:h.pv, objet:null, bouclier:0 };
+    : { id:h.voie, nom:h.nom, av:h.av, c:h.c, portrait:h.portrait, faces:h.faces, talents:h.talents || [], desPlus:h.desPlus || 0, pv:h.pv, pvmax:h.pv, objet:null, bouclier:0 };
   const S = { heros:heros.map(fait), scen, sablier:SCEN[scen].sablier, rs:graine(s), graine:s,
     livre:false, journal:[], seq:0, fin:null, score:0, tours:0, rouagesTrouves:0, etape:'jeu' };
   const R = { w:W, h:H, murs:{}, salle:{}, obj:{}, portes:{}, monstres:[], tour:0, vuSalle:{}, vu:{}, rouagesPoses:0, boss:null, bronze:false, leviersTour:{} };
   S.R = R;
-  if (scen === 'brulees') { construitCarte(S, R); voir(S); log(S, '🔥 Les Terres brûlées : trouvez 3 braises éternelles en fouillant les meubles et portez-les au grand brasier.'); debutTour(S); return S; }
+  if (scen === 'brulees') { construitCarte(S, R); adapte(S); voir(S); log(S, '🔥 Les Terres brûlées : trouvez 3 braises éternelles en fouillant les meubles et portez-les au grand brasier.'); debutTour(S); return S; }
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) R.murs[cle(x, y)] = '#';
   const creuse = ([x0, y0, w, h], id) => { for (let y = y0; y < y0 + h; y++) for (let x = x0; x < x0 + w; x++) { delete R.murs[cle(x, y)]; if (id) R.salle[cle(x, y)] = id; } };
   Object.entries(SALLES).forEach(([id, D]) => creuse(D.r, id)); COULOIRS.forEach(c => creuse(c));
   PORTES.forEach(([x, y, id, b]) => { delete R.murs[cle(x, y)]; R.portes[cle(x, y)] = { salle:id, ouverte:false, bronze:!!b }; });
-  const tirage = ['potion', 'grains', 'objet', 'piege', 'monstre', 'rien', 'or'];
+  const tirage = ['potion', 'grains', 'objet', 'piege', 'monstre', 'parchemin', 'or', 'fumee', 'rien'];
   MEUBLES.forEach(([x, y, t, id]) => { R.murs[cle(x, y)] = 'M'; R.obj[cle(x, y)] = { t, meuble:true, salle:id, fouille:false, cache:ROUAGES_CACHES.includes(cle(x, y)) ? 'rouage' : tirage[Math.floor(hasard(S) * tirage.length)] }; });
   LEVIERS.forEach(([x, y]) => { R.murs[cle(x, y)] = 'L'; R.obj[cle(x, y)] = { t:'levier', v:2 + Math.floor(hasard(S) * 4) }; });
   const vus = []; Object.values(R.obj).filter(o => o.t === 'levier').forEach(o => { while (vus.includes(o.v)) o.v = 2 + Math.floor(hasard(S) * 4); vus.push(o.v); });
@@ -158,12 +179,30 @@ function nouvelle(heros, s, scen) {
   R.murs[cle(...AXE)] = 'A'; R.axe = AXE.slice();
   [[7, 7], [13, 11], [11, 12], [17, 5]].forEach(([x, y]) => R.obj[cle(x, y)] = { t:'piege', cache:true });
   MONSTRES_DEPART.forEach(([b, x, y]) => ajouteMonstre(S, b, x, y));
+  adapte(S);
   [[1, 1], [2, 1], [1, 2], [2, 2]].forEach(([x, y], i) => { if (S.heros[i]) { S.heros[i].x = x; S.heros[i].y = y; } });
   voir(S);
   log(S, '⏳ Le Sommeil de l’Horloger commence. Trouvez 3 rouages en fouillant les meubles, ouvrez la porte de bronze, réveillez l’Horloger.');
   debutTour(S); return S;
 }
-const nm = h => h.nom || HEROS_C[h.id].n; // le nom affiché (héros d'aventure ou héros de la Guilde)
+const nm = h => h.nom || HEROS_C[h.id].n;
+// ------------------------------------------------------------------ LE SAC (15/11, façon HeroQuest) : des trésors trouvés en fouillant, gardés pour le bon moment, utilisés SANS dé
+const SAC = {
+  potion:   { e:'🧪', n:'Une potion de soin', d:'+5 PV, à toi ou à un ami à côté.' },
+  parchemin:{ e:'📜', n:'Un parchemin de feu', d:'Brise 2 sceaux d’un monstre jusqu’à 4 cases.' },
+  fumee:    { e:'💨', n:'Une bombe fumigène', d:'Les monstres ne frappent pas à la fin de ce tour.' },
+};
+// utiliser l'objet n°k du sac du héros hi ; cible : un héros (potion) ou un monstre (parchemin)
+function utiliser(S, hi, k, cible) {
+  const h = S.heros[hi], it = h.sac && h.sac[k], R = S.R; if (!it || h.aTerre) return 'Rien à utiliser.';
+  if (it === 'potion') { const c = S.heros[cible == null ? hi : cible]; if (!c || (c !== h && !voisins(h, c))) return 'Il faut être à côté de l’ami.';
+    const av = c.pv; c.pv = Math.min(c.pvmax, c.pv + 5); if (c.aTerre) { c.aTerre = false; c.pv = Math.max(c.pv, 5); } log(S, `🧪 ${nm(h)} donne une potion à ${nm(c)} : +${c.pv - av} PV.`); h.sac.splice(k, 1); return { ok:true, ev:[{ t:'soin', h:S.heros.indexOf(c) }] }; }
+  if (it === 'parchemin') { const m = cible === 'boss' ? R.boss : R.monstres.find(z => z.id === cible); if (!m) return 'Touche un monstre.'; if (dist(h, m) > 4) return 'Trop loin (4 cases au plus).';
+    m.sceaux.filter(s => !s.ok).slice(0, 2).forEach(brise); log(S, `📜 ${nm(h)} lit le parchemin de feu : deux sceaux de ${m.n} brûlent.`); h.sac.splice(k, 1); return { ok:true, ev:verifieMonstre(S, m) }; }
+  if (it === 'fumee') { R.fumee = true; log(S, `💨 ${nm(h)} lance une bombe fumigène : les monstres ne frapperont pas ce tour-ci.`); h.sac.splice(k, 1); return { ok:true, ev:[] }; }
+  return 'Rien à utiliser.';
+}
+const a_t = (h, k) => !!(h.talents && h.talents.includes(k)); // un talent de héros d'aventure (aventuriers.js, TALENTS) // le nom affiché (héros d'aventure ou héros de la Guilde)
 const log = (S, t) => { S.journal.unshift(t); S.journal.length = Math.min(S.journal.length, 40); };
 function ajouteMonstre(S, b, x, y) { const B = BETES[b]; const m = { id:'m' + S.seq++, b, n:B.n, img:B.img, x, y, att:B.att, sceaux:B.s(), it:'frappe' }; S.R.monstres.push(m); return m; }
 function libre(S, x, y, sauf) { const R = S.R; if (x < 0 || y < 0 || x >= R.w || y >= R.h || R.murs[cle(x, y)]) return false;
@@ -206,7 +245,7 @@ function debutTour(S) {
   if (R.boss) R.boss.it = R.boss.repos ? 'remonte' : 'frappe';
 }
 function atteignables(S, h, v) {
-  const R = S.R, pasMax = v + (h.id === 'oria' ? 2 : 0) - (h.porte ? 1 : 0), res = {}, file = [[h.x, h.y, 0]], vu = { [cle(h.x, h.y)]:1 };
+  const R = S.R, pasMax = v + (h.id === 'oria' ? 2 : 0) + (a_t(h, 'eclaireur') ? 1 : 0) - (h.porte ? 1 : 0), res = {}, file = [[h.x, h.y, 0]], vu = { [cle(h.x, h.y)]:1 };
   while (file.length) { const [x, y, d] = file.shift(); if (d >= pasMax) continue;
     // on s'arrête en entrant dans une salle pas encore vue (comme à HeroQuest : on découvre en entrant)
     const ici = R.salle[cle(x, y)]; if (d > 0 && ici && !R.vuSalle[ici]) continue;
@@ -246,7 +285,7 @@ function frapper(S, hi, idDe, mid, k) {
   if (dist(h, m) > portee) return portee > 1 ? 'Trop loin (2 cases au plus).' : 'Il faut être à côté du monstre.';
   const s = m.sceaux[k]; if (!s || !accepte(s, d.v, m.sceaux)) return 'Ce dé ne va pas sur ce sceau.';
   prendDe(h, idDe); pose(s, d.v);
-  if (h.id === 'maelle' && d.v === 6) { const s2 = m.sceaux.find(z => !z.ok); if (s2) { brise(s2); log(S, '🔨 Coup de forge : deux sceaux d’un coup !'); } }
+  if ((h.id === 'maelle' && d.v === 6) || (a_t(h, 'brute') && d.v >= 5)) { const s2 = m.sceaux.find(z => !z.ok); if (s2) { brise(s2); log(S, '🔨 Coup de forge : deux sceaux d’un coup !'); } }
   R.frappeurs = R.frappeurs || {}; R.frappeurs[m.id] = (R.frappeurs[m.id] || []); if (!R.frappeurs[m.id].includes(hi)) R.frappeurs[m.id].push(hi);
   return { ok:true, ev:verifieMonstre(S, m) };
 }
@@ -256,7 +295,7 @@ function verifieMonstre(S, m) {
   if (m === R.boss) {
     R.boss.phase++; ev.push({ t:'phase', m:m.id });
     if (R.boss.phase >= PHASES.length) { R.boss = null; S.fin = 'gagne'; S.score += 500 + S.sablier * 10; log(S, '🏆 L’Horloger s’arrête… et s’excuse !'); return ev; }
-    R.boss.sceaux = PHASES[R.boss.phase].s(); if (R.boss.phase === 2 && S.livre) { R.boss.sceaux.pop(); log(S, '📕 Le Livre des heures : un sceau de moins pour la Dernière Heure.'); }
+    R.boss.sceaux = sceauxBoss(S, R.boss.phase); if (R.boss.phase === 2 && S.livre) log(S, '📕 Le Livre des heures : un sceau de moins pour la Dernière Heure.');
     log(S, `⏰ L’Horloger passe à la phase « ${PHASES[R.boss.phase].n} » : il ${PHASES[R.boss.phase].d}.`); return ev;
   }
   R.monstres = R.monstres.filter(z => z !== m); S.score += BETES[m.b].elite ? 60 : 20;
@@ -266,16 +305,16 @@ function verifieMonstre(S, m) {
 function proteger(S, hi, idDe, cibleI) {
   const h = S.heros[hi], d = h.des.find(z => z.id === idDe), c = S.heros[cibleI]; if (!d || !c) return 'Personne à protéger.';
   if (c !== h && !voisins(h, c)) return 'Il faut être à côté de l’ami.';
-  prendDe(h, idDe); const b = Math.ceil(d.v / 2) + 1;
+  prendDe(h, idDe); const b = Math.ceil(d.v / 2) + 1 + (a_t(h, 'protecteur') ? 2 : 0);
   const qui = h.id === 'aldric' ? S.heros.filter(z => z === c || z === h || voisins(z, h)) : [c];
   qui.forEach(z => z.bouclier += b); log(S, `🛡 ${nm(h)} protège ${qui.map(z => nm(z)).join(', ')} (bouclier ${b}).`);
   return { ok:true, ev:[] };
 }
 function soigner(S, hi, idDe, cibleI) {
-  const h = S.heros[hi], d = h.des.find(z => z.id === idDe), c = S.heros[cibleI]; if (h.id !== 'pip') return 'Seule Pip sait soigner.';
+  const h = S.heros[hi], d = h.des.find(z => z.id === idDe), c = S.heros[cibleI]; if (h.id !== 'pip' && !a_t(h, 'guerisseur')) return 'Ce héros ne sait pas soigner.';
   if (!d || !c || (c !== h && !voisins(h, c))) return 'Il faut être à côté de l’ami.';
-  prendDe(h, idDe); const av = c.pv; c.pv = Math.min(c.pvmax, c.pv + d.v); if (c.aTerre && c.pv > 0) c.aTerre = false;
-  log(S, `🌿 Pip soigne ${nm(c)} : +${c.pv - av} PV.`); return { ok:true, ev:[{ t:'soin', h:cibleI }] };
+  prendDe(h, idDe); const av = c.pv; c.pv = Math.min(c.pvmax, c.pv + (h.id === 'pip' ? d.v : Math.ceil(d.v / 2))); if (c.aTerre && c.pv > 0) c.aTerre = false;
+  log(S, `🌿 ${nm(h)} soigne ${nm(c)} : +${c.pv - av} PV.`); return { ok:true, ev:[{ t:'soin', h:cibleI }] };
 }
 function donner(S, hi, idDe, cibleI) {
   const h = S.heros[hi], c = S.heros[cibleI]; if (!c || c === h || !voisins(h, c)) return 'Il faut être à côté de l’ami.';
@@ -306,7 +345,7 @@ function agir(S, hi, idDe, x, y) {
   if (dist(h, { x, y }) > 1) return 'Il faut être à côté.';
   if (o.meuble) return fouilleMeuble(S, hi, idDe, x, y, o);
   if (o.t === 'levier') { if (d.v < o.v) return `Ce levier demande un ${o.v} ou plus.`; if (R.leviersTour[cle(x, y)]) return 'Ce levier est déjà baissé.';
-    prendDe(h, idDe); R.leviersTour[cle(x, y)] = 2; const n = Object.keys(R.leviersTour).length; log(S, `🎚 Levier baissé (${n}/4).`);
+    prendDe(h, idDe); R.leviersTour[cle(x, y)] = S.dureeLevier || 2; const n = Object.keys(R.leviersTour).length; log(S, `🎚 Levier baissé (${n}/4).`);
     if (n >= 4 && !R.bronze) { R.bronze = true; S.sablier += 3; log(S, '🎚🎚🎚🎚 Les 4 leviers ensemble : un grondement… la PORTE DE BRONZE s’est déverrouillée (+3 grains) !'); }
     return { ok:true, ev:[{ t:'levier', bronze:R.bronze && n >= 4 }] }; }
   if (o.t === 'livre') { if (d.v < 4) return 'Il faut un dé de 4 ou plus.';
@@ -322,12 +361,12 @@ function fouilleMeuble(S, hi, idDe, x, y, o) {
   const Le = MEUBLE_N[o.t][0].toUpperCase() + MEUBLE_N[o.t].slice(1);
   switch (o.cache) {
     case 'rouage': { h.porte = true; S.rouagesTrouves++; const sc = SCEN[S.scen || 'horloger']; log(S, `${sc.objet.e} ${nom} trouve ${sc.objet.n === 'rouage' ? 'un ROUAGE' : 'une BRAISE ÉTERNELLE'} dans ${MEUBLE_N[o.t] || 'le meuble'} ! À porter jusqu’à ${sc.axe}.`); break; }
-    case 'potion': h.pv = Math.min(h.pvmax + 3, h.pv + 5); log(S, `🧪 Une potion dans ${MEUBLE_N[o.t]} : ${nom} +5 PV.`); break;
+    case 'potion': case 'parchemin': case 'fumee': (h.sac = h.sac || []).push(o.cache); log(S, `🎒 ${nom} met ${SAC[o.cache].n.toLowerCase()} dans son sac (trouvée dans ${MEUBLE_N[o.t]}).`); break;
     case 'grains': S.sablier += 3; log(S, `⌛ Un petit sablier dans ${MEUBLE_N[o.t]} : +3 grains !`); break;
     case 'or': S.score += 50; log(S, `💰 Des pièces d’or dans ${MEUBLE_N[o.t]} : +50.`); break;
     case 'objet': { if (h.objet) { S.score += 30; ev.quoi = 'or'; log(S, `💰 Un petit trésor dans ${MEUBLE_N[o.t]} : +30.`); break; }
       const k = ['bouclier', 'cle', 'lunettes'][Math.floor(hasard(S) * 3)]; h.objet = k; ev.objet = k; log(S, `🎁 ${nom} trouve ${OBJETS[k].n} : ${OBJETS[k].d}`); break; }
-    case 'piege': blesseHeros(S, h, 2); log(S, `⚠ ${Le} était piégé : ${nom} −2 PV.`); break;
+    case 'piege': if (a_t(h, 'chanceux')) { log(S, `🍀 ${nm(h)} évite le piège caché dans ${MEUBLE_N[o.t]}.`); break; } blesseHeros(S, h, 2); log(S, `⚠ ${Le} était piégé : ${nom} −2 PV.`); break;
     case 'monstre': { const p = [[1, 0], [-1, 0], [0, 1], [0, -1]].map(([dx, dy]) => [x + dx, y + dy]).find(([a, b]) => libre(S, a, b) && !herosEn(S, a, b));
       if (p) { const m = ajouteMonstre(S, S.scen === 'brulees' ? 'gobelin' : 'rouagelin', p[0], p[1]); m.it = 'frappe'; R.vu[cle(p[0], p[1])] = 1; } log(S, `👹 Un Rouagelin jaillit de ${MEUBLE_N[o.t]} !`); break; }
     default: log(S, `🔍 ${nom} fouille ${MEUBLE_N[o.t]}… de la poussière, rien d’autre.`);
@@ -338,7 +377,7 @@ function reveilBoss(S) {
   const R = S.R, [ax, ay] = R.axe;
   const pos = [[ax, ay - 1], [ax + 1, ay], [ax - 1, ay], [ax, ay + 1]].find(([x, y]) => libre(S, x, y) && !herosEn(S, x, y)) || [ax + 2, ay];
   const sc = SCEN[S.scen || 'horloger'], Bb = BETES[sc.boss];
-  R.boss = { id:'boss', b:sc.boss, n:Bb.n, img:Bb.img, x:pos[0], y:pos[1], att:3, phase:0, sceaux:PHASES[0].s(), repos:false, it:'frappe' };
+  R.boss = { id:'boss', b:sc.boss, n:Bb.n, img:Bb.img, x:pos[0], y:pos[1], att:(S.nbHeros || 4) <= 2 ? 2 : 3, phase:0, sceaux:sceauxBoss(S, 0), repos:false, it:'frappe' };
   log(S, S.scen === 'brulees' ? '🔥 Les trois braises rallument le grand brasier… LE TITAN DE FEU en sort, furieux !' : '⏰ Les trois rouages tournent… L’HORLOGER se réveille, furieux !');
 }
 function repousse(S, m, h, n) { for (let i = 0; i < n; i++) { const dx = Math.sign(m.x - h.x), dy = Math.sign(m.y - h.y); const nx = m.x + (Math.abs(m.x - h.x) >= Math.abs(m.y - h.y) ? dx || 1 : 0), ny = m.y + (Math.abs(m.x - h.x) < Math.abs(m.y - h.y) ? dy || 1 : 0); if (libre(S, nx, ny, m) && !herosEn(S, nx, ny)) { m.x = nx; m.y = ny; } } }
@@ -359,7 +398,9 @@ function finTour(S) {
     const opts = [[1, 0], [-1, 0], [0, 1], [0, -1]].map(([dx, dy]) => [m.x + dx, m.y + dy]).filter(([x, y]) => libre(S, x, y, m) && !herosEn(S, x, y) && R.vu[cle(x, y)] && !(R.portes[cle(x, y)] && !R.portes[cle(x, y)].ouverte));
     if (!opts.length) return; opts.sort((a, b) => dist({ x:a[0], y:a[1] }, cible) - dist({ x:b[0], y:b[1] }, cible));
     if (dist({ x:opts[0][0], y:opts[0][1] }, cible) >= dist(m, cible)) return; [m.x, m.y] = opts[0]; } };
+  const fumee = R.fumee; R.fumee = false;
   for (const m of R.monstres.slice()) {
+    if (fumee) break;
     if (!reveille(S, m)) continue;
     const B = BETES[m.b], c = plusProche(m); if (!c || dist(m, c) > 8) continue;
     if (m.it === 'garde') { const s = m.sceaux.find(x => x.ok && x.t !== 'tot'); if (s) { s.ok = false; s.val = 0; } ev.push({ t:'garde', m:m.id }); continue; }
@@ -373,9 +414,9 @@ function finTour(S) {
     if (Bo.repos) { const s = Bo.sceaux.find(x => x.ok && x.t !== 'tot'); if (s) { s.ok = false; s.val = 0; } log(S, '⏰ L’Horloger remonte son ressort (un sceau se referme).'); ev.push({ t:'garde', m:'boss' }); }
     else {
       const c = plusProche(Bo);
-      if (Bo.phase === 0) { marche(Bo, c, 1); if (c && dist(Bo, c) <= 2) blesseHeros(S, c, 3); for (let i = 0; i < 2; i++) { const p = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [-1, -1]].map(([dx, dy]) => [Bo.x + dx, Bo.y + dy]).find(([x, y]) => libre(S, x, y) && !herosEn(S, x, y)); if (p) ajouteMonstre(S, SCEN[S.scen || 'horloger'].renfort, p[0], p[1]); } log(S, `⏰ ${SCEN[S.scen || 'horloger'].phases[0]} : un coup de 3 et deux renforts !`); }
+      if (Bo.phase === 0) { marche(Bo, c, 1); if (c && dist(Bo, c) <= 2) blesseHeros(S, c, Bo.att); for (let i = 0; i < 2; i++) { const p = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [-1, -1]].map(([dx, dy]) => [Bo.x + dx, Bo.y + dy]).find(([x, y]) => libre(S, x, y) && !herosEn(S, x, y)); if (p) ajouteMonstre(S, SCEN[S.scen || 'horloger'].renfort, p[0], p[1]); } log(S, `⏰ ${SCEN[S.scen || 'horloger'].phases[0]} : un coup de 3 et deux renforts !`); }
       else if (Bo.phase === 1) { debout().forEach(h => { if (!S.heros.some(z => z !== h && !z.aTerre && voisins(z, h))) h.carillon = true; }); log(S, '🔔 Le Carillon sonne ! Ceux qui sont seuls perdront leur plus gros dé.'); }
-      else { const bl = debout().sort((a, b) => a.pv - b.pv)[0]; if (bl) { const p = [[1, 1], [2, 1], [1, 2], [2, 2], [3, 1], [3, 2]].find(([x, y]) => !herosEn(S, x, y) && libre(S, x, y)) || [1, 1]; bl.x = p[0]; bl.y = p[1]; blesseHeros(S, bl, 4); log(S, `⏳ La Dernière Heure : ${nm(bl)} est renvoyé dans le hall d’entrée (−4).`); } }
+      else { const bl = debout().sort((a, b) => a.pv - b.pv)[0]; if (bl) { const p = [[1, 1], [2, 1], [1, 2], [2, 2], [3, 1], [3, 2]].find(([x, y]) => !herosEn(S, x, y) && libre(S, x, y)) || [1, 1]; bl.x = p[0]; bl.y = p[1]; blesseHeros(S, bl, Bo.att + 1); log(S, `⏳ La Dernière Heure : ${nm(bl)} est renvoyé dans le hall d’entrée (−4).`); } }
       ev.push({ t:'boss' });
     }
     Bo.repos = !Bo.repos;
@@ -386,7 +427,7 @@ function finTour(S) {
   debutTour(S); return ev;
 }
 
-const API = { SCEN, HEROS_C, BETES, PHASES, SALLES, OBJETS, MEUBLE_N, nouvelle, atteignables, bouger, frapper, proteger, soigner, donner, relever, fouiller, agir, ouvrir,
+const API = { SAC, utiliser, SCEN, HEROS_C, BETES, PHASES, SALLES, OBJETS, MEUBLE_N, nouvelle, atteignables, bouger, frapper, proteger, soigner, donner, relever, fouiller, agir, ouvrir,
   finTour, visible, accepte, voisins, dist, herosEn, cle, libre, reveille };
 if (typeof module !== 'undefined' && module.exports) module.exports = API; else racine.CHRON = API;
 })(typeof window !== 'undefined' ? window : globalThis);
