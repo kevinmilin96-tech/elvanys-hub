@@ -49,10 +49,10 @@
 <body>
 <div id="app"></div>
 <div id="fen"></div>
-<script src="musique.js?v=20261115-144348"></script>
-<script src="rang.js?v=20261115-144348"></script>
-<script src="heros-etoiles.js?v=20261115-144348"></script>
-<script src="progression-modes.js?v=20261115-144348"></script>
+<script src="musique.js?v=20261115-145231"></script>
+<script src="rang.js?v=20261115-145231"></script>
+<script src="heros-etoiles.js?v=20261115-145231"></script>
+<script src="progression-modes.js?v=20261115-145231"></script>
 <script>
 // =============================================================================================== LA FOSSE AUX RUNES v3 (15/11) : SURVIE NERVEUSE façon Vampire Survivors
 // Retour de l'utilisateur sur la v2 (casse-briques, gardée dans fosse-v2.html) : « un casse-briques ordinaire, rien ne me met en difficulté,
@@ -125,7 +125,7 @@ function lancerDe(raqY) {
   J.pops.push({ x:J.raq.x, y:raqY - 30, v, t:0 }); J.derniers.push(v); if (J.derniers.length > 3) J.derniers.shift();
   son('relance');
   const k = combo(J.derniers); if (!k) return;
-  const fort = 1 + L('combo') * .5; texte(W / 2, H * .45, `${COMBOS[k].e} ${COMBOS[k].n}`, '#f3c96b', 1.3); son('ultime', true);
+  J.flashC = { k, t:1.2, des:J.derniers.slice(-(k === 'paire' ? 2 : 3)) }; const fort = 1 + L('combo') * .5; texte(W / 2, H * .45, `${COMBOS[k].e} ${COMBOS[k].n}`, '#f3c96b', 1.3); son('ultime', true);
   if (k === 'paire') { const n = 1 + (L('combo') >= 2 ? 1 : 0); for (let i = 0; i < n; i++) { const a2 = -Math.PI / 2 + rnd(-.5, .5); J.balles.push({ x:J.raq.x, y:raqY - 10, vx:Math.cos(a2) * s, vy:Math.sin(a2) * s, r:6 + v * .4, v, perce:L('perce') }); } }
   if (k === 'brelan') { J.onde = .5; J.monstres.forEach(m => blesse(m, Math.round((4 + v) * fort), '#f3c96b')); J.tremble = .4; J.derniers = []; }
   if (k === 'suite') { for (let i = 0; i < Math.round(8 * fort); i++) { const a3 = -Math.PI + rnd(0, Math.PI); J.eclats.push({ x:J.raq.x, y:raqY - 20, vx:Math.cos(a3) * 280, vy:Math.sin(a3) * 280, v:1.4 }); } J.derniers = []; }
@@ -217,7 +217,7 @@ function pas(dt) {
   J.monstres = J.monstres.filter(m => { if (m.mort && !m.sansGemme) meurt(m); return !m.mort; });
   J.balles = J.balles.filter(b => b.y < H + 20 && !(b.vie <= 0)); J.tirs = J.tirs.filter(f => !f.fin); J.gemmes = J.gemmes.filter(g => !g.fin); J.capsules = J.capsules.filter(c => !c.fin);
   J.eclats = J.eclats.filter(e => e.v > 0 && e.y > -10 && e.y < H + 10); J.textes.forEach(t => { t.y -= 28 * dt; t.v -= dt; }); J.textes = J.textes.filter(t => t.v > 0);
-  J.pops.forEach(p => p.t += dt); J.pops = J.pops.filter(p => p.t < .8); if (J.onde > 0) J.onde -= dt;
+  if (J.flashC) { J.flashC.t -= dt; if (J.flashC.t <= 0) J.flashC = null; } J.pops.forEach(p => p.t += dt); J.pops = J.pops.filter(p => p.t < .8); if (J.onde > 0) J.onde -= dt;
   if (J.tremble > 0) J.tremble -= dt;
   if (J.pv <= 0) return fin(false);
   if (J.bossMort || (J.t >= DUREE && J.boss && !J.monstres.some(m => MONSTRES[m.k].boss))) return fin(true);
@@ -324,6 +324,26 @@ function dessine() {
       if (i === J.reserve) { const k = 1 - Math.max(0, J.prochainLancer) / cadence(); ctx.strokeStyle = '#7cd4ff'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(x, y, 10, -Math.PI / 2, -Math.PI / 2 + k * Math.PI * 2); ctx.stroke(); } } }
   if (J.lances < 3 || (J.reserve === maxReserve() && J.balles.length === 0 && J.t > 4)) { ctx.font = 'bold 15px Georgia'; ctx.textAlign = 'center'; ctx.fillStyle = '#000'; ctx.fillText('👆 Touche, clique ou Espace : lancer un dé', W / 2 + 1, H - 69); ctx.fillStyle = '#f3c96b'; ctx.fillText('👆 Touche, clique ou Espace : lancer un dé', W / 2, H - 70); }
   ctx.textBaseline = 'alphabetic';
+  // 15/11 soir : le PLATEAU DES COMBOS (en bas à droite) : les 3 derniers dés lancés ; le plus ancien sort quand un nouveau arrive ;
+  // au-dessus, l'indice « un 3 → SUITE » ; une étiquette PAIRE / BRELAN / SUITE s'allume quand un combo part
+  { const x0 = W - 82, y0 = H - 11, F = J.flashC;
+    ctx.font = 'bold 10px Georgia'; ctx.textAlign = 'right'; ctx.textBaseline = 'middle'; ctx.fillStyle = '#f3c96b'; ctx.fillText('COMBO', x0 - 14, y0);
+    const montre = F ? F.des : J.derniers.slice(-3);
+    for (let i = 0; i < 3; i++) { const x = x0 + i * 22, v = montre[i];
+      ctx.beginPath(); ctx.roundRect(x - 9, y0 - 9, 18, 18, 4); ctx.fillStyle = F ? '#f3c96b55' : '#00000055'; ctx.fill(); ctx.strokeStyle = F ? '#f3c96b' : '#f6efe066'; ctx.lineWidth = F ? 2.5 : 1; ctx.stroke();
+      if (v != null) { const im = img(`faces-${J.heros}/face-${v}.webp`); if (im.complete && im.naturalWidth) ctx.drawImage(im, x - 8, y0 - 8, 16, 16); } }
+    let indice = '';
+    if (F) indice = { paire:'🎲🎲 PAIRE !', brelan:'💥 BRELAN !', suite:'🌠 SUITE !' }[F.k];
+    else if (J.derniers.length >= 1) {
+      const ord = { brelan:3, suite:2, paire:1 }, bons = {};
+      for (const v of new Set(J.faces)) { const k = combo([...J.derniers.slice(-2), v]); if (k && (!bons[k] || true)) (bons[k] = bons[k] || []).push(v); }
+      const k = Object.keys(bons).sort((a, b) => ord[b] - ord[a])[0];
+      if (k) indice = `un ${bons[k].sort((a, b) => a - b).join(' ou ')} → ${{ paire:'PAIRE', brelan:'BRELAN', suite:'SUITE' }[k]}`;
+    }
+    if (indice) { ctx.font = F ? 'bold 14px Georgia' : 'bold 10px Georgia'; ctx.textAlign = 'center'; const xi = x0 + 22, yi = y0 - 20;
+      if (F) { const w = ctx.measureText(indice).width + 14; ctx.beginPath(); ctx.roundRect(xi - w / 2, yi - 10, w, 20, 10); ctx.fillStyle = '#f3c96b'; ctx.fill(); ctx.fillStyle = '#2b1d0a'; }
+      else ctx.fillStyle = '#7cd4ff'; ctx.fillText(indice, xi, yi); }
+    ctx.textBaseline = 'alphabetic'; }
   for (let i = 0; i < L('orbe'); i++) { const a = J.t * 3 + i * Math.PI * 2 / L('orbe'); ctx.beginPath(); ctx.arc(J.raq.x + Math.cos(a) * (lw / 2 + 26), raqY - 20 + Math.sin(a) * 34, 7, 0, 7); ctx.fillStyle = '#c084fc'; ctx.shadowColor = '#c084fc'; ctx.shadowBlur = 12; ctx.fill(); ctx.shadowBlur = 0; }
   ctx.textAlign = 'center'; ctx.font = 'bold 13px Georgia';
   for (const t of J.textes) { ctx.globalAlpha = Math.min(1, t.v * 2); ctx.fillStyle = '#000'; ctx.fillText(t.t, t.x + 1, t.y + 1); ctx.fillStyle = t.c; ctx.fillText(t.t, t.x, t.y); }
@@ -337,7 +357,7 @@ function hud() {
   $('hPV').textContent = Math.max(0, J.pv); $('hN').textContent = J.niv; $('hS').textContent = J.score;
   $('hVie').style.width = Math.max(0, 100 * J.pv / J.pvmax) + '%'; $('hXP').style.width = Math.min(100, 100 * J.xp / J.besoin) + '%';
   const c = combo(J.derniers), b = `<span class="faces" title="Les 6 faces de ton dé : chaque lancer en tire une au hasard">🎲 faces ${J.faces.map(v => `<img src="faces-${J.heros}/face-${v}.webp" alt="${v}">`).join('')}</span>
-    <span class="dern">${J.derniers.map(v => `<img src="faces-${J.heros}/face-${v}.webp" alt="${v}">`).join('') || '…'}${c ? ` <b style="color:var(--or)">${COMBOS[c].n}</b>` : ''}</span>`
+`
     + Object.entries(J.lv).filter(([, n]) => n).map(([k, n]) => `<span>${AMELIO[k].e} ${n}</span>`).join('');
   if ($('bas').dataset.b !== b) { $('bas').innerHTML = b; $('bas').dataset.b = b; }
 }
@@ -361,7 +381,7 @@ function pause() { if (!J || J.etat !== 'jeu') return; J.etat = 'pause'; fenetre
 function regles(enJeu) {
   if (enJeu && J && J.etat === 'jeu') J.etat = 'pause';
   fenetre(`<h2>🕳️ La Fosse aux Runes</h2><div class="moust"><img src="ui/moustache.webp" alt=""><p>« Ça grouille ! Bouge ton bouclier, ramasse les gemmes, et choisis bien tes améliorations. Moi je compte les secondes. Miaou. »</p></div>
-    <ol><li><b>D’où viennent tes dés ?</b> Tu as 3 dés en main (« TES DÉS », en bas à gauche) ; le prochain est posé sur ton bouclier. <b>Clique, touche l’écran ou appuie sur Espace</b> pour le lancer : il tire une de tes 6 faces au hasard (montrées dans la barre du bas) et part vers le haut. Chaque dé lancé revient tout seul dans ta main au bout de quelques secondes (le cercle bleu). Chaque dé est une balle, sa valeur = ses dégâts. <b>Combinaisons</b> des derniers dés : 🎲🎲 paire = une balle en double, 💥 brelan = onde de choc sur tous les monstres, 🌠 suite = pluie d’éclats. Forge tes faces aux niveaux ! <b>Bouge la souris</b> (ou glisse le doigt, ou les flèches) pour bouger le bouclier et renvoyer les balles.</li>
+    <ol><li><b>D’où viennent tes dés ?</b> Tu as 3 dés en main (« TES DÉS », en bas à gauche) ; le prochain est posé sur ton bouclier. <b>Clique, touche l’écran ou appuie sur Espace</b> pour le lancer : il tire une de tes 6 faces au hasard (montrées dans la barre du bas) et part vers le haut. Chaque dé lancé revient tout seul dans ta main au bout de quelques secondes (le cercle bleu). <b>Combos</b> : le plateau « COMBO » (en bas à droite) garde tes <b>3 derniers dés</b> ; à chaque lancer, le plus ancien sort. L’indice bleu te dit quel dé ferait un combo (« un 3 → SUITE »). Chaque dé est une balle, sa valeur = ses dégâts. <b>Combinaisons</b> des derniers dés : 🎲🎲 paire (tes 2 derniers dés pareils) = une balle en double, 💥 brelan (les 3 pareils) = onde de choc sur tous les monstres, 🌠 suite (3 qui se suivent, dans n’importe quel ordre : 4-5-3) = pluie d’éclats. Forge tes faces aux niveaux ! <b>Bouge la souris</b> (ou glisse le doigt, ou les flèches) pour bouger le bouclier et renvoyer les balles.</li>
     <li>Les monstres descendent <b>de plus en plus vite</b> et <b>attaquent</b> : 🔥 les salamandres crachent du feu (évite-le !), 🐺 les loups plongent sur toi, 🪲 les scarabées arrivent en essaim, 🗿 les golems encaissent tout. S’ils touchent le rempart, tu perds des PV.</li>
     <li>Chaque monstre abattu lâche des <b>gemmes 💎</b> : ramasse-les avec ton bouclier. Barre bleue pleine = <b>un niveau : pause, choisis 1 amélioration parmi 3</b>.</li>
     <li>Les capsules dorées : ✦ trois balles de 6, ❄ tout ralentit, ❤ soin, 🛡 grand bouclier.</li>
