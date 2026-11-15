@@ -696,7 +696,7 @@
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
 // 14/11 : l'Odyssée sans fin a ses propres emplacements (odyssee.js lit SANSFIN)
 const SANSFIN = new URLSearchParams(location.search).get('sansfin') === '1', ROUTE_TITAN = new URLSearchParams(location.search).get('route') === '1', EPREUVE_PAGE = new URLSearchParams(location.search).get('epreuve') === '1', ODY_PAGE = EPREUVE_PAGE ? 'epreuves.html' : 'odyssee.html' + (SANSFIN ? '?sansfin=1' : ROUTE_TITAN ? '?route=1' : '');
-const VERSION = '20261115-213653';
+const VERSION = '20261115-214101';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -715,17 +715,17 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261115-213653"></script>
-<script src="musique.js?v=20261115-213653"></script>
-<script src="rang.js?v=20261115-213653"></script>
-<script src="heros-etoiles.js?v=20261115-213653"></script>
-<script src="heros-aventure.js?v=20261115-213653"></script>
-<script src="donnees.js?v=20261115-213653"></script>
-<script src="odyssee.js?v=20261115-213653"></script>
-<script src="bestiaire.js?v=20261115-213653"></script>
-<script src="aventure.js?v=20261115-213653"></script>
-<script src="odyssee-sansfin.js?v=20261115-213653"></script>
-<script src="chronique.js?v=20261115-213653"></script>
+<script src="cartes.js?v=20261115-214101"></script>
+<script src="musique.js?v=20261115-214101"></script>
+<script src="rang.js?v=20261115-214101"></script>
+<script src="heros-etoiles.js?v=20261115-214101"></script>
+<script src="heros-aventure.js?v=20261115-214101"></script>
+<script src="donnees.js?v=20261115-214101"></script>
+<script src="odyssee.js?v=20261115-214101"></script>
+<script src="bestiaire.js?v=20261115-214101"></script>
+<script src="aventure.js?v=20261115-214101"></script>
+<script src="odyssee-sansfin.js?v=20261115-214101"></script>
+<script src="chronique.js?v=20261115-214101"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -868,6 +868,8 @@ function ciblesPossibles(J, type) {
   if ((type === 'ennemi' || type === 'uniteE') && def.length) return def.map(u => ({ J:D, u }));
   if (type === 'ennemi') return [{ J:D }, ...vis.map(u => ({ J:D, u }))];
   if (type === 'uniteE') return vis.map(u => ({ J:D, u }));
+  // 15/11 soir (l'utilisateur : « je ne peux pas jouer la Torche, pourquoi ? » : sa seule cible était Cachée) : la Torche éclaire, elle VOIT les Cachées
+  if (type === 'uniteEC') return D.front.map(u => ({ J:D, u }));
   if (type === 'allie') return [{ J }, ...J.front.map(u => ({ J, u }))];
   if (type === 'uniteA') return J.front.map(u => ({ J, u }));
   if (type === 'barriereA') return J.front.filter(u => u.barriere).map(u => ({ J, u }));
@@ -1076,7 +1078,7 @@ function cibleAuto(J, type) {
   const D = adv(J), l = ciblesPossibles(J, type);
   if (!l.length) return null;
   if (type === 'ennemi') { const u = l.find(x => x.u && (x.u.louve || x.u.a >= 6)); return u && Math.random() < .35 ? u : l[0]; }
-  if (type === 'uniteE') return [...l].sort((a, b) => atk(D, b.u) - atk(D, a.u))[0];
+  if (type === 'uniteE' || type === 'uniteEC') return [...l].sort((a, b) => atk(D, b.u) - atk(D, a.u))[0];
   if (type === 'allie') { const u = J.front.find(x => x.v < x.vmax - 2); return J.pv < J.pvMax - 5 || !u ? { J } : { J, u }; }
   if (type === 'uniteA') return [...l].sort((a, b) => (b.u.pret - a.u.pret) || (b.u.a - a.u.a))[0];
   return l[0];
@@ -1160,7 +1162,7 @@ function raisonCarte(J, k) {
   if (c.t === 'u' && J.front.length >= 5) return 'Ton plateau est plein (5 créatures)';
   if (c.cible === 'uniteA' && !J.front.length) return 'Il te faut une de tes créatures sur le plateau';
   if (c.cible === 'barriereA' && !J.front.some(u => u.barriere)) return 'Il te faut une de tes créatures à Barrière';
-  if (c.cible === 'uniteE' && !ciblesPossibles(J, 'uniteE').length) return 'Aucune créature adverse à viser';
+  if ((c.cible === 'uniteE' || c.cible === 'uniteEC') && !ciblesPossibles(J, c.cible).length) return c.cible === 'uniteE' && adv(J).front.some(u => u.cachee) ? 'Les créatures adverses sont Cachées : on ne peut pas les viser (la Torche, elle, les voit)' : 'Aucune créature adverse à viser';
   if (c.cible === 'de' && !J.des.some(d => !d.pose && !sel.includes(d))) return 'Il te faut un autre dé libre';
   if (k === 'echo' && !echoPossible(J)) return J.dernierSort ? `Écho ne peut pas rejouer ${CARTES[J.dernierSort.key].n}` : 'Joue d’abord un Sort ce tour-ci (une créature ne compte pas) : Écho le rejouera';
   if (!c.cond(vs, sel)) return vs.length > 1 && /1 dé|dé [≤≥=]|dé pair|dé impair/.test(c.txt) ? 'Choisis un seul dé' : `Il faut : ${txtLisible(c.txt)}`;
@@ -2377,17 +2379,17 @@ async function joueFX() {
 // toucher l'écran pendant les animations les accélère
 document.addEventListener('pointerdown', () => { if (fxOn && !(S && S.tuto)) fxVite = .5; }, true); // 14/11 : plus d'accélération dans le tutoriel
 </script>
-<script src="profil.js?v=20261115-213653"></script>
-<script src="pantheon.js?v=20261115-213653"></script>
-<script src="tuto.js?v=20261115-213653"></script>
-<script src="deux.js?v=20261115-213653"></script>
+<script src="profil.js?v=20261115-214101"></script>
+<script src="pantheon.js?v=20261115-214101"></script>
+<script src="tuto.js?v=20261115-214101"></script>
+<script src="deux.js?v=20261115-214101"></script>
 <script>window.AMIS_SANS_BOUTON = true;</script>
-<script src="amis.js?v=20261115-213653"></script>
-<script src="duel-ligne.js?v=20261115-213653"></script>
-<script src="invasion.js?v=20261115-213653"></script>
-<script src="enigme-table.js?v=20261115-213653"></script>
-<script src="forge.js?v=20261115-213653"></script>
-<script src="semaine.js?v=20261115-213653"></script>
-<script src="enigme.js?v=20261115-213653"></script>
+<script src="amis.js?v=20261115-214101"></script>
+<script src="duel-ligne.js?v=20261115-214101"></script>
+<script src="invasion.js?v=20261115-214101"></script>
+<script src="enigme-table.js?v=20261115-214101"></script>
+<script src="forge.js?v=20261115-214101"></script>
+<script src="semaine.js?v=20261115-214101"></script>
+<script src="enigme.js?v=20261115-214101"></script>
 </body>
 </html>
