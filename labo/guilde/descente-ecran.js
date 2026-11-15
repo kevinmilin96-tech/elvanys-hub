@@ -6,7 +6,7 @@ const CLE_D = 'guilde-descente', CLE_DP = 'guilde-descente-partie';
 let DR = null, choixPacte = null, choixProf = 0;
 // 15/11 soir : une image (si elle existe déjà : prompts.html) sinon l'émoji
 const ico = (src, e, cl = 'ico') => `<img class="${cl}" src="${src}" alt="" onerror="this.outerHTML='${e}'">`;
-const icoObj = k => ico(`objets/objet-${k}.webp?v=2`, D.OBJETS[k].e), icoBrel = k => ico(`objets/brel-${k}.webp`, D.BRELOQUES[k].e), icoComp = k => ico(`portraits/comp-${k}.webp`, C.COMPAGNONS[k].e, 'ico rond');
+const icoObj = k => ico(`objets/objet-${k}.webp?v=3`, D.OBJETS[k].e), icoBrel = k => ico(`objets/brel-${k}.webp`, D.BRELOQUES[k].e), icoComp = k => ico(`portraits/comp-${k}.webp`, C.COMPAGNONS[k].e, 'ico rond');
 const lireD = () => { try { return Object.assign({ parties:0, victoires:0, meilleur:0, breloques:{}, equipee:null, etageMax:0 }, JSON.parse(localStorage.getItem(CLE_D) || '{}')); } catch (e) { return { parties:0, victoires:0, meilleur:0, breloques:{}, equipee:null, etageMax:0 }; } };
 const ecrireD = d => { try { localStorage.setItem(CLE_D, JSON.stringify(d)); } catch (e) {} };
 function sauveD() { try { if (DR && !DR.fin) localStorage.setItem(CLE_DP, JSON.stringify(DR)); else localStorage.removeItem(CLE_DP); } catch (e) {} }
