@@ -363,11 +363,11 @@ function dessine() {
   const dansCombo = new Set(J.comboP ? J.comboP.balles : []);
   for (const b of J.balles) {
     if (!b.de) { ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, 7); ctx.fillStyle = COUL[b.v] || '#fff'; ctx.shadowColor = '#fff'; ctx.shadowBlur = 8; ctx.fill(); ctx.shadowBlur = 0; continue; }
-    const s = 20, im = img(`faces-${J.heros}/face-${b.v}.webp`);
-    ctx.save(); if (b.dore > 0 || dansCombo.has(b)) { ctx.shadowColor = '#f3c96b'; ctx.shadowBlur = b.dore > 0 ? 18 : 12; }
-    if (im.complete && im.naturalWidth) ctx.drawImage(im, b.x - s / 2, b.y - s / 2, s, s); else { ctx.fillStyle = '#f6efe0'; ctx.fillRect(b.x - s / 2, b.y - s / 2, s, s); ctx.fillStyle = '#2b1d0a'; ctx.font = 'bold 12px Georgia'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(b.v, b.x, b.y); ctx.textBaseline = 'alphabetic'; }
-    ctx.restore();
-    if (b.dore > 0 || dansCombo.has(b)) { ctx.strokeStyle = '#f3c96b'; ctx.lineWidth = 2; ctx.strokeRect(b.x - s / 2 - 2, b.y - s / 2 - 2, s + 4, s + 4); }
+    const or = b.dore > 0 || dansCombo.has(b), c = b.dore > 0 ? '#f3c96b' : COUL[b.v] || '#fff';
+    ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, 7); const gg = ctx.createRadialGradient(b.x - 3, b.y - 3, 1, b.x, b.y, b.r); gg.addColorStop(0, '#fff'); gg.addColorStop(1, c);
+    ctx.fillStyle = gg; ctx.shadowColor = or ? '#f3c96b' : c; ctx.shadowBlur = or ? 16 : 8; ctx.fill(); ctx.shadowBlur = 0;
+    if (or) { ctx.strokeStyle = '#fff6d0'; ctx.lineWidth = 2; ctx.stroke(); }
+    ctx.fillStyle = '#1a1206'; ctx.font = 'bold 11px Georgia'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(b.v, b.x, b.y + .5); ctx.textBaseline = 'alphabetic';
   }
   // le dé qui jaillit à chaque lancer
   for (const p of J.pops) { const k = Math.min(1, p.t / .15), s = 26 * (k < 1 ? .5 + k * .7 : 1.2 - (p.t - .15) * .4), al = Math.max(0, 1 - Math.max(0, p.t - .45) / .35);
@@ -376,7 +376,7 @@ function dessine() {
   // le bouclier et les orbes
   const lw = largeur(), raqY = H - 32, coul = HER[J.heros].c;
   ctx.save(); ctx.beginPath(); ctx.roundRect(J.raq.x - lw / 2, raqY, lw, 11, 6); const gr = ctx.createLinearGradient(0, raqY, 0, raqY + 11); gr.addColorStop(0, '#fff'); gr.addColorStop(1, coul); ctx.fillStyle = gr; ctx.shadowColor = coul; ctx.shadowBlur = 16; ctx.fill(); ctx.restore();
-  if (J.t < 10) { ctx.font = 'bold 14px Georgia'; ctx.textAlign = 'center'; ctx.fillStyle = '#000'; ctx.fillText('Renvoie tes dés : chaque rebond change leur face', W / 2 + 1, H - 69); ctx.fillStyle = '#f3c96b'; ctx.fillText('Renvoie tes dés : chaque rebond change leur face', W / 2, H - 70); }
+  if (J.t < 10) { ctx.font = 'bold 14px Georgia'; ctx.textAlign = 'center'; ctx.fillStyle = '#000'; const aide = matchMedia('(pointer: coarse)').matches ? 'Un doigt : bouclier · un autre doigt : COMBO' : 'Chaque rebond change le chiffre des balles'; ctx.fillText(aide, W / 2 + 1, H - 69); ctx.fillStyle = '#f3c96b'; ctx.fillText(aide, W / 2, H - 70); }
   if (J.flashC) { const F = J.flashC, s = `${COMBOS[F.k].e} ${COMBOS[F.k].n} !`; ctx.font = 'bold 15px Georgia'; ctx.textAlign = 'center'; const w = ctx.measureText(s).width + 18; ctx.globalAlpha = Math.min(1, F.t * 2); ctx.beginPath(); ctx.roundRect(W / 2 - w / 2, H - 100, w, 24, 12); ctx.fillStyle = '#f3c96b'; ctx.fill(); ctx.fillStyle = '#2b1d0a'; ctx.fillText(s, W / 2, H - 83); ctx.globalAlpha = 1; }
   for (let i = 0; i < L('orbe'); i++) { const a = J.t * 3 + i * Math.PI * 2 / L('orbe'); ctx.beginPath(); ctx.arc(J.raq.x + Math.cos(a) * (lw / 2 + 26), raqY - 20 + Math.sin(a) * 34, 7, 0, 7); ctx.fillStyle = '#c084fc'; ctx.shadowColor = '#c084fc'; ctx.shadowBlur = 12; ctx.fill(); ctx.shadowBlur = 0; }
   ctx.textAlign = 'center'; ctx.font = 'bold 13px Georgia';
@@ -412,8 +412,16 @@ function ecranJeu() {
   if (window.ResizeObserver) new ResizeObserver(taille).observe($('zone'));
   const pos = e => { const r = cv.getBoundingClientRect(); return (e.clientX - r.left) * W / r.width; };
   // la souris bouge le bouclier sans appuyer ; clic (ou toucher) sur le jeu = déclencher le combo prêt
-  cv.onpointerdown = e => { cv.setPointerCapture(e.pointerId); J.raq.x = Math.max(25, Math.min(W - 25, pos(e))); lancer(); };
-  cv.onpointermove = e => { J.raq.x = Math.max(25, Math.min(W - 25, pos(e))); };
+  // 15/11 soir (retour de l'utilisateur : « je n'ai jamais pu lâcher mon doigt du bouclier, donc jamais lancé de combo ») :
+  // au doigt, le PREMIER doigt tient le bouclier ; un tap d'un AUTRE doigt n'importe où sur l'écran = COMBO (le bouclier ne bouge pas).
+  // À la souris : elle bouge le bouclier sans appuyer, un clic = COMBO.
+  const bouge = e => { J.raq.x = Math.max(25, Math.min(W - 25, pos(e))); };
+  cv.onpointerdown = e => { if (!J) return;
+    if (e.pointerType === 'mouse') { bouge(e); lancer(); return; }
+    if (J.doigt == null) { J.doigt = e.pointerId; cv.setPointerCapture(e.pointerId); bouge(e); } else lancer(); };
+  cv.onpointermove = e => { if (!J) return; if (e.pointerType === 'mouse' || e.pointerId === J.doigt) bouge(e); };
+  cv.onpointerup = cv.onpointercancel = e => { if (J && e.pointerId === J.doigt) J.doigt = null; };
+  document.onpointerdown = e => { if (J && e.pointerType !== 'mouse' && J.doigt != null && e.pointerId !== J.doigt && e.target !== cv && !e.target.closest('button, a')) lancer(); };
   document.onkeydown = e => { if (!J) return; if (e.code === 'Space') { e.preventDefault(); if (!e.repeat) lancer(); }  if (e.key === 'ArrowLeft') J.gauche = true; if (e.key === 'ArrowRight') J.droite = true; };
   document.onkeyup = e => { if (!J) return; if (e.key === 'ArrowLeft') J.gauche = false; if (e.key === 'ArrowRight') J.droite = false; };
   cancelAnimationFrame(boucle); dernierT = 0; boucle = requestAnimationFrame(tour);
@@ -425,7 +433,7 @@ function regles(enJeu) {
   if (enJeu && J && J.etat === 'jeu') J.etat = 'pause';
   fenetre(`<h2>🕳️ La Fosse aux Runes</h2><div class="moust"><img src="ui/moustache.webp" alt=""><p>« Ça grouille ! Bouge ton bouclier, ramasse les gemmes, et choisis bien tes améliorations. Moi je compte les secondes. Miaou. »</p></div>
     <ol><li><b>Tes balles sont des dés</b> (4 au départ) : ils partent seuls de ton bouclier. <b>Bouge le bouclier</b> (souris, doigt ou flèches) pour les renvoyer. <b>À chaque rebond sur le bouclier, le dé change de face</b>. Un dé raté repart tout seul quelques secondes plus tard (⏳).</li>
-    <li><b>Combos</b> : quand les dés en jeu (montrés en bas) forment un combo, ils brillent et le bouton <b>COMBO</b> s’allume. Touche-le (ou Espace, ou clic sur le jeu) pour le déclencher, au bon moment, ou attends un meilleur combo… mais il peut disparaître au prochain rebond !
+    <li><b>Combos</b> : quand les dés en jeu (montrés en bas) forment un combo, ils brillent et le bouton <b>COMBO</b> s’allume. Déclenche-le : <b>au doigt, tape avec un deuxième doigt n’importe où</b> pendant que le premier tient le bouclier (comme une manette à deux pouces) ; à l’ordinateur, un clic ou Espace. Choisis le bon moment, au bon moment, ou attends un meilleur combo… mais il peut disparaître au prochain rebond !
       🎲🎲 <b>paire</b> = ces 2 dés deviennent dorés (× 2, ils traversent) ; 🌠 <b>3 qui se suivent</b> = éclats ; 💥 <b>brelan</b> = onde de choc sur tous ; 🌠 <b>4 qui se suivent</b> = plus d’éclats ; ❄️ <b>carré</b> = onde + tout gèle ; ⚡ <b>5 qui se suivent</b> = la foudre sur tous.</li>
     <li>Les monstres descendent <b>de plus en plus vite</b> et <b>attaquent</b> : 🔥 les salamandres crachent du feu (évite-le !), 🐺 les loups plongent sur toi, 🪲 les scarabées arrivent en essaim, 🗿 les golems encaissent tout. S’ils touchent le rempart, tu perds des PV.</li>
     <li>Chaque monstre abattu lâche des <b>gemmes 💎</b> : ramasse-les avec ton bouclier. Barre bleue pleine = <b>un niveau : pause, choisis 1 amélioration parmi 3</b>.</li>
