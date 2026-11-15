@@ -218,6 +218,7 @@ for (let i = 0; i < 50; i++) { const s = document.createElement('i'); s.style.le
 // une porte : nom (sur la plaque), desc (sous le carrousel), img (peinture reçue) OU pro (dessin provisoire), puis
 //   vers = un étage, href = une page, ferme = verrouillée (texte), avenir = portail mystère « À venir »
 const PRO = { // dessins provisoires : [émoji, fond, lueur]
+  chroniques:['📜', 'linear-gradient(180deg, #2a2a4a 0%, #4a3a6a 45%, #6a4a2a 75%, #1a1430 100%)', '#f3c96b'], // 15/11 : les Chroniques (coop à 4, dessin provisoire)
   fosse:['🕳️', 'linear-gradient(180deg, #0a0d14 0%, #1a2232 50%, #5a4a36 85%, #2a2016 100%)', '#7cd4ff'], // 15/11 : la Fosse aux Runes (dessin provisoire)
   crypte:['🪦', 'linear-gradient(180deg, #0d0b18 0%, #2a2440 45%, #4a3a6a 70%, #1a1430 100%)', '#c084fc'], // 15/11 : la Crypte aux Sceaux (dessin provisoire)
   epreuves:['🏯', 'linear-gradient(180deg, #1a1030 0%, #5a2a6a 45%, #c2411e 75%, #2a1a0a 100%)', '#ff9f5a'],
@@ -253,6 +254,7 @@ const ETAGES = {
     { nom:'L’Invasion', pro:'invasion', vers:'invasion', desc:'À deux (sur ce téléphone ou avec un compagnon) contre les vagues de ton livre : l’Éveil de l’Abîme, le Réveil des Primordiaux, et les grands boss.' },
     { nom:'Les épreuves', pro:'epreuves', href:'epreuves.html', desc:'La Tour des épreuves : monte étage par étage, un boss tous les cinq. Et la Chasse au boss de la semaine : 8 tours pour lui faire le plus de mal possible.' },
     { nom:'La Crypte aux Sceaux', pro:'crypte', href:'crypte.html', desc:'NOUVEAU · Un solitaire de dés : pose tes dés sur les sceaux des monstres, les cartes se retournent, les chaînes font exploser le score. Une crypte du jour, la même pour tous.' },
+    { nom:'Les Chroniques', pro:'chroniques', href:'chroniques.html', desc:'NOUVEAU · Jusqu’à 4 héros entre amis sur un seul téléphone : un donjon sur plateau, une histoire racontée par Moustache. Scénario 1 : le Sommeil de l’Horloger (45-60 min, sauvegardé).' },
     { nom:'La Fosse aux Runes', pro:'fosse', href:'fosse.html', desc:'NOUVEAU · Un vrai casse-briques : lance tes dés, ils deviennent des balles ; fais-les rebondir sur ton bouclier, attrape les bonus qui tombent des monstres, repousse 5 vagues jusqu’au boss.' },
     { nom:'Tour des héros', pro:'tour', href:'heros.html', desc:'Les six héros, leurs pouvoirs, leurs dés et leurs cartes. Prépare ton deck.' },
   ] },
