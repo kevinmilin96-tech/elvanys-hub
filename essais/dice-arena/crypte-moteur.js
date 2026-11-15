@@ -134,6 +134,26 @@ const COMPAGNONS = {
   chouette: { e:'🦉', n:'Chouette', pv:8, d:'Fait taire tous les monstres : ils ne font rien à la fin de ce tour.', s:() => [sceau('dbl', 0, 1), sceau('dbl', 0, 1), sceau('any')] },
 };
 
+// ------------------------------------------------------------------ les CONSOMMABLES (15/11 soir, la Descente) : dans la poche (3 au plus), utilisés une fois, sans dé
+const CONSOS = {
+  potion: { e:'🧪', n:'Potion', d:'+12 PV.' },
+  bombe:  { e:'💣', n:'Bombe', d:'Brise 2 sceaux du monstre qui frappe le plus fort.' },
+  de6:    { e:'🎲', n:'Dé d’or', d:'Ajoute un dé de 6 à ce tour.' },
+  fumee:  { e:'💨', n:'Fumigène', d:'Les monstres ne font rien à la fin de ce tour.' },
+  rune:   { e:'✦', n:'Éclat de rune', d:'+1 Rune.' },
+};
+function conso(S, i) {
+  if (S.fin || !S.consos || !S.consos[i]) return 'Rien ici.';
+  const k = S.consos[i];
+  if (k === 'de6' && S.aLancer) return 'Lance d’abord tes dés !';
+  if (k === 'potion') { const a = S.pv; S.pv = Math.min(S.pvmax, S.pv + 12); log(S, `🧪 Potion : +${S.pv - a} PV.`); }
+  if (k === 'bombe') { const V = visibles(S).slice().sort((a, b) => force(S, b) - force(S, a)); if (!V[0]) return 'Aucun monstre.'; V[0].sceaux.filter(s => !s.ok).slice(0, 2).forEach(brise); log(S, `💣 Bombe sur ${V[0].nom} !`); S.consos.splice(i, 1); verifie(S, V[0]); return 'ok'; }
+  if (k === 'de6') { S.des.push({ id:'d' + S.seq++, v:6 }); log(S, '🎲 Dé d’or : un 6 de plus.'); }
+  if (k === 'fumee') { S.taire = true; log(S, '💨 Fumigène : les monstres ne verront rien ce tour-ci.'); }
+  if (k === 'rune') { if (S.runes >= RUNES_MAX) return 'Tu as déjà 3 Runes.'; S.runes++; log(S, '✦ Éclat de rune : +1 Rune.'); }
+  S.consos.splice(i, 1); return 'ok';
+}
+
 // ------------------------------------------------------------------ les intentions (15/11, retour de l'utilisateur : « ça ressemblait pas à Dice & Fold »)
 const INTENTIONS = {
   frappe:{ e:'⚔', n:'Frappe', d:'frappe ton héros de sa force' },
@@ -189,7 +209,7 @@ function nouvelle(heros, graine, bonus = {}, opts = {}) {
     tombes:0, fin:null, journal:[], seq:0, rs:Math.floor(R() * 4294967296),
     // la Descente
     or:opts.or || 0, orGagne:0, obj, etage, maitre:opts.maitre || 0, couleur:opts.couleur != null ? opts.couleur : .07, gardienMode:opts.gardien == null ? 'fin' : opts.gardien,
-    vies:opts.vies || 1, comp:opts.comp && COMPAGNONS[opts.comp.id] ? { id:opts.comp.id, pv:opts.comp.pv, pvmax:COMPAGNONS[opts.comp.id].pv, sceaux:COMPAGNONS[opts.comp.id].s(), pret:false } : null,
+    vies:opts.vies || 1, consos:opts.consos ? opts.consos.slice() : null, comp:opts.comp && COMPAGNONS[opts.comp.id] ? { id:opts.comp.id, pv:opts.comp.pv, pvmax:COMPAGNONS[opts.comp.id].pv, sceaux:COMPAGNONS[opts.comp.id].s(), pret:false } : null,
     secours:!!opts.secours, paires:{} };
   if (S.couleur && obj.prisme) S.couleur *= 1 + obj.prisme;
   if (opts.gardien === 'seul') { S.gardien = gardien(R, etage, S.vies); S.gardien.it = 'frappe'; for (let k = 0; k < (obj.bossDur || 0); k++) S.gardien.sceaux.push(sceau('min', 4)); }
@@ -357,6 +377,6 @@ function finTour(S) {
 const etoiles = S => S.fin !== 'gagne' ? 0 : 1 + (S.pv >= 12 ? 1 : 0) + (S.pv >= 25 ? 1 : 0);
 
 const API = { INTENTIONS, intentions, NB_DES, NB_COL, PROF, RESERVE, RUNES_MAX, PV_HEROS, SCEAU_TXT, TRAITS, POUVOIRS, COMPAGNONS, COULEURS,
-  nouvelle, lancer, relancer, placer, rune, pouvoir, competence, finTour, visibles, menace, menaceComp, accepte, etoiles, trouve, force, silence, plafond, rng };
+  CONSOS, conso, nouvelle, lancer, relancer, placer, rune, pouvoir, competence, finTour, visibles, menace, menaceComp, accepte, etoiles, trouve, force, silence, plafond, rng };
 if (typeof module !== 'undefined' && module.exports) module.exports = API; else racine.CRYPTE = API;
 })(typeof window !== 'undefined' ? window : globalThis);

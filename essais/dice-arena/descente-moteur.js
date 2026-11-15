@@ -108,7 +108,7 @@ const prix = (R, p) => Math.round(p * 1.4 * (R.breloque === 'remise' ? .75 : 1) 
 // bonus : la progression du héros (étoiles, équipement) ; opts : { breloque, pacte }
 function nouvelle(heros, graine, bonus = {}, opts = {}) {
   const R = { heros, graine, rs:0, etage:1, pas:0, pvmax:C.PV_HEROS + (bonus.pv || 0), pv:0, or:0, obj:{}, comp:null, bonus,
-    breloque:opts.breloque || null, pacte:opts.pacte || null, prof:Math.max(0, Math.min(10, opts.profondeur || 0)), ecran:'carte', choix:[], salle:null, S:null, fin:null, score:0, journal:[], combats:0, chemin:[], souffleUtilise:false };
+    breloque:opts.breloque || null, pacte:opts.pacte || null, prof:Math.max(0, Math.min(10, opts.profondeur || 0)), consos:['potion'], ecran:'carte', choix:[], salle:null, S:null, fin:null, score:0, journal:[], combats:0, chemin:[], souffleUtilise:false };
   const h0 = C.rng(graine); R.rs = Math.floor(h0() * 4294967296); const h = RR(R);
   if (R.breloque === 'coeur') R.pvmax += 10;
   if (R.pacte === 'verre') { R.pvmax = Math.round(R.pvmax * .7); R.obj.sac = 1; }
@@ -157,7 +157,7 @@ function optsCombat(R, type) {
   if (R.prof >= 6) obj.moinsOr = 1;
   if (R.prof >= 10 && type === 'boss') obj.bossDur = 2;
   return { cols, gardien:type === 'boss' ? 'seul' : false, etage:e, vies:type === 'boss' ? [0, 2, 3, 3][e] : 1, pv:R.pv, pvmax:R.pvmax, obj, comp:R.comp && R.comp.pv > 0 ? R.comp : null, or:R.or,
-    maitre:(type === 'boss' ? 9 : type === 'elite' ? 7 : 6) - (R.prof >= 4 ? 1 : 0), couleur:.08 * (R.pacte === 'nuit' ? 3 : 1) * (R.prof >= 9 ? .5 : 1), secours:!!R.obj.souffle && !R.souffleUtilise };
+    maitre:(type === 'boss' ? 9 : type === 'elite' ? 7 : 6) - (R.prof >= 4 ? 1 : 0), couleur:.08 * (R.pacte === 'nuit' ? 3 : 1) * (R.prof >= 9 ? .5 : 1), secours:!!R.obj.souffle && !R.souffleUtilise, consos:R.consos || [] };
 }
 // choisir la salle k parmi les choix ; pour un combat, R.S est la crypte à jouer (écran de combat de crypte.html)
 function choisir(R, k) {
@@ -179,6 +179,7 @@ function etal(R, h) {
   const l = tireObjets(R, h, 4).map(k => ({ t:'objet', k, prix:prix(R, OBJETS[k].prix + 2 * (R.etage - 1)) }));
   if (!R.comp || R.comp.pv <= 0) { const k = pick(h, Object.keys(C.COMPAGNONS)); l.push({ t:'comp', k, prix:prix(R, 16) }); }
   else if (R.comp.pv < C.COMPAGNONS[R.comp.id].pv) l.push({ t:'reparer', prix:prix(R, 5) });
+  melange(h, Object.keys(C.CONSOS)).slice(0, 2).forEach(k => l.push({ t:'conso', k, prix:prix(R, 5) }));
   l.push({ t:'soin', n:12, prix:prix(R, 8) });
   return l;
 }
@@ -186,6 +187,7 @@ function acheter(R, i) {
   if (R.ecran !== 'marchand') return 'non';
   const x = R.salle.etal[i]; if (!x || x.vendu) return 'non'; if (R.or < x.prix) return 'Pas assez d’or.';
   R.or -= x.prix; x.vendu = x.t !== 'soin';
+  if (x.t === 'conso') { if ((R.consos || []).length >= 3) { R.or += x.prix; x.vendu = false; return 'Ta poche est pleine (3).'; } R.consos = R.consos || []; R.consos.push(x.k); x.vendu = false; }
   if (x.t === 'objet') R.obj[x.k] = (R.obj[x.k] || 0) + 1;
   if (x.t === 'comp') R.comp = { id:x.k, pv:C.COMPAGNONS[x.k].pv };
   if (x.t === 'reparer') R.comp.pv = C.COMPAGNONS[R.comp.id].pv;
@@ -208,14 +210,14 @@ function evenement(R, k) {
 // fin d'un combat (R.S.fin posé) : on reprend la vie, l'or, le compagnon ; puis la récompense
 function apresCombat(R) {
   const S = R.S; if (!S || !S.fin) return false;
-  R.or = S.or; R.combats++; R.score += S.score;
+  R.or = S.or; R.combats++; R.score += S.score; if (S.consos) R.consos = S.consos.slice();
   if (S.secoursUtilise) R.souffleUtilise = true;
   if (R.comp && S.comp) R.comp.pv = S.comp.pv;
   if (S.fin === 'perdu') { R.pv = 0; R.fin = 'perdu'; R.ecran = 'fin'; R.S = null; return true; }
   R.pv = S.pv + (R.prof >= 8 ? 0 : 2) + 3 * (R.obj.trophee || 0); R.pv = Math.min(R.pv, R.pvmax); // on souffle un peu après chaque victoire (+2)
   const h = RR(R), t = R.salle.type;
   R.salle.texte = `Victoire ! +${S.orGagne} or ramassés.`;
-  if (t === 'combat') R.salle.recomp = [{ t:'or', n:4 + 2 * R.etage }, { t:'soin', n:8 }, ...tireObjets(R, h, 1).map(k => ({ t:'objet', k }))];
+  if (t === 'combat') R.salle.recomp = [{ t:'or', n:4 + 2 * R.etage }, h() < .5 ? { t:'soin', n:8 } : { t:'conso', k:pick(h, Object.keys(C.CONSOS)) }, ...tireObjets(R, h, 1).map(k => ({ t:'objet', k }))];
   if (t === 'elite') R.salle.recomp = tireObjets(R, h, 3, true).map(k => ({ t:'objet', k }));
   if (t === 'boss') { R.salle.recomp = melange(h, Object.keys(BRELOQUES)).slice(0, 3).map(k => ({ t:'breloque', k })); R.pv = Math.min(R.pvmax, R.pv + Math.round((R.pvmax - R.pv) / 2)); R.salle.texte += ' Tu reprends ton souffle (moitié de la vie perdue).'; }
   if (!R.salle.recomp.length) R.salle.recomp = [{ t:'or', n:10 }];
@@ -225,7 +227,7 @@ function apresCombat(R) {
 function recompense(R, k) {
   if (R.ecran !== 'recompense') return null;
   const x = R.salle.recomp && R.salle.recomp[k]; let gain = null;
-  if (x) { if (x.t === 'or') R.or += x.n; if (x.t === 'soin') soin(R, x.n); if (x.t === 'objet') R.obj[x.k] = (R.obj[x.k] || 0) + 1; if (x.t === 'breloque') gain = x.k; }
+  if (x) { if (x.t === 'or') R.or += x.n; if (x.t === 'soin') soin(R, x.n); if (x.t === 'objet') R.obj[x.k] = (R.obj[x.k] || 0) + 1; if (x.t === 'conso') { R.consos = R.consos || []; if (R.consos.length < 3) R.consos.push(x.k); } if (x.t === 'breloque') gain = x.k; }
   suite(R); return gain;
 }
 // passer à l'étape suivante (ou à l'étage suivant, ou à la victoire)
