@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Les Chroniques de la Guilde · proposition</title>
+<style>
+  :root { --or:#f3c96b; --texte:#f1ecff; --doux:#c9c1ea; --ok:#7dffb0; }
+  body { margin:0; color:var(--texte); font:16px/1.55 Georgia, 'Times New Roman', serif; background:radial-gradient(ellipse at 50% -10%, #3a2a5c, #120f24 60%) fixed, #120f24; }
+  main { max-width:760px; margin:0 auto; padding:18px 16px 60px; }
+  h1 { color:var(--or); text-align:center; margin:.3em 0 .1em; } .sous { text-align:center; color:var(--doux); margin:0 0 1.2em; }
+  h2 { color:var(--or); border-bottom:1px solid #4b4580; padding-bottom:4px; margin-top:1.6em; font-size:1.25em; }
+  .carte { background:#1d1b3aee; border:1px solid #4b4580; border-radius:14px; padding:12px 14px; margin:10px 0; }
+  .reco { border-color:var(--ok); } .reco b.t { color:var(--ok); }
+  table { width:100%; border-collapse:collapse; font-size:.92em; } td, th { border-bottom:1px solid #3a3260; padding:6px; text-align:left; vertical-align:top; } th { color:var(--or); }
+  .q { background:#2f2650; border-left:4px solid var(--or); padding:8px 12px; margin:8px 0; border-radius:0 10px 10px 0; }
+  small, .gris { color:var(--doux); }
+  a { color:var(--or); }
+  .plateau { display:grid; grid-template-columns:repeat(10, 1fr); gap:2px; max-width:420px; margin:10px auto; }
+  .plateau i { aspect-ratio:1; border-radius:3px; background:#2a2440; display:flex; align-items:center; justify-content:center; font-style:normal; font-size:13px; }
+  .plateau i.m { background:#4a3c2c; } .plateau i.n { background:#0d0b18; } .plateau i.h { background:#3a2f12; } .plateau i.e { background:#5a1a1a; }
+</style>
+</head>
+<body>
+<main>
+  <p><a href="menu.html">‹ Menu</a></p>
+  <h1>📜 Les Chroniques de la Guilde</h1>
+  <p class="sous">Proposition (15/11) · un donjon sur plateau, en coopération à 4, avec des scénarios · rien n’est construit : à valider</p>
+
+  <div class="carte"><b>L’idée en une phrase :</b> toi et tes 3 amis explorez un donjon <b>case par case</b>, chacun avec <b>son héros d’aventure</b> ;
+  à votre tour, vous lancez vos dés et vous les posez pour <b>bouger, frapper, protéger ou aider un ami</b> ; le jeu joue les monstres
+  (ils annoncent leurs gestes, comme dans la Crypte) et <b>raconte l’histoire</b> du scénario, salle après salle.</div>
+
+  <h2>1. Comment on joue à quatre</h2>
+  <table>
+    <tr><th>Façon</th><th>Ce que c’est</th><th>Ce que ça demande</th></tr>
+    <tr><td><b>A. Chacun son téléphone</b></td><td>Chacun joue depuis chez lui ou autour de la table, sur son téléphone ; le plateau est le même pour tous, en direct.</td><td>Un <b>serveur de partie</b> (le labo perso a déjà PocketBase : une salle de jeu, un code à 4 lettres pour rejoindre). Le plus gros chantier.</td></tr>
+    <tr><td><b>B. Un téléphone qui passe</b></td><td>Un seul téléphone, on se le passe à chaque tour (comme « Contre un proche »).</td><td>Rien de plus : faisable tout de suite.</td></tr>
+    <tr><td><b>C. Une tablette au milieu</b></td><td>Le plateau sur une tablette posée sur la table, chacun touche son héros.</td><td>Comme B, avec un écran plus grand.</td></tr>
+  </table>
+  <div class="carte reco"><b class="t">Recommandation :</b> construire d’abord <b>B / C</b> (mêmes règles, un écran) pour régler le jeu entre amis,
+  puis passer à <b>A</b> (chacun son téléphone) quand les règles sont bonnes. On ne refait rien : A réutilise tout.</div>
+
+  <h2>2. Le plateau</h2>
+  <p>Une grille de cases vue de dessus (façon HeroQuest). Les salles sont dans le noir et <b>se dévoilent</b> quand un héros ouvre la porte.
+  Couloirs, portes (certaines fermées à clé), pièges cachés, coffres, autels, leviers, objets à porter.</p>
+  <div class="plateau">
+    <i class="m"></i><i class="m"></i><i class="m"></i><i class="m"></i><i class="m"></i><i class="n"></i><i class="n"></i><i class="n"></i><i class="n"></i><i class="n"></i>
+    <i class="m"></i><i class="h">🔨</i><i></i><i></i><i class="m">🚪</i><i class="n"></i><i class="n"></i><i class="n"></i><i class="n"></i><i class="n"></i>
+    <i class="m"></i><i class="h">🛡</i><i></i><i class="e">👺</i><i class="m"></i><i class="n"></i><i class="n"></i><i class="n"></i><i class="n"></i><i class="n"></i>
+    <i class="m"></i><i class="h">🌿</i><i></i><i></i><i></i><i></i><i></i><i>💰</i><i class="m"></i><i class="n"></i>
+    <i class="m"></i><i class="h">🧭</i><i></i><i class="e">🐺</i><i></i><i></i><i>⚠</i><i></i><i class="m"></i><i class="n"></i>
+    <i class="m"></i><i class="m"></i><i class="m"></i><i class="m"></i><i class="m"></i><i class="m"></i><i class="m"></i><i class="m">🚪</i><i class="m"></i><i class="n"></i>
+  </div>
+  <p class="gris" style="text-align:center">Exemple : les 4 héros dans la 1re salle, deux monstres, un coffre, un piège, deux portes ; le reste est dans le noir.</p>
+
+  <h2>3. Un tour</h2>
+  <ol>
+    <li><b>Tous les héros jouent</b> (dans l’ordre qu’on veut). Chacun lance <b>ses dés</b> (3 ou 4) puis les pose :
+      <br>🦶 <b>Bouger</b> : un dé = autant de cases · ⚔ <b>Frapper</b> un monstre à côté : on pose les dés sur ses <b>sceaux</b> (exact, ≥, pair, total…, comme la Crypte) ·
+      🛡 <b>Protéger</b> un ami à côté · 🤝 <b>Donner un dé</b> à un ami à côté · 🔍 <b>Fouiller</b> (pièges, passages secrets) · ⚡ <b>pouvoir</b> du héros (chargé par des dés).</li>
+    <li><b>Les monstres jouent</b> : chacun a annoncé son geste au début du tour (⚔ frapper qui, ⏳ préparer, 🛡 se protéger, 🏃 fuir chercher de l’aide…). Le jeu les joue tout seul.</li>
+    <li>Le <b>narrateur</b> (Moustache) lit ce qui arrive : une porte qui grince, un piège, un choix à faire.</li>
+  </ol>
+
+  <h2>4. Ce qui rend la coopération vraie</h2>
+  <ul>
+    <li><b>Donner un dé</b> à l’ami qui en a besoin (le 6 que tu ne peux pas utiliser).</li>
+    <li><b>Frapper à deux</b> : deux héros qui brisent les sceaux d’un même monstre dans le même tour font une <b>chaîne</b> (bonus).</li>
+    <li><b>Relever</b> un ami tombé (il ne meurt pas : il faut aller le chercher).</li>
+    <li><b>Les choix du groupe</b> : aux carrefours de l’histoire, on vote (le pont ou la rivière ? libérer le prisonnier ?).</li>
+    <li><b>Rôles</b> : la façon de jouer de chaque héros est différente (le gros bouclier devant, la soigneuse derrière, l’éclaireuse qui trouve les pièges).</li>
+  </ul>
+
+  <h2>5. Les héros d’aventure (idée de tes notes du 15/11)</h2>
+  <p>Chaque joueur <b>crée son héros</b> comme dans Donjons et Dragons : il choisit une <b>voie</b> parmi les 6 de la Guilde
+  (Forgeronne, Chevalier, Druidesse, Cartographe, Barde, Tempête), un <b>nom</b>, un <b>portrait</b>, et il <b>modifie son dé</b> au fil des aventures.
+  Son héros garde ses <b>niveaux</b>, son <b>équipement</b> (l’armurerie de la Tour des héros) et ses cicatrices d’un scénario à l’autre.
+  Ces héros ne vont jamais dans le Duel : ils sont faits pour l’aventure.</p>
+
+  <h2>6. Les scénarios</h2>
+  <p>Une partie = un <b>scénario</b> de 45 à 60 minutes (3 à 5 salles + un boss), <b>sauvegardé à chaque salle</b> (on peut s’arrêter et reprendre la semaine suivante).
+  Plusieurs scénarios forment une <b>campagne</b>. Pour les écrire : tu me racontes l’histoire en quelques phrases (ou tu me montres tes livres pour l’ambiance),
+  j’écris le scénario complet (salles, monstres, textes lus, pièges, choix), tu le valides, je le construis.
+  Les livres servent d’<b>inspiration seulement</b> : textes, noms et images sont réécrits pour la Guilde.</p>
+  <div class="carte">Premier scénario proposé, court : <b>« Le Sommeil de l’Horloger »</b>. Une horloge géante s’est arrêtée sous la Guilde et le temps commence à se figer.
+  3 salles (le Hall des balanciers, la Salle des rouages piégée, la Bibliothèque des heures) puis l’Horloger lui-même, qui rejoue un tour sur deux.</div>
+
+  <h2>7. Ordre de construction proposé</h2>
+  <table>
+    <tr><th>Étape</th><th>Contenu</th></tr>
+    <tr><td>1</td><td>Le plateau, les règles du tour, 4 héros (les 6 de la Guilde pour commencer), le scénario court, <b>un seul écran</b> (B/C). On y joue entre amis.</td></tr>
+    <tr><td>2</td><td>La création des héros d’aventure, leur progression, l’équipement.</td></tr>
+    <tr><td>3</td><td><b>Chacun son téléphone</b> : le serveur de partie sur le labo perso (code de salle, temps réel, reprise si on perd le réseau).</td></tr>
+    <tr><td>4</td><td>La campagne : plusieurs scénarios, à partir de tes histoires.</td></tr>
+  </table>
+
+  <h2>8. Les 4 questions de la Boussole</h2>
+  <div class="carte">
+    <b>(a) Quel pilier ?</b> « Un monde chaleureux et drôle » et le plaisir entre amis ; aussi « le hasard avant la décision » (on lance, puis on choisit où poser).<br>
+    <b>(b) Doublon ?</b> L’Invasion est déjà à deux ; ici c’est différent : à 4, sur un plateau, avec une histoire. Elle remplace plutôt l’envie d’un « Invasion à 4 ».<br>
+    <b>(c) Une chose de plus à apprendre ?</b> Oui : bouger sur un plateau. Le reste (sceaux, intentions des monstres, pouvoirs) vient de la Crypte et du Duel.<br>
+    <b>(d) Le cœur est-il propre ?</b> Tu as joué à tous les modes du cœur : oui.<br>
+    <b>Avis :</b> oui, c’est le mode qui peut faire revenir tes amis. Gros chantier : le faire par étapes, en commençant par un seul écran.
+  </div>
+
+  <h2>9. Les questions pour toi</h2>
+  <div class="q">1. Pour commencer : un seul écran qui passe de main en main (B/C), ou directement chacun son téléphone (A) ?</div>
+  <div class="q">2. Héros : on commence avec les 6 héros de la Guilde, ou directement des héros d’aventure créés par chaque joueur ?</div>
+  <div class="q">3. Premier scénario : « Le Sommeil de l’Horloger » (proposé ici), ou tu me racontes ton histoire d’abord ?</div>
+  <div class="q">4. Durée d’une partie : 30 minutes (2 salles + boss) ou 45-60 minutes (4 salles + boss) ?</div>
+</main>
+</body>
+</html>
