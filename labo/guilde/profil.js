@@ -16,6 +16,11 @@ function titresGuilde() {
     ['traversee', '🌊', 'Traversée parfaite', 'Vaincre le Titan des Expéditions sans perdre un cœur.', exp.some(r => r.parfait), '#2fd3c4'],
     ['rempart',   '⚔️', 'Rempart de la Guilde', 'Gagner les deux actes de l’Invasion.', !!(inv.eveil && inv.reveil), '#ff6b5a'],
     ['sceaux',    '🔏', 'Gardien des sceaux', 'Gagner 10 Sceaux de la semaine (Duel de la semaine).', Object.keys(JL('guilde-sceaux', {})).length >= 10, '#d08a4a'],
+    // 15/11 soir : les titres des nouveaux modes
+    ['profondeurs', '🗺️', 'Seigneur des profondeurs', 'Remonter d’une Descente (Crypte) : les trois étages et leurs boss.', (JL('guilde-descente', {}).victoires || 0) > 0, '#ff9a4a'],
+    ['abysses',   '🕳', 'Roi des abysses', 'Gagner une Descente en profondeur 5 ou plus.', (JL('guilde-descente', {}).profMax || 0) >= 6, '#7a4aff'],
+    ['chroniques', '📜', 'Héros des Chroniques', 'Finir la Campagne des Chroniques (les trois chapitres).', (JL('guilde-chroniques', {}).campagnes || 0) > 0, '#c084fc'],
+    ['fosse',     '🔥', 'Tueur de Titan', 'Abattre le Titan de feu dans la Fosse aux Runes.', (JL('guilde-fosse3', {}).victoires || 0) > 0, '#ff6a3a'],
     ['sphinx',    '🧩', 'Sphinx de la Guilde', 'Résoudre une énigme du dimanche (la plus redoutable de la semaine).', eniDim > 0, '#9be37a'],
     // 14/11 nuit : les titres du Rang de la Guilde (rang.js)
     ...(typeof ROUTE !== 'undefined' ? Object.entries(ROUTE).filter(([, x]) => x[0] === 'titre').map(([n, x]) => [x[1], x[2], x[3], `Atteindre le rang ${n} de la Guilde.`, rgRecompense('titre', x[1]), COULEUR_TITRE_RANG[x[1]] || '#f3c96b']) : []),
@@ -61,6 +66,11 @@ function tropheesHTML() {
     <div><b>🏰 La Défense de la porte</b>${s(def.filter(x => x.gagne).length, 'victoire')} sur ${def.length}<br><small>meilleur score : ${Math.max(0, ...def.map(x => x.score)) || '—'}</small></div>
     <div><b>🔏 Les Sceaux de la semaine</b>${nbSc} sceau${nbSc > 1 ? 'x' : ''}<br><small>${Object.entries(sc).sort().reverse().slice(0, 6).map(([k, x]) => `${k.slice(8, 10)}/${k.slice(5, 7)} ${x.regle}`).join(' · ') || 'aucun pour l’instant'}</small></div>
     <div><b>🧩 L’énigme du jour</b>${s(eniOk.length, 'résolue')} · ${eniPremier} du premier coup<br><small>meilleure série : ${eniSerieMax} jour${eniSerieMax > 1 ? 's' : ''} · dimanches : ${eniDim}</small></div>
+    ${(() => { const cr = JL('guilde-crypte', {}), de = JL('guilde-descente', {}), fo = JL('guilde-fosse3', {}), ch = JL('guilde-chroniques', {});
+      return `<div><b>🪦 La Crypte aux Sceaux</b>${s(cr.victoires || 0, 'crypte')} vidée${(cr.victoires || 0) > 1 ? 's' : ''} sur ${cr.parties || 0}<br><small>meilleur score : ${cr.meilleur || '—'}</small></div>
+    <div><b>🗺️ La Descente</b>${s(de.victoires || 0, 'victoire')} sur ${de.parties || 0} · profondeur ${Math.max(0, (de.profMax || 1) - 1)}<br><small>breloques : ${Object.keys(de.breloques || {}).length}/8 · meilleur score : ${de.meilleur || '—'}</small></div>
+    <div><b>🕳️ La Fosse aux Runes</b>${s(fo.victoires || 0, 'Titan')} abattu${(fo.victoires || 0) > 1 ? 's' : ''} sur ${fo.parties || 0}<br><small>meilleur score : ${fo.meilleur || '—'}</small></div>
+    <div><b>📜 Les Chroniques</b>${s(ch.horloger || 0, 'scénario')} gagné${(ch.horloger || 0) > 1 ? 's' : ''}<br><small>campagnes finies : ${ch.campagnes || 0}${ch.gardiens ? ' · 🏅 Gardiens du temps' : ''}</small></div>`; })()}
     <div><b>🛡 L’Invasion</b>Acte I ${inv.eveil ? '✅' : '⬜'} · Acte II ${inv.reveil ? '✅' : '⬜'}<br><small>grands boss : ${['colosseracines', 'kraken', 'ignaros'].filter(k => inv[k]).map(k => HEROS[k].nom.split(',')[0]).join(', ') || '—'}</small></div>
   </div>`;
 }
