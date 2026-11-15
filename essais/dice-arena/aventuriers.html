@@ -65,8 +65,11 @@
 <body>
 <main id="app"></main>
 <div id="fen"></div>
-<script src="musique.js?v=20261115-170513"></script>
-<script src="aventuriers.js?v=20261115-170513"></script>
+<script src="musique.js?v=20261115-170430"></script>
+<script src="rang.js?v=20261115-170430"></script>
+<script src="heros-etoiles.js?v=20261115-170430"></script>
+<script src="aventuriers.js?v=20261115-170430"></script>
+<script src="fiche-heros.js?v=20261115-170430"></script>
 <script>
 // =============================================================================================== LA FORGE DES HÉROS (15/11) : créer et faire grandir ses héros d'aventure
 const $ = id => document.getElementById(id);
@@ -95,33 +98,25 @@ function creation() {
     <button class="go" onclick="cree()">⚒ Forger ce héros</button>`;
 }
 function cree() { const nom = ($('nom') ? $('nom').value : N.nom).trim(); if (!nom) return; N.nom = nom; const a = avCreer(N); son('ultime'); fiche(a.id); }
+let FICHE = null; FH.apres = () => FICHE && fiche(FICHE);
 function fiche(id) {
-  const a = avTrouve(id); if (!a) return liste(); const s = avStats(a), E = avEquipement(a), sac = avSac(), niv = s.niveau;
+  FICHE = id; const a = avTrouve(id); if (!a) return liste(); const s = avStats(a), E = avEquipement(a), sac = avSac(), niv = s.niveau;
   const slot = c => { const p = E[c.k], lock = c.niv && niv < c.niv;
     return `<button class="slot ${p ? 'r' + p.r : ''} ${lock ? 'lock' : ''}" onclick="${lock ? `bulle('Cette case s’ouvre au niveau ${c.niv}')` : `caseEquip('${a.id}','${c.k}')`}">${lock ? `<span class="e">🔒</span><small>niveau ${c.niv}</small>` : p ? `<span class="e">${c.e}</span><small>${p.nom}</small><i>+${p.niv}</i>` : `<span class="e vide">${c.e}</span><small>${c.n}</small>`}</button>`; };
   const nbLibres = sac.pieces.filter(p => !avLire().some(b => b.equip && Object.values(b.equip).includes(p.id))).length;
-  $('app').innerHTML = `<div class="haut"><a href="#" onclick="liste();return false">‹ Mes héros</a><h1>${a.nom}</h1><span style="color:var(--or);font-weight:bold">🪙 ${sac.or}</span></div>
-    <div class="scene" style="--c:${a.couleur}">
-      <div class="col">${['arme', 'tete', 'anneau'].map(k => slot(EQ_CASES.find(c => c.k === k))).join('')}</div>
-      <div class="heros-c">${img(a)}<b>${a.nom}</b><small>${avTitre(a)} · niveau ${niv}</small><br><small>${VOIES[a.voie].role}</small></div>
-      <div class="col">${['torse', 'pieds', 'talisman'].map(k => slot(EQ_CASES.find(c => c.k === k))).join('')}</div>
-    </div>
-    <div class="puiss">✊ ${avPuissance(a)}</div>
-    <div class="stats-h"><div><b>${niv}</b><span>Niveau</span></div><div><b>${s.pv}</b><span>❤ PV</span></div><div><b>${s.att}</b><span>⚔ Att.</span></div><div><b>${s.def}</b><span>🛡 Déf.</span></div><div><b>${s.agi}</b><span>🥾 Agi.</span></div><div><b>${({ gorm:4 }[a.voie] || 3) + s.desPlus}</b><span>🎲 dés</span></div></div>
-    <p class="sous" style="margin:6px 0">⚔ Attaque : tes dés comptent + autant sur les sceaux « ≥ » et « Σ ». 🛡 Défense : un bouclier au début de chaque tour. 🥾 Agilité : + autant de cases à chaque déplacement.</p>
-    <div class="boutons-h"><button class="sec" onclick="forgeron('${a.id}')">⚒ Le forgeron</button><button class="sec" onclick="coffre('${a.id}')">🎒 Le coffre (${nbLibres} libre${nbLibres > 1 ? 's' : ''})</button></div>
-    <div class="bloc"><b style="color:var(--or)">⚒ Son dé personnel</b><p class="sous" style="text-align:left;margin:4px 0">Chaque niveau donne un <b>point de forge</b> : touche une face pour lui ajouter 1 (jusqu’à 6). Un dé avec plus de grosses faces frappe plus fort et ouvre plus de sceaux. Points à dépenser : <b style="color:var(--ok)">${a.points}</b>.</p>
+  $('app').innerHTML = `<div class="haut"><a href="#" onclick="liste();return false">‹ Mes héros</a><h1>${a.nom}</h1><a href="mes-heros.html">🏰 Mes héros</a></div>
+    ${ficheHerosHTML(a.id)}
+    <div class="bloc"><b style="color:var(--or)">⚒ Son dé personnel</b><p class="sous" style="text-align:left;margin:4px 0">Chaque niveau d’EXPÉRIENCE d’aventure donne un <b>point de forge</b> : touche une face pour lui ajouter 1 (jusqu’à 6). Un dé avec plus de grosses faces frappe plus fort et ouvre plus de sceaux. Points à dépenser : <b style="color:var(--ok)">${a.points}</b>.</p>
       <div class="de">${a.faces.map((v, k) => `<button class="${a.points && v < 6 ? 'peut' : ''}" onclick="forge('${a.id}',${k})"><img src="faces-${a.voie}/face-${v}.webp" alt="${v}"><span>${k + 1}</span></button>`).join('')}</div></div>
     <div class="bloc"><b style="color:var(--or)">✨ Ses talents</b><p class="sous" style="text-align:left;margin:4px 0">Aux niveaux 2, 4 et 6, choisis un talent sur deux.</p>
       ${[2, 4, 6].map(niv => `<p style="margin:8px 0 4px"><b>Niveau ${niv}</b>${s.niveau < niv ? ' <small style="color:var(--doux)">(pas encore atteint)</small>' : ''}</p><div class="grille" style="grid-template-columns:1fr 1fr">${TALENTS[niv].map(([k, n, d]) => `<button class="${(a.talents || {})[niv] === k ? 'on' : ''}" ${s.niveau < niv ? 'disabled style="opacity:.4"' : ''} onclick="talent('${a.id}',${niv},'${k}')">${n}<small>${d}</small></button>`).join('')}</div>`).join('')}</div>
-    <div class="bloc"><b style="color:var(--or)">📈 Les niveaux</b><p class="sous" style="text-align:left;margin:4px 0">Une aventure réussie : 120 XP ; une aventure ratée : 40 XP. Chaque niveau : +2 PV et un point de forge. Au niveau 4 : un dé de plus.</p>
+    <div class="bloc"><b style="color:var(--or)">📈 L’expérience d’aventure</b><p class="sous" style="text-align:left;margin:4px 0">Une aventure réussie : 120 XP ; une aventure ratée : 40 XP. Chaque niveau : +2 PV et un point de forge. Au niveau 4 : un dé de plus.</p>
       <p style="margin:0">${[2, 3, 4, 5, 6].map(n => `${s.niveau >= n ? '✅' : '⬜'} niveau ${n} (${AV_SEUILS[n]} XP)`).join('<br>')}</p></div>
     <button class="sec" style="margin-top:14px" onclick="if(confirm('Effacer ${a.nom.replace(/'/g, '')} pour toujours ?')){avSupprime('${a.id}');liste()}">🗑 Effacer ce héros</button>`;
 }
 // ---- l'équipement : une case, le coffre, le forgeron
 const bulle = x => { const b = document.createElement('div'); b.className = 'bulle'; b.textContent = x; document.body.appendChild(b); setTimeout(() => b.remove(), 1500); };
 function fenetre(h) { $('fen').innerHTML = h ? `<div class="voile-f" onclick="if(event.target===this)fenetre('')"><div class="fen">${h}</div></div>` : ''; }
-const porteurDe = pid => avLire().find(b => b.equip && Object.values(b.equip).includes(pid));
 function pieceHTML(p, actions) { const C = EQ_CASES.find(c => c.k === p.slot), por = porteurDe(p.id);
   return `<div class="piece r${p.r}"><span class="e">${C.e}</span><div><b style="color:${EQ_RARE[p.r].c}">${p.nom} <small style="display:inline">+${p.niv}</small></b><small>${C.n} ${EQ_RARE[p.r].n} · ${eqTexte(p)}</small>${por ? `<small>porté par ${por.nom}</small>` : ''}</div><div class="act">${actions}</div></div>`; }
 function caseEquip(id, k) {
@@ -154,7 +149,7 @@ function achete(id, i) { const r = forgeronAchete(i); if (r === 'ok') { son('tou
 function talent(id, niv, k) { if (avChoisitTalent(id, niv, k)) son('magie'); fiche(id); }
 function forge(id, k) { if (avForge(id, k)) son('tour-fusion'); fiche(id); }
 if (typeof GM !== 'undefined') { try { GM.musique('menu'); GM.bouton(); } catch (e) {} }
-liste();
+const hQ = new URLSearchParams(location.search).get('h'); hQ && avTrouve(hQ) ? fiche(hQ) : liste();
 </script>
 </body>
 </html>

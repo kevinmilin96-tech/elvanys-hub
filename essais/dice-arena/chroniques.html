@@ -473,9 +473,9 @@ function finPartie() {
   const campagne = gagne ? campagneGagnee() : '';
   // 16/11 : l'or et les pièces d'équipement trouvés vont dans la Forge des héros (si l'équipe a des héros d'aventure)
   let butin = '';
-  if (S.heros.some(z => z.av) && typeof avGagne === 'function' && !S.butinFait) { S.butinFait = true;
+  if (typeof avGagne === 'function' && !S.butinFait) { S.butinFait = true;
     const or = (S.orAv || 0) + (gagne ? 25 : 5), g = avGagne(or, (S.equipTrouve || 0) + (gagne ? 1 : 0), gagne);
-    butin = `<p style="text-align:center">⚒ Pour la Forge des héros : 🪙 +${or} or${g.length ? ` · ${g.map(p => `<b style="color:${EQ_RARE[p.r].c}">${EQ_CASES.find(c => c.k === p.slot).e} ${p.nom}</b>`).join(', ')}` : ''}</p>`; }
+    butin = `<p style="text-align:center">⚒ Pour tes héros : 🪙 +${or} or${g.length ? ` · ${g.map(p => `<b style="color:${EQ_RARE[p.r].c}">${EQ_CASES.find(c => c.k === p.slot).e} ${p.nom}</b>`).join(', ')}` : ''}</p>`; }
   fenetre(gagne ? `<h2>${SCT().gagne[0]}</h2><div class="moust"><img src="ui/moustache.webp" alt=""><div class="lu">${SCT().gagne[1]}</div></div>
       <p style="text-align:center">Score : <b style="color:var(--or)">${S.score}</b> · ${S.tours} tours · ⌛ ${S.sablier} grains${S.sablier > 0 ? '<br>🏅 Titre « <b>Gardiens du temps</b> » : le sablier n’est jamais tombé à zéro !' : ''}</p>
       <p style="text-align:center">✨ Chaque héros gagne des éclats et de l’XP${objet ? ` · 🎒 <b>${objet}</b> rejoint l’armurerie` : ''}.</p>${butin}${campagne}<button class="${campagne ? 'sec' : 'go'}" onclick="fin()">Retour à la Guilde</button>`
