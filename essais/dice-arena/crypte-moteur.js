@@ -102,12 +102,17 @@ function carte(R, niv, n, plus = 0) {
   const att = [0, [1, 1, 2], [1, 2, 2], [2, 2, 3], [2, 3, 3]][Math.min(4, Math.max(1, niv))][Math.floor(R() * 3)] + plus; // 15/11 : chaque monstre a SA force
   return { id:'c' + n, m, nom, niv, att, trait, sceaux:sceauxNiveau(R, niv), vue:false, elite:niv === 4, age:0 };
 }
-function gardien(R, etage = 0) {
-  const [m, nom] = pick(R, GARDIENS);
+function sceauxGardien(R, etage) {
   const sc = [sceau('ex', de6(R)), sceau('ex', de6(R)), sceau('dbl', 0, 1), sceau('dbl', 0, 1), sceau('min', 5), sceau('tot', 14)];
   if (etage >= 2) sc.push(sceau('max', 2)), sc.push(sceau('tot', 12));
   if (etage >= 3) sc.push(sceau('dbl', 0, 2)), sc.push(sceau('dbl', 0, 2));
-  return { id:'g', m, nom, niv:5, att:2 + Math.max(0, etage - 1), trait:'furie', gardien:true, vue:true, sceaux:sc, age:0 };
+  return sc;
+}
+// 15/11 soir (l'utilisateur : « le boss de la Descente, super simple, il est tombé en deux trois tours ») : un gardien peut avoir PLUSIEURS VIES ;
+// quand tous ses sceaux sont brisés, il se relève avec de nouveaux sceaux et frappe 1 de plus.
+function gardien(R, etage = 0, vies = 1) {
+  const [m, nom] = pick(R, GARDIENS);
+  return { id:'g', m, nom, niv:5, att:(vies > 1 ? 3 : 2) + Math.max(0, etage - 1), trait:'furie', gardien:true, vue:true, sceaux:sceauxGardien(R, etage), age:0, vies, viesMax:vies };
 }
 
 // ------------------------------------------------------------------ les héros : un pouvoir qui se charge avec des dés
@@ -184,10 +189,10 @@ function nouvelle(heros, graine, bonus = {}, opts = {}) {
     tombes:0, fin:null, journal:[], seq:0, rs:Math.floor(R() * 4294967296),
     // la Descente
     or:opts.or || 0, orGagne:0, obj, etage, maitre:opts.maitre || 0, couleur:opts.couleur != null ? opts.couleur : .07, gardienMode:opts.gardien == null ? 'fin' : opts.gardien,
-    comp:opts.comp && COMPAGNONS[opts.comp.id] ? { id:opts.comp.id, pv:opts.comp.pv, pvmax:COMPAGNONS[opts.comp.id].pv, sceaux:COMPAGNONS[opts.comp.id].s(), pret:false } : null,
+    vies:opts.vies || 1, comp:opts.comp && COMPAGNONS[opts.comp.id] ? { id:opts.comp.id, pv:opts.comp.pv, pvmax:COMPAGNONS[opts.comp.id].pv, sceaux:COMPAGNONS[opts.comp.id].s(), pret:false } : null,
     secours:!!opts.secours, paires:{} };
   if (S.couleur && obj.prisme) S.couleur *= 1 + obj.prisme;
-  if (opts.gardien === 'seul') { S.gardien = gardien(R, etage); S.gardien.it = 'frappe'; for (let k = 0; k < (obj.bossDur || 0); k++) S.gardien.sceaux.push(sceau('min', 4)); }
+  if (opts.gardien === 'seul') { S.gardien = gardien(R, etage, S.vies); S.gardien.it = 'frappe'; for (let k = 0; k < (obj.bossDur || 0); k++) S.gardien.sceaux.push(sceau('min', 4)); }
   if (obj.eliteDur) cols.forEach(col => col.forEach(c => { if (c.elite) c.sceaux.push(sceau('tot', 9)); }));
   if (obj.talisman) S.pouvoir.slice(0, obj.talisman).forEach(brise);
   if (obj.entree) visibles(S).forEach(c => { const s = c.sceaux.find(x => !x.ok); if (s) brise(s); });
@@ -208,12 +213,15 @@ function debutTour(S) {
   visibles(S).forEach(c => intention(S, c));
   visibles(S).forEach(c => { if (c.trait === 'repousse') { const s = c.sceaux.find(x => x.ok && x.t !== 'tot'); if (s) { s.ok = false; s.val = 0; log(S, `🌱 ${c.nom} : un sceau se referme.`); } } });
   const garde = S.reserve.filter(x => x != null); S.reserve = Array(RESERVE + (S.obj.besace || 0)).fill(null);
+  S.aLancer = true; // 15/11 soir : les dés restent cachés jusqu'à ce que le joueur les lance (il voit le lancer)
   S.des = garde.map(g => Object.assign({ id:'d' + S.seq++, garde:true }, typeof g === 'object' ? g : { v:g }));
   for (let i = 0; i < nbDes(S); i++) S.des.push(tire(S));
 }
+// lancer les dés du tour (ils sont déjà tirés, cachés : le lancer les montre)
+function lancer(S) { if (S.fin || !S.aLancer) return false; S.aLancer = false; return true; }
 // relancer : tous les dés pas encore posés, sauf ceux sortis de la besace (un dé de couleur relancé garde sa couleur)
 function relancer(S) {
-  if (S.fin || S.relance < 1) return false;
+  if (S.fin || S.relance < 1 || S.aLancer) return false;
   S.relance--; S.des.forEach(d => { if (!d.garde) d.v = de6(RS(S)); }); return true;
 }
 function gagneOr(S, n, pourquoi) { if (n <= 0) return; S.or += n; S.orGagne += n; if (pourquoi) log(S, `🪙 +${n} or (${pourquoi}).`); }
@@ -224,6 +232,7 @@ function creusetPlein(S) {
 // poser le dé id sur : { carte:id, s:index } · { pouvoir:index } · { comp:index } · { creuset:true } · { reserve:true } · { couleur:true } (effet spécial)
 function placer(S, idDe, ou) {
   if (S.fin) return 'fin';
+  if (S.aLancer) return 'Lance d’abord tes dés !';
   const i = S.des.findIndex(d => d.id === idDe); if (i < 0) return 'de';
   const D = S.des[i], v = D.v;
   if (ou.couleur) return effetCouleur(S, i);
@@ -266,18 +275,22 @@ function verifie(S, c) {
   S.chaine++; S.chaineMax = Math.max(S.chaineMax, S.chaine); S.tombes++;
   const gain = 10 * c.niv * S.chaine; S.score += gain;
   log(S, `💀 ${c.nom} tombe${S.chaine > 1 ? ` · chaîne ×${S.chaine}` : ''} (+${gain}).`);
-  gagneOr(S, S.obj.moinsOr ? (c.gardien ? 6 + 3 * S.etage : c.elite ? 3 : 1) : c.gardien ? 8 + 4 * S.etage : c.elite ? 5 : c.niv >= 3 ? 2 : 1);
+  gagneOr(S, S.obj.moinsOr ? (c.gardien ? 6 + 3 * S.etage : c.elite ? 3 : 1) : c.gardien ? ((c.vies || 1) > 1 ? 2 : 8 + 4 * S.etage) : c.elite ? 5 : c.niv >= 3 ? 2 : 1);
   if (S.chaine >= 2 && S.obj.chaineor) gagneOr(S, 2 * S.obj.chaineor, 'chaîne d’or');
   if (c.trait === 'rancune') { degats(S, c.att); log(S, `💢 Rancune : ${c.nom} frappe en tombant (${c.att}).`); }
   if (c.trait === 'tresor') { const vides = S.creuset.map((x, k) => x ? -1 : k).filter(k => k >= 0); if (vides.length) { S.creuset[pick(RS(S), vides)] = true; log(S, '💎 Trésor : une case du creuset se remplit.');
       if (S.creuset.every(Boolean)) creusetPlein(S); } }
+  if (c.gardien && (c.vies || 1) > 1) {
+    c.vies--; c.sceaux = sceauxGardien(RS(S), S.etage + 1); c.att++; c.relevé = true;
+    log(S, `♛ ${c.nom} se relève ! Nouveaux sceaux, et il frappe 1 de plus (encore ${c.vies} vie${c.vies > 1 ? 's' : ''}).`); return;
+  }
   if (c.gardien) { S.gardien = null; S.score += 200 + 10 * S.pv; S.fin = 'gagne'; log(S, '🏆 Le Gardien est vaincu !'); return; }
   const col = S.cols.find(k => k[k.length - 1] === c); col.pop();
   if (c.trait === 'mue') { const b = carte(RS(S), 1, 'm' + S.seq++); b.nom = 'Larve de ' + c.nom.split(' ')[0]; b.m = 'larve'; b.vue = true; b.it = 'frappe'; b.mueDe = true; col.push(b); log(S, `🐛 Mue : une larve sort de ${c.nom} !`); }
   else if (col.length) { col[col.length - 1].vue = true; col[col.length - 1].it = 'frappe'; log(S, `🂠 Une carte se retourne : ${col[col.length - 1].nom}.`); }
   if (S.cols.every(k => !k.length)) {
     if (S.gardienMode === false) { S.fin = 'gagne'; S.score += 5 * S.pv; log(S, '🏆 La salle est vidée !'); return; }
-    S.gardien = gardien(RS(S), S.etage); S.gardien.it = 'frappe'; log(S, `🔥 Les colonnes sont vides… ${S.gardien.nom} se réveille !`);
+    S.gardien = gardien(RS(S), S.etage, S.vies); S.gardien.it = 'frappe'; log(S, `🔥 Les colonnes sont vides… ${S.gardien.nom} se réveille !`);
   }
 }
 // la Rune : brise n'importe quel sceau d'un monstre visible
@@ -344,6 +357,6 @@ function finTour(S) {
 const etoiles = S => S.fin !== 'gagne' ? 0 : 1 + (S.pv >= 12 ? 1 : 0) + (S.pv >= 25 ? 1 : 0);
 
 const API = { INTENTIONS, intentions, NB_DES, NB_COL, PROF, RESERVE, RUNES_MAX, PV_HEROS, SCEAU_TXT, TRAITS, POUVOIRS, COMPAGNONS, COULEURS,
-  nouvelle, relancer, placer, rune, pouvoir, competence, finTour, visibles, menace, menaceComp, accepte, etoiles, trouve, force, silence, plafond, rng };
+  nouvelle, lancer, relancer, placer, rune, pouvoir, competence, finTour, visibles, menace, menaceComp, accepte, etoiles, trouve, force, silence, plafond, rng };
 if (typeof module !== 'undefined' && module.exports) module.exports = API; else racine.CRYPTE = API;
 })(typeof window !== 'undefined' ? window : globalThis);

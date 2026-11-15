@@ -88,6 +88,11 @@
   .de .g { position:absolute; top:-1cqw; right:-1cqw; font-size:3cqw; }
   .de.roule { animation:roule .45s; }
   @keyframes roule { 0% { transform:rotate(0) scale(.7); } 50% { transform:rotate(200deg) scale(1.15); } 100% { transform:rotate(360deg) scale(1); } }
+  /* 15/11 soir : les dés cachés avant le lancer, et le lancer qu'on voit (comme dans le Duel) */
+  .de.cache { border-radius:2.6cqw; background:radial-gradient(circle at 35% 30%, #5a4e8a, #2a2448); box-shadow:inset 0 0 0 .5cqw #8a7ec4, 0 1cqw 1.2cqw #000a; }
+  .de.cache::after { content:'?'; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:6cqw; color:#c9c1ea88; font-weight:bold; }
+  .de.tourne img { animation:tourne .26s linear infinite; } @keyframes tourne { 0% { transform:rotate(0) translateY(0) scale(1); } 50% { transform:rotate(190deg) translateY(-2.4cqw) scale(1.1); } 100% { transform:rotate(360deg) translateY(0) scale(1); } }
+  .actions .lancer { flex:2; background:var(--or); color:#2b1d0a; border-color:var(--or); animation:pulse 1s infinite; }
   .actions { display:flex; gap:2.5cqw; }
   .actions button { flex:1; border-radius:3cqw; padding:2.6cqw; font-size:3.8cqw; font-weight:bold; border:2px solid #4b4580; background:#221d42; }
   .actions .fin { background:var(--or); color:#2b1d0a; border-color:var(--or); }
@@ -178,7 +183,7 @@ function carteHTML(c) {
   const cible = mode === 'cible' ? 'cible' : '';
   return `<div class="carte ${c.elite ? 'elite' : ''} ${c.gardien ? 'gardien' : ''} ${cible} ${c.neuve ? 'neuve' : ''}" id="k-${c.id}" ${mode === 'cible' ? `onclick="cible('${c.id}')"` : ''}>
     <img class="img" src="portraits/m-${c.m}.webp" alt="">
-    <div class="niv">${c.gardien ? '♛ GARDIEN' : c.elite ? '★ ÉLITE' : '◆'.repeat(c.niv)}</div>
+    <div class="niv">${c.gardien ? `♛ GARDIEN${(c.viesMax || 1) > 1 ? ` · ${'❤'.repeat(c.vies)}${'🖤'.repeat(c.viesMax - c.vies)}` : ''}` : c.elite ? '★ ÉLITE' : '◆'.repeat(c.niv)}</div>
     ${T ? `<div class="trait" onclick="event.stopPropagation();explique('${c.id}')">${T.e}</div>` : ''}
     ${intentHTML(c)}
     <div class="nom">${c.nom}</div>
@@ -233,10 +238,10 @@ function dessine() {
       <div class="bloc besace"><h4>🎒 Besace</h4><div class="cases">${besace}</div></div>
       <div class="bloc runes"><button ${S.runes ? '' : 'disabled'} class="${mode === 'rune' ? 'on' : ''}" onclick="modeRune()">✦</button><small>${S.runes} Rune${S.runes > 1 ? 's' : ''}</small></div>
     </div>
-    <div class="plateau" id="plateau">${S.des.map(d => `<button class="de ${sel === d.id ? 'sel' : ''} ${d.neuf ? 'roule' : ''} ${d.c ? 'c-' + d.c : ''}" onclick="choisit('${d.id}')"><img src="faces-${S.heros}/face-${d.v}.webp" alt="${d.v}">${d.garde ? '<span class="g">🎒</span>' : ''}${d.c ? `<span class="cc">${C.COULEURS[d.c].e}</span>` : ''}</button>`).join('')}</div>
+    <div class="plateau" id="plateau">${S.aLancer ? S.des.map(d => `<button class="de cache" onclick="lanceDes()"></button>`).join('') : S.des.map(d => `<button class="de ${sel === d.id ? 'sel' : ''} ${d.neuf ? 'roule' : ''} ${d.c ? 'c-' + d.c : ''}" onclick="choisit('${d.id}')"><img src="faces-${S.heros}/face-${d.v}.webp" alt="${d.v}">${d.garde ? '<span class="g">🎒</span>' : ''}${d.c ? `<span class="cc">${C.COULEURS[d.c].e}</span>` : ''}</button>`).join('')}</div>
     ${btnEffet()}
     <div class="consigne">${consigne()}</div>
-    <div class="actions"><button onclick="relance()" ${S.relance && S.des.some(d => !d.garde) ? '' : 'disabled'}>🎲 Relancer (${S.relance})</button><button class="fin" onclick="finTour()">Fin du tour ▶</button></div>
+    <div class="actions">${S.aLancer ? `<button class="lancer" onclick="lanceDes()">🎲 Lancer les dés</button>` : `<button onclick="relance()" ${S.relance && S.des.some(d => !d.garde) ? '' : 'disabled'}>🎲 Relancer (${S.relance})</button><button class="fin" onclick="finTour()">Fin du tour ▶</button>`}</div>
     <div class="journal">${S.journal[0] || ''}</div>`;
   S.des.forEach(d => delete d.neuf); visibles().forEach(c => delete c.neuve);
   sauve();
@@ -245,6 +250,7 @@ const visibles = () => S ? C.visibles(S) : [];
 // 15/11 : seules les cartes VISIBLES frappent, chacune de sa force ; on l'écrit en clair (« Scarabée 1 + Lutin 2 »)
 function detailMenace() { return C.intentions(S).filter(x => x.v).map(x => `${x.nom.split(' ')[0]} ${x.v}`).join(' + '); }
 function consigne() {
+  if (S.aLancer) return 'Un nouveau tour : touche <b>🎲 Lancer les dés</b>.';
   if (mode === 'rune') return '✦ Touche le <b>sceau</b> que la Rune doit briser (n’importe lequel).';
   if (mode === 'cible') return '🔨 Touche le <b>monstre</b> à frapper.';
   if (sel) { const d = S.des.find(x => x.id === sel); return 'Pose ce dé : un <b>sceau en vert</b>, le <b>creuset</b> (case de sa valeur) ou la <b>besace</b>' + (d && d.c ? ', ou utilise son <b>effet</b> (bouton doré).' : '.') + (C.plafond(S) && d && d.v >= 5 ? ' <span style="color:#ff9a7a">⛓ Chaînes lourdes : pas de 5 ni de 6 sur les sceaux !</span>' : ''); }
@@ -268,7 +274,21 @@ function touchePouvoir(k) { if (!sel) return; const p = S.pret; resultat(C.place
 function versCreuset() { if (!sel) return; resultat(C.placer(S, sel, { creuset:true })); dessine(); }
 function versBesace() { if (!sel) return; resultat(C.placer(S, sel, { reserve:true })); dessine(); }
 function modeRune() { if (!S.runes) return; mode = mode === 'rune' ? null : 'rune'; sel = null; dessine(); }
-function relance() { if (C.relancer(S)) { son('relance'); sel = null; S.des.forEach(d => { if (!d.garde) d.neuf = true; }); dessine(); } }
+// 15/11 soir : le LANCER se voit : les dés tournent en changeant de face, puis s'arrêtent sur leur valeur
+let anime = false;
+function animeDes(ids, puis) {
+  anime = true; son('relance'); const fin = Date.now() + 650;
+  const tick = () => {
+    const pl = $('plateau'); if (!pl || !S) { anime = false; return; }
+    if (Date.now() >= fin) { anime = false; S.des.forEach(d => { if (ids.includes(d.id)) d.neuf = true; }); dessine(); if (puis) puis(); return; }
+    pl.innerHTML = S.des.map(d => ids.includes(d.id) ? `<button class="de tourne ${d.c ? 'c-' + d.c : ''}"><img src="faces-${S.heros}/face-${1 + Math.floor(Math.random() * 6)}.webp" alt=""></button>`
+      : `<button class="de ${d.c ? 'c-' + d.c : ''}"><img src="faces-${S.heros}/face-${d.v}.webp" alt="${d.v}"></button>`).join('');
+    setTimeout(tick, 70);
+  };
+  tick();
+}
+function lanceDes() { if (anime || !S || !S.aLancer) return; C.lancer(S); sel = null; const ids = S.des.filter(d => !d.garde).map(d => d.id); dessine(); animeDes(ids); }
+function relance() { if (anime) return; const ids = S.des.filter(d => !d.garde).map(d => d.id); if (C.relancer(S)) { sel = null; dessine(); animeDes(ids); } }
 function utilise() {
   if (C.silence(S)) { son('erreur'); bulle('🤐 Silence !', true); return; }
   if (S.heros === 'maelle') { mode = 'cible'; sel = null; dessine(); return; }
@@ -279,6 +299,7 @@ function cible(id) { const avant = S.tombes; if (C.pouvoir(S, { carte:id })) { s
 // après un coup : les monstres tombés se replient, la carte du dessous se retourne
 function apresCoup(avant) {
   const n = S.tombes - avant;
+  if (S.gardien && S.gardien.relevé) { delete S.gardien.relevé; S.gardien.neuve = true; son('vague'); bulle(`♛ ${S.gardien.nom.split(' ').slice(-1)[0]} se relève !`, true); tremble(); }
   if (n > 0) {
     son('tombe'); if (S.chaine > 1) bulle(`Chaîne ×${S.chaine} !`); else bulle('💀 Il tombe !');
     if (typeof guildeEvt === 'function') guildeEvt('salle', n, { heros:S.heros });
@@ -305,7 +326,6 @@ async function finTour() {
   const perdu = avant - S.pv;
   if (perdu > 0) { son('coup'); $('flash').classList.remove('go'); void $('flash').offsetWidth; $('flash').classList.add('go'); tremble(); bulle(`−${perdu} PV`, true); }
   if (S.fin) return setTimeout(finPartie, 700);
-  S.des.forEach(d => d.neuf = true); setTimeout(() => son('relance'), 150);
   dessine();
 }
 
