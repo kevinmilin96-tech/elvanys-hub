@@ -696,7 +696,7 @@
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
 // 14/11 : l'Odyssée sans fin a ses propres emplacements (odyssee.js lit SANSFIN)
 const SANSFIN = new URLSearchParams(location.search).get('sansfin') === '1', ROUTE_TITAN = new URLSearchParams(location.search).get('route') === '1', EPREUVE_PAGE = new URLSearchParams(location.search).get('epreuve') === '1', ODY_PAGE = EPREUVE_PAGE ? 'epreuves.html' : 'odyssee.html' + (SANSFIN ? '?sansfin=1' : ROUTE_TITAN ? '?route=1' : '');
-const VERSION = '20261115-223503';
+const VERSION = '20261115-223810';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -715,17 +715,17 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261115-223503"></script>
-<script src="musique.js?v=20261115-223503"></script>
-<script src="rang.js?v=20261115-223503"></script>
-<script src="heros-etoiles.js?v=20261115-223503"></script>
-<script src="heros-aventure.js?v=20261115-223503"></script>
-<script src="donnees.js?v=20261115-223503"></script>
-<script src="odyssee.js?v=20261115-223503"></script>
-<script src="bestiaire.js?v=20261115-223503"></script>
-<script src="aventure.js?v=20261115-223503"></script>
-<script src="odyssee-sansfin.js?v=20261115-223503"></script>
-<script src="chronique.js?v=20261115-223503"></script>
+<script src="cartes.js?v=20261115-223810"></script>
+<script src="musique.js?v=20261115-223810"></script>
+<script src="rang.js?v=20261115-223810"></script>
+<script src="heros-etoiles.js?v=20261115-223810"></script>
+<script src="heros-aventure.js?v=20261115-223810"></script>
+<script src="donnees.js?v=20261115-223810"></script>
+<script src="odyssee.js?v=20261115-223810"></script>
+<script src="bestiaire.js?v=20261115-223810"></script>
+<script src="aventure.js?v=20261115-223810"></script>
+<script src="odyssee-sansfin.js?v=20261115-223810"></script>
+<script src="chronique.js?v=20261115-223810"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -1936,7 +1936,7 @@ function texteParties(l, avecJournal) {
   const lignes = l.map(p => `${DATE(p.quand)} · ${HEROS[p.moi].nom} contre ${HEROS[p.ordi].nom} · ${p.resultat === 'gagne' ? 'GAGNÉ' : 'PERDU'} en ${p.tours} tours · PV ${p.pvMoi} / ${p.pvOrdi} · ${p.salle} · v${p.version}${avecJournal ? '\n  ' + p.journal.join('\n  ') : ''}`);
   return `La Guilde des Runes · mes parties (${l.length})\n` + lignes.join('\n');
 }
-function mesParties() {
+function mesParties() { if (typeof Carnet !== 'undefined') return Carnet.ouvrir('duel'); // 15/11 nuit : le carnet commun à tous les modes (musique.js)
   const l = parties();
   if (!l.length) { fenetre('<h2>📜 Mes parties</h2><p>Aucune partie terminée pour l’instant.</p><div class="choixh"><button onclick="accueil()">Retour</button></div>'); return; }
   const g = l.filter(p => p.resultat === 'gagne').length, par = {};
@@ -1979,7 +1979,7 @@ let monHeros = null;
 function accueil() {
   fenetre(`<h2>Duel · prototype</h2><p>1. Choisis ton héros.</p>
   <div class="heros6">${ORDRE.map(id => id === 'zephine' && localStorage.getItem('guilde-tuto') !== 'fait' ? `<button onclick="typeof tutoVerrou === 'function' ? tutoVerrou() : location.href='duel.html?tuto=1'" style="opacity:.55;position:relative"><img src="${IMG(id)}" alt="" style="filter:grayscale(1)">🔒 ${HEROS[id].nom}<br><small>Fais le tutoriel</small></button>` : `<button onclick="monHeros='${id}';adversaire()"><img src="${IMG(id)}" alt="">${HEROS[id].nom}</button>`).join('')}</div>
-  <div class="choixh"><button onclick="mesParties()">📜 Mes parties (${parties().length})</button><button onclick="location.href='menu.html'">⌂ Menu</button></div>
+  <div class="choixh"><button onclick="mesParties()">📜 Mes parties</button><button onclick="location.href='menu.html'">⌂ Menu</button></div>
   <p style="color:#c9c1ea;font-size:.85em">Prototype pour essayer les règles : dessins provisoires, chiffres à équilibrer.</p>`);
 }
 function adversaire() {
@@ -2387,17 +2387,17 @@ async function joueFX() {
 // toucher l'écran pendant les animations les accélère
 document.addEventListener('pointerdown', () => { if (fxOn && !(S && S.tuto)) fxVite = .5; }, true); // 14/11 : plus d'accélération dans le tutoriel
 </script>
-<script src="profil.js?v=20261115-223503"></script>
-<script src="pantheon.js?v=20261115-223503"></script>
-<script src="tuto.js?v=20261115-223503"></script>
-<script src="deux.js?v=20261115-223503"></script>
+<script src="profil.js?v=20261115-223810"></script>
+<script src="pantheon.js?v=20261115-223810"></script>
+<script src="tuto.js?v=20261115-223810"></script>
+<script src="deux.js?v=20261115-223810"></script>
 <script>window.AMIS_SANS_BOUTON = true;</script>
-<script src="amis.js?v=20261115-223503"></script>
-<script src="duel-ligne.js?v=20261115-223503"></script>
-<script src="invasion.js?v=20261115-223503"></script>
-<script src="enigme-table.js?v=20261115-223503"></script>
-<script src="forge.js?v=20261115-223503"></script>
-<script src="semaine.js?v=20261115-223503"></script>
-<script src="enigme.js?v=20261115-223503"></script>
+<script src="amis.js?v=20261115-223810"></script>
+<script src="duel-ligne.js?v=20261115-223810"></script>
+<script src="invasion.js?v=20261115-223810"></script>
+<script src="enigme-table.js?v=20261115-223810"></script>
+<script src="forge.js?v=20261115-223810"></script>
+<script src="semaine.js?v=20261115-223810"></script>
+<script src="enigme.js?v=20261115-223810"></script>
 </body>
 </html>

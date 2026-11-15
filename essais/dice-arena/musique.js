@@ -132,6 +132,7 @@ const GM = (() => {
         <div class="l"><span>✅ Confirmer les actions en combat</span><button class="t ${localStorage.getItem('guilde-confirme-actions') !== 'non' ? 'on' : ''}" data-k="c">${localStorage.getItem('guilde-confirme-actions') !== 'non' ? 'Oui' : 'Non'}</button></div>
         ${window.GM_QUITTER ? `<button class="a q" data-k="q">🚪 ${window.GM_QUITTER.t}</button>` : ''}
         ${window.Guide && Guide.dernier && Guide.dernier() ? '<button class="a" data-k="g">🐱 Le guide de cet écran</button>' : ''}
+        <button class="a" data-k="p">📜 Mes parties (le journal de chaque partie)</button>
         <a class="a" href="duel.html?tuto=1">🎓 Rejouer le tutoriel</a>
         <a class="a" href="#" onclick="Object.keys(localStorage).filter(k => k.startsWith('guilde-guide-') || k === 'guilde-exp-guide').forEach(k => localStorage.removeItem(k)); this.textContent = '🐱 C’est fait : Moustache vous guidera à nouveau'; return false">🐱 Revoir les guides de Moustache</a>
         <button class="f" data-k="x">Fermer</button></div>`; };
@@ -140,6 +141,7 @@ const GM = (() => {
         if (e.target === z) { z.remove(); return; }
         const k = e.target.dataset && e.target.dataset.k; if (!k) return;
         if (k === 'x') { z.remove(); return; }
+        if (k === 'p') { z.remove(); Carnet.ouvrir(); return; } // 15/11 nuit : le carnet commun à tous les modes
         if (k === 'g') { z.remove(); Guide.rejoue(); return; } // 15/11 soir : Moustache réexplique l'écran en cours
         if (k === 'q') { z.remove(); window.GM_QUITTER.f(); return; } // 14/11 : quitter une partie en cours (posé par la page du combat)
         if (k === 'm') api.bascule();
@@ -184,6 +186,7 @@ const GM = (() => {
 // Chaque partie finie envoie son journal au serveur du laboratoire perso (POST /api/hub/guilde/journal) ; Claude les relit depuis l'atelier.
 // Seulement sur perso.elvanys.fr ; aucun compte : le pseudo tapé par le joueur. Un envoi raté ne gêne jamais le jeu.
 function guildeJournal(mode, info) {
+  try { Carnet.garde(mode, info || {}); } catch (e) { /* jamais bloquant */ }
   try {
     if (!/^(perso\.elvanys\.fr|localhost|127\.0\.0\.1)$/.test(location.hostname)) return;
     info = info || {};
@@ -193,3 +196,112 @@ function guildeJournal(mode, info) {
     fetch('/api/hub/guilde/journal', { method:'POST', headers:{ 'Content-Type':'application/json' }, body:corps, keepalive:corps.length < 60000 }).catch(() => {});
   } catch (e) { /* jamais bloquant */ }
 }
+
+// 15/11 nuit (l'utilisateur : « l'historique des combats du Duel, le même principe dans CHAQUE mode, pour bien voir les problèmes ») :
+// LE CARNET COMMUN « 📜 Mes parties ». Chaque partie finie (guildeJournal) est aussi gardée sur le téléphone (les 60 dernières) ;
+// on l'ouvre depuis ⚙️ dans tous les modes, ou par la pastille qui apparaît à la fin d'une partie. Filtre par mode, détail tour par tour,
+// « Copier pour Claude » (une partie ou toutes celles du filtre). Les anciens duels (« guilde-parties » du Duel) y sont repris une fois.
+const Carnet = (() => {
+  const CLE = 'guilde-carnet', MAX = 60;
+  const FAM = [ // [famille, nom affiché, modes du carnet]
+    ['duel', '⚔️ Duels', ['duel', 'duel-ami', 'duel-deux', 'duel-semaine', 'enigme', 'tutoriel']],
+    ['odyssee', '🗺️ Odyssée', ['odyssee', 'odyssee-combat', 'odyssee-route', 'odyssee-sansfin', 'grande-aventure', 'epreuve']],
+    ['crypte', '🕯️ Crypte et Descente', ['crypte', 'descente-combat', 'descente']],
+    ['defense', '🏰 Défense', ['defense', 'defense-sansfin']],
+    ['fosse', '🕳️ Fosse', ['fosse']],
+    ['chroniques', '📖 Chroniques', ['chroniques', 'chroniques-aventure']],
+    ['autres', '⛵ Expéditions et Invasion', ['expedition', 'invasion']]];
+  const NOMS = { duel:'Duel', 'duel-ami':'Duel contre un ami', 'duel-deux':'Duel à deux (un téléphone)', 'duel-semaine':'Duel de la semaine', enigme:'Énigme du jour', tutoriel:'Tutoriel',
+    odyssee:'Odyssée', 'odyssee-combat':'Combat de l’Odyssée', 'odyssee-route':'Route du Titan', 'odyssee-sansfin':'Odyssée sans fin', 'grande-aventure':'Grande aventure', epreuve:'Épreuve',
+    crypte:'Crypte aux Sceaux', 'descente-combat':'Combat de la Descente', descente:'Descente', defense:'Défense de la porte', 'defense-sansfin':'Défense sans fin', fosse:'Fosse aux Runes',
+    chroniques:'Chroniques', 'chroniques-aventure':'Aventure des Chroniques', expedition:'Expédition', invasion:'Invasion' };
+  const famDe = m => (FAM.find(f => f[2].includes(m)) || ['autres'])[0];
+  const lit = () => { try { return JSON.parse(localStorage.getItem(CLE) || '[]'); } catch (e) { return []; } };
+  const ecrit = l => { try { localStorage.setItem(CLE, JSON.stringify(l.slice(0, MAX))); } catch (e) { // trop gros : on raccourcit les journaux
+    try { localStorage.setItem(CLE, JSON.stringify(l.slice(0, 30).map(p => ({ ...p, journal:(p.journal || []).slice(-150) })))); } catch (e2) {} } };
+  const esc = t => String(t == null ? '' : t).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
+  const DATEF = iso => { try { return new Date(iso).toLocaleString('fr-FR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' }); } catch (e) { return ''; } };
+  const gagne = r => /gagn|victoire|win/i.test(String(r || ''));
+  const resTxt = r => gagne(r) ? 'GAGNÉ' : /perd|defaite|défaite|mort/i.test(String(r || '')) ? 'PERDU' : (r ? String(r).toUpperCase() : 'FINI');
+  const resumeTxt = o => Object.entries(o || {}).filter(([, v]) => v !== null && v !== undefined && v !== '' && !(Array.isArray(v) && !v.length))
+    .map(([k, v]) => `${k} ${typeof v === 'object' ? JSON.stringify(v) : v}`).join(' · ');
+  function reprendAnciens() { // une fois : les duels de l'ancien historique du Duel
+    if (localStorage.getItem('guilde-carnet-repris')) return; localStorage.setItem('guilde-carnet-repris', '1');
+    let v = []; try { v = JSON.parse(localStorage.getItem('guilde-parties') || '[]'); } catch (e) {}
+    if (!v.length) return; const l = lit();
+    v.forEach(p => l.push({ quand:p.quand, mode:'duel', heros:p.moi, resultat:p.resultat, version:p.version || '',
+      resume:{ contre:p.ordi, tours:p.tours, pvMoi:p.pvMoi, pvContre:p.pvOrdi, salle:p.salle }, journal:p.journal || [] }));
+    l.sort((a, b) => String(b.quand).localeCompare(String(a.quand))); ecrit(l);
+  }
+  function garde(mode, info) {
+    reprendAnciens();
+    const l = lit(); l.unshift({ quand:new Date().toISOString(), mode, heros:String(info.heros || ''), resultat:String(info.resultat || ''),
+      version:typeof VERSION !== 'undefined' ? VERSION : '', resume:info.resume || {}, journal:(info.journal || []).map(String).slice(-400) });
+    ecrit(l); pastille();
+  }
+  function pastille() { // à la fin d'une partie : une pastille discrète pour relire le journal tout de suite
+    if (!document.body) return; let b = document.getElementById('carnet-pastille'); if (b) b.remove();
+    b = document.createElement('div'); b.id = 'carnet-pastille';
+    b.style.cssText = 'position:fixed;left:10px;bottom:calc(10px + env(safe-area-inset-bottom));z-index:950;display:flex;gap:4px;align-items:center;background:#1b1838ee;border:1px solid #f3c96b88;border-radius:20px;padding:4px 6px 4px 12px;font:14px Georgia,serif;color:#f3c96b;box-shadow:0 4px 12px #000a';
+    b.innerHTML = '<span style="cursor:pointer">📜 Journal de la partie</span><button style="background:none;border:none;color:#c9c1ea;font-size:16px;padding:2px 6px;cursor:pointer" aria-label="Fermer">✕</button>';
+    b.firstChild.onclick = () => { b.remove(); ouvrir(null, 0); }; b.lastChild.onclick = () => b.remove();
+    document.body.appendChild(b); setTimeout(() => b.isConnected && b.remove(), 60000);
+  }
+  let filtre = null, z = null;
+  function styles() { if (document.getElementById('carnet-st')) return; const st = document.createElement('style'); st.id = 'carnet-st';
+    st.textContent = `#carnet{position:fixed;inset:0;z-index:1001;background:#000b;display:flex;align-items:center;justify-content:center;padding:10px;font:15px/1.4 Georgia,serif}
+      #carnet .p{width:100%;max-width:520px;max-height:92vh;display:flex;flex-direction:column;background:#1d1838;border:1px solid #f3c96b66;border-radius:18px;padding:14px;color:#efe9ff;box-shadow:0 10px 30px #000c}
+      #carnet h2{margin:0 0 8px;color:#f3c96b;font-size:1.25em;text-align:center}
+      #carnet .fil{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px} #carnet .fil button{border:1px solid #4b4580;background:#2a2650;color:#fff;border-radius:14px;padding:4px 9px;font:13px Georgia}
+      #carnet .fil button.on{background:#f3c96b;color:#2a1a08;border-color:#f3c96b}
+      #carnet .liste{overflow:auto;flex:1;min-height:80px} #carnet .ligne{display:block;width:100%;text-align:left;margin:3px 0;padding:8px 10px;border-radius:10px;border:1px solid #3a3570;background:#241f45;color:#efe9ff;font:14px Georgia}
+      #carnet .ligne small{color:#b9b1e0} #carnet .j{overflow:auto;flex:1;background:#120f24;border-radius:10px;padding:8px;font:13px/1.45 system-ui,sans-serif;color:#ddd6fe}
+      #carnet .j div{padding:2px 0;border-bottom:1px solid #ffffff0d} #carnet .doux{color:#b9b1e0;font-size:.88em;text-align:center;margin:4px 0}
+      #carnet .bts{display:flex;gap:6px;margin-top:10px} #carnet .bts button{flex:1;padding:10px;border-radius:12px;border:1px solid #4b4580;background:#2a2650;color:#fff;font:14px Georgia}
+      #carnet .bts button.f{background:#f3c96b;color:#2a1a08;border:none;font-weight:bold} #carnet .ok{color:#7dffb0;text-align:center;font-size:.9em;min-height:1.2em;margin:4px 0 0}`;
+    document.head.appendChild(st); }
+  const fenetre = h => { styles(); if (!z) { z = document.createElement('div'); z.id = 'carnet'; z.addEventListener('click', e => { if (e.target === z) fermer(); }); } z.innerHTML = `<div class="p">${h}</div>`; if (!z.isConnected) document.body.appendChild(z); };
+  const fermer = () => { if (z) z.remove(); };
+  const choisis = () => filtre ? lit().map((p, i) => ({ p, i })).filter(x => famDe(x.p.mode) === filtre) : lit().map((p, i) => ({ p, i }));
+  function liste() {
+    reprendAnciens(); const tout = lit(), l = choisis(), g = l.filter(x => gagne(x.p.resultat)).length;
+    const chips = `<button data-f="" class="${filtre ? '' : 'on'}">Tout (${tout.length})</button>` + FAM.map(([k, n]) => { const c = tout.filter(p => famDe(p.mode) === k).length;
+      return c ? `<button data-f="${k}" class="${filtre === k ? 'on' : ''}">${n} (${c})</button>` : ''; }).join('');
+    fenetre(`<h2>📜 Mes parties</h2><div class="fil">${chips}</div>
+      ${l.length ? `<p class="doux">${l.length} partie${l.length > 1 ? 's' : ''} · ${g} gagnée${g > 1 ? 's' : ''} · touche une partie pour la relire tour par tour</p>
+      <div class="liste">${l.map(({ p, i }) => `<button class="ligne" data-i="${i}">${gagne(p.resultat) ? '🏆' : '💀'} <b>${esc(NOMS[p.mode] || p.mode)}</b> · ${esc(p.heros)}<br><small>${DATEF(p.quand)} · ${resTxt(p.resultat)} · ${(p.journal || []).length} lignes ›</small></button>`).join('')}</div>`
+      : '<p class="doux">Aucune partie terminée ici pour l’instant. Chaque partie finie viendra s’ajouter à ce carnet.</p><div class="liste"></div>'}
+      <div class="bts">${l.length ? '<button data-c="tout">📋 Copier tout (pour Claude)</button>' : ''}<button class="f" data-x="1">Fermer</button></div><p class="ok" id="carnet-ok"></p>`);
+    z.querySelectorAll('[data-f]').forEach(b => b.onclick = () => { filtre = b.dataset.f || null; liste(); });
+    z.querySelectorAll('[data-i]').forEach(b => b.onclick = () => une(+b.dataset.i));
+    const c = z.querySelector('[data-c]'); if (c) c.onclick = () => copie(l.map(x => x.p));
+    z.querySelector('[data-x]').onclick = fermer;
+  }
+  function une(i) {
+    const p = lit()[i]; if (!p) return liste();
+    fenetre(`<h2>${gagne(p.resultat) ? '🏆' : '💀'} ${esc(NOMS[p.mode] || p.mode)}</h2>
+      <p class="doux">${esc(p.heros)} · ${DATEF(p.quand)} · ${resTxt(p.resultat)}${p.version ? ' · v' + esc(p.version) : ''}</p>
+      ${resumeTxt(p.resume) ? `<p class="doux" style="text-align:left">${esc(resumeTxt(p.resume))}</p>` : ''}
+      <div class="j">${(p.journal || []).length ? p.journal.map(t => `<div>${esc(t)}</div>`).join('') : '<div>(Ce mode n’envoie qu’un résumé, pas de journal tour par tour.)</div>'}</div>
+      <div class="bts"><button data-c="1">📋 Copier pour Claude</button><button data-r="1">‹ Retour</button><button class="f" data-x="1">Fermer</button></div><p class="ok" id="carnet-ok"></p>`);
+    z.querySelector('[data-c]').onclick = () => copie([p]); z.querySelector('[data-r]').onclick = liste; z.querySelector('[data-x]').onclick = fermer;
+  }
+  function texte(l) {
+    return `La Guilde des Runes · mes parties (${l.length})\n` + l.map(p => `\n=== ${DATEF(p.quand)} · ${NOMS[p.mode] || p.mode} · ${p.heros} · ${resTxt(p.resultat)}${p.version ? ' · v' + p.version : ''}\n`
+      + (resumeTxt(p.resume) ? `Résumé : ${resumeTxt(p.resume)}\n` : '') + (p.journal || []).map(t => '  ' + t).join('\n')).join('\n');
+  }
+  function copie(l) {
+    const t = texte(l), ok = m => { const e = document.getElementById('carnet-ok'); if (e) e.textContent = m; };
+    const secours = () => { try { const a = document.createElement('textarea'); a.value = t; document.body.appendChild(a); a.select(); const r = document.execCommand('copy'); a.remove(); return r; } catch (e) { return false; } };
+    (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => ok('Copié ✓ : colle-le dans la discussion avec Claude.'))
+      .catch(() => ok(secours() ? 'Copié ✓ : colle-le dans la discussion avec Claude.' : 'Copie impossible sur ce téléphone.'));
+  }
+  function ouvrir(f, i) { // f : famille (duel, odyssee…) ; sans f : celle de la page ouverte ; i : ouvrir directement la partie n° i
+    if (f === undefined || f === null) { const page = location.pathname.split('/').pop();
+      f = /^duel/.test(page) ? 'duel' : /^odyssee|^epreuves/.test(page) ? 'odyssee' : /^crypte/.test(page) ? 'crypte' : /^defense/.test(page) ? 'defense' : /^fosse/.test(page) ? 'fosse'
+        : /^chroniques/.test(page) ? 'chroniques' : /^expedition|^campement/.test(page) ? 'autres' : null; }
+    reprendAnciens(); filtre = f && lit().some(p => famDe(p.mode) === f) ? f : null;
+    if (typeof i === 'number') une(i); else liste();
+  }
+  return { garde, ouvrir, lit };
+})();

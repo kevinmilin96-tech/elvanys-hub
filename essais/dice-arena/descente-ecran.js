@@ -311,6 +311,10 @@ function descenteFin() {
   E.parties++; if (gagne) E.victoires++; E.meilleur = Math.max(E.meilleur, DR.score); E.etageMax = Math.max(E.etageMax || 0, gagne ? 4 : DR.etage); if (gagne && (DR.prof || 0) >= (E.profMax || 0)) { E.profMax = Math.min(10, (DR.prof || 0) + 1); setTimeout(() => bulle(`🕳 Profondeur ${E.profMax} ouverte !`), 1200); }
   if (DR.duJour) { E.jours = E.jours || {}; const j = E.jours[jour()]; const sc = gagne ? DR.score : DR.etage * 100 + DR.pas * 10; if (!j || sc > j.score) E.jours[jour()] = { score:sc, etoiles:et, etage:gagne ? 0 : DR.etage }; }
   ecrireD(E);
+  // 15/11 nuit : la Descente entière va aussi au carnet des parties (les combats y sont déjà, un par un, sous « Combat de la Descente »)
+  if (!DR.journalEnvoye && typeof guildeJournal === 'function') { DR.journalEnvoye = true; guildeJournal('descente', { heros:DR.heros, resultat:DR.fin,
+    journal:[...(DR.journal || []).slice().reverse(), `— Fin : étage ${DR.etage}, salle ${DR.pas}, or ${DR.or}, PV ${DR.pv}/${DR.pvmax}`, `Objets : ${Object.entries(DR.obj || {}).map(([k, n]) => n > 1 ? k + ' ×' + n : k).join(', ') || 'aucun'} · compagnon : ${DR.comp ? (DR.comp.id || DR.comp) : 'aucun'}`, `Breloque : ${DR.breloque || 'aucune'} · pacte : ${DR.pacte || 'aucun'} · profondeur ${DR.prof || 0} · combats ${DR.combats || 0}`],
+    resume:{ score:DR.score, etage:DR.etage, etoiles:et, duJour:!!DR.duJour, profondeur:DR.prof || 0 } }); }
   // 15/11 soir : la renommée gagnée (comptée une seule fois, même si l'écran de fin se redessine)
   let renTxt = '';
   { const avant = lireRen(); if (DR.renGain == null) { DR.renGain = D.renommeeGagnee(DR); DR.renAvant = avant; ecrireRen(avant + DR.renGain); }
