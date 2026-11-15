@@ -70,6 +70,8 @@ const SCEN = {
   // 15/11 soir : LE LABYRINTHE DES RUNES, un donjon TIRÉ AU HASARD à chaque partie (salles, couloirs, meubles, monstres, pièges) : on rejoue sans fin
   labyrinthe: { n:'Le Labyrinthe des Runes (donjon au hasard)', boss:'titan', renfort:'gobelin', objet:{ n:'fragment de rune', e:'✦' }, axe:'l’autel des runes', axeE:'✦', sablier:30,
     phases:['Le Réveil', 'La Colère', 'Le Dernier Souffle'], vue:5, hasard:true },
+  // 15/11 soir : LES AVENTURES EN SCÈNES (chroniques-aventures.js) : une EMBUSCADE sur le chemin = un petit terrain ouvert, gagner = abattre tous les monstres
+  arene: { n:'Embuscade', boss:'titan', renfort:'gobelin', objet:{ n:'—', e:'⚔' }, axe:'', axeE:'', sablier:40, phases:['', '', ''], vue:8, hasard:true, objectif:'vaincre' },
 };
 // la carte peinte, calée par l'utilisateur le 15/11 (28 × 36 ; . sol · # mur · ~ obstacle)
 const GRILLE_BRULEES = ["############################","####..#####~####~#####~~~~##","#.......##~~#########..~~~~#","#.......########.###.....~~#","#.......#####..#.###......~#","#.......##.......###.......#","#.......##...##...##.......#","#.......##...##...##......##","#.......###......###.....###","########.####..####..#######","####..###.###..###..########","##.....##..##..###..#......#","#..........##..###.........#","#..........................#","#......##..##..###..#......#","##.....##.......##..#......#","###...###........#..########","########..#......#..########","#######..##......#..##.....#","##......###......#.........#","#.......####....#####......#","#.......#...#..#~~~........#","#.......#...#..~....~......#","#.......#...#..#....~......#","##.....##...#..............#","#########......#.....#######","#########...#..##...########","#.......#####..#####.......#","#.......#####..#####.......#","#..........................#","#..........................#","#.......#####..######......#","#.......#####..######......#","#.......#############.....##","############################","############################"];
@@ -99,6 +101,17 @@ function construitCarte(S, R) {
   B.pieges.forEach(([x, y]) => R.obj[cle(x, y)] = { t:'piege', cache:true });
   B.monstres.forEach(([b, x, y]) => ajouteMonstre(S, b, x, y));
   B.depart.forEach(([x, y], i) => { if (S.heros[i]) { S.heros[i].x = x; S.heros[i].y = y; } });
+}
+// ------------------------------------------------------------------ L'EMBUSCADE (15/11 soir) : 12 × 10, des arbres ou des rochers, les héros en bas, les monstres en haut
+function construitArene(S, R, opts) {
+  const W2 = 12, H2 = 10; R.w = W2; R.h = H2; R.bronze = true;
+  for (let x = 0; x < W2; x++) { R.murs[cle(x, 0)] = '#'; R.murs[cle(x, H2 - 1)] = '#'; }
+  for (let y = 0; y < H2; y++) { R.murs[cle(0, y)] = '#'; R.murs[cle(W2 - 1, y)] = '#'; }
+  const libreA = (x, y) => !R.murs[cle(x, y)];
+  for (let i = 0, n = 0; i < 60 && n < (opts.obstacles || 9); i++) { const x = 1 + Math.floor(hasard(S) * (W2 - 2)), y = 2 + Math.floor(hasard(S) * (H2 - 5)); if (libreA(x, y)) { R.murs[cle(x, y)] = '~'; n++; } }
+  S.heros.forEach((h, i) => { h.x = 4 + i; h.y = H2 - 2; delete R.murs[cle(h.x, h.y)]; });
+  (opts.monstres || ['gobelin', 'gobelin', 'loup']).forEach((b, i) => { let x, y, k = 0; do { x = 1 + Math.floor(hasard(S) * (W2 - 2)); y = 1 + Math.floor(hasard(S) * 3); } while (k++ < 40 && (!libreA(x, y) || R.monstres.some(m => m.x === x && m.y === y))); ajouteMonstre(S, b, x, y); });
+  for (let y = 0; y < H2; y++) for (let x = 0; x < W2; x++) R.vu[cle(x, y)] = 1; // tout se voit : c'est une embuscade en plein air
 }
 // ------------------------------------------------------------------ LE LABYRINTHE DES RUNES : un donjon au hasard (15/11 soir)
 // 26 × 30 : 8 salles posées sans se toucher, reliées par des couloirs (plus 2 raccourcis pour faire des boucles) ; départ dans une salle,
@@ -212,7 +225,7 @@ function adapte(S) {
   const R = S.R, n = Math.max(1, Math.min(4, S.heros.length)), A = ADAPTE[n];
   S.nbHeros = n; S.dureeLevier = A.levier; S.sablier += A.sablier;
   if (S.scen === 'labyrinthe') { S.sablier += [0, 20, 10, 0, 0][n]; if (n <= 2) R.monstres = R.monstres.filter(() => hasard(S) < .7); } // un donjon plus grand : plus de temps aux petits groupes
-  if (A.garde < 1) R.monstres = R.monstres.filter(m => hasard(S) < A.garde);
+  if (A.garde < 1 && S.scen !== 'arene') R.monstres = R.monstres.filter(m => hasard(S) < A.garde); // une embuscade garde ses monstres (écrits pour l'aventure)
   if (A.renfort) { // à 4 : quelques monstres de plus, posés dans des couloirs (cases de sol hors salle, loin du départ)
     const libres = []; for (let y = 0; y < R.h; y++) for (let x = 0; x < R.w; x++) { const c = cle(x, y); if (!R.murs[c] && !R.salle[c] && !R.portes[c] && !R.obj[c] && !S.heros.some(h => dist(h, { x, y }) < 8) && !R.monstres.some(m => m.x === x && m.y === y)) libres.push([x, y]); }
     const sorte = S.scen === 'brulees' ? ['loup', 'gobelin', 'salamandre'] : S.scen === 'labyrinthe' ? ['gobelin', 'loup', 'page'] : ['rouagelin', 'coucou', 'rouagelin'];
@@ -221,7 +234,7 @@ function adapte(S) {
 }
 
 // ------------------------------------------------------------------ une partie
-function nouvelle(heros, s, scen) {
+function nouvelle(heros, s, scen, opts = {}) {
   scen = SCEN[scen] ? scen : 'horloger';
   // un héros = le nom d'une voie (« maelle »…) ou un HÉROS D'AVENTURE { voie, nom, pv, faces, desPlus, av, c } (aventuriers.js)
   const fait = h => typeof h === 'string' ? { id:h, pv:HEROS_C[h].pv, pvmax:HEROS_C[h].pv, objet:null, bouclier:0 }
@@ -230,6 +243,7 @@ function nouvelle(heros, s, scen) {
     livre:false, journal:[], seq:0, fin:null, score:0, tours:0, rouagesTrouves:0, etape:'jeu' };
   const R = { w:W, h:H, murs:{}, salle:{}, obj:{}, portes:{}, monstres:[], tour:0, vuSalle:{}, vu:{}, rouagesPoses:0, boss:null, bronze:false, leviersTour:{} };
   S.R = R;
+  if (scen === 'arene') { construitArene(S, R, opts); adapte(S); S.objectif = 'vaincre'; log(S, '⚔ Embuscade ! Abattez tous les monstres.'); debutTour(S); return S; }
   if (scen === 'labyrinthe') { construitLabyrinthe(S, R); adapte(S); voir(S); log(S, '✦ Le Labyrinthe des Runes : un donjon jamais vu. Trouvez 3 fragments de rune dans les meubles et portez-les à l’autel, tout au fond.'); debutTour(S); return S; }
   if (scen === 'brulees') { construitCarte(S, R); adapte(S); voir(S); log(S, '🔥 Les Terres brûlées : trouvez 3 braises éternelles en fouillant les meubles et portez-les au grand brasier.'); debutTour(S); return S; }
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) R.murs[cle(x, y)] = '#';
@@ -365,7 +379,9 @@ function verifieMonstre(S, m) {
   }
   R.monstres = R.monstres.filter(z => z !== m); S.score += BETES[m.b].elite ? 60 : 20;
   const duo = (R.frappeurs && R.frappeurs[m.id] || []).length >= 2; if (duo) { S.score += 25; log(S, `🤝 ${m.n} abattu à deux : +25 !`); }
-  ev.push({ t:'tombe', m:m.id, duo }); log(S, `💀 ${m.n} tombe.`); return ev;
+  ev.push({ t:'tombe', m:m.id, duo }); log(S, `💀 ${m.n} tombe.`);
+  if (S.objectif === 'vaincre' && !R.monstres.length && !R.boss) { S.fin = 'gagne'; S.score += 100; log(S, '🏆 L’embuscade est repoussée !'); }
+  return ev;
 }
 function proteger(S, hi, idDe, cibleI) {
   const h = S.heros[hi], d = h.des.find(z => z.id === idDe), c = S.heros[cibleI]; if (!d || !c) return 'Personne à protéger.';
