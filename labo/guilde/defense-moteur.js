@@ -66,16 +66,20 @@ Object.assign(DHEROS, {
     deck:['aigue', 'aigue', 'etincelles', 'torche', 'torche', 'retremper', 'ajuste', 'pierre', 'lame', 'mortier', 'trancheV'] },
 });
 // les cartes de la Défense (noms et conditions du Duel ; effets adaptés). cible : monstre | tour | de | (rien)
+// 15/11 soir (l'utilisateur : « Marteau de forge 10 dégâts pour un 6, c'est inutile, les ennemis ont 200 PV ») : les cartes de DÉGÂTS
+// montent avec les vagues comme Frappe et Technique (× echelleD : ×1,7 par vague) ; la carte affiche la vraie valeur (texteCarteD)
+const dgC = (D, n) => Math.round(n * echelleD(D));
+const texteCarteD = (D, c) => c.echelle ? c.d.replace(/\d+/g, n => dgC(D, +n)) : c.d;
 const DCARTES = {
-  marteau:{ n:'Marteau de forge', c:2, txt:'dé = 6', d:'10 dégâts à un monstre.', cond:vs => vs.length === 1 && vs[0] === 6, cible:'monstre', f:(D, vs, k) => blesse(D, k.m, 10) },
-  etincelles:{ n:'Étincelles', c:0, txt:'dé ≤ 2', d:'2 dégâts à chaque monstre.', cond:vs => vs.length === 1 && vs[0] <= 2, f:D => [...D.monstres].forEach(m => blesse(D, m, 2)) },
+  marteau:{ n:'Marteau de forge', c:2, txt:'dé = 6', d:'10 dégâts à un monstre.', echelle:true, cond:vs => vs.length === 1 && vs[0] === 6, cible:'monstre', f:(D, vs, k) => blesse(D, k.m, dgC(D, 10)) },
+  etincelles:{ n:'Étincelles', c:0, txt:'dé ≤ 2', d:'2 dégâts à chaque monstre.', echelle:true, cond:vs => vs.length === 1 && vs[0] <= 2, f:D => [...D.monstres].forEach(m => blesse(D, m, dgC(D, 2))) },
   lame:{ n:'Lame trempée', c:1, txt:'dé ≥ 4', d:'Une de tes tours tire + la valeur du dé, pour toute la partie.', cond:vs => vs.length === 1 && vs[0] >= 4, cible:'tour', f:(D, vs, k) => { k.t.bonus = (k.t.bonus || 0) + vs[0]; } },
   retremper:{ n:'Retremper', c:1, txt:'1 dé', d:'Un autre de tes dés gagne +2 (6 au plus).', cond:vs => vs.length === 1, cible:'de', f:(D, vs, k) => { k.d.v = Math.min(6, k.d.v + 2); } },
-  torche:{ n:'Torche', c:1, txt:'dé ≥ 4', d:'4 dégâts à un monstre (6 à une chauve-souris).', cond:vs => vs.length === 1 && vs[0] >= 4, cible:'monstre', f:(D, vs, k) => blesse(D, k.m, MONSTRES[k.m.t].vol ? 6 : 4) },
+  torche:{ n:'Torche', c:1, txt:'dé ≥ 4', d:'4 dégâts à un monstre (6 à une chauve-souris).', echelle:true, cond:vs => vs.length === 1 && vs[0] >= 4, cible:'monstre', f:(D, vs, k) => blesse(D, k.m, dgC(D, MONSTRES[k.m.t].vol ? 6 : 4)) },
   ajuste:{ n:'Pierre d’ajustement', c:0, txt:'1 dé', d:'Un autre de tes dés gagne +1 ou −1 (tu choisis).', cond:vs => vs.length === 1, cible:'de', f:(D, vs, k) => { k.d.v = Math.max(1, Math.min(6, k.d.v + (k.sens || 1))); } },
   pierre:{ n:'Pierre à aiguiser', c:1, txt:'1 dé', d:'Une de tes tours tire +2, pour toute la partie.', cond:vs => vs.length === 1, cible:'tour', f:(D, vs, k) => { k.t.bonus = (k.t.bonus || 0) + 2; } },
   mortier:{ n:'Mortier frais', c:1, txt:'1 dé', d:'Répare la porte : + la valeur du dé + 2 PV.', cond:vs => vs.length === 1, f:(D, vs) => { D.porte = Math.min(D.porteMax, D.porte + vs[0] + 2); } },
-  trancheV:{ n:'Tranche-vent', c:2, txt:'3, 4 ou 5 identiques', d:'7, 10 ou 15 dégâts à un monstre.', cond:vs => vs.length >= 3 && egaux(vs), cible:'monstre', f:(D, vs, k) => blesse(D, k.m, [0, 0, 0, 7, 10, 15][vs.length]) },
+  trancheV:{ n:'Tranche-vent', c:2, txt:'3, 4 ou 5 identiques', d:'7, 10 ou 15 dégâts à un monstre.', echelle:true, cond:vs => vs.length >= 3 && egaux(vs), cible:'monstre', f:(D, vs, k) => blesse(D, k.m, dgC(D, [0, 0, 0, 7, 10, 15][vs.length])) },
   aigue:{ n:'Note aiguë', c:0, txt:'dé impair', d:'Une de tes tours tire + la valeur du dé ce tour.', cond:vs => vs.length === 1 && vs[0] % 2 === 1, cible:'tour', f:(D, vs, k) => { k.t.tmp = (k.t.tmp || 0) + vs[0]; } },
 };
 

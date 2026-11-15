@@ -76,6 +76,19 @@
   .plateauD .rc.rune { background:radial-gradient(circle, #6b2bd988, transparent 70%); }
   .plateauD .mo { min-width:34px; height:34px; padding:0 1px; } .plateauD .mo img.e { width:24px; height:24px; } .plateauD .mo.boss img.e { width:32px; height:32px; } .plateauD .mo.boss { min-width:42px; height:42px; }
   .porteD { position:absolute; transform:translate(-50%, -50%); margin:0; padding:1px 8px; font-size:.75em; background:#3a2410dd; white-space:nowrap; }
+  /* 15/11 soir (l'utilisateur : « faire tenir l'ensemble sur une page sans scroll ») : en jeu, la page fait la hauteur du téléphone ;
+     le plateau prend toute la place qui reste et se redimensionne (container query), le reste est compacté */
+  #app.jeu { height:100vh; height:100dvh; min-height:0; display:flex; flex-direction:column; overflow:hidden; padding:4px 6px calc(4px + env(safe-area-inset-bottom)); }
+  #app.jeu > * { flex:none; }
+  #app.jeu .zoneP { flex:1 1 0; min-height:120px; container-type:size; display:flex; align-items:center; justify-content:center; }
+  #app.jeu .plateauD { width:min(100cqw, calc(100cqh * .558)); min-width:0; margin:0; }
+  #app.jeu .entete { padding:3px 6px; } #app.jeu .entete img { width:32px; height:32px; }
+  #app.jeu .bas.icones { display:flex; flex-direction:column; gap:2px; margin:0; } #app.jeu .bas.icones button { padding:1px 6px; font-size:.95em; line-height:1.2; }
+  #app.jeu .msg { min-height:0; height:1.5em; margin:2px 0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .annuleM { background:#3a1f1f; color:#ffb0b0; border:1px solid #7a3a3a; border-radius:9px; padding:0 8px; font-size:.95em; }
+  #app.jeu .des { margin:2px 0; } #app.jeu .de { width:46px; height:46px; }
+  #app.jeu .acts { margin:3px 0; gap:4px; } #app.jeu .acts button { padding:3px 2px; font-size:.7em; }
+  #app.jeu .main { padding:2px 52px 2px 0; } /* la place du ⚙️ en bas à droite */ #app.jeu .carte { flex-basis:30%; font-size:.6em; padding:3px 4px; }
   .msg { min-height:2.4em; text-align:center; font-size:.85em; color:var(--doux); margin:5px 0; }
   .msg.err { color:var(--rouge); }
   .des { display:flex; gap:6px; justify-content:center; margin:4px 0; }
@@ -112,13 +125,13 @@
 <body>
 <div id="app"></div>
 <div id="fen"></div>
-<script src="guide.js?v=20261115-192906"></script>
-<script src="cartes.js?v=20261115-192906"></script>
-<script src="musique.js?v=20261115-192906"></script>
-<script src="rang.js?v=20261115-192906"></script>
-<script src="heros-etoiles.js?v=20261115-192906"></script>
-<script src="donnees.js?v=20261115-192906"></script>
-<script src="defense-moteur.js?v=20261115-192906"></script>
+<script src="guide.js?v=20261115-193205"></script>
+<script src="cartes.js?v=20261115-193205"></script>
+<script src="musique.js?v=20261115-193205"></script>
+<script src="rang.js?v=20261115-193205"></script>
+<script src="heros-etoiles.js?v=20261115-193205"></script>
+<script src="donnees.js?v=20261115-193205"></script>
+<script src="defense-moteur.js?v=20261115-193205"></script>
 <script>
 // =============================================================================================== LA DÉFENSE DE LA PORTE · l'ÉCRAN (13/11)
 // Règles : defense-proposition.html (validées le 13/11). Moteur : defense-moteur.js.
@@ -131,6 +144,7 @@ const CORBIN = {
   4:'Ça se corse. Tu as pensé à fusionner, au moins ?', 5:'Ils sont nombreux. Moi, je surveille depuis le rempart. Le coussin du rempart. Courage.', 6:'LE TITAN. S’il touche la porte, c’est fini. Il fait fondre tes tours : tape fort, tape vite.' };
 
 function accueil() {
+  app.classList.remove('jeu'); // 15/11 soir : l'écran de jeu seul est figé sur la hauteur du téléphone
   D = null;
   app.innerHTML = `<h1>🏰 La Défense de la porte</h1>
   <p class="doux" style="text-align:center">Les monstres descendent trois chemins vers la porte de la Guilde. Tes dés deviennent des tours… ou des coups tout de suite. Deux tours identiques qui se touchent fusionnent ; deux 6 éveillent une Rune.</p>
@@ -216,16 +230,17 @@ function rendu() {
   <div class="entete"><img src="${IMG(D.heros)}" alt="">
     <div class="bloc">🚪 Porte <b>${D.porte}</b>/${D.porteMax}<div class="barre"><i style="width:${D.porte / D.porteMax * 100}%"></i></div></div>
     <div class="bloc">⚡ Ultime ${D.ultimeFait ? '✔' : `${D.jauge}/${DEF.jaugeMax}`}<div class="barre jauge"><i style="width:${D.ultimeFait ? 100 : D.jauge / DEF.jaugeMax * 100}%"></i></div></div>
+    <div class="bas icones"><button onclick="regles()" title="Règles">📜</button><button onclick="journal()" title="Journal">📖</button><button onclick="quitter()" title="Quitter">⌂</button></div>
     <div style="text-align:right"><span class="p">🌊 ${D.sansFin ? `${D.vague + 1} ♾` : `${Math.min(D.vague + 1, VAGUES.length)}/${VAGUES.length}`}</span><br><span class="p">◆ ${D.pc} PC</span></div></div>
   ${bandeVague()}
-  ${PD ? '<div class="plateauD">' : ''}<div class="${PD ? 'cheminD' : 'chemin'}">${chemin.map(({ r, col }) => `<div class="cc ${okPiege(r, col) ? 'ok' : ''}" style="${PD ? posCC(r, col) : ''}" onclick="toucheChemin(event, ${r}, ${col})">${piegeHTML(r, col)}${D.monstres.filter(m => m.row === r && m.col === col).map(m => { const M = MONSTRES[m.t];
+  <div class="zoneP">${PD ? '<div class="plateauD">' : ''}<div class="${PD ? 'cheminD' : 'chemin'}">${chemin.map(({ r, col }) => `<div class="cc ${okPiege(r, col) ? 'ok' : ''}" style="${PD ? posCC(r, col) : ''}" onclick="toucheChemin(event, ${r}, ${col})">${piegeHTML(r, col)}${D.monstres.filter(m => m.row === r && m.col === col).map(m => { const M = MONSTRES[m.t];
       return `<div class="mo ${M.boss ? 'boss' : ''} ${besoinMonstre ? 'cible' : ''}" data-m="${m.id}" onclick="toucheMonstre(${m.id})">${IMG_D[m.t] ? `<img class="e" src="${IMG_D[m.t]}" alt="">` : `<span class="e">${M.e}</span>`}<span class="pv">${m.pv}</span>${M.vit > 1 ? '<span class="vit">💨</span>' : M.vol ? '<span class="vit">🪽</span>' : M.armure ? '<span class="vit">🛡</span>' : ''}${tete.has(m.id) && !M.boss ? '' : ''}</div>`; }).join('')}</div>`).join('')}</div>
   <div class="${PD ? 'rempartD' : 'rempart'}">${D.rempart.map((t, c) => { const okVide = !t && un && !attente && D.pc >= DEF.coutBatir; const okFus = t && ((!t.rune && un && un.v === t.v && !attente) || (selTour >= 0 && selTour !== c && voisinsD(selTour).includes(c) && D.rempart[selTour] && D.rempart[selTour].v === t.v && t.v < NIV_MAX));
       const okDep = !t && selTour >= 0 && !D.deplace && voisinsD(selTour).includes(c);
       if (!t) return `<div class="rc vide ${okVide || okDep ? 'ok' : ''}" data-c="${c}" style="${PD ? posRC(c) : ''}" onclick="toucheCase(${c})"></div>`;
       return `<div class="rc ${t.rune ? 'rune' : ''} ${selTour === c ? 'sel' : ''} ${okFus || besoinTour ? 'ok' : ''}" data-c="${c}" style="${PD ? posRC(c) : ''}" onclick="toucheCase(${c})">${t.rune ? (RUNE_IMG[D.heros] ? `<img class="runeimg niv${t.v}" src="${RUNE_IMG[D.heros]}" alt="">` : `<img class="runeimg niv${t.v}" src="${FACE(D.heros, 6)}" alt="" style="filter:drop-shadow(0 0 6px #c084fc) drop-shadow(0 0 2px #fff)">`) + (t.v > 7 ? `<span class="nivr">${'✦'.repeat(t.v - 6)}</span>` : '') : `<img class="canon" src="tours/canon-${D.heros}-${t.v <= 2 ? 1 : t.v <= 4 ? 2 : 3}.webp?v=2" onerror="this.onerror=null;this.src='tours/canon-${['aldric', 'oria'].includes(D.heros) ? 'gorm' : 'maelle'}-${t.v <= 2 ? 1 : t.v <= 4 ? 2 : 3}.webp?v=2'" alt="Canon de ${t.v}" style="transform:rotate(${ANGLE[c] || 0}deg)"><img class="tourde" src="${FACE(D.heros, t.v)}" alt="${t.v}">`}<span class="pw">${puissanceTour(D, c, t)}</span>${t.bonus ? `<span class="bn">+${t.bonus}</span>` : ''}</div>`; }).join('')}</div>
-  ${PD ? `<div class="porte porteD" id="porte" style="left:${PD.porte[0]}%;top:${PD.porte[1]}%">🚪 ${D.porte}/${D.porteMax}</div></div>` : '<div class="porte" id="porte">🚪 La porte de la Guilde</div>'}
-  <div class="msg ${err ? 'err' : ''}">${msg}</div>
+  ${PD ? `<div class="porte porteD" id="porte" style="left:${PD.porte[0]}%;top:${PD.porte[1]}%">🚪 ${D.porte}/${D.porteMax}</div></div>` : '<div class="porte" id="porte">🚪 La porte de la Guilde</div>'}</div>
+  <div class="msg ${err ? 'err' : ''}">${attente || sel.length || selTour >= 0 ? '<button class="annuleM" onclick="annule()">✖ Annuler</button> ' : ''}${msg}</div>
   <div class="des" id="desD">${D.lanceT !== D.tour ? D.des.map(() => `<div class="de cacheD" onclick="lanceDesD()"></div>`).join('') + `<button class="lancerD" onclick="lanceDesD()">🎲 Lancer</button>` : ''}${D.lanceT !== D.tour ? '' : D.des.map((d, i) => `<div class="de ${d.pose ? 'pose' : ''} ${sel.includes(d) ? 'sel' : ''} ${besoinDe && !d.pose && !sel.includes(d) ? 'cible' : ''}" onclick="toucheDe(${i})"><img src="${FACE(D.heros, d.v)}" alt="${d.v}"></div>`).join('')}</div>
   <div class="acts">
     ${bouton('frappe', '⚔ Frappe', 'dés identiques')}${bouton('technique', '⚔⚔ Technique', 'suite')}${bouton('pouvoir', '✦ Pouvoir', H.pouvoir.txt)}${bouton('ultime', '⚡ Ultime', ultimeSous(H))}
@@ -233,8 +248,9 @@ function rendu() {
     <button ${D.relance && sel.length && !attente ? '' : 'disabled'} onclick="relance()">🎲 Relancer<br><small>${D.relance} restante${D.relance > 1 ? 's' : ''}</small></button>
     <button class="fin" onclick="finTour()">Fin du tour ▶</button></div>
   <div class="main">${D.main.map((k, i) => { const c = DCARTES[k]; const ok = !attente && sel.length && permisD(D, i, sel);
-      return `<div class="carte ${ok ? 'ok' : ''} ${attente && attente.quoi === i ? 'attente' : ''}" onclick="toucheCarte(${i})"><span class="c">${c.c}</span><b>${c.n}</b><span class="tx">${c.txt}</span><br>${c.d}</div>`; }).join('')}</div>
-  <div class="bas"><button onclick="regles()">📜 Règles</button><button onclick="journal()">📖 Journal</button>${attente || sel.length || selTour >= 0 ? '<button onclick="annule()">✖ Annuler</button>' : ''}<button onclick="quitter()">⌂ Quitter</button></div>`;
+      return `<div class="carte ${ok ? 'ok' : ''} ${attente && attente.quoi === i ? 'attente' : ''}" onclick="toucheCarte(${i})"><span class="c">${c.c}</span><b>${c.n}</b><span class="tx">${c.txt}</span><br>${texteCarteD(D, c)}</div>`; }).join('')}</div>
+  `;
+  app.classList.add('jeu');
   joueFx();
   if (D.fini) setTimeout(fin, 700); else Guide.lance('defense', GUIDE_DEF);
 }
