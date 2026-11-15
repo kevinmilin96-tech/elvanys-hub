@@ -26,22 +26,65 @@ function titresGuilde() {
     ...(typeof ROUTE !== 'undefined' ? Object.entries(ROUTE).filter(([, x]) => x[0] === 'titre').map(([n, x]) => [x[1], x[2], x[3], `Atteindre le rang ${n} de la Guilde.`, rgRecompense('titre', x[1]), COULEUR_TITRE_RANG[x[1]] || '#f3c96b']) : []),
   ];
 }
+// ------------------------------------------------------------------ 15/11 : L'ATELIER DU PROFIL (demande : « un crayon Modifier qui ouvre l'onglet
+// de modification du profil, où on change l'image, le cadre, les dés…, à étoffer avec plein de features »)
+// portrait (n'importe quel héros, ou un héros d'aventure), emblème, couleur du nom, fond de la carte, devise, vitrine de 3 titres.
+// Chaque choix a sa condition : libre, un rang de la Guilde (r), ou un titre gagné (t). Rien ne donne d'avantage en jeu.
+const rangGuilde = () => typeof lireRang === 'function' ? lireRang().info.rang : 1;
+const titreGagne = k => titresGuilde().some(x => x[0] === k && x[4]);
+const condOk = c => !c || (c.r ? rangGuilde() >= c.r : true) && (c.t ? titreGagne(c.t) : true);
+const condTxt = c => !c ? '' : c.r ? `rang ${c.r} de la Guilde` : c.t ? `titre « ${(titreDe(c.t) || [])[2] || c.t} »` : '';
+const FONDS = {
+  nuit:['Nuit étoilée', 'radial-gradient(ellipse at 50% 0%, #3a2a5c, #120f24 75%)'],
+  forge:['La forge', 'radial-gradient(ellipse at 50% 100%, #8a3a12, #2a1208 70%)'],
+  foret:['La forêt', 'linear-gradient(180deg, #1f4a2a, #0c1f12)'],
+  ocean:['L’océan', 'linear-gradient(180deg, #13406a, #081a30)'],
+  aube:['L’aube', 'linear-gradient(180deg, #ff9a6a, #6a3a8a 60%, #1a1430)', { r:3 }],
+  aurore:['L’aurore', 'linear-gradient(160deg, #0a3a3a, #2a8a6a 40%, #6a3aaa 70%, #120f24)', { r:6 }],
+  orage:['L’orage', 'radial-gradient(ellipse at 30% 20%, #6a7aaa, #1a2040 50%, #08080f)', { r:10 }],
+  royal:['La salle du trône', 'linear-gradient(180deg, #6a1a2a, #3a0a14 50%, #c9a03a 51%, #3a0a14 53%, #1a0408)', { r:15 }],
+  etoiles:['La voie lactée', 'radial-gradient(ellipse at 70% 30%, #fff3 0%, transparent 20%), linear-gradient(135deg, #0a0420, #3a1a6a, #0a0420)', { r:20 }],
+  lave:['La lave', 'radial-gradient(ellipse at 50% 110%, #ff6a1a, #8a1a0a 40%, #1a0804 75%)', { t:'fosse' }],
+  iles:['Les trois îles', 'linear-gradient(180deg, #ff8a3a 0%, #8ad4ff 50%, #3a1a6a 100%)', { t:'odyssee' }],
+  grimoire:['Le grimoire', 'linear-gradient(90deg, #3a2814, #c9a46a 48%, #8a6a3a 50%, #c9a46a 52%, #3a2814)', { t:'chroniques' }],
+  vide:['Le Néant', 'radial-gradient(circle at 50% 50%, #a855f7 0%, #2a0a4a 35%, #000 75%)', { t:'neant' }],
+  profondeurs:['Les profondeurs', 'radial-gradient(ellipse at 50% 120%, #ff9a4a55, #14100c 60%), #14100c', { t:'profondeurs' }],
+};
+const EMBLEMES = [['aucun', '—'], ['lion', '🦁'], ['loup', '🐺'], ['dragon', '🐉'], ['hibou', '🦉'], ['chat', '🐱'], ['epee', '⚔️'], ['bouclier', '🛡️'], ['etoile', '⭐'],
+  ['flamme', '🔥', { r:4 }], ['eclair', '⚡', { r:7 }], ['couronne', '👑', { r:12 }], ['diamant', '💎', { r:18 }], ['comete', '☄️', { r:25 }],
+  ['de', '🎲', { t:'diplome' }], ['vague', '🌊', { t:'traversee' }], ['crane', '💀', { t:'fosse' }], ['parchemin', '📜', { t:'chroniques' }], ['lune', '🌑', { t:'neant' }], ['sphinx', '🧩', { t:'sphinx' }]];
+const COULEURS_NOM = [['blanc', '#f1ecff'], ['or', '#f3c96b'], ['ciel', '#7cd4ff'], ['menthe', '#7dffb0'], ['rose', '#ff8ad4', { r:5 }], ['braise', '#ff7a3a', { r:8 }],
+  ['amethyste', '#c084fc', { r:11 }], ['arcenciel', 'linear-gradient(90deg,#ff5a5a,#f3c96b,#7dffb0,#7cd4ff,#c084fc)', { r:22 }]];
+const DEVISES = ['Ce qui est forgé ne casse pas.', 'Un dé, une chance.', 'Toujours un 6 dans la manche.', 'La Guilde avant tout.', 'Je lance, donc je suis.',
+  'Ni peur, ni reproche.', 'Le sort sourit aux audacieux.', 'Pas de sieste avant le boss.', 'Moustache a toujours raison.', 'Une rune à la fois.', 'Au bout du donjon, la gloire.', 'Les dés sont jetés.'];
+function nomStyle(p) { const c = (COULEURS_NOM.find(x => x[0] === p.couleur) || COULEURS_NOM[0])[1]; return c.startsWith('linear') ? `background:${c};-webkit-background-clip:text;background-clip:text;color:transparent` : `color:${c}`; }
+function portraitProfil(p) {
+  if (p.portrait && p.portrait.startsWith('av:') && typeof avTrouve === 'function') { const a = avTrouve(p.portrait.slice(3)); if (a) return [avPortrait(a), avPortraitSecours(a)]; }
+  const id = p.portrait && typeof HEROS !== 'undefined' && HEROS[p.portrait] ? p.portrait : null;
+  if (id) return [`portraits/${id}.webp`, `portraits/${id}.webp`];
+  return [null, null];
+}
 function lireProfil() {
-  const p = Object.assign({ nom:'', cadre:null, titre:null }, JL(PROFIL_CLE, {}));
+  const p = Object.assign({ nom:'', cadre:null, titre:null, portrait:null, embleme:'aucun', couleur:'blanc', fond:'nuit', devise:'', vitrine:[] }, JL(PROFIL_CLE, {}));
   const gagnes = titresGuilde().filter(t => t[4]).map(t => t[0]);
   if (p.cadre === null) p.cadre = gagnes.includes('diplome') ? 'diplome' : 'aucun'; // avant le profil, le diplôme se posait tout seul : on garde ça par défaut
   if (p.cadre !== 'aucun' && !gagnes.includes(p.cadre)) p.cadre = 'aucun';
   if (p.titre && !gagnes.includes(p.titre)) p.titre = null;
+  const em = EMBLEMES.find(x => x[0] === p.embleme); if (!em || !condOk(em[2])) p.embleme = 'aucun';
+  const co = COULEURS_NOM.find(x => x[0] === p.couleur); if (!co || !condOk(co[2])) p.couleur = 'blanc';
+  if (!FONDS[p.fond] || !condOk(FONDS[p.fond][2])) p.fond = 'nuit';
+  p.vitrine = (p.vitrine || []).filter(k => gagnes.includes(k)).slice(0, 3);
   return p;
 }
-function ecrireProfil(p) { localStorage.setItem(PROFIL_CLE, JSON.stringify({ nom:(p.nom || '').trim().slice(0, 18), cadre:p.cadre, titre:p.titre })); }
+function ecrireProfil(p) { localStorage.setItem(PROFIL_CLE, JSON.stringify({ nom:(p.nom || '').trim().slice(0, 18), cadre:p.cadre, titre:p.titre, portrait:p.portrait || null,
+  embleme:p.embleme, couleur:p.couleur, fond:p.fond, devise:String(p.devise || '').slice(0, 60), vitrine:(p.vitrine || []).slice(0, 3) })); }
 const titreDe = k => titresGuilde().find(t => t[0] === k);
 // le portrait du joueur en combat : cadre + nom + titre (appelé après chaque dessin du Duel)
 function appliqueProfil() {
   const b = document.getElementById('b-J'); if (!b || typeof S === 'undefined' || !S || S.deux || S.coop) return;
   const p = lireProfil(), c = p.cadre !== 'aucun' && titreDe(p.cadre);
   b.classList.toggle('cadreP', !!c); if (c) { b.style.setProperty('--cc', c[5]); b.dataset.e = c[1]; }
-  const n = b.querySelector('.nom'); if (n && (p.nom || p.titre)) { n.classList.add('nomP'); const t = p.titre && titreDe(p.titre); n.innerHTML = `${p.nom || 'Toi'}${t ? ` <small>${t[1]} ${t[2]}</small>` : ''}`; }
+  const n = b.querySelector('.nom'); if (n && (p.nom || p.titre)) { n.classList.add('nomP'); const t = p.titre && titreDe(p.titre); const em = (EMBLEMES.find(x => x[0] === p.embleme) || [])[1]; n.innerHTML = `${em && em !== '—' ? em + ' ' : ''}<span style="${nomStyle(p)}">${p.nom || 'Toi'}</span>${t ? ` <small>${t[1]} ${t[2]}</small>` : ''}`; }
 }
 if (typeof document !== 'undefined') { const st = document.createElement('style'); st.textContent = `
   .barre.cadreP img:first-child { box-shadow:0 0 0 3px var(--cc), 0 0 16px var(--cc); }

@@ -37,6 +37,22 @@
   .route { display:flex; flex-direction:column; gap:5px; } .etape { display:flex; gap:8px; align-items:center; background:#1d1b3aee; border:1px solid #4b4580; border-radius:10px; padding:6px 8px; opacity:.6; } .etape.ok { opacity:1; border-color:#f3c96b88; }
   .etape .num { width:28px; text-align:center; color:var(--or); font-weight:bold; flex:none; } .etape .e { font-size:1.4em; width:30px; text-align:center; flex:none; } .etape small { display:block; color:var(--doux); font-size:.8em; } .etape em { font-size:.75em; color:var(--or); font-style:normal; }
   .lien { display:block; text-align:center; margin-top:10px; color:var(--or); }
+  .carte { position:relative; }
+  .crayon { position:absolute; right:10px; top:10px; background:#000a; color:#f3c96b; border:1px solid #f3c96b88; border-radius:20px; padding:6px 12px; font:bold .9em Georgia, serif; cursor:pointer; }
+  .port .rg { position:absolute; right:-6px; bottom:-4px; background:#f3c96b; color:#2b1d0a; font-weight:bold; font-size:.8em; border-radius:12px; padding:1px 7px; box-shadow:0 0 0 2px #120f24; }
+  .carte .dev { color:#e8e2ff; font-style:italic; font-size:.9em; min-height:1em; text-align:center; text-shadow:0 1px 3px #000; }
+  .carte .vit { display:flex; flex-wrap:wrap; gap:6px; justify-content:center; } .carte .vit span { border:1.5px solid; border-radius:14px; padding:2px 8px; font-size:.75em; background:#0008; }
+  .carte .nom, .carte .tit { text-shadow:0 1px 3px #000; }
+  .haut2 { display:flex; align-items:center; gap:10px; margin:10px 0 0; } .haut2 button { color:var(--doux); background:#221d42; border:1px solid #4b4580; border-radius:20px; padding:5px 12px; font:inherit; font-size:.9em; } .haut2 b { color:var(--or); }
+  .onglets { display:grid; grid-template-columns:repeat(5, 1fr); gap:6px; margin:12px 0 8px; }
+  .onglets button { background:#1d1b3aee; border:2px solid #4b4580; border-radius:12px; padding:6px 2px; color:var(--texte); font:inherit; font-size:1.2em; cursor:pointer; } .onglets button small { display:block; font-size:.55em; color:var(--doux); }
+  .onglets button.on { border-color:var(--or); background:#3a2f12; }
+  .corps h3 { color:var(--or); font-size:1em; margin:14px 0 6px; }
+  img.rond { width:44px; height:44px; border-radius:50%; object-fit:cover; }
+  .fonds { grid-template-columns:repeat(3, 1fr); } .rect { display:grid; place-items:center; width:100%; height:44px; border-radius:8px; }
+  .cad small { color:var(--doux); font-size:.9em; }
+  .devises { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; } .devises button { background:#1d1b3aee; border:1px solid #4b4580; border-radius:14px; padding:6px 10px; color:var(--texte); font:italic .85em Georgia, serif; cursor:pointer; }
+  .fini { display:block; width:100%; margin-top:16px; padding:12px; border:0; border-radius:14px; background:var(--or); color:#2b1d0a; font:bold 1.05em Georgia, serif; cursor:pointer; }
 </style>
 </head>
 <body>
@@ -44,62 +60,109 @@
   <div class="haut"><a href="menu.html">‹ Menu</a><h1>👤 Mon profil</h1><a href="pantheon.html">Panthéon</a></div>
   <div id="app"></div>
 </main>
-<script src="cartes.js?v=20261115-174548"></script>
-<script src="musique.js?v=20261115-174548"></script>
-<script src="rang.js?v=20261115-174548"></script>
-<script src="heros-etoiles.js?v=20261115-174548"></script>
-<script src="donnees.js?v=20261115-174548"></script>
-<script src="odyssee.js?v=20261115-174548"></script>
-<script src="profil.js?v=20261115-174548"></script>
-<script src="pantheon.js?v=20261115-174548"></script>
+<script src="cartes.js?v=20261115-175010"></script>
+<script src="musique.js?v=20261115-175010"></script>
+<script src="rang.js?v=20261115-175010"></script>
+<script src="heros-etoiles.js?v=20261115-175010"></script>
+<script src="donnees.js?v=20261115-175010"></script>
+<script src="aventuriers.js?v=20261115-175010"></script>
+<script src="odyssee.js?v=20261115-175010"></script>
+<script src="profil.js?v=20261115-175010"></script>
+<script src="pantheon.js?v=20261115-175010"></script>
 <script>
 const log = () => {};
-// héros de l'aperçu : le dernier joué (on peut en changer en touchant le portrait, pour voir le cadre sur chacun)
+// 15/11 (l'utilisateur : « changer de portrait en touchant ne sert à rien, sauf avec un crayon Modifier qui ouvre la modification du profil »)
+// La page montre la CARTE DE PROFIL ; le crayon ✏️ ouvre L'ATELIER DU PROFIL, en onglets.
 const parties = JL('guilde-parties', []);
-let apercu = (parties.length && parties[parties.length - 1].moi) || 'gorm'; if (!HEROS[apercu]) apercu = 'gorm';
-function suivant() { const L = ORDRE.filter(id => id !== 'zephine' || localStorage.getItem('guilde-tuto') === 'fait'); apercu = L[(L.indexOf(apercu) + 1) % L.length]; dessine(); }
+const dernier = (parties.length && parties[parties.length - 1].moi) || 'gorm';
+let onglet = null; // null = la page ; sinon l'onglet de l'atelier
+const ONGLETS = [['portrait', '🖼', 'Portrait'], ['cadre', '🔲', 'Cadre'], ['titre', '🎖', 'Titre'], ['embleme', '🦁', 'Emblème'], ['couleur', '🎨', 'Nom'],
+  ['fond', '🌌', 'Fond'], ['devise', '💬', 'Devise'], ['vitrine', '🏅', 'Vitrine'], ['des', '🎲', 'Dés']];
 function choisir(quoi, k) { const p = lireProfil(); p[quoi] = k; ecrireProfil(p); if (typeof GM !== 'undefined') GM.son('clic'); dessine(); }
-function nom(v) { const p = lireProfil(); p.nom = v; ecrireProfil(p); document.getElementById('nomv').textContent = v.trim() || 'Toi'; }
+function nom(v) { const p = lireProfil(); p.nom = v; ecrireProfil(p); const e = document.getElementById('nomv'); if (e) e.textContent = v.trim() || 'Toi'; }
+function devise(v) { const p = lireProfil(); p.devise = v; ecrireProfil(p); const e = document.getElementById('devv'); if (e) e.textContent = v ? `« ${v} »` : ''; }
+function vitrine(k) { const p = lireProfil(); const v = p.vitrine || []; p.vitrine = v.includes(k) ? v.filter(x => x !== k) : v.length >= 3 ? v : v.concat(k); if (!v.includes(k) && v.length >= 3) { alert('3 titres au plus dans la vitrine : retire-en un d’abord.'); return; } ecrireProfil(p); if (typeof GM !== 'undefined') GM.son('clic'); dessine(); }
+function carteProfil(p, edit) {
+  const c = p.cadre !== 'aucun' && titreDe(p.cadre), t = p.titre && titreDe(p.titre), [src, sec] = portraitProfil(p), img = src || IMG(dernier), sc = sec || IMG(dernier);
+  const em = (EMBLEMES.find(x => x[0] === p.embleme) || [])[1], f = (FONDS[p.fond] || FONDS.nuit)[1], r = rangGuilde();
+  return `<div class="carte" style="background:${f};border-color:${c ? c[5] : '#4b4580'}">
+    ${edit ? '' : `<button class="crayon" onclick="ouvre('portrait')" aria-label="Modifier mon profil">✏️ Modifier</button>`}
+    <div class="port" ${edit ? '' : `onclick="ouvre('portrait')"`}><img src="${img}" onerror="this.onerror=null;this.src='${sc}'" alt="" style="${c ? `box-shadow:0 0 0 4px ${c[5]}, 0 0 22px ${c[5]}` : ''}">${em && em !== '—' ? `<span class="em">${em}</span>` : c ? `<span class="em">${c[1]}</span>` : ''}<span class="rg">${r}</span></div>
+    <div class="nom" id="nomv" style="${nomStyle(p)}">${p.nom || 'Toi'}</div><div class="tit">${t ? `${t[1]} ${t[2]}` : ''}</div>
+    <div class="dev" id="devv">${p.devise ? `« ${p.devise.replace(/</g, '&lt;')} »` : ''}</div>
+    ${(p.vitrine || []).length ? `<div class="vit">${p.vitrine.map(k => { const x = titreDe(k); return x ? `<span style="border-color:${x[5]}">${x[1]} ${x[2]}</span>` : ''; }).join('')}</div>` : ''}
+  </div>`;
+}
+function ouvre(o) { onglet = o; if (typeof GM !== 'undefined') GM.son('clic'); dessine(); window.scrollTo(0, 0); }
 function dessine() {
-  const p = lireProfil(), T = titresGuilde(), c = p.cadre !== 'aucun' && titreDe(p.cadre), t = p.titre && titreDe(p.titre), nb = T.filter(x => x[4]).length;
-  document.getElementById('app').innerHTML = `
-  <div class="carte">
-    <div class="port" onclick="suivant()"><img src="${IMG(apercu)}" alt="" style="${c ? `box-shadow:0 0 0 4px ${c[5]}, 0 0 22px ${c[5]}` : ''}">${c ? `<span class="em">${c[1]}</span>` : ''}</div>
-    <div class="nom" id="nomv">${p.nom || 'Toi'}</div><div class="tit">${t ? `${t[1]} ${t[2]}` : ''}</div>
-    <div class="h">C’est ainsi que tu apparais en combat · touche le portrait pour essayer un autre héros</div>
-  </div>
+  const p = lireProfil(), T = titresGuilde();
+  if (onglet) { document.getElementById('app').innerHTML = atelier(p, T); return; }
+  document.getElementById('app').innerHTML = `${carteProfil(p)}
+  <p class="aide" style="text-align:center;margin-top:6px">C’est ta carte : ton nom, ton titre et ton cadre te suivent en combat. Touche ✏️ pour la personnaliser.</p>
   ${typeof lireRang === 'function' ? rangHTML() : ''}
-  <h2>✏️ Mon nom</h2>
-  <input maxlength="18" placeholder="Ton nom d’aventurier (sinon : « Toi »)" value="${(p.nom || '').replace(/"/g, '&quot;')}" oninput="nom(this.value)">
-  <h2>🖼 Mon cadre</h2>
-  <p class="aide">Il entoure le portrait de ton héros pendant les combats, quel que soit le héros. Chaque titre gagné débloque son cadre.</p>
-  <div class="grille">
-    <button class="cad ${p.cadre === 'aucun' ? 'choisi' : ''}" onclick="choisir('cadre','aucun')"><span class="rond" style="box-shadow:0 0 0 2px #4b4580">—</span>Aucun</button>
-    ${T.map(x => `<button class="cad ${p.cadre === x[0] ? 'choisi' : ''}" ${x[4] ? '' : 'disabled'} onclick="choisir('cadre','${x[0]}')"><span class="rond" style="box-shadow:0 0 0 3px ${x[5]}, 0 0 10px ${x[5]}">${x[4] ? x[1] : '🔒'}</span>${x[2]}</button>`).join('')}
-  </div>
-  <h2>🎖 Mon titre · ${nb} sur ${T.length}</h2>
-  <p class="aide">Il s’affiche sous ton nom pendant les combats. Les titres verrouillés disent comment les gagner.</p>
-  <button class="ligne ${!p.titre ? 'choisi' : ''}" onclick="choisir('titre',null)"><div class="e">—</div><div><b>Pas de titre</b></div></button>
-  ${T.map(x => `<button class="ligne ${p.titre === x[0] ? 'choisi' : ''}" ${x[4] ? '' : 'disabled'} onclick="choisir('titre','${x[0]}')"><div class="e">${x[4] ? x[1] : '🔒'}</div><div><b>${x[2]}</b><small>${x[3]}</small></div></button>`).join('')}
   <h2>🏆 Mes trophées</h2>
   ${tropheesHTML()}
   <a class="lien" href="pantheon.html">🏛 Le Panthéon : Tableau d’honneur et récompenses ›</a>`;
+}
+// ------------------------------------------------------------------ l'atelier du profil
+const verrou = c => condOk(c) ? '' : `🔒 ${condTxt(c)}`;
+function atelier(p, T) {
+  const tabs = `<div class="onglets">${ONGLETS.map(([k, e, n]) => `<button class="${onglet === k ? 'on' : ''}" onclick="ouvre('${k}')">${e}<small>${n}</small></button>`).join('')}</div>`;
+  let corps = '';
+  if (onglet === 'portrait') {
+    const av = typeof avLire === 'function' ? avLire() : [];
+    corps = `<p class="aide">Le visage de ta carte de profil (tu joues toujours le héros que tu veux).</p><div class="grille">
+      <button class="cad ${!p.portrait ? 'choisi' : ''}" onclick="choisir('portrait',null)"><img class="rond" src="${IMG(dernier)}" alt="">Mon dernier héros</button>
+      ${ORDRE.filter(id => id !== 'zephine' || localStorage.getItem('guilde-tuto') === 'fait').map(id => `<button class="cad ${p.portrait === id ? 'choisi' : ''}" onclick="choisir('portrait','${id}')"><img class="rond" src="portraits/${id}.webp" alt="">${HEROS[id].nom}</button>`).join('')}
+      ${av.map(a => `<button class="cad ${p.portrait === 'av:' + a.id ? 'choisi' : ''}" onclick="choisir('portrait','av:${a.id}')"><img class="rond" src="${avPortrait(a)}" onerror="this.onerror=null;this.src='${avPortraitSecours(a)}'" alt="">${a.nom}</button>`).join('')}</div>
+      <h3>✏️ Mon nom</h3><input maxlength="18" placeholder="Ton nom d’aventurier (sinon : « Toi »)" value="${(p.nom || '').replace(/"/g, '&quot;')}" oninput="nom(this.value)">`;
+  } else if (onglet === 'cadre') {
+    corps = `<p class="aide">Il entoure ton portrait, ici et en combat. Chaque titre gagné débloque son cadre.</p><div class="grille">
+      <button class="cad ${p.cadre === 'aucun' ? 'choisi' : ''}" onclick="choisir('cadre','aucun')"><span class="rond" style="box-shadow:0 0 0 2px #4b4580">—</span>Aucun</button>
+      ${T.map(x => `<button class="cad ${p.cadre === x[0] ? 'choisi' : ''}" ${x[4] ? '' : 'disabled'} onclick="choisir('cadre','${x[0]}')"><span class="rond" style="box-shadow:0 0 0 3px ${x[5]}, 0 0 10px ${x[5]}">${x[4] ? x[1] : '🔒'}</span>${x[2]}</button>`).join('')}</div>`;
+  } else if (onglet === 'titre') {
+    corps = `<p class="aide">Il s’affiche sous ton nom. ${T.filter(x => x[4]).length} sur ${T.length} gagnés ; les verrouillés disent comment les gagner.</p>
+      <button class="ligne ${!p.titre ? 'choisi' : ''}" onclick="choisir('titre',null)"><div class="e">—</div><div><b>Pas de titre</b></div></button>
+      ${T.map(x => `<button class="ligne ${p.titre === x[0] ? 'choisi' : ''}" ${x[4] ? '' : 'disabled'} onclick="choisir('titre','${x[0]}')"><div class="e">${x[4] ? x[1] : '🔒'}</div><div><b>${x[2]}</b><small>${x[3]}</small></div></button>`).join('')}`;
+  } else if (onglet === 'embleme') {
+    corps = `<p class="aide">Un petit emblème sur ton portrait et devant ton nom en combat.</p><div class="grille">
+      ${EMBLEMES.map(([k, e, c]) => `<button class="cad ${p.embleme === k ? 'choisi' : ''}" ${condOk(c) ? '' : 'disabled'} onclick="choisir('embleme','${k}')"><span class="rond">${condOk(c) ? e : '🔒'}</span>${condOk(c) ? '' : verrou(c)}</button>`).join('')}</div>`;
+  } else if (onglet === 'couleur') {
+    corps = `<p class="aide">La couleur de ton nom, sur ta carte et en combat.</p><div class="grille">
+      ${COULEURS_NOM.map(([k, c, cd]) => `<button class="cad ${p.couleur === k ? 'choisi' : ''}" ${condOk(cd) ? '' : 'disabled'} onclick="choisir('couleur','${k}')"><span class="rond" style="background:${c}">${condOk(cd) ? '' : '🔒'}</span>${condOk(cd) ? (k === 'arcenciel' ? 'Arc-en-ciel' : k[0].toUpperCase() + k.slice(1)) : verrou(cd)}</button>`).join('')}</div>`;
+  } else if (onglet === 'fond') {
+    corps = `<p class="aide">Le décor de ta carte de profil. Les plus beaux se gagnent avec le rang et les titres.</p><div class="grille fonds">
+      ${Object.entries(FONDS).map(([k, [n, f, c]]) => `<button class="cad ${p.fond === k ? 'choisi' : ''}" ${condOk(c) ? '' : 'disabled'} onclick="choisir('fond','${k}')"><span class="rect" style="background:${f}">${condOk(c) ? '' : '🔒'}</span>${n}${condOk(c) ? '' : `<small>${condTxt(c)}</small>`}</button>`).join('')}</div>`;
+  } else if (onglet === 'devise') {
+    corps = `<p class="aide">Une phrase sous ton nom. Écris la tienne ou choisis-en une.</p>
+      <input maxlength="60" placeholder="Ta devise" value="${(p.devise || '').replace(/"/g, '&quot;')}" oninput="devise(this.value)">
+      <div class="devises">${DEVISES.map(d => `<button onclick="choisir('devise', ${JSON.stringify(d).replace(/"/g, '&quot;')})">« ${d} »</button>`).join('')}<button onclick="choisir('devise','')">Pas de devise</button></div>`;
+  } else if (onglet === 'vitrine') {
+    corps = `<p class="aide">Choisis jusqu’à 3 titres gagnés à exposer sur ta carte (${(p.vitrine || []).length}/3).</p>
+      ${T.filter(x => x[4]).map(x => `<button class="ligne ${(p.vitrine || []).includes(x[0]) ? 'choisi' : ''}" onclick="vitrine('${x[0]}')"><div class="e">${x[1]}</div><div><b>${x[2]}</b><small>${(p.vitrine || []).includes(x[0]) ? '✅ dans la vitrine' : 'toucher pour exposer'}</small></div></button>`).join('') || '<p class="aide">Pas encore de titre gagné : finis le tutoriel, une île, une Descente…</p>'}`;
+  } else if (onglet === 'des') {
+    const d = lireRang();
+    corps = `<p class="aide">L’apparence de tes dés, dans tous les modes. Pour le plaisir des yeux : aucun avantage.</p><div class="grille">
+      ${Object.entries(PEAUX_DES).map(([k, x]) => { const ok = rgPeauOk(k); return `<button class="cad ${d.peau === k ? 'choisi' : ''}" ${ok ? '' : 'disabled'} onclick="choisirPeau('${k}');dessine()"><span class="rond" style="background:none"><img src="faces-${dernier}/face-6.webp" alt="" style="width:40px;height:40px;border-radius:8px;filter:${x[1] || 'none'}"></span>${x[0]}${ok ? '' : '<small>🔒 route des rangs</small>'}</button>`; }).join('')}</div>`;
+  }
+  return `<div class="haut2"><button onclick="onglet=null;dessine()">‹ Ma carte</button><b>✏️ L’atelier du profil</b></div>
+    ${carteProfil(p, true)}${tabs}<div class="corps">${corps}</div>
+    <button class="fini" onclick="onglet=null;dessine()">✅ C’est bon</button>`;
 }
 // 14/11 nuit : le Rang de la Guilde, les quêtes, la route des récompenses, l'apparence des dés
 const GENRE = { titre:'Titre', des:'Dés', depart:'Odyssée', carte:'Carte', equip:'Équipement' };
 function rangHTML() {
   const d = lireRang(), i = d.info, Q = lireQuetes();
   const ligneQ = (q, jour, idx) => { const def = defQuete(q, jour); return `<div class="quete ${q.fait ? 'faite' : ''}"><div><b>${q.fait ? '✅' : '📜'} ${texteQuete(q, jour)}</b><span class="barre-rang"><i style="width:${Math.round(q.prog / def[3] * 100)}%"></i></span><small>${q.prog} / ${def[3]} · +${jour ? 40 : 150} XP</small></div>${jour && !Q.change && !q.fait ? `<button class="chg" onclick="if (changeQuete(${idx})) dessine()">🔄</button>` : ''}</div>`; };
-  const peaux = Object.entries(PEAUX_DES).map(([k, x]) => { const ok = rgPeauOk(k); return `<button class="cad ${d.peau === k ? 'choisi' : ''}" ${ok ? '' : 'disabled'} onclick="choisirPeau('${k}');dessine()"><span class="rond" style="background:none"><img src="faces-${apercu}/face-6.webp" alt="" style="width:40px;height:40px;border-radius:8px;filter:${x[1] || 'none'};opacity:${ok ? 1 : .45}"></span>${ok ? x[0] : '🔒 ' + x[0]}</button>`; }).join('');
   return `<h2 id="rang">🏆 Rang de la Guilde · ${i.rang}${i.rang >= RANG_MAX ? ' (le plus haut)' : ''}</h2>
   <div class="rangbloc"><span class="barre-rang gros"><i style="width:${i.besoin ? Math.round(i.dans / i.besoin * 100) : 100}%"></i></span><small>${i.besoin ? `${i.dans} / ${i.besoin} XP pour le rang ${i.rang + 1}` : 'Tu as atteint le plus haut rang.'} · ${d.xp} XP en tout</small>
   <p class="aide">Chaque partie rapporte de l’expérience, même perdue : duel gagné 30 (perdu 10), salle vidée 5, élite 20, boss 60, escale 15, Titan 60, acte de l’Invasion 50, vague tenue 10, énigme 20, quête du jour 40, quête de la semaine 150.</p>
   ${d.journal.length ? `<details><summary>Mes derniers gains</summary>${d.journal.slice(0, 12).map(j => `<div class="jr">+${j.xp} · ${j.raison} <small>${new Date(j.q).toLocaleString('fr-FR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' })}</small></div>`).join('')}</details>` : ''}</div>
   <h2>📜 Quêtes du jour</h2><p class="aide">Elles changent chaque jour à minuit. 🔄 : changer une quête (une fois par jour).</p>${Q.j.map((q, k) => ligneQ(q, true, k)).join('')}
   <h2>🗓️ Quêtes de la semaine</h2><p class="aide">Elles changent chaque lundi.</p>${Q.s.map(q => ligneQ(q, false)).join('')}
-  <h2>🎁 La route des récompenses</h2><p class="aide">Une récompense à chaque rang. Les titres et leurs cadres se choisissent plus bas ; les dés juste dessous.</p>
+  <h2>🎁 La route des récompenses</h2><p class="aide">Une récompense à chaque rang. Les titres, cadres et dés se choisissent dans l’atelier du profil (✏️).</p>
   <details ${i.rang < 6 ? 'open' : ''}><summary>Voir les 30 rangs</summary><div class="route">${Object.entries(ROUTE).map(([n, x]) => `<div class="etape ${+n <= i.rang ? 'ok' : ''}"><span class="num">${+n <= i.rang ? '✅' : n}</span><span class="e">${x[2]}</span><div>${x[0] === 'carte' && CARTES[x[1]] ? `<b>${CARTES[x[1]].n}</b> <em>Carte${CARTES[x[1]].heros ? ' de ' + HEROS[CARTES[x[1]].heros].nom : ' de la Guilde'}</em><small>${CARTES[x[1]].d} (🎲 ${CARTES[x[1]].txt}, ${CARTES[x[1]].c} PC)</small>` : `<b>${x[3]}</b> <em>${GENRE[x[0]]}</em><small>${x[4]}</small>`}</div></div>`).join('')}</div></details>
-  <h2>🎲 L’apparence de mes dés</h2><p class="aide">Pour le plaisir des yeux : aucun avantage en jeu.</p><div class="grille">${peaux}</div>`;
+  <p class="aide">🎲 L’apparence de tes dés se choisit dans l’atelier du profil (✏️ Modifier → Dés).</p>`;
 }
 dessine();
 if (location.hash === '#rang') setTimeout(() => { const e = document.getElementById('rang'); if (e) e.scrollIntoView(); }, 50);
