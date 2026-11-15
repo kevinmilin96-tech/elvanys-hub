@@ -13,39 +13,34 @@
   #app { max-width:520px; height:100%; margin:0 auto; display:flex; flex-direction:column; container-type:inline-size; }
   .hud { display:flex; align-items:center; gap:2cqw; padding:2cqw 2cqw 1cqw; font-size:3.4cqw; }
   .hud a, .hud button { color:var(--doux); text-decoration:none; background:#1c2436; border:1px solid #3f5070; border-radius:20px; padding:1cqw 2.6cqw; font:inherit; }
-  .hud .mid { flex:1; display:flex; justify-content:space-around; }
-  .hud b { color:var(--texte); }
-  .vie { height:2cqw; margin:0 2cqw 1cqw; border-radius:2cqw; background:#2a0e0e; overflow:hidden; border:1px solid #000; }
-  .vie i { display:block; height:100%; background:linear-gradient(90deg, #ff3a1a, #ffb03a); transition:width .3s; }
+  .hud .mid { flex:1; display:flex; justify-content:space-around; } .hud b { color:var(--texte); }
+  .barres { padding:0 2cqw 1cqw; display:grid; gap:.8cqw; }
+  .barre { height:2cqw; border-radius:2cqw; background:#1a1020; overflow:hidden; border:1px solid #000; }
+  .barre i { display:block; height:100%; transition:width .2s; } .vie i { background:linear-gradient(90deg, #ff3a1a, #ffb03a); } .xp i { background:linear-gradient(90deg, #4f8bff, #c084fc); }
   .zone { position:relative; flex:1; min-height:0; }
   canvas { position:absolute; inset:0; width:100%; height:100%; display:block; touch-action:none; }
-  .bas { padding:1.5cqw 2cqw 3cqw; min-height:16cqw; display:flex; align-items:center; justify-content:center; gap:2cqw; }
-  .bas img { width:11cqw; height:11cqw; object-fit:contain; filter:drop-shadow(0 1cqw 1cqw #000a); }
-  .bas img.roule { animation:roule .5s; } @keyframes roule { 0% { transform:rotate(0) scale(.6); } 60% { transform:rotate(250deg) scale(1.15); } 100% { transform:rotate(360deg); } }
-  .bas .msg { font-size:3.3cqw; color:var(--doux); text-align:center; }
-  .bonus { display:flex; gap:1.2cqw; font-size:3.4cqw; }
-  .bonus span { background:#1c2436; border:1px solid #3f5070; border-radius:2cqw; padding:.4cqw 1.4cqw; }
+  .bas { padding:1cqw 2cqw 3cqw; min-height:9cqw; display:flex; flex-wrap:wrap; gap:1.2cqw; justify-content:center; font-size:3cqw; }
+  .bas img { width:5.2cqw; height:5.2cqw; vertical-align:middle; } .bas .dern { border-color:var(--or); }
+  .bas span { background:#1c2436; border:1px solid #3f5070; border-radius:2cqw; padding:.3cqw 1.4cqw; }
   .voile-f { position:fixed; inset:0; background:#000c; z-index:50; display:flex; align-items:center; justify-content:center; padding:4vw; }
   .fen { width:min(94vw, 500px); max-height:90vh; overflow:auto; background:#161d2c; border:2px solid var(--or); border-radius:18px; padding:16px; font-size:15px; }
   .fen h2 { margin:0 0 8px; color:var(--or); text-align:center; }
   .fen .go { display:block; width:100%; font:bold 1.05em Georgia, serif; padding:12px; border-radius:14px; border:0; background:var(--or); color:#2b1d0a; margin-top:10px; }
   .fen .sec { display:block; width:100%; font:1em Georgia, serif; padding:10px; border-radius:14px; border:1px solid #3f5070; background:#1c2436; color:var(--texte); margin-top:8px; }
   .fen ol { padding-left:20px; } .fen li { margin:5px 0; }
-  .offre { display:block; width:100%; text-align:left; margin:8px 0; padding:10px 12px; border-radius:14px; border:2px solid #3f5070; background:#1c2436; color:var(--texte); font:inherit; }
-  .offre b { color:var(--or); } .offre small { display:block; color:var(--doux); font-size:.85em; margin-top:2px; }
+  .offre { display:flex; gap:12px; align-items:center; width:100%; text-align:left; margin:8px 0; padding:12px; border-radius:14px; border:2px solid var(--c, #3f5070); background:#1c2436; color:var(--texte); font:inherit; animation:entre .35s backwards; }
+  .offre:nth-child(3) { animation-delay:.08s; } .offre:nth-child(4) { animation-delay:.16s; }
+  @keyframes entre { from { transform:translateY(20px) scale(.9); opacity:0; } }
+  .offre .e { font-size:2em; flex:none; } .offre b { color:var(--or); } .offre small { display:block; color:var(--doux); font-size:.85em; margin-top:2px; }
   .moust { display:flex; gap:10px; align-items:flex-start; } .moust img { width:64px; height:64px; border-radius:50%; object-fit:cover; flex:none; border:2px solid var(--or); }
   .acc { overflow:auto; height:100%; padding:0 2cqw 4cqw; touch-action:pan-y; }
-  .acc h1 { text-align:center; color:var(--or); margin:3cqw 0 1cqw; font-size:7cqw; }
-  .acc .sous { text-align:center; color:var(--doux); font-size:3.6cqw; margin:0 4cqw 3cqw; }
+  .acc h1 { text-align:center; color:var(--or); margin:3cqw 0 1cqw; font-size:7cqw; } .acc .sous { text-align:center; color:var(--doux); font-size:3.6cqw; margin:0 4cqw 3cqw; }
   .heros { display:grid; grid-template-columns:repeat(3, 1fr); gap:2cqw; }
   .heros button { background:#1c2436; border:2px solid #3f5070; border-radius:3cqw; padding:2cqw 1cqw; font:inherit; font-size:3.2cqw; color:var(--texte); }
   .heros button.on { border-color:var(--or); background:#3a2f12; } .heros button:disabled { opacity:.35; }
   .heros img { width:16cqw; height:16cqw; border-radius:50%; object-fit:cover; display:block; margin:0 auto 1cqw; }
   .pv-h { font-size:3cqw; color:var(--doux); margin:3cqw 1cqw; background:#161d2c; border-left:3px solid var(--or); padding:2cqw 3cqw; border-radius:2cqw; }
-  .choix { display:grid; gap:2cqw; margin-top:3cqw; }
-  .choix button { border-radius:3.5cqw; padding:3cqw; font:inherit; font-size:4cqw; border:2px solid var(--or); background:#3a2f12; color:var(--or); font-weight:bold; text-align:left; }
-  .choix button small { display:block; font-weight:normal; color:var(--doux); font-size:3cqw; }
-  .choix button.b2 { background:#1c2436; border-color:#3f5070; color:var(--texte); }
+  .gros { display:block; width:100%; border-radius:3.5cqw; padding:3cqw; font:inherit; font-size:4.2cqw; border:2px solid var(--or); background:#3a2f12; color:var(--or); font-weight:bold; margin-top:3cqw; }
   .record { text-align:center; font-size:3.2cqw; color:var(--doux); margin-top:3cqw; }
   .top { display:flex; justify-content:space-between; padding:2cqw 0; }
   .top a, .top button { color:var(--doux); text-decoration:none; background:#1c2436; border:1px solid #3f5070; border-radius:20px; padding:1.2cqw 3cqw; font:inherit; font-size:3.6cqw; }
@@ -54,373 +49,342 @@
 <body>
 <div id="app"></div>
 <div id="fen"></div>
-<script src="musique.js?v=20261115-142258"></script>
-<script src="rang.js?v=20261115-142258"></script>
-<script src="heros-etoiles.js?v=20261115-142258"></script>
-<script src="progression-modes.js?v=20261115-142258"></script>
+<script src="musique.js?v=20261115-143422"></script>
+<script src="rang.js?v=20261115-143422"></script>
+<script src="heros-etoiles.js?v=20261115-143422"></script>
+<script src="progression-modes.js?v=20261115-143422"></script>
 <script>
-// =============================================================================================== LA FOSSE AUX RUNES v2 (15/11) : un VRAI casse-briques
-// Retour de l'utilisateur sur la v1 (tour par tour, gardée dans fosse-v1.html) : « je dois cliquer sur chaque dé et chaque colonne et attendre,
-// c'est super ennuyant ; je voyais un vrai casse-briques : je lance une balle, elle touche, je la récupère, des bonus tombent des monstres ».
-// Donc : temps réel. Une raquette (le bouclier runique du héros) qu'on glisse au doigt ; chaque LANCER DE DÉS donne les balles
-// (la valeur du dé = les dégâts de la balle) ; les monstres descendent doucement ; ceux qui touchent le rempart le frappent ;
-// les monstres tombés lâchent parfois un BONUS qu'on attrape avec la raquette. 5 vagues, un choix entre deux vagues, un boss à la 5e.
+// =============================================================================================== LA FOSSE AUX RUNES v3 (15/11) : SURVIE NERVEUSE façon Vampire Survivors
+// Retour de l'utilisateur sur la v2 (casse-briques, gardée dans fosse-v2.html) : « un casse-briques ordinaire, rien ne me met en difficulté,
+// les monstres ne m'attaquent jamais ; plus d'actions, comme Vampire Survivors : quand je récupère quelque chose, une pause et je choisis
+// parmi 3 objets ; les monstres doivent descendre plus vite, attaquer ; un truc ultra dynamique ».
+// Donc : les DÉS PARTENT TOUT SEULS du bouclier (cadence réglable) ; les monstres descendent en continu et ATTAQUENT (crachats de feu, plongeons,
+// essaims) ; chaque monstre abattu lâche une GEMME ; assez de gemmes = UN NIVEAU : pause et 1 amélioration parmi 3 ; tenir 5 minutes, le Titan à 4:00.
 const HER = {
   maelle:{ n:'Maëlle', c:'#ff8a2a', t:'Marteau de forge', d:'Tes balles font +1 dégât.' },
-  aldric:{ n:'Sire Aldric', c:'#ffd27a', t:'Grand pavois', d:'Ta raquette est plus large.' },
-  pip:{ n:'Pip', c:'#c58bff', t:'Cueillette', d:'Chaque bonus attrapé te rend aussi 1 PV.' },
-  oria:{ n:'Oria', c:'#5ff5e6', t:'Œil du cartographe', d:'Au lancer, tu vois la trajectoire de la balle (et tu vises au doigt).' },
-  gorm:{ n:'Gorm', c:'#4f8bff', t:'Grand souffle', d:'Tu lances 4 dés au lieu de 3.' },
-  zephine:{ n:'Zéphine', c:'#ff4040', t:'Vent de tempête', d:'Tes balles vont plus vite et leurs 1 et 2 comptent comme des 3.' },
+  aldric:{ n:'Sire Aldric', c:'#ffd27a', t:'Grand pavois', d:'Ton bouclier est plus large et encaisse le premier coup de chaque minute.' },
+  pip:{ n:'Pip', c:'#c58bff', t:'Sève', d:'Tu regagnes 1 PV toutes les 15 secondes.' },
+  oria:{ n:'Oria', c:'#5ff5e6', t:'Œil du cartographe', d:'Les gemmes viennent à toi de plus loin (aimant).' },
+  gorm:{ n:'Gorm', c:'#4f8bff', t:'Grand souffle', d:'Une balle de plus en même temps.' },
+  zephine:{ n:'Zéphine', c:'#ff4040', t:'Vent de tempête', d:'Tes balles vont plus vite et partent plus souvent.' },
 };
-const W = 360, H = 560, COLS = 6, BW = 56, BH = 34, GAP = 3.6, X0 = (W - COLS * BW - (COLS - 1) * GAP) / 2;
-const PV0 = 20, VAGUES = 5;
-const PETITS = ['gobelin', 'loup', 'salamandre', 'scarabee', 'harpie', 'lutin', 'larve', 'sangsue', 'rongeur', 'givrelin', 'tisseuse', 'oeil', 'ombre', 'esprit', 'cultiste'];
-const ELITES = ['golem', 'chefgobelin', 'drake', 'yeti', 'ours', 'liche', 'chevalier', 'mammouth'];
-const BOSS = [['titan', 'Le Titan de feu'], ['vouivre', 'La Vouivre des glaces'], ['roi', 'Le Roi sans visage'], ['hydre', 'L’Hydre'], ['kraken', 'Le Kraken des brumes']];
-// les bonus qui tombent des monstres (on les attrape avec la raquette)
-const BONUS = {
-  multi:  { e:'✦', c:'#c084fc', n:'Multi-balle', d:'chaque balle se divise en trois' },
-  feu:    { e:'🔥', c:'#ff6a2a', n:'Balles de feu', d:'elles traversent les monstres (8 s)' },
-  large:  { e:'🛡', c:'#7cd4ff', n:'Grand bouclier', d:'raquette plus large (10 s)' },
-  soin:   { e:'❤', c:'#ff7a8a', n:'Soin', d:'+3 PV' },
-  or:     { e:'🎲', c:'#f3c96b', n:'Dé d’or', d:'une balle de 6 de plus' },
-  foudre: { e:'⚡', c:'#ffe14a', n:'Foudre', d:'chaque coup électrise les voisins (8 s)' },
-  lent:   { e:'❄', c:'#a8e6ff', n:'Givre', d:'les monstres descendent deux fois moins vite (8 s)' },
-};
-// les choix entre deux vagues
-const AMELIOS = {
-  de:     { n:'🎲 Un dé de plus', d:'Tu lances un dé de plus à chaque lancer.' },
-  force:  { n:'⚒ Balles forgées', d:'Tes balles font +1 dégât.' },
-  raquette:{ n:'🛡 Bouclier élargi', d:'Ta raquette est plus large.' },
-  chance: { n:'🍀 Trèfle', d:'Les monstres lâchent des bonus deux fois plus souvent.' },
-  min:    { n:'⬆ Dés lestés', d:'Tes dés ne font jamais moins de 3.' },
-  soin:   { n:'❤ Rempart réparé', d:'+8 PV (et +4 PV max).' },
-};
+const W = 360, H = 600, DUREE = 300, BOSS_A = 240, PV0 = 20;
 const $ = id => document.getElementById(id);
 const ZEPH_OK = () => localStorage.getItem('guilde-tuto') === 'fait';
-const CLE = 'guilde-fosse', CLE_PARTIE = 'guilde-fosse2-partie';
-const jour = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
-const lire = () => { try { return Object.assign({ parties:0, victoires:0, meilleur:0, jours:{}, heros:'maelle' }, JSON.parse(localStorage.getItem(CLE) || '{}')); } catch (e) { return { parties:0, victoires:0, meilleur:0, jours:{}, heros:'maelle' }; } };
+const CLE = 'guilde-fosse3';
+const lire = () => { try { return Object.assign({ parties:0, victoires:0, meilleur:0, meilleurTemps:0, heros:'maelle' }, JSON.parse(localStorage.getItem(CLE) || '{}')); } catch (e) { return { parties:0, victoires:0, meilleur:0, meilleurTemps:0, heros:'maelle' }; } };
 const ecrire = d => { try { localStorage.setItem(CLE, JSON.stringify(d)); } catch (e) {} };
 let dernierSon = 0;
-const son = (k, force) => { const t = performance.now(); if (!force && t - dernierSon < 70) return; dernierSon = t; try { if (typeof GM !== 'undefined') GM.son(k); } catch (e) {} };
+const son = (k, force) => { const t = performance.now(); if (!force && t - dernierSon < 60) return; dernierSon = t; try { if (typeof GM !== 'undefined') GM.son(k); } catch (e) {} };
+const IMG = {}; function img(src) { if (!IMG[src]) { const i = new Image(); i.src = src; IMG[src] = i; } return IMG[src]; }
+const rnd = (a, b) => a + Math.random() * (b - a), pick = l => l[Math.floor(Math.random() * l.length)];
 
-// ------------------------------------------------------------------ hasard à graine (la Fosse du jour est la même pour tous)
-let rs = 1;
-function graine(s) { let h = 2166136261; for (const c of String(s)) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
-function hasard() { rs = (rs + 0x6D2B79F5) >>> 0; let t = rs; t = Math.imul(t ^ t >>> 15, t | 1); t ^= t + Math.imul(t ^ t >>> 7, t | 61); return ((t ^ t >>> 14) >>> 0) / 4294967296; }
-const pick = l => l[Math.floor(hasard() * l.length)];
-
-// ------------------------------------------------------------------ les images
-const IMG = {};
-function img(src) { if (!IMG[src]) { const i = new Image(); i.src = src; IMG[src] = i; } return IMG[src]; }
+// ------------------------------------------------------------------ les monstres (chacun sa façon d'attaquer)
+const MONSTRES = {
+  gobelin:   { img:'gobelin', r:15, pv:3, v:22, att:1, gem:1 },
+  scarabee:  { img:'scarabee', r:11, pv:2, v:55, att:1, gem:1, essaim:true },
+  loup:      { img:'loup', r:15, pv:6, v:22, att:2, gem:2, plonge:true },
+  salamandre:{ img:'salamandre', r:15, pv:6, v:30, att:1, gem:2, tire:true },
+  golem:     { img:'golem', r:24, pv:30, v:12, att:4, gem:6, elite:true },
+  titan:     { img:'titan', r:44, pv:420, v:6, att:8, gem:30, boss:true },
+};
+// ------------------------------------------------------------------ les améliorations (5 niveaux chacune, sauf le soin)
+const AMELIO = {
+  multi:  { e:'🎲', n:'Un dé de plus', d:n => `Chaque lancer lance ${n + 2} dés.` },
+  force:  { e:'⚒️', n:'Balles forgées', d:n => `Tes balles font +${n + 1} dégât${n ? 's' : ''}.` },
+  cadence:{ e:'⏱️', n:'Lancer rapide', d:() => 'Les dés partent plus souvent.' },
+  vitesse:{ e:'💨', n:'Balles rapides', d:() => 'Tes balles vont plus vite.' },
+  perce:  { e:'🗡️', n:'Balles perçantes', d:n => `Elles traversent ${n + 1} monstre${n ? 's' : ''} avant de rebondir.` },
+  feu:    { e:'🔥', n:'Balles de feu', d:n => `Chaque touche brûle (${n + 1} dégât${n ? 's' : ''} par seconde, 3 s).` },
+  eclat:  { e:'✨', n:'Éclats', d:n => `Chaque touche lance ${n + 1} petit${n ? 's' : ''} éclat${n ? 's' : ''}.` },
+  large:  { e:'🛡️', n:'Bouclier élargi', d:() => 'Ton bouclier est plus large.' },
+  aimant: { e:'🧲', n:'Aimant', d:() => 'Les gemmes viennent à toi de plus loin.' },
+  orbe:   { e:'🔮', n:'Orbe gardienne', d:n => `${n + 1} orbe${n ? 's' : ''} tourne${n ? 'nt' : ''} autour du bouclier : détruit les crachats, blesse les monstres.` },
+  foudre: { e:'⚡', n:'Foudre', d:n => `Toutes les ${Math.max(1.5, 4 - n * .5)} s, un éclair frappe le monstre le plus bas.` },
+  soin:   { e:'❤️', n:'Rempart réparé', d:() => '+8 PV et +3 PV max.', unique:true },
+  forge:  { e:'⚒️', n:'Forger une face', d:() => 'Ta plus petite face de dé gagne +2 (jusqu’à 6). Plus de gros dés, plus de dégâts.', faces:true },
+  six:    { e:'💥', n:'Six explosifs', d:n => `Quand un 6 touche, il explose autour de lui (${2 + (n + 1) * 2} dégâts).` },
+  combo:  { e:'🎰', n:'Maître des combinaisons', d:n => n === 0 ? 'Paires, brelans et suites plus forts.' : 'Encore plus forts (une paire donne 2 balles en plus).' },
+  pipe:   { e:'🎯', n:'Dé pipé', d:() => 'Une de tes faces devient la copie de ta plus forte : plus de paires et de brelans.', faces:true },
+};
+// ------------------------------------------------------------------ LES DÉS AU CŒUR (15/11, l'utilisateur : « les dés doivent rester le cœur du gameplay, quelque chose qui pop
+// et qui change les améliorations ») : chaque lancer se voit (la face du dé du héros jaillit au-dessus du bouclier) ; le dé a 6 FACES qu'on forge ;
+// les 3 derniers dés forment des COMBINAISONS : PAIRE (deux pareils de suite) = une balle en double ; BRELAN = onde de choc sur tous les monstres ;
+// SUITE (3 qui se suivent) = pluie d'éclats.
+const COMBOS = { paire:{ e:'🎲🎲', n:'PAIRE !' }, brelan:{ e:'💥', n:'BRELAN !' }, suite:{ e:'🌠', n:'SUITE !' } };
+function combo(dern) {
+  const [a, b, c] = dern.slice(-3);
+  if (c != null && a === b && b === c) return 'brelan';
+  if (c != null) { const s = [a, b, c].slice().sort((x, y) => x - y); if (s[1] === s[0] + 1 && s[2] === s[1] + 1) return 'suite'; }
+  if (b != null && dern[dern.length - 1] === dern[dern.length - 2]) return 'paire';
+  return null;
+}
+function lancerDe(raqY) {
+  const v = J.faces[Math.floor(Math.random() * 6)], a = -Math.PI / 2 + rnd(-.35, .35), s = vitBalle();
+  J.balles.push({ x:J.raq.x, y:raqY - 10, vx:Math.cos(a) * s, vy:Math.sin(a) * s, r:6 + v * .4, v, perce:L('perce'), vie:5 });
+  J.pops.push({ x:J.raq.x, y:raqY - 30, v, t:0 }); J.derniers.push(v); if (J.derniers.length > 3) J.derniers.shift();
+  son('relance');
+  const k = combo(J.derniers); if (!k) return;
+  const fort = 1 + L('combo') * .5; texte(W / 2, H * .45, `${COMBOS[k].e} ${COMBOS[k].n}`, '#f3c96b', 1.3); son('ultime', true);
+  if (k === 'paire') { const n = 1 + (L('combo') >= 2 ? 1 : 0); for (let i = 0; i < n; i++) { const a2 = -Math.PI / 2 + rnd(-.5, .5); J.balles.push({ x:J.raq.x, y:raqY - 10, vx:Math.cos(a2) * s, vy:Math.sin(a2) * s, r:6 + v * .4, v, perce:L('perce') }); } }
+  if (k === 'brelan') { J.onde = .5; J.monstres.forEach(m => blesse(m, Math.round((4 + v) * fort), '#f3c96b')); J.tremble = .4; J.derniers = []; }
+  if (k === 'suite') { for (let i = 0; i < Math.round(8 * fort); i++) { const a3 = -Math.PI + rnd(0, Math.PI); J.eclats.push({ x:J.raq.x, y:raqY - 20, vx:Math.cos(a3) * 280, vy:Math.sin(a3) * 280, v:1.4 }); } J.derniers = []; }
+}
 
 // ------------------------------------------------------------------ l'état d'une partie
-// P = ce qui est sauvegardé entre deux vagues ; J = le jeu en mouvement (pas sauvegardé : on reprend au début de la vague)
-let P = null, J = null, duJour = false, choixH = lire().heros, cv, ctx, ech = 1, boucle = 0, dernierT = 0;
-function nouvellePartie(h, jourOk) {
-  const B = bonusMode(h);
-  duJour = jourOk; rs = graine(jourOk ? 'fosse2-' + jour() : 'fosse2-' + Date.now() + Math.random());
-  P = { heros:h, vague:1, pv:PV0 + B.pv + B.bouclier, pvmax:PV0 + B.pv + B.bouclier, des:(h === 'gorm' ? 4 : 3) + B.des + B.relance, force:h === 'maelle' ? 1 : 0,
-    large:h === 'aldric' ? 1 : 0, chance:1, min:h === 'zephine' ? 3 : 1, score:0, tues:0, rs, duJour, amelios:[] };
+let J = null, cv, ctx, ech = 1, boucle = 0, dernierT = 0, choixH = lire().heros;
+function nouvelle(h) {
+  const B = typeof bonusMode === 'function' ? bonusMode(h) : { pv:0, bouclier:0, relance:0, des:0 };
+  const pvmax = PV0 + B.pv + B.bouclier;
+  J = { heros:h, pv:pvmax, pvmax, t:0, etat:'jeu', score:0, tues:0, xp:0, niv:1, besoin:5, lv:{}, balles:[], monstres:[], tirs:[], gemmes:[], capsules:[], eclats:[], textes:[],
+    raq:{ x:W / 2, w:70 + (h === 'aldric' ? 18 : 0) }, faces:[1, 2, 3, 4, 5, 6], derniers:[], pops:[], onde:0, prochainLancer:.5, prochainSpawn:1, foudreT:3, regenT:15, gardeT:0, boss:false, bossMort:false, tremble:0, effets:{}, fini:false };
+  if (h === 'maelle') J.lv.force = 1; if (h === 'gorm') J.lv.multi = 1; if (h === 'oria') J.lv.aimant = 2; if (h === 'zephine') { J.lv.vitesse = 1; J.lv.cadence = 1; }
+  J.lv.multi = (J.lv.multi || 0) + (B.des || 0) + (B.relance || 0);
 }
-const sauve = () => { try { if (P && !P.fin) localStorage.setItem(CLE_PARTIE, JSON.stringify(P)); else localStorage.removeItem(CLE_PARTIE); } catch (e) {} };
-const partieGardee = () => { try { const p = JSON.parse(localStorage.getItem(CLE_PARTIE) || 'null'); return p && p.heros && !p.fin ? p : null; } catch (e) { return null; } };
+const L = k => J.lv[k] || 0;
+const maxBalles = () => 2 + L('multi');
+const cadence = () => Math.max(.35, 1.6 * Math.pow(.85, L('cadence')));
+const vitBalle = () => 300 * (1 + .12 * L('vitesse'));
+const largeur = () => J.raq.w + 16 * L('large') + (J.effets.large ? 40 : 0);
 
-// ------------------------------------------------------------------ une vague
-function vague() {
-  rs = P.rs;
-  const v = P.vague, M = [];
-  if (v < VAGUES) {
-    const rangs = 2 + v, pvB = 2 + v * 1.5;
-    for (let r = 0; r < rangs; r++) for (let c = 0; c < COLS; c++) {
-      if (hasard() < .28) continue;
-      const elite = hasard() < .07 + v * .02;
-      const pv = Math.round((pvB + hasard() * 3) * (elite ? 3 : 1));
-      M.push({ x:X0 + c * (BW + GAP), y:14 + r * (BH + GAP), w:BW, h:BH, pv, pvmax:pv, m:elite ? pick(ELITES) : pick(PETITS), elite, att:elite ? 3 : 1, flash:0 });
-    }
-  } else {
-    const [m, nom] = pick(BOSS);
-    M.push({ x:X0 + 1.5 * (BW + GAP), y:60, w:BW * 3 + GAP * 2, h:BH * 2 + GAP, pv:110, pvmax:110, m, nom, boss:true, att:99, flash:0, tir:2.5 });
-    for (let c = 0; c < COLS; c++) { const pv = 10; M.push({ x:X0 + c * (BW + GAP), y:14, w:BW, h:BH, pv, pvmax:pv, m:pick(PETITS), att:1, flash:0 }); }
-  }
-  P.rs = rs;
-  J = { M, balles:[], capsules:[], feux:[], effets:{}, raq:{ x:W / 2, w:66 + P.large * 22 }, etat:'lancer', desLances:[], vitesse:2.4 + v * .6, textes:[], tremble:0, tuesVague:0 };
+// ------------------------------------------------------------------ apparitions : de plus en plus de monstres, de plus en plus vite
+function spawn() {
+  const t = J.t, m = Math.min(1, t / 200);
+  const tab = t < 30 ? ['gobelin', 'gobelin', 'scarabee'] : t < 90 ? ['gobelin', 'scarabee', 'loup', 'salamandre'] : ['gobelin', 'scarabee', 'loup', 'salamandre', 'salamandre', 'loup'];
+  const k = pick(tab);
+  if (MONSTRES[k].essaim) { const x = rnd(40, W - 40); for (let i = 0; i < 4; i++) ajoute(k, x + rnd(-30, 30), -10 - i * 18); }
+  else ajoute(k, rnd(24, W - 24), -20);
+  if (t > 60 && Math.random() < .06 + m * .06) ajoute('golem', rnd(40, W - 40), -30);
+  J.prochainSpawn = Math.max(.45, 2.2 - m * 1.6) * rnd(.7, 1.3);
 }
-// les dés deviennent des balles posées sur la raquette
-function lancer() {
-  const n = P.des; J.desLances = [];
-  for (let i = 0; i < n; i++) J.desLances.push(Math.max(P.min, 1 + Math.floor(Math.random() * 6)));
-  J.etat = 'pret'; son('relance', true);
-  dessineBas(true);
+function ajoute(k, x, y) {
+  const M = MONSTRES[k], f = 1 + J.t / 160;
+  J.monstres.push({ k, x, y, r:M.r, pv:Math.round(M.pv * f), pvmax:Math.round(M.pv * f), v:M.v * (1 + J.t / 500), att:M.att, flash:0, brule:0, tirT:rnd(1.5, 3), etat:'descend', dx:0 });
 }
-function tirer(angleDoigt) {
-  if (J.etat !== 'pret') return;
-  J.etat = 'jeu';
-  const vit = P.heros === 'zephine' ? 330 : 290;
-  // toutes les balles sont créées tout de suite, mais partent l'une après l'autre (attente) : elles restent posées sur le bouclier d'ici là
-  J.desLances.forEach((v, i) => {
-    const a = angleDoigt != null ? angleDoigt : -Math.PI / 2 + (i - (J.desLances.length - 1) / 2) * .22;
-    J.balles.push({ x:J.raq.x, y:H - 40, vx:Math.cos(a) * vit, vy:Math.sin(a) * vit, r:7, v, vit, attente:i * .14 });
-  });
-  son('tir', true);
-  J.desLances = []; dessineBas();
-}
-
-// ------------------------------------------------------------------ la physique
+// ------------------------------------------------------------------ une image (60 par seconde)
 function pas(dt) {
-  if (!J || J.etat === 'pause' || J.etat === 'choix' || J.etat === 'fin') return;
-  const E = J.effets; for (const k in E) { E[k] -= dt; if (E[k] <= 0) delete E[k]; }
-  const lw = J.raq.w + (E.large ? 40 : 0);
-  // les monstres descendent
-  const vd = J.vitesse * (E.lent ? .5 : 1) * (J.etat === 'jeu' ? 1 : .35);
-  for (const m of J.M) {
-    m.y += vd * dt * (m.boss ? .55 : 1); if (m.flash > 0) m.flash -= dt;
-    if (m.boss) { m.tir -= dt; if (m.tir <= 0 && m.y > 0) { m.tir = 3; J.feux.push({ x:m.x + m.w / 2 + (Math.random() - .5) * m.w * .6, y:m.y + m.h, vy:150 }); son('magie'); } }
-    if (m.y + m.h >= H - 44) { // le rempart
-      if (m.boss) { P.pv = 0; } else { P.pv -= m.att; texte(m.x + m.w / 2, H - 60, `−${m.att} PV`, '#ff8a7a'); J.tremble = .3; son('coup', true); }
-      m.mort = true;
-    }
-  }
-  J.M = J.M.filter(m => !m.mort);
-  // les boules de feu du boss
-  for (const f of J.feux) { f.y += f.vy * dt; if (f.y > H - 40 && f.y < H - 22 && Math.abs(f.x - J.raq.x) < lw / 2) { f.fin = true; P.pv -= 2; texte(f.x, H - 60, '−2 PV', '#ff8a7a'); J.tremble = .25; son('coup', true); } if (f.y > H) f.fin = true; }
-  J.feux = J.feux.filter(f => !f.fin);
-  // les balles (petits pas pour ne pas traverser les briques)
-  const sub = 3;
-  for (let s = 0; s < sub; s++) for (const b of J.balles) bouge(b, dt / sub, lw);
-  J.balles = J.balles.filter(b => !b.perdue);
-  // les capsules de bonus
-  for (const c of J.capsules) { c.y += 120 * dt; if (c.y > H - 40 && c.y < H - 20 && Math.abs(c.x - J.raq.x) < lw / 2 + 8) { c.fin = true; prendBonus(c); } if (c.y > H) c.fin = true; }
-  J.capsules = J.capsules.filter(c => !c.fin);
-  J.textes.forEach(t => { t.y -= 30 * dt; t.v -= dt; }); J.textes = J.textes.filter(t => t.v > 0);
-  if (J.tremble > 0) J.tremble -= dt;
-  // fin de vague, plus de balles, défaite
-  if (P.pv <= 0) return finPartie(false);
-  if (!J.M.length) return finVague();
-  if (J.etat === 'jeu' && !J.balles.length) { J.etat = 'lancer'; P.pv -= 1; texte(W / 2, H - 70, 'Balles perdues : −1 PV', '#ff8a7a'); son('erreur', true); dessineBas(); if (P.pv <= 0) return finPartie(false); }
-}
-function bouge(b, dt, lw) {
-  if (b.attente > 0) { b.attente -= dt; b.x = J.raq.x; b.y = H - 40; if (b.attente <= 0) son('tir', true); return; }
-  b.x += b.vx * dt; b.y += b.vy * dt;
-  if (b.x < b.r) { b.x = b.r; b.vx = Math.abs(b.vx); } if (b.x > W - b.r) { b.x = W - b.r; b.vx = -Math.abs(b.vx); }
-  if (b.y < b.r) { b.y = b.r; b.vy = Math.abs(b.vy); }
-  // la raquette : l'angle dépend de l'endroit touché
-  const ry = H - 30;
-  if (b.vy > 0 && b.y + b.r >= ry && b.y + b.r <= ry + 14 && Math.abs(b.x - J.raq.x) <= lw / 2 + b.r) {
-    const k = (b.x - J.raq.x) / (lw / 2), a = -Math.PI / 2 + k * 1.05;
-    b.vx = Math.cos(a) * b.vit; b.vy = Math.sin(a) * b.vit; b.y = ry - b.r; son('choisir');
-  }
-  if (b.y > H + 20) { b.perdue = true; return; }
+  if (!J || J.etat !== 'jeu') return;
+  J.t += dt; const E = J.effets; for (const k in E) { E[k] -= dt; if (E[k] <= 0) delete E[k]; }
+  const raqY = H - 32, lw = largeur();
+  // les dés partent tout seuls
+  J.prochainLancer -= dt;
+  // 15/11 : un lancer = 1 dé + 1 par niveau de « Un dé de plus », les uns après les autres (chacun peut faire une combinaison)
+  if (J.prochainLancer <= 0) { J.aLancer = (J.aLancer || 0) + 1 + L('multi'); J.prochainLancer = cadence(); }
+  if (J.aLancer > 0) { J.fileT = (J.fileT || 0) - dt; if (J.fileT <= 0) { lancerDe(raqY); J.aLancer--; J.fileT = .11; } }
+  J.balles.forEach(b => { if (b.vie != null) b.vie -= dt; });
+  // apparitions et boss
+  J.prochainSpawn -= dt; if (J.prochainSpawn <= 0 && J.t < DUREE + 60) spawn();
+  if (!J.boss && J.t >= BOSS_A) { J.boss = true; ajoute('titan', W / 2, -50); son('vague', true); texte(W / 2, H / 3, '🔥 LE TITAN DE FEU !', '#ff7a4a', 2.5); }
+  // talents qui tournent
+  if (J.heros === 'pip') { J.regenT -= dt; if (J.regenT <= 0) { J.regenT = 15; soigne(1); } }
+  if (J.heros === 'aldric') J.gardeT = Math.max(0, J.gardeT - dt);
+  if (L('foudre')) { J.foudreT -= dt; if (J.foudreT <= 0) { J.foudreT = Math.max(1.5, 4 - L('foudre') * .5); const m = J.monstres.slice().sort((a, b) => b.y - a.y)[0]; if (m) { blesse(m, 4 + L('foudre') * 2, '#ffe14a'); J.eclats.push({ foudre:true, x:m.x, y:m.y, v:.25 }); son('magie'); } } }
   // les monstres
-  for (const m of J.M) {
-    if (m.mort) continue;
-    const cx = Math.max(m.x, Math.min(b.x, m.x + m.w)), cy = Math.max(m.y, Math.min(b.y, m.y + m.h));
-    const dx = b.x - cx, dy = b.y - cy;
-    if (dx * dx + dy * dy > b.r * b.r) continue;
-    touche(m, b);
-    if (!J.effets.feu || m.boss) { // rebond, sauf balles de feu qui traversent
-      const ox = Math.min(Math.abs(b.x - m.x), Math.abs(b.x - m.x - m.w)), oy = Math.min(Math.abs(b.y - m.y), Math.abs(b.y - m.y - m.h));
-      if (ox < oy) { b.vx = -b.vx; b.x += Math.sign(b.vx) * 2; } else { b.vy = -b.vy; b.y += Math.sign(b.vy) * 2; }
-    } else m.feu = .2;
+  const lent = E.gel ? .4 : 1;
+  for (const m of J.monstres) {
+    const M = MONSTRES[m.k]; if (m.flash > 0) m.flash -= dt;
+    if (m.brule > 0) { m.brule -= dt; m.bruleT = (m.bruleT || 0) - dt; if (m.bruleT <= 0) { m.bruleT = 1; blesse(m, L('feu'), '#ff9a4a'); } }
+    if (M.plonge && m.etat === 'descend' && m.y > 170) { m.etat = 'plonge'; const dx = J.raq.x - m.x; m.dx = Math.sign(dx) * Math.min(90, Math.abs(dx)); texte(m.x, m.y - 20, '!', '#ff7a7a', .6); }
+    if (M.tire && m.y > 90 && m.y < 230) { m.tirT -= dt; if (m.tirT <= 0) { m.tirT = rnd(2.2, 3.4) / (1 + J.t / 300); const dx = J.raq.x - m.x, dy = raqY - m.y, d = Math.hypot(dx, dy); J.tirs.push({ x:m.x, y:m.y + 10, vx:dx / d * 150, vy:dy / d * 150, r:6 }); son('magie'); } }
+    const vy = (m.etat === 'plonge' ? 190 : M.tire && m.y > 150 && m.y < 230 ? 4 : m.v) * lent * (M.boss && m.y > 120 ? .25 : 1);
+    m.y += vy * dt; m.x += m.dx * dt;
+    if (M.boss && m.y > 120) { m.tirT -= dt; if (m.tirT <= 0) { m.tirT = 2; for (let i = -2; i <= 2; i++) { const a = Math.PI / 2 + i * .28; J.tirs.push({ x:m.x, y:m.y + 30, vx:Math.cos(a) * 140, vy:Math.sin(a) * 140, r:8 }); } son('gros'); } }
+    if (m.y + m.r >= raqY - 4) { coupRempart(m.att, m.x); m.mort = true; m.sansGemme = true; }
+  }
+  // les crachats de feu : il faut les ÉVITER avec le bouclier… ou les détruire avec une orbe
+  for (const f of J.tirs) { f.x += f.vx * dt; f.y += f.vy * dt;
+    if (f.y > raqY - 8 && f.y < raqY + 12 && Math.abs(f.x - J.raq.x) < lw / 2 + f.r) { f.fin = true; coupRempart(1, f.x, true); }
+    if (f.y > H + 10 || f.x < -10 || f.x > W + 10) f.fin = true; }
+  // les orbes autour du bouclier
+  const nOrbes = L('orbe');
+  for (let i = 0; i < nOrbes; i++) { const a = J.t * 3 + i * Math.PI * 2 / nOrbes, ox = J.raq.x + Math.cos(a) * (lw / 2 + 26), oy = raqY - 20 + Math.sin(a) * 34;
+    J.tirs.forEach(f => { if (Math.hypot(f.x - ox, f.y - oy) < f.r + 9) { f.fin = true; texte(ox, oy, '✦', '#c084fc', .4); } });
+    J.monstres.forEach(m => { if (!m.mort && Math.hypot(m.x - ox, m.y - oy) < m.r + 9 && !(m.orbeT > 0)) { m.orbeT = .5; blesse(m, 2 + nOrbes, '#c084fc'); } }); }
+  J.monstres.forEach(m => { if (m.orbeT > 0) m.orbeT -= dt; });
+  // les balles (petits pas pour ne pas traverser)
+  for (let s = 0; s < 3; s++) for (const b of J.balles) bouge(b, dt / 3, raqY, lw);
+  for (const e of J.eclats) { if (e.foudre || e.boum) { e.v -= dt; continue; } e.x += e.vx * dt; e.y += e.vy * dt; e.v -= dt;
+    for (const m of J.monstres) if (!m.mort && Math.hypot(m.x - e.x, m.y - e.y) < m.r + 3) { blesse(m, 2, '#ffe9a8'); e.v = 0; break; } }
+  // gemmes et capsules qui tombent ; l'aimant les attire
+  const rayon = 40 + L('aimant') * 35;
+  for (const g of J.gemmes) { const dx = J.raq.x - g.x, dy = raqY - g.y, d = Math.hypot(dx, dy);
+    if (d < rayon) { g.x += dx / d * 320 * dt; g.y += dy / d * 320 * dt; } else g.y += 90 * dt;
+    if (d < 18 || (g.y > raqY - 10 && g.y < raqY + 14 && Math.abs(g.x - J.raq.x) < lw / 2 + 6)) { g.fin = true; gemmeXP(g.v); }
+    if (g.y > H + 10) g.fin = true; }
+  for (const c of J.capsules) { c.y += 110 * dt; if (c.y > raqY - 10 && c.y < raqY + 14 && Math.abs(c.x - J.raq.x) < lw / 2 + 10) { c.fin = true; capsule(c.k); } if (c.y > H + 10) c.fin = true; }
+  // ménage
+  J.monstres = J.monstres.filter(m => { if (m.mort && !m.sansGemme) meurt(m); return !m.mort; });
+  J.balles = J.balles.filter(b => b.y < H + 20 && !(b.vie <= 0)); J.tirs = J.tirs.filter(f => !f.fin); J.gemmes = J.gemmes.filter(g => !g.fin); J.capsules = J.capsules.filter(c => !c.fin);
+  J.eclats = J.eclats.filter(e => e.v > 0 && e.y > -10 && e.y < H + 10); J.textes.forEach(t => { t.y -= 28 * dt; t.v -= dt; }); J.textes = J.textes.filter(t => t.v > 0);
+  J.pops.forEach(p => p.t += dt); J.pops = J.pops.filter(p => p.t < .8); if (J.onde > 0) J.onde -= dt;
+  if (J.tremble > 0) J.tremble -= dt;
+  if (J.pv <= 0) return fin(false);
+  if (J.bossMort || (J.t >= DUREE && J.boss && !J.monstres.some(m => MONSTRES[m.k].boss))) return fin(true);
+}
+function bouge(b, dt, raqY, lw) {
+  b.x += b.vx * dt; b.y += b.vy * dt;
+  if (b.x < b.r) { b.x = b.r; b.vx = Math.abs(b.vx); } if (b.x > W - b.r) { b.x = W - b.r; b.vx = -Math.abs(b.vx); } if (b.y < b.r) { b.y = b.r; b.vy = Math.abs(b.vy); }
+  if (b.vy > 0 && b.y + b.r >= raqY && b.y + b.r <= raqY + 14 && Math.abs(b.x - J.raq.x) <= lw / 2 + b.r) {
+    const k = (b.x - J.raq.x) / (lw / 2), a = -Math.PI / 2 + k * 1.05, s = vitBalle(); b.vx = Math.cos(a) * s; b.vy = Math.sin(a) * s; b.y = raqY - b.r; b.perce = L('perce'); }
+  for (const m of J.monstres) {
+    if (m.mort || b.dejaT === m) continue;
+    const dx = b.x - m.x, dy = b.y - m.y; if (dx * dx + dy * dy > (b.r + m.r) ** 2) continue;
+    blesse(m, b.v + L('force')); if (L('feu')) m.brule = 3;
+    if (b.v === 6 && L('six')) { J.monstres.forEach(o => { if (o !== m && !o.mort && Math.hypot(o.x - m.x, o.y - m.y) < 55 + L('six') * 12) blesse(o, 2 + L('six') * 2, '#ff9f2a'); }); J.eclats.push({ boum:true, x:m.x, y:m.y, v:.3 }); }
+    for (let i = 0; i < L('eclat'); i++) { const a = rnd(0, Math.PI * 2); J.eclats.push({ x:b.x, y:b.y, vx:Math.cos(a) * 260, vy:Math.sin(a) * 260, v:.6 }); }
+    if (b.perce > 0) { b.perce--; b.dejaT = m; continue; }
+    const d = Math.hypot(dx, dy) || 1, nx = dx / d, ny = dy / d, p = b.vx * nx + b.vy * ny; b.vx -= 2 * p * nx; b.vy -= 2 * p * ny; b.x = m.x + nx * (m.r + b.r + 1); b.y = m.y + ny * (m.r + b.r + 1); b.dejaT = m;
     break;
   }
-  J.M = J.M.filter(m => !m.mort);
+  if (b.dejaT && Math.hypot(b.x - b.dejaT.x, b.y - b.dejaT.y) > b.r + b.dejaT.r + 4) b.dejaT = null;
 }
-function touche(m, b) {
-  if (m.feu > 0) return;
-  const dmg = b.v + P.force;
-  blesse(m, dmg);
-  if (J.effets.foudre) J.M.forEach(o => { if (o !== m && !o.mort && Math.abs(o.y - m.y) < 4 && Math.abs(o.x - m.x) < BW + GAP + 2) blesse(o, Math.ceil(dmg / 2), true); });
+function blesse(m, n, coul) {
+  if (m.mort) return; m.pv -= n; m.flash = .1; J.score += n; texte(m.x, m.y - m.r, `−${n}`, coul || '#fff', .6);
+  if (m.pv <= 0) m.mort = true; else son('coup');
 }
-function blesse(m, dmg, foudre) {
-  m.pv -= dmg; m.flash = .12; P.score += dmg;
-  texte(m.x + m.w / 2, m.y + m.h / 2, `−${dmg}`, foudre ? '#ffe14a' : '#fff');
-  if (m.pv <= 0 && !m.mort) {
-    m.mort = true; P.tues++; J.tuesVague++; P.score += m.elite ? 30 : m.boss ? 500 : 10; son('tombe', true);
-    if (P.tues % 5 === 0 && typeof guildeEvt === 'function') guildeEvt('salle', 1, { heros:P.heros });
-    const chance = (m.elite ? .9 : .16) * P.chance;
-    if (Math.random() < chance) { const k = pick(Object.keys(BONUS)); J.capsules.push({ x:m.x + m.w / 2, y:m.y + m.h / 2, k }); }
-  } else son('coup');
+function meurt(m) {
+  const M = MONSTRES[m.k]; J.tues++; J.score += M.boss ? 1000 : M.elite ? 60 : 10; son('tombe', true);
+  for (let i = 0; i < Math.min(8, M.gem); i++) J.gemmes.push({ x:m.x + rnd(-14, 14), y:m.y + rnd(-10, 10), v:Math.ceil(M.gem / Math.min(8, M.gem)) });
+  if (M.elite || Math.random() < .05) J.capsules.push({ x:m.x, y:m.y, k:pick(['multi', 'gel', 'soin', 'large']) });
+  if (M.boss) { J.bossMort = true; texte(W / 2, H / 3, '🏆 Le Titan est tombé !', '#f3c96b', 3); }
+  if (J.tues % 10 === 0 && typeof guildeEvt === 'function') guildeEvt('salle', 1, { heros:J.heros });
 }
-function prendBonus(c) {
-  const B = BONUS[c.k]; son('soin', true); texte(c.x, H - 70, `${B.e} ${B.n}`, B.c);
-  if (P.heros === 'pip') P.pv = Math.min(P.pvmax, P.pv + 1);
-  if (c.k === 'multi') { const nv = []; J.balles.slice(0, 12).forEach(b => [-.35, .35].forEach(d => { const a = Math.atan2(b.vy, b.vx) + d; nv.push({ ...b, vx:Math.cos(a) * b.vit, vy:Math.sin(a) * b.vit }); })); J.balles.push(...nv); }
-  else if (c.k === 'soin') P.pv = Math.min(P.pvmax, P.pv + 3);
-  else if (c.k === 'or') { const vit = P.heros === 'zephine' ? 330 : 290; if (J.etat === 'jeu') J.balles.push({ x:J.raq.x, y:H - 40, vx:0, vy:-vit, r:8, v:6, vit }); }
-  else J.effets[c.k] = c.k === 'large' ? 10 : 8;
+function coupRempart(n, x, crachat) {
+  if (J.heros === 'aldric' && J.gardeT <= 0) { J.gardeT = 60; texte(x, H - 70, '🛡 Paré !', '#ffd27a', 1); son('bouclier', true); return; }
+  J.pv -= n; J.tremble = .3; texte(x, H - 70, `−${n} PV`, '#ff7a7a', .9); son(crachat ? 'magie' : 'coup', true);
 }
-function texte(x, y, t, c) { J.textes.push({ x, y, t, c, v:.9 }); }
+function soigne(n) { J.pv = Math.min(J.pvmax, J.pv + n); texte(J.raq.x, H - 70, `+${n} PV`, '#7dffb0', .9); }
+function capsule(k) {
+  son('soin', true);
+  if (k === 'multi') { for (let i = 0; i < 3; i++) { const a = -Math.PI / 2 + (i - 1) * .4, s = vitBalle(); J.balles.push({ x:J.raq.x, y:H - 45, vx:Math.cos(a) * s, vy:Math.sin(a) * s, r:8, v:6, perce:L('perce') }); } texte(J.raq.x, H - 80, '✦ Trois balles de 6 !', '#c084fc', 1.2); }
+  if (k === 'gel') { J.effets.gel = 6; texte(J.raq.x, H - 80, '❄ Tout ralentit !', '#a8e6ff', 1.2); }
+  if (k === 'soin') soigne(4);
+  if (k === 'large') { J.effets.large = 10; texte(J.raq.x, H - 80, '🛡 Grand bouclier !', '#7cd4ff', 1.2); }
+}
+// ------------------------------------------------------------------ l'XP et les niveaux : pause, 1 amélioration parmi 3
+function gemmeXP(n) {
+  J.xp += n; son('pioche');
+  if (J.xp >= J.besoin) { J.xp -= J.besoin; J.niv++; J.besoin = Math.round(5 + J.niv * 3.5); niveau(); }
+}
+function niveau() {
+  J.etat = 'choix'; son('ultime', true);
+  const dispo = Object.keys(AMELIO).filter(k => AMELIO[k].unique || (k === 'forge' ? Math.min(...J.faces) < 6 : k === 'pipe' ? new Set(J.faces).size > 1 : L(k) < 5));
+  // au moins une amélioration qui touche les DÉS à chaque niveau (le cœur du jeu)
+  const desK = dispo.filter(k => AMELIO[k].faces || k === 'six' || k === 'combo');
+  const offres = []; if (desK.length) { const k0 = pick(desK); offres.push(k0); dispo.splice(dispo.indexOf(k0), 1); }
+  while (offres.length < 3 && dispo.length) offres.push(dispo.splice(Math.floor(Math.random() * dispo.length), 1)[0]);
+  fenetre(`<h2>⬆ Niveau ${J.niv} !</h2><p style="text-align:center;color:var(--doux);margin:0 0 6px">Le jeu est en pause. Choisis une amélioration :</p>
+    ${offres.map(k => { const A = AMELIO[k], n = L(k); return `<button class="offre" onclick="prend('${k}')"><span class="e">${A.e}</span><span><b>${A.n}${A.unique || A.faces ? '' : ` · niveau ${n + 1}`}</b><small>${A.d(n)}</small></span></button>`; }).join('')}
+    <p style="text-align:center;margin:8px 0 0">${J.faces.map(v => `<img src="faces-${J.heros}/face-${v}.webp" style="width:34px;height:34px" alt="${v}">`).join('')}</p>`, false);
+}
+function prend(k) {
+  if (k === 'forge') { const i = J.faces.indexOf(Math.min(...J.faces)); J.faces[i] = Math.min(6, J.faces[i] + 2); J.lv.forge = L('forge') + 1; texte(W / 2, H / 2, `⚒ Face forgée : ${J.faces.join(' ')}`, '#f3c96b', 1.6); }
+  else if (k === 'pipe') { const max = Math.max(...J.faces), i = J.faces.indexOf(Math.min(...J.faces)); J.faces[i] = max; J.lv.pipe = L('pipe') + 1; texte(W / 2, H / 2, `🎯 Dé pipé : ${J.faces.join(' ')}`, '#f3c96b', 1.6); }
+  else if (k === 'soin') { J.pvmax += 3; soigne(8); } else J.lv[k] = L(k) + 1; fenetre(''); son('magie', true); J.etat = 'jeu'; dernierT = 0; }
+function texte(x, y, t, c, v) { J.textes.push({ x, y, t, c, v:v || .9 }); }
 
 // ------------------------------------------------------------------ le dessin
-function rrect(x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
-const COUL_DE = ['', '#9fb4d8', '#7cd4ff', '#7dffb0', '#ffe14a', '#ff9f2a', '#ff5a5a'];
+function cercleImg(src, x, y, r, bord, flash) {
+  const i = img(src); ctx.save(); ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.closePath();
+  if (i.complete && i.naturalWidth) { ctx.save(); ctx.clip(); ctx.drawImage(i, x - r, y - r, r * 2, r * 2); ctx.restore(); } else { ctx.fillStyle = '#3a3a5a'; ctx.fill(); }
+  ctx.lineWidth = 2.5; ctx.strokeStyle = flash ? '#fff' : bord; ctx.stroke(); ctx.restore();
+}
+const COUL = ['', '#9fb4d8', '#7cd4ff', '#7dffb0', '#ffe14a', '#ff9f2a', '#ff5a5a'];
 function dessine() {
   if (!J || !ctx) return;
-  ctx.setTransform(ech, 0, 0, ech, 0, 0);
-  const tr = J.tremble > 0 ? (Math.random() - .5) * 6 : 0; ctx.translate(tr, 0);
-  const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#0d1220'); g.addColorStop(.7, '#18202e'); g.addColorStop(1, '#2a2016'); ctx.fillStyle = g; ctx.fillRect(-10, 0, W + 20, H);
-  // le rempart
-  ctx.fillStyle = '#4a3c2c'; ctx.fillRect(0, H - 44, W, 3); ctx.fillStyle = '#ff6a5a33'; ctx.fillRect(0, H - 47, W, 3);
-  // monstres
-  for (const m of J.M) {
-    ctx.save(); rrect(m.x, m.y, m.w, m.h, 7); ctx.fillStyle = m.flash > 0 ? '#fff' : m.boss ? '#5a1a0a' : m.elite ? '#3a2f12' : '#1f2a40'; ctx.fill();
-    ctx.lineWidth = m.boss ? 3 : 1.6; ctx.strokeStyle = m.boss ? '#ff7a4a' : m.elite ? '#f3c96b' : '#5a6a90'; ctx.stroke();
-    const i = img(`portraits/m-${m.m}.webp`), d = m.boss ? m.h - 10 : m.h - 6;
-    if (i.complete && i.naturalWidth) { ctx.save(); ctx.beginPath(); ctx.arc(m.x + 4 + d / 2, m.y + m.h / 2, d / 2, 0, 7); ctx.clip(); ctx.drawImage(i, m.x + 4, m.y + m.h / 2 - d / 2, d, d); ctx.restore(); }
-    ctx.fillStyle = '#fff'; ctx.font = `bold ${m.boss ? 18 : 13}px Georgia`; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
-    ctx.fillText(m.pv, m.x + m.w - 5, m.y + m.h / 2 - (m.boss ? 8 : 0));
-    if (m.boss) { ctx.font = '11px Georgia'; ctx.fillText(m.nom, m.x + m.w - 5, m.y + m.h / 2 + 12); }
-    const k = m.pv / m.pvmax; ctx.fillStyle = '#000a'; ctx.fillRect(m.x + 3, m.y + m.h - 4, m.w - 6, 2.5); ctx.fillStyle = k > .5 ? '#7dffb0' : k > .25 ? '#ffe14a' : '#ff5a5a'; ctx.fillRect(m.x + 3, m.y + m.h - 4, (m.w - 6) * k, 2.5);
-    ctx.restore();
-  }
-  // boules de feu du boss
-  for (const f of J.feux) { ctx.beginPath(); ctx.arc(f.x, f.y, 7, 0, 7); ctx.fillStyle = '#ff7a2a'; ctx.shadowColor = '#ff5a1a'; ctx.shadowBlur = 14; ctx.fill(); ctx.shadowBlur = 0; }
-  // capsules
-  for (const c of J.capsules) { const B = BONUS[c.k]; ctx.save(); rrect(c.x - 15, c.y - 10, 30, 20, 9); ctx.fillStyle = B.c; ctx.shadowColor = B.c; ctx.shadowBlur = 12; ctx.fill(); ctx.shadowBlur = 0; ctx.font = '13px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = '#000'; ctx.fillText(B.e, c.x, c.y + 1); ctx.restore(); }
-  // la raquette (le bouclier runique du héros)
-  const lw = J.raq.w + (J.effets.large ? 40 : 0), coul = HER[P.heros].c;
-  ctx.save(); rrect(J.raq.x - lw / 2, H - 30, lw, 12, 6); const gr = ctx.createLinearGradient(0, H - 30, 0, H - 18); gr.addColorStop(0, '#fff'); gr.addColorStop(1, coul); ctx.fillStyle = gr; ctx.shadowColor = coul; ctx.shadowBlur = 16; ctx.fill(); ctx.restore();
-  // la visée (Oria) et les balles posées sur la raquette
-  if (J.etat === 'pret') {
-    J.desLances.forEach((v, i) => balle(J.raq.x + (i - (J.desLances.length - 1) / 2) * 16, H - 40, 7, v));
-    if (P.heros === 'oria' && J.vise != null) { ctx.save(); ctx.setLineDash([4, 6]); ctx.strokeStyle = '#5ff5e6'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(J.raq.x, H - 40); ctx.lineTo(J.raq.x + Math.cos(J.vise) * 260, H - 40 + Math.sin(J.vise) * 260); ctx.stroke(); ctx.restore(); }
-    ctx.fillStyle = '#ffffffcc'; ctx.font = '15px Georgia'; ctx.textAlign = 'center'; ctx.fillText(P.heros === 'oria' ? 'Touche l’endroit où tirer' : 'Touche l’écran pour tirer', W / 2, H - 100);
-  }
-  for (const b of J.balles) balle(b.x, b.y, b.r, b.v);
-  // textes
-  ctx.textAlign = 'center'; ctx.font = 'bold 14px Georgia';
+  ctx.setTransform(ech, 0, 0, ech, 0, 0); if (J.tremble > 0) ctx.translate((Math.random() - .5) * 7, 0);
+  const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#0d0810'); g.addColorStop(.6, '#1a1222'); g.addColorStop(1, '#2a1610'); ctx.fillStyle = g; ctx.fillRect(-10, 0, W + 20, H);
+  if (J.effets.gel) { ctx.fillStyle = '#7cd4ff14'; ctx.fillRect(0, 0, W, H); }
+  ctx.fillStyle = '#4a2a1a'; ctx.fillRect(0, H - 22, W, 22); ctx.fillStyle = '#ff6a3a33'; ctx.fillRect(0, H - 24, W, 2);
+  for (const m of J.monstres) { const M = MONSTRES[m.k];
+    cercleImg(`portraits/m-${M.img}.webp`, m.x, m.y, m.r, M.boss ? '#ff7a4a' : M.elite ? '#f3c96b' : m.etat === 'plonge' ? '#ff5a5a' : '#8a98b8', m.flash > 0);
+    if (m.brule > 0) { ctx.fillStyle = '#ff7a2a'; ctx.font = '11px serif'; ctx.fillText('🔥', m.x + m.r - 6, m.y - m.r + 6); }
+    if (M.boss || M.elite || m.pv < m.pvmax) { const w = m.r * 2; ctx.fillStyle = '#000a'; ctx.fillRect(m.x - m.r, m.y + m.r + 2, w, 3); ctx.fillStyle = '#ff5a3a'; ctx.fillRect(m.x - m.r, m.y + m.r + 2, w * Math.max(0, m.pv / m.pvmax), 3); } }
+  for (const f of J.tirs) { ctx.beginPath(); ctx.arc(f.x, f.y, f.r, 0, 7); ctx.fillStyle = '#ff7a2a'; ctx.shadowColor = '#ff4a1a'; ctx.shadowBlur = 12; ctx.fill(); ctx.shadowBlur = 0; }
+  for (const gm of J.gemmes) { ctx.save(); ctx.translate(gm.x, gm.y); ctx.rotate(Math.PI / 4); ctx.fillStyle = gm.v > 1 ? '#c084fc' : '#4f8bff'; ctx.shadowColor = ctx.fillStyle; ctx.shadowBlur = 8; ctx.fillRect(-4, -4, 8, 8); ctx.restore(); }
+  for (const c of J.capsules) { ctx.beginPath(); ctx.arc(c.x, c.y, 11, 0, 7); ctx.fillStyle = '#f3c96b'; ctx.shadowColor = '#f3c96b'; ctx.shadowBlur = 14; ctx.fill(); ctx.shadowBlur = 0; ctx.fillStyle = '#2b1d0a'; ctx.font = '12px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText({ multi:'✦', gel:'❄', soin:'❤', large:'🛡' }[c.k], c.x, c.y + 1); }
+  for (const e of J.eclats) { if (e.boum) { ctx.beginPath(); ctx.arc(e.x, e.y, 30 + (0.3 - e.v) * 120, 0, 7); ctx.fillStyle = `rgba(255,159,42,${e.v * 2})`; ctx.fill(); continue; }
+    if (e.foudre) { const m = e; ctx.strokeStyle = '#ffe14a'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(m.x, 0); for (let y = 30; y < m.y; y += 30) ctx.lineTo(m.x + rnd(-10, 10), y); ctx.lineTo(m.x, m.y); ctx.stroke(); continue; }
+    ctx.beginPath(); ctx.arc(e.x, e.y, 3, 0, 7); ctx.fillStyle = '#ffe9a8'; ctx.fill(); }
+  for (const b of J.balles) { const c = COUL[b.v] || '#fff'; ctx.globalAlpha = b.vie != null ? Math.min(1, b.vie / 1.2 + .15) : 1; ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, 7); const gg = ctx.createRadialGradient(b.x - 2, b.y - 2, 1, b.x, b.y, b.r); gg.addColorStop(0, '#fff'); gg.addColorStop(1, L('feu') ? '#ff6a2a' : c);
+    ctx.fillStyle = gg; ctx.shadowColor = c; ctx.shadowBlur = 10; ctx.fill(); ctx.shadowBlur = 0; ctx.fillStyle = '#000'; ctx.font = 'bold 8px Georgia'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(b.v + L('force'), b.x, b.y + .5); ctx.globalAlpha = 1; }
+  // le dé qui jaillit à chaque lancer
+  for (const p of J.pops) { const k = Math.min(1, p.t / .15), s = 26 * (k < 1 ? .5 + k * .7 : 1.2 - (p.t - .15) * .4), al = Math.max(0, 1 - Math.max(0, p.t - .45) / .35);
+    const i = img(`faces-${J.heros}/face-${p.v}.webp`); ctx.globalAlpha = al; if (i.complete && i.naturalWidth) ctx.drawImage(i, p.x - s, p.y - s - p.t * 40, s * 2, s * 2); ctx.globalAlpha = 1; }
+  if (J.onde > 0) { ctx.strokeStyle = `rgba(243,201,107,${J.onde * 2})`; ctx.lineWidth = 6; ctx.beginPath(); ctx.arc(J.raq.x, H - 40, (0.5 - J.onde) * 1400, 0, 7); ctx.stroke(); }
+  // le bouclier et les orbes
+  const lw = largeur(), raqY = H - 32, coul = HER[J.heros].c;
+  ctx.save(); ctx.beginPath(); ctx.roundRect(J.raq.x - lw / 2, raqY, lw, 11, 6); const gr = ctx.createLinearGradient(0, raqY, 0, raqY + 11); gr.addColorStop(0, '#fff'); gr.addColorStop(1, coul); ctx.fillStyle = gr; ctx.shadowColor = coul; ctx.shadowBlur = 16; ctx.fill(); ctx.restore();
+  for (let i = 0; i < L('orbe'); i++) { const a = J.t * 3 + i * Math.PI * 2 / L('orbe'); ctx.beginPath(); ctx.arc(J.raq.x + Math.cos(a) * (lw / 2 + 26), raqY - 20 + Math.sin(a) * 34, 7, 0, 7); ctx.fillStyle = '#c084fc'; ctx.shadowColor = '#c084fc'; ctx.shadowBlur = 12; ctx.fill(); ctx.shadowBlur = 0; }
+  ctx.textAlign = 'center'; ctx.font = 'bold 13px Georgia';
   for (const t of J.textes) { ctx.globalAlpha = Math.min(1, t.v * 2); ctx.fillStyle = '#000'; ctx.fillText(t.t, t.x + 1, t.y + 1); ctx.fillStyle = t.c; ctx.fillText(t.t, t.x, t.y); }
   ctx.globalAlpha = 1;
 }
-function balle(x, y, r, v) {
-  const c = J.effets.feu ? '#ff6a2a' : COUL_DE[v] || '#fff';
-  ctx.beginPath(); ctx.arc(x, y, r, 0, 7); const g = ctx.createRadialGradient(x - 2, y - 2, 1, x, y, r); g.addColorStop(0, '#fff'); g.addColorStop(1, c);
-  ctx.fillStyle = g; ctx.shadowColor = c; ctx.shadowBlur = 12; ctx.fill(); ctx.shadowBlur = 0;
-  ctx.fillStyle = '#000'; ctx.font = 'bold 9px Georgia'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(v + P.force, x, y + .5);
-}
-function tour(t) {
-  const dt = Math.min(.05, (t - (dernierT || t)) / 1000); dernierT = t;
-  pas(dt); dessine(); hud();
-  boucle = requestAnimationFrame(tour);
-}
-
-// ------------------------------------------------------------------ l'écran autour du jeu
-function ecranJeu() {
-  $('app').innerHTML = `
-    <div class="hud"><a href="#" onclick="pause();return false">⏸</a><div class="mid"><span>Vague <b id="hV"></b>/${VAGUES}</span><span>❤ <b id="hPV"></b></span><span>⭐ <b id="hS"></b></span></div><button onclick="regles(true)">❓</button></div>
-    <div class="vie"><i id="hBar"></i></div>
-    <div class="zone" id="zone"><canvas id="cv"></canvas></div>
-    <div class="bas" id="bas"></div>`;
-  cv = $('cv'); ctx = cv.getContext('2d'); taille(); window.onresize = taille;
-  const pos = e => { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) * W / r.width, (e.clientY - r.top) * H / r.height]; };
-  cv.onpointerdown = e => { cv.setPointerCapture(e.pointerId); const [x, y] = pos(e);
-    if (J.etat === 'lancer') { lancer(); return; }
-    if (J.etat === 'pret') { if (P.heros === 'oria') { J.vise = Math.atan2(Math.min(y, H - 60) - (H - 40), x - J.raq.x); J.oriaTouche = true; } else tirer(); return; }
-    J.raq.x = Math.max(20, Math.min(W - 20, x)); };
-  cv.onpointermove = e => { const [x, y] = pos(e); if (J.etat === 'pret' && P.heros === 'oria' && J.oriaTouche) { J.vise = Math.atan2(Math.min(y, H - 60) - (H - 40), x - J.raq.x); return; } if (J.etat !== 'pret') J.raq.x = Math.max(20, Math.min(W - 20, x)); };
-  cv.onpointerup = () => { if (J.etat === 'pret' && P.heros === 'oria' && J.oriaTouche) { J.oriaTouche = false; tirer(Math.min(-.25, Math.max(-Math.PI + .25, J.vise))); } };
-  dessineBas(); cancelAnimationFrame(boucle); dernierT = 0; boucle = requestAnimationFrame(tour);
-}
-function taille() { const z = $('zone'); if (!z) return; const r = z.getBoundingClientRect(); const k = Math.min(r.width / W, r.height / H); cv.style.width = W * k + 'px'; cv.style.height = H * k + 'px'; cv.style.left = (r.width - W * k) / 2 + 'px'; ech = k * (window.devicePixelRatio || 1); cv.width = W * ech; cv.height = H * ech; }
+function tour(t) { const dt = Math.min(.05, (t - (dernierT || t)) / 1000); dernierT = t; pas(dt); dessine(); hud(); boucle = requestAnimationFrame(tour); }
 function hud() {
   if (!$('hPV')) return;
-  $('hV').textContent = P.vague; $('hPV').textContent = Math.max(0, P.pv); $('hS').textContent = P.score; $('hBar').style.width = Math.max(0, 100 * P.pv / P.pvmax) + '%';
-  const e = Object.keys(J.effets).map(k => `<span>${BONUS[k].e} ${Math.ceil(J.effets[k])}</span>`).join('');
-  const b = $('bonusZone'); if (b && b.dataset.e !== e) { b.innerHTML = e; b.dataset.e = e; }
+  const reste = Math.max(0, Math.ceil((J.boss ? Math.max(0, DUREE - J.t) : BOSS_A - J.t)));
+  $('hT').textContent = J.boss ? (J.monstres.some(m => MONSTRES[m.k].boss) ? '🔥 Titan !' : `${Math.floor(reste / 60)}:${String(reste % 60).padStart(2, '0')}`) : `${Math.floor(reste / 60)}:${String(reste % 60).padStart(2, '0')}`;
+  $('hPV').textContent = Math.max(0, J.pv); $('hN').textContent = J.niv; $('hS').textContent = J.score;
+  $('hVie').style.width = Math.max(0, 100 * J.pv / J.pvmax) + '%'; $('hXP').style.width = Math.min(100, 100 * J.xp / J.besoin) + '%';
+  const c = combo(J.derniers), b = `<span class="faces">🎲 ${J.faces.map(v => `<img src="faces-${J.heros}/face-${v}.webp" alt="${v}">`).join('')}</span>
+    <span class="dern">${J.derniers.map(v => `<img src="faces-${J.heros}/face-${v}.webp" alt="${v}">`).join('') || '…'}${c ? ` <b style="color:var(--or)">${COMBOS[c].n}</b>` : ''}</span>`
+    + Object.entries(J.lv).filter(([, n]) => n).map(([k, n]) => `<span>${AMELIO[k].e} ${n}</span>`).join('');
+  if ($('bas').dataset.b !== b) { $('bas').innerHTML = b; $('bas').dataset.b = b; }
 }
-function dessineBas(roule) {
-  const b = $('bas'); if (!b || !J) return;
-  if (J.etat === 'lancer') b.innerHTML = `<div class="msg">🎲 <b>Touche la Fosse</b> pour lancer tes ${P.des} dés : chaque dé devient une balle, sa valeur = ses dégâts.</div>`;
-  else if (J.etat === 'pret') b.innerHTML = J.desLances.map(v => `<img class="${roule ? 'roule' : ''}" src="faces-${P.heros}/face-${Math.min(6, v)}.webp" alt="${v}">`).join('');
-  else b.innerHTML = `<div class="bonus" id="bonusZone"></div><div class="msg" style="font-size:2.8cqw">Glisse le doigt pour bouger ton bouclier · 💀 ${P.tues}</div>`;
+// ------------------------------------------------------------------ l'écran
+function ecranJeu() {
+  $('app').innerHTML = `<div class="hud"><a href="#" onclick="pause();return false">⏸</a><div class="mid"><span>⏳ <b id="hT"></b></span><span>❤ <b id="hPV"></b></span><span>⬆ <b id="hN"></b></span><span>⭐ <b id="hS"></b></span></div><button onclick="regles(true)">❓</button></div>
+    <div class="barres"><div class="barre vie"><i id="hVie"></i></div><div class="barre xp"><i id="hXP"></i></div></div>
+    <div class="zone" id="zone"><canvas id="cv"></canvas></div><div class="bas" id="bas"></div>`;
+  cv = $('cv'); ctx = cv.getContext('2d'); taille(); window.onresize = taille;
+  const pos = e => { const r = cv.getBoundingClientRect(); return (e.clientX - r.left) * W / r.width; };
+  cv.onpointerdown = e => { cv.setPointerCapture(e.pointerId); J.raq.x = Math.max(25, Math.min(W - 25, pos(e))); };
+  cv.onpointermove = e => { if (e.buttons || e.pointerType === 'touch') J.raq.x = Math.max(25, Math.min(W - 25, pos(e))); };
+  cancelAnimationFrame(boucle); dernierT = 0; boucle = requestAnimationFrame(tour);
 }
-function pause() { if (!J || J.etat === 'fin') return; const avant = J.etat; J.etat = 'pause'; fenetre(`<h2>⏸ Pause</h2><button class="go" onclick="fenetre('');J.etat='${avant === 'pause' ? 'jeu' : avant}'">Reprendre</button><button class="sec" onclick="quitte()">Quitter (la partie est gardée au début de la vague ${P.vague})</button>`, false); }
-function quitte() { fenetre(''); cancelAnimationFrame(boucle); J = null; sauve(); accueil(); }
-
-// ------------------------------------------------------------------ entre deux vagues
-function finVague() {
-  J.etat = 'choix'; son('victoire', true);
-  if (P.vague >= VAGUES) return finPartie(true);
-  if (typeof guildeEvt === 'function') guildeEvt('defense_vague', 1, { heros:P.heros });
-  rs = P.rs; const cles = Object.keys(AMELIOS).filter(k => !(k === 'min' && P.min >= 3)); const offres = [];
-  while (offres.length < 3) { const k = cles.splice(Math.floor(hasard() * cles.length), 1)[0]; offres.push(k); }
-  P.rs = rs; P.offres = offres; P.vague++; sauve();
-  choix();
+function taille() { const z = $('zone'); if (!z) return; const r = z.getBoundingClientRect(), k = Math.min(r.width / W, r.height / H); cv.style.width = W * k + 'px'; cv.style.height = H * k + 'px'; cv.style.left = (r.width - W * k) / 2 + 'px'; ech = k * (window.devicePixelRatio || 1); cv.width = W * ech; cv.height = H * ech; }
+function fenetre(h, ferme = true) { $('fen').innerHTML = h ? `<div class="voile-f" ${ferme ? `onclick="if(event.target===this)fenetre('')"` : ''}><div class="fen">${h}</div></div>` : ''; }
+function pause() { if (!J || J.etat !== 'jeu') return; J.etat = 'pause'; fenetre(`<h2>⏸ Pause</h2><button class="go" onclick="fenetre('');J.etat='jeu';dernierT=0">Reprendre</button><button class="sec" onclick="fenetre('');cancelAnimationFrame(boucle);J=null;accueil()">Abandonner la partie</button>`, false); }
+function regles(enJeu) {
+  if (enJeu && J && J.etat === 'jeu') J.etat = 'pause';
+  fenetre(`<h2>🕳️ La Fosse aux Runes</h2><div class="moust"><img src="ui/moustache.webp" alt=""><p>« Ça grouille ! Bouge ton bouclier, ramasse les gemmes, et choisis bien tes améliorations. Moi je compte les secondes. Miaou. »</p></div>
+    <ol><li><b>Tes dés partent tout seuls</b> de ton bouclier : chaque dé est une balle, sa valeur = ses dégâts. <b>Combinaisons</b> des derniers dés : 🎲🎲 paire = une balle en double, 💥 brelan = onde de choc sur tous les monstres, 🌠 suite = pluie d’éclats. Forge tes faces aux niveaux ! <b>Glisse le doigt</b> pour bouger le bouclier et renvoyer les balles.</li>
+    <li>Les monstres descendent <b>de plus en plus vite</b> et <b>attaquent</b> : 🔥 les salamandres crachent du feu (évite-le !), 🐺 les loups plongent sur toi, 🪲 les scarabées arrivent en essaim, 🗿 les golems encaissent tout. S’ils touchent le rempart, tu perds des PV.</li>
+    <li>Chaque monstre abattu lâche des <b>gemmes 💎</b> : ramasse-les avec ton bouclier. Barre bleue pleine = <b>un niveau : pause, choisis 1 amélioration parmi 3</b>.</li>
+    <li>Les capsules dorées : ✦ trois balles de 6, ❄ tout ralentit, ❤ soin, 🛡 grand bouclier.</li>
+    <li>À <b>4:00</b>, le <b>Titan de feu</b> arrive et crache en éventail. Abats-le, ou tiens jusqu’à 5:00 et finis-le, pour gagner.</li></ol>
+    <p style="color:var(--doux)">Talent de ${HER[J ? J.heros : choixH].n} : <b>${HER[J ? J.heros : choixH].t}</b> · ${HER[J ? J.heros : choixH].d}</p>
+    <button class="go" onclick="fenetre('');if(J&&J.etat==='pause'){J.etat='jeu';dernierT=0}">C’est parti !</button>`, false);
 }
-function choix() {
-  fenetre(`<h2>🏆 Vague ${P.vague - 1} repoussée !</h2><p style="text-align:center;color:var(--doux)">Choisis un renfort pour la vague ${P.vague}${P.vague === VAGUES ? ' : <b style="color:#ff7a4a">le boss sort de la Fosse</b>' : ''}.</p>
-    ${P.offres.map(k => `<button class="offre" onclick="prend('${k}')"><b>${AMELIOS[k].n}</b><small>${AMELIOS[k].d}</small></button>`).join('')}`, false);
-}
-function prend(k) {
-  if (k === 'de') P.des++; else if (k === 'force') P.force++; else if (k === 'raquette') P.large++; else if (k === 'chance') P.chance *= 2; else if (k === 'min') P.min = 3; else if (k === 'soin') { P.pvmax += 4; P.pv = Math.min(P.pvmax, P.pv + 8); }
-  P.amelios.push(k); delete P.offres; sauve(); fenetre(''); son('magie', true);
-  vague(); dessineBas();
-}
-
-// ------------------------------------------------------------------ fin d'une partie
-function finPartie(gagne) {
-  if (!J || J.etat === 'fin') return; J.etat = 'fin'; P.fin = gagne ? 'gagne' : 'perdu';
-  const et = gagne ? 1 + (P.pv >= 8 ? 1 : 0) + (P.pv >= 15 ? 1 : 0) : 0;
-  const D = lire(); D.parties++; if (gagne) D.victoires++; D.meilleur = Math.max(D.meilleur, P.score);
-  if (duJour) { const j = D.jours[jour()]; if (!j || P.score > j.score) D.jours[jour()] = { score:P.score, etoiles:et, heros:P.heros }; }
-  ecrire(D); try { localStorage.removeItem(CLE_PARTIE); } catch (e) {}
+function fin(gagne) {
+  if (!J || J.fini) return; J.fini = true; J.etat = 'fin';
+  const et = gagne ? 1 + (J.pv >= J.pvmax / 3 ? 1 : 0) + (J.pv >= J.pvmax * .66 ? 1 : 0) : 0;
+  const D = lire(); D.parties++; if (gagne) D.victoires++; D.meilleur = Math.max(D.meilleur, J.score); D.meilleurTemps = Math.max(D.meilleurTemps, Math.floor(J.t)); ecrire(D);
   let objet = null;
-  if (gagne) { son('victoire', true); if (typeof guildeEvt === 'function') guildeEvt('boss', 1, { heros:P.heros }); try { GM.jingle('victoire'); } catch (e) {} objet = butinArmurerie(et, P.score); }
-  else { try { GM.jingle('defaite'); } catch (e) {} if (typeof gagneXP === 'function') gagneXP(10, 'Fosse défendue'); }
+  if (gagne) { son('victoire', true); try { GM.jingle('victoire'); } catch (e) {} if (typeof guildeEvt === 'function') guildeEvt('boss', 1, { heros:J.heros }); if (typeof butinArmurerie === 'function') objet = butinArmurerie(et, J.score); }
+  else { try { GM.jingle('defaite'); } catch (e) {} if (typeof gagneXP === 'function' && J.t > 60) gagneXP(10, 'Fosse défendue'); }
   fenetre(`<h2>${gagne ? '🏆 La Fosse est refermée !' : '☠ Le rempart est tombé…'}</h2>
     <p style="text-align:center;font-size:2em;margin:6px 0">${gagne ? '★'.repeat(et) + '☆'.repeat(3 - et) : ''}</p>
-    <p style="text-align:center">Score : <b style="color:var(--or)">${P.score}</b> · ${P.tues} monstres · vague ${Math.min(P.vague, VAGUES)}/${VAGUES}${gagne ? ` · ❤ ${P.pv}` : ''}</p>
-    ${gagne ? `<p style="text-align:center">✨ +5 éclats de ${HER[P.heros].n}${objet ? ` · 🎒 <b>${objet}</b> rejoint ton armurerie` : ''}</p><p style="color:var(--doux);font-size:.9em;text-align:center">★★ : finir avec 8 PV · ★★★ : 15 PV.</p>` : '<p style="color:var(--doux);text-align:center">Astuce : attrape les bonus qui tombent, et ne laisse pas les monstres approcher du rempart.</p>'}
-    <p style="text-align:center;color:var(--doux);font-size:.9em">Meilleur score : ${D.meilleur} · ${D.victoires} victoire${D.victoires > 1 ? 's' : ''} sur ${D.parties}</p>
-    <button class="go" onclick="fenetre('');cancelAnimationFrame(boucle);J=null;P=null;accueil()">Retour au bord de la Fosse</button>`, false);
-}
-
-// ------------------------------------------------------------------ fenêtres, règles, accueil
-function fenetre(h, ferme = true) { $('fen').innerHTML = h ? `<div class="voile-f" ${ferme ? `onclick="if(event.target===this)fenetre('')"` : ''}><div class="fen">${h}</div></div>` : ''; }
-function regles(enJeu) {
-  let avant = null; if (enJeu && J && J.etat !== 'fin') { avant = J.etat; J.etat = 'pause'; }
-  fenetre(`<h2>🕳️ La Fosse aux Runes</h2>
-    <div class="moust"><img src="ui/moustache.webp" alt=""><p>« Un bouclier, des dés qui rebondissent, des monstres qui tombent. Et des bonus partout. Miaou ! »</p></div>
-    <ol>
-      <li><b>Touche la Fosse</b> : tu lances tes dés. Chaque dé devient une <b>balle</b>, et sa <b>valeur = ses dégâts</b>.</li>
-      <li><b>Touche encore</b> pour tirer. Puis <b>glisse le doigt</b> pour bouger ton bouclier et renvoyer les balles. L’endroit où la balle touche le bouclier choisit son angle.</li>
-      <li>Les monstres <b>descendent</b> doucement. S’ils touchent le <b>rempart</b>, tu perds des PV.</li>
-      <li>Les monstres tombés lâchent parfois un <b>bonus</b> : attrape-le avec ton bouclier ! ${Object.values(BONUS).map(b => `${b.e} ${b.n} (${b.d})`).join(' · ')}.</li>
-      <li>Si toutes tes balles tombent, tu perds <b>1 PV</b> et tu relances tes dés.</li>
-      <li>${VAGUES} vagues ; entre deux vagues, un <b>renfort</b> au choix. À la dernière, le <b>boss</b> crache du feu : évite ses boules avec ton bouclier.</li>
-    </ol>
-    <p style="color:var(--doux)">Talent de ${HER[P ? P.heros : choixH].n} : <b>${HER[P ? P.heros : choixH].t}</b> · ${HER[P ? P.heros : choixH].d}</p>
-    <button class="go" onclick="fenetre('');${avant ? `J.etat='${avant}'` : ''}">C’est parti !</button>`, false);
+    <p style="text-align:center">Tenu <b>${Math.floor(J.t / 60)}:${String(Math.floor(J.t % 60)).padStart(2, '0')}</b> · score <b style="color:var(--or)">${J.score}</b> · ${J.tues} monstres · niveau ${J.niv}</p>
+    <p style="text-align:center">${Object.entries(J.lv).filter(([, n]) => n).map(([k, n]) => `${AMELIO[k].e}${n}`).join(' ')}</p>
+    ${gagne && objet ? `<p style="text-align:center">🎒 <b>${objet}</b> rejoint ton armurerie</p>` : ''}
+    <p style="text-align:center;color:var(--doux);font-size:.9em">Meilleur score : ${D.meilleur} · plus longue survie : ${Math.floor(D.meilleurTemps / 60)}:${String(D.meilleurTemps % 60).padStart(2, '0')}</p>
+    <button class="go" onclick="fenetre('');cancelAnimationFrame(boucle);J=null;accueil()">Retour au bord de la Fosse</button>`, false);
 }
 function accueil() {
-  const D = lire(), j = D.jours[jour()], g = partieGardee();
-  if (choixH === 'zephine' && !ZEPH_OK()) choixH = 'maelle';
-  window.onresize = null;
-  $('app').innerHTML = `<div class="acc">
-    <div class="top"><a href="menu.html">‹ Menu</a><button onclick="regles()">❓ Règles</button></div>
-    <h1>🕳️ La Fosse aux Runes</h1>
-    <p class="sous">Un casse-briques de dés : lance, fais rebondir, attrape les bonus, repousse les monstres jusqu’au boss.</p>
+  const D = lire(); if (choixH === 'zephine' && !ZEPH_OK()) choixH = 'maelle'; window.onresize = null;
+  $('app').innerHTML = `<div class="acc"><div class="top"><a href="menu.html">‹ Menu</a><button onclick="regles()">❓ Règles</button></div>
+    <h1>🕳️ La Fosse aux Runes</h1><p class="sous">Ça grouille. Tes dés partent tout seuls, les monstres attaquent, chaque niveau t’offre une amélioration. Tiens 5 minutes… et abats le Titan.</p>
     <div class="heros">${Object.entries(HER).map(([k, h]) => `<button class="${choixH === k ? 'on' : ''}" ${k === 'zephine' && !ZEPH_OK() ? 'disabled' : ''} onclick="choixH='${k}';accueil()"><img src="portraits/${k}.webp" alt="">${h.n}${k === 'zephine' && !ZEPH_OK() ? '<br>🔒 tutoriel' : ''}</button>`).join('')}</div>
-    <div class="pv-h">✦ <b>${HER[choixH].t}</b> : ${HER[choixH].d}<br>❤ ${PV0} PV de rempart · ${VAGUES} vagues.<br>✨ ${texteBonus(choixH)}</div>
-    <div class="choix">
-      ${g ? `<button onclick="reprend()" style="border-color:var(--ok);color:var(--ok);background:#14322a">▶ Reprendre ta Fosse<small>${HER[g.heros].n} · vague ${g.vague}/${VAGUES} · ❤ ${g.pv}</small></button>` : ''}
-      <button onclick="commence(true)">📅 La Fosse du jour<small>Les mêmes vagues pour tout le monde aujourd’hui. ${j ? `Ton record du jour : ${j.score} ${'★'.repeat(j.etoiles)}` : 'Pas encore tentée.'}</small></button>
-      <button class="b2" onclick="commence(false)">🎲 Une Fosse au hasard<small>De nouvelles vagues à chaque fois.</small></button>
-    </div>
-    <p class="record">Meilleur score : ${D.meilleur} · ${D.victoires} victoire${D.victoires > 1 ? 's' : ''} sur ${D.parties} · <a href="fosse-v1.html" style="color:var(--doux)">l’ancienne version (tour par tour)</a></p>
-  </div>`;
+    <div class="pv-h">✦ <b>${HER[choixH].t}</b> : ${HER[choixH].d}<br>${typeof texteBonus === 'function' ? '✨ ' + texteBonus(choixH) : ''}</div>
+    <button class="gros" onclick="commence()">⚔ Descendre dans la Fosse</button>
+    <p class="record">Meilleur score : ${D.meilleur} · plus longue survie : ${Math.floor(D.meilleurTemps / 60)}:${String(D.meilleurTemps % 60).padStart(2, '0')} · ${D.victoires} victoire${D.victoires > 1 ? 's' : ''} sur ${D.parties}<br>
+      <a href="fosse-v2.html" style="color:var(--doux)">l’ancien casse-briques</a> · <a href="fosse-v1.html" style="color:var(--doux)">la version tour par tour</a></p></div>`;
 }
-function commence(jourOk) {
-  const D = lire(); D.heros = choixH; ecrire(D);
-  nouvellePartie(choixH, jourOk); sauve(); vague(); ecranJeu(); son('portail', true);
-  if (!localStorage.getItem('guilde-fosse2-guide')) { localStorage.setItem('guilde-fosse2-guide', '1'); regles(true); }
-}
-function reprend() { const g = partieGardee(); if (!g) return; P = g; duJour = !!g.duJour; if (P.offres) { vague(); ecranJeu(); J.etat = 'choix'; choix(); } else { vague(); ecranJeu(); } }
+function commence() { const D = lire(); D.heros = choixH; ecrire(D); nouvelle(choixH); ecranJeu(); son('portail', true); if (!localStorage.getItem('guilde-fosse3-guide')) { localStorage.setItem('guilde-fosse3-guide', '1'); regles(true); } }
 if (typeof GM !== 'undefined') { try { GM.musique('combat2'); GM.bouton(); } catch (e) {} }
-document.addEventListener('visibilitychange', () => { if (document.hidden && J && (J.etat === 'jeu' || J.etat === 'pret')) pause(); });
+document.addEventListener('visibilitychange', () => { if (document.hidden && J && J.etat === 'jeu') pause(); });
 accueil();
 </script>
 </body>
