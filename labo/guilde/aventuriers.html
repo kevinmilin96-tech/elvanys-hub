@@ -37,12 +37,36 @@
   .de button.peut { border-color:var(--ok); box-shadow:0 0 0 2px var(--ok); }
   .de button span { position:absolute; bottom:-2px; right:2px; font-size:.75em; color:var(--doux); }
   .bloc { background:#2a1d18cc; border:1px solid #6a4a3a; border-radius:14px; padding:12px; margin:10px 0; }
+  /* 16/11 nuit : la FICHE DU HÉROS façon jeu de héros (captures d'AFK Journey) : le héros au centre, l'équipement autour, les caractéristiques */
+  .scene { display:grid; grid-template-columns:76px 1fr 76px; gap:8px; align-items:center; padding:14px 8px 10px; border-radius:18px; margin:8px 0;
+    background:radial-gradient(ellipse at 50% 70%, #c88a4a55, transparent 60%), linear-gradient(180deg, #3a2414, #1a100a); border:2px solid #6a4a2a; box-shadow:inset 0 0 40px #000a; }
+  .scene .col { display:grid; gap:10px; }
+  .slot { position:relative; width:72px; height:72px; border-radius:12px; border:2px solid #6a4a3a; background:linear-gradient(160deg, #2a1d18, #120c0a); padding:2px; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  .slot .e { font-size:28px; line-height:1; } .slot .e.vide { opacity:.3; } .slot small { font-size:9px; color:var(--doux); line-height:1.1; text-align:center; max-width:66px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+  .slot i { position:absolute; top:2px; right:4px; font-style:normal; font-size:10px; color:var(--or); font-weight:bold; }
+  .slot.r0 { border-color:#c9c1ea; } .slot.r1 { border-color:#4f8bff; box-shadow:0 0 10px #4f8bff66; background:linear-gradient(160deg, #1a2a5a, #0c1430); } .slot.r2 { border-color:#c084fc; box-shadow:0 0 12px #c084fc88; background:linear-gradient(160deg, #3a1a5a, #160c30); }
+  .slot.lock { opacity:.55; } .slot.lock .e { font-size:22px; }
+  .heros-c { text-align:center; } .heros-c img { width:100%; max-width:170px; aspect-ratio:1; border-radius:50%; object-fit:cover; box-shadow:0 0 0 4px var(--c), 0 0 30px var(--c); }
+  .heros-c b { display:block; color:var(--or); font-size:1.15em; margin-top:6px; } .heros-c small { color:var(--doux); }
+  .puiss { text-align:center; font-size:1.6em; font-weight:bold; color:var(--or); margin:6px 0 2px; text-shadow:0 0 10px #f3c96b66; }
+  .stats-h { display:grid; grid-template-columns:repeat(6, 1fr); gap:4px; background:#1a1210; border:1px solid #6a4a3a; border-radius:14px; padding:8px 4px; text-align:center; font-size:.8em; }
+  .stats-h b { display:block; font-size:1.25em; color:var(--texte); } .stats-h span { color:var(--doux); }
+  .boutons-h { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:10px 0; }
+  .voile-f { position:fixed; inset:0; background:#000c; z-index:50; display:flex; align-items:center; justify-content:center; padding:4vw; }
+  .fen { width:min(94vw, 480px); max-height:88vh; overflow:auto; background:#2a1d18; border:2px solid var(--or); border-radius:18px; padding:16px; }
+  .fen h2 { margin:0 0 8px; text-align:center; }
+  .piece { display:flex; align-items:center; gap:10px; border:2px solid #6a4a3a; border-radius:12px; padding:8px; margin:6px 0; background:#1a1210; }
+  .piece .e { font-size:26px; } .piece b { display:block; } .piece small { color:var(--doux); display:block; } .piece .act { margin-left:auto; display:flex; flex-direction:column; gap:4px; }
+  .piece.r1 { border-color:#4f8bff; } .piece.r2 { border-color:#c084fc; }
+  .bulle { position:fixed; left:50%; top:40%; transform:translateX(-50%); z-index:60; background:#000c; color:var(--or); font-weight:bold; padding:10px 18px; border-radius:14px; animation:bul 1.4s forwards; pointer-events:none; }
+  @keyframes bul { 0% { opacity:0; } 15% { opacity:1; } 80% { opacity:1; } 100% { opacity:0; } }
 </style>
 </head>
 <body>
 <main id="app"></main>
-<script src="musique.js?v=20261115-165551"></script>
-<script src="aventuriers.js?v=20261115-165551"></script>
+<div id="fen"></div>
+<script src="musique.js?v=20261115-165754"></script>
+<script src="aventuriers.js?v=20261115-165754"></script>
 <script>
 // =============================================================================================== LA FORGE DES HÉROS (15/11) : créer et faire grandir ses héros d'aventure
 const $ = id => document.getElementById(id);
@@ -55,7 +79,7 @@ function liste() {
   $('app').innerHTML = `<div class="haut"><a href="${retour}">‹ Retour</a><h1>⚒ La Forge des héros</h1><a href="menu.html">Menu</a></div>
     <p class="sous">Crée TON héros d’aventure, comme dans un jeu de rôle : une voie, un nom, un portrait, un dé que tu forges en montant de niveau. Il garde tout d’une aventure à l’autre.</p>
     ${L.map(a => { const s = avStats(a), n = s.niveau, prochain = AV_SEUILS[n + 1], aChoisir = [2, 4, 6].filter(v => n >= v && !(a.talents || {})[v]).length;
-      return `<div class="fiche" style="--c:${a.couleur}">${img(a)}<div style="flex:1"><b>${a.nom}</b><small>${avTitre(a)} · niveau ${n} · ❤ ${s.pv}${s.desPlus ? ' · 🎲 +1 dé' : ''}${a.points ? ` · <span style="color:var(--ok)">⚒ ${a.points} point${a.points > 1 ? 's' : ''} à forger</span>` : ''}${aChoisir ? ` · <span style="color:var(--ok)">✨ talent à choisir</span>` : ''}</small>
+      return `<div class="fiche" style="--c:${a.couleur}">${img(a)}<div style="flex:1"><b>${a.nom} <span style="color:var(--doux);font-size:.8em">✊ ${avPuissance(a)}</span></b><small>${avTitre(a)} · niveau ${n} · ❤ ${s.pv}${s.desPlus ? ' · 🎲 +1 dé' : ''}${a.points ? ` · <span style="color:var(--ok)">⚒ ${a.points} point${a.points > 1 ? 's' : ''} à forger</span>` : ''}${aChoisir ? ` · <span style="color:var(--ok)">✨ talent à choisir</span>` : ''}</small>
         <div class="barre"><i style="width:${n >= AV_MAX ? 100 : Math.round(100 * (a.xp - AV_SEUILS[n]) / (prochain - AV_SEUILS[n]))}%"></i></div><small>${n >= AV_MAX ? 'niveau maximum' : `${a.xp} / ${prochain} XP`} · ${a.victoires}/${a.parties} aventures réussies</small></div>
         <button class="sec" onclick="fiche('${a.id}')">Ouvrir</button></div>`; }).join('') || '<p class="sous">Pas encore de héros d’aventure.</p>'}
     <button class="go" onclick="nouveau()">＋ Créer un héros d’aventure</button>`;
@@ -72,9 +96,20 @@ function creation() {
 }
 function cree() { const nom = ($('nom') ? $('nom').value : N.nom).trim(); if (!nom) return; N.nom = nom; const a = avCreer(N); son('ultime'); fiche(a.id); }
 function fiche(id) {
-  const a = avTrouve(id); if (!a) return liste(); const s = avStats(a);
-  $('app').innerHTML = `<div class="haut"><a href="#" onclick="liste();return false">‹ Mes héros</a><h1>${a.nom}</h1><span></span></div>
-    <div class="fiche" style="--c:${a.couleur}">${img(a, 96)}<div><b>${a.nom}</b><small>${avTitre(a)} · niveau ${s.niveau}</small><small>❤ ${s.pv} PV · 🎲 ${({ gorm:4 }[a.voie] || 3) + s.desPlus} dés</small><small>${VOIES[a.voie].role}</small></div></div>
+  const a = avTrouve(id); if (!a) return liste(); const s = avStats(a), E = avEquipement(a), sac = avSac(), niv = s.niveau;
+  const slot = c => { const p = E[c.k], lock = c.niv && niv < c.niv;
+    return `<button class="slot ${p ? 'r' + p.r : ''} ${lock ? 'lock' : ''}" onclick="${lock ? `bulle('Cette case s’ouvre au niveau ${c.niv}')` : `caseEquip('${a.id}','${c.k}')`}">${lock ? `<span class="e">🔒</span><small>niveau ${c.niv}</small>` : p ? `<span class="e">${c.e}</span><small>${p.nom}</small><i>+${p.niv}</i>` : `<span class="e vide">${c.e}</span><small>${c.n}</small>`}</button>`; };
+  const nbLibres = sac.pieces.filter(p => !avLire().some(b => b.equip && Object.values(b.equip).includes(p.id))).length;
+  $('app').innerHTML = `<div class="haut"><a href="#" onclick="liste();return false">‹ Mes héros</a><h1>${a.nom}</h1><span style="color:var(--or);font-weight:bold">🪙 ${sac.or}</span></div>
+    <div class="scene" style="--c:${a.couleur}">
+      <div class="col">${['arme', 'tete', 'anneau'].map(k => slot(EQ_CASES.find(c => c.k === k))).join('')}</div>
+      <div class="heros-c">${img(a)}<b>${a.nom}</b><small>${avTitre(a)} · niveau ${niv}</small><br><small>${VOIES[a.voie].role}</small></div>
+      <div class="col">${['torse', 'pieds', 'talisman'].map(k => slot(EQ_CASES.find(c => c.k === k))).join('')}</div>
+    </div>
+    <div class="puiss">✊ ${avPuissance(a)}</div>
+    <div class="stats-h"><div><b>${niv}</b><span>Niveau</span></div><div><b>${s.pv}</b><span>❤ PV</span></div><div><b>${s.att}</b><span>⚔ Att.</span></div><div><b>${s.def}</b><span>🛡 Déf.</span></div><div><b>${s.agi}</b><span>🥾 Agi.</span></div><div><b>${({ gorm:4 }[a.voie] || 3) + s.desPlus}</b><span>🎲 dés</span></div></div>
+    <p class="sous" style="margin:6px 0">⚔ Attaque : tes dés comptent + autant sur les sceaux « ≥ » et « Σ ». 🛡 Défense : un bouclier au début de chaque tour. 🥾 Agilité : + autant de cases à chaque déplacement.</p>
+    <div class="boutons-h"><button class="sec" onclick="forgeron('${a.id}')">⚒ Le forgeron</button><button class="sec" onclick="coffre('${a.id}')">🎒 Le coffre (${nbLibres} libre${nbLibres > 1 ? 's' : ''})</button></div>
     <div class="bloc"><b style="color:var(--or)">⚒ Son dé personnel</b><p class="sous" style="text-align:left;margin:4px 0">Chaque niveau donne un <b>point de forge</b> : touche une face pour lui ajouter 1 (jusqu’à 6). Un dé avec plus de grosses faces frappe plus fort et ouvre plus de sceaux. Points à dépenser : <b style="color:var(--ok)">${a.points}</b>.</p>
       <div class="de">${a.faces.map((v, k) => `<button class="${a.points && v < 6 ? 'peut' : ''}" onclick="forge('${a.id}',${k})"><img src="faces-${a.voie}/face-${v}.webp" alt="${v}"><span>${k + 1}</span></button>`).join('')}</div></div>
     <div class="bloc"><b style="color:var(--or)">✨ Ses talents</b><p class="sous" style="text-align:left;margin:4px 0">Aux niveaux 2, 4 et 6, choisis un talent sur deux.</p>
@@ -83,6 +118,39 @@ function fiche(id) {
       <p style="margin:0">${[2, 3, 4, 5, 6].map(n => `${s.niveau >= n ? '✅' : '⬜'} niveau ${n} (${AV_SEUILS[n]} XP)`).join('<br>')}</p></div>
     <button class="sec" style="margin-top:14px" onclick="if(confirm('Effacer ${a.nom.replace(/'/g, '')} pour toujours ?')){avSupprime('${a.id}');liste()}">🗑 Effacer ce héros</button>`;
 }
+// ---- l'équipement : une case, le coffre, le forgeron
+const bulle = x => { const b = document.createElement('div'); b.className = 'bulle'; b.textContent = x; document.body.appendChild(b); setTimeout(() => b.remove(), 1500); };
+function fenetre(h) { $('fen').innerHTML = h ? `<div class="voile-f" onclick="if(event.target===this)fenetre('')"><div class="fen">${h}</div></div>` : ''; }
+const porteurDe = pid => avLire().find(b => b.equip && Object.values(b.equip).includes(pid));
+function pieceHTML(p, actions) { const C = EQ_CASES.find(c => c.k === p.slot), por = porteurDe(p.id);
+  return `<div class="piece r${p.r}"><span class="e">${C.e}</span><div><b style="color:${EQ_RARE[p.r].c}">${p.nom} <small style="display:inline">+${p.niv}</small></b><small>${C.n} ${EQ_RARE[p.r].n} · ${eqTexte(p)}</small>${por ? `<small>porté par ${por.nom}</small>` : ''}</div><div class="act">${actions}</div></div>`; }
+function caseEquip(id, k) {
+  const a = avTrouve(id), E = avEquipement(a), p = E[k], C = EQ_CASES.find(c => c.k === k), sac = avSac();
+  const autres = sac.pieces.filter(x => x.slot === k && x.id !== (p && p.id));
+  fenetre(`<h2>${C.e} ${C.n}</h2>
+    ${p ? `<p style="color:var(--doux);margin:0">Porté :</p>${pieceHTML(p, `${p.niv < EQ_NIV_MAX ? `<button class="sec" onclick="ameliore('${id}','${k}','${p.id}')">⬆ ${eqPrixAmelio(p)} 🪙</button>` : '<small>niveau max</small>'}<button class="sec" onclick="avRetire('${id}','${k}');fenetre('');fiche('${id}')">Retirer</button>`)}
+      ${p.niv < EQ_NIV_MAX ? `<p style="color:var(--doux);font-size:.85em;margin:2px 0 10px">Au niveau ${p.niv + 1} : ${eqTexte(Object.assign({}, p, { niv:p.niv + 1 }))}</p>` : ''}` : '<p style="color:var(--doux)">Rien dans cette case.</p>'}
+    <p style="color:var(--doux);margin:10px 0 0">Dans le coffre :</p>
+    ${autres.length ? autres.map(x => pieceHTML(x, `<button class="sec" onclick="equipe('${id}','${x.id}')">Équiper</button>`)).join('') : '<p class="sous">Aucune pièce de ce genre. Fouille les meubles des Chroniques, finis des aventures, ou passe chez le forgeron.</p>'}
+    <button class="go" onclick="fenetre('')">Fermer</button>`);
+}
+function equipe(id, pid) { const r = avEquipe(id, pid); if (r === 'ok') { son('tour-fusion'); bulle('Équipé !'); fenetre(''); fiche(id); } else bulle(r); }
+function ameliore(id, k, pid) { const r = avAmeliore(pid); if (r === 'ok') { son('tour-fusion'); bulle('⬆ Amélioré !'); fiche(id); caseEquip(id, k); } else bulle(r); }
+function coffre(id) {
+  const sac = avSac();
+  fenetre(`<h2>🎒 Le coffre</h2><p class="sous">🪙 ${sac.or} pièces d’or · ${sac.pieces.length} pièce${sac.pieces.length > 1 ? 's' : ''}. Améliore avec l’or, ou revends ce qui ne sert plus.</p>
+    ${sac.pieces.slice().sort((x, y) => y.r - x.r || y.niv - x.niv).map(p => pieceHTML(p, `${p.niv < EQ_NIV_MAX ? `<button class="sec" onclick="ameliorePiece('${id}','${p.id}')">⬆ ${eqPrixAmelio(p)} 🪙</button>` : ''}<button class="sec" onclick="if(confirm('Revendre ${p.nom.replace(/'/g, '')} pour ${eqPrixVente(p)} pièces ?')){avVend('${p.id}');coffre('${id}');fiche('${id}')}">Vendre ${eqPrixVente(p)}</button>`)).join('') || '<p class="sous">Le coffre est vide.</p>'}
+    <button class="go" onclick="fenetre('')">Fermer</button>`);
+}
+function ameliorePiece(id, pid) { const r = avAmeliore(pid); if (r === 'ok') { son('tour-fusion'); bulle('⬆ Amélioré !'); } else bulle(r); fiche(id); coffre(id); }
+function forgeron(id) {
+  const sac = avSac(); let deja = {}; try { deja = JSON.parse(localStorage.getItem('guilde-forgeron-achats') || '{}'); } catch (e) {}
+  fenetre(`<h2>⚒ Le forgeron</h2><p class="sous">« Trois pièces aujourd’hui, pas une de plus. Demain, autre chose. » · 🪙 ${sac.or}</p>
+    ${forgeronStock().map((x, i) => pieceHTML(x, deja[x.id] ? '<small>vendu</small>' : `<button class="sec" ${sac.or < x.prix ? 'disabled style="opacity:.4"' : ''} onclick="achete('${id}',${i})">${x.prix} 🪙</button>`)).join('')}
+    <p class="sous">L’or se gagne dans les Chroniques et les Aventures : pièces d’or dans les meubles, et à chaque victoire.</p>
+    <button class="go" onclick="fenetre('')">Fermer</button>`);
+}
+function achete(id, i) { const r = forgeronAchete(i); if (r === 'ok') { son('tour-fusion'); bulle('Acheté : dans le coffre !'); fiche(id); forgeron(id); } else bulle(r); }
 function talent(id, niv, k) { if (avChoisitTalent(id, niv, k)) son('magie'); fiche(id); }
 function forge(id, k) { if (avForge(id, k)) son('tour-fusion'); fiche(id); }
 if (typeof GM !== 'undefined') { try { GM.musique('menu'); GM.bouton(); } catch (e) {} }
