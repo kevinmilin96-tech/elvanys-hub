@@ -389,7 +389,13 @@
   .unique .barre .nom { font-size:3cqw; top:calc(100% + 5cqw) !important; bottom:auto !important; z-index:3; }
   .unique .barre .pastilles { left:calc(100% + 6cqw); right:auto; top:0 !important; bottom:auto !important; width:17cqw; align-items:flex-start; gap:1cqw; z-index:3; }
   .unique .pastilles [data-k="pv"] { position:absolute; right:calc(100% + 30cqw); top:7cqw; font-size:3.8cqw; }
-  .unique .pastilles [data-k="pc"], .unique .pastilles [data-k="ultime"], .unique .pastilles [data-k="ultimefait"] { display:none; }
+  .unique .pastilles [data-k="ultime"], .unique .pastilles [data-k="ultimefait"] { display:none; }
+  /* 15/11 : les PC = un gros cristal avec le chiffre, dans le panneau de droite (sous le nom, au-dessus des cartes en main) */
+  .p.pc .icopc { width:1.6em; height:1.6em; vertical-align:middle; margin-right:.15em; filter:drop-shadow(0 0 4px #5fb0ff); }
+  .plateau.tapis.unique:not(.scene) .barre .pastilles [data-k="pc"] { display:flex !important; align-items:center; gap:.2em; order:1; font-size:3.6cqw !important; font-weight:bold; color:#cfe8ff !important; text-shadow:0 0 6px #2a7fc1, 0 1px 2px #000; }
+  .plateau.tapis.unique:not(.scene) .barre .pastilles [data-k="pc"] b { font-size:1.35em; color:#fff; }
+  .plateau.tapis.unique:not(.scene) .barre .pastilles [data-k="main"] { order:2; }
+  .plateau.tapis.unique:not(.scene) .barre .pastilles .nom { order:0; }
   .unique .pastilles [data-k="main"] { position:static; font-size:2.6cqw; }
   .unique .p { font-size:2.6cqw; white-space:nowrap; }
   .unique .barre .bdg { font-size:3.2cqw; } .unique .barre .bdg.bg { left:-17cqw; top:14cqw; } .unique .barre .bdg.bb { left:-17cqw; right:auto; top:19cqw; }
@@ -460,6 +466,9 @@
   .unique .barre .bdg.bg { left:-19cqw; top:13cqw; background-image:url('ui/equip/icone-garde.webp?v=1'); width:9cqw; } .unique .barre .bdg.bb { left:-19cqw; top:13cqw; background-image:url('ui/equip/icone-bouclier.webp?v=1'); } /* 14/11 nuit : icônes Gemini, Garde ≠ Bouclier */
   .unique .barre .bdg.bg:not([hidden]) + .bdg.bb { left:-27cqw; }
   .unique .barre .bdg[hidden] { display:none; }
+  .unique .barre .bdg.bb { pointer-events:auto; cursor:pointer; }
+  .unique .barre .bdg.bb .tmp { position:absolute; left:50%; transform:translateX(-50%); bottom:-3.4cqw; font:bold 3cqw Georgia, serif; font-style:normal; color:#cfeaff; background:#0a1a2acc; border:1px dashed #cfeaff; border-radius:8px; padding:0 .5cqw; white-space:nowrap; }
+  .unique .barre .bdg.bb.tempo { filter:drop-shadow(0 0 3px #8fd0ff); }
   .ic { background:center/contain no-repeat; border:none; box-shadow:none; filter:drop-shadow(0 2px 4px #000c); }
   .ic.ok { box-shadow:none; filter:drop-shadow(0 0 4px #7dffb0) drop-shadow(0 0 8px #7dffb0); }
   .ic.non { opacity:.45; filter:grayscale(.6) drop-shadow(0 2px 4px #000c); }
@@ -687,7 +696,7 @@
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
 // 14/11 : l'Odyssée sans fin a ses propres emplacements (odyssee.js lit SANSFIN)
 const SANSFIN = new URLSearchParams(location.search).get('sansfin') === '1', EPREUVE_PAGE = new URLSearchParams(location.search).get('epreuve') === '1', ODY_PAGE = EPREUVE_PAGE ? 'epreuves.html' : 'odyssee.html' + (SANSFIN ? '?sansfin=1' : '');
-const VERSION = '20261115-180839';
+const VERSION = '20261115-181846';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -706,16 +715,16 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261115-180839"></script>
-<script src="musique.js?v=20261115-180839"></script>
-<script src="rang.js?v=20261115-180839"></script>
-<script src="heros-etoiles.js?v=20261115-180839"></script>
-<script src="donnees.js?v=20261115-180839"></script>
-<script src="odyssee.js?v=20261115-180839"></script>
-<script src="bestiaire.js?v=20261115-180839"></script>
-<script src="aventure.js?v=20261115-180839"></script>
-<script src="odyssee-sansfin.js?v=20261115-180839"></script>
-<script src="chronique.js?v=20261115-180839"></script>
+<script src="cartes.js?v=20261115-181846"></script>
+<script src="musique.js?v=20261115-181846"></script>
+<script src="rang.js?v=20261115-181846"></script>
+<script src="heros-etoiles.js?v=20261115-181846"></script>
+<script src="donnees.js?v=20261115-181846"></script>
+<script src="odyssee.js?v=20261115-181846"></script>
+<script src="bestiaire.js?v=20261115-181846"></script>
+<script src="aventure.js?v=20261115-181846"></script>
+<script src="odyssee-sansfin.js?v=20261115-181846"></script>
+<script src="chronique.js?v=20261115-181846"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -1655,10 +1664,21 @@ function etatsHTML(P) {
     P.esquive ? ['esquive', '💨', ''] : null, P.cor ? ['cor', '📯', ''] : null, P.gardeE ? ['epines', '🌿', P.gardeE] : null].filter(Boolean);
   return l.length ? `<span class="etats">${l.map(([k, e, n]) => `<span data-k="${k}" class="etat">${e}${n !== '' ? `<b>${n}</b>` : ''}</span>`).join('')}</span>` : '';
 }
+// 15/11 (l'utilisateur : « comment différencier le bouclier temporaire du permanent ? ») : un seul bouclier = le total ;
+// la part TEMPORAIRE (la Garde) en petit avec un sablier ⏳, et un contour en pointillés ; un toucher donne le détail
+const protTxt = (g, b) => `${g + b}${g ? `<i class="tmp">⏳${g}</i>` : ''}`;
+function infoProtection(s) {
+  const P = S[s]; if (!P) return;
+  fenetre(`<h2>🛡 Protection de ${P.nom} : ${(P.gardeB || 0) + (P.bouclier || 0)}</h2>
+    <p>⏳ <b>Garde : ${P.gardeB || 0}</b> (temporaire). Posée avec un dé, une fois par tour. Elle prend les coups, puis <b>disparaît au début du prochain tour</b> de ce héros, même si elle n’a pas servi.</p>
+    <p>🛡 <b>Bouclier : ${P.bouclier || 0}</b> (permanent). Il prend les coups et <b>reste tant qu’il n’est pas usé</b>, sur plusieurs tours.</p>
+    <p style="color:#c9c1ea;font-size:.9em">Les coups usent la Garde d’abord, puis le Bouclier. Sur le plateau : le gros chiffre = le total ; le petit ⏳ = la part qui partira.</p>
+    <div class="choixh"><button onclick="fermer()">Compris</button></div>`);
+}
 function barre(P, haut) {
   const ref = `{J:S.${haut ? 'O' : 'J'}}`;
-  return `<div class="barre ${estCible({ J:P }) ? 'cible' : ''} ${!P.ultimeFait && P.jauge >= JAUGE.max ? 'ultpret' : ''} ${P.gardeB || P.bouclier ? 'protege' : ''}" data-bouclier="${(P.gardeB || 0) + (P.bouclier || 0)}" id="b-${haut ? 'O' : 'J'}" style="--c:${P.c}" onclick="touche(${ref})"><img src="${HEROS[P.id].img || IMG(P.id)}" alt=""><img class="cadre" src="ui/cadre.webp?v=1" alt="">${anneauDe(P)}${etatsHTML(P)}${!haut && !P.ultimeFait && P.jauge >= JAUGE.max && !S.J.aLancer ? `<span class="ultbtn ${P.pc >= 3 ? '' : 'manque'}" onclick="event.stopPropagation(); vise('ultime')">⚡ ULTIME PRÊT${P.pc >= 3 ? '' : ' · 3 PC'}</span>` : ''}<span class="bdg bg" ${P.gardeB ? '' : 'hidden'}>${P.gardeB}</span><span class="bdg bb" ${P.bouclier ? '' : 'hidden'}>${P.bouclier}</span><div style="flex:1"><div class="nom">${P.nom}<small class="sous">${P.ordi ? (S.lieu ? (HEROS[P.id].titre || 'ennemi') : 'ordinateur') : (P.qui && P.qui !== 'toi' ? P.qui : '')}</small></div><div class="vie"><b style="width:${Math.max(0, P.pv) / P.pvMax * 100}%"></b><i style="width:${Math.max(0, P.pv) / P.pvMax * 100}%"></i></div><div class="pastilles">
-    <span data-k="pv" class="p pv">${Math.max(0, P.pv)}</span><span data-k="pc" class="p pc">◆ ${P.pc} PC</span>
+  return `<div class="barre ${estCible({ J:P }) ? 'cible' : ''} ${!P.ultimeFait && P.jauge >= JAUGE.max ? 'ultpret' : ''} ${P.gardeB || P.bouclier ? 'protege' : ''}" data-bouclier="${(P.gardeB || 0) + (P.bouclier || 0)}" id="b-${haut ? 'O' : 'J'}" style="--c:${P.c}" onclick="touche(${ref})"><img src="${HEROS[P.id].img || IMG(P.id)}" alt=""><img class="cadre" src="ui/cadre.webp?v=1" alt="">${anneauDe(P)}${etatsHTML(P)}${!haut && !P.ultimeFait && P.jauge >= JAUGE.max && !S.J.aLancer ? `<span class="ultbtn ${P.pc >= 3 ? '' : 'manque'}" onclick="event.stopPropagation(); vise('ultime')">⚡ ULTIME PRÊT${P.pc >= 3 ? '' : ' · 3 PC'}</span>` : ''}<span class="bdg bg" hidden>${P.gardeB}</span><span class="bdg bb ${P.gardeB ? 'tempo' : ''}" ${(P.gardeB || 0) + (P.bouclier || 0) ? '' : 'hidden'} onclick="event.stopPropagation();infoProtection('${haut ? 'O' : 'J'}')">${protTxt(P.gardeB || 0, P.bouclier || 0)}</span><div style="flex:1"><div class="nom">${P.nom}<small class="sous">${P.ordi ? (S.lieu ? (HEROS[P.id].titre || 'ennemi') : 'ordinateur') : (P.qui && P.qui !== 'toi' ? P.qui : '')}</small></div><div class="vie"><b style="width:${Math.max(0, P.pv) / P.pvMax * 100}%"></b><i style="width:${Math.max(0, P.pv) / P.pvMax * 100}%"></i></div><div class="pastilles">
+    <span data-k="pv" class="p pv">${Math.max(0, P.pv)}</span><span data-k="pc" class="p pc"><img class="icopc" src="ui/cristal.webp?v=1" alt=""><b>${P.pc}</b> PC</span>
     ${P.gardeB ? `<span data-k="garde" class="p g pg"><img class="icopb" src="ui/equip/icone-garde.webp?v=1" alt="">Garde ${P.gardeB}</span>` : ''}${P.gardeE ? `<span data-k="epines" class="p g">🌿 Épines ${P.gardeE}</span>` : ''}${P.esquive ? '<span data-k="esquive" class="p g">💨 Esquive</span>' : ''}
     ${P.bouclier ? `<span data-k="bouclier" class="p g pb"><img class="icopb" src="ui/equip/icone-bouclier.webp?v=1" alt="">Bouclier ${P.bouclier}</span>` : ''}${P.contre ? '<span data-k="contre" class="p g">⚔ Contre-attaque : 6 à la 1re créature</span>' : ''}${P.piege ? '<span data-k="piege" class="p g">🪤 Piège</span>' : ''}
     ${P.cor ? '<span data-k="cor" class="p g">📯 Cor</span>' : ''}${P.fournaise ? '<span data-k="fournaise" class="p g">🔥 Fournaise</span>' : ''}${P.paillasse ? '<span data-k="paillasse" class="p g">⚗ Paillasse</span>' : ''}
@@ -1789,7 +1809,7 @@ function anneauSVG(pv, max, prot, jauge, pc, fait, avant, haut) {
   if (!fait && jauge >= JAUGE.max) g += `<circle class="ultplein" cx="50" cy="50" r="36.4" fill="none" stroke="#ffe680" stroke-width="3.2" filter="url(#${id}l)"/>`;
   // 14/11 (l'utilisateur : « on ne voit pas mes PC à cause des cartes ») : les cristaux du joueur du bas passent EN HAUT de son anneau ; ceux de l'adversaire restent en bas
   // 14/11 nuit (l'utilisateur : « les PC à gauche et à droite, pas en haut sur l'icône du cadre ») : deux colonnes, une de chaque côté du portrait
-  const n = Math.min(pc, 8); let gem = '';
+  const n = 0; let gem = ''; // 15/11 (l'utilisateur : « les petites runes autour du cercle, sur un petit écran on ne voit rien ») : les PC sont un gros cristal dans le panneau de droite
   // puis (l'utilisateur) : dans l'ordre d'une horloge, 1 h, 11 h, 2 h, 10 h, 4 h, 8 h, 5 h, 7 h
   const HEURES = [1, 11, 2, 10, 4, 8, 5, 7];
   for (let k = 0; k < n; k++) { const a = HEURES[k] / 12, x = C + 46 * Math.sin(a * 2 * Math.PI), y = C - 46 * Math.cos(a * 2 * Math.PI);
@@ -1874,7 +1894,7 @@ function regles(court) {
   <li><b>Vendre</b> : pendant ton tour, choisis des dés puis touche le cristal bleu (à gauche) : <b>+1 PC par dé, tout de suite</b>, pour payer une carte ce tour-ci. Les dés <b>pas posés</b> à la fin du tour sont vendus tout seuls.</li>
   <li>« +1 / −1 sur un dé » et « Premiers soins » sont maintenant des <b>cartes de la Guilde</b> (Pierre d’ajustement, Premiers soins).</li>
   <li>Tu gagnes +1 PC au début de chaque tour (6 au plus). Tu lances 3 dés au tour 1, 4 au tour 2, puis 5.</li>
-  <li><b>Ton portrait</b> : l’anneau rouge = ta vie, le trait bleu = ta Garde ou ton Bouclier, l’anneau doré en 20 segments = ta jauge d’Ultime, les losanges bleus = tes PC.</li>
+  <li><b>Ton portrait</b> : l’anneau rouge = ta vie, le trait bleu = ta Garde ou ton Bouclier, l’anneau doré en 20 segments = ta jauge d’Ultime. Tes PC : le gros cristal bleu ◆ à droite de ton portrait.</li>
   <li>Sous chaque dé, le <b>sac</b> montre les faces qui peuvent encore sortir : une face sortie ne revient qu’une fois les six sorties.</li>
   <li>Tes <b>unités</b> attaquent à partir du tour suivant leur arrivée : touche ton unité (contour jaune), puis sa cible. Les unités <b>Barrière</b> doivent être attaquées d’abord par les unités. Les unités <b>Cachées</b> ne peuvent pas être visées tant qu’elles n’ont pas attaqué.</li>
   <li>La <b>Garde</b> = ta défense : tu poses un dé et ton héros gagne un Bouclier (ou une autre protection selon le héros). Ce Bouclier absorbe les prochains dégâts que tu reçois pendant le tour de l’adversaire, puis disparaît. Exemple : Garde 4, l’adversaire frappe à 6, tu ne perds que 2 PV.</li><li>Tes <b>créatures</b> attaquent au tour suivant leur arrivée (sauf Charge) : touche-en une puis sa cible ; celles que tu ne fais pas attaquer frappent le héros adverse à « Fin du tour », sauf les créatures 👁 Cachées, qui restent dans l’ombre tant que tu ne leur demandes pas d’attaquer. Le Bouclier et la Garde de l’adversaire absorbent leurs coups.</li><li>Une créature <b>Cachée</b> 👁 ne peut être ni attaquée ni visée tant qu’elle n’a pas attaqué ; sa première attaque depuis l’ombre est une <b>Embuscade</b> (+2 dégâts), puis elle se montre.</li><li>Une créature prête peut aussi se mettre <b>en défense</b> (touche-la) : elle n’attaque pas ce tour, mais elle protège ton héros comme une Barrière jusqu’à ton prochain tour : les créatures adverses doivent l’attaquer d’abord.</li></ul>
@@ -2100,7 +2120,7 @@ function majVie(c, ev) {
     const tot = (ev.garde || 0) + (ev.bouclier || 0), pg = e.querySelector('.pg'), pb = e.querySelector('.pb');
     if (pg) { if (ev.garde) pg.textContent = `🛡 Garde ${ev.garde}`; else pg.style.opacity = .3; }
     const bg = e.querySelector('.bdg.bg'), bb = e.querySelector('.bdg.bb');
-    if (bg) { bg.textContent = `${ev.garde || 0}`; bg.hidden = !ev.garde; } if (bb) { bb.textContent = `${ev.bouclier || 0}`; bb.hidden = !ev.bouclier; }
+    if (bg) { bg.textContent = `${ev.garde || 0}`; bg.hidden = true; } if (bb) { bb.innerHTML = protTxt(ev.garde || 0, ev.bouclier || 0); bb.hidden = !tot; bb.classList.toggle('tempo', !!ev.garde); } // 15/11 : un seul bouclier, le total
     if (pb) { if (ev.bouclier) pb.textContent = `🛡 Bouclier ${ev.bouclier}`; else pb.style.opacity = .3; }
     e.dataset.bouclier = tot; if (!tot) e.classList.remove('protege');
   }
@@ -2340,17 +2360,17 @@ async function joueFX() {
 // toucher l'écran pendant les animations les accélère
 document.addEventListener('pointerdown', () => { if (fxOn && !(S && S.tuto)) fxVite = .5; }, true); // 14/11 : plus d'accélération dans le tutoriel
 </script>
-<script src="profil.js?v=20261115-180839"></script>
-<script src="pantheon.js?v=20261115-180839"></script>
-<script src="tuto.js?v=20261115-180839"></script>
-<script src="deux.js?v=20261115-180839"></script>
+<script src="profil.js?v=20261115-181846"></script>
+<script src="pantheon.js?v=20261115-181846"></script>
+<script src="tuto.js?v=20261115-181846"></script>
+<script src="deux.js?v=20261115-181846"></script>
 <script>window.AMIS_SANS_BOUTON = true;</script>
-<script src="amis.js?v=20261115-180839"></script>
-<script src="duel-ligne.js?v=20261115-180839"></script>
-<script src="invasion.js?v=20261115-180839"></script>
-<script src="enigme-table.js?v=20261115-180839"></script>
-<script src="forge.js?v=20261115-180839"></script>
-<script src="semaine.js?v=20261115-180839"></script>
-<script src="enigme.js?v=20261115-180839"></script>
+<script src="amis.js?v=20261115-181846"></script>
+<script src="duel-ligne.js?v=20261115-181846"></script>
+<script src="invasion.js?v=20261115-181846"></script>
+<script src="enigme-table.js?v=20261115-181846"></script>
+<script src="forge.js?v=20261115-181846"></script>
+<script src="semaine.js?v=20261115-181846"></script>
+<script src="enigme.js?v=20261115-181846"></script>
 </body>
 </html>
