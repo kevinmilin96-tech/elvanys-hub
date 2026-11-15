@@ -218,6 +218,7 @@ for (let i = 0; i < 50; i++) { const s = document.createElement('i'); s.style.le
 // une porte : nom (sur la plaque), desc (sous le carrousel), img (peinture reçue) OU pro (dessin provisoire), puis
 //   vers = un étage, href = une page, ferme = verrouillée (texte), avenir = portail mystère « À venir »
 const PRO = { // dessins provisoires : [émoji, fond, lueur]
+  crypte:['🪦', 'linear-gradient(180deg, #0d0b18 0%, #2a2440 45%, #4a3a6a 70%, #1a1430 100%)', '#c084fc'], // 15/11 : la Crypte aux Sceaux (dessin provisoire)
   epreuves:['🏯', 'linear-gradient(180deg, #1a1030 0%, #5a2a6a 45%, #c2411e 75%, #2a1a0a 100%)', '#ff9f5a'],
   arene:['⚔️', 'linear-gradient(180deg, #f59e0b 0%, #b45309 35%, #7c2d12 62%, #e7c48a 63%, #c99a5b 100%)', '#ffd27a'],
   odyssee:['⛵', 'linear-gradient(180deg, #2b1d4a 0%, #a8432c 45%, #1c2b4a 58%, #0f1a33 100%)', '#ff9f5a'],
@@ -250,6 +251,7 @@ const ETAGES = {
     { nom:'Expéditions', pro:'expeditions', href:'expedition.html', desc:'Le navire volant : recrute ton équipage, donne tes ordres aux dés, et vogue d’escale en escale jusqu’au Nid du Titan.' },
     { nom:'L’Invasion', pro:'invasion', vers:'invasion', desc:'À deux (sur ce téléphone ou avec un compagnon) contre les vagues de ton livre : l’Éveil de l’Abîme, le Réveil des Primordiaux, et les grands boss.' },
     { nom:'Les épreuves', pro:'epreuves', href:'epreuves.html', desc:'La Tour des épreuves : monte étage par étage, un boss tous les cinq. Et la Chasse au boss de la semaine : 8 tours pour lui faire le plus de mal possible.' },
+    { nom:'La Crypte aux Sceaux', pro:'crypte', href:'crypte.html', desc:'NOUVEAU · Un solitaire de dés : pose tes dés sur les sceaux des monstres, les cartes se retournent, les chaînes font exploser le score. Une crypte du jour, la même pour tous.' },
     { nom:'Tour des héros', pro:'tour', href:'heros.html', desc:'Les six héros, leurs pouvoirs, leurs dés et leurs cartes. Prépare ton deck.' },
   ] },
   arene:{ titre:'L’Arène des Duels', sous:'Contre qui veux-tu te battre ?', portes:[
