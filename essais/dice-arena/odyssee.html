@@ -298,7 +298,7 @@ function dessine() {
   ${carteSVG()}
   <div class="bulles" id="bulles">${bullesHTML()}</div>
   <div class="bandeau">${r.vivres ? 'Touche une salle verte : une fiche dit ce qu’il y a et le prix en huile ; « Y aller » pour partir.' : '<b style="color:#ff7a7a">Lanterne éteinte : chaque case nouvelle coûte 3 PV.</b>'} ${r.fragments >= 2 ? '<b style="color:var(--ok)">Tu as les 2 fragments : la porte 🚪 t’attend.</b>' : ''}</div>
-  <div class="legende"><span>⚔ monstres (I, II, III)</span><span>💀 élite</span><span>🗝 coffre</span><span>💧 source</span><span>🏪 marchand</span><span>❓ événement</span><span>🔥 autel</span><span>🏕 feu de camp</span><span>🧱 mur fissuré</span><span>🚪 porte</span><span>👑 boss</span></div>
+  <div class="legende"><span>⚔ monstres (I, II, III)</span><span>💀 élite</span><span>🗝 coffre</span><span>💧 source</span><span>🏪 marchand</span><span>❓ événement</span><span>🔥 autel</span><span>🏕 feu de camp</span><span>🧱 mur fissuré</span><span>⚒ forge</span><span>🎲 sac de Moustache</span><span>🎯 défi</span><span>⛲ fontaine</span><span>❔ mystère</span><span>🚪 porte</span><span>👑 boss</span></div>
   <div class="bas"><button onclick="monDeck()">🂠 Deck</button><button onclick="journal()">📜 Journal</button><button onclick="reglesCourtes()">❓ Règles</button><button onclick="abandon()">⏏ Quitter</button></div>`;
   if (r.sansfin) sfEcran(); else if (r.aventure && localStorage.getItem('guilde-guide-odyssee')) Guide.lance('aventure', GUIDE_AV); else Guide.lance('odyssee', r.aventure ? [...GUIDE_ODY, ...GUIDE_AV] : GUIDE_ODY, false, () => { if (r.aventure) localStorage.setItem('guilde-guide-aventure', '1'); }); // 15/11 : sinon la fin du guide revenait une 2e fois
 }
@@ -606,6 +606,8 @@ function montreTrajet(c, chemin) {
   if (b) b.innerHTML = `${SALLES_ODY[c.t].e} ${SALLES_ODY[c.t].n} · ${cout ? `🪔 ${cout} dose${cout > 1 ? 's' : ''} d’huile${R.vivres < cout ? ' <b style="color:#ff7a7a">(pas assez : 3 PV par case dans le noir)</b>' : ''}` : 'gratuit (déjà exploré)'} · <b>« Y aller » pour partir</b>`;
 }
 async function marcheVers(x, y, confirme) {
+  // 15/11 (l'utilisateur : « on a quitté la forge sans forger, et impossible d'y rentrer ») : toucher SA case rouvre la salle si elle n'est pas finie
+  if (x === R.pos.x && y === R.pos.y && !enMarche) { const ici = caseA(R, x, y); if (ici && (!ici.fait || ici.t === 'marchand')) { fermeFicheTrajet(); arrive(ici); } else info('📍 Tu es ici', 'Cette salle est déjà faite. Touche une salle verte pour avancer.'); return; }
   const c = caseA(R, x, y); if (!c || enMarche || !peutCible(c)) return;
   const chemin = cheminVers(c); if (!chemin) return;
   if (!confirme || !destination || destination.x !== x || destination.y !== y) { destination = { x, y }; montreTrajet(c, chemin); return; } // seul « Y aller » fait partir
@@ -739,7 +741,13 @@ function forgeFen(c, msg) {
   <div style="text-align:center">${[0, 1, 2, 3, 4].map(de => `<div><small style="color:var(--doux)">dé ${de + 1}</small> ${[1, 2, 3, 4, 5, 6].map(f => face(de, f)).join('')}</div>`).join('')}</div>
   <p><b>${etape}</b></p>
   <div class="choixv">${offre.map(code => `<button ${ch.de < 0 || (c.nb && R.or < FORGE_PRIX) ? 'disabled' : ''} onclick="forgeOk(${c.x},${c.y},'${code}')">${FACES_FORGE[code].e} <b>${FACES_FORGE[code].n}</b><small>${FACES_FORGE[code].d}</small></button>`).join('')}</div>
-  <div class="choixh"><button onclick="FORGE_CHOIX={de:-1,face:0};${c.nb ? `${k}.fait=true;sauve();` : ''}fermer();dessine()">${c.nb ? 'Partir' : 'Plus tard'}</button></div>`);
+  <div class="choixh"><button onclick="forgePart(${c.x},${c.y})">${c.nb ? 'Partir' : 'Plus tard'}</button></div>`);
+}
+// 15/11 : « êtes-vous sûr ? » avant de quitter la forge
+function forgePart(x, y) {
+  const c = R.ile[y][x];
+  fenetre(c.nb ? `<h2>⚒ Partir ?</h2><p>Si tu pars maintenant, la forge s’éteint : tu ne pourras plus forger de deuxième face ici.</p><div class="choixh"><button onclick="forgeFen(R.ile[${y}][${x}])">Rester</button><button class="or" onclick="FORGE_CHOIX={de:-1,face:0};R.ile[${y}][${x}].fait=true;sauve();fermer();dessine()">Partir</button></div>`
+    : `<h2>⚒ Plus tard ?</h2><p>Tu n’as pas encore forgé de face. Pas de souci : la forge t’attend. Pour y revenir, <b>touche la case de la forge</b> (même si tu es dessus).</p><div class="choixh"><button onclick="forgeFen(R.ile[${y}][${x}])">Rester</button><button class="or" onclick="FORGE_CHOIX={de:-1,face:0};fermer();dessine()">Plus tard</button></div>`);
 }
 function forgeOk(x, y, code) {
   const c = R.ile[y][x], e = forgeApplique(R, c, FORGE_CHOIX.de, FORGE_CHOIX.face, code);
