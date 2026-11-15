@@ -149,6 +149,17 @@
   body.sansfin .bulles .bulle { font-size:.78em; } body.sansfin .bulles .bulle img, body.sansfin .bulles .bulle .avatar { width:26px; height:26px; }
   body.sansfin #pioche { padding:6px 8px; } body.sansfin .sfent { font-size:.82em; margin-bottom:4px; } body.sansfin .sft small { font-size:.66em; }
   .ico.fait { opacity:.62 !important; }
+  /* 15/11 soir : la carte de la Route du Titan */
+  svg.route .rlien { fill:none; stroke:#5a3d22; stroke-width:3.2; stroke-linecap:round; stroke-dasharray:2 7; opacity:.75; }
+  svg.route .rlien.pris { stroke:#8a1f1f; stroke-width:5; stroke-dasharray:none; opacity:.95; }
+  svg.route .rlien.libre { stroke:#15803d; stroke-width:5; stroke-dasharray:9 7; opacity:1; animation:rlibre 1.2s linear infinite; }
+  @keyframes rlibre { to { stroke-dashoffset:-32; } }
+  svg.route .rnoeud { fill:#efe0bd; stroke:#5a3d22; stroke-width:2.5; }
+  svg.route .rnoeud.visite { fill:#c9b58f; } svg.route .rnoeud.elite { stroke:#7a1f1a; stroke-width:3.5; }
+  svg.route .rnoeud.boss { fill:#f6d77e; stroke:#7a1f1a; stroke-width:4; }
+  svg.route .rnoeud.ok { stroke:#15803d; stroke-width:4.5; animation:rok 1.6s ease-in-out infinite; }
+  @keyframes rok { 50% { stroke-width:7; } }
+  svg.route .retape { fill:#7a1f1a; font-size:18px; text-anchor:middle; opacity:.7; }
 </style>
 </head>
 <body>
@@ -189,7 +200,7 @@ document.head.insertAdjacentHTML('beforeend', '<style>' + (typeof CSS_CARTE !== 
 let R = null; // la partie en cours
 const sauve = () => ecrireOdyssee(R);
 // 14/11 (l'utilisateur : « quand on doit payer, on ne voit pas ce qu'on a ») : chaque fenêtre rappelle l'or, la vie, l'huile et les clés
-const bourse = () => R ? `<div class="bourse"><span>💰 <b>${R.or}</b> or</span><span>❤ ${R.pv}/${R.pvMax}</span><span>🪔 ${R.vivres}</span><span>🗝 ${R.cles}</span></div>` : '';
+const bourse = () => R ? `<div class="bourse"><span>💰 <b>${R.or}</b> or</span><span>❤ ${R.pv}/${R.pvMax}</span>${R.route ? "" : `<span>🪔 ${R.vivres}</span>`}<span>🗝 ${R.cles}</span></div>` : '';
 // 14/11 (l'utilisateur : « je ne peux pas sélectionner les reliques, c'est grisé ») : on porte 3 reliques au plus ;
 // à la 4e, on CHOISIT laquelle laisser au lieu d'un bouton grisé sans explication
 function reliqueOuEchange(k, suite) {
@@ -204,7 +215,8 @@ const NIV = ['', 'I', 'II', 'III'];
 
 // ----------------------------------------------------------------------------------------------- accueil
 // 12/11 nuit : plusieurs îles (actes). odyssee.html?ile=givre ; l'île du Givre s'ouvre après la victoire contre le Titan (?essai=1 pour l'essayer avant, prototype)
-const Q = new URLSearchParams(location.search), ACTE_URL = ILES[Q.get('ile')] ? Q.get('ile') : 'brulees', SANSFIN = Q.get('sansfin') === '1';
+const Q = new URLSearchParams(location.search), SANSFIN = Q.get('sansfin') === '1', ROUTE_TITAN = Q.get('route') === '1', ACTE_URL = !ROUTE_TITAN && ILES[Q.get('ile')] ? Q.get('ile') : 'brulees';
+const SUF_URL = SANSFIN ? '&sansfin=1' : ROUTE_TITAN ? '&route=1' : ''; // 15/11 soir : la Route du Titan (odyssee.html?route=1)
 const acteDe = () => (R && R.acte) || ACTE_URL;
 let ASC_CHOIX = 0;
 const CH = () => ({ givre:CHRON_GIVRE, abime:CHRON_ABIME }[acteDe()] || CHRON_ODY);
@@ -222,19 +234,19 @@ const CORBIN_GIVRE = {
 };
 // 14/11 : 3 EMPLACEMENTS de sauvegarde (demande de l'utilisateur) : continuer, recommencer ou effacer chaque partie.
 // On revient seul dans la partie seulement au retour d'un combat ; sinon l'écran des emplacements s'ouvre.
-function reprendre(r) { R = r; dejaDessine = new Set(); R.ile.flat().forEach(c => { if (c.vu) dejaDessine.add(c.x + ',' + c.y); }); if (R.combat && !R.combat.resultat) { location.href = 'duel.html?odyssee=1' + (SANSFIN ? '&sansfin=1' : ''); return; } if (R.combat && R.combat.resultat) { dessine(); apresCombat(); return; } dessine(); }
+function reprendre(r) { R = r; dejaDessine = new Set(); R.ile.flat().forEach(c => { if (c.vu) dejaDessine.add(c.x + ',' + c.y); }); if (R.combat && !R.combat.resultat) { location.href = 'duel.html?odyssee=1' + SUF_URL; return; } if (R.combat && R.combat.resultat) { dessine(); apresCombat(); return; } dessine(); }
 const ilDYa = t => { if (!t) return ''; const m = Math.round((Date.now() - t) / 60000); return m < 2 ? 'à l’instant' : m < 60 ? `il y a ${m} min` : m < 1440 ? `il y a ${Math.round(m / 60)} h` : `il y a ${Math.round(m / 1440)} jour${m >= 2880 ? 's' : ''}`; };
 function emplacements() {
   document.body.classList.remove('givre', 'abime');
   const cartes = Array.from({ length:ODY_SLOTS }, (_, i) => {
     const n = i + 1, r = lireSlot(n);
-    if (!r) return `<div class="slot vide"><div class="sn">Emplacement ${n}</div><p>Vide</p><button class="or" onclick="choisirSlot(${n});ecran()">✨ Nouvelle Odyssée${SANSFIN ? ' sans fin' : ''}<br><small>${ILES[ACTE_URL].court}</small></button></div>`;
+    if (!r) return `<div class="slot vide"><div class="sn">Emplacement ${n}</div><p>Vide</p><button class="or" onclick="choisirSlot(${n});ecran()">✨ ${ROUTE_TITAN ? 'Nouvelle Route' : 'Nouvelle Odyssée' + (SANSFIN ? ' sans fin' : '')}<br><small>${ILES[ACTE_URL].court}</small></button></div>`;
     const I = ILES[r.acte || 'brulees'] || ILES.brulees, vues = r.ile.flat().filter(c => c.visite).length;
-    return `<div class="slot"><div class="sn">Emplacement ${n}</div><div class="sl"><img src="${IMG(r.heros)}" alt=""><div><b>${HEROS[r.heros].nom}</b> · ${I.court}${r.asc ? ` · ⛰ ${r.asc}` : ''}<br><span class="p pv">❤ ${r.pv} / ${r.pvMax}</span><span class="p">🔮 ${r.fragments}/2</span><span class="p">🗺 ${vues} case${vues > 1 ? 's' : ''}</span><br><small>Joué ${ilDYa(r.maj || r.debut)}${r.combat && !r.combat.resultat ? ` · <b style="color:#ffb347">⚔ combat en cours${HEROS[r.combat.ennemi] ? ' contre ' + HEROS[r.combat.ennemi].nom : ''}</b>` : ''}</small></div></div>
+    return `<div class="slot"><div class="sn">Emplacement ${n}</div><div class="sl"><img src="${IMG(r.heros)}" alt=""><div><b>${HEROS[r.heros].nom}</b> · ${I.court}${r.asc ? ` · ⛰ ${r.asc}` : ''}<br><span class="p pv">❤ ${r.pv} / ${r.pvMax}</span>${r.route ? `<span class="p">🛤 étape ${r.route.etape}/${ROUTE_ETAPES}</span>` : `<span class="p">🔮 ${r.fragments}/2</span><span class="p">🗺 ${vues} case${vues > 1 ? 's' : ''}</span>`}<br><small>Joué ${ilDYa(r.maj || r.debut)}${r.combat && !r.combat.resultat ? ` · <b style="color:#ffb347">⚔ combat en cours${HEROS[r.combat.ennemi] ? ' contre ' + HEROS[r.combat.ennemi].nom : ''}</b>` : ''}</small></div></div>
     <div class="choixh"><button class="or" onclick="choisirSlot(${n});reprendre(lireSlot(${n}))">▶ Continuer</button></div>
     <div class="choixh"><button onclick="recommencer(${n})">🔄 Recommencer</button><button onclick="effacer(${n})">🗑 Effacer</button></div></div>`;
   }).join('');
-  document.getElementById('app').innerHTML = `<h1>${SANSFIN ? '🧩 L’Odyssée sans fin' : '🏰 L’Odyssée'}</h1><p style="text-align:center;color:var(--doux);font-size:.9em">Trois emplacements pour trois parties. Continue une partie, ou recommence-la de zéro.</p>${cartes}
+  document.getElementById('app').innerHTML = `<h1>${ROUTE_TITAN ? '🛤 La Route du Titan' : SANSFIN ? '🧩 L’Odyssée sans fin' : '🏰 L’Odyssée'}</h1><p style="text-align:center;color:var(--doux);font-size:.9em">Trois emplacements pour trois parties. Continue une partie, ou recommence-la de zéro.</p>${cartes}
   <div class="choixh"><button onclick="records()">🏆 Mes Odyssées (${lireRecords().length})</button><button onclick="collection()">📚 Ma collection (${lireCollection().length})</button></div>
   <div class="choixh"><button onclick="location.href='menu.html'">⌂ Menu</button></div>`;
 }
@@ -258,13 +270,13 @@ function ecran() {
   if (ACTE_URL === 'givre' && !actesFaits().brulees && !Q.get('essai')) {
     document.getElementById('app').innerHTML = `<h1>❄️ L’Odyssée · l’île du Givre</h1><p style="text-align:center">🔒 L’acte II s’ouvre quand tu as vaincu <b>le Titan de feu</b> (acte I, les Terres brûlées), avec n’importe quel héros.</p>
     <div class="choixh"><button onclick="location.href='odyssee.html'">🌋 Aller aux Terres brûlées</button><button onclick="location.href='odyssee.html?ile=givre&essai=1'">🧪 L’essayer quand même (prototype)</button></div><div class="choixh"><button onclick="location.href='menu.html#odyssee'">⌂ Menu</button></div>`; return; }
-  document.getElementById('app').innerHTML = `<h1>${{ givre:'❄️ L’Odyssée · l’île du Givre', abime:'🌀 L’Odyssée · l’Abîme du Vide' }[ACTE_URL] || '🏰 L’Odyssée · les Terres brûlées'}${SANSFIN ? ' · 🧩 sans fin' : ''}</h1>${SANSFIN ? '<p style="text-align:center;color:var(--or);font-size:.9em">L’île se construit tuile par tuile : à chaque pas, tu choisis une tuile parmi 3 et tu la raccordes au donjon.</p>' : ''}
-  <p style="text-align:center;color:var(--doux);font-size:.9em">Une île tirée au sort, à explorer case par case. Le combat, c’est le Duel. Tes PV ne remontent pas tout seuls : sources, potions et marchand. Une lanterne de 20 doses d’huile pour fouiller. Deux fragments de rune ouvrent la porte ${{ givre:"de la Vouivre des glaces. Ici, le Givre ❄ s’accumule sur toi : à trois, tu es gelé", abime:"du Roi sans visage. Ici, la Corruption 🟣 s’accumule : à trois, le Vide te dévore (Silence) et nourrit l’ennemi" }[ACTE_URL] || "du Titan de feu"}.</p>
-  ${ascMax(ACTE_URL) && (SANSFIN || !MODE_AV) ? `<p style="text-align:center;font-size:.9em">⛰ <b style="color:var(--or)">Ascension</b> : ${Array.from({ length:ascMax(ACTE_URL) + 1 }, (_, n) => `<button class="asc ${ASC_CHOIX === n ? 'on' : ''}" onclick="ASC_CHOIX=${n};ecran()">${n || 'normal'}</button>`).join(' ')}${ASC_CHOIX ? `<br><small style="color:var(--doux)">${Array.from({ length:ASC_CHOIX }, (_, i) => ASCENSION[i + 1].n).join(' · ')}</small>` : ''}</p>` : ''}
-  ${SANSFIN ? '' : `<div class="modeav"><button class="${MODE_AV ? 'on' : ''}" onclick="choixModeAv(true)">🗺 <b>La Grande aventure</b><small>les 3 îles à la suite : ton héros garde son deck, monte de niveau et trouve de l’équipement</small></button><button class="${MODE_AV ? '' : 'on'}" onclick="choixModeAv(false)">🏝 <b>Une île seule</b><small>une partie, l’île du jour, l’Ascension</small></button></div>`}
+  document.getElementById('app').innerHTML = `<h1>${ROUTE_TITAN ? '🛤 La Route du Titan' : ({ givre:'❄️ L’Odyssée · l’île du Givre', abime:'🌀 L’Odyssée · l’Abîme du Vide' }[ACTE_URL] || '🏰 L’Odyssée · les Terres brûlées') + (SANSFIN ? ' · 🧩 sans fin' : '')}</h1>${SANSFIN ? '<p style="text-align:center;color:var(--or);font-size:.9em">L’île se construit tuile par tuile : à chaque pas, tu choisis une tuile parmi 3 et tu la raccordes au donjon.</p>' : ''}
+  ${ROUTE_TITAN ? `<p style="text-align:center;color:var(--doux);font-size:.9em">Les Terres brûlées, vues d’en haut : <b>tout le chemin jusqu’au Titan de feu se voit dès le départ</b>. ${ROUTE_ETAPES} étapes, des chemins qui se séparent et se rejoignent : à toi de choisir ta route (combats, élites, coffres, marchand, feu de camp…). On ne revient pas en arrière. Pas d’huile ici : ta vie, ton or et ton deck. Le combat, c’est le Duel.</p>` : `<p style="text-align:center;color:var(--doux);font-size:.9em">Une île tirée au sort, à explorer case par case. Le combat, c’est le Duel. Tes PV ne remontent pas tout seuls : sources, potions et marchand. Une lanterne de 20 doses d’huile pour fouiller. Deux fragments de rune ouvrent la porte ${{ givre:"de la Vouivre des glaces. Ici, le Givre ❄ s’accumule sur toi : à trois, tu es gelé", abime:"du Roi sans visage. Ici, la Corruption 🟣 s’accumule : à trois, le Vide te dévore (Silence) et nourrit l’ennemi" }[ACTE_URL] || "du Titan de feu"}.</p>`}
+  ${ascMax(ACTE_URL) && (SANSFIN || ROUTE_TITAN || !MODE_AV) ? `<p style="text-align:center;font-size:.9em">⛰ <b style="color:var(--or)">Ascension</b> : ${Array.from({ length:ascMax(ACTE_URL) + 1 }, (_, n) => `<button class="asc ${ASC_CHOIX === n ? 'on' : ''}" onclick="ASC_CHOIX=${n};ecran()">${n || 'normal'}</button>`).join(' ')}${ASC_CHOIX ? `<br><small style="color:var(--doux)">${Array.from({ length:ASC_CHOIX }, (_, i) => ASCENSION[i + 1].n).join(' · ')}</small>` : ''}</p>` : ''}
+  ${SANSFIN || ROUTE_TITAN ? '' : `<div class="modeav"><button class="${MODE_AV ? 'on' : ''}" onclick="choixModeAv(true)">🗺 <b>La Grande aventure</b><small>les 3 îles à la suite : ton héros garde son deck, monte de niveau et trouve de l’équipement</small></button><button class="${MODE_AV ? '' : 'on'}" onclick="choixModeAv(false)">🏝 <b>Une île seule</b><small>une partie, l’île du jour, l’Ascension</small></button></div>`}
   <p style="text-align:center"><b style="color:var(--or)">Choisis ton héros</b></p>
   <div class="heros6">${ORDRE.map(id => id === 'zephine' && !ZOK() ? `<button onclick="location.href='duel.html?tuto=1'" style="opacity:.55"><img src="${IMG(id)}" alt="" style="filter:grayscale(1)">🔒 ${HEROS[id].nom}<br><small style="color:var(--doux)">Fais le tutoriel</small></button>` : `<button onclick="commence('${id}')"><img src="${IMG(id)}" alt="">${HEROS[id].nom}<br><small style="color:var(--doux)">${Math.round(HEROS[id].pv * (ODY_PV[id] || 1.8))} PV en Odyssée</small></button>`).join('')}</div>
-  ${SANSFIN || !MODE_AV ? `<p style="text-align:center;font-size:.86em"><label><input type="checkbox" id="jour"> 🗓 L’île du jour (la même île pour tout le monde aujourd’hui)</label></p>` : ''}
+  ${!ROUTE_TITAN && (SANSFIN || !MODE_AV) ? `<p style="text-align:center;font-size:.86em"><label><input type="checkbox" id="jour"> 🗓 L’île du jour (la même île pour tout le monde aujourd’hui)</label></p>` : ''}
   <div class="choixh"><button onclick="records()">🏆 Mes Odyssées (${rec.length})</button><button onclick="collection()">📚 Ma collection (${col.length})</button></div>
   <div class="choixh"><button onclick="location.href='odyssee-regles.html'">📖 Les règles complètes</button><button onclick="emplacements()">← Emplacements</button></div>`;
 }
@@ -273,10 +285,10 @@ let MODE_AV = localStorage.getItem('guilde-mode-av') !== 'ile';
 function choixModeAv(v) { MODE_AV = v; localStorage.setItem('guilde-mode-av', v ? 'av' : 'ile'); ecran(); }
 function commence(id) {
   const jour = document.getElementById('jour') && document.getElementById('jour').checked;
-  R = !SANSFIN && MODE_AV ? nouvelleAventure(id) : SANSFIN ? nouvelleSansFin(id, ACTE_URL, ASC_CHOIX) : nouvelleOdyssee(id, jour ? graineDuJour() + (ACTE_URL !== 'brulees' ? '-' + ACTE_URL : '') : null, ACTE_URL, ASC_CHOIX); if (!R) { alert('Impossible de tirer une île : réessaie.'); return; }
+  R = ROUTE_TITAN ? nouvelleRoute(id, ASC_CHOIX) : !SANSFIN && MODE_AV ? nouvelleAventure(id) : SANSFIN ? nouvelleSansFin(id, ACTE_URL, ASC_CHOIX) : nouvelleOdyssee(id, jour ? graineDuJour() + (ACTE_URL !== 'brulees' ? '-' + ACTE_URL : '') : null, ACTE_URL, ASC_CHOIX); if (!R) { alert('Impossible de tirer une île : réessaie.'); return; }
   dejaDessine = new Set(); bulles = []; sauve(); dessine();
   chronique([CH().arrivee(HEROS[id].nom)], () => { dialogue('depart'); fenetre(`<h2>⛵ Débarquement</h2><p>${HEROS[id].nom} pose le pied sur ${ILE(R).nom}. ${{ givre:'La glace craque, le vent mord, l’aurore danse au-dessus du château de glace.', abime:'Le silence est total. Sous tes pieds, le gouffre ; au-dessus, un trône.' }[R.acte] || 'Le ciel est rouge, la roche fume.'}</p>
-  ${R.sansfin ? `<p>Ici, l’île n’existe pas encore : <b>tu la construis</b>. Sous la carte, 3 tuiles t’attendent. Touche-en une, tourne-la avec ⟳, puis touche une case <b style="color:var(--ok)">verte</b> : ses couloirs doivent se raccorder à ceux du donjon. Ton héros y entre (1 dose d’huile 🪔).</p><p>Bats <b>2 élites</b> 💀 pour gagner 2 fragments de rune : la tuile du boss 👑 apparaîtra alors dans ta pioche, et tu choisiras où ouvrir sa porte.</p>` : `<p>Touche une salle <b style="color:var(--ok)">verte</b> : le héros y marche et l’île se dessine devant lui. Tu vois le <b>type</b> des salles voisines, jamais ce qu’elles cachent. Touche-la une première fois pour voir le trajet et son coût, une seconde fois pour y aller. Chaque case nouvelle brûle <b>1 dose d’huile 🪔</b> (la lumière autour du héros rétrécit quand la lanterne se vide) ; revenir est gratuit.</p>
+  ${R.route ? `<p>D’ici, tu vois <b>toute la route</b> jusqu’au Titan 👑. Les salles <b style="color:var(--ok)">vertes</b> sont celles où mène ta salle : touche-en une pour voir ce qu’il y a, puis « Y aller ». <b>On ne revient pas en arrière</b> : regarde bien où chaque chemin te mène.</p><p>Les chemins se rejoignent aux <b>carrefours</b> (étapes 4 et 8) : si tu pars à gauche, tu peux revenir au milieu puis filer à droite. Juste avant le boss : feu de camp, marchand ou source.</p>` : R.sansfin ? `<p>Ici, l’île n’existe pas encore : <b>tu la construis</b>. Sous la carte, 3 tuiles t’attendent. Touche-en une, tourne-la avec ⟳, puis touche une case <b style="color:var(--ok)">verte</b> : ses couloirs doivent se raccorder à ceux du donjon. Ton héros y entre (1 dose d’huile 🪔).</p><p>Bats <b>2 élites</b> 💀 pour gagner 2 fragments de rune : la tuile du boss 👑 apparaîtra alors dans ta pioche, et tu choisiras où ouvrir sa porte.</p>` : `<p>Touche une salle <b style="color:var(--ok)">verte</b> : le héros y marche et l’île se dessine devant lui. Tu vois le <b>type</b> des salles voisines, jamais ce qu’elles cachent. Touche-la une première fois pour voir le trajet et son coût, une seconde fois pour y aller. Chaque case nouvelle brûle <b>1 dose d’huile 🪔</b> (la lumière autour du héros rétrécit quand la lanterne se vide) ; revenir est gratuit.</p>
   <p>Le chemin direct fait ${R.direct} cases. La porte 🚪 ${{ givre:'de la Vouivre', abime:'du Roi' }[R.acte] || 'du Titan'} 👑 est tout en haut : il te faut <b>2 fragments de rune</b>, gardés par les 3 élites 💀 de l’île.</p>`}
   ${R.sansfin && regleSF(R) ? `<p>${regleSF(R).e} <b>Règle du jour : ${regleSF(R).n}</b>. ${regleSF(R).d}</p><p>Après le boss, tu pourras <b>descendre à l’étage suivant</b>. Jusqu’où iras-tu ?</p>` : ''}
   <div class="choixh"><button class="or" onclick="fermer();${R.sansfin ? 'primeFen()' : ''}">En route !</button></div>`); });
@@ -298,10 +310,10 @@ function dessine() {
   <div id="entete">${enteteHTML()}</div>
   ${carteSVG()}
   <div class="bulles" id="bulles">${bullesHTML()}</div>
-  <div class="bandeau">${r.vivres ? 'Touche une salle verte : une fiche dit ce qu’il y a et le prix en huile ; « Y aller » pour partir.' : '<b style="color:#ff7a7a">Lanterne éteinte : chaque case nouvelle coûte 3 PV.</b>'} ${r.fragments >= 2 ? '<b style="color:var(--ok)">Tu as les 2 fragments : la porte 🚪 t’attend.</b>' : ''}</div>
+  <div class="bandeau">${r.route ? 'Touche une salle verte (reliée à la tienne) : une fiche dit ce qu’il y a ; « Y aller » pour avancer. On ne revient pas en arrière.' : r.vivres ? 'Touche une salle verte : une fiche dit ce qu’il y a et le prix en huile ; « Y aller » pour partir.' : '<b style="color:#ff7a7a">Lanterne éteinte : chaque case nouvelle coûte 3 PV.</b>'} ${!r.route && r.fragments >= 2 ? '<b style="color:var(--ok)">Tu as les 2 fragments : la porte 🚪 t’attend.</b>' : ''}</div>
   <div class="legende" title="Touche une étiquette pour sa description"><span onclick="legendeInfo('monstre')">⚔ monstres (I, II, III)</span><span onclick="legendeInfo('elite')">💀 élite</span><span onclick="legendeInfo('coffre')">🗝 coffre</span><span onclick="legendeInfo('source')">💧 source</span><span onclick="legendeInfo('marchand')">🏪 marchand</span><span onclick="legendeInfo('evenement')">❓ événement</span><span onclick="legendeInfo('autel')">🔥 autel</span><span onclick="legendeInfo('feu')">🏕 feu de camp</span><span onclick="legendeInfo('mur')">🧱 mur fissuré</span><span onclick="legendeInfo('forge')">⚒ forge</span><span onclick="legendeInfo('sac')">🎲 sac de Moustache</span><span onclick="legendeInfo('defi')">🎯 défi</span><span onclick="legendeInfo('fontaine')">⛲ fontaine</span><span onclick="legendeInfo('mystere')">❔ mystère</span><span onclick="legendeInfo('porte')">🚪 porte</span><span onclick="legendeInfo('boss')">👑 boss</span></div>
   <div class="bas"><button onclick="monDeck()">🂠 Deck</button><button onclick="journal()">📜 Journal</button><button onclick="reglesCourtes()">❓ Règles</button><button onclick="abandon()">⏏ Quitter</button></div>`;
-  if (r.sansfin) sfEcran(); else if (r.aventure && localStorage.getItem('guilde-guide-odyssee')) Guide.lance('aventure', GUIDE_AV); else Guide.lance('odyssee', r.aventure ? [...GUIDE_ODY, ...GUIDE_AV] : GUIDE_ODY, false, () => { if (r.aventure) localStorage.setItem('guilde-guide-aventure', '1'); }); // 15/11 : sinon la fin du guide revenait une 2e fois
+  if (r.route) Guide.lance('route', GUIDE_ROUTE); else if (r.sansfin) sfEcran(); else if (r.aventure && localStorage.getItem('guilde-guide-odyssee')) Guide.lance('aventure', GUIDE_AV); else Guide.lance('odyssee', r.aventure ? [...GUIDE_ODY, ...GUIDE_AV] : GUIDE_ODY, false, () => { if (r.aventure) localStorage.setItem('guilde-guide-aventure', '1'); }); // 15/11 : sinon la fin du guide revenait une 2e fois
 }
 // =============================================================================================== l'Odyssée sans fin : la pioche sous la carte (14/11)
 let sfSel = null, sfRot = 0, sfCase = null;
@@ -448,10 +460,18 @@ const GUIDE_ODY = [
   ['.bulles', 'Ici, ton héros et moi, on commente l’aventure. Je donne souvent de bons conseils. Souvent.'],
   ['.bas', '🂠 ton deck (les cartes gagnées en route), 📜 le journal, ❓ les règles. Et ⏏ pour quitter : la partie est gardée. Bonne exploration, miaou !'],
 ];
+// 15/11 soir : le guide de la Route du Titan (une seule fois)
+const GUIDE_ROUTE = [
+  [null, 'Miaou ! Ici, pas de brume : <b>toute la route jusqu’au Titan</b> se voit d’un coup. Dix étapes, et le boss tout en haut.'],
+  ['svg.ile', 'Les traits sont les chemins. Les salles <b>en vert</b> sont celles où mène la tienne : touche-en une, une fiche te dit ce qu’il y a, puis « Y aller ». <b>On ne revient jamais en arrière</b>, alors regarde loin devant.'],
+  ['svg.ile', 'Aux étapes 4 et 8, les chemins se rejoignent : un carrefour. Parti à gauche ? Tu peux revenir au milieu, puis filer à droite. Juste avant le Titan : feu de camp, marchand ou source.'],
+  ['.entete', 'Ici, pas d’huile : ❤ ta vie, 💰 ton or, 🗝 tes clés pour les coffres (les élites en donnent), et l’étape où tu en es.'],
+  ['.bas', '🂠 ton deck, 📜 le journal, ⏏ pour quitter : la partie est gardée. Bonne route, miaou !'],
+];
 function enteteHTML() {
   const r = R, h = HEROS[r.heros];
   return `<div class="entete"><img src="${IMG(r.heros)}" alt="" onclick="monDeck()"><div class="st"><b>${h.nom}</b> · ${r.deck.length} cartes${r.asc ? ` · ⛰ Ascension ${r.asc}` : ''}${r.aventure ? ` · <span onclick="equipFen()" style="color:var(--or);cursor:pointer">🗺 ch. ${r.aventure.chapitre}/3 · niv. ${r.aventure.niveau} · 🎒 ${Object.values(r.aventure.equip).filter(Boolean).map(k => eqImg(k, 18)).join('') || 'équipement'}</span>` : ''}
-    <br><span class="p pv">❤ ${r.pv} / ${r.pvMax}</span><span class="p or">💰 ${r.or}</span><span class="p vivres ${r.vivres ? '' : 'zero'}" title="Huile de la lanterne">🪔 ${r.vivres}</span><span class="p">🗝 ${r.cles}</span><span class="p">🔮 ${r.fragments}/2</span>
+    <br><span class="p pv">❤ ${r.pv} / ${r.pvMax}</span><span class="p or">💰 ${r.or}</span>${r.route ? `<span class="p">🗝 ${r.cles}</span><span class="p">🛤 étape ${r.route.etape}/${ROUTE_ETAPES}</span>` : `<span class="p vivres ${r.vivres ? '' : 'zero'}" title="Huile de la lanterne">🪔 ${r.vivres}</span><span class="p">🗝 ${r.cles}</span><span class="p">🔮 ${r.fragments}/2</span>`}
     <br><span class="rel">${r.reliques.map(k => `<i onclick="info('${RELIQUES[k].e} ${RELIQUES[k].n}', '${RELIQUES[k].d.replace(/'/g, '’')}')">${RELIQUES[k].e}</i>`).join('')}${r.sacoche.map((k, i) => `<i onclick="sacocheIle(${i})">${SACOCHE[k].e}</i>`).join('')}${r.benes.map(k => `<i onclick="info('✨ ${BENEDICTIONS[k].n}', '${BENEDICTIONS[k].d.replace(/'/g, '’')}')">✨</i>`).join('')}${r.males.map(k => `<i onclick="info('🕯 ${MALEDICTIONS[k].n}', '${MALEDICTIONS[k].d.replace(/'/g, '’')}')">🕯</i>`).join('')}</span></div></div>`;
 }
 // =============================================================================================== la carte à l'encre (10/11 soir, idée de l'utilisateur d'après une vidéo)
@@ -468,6 +488,7 @@ function traitMur(x1, y1, x2, y2, seed) {
 function pierres(x1, y1, x2, y2, seed) { let out = ''; for (let i = 1; i < 5; i++) { const t = i / 5; out += `<circle class="pierre" cx="${(x1 + (x2 - x1) * t + gigue(x1 + i, y1, seed + 11, 10)).toFixed(1)}" cy="${(y1 + (y2 - y1) * t + gigue(x2 + i, y2, seed + 13, 10)).toFixed(1)}" r="${(1.2 + Math.abs(gigue(x1, y1 + i, seed + 17, 2))).toFixed(1)}"/>`; } return out; }
 function calculeDist() { const marche = c => c.visite; distV = bfs(R.ile, R.pos, marche).dist; }
 function peutCible(c) {
+  if (R.route) return !!c && peutAller(R, c.x, c.y);
   if (!c.vu || c.t === 'roche' || (c.x === R.pos.x && c.y === R.pos.y)) return false;
   if (c.t === 'boss' && R.porte) { const p = caseA(R, R.porte.x, R.porte.y); if (!p.fait) return false; }
   if (c.t === 'mur' && !c.fait && !(R.sacoche.includes('bombe') || R.vivres >= 3)) return false;
@@ -527,6 +548,7 @@ function vueCible() {
   return { x:X * CEL, y:Y * CEL, w:w * CEL, h:h * CEL };
 }
 function camera(anime) {
+  if (R && R.route) return;
   const svg = document.querySelector('svg.ile'); if (!svg) return; const c = vueCible();
   if (!anime || !vue) { vue = c; svg.setAttribute('viewBox', `${c.x} ${c.y} ${c.w} ${c.h}`); return; }
   const d = { ...vue }, t0 = performance.now(); const pas = now => { const k = Math.min(1, (now - t0) / 450), e = k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
@@ -546,6 +568,7 @@ function toucheCarte(e) {
 // 14/11 (l'utilisateur : « sur l'île gelée, on dirait un château dans le désert ») : le plan prend les couleurs de chaque île
 const TEINTE_PAPIER = { brulees:'0 0 0 0 .50  0 0 0 0 .30  0 0 0 0 .16  0 0 0 -1.6 1.05', givre:'0 0 0 0 .32  0 0 0 0 .45  0 0 0 0 .60  0 0 0 -1.6 1.05', abime:'0 0 0 0 .30  0 0 0 0 .16  0 0 0 0 .42  0 0 0 -1.6 1.05' };
 function carteSVG() {
+  if (R.route) return routeSVG();
   fixeDims(R); VBW = ILE_W * CEL; VBH = ILE_H * CEL;
   calculeDist(); const c = vueCible(); vue = c;
   const toutes = R.ile.flat();
@@ -563,6 +586,28 @@ function carteSVG() {
     <g id="brume" filter="url(#flou)">${brume}</g>
     <g id="cels">${cels}</g>${herosSVG()}</svg>`;
 }
+// =============================================================================================== la carte de la Route du Titan (15/11 soir)
+// Même parchemin que l'île ; à la place des couloirs, des chemins à l'encre entre les salles. Le chemin déjà pris est tracé en rouge,
+// ceux qu'on peut prendre maintenant clignotent en vert. Les salles gardent leurs icônes (celluleSVG) et le héros sa lanterne.
+function routeSVG() {
+  fixeDims(R); VBW = ILE_W * CEL; VBH = ILE_H * CEL; const toutes = R.ile.flat(), M = CEL;
+  vue = { x:-CEL * .5, y:-CEL * .3, w:VBW + CEL, h:VBH + CEL * .6 };
+  const pris = new Set((R.route.trace || []).map(t => t.replace('>', '|'))), ici = R.pos.x + ',' + R.pos.y, ctr = k => k.split(',').map(n => +n * CEL + CEL / 2);
+  let liens = '';
+  toutes.forEach(c => (c.suiv || []).forEach(k => {
+    const a = c.x + ',' + c.y, [x1, y1] = ctr(a), [x2, y2] = ctr(k), deja = pris.has(a + '|' + k), libre = a === ici;
+    const mx = (x1 + x2) / 2 + gigue(c.x, c.y, x2, 8), my = (y1 + y2) / 2;
+    liens += `<path class="rlien ${deja ? 'pris' : ''} ${libre ? 'libre' : ''}" d="M${x1},${y1} Q${mx.toFixed(1)},${my} ${x2},${y2}"/>`;
+  }));
+  const noeuds = toutes.filter(c => c.t !== 'roche').map(c => { const [x, y] = ctr(c.x + ',' + c.y);
+    return `<circle class="rnoeud ${c.visite ? 'visite' : ''} ${c.t === 'boss' ? 'boss' : ''} ${c.t === 'elite' ? 'elite' : ''} ${peutCible(c) ? 'ok' : ''}" cx="${x}" cy="${y}" r="${c.t === 'boss' ? 27 : 21}"/>`; }).join('');
+  const cels = toutes.map(c => { const k = c.x + ',' + c.y; if (c.vu) dejaDessine.add(k); return celluleSVG(c, false); }).join('');
+  const carrefours = ROUTE_CARREFOURS.map(f => `<text class="retape" x="${-CEL * .25}" y="${(ILE_H - 1 - f) * CEL + CEL / 2 + 5}">✦</text>`).join('');
+  return `<svg class="ile route" viewBox="${vue.x} ${vue.y} ${vue.w} ${vue.h}" preserveAspectRatio="xMidYMid meet" onpointerdown="posDoigt=[event.clientX,event.clientY]" onpointerup="toucheCarte(event)"><defs><clipPath id="rond"><circle r="16"/></clipPath>
+    <filter id="papier" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".012" numOctaves="4" seed="7"/><feColorMatrix values="${TEINTE_PAPIER.brulees}"/><feComposite in2="SourceGraphic" operator="in"/><feBlend in2="SourceGraphic" mode="multiply"/></filter></defs>
+    <rect x="${-M}" y="${-M}" width="${VBW + 2 * M}" height="${VBH + 2 * M}" class="parch" filter="url(#papier)"/>
+    <g id="rliens">${liens}</g>${carrefours}<g id="rnoeuds">${noeuds}</g><g id="cels">${cels}</g>${herosSVG()}</svg>`;
+}
 // révèle ce qui vient d'apparaître pendant la marche (sans tout redessiner), et redessine les voisins dont un mur a pu apparaître
 function revele() {
   const g = document.getElementById('cels'); if (!g) return; calculeDist();
@@ -576,6 +621,7 @@ function revele() {
 }
 function placeHeros() { const h = document.getElementById('heros'); if (h) { h.style.transform = `translate(${R.pos.x * CEL + CEL / 2}px,${R.pos.y * CEL + CEL / 2}px)`; const l = h.querySelector('.halo'); if (l) l.setAttribute('r', haloR()); } }
 function cheminVers(c) {
+  if (R.route) return peutAller(R, c.x, c.y) ? [[c.x, c.y]] : null;
   const { prev } = bfs(R.ile, R.pos, v => v.visite || v === c);
   const chemin = []; let k = c.x + ',' + c.y; if (prev[k] === undefined && !(c.x === R.pos.x && c.y === R.pos.y)) return null;
   while (prev[k]) { chemin.unshift(k.split(',').map(Number)); k = prev[k]; } return chemin;
@@ -593,7 +639,7 @@ function ficheTrajet(c, chemin, cout) {
   fermeFicheTrajet();
   const neuves = chemin.filter(([a, b]) => !caseA(R, a, b).visite).length, noir = cout > R.vivres;
   document.body.insertAdjacentHTML('beforeend', `<div id="fiche-trajet"><div class="ft-t"><span class="ft-e">${SALLES_ODY[c.t].e || '·'}</span><div><b>${SALLES_ODY[c.t].n}</b><small>${DESC_SALLE[c.t] || ''}</small></div></div>
-    <div class="ft-c">👣 ${chemin.length} case${chemin.length > 1 ? 's' : ''}${neuves ? ` dont ${neuves} nouvelle${neuves > 1 ? 's' : ''}` : ''} · ${cout ? `🪔 <b>${cout}</b> dose${cout > 1 ? 's' : ''} d’huile (il t’en reste ${R.vivres})` : '🪔 gratuit (déjà exploré)'}${noir ? '<br><b style="color:#ff7a7a">Pas assez d’huile : 3 PV par case dans le noir.</b>' : ''}</div>
+    ${R.route ? `<div class="ft-c">🛤 Étape ${c.etape > ROUTE_ETAPES ? 'finale' : c.etape + '/' + ROUTE_ETAPES} · <b>on ne revient pas en arrière</b>${c.t === 'monstre' && c.niv ? ` · monstres de niveau ${NIV[c.niv]}` : ''}</div>` : `<div class="ft-c">👣 ${chemin.length} case${chemin.length > 1 ? 's' : ''}${neuves ? ` dont ${neuves} nouvelle${neuves > 1 ? 's' : ''}` : ''} · ${cout ? `🪔 <b>${cout}</b> dose${cout > 1 ? 's' : ''} d’huile (il t’en reste ${R.vivres})` : '🪔 gratuit (déjà exploré)'}${noir ? '<br><b style="color:#ff7a7a">Pas assez d’huile : 3 PV par case dans le noir.</b>' : ''}</div>`}
     <div class="ft-b"><button class="non" onclick="annuleTrajet()">Annuler</button><button class="oui" onclick="marcheVers(${c.x},${c.y},true)">▶ Y aller</button></div></div>`);
 }
 // 15/11 (l'utilisateur : « une petite description sur chaque étiquette ») : la légende de la carte s'explique au toucher
@@ -606,7 +652,8 @@ function montreTrajet(c, chemin) {
   const neuves = chemin.filter(([a, b]) => !caseA(R, a, b).visite).length, mur = c.t === 'mur' && !c.fait && !R.sacoche.includes('bombe') ? 3 : 0;
   g.insertAdjacentHTML('beforeend', `<g id="trajet" style="pointer-events:none"><polyline points="${pts}" fill="none" stroke="#8a1f1f" stroke-width="4" stroke-dasharray="7 7" stroke-linecap="round"/><circle cx="${c.x * CEL + CEL / 2}" cy="${c.y * CEL + CEL / 2}" r="24" fill="none" stroke="#15803d" stroke-width="3"/></g>`);
   const cout = neuves + mur, b = document.querySelector('.bandeau'); ficheTrajet(c, chemin, cout);
-  if (b) b.innerHTML = `${SALLES_ODY[c.t].e} ${SALLES_ODY[c.t].n} · ${cout ? `🪔 ${cout} dose${cout > 1 ? 's' : ''} d’huile${R.vivres < cout ? ' <b style="color:#ff7a7a">(pas assez : 3 PV par case dans le noir)</b>' : ''}` : 'gratuit (déjà exploré)'} · <b>« Y aller » pour partir</b>`;
+  if (b && R.route) b.innerHTML = `${SALLES_ODY[c.t].e} ${SALLES_ODY[c.t].n} · <b>« Y aller » pour avancer</b>`;
+  else if (b) b.innerHTML = `${SALLES_ODY[c.t].e} ${SALLES_ODY[c.t].n} · ${cout ? `🪔 ${cout} dose${cout > 1 ? 's' : ''} d’huile${R.vivres < cout ? ' <b style="color:#ff7a7a">(pas assez : 3 PV par case dans le noir)</b>' : ''}` : 'gratuit (déjà exploré)'} · <b>« Y aller » pour partir</b>`;
 }
 async function marcheVers(x, y, confirme) {
   // 15/11 (l'utilisateur : « on a quitté la forge sans forger, et impossible d'y rentrer ») : toucher SA case rouvre la salle si elle n'est pas finie
@@ -693,7 +740,7 @@ function combat(c) {
   <p>🎯 <b>Défi · ${d.n}</b> : ${d.d} Réussi = +30 or.</p>
   ${cb.ombre ? `<p style="color:#c084fc">🌑 <b>Ombre majeure · ${OMBRES[cb.ombre].n}</b> : ${OMBRES[cb.ombre].d} Vaincue = double butin (+40 or et deux cartes).</p>` : ''}${cb.anomalie ? `<p style="color:#ff9a7a">🌀 <b>Anomalie ${'4'.repeat(cb.anomalie)}</b> : ${ANOMALIE.slice(1, cb.anomalie + 1).join(', ')}. ${cb.anomalie === 3 ? 'Vaincue = +80 or et deux cartes à garder toutes les deux !' : `Vaincue = +${10 * cb.anomalie} or.`}</p>` : ''}
   <p style="font-size:.86em;color:var(--doux)">Tu entres avec ❤ ${R.pv} / ${R.pvMax}${R.sacoche.length ? ' et ta sacoche : ' + R.sacoche.map(k => SACOCHE[k].e + ' ' + SACOCHE[k].n).join(', ') : ''}.</p>
-  <div class="choixh"><button class="or" onclick="location.href='duel.html?odyssee=1${SANSFIN ? '&sansfin=1' : ''}'">⚔ Au combat !</button></div>`);
+  <div class="choixh"><button class="or" onclick="location.href='duel.html?odyssee=1${SUF_URL}'">⚔ Au combat !</button></div>`);
 }
 // retour du Duel : récompenses, tirage de cartes
 function apresCombat() {
@@ -726,7 +773,7 @@ function feuFen(c) {
   const k = `R.ile[${c.y}][${c.x}]`, soin = Math.min(R.pvMax - R.pv, Math.round(R.pvMax * .3));
   fenetre(`<h2>🏕 Un feu de camp</h2><p>Un cercle de pierres, des braises encore chaudes. Le temps d’une halte, une seule chose.</p><div class="choixv">
     <button onclick="feuDeCamp(R,${k},'repos');sauve();fermer();dessine()">Se reposer : <b>+${soin} PV</b><small>30 % de tes PV</small></button>
-    <button onclick="feuDeCamp(R,${k},'huile');sauve();fermer();dessine()">Raviver la lanterne : <b>+6 huile</b><small>🪔 ${R.vivres} → ${R.vivres + 6}</small></button>
+    ${R.route ? '' : `<button onclick="feuDeCamp(R,${k},'huile');sauve();fermer();dessine()">Raviver la lanterne : <b>+6 huile</b><small>🪔 ${R.vivres} → ${R.vivres + 6}</small></button>`}
     <button onclick="feuRetirer(${c.x},${c.y})">Brûler une carte<small>ton deck s’allège</small></button></div><div class="choixh"><button onclick="fermer()">Plus tard</button></div>`);
 }
 function feuRetirer(x, y) { fenetre(`<h2>🏕 Brûler une carte</h2><div class="cartes3">${[...new Set(R.deck)].map(k => carteHTML(k, `retireCarte(R,'${k}');feuDeCamp(R,R.ile[${y}][${x}],'retirer');sauve();fermer();dessine()`)).join('')}</div><div class="choixh"><button onclick="feuFen(R.ile[${y}][${x}])">Retour</button></div>`); }
@@ -828,7 +875,7 @@ function finPartie(gagne, texte) {
   <p>${f.ajoutees ? `📚 <b>${f.ajoutees}</b> carte${f.ajoutees > 1 ? 's' : ''} rejoi${f.ajoutees > 1 ? 'gnent' : 'nt'} ta collection : ${f.nouvelles.map(k => CARTES[k].n).join(', ')}.` : 'Aucune carte nouvelle pour la collection cette fois.'}</p>
   <div class="choixh"><button class="or" onclick="fermer();emplacements()">💾 Emplacements</button><button onclick="location.href='menu.html'">⌂ Menu</button></div>`));
 }
-function records() { const l = lireRecords(); fenetre(`<h2>🏆 Mes Odyssées (${l.length})</h2>${l.length ? `<table>${l.map(r => `<tr><td>${r.gagne ? '🏆' : '💀'} ${new Date(r.quand).toLocaleDateString('fr-FR')} · ${HEROS[r.heros].nom}${r.sansfin ? ` · 🧩 étage ${r.etage || 1}` : ''}${r.aventure ? ` · 🗺 aventure, ch. ${r.aventure.chapitre} (niv. ${r.aventure.niveau})` : ''} · ${r.cases} cases, ${r.victoires} victoires, ${r.duree} min</td><td>${r.score}</td></tr>`).join('')}</table>` : '<p>Aucune Odyssée finie.</p>'}<div class="choixh"><button onclick="fermer()">Fermer</button></div>`); }
+function records() { const l = lireRecords(); fenetre(`<h2>🏆 Mes Odyssées (${l.length})</h2>${l.length ? `<table>${l.map(r => `<tr><td>${r.gagne ? '🏆' : '💀'} ${new Date(r.quand).toLocaleDateString('fr-FR')} · ${HEROS[r.heros].nom}${r.sansfin ? ` · 🧩 étage ${r.etage || 1}` : ''}${r.route ? ' · 🛤 Route' : ''}${r.aventure ? ` · 🗺 aventure, ch. ${r.aventure.chapitre} (niv. ${r.aventure.niveau})` : ''} · ${r.cases} cases, ${r.victoires} victoires, ${r.duree} min</td><td>${r.score}</td></tr>`).join('')}</table>` : '<p>Aucune Odyssée finie.</p>'}<div class="choixh"><button onclick="fermer()">Fermer</button></div>`); }
 function collection() { const l = lireCollection(); fenetre(`<h2>📚 Ma collection (${l.length})</h2><p style="font-size:.86em;color:var(--doux)">Les cartes rencontrées en Odyssée. Elles s’ajoutent à l’éditeur de deck de la Tour des héros.</p><div class="cartes3">${l.map(k => carteHTML(k)).join('') || '<i>Rien encore : pars en Odyssée !</i>'}</div><div class="choixh"><button onclick="fermer()">Fermer</button></div>`); }
 accueil();
 // 13/11 soir : musique de la carte (Terres brûlées : folk médiéval ; Givre et Abîme : la vallée des vents) ; le marchand a la sienne jusqu'à la fermeture de sa fenêtre

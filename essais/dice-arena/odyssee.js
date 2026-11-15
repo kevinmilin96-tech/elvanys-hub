@@ -524,6 +524,66 @@ function genereIle(graine, R0, acte) {
   return null;
 }
 
+// =============================================================================================== LA ROUTE DU TITAN (15/11 soir)
+// Demande de l'utilisateur (d'après Run Dice) : tout le chemin jusqu'au boss se voit dès le départ, on choisit sa route.
+// Ses choix : 10 étapes, pas d'huile, Terres brûlées seulement, et des chemins qui se croisent et se rejoignent toutes les 3-4 étapes
+// (« si on part à gauche, on peut revenir au milieu puis à droite »). Les salles, combats, marchand, forge et boss sont ceux de l'Odyssée.
+// La carte : 3 voies (étapes 1-3, 5-7, 9-10) qui se resserrent en 2 carrefours (étapes 4 et 8) ; entre deux étapes, des liens en biais.
+// Chaque salle garde la liste de celles où elle mène (c.suiv = ["x,y", …]) ; on n'avance que vers le haut, sans retour.
+const ROUTE_ETAPES = 10, ROUTE_CARREFOURS = [4, 8];
+function genereRoute(graine, acte) {
+  const I = ILES[acte] || ILES.brulees, W = 7, H = ROUTE_ETAPES + 2; ILE_W = W; ILE_H = H;
+  const R = rngDe(graine + '#route'), yDe = f => H - 1 - f;
+  const cases = Array.from({ length:H }, (_, y) => Array.from({ length:W }, (_, x) => ({ x, y, t:'roche', vu:false, visite:false, fait:false })));
+  const rangs = [[3]];
+  for (let f = 1; f <= ROUTE_ETAPES; f++) {
+    if (ROUTE_CARREFOURS.includes(f)) { rangs.push(R() < .5 ? [2, 4] : [R() < .5 ? 1 : 2, R() < .5 ? 4 : 5]); continue; }
+    const v = [1, 3, 5].map(b => b + (R() < .3 ? -1 : R() < .45 ? 1 : 0));
+    for (let i = 1; i < 3; i++) if (v[i] <= v[i - 1]) v[i] = v[i - 1] + 1;
+    if (v[2] > 6) { v[2] = 6; if (v[1] >= 6) v[1] = 5; if (v[0] >= v[1]) v[0] = v[1] - 1; }
+    rangs.push(v.map(x => Math.max(0, Math.min(6, x))));
+  }
+  rangs.push([3]);
+  const C = (f, x) => cases[yDe(f)][x], lie = (a, b) => { a.suiv = a.suiv || []; const k = b.x + ',' + b.y; if (!a.suiv.includes(k)) a.suiv.push(k); };
+  for (let f = 0; f <= ROUTE_ETAPES; f++) {
+    const A = rangs[f].map(x => C(f, x)), B = rangs[f + 1].map(x => C(f + 1, x));
+    if (A.length === 1 || B.length === 1) { A.forEach(a => B.forEach(b => lie(a, b))); continue; }
+    if (B.length === 2) { lie(A[0], B[0]); lie(A[1], B[0]); lie(A[1], B[1]); lie(A[2], B[1]); continue; }      // les voies se rejoignent
+    if (A.length === 2) { lie(A[0], B[0]); lie(A[0], B[1]); lie(A[1], B[1]); lie(A[1], B[2]); continue; }      // puis se séparent
+    A.forEach((a, i) => lie(a, B[i]));                                                                       // chaque voie continue…
+    for (let i = 0; i < 2; i++) { const r = R(); if (r < .35) lie(A[i], B[i + 1]); else if (r < .6) lie(A[i + 1], B[i]); } // … et parfois bifurque (jamais en croix)
+  }
+  // ce qu'il y a dans chaque salle, étape par étape (le danger monte ; feu de camp, marchand ou source juste avant le boss)
+  const TYPES = { 1:['monstre'], 2:['monstre', 'monstre', 'evenement', 'sac', 'source'], 3:['monstre', 'monstre', 'evenement', 'sac', 'source'], 4:['elite', 'marchand'],
+    5:['monstre', 'monstre', 'monstre', 'elite', 'evenement', 'forge', 'autel', 'coffre', 'fontaine'], 6:['monstre', 'monstre', 'evenement', 'forge', 'autel', 'coffre', 'defi', 'marchand'],
+    7:['monstre', 'monstre', 'monstre', 'elite', 'evenement', 'coffre', 'fontaine', 'sac'], 8:['elite', 'feu'], 9:['monstre', 'monstre', 'elite', 'evenement', 'coffre', 'tresor'], 10:['feu', 'marchand', 'source'] };
+  const elites = brasse(R, ['heros', 'monstre', 'heros', 'monstre', 'heros']); let ie = 0;
+  const evs = brasse(R, EVENEMENTS.filter(e => I.evenements ? I.evenements.includes(e.id) : !e.ile).map(e => e.id).filter(id => id !== 'cartographe')); let iev = 0;
+  for (let f = 1; f <= ROUTE_ETAPES; f++) {
+    const fixe = f === 4 || f === 8 || f === 10, l = fixe ? brasse(R, TYPES[f]) : null;
+    rangs[f].forEach((x, i) => {
+      const c = C(f, x); c.t = fixe ? l[i % l.length] : tire(R, TYPES[f]); c.etape = f;
+      const niv = f <= 3 ? 1 : f <= 7 ? 2 : 3;
+      if (c.t === 'monstre') { c.niv = niv; c.ennemi = tire(R, I.pools[niv - 1]); }
+      if (c.t === 'elite') { c.niv = 2; const s0 = elites[ie++ % elites.length]; if (s0 === 'monstre') c.ennemi = tire(R, I.elites); else { c.ennemi = 'heros'; c.renfort = tire(R, ['pc', 'pv', 'bouclier']); } }
+      if (c.t === 'defi') { c.niv = 2; c.ennemi = tire(R, I.pools[1]); }
+      if (c.t === 'evenement') c.ev = evs[iev++ % evs.length];
+    });
+  }
+  const dep = C(0, 3), boss = C(ROUTE_ETAPES + 1, 3); dep.t = 'depart'; dep.visite = true; dep.etape = 0; boss.t = 'boss'; boss.ennemi = I.boss; boss.niv = 1; boss.etape = ROUTE_ETAPES + 1;
+  cases.flat().forEach(c => { if (c.t !== 'roche') c.vu = true; });
+  return { cases, dep:{ x:dep.x, y:dep.y }, boss:{ x:boss.x, y:boss.y } };
+}
+function nouvelleRoute(heros, niveau) {
+  const r = nouvelleOdyssee(heros, null, 'brulees', niveau); if (!r) return null;
+  const g = genereRoute(r.graine, 'brulees');
+  r.ile = g.cases; r.pos = { ...g.dep }; r.porte = null; r.bossPos = g.boss; r.direct = ROUTE_ETAPES; r.route = { etape:0 };
+  r.journal = [`🛤 La Route du Titan (${HEROS[heros].nom}) : tout le chemin se voit, à toi de choisir ta route jusqu’au Titan.`, ...r.journal.slice(1).filter(l => !/Némésis/.test(l))];
+  const nem = typeof localStorage !== 'undefined' ? lireNemesis()[heros] : null;
+  if (nem && HEROS[nem.rival]) { const c = r.ile.flat().find(x => x.t === 'elite'); if (c) { c.nemesis = nem.rival; c.nemNiv = nem.niv; c.ennemi = nem.rival; r.journal.push(`😈 ${HEROS[nem.rival].nom}, ta Némésis, t’attend sur la route.`); } }
+  return r;
+}
+
 // ----------------------------------------------------------------------------------------------- la partie (sauvée sur le téléphone à chaque case)
 // 14/11 (demande de l'utilisateur) : 3 EMPLACEMENTS de sauvegarde. L'emplacement 1 garde l'ancienne clé (aucune partie perdue).
 const ODY_CLE = 'guilde-odyssee', ODY_SLOTS = 3, ODY_SLOT_CLE = 'guilde-odyssee-emplacement', COLLECTION_CLE = 'guilde-collection', RECORDS_CLE = 'guilde-odyssee-records';
@@ -538,9 +598,11 @@ const DEFIS = [
 ];
 // 14/11 (l'utilisateur : « dans l'Odyssée sans fin, j'ai une sauvegarde du Givre ») : l'Odyssée sans fin a ses 3 emplacements à elle
 const sansFinPage = () => typeof SANSFIN !== 'undefined' && SANSFIN;
-const odyCle = n => { if (typeof EPREUVE_PAGE !== 'undefined' && EPREUVE_PAGE) return 'guilde-epreuve-run'; const b = sansFinPage() ? ODY_CLE + '-sansfin' : ODY_CLE; return n > 1 ? b + '-' + n : b; }; // 14/11 nuit : la Tour des épreuves et la Chasse ont leur propre partie
-function slotActif() { const n = +(typeof localStorage !== 'undefined' && localStorage.getItem(ODY_SLOT_CLE + (sansFinPage() ? '-sansfin' : ''))) || 1; return n >= 1 && n <= ODY_SLOTS ? n : 1; }
-function choisirSlot(n) { localStorage.setItem(ODY_SLOT_CLE + (sansFinPage() ? '-sansfin' : ''), String(n)); }
+const routePage = () => typeof ROUTE_TITAN !== 'undefined' && ROUTE_TITAN; // 15/11 soir : la Route du Titan a ses 3 emplacements à elle
+const sufPage = () => routePage() ? '-route' : sansFinPage() ? '-sansfin' : '';
+const odyCle = n => { if (typeof EPREUVE_PAGE !== 'undefined' && EPREUVE_PAGE) return 'guilde-epreuve-run'; const b = ODY_CLE + sufPage(); return n > 1 ? b + '-' + n : b; }; // 14/11 nuit : la Tour des épreuves et la Chasse ont leur propre partie
+function slotActif() { const n = +(typeof localStorage !== 'undefined' && localStorage.getItem(ODY_SLOT_CLE + sufPage())) || 1; return n >= 1 && n <= ODY_SLOTS ? n : 1; }
+function choisirSlot(n) { localStorage.setItem(ODY_SLOT_CLE + sufPage(), String(n)); }
 function lireSlot(n) { try { return JSON.parse(localStorage.getItem(odyCle(n)) || 'null'); } catch (e) { return null; } }
 function effacerSlot(n) { localStorage.removeItem(odyCle(n)); }
 function lireOdyssee() { return lireSlot(slotActif()); }
@@ -581,6 +643,7 @@ const caseA = (r, x, y) => (r.ile[y] || [])[x];
 const hasard = r => { r.tirage = (r.tirage || 0) + 1; return rngDe(r.graine + '/' + r.tirage); };
 function peutAller(r, x, y) {
   const c = caseA(r, x, y); if (!c || c.t === 'roche' || !c.vu) return false;
+  if (r.route) { const ici = caseA(r, r.pos.x, r.pos.y); return !!(ici && ici.suiv && ici.suiv.includes(x + ',' + y)); } // la Route : seulement une salle reliée, vers le haut
   if (Math.abs(x - r.pos.x) + Math.abs(y - r.pos.y) !== 1) return false;
   if (c.t === 'boss' && r.porte) { const p = caseA(r, r.porte.x, r.porte.y); if (!p.fait) return false; }
   if (typeof relies === 'function' && !relies(r.ile, r.pos.x, r.pos.y, x, y)) return false;
@@ -593,8 +656,9 @@ function deplace(r, x, y) {
   const neuve = !c.visite;
   if (c.t === 'mur' && !c.fait) { if (r.sacoche.includes('bombe')) { r.sacoche.splice(r.sacoche.indexOf('bombe'), 1); r.journal.push('💣 La bombe ouvre le mur fissuré.'); } else { r.vivres -= 3; r.journal.push('🧱 Trois doses d’huile pour creuser le mur fissuré.'); } }
   if (neuve && r.sansfin && r.sansfin.regle === 'lanterne' && r.vivres > 0) r.vivres--; // règle du jour : 2 huiles par tuile nouvelle
-  if (neuve) { if (r.vivres > 0) r.vivres--; else { r.pv -= 3; r.journal.push('🪔 Lanterne éteinte : vous avancez dans le noir, −3 PV.'); } r.stats.cases++; }
-  r.pos = { x, y }; c.visite = true; c.vu = true; if (!r.sansfin) voisins(x, y).forEach(([a, b]) => { caseA(r, a, b).vu = true; });
+  if (neuve && r.route) { r.stats.cases++; r.route.etape = c.etape || r.route.etape; r.route.trace = [...(r.route.trace || []), r.pos.x + ',' + r.pos.y + '>' + x + ',' + y]; } // la Route : pas d'huile
+  else if (neuve) { if (r.vivres > 0) r.vivres--; else { r.pv -= 3; r.journal.push('🪔 Lanterne éteinte : vous avancez dans le noir, −3 PV.'); } r.stats.cases++; }
+  r.pos = { x, y }; c.visite = true; c.vu = true; if (!r.sansfin && !r.route) voisins(x, y).forEach(([a, b]) => { caseA(r, a, b).vu = true; });
   if (r.pv <= 0) return { c, mort:true };
   return { c, neuve };
 }
@@ -711,7 +775,7 @@ function finOdysseeRun(r, gagne) {
     if (k === 'abime' && !localStorage.getItem('guilde-odyssee-finie')) { localStorage.setItem('guilde-odyssee-finie', '1'); premiereFin = true; }
     if (k === 'abime' && typeof inscrirePantheon === 'function') { inscrit = inscrirePantheon(r.heros, r.asc || 0) ? 'nouveau' : 'encore'; briseMiroir = !!r.stats.miroir && recompensesRestantes().length > 0; }
   }
-  const rec = { quand:new Date().toISOString(), acte:r.acte || 'brulees', asc:r.asc || 0, heros:r.heros, gagne, score, cases:r.stats.cases, combats:r.stats.combats, victoires:r.stats.victoires, tours:r.stats.tours, defis:r.stats.defis, or:r.or, duree, graine:r.graine, pv:r.pv, etage, sansfin:!!r.sansfin, regle:r.sansfin ? r.sansfin.regle : null, aventure:r.aventure ? { chapitre:r.aventure.chapitre, niveau:r.aventure.niveau } : null };
+  const rec = { quand:new Date().toISOString(), acte:r.acte || 'brulees', asc:r.asc || 0, heros:r.heros, gagne, score, cases:r.stats.cases, combats:r.stats.combats, victoires:r.stats.victoires, tours:r.stats.tours, defis:r.stats.defis, or:r.or, duree, graine:r.graine, pv:r.pv, etage, sansfin:!!r.sansfin, route:!!r.route, regle:r.sansfin ? r.sansfin.regle : null, aventure:r.aventure ? { chapitre:r.aventure.chapitre, niveau:r.aventure.niveau } : null };
   if (typeof localStorage !== 'undefined') { const l = lireRecords(); l.unshift(rec); localStorage.setItem(RECORDS_CLE, JSON.stringify(l.slice(0, 50))); ecrireOdyssee(null); }
   return { ...rec, ajoutees, nouvelles:neuves, ascNouveau, premiereFin, inscrit, briseMiroir };
 }
