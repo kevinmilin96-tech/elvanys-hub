@@ -146,12 +146,13 @@ function dlAffiche() {
   if (!z) { z = document.createElement('div'); z.id = 'dlDirect'; document.body.appendChild(z); }
   z.innerHTML = `<div class="dl-band"><b>⏳ Tour de ${J.qui}</b> <small style="color:#ff6b6b">● en direct</small>
       <button onclick="if(confirm('Quitter le duel ? (tu pourras revenir dans la salle)'))location.href='menu.html#enligne'">⌂</button>
-      <div class="dl-der">${lignes.length ? lignes.slice(0, 2).map((t, i) => `<div class="${i < nouv ? 'neuf' : ''}">${t}</div>`).join('') : `${J.qui} réfléchit…`}</div></div>`;
+      <div class="dl-der">${lignes.length ? lignes.slice(0, 2).map((t, i) => `<div class="${i < nouv ? 'neuf' : ''}">${dlTexte(t, J.nom)}</div>`).join('') : `${J.qui} réfléchit…`}</div></div>`;
 }
 function dlDirectOff() { const z = document.getElementById('dlDirect'); if (z) z.remove(); }
 // 15/11 soir (l'utilisateur : « on ne voit pas l'écran en direct, on se retrouve à avoir perdu toute la vie sans rien voir ») :
 // pendant mon tour, la partie part au serveur après chaque action (au plus toutes les 1,2 s) ; l'ami voit le fil des actions et les deux vies.
 let dlVu = 0, dlPvVu = null, dlDirectT = null;
+const dlTexte = (t, nom) => String(t).replace(/^Tu lances/, nom + ' lance').replace(/^Tu relances/, nom + ' relance').replace(/^Tu /, nom + ' : ');
 function dlCarteH(H, qui) {
   const pct = Math.max(0, Math.min(100, 100 * H.pv / (H.pvMax || H.pv || 1)));
   return `<div class="dl-h"><img src="${IMG(H.id)}" alt="" style="box-shadow:0 0 0 3px ${H.c}"><small>${qui}</small><b>${H.nom}</b>
@@ -163,7 +164,7 @@ function dlResume(lignes) {
   fenetre(`<div style="text-align:center">
     <div class="dl-face">${dlCarteH(A, A.qui)}<b style="font-size:1.4em;color:#f3c96b">⚔</b>${dlCarteH(J, 'Toi')}</div>
     <h2 style="margin:6px 0">📜 Pendant le tour de ${A.qui}</h2>
-    <div class="dl-fil">${lignes.map(t => `<div>${t}</div>`).join('')}</div>
+    <div class="dl-fil">${lignes.map(t => `<div>${dlTexte(t, A.nom)}</div>`).join('')}</div>
     <div class="choixh"><button class="or" onclick="fermer();document.getElementById('app').style.visibility='';dessine();rendu();try{GM.son('portail')}catch(e){}">À moi de jouer</button></div></div>`, false);
 }
 function dlDirect() {
