@@ -61,7 +61,7 @@ const sceneAV = () => AV && AVENTURES[AV.id].scenes[AV.scene];
   .scn { position:relative; min-height:calc(100vh - 20px); border-radius:4cqw; overflow:hidden; padding:4cqw; animation:scnIn .7s ease-out; display:flex; flex-direction:column; }
   @keyframes scnIn { from { opacity:0; transform:scale(1.04); filter:blur(6px); } to { opacity:1; transform:none; filter:none; } }
   /* 15/11 nuit : les images reçues passent DEVANT le dégradé (avant, le dégradé opaque les cachait) */
-  .scn.taverne { background:linear-gradient(180deg, #0004, #0009), url('decor/scene-taverne.webp?v=1') center/cover, radial-gradient(ellipse at 50% 30%, #6a3a12cc, #1a0d06 75%); }
+  .scn.taverne { background:linear-gradient(180deg, #0004, #0009), url('decor/scene-taverne.webp?v=2') center/cover, radial-gradient(ellipse at 50% 30%, #6a3a12cc, #1a0d06 75%); }
   .scn.brume { background:linear-gradient(180deg, #0004, #0009), url('decor/scene-brume.webp?v=1') center/cover, radial-gradient(ellipse at 50% 40%, #8a8e9a, #2a2c34 80%); }
   .scn.marais { background:linear-gradient(180deg, #3a4a3a, #1a221c); }
   .scn.aube { background:linear-gradient(180deg, #0004, #0009), url('decor/scene-aube.webp?v=1') center/cover, radial-gradient(ellipse at 50% 20%, #ffd27a, #ff8a4a 40%, #3a1a3a 90%); }
