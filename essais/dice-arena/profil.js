@@ -74,6 +74,8 @@ function lireProfil() {
   const co = COULEURS_NOM.find(x => x[0] === p.couleur); if (!co || !condOk(co[2])) p.couleur = 'blanc';
   if (!FONDS[p.fond] || !condOk(FONDS[p.fond][2])) p.fond = 'nuit';
   p.vitrine = (p.vitrine || []).filter(k => gagnes.includes(k)).slice(0, 3);
+  // 15/11 (l'utilisateur : « il y a écrit Toi, je devrais retrouver mon pseudo en ligne ») : sans nom choisi, le pseudo de la carte de joueur
+  if (!(p.nom || '').trim()) { try { const c = JSON.parse(localStorage.getItem('guilde-carte') || 'null'); p.nom = (c && c.pseudo) || localStorage.getItem('guilde-pseudo') || ''; } catch (e) {} }
   return p;
 }
 function ecrireProfil(p) { localStorage.setItem(PROFIL_CLE, JSON.stringify({ nom:(p.nom || '').trim().slice(0, 18), cadre:p.cadre, titre:p.titre, portrait:p.portrait || null,

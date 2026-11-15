@@ -126,6 +126,7 @@ const GM = (() => {
         <div class="l"><span>🎵 Musique<input type="range" min="0" max="100" value="${Math.round(volM() * 100)}" data-v="guilde-vol-musique"></span><button class="t ${actif ? 'on' : ''}" data-k="m">${actif ? 'Allumée' : 'Éteinte'}</button></div>
         <div class="l"><span>🔊 Bruitages<input type="range" min="0" max="100" value="${Math.round(volS() * 100)}" data-v="guilde-vol-sons"></span><button class="t ${sonOn() ? 'on' : ''}" data-k="s">${sonOn() ? 'Allumés' : 'Éteints'}</button></div>
         <div class="l"><span>⚡ Vitesse des animations</span><button class="t on" data-k="v">${rapide() ? 'Rapide' : 'Normale'}</button></div>
+        <div class="l"><span>✅ Confirmer les actions en combat</span><button class="t ${localStorage.getItem('guilde-confirme-actions') !== 'non' ? 'on' : ''}" data-k="c">${localStorage.getItem('guilde-confirme-actions') !== 'non' ? 'Oui' : 'Non'}</button></div>
         ${window.GM_QUITTER ? `<button class="a q" data-k="q">🚪 ${window.GM_QUITTER.t}</button>` : ''}
         <a class="a" href="duel.html?tuto=1">🎓 Rejouer le tutoriel</a>
         <a class="a" href="#" onclick="Object.keys(localStorage).filter(k => k.startsWith('guilde-guide-') || k === 'guilde-exp-guide').forEach(k => localStorage.removeItem(k)); this.textContent = '🐱 C’est fait : Moustache vous guidera à nouveau'; return false">🐱 Revoir les guides de Moustache</a>
@@ -139,6 +140,7 @@ const GM = (() => {
         if (k === 'm') api.bascule();
         if (k === 's') { localStorage.setItem('guilde-son', sonOn() ? '0' : '1'); api.son('ok'); }
         if (k === 'v') localStorage.setItem('guilde-vitesse', rapide() ? 'normale' : 'rapide');
+        if (k === 'c') localStorage.setItem('guilde-confirme-actions', localStorage.getItem('guilde-confirme-actions') !== 'non' ? 'non' : 'oui'); // 15/11
         dessine();
       });
       z.addEventListener('change', e => { const v = e.target.dataset && e.target.dataset.v; if (!v) return; localStorage.setItem(v, e.target.value);
