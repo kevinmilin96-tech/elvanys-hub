@@ -89,6 +89,7 @@
 <script src="rang.js?v=20261115-134302"></script>
 <script src="heros-etoiles.js?v=20261115-134302"></script>
 <script src="progression-modes.js?v=20261115-134302"></script>
+<script src="aventuriers.js?v=20261115-133333"></script>
 <script src="chroniques-moteur.js?v=20261115-134302"></script>
 <script>
 // =============================================================================================== LES CHRONIQUES DE LA GUILDE v2 (15/11, écran « façon HeroQuest »)
@@ -106,6 +107,84 @@ const MEUBLE_E = { coffre:'🧰', armoire:'🗄️', tonneaux:'🛢️', tombeau
 function sauve() { try { if (S && !S.fin) localStorage.setItem(CLE_PARTIE, JSON.stringify(S)); else localStorage.removeItem(CLE_PARTIE); } catch (e) {} }
 const gardee = () => { try { const p = JSON.parse(localStorage.getItem(CLE_PARTIE) || 'null'); return p && p.heros && p.R && !p.fin ? p : null; } catch (e) { return null; } };
 function pointDePassage() { const c = JSON.parse(JSON.stringify(S)); delete c.passage; S.passage = JSON.stringify(c); }
+
+// ------------------------------------------------------------------ À DISTANCE : chacun son téléphone (15/11 ; serveur : routes /api/hub/guilde/partie, labo perso seulement)
+// L = null hors ligne ; sinon { code, version, joueurs:[{ id, nom, heros:[indices] }], moi:{ id, nom }, dernier:(JSON envoyé ou reçu) }.
+// Chaque coup est envoyé au serveur ; les autres téléphones le reçoivent en demandant l'état toutes les 2 secondes.
+// Chacun ne joue que SES héros ; tout le monde peut ouvrir une porte et finir le tour.
+let L = null, envoi = false;
+const API = '/api/hub/guilde/partie';
+const SALLE = 'guilde-salle';
+const mesHeros = () => !L ? S.heros.map((z, i) => i) : ((L.joueurs.find(j => j.id === L.moi.id) || {}).heros || []);
+const proprio = i => L ? (L.joueurs.find(j => (j.heros || []).includes(i)) || {}).nom : null;
+async function api(methode, url, corps) {
+  const r = await fetch(url, { method:methode, headers:{ 'Content-Type':'application/json' }, body:corps ? JSON.stringify(corps) : undefined });
+  let d = {}; try { d = await r.json(); } catch (e) {}
+  return { statut:r.status, d };
+}
+async function pousse() {
+  if (!L || envoi) return; envoi = true;
+  try {
+    const etat = S, j = JSON.stringify(S); L.dernier = j;
+    const { statut, d } = await api('POST', `${API}/${L.code}`, { version:L.version, etat, joueurs:L.joueurs });
+    if (statut === 200) L.version = d.version;
+    else if (statut === 409) { recoit(d); bulle('Quelqu’un a joué en même temps : partie mise à jour.', true); }
+    else bulle(d.message || 'Le serveur ne répond pas.', true);
+  } catch (e) { bulle('Pas de réseau : le coup n’est pas parti.', true); }
+  envoi = false;
+}
+function recoit(d) {
+  if (!d || !d.etat) return;
+  const avant = S && S.journal ? S.journal[0] : null;
+  S = d.etat; L.version = d.version; if (d.joueurs) L.joueurs = d.joueurs; L.dernier = JSON.stringify(S);
+  if (!mesHeros().includes(actif)) { const m = mesHeros().find(i => !S.heros[i].aTerre); if (m != null) actif = m; }
+  sel = null; dessine();
+  if (S.journal[0] && S.journal[0] !== avant) bulle(S.journal[0].replace(/^[^ ]+ /, ''));
+  if (S.fin) finPartie();
+}
+setInterval(async () => {
+  if (!L || envoi || occupe || document.hidden) return;
+  try { const { statut, d } = await api('GET', `${API}/${L.code}?v=${L.version}`); if (statut === 200 && !d.pareil) recoit(d); } catch (e) {}
+}, 2000);
+async function creerSalle() {
+  const nom = (prompt('Ton prénom (ou pseudo) pour tes amis :', localStorage.getItem('guilde-pseudo') || '') || '').trim().slice(0, 24); if (!nom) return;
+  localStorage.setItem('guilde-pseudo', nom);
+  S = K.nouvelle(equipeChoisie(), 'chron-' + Date.now()); pointDePassage(); actif = 0; sel = null; centrer = true;
+  const moi = { id:'j' + Math.random().toString(36).slice(2, 10), nom };
+  const joueurs = [{ id:moi.id, nom, heros:S.heros.map((z, i) => i) }];
+  try { const { statut, d } = await api('POST', API, { mode:'chroniques', etat:S, joueurs });
+    if (statut !== 200) { bulle(d.message || 'Impossible de créer la salle.', true); S = null; return; }
+    L = { code:d.code, version:d.version, joueurs, moi, dernier:JSON.stringify(S) };
+    localStorage.setItem(SALLE, JSON.stringify({ code:L.code, moi }));
+    dessine();
+    fenetre(`<h2>🌐 Ta salle est ouverte</h2><p style="text-align:center">Donne ce code à tes amis :</p><p style="text-align:center;font-size:2.6em;letter-spacing:.2em;color:var(--or);margin:6px 0"><b>${L.code}</b></p>
+      <p>Ils vont sur <b>perso.elvanys.fr/guilde</b> → <b>Les Chroniques</b> → <b>🔑 Rejoindre avec un code</b>. Quand ils arrivent, ils prennent leurs héros (tu les leur laisses). Tu peux commencer tout de suite.</p>
+      <button class="go" onclick="fenetre('');equipeEnLigne()">Voir qui joue quoi</button>`, false);
+  } catch (e) { bulle('Pas de réseau.', true); S = null; }
+}
+async function rejoindre(code, moi) {
+  code = (code || prompt('Le code de la salle (4 lettres) :') || '').toUpperCase().replace(/[^A-Z]/g, ''); if (code.length < 4) return;
+  if (!moi) { const nom = (prompt('Ton prénom (ou pseudo) :', localStorage.getItem('guilde-pseudo') || '') || '').trim().slice(0, 24); if (!nom) return; localStorage.setItem('guilde-pseudo', nom); moi = { id:'j' + Math.random().toString(36).slice(2, 10), nom }; }
+  try { const { statut, d } = await api('GET', `${API}/${code}`);
+    if (statut !== 200) { bulle(d.message || 'Code inconnu.', true); return; }
+    L = { code, version:d.version, joueurs:d.joueurs || [], moi, dernier:'' }; S = d.etat; actif = 0; sel = null; centrer = true;
+    if (!L.joueurs.some(j => j.id === moi.id)) L.joueurs.push({ id:moi.id, nom:moi.nom, heros:[] });
+    localStorage.setItem(SALLE, JSON.stringify({ code, moi }));
+    dessine(); await pousse(); equipeEnLigne();
+  } catch (e) { bulle('Pas de réseau.', true); }
+}
+// qui joue quel héros : on touche un héros pour le prendre
+function equipeEnLigne() {
+  if (!L) return;
+  fenetre(`<h2>🌐 Salle ${L.code}</h2><p style="text-align:center;color:var(--doux)">Touche un héros pour le jouer depuis ce téléphone.</p>
+    ${S.heros.map((z, i) => `<button class="sec" onclick="prendHeros(${i})"><b>${nomH(z)}</b> · ${(H[z.id] || {}).t || ''}<small>${proprio(i) ? 'joué par ' + proprio(i) + (mesHeros().includes(i) ? ' (toi)' : '') : 'libre'}</small></button>`).join('')}
+    <p style="color:var(--doux);font-size:.9em">Joueurs : ${L.joueurs.map(j => j.nom).join(', ')}</p><button class="go" onclick="fenetre('')">C’est bon</button>`);
+}
+function prendHeros(i) { L.joueurs.forEach(j => j.heros = (j.heros || []).filter(x => x !== i)); const m = L.joueurs.find(j => j.id === L.moi.id); m.heros.push(i); actif = i; L.dernier = ''; dessine(); equipeEnLigne(); }
+function quitterSalle() { L = null; localStorage.removeItem(SALLE); }
+const nomH = z => z.nom || (H[z.id] || {}).n || '?';
+const coulH = z => z.c || (H[z.id] || {}).c;
+const imgH = (z, cl) => `<img ${cl || ''} src="${z.portrait || `portraits/${z.id}.webp`}" onerror="this.onerror=null;this.src='portraits/${z.id}.webp'" alt="">`;
 
 // ------------------------------------------------------------------ le dessin
 const SCX = { ex:s => `${s.v}`, min:s => `≥ ${s.v}`, max:s => `≤ ${s.v}`, pair:() => '<small>pair</small>', imp:() => '<small>impair</small>', tot:s => `Σ ${s.reste}`, any:() => '✶' };
@@ -133,7 +212,7 @@ function dessine() {
       if (o && o.t === 'rouage') inner = '<span class="o">⚙️</span>'; }
     if (atteint[c]) cl += ' peut';
     const hi = S.heros.findIndex(z => z.x === x && z.y === y), m = R.monstres.find(z => z.x === x && z.y === y), B = R.boss && R.boss.x === x && R.boss.y === y ? R.boss : null;
-    if (hi >= 0) { const z = S.heros[hi]; inner += `<div class="jeton ${hi === actif ? 'actif' : ''} ${z.aTerre ? 'terre' : ''}" id="j-h${hi}" style="--c:${H[z.id].c}"><img src="portraits/${z.id}.webp" alt=""><span class="pv">${z.aTerre ? '✋' : '❤' + z.pv}${z.bouclier ? '🛡' + z.bouclier : ''}${z.porte ? '⚙' : ''}</span></div>`; }
+    if (hi >= 0) { const z = S.heros[hi]; inner += `<div class="jeton ${hi === actif ? 'actif' : ''} ${z.aTerre ? 'terre' : ''}" id="j-h${hi}" style="--c:${coulH(z)}">${imgH(z)}<span class="pv">${z.aTerre ? '✋' : '❤' + z.pv}${z.bouclier ? '🛡' + z.bouclier : ''}${z.porte ? '⚙' : ''}</span></div>`; }
     const mm = B || m;
     if (mm && vu) { const it = mm.it === 'frappe' ? `⚔${mm.att}` : mm.it === 'garde' ? '🛡' : mm.it === 'soin' ? '💚' : mm.it === 'fuit' ? '🏃' : mm.it === 'remonte' ? '⏳' : '';
       inner += `<div class="jeton ${B ? 'boss' : ''}" id="j-${mm.id}" style="--c:${B ? '#ff7a4a' : K.BETES[mm.b].elite ? '#f3c96b' : '#8a98b8'}"><img src="portraits/m-${mm.img}.webp" alt=""><span class="it">${it}</span><span class="sc">🔒${mm.sceaux.filter(s => !s.ok).length}</span></div>`;
@@ -145,15 +224,15 @@ function dessine() {
   const posee = R.rouagesPoses, portes = S.heros.filter(z => z.porte).length;
   const ancienne = $('vue') ? [$('vue').scrollLeft, $('vue').scrollTop] : null;
   $('app').innerHTML = `
-    <div class="haut"><a href="#" onclick="quitter();return false">‹ Quitter</a><span class="t">⏳ Le Sommeil de l’Horloger</span><button onclick="regles()">❓</button></div>
+    <div class="haut"><a href="#" onclick="quitter();return false">‹ Quitter</a><span class="t">⏳ Le Sommeil de l’Horloger</span>${L ? `<button onclick="equipeEnLigne()">🌐 ${L.code}</button>` : ''}<button onclick="regles()">❓</button></div>
     <div class="stats"><span>⌛ <b>${S.sablier}</b></span><span>⚙ <b>${posee}</b>/3 posés${portes ? ` · ${portes} porté${portes > 1 ? 's' : ''}` : ''}</span><span>${R.bronze ? '🚪 bronze ouverte' : '🔒 bronze'}</span><span>${S.livre ? '📕 ✓' : '📕 —'}</span><span>⭐ <b>${S.score}</b></span></div>
     <div class="but">${R.boss ? `⏰ <b>L’Horloger</b> · « ${K.PHASES[R.boss.phase].n} » : il ${K.PHASES[R.boss.phase].d}. ${R.boss.repos ? 'Ce tour-ci il se repose.' : '<b style="color:#ff8a7a">Ce tour-ci il frappe !</b>'}`
       : posee + portes >= 3 || S.rouagesTrouves >= 3 ? 'Portez les rouages jusqu’à l’axe ✹ du Cœur de l’Horloge (derrière la porte de bronze).' : 'Explorez : ouvrez les portes (gratuit, à côté), fouillez les meubles (un dé) pour trouver <b>3 rouages ⚙</b>. Les 4 leviers de la Salle des rouages ouvrent la porte de bronze.'}</div>
     <div style="position:relative"><div class="vue" id="vue"><div class="plateau" style="grid-template-columns:repeat(${R.w}, ${t});--t:${t}">${cases}</div></div>
       <button class="zoom haut" style="position:absolute;right:2cqw;bottom:2cqw;padding:1cqw 2.4cqw;border-radius:20px;background:#1c1c36cc;border:1px solid #45457a;color:var(--doux)" onclick="petit=!petit;centrer=true;dessine()">${petit ? '🔍 Zoom' : '🗺 Carte'}</button></div>
-    <div class="equipe">${S.heros.map((z, i) => `<button class="${i === actif ? 'on' : ''} ${z.aTerre ? 'terre' : ''}" onclick="choisitHeros(${i})"><img src="portraits/${z.id}.webp" alt="">${H[z.id].n.replace('Sire ', '')}<br>${z.aTerre ? '✋ à terre' : `❤${z.pv} · 🎲${z.des.length}`}</button>`).join('')}</div>
-    <div class="des">${h.aTerre ? `<span class="aide">${H[h.id].n} est à terre : un ami à côté peut le relever avec un dé.</span>` : h.des.map(z => `<button class="de ${sel === z.id ? 'sel' : ''}" onclick="choisitDe('${z.id}')"><img src="faces-${h.id}/face-${z.v}.webp" alt="${z.v}"></button>`).join('') || '<span class="aide">Plus de dés pour ce héros : passe au suivant.</span>'}</div>
-    <div class="aide">${d ? 'Touche une <b>case verte</b> pour bouger, un <b>monstre</b> pour frapper, un <b>meuble</b> pour le fouiller, un <b>ami</b> pour protéger / donner / soigner, un <b>levier</b>, le <b>livre</b> ou l’<b>axe</b>.' : `<b>${H[h.id].n}</b> · ${H[h.id].t} : ${H[h.id].d} <br>Une <b>porte</b> à côté s’ouvre d’un toucher, sans dé.`}</div>
+    <div class="equipe">${S.heros.map((z, i) => `<button class="${i === actif ? 'on' : ''} ${z.aTerre ? 'terre' : ''}" onclick="choisitHeros(${i})">${imgH(z)}${nomH(z).replace('Sire ', '')}<br>${z.aTerre ? '✋ à terre' : `❤${z.pv} · 🎲${z.des.length}`}</button>`).join('')}</div>
+    <div class="des">${h.aTerre ? `<span class="aide">${nomH(h)} est à terre : un ami à côté peut le relever avec un dé.</span>` : h.des.map(z => `<button class="de ${sel === z.id ? 'sel' : ''}" onclick="choisitDe('${z.id}')"><img src="faces-${h.id}/face-${z.v}.webp" alt="${z.v}"></button>`).join('') || '<span class="aide">Plus de dés pour ce héros : passe au suivant.</span>'}</div>
+    <div class="aide">${d ? 'Touche une <b>case verte</b> pour bouger, un <b>monstre</b> pour frapper, un <b>meuble</b> pour le fouiller, un <b>ami</b> pour protéger / donner / soigner, un <b>levier</b>, le <b>livre</b> ou l’<b>axe</b>.' : `<b>${nomH(h)}</b> · ${H[h.id].t} : ${H[h.id].d} <br>Une <b>porte</b> à côté s’ouvre d’un toucher, sans dé.`}</div>
     <div class="actions">${d ? '<button onclick="cherche()">🔍 Pièges</button>' : ''}<button class="fin" onclick="finTour()">Fin du tour ▶</button></div>
     <div class="journal">${S.journal.slice(0, 6).map(l => `<div>${l}</div>`).join('')}</div>`;
   // la carte suit le héros actif (sauf si on vient de la déplacer à la main)
@@ -161,11 +240,12 @@ function dessine() {
   if (centrer && e) { V.scrollLeft = e.offsetLeft - V.clientWidth / 2 + e.offsetWidth / 2; V.scrollTop = e.offsetTop - V.clientHeight / 2 + e.offsetHeight / 2; centrer = false; }
   else if (ancienne) { V.scrollLeft = ancienne[0]; V.scrollTop = ancienne[1]; }
   sauve();
+  if (L && JSON.stringify(S) !== L.dernier) pousse();
 }
 
 // ------------------------------------------------------------------ les gestes
 function choisitHeros(i) { if (occupe) return; actif = i; sel = null; centrer = true; son('choisir'); dessine(); }
-function choisitDe(id) { if (occupe) return; sel = sel === id ? null : id; son('choisir'); dessine(); }
+function choisitDe(id) { if (occupe) return; if (L && !mesHeros().includes(actif)) { bulle(`${nomH(S.heros[actif])} est joué par ${proprio(actif) || 'personne'} : touche 🌐 pour le prendre.`, true); return; } sel = sel === id ? null : id; son('choisir'); dessine(); }
 function resultat(r) {
   if (r && r.ok) { sel = null;
     if (r.point) pointDePassage();
@@ -209,13 +289,13 @@ function frappeMenu(m) {
 function frappeSceau(id, k) { fenetre(''); const r = K.frapper(S, actif, sel, id, k); if (r && r.ok) { son('coup'); flash('j-' + id); } resultat(r); }
 function amiMenu(i) {
   const h = S.heros[actif], z = S.heros[i], d = deSel(), moi = i === actif, b = [];
-  if (z.aTerre) b.push(`<button class="sec" onclick="fenetre('');resultat(K.relever(S,actif,sel,${i}))">✋ Relever ${H[z.id].n}<small>Il revient avec 4 PV.</small></button>`);
+  if (z.aTerre) b.push(`<button class="sec" onclick="fenetre('');resultat(K.relever(S,actif,sel,${i}))">✋ Relever ${nomH(z)}<small>Il revient avec 4 PV.</small></button>`);
   else {
-    b.push(`<button class="sec" onclick="fenetre('');son('bouclier');resultat(K.proteger(S,actif,sel,${i}))">🛡 Protéger ${moi ? '(soi-même)' : H[z.id].n}<small>Bouclier ${Math.ceil(d.v / 2) + 1}${h.id === 'aldric' ? ', pour lui et tous ses voisins' : ''} jusqu’au prochain coup.</small></button>`);
-    if (h.id === 'pip') b.push(`<button class="sec" onclick="fenetre('');resultat(K.soigner(S,actif,sel,${i}))">🌿 Soigner ${moi ? '(soi-même)' : H[z.id].n}<small>+${d.v} PV.</small></button>`);
-    if (!moi) b.push(`<button class="sec" onclick="fenetre('');son('carte');resultat(K.donner(S,actif,sel,${i}))">🤝 Donner ce ${d.v} à ${H[z.id].n}<small>Il pourra le poser (il doit être à côté).</small></button>`);
+    b.push(`<button class="sec" onclick="fenetre('');son('bouclier');resultat(K.proteger(S,actif,sel,${i}))">🛡 Protéger ${moi ? '(soi-même)' : nomH(z)}<small>Bouclier ${Math.ceil(d.v / 2) + 1}${h.id === 'aldric' ? ', pour lui et tous ses voisins' : ''} jusqu’au prochain coup.</small></button>`);
+    if (h.id === 'pip') b.push(`<button class="sec" onclick="fenetre('');resultat(K.soigner(S,actif,sel,${i}))">🌿 Soigner ${moi ? '(soi-même)' : nomH(z)}<small>+${d.v} PV.</small></button>`);
+    if (!moi) b.push(`<button class="sec" onclick="fenetre('');son('carte');resultat(K.donner(S,actif,sel,${i}))">🤝 Donner ce ${d.v} à ${nomH(z)}<small>Il pourra le poser (il doit être à côté).</small></button>`);
   }
-  fenetre(`<h2>${H[z.id].n}</h2>${b.join('')}<button class="sec" onclick="fenetre('')">Annuler</button>`);
+  fenetre(`<h2>${nomH(z)}</h2>${b.join('')}<button class="sec" onclick="fenetre('')">Annuler</button>`);
 }
 function infoMonstre(m) {
   const it = { frappe:`⚔ va frapper (${m.att})`, garde:'🛡 va refermer un de ses sceaux', soin:'💚 va réparer un autre monstre', fuit:'🏃 va s’enfuir', remonte:'⏳ remonte son ressort' }[m.it] || '';
@@ -228,7 +308,7 @@ async function finTour() {
   occupe = true; sel = null;
   const ev = K.finTour(S); dessine();
   for (const e of ev) {
-    if (e.t === 'frappe') { son('coup'); flash('j-' + e.m); flash('j-h' + e.h); bulle(`⚔ ${H[S.heros[e.h].id].n} −${e.v}`, true); await attends(450); }
+    if (e.t === 'frappe') { son('coup'); flash('j-' + e.m); flash('j-h' + e.h); bulle(`⚔ ${nomH(S.heros[e.h])} −${e.v}`, true); await attends(450); }
     else if (e.t === 'boss') { son('gros'); bulle('⏰ L’Horloger agit !'); await attends(500); }
   }
   occupe = false; actif = Math.max(0, S.heros.findIndex(z => !z.aTerre)); centrer = true;
@@ -260,9 +340,11 @@ function regles() {
 }
 
 // ------------------------------------------------------------------ fin, quitter, recommencer
-function quitter() { sauve(); S = null; fenetre(''); accueil(); }
+function quitter() { sauve(); S = null; L = null; fenetre(''); accueil(); }
 function finPartie() {
-  sauve(); const gagne = S.fin === 'gagne'; let objet = null;
+  sauve(); const gagne = S.fin === 'gagne'; let objet = null, niv = [];
+  S.heros.forEach(z => { if (z.av && avTrouve(z.av)) { const g = avGagneXP(z.av, gagne ? 120 : 40, gagne); if (g) niv.push(nomH(z)); } });
+  if (niv.length) setTimeout(() => bulle(`⬆ Niveau gagné : ${niv.join(', ')} ! (à forger dans la Forge des héros)`), 900);
   if (gagne) { son('victoire'); try { GM.jingle('victoire'); } catch (e) {} S.heros.forEach(z => { if (typeof guildeEvt === 'function') guildeEvt('boss', 1, { heros:z.id }); }); objet = butinArmurerie(S.sablier > 0 ? 3 : 1, S.score);
     try { const D = JSON.parse(localStorage.getItem(CLE) || '{}'); D.horloger = (D.horloger || 0) + 1; if (S.sablier > 0) D.gardiens = true; localStorage.setItem(CLE, JSON.stringify(D)); } catch (e) {} }
   else { try { GM.jingle('defaite'); } catch (e) {} }
@@ -273,7 +355,7 @@ function finPartie() {
       <button class="go" onclick="recommence()">↺ Repartir de la dernière porte ouverte</button><button class="sec" onclick="fin()">Abandonner</button>`, false);
 }
 function recommence() { if (!S.passage) { const h = S.heros.map(z => z.id); S = K.nouvelle(h, 'chron-' + Date.now()); } else S = JSON.parse(S.passage); actif = 0; sel = null; centrer = true; fenetre(''); dessine(); }
-function fin() { try { localStorage.removeItem(CLE_PARTIE); } catch (e) {} S = null; fenetre(''); accueil(); }
+function fin() { try { localStorage.removeItem(CLE_PARTIE); } catch (e) {} if (L) quitterSalle(); S = null; fenetre(''); accueil(); }
 
 // ------------------------------------------------------------------ l'accueil
 function accueil() {
@@ -283,17 +365,33 @@ function accueil() {
     <div class="haut"><a href="menu.html">‹ Menu</a><span class="t"></span><button onclick="regles()">❓ Règles</button></div>
     <h1>📜 Les Chroniques de la Guilde</h1>
     <p class="sous">Jusqu’à 4 héros, un donjon dans le noir, des portes à ouvrir, des meubles à fouiller, une histoire. Un seul téléphone : passez-le à celui dont c’est le tour.</p>
-    ${g ? `<button class="gros" style="border-color:var(--ok);color:var(--ok);background:#14322a" onclick="reprend()">▶ Reprendre la partie<small>${g.heros.map(z => H[z.id].n).join(', ')} · ⚙ ${g.R.rouagesPoses}/3 · ⌛ ${g.sablier}</small></button>` : ''}
+    ${g ? `<button class="gros" style="border-color:var(--ok);color:var(--ok);background:#14322a" onclick="reprend()">▶ Reprendre la partie<small>${g.heros.map(z => nomH(z)).join(', ')} · ⚙ ${g.R.rouagesPoses}/3 · ⌛ ${g.sablier}</small></button>` : ''}
     <p style="text-align:center;color:var(--or);margin:4cqw 0 2cqw">Scénario 1 · ⏳ Le Sommeil de l’Horloger · 45-60 min${D.horloger ? ` · ✓ réussi ${D.horloger} fois${D.gardiens ? ' · 🏅 Gardiens du temps' : ''}` : ''}</p>
     <p style="text-align:center;color:var(--doux);font-size:3cqw;margin:0 0 2cqw">Choisis de 1 à 4 héros (un par joueur ; seul, tu peux en jouer plusieurs).</p>
+    <h3 style="color:var(--or);margin:3cqw 0 1.5cqw">⚒ Tes héros d’aventure</h3>
+    <div class="choixH">${avLire().map(a => { const s = avStats(a); return `<button class="${choisis.includes('av:' + a.id) ? 'on' : ''}" onclick="basculeHeros('av:${a.id}')"><img src="${avPortrait(a)}" onerror="this.onerror=null;this.src='${avPortraitSecours(a)}'" alt="" style="box-shadow:0 0 0 3px ${a.couleur}">${a.nom}<small>${avTitre(a)} · niv. ${s.niveau}</small></button>`; }).join('')}
+      <button onclick="location.href='aventuriers.html?retour=chroniques.html'">＋<small>Créer un héros dans la Forge des héros</small></button></div>
+    <h3 style="color:var(--or);margin:3cqw 0 1.5cqw">Les héros de la Guilde</h3>
     <div class="choixH">${Object.entries(H).map(([k, h]) => `<button class="${choisis.includes(k) ? 'on' : ''}" ${k === 'zephine' && !ZEPH_OK() ? 'disabled' : ''} onclick="basculeHeros('${k}')"><img src="portraits/${k}.webp" alt="">${h.n}<small>${h.t}</small>${k === 'zephine' && !ZEPH_OK() ? '<small>🔒 tutoriel</small>' : ''}</button>`).join('')}</div>
-    <button class="gros" ${choisis.length ? '' : 'disabled'} onclick="commence()">⚔ Commencer avec ${choisis.length} héros<small>${choisis.map(k => H[k].n).join(', ') || 'choisis au moins un héros'}</small></button>
+    <button class="gros" ${choisis.length ? '' : 'disabled'} onclick="commence()">⚔ Commencer avec ${choisis.length} héros<small>${choisis.map(nomChoix).join(', ') || 'choisis au moins un héros'}</small></button>
+    <h3 style="color:var(--or);text-align:center;margin:5cqw 0 1cqw">🌐 Chacun chez soi</h3>
+    <button class="gros" style="background:#14223a;border-color:#7cd4ff;color:#7cd4ff" ${choisis.length ? '' : 'disabled'} onclick="creerSalle()">🌐 Créer une partie à distance<small>Avec les héros choisis ci-dessus ; un code de 4 lettres à donner à tes amis.</small></button>
+    <button class="gros" style="background:#1c1c36;border-color:#45457a;color:var(--texte)" onclick="rejoindre()">🔑 Rejoindre avec un code<small>Un ami t’a donné un code de salle.</small></button>
+    ${(() => { try { const s = JSON.parse(localStorage.getItem(SALLE) || 'null'); return s ? `<button class="gros" style="background:#14322a;border-color:var(--ok);color:var(--ok)" onclick='rejoindre(${JSON.stringify(s.code)}, ${JSON.stringify(s.moi)})'>↩ Revenir dans la salle ${s.code}<small>en tant que ${s.moi.nom}</small></button>` : ''; } catch (e) { return ''; } })()}
     <p style="text-align:center;margin-top:4cqw"><a href="chroniques-v1.html" style="color:var(--doux);font-size:3cqw">l’ancienne version (salles séparées)</a></p>
   </div>`;
 }
+// un choix de l'accueil → ce que le moteur attend (une voie, ou un héros d'aventure avec ses stats)
+const nomChoix = k => k.startsWith('av:') ? ((avTrouve(k.slice(3)) || {}).nom || '?') : H[k].n;
+function versMoteur(k) {
+  if (!k.startsWith('av:')) return k;
+  const a = avTrouve(k.slice(3)); if (!a) return null; const s = avStats(a);
+  return { voie:a.voie, nom:a.nom, pv:s.pv, faces:s.faces, desPlus:s.desPlus, av:a.id, c:a.couleur, portrait:avPortrait(a) };
+}
+const equipeChoisie = () => choisis.map(versMoteur).filter(Boolean);
 function basculeHeros(k) { if (choisis.includes(k)) choisis = choisis.filter(x => x !== k); else if (choisis.length < 4) choisis.push(k); else { bulle('4 héros au plus', true); return; } son('choisir'); accueil(); }
 function commence() {
-  if (!choisis.length) return; S = K.nouvelle(choisis.slice(), 'chron-' + Date.now()); pointDePassage(); actif = 0; sel = null; centrer = true; son('portail'); dessine();
+  if (!choisis.length) return; S = K.nouvelle(equipeChoisie(), 'chron-' + Date.now()); pointDePassage(); actif = 0; sel = null; centrer = true; son('portail'); dessine();
   fenetre(`<h2>⏳ Le Sommeil de l’Horloger</h2><div class="moust"><img src="ui/moustache.webp" alt=""><div class="lu">${OUVERTURE}</div></div><div class="moust"><img src="ui/moustache.webp" alt=""><div class="lu">${K.SALLES.A.lu}</div></div><button class="go" onclick="fenetre('')">On y va !</button>`, false);
 }
 function reprend() { const g = gardee(); if (!g) return; S = g; actif = Math.max(0, S.heros.findIndex(z => !z.aTerre)); sel = null; centrer = true; dessine(); }
