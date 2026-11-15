@@ -57,6 +57,7 @@
   .actions { display:flex; gap:2cqw; margin-top:1cqw; }
   .actions button { flex:1; border-radius:3cqw; padding:2.4cqw; font-size:3.4cqw; font-weight:bold; border:2px solid #45457a; background:#1c1c36; }
   .actions .fin { background:var(--or); color:#2b1d0a; border-color:var(--or); }
+  .sac { display:flex; gap:1.5cqw; justify-content:center; flex-wrap:wrap; margin:0 0 1cqw; font-size:2.8cqw; } .sac button { background:#2a2a14; border:1px solid #8a7a3a; border-radius:2cqw; padding:1cqw 2cqw; color:#ffe9a8; }
   .journal { font-size:2.7cqw; color:#9a92c4; margin-top:2cqw; max-height:18cqw; overflow:auto; } .journal div { padding:.3cqw 0; border-bottom:1px solid #22223a; }
   /* ---------------------------------------------------------------- fenêtres */
   .voile-f { position:fixed; inset:0; background:#000c; z-index:50; display:flex; align-items:center; justify-content:center; padding:4vw; }
@@ -249,6 +250,7 @@ function dessine() {
       <button class="zoom haut" style="position:absolute;right:2cqw;bottom:2cqw;padding:1cqw 2.4cqw;border-radius:20px;background:#1c1c36cc;border:1px solid #45457a;color:var(--doux)" onclick="petit=!petit;centrer=true;dessine()">${petit ? '🔍 Zoom' : '🗺 Carte'}</button></div>
     <div class="equipe">${S.heros.map((z, i) => `<button class="${i === actif ? 'on' : ''} ${z.aTerre ? 'terre' : ''}" onclick="choisitHeros(${i})">${imgH(z)}${nomH(z).replace('Sire ', '')}<br>${z.aTerre ? '✋ à terre' : `❤${z.pv} · 🎲${z.des.length}`}</button>`).join('')}</div>
     <div class="des">${h.aTerre ? `<span class="aide">${nomH(h)} est à terre : un ami à côté peut le relever avec un dé.</span>` : h.des.map(z => `<button class="de ${sel === z.id ? 'sel' : ''}" onclick="choisitDe('${z.id}')"><img src="faces-${h.id}/face-${z.v}.webp" alt="${z.v}"></button>`).join('') || '<span class="aide">Plus de dés pour ce héros : passe au suivant.</span>'}</div>
+    ${!h.aTerre && h.sac && h.sac.length ? `<div class="sac">🎒 ${h.sac.map((it, k) => `<button onclick="utiliseSac(${k})">${K.SAC[it].e} ${K.SAC[it].n.replace(/^Une? /, '')}</button>`).join('')}</div>` : ''}
     <div class="aide">${d ? 'Touche une <b>case verte</b> pour bouger, un <b>monstre</b> pour frapper, un <b>meuble</b> pour le fouiller, un <b>ami</b> pour protéger / donner / soigner, un <b>levier</b>, le <b>livre</b> ou l’<b>axe</b>.' : `<b>${nomH(h)}</b> · ${H[h.id].t} : ${H[h.id].d} <br>Une <b>porte</b> à côté s’ouvre d’un toucher, sans dé.`}</div>
     <div class="actions">${d ? '<button onclick="cherche()">🔍 Pièges</button>' : ''}<button class="fin" onclick="finTour()">Fin du tour ▶</button></div>
     <div class="journal">${S.journal.slice(0, 6).map(l => `<div>${l}</div>`).join('')}</div>`;
@@ -288,6 +290,8 @@ function touche(x, y) {
     const qui = [actif, ...S.heros.map((z, i) => i)].find(i => !S.heros[i].aTerre && K.dist(S.heros[i], { x, y }) === 1);
     son('porte'); return resultat(K.ouvrir(S, qui == null ? actif : qui, x, y)); }
   const hi = S.heros.findIndex(z => z.x === x && z.y === y), m = R.monstres.find(z => z.x === x && z.y === y), B = R.boss && R.boss.x === x && R.boss.y === y ? R.boss : null;
+  if (sacEnCours != null && (m || B)) { const k = sacEnCours; sacEnCours = null; son('ultime'); return resultat(K.utiliser(S, actif, k, B ? 'boss' : m.id)); }
+  sacEnCours = null;
   if (!d) { if (hi >= 0) return choisitHeros(hi); if (m || B) return infoMonstre(B || m); const o = R.obj[c]; if (o && o.meuble) bulle(o.fouille ? 'Déjà fouillé.' : 'Choisis un dé pour fouiller.'); return; }
   if (m || B) return frappeMenu(B || m);
   if (hi >= 0) return amiMenu(hi);
@@ -295,6 +299,16 @@ function touche(x, y) {
   if ((o && (o.meuble || o.t === 'levier' || o.t === 'livre')) || R.murs[c] === 'A') return resultat(K.agir(S, actif, sel, x, y));
   if (K.atteignables(S, h, d.v)[c]) { son('pas'); centrer = true; return resultat(K.bouger(S, actif, sel, x, y)); }
   bulle('Trop loin pour ce dé.', true);
+}
+// le sac : potion (soi ou un ami à côté), parchemin (un monstre à 4 cases : on touche le monstre ensuite), fumigène (tout de suite)
+let sacEnCours = null;
+function utiliseSac(k) {
+  const h = S.heros[actif], it = h.sac[k];
+  if (L && !mesHeros().includes(actif)) return bulle(`${nomH(h)} est joué par ${proprio(actif) || 'personne'}.`, true);
+  if (it === 'fumee') { son('magie'); return resultat(K.utiliser(S, actif, k)); }
+  if (it === 'potion') { const amis = S.heros.map((z, i) => i).filter(i => i === actif || K.voisins(S.heros[i], h));
+    return fenetre(`<h2>🧪 La potion de soin</h2>${amis.map(i => `<button class="sec" onclick="fenetre('');son('soin');resultat(K.utiliser(S,actif,${k},${i}))">${i === actif ? 'Pour soi' : 'Pour ' + nomH(S.heros[i])} <small>❤ ${S.heros[i].pv}/${S.heros[i].pvmax}${S.heros[i].aTerre ? ' · à terre : la potion le relève' : ''}</small></button>`).join('')}<button class="sec" onclick="fenetre('')">Annuler</button>`); }
+  if (it === 'parchemin') { sacEnCours = k; sel = null; bulle('📜 Touche le monstre à brûler (4 cases au plus).'); dessine(); }
 }
 function cherche() { if (!sel) return; son('livre'); resultat(K.fouiller(S, actif, sel)); }
 function frappeMenu(m) {
@@ -309,7 +323,7 @@ function amiMenu(i) {
   if (z.aTerre) b.push(`<button class="sec" onclick="fenetre('');resultat(K.relever(S,actif,sel,${i}))">✋ Relever ${nomH(z)}<small>Il revient avec 4 PV.</small></button>`);
   else {
     b.push(`<button class="sec" onclick="fenetre('');son('bouclier');resultat(K.proteger(S,actif,sel,${i}))">🛡 Protéger ${moi ? '(soi-même)' : nomH(z)}<small>Bouclier ${Math.ceil(d.v / 2) + 1}${h.id === 'aldric' ? ', pour lui et tous ses voisins' : ''} jusqu’au prochain coup.</small></button>`);
-    if (h.id === 'pip') b.push(`<button class="sec" onclick="fenetre('');resultat(K.soigner(S,actif,sel,${i}))">🌿 Soigner ${moi ? '(soi-même)' : nomH(z)}<small>+${d.v} PV.</small></button>`);
+    if (h.id === 'pip' || (h.talents || []).includes('guerisseur')) b.push(`<button class="sec" onclick="fenetre('');resultat(K.soigner(S,actif,sel,${i}))">🌿 Soigner ${moi ? '(soi-même)' : nomH(z)}<small>+${d.v} PV.</small></button>`);
     if (!moi) b.push(`<button class="sec" onclick="fenetre('');son('carte');resultat(K.donner(S,actif,sel,${i}))">🤝 Donner ce ${d.v} à ${nomH(z)}<small>Il pourra le poser (il doit être à côté).</small></button>`);
   }
   fenetre(`<h2>${nomH(z)}</h2>${b.join('')}<button class="sec" onclick="fenetre('')">Annuler</button>`);
@@ -404,7 +418,7 @@ const nomChoix = k => k.startsWith('av:') ? ((avTrouve(k.slice(3)) || {}).nom ||
 function versMoteur(k) {
   if (!k.startsWith('av:')) return k;
   const a = avTrouve(k.slice(3)); if (!a) return null; const s = avStats(a);
-  return { voie:a.voie, nom:a.nom, pv:s.pv, faces:s.faces, desPlus:s.desPlus, av:a.id, c:a.couleur, portrait:avPortrait(a) };
+  return { voie:a.voie, nom:a.nom, pv:s.pv, faces:s.faces, desPlus:s.desPlus, talents:s.talents, av:a.id, c:a.couleur, portrait:avPortrait(a) };
 }
 const equipeChoisie = () => choisis.map(versMoteur).filter(Boolean);
 function basculeHeros(k) { if (choisis.includes(k)) choisis = choisis.filter(x => x !== k); else if (choisis.length < 4) choisis.push(k); else { bulle('4 héros au plus', true); return; } son('choisir'); accueil(); }

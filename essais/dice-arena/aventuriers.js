@@ -18,6 +18,14 @@ const AV_NOMS = ['Brann', 'Elva', 'Toric', 'Lysa', 'Corwin', 'Maëva', 'Hugo le 
 // niveaux : XP pour atteindre le niveau n (1 à 6) ; chaque niveau donne +2 PV et 1 point de forge ; au niveau 4, un dé de plus
 const AV_SEUILS = [0, 0, 100, 250, 450, 700, 1000];
 const AV_MAX = 6;
+// les TALENTS : aux niveaux 2, 4 et 6, on en choisit un sur deux (pour que deux héros de la même voie ne se ressemblent pas)
+const TALENTS = {
+  2:[['robuste', '💪 Robuste', '+4 PV.'], ['eclaireur', '🥾 Pied léger', '+1 case à chaque déplacement.']],
+  4:[['protecteur', '🛡 Protecteur', 'Quand il protège, le bouclier donné est plus fort de 2.'], ['chanceux', '🍀 Chanceux', 'Les pièges cachés dans les meubles ne le touchent jamais.']],
+  6:[['brute', '🔨 Coup puissant', 'Quand il frappe avec un 5 ou un 6, il brise DEUX sceaux.'], ['guerisseur', '🌿 Herboriste', 'Il sait soigner : un dé rend la moitié de sa valeur en PV (à lui ou à un voisin).']],
+};
+const avTalents = a => Object.values(a.talents || {});
+function avChoisitTalent(id, niv, k) { return !!avMaj(id, a => { if (avNiveau(a.xp) < niv) return; a.talents = a.talents || {}; a.talents[niv] = k; }); }
 
 function avLire() { try { return JSON.parse(localStorage.getItem(AV_CLE) || '[]'); } catch (e) { return []; } }
 function avEcrire(l) { try { localStorage.setItem(AV_CLE, JSON.stringify(l)); } catch (e) {} }
@@ -41,7 +49,7 @@ function avForge(id, k) { return !!avMaj(id, a => { if (a.points < 1 || a.faces[
 // ce que le héros apporte en jeu
 function avStats(a) {
   const n = avNiveau(a.xp), base = { maelle:15, aldric:16, pip:12, oria:15, gorm:16, zephine:15 }[a.voie] || 15;
-  return { niveau:n, pv:base + 2 * (n - 1), desPlus:n >= 4 ? 1 : 0, faces:a.faces.slice() };
+  return { niveau:n, pv:base + 2 * (n - 1) + (avTalents(a).includes('robuste') ? 4 : 0), desPlus:n >= 4 ? 1 : 0, faces:a.faces.slice(), talents:avTalents(a) };
 }
 // le portrait : ceux de la galerie (Gemini) s'ils existent, sinon le héros modèle de la voie
 const avPortrait = a => `portraits/av-${a.voie}-${a.genre}.webp`;

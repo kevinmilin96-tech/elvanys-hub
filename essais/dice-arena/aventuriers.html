@@ -54,8 +54,8 @@ function liste() {
   const L = avLire();
   $('app').innerHTML = `<div class="haut"><a href="${retour}">‹ Retour</a><h1>⚒ La Forge des héros</h1><a href="menu.html">Menu</a></div>
     <p class="sous">Crée TON héros d’aventure, comme dans un jeu de rôle : une voie, un nom, un portrait, un dé que tu forges en montant de niveau. Il garde tout d’une aventure à l’autre.</p>
-    ${L.map(a => { const s = avStats(a), n = s.niveau, prochain = AV_SEUILS[n + 1];
-      return `<div class="fiche" style="--c:${a.couleur}">${img(a)}<div style="flex:1"><b>${a.nom}</b><small>${avTitre(a)} · niveau ${n} · ❤ ${s.pv}${s.desPlus ? ' · 🎲 +1 dé' : ''}${a.points ? ` · <span style="color:var(--ok)">⚒ ${a.points} point${a.points > 1 ? 's' : ''} à forger</span>` : ''}</small>
+    ${L.map(a => { const s = avStats(a), n = s.niveau, prochain = AV_SEUILS[n + 1], aChoisir = [2, 4, 6].filter(v => n >= v && !(a.talents || {})[v]).length;
+      return `<div class="fiche" style="--c:${a.couleur}">${img(a)}<div style="flex:1"><b>${a.nom}</b><small>${avTitre(a)} · niveau ${n} · ❤ ${s.pv}${s.desPlus ? ' · 🎲 +1 dé' : ''}${a.points ? ` · <span style="color:var(--ok)">⚒ ${a.points} point${a.points > 1 ? 's' : ''} à forger</span>` : ''}${aChoisir ? ` · <span style="color:var(--ok)">✨ talent à choisir</span>` : ''}</small>
         <div class="barre"><i style="width:${n >= AV_MAX ? 100 : Math.round(100 * (a.xp - AV_SEUILS[n]) / (prochain - AV_SEUILS[n]))}%"></i></div><small>${n >= AV_MAX ? 'niveau maximum' : `${a.xp} / ${prochain} XP`} · ${a.victoires}/${a.parties} aventures réussies</small></div>
         <button class="sec" onclick="fiche('${a.id}')">Ouvrir</button></div>`; }).join('') || '<p class="sous">Pas encore de héros d’aventure.</p>'}
     <button class="go" onclick="nouveau()">＋ Créer un héros d’aventure</button>`;
@@ -77,10 +77,13 @@ function fiche(id) {
     <div class="fiche" style="--c:${a.couleur}">${img(a, 96)}<div><b>${a.nom}</b><small>${avTitre(a)} · niveau ${s.niveau}</small><small>❤ ${s.pv} PV · 🎲 ${({ gorm:4 }[a.voie] || 3) + s.desPlus} dés</small><small>${VOIES[a.voie].role}</small></div></div>
     <div class="bloc"><b style="color:var(--or)">⚒ Son dé personnel</b><p class="sous" style="text-align:left;margin:4px 0">Chaque niveau donne un <b>point de forge</b> : touche une face pour lui ajouter 1 (jusqu’à 6). Un dé avec plus de grosses faces frappe plus fort et ouvre plus de sceaux. Points à dépenser : <b style="color:var(--ok)">${a.points}</b>.</p>
       <div class="de">${a.faces.map((v, k) => `<button class="${a.points && v < 6 ? 'peut' : ''}" onclick="forge('${a.id}',${k})"><img src="faces-${a.voie}/face-${v}.webp" alt="${v}"><span>${k + 1}</span></button>`).join('')}</div></div>
+    <div class="bloc"><b style="color:var(--or)">✨ Ses talents</b><p class="sous" style="text-align:left;margin:4px 0">Aux niveaux 2, 4 et 6, choisis un talent sur deux.</p>
+      ${[2, 4, 6].map(niv => `<p style="margin:8px 0 4px"><b>Niveau ${niv}</b>${s.niveau < niv ? ' <small style="color:var(--doux)">(pas encore atteint)</small>' : ''}</p><div class="grille" style="grid-template-columns:1fr 1fr">${TALENTS[niv].map(([k, n, d]) => `<button class="${(a.talents || {})[niv] === k ? 'on' : ''}" ${s.niveau < niv ? 'disabled style="opacity:.4"' : ''} onclick="talent('${a.id}',${niv},'${k}')">${n}<small>${d}</small></button>`).join('')}</div>`).join('')}</div>
     <div class="bloc"><b style="color:var(--or)">📈 Les niveaux</b><p class="sous" style="text-align:left;margin:4px 0">Une aventure réussie : 120 XP ; une aventure ratée : 40 XP. Chaque niveau : +2 PV et un point de forge. Au niveau 4 : un dé de plus.</p>
       <p style="margin:0">${[2, 3, 4, 5, 6].map(n => `${s.niveau >= n ? '✅' : '⬜'} niveau ${n} (${AV_SEUILS[n]} XP)`).join('<br>')}</p></div>
     <button class="sec" style="margin-top:14px" onclick="if(confirm('Effacer ${a.nom.replace(/'/g, '')} pour toujours ?')){avSupprime('${a.id}');liste()}">🗑 Effacer ce héros</button>`;
 }
+function talent(id, niv, k) { if (avChoisitTalent(id, niv, k)) son('magie'); fiche(id); }
 function forge(id, k) { if (avForge(id, k)) son('tour-fusion'); fiche(id); }
 if (typeof GM !== 'undefined') { try { GM.musique('menu'); GM.bouton(); } catch (e) {} }
 liste();
