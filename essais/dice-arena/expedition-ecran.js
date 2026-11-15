@@ -328,6 +328,7 @@ function guidePort(force) {
 }
 // ----------------------------------------------------------------------------------------------- fin, journal, records
 function finExp() {
+  if (!X.journalEnvoye && typeof guildeJournal === 'function') { X.journalEnvoye = true; guildeJournal('expedition', { heros:X.heros + (X.av ? ' (aventure)' : ''), resultat:X.fini, journal:X.journal || [], resume:{ escales:X.victoires, coeurs:X.coeurs, or:X.or, diff:X.diff } }); } // 15/11 soir : carnet des parties
   const gagne = X.fini === 'gagne', parfait = gagne && X.coeurs === 3, score = Math.round((X.victoires * 100 + X.coeurs * 100 + X.or + (gagne ? 300 : 0) + (parfait ? 200 : 0)) * ((DIFF_EXP[X.diff] || DIFF_EXP.normal).pts));
   const l = lireRec(); l.unshift({ quand:new Date().toISOString(), heros:X.heros, av:X.av || null, nom:avX() ? avX().nom : null, diff:X.diff || 'normal', gagne, parfait, score, escales:X.victoires, coeurs:X.coeurs, duree:Math.round((Date.now() - X.debut) / 60000) });
   localStorage.setItem(CLE + '-records', JSON.stringify(l.slice(0, 50))); localStorage.removeItem(CLE); if (gagne) typeof guildeEvt === 'function' && guildeEvt('titan', 1, { heros:progX(), voie:X.heros });

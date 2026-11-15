@@ -481,6 +481,7 @@ function regles() {
 // ------------------------------------------------------------------ fin, quitter, recommencer
 function quitter() { sauve(); S = null; L = null; fenetre(''); accueil(); }
 function finPartie() {
+  if (S && !S.journalEnvoye && typeof guildeJournal === 'function') { S.journalEnvoye = true; guildeJournal(S.aventure ? 'chroniques-aventure' : 'chroniques', { heros:(S.heros || []).map(z => z.id || z.voie || '').join(','), resultat:S.fin, journal:[...(S.journal || [])].reverse(), resume:{ scen:S.scen, campagne:S.campagne, tour:S.tour } }); } // 15/11 soir : carnet des parties
   if (S.aventure && typeof aventureFinCombat === 'function') return aventureFinCombat();
   sauve(); const gagne = S.fin === 'gagne'; let objet = null, niv = [];
   S.heros.forEach(z => { if (z.av && avTrouve(z.av)) { const g = avGagneXP(z.av, gagne ? 120 : 40, gagne); if (g) niv.push(nomH(z)); } });

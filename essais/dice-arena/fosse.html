@@ -478,6 +478,7 @@ function regles(enJeu) {
 }
 function fin(gagne) {
   if (!J || J.fini) return; J.fini = true; J.etat = 'fin';
+  if (typeof guildeJournal === 'function') guildeJournal('fosse', { heros:J.heros + (J.av ? ' (aventure)' : ''), resultat:gagne ? 'gagne' : 'perdu', resume:{ temps:Math.floor(J.t), score:J.score, tues:J.tues, niveau:J.niv, pv:J.pv, pvmax:J.pvmax, combos:J.combos || 0, sceaux:J.sceauxBrises || 0, ameliorations:J.lv, faces:J.faces, suivi:J.fs } }); // 15/11 soir : carnet des parties
   const et = gagne ? 1 + (J.pv >= J.pvmax / 3 ? 1 : 0) + (J.pv >= J.pvmax * .66 ? 1 : 0) : 0;
   const D = lire(); D.parties++; if (gagne) D.victoires++; D.meilleur = Math.max(D.meilleur, J.score); D.meilleurTemps = Math.max(D.meilleurTemps, Math.floor(J.t)); ecrire(D);
   let objet = null;

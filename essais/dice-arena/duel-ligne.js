@@ -273,6 +273,7 @@ const _montrerFinLigne = montrerFin;
 montrerFin = function () {
   if (!S || !S.ligne) return _montrerFinLigne();
   if (!S.ligneFin) { S.ligneFin = true; dlPousse(); }
+  if (DL && S.ligneHote === DL.moi.id && typeof journalCombat === 'function') journalCombat(); // une seule fois (le téléphone de l'hôte)
   if (S.deuxFinVu) return; S.deuxFinVu = true;
   // 15/11 soir : le duel à distance va aussi dans « Mes parties » (avant : rien, impossible de relire le combat)
   try { if (typeof enregistrePartie === 'function') enregistrePartie(); } catch (e) {}

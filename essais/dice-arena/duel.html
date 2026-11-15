@@ -1957,7 +1957,15 @@ function copieParties(journal, i) {
   navigator.clipboard.writeText(t).then(() => { document.getElementById('copie').textContent = 'Copié ✓ : collez-le dans la discussion avec Claude.'; })
     .catch(() => { document.getElementById('copie').textContent = 'Copie impossible sur ce téléphone.'; });
 }
+// 15/11 soir : le carnet des parties (musique.js) : chaque combat fini envoie son journal (une fois)
+function journalCombat() {
+  if (!S || S.auto || S.journalEnvoye || typeof guildeJournal !== 'function') return; S.journalEnvoye = true;
+  const mode = S.ody ? 'odyssee-combat' : S.coop ? 'invasion' : S.ligne ? 'duel-ami' : S.deux ? 'duel-deux' : S.tuto ? 'tutoriel' : S.enigme ? 'enigme' : S.semaine ? 'duel-semaine' : 'duel';
+  guildeJournal(mode, { heros:S.J.id + (S.J.av ? ' (aventure)' : ''), resultat:S.fini, journal:[...S.log].reverse(),
+    resume:{ contre:S.O.id, nomContre:S.O.nom, tours:S.J.tours, pvMoi:Math.max(0, S.J.pv), pvMaxMoi:S.J.pvMax, pvContre:Math.max(0, S.O.pv), pvMaxContre:S.O.pvMax, salle:S.salle && S.salle.n, ultimeMoi:!!S.J.ultimeFait, ultimeContre:!!S.O.ultimeFait, ile:S.ody && S.ody.titre } });
+}
 function montrerFin() {
+  journalCombat();
   if (S.ody) { finOdyssee(); return; }
   if (S.coop) { if (S.enregistre) return; S.enregistre = true; if (S.fini === 'gagne') typeof guildeEvt === 'function' && guildeEvt('invasion_acte', 1); if (S.fini === 'gagne' && S.choix) { try { const v = JSON.parse(localStorage.getItem('guilde-invasion') || '{}'); v[S.choix] = (v[S.choix] || 0) + 1; localStorage.setItem('guilde-invasion', JSON.stringify(v)); } catch (e) {} } arreteMusique(1.2); son(S.fini === 'gagne' ? 'victoire' : 'defaite'); effetImage(S.fini === 'gagne' ? 'victoire' : 'defaite', document.getElementById('app'), 2.2);
     chronique([(CHRON_CAMP_B[S.O.id] || CHRON_CAMP)[S.fini === 'gagne' ? 'victoire' : 'defaite']], () => fenetre(`<h2>${S.fini === 'gagne' ? '🏆 Le boss est tombé !' : '💀 Le campement est perdu…'}</h2><p>${S.equipe.map(h => `${h.nom} : ${h.aTerre ? 'à terre' : h.pv + ' PV'}`).join(' · ')} · ${S.O.nom} : ${Math.max(0, S.O.pv)} PV · ${S.equipe[0].tours} tours.</p><div class="choixh"><button onclick="location.href='campement.html'">🔥 Rejouer</button><button onclick="location.href='menu.html'">⌂ Menu</button></div>`)); return; }

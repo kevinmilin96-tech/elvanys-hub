@@ -453,6 +453,7 @@ function regles() {
 
 // ------------------------------------------------------------------ fin d'une partie
 function finPartie() {
+  if (S && !S.journalEnvoye && typeof guildeJournal === 'function') { S.journalEnvoye = true; guildeJournal(typeof DR !== 'undefined' && DR ? 'descente-combat' : 'crypte', { heros:S.heros, resultat:S.fin, journal:[...(S.journal || [])].reverse(), resume:{ score:S.score, pv:S.pv, tour:S.tour, variante:S.variante, etage:S.etage } }); } // 15/11 soir : carnet des parties
   if (typeof DR !== 'undefined' && DR) return descenteFinCombat();
   const D = lire(), gagne = S.fin === 'gagne', et = C.etoiles(S);
   D.parties++; if (gagne) D.victoires++; D.meilleur = Math.max(D.meilleur, S.score);
