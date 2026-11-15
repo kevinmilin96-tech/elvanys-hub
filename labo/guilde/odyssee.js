@@ -639,7 +639,9 @@ function nouvelleOdyssee(heros, graine, acte, niveau, avent) {
   if (asc(run, 10)) { run.pvMax = Math.round(run.pvMax * .9); run.pv = run.pvMax; }
   if (typeof pantheonDepart === 'function') pantheonDepart(run);
   // 14/11 nuit : les étoiles et l'équipement du héros (heros-etoiles.js) ; la Grande aventure gère son équipement elle-même
-  // 15/11 soir : le suivi des ennemis (run.fs) n'est PAS encore activé ici : à mesurer d'abord au simulateur (la Défense a montré qu'un suivi mal réglé rend un mode impossible)
+  // 15/11 soir : les ennemis suivent la force du héros, à 30 % (mesuré : débutant 72 %, héros niveau 50 ≈ 83 %, niveau 250 ≈ 86 % ;
+  // suivi entier = 8-58 %, beaucoup trop dur). Pas encore dans la Grande aventure (elle ne donne pas les PV du héros : à mesurer à part).
+  if (!avent && typeof forceSuiveuse === 'function' && typeof localStorage !== 'undefined') { const f = forceSuiveuse(run.av || heros); if (f > 1.05) run.fs = Math.round((1 + 0.3 * (f - 1)) * 100) / 100; }
   if (!avent && typeof bonusHerosPvE === 'function' && typeof localStorage !== 'undefined') { const b = bonusHerosPvE(run.av || heros); if (b.pv) { run.pvMax += b.pv; run.pv += b.pv; }
     run.equipH = equipHeros(run.av || heros); if (run.equipH.armure === 'heaume') { run.pvMax += valEquip('heaume'); run.pv += valEquip('heaume'); }
     if (run.equipH.armure === 'cape') run.vivres += valEquip('cape');
