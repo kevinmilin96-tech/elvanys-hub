@@ -206,6 +206,7 @@ function dlNoteFX() {
   S.fxLog = S.fxLog || []; S.fxSeq = S.fxSeq || 0;
   FX.forEach(e => { if (e._n) return; e._n = ++S.fxSeq; try { if (e.t !== 'recap' && e.t !== 'desO') S.fxLog.push({ n:e._n, e:dlCopie(e) }); } catch (x) {} });
   if (S.fxLog.length > 60) S.fxLog = S.fxLog.slice(-60);
+  dlFxVu = Math.max(dlFxVu || 0, S.fxSeq); // mes propres animations, je les ai déjà vues : jamais rejouées chez moi quand la partie me revient
 }
 const dlInverse = o => Array.isArray(o) ? o.map(dlInverse) : o && typeof o === 'object' ? Object.fromEntries(Object.entries(o).map(([k, v]) => [k, k === 's' && (v === 'J' || v === 'O') ? (v === 'J' ? 'O' : 'J') : dlInverse(v)])) : o;
 let dlFxVu = null, dlJoue = false, dlAttente = null;
