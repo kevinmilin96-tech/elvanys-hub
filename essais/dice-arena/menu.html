@@ -248,6 +248,7 @@ const PRO = { // dessins provisoires : [émoji, fond, lueur]
   defense:['🏰', 'linear-gradient(180deg, #2a1d10 0%, #5a3a1a 45%, #1f3b2b 46%, #14281d 100%)', '#7dffb0'],
   semaine:['🗓️', 'linear-gradient(180deg, #3a1f5c 0%, #7a3a8a 45%, #e7c48a 46%, #c99a5b 100%)', '#f3c96b'],
   enigme:['🧩', 'linear-gradient(180deg, #14213d 0%, #2b3a67 50%, #e9c46a 100%)', '#ffe08a'],
+  rdv:['🗓️', 'linear-gradient(180deg, #14213d 0%, #3a1f5c 50%, #e9c46a 100%)', '#ffe08a'], // 15/11 soir : les rendez-vous (dessin provisoire)
   route:['🛤', 'linear-gradient(180deg, #2b1d4a 0%, #a8432c 40%, #c2411e 62%, #2a1a0a 100%)', '#ffb347'], // 15/11 soir : la Route du Titan (dessin provisoire)
   abime:['🌀','radial-gradient(circle at 50% 70%, #6d28d9 0%, #1e0b3a 50%, #05020d 100%)', '#a855f7'],
 };
@@ -263,7 +264,7 @@ const ABIME_OK = (() => { try { return !!JSON.parse(localStorage.getItem('guilde
 const ETAGES = {
   '':{ titre:'Le monde de la Guilde', sous:'Glisse, puis touche un portail pour y entrer.', portes:[
     { cat:'duels', nom:'L’Arène', pro:'arene', vers:'arene', desc:'Les Duels : un héros contre un autre. Dés, cartes, créatures : le premier à zéro perd.' },
-    { cat:'amis', nom:'En ligne', pro:'enligne', vers:'enligne', desc:'NOUVEAU · Jouer avec tes amis, chacun sur son téléphone : Duel contre un ami, les Chroniques entre amis, tes amis en ligne.' },
+    { cat:'amis', nom:'Entre amis', pro:'enligne', vers:'enligne', desc:'Jouer avec tes amis : chacun sur son téléphone (Duel contre un ami, les Chroniques à distance), ou à deux sur le même (Contre un proche). Tes amis en ligne.' },
     { cat:'aventure', nom:'L’Odyssée', pro:'odyssee', vers:'odyssee', desc:'Seul sur une île : explore case par case, fais grandir ton deck, vaincs le gardien de l’île.' },
     { cat:'aventure', nom:'Expéditions', pro:'expeditions', href:'expedition.html', desc:'Le navire volant : recrute ton équipage, donne tes ordres aux dés, et vogue d’escale en escale jusqu’au Nid du Titan.' },
     { cat:'amis', nom:'L’Invasion', pro:'invasion', vers:'invasion', desc:'À deux (sur ce téléphone ou avec un compagnon) contre les vagues de ton livre : l’Éveil de l’Abîme, le Réveil des Primordiaux, et les grands boss.' },
@@ -272,19 +273,19 @@ const ETAGES = {
     { cat:'amis', nom:'Les Chroniques', pro:'chroniques', href:'chroniques.html', desc:'NOUVEAU · Jusqu’à 4 héros entre amis sur un seul téléphone : un donjon dans le noir façon HeroQuest, des portes à ouvrir, des meubles à fouiller, une histoire racontée par Moustache. Scénario 1 : le Sommeil de l’Horloger.' },
     { cat:'defis', nom:'La Fosse aux Runes', pro:'fosse', href:'fosse.html', desc:'NOUVEAU · Tes balles sont des dés : renvoie-les avec ton bouclier, chaque rebond change leur face. Quand ils forment un combo (paire, brelan, suite, carré…), déclenche-le au bon moment. Tiens 5 minutes jusqu’au Titan.' },
     // 15/11 soir (décision de l'utilisateur) : les modes « en attente » reviennent au menu principal, rangés par catégorie
+    // 15/11 soir (l'utilisateur) : l'énigme du jour et le Duel de la semaine réunis dans un portail spécial
+    { cat:'defis', nom:'Les rendez-vous', pro:'rdv', vers:'rdv', desc:`Ce qui change chaque jour et chaque semaine : l’énigme du jour, et le Duel de la semaine (« ${regleDeLaSemaine().n} »).` },
     { cat:'defis', nom:'Défense de la porte', pro:'defense', href:'defense.html', desc:'Les monstres descendent vers la porte de la Guilde : tes dés deviennent des tours, deux tours identiques fusionnent, deux 6 éveillent une Rune. 6 héros, et un mode vagues sans fin.' },
-    { cat:'defis', nom:'L’énigme du jour', pro:'enigme', href:'duel.html?enigme=1', desc:'Tes dés sont lancés, ta main est prête : trouve le coup parfait qui fait tomber l’adversaire en un seul tour. Une nouvelle chaque jour, de plus en plus dure du lundi au dimanche.' },
-    { cat:'duels', nom:'Le Duel de la semaine', pro:'semaine', href:'duel.html?semaine=1', desc:`Cette semaine : « ${regleDeLaSemaine().n} ». ${regleDeLaSemaine().d} Gagne pour le Sceau de la semaine.` },
-    { cat:'duels', nom:'Contre un proche', pro:'proche', href:'duel.html?deux=1', desc:'À deux sur le même téléphone : chacun son héros, on se passe le téléphone à chaque tour.' },
     { cat:'collection', nom:'Le Panthéon', pro:'pantheon', href:'pantheon.html', desc:'Le Tableau d’honneur, tes titres, les récompenses du défi Brise-Miroir et tes trophées de tous les modes.' },
-    { cat:'collection', nom:'Tour des héros', pro:'tour', href:'heros.html', desc:'Les six héros, leurs pouvoirs, leurs dés et leurs cartes. Prépare ton deck.' },
-    { cat:'collection', nom:'Mes héros', pro:'tour', href:'mes-heros.html', desc:'NOUVEAU · Tous tes héros (Guilde et aventure) façon jeu de héros : niveau avec l’or et la poussière de rune, rang avec les éclats (Commun → Ascendant ★★★★★), 6 pièces d’équipement à améliorer et fusionner, la récolte du campement.' },
+    // 15/11 soir (l'utilisateur : « Mes héros et la Tour des héros font la même chose ») : un seul portail ; la fiche de chaque héros mène à son histoire, ses pouvoirs et son deck
+    { cat:'collection', nom:'Mes héros', pro:'tour', href:'mes-heros.html', desc:'Tous tes héros (Guilde et aventure) : niveau, rang, équipement, et pour chacun son histoire, ses pouvoirs, ses dés et son deck.' },
   ] },
   // 15/11 (l'utilisateur : « il faut un endroit en ligne, avec les portails possibles en multijoueur »)
-  enligne:{ titre:'En ligne', sous:'Avec tes amis, chacun sur son téléphone.', portes:[
+  enligne:{ titre:'Entre amis', sous:'Avec tes amis : chacun sur son téléphone, ou à deux sur le même.', portes:[
     { nom:'Duel contre un ami', pro:'duelami', href:'duel.html?ami=1', desc:'Une salle, un code ou une invitation : chacun choisit son héros, et l’Arène se joue à distance, tour par tour.' },
     { nom:'Les Chroniques entre amis', pro:'chroniques', href:'chroniques.html?ligne=1', desc:'Une salle d’attente : tu choisis le scénario ou la campagne, chacun ajoute son héros, tu lances pour tout le monde.' },
     { nom:'Rejoindre avec un code', pro:'codesalle', href:'chroniques.html?code=1', desc:'Un ami t’a donné un code de salle (duel ou Chroniques) : entre-le ici.' },
+    { nom:'Contre un proche', pro:'proche', href:'duel.html?deux=1', desc:'À deux sur le même téléphone : chacun son héros, on se passe le téléphone à chaque tour.' },
     { nom:'Mes amis', pro:'amis', href:'menu.html?amis=1#enligne', desc:'Ton code ami, tes amis en ligne, leurs salles, et les invitations.' },
   ] },
   arene:{ titre:'L’Arène des Duels', sous:'Contre qui veux-tu te battre ?', portes:[
@@ -307,6 +308,10 @@ const ETAGES = {
     { nom:'Le Panthéon', pro:'pantheon', href:'pantheon.html', desc:'Le Tableau d’honneur, tes titres, les récompenses du défi Brise-Miroir et tes trophées de tous les modes.' },
     { nom:'Le Duel de la semaine', pro:'semaine', href:'duel.html?semaine=1', desc:`Cette semaine : « ${regleDeLaSemaine().n} ». ${regleDeLaSemaine().d} Gagne pour le Sceau de la semaine.` },
     { nom:'Contre un proche', pro:'proche', href:'duel.html?deux=1', desc:'À deux sur le même téléphone : chacun son héros, on se passe le téléphone à chaque tour.' },
+  ] },
+  rdv:{ titre:'Les rendez-vous', sous:'Une énigme chaque jour, une règle nouvelle chaque semaine.', portes:[
+    { nom:'L’énigme du jour', pro:'enigme', href:'duel.html?enigme=1', desc:'Tes dés sont lancés, ta main est prête : trouve le coup parfait qui fait tomber l’adversaire en un seul tour. Une nouvelle chaque jour, de plus en plus dure du lundi au dimanche.' },
+    { nom:'Le Duel de la semaine', pro:'semaine', href:'duel.html?semaine=1', desc:`Cette semaine : « ${regleDeLaSemaine().n} ». ${regleDeLaSemaine().d} Gagne pour le Sceau de la semaine.` },
   ] },
   odyssee:{ titre:'L’Odyssée', sous:'Quelle île veux-tu explorer ?', portes:[
     { nom:'Terres brûlées', fx:'lave', img:'menu-recu/ody-terres-brulees.webp', href:'odyssee.html', desc:'Acte I · L’île de cendre et de lave, gardée par le Titan de feu. C’est ici que commence la Grande aventure : les 3 îles à la suite, avec niveaux et équipement.' },
@@ -428,7 +433,7 @@ function profilMenu() {
   const bt = (t, f) => `<button style="text-align:left;background:none;border:0;color:#f1ecff;font:inherit;padding:9px 10px;border-radius:10px;cursor:pointer" onclick="document.getElementById('profil-menu').remove();${f}">${t}</button>`;
   m.innerHTML = bt('👤 Mon profil', "try{sessionStorage.setItem('guilde-dans-mode','1')}catch(e){};location.href='profil.html'")
     + bt(`👥 Mes amis${dem ? ` <b style="color:#ff5a5a">· ${dem} demande${dem > 1 ? 's' : ''}</b>` : n ? ` <b style="color:#7dffb0">· ${n} en ligne</b>` : ''}`, 'amisFenetre()')
-    + bt('🌐 Jouer en ligne', "location.hash='enligne'")
+    + bt('🤝 Entre amis', "location.hash='enligne'")
     + bt('🏰 Mes héros', "try{sessionStorage.setItem('guilde-dans-mode','1')}catch(e){};location.href='mes-heros.html'");
   document.body.appendChild(m);
   setTimeout(() => document.addEventListener('click', function f(e) { if (!m.contains(e.target) && e.target.id !== 'profil-bouton') { m.remove(); document.removeEventListener('click', f); } }), 0);
