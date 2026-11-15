@@ -27,6 +27,13 @@
   /* 15/11 soir : le Labyrinthe des Runes a son sol et ses murs (s'ils sont déjà peints ; sinon ceux des Terres brûlées) */
   .laby .c { background:url('decor/tuile-sol-labyrinthe.webp') 0 0 / calc(var(--t) * 4) calc(var(--t) * 4), url('decor/tuile-sol-brulees.webp') 0 0 / calc(var(--t) * 4) calc(var(--t) * 4); }
   .laby .c.mur { background:url('decor/tuile-mur-labyrinthe.webp') 0 0 / calc(var(--t) * 4) calc(var(--t) * 4), url('decor/tuile-roche-brulees.webp') 0 0 / calc(var(--t) * 4) calc(var(--t) * 4); }
+  /* 15/11 soir : les salles de l'Horloge ont leur sol et leurs murs peints */
+  .horloge .c { background:url('decor/tuile-sol-horloge.webp?v=1') 0 0 / calc(var(--t) * 4) calc(var(--t) * 4); }
+  .horloge .c.mur { background:url('decor/tuile-mur-horloge.webp?v=1') 0 0 / calc(var(--t) * 4) calc(var(--t) * 4); filter:brightness(.55) saturate(.9); }
+  .horloge .c.porte.ouverte { background:url('decor/tuile-sol-horloge.webp?v=1') 0 0 / calc(var(--t) * 4) calc(var(--t) * 4); }
+  .c .oi { width:88%; height:88%; object-fit:contain; filter:drop-shadow(0 .4cqw .5cqw #000c); pointer-events:none; } .c .oi.fait { opacity:.4; filter:grayscale(1); } .c .oi.baisse { transform:rotate(180deg); }
+  .c .cad { position:absolute; right:2%; bottom:2%; font-size:calc(var(--t) * .34); }
+  .c.porte.img { background-color:transparent; box-shadow:none; }
   .c.mur { background:url('decor/tuile-roche-brulees.webp') 0 0 / calc(var(--t) * 4) calc(var(--t) * 4); filter:brightness(.3) saturate(.6); }
   .c:not(.mur):not(.noir) { filter:brightness(1.15); }
   .c.noir { background:#05050a !important; filter:none; } .c.noir > * { display:none; }
@@ -116,6 +123,9 @@ const CLE_PARTIE = 'guilde-chroniques2-partie', CLE = 'guilde-chroniques';
 const son = k => { try { if (typeof GM !== 'undefined') GM.son(k); } catch (e) {} };
 let S = null, actif = 0, sel = null, choisis = ['maelle', 'aldric', 'pip', 'gorm'], occupe = false, petit = false, centrer = true;
 const OUVERTURE = '« Vous avez entendu ? Moi non plus. C’est bien ça le problème : la Grande Horloge de la Guilde ne fait plus tic-tac. Le boulanger est figé, la main dans la pâte. Le pigeon du toit est figé, en plein vol. Quelqu’un doit descendre sous la Guilde, retrouver trois rouages perdus et réveiller l’Horloger. Pas moi : j’ai des pattes courtes. »';
+// 15/11 soir : les meubles et objets peints (decor/obj-<nom>.webp, fond détouré) ; sinon l'émoji
+const OBJ_PEINTS = ['coffre', 'armoire', 'tonneaux', 'tombeau', 'etabli', 'cheminee', 'etagere', 'levier', 'rouage', 'axe', 'porte'];
+const objImg = (n, cl) => OBJ_PEINTS.includes(n) ? `<img class="oi ${cl || ''}" src="decor/obj-${n}.webp?v=1" alt="">` : null;
 const MEUBLE_E = { coffre:'🧰', armoire:'🗄️', tonneaux:'🛢️', tombeau:'🪦', etabli:'🛠️', cheminee:'🔥', lit:'🛏️', tente:'⛺', etagere:'📚', bureau:'🪑', banc:'🪑', autel:'🕯️', fontaine:'⛲', cristaux:'💎' };
 // 15/11 : deux scénarios ; « brulees » se joue sur la CARTE PEINTE (decor/carte-brulees.webp), calée par l'utilisateur
 let scenChoisi = 'horloger';
@@ -275,17 +285,17 @@ function dessine() {
     let cl = 'c', inner = '';
     if (!vu) cl += ' noir';
     else if (peint) cl += ' peint';
-    else if (p) { cl += ' porte' + (p.ouverte ? ' ouverte' : '') + (p.bronze ? ' bronze' : ''); if (!p.ouverte) inner = `<span class="o">${p.bronze && !R.bronze ? '🔒' : '🚪'}</span>`; }
+    else if (p) { cl += ' porte' + (p.ouverte ? ' ouverte' : '') + (p.bronze ? ' bronze' : '') + (p.ouverte ? '' : ' img'); if (!p.ouverte) inner = objImg('porte', p.bronze ? 'bronze' : '') + (p.bronze && !R.bronze ? '<span class="cad">🔒</span>' : ''); }
     else if (mur === '#') cl += ' mur';
     else if (mur === '~') inner = `<span class="o">${S.scen === 'arene' ? '🌳' : '🪨'}</span>`; // 15/11 soir : les obstacles (arbres d'une embuscade, rochers) se voient
-    else if (mur === 'M' && o) inner = `<span class="o ${o.fouille ? 'fait' : ''}">${MEUBLE_E[o.t] || '📦'}</span>`;
-    else if (mur === 'L' && o) inner = `<span class="o">${R.leviersTour[c] ? '⬇️' : '🎚️'}</span><span class="lv">≥${o.v}</span>`;
-    else if (mur === 'B') inner = '<span class="o">📚</span>';
+    else if (mur === 'M' && o) inner = objImg(o.t, o.fouille ? 'fait' : '') || `<span class="o ${o.fouille ? 'fait' : ''}">${MEUBLE_E[o.t] || '📦'}</span>`;
+    else if (mur === 'L' && o) inner = `${objImg('levier', R.leviersTour[c] ? 'baisse' : '')}<span class="lv">≥${o.v}</span>`;
+    else if (mur === 'B') inner = objImg('etagere');
     else if (mur === 'K') inner = '<span class="o">📕</span>';
-    else if (mur === 'A') inner = `<span class="o">${K.SCEN[S.scen || 'horloger'].axeE}</span><span class="lv">${R.rouagesPoses}/3</span>`;
+    else if (mur === 'A') inner = `${(S.scen || 'horloger') === 'horloger' ? objImg('axe') : `<span class="o">${K.SCEN[S.scen || 'horloger'].axeE}</span>`}<span class="lv">${R.rouagesPoses}/3</span>`;
     else { if (!R.salle[c]) cl += ' couloir';
       if (o && o.t === 'piege' && !o.trouve && (o.vu || voitPieges || S.heros.some(z => z.id === 'oria' && Math.abs(z.x - x) + Math.abs(z.y - y) <= 2))) inner = '<span class="o">⚠️</span>';
-      if (o && o.t === 'rouage') inner = '<span class="o">⚙️</span>'; }
+      if (o && o.t === 'rouage') inner = objImg('rouage'); }
     if (atteint[c]) cl += ' peut';
     const hi = S.heros.findIndex(z => z.x === x && z.y === y), m = R.monstres.find(z => z.x === x && z.y === y), B = R.boss && R.boss.x === x && R.boss.y === y ? R.boss : null;
     if (hi >= 0) { const z = S.heros[hi]; inner += `<div class="jeton ${hi === actif ? 'actif' : ''} ${z.aTerre ? 'terre' : ''}" id="j-h${hi}" style="--c:${coulH(z)}">${imgH(z)}<span class="pv">${z.aTerre ? '✋' : '❤' + z.pv}${z.bouclier ? '🛡' + z.bouclier : ''}${z.porte ? '⚙' : ''}</span></div>`; }
@@ -304,7 +314,7 @@ function dessine() {
     <div class="stats"><span>⌛ <b>${S.sablier}</b></span>${S.scen === 'arene' ? `<span>👹 <b>${R.monstres.length}</b> monstre${R.monstres.length > 1 ? 's' : ''}</span>` : `<span>${K.SCEN[S.scen || 'horloger'].objet.e} <b>${posee}</b>/3 posés${portes ? ` · ${portes} porté${portes > 1 ? 's' : ''}` : ''}</span>`}${(S.scen || 'horloger') === 'horloger' ? `<span>${R.bronze ? '🚪 bronze ouverte' : '🔒 bronze'}</span><span>${S.livre ? '📕 ✓' : '📕 —'}</span>` : ''}<span>⭐ <b>${S.score}</b></span></div>
     <div class="but">${R.boss ? `⏰ <b>${R.boss.n}</b> · « ${K.SCEN[S.scen || 'horloger'].phases[R.boss.phase]} » : il ${K.PHASES[R.boss.phase].d.replace('Rouagelins', 'renforts').replace('hall d’entrée', 'point de départ')}. ${R.boss.repos ? 'Ce tour-ci il se repose.' : '<b style="color:#ff8a7a">Ce tour-ci il frappe !</b>'}`
       : posee + portes >= 3 || S.rouagesTrouves >= 3 ? SCT().porter : SCT().but}</div>
-    <div style="position:relative"><div class="vue" id="vue"><div class="plateau ${S.scen === 'labyrinthe' ? 'laby' : ''}" style="grid-template-columns:repeat(${R.w}, ${t});--t:${t};${peint ? `background:url('${SC.image}?v=1') 0 0/100% 100% no-repeat` : ''}">${cases}</div></div>
+    <div style="position:relative"><div class="vue" id="vue"><div class="plateau ${S.scen === 'labyrinthe' ? 'laby' : (S.scen || 'horloger') === 'horloger' ? 'horloge' : ''}" style="grid-template-columns:repeat(${R.w}, ${t});--t:${t};${peint ? `background:url('${SC.image}?v=1') 0 0/100% 100% no-repeat` : ''}">${cases}</div></div>
       <button class="zoom haut" style="position:absolute;right:2cqw;bottom:2cqw;padding:1cqw 2.4cqw;border-radius:20px;background:#1c1c36cc;border:1px solid #45457a;color:var(--doux)" onclick="petit=!petit;centrer=true;dessine()">${petit ? '🔍 Zoom' : '🗺 Carte'}</button></div>
     <div class="equipe">${S.heros.map((z, i) => `<button class="${i === actif ? 'on' : ''} ${z.aTerre ? 'terre' : ''} ${fini(i) ? 'fini' : ''}" onclick="choisitHeros(${i})">${fini(i) ? '<span class="ok-f">✓</span>' : ''}${imgH(z)}${nomH(z).replace('Sire ', '')}<br>${z.aTerre ? '✋ à terre' : `❤${z.pv} · 🎲${z.des.length}`}${L ? `<small class="qui${mesHeros().includes(i) ? ' moi' : ''}">${mesHeros().includes(i) ? 'toi' : proprio(i) || 'libre'}</small>` : ''}</button>`).join('')}</div>
     <div class="des" id="desH">${L && !mesHeros().includes(actif) ? `<span class="aide">👤 ${nomH(h)} est joué par <b>${proprio(actif) || 'personne'}</b>${proprio(actif) ? '' : ' : touche 🌐 en haut pour le prendre'}.</span>` : h.aTerre ? `<span class="aide">${nomH(h)} est à terre : un ami à côté peut le relever avec un dé.</span>` : h.des.length && !lanceOK(actif) ? h.des.map(() => `<button class="de cache" onclick="lanceDesH()"></button>`).join('') + `<button class="lancerH" onclick="lanceDesH()">🎲 Lancer</button>` : h.des.map(z => `<button class="de ${sel === z.id ? 'sel' : ''}" onclick="choisitDe('${z.id}')"><img src="faces-${h.id}/face-${z.v}.webp" alt="${z.v}"></button>`).join('') || '<span class="aide">Plus de dés pour ce héros : passe au suivant.</span>'}</div>

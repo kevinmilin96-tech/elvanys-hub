@@ -371,6 +371,7 @@ function dessine() {
   if (!J || !ctx) return;
   ctx.setTransform(ech, 0, 0, ech, 0, 0); if (J.tremble > 0) ctx.translate((Math.random() - .5) * 7, 0);
   const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#0d0810'); g.addColorStop(.6, '#1a1222'); g.addColorStop(1, '#2a1610'); ctx.fillStyle = g; ctx.fillRect(-10, 0, W + 20, H);
+  { const f = img('decor/fosse-fond.webp?v=1'); if (f.complete && f.naturalWidth) { const k = Math.max((W + 20) / f.naturalWidth, H / f.naturalHeight), fw = f.naturalWidth * k, fh = f.naturalHeight * k; ctx.drawImage(f, (W - fw) / 2, H - fh, fw, fh); } } // 15/11 soir : le puits peint
   if (J.effets.gel) { ctx.fillStyle = '#7cd4ff14'; ctx.fillRect(0, 0, W, H); }
   ctx.fillStyle = '#4a2a1a'; ctx.fillRect(0, H - 22, W, 22); ctx.fillStyle = '#ff6a3a33'; ctx.fillRect(0, H - 24, W, 2);
   for (const m of J.monstres) { const M = MONSTRES[m.k];
@@ -399,7 +400,8 @@ function dessine() {
   if (J.onde > 0) { ctx.strokeStyle = `rgba(243,201,107,${J.onde * 2})`; ctx.lineWidth = 6; ctx.beginPath(); ctx.arc(J.raq.x, H - 40, (0.5 - J.onde) * 1400, 0, 7); ctx.stroke(); }
   // le bouclier et les orbes
   const lw = largeur(), raqY = H - 32, coul = HER[J.heros].c;
-  ctx.save(); ctx.beginPath(); ctx.roundRect(J.raq.x - lw / 2, raqY, lw, 11, 6); const gr = ctx.createLinearGradient(0, raqY, 0, raqY + 11); gr.addColorStop(0, '#fff'); gr.addColorStop(1, coul); ctx.fillStyle = gr; ctx.shadowColor = coul; ctx.shadowBlur = 16; ctx.fill(); ctx.restore();
+  ctx.save(); ctx.beginPath(); ctx.roundRect(J.raq.x - lw / 2, raqY, lw, 11, 6); const gr = ctx.createLinearGradient(0, raqY, 0, raqY + 11); gr.addColorStop(0, '#fff'); gr.addColorStop(1, coul); ctx.fillStyle = gr; ctx.shadowColor = coul; ctx.shadowBlur = 16;
+  { const b = img('decor/fosse-bouclier.webp?v=1'); if (b.complete && b.naturalWidth) { const bh = lw * b.naturalHeight / b.naturalWidth; ctx.drawImage(b, J.raq.x - lw / 2, raqY + 5.5 - bh / 2, lw, bh); } else ctx.fill(); } ctx.restore(); // 15/11 soir : le bouclier runique peint
   if (J.t < 10) { ctx.font = 'bold 14px Georgia'; ctx.textAlign = 'center'; ctx.fillStyle = '#000'; const aide = matchMedia('(pointer: coarse)').matches ? 'Un doigt : bouclier · un autre doigt : COMBO' : 'Chaque rebond change le chiffre des balles'; ctx.fillText(aide, W / 2 + 1, H - 69); ctx.fillStyle = '#f3c96b'; ctx.fillText(aide, W / 2, H - 70); }
   if (J.flashC) { const F = J.flashC, s = `${COMBOS[F.k].e} ${COMBOS[F.k].n} !`; ctx.font = 'bold 15px Georgia'; ctx.textAlign = 'center'; const w = ctx.measureText(s).width + 18; ctx.globalAlpha = Math.min(1, F.t * 2); ctx.beginPath(); ctx.roundRect(W / 2 - w / 2, H - 100, w, 24, 12); ctx.fillStyle = '#f3c96b'; ctx.fill(); ctx.fillStyle = '#2b1d0a'; ctx.fillText(s, W / 2, H - 83); ctx.globalAlpha = 1; }
   for (let i = 0; i < L('orbe'); i++) { const a = J.t * 3 + i * Math.PI * 2 / L('orbe'); ctx.beginPath(); ctx.arc(J.raq.x + Math.cos(a) * (lw / 2 + 26), raqY - 20 + Math.sin(a) * 34, 7, 0, 7); ctx.fillStyle = '#c084fc'; ctx.shadowColor = '#c084fc'; ctx.shadowBlur = 12; ctx.fill(); ctx.shadowBlur = 0; }
