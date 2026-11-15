@@ -41,6 +41,30 @@ const DHEROS = {
     rune:{ n:'Grand Cor', d:'Tire, et donne +15 aux canons voisins (+30 ancienne, +45 légendaire).' },
     deck:['trancheV', 'trancheV', 'aigue', 'aigue', 'torche', 'ajuste', 'ajuste', 'pierre', 'pierre', 'mortier', 'etincelles'] },
 };
+// 16/11 nuit (l'utilisateur : « regarde les autres modes, ce que tu peux apporter », ex. la Défense) : LES 4 AUTRES HÉROS
+const deuxPaires = vs => { if (vs.length !== 4) return false; const s = [...vs].sort((a, b) => a - b); return s[0] === s[1] && s[2] === s[3]; };
+Object.assign(DHEROS, {
+  aldric:{ passif:'Rempart béni : la porte a +6 PV et en reprend 2 à chaque vague ; tes canons font +70 % au Titan.',
+    pouvoir:{ n:'Bouclier de lumière', txt:'2 paires', d:'La porte reprend 8 PV, et tous tes canons tirent +4 ce tour.', cond:vs => deuxPaires(vs) },
+    ultime:{ n:'Jugement', txt:'5 dés tous différents', d:'8 dégâts à chaque monstre, et la porte reprend 6 PV.', cond:vs => vs.length === 5 && new Set(vs).size === 5 },
+    rune:{ n:'Phare sacré', d:'Tire, et répare la porte de 1 PV à chaque tour (2 ancienne, 3 légendaire).' },
+    deck:['mortier', 'mortier', 'pierre', 'pierre', 'torche', 'ajuste', 'retremper', 'lame', 'etincelles', 'marteau', 'aigue'] },
+  pip:{ passif:'Ronces vivantes : tes pièges de ronces font 50 % de plus.',
+    pouvoir:{ n:'Racines', txt:'2 dés qui se suivent', d:'Les monstres d’un chemin (sauf le Titan) restent sur place un tour.', cond:vs => vs.length === 2 && Math.abs(vs[0] - vs[1]) === 1, cible:'monstre' },
+    ultime:{ n:'Forêt vivante', txt:'4 dés tous différents', d:'Tous les monstres (sauf le Titan) restent sur place un tour, et chacun prend 6 dégâts.', cond:vs => vs.length === 4 && new Set(vs).size === 4 },
+    rune:{ n:'Arbre-cœur', d:'Tire, et ses racines retiennent sa cible un tour (sauf le Titan).' },
+    deck:['etincelles', 'etincelles', 'aigue', 'aigue', 'retremper', 'ajuste', 'mortier', 'pierre', 'torche', 'lame', 'trancheV'] },
+  oria:{ passif:'Longue-vue : tes canons de la dernière rangée (contre la porte) tirent +2.',
+    pouvoir:{ n:'Repérage', txt:'un 1 et un 6', d:'Pioche 2 cartes et +1 PC.', cond:vs => vs.length === 2 && vs.includes(1) && vs.includes(6) },
+    ultime:{ n:'Pluie d’étoiles', txt:'3 dés impairs', d:'14 dégâts au premier monstre de deux chemins : celui que tu touches et son voisin.', cond:vs => vs.length === 3 && vs.every(v => v % 2 === 1), cible:'monstre' },
+    rune:{ n:'Astrolabe', d:'Tire sur le premier monstre de CHAQUE chemin (le cinquième de sa force sur les deux autres).' },
+    deck:['torche', 'torche', 'ajuste', 'ajuste', 'pierre', 'lame', 'retremper', 'mortier', 'etincelles', 'marteau', 'aigue'] },
+  zephine:{ passif:'Vent glacé : tes canons de 1, 2 et 3 tirent +2.',
+    pouvoir:{ n:'Rafale', txt:'3 dés qui se suivent', d:'Les monstres d’un chemin reculent d’une case et prennent 6 dégâts.', cond:vs => suite(vs, 3), cible:'monstre' },
+    ultime:{ n:'Tempête', txt:'deux 6', d:'Tous les monstres (sauf le Titan) reculent de 2 cases et prennent 6 dégâts.', cond:vs => vs.length === 2 && vs[0] === 6 && vs[1] === 6 },
+    rune:{ n:'Œil du cyclone', d:'Tire, et sa cible recule d’une case (sauf le Titan).' },
+    deck:['aigue', 'aigue', 'etincelles', 'torche', 'torche', 'retremper', 'ajuste', 'pierre', 'lame', 'mortier', 'trancheV'] },
+});
 // les cartes de la Défense (noms et conditions du Duel ; effets adaptés). cible : monstre | tour | de | (rien)
 const DCARTES = {
   marteau:{ n:'Marteau de forge', c:2, txt:'dé = 6', d:'10 dégâts à un monstre.', cond:vs => vs.length === 1 && vs[0] === 6, cible:'monstre', f:(D, vs, k) => blesse(D, k.m, 10) },
@@ -64,6 +88,7 @@ function nouvelleDefense(heros, rng) {
     rempart:Array(9).fill(null), monstres:[], vague:0, pas:0, repit:0, tour:0, jauge:0, ultimeFait:false, deplace:false, double:false, cri:0,
     kills:0, sansDegats:0, degatsVague:0, log:[], fini:null, fx:[],
     pieges:{}, bonus:{}, choix:null, cartesJouees:0, piegesPoses:0, coups:0, maxCanons:0, degatsDerniere:0 };
+  if (heros === 'aldric') { D.porte += 6; D.porteMax += 6; }
   piocheD(D, DEF.mainDepart); apparitionsD(D); debutTourD(D); return D;
 }
 const logD = (D, t) => { D.log.unshift(t); if (D.log.length > 120) D.log.length = 120; };
@@ -147,11 +172,23 @@ function agitD(D, quoi, ds, k) {
   if (quoi === 'frappe' || quoi === 'technique') { coupHeros(D, quoi, vs, k.m.col); return; }
   const H = DHEROS[D.heros];
   if (quoi === 'pouvoir') { logD(D, `✦ ${H.pouvoir.n} !`); fxD(D, { t:'annonce', txt:H.pouvoir.n });
+    const e = echelleD(D), colM = k && k.m ? k.m.col : 0, recule = (m, n) => { if (D.monstres.includes(m) && !MONSTRES[m.t].boss) m.row = Math.max(0, m.row - n); };
     if (D.heros === 'maelle') blesse(D, k.m, vs.reduce((a, b) => a + b, 0));
-    else { blesse(D, k.m, 10); D.cri += 2; } return; }
+    else if (D.heros === 'gorm') { blesse(D, k.m, 10); D.cri += 2; }
+    else if (D.heros === 'aldric') { D.porte = Math.min(D.porteMax, D.porte + 8); D.cri += 4; }
+    else if (D.heros === 'pip') D.monstres.filter(m => m.col === colM && !MONSTRES[m.t].boss).forEach(m => { m.colle = Math.max(m.colle || 0, 1); });
+    else if (D.heros === 'oria') { piocheD(D, 2); D.pc = Math.min(DEF.pcMax, D.pc + 1); }
+    else if (D.heros === 'zephine') D.monstres.filter(m => m.col === colM).forEach(m => { blesse(D, m, Math.round(6 * e)); recule(m, 1); });
+    return; }
   if (quoi === 'ultime') { D.pc -= 3; D.ultimeFait = true; D.jauge = 0; logD(D, `⚡ ULTIME : ${H.ultime.n} !`); fxD(D, { t:'annonce', txt:H.ultime.n });
+    const e = echelleD(D), tous = () => [...D.monstres];
     if (D.heros === 'maelle') { blesse(D, k.m, 16); D.double = true; }
-    else [0, 1, 2].forEach(col => { const m = teteD(D, col); if (m) blesse(D, m, 14); }); return; }
+    else if (D.heros === 'gorm') [0, 1, 2].forEach(col => { const m = teteD(D, col); if (m) blesse(D, m, 14); });
+    else if (D.heros === 'aldric') { tous().forEach(m => blesse(D, m, 8)); D.porte = Math.min(D.porteMax, D.porte + 6); }
+    else if (D.heros === 'pip') tous().forEach(m => { if (!MONSTRES[m.t].boss) m.colle = Math.max(m.colle || 0, 1); blesse(D, m, 6); });
+    else if (D.heros === 'oria') { const c = k.m.col, cols = [c, c === 2 ? 1 : c + 1]; cols.forEach(cc => { const m = teteD(D, cc); if (m) blesse(D, m, 14); }); }
+    else if (D.heros === 'zephine') tous().forEach(m => { blesse(D, m, 6); if (D.monstres.includes(m) && !MONSTRES[m.t].boss) m.row = Math.max(0, m.row - 2); });
+    return; }
   const key = D.main[quoi], c = DCARTES[key];
   D.pc -= c.c; D.main.splice(quoi, 1); D.defausse.push(key); D.cartesJouees++; logD(D, `🂠 ${c.n} (${vs.join('·')}).`); fxD(D, { t:'carte', n:c.n });
   c.f(D, vs, k);
@@ -162,11 +199,14 @@ const teteD = (D, col, sauf) => D.monstres.filter(m => m.col === col && m !== sa
 function verifieFinD(D) {
   if (D.fini) return;
   if (D.porte <= 0) { D.porte = 0; D.fini = 'perdu'; logD(D, '💥 La porte est tombée…'); return; }
+  if (D.sansFin) return;
   if (D.vague >= VAGUES.length && !D.monstres.length) { D.fini = 'gagne'; logD(D, '🏆 La porte a tenu !'); }
 }
 function puissanceTour(D, c, t) {
   let n = PUISSANCE(t.v) + (t.bonus || 0) + (t.tmp || 0) + D.cri + (D.bonus.forge || 0);
   if (D.heros === 'maelle' && t.v >= 5 && !t.rune) n += D.bonus.acier ? 4 : 2;
+  if (D.heros === 'oria' && rangD(c) === 2) n += 2;
+  if (D.heros === 'zephine' && t.v <= 3 && !t.rune) n += 2;
   voisinsD(c).forEach(x => { const u = D.rempart[x]; if (u && u.rune && D.heros === 'gorm') n += DEF.runeGorm * (u.v - 6); });
   return n;
 }
@@ -180,7 +220,13 @@ function tirsD(D) {
       const devant = [0, 1, 2].map(rr => rr * 3 + col).find(x => D.rempart[x]);
       const m = D.monstres.filter(x => x.col === col && !(MONSTRES[x.t].vol && devant === c)).sort((a, b) => b.row - a.row || a.id - b.id)[0];
       if (!m) continue;
-      fxD(D, { t:'tir', c, id:m.id }); blesse(D, m, puissanceTour(D, c, t), true);
+      fxD(D, { t:'tir', c, id:m.id }); const pw = puissanceTour(D, c, t); blesse(D, m, D.heros === 'aldric' && MONSTRES[m.t].boss ? Math.round(pw * 1.7) : pw, true);
+      if (t.rune && fois === 0) {
+        if (D.heros === 'aldric') D.porte = Math.min(D.porteMax, D.porte + (t.v - 6));
+        if (D.heros === 'pip' && D.monstres.includes(m) && !MONSTRES[m.t].boss) m.colle = Math.max(m.colle || 0, 1);
+        if (D.heros === 'zephine' && D.monstres.includes(m) && !MONSTRES[m.t].boss) m.row = Math.max(0, m.row - 1);
+        if (D.heros === 'oria') [0, 1, 2].filter(x => x !== col).forEach(x => { const o = teteD(D, x); if (o) { fxD(D, { t:'tir', c, id:o.id }); blesse(D, o, Math.round(pw / 5), true); } });
+      }
     }
 }
 function avanceD(D) {
@@ -198,15 +244,21 @@ function avanceD(D) {
     if (m.row >= DEF.chemin) { D.monstres = D.monstres.filter(x => x !== m); D.porte -= M.dg; D.degatsVague += M.dg; if (D.vague >= VAGUES.length - 1) D.degatsDerniere += M.dg; logD(D, `🚪 ${M.e} ${M.n} frappe la porte : −${M.dg} PV.`); fxD(D, { t:'porte', n:M.dg }); verifieFinD(D); if (D.fini) return; }
   }
 }
+// 16/11 nuit : LE MODE SANS FIN (vagues tirées des vagues 3 à 5, de plus en plus fortes ; le Titan revient toutes les 6 vagues, plus coriace)
+function vagueSansFin(D) {
+  if (!D.vaguesSF) D.vaguesSF = {};
+  if (!D.vaguesSF[D.vague]) { const base = VAGUES[2 + Math.floor(D.rng() * 3)].map(x => x.slice()); if ((D.vague + 1) % 6 === 0) base[0] = ['titan', ...base[0]]; D.vaguesSF[D.vague] = base; }
+  return D.vaguesSF[D.vague];
+}
 function apparitionsD(D) {
-  if (D.vague >= VAGUES.length) return;
+  if (D.vague >= VAGUES.length && !D.sansFin) return;
   if (D.repit > 0) { D.repit--; return; }
-  const V = VAGUES[D.vague];
+  const V = D.vague < VAGUES.length ? VAGUES[D.vague] : vagueSansFin(D);
   if (D.pas === 0) { logD(D, `🌊 Vague ${D.vague + 1} sur ${VAGUES.length}${D.vague === VAGUES.length - 1 ? ' : le Titan de feu !' : ''}`); fxD(D, { t:'vague', n:D.vague + 1 }); D.degatsVague = 0; }
   const cols = melangeD([0, 1, 2], D.rng);
-  (V[D.pas] || []).forEach((t, i) => { const M = MONSTRES[t]; const pv = M.boss ? M.pv : Math.round(M.pv * DEF.hpBase * Math.pow(DEF.hpVague, D.vague)); /* le boss a des PV fixes */ D.monstres.push({ id:++DID, t, pv, pvMax:pv, col:cols[i % 3], row:0 }); });
+  (V[D.pas] || []).forEach((t, i) => { const M = MONSTRES[t]; const pv = M.boss ? Math.round(M.pv * (1 + .6 * Math.floor(D.vague / 6))) : Math.round(M.pv * DEF.hpBase * Math.pow(DEF.hpVague, D.sansFin && D.vague >= VAGUES.length ? VAGUES.length - 1 + (D.vague - VAGUES.length + 1) * .6 : D.vague)); /* le boss a des PV fixes */ D.monstres.push({ id:++DID, t, pv, pvMax:pv, col:cols[i % 3], row:0 }); });
   D.pas++;
-  if (D.pas >= V.length) { if (!D.degatsVague) D.sansDegats++; D.vague++; if (typeof guildeEvt === 'function') guildeEvt('defense_vague', 1); D.pas = 0; D.repit = DEF.repit; if (D.vague < VAGUES.length) D.choix = tirageBonus(D); }
+  if (D.pas >= V.length) { if (!D.degatsVague) D.sansDegats++; D.vague++; if (D.heros === 'aldric') D.porte = Math.min(D.porteMax, D.porte + 2); if (typeof guildeEvt === 'function') guildeEvt('defense_vague', 1); D.pas = 0; D.repit = DEF.repit; if (D.vague < VAGUES.length || D.sansFin) D.choix = tirageBonus(D); }
 }
 function finTourD(D) {
   if (D.fini) return;
@@ -222,7 +274,7 @@ const scoreD = D => D.porte * 10 + D.sansDegats * 25 + D.kills;
 
 // =============================================================================================== VERSION 2 (14/11, defense-v2-proposition.html, validée par l'utilisateur)
 // L'échelle suit les PV des monstres : un coup de héros ou un piège garde la même force relative à chaque vague.
-const echelleD = D => Math.pow(DEF.hpVague, Math.min(D.vague, VAGUES.length - 1));
+const echelleD = D => Math.pow(DEF.hpVague, D.sansFin && D.vague >= VAGUES.length ? VAGUES.length - 1 + (D.vague - VAGUES.length + 1) * .6 : Math.min(D.vague, VAGUES.length - 1));
 // ---- 0. Les coups de héros : Frappe et Technique touchent TOUT un chemin (avant : un monstre, quelques dégâts : « ça ne sert à rien »)
 const TECH_DG = [0, 0, 0, 8, 14, 22];
 function coupHeros(D, quoi, vs, col) {
@@ -265,15 +317,15 @@ function marcheD(D, m) {
     return true;
   }
   else if (p && !M.vol && p.k === 'boue') { m.row = nr; m.colle = 1; usePiege(D, key); logD(D, `🟫 ${M.n} s’enlise dans la boue.`); fxD(D, { t:'boue', id:m.id }); return true; }
-  else if (p && !M.vol && p.k === 'ronces') { const n = Math.round((p.v * 3 + (D.bonus.ronces || 0)) * echelleD(D)); usePiege(D, key); m.row = nr; logD(D, `🌿 Les ronces griffent ${M.n} : ${n}.`); fxD(D, { t:'ronces', r:nr, col:m.col }); blesse(D, m, n); return !D.monstres.includes(m); }
+  else if (p && !M.vol && p.k === 'ronces') { const n = Math.round((p.v * 3 + (D.bonus.ronces || 0)) * echelleD(D) * (D.heros === 'pip' ? 1.5 : 1)); usePiege(D, key); m.row = nr; logD(D, `🌿 Les ronces griffent ${M.n} : ${n}.`); fxD(D, { t:'ronces', r:nr, col:m.col }); blesse(D, m, n); return !D.monstres.includes(m); }
   m.row = nr;
   if (m.row >= DEF.chemin) { D.monstres = D.monstres.filter(x => x !== m); D.porte -= M.dg; D.degatsVague += M.dg; if (D.vague >= VAGUES.length - 1) D.degatsDerniere += M.dg; logD(D, `🚪 ${M.e} ${M.n} frappe la porte : −${M.dg >= 99 ? 'tout' : M.dg} PV.`); fxD(D, { t:'porte', n:M.dg }); verifieFinD(D); return true; }
   return false;
 }
 // ---- 1. La prochaine vague : ce qui arrive au prochain tour, et le reste de la vague en cours
 function prochainesD(D) {
-  if (D.vague >= VAGUES.length) return { tour:[], reste:[], vague:VAGUES.length, attente:0 };
-  const V = VAGUES[D.vague];
+  if (D.vague >= VAGUES.length && !D.sansFin) return { tour:[], reste:[], vague:VAGUES.length, attente:0 };
+  const V = D.vague < VAGUES.length ? VAGUES[D.vague] : vagueSansFin(D);
   return { tour:D.repit > 0 ? [] : (V[D.pas] || []), reste:V.slice(D.repit > 0 ? D.pas : D.pas + 1).flat(), vague:D.vague + 1, attente:D.repit, neuve:D.pas === 0 };
 }
 // ---- 3. Un bonus entre deux vagues (1 parmi 3)
