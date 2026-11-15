@@ -8,7 +8,7 @@
 <title>La Guilde des Runes</title>
 <script>
 // Même mécanisme que le Duel : une nouvelle version = rechargement tout seul à l'ouverture (publier.sh change VERSION).
-const VERSION = '20261115-124447';
+const VERSION = '20261115-125602';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-menu-' + v)) { sessionStorage.setItem('recharge-menu-' + v, '1'); location.replace('menu.html?v=' + v); }
@@ -193,11 +193,11 @@ fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.te
 </div>
 <div id="flash"></div>
 
-<script src="semaine.js?v=20261115-124447"></script>
-<script src="musique.js?v=20261115-124447"></script>
-<script src="rang.js?v=20261115-124447"></script>
-<script src="heros-etoiles.js?v=20261115-124447"></script>
-<script src="donnees.js?v=20261115-124447"></script>
+<script src="semaine.js?v=20261115-125602"></script>
+<script src="musique.js?v=20261115-125602"></script>
+<script src="rang.js?v=20261115-125602"></script>
+<script src="heros-etoiles.js?v=20261115-125602"></script>
+<script src="donnees.js?v=20261115-125602"></script>
 <script>
 // ciel étoilé + runes du portail (symboles, pas des lettres), aux couleurs des héros
 const ciel = document.getElementById('ciel');
@@ -218,6 +218,7 @@ for (let i = 0; i < 50; i++) { const s = document.createElement('i'); s.style.le
 // une porte : nom (sur la plaque), desc (sous le carrousel), img (peinture reçue) OU pro (dessin provisoire), puis
 //   vers = un étage, href = une page, ferme = verrouillée (texte), avenir = portail mystère « À venir »
 const PRO = { // dessins provisoires : [émoji, fond, lueur]
+  fosse:['🕳️', 'linear-gradient(180deg, #0a0d14 0%, #1a2232 50%, #5a4a36 85%, #2a2016 100%)', '#7cd4ff'], // 15/11 : la Fosse aux Runes (dessin provisoire)
   crypte:['🪦', 'linear-gradient(180deg, #0d0b18 0%, #2a2440 45%, #4a3a6a 70%, #1a1430 100%)', '#c084fc'], // 15/11 : la Crypte aux Sceaux (dessin provisoire)
   epreuves:['🏯', 'linear-gradient(180deg, #1a1030 0%, #5a2a6a 45%, #c2411e 75%, #2a1a0a 100%)', '#ff9f5a'],
   arene:['⚔️', 'linear-gradient(180deg, #f59e0b 0%, #b45309 35%, #7c2d12 62%, #e7c48a 63%, #c99a5b 100%)', '#ffd27a'],
@@ -252,6 +253,7 @@ const ETAGES = {
     { nom:'L’Invasion', pro:'invasion', vers:'invasion', desc:'À deux (sur ce téléphone ou avec un compagnon) contre les vagues de ton livre : l’Éveil de l’Abîme, le Réveil des Primordiaux, et les grands boss.' },
     { nom:'Les épreuves', pro:'epreuves', href:'epreuves.html', desc:'La Tour des épreuves : monte étage par étage, un boss tous les cinq. Et la Chasse au boss de la semaine : 8 tours pour lui faire le plus de mal possible.' },
     { nom:'La Crypte aux Sceaux', pro:'crypte', href:'crypte.html', desc:'NOUVEAU · Un solitaire de dés : pose tes dés sur les sceaux des monstres, les cartes se retournent, les chaînes font exploser le score. Une crypte du jour, la même pour tous.' },
+    { nom:'La Fosse aux Runes', pro:'fosse', href:'fosse.html', desc:'NOUVEAU · Un casse-briques de dés : les monstres remontent vers ton rempart, chaque dé est une balle qui transperce et ricoche. Balles de feu, de foudre, de glace… et elles fusionnent.' },
     { nom:'Tour des héros', pro:'tour', href:'heros.html', desc:'Les six héros, leurs pouvoirs, leurs dés et leurs cartes. Prépare ton deck.' },
   ] },
   arene:{ titre:'L’Arène des Duels', sous:'Contre qui veux-tu te battre ?', portes:[
