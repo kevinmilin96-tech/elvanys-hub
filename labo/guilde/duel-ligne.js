@@ -124,7 +124,8 @@ function dlAffiche() {
     if (S.tourLogDe !== cle) { // 15/11 soir : un nouveau tour commence pour moi : le résumé de ce que l'ami a fait
       const lignes = S.tourLog0 != null ? S.log.slice(0, Math.max(0, S.log.length - S.tourLog0)).reverse() : [];
       S.tourLog0 = S.log.length; S.tourLogDe = cle;
-      if (lignes.length && !S.fini) { dlResume(lignes); return; }
+      // 15/11 soir (l'utilisateur : « pas besoin du résumé si je vois chaque action ») : plus de fenêtre, on revient droit au plateau
+      dlVu = 0; dlPvVu = null;
     }
     fermer(); document.getElementById('app').style.visibility = ''; dessine(); rendu(); if (typeof GM !== 'undefined') try { GM.son('portail'); } catch (e) {} return; }
   // 15/11 soir (l'utilisateur : « je veux que l'on voie tous les deux le plateau en même temps ») : pendant le tour de l'ami, LE PLATEAU
