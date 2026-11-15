@@ -34,7 +34,7 @@ async function dlCreer() {
   try { const { statut, d } = await dlApi('POST', DL_API, { mode:'duel', etat:{ lobby:DLOB }, joueurs:[{ id:moi.id, nom, heros:[] }] });
     if (statut !== 200) { dlToast(d.message || 'Impossible de créer la salle.'); DLOB = null; return; }
     DL = { code:d.code, version:d.version, moi, joueurs:[{ id:moi.id, nom, heros:[] }] }; window.SALLE_ACTIVE = d.code;
-    localStorage.setItem(DL_SALLE, JSON.stringify({ code:d.code, moi })); dlSalle();
+    localStorage.setItem(DL_SALLE, JSON.stringify({ code:d.code, moi, t:Date.now() })); dlSalle();
     if (typeof amisAgir === 'function') amisAgir('signal');
   } catch (e) { dlToast('Pas de réseau.'); DLOB = null; }
 }
@@ -48,9 +48,14 @@ async function dlRejoindre(code, moi) {
   try { const { statut, d } = await dlApi('GET', `${DL_API}/${code}`);
     if (statut !== 200) { dlToast(d.message || 'Code inconnu.'); return; }
     if (d.mode && d.mode !== 'duel') { location.href = 'chroniques.html?salle=' + code; return; }
+    // 15/11 soir (l'utilisateur : « après une mise à jour, on n'arrive pas à relancer, ou on est tous les deux spectateurs ») :
+    // en revenant dans une salle, on reprend SA place : l'identifiant gardé pour cette salle, sinon le joueur de la salle qui a le même nom
+    { let g = null; try { g = JSON.parse(localStorage.getItem(DL_SALLE) || 'null'); } catch (e) {}
+      if (g && g.code === code && g.moi && g.moi.id) moi = g.moi;
+      else { const meme = (d.joueurs || []).find(j => j.nom && moi.nom && j.nom.trim().toLowerCase() === moi.nom.trim().toLowerCase()); if (meme) moi = { id:meme.id, nom:meme.nom }; } }
     DL = { code, version:d.version, moi, joueurs:d.joueurs || [] }; window.SALLE_ACTIVE = code;
     if (!DL.joueurs.some(j => j.id === moi.id)) DL.joueurs.push({ id:moi.id, nom:moi.nom, heros:[] });
-    localStorage.setItem(DL_SALLE, JSON.stringify({ code, moi }));
+    localStorage.setItem(DL_SALLE, JSON.stringify({ code, moi, t:Date.now() }));
     if (typeof amisAgir === 'function') amisAgir('signal');
     if (d.etat && d.etat.lobby) { DLOB = d.etat.lobby; if (DL.joueurs.length > 2 && !DL.joueurs.slice(0, 2).some(j => j.id === moi.id)) { dlToast('Ce duel est déjà complet : tu regardes.'); } dlSalle(); dlPousseLobby(); return; }
     dlRecoit(d);
@@ -254,5 +259,7 @@ setInterval(async () => {
 (function () {
   if (typeof document === 'undefined') return; const q = new URLSearchParams(location.search);
   if (q.get('salle')) addEventListener('load', () => { const nom = dlNom(); if (nom) dlRejoindre(q.get('salle').toUpperCase(), { id:'j' + Math.random().toString(36).slice(2, 10), nom }); else { ligneAccueil(); } });
-  else if (q.get('ami')) addEventListener('load', () => ligneAccueil());
+  else if (q.get('ami')) addEventListener('load', () => {
+    let g = null; try { g = JSON.parse(localStorage.getItem(DL_SALLE) || 'null'); } catch (e) {}
+    if (g && g.code && g.moi && g.t && Date.now() - g.t < 3 * 3600e3) { dlToast('↩ Retour dans la salle ' + g.code); dlRejoindre(g.code, g.moi); } else ligneAccueil(); });
 })();
