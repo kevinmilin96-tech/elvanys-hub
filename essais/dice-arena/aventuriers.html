@@ -141,11 +141,11 @@ function ameliorePiece(id, pid) { const r = avAmeliore(pid); if (r === 'ok') { s
 function forgeron(id) {
   const sac = avSac(); let deja = {}; try { deja = JSON.parse(localStorage.getItem('guilde-forgeron-achats') || '{}'); } catch (e) {}
   fenetre(`<h2>⚒ Le forgeron</h2><p class="sous">« Trois pièces aujourd’hui, pas une de plus. Demain, autre chose. » · 🪙 ${sac.or}</p>
-    ${forgeronStock().map((x, i) => pieceHTML(x, deja[x.id] ? '<small>vendu</small>' : `<button class="sec" ${sac.or < x.prix ? 'disabled style="opacity:.4"' : ''} onclick="achete('${id}',${i})">${x.prix} 🪙</button>`)).join('')}
+    ${forgeronStock(id).map((x, i) => pieceHTML(x, deja[x.id] ? '<small>vendu</small>' : `<button class="sec" ${sac.or < x.prix ? 'disabled style="opacity:.4"' : ''} onclick="achete('${id}',${i})">${x.prix} 🪙</button>`)).join('')}
     <p class="sous">L’or se gagne dans les Chroniques et les Aventures : pièces d’or dans les meubles, et à chaque victoire.</p>
     <button class="go" onclick="fenetre('')">Fermer</button>`);
 }
-function achete(id, i) { const r = forgeronAchete(i); if (r === 'ok') { son('tour-fusion'); bulle('Acheté : dans le coffre !'); fiche(id); forgeron(id); } else bulle(r); }
+function achete(id, i) { const r = forgeronAchete(i, id); if (r === 'ok') { son('tour-fusion'); bulle('Acheté : dans le coffre !'); fiche(id); forgeron(id); } else bulle(r); }
 function talent(id, niv, k) { if (avChoisitTalent(id, niv, k)) son('magie'); fiche(id); }
 function forge(id, k) { if (avForge(id, k)) son('tour-fusion'); fiche(id); }
 if (typeof GM !== 'undefined') { try { GM.musique('menu'); GM.bouton(); } catch (e) {} }

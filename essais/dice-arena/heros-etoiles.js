@@ -158,14 +158,22 @@ function fusionnePiece(slot, r) {
   Object.values(d.heros).forEach(h => { if (h.gear && g.some(p => h.gear[slot] === p.id)) h.gear[slot] = null; });
   if (porteur) d.heros[porteur].gear[slot] = n.id; ecrireEtoiles(d); return n;
 }
-// le forgeron : 3 pièces par jour
-function forgeronStock() {
-  const j = new Date().toISOString().slice(0, 10); let h = 0; for (const ch of j) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+// le forgeron : 3 pièces par jour.
+// 15/11 soir (l'utilisateur : « le forgeron donne en fonction du niveau ? à Élite + et niveau 50, des équipements en fonction ? ») :
+// ses pièces SUIVENT LE HÉROS dont on ouvre la fiche : la rareté avec son RANG, le niveau de la pièce avec son NIVEAU, le prix avec les deux.
+//   rang Commun à Rare + → commune, rare, rare (ou épique) ; Élite / Élite + → rare, épique, épique (ou légendaire) ; Légendaire → épique… ; Mythique et plus → légendaire…
+//   niveau de la pièce = niveau du héros ÷ 5 (au plus le maximum de sa rareté) : un héros niveau 50 trouve des pièces niveau 10.
+const FORGE_PRIX = [25, 60, 110, 200, 350];
+function forgeronStock(hid) {
+  const H = hid ? etatH(hid) : { rang:0, niv:1 }, base = H.rang >= 7 ? 3 : H.rang >= 5 ? 2 : H.rang >= 3 ? 1 : 0;
+  const j = new Date().toISOString().slice(0, 10); let h = 0; for (const ch of j + (hid || '')) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
   const R = () => { h = (Math.imul(h, 1103515245) + 12345) >>> 0; return h / 4294967296; };
-  return [0, 1, 2].map(i => { const C = EQ_CASES[Math.floor(R() * EQ_CASES.length)], r = i === 2 ? (R() < .35 ? 2 : 1) : i; return { id:'f' + j + i, slot:C.k, nom:C.noms[Math.floor(R() * C.noms.length)], r, niv:1, prix:[25, 60, 110][r] }; });
+  return [0, 1, 2].map(i => { const C = EQ_CASES[Math.floor(R() * EQ_CASES.length)], r = Math.min(EQ_RARE.length - 1, i === 2 ? base + (R() < .35 ? 2 : 1) : base + i); // 1re : sa rareté, 2e : celle au-dessus, 3e : au-dessus ou deux au-dessus
+    const niv = Math.max(1, Math.min(5 * (r + 1), Math.floor((H.niv || 1) / 5)));
+    return { id:'f' + j + (hid || '') + i, slot:C.k, nom:C.noms[Math.floor(R() * C.noms.length)], r, niv, prix:FORGE_PRIX[r] + 4 * (niv - 1) * (1 + r) }; });
 }
-function forgeronAchete(i) {
-  const s = avSac(), x = forgeronStock()[i]; let deja = {}; try { deja = JSON.parse(localStorage.getItem('guilde-forgeron-achats') || '{}'); } catch (e) {}
+function forgeronAchete(i, hid) {
+  const s = avSac(), x = forgeronStock(hid)[i]; let deja = {}; try { deja = JSON.parse(localStorage.getItem('guilde-forgeron-achats') || '{}'); } catch (e) {}
   if (!x || deja[x.id]) return 'Déjà acheté.'; if (s.or < x.prix) return `Il faut ${x.prix} pièces d’or.`;
   s.or -= x.prix; const p = Object.assign({}, x, { id:'eq' + Date.now().toString(36) + i }); delete p.prix; s.pieces.push(p); avSacEcrire(s);
   deja[x.id] = 1; try { localStorage.setItem('guilde-forgeron-achats', JSON.stringify(deja)); } catch (e) {} return 'ok';
