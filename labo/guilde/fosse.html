@@ -59,10 +59,10 @@
 <body>
 <div id="app"></div>
 <div id="fen"></div>
-<script src="musique.js?v=20261115-154422"></script>
-<script src="rang.js?v=20261115-154422"></script>
-<script src="heros-etoiles.js?v=20261115-154422"></script>
-<script src="progression-modes.js?v=20261115-154422"></script>
+<script src="musique.js?v=20261115-154640"></script>
+<script src="rang.js?v=20261115-154640"></script>
+<script src="heros-etoiles.js?v=20261115-154640"></script>
+<script src="progression-modes.js?v=20261115-154640"></script>
 <script>
 // =============================================================================================== LA FOSSE AUX RUNES v3 (15/11) : SURVIE NERVEUSE façon Vampire Survivors
 // Retour de l'utilisateur sur la v2 (casse-briques, gardée dans fosse-v2.html) : « un casse-briques ordinaire, rien ne me met en difficulté,
@@ -171,14 +171,14 @@ function lancer() {
   const raqY = H - 32, fort = 1 + L('combo') * .5;
   J.flashC = { k:c.k, t:1.4, des:c.des }; J.comboCD = 1.2; J.combos = (J.combos || 0) + 1; J.lances = (J.lances || 0) + 1;
   texte(W / 2, H * .45, `${COMBOS[c.k].e} ${COMBOS[c.k].n} !`, '#f3c96b', 1.4); son('ultime', true);
-  const onde = n => { J.onde = .5; J.monstres.forEach(m => blesse(m, Math.round(n * fort), '#f3c96b')); J.tremble = .4; };
-  const pluie = (n, x, y) => { for (let i = 0; i < Math.round(n * fort); i++) { const a3 = rnd(0, Math.PI * 2); J.eclats.push({ x, y, vx:Math.cos(a3) * 280, vy:Math.sin(a3) * 280, v:1.4 }); } };
+  const onde = n => { J.onde = .5; J.monstres.forEach(m => blesse(m, Math.round(n * fort), '#f3c96b', true)); J.tremble = .4; };
+  const pluie = (n, x, y) => { for (let i = 0; i < Math.round(n * fort); i++) { const a3 = rnd(0, Math.PI * 2); J.eclats.push({ x, y, vx:Math.cos(a3) * 280, vy:Math.sin(a3) * 280, v:1.4, casse:true }); } };
   if (c.k === 'paire') c.balles.forEach(b => { b.dore = 5 + L('combo') * 2; });
   if (c.k === 'suite3') c.balles.forEach(b => pluie(8 / 3, b.x, b.y));
   if (c.k === 'suite4') c.balles.forEach(b => pluie(16 / 4, b.x, b.y));
   if (c.k === 'brelan') onde(4 + c.v);
   if (c.k === 'carre') { onde(6 + c.v); J.effets.gel = 4; }
-  if (c.k === 'suite5') { J.monstres.forEach(m => { blesse(m, Math.round(10 * fort), '#ffe14a'); J.eclats.push({ foudre:true, x:m.x, y:m.y, v:.25 }); }); J.tremble = .5; }
+  if (c.k === 'suite5') { J.monstres.forEach(m => { blesse(m, Math.round(10 * fort), '#ffe14a', true); J.eclats.push({ foudre:true, x:m.x, y:m.y, v:.25 }); }); J.tremble = .5; }
   // les dés du combo sont « usés » : ils changent de face (sauf la paire, qui reste dorée)
   if (c.k !== 'paire') c.balles.forEach(b => { b.v = tirage(); b.usé = .6; });
 }
@@ -208,9 +208,16 @@ function spawn() {
   if (t > 60 && Math.random() < .06 + m * .06) ajoute('golem', rnd(40, W - 40), -30);
   J.prochainSpawn = Math.max(.75, 3.3 - m * 2.3) * rnd(.7, 1.3);
 }
+// 15/11 soir : MONSTRES À SCEAU (Dice & Fold) : une armure qui ne cède qu'à certaines balles (≥ 4, ≤ 3, pair, impair, un chiffre exact).
+// La bonne balle brise le sceau (puis toutes les balles le blessent) ; les combos (onde, foudre, éclats d'une suite) brisent tout.
+const SC_TYPES = [{ t:'min', v:4 }, { t:'max', v:3 }, { t:'pair' }, { t:'imp' }, { t:'min', v:5 }];
+function accSc(s, v) { return s.t === 'min' ? v >= s.v : s.t === 'max' ? v <= s.v : s.t === 'pair' ? v % 2 === 0 : s.t === 'imp' ? v % 2 === 1 : s.t === 'ex' ? v === s.v : true; }
+function scTxt(s) { return s.t === 'min' ? `≥${s.v}` : s.t === 'max' ? `≤${s.v}` : s.t === 'pair' ? 'pair' : s.t === 'imp' ? 'impair' : `=${s.v}`; }
+function tireSceau() { return Math.random() < .2 ? { t:'ex', v:1 + Math.floor(Math.random() * 6) } : Object.assign({}, pick(SC_TYPES)); }
 function ajoute(k, x, y) {
   const M = MONSTRES[k], f = 1 + J.t / 240;
-  J.monstres.push({ k, x, y, r:M.r, pv:Math.round(M.pv * f), pvmax:Math.round(M.pv * f), v:M.v * (1 + J.t / 650), att:M.att, flash:0, brule:0, tirT:rnd(1.5, 3), etat:'descend', dx:0 });
+  const sc = M.elite || (!M.boss && !M.essaim && J.t > 35 && Math.random() < Math.min(.4, .08 + J.t / 700)) ? tireSceau() : null;
+  J.monstres.push({ k, x, y, r:M.r, pv:Math.round(M.pv * f), pvmax:Math.round(M.pv * f), v:M.v * (1 + J.t / 650), att:M.att, flash:0, brule:0, tirT:rnd(1.5, 3), etat:'descend', dx:0, sceau:sc, paliers:M.boss ? [.75, .5, .25] : null });
 }
 // ------------------------------------------------------------------ une image (60 par seconde)
 function pas(dt) {
@@ -253,11 +260,11 @@ function pas(dt) {
   for (let i = 0; i < nOrbes; i++) { const a = J.t * 3 + i * Math.PI * 2 / nOrbes, ox = J.raq.x + Math.cos(a) * (lw / 2 + 26), oy = raqY - 20 + Math.sin(a) * 34;
     J.tirs.forEach(f => { if (Math.hypot(f.x - ox, f.y - oy) < f.r + 9) { f.fin = true; texte(ox, oy, '✦', '#c084fc', .4); } });
     J.monstres.forEach(m => { if (!m.mort && Math.hypot(m.x - ox, m.y - oy) < m.r + 9 && !(m.orbeT > 0)) { m.orbeT = .5; blesse(m, 2 + nOrbes, '#c084fc'); } }); }
-  J.monstres.forEach(m => { if (m.orbeT > 0) m.orbeT -= dt; });
+  J.monstres.forEach(m => { if (m.orbeT > 0) m.orbeT -= dt; if (m.tinkT > 0) m.tinkT -= dt; });
   // les balles (petits pas pour ne pas traverser)
   for (let s = 0; s < 3; s++) for (const b of J.balles) bouge(b, dt / 3, raqY, lw);
   for (const e of J.eclats) { if (e.foudre || e.boum) { e.v -= dt; continue; } e.x += e.vx * dt; e.y += e.vy * dt; e.v -= dt;
-    for (const m of J.monstres) if (!m.mort && Math.hypot(m.x - e.x, m.y - e.y) < m.r + 3) { blesse(m, 2, '#ffe9a8'); e.v = 0; break; } }
+    for (const m of J.monstres) if (!m.mort && Math.hypot(m.x - e.x, m.y - e.y) < m.r + 3) { blesse(m, 2, '#ffe9a8', e.casse); e.v = 0; break; } }
   // gemmes et capsules qui tombent ; l'aimant les attire
   const rayon = 40 + L('aimant') * 35;
   for (const g of J.gemmes) { const dx = J.raq.x - g.x, dy = raqY - g.y, d = Math.hypot(dx, dy);
@@ -283,17 +290,27 @@ function bouge(b, dt, raqY, lw) {
   for (const m of J.monstres) {
     if (m.mort || b.dejaT === m) continue;
     const dx = b.x - m.x, dy = b.y - m.y; if (dx * dx + dy * dy > (b.r + m.r) ** 2) continue;
+    const bloque = m.sceau && !(b.dore > 0) && !accSc(m.sceau, b.v);
+    if (bloque) { if (!(m.tinkT > 0)) { texte(m.x, m.y - m.r - 8, `🛡 il faut ${scTxt(m.sceau)}`, '#9fb3cf', .7); son('bouclier'); m.tinkT = .4; } }
+    else {
+    if (m.sceau) { texte(m.x, m.y - m.r - 10, '💥 Sceau brisé !', '#f3c96b', .9); m.sceau = null; son('rune'); J.sceauxBrises = (J.sceauxBrises || 0) + 1; }
     blesse(m, (b.v + L('force')) * (b.dore > 0 ? 2 : 1)); if (L('feu')) m.brule = 3;
     if (b.v === 6 && L('six')) { J.monstres.forEach(o => { if (o !== m && !o.mort && Math.hypot(o.x - m.x, o.y - m.y) < 55 + L('six') * 12) blesse(o, 2 + L('six') * 2, '#ff9f2a'); }); J.eclats.push({ boum:true, x:m.x, y:m.y, v:.3 }); }
     for (let i = 0; i < L('eclat'); i++) { const a = rnd(0, Math.PI * 2); J.eclats.push({ x:b.x, y:b.y, vx:Math.cos(a) * 260, vy:Math.sin(a) * 260, v:.6 }); }
     if (b.dore > 0 || b.perce > 0) { if (!(b.dore > 0)) b.perce--; b.dejaT = m; continue; }
+    }
     const d = Math.hypot(dx, dy) || 1, nx = dx / d, ny = dy / d, p = b.vx * nx + b.vy * ny; b.vx -= 2 * p * nx; b.vy -= 2 * p * ny; b.x = m.x + nx * (m.r + b.r + 1); b.y = m.y + ny * (m.r + b.r + 1); b.dejaT = m;
     break;
   }
   if (b.dejaT && Math.hypot(b.x - b.dejaT.x, b.y - b.dejaT.y) > b.r + b.dejaT.r + 4) b.dejaT = null;
 }
-function blesse(m, n, coul) {
-  if (m.mort) return; m.pv -= n; m.flash = .1; J.score += n; texte(m.x, m.y - m.r, `−${n}`, coul || '#fff', .6);
+function blesse(m, n, coul, casse) {
+  if (m.mort) return;
+  if (m.sceau && !casse) { if (!(m.tinkT > 0)) { texte(m.x, m.y - m.r, '🛡', '#9fb3cf', .4); m.tinkT = .4; } return; }
+  if (m.sceau && casse) { m.sceau = null; texte(m.x, m.y - m.r - 10, '💥 Sceau brisé !', '#f3c96b', .9); }
+  m.pv -= n;
+  // le Titan se recouvre d'un sceau à 75 %, 50 % et 25 % de sa vie
+  if (m.paliers && m.paliers.length && m.pv / m.pvmax <= m.paliers[0]) { m.paliers.shift(); m.sceau = tireSceau(); texte(m.x, m.y - m.r - 14, `🛡 Le Titan se blinde : ${scTxt(m.sceau)} !`, '#ff9a7a', 1.6); son('bouclier', true); } m.flash = .1; J.score += n; texte(m.x, m.y - m.r, `−${n}`, coul || '#fff', .6);
   if (m.pv <= 0) m.mort = true; else son('coup');
 }
 function meurt(m) {
@@ -353,6 +370,7 @@ function dessine() {
   for (const m of J.monstres) { const M = MONSTRES[m.k];
     cercleImg(`portraits/m-${M.img}.webp`, m.x, m.y, m.r, M.boss ? '#ff7a4a' : M.elite ? '#f3c96b' : m.etat === 'plonge' ? '#ff5a5a' : '#8a98b8', m.flash > 0);
     if (m.brule > 0) { ctx.fillStyle = '#ff7a2a'; ctx.font = '11px serif'; ctx.fillText('🔥', m.x + m.r - 6, m.y - m.r + 6); }
+    if (m.sceau) { const s = scTxt(m.sceau); ctx.font = 'bold 10px Georgia'; const w = ctx.measureText(s).width + 16; ctx.beginPath(); ctx.roundRect(m.x - w / 2, m.y - m.r - 15, w, 14, 7); ctx.fillStyle = '#1d2a44ee'; ctx.fill(); ctx.strokeStyle = '#9fd0ff'; ctx.lineWidth = 1.5; ctx.stroke(); ctx.fillStyle = '#dff1ff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('🛡' + s, m.x, m.y - m.r - 8); ctx.textBaseline = 'alphabetic'; }
     if (M.boss || M.elite || m.pv < m.pvmax) { const w = m.r * 2; ctx.fillStyle = '#000a'; ctx.fillRect(m.x - m.r, m.y + m.r + 2, w, 3); ctx.fillStyle = '#ff5a3a'; ctx.fillRect(m.x - m.r, m.y + m.r + 2, w * Math.max(0, m.pv / m.pvmax), 3); } }
   for (const f of J.tirs) { ctx.beginPath(); ctx.arc(f.x, f.y, f.r, 0, 7); ctx.fillStyle = '#ff7a2a'; ctx.shadowColor = '#ff4a1a'; ctx.shadowBlur = 12; ctx.fill(); ctx.shadowBlur = 0; }
   for (const gm of J.gemmes) { ctx.save(); ctx.translate(gm.x, gm.y); ctx.rotate(Math.PI / 4); ctx.fillStyle = gm.v > 1 ? '#c084fc' : '#4f8bff'; ctx.shadowColor = ctx.fillStyle; ctx.shadowBlur = 8; ctx.fillRect(-4, -4, 8, 8); ctx.restore(); }
@@ -435,6 +453,7 @@ function regles(enJeu) {
     <ol><li><b>Tes balles sont des dés</b> (4 au départ) : ils partent seuls de ton bouclier. <b>Bouge le bouclier</b> (souris, doigt ou flèches) pour les renvoyer. <b>À chaque rebond sur le bouclier, le dé change de face</b>. Un dé raté repart tout seul quelques secondes plus tard (⏳).</li>
     <li><b>Combos</b> : quand les dés en jeu (montrés en bas) forment un combo, ils brillent et le bouton <b>COMBO</b> s’allume. Déclenche-le : <b>au doigt, tape avec un deuxième doigt n’importe où</b> pendant que le premier tient le bouclier (comme une manette à deux pouces) ; à l’ordinateur, un clic ou Espace. Choisis le bon moment, au bon moment, ou attends un meilleur combo… mais il peut disparaître au prochain rebond !
       🎲🎲 <b>paire</b> = ces 2 dés deviennent dorés (× 2, ils traversent) ; 🌠 <b>3 qui se suivent</b> = éclats ; 💥 <b>brelan</b> = onde de choc sur tous ; 🌠 <b>4 qui se suivent</b> = plus d’éclats ; ❄️ <b>carré</b> = onde + tout gèle ; ⚡ <b>5 qui se suivent</b> = la foudre sur tous.</li>
+    <li><b>🛡 Monstres à sceau</b> : certains portent une armure marquée (« ≥4 », « pair », « =5 »…). Seule une balle qui correspond la brise ; les autres rebondissent dessus. Une fois brisée, toutes les balles le blessent. Les combos (onde, foudre, éclats d’une suite) brisent tous les sceaux. Le Titan se blinde 3 fois !</li>
     <li>Les monstres descendent <b>de plus en plus vite</b> et <b>attaquent</b> : 🔥 les salamandres crachent du feu (évite-le !), 🐺 les loups plongent sur toi, 🪲 les scarabées arrivent en essaim, 🗿 les golems encaissent tout. S’ils touchent le rempart, tu perds des PV.</li>
     <li>Chaque monstre abattu lâche des <b>gemmes 💎</b> : ramasse-les avec ton bouclier. Barre bleue pleine = <b>un niveau : pause, choisis 1 amélioration parmi 3</b>.</li>
     <li>Les capsules dorées : ✦ trois balles de 6, ❄ tout ralentit, ❤ soin, 🛡 grand bouclier.</li>
