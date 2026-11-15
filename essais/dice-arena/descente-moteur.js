@@ -125,14 +125,38 @@ function nouvelle(heros, graine, bonus = {}, opts = {}) {
 // Un étage = 8 étapes : ⚔ ⚔ (repos) ⚔ ⚔ (repos) ⚔ (repos avant le boss) puis ♛. Aux étapes de combat, on choisit seulement
 // combat OU élite (plus dur, meilleure récompense) ; aux étapes de repos, 3 salles au choix sans combat (marchand, feu, événement, trésor).
 const PLAN = ['', 'c', 'c', 'r', 'c', 'c', 'r', 'c', 'r'];
+// 15/11 soir (l'utilisateur, avec une capture : « la carte, c'est plusieurs chemins avec des élites, combats normaux, magasin… ») :
+// UNE VRAIE CARTE À EMBRANCHEMENTS par étage : 8 rangées de 2 à 4 cases, chaque case reliée à 1 ou 2 cases de la rangée suivante ;
+// les rangées « c » ne contiennent que des combats (combat ou élite : les combats restent obligatoires), les rangées « r » des haltes ; le boss en haut.
+function typeCase(R, p, h) {
+  if (PLAN[p] === 'c') return p <= 2 ? (p === 1 || h() < .8 ? 'combat' : 'elite') : h() < .25 ? 'elite' : 'combat';
+  const pool = ['marchand', 'feu', 'feu', 'evenement', 'evenement', 'tresor'].filter(x => !(x === 'feu' && R.pacte === 'nuit'));
+  if (p === ETAPES) return R.pacte === 'nuit' ? 'marchand' : h() < .55 ? 'feu' : 'marchand';
+  return pick(h, pool);
+}
+function genCarte(R) {
+  const h = RR(R), rows = [];
+  for (let p = 1; p <= ETAPES; p++) {
+    const n = p === 1 ? 3 : 2 + Math.floor(h() * 3), row = [];
+    for (let c = 0; c < n; c++) row.push({ t:typeCase(R, p, h), x:Math.round(100 * ((c + .5) / n + (h() - .5) * .1)) / 100, next:[] });
+    // une rangée de combats (après la 1re) a toujours au moins une élite et un combat normal : le choix existe sur la carte
+    if (p === ETAPES && n >= 2) { row[0].t = R.pacte === 'nuit' ? 'marchand' : 'feu'; row[1].t = 'marchand'; } // avant le boss : un feu ET un marchand
+    if (PLAN[p] === 'c' && p > 1) { if (!row.some(x => x.t === 'elite')) row[Math.floor(h() * n)].t = 'elite'; if (!row.some(x => x.t === 'combat')) row[(row.findIndex(x => x.t === 'elite') + 1) % n].t = 'combat'; }
+    rows.push(row);
+  }
+  for (let r = 0; r < rows.length - 1; r++) {
+    const A = rows[r], B = rows[r + 1];
+    A.forEach(a => { const tri = B.map((b, k) => [Math.abs(b.x - a.x), k]).sort((u, v) => u[0] - v[0]); a.next = [tri[0][1]]; if (tri[1] && h() < .45) a.next.push(tri[1][1]); });
+    B.forEach((b, k) => { if (!A.some(a => a.next.includes(k))) { const a = A.slice().sort((u, v) => Math.abs(u.x - b.x) - Math.abs(v.x - b.x))[0]; a.next.push(k); } });
+  }
+  R.carte = { etage:R.etage, rows, pos:null, chemin:[] };
+}
 function tireChoix(R) {
-  const h = RR(R), p = R.pas + 1;
-  if (p > ETAPES) { R.choix = ['boss']; return; }
-  if (PLAN[p] === 'c') { R.choix = p === 1 ? ['combat'] : ['combat', 'elite']; return; }
-  const pool = ['marchand', 'feu', 'evenement', 'tresor'].filter(t => !(t === 'feu' && R.pacte === 'nuit'));
-  let ch = melange(h, pool).slice(0, 3);
-  if (p === ETAPES) { const repos = R.pacte === 'nuit' ? 'marchand' : 'feu'; if (!ch.includes(repos)) ch[0] = repos; if (!ch.includes('marchand')) ch[1] = 'marchand'; }
-  R.choix = ch;
+  const p = R.pas + 1;
+  if (!R.carte || R.carte.etage !== R.etage) genCarte(R);
+  if (p > ETAPES) { R.choix = ['boss']; R.choixIdx = [0]; return; }
+  const row = R.carte.rows[p - 1], idx = R.carte.pos == null ? row.map((_, k) => k) : R.carte.rows[p - 2][R.carte.pos].next.slice().sort((a, b) => a - b);
+  R.choixIdx = idx; R.choix = idx.map(k => row[k].t);
 }
 // les réglages du combat (pour CRYPTE.nouvelle)
 function optsCombat(R, type) {
@@ -141,7 +165,7 @@ function optsCombat(R, type) {
   let cols;
   if (type === 'boss') cols = null;
   else {
-    const n = [0, 4, 6, 7][e]; cols = [[], [], []];
+    const n = [0, 4, 5, 6][e]; cols = [[], [], []];
     for (let i = 0; i < n; i++) cols[i % 3].push(niv());
     cols.forEach(c => c.sort((a, b) => b - a)); // le plus fort au fond
     if (type === 'elite') cols[Math.floor(h() * 3)].unshift(4);
@@ -163,6 +187,7 @@ function optsCombat(R, type) {
 function choisir(R, k) {
   if (R.fin || R.ecran !== 'carte') return false;
   const t = R.choix[k]; if (!t) return false; const h = RR(R);
+  if (R.carte && t !== 'boss') { R.carte.pos = R.choixIdx[k]; R.carte.chemin.push([R.pas, R.carte.pos]); }
   R.pas++; R.salle = { type:t }; R.chemin.push(t);
   if (t === 'combat' || t === 'elite' || t === 'boss') { R.ecran = 'combat'; R.S = C.nouvelle(R.heros, R.graine + '-' + R.etage + '-' + R.pas, R.bonus, optsCombat(R, t)); return true; }
   if (t === 'marchand') { R.ecran = 'marchand'; R.salle.etal = etal(R, h); return true; }

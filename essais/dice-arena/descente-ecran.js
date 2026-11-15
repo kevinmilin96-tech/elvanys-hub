@@ -45,6 +45,8 @@ function descenteGardee() { try { const p = JSON.parse(localStorage.getItem(CLE_
   .objets-c { display:flex; flex-wrap:wrap; gap:1cqw; justify-content:center; margin:1.4cqw 0 0; font-size:3.6cqw; }
   .objets-c span { background:#1d1934; border:1px solid #3a3260; border-radius:1.6cqw; padding:.2cqw 1cqw; }
   .ico { width:1.25em; height:1.25em; object-fit:contain; vertical-align:middle; } .ico.rond { border-radius:50%; object-fit:cover; }
+  .carteD { max-height:62vh; overflow:auto; border-radius:3cqw; background:radial-gradient(ellipse at 50% 0%, #3a2a1a, #14100c 80%), #14100c; border:1.5px solid #5a4a2a; padding:2cqw; }
+  .carteD .pulse circle { animation:pulseC 1s ease-in-out infinite; } @keyframes pulseC { 50% { stroke-width:2.4; filter:drop-shadow(0 0 2px #7dffb0); } }
   .breloques { display:grid; grid-template-columns:repeat(2, 1fr); gap:2cqw; }
   .breloques button { border-radius:3cqw; padding:2cqw; border:1.5px solid #4b4580; background:#221d42; text-align:left; font-size:3cqw; }
   .breloques button.on { border-color:var(--or); background:#3a2f12; } .breloques button b { color:var(--or); display:block; font-size:3.4cqw; }
@@ -99,9 +101,24 @@ function descenteEcran() {
     ${sacHTML()}`;
   let corps = '';
   if (DR.ecran === 'carte') {
-    const pas = Array.from({ length:D.ETAPES + 1 }, (_, i) => `<span class="${i < DR.pas ? 'fait' : i === DR.pas ? 'ici' : ''}">${i < DR.pas ? (D.SALLES[DR.chemin[DR.chemin.length - DR.pas + i]] || { e:'✓' }).e : i === D.ETAPES ? '♛' : i + 1}</span>`).join('<i>›</i>');
-    corps = `<div class="etages">${pas}</div><h3 style="text-align:center;color:var(--or);margin:3cqw 0 0">Où vas-tu ?</h3>
-      <div class="salles">${DR.choix.map((t, k) => `<button class="${t === 'boss' ? 'boss' : ''}" onclick="allerSalle(${k})"><span class="e">${D.SALLES[t].e}</span><span><b>${D.SALLES[t].n}</b><small>${D.SALLES[t].d}</small></span></button>`).join('')}</div>`;
+    // la carte à embranchements : des rangées de cases, les chemins entre elles ; les cases où l'on peut aller clignotent
+    const Cm = DR.carte, rows = Cm ? Cm.rows : [], nR = rows.length, HH = 22 * (nR + 1) + 12;
+    const Y = r => HH - 10 - r * 22, X = x => 8 + x * 84;
+    const ICO = { combat:'⚔', elite:'★', marchand:'🛒', feu:'🔥', evenement:'❓', tresor:'💰', boss:'♛' };
+    const COUL = { combat:'#c9c1ea', elite:'#f3c96b', marchand:'#7dffb0', feu:'#ff9a4a', evenement:'#c084fc', tresor:'#ffd27a' };
+    const vu = new Set((Cm ? Cm.chemin : []).map(([r, k]) => r + ',' + k)), peut = new Set((DR.choixIdx || []).map(k => DR.pas + ',' + k));
+    let liens = '';
+    rows.forEach((row, r) => row.forEach((n, k) => { if (r < nR - 1) n.next.forEach(k2 => { const fait = vu.has(r + ',' + k) && vu.has((r + 1) + ',' + k2);
+      liens += `<line x1="${X(n.x)}" y1="${Y(r)}" x2="${X(rows[r + 1][k2].x)}" y2="${Y(r + 1)}" stroke="${fait ? '#f3c96b' : '#6a5a8a'}" stroke-width="${fait ? 1.4 : .7}" stroke-dasharray="${fait ? '' : '1.6 1.2'}"/>`; });
+      else liens += `<line x1="${X(n.x)}" y1="${Y(r)}" x2="50" y2="${Y(nR)}" stroke="#6a5a8a" stroke-width=".6" stroke-dasharray="1.6 1.2"/>`; }));
+    const cases = rows.map((row, r) => row.map((n, k) => { const ok = peut.has(r + ',' + k) && DR.choix[0] !== 'boss', fait = vu.has(r + ',' + k), ki = (DR.choixIdx || []).indexOf(k);
+      return `<g ${ok ? `onclick="allerSalle(${ki})" style="cursor:pointer"` : ''} class="${ok ? 'pulse' : ''}"><circle cx="${X(n.x)}" cy="${Y(r)}" r="${ok ? 6.2 : 5.2}" fill="${fait ? '#3a2f12' : ok ? '#2a2448' : '#1a1630'}" stroke="${ok ? '#7dffb0' : fait ? '#f3c96b' : COUL[n.t]}" stroke-width="${ok ? 1.4 : .8}" opacity="${r < DR.pas && !fait ? .35 : 1}"/><text x="${X(n.x)}" y="${Y(r) + 2}" font-size="5.4" text-anchor="middle" opacity="${r < DR.pas && !fait ? .35 : 1}">${ICO[n.t]}</text></g>`; }).join('')).join('');
+    const bossOk = DR.choix[0] === 'boss';
+    const boss = `<g ${bossOk ? `onclick="allerSalle(0)" style="cursor:pointer" class="pulse"` : ''}><circle cx="50" cy="${Y(nR)}" r="8.5" fill="#3a1a12" stroke="${bossOk ? '#7dffb0' : '#ff7a4a'}" stroke-width="1.4"/><text x="50" y="${Y(nR) + 3}" font-size="8" text-anchor="middle">♛</text></g>`;
+    corps = `<p style="text-align:center;color:var(--doux);font-size:3.2cqw;margin:1cqw 0 2cqw">Touche une case qui clignote en vert. ⚔ combat · ★ élite · 🛒 marchand · 🔥 feu · ❓ événement · 💰 trésor · ♛ boss</p>
+      <div class="carteD" id="carteD"><svg viewBox="0 0 100 ${HH}" style="width:100%;display:block">${liens}${cases}${boss}</svg></div>
+      ${DR.choix.length === 1 || bossOk ? '' : `<div class="salles" style="margin-top:3cqw">${DR.choix.map((t, k) => `<button class="${t === 'boss' ? 'boss' : ''}" onclick="allerSalle(${k})"><span class="e">${D.SALLES[t].e}</span><span><b>${D.SALLES[t].n}</b><small>${D.SALLES[t].d}</small></span></button>`).join('')}</div>`}
+      ${bossOk ? `<div class="salles" style="margin-top:3cqw"><button class="boss" onclick="allerSalle(0)"><span class="e">♛</span><span><b>${D.SALLES.boss.n}</b><small>${D.SALLES.boss.d}</small></span></button></div>` : ''}`;
   }
   if (DR.ecran === 'marchand') {
     const lig = x => x.t === 'objet' ? [icoObj(x.k), D.OBJETS[x.k].n, D.OBJETS[x.k].d] : x.t === 'comp' ? [icoComp(x.k), 'Compagnon : ' + C.COMPAGNONS[x.k].n, `${C.COMPAGNONS[x.k].pv} PV · ${C.COMPAGNONS[x.k].d}`] : x.t === 'reparer' ? ['🩹', 'Soigner ton compagnon', 'Sa vie redevient pleine.'] : x.t === 'conso' ? [C.CONSOS[x.k].e, 'Consommable : ' + C.CONSOS[x.k].n, C.CONSOS[x.k].d + ' (dans ta poche, 3 au plus, à utiliser en combat)'] : ['🍖', `Un bon repas (+${x.n} PV)`, 'À volonté, tant que tu as de l’or.'];
@@ -128,6 +145,7 @@ function descenteEcran() {
   }
   if (DR.ecran === 'fin') return descenteFin();
   $('jeu').innerHTML = `<div class="dsc">${tete}${corps}</div>`;
+  const cd = $('carteD'); if (cd) cd.scrollTop = cd.scrollHeight * Math.max(0, 1 - (DR.pas + 2.5) / (D.ETAPES + 1)) - cd.clientHeight / 2;
 }
 function sacHTML() {
   const o = Object.entries(DR.obj).filter(([k, n]) => n && D.OBJETS[k]);
