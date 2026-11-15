@@ -160,7 +160,7 @@ async function amisCree() {
   const bt = document.getElementById('am-cree'); if (bt) { if (bt.disabled) return; bt.disabled = true; bt.textContent = 'Création…'; }
   const remet = () => { if (bt) { bt.disabled = false; bt.textContent = 'Créer ma carte'; } };
   try { const { statut, d } = await amisApi(AMIS_API, { pseudo:p });
-    if (statut !== 200) { remet(); amisMsg((d.message || 'Le serveur ne répond pas.') + ` (code ${statut})`); return; }
+    if (statut !== 200) { remet(); amisMsg(statut === 501 || statut === 405 || (statut === 404 && !d.message) ? 'Les amis marchent seulement sur perso.elvanys.fr/guilde (cette page est ouverte ailleurs).' : (d.message || 'Le serveur ne répond pas.') + ` (code ${statut})`); return; }
     AMIS.carte = { code:d.code, cle:d.cle, pseudo:d.pseudo }; localStorage.setItem('guilde-carte', JSON.stringify(AMIS.carte)); localStorage.setItem('guilde-pseudo', d.pseudo);
     await amisAgir('signal'); amisDessine();
   } catch (e) { remet(); amisMsg('Pas de réseau, ou la page n’a pas pu joindre le serveur : ' + (e && e.message || e)); }

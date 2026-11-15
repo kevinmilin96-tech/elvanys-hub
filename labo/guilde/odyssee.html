@@ -64,6 +64,11 @@
   .k.boss { background:#5a1a1a; border-color:#ff4a1a; } .k.porte { background:#3a2a4a; } .k.porte.fait { background:#2a4a3a; }
   .k.mur { background:#3a3a3a; }
   .legende { font-size:.78em; color:var(--doux); display:flex; flex-wrap:wrap; gap:4px 10px; padding:2px 4px; }
+  #fiche-trajet { position:fixed; left:50%; transform:translateX(-50%); bottom:calc(10px + env(safe-area-inset-bottom)); width:min(94vw, 480px); z-index:900; background:#1b1838f5; border:2px solid #7dffb0; border-radius:16px; padding:10px 12px; box-shadow:0 8px 30px #000c; animation:ftIn .25s; }
+  @keyframes ftIn { from { transform:translate(-50%, 20px); opacity:0; } }
+  #fiche-trajet .ft-t { display:flex; gap:10px; align-items:center; } #fiche-trajet .ft-e { font-size:30px; width:40px; text-align:center; } #fiche-trajet b { color:#f3c96b; } #fiche-trajet small { display:block; color:#c9c1ea; }
+  #fiche-trajet .ft-c { margin:8px 0; font-size:.92em; } #fiche-trajet .ft-b { display:flex; gap:8px; } #fiche-trajet .ft-b button { flex:1; padding:10px; border-radius:12px; font:bold 1em Georgia, serif; }
+  #fiche-trajet .non { background:#2a2350; color:#fff; border:1px solid #4b4580; } #fiche-trajet .oui { background:#7dffb0; color:#0a2a14; border:0; }
   .bandeau { background:#2a2650; border-radius:10px; padding:7px 10px; margin:5px 0; font-size:.9em; min-height:2.2em; }
   .bas { position:fixed; left:0; right:0; bottom:0; background:#15132bee; border-top:1px solid #4b4580; display:flex; gap:6px; padding:7px; justify-content:center; }
   .bas button { background:#2a2650; color:#fff; border:2px solid #4b4580; border-radius:12px; padding:8px 6px; font-size:.86em; flex:1; max-width:140px; }
@@ -151,7 +156,7 @@
 <script>
 const ZOK = () => localStorage.getItem('guilde-tuto') === 'fait'; // Zéphine : débloquée par le tutoriel (12/11)
 
-const VERSION = '20261115-175637';
+const VERSION = '20261115-180610';
 function verifieVersion() {
   fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
     v = (v || '').trim(); if (!v || v === VERSION || document.getElementById('majbar')) return;
@@ -164,18 +169,18 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261115-175637"></script>
-<script src="musique.js?v=20261115-175637"></script>
-<script src="rang.js?v=20261115-175637"></script>
-<script src="heros-etoiles.js?v=20261115-175637"></script>
-<script src="donnees.js?v=20261115-175637"></script>
-<script src="guide.js?v=20261115-175637"></script>
-<script src="odyssee.js?v=20261115-175637"></script>
-<script src="bestiaire.js?v=20261115-175637"></script>
-<script src="aventure.js?v=20261115-175637"></script>
-<script src="odyssee-sansfin.js?v=20261115-175637"></script>
-<script src="pantheon.js?v=20261115-175637"></script>
-<script src="chronique.js?v=20261115-175637"></script>
+<script src="cartes.js?v=20261115-180610"></script>
+<script src="musique.js?v=20261115-180610"></script>
+<script src="rang.js?v=20261115-180610"></script>
+<script src="heros-etoiles.js?v=20261115-180610"></script>
+<script src="donnees.js?v=20261115-180610"></script>
+<script src="guide.js?v=20261115-180610"></script>
+<script src="odyssee.js?v=20261115-180610"></script>
+<script src="bestiaire.js?v=20261115-180610"></script>
+<script src="aventure.js?v=20261115-180610"></script>
+<script src="odyssee-sansfin.js?v=20261115-180610"></script>
+<script src="pantheon.js?v=20261115-180610"></script>
+<script src="chronique.js?v=20261115-180610"></script>
 <script>
 // le moteur du Duel n'est pas chargé ici : les cartes de l'Odyssée appellent degats/soin seulement en combat (dans duel.html)
 const log = () => {}, degats = () => {}, soin = () => {}, altere = () => {}, invoque = () => {}, adv = () => ({}), fin = () => {};
@@ -292,10 +297,10 @@ function dessine() {
   <div id="entete">${enteteHTML()}</div>
   ${carteSVG()}
   <div class="bulles" id="bulles">${bullesHTML()}</div>
-  <div class="bandeau">${r.vivres ? 'Touche une salle verte pour voir le trajet, puis touche-la encore : le héros y va.' : '<b style="color:#ff7a7a">Lanterne éteinte : chaque case nouvelle coûte 3 PV.</b>'} ${r.fragments >= 2 ? '<b style="color:var(--ok)">Tu as les 2 fragments : la porte 🚪 t’attend.</b>' : ''}</div>
+  <div class="bandeau">${r.vivres ? 'Touche une salle verte : une fiche dit ce qu’il y a et le prix en huile ; « Y aller » pour partir.' : '<b style="color:#ff7a7a">Lanterne éteinte : chaque case nouvelle coûte 3 PV.</b>'} ${r.fragments >= 2 ? '<b style="color:var(--ok)">Tu as les 2 fragments : la porte 🚪 t’attend.</b>' : ''}</div>
   <div class="legende"><span>⚔ monstres (I, II, III)</span><span>💀 élite</span><span>🗝 coffre</span><span>💧 source</span><span>🏪 marchand</span><span>❓ événement</span><span>🔥 autel</span><span>🏕 feu de camp</span><span>🧱 mur fissuré</span><span>🚪 porte</span><span>👑 boss</span></div>
   <div class="bas"><button onclick="monDeck()">🂠 Deck</button><button onclick="journal()">📜 Journal</button><button onclick="reglesCourtes()">❓ Règles</button><button onclick="abandon()">⏏ Quitter</button></div>`;
-  if (r.sansfin) sfEcran(); else if (r.aventure && localStorage.getItem('guilde-guide-odyssee')) Guide.lance('aventure', GUIDE_AV); else Guide.lance('odyssee', r.aventure ? [...GUIDE_ODY, ...GUIDE_AV] : GUIDE_ODY);
+  if (r.sansfin) sfEcran(); else if (r.aventure && localStorage.getItem('guilde-guide-odyssee')) Guide.lance('aventure', GUIDE_AV); else Guide.lance('odyssee', r.aventure ? [...GUIDE_ODY, ...GUIDE_AV] : GUIDE_ODY, false, () => { if (r.aventure) localStorage.setItem('guilde-guide-aventure', '1'); }); // 15/11 : sinon la fin du guide revenait une 2e fois
 }
 // =============================================================================================== l'Odyssée sans fin : la pioche sous la carte (14/11)
 let sfSel = null, sfRot = 0, sfCase = null;
@@ -436,7 +441,7 @@ const GUIDE_AV = [
 // 14/11 : le guide de Moustache au premier passage sur l'île
 const GUIDE_ODY = [
   [null, 'Bienvenue sur l’île, aventurier ! Elle est cachée dans la brume : tu la découvres <b>case par case</b>. Au bout, un boss t’attend derrière une porte scellée.'],
-  ['svg.ile', 'Voici la carte. Les salles <b>en vert</b> sont celles où tu peux aller. Touche-en une : le trajet s’affiche avec son coût. Touche-la <b>encore</b> : ton héros y marche.'],
+  ['svg.ile', 'Voici la carte. Les salles <b>en vert</b> sont celles où tu peux aller. Touche-en une : une fiche te dit ce qu’il y a et combien d’huile ça coûte. Ton héros part seulement quand tu touches <b>« Y aller »</b>.'],
   ['.entete', 'Tes réserves. ❤ ta vie (elle ne remonte pas toute seule !), 💰 ton or pour le marchand, 🪔 <b>l’huile de ta lanterne</b> : chaque case nouvelle en coûte 1. Sans huile, chaque case nouvelle coûte 3 PV. 🗝 ouvre les coffres, 🔮 les fragments.'],
   ['.legende', 'Les salles. ⚔ monstres, 💀 élites : bats <b>2 élites</b> pour gagner 2 fragments 🔮 et ouvrir la porte du boss. Le reste t’aide : sources, marchand, feu de camp, coffres…'],
   ['.bulles', 'Ici, ton héros et moi, on commente l’aventure. Je donne souvent de bons conseils. Souvent.'],
@@ -575,20 +580,36 @@ function cheminVers(c) {
   while (prev[k]) { chemin.unshift(k.split(',').map(Number)); k = prev[k]; } return chemin;
 }
 // 10/11 : DEUX TOUCHERS : le 1er dessine le trajet en pointillés avec son coût, le 2e (sur la même salle) fait marcher le héros
+// 15/11 (l'utilisateur : « on touche le point vert, pas d'information, on touche encore et on y va : on brûle de l'huile sans l'avoir voulu ») :
+// le 1er toucher ouvre une FICHE en bas de l'écran (ce qu'il y a dans la salle, le chemin, l'huile) ; on part seulement avec « Y aller ».
 let destination = null;
+const DESC_SALLE = { chemin:'Un passage déjà sûr.', depart:'Le débarcadère : ton point de départ.', monstre:'Un combat contre des monstres (le Duel).', elite:'Un combat difficile : une élite, qui garde un fragment de la porte.',
+  coffre:'Un coffre : de l’or, une relique… ou un piège.', mimique:'Un coffre : de l’or, une relique… ou un piège.', source:'Une source : elle rend de la vie.', marchand:'Le marchand : cartes, potions, huile, contre de l’or.',
+  evenement:'Un événement : une rencontre, un choix à faire.', autel:'Un autel : une bénédiction contre une malédiction.', mur:'Un mur fissuré : une bombe ou 3 doses d’huile pour l’ouvrir ; une relique derrière.',
+  feu:'Un feu de camp : se reposer, raviver la lanterne ou s’entraîner.', sac:'Le sac de Moustache : un tirage à l’aveugle.', forge:'La forge runique : améliorer un dé.', defi:'La salle du défi : un combat avec une règle spéciale.',
+  tresor:'Un trésor légendaire.', fontaine:'Une fontaine maudite : un pari risqué.', mystere:'On ne sait pas ce qu’il y a là-dedans.', porte:'La porte du boss : il faut les fragments des élites.', boss:'Le gardien de l’île. Le combat final.' };
+function ficheTrajet(c, chemin, cout) {
+  fermeFicheTrajet();
+  const neuves = chemin.filter(([a, b]) => !caseA(R, a, b).visite).length, noir = cout > R.vivres;
+  document.body.insertAdjacentHTML('beforeend', `<div id="fiche-trajet"><div class="ft-t"><span class="ft-e">${SALLES_ODY[c.t].e || '·'}</span><div><b>${SALLES_ODY[c.t].n}</b><small>${DESC_SALLE[c.t] || ''}</small></div></div>
+    <div class="ft-c">👣 ${chemin.length} case${chemin.length > 1 ? 's' : ''}${neuves ? ` dont ${neuves} nouvelle${neuves > 1 ? 's' : ''}` : ''} · ${cout ? `🪔 <b>${cout}</b> dose${cout > 1 ? 's' : ''} d’huile (il t’en reste ${R.vivres})` : '🪔 gratuit (déjà exploré)'}${noir ? '<br><b style="color:#ff7a7a">Pas assez d’huile : 3 PV par case dans le noir.</b>' : ''}</div>
+    <div class="ft-b"><button class="non" onclick="annuleTrajet()">Annuler</button><button class="oui" onclick="marcheVers(${c.x},${c.y},true)">▶ Y aller</button></div></div>`);
+}
+function fermeFicheTrajet() { const f = document.getElementById('fiche-trajet'); if (f) f.remove(); }
+function annuleTrajet() { destination = null; fermeFicheTrajet(); const t = document.getElementById('trajet'); if (t) t.remove(); dessine(); }
 function montreTrajet(c, chemin) {
   const g = document.getElementById('cels'); if (!g) return; const old = document.getElementById('trajet'); if (old) old.remove();
   const pts = [[R.pos.x, R.pos.y], ...chemin].map(([a, b]) => `${a * CEL + CEL / 2},${b * CEL + CEL / 2}`).join(' ');
   const neuves = chemin.filter(([a, b]) => !caseA(R, a, b).visite).length, mur = c.t === 'mur' && !c.fait && !R.sacoche.includes('bombe') ? 3 : 0;
   g.insertAdjacentHTML('beforeend', `<g id="trajet" style="pointer-events:none"><polyline points="${pts}" fill="none" stroke="#8a1f1f" stroke-width="4" stroke-dasharray="7 7" stroke-linecap="round"/><circle cx="${c.x * CEL + CEL / 2}" cy="${c.y * CEL + CEL / 2}" r="24" fill="none" stroke="#15803d" stroke-width="3"/></g>`);
-  const cout = neuves + mur, b = document.querySelector('.bandeau');
-  if (b) b.innerHTML = `${SALLES_ODY[c.t].e} ${SALLES_ODY[c.t].n} · ${cout ? `🪔 ${cout} dose${cout > 1 ? 's' : ''} d’huile${R.vivres < cout ? ' <b style="color:#ff7a7a">(pas assez : 3 PV par case dans le noir)</b>' : ''}` : 'gratuit (déjà exploré)'} · <b>touche encore la salle pour y aller</b>`;
+  const cout = neuves + mur, b = document.querySelector('.bandeau'); ficheTrajet(c, chemin, cout);
+  if (b) b.innerHTML = `${SALLES_ODY[c.t].e} ${SALLES_ODY[c.t].n} · ${cout ? `🪔 ${cout} dose${cout > 1 ? 's' : ''} d’huile${R.vivres < cout ? ' <b style="color:#ff7a7a">(pas assez : 3 PV par case dans le noir)</b>' : ''}` : 'gratuit (déjà exploré)'} · <b>« Y aller » pour partir</b>`;
 }
-async function marcheVers(x, y) {
+async function marcheVers(x, y, confirme) {
   const c = caseA(R, x, y); if (!c || enMarche || !peutCible(c)) return;
   const chemin = cheminVers(c); if (!chemin) return;
-  if (!destination || destination.x !== x || destination.y !== y) { destination = { x, y }; montreTrajet(c, chemin); return; }
-  destination = null; { const t = document.getElementById('trajet'); if (t) t.remove(); }
+  if (!confirme || !destination || destination.x !== x || destination.y !== y) { destination = { x, y }; montreTrajet(c, chemin); return; } // seul « Y aller » fait partir
+  destination = null; fermeFicheTrajet(); { const t = document.getElementById('trajet'); if (t) t.remove(); }
   enMarche = true;
   for (const [a, b] of chemin) {
     const res = deplace(R, a, b); if (!res) break;
@@ -780,7 +801,7 @@ function sacocheIle(i) { const k = R.sacoche[i]; if (k === 'soin') { fenetre(`<h
 function monDeck() { const n = {}; R.deck.forEach(k => n[k] = (n[k] || 0) + 1); fenetre(`<h2>🂠 Mon deck (${R.deck.length} cartes)</h2><div class="cartes3">${Object.keys(n).map(k => carteHTML(k, '', n[k] > 1 ? '× ' + n[k] : '')).join('')}</div><div class="choixh"><button onclick="fermer()">Fermer</button></div>`); }
 function journal() { fenetre(`<h2>📜 Journal de l’île</h2><div class="journal">${[...R.journal].reverse().map(t => `<div>${t}</div>`).join('')}</div><div class="choixh"><button onclick="fermer()">Fermer</button></div>`); }
 function reglesCourtes() { fenetre(`<h2>❓ L’Odyssée en bref</h2><ul style="padding-left:1.1em;font-size:.9em">
-  <li>Touche une case verte : le trajet s’affiche avec son coût ; touche-la encore pour y aller. Chaque case <b>nouvelle</b> brûle 1 dose d’huile 🪔 ; lanterne vide = on avance dans le noir, 3 PV par case.</li>
+  <li>Touche une case verte : le trajet s’affiche avec son coût ; une fiche dit ce qu’il y a et combien d’huile il faut ; le héros part avec « Y aller ». Chaque case <b>nouvelle</b> brûle 1 dose d’huile 🪔 ; lanterne vide = on avance dans le noir, 3 PV par case.</li>
   <li>Tes PV ne remontent pas entre les combats. Sources 💧 (+20), potions, marchand 🏪.</li>
   <li>Chaque victoire : de l’or et <b>une carte parmi trois</b> pour ton deck. Les élites 💀 donnent un fragment 🔮 et une clé 🗝 (coffres).</li>
   <li>2 fragments ouvrent la porte 🚪 du Titan 👑. Il ne se combat qu’une fois.</li>

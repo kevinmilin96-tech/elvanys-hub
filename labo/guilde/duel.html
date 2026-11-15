@@ -687,7 +687,7 @@
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
 // 14/11 : l'Odyssée sans fin a ses propres emplacements (odyssee.js lit SANSFIN)
 const SANSFIN = new URLSearchParams(location.search).get('sansfin') === '1', EPREUVE_PAGE = new URLSearchParams(location.search).get('epreuve') === '1', ODY_PAGE = EPREUVE_PAGE ? 'epreuves.html' : 'odyssee.html' + (SANSFIN ? '?sansfin=1' : '');
-const VERSION = '20261115-175637';
+const VERSION = '20261115-180610';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -706,16 +706,16 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261115-175637"></script>
-<script src="musique.js?v=20261115-175637"></script>
-<script src="rang.js?v=20261115-175637"></script>
-<script src="heros-etoiles.js?v=20261115-175637"></script>
-<script src="donnees.js?v=20261115-175637"></script>
-<script src="odyssee.js?v=20261115-175637"></script>
-<script src="bestiaire.js?v=20261115-175637"></script>
-<script src="aventure.js?v=20261115-175637"></script>
-<script src="odyssee-sansfin.js?v=20261115-175637"></script>
-<script src="chronique.js?v=20261115-175637"></script>
+<script src="cartes.js?v=20261115-180610"></script>
+<script src="musique.js?v=20261115-180610"></script>
+<script src="rang.js?v=20261115-180610"></script>
+<script src="heros-etoiles.js?v=20261115-180610"></script>
+<script src="donnees.js?v=20261115-180610"></script>
+<script src="odyssee.js?v=20261115-180610"></script>
+<script src="bestiaire.js?v=20261115-180610"></script>
+<script src="aventure.js?v=20261115-180610"></script>
+<script src="odyssee-sansfin.js?v=20261115-180610"></script>
+<script src="chronique.js?v=20261115-180610"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -1486,7 +1486,18 @@ function vise(quoi, im) {
   const def = defDe(S.J, quoi), t = def && def.cible;
   if (t && quoi !== 'garde') { ciblage = { quoi, ds:sel, im, type:t }; rendu(); return; }
   if (CARTES[quoi] && soinPrevu(quoi, vals(sel)) !== null) { ciblage = { quoi, ds:sel, im, type:'soin', choisi:{ J:S.J } }; montreConfirme(); return; }
+  // 15/11 (l'utilisateur : « on touche le bouclier, l'effet est immédiat ; si on ne sait pas, c'est problématique ») : une CONFIRMATION
+  // explique l'action et les dés choisis avant de la jouer (sauf dans le tutoriel, ou si « Ne plus me demander » est coché)
+  if (!S.tuto && !S.auto && localStorage.getItem('guilde-confirme-actions') !== 'non') { actionAttente = { quoi, ds:sel.slice(), im }; aide(quoi, 'confirme'); return; }
   pose(S.J, quoi, sel, null, im); sel = []; rendu();
+}
+let actionAttente = null;
+function confirmeAction(ok) {
+  const a = actionAttente; actionAttente = null;
+  const c = document.getElementById('plusDemander'); if (c && c.checked) localStorage.setItem('guilde-confirme-actions', 'non');
+  fermer(); if (!ok || !a || S.fini) { rendu(); return; }
+  if (!permis(S.J, a.quoi, vals(a.ds), a.ds)) { rendu(); return; }
+  pose(S.J, a.quoi, a.ds, null, a.im); sel = []; rendu();
 }
 // 13/11 soir : LA VALIDATION D'UNE ATTAQUE. Après le choix de la cible, une fenêtre montre ce qui va se passer (dégâts prévus,
 // protection de la cible) ; l'attaque ne part qu'avec « Valider ».
@@ -1800,6 +1811,10 @@ function aide(quoi, info) {
   else if (quoi === 'transmu') t = `<b>${h.action.n}</b> (${h.action.txt}) : ${h.action.d}`;
   else if (quoi === 'vendre') t = '<b>Vendre</b> (le cristal bleu, à gauche) : choisis un ou plusieurs dés, puis touche le cristal : <b>+1 PC par dé, tout de suite</b> (6 PC au plus). Pratique pour payer une carte ce tour-ci. Un dé vendu est perdu pour le tour : il ne se relance plus. Les dés pas posés à « Fin du tour » sont vendus tout seuls.';
   else { const c = CARTES[quoi]; t = `<b>${c.n}</b> : coûte <b>${coutCarte(J, quoi)} PC</b> et demande <b>${c.txt}</b>. ${c.d}${c.t === 's' && J.silence ? '<br><i>Tu es réduit au Silence ce tour : pas de Sort.</i>' : ''}`; }
+  if (info === 'confirme') { const [sym, nomI] = ICONES[quoi] || ['🂠', (CARTES[quoi] || {}).n || quoi], vs = actionAttente ? vals(actionAttente.ds) : [];
+    fenetre(`<h2>${sym} ${nomI || (h.action && h.action.n) || ''} : on y va ?</h2><p>${t}</p>${vs.length ? `<p>Avec ${vs.length > 1 ? 'les dés' : 'le dé'} <b>${vs.join(', ')}</b>.</p>` : ''}
+      <label style="display:flex;gap:8px;align-items:center;color:#c9c1ea;font-size:.85em;margin:6px 0"><input type="checkbox" id="plusDemander"> Ne plus me demander (on peut le remettre dans ⚙️ Paramètres)</label>
+      <div class="choixh"><button onclick="confirmeAction(false)">Annuler</button><button class="or" onclick="confirmeAction(true)">✅ Valider</button></div>`); return; }
   fenetre(`<h2>${info ? 'Comment ça marche' : 'Pas encore possible'}</h2><p>${t}</p>${info ? '' : `<p style="color:#f3c96b"><b>${raison(quoi)}</b></p>`}<div class="choixh"><button onclick="fermer()">Compris</button></div>`);
 }
 // pourquoi une action est refusée, en une phrase
@@ -2325,17 +2340,17 @@ async function joueFX() {
 // toucher l'écran pendant les animations les accélère
 document.addEventListener('pointerdown', () => { if (fxOn && !(S && S.tuto)) fxVite = .5; }, true); // 14/11 : plus d'accélération dans le tutoriel
 </script>
-<script src="profil.js?v=20261115-175637"></script>
-<script src="pantheon.js?v=20261115-175637"></script>
-<script src="tuto.js?v=20261115-175637"></script>
-<script src="deux.js?v=20261115-175637"></script>
+<script src="profil.js?v=20261115-180610"></script>
+<script src="pantheon.js?v=20261115-180610"></script>
+<script src="tuto.js?v=20261115-180610"></script>
+<script src="deux.js?v=20261115-180610"></script>
 <script>window.AMIS_SANS_BOUTON = true;</script>
-<script src="amis.js?v=20261115-175637"></script>
-<script src="duel-ligne.js?v=20261115-175637"></script>
-<script src="invasion.js?v=20261115-175637"></script>
-<script src="enigme-table.js?v=20261115-175637"></script>
-<script src="forge.js?v=20261115-175637"></script>
-<script src="semaine.js?v=20261115-175637"></script>
-<script src="enigme.js?v=20261115-175637"></script>
+<script src="amis.js?v=20261115-180610"></script>
+<script src="duel-ligne.js?v=20261115-180610"></script>
+<script src="invasion.js?v=20261115-180610"></script>
+<script src="enigme-table.js?v=20261115-180610"></script>
+<script src="forge.js?v=20261115-180610"></script>
+<script src="semaine.js?v=20261115-180610"></script>
+<script src="enigme.js?v=20261115-180610"></script>
 </body>
 </html>
