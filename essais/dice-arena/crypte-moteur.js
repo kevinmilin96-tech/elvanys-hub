@@ -7,7 +7,7 @@
 (function (racine) {
 'use strict';
 
-const NB_DES = 5, NB_COL = 3, PROF = 4, RESERVE = 2, RUNES_MAX = 3, PV_HEROS = 60;
+const NB_DES = 5, NB_COL = 3, PROF = 4, RESERVE = 2, RUNES_MAX = 3, PV_HEROS = 55;
 
 // ------------------------------------------------------------------ hasard à graine (la même crypte pour tout le monde le même jour)
 function rng(graine) {
@@ -15,6 +15,8 @@ function rng(graine) {
   return () => { h += 0x6D2B79F5; let t = h; t = Math.imul(t ^ t >>> 15, t | 1); t ^= t + Math.imul(t ^ t >>> 7, t | 61); return ((t ^ t >>> 14) >>> 0) / 4294967296; };
 }
 const de6 = R => 1 + Math.floor(R() * 6);
+// 15/11 : le hasard de la partie vit DANS l'état (S.rs), pour sauvegarder une crypte en cours (JSON simple)
+function RS(S) { return () => { S.rs = (S.rs + 0x6D2B79F5) >>> 0; let t = S.rs; t = Math.imul(t ^ t >>> 15, t | 1); t ^= t + Math.imul(t ^ t >>> 7, t | 61); return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
 const pick = (R, l) => l[Math.floor(R() * l.length)];
 
 // ------------------------------------------------------------------ les sceaux (les cases de dés)
@@ -93,32 +95,57 @@ const POUVOIRS = {
   zephine: { n:'Tempête', d:'Brise 1 sceau sur chaque monstre visible.', s:() => [sceau('imp'), sceau('imp')] },
 };
 
+// ------------------------------------------------------------------ les intentions (15/11, retour de l'utilisateur : « ça ressemblait pas à Dice & Fold »)
+// À chaque tour, chaque monstre visible annonce ce qu'il va faire à la fin du tour : frapper, préparer un gros coup, se protéger, soigner un voisin.
+const INTENTIONS = {
+  frappe:{ e:'⚔', n:'Frappe', d:'frappe ton héros de sa force' },
+  charge:{ e:'⏳', n:'Prépare un gros coup', d:'ne frappe pas ce tour-ci, mais frappera DOUBLE au tour suivant' },
+  garde: { e:'🛡', n:'Se protège', d:'ne frappe pas, mais referme un de ses sceaux brisés' },
+  soin:  { e:'💚', n:'Soigne', d:'ne frappe pas, mais referme un sceau brisé d’un monstre voisin' },
+};
+function intention(S, c) {
+  if (c.charge) { c.it = 'frappe'; c.double = true; c.charge = false; return; }
+  c.double = false; const r = RS(S)();
+  if (c.niv <= 1) { c.it = 'frappe'; return; }
+  const table = c.gardien ? [['frappe', .6], ['charge', .2], ['garde', .2]] : c.niv === 2 ? [['frappe', .7], ['charge', .15], ['garde', .15]] : [['frappe', .55], ['charge', .15], ['garde', .15], ['soin', .15]];
+  let a = 0; c.it = 'frappe'; for (const [k, p] of table) { a += p; if (r < a) { c.it = k; break; } }
+}
+// ce que chaque monstre visible fera à la fin du tour (pour l'écran : « Gobelin 2 + Harpie 1 »)
+function intentions(S) {
+  const V = visibles(S), chefs = V.filter(c => c.trait === 'chef').length;
+  return V.map(c => ({ id:c.id, nom:c.nom, it:c.it || 'frappe', v:(c.it || 'frappe') === 'frappe' && !S.voile ? (c.att + chefs - (c.trait === 'chef' ? 1 : 0)) * (c.double ? 2 : 1) : 0 }));
+}
+
 // ------------------------------------------------------------------ une partie
-function nouvelle(heros, graine) {
+// bonus (optionnel) : ce que le héros apporte de sa progression (étoiles, équipement) : { pv, bouclier, relance, des }
+function nouvelle(heros, graine, bonus = {}) {
   const R = rng(graine); let n = 0;
   const cols = [];
   for (let c = 0; c < NB_COL; c++) { const col = []; for (let p = PROF; p >= 1; p--) col.push(carte(R, p, n++)); col[col.length - 1].vue = true; cols.push(col); }
-  const S = { heros, graine, cols, gardien:null, pv:PV_HEROS, pvmax:PV_HEROS, tour:0, des:[], relance:1, reserve:Array(RESERVE).fill(null),
+  const pvmax = PV_HEROS + (bonus.pv || 0);
+  const S = { heros, graine, cols, gardien:null, pv:pvmax, pvmax, tour:0, des:[], relance:1, reserve:Array(RESERVE).fill(null),
+    bouclier:bonus.bouclier || 0, relanceBase:1 + (bonus.relance || 0), desPlus:bonus.des || 0,
     creuset:Array(6).fill(false), runes:0, pouvoir:POUVOIRS[heros].s(), pret:false, voile:false, voitTout:false, score:0, chaine:0, chaineMax:0,
-    tombes:0, fin:null, journal:[], seq:0, _r:R };
+    tombes:0, fin:null, journal:[], seq:0, rs:Math.floor(R() * 4294967296) };
   debutTour(S); return S;
 }
 const log = (S, t) => { S.journal.unshift(t); S.journal.length = Math.min(S.journal.length, 30); };
 const visibles = S => S.gardien ? [S.gardien] : S.cols.filter(c => c.length).map(c => c[c.length - 1]);
 const trouve = (S, id) => visibles(S).find(c => c.id === id);
-const nbDes = S => NB_DES - visibles(S).filter(c => c.trait === 'gel').length;
+const nbDes = S => NB_DES + (S.desPlus || 0) - visibles(S).filter(c => c.trait === 'gel').length;
 
 function debutTour(S) {
-  S.tour++; S.relance = 1; S.chaine = 0; S.voile = false;
+  S.tour++; S.relance = S.relanceBase || 1; S.chaine = 0; S.voile = false;
+  visibles(S).forEach(c => intention(S, c));
   visibles(S).forEach(c => { if (c.trait === 'repousse') { const s = c.sceaux.find(x => x.ok && x.t !== 'tot'); if (s) { s.ok = false; s.val = 0; log(S, `🌱 ${c.nom} : un sceau se referme.`); } } });
   const garde = S.reserve.filter(x => x != null); S.reserve = Array(RESERVE).fill(null);
   S.des = garde.map(v => ({ id:'d' + S.seq++, v, garde:true }));
-  for (let i = 0; i < nbDes(S); i++) S.des.push({ id:'d' + S.seq++, v:de6(S._r) });
+  for (let i = 0; i < nbDes(S); i++) S.des.push({ id:'d' + S.seq++, v:de6(RS(S)) });
 }
 // relancer : tous les dés pas encore posés, sauf ceux sortis de la besace
 function relancer(S) {
   if (S.fin || S.relance < 1) return false;
-  S.relance--; S.des.forEach(d => { if (!d.garde) d.v = de6(S._r); }); return true;
+  S.relance--; S.des.forEach(d => { if (!d.garde) d.v = de6(RS(S)); }); return true;
 }
 // poser le dé id sur : { carte:id, s:index } · { pouvoir:index } · { creuset:true } · { reserve:true }
 function placer(S, idDe, ou) {
@@ -140,12 +167,12 @@ function verifie(S, c) {
   const gain = 10 * c.niv * S.chaine; S.score += gain;
   log(S, `💀 ${c.nom} tombe${S.chaine > 1 ? ` · chaîne ×${S.chaine}` : ''} (+${gain}).`);
   if (c.trait === 'rancune') { degats(S, c.att); log(S, `💢 Rancune : ${c.nom} frappe en tombant (${c.att}).`); }
-  if (c.trait === 'tresor') { const vides = S.creuset.map((x, k) => x ? -1 : k).filter(k => k >= 0); if (vides.length) { S.creuset[pick(S._r, vides)] = true; log(S, '💎 Trésor : une case du creuset se remplit.');
+  if (c.trait === 'tresor') { const vides = S.creuset.map((x, k) => x ? -1 : k).filter(k => k >= 0); if (vides.length) { S.creuset[pick(RS(S), vides)] = true; log(S, '💎 Trésor : une case du creuset se remplit.');
       if (S.creuset.every(Boolean)) { S.creuset = Array(6).fill(false); if (S.runes < RUNES_MAX) S.runes++; log(S, '✦ Le creuset est plein : une Rune !'); } } }
   if (c.gardien) { S.gardien = null; S.score += 200 + 10 * S.pv; S.fin = 'gagne'; log(S, '🏆 Le Gardien de la crypte est vaincu !'); return; }
   const col = S.cols.find(k => k[k.length - 1] === c); col.pop();
-  if (col.length) { col[col.length - 1].vue = true; log(S, `🂠 Une carte se retourne : ${col[col.length - 1].nom}.`); }
-  if (S.cols.every(k => !k.length)) { S.gardien = gardien(S._r); log(S, `🔥 Les colonnes sont vides… ${S.gardien.nom} se réveille !`); }
+  if (col.length) { col[col.length - 1].vue = true; col[col.length - 1].it = 'frappe'; log(S, `🂠 Une carte se retourne : ${col[col.length - 1].nom}.`); }
+  if (S.cols.every(k => !k.length)) { S.gardien = gardien(RS(S)); S.gardien.it = 'frappe'; log(S, `🔥 Les colonnes sont vides… ${S.gardien.nom} se réveille !`); }
 }
 // la Rune : brise n'importe quel sceau d'un monstre visible
 function rune(S, idCarte, k) {
@@ -159,27 +186,32 @@ function pouvoir(S, opt = {}) {
   else if (S.heros === 'aldric') { S.voile = true; log(S, '🛡 Mur de lumière : personne ne frappe à ce tour.'); }
   else if (S.heros === 'pip') { const av = S.pv; S.pv = Math.min(S.pvmax, S.pv + 6); log(S, `🌿 Sève : +${S.pv - av} PV.`); }
   else if (S.heros === 'oria') { S.runes = Math.min(RUNES_MAX, S.runes + 1); S.voitTout = true; log(S, '🧭 Longue-vue : une Rune, et les cartes cachées se dévoilent.'); }
-  else if (S.heros === 'gorm') { S.des.forEach(d => { d.v = de6(S._r); d.garde = false; }); for (let k = 0; k < 2; k++) S.des.push({ id:'d' + S.seq++, v:de6(S._r) }); log(S, '📯 Second souffle : nouveaux dés, et deux de plus !'); }
+  else if (S.heros === 'gorm') { S.des.forEach(d => { d.v = de6(RS(S)); d.garde = false; }); for (let k = 0; k < 2; k++) S.des.push({ id:'d' + S.seq++, v:de6(RS(S)) }); log(S, '📯 Second souffle : nouveaux dés, et deux de plus !'); }
   else if (S.heros === 'zephine') { visibles(S).forEach(c => { const s = c.sceaux.find(x => !x.ok); if (s) brise(s); }); log(S, '🌪 Tempête : un sceau saute sur chaque monstre.'); visibles(S).slice().forEach(c => verifie(S, c)); }
   S.pret = false; S.pouvoir = P.s(); return true;
 }
 function degats(S, n) { if (n <= 0 || S.fin) return; S.pv -= n; if (S.pv <= 0) { S.pv = 0; S.fin = 'perdu'; log(S, '☠ Ton héros tombe dans la crypte.'); } }
 // combien vont frapper les monstres à la fin de ce tour (affiché en direct)
-function menace(S) {
-  if (S.voile) return 0; const V = visibles(S), chefs = V.filter(c => c.trait === 'chef').length;
-  return V.reduce((t, c) => t + c.att + chefs - (c.trait === 'chef' ? 1 : 0), 0);
-}
+function menace(S) { return S.voile ? 0 : intentions(S).reduce((t, x) => t + x.v, 0); }
 function finTour(S) {
   if (S.fin) return;
-  const m = menace(S); if (m) { degats(S, m); log(S, `⚔ Les monstres frappent : −${m} PV.`); }
+  let m = menace(S);
+  if (m && S.bouclier > 0) { const b = Math.min(S.bouclier, m); S.bouclier -= b; m -= b; log(S, `🛡 Ton bouclier encaisse ${b}.`); }
+  if (m) { degats(S, m); log(S, `⚔ Les monstres frappent : −${m} PV.`); }
   if (S.fin) return;
+  const V = visibles(S);
+  V.forEach((c, i) => {
+    if (c.it === 'charge') { c.charge = true; log(S, `⏳ ${c.nom} prépare un gros coup…`); }
+    if (c.it === 'garde') { const s = c.sceaux.find(x => x.ok && x.t !== 'tot'); if (s) { s.ok = false; s.val = 0; log(S, `🛡 ${c.nom} referme un sceau.`); } }
+    if (c.it === 'soin') { const v = [V[i - 1], V[i + 1]].filter(Boolean).map(x => [x, x.sceaux.find(s => s.ok && s.t !== 'tot')]).find(([, s]) => s); if (v) { v[1].ok = false; v[1].val = 0; log(S, `💚 ${c.nom} soigne ${v[0].nom} : un sceau se referme.`); } }
+  });
   visibles(S).forEach(c => { if (c.trait === 'furie') c.att++; });
   S.des = []; debutTour(S);
 }
 // les étoiles d'une victoire
-const etoiles = S => S.fin !== 'gagne' ? 0 : 1 + (S.pv >= 15 ? 1 : 0) + (S.pv >= 30 ? 1 : 0);
+const etoiles = S => S.fin !== 'gagne' ? 0 : 1 + (S.pv >= 12 ? 1 : 0) + (S.pv >= 25 ? 1 : 0);
 
-const API = { NB_DES, NB_COL, PROF, RESERVE, RUNES_MAX, PV_HEROS, SCEAU_TXT, TRAITS, POUVOIRS,
+const API = { INTENTIONS, intentions, NB_DES, NB_COL, PROF, RESERVE, RUNES_MAX, PV_HEROS, SCEAU_TXT, TRAITS, POUVOIRS,
   nouvelle, relancer, placer, rune, pouvoir, finTour, visibles, menace, accepte, etoiles, trouve };
 if (typeof module !== 'undefined' && module.exports) module.exports = API; else racine.CRYPTE = API;
 })(typeof window !== 'undefined' ? window : globalThis);
