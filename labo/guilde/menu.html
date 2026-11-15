@@ -8,7 +8,7 @@
 <title>La Guilde des Runes</title>
 <script>
 // Même mécanisme que le Duel : une nouvelle version = rechargement tout seul à l'ouverture (publier.sh change VERSION).
-const VERSION = '20261115-174322';
+const VERSION = '20261115-174548';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-menu-' + v)) { sessionStorage.setItem('recharge-menu-' + v, '1'); location.replace('menu.html?v=' + v); }
@@ -193,12 +193,13 @@ fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.te
 </div>
 <div id="flash"></div>
 
-<script src="semaine.js?v=20261115-174322"></script>
-<script src="musique.js?v=20261115-174322"></script>
-<script src="rang.js?v=20261115-174322"></script>
-<script src="amis.js?v=20261115-174322"></script>
-<script src="heros-etoiles.js?v=20261115-174322"></script>
-<script src="donnees.js?v=20261115-174322"></script>
+<script src="semaine.js?v=20261115-174548"></script>
+<script src="musique.js?v=20261115-174548"></script>
+<script src="rang.js?v=20261115-174548"></script>
+<script>window.AMIS_SANS_BOUTON = true; /* 15/11 : un seul bouton en haut à gauche (profil + amis) */</script>
+<script src="amis.js?v=20261115-174548"></script>
+<script src="heros-etoiles.js?v=20261115-174548"></script>
+<script src="donnees.js?v=20261115-174548"></script>
 <script>
 // ciel étoilé + runes du portail (symboles, pas des lettres), aux couleurs des héros
 const ciel = document.getElementById('ciel');
@@ -386,7 +387,25 @@ GM.musique(document.getElementById('titre') ? 'titre' : 'menu'); GM.bouton({ hau
 // 14/11 : bouton « Mon profil », en haut à gauche (le ⚙️ est en haut à droite)
 { const pb = document.createElement('a'); pb.id = 'profil-bouton'; pb.href = 'profil.html'; pb.title = 'Mon profil'; pb.setAttribute('aria-label', 'Mon profil'); pb.textContent = '👤';
   pb.style.cssText = 'position:fixed;left:10px;top:calc(10px + env(safe-area-inset-top));z-index:900;width:38px;height:38px;border-radius:50%;border:1px solid #f3c96b88;background:#15132bcc;color:#f3c96b;font-size:18px;line-height:36px;text-align:center;text-decoration:none';
-  pb.onclick = () => { try { sessionStorage.setItem('guilde-dans-mode', '1'); } catch (e) {} }; document.body.appendChild(pb); }
+  pb.onclick = (ev) => { ev.preventDefault(); profilMenu(); }; document.body.appendChild(pb); }
+// 15/11 (l'utilisateur : « l'icône multijoueur à côté du profil cache les menus : fusionner les deux icônes ») : le 👤 ouvre un petit menu
+// « Mon profil / Mes amis / En ligne », avec la pastille des amis en ligne (vert) ou des demandes d'amis (rouge)
+window.amisPastille = (n, dem) => { const pb = document.getElementById('profil-bouton'); if (!pb) return; let s = pb.querySelector('span'); if (!n && !dem) { if (s) s.remove(); return; }
+  if (!s) { s = document.createElement('span'); s.style.cssText = 'position:absolute;top:-4px;right:-6px;min-width:17px;height:17px;line-height:17px;border-radius:9px;font:bold 11px Georgia;padding:0 4px'; pb.appendChild(s); }
+  s.textContent = dem || n; s.style.background = dem ? '#ff5a5a' : '#7dffb0'; s.style.color = dem ? '#fff' : '#0a2a14'; };
+function profilMenu() {
+  let m = document.getElementById('profil-menu'); if (m) { m.remove(); return; }
+  const E = typeof AMIS !== 'undefined' && AMIS.etat, n = E ? E.amis.filter(a => a.enLigne).length : 0, dem = E ? E.demandes.length : 0;
+  m = document.createElement('div'); m.id = 'profil-menu';
+  m.style.cssText = 'position:fixed;left:10px;top:calc(54px + env(safe-area-inset-top));z-index:4000;background:#15132bf2;border:1px solid #f3c96b88;border-radius:14px;padding:6px;display:flex;flex-direction:column;gap:4px;min-width:200px;box-shadow:0 8px 30px #000a;font:15px Georgia,serif';
+  const bt = (t, f) => `<button style="text-align:left;background:none;border:0;color:#f1ecff;font:inherit;padding:9px 10px;border-radius:10px;cursor:pointer" onclick="document.getElementById('profil-menu').remove();${f}">${t}</button>`;
+  m.innerHTML = bt('👤 Mon profil', "try{sessionStorage.setItem('guilde-dans-mode','1')}catch(e){};location.href='profil.html'")
+    + bt(`👥 Mes amis${dem ? ` <b style="color:#ff5a5a">· ${dem} demande${dem > 1 ? 's' : ''}</b>` : n ? ` <b style="color:#7dffb0">· ${n} en ligne</b>` : ''}`, 'amisFenetre()')
+    + bt('🌐 Jouer en ligne', "location.hash='enligne'")
+    + bt('🏰 Mes héros', "try{sessionStorage.setItem('guilde-dans-mode','1')}catch(e){};location.href='mes-heros.html'");
+  document.body.appendChild(m);
+  setTimeout(() => document.addEventListener('click', function f(e) { if (!m.contains(e.target) && e.target.id !== 'profil-bouton') { m.remove(); document.removeEventListener('click', f); } }), 0);
+}
 </script>
 </body>
 </html>

@@ -52,7 +52,8 @@ function amisMsg(t) { const d = document.createElement('div'); d.className = 'am
   const z = document.getElementById('am-info'); if (z) z.textContent = t; }
 // le bouton 👥 en haut (à côté du 👤 du profil)
 function amisBouton() {
-  if (typeof document === 'undefined' || !document.body || window.AMIS_SANS_BOUTON) return;
+  if (typeof document === 'undefined' || !document.body) return;
+  if (window.AMIS_SANS_BOUTON) { if (typeof window.amisPastille === 'function') { const E = AMIS.etat; window.amisPastille(E ? E.amis.filter(a => a.enLigne).length : 0, E ? E.demandes.length : 0); } return; }
   let b = document.getElementById('amis-bouton'); if (!b) { b = document.createElement('button'); b.id = 'amis-bouton'; b.onclick = amisFenetre; b.setAttribute('aria-label', 'Mes amis'); document.body.appendChild(b); }
   const E = AMIS.etat, n = E ? E.amis.filter(a => a.enLigne).length : 0, dem = E ? E.demandes.length : 0;
   b.innerHTML = `👥${dem ? `<span class="pt rouge">${dem}</span>` : n ? `<span class="pt">${n}</span>` : ''}`;
