@@ -72,7 +72,7 @@ function descenteAccueil() {
     <p class="pv-h">${choixProf ? `Profondeur ${choixProf} · score ×${(1 + .1 * choixProf).toFixed(1)} :<br>${D.PROFONDEURS.slice(1, choixProf + 1).map((x, i) => `${i + 1}. ${x}`).join('<br>')}` : 'Profondeur 0 : la descente normale.'}</p>` : ''}
     <div class="choix">
       ${descenteGardee() ? `<button onclick="reprendDescente()" style="border-color:var(--ok);color:var(--ok);background:#163a2a">▶ Reprendre ta descente<small>${HER[descenteGardee().heros].n} · étage ${descenteGardee().etage} · ❤ ${descenteGardee().S ? descenteGardee().S.pv : descenteGardee().pv}</small></button><button onclick="if(confirm('Abandonner cette partie ? Elle sera effacée.')){try{localStorage.removeItem('guilde-descente-partie')}catch(e){};descenteAccueil()}" style="display:block;margin:0 auto;background:none;border:0;color:var(--doux);font-size:3cqw;text-decoration:underline;padding:1cqw;text-align:center">✕ abandonner cette partie</button>` : ''}
-      <button onclick="lanceDescente(true)">📅 La descente du jour<small>La même pour tout le monde aujourd’hui (salles, monstres, marchand). ${(E.jours || {})[jour()] ? `Ton record du jour : ${E.jours[jour()].score} ${'★'.repeat(E.jours[jour()].etoiles)}${E.jours[jour()].etage ? ' · étage ' + E.jours[jour()].etage : ''}` : 'Pas encore tentée.'}${descenteGardee() ? ' (ta descente en cours sera abandonnée)' : ''}</small></button>
+      <button onclick="lanceDescente(true)">📅 La descente du jour<small>${(r => `${r.e} Règle du jour : <b>${r.n}</b> (${r.d}) · `)(C.REGLES[C.regleDuJour('descente-' + jour())])}La même pour tout le monde aujourd’hui. ${(E.jours || {})[jour()] ? `Ton record du jour : ${E.jours[jour()].score} ${'★'.repeat(E.jours[jour()].etoiles)}${E.jours[jour()].etage ? ' · étage ' + E.jours[jour()].etage : ''}` : 'Pas encore tentée.'}${descenteGardee() ? ' (ta descente en cours sera abandonnée)' : ''}</small></button>
       <button class="b2" onclick="lanceDescente(false)">🗺️ Une descente au hasard<small>${descenteGardee() ? 'Attention : ta descente en cours sera abandonnée.' : '3 étages · 5 combats, 3 haltes et un boss par étage.'}</small></button>
     </div>
     <p class="record">Meilleur score : ${E.meilleur} · ${E.victoires} victoire${E.victoires > 1 ? 's' : ''} sur ${E.parties} · étage le plus profond : ${E.etageMax || '—'}</p>
@@ -82,7 +82,7 @@ function equipe(k) { const E = lireD(); E.equipee = k; ecrireD(E); descenteAccue
 function lanceDescente(duJ) {
   const E = lireD(); const L = lire(); L.heros = choixH; ecrire(L);
   DR = D.nouvelle(choixH, duJ ? 'descente-jour-' + jour() : 'descente-' + Date.now() + Math.random(), bonusMode(choixH), { breloque:E.equipee, pacte:choixPacte, profondeur:choixProf });
-  DR.duJour = !!duJ;
+  DR.duJour = !!duJ; if (duJ) DR.regle = C.regleDuJour('descente-' + jour());
   son('melange'); descenteEcran();
   if (!localStorage.getItem('guilde-descente-guide')) { localStorage.setItem('guilde-descente-guide', '1'); descenteRegles(); }
 }
@@ -95,7 +95,7 @@ function descenteEcran() {
   if (DR.ecran === 'combat') { S = DR.S; S.des.forEach(d => d.neuf = true); C.visibles(S).forEach(c => c.neuve = true); sel = null; mode = null; return dessine(); }
   S = null;
   const tete = `<div class="haut"><a href="#" onclick="if(confirm('Quitter ? Ta descente est gardée, tu pourras la reprendre.')){DR=null;descenteAccueil()}return false">‹ Quitter</a><span class="titre">🗺️ Étage ${DR.etage} · salle ${Math.min(DR.pas + (DR.ecran === 'carte' ? 1 : 0), D.ETAPES + 1)}/${D.ETAPES + 1}</span><button onclick="descenteRegles()">❓</button></div>
-    <div class="ressources"><span>❤ <b>${DR.pv}</b>/${DR.pvmax}</span><span>🪙 <b>${DR.or}</b></span>${DR.comp ? `<span>${icoComp(DR.comp.id)} <b>${DR.comp.pv}</b>/${C.COMPAGNONS[DR.comp.id].pv}</span>` : ''}${DR.breloque ? `<span>${icoBrel(DR.breloque)}</span>` : ''}${(DR.consos || []).length ? `<span>🎒 ${DR.consos.map(k => C.CONSOS[k].e).join('')}</span>` : ''}${DR.pacte ? `<span>${D.PACTES[DR.pacte].e}</span>` : ''}</div>
+    <div class="ressources"><span>❤ <b>${DR.pv}</b>/${DR.pvmax}</span><span>🪙 <b>${DR.or}</b></span>${DR.comp ? `<span>${icoComp(DR.comp.id)} <b>${DR.comp.pv}</b>/${C.COMPAGNONS[DR.comp.id].pv}</span>` : ''}${DR.breloque ? `<span>${icoBrel(DR.breloque)}</span>` : ''}${(DR.consos || []).length ? `<span>🎒 ${DR.consos.map(k => C.CONSOS[k].e).join('')}</span>` : ''}${DR.pacte ? `<span>${D.PACTES[DR.pacte].e}</span>` : ''}${DR.regle ? `<span onclick="bulle('${C.REGLES[DR.regle].n}')">${C.REGLES[DR.regle].e}</span>` : ''}</div>
     ${sacHTML()}`;
   let corps = '';
   if (DR.ecran === 'carte') {
