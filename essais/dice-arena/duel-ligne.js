@@ -132,7 +132,7 @@ function dlRecoit(d) {
     if (neuves.length) {
       const vue = dlCopie(d.etat); const act = vue.J.joueur === DL.moi.id ? vue.O : vue.J, moi = act === vue.J ? vue.O : vue.J; vue.J = moi; vue.O = act;
       // si le tour vient de passer de mon côté, les animations ont été notées quand l'ami était encore « J » : elles restent à inverser (c'est ce que fait dlInverse)
-      S = d.etat; DLOB = null; dlAttente = null; dlRejoue(neuves, vue); return;
+      S = d.etat; DLOB = null; dlAttente = null; if (typeof FX !== 'undefined') { FX = []; fxApres = []; fxOn = false; } dlRejoue(neuves, vue); return;
     }
   } else if (d.etat.fxLog) dlFxVu = Math.max(dlFxVu || 0, ...d.etat.fxLog.map(x => x.n));
   if (d.etat.lobby) { DLOB = d.etat.lobby; S = null; dlSalle(); return; }
@@ -234,7 +234,10 @@ rendu = function () {
   document.head.appendChild(st); })();
 // la fin du tour : deux.js échange les camps puis appelle deuxPasse ; à distance, on envoie la partie et on attend
 const _deuxPasseLigne = deuxPasse;
-deuxPasse = function (premier) { if (!S || !S.ligne) return _deuxPasseLigne(premier); dlPousse().then(dlAffiche); };
+deuxPasse = function (premier) { if (!S || !S.ligne) return _deuxPasseLigne(premier);
+  // 15/11 soir (« les animations reviennent à la fin du tour ») : les animations du début de tour de l'ami, fabriquées ici au passage de tour,
+  // restaient en attente et se rejouaient à mon tour suivant (puis repartaient chez l'ami) : on les jette, c'est chez lui qu'elles comptent
+  FX = []; fxApres = []; dlPousse().then(dlAffiche); };
 // la fin : on envoie l'état final (une fois), puis l'annonce, et la revanche (l'hôte la lance, le perdant commence)
 const _montrerFinLigne = montrerFin;
 montrerFin = function () {
