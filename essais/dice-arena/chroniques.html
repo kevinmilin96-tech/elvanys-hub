@@ -133,7 +133,7 @@ SCX_TXT.labyrinthe = { titre:'✦ Le Labyrinthe des Runes', duree:'30-60 min · 
   but:'Explorez (on ne voit que ce qui est en vue), fouillez les meubles (un dé) pour trouver <b>3 fragments de rune ✦</b>, puis portez-les à <b>l’autel des runes</b>, au fond du labyrinthe.',
   porter:'Portez les fragments jusqu’à l’autel ✦, au fond du labyrinthe.',
   gagne:['🏆 Le Titan des runes s’effondre !', '« Le Titan se fige, puis tombe en poussière de pierre. Les fragments brillent sur l’autel : le labyrinthe se tait. Pour cette fois. Demain, il aura encore changé de forme. On revient ? »'] };
-const SCT = () => SCX_TXT[(S && S.scen) || scenChoisi];
+const SCT = () => (S && S.textes) || SCX_TXT[(S && S.scen) || scenChoisi]; // 15/11 soir : une aventure donne ses propres textes
 
 // ------------------------------------------------------------------ sauvegarde : tout l'état ; un POINT DE PASSAGE à chaque porte ouverte
 function sauve() { try { if (S && !S.fin) localStorage.setItem(CLE_PARTIE, JSON.stringify(S)); else localStorage.removeItem(CLE_PARTIE); } catch (e) {} }
@@ -237,6 +237,7 @@ function dessine() {
     else if (peint) cl += ' peint';
     else if (p) { cl += ' porte' + (p.ouverte ? ' ouverte' : '') + (p.bronze ? ' bronze' : ''); if (!p.ouverte) inner = `<span class="o">${p.bronze && !R.bronze ? '🔒' : '🚪'}</span>`; }
     else if (mur === '#') cl += ' mur';
+    else if (mur === '~') inner = `<span class="o">${S.scen === 'arene' ? '🌳' : '🪨'}</span>`; // 15/11 soir : les obstacles (arbres d'une embuscade, rochers) se voient
     else if (mur === 'M' && o) inner = `<span class="o ${o.fouille ? 'fait' : ''}">${MEUBLE_E[o.t] || '📦'}</span>`;
     else if (mur === 'L' && o) inner = `<span class="o">${R.leviersTour[c] ? '⬇️' : '🎚️'}</span><span class="lv">≥${o.v}</span>`;
     else if (mur === 'B') inner = '<span class="o">📚</span>';
@@ -260,7 +261,7 @@ function dessine() {
   const ancienne = $('vue') ? [$('vue').scrollLeft, $('vue').scrollTop] : null;
   $('app').innerHTML = `
     <div class="haut"><a href="#" onclick="quitter();return false">‹ Quitter</a><span class="t">${SCT().titre}</span>${L ? `<button onclick="equipeEnLigne()">🌐 ${L.code}</button>` : ''}<button onclick="regles()">❓</button></div>
-    <div class="stats"><span>⌛ <b>${S.sablier}</b></span><span>${K.SCEN[S.scen || 'horloger'].objet.e} <b>${posee}</b>/3 posés${portes ? ` · ${portes} porté${portes > 1 ? 's' : ''}` : ''}</span>${(S.scen || 'horloger') === 'horloger' ? `<span>${R.bronze ? '🚪 bronze ouverte' : '🔒 bronze'}</span><span>${S.livre ? '📕 ✓' : '📕 —'}</span>` : ''}<span>⭐ <b>${S.score}</b></span></div>
+    <div class="stats"><span>⌛ <b>${S.sablier}</b></span>${S.scen === 'arene' ? `<span>👹 <b>${R.monstres.length}</b> monstre${R.monstres.length > 1 ? 's' : ''}</span>` : `<span>${K.SCEN[S.scen || 'horloger'].objet.e} <b>${posee}</b>/3 posés${portes ? ` · ${portes} porté${portes > 1 ? 's' : ''}` : ''}</span>`}${(S.scen || 'horloger') === 'horloger' ? `<span>${R.bronze ? '🚪 bronze ouverte' : '🔒 bronze'}</span><span>${S.livre ? '📕 ✓' : '📕 —'}</span>` : ''}<span>⭐ <b>${S.score}</b></span></div>
     <div class="but">${R.boss ? `⏰ <b>${R.boss.n}</b> · « ${K.SCEN[S.scen || 'horloger'].phases[R.boss.phase]} » : il ${K.PHASES[R.boss.phase].d.replace('Rouagelins', 'renforts').replace('hall d’entrée', 'point de départ')}. ${R.boss.repos ? 'Ce tour-ci il se repose.' : '<b style="color:#ff8a7a">Ce tour-ci il frappe !</b>'}`
       : posee + portes >= 3 || S.rouagesTrouves >= 3 ? SCT().porter : SCT().but}</div>
     <div style="position:relative"><div class="vue" id="vue"><div class="plateau ${S.scen === 'labyrinthe' ? 'laby' : ''}" style="grid-template-columns:repeat(${R.w}, ${t});--t:${t};${peint ? `background:url('${SC.image}?v=1') 0 0/100% 100% no-repeat` : ''}">${cases}</div></div>
@@ -430,6 +431,7 @@ function regles() {
 // ------------------------------------------------------------------ fin, quitter, recommencer
 function quitter() { sauve(); S = null; L = null; fenetre(''); accueil(); }
 function finPartie() {
+  if (S.aventure && typeof aventureFinCombat === 'function') return aventureFinCombat();
   sauve(); const gagne = S.fin === 'gagne'; let objet = null, niv = [];
   S.heros.forEach(z => { if (z.av && avTrouve(z.av)) { const g = avGagneXP(z.av, gagne ? 120 : 40, gagne); if (g) niv.push(nomH(z)); } });
   if (niv.length) setTimeout(() => bulle(`⬆ Niveau gagné : ${niv.join(', ')} ! (à forger dans la Forge des héros)`), 900);
@@ -507,6 +509,7 @@ function accueil() {
       <button onclick="location.href='aventuriers.html?retour=chroniques.html'">＋<small>Créer un héros dans la Forge des héros</small></button></div>
     <h3 style="color:var(--or);margin:3cqw 0 1.5cqw">Les héros de la Guilde</h3>
     <div class="choixH">${Object.entries(H).map(([k, h]) => `<button class="${choisis.includes(k) ? 'on' : ''}" ${k === 'zephine' && !ZEPH_OK() ? 'disabled' : ''} onclick="basculeHeros('${k}')"><img src="portraits/${k}.webp" alt="">${h.n}<small>${h.t}</small>${k === 'zephine' && !ZEPH_OK() ? '<small>🔒 tutoriel</small>' : ''}</button>`).join('')}</div>
+    ${typeof aventuresHTML === 'function' ? aventuresHTML() : ''}
     ${campagneHTML()}
     <h3 style="color:var(--or);margin:3cqw 0 1cqw">⚔ Une partie seule</h3>
     <button class="gros" ${choisis.length ? '' : 'disabled'} onclick="commence()">⚔ Commencer avec ${choisis.length} héros<small>${choisis.map(nomChoix).join(', ') || 'choisis au moins un héros'}</small></button>
@@ -541,5 +544,6 @@ function reprend() { const g = gardee(); if (!g) return; S = g; actif = Math.max
 if (typeof GM !== 'undefined') { try { GM.musique('exploration'); GM.bouton(); } catch (e) {} }
 accueil();
 </script>
+<script src="chroniques-aventures.js?v=20261115-151353"></script>
 </body>
 </html>
