@@ -131,12 +131,12 @@
 <div id="jeu"></div>
 <div class="flash" id="flash"></div>
 <div id="fen"></div>
-<script src="musique.js?v=20261115-160039"></script>
-<script src="rang.js?v=20261115-160039"></script>
-<script src="heros-etoiles.js?v=20261115-160039"></script>
-<script src="progression-modes.js?v=20261115-160039"></script>
-<script src="crypte-moteur.js?v=20261115-160039"></script>
-<script src="descente-moteur.js?v=20261115-160039"></script>
+<script src="musique.js?v=20261115-160140"></script>
+<script src="rang.js?v=20261115-160140"></script>
+<script src="heros-etoiles.js?v=20261115-160140"></script>
+<script src="progression-modes.js?v=20261115-160140"></script>
+<script src="crypte-moteur.js?v=20261115-160140"></script>
+<script src="descente-moteur.js?v=20261115-160140"></script>
 <script>
 // =============================================================================================== LA CRYPTE AUX SCEAUX (15/11, écran)
 // Le moteur (règles, hasard, monstres) est dans crypte-moteur.js ; ici seulement le dessin et les gestes.
@@ -398,7 +398,7 @@ function accueil() {
     <div class="heros">${Object.entries(HER).map(([k, h]) => `<button class="${choixH === k ? 'on' : ''}" ${k === 'zephine' && !ZEPH_OK() ? 'disabled' : ''} onclick="choixH='${k}';accueil()"><img src="portraits/${k}.webp" alt="">${h.n}${k === 'zephine' && !ZEPH_OK() ? '<br>🔒 tutoriel' : ''}</button>`).join('')}</div>
     <div class="pv-h">⚡ <b>${C.POUVOIRS[choixH].n}</b> : ${C.POUVOIRS[choixH].d}<br>❤ ${C.PV_HEROS} PV dans la crypte.<br>✨ ${texteBonus(choixH)}</div>
     <div class="choix">
-      ${partieGardee() ? `<button onclick="reprend()" style="border-color:var(--ok);color:var(--ok);background:#163a2a">▶ Reprendre ta crypte<small>${HER[partieGardee().S.heros].n} · tour ${partieGardee().S.tour} · ❤ ${partieGardee().S.pv}</small></button>` : ''}
+      ${partieGardee() ? `<button onclick="reprend()" style="border-color:var(--ok);color:var(--ok);background:#163a2a">▶ Reprendre ta crypte<small>${HER[partieGardee().S.heros].n} · tour ${partieGardee().S.tour} · ❤ ${partieGardee().S.pv}</small></button><button onclick="if(confirm('Abandonner cette partie ? Elle sera effacée.')){try{localStorage.removeItem('guilde-crypte-partie')}catch(e){};accueil()}" style="display:block;margin:0 auto;background:none;border:0;color:var(--doux);font-size:3cqw;text-decoration:underline;padding:1cqw;text-align:center">✕ abandonner cette partie</button>` : ''}
       <button onclick="descenteAccueil()" style="border-color:#ff9a4a;background:#3a1f10;color:#ffb070">🗺️ NOUVEAU · La Descente<small>Le grand voyage : 3 étages, tu choisis tes salles (combats, marchand, feu de camp, événements), objets, compagnons, dés de couleur, boss et breloques.</small></button>
       <button onclick="lance(true)">📅 La crypte du jour<small>La même pour tout le monde aujourd’hui. ${j ? `Ton record du jour : ${j.score} ${'★'.repeat(j.etoiles)}` : 'Pas encore tentée.'}</small></button>
       <button class="b2" onclick="lance(false)">🎲 Une crypte au hasard<small>Une nouvelle à chaque fois, pour t’entraîner.</small></button>
@@ -417,6 +417,6 @@ function lance(j) {
 if (typeof GM !== 'undefined') { try { GM.musique('exploration'); GM.bouton(); } catch (e) {} }
 accueil();
 </script>
-<script src="descente-ecran.js?v=20261115-160039"></script>
+<script src="descente-ecran.js?v=20261115-160140"></script>
 </body>
 </html>
