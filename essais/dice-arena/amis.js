@@ -36,7 +36,7 @@ async function amisApi(url, corps) {
   const r = await fetch(url, { method:'POST', headers:{ 'Content-Type':'application/json' }, body:JSON.stringify(corps) });
   let d = {}; try { d = await r.json(); } catch (e) {} return { statut:r.status, d };
 }
-const amisSalle = () => (typeof L !== 'undefined' && L && L.code) ? L.code : '';
+const amisSalle = () => window.SALLE_ACTIVE || ((typeof L !== 'undefined' && L && L.code) ? L.code : '');
 const amisEsc = s => String(s || '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
 async function amisAgir(action, plus) {
   if (!AMIS.carte) return null;
@@ -68,8 +68,11 @@ function amisInvitations() {
   document.body.appendChild(d); try { if (typeof GM !== 'undefined') GM.son('portail'); } catch (e) {}
   setTimeout(() => d.remove(), 30000);
 }
-function amisRejoindre(salle) {
+async function amisRejoindre(salle) {
   amisAgir('oublie', { salle });
+  // 15/11 : une salle de DUEL ou des CHRONIQUES ? on demande au serveur
+  let mode = 'chroniques'; try { const r = await fetch('/api/hub/guilde/partie/' + encodeURIComponent(salle)); const d = await r.json(); if (d && d.mode) mode = d.mode; } catch (e) {}
+  if (mode === 'duel') { if (location.pathname.endsWith('duel.html') && typeof dlRejoindre === 'function') { document.querySelectorAll('.am-invit').forEach(x => x.remove()); amisFermer(); dlRejoindre(salle, { id:'j' + Math.random().toString(36).slice(2, 10), nom:AMIS.carte.pseudo }); } else location.href = 'duel.html?salle=' + encodeURIComponent(salle); return; }
   if (location.pathname.endsWith('chroniques.html') && typeof rejoindre === 'function') { document.querySelectorAll('.am-invit').forEach(x => x.remove()); amisFermer(); rejoindre(salle, { id:'j' + Math.random().toString(36).slice(2, 10), nom:AMIS.carte.pseudo }); }
   else location.href = 'chroniques.html?salle=' + encodeURIComponent(salle);
 }
@@ -103,10 +106,10 @@ function amisDessine() {
         ${a.enLigne && salle && a.salle !== salle ? `<button class="am-bt or" onclick="amisInvite('${a.code}')">Inviter</button>` : ''}
         <button class="am-bt" style="padding:6px 8px" title="Retirer" onclick="if(confirm('Retirer ${amisEsc(a.pseudo).replace(/'/g, '')} de tes amis ?'))amisFait('retire','${a.code}')">✕</button></div>`).join('')
       : '<p class="doux">Pas encore d’amis : demande leur code, ou donne-leur le tien.</p>'}
-    ${salle ? `<p class="doux">Tu es dans la salle <b>${salle}</b> : touche « Inviter » à côté d’un ami en ligne.</p>` : '<p class="doux">Pour jouer ensemble : ouvre une salle dans les Chroniques (🌐 Créer une partie à distance), puis invite tes amis.</p>'}
+    ${salle ? `<p class="doux">Tu es dans la salle <b>${salle}</b> : touche « Inviter » à côté d’un ami en ligne.</p>` : '<p class="doux">Pour jouer ensemble : crée une salle (Duel contre un ami, ou les Chroniques), puis invite tes amis.</p>'}
     <h3>＋ Ajouter un ami</h3>
     <p id="am-info"></p><div style="display:flex;gap:8px"><input id="am-ajout" class="code" maxlength="6" placeholder="CODE" autocomplete="off"><button class="am-bt go" onclick="amisAjoute()">Ajouter</button></div>
-    ${location.pathname.endsWith('chroniques.html') ? '' : '<button class="am-bt or large" onclick="location.href=\'chroniques.html\'">🎲 Jouer ensemble aux Chroniques</button>'}
+    ${salle ? '' : `<button class="am-bt or large" onclick="location.href='duel.html?ami=1'">⚔ Duel contre un ami</button><button class="am-bt or large" onclick="location.href='chroniques.html?ligne=1'">📜 Les Chroniques entre amis</button>`}
     <button class="am-bt large" onclick="amisFermer()">Fermer</button>`);
 }
 async function amisCree() {

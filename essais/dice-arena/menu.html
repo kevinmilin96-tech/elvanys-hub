@@ -230,6 +230,10 @@ const PRO = { // dessins provisoires : [émoji, fond, lueur]
   tour:['📚', 'linear-gradient(180deg, #0f0c29 0%, #302b63 60%, #24243e 100%)', '#c084fc'],
   ordinateur:['🗿', 'linear-gradient(180deg, #3b82f6 0%, #1e3a8a 50%, #c99a5b 51%, #8a6538 100%)', '#7cc8ff'],
   tuto:['🐱', 'linear-gradient(180deg, #ffe7a8 0%, #f4c27a 45%, #7aa36b 46%, #4d7a43 100%)', '#fff3c4'],
+  enligne:['🌐', 'linear-gradient(180deg, #0a1a3a 0%, #1a4a7a 45%, #2a8ac9 70%, #0a1430 100%)', '#7cd4ff'], // 15/11 : l'endroit EN LIGNE (multijoueur)
+  amis:['👥', 'linear-gradient(180deg, #14223a 0%, #24527a 50%, #0a1430 100%)', '#7dffb0'],
+  codesalle:['🔑', 'linear-gradient(180deg, #2a2440 0%, #4a3a6a 50%, #1a1430 100%)', '#f3c96b'],
+  duelami:['⚔', 'linear-gradient(180deg, #3a1414 0%, #7a2424 45%, #2a8ac9 75%, #0a1430 100%)', '#ffb0b0'],
   proche:['🤝', 'linear-gradient(180deg, #3a2414 0%, #7a4a24 45%, #c9893f 46%, #6b3f1f 100%)', '#ffd27a'],
   invasion:['🔥', 'linear-gradient(180deg, #1e0b3a 0%, #3a1a5c 55%, #3a2a14 100%)', '#a855f7'], inv1:['🌀', 'radial-gradient(circle at 50% 40%, #6d28d9 0%, #1e0b3a 60%, #05020d 100%)', '#a855f7'],
   inv2:['🌳', 'linear-gradient(180deg, #1a1433 0%, #3a2a5c 55%, #1f3b2b 100%)', '#c084fc'], invboss:['🐲', 'linear-gradient(180deg, #3a0a0a 0%, #7a1f1a 55%, #0d1f2a 100%)', '#ff7a4a'],
@@ -250,6 +254,7 @@ const ABIME_OK = (() => { try { return !!JSON.parse(localStorage.getItem('guilde
 const ETAGES = {
   '':{ titre:'Le monde de la Guilde', sous:'Glisse, puis touche un portail pour y entrer.', portes:[
     { nom:'L’Arène', pro:'arene', vers:'arene', desc:'Les Duels : un héros contre un autre. Dés, cartes, créatures : le premier à zéro perd.' },
+    { nom:'En ligne', pro:'enligne', vers:'enligne', desc:'NOUVEAU · Jouer avec tes amis, chacun sur son téléphone : Duel contre un ami, les Chroniques entre amis, tes amis en ligne.' },
     { nom:'L’Odyssée', pro:'odyssee', vers:'odyssee', desc:'Seul sur une île : explore case par case, fais grandir ton deck, vaincs le gardien de l’île.' },
     { nom:'Expéditions', pro:'expeditions', href:'expedition.html', desc:'Le navire volant : recrute ton équipage, donne tes ordres aux dés, et vogue d’escale en escale jusqu’au Nid du Titan.' },
     { nom:'L’Invasion', pro:'invasion', vers:'invasion', desc:'À deux (sur ce téléphone ou avec un compagnon) contre les vagues de ton livre : l’Éveil de l’Abîme, le Réveil des Primordiaux, et les grands boss.' },
@@ -260,7 +265,15 @@ const ETAGES = {
     { nom:'Tour des héros', pro:'tour', href:'heros.html', desc:'Les six héros, leurs pouvoirs, leurs dés et leurs cartes. Prépare ton deck.' },
     { nom:'Mes héros', pro:'tour', href:'mes-heros.html', desc:'NOUVEAU · Tous tes héros (Guilde et aventure) façon jeu de héros : niveau avec l’or et la poussière de rune, rang avec les éclats (Commun → Ascendant ★★★★★), 6 pièces d’équipement à améliorer et fusionner, la récolte du campement.' },
   ] },
+  // 15/11 (l'utilisateur : « il faut un endroit en ligne, avec les portails possibles en multijoueur »)
+  enligne:{ titre:'En ligne', sous:'Avec tes amis, chacun sur son téléphone.', portes:[
+    { nom:'Duel contre un ami', pro:'duelami', href:'duel.html?ami=1', desc:'Une salle, un code ou une invitation : chacun choisit son héros, et l’Arène se joue à distance, tour par tour.' },
+    { nom:'Les Chroniques entre amis', pro:'chroniques', href:'chroniques.html?ligne=1', desc:'Une salle d’attente : tu choisis le scénario ou la campagne, chacun ajoute son héros, tu lances pour tout le monde.' },
+    { nom:'Rejoindre avec un code', pro:'codesalle', href:'chroniques.html?code=1', desc:'Un ami t’a donné un code de salle (duel ou Chroniques) : entre-le ici.' },
+    { nom:'Mes amis', pro:'amis', href:'menu.html?amis=1#enligne', desc:'Ton code ami, tes amis en ligne, leurs salles, et les invitations.' },
+  ] },
   arene:{ titre:'L’Arène des Duels', sous:'Contre qui veux-tu te battre ?', portes:[
+    { nom:'Contre un ami (en ligne)', pro:'duelami', href:'duel.html?ami=1', desc:'Chacun sur son téléphone, où qu’il soit : une salle, un code ou une invitation de la fenêtre des amis.' },
     { nom:'Contre l’ordinateur', pro:'ordinateur', href:'duel.html', desc:'Choisis ton héros et affronte l’automate de la Guilde.' },
     { nom:'Le tutoriel', pro:'tuto', href:'duel.html?tuto=1', desc:'Un premier duel guidé par Moustache, avec Gorm (5 minutes). À la clé : Zéphine et le cadre de Diplômé.' },
   ] },
@@ -351,6 +364,8 @@ function proposeTuto() {
 }
 // la flèche « retour » du téléphone ramène à l'étage d'avant
 window.addEventListener('hashchange', () => montre(location.hash.slice(1)));
+// 15/11 : menu.html?amis=1 (portail « Mes amis ») ouvre la fenêtre des amis
+if (new URLSearchParams(location.search).get('amis')) { history.replaceState(null, '', location.pathname + location.hash); addEventListener('load', () => { if (typeof amisFenetre === 'function') amisFenetre(); }); }
 window.addEventListener('pageshow', e => { if (e.persisted) { document.getElementById('flash').classList.remove('go'); montre(location.hash.slice(1)); } });
 // on entre : petit souffle magique, on plonge dans le portail
 function souffle() { try { const a = new (window.AudioContext || window.webkitAudioContext)(), t = a.currentTime, o = a.createOscillator(), g = a.createGain();
