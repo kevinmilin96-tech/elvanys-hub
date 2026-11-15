@@ -204,9 +204,10 @@ function aventureFinCombat() {
     return;
   }
   S.heros.forEach((h, i) => { AV.pv[i] = Math.min(h.pvmax, Math.max(1, h.pv) + 3); AV.sacs[i] = (h.sac || []).slice(); });
+  let butin = ''; if (S.heros.some(z => z.av) && typeof avGagne === 'function' && !S.butinFait) { S.butinFait = true; const or = (S.orAv || 0) + 10, g = avGagne(or, S.equipTrouve || 0); butin = `<p style="text-align:center">⚒ 🪙 +${or} or pour la Forge${g.length ? ` · ${g.map(p => `<b style="color:${EQ_RARE[p.r].c}">${EQ_CASES.find(c => c.k === p.slot).e} ${p.nom}</b>`).join(', ')}` : ''}</p>`; }
   try { localStorage.removeItem(CLE_PARTIE); } catch (e) {}
   son('victoire'); const sc = sceneAV(), T = S.textes;
-  fenetre(`<h2>${T.gagne[0]}</h2><div class="moust"><img src="ui/moustache.webp" alt=""><div class="lu">${T.gagne[1]}</div></div>
+  fenetre(`<h2>${T.gagne[0]}</h2><div class="moust"><img src="ui/moustache.webp" alt=""><div class="lu">${T.gagne[1]}</div></div>${butin}
     <button class="go" onclick="fenetre('');${sc.t === 'carte' ? 'AV.fait=true;sauveAV();joueScene()' : 'sceneSuivante()'}">${sc.t === 'carte' ? 'Reprendre la route ▶' : 'Sortir de la tour ▶'}</button>`, false);
 }
 function finAventure() {
@@ -214,9 +215,10 @@ function finAventure() {
   AV.equipe.forEach(k => { if (k.startsWith('av:') && typeof avGagneXP === 'function') { const g = avGagneXP(k.slice(3), sc.xp || 150, true); if (g) niv.push(nomChoix(k)); } });
   if (typeof gagneXP === 'function') gagneXP(sc.xp || 150, 'Aventure des Chroniques');
   const o = typeof butinArmurerie === 'function' ? butinArmurerie(3, Date.now()) : null;
+  const gEq = AV.equipe.some(k => k.startsWith('av:')) && typeof avGagne === 'function' ? avGagne(60, 1, true) : [];
   try { const D = JSON.parse(localStorage.getItem(CLE) || '{}'); D.aventures = D.aventures || {}; D.aventures[AV.id] = (D.aventures[AV.id] || 0) + 1; localStorage.setItem(CLE, JSON.stringify(D)); } catch (e) {}
   AV = null; sauveAV();
-  fenetre(`<h2>🏆 Aventure terminée !</h2><p style="text-align:center">+${sc.xp || 150} XP${o ? ` · 🎒 <b>${o}</b> rejoint l’armurerie` : ''}${niv.length ? `<br>⬆ Niveau gagné : ${niv.join(', ')}` : ''}</p><button class="go" onclick="fenetre('');accueil()">Retour à la Guilde</button>`, false);
+  fenetre(`<h2>🏆 Aventure terminée !</h2><p style="text-align:center">+${sc.xp || 150} XP${o ? ` · 🎒 <b>${o}</b> rejoint l’armurerie` : ''}${gEq.length ? `<br>⚒ Pour la Forge : 🪙 +60 or · <b style="color:${EQ_RARE[gEq[0].r].c}">${EQ_CASES.find(c => c.k === gEq[0].slot).e} ${gEq[0].nom}</b>` : ''}${niv.length ? `<br>⬆ Niveau gagné : ${niv.join(', ')}` : ''}</p><button class="go" onclick="fenetre('');accueil()">Retour à la Guilde</button>`, false);
 }
 // la liste des aventures sur l'accueil des Chroniques
 function aventuresHTML() {
