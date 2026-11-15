@@ -38,12 +38,29 @@ async function amisApi(url, corps) {
 }
 const amisSalle = () => window.SALLE_ACTIVE || ((typeof L !== 'undefined' && L && L.code) ? L.code : '');
 const amisEsc = s => String(s || '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+// 15/11 (accord de l'utilisateur) : MA CARTE DE PROFIL, vue par mes amis (profil.js doit être chargé ; sinon rien n'est envoyé)
+function amisMonProfil() {
+  if (typeof lireProfil !== 'function') return null;
+  try {
+    const p = lireProfil(), m = x => x ? { t:`${x[1]} ${x[2]}`, c:x[5] } : null;
+    let portrait = p.portrait || '';
+    if (portrait.startsWith('av:')) { const a = typeof avTrouve === 'function' ? avTrouve(portrait.slice(3)) : null; portrait = a ? `av-${a.voie}-${a.genre}` : ''; }
+    if (!portrait) { try { const l = JSON.parse(localStorage.getItem('guilde-parties') || '[]'); portrait = (l.length && l[l.length - 1].moi) || ''; } catch (e) {} }
+    const em = typeof EMBLEMES !== 'undefined' ? (EMBLEMES.find(x => x[0] === p.embleme) || [])[1] : '';
+    let puissance = 0; if (typeof puissanceHeros === 'function') ['maelle', 'aldric', 'pip', 'oria', 'gorm', 'zephine'].forEach(id => { puissance = Math.max(puissance, puissanceHeros(id)); });
+    return { portrait, fond:p.fond, couleur:p.couleur, embleme:em && em !== '—' ? em : '', cadre:p.cadre !== 'aucun' ? m(titreDe(p.cadre)) : null, titre:p.titre ? m(titreDe(p.titre)) : null,
+      devise:p.devise || '', vitrine:(p.vitrine || []).map(k => m(titreDe(k))).filter(Boolean), rang:typeof rangGuilde === 'function' ? rangGuilde() : 0, puissance };
+  } catch (e) { return null; }
+}
 async function amisAgir(action, plus) {
   if (!AMIS.carte) return null;
+  let envoiProfil = null;
+  if (action === 'signal') { const pr = amisMonProfil(), j = pr && JSON.stringify(pr); if (j && j !== localStorage.getItem('guilde-profil-envoye')) { envoiProfil = j; plus = Object.assign({ profil:pr }, plus || {}); } }
   try {
     const { statut, d } = await amisApi(AMIS_API + '/moi', Object.assign({ cle:AMIS.carte.cle, action, salle:amisSalle() }, plus || {}));
     if (statut === 401) { AMIS.carte = null; try { localStorage.removeItem('guilde-carte'); } catch (e) {} AMIS.etat = null; amisBouton(); return null; }
     if (statut !== 200) { amisMsg(d.message || 'Le serveur ne répond pas.'); return null; }
+    if (envoiProfil) try { localStorage.setItem('guilde-profil-envoye', envoiProfil); } catch (e) {}
     AMIS.etat = d; AMIS.erreur = false; amisBouton(); amisInvitations(); return d;
   } catch (e) { AMIS.erreur = true; amisBouton(); return null; }
 }
@@ -81,6 +98,31 @@ async function amisRejoindre(salle) {
 function amisFermer() { AMIS.ouvert = false; const f = document.getElementById('amis-fen'); if (f) f.innerHTML = ''; }
 function amisFen(h) { let f = document.getElementById('amis-fen'); if (!f) { f = document.createElement('div'); f.id = 'amis-fen'; document.body.appendChild(f); }
   f.innerHTML = h ? `<div class="am-voile" onclick="if(event.target===this)amisFermer()"><div class="am-fen">${h}</div></div>` : ''; }
+// la carte de profil d'un ami (les décors viennent de profil.js s'il est chargé, sinon un fond simple)
+const amisPortrait = k => { if (!k) return ['portraits/gorm.webp', 'portraits/gorm.webp']; const m = /^av-([a-z]+)-[hf]$/.exec(k); return [`portraits/${k}.webp`, `portraits/${m ? m[1] : 'gorm'}.webp`]; };
+function amisCarteHTML(a) {
+  const P = a.profil || {}, [src, sec] = amisPortrait(P.portrait), fond = typeof FONDS !== 'undefined' && FONDS[P.fond] ? FONDS[P.fond][1] : 'radial-gradient(ellipse at 50% 0%, #3a2a5c, #120f24 75%)';
+  const coul = typeof COULEURS_NOM !== 'undefined' ? (COULEURS_NOM.find(x => x[0] === P.couleur) || [0, '#f1ecff'])[1] : '#f1ecff';
+  const nomSt = String(coul).startsWith('linear') ? `background:${coul};-webkit-background-clip:text;background-clip:text;color:transparent` : `color:${coul}`;
+  const cc = P.cadre && P.cadre.c ? P.cadre.c : '#4b4580';
+  return `<div style="position:relative;display:flex;flex-direction:column;align-items:center;gap:5px;background:${fond};border:2px solid ${cc};border-radius:16px;padding:16px 10px 12px;margin:8px 0">
+    <div style="position:relative;width:96px;height:96px"><img src="${src}" onerror="this.onerror=null;this.src='${sec}'" alt="" style="width:96px;height:96px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 4px ${cc}, 0 0 20px ${cc}">
+      ${P.embleme ? `<span style="position:absolute;left:-4px;top:-4px;font-size:24px">${amisEsc(P.embleme)}</span>` : ''}${P.rang ? `<span style="position:absolute;right:-6px;bottom:-4px;background:#f3c96b;color:#2b1d0a;font-weight:bold;font-size:.8em;border-radius:12px;padding:1px 7px">${P.rang | 0}</span>` : ''}</div>
+    <div style="font-size:1.2em;font-weight:bold;text-shadow:0 1px 3px #000;${nomSt}">${amisEsc(a.pseudo)}</div>
+    ${P.titre ? `<div style="color:${P.titre.c || '#f3c96b'};font-size:.9em;text-shadow:0 1px 3px #000">${amisEsc(P.titre.t)}</div>` : ''}
+    ${P.devise ? `<div style="font-style:italic;font-size:.88em;color:#e8e2ff;text-shadow:0 1px 3px #000">« ${amisEsc(P.devise)} »</div>` : ''}
+    ${(P.vitrine || []).length ? `<div style="display:flex;flex-wrap:wrap;gap:5px;justify-content:center">${P.vitrine.map(v => `<span style="border:1.5px solid ${v.c || '#f3c96b'};border-radius:14px;padding:2px 8px;font-size:.75em;background:#0008">${amisEsc(v.t)}</span>`).join('')}</div>` : ''}
+    ${P.puissance ? `<div style="color:#f3c96b;font-weight:bold;font-size:.9em">✊ ${P.puissance | 0} (son meilleur héros)</div>` : ''}
+  </div>`;
+}
+function amisVoir(code) {
+  const a = AMIS.etat && AMIS.etat.amis.find(x => x.code === code); if (!a) return; AMIS.ouvert = false;
+  amisFen(`<h2>👤 ${amisEsc(a.pseudo)}</h2>${a.profil ? amisCarteHTML(a) : `<p class="doux" style="text-align:center">${amisEsc(a.pseudo)} n’a pas encore de carte de profil (elle arrive quand il ouvre le menu de la Guilde).</p>`}
+    <p class="doux" style="text-align:center">${a.enLigne ? (a.salle ? `🎲 dans la salle ${amisEsc(a.salle)}` : '🟢 en ligne') : amisVuTxt(a.vu)}</p>
+    ${a.enLigne && a.salle && a.salle !== amisSalle() ? `<button class="am-bt go large" onclick="amisRejoindre('${amisEsc(a.salle)}')">▶ Rejoindre sa salle</button>` : ''}
+    ${a.enLigne && amisSalle() && a.salle !== amisSalle() ? `<button class="am-bt or large" onclick="amisInvite('${a.code}')">🎲 L’inviter dans ma salle</button>` : ''}
+    <button class="am-bt large" onclick="AMIS.ouvert=true;amisDessine()">‹ Mes amis</button>`);
+}
 const amisVuTxt = t => { const m = Math.round((Date.now() - t) / 60000); return m < 60 ? `vu il y a ${Math.max(1, m)} min` : m < 1440 ? `vu il y a ${Math.round(m / 60)} h` : `vu il y a ${Math.round(m / 1440)} j`; };
 async function amisFenetre() {
   AMIS.ouvert = true;
@@ -102,7 +144,7 @@ function amisDessine() {
     <p class="doux" style="text-align:center;margin:0">Ton pseudo : <b>${amisEsc(E.pseudo)}</b> <button class="am-bt" style="padding:3px 8px" onclick="amisPseudo()">changer</button></p>
     ${E.demandes.length ? `<h3>📩 Demandes d’amis</h3>${E.demandes.map(d => `<div class="am-ligne"><div class="p"><b>${amisEsc(d.pseudo)}</b><small>code ${d.code}</small></div><button class="am-bt go" onclick="amisFait('accepte','${d.code}')">Accepter</button><button class="am-bt" onclick="amisFait('refuse','${d.code}')">Non</button></div>`).join('')}` : ''}
     <h3>🟢 En ligne (${enL.length}) · ${E.amis.length} ami${E.amis.length > 1 ? 's' : ''}</h3>
-    ${E.amis.length ? E.amis.map(a => `<div class="am-ligne"><span class="am-pt ${a.enLigne ? 'on' : ''}"></span><div class="p"><b>${amisEsc(a.pseudo)}</b><small>${a.enLigne ? (a.salle ? `🎲 dans la salle ${amisEsc(a.salle)}` : 'en ligne dans la Guilde') : amisVuTxt(a.vu)}</small></div>
+    ${E.amis.length ? E.amis.map(a => `<div class="am-ligne"><span class="am-pt ${a.enLigne ? 'on' : ''}"></span><img src="${amisPortrait((a.profil || {}).portrait)[0]}" onerror="this.onerror=null;this.src='${amisPortrait((a.profil || {}).portrait)[1]}'" alt="" style="width:36px;height:36px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 2px ${(a.profil && a.profil.cadre && a.profil.cadre.c) || '#4b4580'};cursor:pointer" onclick="amisVoir('${a.code}')"><div class="p" style="cursor:pointer" onclick="amisVoir('${a.code}')"><b>${amisEsc(a.pseudo)}</b><small>${a.enLigne ? (a.salle ? `🎲 dans la salle ${amisEsc(a.salle)}` : 'en ligne dans la Guilde') : amisVuTxt(a.vu)}</small></div>
         ${a.enLigne && a.salle && a.salle !== salle ? `<button class="am-bt go" onclick="amisRejoindre('${amisEsc(a.salle)}')">Rejoindre</button>` : ''}
         ${a.enLigne && salle && a.salle !== salle ? `<button class="am-bt or" onclick="amisInvite('${a.code}')">Inviter</button>` : ''}
         <button class="am-bt" style="padding:6px 8px" title="Retirer" onclick="if(confirm('Retirer ${amisEsc(a.pseudo).replace(/'/g, '')} de tes amis ?'))amisFait('retire','${a.code}')">✕</button></div>`).join('')
