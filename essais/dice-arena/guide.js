@@ -18,7 +18,7 @@
   let cle = null, etapes = [], n = 0, fini = null;
   const nettoie = () => { document.querySelectorAll('.guide-on').forEach(e => e.classList.remove('guide-on')); const g = document.getElementById('guide'); if (g) g.remove(); };
   // 14/11 : on attend que les pages de récit (#chron) et les fenêtres (#fen, .fenetre) soient fermées, sinon le guide montre des zones cachées
-  const occupe = () => { if (document.getElementById('chron')) return true; return !!document.querySelector('#fen .fenetre, .fenetre:not(#guide *)'); };
+  const occupe = () => { if (document.getElementById('chron')) return true; return !!document.querySelector('#fen .fenetre, .fenetre:not(#guide *), #fen .fen, .voile-f, .am-voile, .fh-voile, #fiche-trajet'); }; // 15/11 : les fenêtres des nouveaux modes
   function montre() {
     if (n === 0 && occupe()) { setTimeout(montre, 600); return; }
     nettoie();

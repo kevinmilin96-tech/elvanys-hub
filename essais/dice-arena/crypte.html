@@ -441,5 +441,13 @@ if (typeof GM !== 'undefined') { try { GM.musique('exploration'); GM.bouton(); }
 accueil();
 </script>
 <script src="descente-ecran.js?v=20261115-180610"></script>
+<script src="guide.js?v=20261115-180610"></script>
+<script src="guides-modes.js?v=20261115-180610"></script>
+<script>
+// 15/11 : le guide de Moustache de ce mode (guides-modes.js)
+{ const _d = dessine; dessine = function () { const r = _d.apply(this, arguments); if (typeof S !== 'undefined' && S) guideMode('crypte'); return r; }; }
+{ const _a = descenteAccueil; descenteAccueil = function () { const r = _a.apply(this, arguments); guideMode('descente'); return r; }; }
+{ const _e = descenteEcran; descenteEcran = function () { const r = _e.apply(this, arguments); if (DR && DR.ecran === 'carte') guideMode('descente-carte'); return r; }; }
+</script>
 </body>
 </html>

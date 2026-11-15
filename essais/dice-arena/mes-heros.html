@@ -77,5 +77,13 @@ FH.apres = () => actuel ? ouvre(actuel) : liste();
 if (typeof GM !== 'undefined') { try { GM.musique('menu'); GM.bouton(); } catch (e) {} }
 actuel && fhInfo(actuel) ? ouvre(actuel) : liste();
 </script>
+<script src="guide.js?v=20261115-180610"></script>
+<script src="guides-modes.js?v=20261115-180610"></script>
+<script>
+// 15/11 : le guide de Moustache de ce mode (guides-modes.js)
+{ const _l = liste; liste = function () { const r = _l.apply(this, arguments); guideMode('mes-heros'); return r; }; }
+{ const _o = ouvre; ouvre = function () { const r = _o.apply(this, arguments); guideMode('fiche-heros'); return r; }; }
+if (actuel) guideMode('fiche-heros'); else guideMode('mes-heros');
+</script>
 </body>
 </html>
