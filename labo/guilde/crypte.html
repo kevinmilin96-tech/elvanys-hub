@@ -33,6 +33,8 @@
   .carte.gardien .img { aspect-ratio:16/9; }
   .carte .nom { font-size:2.8cqw; text-align:center; padding:.6cqw .5cqw; color:var(--or); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .carte.gardien .nom { font-size:4cqw; }
+  .att.double { background:#7a0a0a; box-shadow:0 0 3cqw #ff3a1a; animation:pulse .8s infinite; } .att.autre { background:#1a2a3aee; border-color:#7cd4ff; }
+  .carte.frappe { animation:frappe .45s; } @keyframes frappe { 30% { transform:translateY(4cqw) scale(1.06); filter:brightness(1.6) saturate(1.4); } }
   .att { position:absolute; top:1cqw; right:1cqw; background:#3a1010ee; border:1px solid var(--rouge); color:#fff; border-radius:2cqw; padding:.3cqw 1.4cqw; font-size:3.2cqw; font-weight:bold; }
   .trait { position:absolute; top:1cqw; left:1cqw; background:#000a; border-radius:50%; width:6.4cqw; height:6.4cqw; display:flex; align-items:center; justify-content:center; font-size:3.6cqw; border:1px solid #fff4; }
   .niv { position:absolute; left:50%; transform:translateX(-50%); top:1cqw; font-size:2.4cqw; color:#ffe9a8; text-shadow:0 0 1cqw #000; letter-spacing:.3cqw; }
@@ -129,9 +131,11 @@
 <div id="jeu"></div>
 <div class="flash" id="flash"></div>
 <div id="fen"></div>
-<script src="musique.js?v=20261115-125602"></script>
-<script src="rang.js?v=20261115-125602"></script>
-<script src="crypte-moteur.js?v=20261115-125602"></script>
+<script src="musique.js?v=20261115-130630"></script>
+<script src="rang.js?v=20261115-130630"></script>
+<script src="heros-etoiles.js?v=20261115-130630"></script>
+<script src="progression-modes.js?v=20261115-130630"></script>
+<script src="crypte-moteur.js?v=20261115-130630"></script>
 <script>
 // =============================================================================================== LA CRYPTE AUX SCEAUX (15/11, écran)
 // Le moteur (règles, hasard, monstres) est dans crypte-moteur.js ; ici seulement le dessin et les gestes.
@@ -175,11 +179,23 @@ function carteHTML(c) {
     <img class="img" src="portraits/m-${c.m}.webp" alt="">
     <div class="niv">${c.gardien ? '♛ GARDIEN' : c.elite ? '★ ÉLITE' : '◆'.repeat(c.niv)}</div>
     ${T ? `<div class="trait" onclick="event.stopPropagation();explique('${c.id}')">${T.e}</div>` : ''}
-    <div class="att">⚔ ${c.att}</div>
+    ${intentHTML(c)}
     <div class="nom">${c.nom}</div>
     <div class="sceaux">${c.sceaux.map((s, k) => sceauHTML(s, c.sceaux, mode === 'cible' ? '' : `touche('${c.id}',${k})`, etatSceau(s, c.sceaux))).join('')}</div>
   </div>`;
 }
+
+// l'intention du monstre (ce qu'il fera à la fin du tour), sur sa carte
+function intentHTML(c) {
+  const x = (C.intentions(S).find(y => y.id === c.id) || {}), I = C.INTENTIONS[x.it || 'frappe'];
+  if ((x.it || 'frappe') === 'frappe') return `<div class="att ${c.double ? 'double' : ''}" onclick="event.stopPropagation();explique('${c.id}')">${c.double ? '⚔⚔' : '⚔'} ${x.v}</div>`;
+  return `<div class="att autre" onclick="event.stopPropagation();explique('${c.id}')">${I.e}</div>`;
+}
+// ------------------------------------------------------------------ sauvegarde de la crypte en cours (15/11)
+const CLE_PARTIE = 'guilde-crypte-partie';
+function sauve() { try { if (S && !S.fin) localStorage.setItem(CLE_PARTIE, JSON.stringify({ S, duJour })); else localStorage.removeItem(CLE_PARTIE); } catch (e) {} }
+function partieGardee() { try { const p = JSON.parse(localStorage.getItem(CLE_PARTIE) || 'null'); return p && p.S && !p.S.fin && p.S.cols ? p : null; } catch (e) { return null; } }
+function reprend() { const p = partieGardee(); if (!p) return; S = p.S; duJour = p.duJour; sel = null; mode = null; son('melange'); dessine(); }
 
 // ------------------------------------------------------------------ l'écran de jeu
 function dessine() {
@@ -200,7 +216,7 @@ function dessine() {
     <div class="haut"><a href="menu.html">‹ Menu</a><span class="titre">🪦 La Crypte aux Sceaux</span><button onclick="regles()">❓</button></div>
     <div class="stats"><span>Tour <b>${S.tour}</b></span><span>⭐ <b>${S.score}</b></span><span>${S.gardien ? '♛ Gardien' : `Cartes restantes <b>${S.cols.reduce((t, c) => t + c.length, 0)}</b>`}</span><span>${duJour ? '📅 du jour' : '🎲 au hasard'}</span></div>
     ${table}
-    <div class="menace">${S.voile ? '<span class="voile">🛡 Mur de lumière : personne ne frappera à la fin de ce tour.</span>' : m ? `Fin du tour : ${detailMenace()} = <b>−${m} PV</b>` : ''}</div>
+    <div class="menace">${S.voile ? '<span class="voile">🛡 Mur de lumière : personne ne frappera à la fin de ce tour.</span>' : m ? `Fin du tour : ${detailMenace()} = <b>−${m} PV</b>${S.bouclier ? ` <small>(🛡 ${S.bouclier} encaisse d’abord)</small>` : ''}` : (S.bouclier ? `🛡 Bouclier ${S.bouclier}` : 'Aucun monstre ne frappera à la fin de ce tour.')}</div>
     <div class="bas" style="--c:${H.c}">
       <div class="portrait"><img src="portraits/${S.heros}.webp" alt=""><div class="pv">❤ ${S.pv}</div></div>
       <div class="pouv"><b>⚡ ${P.n}</b><p>${P.d}</p>
@@ -218,10 +234,11 @@ function dessine() {
     <div class="actions"><button onclick="relance()" ${S.relance && S.des.some(d => !d.garde) ? '' : 'disabled'}>🎲 Relancer (${S.relance})</button><button class="fin" onclick="finTour()">Fin du tour ▶</button></div>
     <div class="journal">${S.journal[0] || ''}</div>`;
   S.des.forEach(d => delete d.neuf); visibles().forEach(c => delete c.neuve);
+  sauve();
 }
 const visibles = () => S ? C.visibles(S) : [];
 // 15/11 : seules les cartes VISIBLES frappent, chacune de sa force ; on l'écrit en clair (« Scarabée 1 + Lutin 2 »)
-function detailMenace() { const V = visibles(), chefs = V.filter(c => c.trait === 'chef').length; return V.map(c => `${c.nom.split(' ')[0]} ${c.att + chefs - (c.trait === 'chef' ? 1 : 0)}`).join(' + '); }
+function detailMenace() { return C.intentions(S).filter(x => x.v).map(x => `${x.nom.split(' ')[0]} ${x.v}`).join(' + '); }
 function consigne() {
   if (mode === 'rune') return '✦ Touche le <b>sceau</b> que la Rune doit briser (n’importe lequel).';
   if (mode === 'cible') return '🔨 Touche le <b>monstre</b> à frapper.';
@@ -264,10 +281,20 @@ function apresCoup(avant) {
   if (S.fin) return finPartie();
   dessine();
 }
-function finTour() {
-  if (!S || S.fin) return;
+let occupe = false;
+async function finTour() {
+  if (!S || S.fin || occupe) return;
   const avant = S.pv; mode = null; sel = null;
   if (S.des.length && !confirm(`Il te reste ${S.des.length} dé${S.des.length > 1 ? 's' : ''} pas posé${S.des.length > 1 ? 's' : ''} : ils seront perdus. Finir le tour quand même ?`)) return;
+  // 15/11 : chaque monstre agit à son tour, avec son geste (retour de l'utilisateur)
+  occupe = true; dessine();
+  for (const x of C.intentions(S)) {
+    const k = document.getElementById('k-' + x.id); if (!k) continue;
+    k.classList.add('frappe'); const I = C.INTENTIONS[x.it];
+    if (x.v) { son('coup'); bulle(`${x.nom.split(' ')[0]} −${x.v}`, true); } else { son(x.it === 'soin' ? 'soin' : 'bouclier'); bulle(`${I.e} ${I.n}`); }
+    await new Promise(r => setTimeout(r, 520)); k.classList.remove('frappe');
+  }
+  occupe = false;
   C.finTour(S);
   const perdu = avant - S.pv;
   if (perdu > 0) { son('coup'); $('flash').classList.remove('go'); void $('flash').offsetWidth; $('flash').classList.add('go'); tremble(); bulle(`−${perdu} PV`, true); }
@@ -296,7 +323,7 @@ function regles() {
       <li><b>Pose</b> : touche un dé, puis un <b>sceau qui s’allume en vert</b>. Quand tous les sceaux d’un monstre sont brisés, il <b>tombe</b> et la carte du dessous se retourne.</li>
       <li><b>Rien n’est perdu</b> : un dé qui ne sert pas va dans le <b>creuset</b> (une case par valeur, de 1 à 6 ; plein = une <b>Rune ✦</b> qui brise n’importe quel sceau) ou dans la <b>besace</b> (2 places : il revient au tour suivant).</li>
       <li><b>Ton héros</b> : pose des dés sur les sceaux de son pouvoir ; quand ils sont tous brisés, le pouvoir est prêt.</li>
-      <li><b>Fin du tour</b> : chaque monstre visible frappe de son chiffre ⚔. Le chiffre rouge au milieu te dit combien tu vas perdre.</li>
+      <li><b>Fin du tour</b> : chaque monstre visible fait ce qu’il annonce sur sa carte (⚔ frapper, ⏳ préparer un coup double, 🛡 se protéger, 💚 soigner un voisin). La ligne du milieu te dit combien tu vas perdre.</li>
       <li><b>Chaîne</b> : plusieurs monstres tombés dans le même tour multiplient les points.</li>
       <li><b>Victoire</b> : vide les 3 colonnes, puis bats le <b>Gardien</b> de la crypte. Les élites ★ dorment au fond des colonnes.</li>
     </ol>
@@ -311,6 +338,8 @@ function regles() {
       ${ex('dbl', 0, 1)}<span><b>jumeaux</b> : deux sceaux qui veulent le <b>même chiffre</b></span>
       ${ex('any')}<span><b>n’importe quel</b> dé</span>
     </div>
+    <h3 style="color:var(--or);margin:10px 0 4px">Ce que les monstres annoncent</h3>
+    <div class="leg">${Object.values(C.INTENTIONS).map(i => `<span style="font-size:22px;text-align:center">${i.e}</span><span><b>${i.n}</b> : ${i.d}.</span>`).join('')}</div>
     <h3 style="color:var(--or);margin:10px 0 4px">Les particularités</h3>
     <div class="leg">${Object.values(C.TRAITS).map(t => `<span style="font-size:22px;text-align:center">${t.e}</span><span><b>${t.n}</b> : ${t.d}</span>`).join('')}</div>
     <button class="go" onclick="fenetre('')">À l’attaque !</button>`);
@@ -322,13 +351,16 @@ function finPartie() {
   D.parties++; if (gagne) D.victoires++; D.meilleur = Math.max(D.meilleur, S.score);
   if (duJour) { const j = D.jours[jour()]; if (!j || S.score > j.score) D.jours[jour()] = { score:S.score, etoiles:et, heros:S.heros }; }
   ecrire(D);
-  if (gagne) { son('victoire'); if (typeof guildeEvt === 'function') guildeEvt('boss', 1, { heros:S.heros }); try { GM.jingle('victoire'); } catch (e) {} }
+  let objet = null;
+  if (gagne) { son('victoire'); if (typeof guildeEvt === 'function') guildeEvt('boss', 1, { heros:S.heros }); try { GM.jingle('victoire'); } catch (e) {} objet = butinArmurerie(et, S.score + S.tour); }
   else { try { GM.jingle('defaite'); } catch (e) {} if (typeof gagneXP === 'function') gagneXP(10, 'Crypte explorée'); }
+  try { localStorage.removeItem(CLE_PARTIE); } catch (e) {}
   dessine();
   fenetre(`<h2>${gagne ? '🏆 La crypte est à toi !' : '☠ La crypte t’a eu…'}</h2>
     <p style="text-align:center;font-size:2em;margin:6px 0">${gagne ? '★'.repeat(et) + '☆'.repeat(3 - et) : ''}</p>
     <p style="text-align:center">Score : <b style="color:var(--or)">${S.score}</b> · ${S.tombes} monstre${S.tombes > 1 ? 's' : ''} · plus longue chaîne ×${S.chaineMax} · ${S.tour} tours${gagne ? ` · ❤ ${S.pv} restants` : ''}</p>
-    ${gagne ? `<p style="color:var(--doux);font-size:.9em;text-align:center">★★ : finir avec 15 PV ou plus · ★★★ : 30 PV ou plus.</p>` : `<p style="color:var(--doux);text-align:center">${S.gardien ? 'Tu étais devant le Gardien !' : `Il restait ${S.cols.reduce((t, c) => t + c.length, 0)} monstres.`} Astuce : vide d’abord les monstres qui frappent fort, et garde le creuset pour les sceaux difficiles.</p>`}
+    ${gagne ? `<p style="color:var(--doux);font-size:.9em;text-align:center">★★ : finir avec 12 PV ou plus · ★★★ : 25 PV ou plus.</p>` : `<p style="color:var(--doux);text-align:center">${S.gardien ? 'Tu étais devant le Gardien !' : `Il restait ${S.cols.reduce((t, c) => t + c.length, 0)} monstres.`} Astuce : vide d’abord les monstres qui frappent fort, et garde le creuset pour les sceaux difficiles.</p>`}
+    ${gagne ? `<p style="text-align:center">✨ +5 éclats de ${HER[S.heros].n}${objet ? ` · 🎒 <b>${objet}</b> rejoint ton armurerie` : ''}</p>` : ''}
     <p style="text-align:center;color:var(--doux);font-size:.9em">Meilleur score : ${D.meilleur} · ${D.victoires} victoire${D.victoires > 1 ? 's' : ''} sur ${D.parties}</p>
     <button class="go" onclick="fenetre('');S=null;accueil()">Retour à l’entrée de la crypte</button>`);
 }
@@ -342,8 +374,9 @@ function accueil() {
     <h1>🪦 La Crypte aux Sceaux</h1>
     <p class="sous">Un solitaire de dés : brise les sceaux des monstres, carte après carte, jusqu’au Gardien.</p>
     <div class="heros">${Object.entries(HER).map(([k, h]) => `<button class="${choixH === k ? 'on' : ''}" ${k === 'zephine' && !ZEPH_OK() ? 'disabled' : ''} onclick="choixH='${k}';accueil()"><img src="portraits/${k}.webp" alt="">${h.n}${k === 'zephine' && !ZEPH_OK() ? '<br>🔒 tutoriel' : ''}</button>`).join('')}</div>
-    <div class="pv-h">⚡ <b>${C.POUVOIRS[choixH].n}</b> : ${C.POUVOIRS[choixH].d}<br>❤ ${C.PV_HEROS} PV dans la crypte.</div>
+    <div class="pv-h">⚡ <b>${C.POUVOIRS[choixH].n}</b> : ${C.POUVOIRS[choixH].d}<br>❤ ${C.PV_HEROS} PV dans la crypte.<br>✨ ${texteBonus(choixH)}</div>
     <div class="choix">
+      ${partieGardee() ? `<button onclick="reprend()" style="border-color:var(--ok);color:var(--ok);background:#163a2a">▶ Reprendre ta crypte<small>${HER[partieGardee().S.heros].n} · tour ${partieGardee().S.tour} · ❤ ${partieGardee().S.pv}</small></button>` : ''}
       <button onclick="lance(true)">📅 La crypte du jour<small>La même pour tout le monde aujourd’hui. ${j ? `Ton record du jour : ${j.score} ${'★'.repeat(j.etoiles)}` : 'Pas encore tentée.'}</small></button>
       <button class="b2" onclick="lance(false)">🎲 Une crypte au hasard<small>Une nouvelle à chaque fois, pour t’entraîner.</small></button>
     </div>
@@ -352,7 +385,8 @@ function accueil() {
 }
 function lance(j) {
   duJour = j; const D = lire(); D.heros = choixH; ecrire(D);
-  S = C.nouvelle(choixH, j ? 'crypte-' + jour() : 'crypte-' + Date.now() + Math.random());
+  const B = bonusMode(choixH);
+  S = C.nouvelle(choixH, j ? 'crypte-' + jour() : 'crypte-' + Date.now() + Math.random(), B);
   S.des.forEach(d => d.neuf = true); visibles().forEach(c => c.neuve = true); sel = null; mode = null;
   son('melange'); dessine();
   if (!localStorage.getItem('guilde-crypte-guide')) { localStorage.setItem('guilde-crypte-guide', '1'); regles(); }

@@ -42,8 +42,11 @@ const PETITS = ['gobelin', 'loup', 'salamandre', 'scarabee', 'harpie', 'lutin', 
 const ELITES = ['golem', 'chefgobelin', 'drake', 'yeti', 'ours', 'liche', 'chevalier', 'mammouth'];
 const BOSS = [['titan', 'Le Titan de feu'], ['vouivre', 'La Vouivre des glaces'], ['roi', 'Le Roi sans visage'], ['hydre', 'L’Hydre'], ['kraken', 'Le Kraken des brumes']];
 
-function nouvelle(heros, s) {
-  const S = { heros, rs:graine(s), grille:Array.from({ length:RANGS }, () => Array(COL).fill(null)), boss:null, pv:PV_HEROS, pvmax:PV_HEROS,
+// bonus (optionnel, 15/11) : la progression du héros (étoiles, équipement) : { pv, bouclier, relance, des }
+function nouvelle(heros, s, bonus = {}) {
+  const pvmax = PV_HEROS + (bonus.pv || 0);
+  const S = { heros, rs:graine(s), grille:Array.from({ length:RANGS }, () => Array(COL).fill(null)), boss:null, pv:pvmax, pvmax,
+    bouclier:bonus.bouclier || 0, relPlus:bonus.relance || 0, desPlus:bonus.des || 0,
     tour:0, des:[], relances:0, sac:[], butin:null, prochaine:null, score:0, tues:0, tuesTour:0, fin:null, journal:[], seq:0 };
   S.grille[1] = rangee(S, 1); S.grille[0] = rangee(S, 2); S.prochaine = rangee(S, 3);
   debutTour(S); return S;
@@ -65,8 +68,8 @@ function rangee(S, t) {
 function arrivee(S) { S.prochaine.forEach((m, c) => { if (m && !S.grille[0][c]) S.grille[0][c] = m; }); }
 
 function debutTour(S) {
-  S.tour++; S.tuesTour = 0; S.relances = S.heros === 'oria' ? 2 : S.heros === 'gorm' ? 0 : 1;
-  const base = S.heros === 'gorm' ? 4 : 3;
+  S.tour++; S.tuesTour = 0; S.relances = (S.heros === 'oria' ? 2 : S.heros === 'gorm' ? 0 : 1) + (S.relPlus || 0);
+  const base = (S.heros === 'gorm' ? 4 : 3) + (S.desPlus || 0);
   S.des = [];
   for (let i = 0; i < base; i++) S.des.push({ id:'d' + S.seq++, v:de6(S), b:null });
   S.sac.forEach((b, k) => S.des.push({ id:'d' + S.seq++, v:de6(S), b:k }));
@@ -143,6 +146,7 @@ function finTour(S) {
     if (r === RANGS - 1) { S.grille[r][c] = null; if (protege > 0) { protege--; log(S, '🛡 Rempart de lumière : un monstre repoussé.'); ev.push({ r, c, rempart:true, bloque:true }); continue; } perdu += m.att + (m.elite ? 0 : 0); ev.push({ r, c, rempart:true, att:m.att }); }
     else if (!S.grille[r + 1][c]) { S.grille[r + 1][c] = m; S.grille[r][c] = null; }
   }
+  if (perdu && S.bouclier > 0) { const b = Math.min(S.bouclier, perdu); S.bouclier -= b; perdu -= b; log(S, `🛡 Ton bouclier encaisse ${b}.`); }
   if (perdu) { S.pv -= perdu; log(S, `💥 Les monstres frappent le rempart : −${perdu} PV.`); }
   // le boss descend d'un rang tous les 2 tours ; au rempart, il écrase tout
   if (S.boss) { S.boss.pas++; if (S.boss.pas % 2 === 0) S.boss.r++; if (S.boss.r >= RANGS - 1) { S.pv = 0; log(S, `☠ ${S.boss.nom} a atteint le rempart.`); } }
