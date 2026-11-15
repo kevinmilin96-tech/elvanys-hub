@@ -92,6 +92,7 @@
   .choixH small { display:block; color:var(--doux); font-size:2.4cqw; }
   .gros { display:block; width:100%; border-radius:3.5cqw; padding:3cqw; font-size:4cqw; border:2px solid var(--or); background:#3a2f12; color:var(--or); font-weight:bold; margin-top:2.5cqw; text-align:left; }
   .gros small { display:block; font-weight:normal; color:var(--doux); font-size:3cqw; } .gros:disabled { opacity:.4; }
+  .equipe .qui { display:block; font-size:.78em; color:#9a92c8; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; } .equipe .qui.moi { color:var(--ok); }
 </style>
 </head>
 <body>
@@ -154,23 +155,33 @@ async function api(methode, url, corps) {
   let d = {}; try { d = await r.json(); } catch (e) {}
   return { statut:r.status, d };
 }
+// 15/11 17 h (l'utilisateur, 2 téléphones : « on ne voit pas les héros choisis par les amis, et je peux jouer leurs héros ») :
+// (1) un envoi demandé pendant qu'un autre partait était PERDU → on le refait juste après ;
+// (2) en cas de conflit, le héros qu'on vient de prendre était perdu → on le reprend et on renvoie ;
+// (3) la fenêtre « Salle » se met à jour quand un ami prend un héros ; le nom du joueur s'affiche sous chaque héros.
+let encore = false;
+function appliquePrises() { if (!L || !L.prises) return; L.prises.forEach(i => { L.joueurs.forEach(j => j.heros = (j.heros || []).filter(x => x !== i)); let m = L.joueurs.find(j => j.id === L.moi.id); if (!m) { m = { id:L.moi.id, nom:L.moi.nom, heros:[] }; L.joueurs.push(m); } if (!m.heros.includes(i)) m.heros.push(i); }); }
 async function pousse() {
-  if (!L || envoi) return; envoi = true;
+  if (!L) return; if (envoi) { encore = true; return; } envoi = true;
   try {
-    const etat = S, j = JSON.stringify(S); L.dernier = j;
-    const { statut, d } = await api('POST', `${API}/${L.code}`, { version:L.version, etat, joueurs:L.joueurs });
-    if (statut === 200) L.version = d.version;
-    else if (statut === 409) { recoit(d); bulle('Quelqu’un a joué en même temps : partie mise à jour.', true); }
-    else bulle(d.message || 'Le serveur ne répond pas.', true);
+    for (let essai = 0; essai < 3; essai++) {
+      const etat = S, j = JSON.stringify(S); L.dernier = j;
+      const { statut, d } = await api('POST', `${API}/${L.code}`, { version:L.version, etat, joueurs:L.joueurs });
+      if (statut === 200) { L.version = d.version; L.prises = []; break; }
+      if (statut === 409) { const prises = (L.prises || []).slice(); recoit(d); if (prises.length) { L.prises = prises; appliquePrises(); salleAJour(); continue; } bulle('Quelqu’un a joué en même temps : partie mise à jour.', true); break; }
+      bulle(d.message || 'Le serveur ne répond pas.', true); break;
+    }
   } catch (e) { bulle('Pas de réseau : le coup n’est pas parti.', true); }
   envoi = false;
+  if (encore) { encore = false; pousse(); }
 }
+const salleAJour = () => { if ($('salleListe')) equipeEnLigne(); };
 function recoit(d) {
   if (!d || !d.etat) return;
   const avant = S && S.journal ? S.journal[0] : null;
   S = d.etat; L.version = d.version; if (d.joueurs) L.joueurs = d.joueurs; L.dernier = JSON.stringify(S);
   if (!mesHeros().includes(actif)) { const m = mesHeros().find(i => !S.heros[i].aTerre); if (m != null) actif = m; }
-  sel = null; dessine();
+  sel = null; dessine(); salleAJour();
   if (S.journal[0] && S.journal[0] !== avant) bulle(S.journal[0].replace(/^[^ ]+ /, ''));
   if (S.fin) finPartie();
 }
@@ -227,11 +238,11 @@ async function rejoindre(code, moi) {
 // qui joue quel héros : on touche un héros pour le prendre
 function equipeEnLigne() {
   if (!L) return;
-  fenetre(`<h2>🌐 Salle ${L.code}</h2><p style="text-align:center;color:var(--doux)">Touche un héros pour le jouer depuis ce téléphone.</p>
-    ${S.heros.map((z, i) => `<button class="sec" onclick="prendHeros(${i})"><b>${nomH(z)}</b> · ${(H[z.id] || {}).t || ''}<small>${proprio(i) ? 'joué par ' + proprio(i) + (mesHeros().includes(i) ? ' (toi)' : '') : 'libre'}</small></button>`).join('')}
+  fenetre(`<h2>🌐 Salle ${L.code}</h2><p style="text-align:center;color:var(--doux)">Touche un héros pour le jouer depuis ce téléphone. La liste se met à jour toute seule quand un ami choisit.</p>
+    <div id="salleListe">${S.heros.map((z, i) => { const toi = mesHeros().includes(i); return `<button class="sec" style="${toi ? 'border-color:var(--ok)' : ''}" onclick="prendHeros(${i})"><b>${nomH(z)}</b> · ${(H[z.id] || {}).t || ''}<small>${proprio(i) ? (toi ? '✅ joué par toi' : '👤 joué par ' + proprio(i)) : 'libre'}</small></button>`; }).join('')}</div>
     <p style="color:var(--doux);font-size:.9em">Joueurs : ${L.joueurs.map(j => j.nom).join(', ')}</p><button class="go" onclick="fenetre('')">${mesHeros().length ? 'Jouer ▶' : 'Fermer'}</button>`);
 }
-function prendHeros(i) { L.joueurs.forEach(j => j.heros = (j.heros || []).filter(x => x !== i)); const m = L.joueurs.find(j => j.id === L.moi.id); m.heros.push(i); actif = i; L.dernier = ''; dessine(); if (typeof pousse === 'function') pousse();
+function prendHeros(i) { L.prises = (L.prises || []).filter(x => x !== i).concat(i); appliquePrises(); actif = i; L.dernier = ''; dessine(); if (typeof pousse === 'function') pousse();
   // 16/11 nuit (l'utilisateur : « je sélectionne un personnage, derrière ça bouge mais rien sur l'écran, je suis bloqué ») : la fenêtre se ferme, on joue
   fenetre(''); bulle(`🎮 Tu joues ${nomH(S.heros[i])} ! (bouton 🌐 en haut pour changer)`); }
 function quitterSalle() { L = null; localStorage.removeItem(SALLE); }
@@ -287,11 +298,11 @@ function dessine() {
       : posee + portes >= 3 || S.rouagesTrouves >= 3 ? SCT().porter : SCT().but}</div>
     <div style="position:relative"><div class="vue" id="vue"><div class="plateau ${S.scen === 'labyrinthe' ? 'laby' : ''}" style="grid-template-columns:repeat(${R.w}, ${t});--t:${t};${peint ? `background:url('${SC.image}?v=1') 0 0/100% 100% no-repeat` : ''}">${cases}</div></div>
       <button class="zoom haut" style="position:absolute;right:2cqw;bottom:2cqw;padding:1cqw 2.4cqw;border-radius:20px;background:#1c1c36cc;border:1px solid #45457a;color:var(--doux)" onclick="petit=!petit;centrer=true;dessine()">${petit ? '🔍 Zoom' : '🗺 Carte'}</button></div>
-    <div class="equipe">${S.heros.map((z, i) => `<button class="${i === actif ? 'on' : ''} ${z.aTerre ? 'terre' : ''} ${fini(i) ? 'fini' : ''}" onclick="choisitHeros(${i})">${fini(i) ? '<span class="ok-f">✓</span>' : ''}${imgH(z)}${nomH(z).replace('Sire ', '')}<br>${z.aTerre ? '✋ à terre' : `❤${z.pv} · 🎲${z.des.length}`}</button>`).join('')}</div>
-    <div class="des" id="desH">${h.aTerre ? `<span class="aide">${nomH(h)} est à terre : un ami à côté peut le relever avec un dé.</span>` : h.des.length && !lanceOK(actif) ? h.des.map(() => `<button class="de cache" onclick="lanceDesH()"></button>`).join('') + `<button class="lancerH" onclick="lanceDesH()">🎲 Lancer</button>` : h.des.map(z => `<button class="de ${sel === z.id ? 'sel' : ''}" onclick="choisitDe('${z.id}')"><img src="faces-${h.id}/face-${z.v}.webp" alt="${z.v}"></button>`).join('') || '<span class="aide">Plus de dés pour ce héros : passe au suivant.</span>'}</div>
+    <div class="equipe">${S.heros.map((z, i) => `<button class="${i === actif ? 'on' : ''} ${z.aTerre ? 'terre' : ''} ${fini(i) ? 'fini' : ''}" onclick="choisitHeros(${i})">${fini(i) ? '<span class="ok-f">✓</span>' : ''}${imgH(z)}${nomH(z).replace('Sire ', '')}<br>${z.aTerre ? '✋ à terre' : `❤${z.pv} · 🎲${z.des.length}`}${L ? `<small class="qui${mesHeros().includes(i) ? ' moi' : ''}">${mesHeros().includes(i) ? 'toi' : proprio(i) || 'libre'}</small>` : ''}</button>`).join('')}</div>
+    <div class="des" id="desH">${L && !mesHeros().includes(actif) ? `<span class="aide">👤 ${nomH(h)} est joué par <b>${proprio(actif) || 'personne'}</b>${proprio(actif) ? '' : ' : touche 🌐 en haut pour le prendre'}.</span>` : h.aTerre ? `<span class="aide">${nomH(h)} est à terre : un ami à côté peut le relever avec un dé.</span>` : h.des.length && !lanceOK(actif) ? h.des.map(() => `<button class="de cache" onclick="lanceDesH()"></button>`).join('') + `<button class="lancerH" onclick="lanceDesH()">🎲 Lancer</button>` : h.des.map(z => `<button class="de ${sel === z.id ? 'sel' : ''}" onclick="choisitDe('${z.id}')"><img src="faces-${h.id}/face-${z.v}.webp" alt="${z.v}"></button>`).join('') || '<span class="aide">Plus de dés pour ce héros : passe au suivant.</span>'}</div>
     ${!h.aTerre && h.sac && h.sac.length ? `<div class="sac">🎒 ${h.sac.map((it, k) => `<button onclick="utiliseSac(${k})">${K.SAC[it].e} ${K.SAC[it].n.replace(/^Une? /, '')}</button>`).join('')}</div>` : ''}
     <div class="aide">${d ? 'Touche une <b>case verte</b> pour bouger, un <b>monstre</b> pour frapper, un <b>meuble</b> pour le fouiller, un <b>ami</b> pour protéger / donner / soigner, un <b>levier</b>, le <b>livre</b> ou l’<b>axe</b>.' : `<b>${nomH(h)}</b> · ${H[h.id].t} : ${H[h.id].d} <br>Une <b>porte</b> à côté s’ouvre d’un toucher, sans dé.`}</div>
-    <div class="actions">${d ? '<button onclick="cherche()">🔍 Pièges</button>' : ''}<button class="fin" onclick="aFini()">${libres().length <= 1 ? `✋ ${nomH(S.heros[actif]).replace('Sire ', '')} a fini ▶ les monstres` : `✋ ${nomH(S.heros[actif]).replace('Sire ', '')} a fini`}</button>${libres().length > 1 ? `<button class="sec" style="flex:none" onclick="finTour()" title="Tout le groupe a fini">▶ Monstres</button>` : ''}</div>
+    <div class="actions" ${L && !mesHeros().includes(actif) ? 'style="display:none"' : ''}>${d ? '<button onclick="cherche()">🔍 Pièges</button>' : ''}<button class="fin" onclick="aFini()">${libres().length <= 1 ? `✋ ${nomH(S.heros[actif]).replace('Sire ', '')} a fini ▶ les monstres` : `✋ ${nomH(S.heros[actif]).replace('Sire ', '')} a fini`}</button>${libres().length > 1 ? `<button class="sec" style="flex:none" onclick="finTour()" title="Tout le groupe a fini">▶ Monstres</button>` : ''}</div>
     <div class="journal">${S.journal.slice(0, 6).map(l => `<div>${l}</div>`).join('')}</div>`;
   // la carte suit le héros actif (sauf si on vient de la déplacer à la main)
   const V = $('vue'), e = $(`c-${h.x}-${h.y}`);
