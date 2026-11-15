@@ -7,7 +7,7 @@
 
 const DEF = {
   porte:20, pcDepart:2, pcMax:6, mainDepart:3, mainMax:5, relances:2, jaugeMax:8, chemin:4, // le chemin a 4 cases (rangées 0 à 3)
-  hpVague:1.7, hpBase:3.4, coutBatir:1, repit:0, runeGorm:15, runeMaelle:0.75, // v2 : bonus de la Rune de Gorm aux voisins (× niveau au-dessus de 6) ; part des dégâts de la Rune de Maëlle sur chaque monstre du chemin // PV des monstres × hpBase × hpVague^(vague) ; bâtir (poser un dé en tour, ou dans une tour) coûte 1 PC
+  hpVague:1.7, hpBase:3.9, coutBatir:1, repit:0, runeGorm:15, runeMaelle:0.75, // v2 : bonus de la Rune de Gorm aux voisins (× niveau au-dessus de 6) ; part des dégâts de la Rune de Maëlle sur chaque monstre du chemin // PV des monstres × hpBase × hpVague^(vague) ; bâtir (poser un dé en tour, ou dans une tour) coûte 1 PC
 };
 const PUISSANCE = v => v >= 7 ? 32 * Math.pow(2, v - 7) : Math.pow(2, v - 1); // 1, 2, 4, 8, 16, 32 ; la Rune (7) 32 + son pouvoir, la Rune ancienne (8) 64, la Rune légendaire (9) 128
 // 14/11 (v2, remarque de l'utilisateur : « à la fin toutes mes tourelles sont au max ») : deux Runes de même niveau fusionnent encore, jusqu'au niveau 9
@@ -17,7 +17,7 @@ const MONSTRES = {
   sanglier:{ n:'Sanglier', e:'🐗', pv:16, vit:1, dg:4, d:'Beaucoup de PV, lent.' },
   bouclier:{ n:'Porte-bouclier', e:'🛡', pv:10, vit:1, dg:3, armure:3, d:'Chaque tir sur lui fait 3 de moins.' },
   chauve:{ n:'Chauve-souris', e:'🦇', pv:6, vit:1, dg:2, vol:true, d:'Vole : la tour de devant de sa colonne ne la voit pas.' },
-  titan:{ n:'Titan de feu', e:'🌋', pv:1100, vit:1, lent:2, dg:99, boss:true, fond:true, d:'Le boss : avance d’une case tous les 2 tours et fait fondre la tour la plus faible de sa colonne (−1 niveau) à chaque tour.' },
+  titan:{ n:'Titan de feu', e:'🌋', pv:1400, vit:1, lent:2, dg:99, boss:true, fond:true, d:'Le boss : avance d’une case tous les 2 tours et fait fondre la tour la plus faible de sa colonne (−1 niveau) à chaque tour.' },
 };
 // une vague = une liste de tours ; chaque tour = les monstres qui apparaissent en haut (colonne au hasard)
 const VAGUES = [
@@ -31,13 +31,13 @@ const VAGUES = [
 // les héros de la Défense (leurs Pouvoirs et Ultimes gardent les conditions du Duel ; les effets sont adaptés aux vagues)
 const DHEROS = {
   maelle:{ passif:'Métal chaud : tes tours de 5 et de 6 tirent +2.',
-    pouvoir:{ n:'Coup d’enclume', txt:'3 dés identiques', d:'Dégâts égaux à leur somme sur un monstre.', cond:vs => vs.length === 3 && egaux(vs), cible:'monstre' },
-    ultime:{ n:'Le Grand Martelage', txt:'3 dés de 4 ou plus', d:'16 dégâts à un monstre, et toutes tes tours tirent deux fois ce tour.', cond:vs => vs.length === 3 && vs.every(v => v >= 4), cible:'monstre' },
+    pouvoir:{ n:'Coup d’enclume', txt:'3 dés identiques', d:'Dégâts égaux à 3 fois leur somme sur un monstre (54 dégâts avec trois 6).', cond:vs => vs.length === 3 && egaux(vs), cible:'monstre' },
+    ultime:{ n:'Le Grand Martelage', txt:'3 dés de 4 ou plus', d:'70 dégâts à un monstre, et toutes tes tours tirent deux fois ce tour.', cond:vs => vs.length === 3 && vs.every(v => v >= 4), cible:'monstre' },
     rune:{ n:'Enclume runique', d:'Frappe TOUS les monstres de son chemin (les trois quarts de sa force). Deux Runes du même niveau fusionnent : ancienne, puis légendaire.' },
     deck:['marteau', 'marteau', 'etincelles', 'etincelles', 'lame', 'retremper', 'retremper', 'torche', 'ajuste', 'pierre', 'mortier'] },
   gorm:{ passif:'Écho du cor : chaque fusion donne +3 aux tours voisines jusqu’à la fin du tour.',
-    pouvoir:{ n:'Chant de guerre', txt:'4 dés tous pairs ou tous impairs', d:'10 dégâts à un monstre, et toutes tes tours +2 ce tour.', cond:vs => vs.length === 4 && (vs.every(v => v % 2 === 0) || vs.every(v => v % 2 === 1)), cible:'monstre' },
-    ultime:{ n:'Le Grand Souffle', txt:'3 dés tous pairs ou tous impairs', d:'14 dégâts au monstre de tête de chaque chemin.', cond:vs => vs.length === 3 && (vs.every(v => v % 2 === 0) || vs.every(v => v % 2 === 1)) },
+    pouvoir:{ n:'Chant de guerre', txt:'4 dés tous pairs ou tous impairs', d:'30 dégâts à un monstre, et toutes tes tours +2 ce tour.', cond:vs => vs.length === 4 && (vs.every(v => v % 2 === 0) || vs.every(v => v % 2 === 1)), cible:'monstre' },
+    ultime:{ n:'Le Grand Souffle', txt:'3 dés tous pairs ou tous impairs', d:'45 dégâts au monstre de tête de chaque chemin.', cond:vs => vs.length === 3 && (vs.every(v => v % 2 === 0) || vs.every(v => v % 2 === 1)) },
     rune:{ n:'Grand Cor', d:'Tire, et donne +15 aux canons voisins (+30 ancienne, +45 légendaire).' },
     deck:['trancheV', 'trancheV', 'aigue', 'aigue', 'torche', 'ajuste', 'ajuste', 'pierre', 'pierre', 'mortier', 'etincelles'] },
 };
@@ -45,23 +45,23 @@ const DHEROS = {
 const deuxPaires = vs => { if (vs.length !== 4) return false; const s = [...vs].sort((a, b) => a - b); return s[0] === s[1] && s[2] === s[3]; };
 Object.assign(DHEROS, {
   aldric:{ passif:'Rempart béni : la porte a +6 PV et en reprend 2 à chaque vague ; tes canons font +70 % au Titan.',
-    pouvoir:{ n:'Bouclier de lumière', txt:'2 paires', d:'La porte reprend 8 PV, et tous tes canons tirent +4 ce tour.', cond:vs => deuxPaires(vs) },
-    ultime:{ n:'Jugement', txt:'5 dés tous différents', d:'8 dégâts à chaque monstre, et la porte reprend 6 PV.', cond:vs => vs.length === 5 && new Set(vs).size === 5 },
+    pouvoir:{ n:'Bouclier de lumière', txt:'2 paires', d:'La porte reprend 8 PV, et tous tes canons tirent +8 ce tour.', cond:vs => deuxPaires(vs) },
+    ultime:{ n:'Jugement', txt:'5 dés tous différents', d:'35 dégâts à chaque monstre, et la porte reprend 6 PV.', cond:vs => vs.length === 5 && new Set(vs).size === 5 },
     rune:{ n:'Phare sacré', d:'Tire, et répare la porte de 1 PV à chaque tour (2 ancienne, 3 légendaire).' },
     deck:['mortier', 'mortier', 'pierre', 'pierre', 'torche', 'ajuste', 'retremper', 'lame', 'etincelles', 'marteau', 'aigue'] },
   pip:{ passif:'Ronces vivantes : tes pièges de ronces font 50 % de plus.',
-    pouvoir:{ n:'Racines', txt:'2 dés qui se suivent', d:'Les monstres d’un chemin (sauf le Titan) restent sur place un tour.', cond:vs => vs.length === 2 && Math.abs(vs[0] - vs[1]) === 1, cible:'monstre' },
-    ultime:{ n:'Forêt vivante', txt:'4 dés tous différents', d:'Tous les monstres (sauf le Titan) restent sur place un tour, et chacun prend 6 dégâts.', cond:vs => vs.length === 4 && new Set(vs).size === 4 },
+    pouvoir:{ n:'Racines', txt:'2 dés qui se suivent', d:'Les monstres d’un chemin (sauf le Titan) restent sur place un tour et prennent 6 dégâts.', cond:vs => vs.length === 2 && Math.abs(vs[0] - vs[1]) === 1, cible:'monstre' },
+    ultime:{ n:'Forêt vivante', txt:'4 dés tous différents', d:'Tous les monstres (sauf le Titan) restent sur place un tour, et chacun prend 30 dégâts.', cond:vs => vs.length === 4 && new Set(vs).size === 4 },
     rune:{ n:'Arbre-cœur', d:'Tire, et ses racines retiennent sa cible un tour (sauf le Titan).' },
     deck:['etincelles', 'etincelles', 'aigue', 'aigue', 'retremper', 'ajuste', 'mortier', 'pierre', 'torche', 'lame', 'trancheV'] },
   oria:{ passif:'Longue-vue : tes canons de la dernière rangée (contre la porte) tirent +2.',
     pouvoir:{ n:'Repérage', txt:'un 1 et un 6', d:'Pioche 2 cartes et +1 PC.', cond:vs => vs.length === 2 && vs.includes(1) && vs.includes(6) },
-    ultime:{ n:'Pluie d’étoiles', txt:'3 dés impairs', d:'14 dégâts au premier monstre de deux chemins : celui que tu touches et son voisin.', cond:vs => vs.length === 3 && vs.every(v => v % 2 === 1), cible:'monstre' },
+    ultime:{ n:'Pluie d’étoiles', txt:'3 dés impairs', d:'40 dégâts au premier monstre de deux chemins : celui que tu touches et son voisin.', cond:vs => vs.length === 3 && vs.every(v => v % 2 === 1), cible:'monstre' },
     rune:{ n:'Astrolabe', d:'Tire sur le premier monstre de CHAQUE chemin (le cinquième de sa force sur les deux autres).' },
     deck:['torche', 'torche', 'ajuste', 'ajuste', 'pierre', 'lame', 'retremper', 'mortier', 'etincelles', 'marteau', 'aigue'] },
   zephine:{ passif:'Vent glacé : tes canons de 1, 2 et 3 tirent +2.',
-    pouvoir:{ n:'Rafale', txt:'3 dés qui se suivent', d:'Les monstres d’un chemin reculent d’une case et prennent 6 dégâts.', cond:vs => suite(vs, 3), cible:'monstre' },
-    ultime:{ n:'Tempête', txt:'deux 6', d:'Tous les monstres (sauf le Titan) reculent de 2 cases et prennent 6 dégâts.', cond:vs => vs.length === 2 && vs[0] === 6 && vs[1] === 6 },
+    pouvoir:{ n:'Rafale', txt:'3 dés qui se suivent', d:'Les monstres d’un chemin reculent d’une case et prennent 18 dégâts.', cond:vs => suite(vs, 3), cible:'monstre' },
+    ultime:{ n:'Tempête', txt:'deux 6', d:'Tous les monstres (sauf le Titan) reculent de 2 cases et prennent 20 dégâts.', cond:vs => vs.length === 2 && vs[0] === 6 && vs[1] === 6 },
     rune:{ n:'Œil du cyclone', d:'Tire, et sa cible recule d’une case (sauf le Titan).' },
     deck:['aigue', 'aigue', 'etincelles', 'torche', 'torche', 'retremper', 'ajuste', 'pierre', 'lame', 'mortier', 'trancheV'] },
 });
@@ -69,6 +69,8 @@ Object.assign(DHEROS, {
 // 15/11 soir (l'utilisateur : « Marteau de forge 10 dégâts pour un 6, c'est inutile, les ennemis ont 200 PV ») : les cartes de DÉGÂTS
 // montent avec les vagues comme Frappe et Technique (× echelleD : ×1,7 par vague) ; la carte affiche la vraie valeur (texteCarteD)
 const dgC = (D, n) => Math.round(n * echelleD(D));
+// les « N dégâts » d'un Pouvoir ou d'un Ultime, à la valeur de la vague en cours
+const texteCoupD = (D, t) => String(t).replace(/(\d+) dégâts/g, (x, n) => `${dgC(D, +n)} dégâts`);
 const texteCarteD = (D, c) => c.echelle ? c.d.replace(/\d+/g, n => dgC(D, +n)) : c.d;
 const DCARTES = {
   marteau:{ n:'Marteau de forge', c:2, txt:'dé = 6', d:'10 dégâts à un monstre.', echelle:true, cond:vs => vs.length === 1 && vs[0] === 6, cible:'monstre', f:(D, vs, k) => blesse(D, k.m, dgC(D, 10)) },
@@ -177,21 +179,23 @@ function agitD(D, quoi, ds, k) {
   const H = DHEROS[D.heros];
   if (quoi === 'pouvoir') { logD(D, `✦ ${H.pouvoir.n} !`); fxD(D, { t:'annonce', txt:H.pouvoir.n });
     const e = echelleD(D), colM = k && k.m ? k.m.col : 0, recule = (m, n) => { if (D.monstres.includes(m) && !MONSTRES[m.t].boss) m.row = Math.max(0, m.row - n); };
-    if (D.heros === 'maelle') blesse(D, k.m, vs.reduce((a, b) => a + b, 0));
-    else if (D.heros === 'gorm') { blesse(D, k.m, 10); D.cri += 2; }
-    else if (D.heros === 'aldric') { D.porte = Math.min(D.porteMax, D.porte + 8); D.cri += 4; }
-    else if (D.heros === 'pip') D.monstres.filter(m => m.col === colM && !MONSTRES[m.t].boss).forEach(m => { m.colle = Math.max(m.colle || 0, 1); });
+    // 15/11 soir (l'utilisateur : « Frappe avec deux dés c'est 147, les autres plus durs font quasi rien ») : tout suit l'échelle des vagues
+    if (D.heros === 'maelle') blesse(D, k.m, Math.round(vs.reduce((a, b) => a + b, 0) * 3 * e));
+    else if (D.heros === 'gorm') { blesse(D, k.m, Math.round(30 * e)); D.cri += 2; }
+    else if (D.heros === 'aldric') { D.porte = Math.min(D.porteMax, D.porte + 8); D.cri += 8; }
+    else if (D.heros === 'pip') D.monstres.filter(m => m.col === colM).forEach(m => { if (!MONSTRES[m.t].boss) m.colle = Math.max(m.colle || 0, 1); blesse(D, m, Math.round(6 * e)); });
     else if (D.heros === 'oria') { piocheD(D, 2); D.pc = Math.min(DEF.pcMax, D.pc + 1); }
-    else if (D.heros === 'zephine') D.monstres.filter(m => m.col === colM).forEach(m => { blesse(D, m, Math.round(6 * e)); recule(m, 1); });
+    else if (D.heros === 'zephine') D.monstres.filter(m => m.col === colM).forEach(m => { blesse(D, m, Math.round(18 * e)); recule(m, 1); });
     return; }
   if (quoi === 'ultime') { D.pc -= 3; D.ultimeFait = true; D.jauge = 0; logD(D, `⚡ ULTIME : ${H.ultime.n} !`); fxD(D, { t:'annonce', txt:H.ultime.n });
     const e = echelleD(D), tous = () => [...D.monstres];
-    if (D.heros === 'maelle') { blesse(D, k.m, 16); D.double = true; }
-    else if (D.heros === 'gorm') [0, 1, 2].forEach(col => { const m = teteD(D, col); if (m) blesse(D, m, 14); });
-    else if (D.heros === 'aldric') { tous().forEach(m => blesse(D, m, 8)); D.porte = Math.min(D.porteMax, D.porte + 6); }
-    else if (D.heros === 'pip') tous().forEach(m => { if (!MONSTRES[m.t].boss) m.colle = Math.max(m.colle || 0, 1); blesse(D, m, 6); });
-    else if (D.heros === 'oria') { const c = k.m.col, cols = [c, c === 2 ? 1 : c + 1]; cols.forEach(cc => { const m = teteD(D, cc); if (m) blesse(D, m, 14); }); }
-    else if (D.heros === 'zephine') tous().forEach(m => { blesse(D, m, 6); if (D.monstres.includes(m) && !MONSTRES[m.t].boss) m.row = Math.max(0, m.row - 2); });
+    const u = n => Math.round(n * e);
+    if (D.heros === 'maelle') { blesse(D, k.m, u(70)); D.double = true; }
+    else if (D.heros === 'gorm') [0, 1, 2].forEach(col => { const m = teteD(D, col); if (m) blesse(D, m, u(45)); });
+    else if (D.heros === 'aldric') { tous().forEach(m => blesse(D, m, u(35))); D.porte = Math.min(D.porteMax, D.porte + 6); }
+    else if (D.heros === 'pip') tous().forEach(m => { if (!MONSTRES[m.t].boss) m.colle = Math.max(m.colle || 0, 1); blesse(D, m, u(30)); });
+    else if (D.heros === 'oria') { const c = k.m.col, cols = [c, c === 2 ? 1 : c + 1]; cols.forEach(cc => { const m = teteD(D, cc); if (m) blesse(D, m, u(40)); }); }
+    else if (D.heros === 'zephine') tous().forEach(m => { blesse(D, m, u(20)); if (D.monstres.includes(m) && !MONSTRES[m.t].boss) m.row = Math.max(0, m.row - 2); });
     return; }
   const key = D.main[quoi], c = DCARTES[key];
   D.pc -= c.c; D.main.splice(quoi, 1); D.defausse.push(key); D.cartesJouees++; logD(D, `🂠 ${c.n} (${vs.join('·')}).`); fxD(D, { t:'carte', n:c.n });
@@ -280,7 +284,7 @@ const scoreD = D => D.porte * 10 + D.sansDegats * 25 + D.kills;
 // L'échelle suit les PV des monstres : un coup de héros ou un piège garde la même force relative à chaque vague.
 const echelleD = D => Math.pow(DEF.hpVague, D.sansFin && D.vague >= VAGUES.length ? VAGUES.length - 1 + (D.vague - VAGUES.length + 1) * .6 : Math.min(D.vague, VAGUES.length - 1));
 // ---- 0. Les coups de héros : Frappe et Technique touchent TOUT un chemin (avant : un monstre, quelques dégâts : « ça ne sert à rien »)
-const TECH_DG = [0, 0, 0, 8, 14, 22];
+const TECH_DG = [0, 0, 0, 22, 34, 50]; // 15/11 soir : avant 8 / 14 / 22, moins qu'une paire de 6 (24) alors qu'une suite est plus dure
 function coupHeros(D, quoi, vs, col) {
   const mul = echelleD(D) * (1 + 0.25 * (D.bonus.coups || 0));
   const n = Math.round((quoi === 'frappe' ? vs[0] * vs.length * 2 : TECH_DG[vs.length]) * mul);
