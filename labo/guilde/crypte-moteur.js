@@ -121,7 +121,7 @@ const POUVOIRS = {
   aldric:  { n:'Mur de lumière', d:'Aucun monstre ne frappe à la fin de ce tour.', s:() => [sceau('dbl', 0, 1), sceau('dbl', 0, 1)] },
   pip:     { n:'Sève de la forêt', d:'Soigne 6 PV.', s:() => [sceau('max', 3), sceau('max', 3)] },
   oria:    { n:'Longue-vue', d:'Tu gagnes une Rune, et tu vois les cartes cachées jusqu’à la fin de la crypte.', s:() => [sceau('pair'), sceau('imp')] },
-  gorm:    { n:'Second souffle', d:'Relance tous tes dés pas encore posés, avec 2 dés de plus.', s:() => [sceau('any'), sceau('any'), sceau('any')] },
+  gorm:    { n:'Second souffle', d:'Relance tous tes dés pas encore posés, avec 2 dés de plus.', s:() => [sceau('any'), sceau('any')] }, // 15/11 soir : 2 sceaux au lieu de 3 (Gorm était le plus faible partout)
   zephine: { n:'Tempête', d:'Brise 1 sceau sur chaque monstre visible.', s:() => [sceau('imp'), sceau('imp')] },
 };
 // ------------------------------------------------------------------ les compagnons (Dice & Fold) : une 2e carte à côté du héros, sa vie, sa compétence
