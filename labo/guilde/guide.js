@@ -15,7 +15,7 @@
 #guide .bg button{background:#2a2350;color:#fff;border:1px solid #4b4580;border-radius:10px;padding:6px 12px;font:inherit}
 #guide .bg button.or{background:#f3c96b;color:#2b1d0a;border:0;font-weight:bold}`;
   document.head.appendChild(st);
-  let cle = null, etapes = [], n = 0, fini = null;
+  let cle = null, etapes = [], n = 0, fini = null, dernier = null; // 15/11 soir : le dernier guide de l'écran, pour le revoir depuis ⚙️
   const nettoie = () => { document.querySelectorAll('.guide-on').forEach(e => e.classList.remove('guide-on')); const g = document.getElementById('guide'); if (g) g.remove(); };
   // 14/11 : on attend que les pages de récit (#chron) et les fenêtres (#fen, .fenetre) soient fermées, sinon le guide montre des zones cachées
   const occupe = () => { if (document.getElementById('chron')) return true; return !!document.querySelector('#fen .fenetre, .fenetre:not(#guide *), #fen .fen, .voile-f, .am-voile, .fh-voile, #fiche-trajet'); }; // 15/11 : les fenêtres des nouveaux modes
@@ -33,8 +33,11 @@
   }
   window.Guide = {
     vu:k => !!localStorage.getItem('guilde-guide-' + k),
-    lance(k, e, force, apres) { if (!force && this.vu(k)) return false; if (document.getElementById('guide')) return false; cle = k; etapes = e; n = 0; fini = apres || null; setTimeout(montre, 350); return true; },
+    lance(k, e, force, apres) { dernier = { k, e }; if (!force && this.vu(k)) return false; if (document.getElementById('guide')) return false; cle = k; etapes = e; n = 0; fini = apres || null; setTimeout(montre, 350); return true; },
     suivant() { n++; montre(); },
     passe() { n = etapes.length; montre(); },
+    // 15/11 soir (idée notée : « un bouton Aide dans chaque écran ») : revoir le guide de l'écran en cours, depuis le menu ⚙️
+    dernier:() => dernier,
+    rejoue() { if (dernier) this.lance(dernier.k, dernier.e, true); },
   };
 })();
