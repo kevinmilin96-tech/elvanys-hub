@@ -228,7 +228,7 @@ function rendu() {
   <div class="msg ${err ? 'err' : ''}">${msg}</div>
   <div class="des" id="desD">${D.lanceT !== D.tour ? D.des.map(() => `<div class="de cacheD" onclick="lanceDesD()"></div>`).join('') + `<button class="lancerD" onclick="lanceDesD()">🎲 Lancer</button>` : ''}${D.lanceT !== D.tour ? '' : D.des.map((d, i) => `<div class="de ${d.pose ? 'pose' : ''} ${sel.includes(d) ? 'sel' : ''} ${besoinDe && !d.pose && !sel.includes(d) ? 'cible' : ''}" onclick="toucheDe(${i})"><img src="${FACE(D.heros, d.v)}" alt="${d.v}"></div>`).join('')}</div>
   <div class="acts">
-    ${bouton('frappe', '⚔ Frappe', 'dés identiques')}${bouton('technique', '⚔⚔ Technique', 'suite')}${bouton('pouvoir', '✦ Pouvoir', H.pouvoir.txt)}${bouton('ultime', '⚡ Ultime', H.ultime.txt)}
+    ${bouton('frappe', '⚔ Frappe', 'dés identiques')}${bouton('technique', '⚔⚔ Technique', 'suite')}${bouton('pouvoir', '✦ Pouvoir', H.pouvoir.txt)}${bouton('ultime', '⚡ Ultime', ultimeSous(H))}
     <button class="${sel.length && !attente ? 'ok' : ''}" ${sel.length && !attente ? '' : 'disabled'} onclick="agir('vendre')">◆ Vendre<br><small>+1 PC / dé</small></button>
     <button ${D.relance && sel.length && !attente ? '' : 'disabled'} onclick="relance()">🎲 Relancer<br><small>${D.relance} restante${D.relance > 1 ? 's' : ''}</small></button>
     <button class="fin" onclick="finTour()">Fin du tour ▶</button></div>
@@ -247,6 +247,9 @@ const GUIDE_DEF = [
   ['.acts', 'Ou bien tu frappes toi-même : dés identiques = <b>Frappe</b>, une suite = <b>Technique</b>, sur tout un chemin. ◆ Vendre un dé donne 1 PC. Puis <b>Fin du tour</b> : les monstres avancent.'],
   ['.main', 'Tes cartes : choisis d’abord un dé, puis touche une carte en vert pour la jouer. Deux canons pareils côte à côte fusionnent, et deux 6 font une Rune. Bonne garde, miaou !'],
 ];
+// 15/11 soir (l'utilisateur : « je ne peux pas lancer mon Ultime, il demande 3 dés de 4 ou plus ») : l'Ultime demande AUSSI la jauge pleine
+// (8 monstres tombés) et 3 PC, une fois par partie ; le bouton dit maintenant ce qui manque
+function ultimeSous(H) { if (D.ultimeFait) return 'déjà utilisé'; if (D.jauge < DEF.jaugeMax) return `jauge ${D.jauge}/${DEF.jaugeMax} · ${H.ultime.txt}`; if (D.pc < 3) return `il faut 3 PC (tu en as ${D.pc})`; return H.ultime.txt; }
 function bouton(q, titre, sous) { const ok = !attente && sel.length && permisD(D, q, sel); const at = attente && attente.quoi === q;
   return `<button class="${ok ? 'ok' : ''} ${at ? 'attente' : ''}" ${ok || at ? '' : 'disabled'} onclick="agir('${q}')">${titre}<br><small>${sous}</small></button>`; }
 function joueFx() {
