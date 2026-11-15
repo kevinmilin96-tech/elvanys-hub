@@ -23,7 +23,7 @@
     background:linear-gradient(180deg, #1a1630, #241c3a); border:1px solid #3a3260; box-shadow:inset 0 0 8cqw #000a; }
   .table.boss { grid-template-columns:1fr; justify-items:center; }
   .col { display:flex; flex-direction:column; align-items:stretch; }
-  .dos { height:2.6cqw; margin-bottom:.6cqw; border-radius:1.2cqw; background:repeating-linear-gradient(45deg, #3a2f5c 0 1.2cqw, #2c2448 1.2cqw 2.4cqw); border:1px solid #5a4e8a; position:relative; overflow:hidden; }
+  .dos { height:2.6cqw; margin-bottom:.6cqw; border-radius:1.2cqw; background:url('decor/crypte-dos.webp?v=1') center/cover, repeating-linear-gradient(45deg, #3a2f5c 0 1.2cqw, #2c2448 1.2cqw 2.4cqw); border:1px solid #c8902f88; position:relative; overflow:hidden; }
   .dos.vu { height:4.6cqw; background:#2c2448; display:flex; align-items:center; gap:1cqw; padding-left:1cqw; font-size:2.6cqw; color:var(--doux); }
   .dos.vu img { width:3.6cqw; height:3.6cqw; border-radius:50%; object-fit:cover; }
   .vide { height:40cqw; border:2px dashed #3a3260; border-radius:3cqw; display:flex; align-items:center; justify-content:center; color:#5a5280; font-size:6cqw; }
@@ -136,12 +136,12 @@
 <div id="jeu"></div>
 <div class="flash" id="flash"></div>
 <div id="fen"></div>
-<script src="musique.js?v=20261115-185050"></script>
-<script src="rang.js?v=20261115-185050"></script>
-<script src="heros-etoiles.js?v=20261115-185050"></script>
-<script src="progression-modes.js?v=20261115-185050"></script>
-<script src="crypte-moteur.js?v=20261115-185050"></script>
-<script src="descente-moteur.js?v=20261115-185050"></script>
+<script src="musique.js?v=20261115-190116"></script>
+<script src="rang.js?v=20261115-190116"></script>
+<script src="heros-etoiles.js?v=20261115-190116"></script>
+<script src="progression-modes.js?v=20261115-190116"></script>
+<script src="crypte-moteur.js?v=20261115-190116"></script>
+<script src="descente-moteur.js?v=20261115-190116"></script>
 <script>
 // =============================================================================================== LA CRYPTE AUX SCEAUX (15/11, écran)
 // Le moteur (règles, hasard, monstres) est dans crypte-moteur.js ; ici seulement le dessin et les gestes.
@@ -440,9 +440,9 @@ function lance(j) {
 if (typeof GM !== 'undefined') { try { GM.musique('exploration'); GM.bouton(); } catch (e) {} }
 accueil();
 </script>
-<script src="descente-ecran.js?v=20261115-185050"></script>
-<script src="guide.js?v=20261115-185050"></script>
-<script src="guides-modes.js?v=20261115-185050"></script>
+<script src="descente-ecran.js?v=20261115-190116"></script>
+<script src="guide.js?v=20261115-190116"></script>
+<script src="guides-modes.js?v=20261115-190116"></script>
 <script>
 // 15/11 : le guide de Moustache de ce mode (guides-modes.js)
 { const _d = dessine; dessine = function () { const r = _d.apply(this, arguments); if (typeof S !== 'undefined' && S) guideMode('crypte'); return r; }; }

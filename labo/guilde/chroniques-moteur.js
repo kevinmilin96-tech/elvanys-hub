@@ -37,12 +37,13 @@ const HEROS_C = {
   gorm:    { n:'Gorm', pv:16, des:4, c:'#4f8bff', t:'Grand souffle', d:'Il lance 4 dés au lieu de 3.' },
   zephine: { n:'Zéphine', pv:15, des:3, c:'#ff4040', t:'Vent', d:'Elle frappe un monstre jusqu’à 2 cases de distance.' },
 };
+// 15/11 soir : les portraits peints des monstres de l'Horloger (portraits/m-<img>.webp) ; l'Horloger garde le sien en attendant le nouveau
 const BETES = {
-  rouagelin: { n:'Rouagelin', img:'lutin', att:1, mv:2, s:() => [sceau('any'), sceau('min', 3)] },
-  gardien:   { n:'Gardien de bronze', img:'sentinelle', att:2, mv:1, s:() => [sceau('pair'), sceau('pair'), sceau('tot', 7)], garde:.33 },
-  coucou:    { n:'Coucou furieux', img:'harpie', att:2, mv:3, s:() => [sceau('imp'), sceau('min', 4)] },
-  page:      { n:'Page hurlante', img:'esprit', att:1, mv:3, s:() => [sceau('imp'), sceau('imp')], fuit:.3 },
-  archiviste:{ n:'Archiviste de cuivre', img:'liche', att:3, mv:1, s:() => [sceau('dbl', 0, 1), sceau('dbl', 0, 1), sceau('min', 5), sceau('tot', 10)], soin:.35, elite:true },
+  rouagelin: { n:'Rouagelin', img:'rouagelin', att:1, mv:2, s:() => [sceau('any'), sceau('min', 3)] },
+  gardien:   { n:'Gardien de bronze', img:'gardienbronze', att:2, mv:1, s:() => [sceau('pair'), sceau('pair'), sceau('tot', 7)], garde:.33 },
+  coucou:    { n:'Coucou furieux', img:'coucou', att:2, mv:3, s:() => [sceau('imp'), sceau('min', 4)] },
+  page:      { n:'Page hurlante', img:'pagehurlante', att:1, mv:3, s:() => [sceau('imp'), sceau('imp')], fuit:.3 },
+  archiviste:{ n:'Archiviste de cuivre', img:'archiviste', att:3, mv:1, s:() => [sceau('dbl', 0, 1), sceau('dbl', 0, 1), sceau('min', 5), sceau('tot', 10)], soin:.35, elite:true },
   horloger:  { n:'L’Horloger', img:'horloger', att:3, mv:1, s:() => [], boss:true },
   // les Terres brûlées (scénario d'essai sur la carte peinte, 15/11)
   gobelin:   { n:'Gobelin des cendres', img:'gobelin', att:1, mv:2, s:() => [sceau('any'), sceau('min', 3)], fuit:.2 },
