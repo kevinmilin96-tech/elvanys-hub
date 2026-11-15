@@ -31,14 +31,14 @@
 </head>
 <body>
 <main id="app"></main>
-<script src="musique.js?v=20261115-211538"></script>
-<script src="rang.js?v=20261115-211538"></script>
-<script src="heros-etoiles.js?v=20261115-211538"></script>
-<script src="donnees.js?v=20261115-211538"></script>
-<script src="odyssee.js?v=20261115-211538"></script>
-<script src="aventure.js?v=20261115-211538"></script>
-<script src="aventuriers.js?v=20261115-211538"></script>
-<script src="fiche-heros.js?v=20261115-211538"></script>
+<script src="musique.js?v=20261115-211646"></script>
+<script src="rang.js?v=20261115-211646"></script>
+<script src="heros-etoiles.js?v=20261115-211646"></script>
+<script src="donnees.js?v=20261115-211646"></script>
+<script src="odyssee.js?v=20261115-211646"></script>
+<script src="aventure.js?v=20261115-211646"></script>
+<script src="aventuriers.js?v=20261115-211646"></script>
+<script src="fiche-heros.js?v=20261115-211646"></script>
 <script>
 // =============================================================================================== MES HÉROS (15/11 ~17 h 45) : le système des héros unifié
 // Tous les héros (les 6 de la Guilde + les héros d'aventure de la Forge), triés par puissance, et la récolte du campement.
@@ -77,8 +77,8 @@ FH.apres = () => actuel ? ouvre(actuel) : liste();
 if (typeof GM !== 'undefined') { try { GM.musique('menu'); GM.bouton(); } catch (e) {} }
 actuel && fhInfo(actuel) ? ouvre(actuel) : liste();
 </script>
-<script src="guide.js?v=20261115-211538"></script>
-<script src="guides-modes.js?v=20261115-211538"></script>
+<script src="guide.js?v=20261115-211646"></script>
+<script src="guides-modes.js?v=20261115-211646"></script>
 <script>
 // 15/11 : le guide de Moustache de ce mode (guides-modes.js)
 { const _l = liste; liste = function () { const r = _l.apply(this, arguments); guideMode('mes-heros'); return r; }; }
