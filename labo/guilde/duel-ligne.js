@@ -136,7 +136,7 @@ function dlRecoit(d) {
     }
   } else if (d.etat.fxLog) dlFxVu = Math.max(dlFxVu || 0, ...d.etat.fxLog.map(x => x.n));
   if (d.etat.lobby) { DLOB = d.etat.lobby; S = null; dlSalle(); return; }
-  const avant = S && S.manche; S = d.etat; DLOB = null;
+  const avant = S && S.manche; S = d.etat; DLOB = null; delete S.deuxFinVu; // l'écran de fin se montre sur CHAQUE téléphone (et après un rechargement)
   if (typeof FX !== 'undefined') { FX = []; fxApres = []; fxOn = false; }
   if (avant !== S.manche) { try { arreteMusique(); } catch (e) {} }
   dlAffiche();
@@ -274,14 +274,22 @@ montrerFin = function () {
   if (!S || !S.ligne) return _montrerFinLigne();
   if (!S.ligneFin) { S.ligneFin = true; dlPousse(); }
   if (S.deuxFinVu) return; S.deuxFinVu = true;
+  // 15/11 soir : le duel à distance va aussi dans « Mes parties » (avant : rien, impossible de relire le combat)
+  try { if (typeof enregistrePartie === 'function') enregistrePartie(); } catch (e) {}
   const g = S.J.pv > 0 ? S.J : S.O, p = g === S.J ? S.O : S.J, moiGagne = g.joueur === DL.moi.id;
   try { arreteMusique(1.2); son(moiGagne ? 'victoire' : 'defaite'); effetImage(moiGagne ? 'victoire' : 'defaite', document.getElementById('app'), 2.2); } catch (e) {}
   document.getElementById('app').style.visibility = '';
   fenetre(`<div style="text-align:center"><img src="${IMG(g.id)}" alt="" style="width:110px;height:110px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 4px #f3c96b,0 0 30px #f3c96b">
     <h2>${moiGagne ? '🏆 Tu gagnes !' : `💀 ${g.qui} gagne…`}</h2><p>${g.nom} (${g.qui}) bat ${p.nom} (${p.qui}) en ${Math.max(S.J.tours, S.O.tours)} tours.</p>
     <div class="choixh">${S.ligneHote === DL.moi.id ? `<button class="or" onclick="fermer();dlLance('${p.joueur}')">🔁 Revanche (${p.qui} commence)</button>` : '<p style="color:#c9c1ea">L’hôte peut lancer la revanche.</p>'}
-      <button onclick="dlQuitte()">⌂ Menu</button></div></div>`);
+      <button onclick="dlQuitte()">⌂ Menu</button></div>
+    <div class="choixh"><button onclick="dlCopieJournal(this)">📜 Copier le journal du duel (pour Claude)</button></div></div>`);
 };
+function dlCopieJournal(b) {
+  const t = `Duel à distance · version ${typeof VERSION !== 'undefined' ? VERSION : ''} · ${S.J.nom} (${S.J.qui}) contre ${S.O.nom} (${S.O.qui})` + String.fromCharCode(10) + [...S.log].reverse().join(String.fromCharCode(10));
+  (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => { b.textContent = '✅ Copié : colle-le à Claude'; })
+    .catch(() => { fenetre(`<h2>📜 Journal du duel</h2><textarea style="width:100%;height:50vh;font:12px monospace">${t.replace(/</g, '&lt;')}</textarea><div class="choixh"><button onclick="fermer()">Fermer</button></div>`); });
+}
 // on demande l'état toutes les 2 secondes quand ce n'est pas à nous de jouer
 setInterval(async () => {
   if (!DL || dlEnvoi || document.hidden) return;
