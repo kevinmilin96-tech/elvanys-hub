@@ -8,7 +8,7 @@
 <title>La Guilde des Runes</title>
 <script>
 // Même mécanisme que le Duel : une nouvelle version = rechargement tout seul à l'ouverture (publier.sh change VERSION).
-const VERSION = '20261115-170513';
+const VERSION = '20261115-171545';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-menu-' + v)) { sessionStorage.setItem('recharge-menu-' + v, '1'); location.replace('menu.html?v=' + v); }
@@ -193,11 +193,11 @@ fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.te
 </div>
 <div id="flash"></div>
 
-<script src="semaine.js?v=20261115-170513"></script>
-<script src="musique.js?v=20261115-170513"></script>
-<script src="rang.js?v=20261115-170513"></script>
-<script src="heros-etoiles.js?v=20261115-170513"></script>
-<script src="donnees.js?v=20261115-170513"></script>
+<script src="semaine.js?v=20261115-171545"></script>
+<script src="musique.js?v=20261115-171545"></script>
+<script src="rang.js?v=20261115-171545"></script>
+<script src="heros-etoiles.js?v=20261115-171545"></script>
+<script src="donnees.js?v=20261115-171545"></script>
 <script>
 // ciel étoilé + runes du portail (symboles, pas des lettres), aux couleurs des héros
 const ciel = document.getElementById('ciel');
@@ -257,6 +257,7 @@ const ETAGES = {
     { nom:'Les Chroniques', pro:'chroniques', href:'chroniques.html', desc:'NOUVEAU · Jusqu’à 4 héros entre amis sur un seul téléphone : un donjon dans le noir façon HeroQuest, des portes à ouvrir, des meubles à fouiller, une histoire racontée par Moustache. Scénario 1 : le Sommeil de l’Horloger.' },
     { nom:'La Fosse aux Runes', pro:'fosse', href:'fosse.html', desc:'NOUVEAU · Tes balles sont des dés : renvoie-les avec ton bouclier, chaque rebond change leur face. Quand ils forment un combo (paire, brelan, suite, carré…), déclenche-le au bon moment. Tiens 5 minutes jusqu’au Titan.' },
     { nom:'Tour des héros', pro:'tour', href:'heros.html', desc:'Les six héros, leurs pouvoirs, leurs dés et leurs cartes. Prépare ton deck.' },
+    { nom:'Mes héros', pro:'tour', href:'mes-heros.html', desc:'NOUVEAU · Tous tes héros (Guilde et aventure) façon jeu de héros : niveau avec l’or et la poussière de rune, rang avec les éclats (Commun → Ascendant ★★★★★), 6 pièces d’équipement à améliorer et fusionner, la récolte du campement.' },
   ] },
   arene:{ titre:'L’Arène des Duels', sous:'Contre qui veux-tu te battre ?', portes:[
     { nom:'Contre l’ordinateur', pro:'ordinateur', href:'duel.html', desc:'Choisis ton héros et affronte l’automate de la Guilde.' },

@@ -237,7 +237,7 @@ function adapte(S) {
 function nouvelle(heros, s, scen, opts = {}) {
   scen = SCEN[scen] ? scen : 'horloger';
   // un héros = le nom d'une voie (« maelle »…) ou un HÉROS D'AVENTURE { voie, nom, pv, faces, desPlus, av, c } (aventuriers.js)
-  const fait = h => typeof h === 'string' ? { id:h, pv:HEROS_C[h].pv, pvmax:HEROS_C[h].pv, objet:null, bouclier:0 }
+  const fait = h => typeof h === 'string' ? (B => ({ id:h, pv:HEROS_C[h].pv + B.pv, pvmax:HEROS_C[h].pv + B.pv, objet:null, bouclier:0, att:B.att || 0, def:B.bouclier || 0, agi:B.agi || 0 }))(typeof bonusHerosPvE === 'function' && !opts.sansBonus ? bonusHerosPvE(h) : { pv:0 }) // 15/11 : le système des héros (heros-etoiles.js)
     : { id:h.voie, nom:h.nom, av:h.av, c:h.c, portrait:h.portrait, faces:h.faces, talents:h.talents || [], desPlus:h.desPlus || 0, pv:h.pv, pvmax:h.pv, objet:null, bouclier:0, att:h.att || 0, def:h.def || 0, agi:h.agi || 0 }; // 16/11 : l'équipement (aventuriers.js)
   const S = { heros:heros.map(fait), scen, sablier:SCEN[scen].sablier, rs:graine(s), graine:s,
     livre:false, journal:[], seq:0, fin:null, score:0, tours:0, rouagesTrouves:0, etape:'jeu' };
@@ -446,8 +446,8 @@ function fouilleMeuble(S, hi, idDe, x, y, o) {
     case 'rouage': { h.porte = true; S.rouagesTrouves++; const sc = SCEN[S.scen || 'horloger']; log(S, `${sc.objet.e} ${nom} trouve ${sc.objet.n === 'rouage' ? 'un ROUAGE' : 'une BRAISE ÉTERNELLE'} dans ${MEUBLE_N[o.t] || 'le meuble'} ! À porter jusqu’à ${sc.axe}.`); break; }
     case 'potion': case 'parchemin': case 'fumee': (h.sac = h.sac || []).push(o.cache); log(S, `🎒 ${nom} met ${SAC[o.cache].n.toLowerCase()} dans son sac (trouvée dans ${MEUBLE_N[o.t]}).`); break;
     case 'grains': S.sablier += 3; log(S, `⌛ Un petit sablier dans ${MEUBLE_N[o.t]} : +3 grains !`); break;
-    case 'or': S.score += 50; S.orAv = (S.orAv || 0) + 8; log(S, `💰 Des pièces d’or dans ${MEUBLE_N[o.t]} : +50 points${S.heros.some(z => z.av) ? ', +8 or pour la Forge' : ''}.`); break;
-    case 'objet': { if (h.av && hasard(S) < .6) { S.equipTrouve = (S.equipTrouve || 0) + 1; ev.quoi = 'equip'; log(S, `🗡 ${nom} trouve une PIÈCE D’ÉQUIPEMENT dans ${MEUBLE_N[o.t]} ! (elle t’attend dans la Forge des héros)`); break; }
+    case 'or': S.score += 50; S.orAv = (S.orAv || 0) + 8; log(S, `💰 Des pièces d’or dans ${MEUBLE_N[o.t]} : +50 points, +8 or pour tes héros.`); break;
+    case 'objet': { if (hasard(S) < (h.av ? .6 : .35)) { S.equipTrouve = (S.equipTrouve || 0) + 1; ev.quoi = 'equip'; log(S, `🗡 ${nom} trouve une PIÈCE D’ÉQUIPEMENT dans ${MEUBLE_N[o.t]} ! (elle t’attend dans le coffre des héros)`); break; }
       if (h.objet) { S.score += 30; ev.quoi = 'or'; log(S, `💰 Un petit trésor dans ${MEUBLE_N[o.t]} : +30.`); break; }
       const k = ['bouclier', 'cle', 'lunettes'][Math.floor(hasard(S) * 3)]; h.objet = k; ev.objet = k; log(S, `🎁 ${nom} trouve ${OBJETS[k].n} : ${OBJETS[k].d}`); break; }
     case 'piege': if (a_t(h, 'chanceux')) { log(S, `🍀 ${nm(h)} évite le piège caché dans ${MEUBLE_N[o.t]}.`); break; } blesseHeros(S, h, 2); log(S, `⚠ ${Le} était piégé : ${nom} −2 PV.`); break;

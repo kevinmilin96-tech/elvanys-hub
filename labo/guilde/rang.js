@@ -146,6 +146,9 @@ function guildeEvt(type, n = 1, info = {}) {
   if (typeof localStorage === 'undefined') return;
   try {
     if (info.heros && typeof ECLATS_EVT !== 'undefined' && ECLATS_EVT[type]) donneEclats(info.heros, ECLATS_EVT[type]); // 14/11 nuit : éclats du héros
+    // 15/11 : le système des héros : de l'or 🪙 et de la poussière de rune 🔹 à chaque moment fort, et parfois une pièce d'équipement sur un boss ou une élite
+    if (typeof GAINS_EVT !== 'undefined' && GAINS_EVT[type]) { const g = GAINS_EVT[type], k = type === 'salle' || type === 'defense_vague' ? Math.min(n, 5) : 1; donneRessources(g[0] * k, g[1] * k, type === 'salle' || type === 'defense_vague');
+      const ch = { boss:.5, titan:.6, elite:.2, etage:.25 }[type]; if (ch && Math.random() < ch && typeof avGagne === 'function') { const p = avGagne(0, 1, type !== 'elite')[0]; if (p && typeof annonceRang === 'function') annonceRang(`⚒ Équipement trouvé : ${p.nom} (${EQ_RARE[p.r].n})`, true); } }
     if (XP_EVT[type]) gagneXP(XP_EVT[type] * (type === 'salle' || type === 'defense_vague' ? n : 1), NOM_EVT[type]);
     const Q = lireQuetes(); let fini = [];
     [['j', true], ['s', false]].forEach(([k, jour]) => Q[k].forEach(q => {
@@ -155,7 +158,7 @@ function guildeEvt(type, n = 1, info = {}) {
       if (q.prog >= d[3]) { q.prog = d[3]; q.fait = true; fini.push([texteQuete(q, jour), jour]); }
     }));
     localStorage.setItem(QUETES_CLE, JSON.stringify(Q));
-    fini.forEach(([t, jour]) => { annonceRang(`📜 Quête accomplie : ${t}`, true); gagneXP(jour ? 40 : 150, jour ? NOM_EVT.quete_jour : NOM_EVT.quete_semaine); if (typeof donneLibres === 'function') donneLibres(jour ? ECLATS_QUETE.jour : ECLATS_QUETE.semaine); });
+    fini.forEach(([t, jour]) => { annonceRang(`📜 Quête accomplie : ${t}`, true); gagneXP(jour ? 40 : 150, jour ? NOM_EVT.quete_jour : NOM_EVT.quete_semaine); if (typeof donneLibres === 'function') donneLibres(jour ? ECLATS_QUETE.jour : ECLATS_QUETE.semaine); if (typeof donneRessources === 'function') donneRessources(jour ? 60 : 250, jour ? 30 : 120); });
   } catch (e) { console.error(e); }
 }
 

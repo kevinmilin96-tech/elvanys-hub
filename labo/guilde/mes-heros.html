@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#120f24">
+<title>La Guilde des Runes · Mes héros</title>
+<style>
+  :root { --or:#f3c96b; --texte:#f1ecff; --doux:#c9c1ea; --ok:#7dffb0; }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body { margin:0; color:var(--texte); font:15px/1.45 Georgia, 'Times New Roman', serif; background:radial-gradient(ellipse at 50% -10%, #3a2a5a, #120f24 60%) fixed, #120f24; }
+  main { max-width:560px; margin:0 auto; padding:12px 12px 60px; }
+  .haut { display:flex; align-items:center; gap:8px; } .haut a { color:var(--doux); text-decoration:none; background:#221d42; border:1px solid #4b4580; border-radius:20px; padding:5px 12px; font-size:.9em; }
+  h1 { flex:1; margin:0; text-align:center; color:var(--or); font-size:1.3em; }
+  .sous { color:var(--doux); text-align:center; font-size:.9em; margin:8px 0; }
+  .recolte { display:flex; align-items:center; gap:10px; background:linear-gradient(135deg, #3a2a12, #1c1838); border:2px solid var(--or); border-radius:16px; padding:10px 12px; margin:10px 0; }
+  .recolte .e { font-size:34px; } .recolte b { color:var(--or); } .recolte small { display:block; color:var(--doux); }
+  .recolte button { margin-left:auto; font:bold .95em Georgia, serif; padding:10px 14px; border-radius:12px; border:0; background:var(--or); color:#2b1d0a; cursor:pointer; }
+  .recolte button[disabled] { opacity:.4; }
+  .grille { display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; margin-top:10px; }
+  .carte { position:relative; background:#1c1838; border:2px solid var(--rc); border-radius:16px; padding:8px 4px 6px; text-align:center; color:inherit; font:inherit; cursor:pointer; box-shadow:0 0 12px color-mix(in srgb, var(--rc) 40%, transparent); }
+  .carte img { width:74px; height:74px; border-radius:50%; object-fit:cover; display:block; margin:0 auto 4px; box-shadow:0 0 0 3px var(--hc); }
+  .carte b { display:block; font-size:.92em; } .carte small { display:block; color:var(--doux); font-size:.75em; }
+  .carte .p { color:var(--or); font-weight:bold; font-size:.85em; }
+  .carte .pastille { position:absolute; top:4px; right:4px; background:var(--ok); color:#0a2a14; border-radius:10px; font-size:.7em; font-weight:bold; padding:1px 6px; }
+  .carte.verrou { opacity:.45; }
+  h2 { color:var(--or); font-size:1.05em; margin:16px 0 4px; }
+  .lien { display:block; text-align:center; margin:14px 0; color:var(--doux); }
+</style>
+</head>
+<body>
+<main id="app"></main>
+<script src="musique.js?v=20261115-171545"></script>
+<script src="rang.js?v=20261115-171545"></script>
+<script src="heros-etoiles.js?v=20261115-171545"></script>
+<script src="donnees.js?v=20261115-171545"></script>
+<script src="odyssee.js?v=20261115-171545"></script>
+<script src="aventure.js?v=20261115-171545"></script>
+<script src="aventuriers.js?v=20261115-171545"></script>
+<script src="fiche-heros.js?v=20261115-171545"></script>
+<script>
+// =============================================================================================== MES HÉROS (15/11 ~17 h 45) : le système des héros unifié
+// Tous les héros (les 6 de la Guilde + les héros d'aventure de la Forge), triés par puissance, et la récolte du campement.
+const $ = id => document.getElementById(id);
+const ZOK = () => localStorage.getItem('guilde-tuto') === 'fait';
+const H_GUILDE = ['maelle', 'aldric', 'pip', 'oria', 'gorm', 'zephine'];
+let actuel = new URLSearchParams(location.search).get('h');
+const retour = new URLSearchParams(location.search).get('retour') || 'menu.html';
+const alerte = id => peutPromouvoir(id) || peutMonterNiveau(id) === 'ok';
+function carte(id) {
+  const I = fhInfo(id); if (!I) return ''; const H = etatH(id), R = RANGS[H.rang], off = id === 'zephine' && !ZOK();
+  return `<button class="carte ${off ? 'verrou' : ''}" style="--rc:${R.c};--hc:${I.c}" onclick="${off ? `fhBulle('Zéphine arrive après le tutoriel')` : `ouvre('${id}')`}">${alerte(id) && !off ? '<span class="pastille">⬆</span>' : ''}${fhImg(I)}<b>${I.nom}</b><small style="color:${R.c}">${R.n} · niv. ${H.niv}</small><span class="p">✊ ${fhPuissance(id)}</span></button>`;
+}
+function liste() {
+  actuel = null; history.replaceState(null, '', location.pathname + (retour !== 'menu.html' ? '?retour=' + retour : ''));
+  const r = recolteDispo(), avs = typeof avLire === 'function' ? avLire().map(a => a.id) : [];
+  const tri = l => l.slice().sort((a, b) => fhPuissance(b) - fhPuissance(a));
+  $('app').innerHTML = `<div class="haut"><a href="${retour}">‹ Retour</a><h1>🏰 Mes héros</h1><span></span></div>
+    ${fhRess()}
+    <div class="recolte"><span class="e">🧺</span><div><b>La récolte du campement</b><small>Pendant que tu n’es pas là, la Guilde ramasse de l’or et de la poussière de rune (12 h au plus).</small><small>En attente : 🪙 ${r.or} · 🔹 ${r.pou} (${Math.floor(r.h)} h ${Math.floor((r.h % 1) * 60)} min)</small></div><button ${r.or < 1 ? 'disabled' : ''} onclick="recolte()">Ramasser</button></div>
+    <p class="sous">Touche un héros pour sa fiche : niveau (or + poussière), rang (éclats), équipement (améliorer, fusionner), reliques.</p>
+    <h2>⚔ Les héros de la Guilde</h2><div class="grille">${tri(H_GUILDE).map(carte).join('')}</div>
+    <h2>🗺 Tes héros d’aventure</h2><div class="grille">${tri(avs).map(carte).join('')}</div>
+    ${avs.length ? '' : '<p class="sous">Pas encore de héros d’aventure.</p>'}
+    <a class="lien" href="aventuriers.html?retour=mes-heros.html">⚒ Créer un héros d’aventure (la Forge des héros)</a>`;
+}
+function recolte() { const r = recolter(); if (r.or) { fhSon('victoire'); fhBulle(`🧺 +${r.or} 🪙 · +${r.pou} 🔹`); } liste(); }
+function ouvre(id) {
+  actuel = id; history.replaceState(null, '', '?h=' + id + (retour !== 'menu.html' ? '&retour=' + retour : ''));
+  const I = fhInfo(id), av = !fhGuilde(id);
+  $('app').innerHTML = `<div class="haut"><a href="#" onclick="liste();return false">‹ Mes héros</a><h1>${I.nom}</h1><span></span></div>
+    ${ficheHerosHTML(id)}
+    <a class="lien" href="${av ? `aventuriers.html?h=${id}&retour=mes-heros.html` : `heros.html?h=${id}`}">${av ? '🎲 Son dé personnel et ses talents (la Forge)' : '🂠 Ses cartes, ses dés et son deck (la Tour des héros)'}</a>`;
+}
+FH.apres = () => actuel ? ouvre(actuel) : liste();
+if (typeof GM !== 'undefined') { try { GM.musique('menu'); GM.bouton(); } catch (e) {} }
+actuel && fhInfo(actuel) ? ouvre(actuel) : liste();
+</script>
+</body>
+</html>
