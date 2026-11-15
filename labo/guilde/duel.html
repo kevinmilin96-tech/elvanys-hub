@@ -696,7 +696,7 @@
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
 // 14/11 : l'Odyssée sans fin a ses propres emplacements (odyssee.js lit SANSFIN)
 const SANSFIN = new URLSearchParams(location.search).get('sansfin') === '1', ROUTE_TITAN = new URLSearchParams(location.search).get('route') === '1', EPREUVE_PAGE = new URLSearchParams(location.search).get('epreuve') === '1', ODY_PAGE = EPREUVE_PAGE ? 'epreuves.html' : 'odyssee.html' + (SANSFIN ? '?sansfin=1' : ROUTE_TITAN ? '?route=1' : '');
-const VERSION = '20261115-200347';
+const VERSION = '20261115-202005';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -715,16 +715,17 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261115-200347"></script>
-<script src="musique.js?v=20261115-200347"></script>
-<script src="rang.js?v=20261115-200347"></script>
-<script src="heros-etoiles.js?v=20261115-200347"></script>
-<script src="donnees.js?v=20261115-200347"></script>
-<script src="odyssee.js?v=20261115-200347"></script>
-<script src="bestiaire.js?v=20261115-200347"></script>
-<script src="aventure.js?v=20261115-200347"></script>
-<script src="odyssee-sansfin.js?v=20261115-200347"></script>
-<script src="chronique.js?v=20261115-200347"></script>
+<script src="cartes.js?v=20261115-202005"></script>
+<script src="musique.js?v=20261115-202005"></script>
+<script src="rang.js?v=20261115-202005"></script>
+<script src="heros-etoiles.js?v=20261115-202005"></script>
+<script src="heros-aventure.js?v=20261115-202005"></script>
+<script src="donnees.js?v=20261115-202005"></script>
+<script src="odyssee.js?v=20261115-202005"></script>
+<script src="bestiaire.js?v=20261115-202005"></script>
+<script src="aventure.js?v=20261115-202005"></script>
+<script src="odyssee-sansfin.js?v=20261115-202005"></script>
+<script src="chronique.js?v=20261115-202005"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -1219,6 +1220,8 @@ function prepareCombatOdyssee(run, cb, auto) {
     lieu:cb.lieu || 'cendres', ile:run.acte || 'brulees', ody:{ id:cb.id, type:cb.type, titre:cb.type === 'boss' ? '👑 Le boss' : cb.type === 'elite' ? '💀 Élite' : `⚔ Monstres · niveau ${'I II III'.split(' ')[cb.niv - 1] || 'I'}`, defi:DEFIS.find(d => d.id === cb.defi) || null } };
   FX = []; fxApres = []; fxOn = false; if (!auto) arreteMusique();
   const J = S.J, O = S.O;
+  // 15/11 soir : un HÉROS D'AVENTURE (run.av, heros-aventure.js) : son nom et son portrait dans le combat ; le jeu reste celui de sa voie
+  if (typeof odyAvInfo === 'function' && odyAvInfo(run)) { const i = odyAvInfo(run); J.nom = i.nom; J.img = i.img; J.imgSec = i.sec; J.av = i.id; }
   J.deck = melange([...run.deck]); J.pv = run.pv; J.pvMax = run.pvMax; J.reliques = [...run.reliques]; J.benes = [...run.benes]; J.sacoche = [...run.sacoche];
   mainDeDepart(J, 4 + (J.reliques.includes('souvenir') ? 1 : 0) + (J.benes.includes('main') ? 1 : 0));
   if (J.benes.includes('pcplus')) J.pc += 1;
@@ -1406,9 +1409,14 @@ function finDeMonTour() {
 }
 // =============================================================================================== le Campement : rotation héros 1 → héros 2 → boss
 function partieCampement() {
-  const cfg = lireCampement(); if (!cfg || !HEROS[cfg.a] || !HEROS[cfg.b]) { location.href = 'campement.html'; return; }
+  const cfg = lireCampement();
+  // 15/11 soir : un HÉROS D'AVENTURE 'av:<id>' (heros-aventure.js) joue sa voie, avec son nom et son portrait (supprimé → Maëlle)
+  const avA = cfg && typeof haInfo === 'function' ? haInfo(cfg.a) : null, avB = cfg && typeof haInfo === 'function' ? haInfo(cfg.b) : null;
+  if (cfg && typeof haVoie === 'function') { cfg.a = haVoie(cfg.a); cfg.b = haVoie(cfg.b); }
+  if (!cfg || !HEROS[cfg.a] || !HEROS[cfg.b]) { location.href = 'campement.html'; return; }
   const boss = HEROS[cfg.boss] ? cfg.boss : 'colosseracines', h = HEROS[boss]; if (h.phases) { h.garde = h.phases[0].garde; h.pouvoir = h.phases[0].pouvoir; }
   const A = joueur(cfg.a, false, false), B = joueur(cfg.b, cfg.modeB === 'ordi', cfg.modeB === 'ordi');
+  [[A, avA], [B, avB]].forEach(([P, i]) => { if (i) { P.nom = i.nom; P.img = i.img; P.imgSec = i.sec; P.av = i.id; } });
   A.qui = 'toi'; B.qui = cfg.modeB === 'ordi' ? 'compagnon' : 'joueur 2'; B.nomCourt = B.nom;
   S = { J:A, O:joueur(h.vagues ? h.vagues[0] : boss, true), choix:boss, salle:SALLES[Math.floor(Math.random() * SALLES.length)], log:[], fini:null, auto:false, coop:true, equipe:[A, B], cohesion:COHESION.depart, lieu:h.lieu || 'brume', vagues:h.vagues || null, vague:0, seve:h.seve ? 100 : undefined };
   FX = []; fxApres = []; fxOn = false; arreteMusique();
@@ -1469,7 +1477,7 @@ function cohesionAct(q) {
 }
 function equipeHTML() {
   const J = S.J;
-  return `<div class="equipe">${S.equipe.map(h => `<div class="eq ${h === J ? 'actif' : ''} ${h.aTerre ? 'terre' : ''}"><img src="${IMG(h.id)}" alt=""><div><b>${h.nom}</b> <small>· ${h.qui}</small><br>${h.aTerre ? '💀 à terre' : `❤ ${h.pv}/${h.pvMax} · ◆ ${h.pc} PC · 🂠 ${h.main.length}`}</div></div>`).join('')}
+  return `<div class="equipe">${S.equipe.map(h => `<div class="eq ${h === J ? 'actif' : ''} ${h.aTerre ? 'terre' : ''}"><img src="${h.img || IMG(h.id)}"${h.imgSec ? ` onerror="this.onerror=null;this.src='${h.imgSec}'"` : ''} alt=""><div><b>${h.nom}</b> <small>· ${h.qui}</small><br>${h.aTerre ? '💀 à terre' : `❤ ${h.pv}/${h.pvMax} · ◆ ${h.pc} PC · 🂠 ${h.main.length}`}</div></div>`).join('')}
     <div class="coh"><b>🤝 Cohésion ${S.cohesion}/${COHESION.max}</b> <small>+1 quand un héros pose 3 dés ou plus</small><div class="cohb">
       <button onclick="cohesionAct('relever')" ${S.equipe.some(h => h.aTerre) && S.cohesion >= COHESION.relever ? '' : 'disabled'}>Relever (${COHESION.relever})</button>
       <button onclick="cohesionAct('cri')" ${S.cohesion >= COHESION.cri ? '' : 'disabled'}>Cri de ralliement (${COHESION.cri}) : +2 PC chacun</button>
@@ -1678,7 +1686,7 @@ function infoProtection(s) {
 }
 function barre(P, haut) {
   const ref = `{J:S.${haut ? 'O' : 'J'}}`;
-  return `<div class="barre ${estCible({ J:P }) ? 'cible' : ''} ${!P.ultimeFait && P.jauge >= JAUGE.max ? 'ultpret' : ''} ${P.gardeB || P.bouclier ? 'protege' : ''}" data-bouclier="${(P.gardeB || 0) + (P.bouclier || 0)}" id="b-${haut ? 'O' : 'J'}" style="--c:${P.c}" onclick="touche(${ref})"><img src="${HEROS[P.id].img || IMG(P.id)}" alt=""><img class="cadre" src="ui/cadre.webp?v=1" alt="">${anneauDe(P)}${etatsHTML(P)}${!haut && !P.ultimeFait && P.jauge >= JAUGE.max && !S.J.aLancer ? `<span class="ultbtn ${P.pc >= 3 ? '' : 'manque'}" onclick="event.stopPropagation(); vise('ultime')">⚡ ULTIME PRÊT${P.pc >= 3 ? '' : ' · 3 PC'}</span>` : ''}<span class="bdg bg" hidden>${P.gardeB}</span><span class="bdg bb ${P.gardeB ? 'tempo' : ''}" ${(P.gardeB || 0) + (P.bouclier || 0) ? '' : 'hidden'} onclick="event.stopPropagation();infoProtection('${haut ? 'O' : 'J'}')">${protTxt(P.gardeB || 0, P.bouclier || 0)}</span><div style="flex:1"><div class="nom">${P.nom}<small class="sous">${P.ordi ? (S.lieu ? (HEROS[P.id].titre || 'ennemi') : 'ordinateur') : (P.qui && P.qui !== 'toi' ? P.qui : '')}</small></div><div class="vie"><b style="width:${Math.max(0, P.pv) / P.pvMax * 100}%"></b><i style="width:${Math.max(0, P.pv) / P.pvMax * 100}%"></i></div><div class="pastilles">
+  return `<div class="barre ${estCible({ J:P }) ? 'cible' : ''} ${!P.ultimeFait && P.jauge >= JAUGE.max ? 'ultpret' : ''} ${P.gardeB || P.bouclier ? 'protege' : ''}" data-bouclier="${(P.gardeB || 0) + (P.bouclier || 0)}" id="b-${haut ? 'O' : 'J'}" style="--c:${P.c}" onclick="touche(${ref})"><img src="${P.img || HEROS[P.id].img || IMG(P.id)}"${P.imgSec ? ` onerror="this.onerror=null;this.src='${P.imgSec}'"` : ''} alt=""><img class="cadre" src="ui/cadre.webp?v=1" alt="">${anneauDe(P)}${etatsHTML(P)}${!haut && !P.ultimeFait && P.jauge >= JAUGE.max && !S.J.aLancer ? `<span class="ultbtn ${P.pc >= 3 ? '' : 'manque'}" onclick="event.stopPropagation(); vise('ultime')">⚡ ULTIME PRÊT${P.pc >= 3 ? '' : ' · 3 PC'}</span>` : ''}<span class="bdg bg" hidden>${P.gardeB}</span><span class="bdg bb ${P.gardeB ? 'tempo' : ''}" ${(P.gardeB || 0) + (P.bouclier || 0) ? '' : 'hidden'} onclick="event.stopPropagation();infoProtection('${haut ? 'O' : 'J'}')">${protTxt(P.gardeB || 0, P.bouclier || 0)}</span><div style="flex:1"><div class="nom">${P.nom}<small class="sous">${P.ordi ? (S.lieu ? (HEROS[P.id].titre || 'ennemi') : 'ordinateur') : (P.qui && P.qui !== 'toi' ? P.qui : '')}</small></div><div class="vie"><b style="width:${Math.max(0, P.pv) / P.pvMax * 100}%"></b><i style="width:${Math.max(0, P.pv) / P.pvMax * 100}%"></i></div><div class="pastilles">
     <span data-k="pv" class="p pv">${Math.max(0, P.pv)}</span><span data-k="pc" class="p pc"><img class="icopc" src="ui/cristal.webp?v=1" alt=""><b>${P.pc}</b> PC</span>
     ${P.gardeB ? `<span data-k="garde" class="p g pg"><img class="icopb" src="ui/equip/icone-garde.webp?v=1" alt="">Garde ${P.gardeB}</span>` : ''}${P.gardeE ? `<span data-k="epines" class="p g">🌿 Épines ${P.gardeE}</span>` : ''}${P.esquive ? '<span data-k="esquive" class="p g">💨 Esquive</span>' : ''}
     ${P.bouclier ? `<span data-k="bouclier" class="p g pb"><img class="icopb" src="ui/equip/icone-bouclier.webp?v=1" alt="">Bouclier ${P.bouclier}</span>` : ''}${P.contre ? '<span data-k="contre" class="p g">⚔ Contre-attaque : 6 à la 1re créature</span>' : ''}${P.piege ? '<span data-k="piege" class="p g">🪤 Piège</span>' : ''}
@@ -1870,7 +1878,7 @@ function choix(titre, options, cb) {
 // 14/11 (l'utilisateur : « le comment on joue prend trop de place ») : au début d'une partie, un RAPPEL court ; le ❓ ouvre les règles complètes
 function rappelDebut() {
   const h = HEROS[S.J.id];
-  fenetre(`<h2>⚔ ${h.nom} contre ${S.O.nom}</h2>
+  fenetre(`<h2>⚔ ${S.J.nom || h.nom} contre ${S.O.nom}</h2>
   <p style="margin:.2em 0 .5em">Le premier à 0 ❤ perd. <b>Ton tour en 3 gestes :</b></p>
   <ol style="margin:0 0 .4em;padding-left:1.3em;line-height:1.45">
   <li><b>Tes dés sont lancés.</b> Tu peux en relancer (2 fois, bouton 🎲 Relancer).</li>
@@ -2292,7 +2300,7 @@ async function joue1(e) {
     const ordi = e.s === 'O', d = document.createElement('div');
     if (e.t === 'ultime') {
       son('ultime'); const f = document.createElement('div'); f.className = 'eclair'; couche().appendChild(f); setTimeout(() => f.remove(), 1400 * fxVite);
-      d.className = 'fxcarte ultime'; d.innerHTML = `<img src="${HEROS[e.id].img || IMG(e.id)}" alt=""><div class="sorte">⚡ ULTIME</div><div class="n">${e.nom}</div><div class="t">${e.d || ''}</div><div class="cit">${e.cit}</div>`;
+      d.className = 'fxcarte ultime'; d.innerHTML = `<img src="${(e.s === 'J' && S && S.J && S.J.img) || HEROS[e.id].img || IMG(e.id)}"${e.s === 'J' && S && S.J && S.J.imgSec ? ` onerror="this.onerror=null;this.src='${S.J.imgSec}'"` : ''} alt=""><div class="sorte">⚡ ULTIME</div><div class="n">${e.nom}</div><div class="t">${e.d || ''}</div><div class="cit">${e.cit}</div>`;
     } else { son(/Pouvoir|Sort/.test(e.sorte || '') ? 'magie' : 'carte'); d.className = 'fxcarte'; d.innerHTML = `<div class="sorte">${e.sorte}${e.cout !== undefined ? ` · ${e.cout} PC` : ''}</div><div class="n">${e.nom}</div><div class="t">${e.txt}</div>${e.vs ? `<div class="vs">🎲 ${e.vs.join(' · ')}</div>` : ''}`; }
     couche().appendChild(d);
     d.animate([{ transform:`translate(-50%, ${ordi ? '-160%' : '60%'}) scale(.4) rotate(${ordi ? -8 : 8}deg)`, opacity:0 }, { transform:'translate(-50%,-50%) scale(1) rotate(0)', opacity:1 }], { duration:280 * fxVite, easing:'ease-out', fill:'forwards' });
@@ -2361,17 +2369,17 @@ async function joueFX() {
 // toucher l'écran pendant les animations les accélère
 document.addEventListener('pointerdown', () => { if (fxOn && !(S && S.tuto)) fxVite = .5; }, true); // 14/11 : plus d'accélération dans le tutoriel
 </script>
-<script src="profil.js?v=20261115-200347"></script>
-<script src="pantheon.js?v=20261115-200347"></script>
-<script src="tuto.js?v=20261115-200347"></script>
-<script src="deux.js?v=20261115-200347"></script>
+<script src="profil.js?v=20261115-202005"></script>
+<script src="pantheon.js?v=20261115-202005"></script>
+<script src="tuto.js?v=20261115-202005"></script>
+<script src="deux.js?v=20261115-202005"></script>
 <script>window.AMIS_SANS_BOUTON = true;</script>
-<script src="amis.js?v=20261115-200347"></script>
-<script src="duel-ligne.js?v=20261115-200347"></script>
-<script src="invasion.js?v=20261115-200347"></script>
-<script src="enigme-table.js?v=20261115-200347"></script>
-<script src="forge.js?v=20261115-200347"></script>
-<script src="semaine.js?v=20261115-200347"></script>
-<script src="enigme.js?v=20261115-200347"></script>
+<script src="amis.js?v=20261115-202005"></script>
+<script src="duel-ligne.js?v=20261115-202005"></script>
+<script src="invasion.js?v=20261115-202005"></script>
+<script src="enigme-table.js?v=20261115-202005"></script>
+<script src="forge.js?v=20261115-202005"></script>
+<script src="semaine.js?v=20261115-202005"></script>
+<script src="enigme.js?v=20261115-202005"></script>
 </body>
 </html>

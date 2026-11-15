@@ -94,7 +94,7 @@ function confirmeD(titre, texte, action) {
 // ------------------------------------------------------------------ l'entrée de la descente
 function descenteAccueil() {
   DR = null; S = null; const E = lireD();
-  if (choixH === 'zephine' && !ZEPH_OK()) choixH = 'maelle';
+  choixH = haValide(choixH, ZEPH_OK()); // 15/11 soir : un héros d'aventure supprimé ou verrouillé → Maëlle
   const mesB = Object.keys(E.breloques).filter(k => E.breloques[k] > 0);
   $('jeu').innerHTML = `<div class="dsc">
     <div class="haut"><a href="#" onclick="S=null;DR=null;accueil();return false">‹ Crypte</a><span class="titre"></span><button onclick="descenteRegles()">❓ Règles</button></div>
@@ -102,8 +102,8 @@ function descenteAccueil() {
     <p class="sous">Trois étages de cryptes : <b>des combats obligatoires</b> (combat ou élite, à toi de voir), des <b>haltes</b> au choix (marchand, feu de camp, événement, trésor), puis le boss de l’étage. Ta vie ne remonte presque pas toute seule !</p>
     ${(() => { const ren = lireRen(), i = D.palierDe(ren), P = D.PALIERS, suiv = P[i + 1];
       return `<button class="renB" onclick="descenteRenommee()">🏅 Renommée : <b>${ren}</b> · ${P[i].n}<small>${suiv ? `Prochain palier à ${suiv.ren} : de nouveaux trésors dans la réserve. Touche pour voir.` : 'Tous les paliers sont atteints ! Touche pour revoir.'}</small>${suiv ? `<div class="barre"><i style="width:${Math.round(100 * (ren - P[i].ren) / (suiv.ren - P[i].ren))}%"></i></div>` : ''}</button>`; })()}
-    <div class="heros">${Object.entries(HER).map(([k, h]) => `<button class="${choixH === k ? 'on' : ''}" ${k === 'zephine' && !ZEPH_OK() ? 'disabled' : ''} onclick="choixH='${k}';descenteAccueil()"><img src="portraits/${k}.webp" alt="">${h.n}${k === 'zephine' && !ZEPH_OK() ? '<br>🔒 tutoriel' : ''}</button>`).join('')}</div>
-    <div class="pv-h">⚡ <b>${C.POUVOIRS[choixH].n}</b> : ${C.POUVOIRS[choixH].d}<br>✨ ${texteBonus(choixH)}</div>
+    <div class="heros">${choixHerosHTML('descenteAccueil')}</div>
+    <div class="pv-h">${haInfo(choixH) ? `⚔ <b>${haEsc(haInfo(choixH).nom)}</b>, ${haEsc(haInfo(choixH).titre)} · la voie de ${HER[vJ()].n}.<br>` : ''}⚡ <b>${C.POUVOIRS[vJ()].n}</b> : ${C.POUVOIRS[vJ()].d}<br>✨ ${texteBonus(pJ())}</div>
     <h3 style="color:var(--or);margin:3cqw 0 1.5cqw">🔮 Ta breloque <small style="color:var(--doux);font-weight:normal">(gagnées sur les boss, elles restent)</small></h3>
     ${mesB.length ? `<div class="breloques"><button class="${!E.equipee ? 'on' : ''}" onclick="equipe(null)"><b>Aucune</b>Descendre les mains vides.</button>${mesB.map(k => `<button class="${E.equipee === k ? 'on' : ''}" onclick="equipe('${k}')"><b>${icoBrel(k)} ${D.BRELOQUES[k].n}</b>${D.BRELOQUES[k].d}</button>`).join('')}</div>` : '<p class="pv-h">Pas encore de breloque : bats un boss d’étage pour en gagner une.</p>'}
     <h3 style="color:var(--or);margin:3cqw 0 1.5cqw">🩸 Un pacte ? <small style="color:var(--doux);font-weight:normal">(plus dur, plus de points)</small></h3>
@@ -112,7 +112,7 @@ function descenteAccueil() {
     <div class="etages">${Array.from({ length:Math.min(10, E.profMax) + 1 }, (_, p) => `<span class="${choixProf === p ? 'ici' : ''}" onclick="choixProf=${p};descenteAccueil()" style="cursor:pointer">${p}</span>`).join('')}</div>
     <p class="pv-h">${choixProf ? `Profondeur ${choixProf} · score ×${(1 + .1 * choixProf).toFixed(1)} :<br>${D.PROFONDEURS.slice(1, choixProf + 1).map((x, i) => `${i + 1}. ${x}`).join('<br>')}` : 'Profondeur 0 : la descente normale.'}</p>` : ''}
     <div class="choix">
-      ${descenteGardee() ? `<button onclick="reprendDescente()" style="border-color:var(--ok);color:var(--ok);background:#163a2a">▶ Reprendre ta descente<small>${HER[descenteGardee().heros].n} · étage ${descenteGardee().etage} · ❤ ${descenteGardee().S ? descenteGardee().S.pv : descenteGardee().pv}</small></button><button onclick="if(confirm('Abandonner cette partie ? Elle sera effacée.')){try{localStorage.removeItem('guilde-descente-partie')}catch(e){};descenteAccueil()}" style="display:block;margin:0 auto;background:none;border:0;color:var(--doux);font-size:3cqw;text-decoration:underline;padding:1cqw;text-align:center">✕ abandonner cette partie</button>` : ''}
+      ${descenteGardee() ? `<button onclick="reprendDescente()" style="border-color:var(--ok);color:var(--ok);background:#163a2a">▶ Reprendre ta descente<small>${haEsc(herosS(descenteGardee()).nom)} · étage ${descenteGardee().etage} · ❤ ${descenteGardee().S ? descenteGardee().S.pv : descenteGardee().pv}</small></button><button onclick="if(confirm('Abandonner cette partie ? Elle sera effacée.')){try{localStorage.removeItem('guilde-descente-partie')}catch(e){};descenteAccueil()}" style="display:block;margin:0 auto;background:none;border:0;color:var(--doux);font-size:3cqw;text-decoration:underline;padding:1cqw;text-align:center">✕ abandonner cette partie</button>` : ''}
       <button onclick="lanceDescente(true)">📅 La descente du jour<small>${(r => `${r.e} Règle du jour : <b>${r.n}</b> (${r.d}) · `)(C.REGLES[C.regleDuJour('descente-' + jour())])}La même pour tout le monde aujourd’hui (toute la réserve est ouverte). ${(E.jours || {})[jour()] ? `Ton record du jour : ${E.jours[jour()].score} ${'★'.repeat(E.jours[jour()].etoiles)}${E.jours[jour()].etage ? ' · étage ' + E.jours[jour()].etage : ''}` : 'Pas encore tentée.'}${descenteGardee() ? ' (ta descente en cours sera abandonnée)' : ''}</small></button>
       <button class="b2" onclick="lanceDescente(false)">🗺️ Une descente au hasard<small>${descenteGardee() ? 'Attention : ta descente en cours sera abandonnée.' : '3 étages · 5 combats, 3 haltes et un boss par étage.'}</small></button>
     </div>
@@ -123,7 +123,9 @@ function equipe(k) { const E = lireD(); E.equipee = k; ecrireD(E); descenteAccue
 function lanceDescente(duJ) {
   const E = lireD(); const L = lire(); L.heros = choixH; ecrire(L);
   // 15/11 soir : la descente du jour ouvre toute la réserve (renommée ignorée), pour qu'elle soit la même pour tout le monde
-  DR = D.nouvelle(choixH, duJ ? 'descente-jour-' + jour() : 'descente-' + Date.now() + Math.random(), bonusMode(choixH), { breloque:E.equipee, pacte:choixPacte, profondeur:choixProf, renommee:duJ ? null : lireRen() });
+  // 15/11 soir : le moteur joue la VOIE (vJ) ; la progression vient du héros d'aventure (pJ) ; DR.av le garde dans la sauvegarde
+  DR = D.nouvelle(vJ(), duJ ? 'descente-jour-' + jour() : 'descente-' + Date.now() + Math.random(), bonusMode(pJ()), { breloque:E.equipee, pacte:choixPacte, profondeur:choixProf, renommee:duJ ? null : lireRen() });
+  DR.av = haInfo(choixH) ? haInfo(choixH).id : null;
   DR.duJour = !!duJ; if (duJ) DR.regle = C.regleDuJour('descente-' + jour());
   son('melange'); descenteEcran();
   if (!localStorage.getItem('guilde-descente-guide')) { localStorage.setItem('guilde-descente-guide', '1'); descenteRegles(); }
@@ -299,7 +301,7 @@ function prendD(k) {
 // fin d'un combat de la descente (appelé par finPartie() de crypte.html)
 function descenteFinCombat() {
   const gagne = S.fin === 'gagne', type = DR.salle.type;
-  if (gagne) { son('victoire'); if (typeof guildeEvt === 'function') guildeEvt(type === 'boss' ? 'boss' : 'salle', 1, { heros:S.heros }); }
+  if (gagne) { son('victoire'); if (typeof guildeEvt === 'function') guildeEvt(type === 'boss' ? 'boss' : 'salle', 1, { heros:herosS(S).prog, voie:S.heros }); }
   D.apresCombat(DR); S = null;
   setTimeout(descenteEcran, gagne ? 500 : 900);
 }

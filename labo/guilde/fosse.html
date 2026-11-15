@@ -59,10 +59,11 @@
 <body>
 <div id="app"></div>
 <div id="fen"></div>
-<script src="musique.js?v=20261115-200347"></script>
-<script src="rang.js?v=20261115-200347"></script>
-<script src="heros-etoiles.js?v=20261115-200347"></script>
-<script src="progression-modes.js?v=20261115-200347"></script>
+<script src="musique.js?v=20261115-202005"></script>
+<script src="rang.js?v=20261115-202005"></script>
+<script src="heros-etoiles.js?v=20261115-202005"></script>
+<script src="progression-modes.js?v=20261115-202005"></script>
+<script src="heros-aventure.js?v=20261115-202005"></script>
 <script>
 // =============================================================================================== LA FOSSE AUX RUNES v3 (15/11) : SURVIE NERVEUSE façon Vampire Survivors
 // Retour de l'utilisateur sur la v2 (casse-briques, gardée dans fosse-v2.html) : « un casse-briques ordinaire, rien ne me met en difficulté,
@@ -186,12 +187,18 @@ function lancer() {
 }
 
 // ------------------------------------------------------------------ l'état d'une partie
-let J = null, cv, ctx, ech = 1, boucle = 0, dernierT = 0, choixH = lire().heros;
+let J = null, cv, ctx, ech = 1, boucle = 0, dernierT = 0, choixH = haValide(lire().heros, ZEPH_OK());
+// 15/11 soir : les HÉROS D'AVENTURE (heros-aventure.js) : choixH peut valoir 'av:<id>'. La Fosse joue sa VOIE (J.heros),
+// sa progression vient de SON id (J.av), son nom et son portrait sont les siens.
+const vJ = () => haVoie(choixH), pJ = () => haProg(choixH);
+const nomJ = () => J && J.av && haInfo('av:' + J.av) ? haEsc(haInfo('av:' + J.av).nom) : HER[J ? J.heros : vJ()].n;
 function nouvelle(h) {
-  const B = typeof bonusMode === 'function' ? bonusMode(h) : { pv:0, bouclier:0, relance:0, des:0 };
+  const avF = haInfo(h); h = haVoie(h); // un héros d'aventure → sa voie ; avF garde qui il est
+  const B = typeof bonusMode === 'function' ? bonusMode(avF ? avF.id : h) : { pv:0, bouclier:0, relance:0, des:0 };
   const pvmax = PV0 + B.pv + B.bouclier;
   J = { fs:1 /* 15/11 soir : suivi pas encore activé ici, à mesurer d'abord (sinon B.fs) */, heros:h, pv:pvmax, pvmax, t:0, etat:'jeu', score:0, tues:0, xp:0, niv:1, besoin:5, lv:{}, balles:[], monstres:[], tirs:[], gemmes:[], capsules:[], eclats:[], textes:[],
     raq:{ x:W / 2, w:70 + (h === 'aldric' ? 18 : 0) }, faces:[1, 2, 3, 4, 5, 6], perdus:[], pops:[], onde:0, prochainSpawn:1, foudreT:3, regenT:15, gardeT:0, boss:false, bossMort:false, tremble:0, effets:{}, fini:false };
+  J.av = avF ? avF.id : null; // 15/11 soir : le héros d'aventure de la partie
   if (h === 'maelle') J.lv.force = 1; if (h === 'gorm') J.lv.multi = 1; if (h === 'oria') J.lv.aimant = 2; if (h === 'zephine') { J.lv.vitesse = 1; J.lv.cadence = 1; }
   J.lv.multi = (J.lv.multi || 0) + (B.des || 0) + (B.relance || 0);
   for (let i = 0; i < nbDes(); i++) J.perdus.push({ t:.4 + i * .35 });
@@ -324,7 +331,7 @@ function meurt(m) {
   if (M.mini) { J.capsules.push({ x:m.x - 20, y:m.y, k:'soin' }); J.capsules.push({ x:m.x + 20, y:m.y, k:'multi' }); texte(W / 2, H / 3, `🏆 ${M.mini} est tombé !`, '#f3c96b', 2); }
   else if (M.elite || Math.random() < .05) J.capsules.push({ x:m.x, y:m.y, k:pick(['multi', 'gel', 'soin', 'large']) });
   if (M.boss) { J.bossMort = true; texte(W / 2, H / 3, '🏆 Le Titan est tombé !', '#f3c96b', 3); }
-  if (J.tues % 10 === 0 && typeof guildeEvt === 'function') guildeEvt('salle', 1, { heros:J.heros });
+  if (J.tues % 10 === 0 && typeof guildeEvt === 'function') guildeEvt('salle', 1, { heros:J.av || J.heros, voie:J.heros });
 }
 function coupRempart(n, x, crachat) {
   if (J.heros === 'aldric' && J.gardeT <= 0) { J.gardeT = 60; texte(x, H - 70, '🛡 Paré !', '#ffd27a', 1); son('bouclier', true); return; }
@@ -466,7 +473,7 @@ function regles(enJeu) {
     <li>Chaque monstre abattu lâche des <b>gemmes 💎</b> : ramasse-les avec ton bouclier. Barre bleue pleine = <b>un niveau : pause, choisis 1 amélioration parmi 3</b>.</li>
     <li>Les capsules dorées : ✦ trois balles de 6, ❄ tout ralentit, ❤ soin, 🛡 grand bouclier.</li>
     <li>À <b>4:00</b>, le <b>Titan de feu</b> arrive et crache en éventail. Abats-le, ou tiens jusqu’à 5:00 et finis-le, pour gagner.</li></ol>
-    <p style="color:var(--doux)">Talent de ${HER[J ? J.heros : choixH].n} : <b>${HER[J ? J.heros : choixH].t}</b> · ${HER[J ? J.heros : choixH].d}</p>
+    <p style="color:var(--doux)">Talent de ${nomJ()} : <b>${HER[J ? J.heros : vJ()].t}</b> · ${HER[J ? J.heros : vJ()].d}</p>
     <button class="go" onclick="fenetre('');if(J&&J.etat==='pause'){J.etat='jeu';dernierT=0}">C’est parti !</button>`, false);
 }
 function fin(gagne) {
@@ -474,22 +481,22 @@ function fin(gagne) {
   const et = gagne ? 1 + (J.pv >= J.pvmax / 3 ? 1 : 0) + (J.pv >= J.pvmax * .66 ? 1 : 0) : 0;
   const D = lire(); D.parties++; if (gagne) D.victoires++; D.meilleur = Math.max(D.meilleur, J.score); D.meilleurTemps = Math.max(D.meilleurTemps, Math.floor(J.t)); ecrire(D);
   let objet = null;
-  if (gagne) { son('victoire', true); try { GM.jingle('victoire'); } catch (e) {} if (typeof guildeEvt === 'function') guildeEvt('boss', 1, { heros:J.heros }); if (typeof butinArmurerie === 'function') objet = butinArmurerie(et, J.score); }
+  if (gagne) { son('victoire', true); try { GM.jingle('victoire'); } catch (e) {} if (typeof guildeEvt === 'function') guildeEvt('boss', 1, { heros:J.av || J.heros, voie:J.heros }); if (typeof butinArmurerie === 'function') objet = butinArmurerie(et, J.score); }
   else { try { GM.jingle('defaite'); } catch (e) {} if (typeof gagneXP === 'function' && J.t > 60) gagneXP(10, 'Fosse défendue'); }
   fenetre(`<h2>${gagne ? '🏆 La Fosse est refermée !' : '☠ Le rempart est tombé…'}</h2>
     <p style="text-align:center;font-size:2em;margin:6px 0">${gagne ? '★'.repeat(et) + '☆'.repeat(3 - et) : ''}</p>
-    <p style="text-align:center">Tenu <b>${Math.floor(J.t / 60)}:${String(Math.floor(J.t % 60)).padStart(2, '0')}</b> · score <b style="color:var(--or)">${J.score}</b> · ${J.tues} monstres · niveau ${J.niv}</p>
+    <p style="text-align:center">${J.av ? `⚔ ${nomJ()} · ` : ''}Tenu <b>${Math.floor(J.t / 60)}:${String(Math.floor(J.t % 60)).padStart(2, '0')}</b> · score <b style="color:var(--or)">${J.score}</b> · ${J.tues} monstres · niveau ${J.niv}</p>
     <p style="text-align:center">${Object.entries(J.lv).filter(([, n]) => n).map(([k, n]) => `${AMELIO[k].e}${n}`).join(' ')}</p>
     ${gagne && objet ? `<p style="text-align:center">🎒 <b>${objet}</b> rejoint ton armurerie</p>` : ''}
     <p style="text-align:center;color:var(--doux);font-size:.9em">Meilleur score : ${D.meilleur} · plus longue survie : ${Math.floor(D.meilleurTemps / 60)}:${String(D.meilleurTemps % 60).padStart(2, '0')}</p>
     <button class="go" onclick="fenetre('');cancelAnimationFrame(boucle);J=null;accueil()">Retour au bord de la Fosse</button>`, false);
 }
 function accueil() {
-  const D = lire(); if (choixH === 'zephine' && !ZEPH_OK()) choixH = 'maelle'; window.onresize = null;
+  const D = lire(); choixH = haValide(choixH, ZEPH_OK()); window.onresize = null;
   $('app').innerHTML = `<div class="acc"><div class="top"><a href="menu.html">‹ Menu</a><button onclick="regles()">❓ Règles</button></div>
     <h1>🕳️ La Fosse aux Runes</h1><p class="sous">Ça grouille. Tes dés partent tout seuls, les monstres attaquent, chaque niveau t’offre une amélioration. Tiens 5 minutes… et abats le Titan.</p>
-    <div class="heros">${Object.entries(HER).map(([k, h]) => `<button class="${choixH === k ? 'on' : ''}" ${k === 'zephine' && !ZEPH_OK() ? 'disabled' : ''} onclick="choixH='${k}';accueil()"><img src="portraits/${k}.webp" alt="">${h.n}${k === 'zephine' && !ZEPH_OK() ? '<br>🔒 tutoriel' : ''}</button>`).join('')}</div>
-    <div class="pv-h">✦ <b>${HER[choixH].t}</b> : ${HER[choixH].d}<br>${typeof texteBonus === 'function' ? '✨ ' + texteBonus(choixH) : ''}</div>
+    <div class="heros">${Object.entries(HER).map(([k, h]) => `<button class="${choixH === k ? 'on' : ''}" ${k === 'zephine' && !ZEPH_OK() ? 'disabled' : ''} onclick="choixH='${k}';accueil()"><img src="portraits/${k}.webp" alt="">${h.n}${k === 'zephine' && !ZEPH_OK() ? '<br>🔒 tutoriel' : ''}</button>`).join('')}${haBoutons(choixH, k => `choixH='${k}';accueil()`, ZEPH_OK())}</div>
+    <div class="pv-h">${haInfo(choixH) ? `⚔ <b>${haEsc(haInfo(choixH).nom)}</b>, ${haEsc(haInfo(choixH).titre)} · la voie de ${HER[vJ()].n}.<br>` : ''}✦ <b>${HER[vJ()].t}</b> : ${HER[vJ()].d}<br>${typeof texteBonus === 'function' ? '✨ ' + texteBonus(pJ()) : ''}</div>
     <button class="gros" onclick="commence()">⚔ Descendre dans la Fosse</button>
     <p class="record">Meilleur score : ${D.meilleur} · plus longue survie : ${Math.floor(D.meilleurTemps / 60)}:${String(D.meilleurTemps % 60).padStart(2, '0')} · ${D.victoires} victoire${D.victoires > 1 ? 's' : ''} sur ${D.parties}<br>
       <a href="fosse-v2.html" style="color:var(--doux)">l’ancien casse-briques</a> · <a href="fosse-v1.html" style="color:var(--doux)">la version tour par tour</a></p></div>`;

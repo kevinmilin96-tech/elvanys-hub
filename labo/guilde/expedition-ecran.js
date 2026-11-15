@@ -11,6 +11,18 @@ const fermer = () => { document.getElementById('fen').innerHTML = ''; };
 const dodo = ms => new Promise(ok => setTimeout(ok, ms / vitesse));
 const app = () => document.getElementById('app');
 
+// ----------------------------------------------------------------------------------------------- 15/11 soir : LES HÉROS D'AVENTURE
+// Un héros d'aventure (heros-aventure.js) peut être capitaine : le navire joue sa VOIE (X.heros : pouvoir de capitaine, dés),
+// X.av garde son id (éclats et progression), son nom et son portrait sont les siens (le capitaine porte u.av).
+const avX = () => X && X.av && typeof haInfo === 'function' ? haInfo('av:' + X.av) : null;
+const nomX = () => avX() ? haEsc(avX().nom) : HEROS[X.heros].nom;
+const progX = () => avX() ? X.av : X.heros;
+const capArt = u => { const i = u.av && typeof haInfo === 'function' ? haInfo('av:' + u.av) : null; return i ? i.img : IMG(u.hid); };
+// une image de fond avec, pour un héros d'aventure, le portrait de sa voie dessous (si la galerie n'a pas encore son image)
+const bgU = (u, art) => `url('${art}')${u.key === 'capitaine' && art !== IMG(u.hid) ? `, url('${IMG(u.hid)}')` : ''}`;
+const capitainesAventure = () => haListe().map(a => haInfo('av:' + a.id)).map(i => i.voie === 'zephine' && localStorage.getItem('guilde-tuto') !== 'fait'
+  ? `<button disabled style="opacity:.5">${haImg(i, 'filter:grayscale(1)')}🔒 ${haEsc(i.nom)}</button>`
+  : `<button onclick="choixCapitaine('${i.cle}')">${haImg(i, `box-shadow:0 0 0 2px ${i.couleur}`)}${haEsc(i.nom)}<small class="ha-t">⚔ ${haEsc(i.titre)}</small><small style="color:var(--or)">${CAPITAINES[i.voie].n}</small><br><small class="prise ${PRISE_EXP[i.voie]}">${PRISE_TXT[PRISE_EXP[i.voie]]}</small></button>`).join('');
 // ----------------------------------------------------------------------------------------------- accueil
 function accueil() {
   const e = lire(); if (e && !e.fini) { X = e; port(); return; }
@@ -18,12 +30,13 @@ function accueil() {
   <p class="doux" style="text-align:center">Le navire volant de la Guilde part pour six escales. Au port, tu recrutes et tu places ton équipage sur deux rangées ; à chaque escale, il combat tout seul aux dés. Trois cœurs : trois défaites et c’est fini.</p>
   <h2>Ton capitaine</h2><div class="heros6">${ORDRE.map(id => id === 'zephine' && localStorage.getItem('guilde-tuto') !== 'fait'
     ? `<button disabled style="opacity:.5"><img src="${IMG(id)}" alt="" style="filter:grayscale(1)">🔒 ${HEROS[id].nom}</button>`
-    : `<button onclick="choixCapitaine('${id}')"><img src="${IMG(id)}" alt="">${HEROS[id].nom}<br><small style="color:var(--or)">${CAPITAINES[id].n}</small><br><small class="prise ${PRISE_EXP[id]}">${PRISE_TXT[PRISE_EXP[id]]}</small></button>`).join('')}</div>
+    : `<button onclick="choixCapitaine('${id}')"><img src="${IMG(id)}" alt="">${HEROS[id].nom}<br><small style="color:var(--or)">${CAPITAINES[id].n}</small><br><small class="prise ${PRISE_EXP[id]}">${PRISE_TXT[PRISE_EXP[id]]}</small></button>`).join('')}${capitainesAventure()}</div>
   <div class="choixh"><button onclick="location.href='expeditions-v2-regles.html'">📖 Les règles</button><button onclick="records()">🏆 Mes expéditions</button><button onclick="location.href='menu.html'">⌂ Menu</button></div>`;
 }
 function choixCapitaine(id) {
-  fenetre(`<div style="text-align:center"><img src="${IMG(id)}" alt="" style="width:90px;height:90px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 3px var(--or)"><h2>${HEROS[id].nom}, capitaine</h2>
-    <p><b style="color:var(--or)">${CAPITAINES[id].n}</b> : ${CAPITAINES[id].d}</p><p class="prise ${PRISE_EXP[id]}">${PRISE_TXT[PRISE_EXP[id]]} · ${PRISE_DIT[PRISE_EXP[id]]}</p></div>
+  const v = haVoie(id), i = haInfo(id); // 15/11 soir : un héros d'aventure → sa voie
+  fenetre(`<div style="text-align:center">${i ? haImg(i, 'width:90px;height:90px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 3px var(--or)') : `<img src="${IMG(v)}" alt="" style="width:90px;height:90px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 3px var(--or)">`}<h2>${i ? haEsc(i.nom) : HEROS[v].nom}, capitaine</h2>${i ? `<p class="doux" style="margin:0">⚔ ${haEsc(i.titre)} · la voie de ${HEROS[v].nom}</p>` : ''}
+    <p><b style="color:var(--or)">${CAPITAINES[v].n}</b> : ${CAPITAINES[v].d}</p><p class="prise ${PRISE_EXP[v]}">${PRISE_TXT[PRISE_EXP[v]]} · ${PRISE_DIT[PRISE_EXP[v]]}</p></div>
     <p style="text-align:center;margin:.6em 0 .2em"><b>Difficulté</b></p>
     <div class="diffs">${Object.entries(DIFF_EXP).map(([k, d]) => `<button class="${diffChoisie === k ? 'sel' : ''}" onclick="diffChoisie='${k}';localStorage.setItem('guilde-exp-diff','${k}');choixCapitaine('${id}')">${d.e} ${d.n}<br><small>${k === 'facile' ? 'ennemis moins solides · points ×0,7' : k === 'difficile' ? 'ennemis plus solides · points ×1,5' : 'l’équilibre prévu'}</small></button>`).join('')}</div>
     <div class="choixh"><button onclick="fermer()">Autre capitaine</button><button class="or" onclick="fermer();depart('${id}')">⛵ Larguer les amarres</button></div>`);
@@ -31,7 +44,9 @@ function choixCapitaine(id) {
 let diffChoisie = localStorage.getItem('guilde-exp-diff') || 'normal';
 const PRISE_TXT = { simple:'🟢 Prise en main simple', moyenne:'🟡 Prise en main moyenne', technique:'🔴 Prise en main technique' };
 const PRISE_DIT = { simple:'son pouvoir marche tout seul', moyenne:'il faut miser sur ses Tireurs', technique:'il faut bien construire son équipage' };
-function depart(id) { X = nouvelleExpedition(id); X.diff = diffChoisie; sel = null; sauve(); chroniqueEscale(() => port()); }
+function depart(id) { const i = haInfo(id); X = nouvelleExpedition(haVoie(id)); X.diff = diffChoisie;
+  if (i) { X.av = i.id; const cap = X.plateau.av[1]; if (cap && cap.key === 'capitaine') { cap.n = i.nom; cap.av = i.id; } X.journal[0] = `Le navire de ${i.nom} quitte la Guilde.`; } // 15/11 soir : héros d'aventure capitaine
+  sel = null; sauve(); chroniqueEscale(() => port()); }
 // la page de l'escale qui vient (texte seulement : les choix de la v1 jouaient sur l'ancien or)
 function chroniqueEscale(apres) {
   const esc = ESCALES2[X.escale]; X.lu = X.lu || {};
@@ -62,17 +77,17 @@ function uniteHTML(u, opt) {
   if (!u) return '';
   const cap = u.key === 'capitaine', fam = u.fam && FAMILLES[u.fam] ? FAMILLES[u.fam].e : '', tags = etiquettes(u);
   const a = u.a + (u.bonusA || 0), v = u.v + (u.bonusV || 0), ennemi = opt && opt.ennemi;
-  const art = cap ? IMG(u.hid) : u.key === 'm' ? '' : `cartes/${ART_EXP[u.key] || u.key}.webp?v=2`;
+  const art = cap ? capArt(u) : u.key === 'm' ? '' : `cartes/${ART_EXP[u.key] || u.key}.webp?v=2`;
   const clic = opt && opt.clic ? `onclick="toucheUnite('${u.id}', event)"` : `onclick="ficheUnite('${u.id}', event)"`;
-  return `<div class="u carte ${cap ? 'capitaine' : ''} ${ennemi ? 'ennemi' : ''} ${u.role === 'soutien' ? 'soutien' : ''} ${sel === u.id ? 'sel' : ''}" data-id="${u.id}" ${clic} style="${art ? `background-image:url('${art}')` : ''}">
+  return `<div class="u carte ${cap ? 'capitaine' : ''} ${ennemi ? 'ennemi' : ''} ${u.role === 'soutien' ? 'soutien' : ''} ${sel === u.id ? 'sel' : ''}" data-id="${u.id}" ${clic} style="${art ? `background-image:${bgU(u, art)}` : ''}">
     ${art ? '' : `<span class="sansart">${ennemi ? '👹' : '❔'}</span>`}<span class="nm">${u.n}${u.star ? ` <span class="st">${'★'.repeat(u.star)}</span>` : ''}</span>${fam ? `<span class="fm">${fam}</span>` : ''}
     <span class="rl">${ROLE_COURT[u.role] || ''}${tags.length ? '<br>' + tags.join(' · ') : ''}</span>
     <div class="av"><span>⚔ ${a}</span><span>❤ ${v}</span></div></div>`;
 }
 // la fiche d'une unité (au port, en combat, chez le recruteur)
 function ficheHTML(u, r) {
-  const cap = u.key === 'capitaine', tags = etiquettes(u), art = cap ? IMG(u.hid) : u.key === 'm' ? '' : `cartes/${ART_EXP[u.key] || u.key}.webp?v=2`;
-  return `<div class="fiche">${art ? `<img src="${art}" alt="">` : ''}<div><h2>${u.n}${u.star ? ` <span class="st">${'★'.repeat(u.star)}</span>` : ''}</h2>
+  const cap = u.key === 'capitaine', tags = etiquettes(u), art = cap ? capArt(u) : u.key === 'm' ? '' : `cartes/${ART_EXP[u.key] || u.key}.webp?v=2`;
+  return `<div class="fiche">${art ? `<img src="${art}"${cap ? ` onerror="this.onerror=null;this.src='${IMG(u.hid)}'"` : ''} alt="">` : ''}<div><h2>${u.n}${u.star ? ` <span class="st">${'★'.repeat(u.star)}</span>` : ''}</h2>
     <p class="doux">${u.fam && FAMILLES[u.fam] ? `${FAMILLES[u.fam].e} ${FAMILLES[u.fam].n} · ` : ''}⚔ ${u.a + (u.bonusA || 0)} · ❤ ${u.v + (u.bonusV || 0)}</p></div></div>
     <p>${ROLE_LONG[u.role] || (u.tireur ? ROLE_LONG.tireur : ROLE_LONG.lame)}</p>
     ${cap && CAPITAINES[u.hid] ? `<p>🧭 <b>${CAPITAINES[u.hid].n}</b> : ${CAPITAINES[u.hid].d}</p>` : ''}
@@ -99,7 +114,7 @@ function port() {
   const esc = ESCALES2[X.escale], selU = sel && aEn(X, ouEst(X, sel) || { r:'cale', i:9 });
   const paires = k => toutes(X).filter(u => u.key === k && u.star === 0).length >= 2;
   app().innerHTML = `
-  <div class="entete"><img src="${IMG(X.heros)}" alt=""><div><b>${HEROS[X.heros].nom}</b>, capitaine · <span class="p">💰 ${X.or}</span> <span class="p coeurs">${'❤'.repeat(X.coeurs)}${'🖤'.repeat(3 - X.coeurs)}</span><br><span class="doux">${CAPITAINES[X.heros].n}</span></div><span class="ic" onclick="journalExp()">📜</span><span class="ic" onclick="quitter()">⏏</span></div>
+  <div class="entete">${avX() ? haImg(avX()) : `<img src="${IMG(X.heros)}" alt="">`}<div><b>${nomX()}</b>, capitaine · <span class="p">💰 ${X.or}</span> <span class="p coeurs">${'❤'.repeat(X.coeurs)}${'🖤'.repeat(3 - X.coeurs)}</span><br><span class="doux">${CAPITAINES[X.heros].n}</span></div><span class="ic" onclick="journalExp()">📜</span><span class="ic" onclick="quitter()">⏏</span></div>
   <div class="route">${ESCALES2.map((x, i) => `<div class="esc ${i < X.escale ? 'faite' : i === X.escale ? 'ici' : ''}"><b>${x.type === 'fantome' ? '👻' : x.e}</b>${i + 1}</div>`).join('')}</div>
   <p class="prochain">Prochaine escale : <b>${esc.e} ${esc.n}</b> · ${esc.type === 'fantome' ? '👻 un navire rival (un autre capitaine)' : esc.type === 'boss' ? '👑 le boss' : '⚔ des monstres'}</p>
   ${famillesHTML()}
@@ -141,7 +156,7 @@ function aideExp() { fenetre(`<h2>❓ Le port</h2><ul style="padding-left:1.1em"
 // sur la proue ; chaque unité est un médaillon (la fiche complète s'ouvre au toucher).
 const PORTRAIT_M = { 'Gobelin':'m-gobelin', 'Gobelin chef':'m-chefgobelin', 'Gobelin lanceur':'m-gobelin', 'Loup de braise':'m-loup', 'Louveteau':'m-loup', 'Salamandre':'m-salamandre',
   'Élémentaire de lave':'m-elementaire', 'Golem de scories':'m-golem', 'Drake de cendre':'m-drake', 'Flammèche':'m-salamandre', 'Le Titan de feu':'m-titan', 'Cultiste du feu':'m-cultiste' };
-const artU = u => u.key === 'capitaine' ? IMG(u.hid) : u.key === 'm' ? (PORTRAIT_M[u.n] ? `portraits/${PORTRAIT_M[u.n]}.webp` : '') : `cartes/${ART_EXP[u.key] || u.key}.webp?v=2`;
+const artU = u => u.key === 'capitaine' ? capArt(u) : u.key === 'm' ? (PORTRAIT_M[u.n] ? `portraits/${PORTRAIT_M[u.n]}.webp` : '') : `cartes/${ART_EXP[u.key] || u.key}.webp?v=2`;
 // où se tiennent les ennemis sur chaque décor (en % de l'écran : haut de la rangée du fond, haut de la rangée de devant, décalage horizontal)
 // 14/11 : les plateaux vus du dessus (s'il y en a un pour l'escale, il remplace le décor en perspective) : [rangée du fond, rangée de devant] des ennemis, puis de l'équipage
 const PLATEAUX_EXP = { crique:{ enn:[10, 26], equ:[62, 78] }, falaises:{ enn:[11, 26], equ:[63, 79] }, port:{ enn:[13, 29], equ:[63, 79] }, foret:{ enn:[11, 26], equ:[64, 80] }, cratere:{ enn:[10, 26], equ:[63, 79] }, nid:{ enn:[13, 29], equ:[65, 81] } };
@@ -151,7 +166,7 @@ function medHTML(u, ennemi) {
   if (!u) return '<div class="med vide"></div>';
   const art = artU(u), a = u.a + (u.bonusA || 0), v = u.v + (u.bonusV || 0);
   return `<div class="u med ${ennemi ? 'ennemi' : ''} ${u.key === 'capitaine' ? 'capitaine' : ''} ${u.boss ? 'boss' : ''}" data-id="${u.id}" onclick="ficheUnite('${u.id}', event)">
-    <div class="rond" style="${art ? `background-image:url('${art}')` : ''}">${art ? '' : '👹'}</div><div class="pvb" data-max="${v}"><i style="width:100%"></i></div><span class="nm">${u.n}${u.star ? ' ' + '★'.repeat(u.star) : ''}</span><div class="av"><span>⚔ ${a}</span><span>❤ ${v}</span></div></div>`;
+    <div class="rond" style="${art ? `background-image:${bgU(u, art)}` : ''}">${art ? '' : '👹'}</div><div class="pvb" data-max="${v}"><i style="width:100%"></i></div><span class="nm">${u.n}${u.star ? ' ' + '★'.repeat(u.star) : ''}</span><div class="av"><span>⚔ ${a}</span><span>❤ ${v}</span></div></div>`;
 }
 function ligneMed(P, r, ennemi, top, dx) { return `<div class="lignemed" style="top:${top}%;left:${dx}%">${[0, 1, 2].map(i => medHTML(P[r][i], ennemi)).join('')}</div>`; }
 const elU = id => document.querySelector(`[data-id="${id}"]`);
@@ -279,7 +294,7 @@ async function partir() {
     if (e.t === 'avance') { jl(`${noms[e.id]} avance au premier rang.`); continue; }
   }
   enCours = false;
-  const g = res.gagne; if (g) typeof guildeEvt === 'function' && guildeEvt('escale', 1, { heros:X.heros });
+  const g = res.gagne; if (g) typeof guildeEvt === 'function' && guildeEvt('escale', 1, { heros:progX(), voie:X.heros });
   const lignes = [g ? '🏆 <b>Victoire !</b>' : '💔 <b>Défaite</b> : un cœur de moins.', res.forge ? `⚒ Forge : ${res.forge}.` : '', res.maelle ? `⚒ La forge du bord : ${res.maelle}.` : '', res.louve ? '🐺 La Louve rejoint l’équipage !' : '', !X.fini && res.gain ? `💰 +${res.gain} pièces${res.interet ? ` (dont ${res.interet} d’intérêts)` : ''}.` : ''].filter(Boolean).map(t => `<p>${t}</p>`).join('');
   if (X.fini) { setTimeout(() => finExp(), 600 / vitesse); return; }
   fenetre(`<h2>${g ? '🏆' : '💔'} ${esc.n}</h2>${lignes}<p class="doux">Les recrues tombées se relèvent au port : chaque combat commence à pleine vie.</p><div class="choixh"><button class="or" onclick="fermer();voyage()">⛵ Lever l’ancre</button></div>`);
@@ -314,14 +329,14 @@ function guidePort(force) {
 // ----------------------------------------------------------------------------------------------- fin, journal, records
 function finExp() {
   const gagne = X.fini === 'gagne', parfait = gagne && X.coeurs === 3, score = Math.round((X.victoires * 100 + X.coeurs * 100 + X.or + (gagne ? 300 : 0) + (parfait ? 200 : 0)) * ((DIFF_EXP[X.diff] || DIFF_EXP.normal).pts));
-  const l = lireRec(); l.unshift({ quand:new Date().toISOString(), heros:X.heros, diff:X.diff || 'normal', gagne, parfait, score, escales:X.victoires, coeurs:X.coeurs, duree:Math.round((Date.now() - X.debut) / 60000) });
-  localStorage.setItem(CLE + '-records', JSON.stringify(l.slice(0, 50))); localStorage.removeItem(CLE); if (gagne) typeof guildeEvt === 'function' && guildeEvt('titan', 1, { heros:X.heros });
-  const h = HEROS[X.heros].nom; X = null;
+  const l = lireRec(); l.unshift({ quand:new Date().toISOString(), heros:X.heros, av:X.av || null, nom:avX() ? avX().nom : null, diff:X.diff || 'normal', gagne, parfait, score, escales:X.victoires, coeurs:X.coeurs, duree:Math.round((Date.now() - X.debut) / 60000) });
+  localStorage.setItem(CLE + '-records', JSON.stringify(l.slice(0, 50))); localStorage.removeItem(CLE); if (gagne) typeof guildeEvt === 'function' && guildeEvt('titan', 1, { heros:progX(), voie:X.heros });
+  const h = nomX(); X = null;
   fenetre(`<h2>${parfait ? '🌟 Traversée parfaite !' : gagne ? '🏆 Le Titan est tombé !' : '💀 Le navire rentre au port'}</h2><p>${gagne ? `L’équipage de ${h} a vaincu le Nid du Titan${parfait ? ' sans perdre un seul cœur' : ''}.` : `Plus de cœurs : l’équipage de ${h} rentre à la Guilde.`}</p>
   <p style="font-size:1.5em;color:var(--or);text-align:center">${score} points</p><div class="choixh"><button class="or" onclick="fermer();accueil()">⛵ Nouvelle expédition</button><button onclick="location.href='menu.html'">⌂ Menu</button></div>`);
 }
 function journalExp() { fenetre(`<h2>📜 Journal de bord</h2><div class="journal">${[...X.journal].reverse().map(t => `<div>${t}</div>`).join('')}</div><div class="choixh"><button onclick="fermer()">Fermer</button></div>`); }
 function quitter() { fenetre('<h2>⏏ Quitter</h2><p>L’expédition est gardée sur ce téléphone. Ou on l’abandonne (comptée perdue).</p><div class="choixh"><button onclick="location.href=\'menu.html\'">⌂ Menu, je reprendrai</button><button onclick="X.fini=\'perdu\';X.coeurs=0;fermer();finExp()">Abandonner</button><button class="or" onclick="localStorage.removeItem(CLE);X=null;fermer();accueil()">🔄 Recommencer (sans la compter)</button></div>'); }
 const lireRec = () => { try { return JSON.parse(localStorage.getItem(CLE + '-records') || '[]'); } catch (e) { return []; } };
-function records() { const l = lireRec(); fenetre(`<h2>🏆 Mes expéditions (${l.length})</h2>${l.length ? `<table>${l.map(r => `<tr><td>${r.parfait ? '🌟' : r.gagne ? '🏆' : '💀'} ${new Date(r.quand).toLocaleDateString('fr-FR')} · ${HEROS[r.heros].nom}${r.diff && r.diff !== 'normal' ? ' · ' + DIFF_EXP[r.diff].e + ' ' + DIFF_EXP[r.diff].n : ''} · ${r.escales} victoire${r.escales > 1 ? 's' : ''}</td><td>${r.score}</td></tr>`).join('')}</table>` : '<p>Aucune encore.</p>'}<div class="choixh"><button onclick="fermer()">Fermer</button></div>`); }
+function records() { const l = lireRec(); fenetre(`<h2>🏆 Mes expéditions (${l.length})</h2>${l.length ? `<table>${l.map(r => `<tr><td>${r.parfait ? '🌟' : r.gagne ? '🏆' : '💀'} ${new Date(r.quand).toLocaleDateString('fr-FR')} · ${r.nom ? haEsc(r.nom) : HEROS[r.heros].nom}${r.diff && r.diff !== 'normal' ? ' · ' + DIFF_EXP[r.diff].e + ' ' + DIFF_EXP[r.diff].n : ''} · ${r.escales} victoire${r.escales > 1 ? 's' : ''}</td><td>${r.score}</td></tr>`).join('')}</table>` : '<p>Aucune encore.</p>'}<div class="choixh"><button onclick="fermer()">Fermer</button></div>`); }
 if (document.getElementById('app')) accueil();

@@ -153,7 +153,7 @@ function guildeEvt(type, n = 1, info = {}) {
     const Q = lireQuetes(); let fini = [];
     [['j', true], ['s', false]].forEach(([k, jour]) => Q[k].forEach(q => {
       const d = defQuete(q, jour); if (!d || q.fait || d[2] !== type) return;
-      if (d[4] === 'heros' && info.heros !== q.heros) return;
+      if (d[4] === 'heros' && info.heros !== q.heros && info.voie !== q.heros) return; // 15/11 soir : un héros d'aventure compte pour le héros de sa voie
       q.prog = d[4] === 'max' ? Math.max(q.prog, n) : q.prog + n;
       if (q.prog >= d[3]) { q.prog = d[3]; q.fait = true; fini.push([texteQuete(q, jour), jour]); }
     }));

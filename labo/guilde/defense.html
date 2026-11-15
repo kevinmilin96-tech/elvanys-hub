@@ -125,13 +125,14 @@
 <body>
 <div id="app"></div>
 <div id="fen"></div>
-<script src="guide.js?v=20261115-200347"></script>
-<script src="cartes.js?v=20261115-200347"></script>
-<script src="musique.js?v=20261115-200347"></script>
-<script src="rang.js?v=20261115-200347"></script>
-<script src="heros-etoiles.js?v=20261115-200347"></script>
-<script src="donnees.js?v=20261115-200347"></script>
-<script src="defense-moteur.js?v=20261115-200347"></script>
+<script src="guide.js?v=20261115-202005"></script>
+<script src="cartes.js?v=20261115-202005"></script>
+<script src="musique.js?v=20261115-202005"></script>
+<script src="rang.js?v=20261115-202005"></script>
+<script src="heros-etoiles.js?v=20261115-202005"></script>
+<script src="donnees.js?v=20261115-202005"></script>
+<script src="defense-moteur.js?v=20261115-202005"></script>
+<script src="heros-aventure.js?v=20261115-202005"></script>
 <script>
 // =============================================================================================== LA DÉFENSE DE LA PORTE · l'ÉCRAN (13/11)
 // Règles : defense-proposition.html (validées le 13/11). Moteur : defense-moteur.js.
@@ -150,7 +151,7 @@ function accueil() {
   <p class="doux" style="text-align:center">Les monstres descendent trois chemins vers la porte de la Guilde. Tes dés deviennent des tours… ou des coups tout de suite. Deux tours identiques qui se touchent fusionnent ; deux 6 éveillent une Rune.</p>
   <div class="choixh" style="margin:8px 0"><button class="${!modeSF ? 'or' : ''}" onclick="modeSF=false;accueil()">🌊 6 vagues et le Titan</button><button class="${modeSF ? 'or' : ''}" onclick="modeSF=true;accueil()">♾ Vagues sans fin</button></div>
   ${modeSF ? `<p class="doux" style="text-align:center">♾ Les vagues ne s’arrêtent jamais, toujours plus fortes ; le Titan revient toutes les 6 vagues. Ton record : <b style="color:var(--or)">${(() => { try { return JSON.parse(localStorage.getItem('guilde-defense-sansfin') || '{}').vague || 0; } catch (e) { return 0; } })()} vagues</b>.</p>` : ''}
-  <div class="heros">${['maelle', 'gorm', 'aldric', 'pip', 'oria', 'zephine'].filter(h => h !== 'zephine' || localStorage.getItem('guilde-tuto') === 'fait').map(h => `<button onclick="demarre('${h}')"><img src="${IMG(h)}" alt=""><b>${HEROS[h].nom}</b><br>${DHEROS[h].passif}<br><br>✨ Rune : ${DHEROS[h].rune.n}<br><small>${DHEROS[h].rune.d}</small></button>`).join('')}</div>
+  <div class="heros">${['maelle', 'gorm', 'aldric', 'pip', 'oria', 'zephine'].filter(h => h !== 'zephine' || localStorage.getItem('guilde-tuto') === 'fait').map(h => `<button onclick="demarre('${h}')"><img src="${IMG(h)}" alt=""><b>${HEROS[h].nom}</b><br>${DHEROS[h].passif}<br><br>✨ Rune : ${DHEROS[h].rune.n}<br><small>${DHEROS[h].rune.d}</small></button>`).join('')}${herosAventureD()}</div>
   <p class="doux" style="text-align:center">🎯 Défi du jour : <b style="color:var(--or)">${defiDuJourD().n}</b>${lesEtoiles()[jourCle()] ? ` · aujourd’hui : ${'★'.repeat(lesEtoiles()[jourCle()])}` : ''}</p>
   <p class="doux" style="text-align:center">Chaque héros a son passif, son pouvoir, son ultime et sa Rune.</p>
   ${records()}
@@ -160,11 +161,19 @@ const REC = 'guilde-defense';
 const lesRecords = () => { try { return JSON.parse(localStorage.getItem(REC) || '[]'); } catch (e) { return []; } };
 function records() { const r = lesRecords(); if (!r.length) return ''; const g = r.filter(x => x.gagne); return `<p class="doux" style="text-align:center">🏆 ${g.length} victoire${g.length > 1 ? 's' : ''} sur ${r.length} partie${r.length > 1 ? 's' : ''}${g.length ? ` · meilleur score ${Math.max(...g.map(x => x.score))}` : ''}</p>`; }
 let modeSF = false;
-function demarre(h) { D = nouvelleDefense(h); D.sansFin = modeSF;
+// 15/11 soir : les HÉROS D'AVENTURE (heros-aventure.js), après les 6 héros de base. Le moteur joue leur VOIE ;
+// la porte reçoit LEUR progression ; l'écran montre LEUR portrait.
+function herosAventureD() {
+  const zok = localStorage.getItem('guilde-tuto') === 'fait';
+  return haListe().map(a => haInfo('av:' + a.id)).filter(i => i.voie !== 'zephine' || zok).map(i => `<button onclick="demarre('${i.cle}')">${haImg(i, `box-shadow:0 0 0 2px ${i.couleur}`)}<b>${haEsc(i.nom)}</b><small class="ha-t">⚔ ${haEsc(i.titre)} · voie de ${HEROS[i.voie].nom}</small>${DHEROS[i.voie].passif}<br><br>✨ Rune : ${DHEROS[i.voie].rune.n}<br><small>${DHEROS[i.voie].rune.d}</small></button>`).join('');
+}
+const cleD = () => D && D.av && haInfo('av:' + D.av) ? 'av:' + D.av : D.heros;  // pour « Rejouer » avec le même héros
+const imgD = () => { const i = D && D.av ? haInfo('av:' + D.av) : null; return i ? haImg(i) : `<img src="${IMG(D.heros)}" alt="">`; };
+function demarre(h) { const i = haInfo(h); D = nouvelleDefense(haVoie(h)); D.av = i ? i.id : null; D.sansFin = modeSF;
   // 15/11 : le système des héros : la porte gagne les PV du héros (niveau, rang, équipement), et ses PC de départ
   // 15/11 soir : PAS de suivi des monstres ici (mesuré : la force vient des tours, pas du héros ; monstres ×2 = 0 % de victoires) ;
   // le bonus de porte est plafonné à +20 (avec +81, la porte d'Aldric dépassait les 99 de dégâts du Titan : 100 % de victoires)
-  if (typeof bonusHerosPvE === 'function') { const B = bonusHerosPvE(h), bp = Math.min(20, B.pv); D.porte += bp; D.porteMax += bp; D.pc += B.pc; } sel = []; selTour = -1; attente = null; dis('Touche 🎲 Lancer, puis choisis des dés : bâtis une tour (touche une case verte) ou frappe un monstre.'); vagueAnnonce(); rendu(); }
+  if (typeof bonusHerosPvE === 'function') { const B = bonusHerosPvE(haProg(h)), bp = Math.min(20, B.pv); D.porte += bp; D.porteMax += bp; D.pc += B.pc; } sel = []; selTour = -1; attente = null; dis('Touche 🎲 Lancer, puis choisis des dés : bâtis une tour (touche une case verte) ou frappe un monstre.'); vagueAnnonce(); rendu(); }
 function dis(t, e) { msg = t; err = !!e; }
 function vagueAnnonce() { const v = D.fx.find(f => f.t === 'vague'); if (v) GM.son('vague'); if (v && CORBIN[v.n]) setTimeout(() => fenetre(`<h2>🌊 Vague ${v.n}${D.sansFin ? ' ♾' : ` sur ${VAGUES.length}`}</h2><div class="corbin">Moustache : « ${CORBIN[v.n]} »</div><div class="choixh"><button class="or" onclick="fermer()">À la porte !</button></div>`), 450); }
 
@@ -229,7 +238,7 @@ function rendu() {
   const besoinMonstre = attente && attente.cible === 'monstre', besoinTour = attente && attente.cible === 'tour', besoinDe = attente && attente.cible === 'de';
   const un = sel.length === 1 ? sel[0] : null;
   app.innerHTML = `
-  <div class="entete"><img src="${IMG(D.heros)}" alt="">
+  <div class="entete">${imgD()}
     <div class="bloc">🚪 Porte <b>${D.porte}</b>/${D.porteMax}<div class="barre"><i style="width:${D.porte / D.porteMax * 100}%"></i></div></div>
     <div class="bloc">⚡ Ultime ${D.ultimeFait ? '✔' : `${D.jauge}/${DEF.jaugeMax}`}<div class="barre jauge"><i style="width:${D.ultimeFait ? 100 : D.jauge / DEF.jaugeMax * 100}%"></i></div></div>
     <div class="bas icones"><button onclick="regles()" title="Règles">📜</button><button onclick="journal()" title="Journal">📖</button><button onclick="quitter()" title="Quitter">⌂</button></div>
@@ -394,13 +403,13 @@ function fin() {
   if (fen.innerHTML) return;
   const g = D.fini === 'gagne', sc = scoreD(D), r = lesRecords();
   if (D.sansFin && !D.enregistre) { try { const sf = JSON.parse(localStorage.getItem('guilde-defense-sansfin') || '{}'); if ((D.vague || 0) > (sf.vague || 0)) localStorage.setItem('guilde-defense-sansfin', JSON.stringify({ vague:D.vague, heros:D.heros })); } catch (e) {} }
-  if (!D.enregistre) { D.enregistre = true; r.push({ heros:D.heros, gagne:g, porte:D.porte, score:g ? sc : 0, vague:D.vague, quand:new Date().toISOString() }); try { localStorage.setItem(REC, JSON.stringify(r.slice(-50))); } catch (e) {} }
+  if (!D.enregistre) { D.enregistre = true; r.push({ heros:D.heros, av:D.av || null, gagne:g, porte:D.porte, score:g ? sc : 0, vague:D.vague, quand:new Date().toISOString() }); try { localStorage.setItem(REC, JSON.stringify(r.slice(-50))); } catch (e) {} }
   fenetre(`<h2>${g ? '🏆 La porte a tenu !' : '💥 La porte est tombée…'}</h2>
     <p>${g ? `Le Titan de feu est tombé. Porte : ${D.porte}/${D.porteMax} PV · vagues sans dégâts : ${D.sansDegats} · monstres abattus : ${D.kills}.<br><b>Score : ${sc}</b>` : (D.sansFin ? `♾ Tu as tenu ${D.vague} vague${D.vague > 1 ? 's' : ''} · monstres abattus : ${D.kills}.` : `Vague ${Math.min(D.vague + 1, VAGUES.length)} sur ${VAGUES.length} · monstres abattus : ${D.kills}.`)}</p>
     ${(() => { const e = etoilesD(D), df = defiDuJourD(); if (g) { const E = lesEtoiles(), n = e.filter(Boolean).length; if (!E[jourCle()] || E[jourCle()] < n) { E[jourCle()] = n; try { localStorage.setItem(ETO_CLE, JSON.stringify(E)); } catch (x) {} } }
       return `<div class="etoiles">${e.map(x => `<span class="${x ? 'on' : ''}">★</span>`).join('')}</div><p class="doux" style="text-align:center;font-size:.85em">★ la victoire · ★ la porte à 15 PV ou plus · ★ le défi du jour : ${df.n}</p>`; })()}
     <div class="corbin">Moustache : « ${g ? 'Pas mal. La porte est encore là, mon coussin aussi. Tout le monde est content.' : 'Bon. On reconstruit la porte et on recommence ? Moi, je ne porte rien. Je suis un chat.'} »</div>
-    <div class="choixh"><button class="or" onclick="fermer();demarre('${D.heros}')">↺ Rejouer</button><button onclick="fermer();accueil()">Changer de héros</button><button onclick="location.href='menu.html'">⌂ Menu</button></div>`);
+    <div class="choixh"><button class="or" onclick="fermer();demarre('${cleD()}')">↺ Rejouer</button><button onclick="fermer();accueil()">Changer de héros</button><button onclick="location.href='menu.html'">⌂ Menu</button></div>`);
 }
 function journal() { fenetre(`<h2>📖 Journal</h2><div class="journal">${D.log.map(t => `<div>${t}</div>`).join('')}</div><div class="choixh"><button onclick="fermer()">Fermer</button></div>`); }
 function quitter() { if (D && !D.fini && !confirm('Quitter la partie ?')) return; location.href = 'menu.html'; }

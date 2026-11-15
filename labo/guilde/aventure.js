@@ -48,23 +48,24 @@ function ileAventure(heros, acte, etat) {
   if (etat) { Object.assign(r, { deck:etat.deck, pvMax:etat.pvMax, pv:etat.pvMax, reliques:etat.reliques, sacoche:etat.sacoche, benes:etat.benes, males:etat.males, forge:etat.forge }); r.aventure = etat.aventure; }
   else { r.aventure = { chapitre:1, niveau:1, equip:{ arme:null, armure:null, talisman:null }, sac:[], bonus:[], ameliore:[], essais:0, debut:Date.now() };
     // 14/11 nuit : l'aventure part avec l'équipement du héros (son profil, armurerie) ; heros-etoiles.js
-    if (typeof equipHeros === 'function' && typeof localStorage !== 'undefined') { const eh = equipHeros(heros); r.aventure.equip = { ...eh }; if (eh.armure === 'heaume') r.pvMax += valEquip('heaume'); const b = bonusHerosPvE(heros); r.pvMax += b.pv; r.pv = r.pvMax; } }
+    // 15/11 soir : un héros d'aventure prend SA progression (odyProg), le moteur joue sa voie (r.heros)
+    if (typeof equipHeros === 'function' && typeof localStorage !== 'undefined') { const eh = equipHeros(odyProg(r)); r.aventure.equip = { ...eh }; if (eh.armure === 'heaume') r.pvMax += valEquip('heaume'); const b = bonusHerosPvE(odyProg(r)); r.pvMax += b.pv; r.pv = r.pvMax; } }
   r.aventure.chapitre = ACTES_AV.indexOf(acte) + 1;
   // ce qui se gagne en arrivant sur l'île
   const A = r.aventure; let plus = [];
   if (porte(r, 'cape')) { const v = V('cape'); r.vivres += v; plus.push(`+${v} huile (Cape de voyage)`); }
   if (nbBonus(r, 'huile')) { r.vivres += 5 * nbBonus(r, 'huile'); plus.push(`+${5 * nbBonus(r, 'huile')} huile`); }
   if (nbBonus(r, 'or')) { r.or += 30 * nbBonus(r, 'or'); plus.push(`+${30 * nbBonus(r, 'or')} or`); }
-  r.journal.unshift(`🗺 Grande aventure · chapitre ${A.chapitre} sur 3 · ${HEROS[heros].nom} niveau ${A.niveau}${plus.length ? ' · ' + plus.join(', ') : ''}.`);
+  r.journal.unshift(`🗺 Grande aventure · chapitre ${A.chapitre} sur 3 · ${odyNom(r)} niveau ${A.niveau}${plus.length ? ' · ' + plus.join(', ') : ''}.`);
   A.retour = etatHeros(r); // si le héros tombe, il repart d'ici
   return r;
 }
 const nouvelleAventure = heros => ileAventure(heros, 'brulees', null);
 // le héros est tombé : on recommence l'île en cours, avec ce qu'on avait en y arrivant
-function recommenceIle(r) { const et = r.aventure.retour; et.aventure.essais = (r.aventure.essais || 0) + 1; return ileAventure(r.heros, r.acte, et); }
+function recommenceIle(r) { const et = r.aventure.retour; et.aventure.essais = (r.aventure.essais || 0) + 1; return ileAventure(odyChoix(r), r.acte, et); }
 // l'île est finie : niveau +1 (+8 PV max), et on passe à la suivante (après les choix du camp)
 function niveauSuivant(r, bonus) { const A = r.aventure; A.niveau++; r.pvMax += PV_NIVEAU; if (bonus) { A.bonus.push(bonus); if (bonus === 'pv') r.pvMax += 10; } r.pv = r.pvMax; }
-function ileSuivante(r) { const i = ACTES_AV.indexOf(r.acte); if (i >= 2) return null; return ileAventure(r.heros, ACTES_AV[i + 1], etatHeros(r)); }
+function ileSuivante(r) { const i = ACTES_AV.indexOf(r.acte); if (i >= 2) return null; return ileAventure(odyChoix(r), ACTES_AV[i + 1], etatHeros(r)); }
 // l'équipement : mettre un objet (l'ancien va au sac), ranger, jeter
 function equipe(r, k) {
   const A = r.aventure, e = EQUIP[k]; if (!e) return false; const pl = e[0], ancien = A.equip[pl];
@@ -97,7 +98,7 @@ function equipeCombat(J, O, run, log) {
   const A = run.aventure || { bonus:[], ameliore:[] }, eq = k => porte(run, k), L = [];
   J.ameliorees = [...(A.ameliore || [])];
   // les étoiles du héros (heros-etoiles.js) : seulement contre les monstres
-  if (typeof bonusHerosPvE === 'function' && typeof localStorage !== 'undefined' && !run.simu) { const b = bonusHerosPvE(run.heros);
+  if (typeof bonusHerosPvE === 'function' && typeof localStorage !== 'undefined' && !run.simu) { const b = bonusHerosPvE(odyProg(run));
     if (b.bouclier) { J.bouclier = (J.bouclier || 0) + b.bouclier; L.push(`⭐ Bouclier ${b.bouclier}`); } if (b.pc) { J.pc = Math.min(6, J.pc + b.pc); L.push(`⭐ +${b.pc} PC`); }
     if (b.relance) { J.relanceRang = (J.relanceRang || 0) + b.relance; L.push('⭐ +1 relance par tour'); } if (b.main && typeof pioche === 'function') { pioche(J, b.main); L.push('⭐ +1 carte'); } }
   if (eq('hache')) { J.pc = Math.min(6, J.pc + V('hache')); L.push(`🪓 Hache : +${V('hache')} PC`); }
