@@ -163,6 +163,7 @@ function dlAffiche() {
   dlPvVu = M.pv;
   const vue = dlCopie(S); vue.J = vue.O; vue.O = dlCopie(S.J); vue.J.aLancer = false; vue.finPrevue = true; vue.vueDirect = true;
   const vrai = S; S = vue; try { dessine(); } catch (e) { console.error(e); } finally { S = vrai; }
+  dlVueCour = vue;
   document.getElementById('app').style.visibility = '';
   { const b = document.querySelector('#app .bandeau'); if (b) b.textContent = `⏳ ${J.qui} joue : regarde son tour en direct.`; // pas de consigne pour moi
     const bas = document.querySelector('#app .bas'); if (bas) bas.style.visibility = 'hidden'; }
@@ -175,7 +176,35 @@ function dlAffiche() {
       <button onclick="if(confirm('Quitter le duel ? (tu pourras revenir dans la salle)'))location.href='menu.html#enligne'">⌂</button>
       <div class="dl-der">${lignes.length ? lignes.slice(0, 2).map((t, i) => `<div class="${i < nouv ? 'neuf' : ''}">${dlTexte(t, J.nom)}</div>`).join('') : `${J.qui} réfléchit…`}</div></div>`;
 }
-function dlDirectOff() { const z = document.getElementById('dlDirect'); if (z) z.remove(); }
+function dlDirectOff() { const z = document.getElementById('dlDirect'); if (z) z.remove(); dlVueCour = null; }
+// 15/11 soir (l'utilisateur : « je ne peux pas cliquer sur les étiquettes, le portrait ou les monstres pour avoir une description, c'est important ») :
+// pendant le tour de l'ami, on peut LIRE (fiches des créatures, des héros, des cartes de ma main, des actions, étiquettes) mais rien JOUER.
+var dlVueCour = null;
+function dlFicheHeros(P) {
+  const h = HEROS[P.id]; if (!h) return;
+  fenetre(`<h2>${P.nom} <span style="color:#c9c1ea;font-size:.7em">· ${P === S.J ? 'toi' : P.qui || ''}</span></h2>
+    <p style="font-size:1.1em"><b style="color:#7dffb0">❤ ${Math.max(0, P.pv)} / ${P.pvMax}</b> · <b style="color:#8fd3ff">◆ ${P.pc} PC</b>${P.gardeB ? ` · 🛡 Garde ${P.gardeB}` : ''}${P.bouclier ? ` · 🛡 Bouclier ${P.bouclier}` : ''} · ⚡ Ultime ${P.ultimeFait ? 'utilisé' : P.jauge + '/' + JAUGE.max}</p>
+    ${h.passif ? `<p><b>Passif</b> : ${h.passif}</p>` : ''}<p><b>Garde · ${h.garde.n}</b> (${h.garde.txt}) : ${h.garde.d}</p><p><b>Pouvoir · ${h.pouvoir.n}</b> (${h.pouvoir.txt}) : ${h.pouvoir.d}</p><p><b>Ultime · ${h.ultime.n}</b> (jauge pleine, ${h.ultime.txt}, 3 PC) : ${h.ultime.d}</p>
+    <div class="choixh"><button onclick="fermer()">Fermer</button></div>`);
+}
+function dlFicheCarte(k) {
+  const c = CARTES[k]; if (!c) return; const art = typeof ARTS !== 'undefined' && ARTS.includes(k) ? `<img src="cartes/${k}.webp?v=1" alt="" style="width:100%;border-radius:10px;margin:4px 0">` : '';
+  fenetre(`<h2>${c.n}</h2>${art}<p><b>${c.c != null ? c.c + ' PC' : ''}</b>${c.txt ? ` · 🎲 ${c.txt}` : ''}</p><p>${c.d || ''}</p><p style="color:#c9c1ea;font-size:.9em">Tu pourras la jouer à ton tour.</p><div class="choixh"><button onclick="fermer()">Fermer</button></div>`);
+}
+document.addEventListener('click', e => {
+  if (!dlVueCour || !document.getElementById('dlDirect')) return;
+  const t = e.target; if (!t.closest || !t.closest('#app') || t.closest('#fen')) return;
+  if (t.closest('.pastilles [data-k], .etats [data-k]')) return; // les étiquettes : déjà expliquées par leur propre fenêtre
+  e.stopPropagation(); e.preventDefault();
+  const vrai = S; S = dlVueCour;
+  try {
+    const u = t.closest('.u[data-uid]'), b = t.closest('.barre'), c = t.closest('.main .c'), a = t.closest('[onclick*="vise("]');
+    if (u) { for (const P of [S.J, S.O]) { const x = P.front.find(z => String(z.id) === u.dataset.uid); if (x) { ficheUnite(P, x); break; } } }
+    else if (b) dlFicheHeros(b.id === 'b-O' ? S.O : S.J);
+    else if (c) { const i = [...c.parentElement.querySelectorAll('.c')].indexOf(c); if (S.J.main[i]) dlFicheCarte(S.J.main[i]); }
+    else if (a) { const m = (a.getAttribute('onclick') || '').match(/vise\('([a-zA-Z]+)'/); if (m && typeof aide === 'function') aide(m[1], true); }
+  } catch (x) { console.error(x); } finally { S = vrai; }
+}, true);
 // 15/11 soir (l'utilisateur : « on ne voit pas l'écran en direct, on se retrouve à avoir perdu toute la vie sans rien voir ») :
 // pendant mon tour, la partie part au serveur après chaque action (au plus toutes les 1,2 s) ; l'ami voit le fil des actions et les deux vies.
 let dlVu = 0, dlPvVu = null, dlDirectT = null;
@@ -227,7 +256,7 @@ rendu = function () {
   .dl-h img{width:64px;height:64px;border-radius:50%;object-fit:cover}.dl-h small{color:#c9c1ea;font-size:.75em;margin-top:4px}.dl-h b{font-size:.95em}
   .dl-h span{font-size:.85em}.dl-pv{width:100%;height:8px;border-radius:4px;background:#0006;overflow:hidden;margin:3px 0}.dl-pv i{display:block;height:100%;background:linear-gradient(90deg,#e5262c,#ff8a65);transition:width .6s}
   .dl-fil{max-height:38vh;overflow:auto;text-align:left;background:#0004;border-radius:10px;padding:6px 10px;margin:8px 0;font-size:.9em}
-  #dlDirect{position:fixed;inset:0;z-index:40;background:transparent}#dlDirect .dl-band{position:absolute;left:8px;right:8px;top:8px;background:#161d2cee;border:2px solid #f3c96b;border-radius:14px;padding:6px 10px;font:14px Georgia;color:#fff;box-shadow:0 4px 16px #000a}
+  #dlDirect{position:fixed;inset:0;z-index:40;background:transparent;pointer-events:none}#dlDirect .dl-band{pointer-events:auto}#dlDirect .dl-band{position:absolute;left:8px;right:8px;top:8px;background:#161d2cee;border:2px solid #f3c96b;border-radius:14px;padding:6px 10px;font:14px Georgia;color:#fff;box-shadow:0 4px 16px #000a}
   #dlDirect .dl-band button{float:right;background:#0006;color:#fff;border:1px solid #fff4;border-radius:10px;padding:2px 10px}#dlDirect .dl-der{font-size:.88em;margin-top:3px}#dlDirect .dl-der .neuf{color:#f3c96b;animation:dlNeuf .8s}
   #app .des .dl-ennemi{filter:drop-shadow(0 0 6px #ff4b4b)}#app .des .dl-qui{font:bold 11px Georgia;color:#ffb3b3;text-align:center;text-shadow:0 1px 2px #000}
   .dl-fil div{padding:3px 0;border-bottom:1px solid #ffffff14}.dl-fil .neuf{color:#f3c96b;animation:dlNeuf .8s}
