@@ -97,6 +97,9 @@ const MONSTRES = {
   salamandre:{ img:'salamandre', r:15, pv:6, v:30, att:1, gem:2, tire:true },
   golem:     { img:'golem', r:24, pv:30, v:12, att:4, gem:6, elite:true },
   titan:     { img:'titan', r:44, pv:340, v:6, att:8, gem:30, boss:true },
+  // 15/11 soir : deux MINI-BOSS, blindés, qui se reblindent à 66 % et 33 % de leur vie (il faut les bonnes balles, encore et encore)
+  chef:      { img:'chefgobelin', r:26, pv:70, v:9, att:5, gem:14, elite:true, mini:'Le Chef gobelin' },
+  drake:     { img:'drake', r:28, pv:110, v:8, att:6, gem:20, elite:true, mini:'Le Drake', tire:true },
 };
 // ------------------------------------------------------------------ les améliorations (5 niveaux chacune, sauf le soin)
 const AMELIO = {
@@ -217,7 +220,7 @@ function tireSceau() { return Math.random() < .2 ? { t:'ex', v:1 + Math.floor(Ma
 function ajoute(k, x, y) {
   const M = MONSTRES[k], f = 1 + J.t / 240;
   const sc = M.elite || (!M.boss && !M.essaim && J.t > 35 && Math.random() < Math.min(.4, .08 + J.t / 700)) ? tireSceau() : null;
-  J.monstres.push({ k, x, y, r:M.r, pv:Math.round(M.pv * f), pvmax:Math.round(M.pv * f), v:M.v * (1 + J.t / 650), att:M.att, flash:0, brule:0, tirT:rnd(1.5, 3), etat:'descend', dx:0, sceau:sc, paliers:M.boss ? [.75, .5, .25] : null });
+  J.monstres.push({ k, x, y, r:M.r, pv:Math.round(M.pv * f), pvmax:Math.round(M.pv * f), v:M.v * (1 + J.t / 650), att:M.att, flash:0, brule:0, tirT:rnd(1.5, 3), etat:'descend', dx:0, sceau:sc, paliers:M.boss ? [.75, .5, .25] : M.mini ? [.66, .33] : null });
 }
 // ------------------------------------------------------------------ une image (60 par seconde)
 function pas(dt) {
@@ -234,6 +237,8 @@ function pas(dt) {
   if (J.gauche) J.raq.x = Math.max(25, J.raq.x - 330 * dt); if (J.droite) J.raq.x = Math.min(W - 25, J.raq.x + 330 * dt);
   // apparitions et boss
   J.prochainSpawn -= dt; if (J.prochainSpawn <= 0 && J.t < DUREE + 60) spawn();
+  if (!J.mini1 && J.t >= 100) { J.mini1 = true; ajoute('chef', W / 2, -40); son('vague', true); texte(W / 2, H / 3, '👑 LE CHEF GOBELIN arrive, blindé !', '#f3c96b', 2.2); }
+  if (!J.mini2 && J.t >= 190) { J.mini2 = true; ajoute('drake', W / 2, -40); son('vague', true); texte(W / 2, H / 3, '🐉 LE DRAKE arrive, blindé !', '#ff9a7a', 2.2); }
   if (!J.boss && J.t >= BOSS_A) { J.boss = true; ajoute('titan', W / 2, -50); son('vague', true); texte(W / 2, H / 3, '🔥 LE TITAN DE FEU !', '#ff7a4a', 2.5); }
   // talents qui tournent
   if (J.heros === 'pip') { J.regenT -= dt; if (J.regenT <= 0) { J.regenT = 15; soigne(1); } }
@@ -310,13 +315,14 @@ function blesse(m, n, coul, casse) {
   if (m.sceau && casse) { m.sceau = null; texte(m.x, m.y - m.r - 10, '💥 Sceau brisé !', '#f3c96b', .9); }
   m.pv -= n;
   // le Titan se recouvre d'un sceau à 75 %, 50 % et 25 % de sa vie
-  if (m.paliers && m.paliers.length && m.pv / m.pvmax <= m.paliers[0]) { m.paliers.shift(); m.sceau = tireSceau(); texte(m.x, m.y - m.r - 14, `🛡 Le Titan se blinde : ${scTxt(m.sceau)} !`, '#ff9a7a', 1.6); son('bouclier', true); } m.flash = .1; J.score += n; texte(m.x, m.y - m.r, `−${n}`, coul || '#fff', .6);
+  if (m.paliers && m.paliers.length && m.pv / m.pvmax <= m.paliers[0]) { m.paliers.shift(); m.sceau = tireSceau(); texte(m.x, m.y - m.r - 14, `🛡 ${MONSTRES[m.k].mini || 'Le Titan'} se blinde : ${scTxt(m.sceau)} !`, '#ff9a7a', 1.6); son('bouclier', true); } m.flash = .1; J.score += n; texte(m.x, m.y - m.r, `−${n}`, coul || '#fff', .6);
   if (m.pv <= 0) m.mort = true; else son('coup');
 }
 function meurt(m) {
   const M = MONSTRES[m.k]; J.tues++; J.score += M.boss ? 1000 : M.elite ? 60 : 10; son('tombe', true);
   for (let i = 0; i < Math.min(8, M.gem); i++) J.gemmes.push({ x:m.x + rnd(-14, 14), y:m.y + rnd(-10, 10), v:Math.ceil(M.gem / Math.min(8, M.gem)) });
-  if (M.elite || Math.random() < .05) J.capsules.push({ x:m.x, y:m.y, k:pick(['multi', 'gel', 'soin', 'large']) });
+  if (M.mini) { J.capsules.push({ x:m.x - 20, y:m.y, k:'soin' }); J.capsules.push({ x:m.x + 20, y:m.y, k:'multi' }); texte(W / 2, H / 3, `🏆 ${M.mini} est tombé !`, '#f3c96b', 2); }
+  else if (M.elite || Math.random() < .05) J.capsules.push({ x:m.x, y:m.y, k:pick(['multi', 'gel', 'soin', 'large']) });
   if (M.boss) { J.bossMort = true; texte(W / 2, H / 3, '🏆 Le Titan est tombé !', '#f3c96b', 3); }
   if (J.tues % 10 === 0 && typeof guildeEvt === 'function') guildeEvt('salle', 1, { heros:J.heros });
 }
@@ -453,7 +459,7 @@ function regles(enJeu) {
     <ol><li><b>Tes balles sont des dés</b> (4 au départ) : ils partent seuls de ton bouclier. <b>Bouge le bouclier</b> (souris, doigt ou flèches) pour les renvoyer. <b>À chaque rebond sur le bouclier, le dé change de face</b>. Un dé raté repart tout seul quelques secondes plus tard (⏳).</li>
     <li><b>Combos</b> : quand les dés en jeu (montrés en bas) forment un combo, ils brillent et le bouton <b>COMBO</b> s’allume. Déclenche-le : <b>au doigt, tape avec un deuxième doigt n’importe où</b> pendant que le premier tient le bouclier (comme une manette à deux pouces) ; à l’ordinateur, un clic ou Espace. Choisis le bon moment, au bon moment, ou attends un meilleur combo… mais il peut disparaître au prochain rebond !
       🎲🎲 <b>paire</b> = ces 2 dés deviennent dorés (× 2, ils traversent) ; 🌠 <b>3 qui se suivent</b> = éclats ; 💥 <b>brelan</b> = onde de choc sur tous ; 🌠 <b>4 qui se suivent</b> = plus d’éclats ; ❄️ <b>carré</b> = onde + tout gèle ; ⚡ <b>5 qui se suivent</b> = la foudre sur tous.</li>
-    <li><b>🛡 Monstres à sceau</b> : certains portent une armure marquée (« ≥4 », « pair », « =5 »…). Seule une balle qui correspond la brise ; les autres rebondissent dessus. Une fois brisée, toutes les balles le blessent. Les combos (onde, foudre, éclats d’une suite) brisent tous les sceaux. Le Titan se blinde 3 fois !</li>
+    <li><b>🛡 Monstres à sceau</b> : certains portent une armure marquée (« ≥4 », « pair », « =5 »…). Seule une balle qui correspond la brise ; les autres rebondissent dessus. Une fois brisée, toutes les balles le blessent. Les combos (onde, foudre, éclats d’une suite) brisent tous les sceaux. Les mini-boss (👑 Chef gobelin à 1:40, 🐉 Drake à 3:10) se blindent 2 fois, le Titan 3 fois !</li>
     <li>Les monstres descendent <b>de plus en plus vite</b> et <b>attaquent</b> : 🔥 les salamandres crachent du feu (évite-le !), 🐺 les loups plongent sur toi, 🪲 les scarabées arrivent en essaim, 🗿 les golems encaissent tout. S’ils touchent le rempart, tu perds des PV.</li>
     <li>Chaque monstre abattu lâche des <b>gemmes 💎</b> : ramasse-les avec ton bouclier. Barre bleue pleine = <b>un niveau : pause, choisis 1 amélioration parmi 3</b>.</li>
     <li>Les capsules dorées : ✦ trois balles de 6, ❄ tout ralentit, ❤ soin, 🛡 grand bouclier.</li>
