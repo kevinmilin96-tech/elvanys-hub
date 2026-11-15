@@ -1387,7 +1387,12 @@ function signaleErreur(x) {
 }
 window.addEventListener('error', e => signaleErreur(e)); window.addEventListener('unhandledrejection', e => signaleErreur(e));
 let blocageDepuis = 0;
+// 15/11 soir (l'utilisateur : « Fin du tour : obligé d'appuyer deux fois ») : un appui PENDANT l'animation de ma dernière action
+// était ignoré sans rien dire. Il est maintenant GARDÉ : le tour se termine tout seul dès que l'animation est finie (si c'est toujours mon tour).
+let finEnAttente = null;
+setInterval(() => { if (finEnAttente && S && !fxOn && !roule) { const qui = finEnAttente; finEnAttente = null; if (S.J === qui && !S.fini && finTourDe !== S) finDeMonTour(); } }, 150);
 function finDeMonTour() {
+  if (!S.fini && fxOn && !S.J.aLancer && finTourDe !== S) { finEnAttente = S.J; }
   if (!S.fini && !roule && (finTourDe === S || (fxOn && !S.J.aLancer))) {
     if (!blocageDepuis) blocageDepuis = Date.now();
     else if (Date.now() - blocageDepuis > 3000) { // déblocage forcé
