@@ -199,6 +199,14 @@ function puissanceHeros(id, pvBase) {
   const S = statsHeros(id), pv = (pvBase || (typeof HEROS !== 'undefined' && HEROS[id] && HEROS[id].pv) || PV_BASE[id] || 15) + S.pv;
   return Math.round(10 * pv + 60 * S.att + 50 * S.def + 40 * S.agi + 120 * (S.des + S.main) + 80 * S.bouclier + 150 * S.pc + 150 * S.relance + 15 * S.niv + 120 * S.rang);
 }
+// 15/11 soir (choix de l'utilisateur : « les ennemis qui suivent ») : LE FACTEUR DE FORCE. Contre les monstres, les ennemis prennent de la force
+// selon ce que le héros a VRAIMENT gagné (PV, bouclier, défense, attaque, dés, relances, PC), ramené à ses PV de base. Ils rattrapent
+// SUIVI = 70 % de ce gain : monter son héros reste utile (il garde 30 % d'avance), mais un héros très monté n'écrase plus tout.
+// ACTIF dans la Crypte et la Descente (force + sceaux des monstres, réglé au simulateur : héros montés 87-89 %, débutant 82 %).
+// PAS dans la Défense (mesuré : la force vient des tours ; monstres ×2 = 0 %). Odyssée et Fosse : prêts (run.fs, J.fs) mais coupés, à mesurer. Jamais en Duel.
+const SUIVI = 0.7;
+function gainHeros(id) { const S = statsHeros(id), base = PV_BASE[id] || 44; return Math.max(0, (S.pv + 1.5 * S.bouclier + 3 * S.def + 4 * S.att + 2 * S.agi + 8 * (S.des + S.main) + 5 * S.relance + 5 * S.pc) / base); }
+function forceSuiveuse(id) { if (typeof localStorage === 'undefined') return 1; try { return Math.round((1 + SUIVI * gainHeros(id)) * 100) / 100; } catch (e) { return 1; } }
 // (ancien nom) les bonus contre les monstres, utilisés par l'Odyssée, la Grande aventure, les épreuves…
 function bonusHerosPvE(id) { const S = statsHeros(id); return { pv:S.pv, bouclier:S.bouclier + S.def, pc:S.pc, relance:S.relance, main:S.main + S.des, att:S.att, agi:S.agi }; }
 

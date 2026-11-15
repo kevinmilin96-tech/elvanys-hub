@@ -16,6 +16,7 @@ function bonusMode(id) {
   try {
     const S = statsHeros(id), b = bonusHerosPvE(id);
     B.pv += b.pv; B.bouclier += b.bouclier; B.relance += b.relance; B.des += b.main;
+    if (typeof forceSuiveuse === 'function') B.fs = forceSuiveuse(id); // 15/11 soir : les monstres suivent la force du héros
     B.lignes.push(`niveau ${S.niv}${S.rang ? ' · ' + RANGS[S.rang].n : ''}`);
     Object.values(equipHeros(id)).filter(Boolean).forEach(k => {
       const v = valEquip(k);
@@ -29,6 +30,7 @@ function bonusMode(id) {
 function texteBonus(id) {
   const B = bonusMode(id);
   const p = [B.pv && `❤ +${B.pv}`, B.bouclier && `🛡 ${B.bouclier}`, B.relance && `🎲 +${B.relance} relance`, B.des && `🎲 +${B.des} dé`].filter(Boolean);
+  if (B.fs > 1.05) p.push(`👹 monstres ×${String(B.fs).replace('.', ',')}`);
   return p.length ? `Ta progression : ${p.join(' · ')}` : 'Fais monter ton héros (niveau, rang, équipement) dans « Mes héros » : il sera plus fort ici aussi.';
 }
 // une récompense d'armurerie à la victoire : sûre avec 3 étoiles, 1 chance sur 4 sinon. Renvoie le nom de l'objet ou null.

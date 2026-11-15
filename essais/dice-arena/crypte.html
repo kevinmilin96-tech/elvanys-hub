@@ -144,15 +144,15 @@
 <div id="jeu"></div>
 <div class="flash" id="flash"></div>
 <div id="fen"></div>
-<script src="musique.js?v=20261115-195747"></script>
-<script src="rang.js?v=20261115-195747"></script>
-<script src="heros-etoiles.js?v=20261115-195747"></script>
-<script src="progression-modes.js?v=20261115-195747"></script>
-<script src="profil.js?v=20261115-195747"></script>
+<script src="musique.js?v=20261115-200347"></script>
+<script src="rang.js?v=20261115-200347"></script>
+<script src="heros-etoiles.js?v=20261115-200347"></script>
+<script src="progression-modes.js?v=20261115-200347"></script>
+<script src="profil.js?v=20261115-200347"></script>
 <script>window.AMIS_SANS_BOUTON = true; /* 15/11 soir : la crypte du jour se compare entre amis */</script>
-<script src="amis.js?v=20261115-195747"></script>
-<script src="crypte-moteur.js?v=20261115-195747"></script>
-<script src="descente-moteur.js?v=20261115-195747"></script>
+<script src="amis.js?v=20261115-200347"></script>
+<script src="crypte-moteur.js?v=20261115-200347"></script>
+<script src="descente-moteur.js?v=20261115-200347"></script>
 <script>
 // =============================================================================================== LA CRYPTE AUX SCEAUX (15/11, écran)
 // Le moteur (règles, hasard, monstres) est dans crypte-moteur.js ; ici seulement le dessin et les gestes.
@@ -509,9 +509,9 @@ if (typeof GM !== 'undefined') { try { GM.musique('exploration'); GM.bouton(); }
 accueil();
 if (typeof AMIS !== 'undefined' && AMIS.carte) setTimeout(() => { if (!S && (typeof DR === 'undefined' || !DR) && AMIS.etat) accueil(); }, 2500);
 </script>
-<script src="descente-ecran.js?v=20261115-195747"></script>
-<script src="guide.js?v=20261115-195747"></script>
-<script src="guides-modes.js?v=20261115-195747"></script>
+<script src="descente-ecran.js?v=20261115-200347"></script>
+<script src="guide.js?v=20261115-200347"></script>
+<script src="guides-modes.js?v=20261115-200347"></script>
 <script>
 // 15/11 : le guide de Moustache de ce mode (guides-modes.js)
 { const _d = dessine; dessine = function () { const r = _d.apply(this, arguments); if (typeof S !== 'undefined' && S) guideMode('crypte'); return r; }; }
