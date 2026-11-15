@@ -26,6 +26,8 @@ const AMIS_API = '/api/hub/guilde/joueur';
   .am-ligne .p { flex:1; } .am-ligne small { display:block; color:#c9c1ea; }
   .am-pt { width:11px; height:11px; border-radius:50%; background:#5a5680; flex:none; } .am-pt.on { background:#7dffb0; box-shadow:0 0 8px #7dffb0; }
   .am-invit { position:fixed; left:50%; transform:translateX(-50%); top:calc(60px + env(safe-area-inset-top)); z-index:4990; width:min(92vw, 420px); background:#14223a; border:2px solid #7cd4ff; border-radius:16px; padding:10px 12px; color:#f1ecff; font:15px Georgia, serif; box-shadow:0 8px 30px #000a; animation:amIn .4s; }
+  .am-msg { position:fixed; left:50%; transform:translateX(-50%); bottom:calc(24px + env(safe-area-inset-bottom)); z-index:6000; max-width:90vw; background:#000e; color:#f3c96b; font:bold 15px Georgia, serif; padding:10px 16px; border-radius:14px; text-align:center; }
+  #am-info { color:#ff9a7a; font-size:.9em; min-height:1.2em; margin:6px 0 0; text-align:center; }
   .am-invit b { color:#7cd4ff; } .am-invit .bts { display:flex; gap:8px; margin-top:8px; } .am-invit .bts button { flex:1; }
   @keyframes amIn { from { transform:translate(-50%, -20px); opacity:0; } }`;
   if (typeof document !== 'undefined') document.head.insertAdjacentHTML('beforeend', `<style>${css}</style>`);
@@ -45,7 +47,9 @@ async function amisAgir(action, plus) {
     AMIS.etat = d; AMIS.erreur = false; amisBouton(); amisInvitations(); return d;
   } catch (e) { AMIS.erreur = true; amisBouton(); return null; }
 }
-function amisMsg(t) { if (typeof bulle === 'function') { try { bulle(t, true); return; } catch (e) {} } if (typeof fhBulle === 'function') fhBulle(t); else alert(t); }
+// 15/11 (l'utilisateur : « créer ma carte ne fonctionne pas ») : les messages s'affichaient DERRIÈRE la fenêtre des amis ; maintenant un bandeau au-dessus de tout
+function amisMsg(t) { const d = document.createElement('div'); d.className = 'am-msg'; d.textContent = t; document.body.appendChild(d); setTimeout(() => d.remove(), 3500);
+  const z = document.getElementById('am-info'); if (z) z.textContent = t; }
 // le bouton 👥 en haut (à côté du 👤 du profil)
 function amisBouton() {
   if (typeof document === 'undefined' || !document.body || window.AMIS_SANS_BOUTON) return;
@@ -79,7 +83,7 @@ async function amisFenetre() {
   if (!AMIS.carte) {
     amisFen(`<h2>👥 Mes amis</h2><p class="doux">Crée ta carte de joueur : un <b>pseudo</b>, et tu reçois un <b>code ami</b> à donner à tes amis. Pas de compte, pas d’e-mail.</p>
       <input id="am-pseudo" maxlength="24" placeholder="Ton pseudo" value="${amisEsc(localStorage.getItem('guilde-pseudo') || '')}">
-      <button class="am-bt go large" onclick="amisCree()">Créer ma carte</button><button class="am-bt large" onclick="amisFermer()">Fermer</button>`); return;
+      <p id="am-info"></p><button class="am-bt go large" id="am-cree" onclick="amisCree()">Créer ma carte</button><button class="am-bt large" onclick="amisFermer()">Fermer</button>`); return;
   }
   if (!AMIS.etat) { amisFen('<h2>👥 Mes amis</h2><p class="doux" style="text-align:center">Un instant…</p>'); await amisAgir('signal'); }
   amisDessine();
@@ -101,17 +105,19 @@ function amisDessine() {
       : '<p class="doux">Pas encore d’amis : demande leur code, ou donne-leur le tien.</p>'}
     ${salle ? `<p class="doux">Tu es dans la salle <b>${salle}</b> : touche « Inviter » à côté d’un ami en ligne.</p>` : '<p class="doux">Pour jouer ensemble : ouvre une salle dans les Chroniques (🌐 Créer une partie à distance), puis invite tes amis.</p>'}
     <h3>＋ Ajouter un ami</h3>
-    <div style="display:flex;gap:8px"><input id="am-ajout" class="code" maxlength="6" placeholder="CODE" autocomplete="off"><button class="am-bt go" onclick="amisAjoute()">Ajouter</button></div>
+    <p id="am-info"></p><div style="display:flex;gap:8px"><input id="am-ajout" class="code" maxlength="6" placeholder="CODE" autocomplete="off"><button class="am-bt go" onclick="amisAjoute()">Ajouter</button></div>
     ${location.pathname.endsWith('chroniques.html') ? '' : '<button class="am-bt or large" onclick="location.href=\'chroniques.html\'">🎲 Jouer ensemble aux Chroniques</button>'}
     <button class="am-bt large" onclick="amisFermer()">Fermer</button>`);
 }
 async function amisCree() {
   const p = (document.getElementById('am-pseudo').value || '').trim().slice(0, 24); if (!p) { amisMsg('Choisis un pseudo'); return; }
+  const bt = document.getElementById('am-cree'); if (bt) { if (bt.disabled) return; bt.disabled = true; bt.textContent = 'Création…'; }
+  const remet = () => { if (bt) { bt.disabled = false; bt.textContent = 'Créer ma carte'; } };
   try { const { statut, d } = await amisApi(AMIS_API, { pseudo:p });
-    if (statut !== 200) { amisMsg(d.message || 'Le serveur ne répond pas.'); return; }
+    if (statut !== 200) { remet(); amisMsg((d.message || 'Le serveur ne répond pas.') + ` (code ${statut})`); return; }
     AMIS.carte = { code:d.code, cle:d.cle, pseudo:d.pseudo }; localStorage.setItem('guilde-carte', JSON.stringify(AMIS.carte)); localStorage.setItem('guilde-pseudo', d.pseudo);
     await amisAgir('signal'); amisDessine();
-  } catch (e) { amisMsg('Pas de réseau.'); }
+  } catch (e) { remet(); amisMsg('Pas de réseau, ou la page n’a pas pu joindre le serveur : ' + (e && e.message || e)); }
 }
 async function amisAjoute() {
   const c = (document.getElementById('am-ajout').value || '').toUpperCase().replace(/[^A-Z]/g, ''); if (c.length < 6) { amisMsg('Le code ami a 6 lettres'); return; }
