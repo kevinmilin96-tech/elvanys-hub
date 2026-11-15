@@ -39,7 +39,7 @@
   .lien { display:block; text-align:center; margin-top:10px; color:var(--or); }
   .carte { position:relative; }
   .crayon { position:absolute; right:10px; top:10px; background:#000a; color:#f3c96b; border:1px solid #f3c96b88; border-radius:20px; padding:6px 12px; font:bold .9em Georgia, serif; cursor:pointer; }
-  .port .rg { position:absolute; right:-6px; bottom:-4px; background:#f3c96b; color:#2b1d0a; font-weight:bold; font-size:.8em; border-radius:12px; padding:1px 7px; box-shadow:0 0 0 2px #120f24; }
+  .port .rg { position:absolute; right:-14px; bottom:-4px; white-space:nowrap; /* 15/11 nuit : « RG 5 » (rang de la Guilde) au lieu d’un chiffre seul */ background:#f3c96b; color:#2b1d0a; font-weight:bold; font-size:.8em; border-radius:12px; padding:1px 7px; box-shadow:0 0 0 2px #120f24; }
   .carte .dev { color:#e8e2ff; font-style:italic; font-size:.9em; min-height:1em; text-align:center; text-shadow:0 1px 3px #000; }
   .carte .vit { display:flex; flex-wrap:wrap; gap:6px; justify-content:center; } .carte .vit span { border:1.5px solid; border-radius:14px; padding:2px 8px; font-size:.75em; background:#0008; }
   .carte .nom, .carte .tit { text-shadow:0 1px 3px #000; }
@@ -60,15 +60,15 @@
   <div class="haut"><a href="menu.html">‹ Menu</a><h1>👤 Mon profil</h1><a href="pantheon.html">Panthéon</a></div>
   <div id="app"></div>
 </main>
-<script src="cartes.js?v=20261115-225537"></script>
-<script src="musique.js?v=20261115-225537"></script>
-<script src="rang.js?v=20261115-225537"></script>
-<script src="heros-etoiles.js?v=20261115-225537"></script>
-<script src="donnees.js?v=20261115-225537"></script>
-<script src="aventuriers.js?v=20261115-225537"></script>
-<script src="odyssee.js?v=20261115-225537"></script>
-<script src="profil.js?v=20261115-225537"></script>
-<script src="pantheon.js?v=20261115-225537"></script>
+<script src="cartes.js?v=20261115-225645"></script>
+<script src="musique.js?v=20261115-225645"></script>
+<script src="rang.js?v=20261115-225645"></script>
+<script src="heros-etoiles.js?v=20261115-225645"></script>
+<script src="donnees.js?v=20261115-225645"></script>
+<script src="aventuriers.js?v=20261115-225645"></script>
+<script src="odyssee.js?v=20261115-225645"></script>
+<script src="profil.js?v=20261115-225645"></script>
+<script src="pantheon.js?v=20261115-225645"></script>
 <script>
 const log = () => {};
 // 15/11 (l'utilisateur : « changer de portrait en touchant ne sert à rien, sauf avec un crayon Modifier qui ouvre la modification du profil »)
@@ -87,7 +87,7 @@ function carteProfil(p, edit) {
   const em = (EMBLEMES.find(x => x[0] === p.embleme) || [])[1], f = (FONDS[p.fond] || FONDS.nuit)[1], r = rangGuilde();
   return `<div class="carte" style="background:${f};border-color:${c ? c[5] : '#4b4580'}">
     ${edit ? '' : `<button class="crayon" onclick="ouvre('portrait')" aria-label="Modifier mon profil">✏️ Modifier</button>`}
-    <div class="port" ${edit ? '' : `onclick="ouvre('portrait')"`}><img src="${img}" onerror="this.onerror=null;this.src='${sc}'" alt="" style="${c ? `box-shadow:0 0 0 4px ${c[5]}, 0 0 22px ${c[5]}` : ''}">${em && em !== '—' ? `<span class="em">${em}</span>` : c ? `<span class="em">${c[1]}</span>` : ''}<span class="rg">${r}</span></div>
+    <div class="port" ${edit ? '' : `onclick="ouvre('portrait')"`}><img src="${img}" onerror="this.onerror=null;this.src='${sc}'" alt="" style="${c ? `box-shadow:0 0 0 4px ${c[5]}, 0 0 22px ${c[5]}` : ''}">${em && em !== '—' ? `<span class="em">${em}</span>` : c ? `<span class="em">${c[1]}</span>` : ''}<span class="rg" title="Rang de la Guilde">RG ${r}</span></div>
     <div class="nom" id="nomv" style="${nomStyle(p)}">${p.nom || 'Toi'}</div><div class="tit">${t ? `${t[1]} ${t[2]}` : ''}</div>
     <div class="dev" id="devv">${p.devise ? `« ${p.devise.replace(/</g, '&lt;')} »` : ''}</div>
     ${(p.vitrine || []).length ? `<div class="vit">${p.vitrine.map(k => { const x = titreDe(k); return x ? `<span style="border-color:${x[5]}">${x[1]} ${x[2]}</span>` : ''; }).join('')}</div>` : ''}
