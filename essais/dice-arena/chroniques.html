@@ -229,9 +229,11 @@ function equipeEnLigne() {
   if (!L) return;
   fenetre(`<h2>🌐 Salle ${L.code}</h2><p style="text-align:center;color:var(--doux)">Touche un héros pour le jouer depuis ce téléphone.</p>
     ${S.heros.map((z, i) => `<button class="sec" onclick="prendHeros(${i})"><b>${nomH(z)}</b> · ${(H[z.id] || {}).t || ''}<small>${proprio(i) ? 'joué par ' + proprio(i) + (mesHeros().includes(i) ? ' (toi)' : '') : 'libre'}</small></button>`).join('')}
-    <p style="color:var(--doux);font-size:.9em">Joueurs : ${L.joueurs.map(j => j.nom).join(', ')}</p><button class="go" onclick="fenetre('')">C’est bon</button>`);
+    <p style="color:var(--doux);font-size:.9em">Joueurs : ${L.joueurs.map(j => j.nom).join(', ')}</p><button class="go" onclick="fenetre('')">${mesHeros().length ? 'Jouer ▶' : 'Fermer'}</button>`);
 }
-function prendHeros(i) { L.joueurs.forEach(j => j.heros = (j.heros || []).filter(x => x !== i)); const m = L.joueurs.find(j => j.id === L.moi.id); m.heros.push(i); actif = i; L.dernier = ''; dessine(); equipeEnLigne(); }
+function prendHeros(i) { L.joueurs.forEach(j => j.heros = (j.heros || []).filter(x => x !== i)); const m = L.joueurs.find(j => j.id === L.moi.id); m.heros.push(i); actif = i; L.dernier = ''; dessine(); if (typeof pousse === 'function') pousse();
+  // 16/11 nuit (l'utilisateur : « je sélectionne un personnage, derrière ça bouge mais rien sur l'écran, je suis bloqué ») : la fenêtre se ferme, on joue
+  fenetre(''); bulle(`🎮 Tu joues ${nomH(S.heros[i])} ! (bouton 🌐 en haut pour changer)`); }
 function quitterSalle() { L = null; localStorage.removeItem(SALLE); }
 const nomH = z => z.nom || (H[z.id] || {}).n || '?';
 const coulH = z => z.c || (H[z.id] || {}).c;
