@@ -3,7 +3,7 @@
 // Les combats utilisent l'écran de la Crypte (dessine() de crypte.html) avec la crypte DR.S.
 const D = DESCENTE;
 const CLE_D = 'guilde-descente', CLE_DP = 'guilde-descente-partie';
-let DR = null, choixPacte = null;
+let DR = null, choixPacte = null, choixProf = 0;
 // 15/11 soir : une image (si elle existe déjà : prompts.html) sinon l'émoji
 const ico = (src, e, cl = 'ico') => `<img class="${cl}" src="${src}" alt="" onerror="this.outerHTML='${e}'">`;
 const icoObj = k => ico(`objets/objet-${k}.webp`, D.OBJETS[k].e), icoBrel = k => ico(`objets/brel-${k}.webp`, D.BRELOQUES[k].e), icoComp = k => ico(`portraits/comp-${k}.webp`, C.COMPAGNONS[k].e, 'ico rond');
@@ -67,6 +67,9 @@ function descenteAccueil() {
     ${mesB.length ? `<div class="breloques"><button class="${!E.equipee ? 'on' : ''}" onclick="equipe(null)"><b>Aucune</b>Descendre les mains vides.</button>${mesB.map(k => `<button class="${E.equipee === k ? 'on' : ''}" onclick="equipe('${k}')"><b>${icoBrel(k)} ${D.BRELOQUES[k].n}</b>${D.BRELOQUES[k].d}</button>`).join('')}</div>` : '<p class="pv-h">Pas encore de breloque : bats un boss d’étage pour en gagner une.</p>'}
     <h3 style="color:var(--or);margin:3cqw 0 1.5cqw">🩸 Un pacte ? <small style="color:var(--doux);font-weight:normal">(plus dur, plus de points)</small></h3>
     <div class="breloques"><button class="${!choixPacte ? 'on' : ''}" onclick="choixPacte=null;descenteAccueil()"><b>Pas de pacte</b>La descente normale.</button>${Object.entries(D.PACTES).map(([k, p]) => `<button class="${choixPacte === k ? 'on' : ''}" onclick="choixPacte='${k}';descenteAccueil()"><b>${p.e} ${p.n}</b>${p.d} <i>Score ×${p.score}</i></button>`).join('')}</div>
+    ${(E.profMax || 0) > 0 ? `<h3 style="color:var(--or);margin:3cqw 0 1.5cqw">🕳 Profondeur <small style="color:var(--doux);font-weight:normal">(une descente gagnée ouvre la suivante)</small></h3>
+    <div class="etages">${Array.from({ length:Math.min(10, E.profMax) + 1 }, (_, p) => `<span class="${choixProf === p ? 'ici' : ''}" onclick="choixProf=${p};descenteAccueil()" style="cursor:pointer">${p}</span>`).join('')}</div>
+    <p class="pv-h">${choixProf ? `Profondeur ${choixProf} · score ×${(1 + .1 * choixProf).toFixed(1)} :<br>${D.PROFONDEURS.slice(1, choixProf + 1).map((x, i) => `${i + 1}. ${x}`).join('<br>')}` : 'Profondeur 0 : la descente normale.'}</p>` : ''}
     <div class="choix">
       ${descenteGardee() ? `<button onclick="reprendDescente()" style="border-color:var(--ok);color:var(--ok);background:#163a2a">▶ Reprendre ta descente<small>${HER[descenteGardee().heros].n} · étage ${descenteGardee().etage} · ❤ ${descenteGardee().S ? descenteGardee().S.pv : descenteGardee().pv}</small></button>` : ''}
       <button onclick="lanceDescente(true)">📅 La descente du jour<small>La même pour tout le monde aujourd’hui (salles, monstres, marchand). ${(E.jours || {})[jour()] ? `Ton record du jour : ${E.jours[jour()].score} ${'★'.repeat(E.jours[jour()].etoiles)}${E.jours[jour()].etage ? ' · étage ' + E.jours[jour()].etage : ''}` : 'Pas encore tentée.'}${descenteGardee() ? ' (ta descente en cours sera abandonnée)' : ''}</small></button>
@@ -78,7 +81,7 @@ function descenteAccueil() {
 function equipe(k) { const E = lireD(); E.equipee = k; ecrireD(E); descenteAccueil(); }
 function lanceDescente(duJ) {
   const E = lireD(); const L = lire(); L.heros = choixH; ecrire(L);
-  DR = D.nouvelle(choixH, duJ ? 'descente-jour-' + jour() : 'descente-' + Date.now() + Math.random(), bonusMode(choixH), { breloque:E.equipee, pacte:choixPacte });
+  DR = D.nouvelle(choixH, duJ ? 'descente-jour-' + jour() : 'descente-' + Date.now() + Math.random(), bonusMode(choixH), { breloque:E.equipee, pacte:choixPacte, profondeur:choixProf });
   DR.duJour = !!duJ;
   son('melange'); descenteEcran();
   if (!localStorage.getItem('guilde-descente-guide')) { localStorage.setItem('guilde-descente-guide', '1'); descenteRegles(); }
@@ -156,7 +159,7 @@ function descenteFinCombat() {
 }
 function descenteFin() {
   const E = lireD(), gagne = DR.fin === 'gagne', et = D.etoiles(DR);
-  E.parties++; if (gagne) E.victoires++; E.meilleur = Math.max(E.meilleur, DR.score); E.etageMax = Math.max(E.etageMax || 0, gagne ? 4 : DR.etage);
+  E.parties++; if (gagne) E.victoires++; E.meilleur = Math.max(E.meilleur, DR.score); E.etageMax = Math.max(E.etageMax || 0, gagne ? 4 : DR.etage); if (gagne && (DR.prof || 0) >= (E.profMax || 0)) { E.profMax = Math.min(10, (DR.prof || 0) + 1); setTimeout(() => bulle(`🕳 Profondeur ${E.profMax} ouverte !`), 1200); }
   if (DR.duJour) { E.jours = E.jours || {}; const j = E.jours[jour()]; const sc = gagne ? DR.score : DR.etage * 100 + DR.pas * 10; if (!j || sc > j.score) E.jours[jour()] = { score:sc, etoiles:et, etage:gagne ? 0 : DR.etage }; }
   ecrireD(E);
   let objet = null;
