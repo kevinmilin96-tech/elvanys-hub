@@ -125,14 +125,14 @@
 <body>
 <div id="app"></div>
 <div id="fen"></div>
-<script src="guide.js?v=20261115-214438"></script>
-<script src="cartes.js?v=20261115-214438"></script>
-<script src="musique.js?v=20261115-214438"></script>
-<script src="rang.js?v=20261115-214438"></script>
-<script src="heros-etoiles.js?v=20261115-214438"></script>
-<script src="donnees.js?v=20261115-214438"></script>
-<script src="defense-moteur.js?v=20261115-214438"></script>
-<script src="heros-aventure.js?v=20261115-214438"></script>
+<script src="guide.js?v=20261115-215016"></script>
+<script src="cartes.js?v=20261115-215016"></script>
+<script src="musique.js?v=20261115-215016"></script>
+<script src="rang.js?v=20261115-215016"></script>
+<script src="heros-etoiles.js?v=20261115-215016"></script>
+<script src="donnees.js?v=20261115-215016"></script>
+<script src="defense-moteur.js?v=20261115-215016"></script>
+<script src="heros-aventure.js?v=20261115-215016"></script>
 <script>
 // =============================================================================================== LA DÉFENSE DE LA PORTE · l'ÉCRAN (13/11)
 // Règles : defense-proposition.html (validées le 13/11). Moteur : defense-moteur.js.
@@ -401,6 +401,7 @@ function animeTirs(pvAvant, ensuite) {
 }
 function fin() {
   if (fen.innerHTML) return;
+  if (!D.journalEnvoye && typeof guildeJournal === 'function') { D.journalEnvoye = true; guildeJournal(D.sansFin ? 'defense-sansfin' : 'defense', { heros:D.heros, resultat:D.fini, journal:[...(D.log || [])].reverse(), resume:{ vague:D.vague, porte:D.porte, porteMax:D.porteMax, score:typeof scoreD === 'function' ? scoreD(D) : null } }); } // 15/11 soir : carnet des parties
   const g = D.fini === 'gagne', sc = scoreD(D), r = lesRecords();
   if (D.sansFin && !D.enregistre) { try { const sf = JSON.parse(localStorage.getItem('guilde-defense-sansfin') || '{}'); if ((D.vague || 0) > (sf.vague || 0)) localStorage.setItem('guilde-defense-sansfin', JSON.stringify({ vague:D.vague, heros:D.heros })); } catch (e) {} }
   if (!D.enregistre) { D.enregistre = true; r.push({ heros:D.heros, av:D.av || null, gagne:g, porte:D.porte, score:g ? sc : 0, vague:D.vague, quand:new Date().toISOString() }); try { localStorage.setItem(REC, JSON.stringify(r.slice(-50))); } catch (e) {} }

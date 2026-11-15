@@ -776,6 +776,7 @@ function ouvreCoffre(r, c) { const fievre = r.sansfin && r.sansfin.regle === 'fi
 function ouvrePorte(r) { const p = caseA(r, r.porte.x, r.porte.y); if (p.fait) return true; if (r.fragments >= 2) { p.fait = true; const a = r.pv; r.pv = Math.min(r.pvMax, r.pv + 15); r.journal.push(`🚪 Les deux fragments s’assemblent : la porte s’ouvre. Bivouac devant la porte : +${r.pv - a} PV.`); return true; } return false; }
 // fin de l'Odyssée : score, collection, record
 function finOdysseeRun(r, gagne) {
+  if (!r.journalEnvoye && typeof guildeJournal === 'function' && !r.simu) { r.journalEnvoye = true; guildeJournal(r.route ? 'odyssee-route' : r.sansfin ? 'odyssee-sansfin' : r.aventure ? 'grande-aventure' : r.epreuve ? 'epreuve' : 'odyssee', { heros:r.heros + (r.av ? ' (aventure)' : ''), resultat:gagne ? 'gagne' : 'perdu', journal:r.journal || [], resume:{ acte:r.acte, pv:r.pv, pvMax:r.pvMax, or:r.or, cases:r.stats && r.stats.cases, combats:r.stats && r.stats.combats, victoires:r.stats && r.stats.victoires, reliques:r.reliques, deck:r.deck && r.deck.length, suivi:r.fs || 1 } }); } // 15/11 soir : carnet des parties
   const duree = Math.round((Date.now() - r.debut) / 60000);
   const etage = r.sansfin ? r.sansfin.etage || 1 : 0;
   const score = r.stats.victoires * 50 + r.stats.cases * 5 + r.or + (gagne ? 300 : 0) + r.stats.defis * 30 - r.stats.tours * 2 + Math.max(0, etage - 1) * 500;

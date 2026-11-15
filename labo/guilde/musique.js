@@ -176,3 +176,17 @@ const GM = (() => {
       .observe(document.body, { childList:true, subtree:true, characterData:true }); });
   return api;
 })();
+
+// 15/11 soir (l'utilisateur : « j'ai besoin que tu puisses voir tous les matchs ou jeux pour corriger les problèmes ») : LE CARNET DES PARTIES.
+// Chaque partie finie envoie son journal au serveur du laboratoire perso (POST /api/hub/guilde/journal) ; Claude les relit depuis l'atelier.
+// Seulement sur perso.elvanys.fr ; aucun compte : le pseudo tapé par le joueur. Un envoi raté ne gêne jamais le jeu.
+function guildeJournal(mode, info) {
+  try {
+    if (!/^(perso\.elvanys\.fr|localhost|127\.0\.0\.1)$/.test(location.hostname)) return;
+    info = info || {};
+    const pseudo = ((typeof AMIS !== 'undefined' && AMIS && AMIS.carte && AMIS.carte.pseudo) || localStorage.getItem('guilde-pseudo') || '').slice(0, 40);
+    const corps = JSON.stringify({ mode, heros:String(info.heros || ''), resultat:String(info.resultat || ''), joueur:pseudo,
+      version:typeof VERSION !== 'undefined' ? VERSION : '', resume:info.resume || {}, journal:(info.journal || []).map(String).slice(-3000) });
+    fetch('/api/hub/guilde/journal', { method:'POST', headers:{ 'Content-Type':'application/json' }, body:corps, keepalive:corps.length < 60000 }).catch(() => {});
+  } catch (e) { /* jamais bloquant */ }
+}

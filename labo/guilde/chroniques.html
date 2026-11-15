@@ -105,14 +105,14 @@
 <body>
 <div id="app"></div>
 <div id="fen"></div>
-<script src="musique.js?v=20261115-214438"></script>
-<script src="rang.js?v=20261115-214438"></script>
+<script src="musique.js?v=20261115-215016"></script>
+<script src="rang.js?v=20261115-215016"></script>
 <script>window.AMIS_SANS_BOUTON = true;</script>
-<script src="amis.js?v=20261115-214438"></script>
-<script src="heros-etoiles.js?v=20261115-214438"></script>
-<script src="progression-modes.js?v=20261115-214438"></script>
-<script src="aventuriers.js?v=20261115-214438"></script>
-<script src="chroniques-moteur.js?v=20261115-214438"></script>
+<script src="amis.js?v=20261115-215016"></script>
+<script src="heros-etoiles.js?v=20261115-215016"></script>
+<script src="progression-modes.js?v=20261115-215016"></script>
+<script src="aventuriers.js?v=20261115-215016"></script>
+<script src="chroniques-moteur.js?v=20261115-215016"></script>
 <script>
 // =============================================================================================== LES CHRONIQUES DE LA GUILDE v2 (15/11, écran « façon HeroQuest »)
 // Une grande carte qui défile : les salles restent dans le noir jusqu'à ce qu'on ouvre leur porte ; les couloirs se dévoilent en avançant ;
@@ -481,6 +481,7 @@ function regles() {
 // ------------------------------------------------------------------ fin, quitter, recommencer
 function quitter() { sauve(); S = null; L = null; fenetre(''); accueil(); }
 function finPartie() {
+  if (S && !S.journalEnvoye && typeof guildeJournal === 'function') { S.journalEnvoye = true; guildeJournal(S.aventure ? 'chroniques-aventure' : 'chroniques', { heros:(S.heros || []).map(z => z.id || z.voie || '').join(','), resultat:S.fin, journal:[...(S.journal || [])].reverse(), resume:{ scen:S.scen, campagne:S.campagne, tour:S.tour } }); } // 15/11 soir : carnet des parties
   if (S.aventure && typeof aventureFinCombat === 'function') return aventureFinCombat();
   sauve(); const gagne = S.fin === 'gagne'; let objet = null, niv = [];
   S.heros.forEach(z => { if (z.av && avTrouve(z.av)) { const g = avGagneXP(z.av, gagne ? 120 : 40, gagne); if (g) niv.push(nomH(z)); } });
@@ -692,9 +693,9 @@ accueil();
 { const s = new URLSearchParams(location.search).get('salle'); if (s) { history.replaceState(null, '', location.pathname); const c = (typeof AMIS !== 'undefined' && AMIS.carte) || null, nom = (c && c.pseudo) || localStorage.getItem('guilde-pseudo');
     if (nom) rejoindre(s, { id:'j' + Math.random().toString(36).slice(2, 10), nom }); else { rejoindreForm(); setTimeout(() => { const i = $('fCode'); if (i) i.value = s; }, 150); } } }
 </script>
-<script src="chroniques-aventures.js?v=20261115-214438"></script>
-<script src="guide.js?v=20261115-214438"></script>
-<script src="guides-modes.js?v=20261115-214438"></script>
+<script src="chroniques-aventures.js?v=20261115-215016"></script>
+<script src="guide.js?v=20261115-215016"></script>
+<script src="guides-modes.js?v=20261115-215016"></script>
 <script>
 // 15/11 : le guide de Moustache de ce mode (guides-modes.js)
 { const _a = accueil; accueil = function () { const r = _a.apply(this, arguments); guideMode('chroniques'); return r; }; }

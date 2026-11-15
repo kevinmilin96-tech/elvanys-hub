@@ -696,7 +696,7 @@
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
 // 14/11 : l'Odyssée sans fin a ses propres emplacements (odyssee.js lit SANSFIN)
 const SANSFIN = new URLSearchParams(location.search).get('sansfin') === '1', ROUTE_TITAN = new URLSearchParams(location.search).get('route') === '1', EPREUVE_PAGE = new URLSearchParams(location.search).get('epreuve') === '1', ODY_PAGE = EPREUVE_PAGE ? 'epreuves.html' : 'odyssee.html' + (SANSFIN ? '?sansfin=1' : ROUTE_TITAN ? '?route=1' : '');
-const VERSION = '20261115-214438';
+const VERSION = '20261115-215016';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -715,17 +715,17 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261115-214438"></script>
-<script src="musique.js?v=20261115-214438"></script>
-<script src="rang.js?v=20261115-214438"></script>
-<script src="heros-etoiles.js?v=20261115-214438"></script>
-<script src="heros-aventure.js?v=20261115-214438"></script>
-<script src="donnees.js?v=20261115-214438"></script>
-<script src="odyssee.js?v=20261115-214438"></script>
-<script src="bestiaire.js?v=20261115-214438"></script>
-<script src="aventure.js?v=20261115-214438"></script>
-<script src="odyssee-sansfin.js?v=20261115-214438"></script>
-<script src="chronique.js?v=20261115-214438"></script>
+<script src="cartes.js?v=20261115-215016"></script>
+<script src="musique.js?v=20261115-215016"></script>
+<script src="rang.js?v=20261115-215016"></script>
+<script src="heros-etoiles.js?v=20261115-215016"></script>
+<script src="heros-aventure.js?v=20261115-215016"></script>
+<script src="donnees.js?v=20261115-215016"></script>
+<script src="odyssee.js?v=20261115-215016"></script>
+<script src="bestiaire.js?v=20261115-215016"></script>
+<script src="aventure.js?v=20261115-215016"></script>
+<script src="odyssee-sansfin.js?v=20261115-215016"></script>
+<script src="chronique.js?v=20261115-215016"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -1957,7 +1957,15 @@ function copieParties(journal, i) {
   navigator.clipboard.writeText(t).then(() => { document.getElementById('copie').textContent = 'Copié ✓ : collez-le dans la discussion avec Claude.'; })
     .catch(() => { document.getElementById('copie').textContent = 'Copie impossible sur ce téléphone.'; });
 }
+// 15/11 soir : le carnet des parties (musique.js) : chaque combat fini envoie son journal (une fois)
+function journalCombat() {
+  if (!S || S.auto || S.journalEnvoye || typeof guildeJournal !== 'function') return; S.journalEnvoye = true;
+  const mode = S.ody ? 'odyssee-combat' : S.coop ? 'invasion' : S.ligne ? 'duel-ami' : S.deux ? 'duel-deux' : S.tuto ? 'tutoriel' : S.enigme ? 'enigme' : S.semaine ? 'duel-semaine' : 'duel';
+  guildeJournal(mode, { heros:S.J.id + (S.J.av ? ' (aventure)' : ''), resultat:S.fini, journal:[...S.log].reverse(),
+    resume:{ contre:S.O.id, nomContre:S.O.nom, tours:S.J.tours, pvMoi:Math.max(0, S.J.pv), pvMaxMoi:S.J.pvMax, pvContre:Math.max(0, S.O.pv), pvMaxContre:S.O.pvMax, salle:S.salle && S.salle.n, ultimeMoi:!!S.J.ultimeFait, ultimeContre:!!S.O.ultimeFait, ile:S.ody && S.ody.titre } });
+}
 function montrerFin() {
+  journalCombat();
   if (S.ody) { finOdyssee(); return; }
   if (S.coop) { if (S.enregistre) return; S.enregistre = true; if (S.fini === 'gagne') typeof guildeEvt === 'function' && guildeEvt('invasion_acte', 1); if (S.fini === 'gagne' && S.choix) { try { const v = JSON.parse(localStorage.getItem('guilde-invasion') || '{}'); v[S.choix] = (v[S.choix] || 0) + 1; localStorage.setItem('guilde-invasion', JSON.stringify(v)); } catch (e) {} } arreteMusique(1.2); son(S.fini === 'gagne' ? 'victoire' : 'defaite'); effetImage(S.fini === 'gagne' ? 'victoire' : 'defaite', document.getElementById('app'), 2.2);
     chronique([(CHRON_CAMP_B[S.O.id] || CHRON_CAMP)[S.fini === 'gagne' ? 'victoire' : 'defaite']], () => fenetre(`<h2>${S.fini === 'gagne' ? '🏆 Le boss est tombé !' : '💀 Le campement est perdu…'}</h2><p>${S.equipe.map(h => `${h.nom} : ${h.aTerre ? 'à terre' : h.pv + ' PV'}`).join(' · ')} · ${S.O.nom} : ${Math.max(0, S.O.pv)} PV · ${S.equipe[0].tours} tours.</p><div class="choixh"><button onclick="location.href='campement.html'">🔥 Rejouer</button><button onclick="location.href='menu.html'">⌂ Menu</button></div>`)); return; }
@@ -2379,17 +2387,17 @@ async function joueFX() {
 // toucher l'écran pendant les animations les accélère
 document.addEventListener('pointerdown', () => { if (fxOn && !(S && S.tuto)) fxVite = .5; }, true); // 14/11 : plus d'accélération dans le tutoriel
 </script>
-<script src="profil.js?v=20261115-214438"></script>
-<script src="pantheon.js?v=20261115-214438"></script>
-<script src="tuto.js?v=20261115-214438"></script>
-<script src="deux.js?v=20261115-214438"></script>
+<script src="profil.js?v=20261115-215016"></script>
+<script src="pantheon.js?v=20261115-215016"></script>
+<script src="tuto.js?v=20261115-215016"></script>
+<script src="deux.js?v=20261115-215016"></script>
 <script>window.AMIS_SANS_BOUTON = true;</script>
-<script src="amis.js?v=20261115-214438"></script>
-<script src="duel-ligne.js?v=20261115-214438"></script>
-<script src="invasion.js?v=20261115-214438"></script>
-<script src="enigme-table.js?v=20261115-214438"></script>
-<script src="forge.js?v=20261115-214438"></script>
-<script src="semaine.js?v=20261115-214438"></script>
-<script src="enigme.js?v=20261115-214438"></script>
+<script src="amis.js?v=20261115-215016"></script>
+<script src="duel-ligne.js?v=20261115-215016"></script>
+<script src="invasion.js?v=20261115-215016"></script>
+<script src="enigme-table.js?v=20261115-215016"></script>
+<script src="forge.js?v=20261115-215016"></script>
+<script src="semaine.js?v=20261115-215016"></script>
+<script src="enigme.js?v=20261115-215016"></script>
 </body>
 </html>
