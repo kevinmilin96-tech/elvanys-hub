@@ -98,12 +98,12 @@
 <body>
 <div id="app"></div>
 <div id="fen"></div>
-<script src="musique.js?v=20261115-171545"></script>
-<script src="rang.js?v=20261115-171545"></script>
-<script src="heros-etoiles.js?v=20261115-171545"></script>
-<script src="progression-modes.js?v=20261115-171545"></script>
-<script src="aventuriers.js?v=20261115-171545"></script>
-<script src="chroniques-moteur.js?v=20261115-171545"></script>
+<script src="musique.js?v=20261115-171900"></script>
+<script src="rang.js?v=20261115-171900"></script>
+<script src="heros-etoiles.js?v=20261115-171900"></script>
+<script src="progression-modes.js?v=20261115-171900"></script>
+<script src="aventuriers.js?v=20261115-171900"></script>
+<script src="chroniques-moteur.js?v=20261115-171900"></script>
 <script>
 // =============================================================================================== LES CHRONIQUES DE LA GUILDE v2 (15/11, écran « façon HeroQuest »)
 // Une grande carte qui défile : les salles restent dans le noir jusqu'à ce qu'on ouvre leur porte ; les couloirs se dévoilent en avançant ;
@@ -165,6 +165,7 @@ async function pousse() {
   if (!L) return; if (envoi) { encore = true; return; } envoi = true;
   try {
     for (let essai = 0; essai < 3; essai++) {
+      if (!S && LOB) { envoi = false; return lobbyPousse(); }
       const etat = S, j = JSON.stringify(S); L.dernier = j;
       const { statut, d } = await api('POST', `${API}/${L.code}`, { version:L.version, etat, joueurs:L.joueurs });
       if (statut === 200) { L.version = d.version; L.prises = []; break; }
@@ -178,10 +179,13 @@ async function pousse() {
 const salleAJour = () => { if ($('salleListe')) equipeEnLigne(); };
 function recoit(d) {
   if (!d || !d.etat) return;
+  if (d.etat.lobby) { LOB = d.etat.lobby; S = null; L.version = d.version; if (d.joueurs) L.joueurs = d.joueurs; L.dernier = ''; fenetre(''); salleAttente(); return; }
+  const depart = !S; LOB = null;
   const avant = S && S.journal ? S.journal[0] : null;
   S = d.etat; L.version = d.version; if (d.joueurs) L.joueurs = d.joueurs; L.dernier = JSON.stringify(S);
   if (!mesHeros().includes(actif)) { const m = mesHeros().find(i => !S.heros[i].aTerre); if (m != null) actif = m; }
   sel = null; dessine(); salleAJour();
+  if (depart) { son('portail'); dialogue(S.campagne != null ? CHAPITRES[S.campagne].titre : SCT().titre, [S.campagne != null ? CHAPITRES[S.campagne].avant : SCT().ouverture, SCT().entree()]); return; }
   if (S.journal[0] && S.journal[0] !== avant) bulle(S.journal[0].replace(/^[^ ]+ /, ''));
   if (S.fin) finPartie();
 }
@@ -195,18 +199,17 @@ async function creerSalle(nomDonne) {
       <button class="go" onclick="const n=($('fNom2').value||'').trim();if(!n){bulle('Ton prénom ?',true);return}fenetre('');creerSalle(n)">Créer la salle</button><button class="sec" onclick="fenetre('')">Annuler</button>`); return; }
   const nom = String(nomDonne).trim().slice(0, 24); if (!nom) return;
   localStorage.setItem('guilde-pseudo', nom);
-  S = K.nouvelle(equipeChoisie(), 'chron-' + Date.now(), scenChoisi); pointDePassage(); actif = 0; sel = null; centrer = true;
+  // 15/11 : une SALLE D'ATTENTE (l'hôte choisit le scénario, chacun ajoute son héros, l'hôte lance pour tout le monde)
   const moi = { id:'j' + Math.random().toString(36).slice(2, 10), nom };
-  const joueurs = [{ id:moi.id, nom, heros:S.heros.map((z, i) => i) }];
-  try { const { statut, d } = await api('POST', API, { mode:'chroniques', etat:S, joueurs });
-    if (statut !== 200) { bulle(d.message || 'Impossible de créer la salle.', true); S = null; return; }
-    L = { code:d.code, version:d.version, joueurs, moi, dernier:JSON.stringify(S) };
+  const joueurs = [{ id:moi.id, nom, heros:[] }];
+  S = null; L = { code:'', version:0, joueurs, moi, dernier:'' };
+  LOB = { scen:scenChoisi, camp:null, equipe:choisis.slice(0, 4).map(entreeLobby).filter(Boolean), hote:moi.id };
+  try { const { statut, d } = await api('POST', API, { mode:'chroniques', etat:{ lobby:LOB }, joueurs });
+    if (statut !== 200) { bulle(d.message || 'Impossible de créer la salle.', true); L = null; LOB = null; return; }
+    L.code = d.code; L.version = d.version;
     localStorage.setItem(SALLE, JSON.stringify({ code:L.code, moi }));
-    dessine();
-    fenetre(`<h2>🌐 Ta salle est ouverte</h2><p style="text-align:center">Donne ce code à tes amis :</p><p style="text-align:center;font-size:2.6em;letter-spacing:.2em;color:var(--or);margin:6px 0"><b>${L.code}</b></p>
-      <p>Ils vont sur <b>perso.elvanys.fr/guilde</b> → <b>Les Chroniques</b> → <b>🔑 Rejoindre avec un code</b>. Quand ils arrivent, ils prennent leurs héros (tu les leur laisses). Tu peux commencer tout de suite.</p>
-      <button class="go" onclick="fenetre('');equipeEnLigne()">Voir qui joue quoi</button>`, false);
-  } catch (e) { bulle('Pas de réseau.', true); S = null; }
+    son('portail'); salleAttente();
+  } catch (e) { bulle('Pas de réseau.', true); L = null; LOB = null; }
 }
 // 16/11 nuit (l'utilisateur : « je ne peux pas sélectionner Rejoindre avec un code ») : la petite fenêtre du navigateur (prompt) est bloquée sur certains
 // téléphones ; on demande le code et le prénom dans une vraie fenêtre du jeu
@@ -229,9 +232,11 @@ async function rejoindre(code, moi) {
   if (!moi) { const nom = (localStorage.getItem('guilde-pseudo') || 'Joueur').trim().slice(0, 24); if (!nom) return; localStorage.setItem('guilde-pseudo', nom); moi = { id:'j' + Math.random().toString(36).slice(2, 10), nom }; }
   try { const { statut, d } = await api('GET', `${API}/${code}`);
     if (statut !== 200) { bulle(d.message || 'Code inconnu.', true); return; }
-    L = { code, version:d.version, joueurs:d.joueurs || [], moi, dernier:'' }; S = d.etat; actif = 0; sel = null; centrer = true;
+    L = { code, version:d.version, joueurs:d.joueurs || [], moi, dernier:'' };
     if (!L.joueurs.some(j => j.id === moi.id)) L.joueurs.push({ id:moi.id, nom:moi.nom, heros:[] });
     localStorage.setItem(SALLE, JSON.stringify({ code, moi }));
+    if (d.etat && d.etat.lobby) { LOB = d.etat.lobby; S = null; son('portail'); salleAttente(); lobbyPousse(); return; }
+    S = d.etat; LOB = null; actif = 0; sel = null; centrer = true;
     dessine(); await pousse(); equipeEnLigne();
   } catch (e) { bulle('Pas de réseau.', true); }
 }
@@ -467,10 +472,11 @@ function finPartie() {
   sauve(); const gagne = S.fin === 'gagne'; let objet = null, niv = [];
   S.heros.forEach(z => { if (z.av && avTrouve(z.av)) { const g = avGagneXP(z.av, gagne ? 120 : 40, gagne); if (g) niv.push(nomH(z)); } });
   if (niv.length) setTimeout(() => bulle(`⬆ Niveau gagné : ${niv.join(', ')} ! (à forger dans la Forge des héros)`), 900);
-  if (gagne) { son('victoire'); try { GM.jingle('victoire'); } catch (e) {} S.heros.forEach(z => { if (typeof guildeEvt === 'function') guildeEvt('boss', 1, { heros:z.id }); }); objet = butinArmurerie(S.sablier > 0 ? 3 : 1, S.score);
+  if (gagne) { son('victoire'); try { GM.jingle('victoire'); } catch (e) {} S.heros.forEach((z, i) => { if (L && !mesHeros().includes(i)) return; if (typeof guildeEvt === 'function') guildeEvt('boss', 1, { heros:z.av || z.id }); }); objet = butinArmurerie(S.sablier > 0 ? 3 : 1, S.score);
     try { const D = JSON.parse(localStorage.getItem(CLE) || '{}'); D.horloger = (D.horloger || 0) + 1; if (S.sablier > 0) D.gardiens = true; localStorage.setItem(CLE, JSON.stringify(D)); } catch (e) {} }
   else { try { GM.jingle('defaite'); } catch (e) {} }
-  const campagne = gagne ? campagneGagnee() : '';
+  const campagne = gagne && (!L || estHote()) ? campagneGagnee().replace('onclick="fin();chapitre()"', L ? 'onclick="retourSalle()"' : 'onclick="fin();chapitre()"') : '';
+  const salleBt = L ? (estHote() ? '<button class="go" onclick="retourSalle()">↩ Ramener tout le monde dans la salle d’attente</button>' : '<p style="text-align:center;color:var(--doux)">L’hôte peut ramener tout le monde dans la salle d’attente pour la suite.</p>') : '';
   // 16/11 : l'or et les pièces d'équipement trouvés vont dans la Forge des héros (si l'équipe a des héros d'aventure)
   let butin = '';
   if (typeof avGagne === 'function' && !S.butinFait) { S.butinFait = true;
@@ -478,9 +484,9 @@ function finPartie() {
     butin = `<p style="text-align:center">⚒ Pour tes héros : 🪙 +${or} or${g.length ? ` · ${g.map(p => `<b style="color:${EQ_RARE[p.r].c}">${EQ_CASES.find(c => c.k === p.slot).e} ${p.nom}</b>`).join(', ')}` : ''}</p>`; }
   fenetre(gagne ? `<h2>${SCT().gagne[0]}</h2><div class="moust"><img src="ui/moustache.webp" alt=""><div class="lu">${SCT().gagne[1]}</div></div>
       <p style="text-align:center">Score : <b style="color:var(--or)">${S.score}</b> · ${S.tours} tours · ⌛ ${S.sablier} grains${S.sablier > 0 ? '<br>🏅 Titre « <b>Gardiens du temps</b> » : le sablier n’est jamais tombé à zéro !' : ''}</p>
-      <p style="text-align:center">✨ Chaque héros gagne des éclats et de l’XP${objet ? ` · 🎒 <b>${objet}</b> rejoint l’armurerie` : ''}.</p>${butin}${campagne}<button class="${campagne ? 'sec' : 'go'}" onclick="fin()">Retour à la Guilde</button>`
+      <p style="text-align:center">✨ Chaque héros gagne des éclats et de l’XP${objet ? ` · 🎒 <b>${objet}</b> rejoint l’armurerie` : ''}.</p>${butin}${campagne}${salleBt}<button class="${campagne || salleBt ? 'sec' : 'go'}" onclick="fin()">Retour à la Guilde</button>`
     : `<h2>❄ Figés…</h2><div class="moust"><img src="ui/moustache.webp" alt=""><div class="lu">« Figés. Tous. Comme des statues. Très jolies, d’ailleurs. L’Horloger vous remonte comme des jouets… On réessaie ? »</div></div>
-      <button class="go" onclick="recommence()">↺ Repartir de la dernière porte ouverte</button><button class="sec" onclick="fin()">Abandonner</button>`, false);
+      ${L ? (estHote() ? '<button class="go" onclick="retourSalle()">↩ Revenir dans la salle d’attente</button>' : '<p style="text-align:center;color:var(--doux)">L’hôte peut ramener tout le monde dans la salle d’attente.</p>') : '<button class="go" onclick="recommence()">↺ Repartir de la dernière porte ouverte</button>'}<button class="sec" onclick="fin()">Abandonner</button>`, false);
 }
 function recommence() { if (!S.passage) { const h = S.heros.map(z => z.id); S = K.nouvelle(h, 'chron-' + Date.now(), S.scen); } else S = JSON.parse(S.passage); actif = 0; sel = null; centrer = true; fenetre(''); dessine(); }
 function fin() { try { localStorage.removeItem(CLE_PARTIE); } catch (e) {} if (L) quitterSalle(); S = null; fenetre(''); accueil(); }
@@ -551,7 +557,7 @@ function accueil() {
     <h3 style="color:var(--or);margin:3cqw 0 1cqw">⚔ Une partie seule</h3>
     <button class="gros" ${choisis.length ? '' : 'disabled'} onclick="commence()">⚔ Commencer avec ${choisis.length} héros<small>${choisis.map(nomChoix).join(', ') || 'choisis au moins un héros'}</small></button>
     <h3 style="color:var(--or);text-align:center;margin:5cqw 0 1cqw">🌐 Chacun chez soi</h3>
-    <button class="gros" style="background:#14223a;border-color:#7cd4ff;color:#7cd4ff" ${choisis.length ? '' : 'disabled'} onclick="creerSalle()">🌐 Créer une partie à distance<small>Avec les héros choisis ci-dessus ; un code de 4 lettres à donner à tes amis.</small></button>
+    <button class="gros" style="background:#14223a;border-color:#7cd4ff;color:#7cd4ff" onclick="creerSalle()">🌐 Créer une partie à distance<small>Une salle d’attente : tu choisis le scénario, chacun ajoute son héros depuis son téléphone, tu lances pour tout le monde.</small></button>
     <button class="gros" style="background:#1c1c36;border-color:#45457a;color:var(--texte)" onclick="rejoindre()">🔑 Rejoindre avec un code<small>Un ami t’a donné un code de salle.</small></button>
     ${(() => { try { const s = JSON.parse(localStorage.getItem(SALLE) || 'null'); return s ? `<button class="gros" style="background:#14322a;border-color:var(--ok);color:var(--ok)" onclick='rejoindre(${JSON.stringify(s.code)}, ${JSON.stringify(s.moi)})'>↩ Revenir dans la salle ${s.code}<small>en tant que ${s.moi.nom}</small></button>` : ''; } catch (e) { return ''; } })()}
     <p style="text-align:center;margin-top:4cqw"><a href="chroniques-v1.html" style="color:var(--doux);font-size:3cqw">l’ancienne version (salles séparées)</a></p>
@@ -573,6 +579,89 @@ function dialogue(titre, lignes, k = 0) {
   fenetre(`<h2>${titre}</h2>${lignes.slice(0, k + 1).map((l, i) => `<div class="moust" style="${i < k ? 'opacity:.55' : 'animation:apparait .35s'}"><img src="ui/moustache.webp" alt=""><div class="lu">${l}</div></div>`).join('')}
     <button class="go" onclick="${der ? `fenetre('')` : `son('choisir');dialogue(DLG.titre, DLG.lignes, ${k + 1})`}">${der ? 'On y va !' : 'Suivant ▶'}</button>`, false);
 }
+// ------------------------------------------------------------------ LA SALLE D'ATTENTE (15/11 ~17 h 20, demande de l'utilisateur)
+// « Seul le joueur 1, l'hôte, doit pouvoir lancer et sélectionner le scénario ou la campagne, comme un vrai jeu avec un hub de sélection,
+// et tous partir en même temps. » Tant que la partie n'est pas lancée, le serveur garde { lobby:LOB } au lieu de la partie :
+// LOB = { scen, camp (null, 'nouvelle' ou n° de chapitre), equipe:[{ id, owner, nom, img, sec, c, m (ce que le moteur attend) }], hote }.
+// Chacun ajoute SES héros depuis SON téléphone (avec sa progression : niveau, rang, équipement) ; l'hôte choisit le scénario et lance.
+let LOB = null;
+const estHote = () => !!L && !!(LOB ? LOB.hote === L.moi.id : S && S.hote === L.moi.id);
+function assureMoi() { if (L && !L.joueurs.some(j => j.id === L.moi.id)) L.joueurs.push({ id:L.moi.id, nom:L.moi.nom, heros:[] }); }
+async function lobbyPousse(f) {
+  if (!L || !LOB) return; if (envoi) { setTimeout(() => lobbyPousse(f), 300); return; } envoi = true;
+  try {
+    for (let k = 0; k < 4; k++) {
+      if (f) f(LOB); assureMoi();
+      const { statut, d } = await api('POST', `${API}/${L.code}`, { version:L.version, etat:{ lobby:LOB }, joueurs:L.joueurs });
+      if (statut === 200) { L.version = d.version; break; }
+      if (statut === 409 && d.etat && d.etat.lobby) { LOB = d.etat.lobby; if (d.joueurs) L.joueurs = d.joueurs; L.version = d.version; continue; }
+      if (statut === 409) { envoi = false; recoit(d); return; }
+      bulle(d.message || 'Le serveur ne répond pas.', true); break;
+    }
+  } catch (e) { bulle('Pas de réseau.', true); }
+  envoi = false; if (LOB && !S) salleAttente();
+}
+// une entrée d'équipe à partir d'un choix de l'accueil ('maelle' ou 'av:<id>')
+function entreeLobby(k) {
+  const id = 'e' + Math.random().toString(36).slice(2, 8);
+  if (k.startsWith('av:')) { const a = avTrouve(k.slice(3)); if (!a) return null; return { id, cle:k, owner:L.moi.id, nom:a.nom, img:avPortrait(a), sec:avPortraitSecours(a), c:a.couleur, m:versMoteur(k) }; }
+  return { id, cle:k, owner:L.moi.id, nom:H[k].n, img:`portraits/${k}.webp`, sec:`portraits/${k}.webp`, c:(H[k] || {}).c, m:{ g:k, B:typeof bonusHerosPvE === 'function' ? bonusHerosPvE(k) : { pv:0 } } };
+}
+const nomJoueur = id => (L.joueurs.find(j => j.id === id) || {}).nom || '?';
+function ajouteLobby(k) {
+  if (LOB.equipe.length >= 4) { bulle('4 héros au plus', true); return; }
+  const e = entreeLobby(k); if (!e) return; son('choisir');
+  lobbyPousse(X => { if (X.equipe.some(x => x.id === e.id)) return; if (X.equipe.some(x => x.owner === e.owner && x.cle === e.cle)) return; if (X.equipe.length < 4) X.equipe.push(e); });
+}
+function retireLobby(eid) { son('choisir'); lobbyPousse(X => { X.equipe = X.equipe.filter(x => x.id !== eid); }); }
+function choixScenLobby(scen, camp) { if (!estHote()) return; son('choisir'); lobbyPousse(X => { X.scen = scen; X.camp = camp == null ? null : camp; }); }
+function salleAttente() {
+  if (!L || !LOB) return;
+  const hote = estHote(), c = hote ? lireCamp() : null, titreScen = LOB.camp != null ? (LOB.camp === 'nouvelle' ? CHAPITRES[0].titre : (CHAPITRES[LOB.camp] || {}).titre) : SCX_TXT[LOB.scen].titre;
+  const pris = new Set(LOB.equipe.filter(e => e.owner === L.moi.id).map(e => e.cle));
+  const dispo = Object.keys(H).filter(k => !(k === 'zephine' && !ZEPH_OK())).map(k => [k, H[k].n, `portraits/${k}.webp`, `portraits/${k}.webp`]).concat(avLire().map(a => ['av:' + a.id, a.nom, avPortrait(a), avPortraitSecours(a)]));
+  const img = (s, sec, c) => `<img src="${s}" onerror="this.onerror=null;this.src='${sec}'" alt="" style="width:13cqw;height:13cqw;border-radius:50%;object-fit:cover;box-shadow:0 0 0 2px ${c || '#7cd4ff'}">`;
+  $('app').innerHTML = `<div class="acc">
+    <div class="haut"><button onclick="if(confirm('Quitter la salle ?')){quitterSalle();LOB=null;accueil()}">‹ Quitter</button><span class="t"></span><span></span></div>
+    <h1>🌐 Salle d’attente</h1>
+    <p class="sous">Code à donner à tes amis : <b style="color:var(--or);font-size:1.6em;letter-spacing:.15em">${L.code}</b><br>(perso.elvanys.fr/guilde → Les Chroniques → 🔑 Rejoindre avec un code)</p>
+    <h3 style="color:var(--or);margin:3cqw 0 1.5cqw">👥 Les joueurs</h3>
+    <p style="margin:0 0 2cqw">${L.joueurs.map(j => `${j.id === LOB.hote ? '👑 ' : '🙂 '}<b>${j.nom}</b>${j.id === L.moi.id ? ' (toi)' : ''}`).join(' · ')}</p>
+    <h3 style="color:var(--or);margin:3cqw 0 1.5cqw">📖 Le scénario${hote ? '' : ' <small style="color:var(--doux);font-weight:normal">(choisi par l’hôte)</small>'}</h3>
+    ${hote ? `<div class="choixH" style="grid-template-columns:1fr 1fr">${Object.entries(SCX_TXT).map(([k, s]) => `<button class="${LOB.camp == null && LOB.scen === k ? 'on' : ''}" onclick="choixScenLobby('${k}')" style="font-size:3.4cqw">${s.titre}<small>${s.duree}</small></button>`).join('')}
+      ${c ? `<button class="${LOB.camp === c.chap ? 'on' : ''}" onclick="choixScenLobby('${CHAPITRES[c.chap].scen}', ${c.chap})" style="font-size:3.4cqw">📜 Campagne · ${CHAPITRES[c.chap].titre}<small>la suite de ta campagne</small></button>`
+        : `<button class="${LOB.camp === 'nouvelle' ? 'on' : ''}" onclick="choixScenLobby('horloger', 'nouvelle')" style="font-size:3.4cqw">📜 Commencer la campagne<small>3 chapitres à la suite</small></button>`}</div>`
+      : `<p class="gros" style="text-align:center;padding:3cqw;border:1px solid #45457a;border-radius:3cqw">${titreScen}</p>`}
+    <h3 style="color:var(--or);margin:3cqw 0 1.5cqw">⚔ L’équipe (${LOB.equipe.length}/4)</h3>
+    ${LOB.equipe.length ? LOB.equipe.map(e => `<div style="display:flex;align-items:center;gap:3cqw;background:#1c1c36;border:1px solid ${e.owner === L.moi.id ? 'var(--ok)' : '#45457a'};border-radius:3cqw;padding:2cqw;margin:1.5cqw 0">${img(e.img, e.sec, e.c)}<div style="flex:1"><b>${e.nom}</b><br><small style="color:var(--doux)">${e.owner === L.moi.id ? '✅ joué par toi' : '👤 joué par ' + nomJoueur(e.owner)}</small></div>${e.owner === L.moi.id || hote ? `<button class="sec" style="flex:none;width:auto;margin:0" onclick="retireLobby('${e.id}')">Retirer</button>` : ''}</div>`).join('')
+      : '<p class="sous">Personne encore : chacun ajoute son héros ci-dessous.</p>'}
+    ${LOB.equipe.length < 4 ? `<h3 style="color:var(--or);margin:3cqw 0 1.5cqw">＋ Ajoute ton héros</h3>
+      <div class="choixH">${dispo.filter(([k]) => !pris.has(k)).map(([k, n, s, sec]) => `<button onclick="ajouteLobby('${k}')"><img src="${s}" onerror="this.onerror=null;this.src='${sec}'" alt="">${n}<small>${k.startsWith('av:') ? 'ton héros d’aventure' : 'héros de la Guilde'}</small></button>`).join('')}</div>` : ''}
+    ${hote ? `<button class="gros" style="margin-top:4cqw" ${LOB.equipe.length ? '' : 'disabled'} onclick="lanceSalle()">▶ Lancer la partie pour tout le monde<small>${LOB.equipe.length ? `${LOB.equipe.length} héros · ${titreScen}` : 'il faut au moins un héros'}</small></button>`
+      : `<p class="sous" style="margin-top:4cqw;font-size:1.05em">⏳ En attente du lancement par <b>${nomJoueur(LOB.hote)}</b>… La partie démarrera toute seule sur ton téléphone.</p>`}
+  </div>`;
+}
+// l'hôte lance : la partie est créée sur son téléphone et envoyée à tous
+async function lanceSalle() {
+  if (!estHote() || !LOB.equipe.length) return;
+  let chap = null;
+  if (LOB.camp === 'nouvelle') { ecrireCamp({ chap:0, equipe:[], sacs:{}, debut:Date.now() }); chap = 0; }
+  else if (LOB.camp != null) chap = LOB.camp;
+  const scen = chap != null ? CHAPITRES[chap].scen : LOB.scen, c = chap != null ? lireCamp() : null;
+  S = K.nouvelle(LOB.equipe.map(e => e.m), 'chron-' + Date.now(), scen);
+  S.hote = LOB.hote; S.equipeLob = LOB.equipe;
+  if (chap != null) { S.campagne = chap; S.heros.forEach((h, i) => { h.pvmax += 2 * chap; h.pv += 2 * chap; if (c && c.sacs[i]) h.sac = c.sacs[i].slice(); }); }
+  L.joueurs.forEach(j => { j.heros = LOB.equipe.map((e, i) => e.owner === j.id ? i : -1).filter(i => i >= 0); });
+  L.prises = []; LOB = null; pointDePassage(); actif = Math.max(0, mesHeros()[0] || 0); sel = null; centrer = true;
+  son('portail'); dessine(); await pousse();
+  dialogue(chap != null ? CHAPITRES[chap].titre : SCT().titre, [chap != null ? CHAPITRES[chap].avant : SCT().ouverture, SCT().entree()]);
+}
+// après une partie à distance, l'hôte ramène tout le monde dans la salle d'attente (même équipe, scénario à choisir)
+function retourSalle() {
+  if (!estHote() || !S) return; const c = lireCamp();
+  LOB = { scen:S.scen, camp:c ? c.chap : null, equipe:S.equipeLob || [], hote:S.hote }; S = null; fenetre(''); lobbyPousse();
+}
+
 function commence() {
   if (!choisis.length) return; S = K.nouvelle(equipeChoisie(), 'chron-' + Date.now(), scenChoisi); pointDePassage(); actif = 0; sel = null; centrer = true; son('portail'); dessine();
   dialogue(SCT().titre, [SCT().ouverture, SCT().entree()]);
@@ -581,6 +670,6 @@ function reprend() { const g = gardee(); if (!g) return; S = g; actif = Math.max
 if (typeof GM !== 'undefined') { try { GM.musique('exploration'); GM.bouton(); } catch (e) {} }
 accueil();
 </script>
-<script src="chroniques-aventures.js?v=20261115-171545"></script>
+<script src="chroniques-aventures.js?v=20261115-171900"></script>
 </body>
 </html>
