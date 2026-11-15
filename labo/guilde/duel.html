@@ -696,7 +696,7 @@
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
 // 14/11 : l'Odyssée sans fin a ses propres emplacements (odyssee.js lit SANSFIN)
 const SANSFIN = new URLSearchParams(location.search).get('sansfin') === '1', ROUTE_TITAN = new URLSearchParams(location.search).get('route') === '1', EPREUVE_PAGE = new URLSearchParams(location.search).get('epreuve') === '1', ODY_PAGE = EPREUVE_PAGE ? 'epreuves.html' : 'odyssee.html' + (SANSFIN ? '?sansfin=1' : ROUTE_TITAN ? '?route=1' : '');
-const VERSION = '20261115-211918';
+const VERSION = '20261115-212731';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -715,17 +715,17 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261115-211918"></script>
-<script src="musique.js?v=20261115-211918"></script>
-<script src="rang.js?v=20261115-211918"></script>
-<script src="heros-etoiles.js?v=20261115-211918"></script>
-<script src="heros-aventure.js?v=20261115-211918"></script>
-<script src="donnees.js?v=20261115-211918"></script>
-<script src="odyssee.js?v=20261115-211918"></script>
-<script src="bestiaire.js?v=20261115-211918"></script>
-<script src="aventure.js?v=20261115-211918"></script>
-<script src="odyssee-sansfin.js?v=20261115-211918"></script>
-<script src="chronique.js?v=20261115-211918"></script>
+<script src="cartes.js?v=20261115-212731"></script>
+<script src="musique.js?v=20261115-212731"></script>
+<script src="rang.js?v=20261115-212731"></script>
+<script src="heros-etoiles.js?v=20261115-212731"></script>
+<script src="heros-aventure.js?v=20261115-212731"></script>
+<script src="donnees.js?v=20261115-212731"></script>
+<script src="odyssee.js?v=20261115-212731"></script>
+<script src="bestiaire.js?v=20261115-212731"></script>
+<script src="aventure.js?v=20261115-212731"></script>
+<script src="odyssee-sansfin.js?v=20261115-212731"></script>
+<script src="chronique.js?v=20261115-212731"></script>
 <script>
 // =============================================================================================== moteur
 let S = null;
@@ -1391,7 +1391,10 @@ let blocageDepuis = 0;
 // était ignoré sans rien dire. Il est maintenant GARDÉ : le tour se termine tout seul dès que l'animation est finie (si c'est toujours mon tour).
 let finEnAttente = null;
 setInterval(() => { if (finEnAttente && S && !fxOn && !roule) { const qui = finEnAttente; finEnAttente = null; if (S.J === qui && !S.fini && finTourDe !== S) finDeMonTour(); } }, 150);
+// 15/11 soir (« obligé d'appuyer deux fois ») : l'appui se VOIT tout de suite (⏳), même si les animations de fin de tour durent quelques secondes
+function finVu() { const b = document.querySelector('.bas .b2'); if (b && S && !S.fini && !S.J.aLancer) b.textContent = '⏳ Fin du tour…'; }
 function finDeMonTour() {
+  finVu();
   if (!S.fini && fxOn && !S.J.aLancer && finTourDe !== S) { finEnAttente = S.J; }
   if (!S.fini && !roule && (finTourDe === S || (fxOn && !S.J.aLancer))) {
     if (!blocageDepuis) blocageDepuis = Date.now();
@@ -1705,7 +1708,7 @@ function front(P, haut) {
   const cote = haut ? 'O' : 'J';
   return `<div class="front${P.front.length ? '' : ' vide'}" id="f-${cote}">${P.front.map((u, i) => {
     const cls = [u.cachee ? 'cachee' : '', u.defense ? 'defense' : '', estCible({ J:P, u }) ? 'cible' : '', attaquant === u ? 'choisi' : '', !haut && u.pret ? 'pret' : '', !u.pret ? 'dort' : ''].join(' ');
-    const tags = [u.defense ? '🛡 EN DÉFENSE' : '', u.barriere ? 'Barrière' : '', u.cachee ? '👁 Cachée' : '', u.charge ? 'Charge' : '', u.epines ? `Épines ${u.epines}` : '', u.bouclier ? `🛡${u.bouclier}` : '', u.entrave ? 'Entravé' : '', u.louve && haut ? 'Louve' : '', !haut ? (u.pret ? (u.louve ? '🐺 touche-la !' : '⚔ prête') : '💤 repos') : ''].filter(Boolean).join(' · ');
+    const tags = [u.defense ? '🛡 EN DÉFENSE' : '', u.barriere ? 'Barrière' : '', u.cachee ? '👁 Cachée' : '', u.charge ? 'Charge' : '', u.epines ? `Épines ${u.epines}` : '', u.bouclier ? `🛡${u.bouclier}` : '', u.entrave ? 'Entravé' : '', u.louve && haut ? 'Louve' : '', !haut ? (u.pret ? (u.louve ? '🐺 touche-la !' : '⚔ prête') : '💤 repos') : S.vueDirect && !u.pret ? '💤 repos' : ''].filter(Boolean).join(' · ');
     if (haut && u.cachee) return `<div class="u mystere ${estCible({ J:P, u }) ? 'cible' : ''}" data-uid="${u.id}" onclick="touche({J:S.${cote},u:S.${cote}.front[${i}]})"><b>?</b><div class="tg">👁 Cachée</div><div class="av"><span>⚔ ?</span><span>❤ ?</span></div></div>`;
     const art = u.louve ? 'louve' : u.key, img = typeof ARTS !== 'undefined' && ARTS.includes(art) ? ` style="background:linear-gradient(#0000 30%, #000c 85%), url('cartes/${art}.webp?v=1') center 30%/cover;color:#fff"` : RENFORT_IMG[u.n] ? ` style="background:linear-gradient(#0000 30%, #000c 85%), url('portraits/${RENFORT_IMG[u.n]}.webp') center 25%/cover;color:#fff"` : '';
     return `<div class="u ${cls}${img ? ' illu' : ''}" data-uid="${u.id}"${img} onclick="touche({J:S.${cote},u:S.${cote}.front[${i}]})"><b class="${u.n.length > 9 ? 'long' : ''}">${u.n}</b><div class="tg">${tags}</div><div class="av"><span class="${atk(P, u) >= 10 ? 'n2' : ''}">⚔ ${atk(P, u)}</span><span class="${u.v >= 10 ? 'n2' : ''}">❤ ${u.v}</span></div></div>`;
@@ -1770,7 +1773,7 @@ function dessine() {
     ${S.ody && J.sacoche.length ? `<button class="b0" onclick="voirSacoche()" aria-label="Sacoche">🎒<sup>${J.sacoche.length}</sup></button>` : ''}
     ${S.ody && !J.sacrifie && J.pv > 10 && J.pc < 6 ? '<button class="b0" onclick="sacrifice()" aria-label="Sacrifice" title="Sacrifice : −10 PV, +2 PC">🩸</button>' : ''}
     <button class="b1" onclick="relancer()" ${sel.length && (J.relance || J.pc >= sel.length) ? '' : 'disabled style="opacity:.4"'}>🎲<span class="mot"> Relancer</span> <small class="nb">${J.relance ? `(${J.relance})` : '· 1 PC/dé'}</small></button>
-    <button class="b2" onclick="finDeMonTour()">Fin du tour ▶</button>
+    <button class="b2" onclick="finDeMonTour()">${finEnAttente || finTourDe === S || (S.deux && S.deuxFinFaite === S.J) ? '⏳ Fin du tour…' : 'Fin du tour ▶'}</button>
   </div>`;
   if (S.fini && !S.finPrevue) { S.finPrevue = true; setTimeout(montrerFin, 2200); } // 14/11 : 2,2 s pour voir les derniers dégâts avant la fenêtre de fin
   nomsDansPanneau();
@@ -2374,17 +2377,17 @@ async function joueFX() {
 // toucher l'écran pendant les animations les accélère
 document.addEventListener('pointerdown', () => { if (fxOn && !(S && S.tuto)) fxVite = .5; }, true); // 14/11 : plus d'accélération dans le tutoriel
 </script>
-<script src="profil.js?v=20261115-211918"></script>
-<script src="pantheon.js?v=20261115-211918"></script>
-<script src="tuto.js?v=20261115-211918"></script>
-<script src="deux.js?v=20261115-211918"></script>
+<script src="profil.js?v=20261115-212731"></script>
+<script src="pantheon.js?v=20261115-212731"></script>
+<script src="tuto.js?v=20261115-212731"></script>
+<script src="deux.js?v=20261115-212731"></script>
 <script>window.AMIS_SANS_BOUTON = true;</script>
-<script src="amis.js?v=20261115-211918"></script>
-<script src="duel-ligne.js?v=20261115-211918"></script>
-<script src="invasion.js?v=20261115-211918"></script>
-<script src="enigme-table.js?v=20261115-211918"></script>
-<script src="forge.js?v=20261115-211918"></script>
-<script src="semaine.js?v=20261115-211918"></script>
-<script src="enigme.js?v=20261115-211918"></script>
+<script src="amis.js?v=20261115-212731"></script>
+<script src="duel-ligne.js?v=20261115-212731"></script>
+<script src="invasion.js?v=20261115-212731"></script>
+<script src="enigme-table.js?v=20261115-212731"></script>
+<script src="forge.js?v=20261115-212731"></script>
+<script src="semaine.js?v=20261115-212731"></script>
+<script src="enigme.js?v=20261115-212731"></script>
 </body>
 </html>

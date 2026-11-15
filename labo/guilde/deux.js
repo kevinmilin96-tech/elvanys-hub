@@ -40,6 +40,7 @@ const _finDeMonTourDeux = finDeMonTour;
 finDeMonTour = function () {
   if (!S || !S.deux) return _finDeMonTourDeux();
   if (S.fini) return;
+  if (typeof finVu === 'function') finVu();
   if (roule || fxOn) { if (!S.deuxFinFaite || S.deuxFinFaite !== S.J) finEnAttente = S.J; return; } // 15/11 soir : appui gardé pendant une animation
   if (S.J.aLancer) { lancerMesDes(); return; }
   const J = S.J, pvAvant = S.O.pv; S.deuxFinFaite = J;

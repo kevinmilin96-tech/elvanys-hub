@@ -161,7 +161,7 @@ function dlAffiche() {
   const nouv = lignes.length - (dlVu || 0); dlVu = lignes.length;
   if (M.pv < (dlPvVu == null ? M.pv : dlPvVu)) { try { son('coup'); } catch (e) {} }
   dlPvVu = M.pv;
-  const vue = dlCopie(S); vue.J = vue.O; vue.O = dlCopie(S.J); vue.J.aLancer = false; vue.finPrevue = true;
+  const vue = dlCopie(S); vue.J = vue.O; vue.O = dlCopie(S.J); vue.J.aLancer = false; vue.finPrevue = true; vue.vueDirect = true;
   const vrai = S; S = vue; try { dessine(); } catch (e) { console.error(e); } finally { S = vrai; }
   document.getElementById('app').style.visibility = '';
   { const b = document.querySelector('#app .bandeau'); if (b) b.textContent = `⏳ ${J.qui} joue : regarde son tour en direct.`; // pas de consigne pour moi
