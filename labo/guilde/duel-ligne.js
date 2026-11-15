@@ -99,7 +99,7 @@ async function dlLance(premier) {
 }
 // ------------------------------------------------------------------ pendant la partie
 async function dlPousse() {
-  if (!DL || !S) return; if (dlEnvoi) { setTimeout(dlPousse, 300); return; } dlEnvoi = true;
+  if (!DL || !S || dlJoue) return; if (dlEnvoi) { setTimeout(dlPousse, 300); return; } dlEnvoi = true;
   try { for (let k = 0; k < 3; k++) {
       const { statut, d } = await dlApi('POST', `${DL_API}/${DL.code}`, { version:DL.version, etat:S, joueurs:DL.joueurs });
       if (statut === 200) { DL.version = d.version; break; }
@@ -108,7 +108,17 @@ async function dlPousse() {
   dlEnvoi = false;
 }
 function dlRecoit(d) {
-  if (!d || !d.etat) return; DL.version = d.version; if (d.joueurs) DL.joueurs = d.joueurs;
+  if (!d || !d.etat) return; if (dlJoue) { dlAttente = d; return; } // une animation de l'ami se joue : on attend qu'elle finisse
+  DL.version = d.version; if (d.joueurs) DL.joueurs = d.joueurs;
+  if (!d.etat.lobby && document.getElementById('dlDirect') && S && d.etat.manche === S.manche) {
+    const neuves = (d.etat.fxLog || []).filter(x => x.n > (dlFxVu == null ? Infinity : dlFxVu));
+    dlFxVu = Math.max(dlFxVu || 0, ...(d.etat.fxLog || []).map(x => x.n));
+    if (neuves.length) {
+      const vue = JSON.parse(JSON.stringify(d.etat)); const act = vue.J.joueur === DL.moi.id ? vue.O : vue.J, moi = act === vue.J ? vue.O : vue.J; vue.J = moi; vue.O = act;
+      // si le tour vient de passer de mon côté, les animations ont été notées quand l'ami était encore « J » : elles restent à inverser (c'est ce que fait dlInverse)
+      S = d.etat; DLOB = null; dlAttente = null; dlRejoue(neuves, vue); return;
+    }
+  } else if (d.etat.fxLog) dlFxVu = Math.max(dlFxVu || 0, ...d.etat.fxLog.map(x => x.n));
   if (d.etat.lobby) { DLOB = d.etat.lobby; S = null; dlSalle(); return; }
   const avant = S && S.manche; S = d.etat; DLOB = null;
   if (typeof FX !== 'undefined') { FX = []; fxApres = []; fxOn = false; }
@@ -173,7 +183,26 @@ function dlDirect() {
   dlDirectT = setTimeout(() => { dlDirectT = null; if (S && S.ligne && DL && dlMonTour() && !S.fini) dlPousse(); }, 1200);
 }
 const _renduLigne = rendu;
+// 15/11 soir (l'utilisateur : « je ne vois pas les animations des attaques ni des cartes jouées par l'adversaire ») : chaque animation
+// du joueur actif est notée dans la partie (S.fxLog, numérotée) ; l'ami la REJOUE sur son plateau, côtés inversés, avant de le redessiner.
+function dlNoteFX() {
+  if (!S || !S.ligne || !DL || !dlMonTour() || !FX.length) return;
+  S.fxLog = S.fxLog || []; S.fxSeq = S.fxSeq || 0;
+  FX.forEach(e => { if (e._n) return; e._n = ++S.fxSeq; try { if (e.t !== 'recap' && e.t !== 'desO') S.fxLog.push({ n:e._n, e:JSON.parse(JSON.stringify(e)) }); } catch (x) {} });
+  if (S.fxLog.length > 60) S.fxLog = S.fxLog.slice(-60);
+}
+const dlInverse = o => Array.isArray(o) ? o.map(dlInverse) : o && typeof o === 'object' ? Object.fromEntries(Object.entries(o).map(([k, v]) => [k, k === 's' && (v === 'J' || v === 'O') ? (v === 'J' ? 'O' : 'J') : dlInverse(v)])) : o;
+let dlFxVu = null, dlJoue = false, dlAttente = null;
+async function dlRejoue(liste, vue) {
+  dlJoue = true; const vrai = S; S = vue;
+  fxVite = localStorage.getItem('guilde-vitesse') === 'rapide' ? .7 : 1.4;
+  for (const x of liste) { try { await Promise.race([joue1(dlInverse(x.e)), new Promise(r => setTimeout(r, 7000))]); } catch (e) { console.error(e); } }
+  S = vrai; dlJoue = false;
+  if (dlAttente) { const d = dlAttente; dlAttente = null; dlRecoit(d); } else dlAffiche();
+}
 rendu = function () {
+  if (dlJoue) return; // pendant qu'on rejoue les animations de l'ami, S est une vue inversée : ni dessin ni envoi
+  dlNoteFX();
   if (S && S.ligne && DL && !S.fini && !dlMonTour()) { dlAffiche(); return; } // pendant le tour de l'ami : toujours le plateau vu de mon côté
   _renduLigne(); if (S && S.ligne && DL && !S.fini && dlMonTour()) dlDirect(); };
 (function () { if (typeof document === 'undefined') return; const st = document.createElement('style');
