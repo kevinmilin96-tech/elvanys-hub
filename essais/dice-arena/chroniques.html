@@ -222,6 +222,8 @@ const SCX = { ex:s => `${s.v}`, min:s => `≥ ${s.v}`, max:s => `≤ ${s.v}`, pa
 function sceauTxt(s, L) { if (s.ok) return s.t === 'tot' ? `Σ ${s.val}` : (s.val || '✓'); if (s.t === 'dbl') { const j = L.find(x => x !== s && x.t === 'dbl' && x.g === s.g && x.ok); return j ? `= ${j.val}` : '<small>jumeau</small>'; } return SCX[s.t](s); }
 const deSel = () => sel && S.heros[actif].des.find(d => d.id === sel);
 function dessine() {
+  if (S && !S.fin && !ordreOK() && !occupe && (!L || mesHeros().includes(0))) { initiative(); }
+  if (S && ordreOK()) actif = auTourDe();
   if (!S) return accueil();
   const R = S.R, h = S.heros[actif], d = deSel();
   const atteint = d && !h.aTerre ? K.atteignables(S, h, d.v) : {};
@@ -267,7 +269,7 @@ function dessine() {
     <div class="des" id="desH">${h.aTerre ? `<span class="aide">${nomH(h)} est à terre : un ami à côté peut le relever avec un dé.</span>` : h.des.length && !lanceOK(actif) ? h.des.map(() => `<button class="de cache" onclick="lanceDesH()"></button>`).join('') + `<button class="lancerH" onclick="lanceDesH()">🎲 Lancer</button>` : h.des.map(z => `<button class="de ${sel === z.id ? 'sel' : ''}" onclick="choisitDe('${z.id}')"><img src="faces-${h.id}/face-${z.v}.webp" alt="${z.v}"></button>`).join('') || '<span class="aide">Plus de dés pour ce héros : passe au suivant.</span>'}</div>
     ${!h.aTerre && h.sac && h.sac.length ? `<div class="sac">🎒 ${h.sac.map((it, k) => `<button onclick="utiliseSac(${k})">${K.SAC[it].e} ${K.SAC[it].n.replace(/^Une? /, '')}</button>`).join('')}</div>` : ''}
     <div class="aide">${d ? 'Touche une <b>case verte</b> pour bouger, un <b>monstre</b> pour frapper, un <b>meuble</b> pour le fouiller, un <b>ami</b> pour protéger / donner / soigner, un <b>levier</b>, le <b>livre</b> ou l’<b>axe</b>.' : `<b>${nomH(h)}</b> · ${H[h.id].t} : ${H[h.id].d} <br>Une <b>porte</b> à côté s’ouvre d’un toucher, sans dé.`}</div>
-    <div class="actions">${d ? '<button onclick="cherche()">🔍 Pièges</button>' : ''}<button class="fin" onclick="finTour()">Fin du tour ▶</button></div>
+    <div class="actions">${d ? '<button onclick="cherche()">🔍 Pièges</button>' : ''}<button class="fin" onclick="finTour()">${ordreOK() && S.ordre.k < S.ordre.l.length - 1 ? `Fin du tour de ${nomH(S.heros[auTourDe()])} ▶ ${nomH(S.heros[S.ordre.l[S.ordre.k + 1]])}` : 'Fin du tour ▶ les monstres'}</button></div>
     <div class="journal">${S.journal.slice(0, 6).map(l => `<div>${l}</div>`).join('')}</div>`;
   // la carte suit le héros actif (sauf si on vient de la déplacer à la main)
   const V = $('vue'), e = $(`c-${h.x}-${h.y}`);
@@ -294,7 +296,33 @@ function lanceDesH() {
   };
   tick();
 }
-function choisitHeros(i) { if (occupe) return; actif = i; sel = null; centrer = true; son('choisir'); dessine(); }
+// 15/11 soir (l'utilisateur : « Fin du tour doit passer au personnage suivant ; au début de chaque tour, chaque personnage lance un dé pour l'ordre ») :
+// L'ORDRE DU TOUR : au début de chaque tour, chaque héros debout lance un dé d'initiative (le plus haut joue en premier) ;
+// « Fin du tour » passe au héros suivant ; après le dernier, les monstres jouent.
+const ordreOK = () => S && S.ordre && S.ordre.t === S.tours;
+const auTourDe = () => ordreOK() ? S.ordre.l[S.ordre.k] : actif;
+function initiative() {
+  const debout = S.heros.map((z, i) => i).filter(i => !S.heros[i].aTerre);
+  const r = {}; debout.forEach(i => r[i] = 1 + Math.floor(Math.random() * 6));
+  const l = debout.slice().sort((a, b) => r[b] - r[a] || Math.random() - .5);
+  S.ordre = { t:S.tours, l, r, k:0 }; actif = l[0] != null ? l[0] : 0; centrer = true;
+  if (L && typeof pousse === 'function') pousse();
+  montreOrdre();
+}
+function montreOrdre() {
+  const l = S.ordre.l, r = S.ordre.r;
+  if (S.heros.length > 1) {
+    fenetre(`<h2>🎲 L’ordre du tour ${S.tours}</h2><p style="text-align:center;color:var(--doux)">Chaque héros a lancé un dé : le plus haut joue en premier.</p>
+      <div style="display:grid;gap:8px;margin:10px 0">${l.map((i, n) => `<div style="display:flex;align-items:center;gap:10px;background:#221d42;border-radius:12px;padding:6px 10px"><b style="color:var(--or);width:22px">${n + 1}.</b>${imgH(S.heros[i], 'style="width:40px;height:40px;border-radius:50%;object-fit:cover;flex:none"')}<span style="flex:1">${nomH(S.heros[i])}</span><img src="faces-${S.heros[i].id}/face-${r[i]}.webp" alt="${r[i]}" style="width:34px;height:34px;animation:tourneD .26s linear 3"></div>`).join('')}</div>
+      <button class="go" onclick="fenetre('')">${nomH(S.heros[l[0]])} commence !</button>`, false);
+    son('relance');
+  }
+}
+function choisitHeros(i) {
+  if (occupe) return;
+  if (ordreOK() && i !== auTourDe()) { bulle(`C’est au tour de ${nomH(S.heros[auTourDe()])}`, true); return; }
+  actif = i; sel = null; centrer = true; son('choisir'); dessine();
+}
 function choisitDe(id) { if (occupe || animeH || !lanceOK(actif)) return; if (L && !mesHeros().includes(actif)) { bulle(`${nomH(S.heros[actif])} est joué par ${proprio(actif) || 'personne'} : touche 🌐 pour le prendre.`, true); return; } sel = sel === id ? null : id; son('choisir'); dessine(); }
 function resultat(r) {
   if (r && r.ok) { sel = null;
@@ -348,7 +376,7 @@ function frappeMenu(m) {
     <div class="sceaux">${m.sceaux.map((s, k) => `<div class="sx ${s.ok ? 'ok' : K.accepte(s, d.v, m.sceaux) ? 'peut' : 'non'}" onclick="frappeSceau('${m.id}',${k})">${sceauTxt(s, m.sceaux)}</div>`).join('')}</div>
     <button class="sec" onclick="fenetre('')">Annuler</button>`);
 }
-function frappeSceau(id, k) { fenetre(''); const r = K.frapper(S, actif, sel, id, k); if (r && r.ok) { son('coup'); flash('j-' + id); } resultat(r); }
+function frappeSceau(id, k) { fenetre(''); const r = K.frapper(S, actif, sel, id, k); if (r && r.ok) { son('coup'); flash('j-' + id); if ((S.journal[0] || '').includes('Coup de forge')) setTimeout(() => bulle('🔨 Coup de forge : 2 sceaux d’un coup !'), 50); } resultat(r); }
 function amiMenu(i) {
   const h = S.heros[actif], z = S.heros[i], d = deSel(), moi = i === actif, b = [];
   if (z.aTerre) b.push(`<button class="sec" onclick="fenetre('');resultat(K.relever(S,actif,sel,${i}))">✋ Relever ${nomH(z)}<small>Il revient avec 4 PV.</small></button>`);
@@ -365,8 +393,18 @@ function infoMonstre(m) {
 }
 async function finTour() {
   if (occupe || !S || S.fin) return;
+  if (L && !mesHeros().includes(auTourDe())) { bulle(`C’est au tour de ${nomH(S.heros[auTourDe()])}`, true); return; }
+  // le héros suivant dans l'ordre du tour
+  if (ordreOK() && S.ordre.k < S.ordre.l.length - 1) {
+    const h = S.heros[auTourDe()], n = (h.des || []).length;
+    if (n && lanceOK(auTourDe()) && !confirm(`Il reste ${n} dé${n > 1 ? 's' : ''} à ${nomH(h)}. Passer au héros suivant ?`)) return;
+    S.ordre.k++; while (S.ordre.k < S.ordre.l.length - 1 && S.heros[S.ordre.l[S.ordre.k]].aTerre) S.ordre.k++;
+    actif = auTourDe(); sel = null; centrer = true; son('choisir'); bulle(`À ${nomH(S.heros[actif])} !`);
+    if (L && typeof pousse === 'function') pousse();
+    return dessine();
+  }
   const reste = S.heros.reduce((t, z) => t + z.des.length, 0);
-  if (reste && !confirm(`Il reste ${reste} dé${reste > 1 ? 's' : ''} pas posé${reste > 1 ? 's' : ''} dans le groupe. Finir le tour ?`)) return;
+  if (reste && !confirm(`Il reste ${reste} dé${reste > 1 ? 's' : ''} pas posé${reste > 1 ? 's' : ''} dans le groupe. Les monstres jouent ?`)) return;
   occupe = true; sel = null;
   const ev = K.finTour(S); dessine();
   for (const e of ev) {
@@ -395,7 +433,8 @@ function regles() {
     <li><b>Fouiller un meuble</b> à côté (🧰 🗄️ 🛢️ 🪦 🛠️ 🔥, un dé, une fois) : potion, or, sablier, objet… ou piège, ou monstre caché. <b>Quatre rouages ⚙ sont cachés</b> dans des meubles : il en faut trois.</li>
     <li><b>Les 4 leviers</b> de la Salle des rouages (chacun « tel chiffre ou plus », baissé 2 tours) ouvrent la <b>porte de bronze</b> du Cœur de l’Horloge. Posez-y les 3 rouages sur l’axe ✹ : l’Horloger se réveille.</li>
     <li><b>Un ami</b> (ou soi) : protéger, donner un dé (à côté), soigner (Pip), relever. <b>🔍 Pièges</b> : repère les pièges à 2 cases.</li>
-    <li><b>Fin du tour</b> : les monstres réveillés font ce qu’ils annoncent ; le <b>sablier</b> perd un grain (vide : un dé de moins pour tous). Le <b>Livre des heures</b> (bibliothèque, à deux) affaiblit l’Horloger.</li>
+    <li><b>L’ordre du tour</b> : au début de chaque tour, chaque héros lance un dé d’initiative ; le plus haut joue en premier. <b>Fin du tour</b> passe au héros suivant ; après le dernier, les monstres jouent.</li>
+    <li><b>Fin du tour</b> (après le dernier héros) : les monstres réveillés font ce qu’ils annoncent ; le <b>sablier</b> perd un grain (vide : un dé de moins pour tous). Le <b>Livre des heures</b> (bibliothèque, à deux) affaiblit l’Horloger.</li>
     <li>🗺 <b>Carte</b> : voir tout le donjon dévoilé. La partie est gardée ; si tout le groupe tombe, on repart du dernier point de passage (la dernière porte ouverte).</li></ol>
     <h3 style="color:var(--or)">Les héros</h3>${Object.entries(H).map(([k, h]) => `<p style="margin:4px 0"><b>${h.n}</b> · ${h.t} : ${h.d}</p>`).join('')}
     <button class="go" onclick="fenetre('')">Compris</button>`);
@@ -505,7 +544,7 @@ let DLG = null;
 function dialogue(titre, lignes, k = 0) {
   DLG = { titre, lignes }; const der = k >= lignes.length - 1;
   fenetre(`<h2>${titre}</h2>${lignes.slice(0, k + 1).map((l, i) => `<div class="moust" style="${i < k ? 'opacity:.55' : 'animation:apparait .35s'}"><img src="ui/moustache.webp" alt=""><div class="lu">${l}</div></div>`).join('')}
-    <button class="go" onclick="${der ? `fenetre('')` : `son('choisir');dialogue(DLG.titre, DLG.lignes, ${k + 1})`}">${der ? 'On y va !' : 'Suivant ▶'}</button>`, false);
+    <button class="go" onclick="${der ? `fenetre('');if(ordreOK())montreOrdre()` : `son('choisir');dialogue(DLG.titre, DLG.lignes, ${k + 1})`}">${der ? 'On y va !' : 'Suivant ▶'}</button>`, false);
 }
 function commence() {
   if (!choisis.length) return; S = K.nouvelle(equipeChoisie(), 'chron-' + Date.now(), scenChoisi); pointDePassage(); actif = 0; sel = null; centrer = true; son('portail'); dessine();
