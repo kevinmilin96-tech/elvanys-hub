@@ -110,9 +110,9 @@ function sceauxGardien(R, etage) {
 }
 // 15/11 soir (l'utilisateur : « le boss de la Descente, super simple, il est tombé en deux trois tours ») : un gardien peut avoir PLUSIEURS VIES ;
 // quand tous ses sceaux sont brisés, il se relève avec de nouveaux sceaux et frappe 1 de plus.
-function gardien(R, etage = 0, vies = 1) {
+function gardien(R, etage = 0, vies = 1, fsPlus = 0) {
   const [m, nom] = pick(R, GARDIENS);
-  return { id:'g', m, nom, niv:5, att:(vies > 1 ? 3 : 2) + Math.max(0, etage - 1), trait:'furie', gardien:true, vue:true, sceaux:sceauxGardien(R, etage), age:0, vies, viesMax:vies };
+  return { id:'g', m, nom, niv:5, att:(vies > 1 ? 3 : 2) + Math.max(0, etage - 1) + fsPlus, trait:'furie', gardien:true, vue:true, sceaux:sceauxGardien(R, etage), age:0, vies, viesMax:vies };
 }
 
 // ------------------------------------------------------------------ LA REJOUABILITÉ DU SOLITAIRE (15/11 soir, choix de l'utilisateur)
@@ -246,14 +246,21 @@ function intentions(S) {
 // bonus (optionnel) : ce que le héros apporte de sa progression (étoiles, équipement) : { pv, bouclier, relance, des }
 // opts (optionnel, la Descente) : { cols:[[niv du fond…, niv du dessus], …], gardien:'fin'|'seul'|false, etage, pv, pvmax, obj:{}, comp:{id,pv}, or,
 //   maitre:N (le Maître des cryptes arrive après N tours), couleur:chance de dé de couleur }
+// 15/11 soir : le suivi de la force du héros dans la Crypte (réglé au simulateur) : +SUIVI_FORCE de force par point de facteur au-dessus de 1,
+// +1 sceau par tranche de SUIVI_SCEAU (3 au plus)
+let SUIVI_FORCE = 0.75, SUIVI_SCEAU = 3; // simulateur : héros montés 87-89 % (débutant 82 %)
 function nouvelle(heros, graine, bonus = {}, opts = {}) {
   const R = rng(graine); let n = 0;
-  const etage = opts.etage || 0, plus = Math.max(0, etage - 1);
+  // 15/11 soir : les monstres suivent la force du héros (bonus.fs, voir heros-etoiles.js) : +1 de force par tranche de 0,5
+  const fsPlus = Math.max(0, Math.round(((bonus.fs || 1) - 1) * SUIVI_FORCE));
+  const etage = opts.etage || 0, plus = Math.max(0, etage - 1) + fsPlus;
   const cols = [];
   if (opts.gardien !== 'seul') {
     const plan = opts.cols || (opts.variante && VARIANTES[opts.variante] ? VARIANTES[opts.variante].plan : Array.from({ length:NB_COL }, () => [4, 3, 2, 1]));
     const fv = opts.variante && VARIANTES[opts.variante] ? VARIANTES[opts.variante].force || 0 : 0;
-    for (const p of plan) { const col = p.map(niv => carte(R, niv, n++, plus + (niv >= 3 ? fv : 0))); if (col.length) col[col.length - 1].vue = true; cols.push(col); }
+    // 15/11 soir : les monstres suivent aussi par leurs SCEAUX (un héros très monté a plus de dés) : +1 sceau par tranche de 1,5 de force, 3 au plus
+    const fsSceaux = Math.min(3, Math.floor(((bonus.fs || 1) - 1) / SUIVI_SCEAU));
+    for (const p of plan) { const col = p.map(niv => { const c = carte(R, niv, n++, plus + (niv >= 3 ? fv : 0)); for (let k = 0; k < fsSceaux; k++) c.sceaux.push(sceau('min', 3 + Math.min(2, niv >> 1))); return c; }); if (col.length) col[col.length - 1].vue = true; cols.push(col); }
     // 15/11 soir : des cartes spéciales cachées dans les colonnes (jamais au fond ni sur le dessus)
     if (opts.speciales) { const places = []; cols.forEach((col, i) => col.forEach((c, j) => { if (j > 0 && j < col.length - 1) places.push([i, j]); }));
       const sortes = ['coffre', 'autel', 'piege', 'coffre']; for (let k = 0; k < opts.speciales && places.length; k++) { const [i, j] = places.splice(Math.floor(R() * places.length), 1)[0]; places.forEach(q => { if (q[0] === i && q[1] >= j) q[1]++; }); cols[i].splice(j, 0, speciale(R, sortes[(k + Math.floor(R() * 3)) % sortes.length], n++)); } } // ajoutées EN PLUS des monstres (sinon la crypte devenait trop facile)
@@ -276,7 +283,8 @@ function nouvelle(heros, graine, bonus = {}, opts = {}) {
   if (rg === 'presse') S.maitre = Math.max(2, (S.maitre || 8) - 2);
   if (rg === 'lourd') { S.desPlus++; obj.forcePlus = (obj.forcePlus || 0) + 1; }
   if (rg === 'precis') { S.relanceBase = 0; S.runes = Math.min(RUNES_MAX, S.runes + 2); }
-  if (opts.gardien === 'seul') { S.gardien = gardien(R, etage, S.vies); S.gardien.it = 'frappe'; for (let k = 0; k < (obj.bossDur || 0); k++) S.gardien.sceaux.push(sceau('min', 4)); }
+  if (fsPlus) S.fsPlus = fsPlus;
+  if (opts.gardien === 'seul') { S.gardien = gardien(R, etage, S.vies, S.fsPlus || 0); S.gardien.it = 'frappe'; for (let k = 0; k < (obj.bossDur || 0); k++) S.gardien.sceaux.push(sceau('min', 4)); }
   if (obj.eliteDur) cols.forEach(col => col.forEach(c => { if (c.elite) c.sceaux.push(sceau('tot', 9)); }));
   if (obj.talisman) { S.pouvoir.slice(0, obj.talisman).forEach(brise); if (S.pouvoir.every(x => x.ok)) S.pret = true; } // 15/11 soir : tout brisé = prêt
   if (obj.entree) visibles(S).forEach(c => { const s = c.sceaux.find(x => !x.ok); if (s) brise(s); });
@@ -379,7 +387,7 @@ function verifie(S, c) {
   else if (col.length) { col[col.length - 1].vue = true; col[col.length - 1].it = col[col.length - 1].special && col[col.length - 1].special !== 'piege' ? 'rien' : 'frappe'; log(S, `🂠 Une carte se retourne : ${col[col.length - 1].nom}.`); }
   if (S.cols.every(k => !k.length)) {
     if (S.gardienMode === false) { S.fin = 'gagne'; S.score += 5 * S.pv; log(S, '🏆 La salle est vidée !'); return; }
-    S.gardien = gardien(RS(S), S.etage, S.vies); S.gardien.it = 'frappe'; log(S, `🔥 Les colonnes sont vides… ${S.gardien.nom} se réveille !`);
+    S.gardien = gardien(RS(S), S.etage, S.vies, S.fsPlus || 0); S.gardien.it = 'frappe'; log(S, `🔥 Les colonnes sont vides… ${S.gardien.nom} se réveille !`);
   }
 }
 // la Rune : brise n'importe quel sceau d'un monstre visible
@@ -446,7 +454,7 @@ function finTour(S) {
 // 15/11 soir : avec des défis, une étoile par défi réussi (victoire obligatoire) ; sinon l'ancienne règle (la Descente)
 const etoiles = S => S.fin !== 'gagne' ? 0 : S.defis ? defisEtat(S).filter(x => x.ok).length : 1 + (S.pv >= 12 ? 1 : 0) + (S.pv >= 25 ? 1 : 0);
 
-const API = { INTENTIONS, intentions, NB_DES, NB_COL, PROF, RESERVE, RUNES_MAX, PV_HEROS, SCEAU_TXT, TRAITS, POUVOIRS, COMPAGNONS, COULEURS,
+const API = { reglerSuivi:(f, sc) => { SUIVI_FORCE = f; SUIVI_SCEAU = sc; }, INTENTIONS, intentions, NB_DES, NB_COL, PROF, RESERVE, RUNES_MAX, PV_HEROS, SCEAU_TXT, TRAITS, POUVOIRS, COMPAGNONS, COULEURS,
   REGLES, regleDuJour, VARIANTES, varianteDuJour, SPECIALES, GAINS_COFFRE, DEFIS, defisEtat, CONSOS, conso, nouvelle, lancer, relancer, placer, rune, pouvoir, competence, finTour, visibles, menace, menaceComp, accepte, etoiles, trouve, force, silence, plafond, rng };
 if (typeof module !== 'undefined' && module.exports) module.exports = API; else racine.CRYPTE = API;
 })(typeof window !== 'undefined' ? window : globalThis);

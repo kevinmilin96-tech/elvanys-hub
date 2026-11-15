@@ -162,7 +162,9 @@ function records() { const r = lesRecords(); if (!r.length) return ''; const g =
 let modeSF = false;
 function demarre(h) { D = nouvelleDefense(h); D.sansFin = modeSF;
   // 15/11 : le système des héros : la porte gagne les PV du héros (niveau, rang, équipement), et ses PC de départ
-  if (typeof bonusHerosPvE === 'function') { const B = bonusHerosPvE(h); D.porte += B.pv; D.porteMax += B.pv; D.pc += B.pc; } sel = []; selTour = -1; attente = null; dis('Touche 🎲 Lancer, puis choisis des dés : bâtis une tour (touche une case verte) ou frappe un monstre.'); vagueAnnonce(); rendu(); }
+  // 15/11 soir : PAS de suivi des monstres ici (mesuré : la force vient des tours, pas du héros ; monstres ×2 = 0 % de victoires) ;
+  // le bonus de porte est plafonné à +20 (avec +81, la porte d'Aldric dépassait les 99 de dégâts du Titan : 100 % de victoires)
+  if (typeof bonusHerosPvE === 'function') { const B = bonusHerosPvE(h), bp = Math.min(20, B.pv); D.porte += bp; D.porteMax += bp; D.pc += B.pc; } sel = []; selTour = -1; attente = null; dis('Touche 🎲 Lancer, puis choisis des dés : bâtis une tour (touche une case verte) ou frappe un monstre.'); vagueAnnonce(); rendu(); }
 function dis(t, e) { msg = t; err = !!e; }
 function vagueAnnonce() { const v = D.fx.find(f => f.t === 'vague'); if (v) GM.son('vague'); if (v && CORBIN[v.n]) setTimeout(() => fenetre(`<h2>🌊 Vague ${v.n}${D.sansFin ? ' ♾' : ` sur ${VAGUES.length}`}</h2><div class="corbin">Moustache : « ${CORBIN[v.n]} »</div><div class="choixh"><button class="or" onclick="fermer()">À la porte !</button></div>`), 450); }
 

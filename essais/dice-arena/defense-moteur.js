@@ -277,7 +277,7 @@ function apparitionsD(D) {
   const V = D.vague < VAGUES.length ? VAGUES[D.vague] : vagueSansFin(D);
   if (D.pas === 0) { logD(D, `🌊 Vague ${D.vague + 1} sur ${VAGUES.length}${D.vague === VAGUES.length - 1 ? ' : le Titan de feu !' : ''}`); fxD(D, { t:'vague', n:D.vague + 1 }); D.degatsVague = 0; }
   const cols = melangeD([0, 1, 2], D.rng);
-  (V[D.pas] || []).forEach((t, i) => { const M = MONSTRES[t]; const pv = M.boss ? Math.round(M.pv * (1 + .6 * Math.floor(D.vague / 6))) : Math.round(M.pv * DEF.hpBase * Math.pow(DEF.hpVague, D.sansFin && D.vague >= VAGUES.length ? VAGUES.length - 1 + (D.vague - VAGUES.length + 1) * .6 : D.vague)); /* le boss a des PV fixes */ D.monstres.push({ id:++DID, t, pv, pvMax:pv, col:cols[i % 3], row:0 }); });
+  (V[D.pas] || []).forEach((t, i) => { const M = MONSTRES[t]; const pv = M.boss ? Math.round(M.pv * (1 + .6 * Math.floor(D.vague / 6))) : Math.round(M.pv * DEF.hpBase * Math.pow(DEF.hpVague, D.sansFin && D.vague >= VAGUES.length ? VAGUES.length - 1 + (D.vague - VAGUES.length + 1) * .6 : D.vague)); /* le boss a des PV fixes */ const pvF = Math.round(pv * (D.fs || 1)); /* 15/11 soir : × la force du héros */ D.monstres.push({ id:++DID, t, pv:pvF, pvMax:pvF, col:cols[i % 3], row:0 }); });
   D.pas++;
   if (D.pas >= V.length) { if (!D.degatsVague) D.sansDegats++; D.vague++; if (D.heros === 'aldric') D.porte = Math.min(D.porteMax, D.porte + REG.aldric.porteVague); if (typeof guildeEvt === 'function') guildeEvt('defense_vague', 1); D.pas = 0; D.repit = DEF.repit; if (D.vague < VAGUES.length || D.sansFin) D.choix = tirageBonus(D); }
 }

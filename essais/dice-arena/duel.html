@@ -1239,6 +1239,7 @@ function prepareCombatOdyssee(run, cb, auto) {
     // 14/11 nuit : sans fin, chaque tour complet des trois îles donne +25 % de vie aux ennemis ; le coffre piège est un monstre fort
     if (run.sansfin) { const f = Math.floor(((run.sansfin.etage || 1) - 1) / 3); if (f) { O.pvMax = Math.round(O.pvMax * (1 + .25 * f)); log(`🪜 Étage ${run.sansfin.etage} : ennemis +${25 * f} % de vie.`); } }
     if (run.epreuve && run.epreuve.force) { O.pvMax = Math.round(O.pvMax * run.epreuve.force); }
+    if (run.fs > 1.05 && !(run.epreuve && run.epreuve.chasse)) { O.pvMax = Math.round(O.pvMax * run.fs); log(`👹 L’ennemi suit ta force : vie ×${String(run.fs).replace('.', ',')}.`); } // 15/11 soir
     if (run.epreuve && run.epreuve.chasse) { O.pvMax = 999; S.chasse = run.epreuve.chasse; log(`🎯 Chasse : fais le plus de dégâts possible en ${run.epreuve.chasse} tours.`); }
     if (cb.mimique) { O.pvMax = Math.round(O.pvMax * 1.2); log('🗝 Le coffre avait des dents : c’était un monstre déguisé !'); }
     if (cb.grandDefi) log('🎯 Salle du défi : réussis le défi pour +90 or et une carte plus rare.');

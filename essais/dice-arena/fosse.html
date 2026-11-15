@@ -190,7 +190,7 @@ let J = null, cv, ctx, ech = 1, boucle = 0, dernierT = 0, choixH = lire().heros;
 function nouvelle(h) {
   const B = typeof bonusMode === 'function' ? bonusMode(h) : { pv:0, bouclier:0, relance:0, des:0 };
   const pvmax = PV0 + B.pv + B.bouclier;
-  J = { heros:h, pv:pvmax, pvmax, t:0, etat:'jeu', score:0, tues:0, xp:0, niv:1, besoin:5, lv:{}, balles:[], monstres:[], tirs:[], gemmes:[], capsules:[], eclats:[], textes:[],
+  J = { fs:1 /* 15/11 soir : suivi pas encore activé ici, à mesurer d'abord (sinon B.fs) */, heros:h, pv:pvmax, pvmax, t:0, etat:'jeu', score:0, tues:0, xp:0, niv:1, besoin:5, lv:{}, balles:[], monstres:[], tirs:[], gemmes:[], capsules:[], eclats:[], textes:[],
     raq:{ x:W / 2, w:70 + (h === 'aldric' ? 18 : 0) }, faces:[1, 2, 3, 4, 5, 6], perdus:[], pops:[], onde:0, prochainSpawn:1, foudreT:3, regenT:15, gardeT:0, boss:false, bossMort:false, tremble:0, effets:{}, fini:false };
   if (h === 'maelle') J.lv.force = 1; if (h === 'gorm') J.lv.multi = 1; if (h === 'oria') J.lv.aimant = 2; if (h === 'zephine') { J.lv.vitesse = 1; J.lv.cadence = 1; }
   J.lv.multi = (J.lv.multi || 0) + (B.des || 0) + (B.relance || 0);
@@ -217,7 +217,7 @@ function accSc(s, v) { return s.t === 'min' ? v >= s.v : s.t === 'max' ? v <= s.
 function scTxt(s) { return s.t === 'min' ? `≥${s.v}` : s.t === 'max' ? `≤${s.v}` : s.t === 'pair' ? 'pair' : s.t === 'imp' ? 'impair' : `=${s.v}`; }
 function tireSceau() { return Math.random() < .2 ? { t:'ex', v:1 + Math.floor(Math.random() * 6) } : Object.assign({}, pick(SC_TYPES)); }
 function ajoute(k, x, y) {
-  const M = MONSTRES[k], f = 1 + J.t / 240;
+  const M = MONSTRES[k], f = (1 + J.t / 240) * (J.fs || 1); // 15/11 soir : × la force du héros
   const sc = M.elite || (!M.boss && !M.essaim && J.t > 35 && Math.random() < Math.min(.4, .08 + J.t / 700)) ? tireSceau() : null;
   J.monstres.push({ k, x, y, r:M.r, pv:Math.round(M.pv * f), pvmax:Math.round(M.pv * f), v:M.v * (1 + J.t / 650), att:M.att, flash:0, brule:0, tirT:rnd(1.5, 3), etat:'descend', dx:0, sceau:sc, paliers:M.boss ? [.75, .5, .25] : M.mini ? [.66, .33] : null });
 }
