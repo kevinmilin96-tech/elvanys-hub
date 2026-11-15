@@ -8,7 +8,7 @@
 'use strict';
 const C = typeof module !== 'undefined' && module.exports ? require('./crypte-moteur.js') : racine.CRYPTE;
 
-const ETAPES = 6, ETAGES = 3;
+const ETAPES = 8, ETAGES = 3;
 function RR(R) { return () => { R.rs = (R.rs + 0x6D2B79F5) >>> 0; let t = R.rs; t = Math.imul(t ^ t >>> 15, t | 1); t ^= t + Math.imul(t ^ t >>> 7, t | 61); return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
 const pick = (h, l) => l[Math.floor(h() * l.length)];
 const melange = (h, l) => { const a = l.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(h() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
@@ -26,22 +26,22 @@ const SALLES = {
 
 // ------------------------------------------------------------------ les objets (permanents pour la descente ; les clés sont lues par crypte-moteur.js)
 const OBJETS = {
-  sac:      { e:'🎲', n:'Sac de dés', d:'+1 dé à chaque tour.', prix:20, rare:true, max:2 },
-  gobelet:  { e:'🥤', n:'Gobelet de relance', d:'+1 relance à chaque tour.', prix:14, max:2 },
-  besace:   { e:'🎒', n:'Grande besace', d:'+1 place dans ta besace.', prix:10, max:2 },
-  six:      { e:'6️⃣', n:'Six béni', d:'Chaque 6 posé sur un sceau te donne 1 bouclier.', prix:12, max:3 },
-  bourse:   { e:'👛', n:'Bourse jumelle', d:'Deux dés de même valeur posés dans le même tour : +1 or.', prix:8, max:3 },
-  aube:     { e:'🌅', n:'Fiole d’aube', d:'+4 bouclier au début de chaque combat.', prix:12, max:3 },
-  trophee:  { e:'🏆', n:'Trophée de chasse', d:'+3 PV après chaque combat gagné.', prix:12, max:3 },
-  prisme:   { e:'🔮', n:'Prisme', d:'Deux fois plus de dés de couleur.', prix:12, max:2 },
-  creusetor:{ e:'🔥', n:'Creuset doré', d:'Creuset plein : en plus de la Rune, +3 or et +3 bouclier.', prix:12, max:2 },
-  souffle:  { e:'🕯', n:'Dernier souffle', d:'Une fois dans la descente : quand ton héros tombe, il se relève à 10 PV.', prix:18, rare:true, max:1 },
-  entree:   { e:'🗡', n:'Lame d’entrée', d:'Au début de chaque combat, brise 1 sceau sur chaque monstre visible.', prix:16, rare:true, max:1 },
-  chaineor: { e:'⛓', n:'Chaîne d’or', d:'Chaque chaîne (2 monstres ou plus dans le même tour) : +2 or.', prix:10, max:2 },
-  aiguise:  { e:'🪨', n:'Pierre à aiguiser', d:'Tes dés valent +1 sur les sceaux « total ».', prix:12, max:2 },
-  rune:     { e:'✦', n:'Rune de départ', d:'Commence chaque combat avec 1 Rune.', prix:16, rare:true, max:2 },
-  talisman: { e:'🧿', n:'Talisman', d:'Ton pouvoir commence chaque combat avec 1 sceau déjà brisé.', prix:14, max:1 },
-  diable:   { e:'😈', n:'Marché du diable', d:'+1 dé à chaque tour, mais tous les monstres frappent 1 de plus.', prix:6, max:1 },
+  sac:      { e:'🎲', n:'Sac de dés', d:'+1 dé à chaque tour.', c:'+1 dé / tour', prix:20, rare:true, max:2 },
+  gobelet:  { e:'🥤', n:'Gobelet de relance', d:'+1 relance à chaque tour.', c:'+1 relance / tour', prix:14, max:2 },
+  besace:   { e:'🎒', n:'Grande besace', d:'+1 place dans ta besace.', c:'+1 place de besace', prix:10, max:2 },
+  six:      { e:'6️⃣', n:'Six béni', d:'Chaque 6 posé sur un sceau te donne 1 bouclier.', c:'un 6 posé = +1 🛡', prix:12, max:3 },
+  bourse:   { e:'👛', n:'Bourse jumelle', d:'Deux dés de même valeur posés dans le même tour : +1 or.', c:'paire posée = +1 🪙', prix:8, max:3 },
+  aube:     { e:'🌅', n:'Fiole d’aube', d:'+4 bouclier au début de chaque combat.', c:'+4 🛡 au début du combat', prix:12, max:3 },
+  trophee:  { e:'🏆', n:'Trophée de chasse', d:'+3 PV après chaque combat gagné.', c:'+3 PV après chaque victoire', prix:12, max:3 },
+  prisme:   { e:'🔮', n:'Prisme', d:'Deux fois plus de dés de couleur.', c:'2× plus de dés de couleur', prix:12, max:2 },
+  creusetor:{ e:'🔥', n:'Creuset doré', d:'Creuset plein : en plus de la Rune, +3 or et +3 bouclier.', c:'creuset plein = +3 🪙 +3 🛡', prix:12, max:2 },
+  souffle:  { e:'🕯', n:'Dernier souffle', d:'Une fois dans la descente : quand ton héros tombe, il se relève à 10 PV.', c:'se relève à 10 PV (1 fois)', prix:18, rare:true, max:1 },
+  entree:   { e:'🗡', n:'Lame d’entrée', d:'Au début de chaque combat, brise 1 sceau sur chaque monstre visible.', c:'1 sceau brisé par monstre au début', prix:16, rare:true, max:1 },
+  chaineor: { e:'⛓', n:'Chaîne d’or', d:'Chaque chaîne (2 monstres ou plus dans le même tour) : +2 or.', c:'chaîne = +2 🪙', prix:10, max:2 },
+  aiguise:  { e:'🪨', n:'Pierre à aiguiser', d:'Tes dés valent +1 sur les sceaux « total ».', c:'+1 sur les « total »', prix:12, max:2 },
+  rune:     { e:'✦', n:'Rune de départ', d:'Commence chaque combat avec 1 Rune.', c:'1 Rune au début du combat', prix:16, rare:true, max:2 },
+  talisman: { e:'🧿', n:'Talisman', d:'Ton pouvoir commence chaque combat avec 1 sceau déjà brisé.', c:'pouvoir : 1 sceau déjà brisé', prix:14, max:1 },
+  diable:   { e:'😈', n:'Marché du diable', d:'+1 dé à chaque tour, mais tous les monstres frappent 1 de plus.', c:'+1 dé, monstres +1 de force', prix:6, max:1 },
 };
 // ------------------------------------------------------------------ les breloques (gagnées sur les boss, gardées entre les descentes ; on en équipe une)
 const BRELOQUES = {
@@ -86,7 +86,7 @@ function donneObjet(R, h, rare) {
 function donneComp(R, h) {
   const k = pick(h, Object.keys(C.COMPAGNONS)); R.comp = { id:k, pv:C.COMPAGNONS[k].pv }; return `${C.COMPAGNONS[k].e} ${C.COMPAGNONS[k].n} te rejoint : ${C.COMPAGNONS[k].d}`;
 }
-const prix = (R, p) => Math.round(p * (R.breloque === 'remise' ? .75 : 1));
+const prix = (R, p) => Math.round(p * 1.4 * (R.breloque === 'remise' ? .75 : 1));
 
 // ------------------------------------------------------------------ une descente
 // bonus : la progression du héros (étoiles, équipement) ; opts : { breloque, pacte }
@@ -104,24 +104,27 @@ function nouvelle(heros, graine, bonus = {}, opts = {}) {
   tireChoix(R); return R;
 }
 // les 2-3 salles proposées à l'étape suivante
+// 15/11 soir (retour de l'utilisateur : « j'ai pu aller au boss sans un seul combat ») : les COMBATS sont obligatoires.
+// Un étage = 8 étapes : ⚔ ⚔ (repos) ⚔ ⚔ (repos) ⚔ (repos avant le boss) puis ♛. Aux étapes de combat, on choisit seulement
+// combat OU élite (plus dur, meilleure récompense) ; aux étapes de repos, 3 salles au choix sans combat (marchand, feu, événement, trésor).
+const PLAN = ['', 'c', 'c', 'r', 'c', 'c', 'r', 'c', 'r'];
 function tireChoix(R) {
   const h = RR(R), p = R.pas + 1;
   if (p > ETAPES) { R.choix = ['boss']; return; }
-  if (p === 1) { R.choix = ['combat', 'evenement']; return; }
-  const pool = ['combat', 'combat', 'combat', 'elite', 'evenement', 'evenement', 'tresor', 'marchand', 'feu'].filter(t => !(t === 'feu' && R.pacte === 'nuit')).filter(t => !(t === 'elite' && p < 3));
-  let ch = melange(h, pool).filter((t, i, a) => a.indexOf(t) === i).slice(0, 3);
-  if (p === ETAPES) { const repos = R.pacte === 'nuit' ? 'marchand' : pick(h, ['feu', 'marchand']); if (!ch.includes(repos)) ch[0] = repos; }
-  if (!ch.some(t => t === 'combat' || t === 'elite')) ch[ch.length - 1] = 'combat';
+  if (PLAN[p] === 'c') { R.choix = p === 1 ? ['combat'] : ['combat', 'elite']; return; }
+  const pool = ['marchand', 'feu', 'evenement', 'tresor'].filter(t => !(t === 'feu' && R.pacte === 'nuit'));
+  let ch = melange(h, pool).slice(0, 3);
+  if (p === ETAPES) { const repos = R.pacte === 'nuit' ? 'marchand' : 'feu'; if (!ch.includes(repos)) ch[0] = repos; if (!ch.includes('marchand')) ch[1] = 'marchand'; }
   R.choix = ch;
 }
 // les réglages du combat (pour CRYPTE.nouvelle)
 function optsCombat(R, type) {
   const h = RR(R), e = R.etage;
-  const niv = () => e === 1 ? pick(h, [1, 2, 2]) : e === 2 ? pick(h, [2, 2, 3, 3]) : pick(h, [2, 3, 3, 3]);
+  const niv = () => e === 1 ? pick(h, [1, 2, 2]) : e === 2 ? pick(h, [2, 2, 3, 3]) : pick(h, [2, 2, 3, 3]);
   let cols;
   if (type === 'boss') cols = null;
   else {
-    const n = [0, 5, 7, 8][e]; cols = [[], [], []];
+    const n = [0, 4, 6, 7][e]; cols = [[], [], []];
     for (let i = 0; i < n; i++) cols[i % 3].push(niv());
     cols.forEach(c => c.sort((a, b) => b - a)); // le plus fort au fond
     if (type === 'elite') cols[Math.floor(h() * 3)].unshift(4);
@@ -187,7 +190,7 @@ function apresCombat(R) {
   if (S.secoursUtilise) R.souffleUtilise = true;
   if (R.comp && S.comp) R.comp.pv = S.comp.pv;
   if (S.fin === 'perdu') { R.pv = 0; R.fin = 'perdu'; R.ecran = 'fin'; R.S = null; return true; }
-  R.pv = S.pv + 3 * (R.obj.trophee || 0); R.pv = Math.min(R.pv, R.pvmax);
+  R.pv = S.pv + 2 + 3 * (R.obj.trophee || 0); // on souffle un peu après chaque victoire (+2) R.pv = Math.min(R.pv, R.pvmax);
   const h = RR(R), t = R.salle.type;
   R.salle.texte = `Victoire ! +${S.orGagne} or ramassés.`;
   if (t === 'combat') R.salle.recomp = [{ t:'or', n:4 + 2 * R.etage }, { t:'soin', n:8 }, ...tireObjets(R, h, 1).map(k => ({ t:'objet', k }))];
