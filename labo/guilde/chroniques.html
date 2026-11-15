@@ -98,14 +98,14 @@
 <body>
 <div id="app"></div>
 <div id="fen"></div>
-<script src="musique.js?v=20261115-173927"></script>
-<script src="rang.js?v=20261115-173927"></script>
+<script src="musique.js?v=20261115-174322"></script>
+<script src="rang.js?v=20261115-174322"></script>
 <script>window.AMIS_SANS_BOUTON = true;</script>
-<script src="amis.js?v=20261115-173927"></script>
-<script src="heros-etoiles.js?v=20261115-173927"></script>
-<script src="progression-modes.js?v=20261115-173927"></script>
-<script src="aventuriers.js?v=20261115-173927"></script>
-<script src="chroniques-moteur.js?v=20261115-173927"></script>
+<script src="amis.js?v=20261115-174322"></script>
+<script src="heros-etoiles.js?v=20261115-174322"></script>
+<script src="progression-modes.js?v=20261115-174322"></script>
+<script src="aventuriers.js?v=20261115-174322"></script>
+<script src="chroniques-moteur.js?v=20261115-174322"></script>
 <script>
 // =============================================================================================== LES CHRONIQUES DE LA GUILDE v2 (15/11, écran « façon HeroQuest »)
 // Une grande carte qui défile : les salles restent dans le noir jusqu'à ce qu'on ouvre leur porte ; les couloirs se dévoilent en avançant ;
@@ -234,6 +234,7 @@ async function rejoindre(code, moi) {
   if (!moi) { const nom = (localStorage.getItem('guilde-pseudo') || 'Joueur').trim().slice(0, 24); if (!nom) return; localStorage.setItem('guilde-pseudo', nom); moi = { id:'j' + Math.random().toString(36).slice(2, 10), nom }; }
   try { const { statut, d } = await api('GET', `${API}/${code}`);
     if (statut !== 200) { bulle(d.message || 'Code inconnu.', true); return; }
+    if (d.mode === 'duel') { location.href = 'duel.html?salle=' + code; return; } // 15/11 : un code de duel
     L = { code, version:d.version, joueurs:d.joueurs || [], moi, dernier:'' };
     if (!L.joueurs.some(j => j.id === moi.id)) L.joueurs.push({ id:moi.id, nom:moi.nom, heros:[] });
     localStorage.setItem(SALLE, JSON.stringify({ code, moi }));
@@ -675,9 +676,10 @@ function reprend() { const g = gardee(); if (!g) return; S = g; actif = Math.max
 if (typeof GM !== 'undefined') { try { GM.musique('exploration'); GM.bouton(); } catch (e) {} }
 accueil();
 // 15/11 : arrivée par une invitation d'un ami (« Rejoindre » dans la fenêtre des amis ou le bandeau d'invitation)
+{ const q = new URLSearchParams(location.search); if (q.get('ligne')) { history.replaceState(null, '', location.pathname); creerSalle(); } else if (q.get('code')) { history.replaceState(null, '', location.pathname); rejoindreForm(); } }
 { const s = new URLSearchParams(location.search).get('salle'); if (s) { history.replaceState(null, '', location.pathname); const c = (typeof AMIS !== 'undefined' && AMIS.carte) || null, nom = (c && c.pseudo) || localStorage.getItem('guilde-pseudo');
     if (nom) rejoindre(s, { id:'j' + Math.random().toString(36).slice(2, 10), nom }); else { rejoindreForm(); setTimeout(() => { const i = $('fCode'); if (i) i.value = s; }, 150); } } }
 </script>
-<script src="chroniques-aventures.js?v=20261115-173927"></script>
+<script src="chroniques-aventures.js?v=20261115-174322"></script>
 </body>
 </html>
