@@ -90,12 +90,12 @@
 <body>
 <div id="app"></div>
 <div id="fen"></div>
-<script src="musique.js?v=20261115-155235"></script>
-<script src="rang.js?v=20261115-155235"></script>
-<script src="heros-etoiles.js?v=20261115-155235"></script>
-<script src="progression-modes.js?v=20261115-155235"></script>
-<script src="aventuriers.js?v=20261115-155235"></script>
-<script src="chroniques-moteur.js?v=20261115-155235"></script>
+<script src="musique.js?v=20261115-155418"></script>
+<script src="rang.js?v=20261115-155418"></script>
+<script src="heros-etoiles.js?v=20261115-155418"></script>
+<script src="progression-modes.js?v=20261115-155418"></script>
+<script src="aventuriers.js?v=20261115-155418"></script>
+<script src="chroniques-moteur.js?v=20261115-155418"></script>
 <script>
 // =============================================================================================== LES CHRONIQUES DE LA GUILDE v2 (15/11, écran « façon HeroQuest »)
 // Une grande carte qui défile : les salles restent dans le noir jusqu'à ce qu'on ouvre leur porte ; les couloirs se dévoilent en avançant ;
@@ -388,14 +388,59 @@ function finPartie() {
   if (gagne) { son('victoire'); try { GM.jingle('victoire'); } catch (e) {} S.heros.forEach(z => { if (typeof guildeEvt === 'function') guildeEvt('boss', 1, { heros:z.id }); }); objet = butinArmurerie(S.sablier > 0 ? 3 : 1, S.score);
     try { const D = JSON.parse(localStorage.getItem(CLE) || '{}'); D.horloger = (D.horloger || 0) + 1; if (S.sablier > 0) D.gardiens = true; localStorage.setItem(CLE, JSON.stringify(D)); } catch (e) {} }
   else { try { GM.jingle('defaite'); } catch (e) {} }
+  const campagne = gagne ? campagneGagnee() : '';
   fenetre(gagne ? `<h2>${SCT().gagne[0]}</h2><div class="moust"><img src="ui/moustache.webp" alt=""><div class="lu">${SCT().gagne[1]}</div></div>
       <p style="text-align:center">Score : <b style="color:var(--or)">${S.score}</b> · ${S.tours} tours · ⌛ ${S.sablier} grains${S.sablier > 0 ? '<br>🏅 Titre « <b>Gardiens du temps</b> » : le sablier n’est jamais tombé à zéro !' : ''}</p>
-      <p style="text-align:center">✨ Chaque héros gagne des éclats et de l’XP${objet ? ` · 🎒 <b>${objet}</b> rejoint l’armurerie` : ''}.</p><button class="go" onclick="fin()">Retour à la Guilde</button>`
+      <p style="text-align:center">✨ Chaque héros gagne des éclats et de l’XP${objet ? ` · 🎒 <b>${objet}</b> rejoint l’armurerie` : ''}.</p>${campagne}<button class="${campagne ? 'sec' : 'go'}" onclick="fin()">Retour à la Guilde</button>`
     : `<h2>❄ Figés…</h2><div class="moust"><img src="ui/moustache.webp" alt=""><div class="lu">« Figés. Tous. Comme des statues. Très jolies, d’ailleurs. L’Horloger vous remonte comme des jouets… On réessaie ? »</div></div>
       <button class="go" onclick="recommence()">↺ Repartir de la dernière porte ouverte</button><button class="sec" onclick="fin()">Abandonner</button>`, false);
 }
 function recommence() { if (!S.passage) { const h = S.heros.map(z => z.id); S = K.nouvelle(h, 'chron-' + Date.now(), S.scen); } else S = JSON.parse(S.passage); actif = 0; sel = null; centrer = true; fenetre(''); dessine(); }
 function fin() { try { localStorage.removeItem(CLE_PARTIE); } catch (e) {} if (L) quitterSalle(); S = null; fenetre(''); accueil(); }
+
+// ------------------------------------------------------------------ LA CAMPAGNE (15/11 soir, étape 4 de l'ordre validé) : les 3 scénarios à la suite,
+// la même équipe ; ce qui reste dans les sacs passe au chapitre suivant ; chaque chapitre gagné rend les héros plus solides (+2 PV max).
+const CLE_CAMP = 'guilde-campagne';
+const CHAPITRES = [
+  { scen:'horloger', titre:'Chapitre I · Le Sommeil de l’Horloger', avant:'« Tout commence ici : la Guilde est figée, le temps s’est arrêté. Une équipe, trois chapitres. Si on réveille l’Horloger, il paraît qu’il a quelque chose à nous dire… »' },
+  { scen:'brulees', titre:'Chapitre II · Les Terres brûlées', avant:'« L’Horloger s’est excusé, puis il a pointé le sud : “Le feu s’éteint sur l’île des Terres brûlées. Sans ses braises, plus rien ne chauffe, même pas mes rouages.” On reprend la barque. Gardez vos potions. »' },
+  { scen:'labyrinthe', titre:'Chapitre III · Le Labyrinthe des Runes', avant:'« Sous le grand brasier, le Titan gardait un escalier. Il descend vers un labyrinthe qui change de forme à chaque fois. Tout au fond, l’autel des runes. Dernier chapitre. Je viens avec vous… jusqu’à l’escalier. »' },
+];
+const lireCamp = () => { try { return JSON.parse(localStorage.getItem(CLE_CAMP) || 'null'); } catch (e) { return null; } };
+const ecrireCamp = c => { try { if (c) localStorage.setItem(CLE_CAMP, JSON.stringify(c)); else localStorage.removeItem(CLE_CAMP); } catch (e) {} };
+function campagneHTML() {
+  const c = lireCamp();
+  if (!c) return `<h3 style="color:var(--or);margin:4cqw 0 1.5cqw">📜 La Campagne</h3>
+    <button class="gros" style="background:#2a1a3a;border-color:#c084fc;color:#e6c8ff" ${choisis.length ? '' : 'disabled'} onclick="lanceCampagne()">📜 Commencer la campagne<small>Les 3 scénarios à la suite avec la même équipe (${choisis.map(nomChoix).join(', ') || 'choisis tes héros plus bas'}). Les objets du sac se gardent, et chaque chapitre gagné rend tes héros plus solides.</small></button>`;
+  const ch = CHAPITRES[c.chap];
+  return `<h3 style="color:var(--or);margin:4cqw 0 1.5cqw">📜 La Campagne · ${c.chap}/3 chapitres</h3>
+    <button class="gros" style="background:#2a1a3a;border-color:#c084fc;color:#e6c8ff" onclick="chapitre()">▶ ${ch.titre}<small>Équipe : ${c.equipe.map(nomChoix).join(', ')}${c.chap ? ` · +${2 * c.chap} PV max chacun` : ''}</small></button>
+    <button class="petit" style="display:block;margin:1cqw auto 0;background:none;border:0;color:var(--doux);font-size:3cqw;text-decoration:underline" onclick="if(confirm('Abandonner la campagne ?')){ecrireCamp(null);accueil()}">abandonner la campagne</button>`;
+}
+function lanceCampagne() { if (!choisis.length) return; ecrireCamp({ chap:0, equipe:choisis.slice(), sacs:{}, debut:Date.now() }); chapitre(); }
+function chapitre() {
+  const c = lireCamp(); if (!c) return; const ch = CHAPITRES[c.chap];
+  const eq = c.equipe.map(versMoteur).filter(Boolean); if (!eq.length) { bulle('Héros introuvables', true); return; }
+  S = K.nouvelle(eq, 'camp-' + c.debut + '-' + c.chap, ch.scen); S.campagne = c.chap;
+  S.heros.forEach((h, i) => { h.pvmax += 2 * c.chap; h.pv += 2 * c.chap; if (c.sacs[i]) h.sac = c.sacs[i].slice(); });
+  pointDePassage(); actif = 0; sel = null; centrer = true; son('portail'); dessine();
+  fenetre(`<h2>${ch.titre}</h2><div class="moust"><img src="ui/moustache.webp" alt=""><div class="lu">${ch.avant}</div></div><div class="moust"><img src="ui/moustache.webp" alt=""><div class="lu">${SCT().entree()}</div></div><button class="go" onclick="fenetre('')">On y va !</button>`, false);
+}
+// après une victoire de campagne : on garde les sacs, on passe au chapitre suivant
+function campagneGagnee() {
+  const c = lireCamp(); if (!c || S.campagne == null) return '';
+  c.sacs = {}; S.heros.forEach((h, i) => { if (h.sac && h.sac.length) c.sacs[i] = h.sac.slice(); });
+  c.chap = S.campagne + 1;
+  if (c.chap >= CHAPITRES.length) {
+    ecrireCamp(null);
+    try { const D = JSON.parse(localStorage.getItem(CLE) || '{}'); D.campagnes = (D.campagnes || 0) + 1; localStorage.setItem(CLE, JSON.stringify(D)); } catch (e) {}
+    if (typeof gagneXP === 'function') gagneXP(300, 'Campagne des Chroniques');
+    const o2 = butinArmurerie(3, Date.now());
+    return `<p style="text-align:center;font-size:1.1em">📜🏆 <b>LA CAMPAGNE EST FINIE !</b> Titre « <b>Héros des Chroniques</b> » · +300 XP${o2 ? ` · 🎒 <b>${o2}</b>` : ''}</p>`;
+  }
+  ecrireCamp(c);
+  return `<button class="go" onclick="fin();chapitre()">▶ ${CHAPITRES[c.chap].titre}</button>`;
+}
 
 // ------------------------------------------------------------------ l'accueil
 function accueil() {
@@ -414,6 +459,8 @@ function accueil() {
       <button onclick="location.href='aventuriers.html?retour=chroniques.html'">＋<small>Créer un héros dans la Forge des héros</small></button></div>
     <h3 style="color:var(--or);margin:3cqw 0 1.5cqw">Les héros de la Guilde</h3>
     <div class="choixH">${Object.entries(H).map(([k, h]) => `<button class="${choisis.includes(k) ? 'on' : ''}" ${k === 'zephine' && !ZEPH_OK() ? 'disabled' : ''} onclick="basculeHeros('${k}')"><img src="portraits/${k}.webp" alt="">${h.n}<small>${h.t}</small>${k === 'zephine' && !ZEPH_OK() ? '<small>🔒 tutoriel</small>' : ''}</button>`).join('')}</div>
+    ${campagneHTML()}
+    <h3 style="color:var(--or);margin:3cqw 0 1cqw">⚔ Une partie seule</h3>
     <button class="gros" ${choisis.length ? '' : 'disabled'} onclick="commence()">⚔ Commencer avec ${choisis.length} héros<small>${choisis.map(nomChoix).join(', ') || 'choisis au moins un héros'}</small></button>
     <h3 style="color:var(--or);text-align:center;margin:5cqw 0 1cqw">🌐 Chacun chez soi</h3>
     <button class="gros" style="background:#14223a;border-color:#7cd4ff;color:#7cd4ff" ${choisis.length ? '' : 'disabled'} onclick="creerSalle()">🌐 Créer une partie à distance<small>Avec les héros choisis ci-dessus ; un code de 4 lettres à donner à tes amis.</small></button>
