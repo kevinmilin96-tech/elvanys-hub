@@ -19,7 +19,7 @@
   .barre i { display:block; height:100%; transition:width .2s; } .vie i { background:linear-gradient(90deg, #ff3a1a, #ffb03a); } .xp i { background:linear-gradient(90deg, #4f8bff, #c084fc); }
   .zone { position:relative; flex:1; min-height:0; }
   canvas { position:absolute; inset:0; width:100%; height:100%; display:block; touch-action:none; }
-  .bas { padding:1cqw 2cqw 3cqw; min-height:9cqw; display:flex; flex-wrap:wrap; gap:1.2cqw; justify-content:center; font-size:3cqw; }
+  .bas { padding:1cqw 2cqw 3cqw; min-height:9cqw; max-height:12cqw; overflow-x:auto; overflow-y:hidden; display:flex; flex-wrap:nowrap; white-space:nowrap; flex-shrink:0; gap:1.2cqw; justify-content:center; font-size:3cqw; }
   .bas img { width:5.2cqw; height:5.2cqw; vertical-align:middle; } .bas .dern { border-color:var(--or); }
   .bas span { background:#1c2436; border:1px solid #3f5070; border-radius:2cqw; padding:.3cqw 1.4cqw; }
   .voile-f { position:fixed; inset:0; background:#000c; z-index:50; display:flex; align-items:center; justify-content:center; padding:4vw; }
@@ -49,10 +49,10 @@
 <body>
 <div id="app"></div>
 <div id="fen"></div>
-<script src="musique.js?v=20261115-143822"></script>
-<script src="rang.js?v=20261115-143822"></script>
-<script src="heros-etoiles.js?v=20261115-143822"></script>
-<script src="progression-modes.js?v=20261115-143822"></script>
+<script src="musique.js?v=20261115-144348"></script>
+<script src="rang.js?v=20261115-144348"></script>
+<script src="heros-etoiles.js?v=20261115-144348"></script>
+<script src="progression-modes.js?v=20261115-144348"></script>
 <script>
 // =============================================================================================== LA FOSSE AUX RUNES v3 (15/11) : SURVIE NERVEUSE façon Vampire Survivors
 // Retour de l'utilisateur sur la v2 (casse-briques, gardée dans fosse-v2.html) : « un casse-briques ordinaire, rien ne me met en difficulté,
@@ -144,7 +144,7 @@ function nouvelle(h) {
 const L = k => J.lv[k] || 0;
 const maxBalles = () => 2 + L('multi');
 const maxReserve = () => 3 + L('multi');
-function lancer() { if (!J || J.etat !== 'jeu' || J.reserve < 1) return; J.reserve--; J.aLancer = (J.aLancer || 0) + 1 + L('multi'); }
+function lancer() { if (!J || J.etat !== 'jeu' || J.reserve < 1) return; J.reserve--; J.lances = (J.lances || 0) + 1; J.aLancer = (J.aLancer || 0) + 1 + L('multi'); }
 const cadence = () => Math.max(.35, 1.6 * Math.pow(.85, L('cadence')));
 const vitBalle = () => 300 * (1 + .12 * L('vitesse'));
 const largeur = () => J.raq.w + 16 * L('large') + (J.effets.large ? 40 : 0);
@@ -316,6 +316,14 @@ function dessine() {
   // le bouclier et les orbes
   const lw = largeur(), raqY = H - 32, coul = HER[J.heros].c;
   ctx.save(); ctx.beginPath(); ctx.roundRect(J.raq.x - lw / 2, raqY, lw, 11, 6); const gr = ctx.createLinearGradient(0, raqY, 0, raqY + 11); gr.addColorStop(0, '#fff'); gr.addColorStop(1, coul); ctx.fillStyle = gr; ctx.shadowColor = coul; ctx.shadowBlur = 16; ctx.fill(); ctx.restore();
+  // 15/11 soir : les DÉS EN MAIN se voient sur le jeu (le prochain est posé sur le bouclier, les autres dans la barre du bas, le suivant se recharge)
+  const de = (x, y, s, al, lettre) => { ctx.globalAlpha = al; ctx.beginPath(); ctx.roundRect(x - s / 2, y - s / 2, s, s, s * .22); ctx.fillStyle = '#f6efe0'; ctx.fill(); ctx.strokeStyle = coul; ctx.lineWidth = 2; ctx.stroke(); ctx.fillStyle = '#2b1d0a'; ctx.font = `bold ${s * .62}px Georgia`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(lettre, x, y + 1); ctx.globalAlpha = 1; };
+  if (J.reserve > 0) de(J.raq.x, raqY - 11, 16, .95, '?');
+  ctx.font = 'bold 10px Georgia'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.fillStyle = '#f3c96b'; ctx.fillText('TES DÉS', 6, H - 10);
+  for (let i = 0; i < maxReserve(); i++) { const x = 66 + i * 20, y = H - 11; if (i < J.reserve) de(x, y, 15, 1, '?'); else { ctx.globalAlpha = .35; ctx.strokeStyle = '#f6efe0'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.roundRect(x - 7.5, y - 7.5, 15, 15, 3); ctx.stroke(); ctx.globalAlpha = 1;
+      if (i === J.reserve) { const k = 1 - Math.max(0, J.prochainLancer) / cadence(); ctx.strokeStyle = '#7cd4ff'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(x, y, 10, -Math.PI / 2, -Math.PI / 2 + k * Math.PI * 2); ctx.stroke(); } } }
+  if (J.lances < 3 || (J.reserve === maxReserve() && J.balles.length === 0 && J.t > 4)) { ctx.font = 'bold 15px Georgia'; ctx.textAlign = 'center'; ctx.fillStyle = '#000'; ctx.fillText('👆 Touche, clique ou Espace : lancer un dé', W / 2 + 1, H - 69); ctx.fillStyle = '#f3c96b'; ctx.fillText('👆 Touche, clique ou Espace : lancer un dé', W / 2, H - 70); }
+  ctx.textBaseline = 'alphabetic';
   for (let i = 0; i < L('orbe'); i++) { const a = J.t * 3 + i * Math.PI * 2 / L('orbe'); ctx.beginPath(); ctx.arc(J.raq.x + Math.cos(a) * (lw / 2 + 26), raqY - 20 + Math.sin(a) * 34, 7, 0, 7); ctx.fillStyle = '#c084fc'; ctx.shadowColor = '#c084fc'; ctx.shadowBlur = 12; ctx.fill(); ctx.shadowBlur = 0; }
   ctx.textAlign = 'center'; ctx.font = 'bold 13px Georgia';
   for (const t of J.textes) { ctx.globalAlpha = Math.min(1, t.v * 2); ctx.fillStyle = '#000'; ctx.fillText(t.t, t.x + 1, t.y + 1); ctx.fillStyle = t.c; ctx.fillText(t.t, t.x, t.y); }
@@ -328,7 +336,7 @@ function hud() {
   $('hT').textContent = J.boss ? (J.monstres.some(m => MONSTRES[m.k].boss) ? '🔥 Titan !' : `${Math.floor(reste / 60)}:${String(reste % 60).padStart(2, '0')}`) : `${Math.floor(reste / 60)}:${String(reste % 60).padStart(2, '0')}`;
   $('hPV').textContent = Math.max(0, J.pv); $('hN').textContent = J.niv; $('hS').textContent = J.score;
   $('hVie').style.width = Math.max(0, 100 * J.pv / J.pvmax) + '%'; $('hXP').style.width = Math.min(100, 100 * J.xp / J.besoin) + '%';
-  const c = combo(J.derniers), b = `<span class="faces">✋ ${'🎲'.repeat(J.reserve)}${'▫️'.repeat(Math.max(0, maxReserve() - J.reserve))}</span><span class="faces">🎲 ${J.faces.map(v => `<img src="faces-${J.heros}/face-${v}.webp" alt="${v}">`).join('')}</span>
+  const c = combo(J.derniers), b = `<span class="faces" title="Les 6 faces de ton dé : chaque lancer en tire une au hasard">🎲 faces ${J.faces.map(v => `<img src="faces-${J.heros}/face-${v}.webp" alt="${v}">`).join('')}</span>
     <span class="dern">${J.derniers.map(v => `<img src="faces-${J.heros}/face-${v}.webp" alt="${v}">`).join('') || '…'}${c ? ` <b style="color:var(--or)">${COMBOS[c].n}</b>` : ''}</span>`
     + Object.entries(J.lv).filter(([, n]) => n).map(([k, n]) => `<span>${AMELIO[k].e} ${n}</span>`).join('');
   if ($('bas').dataset.b !== b) { $('bas').innerHTML = b; $('bas').dataset.b = b; }
@@ -353,7 +361,7 @@ function pause() { if (!J || J.etat !== 'jeu') return; J.etat = 'pause'; fenetre
 function regles(enJeu) {
   if (enJeu && J && J.etat === 'jeu') J.etat = 'pause';
   fenetre(`<h2>🕳️ La Fosse aux Runes</h2><div class="moust"><img src="ui/moustache.webp" alt=""><p>« Ça grouille ! Bouge ton bouclier, ramasse les gemmes, et choisis bien tes améliorations. Moi je compte les secondes. Miaou. »</p></div>
-    <ol><li><b>Clique, touche l’écran ou appuie sur Espace pour lancer un dé</b> (tes dés en main ✋ se rechargent tout seuls) : chaque dé est une balle, sa valeur = ses dégâts. <b>Combinaisons</b> des derniers dés : 🎲🎲 paire = une balle en double, 💥 brelan = onde de choc sur tous les monstres, 🌠 suite = pluie d’éclats. Forge tes faces aux niveaux ! <b>Bouge la souris</b> (ou glisse le doigt, ou les flèches) pour bouger le bouclier et renvoyer les balles.</li>
+    <ol><li><b>D’où viennent tes dés ?</b> Tu as 3 dés en main (« TES DÉS », en bas à gauche) ; le prochain est posé sur ton bouclier. <b>Clique, touche l’écran ou appuie sur Espace</b> pour le lancer : il tire une de tes 6 faces au hasard (montrées dans la barre du bas) et part vers le haut. Chaque dé lancé revient tout seul dans ta main au bout de quelques secondes (le cercle bleu). Chaque dé est une balle, sa valeur = ses dégâts. <b>Combinaisons</b> des derniers dés : 🎲🎲 paire = une balle en double, 💥 brelan = onde de choc sur tous les monstres, 🌠 suite = pluie d’éclats. Forge tes faces aux niveaux ! <b>Bouge la souris</b> (ou glisse le doigt, ou les flèches) pour bouger le bouclier et renvoyer les balles.</li>
     <li>Les monstres descendent <b>de plus en plus vite</b> et <b>attaquent</b> : 🔥 les salamandres crachent du feu (évite-le !), 🐺 les loups plongent sur toi, 🪲 les scarabées arrivent en essaim, 🗿 les golems encaissent tout. S’ils touchent le rempart, tu perds des PV.</li>
     <li>Chaque monstre abattu lâche des <b>gemmes 💎</b> : ramasse-les avec ton bouclier. Barre bleue pleine = <b>un niveau : pause, choisis 1 amélioration parmi 3</b>.</li>
     <li>Les capsules dorées : ✦ trois balles de 6, ❄ tout ralentit, ❤ soin, 🛡 grand bouclier.</li>
