@@ -127,7 +127,7 @@ function dlRecoit(d) {
   if (!d || !d.etat) return; if (dlJoue) { dlAttente = d; return; } // une animation de l'ami se joue : on attend qu'elle finisse
   DL.version = d.version; if (d.joueurs) DL.joueurs = d.joueurs;
   if (!d.etat.lobby && document.getElementById('dlDirect') && S && d.etat.manche === S.manche) {
-    const neuves = (d.etat.fxLog || []).filter(x => x.n > (dlFxVu == null ? Infinity : dlFxVu));
+    const neuves = (d.etat.fxLog || []).filter(x => x.n > (dlFxVu == null ? Infinity : dlFxVu) && x.par !== DL.moi.id); // jamais mes propres animations (sinon, inversées, elles frappaient mes créatures)
     dlFxVu = Math.max(dlFxVu || 0, ...(d.etat.fxLog || []).map(x => x.n));
     if (neuves.length) {
       const vue = dlCopie(d.etat); const act = vue.J.joueur === DL.moi.id ? vue.O : vue.J, moi = act === vue.J ? vue.O : vue.J; vue.J = moi; vue.O = act;
@@ -204,7 +204,7 @@ const _renduLigne = rendu;
 function dlNoteFX() {
   if (!S || !S.ligne || !DL || !dlMonTour() || !FX.length) return;
   S.fxLog = S.fxLog || []; S.fxSeq = S.fxSeq || 0;
-  FX.forEach(e => { if (e._n) return; e._n = ++S.fxSeq; try { if (e.t !== 'recap' && e.t !== 'desO') S.fxLog.push({ n:e._n, e:dlCopie(e) }); } catch (x) {} });
+  FX.forEach(e => { if (e._n) return; e._n = ++S.fxSeq; try { if (e.t !== 'recap' && e.t !== 'desO') S.fxLog.push({ n:e._n, par:DL.moi.id, e:dlCopie(e) }); } catch (x) {} });
   if (S.fxLog.length > 60) S.fxLog = S.fxLog.slice(-60);
   dlFxVu = Math.max(dlFxVu || 0, S.fxSeq); // mes propres animations, je les ai déjà vues : jamais rejouées chez moi quand la partie me revient
 }
