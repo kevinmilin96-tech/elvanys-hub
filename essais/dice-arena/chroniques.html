@@ -117,6 +117,12 @@ const SCX_TXT = {
     porter:'Portez les braises jusqu’au grand brasier 🔥, tout en haut de la carte.',
     gagne:['🏆 Le Titan de feu s’éteint !', '« Le Titan vacille, fume, et s’effondre en un tas de braises tièdes. Les trois braises éternelles brillent au cœur du brasier : l’île est sauvée. Je peux sortir de la barque ? Il fait encore un peu chaud, non ? »'] },
 };
+SCX_TXT.labyrinthe = { titre:'✦ Le Labyrinthe des Runes', duree:'30-60 min · un donjon NEUF à chaque partie',
+  ouverture:'« Un escalier qui descend… et un labyrinthe que personne n’a jamais vu. Il change à chaque fois qu’on y entre, paraît-il. Trois fragments de rune dorment dans les meubles : rapportez-les à l’autel, tout au fond. Moi, je reste près de l’escalier. »',
+  entree:() => '« On ne voit que ce qui est en vue. Avancez prudemment : chaque labyrinthe est différent. »',
+  but:'Explorez (on ne voit que ce qui est en vue), fouillez les meubles (un dé) pour trouver <b>3 fragments de rune ✦</b>, puis portez-les à <b>l’autel des runes</b>, au fond du labyrinthe.',
+  porter:'Portez les fragments jusqu’à l’autel ✦, au fond du labyrinthe.',
+  gagne:['🏆 Le Titan des runes s’effondre !', '« Le Titan se fige, puis tombe en poussière de pierre. Les fragments brillent sur l’autel : le labyrinthe se tait. Pour cette fois. Demain, il aura encore changé de forme. On revient ? »'] };
 const SCT = () => SCX_TXT[(S && S.scen) || scenChoisi];
 
 // ------------------------------------------------------------------ sauvegarde : tout l'état ; un POINT DE PASSAGE à chaque porte ouverte
