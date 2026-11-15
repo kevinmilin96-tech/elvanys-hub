@@ -60,6 +60,13 @@ const PACTES = {
   verre: { e:'🥀', n:'Pacte de verre', d:'+1 dé à chaque tour, mais ton héros n’a que 70 % de sa vie.', score:1.25 },
   nuit:  { e:'🌑', n:'Pacte de la nuit', d:'Trois fois plus de dés de couleur, mais plus aucun feu de camp.', score:1.2 },
 };
+// ------------------------------------------------------------------ LA PROFONDEUR (15/11 soir) : chaque descente gagnée ouvre un niveau plus dur (comme l'Ascension).
+// Les difficultés s'additionnent ; le score est multiplié par 1 + 0,1 × profondeur.
+const PROFONDEURS = [
+  '', 'Les boss frappent 1 de plus.', 'Le marchand est 20 % plus cher.', 'Ton héros commence avec 5 PV de moins.', 'Le Maître des cryptes arrive 1 tour plus tôt.',
+  'Les élites ont 1 sceau de plus.', 'Les monstres lâchent moins d’or.', 'Aux étages 2 et 3, tous les monstres frappent 1 de plus.', 'Plus de +2 PV après une victoire.',
+  'Moitié moins de dés de couleur.', 'Les boss ont 2 sceaux de plus.',
+];
 // ------------------------------------------------------------------ les événements
 const EVENEMENTS = {
   fontaine: { e:'⛲', n:'La fontaine aux souhaits', t:'Une fontaine de pierre murmure. On voit des pièces au fond… et elles brillent un peu trop.',
@@ -86,16 +93,17 @@ function donneObjet(R, h, rare) {
 function donneComp(R, h) {
   const k = pick(h, Object.keys(C.COMPAGNONS)); R.comp = { id:k, pv:C.COMPAGNONS[k].pv }; return `${C.COMPAGNONS[k].e} ${C.COMPAGNONS[k].n} te rejoint : ${C.COMPAGNONS[k].d}`;
 }
-const prix = (R, p) => Math.round(p * 1.4 * (R.breloque === 'remise' ? .75 : 1));
+const prix = (R, p) => Math.round(p * 1.4 * (R.breloque === 'remise' ? .75 : 1) * (R.prof >= 2 ? 1.2 : 1));
 
 // ------------------------------------------------------------------ une descente
 // bonus : la progression du héros (étoiles, équipement) ; opts : { breloque, pacte }
 function nouvelle(heros, graine, bonus = {}, opts = {}) {
   const R = { heros, graine, rs:0, etage:1, pas:0, pvmax:C.PV_HEROS + (bonus.pv || 0), pv:0, or:0, obj:{}, comp:null, bonus,
-    breloque:opts.breloque || null, pacte:opts.pacte || null, ecran:'carte', choix:[], salle:null, S:null, fin:null, score:0, journal:[], combats:0, chemin:[], souffleUtilise:false };
+    breloque:opts.breloque || null, pacte:opts.pacte || null, prof:Math.max(0, Math.min(10, opts.profondeur || 0)), ecran:'carte', choix:[], salle:null, S:null, fin:null, score:0, journal:[], combats:0, chemin:[], souffleUtilise:false };
   const h0 = C.rng(graine); R.rs = Math.floor(h0() * 4294967296); const h = RR(R);
   if (R.breloque === 'coeur') R.pvmax += 10;
   if (R.pacte === 'verre') { R.pvmax = Math.round(R.pvmax * .7); R.obj.sac = 1; }
+  if (R.prof >= 3) R.pvmax -= 5;
   R.pv = R.pvmax;
   if (R.breloque === 'bourse') R.or += 20;
   if (R.pacte === 'sang') R.or += 25;
@@ -134,8 +142,13 @@ function optsCombat(R, type) {
   if (R.breloque === 'rune') obj.rune = (obj.rune || 0) + 1;
   if (R.breloque === 'prisme') obj.prisme = (obj.prisme || 0) + 1;
   if (R.pacte === 'sang') obj.pactesang = 1;
+  if (R.prof >= 1 && type === 'boss') obj.forcePlus = (obj.forcePlus || 0) + 1;
+  if (R.prof >= 7 && e >= 2) obj.forcePlus = (obj.forcePlus || 0) + 1;
+  if (R.prof >= 5 && type === 'elite') obj.eliteDur = 1;
+  if (R.prof >= 6) obj.moinsOr = 1;
+  if (R.prof >= 10 && type === 'boss') obj.bossDur = 2;
   return { cols, gardien:type === 'boss' ? 'seul' : false, etage:e, pv:R.pv, pvmax:R.pvmax, obj, comp:R.comp && R.comp.pv > 0 ? R.comp : null, or:R.or,
-    maitre:type === 'boss' ? 9 : type === 'elite' ? 7 : 6, couleur:.08 * (R.pacte === 'nuit' ? 3 : 1), secours:!!R.obj.souffle && !R.souffleUtilise };
+    maitre:(type === 'boss' ? 9 : type === 'elite' ? 7 : 6) - (R.prof >= 4 ? 1 : 0), couleur:.08 * (R.pacte === 'nuit' ? 3 : 1) * (R.prof >= 9 ? .5 : 1), secours:!!R.obj.souffle && !R.souffleUtilise };
 }
 // choisir la salle k parmi les choix ; pour un combat, R.S est la crypte à jouer (écran de combat de crypte.html)
 function choisir(R, k) {
@@ -190,7 +203,7 @@ function apresCombat(R) {
   if (S.secoursUtilise) R.souffleUtilise = true;
   if (R.comp && S.comp) R.comp.pv = S.comp.pv;
   if (S.fin === 'perdu') { R.pv = 0; R.fin = 'perdu'; R.ecran = 'fin'; R.S = null; return true; }
-  R.pv = S.pv + 2 + 3 * (R.obj.trophee || 0); // on souffle un peu après chaque victoire (+2) R.pv = Math.min(R.pv, R.pvmax);
+  R.pv = S.pv + (R.prof >= 8 ? 0 : 2) + 3 * (R.obj.trophee || 0); R.pv = Math.min(R.pv, R.pvmax); // on souffle un peu après chaque victoire (+2)
   const h = RR(R), t = R.salle.type;
   R.salle.texte = `Victoire ! +${S.orGagne} or ramassés.`;
   if (t === 'combat') R.salle.recomp = [{ t:'or', n:4 + 2 * R.etage }, { t:'soin', n:8 }, ...tireObjets(R, h, 1).map(k => ({ t:'objet', k }))];
@@ -209,13 +222,13 @@ function recompense(R, k) {
 // passer à l'étape suivante (ou à l'étage suivant, ou à la victoire)
 function suite(R) {
   if (R.salle && R.salle.type === 'boss') {
-    if (R.etage >= ETAGES) { R.fin = 'gagne'; R.ecran = 'fin'; R.score = Math.round((R.score + 50 * R.pv + 10 * R.or) * (R.pacte ? PACTES[R.pacte].score : 1)); return true; }
+    if (R.etage >= ETAGES) { R.fin = 'gagne'; R.ecran = 'fin'; R.score = Math.round((R.score + 50 * R.pv + 10 * R.or) * (R.pacte ? PACTES[R.pacte].score : 1) * (1 + .1 * R.prof)); return true; }
     R.etage++; R.pas = 0;
   }
   R.salle = null; R.ecran = 'carte'; tireChoix(R); return true;
 }
 const etoiles = R => R.fin !== 'gagne' ? 0 : 1 + (R.pv >= R.pvmax * .3 ? 1 : 0) + (R.pv >= R.pvmax * .6 ? 1 : 0);
 
-const API = { ETAPES, ETAGES, SALLES, OBJETS, BRELOQUES, PACTES, EVENEMENTS, nouvelle, choisir, acheter, feu, evenement, apresCombat, recompense, suite, etoiles, prix };
+const API = { PROFONDEURS, ETAPES, ETAGES, SALLES, OBJETS, BRELOQUES, PACTES, EVENEMENTS, nouvelle, choisir, acheter, feu, evenement, apresCombat, recompense, suite, etoiles, prix };
 if (typeof module !== 'undefined' && module.exports) module.exports = API; else racine.DESCENTE = API;
 })(typeof window !== 'undefined' ? window : globalThis);

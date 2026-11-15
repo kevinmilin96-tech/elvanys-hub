@@ -154,7 +154,7 @@ function intention(S, c) {
 // la force d'un monstre ce tour-ci (chef, meneur, maître, marché du diable)
 function force(S, c, V) {
   V = V || visibles(S);
-  let f = c.att + V.filter(x => x !== c && x.trait === 'chef').length + (S.obj && S.obj.diable ? 1 : 0) + (S.obj && S.obj.pactesang ? 1 : 0);
+  let f = c.att + V.filter(x => x !== c && x.trait === 'chef').length + (S.obj && S.obj.diable ? 1 : 0) + (S.obj && S.obj.pactesang ? 1 : 0) + (S.obj && S.obj.forcePlus || 0);
   if (!S.gardien) { const i = V.indexOf(c), col = k => V[k]; [i - 1, i + 1].forEach(k => { if (col(k) && col(k).trait === 'voisins') f++; }); }
   return f * (c.double ? 2 : 1);
 }
@@ -187,7 +187,8 @@ function nouvelle(heros, graine, bonus = {}, opts = {}) {
     comp:opts.comp && COMPAGNONS[opts.comp.id] ? { id:opts.comp.id, pv:opts.comp.pv, pvmax:COMPAGNONS[opts.comp.id].pv, sceaux:COMPAGNONS[opts.comp.id].s(), pret:false } : null,
     secours:!!opts.secours, paires:{} };
   if (S.couleur && obj.prisme) S.couleur *= 1 + obj.prisme;
-  if (opts.gardien === 'seul') { S.gardien = gardien(R, etage); S.gardien.it = 'frappe'; }
+  if (opts.gardien === 'seul') { S.gardien = gardien(R, etage); S.gardien.it = 'frappe'; for (let k = 0; k < (obj.bossDur || 0); k++) S.gardien.sceaux.push(sceau('min', 4)); }
+  if (obj.eliteDur) cols.forEach(col => col.forEach(c => { if (c.elite) c.sceaux.push(sceau('tot', 9)); }));
   if (obj.talisman) S.pouvoir.slice(0, obj.talisman).forEach(brise);
   if (obj.entree) visibles(S).forEach(c => { const s = c.sceaux.find(x => !x.ok); if (s) brise(s); });
   debutTour(S); return S;
@@ -265,7 +266,7 @@ function verifie(S, c) {
   S.chaine++; S.chaineMax = Math.max(S.chaineMax, S.chaine); S.tombes++;
   const gain = 10 * c.niv * S.chaine; S.score += gain;
   log(S, `💀 ${c.nom} tombe${S.chaine > 1 ? ` · chaîne ×${S.chaine}` : ''} (+${gain}).`);
-  gagneOr(S, c.gardien ? 8 + 4 * S.etage : c.elite ? 5 : c.niv >= 3 ? 2 : 1);
+  gagneOr(S, S.obj.moinsOr ? (c.gardien ? 6 + 3 * S.etage : c.elite ? 3 : 1) : c.gardien ? 8 + 4 * S.etage : c.elite ? 5 : c.niv >= 3 ? 2 : 1);
   if (S.chaine >= 2 && S.obj.chaineor) gagneOr(S, 2 * S.obj.chaineor, 'chaîne d’or');
   if (c.trait === 'rancune') { degats(S, c.att); log(S, `💢 Rancune : ${c.nom} frappe en tombant (${c.att}).`); }
   if (c.trait === 'tresor') { const vides = S.creuset.map((x, k) => x ? -1 : k).filter(k => k >= 0); if (vides.length) { S.creuset[pick(RS(S), vides)] = true; log(S, '💎 Trésor : une case du creuset se remplit.');
