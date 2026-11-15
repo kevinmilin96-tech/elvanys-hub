@@ -39,9 +39,10 @@ function deuxGo() { fermer(); document.getElementById('app').style.visibility = 
 const _finDeMonTourDeux = finDeMonTour;
 finDeMonTour = function () {
   if (!S || !S.deux) return _finDeMonTourDeux();
-  if (S.fini || roule || fxOn) return;
+  if (S.fini) return;
+  if (roule || fxOn) { if (!S.deuxFinFaite || S.deuxFinFaite !== S.J) finEnAttente = S.J; return; } // 15/11 soir : appui gardé pendant une animation
   if (S.J.aLancer) { lancerMesDes(); return; }
-  const J = S.J, pvAvant = S.O.pv;
+  const J = S.J, pvAvant = S.O.pv; S.deuxFinFaite = J;
   const libres = J.des.filter(d => !d.pose);
   if (libres.length) pose(J, 'vendre', libres);
   attaquesRestantes(J); if (S.fini) { rendu(); return; }
@@ -49,7 +50,7 @@ finDeMonTour = function () {
   const perdu = pvAvant - S.O.pv;
   S.deuxResume = perdu > 0 ? `Pendant le tour de ${J.nom}, tu as perdu ${perdu} ❤.` : '';
   rendu();
-  fxApres.push(() => { const t = S.J; S.J = S.O; S.O = t; FX = []; debutTour(S.J); deuxPasse(false); });
+  fxApres.push(() => { const t = S.J; S.J = S.O; S.O = t; FX = []; S.deuxFinFaite = null; finEnAttente = null; debutTour(S.J); deuxPasse(false); });
 };
 // la fin : on annonce le gagnant par son nom (S.fini est vu du joueur du bas)
 const _montrerFinDeux = montrerFin;
