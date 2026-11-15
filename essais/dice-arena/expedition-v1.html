@@ -59,10 +59,10 @@
 <body>
 <div id="app"></div>
 <div id="fen"></div>
-<script src="cartes.js?v=20261115-222748"></script>
-<script src="donnees.js?v=20261115-222748"></script>
-<script src="odyssee.js?v=20261115-222748"></script>
-<script src="chronique.js?v=20261115-222748"></script>
+<script src="cartes.js?v=20261115-222834"></script>
+<script src="donnees.js?v=20261115-222834"></script>
+<script src="odyssee.js?v=20261115-222834"></script>
+<script src="chronique.js?v=20261115-222834"></script>
 <script>
 // =============================================================================================== LES EXPÉDITIONS (10/11 soir) — l'auto-battler du navire volant
 // Proposé par Claude, à valider : on forme un ÉQUIPAGE (son héros + jusqu'à 4 créatures recrutées parmi les créatures des cartes du jeu) et on le regarde
@@ -225,6 +225,6 @@ const lireRec = () => { try { return JSON.parse(localStorage.getItem(CLE + '-rec
 function records() { const l = lireRec(); fenetre(`<h2>🏆 Mes expéditions (${l.length})</h2>${l.length ? `<table>${l.map(r => `<tr><td>${r.gagne ? '🏆' : '💀'} ${new Date(r.quand).toLocaleDateString('fr-FR')} · ${HEROS[r.heros].nom} · ${r.escales} escale${r.escales > 1 ? 's' : ''}</td><td>${r.score}</td></tr>`).join('')}</table>` : '<p>Aucune expédition finie.</p>'}<div class="choixh"><button onclick="fermer()">Fermer</button></div>`); }
 accueil();
 </script>
-<script src="musique.js?v=1"></script>
+<script src="musique.js?v=outil2"></script>
 </body>
 </html>
