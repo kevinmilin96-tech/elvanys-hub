@@ -4,6 +4,9 @@
 const D = DESCENTE;
 const CLE_D = 'guilde-descente', CLE_DP = 'guilde-descente-partie';
 let DR = null, choixPacte = null;
+// 15/11 soir : une image (si elle existe déjà : prompts.html) sinon l'émoji
+const ico = (src, e, cl = 'ico') => `<img class="${cl}" src="${src}" alt="" onerror="this.outerHTML='${e}'">`;
+const icoObj = k => ico(`objets/objet-${k}.webp`, D.OBJETS[k].e), icoBrel = k => ico(`objets/brel-${k}.webp`, D.BRELOQUES[k].e), icoComp = k => ico(`portraits/comp-${k}.webp`, C.COMPAGNONS[k].e, 'ico rond');
 const lireD = () => { try { return Object.assign({ parties:0, victoires:0, meilleur:0, breloques:{}, equipee:null, etageMax:0 }, JSON.parse(localStorage.getItem(CLE_D) || '{}')); } catch (e) { return { parties:0, victoires:0, meilleur:0, breloques:{}, equipee:null, etageMax:0 }; } };
 const ecrireD = d => { try { localStorage.setItem(CLE_D, JSON.stringify(d)); } catch (e) {} };
 function sauveD() { try { if (DR && !DR.fin) localStorage.setItem(CLE_DP, JSON.stringify(DR)); else localStorage.removeItem(CLE_DP); } catch (e) {} }
@@ -41,6 +44,7 @@ function descenteGardee() { try { const p = JSON.parse(localStorage.getItem(CLE_
   .maitre { text-align:center; color:#ff9a7a; font-size:3cqw; margin:1cqw 0; }
   .objets-c { display:flex; flex-wrap:wrap; gap:1cqw; justify-content:center; margin:1.4cqw 0 0; font-size:3.6cqw; }
   .objets-c span { background:#1d1934; border:1px solid #3a3260; border-radius:1.6cqw; padding:.2cqw 1cqw; }
+  .ico { width:1.25em; height:1.25em; object-fit:contain; vertical-align:middle; } .ico.rond { border-radius:50%; object-fit:cover; }
   .breloques { display:grid; grid-template-columns:repeat(2, 1fr); gap:2cqw; }
   .breloques button { border-radius:3cqw; padding:2cqw; border:1.5px solid #4b4580; background:#221d42; text-align:left; font-size:3cqw; }
   .breloques button.on { border-color:var(--or); background:#3a2f12; } .breloques button b { color:var(--or); display:block; font-size:3.4cqw; }
@@ -60,20 +64,22 @@ function descenteAccueil() {
     <div class="heros">${Object.entries(HER).map(([k, h]) => `<button class="${choixH === k ? 'on' : ''}" ${k === 'zephine' && !ZEPH_OK() ? 'disabled' : ''} onclick="choixH='${k}';descenteAccueil()"><img src="portraits/${k}.webp" alt="">${h.n}${k === 'zephine' && !ZEPH_OK() ? '<br>🔒 tutoriel' : ''}</button>`).join('')}</div>
     <div class="pv-h">⚡ <b>${C.POUVOIRS[choixH].n}</b> : ${C.POUVOIRS[choixH].d}<br>✨ ${texteBonus(choixH)}</div>
     <h3 style="color:var(--or);margin:3cqw 0 1.5cqw">🔮 Ta breloque <small style="color:var(--doux);font-weight:normal">(gagnées sur les boss, elles restent)</small></h3>
-    ${mesB.length ? `<div class="breloques"><button class="${!E.equipee ? 'on' : ''}" onclick="equipe(null)"><b>Aucune</b>Descendre les mains vides.</button>${mesB.map(k => `<button class="${E.equipee === k ? 'on' : ''}" onclick="equipe('${k}')"><b>${D.BRELOQUES[k].e} ${D.BRELOQUES[k].n}</b>${D.BRELOQUES[k].d}</button>`).join('')}</div>` : '<p class="pv-h">Pas encore de breloque : bats un boss d’étage pour en gagner une.</p>'}
+    ${mesB.length ? `<div class="breloques"><button class="${!E.equipee ? 'on' : ''}" onclick="equipe(null)"><b>Aucune</b>Descendre les mains vides.</button>${mesB.map(k => `<button class="${E.equipee === k ? 'on' : ''}" onclick="equipe('${k}')"><b>${icoBrel(k)} ${D.BRELOQUES[k].n}</b>${D.BRELOQUES[k].d}</button>`).join('')}</div>` : '<p class="pv-h">Pas encore de breloque : bats un boss d’étage pour en gagner une.</p>'}
     <h3 style="color:var(--or);margin:3cqw 0 1.5cqw">🩸 Un pacte ? <small style="color:var(--doux);font-weight:normal">(plus dur, plus de points)</small></h3>
     <div class="breloques"><button class="${!choixPacte ? 'on' : ''}" onclick="choixPacte=null;descenteAccueil()"><b>Pas de pacte</b>La descente normale.</button>${Object.entries(D.PACTES).map(([k, p]) => `<button class="${choixPacte === k ? 'on' : ''}" onclick="choixPacte='${k}';descenteAccueil()"><b>${p.e} ${p.n}</b>${p.d} <i>Score ×${p.score}</i></button>`).join('')}</div>
     <div class="choix">
       ${descenteGardee() ? `<button onclick="reprendDescente()" style="border-color:var(--ok);color:var(--ok);background:#163a2a">▶ Reprendre ta descente<small>${HER[descenteGardee().heros].n} · étage ${descenteGardee().etage} · ❤ ${descenteGardee().S ? descenteGardee().S.pv : descenteGardee().pv}</small></button>` : ''}
-      <button onclick="lanceDescente()">🗺️ Commencer la descente<small>${descenteGardee() ? 'Attention : ta descente en cours sera abandonnée.' : '3 étages · 6 salles + le boss par étage.'}</small></button>
+      <button onclick="lanceDescente(true)">📅 La descente du jour<small>La même pour tout le monde aujourd’hui (salles, monstres, marchand). ${(E.jours || {})[jour()] ? `Ton record du jour : ${E.jours[jour()].score} ${'★'.repeat(E.jours[jour()].etoiles)}${E.jours[jour()].etage ? ' · étage ' + E.jours[jour()].etage : ''}` : 'Pas encore tentée.'}${descenteGardee() ? ' (ta descente en cours sera abandonnée)' : ''}</small></button>
+      <button class="b2" onclick="lanceDescente(false)">🗺️ Une descente au hasard<small>${descenteGardee() ? 'Attention : ta descente en cours sera abandonnée.' : '3 étages · 6 salles + le boss par étage.'}</small></button>
     </div>
     <p class="record">Meilleur score : ${E.meilleur} · ${E.victoires} victoire${E.victoires > 1 ? 's' : ''} sur ${E.parties} · étage le plus profond : ${E.etageMax || '—'}</p>
   </div>`;
 }
 function equipe(k) { const E = lireD(); E.equipee = k; ecrireD(E); descenteAccueil(); }
-function lanceDescente() {
+function lanceDescente(duJ) {
   const E = lireD(); const L = lire(); L.heros = choixH; ecrire(L);
-  DR = D.nouvelle(choixH, 'descente-' + Date.now() + Math.random(), bonusMode(choixH), { breloque:E.equipee, pacte:choixPacte });
+  DR = D.nouvelle(choixH, duJ ? 'descente-jour-' + jour() : 'descente-' + Date.now() + Math.random(), bonusMode(choixH), { breloque:E.equipee, pacte:choixPacte });
+  DR.duJour = !!duJ;
   son('melange'); descenteEcran();
   if (!localStorage.getItem('guilde-descente-guide')) { localStorage.setItem('guilde-descente-guide', '1'); descenteRegles(); }
 }
@@ -86,7 +92,7 @@ function descenteEcran() {
   if (DR.ecran === 'combat') { S = DR.S; S.des.forEach(d => d.neuf = true); C.visibles(S).forEach(c => c.neuve = true); sel = null; mode = null; return dessine(); }
   S = null;
   const tete = `<div class="haut"><a href="#" onclick="if(confirm('Quitter ? Ta descente est gardée, tu pourras la reprendre.')){DR=null;descenteAccueil()}return false">‹ Quitter</a><span class="titre">🗺️ Étage ${DR.etage} · salle ${Math.min(DR.pas + (DR.ecran === 'carte' ? 1 : 0), D.ETAPES + 1)}/${D.ETAPES + 1}</span><button onclick="descenteRegles()">❓</button></div>
-    <div class="ressources"><span>❤ <b>${DR.pv}</b>/${DR.pvmax}</span><span>🪙 <b>${DR.or}</b></span>${DR.comp ? `<span>${C.COMPAGNONS[DR.comp.id].e} <b>${DR.comp.pv}</b>/${C.COMPAGNONS[DR.comp.id].pv}</span>` : ''}${DR.breloque ? `<span>${D.BRELOQUES[DR.breloque].e}</span>` : ''}${DR.pacte ? `<span>${D.PACTES[DR.pacte].e}</span>` : ''}</div>
+    <div class="ressources"><span>❤ <b>${DR.pv}</b>/${DR.pvmax}</span><span>🪙 <b>${DR.or}</b></span>${DR.comp ? `<span>${icoComp(DR.comp.id)} <b>${DR.comp.pv}</b>/${C.COMPAGNONS[DR.comp.id].pv}</span>` : ''}${DR.breloque ? `<span>${icoBrel(DR.breloque)}</span>` : ''}${DR.pacte ? `<span>${D.PACTES[DR.pacte].e}</span>` : ''}</div>
     ${sacHTML()}`;
   let corps = '';
   if (DR.ecran === 'carte') {
@@ -95,7 +101,7 @@ function descenteEcran() {
       <div class="salles">${DR.choix.map((t, k) => `<button class="${t === 'boss' ? 'boss' : ''}" onclick="allerSalle(${k})"><span class="e">${D.SALLES[t].e}</span><span><b>${D.SALLES[t].n}</b><small>${D.SALLES[t].d}</small></span></button>`).join('')}</div>`;
   }
   if (DR.ecran === 'marchand') {
-    const lig = x => x.t === 'objet' ? [D.OBJETS[x.k].e, D.OBJETS[x.k].n, D.OBJETS[x.k].d] : x.t === 'comp' ? [C.COMPAGNONS[x.k].e, 'Compagnon : ' + C.COMPAGNONS[x.k].n, `${C.COMPAGNONS[x.k].pv} PV · ${C.COMPAGNONS[x.k].d}`] : x.t === 'reparer' ? ['🩹', 'Soigner ton compagnon', 'Sa vie redevient pleine.'] : ['🍖', `Un bon repas (+${x.n} PV)`, 'À volonté, tant que tu as de l’or.'];
+    const lig = x => x.t === 'objet' ? [icoObj(x.k), D.OBJETS[x.k].n, D.OBJETS[x.k].d] : x.t === 'comp' ? [icoComp(x.k), 'Compagnon : ' + C.COMPAGNONS[x.k].n, `${C.COMPAGNONS[x.k].pv} PV · ${C.COMPAGNONS[x.k].d}`] : x.t === 'reparer' ? ['🩹', 'Soigner ton compagnon', 'Sa vie redevient pleine.'] : ['🍖', `Un bon repas (+${x.n} PV)`, 'À volonté, tant que tu as de l’or.'];
     corps = `<div class="moust"><img src="ui/moustache.webp" alt=""><p>« Un marchand… dans une crypte ? Bon. Ne me demande pas d’où viennent ses objets. »</p></div>
       <div class="etal">${DR.salle.etal.map((x, i) => { const [e, n, d] = lig(x); return `<button class="${x.vendu ? 'vendu' : ''}" ${x.vendu || DR.or < x.prix ? 'disabled' : ''} onclick="acheteD(${i})"><span class="e">${e}</span><span><b>${n}</b><small>${d}</small></span><span class="p">🪙 ${x.prix}</span></button>`; }).join('')}</div>
       <button class="grosbtn" onclick="D.suite(DR);son('choisir');descenteEcran()">Continuer la descente ▶</button>`;
@@ -111,7 +117,7 @@ function descenteEcran() {
       <div class="salles">${E.choix.map((c, k) => `<button ${c.si && !c.si(DR) ? 'disabled style="opacity:.35"' : ''} onclick="evenementD(${k})"><span class="e">▸</span><span><b>${c.n}</b></span></button>`).join('')}</div>`; }
   if (DR.ecran === 'recompense') {
     const r = DR.salle.recomp || [];
-    const lig = x => x.t === 'or' ? ['🪙', `+${x.n} pièces d’or`, ''] : x.t === 'soin' ? ['❤', `+${x.n} PV`, ''] : x.t === 'objet' ? [D.OBJETS[x.k].e, D.OBJETS[x.k].n, D.OBJETS[x.k].d] : [D.BRELOQUES[x.k].e, 'Breloque : ' + D.BRELOQUES[x.k].n, D.BRELOQUES[x.k].d + ' (elle reste pour tes prochaines descentes)'];
+    const lig = x => x.t === 'or' ? ['🪙', `+${x.n} pièces d’or`, ''] : x.t === 'soin' ? ['❤', `+${x.n} PV`, ''] : x.t === 'objet' ? [icoObj(x.k), D.OBJETS[x.k].n, D.OBJETS[x.k].d] : [icoBrel(x.k), 'Breloque : ' + D.BRELOQUES[x.k].n, D.BRELOQUES[x.k].d + ' (elle reste pour tes prochaines descentes)'];
     corps = `<p class="pv-h" style="font-size:3.6cqw;text-align:center">${DR.salle.texte || ''}</p>
       ${r.length ? `<h3 style="text-align:center;color:var(--or)">${DR.salle.type === 'boss' ? '♛ Choisis une breloque' : r.length > 1 ? 'Choisis ta récompense' : 'Ta récompense'}</h3>
       <div class="etal">${r.map((x, k) => { const [e, n, d] = lig(x); return `<button onclick="prendD(${k})"><span class="e">${e}</span><span><b>${n}</b><small>${d}</small></span><span class="p">Prendre</span></button>`; }).join('')}</div>` : ''}
@@ -122,7 +128,7 @@ function descenteEcran() {
 }
 function sacHTML() {
   const o = Object.entries(DR.obj).filter(([k, n]) => n && D.OBJETS[k]);
-  return o.length ? `<div class="sac">${o.map(([k, n]) => `<span onclick="bulle('${D.OBJETS[k].n}')" title="${D.OBJETS[k].d}">${D.OBJETS[k].e}${n > 1 ? '×' + n : ''}</span>`).join('')}</div>` : '';
+  return o.length ? `<div class="sac">${o.map(([k, n]) => `<span onclick="bulle('${D.OBJETS[k].n}')" title="${D.OBJETS[k].d}">${icoObj(k)}${n > 1 ? '×' + n : ''}</span>`).join('')}</div>` : '';
 }
 function allerSalle(k) {
   const t = DR.choix[k]; if (!D.choisir(DR, k)) return;
@@ -148,7 +154,9 @@ function descenteFinCombat() {
 }
 function descenteFin() {
   const E = lireD(), gagne = DR.fin === 'gagne', et = D.etoiles(DR);
-  E.parties++; if (gagne) E.victoires++; E.meilleur = Math.max(E.meilleur, DR.score); E.etageMax = Math.max(E.etageMax || 0, gagne ? 4 : DR.etage); ecrireD(E);
+  E.parties++; if (gagne) E.victoires++; E.meilleur = Math.max(E.meilleur, DR.score); E.etageMax = Math.max(E.etageMax || 0, gagne ? 4 : DR.etage);
+  if (DR.duJour) { E.jours = E.jours || {}; const j = E.jours[jour()]; const sc = gagne ? DR.score : DR.etage * 100 + DR.pas * 10; if (!j || sc > j.score) E.jours[jour()] = { score:sc, etoiles:et, etage:gagne ? 0 : DR.etage }; }
+  ecrireD(E);
   let objet = null;
   if (gagne) { try { GM.jingle('victoire'); } catch (e) {} if (typeof gagneXP === 'function') gagneXP(150, 'Descente réussie'); objet = butinArmurerie(et, DR.score); }
   else { try { GM.jingle('defaite'); } catch (e) {} if (typeof gagneXP === 'function') gagneXP(20 * DR.etage, 'Descente'); }

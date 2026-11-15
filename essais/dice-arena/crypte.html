@@ -312,7 +312,7 @@ async function finTour() {
 // ------------------------------------------------------------------ le compagnon et les dés de couleur (15/11 soir, la Descente)
 function compHTML() {
   const K = S.comp; if (!K) return ''; const P = C.COMPAGNONS[K.id];
-  return `<div class="comp ${K.pv <= 0 ? 'ko' : ''}"><div class="av">${P.e}<small>❤ ${K.pv}</small></div><div><b>${P.n}</b><p>${K.pv <= 0 ? 'Il est tombé : il se repose jusqu’au prochain feu de camp.' : P.d}</p>
+  return `<div class="comp ${K.pv <= 0 ? 'ko' : ''}"><div class="av">${typeof icoComp === 'function' ? icoComp(K.id) : P.e}<small>❤ ${K.pv}</small></div><div><b>${P.n}</b><p>${K.pv <= 0 ? 'Il est tombé : il se repose jusqu’au prochain feu de camp.' : P.d}</p>
     ${K.pv > 0 ? (K.pret ? `<button class="btn-pouv" onclick="utiliseComp()">${P.e} ${P.n} : à l’action !</button>` : `<div class="sceaux">${K.sceaux.map((s, k) => sceauHTML(s, K.sceaux, `toucheComp(${k})`, mode === 'rune' ? 'non' : etatSceau(s, K.sceaux))).join('')}</div>`) : ''}</div></div>`;
 }
 function btnEffet() { const d = sel && S.des.find(x => x.id === sel); return d && d.c ? `<button class="btn-effet" onclick="effetCouleur()">${C.COULEURS[d.c].e} Effet du ${C.COULEURS[d.c].n.toLowerCase()} : ${C.COULEURS[d.c].d}</button>` : ''; }
