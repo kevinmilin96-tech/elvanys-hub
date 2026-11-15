@@ -55,6 +55,11 @@
   .des { display:flex; gap:2cqw; justify-content:center; margin:1.5cqw 0 1cqw; min-height:13cqw; align-items:center; flex-wrap:wrap; }
   .de { width:12.5cqw; height:12.5cqw; border:0; padding:0; background:none; transition:transform .15s; }
   .de img { width:100%; height:100%; object-fit:contain; filter:drop-shadow(0 1cqw 1cqw #000a); }
+  /* 15/11 soir (l'utilisateur : « pareil, animation de lancer de dés, c'est important pour les joueurs ») : dés cachés, puis lancer animé */
+  .de.cache { position:relative; border-radius:2.4cqw; background:radial-gradient(circle at 35% 30%, #5a4e8a, #2a2448); box-shadow:inset 0 0 0 .5cqw #8a7ec4, 0 1cqw 1.2cqw #000a; }
+  .de.cache::after { content:'?'; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:5.4cqw; color:#c9c1ea88; font-weight:bold; }
+  .de.tourne img { animation:tourneD .26s linear infinite; } @keyframes tourneD { 0% { transform:rotate(0) translateY(0) scale(1); } 50% { transform:rotate(190deg) translateY(-2cqw) scale(1.1); } 100% { transform:rotate(360deg) translateY(0) scale(1); } }
+  .lancerH { border:0; border-radius:3cqw; padding:2cqw 4cqw; font:bold 3.8cqw Georgia, serif; background:var(--or); color:#2b1d0a; margin-left:2cqw; animation:pulseL 1s infinite; } @keyframes pulseL { 50% { filter:brightness(1.2); } }
   .de.sel { transform:translateY(-2.5cqw) scale(1.08); } .de.sel img { filter:drop-shadow(0 0 2cqw var(--ok)); }
   .aide { text-align:center; font-size:2.9cqw; color:var(--doux); min-height:8cqw; } .aide b { color:var(--ok); }
   .actions { display:flex; gap:2cqw; margin-top:1cqw; }
@@ -259,7 +264,7 @@ function dessine() {
     <div style="position:relative"><div class="vue" id="vue"><div class="plateau ${S.scen === 'labyrinthe' ? 'laby' : ''}" style="grid-template-columns:repeat(${R.w}, ${t});--t:${t};${peint ? `background:url('${SC.image}?v=1') 0 0/100% 100% no-repeat` : ''}">${cases}</div></div>
       <button class="zoom haut" style="position:absolute;right:2cqw;bottom:2cqw;padding:1cqw 2.4cqw;border-radius:20px;background:#1c1c36cc;border:1px solid #45457a;color:var(--doux)" onclick="petit=!petit;centrer=true;dessine()">${petit ? '🔍 Zoom' : '🗺 Carte'}</button></div>
     <div class="equipe">${S.heros.map((z, i) => `<button class="${i === actif ? 'on' : ''} ${z.aTerre ? 'terre' : ''}" onclick="choisitHeros(${i})">${imgH(z)}${nomH(z).replace('Sire ', '')}<br>${z.aTerre ? '✋ à terre' : `❤${z.pv} · 🎲${z.des.length}`}</button>`).join('')}</div>
-    <div class="des">${h.aTerre ? `<span class="aide">${nomH(h)} est à terre : un ami à côté peut le relever avec un dé.</span>` : h.des.map(z => `<button class="de ${sel === z.id ? 'sel' : ''}" onclick="choisitDe('${z.id}')"><img src="faces-${h.id}/face-${z.v}.webp" alt="${z.v}"></button>`).join('') || '<span class="aide">Plus de dés pour ce héros : passe au suivant.</span>'}</div>
+    <div class="des" id="desH">${h.aTerre ? `<span class="aide">${nomH(h)} est à terre : un ami à côté peut le relever avec un dé.</span>` : h.des.length && !lanceOK(actif) ? h.des.map(() => `<button class="de cache" onclick="lanceDesH()"></button>`).join('') + `<button class="lancerH" onclick="lanceDesH()">🎲 Lancer</button>` : h.des.map(z => `<button class="de ${sel === z.id ? 'sel' : ''}" onclick="choisitDe('${z.id}')"><img src="faces-${h.id}/face-${z.v}.webp" alt="${z.v}"></button>`).join('') || '<span class="aide">Plus de dés pour ce héros : passe au suivant.</span>'}</div>
     ${!h.aTerre && h.sac && h.sac.length ? `<div class="sac">🎒 ${h.sac.map((it, k) => `<button onclick="utiliseSac(${k})">${K.SAC[it].e} ${K.SAC[it].n.replace(/^Une? /, '')}</button>`).join('')}</div>` : ''}
     <div class="aide">${d ? 'Touche une <b>case verte</b> pour bouger, un <b>monstre</b> pour frapper, un <b>meuble</b> pour le fouiller, un <b>ami</b> pour protéger / donner / soigner, un <b>levier</b>, le <b>livre</b> ou l’<b>axe</b>.' : `<b>${nomH(h)}</b> · ${H[h.id].t} : ${H[h.id].d} <br>Une <b>porte</b> à côté s’ouvre d’un toucher, sans dé.`}</div>
     <div class="actions">${d ? '<button onclick="cherche()">🔍 Pièges</button>' : ''}<button class="fin" onclick="finTour()">Fin du tour ▶</button></div>
@@ -273,8 +278,24 @@ function dessine() {
 }
 
 // ------------------------------------------------------------------ les gestes
+// le lancer des dés d'un héros (une fois par tour ; gardé dans la partie, donc aussi à distance)
+const lanceOK = i => !!(S && S.lances && S.lances.t === S.tours && S.lances.l.includes(i));
+let animeH = false;
+function lanceDesH() {
+  if (animeH || occupe || !S) return; if (L && !mesHeros().includes(actif)) { bulle(`${nomH(S.heros[actif])} n’est pas à toi`, true); return; }
+  const i = actif, h = S.heros[i]; if (lanceOK(i)) return;
+  if (!S.lances || S.lances.t !== S.tours) S.lances = { t:S.tours, l:[] };
+  S.lances.l.push(i); animeH = true; son('relance'); const fin = Date.now() + 650;
+  const tick = () => {
+    const z = $('desH'); if (!z || !S) { animeH = false; return; }
+    if (Date.now() >= fin) { animeH = false; dessine(); if (L && typeof pousse === 'function') pousse(); return; }
+    z.innerHTML = h.des.map(() => `<button class="de tourne"><img src="faces-${h.id}/face-${1 + Math.floor(Math.random() * 6)}.webp" alt=""></button>`).join('');
+    setTimeout(tick, 70);
+  };
+  tick();
+}
 function choisitHeros(i) { if (occupe) return; actif = i; sel = null; centrer = true; son('choisir'); dessine(); }
-function choisitDe(id) { if (occupe) return; if (L && !mesHeros().includes(actif)) { bulle(`${nomH(S.heros[actif])} est joué par ${proprio(actif) || 'personne'} : touche 🌐 pour le prendre.`, true); return; } sel = sel === id ? null : id; son('choisir'); dessine(); }
+function choisitDe(id) { if (occupe || animeH || !lanceOK(actif)) return; if (L && !mesHeros().includes(actif)) { bulle(`${nomH(S.heros[actif])} est joué par ${proprio(actif) || 'personne'} : touche 🌐 pour le prendre.`, true); return; } sel = sel === id ? null : id; son('choisir'); dessine(); }
 function resultat(r) {
   if (r && r.ok) { sel = null;
     if (r.point) pointDePassage();
