@@ -251,7 +251,22 @@ const GUIDE_DEF = [
 // (8 monstres tombés) et 3 PC, une fois par partie ; le bouton dit maintenant ce qui manque
 function ultimeSous(H) { if (D.ultimeFait) return 'déjà utilisé'; if (D.jauge < DEF.jaugeMax) return `jauge ${D.jauge}/${DEF.jaugeMax} · ${H.ultime.txt}`; if (D.pc < 3) return `il faut 3 PC (tu en as ${D.pc})`; return H.ultime.txt; }
 function bouton(q, titre, sous) { const ok = !attente && sel.length && permisD(D, q, sel); const at = attente && attente.quoi === q;
-  return `<button class="${ok ? 'ok' : ''} ${at ? 'attente' : ''}" ${ok || at ? '' : 'disabled'} onclick="agir('${q}')">${titre}<br><small>${sous}</small></button>`; }
+  // 15/11 soir (l'utilisateur : « je ne peux pas cliquer sur les étiquettes pour savoir ce que je dois faire ») : un coup pas encore possible
+  // reste grisé, mais le toucher l'EXPLIQUE (ce qu'il demande, ce qu'il fait, et pour l'Ultime ce qui manque)
+  const coup = ['frappe', 'technique', 'pouvoir', 'ultime'].includes(q);
+  return `<button class="${ok ? 'ok' : ''} ${at ? 'attente' : ''}" ${ok || at || coup ? '' : 'disabled'} ${!ok && !at && coup ? 'style="opacity:.5"' : ''} onclick="${ok || at ? `agir('${q}')` : `expliqueCoup('${q}')`}">${titre}<br><small>${sous}</small></button>`; }
+function expliqueCoup(q) {
+  const H = DHEROS[D.heros], vs = sel.map(d => d && d.v).filter(Boolean), aide = '<p style="color:var(--doux);font-size:.9em">Choisis d’abord tes dés en les touchant : le bouton s’allume en vert quand ils conviennent.</p>';
+  const ok = b => b ? '✅' : '❌';
+  const T = {
+    frappe:`<h2>⚔ Frappe</h2><p><b>Il faut</b> : 2 dés identiques ou plus (deux 5, trois 3…).</p><p><b>Effet</b> : touche <b>tout un chemin</b> : valeur × nombre de dés × 2. Gratuit.</p>`,
+    technique:`<h2>⚔⚔ Technique</h2><p><b>Il faut</b> : une suite de 3 dés ou plus (2-3-4, 1-2-3-4…).</p><p><b>Effet</b> : touche <b>tout un chemin</b> (8 dégâts avec 3 dés, 14 avec 4, 22 avec 5) et les monstres <b>reculent</b> d’une case. Gratuit.</p>`,
+    pouvoir:`<h2>✦ Pouvoir · ${H.pouvoir.n}</h2><p><b>Il faut</b> : ${H.pouvoir.txt}.</p><p><b>Effet</b> : ${H.pouvoir.d}</p><p>Gratuit, autant de fois que tu as les bons dés.</p>`,
+    ultime:`<h2>⚡ Ultime · ${H.ultime.n}</h2><p><b>Effet</b> : ${H.ultime.d}</p><p><b>Il faut les quatre</b> :</p>
+      <p>${ok(D.jauge >= DEF.jaugeMax)} la jauge pleine : ${DEF.jaugeMax} monstres tombés (tu en es à ${Math.min(D.jauge, DEF.jaugeMax)})<br>${ok(D.pc >= 3)} 3 PC pour la payer (tu en as ${D.pc})<br>${ok(!D.ultimeFait)} une seule fois par partie${D.ultimeFait ? ' (déjà utilisée)' : ''}<br>${ok(vs.length && H.ultime.cond(vs))} les dés : ${H.ultime.txt}</p>`,
+  };
+  fenetre(T[q] + aide + '<div class="choixh"><button onclick="fermer()">Compris</button></div>');
+}
 function joueFx() {
   const fx = D.fx; D.fx = [];
   // 13/11 soir : bruitages (une fois par tour, pas un par coup)
