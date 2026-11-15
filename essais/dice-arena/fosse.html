@@ -157,7 +157,6 @@ const delaiPerdu = () => Math.max(1.5, 4 * Math.pow(.85, L('cadence')));
 function nouvelleBalle(v, a) {
   const s = vitBalle(), raqY = H - 32;
   J.balles.push({ x:J.raq.x, y:raqY - 10, vx:Math.cos(a) * s, vy:Math.sin(a) * s, r:9, v, perce:L('perce'), de:true });
-  J.pops.push({ x:J.raq.x, y:raqY - 30, v, t:0 });
 }
 // les balles-dés en jeu et le combo qu'elles forment (avec les balles qui le forment)
 function comboEnJeu() {
@@ -253,6 +252,7 @@ function pas(dt) {
     if (M.tire && m.y > 90 && m.y < 230) { m.tirT -= dt; if (m.tirT <= 0) { m.tirT = rnd(2.2, 3.4) / (1 + J.t / 300); const dx = J.raq.x - m.x, dy = raqY - m.y, d = Math.hypot(dx, dy); J.tirs.push({ x:m.x, y:m.y + 10, vx:dx / d * 150, vy:dy / d * 150, r:6 }); son('magie'); } }
     const vy = (m.etat === 'plonge' ? 190 : M.tire && m.y > 150 && m.y < 230 ? 4 : m.v) * lent * (M.boss && m.y > 120 ? .25 : 1);
     m.y += vy * dt; m.x += m.dx * dt;
+    if (m.x < m.r) { m.x = m.r; m.dx = Math.abs(m.dx); } if (m.x > W - m.r) { m.x = W - m.r; m.dx = -Math.abs(m.dx); } // 15/11 soir : ils rebondissent sur les parois au lieu de sortir de l'écran
     if (M.boss && m.y > 120) { m.tirT -= dt; if (m.tirT <= 0) { m.tirT = 2; for (let i = -2; i <= 2; i++) { const a = Math.PI / 2 + i * .28; J.tirs.push({ x:m.x, y:m.y + 30, vx:Math.cos(a) * 140, vy:Math.sin(a) * 140, r:8 }); } son('gros'); } }
     if (m.y + m.r >= raqY - 4) { coupRempart(m.att, m.x); m.mort = true; m.sansGemme = true; }
   }
@@ -291,7 +291,7 @@ function bouge(b, dt, raqY, lw) {
   if (b.x < b.r) { b.x = b.r; b.vx = Math.abs(b.vx); } if (b.x > W - b.r) { b.x = W - b.r; b.vx = -Math.abs(b.vx); } if (b.y < b.r) { b.y = b.r; b.vy = Math.abs(b.vy); }
   if (b.vy > 0 && b.y + b.r >= raqY && b.y + b.r <= raqY + 14 && Math.abs(b.x - J.raq.x) <= lw / 2 + b.r) {
     const k = (b.x - J.raq.x) / (lw / 2), a = -Math.PI / 2 + k * 1.05, s = vitBalle(); b.vx = Math.cos(a) * s; b.vy = Math.sin(a) * s; b.y = raqY - b.r; b.perce = L('perce');
-    if (b.de) { b.v = tirage(); J.pops.push({ x:b.x, y:raqY - 28, v:b.v, t:0 }); son('relance'); } }
+    if (b.de) { b.v = tirage(); son('relance'); } } // 15/11 soir : plus de gros dé qui saute au rebond (l'utilisateur : « trop gros »), le chiffre de la balle suffit
   for (const m of J.monstres) {
     if (m.mort || b.dejaT === m) continue;
     const dx = b.x - m.x, dy = b.y - m.y; if (dx * dx + dy * dy > (b.r + m.r) ** 2) continue;
