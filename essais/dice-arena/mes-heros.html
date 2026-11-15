@@ -58,7 +58,7 @@ function liste() {
   const tri = l => l.slice().sort((a, b) => fhPuissance(b) - fhPuissance(a));
   $('app').innerHTML = `<div class="haut"><a href="${retour}">‹ Retour</a><h1>🏰 Mes héros</h1><span></span></div>
     ${fhRess()}
-    <div class="recolte"><span class="e">🧺</span><div><b>La récolte du campement</b><small>Pendant que tu n’es pas là, la Guilde ramasse de l’or et de la poussière de rune (12 h au plus).</small><small>En attente : 🪙 ${r.or} · 🔹 ${r.pou} (${Math.floor(r.h)} h ${Math.floor((r.h % 1) * 60)} min)</small></div><button ${r.or < 1 ? 'disabled' : ''} onclick="recolte()">Ramasser</button></div>
+    <div class="recolte"><span class="e"><img src="ui/heros/recolte.webp?v=1" alt="" style="width:46px;height:46px;object-fit:contain" onerror="this.replaceWith(document.createTextNode('🧺'))"></span><div><b>La récolte du campement</b><small>Pendant que tu n’es pas là, la Guilde ramasse de l’or et de la poussière de rune (12 h au plus).</small><small>En attente : 🪙 ${r.or} · 🔹 ${r.pou} (${Math.floor(r.h)} h ${Math.floor((r.h % 1) * 60)} min)</small></div><button ${r.or < 1 ? 'disabled' : ''} onclick="recolte()">Ramasser</button></div>
     <p class="sous">Touche un héros pour sa fiche : niveau (or + poussière), rang (éclats), équipement (améliorer, fusionner), reliques.</p>
     <h2>⚔ Les héros de la Guilde</h2><div class="grille">${tri(H_GUILDE).map(carte).join('')}</div>
     <h2>🗺 Tes héros d’aventure</h2><div class="grille">${tri(avs).map(carte).join('')}</div>

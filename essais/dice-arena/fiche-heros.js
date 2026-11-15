@@ -55,14 +55,16 @@ function fhInfo(id) {
 }
 const fhPuissance = id => { const I = fhInfo(id); return I ? (I.av ? avPuissance(I.av) : puissanceHeros(id, I.pvBase)) : 0; };
 const fhImg = (I, px) => `<img src="${I.img}" onerror="this.onerror=null;this.src='${I.secours}'" alt="" ${px ? `style="width:${px}px;height:${px}px;border-radius:50%;object-fit:cover"` : ''}>`;
-const fhRess = () => { const s = avSac(), d = lireEtoiles(); return `<div class="fh-ress"><span>🪙 ${s.or}</span><span>🔹 ${d.poussiere || 0}</span><span>💠 ${d.libres || 0}</span></div>`; };
+// 15/11 soir : les icônes peintes (ui/heros/<nom>.webp) ; si une image manque, l'émoji reste
+const fhIco = (nom, e, t) => `<img src="ui/heros/${nom}.webp?v=1" alt="" style="width:${t || '1.3em'};height:${t || '1.3em'};object-fit:contain;vertical-align:middle;filter:drop-shadow(0 1px 2px #000a)" onerror="this.replaceWith(document.createTextNode('${e}'))">`;
+const fhRess = () => { const s = avSac(), d = lireEtoiles(); return `<div class="fh-ress"><span>${fhIco('ress-or', '🪙')} ${s.or}</span><span>${fhIco('ress-poussiere', '🔹')} ${d.poussiere || 0}</span><span>${fhIco('ress-eclats', '💠')} ${d.libres || 0}</span></div>`; };
 
 // ------------------------------------------------------------------------------------------------ la fiche
 function ficheHerosHTML(id) {
   const I = fhInfo(id); if (!I) return '<p>Héros introuvable.</p>';
   const H = etatH(id), S = statsHeros(id), R = RANGS[H.rang], E = equipementDe(id), pvTot = I.pvBase + S.pv;
   const slot = c => { const p = E[c.k], lock = c.niv && H.niv < c.niv;
-    return `<button class="fh-slot ${p ? 'fh-r' + p.r : ''} ${lock ? 'lock' : ''}" onclick="${lock ? `fhBulle('Cette case s’ouvre au niveau ${c.niv}')` : `fhCase('${id}','${c.k}')`}">${lock ? `<span class="e">🔒</span><small>niveau ${c.niv}</small>` : p ? `<span class="e">${c.e}</span><small>${p.nom}</small><i>+${p.niv}</i>` : `<span class="e vide">${c.e}</span><small>${c.n}</small>`}</button>`; };
+    return `<button class="fh-slot ${p ? 'fh-r' + p.r : ''} ${lock ? 'lock' : ''}" onclick="${lock ? `fhBulle('Cette case s’ouvre au niveau ${c.niv}')` : `fhCase('${id}','${c.k}')`}">${lock ? `<span class="e">🔒</span><small>niveau ${c.niv}</small>` : p ? `<span class="e">${fhIco('eq-' + c.k, c.e, '1.6em')}</span><small>${p.nom}</small><i>+${p.niv}</i>` : `<span class="e vide">${fhIco('eq-' + c.k, c.e, '1.6em')}</span><small>${c.n}</small>`}</button>`; };
   const cn = coutNiveau(H.niv), etatN = peutMonterNiveau(id), coutR = COUT_NIV[H.rang];
   const max10 = (() => { let n = H.niv, or = avSac().or, pou = poussiereH(), k = 0; while (k < 10 && n < R.max) { const c = coutNiveau(n); if (or < c.or || pou < c.pou) break; or -= c.or; pou -= c.pou; n++; k++; } return k; })();
   return `<div class="fh-scene" style="--hc:${I.c};--rc:${R.c}">
@@ -87,7 +89,7 @@ function ficheHerosHTML(id) {
         <div class="fh-bts"><button class="fh-bt or" ${H.e >= coutR ? '' : 'disabled'} onclick="fhRang('${id}')">⬆ Passer ${RANGS[H.rang + 1].n}</button>${lireEtoiles().libres ? `<button class="fh-bt" onclick="fhVerse('${id}')">💠 Verser des éclats de Guilde</button>` : ''}</div>` : '<p>Rang maximum : légende de la Guilde !</p>'}
       <ul class="fh-bonus">${BONUS_RANG.map(([r, e, t]) => `<li class="${H.rang >= r ? 'on' : ''}">${H.rang >= r ? '✅' : '🔒'} <b>${RANGS[r].n}</b> : ${e} ${t}</li>`).join('')}</ul>
       <p style="color:#8a84b0;font-size:.82em;margin:6px 0 0">Les éclats de ${I.nom} se gagnent en jouant avec : élite 2, boss 5, Titan 5, étage 3… Les quêtes donnent des éclats de Guilde 💠, à verser sur qui tu veux.</p></div>
-    <div class="fh-bts"><button class="fh-bt" onclick="fhCoffre('${id}')">🎒 Le coffre (${avSac().pieces.length})${groupesFusion().length ? ' · ⚒ fusion !' : ''}</button><button class="fh-bt" onclick="fhForgeron('${id}')">⚒ Le forgeron</button></div>
+    <div class="fh-bts"><button class="fh-bt" onclick="fhCoffre('${id}')">${fhIco('coffre-heros', '🎒')} Le coffre (${avSac().pieces.length})${groupesFusion().length ? ' · ⚒ fusion !' : ''}</button><button class="fh-bt" onclick="fhForgeron('${id}')">⚒ Le forgeron</button></div>
     ${typeof EQUIP !== 'undefined' && typeof equipHeros === 'function' ? fhReliques(id) : ''}`;
 }
 function fhReliques(id) {
