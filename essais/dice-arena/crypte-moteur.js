@@ -7,7 +7,7 @@
 (function (racine) {
 'use strict';
 
-const NB_DES = 5, NB_COL = 3, PROF = 4, RESERVE = 2, RUNES_MAX = 3, PV_HEROS = 50;
+const NB_DES = 5, NB_COL = 3, PROF = 4, RESERVE = 2, RUNES_MAX = 3, PV_HEROS = 60;
 
 // ------------------------------------------------------------------ hasard à graine (la même crypte pour tout le monde le même jour)
 function rng(graine) {
@@ -74,7 +74,8 @@ function sceauxNiveau(R, niv) {
 function carte(R, niv, n) {
   const [m, nom] = niv === 4 ? pick(R, ELITES) : pick(R, BETES);
   const trait = niv >= 2 && R() < .55 ? pick(R, niv === 4 ? ['furie', 'repousse', 'chef', 'rancune'] : Object.keys(TRAITS)) : null;
-  return { id:'c' + n, m, nom, niv, att:[0, 1, 1, 2, 2][niv], trait, sceaux:sceauxNiveau(R, niv), vue:false, elite:niv === 4 };
+  const att = [0, [1, 1, 2], [1, 2, 2], [2, 2, 3], [2, 3, 3]][niv][Math.floor(R() * 3)]; // 15/11 : chaque monstre a SA force (retour de l'utilisateur)
+  return { id:'c' + n, m, nom, niv, att, trait, sceaux:sceauxNiveau(R, niv), vue:false, elite:niv === 4 };
 }
 function gardien(R) {
   const [m, nom] = pick(R, GARDIENS);
@@ -176,7 +177,7 @@ function finTour(S) {
   S.des = []; debutTour(S);
 }
 // les étoiles d'une victoire
-const etoiles = S => S.fin !== 'gagne' ? 0 : 1 + (S.pv >= 12 ? 1 : 0) + (S.pv >= 25 ? 1 : 0);
+const etoiles = S => S.fin !== 'gagne' ? 0 : 1 + (S.pv >= 15 ? 1 : 0) + (S.pv >= 30 ? 1 : 0);
 
 const API = { NB_DES, NB_COL, PROF, RESERVE, RUNES_MAX, PV_HEROS, SCEAU_TXT, TRAITS, POUVOIRS,
   nouvelle, relancer, placer, rune, pouvoir, finTour, visibles, menace, accepte, etoiles, trouve };

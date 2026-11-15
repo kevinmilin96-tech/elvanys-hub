@@ -198,9 +198,9 @@ function dessine() {
   const creuset = S.creuset.map((p, k) => `<div class="cs ${p ? 'plein' : dePeut === k + 1 ? 'peut' : ''}" onclick="versCreuset()">${k + 1}</div>`).join('');
   $('jeu').innerHTML = `
     <div class="haut"><a href="menu.html">‹ Menu</a><span class="titre">🪦 La Crypte aux Sceaux</span><button onclick="regles()">❓</button></div>
-    <div class="stats"><span>Tour <b>${S.tour}</b></span><span>⭐ <b>${S.score}</b></span><span>${S.gardien ? '♛ Gardien' : `Monstres <b>${S.cols.reduce((t, c) => t + c.length, 0)}</b>`}</span><span>${duJour ? '📅 du jour' : '🎲 au hasard'}</span></div>
+    <div class="stats"><span>Tour <b>${S.tour}</b></span><span>⭐ <b>${S.score}</b></span><span>${S.gardien ? '♛ Gardien' : `Cartes restantes <b>${S.cols.reduce((t, c) => t + c.length, 0)}</b>`}</span><span>${duJour ? '📅 du jour' : '🎲 au hasard'}</span></div>
     ${table}
-    <div class="menace">${S.voile ? '<span class="voile">🛡 Mur de lumière : personne ne frappera à la fin de ce tour.</span>' : m ? `À la fin du tour, les monstres frappent : <b>−${m} PV</b>` : ''}</div>
+    <div class="menace">${S.voile ? '<span class="voile">🛡 Mur de lumière : personne ne frappera à la fin de ce tour.</span>' : m ? `Fin du tour : ${detailMenace()} = <b>−${m} PV</b>` : ''}</div>
     <div class="bas" style="--c:${H.c}">
       <div class="portrait"><img src="portraits/${S.heros}.webp" alt=""><div class="pv">❤ ${S.pv}</div></div>
       <div class="pouv"><b>⚡ ${P.n}</b><p>${P.d}</p>
@@ -220,6 +220,8 @@ function dessine() {
   S.des.forEach(d => delete d.neuf); visibles().forEach(c => delete c.neuve);
 }
 const visibles = () => S ? C.visibles(S) : [];
+// 15/11 : seules les cartes VISIBLES frappent, chacune de sa force ; on l'écrit en clair (« Scarabée 1 + Lutin 2 »)
+function detailMenace() { const V = visibles(), chefs = V.filter(c => c.trait === 'chef').length; return V.map(c => `${c.nom.split(' ')[0]} ${c.att + chefs - (c.trait === 'chef' ? 1 : 0)}`).join(' + '); }
 function consigne() {
   if (mode === 'rune') return '✦ Touche le <b>sceau</b> que la Rune doit briser (n’importe lequel).';
   if (mode === 'cible') return '🔨 Touche le <b>monstre</b> à frapper.';
@@ -326,7 +328,7 @@ function finPartie() {
   fenetre(`<h2>${gagne ? '🏆 La crypte est à toi !' : '☠ La crypte t’a eu…'}</h2>
     <p style="text-align:center;font-size:2em;margin:6px 0">${gagne ? '★'.repeat(et) + '☆'.repeat(3 - et) : ''}</p>
     <p style="text-align:center">Score : <b style="color:var(--or)">${S.score}</b> · ${S.tombes} monstre${S.tombes > 1 ? 's' : ''} · plus longue chaîne ×${S.chaineMax} · ${S.tour} tours${gagne ? ` · ❤ ${S.pv} restants` : ''}</p>
-    ${gagne ? `<p style="color:var(--doux);font-size:.9em;text-align:center">★★ : finir avec 12 PV ou plus · ★★★ : 25 PV ou plus.</p>` : `<p style="color:var(--doux);text-align:center">${S.gardien ? 'Tu étais devant le Gardien !' : `Il restait ${S.cols.reduce((t, c) => t + c.length, 0)} monstres.`} Astuce : vide d’abord les monstres qui frappent fort, et garde le creuset pour les sceaux difficiles.</p>`}
+    ${gagne ? `<p style="color:var(--doux);font-size:.9em;text-align:center">★★ : finir avec 15 PV ou plus · ★★★ : 30 PV ou plus.</p>` : `<p style="color:var(--doux);text-align:center">${S.gardien ? 'Tu étais devant le Gardien !' : `Il restait ${S.cols.reduce((t, c) => t + c.length, 0)} monstres.`} Astuce : vide d’abord les monstres qui frappent fort, et garde le creuset pour les sceaux difficiles.</p>`}
     <p style="text-align:center;color:var(--doux);font-size:.9em">Meilleur score : ${D.meilleur} · ${D.victoires} victoire${D.victoires > 1 ? 's' : ''} sur ${D.parties}</p>
     <button class="go" onclick="fenetre('');S=null;accueil()">Retour à l’entrée de la crypte</button>`);
 }
