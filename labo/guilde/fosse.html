@@ -59,11 +59,11 @@
 <body>
 <div id="app"></div>
 <div id="fen"></div>
-<script src="musique.js?v=20261115-202947"></script>
-<script src="rang.js?v=20261115-202947"></script>
-<script src="heros-etoiles.js?v=20261115-202947"></script>
-<script src="progression-modes.js?v=20261115-202947"></script>
-<script src="heros-aventure.js?v=20261115-202947"></script>
+<script src="musique.js?v=20261115-203204"></script>
+<script src="rang.js?v=20261115-203204"></script>
+<script src="heros-etoiles.js?v=20261115-203204"></script>
+<script src="progression-modes.js?v=20261115-203204"></script>
+<script src="heros-aventure.js?v=20261115-203204"></script>
 <script>
 // =============================================================================================== LA FOSSE AUX RUNES v3 (15/11) : SURVIE NERVEUSE façon Vampire Survivors
 // Retour de l'utilisateur sur la v2 (casse-briques, gardée dans fosse-v2.html) : « un casse-briques ordinaire, rien ne me met en difficulté,
@@ -196,7 +196,7 @@ function nouvelle(h) {
   const avF = haInfo(h); h = haVoie(h); // un héros d'aventure → sa voie ; avF garde qui il est
   const B = typeof bonusMode === 'function' ? bonusMode(avF ? avF.id : h) : { pv:0, bouclier:0, relance:0, des:0 };
   const pvmax = PV0 + B.pv + B.bouclier;
-  J = { fs:1 /* 15/11 soir : suivi pas encore activé ici, à mesurer d'abord (sinon B.fs) */, heros:h, pv:pvmax, pvmax, t:0, etat:'jeu', score:0, tues:0, xp:0, niv:1, besoin:5, lv:{}, balles:[], monstres:[], tirs:[], gemmes:[], capsules:[], eclats:[], textes:[],
+  J = { fs:Math.round((1 + .3 * ((B.fs || 1) - 1)) * 100) / 100 /* 15/11 soir : les monstres suivent la force du héros à 30 % (mesuré au joueur automatique : survie débutant 189 s, niveau 250 sans suivi 288 s, avec 269 s) */, heros:h, pv:pvmax, pvmax, t:0, etat:'jeu', score:0, tues:0, xp:0, niv:1, besoin:5, lv:{}, balles:[], monstres:[], tirs:[], gemmes:[], capsules:[], eclats:[], textes:[],
     raq:{ x:W / 2, w:70 + (h === 'aldric' ? 18 : 0) }, faces:[1, 2, 3, 4, 5, 6], perdus:[], pops:[], onde:0, prochainSpawn:1, foudreT:3, regenT:15, gardeT:0, boss:false, bossMort:false, tremble:0, effets:{}, fini:false };
   J.av = avF ? avF.id : null; // 15/11 soir : le héros d'aventure de la partie
   if (h === 'maelle') J.lv.force = 1; if (h === 'gorm') J.lv.multi = 1; if (h === 'oria') J.lv.aimant = 2; if (h === 'zephine') { J.lv.vitesse = 1; J.lv.cadence = 1; }
