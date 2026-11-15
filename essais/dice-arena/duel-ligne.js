@@ -98,10 +98,21 @@ async function dlLance(premier) {
   await dlPousse(); dlAffiche();
 }
 // ------------------------------------------------------------------ pendant la partie
+// 15/11 soir (erreur sur l'écran de Louve : « Converting circular structure to JSON … dernierSort → k → J ») : la partie contient parfois
+// une boucle (le dernier Sort garde sa cible, qui contient le héros). La copie coupe seulement les BOUCLES (un objet qui se contient lui-même) ;
+// un objet présent deux fois sans boucle est recopié deux fois, comme le faisait JSON avant.
+function dlCopie(o, pile = []) {
+  if (o === null || typeof o !== 'object') return typeof o === 'function' ? undefined : o;
+  if (pile.includes(o)) return null;
+  pile.push(o); let r;
+  if (Array.isArray(o)) r = o.map(x => { const v = dlCopie(x, pile); return v === undefined ? null : v; });
+  else { r = {}; for (const k in o) { if (!Object.prototype.hasOwnProperty.call(o, k)) continue; const v = dlCopie(o[k], pile); if (v !== undefined) r[k] = v; } }
+  pile.pop(); return r;
+}
 async function dlPousse() {
   if (!DL || !S || dlJoue) return; if (dlEnvoi) { setTimeout(dlPousse, 300); return; } dlEnvoi = true;
   try { for (let k = 0; k < 3; k++) {
-      const { statut, d } = await dlApi('POST', `${DL_API}/${DL.code}`, { version:DL.version, etat:S, joueurs:DL.joueurs });
+      const { statut, d } = await dlApi('POST', `${DL_API}/${DL.code}`, { version:DL.version, etat:dlCopie(S), joueurs:DL.joueurs });
       if (statut === 200) { DL.version = d.version; break; }
       if (statut === 409) { DL.version = d.version; continue; } // le duel se joue chacun son tour : notre état fait foi
       dlToast(d.message || 'Le serveur ne répond pas.'); break; } } catch (e) { dlToast('Pas de réseau : le coup n’est pas parti.'); }
@@ -114,7 +125,7 @@ function dlRecoit(d) {
     const neuves = (d.etat.fxLog || []).filter(x => x.n > (dlFxVu == null ? Infinity : dlFxVu));
     dlFxVu = Math.max(dlFxVu || 0, ...(d.etat.fxLog || []).map(x => x.n));
     if (neuves.length) {
-      const vue = JSON.parse(JSON.stringify(d.etat)); const act = vue.J.joueur === DL.moi.id ? vue.O : vue.J, moi = act === vue.J ? vue.O : vue.J; vue.J = moi; vue.O = act;
+      const vue = dlCopie(d.etat); const act = vue.J.joueur === DL.moi.id ? vue.O : vue.J, moi = act === vue.J ? vue.O : vue.J; vue.J = moi; vue.O = act;
       // si le tour vient de passer de mon côté, les animations ont été notées quand l'ami était encore « J » : elles restent à inverser (c'est ce que fait dlInverse)
       S = d.etat; DLOB = null; dlAttente = null; dlRejoue(neuves, vue); return;
     }
@@ -145,7 +156,7 @@ function dlAffiche() {
   const nouv = lignes.length - (dlVu || 0); dlVu = lignes.length;
   if (M.pv < (dlPvVu == null ? M.pv : dlPvVu)) { try { son('coup'); } catch (e) {} }
   dlPvVu = M.pv;
-  const vue = JSON.parse(JSON.stringify(S)); vue.J = vue.O; vue.O = JSON.parse(JSON.stringify(S.J)); vue.J.aLancer = false; vue.finPrevue = true;
+  const vue = dlCopie(S); vue.J = vue.O; vue.O = dlCopie(S.J); vue.J.aLancer = false; vue.finPrevue = true;
   const vrai = S; S = vue; try { dessine(); } catch (e) { console.error(e); } finally { S = vrai; }
   document.getElementById('app').style.visibility = '';
   { const b = document.querySelector('#app .bandeau'); if (b) b.textContent = `⏳ ${J.qui} joue : regarde son tour en direct.`; // pas de consigne pour moi
@@ -188,7 +199,7 @@ const _renduLigne = rendu;
 function dlNoteFX() {
   if (!S || !S.ligne || !DL || !dlMonTour() || !FX.length) return;
   S.fxLog = S.fxLog || []; S.fxSeq = S.fxSeq || 0;
-  FX.forEach(e => { if (e._n) return; e._n = ++S.fxSeq; try { if (e.t !== 'recap' && e.t !== 'desO') S.fxLog.push({ n:e._n, e:JSON.parse(JSON.stringify(e)) }); } catch (x) {} });
+  FX.forEach(e => { if (e._n) return; e._n = ++S.fxSeq; try { if (e.t !== 'recap' && e.t !== 'desO') S.fxLog.push({ n:e._n, e:dlCopie(e) }); } catch (x) {} });
   if (S.fxLog.length > 60) S.fxLog = S.fxLog.slice(-60);
 }
 const dlInverse = o => Array.isArray(o) ? o.map(dlInverse) : o && typeof o === 'object' ? Object.fromEntries(Object.entries(o).map(([k, v]) => [k, k === 's' && (v === 'J' || v === 'O') ? (v === 'J' ? 'O' : 'J') : dlInverse(v)])) : o;
