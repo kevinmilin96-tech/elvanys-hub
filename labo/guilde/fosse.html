@@ -23,6 +23,8 @@
   .main .md { flex:1; display:flex; gap:1.2cqw; justify-content:center; flex-wrap:nowrap; }
   .main .d { width:11cqw; height:11cqw; max-width:56px; max-height:56px; border-radius:2cqw; border:2px solid #3f5070; background:#1c2436; padding:0; display:grid; place-items:center; transition:transform .1s; }
   .main .d img { width:88%; height:88%; } .main .d.on { border-color:var(--or); background:#4a3a12; transform:translateY(-1.6cqw); box-shadow:0 0 12px #f3c96b88; }
+  .main .go2.pret { animation:pret .5s ease-in-out infinite alternate; box-shadow:0 0 16px #f3c96b; } @keyframes pret { to { transform:scale(1.07); } }
+  .main .d { width:9cqw; height:9cqw; }
   .main .d.vide { opacity:.35; font-size:3cqw; color:var(--doux); }
   .main .go2 { background:linear-gradient(180deg, #ffd27a, #e0a43a); color:#2b1d0a; border:0; border-radius:2.4cqw; font:bold 3.6cqw Georgia; padding:2cqw 2.6cqw; }
   .main .go2:disabled { opacity:.4; } .main .rl { background:#1c2436; color:var(--texte); border:1px solid #3f5070; border-radius:2.4cqw; font:3.2cqw Georgia; padding:2cqw 2cqw; }
@@ -57,10 +59,10 @@
 <body>
 <div id="app"></div>
 <div id="fen"></div>
-<script src="musique.js?v=20261115-150649"></script>
-<script src="rang.js?v=20261115-150649"></script>
-<script src="heros-etoiles.js?v=20261115-150649"></script>
-<script src="progression-modes.js?v=20261115-150649"></script>
+<script src="musique.js?v=20261115-151300"></script>
+<script src="rang.js?v=20261115-151300"></script>
+<script src="heros-etoiles.js?v=20261115-151300"></script>
+<script src="progression-modes.js?v=20261115-151300"></script>
 <script>
 // =============================================================================================== LA FOSSE AUX RUNES v3 (15/11) : SURVIE NERVEUSE façon Vampire Survivors
 // Retour de l'utilisateur sur la v2 (casse-briques, gardée dans fosse-v2.html) : « un casse-briques ordinaire, rien ne me met en difficulté,
@@ -98,9 +100,9 @@ const MONSTRES = {
 };
 // ------------------------------------------------------------------ les améliorations (5 niveaux chacune, sauf le soin)
 const AMELIO = {
-  multi:  { e:'🎲', n:'Un dé de plus', d:n => `Ta main passe à ${n + 6} dés.` },
+  multi:  { e:'🎲', n:'Un dé de plus', d:n => `${n + 4} dés en jeu : plus de dégâts, plus de combos.` },
   force:  { e:'⚒️', n:'Balles forgées', d:n => `Tes balles font +${n + 1} dégât${n ? 's' : ''}.` },
-  cadence:{ e:'⏱️', n:'Retour rapide', d:() => 'Un dé raté revient plus vite dans ta main.' },
+  cadence:{ e:'⏱️', n:'Retour rapide', d:() => 'Un dé perdu repart plus vite de ton bouclier.' },
   vitesse:{ e:'💨', n:'Balles rapides', d:() => 'Tes balles vont plus vite.' },
   perce:  { e:'🗡️', n:'Balles perçantes', d:n => `Elles traversent ${n + 1} monstre${n ? 's' : ''} avant de rebondir.` },
   feu:    { e:'🔥', n:'Balles de feu', d:n => `Chaque touche brûle (${n + 1} dégât${n ? 's' : ''} par seconde, 3 s).` },
@@ -112,26 +114,26 @@ const AMELIO = {
   soin:   { e:'❤️', n:'Rempart réparé', d:() => '+8 PV et +3 PV max.', unique:true },
   forge:  { e:'⚒️', n:'Forger une face', d:() => 'Ta plus petite face de dé gagne +2 (jusqu’à 6). Plus de gros dés, plus de dégâts.', faces:true },
   six:    { e:'💥', n:'Six explosifs', d:n => `Quand un 6 touche, il explose autour de lui (${2 + (n + 1) * 2} dégâts).` },
-  combo:  { e:'🎰', n:'Maître des combinaisons', d:() => 'Tous les combos +50 % (ondes, éclats, foudre) ; la grosse balle de la paire traverse un monstre de plus.' },
+  combo:  { e:'🎰', n:'Maître des combinaisons', d:() => 'Tous les combos +50 % (ondes, éclats, foudre) ; les dés dorés de la paire durent 2 s de plus.' },
   pipe:   { e:'🎯', n:'Dé pipé', d:() => 'Une de tes faces devient la copie de ta plus forte : plus de paires et de brelans.', faces:true },
 };
 // ------------------------------------------------------------------ LES DÉS AU CŒUR (15/11, l'utilisateur : « les dés doivent rester le cœur du gameplay, quelque chose qui pop
 // et qui change les améliorations ») : chaque lancer se voit (la face du dé du héros jaillit au-dessus du bouclier) ; le dé a 6 FACES qu'on forge ;
 // les 3 derniers dés forment des COMBINAISONS : PAIRE (deux pareils de suite) = une balle en double ; BRELAN = onde de choc sur tous les monstres ;
 // SUITE (3 qui se suivent) = pluie d'éclats.
-// 15/11 soir, DÉCISION de l'utilisateur (« on spamme le clic, les dés et les combos sont effacés du gameplay ») : LA MAIN DE DÉS.
-// Tu as 5 dés visibles en main. Tu CHOISIS ceux que tu lances ENSEMBLE : la combinaison se fait avec les dés lancés ensemble.
-// Un dé rattrapé avec le bouclier revient en main et se relance ; un dé raté est perdu quelques secondes. Relancer sa main = toutes les 8 s.
+// 15/11 soir, DÉCISION de l'utilisateur (2e essai) : « REBOND = RELANCE ». La main de dés (choisir puis lancer) demandait trop de gestes
+// et la balle ne repartait pas toute seule. Maintenant : tes balles sont des DÉS qui rebondissent sur le bouclier comme dans un casse-briques ;
+// à CHAQUE REBOND sur le bouclier, le dé change de face. Quand les dés en jeu forment un combo, le bouton « COMBO ! » s'allume :
+// un clic (ou Espace) le déclenche, au moment que TU choisis (attendre un meilleur combo ? il peut disparaître au prochain rebond).
 const COMBOS = {
-  paire:  { e:'🎲🎲', n:'PAIRE', d:'les 2 dés fusionnent : une grosse balle (valeur × 2) qui traverse' },
+  paire:  { e:'🎲🎲', n:'PAIRE', d:'ces 2 dés deviennent dorés 5 s : dégâts × 2, ils traversent' },
   suite3: { e:'🌠', n:'PETITE SUITE', d:'pluie de 8 éclats' },
   brelan: { e:'💥', n:'BRELAN', d:'onde de choc sur tous les monstres (4 + valeur)' },
   suite4: { e:'🌠', n:'SUITE', d:'pluie de 16 éclats' },
   carre:  { e:'❄️', n:'CARRÉ', d:'onde de choc (6 + valeur) et tout gèle 4 s' },
   suite5: { e:'⚡', n:'GRANDE SUITE', d:'la foudre frappe tous les monstres (10)' },
 };
-const ORDRE_C = ['suite5', 'carre', 'suite4', 'brelan', 'suite3', 'paire'];
-// la meilleure combinaison contenue dans les dés lancés ensemble (+ les dés qui la forment)
+// la meilleure combinaison contenue dans des faces (+ les faces qui la forment)
 function combo(vals) {
   const n = {}; vals.forEach(v => n[v] = (n[v] || 0) + 1);
   const uniq = [...new Set(vals)].sort((a, b) => a - b);
@@ -146,47 +148,40 @@ function combo(vals) {
   if (max === 2) return { k:'paire', des:[vMax, vMax], v:vMax };
   return null;
 }
-const GRAV = 45;
 const tirage = () => J.faces[Math.floor(Math.random() * 6)];
-const tailleMain = () => 5 + L('multi');
-const delaiPerdu = () => Math.max(2, 6 * Math.pow(.85, L('cadence')));
-function nouvelleBalle(v, des, a, opts = {}) {
+const nbDes = () => 4 + L('multi');
+const delaiPerdu = () => Math.max(1.5, 4 * Math.pow(.85, L('cadence')));
+function nouvelleBalle(v, a) {
   const s = vitBalle(), raqY = H - 32;
-  J.balles.push(Object.assign({ x:J.raq.x, y:raqY - 10, vx:Math.cos(a) * s, vy:Math.sin(a) * s, r:6 + v * .4, v, perce:L('perce'), des }, opts));
+  J.balles.push({ x:J.raq.x, y:raqY - 10, vx:Math.cos(a) * s, vy:Math.sin(a) * s, r:9, v, perce:L('perce'), de:true });
+  J.pops.push({ x:J.raq.x, y:raqY - 30, v, t:0 });
 }
-// lancer les dés choisis (ensemble)
+// les balles-dés en jeu et le combo qu'elles forment (avec les balles qui le forment)
+function comboEnJeu() {
+  const B = J.balles.filter(b => b.de && !(b.dore > 0)), c = combo(B.map(b => b.v)); if (!c) return null; // un dé doré (paire déjà jouée) ne compte plus
+  const pris = [], reste = c.des.slice();
+  for (const b of B) { const k = reste.indexOf(b.v); if (k >= 0) { reste.splice(k, 1); pris.push(b); } }
+  return Object.assign(c, { balles:pris });
+}
+// déclencher le combo du moment (clic, toucher, Espace)
 function lancer() {
-  if (!J || J.etat !== 'jeu') return;
-  if (!J.sel.length) { if (!J.main.length) return; texte(W / 2, H - 90, 'Choisis d’abord des dés en bas 👇', '#7cd4ff', 1); return; }
-  const idx = J.sel.slice().sort((a, b) => b - a), vals = idx.map(i => J.main[i]);
-  idx.forEach(i => J.main.splice(i, 1)); J.sel = []; J.lances = (J.lances || 0) + 1;
-  const c = combo(vals), raqY = H - 32, fort = 1 + L('combo') * .5;
-  let reste = vals.slice();
-  if (c && c.k === 'paire') {
-    reste.splice(reste.indexOf(c.v), 1); reste.splice(reste.indexOf(c.v), 1);
-    nouvelleBalle(c.v * 2, [c.v, c.v], -Math.PI / 2 + rnd(-.4, .4), { r:13, perce:L('perce') + 2 + L('combo'), gros:true });
-  }
-  reste.forEach((v, i) => nouvelleBalle(v, [v], -Math.PI / 2 + (i - (reste.length - 1) / 2) * .3 + rnd(-.55, .55)));
-  vals.forEach((v, i) => J.pops.push({ x:J.raq.x + (i - (vals.length - 1) / 2) * 22, y:raqY - 30, v, t:0 }));
-  son('relance');
-  if (!c) return;
-  J.flashC = { k:c.k, t:1.4, des:c.des }; J.combos = (J.combos || 0) + 1;
+  if (!J || J.etat !== 'jeu' || J.comboCD > 0) return;
+  const c = comboEnJeu();
+  if (!c) { texte(W / 2, H - 90, 'Pas de combo pour l’instant : attends que tes dés en fassent un', '#9fb3cf', 1); return; }
+  const raqY = H - 32, fort = 1 + L('combo') * .5;
+  J.flashC = { k:c.k, t:1.4, des:c.des }; J.comboCD = 1.2; J.combos = (J.combos || 0) + 1; J.lances = (J.lances || 0) + 1;
   texte(W / 2, H * .45, `${COMBOS[c.k].e} ${COMBOS[c.k].n} !`, '#f3c96b', 1.4); son('ultime', true);
   const onde = n => { J.onde = .5; J.monstres.forEach(m => blesse(m, Math.round(n * fort), '#f3c96b')); J.tremble = .4; };
-  const pluie = n => { for (let i = 0; i < Math.round(n * fort); i++) { const a3 = -Math.PI + rnd(0, Math.PI); J.eclats.push({ x:J.raq.x, y:raqY - 20, vx:Math.cos(a3) * 280, vy:Math.sin(a3) * 280, v:1.4 }); } };
-  if (c.k === 'suite3') pluie(8);
-  if (c.k === 'suite4') pluie(16);
+  const pluie = (n, x, y) => { for (let i = 0; i < Math.round(n * fort); i++) { const a3 = rnd(0, Math.PI * 2); J.eclats.push({ x, y, vx:Math.cos(a3) * 280, vy:Math.sin(a3) * 280, v:1.4 }); } };
+  if (c.k === 'paire') c.balles.forEach(b => { b.dore = 5 + L('combo') * 2; });
+  if (c.k === 'suite3') c.balles.forEach(b => pluie(8 / 3, b.x, b.y));
+  if (c.k === 'suite4') c.balles.forEach(b => pluie(16 / 4, b.x, b.y));
   if (c.k === 'brelan') onde(4 + c.v);
   if (c.k === 'carre') { onde(6 + c.v); J.effets.gel = 4; }
-  if (c.k === 'suite5') { J.monstres.forEach(m => { blesse(m, Math.round(10 * fort), '#ffe14a'); J.eclats.push({ foudre:true, x:m.x, y:m.y, v:.25 }); }); pluie(10); J.tremble = .5; }
+  if (c.k === 'suite5') { J.monstres.forEach(m => { blesse(m, Math.round(10 * fort), '#ffe14a'); J.eclats.push({ foudre:true, x:m.x, y:m.y, v:.25 }); }); J.tremble = .5; }
+  // les dés du combo sont « usés » : ils changent de face (sauf la paire, qui reste dorée)
+  if (c.k !== 'paire') c.balles.forEach(b => { b.v = tirage(); b.usé = .6; });
 }
-function choisir(i) { if (!J || J.etat !== 'jeu' || i >= J.main.length) return; const k = J.sel.indexOf(i); if (k >= 0) J.sel.splice(k, 1); else J.sel.push(i); hud(); }
-function relancerMain() {
-  if (!J || J.etat !== 'jeu' || J.relanceT > 0 || !J.main.length) return;
-  const qui = J.sel.length ? J.sel : J.main.map((_, i) => i);
-  qui.forEach(i => J.main[i] = tirage()); J.sel = []; J.relanceT = 8; son('relance'); hud();
-}
-function rendDe(des) { des.forEach(() => { if (J.main.length + J.perdus.length < tailleMain() + 2) J.main.push(tirage()); }); }
 
 // ------------------------------------------------------------------ l'état d'une partie
 let J = null, cv, ctx, ech = 1, boucle = 0, dernierT = 0, choixH = lire().heros;
@@ -194,10 +189,10 @@ function nouvelle(h) {
   const B = typeof bonusMode === 'function' ? bonusMode(h) : { pv:0, bouclier:0, relance:0, des:0 };
   const pvmax = PV0 + B.pv + B.bouclier;
   J = { heros:h, pv:pvmax, pvmax, t:0, etat:'jeu', score:0, tues:0, xp:0, niv:1, besoin:5, lv:{}, balles:[], monstres:[], tirs:[], gemmes:[], capsules:[], eclats:[], textes:[],
-    raq:{ x:W / 2, w:70 + (h === 'aldric' ? 18 : 0) }, faces:[1, 2, 3, 4, 5, 6], main:[], sel:[], perdus:[], relanceT:0, pops:[], onde:0, prochainSpawn:1, foudreT:3, regenT:15, gardeT:0, boss:false, bossMort:false, tremble:0, effets:{}, fini:false };
+    raq:{ x:W / 2, w:70 + (h === 'aldric' ? 18 : 0) }, faces:[1, 2, 3, 4, 5, 6], perdus:[], pops:[], onde:0, prochainSpawn:1, foudreT:3, regenT:15, gardeT:0, boss:false, bossMort:false, tremble:0, effets:{}, fini:false };
   if (h === 'maelle') J.lv.force = 1; if (h === 'gorm') J.lv.multi = 1; if (h === 'oria') J.lv.aimant = 2; if (h === 'zephine') { J.lv.vitesse = 1; J.lv.cadence = 1; }
   J.lv.multi = (J.lv.multi || 0) + (B.des || 0) + (B.relance || 0);
-  for (let i = 0; i < tailleMain(); i++) J.main.push(tirage());
+  for (let i = 0; i < nbDes(); i++) J.perdus.push({ t:.4 + i * .35 });
 }
 const L = k => J.lv[k] || 0;
 const vitBalle = () => 340 * (1 + .12 * L('vitesse'));
@@ -223,11 +218,12 @@ function pas(dt) {
   J.t += dt; const E = J.effets; for (const k in E) { E[k] -= dt; if (E[k] <= 0) delete E[k]; }
   const raqY = H - 32, lw = largeur();
   // 15/11 soir (retour de l'utilisateur) : c'est le JOUEUR qui lance (clic, toucher, Espace) ; les dés en main se rechargent tout seuls
-  // les dés perdus reviennent après quelques secondes ; la relance de la main se recharge
-  J.perdus.forEach(p => p.t -= dt); J.perdus = J.perdus.filter(p => { if (p.t <= 0) { J.main.push(tirage()); return false; } return true; });
-  if (J.relanceT > 0) J.relanceT -= dt;
-  // une main pleine (rien en vol) : un dé de plus revient pour ne jamais bloquer
-  while (J.main.length + J.perdus.length + J.balles.reduce((n, b) => n + (b.des ? b.des.length : 0), 0) < tailleMain()) J.main.push(tirage());
+  // un dé perdu repart tout seul du bouclier après quelques secondes ; un dé de plus (amélioration) arrive aussi seul
+  J.perdus.forEach(p => p.t -= dt); J.perdus = J.perdus.filter(p => { if (p.t <= 0) { nouvelleBalle(tirage(), -Math.PI / 2 + rnd(-.5, .5)); return false; } return true; });
+  if (J.balles.filter(b => b.de).length + J.perdus.length < nbDes()) J.perdus.push({ t:.3 });
+  J.balles.forEach(b => { if (b.dore > 0) b.dore -= dt; if (b.usé > 0) b.usé -= dt; });
+  if (J.comboCD > 0) J.comboCD -= dt;
+  J.comboP = J.comboCD > 0 ? null : comboEnJeu();
   if (J.gauche) J.raq.x = Math.max(25, J.raq.x - 330 * dt); if (J.droite) J.raq.x = Math.min(W - 25, J.raq.x + 330 * dt);
   // apparitions et boss
   J.prochainSpawn -= dt; if (J.prochainSpawn <= 0 && J.t < DUREE + 60) spawn();
@@ -271,7 +267,7 @@ function pas(dt) {
   for (const c of J.capsules) { c.y += 110 * dt; if (c.y > raqY - 10 && c.y < raqY + 14 && Math.abs(c.x - J.raq.x) < lw / 2 + 10) { c.fin = true; capsule(c.k); } if (c.y > H + 10) c.fin = true; }
   // ménage
   J.monstres = J.monstres.filter(m => { if (m.mort && !m.sansGemme) meurt(m); return !m.mort; });
-  J.balles = J.balles.filter(b => { if (b.attrape) { rendDe(b.des || []); return false; } if (b.y >= H + 20) { (b.des || []).forEach(() => J.perdus.push({ t:delaiPerdu() })); if ((b.des || []).length) texte(Math.max(30, Math.min(W - 30, b.x)), H - 50, '🎲 perdu', '#ff9a7a', .8); return false; } return true; }); J.tirs = J.tirs.filter(f => !f.fin); J.gemmes = J.gemmes.filter(g => !g.fin); J.capsules = J.capsules.filter(c => !c.fin);
+  J.balles = J.balles.filter(b => { if (b.y >= H + 20) { if (b.de) { J.perdus.push({ t:delaiPerdu() }); texte(Math.max(30, Math.min(W - 30, b.x)), H - 50, '🎲 perdu', '#ff9a7a', .8); } return false; } return true; }); J.tirs = J.tirs.filter(f => !f.fin); J.gemmes = J.gemmes.filter(g => !g.fin); J.capsules = J.capsules.filter(c => !c.fin);
   J.eclats = J.eclats.filter(e => e.v > 0 && e.y > -10 && e.y < H + 10); J.textes.forEach(t => { t.y -= 28 * dt; t.v -= dt; }); J.textes = J.textes.filter(t => t.v > 0);
   if (J.flashC) { J.flashC.t -= dt; if (J.flashC.t <= 0) J.flashC = null; } J.pops.forEach(p => p.t += dt); J.pops = J.pops.filter(p => p.t < .8); if (J.onde > 0) J.onde -= dt;
   if (J.tremble > 0) J.tremble -= dt;
@@ -279,19 +275,18 @@ function pas(dt) {
   if (J.bossMort || (J.t >= DUREE && J.boss && !J.monstres.some(m => MONSTRES[m.k].boss))) return fin(true);
 }
 function bouge(b, dt, raqY, lw) {
-  if (b.des) b.vy += GRAV * dt; // les dés RETOMBENT (on les rattrape, on relance : plus de lancers, plus de choix)
   b.x += b.vx * dt; b.y += b.vy * dt;
   if (b.x < b.r) { b.x = b.r; b.vx = Math.abs(b.vx); } if (b.x > W - b.r) { b.x = W - b.r; b.vx = -Math.abs(b.vx); } if (b.y < b.r) { b.y = b.r; b.vy = Math.abs(b.vy); }
   if (b.vy > 0 && b.y + b.r >= raqY && b.y + b.r <= raqY + 14 && Math.abs(b.x - J.raq.x) <= lw / 2 + b.r) {
-    if (b.des) { b.attrape = true; texte(b.x, raqY - 14, '✋', '#7dffb0', .5); son('pioche'); return; }
-    const k = (b.x - J.raq.x) / (lw / 2), a = -Math.PI / 2 + k * 1.05, s = vitBalle(); b.vx = Math.cos(a) * s; b.vy = Math.sin(a) * s; b.y = raqY - b.r; b.perce = L('perce'); }
+    const k = (b.x - J.raq.x) / (lw / 2), a = -Math.PI / 2 + k * 1.05, s = vitBalle(); b.vx = Math.cos(a) * s; b.vy = Math.sin(a) * s; b.y = raqY - b.r; b.perce = L('perce');
+    if (b.de) { b.v = tirage(); J.pops.push({ x:b.x, y:raqY - 28, v:b.v, t:0 }); son('relance'); } }
   for (const m of J.monstres) {
     if (m.mort || b.dejaT === m) continue;
     const dx = b.x - m.x, dy = b.y - m.y; if (dx * dx + dy * dy > (b.r + m.r) ** 2) continue;
-    blesse(m, b.v + L('force')); if (L('feu')) m.brule = 3;
+    blesse(m, (b.v + L('force')) * (b.dore > 0 ? 2 : 1)); if (L('feu')) m.brule = 3;
     if (b.v === 6 && L('six')) { J.monstres.forEach(o => { if (o !== m && !o.mort && Math.hypot(o.x - m.x, o.y - m.y) < 55 + L('six') * 12) blesse(o, 2 + L('six') * 2, '#ff9f2a'); }); J.eclats.push({ boum:true, x:m.x, y:m.y, v:.3 }); }
     for (let i = 0; i < L('eclat'); i++) { const a = rnd(0, Math.PI * 2); J.eclats.push({ x:b.x, y:b.y, vx:Math.cos(a) * 260, vy:Math.sin(a) * 260, v:.6 }); }
-    if (b.perce > 0) { b.perce--; b.dejaT = m; continue; }
+    if (b.dore > 0 || b.perce > 0) { if (!(b.dore > 0)) b.perce--; b.dejaT = m; continue; }
     const d = Math.hypot(dx, dy) || 1, nx = dx / d, ny = dy / d, p = b.vx * nx + b.vy * ny; b.vx -= 2 * p * nx; b.vy -= 2 * p * ny; b.x = m.x + nx * (m.r + b.r + 1); b.y = m.y + ny * (m.r + b.r + 1); b.dejaT = m;
     break;
   }
@@ -365,8 +360,15 @@ function dessine() {
   for (const e of J.eclats) { if (e.boum) { ctx.beginPath(); ctx.arc(e.x, e.y, 30 + (0.3 - e.v) * 120, 0, 7); ctx.fillStyle = `rgba(255,159,42,${e.v * 2})`; ctx.fill(); continue; }
     if (e.foudre) { const m = e; ctx.strokeStyle = '#ffe14a'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(m.x, 0); for (let y = 30; y < m.y; y += 30) ctx.lineTo(m.x + rnd(-10, 10), y); ctx.lineTo(m.x, m.y); ctx.stroke(); continue; }
     ctx.beginPath(); ctx.arc(e.x, e.y, 3, 0, 7); ctx.fillStyle = '#ffe9a8'; ctx.fill(); }
-  for (const b of J.balles) { const c = b.gros ? '#f3c96b' : COUL[b.v] || '#fff'; ctx.globalAlpha = b.vie != null ? Math.min(1, b.vie / 1.2 + .15) : 1; ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, 7); const gg = ctx.createRadialGradient(b.x - 2, b.y - 2, 1, b.x, b.y, b.r); gg.addColorStop(0, '#fff'); gg.addColorStop(1, L('feu') ? '#ff6a2a' : c);
-    ctx.fillStyle = gg; ctx.shadowColor = c; ctx.shadowBlur = 10; ctx.fill(); ctx.shadowBlur = 0; ctx.fillStyle = '#000'; ctx.font = 'bold 8px Georgia'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(b.v + L('force'), b.x, b.y + .5); ctx.globalAlpha = 1; }
+  const dansCombo = new Set(J.comboP ? J.comboP.balles : []);
+  for (const b of J.balles) {
+    if (!b.de) { ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, 7); ctx.fillStyle = COUL[b.v] || '#fff'; ctx.shadowColor = '#fff'; ctx.shadowBlur = 8; ctx.fill(); ctx.shadowBlur = 0; continue; }
+    const s = 20, im = img(`faces-${J.heros}/face-${b.v}.webp`);
+    ctx.save(); if (b.dore > 0 || dansCombo.has(b)) { ctx.shadowColor = '#f3c96b'; ctx.shadowBlur = b.dore > 0 ? 18 : 12; }
+    if (im.complete && im.naturalWidth) ctx.drawImage(im, b.x - s / 2, b.y - s / 2, s, s); else { ctx.fillStyle = '#f6efe0'; ctx.fillRect(b.x - s / 2, b.y - s / 2, s, s); ctx.fillStyle = '#2b1d0a'; ctx.font = 'bold 12px Georgia'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(b.v, b.x, b.y); ctx.textBaseline = 'alphabetic'; }
+    ctx.restore();
+    if (b.dore > 0 || dansCombo.has(b)) { ctx.strokeStyle = '#f3c96b'; ctx.lineWidth = 2; ctx.strokeRect(b.x - s / 2 - 2, b.y - s / 2 - 2, s + 4, s + 4); }
+  }
   // le dé qui jaillit à chaque lancer
   for (const p of J.pops) { const k = Math.min(1, p.t / .15), s = 26 * (k < 1 ? .5 + k * .7 : 1.2 - (p.t - .15) * .4), al = Math.max(0, 1 - Math.max(0, p.t - .45) / .35);
     const i = img(`faces-${J.heros}/face-${p.v}.webp`); ctx.globalAlpha = al; if (i.complete && i.naturalWidth) ctx.drawImage(i, p.x - s, p.y - s - p.t * 40, s * 2, s * 2); ctx.globalAlpha = 1; }
@@ -374,7 +376,7 @@ function dessine() {
   // le bouclier et les orbes
   const lw = largeur(), raqY = H - 32, coul = HER[J.heros].c;
   ctx.save(); ctx.beginPath(); ctx.roundRect(J.raq.x - lw / 2, raqY, lw, 11, 6); const gr = ctx.createLinearGradient(0, raqY, 0, raqY + 11); gr.addColorStop(0, '#fff'); gr.addColorStop(1, coul); ctx.fillStyle = gr; ctx.shadowColor = coul; ctx.shadowBlur = 16; ctx.fill(); ctx.restore();
-  if ((J.lances || 0) < 2) { ctx.font = 'bold 14px Georgia'; ctx.textAlign = 'center'; ctx.fillStyle = '#000'; ctx.fillText('👇 Choisis des dés en bas, puis LANCE', W / 2 + 1, H - 69); ctx.fillStyle = '#f3c96b'; ctx.fillText('👇 Choisis des dés en bas, puis LANCE', W / 2, H - 70); }
+  if (J.t < 10) { ctx.font = 'bold 14px Georgia'; ctx.textAlign = 'center'; ctx.fillStyle = '#000'; ctx.fillText('Renvoie tes dés : chaque rebond change leur face', W / 2 + 1, H - 69); ctx.fillStyle = '#f3c96b'; ctx.fillText('Renvoie tes dés : chaque rebond change leur face', W / 2, H - 70); }
   if (J.flashC) { const F = J.flashC, s = `${COMBOS[F.k].e} ${COMBOS[F.k].n} !`; ctx.font = 'bold 15px Georgia'; ctx.textAlign = 'center'; const w = ctx.measureText(s).width + 18; ctx.globalAlpha = Math.min(1, F.t * 2); ctx.beginPath(); ctx.roundRect(W / 2 - w / 2, H - 100, w, 24, 12); ctx.fillStyle = '#f3c96b'; ctx.fill(); ctx.fillStyle = '#2b1d0a'; ctx.fillText(s, W / 2, H - 83); ctx.globalAlpha = 1; }
   for (let i = 0; i < L('orbe'); i++) { const a = J.t * 3 + i * Math.PI * 2 / L('orbe'); ctx.beginPath(); ctx.arc(J.raq.x + Math.cos(a) * (lw / 2 + 26), raqY - 20 + Math.sin(a) * 34, 7, 0, 7); ctx.fillStyle = '#c084fc'; ctx.shadowColor = '#c084fc'; ctx.shadowBlur = 12; ctx.fill(); ctx.shadowBlur = 0; }
   ctx.textAlign = 'center'; ctx.font = 'bold 13px Georgia';
@@ -388,13 +390,12 @@ function hud() {
   $('hT').textContent = J.boss ? (J.monstres.some(m => MONSTRES[m.k].boss) ? '🔥 Titan !' : `${Math.floor(reste / 60)}:${String(reste % 60).padStart(2, '0')}`) : `${Math.floor(reste / 60)}:${String(reste % 60).padStart(2, '0')}`;
   $('hPV').textContent = Math.max(0, J.pv); $('hN').textContent = J.niv; $('hS').textContent = J.score;
   $('hVie').style.width = Math.max(0, 100 * J.pv / J.pvmax) + '%'; $('hXP').style.width = Math.min(100, 100 * J.xp / J.besoin) + '%';
-  // la main de dés
-  const sv = J.sel.map(i => J.main[i]), cc = sv.length ? combo(sv) : null;
-  const m = `<div class="md">${J.main.map((v, i) => `<button class="d${J.sel.includes(i) ? ' on' : ''}" onclick="choisir(${i})"><img src="faces-${J.heros}/face-${v}.webp" alt="${v}"></button>`).join('')}${J.perdus.map(p => `<span class="d vide">⏳${Math.ceil(p.t)}</span>`).join('')}</div>
-    <button class="rl" onclick="relancerMain()" ${J.relanceT > 0 ? 'disabled' : ''} title="Relancer les dés choisis (ou toute la main)">🔄${J.relanceT > 0 ? Math.ceil(J.relanceT) : ''}</button>
-    <button class="go2" onclick="lancer()" ${sv.length ? '' : 'disabled'}>LANCER ▲</button>`;
+  // le bouton COMBO (s'allume quand les dés en jeu forment un combo)
+  const cp = J.comboP, enJeu = J.balles.filter(b => b.de).map(b => b.v);
+  const m = `<div class="md">${enJeu.map(v => `<span class="d"><img src="faces-${J.heros}/face-${v}.webp" alt="${v}"></span>`).join('')}${J.perdus.map(p => `<span class="d vide">⏳${Math.ceil(p.t)}</span>`).join('')}</div>
+    <button class="go2${cp ? ' pret' : ''}" onclick="lancer()" ${cp ? '' : 'disabled'}>${cp ? `${COMBOS[cp.k].e} ${COMBOS[cp.k].n} !` : 'COMBO'}</button>`;
   if ($('mainD').dataset.b !== m) { $('mainD').innerHTML = m; $('mainD').dataset.b = m; }
-  const cl = !sv.length ? 'Touche des dés pour les choisir : lancés <b>ensemble</b>, ils font des combos.' : cc ? `${COMBOS[cc.k].e} <b>${COMBOS[cc.k].n}</b> : ${COMBOS[cc.k].d}` : `${sv.length} dé${sv.length > 1 ? 's' : ''} · pas de combo`;
+  const cl = cp ? `<b>${COMBOS[cp.k].n} prêt</b> : ${COMBOS[cp.k].d}` : 'Chaque rebond change la face de tes dés. 2 pareils, 3 qui se suivent… = combo !';
   if ($('comboL').innerHTML !== cl) $('comboL').innerHTML = cl;
   const b = `<span class="faces" title="Les 6 faces de ton dé : chaque lancer en tire une au hasard">🎲 faces ${J.faces.map(v => `<img src="faces-${J.heros}/face-${v}.webp" alt="${v}">`).join('')}</span>
 `
@@ -410,10 +411,10 @@ function ecranJeu() {
   // la main de dés change la hauteur du bas : on recalcule la taille du jeu quand la zone change
   if (window.ResizeObserver) new ResizeObserver(taille).observe($('zone'));
   const pos = e => { const r = cv.getBoundingClientRect(); return (e.clientX - r.left) * W / r.width; };
-  // la souris bouge le bouclier sans appuyer ; clic (ou toucher) sur le jeu = lancer les dés choisis
+  // la souris bouge le bouclier sans appuyer ; clic (ou toucher) sur le jeu = déclencher le combo prêt
   cv.onpointerdown = e => { cv.setPointerCapture(e.pointerId); J.raq.x = Math.max(25, Math.min(W - 25, pos(e))); lancer(); };
   cv.onpointermove = e => { J.raq.x = Math.max(25, Math.min(W - 25, pos(e))); };
-  document.onkeydown = e => { if (!J) return; if (e.code === 'Space') { e.preventDefault(); if (!e.repeat) lancer(); } if (/^[1-7]$/.test(e.key)) choisir(+e.key - 1); if (e.key === 'r' || e.key === 'R') relancerMain(); if (e.key === 'ArrowLeft') J.gauche = true; if (e.key === 'ArrowRight') J.droite = true; };
+  document.onkeydown = e => { if (!J) return; if (e.code === 'Space') { e.preventDefault(); if (!e.repeat) lancer(); }  if (e.key === 'ArrowLeft') J.gauche = true; if (e.key === 'ArrowRight') J.droite = true; };
   document.onkeyup = e => { if (!J) return; if (e.key === 'ArrowLeft') J.gauche = false; if (e.key === 'ArrowRight') J.droite = false; };
   cancelAnimationFrame(boucle); dernierT = 0; boucle = requestAnimationFrame(tour);
 }
@@ -423,9 +424,9 @@ function pause() { if (!J || J.etat !== 'jeu') return; J.etat = 'pause'; fenetre
 function regles(enJeu) {
   if (enJeu && J && J.etat === 'jeu') J.etat = 'pause';
   fenetre(`<h2>🕳️ La Fosse aux Runes</h2><div class="moust"><img src="ui/moustache.webp" alt=""><p>« Ça grouille ! Bouge ton bouclier, ramasse les gemmes, et choisis bien tes améliorations. Moi je compte les secondes. Miaou. »</p></div>
-    <ol><li><b>Ta main de dés</b> (en bas) : 5 dés, faces visibles. <b>Touche les dés</b> que tu veux lancer (ou touches 1 à 7), puis <b>LANCER ▲</b> (ou Espace, ou un clic sur le jeu). Les dés lancés <b>ensemble</b> font des combos :
-      🎲🎲 <b>paire</b> = une grosse balle (× 2) qui traverse ; 🌠 <b>3 qui se suivent</b> = 8 éclats ; 💥 <b>brelan</b> = onde de choc sur tous ; 🌠 <b>4 qui se suivent</b> = 16 éclats ; ❄️ <b>carré</b> = onde + tout gèle ; ⚡ <b>5 qui se suivent</b> = la foudre sur tous. L’annonce au-dessus de ta main te dit ce que ta sélection va faire.</li>
-    <li><b>Rattrape tes dés</b> avec le bouclier (bouge la souris, glisse le doigt ou les flèches) : un dé rattrapé revient dans ta main avec une <b>nouvelle face</b>. Un dé raté est perdu quelques secondes (⏳). 🔄 <b>Relancer</b> (touche R, toutes les 8 s) : relance les dés choisis, ou toute ta main. Garder trois 6 pour un brelan quand l’essaim arrive, ou tirer tout de suite ? À toi de voir.</li>
+    <ol><li><b>Tes balles sont des dés</b> (4 au départ) : ils partent seuls de ton bouclier. <b>Bouge le bouclier</b> (souris, doigt ou flèches) pour les renvoyer. <b>À chaque rebond sur le bouclier, le dé change de face</b>. Un dé raté repart tout seul quelques secondes plus tard (⏳).</li>
+    <li><b>Combos</b> : quand les dés en jeu (montrés en bas) forment un combo, ils brillent et le bouton <b>COMBO</b> s’allume. Touche-le (ou Espace, ou clic sur le jeu) pour le déclencher, au bon moment, ou attends un meilleur combo… mais il peut disparaître au prochain rebond !
+      🎲🎲 <b>paire</b> = ces 2 dés deviennent dorés (× 2, ils traversent) ; 🌠 <b>3 qui se suivent</b> = éclats ; 💥 <b>brelan</b> = onde de choc sur tous ; 🌠 <b>4 qui se suivent</b> = plus d’éclats ; ❄️ <b>carré</b> = onde + tout gèle ; ⚡ <b>5 qui se suivent</b> = la foudre sur tous.</li>
     <li>Les monstres descendent <b>de plus en plus vite</b> et <b>attaquent</b> : 🔥 les salamandres crachent du feu (évite-le !), 🐺 les loups plongent sur toi, 🪲 les scarabées arrivent en essaim, 🗿 les golems encaissent tout. S’ils touchent le rempart, tu perds des PV.</li>
     <li>Chaque monstre abattu lâche des <b>gemmes 💎</b> : ramasse-les avec ton bouclier. Barre bleue pleine = <b>un niveau : pause, choisis 1 amélioration parmi 3</b>.</li>
     <li>Les capsules dorées : ✦ trois balles de 6, ❄ tout ralentit, ❤ soin, 🛡 grand bouclier.</li>
