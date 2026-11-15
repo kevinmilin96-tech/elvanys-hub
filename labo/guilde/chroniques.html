@@ -105,14 +105,14 @@
 <body>
 <div id="app"></div>
 <div id="fen"></div>
-<script src="musique.js?v=20261115-194541"></script>
-<script src="rang.js?v=20261115-194541"></script>
+<script src="musique.js?v=20261115-195428"></script>
+<script src="rang.js?v=20261115-195428"></script>
 <script>window.AMIS_SANS_BOUTON = true;</script>
-<script src="amis.js?v=20261115-194541"></script>
-<script src="heros-etoiles.js?v=20261115-194541"></script>
-<script src="progression-modes.js?v=20261115-194541"></script>
-<script src="aventuriers.js?v=20261115-194541"></script>
-<script src="chroniques-moteur.js?v=20261115-194541"></script>
+<script src="amis.js?v=20261115-195428"></script>
+<script src="heros-etoiles.js?v=20261115-195428"></script>
+<script src="progression-modes.js?v=20261115-195428"></script>
+<script src="aventuriers.js?v=20261115-195428"></script>
+<script src="chroniques-moteur.js?v=20261115-195428"></script>
 <script>
 // =============================================================================================== LES CHRONIQUES DE LA GUILDE v2 (15/11, écran « façon HeroQuest »)
 // Une grande carte qui défile : les salles restent dans le noir jusqu'à ce qu'on ouvre leur porte ; les couloirs se dévoilent en avançant ;
@@ -495,7 +495,7 @@ function finPartie() {
   if (typeof avGagne === 'function' && !S.butinFait) { S.butinFait = true;
     const or = (S.orAv || 0) + (gagne ? 25 : 5), g = avGagne(or, (S.equipTrouve || 0) + (gagne ? 1 : 0), gagne);
     butin = `<p style="text-align:center">⚒ Pour tes héros : 🪙 +${or} or${g.length ? ` · ${g.map(p => `<b style="color:${EQ_RARE[p.r].c}">${EQ_CASES.find(c => c.k === p.slot).e} ${p.nom}</b>`).join(', ')}` : ''}</p>`; }
-  fenetre(gagne ? `<h2>${SCT().gagne[0]}</h2><div class="moust"><img src="ui/moustache.webp" alt=""><div class="lu">${SCT().gagne[1]}</div></div>
+  fenetre(gagne ? `<h2>${SCT().gagne[0]}</h2>${(S.scen || 'horloger') === 'horloger' ? '<img src="decor/chron-horloger-fin.webp?v=1" alt="" style="width:100%;border-radius:12px;margin:2px 0 8px;display:block">' : ''}<div class="moust"><img src="ui/moustache.webp" alt=""><div class="lu">${SCT().gagne[1]}</div></div>
       <p style="text-align:center">Score : <b style="color:var(--or)">${S.score}</b> · ${S.tours} tours · ⌛ ${S.sablier} grains${S.sablier > 0 ? '<br>🏅 Titre « <b>Gardiens du temps</b> » : le sablier n’est jamais tombé à zéro !' : ''}</p>
       <p style="text-align:center">✨ Chaque héros gagne des éclats et de l’XP${objet ? ` · 🎒 <b>${objet}</b> rejoint l’armurerie` : ''}.</p>${butin}${campagne}${salleBt}<button class="${campagne || salleBt ? 'sec' : 'go'}" onclick="fin()">Retour à la Guilde</button>`
     : `<h2>❄ Figés…</h2><div class="moust"><img src="ui/moustache.webp" alt=""><div class="lu">« Figés. Tous. Comme des statues. Très jolies, d’ailleurs. L’Horloger vous remonte comme des jouets… On réessaie ? »</div></div>
@@ -590,7 +590,9 @@ function basculeHeros(k) { if (choisis.includes(k)) choisis = choisis.filter(x =
 let DLG = null;
 function dialogue(titre, lignes, k = 0) {
   DLG = { titre, lignes }; const der = k >= lignes.length - 1;
-  fenetre(`<h2>${titre}</h2>${lignes.slice(0, k + 1).map((l, i) => `<div class="moust" style="${i < k ? 'opacity:.55' : 'animation:apparait .35s'}"><img src="ui/moustache.webp" alt=""><div class="lu">${l}</div></div>`).join('')}
+  // 15/11 soir : la page peinte de l'ouverture du Sommeil de l'Horloger
+  const page = k === 0 && typeof S !== 'undefined' && S && (S.scen || 'horloger') === 'horloger' && S.campagne == null ? '<img src="decor/chron-horloger-debut.webp?v=1" alt="" style="width:100%;border-radius:12px;margin:2px 0 8px;display:block">' : '';
+  fenetre(`<h2>${titre}</h2>${page}${lignes.slice(0, k + 1).map((l, i) => `<div class="moust" style="${i < k ? 'opacity:.55' : 'animation:apparait .35s'}"><img src="ui/moustache.webp" alt=""><div class="lu">${l}</div></div>`).join('')}
     <button class="go" onclick="${der ? `fenetre('')` : `son('choisir');dialogue(DLG.titre, DLG.lignes, ${k + 1})`}">${der ? 'On y va !' : 'Suivant ▶'}</button>`, false);
 }
 // ------------------------------------------------------------------ LA SALLE D'ATTENTE (15/11 ~17 h 20, demande de l'utilisateur)
@@ -690,9 +692,9 @@ accueil();
 { const s = new URLSearchParams(location.search).get('salle'); if (s) { history.replaceState(null, '', location.pathname); const c = (typeof AMIS !== 'undefined' && AMIS.carte) || null, nom = (c && c.pseudo) || localStorage.getItem('guilde-pseudo');
     if (nom) rejoindre(s, { id:'j' + Math.random().toString(36).slice(2, 10), nom }); else { rejoindreForm(); setTimeout(() => { const i = $('fCode'); if (i) i.value = s; }, 150); } } }
 </script>
-<script src="chroniques-aventures.js?v=20261115-194541"></script>
-<script src="guide.js?v=20261115-194541"></script>
-<script src="guides-modes.js?v=20261115-194541"></script>
+<script src="chroniques-aventures.js?v=20261115-195428"></script>
+<script src="guide.js?v=20261115-195428"></script>
+<script src="guides-modes.js?v=20261115-195428"></script>
 <script>
 // 15/11 : le guide de Moustache de ce mode (guides-modes.js)
 { const _a = accueil; accueil = function () { const r = _a.apply(this, arguments); guideMode('chroniques'); return r; }; }
