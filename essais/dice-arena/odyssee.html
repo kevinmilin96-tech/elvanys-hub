@@ -64,6 +64,7 @@
   .k.boss { background:#5a1a1a; border-color:#ff4a1a; } .k.porte { background:#3a2a4a; } .k.porte.fait { background:#2a4a3a; }
   .k.mur { background:#3a3a3a; }
   .legende { font-size:.78em; color:var(--doux); display:flex; flex-wrap:wrap; gap:4px 10px; padding:2px 4px; }
+  .legende span { cursor:pointer; border-bottom:1px dotted #c9c1ea66; } /* 15/11 : une description au toucher */
   #fiche-trajet { position:fixed; left:50%; transform:translateX(-50%); bottom:calc(10px + env(safe-area-inset-bottom)); width:min(94vw, 480px); z-index:900; background:#1b1838f5; border:2px solid #7dffb0; border-radius:16px; padding:10px 12px; box-shadow:0 8px 30px #000c; animation:ftIn .25s; }
   @keyframes ftIn { from { transform:translate(-50%, 20px); opacity:0; } }
   #fiche-trajet .ft-t { display:flex; gap:10px; align-items:center; } #fiche-trajet .ft-e { font-size:30px; width:40px; text-align:center; } #fiche-trajet b { color:#f3c96b; } #fiche-trajet small { display:block; color:#c9c1ea; }
@@ -298,7 +299,7 @@ function dessine() {
   ${carteSVG()}
   <div class="bulles" id="bulles">${bullesHTML()}</div>
   <div class="bandeau">${r.vivres ? 'Touche une salle verte : une fiche dit ce qu’il y a et le prix en huile ; « Y aller » pour partir.' : '<b style="color:#ff7a7a">Lanterne éteinte : chaque case nouvelle coûte 3 PV.</b>'} ${r.fragments >= 2 ? '<b style="color:var(--ok)">Tu as les 2 fragments : la porte 🚪 t’attend.</b>' : ''}</div>
-  <div class="legende"><span>⚔ monstres (I, II, III)</span><span>💀 élite</span><span>🗝 coffre</span><span>💧 source</span><span>🏪 marchand</span><span>❓ événement</span><span>🔥 autel</span><span>🏕 feu de camp</span><span>🧱 mur fissuré</span><span>⚒ forge</span><span>🎲 sac de Moustache</span><span>🎯 défi</span><span>⛲ fontaine</span><span>❔ mystère</span><span>🚪 porte</span><span>👑 boss</span></div>
+  <div class="legende" title="Touche une étiquette pour sa description"><span onclick="legendeInfo('monstre')">⚔ monstres (I, II, III)</span><span onclick="legendeInfo('elite')">💀 élite</span><span onclick="legendeInfo('coffre')">🗝 coffre</span><span onclick="legendeInfo('source')">💧 source</span><span onclick="legendeInfo('marchand')">🏪 marchand</span><span onclick="legendeInfo('evenement')">❓ événement</span><span onclick="legendeInfo('autel')">🔥 autel</span><span onclick="legendeInfo('feu')">🏕 feu de camp</span><span onclick="legendeInfo('mur')">🧱 mur fissuré</span><span onclick="legendeInfo('forge')">⚒ forge</span><span onclick="legendeInfo('sac')">🎲 sac de Moustache</span><span onclick="legendeInfo('defi')">🎯 défi</span><span onclick="legendeInfo('fontaine')">⛲ fontaine</span><span onclick="legendeInfo('mystere')">❔ mystère</span><span onclick="legendeInfo('porte')">🚪 porte</span><span onclick="legendeInfo('boss')">👑 boss</span></div>
   <div class="bas"><button onclick="monDeck()">🂠 Deck</button><button onclick="journal()">📜 Journal</button><button onclick="reglesCourtes()">❓ Règles</button><button onclick="abandon()">⏏ Quitter</button></div>`;
   if (r.sansfin) sfEcran(); else if (r.aventure && localStorage.getItem('guilde-guide-odyssee')) Guide.lance('aventure', GUIDE_AV); else Guide.lance('odyssee', r.aventure ? [...GUIDE_ODY, ...GUIDE_AV] : GUIDE_ODY, false, () => { if (r.aventure) localStorage.setItem('guilde-guide-aventure', '1'); }); // 15/11 : sinon la fin du guide revenait une 2e fois
 }
@@ -443,7 +444,7 @@ const GUIDE_ODY = [
   [null, 'Bienvenue sur l’île, aventurier ! Elle est cachée dans la brume : tu la découvres <b>case par case</b>. Au bout, un boss t’attend derrière une porte scellée.'],
   ['svg.ile', 'Voici la carte. Les salles <b>en vert</b> sont celles où tu peux aller. Touche-en une : une fiche te dit ce qu’il y a et combien d’huile ça coûte. Ton héros part seulement quand tu touches <b>« Y aller »</b>.'],
   ['.entete', 'Tes réserves. ❤ ta vie (elle ne remonte pas toute seule !), 💰 ton or pour le marchand, 🪔 <b>l’huile de ta lanterne</b> : chaque case nouvelle en coûte 1. Sans huile, chaque case nouvelle coûte 3 PV. 🗝 ouvre les coffres, 🔮 les fragments.'],
-  ['.legende', 'Les salles. ⚔ monstres, 💀 élites : bats <b>2 élites</b> pour gagner 2 fragments 🔮 et ouvrir la porte du boss. Le reste t’aide : sources, marchand, feu de camp, coffres…'],
+  ['.legende', 'Les salles (touche une étiquette pour sa description). ⚔ monstres, 💀 élites : bats <b>2 élites</b> pour gagner 2 fragments 🔮 et ouvrir la porte du boss. Le reste t’aide : sources, marchand, feu de camp, coffres…'],
   ['.bulles', 'Ici, ton héros et moi, on commente l’aventure. Je donne souvent de bons conseils. Souvent.'],
   ['.bas', '🂠 ton deck (les cartes gagnées en route), 📜 le journal, ❓ les règles. Et ⏏ pour quitter : la partie est gardée. Bonne exploration, miaou !'],
 ];
@@ -595,6 +596,8 @@ function ficheTrajet(c, chemin, cout) {
     <div class="ft-c">👣 ${chemin.length} case${chemin.length > 1 ? 's' : ''}${neuves ? ` dont ${neuves} nouvelle${neuves > 1 ? 's' : ''}` : ''} · ${cout ? `🪔 <b>${cout}</b> dose${cout > 1 ? 's' : ''} d’huile (il t’en reste ${R.vivres})` : '🪔 gratuit (déjà exploré)'}${noir ? '<br><b style="color:#ff7a7a">Pas assez d’huile : 3 PV par case dans le noir.</b>' : ''}</div>
     <div class="ft-b"><button class="non" onclick="annuleTrajet()">Annuler</button><button class="oui" onclick="marcheVers(${c.x},${c.y},true)">▶ Y aller</button></div></div>`);
 }
+// 15/11 (l'utilisateur : « une petite description sur chaque étiquette ») : la légende de la carte s'explique au toucher
+function legendeInfo(k) { const S0 = SALLES_ODY[k] || { e:'', n:k }; info(`${S0.e} ${S0.n}`, DESC_SALLE[k] || ''); }
 function fermeFicheTrajet() { const f = document.getElementById('fiche-trajet'); if (f) f.remove(); }
 function annuleTrajet() { destination = null; fermeFicheTrajet(); const t = document.getElementById('trajet'); if (t) t.remove(); dessine(); }
 function montreTrajet(c, chemin) {
