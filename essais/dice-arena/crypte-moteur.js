@@ -115,6 +115,45 @@ function gardien(R, etage = 0, vies = 1) {
   return { id:'g', m, nom, niv:5, att:(vies > 1 ? 3 : 2) + Math.max(0, etage - 1), trait:'furie', gardien:true, vue:true, sceaux:sceauxGardien(R, etage), age:0, vies, viesMax:vies };
 }
 
+// ------------------------------------------------------------------ LA REJOUABILITÉ DU SOLITAIRE (15/11 soir, choix de l'utilisateur)
+// 1) VARIANTES DE PLATEAU : la disposition des cartes change (la crypte du jour en tire une par la date) ; toujours 12 cartes.
+const VARIANTES = {
+  classique:{ e:'🂠', n:'Trois colonnes', d:'La crypte classique : 3 colonnes de 4 cartes.', plan:[[4, 3, 2, 1], [4, 3, 2, 1], [4, 3, 2, 1]] },
+  quatre:   { e:'🃏', n:'Quatre colonnes', d:'4 colonnes de 3 cartes : plus de monstres visibles à la fois, mais des colonnes plus courtes.', plan:[[4, 2, 1], [3, 2, 1], [3, 2, 1], [4, 2, 1]] },
+  escalier: { e:'🪜', n:'L’escalier', d:'Des colonnes de 5, 4 et 3 cartes : la grande colonne cache sa meilleure élite tout au fond. Les monstres forts (◆◆◆ et élites) frappent 1 de plus.', force:1, plan:[[4, 3, 3, 2, 1], [4, 2, 2, 1], [3, 2, 1]] },
+  tours:    { e:'🗼', n:'Les deux tours', d:'2 colonnes de 6 cartes : seulement 2 monstres visibles, mais il faut percer haut. Les monstres forts (◆◆◆ et élites) frappent 2 de plus.', force:2, plan:[[4, 3, 3, 2, 2, 1], [4, 3, 2, 2, 1, 1]] },
+};
+const varianteDuJour = jour => { let h = 7; for (const c of String(jour)) h = (h * 33 + c.charCodeAt(0)) >>> 0; const k = Object.keys(VARIANTES); return k[h % k.length]; };
+// 2) CARTES SPÉCIALES : dans les colonnes, des cartes qui ne sont pas des monstres. On brise leurs sceaux comme ceux d'un monstre.
+const SPECIALES = {
+  coffre:{ e:'🧰', n:'Coffre scellé', d:'Ne frappe pas. Ouvert (sceaux brisés), il donne ce qui est écrit dessus.' },
+  autel: { e:'🕯️', n:'Autel des runes', d:'Ne frappe pas. Ses sceaux brisés, il charge entièrement le pouvoir de ton héros.' },
+  piege: { e:'⚙️', n:'Piège à ressort', d:'Frappe de 2 à chaque fin de tour tant qu’il est visible. Désamorcé : +3 or.' },
+};
+const GAINS_COFFRE = { rune:{ e:'✦', n:'une Rune' }, soin:{ e:'❤', n:'+10 PV' }, bouclier:{ e:'🛡', n:'+6 bouclier' }, or:{ e:'🪙', n:'+6 or' } };
+function speciale(R, k, n) {
+  const c = { id:'s' + n, m:null, special:k, nom:SPECIALES[k].n, e:SPECIALES[k].e, niv:1, att:k === 'piege' ? 2 : 0, trait:null, vue:false, elite:false, age:0 };
+  if (k === 'coffre') { c.sceaux = [sceau('dbl', 0, 1), sceau('dbl', 0, 1)]; c.gain = pick(R, Object.keys(GAINS_COFFRE)); }
+  if (k === 'autel') c.sceaux = [sceau('min', 4), sceau('min', 4)];
+  if (k === 'piege') c.sceaux = [sceau('ex', de6(R)), sceau('ex', de6(R))];
+  return c;
+}
+// 3) LES DÉFIS À ÉTOILES : chaque crypte en tire 3 ; une victoire + un défi réussi = une étoile. (Réglés au simulateur.)
+const DEFIS = {
+  robuste:   { e:'❤', n:'Increvable', d:'Gagner avec 22 PV ou plus.', ok:S => S.pv >= 22 },
+  rapide:    { e:'⚡', n:'Éclair', d:'Gagner en 11 tours ou moins.', ok:S => S.tour <= 11 },
+  sansBesace:{ e:'🎒', n:'Mains vides', d:'Ne jamais ranger de dé dans la besace.', ok:S => !st(S).besace },
+  sansRune:  { e:'✦', n:'Sans magie', d:'Ne jamais utiliser de Rune.', ok:S => !st(S).runes },
+  chaine:    { e:'⛓', n:'Carambolage', d:'Faire tomber 3 cartes dans le même tour.', ok:S => S.chaineMax >= 3 },
+  sansRelance:{ e:'🎲', n:'Du premier coup', d:'Ne jamais relancer les dés.', ok:S => !st(S).relances },
+  heroique:  { e:'⚡', n:'Héroïque', d:'Utiliser 3 fois le pouvoir de ton héros.', ok:S => (st(S).pouvoir || 0) >= 3 },
+  prudent:   { e:'🛡', n:'Prudent', d:'Ne jamais descendre sous 15 PV.', ok:S => (st(S).pvMin == null ? S.pv : st(S).pvMin) >= 15 },
+};
+const st = S => S.st || (S.st = {});
+const compte = (S, k) => { st(S)[k] = (st(S)[k] || 0) + 1; };
+// l'état de chaque défi de la partie : [{ k, e, n, d, ok }]
+const defisEtat = S => (S.defis || []).map(k => Object.assign({ k }, DEFIS[k], { ok:S.fin === 'gagne' && DEFIS[k].ok(S), enCours:!S.fin ? DEFIS[k].ok(S) : null }));
+
 // ------------------------------------------------------------------ les héros : un pouvoir qui se charge avec des dés
 const POUVOIRS = {
   maelle:  { n:'Coup d’enclume', d:'Brise 3 sceaux d’un monstre (tu choisis le monstre).', s:() => [sceau('min', 5), sceau('min', 5)], cible:true },
@@ -177,6 +216,7 @@ const INTENTIONS = {
 };
 function intention(S, c) {
   c.vise = null;
+  if (c.special) { c.it = c.special === 'piege' ? 'frappe' : 'rien'; c.double = false; return; } // 15/11 soir : les cartes spéciales
   if (c.charge) { c.it = 'frappe'; c.double = true; c.charge = false; }
   else {
     c.double = false; const r = RS(S)();
@@ -199,7 +239,7 @@ function force(S, c, V) {
 // ce que chaque monstre visible fera à la fin du tour (pour l'écran : « Gobelin 2 + Harpie 1 »)
 function intentions(S) {
   const V = visibles(S);
-  return V.map(c => { const it = S.taire ? 'rien' : (c.it || 'frappe'); return { id:c.id, nom:c.nom, it, vise:c.vise, v:it === 'frappe' && !S.voile ? force(S, c, V) : 0 }; });
+  return V.map(c => { const it = S.taire || (c.special && c.special !== 'piege') ? 'rien' : (c.it || 'frappe'); return { id:c.id, nom:c.nom, it, vise:c.vise, v:it === 'frappe' && !S.voile ? force(S, c, V) : 0 }; });
 }
 
 // ------------------------------------------------------------------ une partie
@@ -211,19 +251,24 @@ function nouvelle(heros, graine, bonus = {}, opts = {}) {
   const etage = opts.etage || 0, plus = Math.max(0, etage - 1);
   const cols = [];
   if (opts.gardien !== 'seul') {
-    const plan = opts.cols || Array.from({ length:NB_COL }, () => [4, 3, 2, 1]);
-    for (const p of plan) { const col = p.map(niv => carte(R, niv, n++, plus)); if (col.length) col[col.length - 1].vue = true; cols.push(col); }
+    const plan = opts.cols || (opts.variante && VARIANTES[opts.variante] ? VARIANTES[opts.variante].plan : Array.from({ length:NB_COL }, () => [4, 3, 2, 1]));
+    const fv = opts.variante && VARIANTES[opts.variante] ? VARIANTES[opts.variante].force || 0 : 0;
+    for (const p of plan) { const col = p.map(niv => carte(R, niv, n++, plus + (niv >= 3 ? fv : 0))); if (col.length) col[col.length - 1].vue = true; cols.push(col); }
+    // 15/11 soir : des cartes spéciales cachées dans les colonnes (jamais au fond ni sur le dessus)
+    if (opts.speciales) { const places = []; cols.forEach((col, i) => col.forEach((c, j) => { if (j > 0 && j < col.length - 1) places.push([i, j]); }));
+      const sortes = ['coffre', 'autel', 'piege', 'coffre']; for (let k = 0; k < opts.speciales && places.length; k++) { const [i, j] = places.splice(Math.floor(R() * places.length), 1)[0]; places.forEach(q => { if (q[0] === i && q[1] >= j) q[1]++; }); cols[i].splice(j, 0, speciale(R, sortes[(k + Math.floor(R() * 3)) % sortes.length], n++)); } } // ajoutées EN PLUS des monstres (sinon la crypte devenait trop facile)
   }
   const pvmax = opts.pvmax || PV_HEROS + (bonus.pv || 0);
   const obj = opts.obj || {};
-  const S = { heros, graine, cols, gardien:null, pv:opts.pv != null ? opts.pv : pvmax, pvmax, tour:0, des:[], relance:1, reserve:Array(RESERVE + (obj.besace || 0)).fill(null),
+  const S = { heros, graine, cols, gardien:null, pv:opts.pv != null ? opts.pv : pvmax, pvmax, tour:0, des:[], relance:1, reserve:Array(Math.max(0, RESERVE + (obj.besace || 0))).fill(null),
     bouclier:(bonus.bouclier || 0) + 4 * (obj.aube || 0), relanceBase:1 + (bonus.relance || 0) + (obj.gobelet || 0), desPlus:(bonus.des || 0) + (obj.sac || 0) + (obj.diable || 0),
     creuset:Array(6).fill(false), runes:Math.min(RUNES_MAX, obj.rune || 0), pouvoir:POUVOIRS[heros].s(), pret:false, voile:false, taire:false, voitTout:false, score:0, chaine:0, chaineMax:0,
     tombes:0, fin:null, journal:[], seq:0, rs:Math.floor(R() * 4294967296),
     // la Descente
     or:opts.or || 0, orGagne:0, obj, etage, maitre:opts.maitre || 0, couleur:opts.couleur != null ? opts.couleur : .07, gardienMode:opts.gardien == null ? 'fin' : opts.gardien,
     vies:opts.vies || 1, regle:opts.regle || null, consos:opts.consos ? opts.consos.slice() : null, comp:opts.comp && COMPAGNONS[opts.comp.id] ? { id:opts.comp.id, pv:opts.comp.pv, pvmax:COMPAGNONS[opts.comp.id].pv, sceaux:COMPAGNONS[opts.comp.id].s(), pret:false } : null,
-    secours:!!opts.secours, paires:{} };
+    secours:!!opts.secours, paires:{}, variante:opts.variante || null, st:{}, nbSpeciales:cols.reduce((t, k) => t + k.filter(c => c.special).length, 0),
+    defis:opts.defis ? (() => { const l = Object.keys(DEFIS).slice(); const out = []; while (out.length < 3) out.push(l.splice(Math.floor(R() * l.length), 1)[0]); return out; })() : null };
   if (S.couleur && obj.prisme) S.couleur *= 1 + obj.prisme;
   // la règle du jour
   const rg = S.regle;
@@ -233,7 +278,7 @@ function nouvelle(heros, graine, bonus = {}, opts = {}) {
   if (rg === 'precis') { S.relanceBase = 0; S.runes = Math.min(RUNES_MAX, S.runes + 2); }
   if (opts.gardien === 'seul') { S.gardien = gardien(R, etage, S.vies); S.gardien.it = 'frappe'; for (let k = 0; k < (obj.bossDur || 0); k++) S.gardien.sceaux.push(sceau('min', 4)); }
   if (obj.eliteDur) cols.forEach(col => col.forEach(c => { if (c.elite) c.sceaux.push(sceau('tot', 9)); }));
-  if (obj.talisman) S.pouvoir.slice(0, obj.talisman).forEach(brise);
+  if (obj.talisman) { S.pouvoir.slice(0, obj.talisman).forEach(brise); if (S.pouvoir.every(x => x.ok)) S.pret = true; } // 15/11 soir : tout brisé = prêt
   if (obj.entree) visibles(S).forEach(c => { const s = c.sceaux.find(x => !x.ok); if (s) brise(s); });
   debutTour(S); return S;
 }
@@ -246,12 +291,12 @@ const silence = S => visibles(S).some(c => c.trait === 'silence');
 const plafond = S => visibles(S).some(c => c.trait === 'plafond');
 
 function debutTour(S) {
-  S.tour++; S.relance = S.relanceBase || 1; S.chaine = 0; S.voile = false; S.taire = false; S.paires = {};
+  S.tour++; S.relance = S.relanceBase == null ? 1 : S.relanceBase; // 15/11 soir : 0 relance = vraiment 0 (« Main sûre ») S.chaine = 0; S.voile = false; S.taire = false; S.paires = {};
   // le Maître des cryptes (Dice & Fold) : après N tours, chaque nouveau tour rend tous les monstres plus forts
   if (S.maitre && S.tour > S.maitre) { visibles(S).forEach(c => c.att++); log(S, `👹 Le Maître des cryptes s’impatiente : tous les monstres +1 de force.`); S.maitreLa = true; }
   visibles(S).forEach(c => intention(S, c));
   visibles(S).forEach(c => { if (c.trait === 'repousse') { const s = c.sceaux.find(x => x.ok && x.t !== 'tot'); if (s) { s.ok = false; s.val = 0; log(S, `🌱 ${c.nom} : un sceau se referme.`); } } });
-  const garde = S.reserve.filter(x => x != null); S.reserve = Array(RESERVE + (S.obj.besace || 0)).fill(null);
+  const garde = S.reserve.filter(x => x != null); S.reserve = Array(Math.max(0, RESERVE + (S.obj.besace || 0))).fill(null);
   S.aLancer = true; // 15/11 soir : les dés restent cachés jusqu'à ce que le joueur les lance (il voit le lancer)
   S.des = garde.map(g => Object.assign({ id:'d' + S.seq++, garde:true }, typeof g === 'object' ? g : { v:g }));
   for (let i = 0; i < nbDes(S); i++) S.des.push(tire(S));
@@ -261,11 +306,11 @@ function lancer(S) { if (S.fin || !S.aLancer) return false; S.aLancer = false; r
 // relancer : tous les dés pas encore posés, sauf ceux sortis de la besace (un dé de couleur relancé garde sa couleur)
 function relancer(S) {
   if (S.fin || S.relance < 1 || S.aLancer) return false;
-  S.relance--; S.des.forEach(d => { if (!d.garde) d.v = de6(RS(S)); }); return true;
+  S.relance--; compte(S, 'relances'); S.des.forEach(d => { if (!d.garde) d.v = de6(RS(S)); }); return true;
 }
 function gagneOr(S, n, pourquoi) { if (n <= 0) return; if (S.regle === 'riche') n *= 2; S.or += n; S.orGagne += n; if (pourquoi) log(S, `🪙 +${n} or (${pourquoi}).`); }
 function creusetPlein(S) {
-  S.creuset = Array(6).fill(false); if (S.runes < RUNES_MAX) S.runes++; if (S.regle === 'creuset' && S.runes < RUNES_MAX) S.runes++; log(S, S.regle === 'creuset' ? '✦ Creuset bouillant : deux Runes !' : '✦ Le creuset est plein : une Rune !');
+  S.creuset = Array(6).fill(false); compte(S, 'creusets'); if (S.runes < RUNES_MAX) S.runes++; if (S.regle === 'creuset' && S.runes < RUNES_MAX) S.runes++; log(S, S.regle === 'creuset' ? '✦ Creuset bouillant : deux Runes !' : '✦ Le creuset est plein : une Rune !');
   if (S.obj.creusetor) { gagneOr(S, 3 * S.obj.creusetor, 'creuset doré'); S.bouclier += 3 * S.obj.creusetor; }
 }
 // poser le dé id sur : { carte:id, s:index } · { pouvoir:index } · { comp:index } · { creuset:true } · { reserve:true } · { couleur:true } (effet spécial)
@@ -277,7 +322,7 @@ function placer(S, idDe, ou) {
   if (ou.couleur) return effetCouleur(S, i);
   if (ou.creuset) { if (S.creuset[v - 1]) return 'Cette case du creuset est déjà pleine.'; S.creuset[v - 1] = true; S.des.splice(i, 1);
     if (S.creuset.every(Boolean)) { creusetPlein(S); return 'rune'; } return 'ok'; }
-  if (ou.reserve) { const k = S.reserve.indexOf(null); if (k < 0) return 'La besace est pleine.'; S.reserve[k] = D.c ? { v, c:D.c } : v; S.des.splice(i, 1); return 'ok'; }
+  if (ou.reserve) { const k = S.reserve.indexOf(null); if (k < 0) return 'La besace est pleine.'; S.reserve[k] = D.c ? { v, c:D.c } : v; S.des.splice(i, 1); compte(S, 'besace'); return 'ok'; }
   if (plafond(S) && v >= 5) return 'Chaînes lourdes : pas de 5 ni de 6 !';
   if (ou.pouvoir != null) { const s = S.pouvoir[ou.pouvoir]; if (!s || !accepte(s, v, S.pouvoir)) return 'Ce dé ne va pas sur ce sceau.'; pose(s, v, S.obj.aiguise); S.des.splice(i, 1);
     if (S.pouvoir.every(x => x.ok)) { S.pret = true; log(S, `⚡ ${POUVOIRS[S.heros].n} est prêt !`); } return 'ok'; }
@@ -317,6 +362,10 @@ function verifie(S, c) {
   gagneOr(S, S.obj.moinsOr ? (c.gardien ? 6 + 3 * S.etage : c.elite ? 3 : 1) : c.gardien ? ((c.vies || 1) > 1 ? 2 : 8 + 4 * S.etage) : c.elite ? 5 : c.niv >= 3 ? 2 : 1);
   if (S.chaine >= 2 && S.obj.chaineor) gagneOr(S, 2 * S.obj.chaineor, 'chaîne d’or');
   if (S.chaine >= 2 && S.regle === 'chaines') { S.pv = Math.min(S.pvmax, S.pv + 3); log(S, '⛓ Chaîne : +3 PV.'); }
+  if (c.special) compte(S, 'speciales');
+  if (c.special === 'coffre') { const g = c.gain; if (g === 'rune') S.runes = Math.min(RUNES_MAX, S.runes + 1); if (g === 'soin') S.pv = Math.min(S.pvmax, S.pv + 10); if (g === 'bouclier') S.bouclier += 6; if (g === 'or') gagneOr(S, 6); log(S, `🧰 Le coffre s’ouvre : ${GAINS_COFFRE[g].n} !`); }
+  if (c.special === 'autel') { S.pret = true; S.pouvoir.forEach(brise); log(S, `🕯️ L’autel s’illumine : ${POUVOIRS[S.heros].n} est prêt !`); }
+  if (c.special === 'piege') { gagneOr(S, 3, 'piège désamorcé'); log(S, '⚙️ Le piège est désamorcé.'); }
   if (c.trait === 'rancune') { degats(S, c.att); log(S, `💢 Rancune : ${c.nom} frappe en tombant (${c.att}).`); }
   if (c.trait === 'tresor') { const vides = S.creuset.map((x, k) => x ? -1 : k).filter(k => k >= 0); if (vides.length) { S.creuset[pick(RS(S), vides)] = true; log(S, '💎 Trésor : une case du creuset se remplit.');
       if (S.creuset.every(Boolean)) creusetPlein(S); } }
@@ -327,7 +376,7 @@ function verifie(S, c) {
   if (c.gardien) { S.gardien = null; S.score += 200 + 10 * S.pv; S.fin = 'gagne'; log(S, '🏆 Le Gardien est vaincu !'); return; }
   const col = S.cols.find(k => k[k.length - 1] === c); col.pop();
   if (c.trait === 'mue') { const b = carte(RS(S), 1, 'm' + S.seq++); b.nom = 'Larve de ' + c.nom.split(' ')[0]; b.m = 'larve'; b.vue = true; b.it = 'frappe'; b.mueDe = true; col.push(b); log(S, `🐛 Mue : une larve sort de ${c.nom} !`); }
-  else if (col.length) { col[col.length - 1].vue = true; col[col.length - 1].it = 'frappe'; log(S, `🂠 Une carte se retourne : ${col[col.length - 1].nom}.`); }
+  else if (col.length) { col[col.length - 1].vue = true; col[col.length - 1].it = col[col.length - 1].special && col[col.length - 1].special !== 'piege' ? 'rien' : 'frappe'; log(S, `🂠 Une carte se retourne : ${col[col.length - 1].nom}.`); }
   if (S.cols.every(k => !k.length)) {
     if (S.gardienMode === false) { S.fin = 'gagne'; S.score += 5 * S.pv; log(S, '🏆 La salle est vidée !'); return; }
     S.gardien = gardien(RS(S), S.etage, S.vies); S.gardien.it = 'frappe'; log(S, `🔥 Les colonnes sont vides… ${S.gardien.nom} se réveille !`);
@@ -336,7 +385,7 @@ function verifie(S, c) {
 // la Rune : brise n'importe quel sceau d'un monstre visible
 function rune(S, idCarte, k) {
   if (S.fin || S.runes < 1) return false; const c = trouve(S, idCarte); if (!c || !c.sceaux[k] || c.sceaux[k].ok) return false;
-  S.runes--; brise(c.sceaux[k]); log(S, `✦ Rune : un sceau de ${c.nom} vole en éclats.`); verifie(S, c); return true;
+  S.runes--; compte(S, 'runes'); brise(c.sceaux[k]); log(S, `✦ Rune : un sceau de ${c.nom} vole en éclats.`); verifie(S, c); return true;
 }
 // le pouvoir du héros (une fois chargé)
 function pouvoir(S, opt = {}) {
@@ -348,7 +397,7 @@ function pouvoir(S, opt = {}) {
   else if (S.heros === 'oria') { S.runes = Math.min(RUNES_MAX, S.runes + 1); S.voitTout = true; log(S, '🧭 Longue-vue : une Rune, et les cartes cachées se dévoilent.'); }
   else if (S.heros === 'gorm') { S.des.forEach(d => { d.v = de6(RS(S)); d.garde = false; }); for (let k = 0; k < 2; k++) S.des.push(tire(S)); log(S, '📯 Second souffle : nouveaux dés, et deux de plus !'); }
   else if (S.heros === 'zephine') { visibles(S).forEach(c => { const s = c.sceaux.find(x => !x.ok); if (s) brise(s); }); log(S, '🌪 Tempête : un sceau saute sur chaque monstre.'); visibles(S).slice().forEach(c => verifie(S, c)); }
-  S.pret = false; S.pouvoir = P.s(); return true;
+  S.pret = false; S.pouvoir = P.s(); compte(S, 'pouvoir'); return true;
 }
 // la compétence du compagnon (une fois chargée)
 function competence(S) {
@@ -364,7 +413,7 @@ function competence(S) {
   C.pret = false; C.sceaux = K.s(); return true;
 }
 function degats(S, n) {
-  if (n <= 0 || S.fin) return; S.pv -= n;
+  if (n <= 0 || S.fin) return; S.pv -= n; st(S).pvMin = Math.min(st(S).pvMin == null ? 999 : st(S).pvMin, Math.max(0, S.pv));
   if (S.pv <= 0 && S.secours) { S.secours = false; S.secoursUtilise = true; S.pv = 10; log(S, '🕯 Dernier souffle : ton héros se relève à 10 PV !'); return; }
   if (S.pv <= 0) { S.pv = 0; S.fin = 'perdu'; log(S, '☠ Ton héros tombe dans la crypte.'); }
 }
@@ -394,9 +443,10 @@ function finTour(S) {
   S.des = []; debutTour(S);
 }
 // les étoiles d'une victoire
-const etoiles = S => S.fin !== 'gagne' ? 0 : 1 + (S.pv >= 12 ? 1 : 0) + (S.pv >= 25 ? 1 : 0);
+// 15/11 soir : avec des défis, une étoile par défi réussi (victoire obligatoire) ; sinon l'ancienne règle (la Descente)
+const etoiles = S => S.fin !== 'gagne' ? 0 : S.defis ? defisEtat(S).filter(x => x.ok).length : 1 + (S.pv >= 12 ? 1 : 0) + (S.pv >= 25 ? 1 : 0);
 
 const API = { INTENTIONS, intentions, NB_DES, NB_COL, PROF, RESERVE, RUNES_MAX, PV_HEROS, SCEAU_TXT, TRAITS, POUVOIRS, COMPAGNONS, COULEURS,
-  REGLES, regleDuJour, CONSOS, conso, nouvelle, lancer, relancer, placer, rune, pouvoir, competence, finTour, visibles, menace, menaceComp, accepte, etoiles, trouve, force, silence, plafond, rng };
+  REGLES, regleDuJour, VARIANTES, varianteDuJour, SPECIALES, GAINS_COFFRE, DEFIS, defisEtat, CONSOS, conso, nouvelle, lancer, relancer, placer, rune, pouvoir, competence, finTour, visibles, menace, menaceComp, accepte, etoiles, trouve, force, silence, plafond, rng };
 if (typeof module !== 'undefined' && module.exports) module.exports = API; else racine.CRYPTE = API;
 })(typeof window !== 'undefined' ? window : globalThis);
