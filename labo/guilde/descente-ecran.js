@@ -95,7 +95,7 @@ function descenteEcran() {
   if (DR.ecran === 'combat') { S = DR.S; S.des.forEach(d => d.neuf = true); C.visibles(S).forEach(c => c.neuve = true); sel = null; mode = null; return dessine(); }
   S = null;
   const tete = `<div class="haut"><a href="#" onclick="if(confirm('Quitter ? Ta descente est gardée, tu pourras la reprendre.')){DR=null;descenteAccueil()}return false">‹ Quitter</a><span class="titre">🗺️ Étage ${DR.etage} · salle ${Math.min(DR.pas + (DR.ecran === 'carte' ? 1 : 0), D.ETAPES + 1)}/${D.ETAPES + 1}</span><button onclick="descenteRegles()">❓</button></div>
-    <div class="ressources"><span>❤ <b>${DR.pv}</b>/${DR.pvmax}</span><span>🪙 <b>${DR.or}</b></span>${DR.comp ? `<span>${icoComp(DR.comp.id)} <b>${DR.comp.pv}</b>/${C.COMPAGNONS[DR.comp.id].pv}</span>` : ''}${DR.breloque ? `<span>${icoBrel(DR.breloque)}</span>` : ''}${DR.pacte ? `<span>${D.PACTES[DR.pacte].e}</span>` : ''}</div>
+    <div class="ressources"><span>❤ <b>${DR.pv}</b>/${DR.pvmax}</span><span>🪙 <b>${DR.or}</b></span>${DR.comp ? `<span>${icoComp(DR.comp.id)} <b>${DR.comp.pv}</b>/${C.COMPAGNONS[DR.comp.id].pv}</span>` : ''}${DR.breloque ? `<span>${icoBrel(DR.breloque)}</span>` : ''}${(DR.consos || []).length ? `<span>🎒 ${DR.consos.map(k => C.CONSOS[k].e).join('')}</span>` : ''}${DR.pacte ? `<span>${D.PACTES[DR.pacte].e}</span>` : ''}</div>
     ${sacHTML()}`;
   let corps = '';
   if (DR.ecran === 'carte') {
@@ -104,7 +104,7 @@ function descenteEcran() {
       <div class="salles">${DR.choix.map((t, k) => `<button class="${t === 'boss' ? 'boss' : ''}" onclick="allerSalle(${k})"><span class="e">${D.SALLES[t].e}</span><span><b>${D.SALLES[t].n}</b><small>${D.SALLES[t].d}</small></span></button>`).join('')}</div>`;
   }
   if (DR.ecran === 'marchand') {
-    const lig = x => x.t === 'objet' ? [icoObj(x.k), D.OBJETS[x.k].n, D.OBJETS[x.k].d] : x.t === 'comp' ? [icoComp(x.k), 'Compagnon : ' + C.COMPAGNONS[x.k].n, `${C.COMPAGNONS[x.k].pv} PV · ${C.COMPAGNONS[x.k].d}`] : x.t === 'reparer' ? ['🩹', 'Soigner ton compagnon', 'Sa vie redevient pleine.'] : ['🍖', `Un bon repas (+${x.n} PV)`, 'À volonté, tant que tu as de l’or.'];
+    const lig = x => x.t === 'objet' ? [icoObj(x.k), D.OBJETS[x.k].n, D.OBJETS[x.k].d] : x.t === 'comp' ? [icoComp(x.k), 'Compagnon : ' + C.COMPAGNONS[x.k].n, `${C.COMPAGNONS[x.k].pv} PV · ${C.COMPAGNONS[x.k].d}`] : x.t === 'reparer' ? ['🩹', 'Soigner ton compagnon', 'Sa vie redevient pleine.'] : x.t === 'conso' ? [C.CONSOS[x.k].e, 'Consommable : ' + C.CONSOS[x.k].n, C.CONSOS[x.k].d + ' (dans ta poche, 3 au plus, à utiliser en combat)'] : ['🍖', `Un bon repas (+${x.n} PV)`, 'À volonté, tant que tu as de l’or.'];
     corps = `<div class="moust"><img src="ui/moustache.webp" alt=""><p>« Un marchand… dans une crypte ? Bon. Ne me demande pas d’où viennent ses objets. »</p></div>
       <div class="etal">${DR.salle.etal.map((x, i) => { const [e, n, d] = lig(x); return `<button class="${x.vendu ? 'vendu' : ''}" ${x.vendu || DR.or < x.prix ? 'disabled' : ''} onclick="acheteD(${i})"><span class="e">${e}</span><span><b>${n}</b><small>${d}</small></span><span class="p">🪙 ${x.prix}</span></button>`; }).join('')}</div>
       <button class="grosbtn" onclick="D.suite(DR);son('choisir');descenteEcran()">Continuer la descente ▶</button>`;
@@ -120,7 +120,7 @@ function descenteEcran() {
       <div class="salles">${E.choix.map((c, k) => `<button ${c.si && !c.si(DR) ? 'disabled style="opacity:.35"' : ''} onclick="evenementD(${k})"><span class="e">▸</span><span><b>${c.n}</b></span></button>`).join('')}</div>`; }
   if (DR.ecran === 'recompense') {
     const r = DR.salle.recomp || [];
-    const lig = x => x.t === 'or' ? ['🪙', `+${x.n} pièces d’or`, ''] : x.t === 'soin' ? ['❤', `+${x.n} PV`, ''] : x.t === 'objet' ? [icoObj(x.k), D.OBJETS[x.k].n, D.OBJETS[x.k].d] : [icoBrel(x.k), 'Breloque : ' + D.BRELOQUES[x.k].n, D.BRELOQUES[x.k].d + ' (elle reste pour tes prochaines descentes)'];
+    const lig = x => x.t === 'or' ? ['🪙', `+${x.n} pièces d’or`, ''] : x.t === 'soin' ? ['❤', `+${x.n} PV`, ''] : x.t === 'objet' ? [icoObj(x.k), D.OBJETS[x.k].n, D.OBJETS[x.k].d] : x.t === 'conso' ? [C.CONSOS[x.k].e, 'Consommable : ' + C.CONSOS[x.k].n, C.CONSOS[x.k].d] : [icoBrel(x.k), 'Breloque : ' + D.BRELOQUES[x.k].n, D.BRELOQUES[x.k].d + ' (elle reste pour tes prochaines descentes)'];
     corps = `<p class="pv-h" style="font-size:3.6cqw;text-align:center">${DR.salle.texte || ''}</p>
       ${r.length ? `<h3 style="text-align:center;color:var(--or)">${DR.salle.type === 'boss' ? '♛ Choisis une breloque' : r.length > 1 ? 'Choisis ta récompense' : 'Ta récompense'}</h3>
       <div class="etal">${r.map((x, k) => { const [e, n, d] = lig(x); return `<button onclick="prendD(${k})"><span class="e">${e}</span><span><b>${n}</b><small>${d}</small></span><span class="p">Prendre</span></button>`; }).join('')}</div>` : ''}

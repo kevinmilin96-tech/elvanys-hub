@@ -136,12 +136,12 @@
 <div id="jeu"></div>
 <div class="flash" id="flash"></div>
 <div id="fen"></div>
-<script src="musique.js?v=20261115-160529"></script>
-<script src="rang.js?v=20261115-160529"></script>
-<script src="heros-etoiles.js?v=20261115-160529"></script>
-<script src="progression-modes.js?v=20261115-160529"></script>
-<script src="crypte-moteur.js?v=20261115-160529"></script>
-<script src="descente-moteur.js?v=20261115-160529"></script>
+<script src="musique.js?v=20261115-161232"></script>
+<script src="rang.js?v=20261115-161232"></script>
+<script src="heros-etoiles.js?v=20261115-161232"></script>
+<script src="progression-modes.js?v=20261115-161232"></script>
+<script src="crypte-moteur.js?v=20261115-161232"></script>
+<script src="descente-moteur.js?v=20261115-161232"></script>
 <script>
 // =============================================================================================== LA CRYPTE AUX SCEAUX (15/11, écran)
 // Le moteur (règles, hasard, monstres) est dans crypte-moteur.js ; ici seulement le dessin et les gestes.
@@ -233,6 +233,7 @@ function dessine() {
     </div>
     ${compHTML()}
     ${typeof DR !== 'undefined' && DR ? sacHTML() : ''}
+    ${S.consos && S.consos.length ? `<div class="sac">🎒 ${S.consos.map((k, i) => `<span onclick="utiliseConso(${i})" style="border-color:var(--or)">${C.CONSOS[k].e} <small>${C.CONSOS[k].n} : ${C.CONSOS[k].d}</small></span>`).join('')}</div>` : ''}
     <div class="rangee">
       <div class="bloc creuset"><h4>🔥 Le creuset · plein = une Rune</h4><div class="cases">${creuset}</div></div>
       <div class="bloc besace"><h4>🎒 Besace</h4><div class="cases">${besace}</div></div>
@@ -335,6 +336,8 @@ function compHTML() {
   return `<div class="comp ${K.pv <= 0 ? 'ko' : ''}"><div class="av">${typeof icoComp === 'function' ? icoComp(K.id) : P.e}<small>❤ ${K.pv}</small></div><div><b>${P.n}</b><p>${K.pv <= 0 ? 'Il est tombé : il se repose jusqu’au prochain feu de camp.' : P.d}</p>
     ${K.pv > 0 ? (K.pret ? `<button class="btn-pouv" onclick="utiliseComp()">${P.e} ${P.n} : à l’action !</button>` : `<div class="sceaux">${K.sceaux.map((s, k) => sceauHTML(s, K.sceaux, `toucheComp(${k})`, mode === 'rune' ? 'non' : etatSceau(s, K.sceaux))).join('')}</div>`) : ''}</div></div>`;
 }
+function utiliseConso(i) { if (anime) return; const k = S.consos[i], avant = S.tombes, nb = S.des.length; const r = C.conso(S, i);
+  if (r === 'ok') { son(k === 'potion' ? 'soin' : k === 'bombe' ? 'gros' : 'magie'); bulle(`${C.CONSOS[k].e} ${C.CONSOS[k].n} !`); if (S.des.length !== nb) S.des[S.des.length - 1].neuf = true; apresCoup(avant); } else { son('erreur'); bulle(r, true); } }
 function btnEffet() { const d = sel && S.des.find(x => x.id === sel); return d && d.c ? `<button class="btn-effet" onclick="effetCouleur()">${C.COULEURS[d.c].e} Effet du ${C.COULEURS[d.c].n.toLowerCase()} : ${C.COULEURS[d.c].d}</button>` : ''; }
 function toucheComp(k) { if (!sel) return; const p = S.comp.pret; resultat(C.placer(S, sel, { comp:k })); if (!p && S.comp.pret) { son('magie'); bulle(`${C.COMPAGNONS[S.comp.id].e} prêt !`); } dessine(); }
 function utiliseComp() { const avant = S.tombes, nb = S.des.length; if (C.competence(S)) { son('magie'); bulle(`${C.COMPAGNONS[S.comp.id].e} ${C.COMPAGNONS[S.comp.id].n} !`); if (S.des.length !== nb) S.des.forEach(d => d.neuf = true); apresCoup(avant); } else { son('erreur'); bulle('🤐 Silence !', true); } }
@@ -437,6 +440,6 @@ function lance(j) {
 if (typeof GM !== 'undefined') { try { GM.musique('exploration'); GM.bouton(); } catch (e) {} }
 accueil();
 </script>
-<script src="descente-ecran.js?v=20261115-160529"></script>
+<script src="descente-ecran.js?v=20261115-161232"></script>
 </body>
 </html>
