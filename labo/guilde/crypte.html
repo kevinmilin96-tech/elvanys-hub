@@ -131,12 +131,12 @@
 <div id="jeu"></div>
 <div class="flash" id="flash"></div>
 <div id="fen"></div>
-<script src="musique.js?v=20261115-154952"></script>
-<script src="rang.js?v=20261115-154952"></script>
-<script src="heros-etoiles.js?v=20261115-154952"></script>
-<script src="progression-modes.js?v=20261115-154952"></script>
-<script src="crypte-moteur.js?v=20261115-154952"></script>
-<script src="descente-moteur.js?v=20261115-154952"></script>
+<script src="musique.js?v=20261115-155235"></script>
+<script src="rang.js?v=20261115-155235"></script>
+<script src="heros-etoiles.js?v=20261115-155235"></script>
+<script src="progression-modes.js?v=20261115-155235"></script>
+<script src="crypte-moteur.js?v=20261115-155235"></script>
+<script src="descente-moteur.js?v=20261115-155235"></script>
 <script>
 // =============================================================================================== LA CRYPTE AUX SCEAUX (15/11, écran)
 // Le moteur (règles, hasard, monstres) est dans crypte-moteur.js ; ici seulement le dessin et les gestes.
@@ -312,7 +312,7 @@ async function finTour() {
 // ------------------------------------------------------------------ le compagnon et les dés de couleur (15/11 soir, la Descente)
 function compHTML() {
   const K = S.comp; if (!K) return ''; const P = C.COMPAGNONS[K.id];
-  return `<div class="comp ${K.pv <= 0 ? 'ko' : ''}"><div class="av">${P.e}<small>❤ ${K.pv}</small></div><div><b>${P.n}</b><p>${K.pv <= 0 ? 'Il est tombé : il se repose jusqu’au prochain feu de camp.' : P.d}</p>
+  return `<div class="comp ${K.pv <= 0 ? 'ko' : ''}"><div class="av">${typeof icoComp === 'function' ? icoComp(K.id) : P.e}<small>❤ ${K.pv}</small></div><div><b>${P.n}</b><p>${K.pv <= 0 ? 'Il est tombé : il se repose jusqu’au prochain feu de camp.' : P.d}</p>
     ${K.pv > 0 ? (K.pret ? `<button class="btn-pouv" onclick="utiliseComp()">${P.e} ${P.n} : à l’action !</button>` : `<div class="sceaux">${K.sceaux.map((s, k) => sceauHTML(s, K.sceaux, `toucheComp(${k})`, mode === 'rune' ? 'non' : etatSceau(s, K.sceaux))).join('')}</div>`) : ''}</div></div>`;
 }
 function btnEffet() { const d = sel && S.des.find(x => x.id === sel); return d && d.c ? `<button class="btn-effet" onclick="effetCouleur()">${C.COULEURS[d.c].e} Effet du ${C.COULEURS[d.c].n.toLowerCase()} : ${C.COULEURS[d.c].d}</button>` : ''; }
@@ -417,6 +417,6 @@ function lance(j) {
 if (typeof GM !== 'undefined') { try { GM.musique('exploration'); GM.bouton(); } catch (e) {} }
 accueil();
 </script>
-<script src="descente-ecran.js?v=20261115-154952"></script>
+<script src="descente-ecran.js?v=20261115-155235"></script>
 </body>
 </html>
