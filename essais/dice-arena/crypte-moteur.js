@@ -134,6 +134,19 @@ const COMPAGNONS = {
   chouette: { e:'🦉', n:'Chouette', pv:8, d:'Fait taire tous les monstres : ils ne font rien à la fin de ce tour.', s:() => [sceau('dbl', 0, 1), sceau('dbl', 0, 1), sceau('any')] },
 };
 
+// ------------------------------------------------------------------ LA RÈGLE DU JOUR (15/11 soir) : la crypte du jour et la descente du jour ont une règle en plus,
+// la même pour tout le monde ce jour-là (tirée de la date).
+const REGLES = {
+  riche:   { e:'🪙', n:'Jour de fortune', d:'Les monstres lâchent deux fois plus d’or.' },
+  chaos:   { e:'🌈', n:'Pluie de couleurs', d:'Trois fois plus de dés de couleur.' },
+  presse:  { e:'⏳', n:'Le Maître est pressé', d:'Le Maître des cryptes arrive 2 tours plus tôt (au tour 6 dans la crypte du jour).' },
+  lourd:   { e:'🏋', n:'Main lourde', d:'Un dé de plus à chaque tour, mais tous les monstres frappent 1 de plus.' },
+  precis:  { e:'🎯', n:'Main sûre', d:'Pas de relance, mais tu commences chaque combat avec 2 Runes.' },
+  creuset: { e:'🔥', n:'Creuset bouillant', d:'Le creuset plein donne 2 Runes au lieu d’une.' },
+  chaines: { e:'⛓', n:'Chaînes d’or', d:'Chaque chaîne (2 monstres ou plus dans le même tour) soigne 3 PV.' },
+};
+const regleDuJour = jour => { let h = 0; for (const c of String(jour)) h = (h * 31 + c.charCodeAt(0)) >>> 0; const k = Object.keys(REGLES); return k[h % k.length]; };
+
 // ------------------------------------------------------------------ les CONSOMMABLES (15/11 soir, la Descente) : dans la poche (3 au plus), utilisés une fois, sans dé
 const CONSOS = {
   potion: { e:'🧪', n:'Potion', d:'+12 PV.' },
@@ -209,9 +222,15 @@ function nouvelle(heros, graine, bonus = {}, opts = {}) {
     tombes:0, fin:null, journal:[], seq:0, rs:Math.floor(R() * 4294967296),
     // la Descente
     or:opts.or || 0, orGagne:0, obj, etage, maitre:opts.maitre || 0, couleur:opts.couleur != null ? opts.couleur : .07, gardienMode:opts.gardien == null ? 'fin' : opts.gardien,
-    vies:opts.vies || 1, consos:opts.consos ? opts.consos.slice() : null, comp:opts.comp && COMPAGNONS[opts.comp.id] ? { id:opts.comp.id, pv:opts.comp.pv, pvmax:COMPAGNONS[opts.comp.id].pv, sceaux:COMPAGNONS[opts.comp.id].s(), pret:false } : null,
+    vies:opts.vies || 1, regle:opts.regle || null, consos:opts.consos ? opts.consos.slice() : null, comp:opts.comp && COMPAGNONS[opts.comp.id] ? { id:opts.comp.id, pv:opts.comp.pv, pvmax:COMPAGNONS[opts.comp.id].pv, sceaux:COMPAGNONS[opts.comp.id].s(), pret:false } : null,
     secours:!!opts.secours, paires:{} };
   if (S.couleur && obj.prisme) S.couleur *= 1 + obj.prisme;
+  // la règle du jour
+  const rg = S.regle;
+  if (rg === 'chaos') S.couleur = (S.couleur || .07) * 3;
+  if (rg === 'presse') S.maitre = Math.max(2, (S.maitre || 8) - 2);
+  if (rg === 'lourd') { S.desPlus++; obj.forcePlus = (obj.forcePlus || 0) + 1; }
+  if (rg === 'precis') { S.relanceBase = 0; S.runes = Math.min(RUNES_MAX, S.runes + 2); }
   if (opts.gardien === 'seul') { S.gardien = gardien(R, etage, S.vies); S.gardien.it = 'frappe'; for (let k = 0; k < (obj.bossDur || 0); k++) S.gardien.sceaux.push(sceau('min', 4)); }
   if (obj.eliteDur) cols.forEach(col => col.forEach(c => { if (c.elite) c.sceaux.push(sceau('tot', 9)); }));
   if (obj.talisman) S.pouvoir.slice(0, obj.talisman).forEach(brise);
@@ -244,9 +263,9 @@ function relancer(S) {
   if (S.fin || S.relance < 1 || S.aLancer) return false;
   S.relance--; S.des.forEach(d => { if (!d.garde) d.v = de6(RS(S)); }); return true;
 }
-function gagneOr(S, n, pourquoi) { if (n <= 0) return; S.or += n; S.orGagne += n; if (pourquoi) log(S, `🪙 +${n} or (${pourquoi}).`); }
+function gagneOr(S, n, pourquoi) { if (n <= 0) return; if (S.regle === 'riche') n *= 2; S.or += n; S.orGagne += n; if (pourquoi) log(S, `🪙 +${n} or (${pourquoi}).`); }
 function creusetPlein(S) {
-  S.creuset = Array(6).fill(false); if (S.runes < RUNES_MAX) S.runes++; log(S, '✦ Le creuset est plein : une Rune !');
+  S.creuset = Array(6).fill(false); if (S.runes < RUNES_MAX) S.runes++; if (S.regle === 'creuset' && S.runes < RUNES_MAX) S.runes++; log(S, S.regle === 'creuset' ? '✦ Creuset bouillant : deux Runes !' : '✦ Le creuset est plein : une Rune !');
   if (S.obj.creusetor) { gagneOr(S, 3 * S.obj.creusetor, 'creuset doré'); S.bouclier += 3 * S.obj.creusetor; }
 }
 // poser le dé id sur : { carte:id, s:index } · { pouvoir:index } · { comp:index } · { creuset:true } · { reserve:true } · { couleur:true } (effet spécial)
@@ -297,6 +316,7 @@ function verifie(S, c) {
   log(S, `💀 ${c.nom} tombe${S.chaine > 1 ? ` · chaîne ×${S.chaine}` : ''} (+${gain}).`);
   gagneOr(S, S.obj.moinsOr ? (c.gardien ? 6 + 3 * S.etage : c.elite ? 3 : 1) : c.gardien ? ((c.vies || 1) > 1 ? 2 : 8 + 4 * S.etage) : c.elite ? 5 : c.niv >= 3 ? 2 : 1);
   if (S.chaine >= 2 && S.obj.chaineor) gagneOr(S, 2 * S.obj.chaineor, 'chaîne d’or');
+  if (S.chaine >= 2 && S.regle === 'chaines') { S.pv = Math.min(S.pvmax, S.pv + 3); log(S, '⛓ Chaîne : +3 PV.'); }
   if (c.trait === 'rancune') { degats(S, c.att); log(S, `💢 Rancune : ${c.nom} frappe en tombant (${c.att}).`); }
   if (c.trait === 'tresor') { const vides = S.creuset.map((x, k) => x ? -1 : k).filter(k => k >= 0); if (vides.length) { S.creuset[pick(RS(S), vides)] = true; log(S, '💎 Trésor : une case du creuset se remplit.');
       if (S.creuset.every(Boolean)) creusetPlein(S); } }
@@ -377,6 +397,6 @@ function finTour(S) {
 const etoiles = S => S.fin !== 'gagne' ? 0 : 1 + (S.pv >= 12 ? 1 : 0) + (S.pv >= 25 ? 1 : 0);
 
 const API = { INTENTIONS, intentions, NB_DES, NB_COL, PROF, RESERVE, RUNES_MAX, PV_HEROS, SCEAU_TXT, TRAITS, POUVOIRS, COMPAGNONS, COULEURS,
-  CONSOS, conso, nouvelle, lancer, relancer, placer, rune, pouvoir, competence, finTour, visibles, menace, menaceComp, accepte, etoiles, trouve, force, silence, plafond, rng };
+  REGLES, regleDuJour, CONSOS, conso, nouvelle, lancer, relancer, placer, rune, pouvoir, competence, finTour, visibles, menace, menaceComp, accepte, etoiles, trouve, force, silence, plafond, rng };
 if (typeof module !== 'undefined' && module.exports) module.exports = API; else racine.CRYPTE = API;
 })(typeof window !== 'undefined' ? window : globalThis);

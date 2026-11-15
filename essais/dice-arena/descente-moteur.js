@@ -157,7 +157,7 @@ function optsCombat(R, type) {
   if (R.prof >= 6) obj.moinsOr = 1;
   if (R.prof >= 10 && type === 'boss') obj.bossDur = 2;
   return { cols, gardien:type === 'boss' ? 'seul' : false, etage:e, vies:type === 'boss' ? [0, 2, 3, 3][e] : 1, pv:R.pv, pvmax:R.pvmax, obj, comp:R.comp && R.comp.pv > 0 ? R.comp : null, or:R.or,
-    maitre:(type === 'boss' ? 9 : type === 'elite' ? 7 : 6) - (R.prof >= 4 ? 1 : 0), couleur:.08 * (R.pacte === 'nuit' ? 3 : 1) * (R.prof >= 9 ? .5 : 1), secours:!!R.obj.souffle && !R.souffleUtilise, consos:R.consos || [] };
+    maitre:(type === 'boss' ? 9 : type === 'elite' ? 7 : 6) - (R.prof >= 4 ? 1 : 0), couleur:.08 * (R.pacte === 'nuit' ? 3 : 1) * (R.prof >= 9 ? .5 : 1), secours:!!R.obj.souffle && !R.souffleUtilise, consos:R.consos || [], regle:R.regle || null };
 }
 // choisir la salle k parmi les choix ; pour un combat, R.S est la crypte à jouer (écran de combat de crypte.html)
 function choisir(R, k) {

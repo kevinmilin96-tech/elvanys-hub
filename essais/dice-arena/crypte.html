@@ -221,7 +221,7 @@ function dessine() {
   const creuset = S.creuset.map((p, k) => `<div class="cs ${p ? 'plein' : dePeut === k + 1 ? 'peut' : ''}" onclick="versCreuset()">${k + 1}</div>`).join('');
   $('jeu').innerHTML = `
     <div class="haut"><a href="#" onclick="${typeof DR !== 'undefined' && DR ? `if(confirm('Quitter ? Ta descente est gardée.')){DR=null;descenteAccueil()}` : `location.href='menu.html'`};return false">‹ ${typeof DR !== 'undefined' && DR ? 'Quitter' : 'Menu'}</a><span class="titre">${typeof DR !== 'undefined' && DR ? `🗺️ Étage ${DR.etage} · ${D.SALLES[DR.salle.type].e} ${D.SALLES[DR.salle.type].n}` : '🪦 La Crypte aux Sceaux'}</span><button onclick="regles()">❓</button></div>
-    <div class="stats"><span>Tour <b>${S.tour}</b></span><span>⭐ <b>${S.score}</b></span><span>${S.gardien ? '♛ Gardien' : `Cartes restantes <b>${S.cols.reduce((t, c) => t + c.length, 0)}</b>`}</span><span>🪙 <b>${S.or}</b></span></div>${S.maitreLa ? '<div class="maitre">👹 Le Maître des cryptes est là : chaque tour, tous les monstres +1 de force !</div>' : S.maitre ? `<div class="maitre" style="color:var(--doux)">👹 Maître des cryptes au tour ${S.maitre + 1}</div>` : ''}
+    <div class="stats"><span>Tour <b>${S.tour}</b></span><span>⭐ <b>${S.score}</b></span><span>${S.gardien ? '♛ Gardien' : `Cartes restantes <b>${S.cols.reduce((t, c) => t + c.length, 0)}</b>`}</span><span>🪙 <b>${S.or}</b></span></div>${S.regle ? `<div class="maitre" style="color:var(--or)">${C.REGLES[S.regle].e} Règle du jour : ${C.REGLES[S.regle].n} — ${C.REGLES[S.regle].d}</div>` : ''}${S.maitreLa ? '<div class="maitre">👹 Le Maître des cryptes est là : chaque tour, tous les monstres +1 de force !</div>' : S.maitre ? `<div class="maitre" style="color:var(--doux)">👹 Maître des cryptes au tour ${S.maitre + 1}</div>` : ''}
     ${table}
     <div class="menace">${S.voile ? '<span class="voile">🛡 Mur de lumière : personne ne frappera à la fin de ce tour.</span>' : m ? `Fin du tour : ${detailMenace()} = <b>−${m} PV</b>${C.menaceComp(S) ? ` · 🐾 −${C.menaceComp(S)} au compagnon` : ''}${S.bouclier ? ` <small>(🛡 ${S.bouclier} encaisse d’abord)</small>` : ''}` : (S.bouclier ? `🛡 Bouclier ${S.bouclier}` : (C.menaceComp(S) ? `🐾 Ton compagnon prendra −${C.menaceComp(S)}.` : S.taire ? '🦉 Les monstres se taisent ce tour-ci.' : 'Aucun monstre ne frappera à la fin de ce tour.'))}</div>
     <div class="bas" style="--c:${H.c}">
@@ -423,7 +423,7 @@ function accueil() {
     <div class="choix">
       ${partieGardee() ? `<button onclick="reprend()" style="border-color:var(--ok);color:var(--ok);background:#163a2a">▶ Reprendre ta crypte<small>${HER[partieGardee().S.heros].n} · tour ${partieGardee().S.tour} · ❤ ${partieGardee().S.pv}</small></button><button onclick="if(confirm('Abandonner cette partie ? Elle sera effacée.')){try{localStorage.removeItem('guilde-crypte-partie')}catch(e){};accueil()}" style="display:block;margin:0 auto;background:none;border:0;color:var(--doux);font-size:3cqw;text-decoration:underline;padding:1cqw;text-align:center">✕ abandonner cette partie</button>` : ''}
       <button onclick="descenteAccueil()" style="border-color:#ff9a4a;background:#3a1f10;color:#ffb070">🗺️ NOUVEAU · La Descente<small>Le grand voyage : 3 étages, tu choisis tes salles (combats, marchand, feu de camp, événements), objets, compagnons, dés de couleur, boss et breloques.</small></button>
-      <button onclick="lance(true)">📅 La crypte du jour<small>La même pour tout le monde aujourd’hui. ${j ? `Ton record du jour : ${j.score} ${'★'.repeat(j.etoiles)}` : 'Pas encore tentée.'}</small></button>
+      <button onclick="lance(true)">📅 La crypte du jour<small>${(r => `${r.e} Règle du jour : <b>${r.n}</b> (${r.d}) · `)(C.REGLES[C.regleDuJour('c' + jour())])}La même pour tout le monde aujourd’hui. ${j ? `Ton record du jour : ${j.score} ${'★'.repeat(j.etoiles)}` : 'Pas encore tentée.'}</small></button>
       <button class="b2" onclick="lance(false)">🎲 Une crypte au hasard<small>Une nouvelle à chaque fois, pour t’entraîner.</small></button>
     </div>
     <p class="record">Meilleur score : ${D.meilleur} · ${D.victoires} victoire${D.victoires > 1 ? 's' : ''} sur ${D.parties} crypte${D.parties > 1 ? 's' : ''}</p>
@@ -432,7 +432,7 @@ function accueil() {
 function lance(j) {
   duJour = j; const D = lire(); D.heros = choixH; ecrire(D);
   const B = bonusMode(choixH);
-  S = C.nouvelle(choixH, j ? 'crypte-' + jour() : 'crypte-' + Date.now() + Math.random(), B);
+  S = C.nouvelle(choixH, j ? 'crypte-' + jour() : 'crypte-' + Date.now() + Math.random(), B, j ? { regle:C.regleDuJour('c' + jour()), maitre:C.regleDuJour('c' + jour()) === 'presse' ? 8 : 0 } : {});
   S.des.forEach(d => d.neuf = true); visibles().forEach(c => c.neuve = true); sel = null; mode = null;
   son('melange'); dessine();
   if (!localStorage.getItem('guilde-crypte-guide')) { localStorage.setItem('guilde-crypte-guide', '1'); regles(); }
