@@ -54,8 +54,13 @@ function donneEclats(id, n, silence) {
 function donneLibres(n) { if (typeof localStorage === 'undefined' || !n) return; const d = lireEtoiles(); d.libres += n; ecrireEtoiles(d); if (typeof annonceRang === 'function') annonceRang(`💠 +${n} éclats de Guilde`); }
 function verseLibres(id, n) { const d = lireEtoiles(); n = Math.min(n, d.libres); if (n <= 0) return false; d.libres -= n; etatHerosE(d, id).e += n; ecrireEtoiles(d); return true; }
 // le rang
-function peutPromouvoir(id) { const h = etatH(id); return h.rang < RANGH_MAX && h.e >= COUT_NIV[h.rang]; }
-function promouvoir(id) { const d = lireEtoiles(), h = etatHerosE(d, id); if (h.rang >= RANGH_MAX || h.e < COUT_NIV[h.rang]) return false; h.e -= COUT_NIV[h.rang]; h.rang++; h.n = Math.min(6, (h.n || 0) + 1); ecrireEtoiles(d); return true; }
+// 15/11 soir (l'utilisateur : « caper le rang en fonction du niveau, sinon je peux être Ascendant et niveau 1 ») : chaque rang demande un NIVEAU minimum
+// (index = le rang visé). Rare 10, Rare + 20, Élite 30, Élite + 40, Légendaire 60, Légendaire + 80, Mythique 100, Mythique + 120, Ascendant 140, puis 160, 180, 200, 215, 230.
+// Un héros déjà plus haut garde son rang (rien n'est retiré) ; il ne monte plus tant qu'il n'a pas le niveau.
+const NIV_RANG = [0, 10, 20, 30, 40, 60, 80, 100, 120, 140, 160, 180, 200, 215, 230];
+const nivPourRang = r => NIV_RANG[Math.min(r, NIV_RANG.length - 1)] || 0;
+function peutPromouvoir(id) { const h = etatH(id); return h.rang < RANGH_MAX && h.e >= COUT_NIV[h.rang] && (h.niv || 1) >= nivPourRang(h.rang + 1); }
+function promouvoir(id) { const d = lireEtoiles(), h = etatHerosE(d, id); if (h.rang >= RANGH_MAX || h.e < COUT_NIV[h.rang] || (h.niv || 1) < nivPourRang(h.rang + 1)) return false; h.e -= COUT_NIV[h.rang]; h.rang++; h.n = Math.min(6, (h.n || 0) + 1); ecrireEtoiles(d); return true; }
 // l'or (commun à tous, même coffre que la Forge) et la poussière de rune
 const AV_SAC_CLE = 'guilde-aventuriers-sac';
 function avSac() { try { return Object.assign({ or:0, pieces:[] }, JSON.parse(localStorage.getItem(AV_SAC_CLE) || '{}')); } catch (e) { return { or:0, pieces:[] }; } }
