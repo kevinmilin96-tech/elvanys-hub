@@ -39,6 +39,9 @@ async function amisApi(url, corps) {
 const amisSalle = () => window.SALLE_ACTIVE || ((typeof L !== 'undefined' && L && L.code) ? L.code : '');
 const amisEsc = s => String(s || '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
 // 15/11 (accord de l'utilisateur) : MA CARTE DE PROFIL, vue par mes amis (profil.js doit être chargé ; sinon rien n'est envoyé)
+// 15/11 soir : la crypte du jour (score et étoiles), pour la comparer entre amis
+amisCrypteJour.aujourdhui = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
+function amisCrypteJour() { try { const d = new Date(), j = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`, x = (JSON.parse(localStorage.getItem('guilde-crypte') || '{}').jours || {})[j]; return x ? { d:j, s:x.score | 0, e:x.etoiles | 0 } : null; } catch (e) { return null; } }
 function amisMonProfil() {
   if (typeof lireProfil !== 'function') return null;
   try {
@@ -49,7 +52,7 @@ function amisMonProfil() {
     const em = typeof EMBLEMES !== 'undefined' ? (EMBLEMES.find(x => x[0] === p.embleme) || [])[1] : '';
     let puissance = 0; if (typeof puissanceHeros === 'function') ['maelle', 'aldric', 'pip', 'oria', 'gorm', 'zephine'].forEach(id => { puissance = Math.max(puissance, puissanceHeros(id)); });
     return { portrait, fond:p.fond, couleur:p.couleur, embleme:em && em !== '—' ? em : '', cadre:p.cadre !== 'aucun' ? m(titreDe(p.cadre)) : null, titre:p.titre ? m(titreDe(p.titre)) : null,
-      devise:p.devise || '', vitrine:(p.vitrine || []).map(k => m(titreDe(k))).filter(Boolean), rang:typeof rangGuilde === 'function' ? rangGuilde() : 0, puissance };
+      devise:p.devise || '', vitrine:(p.vitrine || []).map(k => m(titreDe(k))).filter(Boolean), rang:typeof rangGuilde === 'function' ? rangGuilde() : 0, puissance, crypte:amisCrypteJour() };
   } catch (e) { return null; }
 }
 async function amisAgir(action, plus) {
@@ -113,6 +116,7 @@ function amisCarteHTML(a) {
     ${P.devise ? `<div style="font-style:italic;font-size:.88em;color:#e8e2ff;text-shadow:0 1px 3px #000">« ${amisEsc(P.devise)} »</div>` : ''}
     ${(P.vitrine || []).length ? `<div style="display:flex;flex-wrap:wrap;gap:5px;justify-content:center">${P.vitrine.map(v => `<span style="border:1.5px solid ${v.c || '#f3c96b'};border-radius:14px;padding:2px 8px;font-size:.75em;background:#0008">${amisEsc(v.t)}</span>`).join('')}</div>` : ''}
     ${P.puissance ? `<div style="color:#f3c96b;font-weight:bold;font-size:.9em">✊ ${P.puissance | 0} (son meilleur héros)</div>` : ''}
+    ${P.crypte && amisCrypteJour.aujourdhui() === P.crypte.d ? `<div style="font-size:.85em;color:#e8e2ff">🪦 Crypte du jour : <b style="color:#f3c96b">${P.crypte.s | 0}</b> ${'★'.repeat(P.crypte.e | 0)}</div>` : ''}
   </div>`;
 }
 function amisVoir(code) {

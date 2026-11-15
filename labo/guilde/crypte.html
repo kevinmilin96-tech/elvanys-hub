@@ -25,6 +25,14 @@
   .col { display:flex; flex-direction:column; align-items:stretch; }
   .dos { height:2.6cqw; margin-bottom:.6cqw; border-radius:1.2cqw; background:url('decor/crypte-dos.webp?v=1') center/cover, repeating-linear-gradient(45deg, #3a2f5c 0 1.2cqw, #2c2448 1.2cqw 2.4cqw); border:1px solid #c8902f88; position:relative; overflow:hidden; }
   .dos.vu { height:4.6cqw; background:#2c2448; display:flex; align-items:center; gap:1cqw; padding-left:1cqw; font-size:2.6cqw; color:var(--doux); }
+  .dos.vu .se { font-size:3.4cqw; }
+  /* 15/11 soir : variantes, défis, cartes spéciales, annuler */
+  .defis { display:flex; gap:1.4cqw; justify-content:center; flex-wrap:wrap; font-size:2.8cqw; color:var(--doux); margin:.6cqw 0 1cqw; cursor:pointer; }
+  .defis span { border:1px solid #45457a; border-radius:20px; padding:.4cqw 1.8cqw; background:#1c1838; } .defis span.ok { border-color:#4ade80; color:#9ff0b5; } .defis span.rate { opacity:.45; text-decoration:line-through; }
+  .carte.speciale { border-color:#c8902f; background:linear-gradient(#2a2410, #1d1934); } .carte .grand { display:block; text-align:center; font-size:13cqw; line-height:1.2; padding-top:3cqw; filter:drop-shadow(0 .6cqw .8cqw #000c); }
+  .carte .gain { position:absolute; top:1cqw; right:1cqw; font-size:2.6cqw; background:#000a; color:var(--or); border-radius:20px; padding:.2cqw 1.2cqw; }
+  .actions .annule { flex:0 0 auto; }
+  .amisj { margin-top:2cqw; border:1px solid #45457a; border-radius:3cqw; padding:1.6cqw 2.4cqw; background:#14122a; font-size:3cqw; } .amisj b { color:var(--or); } .amisj .l { display:flex; justify-content:space-between; padding:.4cqw 0; } .amisj .moi { color:#9ff0b5; }
   .dos.vu img { width:3.6cqw; height:3.6cqw; border-radius:50%; object-fit:cover; }
   .vide { height:40cqw; border:2px dashed #3a3260; border-radius:3cqw; display:flex; align-items:center; justify-content:center; color:#5a5280; font-size:6cqw; }
   .carte { position:relative; border-radius:3cqw; background:#1d1934; border:2px solid #5a4e8a; overflow:hidden; transition:transform .25s, box-shadow .25s; }
@@ -136,12 +144,15 @@
 <div id="jeu"></div>
 <div class="flash" id="flash"></div>
 <div id="fen"></div>
-<script src="musique.js?v=20261115-192715"></script>
-<script src="rang.js?v=20261115-192715"></script>
-<script src="heros-etoiles.js?v=20261115-192715"></script>
-<script src="progression-modes.js?v=20261115-192715"></script>
-<script src="crypte-moteur.js?v=20261115-192715"></script>
-<script src="descente-moteur.js?v=20261115-192715"></script>
+<script src="musique.js?v=20261115-192906"></script>
+<script src="rang.js?v=20261115-192906"></script>
+<script src="heros-etoiles.js?v=20261115-192906"></script>
+<script src="progression-modes.js?v=20261115-192906"></script>
+<script src="profil.js?v=20261115-192906"></script>
+<script>window.AMIS_SANS_BOUTON = true; /* 15/11 soir : la crypte du jour se compare entre amis */</script>
+<script src="amis.js?v=20261115-192906"></script>
+<script src="crypte-moteur.js?v=20261115-192906"></script>
+<script src="descente-moteur.js?v=20261115-192906"></script>
 <script>
 // =============================================================================================== LA CRYPTE AUX SCEAUX (15/11, écran)
 // Le moteur (règles, hasard, monstres) est dans crypte-moteur.js ; ici seulement le dessin et les gestes.
@@ -179,6 +190,7 @@ const etatSceau = (s, liste) => { if (mode === 'rune') return s.ok ? 'non' : 'ru
 
 // ------------------------------------------------------------------ une carte de monstre
 function carteHTML(c) {
+  if (c.special) return speHTML(c);
   const T = c.trait && C.TRAITS[c.trait];
   const cible = mode === 'cible' ? 'cible' : '';
   return `<div class="carte ${c.elite ? 'elite' : ''} ${c.gardien ? 'gardien' : ''} ${cible} ${c.neuve ? 'neuve' : ''}" id="k-${c.id}" ${mode === 'cible' ? `onclick="cible('${c.id}')"` : ''}>
@@ -191,6 +203,15 @@ function carteHTML(c) {
   </div>`;
 }
 
+// 15/11 soir : une carte spéciale (coffre, autel, piège) : un grand émoji, ce qu'elle donne, ses sceaux
+function speHTML(c) {
+  const G = c.special === 'coffre' && C.GAINS_COFFRE[c.gain];
+  return `<div class="carte speciale ${mode === 'cible' ? 'cible' : ''} ${c.neuve ? 'neuve' : ''}" id="k-${c.id}" ${mode === 'cible' ? `onclick="cible('${c.id}')"` : ''}>
+    <span class="grand" onclick="event.stopPropagation();explique('${c.id}')">${c.e}</span>${G ? `<span class="gain">${G.e} ${G.n}</span>` : c.special === 'autel' ? '<span class="gain">⚡ pouvoir</span>' : ''}
+    ${intentHTML(c)}<div class="nom">${c.nom}</div>
+    <div class="sceaux">${c.sceaux.map((s, k) => sceauHTML(s, c.sceaux, mode === 'cible' ? '' : `touche('${c.id}',${k})`, etatSceau(s, c.sceaux))).join('')}</div>
+  </div>`;
+}
 // l'intention du monstre (ce qu'il fera à la fin du tour), sur sa carte
 function intentHTML(c) {
   const x = (C.intentions(S).find(y => y.id === c.id) || {}), I = C.INTENTIONS[x.it || 'frappe'];
@@ -202,7 +223,7 @@ function intentHTML(c) {
 const CLE_PARTIE = 'guilde-crypte-partie';
 function sauve() { if (typeof DR !== 'undefined' && DR) return sauveD(); try { if (S && !S.fin) localStorage.setItem(CLE_PARTIE, JSON.stringify({ S, duJour })); else localStorage.removeItem(CLE_PARTIE); } catch (e) {} }
 function partieGardee() { try { const p = JSON.parse(localStorage.getItem(CLE_PARTIE) || 'null'); return p && p.S && !p.S.fin && p.S.cols ? p : null; } catch (e) { return null; } }
-function reprend() { const p = partieGardee(); if (!p) return; S = p.S; duJour = p.duJour; sel = null; mode = null; son('melange'); dessine(); }
+function reprend() { const p = partieGardee(); if (!p) return; oublie(); S = p.S; duJour = p.duJour; sel = null; mode = null; son('melange'); dessine(); }
 
 // ------------------------------------------------------------------ l'écran de jeu
 function dessine() {
@@ -210,9 +231,9 @@ function dessine() {
   const H = HER[S.heros], P = C.POUVOIRS[S.heros];
   let table;
   if (S.gardien) table = `<div class="table boss">${carteHTML(S.gardien)}</div>`;
-  else table = `<div class="table">${S.cols.map(col => {
+  else table = `<div class="table" style="grid-template-columns:repeat(${S.cols.length}, 1fr)">${S.cols.map(col => {
     if (!col.length) return '<div class="col"><div class="vide">✓</div></div>';
-    const caches = col.slice(0, -1).map(c => S.voitTout ? `<div class="dos vu"><img src="portraits/m-${c.m}.webp" alt="">${c.nom}</div>` : '<div class="dos"></div>').join('');
+    const caches = col.slice(0, -1).map(c => S.voitTout ? `<div class="dos vu">${c.special ? `<span class="se">${c.e}</span>` : `<img src="portraits/m-${c.m}.webp" alt="">`}${c.nom}</div>` : '<div class="dos"></div>').join('');
     return `<div class="col">${caches}${carteHTML(col[col.length - 1])}</div>`;
   }).join('')}</div>`;
   const m = C.menace(S);
@@ -222,6 +243,7 @@ function dessine() {
   $('jeu').innerHTML = `
     <div class="haut"><a href="#" onclick="${typeof DR !== 'undefined' && DR ? `if(confirm('Quitter ? Ta descente est gardée.')){DR=null;descenteAccueil()}` : `location.href='menu.html'`};return false">‹ ${typeof DR !== 'undefined' && DR ? 'Quitter' : 'Menu'}</a><span class="titre">${typeof DR !== 'undefined' && DR ? `🗺️ Étage ${DR.etage} · ${D.SALLES[DR.salle.type].e} ${D.SALLES[DR.salle.type].n}` : '🪦 La Crypte aux Sceaux'}</span><button onclick="regles()">❓</button></div>
     <div class="stats"><span>Tour <b>${S.tour}</b></span><span>⭐ <b>${S.score}</b></span><span>${S.gardien ? '♛ Gardien' : `Cartes restantes <b>${S.cols.reduce((t, c) => t + c.length, 0)}</b>`}</span><span>🪙 <b>${S.or}</b></span></div>${S.regle ? `<div class="maitre" style="color:var(--or)">${C.REGLES[S.regle].e} Règle du jour : ${C.REGLES[S.regle].n} — ${C.REGLES[S.regle].d}</div>` : ''}${S.maitreLa ? '<div class="maitre">👹 Le Maître des cryptes est là : chaque tour, tous les monstres +1 de force !</div>' : S.maitre ? `<div class="maitre" style="color:var(--doux)">👹 Maître des cryptes au tour ${S.maitre + 1}</div>` : ''}
+    ${defisHTML()}
     ${table}
     <div class="menace">${S.voile ? '<span class="voile">🛡 Mur de lumière : personne ne frappera à la fin de ce tour.</span>' : m ? `Fin du tour : ${detailMenace()} = <b>−${m} PV</b>${C.menaceComp(S) ? ` · 🐾 −${C.menaceComp(S)} au compagnon` : ''}${S.bouclier ? ` <small>(🛡 ${S.bouclier} encaisse d’abord)</small>` : ''}` : (S.bouclier ? `🛡 Bouclier ${S.bouclier}` : (C.menaceComp(S) ? `🐾 Ton compagnon prendra −${C.menaceComp(S)}.` : S.taire ? '🦉 Les monstres se taisent ce tour-ci.' : 'Aucun monstre ne frappera à la fin de ce tour.'))}</div>
     <div class="bas" style="--c:${H.c}">
@@ -242,12 +264,24 @@ function dessine() {
     <div class="plateau" id="plateau">${S.aLancer ? S.des.map(d => `<button class="de cache" onclick="lanceDes()"></button>`).join('') : S.des.map(d => `<button class="de ${sel === d.id ? 'sel' : ''} ${d.neuf ? 'roule' : ''} ${d.c ? 'c-' + d.c : ''}" onclick="choisit('${d.id}')"><img src="faces-${S.heros}/face-${d.v}.webp" alt="${d.v}">${d.garde ? '<span class="g">🎒</span>' : ''}${d.c ? `<span class="cc">${C.COULEURS[d.c].e}</span>` : ''}</button>`).join('')}</div>
     ${btnEffet()}
     <div class="consigne">${consigne()}</div>
-    <div class="actions">${S.aLancer ? `<button class="lancer" onclick="lanceDes()">🎲 Lancer les dés</button>` : `<button onclick="relance()" ${S.relance && S.des.some(d => !d.garde) ? '' : 'disabled'}>🎲 Relancer (${S.relance})</button><button class="fin" onclick="finTour()">Fin du tour ▶</button>`}</div>
+    <div class="actions">${S.aLancer ? `<button class="lancer" onclick="lanceDes()">🎲 Lancer les dés</button>` : `${histo.length ? '<button class="annule" onclick="annule()" title="Annuler le dernier dé posé">↩</button>' : ''}<button onclick="relance()" ${S.relance && S.des.some(d => !d.garde) ? '' : 'disabled'}>🎲 Relancer (${S.relance})</button><button class="fin" onclick="finTour()">Fin du tour ▶</button>`}</div>
     <div class="journal">${S.journal[0] || ''}</div>`;
   S.des.forEach(d => delete d.neuf); visibles().forEach(c => delete c.neuve);
   sauve();
 }
 const visibles = () => S ? C.visibles(S) : [];
+// 15/11 soir : la variante de plateau et les 3 défis à étoiles (crypte seule, pas la Descente)
+function defisHTML() {
+  if (!S.defis && !S.variante) return '';
+  const V = S.variante && C.VARIANTES[S.variante];
+  return `<div class="defis" onclick="defisFen()">${V ? `<span>${V.e} ${V.n}</span>` : ''}${C.defisEtat(S).map(d => `<span class="${d.enCours ? 'ok' : (d.k === 'sansBesace' || d.k === 'sansRune' || d.k === 'sansRelance' || d.k === 'prudent') ? 'rate' : ''}">☆ ${d.e} ${d.n}</span>`).join('')}</div>`;
+}
+function defisFen() {
+  const V = S.variante && C.VARIANTES[S.variante];
+  fenetre(`<h2>⭐ Les défis de cette crypte</h2>${V ? `<p><b>${V.e} ${V.n}</b> : ${V.d}</p>` : ''}<p>Gagne la crypte, et chaque défi réussi te donne <b>une étoile</b> (3 au plus).</p>
+    ${C.defisEtat(S).map(d => `<p>${d.e} <b>${d.n}</b> : ${d.d}<br><small style="color:${d.enCours ? '#9ff0b5' : 'var(--doux)'}">${d.enCours ? '✓ en bonne voie' : 'pas encore'}</small></p>`).join('')}
+    <button class="go" onclick="fenetre('')">Compris</button>`);
+}
 // 15/11 : seules les cartes VISIBLES frappent, chacune de sa force ; on l'écrit en clair (« Scarabée 1 + Lutin 2 »)
 function detailMenace() { return C.intentions(S).filter(x => x.v).map(x => `${x.nom.split(' ')[0]} ${x.v}`).join(' + '); }
 function consigne() {
@@ -260,6 +294,15 @@ function consigne() {
 }
 
 // ------------------------------------------------------------------ les gestes
+// 15/11 soir (Dice & Fold) : ANNULER le dernier dé posé, tant que le tour n'est pas fini (ni relance, ni pouvoir, ni Rune entre-temps)
+let histo = [];
+const photo = () => { try { histo.push(JSON.stringify(S)); if (histo.length > 12) histo.shift(); } catch (e) {} };
+const oublie = () => { histo = []; };
+function annule() {
+  if (!histo.length || anime || occupe) return;
+  const ancien = S; S = JSON.parse(histo.pop()); if (typeof DR !== 'undefined' && DR && DR.S === ancien) DR.S = S;
+  sel = null; mode = null; son('choisir'); bulle('↩ Annulé'); dessine();
+}
 function choisit(id) { if (mode) mode = null; sel = sel === id ? null : id; son('choisir'); dessine(); }
 function resultat(r) {
   if (r === 'ok' || r === 'rune') { son(r === 'rune' ? 'rune' : 'poser'); if (r === 'rune') bulle('✦ Une Rune !'); sel = null; return true; }
@@ -267,13 +310,13 @@ function resultat(r) {
   return false;
 }
 function touche(idCarte, k) {
-  if (mode === 'rune') { const avant = S.tombes; if (C.rune(S, idCarte, k)) { son('rune'); mode = null; apresCoup(avant); } return; }
+  if (mode === 'rune') { const avant = S.tombes; if (C.rune(S, idCarte, k)) { oublie(); son('rune'); mode = null; apresCoup(avant); } return; }
   if (!sel) { const c = C.trouve(S, idCarte); if (c) explique(idCarte); return; }
-  const avant = S.tombes; if (resultat(C.placer(S, sel, { carte:idCarte, s:k }))) apresCoup(avant); else dessine();
+  const avant = S.tombes, ph = JSON.stringify(S); if (resultat(C.placer(S, sel, { carte:idCarte, s:k }))) { histo.push(ph); apresCoup(avant); } else dessine();
 }
-function touchePouvoir(k) { if (!sel) return; const p = S.pret; resultat(C.placer(S, sel, { pouvoir:k })); if (!p && S.pret) { son('magie'); bulle('⚡ Pouvoir prêt !'); } dessine(); }
-function versCreuset() { if (!sel) return; resultat(C.placer(S, sel, { creuset:true })); dessine(); }
-function versBesace() { if (!sel) return; resultat(C.placer(S, sel, { reserve:true })); dessine(); }
+function touchePouvoir(k) { if (!sel) return; const p = S.pret, ph = JSON.stringify(S); if (resultat(C.placer(S, sel, { pouvoir:k }))) histo.push(ph); if (!p && S.pret) { son('magie'); bulle('⚡ Pouvoir prêt !'); } dessine(); }
+function versCreuset() { if (!sel) return; const ph = JSON.stringify(S); if (resultat(C.placer(S, sel, { creuset:true }))) histo.push(ph); dessine(); }
+function versBesace() { if (!sel) return; const ph = JSON.stringify(S); if (resultat(C.placer(S, sel, { reserve:true }))) histo.push(ph); dessine(); }
 function modeRune() { if (!S.runes) return; mode = mode === 'rune' ? null : 'rune'; sel = null; dessine(); }
 // 15/11 soir : le LANCER se voit : les dés tournent en changeant de face, puis s'arrêtent sur leur valeur
 let anime = false;
@@ -288,15 +331,15 @@ function animeDes(ids, puis) {
   };
   tick();
 }
-function lanceDes() { if (anime || !S || !S.aLancer) return; C.lancer(S); sel = null; const ids = S.des.filter(d => !d.garde).map(d => d.id); dessine(); animeDes(ids); }
-function relance() { if (anime) return; const ids = S.des.filter(d => !d.garde).map(d => d.id); if (C.relancer(S)) { sel = null; dessine(); animeDes(ids); } }
+function lanceDes() { if (anime || !S || !S.aLancer) return; oublie(); C.lancer(S); sel = null; const ids = S.des.filter(d => !d.garde).map(d => d.id); dessine(); animeDes(ids); }
+function relance() { if (anime) return; const ids = S.des.filter(d => !d.garde).map(d => d.id); if (C.relancer(S)) { oublie(); sel = null; dessine(); animeDes(ids); } }
 function utilise() {
   if (C.silence(S)) { son('erreur'); bulle('🤐 Silence !', true); return; }
   if (S.heros === 'maelle') { mode = 'cible'; sel = null; dessine(); return; }
   const avant = S.tombes, nb = S.des.length;
-  if (C.pouvoir(S, {})) { son(S.heros === 'pip' ? 'soin' : 'ultime'); bulle(`⚡ ${C.POUVOIRS[S.heros].n}`); if (S.des.length !== nb || S.heros === 'gorm') S.des.forEach(d => d.neuf = true); apresCoup(avant); }
+  if (C.pouvoir(S, {})) { oublie(); son(S.heros === 'pip' ? 'soin' : 'ultime'); bulle(`⚡ ${C.POUVOIRS[S.heros].n}`); if (S.des.length !== nb || S.heros === 'gorm') S.des.forEach(d => d.neuf = true); apresCoup(avant); }
 }
-function cible(id) { const avant = S.tombes; if (C.pouvoir(S, { carte:id })) { son('gros'); mode = null; tremble(); apresCoup(avant); } }
+function cible(id) { const avant = S.tombes; if (C.pouvoir(S, { carte:id })) { oublie(); son('gros'); mode = null; tremble(); apresCoup(avant); } }
 // après un coup : les monstres tombés se replient, la carte du dessous se retourne
 function apresCoup(avant) {
   const n = S.tombes - avant;
@@ -322,7 +365,7 @@ async function finTour() {
     if (x.v) { son('coup'); bulle(`${x.nom.split(' ')[0]} −${x.v}`, true); } else { son(x.it === 'soin' ? 'soin' : 'bouclier'); bulle(`${I.e} ${I.n}`); }
     await new Promise(r => setTimeout(r, 520)); k.classList.remove('frappe');
   }
-  occupe = false;
+  occupe = false; oublie();
   C.finTour(S);
   const perdu = avant - S.pv;
   if (perdu > 0) { son('coup'); $('flash').classList.remove('go'); void $('flash').offsetWidth; $('flash').classList.add('go'); tremble(); bulle(`−${perdu} PV`, true); }
@@ -336,19 +379,21 @@ function compHTML() {
   return `<div class="comp ${K.pv <= 0 ? 'ko' : ''}"><div class="av">${typeof icoComp === 'function' ? icoComp(K.id) : P.e}<small>❤ ${K.pv}</small></div><div><b>${P.n}</b><p>${K.pv <= 0 ? 'Il est tombé : il se repose jusqu’au prochain feu de camp.' : P.d}</p>
     ${K.pv > 0 ? (K.pret ? `<button class="btn-pouv" onclick="utiliseComp()">${P.e} ${P.n} : à l’action !</button>` : `<div class="sceaux">${K.sceaux.map((s, k) => sceauHTML(s, K.sceaux, `toucheComp(${k})`, mode === 'rune' ? 'non' : etatSceau(s, K.sceaux))).join('')}</div>`) : ''}</div></div>`;
 }
-function utiliseConso(i) { if (anime) return; const k = S.consos[i], avant = S.tombes, nb = S.des.length; const r = C.conso(S, i);
+function utiliseConso(i) { if (anime) return; const k = S.consos[i], avant = S.tombes, nb = S.des.length; const r = C.conso(S, i); if (r === 'ok') oublie();
   if (r === 'ok') { son(k === 'potion' ? 'soin' : k === 'bombe' ? 'gros' : 'magie'); bulle(`${C.CONSOS[k].e} ${C.CONSOS[k].n} !`); if (S.des.length !== nb) S.des[S.des.length - 1].neuf = true; apresCoup(avant); } else { son('erreur'); bulle(r, true); } }
 function btnEffet() { const d = sel && S.des.find(x => x.id === sel); return d && d.c ? `<button class="btn-effet" onclick="effetCouleur()">${C.COULEURS[d.c].e} Effet du ${C.COULEURS[d.c].n.toLowerCase()} : ${C.COULEURS[d.c].d}</button>` : ''; }
-function toucheComp(k) { if (!sel) return; const p = S.comp.pret; resultat(C.placer(S, sel, { comp:k })); if (!p && S.comp.pret) { son('magie'); bulle(`${C.COMPAGNONS[S.comp.id].e} prêt !`); } dessine(); }
-function utiliseComp() { const avant = S.tombes, nb = S.des.length; if (C.competence(S)) { son('magie'); bulle(`${C.COMPAGNONS[S.comp.id].e} ${C.COMPAGNONS[S.comp.id].n} !`); if (S.des.length !== nb) S.des.forEach(d => d.neuf = true); apresCoup(avant); } else { son('erreur'); bulle('🤐 Silence !', true); } }
-function effetCouleur() { if (!sel) return; const r = C.placer(S, sel, { couleur:true }); if (r === 'ok') { son('magie'); bulle((S.journal[0] || '✨').split(':')[0]); sel = null; } else { son('erreur'); bulle(r, true); } dessine(); }
+function toucheComp(k) { if (!sel) return; const p = S.comp.pret, ph = JSON.stringify(S); if (resultat(C.placer(S, sel, { comp:k }))) histo.push(ph); if (!p && S.comp.pret) { son('magie'); bulle(`${C.COMPAGNONS[S.comp.id].e} prêt !`); } dessine(); }
+function utiliseComp() { const avant = S.tombes, nb = S.des.length; if (C.competence(S)) { oublie(); son('magie'); bulle(`${C.COMPAGNONS[S.comp.id].e} ${C.COMPAGNONS[S.comp.id].n} !`); if (S.des.length !== nb) S.des.forEach(d => d.neuf = true); apresCoup(avant); } else { son('erreur'); bulle('🤐 Silence !', true); } }
+function effetCouleur() { if (!sel) return; const r = C.placer(S, sel, { couleur:true }); if (r === 'ok') { oublie(); son('magie'); bulle((S.journal[0] || '✨').split(':')[0]); sel = null; } else { son('erreur'); bulle(r, true); } dessine(); }
 
 // ------------------------------------------------------------------ petits effets
 function bulle(t, rouge) { const b = document.createElement('div'); b.className = 'bulle'; b.textContent = t; if (rouge) b.style.color = '#ff8a7a'; document.body.appendChild(b); setTimeout(() => b.remove(), 1400); }
 function tremble() { $('jeu').classList.remove('tremble'); void $('jeu').offsetWidth; $('jeu').classList.add('tremble'); }
 function fenetre(h) { $('fen').innerHTML = h ? `<div class="voile-f" onclick="if(event.target===this)fenetre('')"><div class="fen">${h}</div></div>` : ''; }
 function explique(id) {
-  const c = C.trouve(S, id); if (!c) return; const T = c.trait && C.TRAITS[c.trait];
+  const c = C.trouve(S, id); if (!c) return;
+  if (c.special) { const P = C.SPECIALES[c.special], G = c.special === 'coffre' && C.GAINS_COFFRE[c.gain]; return fenetre(`<h2>${c.e} ${c.nom}</h2><p>${P.d}</p>${G ? `<p style="text-align:center">Dans ce coffre : <b>${G.e} ${G.n}</b>.</p>` : ''}<p style="color:var(--doux);font-size:.9em">Brise ses sceaux avec tes dés, comme ceux d’un monstre. Tant qu’elle est sur le dessus, elle bloque la carte du dessous.</p><button class="go" onclick="fenetre('')">Compris</button>`); }
+  const T = c.trait && C.TRAITS[c.trait];
   fenetre(`<h2>${c.nom}</h2><p style="text-align:center">${c.gardien ? 'Le Gardien de la crypte' : c.elite ? 'Une élite, au fond de sa colonne' : 'Niveau ' + c.niv} · frappe de <b>${c.att}</b> à la fin de chaque tour.</p>
     ${T ? `<p><b>${T.e} ${T.n}</b> : ${T.d}</p>` : '<p>Pas de particularité.</p>'}
     <p style="color:var(--doux);font-size:.9em">Pour le faire tomber, brise tous ses sceaux avec tes dés. Touche ❓ pour la liste des sceaux.</p>
@@ -365,7 +410,9 @@ function regles() {
       <li><b>Ton héros</b> : pose des dés sur les sceaux de son pouvoir ; quand ils sont tous brisés, le pouvoir est prêt.</li>
       <li><b>Fin du tour</b> : chaque monstre visible fait ce qu’il annonce sur sa carte (⚔ frapper, ⏳ préparer un coup double, 🛡 se protéger, 💚 soigner un voisin). La ligne du milieu te dit combien tu vas perdre.</li>
       <li><b>Chaîne</b> : plusieurs monstres tombés dans le même tour multiplient les points.</li>
-      <li><b>Victoire</b> : vide les 3 colonnes, puis bats le <b>Gardien</b> de la crypte. Les élites ★ dorment au fond des colonnes.</li>
+      <li><b>Victoire</b> : vide les colonnes, puis bats le <b>Gardien</b> de la crypte. Les élites ★ dorment au fond des colonnes.</li>
+      <li><b>Le plateau change</b> : trois colonnes, quatre colonnes, l’escalier ou les deux tours. Une <b>carte spéciale</b> se cache aussi dans les colonnes : 🧰 un coffre, 🕯️ un autel qui charge ton pouvoir, ou ⚙️ un piège qui frappe tant qu’il n’est pas désamorcé.</li>
+      <li><b>Les étoiles</b> : chaque crypte a 3 <b>défis</b> (en haut de l’écran, touche-les pour les lire). Gagne, et chaque défi réussi vaut une étoile. ↩ annule le dernier dé posé.</li>
     </ol>
     <h3 style="color:var(--or);margin:10px 0 4px">Les sceaux</h3>
     <div class="leg">
@@ -396,6 +443,7 @@ function finPartie() {
   D.parties++; if (gagne) D.victoires++; D.meilleur = Math.max(D.meilleur, S.score);
   if (duJour) { const j = D.jours[jour()]; if (!j || S.score > j.score) D.jours[jour()] = { score:S.score, etoiles:et, heros:S.heros }; }
   ecrire(D);
+  if (duJour && typeof amisAgir === 'function') try { amisAgir('signal'); } catch (e) {} // la carte de profil (avec le score du jour) part chez les amis
   let objet = null;
   if (gagne) { son('victoire'); if (typeof guildeEvt === 'function') guildeEvt('boss', 1, { heros:S.heros }); try { GM.jingle('victoire'); } catch (e) {} objet = butinArmurerie(et, S.score + S.tour); }
   else { try { GM.jingle('defaite'); } catch (e) {} if (typeof gagneXP === 'function') gagneXP(10, 'Crypte explorée'); }
@@ -404,12 +452,24 @@ function finPartie() {
   fenetre(`<h2>${gagne ? '🏆 La crypte est à toi !' : '☠ La crypte t’a eu…'}</h2>
     <p style="text-align:center;font-size:2em;margin:6px 0">${gagne ? '★'.repeat(et) + '☆'.repeat(3 - et) : ''}</p>
     <p style="text-align:center">Score : <b style="color:var(--or)">${S.score}</b> · ${S.tombes} monstre${S.tombes > 1 ? 's' : ''} · plus longue chaîne ×${S.chaineMax} · ${S.tour} tours${gagne ? ` · ❤ ${S.pv} restants` : ''}</p>
-    ${gagne ? `<p style="color:var(--doux);font-size:.9em;text-align:center">★★ : finir avec 12 PV ou plus · ★★★ : 25 PV ou plus.</p>` : `<p style="color:var(--doux);text-align:center">${S.gardien ? 'Tu étais devant le Gardien !' : `Il restait ${S.cols.reduce((t, c) => t + c.length, 0)} monstres.`} Astuce : vide d’abord les monstres qui frappent fort, et garde le creuset pour les sceaux difficiles.</p>`}
+    ${S.defis ? `<div style="font-size:.92em">${C.defisEtat(S).map(d => `<p style="margin:4px 0">${d.ok ? '⭐' : '☆'} ${d.e} <b>${d.n}</b> : ${d.d}</p>`).join('')}</div>${gagne ? '' : '<p style="color:var(--doux);font-size:.9em;text-align:center">Les étoiles se gagnent seulement avec une victoire.</p>'}` : ''}
+    ${duJour ? amisJourHTML() : ''}
+    ${gagne ? (S.defis ? '' : `<p style="color:var(--doux);font-size:.9em;text-align:center">★★ : finir avec 12 PV ou plus · ★★★ : 25 PV ou plus.</p>`) : `<p style="color:var(--doux);text-align:center">${S.gardien ? 'Tu étais devant le Gardien !' : `Il restait ${S.cols.reduce((t, c) => t + c.length, 0)} monstres.`} Astuce : vide d’abord les monstres qui frappent fort, et garde le creuset pour les sceaux difficiles.</p>`}
     ${gagne ? `<p style="text-align:center">✨ +5 éclats de ${HER[S.heros].n}${objet ? ` · 🎒 <b>${objet}</b> rejoint ton armurerie` : ''}</p>` : ''}
     <p style="text-align:center;color:var(--doux);font-size:.9em">Meilleur score : ${D.meilleur} · ${D.victoires} victoire${D.victoires > 1 ? 's' : ''} sur ${D.parties}</p>
     <button class="go" onclick="fenetre('');S=null;accueil()">Retour à l’entrée de la crypte</button>`);
 }
 
+// 15/11 soir : la crypte du jour ENTRE AMIS : ton meilleur score du jour et celui de tes amis (leur carte de profil le porte)
+function amisJourHTML() {
+  if (typeof AMIS === 'undefined' || !AMIS.carte) return '<p style="color:var(--doux);font-size:.85em;text-align:center">👥 Crée ta carte de joueur (menu, bouton 👤) pour comparer la crypte du jour avec tes amis.</p>';
+  const j = lire().jours[jour()], l = [];
+  if (j) l.push({ n:'Toi', s:j.score, e:j.etoiles, moi:true });
+  ((AMIS.etat && AMIS.etat.amis) || []).forEach(a => { const c = a.profil && a.profil.crypte; if (c && c.d === jour()) l.push({ n:a.pseudo, s:c.s, e:c.e }); });
+  if (l.length < 2) return `<div class="amisj">👥 <b>Aujourd’hui entre amis</b><br><span style="color:var(--doux)">${AMIS.etat ? 'Aucun de tes amis n’a encore tenté la crypte du jour.' : 'Chargement de tes amis…'}</span></div>`;
+  l.sort((a, b) => b.s - a.s);
+  return `<div class="amisj">👥 <b>Aujourd’hui entre amis</b>${l.map((x, i) => `<div class="l ${x.moi ? 'moi' : ''}"><span>${['🥇', '🥈', '🥉'][i] || (i + 1) + '.'} ${amisEsc(x.n)}</span><span>${x.s} ${'★'.repeat(x.e || 0)}</span></div>`).join('')}</div>`;
+}
 // ------------------------------------------------------------------ l'entrée de la crypte (choix du héros)
 function accueil() {
   const D = lire(), j = D.jours[jour()];
@@ -423,26 +483,32 @@ function accueil() {
     <div class="choix">
       ${partieGardee() ? `<button onclick="reprend()" style="border-color:var(--ok);color:var(--ok);background:#163a2a">▶ Reprendre ta crypte<small>${HER[partieGardee().S.heros].n} · tour ${partieGardee().S.tour} · ❤ ${partieGardee().S.pv}</small></button><button onclick="if(confirm('Abandonner cette partie ? Elle sera effacée.')){try{localStorage.removeItem('guilde-crypte-partie')}catch(e){};accueil()}" style="display:block;margin:0 auto;background:none;border:0;color:var(--doux);font-size:3cqw;text-decoration:underline;padding:1cqw;text-align:center">✕ abandonner cette partie</button>` : ''}
       <button onclick="descenteAccueil()" style="border-color:#ff9a4a;background:#3a1f10;color:#ffb070">🗺️ NOUVEAU · La Descente<small>Le grand voyage : 3 étages, tu choisis tes salles (combats, marchand, feu de camp, événements), objets, compagnons, dés de couleur, boss et breloques.</small></button>
-      <button onclick="lance(true)">📅 La crypte du jour<small>${(r => `${r.e} Règle du jour : <b>${r.n}</b> (${r.d}) · `)(C.REGLES[C.regleDuJour('c' + jour())])}La même pour tout le monde aujourd’hui. ${j ? `Ton record du jour : ${j.score} ${'★'.repeat(j.etoiles)}` : 'Pas encore tentée.'}</small></button>
-      <button class="b2" onclick="lance(false)">🎲 Une crypte au hasard<small>Une nouvelle à chaque fois, pour t’entraîner.</small></button>
+      <button onclick="lance(true)">📅 La crypte du jour<small>${(v => `${v.e} Plateau du jour : <b>${v.n}</b> · `)(C.VARIANTES[C.varianteDuJour('c' + jour())])}${(r => `${r.e} Règle du jour : <b>${r.n}</b> (${r.d}) · `)(C.REGLES[C.regleDuJour('c' + jour())])}La même pour tout le monde aujourd’hui. ${j ? `Ton record du jour : ${j.score} ${'★'.repeat(j.etoiles)}` : 'Pas encore tentée.'}</small></button>
+      <button class="b2" onclick="lance(false)">🎲 Une crypte au hasard<small>Une nouvelle à chaque fois, avec un plateau au hasard, une carte spéciale et 3 défis à étoiles.</small></button>
     </div>
+    ${amisJourHTML()}
     <p class="record">Meilleur score : ${D.meilleur} · ${D.victoires} victoire${D.victoires > 1 ? 's' : ''} sur ${D.parties} crypte${D.parties > 1 ? 's' : ''}</p>
   </div>`;
 }
 function lance(j) {
   duJour = j; const D = lire(); D.heros = choixH; ecrire(D);
   const B = bonusMode(choixH);
-  S = C.nouvelle(choixH, j ? 'crypte-' + jour() : 'crypte-' + Date.now() + Math.random(), B, j ? { regle:C.regleDuJour('c' + jour()), maitre:C.regleDuJour('c' + jour()) === 'presse' ? 8 : 0 } : {});
+  // 15/11 soir : un plateau (variante), une carte spéciale et 3 défis à étoiles ; la crypte du jour tire tout de la date
+  const vh = Object.keys(C.VARIANTES)[Math.floor(Math.random() * Object.keys(C.VARIANTES).length)];
+  S = C.nouvelle(choixH, j ? 'crypte-' + jour() : 'crypte-' + Date.now() + Math.random(), B, Object.assign({ variante:j ? C.varianteDuJour('c' + jour()) : vh, speciales:1, defis:true },
+    j ? { regle:C.regleDuJour('c' + jour()), maitre:C.regleDuJour('c' + jour()) === 'presse' ? 8 : 0 } : {}));
+  oublie();
   S.des.forEach(d => d.neuf = true); visibles().forEach(c => c.neuve = true); sel = null; mode = null;
   son('melange'); dessine();
   if (!localStorage.getItem('guilde-crypte-guide')) { localStorage.setItem('guilde-crypte-guide', '1'); regles(); }
 }
 if (typeof GM !== 'undefined') { try { GM.musique('exploration'); GM.bouton(); } catch (e) {} }
 accueil();
+if (typeof AMIS !== 'undefined' && AMIS.carte) setTimeout(() => { if (!S && (typeof DR === 'undefined' || !DR) && AMIS.etat) accueil(); }, 2500);
 </script>
-<script src="descente-ecran.js?v=20261115-192715"></script>
-<script src="guide.js?v=20261115-192715"></script>
-<script src="guides-modes.js?v=20261115-192715"></script>
+<script src="descente-ecran.js?v=20261115-192906"></script>
+<script src="guide.js?v=20261115-192906"></script>
+<script src="guides-modes.js?v=20261115-192906"></script>
 <script>
 // 15/11 : le guide de Moustache de ce mode (guides-modes.js)
 { const _d = dessine; dessine = function () { const r = _d.apply(this, arguments); if (typeof S !== 'undefined' && S) guideMode('crypte'); return r; }; }
