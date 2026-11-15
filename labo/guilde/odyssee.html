@@ -175,7 +175,7 @@ const herosAventureOdy = () => haListe().map(a => haInfo('av:' + a.id)).map(i =>
   ? `<button onclick="location.href='duel.html?tuto=1'" style="opacity:.55">${haImg(i, 'filter:grayscale(1)')}🔒 ${haEsc(i.nom)}<br><small style="color:var(--doux)">Fais le tutoriel</small></button>`
   : `<button onclick="commence('${i.cle}')">${haImg(i, `box-shadow:0 0 0 2px ${i.couleur}`)}${haEsc(i.nom)}<small class="ha-t">⚔ ${haEsc(i.titre)}</small><small style="color:var(--doux)">${Math.round(HEROS[i.voie].pv * (ODY_PV[i.voie] || 1.8))} PV en Odyssée</small></button>`).join('');
 
-const VERSION = '20261115-224708';
+const VERSION = '20261115-225537';
 function verifieVersion() {
   fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
     v = (v || '').trim(); if (!v || v === VERSION || document.getElementById('majbar')) return;
@@ -188,19 +188,19 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261115-224708"></script>
-<script src="musique.js?v=20261115-224708"></script>
-<script src="rang.js?v=20261115-224708"></script>
-<script src="heros-etoiles.js?v=20261115-224708"></script>
-<script src="heros-aventure.js?v=20261115-224708"></script>
-<script src="donnees.js?v=20261115-224708"></script>
-<script src="guide.js?v=20261115-224708"></script>
-<script src="odyssee.js?v=20261115-224708"></script>
-<script src="bestiaire.js?v=20261115-224708"></script>
-<script src="aventure.js?v=20261115-224708"></script>
-<script src="odyssee-sansfin.js?v=20261115-224708"></script>
-<script src="pantheon.js?v=20261115-224708"></script>
-<script src="chronique.js?v=20261115-224708"></script>
+<script src="cartes.js?v=20261115-225537"></script>
+<script src="musique.js?v=20261115-225537"></script>
+<script src="rang.js?v=20261115-225537"></script>
+<script src="heros-etoiles.js?v=20261115-225537"></script>
+<script src="heros-aventure.js?v=20261115-225537"></script>
+<script src="donnees.js?v=20261115-225537"></script>
+<script src="guide.js?v=20261115-225537"></script>
+<script src="odyssee.js?v=20261115-225537"></script>
+<script src="bestiaire.js?v=20261115-225537"></script>
+<script src="aventure.js?v=20261115-225537"></script>
+<script src="odyssee-sansfin.js?v=20261115-225537"></script>
+<script src="pantheon.js?v=20261115-225537"></script>
+<script src="chronique.js?v=20261115-225537"></script>
 <script>
 // le moteur du Duel n'est pas chargé ici : les cartes de l'Odyssée appellent degats/soin seulement en combat (dans duel.html)
 const log = () => {}, degats = () => {}, soin = () => {}, altere = () => {}, invoque = () => {}, adv = () => ({}), fin = () => {};
@@ -245,6 +245,7 @@ const CORBIN_GIVRE = {
 function reprendre(r) { R = r; dejaDessine = new Set(); R.ile.flat().forEach(c => { if (c.vu) dejaDessine.add(c.x + ',' + c.y); }); if (R.combat && !R.combat.resultat) { location.href = 'duel.html?odyssee=1' + SUF_URL; return; } if (R.combat && R.combat.resultat) { dessine(); apresCombat(); return; } dessine(); }
 const ilDYa = t => { if (!t) return ''; const m = Math.round((Date.now() - t) / 60000); return m < 2 ? 'à l’instant' : m < 60 ? `il y a ${m} min` : m < 1440 ? `il y a ${Math.round(m / 60)} h` : `il y a ${Math.round(m / 1440)} jour${m >= 2880 ? 's' : ''}`; };
 function emplacements() {
+  if (SANSFIN && !actesFaits().brulees) return ecran(); // 15/11 nuit : verrouillée tant que le Titan de feu n'est pas vaincu
   document.body.classList.remove('givre', 'abime');
   const cartes = Array.from({ length:ODY_SLOTS }, (_, i) => {
     const n = i + 1, r = lireSlot(n);
@@ -270,14 +271,18 @@ function accueil() {
 // le choix du héros pour l'emplacement actif (vide)
 function ecran() {
   const r = lireOdyssee(), rec = lireRecords(), col = lireCollection();
+  // 15/11 nuit (l'utilisateur) : plus d'« essayer quand même » ; l'Odyssée sans fin attend la victoire contre le Titan de feu
+  if (SANSFIN && !actesFaits().brulees) {
+    document.getElementById('app').innerHTML = `<h1>🧩 L’Odyssée sans fin</h1><p style="text-align:center">🔒 Elle s’ouvre quand tu as vaincu <b>le Titan de feu</b> (acte I, les Terres brûlées), avec n’importe quel héros.</p>
+    <div class="choixh"><button onclick="location.href='odyssee.html'">🌋 Aller aux Terres brûlées</button></div><div class="choixh"><button onclick="location.href='menu.html#odyssee'">⌂ Menu</button></div>`; return; }
   if (r) { reprendre(r); return; }
   document.body.classList.toggle('givre', ACTE_URL === 'givre'); document.body.classList.toggle('abime', ACTE_URL === 'abime');
-  if (ACTE_URL === 'abime' && !actesFaits().givre && !Q.get('essai')) {
+  if (ACTE_URL === 'abime' && !actesFaits().givre) {
     document.getElementById('app').innerHTML = `<h1>🌀 L’Odyssée · l’Abîme du Vide</h1><p style="text-align:center">🔒 L’acte III s’ouvre quand tu as vaincu <b>la Vouivre des glaces</b> (acte II, l’île du Givre).</p>
-    <div class="choixh"><button onclick="location.href='odyssee.html?ile=givre'">❄️ Aller à l’île du Givre</button><button onclick="location.href='odyssee.html?ile=abime&essai=1'">🧪 L’essayer quand même (prototype)</button></div><div class="choixh"><button onclick="location.href='menu.html#odyssee'">⌂ Menu</button></div>`; return; }
-  if (ACTE_URL === 'givre' && !actesFaits().brulees && !Q.get('essai')) {
+    <div class="choixh"><button onclick="location.href='odyssee.html?ile=givre'">❄️ Aller à l’île du Givre</button></div><div class="choixh"><button onclick="location.href='menu.html#odyssee'">⌂ Menu</button></div>`; return; }
+  if (ACTE_URL === 'givre' && !actesFaits().brulees) {
     document.getElementById('app').innerHTML = `<h1>❄️ L’Odyssée · l’île du Givre</h1><p style="text-align:center">🔒 L’acte II s’ouvre quand tu as vaincu <b>le Titan de feu</b> (acte I, les Terres brûlées), avec n’importe quel héros.</p>
-    <div class="choixh"><button onclick="location.href='odyssee.html'">🌋 Aller aux Terres brûlées</button><button onclick="location.href='odyssee.html?ile=givre&essai=1'">🧪 L’essayer quand même (prototype)</button></div><div class="choixh"><button onclick="location.href='menu.html#odyssee'">⌂ Menu</button></div>`; return; }
+    <div class="choixh"><button onclick="location.href='odyssee.html'">🌋 Aller aux Terres brûlées</button></div><div class="choixh"><button onclick="location.href='menu.html#odyssee'">⌂ Menu</button></div>`; return; }
   document.getElementById('app').innerHTML = `<h1>${ROUTE_TITAN ? '🛤 La Route du Titan' : ({ givre:'❄️ L’Odyssée · l’île du Givre', abime:'🌀 L’Odyssée · l’Abîme du Vide' }[ACTE_URL] || '🏰 L’Odyssée · les Terres brûlées') + (SANSFIN ? ' · 🧩 sans fin' : '')}</h1>${SANSFIN ? '<p style="text-align:center;color:var(--or);font-size:.9em">L’île se construit tuile par tuile : à chaque pas, tu choisis une tuile parmi 3 et tu la raccordes au donjon.</p>' : ''}
   ${ROUTE_TITAN ? `<p style="text-align:center;color:var(--doux);font-size:.9em">Les Terres brûlées, vues d’en haut : <b>tout le chemin jusqu’au Titan de feu se voit dès le départ</b>. ${ROUTE_ETAPES} étapes, des chemins qui se séparent et se rejoignent : à toi de choisir ta route (combats, élites, coffres, marchand, feu de camp…). On ne revient pas en arrière. Pas d’huile ici : ta vie, ton or et ton deck. Le combat, c’est le Duel.</p>` : `<p style="text-align:center;color:var(--doux);font-size:.9em">Une île tirée au sort, à explorer case par case. Le combat, c’est le Duel. Tes PV ne remontent pas tout seuls : sources, potions et marchand. Une lanterne de 20 doses d’huile pour fouiller. Deux fragments de rune ouvrent la porte ${{ givre:"de la Vouivre des glaces. Ici, le Givre ❄ s’accumule sur toi : à trois, tu es gelé", abime:"du Roi sans visage. Ici, la Corruption 🟣 s’accumule : à trois, le Vide te dévore (Silence) et nourrit l’ennemi" }[ACTE_URL] || "du Titan de feu"}.</p>`}
   ${ascMax(ACTE_URL) && (SANSFIN || ROUTE_TITAN || !MODE_AV) ? `<p style="text-align:center;font-size:.9em">⛰ <b style="color:var(--or)">Ascension</b> : ${Array.from({ length:ascMax(ACTE_URL) + 1 }, (_, n) => `<button class="asc ${ASC_CHOIX === n ? 'on' : ''}" onclick="ASC_CHOIX=${n};ecran()">${n || 'normal'}</button>`).join(' ')}${ASC_CHOIX ? `<br><small style="color:var(--doux)">${Array.from({ length:ASC_CHOIX }, (_, i) => ASCENSION[i + 1].n).join(' · ')}</small>` : ''}</p>` : ''}

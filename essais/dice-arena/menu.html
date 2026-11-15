@@ -8,7 +8,7 @@
 <title>La Guilde des Runes</title>
 <script>
 // Même mécanisme que le Duel : une nouvelle version = rechargement tout seul à l'ouverture (publier.sh change VERSION).
-const VERSION = '20261115-224708';
+const VERSION = '20261115-225537';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-menu-' + v)) { sessionStorage.setItem('recharge-menu-' + v, '1'); location.replace('menu.html?v=' + v); }
@@ -198,14 +198,14 @@ fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.te
 </div>
 <div id="flash"></div>
 
-<script src="semaine.js?v=20261115-224708"></script>
-<script src="musique.js?v=20261115-224708"></script>
-<script src="rang.js?v=20261115-224708"></script>
-<script src="profil.js?v=20261115-224708"></script>
+<script src="semaine.js?v=20261115-225537"></script>
+<script src="musique.js?v=20261115-225537"></script>
+<script src="rang.js?v=20261115-225537"></script>
+<script src="profil.js?v=20261115-225537"></script>
 <script>window.AMIS_SANS_BOUTON = true; /* 15/11 : un seul bouton en haut à gauche (profil + amis) */</script>
-<script src="amis.js?v=20261115-224708"></script>
-<script src="heros-etoiles.js?v=20261115-224708"></script>
-<script src="donnees.js?v=20261115-224708"></script>
+<script src="amis.js?v=20261115-225537"></script>
+<script src="heros-etoiles.js?v=20261115-225537"></script>
+<script src="donnees.js?v=20261115-225537"></script>
 <script>
 // ciel étoilé + runes du portail (symboles, pas des lettres), aux couleurs des héros
 const ciel = document.getElementById('ciel');
@@ -297,9 +297,9 @@ const ETAGES = {
   invasion:{ titre:'L’Invasion', sous:'Quel front veux-tu tenir ?', portes:[
     { nom:'Acte I · L’Éveil', pro:'inv1', href:'campement.html?boss=eveil', desc:'La Meute corrompue, les Gardes jumeaux à abattre dans le même tour, le Nécromancien du Vide.' },
     INV.eveil ? { nom:'Acte II · Le Réveil', pro:'inv2', href:'campement.html?boss=reveil', desc:'Le Colosse des racines, le Titan primordial, et la Sève de l’Arbre-Monde à garder en vie.' }
-      : { nom:'Acte II · Le Réveil', pro:'inv2', ferme:'Acte II', essai:'campement.html?boss=reveil', desc:'S’ouvre quand tu as gagné l’Acte I. (Touche pour l’essayer quand même.)' },
+      : { nom:'Acte II · Le Réveil', pro:'inv2', ferme:'Acte II', essai:'campement.html?boss=reveil', desc:'S’ouvre quand tu as gagné l’Acte I.' },
     INV.reveil ? { nom:'Les grands boss', pro:'invboss', href:'campement.html', desc:'Le Colosse des racines, le Kraken des brumes, Ignaros le dragon ancien : un seul boss, géant.' }
-      : { nom:'Les grands boss', pro:'invboss', ferme:'Grands boss', essai:'campement.html', desc:'S’ouvrent quand tu as gagné l’Acte II. (Touche pour les essayer quand même.)' },
+      : { nom:'Les grands boss', pro:'invboss', ferme:'Grands boss', essai:'campement.html', desc:'S’ouvrent quand tu as gagné l’Acte II.' },
   ] },
   // 13/11 : BOUSSOLE DU JEU (Boussole-du-jeu.md) : cœur = Tutoriel, Duel, Odyssée, Invasion, Expéditions + Tour des héros ;
   // les autres modes sont rangés ici, cachés du 1er étage, rien n'est effacé (lien « 🧪 En attente » en bas du menu).
@@ -317,10 +317,11 @@ const ETAGES = {
   odyssee:{ titre:'L’Odyssée', sous:'Quelle île veux-tu explorer ?', portes:[
     { nom:'Terres brûlées', fx:'lave', img:'menu-recu/ody-terres-brulees.webp', href:'odyssee.html', desc:'Acte I · L’île de cendre et de lave du Titan de feu. Ici commence la Grande aventure.' },
     GIVRE_OK ? { nom:'Île du Givre', fx:'aurore', img:'menu-recu/ody-givre.webp', href:'odyssee.html?ile=givre', desc:'Acte II · Des falaises de glace sous l’aurore, gardées par la Vouivre des glaces.' }
-      : { nom:'Île du Givre', fx:'aurore', img:'menu-recu/ody-givre.webp', ferme:'Acte II', essai:'odyssee.html?ile=givre', desc:'Acte II · S’ouvre quand tu as vaincu le Titan de feu. (Prototype : touche pour l’essayer quand même.)' },
+      : { nom:'Île du Givre', fx:'aurore', img:'menu-recu/ody-givre.webp', ferme:'Acte II', essai:'odyssee.html?ile=givre', desc:'Acte II · S’ouvre quand tu as vaincu le Titan de feu.' },
     ABIME_OK ? { nom:'L’Abîme du Vide', pro:'abime', href:'odyssee.html?ile=abime', desc:'Acte III · Une île brisée au-dessus du néant, et le Roi sans visage.' }
-      : { nom:'L’Abîme du Vide', pro:'abime', ferme:'Acte III', essai:'odyssee.html?ile=abime', desc:'Acte III · S’ouvre après la Vouivre des glaces (touche pour l’essayer).' },
-    { nom:'L’Odyssée sans fin', img:'menu-recu/ody-sansfin.webp?v=1', href:'odyssee.html?sansfin=1', desc:'L’île se construit tuile par tuile ; après le boss, on descend d’un étage.' },
+      : { nom:'L’Abîme du Vide', pro:'abime', ferme:'Acte III', essai:'odyssee.html?ile=abime', desc:'Acte III · S’ouvre après la Vouivre des glaces.' },
+    GIVRE_OK ? { nom:'L’Odyssée sans fin', img:'menu-recu/ody-sansfin.webp?v=1', href:'odyssee.html?sansfin=1', desc:'L’île se construit tuile par tuile ; après le boss, on descend d’un étage.' }
+      : { nom:'L’Odyssée sans fin', img:'menu-recu/ody-sansfin.webp?v=1', ferme:'Sans fin', desc:'S’ouvre quand tu as vaincu le Titan de feu (Terres brûlées).' }, // 15/11 nuit : verrouillée tant que l'Acte I n'est pas gagné
     // 15/11 soir (demande de l'utilisateur, d'après Run Dice) : la carte à chemins
     { nom:'La Route du Titan', pro:'route', href:'odyssee.html?route=1', desc:'Toute la route jusqu’au Titan se voit : 10 étapes, des chemins qui se croisent. Choisis la tienne.' },
   ] },
@@ -380,8 +381,8 @@ car.addEventListener('scroll', () => requestAnimationFrame(echelle), { passive:t
 function touche(i) {
   let p = PORTES[i];
   if (i !== auCentre()) return centre(i, true);
-  if (p.ferme && p.essai) p = { ...p, href:p.essai };
-  else if (p.ferme || p.avenir) { const el = car.children[i]; el.animate([{ translate:'0' }, { translate:'-8px' }, { translate:'8px' }, { translate:'0' }], { duration:300 }); return; }
+  // 15/11 nuit (l'utilisateur : « je peux accéder à chaque portail avec un cadenas ») : un portail fermé ne s'ouvre plus, jamais
+  if (p.ferme || p.avenir) { const el = car.children[i]; el.animate([{ translate:'0' }, { translate:'-8px' }, { translate:'8px' }, { translate:'0' }], { duration:300 }); return; }
   if (!GM.son('portail')) souffle(); car.children[i].classList.add('entre'); document.getElementById('flash').classList.add('go');
   setTimeout(() => {
     if (p.href) { sessionStorage.setItem('guilde-dans-mode', '1'); location.href = p.href; return; }
