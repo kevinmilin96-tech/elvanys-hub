@@ -63,7 +63,7 @@ function dessine() {
   const n = k => G.flat().filter(v => v === k).length;
   document.getElementById('info').textContent = `Outil : ${OUTILS.find(o => o[0] === outil)[1]} · ${n('D')} portes · ${n('M')} meubles · ${n('S')}/4 départs · ${n('.') + n('D') + n('M') + n('S')} cases de sol`;
 }
-function pose(x, y) { histo.push(JSON.stringify(G)); if (histo.length > 50) histo.shift(); G[y][x] = G[y][x] === outil && outil !== '.' ? '.' : outil; sauve(); dessine(); }
+function pose(x, y) { histo.push(JSON.stringify(G)); if (histo.length > 50) histo.shift(); G[y][x] = G[y][x] === outil ? (outil === '.' ? '#' : '.') : outil; // 15/11 : un 2e toucher avec le même outil défait (sol → mur, le reste → sol) sauve(); dessine(); }
 function annule() { if (!histo.length) return; G = JSON.parse(histo.pop()); sauve(); dessine(); }
 function zoom(d) { taille = Math.max(12, Math.min(48, taille + d * 6)); dessine(); }
 function copier() {
