@@ -10,7 +10,10 @@
 // un bandeau propose « Mettre à jour » (recharge la page avec une adresse neuve) ou « Plus tard ». Les parties en cours sont gardées.
 // Duel, menu et Odyssée ont déjà leur propre bandeau (verifieVersion) : on ne double pas.
 (() => { try {
-  const moi = document.currentScript && (document.currentScript.src.match(/[?&]v=([^&]+)/) || [])[1]; if (!moi) return;
+  let moi = document.currentScript && (document.currentScript.src.match(/[?&]v=([^&]+)/) || [])[1];
+  // 15/11 nuit : pages d'outils (prompts, R&D…) chargées avec ?v=1 : jamais de bandeau (il revenait en boucle) ; et l'adresse ?v= de la page compte aussi
+  if (!moi || !/^\d{8}-\d{6}$/.test(moi)) return;
+  { const pv = new URLSearchParams(location.search).get('v'); if (pv && pv > moi) moi = pv; }
   let plusTard = null;
   const verifie = () => { if (typeof window.verifieVersion === 'function' || document.getElementById('majbar')) return;
     fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {

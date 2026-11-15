@@ -60,10 +60,11 @@ const sceneAV = () => AV && AVENTURES[AV.id].scenes[AV.scene];
   st.textContent = `
   .scn { position:relative; min-height:calc(100vh - 20px); border-radius:4cqw; overflow:hidden; padding:4cqw; animation:scnIn .7s ease-out; display:flex; flex-direction:column; }
   @keyframes scnIn { from { opacity:0; transform:scale(1.04); filter:blur(6px); } to { opacity:1; transform:none; filter:none; } }
-  .scn.taverne { background:radial-gradient(ellipse at 50% 30%, #6a3a12cc, #1a0d06 75%), url('decor/scene-taverne.webp') center/cover; }
-  .scn.brume { background:radial-gradient(ellipse at 50% 40%, #8a8e9a, #2a2c34 80%), url('decor/scene-brume.webp') center/cover; }
+  /* 15/11 nuit : les images reçues passent DEVANT le dégradé (avant, le dégradé opaque les cachait) */
+  .scn.taverne { background:linear-gradient(180deg, #0004, #0009), url('decor/scene-taverne.webp?v=1') center/cover, radial-gradient(ellipse at 50% 30%, #6a3a12cc, #1a0d06 75%); }
+  .scn.brume { background:linear-gradient(180deg, #0004, #0009), url('decor/scene-brume.webp?v=1') center/cover, radial-gradient(ellipse at 50% 40%, #8a8e9a, #2a2c34 80%); }
   .scn.marais { background:linear-gradient(180deg, #3a4a3a, #1a221c); }
-  .scn.aube { background:radial-gradient(ellipse at 50% 20%, #ffd27a, #ff8a4a 40%, #3a1a3a 90%), url('decor/scene-aube.webp') center/cover; }
+  .scn.aube { background:linear-gradient(180deg, #0004, #0009), url('decor/scene-aube.webp?v=1') center/cover, radial-gradient(ellipse at 50% 20%, #ffd27a, #ff8a4a 40%, #3a1a3a 90%); }
   .scn h2 { color:var(--or); text-align:center; margin:2cqw 0 3cqw; text-shadow:0 0 2cqw #000; }
   .scn .lieu { text-align:center; color:#ffd9a8; font-size:3.4cqw; letter-spacing:.2cqw; text-transform:uppercase; text-shadow:0 0 2cqw #000; }
   .pnj { display:flex; flex-direction:column; align-items:center; margin:3cqw 0; }
@@ -77,7 +78,7 @@ const sceneAV = () => AV && AVENTURES[AV.id].scenes[AV.scene];
   .scn .bas-s button.b2 { background:#221d42cc; color:var(--texte); border-color:#6a5aa0; font-weight:normal; }
   .page-recit { background:#f3e6c8; color:#3a2a14; border-radius:2cqw; padding:5cqw; font-size:4cqw; line-height:1.55; box-shadow:0 2cqw 6cqw #000a; margin:4cqw 0; animation:feuille .8s ease-out; font-family:Georgia, serif; }
   @keyframes feuille { from { transform:perspective(80cqw) rotateY(-40deg); opacity:0; } to { transform:none; opacity:1; } }
-  .carte-m { position:relative; width:100%; aspect-ratio:3/4; border-radius:3cqw; overflow:hidden; background:#d8c8a0 url('decor/carte-route-saules.webp') center/cover; box-shadow:inset 0 0 8cqw #6a4a2a; }
+  .carte-m { position:relative; width:100%; aspect-ratio:3/4; border-radius:3cqw; overflow:hidden; background:#d8c8a0 url('decor/carte-route-saules.webp?v=1') center/cover; box-shadow:inset 0 0 8cqw #6a4a2a; }
   .carte-m svg { position:absolute; inset:0; width:100%; height:100%; }
   .carte-m .pion { transition:transform 1.1s cubic-bezier(.45,.05,.4,1); }
   .etape-t { background:#1d1530ee; border:1.5px solid #6a5aa0; border-radius:3cqw; padding:3cqw; font-size:3.6cqw; line-height:1.45; margin-top:3cqw; animation:apparait .4s; min-height:20cqw; }

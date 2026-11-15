@@ -65,11 +65,11 @@
 <body>
 <main id="app"></main>
 <div id="fen"></div>
-<script src="musique.js?v=20261115-215016"></script>
-<script src="rang.js?v=20261115-215016"></script>
-<script src="heros-etoiles.js?v=20261115-215016"></script>
-<script src="aventuriers.js?v=20261115-215016"></script>
-<script src="fiche-heros.js?v=20261115-215016"></script>
+<script src="musique.js?v=20261115-222357"></script>
+<script src="rang.js?v=20261115-222357"></script>
+<script src="heros-etoiles.js?v=20261115-222357"></script>
+<script src="aventuriers.js?v=20261115-222357"></script>
+<script src="fiche-heros.js?v=20261115-222357"></script>
 <script>
 // =============================================================================================== LA FORGE DES HÉROS (15/11) : créer et faire grandir ses héros d'aventure
 const $ = id => document.getElementById(id);
@@ -151,8 +151,8 @@ function forge(id, k) { if (avForge(id, k)) son('tour-fusion'); fiche(id); }
 if (typeof GM !== 'undefined') { try { GM.musique('menu'); GM.bouton(); } catch (e) {} }
 const hQ = new URLSearchParams(location.search).get('h'); hQ && avTrouve(hQ) ? fiche(hQ) : liste();
 </script>
-<script src="guide.js?v=20261115-215016"></script>
-<script src="guides-modes.js?v=20261115-215016"></script>
+<script src="guide.js?v=20261115-222357"></script>
+<script src="guides-modes.js?v=20261115-222357"></script>
 <script>
 // 15/11 : le guide de Moustache de ce mode (guides-modes.js)
 { const _l = liste; liste = function () { const r = _l.apply(this, arguments); guideMode('forge'); return r; }; }

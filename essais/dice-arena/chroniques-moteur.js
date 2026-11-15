@@ -44,7 +44,7 @@ const BETES = {
   coucou:    { n:'Coucou furieux', img:'coucou', att:2, mv:3, s:() => [sceau('imp'), sceau('min', 4)] },
   page:      { n:'Page hurlante', img:'pagehurlante', att:1, mv:3, s:() => [sceau('imp'), sceau('imp')], fuit:.3 },
   archiviste:{ n:'Archiviste de cuivre', img:'archiviste', att:3, mv:1, s:() => [sceau('dbl', 0, 1), sceau('dbl', 0, 1), sceau('min', 5), sceau('tot', 10)], soin:.35, elite:true },
-  horloger:  { n:'L’Horloger', img:'horloger', att:3, mv:1, s:() => [], boss:true },
+  horloger:  { n:'L’Horloger', img:'horlogerboss', att:3, mv:1, s:() => [], boss:true },
   // les Terres brûlées (scénario d'essai sur la carte peinte, 15/11)
   gobelin:   { n:'Gobelin des cendres', img:'gobelin', att:1, mv:2, s:() => [sceau('any'), sceau('min', 3)], fuit:.2 },
   loup:      { n:'Loup de braise', img:'loup', att:2, mv:3, s:() => [sceau('pair'), sceau('min', 4)] },
