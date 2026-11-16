@@ -724,6 +724,7 @@ function amiMenu(i) {
   else {
     b.push(`<button class="sec" onclick="fenetre('');son('bouclier');resultat(K.proteger(S,actif,sel,${i}))">🛡 Protéger ${moi ? '(soi-même)' : nomH(z)}<small>Bouclier ${Math.ceil(d.v / 2) + 1}${h.id === 'aldric' ? ', pour lui et tous ses voisins' : ''} jusqu’au prochain coup.</small></button>`);
     if (h.id === 'pip' || (h.talents || []).includes('guerisseur')) b.push(`<button class="sec" onclick="fenetre('');resultat(K.soigner(S,actif,sel,${i}))">🌿 Soigner ${moi ? '(soi-même)' : nomH(z)}<small>+${d.v} PV.</small></button>`);
+    if (!moi && K.dist(h, z) === 1) b.push(`<button class="sec" onclick="fenetre('');son('pas');centrer=true;resultat(K.echanger(S,actif,sel,${i}))">↔ Changer de place avec ${nomH(z)}<small>1 pas : vous échangez vos cases.</small></button>`);
     if (!moi) b.push(`<button class="sec" onclick="fenetre('');son('carte');resultat(K.donner(S,actif,sel,${i}))">🤝 Donner ce ${d.v} à ${nomH(z)}<small>Il pourra le poser (il doit être à côté).</small></button>`);
   }
   fenetre(`<h2>${nomH(z)}</h2>${b.join('')}<button class="sec" onclick="fenetre('')">Annuler</button>`);
