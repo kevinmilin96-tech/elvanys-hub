@@ -144,7 +144,7 @@
   .moust { display:flex; gap:10px; align-items:flex-start; } .moust img { width:58px; height:58px; border-radius:50%; object-fit:cover; flex:none; border:2px solid var(--or); }
   .sceaux { display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; margin:10px 0; }
   .sx { height:46px; border-radius:10px; border:1.5px solid #6a5ea0; background:#2a2448; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:17px; }
-  .sx small { font-size:12px; font-weight:normal; } .sx.ok { background:#163a2a; border-color:#3a8a5a; color:#7dffb0; } .sx.peut { border-color:var(--ok); box-shadow:0 0 0 3px var(--ok); background:#1f4a35; } .sx.non { opacity:.35; }
+  .sx small { font-size:12px; font-weight:normal; } .sx.ok { background:#1a1622; border:1.5px dashed #6a5a3a; color:#8a7a5a; text-decoration:line-through; pointer-events:none; } .sx.ok::before { content:"✓ brisé · "; font-size:12px; font-weight:normal; text-decoration:none; display:inline-block; margin-right:4px; } /* 16/11 : un sceau déjà brisé ne ressemble plus à un sceau qui accepte */ .sx.peut { border-color:var(--ok); box-shadow:0 0 0 3px var(--ok); background:#1f4a35; } .sx.non { opacity:.35; }
   .bulle { position:fixed; left:50%; top:30%; transform:translateX(-50%); z-index:45; pointer-events:none; font-weight:bold; font-size:min(6vw, 30px); color:var(--or); text-shadow:0 0 12px #000, 0 0 3px #000;
     animation:bulle 1.4s forwards; white-space:nowrap; max-width:96vw; overflow:hidden; text-overflow:ellipsis; }
   @keyframes bulle { 0% { opacity:0; transform:translate(-50%, 20px) scale(.7); } 20% { opacity:1; transform:translate(-50%, 0); } 80% { opacity:1; } 100% { opacity:0; transform:translate(-50%, -30px); } }
@@ -162,15 +162,15 @@
 <body>
 <div id="app"></div>
 <div id="fen"></div><div id="perso"></div>
-<script src="musique.js?v=20261116-181534"></script>
-<script src="rang.js?v=20261116-181534"></script>
+<script src="musique.js?v=20261116-181731"></script>
+<script src="rang.js?v=20261116-181731"></script>
 <script>window.AMIS_SANS_BOUTON = true;</script>
-<script src="amis.js?v=20261116-181534"></script>
-<script src="heros-etoiles.js?v=20261116-181534"></script>
-<script src="progression-modes.js?v=20261116-181534"></script>
-<script src="aventuriers.js?v=20261116-181534"></script>
-<script src="chroniques-moteur.js?v=20261116-181534"></script>
-<script src="chroniques-ambiance.js?v=20261116-181534"></script>
+<script src="amis.js?v=20261116-181731"></script>
+<script src="heros-etoiles.js?v=20261116-181731"></script>
+<script src="progression-modes.js?v=20261116-181731"></script>
+<script src="aventuriers.js?v=20261116-181731"></script>
+<script src="chroniques-moteur.js?v=20261116-181731"></script>
+<script src="chroniques-ambiance.js?v=20261116-181731"></script>
 <script>
 // =============================================================================================== LES CHRONIQUES DE LA GUILDE v2 (15/11, écran « façon HeroQuest »)
 // Une grande carte qui défile : les salles restent dans le noir jusqu'à ce qu'on ouvre leur porte ; les couloirs se dévoilent en avançant ;
@@ -1045,9 +1045,9 @@ if (ESSAI) essaiAtelier(ESSAI); else if (sessionStorage.getItem('chron-en-jeu') 
 { const s = new URLSearchParams(location.search).get('salle'); if (s) { history.replaceState(null, '', location.pathname); const c = (typeof AMIS !== 'undefined' && AMIS.carte) || null, nom = (c && c.pseudo) || localStorage.getItem('guilde-pseudo');
     if (nom) rejoindre(s, { id:'j' + Math.random().toString(36).slice(2, 10), nom }); else { rejoindreForm(); setTimeout(() => { const i = $('fCode'); if (i) i.value = s; }, 150); } } }
 </script>
-<script src="chroniques-aventures.js?v=20261116-181534"></script>
-<script src="guide.js?v=20261116-181534"></script>
-<script src="guides-modes.js?v=20261116-181534"></script>
+<script src="chroniques-aventures.js?v=20261116-181731"></script>
+<script src="guide.js?v=20261116-181731"></script>
+<script src="guides-modes.js?v=20261116-181731"></script>
 <script>
 // 15/11 : le guide de Moustache de ce mode (guides-modes.js)
 { const _a = accueil; accueil = function () { const r = _a.apply(this, arguments); guideMode('chroniques'); return r; }; }
