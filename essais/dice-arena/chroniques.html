@@ -138,8 +138,8 @@ const OBJ_PEINTS = ['coffre', 'armoire', 'tonneaux', 'tombeau', 'etabli', 'chemi
 // 16/11 : LES SALLES DESSINÉES de l'Horloger (Gemini, vues du dessus) : chaque salle reçoit son image, étalée sur ses cases de sol
 const SALLE_IMG = { A:'hall', C:'reserve', G:'crypte', B:'rouages', E:'atelier', F:'bibliotheque', H:'coeur', S:'galerie', P:'cagibi' };
 // 16/11 : la porte vue du dessus (poutre en travers du passage) : tournée d'un quart de tour quand le passage est horizontal
-function porteDessus(R, x, y) { const mursCote = R.murs[K.cle(x - 1, y)] && R.murs[K.cle(x + 1, y)];
-  return `<img class="oi porte3" src="decor/obj-porte-v3.webp?v=1" alt=""${mursCote ? '' : ' style="transform:rotate(90deg)"'}>`; }
+function porteDessus(R, x, y, bronze) { const mursCote = R.murs[K.cle(x - 1, y)] && R.murs[K.cle(x + 1, y)];
+  return `<img class="oi porte3" src="decor/obj-porte-${bronze ? 'bronze-v4' : 'v3'}.webp?v=1" alt=""${mursCote ? '' : ' style="transform:rotate(90deg)"'}>`; }
 function fondSalle(S, x, y) {
   if ((S.scen || 'horloger') !== 'horloger') return '';
   const id = S.R.salle[K.cle(x, y)], D = id && K.SALLES[id], f = SALLE_IMG[id]; if (!D || !f) return '';
@@ -319,7 +319,7 @@ function dessine() {
     let cl = 'c', inner = '';
     if (!vu) cl += ' noir';
     else if (peint) cl += ' peint';
-    else if (p) { cl += ' porte' + (p.ouverte ? ' ouverte' : '') + (p.bronze ? ' bronze' : '') + (p.ouverte ? '' : ' img'); if (!p.ouverte) inner = (!p.bronze && (S.scen || 'horloger') === 'horloger' ? porteDessus(R, x, y) : objImg('porte', p.bronze ? 'bronze' : '')) + (p.bronze && !R.bronze ? '<span class="cad">🔒</span>' : ''); }
+    else if (p) { cl += ' porte' + (p.ouverte ? ' ouverte' : '') + (p.bronze ? ' bronze' : '') + (p.ouverte ? '' : ' img'); if (!p.ouverte) inner = ((S.scen || 'horloger') === 'horloger' ? porteDessus(R, x, y, p.bronze) : objImg('porte', p.bronze ? 'bronze' : '')) + (p.bronze && !R.bronze ? '<span class="cad">🔒</span>' : ''); }
     else if (mur === '#') cl += ' mur';
     else if (mur === '~') inner = `<span class="o">${S.scen === 'arene' ? '🌳' : '🪨'}</span>`; // 15/11 soir : les obstacles (arbres d'une embuscade, rochers) se voient
     else if (mur === 'M' && o) inner = objImg(o.t, o.fouille ? 'fait' : '') || `<span class="o ${o.fouille ? 'fait' : ''}">${MEUBLE_E[o.t] || '📦'}</span>`;
