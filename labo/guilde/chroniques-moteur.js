@@ -477,6 +477,9 @@ function bouger(S, hi, idDe, x, y) {
   const A = atteignables(S, h, d.v, d.pas), fait = A[cle(x, y)]; if (!fait) return 'Trop loin pour ce dé.';
   const total = d.pas ? d.v : pasDe(h, d.v).n, reste = total - fait;
   prendDe(h, idDe); const de0 = [h.x, h.y]; h.x = x; h.y = y; const ev = [{ t:'marche', h:hi, de:de0 }];
+  // 16/11 (l'utilisateur : « je suis toujours là ») : marcher SUR le bout d'un escalier fait passer à l'autre étage, sans pas en plus
+  { const l = S.R.liens && S.R.liens[cle(x, y)], venu = S.R.liens && S.R.liens[cle(...de0)] === cle(x, y);
+    if (l && !venu) { const [lx, ly] = l.split(',').map(Number); if (libre(S, lx, ly) && !herosEn(S, lx, ly)) { h.x = lx; h.y = ly; ev.push({ t:'etage', h:hi }); log(S, `${ly < y ? '⬆' : '⬇'} ${nm(h)} ${ly < y ? 'monte' : 'descend'} : ${etageDe(S, ly)}.`); } } }
   // 16/11 (retour de l'utilisateur : « un dé de 4 = 4 actions ») : les PAS PAS UTILISÉS restent dans un petit dé 👣
   // qui sert à marcher encore ou à agir (fouiller, levier, porte, axe, livre) ; il ne frappe pas et ne se donne pas.
   if (reste > 0) h.des.push({ id:'d' + S.seq++, v:reste, pas:true });
@@ -699,7 +702,14 @@ function finTour(S) {
   debutTour(S); return ev;
 }
 
-const API = { moitiesPorte, presDePorte, rectSalle, etageDe, COULOIRS_Z2, CAPA, phasesDe, grilleOuverte, contact, pasDe, aPortee, SAC, utiliser, SCEN, HEROS_C, BETES, PHASES, SALLES, OBJETS, MEUBLE_N, nouvelle, atteignables, bouger, frapper, proteger, soigner, donner, relever, fouiller, agir, ouvrir,
+// passer d'un étage à l'autre quand on est DÉJÀ sur le bout d'un escalier : gratuit
+function prendreEscalier(S, hi) {
+  const h = S.heros[hi], l = S.R.liens && S.R.liens[cle(h.x, h.y)]; if (!l || h.aTerre) return 'Pas d’escalier ici.';
+  const [lx, ly] = l.split(',').map(Number); if (!libre(S, lx, ly) || herosEn(S, lx, ly)) return 'L’autre bout de l’escalier est occupé.';
+  const de0 = [h.x, h.y]; h.x = lx; h.y = ly; log(S, `${ly < de0[1] ? '⬆' : '⬇'} ${nm(h)} ${ly < de0[1] ? 'monte' : 'descend'} : ${etageDe(S, ly)}.`); voir(S);
+  return { ok:true, ev:[{ t:'etage', h:hi }] };
+}
+const API = { prendreEscalier, moitiesPorte, presDePorte, rectSalle, etageDe, COULOIRS_Z2, CAPA, phasesDe, grilleOuverte, contact, pasDe, aPortee, SAC, utiliser, SCEN, HEROS_C, BETES, PHASES, SALLES, OBJETS, MEUBLE_N, nouvelle, atteignables, bouger, frapper, proteger, soigner, donner, relever, fouiller, agir, ouvrir,
   finTour, visible, accepte, voisins, dist, herosEn, cle, libre, reveille };
 if (typeof module !== 'undefined' && module.exports) module.exports = API; else racine.CHRON = API;
 })(typeof window !== 'undefined' ? window : globalThis);
