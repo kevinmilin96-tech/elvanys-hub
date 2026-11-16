@@ -69,6 +69,7 @@
   .de.cache::after { content:'?'; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:5.4cqw; color:#c9c1ea88; font-weight:bold; }
   .de.tourne img { animation:tourneD .26s linear infinite; } @keyframes tourneD { 0% { transform:rotate(0) translateY(0) scale(1); } 50% { transform:rotate(190deg) translateY(-2cqw) scale(1.1); } 100% { transform:rotate(360deg) translateY(0) scale(1); } }
   .lancerH { border:0; border-radius:3cqw; padding:2cqw 4cqw; font:bold 3.8cqw Georgia, serif; background:var(--or); color:#2b1d0a; margin-left:2cqw; animation:pulseL 1s infinite; } @keyframes pulseL { 50% { filter:brightness(1.2); } }
+  .c .oi.porte3 { width:112%; height:112%; max-width:none; }
   .c .oi.statue { transition:transform .4s; } .c .oi.fait-ok, .c .oi.brille { filter:drop-shadow(0 0 1.5cqw #ffd27a); }
   .c .oi.ouverte { opacity:.3; transform:translateY(-30%); } .c .oi.dalle { position:absolute; inset:6%; width:88%; height:88%; opacity:.9; }
 
@@ -136,6 +137,9 @@ const OUVERTURE = '« Vous avez entendu ? Moi non plus. C’est bien ça le prob
 const OBJ_PEINTS = ['coffre', 'armoire', 'tonneaux', 'tombeau', 'etabli', 'cheminee', 'etagere', 'levier', 'rouage', 'axe', 'porte', 'statue', 'autel', 'grille', 'dalle', 'tasdos'];
 // 16/11 : LES SALLES DESSINÉES de l'Horloger (Gemini, vues du dessus) : chaque salle reçoit son image, étalée sur ses cases de sol
 const SALLE_IMG = { A:'hall', C:'reserve', G:'crypte', B:'rouages', E:'atelier', F:'bibliotheque', H:'coeur', S:'galerie', P:'cagibi' };
+// 16/11 : la porte vue du dessus (poutre en travers du passage) : tournée d'un quart de tour quand le passage est horizontal
+function porteDessus(R, x, y) { const mursCote = R.murs[K.cle(x - 1, y)] && R.murs[K.cle(x + 1, y)];
+  return `<img class="oi porte3" src="decor/obj-porte-v3.webp?v=1" alt=""${mursCote ? '' : ' style="transform:rotate(90deg)"'}>`; }
 function fondSalle(S, x, y) {
   if ((S.scen || 'horloger') !== 'horloger') return '';
   const id = S.R.salle[K.cle(x, y)], D = id && K.SALLES[id], f = SALLE_IMG[id]; if (!D || !f) return '';
@@ -315,7 +319,7 @@ function dessine() {
     let cl = 'c', inner = '';
     if (!vu) cl += ' noir';
     else if (peint) cl += ' peint';
-    else if (p) { cl += ' porte' + (p.ouverte ? ' ouverte' : '') + (p.bronze ? ' bronze' : '') + (p.ouverte ? '' : ' img'); if (!p.ouverte) inner = objImg('porte', p.bronze ? 'bronze' : '') + (p.bronze && !R.bronze ? '<span class="cad">🔒</span>' : ''); }
+    else if (p) { cl += ' porte' + (p.ouverte ? ' ouverte' : '') + (p.bronze ? ' bronze' : '') + (p.ouverte ? '' : ' img'); if (!p.ouverte) inner = (!p.bronze && (S.scen || 'horloger') === 'horloger' ? porteDessus(R, x, y) : objImg('porte', p.bronze ? 'bronze' : '')) + (p.bronze && !R.bronze ? '<span class="cad">🔒</span>' : ''); }
     else if (mur === '#') cl += ' mur';
     else if (mur === '~') inner = `<span class="o">${S.scen === 'arene' ? '🌳' : '🪨'}</span>`; // 15/11 soir : les obstacles (arbres d'une embuscade, rochers) se voient
     else if (mur === 'M' && o) inner = objImg(o.t, o.fouille ? 'fait' : '') || `<span class="o ${o.fouille ? 'fait' : ''}">${MEUBLE_E[o.t] || '📦'}</span>`;
