@@ -730,7 +730,15 @@ function prendreEscalier(S, hi) {
   const de0 = [h.x, h.y]; h.x = lx; h.y = ly; log(S, `${ly < de0[1] ? '⬆' : '⬇'} ${nm(h)} ${ly < de0[1] ? 'monte' : 'descend'} : ${etageDe(S, ly)}.`); voir(S);
   return { ok:true, ev:[{ t:'etage', h:hi }] };
 }
-const API = { prendreEscalier, moitiesPorte, presDePorte, rectSalle, etageDe, COULOIRS_Z2, CAPA, phasesDe, grilleOuverte, contact, pasDe, aPortee, SAC, utiliser, SCEN, HEROS_C, BETES, PHASES, SALLES, OBJETS, MEUBLE_N, nouvelle, atteignables, bouger, frapper, proteger, soigner, donner, relever, fouiller, agir, ouvrir,
+// 16/11 (l'utilisateur : « bloqué par Maëlle dans le couloir ») : changer de place avec un allié juste à côté, pour 1 pas
+// (comme traverser un allié dans D&D, ou l'échange de place de Baldur's Gate 3 / Gloomhaven)
+function echanger(S, hi, idDe, ci) {
+  const h = S.heros[hi], z = S.heros[ci]; if (!z || z === h || h.aTerre) return 'Personne avec qui changer de place.';
+  if (dist(h, z) !== 1) return 'Il faut être juste à côté.'; if (!h.des.find(d => d.id === idDe)) return 'Choisis d’abord un dé.';
+  unPas(S, h, idDe); const a = [h.x, h.y]; h.x = z.x; h.y = z.y; z.x = a[0]; z.y = a[1]; log(S, `↔ ${nm(h)} et ${nm(z)} changent de place.`); voir(S);
+  return { ok:true, ev:[{ t:'marche', h:hi, de:[z.x, z.y] }, { t:'marche', h:ci, de:[h.x, h.y] }] };
+}
+const API = { echanger, prendreEscalier, moitiesPorte, presDePorte, rectSalle, etageDe, COULOIRS_Z2, CAPA, phasesDe, grilleOuverte, contact, pasDe, aPortee, SAC, utiliser, SCEN, HEROS_C, BETES, PHASES, SALLES, OBJETS, MEUBLE_N, nouvelle, atteignables, bouger, frapper, proteger, soigner, donner, relever, fouiller, agir, ouvrir,
   finTour, visible, accepte, voisins, dist, herosEn, cle, libre, reveille };
 if (typeof module !== 'undefined' && module.exports) module.exports = API; else racine.CHRON = API;
 })(typeof window !== 'undefined' ? window : globalThis);
