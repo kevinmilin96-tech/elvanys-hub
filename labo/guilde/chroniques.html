@@ -29,7 +29,7 @@
   .laby .c.mur { background:url('decor/tuile-mur-labyrinthe.webp') 0 0 / calc(var(--t) * 4) calc(var(--t) * 4), url('decor/tuile-roche-brulees.webp') 0 0 / calc(var(--t) * 4) calc(var(--t) * 4); }
   /* 15/11 soir : les salles de l'Horloge ont leur sol et leurs murs peints */
   .horloge .c { background:url('decor/tuile-sol-horloge.webp?v=1') 0 0 / calc(var(--t) * 4) calc(var(--t) * 4); }
-  .horloge .c.mur { background:url('decor/tuile-mur-horloge-v3.webp?v=1') 0 0 / calc(var(--t) * 4) calc(var(--t) * 4); filter:brightness(1.9) sepia(.25); } /* 16/11 : mur sombre pour séparer les salles dessinées */
+  .horloge .c.mur { background:#0d0c12; filter:none; box-shadow:inset 0 0 0 .5px #ffffff0d; } /* 16/11 : façon carte de donjon (exemple de l'utilisateur) : vide noir quadrillé, murs = bordure de pierre */ /* 16/11 : mur sombre pour séparer les salles dessinées */
   .horloge .c.couloir { background:url('decor/tuile-couloir-horloge-v2.webp?v=1') 0 0 / calc(var(--t) * 2) calc(var(--t) * 2); filter:brightness(.85); }
   .horloge .c.porte.ouverte { background:url('decor/tuile-sol-horloge.webp?v=1') 0 0 / calc(var(--t) * 4) calc(var(--t) * 4); }
   .c .oi { width:88%; height:88%; object-fit:contain; filter:drop-shadow(0 .4cqw .5cqw #000c); pointer-events:none; } .c .oi.fait { opacity:.4; filter:grayscale(1); } .c .oi.baisse { transform:rotate(180deg); }
@@ -117,14 +117,14 @@
 <body>
 <div id="app"></div>
 <div id="fen"></div>
-<script src="musique.js?v=20261116-134439"></script>
-<script src="rang.js?v=20261116-134439"></script>
+<script src="musique.js?v=20261116-134605"></script>
+<script src="rang.js?v=20261116-134605"></script>
 <script>window.AMIS_SANS_BOUTON = true;</script>
-<script src="amis.js?v=20261116-134439"></script>
-<script src="heros-etoiles.js?v=20261116-134439"></script>
-<script src="progression-modes.js?v=20261116-134439"></script>
-<script src="aventuriers.js?v=20261116-134439"></script>
-<script src="chroniques-moteur.js?v=20261116-134439"></script>
+<script src="amis.js?v=20261116-134605"></script>
+<script src="heros-etoiles.js?v=20261116-134605"></script>
+<script src="progression-modes.js?v=20261116-134605"></script>
+<script src="aventuriers.js?v=20261116-134605"></script>
+<script src="chroniques-moteur.js?v=20261116-134605"></script>
 <script>
 // =============================================================================================== LES CHRONIQUES DE LA GUILDE v2 (15/11, écran « façon HeroQuest »)
 // Une grande carte qui défile : les salles restent dans le noir jusqu'à ce qu'on ouvre leur porte ; les couloirs se dévoilent en avançant ;
@@ -144,13 +144,16 @@ function porteDessus(R, x, y, bronze) { const mursCote = R.murs[K.cle(x - 1, y)]
   return `<img class="oi porte3" src="decor/obj-porte-${bronze ? 'bronze-v4' : 'v3'}.webp?v=1" alt=""${mursCote ? '' : ' style="transform:rotate(90deg)"'}>`; }
 // 16/11 (« les murs je les vois pas ») : un liseré de pierre claire sur chaque côté d'un mur qui touche un sol (vu), et une ombre portée
 function bordMur(R, x, y) {
-  const sol = (a, b) => R.vu[K.cle(a, b)] && R.murs[K.cle(a, b)] !== '#' && a >= 0 && b >= 0 && a < R.w && b < R.h;
+  const sol = (a, b) => a >= 0 && b >= 0 && a < R.w && b < R.h && R.vu[K.cle(a, b)] && R.murs[K.cle(a, b)] !== '#';
+  // une bande de pierre (avec un trait sombre et un reflet) sur chaque côté qui touche un sol, puis le vide noir
+  const e = '30%', bande = dir => `linear-gradient(${dir}, #3a3640 0, #8d8695 7%, #6c6674 14%, #57525e 24%, #1d1b22 ${e}, transparent ${e})`;
   const L = [];
-  if (sol(x, y - 1)) L.push('inset 0 calc(var(--t) * .09) 0 #d9c08a', 'inset 0 calc(var(--t) * .16) 0 #6b5638');
-  if (sol(x, y + 1)) L.push('inset 0 calc(var(--t) * -.09) 0 #d9c08a', 'inset 0 calc(var(--t) * -.16) 0 #6b5638');
-  if (sol(x - 1, y)) L.push('inset calc(var(--t) * .09) 0 0 #d9c08a', 'inset calc(var(--t) * .16) 0 0 #6b5638');
-  if (sol(x + 1, y)) L.push('inset calc(var(--t) * -.09) 0 0 #d9c08a', 'inset calc(var(--t) * -.16) 0 0 #6b5638');
-  return L.length ? `box-shadow:${L.join(',')};` : '';
+  if (sol(x, y - 1)) L.push(bande('to bottom')); if (sol(x, y + 1)) L.push(bande('to top'));
+  if (sol(x - 1, y)) L.push(bande('to right')); if (sol(x + 1, y)) L.push(bande('to left'));
+  // coins : un sol en diagonale seulement → un petit carré de pierre dans le coin
+  [[-1, -1, 'left top'], [1, -1, 'right top'], [-1, 1, 'left bottom'], [1, 1, 'right bottom']].forEach(([dx, dy, pos]) => {
+    if (sol(x + dx, y + dy) && !sol(x + dx, y) && !sol(x, y + dy)) L.push(`radial-gradient(circle at ${pos}, #7a7482 0, #57525e 22%, #1d1b22 30%, transparent 31%)`); });
+  return L.length ? `background:${L.join(',')}, #0d0c12;` : '';
 }
 function fondSalle(S, x, y) {
   if ((S.scen || 'horloger') !== 'horloger') return '';
@@ -781,9 +784,9 @@ accueil();
 { const s = new URLSearchParams(location.search).get('salle'); if (s) { history.replaceState(null, '', location.pathname); const c = (typeof AMIS !== 'undefined' && AMIS.carte) || null, nom = (c && c.pseudo) || localStorage.getItem('guilde-pseudo');
     if (nom) rejoindre(s, { id:'j' + Math.random().toString(36).slice(2, 10), nom }); else { rejoindreForm(); setTimeout(() => { const i = $('fCode'); if (i) i.value = s; }, 150); } } }
 </script>
-<script src="chroniques-aventures.js?v=20261116-134439"></script>
-<script src="guide.js?v=20261116-134439"></script>
-<script src="guides-modes.js?v=20261116-134439"></script>
+<script src="chroniques-aventures.js?v=20261116-134605"></script>
+<script src="guide.js?v=20261116-134605"></script>
+<script src="guides-modes.js?v=20261116-134605"></script>
 <script>
 // 15/11 : le guide de Moustache de ce mode (guides-modes.js)
 { const _a = accueil; accueil = function () { const r = _a.apply(this, arguments); guideMode('chroniques'); return r; }; }
