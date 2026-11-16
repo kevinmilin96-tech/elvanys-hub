@@ -122,6 +122,15 @@
   .c .oi.porte3 { width:100%; height:100%; object-fit:fill; filter:none; }
   /* 16/11 : sous une porte, le sol du couloir (plus de noir entre la porte, le couloir et la salle) */
   .horloge .c.porte, .horloge .c.porte.img, .horloge .c.porte.ouverte { background:url('decor/couloir-horloger.webp?v=1') 0 0 / calc(var(--t) * 2) calc(var(--t) * 2); box-shadow:none; }
+  .recu-objet { position:fixed; inset:0; z-index:90; display:flex; flex-direction:column; align-items:center; justify-content:center; background:#000a; animation:roF .3s; }
+  .recu-objet .ro-halo { position:absolute; width:60vmin; height:60vmin; border-radius:50%; background:radial-gradient(circle, #ffd27a88, transparent 65%); animation:roH 2.4s ease-in-out infinite; }
+  .recu-objet .ro-ic { position:relative; font-size:24vmin; filter:drop-shadow(0 0 4vmin #ffcf5a); animation:roI .7s cubic-bezier(.2,1.6,.4,1); }
+  .recu-objet .ro-t { position:relative; margin-top:3vmin; font-size:6.5vmin; font-weight:bold; color:#ffd27a; text-shadow:0 0 2vmin #000; text-align:center; padding:0 6vmin; }
+  .recu-objet .ro-d { position:relative; margin-top:1.5vmin; font-size:4.2vmin; color:#f2e6c8; text-align:center; padding:0 8vmin; }
+  .recu-objet.part { animation:roP .6s forwards; } .recu-objet.part .ro-ic { transition:transform .6s ease-in; transform:translate(0, 60vh) scale(.2); }
+  @keyframes roF { from { opacity:0; } } @keyframes roP { to { opacity:0; } }
+  @keyframes roI { from { transform:scale(0) rotate(-30deg); } } @keyframes roH { 50% { transform:scale(1.15); opacity:.7; } }
+  .plateau .c.autel-cible { box-shadow:inset 0 0 0 .5cqw var(--or), 0 0 2cqw var(--or); border-radius:1cqw; animation:roH 1.6s ease-in-out infinite; }
   .c .oi.statue { transition:transform .6s; }
   .c .stat-socle { position:absolute; inset:6%; display:flex; align-items:center; justify-content:center; pointer-events:none; } .c .stat-socle .oi.statue { width:100%; height:100%; }
   .c .stat-regard, .c .stat-but { position:absolute; inset:-14%; transition:transform .6s; pointer-events:none; }
@@ -174,15 +183,15 @@
 <body>
 <div id="app"></div>
 <div id="fen"></div><div id="perso"></div>
-<script src="musique.js?v=20261116-203739"></script>
-<script src="rang.js?v=20261116-203739"></script>
+<script src="musique.js?v=20261116-203925"></script>
+<script src="rang.js?v=20261116-203925"></script>
 <script>window.AMIS_SANS_BOUTON = true;</script>
-<script src="amis.js?v=20261116-203739"></script>
-<script src="heros-etoiles.js?v=20261116-203739"></script>
-<script src="progression-modes.js?v=20261116-203739"></script>
-<script src="aventuriers.js?v=20261116-203739"></script>
-<script src="chroniques-moteur.js?v=20261116-203739"></script>
-<script src="chroniques-ambiance.js?v=20261116-203739"></script>
+<script src="amis.js?v=20261116-203925"></script>
+<script src="heros-etoiles.js?v=20261116-203925"></script>
+<script src="progression-modes.js?v=20261116-203925"></script>
+<script src="aventuriers.js?v=20261116-203925"></script>
+<script src="chroniques-moteur.js?v=20261116-203925"></script>
+<script src="chroniques-ambiance.js?v=20261116-203925"></script>
 <script>
 // =============================================================================================== LES CHRONIQUES DE LA GUILDE v2 (15/11, écran « façon HeroQuest »)
 // Une grande carte qui défile : les salles restent dans le noir jusqu'à ce qu'on ouvre leur porte ; les couloirs se dévoilent en avançant ;
@@ -195,6 +204,10 @@ let S = null, actif = 0, sel = null, choisis = ['maelle', 'aldric', 'pip', 'gorm
 const OUVERTURE = '« Vous avez entendu ? Moi non plus. C’est bien ça le problème : la Grande Horloge de la Guilde ne fait plus tic-tac. Le boulanger est figé, la main dans la pâte. Le pigeon du toit est figé, en plein vol. Quelqu’un doit descendre sous la Guilde, retrouver trois rouages perdus et réveiller l’Horloger. Pas moi : j’ai des pattes courtes. »';
 // 15/11 soir : les meubles et objets peints (decor/obj-<nom>.webp, fond détouré) ; sinon l'émoji
 // 16/11 soir (l'utilisateur : « les statues ne sont pas sur les socles ») : chaque statue de la Galerie posée sur son socle peint (décalage en % de la case)
+// 16/11 soir (l'utilisateur : « reçu l'objet mais aucune animation ») : un objet gagné apparaît en grand, brille, puis file vers le héros
+function objetRecu(icone, titre, texte) { const d = document.createElement('div'); d.className = 'recu-objet';
+  d.innerHTML = `<div class="ro-halo"></div><div class="ro-ic">${icone}</div><div class="ro-t">${titre}</div>${texte ? `<div class="ro-d">${texte}</div>` : ''}`;
+  d.onclick = () => d.remove(); document.body.appendChild(d); setTimeout(() => d.classList.add('part'), 2300); setTimeout(() => d.remove(), 2900); }
 let statueBrille = []; // les deux statues qui viennent de tourner, allumées un instant
 const SOCLES = { '4,1':[-47, -24], '7,1':[44, -24], '4,3':[-35, 49], '7,3':[33, 49] }; // en % de l'image (88 % de la case)
 const OBJ_PEINTS = ['coffre', 'armoire', 'tonneaux', 'tombeau', 'etabli', 'cheminee', 'etagere', 'levier', 'rouage', 'axe', 'porte', 'statue', 'autel', 'grille', 'dalle', 'tasdos'];
@@ -586,6 +599,7 @@ function dessine() {
     if (mm && vu && (B || vueForcee || eclaire(x, y))) { const it = mm.it === 'frappe' ? `⚔${mm.att}` : mm.it === 'garde' ? '🛡' : mm.it === 'soin' ? '💚' : mm.it === 'fuit' ? '🏃' : mm.it === 'remonte' ? '⏳' : mm.it === 'levier' ? '🎚' : mm.it === 'elan' ? '⚡' : mm.it === 'gros' ? `💥${mm.att + 2}` : '';
       inner += `<div class="jeton ${B ? 'boss' : ''}" id="j-${mm.id}" style="--c:${B ? '#ff7a4a' : K.BETES[mm.b].elite ? '#f3c96b' : '#8a98b8'}"><img src="portraits/m-${mm.img}.webp" alt="" onerror="this.onerror=null;this.src='portraits/m-coucou.webp'"><span class="it">${it}</span><span class="sc">🔒${mm.sceaux.filter(s => !s.ok).length}</span></div>`;
       if (d && !d.pas && K.aPortee(S, h, mm)) cl += ' cible'; }
+    if ((mur === 'O' || mur === 'o') && R.plan === 2 && R.statuesOk && !h.flamme) cl += ' autel-cible'; // 16/11 soir : on voit qu'on peut toucher le feu
     if (d && vu && (p && !p.ouverte || (o && (o.meuble && !o.fouille || o.t === 'levier' || o.t === 'livre')) || mur === 'A') && K.dist(h, { x, y }) === 1 || (d && vu && mur === 'T' && !R.statuesOk && R.salle[c] && R.salle[K.cle(h.x, h.y)] === R.salle[c])) cl += ' cible';
     const fs = vu ? fondSalle(S, x, y) : '';
     cases += `<div class="${cl}${fs ? ' dessin' : ''}" id="c-${x}-${y}"${fs || stMur ? ` style="${fs}${stMur}"` : ''} onclick="touche(${x},${y})">${inner}</div>`;
@@ -704,10 +718,13 @@ function resultat(r) {
       if (e.t === 'levier') { son('tour-batir'); if (e.bronze) { son('porte'); bulle('🚪 La porte de bronze s’ouvre !'); } }
       if (e.t === 'rouage') { son('rune'); bulle(e.boss ? '⏰ L’Horloger se réveille !' : '⚙ Rouage posé !'); }
       if (e.t === 'soin') son('soin');
+      if (e.t === 'flamme') { son('magie'); objetRecu('🔥', `${nomH(S.heros[e.h])} emporte la flamme du feu sacré`, '+1 contre l’Horloger (sceaux « ≥ » et « Σ »)'); }
+      if (e.t === 'statue' && S.R.statuesOk) setTimeout(() => objetRecu('✨', 'Les quatre statues regardent l’autel !', S.journal.find(l => l.startsWith('✨')) ? S.journal.find(l => l.startsWith('✨')).replace(/^✨ /, '') : ''), 600);
       if (e.t === 'statue') { son('tour-batir'); statueBrille = [e.i, e.j]; setTimeout(() => { statueBrille = []; dessine(); }, 1500); bulle(S.journal[0], false, true); }
       if (e.t === 'enigme') { son('ultime'); bulle(S.journal[0], false, true); }
       if (e.t === 'grille') { son('porte'); bulle(S.journal[0], false, true); }
       if (e.t === 'fouille') { const T = { rouage:['⚙ UN ROUAGE !', 'rune'], potion:['🧪 Une potion !', 'soin'], parchemin:['📜 Un parchemin !', 'magie'], fumee:['💨 Une bombe fumigène !', 'magie'], equip:['🗡 De l’équipement !', 'magie'], grains:['⌛ +3 grains !', 'magie'], or:['💰 De l’or !', 'vendre'], objet:['🎁 Un objet !', 'magie'], piege:['⚠ Piégé !', 'coup'], monstre:['👹 Un monstre !', 'vague'], mimique:['👄 Une MIMIQUE !', 'vague'] }[e.quoi] || ['… rien.', 'pioche']; son(T[1]);
+        if (['rouage', 'potion', 'parchemin', 'fumee', 'equip', 'objet'].includes(e.quoi)) objetRecu(T[0].split(' ')[0], T[0].replace(/^\S+ /, ''), '');
         const L1 = S.journal.slice(0, 4), quoi = L1.find(l => !/^(🔊|⌛|🔓)/.test(l)) || T[0]; bulle(quoi, e.quoi === 'piege' || e.quoi === 'monstre' || e.quoi === 'mimique', true);
         const suite = L1.filter(l => /^(🔊|⌛)/.test(l)); suite.forEach((l, k) => setTimeout(() => bulle(l, l.startsWith('🔊'), true), 3100 * (k + 1))); }
       if (e.t === 'salle') setTimeout(() => entreeSalle(e.salle), 350);
@@ -1100,9 +1117,9 @@ if (ESSAI) essaiAtelier(ESSAI); else if (sessionStorage.getItem('chron-en-jeu') 
 { const s = new URLSearchParams(location.search).get('salle'); if (s) { history.replaceState(null, '', location.pathname); const c = (typeof AMIS !== 'undefined' && AMIS.carte) || null, nom = (c && c.pseudo) || localStorage.getItem('guilde-pseudo');
     if (nom) rejoindre(s, { id:'j' + Math.random().toString(36).slice(2, 10), nom }); else { rejoindreForm(); setTimeout(() => { const i = $('fCode'); if (i) i.value = s; }, 150); } } }
 </script>
-<script src="chroniques-aventures.js?v=20261116-203739"></script>
-<script src="guide.js?v=20261116-203739"></script>
-<script src="guides-modes.js?v=20261116-203739"></script>
+<script src="chroniques-aventures.js?v=20261116-203925"></script>
+<script src="guide.js?v=20261116-203925"></script>
+<script src="guides-modes.js?v=20261116-203925"></script>
 <script>
 // 15/11 : le guide de Moustache de ce mode (guides-modes.js)
 { const _a = accueil; accueil = function () { const r = _a.apply(this, arguments); guideMode('chroniques'); return r; }; }
