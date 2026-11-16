@@ -448,6 +448,9 @@ function atteignables(S, h, v, pas) {
     for (const [nx, ny] of voisinsC) { const c = cle(nx, ny); if (vu[c] || !libre(S, nx, ny) || !R.vu[c]) continue; vu[c] = 1; if (!herosEn(S, nx, ny)) res[c] = d + 1; file.push([nx, ny, d + 1]); } }
   return res;
 }
+// 16/11 (l'utilisateur : « mon dé de 4, c'est 4 mouvements ou 4 interactions ; il ne doit pas disparaître ») :
+// fouiller, poser un rouage, tourner une statue coûtent UN PAS ; le reste du dé reste dans un dé 👣
+function unPas(S, h, idDe) { const d = h.des.find(z => z.id === idDe); if (!d) return; prendDe(h, idDe); const reste = (d.pas ? d.v : pasDe(h, d.v).n) - 1; if (reste > 0) h.des.push({ id:'d' + S.seq++, v:reste, pas:true }); }
 const prendDe = (h, id) => { const i = h.des.findIndex(d => d.id === id); return i < 0 ? null : h.des.splice(i, 1)[0]; };
 // ---- ouvrir une porte : GRATUIT, à côté de la porte ; la salle derrière se dévoile
 // 16/11 (l'utilisateur) : une porte PEINTE déborde souvent sur la case de mur voisine : on l'ouvre aussi depuis cette case-là
@@ -571,13 +574,13 @@ function agir(S, hi, idDe, x, y) {
   const d = h.des.find(z => z.id === idDe); if (!d) return 'Choisis d’abord un dé.';
   if (R.axe && x === R.axe[0] && y === R.axe[1]) {
     if (!h.porte) return 'Il faut porter un rouage (on les trouve en fouillant les meubles).'; if (dist(h, { x, y }) !== 1) return 'Il faut être à côté de l’axe.';
-    prendDe(h, idDe); h.porte = false; R.rouagesPoses++; S.sablier += 2; log(S, `⚙ Rouage posé sur l’axe (${R.rouagesPoses}/3) : +2 grains.`);
+    unPas(S, h, idDe); h.porte = false; R.rouagesPoses++; S.sablier += 2; log(S, `⚙ Rouage posé sur l’axe (${R.rouagesPoses}/3) : +2 grains.`);
     if (R.rouagesPoses >= 3) reveilBoss(S); return { ok:true, ev:[{ t:'rouage', boss:R.rouagesPoses >= 3 }] };
   }
   const st = R.statues ? R.statues.findIndex(t => t.x === x && t.y === y) : -1;
   if (st >= 0) {
     if (R.statuesOk) return 'Les statues regardent déjà l’autel.'; if (R.salle[cle(h.x, h.y)] !== R.salle[cle(x, y)]) return 'Il faut être dans la Galerie des statues.'; // 16/11 : depuis n'importe quelle case de la Galerie (une statue était coincée entre les autres)
-    prendDe(h, idDe); tourneStatue(R, st); log(S, `🗿 ${nm(h)} pousse une statue : elle pivote… et sa voisine tourne avec elle, dans un cliquetis d’engrenages.`);
+    unPas(S, h, idDe); tourneStatue(R, st); log(S, `🗿 ${nm(h)} pousse une statue : elle pivote… et sa voisine tourne avec elle, dans un cliquetis d’engrenages.`);
     if (R.statues.every(t => t.d === t.veut)) { R.statuesOk = true; S.score += 80; S.sablier += 3;
       const k = ['bouclier', 'cle', 'lunettes'].find(z => !S.heros.some(w => w.objet === z)); if (k && !h.objet) { h.objet = k; log(S, `✨ Les quatre statues s’agenouillent vers l’autel ! Une niche s’ouvre : ${nm(h)} trouve ${OBJETS[k].n} (${OBJETS[k].d}) ; +3 grains, +80.`); }
       else log(S, '✨ Les quatre statues s’agenouillent vers l’autel ! Une niche s’ouvre : +3 grains et +80 points.');
@@ -602,7 +605,7 @@ function agir(S, hi, idDe, x, y) {
 function fouilleMeuble(S, hi, idDe, x, y, o) {
   const h = S.heros[hi], R = S.R; if (o.fouille) return `On a déjà fouillé ${MEUBLE_N[o.t]}.`;
   if (o.cache === 'rouage' && h.porte) { log(S, `⚙ ${nm(h)} sent un rouage dans ${MEUBLE_N[o.t]}, mais ses mains sont prises : un héros ne porte qu’UN rouage à la fois.`); return `${nm(h)} porte déjà un rouage (un seul à la fois) : qu’un autre héros fouille ici.`; }
-  prendDe(h, idDe); o.fouille = true; const nom = nm(h), ev = { t:'fouille', quoi:o.cache, meuble:o.t, h:hi };
+  unPas(S, h, idDe); o.fouille = true; const nom = nm(h), ev = { t:'fouille', quoi:o.cache, meuble:o.t, h:hi };
   const Le = MEUBLE_N[o.t][0].toUpperCase() + MEUBLE_N[o.t].slice(1);
   switch (o.cache) {
     case 'rouage': { h.porte = true; S.rouagesTrouves++; const sc = SCEN[S.scen || 'horloger']; log(S, `${sc.objet.e} ${nom} trouve ${sc.objet.n === 'rouage' ? 'un ROUAGE' : 'une BRAISE ÉTERNELLE'} dans ${MEUBLE_N[o.t] || 'le meuble'} ! À porter jusqu’à ${sc.axe}.`); break; }
