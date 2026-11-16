@@ -208,30 +208,51 @@ function voirAVue(S) {
   return [];
 }
 
-// ------------------------------------------------------------------ LA CARTE du Sommeil de l'Horloger (20 × 18)
-const W = 20, H = 18;
-const SALLES = {
-  A: { n:'Le Hall d’entrée', r:[1, 1, 5, 3], lu:'« Le hall. Tout est figé, même la poussière. Trois portes, des couloirs… Choisissez bien, le sablier tourne. »' },
-  C: { n:'La Réserve', r:[8, 1, 4, 3], lu:'« Une réserve pleine de vieux meubles. Si j’étais un rouage, je me cacherais là. Ou pas. »' },
-  G: { n:'La Crypte des horlogers', r:[14, 1, 5, 3], lu:'« Ici dorment les anciens horlogers de la Guilde. Fouillez avec respect. Et vite. »' },
-  B: { n:'La Salle des rouages', r:[1, 7, 5, 4], lu:'« Quatre leviers. Baissez-les tous ensemble : ils ouvrent la grande porte de bronze, tout en bas. »' },
-  E: { n:'L’Atelier abandonné', r:[9, 7, 3, 3], lu:'« Un vieil atelier. Des outils, des ressorts… et un établi qui n’a pas été rangé depuis cent ans. »' },
-  F: { n:'La Bibliothèque des heures', r:[15, 7, 4, 4], lu:'« Chut. C’est une bibliothèque. Le Livre des heures est tout en haut d’une étagère : il faut être deux pour l’attraper. »' },
-  S: { n:'La Galerie des statues', r:[15, 14, 4, 3], lu:'« Quatre statues de bronze autour d’un petit autel. Sur le mur, une fresque : quatre silhouettes agenouillées face à une flamme. Et… elles sont reliées par des engrenages. Tourner l’une fait tourner sa voisine. »' },
-  P: { n:'Le Cagibi grillagé', r:[1, 14, 2, 3], lu:'« Une grille de fer. Dans le couloir, une dalle qui s’enfonce quand on marche dessus… Quelqu’un doit rester dessus pour que les autres passent. »' },
-  H: { n:'Le Cœur de l’Horloge', r:[4, 14, 10, 3], lu:'« La Grande Horloge. Son axe attend trois rouages. Posez-les… et quelqu’un va se réveiller. »' },
+// ------------------------------------------------------------------ LA CARTE du Sommeil de l'Horloger
+// 16/11 (décision de l'utilisateur, fichier Chroniques-Conception-cartes.md) : L'HORLOGE EN ÉTAGES : sous-sol (Crypte), rez-de-chaussée
+// (Hall avec la grande porte d'entrée, Réserve), 1er étage (rouages, Atelier, Bibliothèque, Cagibi), sommet (Galerie, Cœur de l'Horloge).
+// Les étages sont posés les uns sous les autres sur la grille ; les ESCALIERS sont de petites zones de 2 cases dont les bouts sont RELIÉS
+// (R.liens : un pas fait passer d'un étage à l'autre). Plan dessiné par outils/plan-horloger-etages.py (dépôt guilde-des-runes).
+// Les parties commencées AVANT le 16/11 gardent l'ancienne carte (R sans « plan ») : SALLES_V1 sert encore à elles.
+const SALLES_LU = {
+  A:'« Le hall. Tout est figé, même la poussière. Derrière nous, la grande porte ; devant, l’horloge qui ne bat plus. Le sablier tourne. »',
+  C:'« Une réserve pleine de vieux meubles. Si j’étais un rouage, je me cacherais là. Ou pas. »',
+  G:'« Le sous-sol. Ici dorment les anciens horlogers de la Guilde. Fouillez avec respect. Et vite. »',
+  B:'« Quatre leviers. Baissez-les tous ensemble : ils ouvrent la grande porte de bronze, tout en haut, au sommet. »',
+  E:'« Un vieil atelier. Des outils, des ressorts… et un établi qui n’a pas été rangé depuis cent ans. »',
+  F:'« Chut. C’est une bibliothèque. Le Livre des heures est tout en haut d’une étagère : il faut être deux pour l’attraper. »',
+  S:'« Quatre statues de bronze autour d’un petit autel. Sur le mur, une fresque : quatre silhouettes agenouillées face à une flamme. Et… elles sont reliées par des engrenages. Tourner l’une fait tourner sa voisine. »',
+  P:'« Une grille de fer. Dans le couloir, une dalle qui s’enfonce quand on marche dessus… Quelqu’un doit rester dessus pour que les autres passent. »',
+  H:'« Le sommet. La Grande Horloge. Son axe attend trois rouages. Posez-les… et quelqu’un va se réveiller. »',
 };
-const COULOIRS = [[1, 5, 18, 1], [1, 12, 18, 1], [7, 5, 1, 8], [13, 5, 1, 8]];
-const PORTES = [[3, 4, 'A'], [10, 4, 'C'], [16, 4, 'G'], [3, 6, 'B'], [6, 10, 'B'], [8, 8, 'E'], [12, 8, 'E'], [16, 6, 'F'], [14, 9, 'F'], [8, 13, 'H', 'bronze'], [17, 13, 'S']];
-// 16/11 : la grille du Cagibi s'ouvre tant qu'un héros se tient sur la dalle du couloir ; les 4 statues de la Galerie (autel au milieu)
-const GRILLE = [2, 13], DALLE = [4, 12], AUTEL_S = [16, 15], STATUES = [[16, 14], [17, 15], [16, 16], [15, 15]];
-const MEUBLES = [[5, 1, 'coffre', 'A'], [1, 3, 'tonneaux', 'A'], [8, 1, 'armoire', 'C'], [11, 1, 'tonneaux', 'C'], [11, 3, 'armoire', 'C'],
-  [15, 2, 'tombeau', 'G'], [17, 2, 'tombeau', 'G'], [18, 1, 'coffre', 'G'], [10, 7, 'etabli', 'E'], [11, 9, 'armoire', 'E'], [18, 10, 'coffre', 'F'], [1, 10, 'tonneaux', 'B'], [13, 16, 'cheminee', 'H'], [1, 16, 'coffre', 'P']];
-const ROUAGES_CACHES = ['11,3', '17,2', '10,7', '18,10'];
-const LEVIERS = [[1, 8], [1, 9], [5, 8], [5, 9]]; // 16/11 : sur les deux pupitres peints de la salle (dessin salle-rouages)
-const ETAGERES = [[16, 8], [17, 8], [16, 10]], LIVRE = [18, 8], AXE = [8, 15];
-const MONSTRES_DEPART = [['rouagelin', 4, 2], ['rouagelin', 9, 2], ['page', 14, 1], ['page', 18, 3], ['gardien', 3, 9], ['rouagelin', 4, 8],
-  ['coucou', 13, 7], ['coucou', 13, 10], ['page', 15, 9], ['archiviste', 17, 9], ['rouagelin', 6, 15], ['rouagelin', 11, 15], ['colosse', 9, 9]];
+const NOMS_S = { A:'Le Hall d’entrée', C:'La Réserve', G:'La Crypte des horlogers', B:'La Salle des rouages', E:'L’Atelier abandonné', F:'La Bibliothèque des heures', S:'La Galerie des statues', P:'Le Cagibi grillagé', H:'Le Cœur de l’Horloge' };
+const W = 24, H = 31;
+const RECTS = { S:[4, 1, 4, 3], H:[11, 1, 10, 3], B:[3, 10, 5, 4], E:[10, 10, 3, 3], F:[14, 10, 4, 4], P:[19, 10, 2, 3], A:[3, 19, 5, 3], C:[10, 19, 4, 3], G:[11, 27, 5, 3] };
+const SALLES = {}; Object.keys(RECTS).forEach(k => SALLES[k] = { n:NOMS_S[k], r:RECTS[k], lu:SALLES_LU[k] });
+// l'ancienne carte (20 × 18), pour les parties commencées avant le 16/11
+const SALLES_V1 = { A:[1, 1, 5, 3], C:[8, 1, 4, 3], G:[14, 1, 5, 3], B:[1, 7, 5, 4], E:[9, 7, 3, 3], F:[15, 7, 4, 4], S:[15, 14, 4, 3], P:[1, 14, 2, 3], H:[4, 14, 10, 3] };
+const rectSalle = (S, id) => (S && S.R && S.R.plan === 2 ? RECTS[id] : SALLES_V1[id]) || null;
+// les couloirs et les escaliers (des zones à part, avec leur nom et leur étage)
+const COULOIRS_Z2 = {
+  K5:{ r:[3, 5, 18, 1], n:'Le palier du sommet' }, X2:{ r:[21, 5, 2, 1], n:'L’escalier du sommet', esc:true },
+  K6:{ r:[3, 8, 18, 1], n:'Le couloir du 1er étage' }, X1h:{ r:[21, 8, 2, 1], n:'L’escalier vers le sommet', esc:true }, X1b:{ r:[1, 8, 2, 1], n:'L’escalier vers le rez-de-chaussée', esc:true },
+  K7:{ r:[3, 17, 14, 1], n:'Le couloir du rez-de-chaussée' }, X0h:{ r:[1, 17, 2, 1], n:'L’escalier vers le 1er étage', esc:true }, X0b:{ r:[17, 17, 2, 1], n:'L’escalier vers le sous-sol', esc:true },
+  K8:{ r:[11, 25, 8, 1], n:'Le couloir de la crypte' }, Xs:{ r:[19, 25, 2, 1], n:'L’escalier qui remonte', esc:true },
+};
+const LIENS2 = [[[22, 5], [22, 8]], [[1, 8], [1, 17]], [[18, 17], [20, 25]]];
+const ETAGES2 = [[0, 6, 'Le sommet'], [7, 15, '1er étage'], [16, 23, 'Rez-de-chaussée'], [24, 30, 'Sous-sol']];
+const etageDe = (S, y) => { if (!S || !S.R || S.R.plan !== 2) return null; const e = ETAGES2.find(([a, b]) => y >= a && y <= b); return e ? e[2] : null; };
+const PORTES = [[6, 4, 'S'], [15, 4, 'H', 'bronze'], [5, 9, 'B'], [11, 9, 'E'], [15, 9, 'F'], [5, 18, 'A'], [11, 18, 'C'], [13, 26, 'G'], [5, 22, 'A', 'entree']];
+// la grille du Cagibi s'ouvre tant qu'un héros se tient sur la dalle du couloir ; les 4 statues de la Galerie (autel au milieu)
+const GRILLE = [20, 9], DALLE = [18, 8], AUTEL_S = [5, 2], STATUES = [[5, 1], [6, 2], [5, 3], [4, 2]];
+const MEUBLES = [[7, 19, 'coffre', 'A'], [3, 21, 'tonneaux', 'A'], [10, 19, 'armoire', 'C'], [13, 19, 'tonneaux', 'C'], [13, 21, 'armoire', 'C'],
+  [12, 28, 'tombeau', 'G'], [14, 28, 'tombeau', 'G'], [15, 27, 'coffre', 'G'], [12, 10, 'etabli', 'E'], [12, 12, 'armoire', 'E'], [17, 13, 'coffre', 'F'], [3, 13, 'tonneaux', 'B'], [20, 3, 'cheminee', 'H'], [19, 12, 'coffre', 'P']];
+const ROUAGES_CACHES = ['13,21', '14,28', '12,10', '17,13'];
+const LEVIERS = [[3, 11], [3, 12], [7, 11], [7, 12]]; // sur les deux pupitres peints de la salle (dessin salle-rouages)
+const ETAGERES = [[15, 11], [16, 11], [15, 13]], LIVRE = [17, 11], AXE = [15, 2];
+const DEPART = [[4, 21], [5, 21], [6, 21], [5, 20]]; // juste devant la grande porte d'entrée, comme si on venait d'entrer
+const MONSTRES_DEPART = [['rouagelin', 11, 20], ['rouagelin', 14, 17], ['page', 13, 28], ['page', 17, 25], ['gardien', 5, 12], ['rouagelin', 6, 11],
+  ['coucou', 9, 8], ['coucou', 19, 8], ['page', 14, 12], ['archiviste', 16, 12], ['rouagelin', 12, 5], ['rouagelin', 18, 5], ['colosse', 10, 11]];
 const OBJETS = { bouclier:{ n:'Bouclier de bronze', d:'Bouclier 3 à chaque fois qu’une porte s’ouvre.' }, cle:{ n:'Clé à molette', d:'+1 dé à chaque tour.' }, lunettes:{ n:'Lunettes de l’horloger', d:'Voit tous les pièges.' } };
 const MEUBLE_N = { coffre:'le coffre', armoire:'l’armoire', tonneaux:'les tonneaux', tombeau:'le tombeau', etabli:'l’établi', cheminee:'la cheminée', lit:'le lit de camp', tente:'la tente', etagere:'l’étagère', bureau:'le bureau', banc:'le banc', autel:'l’autel', fontaine:'la fontaine', cristaux:'les cristaux' };
 const cle = (x, y) => x + ',' + y;
@@ -278,16 +299,18 @@ function nouvelle(heros, s, scen, opts = {}) {
   if (scen === 'brulees') { construitCarte(S, R); adapte(S); voir(S); log(S, '🔥 Les Terres brûlées : trouvez 3 braises éternelles en fouillant les meubles et portez-les au grand brasier.'); debutTour(S); return S; }
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) R.murs[cle(x, y)] = '#';
   const creuse = ([x0, y0, w, h], id) => { for (let y = y0; y < y0 + h; y++) for (let x = x0; x < x0 + w; x++) { delete R.murs[cle(x, y)]; if (id) R.salle[cle(x, y)] = id; } };
-  Object.entries(SALLES).forEach(([id, D]) => creuse(D.r, id)); COULOIRS.forEach(c => creuse(c));
-  PORTES.forEach(([x, y, id, b]) => { delete R.murs[cle(x, y)]; R.portes[cle(x, y)] = { salle:id, ouverte:false, bronze:!!b }; });
+  Object.entries(SALLES).forEach(([id, D]) => creuse(D.r, id)); Object.values(COULOIRS_Z2).forEach(c => creuse(c.r));
+  PORTES.forEach(([x, y, id, b]) => { delete R.murs[cle(x, y)]; R.portes[cle(x, y)] = { salle:id, ouverte:false, bronze:b === 'bronze', entree:b === 'entree' }; });
+  R.plan = 2; R.depart = DEPART.map(c => c.slice()); R.liens = {};
+  LIENS2.forEach(([a, b]) => { R.liens[cle(...a)] = cle(...b); R.liens[cle(...b)] = cle(...a); });
   const tirage = ['potion', 'grains', 'objet', 'piege', 'monstre', 'parchemin', 'or', 'fumee', 'rien'];
   MEUBLES.forEach(([x, y, t, id]) => { R.murs[cle(x, y)] = 'M'; R.obj[cle(x, y)] = { t, meuble:true, salle:id, fouille:false, cache:ROUAGES_CACHES.includes(cle(x, y)) ? 'rouage' : tirage[Math.floor(hasard(S) * tirage.length)] }; });
   LEVIERS.forEach(([x, y]) => { R.murs[cle(x, y)] = 'L'; R.obj[cle(x, y)] = { t:'levier', v:2 + Math.floor(hasard(S) * 4) }; });
   const vus = []; Object.values(R.obj).filter(o => o.t === 'levier').forEach(o => { while (vus.includes(o.v)) o.v = 2 + Math.floor(hasard(S) * 4); vus.push(o.v); });
   ETAGERES.forEach(([x, y]) => R.murs[cle(x, y)] = 'B'); R.murs[cle(...LIVRE)] = 'K'; R.obj[cle(...LIVRE)] = { t:'livre' };
   R.murs[cle(...AXE)] = 'A'; R.axe = AXE.slice();
-  [[7, 7], [13, 11], [11, 12], [17, 5]].forEach(([x, y]) => R.obj[cle(x, y)] = { t:'piege', cache:true });
-  R.obj[cle(1, 16)].cache = 'potion2'; // le Cagibi : deux potions
+  [[6, 17], [12, 8], [9, 5], [15, 25]].forEach(([x, y]) => R.obj[cle(x, y)] = { t:'piege', cache:true });
+  R.obj[cle(19, 12)].cache = 'potion2'; // le Cagibi : deux potions
   // la grille : la case reste « fermée » sauf quand un héros est sur la dalle
   delete R.murs[cle(...GRILLE)]; R.grille = { x:GRILLE[0], y:GRILLE[1], dx:DALLE[0], dy:DALLE[1] };
   // les statues (murs 'T') : chacune regarde N/E/S/O (0-3) ; but = toutes vers l'autel ; tourner l'une tourne aussi la suivante
@@ -298,9 +321,9 @@ function nouvelle(heros, s, scen, opts = {}) {
   R.statues.forEach(t => R.murs[cle(t.x, t.y)] = 'T');
   MONSTRES_DEPART.forEach(([b, x, y]) => ajouteMonstre(S, b, x, y));
   adapte(S);
-  [[1, 1], [2, 1], [1, 2], [2, 2]].forEach(([x, y], i) => { if (S.heros[i]) { S.heros[i].x = x; S.heros[i].y = y; } });
+  DEPART.forEach(([x, y], i) => { if (S.heros[i]) { S.heros[i].x = x; S.heros[i].y = y; } });
   voir(S);
-  log(S, '⏳ Le Sommeil de l’Horloger commence. Trouvez 3 rouages en fouillant les meubles, ouvrez la porte de bronze, réveillez l’Horloger.');
+  log(S, '⏳ La grande porte se referme derrière vous. Le Sommeil de l’Horloger commence : trouvez 3 rouages dans les meubles des étages, montez au sommet, ouvrez la porte de bronze, réveillez l’Horloger.');
   debutTour(S); return S;
 }
 const nm = h => h.nom || HEROS_C[h.id].n;
@@ -348,7 +371,7 @@ function pasDe(h, v) {
 }
 // ---- ce qu'on voit : une salle entière dès qu'on y entre (ou qu'on ouvre sa porte) ; les couloirs en avançant
 function revele(S, id) { const R = S.R; if (R.vuSalle[id]) return false; R.vuSalle[id] = true;
-  const [x0, y0, w, h] = SALLES[id].r; for (let y = y0 - 1; y <= y0 + h; y++) for (let x = x0 - 1; x <= x0 + w; x++) R.vu[cle(x, y)] = 1; return true; }
+  const [x0, y0, w, h] = rectSalle(S, id); for (let y = y0 - 1; y <= y0 + h; y++) for (let x = x0 - 1; x <= x0 + w; x++) R.vu[cle(x, y)] = 1; return true; }
 function voir(S) {
   if (SCEN[S.scen || 'horloger'].image || SCEN[S.scen || 'horloger'].hasard) return voirAVue(S);
   const R = S.R; let neuves = [];
@@ -356,6 +379,8 @@ function voir(S) {
     const ici = R.salle[cle(h.x, h.y)]; if (ici && revele(S, ici)) neuves.push(ici);
     if (ici) return; // dans une salle : on voit la salle, pas plus loin
     const loin = h.id === 'oria' ? 5 : 3; R.vu[cle(h.x, h.y)] = 1;
+    // en haut (ou en bas) d'un escalier, on voit le bout relié et l'escalier de l'autre étage
+    if (R.liens && R.liens[cle(h.x, h.y)]) { const [lx, ly] = R.liens[cle(h.x, h.y)].split(',').map(Number); for (const dx of [-1, 0, 1]) for (const dy of [-1, 0, 1]) R.vu[cle(lx + dx, ly + dy)] = 1; }
     [[1, 0], [-1, 0], [0, 1], [0, -1]].forEach(([dx, dy]) => { for (let k = 1; k <= loin; k++) { const x = h.x + dx * k, y = h.y + dy * k, c = cle(x, y);
       R.vu[c] = 1; R.vu[cle(x + dy, y + dx)] = 1; R.vu[cle(x - dy, y - dx)] = 1;
       if (R.murs[c] || R.portes[c] || R.salle[c]) break; } });
@@ -393,7 +418,9 @@ function atteignables(S, h, v, pas) {
   while (file.length) { const [x, y, d] = file.shift(); if (d >= pasMax) continue;
     // on s'arrête en entrant dans une salle pas encore vue (comme à HeroQuest : on découvre en entrant)
     const ici = R.salle[cle(x, y)]; if (d > 0 && ici && !R.vuSalle[ici]) continue;
-    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const nx = x + dx, ny = y + dy, c = cle(nx, ny); if (vu[c] || !libre(S, nx, ny) || !R.vu[c]) continue; vu[c] = 1; if (!herosEn(S, nx, ny)) res[c] = d + 1; file.push([nx, ny, d + 1]); } }
+    const voisinsC = [[1, 0], [-1, 0], [0, 1], [0, -1]].map(([dx, dy]) => [x + dx, y + dy]);
+    if (R.liens && R.liens[cle(x, y)]) voisinsC.push(R.liens[cle(x, y)].split(',').map(Number)); // 16/11 : un escalier mène à l'autre étage en un pas
+    for (const [nx, ny] of voisinsC) { const c = cle(nx, ny); if (vu[c] || !libre(S, nx, ny) || !R.vu[c]) continue; vu[c] = 1; if (!herosEn(S, nx, ny)) res[c] = d + 1; file.push([nx, ny, d + 1]); } }
   return res;
 }
 const prendDe = (h, id) => { const i = h.des.findIndex(d => d.id === id); return i < 0 ? null : h.des.splice(i, 1)[0]; };
@@ -401,6 +428,7 @@ const prendDe = (h, id) => { const i = h.des.findIndex(d => d.id === id); return
 function ouvrir(S, hi, x, y) {
   const h = S.heros[hi], R = S.R, p = R.portes[cle(x, y)];
   if (!p || p.ouverte) return 'Pas de porte fermée ici.'; if (h.aTerre || dist(h, { x, y }) !== 1) return 'Il faut être juste à côté de la porte.';
+  if (p.entree) return 'Dehors, la ville est figée dans le temps : on ne repartira pas sans avoir réveillé l’Horloger.';
   if (p.bronze && !R.bronze) return 'La porte de bronze est verrouillée : baissez ensemble les 4 leviers de la Salle des rouages.';
   p.ouverte = true; R.vu[cle(x, y)] = 1;
   // on regarde DERRIÈRE la porte, dans le sens où on l'ouvre : une salle se dévoile en entier, un couloir sur 3 cases
@@ -513,7 +541,7 @@ function agir(S, hi, idDe, x, y) {
   }
   const st = R.statues ? R.statues.findIndex(t => t.x === x && t.y === y) : -1;
   if (st >= 0) {
-    if (R.statuesOk) return 'Les statues regardent déjà l’autel.'; if (dist(h, { x, y }) !== 1) return 'Il faut être juste à côté de la statue.';
+    if (R.statuesOk) return 'Les statues regardent déjà l’autel.'; if (R.salle[cle(h.x, h.y)] !== R.salle[cle(x, y)]) return 'Il faut être dans la Galerie des statues.'; // 16/11 : depuis n'importe quelle case de la Galerie (une statue était coincée entre les autres)
     prendDe(h, idDe); tourneStatue(R, st); log(S, `🗿 ${nm(h)} pousse une statue : elle pivote… et sa voisine tourne avec elle, dans un cliquetis d’engrenages.`);
     if (R.statues.every(t => t.d === t.veut)) { R.statuesOk = true; S.score += 80; S.sablier += 3;
       const k = ['bouclier', 'cle', 'lunettes'].find(z => !S.heros.some(w => w.objet === z)); if (k && !h.objet) { h.objet = k; log(S, `✨ Les quatre statues s’agenouillent vers l’autel ! Une niche s’ouvre : ${nm(h)} trouve ${OBJETS[k].n} (${OBJETS[k].d}) ; +3 grains, +80.`); }
@@ -580,7 +608,8 @@ function blesseHeros(S, h, n) {
 function finTour(S) {
   const R = S.R, ev = []; if (!R || S.fin) return ev;
   const debout = () => S.heros.filter(h => !h.aTerre);
-  const plusProche = m => debout().sort((a, b) => dist(a, m) - dist(b, m))[0];
+  const memeEtage = (h, m) => !R.plan || etageDe(S, h.y) === etageDe(S, m.y); // 16/11 : un monstre ne voit que son étage
+  const plusProche = m => debout().filter(h => memeEtage(h, m)).sort((a, b) => dist(a, m) - dist(b, m))[0];
   const marche = (m, cible, n) => { const de = [m.x, m.y]; marche1(m, cible, n); if (m.x !== de[0] || m.y !== de[1]) ev.push({ t:'pas', m:m.id, de }); };
   const marche1 = (m, cible, n) => { for (let i = 0; i < n; i++) { if (!cible || contact(S, m, cible)) return;
     const opts = [[1, 0], [-1, 0], [0, 1], [0, -1]].map(([dx, dy]) => [m.x + dx, m.y + dy]).filter(([x, y]) => libre(S, x, y, m) && !herosEn(S, x, y) && R.vu[cle(x, y)] && !(R.portes[cle(x, y)] && !R.portes[cle(x, y)].ouverte));
@@ -595,7 +624,7 @@ function finTour(S) {
     // ♻ régénère : un sceau se referme, sauf si on lui a posé un 6 ce tour
     if (B.regen && m.six !== R.tour) { const s = m.sceaux.find(x => x.ok); if (s) { s.ok = false; s.val = 0; s.reste = s.t === 'tot' ? s.v : 0; log(S, `♻ ${m.n} se remonte : un sceau se referme (il fallait lui poser un 6).`); ev.push({ t:'garde', m:m.id }); } }
     // le lâche choisit un héros SEUL s'il en voit un pas trop loin
-    const seul = B.lache ? debout().filter(h => !S.heros.some(z => z !== h && !z.aTerre && voisins(z, h))).sort((a, b) => dist(a, m) - dist(b, m))[0] : null;
+    const seul = B.lache ? debout().filter(h => memeEtage(h, m) && !S.heros.some(z => z !== h && !z.aTerre && voisins(z, h))).sort((a, b) => dist(a, m) - dist(b, m))[0] : null;
     const c = seul && dist(seul, m) <= B.mv + 2 ? seul : plusProche(m);
     if (!c || dist(m, c) > 8) continue;
     if (m.it === 'elan') { m.charge = m.sceaux.filter(s => s.ok).length; log(S, `⚡ ${m.n} prend son élan… au prochain tour, il frappera de +2, sauf si vous lui brisez un sceau d’ici là !`); ev.push({ t:'elan', m:m.id }); marche(m, c, 1); continue; }
@@ -627,7 +656,7 @@ function finTour(S) {
       const c = plusProche(Bo);
       if (Bo.phase === 0) { marche(Bo, c, 1); if (c && contact(S, Bo, c)) { const perdu = blesseHeros(S, c, Bo.att); ev.push({ t:'frappe', m:'boss', h:S.heros.indexOf(c), v:perdu }); log(S, `⚔ ${Bo.n} frappe ${nm(c)} (−${perdu}).`); } for (let i = 0; i < 2; i++) { const p = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [-1, -1]].map(([dx, dy]) => [Bo.x + dx, Bo.y + dy]).find(([x, y]) => libre(S, x, y) && !herosEn(S, x, y)); if (p) ajouteMonstre(S, SCEN[S.scen || 'horloger'].renfort, p[0], p[1]); } log(S, `⏰ ${SCEN[S.scen || 'horloger'].phases[0]} : un coup de 3 et deux renforts !`); }
       else if (Bo.phase === 1) { debout().forEach(h => { if (!S.heros.some(z => z !== h && !z.aTerre && voisins(z, h))) h.carillon = true; }); log(S, '🔔 Le Carillon sonne ! Ceux qui sont seuls perdront leur plus gros dé.'); }
-      else { const bl = debout().sort((a, b) => a.pv - b.pv)[0]; if (bl) { const p = [[1, 1], [2, 1], [1, 2], [2, 2], [3, 1], [3, 2]].find(([x, y]) => !herosEn(S, x, y) && libre(S, x, y)) || [1, 1]; bl.x = p[0]; bl.y = p[1]; blesseHeros(S, bl, Bo.att + 1); log(S, `⏳ La Dernière Heure : ${nm(bl)} est renvoyé dans le hall d’entrée (−4).`); } }
+      else { const bl = debout().sort((a, b) => a.pv - b.pv)[0]; if (bl) { const p = (R.depart || [[1, 1], [2, 1], [1, 2], [2, 2], [3, 1], [3, 2]]).find(([x, y]) => !herosEn(S, x, y) && libre(S, x, y)) || (R.depart ? R.depart[0] : [1, 1]); bl.x = p[0]; bl.y = p[1]; blesseHeros(S, bl, Bo.att + 1); log(S, `⏳ La Dernière Heure : ${nm(bl)} est renvoyé dans le hall d’entrée (−4).`); } }
       ev.push({ t:'boss' });
     }
     Bo.repos = !Bo.repos;
@@ -638,7 +667,7 @@ function finTour(S) {
   debutTour(S); return ev;
 }
 
-const API = { CAPA, phasesDe, grilleOuverte, contact, pasDe, aPortee, SAC, utiliser, SCEN, HEROS_C, BETES, PHASES, SALLES, OBJETS, MEUBLE_N, nouvelle, atteignables, bouger, frapper, proteger, soigner, donner, relever, fouiller, agir, ouvrir,
+const API = { rectSalle, etageDe, COULOIRS_Z2, CAPA, phasesDe, grilleOuverte, contact, pasDe, aPortee, SAC, utiliser, SCEN, HEROS_C, BETES, PHASES, SALLES, OBJETS, MEUBLE_N, nouvelle, atteignables, bouger, frapper, proteger, soigner, donner, relever, fouiller, agir, ouvrir,
   finTour, visible, accepte, voisins, dist, herosEn, cle, libre, reveille };
 if (typeof module !== 'undefined' && module.exports) module.exports = API; else racine.CHRON = API;
 })(typeof window !== 'undefined' ? window : globalThis);
