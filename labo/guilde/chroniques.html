@@ -121,14 +121,14 @@
 <body>
 <div id="app"></div>
 <div id="fen"></div>
-<script src="musique.js?v=20261116-144226"></script>
-<script src="rang.js?v=20261116-144226"></script>
+<script src="musique.js?v=20261116-144655"></script>
+<script src="rang.js?v=20261116-144655"></script>
 <script>window.AMIS_SANS_BOUTON = true;</script>
-<script src="amis.js?v=20261116-144226"></script>
-<script src="heros-etoiles.js?v=20261116-144226"></script>
-<script src="progression-modes.js?v=20261116-144226"></script>
-<script src="aventuriers.js?v=20261116-144226"></script>
-<script src="chroniques-moteur.js?v=20261116-144226"></script>
+<script src="amis.js?v=20261116-144655"></script>
+<script src="heros-etoiles.js?v=20261116-144655"></script>
+<script src="progression-modes.js?v=20261116-144655"></script>
+<script src="aventuriers.js?v=20261116-144655"></script>
+<script src="chroniques-moteur.js?v=20261116-144655"></script>
 <script>
 // =============================================================================================== LES CHRONIQUES DE LA GUILDE v2 (15/11, écran « façon HeroQuest »)
 // Une grande carte qui défile : les salles restent dans le noir jusqu'à ce qu'on ouvre leur porte ; les couloirs se dévoilent en avançant ;
@@ -178,7 +178,12 @@ const zoneNom = id => K.SALLES[id] ? K.SALLES[id].n : COULOIRS_Z[id] ? COULOIRS_
 // découvertes en cases à l'encre reliées par les couloirs, la zone regardée en doré, les héros en ronds de couleur, les monstres en points rouges
 function schemaSVG(grand) {
   const R = S.R, zv = vueForcee || zoneDe(R, S.heros[actif].x, S.heros[actif].y), vue = id => id.startsWith('K') ? Object.keys(R.vu).some(c => { const [x, y] = c.split(',').map(Number); return zoneDe(R, x, y) === id && !R.murs[c]; }) : R.vuSalle[id];
-  let svg = `<svg viewBox="0 0 ${R.w} ${R.h}" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="pa" cx="50%" cy="45%" r="75%"><stop offset="0" stop-color="#e9d6a6"/><stop offset="1" stop-color="#b8975c"/></radialGradient></defs><rect x="0" y="0" width="${R.w}" height="${R.h}" rx="1" fill="url(#pa)"/>`;
+  // le cadre suit ce qui est découvert (au début : le Hall seul, en grand), jamais moins de 8 × 6 cases
+  let X0 = R.w, Y0 = R.h, X1 = 0, Y1 = 0; Object.keys(R.vu).forEach(c => { const [x, y] = c.split(',').map(Number); if (R.murs[c] === '#') return; X0 = Math.min(X0, x); Y0 = Math.min(Y0, y); X1 = Math.max(X1, x); Y1 = Math.max(Y1, y); });
+  if (X1 < X0) { X0 = 0; Y0 = 0; X1 = R.w - 1; Y1 = R.h - 1; }
+  let VW = Math.max(8, X1 - X0 + 3), VH = Math.max(6, Y1 - Y0 + 3); const cx = (X0 + X1 + 1) / 2, cy = (Y0 + Y1 + 1) / 2; if (VW / VH < 1.3) VW = VH * 1.3; else VH = VW / 1.3;
+  const vx = cx - VW / 2, vy = cy - VH / 2;
+  let svg = `<svg viewBox="${vx} ${vy} ${VW} ${VH}" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="pa" cx="50%" cy="45%" r="75%"><stop offset="0" stop-color="#e9d6a6"/><stop offset="1" stop-color="#b8975c"/></radialGradient></defs><rect x="${vx}" y="${vy}" width="${VW}" height="${VH}" rx=".6" fill="url(#pa)"/>`;
   Object.keys(COULOIRS_Z).forEach(id => { if (!vue(id)) return; const [x, y, w, h] = COULOIRS_Z[id].r; svg += `<rect x="${x + .3}" y="${y + .3}" width="${w - .6}" height="${h - .6}" fill="${id === zv ? '#f3c96b' : '#cdb07a'}" stroke="#4a3418" stroke-width=".12" stroke-dasharray=".35 .2"/>`; });
   Object.keys(K.SALLES).forEach(id => { if (!vue(id)) return; const [x, y, w, h] = K.SALLES[id].r;
     svg += `<rect x="${x - .15}" y="${y - .15}" width="${w + .3}" height="${h + .3}" rx=".5" fill="${id === zv ? '#f3c96b' : '#d9bf8a'}" stroke="${id === zv ? '#8a4a10' : '#4a3418'}" stroke-width="${id === zv ? .3 : .18}"/>`;
@@ -190,9 +195,14 @@ function schemaSVG(grand) {
 }
 function petiteCarte() { const e = $('pcarte'); if (e && S) e.innerHTML = schemaSVG(false); }
 function grandeCarte() { fenetre(`<h2>🗺 Le donjon</h2><div class="schema-grand">${schemaSVG(true)}</div><p style="text-align:center;color:var(--doux);font-size:.9em">Le doré : la zone que tu regardes. Les ronds : tes héros. Les points rouges : les monstres vus.</p><button class="go" onclick="fenetre('')">Fermer</button>`); }
+// 16/11 : les salles repeintes AVEC LEURS MURS (vue plus haute, prompts salle-<nom>-v2) : l'image couvre aussi la case de mur tout autour
+const SALLE_MURS = [];
 function fondSalle(S, x, y) {
   if ((S.scen || 'horloger') !== 'horloger') return '';
-  const id = S.R.salle[K.cle(x, y)], D = id && K.SALLES[id], f = SALLE_IMG[id]; if (!D || !f) return '';
+  let id = S.R.salle[K.cle(x, y)];
+  if (!id) id = SALLE_MURS.find(k => { const [a, b, w, h] = K.SALLES[k].r; return x >= a - 1 && x <= a + w && y >= b - 1 && y <= b + h; });
+  const D = id && K.SALLES[id], f = SALLE_IMG[id]; if (!D || !f) return '';
+  if (SALLE_MURS.includes(id)) { const [a, b, w, h] = D.r; return `background:url('decor/salle-${f}-v2.webp?v=1') calc(var(--t) * ${a - 1 - x}) calc(var(--t) * ${b - 1 - y}) / calc(var(--t) * ${w + 2}) calc(var(--t) * ${h + 2}) no-repeat;`; }
   const [x0, y0, w, h] = D.r;
   return `background:url('decor/salle-${f}.webp?v=2') calc(var(--t) * ${x0 - x}) calc(var(--t) * ${y0 - y}) / calc(var(--t) * ${w}) calc(var(--t) * ${h}) no-repeat;`;
 }
@@ -832,9 +842,9 @@ accueil();
 { const s = new URLSearchParams(location.search).get('salle'); if (s) { history.replaceState(null, '', location.pathname); const c = (typeof AMIS !== 'undefined' && AMIS.carte) || null, nom = (c && c.pseudo) || localStorage.getItem('guilde-pseudo');
     if (nom) rejoindre(s, { id:'j' + Math.random().toString(36).slice(2, 10), nom }); else { rejoindreForm(); setTimeout(() => { const i = $('fCode'); if (i) i.value = s; }, 150); } } }
 </script>
-<script src="chroniques-aventures.js?v=20261116-144226"></script>
-<script src="guide.js?v=20261116-144226"></script>
-<script src="guides-modes.js?v=20261116-144226"></script>
+<script src="chroniques-aventures.js?v=20261116-144655"></script>
+<script src="guide.js?v=20261116-144655"></script>
+<script src="guides-modes.js?v=20261116-144655"></script>
 <script>
 // 15/11 : le guide de Moustache de ce mode (guides-modes.js)
 { const _a = accueil; accueil = function () { const r = _a.apply(this, arguments); guideMode('chroniques'); return r; }; }
