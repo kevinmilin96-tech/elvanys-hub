@@ -207,11 +207,13 @@ const esc = t => String(t == null ? '' : t).replace(/[&<>"]/g, c => ({ '&':'&amp
 const modeZones = () => S && (S.scen || 'horloger') === 'horloger' && !petit;
 // 16/11 (l'utilisateur : « brouillard, lumière, sons, comme Foundry / Roll20 ») : chaque héros porte une LANTERNE ; hors de sa lumière,
 // la salle reste dans le noir (déjà explorée mais on n'y voit pas les monstres). Le Cœur de l'Horloge luit tout seul.
-const LANTERNE = 3.5, SALLES_CLAIRES = ['H'];
+// 16/11 (l'utilisateur : « une fois dans la pièce, pas besoin de noir, sauf dans une caverne ») : les salles sont ÉCLAIRÉES,
+// seules les salles SOMBRES (crypte, caverne… choisies salle par salle) demandent la lanterne
+const LANTERNE = 3.5, SALLES_SOMBRES = ['G'];
 const lumiereActive = () => modeZones() && S.R.plan === 2;
 function eclaire(x, y) {
   if (!lumiereActive()) return true;
-  const z = zoneDe(S.R, x, y); if (SALLES_CLAIRES.includes(z)) return true;
+  const z = zoneDe(S.R, x, y); if (!SALLES_SOMBRES.includes(z)) return true;
   return S.heros.some(h => zoneDe(S.R, h.x, h.y) === z && Math.hypot(h.x - x, h.y - y) <= LANTERNE);
 }
 const SON_ZONE = { B:'rouages', H:'coeur', G:'crypte', F:'biblio', E:'atelier', A:'hall', C:'reserve', S:'galerie', P:'cagibi' };
@@ -525,7 +527,7 @@ function dessine() {
   }
   const nCol = x1 - x0 + 1;
   const t = petit ? 'min(4.6cqw, 22px)' : RZ ? Math.max(34, Math.min(76, Math.floor((Math.min(innerWidth, 560) - 20) / nCol))) + 'px' : 'min(11cqw, 52px)';
-  if (lumiereActive() && RZ && !SALLES_CLAIRES.includes(ZV)) { // la nuit, percée par la lanterne de chaque héros de la zone
+  if (lumiereActive() && RZ && SALLES_SOMBRES.includes(ZV)) { // la nuit, percée par la lanterne de chaque héros de la zone
     const tp = parseFloat(t), L = S.heros.filter(z => zoneDe(R, z.x, z.y) === ZV).map(z => [(z.x - x0 + .5) * tp, (z.y - y0 + .5) * tp]);
     const m = L.map(([a, b]) => `radial-gradient(circle at ${a}px ${b}px, transparent ${tp * 1.3}px, #000 ${tp * (LANTERNE - .3)}px)`).join(',');
     cases += `<div class="nuit ${vueForcee && !L.length ? 'douce' : ''}"${m ? ` style="-webkit-mask-image:${m};mask-image:${m}"` : ''}></div>`

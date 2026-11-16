@@ -103,7 +103,7 @@ function nouvelleSalle() {
 }
 function creeSalle() {
   const n = $('nNom').value.trim() || 'Nouvelle salle', w = Math.max(2, Math.min(14, +$('nW').value || 5)), h = Math.max(2, Math.min(14, +$('nH').value || 3)); fen('');
-  const s = { id:'s' + Date.now().toString(36), nom:n, w, h, cases:{}, decor:'', lumiere:'sombre', son:'', img:null, maj:Date.now() };
+  const s = { id:'s' + Date.now().toString(36), nom:n, w, h, cases:{}, decor:'', lumiere:'claire', son:'', img:null, maj:Date.now() };
   salles.push(s); actif = s.id; garde(); tout();
 }
 // ------------------------------------------------------------------ les portes : groupes de cases de porte voisines sur un même mur
@@ -140,7 +140,7 @@ function promptDe(s) {
   return `Paint ONE dungeon room seen STRICTLY FROM DIRECTLY ABOVE, like a printed battle map for a virtual tabletop, in a warm hand-painted fantasy board game style (same style as the attached image if there is one). The WHOLE room fits inside the image with its FOUR WALLS clearly visible all around it, as thick tops of stone walls seen from above. Format ${s.w + 2}:${s.h + 2} (width ${s.w + 2}, height ${s.h + 2}), edge to edge, no frame. The wall band is EXACTLY one square thick on every side: it fills the outer 1/${s.w + 2} of the width on the left and on the right, and the outer 1/${s.h + 2} of the height at the top and at the bottom; inside, the FLOOR is a rectangle of exactly ${s.w} by ${s.h} squares of regular flagstones (columns counted from the left, rows from the top).
 DOORS (very important, they must match the game): ${G.length ? 'the walls have exactly ' + G.length + ' door' + (G.length > 1 ? 's' : '') + ': ' + desc.join('; ') + '. Each door is painted seen from above inside the wall band, it never spills onto the next square, and the floor square right in front of it on each side stays EMPTY' : 'the walls have NO door at all'}; NO other door, NO other opening, NO alcove, NO archway, NO niche anywhere else in the walls.
 ${objets.length ? 'Furniture, each exactly on its square: ' + objets.join('; ') + '. ' : ''}${esc.length ? 'Stone stairs going down seen from above on: ' + esc.join('; ') + '. ' : ''}Keep every other floor square clear for game tokens.
-Room: ${s.decor || s.nom}. ${s.lumiere === 'claire' ? 'The room is brightly lit.' : 'The room is dim, lit only by faint light.'}
+Room: ${s.decor || s.nom}. ${s.lumiere === 'sombre' ? 'The room is dim, lit only by faint light.' : 'The room is well lit.'}
 No text, no letters, no numbers, no symbols, no characters, no monsters.`;
 }
 // ------------------------------------------------------------------ les images (IndexedDB, sur cet appareil : l'envoi au serveur perso viendra ensuite)
@@ -171,7 +171,7 @@ function reglages() {
     <label>Nom</label><input value="${esc(s.nom)}" onchange="S().nom=this.value;garde();liste()">
     <label>Taille intérieure (cases)</label><div class="ligne"><input type="number" min="2" max="14" value="${s.w}" style="width:70px" onchange="taille(+this.value, S().h)"> × <input type="number" min="2" max="14" value="${s.h}" style="width:70px" onchange="taille(S().w, +this.value)"></div>
     <label>Décor (ce que Gemini doit peindre)</label><textarea rows="3" style="width:100%" onchange="S().decor=this.value;garde();dessine()" placeholder="Ex. : une crypte d'horlogers, petites bougies et engrenages le long des murs">${esc(s.decor || '')}</textarea>
-    <label>Lumière</label><select onchange="S().lumiere=this.value;garde();dessine()"><option value="sombre" ${s.lumiere !== 'claire' ? 'selected' : ''}>Sombre : il faut la lanterne</option><option value="claire" ${s.lumiere === 'claire' ? 'selected' : ''}>Claire : elle luit toute seule</option></select>
+    <label>Lumière</label><select onchange="S().lumiere=this.value;garde();dessine()"><option value="claire" ${s.lumiere !== 'sombre' ? 'selected' : ''}>Éclairée : on voit toute la salle en y entrant</option><option value="sombre" ${s.lumiere === 'sombre' ? 'selected' : ''}>Sombre (caverne, crypte) : il faut la lanterne</option></select>
     <label>Son d'ambiance</label><select onchange="S().son=this.value;garde()">${Object.entries(SONS).map(([v, n]) => `<option value="${v}" ${s.son === v ? 'selected' : ''}>${n}</option>`).join('')}</select>
     <div class="ligne" style="margin-top:10px"><button onclick="ouiNon('Effacer toute la peinture de cette salle ?', () => { S().cases = {}; garde(); dessine(); })">Tout effacer</button><button onclick="supprimer()">🗑 Supprimer la salle</button></div>`;
 }
