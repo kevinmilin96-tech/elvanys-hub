@@ -43,6 +43,7 @@
   .c.porte.img { background-color:transparent; box-shadow:none; }
   .c.mur { background:url('decor/tuile-roche-brulees.webp') 0 0 / calc(var(--t) * 4) calc(var(--t) * 4); filter:brightness(.3) saturate(.6); }
   .c:not(.mur):not(.noir) { filter:brightness(1.15); }
+  .c.vide { background:transparent !important; pointer-events:none; }
   .c.noir { background:#05050a !important; filter:none; } .c.noir > * { display:none; }
   .c.porte { background:#5a3412; box-shadow:inset 0 0 0 .4cqw #2a1808; } .c.porte.bronze { background:#7a5a1a; } .c.porte.ouverte { background:url('decor/tuile-sol-brulees.webp') 0 0 / calc(var(--t) * 4) calc(var(--t) * 4); }
   .c .o { font-size:calc(var(--t) * .62); filter:drop-shadow(0 .4cqw .4cqw #000); }
@@ -401,8 +402,17 @@ function dessine() {
   const SC = K.SCEN[S.scen || 'horloger'], peint = !!SC.image;
   // la zone regardée (salle ou bout de couloir) et son cadre d'une case de mur tout autour
   const ZV = modeZones() ? (vueForcee || zoneDe(R, h.x, h.y)) : null, RZ = ZV && zoneRect(ZV);
-  const x0 = RZ ? Math.max(0, RZ[0] - 1) : 0, y0 = RZ ? Math.max(0, RZ[1] - 1) : 0, x1 = RZ ? Math.min(R.w - 1, RZ[0] + RZ[2]) : R.w - 1, y1 = RZ ? Math.min(R.h - 1, RZ[1] + RZ[3]) : R.h - 1;
+  let x0 = RZ ? Math.max(0, RZ[0] - 1) : 0, y0 = RZ ? Math.max(0, RZ[1] - 1) : 0, x1 = RZ ? Math.min(R.w - 1, RZ[0] + RZ[2]) : R.w - 1, y1 = RZ ? Math.min(R.h - 1, RZ[1] + RZ[3]) : R.h - 1;
+  // 16/11 (l'utilisateur : « la porte est ouverte mais je n'arrive pas à sortir ») : devant chaque porte OUVERTE de la zone, la case
+  // d'à côté (couloir ou salle voisine) s'affiche aussi : on voit où l'on sort, et on peut y marcher
+  const devant = new Set();
+  if (RZ) { const [a, b, w, hh] = RZ;
+    for (let y = b - 1; y <= b + hh; y++) for (let x = a - 1; x <= a + w; x++) { const pp = R.portes[K.cle(x, y)]; if (!pp || !pp.ouverte) continue;
+      const X = x < a ? x - 1 : x >= a + w ? x + 1 : x, Y = y < b ? y - 1 : y >= b + hh ? y + 1 : y; if (X === x && Y === y) continue;
+      devant.add(K.cle(X, Y)); x0 = Math.max(0, Math.min(x0, X)); y0 = Math.max(0, Math.min(y0, Y)); x1 = Math.min(R.w - 1, Math.max(x1, X)); y1 = Math.min(R.h - 1, Math.max(y1, Y)); } }
+  const horsCadre = (x, y) => RZ && (x < RZ[0] - 1 || x > RZ[0] + RZ[2] || y < RZ[1] - 1 || y > RZ[1] + RZ[3]) && !devant.has(K.cle(x, y));
   for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
+    if (horsCadre(x, y)) { cases += '<div class="c vide"></div>'; continue; }
     const c = K.cle(x, y), mur = peint && (R.murs[c] === '#' || R.murs[c] === '~') ? null : R.murs[c], o = R.obj[c], p = R.portes[c], vu = R.vu[c];
     let cl = 'c', inner = '', stMur = '';
     if (!vu) cl += ' noir';
@@ -431,7 +441,7 @@ function dessine() {
       inner += `<div class="jeton ${B ? 'boss' : ''}" id="j-${mm.id}" style="--c:${B ? '#ff7a4a' : K.BETES[mm.b].elite ? '#f3c96b' : '#8a98b8'}"><img src="portraits/m-${mm.img}.webp" alt=""><span class="it">${it}</span><span class="sc">🔒${mm.sceaux.filter(s => !s.ok).length}</span></div>`;
       if (d && !d.pas && K.aPortee(S, h, mm)) cl += ' cible'; }
     if (d && vu && (p && !p.ouverte || (o && (o.meuble && !o.fouille || o.t === 'levier' || o.t === 'livre')) || mur === 'A') && K.dist(h, { x, y }) === 1 || (d && vu && mur === 'T' && !R.statuesOk && R.salle[c] && R.salle[K.cle(h.x, h.y)] === R.salle[c])) cl += ' cible';
-    const fs = vu ? fondSalle(S, x, y) : '';
+    const fs = vu && !(p && p.ouverte) ? fondSalle(S, x, y) : ''; // une porte ouverte montre le sol du passage, plus la porte peinte fermée
     cases += `<div class="${cl}${fs ? ' dessin' : ''}" id="c-${x}-${y}"${fs || stMur ? ` style="${fs}${stMur}"` : ''} onclick="touche(${x},${y})">${inner}</div>`;
   }
   const nCol = x1 - x0 + 1;
