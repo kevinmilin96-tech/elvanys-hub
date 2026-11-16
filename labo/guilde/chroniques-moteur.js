@@ -242,17 +242,20 @@ const COULOIRS_Z2 = {
 const LIENS2 = [[[22, 5], [22, 8]], [[1, 8], [1, 17]], [[18, 17], [20, 25]]];
 const ETAGES2 = [[0, 6, 'Le sommet'], [7, 15, '1er étage'], [16, 23, 'Rez-de-chaussée'], [24, 30, 'Sous-sol']];
 const etageDe = (S, y) => { if (!S || !S.R || S.R.plan !== 2) return null; const e = ETAGES2.find(([a, b]) => y >= a && y <= b); return e ? e[2] : null; };
-const PORTES = [[6, 4, 'S'], [15, 4, 'H', 'bronze'], [5, 9, 'B'], [11, 9, 'E'], [15, 9, 'F'], [5, 18, 'A'], [11, 18, 'C'], [13, 26, 'G'], [5, 22, 'A', 'entree']];
+// 16/11 : portes de la Réserve, de la Bibliothèque et de la Galerie posées sur les portes PEINTES par Gemini (décalées d'une case)
+const PORTES = [[5, 4, 'S'], [15, 4, 'H', 'bronze'], [5, 9, 'B'], [11, 9, 'E'], [16, 9, 'F'], [5, 18, 'A'], [12, 18, 'C'], [13, 26, 'G'], [5, 22, 'A', 'entree']];
 // la grille du Cagibi s'ouvre tant qu'un héros se tient sur la dalle du couloir ; les 4 statues de la Galerie (autel au milieu)
-const GRILLE = [20, 9], DALLE = [18, 8], AUTEL_S = [5, 2], STATUES = [[5, 1], [6, 2], [5, 3], [4, 2]];
+// les statues sur les 4 socles peints aux coins de la Galerie (dans l'ordre du tour : haut-gauche, haut-droite, bas-droite, bas-gauche) ;
+// celles du haut doivent regarder vers le bas (vers l'autel), celles du bas vers le haut
+const GRILLE = [20, 9], DALLE = [18, 8], AUTEL_S = [5, 2], STATUES = [[4, 1], [7, 1], [7, 3], [4, 3]], VEUT_S = [2, 2, 0, 0];
 const MEUBLES = [[7, 19, 'coffre', 'A'], [3, 21, 'tonneaux', 'A'], [10, 19, 'armoire', 'C'], [13, 19, 'tonneaux', 'C'], [13, 21, 'armoire', 'C'],
   [12, 28, 'tombeau', 'G'], [14, 28, 'tombeau', 'G'], [15, 27, 'coffre', 'G'], [12, 10, 'etabli', 'E'], [12, 12, 'armoire', 'E'], [17, 13, 'coffre', 'F'], [3, 13, 'tonneaux', 'B'], [20, 3, 'cheminee', 'H'], [19, 12, 'coffre', 'P']];
 const ROUAGES_CACHES = ['13,21', '14,28', '12,10', '17,13'];
 const LEVIERS = [[3, 11], [3, 12], [7, 11], [7, 12]]; // sur les deux pupitres peints de la salle (dessin salle-rouages)
-const ETAGERES = [[15, 11], [16, 11], [15, 13]], LIVRE = [17, 11], AXE = [15, 2];
+const ETAGERES = [[14, 11], [14, 12], [17, 12]], LIVRE = [17, 11], AXE = [15, 2]; // contre les murs, comme les étagères peintes
 const DEPART = [[4, 21], [5, 21], [6, 21], [5, 20]]; // juste devant la grande porte d'entrée, comme si on venait d'entrer
 const MONSTRES_DEPART = [['rouagelin', 11, 20], ['rouagelin', 14, 17], ['page', 13, 28], ['page', 17, 25], ['gardien', 5, 12], ['rouagelin', 6, 11],
-  ['coucou', 9, 8], ['coucou', 19, 8], ['page', 14, 12], ['archiviste', 16, 12], ['rouagelin', 12, 5], ['rouagelin', 18, 5], ['colosse', 10, 11]];
+  ['coucou', 9, 8], ['coucou', 19, 8], ['page', 15, 12], ['archiviste', 16, 12], ['rouagelin', 12, 5], ['rouagelin', 18, 5], ['colosse', 10, 11]];
 const OBJETS = { bouclier:{ n:'Bouclier de bronze', d:'Bouclier 3 à chaque fois qu’une porte s’ouvre.' }, cle:{ n:'Clé à molette', d:'+1 dé à chaque tour.' }, lunettes:{ n:'Lunettes de l’horloger', d:'Voit tous les pièges.' } };
 const MEUBLE_N = { coffre:'le coffre', armoire:'l’armoire', tonneaux:'les tonneaux', tombeau:'le tombeau', etabli:'l’établi', cheminee:'la cheminée', lit:'le lit de camp', tente:'la tente', etagere:'l’étagère', bureau:'le bureau', banc:'le banc', autel:'l’autel', fontaine:'la fontaine', cristaux:'les cristaux' };
 const cle = (x, y) => x + ',' + y;
@@ -314,7 +317,7 @@ function nouvelle(heros, s, scen, opts = {}) {
   // la grille : la case reste « fermée » sauf quand un héros est sur la dalle
   delete R.murs[cle(...GRILLE)]; R.grille = { x:GRILLE[0], y:GRILLE[1], dx:DALLE[0], dy:DALLE[1] };
   // les statues (murs 'T') : chacune regarde N/E/S/O (0-3) ; but = toutes vers l'autel ; tourner l'une tourne aussi la suivante
-  R.murs[cle(...AUTEL_S)] = 'O'; const veut = [2, 3, 0, 1]; // N de l'autel regarde S, E regarde O…
+  R.murs[cle(...AUTEL_S)] = 'O'; const veut = VEUT_S; // N de l'autel regarde S, E regarde O…
   R.statues = STATUES.map(([x, y], i) => ({ x, y, d:veut[i], veut:veut[i] }));
   for (let k = 0; k < 3; k++) { const i = Math.floor(hasard(S) * 4); tourneStatue(R, i); } // mélangées depuis la bonne position : toujours faisable
   if (R.statues.every(t => t.d === t.veut)) tourneStatue(R, 0);
