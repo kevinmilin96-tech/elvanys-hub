@@ -68,8 +68,9 @@
   .de.cache::after { content:'?'; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:5.4cqw; color:#c9c1ea88; font-weight:bold; }
   .de.tourne img { animation:tourneD .26s linear infinite; } @keyframes tourneD { 0% { transform:rotate(0) translateY(0) scale(1); } 50% { transform:rotate(190deg) translateY(-2cqw) scale(1.1); } 100% { transform:rotate(360deg) translateY(0) scale(1); } }
   .lancerH { border:0; border-radius:3cqw; padding:2cqw 4cqw; font:bold 3.8cqw Georgia, serif; background:var(--or); color:#2b1d0a; margin-left:2cqw; animation:pulseL 1s infinite; } @keyframes pulseL { 50% { filter:brightness(1.2); } }
-  .statue { display:inline-block; position:relative; transition:transform .4s; } .statue .fl { position:absolute; left:50%; top:-28%; transform:translateX(-50%); font-size:.5em; color:#ffd27a; text-shadow:0 0 4px #000; }
-  .statue.fait { filter:drop-shadow(0 0 6px #ffd27a); } .dalle { opacity:.55; }
+  .c .oi.statue { transition:transform .4s; } .c .oi.fait-ok, .c .oi.brille { filter:drop-shadow(0 0 1.5cqw #ffd27a); }
+  .c .oi.ouverte { opacity:.3; transform:translateY(-30%); } .c .oi.dalle { position:absolute; inset:6%; width:88%; height:88%; opacity:.9; }
+
   .de.pas { position:relative; border-radius:2.4cqw; background:radial-gradient(circle at 35% 30%, #3f6f8a, #1d3446); box-shadow:inset 0 0 0 .5cqw #7fc4e6, 0 1cqw 1.2cqw #000a; color:#e6f6ff; font:bold 4cqw Georgia, serif; }
   .pasinfo { text-align:center; font-size:2.9cqw; color:#9fe0ff; margin:0 0 1cqw; }
   .inv { display:flex; gap:1.4cqw; justify-content:center; flex-wrap:wrap; font-size:2.7cqw; color:var(--doux); margin:0 0 1cqw; } .inv span { background:#1d1d36; border:1px solid #3a3a66; border-radius:2cqw; padding:.6cqw 1.6cqw; }
@@ -131,7 +132,15 @@ const son = k => { try { if (typeof GM !== 'undefined') GM.son(k); } catch (e) {
 let S = null, actif = 0, sel = null, choisis = ['maelle', 'aldric', 'pip', 'gorm'], occupe = false, petit = false, centrer = true;
 const OUVERTURE = '« Vous avez entendu ? Moi non plus. C’est bien ça le problème : la Grande Horloge de la Guilde ne fait plus tic-tac. Le boulanger est figé, la main dans la pâte. Le pigeon du toit est figé, en plein vol. Quelqu’un doit descendre sous la Guilde, retrouver trois rouages perdus et réveiller l’Horloger. Pas moi : j’ai des pattes courtes. »';
 // 15/11 soir : les meubles et objets peints (decor/obj-<nom>.webp, fond détouré) ; sinon l'émoji
-const OBJ_PEINTS = ['coffre', 'armoire', 'tonneaux', 'tombeau', 'etabli', 'cheminee', 'etagere', 'levier', 'rouage', 'axe', 'porte'];
+const OBJ_PEINTS = ['coffre', 'armoire', 'tonneaux', 'tombeau', 'etabli', 'cheminee', 'etagere', 'levier', 'rouage', 'axe', 'porte', 'statue', 'autel', 'grille', 'dalle', 'tasdos'];
+// 16/11 : LES SALLES DESSINÉES de l'Horloger (Gemini, vues du dessus) : chaque salle reçoit son image, étalée sur ses cases de sol
+const SALLE_IMG = { A:'hall', C:'reserve', G:'crypte', B:'rouages', E:'atelier', F:'bibliotheque', H:'coeur', S:'galerie', P:'cagibi' };
+function fondSalle(S, x, y) {
+  if ((S.scen || 'horloger') !== 'horloger') return '';
+  const id = S.R.salle[K.cle(x, y)], D = id && K.SALLES[id], f = SALLE_IMG[id]; if (!D || !f) return '';
+  const [x0, y0, w, h] = D.r;
+  return `background:url('decor/salle-${f}.webp?v=1') calc(var(--t) * ${x0 - x}) calc(var(--t) * ${y0 - y}) / calc(var(--t) * ${w}) calc(var(--t) * ${h}) no-repeat;`;
+}
 const objImg = (n, cl) => OBJ_PEINTS.includes(n) ? `<img class="oi ${cl || ''}" src="decor/obj-${n}.webp?v=1" alt="">` : null;
 const MEUBLE_E = { coffre:'🧰', armoire:'🗄️', tonneaux:'🛢️', tombeau:'🪦', etabli:'🛠️', cheminee:'🔥', lit:'🛏️', tente:'⛺', etagere:'📚', bureau:'🪑', banc:'🪑', autel:'🕯️', fontaine:'⛲', cristaux:'💎' };
 // 15/11 : deux scénarios ; « brulees » se joue sur la CARTE PEINTE (decor/carte-brulees.webp), calée par l'utilisateur
@@ -312,15 +321,15 @@ function dessine() {
     else if (mur === 'L' && o) inner = `${objImg('levier', R.leviersTour[c] ? 'baisse' : '')}<span class="lv">≥${o.v}</span>`;
     else if (mur === 'B') inner = objImg('etagere');
     else if (mur === 'K') inner = '<span class="o">📕</span>';
-    else if (mur === 'T') { const t = R.statues.find(z => z.x === x && z.y === y); inner = `<span class="o statue ${R.statuesOk ? 'fait' : ''}" style="transform:rotate(${t.d * 90}deg)">🗿<b class="fl">▲</b></span>`; }
-    else if (mur === 'O') inner = `<span class="o">${R.statuesOk ? '✨' : '🕯️'}</span>`;
+    else if (mur === 'T') { const t = R.statues.find(z => z.x === x && z.y === y); inner = `<img class="oi statue ${R.statuesOk ? 'fait-ok' : ''}" src="decor/obj-statue.webp?v=1" alt="" style="transform:rotate(${t.d * 90}deg)">`; }
+    else if (mur === 'O') inner = objImg('autel', R.statuesOk ? 'brille' : '');
     else if (mur === 'A') inner = `${(S.scen || 'horloger') === 'horloger' ? objImg('axe') : `<span class="o">${K.SCEN[S.scen || 'horloger'].axeE}</span>`}<span class="lv">${R.rouagesPoses}/3</span>`;
     else { if (!R.salle[c]) cl += ' couloir';
       if (o && o.t === 'piege' && !o.trouve && (o.vu || voitPieges || S.heros.some(z => z.id === 'oria' && Math.abs(z.x - x) + Math.abs(z.y - y) <= 2))) inner = '<span class="o">⚠️</span>';
       if (o && o.t === 'rouage') inner = objImg('rouage');
-      if (R.grille && x === R.grille.x && y === R.grille.y) inner = `<span class="o">${K.grilleOuverte(S) ? '⬆️' : '⛓️'}</span>`;
-      if (R.grille && x === R.grille.dx && y === R.grille.dy) inner = '<span class="o dalle">⬛</span>' + inner;
-      if ((R.os || []).some(z => z.x === x && z.y === y)) inner += '<span class="o">🦴</span>'; }
+      if (R.grille && x === R.grille.x && y === R.grille.y) inner = objImg('grille', K.grilleOuverte(S) ? 'ouverte' : '');
+      if (R.grille && x === R.grille.dx && y === R.grille.dy) inner = objImg('dalle', 'dalle') + inner;
+      if ((R.os || []).some(z => z.x === x && z.y === y)) inner += objImg('tasdos'); }
     if (atteint[c]) cl += ' peut';
     const hi = S.heros.findIndex(z => z.x === x && z.y === y), m = R.monstres.find(z => z.x === x && z.y === y), B = R.boss && R.boss.x === x && R.boss.y === y ? R.boss : null;
     if (hi >= 0) { const z = S.heros[hi]; inner += `<div class="jeton ${hi === actif ? 'actif' : ''} ${z.aTerre ? 'terre' : ''}" id="j-h${hi}" style="--c:${coulH(z)}">${imgH(z)}<span class="pv">${z.aTerre ? '✋' : '❤' + z.pv}${z.bouclier ? '🛡' + z.bouclier : ''}${z.porte ? '⚙' : ''}</span></div>`; }
@@ -329,7 +338,8 @@ function dessine() {
       inner += `<div class="jeton ${B ? 'boss' : ''}" id="j-${mm.id}" style="--c:${B ? '#ff7a4a' : K.BETES[mm.b].elite ? '#f3c96b' : '#8a98b8'}"><img src="portraits/m-${mm.img}.webp" alt=""><span class="it">${it}</span><span class="sc">🔒${mm.sceaux.filter(s => !s.ok).length}</span></div>`;
       if (d && !d.pas && K.aPortee(S, h, mm)) cl += ' cible'; }
     if (d && vu && (p && !p.ouverte || (o && (o.meuble && !o.fouille || o.t === 'levier' || o.t === 'livre')) || mur === 'A' || (mur === 'T' && !R.statuesOk)) && K.dist(h, { x, y }) === 1) cl += ' cible';
-    cases += `<div class="${cl}" id="c-${x}-${y}" onclick="touche(${x},${y})">${inner}</div>`;
+    const fs = vu ? fondSalle(S, x, y) : '';
+    cases += `<div class="${cl}${fs ? ' dessin' : ''}" id="c-${x}-${y}"${fs ? ` style="${fs}"` : ''} onclick="touche(${x},${y})">${inner}</div>`;
   }
   const t = petit ? 'min(4.6cqw, 22px)' : 'min(11cqw, 52px)';
   const posee = R.rouagesPoses, portes = S.heros.filter(z => z.porte).length;
