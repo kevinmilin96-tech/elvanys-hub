@@ -223,10 +223,12 @@ function grandeCarte() { fenetre(`<h2>🗺 Le donjon</h2><div class="schema-gran
 const SALLE_MURS = ['A', 'C', 'B', 'E', 'F', 'S', 'P', 'G', 'H']; // reçues le 16/11 (Crypte G et Cœur H l'après-midi)
 function fondSalle(S, x, y) {
   if ((S.scen || 'horloger') !== 'horloger') return '';
-  // 16/11 après-midi : les escaliers peints (Gemini) : marches sombres = le bout qui descend (image retournée si ce bout est à droite)
+  // 16/11 (l'utilisateur) : un escalier qui MONTE ne montre que la moitié claire des marches, le plus clair au bout qui monte ;
+  // un escalier qui DESCEND ne montre que la moitié sombre, le plus sombre au bout qui descend
   if (S.R.plan === 2) { const E = Object.values(couloirsZ()).find(Z => Z.esc && x >= Z.r[0] && x < Z.r[0] + Z.r[2] && y >= Z.r[1] && y < Z.r[1] + Z.r[3]);
-    if (E) { const [a, b, w] = E.r; let bas = a; for (let i = a; i < a + w; i++) { const l = S.R.liens[K.cle(i, b)]; if (l) { const ly = +l.split(',')[1]; bas = ly > b ? i : (i === a ? a + w - 1 : a); } }
-      return `background:url('decor/escalier-horloger${bas === a ? '' : '-d'}.webp?v=1') calc(var(--t) * ${a - x}) 0 / calc(var(--t) * ${w}) 100% no-repeat;`; } }
+    if (E) { const [a, b, w] = E.r; let bout = a + w - 1, monte = true; for (let i = a; i < a + w; i++) { const l = S.R.liens[K.cle(i, b)]; if (l) { bout = i; monte = +l.split(',')[1] < b; } }
+      const droite = bout === a + w - 1, f = monte ? (droite ? 'escalier-monte' : 'escalier-monte-g') : (droite ? 'escalier-descend-d' : 'escalier-descend');
+      return `background:url('decor/${f}.webp?v=1') calc(var(--t) * ${a - x}) 0 / calc(var(--t) * ${w}) 100% no-repeat;`; } }
   let id = S.R.salle[K.cle(x, y)];
   if (!id) id = SALLE_MURS.find(k => { const [a, b, w, h] = K.rectSalle(S, k); return x >= a - 1 && x <= a + w && y >= b - 1 && y <= b + h; });
   const D = id && K.SALLES[id], f = SALLE_IMG[id]; if (!D || !f) return '';
