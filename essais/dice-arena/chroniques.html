@@ -160,20 +160,22 @@ function bordMur(R, x, y) {
 // 16/11 (choix de l'utilisateur : « salles reliées ») : l'Horloger se joue UNE ZONE À LA FOIS : la salle ou le bout de couloir du héros joué
 // remplit l'écran (avec ses murs et ses portes), une petite carte en haut montre tout le donjon découvert ; au tour des monstres, la caméra
 // visite chaque salle où un monstre agit. Les héros d'une même zone se voient.
-const COULOIRS_Z = { K1:{ r:[1, 5, 18, 1], n:'Le couloir du haut' }, K2:{ r:[1, 12, 18, 1], n:'Le couloir du bas' }, K3:{ r:[7, 6, 1, 6], n:'Le passage de l’ouest' }, K4:{ r:[13, 6, 1, 6], n:'Le passage de l’est' } };
+const COULOIRS_Z1 = { K1:{ r:[1, 5, 18, 1], n:'Le couloir du haut' }, K2:{ r:[1, 12, 18, 1], n:'Le couloir du bas' }, K3:{ r:[7, 6, 1, 6], n:'Le passage de l’ouest' }, K4:{ r:[13, 6, 1, 6], n:'Le passage de l’est' } };
 let vueForcee = null;
+// 16/11 : l'Horloge en étages (plan 2) a ses propres couloirs et escaliers ; les parties commencées avant gardent l'ancienne carte
+const couloirsZ = () => S && S.R && S.R.plan === 2 ? K.COULOIRS_Z2 : COULOIRS_Z1;
 const esc = t => String(t == null ? '' : t).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
 const modeZones = () => S && (S.scen || 'horloger') === 'horloger' && !petit;
 function zoneDe(R, x, y) {
   const c = K.cle(x, y); if (R.salle[c]) return R.salle[c];
-  for (const [id, Z] of Object.entries(COULOIRS_Z)) { const [a, b, w, h] = Z.r; if (x >= a && x < a + w && y >= b && y < b + h) return id; }
+  for (const [id, Z] of Object.entries(couloirsZ())) { const [a, b, w, h] = Z.r; if (x >= a && x < a + w && y >= b && y < b + h) return id; }
   // une porte appartient à la salle qu'elle ouvre (sinon au couloir)
   for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const z = R.salle[K.cle(x + dx, y + dy)]; if (z) return z; }
-  for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { for (const [id, Z] of Object.entries(COULOIRS_Z)) { const [a, b, w, h] = Z.r, X = x + dx, Y = y + dy; if (X >= a && X < a + w && Y >= b && Y < b + h) return id; } }
+  for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { for (const [id, Z] of Object.entries(couloirsZ())) { const [a, b, w, h] = Z.r, X = x + dx, Y = y + dy; if (X >= a && X < a + w && Y >= b && Y < b + h) return id; } }
   return null;
 }
-const zoneRect = id => K.SALLES[id] ? K.SALLES[id].r : COULOIRS_Z[id] ? COULOIRS_Z[id].r : null;
-const zoneNom = id => K.SALLES[id] ? K.SALLES[id].n : COULOIRS_Z[id] ? COULOIRS_Z[id].n : '';
+const zoneRect = id => K.SALLES[id] ? K.rectSalle(S, id) : couloirsZ()[id] ? couloirsZ()[id].r : null;
+const zoneNom = id => { const n = K.SALLES[id] ? K.SALLES[id].n : couloirsZ()[id] ? couloirsZ()[id].n : ''; const r = zoneRect(id), e = r && K.etageDe(S, r[1]); return e ? `${e} · ${n}` : n; };
 // le SCHÉMA du donjon (16/11, l'utilisateur : « pas besoin d'une carte générale, un schéma façon fantastique ») : un parchemin, les salles
 // découvertes en cases à l'encre reliées par les couloirs, la zone regardée en doré, les héros en ronds de couleur, les monstres en points rouges
 function schemaSVG(grand) {
@@ -184,10 +186,12 @@ function schemaSVG(grand) {
   let VW = Math.max(8, X1 - X0 + 3), VH = Math.max(6, Y1 - Y0 + 3); const cx = (X0 + X1 + 1) / 2, cy = (Y0 + Y1 + 1) / 2; if (VW / VH < 1.3) VW = VH * 1.3; else VH = VW / 1.3;
   const vx = cx - VW / 2, vy = cy - VH / 2;
   let svg = `<svg viewBox="${vx} ${vy} ${VW} ${VH}" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="pa" cx="50%" cy="45%" r="75%"><stop offset="0" stop-color="#e9d6a6"/><stop offset="1" stop-color="#b8975c"/></radialGradient></defs><rect x="${vx}" y="${vy}" width="${VW}" height="${VH}" rx=".6" fill="url(#pa)"/>`;
-  Object.keys(COULOIRS_Z).forEach(id => { if (!vue(id)) return; const [x, y, w, h] = COULOIRS_Z[id].r; svg += `<rect x="${x + .3}" y="${y + .3}" width="${w - .6}" height="${h - .6}" fill="${id === zv ? '#f3c96b' : '#cdb07a'}" stroke="#4a3418" stroke-width=".12" stroke-dasharray=".35 .2"/>`; });
-  Object.keys(K.SALLES).forEach(id => { if (!vue(id)) return; const [x, y, w, h] = K.SALLES[id].r;
+  Object.keys(couloirsZ()).forEach(id => { if (!vue(id)) return; const [x, y, w, h] = couloirsZ()[id].r; svg += `<rect x="${x + .3}" y="${y + .3}" width="${w - .6}" height="${h - .6}" fill="${id === zv ? '#f3c96b' : '#cdb07a'}" stroke="#4a3418" stroke-width=".12" stroke-dasharray=".35 .2"/>`; });
+  Object.keys(K.SALLES).forEach(id => { if (!vue(id)) return; const [x, y, w, h] = K.rectSalle(S, id);
     svg += `<rect x="${x - .15}" y="${y - .15}" width="${w + .3}" height="${h + .3}" rx=".5" fill="${id === zv ? '#f3c96b' : '#d9bf8a'}" stroke="${id === zv ? '#8a4a10' : '#4a3418'}" stroke-width="${id === zv ? .3 : .18}"/>`;
     if (grand) svg += `<text x="${x + w / 2}" y="${y + h / 2 + .25}" font-size=".62" text-anchor="middle" fill="#3a2410" font-family="Georgia" font-style="italic">${esc(K.SALLES[id].n.replace(/^(Le|La|L’) ?/, ''))}</text>`; });
+  Object.entries(couloirsZ()).forEach(([id, Z]) => { if (!Z.esc || !vue(id)) return; const [x, y, w, h] = Z.r; for (let i = 1; i < w * 3; i++) svg += `<line x1="${x + i / 3}" y1="${y + .2}" x2="${x + i / 3}" y2="${y + h - .2}" stroke="#4a3418" stroke-width=".07"/>`; });
+  if (R.plan === 2 && grand) [[0, 'Le sommet'], [7, '1er étage'], [16, 'Rez-de-chaussée'], [24, 'Sous-sol']].forEach(([y, t]) => { svg += `<text x="${vx + .4}" y="${y + .9}" font-size=".7" fill="#6a4418" font-family="Georgia" font-style="italic">${t}</text>`; });
   Object.entries(R.portes).forEach(([c, p]) => { if (!R.vu[c]) return; const [x, y] = c.split(',').map(Number); svg += `<rect x="${x + .25}" y="${y + .25}" width=".5" height=".5" fill="${p.ouverte ? '#e9d6a6' : p.bronze ? '#c88a2a' : '#6b3a14'}" stroke="#3a2410" stroke-width=".08"/>`; });
   R.monstres.concat(R.boss ? [R.boss] : []).forEach(m => { if (R.vu[K.cle(m.x, m.y)]) svg += `<circle cx="${m.x + .5}" cy="${m.y + .5}" r="${m === R.boss ? .45 : .28}" fill="#b0201a" stroke="#3a0a08" stroke-width=".08"/>`; });
   S.heros.forEach((h, i) => { svg += `<circle cx="${h.x + .5}" cy="${h.y + .5}" r=".42" fill="${h.aTerre ? '#777' : coulH(h)}" stroke="${i === actif ? '#fff' : '#2a1808'}" stroke-width="${i === actif ? .16 : .1}"/>`; });
@@ -200,10 +204,10 @@ const SALLE_MURS = ['A'];
 function fondSalle(S, x, y) {
   if ((S.scen || 'horloger') !== 'horloger') return '';
   let id = S.R.salle[K.cle(x, y)];
-  if (!id) id = SALLE_MURS.find(k => { const [a, b, w, h] = K.SALLES[k].r; return x >= a - 1 && x <= a + w && y >= b - 1 && y <= b + h; });
+  if (!id) id = SALLE_MURS.find(k => { const [a, b, w, h] = K.rectSalle(S, k); return x >= a - 1 && x <= a + w && y >= b - 1 && y <= b + h; });
   const D = id && K.SALLES[id], f = SALLE_IMG[id]; if (!D || !f) return '';
-  if (SALLE_MURS.includes(id)) { const [a, b, w, h] = D.r; return `background:url('decor/salle-${f}-v2.webp?v=1') calc(var(--t) * ${a - 1 - x}) calc(var(--t) * ${b - 1 - y}) / calc(var(--t) * ${w + 2}) calc(var(--t) * ${h + 2}) no-repeat;`; }
-  const [x0, y0, w, h] = D.r;
+  if (SALLE_MURS.includes(id)) { const [a, b, w, h] = K.rectSalle(S, id); return `background:url('decor/salle-${f}-v2.webp?v=1') calc(var(--t) * ${a - 1 - x}) calc(var(--t) * ${b - 1 - y}) / calc(var(--t) * ${w + 2}) calc(var(--t) * ${h + 2}) no-repeat;`; }
+  const [x0, y0, w, h] = K.rectSalle(S, id);
   return `background:url('decor/salle-${f}.webp?v=2') calc(var(--t) * ${x0 - x}) calc(var(--t) * ${y0 - y}) / calc(var(--t) * ${w}) calc(var(--t) * ${h}) no-repeat;`;
 }
 const objImg = (n, cl) => OBJ_PEINTS.includes(n) ? `<img class="oi ${cl || ''}" src="decor/obj-${n}.webp?v=1" alt="">` : null;
@@ -405,7 +409,7 @@ function dessine() {
     if (mm && vu) { const it = mm.it === 'frappe' ? `⚔${mm.att}` : mm.it === 'garde' ? '🛡' : mm.it === 'soin' ? '💚' : mm.it === 'fuit' ? '🏃' : mm.it === 'remonte' ? '⏳' : mm.it === 'levier' ? '🎚' : mm.it === 'elan' ? '⚡' : mm.it === 'gros' ? `💥${mm.att + 2}` : '';
       inner += `<div class="jeton ${B ? 'boss' : ''}" id="j-${mm.id}" style="--c:${B ? '#ff7a4a' : K.BETES[mm.b].elite ? '#f3c96b' : '#8a98b8'}"><img src="portraits/m-${mm.img}.webp" alt=""><span class="it">${it}</span><span class="sc">🔒${mm.sceaux.filter(s => !s.ok).length}</span></div>`;
       if (d && !d.pas && K.aPortee(S, h, mm)) cl += ' cible'; }
-    if (d && vu && (p && !p.ouverte || (o && (o.meuble && !o.fouille || o.t === 'levier' || o.t === 'livre')) || mur === 'A' || (mur === 'T' && !R.statuesOk)) && K.dist(h, { x, y }) === 1) cl += ' cible';
+    if (d && vu && (p && !p.ouverte || (o && (o.meuble && !o.fouille || o.t === 'levier' || o.t === 'livre')) || mur === 'A') && K.dist(h, { x, y }) === 1 || (d && vu && mur === 'T' && !R.statuesOk && R.salle[c] && R.salle[K.cle(h.x, h.y)] === R.salle[c])) cl += ' cible';
     const fs = vu ? fondSalle(S, x, y) : '';
     cases += `<div class="${cl}${fs ? ' dessin' : ''}" id="c-${x}-${y}"${fs || stMur ? ` style="${fs}${stMur}"` : ''} onclick="touche(${x},${y})">${inner}</div>`;
   }
@@ -503,6 +507,7 @@ function touche(x, y) {
   const R = S.R, h = S.heros[actif], d = deSel(), c = K.cle(x, y);
   if (!R.vu[c]) return;
   const p = R.portes[c]; if (p && !p.ouverte) { // 16/11 (retour de l'utilisateur) : SEUL le héros choisi ouvre, s'il est juste à côté
+    if (p.entree) { bulle('🚪 Dehors, la ville est figée dans le temps : on ne repartira pas sans avoir réveillé l’Horloger.', false, true); return; }
     if (K.dist(h, { x, y }) !== 1) { bulle(`${nomH(h)} doit être juste à côté de la porte.`, true); return; }
     son('porte'); return resultat(K.ouvrir(S, actif, x, y)); }
   const hi = S.heros.findIndex(z => z.x === x && z.y === y), m = R.monstres.find(z => z.x === x && z.y === y), B = R.boss && R.boss.x === x && R.boss.y === y ? R.boss : null;
