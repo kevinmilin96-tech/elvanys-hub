@@ -282,7 +282,8 @@ const MONSTRES_DEPART = [['rouagelin', 11, 20], ['rouagelin', 14, 17], ['page', 
 const OBJETS = { bouclier:{ n:'Bouclier de bronze', d:'Bouclier 3 à chaque fois qu’une porte s’ouvre.' }, cle:{ n:'Clé à molette', d:'+1 dé à chaque tour.' }, lunettes:{ n:'Lunettes de l’horloger', d:'Celui qui les porte voit tous les pièges ; touche un piège pour le signaler au groupe.' } };
 const MEUBLE_N = { caisse:'la caisse', coffre:'le coffre', armoire:'l’armoire', tonneaux:'les tonneaux', tombeau:'le tombeau', etabli:'l’établi', cheminee:'la cheminée', lit:'le lit de camp', tente:'la tente', etagere:'l’étagère', bureau:'le bureau', banc:'le banc', autel:'l’autel', fontaine:'la fontaine', cristaux:'les cristaux' };
 const cle = (x, y) => x + ',' + y;
-function tourneStatue(R, i) { [i, (i + 1) % 4].forEach(k => R.statues[k].d = (R.statues[k].d + 1) % 4); }
+// t.a = angle cumulé (pour que l'image tourne toujours d'un quart de tour dans le même sens, sans repartir en arrière)
+function tourneStatue(R, i) { [i, (i + 1) % 4].forEach(k => { const t = R.statues[k]; t.a = (t.a == null ? t.d : t.a) + 1; t.d = (t.d + 1) % 4; }); }
 
 // ------------------------------------------------------------------ la difficulté selon le NOMBRE DE HÉROS (15/11 : seul, l'Horloger était impossible ; à 4, trop facile)
 // 1 héros : environ la moitié des monstres, sablier +15, leviers baissés 8 tours ; 2 : 70 % des monstres ; 3 : 85 % ; 4 : tous, et 3 de plus dans les couloirs.
@@ -604,12 +605,13 @@ function agir(S, hi, idDe, x, y) {
   const st = R.statues ? R.statues.findIndex(t => t.x === x && t.y === y) : -1;
   if (st >= 0) {
     if (R.statuesOk) return 'Les statues regardent déjà l’autel.'; if (R.salle[cle(h.x, h.y)] !== R.salle[cle(x, y)]) return 'Il faut être dans la Galerie des statues.'; // 16/11 : depuis n'importe quelle case de la Galerie (une statue était coincée entre les autres)
-    unPas(S, h, idDe); tourneStatue(R, st); log(S, `🗿 ${nm(h)} pousse une statue : elle pivote… et sa voisine tourne avec elle, dans un cliquetis d’engrenages.`);
+    unPas(S, h, idDe); tourneStatue(R, st); const bonnes = R.statues.filter(t => t.d === t.veut).length;
+    log(S, `🗿 ${nm(h)} pousse une statue : elle pivote d’un quart de tour… et sa voisine (${['en haut à droite', 'en bas à droite', 'en bas à gauche', 'en haut à gauche'][st]}) tourne avec elle. ${bonnes}/4 regardent l’autel.`);
     if (R.statues.every(t => t.d === t.veut)) { R.statuesOk = true; S.score += 80; S.sablier += 3;
       const k = ['bouclier', 'cle', 'lunettes'].find(z => !S.heros.some(w => w.objet === z)); if (k && !h.objet) { h.objet = k; log(S, `✨ Les quatre statues s’agenouillent vers l’autel ! Une niche s’ouvre : ${nm(h)} trouve ${OBJETS[k].n} (${OBJETS[k].d}) ; +3 grains, +80.`); }
       else log(S, '✨ Les quatre statues s’agenouillent vers l’autel ! Une niche s’ouvre : +3 grains et +80 points.');
       return { ok:true, ev:[{ t:'enigme' }] }; }
-    return { ok:true, ev:[{ t:'statue' }] };
+    return { ok:true, ev:[{ t:'statue', i:st, j:(st + 1) % 4 }] };
   }
   if (!o) return 'Rien à faire ici.';
   if (dist(h, { x, y }) > 1) return 'Il faut être à côté.';
