@@ -269,7 +269,7 @@ const PORTES = [[5, 4, 'S'], [15, 4, 'H', 'bronze'], [5, 9, 'B'], [11, 9, 'E'], 
 // les statues sur les 4 socles peints aux coins de la Galerie (dans l'ordre du tour : haut-gauche, haut-droite, bas-droite, bas-gauche) ;
 // celles du haut doivent regarder vers le bas (vers l'autel), celles du bas vers le haut
 const GRILLE = [20, 9], DALLE = [18, 8], AUTEL_S = [5, 2], STATUES = [[4, 1], [7, 1], [7, 3], [4, 3]], VEUT_S = [2, 2, 0, 0];
-const MEUBLES = [[7, 19, 'coffre', 'A'], [3, 21, 'tonneaux', 'A'], [10, 19, 'armoire', 'C'], [13, 19, 'tonneaux', 'C'], [13, 21, 'armoire', 'C'],
+const MEUBLES = [[7, 19, 'coffre', 'A'], [3, 21, 'tonneaux', 'A'], [10, 19, 'caisse', 'C'], [13, 19, 'tonneaux', 'C'], [13, 21, 'caisse', 'C'],
   [12, 28, 'tombeau', 'G'], [14, 28, 'tombeau', 'G'], [15, 27, 'coffre', 'G'], [12, 10, 'etabli', 'E'], [12, 12, 'armoire', 'E'], [17, 13, 'coffre', 'F'], [3, 13, 'tonneaux', 'B'], [20, 3, 'cheminee', 'H'], [19, 12, 'coffre', 'P']];
 const ROUAGES_CACHES = ['13,21', '14,28', '12,10', '17,13'];
 const LEVIERS = [[3, 11], [3, 12], [7, 11], [7, 12]]; // sur les deux pupitres peints de la salle (dessin salle-rouages)
@@ -278,7 +278,7 @@ const DEPART = [[4, 21], [5, 21], [6, 21], [5, 20]]; // juste devant la grande p
 const MONSTRES_DEPART = [['rouagelin', 11, 20], ['rouagelin', 14, 17], ['page', 13, 28], ['page', 17, 25], ['gardien', 5, 12], ['rouagelin', 6, 11],
   ['coucou', 9, 8], ['coucou', 19, 8], ['page', 15, 12], ['archiviste', 16, 12], ['rouagelin', 12, 5], ['rouagelin', 18, 5], ['colosse', 10, 11]];
 const OBJETS = { bouclier:{ n:'Bouclier de bronze', d:'Bouclier 3 à chaque fois qu’une porte s’ouvre.' }, cle:{ n:'Clé à molette', d:'+1 dé à chaque tour.' }, lunettes:{ n:'Lunettes de l’horloger', d:'Celui qui les porte voit tous les pièges ; touche un piège pour le signaler au groupe.' } };
-const MEUBLE_N = { coffre:'le coffre', armoire:'l’armoire', tonneaux:'les tonneaux', tombeau:'le tombeau', etabli:'l’établi', cheminee:'la cheminée', lit:'le lit de camp', tente:'la tente', etagere:'l’étagère', bureau:'le bureau', banc:'le banc', autel:'l’autel', fontaine:'la fontaine', cristaux:'les cristaux' };
+const MEUBLE_N = { caisse:'la caisse', coffre:'le coffre', armoire:'l’armoire', tonneaux:'les tonneaux', tombeau:'le tombeau', etabli:'l’établi', cheminee:'la cheminée', lit:'le lit de camp', tente:'la tente', etagere:'l’étagère', bureau:'le bureau', banc:'le banc', autel:'l’autel', fontaine:'la fontaine', cristaux:'les cristaux' };
 const cle = (x, y) => x + ',' + y;
 function tourneStatue(R, i) { [i, (i + 1) % 4].forEach(k => R.statues[k].d = (R.statues[k].d + 1) % 4); }
 

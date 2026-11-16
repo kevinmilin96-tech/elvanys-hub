@@ -64,6 +64,7 @@
   .ps-det { margin-top:2cqw; } .ps-det button { margin-top:1.5cqw; } .ps-aide { color:var(--doux); font-size:.85em; text-align:center; }
   .c.vide { background:transparent !important; pointer-events:none; }
   .c.meuble-peint:not(.fouille)::before { content:''; position:absolute; inset:14%; border-radius:30%; box-shadow:0 0 0 2px #ffd36a99, 0 0 12px #ffd36a88; animation:lueurM 2.4s ease-in-out infinite; pointer-events:none; }
+  .c.meuble-peint .etiq { position:absolute; left:50%; bottom:2%; transform:translateX(-50%); z-index:2; font-size:calc(var(--t) * .2); line-height:1.1; white-space:nowrap; background:#1c1c36dd; color:#ffe9a8; border:1px solid #ffd36a88; border-radius:6px; padding:0 .35em; pointer-events:none; } .c.meuble-peint.fouille .etiq { opacity:.55; }
   @keyframes lueurM { 50% { opacity:.35; } } .c.meuble-peint .fm { position:absolute; right:6%; bottom:6%; font-size:calc(var(--t) * .28); color:var(--ok); text-shadow:0 0 4px #000; }
   .escfl { position:absolute; inset:auto 4% 4% auto; z-index:5; background:#1c1c36dd; border:1px solid var(--or); color:var(--or); border-radius:10px; padding:0 .35em; font-size:calc(var(--t) * .3); line-height:1.25; text-align:center; } .escfl small { display:block; font-size:.62em; color:#fff; }
   .c.porte.peinte { box-shadow:none; filter:none; } .c.porte.peinte.cible { box-shadow:inset 0 0 0 3px #ffd36a, 0 0 14px #ffd36a; }
@@ -272,7 +273,9 @@ function fondSalle(S, x, y) {
   return `background:url('decor/salle-${f}.webp?v=2') calc(var(--t) * ${x0 - x}) calc(var(--t) * ${y0 - y}) / calc(var(--t) * ${w}) calc(var(--t) * ${h}) no-repeat;`;
 }
 const objImg = (n, cl) => OBJ_PEINTS.includes(n) ? `<img class="oi ${cl || ''}" src="decor/obj-${n}.webp?v=1" alt="">` : null;
-const MEUBLE_E = { coffre:'🧰', armoire:'🗄️', tonneaux:'🛢️', tombeau:'🪦', etabli:'🛠️', cheminee:'🔥', lit:'🛏️', tente:'⛺', etagere:'📚', bureau:'🪑', banc:'🪑', autel:'🕯️', fontaine:'⛲', cristaux:'💎' };
+// 16/11 (l'utilisateur : « un texte sur chaque objet pour ne pas fouiller n'importe où ») : le nom du meuble, écrit dessus
+function nomMeuble(o, court) { const n = o.nom || (K.MEUBLE_N[o.t] || 'le meuble'); const sans = n.replace(/^(le |la |les |l’)/, ''); return court ? sans.charAt(0).toUpperCase() + sans.slice(1) : n.charAt(0).toUpperCase() + n.slice(1); }
+const MEUBLE_E = { caisse:'📦', coffre:'🧰', armoire:'🗄️', tonneaux:'🛢️', tombeau:'🪦', etabli:'🛠️', cheminee:'🔥', lit:'🛏️', tente:'⛺', etagere:'📚', bureau:'🪑', banc:'🪑', autel:'🕯️', fontaine:'⛲', cristaux:'💎' };
 // 15/11 : deux scénarios ; « brulees » se joue sur la CARTE PEINTE (decor/carte-brulees.webp), calée par l'utilisateur
 let scenChoisi = 'horloger';
 const SCX_TXT = {
@@ -503,7 +506,7 @@ function dessine() {
     else if (mur === '#') cl += ' mur'; // 16/11 (l'utilisateur : « enlève ces murs rajoutés ») : plus de bordure de pierre ajoutée, les murs sont ceux peints dans les salles
     else if (mur === '~') inner = `<span class="o">${S.scen === 'arene' ? '🌳' : '🪨'}</span>`; // 15/11 soir : les obstacles (arbres d'une embuscade, rochers) se voient
     // 16/11 (l'utilisateur : « nos propres images dénaturent ») : dans une salle PEINTE, on touche le meuble du dessin, sans icône ; une lueur dorée le montre
-    else if (mur === 'M' && o && fondSalle(S, x, y)) { cl += ' meuble-peint' + (o.fouille ? ' fouille' : '') + (!o.fouille && K.dist(h, { x, y }) === 1 ? ' cible' : ''); if (o.fouille) inner = '<span class="fm">✓</span>'; }
+    else if (mur === 'M' && o && fondSalle(S, x, y)) { cl += ' meuble-peint' + (o.fouille ? ' fouille' : '') + (!o.fouille && K.dist(h, { x, y }) === 1 ? ' cible' : ''); inner = `<span class="etiq">${esc(nomMeuble(o, true))}</span>` + (o.fouille ? '<span class="fm">✓</span>' : ''); }
     else if (mur === 'M' && o) inner = objImg(o.t, o.fouille ? 'fait' : '') || `<span class="o ${o.fouille ? 'fait' : ''}">${MEUBLE_E[o.t] || '📦'}</span>`;
     else if (mur === 'L' && o) inner = `${objImg('levier', R.leviersTour[c] ? 'baisse' : '')}<span class="lv">≥${o.v}</span>`;
     else if (mur === 'B') inner = objImg('etagere');
@@ -677,7 +680,7 @@ function touche(x, y) {
   if (!d) { if (hi >= 0) return choisitHeros(hi); if (m || B) return infoMonstre(B || m);
     if (R.murs[c] === 'T') { bulle(R.statuesOk ? 'Les statues regardent l’autel.' : 'Choisis un dé (même un 👣), puis touche la statue pour la tourner : sa voisine tourne aussi !'); return; }
     if (R.grille && x === R.grille.dx && y === R.grille.dy) { bulle('La dalle : tant qu’un héros reste dessus, la grille du Cagibi est ouverte.'); return; }
-    const o = R.obj[c]; if (o && o.meuble) bulle(o.fouille ? 'Déjà fouillé.' : 'Choisis un dé pour fouiller.'); return; }
+    const o = R.obj[c]; if (o && o.meuble) { const n = nomMeuble(o); bulle(o.fouille ? `${n} : déjà fouillé.` : `${n} : choisis un dé pour le fouiller.`); } return; }
   if (m || B) return frappeMenu(B || m);
   if (hi >= 0) return amiMenu(hi);
   const o = R.obj[c];
