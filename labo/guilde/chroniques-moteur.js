@@ -44,6 +44,7 @@ const BETES = {
   coucou:    { n:'Coucou furieux', img:'coucou', att:2, mv:3, s:() => [sceau('imp'), sceau('min', 4)], lache:true },
   page:      { n:'Page hurlante', img:'pagehurlante', att:1, mv:3, s:() => [sceau('imp'), sceau('imp')], fuit:.3 },
   archiviste:{ n:'Archiviste de cuivre', img:'archiviste', att:3, mv:1, s:() => [sceau('dbl', 0, 1), sceau('dbl', 0, 1), sceau('min', 5), sceau('tot', 10)], soin:.35, elite:true, grosCoup:.3 },
+  mimique:   { n:'Mimique', img:'mimique', att:2, mv:2, s:() => [sceau('pair'), sceau('min', 4)], grosCoup:.2 }, // 16/11 : un meuble qui mord
   horloger:  { n:'L’Horloger', img:'horlogerboss', att:3, mv:1, s:() => [], boss:true },
   // 16/11 : les nouveaux venus (inspirés des archétypes troll, squelette, liche ; noms et règles à nous)
   colosse:   { n:'Colosse à ressort', img:'colosseressort', att:3, mv:1, s:() => [sceau('min', 5), sceau('dbl', 0, 1), sceau('dbl', 0, 1), sceau('tot', 10)], elite:true, regen:true, grosCoup:.3 },
@@ -329,7 +330,8 @@ function nouvelle(heros, s, scen, opts = {}) {
   R.plan = 2; R.depart = DEPART.map(c => c.slice()); R.liens = {}; R.lus = { A:true }; // la salle de départ est racontée au début
   LIENS2.forEach(([a, b]) => { R.liens[cle(...a)] = cle(...b); R.liens[cle(...b)] = cle(...a); });
   const tirage = ['potion', 'grains', 'objet', 'piege', 'monstre', 'parchemin', 'or', 'fumee', 'rien'];
-  MEUBLES.forEach(([x, y, t, id]) => { R.murs[cle(x, y)] = 'M'; R.obj[cle(x, y)] = { t, meuble:true, salle:id, fouille:false, cache:ROUAGES_CACHES.includes(cle(x, y)) ? 'rouage' : tirage[Math.floor(hasard(S) * tirage.length)] }; });
+  tirage.push('mimique'); // 16/11 (l'utilisateur) : des meubles vides, piégés… ou qui mordent
+  MEUBLES.forEach(([x, y, t, id]) => { R.murs[cle(x, y)] = 'M'; R.obj[cle(x, y)] = { t, meuble:true, salle:id, fouille:false, verrou:t === 'coffre' ? 4 : 0, cache:ROUAGES_CACHES.includes(cle(x, y)) ? 'rouage' : tirage[Math.floor(hasard(S) * tirage.length)] }; });
   LEVIERS.forEach(([x, y]) => { R.murs[cle(x, y)] = 'L'; R.obj[cle(x, y)] = { t:'levier', v:2 + Math.floor(hasard(S) * 4) }; });
   const vus = []; Object.values(R.obj).filter(o => o.t === 'levier').forEach(o => { while (vus.includes(o.v)) o.v = 2 + Math.floor(hasard(S) * 4); vus.push(o.v); });
   ETAGERES.forEach(([x, y]) => R.murs[cle(x, y)] = 'B'); R.murs[cle(...LIVRE)] = 'K'; R.obj[cle(...LIVRE)] = { t:'livre' };
@@ -605,7 +607,10 @@ function agir(S, hi, idDe, x, y) {
 function fouilleMeuble(S, hi, idDe, x, y, o) {
   const h = S.heros[hi], R = S.R; if (o.fouille) return `On a déjà fouillé ${MEUBLE_N[o.t]}.`;
   if (o.cache === 'rouage' && h.porte) { log(S, `⚙ ${nm(h)} sent un rouage dans ${MEUBLE_N[o.t]}, mais ses mains sont prises : un héros ne porte qu’UN rouage à la fois.`); return `${nm(h)} porte déjà un rouage (un seul à la fois) : qu’un autre héros fouille ici.`; }
-  unPas(S, h, idDe); o.fouille = true; const nom = nm(h), ev = { t:'fouille', quoi:o.cache, meuble:o.t, h:hi };
+  // 🔒 crochetage (16/11) : un meuble verrouillé demande un vrai dé de N ou plus, qui est utilisé en entier
+  if (o.verrou && !o.crochete) { const d = h.des.find(z => z.id === idDe); if (!d || d.pas || d.v < o.verrou) return `🔒 ${MEUBLE_N[o.t][0].toUpperCase() + MEUBLE_N[o.t].slice(1)} est verrouillé : il faut un dé de ${o.verrou} ou plus pour le crocheter (le dé est utilisé en entier).`;
+    prendDe(h, idDe); o.crochete = true; log(S, `🔓 ${nm(h)} crochète ${MEUBLE_N[o.t]}… CLIC !`); } else unPas(S, h, idDe);
+  o.fouille = true; const nom = nm(h), ev = { t:'fouille', quoi:o.cache, meuble:o.t, h:hi };
   const Le = MEUBLE_N[o.t][0].toUpperCase() + MEUBLE_N[o.t].slice(1);
   switch (o.cache) {
     case 'rouage': { h.porte = true; S.rouagesTrouves++; const sc = SCEN[S.scen || 'horloger']; log(S, `${sc.objet.e} ${nom} trouve ${sc.objet.n === 'rouage' ? 'un ROUAGE' : 'une BRAISE ÉTERNELLE'} dans ${MEUBLE_N[o.t] || 'le meuble'} ! À porter jusqu’à ${sc.axe}.`); break; }
@@ -622,8 +627,17 @@ function fouilleMeuble(S, hi, idDe, x, y, o) {
     case 'piege': if (a_t(h, 'chanceux')) { log(S, `🍀 ${nm(h)} évite le piège caché dans ${MEUBLE_N[o.t]}.`); break; } blesseHeros(S, h, 2); log(S, `⚠ ${Le} était piégé : ${nom} −2 PV.`); break;
     case 'monstre': { const p = [[1, 0], [-1, 0], [0, 1], [0, -1]].map(([dx, dy]) => [x + dx, y + dy]).find(([a, b]) => libre(S, a, b) && !herosEn(S, a, b));
       if (p) { const m = ajouteMonstre(S, S.scen === 'horloger' || !S.scen ? 'rouagelin' : 'gobelin', p[0], p[1]); m.it = 'frappe'; R.vu[cle(p[0], p[1])] = 1; } log(S, `👹 Un Rouagelin jaillit de ${MEUBLE_N[o.t]} !`); break; }
+    case 'mimique': { const p = [[1, 0], [-1, 0], [0, 1], [0, -1]].map(([dx, dy]) => [x + dx, y + dy]).find(([a, b]) => libre(S, a, b) && !herosEn(S, a, b));
+      if (p) { const m = ajouteMonstre(S, 'mimique', p[0], p[1]); m.it = 'frappe'; R.vu[cle(p[0], p[1])] = 1; } log(S, `👄 ${Le} ouvre une gueule pleine de dents : c’est une MIMIQUE !`); ev.mimique = true; break; }
     default: log(S, `🔍 ${nom} fouille ${MEUBLE_N[o.t]}… de la poussière, rien d’autre.`);
   }
+  // ⌛ le temps file (16/11) : toutes les 2 fouilles, le sablier perd un grain
+  S.fouilles = (S.fouilles || 0) + 1; if (S.scen !== 'atelier' && S.fouilles % 2 === 0) { S.sablier = Math.max(0, S.sablier - 1); log(S, '⌛ Fouiller prend du temps : le sablier perd un grain.'); }
+  // 🔊 le bruit (16/11, façon « monstres errants ») : 1 fois sur 3, le monstre le plus proche du même étage accourt de 2 cases
+  if (!ev.mimique && hasard(S) < 1 / 3) { const P = R.monstres.filter(m => !BETES[m.b].immobile && (!R.plan || etageDe(S, m.y) === etageDe(S, h.y)) && dist(m, h) > 1 && dist(m, h) <= 10).sort((a, b) => dist(a, h) - dist(b, h))[0];
+    if (P) { for (let k = 0; k < 2; k++) { const o2 = [[1, 0], [-1, 0], [0, 1], [0, -1]].map(([dx, dy]) => [P.x + dx, P.y + dy]).filter(([a, b]) => libre(S, a, b, P) && !herosEn(S, a, b) && !(R.portes[cle(a, b)] && !R.portes[cle(a, b)].ouverte)).sort((a, b) => dist({ x:a[0], y:a[1] }, h) - dist({ x:b[0], y:b[1] }, h))[0];
+        if (!o2 || dist({ x:o2[0], y:o2[1] }, h) >= dist(P, h)) break; [P.x, P.y] = o2; }
+      R.vu[cle(P.x, P.y)] = 1; log(S, `🔊 Le bruit de la fouille attire ${P.n} !`); ev.bruit = P.id; } }
   return { ok:true, ev:[ev] };
 }
 function reveilBoss(S) {
