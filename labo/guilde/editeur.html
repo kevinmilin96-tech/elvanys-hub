@@ -35,7 +35,7 @@
   .grille { position:relative; display:grid; background:#05050a; border:1px solid #2a2a4a; touch-action:none; user-select:none; }
   .grille .img { position:absolute; inset:0; background-size:100% 100%; background-repeat:no-repeat; pointer-events:none; }
   .case { position:relative; border:1px solid #ffffff22; }
-  .case.mur { background:#5a5a6acc; } .case.sol { background:transparent; }
+  .case.mur { background:#8a8aa8cc; } .case.sol { background:transparent; }
   .case.porte { background:#f3c96bcc; box-shadow:inset 0 0 0 2px #8a4a10; }
   .case.escalier { background:repeating-linear-gradient(90deg, #9a7a4acc 0 6px, #4a3418cc 6px 9px); }
   .case.meuble { background:#a0522dcc; } .case.obstacle { background:#2f6a3acc; }
@@ -48,12 +48,17 @@
   textarea.prompt { width:100%; min-height:160px; font-size:.82em; }
   .aide { color:var(--doux); font-size:.85em; }
   .legende { display:flex; gap:14px; flex-wrap:wrap; font-size:.85em; color:var(--doux); } .legende i { display:inline-block; width:12px; height:12px; border-radius:3px; margin-right:4px; vertical-align:-1px; }
+  .fenetre { position:fixed; inset:0; background:#000b; z-index:1000; display:flex; align-items:center; justify-content:center; padding:16px; }
+  .fenetre > div { background:#1c1c36; border:2px solid var(--or); border-radius:16px; padding:16px 18px; max-width:420px; width:100%; }
+  .fenetre label { display:block; color:var(--doux); font-size:.85em; margin:8px 0 3px; } .fenetre input { width:100%; }
+  .etapes { font-size:.85em; color:var(--doux); margin:0; padding-left:1.2em; } .etapes b { color:var(--texte); }
 </style>
 </head>
 <body>
 <div class="haut"><a href="chroniques.html">‹ Les Chroniques</a><h1>🛠 L'atelier des cartes</h1><span class="aide">Étape A : une salle à la fois.</span></div>
 <div class="page">
   <div>
+    <div class="panneau"><h2>Comment ça marche</h2><ol class="etapes"><li><b>Crée une salle</b> (nom, taille).</li><li><b>Peins</b> ses portes, meubles, obstacles avec les pinceaux.</li><li>Écris le <b>décor</b>, puis <b>copie le prompt</b> (en bas) et colle-le dans Gemini.</li><li><b>Pose l’image</b> reçue : vérifie que les portes tombent juste.</li><li><b>▶ Tester la salle</b> pour la jouer.</li></ol></div>
     <div class="panneau"><h2>Mes salles</h2><div class="liste" id="liste"></div><button class="or" onclick="nouvelleSalle()">＋ Nouvelle salle</button></div>
     <div class="panneau" id="reglages"></div>
     <div class="panneau"><h2>Pinceaux</h2><div class="pinceaux" id="pinceaux"></div>
@@ -92,8 +97,12 @@ const coin = (s, x, y) => (x === 0 || x === s.w + 1) && (y === 0 || y === s.h + 
 function devant(s, x, y) { return x === 0 ? [1, y] : x === s.w + 1 ? [s.w, y] : y === 0 ? [x, 1] : [x, s.h]; }
 function murDe(s, x, y) { return y === 0 ? 'TOP' : y === s.h + 1 ? 'BOTTOM' : x === 0 ? 'LEFT' : 'RIGHT'; }
 function nouvelleSalle() {
-  const n = prompt('Nom de la salle ?', 'Nouvelle salle'); if (!n) return;
-  const w = Math.max(2, Math.min(14, +prompt('Largeur intérieure en cases (2 à 14) ?', '5') || 5)), h = Math.max(2, Math.min(14, +prompt('Hauteur intérieure en cases (2 à 14) ?', '3') || 3));
+  // 16/11 : plus de fenêtres du navigateur (prompt/confirm), bloquées quand l'atelier est ouvert dans le cadre du laboratoire
+  fen(`<h2>＋ Nouvelle salle</h2><label>Nom</label><input id="nNom" value="Nouvelle salle"><label>Taille intérieure en cases (2 à 14)</label><div class="ligne"><input id="nW" type="number" min="2" max="14" value="5" style="width:80px"> × <input id="nH" type="number" min="2" max="14" value="3" style="width:80px"></div>
+    <div class="ligne" style="margin-top:14px"><button class="or" onclick="creeSalle()">Créer</button><button onclick="fen('')">Annuler</button></div>`);
+}
+function creeSalle() {
+  const n = $('nNom').value.trim() || 'Nouvelle salle', w = Math.max(2, Math.min(14, +$('nW').value || 5)), h = Math.max(2, Math.min(14, +$('nH').value || 3)); fen('');
   const s = { id:'s' + Date.now().toString(36), nom:n, w, h, cases:{}, decor:'', lumiere:'sombre', son:'', img:null, maj:Date.now() };
   salles.push(s); actif = s.id; garde(); tout();
 }
@@ -164,7 +173,7 @@ function reglages() {
     <label>Décor (ce que Gemini doit peindre)</label><textarea rows="3" style="width:100%" onchange="S().decor=this.value;garde();dessine()" placeholder="Ex. : une crypte d'horlogers, petites bougies et engrenages le long des murs">${esc(s.decor || '')}</textarea>
     <label>Lumière</label><select onchange="S().lumiere=this.value;garde();dessine()"><option value="sombre" ${s.lumiere !== 'claire' ? 'selected' : ''}>Sombre : il faut la lanterne</option><option value="claire" ${s.lumiere === 'claire' ? 'selected' : ''}>Claire : elle luit toute seule</option></select>
     <label>Son d'ambiance</label><select onchange="S().son=this.value;garde()">${Object.entries(SONS).map(([v, n]) => `<option value="${v}" ${s.son === v ? 'selected' : ''}>${n}</option>`).join('')}</select>
-    <div class="ligne" style="margin-top:10px"><button onclick="if(confirm('Effacer toute la peinture de cette salle ?')){S().cases={};garde();dessine()}">Tout effacer</button><button onclick="supprimer()">🗑 Supprimer la salle</button></div>`;
+    <div class="ligne" style="margin-top:10px"><button onclick="ouiNon('Effacer toute la peinture de cette salle ?', () => { S().cases = {}; garde(); dessine(); })">Tout effacer</button><button onclick="supprimer()">🗑 Supprimer la salle</button></div>`;
 }
 function pinceauxUI() {
   $('pinceaux').innerHTML = PINCEAUX.map(([v, n, c]) => `<button class="${pinceau === v ? 'on' : ''}" onclick="pinceau='${v}';pinceauxUI()"><i style="background:${c};border:1px solid #fff4"></i>${n}</button>`).join('')
@@ -172,7 +181,8 @@ function pinceauxUI() {
 }
 function taille(w, h) { const s = S(); w = Math.max(2, Math.min(14, w || s.w)); h = Math.max(2, Math.min(14, h || s.h));
   const C = {}; Object.entries(s.cases).forEach(([c, v]) => { const [x, y] = c.split(',').map(Number); if (x <= w + 1 && y <= h + 1) C[c] = v; }); s.w = w; s.h = h; s.cases = C; s.maj = Date.now(); garde(); tout(); }
-function supprimer() { const s = S(); if (!s || !confirm(`Supprimer « ${s.nom} » ?`)) return; salles = salles.filter(z => z.id !== s.id); actif = salles[0] ? salles[0].id : null; garde(); tout(); }
+function supprimer() { const s = S(); if (!s) return; ouiNon(`Supprimer « ${esc(s.nom)} » ?`, () => supprimeVrai(s)); }
+function supprimeVrai(s) { salles = salles.filter(z => z.id !== s.id); actif = salles[0] ? salles[0].id : null; garde(); tout(); }
 const esc = t => String(t == null ? '' : t).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
 async function dessine() {
   const s = S(), G = $('grille');
@@ -202,10 +212,13 @@ $('grille').addEventListener('pointerdown', e => { if (!S()) return; peint = tru
 $('grille').addEventListener('pointermove', e => { if (!peint) return; const avant = JSON.stringify(S().cases); peindre(e); if (JSON.stringify(S().cases) !== avant) dessine(); });
 addEventListener('pointerup', () => { if (peint) { peint = false; garde(); liste(); } });
 addEventListener('resize', () => dessine());
-function tester() { const s = S(); if (!s) return; const V = verifie(s); if (V.E.length && !confirm('La salle a encore des erreurs (en rouge). La tester quand même ?')) return; garde(); location.href = 'chroniques.html?atelier=' + encodeURIComponent(s.id); }
+function tester() { const s = S(); if (!s) return; const V = verifie(s); if (V.E.length && !tester.ok) { ouiNon('La salle a encore des erreurs (en rouge). La tester quand même ?', () => { tester.ok = true; tester(); }); return; } tester.ok = false; garde(); location.href = 'chroniques.html?atelier=' + encodeURIComponent(s.id); }
 function copierPrompt() { const t = $('prompt').value; (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => { $('copie').textContent = 'Copié !'; setTimeout(() => $('copie').textContent = '', 2000); }).catch(() => { $('prompt').select(); document.execCommand('copy'); $('copie').textContent = 'Copié !'; }); }
+function fen(h) { let f = $('fen'); if (!f) { f = document.createElement('div'); f.id = 'fen'; document.body.appendChild(f); } f.innerHTML = h ? `<div class="fenetre"><div>${h}</div></div>` : ''; }
+let ouiNonFn = null;
+function ouiNon(q, fn) { ouiNonFn = fn; fen(`<p>${q}</p><div class="ligne"><button class="or" onclick="fen('');ouiNonFn&&ouiNonFn()">Oui</button><button onclick="fen('')">Non</button></div>`); }
 tout();
 </script>
-<script src="musique.js?v=20261116-163801"></script>
+<script src="musique.js?v=20261116-164321"></script>
 </body>
 </html>
