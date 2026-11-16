@@ -41,7 +41,8 @@
 <script src="odyssee.js?v=3b40723744"></script>
 <script src="aventure.js?v=09133a6200"></script>
 <script src="aventuriers.js?v=04b0962a08"></script>
-<script src="fiche-heros.js?v=f2103b185f"></script>
+<script src="pouvoirs-heros.js?v=67a647af5c"></script>
+<script src="fiche-heros.js?v=128330f3bf"></script>
 <script>
 // =============================================================================================== MES HÉROS (15/11 ~17 h 45) : le système des héros unifié
 // Tous les héros (les 6 de la Guilde + les héros d'aventure de la Forge), triés par puissance, et la récolte du campement.
@@ -53,7 +54,7 @@ const retour = new URLSearchParams(location.search).get('retour') || 'menu.html'
 const alerte = id => peutPromouvoir(id) || peutMonterNiveau(id) === 'ok';
 function carte(id) {
   const I = fhInfo(id); if (!I) return ''; const H = etatH(id), R = RANGS[H.rang], off = id === 'zephine' && !ZOK();
-  return `<button class="carte ${off ? 'verrou' : ''}" style="--rc:${R.c};--hc:${I.c}" onclick="${off ? `fhBulle('Zéphine arrive après le tutoriel')` : `ouvre('${id}')`}">${alerte(id) && !off ? '<span class="pastille">⬆</span>' : ''}${fhImg(I)}<b>${I.nom}</b><small style="color:${R.c}">${R.n} · niv. ${H.niv}</small><span class="p">✊ ${fhPuissance(id)}</span></button>`;
+  return `<button class="carte ${off ? 'verrou' : ''}" style="--rc:${R.c};--hc:${I.c}" onclick="${off ? `fhBulle('Zéphine arrive après le tutoriel')` : `ouvre('${id}')`}">${alerte(id) && !off ? '<span class="pastille">⬆</span>' : ''}${fhImg(I)}<b>${I.nom}</b>${typeof PW_CLASSES !== 'undefined' && PW_CLASSES[classeDe(id)] ? `<small>${PW_CLASSES[classeDe(id)].e} ${PW_CLASSES[classeDe(id)].n}</small>` : ''}<small style="color:${R.c}">${R.n} · niv. ${H.niv}</small><span class="p">✊ ${fhPuissance(id)}</span></button>`;
 }
 function liste() {
   actuel = null; history.replaceState(null, '', location.pathname + (retour !== 'menu.html' ? '?retour=' + retour : ''));

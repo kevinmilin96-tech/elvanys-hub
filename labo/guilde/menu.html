@@ -8,7 +8,7 @@
 <title>La Guilde des Runes</title>
 <script>
 // Même mécanisme que le Duel : une nouvelle version = rechargement tout seul à l'ouverture (publier.sh change VERSION).
-const VERSION = '20261116-212512';
+const VERSION = '20261116-215427';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-menu-' + v)) { sessionStorage.setItem('recharge-menu-' + v, '1'); location.replace('menu.html?v=' + v); }
@@ -210,7 +210,7 @@ fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.te
 <script>window.AMIS_SANS_BOUTON = true; /* 15/11 : un seul bouton en haut à gauche (profil + amis) */</script>
 <script src="amis.js?v=c57fbe14e8"></script>
 <script src="heros-etoiles.js?v=07f78336f4"></script>
-<script src="donnees.js?v=20261116-212512"></script>
+<script src="donnees.js?v=20261116-215427"></script>
 <script>
 // ciel étoilé + runes du portail (symboles, pas des lettres), aux couleurs des héros
 const ciel = document.getElementById('ciel');
@@ -458,7 +458,8 @@ function profilMenu() {
   m.innerHTML = bt('👤 Mon profil', "try{sessionStorage.setItem('guilde-dans-mode','1')}catch(e){};location.href='profil.html'")
     + bt(`👥 Mes amis${dem ? ` <b style="color:#ff5a5a">· ${dem} demande${dem > 1 ? 's' : ''}</b>` : n ? ` <b style="color:#7dffb0">· ${n} en ligne</b>` : ''}`, 'amisFenetre()')
     + bt('🤝 Entre amis', "location.hash='enligne'")
-    + bt('🏰 Mes héros', "try{sessionStorage.setItem('guilde-dans-mode','1')}catch(e){};location.href='mes-heros.html'");
+    + bt('🏰 Mes héros', "try{sessionStorage.setItem('guilde-dans-mode','1')}catch(e){};location.href='mes-heros.html'")
+    + bt('🃏 Les pouvoirs des héros', "try{sessionStorage.setItem('guilde-dans-mode','1')}catch(e){};location.href='pouvoirs.html?retour=menu.html'"); // 16/11 nuit : la page « build »
   document.body.appendChild(m);
   setTimeout(() => document.addEventListener('click', function f(e) { if (!m.contains(e.target) && e.target.id !== 'profil-bouton') { m.remove(); document.removeEventListener('click', f); } }), 0);
 }

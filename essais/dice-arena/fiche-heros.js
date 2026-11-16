@@ -69,7 +69,7 @@ function ficheHerosHTML(id) {
   const max10 = (() => { let n = H.niv, or = avSac().or, pou = poussiereH(), k = 0; while (k < 10 && n < R.max) { const c = coutNiveau(n); if (or < c.or || pou < c.pou) break; or -= c.or; pou -= c.pou; n++; k++; } return k; })();
   return `<div class="fh-scene" style="--hc:${I.c};--rc:${R.c}">
       <div class="fh-col">${['arme', 'tete', 'anneau'].map(k => slot(EQ_CASES.find(c => c.k === k))).join('')}</div>
-      <div class="fh-centre" id="fh-portrait">${fhImg(I)}<b>${I.nom}</b><small>${I.titre}</small><br><span class="fh-rang">${R.n}</span></div>
+      <div class="fh-centre" id="fh-portrait">${fhImg(I)}<b>${I.nom}</b><small>${I.titre}</small>${typeof PW_CLASSES !== 'undefined' && typeof classeDe === 'function' && PW_CLASSES[classeDe(id)] ? `<br><small style="color:#f3c96b">${PW_CLASSES[classeDe(id)].e} ${PW_CLASSES[classeDe(id)].n} · ${PW_CLASSES[classeDe(id)].d}</small>` : ''}<br><span class="fh-rang">${R.n}</span></div>
       <div class="fh-col">${['torse', 'pieds', 'talisman'].map(k => slot(EQ_CASES.find(c => c.k === k))).join('')}</div>
     </div>
     <div class="fh-puiss">✊ ${fhPuissance(id)}</div>
@@ -78,6 +78,7 @@ function ficheHerosHTML(id) {
       <div><b>${S.agi}</b><span>🥾 Agilité</span></div><div><b>${S.bouclier}</b><span>🛡 Bouclier</span></div><div><b>${S.pc}</b><span>◆ PC</span></div><div><b>${S.relance + S.des + S.main}</b><span>🎲 Bonus</span></div>
     </div>
     <p class="doux" style="font-size:.82em;color:#c9c1ea;margin:6px 2px">Tout cela compte contre les monstres (Odyssée, Crypte, Descente, Fosse, Chroniques, Défense, épreuves). Le Duel de l’Arène reste équitable.</p>
+    ${typeof pouvoirsDe === 'function' ? fhPouvoirs(id) : ''}
     ${fhRess()}
     <div class="fh-bloc"><h4>📈 Niveau ${H.niv} / ${R.max}</h4>
       <div class="fh-barre"><i style="width:${Math.round(100 * H.niv / R.max)}%"></i></div>
@@ -99,6 +100,15 @@ function fhReliques(id) {
     <div class="fh-rel">${Object.keys(RELIQUES_PL).map(p => `<button class="${pl === p ? 'sel' : ''}" onclick="FH.choixRel = FH.choixRel === '${p}' ? null : '${p}';FH.apres()"><small>${RELIQUES_PL[p]}</small>${eq[p] ? `${typeof eqImg === 'function' ? eqImg(eq[p], 34) : ''}<b>${EQUIP[eq[p]][2]} ${'★'.repeat(niveauEquip(eq[p]))}</b>` : '<br><span style="opacity:.4">vide</span>'}</button>`).join('')}</div>
     ${pl ? `<p class="doux" style="color:#c9c1ea;font-size:.85em">Touche une relique pour l’équiper.${eq[pl] ? ` <button class="fh-bt" style="min-width:0;flex:none;padding:4px 10px" onclick="equipeHeros('${id}','${pl}',null);FH.apres()">Retirer</button>` : ''}</p>
       <div class="fh-rel">${arm.length ? arm.map(k => `<button onclick="equipeHeros('${id}','${pl}','${k}');FH.choixRel=null;fhSon('tour-fusion');FH.apres()">${typeof eqImg === 'function' ? eqImg(k, 34) : ''}<b>${EQUIP[k][2]}</b><small>${fusionTxt(k)}</small></button>`).join('') : '<p class="doux">Aucune relique de ce genre : elles tombent des élites et des boss de l’Odyssée. 3 exemplaires = ★★, 5 = ★★★.</p>'}</div>` : ''}</div>`;
+}
+// 16/11 nuit : LES POUVOIRS (pouvoirs-heros.js) : un petit bloc ; tout se choisit sur la page pouvoirs.html (la page « build »)
+function fhPouvoirs(id) {
+  if (!classeDe(id)) return ''; const pts = pointsPouvoirs(id), g = pouvoirsDe(id, 'groupe'), s = pouvoirsDe(id, 'solo');
+  const ligne = (o, t) => `<p style="margin:4px 0;font-size:.88em">${t} ${PW_EMP.map(E => `${o[E.k].def.e} ${o[E.k].def.n}${o[E.k].rang ? ` <b style="color:#f3c96b">★${o[E.k].rang}</b>` : ''}`).join(' · ')}</p>`;
+  const ici = location.pathname.split('/').pop() + location.search;
+  return `<div class="fh-bloc"><h4>🃏 Ses pouvoirs ${pts ? `<span style="float:right;color:#7dffb0">⬆ ${pts} point${pts > 1 ? 's' : ''} à placer</span>` : ''}</h4>
+    ${ligne(g, '👥 Groupe :')}${ligne(s, '🗡 Solo :')}
+    <a href="pouvoirs.html?h=${id}&retour=${encodeURIComponent(ici)}" style="display:block;margin-top:8px;padding:14px;border-radius:14px;background:#f3c96b;color:#2b1d0a;text-align:center;font-weight:bold;text-decoration:none;font-size:1.05em">🃏 Choisir ses pouvoirs (Garde, Pouvoir, Passif, Ultime)</a></div>`;
 }
 // ------------------------------------------------------------------------------------------------ les actions
 function fhNiveau(id, n) { const f = monteNiveau(id, n); if (f) { fhSon('tour-fusion'); fhBulle(`⬆ Niveau ${niveauH(id)} !`); FH.apres(); const p = document.getElementById('fh-portrait'); if (p) p.classList.add('fh-monte'); } else fhBulle('Pas assez d’or ou de poussière'); }

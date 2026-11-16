@@ -178,7 +178,30 @@
   .gros { display:block; width:100%; border-radius:3.5cqw; padding:3cqw; font-size:4cqw; border:2px solid var(--or); background:#3a2f12; color:var(--or); font-weight:bold; margin-top:2.5cqw; text-align:left; }
   .gros small { display:block; font-weight:normal; color:var(--doux); font-size:3cqw; } .gros:disabled { opacity:.4; }
   .equipe .qui { display:block; font-size:.78em; color:#9a92c8; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; } .equipe .qui.moi { color:var(--ok); }
+  /* 16/11 nuit : LES POUVOIRS DES HÉROS : boutons ✨ et animations (une par sorte : halo, soin, ronces, louve, éclair, flèches, onde, feu, lumière, vent, alchimie, étoile) */
+  .actions .pw { flex:none; border:2px solid var(--pc, #c58bff); background:#2a1f48; color:#f1ecff; opacity:.45; }
+  .actions .pw.on { opacity:1; box-shadow:0 0 12px var(--pc, #c58bff); animation:pwpulse 1.2s infinite; } @keyframes pwpulse { 50% { box-shadow:0 0 20px var(--pc, #c58bff); } }
+  .pwfx { position:absolute; inset:-35%; pointer-events:none; z-index:30; display:flex; align-items:center; justify-content:center; font-size:22px; }
+  .pwfx i { position:absolute; font-style:normal; color:var(--c); text-shadow:0 0 6px var(--c); }
+  .pw-halo { border-radius:50%; border:4px solid var(--c); box-shadow:0 0 18px var(--c), inset 0 0 14px var(--c); animation:pwhalo 1.2s ease-out forwards; }
+  @keyframes pwhalo { 0% { transform:scale(.3); opacity:1; } 100% { transform:scale(1.25); opacity:0; } }
+  .pw-onde { border-radius:50%; } .pw-onde i { inset:0; border-radius:50%; border:3px solid var(--c); animation:pwonde 1.2s ease-out forwards; } .pw-onde i:nth-child(2) { animation-delay:.2s; } .pw-onde i:nth-child(3) { animation-delay:.4s; }
+  @keyframes pwonde { 0% { transform:scale(.2); opacity:1; } 100% { transform:scale(1.4); opacity:0; } }
+  .pw-soin i, .pw-alchimie i, .pw-feu i, .pw-etoile i { animation:pwmonte 1.3s ease-out forwards; } .pw-soin i:nth-child(2n), .pw-alchimie i:nth-child(2n) { animation-delay:.25s; }
+  @keyframes pwmonte { 0% { transform:translateY(30px) scale(.6); opacity:0; } 30% { opacity:1; } 100% { transform:translateY(-45px) scale(1.2); opacity:0; } }
+  .pw-feu i { animation-name:pwgerbe; } @keyframes pwgerbe { 0% { transform:scale(.3); opacity:1; } 100% { transform:translate(var(--dx), var(--dy)) scale(1.1); opacity:0; } }
+  .pw-etoile i { animation-name:pwbrille; } @keyframes pwbrille { 0%, 100% { transform:scale(0) rotate(0); opacity:0; } 50% { transform:scale(1.6) rotate(180deg); opacity:1; } }
+  .pw-ronces i { bottom:20%; transform-origin:bottom; animation:pwpousse 1.4s ease-out forwards; font-size:26px; } @keyframes pwpousse { 0% { transform:scaleY(0); opacity:0; } 40% { transform:scaleY(1.2); opacity:1; } 80% { opacity:1; } 100% { transform:scaleY(1); opacity:0; } }
+  .pw-louve i { font-size:34px; animation:pwbond 1.1s ease-out forwards; } @keyframes pwbond { 0% { transform:translate(-50px, 20px) scale(.6); opacity:0; } 50% { transform:translate(0, -10px) scale(1.3); opacity:1; } 100% { transform:translate(30px, 0) scale(1); opacity:0; } }
+  .pw-eclair { animation:pwflash .9s; } .pw-eclair i { font-size:36px; animation:pweclair .9s steps(2) forwards; } @keyframes pweclair { 0%, 40% { opacity:1; transform:scale(1.4); } 100% { opacity:0; } } @keyframes pwflash { 0% { background:radial-gradient(circle, #fff, transparent 60%); } 100% { background:none; } }
+  .pw-fleches i { font-size:24px; animation:pwfleche .7s ease-in forwards; } .pw-fleches i:nth-child(2) { animation-delay:.15s; } .pw-fleches i:nth-child(3) { animation-delay:.3s; } @keyframes pwfleche { 0% { transform:translate(-60px, -60px) rotate(45deg); opacity:1; } 100% { transform:translate(0, 0) rotate(45deg); opacity:0; } }
+  .pw-lumiere { background:radial-gradient(circle, var(--c), transparent 65%); animation:pwlum 1.3s ease-out forwards; } @keyframes pwlum { 0% { opacity:0; transform:scale(.4); } 30% { opacity:.9; } 100% { opacity:0; transform:scale(1.3); } }
+  .pw-vent i { font-size:34px; animation:pwtourne 1.2s linear forwards; } @keyframes pwtourne { 0% { transform:rotate(0) scale(.5); opacity:1; } 100% { transform:rotate(540deg) scale(1.4); opacity:0; } }
+  .pwban { position:fixed; left:50%; top:22%; transform:translateX(-50%); z-index:95; padding:10px 18px; border-radius:16px; background:#120f24e6; border:2px solid var(--c); color:#fff; font-weight:bold; font-size:1.1em; box-shadow:0 0 22px var(--c); animation:pwban 1.8s forwards; pointer-events:none; text-align:center; }
+  @keyframes pwban { 0% { opacity:0; transform:translate(-50%, 10px) scale(.8); } 15% { opacity:1; transform:translate(-50%, 0) scale(1.05); } 80% { opacity:1; } 100% { opacity:0; } }
+  .pwfen .pwd { display:flex; gap:6px; justify-content:center; margin:8px 0; } .pwfen .pwd b { width:38px; height:38px; display:flex; align-items:center; justify-content:center; border-radius:8px; background:#f1ecff; color:#120f24; font-size:1.2em; }
 </style>
+
 </head>
 <body>
 <div id="app"></div>
@@ -190,7 +213,8 @@
 <script src="heros-etoiles.js?v=07f78336f4"></script>
 <script src="progression-modes.js?v=807b0f9ad5"></script>
 <script src="aventuriers.js?v=04b0962a08"></script>
-<script src="chroniques-moteur.js?v=1bc7519de2"></script>
+<script src="pouvoirs-heros.js?v=67a647af5c"></script>
+<script src="chroniques-moteur.js?v=3676404dbf"></script>
 <script src="chroniques-ambiance.js?v=cdc992dc3a"></script>
 <script>
 // =============================================================================================== LES CHRONIQUES DE LA GUILDE v2 (15/11, écran « façon HeroQuest »)
@@ -596,7 +620,7 @@ function dessine() {
     const hi = S.heros.findIndex(z => z.x === x && z.y === y), m = R.monstres.find(z => z.x === x && z.y === y), B = R.boss && R.boss.x === x && R.boss.y === y ? R.boss : null;
     if (hi >= 0) { const z = S.heros[hi]; inner += `<div class="jeton ${hi === actif ? 'actif' : ''} ${z.aTerre ? 'terre' : ''}" id="j-h${hi}" style="--c:${coulH(z)}">${imgH(z)}<span class="pv">${z.aTerre ? '✋' : '❤' + z.pv}${z.bouclier ? '🛡' + z.bouclier : ''}${z.porte ? '⚙️' : ''}</span></div>`; }
     const mm = B || m;
-    if (mm && vu && (B || vueForcee || eclaire(x, y))) { const it = mm.it === 'frappe' ? `⚔${mm.att}` : mm.it === 'garde' ? '🛡' : mm.it === 'soin' ? '💚' : mm.it === 'fuit' ? '🏃' : mm.it === 'remonte' ? '⏳' : mm.it === 'levier' ? '🎚' : mm.it === 'elan' ? '⚡' : mm.it === 'gros' ? `💥${mm.att + 2}` : '';
+    if (mm && vu && (B || vueForcee || eclaire(x, y))) { const it = mm.entrave >= R.tour ? '🌵' : mm.it === 'frappe' ? `⚔${mm.att}` : mm.it === 'garde' ? '🛡' : mm.it === 'soin' ? '💚' : mm.it === 'fuit' ? '🏃' : mm.it === 'remonte' ? '⏳' : mm.it === 'levier' ? '🎚' : mm.it === 'elan' ? '⚡' : mm.it === 'gros' ? `💥${mm.att + 2}` : '';
       inner += `<div class="jeton ${B ? 'boss' : ''}" id="j-${mm.id}" style="--c:${B ? '#ff7a4a' : K.BETES[mm.b].elite ? '#f3c96b' : '#8a98b8'}"><img src="portraits/m-${mm.img}.webp" alt="" onerror="this.onerror=null;this.src='portraits/m-coucou.webp'"><span class="it">${it}</span><span class="sc">🔒${mm.sceaux.filter(s => !s.ok).length}</span></div>`;
       if (d && !d.pas && K.aPortee(S, h, mm)) cl += ' cible'; }
     if ((mur === 'O' || mur === 'o') && R.plan === 2 && R.statuesOk && !h.flamme) cl += ' autel-cible'; // 16/11 soir : on voit qu'on peut toucher le feu
@@ -623,7 +647,7 @@ function dessine() {
     <div class="equipe">${S.heros.map((z, i) => `<button class="${i === actif ? 'on' : ''} ${z.aTerre ? 'terre' : ''} ${fini(i) ? 'fini' : ''}" onclick="choisitHeros(${i})">${fini(i) ? '<span class="ok-f">✓</span>' : ''}${imgH(z)}${nomH(z).replace('Sire ', '')}<br>${z.aTerre ? '✋ à terre' : `❤${z.pv} · 🎲${z.des.length}`}${invH(z) ? `<small class="inv-h">${invH(z)}</small>` : ''}${L ? `<small class="qui${mesHeros().includes(i) ? ' moi' : ''}">${mesHeros().includes(i) ? 'toi' : proprio(i) || 'libre'}</small>` : ''}</button>`).join('')}</div>
     <div class="des" id="desH">${L && !mesHeros().includes(actif) ? `<span class="aide">👤 ${nomH(h)} est joué par <b>${proprio(actif) || 'personne'}</b>${proprio(actif) ? '' : ' : touche 🌐 en haut pour le prendre'}.</span>` : h.aTerre ? `<span class="aide">${nomH(h)} est à terre : un ami à côté peut le relever avec un dé.</span>` : h.des.length && !lanceOK(actif) ? h.des.map(() => `<button class="de cache" onclick="lanceDesH()"></button>`).join('') + `<button class="lancerH" onclick="lanceDesH()">🎲 Lancer</button>` : h.des.map(z => z.pas ? `<button class="de pas ${sel === z.id ? 'sel' : ''}" onclick="choisitDe('${z.id}')" title="${z.v} pas qui restent">👣${z.v}</button>` : `<button class="de ${sel === z.id ? 'sel' : ''}" onclick="choisitDe('${z.id}')"><img src="faces-${h.id}/face-${z.v}.webp" alt="${z.v}"></button>`).join('') || '<span class="aide">Plus de dés pour ce héros : passe au suivant.</span>'}</div>
     ${d && !h.aTerre ? `<div class="pasinfo">${d.pas ? `👣 ${d.v} pas : 1 par case, ou 1 pour fouiller (porte gratuite)` : `👣 ce dé : <b>${K.pasDe(h, d.v).n} pas</b> (1 par case ou par fouille) · ou frapper`}</div>` : ''}
-    <div class="actions" ${L && !mesHeros().includes(actif) ? 'style="display:none"' : ''}>${d ? '<button onclick="cherche()">🔍 Pièges (2 cases)</button>' : ''}<button class="fin" onclick="aFini()">${libres().length <= 1 ? `✋ ${nomH(S.heros[actif]).replace('Sire ', '')} a fini ▶ les monstres` : `✋ ${nomH(S.heros[actif]).replace('Sire ', '')} a fini`}</button>${libres().length > 1 ? `<button class="sec" style="flex:none" onclick="finTour()" title="Tout le groupe a fini">▶ Monstres</button>` : ''}</div>`;
+    <div class="actions" ${L && !mesHeros().includes(actif) ? 'style="display:none"' : ''}>${pwBoutons(h, d)}${d ? '<button onclick="cherche()">🔍 Pièges (2 cases)</button>' : ''}<button class="fin" onclick="aFini()">${libres().length <= 1 ? `✋ ${nomH(S.heros[actif]).replace('Sire ', '')} a fini ▶ les monstres` : `✋ ${nomH(S.heros[actif]).replace('Sire ', '')} a fini`}</button>${libres().length > 1 ? `<button class="sec" style="flex:none" onclick="finTour()" title="Tout le groupe a fini">▶ Monstres</button>` : ''}</div>`;
   // la carte suit le héros actif (sauf si on vient de la déplacer à la main)
   const V = $('vue'), e = $(`c-${hv.x}-${hv.y}`);
   if (centrer && e) { V.scrollLeft = e.offsetLeft - V.clientWidth / 2 + e.offsetWidth / 2; V.scrollTop = e.offsetTop - V.clientHeight / 2 + e.offsetHeight / 2; centrer = false; }
@@ -695,6 +719,7 @@ function ficheHeros(i, choix) {
       <div class="ps-centre">${imgH(h)}<b>${esc(nomH(h))}</b><small>❤ ${h.pv} / ${h.pvmax} · 🎲 ${(K.HEROS_C[h.id] ? K.HEROS_C[h.id].des : 3) + (h.desPlus || 0) + (h.objet === 'cle' ? 1 : 0)} dés par tour${h.bouclier ? ` · 🛡 ${h.bouclier}` : ''}</small></div>
       <div class="ps-col">${['torse', 'pieds', 'talisman'].map(slot).join('')}</div></div>
     <div class="ps-bloc"><b>${H[h.id] ? H[h.id].t : ''}</b> : ${H[h.id] ? H[h.id].d : ''}</div>
+    ${h.pw ? `<div class="ps-bloc"><h3>🃏 Ses pouvoirs (${S.pre === 'groupe' ? '👥 Groupe' : '🗡 Solo'})</h3><ul>${PW_EMP.map(E => { const D = pwDef(h, E.k); return D ? `<li><b>${E.e} ${E.n} · ${D.e} ${D.n}</b>${h.pw[E.k].rang ? ` ★${h.pw[E.k].rang}` : ''}${E.k === 'ultime' && h.ultUsed ? ' (déjà utilisé)' : ''} : ${D.chron}</li>` : ''; }).join('')}</ul><p class="ps-aide">Se choisissent dans <b>Mes héros → Pouvoirs</b>, entre deux parties.</p></div>` : ''}
     <div class="ps-bloc"><h3>Ce que lui donne son équipement ici</h3>${B.length ? `<ul>${B.map(t => `<li>${t}</li>`).join('')}</ul>` : '<p class="ps-aide">Aucun bonus : ses dés comptent tels quels.</p>'}${tal ? `<h3>Ses talents</h3><ul>${tal}</ul>` : ''}</div>
     <div class="ps-bloc"><h3>Inventaire</h3><div class="ps-grille">${cases}</div>${det}</div>
     <p class="ps-aide">L’équipement se change dans <b>Mes héros</b> (menu), entre deux parties.</p></div>`;
@@ -728,6 +753,7 @@ function resultat(r) {
         const L1 = S.journal.slice(0, 4), quoi = L1.find(l => !/^(🔊|⌛|🔓)/.test(l)) || T[0]; bulle(quoi, e.quoi === 'piege' || e.quoi === 'monstre' || e.quoi === 'mimique', true);
         const suite = L1.filter(l => /^(🔊|⌛)/.test(l)); suite.forEach((l, k) => setTimeout(() => bulle(l, l.startsWith('🔊'), true), 3100 * (k + 1))); }
       if (e.t === 'salle') setTimeout(() => entreeSalle(e.salle), 350);
+      if (e.t === 'pouvoir') setTimeout(() => animPw(e), 60);
     });
     if (S.fin) return finPartie(); dessine(); return true; }
   if (typeof r === 'string') { son('erreur'); bulle(r, true); } return false;
@@ -780,6 +806,36 @@ function utiliseSac(k) {
   if (it === 'parchemin') { sacEnCours = k; sel = null; bulle('📜 Touche le monstre à brûler (4 cases au plus).'); dessine(); }
 }
 function cherche() { if (!sel) return; son('livre'); resultat(K.fouiller(S, actif, sel)); }
+// ------------------------------------------------------------------ 16/11 nuit : LES POUVOIRS DES HÉROS (pouvoirs-heros.js + moteur)
+const pwDef = (h, emp) => { if (!h || !h.pw || !h.pw[emp] || typeof POUVOIRS_H === 'undefined' || !POUVOIRS_H[h.id]) return null; return POUVOIRS_H[h.id][emp].find(x => x.v === h.pw[emp].v) || null; };
+function pwBoutons(h, d) {
+  if (!h || !h.pw || h.aTerre || !lanceOK(actif)) return '';
+  const b = ['pouvoir', 'ultime'].map(emp => { const D = pwDef(h, emp); if (!D) return ''; const I = K.pwInfo(S, actif, emp), used = emp === 'ultime' && h.ultUsed;
+    return used ? '' : `<button class="pw ${I.ok ? 'on' : ''}" style="--pc:${D.c}" onclick="pwOuvre('${emp}')">${emp === 'ultime' ? '🌟 Ultime' : '✨ Pouvoir'}</button>`; }).join('');
+  const tr = h.id === 'zephine' && h.pw.passif && h.pw.passif.v === 'A' && d && !d.pas && h.transT !== S.R.tour ? `<button class="pw on" style="--pc:#c58bff" onclick="pwRetourne()">🔄 Retourner ce ${d.v}</button>` : '';
+  return b + tr;
+}
+function pwOuvre(emp) {
+  const h = S.heros[actif], D = pwDef(h, emp); if (!D) return; const I = K.pwInfo(S, actif, emp), R0 = PW_ROLES[D.r] || ['', ''];
+  const dit = `<p style="text-align:center;margin:4px 0">${R0[0]} ${R0[1]} · ${emp === 'ultime' ? 'une fois par partie' : 'autant de fois que les dés le permettent'}</p><p>${D.chron}</p><p class="doux" style="font-size:.9em">Il faut : <b>${PW_COMBOS[D.co] || D.co}</b>.</p>`;
+  if (!I.ok) { fenetre(`<div class="pwfen"><h2>${D.e} ${D.n}</h2>${dit}<p style="color:#ff9a9a;text-align:center">${I.raison}</p><div class="choixh"><button onclick="fenetre('')">Fermer</button></div></div>`); son('erreur'); return; }
+  const des = I.des.map(id => h.des.find(z => z.id === id)).filter(Boolean);
+  fenetre(`<div class="pwfen"><h2>${D.e} ${D.n}</h2>${dit}<p style="text-align:center">Dés utilisés :</p><div class="pwd">${des.map(z => `<b>${z.v}</b>`).join('')}</div>
+    <p style="text-align:center;color:#f3c96b"><b>Ce qui va se passer :</b> ${I.cible}</p><div class="choixh"><button onclick="fenetre('')">Annuler</button><button class="or" onclick="pwValide('${emp}')">✨ Valider</button></div></div>`);
+}
+function pwValide(emp) { fenetre(''); const r = K.lancerPouvoir(S, actif, emp); if (r && r.ok) son(emp === 'ultime' ? 'ultime' : 'magie'); resultat(r); }
+function pwRetourne() { const r = K.transmuter(S, actif, sel); if (r && r.ok) son('magie'); resultat(r); }
+const PW_SONS = { halo:'bouclier', soin:'soin', ronces:'magie', louve:'coup', eclair:'gros', fleches:'coup', onde:'ultime', feu:'coup', lumiere:'magie', vent:'magie', alchimie:'magie', etoile:'rune' };
+function animPw(e) {
+  if (typeof POUVOIRS_H === 'undefined' || !POUVOIRS_H[e.cl]) return; const D = (POUVOIRS_H[e.cl][e.emp] || []).find(x => x.v === e.v); if (!D) return;
+  son(PW_SONS[D.a] || 'magie');
+  const bn = document.createElement('div'); bn.className = 'pwban'; bn.style.setProperty('--c', D.c); bn.textContent = `${D.e} ${D.n}`; document.body.appendChild(bn); setTimeout(() => bn.remove(), 1900);
+  const sym = { soin:['✚', '✚', '✚', '✚'], ronces:['🌿', '🌵', '🌿'], louve:['🐺'], eclair:['⚡'], fleches:['➶', '➶', '➶'], onde:['', '', ''], feu:['✦', '✦', '✦', '✦', '✦', '✦'], vent:['🌀'], alchimie:['◍', '○', '◍', '○'], etoile:['✦', '✧', '✦'], halo:[], lumiere:[] }[D.a] || [];
+  ['h' + e.h].concat(e.cibles || []).filter((x, i, a) => a.indexOf(x) === i).forEach((c, k) => { const el = $('j-' + c); if (!el) return;
+    const fx = document.createElement('span'); fx.className = `pwfx pw-${D.a}`; fx.style.setProperty('--c', D.c);
+    fx.innerHTML = sym.map((t, i) => `<i style="left:${20 + 60 * i / Math.max(1, sym.length - 1)}%;--dx:${Math.round(Math.cos(i) * 40)}px;--dy:${Math.round(Math.sin(i) * 40)}px">${t}</i>`).join('');
+    setTimeout(() => { el.appendChild(fx); setTimeout(() => fx.remove(), 1500); }, 120 * k); });
+}
 function frappeMenu(m) {
   const d = deSel(); if (!d) return;
   fenetre(`<h2>${m.n}</h2><p style="text-align:center">Pose ton <b>${d.v}</b> sur un sceau (en vert ceux qui l’acceptent).</p>
@@ -791,7 +847,7 @@ function amiMenu(i) {
   const h = S.heros[actif], z = S.heros[i], d = deSel(), moi = i === actif, b = [];
   if (z.aTerre) b.push(`<button class="sec" onclick="fenetre('');resultat(K.relever(S,actif,sel,${i}))">✋ Relever ${nomH(z)}<small>Il revient avec 4 PV.</small></button>`);
   else {
-    b.push(`<button class="sec" onclick="fenetre('');son('bouclier');resultat(K.proteger(S,actif,sel,${i}))">🛡 Protéger ${moi ? '(soi-même)' : nomH(z)}<small>Bouclier ${Math.ceil(d.v / 2) + 1}${h.id === 'aldric' ? ', pour lui et tous ses voisins' : ''} jusqu’au prochain coup.</small></button>`);
+    b.push(`<button class="sec" onclick="fenetre('');son('bouclier');resultat(K.proteger(S,actif,sel,${i}))">🛡 Protéger ${moi ? '(soi-même)' : nomH(z)}<small>${pwDef(h, 'garde') ? `${pwDef(h, 'garde').e} ${pwDef(h, 'garde').n} : ${pwDef(h, 'garde').chron.replace(/^Protéger[^:]*: /, '')}` : `Bouclier ${Math.ceil(d.v / 2) + 1}${h.id === 'aldric' ? ', pour lui et tous ses voisins' : ''} jusqu’au prochain coup.`}</small></button>`);
     if (h.id === 'pip' || (h.talents || []).includes('guerisseur')) b.push(`<button class="sec" onclick="fenetre('');resultat(K.soigner(S,actif,sel,${i}))">🌿 Soigner ${moi ? '(soi-même)' : nomH(z)}<small>+${d.v} PV.</small></button>`);
     if (!moi && K.dist(h, z) === 1) b.push(`<button class="sec" onclick="fenetre('');son('pas');centrer=true;resultat(K.echanger(S,actif,sel,${i}))">↔ Changer de place avec ${nomH(z)}<small>1 pas : vous échangez vos cases.</small></button>`);
     if (!moi) b.push(`<button class="sec" onclick="fenetre('');son('carte');resultat(K.donner(S,actif,sel,${i}))">🤝 Donner ce ${d.v} à ${nomH(z)}<small>Il pourra le poser (il doit être à côté).</small></button>`);
@@ -813,7 +869,7 @@ async function finTour(tousFinis) {
   const ev = K.finTour(S);
   // 16/11 (l'utilisateur : « en multijoueur, la phase des monstres, on voit tous la même chose ? ») : le tour des monstres part avec la partie,
   // chaque téléphone le rejoue (caméra de salle en salle, marches, coups)
-  S.animM = { n:((S.animM && S.animM.n) || 0) + 1, ev:ev.filter(e => e.m || e.t === 'boss').map(e => Object.assign({}, e)) }; vuAnim = S.animM.n;
+  S.animM = { n:((S.animM && S.animM.n) || 0) + 1, ev:ev.filter(e => e.m || e.t === 'boss' || e.t === 'pouvoir').map(e => Object.assign({}, e)) }; vuAnim = S.animM.n;
   dessine();
   await animeMonstres(ev);
   if (vueForcee) { await attends(400); vueForcee = null; }
@@ -839,6 +895,7 @@ async function animeMonstres(ev) {
     else if (e.t === 'frappe') { await fonce('j-' + e.m, 'j-h' + e.h); son('coup'); flash('j-h' + e.h); bulle(`⚔ ${nomH(S.heros[e.h])} −${e.v}`, true); await attends(380); }
     else if (e.t === 'levierRemonte') { son('tour-batir'); flash('j-' + e.m); bulle(S.journal.find(l => l.startsWith('🗿')) || '🗿 Un levier remonte !', true, true); await attends(1400); }
     else if (e.t === 'garde') { flash('j-' + e.m); await attends(250); }
+    else if (e.t === 'pouvoir') { animPw(e); await attends(900); }
     else if (e.t === 'elan') { son('ultime'); flash('j-' + e.m); bulle(S.journal.find(l => l.startsWith('⚡')) || '⚡ Il prend son élan !', true, true); await attends(1300); }
     else if (e.t === 'boss') { son('gros'); flash('j-boss'); bulle(S.R.boss && S.R.boss.b === 'roios' ? '💀 Le Roi des Os agit !' : '⏰ Le boss agit !'); await attends(600); }
   }
@@ -994,7 +1051,7 @@ const nomChoix = k => k.startsWith('av:') ? ((avTrouve(k.slice(3)) || {}).nom ||
 function versMoteur(k) {
   if (!k.startsWith('av:')) return k;
   const a = avTrouve(k.slice(3)); if (!a) return null; const s = avStats(a);
-  return { voie:a.voie, nom:a.nom, pv:s.pv, faces:s.faces, bonusF:s.bonus, desPlus:s.desPlus, talents:s.talents, av:a.id, c:a.couleur, portrait:avPortrait(a), att:s.att || 0, def:s.def || 0, agi:s.agi || 0 };
+  return { voie:a.voie, nom:a.nom, pv:s.pv, faces:s.faces, bonusF:s.bonus, desPlus:s.desPlus, talents:s.talents, av:a.id, c:a.couleur, portrait:avPortrait(a), att:s.att || 0, def:s.def || 0, agi:s.agi || 0, pwSet:typeof pwPourMoteur === 'function' ? pwPourMoteur(a.id) : null };
 }
 const equipeChoisie = () => choisis.map(versMoteur).filter(Boolean);
 function basculeHeros(k) { if (choisis.includes(k)) choisis = choisis.filter(x => x !== k); else if (choisis.length < 4) choisis.push(k); else { bulle('4 héros au plus', true); return; } son('choisir'); accueil(); }
@@ -1033,7 +1090,7 @@ async function lobbyPousse(f) {
 function entreeLobby(k) {
   const id = 'e' + Math.random().toString(36).slice(2, 8);
   if (k.startsWith('av:')) { const a = avTrouve(k.slice(3)); if (!a) return null; return { id, cle:k, owner:L.moi.id, nom:a.nom, img:avPortrait(a), sec:avPortraitSecours(a), c:a.couleur, m:versMoteur(k) }; }
-  return { id, cle:k, owner:L.moi.id, nom:H[k].n, img:`portraits/${k}.webp`, sec:`portraits/${k}.webp`, c:(H[k] || {}).c, m:{ g:k, B:typeof bonusHerosPvE === 'function' ? bonusHerosPvE(k) : { pv:0 } } };
+  return { id, cle:k, owner:L.moi.id, nom:H[k].n, img:`portraits/${k}.webp`, sec:`portraits/${k}.webp`, c:(H[k] || {}).c, m:{ g:k, B:typeof bonusHerosPvE === 'function' ? bonusHerosPvE(k) : { pv:0 }, pwSet:typeof pwPourMoteur === 'function' ? pwPourMoteur(k) : null } };
 }
 const nomJoueur = id => (L.joueurs.find(j => j.id === id) || {}).nom || '?';
 function ajouteLobby(k) {

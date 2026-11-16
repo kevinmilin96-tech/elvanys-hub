@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#120f24">
+<title>La Guilde des Runes · Les pouvoirs des héros</title>
+<style>
+  :root { --or:#f3c96b; --texte:#f1ecff; --doux:#c9c1ea; --ok:#7dffb0; }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body { margin:0; color:var(--texte); font:15px/1.45 Georgia, 'Times New Roman', serif; background:radial-gradient(ellipse at 50% -10%, #3a2a5a, #120f24 60%) fixed, #120f24; }
+  main { max-width:620px; margin:0 auto; padding:12px 10px 60px; }
+  .haut { display:flex; align-items:center; gap:8px; } .haut a { color:var(--doux); text-decoration:none; background:#221d42; border:1px solid #4b4580; border-radius:20px; padding:6px 12px; font-size:.9em; }
+  h1 { flex:1; margin:0; text-align:center; color:var(--or); font-size:1.25em; }
+  .bande { display:flex; gap:8px; overflow-x:auto; padding:10px 2px; scrollbar-width:none; } .bande::-webkit-scrollbar { display:none; }
+  .bande button { flex:none; width:68px; background:none; border:0; color:var(--doux); font:inherit; font-size:.72em; cursor:pointer; padding:0; }
+  .bande img { width:56px; height:56px; border-radius:50%; object-fit:cover; display:block; margin:0 auto 2px; box-shadow:0 0 0 2px #4b4580; }
+  .bande button.on img { box-shadow:0 0 0 3px var(--or), 0 0 14px var(--or); } .bande button.on { color:var(--or); font-weight:bold; }
+  .tete { display:flex; gap:12px; align-items:center; background:linear-gradient(135deg, color-mix(in srgb, var(--hc) 30%, #1c1838), #120f24); border:2px solid var(--hc); border-radius:18px; padding:10px; }
+  .tete img { width:78px; height:78px; border-radius:50%; object-fit:cover; box-shadow:0 0 0 3px var(--hc); }
+  .tete b { font-size:1.2em; color:var(--or); } .tete .cl { display:inline-block; margin-top:3px; padding:2px 10px; border-radius:12px; background:var(--hc); color:#120f24; font-weight:bold; font-size:.85em; }
+  .tete small { display:block; color:var(--doux); }
+  .points { margin-left:auto; text-align:center; background:#120f24; border:2px solid var(--or); border-radius:14px; padding:6px 10px; color:var(--or); font-weight:bold; min-width:76px; }
+  .points b { display:block; font-size:1.5em; color:var(--or); } .points.zero { border-color:#4b4580; color:var(--doux); } .points.zero b { color:var(--doux); }
+  .onglets { display:flex; gap:8px; margin:12px 0 4px; } .onglets button { flex:1; font:bold 1em Georgia, serif; padding:12px; border-radius:14px; border:2px solid #4b4580; background:#1c1838; color:var(--doux); cursor:pointer; }
+  .onglets button.on { border-color:var(--or); color:#2b1d0a; background:var(--or); }
+  .aide { color:var(--doux); font-size:.86em; margin:4px 2px 10px; }
+  .emp { background:#1c1838e6; border:1px solid #4b4580; border-radius:16px; padding:10px 8px 6px; margin:12px 0; }
+  .emp-h { display:flex; align-items:center; gap:8px; flex-wrap:wrap; } .emp-h h2 { margin:0; font-size:1.05em; color:var(--or); } .emp-h small { color:var(--doux); }
+  .rang { margin-left:auto; display:flex; align-items:center; gap:6px; } .rang .etoiles { color:var(--or); font-weight:bold; }
+  .rang button { font:bold .9em Georgia, serif; padding:9px 12px; border-radius:12px; border:0; background:var(--or); color:#2b1d0a; cursor:pointer; } .rang button[disabled] { opacity:.35; }
+  .verrou { color:#ffb36a; font-size:.85em; margin:4px 2px 0; }
+  .cases { display:flex; gap:8px; overflow-x:auto; scroll-snap-type:x mandatory; padding:8px 2px 8px; }
+  .case { flex:0 0 min(78%, 270px); scroll-snap-align:start; position:relative; background:#14122a; border:2px solid #4b4580; border-radius:16px; padding:10px; text-align:left; color:inherit; font:inherit; cursor:pointer; }
+  .case.choisi { border-color:var(--pc); box-shadow:0 0 14px color-mix(in srgb, var(--pc) 60%, transparent); background:linear-gradient(160deg, color-mix(in srgb, var(--pc) 22%, #14122a), #14122a); }
+  .case.ferme { opacity:.55; }
+  .case .coche { position:absolute; top:8px; right:8px; width:30px; height:30px; border-radius:50%; border:2px solid #4b4580; display:flex; align-items:center; justify-content:center; font-size:16px; background:#120f24; }
+  .case.choisi .coche { border-color:var(--pc); background:var(--pc); color:#120f24; font-weight:bold; }
+  .case .ico { display:flex; align-items:center; gap:8px; margin-right:34px; } .case .ico .em { font-size:30px; line-height:1; }
+  .case .nom { font-weight:bold; font-size:1.02em; } .case .role { display:inline-block; margin-top:2px; font-size:.78em; padding:1px 8px; border-radius:10px; background:#2a2346; color:var(--doux); }
+  .case p { margin:6px 0 0; font-size:.84em; } .case p b { color:var(--or); }
+  .glisse { text-align:center; color:#8a84b0; font-size:.75em; }
+  .resume { background:linear-gradient(135deg, #3a2a12, #1c1838); border:2px solid var(--or); border-radius:16px; padding:12px; margin:14px 0; }
+  .resume h3 { margin:0 0 6px; color:var(--or); } .resume p { margin:4px 0; font-size:.9em; }
+  .gros { display:block; margin:14px 0; padding:14px; border:2px solid #c9a24a; border-radius:16px; background:#2a2040; color:#ffd27a; text-align:center; font-size:1.05em; font-weight:bold; text-decoration:none; }
+</style>
+</head>
+<body>
+<main id="app"></main>
+<script src="musique.js?v=37b288d2f5"></script>
+<script src="rang.js?v=9729fcf665"></script>
+<script src="heros-etoiles.js?v=07f78336f4"></script>
+<script src="donnees.js?v=2afe6cf473"></script>
+<script src="aventuriers.js?v=04b0962a08"></script>
+<script src="pouvoirs-heros.js?v=67a647af5c"></script>
+<script src="fiche-heros.js?v=128330f3bf"></script>
+<script>
+// =============================================================================================== LA PAGE « BUILD » (16/11 nuit, demande de l'utilisateur)
+// Une page par héros : choix du héros (portraits), onglets 👥 Groupe / 🗡 Solo, une ligne par emplacement avec ses versions en cases à cocher,
+// rang ★ et « +1 rang », points à placer en haut, résumé du build en bas. Tout passe par pouvoirs-heros.js (un seul système : le niveau du héros).
+const $ = id => document.getElementById(id);
+const P0 = new URLSearchParams(location.search);
+const H_GUILDE = ['maelle', 'aldric', 'pip', 'oria', 'gorm', 'zephine'];
+const retour = P0.get('retour') || 'mes-heros.html';
+let actuel = P0.get('h') || 'pip', pre = P0.get('pre') === 'solo' ? 'solo' : 'groupe';
+const ZOK = () => localStorage.getItem('guilde-tuto') === 'fait';
+const tous = () => H_GUILDE.filter(id => id !== 'zephine' || ZOK()).concat(typeof avLire === 'function' ? avLire().map(a => a.id) : []);
+const roleTxt = r => (PW_ROLES[r] || ['', '']).join(' ');
+function caseHTML(c, E, D, choisi, ouvert) {
+  const ferme = D.v !== 'A' && !ouvert;
+  return `<button class="case ${choisi ? 'choisi' : ''} ${ferme ? 'ferme' : ''}" style="--pc:${D.c}" onclick="${ferme ? `fhBulle('Ce choix s’ouvre au niveau ${E.niv}')` : choisi ? `fhBulle('Déjà choisi')` : `choisit('${E.k}','${D.v}')`}">
+    <span class="coche">${ferme ? '🔒' : choisi ? '✓' : ''}</span>
+    <div class="ico"><span class="em">${pwIcone(c, E.k, D, 40)}</span><div><div class="nom">${D.n}</div><span class="role">${roleTxt(D.r)}</span></div></div>
+    ${D.co ? `<p>🎲 <b>${PW_COMBOS[D.co]}</b></p>` : ''}
+    <p><b>Duel :</b> ${D.duel}</p><p><b>Chroniques :</b> ${D.chron}</p>${ferme ? `<p style="color:#ffb36a">🔒 au niveau ${E.niv}</p>` : ''}</button>`;
+}
+function dessine() {
+  if (!tous().includes(actuel)) actuel = tous()[0];
+  history.replaceState(null, '', `?h=${actuel}&pre=${pre}${retour !== 'mes-heros.html' ? '&retour=' + encodeURIComponent(retour) : ''}`);
+  const I = fhInfo(actuel), c = classeDe(actuel), CL = PW_CLASSES[c], o = pouvoirsDe(actuel, pre), pts = pointsPouvoirs(actuel), niv = niveauH(actuel);
+  const autre = pre === 'groupe' ? 'solo' : 'groupe', oA = pouvoirsDe(actuel, autre);
+  $('app').innerHTML = `<div class="haut"><a href="${retour}">‹ Retour</a><h1>🃏 Les pouvoirs</h1><a href="mes-heros.html?h=${actuel}">Fiche</a></div>
+    <div class="bande">${tous().map(id => { const J = fhInfo(id); return J ? `<button class="${id === actuel ? 'on' : ''}" onclick="actuel='${id}';fhSon('choisir');dessine()">${fhImg(J)}${J.nom}</button>` : ''; }).join('')}</div>
+    <div class="tete" style="--hc:${I.c}">${fhImg(I)}<div><b>${I.nom}</b><br><span class="cl">${CL.e} ${CL.n}</span><small>${CL.d} · niveau ${niv}</small></div>
+      <div class="points ${pts ? '' : 'zero'}"><b>${pts}</b>point${pts > 1 ? 's' : ''}<br>à placer</div></div>
+    <div class="onglets"><button class="${pre === 'groupe' ? 'on' : ''}" onclick="pre='groupe';fhSon('choisir');dessine()">👥 Groupe</button><button class="${pre === 'solo' ? 'on' : ''}" onclick="pre='solo';fhSon('choisir');dessine()">🗡 Solo</button></div>
+    <p class="aide">${pre === 'groupe' ? '👥 Groupe : pris tout seul dans les Chroniques à 2 héros ou plus.' : '🗡 Solo : pris tout seul quand le héros joue seul (Chroniques seul ; les autres modes viendront).'} Changer est <b>gratuit</b>, quand tu veux hors partie. 1 point par niveau du héros ; les rangs restent sur l’emplacement (communs aux deux onglets).</p>
+    ${PW_EMP.map(E => { const r = o[E.k].rang, ouvert = pwOuvert(actuel, E.k);
+      return `<div class="emp"><div class="emp-h"><h2>${E.e} ${E.n}</h2><small>${E.d}</small>
+        <div class="rang"><span class="etoiles">★ ${r}/10</span><button ${pts && r < PW_RANG_MAX ? '' : 'disabled'} onclick="rangDemande('${E.k}')">⬆ +1 rang<br><small>1 point</small></button></div></div>
+        ${ouvert ? '' : `<p class="verrou">🔒 Le choix s’ouvre au niveau ${E.niv} (niveau ${niv} aujourd’hui) : en attendant, la version A.</p>`}
+        <div class="cases">${POUVOIRS_H[c][E.k].map(D => caseHTML(c, E, D, o[E.k].v === D.v, ouvert)).join('')}</div><div class="glisse">← glisse pour voir les ${POUVOIRS_H[c][E.k].length} versions →</div></div>`; }).join('')}
+    <div class="resume"><h3>📜 Le build</h3>
+      <p><b>${pre === 'groupe' ? '👥' : '🗡'} ${I.nom} ${nomBuild(actuel, pre)}</b> (${pre === 'groupe' ? 'Groupe' : 'Solo'}) : ${PW_EMP.map(E => `${o[E.k].def.e} ${o[E.k].def.n}${o[E.k].rang ? ' ★' + o[E.k].rang : ''}`).join(' · ')}</p>
+      <p style="color:var(--doux)">${autre === 'groupe' ? '👥' : '🗡'} ${I.nom} ${nomBuild(actuel, autre)} (${autre === 'groupe' ? 'Groupe' : 'Solo'}) : ${PW_EMP.map(E => `${oA[E.k].def.e} ${oA[E.k].def.n}`).join(' · ')}</p></div>
+    <a class="gros" href="chroniques.html">🗺 Essayer dans les Chroniques</a>`;
+}
+function choisit(emp, v) {
+  const c = classeDe(actuel), E = PW_EMP.find(x => x.k === emp), o = pouvoirsDe(actuel, pre), D = POUVOIRS_H[c][emp].find(x => x.v === v);
+  fhFen(`<h2>${D.e} ${D.n}</h2><p class="doux" style="text-align:center">${E.e} ${E.n} · ${pre === 'groupe' ? '👥 Groupe' : '🗡 Solo'}</p>
+    <p>À la place de <b>${o[emp].def.n}</b>. C’est gratuit, tu pourras revenir quand tu veux.</p><p><b>Chroniques :</b> ${D.chron}</p>
+    <div class="fh-bts"><button class="fh-bt" onclick="fhFen('')">Annuler</button><button class="fh-bt or" onclick="valideChoix('${emp}','${v}')">✓ Valider</button></div>`);
+}
+function valideChoix(emp, v) { const r = choisirPouvoir(actuel, pre, emp, v); fhFen(''); if (r === 'ok') { fhSon('tour-fusion'); fhBulle('✓ Choisi !'); } else fhBulle(r); dessine(); }
+function rangDemande(emp) {
+  const E = PW_EMP.find(x => x.k === emp), r = pouvoirsDe(actuel, pre)[emp].rang;
+  fhFen(`<h2>⬆ ${E.e} ${E.n} au rang ${r + 1}</h2><p>Ça coûte <b>1 point</b> (il en reste ${pointsPouvoirs(actuel)}). Le rang renforce cet emplacement, quelle que soit la version choisie : en général +1 tous les 3 rangs au chiffre principal, et ce qui est écrit dans le texte (rang 5, rang 10).</p>
+    <div class="fh-bts"><button class="fh-bt" onclick="fhFen('')">Annuler</button><button class="fh-bt or" onclick="valideRang('${emp}')">⬆ Valider</button></div>`);
+}
+function valideRang(emp) { const r = monterRang(actuel, emp); fhFen(''); if (r === 'ok') { fhSon('victoire'); fhBulle('⬆ Rang +1 !'); } else fhBulle(r); dessine(); }
+FH.apres = dessine;
+if (typeof GM !== 'undefined') { try { GM.musique('menu'); GM.bouton(); } catch (e) {} }
+dessine();
+</script>
+</body>
+</html>
