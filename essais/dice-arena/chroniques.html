@@ -44,6 +44,7 @@
   .c.mur { background:url('decor/tuile-roche-brulees.webp') 0 0 / calc(var(--t) * 4) calc(var(--t) * 4); filter:brightness(.3) saturate(.6); }
   .c:not(.mur):not(.noir) { filter:brightness(1.15); }
   .c.vide { background:transparent !important; pointer-events:none; }
+  .c.porte.peinte { box-shadow:none; filter:none; } .c.porte.peinte.cible { box-shadow:inset 0 0 0 3px #ffd36a, 0 0 14px #ffd36a; }
   .c.noir { background:#05050a !important; filter:none; } .c.noir > * { display:none; }
   .c.porte { background:#5a3412; box-shadow:inset 0 0 0 .4cqw #2a1808; } .c.porte.bronze { background:#7a5a1a; } .c.porte.ouverte { background:url('decor/tuile-sol-brulees.webp') 0 0 / calc(var(--t) * 4) calc(var(--t) * 4); }
   .c .o { font-size:calc(var(--t) * .62); filter:drop-shadow(0 .4cqw .4cqw #000); }
@@ -418,6 +419,7 @@ function dessine() {
     let cl = 'c', inner = '', stMur = '';
     if (!vu) cl += ' noir';
     else if (peint) cl += ' peint';
+    else if (p && fondSalle(S, x, y)) { cl += ' porte peinte' + (p.ouverte ? ' ouverte' : '') + (!p.ouverte && K.dist(h, { x, y }) === 1 ? ' cible' : ''); if (p.bronze && !R.bronze) inner = '<span class="cad">🔒</span>'; } // 16/11 (l'utilisateur) : la porte PEINTE sur l'image se touche telle quelle, sans icône par-dessus
     else if (p) { cl += ' porte' + (p.ouverte ? ' ouverte' : '') + (p.bronze ? ' bronze' : '') + (p.ouverte ? '' : ' img'); if (!p.ouverte) inner = ((S.scen || 'horloger') === 'horloger' ? porteDessus(R, x, y, p.bronze) : objImg('porte', p.bronze ? 'bronze' : '')) + (p.bronze && !R.bronze ? '<span class="cad">🔒</span>' : ''); }
     else if (mur === '#') cl += ' mur'; // 16/11 (l'utilisateur : « enlève ces murs rajoutés ») : plus de bordure de pierre ajoutée, les murs sont ceux peints dans les salles
     else if (mur === '~') inner = `<span class="o">${S.scen === 'arene' ? '🌳' : '🪨'}</span>`; // 15/11 soir : les obstacles (arbres d'une embuscade, rochers) se voient
@@ -442,7 +444,7 @@ function dessine() {
       inner += `<div class="jeton ${B ? 'boss' : ''}" id="j-${mm.id}" style="--c:${B ? '#ff7a4a' : K.BETES[mm.b].elite ? '#f3c96b' : '#8a98b8'}"><img src="portraits/m-${mm.img}.webp" alt=""><span class="it">${it}</span><span class="sc">🔒${mm.sceaux.filter(s => !s.ok).length}</span></div>`;
       if (d && !d.pas && K.aPortee(S, h, mm)) cl += ' cible'; }
     if (d && vu && (p && !p.ouverte || (o && (o.meuble && !o.fouille || o.t === 'levier' || o.t === 'livre')) || mur === 'A') && K.dist(h, { x, y }) === 1 || (d && vu && mur === 'T' && !R.statuesOk && R.salle[c] && R.salle[K.cle(h.x, h.y)] === R.salle[c])) cl += ' cible';
-    const fs = vu && !(p && p.ouverte) ? fondSalle(S, x, y) : ''; // une porte ouverte montre le sol du passage, plus la porte peinte fermée
+    const fs = vu ? fondSalle(S, x, y) : '';
     cases += `<div class="${cl}${fs ? ' dessin' : ''}" id="c-${x}-${y}"${fs || stMur ? ` style="${fs}${stMur}"` : ''} onclick="touche(${x},${y})">${inner}</div>`;
   }
   const nCol = x1 - x0 + 1;
