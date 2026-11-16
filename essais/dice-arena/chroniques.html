@@ -217,7 +217,8 @@ const lumiereActive = () => modeZones() && S.R.plan === 2;
 function eclaire(x, y) {
   if (!lumiereActive()) return true;
   const z = zoneDe(S.R, x, y); if (!SALLES_SOMBRES.includes(z)) return true;
-  return S.heros.some(h => zoneDe(S.R, h.x, h.y) === z && Math.hypot(h.x - x, h.y - y) <= LANTERNE);
+  // 16/11 (l'utilisateur : « un monstre m'a attaqué à travers la porte et je ne peux plus entrer ») : ce qui est JUSTE À CÔTÉ d'un héros se voit toujours
+  return S.heros.some(h => (zoneDe(S.R, h.x, h.y) === z && Math.hypot(h.x - x, h.y - y) <= LANTERNE) || Math.hypot(h.x - x, h.y - y) <= 1.5);
 }
 const SON_ZONE = { B:'rouages', H:'coeur', G:'crypte', F:'biblio', E:'atelier', A:'hall', C:'reserve', S:'galerie', P:'cagibi' };
 function zoneDe(R, x, y) {
