@@ -98,6 +98,8 @@
   .de.tourne img { animation:tourneD .26s linear infinite; } @keyframes tourneD { 0% { transform:rotate(0) translateY(0) scale(1); } 50% { transform:rotate(190deg) translateY(-2cqw) scale(1.1); } 100% { transform:rotate(360deg) translateY(0) scale(1); } }
   .lancerH { border:0; border-radius:3cqw; padding:2cqw 4cqw; font:bold 3.8cqw Georgia, serif; background:var(--or); color:#2b1d0a; margin-left:2cqw; animation:pulseL 1s infinite; } @keyframes pulseL { 50% { filter:brightness(1.2); } }
   #pcarte { position:absolute; right:2cqw; top:2cqw; width:min(26cqw, 120px); z-index:4; filter:drop-shadow(0 1cqw 1.4cqw #000c); border-radius:6px; overflow:hidden; opacity:.92; }
+  .schema-grand { position:relative; aspect-ratio:523 / 700; max-height:68vh; margin:0 auto; background:url('decor/carte-parchemin.webp?v=1') center / 100% 100% no-repeat; filter:drop-shadow(0 6px 14px #000a); }
+  .schema-grand .dedans { position:absolute; inset:9.5% 12% 9.5% 12%; display:flex; align-items:center; justify-content:center; } .schema-grand .dedans svg { width:100%; height:100%; }
   .schema-grand .encre { stroke-dasharray:1; stroke-dashoffset:1; fill-opacity:0; animation:encre 1.6s ease-out .3s forwards; } .schema-grand .encre-c, .schema-grand .encre-t { opacity:0; animation:encreF .9s ease-out 1.2s forwards; }
   @keyframes encre { 70% { stroke-dashoffset:0; fill-opacity:0; } to { stroke-dashoffset:0; fill-opacity:1; } } @keyframes encreF { to { opacity:1; } }
   .plateau.zonee { margin-top:3cqw; } /* 16/11 : plus de miniature en haut à droite (le bouton « Carte » suffit) */ #pcarte svg, .schema-grand svg { display:block; width:100%; height:auto; }
@@ -153,15 +155,15 @@
 <body>
 <div id="app"></div>
 <div id="fen"></div><div id="perso"></div>
-<script src="musique.js?v=20261116-162200"></script>
-<script src="rang.js?v=20261116-162200"></script>
+<script src="musique.js?v=20261116-162518"></script>
+<script src="rang.js?v=20261116-162518"></script>
 <script>window.AMIS_SANS_BOUTON = true;</script>
-<script src="amis.js?v=20261116-162200"></script>
-<script src="heros-etoiles.js?v=20261116-162200"></script>
-<script src="progression-modes.js?v=20261116-162200"></script>
-<script src="aventuriers.js?v=20261116-162200"></script>
-<script src="chroniques-moteur.js?v=20261116-162200"></script>
-<script src="chroniques-ambiance.js?v=20261116-162200"></script>
+<script src="amis.js?v=20261116-162518"></script>
+<script src="heros-etoiles.js?v=20261116-162518"></script>
+<script src="progression-modes.js?v=20261116-162518"></script>
+<script src="aventuriers.js?v=20261116-162518"></script>
+<script src="chroniques-moteur.js?v=20261116-162518"></script>
+<script src="chroniques-ambiance.js?v=20261116-162518"></script>
 <script>
 // =============================================================================================== LES CHRONIQUES DE LA GUILDE v2 (15/11, écran « façon HeroQuest »)
 // Une grande carte qui défile : les salles restent dans le noir jusqu'à ce qu'on ouvre leur porte ; les couloirs se dévoilent en avançant ;
@@ -227,9 +229,9 @@ function schemaSVG(grand) {
   const neuf = id => grand && !(S.carteVue || []).includes(id), en = id => neuf(id) ? ' class="encre" pathLength="1"' : ''; // 16/11 : ce qui est nouveau s'écrit à l'encre
   let X0 = R.w, Y0 = R.h, X1 = 0, Y1 = 0; Object.keys(R.vu).forEach(c => { const [x, y] = c.split(',').map(Number); if (R.murs[c] === '#') return; X0 = Math.min(X0, x); Y0 = Math.min(Y0, y); X1 = Math.max(X1, x); Y1 = Math.max(Y1, y); });
   if (X1 < X0) { X0 = 0; Y0 = 0; X1 = R.w - 1; Y1 = R.h - 1; }
-  let VW = Math.max(8, X1 - X0 + 3), VH = Math.max(6, Y1 - Y0 + 3); const cx = (X0 + X1 + 1) / 2, cy = (Y0 + Y1 + 1) / 2; if (VW / VH < 1.3) VW = VH * 1.3; else VH = VW / 1.3;
+  let VW = Math.max(8, X1 - X0 + 3), VH = Math.max(6, Y1 - Y0 + 3); const cx = (X0 + X1 + 1) / 2, cy = (Y0 + Y1 + 1) / 2; const RA = grand ? .71 : 1.3; if (VW / VH < RA) VW = VH * RA; else VH = VW / RA; // 16/11 : en grand, le cadre du parchemin (en hauteur)
   const vx = cx - VW / 2, vy = cy - VH / 2;
-  let svg = `<svg viewBox="${vx} ${vy} ${VW} ${VH}" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="pa" cx="50%" cy="45%" r="75%"><stop offset="0" stop-color="#e9d6a6"/><stop offset="1" stop-color="#b8975c"/></radialGradient></defs><rect x="${vx}" y="${vy}" width="${VW}" height="${VH}" rx=".6" fill="url(#pa)"/>`;
+  let svg = `<svg viewBox="${vx} ${vy} ${VW} ${VH}" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="pa" cx="50%" cy="45%" r="75%"><stop offset="0" stop-color="#e9d6a6"/><stop offset="1" stop-color="#b8975c"/></radialGradient></defs>${grand ? '' : `<rect x="${vx}" y="${vy}" width="${VW}" height="${VH}" rx=".6" fill="url(#pa)"/>`}`;
   Object.keys(couloirsZ()).forEach(id => { if (!vue(id)) return; const [x, y, w, h] = couloirsZ()[id].r; svg += `<rect${neuf(id) ? ' class="encre-c"' : ''} x="${x + .3}" y="${y + .3}" width="${w - .6}" height="${h - .6}" fill="${id === zv ? '#f3c96b' : '#cdb07a'}" stroke="#4a3418" stroke-width=".12" stroke-dasharray=".35 .2"/>`; });
   Object.keys(K.SALLES).forEach(id => { if (!vue(id)) return; const [x, y, w, h] = K.rectSalle(S, id);
     svg += `<rect${en(id)} x="${x - .15}" y="${y - .15}" width="${w + .3}" height="${h + .3}" rx=".5" fill="${id === zv ? '#f3c96b' : '#d9bf8a'}" stroke="${id === zv ? '#8a4a10' : '#4a3418'}" stroke-width="${id === zv ? .3 : .18}"/>`;
@@ -243,7 +245,7 @@ function schemaSVG(grand) {
 }
 function petiteCarte() { const e = $('pcarte'); if (e && S) e.innerHTML = schemaSVG(false); }
 function grandeCarte() { setTimeout(() => { const R = S.R; S.carteVue = Object.keys(K.SALLES).filter(id => R.vuSalle[id]).concat(Object.keys(couloirsZ()).filter(id => Object.keys(R.vu).some(c => { const [x, y] = c.split(',').map(Number); return zoneDe(R, x, y) === id; }))); sauve(); }, 50);
-  fenetre(`<h2>🗺 Le donjon</h2><div class="schema-grand">${schemaSVG(true)}</div><p style="text-align:center;color:var(--doux);font-size:.9em">Le doré : la zone que tu regardes. Les ronds : tes héros. Les points rouges : les monstres vus.</p><button class="go" onclick="fenetre('')">Fermer</button>`); }
+  fenetre(`<h2>🗺 Le donjon</h2><div class="schema-grand"><div class="dedans">${schemaSVG(true)}</div></div><p style="text-align:center;color:var(--doux);font-size:.9em">Le doré : la zone que tu regardes. Les ronds : tes héros. Les points rouges : les monstres vus.</p><button class="go" onclick="fenetre('')">Fermer</button>`); }
 // 16/11 : les salles repeintes AVEC LEURS MURS (vue plus haute, prompts salle-<nom>-v2) : l'image couvre aussi la case de mur tout autour
 const SALLE_MURS = ['A', 'C', 'B', 'E', 'F', 'S', 'P', 'G', 'H']; // reçues le 16/11 (Crypte G et Cœur H l'après-midi)
 function fondSalle(S, x, y) {
@@ -986,9 +988,9 @@ if (sessionStorage.getItem('chron-en-jeu') && !location.search && (() => { try {
 { const s = new URLSearchParams(location.search).get('salle'); if (s) { history.replaceState(null, '', location.pathname); const c = (typeof AMIS !== 'undefined' && AMIS.carte) || null, nom = (c && c.pseudo) || localStorage.getItem('guilde-pseudo');
     if (nom) rejoindre(s, { id:'j' + Math.random().toString(36).slice(2, 10), nom }); else { rejoindreForm(); setTimeout(() => { const i = $('fCode'); if (i) i.value = s; }, 150); } } }
 </script>
-<script src="chroniques-aventures.js?v=20261116-162200"></script>
-<script src="guide.js?v=20261116-162200"></script>
-<script src="guides-modes.js?v=20261116-162200"></script>
+<script src="chroniques-aventures.js?v=20261116-162518"></script>
+<script src="guide.js?v=20261116-162518"></script>
+<script src="guides-modes.js?v=20261116-162518"></script>
 <script>
 // 15/11 : le guide de Moustache de ce mode (guides-modes.js)
 { const _a = accueil; accueil = function () { const r = _a.apply(this, arguments); guideMode('chroniques'); return r; }; }
