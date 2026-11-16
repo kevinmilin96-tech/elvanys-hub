@@ -346,6 +346,7 @@ function recoit(d) {
   S = d.etat; L.version = d.version; if (d.joueurs) L.joueurs = d.joueurs; L.dernier = JSON.stringify(S);
   if (!mesHeros().includes(actif)) { const m = mesHeros().find(i => !S.heros[i].aTerre); if (m != null) actif = m; }
   sel = null; dessine(); salleAJour();
+  if (S.animM && S.animM.n !== vuAnim) { const A = S.animM; vuAnim = A.n; if (!depart && !occupe) { occupe = true; animeMonstres(A.ev.map(e => Object.assign({}, e))).then(() => { occupe = false; centrer = true; dessine(); if (S.fin) finPartie(); }); return; } }
   if (depart) { son('portail'); dialogue(S.campagne != null ? CHAPITRES[S.campagne].titre : SCT().titre, [S.campagne != null ? CHAPITRES[S.campagne].avant : SCT().ouverture, SCT().entree()]); return; }
   if (S.journal[0] && S.journal[0] !== avant) bulle(S.journal[0].replace(/^[^ ]+ /, ''));
   if (S.fin) finPartie();
@@ -730,7 +731,19 @@ async function finTour(tousFinis) {
   occupe = true; sel = null;
   // 16/11 (retour de l'utilisateur : « aucun mouvement de monstre ») : les monstres qui vont bouger attendent à leur ancienne place,
   // puis marchent un par un, se jettent sur leur cible ; la carte les suit.
-  const ev = K.finTour(S); dessine();
+  const ev = K.finTour(S);
+  // 16/11 (l'utilisateur : « en multijoueur, la phase des monstres, on voit tous la même chose ? ») : le tour des monstres part avec la partie,
+  // chaque téléphone le rejoue (caméra de salle en salle, marches, coups)
+  S.animM = { n:((S.animM && S.animM.n) || 0) + 1, ev:ev.filter(e => e.m || e.t === 'boss').map(e => Object.assign({}, e)) }; vuAnim = S.animM.n;
+  dessine();
+  await animeMonstres(ev);
+  if (vueForcee) { await attends(400); vueForcee = null; }
+  occupe = false; actif = Math.max(0, S.heros.findIndex(z => !z.aTerre)); centrer = true;
+  if (S.fin) return finPartie();
+  son('relance'); dessine();
+}
+let vuAnim = 0;
+async function animeMonstres(ev) {
   const voisCase = (x, y) => { const V = $('vue'), c = $(`c-${x}-${y}`); if (!V || !c) return; const r = V.getBoundingClientRect(), q = c.getBoundingClientRect(); if (q.left < r.left || q.right > r.right || q.top < r.top || q.bottom > r.bottom) V.scrollTo({ left:c.offsetLeft - V.clientWidth / 2, top:c.offsetTop - V.clientHeight / 2, behavior:'smooth' }); };
   const ou = id => id === 'boss' ? S.R.boss : S.R.monstres.find(z => z.id === id);
   ev.filter(e => e.t === 'pas').forEach(e => { const el = $('j-' + e.m), m = ou(e.m); if (el && m) { const w = el.parentElement.offsetWidth; el.style.transform = `translate(${(e.de[0] - m.x) * w}px, ${(e.de[1] - m.y) * w}px)`; } });
@@ -750,9 +763,6 @@ async function finTour(tousFinis) {
     else if (e.t === 'boss') { son('gros'); flash('j-boss'); bulle(S.R.boss && S.R.boss.b === 'roios' ? '💀 Le Roi des Os agit !' : '⏰ Le boss agit !'); await attends(600); }
   }
   if (vueForcee) { await attends(400); vueForcee = null; }
-  occupe = false; actif = Math.max(0, S.heros.findIndex(z => !z.aTerre)); centrer = true;
-  if (S.fin) return finPartie();
-  son('relance'); dessine();
 }
 const attends = ms => new Promise(r => setTimeout(r, ms));
 function flash(id) { const e = $(id); if (e) { e.classList.remove('flash'); void e.offsetWidth; e.classList.add('flash'); } }
