@@ -344,7 +344,7 @@ function nouvelle(heros, s, scen, opts = {}) {
   // la grille : la case reste « fermée » sauf quand un héros est sur la dalle
   delete R.murs[cle(...GRILLE)]; R.grille = { x:GRILLE[0], y:GRILLE[1], dx:DALLE[0], dy:DALLE[1] };
   // les statues (murs 'T') : chacune regarde N/E/S/O (0-3) ; but = toutes vers l'autel ; tourner l'une tourne aussi la suivante
-  R.murs[cle(...AUTEL_S)] = 'O'; const veut = VEUT_S; // N de l'autel regarde S, E regarde O…
+  R.murs[cle(...AUTEL_S)] = 'O'; R.murs[cle(AUTEL_S[0] + 1, AUTEL_S[1])] = 'o'; const veut = VEUT_S; // 16/11 soir : le cercle peint de l'autel couvre 2 cases, on ne marche sur aucune // N de l'autel regarde S, E regarde O…
   R.statues = STATUES.map(([x, y], i) => ({ x, y, d:veut[i], veut:veut[i] }));
   for (let k = 0; k < 3; k++) { const i = Math.floor(hasard(S) * 4); tourneStatue(R, i); } // mélangées depuis la bonne position : toujours faisable
   if (R.statues.every(t => t.d === t.veut)) tourneStatue(R, 0);
@@ -424,8 +424,10 @@ function majBibliotheque5(S) { const R = S.R; if (R.plan !== 2 || R.biblio5) ret
   if (!de || (R.murs['17,14'] && R.murs['17,14'] !== '#')) return; const o = R.obj[de]; delete R.obj[de];
   if (de === '17,13') delete R.murs[de]; else R.murs[de] = '#';
   o.t = 'etagere'; if (!o.crochete) o.verrou = 0; R.obj['17,14'] = o; R.murs['17,14'] = 'M'; }
+// parties commencées avant : la 2e case de l'autel de la Galerie devient infranchissable (si personne n'est dessus)
+function majAutel2(S) { const R = S.R; if (R.plan !== 2 || R.autel2 || !R.statues) return; const c = cle(AUTEL_S[0] + 1, AUTEL_S[1]); if (herosEn(S, AUTEL_S[0] + 1, AUTEL_S[1]) || R.monstres.some(m => m.x === AUTEL_S[0] + 1 && m.y === AUTEL_S[1])) return; R.autel2 = true; if (!R.murs[c]) R.murs[c] = 'o'; }
 function voir(S) {
-  elargitPortes(S); majBibliotheque(S); majBibliotheque3(S); majBibliotheque5(S);
+  elargitPortes(S); majBibliotheque(S); majBibliotheque3(S); majBibliotheque5(S); majAutel2(S);
   if (SCEN[S.scen || 'horloger'].image || SCEN[S.scen || 'horloger'].hasard) return voirAVue(S);
   const R = S.R; let neuves = [];
   S.heros.forEach(h => {
@@ -483,7 +485,7 @@ const prendDe = (h, id) => { const i = h.des.findIndex(d => d.id === id); return
 // ---- ouvrir une porte : GRATUIT, à côté de la porte ; la salle derrière se dévoile
 // 16/11 (l'utilisateur) : une porte PEINTE déborde souvent sur la case de mur voisine : on l'ouvre aussi depuis cette case-là
 // 16/11 (l'utilisateur : « deux cases pour simuler la porte, pas trois ») : on note, porte par porte, de quel côté la porte PEINTE déborde
-const DEBORDE = { '12,18':[11, 18], '16,9':[15, 9], '5,4':[6, 4] }; // 16/11 soir : la porte peinte de la Galerie des statues fait aussi deux cases // + la Bibliothèque (16/11) : la porte peinte couvre aussi la case de gauche // la Réserve : la porte peinte couvre aussi la case de gauche
+const DEBORDE = { '12,18':[11, 18], '16,9':[15, 9], '5,4':[6, 4], '15,4':[16, 4] }; // 16/11 soir : la porte de bronze du Cœur est double aussi (RÈGLE : porte peinte double = 2 cases, voir Chroniques-Conception-cartes.md) // 16/11 soir : la porte peinte de la Galerie des statues fait aussi deux cases // + la Bibliothèque (16/11) : la porte peinte couvre aussi la case de gauche // la Réserve : la porte peinte couvre aussi la case de gauche
 function moitiesPorte(S, x, y) { if (S.R.plan !== 2) return []; const d = DEBORDE[cle(x, y)]; return d && S.R.murs[cle(...d)] === '#' ? [d] : []; }
 // une porte peinte large, une fois OUVERTE : sa moitié de mur devient un passage (on traverse les deux cases)
 function elargitPortes(S) { const R = S.R; if (R.plan !== 2) return; Object.entries(R.portes).forEach(([c, p]) => { if (!p.ouverte || p.moitie) return; const [x, y] = c.split(',').map(Number);

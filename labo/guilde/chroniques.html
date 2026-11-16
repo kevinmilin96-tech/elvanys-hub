@@ -174,15 +174,15 @@
 <body>
 <div id="app"></div>
 <div id="fen"></div><div id="perso"></div>
-<script src="musique.js?v=20261116-203328"></script>
-<script src="rang.js?v=20261116-203328"></script>
+<script src="musique.js?v=20261116-203523"></script>
+<script src="rang.js?v=20261116-203523"></script>
 <script>window.AMIS_SANS_BOUTON = true;</script>
-<script src="amis.js?v=20261116-203328"></script>
-<script src="heros-etoiles.js?v=20261116-203328"></script>
-<script src="progression-modes.js?v=20261116-203328"></script>
-<script src="aventuriers.js?v=20261116-203328"></script>
-<script src="chroniques-moteur.js?v=20261116-203328"></script>
-<script src="chroniques-ambiance.js?v=20261116-203328"></script>
+<script src="amis.js?v=20261116-203523"></script>
+<script src="heros-etoiles.js?v=20261116-203523"></script>
+<script src="progression-modes.js?v=20261116-203523"></script>
+<script src="aventuriers.js?v=20261116-203523"></script>
+<script src="chroniques-moteur.js?v=20261116-203523"></script>
+<script src="chroniques-ambiance.js?v=20261116-203523"></script>
 <script>
 // =============================================================================================== LES CHRONIQUES DE LA GUILDE v2 (15/11, écran « façon HeroQuest »)
 // Une grande carte qui défile : les salles restent dans le noir jusqu'à ce qu'on ouvre leur porte ; les couloirs se dévoilent en avançant ;
@@ -738,7 +738,7 @@ function touche(x, y) {
   { const o = R.obj[c]; // 16/11 : celui qui VOIT un piège (lunettes, Oria) peut le signaler au groupe d'un toucher
     if (!d && o && o.t === 'piege' && !o.trouve && !o.vu && (h.objet === 'lunettes' || h.id === 'oria' && Math.abs(h.x - x) + Math.abs(h.y - y) <= 2)) {
       o.vu = true; S.journal.unshift(`⚠️ ${nomH(h)} signale un piège : tout le groupe le voit maintenant.`); bulle(`⚠️ ${nomH(h)} signale le piège : tout le groupe le voit maintenant.`); dessine(); return; } }
-  if (R.murs[c] === 'O' && R.plan === 2 && R.statuesOk) { const r = K.benir(S, actif); if (typeof r === 'string') { bulle(r, true); return; } son('magie'); return resultat(r); } // 16/11 soir : le feu sacré
+  if ((R.murs[c] === 'O' || R.murs[c] === 'o') && R.plan === 2 && R.statuesOk) { const r = K.benir(S, actif); if (typeof r === 'string') { bulle(r, true); return; } son('magie'); return resultat(r); } // 16/11 soir : le feu sacré
   if (!d) { if (hi >= 0) return choisitHeros(hi); if (m || B) return infoMonstre(B || m);
     if (R.murs[c] === 'K') { bulle('📕 Le Livre des heures, tout en haut de l’étagère : mets-toi à côté du livre, avec un ami juste à côté de toi (courte échelle), puis pose un dé de 4 ou plus sur le livre.', false, true); return; }
     if (R.murs[c] === 'B') { bulle('Une étagère pleine de vieux livres d’horlogerie.'); return; }
@@ -1100,9 +1100,9 @@ if (ESSAI) essaiAtelier(ESSAI); else if (sessionStorage.getItem('chron-en-jeu') 
 { const s = new URLSearchParams(location.search).get('salle'); if (s) { history.replaceState(null, '', location.pathname); const c = (typeof AMIS !== 'undefined' && AMIS.carte) || null, nom = (c && c.pseudo) || localStorage.getItem('guilde-pseudo');
     if (nom) rejoindre(s, { id:'j' + Math.random().toString(36).slice(2, 10), nom }); else { rejoindreForm(); setTimeout(() => { const i = $('fCode'); if (i) i.value = s; }, 150); } } }
 </script>
-<script src="chroniques-aventures.js?v=20261116-203328"></script>
-<script src="guide.js?v=20261116-203328"></script>
-<script src="guides-modes.js?v=20261116-203328"></script>
+<script src="chroniques-aventures.js?v=20261116-203523"></script>
+<script src="guide.js?v=20261116-203523"></script>
+<script src="guides-modes.js?v=20261116-203523"></script>
 <script>
 // 15/11 : le guide de Moustache de ce mode (guides-modes.js)
 { const _a = accueil; accueil = function () { const r = _a.apply(this, arguments); guideMode('chroniques'); return r; }; }
