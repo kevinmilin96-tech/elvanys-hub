@@ -342,10 +342,12 @@ function recoit(d) {
   if (!d || !d.etat) return;
   if (d.etat.lobby) { LOB = d.etat.lobby; S = null; L.version = d.version; if (d.joueurs) L.joueurs = d.joueurs; L.dernier = ''; fenetre(''); salleAttente(); return; }
   const depart = !S; LOB = null;
-  const avant = S && S.journal ? S.journal[0] : null;
+  const avant = S && S.journal ? S.journal[0] : null, posAvant = S && S.heros ? S.heros.map(z => [z.x, z.y]) : null;
   S = d.etat; L.version = d.version; if (d.joueurs) L.joueurs = d.joueurs; L.dernier = JSON.stringify(S);
   if (!mesHeros().includes(actif)) { const m = mesHeros().find(i => !S.heros[i].aTerre); if (m != null) actif = m; }
   sel = null; dessine(); salleAJour();
+  // 16/11 (l'utilisateur) : la caméra de chacun reste sur SON héros ; les héros des autres qui bougent dans sa zone glissent case par case
+  if (posAvant && !depart) S.heros.forEach((z, i) => { const a = posAvant[i]; if (a && (a[0] !== z.x || a[1] !== z.y) && !mesHeros().includes(i)) glisse('j-h' + i, a, [z.x, z.y]); });
   if (S.animM && S.animM.n !== vuAnim) { const A = S.animM; vuAnim = A.n; if (!depart && !occupe) { occupe = true; animeMonstres(A.ev.map(e => Object.assign({}, e))).then(() => { occupe = false; centrer = true; dessine(); if (S.fin) finPartie(); }); return; } }
   if (depart) { son('portail'); dialogue(S.campagne != null ? CHAPITRES[S.campagne].titre : SCT().titre, [S.campagne != null ? CHAPITRES[S.campagne].avant : SCT().ouverture, SCT().entree()]); return; }
   if (S.journal[0] && S.journal[0] !== avant) bulle(S.journal[0].replace(/^[^ ]+ /, ''));
