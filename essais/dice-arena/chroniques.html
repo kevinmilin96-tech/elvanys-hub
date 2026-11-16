@@ -397,7 +397,8 @@ function dessine() {
   if (!S) { if (typeof AMB !== 'undefined') AMB.zone(null); return accueil(); }
   const R = S.R, h = S.heros[actif], d = deSel();
   const atteint = d && !h.aTerre ? K.atteignables(S, h, d.v, d.pas) : {};
-  const voitPieges = S.heros.some(z => z.objet === 'lunettes');
+  // 16/11 (l'utilisateur) : les lunettes ne servent qu'à CELUI qui les porte (quand c'est lui qu'on joue) ; un piège signalé se voit de tous
+  const voitPieges = h.objet === 'lunettes';
   let cases = '';
   const SC = K.SCEN[S.scen || 'horloger'], peint = !!SC.image;
   // la zone regardée (salle ou bout de couloir) et son cadre d'une case de mur tout autour
@@ -428,7 +429,7 @@ function dessine() {
     else if (mur === 'O') inner = R.plan === 2 && SALLE_MURS.includes('S') && !R.statuesOk ? '' : objImg('autel', R.statuesOk ? 'brille' : ''); // le cercle de laiton peint fait l'autel
     else if (mur === 'A') inner = `${(S.scen || 'horloger') === 'horloger' ? objImg('axe') : `<span class="o">${K.SCEN[S.scen || 'horloger'].axeE}</span>`}<span class="lv">${R.rouagesPoses}/3</span>`;
     else { if (!R.salle[c]) cl += ' couloir';
-      if (o && o.t === 'piege' && !o.trouve && (o.vu || voitPieges || S.heros.some(z => z.id === 'oria' && Math.abs(z.x - x) + Math.abs(z.y - y) <= 2))) inner = '<span class="o">⚠️</span>';
+      if (o && o.t === 'piege' && !o.trouve && (o.vu || voitPieges || h.id === 'oria' && Math.abs(h.x - x) + Math.abs(h.y - y) <= 2)) inner = `<span class="o">${o.vu ? '⚠️' : '👓'}</span>`;
       if (o && o.t === 'rouage') inner = objImg('rouage');
       if (R.grille && x === R.grille.x && y === R.grille.y) inner = objImg('grille', K.grilleOuverte(S) ? 'ouverte' : '');
       if (R.grille && x === R.grille.dx && y === R.grille.dy) inner = objImg('dalle', 'dalle') + inner;
@@ -552,6 +553,9 @@ function touche(x, y) {
   if (m && !B && hi < 0 && !eclaire(x, y)) { bulle('Il fait trop noir par là : approche ta lanterne pour voir ce qui s’y cache.', true); return; }
   if (sacEnCours != null && (m || B)) { const k = sacEnCours; sacEnCours = null; son('ultime'); return resultat(K.utiliser(S, actif, k, B ? 'boss' : m.id)); }
   sacEnCours = null;
+  { const o = R.obj[c]; // 16/11 : celui qui VOIT un piège (lunettes, Oria) peut le signaler au groupe d'un toucher
+    if (!d && o && o.t === 'piege' && !o.trouve && !o.vu && (h.objet === 'lunettes' || h.id === 'oria' && Math.abs(h.x - x) + Math.abs(h.y - y) <= 2)) {
+      o.vu = true; S.journal.unshift(`⚠️ ${nomH(h)} signale un piège : tout le groupe le voit maintenant.`); bulle(`⚠️ ${nomH(h)} signale le piège : tout le groupe le voit maintenant.`); dessine(); return; } }
   if (!d) { if (hi >= 0) return choisitHeros(hi); if (m || B) return infoMonstre(B || m);
     if (R.murs[c] === 'T') { bulle(R.statuesOk ? 'Les statues regardent l’autel.' : 'Choisis un dé (même un 👣), puis touche la statue pour la tourner : sa voisine tourne aussi !'); return; }
     if (R.grille && x === R.grille.dx && y === R.grille.dy) { bulle('La dalle : tant qu’un héros reste dessus, la grille du Cagibi est ouverte.'); return; }
