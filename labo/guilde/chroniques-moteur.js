@@ -605,7 +605,8 @@ function agir(S, hi, idDe, x, y) {
     if (n >= 4 && !R.bronze) { R.bronze = true; S.sablier += 3; log(S, '🎚🎚🎚🎚 Les quatre leviers sont baissés ensemble : un grondement sourd… la PORTE DE BRONZE s’est déverrouillée (+3 grains) !'); }
     return { ok:true, ev:[{ t:'levier', bronze:R.bronze && n >= 4 }] }; }
   if (o.t === 'livre') { if (d.v < 4) return 'Il faut un dé de 4 ou plus.';
-    const aides = S.heros.filter(z => z !== h && !z.aTerre && dist(z, { x, y }) === 1); if (!aides.length) return 'Il faut un deuxième héros à côté du livre pour faire la courte échelle.';
+    // 16/11 (l'utilisateur : « je ne comprends pas ») : la courte échelle se fait par un ami juste à côté de celui qui grimpe (ou du livre)
+    const aides = S.heros.filter(z => z !== h && !z.aTerre && (dist(z, h) === 1 || dist(z, { x, y }) === 1)); if (!aides.length) return 'Il faut un ami juste à côté de toi pour te faire la courte échelle jusqu’au livre.';
     prendDe(h, idDe); delete R.obj[cle(x, y)]; R.murs[cle(x, y)] = 'B'; S.livre = true; log(S, '📕 Le Livre des heures ! Le point faible de l’Horloger est noté.'); return { ok:true, ev:[{ t:'livre' }] }; }
   return 'Rien à faire ici.';
 }
