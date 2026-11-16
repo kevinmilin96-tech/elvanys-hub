@@ -459,7 +459,7 @@ const prendDe = (h, id) => { const i = h.des.findIndex(d => d.id === id); return
 // ---- ouvrir une porte : GRATUIT, à côté de la porte ; la salle derrière se dévoile
 // 16/11 (l'utilisateur) : une porte PEINTE déborde souvent sur la case de mur voisine : on l'ouvre aussi depuis cette case-là
 // 16/11 (l'utilisateur : « deux cases pour simuler la porte, pas trois ») : on note, porte par porte, de quel côté la porte PEINTE déborde
-const DEBORDE = { '12,18':[11, 18] }; // la Réserve : la porte peinte couvre aussi la case de gauche
+const DEBORDE = { '12,18':[11, 18], '16,9':[15, 9] }; // + la Bibliothèque (16/11) : la porte peinte couvre aussi la case de gauche // la Réserve : la porte peinte couvre aussi la case de gauche
 function moitiesPorte(S, x, y) { if (S.R.plan !== 2) return []; const d = DEBORDE[cle(x, y)]; return d && S.R.murs[cle(...d)] === '#' ? [d] : []; }
 // une porte peinte large, une fois OUVERTE : sa moitié de mur devient un passage (on traverse les deux cases)
 function elargitPortes(S) { const R = S.R; if (R.plan !== 2) return; Object.entries(R.portes).forEach(([c, p]) => { if (!p.ouverte || p.moitie) return; const [x, y] = c.split(',').map(Number);
