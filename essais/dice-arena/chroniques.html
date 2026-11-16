@@ -200,13 +200,13 @@ function schemaSVG(grand) {
 function petiteCarte() { const e = $('pcarte'); if (e && S) e.innerHTML = schemaSVG(false); }
 function grandeCarte() { fenetre(`<h2>🗺 Le donjon</h2><div class="schema-grand">${schemaSVG(true)}</div><p style="text-align:center;color:var(--doux);font-size:.9em">Le doré : la zone que tu regardes. Les ronds : tes héros. Les points rouges : les monstres vus.</p><button class="go" onclick="fenetre('')">Fermer</button>`); }
 // 16/11 : les salles repeintes AVEC LEURS MURS (vue plus haute, prompts salle-<nom>-v2) : l'image couvre aussi la case de mur tout autour
-const SALLE_MURS = ['A'];
+const SALLE_MURS = ['A', 'C', 'B', 'E', 'F', 'S', 'P']; // reçues le 16/11 (manquent la Crypte G et le Cœur H)
 function fondSalle(S, x, y) {
   if ((S.scen || 'horloger') !== 'horloger') return '';
   let id = S.R.salle[K.cle(x, y)];
   if (!id) id = SALLE_MURS.find(k => { const [a, b, w, h] = K.rectSalle(S, k); return x >= a - 1 && x <= a + w && y >= b - 1 && y <= b + h; });
   const D = id && K.SALLES[id], f = SALLE_IMG[id]; if (!D || !f) return '';
-  if (SALLE_MURS.includes(id)) { const [a, b, w, h] = K.rectSalle(S, id); return `background:url('decor/salle-${f}-v2.webp?v=1') calc(var(--t) * ${a - 1 - x}) calc(var(--t) * ${b - 1 - y}) / calc(var(--t) * ${w + 2}) calc(var(--t) * ${h + 2}) no-repeat;`; }
+  if (SALLE_MURS.includes(id)) { const [a, b, w, h] = K.rectSalle(S, id); return `background:url('decor/salle-${f}-v2.webp?v=2') calc(var(--t) * ${a - 1 - x}) calc(var(--t) * ${b - 1 - y}) / calc(var(--t) * ${w + 2}) calc(var(--t) * ${h + 2}) no-repeat;`; }
   const [x0, y0, w, h] = K.rectSalle(S, id);
   return `background:url('decor/salle-${f}.webp?v=2') calc(var(--t) * ${x0 - x}) calc(var(--t) * ${y0 - y}) / calc(var(--t) * ${w}) calc(var(--t) * ${h}) no-repeat;`;
 }
@@ -394,7 +394,7 @@ function dessine() {
     else if (mur === 'B') inner = objImg('etagere');
     else if (mur === 'K') inner = '<span class="o">📕</span>';
     else if (mur === 'T') { const t = R.statues.find(z => z.x === x && z.y === y); inner = `<img class="oi statue ${R.statuesOk ? 'fait-ok' : ''}" src="decor/obj-statue.webp?v=1" alt="" style="transform:rotate(${t.d * 90}deg)">`; }
-    else if (mur === 'O') inner = objImg('autel', R.statuesOk ? 'brille' : '');
+    else if (mur === 'O') inner = R.plan === 2 && SALLE_MURS.includes('S') && !R.statuesOk ? '' : objImg('autel', R.statuesOk ? 'brille' : ''); // le cercle de laiton peint fait l'autel
     else if (mur === 'A') inner = `${(S.scen || 'horloger') === 'horloger' ? objImg('axe') : `<span class="o">${K.SCEN[S.scen || 'horloger'].axeE}</span>`}<span class="lv">${R.rouagesPoses}/3</span>`;
     else { if (!R.salle[c]) cl += ' couloir';
       if (o && o.t === 'piege' && !o.trouve && (o.vu || voitPieges || S.heros.some(z => z.id === 'oria' && Math.abs(z.x - x) + Math.abs(z.y - y) <= 2))) inner = '<span class="o">⚠️</span>';
