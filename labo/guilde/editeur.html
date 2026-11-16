@@ -81,8 +81,8 @@
 const CLE = 'guilde-editeur-salles'; // petit JSON gardé sur le téléphone (et dans la sauvegarde du compte) ; les images à part (IndexedDB)
 const $ = id => document.getElementById(id);
 const PINCEAUX = [['sol', 'Sol', 'transparent'], ['mur', 'Mur', '#5a5a6a'], ['porte', 'Porte', '#f3c96b'], ['escalier', 'Escalier', '#9a7a4a'], ['meuble', 'Meuble', '#a0522d'], ['obstacle', 'Obstacle', '#2f6a3a']];
-const MEUBLE_EN = { coffre:'wooden chest', armoire:'tall wardrobe', tonneaux:'group of barrels', etabli:'workbench', etagere:'bookshelf against the wall', bureau:'small desk', tombeau:'stone tomb', cheminee:'fireplace in the wall', autel:'small stone altar', cristaux:'cluster of glowing crystals' };
-const MEUBLES = { coffre:'🧰', armoire:'🗄️', tonneaux:'🛢️', etabli:'🛠️', etagere:'📚', bureau:'🪑', tombeau:'⚱️', cheminee:'🔥', autel:'🕯️', cristaux:'💎' };
+const MEUBLE_EN = { caisse:'stack of wooden crates', coffre:'wooden chest', armoire:'tall wardrobe', tonneaux:'group of barrels', etabli:'workbench', etagere:'bookshelf against the wall', bureau:'small desk', tombeau:'stone tomb', cheminee:'fireplace in the wall', autel:'small stone altar', cristaux:'cluster of glowing crystals' };
+const MEUBLES = { caisse:'📦', coffre:'🧰', armoire:'🗄️', tonneaux:'🛢️', etabli:'🛠️', etagere:'📚', bureau:'🪑', tombeau:'⚱️', cheminee:'🔥', autel:'🕯️', cristaux:'💎' };
 const SONS = { '':'aucun', rouages:'tic-tac des rouages', coeur:'grondement du Cœur', crypte:'gouttes de la crypte', biblio:'pages et tic-tac lent', atelier:'petits outils', hall:'grand hall', reserve:'réserve', galerie:'vent', cagibi:'cagibi', couloir:'couloir' };
 let salles = lire(), actif = salles[0] ? salles[0].id : null, pinceau = 'porte', meubleSorte = 'coffre', peint = false;
 function lire() { try { return JSON.parse(localStorage.getItem(CLE) || '[]'); } catch (e) { return []; } }
@@ -219,6 +219,6 @@ let ouiNonFn = null;
 function ouiNon(q, fn) { ouiNonFn = fn; fen(`<p>${q}</p><div class="ligne"><button class="or" onclick="fen('');ouiNonFn&&ouiNonFn()">Oui</button><button onclick="fen('')">Non</button></div>`); }
 tout();
 </script>
-<script src="musique.js?v=20261116-171326"></script>
+<script src="musique.js?v=20261116-171512"></script>
 </body>
 </html>
