@@ -130,15 +130,15 @@
 <body>
 <div id="app"></div>
 <div id="fen"></div>
-<script src="musique.js?v=20261116-155641"></script>
-<script src="rang.js?v=20261116-155641"></script>
+<script src="musique.js?v=20261116-160116"></script>
+<script src="rang.js?v=20261116-160116"></script>
 <script>window.AMIS_SANS_BOUTON = true;</script>
-<script src="amis.js?v=20261116-155641"></script>
-<script src="heros-etoiles.js?v=20261116-155641"></script>
-<script src="progression-modes.js?v=20261116-155641"></script>
-<script src="aventuriers.js?v=20261116-155641"></script>
-<script src="chroniques-moteur.js?v=20261116-155641"></script>
-<script src="chroniques-ambiance.js?v=20261116-155641"></script>
+<script src="amis.js?v=20261116-160116"></script>
+<script src="heros-etoiles.js?v=20261116-160116"></script>
+<script src="progression-modes.js?v=20261116-160116"></script>
+<script src="aventuriers.js?v=20261116-160116"></script>
+<script src="chroniques-moteur.js?v=20261116-160116"></script>
+<script src="chroniques-ambiance.js?v=20261116-160116"></script>
 <script>
 // =============================================================================================== LES CHRONIQUES DE LA GUILDE v2 (15/11, écran « façon HeroQuest »)
 // Une grande carte qui défile : les salles restent dans le noir jusqu'à ce qu'on ouvre leur porte ; les couloirs se dévoilent en avançant ;
@@ -414,7 +414,10 @@ function dessine() {
   if (RZ) { const [a, b, w, hh] = RZ;
     for (let y = b - 1; y <= b + hh; y++) for (let x = a - 1; x <= a + w; x++) { const pp = R.portes[K.cle(x, y)]; if (!pp || !pp.ouverte) continue;
       const X = x < a ? x - 1 : x >= a + w ? x + 1 : x, Y = y < b ? y - 1 : y >= b + hh ? y + 1 : y; if (X === x && Y === y) continue;
-      devant.add(K.cle(X, Y)); x0 = Math.max(0, Math.min(x0, X)); y0 = Math.max(0, Math.min(y0, Y)); x1 = Math.min(R.w - 1, Math.max(x1, X)); y1 = Math.min(R.h - 1, Math.max(y1, Y)); } }
+      // la 1re case derrière la porte, puis tout droit les cases où le dé choisi permet d'aller (16/11 : la 3e case d'un pas disparaissait)
+      const dx = Math.sign(X - x), dy = Math.sign(Y - y);
+      for (let k = 0, U = X, V = Y; k < 6 && U >= 0 && V >= 0 && U < R.w && V < R.h; k++, U += dx, V += dy) { if (k > 0 && !atteint[K.cle(U, V)]) break;
+        devant.add(K.cle(U, V)); x0 = Math.min(x0, U); y0 = Math.min(y0, V); x1 = Math.max(x1, U); y1 = Math.max(y1, V); } } }
   const horsCadre = (x, y) => RZ && (x < RZ[0] - 1 || x > RZ[0] + RZ[2] || y < RZ[1] - 1 || y > RZ[1] + RZ[3]) && !devant.has(K.cle(x, y));
   for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
     if (horsCadre(x, y)) { cases += '<div class="c vide"></div>'; continue; }
@@ -896,9 +899,9 @@ accueil();
 { const s = new URLSearchParams(location.search).get('salle'); if (s) { history.replaceState(null, '', location.pathname); const c = (typeof AMIS !== 'undefined' && AMIS.carte) || null, nom = (c && c.pseudo) || localStorage.getItem('guilde-pseudo');
     if (nom) rejoindre(s, { id:'j' + Math.random().toString(36).slice(2, 10), nom }); else { rejoindreForm(); setTimeout(() => { const i = $('fCode'); if (i) i.value = s; }, 150); } } }
 </script>
-<script src="chroniques-aventures.js?v=20261116-155641"></script>
-<script src="guide.js?v=20261116-155641"></script>
-<script src="guides-modes.js?v=20261116-155641"></script>
+<script src="chroniques-aventures.js?v=20261116-160116"></script>
+<script src="guide.js?v=20261116-160116"></script>
+<script src="guides-modes.js?v=20261116-160116"></script>
 <script>
 // 15/11 : le guide de Moustache de ce mode (guides-modes.js)
 { const _a = accueil; accueil = function () { const r = _a.apply(this, arguments); guideMode('chroniques'); return r; }; }
