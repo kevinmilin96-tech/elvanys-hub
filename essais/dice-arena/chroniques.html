@@ -252,13 +252,17 @@ function schemaSVG(grand) {
   Object.entries(couloirsZ()).forEach(([id, Z]) => { if (!Z.esc || !vue(id)) return; const [x, y, w, h] = Z.r; for (let i = 1; i < w * 3; i++) svg += `<line x1="${x + i / 3}" y1="${y + .2}" x2="${x + i / 3}" y2="${y + h - .2}" stroke="#4a3418" stroke-width=".07"/>`; });
   if (R.plan === 2 && grand) [[0, 'Le sommet'], [7, '1er étage'], [16, 'Rez-de-chaussée'], [24, 'Sous-sol']].forEach(([y, t]) => { svg += `<text x="${vx + .4}" y="${y + .9}" font-size=".7" fill="#6a4418" font-family="Georgia" font-style="italic">${t}</text>`; });
   Object.entries(R.portes).forEach(([c, p]) => { if (!R.vu[c]) return; const [x, y] = c.split(',').map(Number); svg += `<rect x="${x + .25}" y="${y + .25}" width=".5" height=".5" fill="${p.ouverte ? '#e9d6a6' : p.bronze ? '#c88a2a' : '#6b3a14'}" stroke="#3a2410" stroke-width=".08"/>`; });
+  // 16/11 (l'utilisateur : « je ne sais pas si je dois aller à gauche ou à droite ») : chaque escalier découvert, avec sa flèche ⬆ / ⬇
+  if (R.liens) Object.entries(R.liens).forEach(([c, l]) => { if (!R.vu[c]) return; const [x, y] = c.split(',').map(Number), ly = +l.split(',')[1], up = ly < y;
+    svg += `<g><circle cx="${x + .5}" cy="${y + .5}" r=".62" fill="${up ? '#2f6a3a' : '#7a3a1a'}" stroke="#2a1808" stroke-width=".1"/><path d="${up ? `M${x + .5} ${y + .1} L${x + .85} ${y + .65} L${x + .15} ${y + .65} Z` : `M${x + .5} ${y + .9} L${x + .85} ${y + .35} L${x + .15} ${y + .35} Z`}" fill="#ffe9a8"/></g>`;
+    if (grand) svg += `<text x="${x + .5}" y="${y + (up ? -.35 : 1.75)}" font-size=".5" text-anchor="middle" fill="#3a2410" font-family="Georgia" font-style="italic">${up ? 'monte' : 'descend'}</text>`; });
   R.monstres.concat(R.boss ? [R.boss] : []).forEach(m => { if (R.vu[K.cle(m.x, m.y)]) svg += `<circle cx="${m.x + .5}" cy="${m.y + .5}" r="${m === R.boss ? .45 : .28}" fill="#b0201a" stroke="#3a0a08" stroke-width=".08"/>`; });
   S.heros.forEach((h, i) => { svg += `<circle cx="${h.x + .5}" cy="${h.y + .5}" r=".42" fill="${h.aTerre ? '#777' : coulH(h)}" stroke="${i === actif ? '#fff' : '#2a1808'}" stroke-width="${i === actif ? .16 : .1}"/>`; });
   return svg + '</svg>';
 }
 function petiteCarte() { const e = $('pcarte'); if (e && S) e.innerHTML = schemaSVG(false); }
 function grandeCarte() { setTimeout(() => { const R = S.R; S.carteVue = Object.keys(K.SALLES).filter(id => R.vuSalle[id]).concat(Object.keys(couloirsZ()).filter(id => Object.keys(R.vu).some(c => { const [x, y] = c.split(',').map(Number); return zoneDe(R, x, y) === id; }))); sauve(); }, 50);
-  fenetre(`<h2>🗺 Le donjon</h2><div class="schema-grand"><div class="dedans">${schemaSVG(true)}</div></div><p style="text-align:center;color:var(--doux);font-size:.9em">Le doré : la zone que tu regardes. Les ronds : tes héros. Les points rouges : les monstres vus.</p><button class="go" onclick="fenetre('')">Fermer</button>`); }
+  fenetre(`<h2>🗺 Le donjon</h2><div class="schema-grand"><div class="dedans">${schemaSVG(true)}</div></div><p style="text-align:center;color:var(--doux);font-size:.9em">Le doré : la zone que tu regardes. Les ronds : tes héros. Les points rouges : les monstres vus. ▲ vert : l’escalier monte ; ▼ brun : il descend.</p><button class="go" onclick="fenetre('')">Fermer</button>`); }
 // 16/11 : les salles repeintes AVEC LEURS MURS (vue plus haute, prompts salle-<nom>-v2) : l'image couvre aussi la case de mur tout autour
 const SALLE_MURS = ['A', 'C', 'B', 'E', 'F', 'S', 'P', 'G', 'H']; // reçues le 16/11 (Crypte G et Cœur H l'après-midi)
 function fondSalle(S, x, y) {
