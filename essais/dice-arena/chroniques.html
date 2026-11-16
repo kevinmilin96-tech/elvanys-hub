@@ -436,7 +436,7 @@ const imgH = (z, cl) => `<img ${cl || ''} src="${z.portrait || `portraits/${z.id
 const SCX = { ex:s => `${s.v}`, min:s => `≥ ${s.v}`, max:s => `≤ ${s.v}`, pair:() => '<small>pair</small>', imp:() => '<small>impair</small>', tot:s => `Σ ${s.reste}`, any:() => '✶' };
 function sceauTxt(s, L) { if (s.ok) return s.t === 'tot' ? `Σ ${s.val}` : (s.val || '✓'); if (s.t === 'dbl') { const j = L.find(x => x !== s && x.t === 'dbl' && x.g === s.g && x.ok); return j ? `= ${j.val}` : '<small>jumeau</small>'; } return SCX[s.t](s); }
 const OBJ_E = { bouclier:'🛡️', cle:'🔧', lunettes:'👓' };
-function invH(z) { return (z.porte ? '⚙' : '') + (z.objet ? OBJ_E[z.objet] : '') + (z.sac || []).map(it => K.SAC[it].e).join(''); }
+function invH(z) { return (z.porte ? '⚙️' : '') + (z.objet ? OBJ_E[z.objet] : '') + (z.sac || []).map(it => K.SAC[it].e).join(''); }
 // 16/11 (retour de l'utilisateur : « je ne retrouve nulle part mes objets ») : ce que porte le héros choisi, toujours visible
 function invLigne(h) {
   const L2 = [];
@@ -566,7 +566,7 @@ function dessine() {
       if (ouv.length === 1) inner = `<span class="impasse" style="transform:rotate(${ouv[0][2]}deg)"></span>` + inner; }
     if (atteint[c]) cl += ' peut';
     const hi = S.heros.findIndex(z => z.x === x && z.y === y), m = R.monstres.find(z => z.x === x && z.y === y), B = R.boss && R.boss.x === x && R.boss.y === y ? R.boss : null;
-    if (hi >= 0) { const z = S.heros[hi]; inner += `<div class="jeton ${hi === actif ? 'actif' : ''} ${z.aTerre ? 'terre' : ''}" id="j-h${hi}" style="--c:${coulH(z)}">${imgH(z)}<span class="pv">${z.aTerre ? '✋' : '❤' + z.pv}${z.bouclier ? '🛡' + z.bouclier : ''}${z.porte ? '⚙' : ''}</span></div>`; }
+    if (hi >= 0) { const z = S.heros[hi]; inner += `<div class="jeton ${hi === actif ? 'actif' : ''} ${z.aTerre ? 'terre' : ''}" id="j-h${hi}" style="--c:${coulH(z)}">${imgH(z)}<span class="pv">${z.aTerre ? '✋' : '❤' + z.pv}${z.bouclier ? '🛡' + z.bouclier : ''}${z.porte ? '⚙️' : ''}</span></div>`; }
     const mm = B || m;
     if (mm && vu && (B || vueForcee || eclaire(x, y))) { const it = mm.it === 'frappe' ? `⚔${mm.att}` : mm.it === 'garde' ? '🛡' : mm.it === 'soin' ? '💚' : mm.it === 'fuit' ? '🏃' : mm.it === 'remonte' ? '⏳' : mm.it === 'levier' ? '🎚' : mm.it === 'elan' ? '⚡' : mm.it === 'gros' ? `💥${mm.att + 2}` : '';
       inner += `<div class="jeton ${B ? 'boss' : ''}" id="j-${mm.id}" style="--c:${B ? '#ff7a4a' : K.BETES[mm.b].elite ? '#f3c96b' : '#8a98b8'}"><img src="portraits/m-${mm.img}.webp" alt="" onerror="this.onerror=null;this.src='portraits/m-coucou.webp'"><span class="it">${it}</span><span class="sc">🔒${mm.sceaux.filter(s => !s.ok).length}</span></div>`;
