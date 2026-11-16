@@ -84,7 +84,7 @@ const PINCEAUX = [['sol', 'Sol', 'transparent'], ['mur', 'Mur', '#5a5a6a'], ['po
 const MEUBLE_EN = { caisse:'stack of wooden crates', coffre:'wooden chest', armoire:'tall wardrobe', tonneaux:'group of barrels', etabli:'workbench', etagere:'bookshelf against the wall', bureau:'small desk', tombeau:'stone tomb', cheminee:'fireplace in the wall', autel:'small stone altar', cristaux:'cluster of glowing crystals' };
 const MEUBLES = { caisse:'📦', coffre:'🧰', armoire:'🗄️', tonneaux:'🛢️', etabli:'🛠️', etagere:'📚', bureau:'🪑', tombeau:'⚱️', cheminee:'🔥', autel:'🕯️', cristaux:'💎' };
 const SONS = { '':'aucun', rouages:'tic-tac des rouages', coeur:'grondement du Cœur', crypte:'gouttes de la crypte', biblio:'pages et tic-tac lent', atelier:'petits outils', hall:'grand hall', reserve:'réserve', galerie:'vent', cagibi:'cagibi', couloir:'couloir' };
-let salles = lire(), actif = salles[0] ? salles[0].id : null, pinceau = 'porte', meubleSorte = 'coffre', peint = false;
+let salles = lire(), actif = salles[0] ? salles[0].id : null, pinceau = 'porte', meubleSorte = 'caisse', meubleNom = '', peint = false;
 function lire() { try { return JSON.parse(localStorage.getItem(CLE) || '[]'); } catch (e) { return []; } }
 function garde() { localStorage.setItem(CLE, JSON.stringify(salles)); }
 const S = () => salles.find(s => s.id === actif);
@@ -136,7 +136,7 @@ function promptDe(s) {
     return g.length === 1 ? `ONE closed wooden door in the ${m} wall, ${ou} ${pos[0]} ${sens}, EXACTLY ONE square wide and centered on that square`
       : `ONE large closed double door in the ${m} wall, ${ou}s ${pos[0]} and ${pos[1]} ${sens}, EXACTLY TWO squares wide`; });
   const objets = [], esc = [];
-  for (let y = 1; y <= s.h; y++) for (let x = 1; x <= s.w; x++) { const v = s.cases[k(x, y)] || ''; if (v.startsWith('meuble')) objets.push(`a ${MEUBLE_EN[v.split(':')[1]] || 'wooden chest'} on the square at column ${x}, row ${y}`); if (v === 'escalier') esc.push(`column ${x}, row ${y}`); if (v === 'obstacle') objets.push(`a rubble pile or pillar on the square at column ${x}, row ${y}`); }
+  for (let y = 1; y <= s.h; y++) for (let x = 1; x <= s.w; x++) { const v = s.cases[k(x, y)] || ''; if (v.startsWith('meuble')) objets.push(`a ${MEUBLE_EN[v.split(':')[1]] || 'wooden chest'}${v.split(':')[2] ? ` (« ${v.split(':')[2]} »)` : ''} on the square at column ${x}, row ${y}`); if (v === 'escalier') esc.push(`column ${x}, row ${y}`); if (v === 'obstacle') objets.push(`a rubble pile or pillar on the square at column ${x}, row ${y}`); }
   return `Paint ONE dungeon room seen STRICTLY FROM DIRECTLY ABOVE, like a printed battle map for a virtual tabletop, in a warm hand-painted fantasy board game style (same style as the attached image if there is one). The WHOLE room fits inside the image with its FOUR WALLS clearly visible all around it, as thick tops of stone walls seen from above. Format ${s.w + 2}:${s.h + 2} (width ${s.w + 2}, height ${s.h + 2}), edge to edge, no frame. The wall band is EXACTLY one square thick on every side: it fills the outer 1/${s.w + 2} of the width on the left and on the right, and the outer 1/${s.h + 2} of the height at the top and at the bottom; inside, the FLOOR is a rectangle of exactly ${s.w} by ${s.h} squares of regular flagstones (columns counted from the left, rows from the top).
 DOORS (very important, they must match the game): ${G.length ? 'the walls have exactly ' + G.length + ' door' + (G.length > 1 ? 's' : '') + ': ' + desc.join('; ') + '. Each door is painted seen from above inside the wall band, it never spills onto the next square, and the floor square right in front of it on each side stays EMPTY' : 'the walls have NO door at all'}; NO other door, NO other opening, NO alcove, NO archway, NO niche anywhere else in the walls.
 ${objets.length ? 'Furniture, each exactly on its square: ' + objets.join('; ') + '. ' : ''}${esc.length ? 'Stone stairs going down seen from above on: ' + esc.join('; ') + '. ' : ''}Keep every other floor square clear for game tokens.
@@ -177,7 +177,7 @@ function reglages() {
 }
 function pinceauxUI() {
   $('pinceaux').innerHTML = PINCEAUX.map(([v, n, c]) => `<button class="${pinceau === v ? 'on' : ''}" onclick="pinceau='${v}';pinceauxUI()"><i style="background:${c};border:1px solid #fff4"></i>${n}</button>`).join('')
-    + (pinceau === 'meuble' ? `<select style="grid-column:1/-1" onchange="meubleSorte=this.value">${Object.entries(MEUBLES).map(([v, e]) => `<option value="${v}" ${meubleSorte === v ? 'selected' : ''}>${e} ${v}</option>`).join('')}</select>` : '');
+    + (pinceau === 'meuble' ? `<label style="grid-column:1/-1;font-size:.85em;color:var(--doux)">Nom du meuble, comme sur le dessin (ce que le jeu dira au toucher)<input style="width:100%" value="${esc(meubleNom)}" placeholder="Ex. : la pile de caisses" oninput="meubleNom=this.value.replace(/:/g, ' ')"></label><select style="grid-column:1/-1" onchange="meubleSorte=this.value">${Object.entries(MEUBLES).map(([v, e]) => `<option value="${v}" ${meubleSorte === v ? 'selected' : ''}>${e} ${v}</option>`).join('')}</select>` : '');
 }
 function taille(w, h) { const s = S(); w = Math.max(2, Math.min(14, w || s.w)); h = Math.max(2, Math.min(14, h || s.h));
   const C = {}; Object.entries(s.cases).forEach(([c, v]) => { const [x, y] = c.split(',').map(Number); if (x <= w + 1 && y <= h + 1) C[c] = v; }); s.w = w; s.h = h; s.cases = C; s.maj = Date.now(); garde(); tout(); }
@@ -192,7 +192,7 @@ async function dessine() {
   if (s.img && !imgCache[s.id]) imgCache[s.id] = await imgLit(s.id);
   let h = `<div class="img" style="${imgCache[s.id] ? `background-image:url('${imgCache[s.id]}')` : ''}"></div>`;
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const v = s.cases[k(x, y)] || '', ty = typeDe(s, x, y);
-    h += `<div class="case ${ty} ${V.res.has(k(x, y)) ? 'devant' : ''} ${V.err.has(k(x, y)) ? 'erreur' : ''}" data-x="${x}" data-y="${y}" style="opacity:${ty === 'sol' && !V.res.has(k(x, y)) ? 1 : op || .01}">${v.startsWith('meuble') ? `<span class="m">${MEUBLES[v.split(':')[1]] || '📦'}</span>` : ''}</div>`; }
+    h += `<div class="case ${ty} ${V.res.has(k(x, y)) ? 'devant' : ''} ${V.err.has(k(x, y)) ? 'erreur' : ''}" data-x="${x}" data-y="${y}" title="${v.startsWith('meuble') ? esc(v.split(':')[2] || v.split(':')[1]) : ''}" style="opacity:${ty === 'sol' && !V.res.has(k(x, y)) ? 1 : op || .01}">${v.startsWith('meuble') ? `<span class="m">${MEUBLES[v.split(':')[1]] || '📦'}</span>` : ''}</div>`; }
   G.style.cssText = `grid-template-columns:repeat(${W}, ${t}px);grid-auto-rows:${t}px`;
   G.innerHTML = h;
   $('bImg').disabled = !s.img;
@@ -203,7 +203,7 @@ async function dessine() {
 function peindre(e) {
   const c = document.elementFromPoint(e.clientX, e.clientY); if (!c || !c.dataset || c.dataset.x == null) return;
   const s = S(), x = +c.dataset.x, y = +c.dataset.y, cle2 = k(x, y);
-  const v = pinceau === 'meuble' ? 'meuble:' + meubleSorte : pinceau;
+  const v = pinceau === 'meuble' ? 'meuble:' + meubleSorte + (meubleNom.trim() ? ':' + meubleNom.trim() : '') : pinceau;
   const defaut = bord(s, x, y) ? 'mur' : 'sol';
   if (v === defaut) delete s.cases[cle2]; else s.cases[cle2] = v;
   s.maj = Date.now();
@@ -219,6 +219,6 @@ let ouiNonFn = null;
 function ouiNon(q, fn) { ouiNonFn = fn; fen(`<p>${q}</p><div class="ligne"><button class="or" onclick="fen('');ouiNonFn&&ouiNonFn()">Oui</button><button onclick="fen('')">Non</button></div>`); }
 tout();
 </script>
-<script src="musique.js?v=20261116-171625"></script>
+<script src="musique.js?v=20261116-171748"></script>
 </body>
 </html>

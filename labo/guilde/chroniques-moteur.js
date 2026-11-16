@@ -134,7 +134,7 @@ function construitAtelier(S, R, C) {
   for (let y = 0; y < H2; y++) for (let x = 0; x < W2; x++) { const v = ty(x, y), c = cle(x, y);
     if (v === 'mur') R.murs[c] = '#'; else if (v === 'obstacle') R.murs[c] = '~';
     else if (v === 'porte') R.portes[c] = { salle:'X', ouverte:false, essai:true };
-    else if (v.startsWith('meuble')) { R.murs[c] = 'M'; R.obj[c] = { t:v.split(':')[1] || 'coffre', meuble:true, fouille:false, cache:tirage[Math.floor(hasard(S) * tirage.length)] }; }
+    else if (v.startsWith('meuble')) { R.murs[c] = 'M'; R.obj[c] = { t:v.split(':')[1] || 'coffre', nom:v.split(':')[2] || undefined, meuble:true, fouille:false, cache:tirage[Math.floor(hasard(S) * tirage.length)] }; }
     else R.salle[c] = 'X';
     R.vu[c] = 1; }
   R.vuSalle.X = true;
