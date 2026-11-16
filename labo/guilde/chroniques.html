@@ -103,6 +103,10 @@
   .schema-grand .encre { stroke-dasharray:1; stroke-dashoffset:1; fill-opacity:0; animation:encre 1.6s ease-out .3s forwards; } .schema-grand .encre-c, .schema-grand .encre-t { opacity:0; animation:encreF .9s ease-out 1.2s forwards; }
   @keyframes encre { 70% { stroke-dashoffset:0; fill-opacity:0; } to { stroke-dashoffset:0; fill-opacity:1; } } @keyframes encreF { to { opacity:1; } }
   .plateau.zonee { margin-top:3cqw; } /* 16/11 : plus de miniature en haut à droite (le bouton « Carte » suffit) */ #pcarte svg, .schema-grand svg { display:block; width:100%; height:auto; }
+  /* 16/11 (l'utilisateur) : le nom de la zone et « Carte » sur une ligne au-dessus du plateau, plus rien par-dessus ; le plateau centré */
+  .zonebar { display:flex; align-items:center; gap:2cqw; margin:0 0 1.2cqw; } .zonebar .zt { flex:1; min-width:0; color:var(--or); font-size:3.1cqw; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .zonebar button { flex:none; padding:1cqw 2.6cqw; border-radius:20px; background:#1c1c36; border:1px solid #45457a; color:var(--doux); font:inherit; font-size:3.1cqw; }
+  body.jeu .vue { display:flex; flex-direction:column; } body.jeu .vue > .plateau { margin:auto !important; }
   .zone-titre { position:absolute; left:50%; transform:translateX(-50%); bottom:2cqw; z-index:4; background:#05050acc; border:1px solid #f3c96b66; border-radius:12px; padding:.6cqw 2.6cqw; font-size:3cqw; color:var(--or); pointer-events:none; white-space:nowrap; }
   .plateau.zonee { margin-left:auto; margin-right:auto; }
   .c .oi.porte3 { width:100%; height:100%; object-fit:fill; filter:none; }
@@ -155,15 +159,15 @@
 <body>
 <div id="app"></div>
 <div id="fen"></div><div id="perso"></div>
-<script src="musique.js?v=20261116-162518"></script>
-<script src="rang.js?v=20261116-162518"></script>
+<script src="musique.js?v=20261116-162715"></script>
+<script src="rang.js?v=20261116-162715"></script>
 <script>window.AMIS_SANS_BOUTON = true;</script>
-<script src="amis.js?v=20261116-162518"></script>
-<script src="heros-etoiles.js?v=20261116-162518"></script>
-<script src="progression-modes.js?v=20261116-162518"></script>
-<script src="aventuriers.js?v=20261116-162518"></script>
-<script src="chroniques-moteur.js?v=20261116-162518"></script>
-<script src="chroniques-ambiance.js?v=20261116-162518"></script>
+<script src="amis.js?v=20261116-162715"></script>
+<script src="heros-etoiles.js?v=20261116-162715"></script>
+<script src="progression-modes.js?v=20261116-162715"></script>
+<script src="aventuriers.js?v=20261116-162715"></script>
+<script src="chroniques-moteur.js?v=20261116-162715"></script>
+<script src="chroniques-ambiance.js?v=20261116-162715"></script>
 <script>
 // =============================================================================================== LES CHRONIQUES DE LA GUILDE v2 (15/11, écran « façon HeroQuest »)
 // Une grande carte qui défile : les salles restent dans le noir jusqu'à ce qu'on ouvre leur porte ; les couloirs se dévoilent en avançant ;
@@ -532,8 +536,9 @@ function dessine() {
   const ancienne = $('vue') ? [$('vue').scrollLeft, $('vue').scrollTop] : null;
   $('app').innerHTML = `
     <div class="haut"><a href="#" onclick="quitter();return false">‹ Quitter</a><span class="t">${SCT().titre}</span>${L ? `<button onclick="equipeEnLigne()">🌐 ${L.code}</button>` : ''}<button class="hsab" onclick="infoStat('sablier')" title="Le sablier">⌛ <b>${S.sablier}</b></button>${R.boss ? `<button onclick="voirBut()" style="color:${R.boss.repos ? 'var(--doux)' : '#ff8a7a'}">⏰${R.boss.repos ? '' : ' !'}</button>` : ''}<button onclick="voirQuetes()" title="Les quêtes">📋 <b>${quetes().filter(q => q.ok).length}/${quetes().length}</b></button><button onclick="voirJournal()" title="Le journal">📜</button><button onclick="regles()">❓</button><button onclick="GM.parametres()" title="Paramètres">⚙️</button></div>
-    <div style="position:relative"><div class="vue" id="vue">${RZ ? `<div class="zone-titre">${esc(zoneNom(ZV))}${vueForcee ? ' · 👹 les monstres' : ''}</div>` : ''}<div class="plateau ${S.scen === 'labyrinthe' ? 'laby' : (S.scen || 'horloger') === 'horloger' ? 'horloge' : ''}${RZ ? ' zonee' : ''}" style="grid-template-columns:repeat(${nCol}, ${t});--t:${t};${peint ? `background:url('${SC.image}?v=1') 0 0/100% 100% no-repeat` : ''}">${cases}</div></div>
-      <button class="zoom haut" style="position:absolute;right:2cqw;bottom:2cqw;padding:1cqw 2.4cqw;border-radius:20px;background:#1c1c36cc;border:1px solid #45457a;color:var(--doux)" onclick="${RZ ? 'grandeCarte()' : 'petit=!petit;centrer=true;dessine()'}">${petit ? '🔍 Zoom' : '🗺 Carte'}</button></div>
+    <div class="zonebar"><span class="zt">${RZ ? `${esc(zoneNom(ZV))}${vueForcee ? ' · 👹 les monstres' : ''}` : ''}</span><button onclick="${RZ ? 'grandeCarte()' : 'petit=!petit;centrer=true;dessine()'}">${petit ? '🔍 Zoom' : '🗺 Carte'}</button></div>
+    <div style="position:relative"><div class="vue" id="vue"><div class="plateau ${S.scen === 'labyrinthe' ? 'laby' : (S.scen || 'horloger') === 'horloger' ? 'horloge' : ''}${RZ ? ' zonee' : ''}" style="grid-template-columns:repeat(${nCol}, ${t});--t:${t};${peint ? `background:url('${SC.image}?v=1') 0 0/100% 100% no-repeat` : ''}">${cases}</div></div>
+</div>
     <div class="equipe">${S.heros.map((z, i) => `<button class="${i === actif ? 'on' : ''} ${z.aTerre ? 'terre' : ''} ${fini(i) ? 'fini' : ''}" onclick="choisitHeros(${i})">${fini(i) ? '<span class="ok-f">✓</span>' : ''}${imgH(z)}${nomH(z).replace('Sire ', '')}<br>${z.aTerre ? '✋ à terre' : `❤${z.pv} · 🎲${z.des.length}`}${invH(z) ? `<small class="inv-h">${invH(z)}</small>` : ''}${L ? `<small class="qui${mesHeros().includes(i) ? ' moi' : ''}">${mesHeros().includes(i) ? 'toi' : proprio(i) || 'libre'}</small>` : ''}</button>`).join('')}</div>
     <div class="des" id="desH">${L && !mesHeros().includes(actif) ? `<span class="aide">👤 ${nomH(h)} est joué par <b>${proprio(actif) || 'personne'}</b>${proprio(actif) ? '' : ' : touche 🌐 en haut pour le prendre'}.</span>` : h.aTerre ? `<span class="aide">${nomH(h)} est à terre : un ami à côté peut le relever avec un dé.</span>` : h.des.length && !lanceOK(actif) ? h.des.map(() => `<button class="de cache" onclick="lanceDesH()"></button>`).join('') + `<button class="lancerH" onclick="lanceDesH()">🎲 Lancer</button>` : h.des.map(z => z.pas ? `<button class="de pas ${sel === z.id ? 'sel' : ''}" onclick="choisitDe('${z.id}')" title="${z.v} pas qui restent">👣${z.v}</button>` : `<button class="de ${sel === z.id ? 'sel' : ''}" onclick="choisitDe('${z.id}')"><img src="faces-${h.id}/face-${z.v}.webp" alt="${z.v}"></button>`).join('') || '<span class="aide">Plus de dés pour ce héros : passe au suivant.</span>'}</div>
     ${d && !h.aTerre ? `<div class="pasinfo">${d.pas ? `👣 ${d.v} pas (marcher, fouiller, porte…)` : `👣 ce dé : <b>${K.pasDe(h, d.v).n} case${K.pasDe(h, d.v).n > 1 ? 's' : ''}</b> · ou frapper`}</div>` : ''}
@@ -988,9 +993,9 @@ if (sessionStorage.getItem('chron-en-jeu') && !location.search && (() => { try {
 { const s = new URLSearchParams(location.search).get('salle'); if (s) { history.replaceState(null, '', location.pathname); const c = (typeof AMIS !== 'undefined' && AMIS.carte) || null, nom = (c && c.pseudo) || localStorage.getItem('guilde-pseudo');
     if (nom) rejoindre(s, { id:'j' + Math.random().toString(36).slice(2, 10), nom }); else { rejoindreForm(); setTimeout(() => { const i = $('fCode'); if (i) i.value = s; }, 150); } } }
 </script>
-<script src="chroniques-aventures.js?v=20261116-162518"></script>
-<script src="guide.js?v=20261116-162518"></script>
-<script src="guides-modes.js?v=20261116-162518"></script>
+<script src="chroniques-aventures.js?v=20261116-162715"></script>
+<script src="guide.js?v=20261116-162715"></script>
+<script src="guides-modes.js?v=20261116-162715"></script>
 <script>
 // 15/11 : le guide de Moustache de ce mode (guides-modes.js)
 { const _a = accueil; accueil = function () { const r = _a.apply(this, arguments); guideMode('chroniques'); return r; }; }
