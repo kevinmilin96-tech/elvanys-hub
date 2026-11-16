@@ -400,6 +400,7 @@ function pasDe(h, v) {
 function revele(S, id) { const R = S.R; if (R.vuSalle[id]) return false; R.vuSalle[id] = true;
   const [x0, y0, w, h] = rectSalle(S, id); for (let y = y0 - 1; y <= y0 + h; y++) for (let x = x0 - 1; x <= x0 + w; x++) R.vu[cle(x, y)] = 1; return true; }
 function voir(S) {
+  elargitPortes(S);
   if (SCEN[S.scen || 'horloger'].image || SCEN[S.scen || 'horloger'].hasard) return voirAVue(S);
   const R = S.R; let neuves = [];
   S.heros.forEach(h => {
@@ -459,6 +460,9 @@ const prendDe = (h, id) => { const i = h.des.findIndex(d => d.id === id); return
 // 16/11 (l'utilisateur : « deux cases pour simuler la porte, pas trois ») : on note, porte par porte, de quel côté la porte PEINTE déborde
 const DEBORDE = { '12,18':[11, 18] }; // la Réserve : la porte peinte couvre aussi la case de gauche
 function moitiesPorte(S, x, y) { if (S.R.plan !== 2) return []; const d = DEBORDE[cle(x, y)]; return d && S.R.murs[cle(...d)] === '#' ? [d] : []; }
+// une porte peinte large, une fois OUVERTE : sa moitié de mur devient un passage (on traverse les deux cases)
+function elargitPortes(S) { const R = S.R; if (R.plan !== 2) return; Object.entries(R.portes).forEach(([c, p]) => { if (!p.ouverte || p.moitie) return; const [x, y] = c.split(',').map(Number);
+  moitiesPorte(S, x, y).forEach(([a, b]) => { delete R.murs[cle(a, b)]; R.portes[cle(a, b)] = { salle:p.salle, ouverte:true, moitie:true }; R.vu[cle(a, b)] = 1; }); }); }
 function presDePorte(S, h, x, y) { return dist(h, { x, y }) === 1 || (S.R.plan === 2 && moitiesPorte(S, x, y).some(([a, b]) => dist(h, { x:a, y:b }) === 1 && !S.R.murs[cle(h.x, h.y)])); }
 function ouvrir(S, hi, x, y) {
   const h = S.heros[hi], R = S.R, p = R.portes[cle(x, y)];
