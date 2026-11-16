@@ -175,7 +175,7 @@ const herosAventureOdy = () => haListe().map(a => haInfo('av:' + a.id)).map(i =>
   ? `<button onclick="location.href='duel.html?tuto=1'" style="opacity:.55">${haImg(i, 'filter:grayscale(1)')}🔒 ${haEsc(i.nom)}<br><small style="color:var(--doux)">Fais le tutoriel</small></button>`
   : `<button onclick="commence('${i.cle}')">${haImg(i, `box-shadow:0 0 0 2px ${i.couleur}`)}${haEsc(i.nom)}<small class="ha-t">⚔ ${haEsc(i.titre)}</small><small style="color:var(--doux)">${Math.round(HEROS[i.voie].pv * (ODY_PV[i.voie] || 1.8))} PV en Odyssée</small></button>`).join('');
 
-const VERSION = '20261116-151428';
+const VERSION = '20261116-151930';
 function verifieVersion() {
   fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
     v = (v || '').trim(); if (!v || v === VERSION || document.getElementById('majbar')) return;
@@ -188,19 +188,19 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=20261116-151428"></script>
-<script src="musique.js?v=20261116-151428"></script>
-<script src="rang.js?v=20261116-151428"></script>
-<script src="heros-etoiles.js?v=20261116-151428"></script>
-<script src="heros-aventure.js?v=20261116-151428"></script>
-<script src="donnees.js?v=20261116-151428"></script>
-<script src="guide.js?v=20261116-151428"></script>
-<script src="odyssee.js?v=20261116-151428"></script>
-<script src="bestiaire.js?v=20261116-151428"></script>
-<script src="aventure.js?v=20261116-151428"></script>
-<script src="odyssee-sansfin.js?v=20261116-151428"></script>
-<script src="pantheon.js?v=20261116-151428"></script>
-<script src="chronique.js?v=20261116-151428"></script>
+<script src="cartes.js?v=20261116-151930"></script>
+<script src="musique.js?v=20261116-151930"></script>
+<script src="rang.js?v=20261116-151930"></script>
+<script src="heros-etoiles.js?v=20261116-151930"></script>
+<script src="heros-aventure.js?v=20261116-151930"></script>
+<script src="donnees.js?v=20261116-151930"></script>
+<script src="guide.js?v=20261116-151930"></script>
+<script src="odyssee.js?v=20261116-151930"></script>
+<script src="bestiaire.js?v=20261116-151930"></script>
+<script src="aventure.js?v=20261116-151930"></script>
+<script src="odyssee-sansfin.js?v=20261116-151930"></script>
+<script src="pantheon.js?v=20261116-151930"></script>
+<script src="chronique.js?v=20261116-151930"></script>
 <script>
 // le moteur du Duel n'est pas chargé ici : les cartes de l'Odyssée appellent degats/soin seulement en combat (dans duel.html)
 const log = () => {}, degats = () => {}, soin = () => {}, altere = () => {}, invoque = () => {}, adv = () => ({}), fin = () => {};
@@ -262,6 +262,8 @@ function emplacements() {
 function recommencer(n) { const r = lireSlot(n); fenetre(`<h2>🔄 Recommencer ?</h2><p>La partie de <b>${odyNom(r)}</b> (emplacement ${n}) sera effacée et tu choisiras un héros pour une île neuve. Elle ne compte pas comme une défaite. Les cartes déjà gagnées restent dans ta collection.</p><div class="choixh"><button class="or" onclick="effacerSlot(${n});choisirSlot(${n});fermer();ecran()">Oui, recommencer</button><button onclick="fermer()">Non</button></div>`); }
 function effacer(n) { const r = lireSlot(n); fenetre(`<h2>🗑 Effacer ?</h2><p>La partie de <b>${odyNom(r)}</b> (emplacement ${n}) sera effacée pour de bon. Elle ne compte pas comme une défaite.</p><div class="choixh"><button onclick="effacerSlot(${n});fermer();emplacements()">Oui, effacer</button><button class="or" onclick="fermer()">Non</button></div>`); }
 function accueil() {
+  // 16/11 : « ▶ Continuer » du menu ouvre directement la partie choisie
+  { const n = +Q.get('reprendre'); if (n >= 1 && n <= ODY_SLOTS && lireSlot(n)) { history.replaceState(null, '', location.pathname + location.search.replace(/[?&]reprendre=\d/, '').replace(/^&/, '?')); choisirSlot(n); reprendre(lireSlot(n)); return; } }
   const r = lireOdyssee();
   // 14/11 (l'utilisateur : « je ne peux pas recommencer ni quitter le combat ») : on ne revient seul que pour FINIR un combat terminé ;
   // un combat en cours attend dans son emplacement (« Continuer » y retourne)
