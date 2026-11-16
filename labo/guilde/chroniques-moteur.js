@@ -259,7 +259,7 @@ const COULOIRS_Z2 = {
   K5:{ r:[3, 5, 18, 1], n:'Le palier du sommet' }, X2:{ r:[21, 5, 2, 1], n:'L’escalier du sommet', esc:true },
   K6:{ r:[3, 8, 18, 1], n:'Le couloir du 1er étage' }, X1h:{ r:[21, 8, 2, 1], n:'L’escalier vers le sommet', esc:true }, X1b:{ r:[1, 8, 2, 1], n:'L’escalier vers le rez-de-chaussée', esc:true },
   K7:{ r:[3, 17, 14, 1], n:'Le couloir du rez-de-chaussée' }, X0h:{ r:[1, 17, 2, 1], n:'L’escalier vers le 1er étage', esc:true }, X0b:{ r:[17, 17, 2, 1], n:'L’escalier vers le sous-sol', esc:true },
-  K8:{ r:[11, 25, 8, 1], n:'Le couloir de la crypte' }, Xs:{ r:[19, 25, 2, 1], n:'L’escalier qui remonte', esc:true },
+  K8:{ r:[13, 25, 6, 1], n:'Le couloir de la crypte' }, Xs:{ r:[19, 25, 2, 1], n:'L’escalier qui remonte', esc:true },
 };
 const LIENS2 = [[[22, 5], [22, 8]], [[1, 8], [1, 17]], [[18, 17], [20, 25]]];
 const ETAGES2 = [[0, 6, 'Le sommet'], [7, 15, '1er étage'], [16, 23, 'Rez-de-chaussée'], [24, 30, 'Sous-sol']];
