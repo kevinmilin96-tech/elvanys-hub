@@ -144,15 +144,13 @@ function porteDessus(R, x, y, bronze) { const mursCote = R.murs[K.cle(x - 1, y)]
   return `<img class="oi porte3" src="decor/obj-porte-${bronze ? 'bronze-v4' : 'v3'}.webp?v=1" alt=""${mursCote ? '' : ' style="transform:rotate(90deg)"'}>`; }
 // 16/11 (« les murs je les vois pas ») : un liseré de pierre claire sur chaque côté d'un mur qui touche un sol (vu), et une ombre portée
 function bordMur(R, x, y) {
+  // 16/11 : les murs façon carte de donjon = l'image Gemini « mur-bord » posée sur chaque côté qui touche un sol (tournée),
+  // et le « mur-pilier » dans un angle où le sol n'est qu'en diagonale (ramené à la même épaisseur que le bord)
   const sol = (a, b) => a >= 0 && b >= 0 && a < R.w && b < R.h && R.vu[K.cle(a, b)] && R.murs[K.cle(a, b)] !== '#';
-  // une bande de pierre (avec un trait sombre et un reflet) sur chaque côté qui touche un sol, puis le vide noir
-  const e = '30%', bande = dir => `linear-gradient(${dir}, #3a3640 0, #8d8695 7%, #6c6674 14%, #57525e 24%, #1d1b22 ${e}, transparent ${e})`;
-  const L = [];
-  if (sol(x, y - 1)) L.push(bande('to bottom')); if (sol(x, y + 1)) L.push(bande('to top'));
-  if (sol(x - 1, y)) L.push(bande('to right')); if (sol(x + 1, y)) L.push(bande('to left'));
-  // coins : un sol en diagonale seulement → un petit carré de pierre dans le coin
-  [[-1, -1, 'left top'], [1, -1, 'right top'], [-1, 1, 'left bottom'], [1, 1, 'right bottom']].forEach(([dx, dy, pos]) => {
-    if (sol(x + dx, y + dy) && !sol(x + dx, y) && !sol(x, y + dy)) L.push(`radial-gradient(circle at ${pos}, #7a7482 0, #57525e 22%, #1d1b22 30%, transparent 31%)`); });
+  const L = [], bord = r => `url('decor/mur-bord-${r}.webp?v=1') 0 0 / 100% 100% no-repeat`;
+  if (sol(x, y - 1)) L.push(bord(0)); if (sol(x + 1, y)) L.push(bord(90)); if (sol(x, y + 1)) L.push(bord(180)); if (sol(x - 1, y)) L.push(bord(270));
+  [[-1, -1, 0, 'left top'], [1, -1, 90, 'right top'], [1, 1, 180, 'right bottom'], [-1, 1, 270, 'left bottom']].forEach(([dx, dy, r, pos]) => {
+    if (sol(x + dx, y + dy) && !sol(x + dx, y) && !sol(x, y + dy)) L.push(`url('decor/mur-pilier-${r}.webp?v=1') ${pos} / 80% 80% no-repeat`); });
   return L.length ? `background:${L.join(',')}, #0d0c12;` : '';
 }
 function fondSalle(S, x, y) {
