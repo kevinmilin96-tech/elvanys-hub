@@ -65,6 +65,7 @@
   .c.vide { background:transparent !important; pointer-events:none; }
   .c.mur.murc { filter:none; }
   .c .bande { position:absolute; pointer-events:none; z-index:1; filter:brightness(.55) saturate(.45); } .c .bande.h { left:0; right:0; height:30%; background:url('decor/couloir-mur-h.webp?v=1') 0 0 / auto 100% repeat-x; } .c .bande.c { width:30%; height:30%; background:url('decor/couloir-mur-h.webp?v=1') 45% 0 / auto 100%; filter:brightness(.55) saturate(.45); } .c .bande.v { top:0; bottom:0; width:30%; background:url('decor/couloir-mur-v.webp?v=1') 0 0 / 100% auto repeat-y; }
+  .jeton.pnj { --c:#c9a24a; } .jeton.pnj img { width:100%; height:100%; border-radius:50%; object-fit:cover; }
   .c .impasse { position:absolute; inset:0; background:url('decor/couloir-impasse.webp?v=1') center / 100% 100%; pointer-events:none; z-index:0; }
   .c.meuble-peint:not(.fouille)::before { content:''; position:absolute; inset:14%; border-radius:30%; box-shadow:0 0 0 1px #ffd36a66, 0 0 8px #ffd36a44; opacity:.6; animation:lueurM 3s ease-in-out infinite; pointer-events:none; }
   .c.meuble-peint .etiq { position:absolute; left:50%; bottom:2%; transform:translateX(-50%); z-index:2; font-size:calc(var(--t) * .2); line-height:1.1; white-space:nowrap; background:#1c1c36dd; color:#ffe9a8; border:1px solid #ffd36a88; border-radius:6px; padding:0 .35em; pointer-events:none; } .c.meuble-peint.fouille .etiq { opacity:.55; }
@@ -149,7 +150,7 @@
   .sx { height:46px; border-radius:10px; border:1.5px solid #6a5ea0; background:#2a2448; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:17px; }
   .sx small { font-size:12px; font-weight:normal; } .sx.ok { background:#1a1622; border:1.5px dashed #6a5a3a; color:#8a7a5a; text-decoration:line-through; pointer-events:none; } .sx.ok::before { content:"✓ brisé · "; font-size:12px; font-weight:normal; text-decoration:none; display:inline-block; margin-right:4px; } /* 16/11 : un sceau déjà brisé ne ressemble plus à un sceau qui accepte */ .sx.peut { border-color:var(--ok); box-shadow:0 0 0 3px var(--ok); background:#1f4a35; } .sx.non { opacity:.35; }
   .bulle { position:fixed; left:50%; top:30%; transform:translateX(-50%); z-index:45; pointer-events:none; font-weight:bold; font-size:min(6vw, 30px); color:var(--or); text-shadow:0 0 12px #000, 0 0 3px #000;
-    animation:bulle 1.4s forwards; white-space:nowrap; max-width:96vw; overflow:hidden; text-overflow:ellipsis; }
+    animation:bulle 1.4s forwards; white-space:normal; width:max-content; max-width:90vw; text-align:center; line-height:1.2; /* 16/11 : les phrases ne sont plus coupées */ }
   @keyframes bulle { 0% { opacity:0; transform:translate(-50%, 20px) scale(.7); } 20% { opacity:1; transform:translate(-50%, 0); } 80% { opacity:1; } 100% { opacity:0; transform:translate(-50%, -30px); } }
   .acc h1 { text-align:center; color:var(--or); margin:3cqw 0 1cqw; font-size:6.5cqw; } .acc .sous { text-align:center; color:var(--doux); font-size:3.4cqw; margin:0 3cqw 3cqw; }
   .choixH { display:grid; grid-template-columns:repeat(3, 1fr); gap:2cqw; }
@@ -481,8 +482,19 @@ function voirQuetes() {
   const Q = quetes(), li = q => `<li style="list-style:none;margin:.35em 0;${q.ok ? 'color:var(--ok);text-decoration:line-through;opacity:.75' : ''}">${q.ok ? '✅' : '⬜'} ${q.t}</li>`;
   fenetre(`<h2>📋 Les quêtes</h2><h3 style="color:var(--or);margin:.4em 0 .2em">⭐ Principale</h3><ul style="padding:0;margin:0">${Q.filter(q => q.p).map(li).join('')}</ul>
     ${Q.some(q => !q.p) ? `<h3 style="color:var(--or);margin:.8em 0 .2em">✨ Secondaires</h3><ul style="padding:0;margin:0">${Q.filter(q => !q.p).map(li).join('')}</ul>` : ''}
-    <p style="color:var(--doux);margin-top:1em">⌛ Sablier : ${S.sablier} tour${S.sablier > 1 ? 's' : ''} · ⭐ Score : ${S.score}</p><div class="choixh"><button onclick="fenetre('')">Fermer</button></div>`);
+    <p style="color:var(--doux);margin-top:1em">⌛ Sablier : ${S.sablier} tour${S.sablier > 1 ? 's' : ''} · 💰 Bourse : ${S.orAv || 0} or · ⭐ Score : ${S.score} · ✋ Relèves : ${3 - (S.releves || 0)}/3</p>
+    <button class="sec" onclick="faitPause()" ${(S.pauses || 0) >= 2 ? 'disabled style="opacity:.45"' : ''}>🔥 Pause au feu de camp (${2 - (S.pauses || 0)} restante${2 - (S.pauses || 0) > 1 ? 's' : ''})<small>+4 PV pour chaque héros debout, mais le sablier perd 3 grains. Impossible avec des monstres tout près.</small></button>
+    <div class="choixh"><button onclick="fenetre('')">Fermer</button></div>`);
 }
+// 16/11 (choix de l'utilisateur) : le COLPORTEUR et la PAUSE AU FEU DE CAMP
+function boutique() {
+  const h = S.heros[actif], M = Object.entries(S.R.obj).find(([c, o]) => o.t === 'marchand'), [mx, my] = M ? M[0].split(',').map(Number) : [0, 0], pres = M && !h.aTerre && K.dist(h, { x:mx, y:my }) === 1;
+  fenetre(`<h2>🧳 Le colporteur</h2><div class="moust"><img src="portraits/pnj-colporteur.webp?v=1" onerror="this.onerror=null;this.src='ui/heros/pnj-forgeron.webp'" alt=""><div class="lu">« Des potions, du feu, de la fumée… Tout se paie en or, mes amis. »</div></div>
+    <p style="text-align:center">💰 Bourse du groupe : <b>${S.orAv || 0} or</b>${pres ? ` · ${esc(nomH(h))} achète` : ''}</p>
+    ${pres ? Object.entries(K.ETAL).map(([k, p]) => `<button class="sec" ${(S.orAv || 0) < p || (h.sac || []).length >= 4 ? 'disabled style="opacity:.45"' : ''} onclick="fenetre('');son('vendre');resultat(K.acheter(S,actif,'${k}'));setTimeout(boutique, 300)">${K.SAC[k].e} ${K.SAC[k].n} · <b>${p} or</b><small>${K.SAC[k].d}</small></button>`).join('') : '<p style="text-align:center;color:var(--doux)">Approche un héros juste à côté du colporteur pour acheter.</p>'}
+    <div class="choixh"><button onclick="fenetre('')">Fermer</button></div>`);
+}
+function faitPause() { fenetre(''); const r = K.pause(S); if (typeof r === 'string') { bulle(r, true, true); return; } son('soin'); resultat(r); bulle('🔥 Pause au feu de camp : +4 PV pour chacun, −3 grains', false, true); }
 function voirBut() { fenetre(`<h2>🎯 Le but</h2><p>${butTexte()}</p><div class="choixh"><button onclick="fenetre('')">Fermer</button></div>`); }
 function voirJournal() { fenetre(`<h2>📜 Le journal</h2><div class="journal" style="max-height:60vh">${S.journal.slice(0, 40).map(l => `<div>${l}</div>`).join('')}</div><div class="choixh"><button onclick="fenetre('')">Fermer</button></div>`); }
 function dessine() {
@@ -537,6 +549,7 @@ function dessine() {
     else if (mur === 'L' && o) inner = `${objImg('levier', R.leviersTour[c] ? 'baisse' : '')}<span class="lv">≥${o.v}</span>`;
     else if (mur === 'B') inner = objImg('etagere');
     else if (mur === 'K') inner = '<span class="o">📕</span>';
+    else if (mur === 'N') inner = `<div class="jeton pnj"><img src="portraits/pnj-colporteur.webp?v=1" alt="Le colporteur" onerror="this.onerror=null;this.src='ui/heros/pnj-forgeron.webp'"><span class="pv">🧳</span></div>`;
     else if (mur === 'T') { const t = R.statues.find(z => z.x === x && z.y === y); inner = `<img class="oi statue ${R.statuesOk ? 'fait-ok' : ''}" src="decor/obj-statue.webp?v=1" alt="" style="transform:rotate(${t.d * 90}deg)">`; }
     else if (mur === 'O') inner = R.plan === 2 && SALLE_MURS.includes('S') && !R.statuesOk ? '' : objImg('autel', R.statuesOk ? 'brille' : ''); // le cercle de laiton peint fait l'autel
     else if (mur === 'A') inner = `${(S.scen || 'horloger') === 'horloger' ? objImg('axe') : `<span class="o">${K.SCEN[S.scen || 'horloger'].axeE}</span>`}<span class="lv">${R.rouagesPoses}/3</span>`;
@@ -702,6 +715,7 @@ function touche(x, y) {
   // hors de l'écran ; toucher l'escalier où l'on se tient (ou sa pancarte) fait monter / descendre avec le dé choisi
   // 16/11 : toucher l'escalier où l'on se tient : on passe à l'autre étage, gratuitement (marcher dessus y mène déjà tout seul)
   if (R.liens && R.liens[c] && hi === actif) { son('pas'); centrer = true; return resultat(K.prendreEscalier(S, actif)); }
+  if (R.murs[c] === 'N') return boutique(); // 16/11 : le colporteur
   if (m && !B && hi < 0 && !eclaire(x, y)) { bulle('Il fait trop noir par là : approche ta lanterne pour voir ce qui s’y cache.', true); return; }
   if (sacEnCours != null && (m || B)) { const k = sacEnCours; sacEnCours = null; son('ultime'); return resultat(K.utiliser(S, actif, k, B ? 'boss' : m.id)); }
   sacEnCours = null;
@@ -796,7 +810,8 @@ async function animeMonstres(ev) {
 }
 const attends = ms => new Promise(r => setTimeout(r, ms));
 function flash(id) { const e = $(id); if (e) { e.classList.remove('flash'); void e.offsetWidth; e.classList.add('flash'); } }
-function bulle(t, rouge, longue) { const b = document.createElement('div'); b.className = 'bulle' + (longue ? ' longue' : ''); b.textContent = t; if (rouge) b.style.color = '#ff8a7a'; document.body.appendChild(b); setTimeout(() => b.remove(), longue ? 3000 : 1500); }
+function bulle(t, rouge, longue) { longue = longue || String(t).length > 38; // 16/11 : une longue phrase reste plus longtemps et s'écrit plus petit
+  const b = document.createElement('div'); b.className = 'bulle' + (longue ? ' longue' : ''); b.textContent = t; if (rouge) b.style.color = '#ff8a7a'; document.body.appendChild(b); setTimeout(() => b.remove(), longue ? 3000 : 1500); }
 // 16/11 : un jeton GLISSE case par case de son ancienne place à la nouvelle (le dessin est déjà à jour : on part de l'ancienne place)
 function glisse(id, de, a, ms = 420) {
   const e = $(id); if (!e || !de || (de[0] === a[0] && de[1] === a[1])) return Promise.resolve();
@@ -853,8 +868,9 @@ function finPartie() {
   // 16/11 : l'or et les pièces d'équipement trouvés vont dans la Forge des héros (si l'équipe a des héros d'aventure)
   let butin = '';
   if (typeof avGagne === 'function' && !S.butinFait) { S.butinFait = true;
-    const or = (S.orAv || 0) + (gagne ? 25 : 5), g = avGagne(or, (S.equipTrouve || 0) + (gagne ? 1 : 0), gagne);
-    butin = `<p style="text-align:center">⚒ Pour tes héros : 🪙 +${or} or${g.length ? ` · ${g.map(p => `<b style="color:${EQ_RARE[p.r].c}">${EQ_CASES.find(c => c.k === p.slot).e} ${p.nom}</b>`).join(', ')}` : ''}</p>`; }
+    const or = (S.orAv || 0) + (gagne ? 25 : 5), pou = gagne ? 30 : 10, g = avGagne(or, (S.equipTrouve || 0) + (gagne ? 1 : 0), gagne);
+    if (typeof donneRessources === 'function') donneRessources(0, pou, true); // 16/11 : la poussière de rune en plus (pour monter les héros)
+    butin = `<p style="text-align:center">⚒ Pour tes héros : 🪙 +${or} or · 🔹 +${pou} poussière de rune${g.length ? ` · ${g.map(p => `<b style="color:${EQ_RARE[p.r].c}">${EQ_CASES.find(c => c.k === p.slot).e} ${p.nom}</b>`).join(', ')}` : ''}</p>`; }
   fenetre(gagne ? `<h2>${SCT().gagne[0]}</h2>${(S.scen || 'horloger') === 'horloger' ? '<img src="decor/chron-horloger-fin.webp?v=1" alt="" style="width:100%;border-radius:12px;margin:2px 0 8px;display:block">' : ''}<div class="moust"><img src="ui/moustache.webp" alt=""><div class="lu">${SCT().gagne[1]}</div></div>
       <p style="text-align:center">Score : <b style="color:var(--or)">${S.score}</b> · ${S.tours} tours · ⌛ ${S.sablier} grains${S.sablier > 0 ? '<br>🏅 Titre « <b>Gardiens du temps</b> » : le sablier n’est jamais tombé à zéro !' : ''}</p>
       <p style="text-align:center">✨ Chaque héros gagne des éclats et de l’XP${objet ? ` · 🎒 <b>${objet}</b> rejoint l’armurerie` : ''}.</p>${butin}${campagne}${salleBt}<button class="${campagne || salleBt ? 'sec' : 'go'}" onclick="fin()">Retour à la Guilde</button>`
