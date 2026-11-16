@@ -121,14 +121,14 @@
 <body>
 <div id="app"></div>
 <div id="fen"></div>
-<script src="musique.js?v=20261116-152115"></script>
-<script src="rang.js?v=20261116-152115"></script>
+<script src="musique.js?v=20261116-152601"></script>
+<script src="rang.js?v=20261116-152601"></script>
 <script>window.AMIS_SANS_BOUTON = true;</script>
-<script src="amis.js?v=20261116-152115"></script>
-<script src="heros-etoiles.js?v=20261116-152115"></script>
-<script src="progression-modes.js?v=20261116-152115"></script>
-<script src="aventuriers.js?v=20261116-152115"></script>
-<script src="chroniques-moteur.js?v=20261116-152115"></script>
+<script src="amis.js?v=20261116-152601"></script>
+<script src="heros-etoiles.js?v=20261116-152601"></script>
+<script src="progression-modes.js?v=20261116-152601"></script>
+<script src="aventuriers.js?v=20261116-152601"></script>
+<script src="chroniques-moteur.js?v=20261116-152601"></script>
 <script>
 // =============================================================================================== LES CHRONIQUES DE LA GUILDE v2 (15/11, écran « façon HeroQuest »)
 // Une grande carte qui défile : les salles restent dans le noir jusqu'à ce qu'on ouvre leur porte ; les couloirs se dévoilent en avançant ;
@@ -200,9 +200,13 @@ function schemaSVG(grand) {
 function petiteCarte() { const e = $('pcarte'); if (e && S) e.innerHTML = schemaSVG(false); }
 function grandeCarte() { fenetre(`<h2>🗺 Le donjon</h2><div class="schema-grand">${schemaSVG(true)}</div><p style="text-align:center;color:var(--doux);font-size:.9em">Le doré : la zone que tu regardes. Les ronds : tes héros. Les points rouges : les monstres vus.</p><button class="go" onclick="fenetre('')">Fermer</button>`); }
 // 16/11 : les salles repeintes AVEC LEURS MURS (vue plus haute, prompts salle-<nom>-v2) : l'image couvre aussi la case de mur tout autour
-const SALLE_MURS = ['A', 'C', 'B', 'E', 'F', 'S', 'P', 'G']; // reçues le 16/11 (Crypte G le 16/11 après-midi ; manque le Cœur H : texte peint, refait)
+const SALLE_MURS = ['A', 'C', 'B', 'E', 'F', 'S', 'P', 'G', 'H']; // reçues le 16/11 (Crypte G et Cœur H l'après-midi)
 function fondSalle(S, x, y) {
   if ((S.scen || 'horloger') !== 'horloger') return '';
+  // 16/11 après-midi : les escaliers peints (Gemini) : marches sombres = le bout qui descend (image retournée si ce bout est à droite)
+  if (S.R.plan === 2) { const E = Object.values(couloirsZ()).find(Z => Z.esc && x >= Z.r[0] && x < Z.r[0] + Z.r[2] && y >= Z.r[1] && y < Z.r[1] + Z.r[3]);
+    if (E) { const [a, b, w] = E.r; let bas = a; for (let i = a; i < a + w; i++) { const l = S.R.liens[K.cle(i, b)]; if (l) { const ly = +l.split(',')[1]; bas = ly > b ? i : (i === a ? a + w - 1 : a); } }
+      return `background:url('decor/escalier-horloger${bas === a ? '' : '-d'}.webp?v=1') calc(var(--t) * ${a - x}) 0 / calc(var(--t) * ${w}) 100% no-repeat;`; } }
   let id = S.R.salle[K.cle(x, y)];
   if (!id) id = SALLE_MURS.find(k => { const [a, b, w, h] = K.rectSalle(S, k); return x >= a - 1 && x <= a + w && y >= b - 1 && y <= b + h; });
   const D = id && K.SALLES[id], f = SALLE_IMG[id]; if (!D || !f) return '';
@@ -847,9 +851,9 @@ accueil();
 { const s = new URLSearchParams(location.search).get('salle'); if (s) { history.replaceState(null, '', location.pathname); const c = (typeof AMIS !== 'undefined' && AMIS.carte) || null, nom = (c && c.pseudo) || localStorage.getItem('guilde-pseudo');
     if (nom) rejoindre(s, { id:'j' + Math.random().toString(36).slice(2, 10), nom }); else { rejoindreForm(); setTimeout(() => { const i = $('fCode'); if (i) i.value = s; }, 150); } } }
 </script>
-<script src="chroniques-aventures.js?v=20261116-152115"></script>
-<script src="guide.js?v=20261116-152115"></script>
-<script src="guides-modes.js?v=20261116-152115"></script>
+<script src="chroniques-aventures.js?v=20261116-152601"></script>
+<script src="guide.js?v=20261116-152601"></script>
+<script src="guides-modes.js?v=20261116-152601"></script>
 <script>
 // 15/11 : le guide de Moustache de ce mode (guides-modes.js)
 { const _a = accueil; accueil = function () { const r = _a.apply(this, arguments); guideMode('chroniques'); return r; }; }
