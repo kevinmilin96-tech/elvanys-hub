@@ -68,6 +68,8 @@
   .de.cache::after { content:'?'; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:5.4cqw; color:#c9c1ea88; font-weight:bold; }
   .de.tourne img { animation:tourneD .26s linear infinite; } @keyframes tourneD { 0% { transform:rotate(0) translateY(0) scale(1); } 50% { transform:rotate(190deg) translateY(-2cqw) scale(1.1); } 100% { transform:rotate(360deg) translateY(0) scale(1); } }
   .lancerH { border:0; border-radius:3cqw; padding:2cqw 4cqw; font:bold 3.8cqw Georgia, serif; background:var(--or); color:#2b1d0a; margin-left:2cqw; animation:pulseL 1s infinite; } @keyframes pulseL { 50% { filter:brightness(1.2); } }
+  .statue { display:inline-block; position:relative; transition:transform .4s; } .statue .fl { position:absolute; left:50%; top:-28%; transform:translateX(-50%); font-size:.5em; color:#ffd27a; text-shadow:0 0 4px #000; }
+  .statue.fait { filter:drop-shadow(0 0 6px #ffd27a); } .dalle { opacity:.55; }
   .de.pas { position:relative; border-radius:2.4cqw; background:radial-gradient(circle at 35% 30%, #3f6f8a, #1d3446); box-shadow:inset 0 0 0 .5cqw #7fc4e6, 0 1cqw 1.2cqw #000a; color:#e6f6ff; font:bold 4cqw Georgia, serif; }
   .pasinfo { text-align:center; font-size:2.9cqw; color:#9fe0ff; margin:0 0 1cqw; }
   .inv { display:flex; gap:1.4cqw; justify-content:center; flex-wrap:wrap; font-size:2.7cqw; color:var(--doux); margin:0 0 1cqw; } .inv span { background:#1d1d36; border:1px solid #3a3a66; border-radius:2cqw; padding:.6cqw 1.6cqw; }
@@ -310,18 +312,23 @@ function dessine() {
     else if (mur === 'L' && o) inner = `${objImg('levier', R.leviersTour[c] ? 'baisse' : '')}<span class="lv">≥${o.v}</span>`;
     else if (mur === 'B') inner = objImg('etagere');
     else if (mur === 'K') inner = '<span class="o">📕</span>';
+    else if (mur === 'T') { const t = R.statues.find(z => z.x === x && z.y === y); inner = `<span class="o statue ${R.statuesOk ? 'fait' : ''}" style="transform:rotate(${t.d * 90}deg)">🗿<b class="fl">▲</b></span>`; }
+    else if (mur === 'O') inner = `<span class="o">${R.statuesOk ? '✨' : '🕯️'}</span>`;
     else if (mur === 'A') inner = `${(S.scen || 'horloger') === 'horloger' ? objImg('axe') : `<span class="o">${K.SCEN[S.scen || 'horloger'].axeE}</span>`}<span class="lv">${R.rouagesPoses}/3</span>`;
     else { if (!R.salle[c]) cl += ' couloir';
       if (o && o.t === 'piege' && !o.trouve && (o.vu || voitPieges || S.heros.some(z => z.id === 'oria' && Math.abs(z.x - x) + Math.abs(z.y - y) <= 2))) inner = '<span class="o">⚠️</span>';
-      if (o && o.t === 'rouage') inner = objImg('rouage'); }
+      if (o && o.t === 'rouage') inner = objImg('rouage');
+      if (R.grille && x === R.grille.x && y === R.grille.y) inner = `<span class="o">${K.grilleOuverte(S) ? '⬆️' : '⛓️'}</span>`;
+      if (R.grille && x === R.grille.dx && y === R.grille.dy) inner = '<span class="o dalle">⬛</span>' + inner;
+      if ((R.os || []).some(z => z.x === x && z.y === y)) inner += '<span class="o">🦴</span>'; }
     if (atteint[c]) cl += ' peut';
     const hi = S.heros.findIndex(z => z.x === x && z.y === y), m = R.monstres.find(z => z.x === x && z.y === y), B = R.boss && R.boss.x === x && R.boss.y === y ? R.boss : null;
     if (hi >= 0) { const z = S.heros[hi]; inner += `<div class="jeton ${hi === actif ? 'actif' : ''} ${z.aTerre ? 'terre' : ''}" id="j-h${hi}" style="--c:${coulH(z)}">${imgH(z)}<span class="pv">${z.aTerre ? '✋' : '❤' + z.pv}${z.bouclier ? '🛡' + z.bouclier : ''}${z.porte ? '⚙' : ''}</span></div>`; }
     const mm = B || m;
-    if (mm && vu) { const it = mm.it === 'frappe' ? `⚔${mm.att}` : mm.it === 'garde' ? '🛡' : mm.it === 'soin' ? '💚' : mm.it === 'fuit' ? '🏃' : mm.it === 'remonte' ? '⏳' : mm.it === 'levier' ? '🎚' : '';
+    if (mm && vu) { const it = mm.it === 'frappe' ? `⚔${mm.att}` : mm.it === 'garde' ? '🛡' : mm.it === 'soin' ? '💚' : mm.it === 'fuit' ? '🏃' : mm.it === 'remonte' ? '⏳' : mm.it === 'levier' ? '🎚' : mm.it === 'elan' ? '⚡' : mm.it === 'gros' ? `💥${mm.att + 2}` : '';
       inner += `<div class="jeton ${B ? 'boss' : ''}" id="j-${mm.id}" style="--c:${B ? '#ff7a4a' : K.BETES[mm.b].elite ? '#f3c96b' : '#8a98b8'}"><img src="portraits/m-${mm.img}.webp" alt=""><span class="it">${it}</span><span class="sc">🔒${mm.sceaux.filter(s => !s.ok).length}</span></div>`;
       if (d && !d.pas && K.aPortee(S, h, mm)) cl += ' cible'; }
-    if (d && vu && (p && !p.ouverte || (o && (o.meuble && !o.fouille || o.t === 'levier' || o.t === 'livre')) || mur === 'A') && K.dist(h, { x, y }) === 1) cl += ' cible';
+    if (d && vu && (p && !p.ouverte || (o && (o.meuble && !o.fouille || o.t === 'levier' || o.t === 'livre')) || mur === 'A' || (mur === 'T' && !R.statuesOk)) && K.dist(h, { x, y }) === 1) cl += ' cible';
     cases += `<div class="${cl}" id="c-${x}-${y}" onclick="touche(${x},${y})">${inner}</div>`;
   }
   const t = petit ? 'min(4.6cqw, 22px)' : 'min(11cqw, 52px)';
@@ -330,7 +337,7 @@ function dessine() {
   $('app').innerHTML = `
     <div class="haut"><a href="#" onclick="quitter();return false">‹ Quitter</a><span class="t">${SCT().titre}</span>${L ? `<button onclick="equipeEnLigne()">🌐 ${L.code}</button>` : ''}<button onclick="regles()">❓</button></div>
     <div class="stats"><span>⌛ <b>${S.sablier}</b></span>${S.scen === 'arene' ? `<span>👹 <b>${R.monstres.length}</b> monstre${R.monstres.length > 1 ? 's' : ''}</span>` : `<span>${K.SCEN[S.scen || 'horloger'].objet.e} <b>${posee}</b>/3 posés${portes ? ` · ${portes} porté${portes > 1 ? 's' : ''}` : ''}</span>`}${(S.scen || 'horloger') === 'horloger' ? `<span>${R.bronze ? '🚪 bronze ouverte' : '🔒 bronze'}</span><span>${S.livre ? '📕 ✓' : '📕 —'}</span>` : ''}<span>⭐ <b>${S.score}</b></span></div>
-    <div class="but">${R.boss ? `⏰ <b>${R.boss.n}</b> · « ${K.SCEN[S.scen || 'horloger'].phases[R.boss.phase]} » : il ${K.PHASES[R.boss.phase].d.replace('Rouagelins', 'renforts').replace('hall d’entrée', 'point de départ')}. ${R.boss.repos ? 'Ce tour-ci il se repose.' : '<b style="color:#ff8a7a">Ce tour-ci il frappe !</b>'}`
+    <div class="but">${R.boss ? `⏰ <b>${R.boss.n}</b> · « ${K.SCEN[S.scen || 'horloger'].phases[R.boss.phase]} » : il ${K.phasesDe(S)[R.boss.phase].d.replace('Rouagelins', 'renforts').replace('hall d’entrée', 'point de départ')}. ${R.boss.repos ? 'Ce tour-ci il se repose.' : '<b style="color:#ff8a7a">Ce tour-ci il frappe !</b>'}`
       : posee + portes >= 3 || S.rouagesTrouves >= 3 ? SCT().porter : SCT().but}</div>
     <div style="position:relative"><div class="vue" id="vue"><div class="plateau ${S.scen === 'labyrinthe' ? 'laby' : (S.scen || 'horloger') === 'horloger' ? 'horloge' : ''}" style="grid-template-columns:repeat(${R.w}, ${t});--t:${t};${peint ? `background:url('${SC.image}?v=1') 0 0/100% 100% no-repeat` : ''}">${cases}</div></div>
       <button class="zoom haut" style="position:absolute;right:2cqw;bottom:2cqw;padding:1cqw 2.4cqw;border-radius:20px;background:#1c1c36cc;border:1px solid #45457a;color:var(--doux)" onclick="petit=!petit;centrer=true;dessine()">${petit ? '🔍 Zoom' : '🗺 Carte'}</button></div>
@@ -402,6 +409,9 @@ function resultat(r) {
       if (e.t === 'levier') { son('tour-batir'); if (e.bronze) { son('porte'); bulle('🚪 La porte de bronze s’ouvre !'); } }
       if (e.t === 'rouage') { son('rune'); bulle(e.boss ? '⏰ L’Horloger se réveille !' : '⚙ Rouage posé !'); }
       if (e.t === 'soin') son('soin');
+      if (e.t === 'statue') { son('tour-batir'); bulle(S.journal[0], false, true); }
+      if (e.t === 'enigme') { son('ultime'); bulle(S.journal[0], false, true); }
+      if (e.t === 'grille') { son('porte'); bulle(S.journal[0], false, true); }
       if (e.t === 'fouille') { const T = { rouage:['⚙ UN ROUAGE !', 'rune'], potion:['🧪 Une potion !', 'soin'], parchemin:['📜 Un parchemin !', 'magie'], fumee:['💨 Une bombe fumigène !', 'magie'], equip:['🗡 De l’équipement !', 'magie'], grains:['⌛ +3 grains !', 'magie'], or:['💰 De l’or !', 'vendre'], objet:['🎁 Un objet !', 'magie'], piege:['⚠ Piégé !', 'coup'], monstre:['👹 Un monstre !', 'vague'] }[e.quoi] || ['… rien.', 'pioche']; son(T[1]); bulle(S.journal[0] || T[0], e.quoi === 'piege' || e.quoi === 'monstre', true); }
       if (e.t === 'salle') setTimeout(() => entreeSalle(e.salle), 350);
     });
@@ -418,11 +428,14 @@ function touche(x, y) {
   const hi = S.heros.findIndex(z => z.x === x && z.y === y), m = R.monstres.find(z => z.x === x && z.y === y), B = R.boss && R.boss.x === x && R.boss.y === y ? R.boss : null;
   if (sacEnCours != null && (m || B)) { const k = sacEnCours; sacEnCours = null; son('ultime'); return resultat(K.utiliser(S, actif, k, B ? 'boss' : m.id)); }
   sacEnCours = null;
-  if (!d) { if (hi >= 0) return choisitHeros(hi); if (m || B) return infoMonstre(B || m); const o = R.obj[c]; if (o && o.meuble) bulle(o.fouille ? 'Déjà fouillé.' : 'Choisis un dé pour fouiller.'); return; }
+  if (!d) { if (hi >= 0) return choisitHeros(hi); if (m || B) return infoMonstre(B || m);
+    if (R.murs[c] === 'T') { bulle(R.statuesOk ? 'Les statues regardent l’autel.' : 'Choisis un dé (même un 👣), puis touche la statue pour la tourner : sa voisine tourne aussi !'); return; }
+    if (R.grille && x === R.grille.dx && y === R.grille.dy) { bulle('La dalle : tant qu’un héros reste dessus, la grille du Cagibi est ouverte.'); return; }
+    const o = R.obj[c]; if (o && o.meuble) bulle(o.fouille ? 'Déjà fouillé.' : 'Choisis un dé pour fouiller.'); return; }
   if (m || B) return frappeMenu(B || m);
   if (hi >= 0) return amiMenu(hi);
   const o = R.obj[c];
-  if ((o && (o.meuble || o.t === 'levier' || o.t === 'livre')) || R.murs[c] === 'A') return resultat(K.agir(S, actif, sel, x, y));
+  if ((o && (o.meuble || o.t === 'levier' || o.t === 'livre')) || R.murs[c] === 'A' || R.murs[c] === 'T') return resultat(K.agir(S, actif, sel, x, y));
   if (K.atteignables(S, h, d.v, d.pas)[c]) { son('pas'); centrer = true; const de0 = [h.x, h.y]; const ok = resultat(K.bouger(S, actif, sel, x, y)); if (ok) glisse('j-h' + actif, de0, [x, y]); return ok; }
   bulle('Trop loin pour ce dé.', true);
 }
@@ -455,8 +468,8 @@ function amiMenu(i) {
   fenetre(`<h2>${nomH(z)}</h2>${b.join('')}<button class="sec" onclick="fenetre('')">Annuler</button>`);
 }
 function infoMonstre(m) {
-  const it = { frappe:`⚔ va frapper (${m.att})`, garde:'🛡 va refermer un de ses sceaux', soin:'💚 va réparer un autre monstre', fuit:'🏃 va s’enfuir', remonte:'⏳ remonte son ressort', levier:'🎚 va remonter un levier' }[m.it] || '';
-  fenetre(`<h2>${m.n}</h2><p style="text-align:center">Ce tour-ci : <b>${it}</b>.</p><div class="sceaux">${m.sceaux.map(s => `<div class="sx ${s.ok ? 'ok' : ''}">${sceauTxt(s, m.sceaux)}</div>`).join('')}</div><p style="color:var(--doux);font-size:.9em">${m.id === 'boss' ? 'Il frappe au contact (une case autour, diagonales comprises), un tour sur deux.' : `Il avance de ${(K.BETES[m.b] || {}).mv || 1} case${((K.BETES[m.b] || {}).mv || 1) > 1 ? 's' : ''} par tour vers le héros le plus proche et frappe au contact (une case autour, diagonales comprises), seulement quand sa salle est dévoilée.`}${(K.BETES[m.b] || {}).leviers ? ' <b>Il surveille les leviers : il en remonte un quand il peut.</b>' : ''}</p><p style="color:var(--doux);font-size:.9em">Choisis un dé, puis touche le monstre pour poser le dé sur un sceau. Tous ses sceaux brisés : il tombe.</p><button class="go" onclick="fenetre('')">Compris</button>`);
+  const it = { frappe:`⚔ va frapper (${m.att})`, garde:'🛡 va refermer un de ses sceaux', soin:'💚 va réparer un autre monstre', fuit:'🏃 va s’enfuir', remonte:'⏳ reprend son souffle', levier:'🎚 va remonter un levier', elan:'⚡ prend son élan', gros:`💥 GROS COUP : frappe de ${m.att + 2}, sauf si vous lui brisez un sceau avant`, rien:'ne fait rien' }[m.it] || '';
+  fenetre(`<h2>${m.n}</h2><p style="text-align:center">Ce tour-ci : <b>${it}</b>.</p><div class="sceaux">${m.sceaux.map(s => `<div class="sx ${s.ok ? 'ok' : ''}">${sceauTxt(s, m.sceaux)}</div>`).join('')}</div><p style="color:var(--doux);font-size:.9em">${m.id === 'boss' ? 'Il frappe au contact (une case autour, diagonales comprises), un tour sur deux.' : `Il avance de ${(K.BETES[m.b] || {}).mv || 1} case${((K.BETES[m.b] || {}).mv || 1) > 1 ? 's' : ''} par tour vers le héros le plus proche et frappe au contact (une case autour, diagonales comprises), seulement quand sa salle est dévoilée.`}</p>${Object.keys(K.CAPA).filter(k => (K.BETES[m.b] || {})[k]).map(k => `<p style="font-size:.9em;margin:4px 0">✦ ${K.CAPA[k]}</p>`).join('')}<p style="color:var(--doux);font-size:.9em">Choisis un dé, puis touche le monstre pour poser le dé sur un sceau. Tous ses sceaux brisés : il tombe.</p><button class="go" onclick="fenetre('')">Compris</button>`);
 }
 async function finTour(tousFinis) {
   if (occupe || !S || S.fin) return;
@@ -475,7 +488,8 @@ async function finTour(tousFinis) {
     else if (e.t === 'frappe') { await fonce('j-' + e.m, 'j-h' + e.h); son('coup'); flash('j-h' + e.h); bulle(`⚔ ${nomH(S.heros[e.h])} −${e.v}`, true); await attends(380); }
     else if (e.t === 'levierRemonte') { son('tour-batir'); flash('j-' + e.m); bulle(S.journal.find(l => l.startsWith('🗿')) || '🗿 Un levier remonte !', true, true); await attends(1400); }
     else if (e.t === 'garde') { flash('j-' + e.m); await attends(250); }
-    else if (e.t === 'boss') { son('gros'); flash('j-boss'); bulle('⏰ Le boss agit !'); await attends(600); }
+    else if (e.t === 'elan') { son('ultime'); flash('j-' + e.m); bulle(S.journal.find(l => l.startsWith('⚡')) || '⚡ Il prend son élan !', true, true); await attends(1300); }
+    else if (e.t === 'boss') { son('gros'); flash('j-boss'); bulle(S.R.boss && S.R.boss.b === 'roios' ? '💀 Le Roi des Os agit !' : '⏰ Le boss agit !'); await attends(600); }
   }
   occupe = false; actif = Math.max(0, S.heros.findIndex(z => !z.aTerre)); centrer = true;
   if (S.fin) return finPartie();
@@ -513,6 +527,8 @@ function regles() {
     <li><b>Bouger</b> : une case verte. Le dé = le nombre de cases (+ équipement, +2 pour Oria, −1 si on porte un rouage). On passe à travers ses amis, jamais à travers un monstre ; on s’arrête en entrant dans une salle inconnue. <b>Les pas qui restent</b> gardent un petit dé 👣 : marcher encore, fouiller, un levier, l’axe (pas frapper). <b>Frapper</b> : un monstre au contact (une case autour, diagonales comprises), puis un de ses sceaux. Les monstres frappent aussi au contact.</li>
     <li><b>Fouiller un meuble</b> à côté (🧰 🗄️ 🛢️ 🪦 🛠️ 🔥, un dé, une fois) : potion, or, sablier, objet… ou piège, ou monstre caché. <b>Quatre rouages ⚙ sont cachés</b> dans des meubles : il en faut trois. <b>Un héros ne porte qu’un rouage à la fois</b> (⚙ sur son portrait). Ce que porte chaque héros (sac 🎒, objet, rouage) est écrit sous ses dés.</li>
     <li><b>Les 4 leviers</b> de la Salle des rouages (chacun « tel chiffre ou plus » ; un levier baissé remonte tout seul au bout de quelques tours, et le <b>Gardien de bronze</b> en remonte un quand il peut : il faut les quatre baissés en même temps) ouvrent la <b>porte de bronze</b> du Cœur de l’Horloge. Posez-y les 3 rouages sur l’axe ✹ : l’Horloger se réveille.</li>
+    <li><b>Les énigmes</b> : la <b>Galerie des statues</b> (tourner les 4 statues vers l’autel ; chacune entraîne sa voisine ; un dé par poussée) et le <b>Cagibi grillagé</b> (un héros reste sur la dalle ⬛ du couloir pendant qu’un autre entre).</li>
+    <li><b>Les monstres ont des capacités</b> (touche un monstre pour les lire) : meute, attaque du héros seul, gros coup annoncé ⚡, régénération (il faut un 6), os qui se relèvent (il faut les achever avec un 6).</li>
     <li><b>Un ami</b> (ou soi) : protéger, donner un dé (à côté), soigner (Pip), relever. <b>🔍 Pièges</b> (un dé) : dévoile les pièges cachés jusqu’à 2 cases autour du héros. <b>Une porte</b> s’ouvre gratuitement, par le héros choisi, s’il est juste à côté.</li>
     <li><b>Ordre libre</b> : jouez vos héros dans l’ordre que vous voulez, même en alternant (touchez un héros pour le prendre). Quand un héros a terminé, touchez « ✋ … a fini ». Quand tous ont fini, les monstres jouent.</li>
     <li><b>Fin du tour</b> (après le dernier héros) : les monstres réveillés font ce qu’ils annoncent ; le <b>sablier</b> perd un grain (vide : un dé de moins pour tous). Le <b>Livre des heures</b> (bibliothèque, à deux) affaiblit l’Horloger.</li>
