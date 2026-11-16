@@ -724,7 +724,7 @@ function touche(x, y) {
     if (!d && o && o.t === 'piege' && !o.trouve && !o.vu && (h.objet === 'lunettes' || h.id === 'oria' && Math.abs(h.x - x) + Math.abs(h.y - y) <= 2)) {
       o.vu = true; S.journal.unshift(`⚠️ ${nomH(h)} signale un piège : tout le groupe le voit maintenant.`); bulle(`⚠️ ${nomH(h)} signale le piège : tout le groupe le voit maintenant.`); dessine(); return; } }
   if (!d) { if (hi >= 0) return choisitHeros(hi); if (m || B) return infoMonstre(B || m);
-    if (R.murs[c] === 'K') { bulle('📕 Le Livre des heures, tout en haut de l’étagère : un dé de 4 ou plus, et un ami juste à côté pour faire la courte échelle.', false, true); return; }
+    if (R.murs[c] === 'K') { bulle('📕 Le Livre des heures, tout en haut de l’étagère : mets-toi à côté du livre, avec un ami juste à côté de toi (courte échelle), puis pose un dé de 4 ou plus sur le livre.', false, true); return; }
     if (R.murs[c] === 'B') { bulle('Une étagère pleine de vieux livres d’horlogerie.'); return; }
     if (R.murs[c] === 'T') { bulle(R.statuesOk ? 'Les statues regardent l’autel.' : 'Choisis un dé (même un 👣), puis touche la statue pour la tourner : sa voisine tourne aussi !'); return; }
     if (R.grille && x === R.grille.dx && y === R.grille.dy) { bulle('La dalle : tant qu’un héros reste dessus, la grille du Cagibi est ouverte.'); return; }
