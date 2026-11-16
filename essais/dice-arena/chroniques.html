@@ -515,7 +515,7 @@ function dessine() {
   // d'à côté (couloir ou salle voisine) s'affiche aussi : on voit où l'on sort, et on peut y marcher
   const devant = new Set();
   if (RZ) { const [a, b, w, hh] = RZ;
-    for (let y = b - 1; y <= b + hh; y++) for (let x = a - 1; x <= a + w; x++) { const pp = R.portes[K.cle(x, y)]; if (!pp || !pp.ouverte) continue;
+    for (let y = b - 1; y <= b + hh; y++) for (let x = a - 1; x <= a + w; x++) { const pp = R.portes[K.cle(x, y)], gr = R.grille && x === R.grille.x && y === R.grille.y && (K.grilleOuverte(S) || S.heros.some(z => z.x === x && z.y === y)); if (!gr && (!pp || !pp.ouverte)) continue; // la grille du Cagibi, ouverte ou franchie, montre aussi le dehors
       const X = x < a ? x - 1 : x >= a + w ? x + 1 : x, Y = y < b ? y - 1 : y >= b + hh ? y + 1 : y; if (X === x && Y === y) continue;
       // la 1re case derrière la porte, puis tout droit les cases où le dé choisi permet d'aller (16/11 : la 3e case d'un pas disparaissait)
       const dx = Math.sign(X - x), dy = Math.sign(Y - y);
