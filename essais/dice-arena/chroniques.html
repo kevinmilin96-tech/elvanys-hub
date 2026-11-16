@@ -87,6 +87,9 @@
   .jeton .it { position:absolute; top:-16%; right:-20%; font-size:calc(var(--t) * .26); background:#000c; border-radius:1cqw; padding:0 .4cqw; white-space:nowrap; }
   .jeton .sc { position:absolute; top:-16%; left:-18%; font-size:calc(var(--t) * .24); background:#2a2448; border:1px solid #6a5ea0; border-radius:1cqw; padding:0 .4cqw; }
   .jeton.boss { inset:-25%; z-index:2; }
+  /* 16/11 soir : héros un peu plus petits et remontés dans leur case, la vie reste dans leur case (deux héros l'un au-dessus de l'autre ne se cachent plus l'étiquette) */
+  .jeton[id^="j-h"] { inset:1% 13% 25% 13%; }
+  .jeton[id^="j-h"] .pv { bottom:-32%; font-size:calc(var(--t) * .23); padding:0 .4cqw; line-height:1.15; }
   .flash { animation:flash .5s; } @keyframes flash { 30% { filter:brightness(2) saturate(2); transform:scale(1.15); } }
   .zoom { position:absolute; right:2cqw; bottom:2cqw; }
   /* ---------------------------------------------------------------- le bas */
@@ -166,15 +169,15 @@
 <body>
 <div id="app"></div>
 <div id="fen"></div><div id="perso"></div>
-<script src="musique.js?v=20261116-195323"></script>
-<script src="rang.js?v=20261116-195323"></script>
+<script src="musique.js?v=20261116-201743"></script>
+<script src="rang.js?v=20261116-201743"></script>
 <script>window.AMIS_SANS_BOUTON = true;</script>
-<script src="amis.js?v=20261116-195323"></script>
-<script src="heros-etoiles.js?v=20261116-195323"></script>
-<script src="progression-modes.js?v=20261116-195323"></script>
-<script src="aventuriers.js?v=20261116-195323"></script>
-<script src="chroniques-moteur.js?v=20261116-195323"></script>
-<script src="chroniques-ambiance.js?v=20261116-195323"></script>
+<script src="amis.js?v=20261116-201743"></script>
+<script src="heros-etoiles.js?v=20261116-201743"></script>
+<script src="progression-modes.js?v=20261116-201743"></script>
+<script src="aventuriers.js?v=20261116-201743"></script>
+<script src="chroniques-moteur.js?v=20261116-201743"></script>
+<script src="chroniques-ambiance.js?v=20261116-201743"></script>
 <script>
 // =============================================================================================== LES CHRONIQUES DE LA GUILDE v2 (15/11, écran « façon HeroQuest »)
 // Une grande carte qui défile : les salles restent dans le noir jusqu'à ce qu'on ouvre leur porte ; les couloirs se dévoilent en avançant ;
@@ -1084,9 +1087,9 @@ if (ESSAI) essaiAtelier(ESSAI); else if (sessionStorage.getItem('chron-en-jeu') 
 { const s = new URLSearchParams(location.search).get('salle'); if (s) { history.replaceState(null, '', location.pathname); const c = (typeof AMIS !== 'undefined' && AMIS.carte) || null, nom = (c && c.pseudo) || localStorage.getItem('guilde-pseudo');
     if (nom) rejoindre(s, { id:'j' + Math.random().toString(36).slice(2, 10), nom }); else { rejoindreForm(); setTimeout(() => { const i = $('fCode'); if (i) i.value = s; }, 150); } } }
 </script>
-<script src="chroniques-aventures.js?v=20261116-195323"></script>
-<script src="guide.js?v=20261116-195323"></script>
-<script src="guides-modes.js?v=20261116-195323"></script>
+<script src="chroniques-aventures.js?v=20261116-201743"></script>
+<script src="guide.js?v=20261116-201743"></script>
+<script src="guides-modes.js?v=20261116-201743"></script>
 <script>
 // 15/11 : le guide de Moustache de ce mode (guides-modes.js)
 { const _a = accueil; accueil = function () { const r = _a.apply(this, arguments); guideMode('chroniques'); return r; }; }
