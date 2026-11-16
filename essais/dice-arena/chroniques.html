@@ -203,7 +203,7 @@ function bordMur(R, x, y) {
 // remplit l'écran (avec ses murs et ses portes), une petite carte en haut montre tout le donjon découvert ; au tour des monstres, la caméra
 // visite chaque salle où un monstre agit. Les héros d'une même zone se voient.
 const COULOIRS_Z1 = { K1:{ r:[1, 5, 18, 1], n:'Le couloir du haut' }, K2:{ r:[1, 12, 18, 1], n:'Le couloir du bas' }, K3:{ r:[7, 6, 1, 6], n:'Le passage de l’ouest' }, K4:{ r:[13, 6, 1, 6], n:'Le passage de l’est' } };
-let vueForcee = null;
+let vueForcee = null, suivi = null; // suivi : le héros d'un ami que la caméra regarde pendant qu'il joue (jeu à distance)
 // 16/11 : l'Horloge en étages (plan 2) a ses propres couloirs et escaliers ; les parties commencées avant gardent l'ancienne carte
 const couloirsZ = () => S && S.R && S.R.plan === 2 ? K.COULOIRS_Z2 : COULOIRS_Z1;
 const esc = t => String(t == null ? '' : t).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
@@ -342,11 +342,14 @@ function recoit(d) {
   if (!d || !d.etat) return;
   if (d.etat.lobby) { LOB = d.etat.lobby; S = null; L.version = d.version; if (d.joueurs) L.joueurs = d.joueurs; L.dernier = ''; fenetre(''); salleAttente(); return; }
   const depart = !S; LOB = null;
-  const avant = S && S.journal ? S.journal[0] : null, posAvant = S && S.heros ? S.heros.map(z => [z.x, z.y]) : null;
+  const avant = S && S.journal ? S.journal[0] : null, posAvant = S && S.heros ? S.heros.map(z => [z.x, z.y]) : null, desAvant = S && S.heros ? S.heros.map(z => z.des.length) : null;
   S = d.etat; L.version = d.version; if (d.joueurs) L.joueurs = d.joueurs; L.dernier = JSON.stringify(S);
   if (!mesHeros().includes(actif)) { const m = mesHeros().find(i => !S.heros[i].aTerre); if (m != null) actif = m; }
   sel = null; dessine(); salleAJour();
   // 16/11 (l'utilisateur) : la caméra de chacun reste sur SON héros ; les héros des autres qui bougent dans sa zone glissent case par case
+  if (posAvant && !depart) { const qui = S.heros.findIndex((z, i) => !mesHeros().includes(i) && ((posAvant[i] && (posAvant[i][0] !== z.x || posAvant[i][1] !== z.y)) || (desAvant && desAvant[i] !== z.des.length)));
+    if (qui >= 0 && !occupe) { suivi = qui; centrer = true; dessine(); }
+    if (suivi != null && fini(suivi)) { const f = suivi; setTimeout(() => { if (suivi === f) { suivi = null; centrer = true; dessine(); } }, 1600); } } // l'ami a fini : retour à son héros
   if (posAvant && !depart) S.heros.forEach((z, i) => { const a = posAvant[i]; if (a && (a[0] !== z.x || a[1] !== z.y) && !mesHeros().includes(i)) glisse('j-h' + i, a, [z.x, z.y]); });
   if (S.animM && S.animM.n !== vuAnim) { const A = S.animM; vuAnim = A.n; if (!depart && !occupe) { occupe = true; animeMonstres(A.ev.map(e => Object.assign({}, e))).then(() => { occupe = false; centrer = true; dessine(); if (S.fin) finPartie(); }); return; } }
   if (depart) { son('portail'); dialogue(S.campagne != null ? CHAPITRES[S.campagne].titre : SCT().titre, [S.campagne != null ? CHAPITRES[S.campagne].avant : SCT().ouverture, SCT().entree()]); return; }
@@ -485,7 +488,8 @@ function dessine() {
   let cases = '';
   const SC = K.SCEN[S.scen || 'horloger'], peint = !!SC.image;
   // la zone regardée (salle ou bout de couloir) et son cadre d'une case de mur tout autour
-  const ZV = modeZones() ? (vueForcee || zoneDe(R, h.x, h.y)) : null, RZ = ZV && zoneRect(ZV);
+  const hv = suivi != null && S.heros[suivi] ? S.heros[suivi] : h; // 16/11 : en coop à distance, la caméra suit l'ami qui joue
+  const ZV = modeZones() ? (vueForcee || zoneDe(R, hv.x, hv.y)) : null, RZ = ZV && zoneRect(ZV);
   let x0 = RZ ? Math.max(0, RZ[0] - 1) : 0, y0 = RZ ? Math.max(0, RZ[1] - 1) : 0, x1 = RZ ? Math.min(R.w - 1, RZ[0] + RZ[2]) : R.w - 1, y1 = RZ ? Math.min(R.h - 1, RZ[1] + RZ[3]) : R.h - 1;
   // 16/11 (l'utilisateur : « la porte est ouverte mais je n'arrive pas à sortir ») : devant chaque porte OUVERTE de la zone, la case
   // d'à côté (couloir ou salle voisine) s'affiche aussi : on voit où l'on sort, et on peut y marcher
@@ -550,7 +554,7 @@ function dessine() {
   const ancienne = $('vue') ? [$('vue').scrollLeft, $('vue').scrollTop] : null;
   $('app').innerHTML = `
     <div class="haut"><a href="#" onclick="quitter();return false">‹ Quitter</a><span class="t">${SCT().titre}</span>${L ? `<button onclick="equipeEnLigne()">🌐 ${L.code}</button>` : ''}<button class="hsab" onclick="infoStat('sablier')" title="Le sablier">⌛ <b>${S.sablier}</b></button>${R.boss ? `<button onclick="voirBut()" style="color:${R.boss.repos ? 'var(--doux)' : '#ff8a7a'}">⏰${R.boss.repos ? '' : ' !'}</button>` : ''}<button onclick="voirQuetes()" title="Les quêtes">📋 <b>${quetes().filter(q => q.ok).length}/${quetes().length}</b></button><button onclick="voirJournal()" title="Le journal">📜</button><button onclick="regles()">❓</button><button onclick="GM.parametres()" title="Paramètres">⚙️</button></div>
-    <div class="zonebar"><span class="zt">${RZ ? `${esc(zoneNom(ZV))}${vueForcee ? ' · 👹 les monstres' : ''}` : ''}</span><button onclick="${RZ ? 'grandeCarte()' : 'petit=!petit;centrer=true;dessine()'}">${petit ? '🔍 Zoom' : '🗺 Carte'}</button></div>
+    <div class="zonebar"><span class="zt">${RZ ? `${esc(zoneNom(ZV))}${vueForcee ? ' · 👹 les monstres' : suivi != null && S.heros[suivi] ? ` · 👀 ${esc(nomH(S.heros[suivi]))} joue` : ''}` : ''}</span><button onclick="${RZ ? 'grandeCarte()' : 'petit=!petit;centrer=true;dessine()'}">${petit ? '🔍 Zoom' : '🗺 Carte'}</button></div>
     <div style="position:relative"><div class="vue" id="vue"><div class="plateau ${S.scen === 'labyrinthe' ? 'laby' : (S.scen || 'horloger') === 'horloger' ? 'horloge' : ''}${RZ ? ' zonee' : ''}" style="grid-template-columns:repeat(${nCol}, ${t});--t:${t};${peint ? `background:url('${SC.image}${SC.image.startsWith('data:') ? '' : '?v=1'}') 0 0/100% 100% no-repeat` : ''}">${cases}</div></div>
 </div>
     <div class="equipe">${S.heros.map((z, i) => `<button class="${i === actif ? 'on' : ''} ${z.aTerre ? 'terre' : ''} ${fini(i) ? 'fini' : ''}" onclick="choisitHeros(${i})">${fini(i) ? '<span class="ok-f">✓</span>' : ''}${imgH(z)}${nomH(z).replace('Sire ', '')}<br>${z.aTerre ? '✋ à terre' : `❤${z.pv} · 🎲${z.des.length}`}${invH(z) ? `<small class="inv-h">${invH(z)}</small>` : ''}${L ? `<small class="qui${mesHeros().includes(i) ? ' moi' : ''}">${mesHeros().includes(i) ? 'toi' : proprio(i) || 'libre'}</small>` : ''}</button>`).join('')}</div>
@@ -558,7 +562,7 @@ function dessine() {
     ${d && !h.aTerre ? `<div class="pasinfo">${d.pas ? `👣 ${d.v} pas (marcher, fouiller, porte…)` : `👣 ce dé : <b>${K.pasDe(h, d.v).n} case${K.pasDe(h, d.v).n > 1 ? 's' : ''}</b> · ou frapper`}</div>` : ''}
     <div class="actions" ${L && !mesHeros().includes(actif) ? 'style="display:none"' : ''}>${d ? '<button onclick="cherche()">🔍 Pièges (2 cases)</button>' : ''}<button class="fin" onclick="aFini()">${libres().length <= 1 ? `✋ ${nomH(S.heros[actif]).replace('Sire ', '')} a fini ▶ les monstres` : `✋ ${nomH(S.heros[actif]).replace('Sire ', '')} a fini`}</button>${libres().length > 1 ? `<button class="sec" style="flex:none" onclick="finTour()" title="Tout le groupe a fini">▶ Monstres</button>` : ''}</div>`;
   // la carte suit le héros actif (sauf si on vient de la déplacer à la main)
-  const V = $('vue'), e = $(`c-${h.x}-${h.y}`);
+  const V = $('vue'), e = $(`c-${hv.x}-${hv.y}`);
   if (centrer && e) { V.scrollLeft = e.offsetLeft - V.clientWidth / 2 + e.offsetWidth / 2; V.scrollTop = e.offsetTop - V.clientHeight / 2 + e.offsetHeight / 2; centrer = false; }
   else if (ancienne) { V.scrollLeft = ancienne[0]; V.scrollTop = ancienne[1]; }
   petiteCarte();
@@ -571,6 +575,7 @@ function dessine() {
 const lanceOK = i => !!(S && S.lances && S.lances.t === S.tours && S.lances.l.includes(i));
 let animeH = false;
 function lanceDesH() {
+  suivi = null;
   if (animeH || occupe || !S) return; if (L && !mesHeros().includes(actif)) { bulle(`${nomH(S.heros[actif])} n’est pas à toi`, true); return; }
   const i = actif, h = S.heros[i]; if (lanceOK(i)) return;
   if (!S.lances || S.lances.t !== S.tours) S.lances = { t:S.tours, l:[] };
@@ -632,6 +637,7 @@ function ficheHeros(i, choix) {
     <p class="ps-aide">L’équipement se change dans <b>Mes héros</b> (menu), entre deux parties.</p></div>`;
 }
 function choisitHeros(i) {
+  suivi = null;
   if (occupe) return;
   if (S && i === actif && !sel) return ficheHeros(i); // toucher le héros déjà choisi : sa fiche
   if (fini(i)) { bulle(`${nomH(S.heros[i])} a fini ce tour`, true); return; }
@@ -659,6 +665,7 @@ function resultat(r) {
   if (typeof r === 'string') { son('erreur'); bulle(r, true); } return false;
 }
 function touche(x, y) {
+  if (suivi != null) { suivi = null; centrer = true; dessine(); return; } // un toucher pendant qu'on regarde un ami : retour à son héros
   if (occupe || !S) return;
   const R = S.R, h = S.heros[actif], d = deSel(), c = K.cle(x, y);
   if (!R.vu[c]) return;
@@ -746,6 +753,7 @@ async function finTour(tousFinis) {
 }
 let vuAnim = 0;
 async function animeMonstres(ev) {
+  suivi = null; // le tour des monstres : la caméra part de son propre héros
   const voisCase = (x, y) => { const V = $('vue'), c = $(`c-${x}-${y}`); if (!V || !c) return; const r = V.getBoundingClientRect(), q = c.getBoundingClientRect(); if (q.left < r.left || q.right > r.right || q.top < r.top || q.bottom > r.bottom) V.scrollTo({ left:c.offsetLeft - V.clientWidth / 2, top:c.offsetTop - V.clientHeight / 2, behavior:'smooth' }); };
   const ou = id => id === 'boss' ? S.R.boss : S.R.monstres.find(z => z.id === id);
   ev.filter(e => e.t === 'pas').forEach(e => { const el = $('j-' + e.m), m = ou(e.m); if (el && m) { const w = el.parentElement.offsetWidth; el.style.transform = `translate(${(e.de[0] - m.x) * w}px, ${(e.de[1] - m.y) * w}px)`; } });
