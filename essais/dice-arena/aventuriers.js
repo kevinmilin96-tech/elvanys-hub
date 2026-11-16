@@ -25,15 +25,22 @@ const TALENTS = {
   6:[['brute', '🔨 Coup puissant', 'Quand il frappe avec un 5 ou un 6, il brise DEUX sceaux.'], ['guerisseur', '🌿 Herboriste', 'Il sait soigner : un dé rend la moitié de sa valeur en PV (à lui ou à un voisin).']],
 };
 const avTalents = a => Object.values(a.talents || {});
-function avChoisitTalent(id, niv, k) { return !!avMaj(id, a => { if (avNiveau(a.xp) < niv) return; a.talents = a.talents || {}; a.talents[niv] = k; }); }
+function avChoisitTalent(id, niv, k) { return !!avMaj(id, a => { if (avNiv(a) < NIV_TALENT[niv]) return; a.talents = a.talents || {}; a.talents[niv] = k; }); }
 
-function avLire() { try { return JSON.parse(localStorage.getItem(AV_CLE) || '[]'); } catch (e) { return []; } }
+// 16/11 soir (choix de l'utilisateur) : UN SEUL NIVEAU, celui du héros (Mes héros) ; le dé personnel garde ses chiffres 1 à 6
+// (pour les paires et les suites) et chaque face reçoit un BONUS +1 (2 au plus) qui compte pour frapper les sceaux « ≥ » et « Σ » ;
+// 1 point de forge tous les 5 niveaux. Les faces déjà montées l'ancienne façon deviennent des bonus.
+const AV_BONUS_MAX = 2, NIV_TALENT = { 2:5, 4:10, 6:20 };
+function avNormalise(a) { if (!a.bonus) { a.bonus = (a.faces || [1, 2, 3, 4, 5, 6]).map((v, k) => Math.max(0, Math.min(AV_BONUS_MAX, v - (k + 1)))); a.faces = [1, 2, 3, 4, 5, 6]; } return a; }
+function avLire() { try { return JSON.parse(localStorage.getItem(AV_CLE) || '[]').map(avNormalise); } catch (e) { return []; } }
 function avEcrire(l) { try { localStorage.setItem(AV_CLE, JSON.stringify(l)); } catch (e) {} }
 const avTrouve = id => avLire().find(a => a.id === id);
+const avNiv = a => (typeof niveauH === 'function' ? niveauH(a.id) : 1) || 1; // le niveau du héros (Mes héros)
+const avPointsForge = a => Math.max(0, Math.floor(avNiv(a) / 5) - (a.bonus || []).reduce((t, v) => t + v, 0));
 function avNiveau(xp) { let n = 1; while (n < AV_MAX && xp >= AV_SEUILS[n + 1]) n++; return n; }
 function avCreer(o) {
   const a = { id:'av' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), voie:o.voie, nom:String(o.nom || '').slice(0, 20) || 'Sans-nom', genre:o.genre === 'f' ? 'f' : 'h',
-    couleur:o.couleur || AV_COULEURS[0], xp:0, faces:[1, 2, 3, 4, 5, 6], points:0, parties:0, victoires:0, cree:Date.now() };
+    couleur:o.couleur || AV_COULEURS[0], xp:0, faces:[1, 2, 3, 4, 5, 6], bonus:[0, 0, 0, 0, 0, 0], points:0, parties:0, victoires:0, cree:Date.now() };
   const l = avLire(); l.push(a); avEcrire(l); return a;
 }
 function avSupprime(id) { avEcrire(avLire().filter(a => a.id !== id)); }
@@ -45,11 +52,11 @@ function avGagneXP(id, xp, gagne) {
   return gain;
 }
 // forger une face : +1 (jusqu'à 6), un point de forge
-function avForge(id, k) { return !!avMaj(id, a => { if (a.points < 1 || a.faces[k] >= 6) return; a.faces[k]++; a.points--; }); }
+function avForge(id, k) { let ok = false; avMaj(id, a => { if (avPointsForge(a) < 1 || a.bonus[k] >= AV_BONUS_MAX) return; a.bonus[k]++; ok = true; }); return ok; }
 // ce que le héros apporte en jeu
 function avStats(a) {
-  const n = avNiveau(a.xp), base = { maelle:15, aldric:16, pip:12, oria:15, gorm:16, zephine:15 }[a.voie] || 15;
-  return { niveau:n, pv:base + 2 * (n - 1) + (avTalents(a).includes('robuste') ? 4 : 0), desPlus:n >= 4 ? 1 : 0, faces:a.faces.slice(), talents:avTalents(a) };
+  const n = avNiv(a), base = { maelle:15, aldric:16, pip:12, oria:15, gorm:16, zephine:15 }[a.voie] || 15, paliers = [5, 10, 20, 35, 50].filter(x => n >= x).length;
+  return { niveau:n, pv:base + 2 * paliers + (avTalents(a).includes('robuste') ? 4 : 0), desPlus:n >= 10 ? 1 : 0, faces:[1, 2, 3, 4, 5, 6], bonus:(a.bonus || [0, 0, 0, 0, 0, 0]).slice(), talents:avTalents(a) };
 }
 // le portrait : ceux de la galerie (Gemini) s'ils existent, sinon le héros modèle de la voie
 const avPortrait = a => `portraits/av-${a.voie}-${a.genre}.webp`;
@@ -68,4 +75,4 @@ function avBonusEquip(a) { const S = statsHeros(a.id); return { pv:S.pv, att:S.a
 // avStats d'origine (expérience d'aventure : PV, dé, talents) + le système des héros (niveau, rang, équipement)
 const avStatsBase = avStats;
 avStats = function (a) { const s = avStatsBase(a), b = avBonusEquip(a); return Object.assign(s, { pv:s.pv + b.pv, att:b.att, def:b.def, agi:b.agi, desPlus:s.desPlus + b.des }); };
-function avPuissance(a) { return puissanceHeros(a.id, avStatsBase(a).pv) + 5 * a.faces.reduce((t, v) => t + v, 0) + 30 * avNiveau(a.xp); }
+function avPuissance(a) { return puissanceHeros(a.id, avStatsBase(a).pv) + 25 * (a.bonus || []).reduce((t, v) => t + v, 0); }

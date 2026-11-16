@@ -316,7 +316,7 @@ function nouvelle(heros, s, scen, opts = {}) {
   // un héros = le nom d'une voie (« maelle »…) ou un HÉROS D'AVENTURE { voie, nom, pv, faces, desPlus, av, c } (aventuriers.js)
   if (heros.some(h => h && h.g)) heros = heros.map(h => h && h.g ? Object.assign({ __g:h.g, __B:h.B }) : h); // 15/11 : salle d'attente
   const fait = h => h && h.__g ? (B => ({ id:h.__g, pv:HEROS_C[h.__g].pv + (B.pv || 0), pvmax:HEROS_C[h.__g].pv + (B.pv || 0), objet:null, bouclier:0, att:B.att || 0, def:B.bouclier || 0, agi:B.agi || 0 }))(h.__B || {}) : typeof h === 'string' ? (B => ({ id:h, pv:HEROS_C[h].pv + B.pv, pvmax:HEROS_C[h].pv + B.pv, objet:null, bouclier:0, att:B.att || 0, def:B.bouclier || 0, agi:B.agi || 0 }))(typeof bonusHerosPvE === 'function' && !opts.sansBonus ? bonusHerosPvE(h) : { pv:0 }) // 15/11 : le système des héros (heros-etoiles.js)
-    : { id:h.voie, nom:h.nom, av:h.av, c:h.c, portrait:h.portrait, faces:h.faces, talents:h.talents || [], desPlus:h.desPlus || 0, pv:h.pv, pvmax:h.pv, objet:null, bouclier:0, att:h.att || 0, def:h.def || 0, agi:h.agi || 0 }; // 16/11 : l'équipement (aventuriers.js)
+    : { id:h.voie, nom:h.nom, av:h.av, c:h.c, portrait:h.portrait, faces:h.faces, bonusF:h.bonusF || null, talents:h.talents || [], desPlus:h.desPlus || 0, pv:h.pv, pvmax:h.pv, objet:null, bouclier:0, att:h.att || 0, def:h.def || 0, agi:h.agi || 0 }; // 16/11 : l'équipement (aventuriers.js)
   const S = { heros:heros.map(fait), scen, sablier:SCEN[scen].sablier, rs:graine(s), graine:s,
     livre:false, journal:[], seq:0, fin:null, score:0, tours:0, rouagesTrouves:0, etape:'jeu' };
   const R = { w:W, h:H, murs:{}, salle:{}, obj:{}, portes:{}, monstres:[], tour:0, vuSalle:{}, vu:{}, rouagesPoses:0, boss:null, bronze:false, leviersTour:{} };
@@ -453,7 +453,7 @@ function debutTour(S) {
   S.heros.forEach(h => {
     let n = HEROS_C[h.id].des + (h.desPlus || 0) + (h.objet === 'cle' ? 1 : 0) - (S.sablier <= 0 ? 1 : 0);
     h.des = []; if (h.aTerre) n = 0;
-    for (let i = 0; i < Math.max(0, n); i++) { const r = de6(S); h.des.push({ id:'d' + S.seq++, v:h.faces ? h.faces[r - 1] : r }); } // dé personnel : ses faces forgées
+    for (let i = 0; i < Math.max(0, n); i++) { const r = de6(S); h.des.push({ id:'d' + S.seq++, v:h.faces ? h.faces[r - 1] : r, b:h.bonusF ? h.bonusF[r - 1] || 0 : 0 }); } // dé personnel : ses chiffres + le bonus forgé de la face (16/11 soir)
     if (h.carillon && h.des.length) { h.des.sort((a, b) => b.v - a.v); h.des.shift(); h.carillon = false; log(S, `🔔 ${nm(h)} a perdu son plus gros dé.`); }
   });
   for (const c in R.leviersTour) { R.leviersTour[c]--; if (R.leviersTour[c] <= 0) { delete R.leviersTour[c]; if (!R.bronze) log(S, '🎚 Un levier remonte tout seul dans un claquement : il faut les baisser tous les quatre en même temps.'); } }
@@ -534,11 +534,11 @@ function frapper(S, hi, idDe, mid, k) {
   if (d.pas) return 'Un dé 👣 (des pas qui restent) sert à marcher ou à agir, pas à frapper.';
   if (!aPortee(S, h, m)) return h.id === 'zephine' ? 'Trop loin (2 cases au plus).' : 'Il faut être au contact du monstre (une case autour, diagonales comprises).';
   const flam = m === R.boss && h.flamme ? 1 : 0; // 16/11 soir : la bénédiction du feu de la Galerie (+1 contre l'Horloger)
-  const s = m.sceaux[k], bonus = s && (s.t === 'min' || s.t === 'tot') ? (h.att || 0) + flam : 0, vA = d.v + bonus; // ⚔ l'Attaque de l'équipement compte sur les sceaux « ≥ » et « Σ »
+  const s = m.sceaux[k], bonus = s && (s.t === 'min' || s.t === 'tot') ? (h.att || 0) + flam + (d.b || 0) : 0, vA = d.v + bonus; // + le bonus forgé de la face // ⚔ l'Attaque de l'équipement compte sur les sceaux « ≥ » et « Σ »
   if (!s || !accepte(s, vA, m.sceaux)) return 'Ce dé ne va pas sur ce sceau.';
   if (m === R.boss && phasesDe(S)[m.phase].intouchable) return 'Il est intouchable : trouvez et brisez son reliquaire.';
   prendDe(h, idDe); pose(s, vA); m.dernier = d.v; if (d.v === 6) m.six = R.tour;
-  log(S, `⚔ ${nm(h)} pose un ${d.v}${bonus ? ` +${bonus} (${flam && bonus === 1 ? 'flamme' : flam ? 'équipement et flamme' : 'équipement'}) = ${vA}` : ''} sur ${m.n}.`);
+  log(S, `⚔ ${nm(h)} pose un ${d.v}${bonus ? ` +${bonus} (${[h.att ? 'équipement' : '', flam ? 'flamme' : '', d.b ? 'dé forgé' : ''].filter(Boolean).join(', ')}) = ${vA}` : ''} sur ${m.n}.`);
   if ((h.id === 'maelle' && d.v === 6) || (a_t(h, 'brute') && d.v >= 5)) { const s2 = m.sceaux.find(z => !z.ok); if (s2) { brise(s2); log(S, `🔨 ${h.id === 'maelle' ? 'Coup de forge (un 6 de Maëlle)' : 'Brute (un 5 ou un 6)'} : un DEUXIÈME sceau se brise !`); } }
   // 16/11 soir : actions légendaires (comme les boss de D&D 5e) : la 1re fois qu'un héros frappe l'Horloger dans le tour, il riposte (−2, perçant)
   const riposte = m === R.boss && m.b !== 'roios' && !(m.riposte || {})[hi] && contact(S, m, h); if (riposte) { m.riposte = m.riposte || {}; m.riposte[hi] = true; }
