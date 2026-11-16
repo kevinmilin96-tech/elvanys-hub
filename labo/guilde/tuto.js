@@ -39,6 +39,7 @@ const carteTambour = () => document.querySelectorAll('.main .c')[S.J.main.indexO
 const cinqLibres = () => S.J.des.filter(d => !d.pose && d.v === 5).length;
 const nbPoses = () => S.J.des.filter(d => d.pose).length;
 const tambour = () => S.J.front.find(u => u.tambour);
+const chien = () => S.O.front.find(u => u.barriere); // 16/11 (l'utilisateur : « je l'avais déjà tué, le tuto m'a bloqué ») : le Chien de garde, s'il est encore là
 const ETAPES = [
   { t:1, c:'Miaou ! Bienvenue à la Guilde. Moi, c’est Moustache, chat d’aventure. Oui, l’oreille ébréchée, c’est une longue histoire. Toi, tu es Gorm, le sonneur de cor. En face : le Chef gobelin et son Chien de garde.', g:'Hé, le matou. Je sais qui je suis.' },
   { t:1, c:'On commence : touche le gros bouton « Lancer les dés ». Non, pas moi. Je ne me lance pas. Le bouton.', cible:'.lancer', ok:() => !S.J.aLancer },
@@ -67,8 +68,8 @@ const ETAPES = [
   { t:3, c:'Puis la carte du Tambour : elle s’agrandit. Touche-la encore pour la jouer.', cible:() => carteTambour(), ok:() => !!tambour() || !peutTambour() },
   { t:3, c:() => tambour() ? 'Ton Tambour arrive sur le plateau. Il DORT ce tour (💤) : une créature attaque à partir du tour suivant. Joue le reste comme tu veux, puis « Fin du tour ».' : 'Tu as joué autre chose ? Pas grave, le Tambour attendra. Finis ton tour comme tu veux, puis « Fin du tour ».', libre:true, ok:() => S.J.tours >= 4 },
   { t:4, c:'Lance tes dés. (Tu peux aussi jouer tes créatures avant ou après : ça ne change rien.)', cible:'.lancer', ok:() => !S.J.aLancer },
-  { t:4, c:'Le Tambour est réveillé : contour doré. Touche-le pour attaquer.', cible:'#f-J', ok:() => !!attaquant || !tambour() || !tambour().pret },
-  { t:4, c:'Le Chien de garde a une BARRIÈRE : les créatures doivent l’attaquer d’abord. Touche-le. (Les Frappes, elles, passent par-dessus. Les règles, c’est pour les chiens. Pardon, Chien.)', cible:'#f-O', ok:() => !attaquant || !tambour() || !tambour().pret },
+  { t:4, c:'Le Tambour est réveillé : contour doré. Touche-le pour attaquer.', cible:'#f-J', ok:() => !!attaquant || !tambour() || !tambour().pret || !chien() },
+  { t:4, c:'Le Chien de garde a une BARRIÈRE : les créatures doivent l’attaquer d’abord. Touche-le. (Les Frappes, elles, passent par-dessus. Les règles, c’est pour les chiens. Pardon, Chien.)', cible:'#f-O', ok:() => !attaquant || !tambour() || !tambour().pret || !chien() },
   { t:4, c:'Astuce : en touchant ta créature, tu peux aussi la mettre EN DÉFENSE : elle prend alors tous les coups visés vers toi. À toi de jouer ce tour, puis « Fin du tour ».', libre:true, ok:() => S.J.tours >= 5 },
   { t:5, c:'Lance. J’ai un pressentiment.', cible:'.lancer', ok:() => !S.J.aLancer },
   { t:5, c:'2, 4, 6, 2 : quatre dés PAIRS. C’est ton POUVOIR, le Chant de guerre ! Touche ces quatre dés.', cible:desVises([2, 4, 6, 2]), ok:() => (sel.length === 4 && vals(sel).every(v => v % 2 === 0)) || S.J.dernier === 'pouvoir' },
