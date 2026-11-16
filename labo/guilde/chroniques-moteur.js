@@ -531,11 +531,12 @@ function frapper(S, hi, idDe, mid, k) {
   const m = mid === 'boss' ? R.boss : R.monstres.find(z => z.id === mid); if (!d || !m) return 'Rien à frapper.';
   if (d.pas) return 'Un dé 👣 (des pas qui restent) sert à marcher ou à agir, pas à frapper.';
   if (!aPortee(S, h, m)) return h.id === 'zephine' ? 'Trop loin (2 cases au plus).' : 'Il faut être au contact du monstre (une case autour, diagonales comprises).';
-  const s = m.sceaux[k], bonus = s && (s.t === 'min' || s.t === 'tot') ? h.att || 0 : 0, vA = d.v + bonus; // ⚔ l'Attaque de l'équipement compte sur les sceaux « ≥ » et « Σ »
+  const flam = m === R.boss && h.flamme ? 1 : 0; // 16/11 soir : la bénédiction du feu de la Galerie (+1 contre l'Horloger)
+  const s = m.sceaux[k], bonus = s && (s.t === 'min' || s.t === 'tot') ? (h.att || 0) + flam : 0, vA = d.v + bonus; // ⚔ l'Attaque de l'équipement compte sur les sceaux « ≥ » et « Σ »
   if (!s || !accepte(s, vA, m.sceaux)) return 'Ce dé ne va pas sur ce sceau.';
   if (m === R.boss && phasesDe(S)[m.phase].intouchable) return 'Il est intouchable : trouvez et brisez son reliquaire.';
   prendDe(h, idDe); pose(s, vA); m.dernier = d.v; if (d.v === 6) m.six = R.tour;
-  log(S, `⚔ ${nm(h)} pose un ${d.v}${bonus ? ` +${bonus} (équipement) = ${vA}` : ''} sur ${m.n}.`);
+  log(S, `⚔ ${nm(h)} pose un ${d.v}${bonus ? ` +${bonus} (${flam && bonus === 1 ? 'flamme' : flam ? 'équipement et flamme' : 'équipement'}) = ${vA}` : ''} sur ${m.n}.`);
   if ((h.id === 'maelle' && d.v === 6) || (a_t(h, 'brute') && d.v >= 5)) { const s2 = m.sceaux.find(z => !z.ok); if (s2) { brise(s2); log(S, `🔨 ${h.id === 'maelle' ? 'Coup de forge (un 6 de Maëlle)' : 'Brute (un 5 ou un 6)'} : un DEUXIÈME sceau se brise !`); } }
   R.frappeurs = R.frappeurs || {}; R.frappeurs[m.id] = (R.frappeurs[m.id] || []); if (!R.frappeurs[m.id].includes(hi)) R.frappeurs[m.id].push(hi);
   return { ok:true, ev:verifieMonstre(S, m) };
@@ -600,6 +601,14 @@ function fouiller(S, hi, idDe) {
   log(S, n ? `🔍 ${nm(h)} repère ${n} piège${n > 1 ? 's' : ''} (2 cases autour d’elle ou de lui).` : `🔍 ${nm(h)} cherche des pièges sur 2 cases autour… rien.`); return { ok:true, ev:[] };
 }
 // agir sur la case (x, y) à côté : porte, MEUBLE à fouiller, levier, livre, axe
+// 16/11 soir (choix de l'utilisateur : « bénédiction contre l'Horloger », comme les autels de Diablo) : une fois les statues tournées,
+// chaque héros à côté du feu de la Galerie peut le toucher (gratuit, une fois) : +1 sur les sceaux « ≥ » et « Σ » de l'Horloger
+function benir(S, hi) { const h = S.heros[hi], R = S.R;
+  if (!R.statuesOk) return 'Le feu ne s’allume que quand les quatre statues regardent l’autel.';
+  if (h.flamme) return `${nm(h)} porte déjà la flamme.`;
+  const [ax, ay] = AUTEL_S; if (!contact(S, h, { x:ax, y:ay }) && !contact(S, h, { x:ax + 1, y:ay })) return 'Il faut être juste à côté du feu.';
+  h.flamme = true; S.score += 10; log(S, `🔥 ${nm(h)} touche le feu sacré : sa main garde une petite flamme. +1 contre l’Horloger (sceaux « ≥ » et « Σ »).`);
+  return { ok:true, ev:[{ t:'flamme', h:hi }] }; }
 function agir(S, hi, idDe, x, y) {
   const h = S.heros[hi], R = S.R, o = R.obj[cle(x, y)], p = R.portes[cle(x, y)];
   if (p && !p.ouverte) return ouvrir(S, hi, x, y);
@@ -615,8 +624,8 @@ function agir(S, hi, idDe, x, y) {
     unPas(S, h, idDe); tourneStatue(R, st); const bonnes = R.statues.filter(t => t.d === t.veut).length;
     log(S, `🗿 ${nm(h)} pousse une statue : elle pivote d’un quart de tour… et sa voisine (${['en haut à droite', 'en bas à droite', 'en bas à gauche', 'en haut à gauche'][st]}) tourne avec elle. ${bonnes}/4 regardent l’autel.`);
     if (R.statues.every(t => t.d === t.veut)) { R.statuesOk = true; S.score += 80; S.sablier += 3;
-      const k = ['bouclier', 'cle', 'lunettes'].find(z => !S.heros.some(w => w.objet === z)); if (k && !h.objet) { h.objet = k; log(S, `✨ Les quatre statues s’agenouillent vers l’autel ! Une niche s’ouvre : ${nm(h)} trouve ${OBJETS[k].n} (${OBJETS[k].d}) ; +3 grains, +80.`); }
-      else log(S, '✨ Les quatre statues s’agenouillent vers l’autel ! Une niche s’ouvre : +3 grains et +80 points.');
+      const k = ['bouclier', 'cle', 'lunettes'].find(z => !S.heros.some(w => w.objet === z)); if (k && !h.objet) { h.objet = k; log(S, `✨ Les quatre statues s’agenouillent vers l’autel ! Une niche s’ouvre : ${nm(h)} trouve ${OBJETS[k].n} (${OBJETS[k].d})  ; +3 grains, +80. Le feu sacré s’allume : chaque héros qui le touche emporte sa flamme (+1 contre l’Horloger).`); }
+      else log(S, '✨ Les quatre statues s’agenouillent vers l’autel ! Une niche s’ouvre : +3 grains et +80 points. Le feu sacré s’allume : chaque héros qui le touche emporte sa flamme (+1 contre l’Horloger).');
       return { ok:true, ev:[{ t:'enigme' }] }; }
     return { ok:true, ev:[{ t:'statue', i:st, j:(st + 1) % 4 }] };
   }
@@ -785,7 +794,7 @@ function pause(S) {
   log(S, `🔥 Le groupe fait une pause au feu de camp : +4 PV à chacun, le sablier perd 3 grains (${2 - S.pauses} pause${2 - S.pauses > 1 ? 's' : ''} restante${2 - S.pauses > 1 ? 's' : ''}).`);
   return { ok:true, ev:[{ t:'pause' }] };
 }
-const API = { ETAL, acheter, pause, echanger, prendreEscalier, moitiesPorte, presDePorte, rectSalle, etageDe, COULOIRS_Z2, CAPA, phasesDe, grilleOuverte, contact, pasDe, aPortee, SAC, utiliser, SCEN, HEROS_C, BETES, PHASES, SALLES, OBJETS, MEUBLE_N, nouvelle, atteignables, bouger, frapper, proteger, soigner, donner, relever, fouiller, agir, ouvrir,
+const API = { benir, ETAL, acheter, pause, echanger, prendreEscalier, moitiesPorte, presDePorte, rectSalle, etageDe, COULOIRS_Z2, CAPA, phasesDe, grilleOuverte, contact, pasDe, aPortee, SAC, utiliser, SCEN, HEROS_C, BETES, PHASES, SALLES, OBJETS, MEUBLE_N, nouvelle, atteignables, bouger, frapper, proteger, soigner, donner, relever, fouiller, agir, ouvrir,
   finTour, visible, accepte, voisins, dist, herosEn, cle, libre, reveille };
 if (typeof module !== 'undefined' && module.exports) module.exports = API; else racine.CHRON = API;
 })(typeof window !== 'undefined' ? window : globalThis);
