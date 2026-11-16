@@ -40,7 +40,7 @@ const HEROS_C = {
 // 15/11 soir : les portraits peints des monstres de l'Horloger (portraits/m-<img>.webp) ; l'Horloger garde le sien en attendant le nouveau
 const BETES = {
   rouagelin: { n:'Rouagelin', img:'rouagelin', att:1, mv:2, s:() => [sceau('any'), sceau('min', 3)] },
-  gardien:   { n:'Gardien de bronze', img:'gardienbronze', att:2, mv:1, s:() => [sceau('pair'), sceau('pair'), sceau('tot', 7)], garde:.33 },
+  gardien:   { n:'Gardien de bronze', img:'gardienbronze', att:2, mv:2, s:() => [sceau('pair'), sceau('pair'), sceau('tot', 7)], garde:.25, leviers:true },
   coucou:    { n:'Coucou furieux', img:'coucou', att:2, mv:3, s:() => [sceau('imp'), sceau('min', 4)] },
   page:      { n:'Page hurlante', img:'pagehurlante', att:1, mv:3, s:() => [sceau('imp'), sceau('imp')], fuit:.3 },
   archiviste:{ n:'Archiviste de cuivre', img:'archiviste', att:3, mv:1, s:() => [sceau('dbl', 0, 1), sceau('dbl', 0, 1), sceau('min', 5), sceau('tot', 10)], soin:.35, elite:true },
@@ -225,6 +225,8 @@ function sceauxBoss(S, k) {
 function adapte(S) {
   const R = S.R, n = Math.max(1, Math.min(4, S.heros.length)), A = ADAPTE[n];
   S.nbHeros = n; S.dureeLevier = A.levier; S.sablier += A.sablier;
+  // 16/11 (retour de l'utilisateur : « pas de mise en danger » à 4) : à 3 héros et plus, chaque monstre frappe 1 de plus
+  S.forceM = n >= 3 ? 1 : 0; R.monstres.forEach(m => m.att = BETES[m.b].att + S.forceM);
   if (S.scen === 'labyrinthe') { S.sablier += [0, 20, 10, 0, 0][n]; if (n <= 2) R.monstres = R.monstres.filter(() => hasard(S) < .7); } // un donjon plus grand : plus de temps aux petits groupes
   if (A.garde < 1 && S.scen !== 'arene') R.monstres = R.monstres.filter(m => hasard(S) < A.garde); // une embuscade garde ses monstres (écrits pour l'aventure)
   if (A.renfort) { // à 4 : quelques monstres de plus, posés dans des couloirs (cases de sol hors salle, loin du départ)
@@ -285,13 +287,28 @@ function utiliser(S, hi, k, cible) {
 }
 const a_t = (h, k) => !!(h.talents && h.talents.includes(k)); // un talent de héros d'aventure (aventuriers.js, TALENTS) // le nom affiché (héros d'aventure ou héros de la Guilde)
 const log = (S, t) => { S.journal.unshift(t); S.journal.length = Math.min(S.journal.length, 40); };
-function ajouteMonstre(S, b, x, y) { const B = BETES[b]; const m = { id:'m' + S.seq++, b, n:B.n, img:B.img, x, y, att:B.att, sceaux:B.s(), it:'frappe' }; S.R.monstres.push(m); return m; }
+function ajouteMonstre(S, b, x, y) { const B = BETES[b]; const m = { id:'m' + S.seq++, b, n:B.n, img:B.img, x, y, att:B.att + (S.forceM || 0), sceaux:B.s(), it:'frappe' }; S.R.monstres.push(m); return m; }
 function libre(S, x, y, sauf) { const R = S.R; if (x < 0 || y < 0 || x >= R.w || y >= R.h || R.murs[cle(x, y)]) return false;
   const p = R.portes[cle(x, y)]; if (p && !p.ouverte) return false;
   if (R.monstres.some(m => m !== sauf && m.x === x && m.y === y)) return false; if (R.boss && R.boss !== sauf && R.boss.x === x && R.boss.y === y) return false; return true; }
 const herosEn = (S, x, y) => S.heros.find(h => h.x === x && h.y === y);
 const voisins = (a, b) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y) === 1;
 const dist = (a, b) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+// 16/11 (retour de l'utilisateur) : AU CONTACT = une case autour, DIAGONALES COMPRISES (pour les héros comme pour les monstres),
+// sauf un coin de mur (les deux cases de côté sont des murs : on ne frappe pas à travers l'angle).
+function contact(S, a, b) {
+  const dx = Math.abs(a.x - b.x), dy = Math.abs(a.y - b.y); if (dx + dy === 1) return true; if (dx !== 1 || dy !== 1) return false;
+  const M = S && S.R ? S.R.murs : {}; return !(M[cle(a.x, b.y)] && M[cle(b.x, a.y)]);
+}
+// le nombre de cases qu'un dé fait marcher, avec le détail (affiché sous les dés)
+function pasDe(h, v) {
+  const det = [`dé ${v}`]; let n = v;
+  if (h.agi) { n += h.agi; det.push(`${h.agi > 0 ? '+' : ''}${h.agi} équipement`); }
+  if (h.id === 'oria') { n += 2; det.push('+2 éclaireuse'); }
+  if (a_t(h, 'eclaireur')) { n += 1; det.push('+1 talent'); }
+  if (h.porte) { n -= 1; det.push('−1 rouage porté'); }
+  return { n:Math.max(1, n), det };
+}
 // ---- ce qu'on voit : une salle entière dès qu'on y entre (ou qu'on ouvre sa porte) ; les couloirs en avançant
 function revele(S, id) { const R = S.R; if (R.vuSalle[id]) return false; R.vuSalle[id] = true;
   const [x0, y0, w, h] = SALLES[id].r; for (let y = y0 - 1; y <= y0 + h; y++) for (let x = x0 - 1; x <= x0 + w; x++) R.vu[cle(x, y)] = 1; return true; }
@@ -322,12 +339,14 @@ function debutTour(S) {
     for (let i = 0; i < Math.max(0, n); i++) { const r = de6(S); h.des.push({ id:'d' + S.seq++, v:h.faces ? h.faces[r - 1] : r }); } // dé personnel : ses faces forgées
     if (h.carillon && h.des.length) { h.des.sort((a, b) => b.v - a.v); h.des.shift(); h.carillon = false; log(S, `🔔 ${nm(h)} a perdu son plus gros dé.`); }
   });
-  for (const c in R.leviersTour) { R.leviersTour[c]--; if (R.leviersTour[c] <= 0) delete R.leviersTour[c]; }
-  R.monstres.forEach(m => { const B = BETES[m.b], r = hasard(S); m.it = B.garde && r < B.garde ? 'garde' : B.soin && r < B.soin && R.monstres.length > 1 ? 'soin' : B.fuit && r < B.fuit ? 'fuit' : 'frappe'; });
+  for (const c in R.leviersTour) { R.leviersTour[c]--; if (R.leviersTour[c] <= 0) { delete R.leviersTour[c]; if (!R.bronze) log(S, '🎚 Un levier remonte tout seul dans un claquement : il faut les baisser tous les quatre en même temps.'); } }
+  R.monstres.forEach(m => { const B = BETES[m.b], r = hasard(S); m.it = B.garde && r < B.garde ? 'garde' : B.soin && r < B.soin && R.monstres.length > 1 ? 'soin' : B.fuit && r < B.fuit ? 'fuit' : 'frappe';
+    // 16/11 : le Gardien de bronze surveille ses leviers : s'il y en a de baissés, il en remonte un (une fois sur deux)
+    if (B.leviers && !R.bronze && Object.keys(R.leviersTour).length && r < .5) m.it = 'levier'; });
   if (R.boss) R.boss.it = R.boss.repos ? 'remonte' : 'frappe';
 }
-function atteignables(S, h, v) {
-  const R = S.R, pasMax = v + (h.agi || 0) + (h.id === 'oria' ? 2 : 0) + (a_t(h, 'eclaireur') ? 1 : 0) - (h.porte ? 1 : 0), res = {}, file = [[h.x, h.y, 0]], vu = { [cle(h.x, h.y)]:1 };
+function atteignables(S, h, v, pas) {
+  const R = S.R, pasMax = pas ? v : pasDe(h, v).n, res = {}, file = [[h.x, h.y, 0]], vu = { [cle(h.x, h.y)]:1 };
   while (file.length) { const [x, y, d] = file.shift(); if (d >= pasMax) continue;
     // on s'arrête en entrant dans une salle pas encore vue (comme à HeroQuest : on découvre en entrant)
     const ici = R.salle[cle(x, y)]; if (d > 0 && ici && !R.vuSalle[ici]) continue;
@@ -352,26 +371,33 @@ function ouvrir(S, hi, x, y) {
 }
 function bouger(S, hi, idDe, x, y) {
   const h = S.heros[hi], d = h.des.find(z => z.id === idDe); if (!d || h.aTerre) return 'Ce héros ne peut pas bouger.';
-  if (!atteignables(S, h, d.v)[cle(x, y)]) return 'Trop loin pour ce dé.';
-  prendDe(h, idDe); h.x = x; h.y = y; const ev = [];
+  const A = atteignables(S, h, d.v, d.pas), fait = A[cle(x, y)]; if (!fait) return 'Trop loin pour ce dé.';
+  const total = d.pas ? d.v : pasDe(h, d.v).n, reste = total - fait;
+  prendDe(h, idDe); const de0 = [h.x, h.y]; h.x = x; h.y = y; const ev = [{ t:'marche', h:hi, de:de0 }];
+  // 16/11 (retour de l'utilisateur : « un dé de 4 = 4 actions ») : les PAS PAS UTILISÉS restent dans un petit dé 👣
+  // qui sert à marcher encore ou à agir (fouiller, levier, porte, axe, livre) ; il ne frappe pas et ne se donne pas.
+  if (reste > 0) h.des.push({ id:'d' + S.seq++, v:reste, pas:true });
   const o = S.R.obj[cle(x, y)];
   if (o && o.t === 'piege' && !o.trouve) { o.trouve = true; o.cache = false; blesseHeros(S, h, 3); ev.push({ t:'piege', h:hi }); log(S, `⚠ ${nm(h)} tombe dans un piège : −3 PV.`); }
   if (o && o.t === 'rouage' && !h.porte) { delete S.R.obj[cle(x, y)]; h.porte = true; log(S, `⚙ ${nm(h)} ramasse un rouage.`); }
+  else if (o && o.t === 'rouage') log(S, `⚙ ${nm(h)} porte déjà un rouage : il en laisse un par terre (un seul à la fois).`);
   voir(S).forEach(s => ev.push({ t:'salle', salle:s }));
   return { ok:true, ev };
 }
 function frapper(S, hi, idDe, mid, k) {
   const h = S.heros[hi], d = h.des.find(z => z.id === idDe), R = S.R;
   const m = mid === 'boss' ? R.boss : R.monstres.find(z => z.id === mid); if (!d || !m) return 'Rien à frapper.';
-  const portee = h.id === 'zephine' ? 2 : 1;
-  if (dist(h, m) > portee) return portee > 1 ? 'Trop loin (2 cases au plus).' : 'Il faut être à côté du monstre.';
-  const s = m.sceaux[k], vA = d.v + (s && (s.t === 'min' || s.t === 'tot') ? h.att || 0 : 0); // ⚔ l'Attaque de l'équipement compte sur les sceaux « ≥ » et « Σ »
+  if (d.pas) return 'Un dé 👣 (des pas qui restent) sert à marcher ou à agir, pas à frapper.';
+  if (!aPortee(S, h, m)) return h.id === 'zephine' ? 'Trop loin (2 cases au plus).' : 'Il faut être au contact du monstre (une case autour, diagonales comprises).';
+  const s = m.sceaux[k], bonus = s && (s.t === 'min' || s.t === 'tot') ? h.att || 0 : 0, vA = d.v + bonus; // ⚔ l'Attaque de l'équipement compte sur les sceaux « ≥ » et « Σ »
   if (!s || !accepte(s, vA, m.sceaux)) return 'Ce dé ne va pas sur ce sceau.';
   prendDe(h, idDe); pose(s, vA);
-  if ((h.id === 'maelle' && d.v === 6) || (a_t(h, 'brute') && d.v >= 5)) { const s2 = m.sceaux.find(z => !z.ok); if (s2) { brise(s2); log(S, '🔨 Coup de forge : deux sceaux d’un coup !'); } }
+  log(S, `⚔ ${nm(h)} pose un ${d.v}${bonus ? ` +${bonus} (équipement) = ${vA}` : ''} sur ${m.n}.`);
+  if ((h.id === 'maelle' && d.v === 6) || (a_t(h, 'brute') && d.v >= 5)) { const s2 = m.sceaux.find(z => !z.ok); if (s2) { brise(s2); log(S, `🔨 ${h.id === 'maelle' ? 'Coup de forge (un 6 de Maëlle)' : 'Brute (un 5 ou un 6)'} : un DEUXIÈME sceau se brise !`); } }
   R.frappeurs = R.frappeurs || {}; R.frappeurs[m.id] = (R.frappeurs[m.id] || []); if (!R.frappeurs[m.id].includes(hi)) R.frappeurs[m.id].push(hi);
   return { ok:true, ev:verifieMonstre(S, m) };
 }
+const aPortee = (S, h, m) => h.id === 'zephine' ? (contact(S, h, m) || dist(h, m) <= 2) : contact(S, h, m);
 function verifieMonstre(S, m) {
   const R = S.R, ev = [];
   if (!m.sceaux.every(s => s.ok)) return ev;
@@ -388,7 +414,7 @@ function verifieMonstre(S, m) {
   return ev;
 }
 function proteger(S, hi, idDe, cibleI) {
-  const h = S.heros[hi], d = h.des.find(z => z.id === idDe), c = S.heros[cibleI]; if (!d || !c) return 'Personne à protéger.';
+  const h = S.heros[hi], d = h.des.find(z => z.id === idDe), c = S.heros[cibleI]; if (!d || !c) return 'Personne à protéger.'; if (d.pas) return 'Un dé 👣 sert à marcher ou à agir, pas à protéger.';
   if (c !== h && !voisins(h, c)) return 'Il faut être à côté de l’ami.';
   prendDe(h, idDe); const b = Math.ceil(d.v / 2) + 1 + (a_t(h, 'protecteur') ? 2 : 0);
   const qui = h.id === 'aldric' ? S.heros.filter(z => z === c || z === h || voisins(z, h)) : [c];
@@ -397,13 +423,13 @@ function proteger(S, hi, idDe, cibleI) {
 }
 function soigner(S, hi, idDe, cibleI) {
   const h = S.heros[hi], d = h.des.find(z => z.id === idDe), c = S.heros[cibleI]; if (h.id !== 'pip' && !a_t(h, 'guerisseur')) return 'Ce héros ne sait pas soigner.';
-  if (!d || !c || (c !== h && !voisins(h, c))) return 'Il faut être à côté de l’ami.';
+  if (!d || !c || (c !== h && !voisins(h, c))) return 'Il faut être à côté de l’ami.'; if (d.pas) return 'Un dé 👣 sert à marcher ou à agir, pas à soigner.';
   prendDe(h, idDe); const av = c.pv; c.pv = Math.min(c.pvmax, c.pv + (h.id === 'pip' ? d.v : Math.ceil(d.v / 2))); if (c.aTerre && c.pv > 0) c.aTerre = false;
   log(S, `🌿 ${nm(h)} soigne ${nm(c)} : +${c.pv - av} PV.`); return { ok:true, ev:[{ t:'soin', h:cibleI }] };
 }
 function donner(S, hi, idDe, cibleI) {
   const h = S.heros[hi], c = S.heros[cibleI]; if (!c || c === h || !voisins(h, c)) return 'Il faut être à côté de l’ami.';
-  const d = prendDe(h, idDe); if (!d) return 'Pas de dé.'; c.des.push(d); log(S, `🤝 ${nm(h)} donne un ${d.v} à ${nm(c)}.`);
+  const d0 = h.des.find(z => z.id === idDe); if (d0 && d0.pas) return 'Un dé 👣 ne se donne pas.'; const d = prendDe(h, idDe); if (!d) return 'Pas de dé.'; c.des.push(d); log(S, `🤝 ${nm(h)} donne un ${d.v} à ${nm(c)}.`);
   return { ok:true, ev:[] };
 }
 function relever(S, hi, idDe, cibleI) {
@@ -414,7 +440,7 @@ function relever(S, hi, idDe, cibleI) {
 function fouiller(S, hi, idDe) {
   const h = S.heros[hi]; if (!prendDe(h, idDe)) return 'Pas de dé.'; let n = 0;
   Object.entries(S.R.obj).forEach(([c, o]) => { const [x, y] = c.split(',').map(Number); if (o.t === 'piege' && o.cache && Math.abs(x - h.x) + Math.abs(y - h.y) <= 2) { o.cache = false; o.vu = true; n++; } });
-  log(S, n ? `🔍 ${nm(h)} repère ${n} piège${n > 1 ? 's' : ''}.` : `🔍 ${nm(h)} cherche des pièges autour… rien.`); return { ok:true, ev:[] };
+  log(S, n ? `🔍 ${nm(h)} repère ${n} piège${n > 1 ? 's' : ''} (2 cases autour d’elle ou de lui).` : `🔍 ${nm(h)} cherche des pièges sur 2 cases autour… rien.`); return { ok:true, ev:[] };
 }
 // agir sur la case (x, y) à côté : porte, MEUBLE à fouiller, levier, livre, axe
 function agir(S, hi, idDe, x, y) {
@@ -430,8 +456,10 @@ function agir(S, hi, idDe, x, y) {
   if (dist(h, { x, y }) > 1) return 'Il faut être à côté.';
   if (o.meuble) return fouilleMeuble(S, hi, idDe, x, y, o);
   if (o.t === 'levier') { if (d.v < o.v) return `Ce levier demande un ${o.v} ou plus.`; if (R.leviersTour[cle(x, y)]) return 'Ce levier est déjà baissé.';
-    prendDe(h, idDe); R.leviersTour[cle(x, y)] = S.dureeLevier || 2; const n = Object.keys(R.leviersTour).length; log(S, `🎚 Levier baissé (${n}/4).`);
-    if (n >= 4 && !R.bronze) { R.bronze = true; S.sablier += 3; log(S, '🎚🎚🎚🎚 Les 4 leviers ensemble : un grondement… la PORTE DE BRONZE s’est déverrouillée (+3 grains) !'); }
+    prendDe(h, idDe); R.leviersTour[cle(x, y)] = S.dureeLevier || 2; const n = Object.keys(R.leviersTour).length;
+    const LV = [`${nm(h)} s’arc-boute sur le levier… CLAC ! Quelque part sous le sol, un engrenage se met à tourner`, `${nm(h)} tire le levier de tout son poids : un long grincement court dans les murs`, `${nm(h)} abaisse le levier : une aiguille de cuivre avance d’un cran au-dessus de la porte de bronze`, `${nm(h)} pousse le levier jusqu’en bas : les tuyaux crachent un jet de vapeur`];
+    log(S, `🎚 ${LV[(n - 1) % LV.length]} (${n}/4 baissés, il tient ${S.dureeLevier || 2} tour${(S.dureeLevier || 2) > 1 ? 's' : ''}).`);
+    if (n >= 4 && !R.bronze) { R.bronze = true; S.sablier += 3; log(S, '🎚🎚🎚🎚 Les quatre leviers sont baissés ensemble : un grondement sourd… la PORTE DE BRONZE s’est déverrouillée (+3 grains) !'); }
     return { ok:true, ev:[{ t:'levier', bronze:R.bronze && n >= 4 }] }; }
   if (o.t === 'livre') { if (d.v < 4) return 'Il faut un dé de 4 ou plus.';
     const aides = S.heros.filter(z => z !== h && !z.aTerre && dist(z, { x, y }) === 1); if (!aides.length) return 'Il faut un deuxième héros à côté du livre pour faire la courte échelle.';
@@ -441,7 +469,7 @@ function agir(S, hi, idDe, x, y) {
 // ce que cache un meuble (une seule fouille)
 function fouilleMeuble(S, hi, idDe, x, y, o) {
   const h = S.heros[hi], R = S.R; if (o.fouille) return `On a déjà fouillé ${MEUBLE_N[o.t]}.`;
-  if (o.cache === 'rouage' && h.porte) return `${nm(h)} porte déjà un rouage : qu’un autre héros fouille.`;
+  if (o.cache === 'rouage' && h.porte) { log(S, `⚙ ${nm(h)} sent un rouage dans ${MEUBLE_N[o.t]}, mais ses mains sont prises : un héros ne porte qu’UN rouage à la fois.`); return `${nm(h)} porte déjà un rouage (un seul à la fois) : qu’un autre héros fouille ici.`; }
   prendDe(h, idDe); o.fouille = true; const nom = nm(h), ev = { t:'fouille', quoi:o.cache, meuble:o.t, h:hi };
   const Le = MEUBLE_N[o.t][0].toUpperCase() + MEUBLE_N[o.t].slice(1);
   switch (o.cache) {
@@ -463,7 +491,7 @@ function reveilBoss(S) {
   const R = S.R, [ax, ay] = R.axe;
   const pos = [[ax, ay - 1], [ax + 1, ay], [ax - 1, ay], [ax, ay + 1]].find(([x, y]) => libre(S, x, y) && !herosEn(S, x, y)) || [ax + 2, ay];
   const sc = SCEN[S.scen || 'horloger'], Bb = BETES[sc.boss];
-  R.boss = { id:'boss', b:sc.boss, n:Bb.n, img:Bb.img, x:pos[0], y:pos[1], att:(S.nbHeros || 4) <= 2 ? 2 : 3, phase:0, sceaux:sceauxBoss(S, 0), repos:false, it:'frappe' };
+  R.boss = { id:'boss', b:sc.boss, n:Bb.n, img:Bb.img, x:pos[0], y:pos[1], att:(S.nbHeros || 4) <= 2 ? 2 : (S.nbHeros || 4) >= 4 ? 4 : 3, phase:0, sceaux:sceauxBoss(S, 0), repos:false, it:'frappe' };
   log(S, S.scen === 'labyrinthe' ? '✦ Les trois fragments s’emboîtent sur l’autel… le sol tremble : LE TITAN DES RUNES se réveille !' : S.scen === 'brulees' ? '🔥 Les trois braises rallument le grand brasier… LE TITAN DE FEU en sort, furieux !' : '⏰ Les trois rouages tournent… L’HORLOGER se réveille, furieux !');
 }
 function repousse(S, m, h, n) { for (let i = 0; i < n; i++) { const dx = Math.sign(m.x - h.x), dy = Math.sign(m.y - h.y); const nx = m.x + (Math.abs(m.x - h.x) >= Math.abs(m.y - h.y) ? dx || 1 : 0), ny = m.y + (Math.abs(m.x - h.x) < Math.abs(m.y - h.y) ? dy || 1 : 0); if (libre(S, nx, ny, m) && !herosEn(S, nx, ny)) { m.x = nx; m.y = ny; } } }
@@ -480,7 +508,8 @@ function finTour(S) {
   const R = S.R, ev = []; if (!R || S.fin) return ev;
   const debout = () => S.heros.filter(h => !h.aTerre);
   const plusProche = m => debout().sort((a, b) => dist(a, m) - dist(b, m))[0];
-  const marche = (m, cible, n) => { for (let i = 0; i < n; i++) { if (!cible || dist(m, cible) <= 1) return;
+  const marche = (m, cible, n) => { const de = [m.x, m.y]; marche1(m, cible, n); if (m.x !== de[0] || m.y !== de[1]) ev.push({ t:'pas', m:m.id, de }); };
+  const marche1 = (m, cible, n) => { for (let i = 0; i < n; i++) { if (!cible || contact(S, m, cible)) return;
     const opts = [[1, 0], [-1, 0], [0, 1], [0, -1]].map(([dx, dy]) => [m.x + dx, m.y + dy]).filter(([x, y]) => libre(S, x, y, m) && !herosEn(S, x, y) && R.vu[cle(x, y)] && !(R.portes[cle(x, y)] && !R.portes[cle(x, y)].ouverte));
     if (!opts.length) return; opts.sort((a, b) => dist({ x:a[0], y:a[1] }, cible) - dist({ x:b[0], y:b[1] }, cible));
     if (dist({ x:opts[0][0], y:opts[0][1] }, cible) >= dist(m, cible)) return; [m.x, m.y] = opts[0]; } };
@@ -491,16 +520,19 @@ function finTour(S) {
     const B = BETES[m.b], c = plusProche(m); if (!c || dist(m, c) > 8) continue;
     if (m.it === 'garde') { const s = m.sceaux.find(x => x.ok && x.t !== 'tot'); if (s) { s.ok = false; s.val = 0; } ev.push({ t:'garde', m:m.id }); continue; }
     if (m.it === 'soin') { const o = R.monstres.find(z => z !== m && z.sceaux.some(s => s.ok) && dist(z, m) <= 4); if (o) { const s = o.sceaux.find(x => x.ok); s.ok = false; s.val = 0; s.reste = s.t === 'tot' ? s.v : 0; log(S, `💚 ${m.n} répare ${o.n}.`); } ev.push({ t:'soin', m:m.id }); continue; }
-    if (m.it === 'fuit') { repousse(S, m, c, 2); ev.push({ t:'fuit', m:m.id }); continue; }
+    if (m.it === 'fuit') { const de = [m.x, m.y]; repousse(S, m, c, 2); ev.push({ t:'pas', m:m.id, de }); ev.push({ t:'fuit', m:m.id }); continue; }
+    if (m.it === 'levier') { const k = Object.keys(R.leviersTour)[0]; delete R.leviersTour[k];
+      const P = ['« Clac ! Personne ne touche à MES leviers. »', '« Grrr… ces leviers restent levés ! »', '« Le Maître dort. Les leviers restent en haut. »'];
+      log(S, `🗿 ${m.n} grince ${P[Math.floor(hasard(S) * P.length)]} Il remonte un levier (${Object.keys(R.leviersTour).length}/4 baissés).`); ev.push({ t:'levierRemonte', m:m.id }); continue; }
     marche(m, c, B.mv);
-    if (dist(m, c) <= 1) { const perdu = blesseHeros(S, c, m.att); ev.push({ t:'frappe', m:m.id, h:S.heros.indexOf(c), v:perdu }); log(S, `⚔ ${m.n} frappe ${nm(c)} (−${perdu}).`); }
+    if (contact(S, m, c)) { const perdu = blesseHeros(S, c, m.att); ev.push({ t:'frappe', m:m.id, h:S.heros.indexOf(c), v:perdu }); log(S, `⚔ ${m.n} frappe ${nm(c)} (−${perdu}).`); }
   }
   if (R.boss && !S.fin) {
     const Bo = R.boss;
     if (Bo.repos) { const s = Bo.sceaux.find(x => x.ok && x.t !== 'tot'); if (s) { s.ok = false; s.val = 0; } log(S, '⏰ L’Horloger remonte son ressort (un sceau se referme).'); ev.push({ t:'garde', m:'boss' }); }
     else {
       const c = plusProche(Bo);
-      if (Bo.phase === 0) { marche(Bo, c, 1); if (c && dist(Bo, c) <= 2) blesseHeros(S, c, Bo.att); for (let i = 0; i < 2; i++) { const p = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [-1, -1]].map(([dx, dy]) => [Bo.x + dx, Bo.y + dy]).find(([x, y]) => libre(S, x, y) && !herosEn(S, x, y)); if (p) ajouteMonstre(S, SCEN[S.scen || 'horloger'].renfort, p[0], p[1]); } log(S, `⏰ ${SCEN[S.scen || 'horloger'].phases[0]} : un coup de 3 et deux renforts !`); }
+      if (Bo.phase === 0) { marche(Bo, c, 1); if (c && contact(S, Bo, c)) { const perdu = blesseHeros(S, c, Bo.att); ev.push({ t:'frappe', m:'boss', h:S.heros.indexOf(c), v:perdu }); log(S, `⚔ ${Bo.n} frappe ${nm(c)} (−${perdu}).`); } for (let i = 0; i < 2; i++) { const p = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [-1, -1]].map(([dx, dy]) => [Bo.x + dx, Bo.y + dy]).find(([x, y]) => libre(S, x, y) && !herosEn(S, x, y)); if (p) ajouteMonstre(S, SCEN[S.scen || 'horloger'].renfort, p[0], p[1]); } log(S, `⏰ ${SCEN[S.scen || 'horloger'].phases[0]} : un coup de 3 et deux renforts !`); }
       else if (Bo.phase === 1) { debout().forEach(h => { if (!S.heros.some(z => z !== h && !z.aTerre && voisins(z, h))) h.carillon = true; }); log(S, '🔔 Le Carillon sonne ! Ceux qui sont seuls perdront leur plus gros dé.'); }
       else { const bl = debout().sort((a, b) => a.pv - b.pv)[0]; if (bl) { const p = [[1, 1], [2, 1], [1, 2], [2, 2], [3, 1], [3, 2]].find(([x, y]) => !herosEn(S, x, y) && libre(S, x, y)) || [1, 1]; bl.x = p[0]; bl.y = p[1]; blesseHeros(S, bl, Bo.att + 1); log(S, `⏳ La Dernière Heure : ${nm(bl)} est renvoyé dans le hall d’entrée (−4).`); } }
       ev.push({ t:'boss' });
@@ -513,7 +545,7 @@ function finTour(S) {
   debutTour(S); return ev;
 }
 
-const API = { SAC, utiliser, SCEN, HEROS_C, BETES, PHASES, SALLES, OBJETS, MEUBLE_N, nouvelle, atteignables, bouger, frapper, proteger, soigner, donner, relever, fouiller, agir, ouvrir,
+const API = { contact, pasDe, aPortee, SAC, utiliser, SCEN, HEROS_C, BETES, PHASES, SALLES, OBJETS, MEUBLE_N, nouvelle, atteignables, bouger, frapper, proteger, soigner, donner, relever, fouiller, agir, ouvrir,
   finTour, visible, accepte, voisins, dist, herosEn, cle, libre, reveille };
 if (typeof module !== 'undefined' && module.exports) module.exports = API; else racine.CHRON = API;
 })(typeof window !== 'undefined' ? window : globalThis);
