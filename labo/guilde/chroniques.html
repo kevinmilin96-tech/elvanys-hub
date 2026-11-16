@@ -43,6 +43,21 @@
   .c.porte.img { background-color:transparent; box-shadow:none; }
   .c.mur { background:url('decor/tuile-roche-brulees.webp') 0 0 / calc(var(--t) * 4) calc(var(--t) * 4); filter:brightness(.3) saturate(.6); }
   .c:not(.mur):not(.noir) { filter:brightness(1.15); }
+  /* 16/11 : la page « Personnage » (feuille du héros : équipement + inventaire de 10 cases) */
+  .ps-page { position:fixed; inset:0; z-index:900; overflow:auto; background:radial-gradient(circle at 50% 0, #2a2350, #0d0b1a 70%); padding:3cqw 3cqw 8cqw; }
+  .ps-haut { display:flex; align-items:center; gap:3cqw; margin-bottom:3cqw; } .ps-haut b { color:var(--or); font-size:1.2em; }
+  .ps-haut button { background:#1c1c36; color:var(--texte); border:1px solid #45457a; border-radius:20px; padding:1.5cqw 3cqw; font:inherit; }
+  .ps-poupee { display:grid; grid-template-columns:1fr 1.3fr 1fr; gap:2cqw; align-items:center; max-width:560px; margin:0 auto; }
+  .ps-col { display:grid; gap:2cqw; }
+  .ps-slot { position:relative; background:#1c1c36; border:2px solid var(--rc, #45457a); border-radius:14px; padding:6px; text-align:center; min-height:min(22vw, 92px); display:flex; flex-direction:column; align-items:center; justify-content:center; box-shadow:0 0 10px color-mix(in srgb, var(--rc, #000) 40%, transparent); }
+  .ps-slot img { width:min(12vw, 52px); height:min(12vw, 52px); object-fit:contain; } .ps-slot.vide img { opacity:.35; filter:grayscale(1); }
+  .ps-slot small { font-size:.72em; color:var(--doux); line-height:1.2; } .ps-slot i { position:absolute; top:3px; right:6px; font-size:.7em; color:var(--or); font-style:normal; }
+  .ps-centre { text-align:center; } .ps-centre img { width:100%; max-width:180px; aspect-ratio:1; border-radius:50%; object-fit:cover; box-shadow:0 0 0 4px var(--or), 0 0 30px #f3c96b66; }
+  .ps-centre b { display:block; color:var(--or); font-size:1.15em; margin-top:2cqw; } .ps-centre small { color:var(--doux); }
+  .ps-bloc { background:#1c1c36cc; border:1px solid #45457a; border-radius:14px; padding:2.5cqw 3cqw; margin:3cqw auto 0; max-width:560px; } .ps-bloc h3 { margin:.3em 0; color:var(--or); font-size:1em; } .ps-bloc ul { margin:.3em 0; padding-left:1.2em; }
+  .ps-grille { display:grid; grid-template-columns:repeat(5, 1fr); gap:1.6cqw; }
+  .ps-inv { aspect-ratio:1; background:#141428; border:2px solid #45457a; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:min(7vw, 30px); cursor:pointer; } .ps-inv.vide { opacity:.45; cursor:default; } .ps-inv.on { border-color:var(--or); box-shadow:0 0 12px var(--or); }
+  .ps-det { margin-top:2cqw; } .ps-det button { margin-top:1.5cqw; } .ps-aide { color:var(--doux); font-size:.85em; text-align:center; }
   .c.vide { background:transparent !important; pointer-events:none; }
   .escfl { position:absolute; inset:auto 4% 4% auto; z-index:5; background:#1c1c36dd; border:1px solid var(--or); color:var(--or); border-radius:10px; padding:0 .35em; font-size:calc(var(--t) * .3); line-height:1.25; text-align:center; } .escfl small { display:block; font-size:.62em; color:#fff; }
   .c.porte.peinte { box-shadow:none; filter:none; } .c.porte.peinte.cible { box-shadow:inset 0 0 0 3px #ffd36a, 0 0 14px #ffd36a; }
@@ -129,16 +144,16 @@
 </head>
 <body>
 <div id="app"></div>
-<div id="fen"></div>
-<script src="musique.js?v=20261116-160346"></script>
-<script src="rang.js?v=20261116-160346"></script>
+<div id="fen"></div><div id="perso"></div>
+<script src="musique.js?v=20261116-160617"></script>
+<script src="rang.js?v=20261116-160617"></script>
 <script>window.AMIS_SANS_BOUTON = true;</script>
-<script src="amis.js?v=20261116-160346"></script>
-<script src="heros-etoiles.js?v=20261116-160346"></script>
-<script src="progression-modes.js?v=20261116-160346"></script>
-<script src="aventuriers.js?v=20261116-160346"></script>
-<script src="chroniques-moteur.js?v=20261116-160346"></script>
-<script src="chroniques-ambiance.js?v=20261116-160346"></script>
+<script src="amis.js?v=20261116-160617"></script>
+<script src="heros-etoiles.js?v=20261116-160617"></script>
+<script src="progression-modes.js?v=20261116-160617"></script>
+<script src="aventuriers.js?v=20261116-160617"></script>
+<script src="chroniques-moteur.js?v=20261116-160617"></script>
+<script src="chroniques-ambiance.js?v=20261116-160617"></script>
 <script>
 // =============================================================================================== LES CHRONIQUES DE LA GUILDE v2 (15/11, écran « façon HeroQuest »)
 // Une grande carte qui défile : les salles restent dans le noir jusqu'à ce qu'on ouvre leur porte ; les couloirs se dévoilent en avançant ;
@@ -394,7 +409,7 @@ function invLigne(h) {
   if (h.att) L2.push(`⚔ +${h.att} sur les sceaux ≥ et Σ (équipement)`);
   if (h.agi) L2.push(`🥾 +${h.agi} case${h.agi > 1 ? 's' : ''} par déplacement (équipement)`);
   if (!(h.sac || []).length) L2.push('🎒 sac vide');
-  L2.push(`<a href="#" onclick="ficheHeros(${S.heros.indexOf(h)});return false" style="color:var(--or)">📜 Fiche</a>`);
+  L2.push(`<a href="#" onclick="ficheHeros(${S.heros.indexOf(h)});return false" style="color:var(--or)">📜 Personnage</a>`);
   return `<div class="inv">${L2.map(t => `<span>${t}</span>`).join('')}</div>`;
 }
 const deSel = () => sel && S.heros[actif].des.find(d => d.id === sel);
@@ -527,25 +542,34 @@ function aFini() {
   dessine();
 }
 // 16/11 (l'utilisateur : « on ne sait pas pourquoi on fait 2 ou 3 cases ») : la FICHE du héros, son équipement et ce qu'il change ici
-function ficheHeros(i) {
-  const h = S.heros[i], pid = h.av || h.id, L2 = [];
+function ficheHeros(i, choix) {
+  const h = S.heros[i], pid = h.av || h.id, B = [];
   const tal = (h.talents || []).map(k => { const t = typeof TALENTS !== 'undefined' && Object.values(TALENTS).flat().find(z => z[0] === k); return t ? `<li><b>${t[1]}</b> : ${t[2]}</li>` : ''; }).join('');
-  let eq = '';
-  if (typeof equipementDe === 'function' && typeof EQ_CASES !== 'undefined') { try { const E = equipementDe(pid);
-    eq = EQ_CASES.map(c => { const q = E[c.k]; return `<li>${c.e} <b>${c.n}</b> : ${q ? `${esc(q.nom)} <small style="color:${EQ_RARE[q.r].c}">(${EQ_RARE[q.r].n}, +${q.niv})</small> · ${eqTexte(q)}` : '<i style="color:var(--doux)">rien</i>'}</li>`; }).join(''); } catch (e) { eq = ''; } }
-  if (h.agi) L2.push(`🥾 <b>+${h.agi} case${h.agi > 1 ? 's' : ''}</b> à chaque déplacement (bottes, agilité)`);
-  if (h.att) L2.push(`⚔ <b>+${h.att}</b> pour briser les sceaux ≥ et Σ (arme, anneau)`);
-  if (h.def) L2.push(`🛡 <b>bouclier ${h.def}</b> au début de chaque tour (casque, défense)`);
-  if (h.desPlus) L2.push(`🎲 <b>+${h.desPlus} dé${h.desPlus > 1 ? 's' : ''}</b> par tour`);
-  if (h.id === 'oria') L2.push('🥾 <b>+2 cases</b> à chaque déplacement (éclaireuse)');
-  if (h.objet) L2.push(`${OBJ_E[h.objet]} <b>${K.OBJETS[h.objet].n}</b> : ${K.OBJETS[h.objet].d}`);
-  (h.sac || []).forEach(it => L2.push(`${K.SAC[it].e} <b>${K.SAC[it].n}</b> dans le sac`));
-  fenetre(`<h2 style="display:flex;align-items:center;gap:2cqw">${imgH(h)} ${esc(nomH(h))}</h2>
-    <p>❤ <b>${h.pv}</b> / ${h.pvmax} PV · 🎲 ${(K.HEROS_C[h.id] ? K.HEROS_C[h.id].des : 3) + (h.desPlus || 0) + (h.objet === 'cle' ? 1 : 0)} dés par tour</p>
-    <p><b>${H[h.id] ? H[h.id].t : ''}</b> : ${H[h.id] ? H[h.id].d : ''}</p>
-    <h3>Ce qui compte dans cette partie</h3>${L2.length ? `<ul>${L2.map(t => `<li>${t}</li>`).join('')}</ul>` : '<p style="color:var(--doux)">Aucun bonus : ses dés comptent tels quels.</p>'}
-    ${tal ? `<h3>Ses talents</h3><ul>${tal}</ul>` : ''}${eq ? `<h3>Son équipement</h3><ul>${eq}</ul><p style="color:var(--doux);font-size:.85em">On le change dans <b>Mes héros</b> (menu), entre deux parties.</p>` : ''}
-    <div class="choixh"><button onclick="fenetre('')">Fermer</button></div>`);
+  let E = {}; try { if (typeof equipementDe === 'function') E = equipementDe(pid); } catch (e) { E = {}; }
+  const ico = (k, e) => `<img src="ui/heros/eq-${k}.webp?v=1" alt="" onerror="this.replaceWith(document.createTextNode('${e}'))">`;
+  const slot = k => { const c = typeof EQ_CASES !== 'undefined' && EQ_CASES.find(z => z.k === k); if (!c) return ''; const q = E[k];
+    return `<div class="ps-slot ${q ? '' : 'vide'}" ${q ? `style="--rc:${EQ_RARE[q.r].c}"` : ''} onclick="bulle('${q ? esc(q.nom).replace(/'/g, '’') + ' : ' + eqTexte(q).replace(/'/g, '’') : c.n + ' : rien (à équiper dans Mes héros)'}')">${ico(k, c.e)}<small>${q ? esc(q.nom) : c.n}</small>${q ? `<i>+${q.niv}</i>` : ''}</div>`; };
+  if (h.agi) B.push(`🥾 <b>+${h.agi} case${h.agi > 1 ? 's' : ''}</b> à chaque déplacement`);
+  if (h.id === 'oria') B.push('🥾 <b>+2 cases</b> à chaque déplacement (éclaireuse)');
+  if (h.att) B.push(`⚔ <b>+${h.att}</b> pour briser les sceaux ≥ et Σ`);
+  if (h.def) B.push(`🛡 <b>bouclier ${h.def}</b> au début de chaque tour`);
+  if (h.desPlus) B.push(`🎲 <b>+${h.desPlus} dé${h.desPlus > 1 ? 's' : ''}</b> par tour`);
+  // l'inventaire : 10 cases (objet trouvé, rouage porté, puis le sac)
+  const inv = [];
+  if (h.objet) inv.push({ e:OBJ_E[h.objet], n:K.OBJETS[h.objet].n, d:K.OBJETS[h.objet].d });
+  if (h.porte) inv.push({ e:'⚙️', n:'Un rouage', d:'À poser sur l’axe de la Salle des rouages. On n’en porte qu’un à la fois (−1 case par déplacement).' });
+  (h.sac || []).forEach((it, k) => inv.push({ e:K.SAC[it].e, n:K.SAC[it].n, d:K.SAC[it].d, sac:k }));
+  const cases = Array.from({ length:10 }, (_, k) => { const o = inv[k]; return `<div class="ps-inv ${o ? '' : 'vide'} ${choix === k ? 'on' : ''}" ${o ? `onclick="ficheHeros(${i}, ${k})"` : ''}>${o ? o.e : ''}</div>`; }).join('');
+  const o = choix != null && inv[choix];
+  const det = o ? `<div class="ps-det"><b>${o.e} ${o.n}</b><br>${o.d}${o.sac != null && i === actif && !h.aTerre ? `<br><button class="or" onclick="$('perso').innerHTML='';utiliseSac(${o.sac})">Utiliser</button>` : ''}</div>` : `<p class="ps-aide">Touche un objet pour le voir.</p>`;
+  $('perso').innerHTML = `<div class="ps-page"><div class="ps-haut"><button onclick="$('perso').innerHTML=''">‹ Retour au jeu</button><b>Personnage</b></div>
+    <div class="ps-poupee"><div class="ps-col">${['arme', 'tete', 'anneau'].map(slot).join('')}</div>
+      <div class="ps-centre">${imgH(h)}<b>${esc(nomH(h))}</b><small>❤ ${h.pv} / ${h.pvmax} · 🎲 ${(K.HEROS_C[h.id] ? K.HEROS_C[h.id].des : 3) + (h.desPlus || 0) + (h.objet === 'cle' ? 1 : 0)} dés par tour${h.bouclier ? ` · 🛡 ${h.bouclier}` : ''}</small></div>
+      <div class="ps-col">${['torse', 'pieds', 'talisman'].map(slot).join('')}</div></div>
+    <div class="ps-bloc"><b>${H[h.id] ? H[h.id].t : ''}</b> : ${H[h.id] ? H[h.id].d : ''}</div>
+    <div class="ps-bloc"><h3>Ce que lui donne son équipement ici</h3>${B.length ? `<ul>${B.map(t => `<li>${t}</li>`).join('')}</ul>` : '<p class="ps-aide">Aucun bonus : ses dés comptent tels quels.</p>'}${tal ? `<h3>Ses talents</h3><ul>${tal}</ul>` : ''}</div>
+    <div class="ps-bloc"><h3>Inventaire</h3><div class="ps-grille">${cases}</div>${det}</div>
+    <p class="ps-aide">L’équipement se change dans <b>Mes héros</b> (menu), entre deux parties.</p></div>`;
 }
 function choisitHeros(i) {
   if (occupe) return;
@@ -923,9 +947,9 @@ accueil();
 { const s = new URLSearchParams(location.search).get('salle'); if (s) { history.replaceState(null, '', location.pathname); const c = (typeof AMIS !== 'undefined' && AMIS.carte) || null, nom = (c && c.pseudo) || localStorage.getItem('guilde-pseudo');
     if (nom) rejoindre(s, { id:'j' + Math.random().toString(36).slice(2, 10), nom }); else { rejoindreForm(); setTimeout(() => { const i = $('fCode'); if (i) i.value = s; }, 150); } } }
 </script>
-<script src="chroniques-aventures.js?v=20261116-160346"></script>
-<script src="guide.js?v=20261116-160346"></script>
-<script src="guides-modes.js?v=20261116-160346"></script>
+<script src="chroniques-aventures.js?v=20261116-160617"></script>
+<script src="guide.js?v=20261116-160617"></script>
+<script src="guides-modes.js?v=20261116-160617"></script>
 <script>
 // 15/11 : le guide de Moustache de ce mode (guides-modes.js)
 { const _a = accueil; accueil = function () { const r = _a.apply(this, arguments); guideMode('chroniques'); return r; }; }
