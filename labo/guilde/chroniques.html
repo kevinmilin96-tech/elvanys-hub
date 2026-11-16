@@ -14,7 +14,7 @@
   button { font:inherit; color:inherit; cursor:pointer; }
   .haut { display:flex; align-items:center; gap:2cqw; padding:2cqw 0 1cqw; font-size:3.4cqw; }
   .haut a, .haut button { color:var(--doux); text-decoration:none; background:#1c1c36; border:1px solid #45457a; border-radius:20px; padding:1cqw 2.6cqw; }
-  .haut .t { flex:1; text-align:center; color:var(--or); font-weight:bold; }
+  .haut .t { flex:1; text-align:center; color:var(--or); font-weight:bold; font-size:.85em; line-height:1.15; min-width:0; } .haut a { flex:none; }
   .stats { display:flex; justify-content:space-around; font-size:3.2cqw; color:var(--doux); margin-bottom:1.2cqw; } .stats b { color:var(--texte); }
   .but { font-size:2.8cqw; color:var(--doux); background:#1c1c36; border-left:3px solid var(--or); border-radius:0 2cqw 2cqw 0; padding:1.2cqw 2cqw; margin-bottom:1.2cqw; }
   /* ---------------------------------------------------------------- la carte (elle défile ; 🗺 pour la voir en entier) */
@@ -151,15 +151,15 @@
 <body>
 <div id="app"></div>
 <div id="fen"></div><div id="perso"></div>
-<script src="musique.js?v=20261116-161507"></script>
-<script src="rang.js?v=20261116-161507"></script>
+<script src="musique.js?v=20261116-161826"></script>
+<script src="rang.js?v=20261116-161826"></script>
 <script>window.AMIS_SANS_BOUTON = true;</script>
-<script src="amis.js?v=20261116-161507"></script>
-<script src="heros-etoiles.js?v=20261116-161507"></script>
-<script src="progression-modes.js?v=20261116-161507"></script>
-<script src="aventuriers.js?v=20261116-161507"></script>
-<script src="chroniques-moteur.js?v=20261116-161507"></script>
-<script src="chroniques-ambiance.js?v=20261116-161507"></script>
+<script src="amis.js?v=20261116-161826"></script>
+<script src="heros-etoiles.js?v=20261116-161826"></script>
+<script src="progression-modes.js?v=20261116-161826"></script>
+<script src="aventuriers.js?v=20261116-161826"></script>
+<script src="chroniques-moteur.js?v=20261116-161826"></script>
+<script src="chroniques-ambiance.js?v=20261116-161826"></script>
 <script>
 // =============================================================================================== LES CHRONIQUES DE LA GUILDE v2 (15/11, écran « façon HeroQuest »)
 // Une grande carte qui défile : les salles restent dans le noir jusqu'à ce qu'on ouvre leur porte ; les couloirs se dévoilent en avançant ;
@@ -432,6 +432,26 @@ function infoStat(k) {
     score:`⭐ Le score de la partie : ${S.score} points (meubles fouillés, monstres vaincus, rouages posés…).` };
   fenetre(`<p>${T[k] || ''}</p><div class="choixh"><button onclick="fenetre('')">Compris</button></div>`);
 }
+// 16/11 (l'utilisateur : « comme dans les jeux vidéo, une icône de quêtes ») : la quête principale par étapes, et les quêtes secondaires
+function quetes() {
+  const R = S.R, sc = S.scen || 'horloger', SC = K.SCEN[sc];
+  if (sc !== 'horloger') return [{ p:1, t:butTexte(), ok:S.fin === 'gagne' }];
+  const portes = S.heros.filter(z => z.porte).length;
+  return [
+    { p:1, t:`Trouver 3 rouages ⚙ en fouillant les meubles (${Math.min(3, S.rouagesTrouves || 0)}/3)`, ok:(S.rouagesTrouves || 0) >= 3 || R.rouagesPoses + portes >= 3 },
+    { p:1, t:`Les poser sur l’axe de la Salle des rouages, 1er étage (${R.rouagesPoses}/3)`, ok:R.rouagesPoses >= 3 },
+    { p:1, t:'Ouvrir la porte de bronze du sommet : les 4 leviers de la Salle des rouages, baissés dans le même tour', ok:!!R.bronze },
+    { p:1, t:`Réveiller l’Horloger dans le Cœur de l’Horloge${R.boss ? ' : il est là !' : ''}`, ok:S.fin === 'gagne' },
+    { p:0, t:'Trouver le Livre des heures dans la Bibliothèque (1er étage) : il note le point faible de l’Horloger', ok:!!S.livre },
+    { p:0, t:'Tourner les 4 statues de la Galerie vers l’autel (sommet) : un objet et du temps en plus', ok:!!R.statuesOk },
+  ];
+}
+function voirQuetes() {
+  const Q = quetes(), li = q => `<li style="list-style:none;margin:.35em 0;${q.ok ? 'color:var(--ok);text-decoration:line-through;opacity:.75' : ''}">${q.ok ? '✅' : '⬜'} ${q.t}</li>`;
+  fenetre(`<h2>📋 Les quêtes</h2><h3 style="color:var(--or);margin:.4em 0 .2em">⭐ Principale</h3><ul style="padding:0;margin:0">${Q.filter(q => q.p).map(li).join('')}</ul>
+    ${Q.some(q => !q.p) ? `<h3 style="color:var(--or);margin:.8em 0 .2em">✨ Secondaires</h3><ul style="padding:0;margin:0">${Q.filter(q => !q.p).map(li).join('')}</ul>` : ''}
+    <p style="color:var(--doux);margin-top:1em">⌛ Sablier : ${S.sablier} tour${S.sablier > 1 ? 's' : ''} · ⭐ Score : ${S.score}</p><div class="choixh"><button onclick="fenetre('')">Fermer</button></div>`);
+}
 function voirBut() { fenetre(`<h2>🎯 Le but</h2><p>${butTexte()}</p><div class="choixh"><button onclick="fenetre('')">Fermer</button></div>`); }
 function voirJournal() { fenetre(`<h2>📜 Le journal</h2><div class="journal" style="max-height:60vh">${S.journal.slice(0, 40).map(l => `<div>${l}</div>`).join('')}</div><div class="choixh"><button onclick="fenetre('')">Fermer</button></div>`); }
 function dessine() {
@@ -505,8 +525,7 @@ function dessine() {
   const posee = R.rouagesPoses, portes = S.heros.filter(z => z.porte).length;
   const ancienne = $('vue') ? [$('vue').scrollLeft, $('vue').scrollTop] : null;
   $('app').innerHTML = `
-    <div class="haut"><a href="#" onclick="quitter();return false">‹ Quitter</a><span class="t">${SCT().titre}</span>${L ? `<button onclick="equipeEnLigne()">🌐 ${L.code}</button>` : ''}<button onclick="voirBut()" title="Le but">🎯</button><button onclick="voirJournal()" title="Le journal">📜</button><button onclick="regles()">❓</button><button onclick="GM.parametres()" title="Paramètres">⚙️</button></div>
-    <div class="stats"><span onclick="infoStat('sablier')">⌛ <b>${S.sablier}</b></span>${S.scen === 'arene' ? `<span>👹 <b>${R.monstres.length}</b> monstre${R.monstres.length > 1 ? 's' : ''}</span>` : `<span onclick="infoStat('objet')">${K.SCEN[S.scen || 'horloger'].objet.e} <b>${posee}</b>/3 posés${portes ? ` · ${portes} porté${portes > 1 ? 's' : ''}` : ''}</span>`}${(S.scen || 'horloger') === 'horloger' ? `<span onclick="infoStat('bronze')">${R.bronze ? '🚪 bronze ouverte' : '🔒 bronze'}</span><span onclick="infoStat('livre')">${S.livre ? '📕 ✓' : '📕 —'}</span>` : ''}<span onclick="infoStat('score')">⭐ <b>${S.score}</b></span>${R.boss ? `<span onclick="voirBut()" style="color:${R.boss.repos ? 'var(--doux)' : '#ff8a7a'}">⏰ ${R.boss.repos ? 'repos' : '<b>frappe !</b>'}</span>` : ''}</div>
+    <div class="haut"><a href="#" onclick="quitter();return false">‹ Quitter</a><span class="t">${SCT().titre}</span>${L ? `<button onclick="equipeEnLigne()">🌐 ${L.code}</button>` : ''}<button class="hsab" onclick="infoStat('sablier')" title="Le sablier">⌛ <b>${S.sablier}</b></button>${R.boss ? `<button onclick="voirBut()" style="color:${R.boss.repos ? 'var(--doux)' : '#ff8a7a'}">⏰${R.boss.repos ? '' : ' !'}</button>` : ''}<button onclick="voirQuetes()" title="Les quêtes">📋 <b>${quetes().filter(q => q.ok).length}/${quetes().length}</b></button><button onclick="voirJournal()" title="Le journal">📜</button><button onclick="regles()">❓</button><button onclick="GM.parametres()" title="Paramètres">⚙️</button></div>
     <div style="position:relative"><div class="vue" id="vue">${RZ ? `<div class="zone-titre">${esc(zoneNom(ZV))}${vueForcee ? ' · 👹 les monstres' : ''}</div>` : ''}<div class="plateau ${S.scen === 'labyrinthe' ? 'laby' : (S.scen || 'horloger') === 'horloger' ? 'horloge' : ''}${RZ ? ' zonee' : ''}" style="grid-template-columns:repeat(${nCol}, ${t});--t:${t};${peint ? `background:url('${SC.image}?v=1') 0 0/100% 100% no-repeat` : ''}">${cases}</div></div>
       <button class="zoom haut" style="position:absolute;right:2cqw;bottom:2cqw;padding:1cqw 2.4cqw;border-radius:20px;background:#1c1c36cc;border:1px solid #45457a;color:var(--doux)" onclick="${RZ ? 'grandeCarte()' : 'petit=!petit;centrer=true;dessine()'}">${petit ? '🔍 Zoom' : '🗺 Carte'}</button>${RZ ? '<div id="pcarte" title="Le schéma du donjon : touche pour l’agrandir" onclick="grandeCarte()"></div>' : ''}</div>
     <div class="equipe">${S.heros.map((z, i) => `<button class="${i === actif ? 'on' : ''} ${z.aTerre ? 'terre' : ''} ${fini(i) ? 'fini' : ''}" onclick="choisitHeros(${i})">${fini(i) ? '<span class="ok-f">✓</span>' : ''}${imgH(z)}${nomH(z).replace('Sire ', '')}<br>${z.aTerre ? '✋ à terre' : `❤${z.pv} · 🎲${z.des.length}`}${invH(z) ? `<small class="inv-h">${invH(z)}</small>` : ''}${L ? `<small class="qui${mesHeros().includes(i) ? ' moi' : ''}">${mesHeros().includes(i) ? 'toi' : proprio(i) || 'libre'}</small>` : ''}</button>`).join('')}</div>
@@ -963,9 +982,9 @@ if (sessionStorage.getItem('chron-en-jeu') && !location.search && (() => { try {
 { const s = new URLSearchParams(location.search).get('salle'); if (s) { history.replaceState(null, '', location.pathname); const c = (typeof AMIS !== 'undefined' && AMIS.carte) || null, nom = (c && c.pseudo) || localStorage.getItem('guilde-pseudo');
     if (nom) rejoindre(s, { id:'j' + Math.random().toString(36).slice(2, 10), nom }); else { rejoindreForm(); setTimeout(() => { const i = $('fCode'); if (i) i.value = s; }, 150); } } }
 </script>
-<script src="chroniques-aventures.js?v=20261116-161507"></script>
-<script src="guide.js?v=20261116-161507"></script>
-<script src="guides-modes.js?v=20261116-161507"></script>
+<script src="chroniques-aventures.js?v=20261116-161826"></script>
+<script src="guide.js?v=20261116-161826"></script>
+<script src="guides-modes.js?v=20261116-161826"></script>
 <script>
 // 15/11 : le guide de Moustache de ce mode (guides-modes.js)
 { const _a = accueil; accueil = function () { const r = _a.apply(this, arguments); guideMode('chroniques'); return r; }; }
