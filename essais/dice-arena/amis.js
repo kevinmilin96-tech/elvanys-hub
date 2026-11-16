@@ -157,6 +157,7 @@ function amisDessine() {
     <h3>＋ Ajouter un ami</h3>
     <p id="am-info"></p><div style="display:flex;gap:8px"><input id="am-ajout" class="code" maxlength="6" placeholder="CODE" autocomplete="off"><button class="am-bt go" onclick="amisAjoute()">Ajouter</button></div>
     ${salle ? '' : `<button class="am-bt or large" onclick="location.href='duel.html?ami=1'">⚔ Duel contre un ami</button><button class="am-bt or large" onclick="location.href='chroniques.html?ligne=1'">📜 Les Chroniques entre amis</button>`}
+    ${window.GS ? `<button class="am-bt large" onclick="amisFermer();GS.ouvrir()">☁ Mon compte et ma sauvegarde</button>` : ''}
     <button class="am-bt large" onclick="amisFermer()">Fermer</button>`);
 }
 async function amisCree() {
@@ -167,6 +168,7 @@ async function amisCree() {
     if (statut !== 200) { remet(); amisMsg(statut === 501 || statut === 405 || (statut === 404 && !d.message) ? 'Les amis marchent seulement sur perso.elvanys.fr/guilde (cette page est ouverte ailleurs).' : (d.message || 'Le serveur ne répond pas.') + ` (code ${statut})`); return; }
     AMIS.carte = { code:d.code, cle:d.cle, pseudo:d.pseudo }; localStorage.setItem('guilde-carte', JSON.stringify(AMIS.carte)); localStorage.setItem('guilde-pseudo', d.pseudo);
     await amisAgir('signal'); amisDessine();
+    if (window.GS) GS.apresCreation(d); // 16/11 : le compte et sa sauvegarde sur le serveur (sauvegarde.js), avec le code de récupération
   } catch (e) { remet(); amisMsg('Pas de réseau, ou la page n’a pas pu joindre le serveur : ' + (e && e.message || e)); }
 }
 async function amisAjoute() {

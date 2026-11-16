@@ -9,6 +9,10 @@
 // chaque page vérifie version.txt (à l'ouverture, toutes les 2 min, au retour dans l'appli) ; si une version plus récente existe,
 // un bandeau propose « Mettre à jour » (recharge la page avec une adresse neuve) ou « Plus tard ». Les parties en cours sont gardées.
 // Duel, menu et Odyssée ont déjà leur propre bandeau (verifieVersion) : on ne double pas.
+// 16/11 : le COMPTE et la SAUVEGARDE SUR LE SERVEUR (sauvegarde.js), chargés sur toutes les pages du jeu par ce lecteur commun
+(() => { try { if (window.GS || document.getElementById('gs-script')) return; const v = (document.currentScript && (document.currentScript.src.match(/[?&]v=([^&]+)/) || [])[1]) || '1';
+  if (!/^\d{8}-\d{6}$/.test(v)) return; // pas sur les pages d'outils (prompts, calage…)
+  const s = document.createElement('script'); s.id = 'gs-script'; s.src = 'sauvegarde.js?v=' + v; document.head.appendChild(s); } catch (e) {} })();
 (() => { try {
   let moi = document.currentScript && (document.currentScript.src.match(/[?&]v=([^&]+)/) || [])[1];
   // 15/11 nuit : pages d'outils (prompts, R&D…) chargées avec ?v=1 : jamais de bandeau (il revenait en boucle) ; et l'adresse ?v= de la page compte aussi
