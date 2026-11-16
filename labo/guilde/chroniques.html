@@ -162,15 +162,15 @@
 <body>
 <div id="app"></div>
 <div id="fen"></div><div id="perso"></div>
-<script src="musique.js?v=20261116-174158"></script>
-<script src="rang.js?v=20261116-174158"></script>
+<script src="musique.js?v=20261116-174305"></script>
+<script src="rang.js?v=20261116-174305"></script>
 <script>window.AMIS_SANS_BOUTON = true;</script>
-<script src="amis.js?v=20261116-174158"></script>
-<script src="heros-etoiles.js?v=20261116-174158"></script>
-<script src="progression-modes.js?v=20261116-174158"></script>
-<script src="aventuriers.js?v=20261116-174158"></script>
-<script src="chroniques-moteur.js?v=20261116-174158"></script>
-<script src="chroniques-ambiance.js?v=20261116-174158"></script>
+<script src="amis.js?v=20261116-174305"></script>
+<script src="heros-etoiles.js?v=20261116-174305"></script>
+<script src="progression-modes.js?v=20261116-174305"></script>
+<script src="aventuriers.js?v=20261116-174305"></script>
+<script src="chroniques-moteur.js?v=20261116-174305"></script>
+<script src="chroniques-ambiance.js?v=20261116-174305"></script>
 <script>
 // =============================================================================================== LES CHRONIQUES DE LA GUILDE v2 (15/11, écran « façon HeroQuest »)
 // Une grande carte qui défile : les salles restent dans le noir jusqu'à ce qu'on ouvre leur porte ; les couloirs se dévoilent en avançant ;
@@ -342,10 +342,12 @@ function recoit(d) {
   if (!d || !d.etat) return;
   if (d.etat.lobby) { LOB = d.etat.lobby; S = null; L.version = d.version; if (d.joueurs) L.joueurs = d.joueurs; L.dernier = ''; fenetre(''); salleAttente(); return; }
   const depart = !S; LOB = null;
-  const avant = S && S.journal ? S.journal[0] : null;
+  const avant = S && S.journal ? S.journal[0] : null, posAvant = S && S.heros ? S.heros.map(z => [z.x, z.y]) : null;
   S = d.etat; L.version = d.version; if (d.joueurs) L.joueurs = d.joueurs; L.dernier = JSON.stringify(S);
   if (!mesHeros().includes(actif)) { const m = mesHeros().find(i => !S.heros[i].aTerre); if (m != null) actif = m; }
   sel = null; dessine(); salleAJour();
+  // 16/11 (l'utilisateur) : la caméra de chacun reste sur SON héros ; les héros des autres qui bougent dans sa zone glissent case par case
+  if (posAvant && !depart) S.heros.forEach((z, i) => { const a = posAvant[i]; if (a && (a[0] !== z.x || a[1] !== z.y) && !mesHeros().includes(i)) glisse('j-h' + i, a, [z.x, z.y]); });
   if (S.animM && S.animM.n !== vuAnim) { const A = S.animM; vuAnim = A.n; if (!depart && !occupe) { occupe = true; animeMonstres(A.ev.map(e => Object.assign({}, e))).then(() => { occupe = false; centrer = true; dessine(); if (S.fin) finPartie(); }); return; } }
   if (depart) { son('portail'); dialogue(S.campagne != null ? CHAPITRES[S.campagne].titre : SCT().titre, [S.campagne != null ? CHAPITRES[S.campagne].avant : SCT().ouverture, SCT().entree()]); return; }
   if (S.journal[0] && S.journal[0] !== avant) bulle(S.journal[0].replace(/^[^ ]+ /, ''));
@@ -1035,9 +1037,9 @@ if (ESSAI) essaiAtelier(ESSAI); else if (sessionStorage.getItem('chron-en-jeu') 
 { const s = new URLSearchParams(location.search).get('salle'); if (s) { history.replaceState(null, '', location.pathname); const c = (typeof AMIS !== 'undefined' && AMIS.carte) || null, nom = (c && c.pseudo) || localStorage.getItem('guilde-pseudo');
     if (nom) rejoindre(s, { id:'j' + Math.random().toString(36).slice(2, 10), nom }); else { rejoindreForm(); setTimeout(() => { const i = $('fCode'); if (i) i.value = s; }, 150); } } }
 </script>
-<script src="chroniques-aventures.js?v=20261116-174158"></script>
-<script src="guide.js?v=20261116-174158"></script>
-<script src="guides-modes.js?v=20261116-174158"></script>
+<script src="chroniques-aventures.js?v=20261116-174305"></script>
+<script src="guide.js?v=20261116-174305"></script>
+<script src="guides-modes.js?v=20261116-174305"></script>
 <script>
 // 15/11 : le guide de Moustache de ce mode (guides-modes.js)
 { const _a = accueil; accueil = function () { const r = _a.apply(this, arguments); guideMode('chroniques'); return r; }; }

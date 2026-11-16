@@ -162,15 +162,15 @@
 <body>
 <div id="app"></div>
 <div id="fen"></div><div id="perso"></div>
-<script src="musique.js?v=20261116-174158"></script>
-<script src="rang.js?v=20261116-174158"></script>
+<script src="musique.js?v=20261116-174305"></script>
+<script src="rang.js?v=20261116-174305"></script>
 <script>window.AMIS_SANS_BOUTON = true;</script>
-<script src="amis.js?v=20261116-174158"></script>
-<script src="heros-etoiles.js?v=20261116-174158"></script>
-<script src="progression-modes.js?v=20261116-174158"></script>
-<script src="aventuriers.js?v=20261116-174158"></script>
-<script src="chroniques-moteur.js?v=20261116-174158"></script>
-<script src="chroniques-ambiance.js?v=20261116-174158"></script>
+<script src="amis.js?v=20261116-174305"></script>
+<script src="heros-etoiles.js?v=20261116-174305"></script>
+<script src="progression-modes.js?v=20261116-174305"></script>
+<script src="aventuriers.js?v=20261116-174305"></script>
+<script src="chroniques-moteur.js?v=20261116-174305"></script>
+<script src="chroniques-ambiance.js?v=20261116-174305"></script>
 <script>
 // =============================================================================================== LES CHRONIQUES DE LA GUILDE v2 (15/11, écran « façon HeroQuest »)
 // Une grande carte qui défile : les salles restent dans le noir jusqu'à ce qu'on ouvre leur porte ; les couloirs se dévoilent en avançant ;
@@ -1037,9 +1037,9 @@ if (ESSAI) essaiAtelier(ESSAI); else if (sessionStorage.getItem('chron-en-jeu') 
 { const s = new URLSearchParams(location.search).get('salle'); if (s) { history.replaceState(null, '', location.pathname); const c = (typeof AMIS !== 'undefined' && AMIS.carte) || null, nom = (c && c.pseudo) || localStorage.getItem('guilde-pseudo');
     if (nom) rejoindre(s, { id:'j' + Math.random().toString(36).slice(2, 10), nom }); else { rejoindreForm(); setTimeout(() => { const i = $('fCode'); if (i) i.value = s; }, 150); } } }
 </script>
-<script src="chroniques-aventures.js?v=20261116-174158"></script>
-<script src="guide.js?v=20261116-174158"></script>
-<script src="guides-modes.js?v=20261116-174158"></script>
+<script src="chroniques-aventures.js?v=20261116-174305"></script>
+<script src="guide.js?v=20261116-174305"></script>
+<script src="guides-modes.js?v=20261116-174305"></script>
 <script>
 // 15/11 : le guide de Moustache de ce mode (guides-modes.js)
 { const _a = accueil; accueil = function () { const r = _a.apply(this, arguments); guideMode('chroniques'); return r; }; }
