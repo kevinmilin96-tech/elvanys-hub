@@ -30,7 +30,7 @@
   /* 15/11 soir : les salles de l'Horloge ont leur sol et leurs murs peints */
   .horloge .c { background:url('decor/tuile-sol-horloge.webp?v=1') 0 0 / calc(var(--t) * 4) calc(var(--t) * 4); }
   .horloge .c.mur { background:#0d0c12; filter:none; box-shadow:inset 0 0 0 .5px #ffffff0d; } /* 16/11 : façon carte de donjon (exemple de l'utilisateur) : vide noir quadrillé, murs = bordure de pierre */ /* 16/11 : mur sombre pour séparer les salles dessinées */
-  .horloge .c.couloir { background:url('decor/tuile-couloir-horloge-v2.webp?v=1') 0 0 / calc(var(--t) * 2) calc(var(--t) * 2); filter:brightness(.85); }
+  .horloge .c.couloir { background:url('decor/couloir-horloger.webp?v=1') 0 0 / calc(var(--t) * 2) calc(var(--t) * 2); filter:brightness(.85); }
   .horloge .c.porte.ouverte { background:url('decor/tuile-sol-horloge.webp?v=1') 0 0 / calc(var(--t) * 4) calc(var(--t) * 4); }
   .c .oi { width:88%; height:88%; object-fit:contain; filter:drop-shadow(0 .4cqw .5cqw #000c); pointer-events:none; } .c .oi.fait { opacity:.4; filter:grayscale(1); } .c .oi.baisse { transform:rotate(180deg); }
   .c .cad { position:absolute; right:2%; bottom:2%; font-size:calc(var(--t) * .34); }
@@ -75,7 +75,7 @@
   .plateau.zonee { margin-left:auto; margin-right:auto; }
   .c .oi.porte3 { width:100%; height:100%; object-fit:fill; filter:none; }
   /* 16/11 : sous une porte, le sol du couloir (plus de noir entre la porte, le couloir et la salle) */
-  .horloge .c.porte, .horloge .c.porte.img, .horloge .c.porte.ouverte { background:url('decor/tuile-couloir-horloge-v2.webp?v=1') 0 0 / calc(var(--t) * 2) calc(var(--t) * 2); box-shadow:none; }
+  .horloge .c.porte, .horloge .c.porte.img, .horloge .c.porte.ouverte { background:url('decor/couloir-horloger.webp?v=1') 0 0 / calc(var(--t) * 2) calc(var(--t) * 2); box-shadow:none; }
   .c .oi.statue { transition:transform .4s; } .c .oi.fait-ok, .c .oi.brille { filter:drop-shadow(0 0 1.5cqw #ffd27a); }
   .c .oi.ouverte { opacity:.3; transform:translateY(-30%); } .c .oi.dalle { position:absolute; inset:6%; width:88%; height:88%; opacity:.9; }
 
@@ -121,14 +121,14 @@
 <body>
 <div id="app"></div>
 <div id="fen"></div>
-<script src="musique.js?v=20261116-143756"></script>
-<script src="rang.js?v=20261116-143756"></script>
+<script src="musique.js?v=20261116-143909"></script>
+<script src="rang.js?v=20261116-143909"></script>
 <script>window.AMIS_SANS_BOUTON = true;</script>
-<script src="amis.js?v=20261116-143756"></script>
-<script src="heros-etoiles.js?v=20261116-143756"></script>
-<script src="progression-modes.js?v=20261116-143756"></script>
-<script src="aventuriers.js?v=20261116-143756"></script>
-<script src="chroniques-moteur.js?v=20261116-143756"></script>
+<script src="amis.js?v=20261116-143909"></script>
+<script src="heros-etoiles.js?v=20261116-143909"></script>
+<script src="progression-modes.js?v=20261116-143909"></script>
+<script src="aventuriers.js?v=20261116-143909"></script>
+<script src="chroniques-moteur.js?v=20261116-143909"></script>
 <script>
 // =============================================================================================== LES CHRONIQUES DE LA GUILDE v2 (15/11, écran « façon HeroQuest »)
 // Une grande carte qui défile : les salles restent dans le noir jusqu'à ce qu'on ouvre leur porte ; les couloirs se dévoilent en avançant ;
@@ -832,9 +832,9 @@ accueil();
 { const s = new URLSearchParams(location.search).get('salle'); if (s) { history.replaceState(null, '', location.pathname); const c = (typeof AMIS !== 'undefined' && AMIS.carte) || null, nom = (c && c.pseudo) || localStorage.getItem('guilde-pseudo');
     if (nom) rejoindre(s, { id:'j' + Math.random().toString(36).slice(2, 10), nom }); else { rejoindreForm(); setTimeout(() => { const i = $('fCode'); if (i) i.value = s; }, 150); } } }
 </script>
-<script src="chroniques-aventures.js?v=20261116-143756"></script>
-<script src="guide.js?v=20261116-143756"></script>
-<script src="guides-modes.js?v=20261116-143756"></script>
+<script src="chroniques-aventures.js?v=20261116-143909"></script>
+<script src="guide.js?v=20261116-143909"></script>
+<script src="guides-modes.js?v=20261116-143909"></script>
 <script>
 // 15/11 : le guide de Moustache de ce mode (guides-modes.js)
 { const _a = accueil; accueil = function () { const r = _a.apply(this, arguments); guideMode('chroniques'); return r; }; }
