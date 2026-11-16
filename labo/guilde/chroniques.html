@@ -40,7 +40,7 @@
   /* 15/11 soir : les salles de l'Horloge ont leur sol et leurs murs peints */
   .horloge .c { background:url('decor/tuile-sol-horloge.webp?v=1') 0 0 / calc(var(--t) * 4) calc(var(--t) * 4); }
   .horloge .c.mur { background:#0d0c12; filter:none; box-shadow:inset 0 0 0 .5px #ffffff0d; } /* 16/11 : façon carte de donjon (exemple de l'utilisateur) : vide noir quadrillé, murs = bordure de pierre */ /* 16/11 : mur sombre pour séparer les salles dessinées */
-  .horloge .c.couloir { background:url('decor/couloir-horloger.webp?v=1') 0 0 / calc(var(--t) * 2) calc(var(--t) * 2); filter:brightness(.85); }
+  .horloge .c.couloir { background:url('decor/couloir-horloger-v2.webp?v=1') 0 0 / calc(var(--t) * 2) calc(var(--t) * 2); filter:brightness(.85); }
   .horloge .c.porte.ouverte { background:url('decor/tuile-sol-horloge.webp?v=1') 0 0 / calc(var(--t) * 4) calc(var(--t) * 4); }
   .c .oi { width:88%; height:88%; object-fit:contain; filter:drop-shadow(0 .4cqw .5cqw #000c); pointer-events:none; } .c .oi.fait { opacity:.4; filter:grayscale(1); } .c .oi.baisse { transform:rotate(180deg); }
   .c .cad { position:absolute; right:2%; bottom:2%; font-size:calc(var(--t) * .34); }
@@ -121,7 +121,7 @@
   .plateau.zonee { margin-left:auto; margin-right:auto; }
   .c .oi.porte3 { width:100%; height:100%; object-fit:fill; filter:none; }
   /* 16/11 : sous une porte, le sol du couloir (plus de noir entre la porte, le couloir et la salle) */
-  .horloge .c.porte, .horloge .c.porte.img, .horloge .c.porte.ouverte { background:url('decor/couloir-horloger.webp?v=1') 0 0 / calc(var(--t) * 2) calc(var(--t) * 2); box-shadow:none; }
+  .horloge .c.porte, .horloge .c.porte.img, .horloge .c.porte.ouverte { background:url('decor/couloir-horloger-v2.webp?v=1') 0 0 / calc(var(--t) * 2) calc(var(--t) * 2); box-shadow:none; }
   .recu-objet { position:fixed; inset:0; z-index:90; display:flex; flex-direction:column; align-items:center; justify-content:center; background:#000a; animation:roF .3s; }
   .recu-objet .ro-halo { position:absolute; width:60vmin; height:60vmin; border-radius:50%; background:radial-gradient(circle, #ffd27a88, transparent 65%); animation:roH 2.4s ease-in-out infinite; }
   .recu-objet .ro-ic { position:relative; font-size:24vmin; filter:drop-shadow(0 0 4vmin #ffcf5a); animation:roI .7s cubic-bezier(.2,1.6,.4,1); }
@@ -183,15 +183,15 @@
 <body>
 <div id="app"></div>
 <div id="fen"></div><div id="perso"></div>
-<script src="musique.js?v=20261116-204050"></script>
-<script src="rang.js?v=20261116-204050"></script>
+<script src="musique.js?v=20261116-204752"></script>
+<script src="rang.js?v=20261116-204752"></script>
 <script>window.AMIS_SANS_BOUTON = true;</script>
-<script src="amis.js?v=20261116-204050"></script>
-<script src="heros-etoiles.js?v=20261116-204050"></script>
-<script src="progression-modes.js?v=20261116-204050"></script>
-<script src="aventuriers.js?v=20261116-204050"></script>
-<script src="chroniques-moteur.js?v=20261116-204050"></script>
-<script src="chroniques-ambiance.js?v=20261116-204050"></script>
+<script src="amis.js?v=20261116-204752"></script>
+<script src="heros-etoiles.js?v=20261116-204752"></script>
+<script src="progression-modes.js?v=20261116-204752"></script>
+<script src="aventuriers.js?v=20261116-204752"></script>
+<script src="chroniques-moteur.js?v=20261116-204752"></script>
+<script src="chroniques-ambiance.js?v=20261116-204752"></script>
 <script>
 // =============================================================================================== LES CHRONIQUES DE LA GUILDE v2 (15/11, écran « façon HeroQuest »)
 // Une grande carte qui défile : les salles restent dans le noir jusqu'à ce qu'on ouvre leur porte ; les couloirs se dévoilent en avançant ;
@@ -477,7 +477,7 @@ function invLigne(h) {
 }
 const deSel = () => sel && S.heros[actif].des.find(d => d.id === sel);
 // 16/11 (l'utilisateur : « tout sur un écran, sans défiler ») : le but et le journal passent derrière des icônes du haut
-function butTexte() { const R = S.R, posee = R.rouagesPoses, portes = S.heros.filter(z => z.porte).length; return `${R.boss ? `⏰ <b>${R.boss.n}</b> · « ${K.SCEN[S.scen || 'horloger'].phases[R.boss.phase]} » : il ${K.phasesDe(S)[R.boss.phase].d.replace('Rouagelins', 'renforts').replace('hall d’entrée', 'point de départ')}. ${R.boss.repos ? 'Ce tour-ci il se repose.' : '<b style="color:#ff8a7a">Ce tour-ci il frappe !</b>'}`
+function butTexte() { const R = S.R, posee = R.rouagesPoses, portes = S.heros.filter(z => z.porte).length; return `${R.boss ? `⏰ <b>${R.boss.n}</b> · « ${K.SCEN[S.scen || 'horloger'].phases[R.boss.phase]} » : il ${K.phasesDe(S)[R.boss.phase].d.replace('Rouagelins', 'renforts').replace('hall d’entrée', 'point de départ')}. ${R.boss.repos && R.boss.b === 'roios' ? 'Ce tour-ci il se repose.' : R.boss.repos ? '<b style="color:#ff8a7a">Ce tour-ci il remonte un sceau ET frappe tous ceux collés à lui !</b>' : '<b style="color:#ff8a7a">Ce tour-ci il frappe tous ceux collés à lui !</b>'} ${R.boss.b === 'roios' ? '' : 'Ses coups percent la moitié du bouclier ; il riposte (−2) au 1er coup de chaque héros.'}`
       : posee + portes >= 3 || S.rouagesTrouves >= 3 ? SCT().porter : SCT().but}`; }
 // 16/11 (l'utilisateur : « c'est quoi l'étoile, le livre ? ») : chaque compteur du haut s'explique d'un toucher
 function infoStat(k) {
@@ -616,7 +616,7 @@ function dessine() {
   const posee = R.rouagesPoses, portes = S.heros.filter(z => z.porte).length;
   const ancienne = $('vue') ? [$('vue').scrollLeft, $('vue').scrollTop] : null;
   $('app').innerHTML = `
-    <div class="haut"><a href="#" onclick="quitter();return false">‹ Quitter</a><span class="t">${SCT().titre}</span>${L ? `<button onclick="equipeEnLigne()">🌐 ${L.code}</button>` : ''}<button class="hsab" onclick="infoStat('sablier')" title="Le sablier">⌛ <b>${S.sablier}</b></button>${R.boss ? `<button onclick="voirBut()" style="color:${R.boss.repos ? 'var(--doux)' : '#ff8a7a'}">⏰${R.boss.repos ? '' : ' !'}</button>` : ''}<button onclick="voirQuetes()" title="Les quêtes">📋 <b>${quetes().filter(q => q.ok).length}/${quetes().length}</b></button><button onclick="voirJournal()" title="Le journal">📜</button><button onclick="regles()">❓</button><button onclick="GM.parametres()" title="Paramètres">⚙️</button></div>
+    <div class="haut"><a href="#" onclick="quitter();return false">‹ Quitter</a><span class="t">${SCT().titre}</span>${L ? `<button onclick="equipeEnLigne()">🌐 ${L.code}</button>` : ''}<button class="hsab" onclick="infoStat('sablier')" title="Le sablier">⌛ <b>${S.sablier}</b></button>${R.boss ? `<button onclick="voirBut()" style="color:${R.boss.repos && R.boss.b === 'roios' ? 'var(--doux)' : '#ff8a7a'}">⏰${R.boss.repos && R.boss.b === 'roios' ? '' : ' !'}</button>` : ''}<button onclick="voirQuetes()" title="Les quêtes">📋 <b>${quetes().filter(q => q.ok).length}/${quetes().length}</b></button><button onclick="voirJournal()" title="Le journal">📜</button><button onclick="regles()">❓</button><button onclick="GM.parametres()" title="Paramètres">⚙️</button></div>
     <div class="zonebar"><span class="zt">${RZ ? `${esc(zoneNom(ZV))}${vueForcee ? ' · 👹 les monstres' : suivi != null && S.heros[suivi] ? ` · 👀 ${esc(nomH(S.heros[suivi]))} joue` : ''}` : ''}</span><button onclick="${RZ ? 'grandeCarte()' : 'petit=!petit;centrer=true;dessine()'}">${petit ? '🔍 Zoom' : '🗺 Carte'}</button></div>
     <div style="position:relative"><div class="vue" id="vue"><div class="plateau ${S.scen === 'labyrinthe' ? 'laby' : (S.scen || 'horloger') === 'horloger' ? 'horloge' : ''}${RZ ? ' zonee' : ''}" style="grid-template-columns:repeat(${nCol}, ${t});--t:${t};${peint ? `background:url('${SC.image}${SC.image.startsWith('data:') ? '' : '?v=1'}') 0 0/100% 100% no-repeat` : ''}">${cases}</div></div>
 </div>
@@ -1117,9 +1117,9 @@ if (ESSAI) essaiAtelier(ESSAI); else if (sessionStorage.getItem('chron-en-jeu') 
 { const s = new URLSearchParams(location.search).get('salle'); if (s) { history.replaceState(null, '', location.pathname); const c = (typeof AMIS !== 'undefined' && AMIS.carte) || null, nom = (c && c.pseudo) || localStorage.getItem('guilde-pseudo');
     if (nom) rejoindre(s, { id:'j' + Math.random().toString(36).slice(2, 10), nom }); else { rejoindreForm(); setTimeout(() => { const i = $('fCode'); if (i) i.value = s; }, 150); } } }
 </script>
-<script src="chroniques-aventures.js?v=20261116-204050"></script>
-<script src="guide.js?v=20261116-204050"></script>
-<script src="guides-modes.js?v=20261116-204050"></script>
+<script src="chroniques-aventures.js?v=20261116-204752"></script>
+<script src="guide.js?v=20261116-204752"></script>
+<script src="guides-modes.js?v=20261116-204752"></script>
 <script>
 // 15/11 : le guide de Moustache de ce mode (guides-modes.js)
 { const _a = accueil; accueil = function () { const r = _a.apply(this, arguments); guideMode('chroniques'); return r; }; }
