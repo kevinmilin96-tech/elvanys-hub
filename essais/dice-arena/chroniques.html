@@ -200,9 +200,13 @@ function schemaSVG(grand) {
 function petiteCarte() { const e = $('pcarte'); if (e && S) e.innerHTML = schemaSVG(false); }
 function grandeCarte() { fenetre(`<h2>🗺 Le donjon</h2><div class="schema-grand">${schemaSVG(true)}</div><p style="text-align:center;color:var(--doux);font-size:.9em">Le doré : la zone que tu regardes. Les ronds : tes héros. Les points rouges : les monstres vus.</p><button class="go" onclick="fenetre('')">Fermer</button>`); }
 // 16/11 : les salles repeintes AVEC LEURS MURS (vue plus haute, prompts salle-<nom>-v2) : l'image couvre aussi la case de mur tout autour
-const SALLE_MURS = ['A', 'C', 'B', 'E', 'F', 'S', 'P', 'G']; // reçues le 16/11 (Crypte G le 16/11 après-midi ; manque le Cœur H : texte peint, refait)
+const SALLE_MURS = ['A', 'C', 'B', 'E', 'F', 'S', 'P', 'G', 'H']; // reçues le 16/11 (Crypte G et Cœur H l'après-midi)
 function fondSalle(S, x, y) {
   if ((S.scen || 'horloger') !== 'horloger') return '';
+  // 16/11 après-midi : les escaliers peints (Gemini) : marches sombres = le bout qui descend (image retournée si ce bout est à droite)
+  if (S.R.plan === 2) { const E = Object.values(couloirsZ()).find(Z => Z.esc && x >= Z.r[0] && x < Z.r[0] + Z.r[2] && y >= Z.r[1] && y < Z.r[1] + Z.r[3]);
+    if (E) { const [a, b, w] = E.r; let bas = a; for (let i = a; i < a + w; i++) { const l = S.R.liens[K.cle(i, b)]; if (l) { const ly = +l.split(',')[1]; bas = ly > b ? i : (i === a ? a + w - 1 : a); } }
+      return `background:url('decor/escalier-horloger${bas === a ? '' : '-d'}.webp?v=1') calc(var(--t) * ${a - x}) 0 / calc(var(--t) * ${w}) 100% no-repeat;`; } }
   let id = S.R.salle[K.cle(x, y)];
   if (!id) id = SALLE_MURS.find(k => { const [a, b, w, h] = K.rectSalle(S, k); return x >= a - 1 && x <= a + w && y >= b - 1 && y <= b + h; });
   const D = id && K.SALLES[id], f = SALLE_IMG[id]; if (!D || !f) return '';
