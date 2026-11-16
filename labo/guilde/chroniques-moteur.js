@@ -274,7 +274,7 @@ const MEUBLES = [[7, 19, 'coffre', 'A'], [3, 21, 'tonneaux', 'A'], [10, 19, 'cai
   [12, 28, 'tombeau', 'G'], [14, 28, 'tombeau', 'G'], [15, 27, 'coffre', 'G'], [12, 10, 'etabli', 'E'], [12, 12, 'armoire', 'E'], [17, 13, 'coffre', 'F'], [3, 13, 'tonneaux', 'B'], [20, 3, 'cheminee', 'H'], [19, 12, 'coffre', 'P']];
 const ROUAGES_CACHES = ['13,21', '14,28', '12,10', '17,13'];
 const LEVIERS = [[3, 11], [3, 12], [7, 11], [7, 12]]; // sur les deux pupitres peints de la salle (dessin salle-rouages)
-const ETAGERES = [[14, 11], [14, 12], [17, 12]], LIVRE = [17, 11], AXE = [15, 2]; // contre les murs, comme les étagères peintes
+const ETAGERES = [[14, 11], [14, 12], [17, 12]], LIVRE = [17, 11], AXE = [15, 2], MARCHAND = [10, 12]; // contre les murs, comme les étagères peintes
 const DEPART = [[4, 21], [5, 21], [6, 21], [5, 20]]; // juste devant la grande porte d'entrée, comme si on venait d'entrer
 const MONSTRES_DEPART = [['rouagelin', 11, 20], ['rouagelin', 14, 17], ['page', 13, 28], ['page', 17, 25], ['gardien', 5, 12], ['rouagelin', 6, 11],
   ['coucou', 9, 8], ['coucou', 19, 8], ['page', 15, 12], ['archiviste', 16, 12], ['rouagelin', 12, 5], ['rouagelin', 18, 5], ['colosse', 10, 11]];
@@ -336,6 +336,7 @@ function nouvelle(heros, s, scen, opts = {}) {
   const vus = []; Object.values(R.obj).filter(o => o.t === 'levier').forEach(o => { while (vus.includes(o.v)) o.v = 2 + Math.floor(hasard(S) * 4); vus.push(o.v); });
   ETAGERES.forEach(([x, y]) => R.murs[cle(x, y)] = 'B'); R.murs[cle(...LIVRE)] = 'K'; R.obj[cle(...LIVRE)] = { t:'livre' };
   R.murs[cle(...AXE)] = 'A'; R.axe = AXE.slice();
+  R.murs[cle(...MARCHAND)] = 'N'; R.obj[cle(...MARCHAND)] = { t:'marchand' }; // 16/11 : le colporteur, dans l'Atelier abandonné
   [[6, 17], [12, 8], [9, 5], [15, 25]].forEach(([x, y]) => R.obj[cle(x, y)] = { t:'piege', cache:true });
   R.obj[cle(19, 12)].cache = 'potion2'; // le Cagibi : deux potions
   // la grille : la case reste « fermée » sauf quand un héros est sur la dalle
@@ -522,7 +523,7 @@ function verifieMonstre(S, m) {
   if (m === R.boss) return bossPhaseSuivante(S, ev);
   if (m.b === 'reliquaire') { R.monstres = R.monstres.filter(z => z !== m); S.score += 60; log(S, '💥 Le Reliquaire éclate en mille éclats d’os !'); ev.push({ t:'tombe', m:m.id }); if (R.boss && phasesDe(S)[R.boss.phase].intouchable) bossPhaseSuivante(S, ev); return ev; }
   if (BETES[m.b].releve && m.dernier !== 6 && !m.revenu) { (R.os = R.os || []).push({ x:m.x, y:m.y, t:R.tour }); log(S, `🦴 ${m.n} s’effondre en tas d’os… qui frémit encore (achevez-les avec un 6, la prochaine fois).`); }
-  R.monstres = R.monstres.filter(z => z !== m); S.score += BETES[m.b].elite ? 60 : 20;
+  R.monstres = R.monstres.filter(z => z !== m); S.score += BETES[m.b].elite ? 60 : 20; S.orAv = (S.orAv || 0) + (BETES[m.b].elite ? 5 : 2); // 16/11 : un peu d'or sur chaque monstre
   const duo = (R.frappeurs && R.frappeurs[m.id] || []).length >= 2; if (duo) { S.score += 25; log(S, `🤝 ${m.n} abattu à deux : +25 !`); }
   ev.push({ t:'tombe', m:m.id, duo }); log(S, `💀 ${m.n} tombe.`);
   if (S.objectif === 'vaincre' && !R.monstres.length && !R.boss) { S.fin = 'gagne'; S.score += 100; log(S, '🏆 L’embuscade est repoussée !'); }
@@ -565,7 +566,8 @@ function donner(S, hi, idDe, cibleI) {
 }
 function relever(S, hi, idDe, cibleI) {
   const h = S.heros[hi], c = S.heros[cibleI]; if (!c || !c.aTerre || !voisins(h, c)) return 'Il faut être à côté de l’ami à terre.';
-  if (!prendDe(h, idDe)) return 'Pas de dé.'; c.aTerre = false; c.pv = 4; log(S, `✋ ${nm(h)} relève ${nm(c)}.`); return { ok:true, ev:[{ t:'soin', h:cibleI }] };
+  if ((S.releves || 0) >= 3) return 'Plus de relève possible : 3 par partie, c’est déjà fait. Une potion peut encore aider.'; // 16/11 (l'utilisateur)
+  if (!prendDe(h, idDe)) return 'Pas de dé.'; S.releves = (S.releves || 0) + 1; c.aTerre = false; c.pv = 4; log(S, `✋ ${nm(h)} relève ${nm(c)}.`); return { ok:true, ev:[{ t:'soin', h:cibleI }] };
 }
 // chercher les pièges autour de soi (2 cases)
 function fouiller(S, hi, idDe) {
@@ -624,7 +626,7 @@ function fouilleMeuble(S, hi, idDe, x, y, o) {
       const m = ajouteMonstre(S, 'reliquaire', p[0], p[1]); m.att = 0; R.vu[cle(p[0], p[1])] = 1; ev.quoi = 'monstre';
       log(S, `💀 ${nom} renverse ${MEUBLE_N[o.t]} : LE RELIQUAIRE du Roi des Os roule sur le sol ! Brisez-le (un 2, un 4, un 6).`); break; }
     case 'grains': S.sablier += 3; log(S, `⌛ Un petit sablier dans ${MEUBLE_N[o.t]} : +3 grains !`); break;
-    case 'or': S.score += 50; S.orAv = (S.orAv || 0) + 8; log(S, `💰 Des pièces d’or dans ${MEUBLE_N[o.t]} : +50 points, +8 or pour tes héros.`); break;
+    case 'or': S.score += 50; S.orAv = (S.orAv || 0) + 10; log(S, `💰 Des pièces d’or dans ${MEUBLE_N[o.t]} : +10 or dans la bourse du groupe.`); break;
     case 'objet': { if (hasard(S) < (h.av ? .6 : .35)) { S.equipTrouve = (S.equipTrouve || 0) + 1; ev.quoi = 'equip'; log(S, `🗡 ${nom} trouve une PIÈCE D’ÉQUIPEMENT dans ${MEUBLE_N[o.t]} ! (elle t’attend dans le coffre des héros)`); break; }
       if (h.objet) { S.score += 30; ev.quoi = 'or'; log(S, `💰 Un petit trésor dans ${MEUBLE_N[o.t]} : +30.`); break; }
       const k = ['bouclier', 'cle', 'lunettes'][Math.floor(hasard(S) * 3)]; h.objet = k; ev.objet = k; log(S, `🎁 ${nom} trouve ${OBJETS[k].n} : ${OBJETS[k].d}`); break; }
@@ -738,7 +740,26 @@ function echanger(S, hi, idDe, ci) {
   unPas(S, h, idDe); const a = [h.x, h.y]; h.x = z.x; h.y = z.y; z.x = a[0]; z.y = a[1]; log(S, `↔ ${nm(h)} et ${nm(z)} changent de place.`); voir(S);
   return { ok:true, ev:[{ t:'marche', h:hi, de:[z.x, z.y] }, { t:'marche', h:ci, de:[h.x, h.y] }] };
 }
-const API = { echanger, prendreEscalier, moitiesPorte, presDePorte, rectSalle, etageDe, COULOIRS_Z2, CAPA, phasesDe, grilleOuverte, contact, pasDe, aPortee, SAC, utiliser, SCEN, HEROS_C, BETES, PHASES, SALLES, OBJETS, MEUBLE_N, nouvelle, atteignables, bouger, frapper, proteger, soigner, donner, relever, fouiller, agir, ouvrir,
+// 16/11 (choix de l'utilisateur) : LE COLPORTEUR (comme le marchand de Slay the Spire / le colporteur de Darkest Dungeon) : on paie avec la bourse du groupe
+const ETAL = { potion:12, parchemin:15, fumee:10 };
+function acheter(S, hi, k) {
+  const h = S.heros[hi], R = S.R, p = ETAL[k]; if (!p) return 'Le colporteur ne vend pas ça.';
+  const M = Object.entries(R.obj).find(([c, o]) => o.t === 'marchand'); if (!M) return 'Pas de colporteur ici.'; const [mx, my] = M[0].split(',').map(Number);
+  if (h.aTerre || dist(h, { x:mx, y:my }) !== 1) return 'Il faut être juste à côté du colporteur.';
+  if ((S.orAv || 0) < p) return `Pas assez d’or : il faut ${p} pièces.`; if ((h.sac || []).length >= 4) return 'Le sac est plein (4 objets).';
+  S.orAv -= p; (h.sac = h.sac || []).push(k); log(S, `🧳 ${nm(h)} achète ${SAC[k].n.toLowerCase()} au colporteur (−${p} or).`); return { ok:true, ev:[] };
+}
+// 16/11 : LA PAUSE AU FEU DE CAMP (comme le repos court de D&D / le feu de camp de Darkest Dungeon) : 2 fois par partie, +4 PV à chacun, le sablier perd 3 grains
+function pause(S) {
+  const R = S.R; if ((S.pauses || 0) >= 2) return 'Plus de pause possible : 2 par partie.';
+  const proche = R.monstres.some(m => reveille(S, m) && S.heros.some(h => !h.aTerre && dist(h, m) <= 5 && (!R.plan || etageDe(S, h.y) === etageDe(S, m.y))));
+  if (proche) return 'Des monstres rôdent trop près : impossible de se reposer.';
+  S.pauses = (S.pauses || 0) + 1; S.sablier = Math.max(0, S.sablier - 3);
+  S.heros.forEach(h => { if (!h.aTerre) h.pv = Math.min(h.pvmax, h.pv + 4); });
+  log(S, `🔥 Le groupe fait une pause au feu de camp : +4 PV à chacun, le sablier perd 3 grains (${2 - S.pauses} pause${2 - S.pauses > 1 ? 's' : ''} restante${2 - S.pauses > 1 ? 's' : ''}).`);
+  return { ok:true, ev:[{ t:'pause' }] };
+}
+const API = { ETAL, acheter, pause, echanger, prendreEscalier, moitiesPorte, presDePorte, rectSalle, etageDe, COULOIRS_Z2, CAPA, phasesDe, grilleOuverte, contact, pasDe, aPortee, SAC, utiliser, SCEN, HEROS_C, BETES, PHASES, SALLES, OBJETS, MEUBLE_N, nouvelle, atteignables, bouger, frapper, proteger, soigner, donner, relever, fouiller, agir, ouvrir,
   finTour, visible, accepte, voisins, dist, herosEn, cle, libre, reveille };
 if (typeof module !== 'undefined' && module.exports) module.exports = API; else racine.CHRON = API;
 })(typeof window !== 'undefined' ? window : globalThis);
