@@ -678,11 +678,8 @@ function touche(x, y) {
   const hi = S.heros.findIndex(z => z.x === x && z.y === y), m = R.monstres.find(z => z.x === x && z.y === y), B = R.boss && R.boss.x === x && R.boss.y === y ? R.boss : null;
   // 16/11 (l'utilisateur : « sur la case 1er étage, ça ne m'emmène nulle part ») : l'autre bout de l'escalier est sur un autre étage,
   // hors de l'écran ; toucher l'escalier où l'on se tient (ou sa pancarte) fait monter / descendre avec le dé choisi
-  if (R.liens && R.liens[c] && hi === actif) {
-    if (!d) { bulle(`Choisis un dé (même un 👣), puis touche l’escalier pour aller au ${K.etageDe(S, +R.liens[c].split(',')[1])}.`, true); return; }
-    const [lx, ly] = R.liens[c].split(',').map(Number), A = K.atteignables(S, h, d.v, d.pas);
-    if (!A[R.liens[c]]) { bulle('L’autre bout de l’escalier est occupé ou trop loin pour ce dé.', true); return; }
-    son('pas'); centrer = true; return resultat(K.bouger(S, actif, sel, lx, ly)); }
+  // 16/11 : toucher l'escalier où l'on se tient : on passe à l'autre étage, gratuitement (marcher dessus y mène déjà tout seul)
+  if (R.liens && R.liens[c] && hi === actif) { son('pas'); centrer = true; return resultat(K.prendreEscalier(S, actif)); }
   if (m && !B && hi < 0 && !eclaire(x, y)) { bulle('Il fait trop noir par là : approche ta lanterne pour voir ce qui s’y cache.', true); return; }
   if (sacEnCours != null && (m || B)) { const k = sacEnCours; sacEnCours = null; son('ultime'); return resultat(K.utiliser(S, actif, k, B ? 'boss' : m.id)); }
   sacEnCours = null;
