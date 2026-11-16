@@ -162,15 +162,15 @@
 <body>
 <div id="app"></div>
 <div id="fen"></div><div id="perso"></div>
-<script src="musique.js?v=20261116-181859"></script>
-<script src="rang.js?v=20261116-181859"></script>
+<script src="musique.js?v=20261116-182200"></script>
+<script src="rang.js?v=20261116-182200"></script>
 <script>window.AMIS_SANS_BOUTON = true;</script>
-<script src="amis.js?v=20261116-181859"></script>
-<script src="heros-etoiles.js?v=20261116-181859"></script>
-<script src="progression-modes.js?v=20261116-181859"></script>
-<script src="aventuriers.js?v=20261116-181859"></script>
-<script src="chroniques-moteur.js?v=20261116-181859"></script>
-<script src="chroniques-ambiance.js?v=20261116-181859"></script>
+<script src="amis.js?v=20261116-182200"></script>
+<script src="heros-etoiles.js?v=20261116-182200"></script>
+<script src="progression-modes.js?v=20261116-182200"></script>
+<script src="aventuriers.js?v=20261116-182200"></script>
+<script src="chroniques-moteur.js?v=20261116-182200"></script>
+<script src="chroniques-ambiance.js?v=20261116-182200"></script>
 <script>
 // =============================================================================================== LES CHRONIQUES DE LA GUILDE v2 (15/11, écran « façon HeroQuest »)
 // Une grande carte qui défile : les salles restent dans le noir jusqu'à ce qu'on ouvre leur porte ; les couloirs se dévoilent en avançant ;
@@ -217,7 +217,8 @@ const lumiereActive = () => modeZones() && S.R.plan === 2;
 function eclaire(x, y) {
   if (!lumiereActive()) return true;
   const z = zoneDe(S.R, x, y); if (!SALLES_SOMBRES.includes(z)) return true;
-  return S.heros.some(h => zoneDe(S.R, h.x, h.y) === z && Math.hypot(h.x - x, h.y - y) <= LANTERNE);
+  // 16/11 (l'utilisateur : « un monstre m'a attaqué à travers la porte et je ne peux plus entrer ») : ce qui est JUSTE À CÔTÉ d'un héros se voit toujours
+  return S.heros.some(h => (zoneDe(S.R, h.x, h.y) === z && Math.hypot(h.x - x, h.y - y) <= LANTERNE) || Math.hypot(h.x - x, h.y - y) <= 1.5);
 }
 const SON_ZONE = { B:'rouages', H:'coeur', G:'crypte', F:'biblio', E:'atelier', A:'hall', C:'reserve', S:'galerie', P:'cagibi' };
 function zoneDe(R, x, y) {
@@ -1042,9 +1043,9 @@ if (ESSAI) essaiAtelier(ESSAI); else if (sessionStorage.getItem('chron-en-jeu') 
 { const s = new URLSearchParams(location.search).get('salle'); if (s) { history.replaceState(null, '', location.pathname); const c = (typeof AMIS !== 'undefined' && AMIS.carte) || null, nom = (c && c.pseudo) || localStorage.getItem('guilde-pseudo');
     if (nom) rejoindre(s, { id:'j' + Math.random().toString(36).slice(2, 10), nom }); else { rejoindreForm(); setTimeout(() => { const i = $('fCode'); if (i) i.value = s; }, 150); } } }
 </script>
-<script src="chroniques-aventures.js?v=20261116-181859"></script>
-<script src="guide.js?v=20261116-181859"></script>
-<script src="guides-modes.js?v=20261116-181859"></script>
+<script src="chroniques-aventures.js?v=20261116-182200"></script>
+<script src="guide.js?v=20261116-182200"></script>
+<script src="guides-modes.js?v=20261116-182200"></script>
 <script>
 // 15/11 : le guide de Moustache de ce mode (guides-modes.js)
 { const _a = accueil; accueil = function () { const r = _a.apply(this, arguments); guideMode('chroniques'); return r; }; }
