@@ -109,7 +109,7 @@ function fhPiece(p, actions) { const C = EQ_CASES.find(c => c.k === p.slot), por
 function fhCase(id, k) {
   const E = equipementDe(id), p = E[k], C = EQ_CASES.find(c => c.k === k), autres = avSac().pieces.filter(x => x.slot === k && x.id !== (p && p.id)).sort((a, b) => b.r - a.r || b.niv - a.niv);
   fhFen(`<h2>${C.e} ${C.n}</h2>
-    ${p ? `<p class="doux">Porté :</p>${fhPiece(p, `${p.niv < eqNivMax(p) ? `<button onclick="fhAmelio('${id}','${k}','${p.id}')">⬆ ${eqPrixAmelio(p)} 🪙</button>` : '<small>max : fusionne</small>'}<button onclick="retirePiece('${id}','${k}');fhFen('');FH.apres()">Retirer</button>`)}
+    ${p ? `<p class="doux">Porté (l’amélioration reste sur la case : changer de pièce ne fait rien perdre) :</p>${fhPiece(p, `${p.niv < eqNivMax(p) ? `<button onclick="fhAmelio('${id}','${k}','${p.id}')">⬆ ${eqPrixAmelio(p)} 🪙</button>` : '<small>max : fusionne</small>'}<button onclick="retirePiece('${id}','${k}');fhFen('');FH.apres()">Retirer</button>`)}
       ${p.niv < eqNivMax(p) ? `<p class="doux">Au niveau ${p.niv + 1} : ${eqTexte(Object.assign({}, p, { niv:p.niv + 1 }))}</p>` : ''}` : '<p class="doux">Rien dans cette case.</p>'}
     <p class="doux" style="margin-top:10px">Dans le coffre :</p>
     ${autres.length ? autres.map(x => fhPiece(x, `<button onclick="fhEquipe('${id}','${x.id}')">Équiper</button>`)).join('') : '<p class="doux">Aucune pièce de ce genre. Elles tombent des boss, des élites et des meubles des Chroniques ; le forgeron en vend.</p>'}

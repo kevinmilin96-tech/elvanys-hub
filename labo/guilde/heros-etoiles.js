@@ -135,23 +135,33 @@ function avGagne(or, n, meilleure) {
 }
 // qui porte une pièce ?
 function porteurDe(pid) { const d = lireEtoiles(); return Object.keys(d.heros).find(id => Object.values(d.heros[id].gear || {}).includes(pid)) || null; }
-function equipementDe(id) { const s = avSac(), g = etatH(id).gear, E = {}; EQ_CASES.forEach(c => { E[c.k] = g[c.k] ? s.pieces.find(p => p.id === g[c.k]) || null : null; }); return E; }
+// 16/11 soir (choix de l'utilisateur, comme AFK Journey) : l'amélioration reste sur la CASE du héros. Changer de pièce ne fait rien perdre :
+// la pièce portée prend le niveau de la case (au plus le maximum de sa rareté) ; une pièce qui quitte la case lui laisse son niveau.
+const lvCase = (id, k) => { try { const h = lireEtoiles().heros[id]; return (h && h.lv && h.lv[k]) || 0; } catch (e) { return 0; } };
+const nivPorte = (id, p) => Math.min(eqNivMax(p), Math.max(p.niv, lvCase(id, p.slot)));
+function equipementDe(id) { const s = avSac(), g = etatH(id).gear, E = {}; EQ_CASES.forEach(c => { const p = g[c.k] ? s.pieces.find(x => x.id === g[c.k]) || null : null; E[c.k] = p ? Object.assign({}, p, { niv:nivPorte(id, p) }) : null; }); return E; }
+// une pièce quitte la case d'un héros : la case garde le niveau atteint, la pièce repart au niveau 1
+function laisseNiveau(d, s, hid, slot) { const h = d.heros[hid]; if (!h || !h.gear || !h.gear[slot]) return; const p = s.pieces.find(x => x.id === h.gear[slot]); if (!p) return;
+  h.lv = h.lv || {}; h.lv[slot] = Math.max(h.lv[slot] || 0, p.niv); p.niv = 1; }
 function equipePiece(id, pid) {
   const s = avSac(), p = s.pieces.find(x => x.id === pid); if (!p) return 'Pièce introuvable.';
   const C = EQ_CASES.find(c => c.k === p.slot); if (C.niv && niveauH(id) < C.niv) return `Cette case s’ouvre au niveau ${C.niv}.`;
-  const d = lireEtoiles(); Object.values(d.heros).forEach(h => { if (h.gear) Object.keys(h.gear).forEach(k => { if (h.gear[k] === pid) h.gear[k] = null; }); });
-  etatHerosE(d, id).gear[p.slot] = pid; ecrireEtoiles(d); return 'ok';
+  const d = lireEtoiles(); Object.keys(d.heros).forEach(hid => { const h = d.heros[hid]; if (h.gear) Object.keys(h.gear).forEach(k => { if (h.gear[k] === pid) { laisseNiveau(d, s, hid, k); h.gear[k] = null; } }); });
+  laisseNiveau(d, s, id, p.slot); etatHerosE(d, id).gear[p.slot] = pid; avSacEcrire(s); ecrireEtoiles(d); return 'ok';
 }
-function retirePiece(id, slot) { const d = lireEtoiles(); etatHerosE(d, id).gear[slot] = null; ecrireEtoiles(d); }
+function retirePiece(id, slot) { const d = lireEtoiles(), s = avSac(); laisseNiveau(d, s, id, slot); etatHerosE(d, id).gear[slot] = null; avSacEcrire(s); ecrireEtoiles(d); }
 function amelioPiece(pid) {
   const s = avSac(), p = s.pieces.find(x => x.id === pid); if (!p) return 'Pièce introuvable.';
-  if (p.niv >= eqNivMax(p)) return 'Niveau maximum pour cette rareté : fusionne-la pour monter plus haut.'; const c = eqPrixAmelio(p); if (s.or < c) return `Il faut ${c} pièces d’or.`;
-  s.or -= c; p.niv++; avSacEcrire(s); return 'ok';
+  const qui = porteurDe(pid), n = qui ? nivPorte(qui, p) : p.niv; // portée : c'est la CASE du héros qui monte
+  if (n >= eqNivMax(p)) return 'Niveau maximum pour cette rareté : fusionne-la pour monter plus haut.'; const c = eqPrixAmelio(Object.assign({}, p, { niv:n })); if (s.or < c) return `Il faut ${c} pièces d’or.`;
+  s.or -= c; p.niv = n + 1; avSacEcrire(s);
+  if (qui) { const d = lireEtoiles(), h = etatHerosE(d, qui); h.lv = h.lv || {}; h.lv[p.slot] = Math.max(h.lv[p.slot] || 0, n + 1); ecrireEtoiles(d); }
+  return 'ok';
 }
 function vendPiece(pid) {
   const s = avSac(), i = s.pieces.findIndex(x => x.id === pid); if (i < 0) return; const p = s.pieces[i];
-  s.or += eqPrixVente(p); s.pieces.splice(i, 1); avSacEcrire(s);
-  const d = lireEtoiles(); Object.values(d.heros).forEach(h => { if (h.gear && h.gear[p.slot] === pid) h.gear[p.slot] = null; }); ecrireEtoiles(d);
+  const d = lireEtoiles(), v = eqPrixVente(p); Object.keys(d.heros).forEach(hid => { const h = d.heros[hid]; if (h.gear && h.gear[p.slot] === pid) { laisseNiveau(d, s, hid, p.slot); h.gear[p.slot] = null; } }); // vendre une pièce portée : la case garde son niveau
+  s.or += v; s.pieces.splice(s.pieces.indexOf(p), 1); avSacEcrire(s); ecrireEtoiles(d);
 }
 // la FUSION : 3 pièces de la même case et de la même rareté → 1 pièce de la rareté au-dessus (elle garde le meilleur niveau ; le porteur la garde)
 function groupesFusion() { const G = {}; avSac().pieces.forEach(p => { if (p.r >= EQ_RARE.length - 1) return; const k = p.slot + ':' + p.r; (G[k] = G[k] || []).push(p); }); return Object.values(G).filter(g => g.length >= 3); }
@@ -161,7 +171,7 @@ function fusionnePiece(slot, r) {
   const n = { id:'eq' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), slot, nom:g[0].nom, r:r + 1, niv:Math.min(g[0].niv, 5 * (r + 2)) };
   s.pieces = s.pieces.filter(p => !g.includes(p)); s.pieces.push(n); avSacEcrire(s);
   Object.values(d.heros).forEach(h => { if (h.gear && g.some(p => h.gear[slot] === p.id)) h.gear[slot] = null; });
-  if (porteur) d.heros[porteur].gear[slot] = n.id; ecrireEtoiles(d); return n;
+  if (porteur) { const h = d.heros[porteur]; h.gear[slot] = n.id; h.lv = h.lv || {}; h.lv[slot] = Math.max(h.lv[slot] || 0, ...g.map(p => p.niv)); } ecrireEtoiles(d); return n;
 }
 // le forgeron : 3 pièces par jour.
 // 15/11 soir (l'utilisateur : « le forgeron donne en fonction du niveau ? à Élite + et niveau 50, des équipements en fonction ? ») :
