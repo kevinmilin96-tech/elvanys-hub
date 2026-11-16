@@ -63,6 +63,7 @@
   .ps-inv { aspect-ratio:1; background:#141428; border:2px solid #45457a; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:min(7vw, 30px); cursor:pointer; } .ps-inv.vide { opacity:.45; cursor:default; } .ps-inv.on { border-color:var(--or); box-shadow:0 0 12px var(--or); }
   .ps-det { margin-top:2cqw; } .ps-det button { margin-top:1.5cqw; } .ps-aide { color:var(--doux); font-size:.85em; text-align:center; }
   .c.vide { background:transparent !important; pointer-events:none; }
+  .c .impasse { position:absolute; inset:0; background:url('decor/couloir-impasse.webp?v=1') center / 100% 100%; pointer-events:none; z-index:0; }
   .c.meuble-peint:not(.fouille)::before { content:''; position:absolute; inset:14%; border-radius:30%; box-shadow:0 0 0 1px #ffd36a66, 0 0 8px #ffd36a44; opacity:.6; animation:lueurM 3s ease-in-out infinite; pointer-events:none; }
   .c.meuble-peint .etiq { position:absolute; left:50%; bottom:2%; transform:translateX(-50%); z-index:2; font-size:calc(var(--t) * .2); line-height:1.1; white-space:nowrap; background:#1c1c36dd; color:#ffe9a8; border:1px solid #ffd36a88; border-radius:6px; padding:0 .35em; pointer-events:none; } .c.meuble-peint.fouille .etiq { opacity:.55; }
   @keyframes lueurM { 50% { opacity:.15; } } .c.meuble-peint .fm { position:absolute; right:6%; bottom:6%; font-size:calc(var(--t) * .28); color:var(--ok); text-shadow:0 0 4px #000; }
@@ -162,15 +163,15 @@
 <body>
 <div id="app"></div>
 <div id="fen"></div><div id="perso"></div>
-<script src="musique.js?v=20261116-184702"></script>
-<script src="rang.js?v=20261116-184702"></script>
+<script src="musique.js?v=20261116-185004"></script>
+<script src="rang.js?v=20261116-185004"></script>
 <script>window.AMIS_SANS_BOUTON = true;</script>
-<script src="amis.js?v=20261116-184702"></script>
-<script src="heros-etoiles.js?v=20261116-184702"></script>
-<script src="progression-modes.js?v=20261116-184702"></script>
-<script src="aventuriers.js?v=20261116-184702"></script>
-<script src="chroniques-moteur.js?v=20261116-184702"></script>
-<script src="chroniques-ambiance.js?v=20261116-184702"></script>
+<script src="amis.js?v=20261116-185004"></script>
+<script src="heros-etoiles.js?v=20261116-185004"></script>
+<script src="progression-modes.js?v=20261116-185004"></script>
+<script src="aventuriers.js?v=20261116-185004"></script>
+<script src="chroniques-moteur.js?v=20261116-185004"></script>
+<script src="chroniques-ambiance.js?v=20261116-185004"></script>
 <script>
 // =============================================================================================== LES CHRONIQUES DE LA GUILDE v2 (15/11, écran « façon HeroQuest »)
 // Une grande carte qui défile : les salles restent dans le noir jusqu'à ce qu'on ouvre leur porte ; les couloirs se dévoilent en avançant ;
@@ -531,6 +532,9 @@ function dessine() {
       if (R.grille && x === R.grille.dx && y === R.grille.dy) inner = objImg('dalle', 'dalle') + inner;
       if ((R.os || []).some(z => z.x === x && z.y === y)) inner += objImg('tasdos'); }
     if (R.plan === 2 && R.liens[c] && vu) { const ly = +R.liens[c].split(',')[1]; inner += `<span class="escfl" title="${esc(K.etageDe(S, ly))}">${ly < y ? '⬆' : '⬇'}<small>${S.heros[actif].x === x && S.heros[actif].y === y ? (ly < y ? 'monter' : 'descendre') : esc(K.etageDe(S, ly).replace('Rez-de-chaussée', 'RDC').replace('Le sommet', 'sommet'))}</small></span>`; } // 16/11 : le sens de l'escalier écrit en clair
+    // 16/11 : le BOUT d'un couloir sans issue (image Gemini couloir-impasse : mur à droite, tournée vers le côté fermé)
+    if (R.plan === 2 && vu && !mur && !p && !R.salle[c] && !(R.liens && R.liens[c])) { const ouv = [[-1, 0, 0], [0, -1, 90], [1, 0, 180], [0, 1, 270]].filter(([dx, dy]) => { const q = K.cle(x + dx, y + dy); return x + dx >= 0 && y + dy >= 0 && x + dx < R.w && y + dy < R.h && !R.murs[q]; });
+      if (ouv.length === 1) inner = `<span class="impasse" style="transform:rotate(${ouv[0][2]}deg)"></span>` + inner; }
     if (atteint[c]) cl += ' peut';
     const hi = S.heros.findIndex(z => z.x === x && z.y === y), m = R.monstres.find(z => z.x === x && z.y === y), B = R.boss && R.boss.x === x && R.boss.y === y ? R.boss : null;
     if (hi >= 0) { const z = S.heros[hi]; inner += `<div class="jeton ${hi === actif ? 'actif' : ''} ${z.aTerre ? 'terre' : ''}" id="j-h${hi}" style="--c:${coulH(z)}">${imgH(z)}<span class="pv">${z.aTerre ? '✋' : '❤' + z.pv}${z.bouclier ? '🛡' + z.bouclier : ''}${z.porte ? '⚙' : ''}</span></div>`; }
@@ -1046,9 +1050,9 @@ if (ESSAI) essaiAtelier(ESSAI); else if (sessionStorage.getItem('chron-en-jeu') 
 { const s = new URLSearchParams(location.search).get('salle'); if (s) { history.replaceState(null, '', location.pathname); const c = (typeof AMIS !== 'undefined' && AMIS.carte) || null, nom = (c && c.pseudo) || localStorage.getItem('guilde-pseudo');
     if (nom) rejoindre(s, { id:'j' + Math.random().toString(36).slice(2, 10), nom }); else { rejoindreForm(); setTimeout(() => { const i = $('fCode'); if (i) i.value = s; }, 150); } } }
 </script>
-<script src="chroniques-aventures.js?v=20261116-184702"></script>
-<script src="guide.js?v=20261116-184702"></script>
-<script src="guides-modes.js?v=20261116-184702"></script>
+<script src="chroniques-aventures.js?v=20261116-185004"></script>
+<script src="guide.js?v=20261116-185004"></script>
+<script src="guides-modes.js?v=20261116-185004"></script>
 <script>
 // 15/11 : le guide de Moustache de ce mode (guides-modes.js)
 { const _a = accueil; accueil = function () { const r = _a.apply(this, arguments); guideMode('chroniques'); return r; }; }
