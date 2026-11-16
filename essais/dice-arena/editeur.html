@@ -206,6 +206,6 @@ function tester() { const s = S(); if (!s) return; const V = verifie(s); if (V.E
 function copierPrompt() { const t = $('prompt').value; (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => { $('copie').textContent = 'Copié !'; setTimeout(() => $('copie').textContent = '', 2000); }).catch(() => { $('prompt').select(); document.execCommand('copy'); $('copie').textContent = 'Copié !'; }); }
 tout();
 </script>
-<script src="musique.js?v=20261116-162941"></script>
+<script src="musique.js?v=20261116-163801"></script>
 </body>
 </html>

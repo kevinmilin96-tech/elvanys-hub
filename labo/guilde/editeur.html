@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>La Guilde des Runes · L'atelier des cartes</title>
+<style>
+  /* 16/11 (décisions de l'utilisateur) : l'ÉDITEUR des Chroniques, pour lui SEUL, sur PC et tablette.
+     Étape A : UNE SALLE (image Gemini, pinceaux sol / mur / porte / escalier / meuble / obstacle, prompt Gemini exact, règle des portes).
+     Étapes suivantes : B assembler salles, couloirs, escaliers ; C meubles, monstres, départ, boss, puis « Jouer ».
+     Règles : Chroniques-Conception-cartes.md (sections 3, 8 et 9). */
+  :root { --or:#f3c96b; --texte:#f1ecff; --doux:#c9c1ea; --ok:#7dffb0; --rouge:#ff6a5a; --fond:#141428; --bord:#45457a; }
+  * { box-sizing:border-box; }
+  html, body { margin:0; }
+  body { color:var(--texte); font:15px/1.4 Georgia, 'Times New Roman', serif; background:radial-gradient(ellipse at 50% 0%, #2a2a4a, #0b0b16 70%) fixed, #0b0b16; min-height:100vh; }
+  h1 { color:var(--or); font-size:1.4em; margin:0; } h2 { color:var(--or); font-size:1.1em; margin:.2em 0 .5em; }
+  button, input, select, textarea { font:inherit; color:var(--texte); }
+  button { background:#1c1c36; border:1px solid var(--bord); border-radius:12px; padding:7px 14px; cursor:pointer; }
+  button.or { background:#3a2e10; border-color:var(--or); color:var(--or); font-weight:bold; }
+  button:disabled { opacity:.4; cursor:default; }
+  input, select, textarea { background:#0f0f22; border:1px solid var(--bord); border-radius:10px; padding:6px 9px; }
+  .haut { display:flex; align-items:center; gap:12px; padding:12px 16px; border-bottom:1px solid #2a2a4a; }
+  .haut a { color:var(--doux); text-decoration:none; }
+  .page { display:grid; grid-template-columns:300px 1fr; gap:16px; padding:16px; max-width:1400px; margin:0 auto; }
+  @media (max-width:800px) { .page { grid-template-columns:1fr; } }
+  .panneau { background:#1c1c36cc; border:1px solid var(--bord); border-radius:14px; padding:12px 14px; margin-bottom:12px; }
+  .panneau label { display:block; font-size:.85em; color:var(--doux); margin:8px 0 3px; }
+  .ligne { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  .liste button { display:block; width:100%; text-align:left; margin:4px 0; } .liste button.on { border-color:var(--or); color:var(--or); }
+  .pinceaux { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+  .pinceaux button { text-align:left; font-size:.9em; } .pinceaux button.on { border-color:var(--or); box-shadow:0 0 8px #f3c96b66; }
+  .pinceaux i { display:inline-block; width:12px; height:12px; border-radius:3px; margin-right:6px; vertical-align:-1px; }
+  .zone { display:flex; flex-direction:column; align-items:center; gap:10px; }
+  .grille { position:relative; display:grid; background:#05050a; border:1px solid #2a2a4a; touch-action:none; user-select:none; }
+  .grille .img { position:absolute; inset:0; background-size:100% 100%; background-repeat:no-repeat; pointer-events:none; }
+  .case { position:relative; border:1px solid #ffffff22; }
+  .case.mur { background:#5a5a6acc; } .case.sol { background:transparent; }
+  .case.porte { background:#f3c96bcc; box-shadow:inset 0 0 0 2px #8a4a10; }
+  .case.escalier { background:repeating-linear-gradient(90deg, #9a7a4acc 0 6px, #4a3418cc 6px 9px); }
+  .case.meuble { background:#a0522dcc; } .case.obstacle { background:#2f6a3acc; }
+  .case.devant::after { content:''; position:absolute; inset:3px; border:2px dashed var(--or); border-radius:4px; }
+  .case.erreur { box-shadow:inset 0 0 0 3px var(--rouge); }
+  .case .m { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:.9em; pointer-events:none; }
+  .grille.cache-peinture .case { background:transparent !important; box-shadow:none; }
+  .msgs { width:100%; max-width:900px; } .msgs div { padding:4px 10px; border-radius:8px; margin:3px 0; font-size:.9em; }
+  .msgs .ko { background:#3a1414; color:#ffb4a8; } .msgs .ok { background:#14322a; color:var(--ok); }
+  textarea.prompt { width:100%; min-height:160px; font-size:.82em; }
+  .aide { color:var(--doux); font-size:.85em; }
+  .legende { display:flex; gap:14px; flex-wrap:wrap; font-size:.85em; color:var(--doux); } .legende i { display:inline-block; width:12px; height:12px; border-radius:3px; margin-right:4px; vertical-align:-1px; }
+</style>
+</head>
+<body>
+<div class="haut"><a href="chroniques.html">‹ Les Chroniques</a><h1>🛠 L'atelier des cartes</h1><span class="aide">Étape A : une salle à la fois.</span></div>
+<div class="page">
+  <div>
+    <div class="panneau"><h2>Mes salles</h2><div class="liste" id="liste"></div><button class="or" onclick="nouvelleSalle()">＋ Nouvelle salle</button></div>
+    <div class="panneau" id="reglages"></div>
+    <div class="panneau"><h2>Pinceaux</h2><div class="pinceaux" id="pinceaux"></div>
+      <p class="aide">Touche ou glisse sur les cases. Une porte = 1 case dans le mur ; deux portes côte à côte = une grande porte (2 cases). La case devant chaque porte est réservée d'office (pointillés dorés).</p></div>
+  </div>
+  <div class="zone">
+    <div class="ligne"><button class="or" onclick="tester()">▶ Tester la salle</button><button onclick="choisirImage()">🖼 Poser l'image Gemini</button><button id="bImg" onclick="retirerImage()">Retirer l'image</button>
+      <label class="aide" style="display:flex;align-items:center;gap:6px">Peinture visible <input type="range" id="opa" min="0" max="100" value="55" oninput="dessine()"></label>
+      <input type="file" id="fichier" accept="image/*" style="display:none" onchange="imageChoisie(this)"></div>
+    <div class="grille" id="grille"></div>
+    <div class="legende"><span><i style="background:#5a5a6a"></i>mur</span><span><i style="background:#f3c96b"></i>porte</span><span><i style="background:#9a7a4a"></i>escalier</span><span><i style="background:#a0522d"></i>meuble</span><span><i style="background:#2f6a3a"></i>obstacle</span><span><i style="border:2px dashed #f3c96b"></i>case réservée devant une porte</span></div>
+    <div class="msgs" id="msgs"></div>
+    <div class="panneau" style="width:100%;max-width:900px"><h2>Le prompt Gemini de cette salle</h2>
+      <p class="aide">Tiré de la grille : format, murs d'une case, portes exactement là où tu les as posées, rien d'autre. Joins l'ancienne image de la salle si tu en as une, comme modèle de style.</p>
+      <textarea class="prompt" id="prompt" readonly></textarea><div class="ligne"><button class="or" onclick="copierPrompt()">📋 Copier le prompt</button><span class="aide" id="copie"></span></div></div>
+  </div>
+</div>
+<script>
+// ------------------------------------------------------------------ les données : une salle = sa taille intérieure, ses cases peintes, son image
+const CLE = 'guilde-editeur-salles'; // petit JSON gardé sur le téléphone (et dans la sauvegarde du compte) ; les images à part (IndexedDB)
+const $ = id => document.getElementById(id);
+const PINCEAUX = [['sol', 'Sol', 'transparent'], ['mur', 'Mur', '#5a5a6a'], ['porte', 'Porte', '#f3c96b'], ['escalier', 'Escalier', '#9a7a4a'], ['meuble', 'Meuble', '#a0522d'], ['obstacle', 'Obstacle', '#2f6a3a']];
+const MEUBLE_EN = { coffre:'wooden chest', armoire:'tall wardrobe', tonneaux:'group of barrels', etabli:'workbench', etagere:'bookshelf against the wall', bureau:'small desk', tombeau:'stone tomb', cheminee:'fireplace in the wall', autel:'small stone altar', cristaux:'cluster of glowing crystals' };
+const MEUBLES = { coffre:'🧰', armoire:'🗄️', tonneaux:'🛢️', etabli:'🛠️', etagere:'📚', bureau:'🪑', tombeau:'⚱️', cheminee:'🔥', autel:'🕯️', cristaux:'💎' };
+const SONS = { '':'aucun', rouages:'tic-tac des rouages', coeur:'grondement du Cœur', crypte:'gouttes de la crypte', biblio:'pages et tic-tac lent', atelier:'petits outils', hall:'grand hall', reserve:'réserve', galerie:'vent', cagibi:'cagibi', couloir:'couloir' };
+let salles = lire(), actif = salles[0] ? salles[0].id : null, pinceau = 'porte', meubleSorte = 'coffre', peint = false;
+function lire() { try { return JSON.parse(localStorage.getItem(CLE) || '[]'); } catch (e) { return []; } }
+function garde() { localStorage.setItem(CLE, JSON.stringify(salles)); }
+const S = () => salles.find(s => s.id === actif);
+const k = (x, y) => x + ',' + y;
+// une case de la grille (w + 2) × (h + 2) : la bordure = les murs, l'intérieur = le sol, sauf ce qui a été peint
+function typeDe(s, x, y) { const v = s.cases[k(x, y)]; if (v) return v.split(':')[0]; return x === 0 || y === 0 || x === s.w + 1 || y === s.h + 1 ? 'mur' : 'sol'; }
+const bord = (s, x, y) => x === 0 || y === 0 || x === s.w + 1 || y === s.h + 1;
+const coin = (s, x, y) => (x === 0 || x === s.w + 1) && (y === 0 || y === s.h + 1);
+// la case juste devant une porte, côté intérieur ; et le mur de la porte
+function devant(s, x, y) { return x === 0 ? [1, y] : x === s.w + 1 ? [s.w, y] : y === 0 ? [x, 1] : [x, s.h]; }
+function murDe(s, x, y) { return y === 0 ? 'TOP' : y === s.h + 1 ? 'BOTTOM' : x === 0 ? 'LEFT' : 'RIGHT'; }
+function nouvelleSalle() {
+  const n = prompt('Nom de la salle ?', 'Nouvelle salle'); if (!n) return;
+  const w = Math.max(2, Math.min(14, +prompt('Largeur intérieure en cases (2 à 14) ?', '5') || 5)), h = Math.max(2, Math.min(14, +prompt('Hauteur intérieure en cases (2 à 14) ?', '3') || 3));
+  const s = { id:'s' + Date.now().toString(36), nom:n, w, h, cases:{}, decor:'', lumiere:'sombre', son:'', img:null, maj:Date.now() };
+  salles.push(s); actif = s.id; garde(); tout();
+}
+// ------------------------------------------------------------------ les portes : groupes de cases de porte voisines sur un même mur
+function portes(s) {
+  const P = []; for (let y = 0; y < s.h + 2; y++) for (let x = 0; x < s.w + 2; x++) if (typeDe(s, x, y) === 'porte') P.push([x, y]);
+  const groupes = [], vu = new Set();
+  P.forEach(([x, y]) => { if (vu.has(k(x, y))) return; const g = [[x, y]]; vu.add(k(x, y));
+    for (let i = 0; i < g.length; i++) { const [a, b] = g[i]; [[1, 0], [-1, 0], [0, 1], [0, -1]].forEach(([dx, dy]) => { const c = k(a + dx, b + dy); if (!vu.has(c) && P.some(([u, v]) => k(u, v) === c)) { vu.add(c); g.push([a + dx, b + dy]); } }); }
+    groupes.push(g); });
+  return groupes;
+}
+function verifie(s) {
+  const E = [], err = new Set(), res = new Set();
+  portes(s).forEach(g => {
+    const nom = g.length === 1 ? 'Une porte' : 'Une grande porte';
+    if (g.some(([x, y]) => !bord(s, x, y))) { E.push(`${nom} est au milieu de la salle : une porte se met dans le MUR (la bordure).`); g.forEach(([x, y]) => err.add(k(x, y))); return; }
+    if (g.some(([x, y]) => coin(s, x, y))) { E.push(`${nom} est dans un coin : pas de porte dans les coins.`); g.forEach(([x, y]) => err.add(k(x, y))); return; }
+    if (g.length > 2) { E.push('Une porte de plus de 2 cases : une porte fait 1 case, une grande porte 2.'); g.forEach(([x, y]) => err.add(k(x, y))); return; }
+    if (g.length === 2 && murDe(s, ...g[0]) !== murDe(s, ...g[1])) { E.push('Une grande porte doit être sur un seul mur.'); g.forEach(([x, y]) => err.add(k(x, y))); return; }
+    g.forEach(([x, y]) => { const [a, b] = devant(s, x, y); res.add(k(a, b)); if (typeDe(s, a, b) !== 'sol') { E.push(`Devant ${nom.toLowerCase()} (${murLisible(murDe(s, x, y))}), la case doit rester libre pour qu'un héros s'y mette.`); err.add(k(a, b)); } });
+  });
+  return { E, err, res };
+}
+const murLisible = m => ({ TOP:'mur du haut', BOTTOM:'mur du bas', LEFT:'mur de gauche', RIGHT:'mur de droite' }[m]);
+// ------------------------------------------------------------------ le prompt Gemini (règles de Chroniques-Conception-cartes.md)
+const rang = n => n + (n === 1 ? 'st' : n === 2 ? 'nd' : n === 3 ? 'rd' : 'th');
+function promptDe(s) {
+  const G = portes(s).filter(g => g.length <= 2 && g.every(([x, y]) => bord(s, x, y) && !coin(s, x, y)));
+  const desc = G.map(g => { const m = murDe(s, ...g[0]), h2 = m === 'TOP' || m === 'BOTTOM', pos = g.map(([x, y]) => h2 ? x : y).sort((a, b) => a - b), ou = h2 ? `right ${m === 'TOP' ? 'above' : 'below'} floor column` : `right beside floor row`, sens = h2 ? '(columns counted from the left)' : '(rows counted from the top)';
+    return g.length === 1 ? `ONE closed wooden door in the ${m} wall, ${ou} ${pos[0]} ${sens}, EXACTLY ONE square wide and centered on that square`
+      : `ONE large closed double door in the ${m} wall, ${ou}s ${pos[0]} and ${pos[1]} ${sens}, EXACTLY TWO squares wide`; });
+  const objets = [], esc = [];
+  for (let y = 1; y <= s.h; y++) for (let x = 1; x <= s.w; x++) { const v = s.cases[k(x, y)] || ''; if (v.startsWith('meuble')) objets.push(`a ${MEUBLE_EN[v.split(':')[1]] || 'wooden chest'} on the square at column ${x}, row ${y}`); if (v === 'escalier') esc.push(`column ${x}, row ${y}`); if (v === 'obstacle') objets.push(`a rubble pile or pillar on the square at column ${x}, row ${y}`); }
+  return `Paint ONE dungeon room seen STRICTLY FROM DIRECTLY ABOVE, like a printed battle map for a virtual tabletop, in a warm hand-painted fantasy board game style (same style as the attached image if there is one). The WHOLE room fits inside the image with its FOUR WALLS clearly visible all around it, as thick tops of stone walls seen from above. Format ${s.w + 2}:${s.h + 2} (width ${s.w + 2}, height ${s.h + 2}), edge to edge, no frame. The wall band is EXACTLY one square thick on every side: it fills the outer 1/${s.w + 2} of the width on the left and on the right, and the outer 1/${s.h + 2} of the height at the top and at the bottom; inside, the FLOOR is a rectangle of exactly ${s.w} by ${s.h} squares of regular flagstones (columns counted from the left, rows from the top).
+DOORS (very important, they must match the game): ${G.length ? 'the walls have exactly ' + G.length + ' door' + (G.length > 1 ? 's' : '') + ': ' + desc.join('; ') + '. Each door is painted seen from above inside the wall band, it never spills onto the next square, and the floor square right in front of it on each side stays EMPTY' : 'the walls have NO door at all'}; NO other door, NO other opening, NO alcove, NO archway, NO niche anywhere else in the walls.
+${objets.length ? 'Furniture, each exactly on its square: ' + objets.join('; ') + '. ' : ''}${esc.length ? 'Stone stairs going down seen from above on: ' + esc.join('; ') + '. ' : ''}Keep every other floor square clear for game tokens.
+Room: ${s.decor || s.nom}. ${s.lumiere === 'claire' ? 'The room is brightly lit.' : 'The room is dim, lit only by faint light.'}
+No text, no letters, no numbers, no symbols, no characters, no monsters.`;
+}
+// ------------------------------------------------------------------ les images (IndexedDB, sur cet appareil : l'envoi au serveur perso viendra ensuite)
+const DB = () => new Promise((ok, ko) => { const r = indexedDB.open('guilde-editeur', 1); r.onupgradeneeded = () => r.result.createObjectStore('img'); r.onsuccess = () => ok(r.result); r.onerror = () => ko(r.error); });
+async function imgPose(id, data) { const d = await DB(); return new Promise(ok => { const t = d.transaction('img', 'readwrite'); t.objectStore('img').put(data, id); t.oncomplete = ok; }); }
+async function imgLit(id) { const d = await DB(); return new Promise(ok => { const r = d.transaction('img').objectStore('img').get(id); r.onsuccess = () => ok(r.result || null); r.onerror = () => ok(null); }); }
+const imgCache = {};
+function choisirImage() { if (!S()) return; $('fichier').value = ''; $('fichier').click(); }
+function imageChoisie(inp) {
+  const f = inp.files && inp.files[0], s = S(); if (!f || !s) return;
+  const lu = new FileReader(); lu.onload = () => { const im = new Image(); im.onload = async () => {
+    // réduite (1400 px de large au plus) et en webp : légère pour l'envoi
+    const L = Math.min(1400, im.width), c = document.createElement('canvas'); c.width = L; c.height = Math.round(im.height * L / im.width); c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
+    const data = c.toDataURL('image/webp', .85), ratio = im.width / im.height, attendu = (s.w + 2) / (s.h + 2);
+    await imgPose(s.id, data); imgCache[s.id] = data; s.img = 'local'; s.maj = Date.now(); garde();
+    if (Math.abs(ratio - attendu) / attendu > .08) msg(`⚠️ L'image est en ${im.width} × ${im.height} : la salle attend un format ${s.w + 2}:${s.h + 2}. Elle sera étirée ; mieux vaut une image au bon format.`, false);
+    dessine(); }; im.src = lu.result; }; lu.readAsDataURL(f);
+}
+async function retirerImage() { const s = S(); if (!s) return; s.img = null; delete imgCache[s.id]; garde(); dessine(); }
+// ------------------------------------------------------------------ l'affichage
+let messagesPerso = [];
+function msg(t, ok) { messagesPerso = [{ t, ok }]; dessine(); }
+function tout() { liste(); reglages(); pinceauxUI(); dessine(); }
+function liste() { $('liste').innerHTML = salles.length ? salles.map(s => `<button class="${s.id === actif ? 'on' : ''}" onclick="actif='${s.id}';messagesPerso=[];tout()">${esc(s.nom)} <small style="color:var(--doux)">${s.w} × ${s.h}${s.img ? ' · 🖼' : ''}</small></button>`).join('') : '<p class="aide">Aucune salle : crée la première.</p>'; }
+function reglages() {
+  const s = S(); if (!s) { $('reglages').innerHTML = '<p class="aide">Choisis ou crée une salle.</p>'; return; }
+  $('reglages').innerHTML = `<h2>${esc(s.nom)}</h2>
+    <label>Nom</label><input value="${esc(s.nom)}" onchange="S().nom=this.value;garde();liste()">
+    <label>Taille intérieure (cases)</label><div class="ligne"><input type="number" min="2" max="14" value="${s.w}" style="width:70px" onchange="taille(+this.value, S().h)"> × <input type="number" min="2" max="14" value="${s.h}" style="width:70px" onchange="taille(S().w, +this.value)"></div>
+    <label>Décor (ce que Gemini doit peindre)</label><textarea rows="3" style="width:100%" onchange="S().decor=this.value;garde();dessine()" placeholder="Ex. : une crypte d'horlogers, petites bougies et engrenages le long des murs">${esc(s.decor || '')}</textarea>
+    <label>Lumière</label><select onchange="S().lumiere=this.value;garde();dessine()"><option value="sombre" ${s.lumiere !== 'claire' ? 'selected' : ''}>Sombre : il faut la lanterne</option><option value="claire" ${s.lumiere === 'claire' ? 'selected' : ''}>Claire : elle luit toute seule</option></select>
+    <label>Son d'ambiance</label><select onchange="S().son=this.value;garde()">${Object.entries(SONS).map(([v, n]) => `<option value="${v}" ${s.son === v ? 'selected' : ''}>${n}</option>`).join('')}</select>
+    <div class="ligne" style="margin-top:10px"><button onclick="if(confirm('Effacer toute la peinture de cette salle ?')){S().cases={};garde();dessine()}">Tout effacer</button><button onclick="supprimer()">🗑 Supprimer la salle</button></div>`;
+}
+function pinceauxUI() {
+  $('pinceaux').innerHTML = PINCEAUX.map(([v, n, c]) => `<button class="${pinceau === v ? 'on' : ''}" onclick="pinceau='${v}';pinceauxUI()"><i style="background:${c};border:1px solid #fff4"></i>${n}</button>`).join('')
+    + (pinceau === 'meuble' ? `<select style="grid-column:1/-1" onchange="meubleSorte=this.value">${Object.entries(MEUBLES).map(([v, e]) => `<option value="${v}" ${meubleSorte === v ? 'selected' : ''}>${e} ${v}</option>`).join('')}</select>` : '');
+}
+function taille(w, h) { const s = S(); w = Math.max(2, Math.min(14, w || s.w)); h = Math.max(2, Math.min(14, h || s.h));
+  const C = {}; Object.entries(s.cases).forEach(([c, v]) => { const [x, y] = c.split(',').map(Number); if (x <= w + 1 && y <= h + 1) C[c] = v; }); s.w = w; s.h = h; s.cases = C; s.maj = Date.now(); garde(); tout(); }
+function supprimer() { const s = S(); if (!s || !confirm(`Supprimer « ${s.nom} » ?`)) return; salles = salles.filter(z => z.id !== s.id); actif = salles[0] ? salles[0].id : null; garde(); tout(); }
+const esc = t => String(t == null ? '' : t).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
+async function dessine() {
+  const s = S(), G = $('grille');
+  if (!s) { G.innerHTML = ''; G.style.cssText = ''; $('prompt').value = ''; $('msgs').innerHTML = ''; return; }
+  const W = s.w + 2, H = s.h + 2, t = Math.floor(Math.min((Math.min(innerWidth, 1400) - (innerWidth > 800 ? 360 : 40)) / W, (innerHeight - 260) / H, 70));
+  const V = verifie(s), op = +$('opa').value / 100;
+  if (s.img && !imgCache[s.id]) imgCache[s.id] = await imgLit(s.id);
+  let h = `<div class="img" style="${imgCache[s.id] ? `background-image:url('${imgCache[s.id]}')` : ''}"></div>`;
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const v = s.cases[k(x, y)] || '', ty = typeDe(s, x, y);
+    h += `<div class="case ${ty} ${V.res.has(k(x, y)) ? 'devant' : ''} ${V.err.has(k(x, y)) ? 'erreur' : ''}" data-x="${x}" data-y="${y}" style="opacity:${ty === 'sol' && !V.res.has(k(x, y)) ? 1 : op || .01}">${v.startsWith('meuble') ? `<span class="m">${MEUBLES[v.split(':')[1]] || '📦'}</span>` : ''}</div>`; }
+  G.style.cssText = `grid-template-columns:repeat(${W}, ${t}px);grid-auto-rows:${t}px`;
+  G.innerHTML = h;
+  $('bImg').disabled = !s.img;
+  $('msgs').innerHTML = messagesPerso.map(m => `<div class="${m.ok ? 'ok' : 'ko'}">${m.t}</div>`).join('') + (V.E.length ? V.E.map(e => `<div class="ko">⛔ ${e}</div>`).join('') : `<div class="ok">✅ ${portes(s).length} porte${portes(s).length > 1 ? 's' : ''}, toutes avec leur case libre devant.${s.img ? '' : ' Il manque l\'image : copie le prompt, génère-la dans Gemini et pose-la.'}</div>`);
+  $('prompt').value = promptDe(s);
+}
+// la peinture au doigt ou à la souris : on peut glisser
+function peindre(e) {
+  const c = document.elementFromPoint(e.clientX, e.clientY); if (!c || !c.dataset || c.dataset.x == null) return;
+  const s = S(), x = +c.dataset.x, y = +c.dataset.y, cle2 = k(x, y);
+  const v = pinceau === 'meuble' ? 'meuble:' + meubleSorte : pinceau;
+  const defaut = bord(s, x, y) ? 'mur' : 'sol';
+  if (v === defaut) delete s.cases[cle2]; else s.cases[cle2] = v;
+  s.maj = Date.now();
+}
+$('grille').addEventListener('pointerdown', e => { if (!S()) return; peint = true; $('grille').setPointerCapture(e.pointerId); peindre(e); dessine(); });
+$('grille').addEventListener('pointermove', e => { if (!peint) return; const avant = JSON.stringify(S().cases); peindre(e); if (JSON.stringify(S().cases) !== avant) dessine(); });
+addEventListener('pointerup', () => { if (peint) { peint = false; garde(); liste(); } });
+addEventListener('resize', () => dessine());
+function tester() { const s = S(); if (!s) return; const V = verifie(s); if (V.E.length && !confirm('La salle a encore des erreurs (en rouge). La tester quand même ?')) return; garde(); location.href = 'chroniques.html?atelier=' + encodeURIComponent(s.id); }
+function copierPrompt() { const t = $('prompt').value; (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => { $('copie').textContent = 'Copié !'; setTimeout(() => $('copie').textContent = '', 2000); }).catch(() => { $('prompt').select(); document.execCommand('copy'); $('copie').textContent = 'Copié !'; }); }
+tout();
+</script>
+<script src="musique.js?v=20261116-163801"></script>
+</body>
+</html>
