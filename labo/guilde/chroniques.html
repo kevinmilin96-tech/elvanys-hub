@@ -164,15 +164,15 @@
 <body>
 <div id="app"></div>
 <div id="fen"></div><div id="perso"></div>
-<script src="musique.js?v=20261116-185659"></script>
-<script src="rang.js?v=20261116-185659"></script>
+<script src="musique.js?v=20261116-185749"></script>
+<script src="rang.js?v=20261116-185749"></script>
 <script>window.AMIS_SANS_BOUTON = true;</script>
-<script src="amis.js?v=20261116-185659"></script>
-<script src="heros-etoiles.js?v=20261116-185659"></script>
-<script src="progression-modes.js?v=20261116-185659"></script>
-<script src="aventuriers.js?v=20261116-185659"></script>
-<script src="chroniques-moteur.js?v=20261116-185659"></script>
-<script src="chroniques-ambiance.js?v=20261116-185659"></script>
+<script src="amis.js?v=20261116-185749"></script>
+<script src="heros-etoiles.js?v=20261116-185749"></script>
+<script src="progression-modes.js?v=20261116-185749"></script>
+<script src="aventuriers.js?v=20261116-185749"></script>
+<script src="chroniques-moteur.js?v=20261116-185749"></script>
+<script src="chroniques-ambiance.js?v=20261116-185749"></script>
 <script>
 // =============================================================================================== LES CHRONIQUES DE LA GUILDE v2 (15/11, écran « façon HeroQuest »)
 // Une grande carte qui défile : les salles restent dans le noir jusqu'à ce qu'on ouvre leur porte ; les couloirs se dévoilent en avançant ;
@@ -520,7 +520,7 @@ function dessine() {
       if (R.plan === 2 && !fondSalle(S, x, y)) { const cou = (a, b) => a >= 0 && b >= 0 && a < R.w && b < R.h && !R.murs[K.cle(a, b)] && !R.salle[K.cle(a, b)];
         const h2 = cou(x, y - 1) || cou(x, y + 1), v2 = cou(x - 1, y) || cou(x + 1, y);
         // 16/11 (l'utilisateur : « trop large ») : une bande FINE (40 % de la case), collée au côté du couloir ; le reste reste sombre
-        if (h2 || v2) { cl += ' murc'; stMur = h2 ? `background:#0b0b14 url('decor/couloir-mur-h.webp?v=1') calc(var(--t) * ${-x * .4}) ${cou(x, y + 1) ? 'bottom' : 'top'} / auto 40% repeat-x;` : `background:#0b0b14 url('decor/couloir-mur-v.webp?v=1') ${cou(x + 1, y) ? 'right' : 'left'} calc(var(--t) * ${-y * .4}) / 40% auto repeat-y;`; } } } // 16/11 (l'utilisateur : « enlève ces murs rajoutés ») : plus de bordure de pierre ajoutée, les murs sont ceux peints dans les salles
+        if (h2 || v2) { cl += ' murc'; stMur = h2 ? `background:#0b0b14 url('decor/couloir-mur-h.webp?v=1') calc(var(--t) * ${-x * .3}) ${cou(x, y + 1) ? 'bottom' : 'top'} / auto 30% repeat-x;` : `background:#0b0b14 url('decor/couloir-mur-v.webp?v=1') ${cou(x + 1, y) ? 'right' : 'left'} calc(var(--t) * ${-y * .3}) / 30% auto repeat-y;`; } } } // 16/11 (l'utilisateur : « enlève ces murs rajoutés ») : plus de bordure de pierre ajoutée, les murs sont ceux peints dans les salles
     else if (mur === '~') inner = `<span class="o">${S.scen === 'arene' ? '🌳' : '🪨'}</span>`; // 15/11 soir : les obstacles (arbres d'une embuscade, rochers) se voient
     // 16/11 (l'utilisateur : « nos propres images dénaturent ») : dans une salle PEINTE, on touche le meuble du dessin, sans icône ; une lueur dorée le montre
     else if (mur === 'M' && o && fondSalle(S, x, y)) { cl += ' meuble-peint' + (o.fouille ? ' fouille' : '') + (!o.fouille && K.dist(h, { x, y }) === 1 ? ' cible' : ''); if (o.fouille) inner = '<span class="fm">✓</span>'; else if (o.verrou && !o.crochete) inner = '<span class="fm">🔒</span>'; } // 16/11 : pas d'étiquette (les noms ne collaient pas au dessin), le nom vient au toucher
@@ -1056,9 +1056,9 @@ if (ESSAI) essaiAtelier(ESSAI); else if (sessionStorage.getItem('chron-en-jeu') 
 { const s = new URLSearchParams(location.search).get('salle'); if (s) { history.replaceState(null, '', location.pathname); const c = (typeof AMIS !== 'undefined' && AMIS.carte) || null, nom = (c && c.pseudo) || localStorage.getItem('guilde-pseudo');
     if (nom) rejoindre(s, { id:'j' + Math.random().toString(36).slice(2, 10), nom }); else { rejoindreForm(); setTimeout(() => { const i = $('fCode'); if (i) i.value = s; }, 150); } } }
 </script>
-<script src="chroniques-aventures.js?v=20261116-185659"></script>
-<script src="guide.js?v=20261116-185659"></script>
-<script src="guides-modes.js?v=20261116-185659"></script>
+<script src="chroniques-aventures.js?v=20261116-185749"></script>
+<script src="guide.js?v=20261116-185749"></script>
+<script src="guides-modes.js?v=20261116-185749"></script>
 <script>
 // 15/11 : le guide de Moustache de ce mode (guides-modes.js)
 { const _a = accueil; accueil = function () { const r = _a.apply(this, arguments); guideMode('chroniques'); return r; }; }
