@@ -44,6 +44,7 @@
   .c.mur { background:url('decor/tuile-roche-brulees.webp') 0 0 / calc(var(--t) * 4) calc(var(--t) * 4); filter:brightness(.3) saturate(.6); }
   .c:not(.mur):not(.noir) { filter:brightness(1.15); }
   .c.vide { background:transparent !important; pointer-events:none; }
+  .escfl { position:absolute; inset:auto 4% 4% auto; z-index:5; background:#1c1c36dd; border:1px solid var(--or); color:var(--or); border-radius:10px; padding:0 .35em; font-size:calc(var(--t) * .3); line-height:1.25; text-align:center; } .escfl small { display:block; font-size:.62em; color:#fff; }
   .c.porte.peinte { box-shadow:none; filter:none; } .c.porte.peinte.cible { box-shadow:inset 0 0 0 3px #ffd36a, 0 0 14px #ffd36a; }
   .c.noir { background:#05050a !important; filter:none; } .c.noir > * { display:none; }
   .c.porte { background:#5a3412; box-shadow:inset 0 0 0 .4cqw #2a1808; } .c.porte.bronze { background:#7a5a1a; } .c.porte.ouverte { background:url('decor/tuile-sol-brulees.webp') 0 0 / calc(var(--t) * 4) calc(var(--t) * 4); }
@@ -129,15 +130,15 @@
 <body>
 <div id="app"></div>
 <div id="fen"></div>
-<script src="musique.js?v=20261116-155137"></script>
-<script src="rang.js?v=20261116-155137"></script>
+<script src="musique.js?v=20261116-155357"></script>
+<script src="rang.js?v=20261116-155357"></script>
 <script>window.AMIS_SANS_BOUTON = true;</script>
-<script src="amis.js?v=20261116-155137"></script>
-<script src="heros-etoiles.js?v=20261116-155137"></script>
-<script src="progression-modes.js?v=20261116-155137"></script>
-<script src="aventuriers.js?v=20261116-155137"></script>
-<script src="chroniques-moteur.js?v=20261116-155137"></script>
-<script src="chroniques-ambiance.js?v=20261116-155137"></script>
+<script src="amis.js?v=20261116-155357"></script>
+<script src="heros-etoiles.js?v=20261116-155357"></script>
+<script src="progression-modes.js?v=20261116-155357"></script>
+<script src="aventuriers.js?v=20261116-155357"></script>
+<script src="chroniques-moteur.js?v=20261116-155357"></script>
+<script src="chroniques-ambiance.js?v=20261116-155357"></script>
 <script>
 // =============================================================================================== LES CHRONIQUES DE LA GUILDE v2 (15/11, écran « façon HeroQuest »)
 // Une grande carte qui défile : les salles restent dans le noir jusqu'à ce qu'on ouvre leur porte ; les couloirs se dévoilent en avançant ;
@@ -436,6 +437,7 @@ function dessine() {
       if (R.grille && x === R.grille.x && y === R.grille.y) inner = objImg('grille', K.grilleOuverte(S) ? 'ouverte' : '');
       if (R.grille && x === R.grille.dx && y === R.grille.dy) inner = objImg('dalle', 'dalle') + inner;
       if ((R.os || []).some(z => z.x === x && z.y === y)) inner += objImg('tasdos'); }
+    if (R.plan === 2 && R.liens[c] && vu) { const ly = +R.liens[c].split(',')[1]; inner += `<span class="escfl" title="${esc(K.etageDe(S, ly))}">${ly < y ? '⬆' : '⬇'}<small>${esc(K.etageDe(S, ly).replace('Rez-de-chaussée', 'RDC').replace('Le sommet', 'sommet'))}</small></span>`; } // 16/11 : le sens de l'escalier écrit en clair
     if (atteint[c]) cl += ' peut';
     const hi = S.heros.findIndex(z => z.x === x && z.y === y), m = R.monstres.find(z => z.x === x && z.y === y), B = R.boss && R.boss.x === x && R.boss.y === y ? R.boss : null;
     if (hi >= 0) { const z = S.heros[hi]; inner += `<div class="jeton ${hi === actif ? 'actif' : ''} ${z.aTerre ? 'terre' : ''}" id="j-h${hi}" style="--c:${coulH(z)}">${imgH(z)}<span class="pv">${z.aTerre ? '✋' : '❤' + z.pv}${z.bouclier ? '🛡' + z.bouclier : ''}${z.porte ? '⚙' : ''}</span></div>`; }
@@ -892,9 +894,9 @@ accueil();
 { const s = new URLSearchParams(location.search).get('salle'); if (s) { history.replaceState(null, '', location.pathname); const c = (typeof AMIS !== 'undefined' && AMIS.carte) || null, nom = (c && c.pseudo) || localStorage.getItem('guilde-pseudo');
     if (nom) rejoindre(s, { id:'j' + Math.random().toString(36).slice(2, 10), nom }); else { rejoindreForm(); setTimeout(() => { const i = $('fCode'); if (i) i.value = s; }, 150); } } }
 </script>
-<script src="chroniques-aventures.js?v=20261116-155137"></script>
-<script src="guide.js?v=20261116-155137"></script>
-<script src="guides-modes.js?v=20261116-155137"></script>
+<script src="chroniques-aventures.js?v=20261116-155357"></script>
+<script src="guide.js?v=20261116-155357"></script>
+<script src="guides-modes.js?v=20261116-155357"></script>
 <script>
 // 15/11 : le guide de Moustache de ce mode (guides-modes.js)
 { const _a = accueil; accueil = function () { const r = _a.apply(this, arguments); guideMode('chroniques'); return r; }; }
