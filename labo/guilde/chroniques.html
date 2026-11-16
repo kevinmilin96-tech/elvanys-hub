@@ -98,7 +98,9 @@
   .de.tourne img { animation:tourneD .26s linear infinite; } @keyframes tourneD { 0% { transform:rotate(0) translateY(0) scale(1); } 50% { transform:rotate(190deg) translateY(-2cqw) scale(1.1); } 100% { transform:rotate(360deg) translateY(0) scale(1); } }
   .lancerH { border:0; border-radius:3cqw; padding:2cqw 4cqw; font:bold 3.8cqw Georgia, serif; background:var(--or); color:#2b1d0a; margin-left:2cqw; animation:pulseL 1s infinite; } @keyframes pulseL { 50% { filter:brightness(1.2); } }
   #pcarte { position:absolute; right:2cqw; top:2cqw; width:min(26cqw, 120px); z-index:4; filter:drop-shadow(0 1cqw 1.4cqw #000c); border-radius:6px; overflow:hidden; opacity:.92; }
-  .plateau.zonee { margin-top:calc(min(26cqw, 120px) * .95 + 3cqw); } #pcarte svg, .schema-grand svg { display:block; width:100%; height:auto; }
+  .schema-grand .encre { stroke-dasharray:1; stroke-dashoffset:1; fill-opacity:0; animation:encre 1.6s ease-out .3s forwards; } .schema-grand .encre-c, .schema-grand .encre-t { opacity:0; animation:encreF .9s ease-out 1.2s forwards; }
+  @keyframes encre { 70% { stroke-dashoffset:0; fill-opacity:0; } to { stroke-dashoffset:0; fill-opacity:1; } } @keyframes encreF { to { opacity:1; } }
+  .plateau.zonee { margin-top:3cqw; } /* 16/11 : plus de miniature en haut à droite (le bouton « Carte » suffit) */ #pcarte svg, .schema-grand svg { display:block; width:100%; height:auto; }
   .zone-titre { position:absolute; left:50%; transform:translateX(-50%); bottom:2cqw; z-index:4; background:#05050acc; border:1px solid #f3c96b66; border-radius:12px; padding:.6cqw 2.6cqw; font-size:3cqw; color:var(--or); pointer-events:none; white-space:nowrap; }
   .plateau.zonee { margin-left:auto; margin-right:auto; }
   .c .oi.porte3 { width:100%; height:100%; object-fit:fill; filter:none; }
@@ -151,15 +153,15 @@
 <body>
 <div id="app"></div>
 <div id="fen"></div><div id="perso"></div>
-<script src="musique.js?v=20261116-161826"></script>
-<script src="rang.js?v=20261116-161826"></script>
+<script src="musique.js?v=20261116-162200"></script>
+<script src="rang.js?v=20261116-162200"></script>
 <script>window.AMIS_SANS_BOUTON = true;</script>
-<script src="amis.js?v=20261116-161826"></script>
-<script src="heros-etoiles.js?v=20261116-161826"></script>
-<script src="progression-modes.js?v=20261116-161826"></script>
-<script src="aventuriers.js?v=20261116-161826"></script>
-<script src="chroniques-moteur.js?v=20261116-161826"></script>
-<script src="chroniques-ambiance.js?v=20261116-161826"></script>
+<script src="amis.js?v=20261116-162200"></script>
+<script src="heros-etoiles.js?v=20261116-162200"></script>
+<script src="progression-modes.js?v=20261116-162200"></script>
+<script src="aventuriers.js?v=20261116-162200"></script>
+<script src="chroniques-moteur.js?v=20261116-162200"></script>
+<script src="chroniques-ambiance.js?v=20261116-162200"></script>
 <script>
 // =============================================================================================== LES CHRONIQUES DE LA GUILDE v2 (15/11, écran « façon HeroQuest »)
 // Une grande carte qui défile : les salles restent dans le noir jusqu'à ce qu'on ouvre leur porte ; les couloirs se dévoilent en avançant ;
@@ -222,15 +224,16 @@ const zoneNom = id => { const n = K.SALLES[id] ? K.SALLES[id].n : couloirsZ()[id
 function schemaSVG(grand) {
   const R = S.R, zv = vueForcee || zoneDe(R, S.heros[actif].x, S.heros[actif].y), vue = id => id.startsWith('K') ? Object.keys(R.vu).some(c => { const [x, y] = c.split(',').map(Number); return zoneDe(R, x, y) === id && !R.murs[c]; }) : R.vuSalle[id];
   // le cadre suit ce qui est découvert (au début : le Hall seul, en grand), jamais moins de 8 × 6 cases
+  const neuf = id => grand && !(S.carteVue || []).includes(id), en = id => neuf(id) ? ' class="encre" pathLength="1"' : ''; // 16/11 : ce qui est nouveau s'écrit à l'encre
   let X0 = R.w, Y0 = R.h, X1 = 0, Y1 = 0; Object.keys(R.vu).forEach(c => { const [x, y] = c.split(',').map(Number); if (R.murs[c] === '#') return; X0 = Math.min(X0, x); Y0 = Math.min(Y0, y); X1 = Math.max(X1, x); Y1 = Math.max(Y1, y); });
   if (X1 < X0) { X0 = 0; Y0 = 0; X1 = R.w - 1; Y1 = R.h - 1; }
   let VW = Math.max(8, X1 - X0 + 3), VH = Math.max(6, Y1 - Y0 + 3); const cx = (X0 + X1 + 1) / 2, cy = (Y0 + Y1 + 1) / 2; if (VW / VH < 1.3) VW = VH * 1.3; else VH = VW / 1.3;
   const vx = cx - VW / 2, vy = cy - VH / 2;
   let svg = `<svg viewBox="${vx} ${vy} ${VW} ${VH}" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="pa" cx="50%" cy="45%" r="75%"><stop offset="0" stop-color="#e9d6a6"/><stop offset="1" stop-color="#b8975c"/></radialGradient></defs><rect x="${vx}" y="${vy}" width="${VW}" height="${VH}" rx=".6" fill="url(#pa)"/>`;
-  Object.keys(couloirsZ()).forEach(id => { if (!vue(id)) return; const [x, y, w, h] = couloirsZ()[id].r; svg += `<rect x="${x + .3}" y="${y + .3}" width="${w - .6}" height="${h - .6}" fill="${id === zv ? '#f3c96b' : '#cdb07a'}" stroke="#4a3418" stroke-width=".12" stroke-dasharray=".35 .2"/>`; });
+  Object.keys(couloirsZ()).forEach(id => { if (!vue(id)) return; const [x, y, w, h] = couloirsZ()[id].r; svg += `<rect${neuf(id) ? ' class="encre-c"' : ''} x="${x + .3}" y="${y + .3}" width="${w - .6}" height="${h - .6}" fill="${id === zv ? '#f3c96b' : '#cdb07a'}" stroke="#4a3418" stroke-width=".12" stroke-dasharray=".35 .2"/>`; });
   Object.keys(K.SALLES).forEach(id => { if (!vue(id)) return; const [x, y, w, h] = K.rectSalle(S, id);
-    svg += `<rect x="${x - .15}" y="${y - .15}" width="${w + .3}" height="${h + .3}" rx=".5" fill="${id === zv ? '#f3c96b' : '#d9bf8a'}" stroke="${id === zv ? '#8a4a10' : '#4a3418'}" stroke-width="${id === zv ? .3 : .18}"/>`;
-    if (grand) svg += `<text x="${x + w / 2}" y="${y + h / 2 + .25}" font-size=".62" text-anchor="middle" fill="#3a2410" font-family="Georgia" font-style="italic">${esc(K.SALLES[id].n.replace(/^(Le|La|L’) ?/, ''))}</text>`; });
+    svg += `<rect${en(id)} x="${x - .15}" y="${y - .15}" width="${w + .3}" height="${h + .3}" rx=".5" fill="${id === zv ? '#f3c96b' : '#d9bf8a'}" stroke="${id === zv ? '#8a4a10' : '#4a3418'}" stroke-width="${id === zv ? .3 : .18}"/>`;
+    if (grand) svg += `<text${neuf(id) ? ' class="encre-t"' : ''} x="${x + w / 2}" y="${y + h / 2 + .25}" font-size=".62" text-anchor="middle" fill="#3a2410" font-family="Georgia" font-style="italic">${esc(K.SALLES[id].n.replace(/^(Le|La|L’) ?/, ''))}</text>`; });
   Object.entries(couloirsZ()).forEach(([id, Z]) => { if (!Z.esc || !vue(id)) return; const [x, y, w, h] = Z.r; for (let i = 1; i < w * 3; i++) svg += `<line x1="${x + i / 3}" y1="${y + .2}" x2="${x + i / 3}" y2="${y + h - .2}" stroke="#4a3418" stroke-width=".07"/>`; });
   if (R.plan === 2 && grand) [[0, 'Le sommet'], [7, '1er étage'], [16, 'Rez-de-chaussée'], [24, 'Sous-sol']].forEach(([y, t]) => { svg += `<text x="${vx + .4}" y="${y + .9}" font-size=".7" fill="#6a4418" font-family="Georgia" font-style="italic">${t}</text>`; });
   Object.entries(R.portes).forEach(([c, p]) => { if (!R.vu[c]) return; const [x, y] = c.split(',').map(Number); svg += `<rect x="${x + .25}" y="${y + .25}" width=".5" height=".5" fill="${p.ouverte ? '#e9d6a6' : p.bronze ? '#c88a2a' : '#6b3a14'}" stroke="#3a2410" stroke-width=".08"/>`; });
@@ -239,7 +242,8 @@ function schemaSVG(grand) {
   return svg + '</svg>';
 }
 function petiteCarte() { const e = $('pcarte'); if (e && S) e.innerHTML = schemaSVG(false); }
-function grandeCarte() { fenetre(`<h2>🗺 Le donjon</h2><div class="schema-grand">${schemaSVG(true)}</div><p style="text-align:center;color:var(--doux);font-size:.9em">Le doré : la zone que tu regardes. Les ronds : tes héros. Les points rouges : les monstres vus.</p><button class="go" onclick="fenetre('')">Fermer</button>`); }
+function grandeCarte() { setTimeout(() => { const R = S.R; S.carteVue = Object.keys(K.SALLES).filter(id => R.vuSalle[id]).concat(Object.keys(couloirsZ()).filter(id => Object.keys(R.vu).some(c => { const [x, y] = c.split(',').map(Number); return zoneDe(R, x, y) === id; }))); sauve(); }, 50);
+  fenetre(`<h2>🗺 Le donjon</h2><div class="schema-grand">${schemaSVG(true)}</div><p style="text-align:center;color:var(--doux);font-size:.9em">Le doré : la zone que tu regardes. Les ronds : tes héros. Les points rouges : les monstres vus.</p><button class="go" onclick="fenetre('')">Fermer</button>`); }
 // 16/11 : les salles repeintes AVEC LEURS MURS (vue plus haute, prompts salle-<nom>-v2) : l'image couvre aussi la case de mur tout autour
 const SALLE_MURS = ['A', 'C', 'B', 'E', 'F', 'S', 'P', 'G', 'H']; // reçues le 16/11 (Crypte G et Cœur H l'après-midi)
 function fondSalle(S, x, y) {
@@ -527,7 +531,7 @@ function dessine() {
   $('app').innerHTML = `
     <div class="haut"><a href="#" onclick="quitter();return false">‹ Quitter</a><span class="t">${SCT().titre}</span>${L ? `<button onclick="equipeEnLigne()">🌐 ${L.code}</button>` : ''}<button class="hsab" onclick="infoStat('sablier')" title="Le sablier">⌛ <b>${S.sablier}</b></button>${R.boss ? `<button onclick="voirBut()" style="color:${R.boss.repos ? 'var(--doux)' : '#ff8a7a'}">⏰${R.boss.repos ? '' : ' !'}</button>` : ''}<button onclick="voirQuetes()" title="Les quêtes">📋 <b>${quetes().filter(q => q.ok).length}/${quetes().length}</b></button><button onclick="voirJournal()" title="Le journal">📜</button><button onclick="regles()">❓</button><button onclick="GM.parametres()" title="Paramètres">⚙️</button></div>
     <div style="position:relative"><div class="vue" id="vue">${RZ ? `<div class="zone-titre">${esc(zoneNom(ZV))}${vueForcee ? ' · 👹 les monstres' : ''}</div>` : ''}<div class="plateau ${S.scen === 'labyrinthe' ? 'laby' : (S.scen || 'horloger') === 'horloger' ? 'horloge' : ''}${RZ ? ' zonee' : ''}" style="grid-template-columns:repeat(${nCol}, ${t});--t:${t};${peint ? `background:url('${SC.image}?v=1') 0 0/100% 100% no-repeat` : ''}">${cases}</div></div>
-      <button class="zoom haut" style="position:absolute;right:2cqw;bottom:2cqw;padding:1cqw 2.4cqw;border-radius:20px;background:#1c1c36cc;border:1px solid #45457a;color:var(--doux)" onclick="${RZ ? 'grandeCarte()' : 'petit=!petit;centrer=true;dessine()'}">${petit ? '🔍 Zoom' : '🗺 Carte'}</button>${RZ ? '<div id="pcarte" title="Le schéma du donjon : touche pour l’agrandir" onclick="grandeCarte()"></div>' : ''}</div>
+      <button class="zoom haut" style="position:absolute;right:2cqw;bottom:2cqw;padding:1cqw 2.4cqw;border-radius:20px;background:#1c1c36cc;border:1px solid #45457a;color:var(--doux)" onclick="${RZ ? 'grandeCarte()' : 'petit=!petit;centrer=true;dessine()'}">${petit ? '🔍 Zoom' : '🗺 Carte'}</button></div>
     <div class="equipe">${S.heros.map((z, i) => `<button class="${i === actif ? 'on' : ''} ${z.aTerre ? 'terre' : ''} ${fini(i) ? 'fini' : ''}" onclick="choisitHeros(${i})">${fini(i) ? '<span class="ok-f">✓</span>' : ''}${imgH(z)}${nomH(z).replace('Sire ', '')}<br>${z.aTerre ? '✋ à terre' : `❤${z.pv} · 🎲${z.des.length}`}${invH(z) ? `<small class="inv-h">${invH(z)}</small>` : ''}${L ? `<small class="qui${mesHeros().includes(i) ? ' moi' : ''}">${mesHeros().includes(i) ? 'toi' : proprio(i) || 'libre'}</small>` : ''}</button>`).join('')}</div>
     <div class="des" id="desH">${L && !mesHeros().includes(actif) ? `<span class="aide">👤 ${nomH(h)} est joué par <b>${proprio(actif) || 'personne'}</b>${proprio(actif) ? '' : ' : touche 🌐 en haut pour le prendre'}.</span>` : h.aTerre ? `<span class="aide">${nomH(h)} est à terre : un ami à côté peut le relever avec un dé.</span>` : h.des.length && !lanceOK(actif) ? h.des.map(() => `<button class="de cache" onclick="lanceDesH()"></button>`).join('') + `<button class="lancerH" onclick="lanceDesH()">🎲 Lancer</button>` : h.des.map(z => z.pas ? `<button class="de pas ${sel === z.id ? 'sel' : ''}" onclick="choisitDe('${z.id}')" title="${z.v} pas qui restent">👣${z.v}</button>` : `<button class="de ${sel === z.id ? 'sel' : ''}" onclick="choisitDe('${z.id}')"><img src="faces-${h.id}/face-${z.v}.webp" alt="${z.v}"></button>`).join('') || '<span class="aide">Plus de dés pour ce héros : passe au suivant.</span>'}</div>
     ${d && !h.aTerre ? `<div class="pasinfo">${d.pas ? `👣 ${d.v} pas (marcher, fouiller, porte…)` : `👣 ce dé : <b>${K.pasDe(h, d.v).n} case${K.pasDe(h, d.v).n > 1 ? 's' : ''}</b> · ou frapper`}</div>` : ''}
@@ -982,9 +986,9 @@ if (sessionStorage.getItem('chron-en-jeu') && !location.search && (() => { try {
 { const s = new URLSearchParams(location.search).get('salle'); if (s) { history.replaceState(null, '', location.pathname); const c = (typeof AMIS !== 'undefined' && AMIS.carte) || null, nom = (c && c.pseudo) || localStorage.getItem('guilde-pseudo');
     if (nom) rejoindre(s, { id:'j' + Math.random().toString(36).slice(2, 10), nom }); else { rejoindreForm(); setTimeout(() => { const i = $('fCode'); if (i) i.value = s; }, 150); } } }
 </script>
-<script src="chroniques-aventures.js?v=20261116-161826"></script>
-<script src="guide.js?v=20261116-161826"></script>
-<script src="guides-modes.js?v=20261116-161826"></script>
+<script src="chroniques-aventures.js?v=20261116-162200"></script>
+<script src="guide.js?v=20261116-162200"></script>
+<script src="guides-modes.js?v=20261116-162200"></script>
 <script>
 // 15/11 : le guide de Moustache de ce mode (guides-modes.js)
 { const _a = accueil; accueil = function () { const r = _a.apply(this, arguments); guideMode('chroniques'); return r; }; }
