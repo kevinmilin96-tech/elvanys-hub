@@ -519,7 +519,7 @@ function lance(j) {
   son('melange'); dessine();
   if (!localStorage.getItem('guilde-crypte-guide')) { localStorage.setItem('guilde-crypte-guide', '1'); regles(); }
 }
-if (typeof GM !== 'undefined') { try { GM.musique('exploration'); GM.bouton(); } catch (e) {} }
+if (typeof GM !== 'undefined') { try { GM.musique('carte') /* 16/11 soir : la piste « exploration » n'existe pas (page sans musique) */; GM.bouton(); } catch (e) {} }
 accueil();
 if (typeof AMIS !== 'undefined' && AMIS.carte) setTimeout(() => { if (!S && (typeof DR === 'undefined' || !DR) && AMIS.etat) accueil(); }, 2500);
 </script>
