@@ -144,7 +144,7 @@ function fondSalle(S, x, y) {
   if ((S.scen || 'horloger') !== 'horloger') return '';
   const id = S.R.salle[K.cle(x, y)], D = id && K.SALLES[id], f = SALLE_IMG[id]; if (!D || !f) return '';
   const [x0, y0, w, h] = D.r;
-  return `background:url('decor/salle-${f}.webp?v=1') calc(var(--t) * ${x0 - x}) calc(var(--t) * ${y0 - y}) / calc(var(--t) * ${w}) calc(var(--t) * ${h}) no-repeat;`;
+  return `background:url('decor/salle-${f}.webp?v=2') calc(var(--t) * ${x0 - x}) calc(var(--t) * ${y0 - y}) / calc(var(--t) * ${w}) calc(var(--t) * ${h}) no-repeat;`;
 }
 const objImg = (n, cl) => OBJ_PEINTS.includes(n) ? `<img class="oi ${cl || ''}" src="decor/obj-${n}.webp?v=1" alt="">` : null;
 const MEUBLE_E = { coffre:'🧰', armoire:'🗄️', tonneaux:'🛢️', tombeau:'🪦', etabli:'🛠️', cheminee:'🔥', lit:'🛏️', tente:'⛺', etagere:'📚', bureau:'🪑', banc:'🪑', autel:'🕯️', fontaine:'⛲', cristaux:'💎' };

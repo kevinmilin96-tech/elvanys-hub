@@ -222,13 +222,13 @@ const SALLES = {
   H: { n:'Le Cœur de l’Horloge', r:[4, 14, 10, 3], lu:'« La Grande Horloge. Son axe attend trois rouages. Posez-les… et quelqu’un va se réveiller. »' },
 };
 const COULOIRS = [[1, 5, 18, 1], [1, 12, 18, 1], [7, 5, 1, 8], [13, 5, 1, 8]];
-const PORTES = [[3, 4, 'A'], [10, 4, 'C'], [16, 4, 'G'], [3, 6, 'B'], [6, 9, 'B'], [8, 8, 'E'], [12, 8, 'E'], [16, 6, 'F'], [14, 9, 'F'], [8, 13, 'H', 'bronze'], [17, 13, 'S']];
+const PORTES = [[3, 4, 'A'], [10, 4, 'C'], [16, 4, 'G'], [3, 6, 'B'], [6, 10, 'B'], [8, 8, 'E'], [12, 8, 'E'], [16, 6, 'F'], [14, 9, 'F'], [8, 13, 'H', 'bronze'], [17, 13, 'S']];
 // 16/11 : la grille du Cagibi s'ouvre tant qu'un héros se tient sur la dalle du couloir ; les 4 statues de la Galerie (autel au milieu)
 const GRILLE = [2, 13], DALLE = [4, 12], AUTEL_S = [16, 15], STATUES = [[16, 14], [17, 15], [16, 16], [15, 15]];
 const MEUBLES = [[5, 1, 'coffre', 'A'], [1, 3, 'tonneaux', 'A'], [8, 1, 'armoire', 'C'], [11, 1, 'tonneaux', 'C'], [11, 3, 'armoire', 'C'],
   [15, 2, 'tombeau', 'G'], [17, 2, 'tombeau', 'G'], [18, 1, 'coffre', 'G'], [10, 7, 'etabli', 'E'], [11, 9, 'armoire', 'E'], [18, 10, 'coffre', 'F'], [1, 10, 'tonneaux', 'B'], [13, 16, 'cheminee', 'H'], [1, 16, 'coffre', 'P']];
 const ROUAGES_CACHES = ['11,3', '17,2', '10,7', '18,10'];
-const LEVIERS = [[1, 7], [5, 7], [2, 9], [5, 10]];
+const LEVIERS = [[1, 8], [1, 9], [5, 8], [5, 9]]; // 16/11 : sur les deux pupitres peints de la salle (dessin salle-rouages)
 const ETAGERES = [[16, 8], [17, 8], [16, 10]], LIVRE = [18, 8], AXE = [8, 15];
 const MONSTRES_DEPART = [['rouagelin', 4, 2], ['rouagelin', 9, 2], ['page', 14, 1], ['page', 18, 3], ['gardien', 3, 9], ['rouagelin', 4, 8],
   ['coucou', 13, 7], ['coucou', 13, 10], ['page', 15, 9], ['archiviste', 17, 9], ['rouagelin', 6, 15], ['rouagelin', 11, 15], ['colosse', 9, 9]];
