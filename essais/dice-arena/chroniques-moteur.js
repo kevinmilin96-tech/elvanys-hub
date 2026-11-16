@@ -451,7 +451,9 @@ function atteignables(S, h, v, pas) {
 const prendDe = (h, id) => { const i = h.des.findIndex(d => d.id === id); return i < 0 ? null : h.des.splice(i, 1)[0]; };
 // ---- ouvrir une porte : GRATUIT, à côté de la porte ; la salle derrière se dévoile
 // 16/11 (l'utilisateur) : une porte PEINTE déborde souvent sur la case de mur voisine : on l'ouvre aussi depuis cette case-là
-function moitiesPorte(S, x, y) { const R = S.R; return [[1, 0], [-1, 0], [0, 1], [0, -1]].map(([a, b]) => [x + a, y + b]).filter(([a, b]) => R.murs[cle(a, b)] === '#' && !R.portes[cle(a, b)]); }
+// 16/11 (l'utilisateur : « deux cases pour simuler la porte, pas trois ») : on note, porte par porte, de quel côté la porte PEINTE déborde
+const DEBORDE = { '12,18':[11, 18] }; // la Réserve : la porte peinte couvre aussi la case de gauche
+function moitiesPorte(S, x, y) { if (S.R.plan !== 2) return []; const d = DEBORDE[cle(x, y)]; return d && S.R.murs[cle(...d)] === '#' ? [d] : []; }
 function presDePorte(S, h, x, y) { return dist(h, { x, y }) === 1 || (S.R.plan === 2 && moitiesPorte(S, x, y).some(([a, b]) => dist(h, { x:a, y:b }) === 1 && !S.R.murs[cle(h.x, h.y)])); }
 function ouvrir(S, hi, x, y) {
   const h = S.heros[hi], R = S.R, p = R.portes[cle(x, y)];
