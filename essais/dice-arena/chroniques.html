@@ -68,6 +68,11 @@
   .de.cache::after { content:'?'; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:5.4cqw; color:#c9c1ea88; font-weight:bold; }
   .de.tourne img { animation:tourneD .26s linear infinite; } @keyframes tourneD { 0% { transform:rotate(0) translateY(0) scale(1); } 50% { transform:rotate(190deg) translateY(-2cqw) scale(1.1); } 100% { transform:rotate(360deg) translateY(0) scale(1); } }
   .lancerH { border:0; border-radius:3cqw; padding:2cqw 4cqw; font:bold 3.8cqw Georgia, serif; background:var(--or); color:#2b1d0a; margin-left:2cqw; animation:pulseL 1s infinite; } @keyframes pulseL { 50% { filter:brightness(1.2); } }
+  .de.pas { position:relative; border-radius:2.4cqw; background:radial-gradient(circle at 35% 30%, #3f6f8a, #1d3446); box-shadow:inset 0 0 0 .5cqw #7fc4e6, 0 1cqw 1.2cqw #000a; color:#e6f6ff; font:bold 4cqw Georgia, serif; }
+  .pasinfo { text-align:center; font-size:2.9cqw; color:#9fe0ff; margin:0 0 1cqw; }
+  .inv { display:flex; gap:1.4cqw; justify-content:center; flex-wrap:wrap; font-size:2.7cqw; color:var(--doux); margin:0 0 1cqw; } .inv span { background:#1d1d36; border:1px solid #3a3a66; border-radius:2cqw; padding:.6cqw 1.6cqw; }
+  .equipe small.inv-h { display:block; font-size:2.4cqw; letter-spacing:.3cqw; }
+  .bulle.longue { font-size:min(4.2vw, 21px); width:88vw; text-align:center; animation-duration:3s; }
   .de.sel { transform:translateY(-2.5cqw) scale(1.08); } .de.sel img { filter:drop-shadow(0 0 2cqw var(--ok)); }
   .aide { text-align:center; font-size:2.9cqw; color:var(--doux); min-height:8cqw; } .aide b { color:var(--ok); }
   .actions { display:flex; gap:2cqw; margin-top:1cqw; }
@@ -271,12 +276,25 @@ const imgH = (z, cl) => `<img ${cl || ''} src="${z.portrait || `portraits/${z.id
 // ------------------------------------------------------------------ le dessin
 const SCX = { ex:s => `${s.v}`, min:s => `≥ ${s.v}`, max:s => `≤ ${s.v}`, pair:() => '<small>pair</small>', imp:() => '<small>impair</small>', tot:s => `Σ ${s.reste}`, any:() => '✶' };
 function sceauTxt(s, L) { if (s.ok) return s.t === 'tot' ? `Σ ${s.val}` : (s.val || '✓'); if (s.t === 'dbl') { const j = L.find(x => x !== s && x.t === 'dbl' && x.g === s.g && x.ok); return j ? `= ${j.val}` : '<small>jumeau</small>'; } return SCX[s.t](s); }
+const OBJ_E = { bouclier:'🛡️', cle:'🔧', lunettes:'👓' };
+function invH(z) { return (z.porte ? '⚙' : '') + (z.objet ? OBJ_E[z.objet] : '') + (z.sac || []).map(it => K.SAC[it].e).join(''); }
+// 16/11 (retour de l'utilisateur : « je ne retrouve nulle part mes objets ») : ce que porte le héros choisi, toujours visible
+function invLigne(h) {
+  const L2 = [];
+  const nDes = K.HEROS_C[h.id] ? K.HEROS_C[h.id].des : 3, plus = (h.desPlus || 0) + (h.objet === 'cle' ? 1 : 0);
+  L2.push(`🎲 ${nDes + plus} dés par tour${plus ? ` (${nDes}${h.desPlus ? ` +${h.desPlus} héros` : ''}${h.objet === 'cle' ? ' +1 clé à molette' : ''})` : ''}`);
+  if (h.porte) L2.push('⚙ porte un rouage (un seul à la fois, −1 case)');
+  if (h.objet) L2.push(`${OBJ_E[h.objet]} ${K.OBJETS[h.objet].n} : ${K.OBJETS[h.objet].d}`);
+  if (h.att) L2.push(`⚔ +${h.att} sur les sceaux ≥ et Σ (équipement)`);
+  if (!(h.sac || []).length) L2.push('🎒 sac vide');
+  return `<div class="inv">${L2.map(t => `<span>${t}</span>`).join('')}</div>`;
+}
 const deSel = () => sel && S.heros[actif].des.find(d => d.id === sel);
 function dessine() {
   if (S && !S.fin && fini(actif)) { const n = libres()[0]; if (n != null) actif = n; }
   if (!S) return accueil();
   const R = S.R, h = S.heros[actif], d = deSel();
-  const atteint = d && !h.aTerre ? K.atteignables(S, h, d.v) : {};
+  const atteint = d && !h.aTerre ? K.atteignables(S, h, d.v, d.pas) : {};
   const voitPieges = S.heros.some(z => z.objet === 'lunettes');
   let cases = '';
   const SC = K.SCEN[S.scen || 'horloger'], peint = !!SC.image;
@@ -300,9 +318,9 @@ function dessine() {
     const hi = S.heros.findIndex(z => z.x === x && z.y === y), m = R.monstres.find(z => z.x === x && z.y === y), B = R.boss && R.boss.x === x && R.boss.y === y ? R.boss : null;
     if (hi >= 0) { const z = S.heros[hi]; inner += `<div class="jeton ${hi === actif ? 'actif' : ''} ${z.aTerre ? 'terre' : ''}" id="j-h${hi}" style="--c:${coulH(z)}">${imgH(z)}<span class="pv">${z.aTerre ? '✋' : '❤' + z.pv}${z.bouclier ? '🛡' + z.bouclier : ''}${z.porte ? '⚙' : ''}</span></div>`; }
     const mm = B || m;
-    if (mm && vu) { const it = mm.it === 'frappe' ? `⚔${mm.att}` : mm.it === 'garde' ? '🛡' : mm.it === 'soin' ? '💚' : mm.it === 'fuit' ? '🏃' : mm.it === 'remonte' ? '⏳' : '';
+    if (mm && vu) { const it = mm.it === 'frappe' ? `⚔${mm.att}` : mm.it === 'garde' ? '🛡' : mm.it === 'soin' ? '💚' : mm.it === 'fuit' ? '🏃' : mm.it === 'remonte' ? '⏳' : mm.it === 'levier' ? '🎚' : '';
       inner += `<div class="jeton ${B ? 'boss' : ''}" id="j-${mm.id}" style="--c:${B ? '#ff7a4a' : K.BETES[mm.b].elite ? '#f3c96b' : '#8a98b8'}"><img src="portraits/m-${mm.img}.webp" alt=""><span class="it">${it}</span><span class="sc">🔒${mm.sceaux.filter(s => !s.ok).length}</span></div>`;
-      if (d && K.dist(h, mm) <= (h.id === 'zephine' ? 2 : 1)) cl += ' cible'; }
+      if (d && !d.pas && K.aPortee(S, h, mm)) cl += ' cible'; }
     if (d && vu && (p && !p.ouverte || (o && (o.meuble && !o.fouille || o.t === 'levier' || o.t === 'livre')) || mur === 'A') && K.dist(h, { x, y }) === 1) cl += ' cible';
     cases += `<div class="${cl}" id="c-${x}-${y}" onclick="touche(${x},${y})">${inner}</div>`;
   }
@@ -316,11 +334,13 @@ function dessine() {
       : posee + portes >= 3 || S.rouagesTrouves >= 3 ? SCT().porter : SCT().but}</div>
     <div style="position:relative"><div class="vue" id="vue"><div class="plateau ${S.scen === 'labyrinthe' ? 'laby' : (S.scen || 'horloger') === 'horloger' ? 'horloge' : ''}" style="grid-template-columns:repeat(${R.w}, ${t});--t:${t};${peint ? `background:url('${SC.image}?v=1') 0 0/100% 100% no-repeat` : ''}">${cases}</div></div>
       <button class="zoom haut" style="position:absolute;right:2cqw;bottom:2cqw;padding:1cqw 2.4cqw;border-radius:20px;background:#1c1c36cc;border:1px solid #45457a;color:var(--doux)" onclick="petit=!petit;centrer=true;dessine()">${petit ? '🔍 Zoom' : '🗺 Carte'}</button></div>
-    <div class="equipe">${S.heros.map((z, i) => `<button class="${i === actif ? 'on' : ''} ${z.aTerre ? 'terre' : ''} ${fini(i) ? 'fini' : ''}" onclick="choisitHeros(${i})">${fini(i) ? '<span class="ok-f">✓</span>' : ''}${imgH(z)}${nomH(z).replace('Sire ', '')}<br>${z.aTerre ? '✋ à terre' : `❤${z.pv} · 🎲${z.des.length}`}${L ? `<small class="qui${mesHeros().includes(i) ? ' moi' : ''}">${mesHeros().includes(i) ? 'toi' : proprio(i) || 'libre'}</small>` : ''}</button>`).join('')}</div>
-    <div class="des" id="desH">${L && !mesHeros().includes(actif) ? `<span class="aide">👤 ${nomH(h)} est joué par <b>${proprio(actif) || 'personne'}</b>${proprio(actif) ? '' : ' : touche 🌐 en haut pour le prendre'}.</span>` : h.aTerre ? `<span class="aide">${nomH(h)} est à terre : un ami à côté peut le relever avec un dé.</span>` : h.des.length && !lanceOK(actif) ? h.des.map(() => `<button class="de cache" onclick="lanceDesH()"></button>`).join('') + `<button class="lancerH" onclick="lanceDesH()">🎲 Lancer</button>` : h.des.map(z => `<button class="de ${sel === z.id ? 'sel' : ''}" onclick="choisitDe('${z.id}')"><img src="faces-${h.id}/face-${z.v}.webp" alt="${z.v}"></button>`).join('') || '<span class="aide">Plus de dés pour ce héros : passe au suivant.</span>'}</div>
+    <div class="equipe">${S.heros.map((z, i) => `<button class="${i === actif ? 'on' : ''} ${z.aTerre ? 'terre' : ''} ${fini(i) ? 'fini' : ''}" onclick="choisitHeros(${i})">${fini(i) ? '<span class="ok-f">✓</span>' : ''}${imgH(z)}${nomH(z).replace('Sire ', '')}<br>${z.aTerre ? '✋ à terre' : `❤${z.pv} · 🎲${z.des.length}`}${invH(z) ? `<small class="inv-h">${invH(z)}</small>` : ''}${L ? `<small class="qui${mesHeros().includes(i) ? ' moi' : ''}">${mesHeros().includes(i) ? 'toi' : proprio(i) || 'libre'}</small>` : ''}</button>`).join('')}</div>
+    <div class="des" id="desH">${L && !mesHeros().includes(actif) ? `<span class="aide">👤 ${nomH(h)} est joué par <b>${proprio(actif) || 'personne'}</b>${proprio(actif) ? '' : ' : touche 🌐 en haut pour le prendre'}.</span>` : h.aTerre ? `<span class="aide">${nomH(h)} est à terre : un ami à côté peut le relever avec un dé.</span>` : h.des.length && !lanceOK(actif) ? h.des.map(() => `<button class="de cache" onclick="lanceDesH()"></button>`).join('') + `<button class="lancerH" onclick="lanceDesH()">🎲 Lancer</button>` : h.des.map(z => z.pas ? `<button class="de pas ${sel === z.id ? 'sel' : ''}" onclick="choisitDe('${z.id}')" title="${z.v} pas qui restent">👣${z.v}</button>` : `<button class="de ${sel === z.id ? 'sel' : ''}" onclick="choisitDe('${z.id}')"><img src="faces-${h.id}/face-${z.v}.webp" alt="${z.v}"></button>`).join('') || '<span class="aide">Plus de dés pour ce héros : passe au suivant.</span>'}</div>
+    ${d && !h.aTerre ? `<div class="pasinfo">${d.pas ? `👣 Ce dé : ${d.v} pas qui restent (marcher, fouiller, levier, porte, axe ; pas frapper).` : `👣 Pour marcher, ce dé fait <b>${K.pasDe(h, d.v).n} case${K.pasDe(h, d.v).n > 1 ? 's' : ''}</b> (${K.pasDe(h, d.v).det.join(' ')}). Les pas en trop restent dans un dé 👣.`}</div>` : ''}
+    ${!h.aTerre ? invLigne(h) : ''}
     ${!h.aTerre && h.sac && h.sac.length ? `<div class="sac">🎒 ${h.sac.map((it, k) => `<button onclick="utiliseSac(${k})">${K.SAC[it].e} ${K.SAC[it].n.replace(/^Une? /, '')}</button>`).join('')}</div>` : ''}
     <div class="aide">${d ? 'Touche une <b>case verte</b> pour bouger, un <b>monstre</b> pour frapper, un <b>meuble</b> pour le fouiller, un <b>ami</b> pour protéger / donner / soigner, un <b>levier</b>, le <b>livre</b> ou l’<b>axe</b>.' : `<b>${nomH(h)}</b> · ${H[h.id].t} : ${H[h.id].d} <br>Une <b>porte</b> à côté s’ouvre d’un toucher, sans dé.`}</div>
-    <div class="actions" ${L && !mesHeros().includes(actif) ? 'style="display:none"' : ''}>${d ? '<button onclick="cherche()">🔍 Pièges</button>' : ''}<button class="fin" onclick="aFini()">${libres().length <= 1 ? `✋ ${nomH(S.heros[actif]).replace('Sire ', '')} a fini ▶ les monstres` : `✋ ${nomH(S.heros[actif]).replace('Sire ', '')} a fini`}</button>${libres().length > 1 ? `<button class="sec" style="flex:none" onclick="finTour()" title="Tout le groupe a fini">▶ Monstres</button>` : ''}</div>
+    <div class="actions" ${L && !mesHeros().includes(actif) ? 'style="display:none"' : ''}>${d ? '<button onclick="cherche()">🔍 Pièges (2 cases)</button>' : ''}<button class="fin" onclick="aFini()">${libres().length <= 1 ? `✋ ${nomH(S.heros[actif]).replace('Sire ', '')} a fini ▶ les monstres` : `✋ ${nomH(S.heros[actif]).replace('Sire ', '')} a fini`}</button>${libres().length > 1 ? `<button class="sec" style="flex:none" onclick="finTour()" title="Tout le groupe a fini">▶ Monstres</button>` : ''}</div>
     <div class="journal">${S.journal.slice(0, 6).map(l => `<div>${l}</div>`).join('')}</div>`;
   // la carte suit le héros actif (sauf si on vient de la déplacer à la main)
   const V = $('vue'), e = $(`c-${h.x}-${h.y}`);
@@ -382,7 +402,7 @@ function resultat(r) {
       if (e.t === 'levier') { son('tour-batir'); if (e.bronze) { son('porte'); bulle('🚪 La porte de bronze s’ouvre !'); } }
       if (e.t === 'rouage') { son('rune'); bulle(e.boss ? '⏰ L’Horloger se réveille !' : '⚙ Rouage posé !'); }
       if (e.t === 'soin') son('soin');
-      if (e.t === 'fouille') { const T = { rouage:['⚙ UN ROUAGE !', 'rune'], potion:['🧪 Une potion !', 'soin'], grains:['⌛ +3 grains !', 'magie'], or:['💰 De l’or !', 'vendre'], objet:['🎁 Un objet !', 'magie'], piege:['⚠ Piégé !', 'coup'], monstre:['👹 Un monstre !', 'vague'] }[e.quoi] || ['… rien.', 'pioche']; son(T[1]); bulle(T[0], e.quoi === 'piege' || e.quoi === 'monstre'); }
+      if (e.t === 'fouille') { const T = { rouage:['⚙ UN ROUAGE !', 'rune'], potion:['🧪 Une potion !', 'soin'], parchemin:['📜 Un parchemin !', 'magie'], fumee:['💨 Une bombe fumigène !', 'magie'], equip:['🗡 De l’équipement !', 'magie'], grains:['⌛ +3 grains !', 'magie'], or:['💰 De l’or !', 'vendre'], objet:['🎁 Un objet !', 'magie'], piege:['⚠ Piégé !', 'coup'], monstre:['👹 Un monstre !', 'vague'] }[e.quoi] || ['… rien.', 'pioche']; son(T[1]); bulle(S.journal[0] || T[0], e.quoi === 'piege' || e.quoi === 'monstre', true); }
       if (e.t === 'salle') setTimeout(() => entreeSalle(e.salle), 350);
     });
     if (S.fin) return finPartie(); dessine(); return true; }
@@ -392,9 +412,9 @@ function touche(x, y) {
   if (occupe || !S) return;
   const R = S.R, h = S.heros[actif], d = deSel(), c = K.cle(x, y);
   if (!R.vu[c]) return;
-  const p = R.portes[c]; if (p && !p.ouverte) { // n'importe quel héros debout à côté l'ouvre (le héros choisi d'abord)
-    const qui = [actif, ...S.heros.map((z, i) => i)].find(i => !S.heros[i].aTerre && K.dist(S.heros[i], { x, y }) === 1);
-    son('porte'); return resultat(K.ouvrir(S, qui == null ? actif : qui, x, y)); }
+  const p = R.portes[c]; if (p && !p.ouverte) { // 16/11 (retour de l'utilisateur) : SEUL le héros choisi ouvre, s'il est juste à côté
+    if (K.dist(h, { x, y }) !== 1) { bulle(`${nomH(h)} doit être juste à côté de la porte.`, true); return; }
+    son('porte'); return resultat(K.ouvrir(S, actif, x, y)); }
   const hi = S.heros.findIndex(z => z.x === x && z.y === y), m = R.monstres.find(z => z.x === x && z.y === y), B = R.boss && R.boss.x === x && R.boss.y === y ? R.boss : null;
   if (sacEnCours != null && (m || B)) { const k = sacEnCours; sacEnCours = null; son('ultime'); return resultat(K.utiliser(S, actif, k, B ? 'boss' : m.id)); }
   sacEnCours = null;
@@ -403,7 +423,7 @@ function touche(x, y) {
   if (hi >= 0) return amiMenu(hi);
   const o = R.obj[c];
   if ((o && (o.meuble || o.t === 'levier' || o.t === 'livre')) || R.murs[c] === 'A') return resultat(K.agir(S, actif, sel, x, y));
-  if (K.atteignables(S, h, d.v)[c]) { son('pas'); centrer = true; return resultat(K.bouger(S, actif, sel, x, y)); }
+  if (K.atteignables(S, h, d.v, d.pas)[c]) { son('pas'); centrer = true; const de0 = [h.x, h.y]; const ok = resultat(K.bouger(S, actif, sel, x, y)); if (ok) glisse('j-h' + actif, de0, [x, y]); return ok; }
   bulle('Trop loin pour ce dé.', true);
 }
 // le sac : potion (soi ou un ami à côté), parchemin (un monstre à 4 cases : on touche le monstre ensuite), fumigène (tout de suite)
@@ -435,8 +455,8 @@ function amiMenu(i) {
   fenetre(`<h2>${nomH(z)}</h2>${b.join('')}<button class="sec" onclick="fenetre('')">Annuler</button>`);
 }
 function infoMonstre(m) {
-  const it = { frappe:`⚔ va frapper (${m.att})`, garde:'🛡 va refermer un de ses sceaux', soin:'💚 va réparer un autre monstre', fuit:'🏃 va s’enfuir', remonte:'⏳ remonte son ressort' }[m.it] || '';
-  fenetre(`<h2>${m.n}</h2><p style="text-align:center">Ce tour-ci : <b>${it}</b>.</p><div class="sceaux">${m.sceaux.map(s => `<div class="sx ${s.ok ? 'ok' : ''}">${sceauTxt(s, m.sceaux)}</div>`).join('')}</div><p style="color:var(--doux);font-size:.9em">Choisis un dé, puis touche le monstre pour poser le dé sur un sceau. Tous ses sceaux brisés : il tombe.</p><button class="go" onclick="fenetre('')">Compris</button>`);
+  const it = { frappe:`⚔ va frapper (${m.att})`, garde:'🛡 va refermer un de ses sceaux', soin:'💚 va réparer un autre monstre', fuit:'🏃 va s’enfuir', remonte:'⏳ remonte son ressort', levier:'🎚 va remonter un levier' }[m.it] || '';
+  fenetre(`<h2>${m.n}</h2><p style="text-align:center">Ce tour-ci : <b>${it}</b>.</p><div class="sceaux">${m.sceaux.map(s => `<div class="sx ${s.ok ? 'ok' : ''}">${sceauTxt(s, m.sceaux)}</div>`).join('')}</div><p style="color:var(--doux);font-size:.9em">${m.id === 'boss' ? 'Il frappe au contact (une case autour, diagonales comprises), un tour sur deux.' : `Il avance de ${(K.BETES[m.b] || {}).mv || 1} case${((K.BETES[m.b] || {}).mv || 1) > 1 ? 's' : ''} par tour vers le héros le plus proche et frappe au contact (une case autour, diagonales comprises), seulement quand sa salle est dévoilée.`}${(K.BETES[m.b] || {}).leviers ? ' <b>Il surveille les leviers : il en remonte un quand il peut.</b>' : ''}</p><p style="color:var(--doux);font-size:.9em">Choisis un dé, puis touche le monstre pour poser le dé sur un sceau. Tous ses sceaux brisés : il tombe.</p><button class="go" onclick="fenetre('')">Compris</button>`);
 }
 async function finTour(tousFinis) {
   if (occupe || !S || S.fin) return;
@@ -444,10 +464,18 @@ async function finTour(tousFinis) {
   const reste = S.heros.reduce((t, z) => t + z.des.length, 0);
   if (!tousFinis && reste && !confirm(`Il reste ${reste} dé${reste > 1 ? 's' : ''} pas posé${reste > 1 ? 's' : ''} dans le groupe. Tout le monde a fini : les monstres jouent ?`)) return;
   occupe = true; sel = null;
+  // 16/11 (retour de l'utilisateur : « aucun mouvement de monstre ») : les monstres qui vont bouger attendent à leur ancienne place,
+  // puis marchent un par un, se jettent sur leur cible ; la carte les suit.
   const ev = K.finTour(S); dessine();
+  const voisCase = (x, y) => { const V = $('vue'), c = $(`c-${x}-${y}`); if (!V || !c) return; const r = V.getBoundingClientRect(), q = c.getBoundingClientRect(); if (q.left < r.left || q.right > r.right || q.top < r.top || q.bottom > r.bottom) V.scrollTo({ left:c.offsetLeft - V.clientWidth / 2, top:c.offsetTop - V.clientHeight / 2, behavior:'smooth' }); };
+  const ou = id => id === 'boss' ? S.R.boss : S.R.monstres.find(z => z.id === id);
+  ev.filter(e => e.t === 'pas').forEach(e => { const el = $('j-' + e.m), m = ou(e.m); if (el && m) { const w = el.parentElement.offsetWidth; el.style.transform = `translate(${(e.de[0] - m.x) * w}px, ${(e.de[1] - m.y) * w}px)`; } });
   for (const e of ev) {
-    if (e.t === 'frappe') { son('coup'); flash('j-' + e.m); flash('j-h' + e.h); bulle(`⚔ ${nomH(S.heros[e.h])} −${e.v}`, true); await attends(450); }
-    else if (e.t === 'boss') { son('gros'); bulle('⏰ L’Horloger agit !'); await attends(500); }
+    if (e.t === 'pas') { const m = ou(e.m), el = $('j-' + e.m); if (!m || !el) continue; voisCase(m.x, m.y); el.style.transform = ''; son('pas'); await glisse('j-' + e.m, e.de, [m.x, m.y], 360); }
+    else if (e.t === 'frappe') { await fonce('j-' + e.m, 'j-h' + e.h); son('coup'); flash('j-h' + e.h); bulle(`⚔ ${nomH(S.heros[e.h])} −${e.v}`, true); await attends(380); }
+    else if (e.t === 'levierRemonte') { son('tour-batir'); flash('j-' + e.m); bulle(S.journal.find(l => l.startsWith('🗿')) || '🗿 Un levier remonte !', true, true); await attends(1400); }
+    else if (e.t === 'garde') { flash('j-' + e.m); await attends(250); }
+    else if (e.t === 'boss') { son('gros'); flash('j-boss'); bulle('⏰ Le boss agit !'); await attends(600); }
   }
   occupe = false; actif = Math.max(0, S.heros.findIndex(z => !z.aTerre)); centrer = true;
   if (S.fin) return finPartie();
@@ -455,7 +483,22 @@ async function finTour(tousFinis) {
 }
 const attends = ms => new Promise(r => setTimeout(r, ms));
 function flash(id) { const e = $(id); if (e) { e.classList.remove('flash'); void e.offsetWidth; e.classList.add('flash'); } }
-function bulle(t, rouge) { const b = document.createElement('div'); b.className = 'bulle'; b.textContent = t; if (rouge) b.style.color = '#ff8a7a'; document.body.appendChild(b); setTimeout(() => b.remove(), 1500); }
+function bulle(t, rouge, longue) { const b = document.createElement('div'); b.className = 'bulle' + (longue ? ' longue' : ''); b.textContent = t; if (rouge) b.style.color = '#ff8a7a'; document.body.appendChild(b); setTimeout(() => b.remove(), longue ? 3000 : 1500); }
+// 16/11 : un jeton GLISSE case par case de son ancienne place à la nouvelle (le dessin est déjà à jour : on part de l'ancienne place)
+function glisse(id, de, a, ms = 420) {
+  const e = $(id); if (!e || !de || (de[0] === a[0] && de[1] === a[1])) return Promise.resolve();
+  const w = e.parentElement.offsetWidth, dx = (de[0] - a[0]) * w, dy = (de[1] - a[1]) * w, n = Math.max(1, Math.abs(de[0] - a[0]) + Math.abs(de[1] - a[1]));
+  const k = []; for (let i = 0; i <= n; i++) { const f = 1 - i / n; k.push({ transform:`translate(${dx * f}px, ${dy * f}px)` }); }
+  e.style.zIndex = 5; const an = e.animate(k, { duration:Math.min(1100, ms * n / 1.6 + 200), easing:'ease-in-out' });
+  return new Promise(r => { an.onfinish = () => { e.style.zIndex = ''; r(); }; });
+}
+// un monstre se jette vers sa cible puis revient
+function fonce(id, cible) {
+  const e = $(id), c = $(cible); if (!e || !c) return Promise.resolve();
+  const a = e.getBoundingClientRect(), b = c.getBoundingClientRect(), dx = (b.left - a.left) * .45, dy = (b.top - a.top) * .45;
+  e.style.zIndex = 6; const an = e.animate([{ transform:'none' }, { transform:`translate(${dx}px, ${dy}px) scale(1.15)`, offset:.4 }, { transform:'none' }], { duration:420, easing:'ease-out' });
+  return new Promise(r => { an.onfinish = () => { e.style.zIndex = ''; r(); }; });
+}
 function fenetre(h, ferme = true) { $('fen').innerHTML = h ? `<div class="voile-f" ${ferme ? `onclick="if(event.target===this)fenetre('')"` : ''}><div class="fen">${h}</div></div>` : ''; }
 
 // ------------------------------------------------------------------ l'histoire
@@ -467,10 +510,10 @@ function regles() {
   fenetre(`<h2>📜 Les Chroniques</h2><ol>
     <li><b>Le donjon est dans le noir.</b> Une salle se dévoile quand on ouvre sa porte (touche une porte 🚪 à côté : c’est gratuit). Les couloirs se dévoilent en avançant.</li>
     <li><b>À chaque tour</b>, tous les héros jouent, dans l’ordre que vous voulez : touche un héros en bas, puis un de ses dés, puis ce que tu veux en faire.</li>
-    <li><b>Bouger</b> : une case verte (le dé = le nombre de cases ; on s’arrête en entrant dans une salle inconnue). <b>Frapper</b> : un monstre à côté, puis un de ses sceaux.</li>
-    <li><b>Fouiller un meuble</b> à côté (🧰 🗄️ 🛢️ 🪦 🛠️ 🔥, un dé, une fois) : potion, or, sablier, objet… ou piège, ou monstre caché. <b>Quatre rouages ⚙ sont cachés</b> dans des meubles : il en faut trois.</li>
-    <li><b>Les 4 leviers</b> de la Salle des rouages (chacun « tel chiffre ou plus », baissé 2 tours) ouvrent la <b>porte de bronze</b> du Cœur de l’Horloge. Posez-y les 3 rouages sur l’axe ✹ : l’Horloger se réveille.</li>
-    <li><b>Un ami</b> (ou soi) : protéger, donner un dé (à côté), soigner (Pip), relever. <b>🔍 Pièges</b> : repère les pièges à 2 cases.</li>
+    <li><b>Bouger</b> : une case verte. Le dé = le nombre de cases (+ équipement, +2 pour Oria, −1 si on porte un rouage). On passe à travers ses amis, jamais à travers un monstre ; on s’arrête en entrant dans une salle inconnue. <b>Les pas qui restent</b> gardent un petit dé 👣 : marcher encore, fouiller, un levier, l’axe (pas frapper). <b>Frapper</b> : un monstre au contact (une case autour, diagonales comprises), puis un de ses sceaux. Les monstres frappent aussi au contact.</li>
+    <li><b>Fouiller un meuble</b> à côté (🧰 🗄️ 🛢️ 🪦 🛠️ 🔥, un dé, une fois) : potion, or, sablier, objet… ou piège, ou monstre caché. <b>Quatre rouages ⚙ sont cachés</b> dans des meubles : il en faut trois. <b>Un héros ne porte qu’un rouage à la fois</b> (⚙ sur son portrait). Ce que porte chaque héros (sac 🎒, objet, rouage) est écrit sous ses dés.</li>
+    <li><b>Les 4 leviers</b> de la Salle des rouages (chacun « tel chiffre ou plus » ; un levier baissé remonte tout seul au bout de quelques tours, et le <b>Gardien de bronze</b> en remonte un quand il peut : il faut les quatre baissés en même temps) ouvrent la <b>porte de bronze</b> du Cœur de l’Horloge. Posez-y les 3 rouages sur l’axe ✹ : l’Horloger se réveille.</li>
+    <li><b>Un ami</b> (ou soi) : protéger, donner un dé (à côté), soigner (Pip), relever. <b>🔍 Pièges</b> (un dé) : dévoile les pièges cachés jusqu’à 2 cases autour du héros. <b>Une porte</b> s’ouvre gratuitement, par le héros choisi, s’il est juste à côté.</li>
     <li><b>Ordre libre</b> : jouez vos héros dans l’ordre que vous voulez, même en alternant (touchez un héros pour le prendre). Quand un héros a terminé, touchez « ✋ … a fini ». Quand tous ont fini, les monstres jouent.</li>
     <li><b>Fin du tour</b> (après le dernier héros) : les monstres réveillés font ce qu’ils annoncent ; le <b>sablier</b> perd un grain (vide : un dé de moins pour tous). Le <b>Livre des heures</b> (bibliothèque, à deux) affaiblit l’Horloger.</li>
     <li>🗺 <b>Carte</b> : voir tout le donjon dévoilé. La partie est gardée ; si tout le groupe tombe, on repart du dernier point de passage (la dernière porte ouverte).</li></ol>
@@ -686,7 +729,9 @@ function commence() {
   dialogue(SCT().titre, [SCT().ouverture, SCT().entree()]);
 }
 function reprend() { const g = gardee(); if (!g) return; S = g; actif = Math.max(0, S.heros.findIndex(z => !z.aTerre)); sel = null; centrer = true; dessine(); }
-if (typeof GM !== 'undefined') { try { GM.musique('exploration'); GM.bouton(); } catch (e) {} }
+// 16/11 (retour de l'utilisateur : pas de musique dans le donjon : la piste « exploration » n'existait pas) : « carte » en exploration, « boss » quand le boss est réveillé
+function musiqueDuMoment() { if (typeof GM === 'undefined') return; try { GM.musique(!S ? 'heros' : S.R && S.R.boss ? 'boss' : 'carte'); } catch (e) {} }
+if (typeof GM !== 'undefined') { try { musiqueDuMoment(); GM.bouton(); } catch (e) {} }
 accueil();
 // 15/11 : arrivée par une invitation d'un ami (« Rejoindre » dans la fenêtre des amis ou le bandeau d'invitation)
 { const q = new URLSearchParams(location.search); if (q.get('ligne')) { history.replaceState(null, '', location.pathname); creerSalle(); } else if (q.get('code')) { history.replaceState(null, '', location.pathname); rejoindreForm(); } }
@@ -699,7 +744,7 @@ accueil();
 <script>
 // 15/11 : le guide de Moustache de ce mode (guides-modes.js)
 { const _a = accueil; accueil = function () { const r = _a.apply(this, arguments); guideMode('chroniques'); return r; }; }
-{ const _d = dessine; dessine = function () { const r = _d.apply(this, arguments); if (S && !LOB) guideMode('chroniques-jeu'); return r; }; }
+{ const _d = dessine; dessine = function () { const r = _d.apply(this, arguments); if (S && !LOB) guideMode('chroniques-jeu'); musiqueDuMoment(); return r; }; }
 </script>
 </body>
 </html>
