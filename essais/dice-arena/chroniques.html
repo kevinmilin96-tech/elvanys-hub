@@ -29,7 +29,7 @@
   .nuit.douce { background:rgba(4,3,12,.55); }
   .lueur { position:absolute; inset:0; pointer-events:none; z-index:2; mix-blend-mode:soft-light; animation:vacille 1.7s infinite reverse; }
   @keyframes vacille { 0%,100% { opacity:1; } 30% { opacity:.94; } 55% { opacity:.99; } 70% { opacity:.91; } }
-  .plateau .jeton { z-index:4; } .plateau .c:has(.jeton) { z-index:5; } /* 16/11 : la vie et les sceaux débordent de la case sans être coupés par la case voisine */
+  .plateau .jeton { z-index:4; } .plateau .c:has(.jeton) { z-index:5; } .plateau .c:has(.jeton .it) { z-index:6; } /* 16/11 : la vie et les sceaux débordent de la case sans être coupés par la case voisine */
   .c { position:relative; width:var(--t); height:var(--t); display:flex; align-items:center; justify-content:center; font-size:calc(var(--t) * .55);
     background:url('decor/tuile-sol-brulees.webp') 0 0 / calc(var(--t) * 4) calc(var(--t) * 4); }
   .c.peint { background:none !important; filter:none !important; } .c.peint .o { font-size:calc(var(--t) * .42); opacity:.9; }
