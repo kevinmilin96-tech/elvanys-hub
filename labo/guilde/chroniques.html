@@ -19,7 +19,13 @@
   .but { font-size:2.8cqw; color:var(--doux); background:#1c1c36; border-left:3px solid var(--or); border-radius:0 2cqw 2cqw 0; padding:1.2cqw 2cqw; margin-bottom:1.2cqw; }
   /* ---------------------------------------------------------------- la carte (elle défile ; 🗺 pour la voir en entier) */
   .vue { position:relative; overflow:auto; height:min(100cqw, 58vh); border-radius:2cqw; background:#05050a; border:1px solid #2a2a4a; -webkit-overflow-scrolling:touch; }
-  .plateau { display:grid; gap:0; width:max-content; }
+  .plateau { display:grid; gap:0; width:max-content; position:relative; }
+  /* 16/11 : la nuit et la lumière des lanternes (façon table de jeu virtuelle) */
+  .nuit { position:absolute; inset:0; pointer-events:none; background:rgba(4,3,12,.9); z-index:3; animation:vacille 2.3s infinite; mask-composite:intersect; -webkit-mask-composite:source-in; }
+  .nuit.douce { background:rgba(4,3,12,.55); }
+  .lueur { position:absolute; inset:0; pointer-events:none; z-index:2; mix-blend-mode:soft-light; animation:vacille 1.7s infinite reverse; }
+  @keyframes vacille { 0%,100% { opacity:1; } 30% { opacity:.94; } 55% { opacity:.99; } 70% { opacity:.91; } }
+  .plateau .jeton { z-index:4; }
   .c { position:relative; width:var(--t); height:var(--t); display:flex; align-items:center; justify-content:center; font-size:calc(var(--t) * .55);
     background:url('decor/tuile-sol-brulees.webp') 0 0 / calc(var(--t) * 4) calc(var(--t) * 4); }
   .c.peint { background:none !important; filter:none !important; } .c.peint .o { font-size:calc(var(--t) * .42); opacity:.9; }
@@ -121,14 +127,15 @@
 <body>
 <div id="app"></div>
 <div id="fen"></div>
-<script src="musique.js?v=20261116-152601"></script>
-<script src="rang.js?v=20261116-152601"></script>
+<script src="musique.js?v=20261116-154456"></script>
+<script src="rang.js?v=20261116-154456"></script>
 <script>window.AMIS_SANS_BOUTON = true;</script>
-<script src="amis.js?v=20261116-152601"></script>
-<script src="heros-etoiles.js?v=20261116-152601"></script>
-<script src="progression-modes.js?v=20261116-152601"></script>
-<script src="aventuriers.js?v=20261116-152601"></script>
-<script src="chroniques-moteur.js?v=20261116-152601"></script>
+<script src="amis.js?v=20261116-154456"></script>
+<script src="heros-etoiles.js?v=20261116-154456"></script>
+<script src="progression-modes.js?v=20261116-154456"></script>
+<script src="aventuriers.js?v=20261116-154456"></script>
+<script src="chroniques-moteur.js?v=20261116-154456"></script>
+<script src="chroniques-ambiance.js?v=20261116-154456"></script>
 <script>
 // =============================================================================================== LES CHRONIQUES DE LA GUILDE v2 (15/11, écran « façon HeroQuest »)
 // Une grande carte qui défile : les salles restent dans le noir jusqu'à ce qu'on ouvre leur porte ; les couloirs se dévoilent en avançant ;
@@ -166,6 +173,16 @@ let vueForcee = null;
 const couloirsZ = () => S && S.R && S.R.plan === 2 ? K.COULOIRS_Z2 : COULOIRS_Z1;
 const esc = t => String(t == null ? '' : t).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
 const modeZones = () => S && (S.scen || 'horloger') === 'horloger' && !petit;
+// 16/11 (l'utilisateur : « brouillard, lumière, sons, comme Foundry / Roll20 ») : chaque héros porte une LANTERNE ; hors de sa lumière,
+// la salle reste dans le noir (déjà explorée mais on n'y voit pas les monstres). Le Cœur de l'Horloge luit tout seul.
+const LANTERNE = 3.5, SALLES_CLAIRES = ['H'];
+const lumiereActive = () => modeZones() && S.R.plan === 2;
+function eclaire(x, y) {
+  if (!lumiereActive()) return true;
+  const z = zoneDe(S.R, x, y); if (SALLES_CLAIRES.includes(z)) return true;
+  return S.heros.some(h => zoneDe(S.R, h.x, h.y) === z && Math.hypot(h.x - x, h.y - y) <= LANTERNE);
+}
+const SON_ZONE = { B:'rouages', H:'coeur', G:'crypte', F:'biblio', E:'atelier', A:'hall', C:'reserve', S:'galerie', P:'cagibi' };
 function zoneDe(R, x, y) {
   const c = K.cle(x, y); if (R.salle[c]) return R.salle[c];
   for (const [id, Z] of Object.entries(couloirsZ())) { const [a, b, w, h] = Z.r; if (x >= a && x < a + w && y >= b && y < b + h) return id; }
@@ -376,7 +393,7 @@ function invLigne(h) {
 const deSel = () => sel && S.heros[actif].des.find(d => d.id === sel);
 function dessine() {
   if (S && !S.fin && fini(actif)) { const n = libres()[0]; if (n != null) actif = n; }
-  if (!S) return accueil();
+  if (!S) { if (typeof AMB !== 'undefined') AMB.zone(null); return accueil(); }
   const R = S.R, h = S.heros[actif], d = deSel();
   const atteint = d && !h.aTerre ? K.atteignables(S, h, d.v, d.pas) : {};
   const voitPieges = S.heros.some(z => z.objet === 'lunettes');
@@ -410,7 +427,7 @@ function dessine() {
     const hi = S.heros.findIndex(z => z.x === x && z.y === y), m = R.monstres.find(z => z.x === x && z.y === y), B = R.boss && R.boss.x === x && R.boss.y === y ? R.boss : null;
     if (hi >= 0) { const z = S.heros[hi]; inner += `<div class="jeton ${hi === actif ? 'actif' : ''} ${z.aTerre ? 'terre' : ''}" id="j-h${hi}" style="--c:${coulH(z)}">${imgH(z)}<span class="pv">${z.aTerre ? '✋' : '❤' + z.pv}${z.bouclier ? '🛡' + z.bouclier : ''}${z.porte ? '⚙' : ''}</span></div>`; }
     const mm = B || m;
-    if (mm && vu) { const it = mm.it === 'frappe' ? `⚔${mm.att}` : mm.it === 'garde' ? '🛡' : mm.it === 'soin' ? '💚' : mm.it === 'fuit' ? '🏃' : mm.it === 'remonte' ? '⏳' : mm.it === 'levier' ? '🎚' : mm.it === 'elan' ? '⚡' : mm.it === 'gros' ? `💥${mm.att + 2}` : '';
+    if (mm && vu && (B || vueForcee || eclaire(x, y))) { const it = mm.it === 'frappe' ? `⚔${mm.att}` : mm.it === 'garde' ? '🛡' : mm.it === 'soin' ? '💚' : mm.it === 'fuit' ? '🏃' : mm.it === 'remonte' ? '⏳' : mm.it === 'levier' ? '🎚' : mm.it === 'elan' ? '⚡' : mm.it === 'gros' ? `💥${mm.att + 2}` : '';
       inner += `<div class="jeton ${B ? 'boss' : ''}" id="j-${mm.id}" style="--c:${B ? '#ff7a4a' : K.BETES[mm.b].elite ? '#f3c96b' : '#8a98b8'}"><img src="portraits/m-${mm.img}.webp" alt=""><span class="it">${it}</span><span class="sc">🔒${mm.sceaux.filter(s => !s.ok).length}</span></div>`;
       if (d && !d.pas && K.aPortee(S, h, mm)) cl += ' cible'; }
     if (d && vu && (p && !p.ouverte || (o && (o.meuble && !o.fouille || o.t === 'levier' || o.t === 'livre')) || mur === 'A') && K.dist(h, { x, y }) === 1 || (d && vu && mur === 'T' && !R.statuesOk && R.salle[c] && R.salle[K.cle(h.x, h.y)] === R.salle[c])) cl += ' cible';
@@ -419,6 +436,13 @@ function dessine() {
   }
   const nCol = x1 - x0 + 1;
   const t = petit ? 'min(4.6cqw, 22px)' : RZ ? Math.max(34, Math.min(76, Math.floor((Math.min(innerWidth, 560) - 20) / nCol))) + 'px' : 'min(11cqw, 52px)';
+  if (lumiereActive() && RZ && !SALLES_CLAIRES.includes(ZV)) { // la nuit, percée par la lanterne de chaque héros de la zone
+    const tp = parseFloat(t), L = S.heros.filter(z => zoneDe(R, z.x, z.y) === ZV).map(z => [(z.x - x0 + .5) * tp, (z.y - y0 + .5) * tp]);
+    const m = L.map(([a, b]) => `radial-gradient(circle at ${a}px ${b}px, transparent ${tp * 1.3}px, #000 ${tp * (LANTERNE - .3)}px)`).join(',');
+    cases += `<div class="nuit ${vueForcee && !L.length ? 'douce' : ''}"${m ? ` style="-webkit-mask-image:${m};mask-image:${m}"` : ''}></div>`
+      + (L.length ? `<div class="lueur" style="background:${L.map(([a, b]) => `radial-gradient(circle at ${a}px ${b}px, rgba(255,170,80,.55), transparent ${tp * LANTERNE}px)`).join(',')}"></div>` : '');
+  }
+  if (typeof AMB !== 'undefined') { const zs = RZ ? ZV : null; AMB.zone(!modeZones() ? null : SON_ZONE[zs] || (zs ? 'couloir' : null)); }
   const posee = R.rouagesPoses, portes = S.heros.filter(z => z.porte).length;
   const ancienne = $('vue') ? [$('vue').scrollLeft, $('vue').scrollTop] : null;
   $('app').innerHTML = `
@@ -515,6 +539,7 @@ function touche(x, y) {
     if (K.dist(h, { x, y }) !== 1) { bulle(`${nomH(h)} doit être juste à côté de la porte.`, true); return; }
     son('porte'); return resultat(K.ouvrir(S, actif, x, y)); }
   const hi = S.heros.findIndex(z => z.x === x && z.y === y), m = R.monstres.find(z => z.x === x && z.y === y), B = R.boss && R.boss.x === x && R.boss.y === y ? R.boss : null;
+  if (m && !B && hi < 0 && !eclaire(x, y)) { bulle('Il fait trop noir par là : approche ta lanterne pour voir ce qui s’y cache.', true); return; }
   if (sacEnCours != null && (m || B)) { const k = sacEnCours; sacEnCours = null; son('ultime'); return resultat(K.utiliser(S, actif, k, B ? 'boss' : m.id)); }
   sacEnCours = null;
   if (!d) { if (hi >= 0) return choisitHeros(hi); if (m || B) return infoMonstre(B || m);
@@ -851,9 +876,9 @@ accueil();
 { const s = new URLSearchParams(location.search).get('salle'); if (s) { history.replaceState(null, '', location.pathname); const c = (typeof AMIS !== 'undefined' && AMIS.carte) || null, nom = (c && c.pseudo) || localStorage.getItem('guilde-pseudo');
     if (nom) rejoindre(s, { id:'j' + Math.random().toString(36).slice(2, 10), nom }); else { rejoindreForm(); setTimeout(() => { const i = $('fCode'); if (i) i.value = s; }, 150); } } }
 </script>
-<script src="chroniques-aventures.js?v=20261116-152601"></script>
-<script src="guide.js?v=20261116-152601"></script>
-<script src="guides-modes.js?v=20261116-152601"></script>
+<script src="chroniques-aventures.js?v=20261116-154456"></script>
+<script src="guide.js?v=20261116-154456"></script>
+<script src="guides-modes.js?v=20261116-154456"></script>
 <script>
 // 15/11 : le guide de Moustache de ce mode (guides-modes.js)
 { const _a = accueil; accueil = function () { const r = _a.apply(this, arguments); guideMode('chroniques'); return r; }; }
