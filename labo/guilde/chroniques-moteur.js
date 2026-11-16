@@ -326,7 +326,7 @@ function nouvelle(heros, s, scen, opts = {}) {
   const creuse = ([x0, y0, w, h], id) => { for (let y = y0; y < y0 + h; y++) for (let x = x0; x < x0 + w; x++) { delete R.murs[cle(x, y)]; if (id) R.salle[cle(x, y)] = id; } };
   Object.entries(SALLES).forEach(([id, D]) => creuse(D.r, id)); Object.values(COULOIRS_Z2).forEach(c => creuse(c.r));
   PORTES.forEach(([x, y, id, b]) => { delete R.murs[cle(x, y)]; R.portes[cle(x, y)] = { salle:id, ouverte:false, bronze:b === 'bronze', entree:b === 'entree' }; });
-  R.plan = 2; R.depart = DEPART.map(c => c.slice()); R.liens = {};
+  R.plan = 2; R.depart = DEPART.map(c => c.slice()); R.liens = {}; R.lus = { A:true }; // la salle de départ est racontée au début
   LIENS2.forEach(([a, b]) => { R.liens[cle(...a)] = cle(...b); R.liens[cle(...b)] = cle(...a); });
   const tirage = ['potion', 'grains', 'objet', 'piege', 'monstre', 'parchemin', 'or', 'fumee', 'rien'];
   MEUBLES.forEach(([x, y, t, id]) => { R.murs[cle(x, y)] = 'M'; R.obj[cle(x, y)] = { t, meuble:true, salle:id, fouille:false, cache:ROUAGES_CACHES.includes(cle(x, y)) ? 'rouage' : tirage[Math.floor(hasard(S) * tirage.length)] }; });
@@ -467,7 +467,8 @@ function ouvrir(S, hi, x, y) {
   const salleOuverte = R.salle[apres] || p.salle; voir(S);
   S.heros.forEach(z => { if (z.objet === 'bouclier') z.bouclier += 3; });
   log(S, R.salle[apres] ? `🚪 ${nm(h)} ouvre la porte : ${SALLES[R.salle[apres]].n}.` : `🚪 ${nm(h)} ouvre la porte : un couloir.`);
-  return { ok:true, ev:neuve ? [{ t:'salle', salle:salleOuverte }] : [], point:true };
+  // 16/11 (l'utilisateur : « sinon on se fait spoiler ») : Moustache ne raconte la salle qu'au PREMIER PAS dedans (voir bouger)
+  return { ok:true, ev:[], point:true };
 }
 function bouger(S, hi, idDe, x, y) {
   const h = S.heros[hi], d = h.des.find(z => z.id === idDe); if (!d || h.aTerre) return 'Ce héros ne peut pas bouger.';
@@ -483,7 +484,7 @@ function bouger(S, hi, idDe, x, y) {
   else if (o && o.t === 'rouage') log(S, `⚙ ${nm(h)} porte déjà un rouage : il en laisse un par terre (un seul à la fois).`);
   if (S.R.grille && x === S.R.grille.dx && y === S.R.grille.dy) { log(S, `⬇ ${nm(h)} monte sur la dalle : CLONK… la grille du Cagibi remonte. Tant que ${nm(h)} reste dessus, elle reste ouverte.`); ev.push({ t:'grille' }); }
   else if (S.R.grille && de0[0] === S.R.grille.dx && de0[1] === S.R.grille.dy && !grilleOuverte(S)) log(S, `⬆ ${nm(h)} quitte la dalle : la grille retombe dans un grand bruit de fer.`);
-  voir(S).forEach(s => ev.push({ t:'salle', salle:s }));
+  voir(S); { const R = S.R, ici = R.salle[cle(x, y)]; if (!R.lus) R.lus = Object.assign({}, R.vuSalle); if (ici && !R.lus[ici]) { R.lus[ici] = true; ev.push({ t:'salle', salle:ici }); } }
   return { ok:true, ev };
 }
 function frapper(S, hi, idDe, mid, k) {
