@@ -200,7 +200,7 @@ function schemaSVG(grand) {
 function petiteCarte() { const e = $('pcarte'); if (e && S) e.innerHTML = schemaSVG(false); }
 function grandeCarte() { fenetre(`<h2>🗺 Le donjon</h2><div class="schema-grand">${schemaSVG(true)}</div><p style="text-align:center;color:var(--doux);font-size:.9em">Le doré : la zone que tu regardes. Les ronds : tes héros. Les points rouges : les monstres vus.</p><button class="go" onclick="fenetre('')">Fermer</button>`); }
 // 16/11 : les salles repeintes AVEC LEURS MURS (vue plus haute, prompts salle-<nom>-v2) : l'image couvre aussi la case de mur tout autour
-const SALLE_MURS = ['A', 'C', 'B', 'E', 'F', 'S', 'P']; // reçues le 16/11 (manquent la Crypte G et le Cœur H)
+const SALLE_MURS = ['A', 'C', 'B', 'E', 'F', 'S', 'P', 'G']; // reçues le 16/11 (Crypte G le 16/11 après-midi ; manque le Cœur H : texte peint, refait)
 function fondSalle(S, x, y) {
   if ((S.scen || 'horloger') !== 'horloger') return '';
   let id = S.R.salle[K.cle(x, y)];
