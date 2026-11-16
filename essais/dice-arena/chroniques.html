@@ -255,7 +255,7 @@ function schemaSVG(grand) {
   // 16/11 (l'utilisateur : « je ne sais pas si je dois aller à gauche ou à droite ») : chaque escalier découvert, avec sa flèche ⬆ / ⬇
   if (R.liens) Object.entries(R.liens).forEach(([c, l]) => { if (!R.vu[c]) return; const [x, y] = c.split(',').map(Number), ly = +l.split(',')[1], up = ly < y;
     svg += `<g><circle cx="${x + .5}" cy="${y + .5}" r=".62" fill="${up ? '#2f6a3a' : '#7a3a1a'}" stroke="#2a1808" stroke-width=".1"/><path d="${up ? `M${x + .5} ${y + .1} L${x + .85} ${y + .65} L${x + .15} ${y + .65} Z` : `M${x + .5} ${y + .9} L${x + .85} ${y + .35} L${x + .15} ${y + .35} Z`}" fill="#ffe9a8"/></g>`;
-    if (grand) svg += `<text x="${x + .5}" y="${y + (up ? -.35 : 1.75)}" font-size=".5" text-anchor="middle" fill="#3a2410" font-family="Georgia" font-style="italic">${up ? 'monte' : 'descend'}</text>`; });
+  }); // 16/11 : pas de mot sous la flèche (il chevauchait le nom de l'étage) ; la légende l'explique
   R.monstres.concat(R.boss ? [R.boss] : []).forEach(m => { if (R.vu[K.cle(m.x, m.y)]) svg += `<circle cx="${m.x + .5}" cy="${m.y + .5}" r="${m === R.boss ? .45 : .28}" fill="#b0201a" stroke="#3a0a08" stroke-width=".08"/>`; });
   S.heros.forEach((h, i) => { svg += `<circle cx="${h.x + .5}" cy="${h.y + .5}" r=".42" fill="${h.aTerre ? '#777' : coulH(h)}" stroke="${i === actif ? '#fff' : '#2a1808'}" stroke-width="${i === actif ? .16 : .1}"/>`; });
   return svg + '</svg>';
