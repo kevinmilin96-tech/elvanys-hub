@@ -207,7 +207,7 @@ function bordMur(R, x, y) {
 // remplit l'écran (avec ses murs et ses portes), une petite carte en haut montre tout le donjon découvert ; au tour des monstres, la caméra
 // visite chaque salle où un monstre agit. Les héros d'une même zone se voient.
 const COULOIRS_Z1 = { K1:{ r:[1, 5, 18, 1], n:'Le couloir du haut' }, K2:{ r:[1, 12, 18, 1], n:'Le couloir du bas' }, K3:{ r:[7, 6, 1, 6], n:'Le passage de l’ouest' }, K4:{ r:[13, 6, 1, 6], n:'Le passage de l’est' } };
-let vueForcee = null, suivi = null; // suivi : le héros d'un ami que la caméra regarde pendant qu'il joue (jeu à distance)
+let vueForcee = null, suivi = null, zoneVue = null; // suivi : le héros d'un ami que la caméra regarde pendant qu'il joue (jeu à distance)
 // 16/11 : l'Horloge en étages (plan 2) a ses propres couloirs et escaliers ; les parties commencées avant gardent l'ancienne carte
 const couloirsZ = () => S && S.R && S.R.plan === 2 ? K.COULOIRS_Z2 : COULOIRS_Z1;
 const esc = t => String(t == null ? '' : t).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
@@ -275,7 +275,7 @@ function fondSalle(S, x, y) {
       const droite = bout === a + w - 1, f = monte ? (droite ? 'escalier-monte' : 'escalier-monte-g') : (droite ? 'escalier-descend-d' : 'escalier-descend');
       return `background:url('decor/${f}.webp?v=1') calc(var(--t) * ${a - x}) 0 / calc(var(--t) * ${w}) 100% no-repeat;`; } }
   let id = S.R.salle[K.cle(x, y)];
-  if (!id) id = SALLE_MURS.find(k => { const [a, b, w, h] = K.rectSalle(S, k); return x >= a - 1 && x <= a + w && y >= b - 1 && y <= b + h; });
+  if (!id) { const C = SALLE_MURS.filter(k => { const [a, b, w, h] = K.rectSalle(S, k); return x >= a - 1 && x <= a + w && y >= b - 1 && y <= b + h; }); id = C.includes(zoneVue) ? zoneVue : C[0]; } // 16/11 : un mur partagé par deux salles montre la salle qu'on regarde
   const D = id && K.SALLES[id], f = SALLE_IMG[id]; if (!D || !f) return '';
   if (SALLE_MURS.includes(id)) { const [a, b, w, h] = K.rectSalle(S, id); return `background:url('decor/salle-${f}-v2.webp?v=2') calc(var(--t) * ${a - 1 - x}) calc(var(--t) * ${b - 1 - y}) / calc(var(--t) * ${w + 2}) calc(var(--t) * ${h + 2}) no-repeat;`; }
   const [x0, y0, w, h] = K.rectSalle(S, id);
@@ -509,7 +509,7 @@ function dessine() {
   const SC = K.SCEN[S.scen || 'horloger'], peint = !!SC.image;
   // la zone regardée (salle ou bout de couloir) et son cadre d'une case de mur tout autour
   const hv = suivi != null && S.heros[suivi] ? S.heros[suivi] : h; // 16/11 : en coop à distance, la caméra suit l'ami qui joue
-  const ZV = modeZones() ? (vueForcee || zoneDe(R, hv.x, hv.y)) : null, RZ = ZV && zoneRect(ZV);
+  const ZV = modeZones() ? (vueForcee || zoneDe(R, hv.x, hv.y)) : null, RZ = ZV && zoneRect(ZV); zoneVue = ZV;
   let x0 = RZ ? Math.max(0, RZ[0] - 1) : 0, y0 = RZ ? Math.max(0, RZ[1] - 1) : 0, x1 = RZ ? Math.min(R.w - 1, RZ[0] + RZ[2]) : R.w - 1, y1 = RZ ? Math.min(R.h - 1, RZ[1] + RZ[3]) : R.h - 1;
   // 16/11 (l'utilisateur : « la porte est ouverte mais je n'arrive pas à sortir ») : devant chaque porte OUVERTE de la zone, la case
   // d'à côté (couloir ou salle voisine) s'affiche aussi : on voit où l'on sort, et on peut y marcher
@@ -547,7 +547,8 @@ function dessine() {
     else if (mur === 'M' && o && fondSalle(S, x, y)) { cl += ' meuble-peint' + (o.fouille ? ' fouille' : '') + (!o.fouille && K.dist(h, { x, y }) === 1 ? ' cible' : ''); if (o.fouille) inner = '<span class="fm">✓</span>'; else if (o.verrou && !o.crochete) inner = '<span class="fm">🔒</span>'; } // 16/11 : pas d'étiquette (les noms ne collaient pas au dessin), le nom vient au toucher
     else if (mur === 'M' && o) inner = objImg(o.t, o.fouille ? 'fait' : '') || `<span class="o ${o.fouille ? 'fait' : ''}">${MEUBLE_E[o.t] || '📦'}</span>`;
     else if (mur === 'L' && o) inner = `${objImg('levier', R.leviersTour[c] ? 'baisse' : '')}<span class="lv">≥${o.v}</span>`;
-    else if (mur === 'B') inner = objImg('etagere');
+    else if (mur === 'B') inner = fondSalle(S, x, y) ? '' : objImg('etagere'); // 16/11 : dans une salle peinte, l'étagère est celle du dessin
+    else if (mur === 'K' && fondSalle(S, x, y)) cl += ' meuble-peint' + (K.dist(h, { x, y }) === 1 ? ' cible' : ''); // le Livre des heures : une lueur sur le dessin, plus d'émoji
     else if (mur === 'K') inner = '<span class="o">📕</span>';
     else if (mur === 'N') inner = `<div class="jeton pnj"><img src="portraits/pnj-colporteur.webp?v=1" alt="Le colporteur" onerror="this.onerror=null;this.src='ui/heros/pnj-forgeron.webp'"><span class="pv">🧳</span></div>`;
     else if (mur === 'T') { const t = R.statues.find(z => z.x === x && z.y === y); inner = `<img class="oi statue ${R.statuesOk ? 'fait-ok' : ''}" src="decor/obj-statue.webp?v=1" alt="" style="transform:rotate(${t.d * 90}deg)">`; }
@@ -723,6 +724,8 @@ function touche(x, y) {
     if (!d && o && o.t === 'piege' && !o.trouve && !o.vu && (h.objet === 'lunettes' || h.id === 'oria' && Math.abs(h.x - x) + Math.abs(h.y - y) <= 2)) {
       o.vu = true; S.journal.unshift(`⚠️ ${nomH(h)} signale un piège : tout le groupe le voit maintenant.`); bulle(`⚠️ ${nomH(h)} signale le piège : tout le groupe le voit maintenant.`); dessine(); return; } }
   if (!d) { if (hi >= 0) return choisitHeros(hi); if (m || B) return infoMonstre(B || m);
+    if (R.murs[c] === 'K') { bulle('📕 Le Livre des heures, tout en haut de l’étagère : un dé de 4 ou plus, et un ami juste à côté pour faire la courte échelle.', false, true); return; }
+    if (R.murs[c] === 'B') { bulle('Une étagère pleine de vieux livres d’horlogerie.'); return; }
     if (R.murs[c] === 'T') { bulle(R.statuesOk ? 'Les statues regardent l’autel.' : 'Choisis un dé (même un 👣), puis touche la statue pour la tourner : sa voisine tourne aussi !'); return; }
     if (R.grille && x === R.grille.dx && y === R.grille.dy) { bulle('La dalle : tant qu’un héros reste dessus, la grille du Cagibi est ouverte.'); return; }
     const o = R.obj[c]; if (o && o.meuble) { const n = nomMeuble(o); bulle(o.fouille ? `${n} : déjà fouillé.` : o.verrou && !o.crochete ? `🔒 ${n} est verrouillé : un dé de ${o.verrou} ou plus pour le crocheter.` : `${n} : choisis un dé pour le fouiller.`); } return; }
