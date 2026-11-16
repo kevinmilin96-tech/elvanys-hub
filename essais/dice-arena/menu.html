@@ -107,6 +107,10 @@ fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.te
   #propTuto button { font:inherit; font-weight:bold; border:0; border-radius:24px; padding:12px 22px; background:linear-gradient(#f6d77e, #c8902f); color:#2a1a08; box-shadow:0 0 18px #f3c96b88; }
   #propTuto a { display:block; margin-top:12px; color:#c9c1ea; font-size:.85em; }
   @keyframes monteT { from { opacity:0; } }
+  .sauves { margin:4px auto 8px; max-width:440px; padding:0 12px; display:flex; flex-direction:column; gap:6px; }
+  .sauves .st { color:var(--or); font-weight:bold; text-align:center; font-size:.9em; }
+  .sauves button { display:flex; flex-wrap:wrap; align-items:center; gap:2px 8px; text-align:left; background:#1d1b3acc; color:#fff; border:2px solid var(--or); border-radius:14px; padding:8px 12px; font:inherit; font-size:.9em; cursor:pointer; }
+  .sauves button small { color:var(--doux); flex-basis:100%; order:3; } .sauves button i { margin-left:auto; color:var(--or); font-style:normal; font-weight:bold; }
   .points { display:flex; justify-content:center; gap:7px; margin:6px 0 2px; }
   .points i { width:8px; height:8px; border-radius:50%; background:#4b4580; transition:all .2s; }
   .points i.on { background:var(--or); width:20px; border-radius:5px; }
@@ -185,6 +189,7 @@ fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.te
   <div class="heros" id="heros"></div>
   <div class="cats" id="cats"></div>
   <button class="retour" id="retour" onclick="location.hash = ''">‹ Retour</button>
+  <div class="sauves" id="sauves" style="display:none"></div>
   <div class="carrousel" id="car"></div>
   <div class="points" id="points"></div>
   <p class="desc" id="desc"></p>
@@ -258,6 +263,22 @@ const PRO_IMG = { epreuves:'mode-epreuves', arene:'mode-arene', odyssee:'mode-od
   ordinateur:'arene-ordinateur', tuto:'arene-tuto', proche:'arene-proche', abime:'ody-abime',
   invasion:'mode-invasion', inv1:'inv-acte1', inv2:'inv-acte2', invboss:'inv-boss', pantheon:'mode-pantheon', defense:'mode-defense', enigme:'mode-enigme', semaine:'mode-semaine',
   crypte:'mode-crypte', fosse:'mode-fosse', chroniques:'mode-chroniques', enligne:'mode-enligne', amis:'mode-amis', codesalle:'mode-codesalle', route:'mode-route', duelami:'mode-duelami', rdv:'mode-rdv' }; // 15/11 nuit : portail du duel entre amis reçu (2e essai) // 15/11 nuit : portail de la Route du Titan reçu // 15/11 soir : 3 portails « Entre amis » reçus // 15/11 soir : portails de la Crypte, de la Fosse et des Chroniques reçus // 14/11 : portails de l'Invasion et du Panthéon reçus
+// 16/11 (l'utilisateur : « Terres brûlées terminée, île du Givre bloquée ») : les parties de la Grande aventure déjà passées à l'île suivante
+// n'avaient pas noté l'île vaincue ; on la note ici d'après les sauvegardes. Et les sauvegardes s'affichent AVANT les portails.
+const ODY_PAGES = [['', 'odyssee.html', 'L’Odyssée'], ['-sansfin', 'odyssee.html?sansfin=1', 'L’Odyssée sans fin'], ['-route', 'odyssee.html?route=1', 'La Route du Titan']];
+const ILE_NOM = { brulees:'Terres brûlées', givre:'Île du Givre', abime:'L’Abîme du Vide' };
+const MES_ODY = (() => { const l = []; ODY_PAGES.forEach(([suf, href, mode]) => { for (let n = 1; n <= 3; n++) { try { const r = JSON.parse(localStorage.getItem('guilde-odyssee' + suf + (n > 1 ? '-' + n : '')) || 'null'); if (r && r.ile) l.push({ suf, href, mode, n, r }); } catch (e) {} } }); return l.sort((a, b) => (b.r.maj || b.r.debut || 0) - (a.r.maj || a.r.debut || 0)); })();
+try { const a = JSON.parse(localStorage.getItem('guilde-actes') || '{}'); let ch = false;
+  MES_ODY.forEach(({ r }) => { if ((r.acte === 'givre' || r.acte === 'abime') && !a.brulees) { a.brulees = true; ch = true; } if (r.acte === 'abime' && !a.givre) { a.givre = true; ch = true; } });
+  if (ch) localStorage.setItem('guilde-actes', JSON.stringify(a)); } catch (e) {}
+function reprendreOdy(i) { const o = MES_ODY[i]; localStorage.setItem('guilde-odyssee-emplacement' + o.suf, String(o.n)); sessionStorage.setItem('guilde-dans-mode', '1'); location.href = o.href + (o.href.includes('?') ? '&' : '?') + 'reprendre=' + o.n; }
+function sauvesOdy() {
+  const b = document.getElementById('sauves'); if (!b) return;
+  if (courant !== 'odyssee' || !MES_ODY.length) { b.style.display = 'none'; return; }
+  const nomH = r => { const h = typeof HEROS !== 'undefined' && HEROS[r.heros]; return h ? h.nom : String(r.heros || '').startsWith('av:') ? 'Héros d’aventure' : 'Héros'; };
+  b.innerHTML = '<div class="st">💾 Tes parties en cours</div>' + MES_ODY.map((o, i) => `<button onclick="reprendreOdy(${i})"><b>${nomH(o.r)}</b> · ${o.r.route ? 'Route du Titan' : (ILE_NOM[o.r.acte] || ILE_NOM.brulees)}${o.suf === '-sansfin' ? ' · sans fin' : ''}${o.r.aventure ? ' · 🗺 Grande aventure' : ''}<small>${o.mode} · emplacement ${o.n} · ❤ ${o.r.pv}/${o.r.pvMax}</small><i>▶ Continuer</i></button>`).join('');
+  b.style.display = '';
+}
 const GIVRE_OK = (() => { try { return !!JSON.parse(localStorage.getItem('guilde-actes') || '{}').brulees; } catch (e) { return false; } })();
 // 14/11 (l'utilisateur : « j'ai accès aux deux autres modes sans avoir fini l'acte I ») : l'Invasion s'ouvre acte par acte
 const INV = (() => { try { return JSON.parse(localStorage.getItem('guilde-invasion') || '{}'); } catch (e) { return {}; } })();
@@ -357,6 +378,7 @@ function montre(id) {
   document.getElementById('retour').classList.toggle('vu', !!courant);
   { const m = document.getElementById('versmenu'); if (m) m.style.display = courant ? '' : 'none'; }
   document.getElementById('heros').style.display = 'none';
+  sauvesOdy();
   car.innerHTML = PORTES.map((p, i) => `<div class="porte ${p.ferme ? 'ferme' : ''}" data-i="${i}">
     <div class="halo"></div><div class="dedans ${p.avenir ? 'tourne' : ''}">${dessin(p)}${p.ferme ? '<div class="verrou"><img src="menu-recu/cadenas.webp?v=2" alt="Verrouillé"></div>' : ''}</div>
     <img class="arche" src="menu-recu/arche-vide.webp?v=1" alt=""><img class="runes" src="menu-recu/fx-runes.webp?v=1" alt=""><div class="reflet"></div>

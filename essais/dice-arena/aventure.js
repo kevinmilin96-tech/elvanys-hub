@@ -65,7 +65,10 @@ const nouvelleAventure = heros => ileAventure(heros, 'brulees', null);
 function recommenceIle(r) { const et = r.aventure.retour; et.aventure.essais = (r.aventure.essais || 0) + 1; return ileAventure(odyChoix(r), r.acte, et); }
 // l'île est finie : niveau +1 (+8 PV max), et on passe à la suivante (après les choix du camp)
 function niveauSuivant(r, bonus) { const A = r.aventure; A.niveau++; r.pvMax += PV_NIVEAU; if (bonus) { A.bonus.push(bonus); if (bonus === 'pv') r.pvMax += 10; } r.pv = r.pvMax; }
-function ileSuivante(r) { const i = ACTES_AV.indexOf(r.acte); if (i >= 2) return null; return ileAventure(odyChoix(r), ACTES_AV[i + 1], etatHeros(r)); }
+// 16/11 (vu par l'utilisateur : la Grande aventure passée au Givre, et l'île du Givre restait verrouillée au menu) : l'île vaincue compte comme un acte gagné
+function ileSuivante(r) { const i = ACTES_AV.indexOf(r.acte);
+  try { const a = JSON.parse(localStorage.getItem('guilde-actes') || '{}'); if (!a[r.acte]) { a[r.acte] = true; localStorage.setItem('guilde-actes', JSON.stringify(a)); } } catch (e) {}
+  if (i >= 2) return null; return ileAventure(odyChoix(r), ACTES_AV[i + 1], etatHeros(r)); }
 // l'équipement : mettre un objet (l'ancien va au sac), ranger, jeter
 function equipe(r, k) {
   const A = r.aventure, e = EQUIP[k]; if (!e) return false; const pl = e[0], ancien = A.equip[pl];
