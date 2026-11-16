@@ -39,12 +39,17 @@ const HEROS_C = {
 };
 // 15/11 soir : les portraits peints des monstres de l'Horloger (portraits/m-<img>.webp) ; l'Horloger garde le sien en attendant le nouveau
 const BETES = {
-  rouagelin: { n:'Rouagelin', img:'rouagelin', att:1, mv:2, s:() => [sceau('any'), sceau('min', 3)] },
-  gardien:   { n:'Gardien de bronze', img:'gardienbronze', att:2, mv:2, s:() => [sceau('pair'), sceau('pair'), sceau('tot', 7)], garde:.25, leviers:true },
-  coucou:    { n:'Coucou furieux', img:'coucou', att:2, mv:3, s:() => [sceau('imp'), sceau('min', 4)] },
+  rouagelin: { n:'Rouagelin', img:'rouagelin', att:1, mv:2, s:() => [sceau('any'), sceau('min', 3)], meute:true },
+  gardien:   { n:'Gardien de bronze', img:'gardienbronze', att:2, mv:2, s:() => [sceau('pair'), sceau('pair'), sceau('tot', 7)], garde:.25, leviers:true, grosCoup:.3 },
+  coucou:    { n:'Coucou furieux', img:'coucou', att:2, mv:3, s:() => [sceau('imp'), sceau('min', 4)], lache:true },
   page:      { n:'Page hurlante', img:'pagehurlante', att:1, mv:3, s:() => [sceau('imp'), sceau('imp')], fuit:.3 },
-  archiviste:{ n:'Archiviste de cuivre', img:'archiviste', att:3, mv:1, s:() => [sceau('dbl', 0, 1), sceau('dbl', 0, 1), sceau('min', 5), sceau('tot', 10)], soin:.35, elite:true },
+  archiviste:{ n:'Archiviste de cuivre', img:'archiviste', att:3, mv:1, s:() => [sceau('dbl', 0, 1), sceau('dbl', 0, 1), sceau('min', 5), sceau('tot', 10)], soin:.35, elite:true, grosCoup:.3 },
   horloger:  { n:'L’Horloger', img:'horlogerboss', att:3, mv:1, s:() => [], boss:true },
+  // 16/11 : les nouveaux venus (inspirés des archétypes troll, squelette, liche ; noms et règles à nous)
+  colosse:   { n:'Colosse à ressort', img:'colosse', att:3, mv:1, s:() => [sceau('min', 5), sceau('dbl', 0, 1), sceau('dbl', 0, 1), sceau('tot', 10)], elite:true, regen:true, grosCoup:.3 },
+  osclaque:  { n:'Os-qui-claque', img:'chevalier', att:1, mv:2, s:() => [sceau('pair'), sceau('max', 4)], releve:true },
+  reliquaire:{ n:'Le Reliquaire', img:'miroir', att:0, mv:0, s:() => [sceau('ex', 2), sceau('ex', 4), sceau('ex', 6)], immobile:true },
+  roios:     { n:'Le Roi des Os', img:'liche', att:3, mv:1, s:() => [], boss:true },
   // les Terres brûlées (scénario d'essai sur la carte peinte, 15/11)
   gobelin:   { n:'Gobelin des cendres', img:'gobelin', att:1, mv:2, s:() => [sceau('any'), sceau('min', 3)], fuit:.2 },
   loup:      { n:'Loup de braise', img:'loup', att:2, mv:3, s:() => [sceau('pair'), sceau('min', 4)] },
@@ -54,12 +59,28 @@ const BETES = {
   elementaire:{ n:'Élémentaire de lave', img:'elementaire', att:3, mv:1, s:() => [sceau('min', 5), sceau('dbl', 0, 1), sceau('dbl', 0, 1), sceau('tot', 9)], soin:.25, elite:true },
   titan:     { n:'Le Titan de feu', img:'titan', att:3, mv:1, s:() => [], boss:true },
 };
+const CAPA = {
+  meute:'Meute : +1 dégât si un autre de ses semblables est déjà au contact de la même cible.',
+  lache:'Lâche : +2 dégâts contre un héros SEUL (aucun ami à côté de lui).',
+  grosCoup:'Gros coup : parfois il prend son élan (⚡) ; au tour suivant il frappe de +2, sauf si on lui a brisé un sceau entre-temps.',
+  regen:'Régénère : à la fin du tour, il referme un sceau brisé, SAUF si on lui a posé un 6 pendant ce tour.',
+  releve:'Se relève : abattu, il revient au tour suivant avec un sceau, SAUF si on l’a achevé avec un 6.',
+  leviers:'Il surveille les leviers : il en remonte un quand il peut.',
+  immobile:'Il ne bouge pas et ne frappe pas.',
+};
 const PHASES = [
   { n:'Le Ressort', s:() => [sceau('min', 5), sceau('min', 5), sceau('dbl', 0, 1), sceau('dbl', 0, 1)], d:'frappe de 3 le héros le plus proche et appelle 2 Rouagelins' },
   { n:'Le Carillon', s:() => [sceau('pair'), sceau('imp'), sceau('tot', 12)], d:'sonne : chaque héros qui n’est pas à côté d’un ami perd son plus gros dé au prochain tour' },
   { n:'La Dernière Heure', s:() => [sceau('ex', 6), sceau('ex', 1), sceau('dbl', 0, 1), sceau('dbl', 0, 1), sceau('tot', 15)], d:'renvoie le héros le plus blessé dans le hall d’entrée et frappe de 4' },
 ];
 
+// 16/11 : LE ROI DES OS (boss du Labyrinthe des Runes) : phase 2 = intouchable tant que son reliquaire, caché dans un meuble, n'est pas brisé
+const PHASES_ROI = [
+  { n:'L’Appel des os', s:() => [sceau('min', 4), sceau('pair'), sceau('dbl', 0, 1), sceau('dbl', 0, 1)], d:'frappe au contact et relève un Os-qui-claque à côté de lui' },
+  { n:'Le Reliquaire', s:() => [], d:'ne peut plus être touché : son reliquaire est caché dans un meuble ; fouillez, brisez-le (2, 4, 6)', intouchable:true },
+  { n:'La Dernière Danse', s:() => [sceau('ex', 6), sceau('imp'), sceau('dbl', 0, 1), sceau('dbl', 0, 1), sceau('tot', 12)], d:'frappe de 4 au contact et vole 1 PV à chaque héros à 2 cases' },
+];
+const phasesDe = S => S && S.R && S.R.boss && S.R.boss.b === 'roios' ? PHASES_ROI : (S && SCEN[S.scen || 'horloger'].boss === 'roios' ? PHASES_ROI : PHASES);
 // ------------------------------------------------------------------ LES SCÉNARIOS (15/11) : chacun a sa carte, ses textes, son objet à trouver et son boss.
 // « horloger » : la carte construite en salles et couloirs (portes) ; « brulees » : la CARTE PEINTE des Terres brûlées (decor/carte-brulees.webp)
 // calée au doigt par l'utilisateur (placer-chroniques.html), brouillard « à vue » (les murs peints cachent ce qu'il y a derrière).
@@ -69,8 +90,8 @@ const SCEN = {
   brulees: { n:'Les Terres brûlées (essai sur la carte peinte)', boss:'titan', renfort:'salamandre', objet:{ n:'braise éternelle', e:'🔥' }, axe:'le grand brasier', axeE:'🔥', sablier:28,
     phases:['Les Flammes', 'La Fumée', 'L’Éruption'], image:'decor/carte-brulees.webp', vue:5 },
   // 15/11 soir : LE LABYRINTHE DES RUNES, un donjon TIRÉ AU HASARD à chaque partie (salles, couloirs, meubles, monstres, pièges) : on rejoue sans fin
-  labyrinthe: { n:'Le Labyrinthe des Runes (donjon au hasard)', boss:'titan', renfort:'gobelin', objet:{ n:'fragment de rune', e:'✦' }, axe:'l’autel des runes', axeE:'✦', sablier:30,
-    phases:['Le Réveil', 'La Colère', 'Le Dernier Souffle'], vue:5, hasard:true },
+  labyrinthe: { n:'Le Labyrinthe des Runes (donjon au hasard)', boss:'roios', renfort:'osclaque', objet:{ n:'fragment de rune', e:'✦' }, axe:'l’autel des runes', axeE:'✦', sablier:30,
+    phases:['L’Appel des os', 'Le Reliquaire', 'La Dernière Danse'], vue:5, hasard:true },
   // 15/11 soir : LES AVENTURES EN SCÈNES (chroniques-aventures.js) : une EMBUSCADE sur le chemin = un petit terrain ouvert, gagner = abattre tous les monstres
   arene: { n:'Embuscade', boss:'titan', renfort:'gobelin', objet:{ n:'—', e:'⚔' }, axe:'', axeE:'', sablier:40, phases:['', '', ''], vue:8, hasard:true, objectif:'vaincre' },
 };
@@ -162,7 +183,7 @@ function construitLabyrinthe(S, R) {
   const couloirs = []; for (let y = 0; y < H2; y++) for (let x = 0; x < W2; x++) if (G[y][x] === '.' && !salles.some(s => dans(s, x, y))) couloirs.push([x, y]);
   for (let i = 0; i < 5 && couloirs.length; i++) { const [x, y] = couloirs.splice(rnd(couloirs.length), 1)[0]; R.obj[cle(x, y)] = { t:'piege', cache:true }; }
   // les monstres : dans les salles (pas le départ), plus forts près de l'autel
-  const faibles = ['gobelin', 'loup', 'scarabee', 'rouagelin', 'page', 'coucou'], forts = ['salamandre', 'golem', 'gardien', 'elementaire', 'archiviste'];
+  const faibles = ['gobelin', 'loup', 'scarabee', 'rouagelin', 'page', 'coucou', 'osclaque'], forts = ['salamandre', 'golem', 'colosse', 'elementaire', 'archiviste'];
   for (let i = 0; i < 13; i++) {
     const s = salles[1 + rnd(salles.length - 1)]; let x, y, k = 0;
     do { x = s.x + rnd(s.w); y = s.y + rnd(s.h); } while (k++ < 20 && (G[y][x] !== '.' || R.monstres.some(m => m.x === x && m.y === y) || (x === fin.cx && y === fin.cy)));
@@ -196,27 +217,32 @@ const SALLES = {
   B: { n:'La Salle des rouages', r:[1, 7, 5, 4], lu:'« Quatre leviers. Baissez-les tous ensemble : ils ouvrent la grande porte de bronze, tout en bas. »' },
   E: { n:'L’Atelier abandonné', r:[9, 7, 3, 3], lu:'« Un vieil atelier. Des outils, des ressorts… et un établi qui n’a pas été rangé depuis cent ans. »' },
   F: { n:'La Bibliothèque des heures', r:[15, 7, 4, 4], lu:'« Chut. C’est une bibliothèque. Le Livre des heures est tout en haut d’une étagère : il faut être deux pour l’attraper. »' },
+  S: { n:'La Galerie des statues', r:[15, 14, 4, 3], lu:'« Quatre statues de bronze autour d’un petit autel. Sur le mur, une fresque : quatre silhouettes agenouillées face à une flamme. Et… elles sont reliées par des engrenages. Tourner l’une fait tourner sa voisine. »' },
+  P: { n:'Le Cagibi grillagé', r:[1, 14, 2, 3], lu:'« Une grille de fer. Dans le couloir, une dalle qui s’enfonce quand on marche dessus… Quelqu’un doit rester dessus pour que les autres passent. »' },
   H: { n:'Le Cœur de l’Horloge', r:[4, 14, 10, 3], lu:'« La Grande Horloge. Son axe attend trois rouages. Posez-les… et quelqu’un va se réveiller. »' },
 };
 const COULOIRS = [[1, 5, 18, 1], [1, 12, 18, 1], [7, 5, 1, 8], [13, 5, 1, 8]];
-const PORTES = [[3, 4, 'A'], [10, 4, 'C'], [16, 4, 'G'], [3, 6, 'B'], [6, 9, 'B'], [8, 8, 'E'], [12, 8, 'E'], [16, 6, 'F'], [14, 9, 'F'], [8, 13, 'H', 'bronze']];
+const PORTES = [[3, 4, 'A'], [10, 4, 'C'], [16, 4, 'G'], [3, 6, 'B'], [6, 9, 'B'], [8, 8, 'E'], [12, 8, 'E'], [16, 6, 'F'], [14, 9, 'F'], [8, 13, 'H', 'bronze'], [17, 13, 'S']];
+// 16/11 : la grille du Cagibi s'ouvre tant qu'un héros se tient sur la dalle du couloir ; les 4 statues de la Galerie (autel au milieu)
+const GRILLE = [2, 13], DALLE = [4, 12], AUTEL_S = [16, 15], STATUES = [[16, 14], [17, 15], [16, 16], [15, 15]];
 const MEUBLES = [[5, 1, 'coffre', 'A'], [1, 3, 'tonneaux', 'A'], [8, 1, 'armoire', 'C'], [11, 1, 'tonneaux', 'C'], [11, 3, 'armoire', 'C'],
-  [15, 2, 'tombeau', 'G'], [17, 2, 'tombeau', 'G'], [18, 1, 'coffre', 'G'], [10, 7, 'etabli', 'E'], [11, 9, 'armoire', 'E'], [18, 10, 'coffre', 'F'], [1, 10, 'tonneaux', 'B'], [13, 16, 'cheminee', 'H']];
+  [15, 2, 'tombeau', 'G'], [17, 2, 'tombeau', 'G'], [18, 1, 'coffre', 'G'], [10, 7, 'etabli', 'E'], [11, 9, 'armoire', 'E'], [18, 10, 'coffre', 'F'], [1, 10, 'tonneaux', 'B'], [13, 16, 'cheminee', 'H'], [1, 16, 'coffre', 'P']];
 const ROUAGES_CACHES = ['11,3', '17,2', '10,7', '18,10'];
 const LEVIERS = [[1, 7], [5, 7], [2, 9], [5, 10]];
 const ETAGERES = [[16, 8], [17, 8], [16, 10]], LIVRE = [18, 8], AXE = [8, 15];
 const MONSTRES_DEPART = [['rouagelin', 4, 2], ['rouagelin', 9, 2], ['page', 14, 1], ['page', 18, 3], ['gardien', 3, 9], ['rouagelin', 4, 8],
-  ['coucou', 13, 7], ['coucou', 13, 10], ['page', 15, 9], ['archiviste', 17, 9], ['rouagelin', 6, 15], ['rouagelin', 11, 15]];
+  ['coucou', 13, 7], ['coucou', 13, 10], ['page', 15, 9], ['archiviste', 17, 9], ['rouagelin', 6, 15], ['rouagelin', 11, 15], ['colosse', 9, 9]];
 const OBJETS = { bouclier:{ n:'Bouclier de bronze', d:'Bouclier 3 à chaque fois qu’une porte s’ouvre.' }, cle:{ n:'Clé à molette', d:'+1 dé à chaque tour.' }, lunettes:{ n:'Lunettes de l’horloger', d:'Voit tous les pièges.' } };
 const MEUBLE_N = { coffre:'le coffre', armoire:'l’armoire', tonneaux:'les tonneaux', tombeau:'le tombeau', etabli:'l’établi', cheminee:'la cheminée', lit:'le lit de camp', tente:'la tente', etagere:'l’étagère', bureau:'le bureau', banc:'le banc', autel:'l’autel', fontaine:'la fontaine', cristaux:'les cristaux' };
 const cle = (x, y) => x + ',' + y;
+function tourneStatue(R, i) { [i, (i + 1) % 4].forEach(k => R.statues[k].d = (R.statues[k].d + 1) % 4); }
 
 // ------------------------------------------------------------------ la difficulté selon le NOMBRE DE HÉROS (15/11 : seul, l'Horloger était impossible ; à 4, trop facile)
 // 1 héros : environ la moitié des monstres, sablier +15, leviers baissés 8 tours ; 2 : 70 % des monstres ; 3 : 85 % ; 4 : tous, et 3 de plus dans les couloirs.
 const ADAPTE = { 1:{ garde:.5, sablier:15, levier:8 }, 2:{ garde:.7, sablier:8, levier:5 }, 3:{ garde:.85, sablier:3, levier:3 }, 4:{ garde:1, sablier:0, levier:2, renfort:3 } };
 // les sceaux d'une phase du boss, selon le nombre de héros : seul −2 sceaux, à deux −1, à quatre +1 (« 4 ou plus »)
 function sceauxBoss(S, k) {
-  const L = PHASES[k].s(), n = S.nbHeros || S.heros.length;
+  const L = phasesDe(S)[k].s(), n = S.nbHeros || S.heros.length; if (!L.length) return L;
   if (n <= 1) L.splice(-2, 2); else if (n === 2) L.pop(); else if (n >= 4) L.push(sceau('min', 4));
   if (k === 2 && S.livre) L.pop();
   if (S.scen === 'labyrinthe' && n <= 1 && L.length > 2) L.pop(); // seul dans un grand labyrinthe : un sceau de moins
@@ -231,7 +257,7 @@ function adapte(S) {
   if (A.garde < 1 && S.scen !== 'arene') R.monstres = R.monstres.filter(m => hasard(S) < A.garde); // une embuscade garde ses monstres (écrits pour l'aventure)
   if (A.renfort) { // à 4 : quelques monstres de plus, posés dans des couloirs (cases de sol hors salle, loin du départ)
     const libres = []; for (let y = 0; y < R.h; y++) for (let x = 0; x < R.w; x++) { const c = cle(x, y); if (!R.murs[c] && !R.salle[c] && !R.portes[c] && !R.obj[c] && !S.heros.some(h => dist(h, { x, y }) < 8) && !R.monstres.some(m => m.x === x && m.y === y)) libres.push([x, y]); }
-    const sorte = S.scen === 'brulees' ? ['loup', 'gobelin', 'salamandre'] : S.scen === 'labyrinthe' ? ['gobelin', 'loup', 'page'] : ['rouagelin', 'coucou', 'rouagelin'];
+    const sorte = S.scen === 'brulees' ? ['loup', 'gobelin', 'salamandre'] : S.scen === 'labyrinthe' ? ['gobelin', 'osclaque', 'page'] : ['rouagelin', 'coucou', 'rouagelin'];
     for (let i = 0; i < A.renfort && libres.length; i++) { const [x, y] = libres.splice(Math.floor(hasard(S) * libres.length), 1)[0]; ajouteMonstre(S, sorte[i % sorte.length], x, y); }
   }
 }
@@ -261,6 +287,15 @@ function nouvelle(heros, s, scen, opts = {}) {
   ETAGERES.forEach(([x, y]) => R.murs[cle(x, y)] = 'B'); R.murs[cle(...LIVRE)] = 'K'; R.obj[cle(...LIVRE)] = { t:'livre' };
   R.murs[cle(...AXE)] = 'A'; R.axe = AXE.slice();
   [[7, 7], [13, 11], [11, 12], [17, 5]].forEach(([x, y]) => R.obj[cle(x, y)] = { t:'piege', cache:true });
+  R.obj[cle(1, 16)].cache = 'potion2'; // le Cagibi : deux potions
+  // la grille : la case reste « fermée » sauf quand un héros est sur la dalle
+  delete R.murs[cle(...GRILLE)]; R.grille = { x:GRILLE[0], y:GRILLE[1], dx:DALLE[0], dy:DALLE[1] };
+  // les statues (murs 'T') : chacune regarde N/E/S/O (0-3) ; but = toutes vers l'autel ; tourner l'une tourne aussi la suivante
+  R.murs[cle(...AUTEL_S)] = 'O'; const veut = [2, 3, 0, 1]; // N de l'autel regarde S, E regarde O…
+  R.statues = STATUES.map(([x, y], i) => ({ x, y, d:veut[i], veut:veut[i] }));
+  for (let k = 0; k < 3; k++) { const i = Math.floor(hasard(S) * 4); tourneStatue(R, i); } // mélangées depuis la bonne position : toujours faisable
+  if (R.statues.every(t => t.d === t.veut)) tourneStatue(R, 0);
+  R.statues.forEach(t => R.murs[cle(t.x, t.y)] = 'T');
   MONSTRES_DEPART.forEach(([b, x, y]) => ajouteMonstre(S, b, x, y));
   adapte(S);
   [[1, 1], [2, 1], [1, 2], [2, 2]].forEach(([x, y], i) => { if (S.heros[i]) { S.heros[i].x = x; S.heros[i].y = y; } });
@@ -290,8 +325,10 @@ const log = (S, t) => { S.journal.unshift(t); S.journal.length = Math.min(S.jour
 function ajouteMonstre(S, b, x, y) { const B = BETES[b]; const m = { id:'m' + S.seq++, b, n:B.n, img:B.img, x, y, att:B.att + (S.forceM || 0), sceaux:B.s(), it:'frappe' }; S.R.monstres.push(m); return m; }
 function libre(S, x, y, sauf) { const R = S.R; if (x < 0 || y < 0 || x >= R.w || y >= R.h || R.murs[cle(x, y)]) return false;
   const p = R.portes[cle(x, y)]; if (p && !p.ouverte) return false;
+  if (R.grille && x === R.grille.x && y === R.grille.y && !grilleOuverte(S)) return false;
   if (R.monstres.some(m => m !== sauf && m.x === x && m.y === y)) return false; if (R.boss && R.boss !== sauf && R.boss.x === x && R.boss.y === y) return false; return true; }
 const herosEn = (S, x, y) => S.heros.find(h => h.x === x && h.y === y);
+const grilleOuverte = S => !!(S.R.grille && S.heros.some(h => !h.aTerre && h.x === S.R.grille.dx && h.y === S.R.grille.dy));
 const voisins = (a, b) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y) === 1;
 const dist = (a, b) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
 // 16/11 (retour de l'utilisateur) : AU CONTACT = une case autour, DIAGONALES COMPRISES (pour les héros comme pour les monstres),
@@ -340,7 +377,13 @@ function debutTour(S) {
     if (h.carillon && h.des.length) { h.des.sort((a, b) => b.v - a.v); h.des.shift(); h.carillon = false; log(S, `🔔 ${nm(h)} a perdu son plus gros dé.`); }
   });
   for (const c in R.leviersTour) { R.leviersTour[c]--; if (R.leviersTour[c] <= 0) { delete R.leviersTour[c]; if (!R.bronze) log(S, '🎚 Un levier remonte tout seul dans un claquement : il faut les baisser tous les quatre en même temps.'); } }
-  R.monstres.forEach(m => { const B = BETES[m.b], r = hasard(S); m.it = B.garde && r < B.garde ? 'garde' : B.soin && r < B.soin && R.monstres.length > 1 ? 'soin' : B.fuit && r < B.fuit ? 'fuit' : 'frappe';
+  // les tas d'os se relèvent (un tour après)
+  (R.os || []).filter(o => o.t < R.tour).forEach(o => { if (libre(S, o.x, o.y) && !herosEn(S, o.x, o.y)) { const m = ajouteMonstre(S, 'osclaque', o.x, o.y); m.sceaux = [sceau('any')]; m.revenu = true; log(S, '🦴 Clac, clac, clac… le tas d’os se remonte : un Os-qui-claque revient (un seul sceau) !'); } });
+  R.os = (R.os || []).filter(o => o.t >= R.tour);
+  R.monstres.forEach(m => { const B = BETES[m.b], r = hasard(S);
+    if (B.immobile) { m.it = 'rien'; return; }
+    if (m.charge != null) { m.it = 'gros'; return; }
+    m.it = B.grosCoup && r < B.grosCoup ? 'elan' : B.garde && r < B.garde ? 'garde' : B.soin && r < B.soin && R.monstres.length > 1 ? 'soin' : B.fuit && r < B.fuit ? 'fuit' : 'frappe';
     // 16/11 : le Gardien de bronze surveille ses leviers : s'il y en a de baissés, il en remonte un (une fois sur deux)
     if (B.leviers && !R.bronze && Object.keys(R.leviersTour).length && r < .5) m.it = 'levier'; });
   if (R.boss) R.boss.it = R.boss.repos ? 'remonte' : 'frappe';
@@ -381,6 +424,8 @@ function bouger(S, hi, idDe, x, y) {
   if (o && o.t === 'piege' && !o.trouve) { o.trouve = true; o.cache = false; blesseHeros(S, h, 3); ev.push({ t:'piege', h:hi }); log(S, `⚠ ${nm(h)} tombe dans un piège : −3 PV.`); }
   if (o && o.t === 'rouage' && !h.porte) { delete S.R.obj[cle(x, y)]; h.porte = true; log(S, `⚙ ${nm(h)} ramasse un rouage.`); }
   else if (o && o.t === 'rouage') log(S, `⚙ ${nm(h)} porte déjà un rouage : il en laisse un par terre (un seul à la fois).`);
+  if (S.R.grille && x === S.R.grille.dx && y === S.R.grille.dy) { log(S, `⬇ ${nm(h)} monte sur la dalle : CLONK… la grille du Cagibi remonte. Tant que ${nm(h)} reste dessus, elle reste ouverte.`); ev.push({ t:'grille' }); }
+  else if (S.R.grille && de0[0] === S.R.grille.dx && de0[1] === S.R.grille.dy && !grilleOuverte(S)) log(S, `⬆ ${nm(h)} quitte la dalle : la grille retombe dans un grand bruit de fer.`);
   voir(S).forEach(s => ev.push({ t:'salle', salle:s }));
   return { ok:true, ev };
 }
@@ -391,7 +436,8 @@ function frapper(S, hi, idDe, mid, k) {
   if (!aPortee(S, h, m)) return h.id === 'zephine' ? 'Trop loin (2 cases au plus).' : 'Il faut être au contact du monstre (une case autour, diagonales comprises).';
   const s = m.sceaux[k], bonus = s && (s.t === 'min' || s.t === 'tot') ? h.att || 0 : 0, vA = d.v + bonus; // ⚔ l'Attaque de l'équipement compte sur les sceaux « ≥ » et « Σ »
   if (!s || !accepte(s, vA, m.sceaux)) return 'Ce dé ne va pas sur ce sceau.';
-  prendDe(h, idDe); pose(s, vA);
+  if (m === R.boss && phasesDe(S)[m.phase].intouchable) return 'Il est intouchable : trouvez et brisez son reliquaire.';
+  prendDe(h, idDe); pose(s, vA); m.dernier = d.v; if (d.v === 6) m.six = R.tour;
   log(S, `⚔ ${nm(h)} pose un ${d.v}${bonus ? ` +${bonus} (équipement) = ${vA}` : ''} sur ${m.n}.`);
   if ((h.id === 'maelle' && d.v === 6) || (a_t(h, 'brute') && d.v >= 5)) { const s2 = m.sceaux.find(z => !z.ok); if (s2) { brise(s2); log(S, `🔨 ${h.id === 'maelle' ? 'Coup de forge (un 6 de Maëlle)' : 'Brute (un 5 ou un 6)'} : un DEUXIÈME sceau se brise !`); } }
   R.frappeurs = R.frappeurs || {}; R.frappeurs[m.id] = (R.frappeurs[m.id] || []); if (!R.frappeurs[m.id].includes(hi)) R.frappeurs[m.id].push(hi);
@@ -400,18 +446,31 @@ function frapper(S, hi, idDe, mid, k) {
 const aPortee = (S, h, m) => h.id === 'zephine' ? (contact(S, h, m) || dist(h, m) <= 2) : contact(S, h, m);
 function verifieMonstre(S, m) {
   const R = S.R, ev = [];
-  if (!m.sceaux.every(s => s.ok)) return ev;
-  if (m === R.boss) {
-    R.boss.phase++; ev.push({ t:'phase', m:m.id });
-    if (R.boss.phase >= PHASES.length) { R.boss = null; S.fin = 'gagne'; S.score += 500 + S.sablier * 10; log(S, '🏆 L’Horloger s’arrête… et s’excuse !'); return ev; }
-    R.boss.sceaux = sceauxBoss(S, R.boss.phase); if (R.boss.phase === 2 && S.livre) log(S, '📕 Le Livre des heures : un sceau de moins pour la Dernière Heure.');
-    log(S, `⏰ L’Horloger passe à la phase « ${PHASES[R.boss.phase].n} » : il ${PHASES[R.boss.phase].d}.`); return ev;
-  }
+  if (!m.sceaux.length || !m.sceaux.every(s => s.ok)) return ev;
+  if (m === R.boss) return bossPhaseSuivante(S, ev);
+  if (m.b === 'reliquaire') { R.monstres = R.monstres.filter(z => z !== m); S.score += 60; log(S, '💥 Le Reliquaire éclate en mille éclats d’os !'); ev.push({ t:'tombe', m:m.id }); if (R.boss && phasesDe(S)[R.boss.phase].intouchable) bossPhaseSuivante(S, ev); return ev; }
+  if (BETES[m.b].releve && m.dernier !== 6 && !m.revenu) { (R.os = R.os || []).push({ x:m.x, y:m.y, t:R.tour }); log(S, `🦴 ${m.n} s’effondre en tas d’os… qui frémit encore (achevez-les avec un 6, la prochaine fois).`); }
   R.monstres = R.monstres.filter(z => z !== m); S.score += BETES[m.b].elite ? 60 : 20;
   const duo = (R.frappeurs && R.frappeurs[m.id] || []).length >= 2; if (duo) { S.score += 25; log(S, `🤝 ${m.n} abattu à deux : +25 !`); }
   ev.push({ t:'tombe', m:m.id, duo }); log(S, `💀 ${m.n} tombe.`);
   if (S.objectif === 'vaincre' && !R.monstres.length && !R.boss) { S.fin = 'gagne'; S.score += 100; log(S, '🏆 L’embuscade est repoussée !'); }
   return ev;
+}
+function bossPhaseSuivante(S, ev) {
+  const R = S.R, P = phasesDe(S), roi = R.boss.b === 'roios';
+  R.boss.phase++; ev.push({ t:'phase', m:'boss' });
+  if (R.boss.phase >= P.length) { R.boss = null; S.fin = 'gagne'; S.score += 500 + S.sablier * 10; log(S, roi ? '🏆 Le Roi des Os tombe en poussière… et le Labyrinthe se tait.' : '🏆 L’Horloger s’arrête… et s’excuse !'); return ev; }
+  R.boss.sceaux = sceauxBoss(S, R.boss.phase); if (!roi && R.boss.phase === 2 && S.livre) log(S, '📕 Le Livre des heures : un sceau de moins pour la Dernière Heure.');
+  log(S, `${roi ? '💀' : '⏰'} ${R.boss.n} passe à la phase « ${P[R.boss.phase].n} » : il ${P[R.boss.phase].d}.`);
+  if (P[R.boss.phase].intouchable) cacheReliquaire(S);
+  return ev;
+}
+// le reliquaire va dans le meuble pas fouillé le plus proche du boss (sinon il roule à côté de lui)
+function cacheReliquaire(S) {
+  const R = S.R, B = R.boss; let best = null;
+  Object.entries(R.obj).forEach(([c, o]) => { if (!o.meuble || o.fouille) return; const [x, y] = c.split(',').map(Number), d = Math.abs(x - B.x) + Math.abs(y - B.y); if (!best || d < best.d) best = { o, d, x, y }; });
+  if (best && best.d <= 14) { best.o.cache = 'reliquaire'; R.vu[cle(best.x, best.y)] = 1; log(S, '💀 « Mon cœur est caché, petits vivants… » Le reliquaire est dans un meuble pas encore fouillé, tout près.'); }
+  else { const p = [[2, 0], [-2, 0], [0, 2], [0, -2], [1, 1], [-1, -1]].map(([dx, dy]) => [B.x + dx, B.y + dy]).find(([x, y]) => libre(S, x, y) && !herosEn(S, x, y)); if (p) { ajouteMonstre(S, 'reliquaire', p[0], p[1]).att = 0; R.vu[cle(p[0], p[1])] = 1; } log(S, '💀 Le reliquaire du Roi apparaît sur le sol : brisez-le (un 2, un 4, un 6) !'); }
 }
 function proteger(S, hi, idDe, cibleI) {
   const h = S.heros[hi], d = h.des.find(z => z.id === idDe), c = S.heros[cibleI]; if (!d || !c) return 'Personne à protéger.'; if (d.pas) return 'Un dé 👣 sert à marcher ou à agir, pas à protéger.';
@@ -452,6 +511,16 @@ function agir(S, hi, idDe, x, y) {
     prendDe(h, idDe); h.porte = false; R.rouagesPoses++; S.sablier += 2; log(S, `⚙ Rouage posé sur l’axe (${R.rouagesPoses}/3) : +2 grains.`);
     if (R.rouagesPoses >= 3) reveilBoss(S); return { ok:true, ev:[{ t:'rouage', boss:R.rouagesPoses >= 3 }] };
   }
+  const st = R.statues ? R.statues.findIndex(t => t.x === x && t.y === y) : -1;
+  if (st >= 0) {
+    if (R.statuesOk) return 'Les statues regardent déjà l’autel.'; if (dist(h, { x, y }) !== 1) return 'Il faut être juste à côté de la statue.';
+    prendDe(h, idDe); tourneStatue(R, st); log(S, `🗿 ${nm(h)} pousse une statue : elle pivote… et sa voisine tourne avec elle, dans un cliquetis d’engrenages.`);
+    if (R.statues.every(t => t.d === t.veut)) { R.statuesOk = true; S.score += 80; S.sablier += 3;
+      const k = ['bouclier', 'cle', 'lunettes'].find(z => !S.heros.some(w => w.objet === z)); if (k && !h.objet) { h.objet = k; log(S, `✨ Les quatre statues s’agenouillent vers l’autel ! Une niche s’ouvre : ${nm(h)} trouve ${OBJETS[k].n} (${OBJETS[k].d}) ; +3 grains, +80.`); }
+      else log(S, '✨ Les quatre statues s’agenouillent vers l’autel ! Une niche s’ouvre : +3 grains et +80 points.');
+      return { ok:true, ev:[{ t:'enigme' }] }; }
+    return { ok:true, ev:[{ t:'statue' }] };
+  }
   if (!o) return 'Rien à faire ici.';
   if (dist(h, { x, y }) > 1) return 'Il faut être à côté.';
   if (o.meuble) return fouilleMeuble(S, hi, idDe, x, y, o);
@@ -475,6 +544,10 @@ function fouilleMeuble(S, hi, idDe, x, y, o) {
   switch (o.cache) {
     case 'rouage': { h.porte = true; S.rouagesTrouves++; const sc = SCEN[S.scen || 'horloger']; log(S, `${sc.objet.e} ${nom} trouve ${sc.objet.n === 'rouage' ? 'un ROUAGE' : 'une BRAISE ÉTERNELLE'} dans ${MEUBLE_N[o.t] || 'le meuble'} ! À porter jusqu’à ${sc.axe}.`); break; }
     case 'potion': case 'parchemin': case 'fumee': (h.sac = h.sac || []).push(o.cache); log(S, `🎒 ${nom} met ${SAC[o.cache].n.toLowerCase()} dans son sac (trouvée dans ${MEUBLE_N[o.t]}).`); break;
+    case 'potion2': (h.sac = h.sac || []).push('potion', 'potion'); ev.quoi = 'potion'; log(S, `🎒 ${nom} trouve DEUX potions de soin dans ${MEUBLE_N[o.t]} ! (dans son sac)`); break;
+    case 'reliquaire': { const p = [[1, 0], [-1, 0], [0, 1], [0, -1]].map(([dx, dy]) => [x + dx, y + dy]).find(([a, b]) => libre(S, a, b) && !herosEn(S, a, b)) || [h.x, h.y];
+      const m = ajouteMonstre(S, 'reliquaire', p[0], p[1]); m.att = 0; R.vu[cle(p[0], p[1])] = 1; ev.quoi = 'monstre';
+      log(S, `💀 ${nom} renverse ${MEUBLE_N[o.t]} : LE RELIQUAIRE du Roi des Os roule sur le sol ! Brisez-le (un 2, un 4, un 6).`); break; }
     case 'grains': S.sablier += 3; log(S, `⌛ Un petit sablier dans ${MEUBLE_N[o.t]} : +3 grains !`); break;
     case 'or': S.score += 50; S.orAv = (S.orAv || 0) + 8; log(S, `💰 Des pièces d’or dans ${MEUBLE_N[o.t]} : +50 points, +8 or pour tes héros.`); break;
     case 'objet': { if (hasard(S) < (h.av ? .6 : .35)) { S.equipTrouve = (S.equipTrouve || 0) + 1; ev.quoi = 'equip'; log(S, `🗡 ${nom} trouve une PIÈCE D’ÉQUIPEMENT dans ${MEUBLE_N[o.t]} ! (elle t’attend dans le coffre des héros)`); break; }
@@ -492,7 +565,7 @@ function reveilBoss(S) {
   const pos = [[ax, ay - 1], [ax + 1, ay], [ax - 1, ay], [ax, ay + 1]].find(([x, y]) => libre(S, x, y) && !herosEn(S, x, y)) || [ax + 2, ay];
   const sc = SCEN[S.scen || 'horloger'], Bb = BETES[sc.boss];
   R.boss = { id:'boss', b:sc.boss, n:Bb.n, img:Bb.img, x:pos[0], y:pos[1], att:(S.nbHeros || 4) <= 2 ? 2 : (S.nbHeros || 4) >= 4 ? 4 : 3, phase:0, sceaux:sceauxBoss(S, 0), repos:false, it:'frappe' };
-  log(S, S.scen === 'labyrinthe' ? '✦ Les trois fragments s’emboîtent sur l’autel… le sol tremble : LE TITAN DES RUNES se réveille !' : S.scen === 'brulees' ? '🔥 Les trois braises rallument le grand brasier… LE TITAN DE FEU en sort, furieux !' : '⏰ Les trois rouages tournent… L’HORLOGER se réveille, furieux !');
+  log(S, S.scen === 'labyrinthe' ? '✦ Les trois fragments s’emboîtent sur l’autel… les os du sol se mettent à claquer : LE ROI DES OS se lève de son trône !' : S.scen === 'brulees' ? '🔥 Les trois braises rallument le grand brasier… LE TITAN DE FEU en sort, furieux !' : '⏰ Les trois rouages tournent… L’HORLOGER se réveille, furieux !');
 }
 function repousse(S, m, h, n) { for (let i = 0; i < n; i++) { const dx = Math.sign(m.x - h.x), dy = Math.sign(m.y - h.y); const nx = m.x + (Math.abs(m.x - h.x) >= Math.abs(m.y - h.y) ? dx || 1 : 0), ny = m.y + (Math.abs(m.x - h.x) < Math.abs(m.y - h.y) ? dy || 1 : 0); if (libre(S, nx, ny, m) && !herosEn(S, nx, ny)) { m.x = nx; m.y = ny; } } }
 function blesseHeros(S, h, n) {
@@ -517,7 +590,15 @@ function finTour(S) {
   for (const m of R.monstres.slice()) {
     if (fumee) break;
     if (!reveille(S, m)) continue;
-    const B = BETES[m.b], c = plusProche(m); if (!c || dist(m, c) > 8) continue;
+    const B = BETES[m.b];
+    if (B.immobile) continue;
+    // ♻ régénère : un sceau se referme, sauf si on lui a posé un 6 ce tour
+    if (B.regen && m.six !== R.tour) { const s = m.sceaux.find(x => x.ok); if (s) { s.ok = false; s.val = 0; s.reste = s.t === 'tot' ? s.v : 0; log(S, `♻ ${m.n} se remonte : un sceau se referme (il fallait lui poser un 6).`); ev.push({ t:'garde', m:m.id }); } }
+    // le lâche choisit un héros SEUL s'il en voit un pas trop loin
+    const seul = B.lache ? debout().filter(h => !S.heros.some(z => z !== h && !z.aTerre && voisins(z, h))).sort((a, b) => dist(a, m) - dist(b, m))[0] : null;
+    const c = seul && dist(seul, m) <= B.mv + 2 ? seul : plusProche(m);
+    if (!c || dist(m, c) > 8) continue;
+    if (m.it === 'elan') { m.charge = m.sceaux.filter(s => s.ok).length; log(S, `⚡ ${m.n} prend son élan… au prochain tour, il frappera de +2, sauf si vous lui brisez un sceau d’ici là !`); ev.push({ t:'elan', m:m.id }); marche(m, c, 1); continue; }
     if (m.it === 'garde') { const s = m.sceaux.find(x => x.ok && x.t !== 'tot'); if (s) { s.ok = false; s.val = 0; } ev.push({ t:'garde', m:m.id }); continue; }
     if (m.it === 'soin') { const o = R.monstres.find(z => z !== m && z.sceaux.some(s => s.ok) && dist(z, m) <= 4); if (o) { const s = o.sceaux.find(x => x.ok); s.ok = false; s.val = 0; s.reste = s.t === 'tot' ? s.v : 0; log(S, `💚 ${m.n} répare ${o.n}.`); } ev.push({ t:'soin', m:m.id }); continue; }
     if (m.it === 'fuit') { const de = [m.x, m.y]; repousse(S, m, c, 2); ev.push({ t:'pas', m:m.id, de }); ev.push({ t:'fuit', m:m.id }); continue; }
@@ -525,11 +606,23 @@ function finTour(S) {
       const P = ['« Clac ! Personne ne touche à MES leviers. »', '« Grrr… ces leviers restent levés ! »', '« Le Maître dort. Les leviers restent en haut. »'];
       log(S, `🗿 ${m.n} grince ${P[Math.floor(hasard(S) * P.length)]} Il remonte un levier (${Object.keys(R.leviersTour).length}/4 baissés).`); ev.push({ t:'levierRemonte', m:m.id }); continue; }
     marche(m, c, B.mv);
-    if (contact(S, m, c)) { const perdu = blesseHeros(S, c, m.att); ev.push({ t:'frappe', m:m.id, h:S.heros.indexOf(c), v:perdu }); log(S, `⚔ ${m.n} frappe ${nm(c)} (−${perdu}).`); }
+    let plus = 0, pourquoi = [];
+    if (m.it === 'gros') { const casse = m.sceaux.filter(s => s.ok).length > m.charge; m.charge = null; if (casse) log(S, `💥 Le gros coup de ${m.n} est brisé : vous lui avez cassé un sceau à temps !`); else { plus += 2; pourquoi.push('gros coup +2'); } }
+    if (B.meute && R.monstres.some(z => z !== m && z.b === m.b && contact(S, z, c))) { plus += 1; pourquoi.push('meute +1'); }
+    if (B.lache && !S.heros.some(z => z !== c && !z.aTerre && voisins(z, c))) { plus += 2; pourquoi.push('héros seul +2'); }
+    if (contact(S, m, c)) { const perdu = blesseHeros(S, c, m.att + plus); ev.push({ t:'frappe', m:m.id, h:S.heros.indexOf(c), v:perdu }); log(S, `⚔ ${m.n} frappe ${nm(c)} (−${perdu}${pourquoi.length ? ' : ' + pourquoi.join(', ') : ''}).`); }
   }
   if (R.boss && !S.fin) {
     const Bo = R.boss;
-    if (Bo.repos) { const s = Bo.sceaux.find(x => x.ok && x.t !== 'tot'); if (s) { s.ok = false; s.val = 0; } log(S, '⏰ L’Horloger remonte son ressort (un sceau se referme).'); ev.push({ t:'garde', m:'boss' }); }
+    if (Bo.repos) { const s = Bo.sceaux.find(x => x.ok && x.t !== 'tot'); if (s) { s.ok = false; s.val = 0; } log(S, Bo.b === 'roios' ? '💀 Le Roi des Os reprend son souffle (un sceau se referme).' : '⏰ L’Horloger remonte son ressort (un sceau se referme).'); ev.push({ t:'garde', m:'boss' }); }
+    else if (Bo.b === 'roios') {
+      const c = plusProche(Bo); marche(Bo, c, 1);
+      const coup = n => { if (c && contact(S, Bo, c)) { const perdu = blesseHeros(S, c, n); ev.push({ t:'frappe', m:'boss', h:S.heros.indexOf(c), v:perdu }); log(S, `⚔ ${Bo.n} frappe ${nm(c)} (−${perdu}).`); } };
+      if (Bo.phase === 0) { coup(Bo.att); const p = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [-1, -1]].map(([dx, dy]) => [Bo.x + dx, Bo.y + dy]).find(([x, y]) => libre(S, x, y) && !herosEn(S, x, y)); if (p) { ajouteMonstre(S, 'osclaque', p[0], p[1]); R.vu[cle(p[0], p[1])] = 1; } log(S, '💀 L’Appel des os : un Os-qui-claque sort du sol !'); }
+      else if (Bo.phase === 1) { coup(Bo.att); log(S, '💀 « Tant que mon cœur bat, je ne crains rien ! »'); }
+      else { coup(Bo.att + 1); debout().filter(h => h !== c && dist(h, Bo) <= 2).forEach(h => { blesseHeros(S, h, 1); Bo.vol = true; }); if (Bo.vol) log(S, '💀 La Dernière Danse : le Roi aspire la vie des héros proches (−1).'); Bo.vol = false; }
+      ev.push({ t:'boss' });
+    }
     else {
       const c = plusProche(Bo);
       if (Bo.phase === 0) { marche(Bo, c, 1); if (c && contact(S, Bo, c)) { const perdu = blesseHeros(S, c, Bo.att); ev.push({ t:'frappe', m:'boss', h:S.heros.indexOf(c), v:perdu }); log(S, `⚔ ${Bo.n} frappe ${nm(c)} (−${perdu}).`); } for (let i = 0; i < 2; i++) { const p = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [-1, -1]].map(([dx, dy]) => [Bo.x + dx, Bo.y + dy]).find(([x, y]) => libre(S, x, y) && !herosEn(S, x, y)); if (p) ajouteMonstre(S, SCEN[S.scen || 'horloger'].renfort, p[0], p[1]); } log(S, `⏰ ${SCEN[S.scen || 'horloger'].phases[0]} : un coup de 3 et deux renforts !`); }
@@ -545,7 +638,7 @@ function finTour(S) {
   debutTour(S); return ev;
 }
 
-const API = { contact, pasDe, aPortee, SAC, utiliser, SCEN, HEROS_C, BETES, PHASES, SALLES, OBJETS, MEUBLE_N, nouvelle, atteignables, bouger, frapper, proteger, soigner, donner, relever, fouiller, agir, ouvrir,
+const API = { CAPA, phasesDe, grilleOuverte, contact, pasDe, aPortee, SAC, utiliser, SCEN, HEROS_C, BETES, PHASES, SALLES, OBJETS, MEUBLE_N, nouvelle, atteignables, bouger, frapper, proteger, soigner, donner, relever, fouiller, agir, ouvrir,
   finTour, visible, accepte, voisins, dist, herosEn, cle, libre, reveille };
 if (typeof module !== 'undefined' && module.exports) module.exports = API; else racine.CHRON = API;
 })(typeof window !== 'undefined' ? window : globalThis);
