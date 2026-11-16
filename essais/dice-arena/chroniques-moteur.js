@@ -93,6 +93,8 @@ const SCEN = {
   labyrinthe: { n:'Le Labyrinthe des Runes (donjon au hasard)', boss:'roios', renfort:'osclaque', objet:{ n:'fragment de rune', e:'✦' }, axe:'l’autel des runes', axeE:'✦', sablier:30,
     phases:['L’Appel des os', 'Le Reliquaire', 'La Dernière Danse'], vue:5, hasard:true },
   // 15/11 soir : LES AVENTURES EN SCÈNES (chroniques-aventures.js) : une EMBUSCADE sur le chemin = un petit terrain ouvert, gagner = abattre tous les monstres
+  // 16/11 : l'ESSAI d'une salle de l'atelier des cartes (editeur.html) : la salle seule, 2 monstres à battre
+  atelier: { n:'Essai de l’atelier', boss:'titan', renfort:'rouagelin', objet:{ n:'rouage', e:'⚙️' }, axe:'', axeE:'', sablier:40, phases:['', '', ''], image:'', vue:0, hasard:true, objectif:'vaincre' },
   arene: { n:'Embuscade', boss:'titan', renfort:'gobelin', objet:{ n:'—', e:'⚔' }, axe:'', axeE:'', sablier:40, phases:['', '', ''], vue:8, hasard:true, objectif:'vaincre' },
 };
 // la carte peinte, calée par l'utilisateur le 15/11 (28 × 36 ; . sol · # mur · ~ obstacle)
@@ -123,6 +125,25 @@ function construitCarte(S, R) {
   B.pieges.forEach(([x, y]) => R.obj[cle(x, y)] = { t:'piege', cache:true });
   B.monstres.forEach(([b, x, y]) => ajouteMonstre(S, b, x, y));
   B.depart.forEach(([x, y], i) => { if (S.heros[i]) { S.heros[i].x = x; S.heros[i].y = y; } });
+}
+// ------------------------------------------------------------------ L'ESSAI D'UNE SALLE DE L'ATELIER (16/11) : la grille de la salle telle que peinte dans l'éditeur
+function construitAtelier(S, R, C) {
+  const W2 = C.w + 2, H2 = C.h + 2; R.w = W2; R.h = H2; R.bronze = true; R.plan = 3;
+  const ty = (x, y) => { const v = (C.cases || {})[cle(x, y)]; if (v) return v; return x === 0 || y === 0 || x === W2 - 1 || y === H2 - 1 ? 'mur' : 'sol'; };
+  const tirage = ['potion', 'grains', 'parchemin', 'piege', 'or', 'fumee', 'rien'];
+  for (let y = 0; y < H2; y++) for (let x = 0; x < W2; x++) { const v = ty(x, y), c = cle(x, y);
+    if (v === 'mur') R.murs[c] = '#'; else if (v === 'obstacle') R.murs[c] = '~';
+    else if (v === 'porte') R.portes[c] = { salle:'X', ouverte:false, essai:true };
+    else if (v.startsWith('meuble')) { R.murs[c] = 'M'; R.obj[c] = { t:v.split(':')[1] || 'coffre', meuble:true, fouille:false, cache:tirage[Math.floor(hasard(S) * tirage.length)] }; }
+    else R.salle[c] = 'X';
+    R.vu[c] = 1; }
+  R.vuSalle.X = true;
+  const libres = []; for (let y = 1; y < H2 - 1; y++) for (let x = 1; x < W2 - 1; x++) if (!R.murs[cle(x, y)]) libres.push([x, y]);
+  // les héros près de la 1re porte (ou en bas à gauche), les monstres le plus loin possible
+  const P = Object.keys(R.portes).map(c => c.split(',').map(Number)), p0 = P[0] || [1, H2 - 2];
+  libres.sort((a, b) => (Math.abs(a[0] - p0[0]) + Math.abs(a[1] - p0[1])) - (Math.abs(b[0] - p0[0]) + Math.abs(b[1] - p0[1])));
+  S.heros.forEach((h, i) => { const c = libres[i] || libres[0]; h.x = c[0]; h.y = c[1]; });
+  (C.monstres || ['rouagelin', 'gobelin']).forEach((b, i) => { const c = libres[libres.length - 1 - i]; if (c && BETES[b]) ajouteMonstre(S, b, c[0], c[1]); });
 }
 // ------------------------------------------------------------------ L'EMBUSCADE (15/11 soir) : 12 × 10, des arbres ou des rochers, les héros en bas, les monstres en haut
 function construitArene(S, R, opts) {
@@ -297,6 +318,7 @@ function nouvelle(heros, s, scen, opts = {}) {
     livre:false, journal:[], seq:0, fin:null, score:0, tours:0, rouagesTrouves:0, etape:'jeu' };
   const R = { w:W, h:H, murs:{}, salle:{}, obj:{}, portes:{}, monstres:[], tour:0, vuSalle:{}, vu:{}, rouagesPoses:0, boss:null, bronze:false, leviersTour:{} };
   S.R = R;
+  if (scen === 'atelier') { construitAtelier(S, R, opts.salle || { w:4, h:3 }); S.objectif = 'vaincre'; log(S, `🛠 Essai de « ${(opts.salle && opts.salle.nom) || 'la salle'} » : déplacez-vous, fouillez, battez les monstres.`); debutTour(S); return S; }
   if (scen === 'arene') { construitArene(S, R, opts); adapte(S); S.objectif = 'vaincre'; log(S, '⚔ Embuscade ! Abattez tous les monstres.'); debutTour(S); return S; }
   if (scen === 'labyrinthe') { construitLabyrinthe(S, R); adapte(S); voir(S); log(S, '✦ Le Labyrinthe des Runes : un donjon jamais vu. Trouvez 3 fragments de rune dans les meubles et portez-les à l’autel, tout au fond.'); debutTour(S); return S; }
   if (scen === 'brulees') { construitCarte(S, R); adapte(S); voir(S); log(S, '🔥 Les Terres brûlées : trouvez 3 braises éternelles en fouillant les meubles et portez-les au grand brasier.'); debutTour(S); return S; }
@@ -435,6 +457,7 @@ function ouvrir(S, hi, x, y) {
   const h = S.heros[hi], R = S.R, p = R.portes[cle(x, y)];
   if (!p || p.ouverte) return 'Pas de porte fermée ici.'; if (h.aTerre || !presDePorte(S, h, x, y)) return 'Il faut être juste à côté de la porte.';
   if (p.entree) return 'Dehors, la ville est figée dans le temps : on ne repartira pas sans avoir réveillé l’Horloger.';
+  if (p.essai) return 'Essai de l’atelier : cette porte mènera à la suite du donjon quand les salles seront assemblées (étape B).';
   if (p.bronze && !R.bronze) return 'La porte de bronze est verrouillée : baissez ensemble les 4 leviers de la Salle des rouages.';
   p.ouverte = true; R.vu[cle(x, y)] = 1;
   // on regarde DERRIÈRE la porte, dans le sens où on l'ouvre : une salle se dévoile en entier, un couloir sur 3 cases

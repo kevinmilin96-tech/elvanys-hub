@@ -291,7 +291,7 @@ SCX_TXT.labyrinthe = { titre:'✦ Le Labyrinthe des Runes', duree:'30-60 min · 
 const SCT = () => (S && S.textes) || SCX_TXT[(S && S.scen) || scenChoisi]; // 15/11 soir : une aventure donne ses propres textes
 
 // ------------------------------------------------------------------ sauvegarde : tout l'état ; un POINT DE PASSAGE à chaque porte ouverte
-function sauve() { try { if (S && !S.fin) localStorage.setItem(CLE_PARTIE, JSON.stringify(S)); else localStorage.removeItem(CLE_PARTIE); } catch (e) {} }
+function sauve() { if (S && S.scen === 'atelier') return; try { if (S && !S.fin) localStorage.setItem(CLE_PARTIE, JSON.stringify(S)); else localStorage.removeItem(CLE_PARTIE); } catch (e) {} }
 const gardee = () => { try { const p = JSON.parse(localStorage.getItem(CLE_PARTIE) || 'null'); return p && p.heros && p.R && !p.fin ? p : null; } catch (e) { return null; } };
 function pointDePassage() { const c = JSON.parse(JSON.stringify(S)); delete c.passage; S.passage = JSON.stringify(c); }
 
@@ -537,7 +537,7 @@ function dessine() {
   $('app').innerHTML = `
     <div class="haut"><a href="#" onclick="quitter();return false">‹ Quitter</a><span class="t">${SCT().titre}</span>${L ? `<button onclick="equipeEnLigne()">🌐 ${L.code}</button>` : ''}<button class="hsab" onclick="infoStat('sablier')" title="Le sablier">⌛ <b>${S.sablier}</b></button>${R.boss ? `<button onclick="voirBut()" style="color:${R.boss.repos ? 'var(--doux)' : '#ff8a7a'}">⏰${R.boss.repos ? '' : ' !'}</button>` : ''}<button onclick="voirQuetes()" title="Les quêtes">📋 <b>${quetes().filter(q => q.ok).length}/${quetes().length}</b></button><button onclick="voirJournal()" title="Le journal">📜</button><button onclick="regles()">❓</button><button onclick="GM.parametres()" title="Paramètres">⚙️</button></div>
     <div class="zonebar"><span class="zt">${RZ ? `${esc(zoneNom(ZV))}${vueForcee ? ' · 👹 les monstres' : ''}` : ''}</span><button onclick="${RZ ? 'grandeCarte()' : 'petit=!petit;centrer=true;dessine()'}">${petit ? '🔍 Zoom' : '🗺 Carte'}</button></div>
-    <div style="position:relative"><div class="vue" id="vue"><div class="plateau ${S.scen === 'labyrinthe' ? 'laby' : (S.scen || 'horloger') === 'horloger' ? 'horloge' : ''}${RZ ? ' zonee' : ''}" style="grid-template-columns:repeat(${nCol}, ${t});--t:${t};${peint ? `background:url('${SC.image}?v=1') 0 0/100% 100% no-repeat` : ''}">${cases}</div></div>
+    <div style="position:relative"><div class="vue" id="vue"><div class="plateau ${S.scen === 'labyrinthe' ? 'laby' : (S.scen || 'horloger') === 'horloger' ? 'horloge' : ''}${RZ ? ' zonee' : ''}" style="grid-template-columns:repeat(${nCol}, ${t});--t:${t};${peint ? `background:url('${SC.image}${SC.image.startsWith('data:') ? '' : '?v=1'}') 0 0/100% 100% no-repeat` : ''}">${cases}</div></div>
 </div>
     <div class="equipe">${S.heros.map((z, i) => `<button class="${i === actif ? 'on' : ''} ${z.aTerre ? 'terre' : ''} ${fini(i) ? 'fini' : ''}" onclick="choisitHeros(${i})">${fini(i) ? '<span class="ok-f">✓</span>' : ''}${imgH(z)}${nomH(z).replace('Sire ', '')}<br>${z.aTerre ? '✋ à terre' : `❤${z.pv} · 🎲${z.des.length}`}${invH(z) ? `<small class="inv-h">${invH(z)}</small>` : ''}${L ? `<small class="qui${mesHeros().includes(i) ? ' moi' : ''}">${mesHeros().includes(i) ? 'toi' : proprio(i) || 'libre'}</small>` : ''}</button>`).join('')}</div>
     <div class="des" id="desH">${L && !mesHeros().includes(actif) ? `<span class="aide">👤 ${nomH(h)} est joué par <b>${proprio(actif) || 'personne'}</b>${proprio(actif) ? '' : ' : touche 🌐 en haut pour le prendre'}.</span>` : h.aTerre ? `<span class="aide">${nomH(h)} est à terre : un ami à côté peut le relever avec un dé.</span>` : h.des.length && !lanceOK(actif) ? h.des.map(() => `<button class="de cache" onclick="lanceDesH()"></button>`).join('') + `<button class="lancerH" onclick="lanceDesH()">🎲 Lancer</button>` : h.des.map(z => z.pas ? `<button class="de pas ${sel === z.id ? 'sel' : ''}" onclick="choisitDe('${z.id}')" title="${z.v} pas qui restent">👣${z.v}</button>` : `<button class="de ${sel === z.id ? 'sel' : ''}" onclick="choisitDe('${z.id}')"><img src="faces-${h.id}/face-${z.v}.webp" alt="${z.v}"></button>`).join('') || '<span class="aide">Plus de dés pour ce héros : passe au suivant.</span>'}</div>
@@ -779,7 +779,7 @@ function regles() {
 }
 
 // ------------------------------------------------------------------ fin, quitter, recommencer
-function quitter() { sauve(); S = null; L = null; fenetre(''); accueil(); }
+function quitter() { if (S && S.scen === 'atelier') { location.href = 'editeur.html'; return; } sauve(); S = null; L = null; fenetre(''); accueil(); }
 function finPartie() {
   if (S && !S.journalEnvoye && typeof guildeJournal === 'function') { S.journalEnvoye = true; guildeJournal(S.aventure ? 'chroniques-aventure' : 'chroniques', { heros:(S.heros || []).map(z => z.id || z.voie || '').join(','), resultat:S.fin, journal:[...(S.journal || [])].reverse(), resume:{ scen:S.scen, campagne:S.campagne, tour:S.tour } }); } // 15/11 soir : carnet des parties
   if (S.aventure && typeof aventureFinCombat === 'function') return aventureFinCombat();
@@ -875,7 +875,7 @@ function accueil() { document.body.classList.remove('jeu'); sessionStorage.remov
     <button class="gros" style="background:#14223a;border-color:#7cd4ff;color:#7cd4ff" onclick="amisFenetre()">👥 Mes amis<small>Vois qui est en ligne, rejoins sa salle ou invite-le dans la tienne.</small></button>
     <button class="gros" style="background:#1c1c36;border-color:#45457a;color:var(--texte)" onclick="rejoindre()">🔑 Rejoindre avec un code<small>Un ami t’a donné un code de salle.</small></button>
     ${(() => { try { const s = JSON.parse(localStorage.getItem(SALLE) || 'null'); return s ? `<button class="gros" style="background:#14322a;border-color:var(--ok);color:var(--ok)" onclick='rejoindre(${JSON.stringify(s.code)}, ${JSON.stringify(s.moi)})'>↩ Revenir dans la salle ${s.code}<small>en tant que ${s.moi.nom}</small></button>` : ''; } catch (e) { return ''; } })()}
-    <p style="text-align:center;margin-top:4cqw"><a href="chroniques-v1.html" style="color:var(--doux);font-size:3cqw">l’ancienne version (salles séparées)</a></p>
+    <p style="text-align:center;margin-top:4cqw"><a href="editeur.html" style="color:var(--or);font-size:3cqw">🛠 L’atelier des cartes</a> · <a href="chroniques-v1.html" style="color:var(--doux);font-size:3cqw">l’ancienne version (salles séparées)</a></p>
   </div>`;
 }
 // un choix de l'accueil → ce que le moteur attend (une voie, ou un héros d'aventure avec ses stats)
@@ -989,7 +989,18 @@ function reprend() { const g = gardee(); if (!g) return; S = g; actif = Math.max
 // 16/11 (retour de l'utilisateur : pas de musique dans le donjon : la piste « exploration » n'existait pas) : « carte » en exploration, « boss » quand le boss est réveillé
 function musiqueDuMoment() { if (typeof GM === 'undefined') return; try { GM.musique(!S ? 'heros' : S.R && S.R.boss ? 'boss' : 'carte'); } catch (e) {} }
 if (typeof GM !== 'undefined') { try { musiqueDuMoment(); GM.bouton(); } catch (e) {} }
-if (sessionStorage.getItem('chron-en-jeu') && !location.search && (() => { try { return gardee(); } catch (e) { return null; } })()) reprend(); else accueil();
+// 16/11 : « ▶ Tester la salle » de l'atelier des cartes (editeur.html?…) : la salle seule, son image, 2 monstres ; rien n'est sauvegardé
+async function essaiAtelier(id) {
+  let C = null; try { C = JSON.parse(localStorage.getItem('guilde-editeur-salles') || '[]').find(z => z.id === id); } catch (e) {}
+  if (!C) { accueil(); return; }
+  const img = await new Promise(ok => { try { const r = indexedDB.open('guilde-editeur', 1); r.onupgradeneeded = () => r.result.createObjectStore('img'); r.onsuccess = () => { const q = r.result.transaction('img').objectStore('img').get(id); q.onsuccess = () => ok(q.result || ''); q.onerror = () => ok(''); }; r.onerror = () => ok(''); } catch (e) { ok(''); } });
+  K.SCEN.atelier.image = img || '';
+  S = K.nouvelle(['maelle', 'gorm'], 'atelier-' + Date.now(), 'atelier', { salle:C, sansBonus:true });
+  S.textes = { titre:`🛠 Essai : ${C.nom}`, duree:'', ouverture:'', entree:() => '', but:'Essai de la salle : déplacez-vous, ouvrez une porte, fouillez un meuble, battez les 2 monstres. « Quitter » ramène à l’atelier.', porter:'', gagne:['🏆 Salle essayée !', '« Les monstres sont battus : la salle tient la route. »'] };
+  actif = 0; sel = null; centrer = true; dessine();
+}
+const ESSAI = new URLSearchParams(location.search).get('atelier');
+if (ESSAI) essaiAtelier(ESSAI); else if (sessionStorage.getItem('chron-en-jeu') && !location.search && (() => { try { return gardee(); } catch (e) { return null; } })()) reprend(); else accueil();
 // 15/11 : arrivée par une invitation d'un ami (« Rejoindre » dans la fenêtre des amis ou le bandeau d'invitation)
 { const q = new URLSearchParams(location.search); if (q.get('ligne')) { history.replaceState(null, '', location.pathname); creerSalle(); } else if (q.get('code')) { history.replaceState(null, '', location.pathname); rejoindreForm(); } }
 { const s = new URLSearchParams(location.search).get('salle'); if (s) { history.replaceState(null, '', location.pathname); const c = (typeof AMIS !== 'undefined' && AMIS.carte) || null, nom = (c && c.pseudo) || localStorage.getItem('guilde-pseudo');
