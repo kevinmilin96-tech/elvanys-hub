@@ -405,8 +405,14 @@ function revele(S, id) { const R = S.R; if (R.vuSalle[id]) return false; R.vuSal
 function majBibliotheque(S) { const R = S.R; if (R.plan !== 2 || R.biblio2) return; R.biblio2 = true;
   ['14,11', '14,12', '17,12'].forEach(c => { if (R.murs[c] === 'B') delete R.murs[c]; });
   if (R.murs['17,11'] === 'K' && R.obj['17,11'] && R.obj['17,11'].t === 'livre') { delete R.murs['17,11']; delete R.obj['17,11']; R.murs['18,11'] = 'K'; R.obj['18,11'] = { t:'livre' }; } }
+// 16/11 soir (l'utilisateur : « je suis juste à côté, la case devrait être verte ») : les parties commencées plus tôt avaient des étagères
+// à d'autres places : toute étagère restée DANS la Bibliothèque est retirée (le Livre des heures, lui, va dans le mur de droite)
+function majBibliotheque3(S) { const R = S.R; if (R.plan !== 2 || R.biblio3) return; R.biblio3 = true;
+  Object.keys(R.murs).forEach(c => { if (R.salle[c] !== 'F') return;
+    if (R.murs[c] === 'B' && !S.livre) delete R.murs[c];
+    if (R.murs[c] === 'K' && c !== '18,11') { delete R.murs[c]; const o = R.obj[c]; delete R.obj[c]; if (!R.murs['18,11']) { R.murs['18,11'] = 'K'; R.obj['18,11'] = o || { t:'livre' }; } } }); }
 function voir(S) {
-  elargitPortes(S); majBibliotheque(S);
+  elargitPortes(S); majBibliotheque(S); majBibliotheque3(S);
   if (SCEN[S.scen || 'horloger'].image || SCEN[S.scen || 'horloger'].hasard) return voirAVue(S);
   const R = S.R; let neuves = [];
   S.heros.forEach(h => {
@@ -464,7 +470,7 @@ const prendDe = (h, id) => { const i = h.des.findIndex(d => d.id === id); return
 // ---- ouvrir une porte : GRATUIT, à côté de la porte ; la salle derrière se dévoile
 // 16/11 (l'utilisateur) : une porte PEINTE déborde souvent sur la case de mur voisine : on l'ouvre aussi depuis cette case-là
 // 16/11 (l'utilisateur : « deux cases pour simuler la porte, pas trois ») : on note, porte par porte, de quel côté la porte PEINTE déborde
-const DEBORDE = { '12,18':[11, 18], '16,9':[15, 9] }; // + la Bibliothèque (16/11) : la porte peinte couvre aussi la case de gauche // la Réserve : la porte peinte couvre aussi la case de gauche
+const DEBORDE = { '12,18':[11, 18], '16,9':[15, 9], '5,4':[6, 4] }; // 16/11 soir : la porte peinte de la Galerie des statues fait aussi deux cases // + la Bibliothèque (16/11) : la porte peinte couvre aussi la case de gauche // la Réserve : la porte peinte couvre aussi la case de gauche
 function moitiesPorte(S, x, y) { if (S.R.plan !== 2) return []; const d = DEBORDE[cle(x, y)]; return d && S.R.murs[cle(...d)] === '#' ? [d] : []; }
 // une porte peinte large, une fois OUVERTE : sa moitié de mur devient un passage (on traverse les deux cases)
 function elargitPortes(S) { const R = S.R; if (R.plan !== 2) return; Object.entries(R.portes).forEach(([c, p]) => { if (!p.ouverte || p.moitie) return; const [x, y] = c.split(',').map(Number);
