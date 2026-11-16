@@ -271,8 +271,8 @@ const PORTES = [[5, 4, 'S'], [15, 4, 'H', 'bronze'], [5, 9, 'B'], [11, 9, 'E'], 
 // celles du haut doivent regarder vers le bas (vers l'autel), celles du bas vers le haut
 const GRILLE = [20, 9], DALLE = [18, 8], AUTEL_S = [5, 2], STATUES = [[4, 1], [7, 1], [7, 3], [4, 3]], VEUT_S = [2, 2, 0, 0];
 const MEUBLES = [[7, 19, 'coffre', 'A'], [3, 21, 'tonneaux', 'A'], [10, 19, 'caisse', 'C'], [13, 19, 'tonneaux', 'C'], [13, 21, 'caisse', 'C'],
-  [12, 28, 'tombeau', 'G'], [14, 28, 'tombeau', 'G'], [15, 27, 'coffre', 'G'], [12, 10, 'etabli', 'E'], [12, 12, 'armoire', 'E'], [17, 13, 'coffre', 'F'], [3, 13, 'tonneaux', 'B'], [20, 3, 'cheminee', 'H'], [19, 12, 'coffre', 'P']];
-const ROUAGES_CACHES = ['13,21', '14,28', '12,10', '17,13'];
+  [12, 28, 'tombeau', 'G'], [14, 28, 'tombeau', 'G'], [15, 27, 'coffre', 'G'], [12, 10, 'etabli', 'E'], [12, 12, 'armoire', 'E'], [18, 12, 'etagere', 'F'], [3, 13, 'tonneaux', 'B'], [20, 3, 'cheminee', 'H'], [19, 12, 'coffre', 'P']];
+const ROUAGES_CACHES = ['13,21', '14,28', '12,10', '18,12']; // 16/11 soir : celui de la Bibliothèque est dans l'étagère peinte du mur de droite
 const LEVIERS = [[3, 11], [3, 12], [7, 11], [7, 12]]; // sur les deux pupitres peints de la salle (dessin salle-rouages)
 const ETAGERES = [], LIVRE = [18, 11], // 16/11 (l'utilisateur) : plus d'étagères au milieu ; le livre est rangé dans la bibliothèque peinte du mur de droite
   AXE = [15, 2], MARCHAND = [10, 12]; // contre les murs, comme les étagères peintes
@@ -411,8 +411,13 @@ function majBibliotheque3(S) { const R = S.R; if (R.plan !== 2 || R.biblio3) ret
   Object.keys(R.murs).forEach(c => { if (R.salle[c] !== 'F') return;
     if (R.murs[c] === 'B' && !S.livre) delete R.murs[c];
     if (R.murs[c] === 'K' && c !== '18,11') { delete R.murs[c]; const o = R.obj[c]; delete R.obj[c]; if (!R.murs['18,11']) { R.murs['18,11'] = 'K'; R.obj['18,11'] = o || { t:'livre' }; } } }); }
+// 16/11 soir (l'utilisateur : « pourquoi je ne peux pas remonter ? » ; « la case à fouiller doit être sur une étagère, pas sur le sol ») :
+// plus aucune étagère au milieu de la salle (même là où était le livre déjà pris), et le coffre du sol devient l'étagère peinte du mur de droite
+function majBibliotheque4(S) { const R = S.R; if (R.plan !== 2 || R.biblio4) return; R.biblio4 = true;
+  Object.keys(R.murs).forEach(c => { if (R.salle[c] === 'F' && R.murs[c] === 'B') delete R.murs[c]; });
+  const o = R.obj['17,13']; if (o && o.meuble && o.salle === 'F' && !R.murs['18,12']) { delete R.obj['17,13']; delete R.murs['17,13']; o.t = 'etagere'; if (!o.crochete) o.verrou = 0; R.obj['18,12'] = o; R.murs['18,12'] = 'M'; } }
 function voir(S) {
-  elargitPortes(S); majBibliotheque(S); majBibliotheque3(S);
+  elargitPortes(S); majBibliotheque(S); majBibliotheque3(S); majBibliotheque4(S);
   if (SCEN[S.scen || 'horloger'].image || SCEN[S.scen || 'horloger'].hasard) return voirAVue(S);
   const R = S.R; let neuves = [];
   S.heros.forEach(h => {
