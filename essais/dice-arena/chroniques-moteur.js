@@ -428,9 +428,12 @@ function atteignables(S, h, v, pas) {
 }
 const prendDe = (h, id) => { const i = h.des.findIndex(d => d.id === id); return i < 0 ? null : h.des.splice(i, 1)[0]; };
 // ---- ouvrir une porte : GRATUIT, à côté de la porte ; la salle derrière se dévoile
+// 16/11 (l'utilisateur) : une porte PEINTE déborde souvent sur la case de mur voisine : on l'ouvre aussi depuis cette case-là
+function moitiesPorte(S, x, y) { const R = S.R; return [[1, 0], [-1, 0], [0, 1], [0, -1]].map(([a, b]) => [x + a, y + b]).filter(([a, b]) => R.murs[cle(a, b)] === '#' && !R.portes[cle(a, b)]); }
+function presDePorte(S, h, x, y) { return dist(h, { x, y }) === 1 || (S.R.plan === 2 && moitiesPorte(S, x, y).some(([a, b]) => dist(h, { x:a, y:b }) === 1 && !S.R.murs[cle(h.x, h.y)])); }
 function ouvrir(S, hi, x, y) {
   const h = S.heros[hi], R = S.R, p = R.portes[cle(x, y)];
-  if (!p || p.ouverte) return 'Pas de porte fermée ici.'; if (h.aTerre || dist(h, { x, y }) !== 1) return 'Il faut être juste à côté de la porte.';
+  if (!p || p.ouverte) return 'Pas de porte fermée ici.'; if (h.aTerre || !presDePorte(S, h, x, y)) return 'Il faut être juste à côté de la porte.';
   if (p.entree) return 'Dehors, la ville est figée dans le temps : on ne repartira pas sans avoir réveillé l’Horloger.';
   if (p.bronze && !R.bronze) return 'La porte de bronze est verrouillée : baissez ensemble les 4 leviers de la Salle des rouages.';
   p.ouverte = true; R.vu[cle(x, y)] = 1;
@@ -670,7 +673,7 @@ function finTour(S) {
   debutTour(S); return ev;
 }
 
-const API = { rectSalle, etageDe, COULOIRS_Z2, CAPA, phasesDe, grilleOuverte, contact, pasDe, aPortee, SAC, utiliser, SCEN, HEROS_C, BETES, PHASES, SALLES, OBJETS, MEUBLE_N, nouvelle, atteignables, bouger, frapper, proteger, soigner, donner, relever, fouiller, agir, ouvrir,
+const API = { moitiesPorte, presDePorte, rectSalle, etageDe, COULOIRS_Z2, CAPA, phasesDe, grilleOuverte, contact, pasDe, aPortee, SAC, utiliser, SCEN, HEROS_C, BETES, PHASES, SALLES, OBJETS, MEUBLE_N, nouvelle, atteignables, bouger, frapper, proteger, soigner, donner, relever, fouiller, agir, ouvrir,
   finTour, visible, accepte, voisins, dist, herosEn, cle, libre, reveille };
 if (typeof module !== 'undefined' && module.exports) module.exports = API; else racine.CHRON = API;
 })(typeof window !== 'undefined' ? window : globalThis);

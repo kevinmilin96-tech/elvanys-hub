@@ -494,7 +494,7 @@ function dessine() {
     let cl = 'c', inner = '', stMur = '';
     if (!vu) cl += ' noir';
     else if (peint) cl += ' peint';
-    else if (p && fondSalle(S, x, y)) { cl += ' porte peinte' + (p.ouverte ? ' ouverte' : '') + (!p.ouverte && K.dist(h, { x, y }) === 1 ? ' cible' : ''); if (p.bronze && !R.bronze) inner = '<span class="cad">🔒</span>'; } // 16/11 (l'utilisateur) : la porte PEINTE sur l'image se touche telle quelle, sans icône par-dessus
+    else if (p && fondSalle(S, x, y)) { cl += ' porte peinte' + (p.ouverte ? ' ouverte' : '') + (!p.ouverte && K.presDePorte(S, h, x, y) ? ' cible' : ''); if (p.bronze && !R.bronze) inner = '<span class="cad">🔒</span>'; } // 16/11 (l'utilisateur) : la porte PEINTE sur l'image se touche telle quelle, sans icône par-dessus
     else if (p) { cl += ' porte' + (p.ouverte ? ' ouverte' : '') + (p.bronze ? ' bronze' : '') + (p.ouverte ? '' : ' img'); if (!p.ouverte) inner = ((S.scen || 'horloger') === 'horloger' ? porteDessus(R, x, y, p.bronze) : objImg('porte', p.bronze ? 'bronze' : '')) + (p.bronze && !R.bronze ? '<span class="cad">🔒</span>' : ''); }
     else if (mur === '#') cl += ' mur'; // 16/11 (l'utilisateur : « enlève ces murs rajoutés ») : plus de bordure de pierre ajoutée, les murs sont ceux peints dans les salles
     else if (mur === '~') inner = `<span class="o">${S.scen === 'arene' ? '🌳' : '🪨'}</span>`; // 15/11 soir : les obstacles (arbres d'une embuscade, rochers) se voient
@@ -648,9 +648,11 @@ function touche(x, y) {
   if (occupe || !S) return;
   const R = S.R, h = S.heros[actif], d = deSel(), c = K.cle(x, y);
   if (!R.vu[c]) return;
+  // la moitié de porte peinte sur la case de mur voisine : un toucher dessus = la porte
+  if (!R.portes[c] && R.murs[c] === '#' && R.plan === 2) { const pc = [[1, 0], [-1, 0], [0, 1], [0, -1]].map(([a, b]) => [x + a, y + b]).find(([a, b]) => { const q = R.portes[K.cle(a, b)]; return q && !q.ouverte && K.moitiesPorte(S, a, b).some(([u, v]) => u === x && v === y) && K.presDePorte(S, h, a, b); }); if (pc) return touche(pc[0], pc[1]); }
   const p = R.portes[c]; if (p && !p.ouverte) { // 16/11 (retour de l'utilisateur) : SEUL le héros choisi ouvre, s'il est juste à côté
     if (p.entree) { bulle('🚪 Dehors, la ville est figée dans le temps : on ne repartira pas sans avoir réveillé l’Horloger.', false, true); return; }
-    if (K.dist(h, { x, y }) !== 1) { bulle(`${nomH(h)} doit être juste à côté de la porte.`, true); return; }
+    if (!K.presDePorte(S, h, x, y)) { bulle(`${nomH(h)} doit être juste à côté de la porte.`, true); return; }
     son('porte'); return resultat(K.ouvrir(S, actif, x, y)); }
   const hi = S.heros.findIndex(z => z.x === x && z.y === y), m = R.monstres.find(z => z.x === x && z.y === y), B = R.boss && R.boss.x === x && R.boss.y === y ? R.boss : null;
   if (m && !B && hi < 0 && !eclaire(x, y)) { bulle('Il fait trop noir par là : approche ta lanterne pour voir ce qui s’y cache.', true); return; }
