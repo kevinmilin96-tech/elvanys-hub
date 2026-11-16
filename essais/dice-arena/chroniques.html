@@ -522,7 +522,7 @@ function dessine() {
         // 16/11 (l'utilisateur) : une bande FINE de pierres (couloir-mur, découpée de l'image Gemini), gris sombre comme les murs des salles,
         // collée au côté du couloir, continue même sur les coins des salles
         const bas = cou(x, y + 1), haut = cou(x, y - 1), dr = cou(x + 1, y), ga = cou(x - 1, y);
-        if (bas || haut || dr || ga) { cl += ' murc'; if (!fondSalle(S, x, y)) stMur = 'background:#0b0b14;';
+        if ((bas || haut || dr || ga) && !fondSalle(S, x, y)) { cl += ' murc'; stMur = 'background:#0b0b14;'; // 16/11 (l'utilisateur) : pas sur les murs peints des salles (les portes y feraient des trous)
           inner += bas || haut ? `<span class="bande h" style="${bas ? 'bottom' : 'top'}:0;background-position:calc(var(--t) * ${-x * .3}) 0"></span>` : `<span class="bande v" style="${dr ? 'right' : 'left'}:0;background-position:0 calc(var(--t) * ${-y * .3})"></span>`; } } } // 16/11 (l'utilisateur : « enlève ces murs rajoutés ») : plus de bordure de pierre ajoutée, les murs sont ceux peints dans les salles
     else if (mur === '~') inner = `<span class="o">${S.scen === 'arene' ? '🌳' : '🪨'}</span>`; // 15/11 soir : les obstacles (arbres d'une embuscade, rochers) se voient
     // 16/11 (l'utilisateur : « nos propres images dénaturent ») : dans une salle PEINTE, on touche le meuble du dessin, sans icône ; une lueur dorée le montre
