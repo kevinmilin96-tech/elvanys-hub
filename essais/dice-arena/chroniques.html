@@ -392,7 +392,9 @@ function invLigne(h) {
   if (h.porte) L2.push('⚙ porte un rouage (un seul à la fois, −1 case)');
   if (h.objet) L2.push(`${OBJ_E[h.objet]} ${K.OBJETS[h.objet].n} : ${K.OBJETS[h.objet].d}`);
   if (h.att) L2.push(`⚔ +${h.att} sur les sceaux ≥ et Σ (équipement)`);
+  if (h.agi) L2.push(`🥾 +${h.agi} case${h.agi > 1 ? 's' : ''} par déplacement (équipement)`);
   if (!(h.sac || []).length) L2.push('🎒 sac vide');
+  L2.push(`<a href="#" onclick="ficheHeros(${S.heros.indexOf(h)});return false" style="color:var(--or)">📜 Fiche</a>`);
   return `<div class="inv">${L2.map(t => `<span>${t}</span>`).join('')}</div>`;
 }
 const deSel = () => sel && S.heros[actif].des.find(d => d.id === sel);
@@ -524,8 +526,30 @@ function aFini() {
   if (L && typeof pousse === 'function') pousse();
   dessine();
 }
+// 16/11 (l'utilisateur : « on ne sait pas pourquoi on fait 2 ou 3 cases ») : la FICHE du héros, son équipement et ce qu'il change ici
+function ficheHeros(i) {
+  const h = S.heros[i], pid = h.av || h.id, L2 = [];
+  const tal = (h.talents || []).map(k => { const t = typeof TALENTS !== 'undefined' && Object.values(TALENTS).flat().find(z => z[0] === k); return t ? `<li><b>${t[1]}</b> : ${t[2]}</li>` : ''; }).join('');
+  let eq = '';
+  if (typeof equipementDe === 'function' && typeof EQ_CASES !== 'undefined') { try { const E = equipementDe(pid);
+    eq = EQ_CASES.map(c => { const q = E[c.k]; return `<li>${c.e} <b>${c.n}</b> : ${q ? `${esc(q.nom)} <small style="color:${EQ_RARE[q.r].c}">(${EQ_RARE[q.r].n}, +${q.niv})</small> · ${eqTexte(q)}` : '<i style="color:var(--doux)">rien</i>'}</li>`; }).join(''); } catch (e) { eq = ''; } }
+  if (h.agi) L2.push(`🥾 <b>+${h.agi} case${h.agi > 1 ? 's' : ''}</b> à chaque déplacement (bottes, agilité)`);
+  if (h.att) L2.push(`⚔ <b>+${h.att}</b> pour briser les sceaux ≥ et Σ (arme, anneau)`);
+  if (h.def) L2.push(`🛡 <b>bouclier ${h.def}</b> au début de chaque tour (casque, défense)`);
+  if (h.desPlus) L2.push(`🎲 <b>+${h.desPlus} dé${h.desPlus > 1 ? 's' : ''}</b> par tour`);
+  if (h.id === 'oria') L2.push('🥾 <b>+2 cases</b> à chaque déplacement (éclaireuse)');
+  if (h.objet) L2.push(`${OBJ_E[h.objet]} <b>${K.OBJETS[h.objet].n}</b> : ${K.OBJETS[h.objet].d}`);
+  (h.sac || []).forEach(it => L2.push(`${K.SAC[it].e} <b>${K.SAC[it].n}</b> dans le sac`));
+  fenetre(`<h2 style="display:flex;align-items:center;gap:2cqw">${imgH(h)} ${esc(nomH(h))}</h2>
+    <p>❤ <b>${h.pv}</b> / ${h.pvmax} PV · 🎲 ${(K.HEROS_C[h.id] ? K.HEROS_C[h.id].des : 3) + (h.desPlus || 0) + (h.objet === 'cle' ? 1 : 0)} dés par tour</p>
+    <p><b>${H[h.id] ? H[h.id].t : ''}</b> : ${H[h.id] ? H[h.id].d : ''}</p>
+    <h3>Ce qui compte dans cette partie</h3>${L2.length ? `<ul>${L2.map(t => `<li>${t}</li>`).join('')}</ul>` : '<p style="color:var(--doux)">Aucun bonus : ses dés comptent tels quels.</p>'}
+    ${tal ? `<h3>Ses talents</h3><ul>${tal}</ul>` : ''}${eq ? `<h3>Son équipement</h3><ul>${eq}</ul><p style="color:var(--doux);font-size:.85em">On le change dans <b>Mes héros</b> (menu), entre deux parties.</p>` : ''}
+    <div class="choixh"><button onclick="fenetre('')">Fermer</button></div>`);
+}
 function choisitHeros(i) {
   if (occupe) return;
+  if (S && i === actif && !sel) return ficheHeros(i); // toucher le héros déjà choisi : sa fiche
   if (fini(i)) { bulle(`${nomH(S.heros[i])} a fini ce tour`, true); return; }
   actif = i; sel = null; centrer = true; son('choisir'); dessine();
 }
