@@ -175,7 +175,9 @@ function classeDe(id) {
 const pwBrut = id => { if (!aLs()) return {}; const h = lireEtoiles().heros[id]; return (h && h.pw) || {}; };
 const nivDe = id => typeof niveauH === 'function' ? niveauH(id) || 1 : 1;
 const empDe = k => PW_EMP.find(e => e.k === k);
-const pwOuvert = (id, emp) => nivDe(id) >= empDe(emp).niv;
+// 16/11 nuit : le MODE ESSAI (interrupteur de la page des pouvoirs) ouvre tous les choix, le temps de les tester ; les rangs, eux, restent payés en points
+const pwEssai = () => { try { return typeof localStorage !== 'undefined' && localStorage.getItem('guilde-pw-essai') === '1'; } catch (e) { return false; } };
+const pwOuvert = (id, emp) => pwEssai() || nivDe(id) >= empDe(emp).niv;
 // les 4 pouvoirs actifs d'un héros pour un préréglage : { garde:{ v, rang, def }, … }
 function pouvoirsDe(id, pre) {
   const c = classeDe(id); if (!c) return null;
@@ -215,6 +217,6 @@ function nomBuild(id, pre) {
 // l'icône peinte du pouvoir (decor/pw-<classe>-<emp>-<v>.webp) si elle existe, sinon l'émoji
 const pwIcone = (c, emp, d, px) => `<img src="decor/pw-${c}-${emp}-${d.v.toLowerCase()}.webp?v=1" alt="" style="width:${px || 34}px;height:${px || 34}px;object-fit:contain;vertical-align:middle;border-radius:8px" onerror="this.replaceWith(document.createTextNode('${d.e}'))">`;
 
-const API = { PW_EMP, PW_RANG_MAX, PW_ROLES, PW_CLASSES, PW_COMBOS, POUVOIRS_H, classeDe, pouvoirsDe, pwPourMoteur, pointsPouvoirs, choisirPouvoir, monterRang, prereglagePour, nomBuild, pwIcone, pwOuvert };
+const API = { PW_EMP, PW_RANG_MAX, PW_ROLES, PW_CLASSES, PW_COMBOS, POUVOIRS_H, classeDe, pouvoirsDe, pwPourMoteur, pointsPouvoirs, choisirPouvoir, monterRang, prereglagePour, nomBuild, pwIcone, pwOuvert, pwEssai };
 if (typeof module !== 'undefined' && module.exports) module.exports = API; else Object.assign(racine, API);
 })(typeof window !== 'undefined' ? window : globalThis);

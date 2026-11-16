@@ -43,6 +43,7 @@
   .glisse { text-align:center; color:#8a84b0; font-size:.75em; }
   .resume { background:linear-gradient(135deg, #3a2a12, #1c1838); border:2px solid var(--or); border-radius:16px; padding:12px; margin:14px 0; }
   .resume h3 { margin:0 0 6px; color:var(--or); } .resume p { margin:4px 0; font-size:.9em; }
+  .essai { display:block; width:100%; margin:8px 0 0; padding:10px; border-radius:12px; border:1px dashed #7dffb0; background:#14122a; color:#7dffb0; font:inherit; font-size:.88em; cursor:pointer; } .essai.on { background:#1d3a2a; border-style:solid; }
   .gros { display:block; margin:14px 0; padding:14px; border:2px solid #c9a24a; border-radius:16px; background:#2a2040; color:#ffd27a; text-align:center; font-size:1.05em; font-weight:bold; text-decoration:none; }
 </style>
 </head>
@@ -53,7 +54,7 @@
 <script src="heros-etoiles.js?v=07f78336f4"></script>
 <script src="donnees.js?v=2afe6cf473"></script>
 <script src="aventuriers.js?v=04b0962a08"></script>
-<script src="pouvoirs-heros.js?v=67a647af5c"></script>
+<script src="pouvoirs-heros.js?v=059cef811d"></script>
 <script src="fiche-heros.js?v=128330f3bf"></script>
 <script>
 // =============================================================================================== LA PAGE « BUILD » (16/11 nuit, demande de l'utilisateur)
@@ -85,6 +86,7 @@ function dessine() {
     <div class="tete" style="--hc:${I.c}">${fhImg(I)}<div><b>${I.nom}</b><br><span class="cl">${CL.e} ${CL.n}</span><small>${CL.d} · niveau ${niv}</small></div>
       <div class="points ${pts ? '' : 'zero'}"><b>${pts}</b>point${pts > 1 ? 's' : ''}<br>à placer</div></div>
     <div class="onglets"><button class="${pre === 'groupe' ? 'on' : ''}" onclick="pre='groupe';fhSon('choisir');dessine()">👥 Groupe</button><button class="${pre === 'solo' ? 'on' : ''}" onclick="pre='solo';fhSon('choisir');dessine()">🗡 Solo</button></div>
+    <button class="essai ${pwEssai() ? 'on' : ''}" onclick="essai()">🧪 Mode essai : ${pwEssai() ? '<b>tous les choix ouverts</b> (toucher pour revenir aux niveaux)' : 'ouvrir tous les choix pour les tester'}</button>
     <p class="aide">${pre === 'groupe' ? '👥 Groupe : pris tout seul dans les Chroniques à 2 héros ou plus.' : '🗡 Solo : pris tout seul quand le héros joue seul (Chroniques seul ; les autres modes viendront).'} Changer est <b>gratuit</b>, quand tu veux hors partie. 1 point par niveau du héros ; les rangs restent sur l’emplacement (communs aux deux onglets).</p>
     ${PW_EMP.map(E => { const r = o[E.k].rang, ouvert = pwOuvert(actuel, E.k);
       return `<div class="emp"><div class="emp-h"><h2>${E.e} ${E.n}</h2><small>${E.d}</small>
@@ -94,7 +96,8 @@ function dessine() {
     <div class="resume"><h3>📜 Le build</h3>
       <p><b>${pre === 'groupe' ? '👥' : '🗡'} ${I.nom} ${nomBuild(actuel, pre)}</b> (${pre === 'groupe' ? 'Groupe' : 'Solo'}) : ${PW_EMP.map(E => `${o[E.k].def.e} ${o[E.k].def.n}${o[E.k].rang ? ' ★' + o[E.k].rang : ''}`).join(' · ')}</p>
       <p style="color:var(--doux)">${autre === 'groupe' ? '👥' : '🗡'} ${I.nom} ${nomBuild(actuel, autre)} (${autre === 'groupe' ? 'Groupe' : 'Solo'}) : ${PW_EMP.map(E => `${oA[E.k].def.e} ${oA[E.k].def.n}`).join(' · ')}</p></div>
-    <a class="gros" href="chroniques.html">🗺 Essayer dans les Chroniques</a>`;
+    <a class="gros" href="chroniques.html">🗺 Essayer dans les Chroniques</a>`;  // la version cochée se voit tout de suite (chaque ligne défile jusqu'à elle)
+  document.querySelectorAll('.cases').forEach(c => { const ch = c.querySelector('.choisi'); if (ch) c.scrollLeft = ch.offsetLeft - c.offsetLeft - 8; });
 }
 function choisit(emp, v) {
   const c = classeDe(actuel), E = PW_EMP.find(x => x.k === emp), o = pouvoirsDe(actuel, pre), D = POUVOIRS_H[c][emp].find(x => x.v === v);
@@ -109,6 +112,7 @@ function rangDemande(emp) {
     <div class="fh-bts"><button class="fh-bt" onclick="fhFen('')">Annuler</button><button class="fh-bt or" onclick="valideRang('${emp}')">⬆ Valider</button></div>`);
 }
 function valideRang(emp) { const r = monterRang(actuel, emp); fhFen(''); if (r === 'ok') { fhSon('victoire'); fhBulle('⬆ Rang +1 !'); } else fhBulle(r); dessine(); }
+function essai() { if (pwEssai()) localStorage.removeItem('guilde-pw-essai'); else localStorage.setItem('guilde-pw-essai', '1'); fhSon('magie'); fhBulle(pwEssai() ? '🧪 Tout est ouvert pour l’essai' : 'Retour aux niveaux du héros'); dessine(); }
 FH.apres = dessine;
 if (typeof GM !== 'undefined') { try { GM.musique('menu'); GM.bouton(); } catch (e) {} }
 dessine();
