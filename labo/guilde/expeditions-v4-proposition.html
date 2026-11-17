@@ -54,17 +54,19 @@ Puis <b>6 étapes</b> : à chacune, tu touches ta prochaine escale sur la carte 
 <div class="a-valider">🟡 <b>À valider</b> : les nouvelles recrues utilisent pour l'instant l'illustration d'une recrue proche (prompts prêts, partie 8).</div>
 <div class="bloc"><b class="or">⛰ Ascension</b> : 10 crans par mer ; gagner au cran N ouvre le cran N+1 sur cette mer. Les effets s'ajoutent :<ol id="asc" start="1"></ol>
 Le score est multiplié : +10 % par cran, +25 % par mer après la première.</div>
-<div class="bloc"><b class="or">📅 Le voyage du jour</b> : la même graine pour tout le monde ce jour-là (même carte, même règle, même boss, mêmes recrues proposées). Ton meilleur score du jour est gardé sur le téléphone.</div>
+<div class="bloc"><b class="or">📅 Le voyage du jour</b> : toujours sur la Mer des nuages, sans ascension, avec la même graine pour tout le monde ce jour-là (même carte, même règle, même boss, mêmes recrues proposées). Ton meilleur score du jour est gardé sur le téléphone.</div>
 <div class="a-valider">🟡 <b>Pas fait (demande ton accord)</b> : comparer les scores du jour <b>entre amis</b>. Il faut une petite table sur le serveur du labo perso (comme le carnet des parties). Je ne l'ai pas mise en ligne : rien n'a été touché sur le serveur cette nuit.</div>
 
 <h2>8. Le simulateur (réglage de la difficulté)</h2>
 <div class="bloc">Outil : <code>outils/simuler-expedition-v4.mjs</code> (le pilote de l'ordinateur choisit sa route comme un joueur raisonnable, sans les recrues débloquées). Pourcentage de voyages gagnés, 30 voyages par capitaine :
 <table><tr><th>Capitaine</th><th>☁️ Nuages</th><th>❄️ Glaces</th><th>⛈️ Tempêtes</th></tr>
-<tr><td>Maëlle</td><td>40 %</td><td>37 %</td><td>23 %</td></tr><tr><td>Aldric</td><td>33 %</td><td>47 %</td><td>37 %</td></tr>
-<tr><td>Pip</td><td>67 %</td><td>70 %</td><td>53 %</td></tr><tr><td>Oria</td><td>63 %</td><td>47 %</td><td>40 %</td></tr>
-<tr><td>Gorm</td><td>50 %</td><td>40 %</td><td>33 %</td></tr><tr><td>Zéphine</td><td>53 %</td><td>67 %</td><td>40 %</td></tr></table>
-<small>Mesures faites pendant le réglage (avant les derniers petits ajustements des Glaces et du Kraken) : à refaire sur 100 voyages quand tu auras joué.</small></div>
-<div class="a-valider">🟡 <b>À surveiller</b> : Pip toujours le plus fort, Maëlle la plus faible dans l'Archipel. La règle « La rançon du boss » et « Mer démontée » font baisser nettement les victoires (c'est voulu : ce sont les règles « dures », elles rapportent plus).</div>
+<tr><td>Maëlle</td><td>49 %</td><td>37 %</td><td>21 %</td></tr><tr><td>Aldric</td><td>49 %</td><td>46 %</td><td>48 %</td></tr>
+<tr><td>Pip</td><td>69 %</td><td>61 %</td><td>56 %</td></tr><tr><td>Oria</td><td>59 %</td><td>48 %</td><td>47 %</td></tr>
+<tr><td>Gorm</td><td>45 %</td><td>35 %</td><td>38 %</td></tr><tr><td>Zéphine</td><td>63 %</td><td>61 %</td><td>52 %</td></tr>
+<tr><td><b>Moyenne</b></td><td><b>56 %</b></td><td><b>49 %</b></td><td><b>44 %</b></td></tr></table>
+<small>100 voyages par capitaine et par mer, réglages définitifs de la nuit. Boss : Titan 54 %, Ignaros 58 % · Titan 50 %, Vouivre 46 % · Roi sans visage 46 %, Kraken 42 %.
+Pour comparer : l'ancienne version (v3) donne 43-77 %. Ascension 5 (Mer des nuages) : 13-42 % ; Ascension 10 : presque 0 % pour l'ordinateur (c'est le défi ultime, un vrai joueur avec ses recrues débloquées fera mieux).</small></div>
+<div class="a-valider">🟡 <b>À surveiller</b> : Pip et Zéphine les plus forts ; Maëlle très faible dans l'Archipel (21 %) et Gorm dans les Glaces (35 %). La règle « La rançon du boss » et « Mer démontée » font baisser nettement les victoires (c'est voulu : ce sont les règles « dures », elles rapportent plus).</div>
 
 <h2>9. Les images à générer (Gemini)</h2>
 <div class="bloc">Les prompts sont <b>en tête de la page des prompts</b> (section « Expéditions v4 ») : fonds des deux nouvelles mers, 4 boss nouveaux, 4 élites, 6 recrues, 6 événements.
@@ -79,7 +81,7 @@ Le score est multiplié : +10 % par cran, +25 % par mer après la première.</di
 <li>Remplacer l'ancienne version par la v4 dans le menu, ou garder les deux ?</li>
 </ol>
 </main>
-<script src="donnees.js?v=2afe6cf473"></script><script src="odyssee.js?v=3b40723744"></script><script src="expedition-moteur.js?v=dccf2c7473"></script><script src="expedition-v4.js?v=4f83dd8e8b"></script>
+<script src="donnees.js?v=2afe6cf473"></script><script src="odyssee.js?v=3b40723744"></script><script src="expedition-moteur.js?v=dccf2c7473"></script><script src="expedition-v4.js?v=a5053d9ad2"></script>
 <script>
 const typ = { monstres:'⚔ monstres', elite:'💀 élite', fantome:'👻 navire rival', evenement:'❔ événement', tresor:'💎 trésor', port:'🏝 port franc', boss:'👑 boss' };
 document.getElementById('etapes').innerHTML = `<div class="bloc"><b class="or">Les étapes</b> (une sorte tirée par case) :<table>${ETAPES_V4.map((e, k) => `<tr><td>Étape ${k + 1}</td><td>${e.map(c => c.map(t => typ[t]).join(' ou ')).join(' · ')}</td></tr>`).join('')}</table></div>`;

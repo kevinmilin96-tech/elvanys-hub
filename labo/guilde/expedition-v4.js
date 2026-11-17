@@ -36,7 +36,7 @@ const MERS = {
     elites:[{ n:'Le Chef de guerre gobelin', e:'👺', cle:'crique', av:[['Chef de guerre', 6, 30, 'barriere'], ['Gobelin chef', 3, 9]], ar:[['Gobelin lanceur', 2, 5, 'tireur'], ['Tambour gobelin', 2, 6, 'tireur']], meca:'rage', d:'Rage : il gagne +1 attaque à chaque round.' },
             { n:'La Matriarche de braise', e:'🐺', cle:'port', av:[['Matriarche de braise', 5, 26], ['Loup de braise', 4, 11]], ar:[['Louveteau', 3, 6], ['Louveteau', 3, 6]], meca:'meute', d:'Meute : quand un Louveteau tombe, la Matriarche hurle (+2 attaque).' }],
     boss:['titan', 'ignaros'] },
-  glaces: { n:'La Mer des glaces', e:'❄️', d:'Le grand nord : banquise, yétis et vouivres. Les monstres encaissent plus.', ouvre:'nuages', pv:1.06,
+  glaces: { n:'La Mer des glaces', e:'❄️', d:'Le grand nord : banquise, yétis et vouivres. Les monstres encaissent plus.', ouvre:'nuages', pv:1,
     decor:{ monstres:['falaises', 'foret', 'port'], fantome:['falaises'], evenement:['foret'], tresor:['crique'], port:['port'], elite:['falaises'], boss:['nid'] },
     groupes:[
       { n:'La Banquise des pingouins-guerriers', e:'🐧', cle:'falaises', av:[['Pingouin-guerrier', 3, 8], ['Pingouin-guerrier', 3, 8]], ar:[['Lanceur de glaçons', 2, 6, 'tireur']] },
@@ -48,7 +48,7 @@ const MERS = {
     elites:[{ n:'Le Yéti ancien', e:'🦍', cle:'falaises', av:[['Yéti ancien', 7, 34, 'barriere']], ar:[['Petit yéti', 3, 8], ['Petit yéti', 3, 8]], meca:'rage', d:'Rage : il gagne +1 attaque à chaque round.' },
             { n:'La Reine des neiges', e:'👸', cle:'foret', av:[['Garde de glace', 4, 14, 'barriere'], ['Garde de glace', 4, 14, 'barriere']], ar:[['La Reine des neiges', 5, 22, 'tireur']], meca:'gel', d:'Gel : un round sur deux, ta recrue la plus forte est gelée (0 attaque ce round).' }],
     boss:['vouivre', 'titan'] },
-  tempetes: { n:'L’Archipel des tempêtes', e:'⛈️', d:'Pirates, harpies et krakens. La mer la plus dure, pour les équipages rodés.', ouvre:'glaces', pv:1.04,
+  tempetes: { n:'L’Archipel des tempêtes', e:'⛈️', d:'Pirates, harpies et krakens. La mer la plus dure, pour les équipages rodés.', ouvre:'glaces', pv:1.08,
     decor:{ monstres:['crique', 'port', 'falaises'], fantome:['falaises'], evenement:['crique'], tresor:['crique'], port:['port'], elite:['port'], boss:['nid'] },
     groupes:[
       { n:'La Crique des naufrageurs', e:'🏴‍☠️', cle:'crique', av:[['Naufrageur', 3, 9], ['Naufrageur', 3, 9]], ar:[['Pistolier', 3, 5, 'tireur']] },
@@ -73,7 +73,7 @@ const BOSS_V4 = {
     meca:'gel', d:'Gel : à chaque round, ta recrue la plus forte est gelée (0 attaque ce round), un round sur deux.' },
   kraken:  { n:'Le Kraken des brumes', e:'🦑', cle:'nid', av:[['Tentacule', 3, 11, 'barriere'], ['Le Kraken', 7, 42, 'boss'], ['Tentacule', 3, 11, 'barriere']], ar:[['Tentacule', 4, 12, 'tireur']],
     meca:'tentacules', d:'Tentacules : tous les 3 rounds, une tentacule coupée repousse (à moitié vie).' },
-  roi:     { n:'Le Roi sans visage', e:'👤', cle:'nid', av:[['Le Roi sans visage', 6, 62, 'boss']], ar:[['Reflet', 3, 8, 'tireur'], ['Reflet', 3, 8, 'tireur']],
+  roi:     { n:'Le Roi sans visage', e:'👤', cle:'nid', av:[['Le Roi sans visage', 6, 66, 'boss']], ar:[['Reflet', 3, 8, 'tireur'], ['Reflet', 3, 8, 'tireur']],
     meca:'miroir', d:'Miroir : il prend l’attaque de ta meilleure4 recrue (+2), et ses Reflets copient sa vie.' },
 };
 
@@ -124,8 +124,8 @@ const ascMax4 = (m, k) => Math.min(10, (m.asc[k] || 0)); // cran le plus haut OU
 function recruesDispo(X) { const g = X && X.debloques != null ? X.debloques : 99;
   return Object.keys(RECRUES).filter(k => !RECRUES[k].verrou || RECRUES[k].verrou <= g); }
 // l'ascension : chaque cran ajoute un peu de difficulté (ce qui est dit dans la page de conception)
-const ASC_V4 = ['De base', '+6 % de vie aux monstres', 'les élites ont +1 attaque', '−2 💰 au départ', 'le boss a +10 % de vie', 'le recruteur : une recrue de moins',
-  '+6 % de vie encore', 'les monstres ont +1 attaque', 'les événements coûtent plus', 'le navire part avec 2 cœurs', 'le boss a +20 % de vie'];
+const ASC_V4 = ['De base', '+4 % de vie aux monstres', 'les élites ont +1 attaque', '−2 💰 au départ', 'le boss a +8 % de vie', 'le recruteur : une recrue de moins',
+  '+5 % de vie encore', 'les monstres ont +1 attaque', 'les événements coûtent plus', 'le navire part avec 2 cœurs', 'le boss a +20 % de vie'];
 
 // ----------------------------------------------------------------------------------------------- la carte du voyage
 // 6 étapes ; à chaque étape (sauf la dernière), 2 ou 3 escales au choix. Les sortes possibles par étape (une de chaque est tirée) :
@@ -192,7 +192,7 @@ nouvelleOffre = function (X) {
 };
 function plateauV4(X, def, mul) {
   const P = { av:[null, null, null], ar:[null, null, null] }, M = MERS[X.mer];
-  const asc = 1 + (X.asc >= 1 ? .06 : 0) + (X.asc >= 6 ? .06 : 0), atq = (X.regle === 'enrages' ? 1 : 0) + (X.asc >= 7 ? 1 : 0);
+  const asc = 1 + (X.asc >= 1 ? .04 : 0) + (X.asc >= 6 ? .05 : 0), atq = (X.regle === 'enrages' ? 1 : 0) + (X.asc >= 7 ? 1 : 0);
   const fait = ([n, a, v, tag]) => ({ id:uid(), key:'m', n, a:a + atq, v:Math.round(v * mul * M.pv * asc), star:0, role:tag === 'tireur' ? 'tireur' : 'lame', tireur:tag === 'tireur', barriere:tag === 'barriere' || tag === 'boss', charge:tag === 'charge', boss:tag === 'boss', bonusA:0, bonusV:0 });
   def.av.forEach((x, i) => { P.av[i] = fait(x); }); def.ar.forEach((x, i) => { P.ar[i] = fait(x); });
   return P;
@@ -200,11 +200,11 @@ function plateauV4(X, def, mul) {
 adversaire = function (X) {
   if (X.v !== 4) return _adv3(X);
   const esc = X.route[X.escale] || ESCALES2[X.escale], M = MERS[X.mer];
-  if (esc.type === 'fantome') { const f = fantome(X, X.escale); const k = M.pv * (1 + (X.asc >= 1 ? .06 : 0)); [...f.plateau.av, ...f.plateau.ar].forEach(u => { if (u) u.v = Math.round(u.v * k); });
+  if (esc.type === 'fantome') { const f = fantome(X, X.escale); const k = M.pv * (1 + (X.asc >= 1 ? .04 : 0) + (X.asc >= 6 ? .05 : 0)); [...f.plateau.av, ...f.plateau.ar].forEach(u => { if (u) u.v = Math.round(u.v * k); });
     return { nom:`Le navire de ${HEROS[f.heros].nom}`, camp:{ heros:f.heros, plateau:f.plateau, X:f.X }, fantome:f.heros }; }
   if (esc.type === 'elite') { const g = M.elites[esc.el || 0], P = plateauV4(X, g, DUR_V4[X.escale]); if (X.asc >= 2) [...P.av, ...P.ar].forEach(u => { if (u) u.a++; });
     return { nom:g.n, camp:{ heros:null, plateau:P, X:null, meca:g.meca, joueur:X }, meca:g.meca, mecaTxt:g.d }; }
-  if (esc.type === 'boss') { const B = BOSS_V4[X.boss], P = plateauV4(X, B, DUR_V4[5] * (X.regle === 'rancon' ? 1.15 : 1) * (X.asc >= 10 ? 1.2 : X.asc >= 4 ? 1.1 : 1));
+  if (esc.type === 'boss') { const B = BOSS_V4[X.boss], P = plateauV4(X, B, DUR_V4[5] * (X.regle === 'rancon' ? 1.15 : 1) * (X.asc >= 10 ? 1.2 : X.asc >= 4 ? 1.08 : 1));
     if (B.meca === 'miroir') { const m = meilleure4(X), a = m ? m.a + m.bonusA + 2 : 6, roi = P.av[0]; roi.a = Math.max(roi.a, a); P.ar.forEach(u => { if (u) u.v = Math.round(roi.v / 4); }); }
     return { nom:B.n, camp:{ heros:null, plateau:P, X:null, meca:B.meca, joueur:X }, meca:B.meca, mecaTxt:B.d }; }
   const g = M.groupes[esc.g || 0]; return { nom:g.n, camp:{ heros:null, plateau:plateauV4(X, g, DUR_V4[X.escale]), X:null } };

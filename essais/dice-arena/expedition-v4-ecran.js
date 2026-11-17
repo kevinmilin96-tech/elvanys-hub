@@ -319,7 +319,7 @@ async function voyage() {
 // 14/11 (l'utilisateur : « il faut expliquer quoi faire quand on lance l'expédition ») : Moustache guide le premier passage au port,
 // une zone à la fois (le reste de l'écran est assombri). Revoir : bouton « Aide ».
 const GUIDE_PORT = [
-  [null, 'Bienvenue à bord, capitaine ! Ton but : traverser <b>6 escales</b> jusqu’au Nid du Titan. Tu as <b>3 cœurs</b> : chaque escale perdue en coûte un.'],
+  [null, 'Bienvenue à bord, capitaine ! Ton but : traverser <b>6 étapes</b> jusqu’au boss du voyage (en haut de l’écran, avec la règle du voyage). Tu as <b>3 cœurs</b> : chaque combat perdu en coûte un. Touche la route pour revoir la carte.'],
   ['.tiroir', 'Ici, <b>le recruteur</b>. Touche une recrue pour lire sa fiche, puis « Recruter » (3 💰). Elle monte toute seule sur le pont. Tu gagnes des pièces après chaque escale.'],
   ['.champ', 'Ton <b>équipage</b> se tient sur ces 6 places. <b>DEVANT</b> : ceux qui encaissent et frappent au corps à corps. <b>DERRIÈRE</b> : ceux qui tirent ou soignent. Tu places qui tu veux où tu veux : une Lame derrière frappe à moitié, un tireur devant prend les coups. Pour déplacer une recrue : touche-la, puis touche une place.'],
   ['.cale', '<b>La cale</b>, c’est la réserve : ces recrues ne combattent pas, mais tu les gardes pour plus tard.'],
@@ -358,13 +358,13 @@ accueil = function () {
     return `<button class="${merChoisie === k ? 'sel' : ''}" ${ok ? `onclick="merChoisie='${k}';localStorage.setItem('guilde-exp4-mer','${k}');ascChoisi=0;accueil()"` : 'disabled'}><b>${ok ? M.e : '🔒'} ${M.n}</b><small>${ok ? M.d : 'Gagne ' + MERS[M.ouvre].n + ' pour l’ouvrir.'}</small>${m.mers[k] ? `<small style="color:var(--ok)">🏆 ${m.mers[k]} voyage${m.mers[k] > 1 ? 's' : ''} gagné${m.mers[k] > 1 ? 's' : ''}</small>` : ''}</button>`; }).join('')}</div>
   <h2>⛰ Ascension</h2><div class="asc4">${Array.from({ length:11 }, (_, i) => `<button class="${ascChoisi === i ? 'sel' : ''}" ${i <= ascMax4(m, merChoisie) ? `onclick="ascChoisi=${i};accueil()"` : 'disabled'}>${i <= ascMax4(m, merChoisie) ? i : '🔒'}</button>`).join('')}</div>
   <p class="doux" style="text-align:center;margin:2px 0 8px">${ascChoisi ? `Cran ${ascChoisi} : ${ASC_V4.slice(1, ascChoisi + 1).join(' · ')}.` : 'De base. Gagne pour ouvrir le cran suivant.'}</p>
-  <label class="jour4"><input type="checkbox" ${jourChoisi ? 'checked' : ''} onchange="jourChoisi=this.checked;accueil()"> 📅 <b>Le voyage du jour</b> : la même carte, la même règle et le même boss pour tout le monde aujourd’hui.${mj ? ` Ton meilleur score du jour : <b>${mj.best}</b> (${mj.essais} essai${mj.essais > 1 ? 's' : ''}).` : ''}</label>
+  <label class="jour4"><input type="checkbox" ${jourChoisi ? 'checked' : ''} onchange="jourChoisi=this.checked;accueil()"> 📅 <b>Le voyage du jour</b> : la même carte, la même règle et le même boss pour tout le monde aujourd’hui (Mer des nuages, sans ascension).${mj ? ` Ton meilleur score du jour : <b>${mj.best}</b> (${mj.essais} essai${mj.essais > 1 ? 's' : ''}).` : ''}</label>
   <h2>Ton capitaine</h2><div class="heros6">${ORDRE.map(id => id === 'zephine' && localStorage.getItem('guilde-tuto') !== 'fait'
     ? `<button disabled style="opacity:.5"><img src="${IMG(id)}" alt="" style="filter:grayscale(1)">🔒 ${HEROS[id].nom}</button>`
     : `<button onclick="choixCapitaine('${id}')"><img src="${IMG(id)}" alt="">${HEROS[id].nom}<br><small style="color:var(--or)">${CAPITAINES[id].n}</small><br><small class="prise ${PRISE_EXP[id]}">${PRISE_TXT[PRISE_EXP[id]]}</small></button>`).join('')}${capitainesAventure()}</div>
   <div class="choixh"><button onclick="location.href='expeditions-v4-proposition.html'">📖 Comment ça marche</button><button onclick="records()">🏆 Mes voyages</button><button onclick="location.href='expedition.html'">⛵ L’ancienne version</button><button onclick="location.href='menu.html'">⌂ Menu</button></div>`;
 };
-depart = function (id) { const i = haInfo(id); X = nouveauVoyage(haVoie(id), { mer:merChoisie, asc:ascChoisi, jour:jourChoisi }); X.diff = diffChoisie;
+depart = function (id) { const i = haInfo(id); X = nouveauVoyage(haVoie(id), jourChoisi ? { mer:'nuages', asc:0, jour:true } : { mer:merChoisie, asc:ascChoisi }); // le voyage du jour : le même pour tous (Mer des nuages, sans ascension) X.diff = diffChoisie;
   if (i) { X.av = i.id; const cap = X.plateau.av[1]; if (cap && cap.key === 'capitaine') { cap.n = i.nom; cap.av = i.id; } }
   sel = null; sauve(); introVoyage(); };
 function introVoyage() { const R = REGLES_V4[X.regle], B = BOSS_V4[X.boss];
@@ -403,4 +403,11 @@ finExp = function () {
   ${apport.map(t => `<p class="ok">${t}</p>`).join('')}<p style="font-size:1.5em;color:var(--or);text-align:center">${score} points</p><div class="choixh"><button class="or" onclick="fermer();accueil()">⛵ Nouveau voyage</button><button onclick="location.href='menu.html'">⌂ Menu</button></div>`);
 };
 records = function () { const l = lireRec(); fenetre(`<h2>🏆 Mes voyages (${l.length})</h2>${l.length ? `<table>${l.map(r => `<tr><td>${r.parfait ? '🌟' : r.gagne ? '🏆' : '💀'} ${new Date(r.quand).toLocaleDateString('fr-FR')} · ${r.nom ? haEsc(r.nom) : HEROS[r.heros].nom} · ${MERS[r.mer] ? MERS[r.mer].e : ''}${r.asc ? ' ⛰' + r.asc : ''}${r.jour ? ' 📅' : ''} · ${BOSS_V4[r.boss] ? BOSS_V4[r.boss].e : ''}</td><td>${r.score}</td></tr>`).join('')}</table>` : '<p>Aucun encore.</p>'}<div class="choixh"><button onclick="fermer()">Fermer</button></div>`); };
+// les monstres des nouvelles mers prennent un portrait déjà peint quand il y en a un proche (les autres gardent la pastille simple, en attendant les images)
+Object.assign(PORTRAIT_M, { 'Pillard':'d-gobelin', 'Frondeur':'m-gobelin', 'Chien de pillard':'m-loup', 'Corbeau ardent':'m-phenix', 'Chef de guerre':'m-chefgobelin', 'Tambour gobelin':'m-gobelin',
+  'Matriarche de braise':'m-loup', 'Lanceur de glaçons':'m-givrelin', 'Loup blanc':'m-loupblanc', 'Chaman du givre':'m-chaman', 'Ent de givre':'m-golemglace', 'Feu follet bleu':'m-esprit',
+  'Archer des neiges':'m-givrelin', 'Troll des glaces':'m-golemglace', 'Golem de cristal':'m-golemglace', 'Sorcière du blizzard':'m-reinefrimas', 'Éclat vivant':'m-givrelin', 'Yéti ancien':'m-yeti',
+  'Petit yéti':'m-yeti', 'Garde de glace':'m-golemglace', 'La Reine des neiges':'m-reinefrimas', 'La Vouivre':'m-vouivre', 'Stalagmite vivante':'m-golemglace', 'Givrelin':'m-givrelin',
+  'Harpie':'m-harpie', 'Harpie tireuse':'m-harpie', 'Élémentaire d’orage':'m-esprit', 'Nuée électrique':'m-esprit', 'Matelot noyé':'m-osclaque', 'Capitaine noyé':'m-liche', 'Mouette spectrale':'m-esprit',
+  'Canonnier fantôme':'m-osclaque', 'Tentacule':'u-tentacule', 'Le Kraken':'m-kraken', 'Le Roi sans visage':'m-roi', 'Reflet':'m-miroir', 'Ignaros':'m-ignaros', 'Dragonnet':'u-dragonnet', 'Sorcier des vents':'m-chaman' });
 if (document.getElementById('app')) accueil();
