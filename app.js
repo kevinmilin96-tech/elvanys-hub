@@ -809,7 +809,7 @@
       '<label>Accès direct<select name="acces_direct">' + directOpts + '</select></label>' +
       vigilysBlock(a) +
       '<label class="chk"><input type="checkbox" name="admin"' + (a.admin ? ' checked' : '') + (a.id === account.id ? ' disabled' : '') + '> Administrateur (gère les comptes)</label>' +
-      '<label class="chk"><input type="checkbox" name="moderateur"' + (a.moderateur ? ' checked' : '') + '> Modérateur (relit les propositions des collaborateurs ; à désigner avec la direction et le CSE)</label>' +
+      '<label class="chk"><input type="checkbox" name="moderateur"' + (a.moderateur ? ' checked' : '') + '> Modérateur de Boost (relit les propositions des collaborateurs dans Boost ; les modérateurs d’Agorys se choisissent dans Agorys ; à désigner avec la direction et le CSE)</label>' +
       '<label class="chk"><input type="checkbox" name="createur"' + (a.createur ? ' checked' : '') + '> Créateur (crée des quiz dans le Studio ; sur candidature)</label>' +
       '<label class="chk"><input type="checkbox" name="testeur"' + (a.testeur ? ' checked' : '') + '> Testeur (voit les démos express privées de Boost, pour les présentations au CSE et à la direction)</label>' +
       '<label class="chk"><input type="checkbox" name="parcours_lecteur"' + (a.parcours_lecteur ? ' checked' : '') + '> Lit les résultats du parcours d’intégration (direction, RH : lecture seule, dans Boost → Profil)</label>' +
@@ -939,7 +939,7 @@
   // --- Candidatures « Devenir modérateur / créateur » (envoyées depuis le Profil de Boost) ---
   // Décision avec la direction et le CSE ; accepter coche la case du compte ; un refus demande un mot d'explication.
   var candPending = 0;
-  var ROLE_LABEL = { moderateur: 'Modérateur', createur: 'Créateur', testeur: 'Testeur', parcours_lecteur: 'Lecteur du parcours' };
+  var ROLE_LABEL = { moderateur: 'Modérateur de Boost', createur: 'Créateur', testeur: 'Testeur', parcours_lecteur: 'Lecteur du parcours' };
   var CAND_STATUS = { en_attente: 'En attente', acceptee: 'Acceptée', refusee: 'Refusée' };
   function refreshCandCount() {
     api('GET', '/api/hub/admin/candidatures').then(function (r) {
@@ -1011,7 +1011,7 @@
     candidature_refusee: 'n’a pas retenu la candidature de',
     entree_animateur: 'a ouvert l’espace animateur de Boost',
   };
-  var FIELD_LABEL = { partage: 'Compte partagé du poste', profil_vigilys: 'Profil Vigilys / Maintys', vigilys_agent: 'Fiche Vigilys', statut: 'Statut', profil: 'Profil', apps: 'Applications', acces_direct: 'Accès direct', admin: 'Administrateur', moderateur: 'Modérateur', createur: 'Créateur', testeur: 'Testeur', parcours_lecteur: 'Lecteur du parcours', animateur: 'Animateur', anim_perms: 'Rubriques animateur' };
+  var FIELD_LABEL = { partage: 'Compte partagé du poste', profil_vigilys: 'Profil Vigilys / Maintys', vigilys_agent: 'Fiche Vigilys', statut: 'Statut', profil: 'Profil', apps: 'Applications', acces_direct: 'Accès direct', admin: 'Administrateur', moderateur: 'Modérateur de Boost', createur: 'Créateur', testeur: 'Testeur', parcours_lecteur: 'Lecteur du parcours', animateur: 'Animateur', anim_perms: 'Rubriques animateur' };
   function shortName(label) { return String(label || '').replace(/s*<[^>]*>$/, '') || '(compte supprimé)'; }
   function fieldValue(k, v) {
     if (k === 'admin' || k === 'moderateur' || k === 'createur' || k === 'testeur' || k === 'parcours_lecteur' || k === 'animateur') return v ? 'oui' : 'non';
