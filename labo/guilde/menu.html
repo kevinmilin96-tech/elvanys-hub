@@ -8,7 +8,7 @@
 <title>La Guilde des Runes</title>
 <script>
 // Même mécanisme que le Duel : une nouvelle version = rechargement tout seul à l'ouverture (publier.sh change VERSION).
-const VERSION = '20261117-225509';
+const VERSION = '20261117-230540';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-menu-' + v)) { sessionStorage.setItem('recharge-menu-' + v, '1'); location.replace('menu.html?v=' + v); }
@@ -207,9 +207,9 @@ fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.te
 <script src="rang.js?v=9729fcf665"></script>
 <script src="profil.js?v=d50e2421e1"></script>
 <script>window.AMIS_SANS_BOUTON = true; /* 15/11 : un seul bouton en haut à gauche (profil + amis) */</script>
-<script src="amis.js?v=b593ac66e7"></script>
+<script src="amis.js?v=782fc8dfb7"></script>
 <script src="heros-etoiles.js?v=07f78336f4"></script>
-<script src="donnees.js?v=20261117-225509"></script>
+<script src="donnees.js?v=20261117-230540"></script>
 <script>
 // ciel étoilé + runes du portail (symboles, pas des lettres), aux couleurs des héros
 const ciel = document.getElementById('ciel');
@@ -494,6 +494,7 @@ function profilMenu() {
   document.body.appendChild(m);
   setTimeout(() => document.addEventListener('click', function f(e) { if (!m.contains(e.target) && e.target.id !== 'profil-bouton') { m.remove(); document.removeEventListener('click', f); } }), 0);
 }
+// 17/11 soir (l'utilisateur) : le 👤 de la barre ouvre directement le profil, plus de petit menu déroulant
 // 17/11 (l'utilisateur : « un menu en bas avec paramètres, icône de profil, messagerie ») : LA BARRE DU BAS du menu ;
 // le haut de l'écran est dégagé (le 👤, le ⚙️ et le 📬 flottants sont cachés ici)
 { const st = document.createElement('style'); st.textContent = `#profil-bouton, #gm-bouton, #boite-bouton { display:none !important; }
@@ -504,7 +505,7 @@ function profilMenu() {
     body:has(#titre:not(.part)) #barre-bas { display:none; } /* 17/11 (l'utilisateur) : pas sur l'écran « Toucher pour entrer », seulement une fois dans le menu */
     #barre-bas { animation:bbArrive .4s ease-out; } @keyframes bbArrive { from { transform:translateY(100%); } }`; document.head.appendChild(st);
   const bb = document.createElement('nav'); bb.id = 'barre-bas';
-  bb.innerHTML = `<button id="bb-profil" onclick="profilMenu()"><b>👤</b>Profil</button><button id="bb-amis" onclick="amisFenetre()"><b>👥</b>Amis</button><button id="bb-boite" onclick="amisBoite()"><b>📬</b>Boîte</button><button id="bb-param" onclick="GM.parametres()"><b>⚙️</b>Paramètres</button>`;
+  bb.innerHTML = `<button id="bb-profil" onclick="try{sessionStorage.setItem('guilde-dans-mode','1')}catch(e){};location.href='profil.html'"><b>👤</b>Profil</button><button id="bb-amis" onclick="amisFenetre()"><b>👥</b>Amis</button><button id="bb-boite" onclick="amisBoite()"><b>📬</b>Boîte</button><button id="bb-param" onclick="GM.parametres()"><b>⚙️</b>Paramètres</button>`;
   document.body.appendChild(bb);
   const pastille = (id, n, coul, txt) => { const b = document.getElementById(id); if (!b) return; let s = b.querySelector('.pt'); if (!n) { if (s) s.remove(); return; } if (!s) { s = document.createElement('span'); s.className = 'pt'; b.appendChild(s); } s.textContent = n; s.style.background = coul; s.style.color = txt; };
   window.amisPastille = (n, dem) => pastille('bb-amis', dem || n, dem ? '#ff5a5a' : '#7dffb0', dem ? '#fff' : '#0a2a14');

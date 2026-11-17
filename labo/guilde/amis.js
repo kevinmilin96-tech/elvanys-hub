@@ -15,9 +15,10 @@ const AMIS_API = '/api/hub/guilde/joueur';
   #amis-bouton .pt.rouge { background:#ff5a5a; color:#fff; }
   #boite-bouton { position:fixed; left:10px; top:calc(54px + env(safe-area-inset-top)); z-index:900; height:38px; min-width:38px; padding:0 8px; border-radius:19px; border:1px solid #f3c96b88; background:#15132bcc; color:#f3c96b; font:bold 17px Georgia, serif; cursor:pointer; }
   #boite-bouton .pt.or { display:inline-block; min-width:18px; height:18px; line-height:18px; border-radius:9px; background:#f3c96b; color:#2b1d0a; font-size:11px; margin-left:3px; padding:0 4px; box-shadow:0 0 8px #f3c96b; }
-  .am-voile { position:fixed; inset:0; background:#000c; z-index:5000; display:flex; align-items:center; justify-content:center; padding:4vw; }
+  .am-voile { position:fixed; inset:0; background:#000c; z-index:5000; display:flex; align-items:center; justify-content:center; padding:4vw; touch-action:none; overscroll-behavior:contain; }
+  html:has(#amis-fen .am-voile), body:has(#amis-fen .am-voile) { overflow:hidden !important; touch-action:none; } /* 17/11 (l'utilisateur) : le décor derrière la fenêtre ne défile plus */
   .am-x { position:sticky; top:0; float:right; margin:-6px -6px 0 0; width:38px; height:38px; border-radius:50%; border:1px solid #45457a; background:#221d42; color:#f1ecff; font:bold 18px Georgia, serif; cursor:pointer; z-index:2; }
-  .am-fen { width:min(94vw, 460px); max-height:88vh; max-height:85dvh; overflow:auto; -webkit-overflow-scrolling:touch; background:#1c1838; border:2px solid #7cd4ff; border-radius:18px; padding:16px; color:#f1ecff; font:15px/1.45 Georgia, serif; }
+  .am-fen { width:min(94vw, 460px); max-height:88vh; max-height:85dvh; overflow:auto; touch-action:pan-y; overscroll-behavior:contain; -webkit-overflow-scrolling:touch; background:#1c1838; border:2px solid #7cd4ff; border-radius:18px; padding:16px; color:#f1ecff; font:15px/1.45 Georgia, serif; }
   .am-fen h2 { margin:0 0 6px; text-align:center; color:#7cd4ff; font-size:1.2em; } .am-fen h3 { color:#f3c96b; font-size:1em; margin:14px 0 6px; }
   .am-fen .doux { color:#c9c1ea; font-size:.9em; }
   .am-code { text-align:center; font-size:1.8em; letter-spacing:.2em; color:#f3c96b; font-weight:bold; margin:4px 0; }
