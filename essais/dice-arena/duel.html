@@ -1973,7 +1973,8 @@ function montrerFin() {
   jingleFin();
   { const c = document.getElementById(S.fini === 'gagne' ? 'b-O' : 'b-J'); if (c) effetImage(S.fini === 'gagne' ? 'victoire' : 'defaite', document.getElementById('app'), 2.2); }
   son(S.fini === 'gagne' ? 'victoire' : 'defaite');
-  fenetre(`<h2>${S.fini === 'gagne' ? '🏆 Victoire !' : '💀 Défaite…'}</h2><p>${S.J.nom} contre ${S.O.nom} : ${S.fini === 'gagne' ? 'gagné' : 'perdu'} en ${S.J.tours} tours.</p><div class="choixh"><button onclick="fermer();nouvellePartie(S.J.id, S.O.id)">Rejouer</button><button onclick="fermer();accueil()">Changer de héros</button></div>`);
+  fenetre(`<h2>${S.fini === 'gagne' ? '🏆 Victoire !' : '💀 Défaite…'}</h2><p>${S.J.nom} contre ${S.O.nom} : ${S.fini === 'gagne' ? 'gagné' : 'perdu'} en ${S.J.tours} tours.</p><div class="choixh"><button onclick="fermer();nouvellePartie(S.J.id, S.O.id)">Rejouer</button><button onclick="fermer();accueil()">Changer de héros</button><button onclick="location.href='menu.html'">⌂ Menu</button></div>`);
+  { const f = document.querySelector('#fen .fenetre'); if (f) f.onclick = null; } // 17/11 (l'utilisateur) : la fin ne se ferme plus en touchant à côté (on restait bloqué sur le combat)
 }
 let monHeros = null;
 function accueil() {
