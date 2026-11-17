@@ -1094,7 +1094,20 @@ function dialogue(titre, lignes, k = 0) {
 // Chacun ajoute SES héros depuis SON téléphone (avec sa progression : niveau, rang, équipement) ; l'hôte choisit le scénario et lance.
 let LOB = null;
 const estHote = () => !!L && !!(LOB ? LOB.hote === L.moi.id : S && S.hote === L.moi.id);
-function assureMoi() { if (L && !L.joueurs.some(j => j.id === L.moi.id)) L.joueurs.push({ id:L.moi.id, nom:L.moi.nom, heros:[] }); }
+function assureMoi() { if (L && !L.part && !L.joueurs.some(j => j.id === L.moi.id)) L.joueurs.push({ id:L.moi.id, nom:L.moi.nom, heros:[] }); }
+// 17/11 (l'utilisateur : « je retourne dans le salon et je vois encore Louve alors qu'elle n'est plus là ») : quitter la salle d'attente
+// RETIRE le joueur et ses héros pour tout le monde ; si c'est l'hôte, la couronne passe au joueur suivant
+async function quitterLobby() {
+  if (L && LOB) {
+    const moi = L.moi.id; L.part = true;
+    try { await lobbyPousse((lob) => {
+      lob.equipe = (lob.equipe || []).filter(e => e.owner !== moi);
+      L.joueurs = (L.joueurs || []).filter(j => j.id !== moi);
+      if (lob.hote === moi && L.joueurs.length) lob.hote = L.joueurs[0].id;
+    }); } catch (e) { /* pas de réseau : on part quand même */ }
+  }
+  quitterSalle(); LOB = null; accueil();
+}
 async function lobbyPousse(f) {
   if (!L || !LOB) return; if (envoi) { setTimeout(() => lobbyPousse(f), 300); return; } envoi = true;
   try {
@@ -1107,7 +1120,7 @@ async function lobbyPousse(f) {
       bulle(d.message || 'Le serveur ne répond pas.', true); break;
     }
   } catch (e) { bulle('Pas de réseau.', true); }
-  envoi = false; if (LOB && !S) salleAttente();
+  envoi = false; if (LOB && !S && L && !L.part) salleAttente();
 }
 // une entrée d'équipe à partir d'un choix de l'accueil ('maelle' ou 'av:<id>')
 function entreeLobby(k) {
@@ -1130,7 +1143,7 @@ function salleAttente() {
   const dispo = Object.keys(H).filter(k => !(k === 'zephine' && !ZEPH_OK())).map(k => [k, H[k].n, `portraits/${k}.webp`, `portraits/${k}.webp`]).concat(avLire().map(a => ['av:' + a.id, a.nom, avPortrait(a), avPortraitSecours(a)]));
   const img = (s, sec, c) => `<img src="${s}" onerror="this.onerror=null;this.src='${sec}'" alt="" style="width:13cqw;height:13cqw;border-radius:50%;object-fit:cover;box-shadow:0 0 0 2px ${c || '#7cd4ff'}">`;
   $('app').innerHTML = `<div class="acc">
-    <div class="haut"><button onclick="if(confirm('Quitter la salle ?')){quitterSalle();LOB=null;accueil()}">‹ Quitter</button><span class="t"></span><span></span></div>
+    <div class="haut"><button onclick="if(confirm('Quitter la salle ? Tes héros en sont retirés pour tout le monde.')){quitterLobby()}">‹ Quitter</button><span class="t"></span><span></span></div>
     <h1>🌐 Salle d’attente</h1>
     <p class="sous">Code à donner à tes amis : <b style="color:var(--or);font-size:1.6em;letter-spacing:.15em">${L.code}</b><br>(perso.elvanys.fr/guilde → Les Chroniques → 🔑 Rejoindre avec un code)</p>
     <h3 style="color:var(--or);margin:3cqw 0 1.5cqw">👥 Les joueurs</h3>
