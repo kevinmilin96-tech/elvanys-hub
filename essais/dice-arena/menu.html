@@ -109,6 +109,8 @@ fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.te
   @keyframes monteT { from { opacity:0; } }
   .sauves { margin:4px auto 8px; max-width:440px; padding:0 12px; display:flex; flex-direction:column; gap:6px; }
   .sauves .st { color:var(--or); font-weight:bold; text-align:center; font-size:.9em; }
+  .slotm { background:#15132bcc; border:1px solid #f3c96b66; border-radius:16px; padding:10px 12px; display:flex; flex-direction:column; gap:6px; } .slotm .sn { color:var(--or); font-weight:bold; } .slotm .vide { margin:0; color:var(--doux); font-style:italic; }
+  .sauves button.neuf { justify-content:center; border-style:dashed; background:#221d42cc; color:var(--or); font-weight:bold; } .sauves .chg { display:inline; margin-left:6px; padding:3px 10px; border:1px solid var(--or); border-radius:10px; background:#1d1b3acc; color:var(--or); font:inherit; font-size:.9em; }
   .sauves button { display:flex; flex-wrap:wrap; align-items:center; gap:2px 8px; text-align:left; background:#1d1b3acc; color:#fff; border:2px solid var(--or); border-radius:14px; padding:8px 12px; font:inherit; font-size:.9em; cursor:pointer; }
   .sauves button small { color:var(--doux); flex-basis:100%; order:3; } .sauves button i { margin-left:auto; color:var(--or); font-style:normal; font-weight:bold; }
   .points { display:flex; justify-content:center; gap:7px; margin:6px 0 2px; }
@@ -269,8 +271,27 @@ try { const a = JSON.parse(localStorage.getItem('guilde-actes') || '{}'); let ch
   MES_ODY.forEach(({ r }) => { if ((r.acte === 'givre' || r.acte === 'abime') && !a.brulees) { a.brulees = true; ch = true; } if (r.acte === 'abime' && !a.givre) { a.givre = true; ch = true; } });
   if (ch) localStorage.setItem('guilde-actes', JSON.stringify(a)); } catch (e) {}
 function reprendreOdy(i) { const o = MES_ODY[i]; localStorage.setItem('guilde-odyssee-emplacement' + o.suf, String(o.n)); sessionStorage.setItem('guilde-dans-mode', '1'); location.href = o.href + (o.href.includes('?') ? '&' : '?') + 'reprendre=' + o.n; }
+// 17/11 (l'utilisateur : « en entrant dans l'Odyssée, d'abord les sauvegardes, sans les portails derrière, comme un menu de jeu vidéo :
+// 3 emplacements, nouvelle partie / charger, et après seulement les portails ») : odySlot = l'emplacement choisi pour une NOUVELLE partie
+let odySlot = null;
+const ODY_SUFS = ['', '-sansfin', '-route'];
+function partiesDuSlot(n) { return MES_ODY.map((o, i) => [o, i]).filter(([o]) => o.n === n); }
+function nouvelleOdy(n) { odySlot = n; ODY_SUFS.forEach(suf => { try { localStorage.setItem('guilde-odyssee-emplacement' + suf, String(n)); } catch (e) {} }); montre('odyssee'); }
+function slotsOdy() {
+  const b = document.getElementById('sauves');
+  const nomH = r => { const h = typeof HEROS !== 'undefined' && HEROS[r.heros]; return h ? h.nom : String(r.heros || '').startsWith('av:') ? 'Héros d’aventure' : 'Héros'; };
+  b.innerHTML = '<div class="st">💾 Choisis un emplacement</div>' + [1, 2, 3].map(n => { const P = partiesDuSlot(n);
+    return `<div class="slotm"><div class="sn">Emplacement ${n}</div>${P.length ? P.map(([o, i]) => `<button onclick="reprendreOdy(${i})"><b>${nomH(o.r)}</b> · ${o.r.route ? 'Route du Titan' : (ILE_NOM[o.r.acte] || ILE_NOM.brulees)}${o.suf === '-sansfin' ? ' · sans fin' : ''}<small>${o.mode} · ❤ ${o.r.pv}/${o.r.pvMax}</small><i>▶ Charger</i></button>`).join('') : '<p class="vide">Vide</p>'}
+      <button class="neuf" onclick="nouvelleOdy(${n})">✨ Nouvelle partie</button></div>`; }).join('');
+  b.style.display = '';
+}
 function sauvesOdy() {
   const b = document.getElementById('sauves'); if (!b) return;
+  const vuSlots = courant === 'odyssee' && !odySlot;
+  [car, document.getElementById('points'), document.getElementById('desc')].forEach(e => { if (e) e.style.display = vuSlots ? 'none' : ''; });
+  if (courant === 'odyssee') document.getElementById('eSous').textContent = vuSlots ? 'Choisis ta partie' : 'Quelle île veux-tu explorer ?';
+  if (vuSlots) return slotsOdy();
+  if (courant === 'odyssee' && odySlot) { b.innerHTML = `<div class="st">✨ Nouvelle partie · emplacement ${odySlot} · choisis ton île <button class="chg" onclick="odySlot=null;montre('odyssee')">‹ Changer</button></div>`; b.style.display = ''; return; }
   if (courant !== 'odyssee' || !MES_ODY.length) { b.style.display = 'none'; return; }
   const nomH = r => { const h = typeof HEROS !== 'undefined' && HEROS[r.heros]; return h ? h.nom : String(r.heros || '').startsWith('av:') ? 'Héros d’aventure' : 'Héros'; };
   b.innerHTML = '<div class="st">💾 Tes parties en cours</div>' + MES_ODY.map((o, i) => `<button onclick="reprendreOdy(${i})"><b>${nomH(o.r)}</b> · ${o.r.route ? 'Route du Titan' : (ILE_NOM[o.r.acte] || ILE_NOM.brulees)}${o.suf === '-sansfin' ? ' · sans fin' : ''}${o.r.aventure ? ' · 🗺 Grande aventure' : ''}<small>${o.mode} · emplacement ${o.n} · ❤ ${o.r.pv}/${o.r.pvMax}</small><i>▶ Continuer</i></button>`).join('');
@@ -368,6 +389,7 @@ function dessin(p) {
   return `<div class="pro" style="--fond:${fond};--g:${g}">${et}<b>${e}</b></div>`;
 }
 function montre(id) {
+  if (id !== 'odyssee') odySlot = null;
   const E = ETAGES[id] || ETAGES['']; courant = ETAGES[id] ? id : '';
   PORTES = !courant && cat !== 'tout' ? E.portes.filter(p => p.cat === cat) : E.portes; ongletsCat();
   document.getElementById('eTitre').textContent = E.titre; document.getElementById('eSous').textContent = E.sous;
@@ -404,7 +426,7 @@ function touche(i) {
   if (p.ferme || p.avenir) { const el = car.children[i]; el.animate([{ translate:'0' }, { translate:'-8px' }, { translate:'8px' }, { translate:'0' }], { duration:300 }); return; }
   if (!GM.son('portail')) souffle(); car.children[i].classList.add('entre'); document.getElementById('flash').classList.add('go');
   setTimeout(() => {
-    if (p.href) { sessionStorage.setItem('guilde-dans-mode', '1'); location.href = p.href; return; }
+    if (p.href) { sessionStorage.setItem('guilde-dans-mode', '1'); location.href = courant === 'odyssee' && odySlot && p.href.startsWith('odyssee.html') ? p.href + (p.href.includes('?') ? '&' : '?') + 'nouvelle=' + odySlot : p.href; return; }
     document.getElementById('flash').classList.remove('go'); location.hash = p.vers;
   }, 750);
 }
