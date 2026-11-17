@@ -21,7 +21,7 @@ function accepte(s, d, L) {
   switch (s.t) {
     case 'ex': return d === s.v; case 'min': return d >= s.v; case 'max': return d <= s.v;
     case 'pair': return d % 2 === 0; case 'imp': return d % 2 === 1; case 'tot': case 'any': return true;
-    case 'dbl': { const j = L.find(x => x !== s && x.t === 'dbl' && x.g === s.g && x.ok); return !j || j.val === d; }
+    case 'dbl': { const j = L.find(x => x !== s && x.t === 'dbl' && x.g === s.g && x.ok); return !j || !j.val || j.val === d; } // 17/11 : jumeau brisé par un pouvoir (sans dé) = n'importe quel dé (avant : « = 0 », impossible)
   }
   return false;
 }
@@ -397,7 +397,8 @@ function libre(S, x, y, sauf) { const R = S.R; if (x < 0 || y < 0 || x >= R.w ||
   if (R.grille && x === R.grille.x && y === R.grille.y && !grilleOuverte(S)) return false;
   if (R.monstres.some(m => m !== sauf && m.x === x && m.y === y)) return false; if (R.boss && R.boss !== sauf && R.boss.x === x && R.boss.y === y) return false; return true; }
 const herosEn = (S, x, y) => S.heros.find(h => h.x === x && h.y === y);
-const grilleOuverte = S => !!(S.R.grille && S.heros.some(h => !h.aTerre && h.x === S.R.grille.dx && h.y === S.R.grille.dy));
+// 17/11 (l'utilisateur : « l'autre reste bloqué dedans, il faut retourner sur la dalle ») : un héros qui se tient SOUS la grille la retient ouverte
+const grilleOuverte = S => !!(S.R.grille && S.heros.some(h => !h.aTerre && ((h.x === S.R.grille.dx && h.y === S.R.grille.dy) || (h.x === S.R.grille.x && h.y === S.R.grille.y))));
 const voisins = (a, b) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y) === 1;
 const dist = (a, b) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
 // 16/11 (retour de l'utilisateur) : AU CONTACT = une case autour, DIAGONALES COMPRISES (pour les héros comme pour les monstres),
@@ -472,7 +473,10 @@ function debutTour(S) {
     const v = m.att + 2, Q = S.heros.filter(h => !h.aTerre && contact(S, m, h));
     if (!Q.length) { log(S, `⚡ La charge de ${m.n} frappe dans le vide : personne n’est resté collé à lui.`); evC.push({ t:'charge', m:m.id, vide:true }); continue; }
     evC.push({ t:'charge', m:m.id }); Q.forEach(h => { const perdu = blesseHeros(S, h, Math.max(0, v - pwMoinsCoup(S, h))); evC.push({ t:'frappe', m:m.id, h:S.heros.indexOf(h), v:perdu }); pwApresCoup(S, m, h, evC); log(S, `⚡ La charge de ${m.n} frappe ${nm(h)} avant qu’il joue (−${perdu}).`); }); }
-  S.heros.forEach(h => { if (h.def && !h.aTerre) h.bouclier = Math.max(h.bouclier || 0, h.def); }); // 🛡 la Défense de l'équipement
+  // 17/11 (l'utilisateur : « on peut faire des tours en boucle et se mettre 80 de bouclier ») : comme Slay the Spire / Gloomhaven, le bouclier
+  // protège pendant le tour des monstres (et contre les charges juste au-dessus), puis il FOND au début du tour des héros ;
+  // seule la Défense de l'équipement revient à chaque tour
+  S.heros.forEach(h => { h.bouclier = h.def && !h.aTerre ? h.def : 0; }); // 🛡 la Défense de l'équipement
   S.heros.forEach(h => {
     let n = HEROS_C[h.id].des + (h.desPlus || 0) + (h.objet === 'cle' ? 1 : 0) - (S.sablier <= 0 ? 1 : 0) + (h.id === 'gorm' && pwA(h, 'passif', 'A') && h.pv < h.pvmax / 2 ? 1 : 0); // 16/11 nuit : Grand souffle
     h.des = []; if (h.aTerre) n = 0;
@@ -535,23 +539,45 @@ function ouvrir(S, hi, x, y) {
   // 16/11 (l'utilisateur : « sinon on se fait spoiler ») : Moustache ne raconte la salle qu'au PREMIER PAS dedans (voir bouger)
   return { ok:true, ev:[], point:true };
 }
+// 17/11 (l'utilisateur : « dans le couloir, Louve est passée sur le piège sans le prendre, moi oui après elle ») : le piège ne partait
+// que si l'on S'ARRÊTAIT dessus. Maintenant on suit le CHEMIN case par case (le plus court, qui évite les pièges déjà repérés si possible) :
+// le premier piège caché sur le chemin arrête le héros dessus (comme à HeroQuest).
+function chemin(S, h, x, y, pasMax, eviter) {
+  const R = S.R, par = { [cle(h.x, h.y)]:null }, file = [[h.x, h.y, 0]], but = cle(x, y);
+  const piegeVu = c => { const o = R.obj[c]; return o && o.t === 'piege' && !o.trouve && (!o.cache || o.vu); };
+  while (file.length) { const [cx, cy, d] = file.shift(); if (cle(cx, cy) === but) break; if (d >= pasMax) continue;
+    const ici = R.salle[cle(cx, cy)]; if (d > 0 && ici && !R.vuSalle[ici]) continue;
+    const vs = [[1, 0], [-1, 0], [0, 1], [0, -1]].map(([dx, dy]) => [cx + dx, cy + dy]);
+    if (R.liens && R.liens[cle(cx, cy)]) vs.push(R.liens[cle(cx, cy)].split(',').map(Number));
+    for (const [nx, ny] of vs) { const c = cle(nx, ny); if (c in par || !libre(S, nx, ny) || !R.vu[c]) continue; if (eviter && c !== but && piegeVu(c)) continue;
+      par[c] = cle(cx, cy); file.push([nx, ny, d + 1]); } }
+  if (!(but in par)) return null;
+  const l = []; for (let c = but; c && c !== cle(h.x, h.y); c = par[c]) l.unshift(c); return l;
+}
 function bouger(S, hi, idDe, x, y) {
   const h = S.heros[hi], d = h.des.find(z => z.id === idDe); if (!d || h.aTerre) return 'Ce héros ne peut pas bouger.';
   const A = atteignables(S, h, d.v, d.pas), fait = A[cle(x, y)]; if (!fait) return 'Trop loin pour ce dé.';
   const total = d.pas ? d.v : pasDe(h, d.v).n, reste = total - fait;
+  // le piège caché sur le chemin (avant la case d'arrivée) arrête le héros dessus
+  let piegeEnRoute = false;
+  { const ch = chemin(S, h, x, y, fait, true) || chemin(S, h, x, y, fait, false) || [];
+    const k = ch.findIndex((c, i) => i < ch.length - 1 && S.R.obj[c] && S.R.obj[c].t === 'piege' && !S.R.obj[c].trouve && !herosEn(S, ...c.split(',').map(Number)));
+    if (k >= 0) { [x, y] = ch[k].split(',').map(Number); piegeEnRoute = true; } }
   prendDe(h, idDe); const de0 = [h.x, h.y]; h.x = x; h.y = y; const ev = [{ t:'marche', h:hi, de:de0 }];
   // 16/11 (l'utilisateur : « je suis toujours là ») : marcher SUR le bout d'un escalier fait passer à l'autre étage, sans pas en plus
   { const l = S.R.liens && S.R.liens[cle(x, y)], venu = S.R.liens && S.R.liens[cle(...de0)] === cle(x, y);
-    if (l && !venu) { const [lx, ly] = l.split(',').map(Number); if (libre(S, lx, ly) && !herosEn(S, lx, ly)) { h.x = lx; h.y = ly; ev.push({ t:'etage', h:hi }); log(S, `${ly < y ? '⬆' : '⬇'} ${nm(h)} ${ly < y ? 'monte' : 'descend'} : ${etageDe(S, ly)}.`); } } }
+    if (l && !venu && !piegeEnRoute) { const [lx, ly] = l.split(',').map(Number); if (libre(S, lx, ly) && !herosEn(S, lx, ly)) { h.x = lx; h.y = ly; ev.push({ t:'etage', h:hi }); log(S, `${ly < y ? '⬆' : '⬇'} ${nm(h)} ${ly < y ? 'monte' : 'descend'} : ${etageDe(S, ly)}.`); } } }
   // 16/11 (retour de l'utilisateur : « un dé de 4 = 4 actions ») : les PAS PAS UTILISÉS restent dans un petit dé 👣
   // qui sert à marcher encore ou à agir (fouiller, levier, porte, axe, livre) ; il ne frappe pas et ne se donne pas.
-  if (reste > 0) h.des.push({ id:'d' + S.seq++, v:reste, pas:true });
+  if (reste > 0 && !piegeEnRoute) h.des.push({ id:'d' + S.seq++, v:reste, pas:true });
   const o = S.R.obj[cle(x, y)];
-  if (o && o.t === 'piege' && !o.trouve) { o.trouve = true; o.cache = false; blesseHeros(S, h, 3); ev.push({ t:'piege', h:hi }); log(S, `⚠ ${nm(h)} tombe dans un piège : −3 PV.`); }
+  if (o && o.t === 'piege' && !o.trouve) { o.trouve = true; o.cache = false; blesseHeros(S, h, 3); ev.push({ t:'piege', h:hi }); log(S, piegeEnRoute ? `⚠ ${nm(h)} marche sur un piège caché en chemin : −3 PV, et s’arrête là.` : `⚠ ${nm(h)} tombe dans un piège : −3 PV.`); }
   if (o && o.t === 'rouage' && !h.porte) { delete S.R.obj[cle(x, y)]; h.porte = true; log(S, `⚙ ${nm(h)} ramasse un rouage.`); }
   else if (o && o.t === 'rouage') log(S, `⚙ ${nm(h)} porte déjà un rouage : il en laisse un par terre (un seul à la fois).`);
   if (S.R.grille && x === S.R.grille.dx && y === S.R.grille.dy) { log(S, `⬇ ${nm(h)} monte sur la dalle : CLONK… la grille du Cagibi remonte. Tant que ${nm(h)} reste dessus, elle reste ouverte.`); ev.push({ t:'grille' }); }
-  else if (S.R.grille && de0[0] === S.R.grille.dx && de0[1] === S.R.grille.dy && !grilleOuverte(S)) log(S, `⬆ ${nm(h)} quitte la dalle : la grille retombe dans un grand bruit de fer.`);
+  else if (S.R.grille && x === S.R.grille.x && y === S.R.grille.y) log(S, `✋ ${nm(h)} se tient sous la grille et la retient : elle reste ouverte tant qu’il ou elle est dessous.`);
+  if (S.R.grille && ((de0[0] === S.R.grille.dx && de0[1] === S.R.grille.dy) || (de0[0] === S.R.grille.x && de0[1] === S.R.grille.y)) && !grilleOuverte(S)) log(S, `⬆ ${nm(h)} s’en va : la grille retombe dans un grand bruit de fer.`);
+  else if (S.R.grille && de0[0] === S.R.grille.dx && de0[1] === S.R.grille.dy && grilleOuverte(S)) log(S, `⬆ ${nm(h)} quitte la dalle, mais la grille reste ouverte : quelqu’un la retient.`);
   voir(S); { const R = S.R, ici = R.salle[cle(x, y)]; if (!R.lus) R.lus = Object.assign({}, R.vuSalle); if (ici && !R.lus[ici]) { R.lus[ici] = true; ev.push({ t:'salle', salle:ici }); } }
   return { ok:true, ev };
 }
@@ -829,11 +855,30 @@ function prendreEscalier(S, hi) {
 }
 // 16/11 (l'utilisateur : « bloqué par Maëlle dans le couloir ») : changer de place avec un allié juste à côté, pour 1 pas
 // (comme traverser un allié dans D&D, ou l'échange de place de Baldur's Gate 3 / Gloomhaven)
+// 17/11 (l'utilisateur : « le changement de place se fait un par un, ça demande trop de gestes ») : on change de place avec N'IMPORTE
+// QUEL allié que le dé permet d'atteindre ; on paie les pas du trajet ; les alliés dépassés reculent chacun d'une case (le groupe se décale).
+function coutEchange(S, hi, idDe, ci) {
+  const h = S.heros[hi], z = S.heros[ci], d = h && h.des.find(x => x.id === idDe); if (!z || z === h || h.aTerre || z.aTerre || !d) return null;
+  const total = d.pas ? d.v : pasDe(h, d.v).n, ch = chemin(S, h, z.x, z.y, total, true) || chemin(S, h, z.x, z.y, total, false);
+  return ch && ch.length <= total ? ch.length : null;
+}
 function echanger(S, hi, idDe, ci) {
   const h = S.heros[hi], z = S.heros[ci]; if (!z || z === h || h.aTerre) return 'Personne avec qui changer de place.';
-  if (dist(h, z) !== 1) return 'Il faut être juste à côté.'; if (!h.des.find(d => d.id === idDe)) return 'Choisis d’abord un dé.';
-  unPas(S, h, idDe); const a = [h.x, h.y]; h.x = z.x; h.y = z.y; z.x = a[0]; z.y = a[1]; log(S, `↔ ${nm(h)} et ${nm(z)} changent de place.`); voir(S);
-  return { ok:true, ev:[{ t:'marche', h:hi, de:[z.x, z.y] }, { t:'marche', h:ci, de:[h.x, h.y] }] };
+  const d = h.des.find(x => x.id === idDe); if (!d) return 'Choisis d’abord un dé.';
+  const total = d.pas ? d.v : pasDe(h, d.v).n, ch = chemin(S, h, z.x, z.y, total, true) || chemin(S, h, z.x, z.y, total, false);
+  if (!ch || ch.length > total) return 'Trop loin pour ce dé.';
+  // un piège caché sur le chemin : on s'y arrête, comme en marchant (pas d'échange)
+  const k = ch.findIndex((c, i) => i < ch.length - 1 && S.R.obj[c] && S.R.obj[c].t === 'piege' && !S.R.obj[c].trouve && !herosEn(S, ...c.split(',').map(Number)));
+  if (k >= 0) { const [tx, ty] = ch[k].split(',').map(Number); return bouger(S, hi, idDe, tx, ty); }
+  prendDe(h, idDe); const reste = total - ch.length; if (reste > 0) h.des.push({ id:'d' + S.seq++, v:reste, pas:true });
+  const cases = [cle(h.x, h.y)].concat(ch), ev = [{ t:'marche', h:hi, de:[h.x, h.y] }], recule = [];
+  // les héros posés sur le chemin reculent d'une case (tous en même temps)
+  ch.forEach((c, i) => { const [cx, cy] = c.split(',').map(Number); S.heros.forEach((y, j) => { if (y !== h && y.x === cx && y.y === cy) recule.push([j, cases[i]]); }); });
+  const [fx, fy] = ch[ch.length - 1].split(',').map(Number); h.x = fx; h.y = fy;
+  recule.forEach(([j, c]) => { const y = S.heros[j], de = [y.x, y.y]; [y.x, y.y] = c.split(',').map(Number); ev.push({ t:'marche', h:j, de }); });
+  const noms = recule.map(([j]) => nm(S.heros[j]));
+  log(S, ch.length === 1 ? `↔ ${nm(h)} et ${nm(z)} changent de place.` : `↔ ${nm(h)} passe devant (${ch.length} pas) : ${noms.join(', ')} recule${noms.length > 1 ? 'nt' : ''} d’une case.`); voir(S);
+  return { ok:true, ev };
 }
 // 16/11 (choix de l'utilisateur) : LE COLPORTEUR (comme le marchand de Slay the Spire / le colporteur de Darkest Dungeon) : on paie avec la bourse du groupe
 const ETAL = { potion:12, parchemin:15, fumee:10 };
@@ -1039,6 +1084,6 @@ function transmuter(S, hi, idDe) {
   const av = d.v; d.v = 7 - d.v; d.mod = true; h.transT = S.R.tour; log(S, `🔄 Transmutation : le ${av} de Zéphine devient un ${d.v}.`); return { ok:true, ev:[pwEv(h, hi, 'passif', ['h' + hi])] };
 }
 const API = { JAUGE_ULT, GRANDIT, miseAJour:S => { if (S && S.R && S.R.plan === 2) { elargitPortes(S); majBibliotheque(S); majBibliotheque3(S); majBibliotheque5(S); majAutel2(S); } return S; }, benir, ETAL, acheter, pause, echanger, prendreEscalier, moitiesPorte, presDePorte, rectSalle, etageDe, COULOIRS_Z2, CAPA, phasesDe, grilleOuverte, contact, pasDe, aPortee, SAC, utiliser, SCEN, HEROS_C, BETES, PHASES, SALLES, OBJETS, MEUBLE_N, nouvelle, atteignables, bouger, frapper, proteger, soigner, donner, relever, fouiller, agir, ouvrir,
-  finTour, visible, accepte, voisins, dist, herosEn, cle, libre, reveille, pwInfo, lancerPouvoir, transmuter, trouveCombo, PW_CO, COMBOS };
+  finTour, visible, accepte, coutEchange, voisins, dist, herosEn, cle, libre, reveille, pwInfo, lancerPouvoir, transmuter, trouveCombo, PW_CO, COMBOS };
 if (typeof module !== 'undefined' && module.exports) module.exports = API; else racine.CHRON = API;
 })(typeof window !== 'undefined' ? window : globalThis);
