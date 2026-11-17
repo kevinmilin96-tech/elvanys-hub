@@ -111,10 +111,10 @@ function dessine() {
       <div class="points ${pts ? '' : 'zero'}"><b>${pts}</b>point${pts > 1 ? 's' : ''}<br>à placer</div></div>
     <div class="onglets"><button class="${pre === 'groupe' ? 'on' : ''}" onclick="pre='groupe';fhSon('choisir');dessine()">👥 Groupe</button><button class="${pre === 'solo' ? 'on' : ''}" onclick="pre='solo';fhSon('choisir');dessine()">🗡 Solo</button></div>
     <button class="essai ${pwEssai() ? 'on' : ''}" onclick="essai()">🧪 Mode essai : ${pwEssai() ? '<b>tous les choix ouverts</b> (toucher pour revenir aux niveaux)' : 'ouvrir tous les choix pour les tester'}</button>
-    <p class="aide">${pre === 'groupe' ? '👥 Groupe : pris tout seul dans les Chroniques à 2 héros ou plus.' : '🗡 Solo : pris tout seul quand le héros joue seul (Chroniques seul ; les autres modes viendront).'} Changer est <b>gratuit</b>, quand tu veux hors partie. 1 point par niveau du héros ; les rangs restent sur l’emplacement (communs aux deux onglets).</p>
+    <p class="aide">${pre === 'groupe' ? '👥 Groupe : pris tout seul dans les Chroniques à 2 héros ou plus.' : '🗡 Solo : pris tout seul quand le héros joue seul (Chroniques seul ; les autres modes viendront).'} Changer est <b>gratuit</b>, quand tu veux hors partie. 1 point par niveau du héros (un rang coûte 1 point jusqu’au rang 4, 2 points des rangs 5 à 7, 3 points des rangs 8 à 10) ; les rangs restent sur l’emplacement (communs aux deux onglets).</p>
     ${PW_EMP.map(E => { const r = o[E.k].rang, ouvert = pwOuvert(actuel, E.k);
       return `<div class="emp"><div class="emp-h"><h2>${E.e} ${E.n}</h2><small>${E.d}</small>
-        <div class="rang"><span class="etoiles">★ ${r}/10</span><button ${pts && r < PW_RANG_MAX ? '' : 'disabled'} onclick="rangDemande('${E.k}')">⬆ +1 rang<br><small>1 point</small></button></div></div>
+        <div class="rang"><span class="etoiles">★ ${r}/10</span><button ${r < PW_RANG_MAX && pts >= coutRang(r + 1) ? '' : 'disabled'} onclick="rangDemande('${E.k}')">⬆ +1 rang<br><small>${r < PW_RANG_MAX ? `${coutRang(r + 1)} point${coutRang(r + 1) > 1 ? 's' : ''}` : 'max'}</small></button></div></div>
         ${ouvert ? '' : `<p class="verrou">🔒 Le choix s’ouvre au niveau ${E.niv} (niveau ${niv} aujourd’hui) : en attendant, la version A.</p>`}
         ${vignettes(c, E, o[E.k].v, ouvert)}</div>`; }).join('')}
     <div class="resume"><h3>📜 Le build</h3>
@@ -132,7 +132,7 @@ function choisit(emp, v) {
 function valideChoix(emp, v) { const r = choisirPouvoir(actuel, pre, emp, v); fhFen(''); if (r === 'ok') { fhSon('tour-fusion'); fhBulle('✓ Choisi !'); } else fhBulle(r); dessine(); }
 function rangDemande(emp) {
   const E = PW_EMP.find(x => x.k === emp), r = pouvoirsDe(actuel, pre)[emp].rang;
-  fhFen(`<h2>⬆ ${E.e} ${E.n} au rang ${r + 1}</h2><p>Ça coûte <b>1 point</b> (il en reste ${pointsPouvoirs(actuel)}). Le rang renforce cet emplacement, quelle que soit la version choisie : +1 tous les 2 rangs au chiffre principal (rangs 2, 4, 6, 8, 10), et ce qui est écrit dans le texte (rang 5, rang 10).</p>
+  fhFen(`<h2>⬆ ${E.e} ${E.n} au rang ${r + 1}</h2><p>Ça coûte <b>${coutRang(r + 1)} point${coutRang(r + 1) > 1 ? 's' : ''}</b> (il en reste ${pointsPouvoirs(actuel)} ; rangs 1 à 4 : 1 point, 5 à 7 : 2 points, 8 à 10 : 3 points). Le rang renforce cet emplacement, quelle que soit la version choisie : +1 tous les 2 rangs au chiffre principal (rangs 2, 4, 6, 8, 10), et ce qui est écrit dans le texte (rang 5, rang 10).</p>
     <div class="fh-bts"><button class="fh-bt" onclick="fhFen('')">Annuler</button><button class="fh-bt or" onclick="valideRang('${emp}')">⬆ Valider</button></div>`);
 }
 function valideRang(emp) { const r = monterRang(actuel, emp); fhFen(''); if (r === 'ok') { fhSon('victoire'); fhBulle('⬆ Rang +1 !'); } else fhBulle(r); dessine(); }

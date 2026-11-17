@@ -240,7 +240,7 @@ function eniResultat() {
     fenetre(`<h2>🏆 Énigme résolue !</h2><p>${x.essais > 1 ? `En ${x.essais} essais.` : 'Du premier coup !'} 🔥 Série : <b>${eniSerie()}</b> jour(s).</p>
       <p style="font-style:italic">Moustache : « ${['Pas mal, pour quelqu’un sans moustaches.', 'Miaou ! Je l’aurais trouvé aussi. Après ma sieste. Peut-être.', 'Propre. Net. Presque élégant.', 'Tu vois ? Réfléchir, ça ne fait pas mal.'][x.essais % 4]} »</p>
       <div class="choixh"><button onclick="eniAccueil()">🧩 Les autres jours</button><button onclick="location.href='menu.html'">⌂ Menu</button></div>`);
-    return;
+    eniFenFixe(); return;
   }
   const reste = Math.max(0, S.O.pv);
   let aide = '';
@@ -249,7 +249,11 @@ function eniResultat() {
   else aide = '<p style="font-style:italic">Moustache : « Raté. Regarde bien tes cartes : il y a peut-être un ordre qui change tout. »</p>';
   fenetre(`<h2>💨 Raté… il lui reste ${reste} PV</h2><p>Essai ${x.essais}.${x.essais < 2 ? ' Un indice arrive au 2e essai raté.' : x.essais < 5 ? ` La solution arrive au 5e essai raté.` : ''}</p>${aide}
     <div class="choixh"><button onclick="eniDemarre()">↺ Recommencer</button><button onclick="eniAccueil()">🧩 L’énigme</button></div>`);
+  eniFenFixe();
 }
+// 17/11 (l'utilisateur : « énigme du jour : quand je touche en dehors du cadre, je reviens sur le combat et je suis bloqué ») :
+// la fenêtre de fin ne se ferme plus en touchant à côté ; on en sort par ses boutons
+function eniFenFixe() { const f = document.querySelector('#fen .fenetre'); if (f) f.onclick = null; }
 
 { const st = document.createElement('style'); st.textContent = 'body.enigme .b1 { visibility:hidden; }'; document.head.appendChild(st); }
 // ---------------------------------------------------------------- branchements dans le Duel (seulement pendant une énigme)
