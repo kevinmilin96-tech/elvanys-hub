@@ -466,7 +466,7 @@ function recoit(d) {
     if (qui >= 0 && !occupe) { suivi = qui; centrer = true; dessine(); }
     if (suivi != null && fini(suivi)) { const f = suivi; setTimeout(() => { if (suivi === f) { suivi = null; centrer = true; dessine(); } }, 1600); } } // l'ami a fini : retour à son héros
   if (posAvant && !depart) S.heros.forEach((z, i) => { const a = posAvant[i]; if (a && (a[0] !== z.x || a[1] !== z.y) && !mesHeros().includes(i)) glisse('j-h' + i, a, [z.x, z.y]); });
-  if (S.animM && S.animM.n !== vuAnim) { const A = S.animM; vuAnim = A.n; if (!depart && !occupe) { occupe = true; animeMonstres(A.ev.map(e => Object.assign({}, e))).then(() => { occupe = false; centrer = true; dessine(); if (S.fin) finPartie(); }); return; } }
+  if (S.animM && S.animM.n !== vuAnim) { const A = S.animM; vuAnim = A.n; if (!depart && !occupe) { occupe = true; occupeDepuis = Date.now(); animeMonstres(A.ev.map(e => Object.assign({}, e))).catch(e => console.warn('[chroniques] animation', e)).finally(() => { occupe = false; vueForcee = null; centrer = true; dessine(); if (S && S.fin) finPartie(); }); return; } }
   if (depart) { son('portail'); dialogue(S.campagne != null ? CHAPITRES[S.campagne].titre : SCT().titre, [S.campagne != null ? CHAPITRES[S.campagne].avant : SCT().ouverture, SCT().entree()]); return; }
   // 17/11 (l'utilisateur : « pour les tours des amis, j'aimerais voir les lancers de dés ») : le lancer d'un ami se rejoue chez moi
   if (!depart && S.lances && S.lances.t === S.tours) S.lances.l.filter(i => !mesHeros().includes(i) && !(lancesAvant && lancesAvant.t === S.lances.t && lancesAvant.l.includes(i))).forEach(i => lancerAmi(i));
@@ -474,7 +474,11 @@ function recoit(d) {
   if (L) annonceTour();
   if (S.fin) finPartie();
 }
+// 17/11 (l'utilisateur : fin de partie, les amis restés dans la salle du boss, puis figés) : un « occupe » bloqué par une animation
+// plantée arrêtait l'écoute de la partie pour toujours ; au bout de 20 s, on le libère
+let occupeDepuis = 0;
 setInterval(async () => {
+  if (occupe) { if (!occupeDepuis) occupeDepuis = Date.now(); else if (Date.now() - occupeDepuis > 20000) { console.warn('[chroniques] occupe bloqué : libéré'); occupe = false; occupeDepuis = 0; vueForcee = null; } } else occupeDepuis = 0;
   if (!L || envoi || occupe || document.hidden) return;
   try { const { statut, d } = await api('GET', `${API}/${L.code}?v=${L.version}`); if (statut === 200 && !d.pareil) recoit(d); } catch (e) {}
 }, 2000);
@@ -1105,16 +1109,18 @@ function finPartie() {
   if (S && !S.journalEnvoye && typeof guildeJournal === 'function') { S.journalEnvoye = true; guildeJournal(S.aventure ? 'chroniques-aventure' : 'chroniques', { heros:(S.heros || []).map(z => z.id || z.voie || '').join(','), resultat:S.fin, journal:[...(S.journal || [])].reverse(), resume:{ scen:S.scen, campagne:S.campagne, tour:S.tour } }); } // 15/11 soir : carnet des parties
   if (S.aventure && typeof aventureFinCombat === 'function') return aventureFinCombat();
   sauve(); const gagne = S.fin === 'gagne'; let objet = null, niv = [];
-  S.heros.forEach(z => { if (z.av && avTrouve(z.av)) { const g = avGagneXP(z.av, gagne ? 120 : 40, gagne); if (g) niv.push(nomH(z)); } });
+  // 17/11 : chacun reçoit ses récompenses sur son téléphone, une seule fois (avant : le 1er téléphone notait « fait » dans la partie partagée)
+  const cleFin = 'guilde-chron-fini-' + (S.graine || '') + '-' + S.tours; let dejaFait = false; try { dejaFait = !!localStorage.getItem(cleFin); localStorage.setItem(cleFin, '1'); } catch (e) {}
+  if (!dejaFait) S.heros.forEach(z => { if (z.av && avTrouve(z.av)) { const g = avGagneXP(z.av, gagne ? 120 : 40, gagne); if (g) niv.push(nomH(z)); } });
   if (niv.length) setTimeout(() => bulle(`⬆ Niveau gagné : ${niv.join(', ')} ! (à forger dans la Forge des héros)`), 900);
-  if (gagne) { son('victoire'); try { GM.jingle('victoire'); } catch (e) {} S.heros.forEach((z, i) => { if (L && !mesHeros().includes(i)) return; if (typeof guildeEvt === 'function') guildeEvt('boss', 1, { heros:z.av || z.id }); }); objet = butinArmurerie(S.sablier > 0 ? 3 : 1, S.score);
+  if (gagne) { son('victoire'); try { GM.jingle('victoire'); } catch (e) {} if (!dejaFait) S.heros.forEach((z, i) => { if (L && !mesHeros().includes(i)) return; if (typeof guildeEvt === 'function') guildeEvt('boss', 1, { heros:z.av || z.id }); }); objet = dejaFait ? null : butinArmurerie(S.sablier > 0 ? 3 : 1, S.score);
     try { const D = JSON.parse(localStorage.getItem(CLE) || '{}'); D.horloger = (D.horloger || 0) + 1; if (S.sablier > 0) D.gardiens = true; localStorage.setItem(CLE, JSON.stringify(D)); } catch (e) {} }
   else { try { GM.jingle('defaite'); } catch (e) {} }
   const campagne = gagne && (!L || estHote()) ? campagneGagnee().replace('onclick="fin();chapitre()"', L ? 'onclick="retourSalle()"' : 'onclick="fin();chapitre()"') : '';
   const salleBt = L ? (estHote() ? '<button class="go" onclick="retourSalle()">↩ Ramener tout le monde dans la salle d’attente</button>' : '<p style="text-align:center;color:var(--doux)">L’hôte peut ramener tout le monde dans la salle d’attente pour la suite.</p>') : '';
   // 16/11 : l'or et les pièces d'équipement trouvés vont dans la Forge des héros (si l'équipe a des héros d'aventure)
   let butin = '';
-  if (typeof avGagne === 'function' && !S.butinFait) { S.butinFait = true;
+  if (typeof avGagne === 'function' && !dejaFait) {
     const or = (S.orAv || 0) + (gagne ? 25 : 5), pou = gagne ? 30 : 10, g = avGagne(or, (S.equipTrouve || 0) + (gagne ? 1 : 0), gagne);
     if (typeof donneRessources === 'function') donneRessources(0, pou, true); // 16/11 : la poussière de rune en plus (pour monter les héros)
     butin = `<p style="text-align:center">⚒ Pour tes héros : 🪙 +${or} or · 🔹 +${pou} poussière de rune${g.length ? ` · ${g.map(p => `<b style="color:${EQ_RARE[p.r].c}">${EQ_CASES.find(c => c.k === p.slot).e} ${p.nom}</b>`).join(', ')}` : ''}</p>`; }
