@@ -37,6 +37,17 @@
   .case.ferme { opacity:.55; }
   .case .coche { position:absolute; top:8px; right:8px; width:30px; height:30px; border-radius:50%; border:2px solid #4b4580; display:flex; align-items:center; justify-content:center; font-size:16px; background:#120f24; }
   .case.choisi .coche { border-color:var(--pc); background:var(--pc); color:#120f24; font-weight:bold; }
+  .vignettes { display:grid; gap:6px; margin:8px 0 6px; }
+  .vig { position:relative; display:flex; flex-direction:column; align-items:center; gap:3px; padding:8px 4px 6px; background:#14122a; border:2px solid #4b4580; border-radius:14px; color:inherit; font:inherit; cursor:pointer; min-height:86px; }
+  .vig .em { font-size:28px; line-height:1; } .vig .vn { font-size:.74em; font-weight:bold; text-align:center; line-height:1.15; }
+  .vig .vb { position:absolute; top:4px; right:5px; font-size:.8em; } .vig.ferme { opacity:.5; }
+  .vig.choisi { border-color:var(--pc); } .vig.choisi .vb { color:var(--pc); font-weight:bold; }
+  .vig.vue { box-shadow:0 0 0 2px #ffd27a, 0 0 12px #ffd27a77; background:linear-gradient(160deg, color-mix(in srgb, var(--pc) 22%, #14122a), #14122a); }
+  .detail { background:#14122a; border:2px solid var(--pc); border-radius:16px; padding:10px; text-align:left; }
+  .detail .ico { display:flex; align-items:center; gap:8px; } .detail .ico .em { font-size:30px; line-height:1; } .detail .nom { font-weight:bold; font-size:1.02em; }
+  .detail .role { display:inline-block; margin-top:2px; font-size:.78em; padding:1px 8px; border-radius:10px; background:#2a2346; color:var(--doux); }
+  .detail p { margin:6px 0 0; font-size:.86em; } .detail p b { color:var(--or); } .dv-ferme { color:#ffb36a; } .dv-ok { color:var(--pc); font-weight:bold; }
+  .dv-choisir { display:block; width:100%; margin-top:10px; padding:12px; border:none; border-radius:12px; background:var(--pc); color:#120f24; font:inherit; font-weight:bold; font-size:1em; cursor:pointer; }
   .case .ico { display:flex; align-items:center; gap:8px; margin-right:34px; } .case .ico .em { font-size:30px; line-height:1; }
   .case .nom { font-weight:bold; font-size:1.02em; } .case .role { display:inline-block; margin-top:2px; font-size:.78em; padding:1px 8px; border-radius:10px; background:#2a2346; color:var(--doux); }
   .case p { margin:6px 0 0; font-size:.84em; } .case p b { color:var(--or); }
@@ -76,13 +87,24 @@ function caseHTML(c, E, D, choisi, ouvert) {
     ${D.co ? `<p>🎲 <b>${PW_COMBOS[D.co]}</b></p>` : ''}
     <p><b>Duel :</b> ${D.duel}</p><p><b>Chroniques :</b> ${D.chron}</p>${ferme ? `<p style="color:#ffb36a">🔒 au niveau ${E.niv}</p>` : ''}</button>`;
 }
+// 17/11 (l'utilisateur : « trois petites vignettes, je touche et j'ai la description, sans glisser à droite ou à gauche ») :
+// une rangée de vignettes (une par version) ; la vignette touchée montre sa fiche en dessous, avec « Choisir cette version »
+let vue = {};
+function vignettes(c, E, choisie, ouvert) {
+  const L = POUVOIRS_H[c][E.k], v = L.some(D => D.v === vue[E.k]) ? vue[E.k] : choisie, D = L.find(x => x.v === v) || L[0], ferme = D.v !== 'A' && !ouvert;
+  return `<div class="vignettes" style="grid-template-columns:repeat(${L.length}, 1fr)">${L.map(X => { const f = X.v !== 'A' && !ouvert;
+    return `<button class="vig ${X.v === v ? 'vue' : ''} ${X.v === choisie ? 'choisi' : ''} ${f ? 'ferme' : ''}" style="--pc:${X.c}" onclick="vue['${E.k}']='${X.v}';fhSon('choisir');dessine()"><span class="em">${pwIcone(c, E.k, X, 34)}</span><span class="vn">${X.n}</span><span class="vb">${f ? '🔒' : X.v === choisie ? '✓' : ''}</span></button>`; }).join('')}</div>
+    <div class="detail" style="--pc:${D.c}"><div class="ico"><span class="em">${pwIcone(c, E.k, D, 40)}</span><div><div class="nom">${D.n}</div><span class="role">${roleTxt(D.r)}</span></div></div>
+      ${D.co ? `<p>🎲 <b>${PW_COMBOS[D.co]}</b></p>` : ''}<p><b>Duel :</b> ${D.duel}</p><p><b>Chroniques :</b> ${D.chron}</p>
+      ${ferme ? `<p class="dv-ferme">🔒 Ce choix s’ouvre au niveau ${E.niv}.</p>` : D.v === choisie ? '<p class="dv-ok">✓ Version choisie</p>' : `<button class="dv-choisir" onclick="choisit('${E.k}','${D.v}')">Choisir cette version</button>`}</div>`;
+}
 function dessine() {
   if (!tous().includes(actuel)) actuel = tous()[0];
   history.replaceState(null, '', `?h=${actuel}&pre=${pre}${retour !== 'mes-heros.html' ? '&retour=' + encodeURIComponent(retour) : ''}`);
   const I = fhInfo(actuel), c = classeDe(actuel), CL = PW_CLASSES[c], o = pouvoirsDe(actuel, pre), pts = pointsPouvoirs(actuel), niv = niveauH(actuel);
   const autre = pre === 'groupe' ? 'solo' : 'groupe', oA = pouvoirsDe(actuel, autre);
   $('app').innerHTML = `<div class="haut"><a href="${retour}">‹ Retour</a><h1>🃏 Les pouvoirs</h1><a href="mes-heros.html?h=${actuel}">Fiche</a></div>
-    <div class="bande">${tous().map(id => { const J = fhInfo(id); return J ? `<button class="${id === actuel ? 'on' : ''}" onclick="actuel='${id}';fhSon('choisir');dessine()">${fhImg(J)}${J.nom}</button>` : ''; }).join('')}</div>
+    <div class="bande">${tous().map(id => { const J = fhInfo(id); return J ? `<button class="${id === actuel ? 'on' : ''}" onclick="actuel='${id}';vue={};fhSon('choisir');dessine()">${fhImg(J)}${J.nom}</button>` : ''; }).join('')}</div>
     <div class="tete" style="--hc:${I.c}">${fhImg(I)}<div><b>${I.nom}</b><br><span class="cl">${CL.e} ${CL.n}</span><small>${CL.d} · niveau ${niv}</small></div>
       <div class="points ${pts ? '' : 'zero'}"><b>${pts}</b>point${pts > 1 ? 's' : ''}<br>à placer</div></div>
     <div class="onglets"><button class="${pre === 'groupe' ? 'on' : ''}" onclick="pre='groupe';fhSon('choisir');dessine()">👥 Groupe</button><button class="${pre === 'solo' ? 'on' : ''}" onclick="pre='solo';fhSon('choisir');dessine()">🗡 Solo</button></div>
@@ -92,12 +114,12 @@ function dessine() {
       return `<div class="emp"><div class="emp-h"><h2>${E.e} ${E.n}</h2><small>${E.d}</small>
         <div class="rang"><span class="etoiles">★ ${r}/10</span><button ${pts && r < PW_RANG_MAX ? '' : 'disabled'} onclick="rangDemande('${E.k}')">⬆ +1 rang<br><small>1 point</small></button></div></div>
         ${ouvert ? '' : `<p class="verrou">🔒 Le choix s’ouvre au niveau ${E.niv} (niveau ${niv} aujourd’hui) : en attendant, la version A.</p>`}
-        <div class="cases">${POUVOIRS_H[c][E.k].map(D => caseHTML(c, E, D, o[E.k].v === D.v, ouvert)).join('')}</div><div class="glisse">← glisse pour voir les ${POUVOIRS_H[c][E.k].length} versions →</div></div>`; }).join('')}
+        ${vignettes(c, E, o[E.k].v, ouvert)}</div>`; }).join('')}
     <div class="resume"><h3>📜 Le build</h3>
       <p><b>${pre === 'groupe' ? '👥' : '🗡'} ${I.nom} ${nomBuild(actuel, pre)}</b> (${pre === 'groupe' ? 'Groupe' : 'Solo'}) : ${PW_EMP.map(E => `${o[E.k].def.e} ${o[E.k].def.n}${o[E.k].rang ? ' ★' + o[E.k].rang : ''}`).join(' · ')}</p>
       <p style="color:var(--doux)">${autre === 'groupe' ? '👥' : '🗡'} ${I.nom} ${nomBuild(actuel, autre)} (${autre === 'groupe' ? 'Groupe' : 'Solo'}) : ${PW_EMP.map(E => `${oA[E.k].def.e} ${oA[E.k].def.n}`).join(' · ')}</p></div>
     <a class="gros" href="chroniques.html">🗺 Essayer dans les Chroniques</a>`;  // la version cochée se voit tout de suite (chaque ligne défile jusqu'à elle)
-  document.querySelectorAll('.cases').forEach(c => { const ch = c.querySelector('.choisi'); if (ch) c.scrollLeft = ch.offsetLeft - c.offsetLeft - 8; });
+
 }
 function choisit(emp, v) {
   const c = classeDe(actuel), E = PW_EMP.find(x => x.k === emp), o = pouvoirsDe(actuel, pre), D = POUVOIRS_H[c][emp].find(x => x.v === v);
