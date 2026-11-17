@@ -13,7 +13,10 @@ const AMIS_API = '/api/hub/guilde/joueur';
   #amis-bouton { position:fixed; left:56px; top:calc(10px + env(safe-area-inset-top)); z-index:900; height:38px; min-width:38px; padding:0 10px; border-radius:19px; border:1px solid #7cd4ff88; background:#15132bcc; color:#7cd4ff; font:bold 15px Georgia, serif; cursor:pointer; }
   #amis-bouton .pt { display:inline-block; min-width:18px; height:18px; line-height:18px; border-radius:9px; background:#7dffb0; color:#0a2a14; font-size:11px; margin-left:4px; padding:0 4px; }
   #amis-bouton .pt.rouge { background:#ff5a5a; color:#fff; }
+  #boite-bouton { position:fixed; left:10px; top:calc(54px + env(safe-area-inset-top)); z-index:900; height:38px; min-width:38px; padding:0 8px; border-radius:19px; border:1px solid #f3c96b88; background:#15132bcc; color:#f3c96b; font:bold 17px Georgia, serif; cursor:pointer; }
+  #boite-bouton .pt.or { display:inline-block; min-width:18px; height:18px; line-height:18px; border-radius:9px; background:#f3c96b; color:#2b1d0a; font-size:11px; margin-left:3px; padding:0 4px; box-shadow:0 0 8px #f3c96b; }
   .am-voile { position:fixed; inset:0; background:#000c; z-index:5000; display:flex; align-items:center; justify-content:center; padding:4vw; }
+  .am-x { position:sticky; top:0; float:right; margin:-6px -6px 0 0; width:38px; height:38px; border-radius:50%; border:1px solid #45457a; background:#221d42; color:#f1ecff; font:bold 18px Georgia, serif; cursor:pointer; z-index:2; }
   .am-fen { width:min(94vw, 460px); max-height:88vh; max-height:85dvh; overflow:auto; -webkit-overflow-scrolling:touch; background:#1c1838; border:2px solid #7cd4ff; border-radius:18px; padding:16px; color:#f1ecff; font:15px/1.45 Georgia, serif; }
   .am-fen h2 { margin:0 0 6px; text-align:center; color:#7cd4ff; font-size:1.2em; } .am-fen h3 { color:#f3c96b; font-size:1em; margin:14px 0 6px; }
   .am-fen .doux { color:#c9c1ea; font-size:.9em; }
@@ -73,11 +76,22 @@ function amisMsg(t) { const d = document.createElement('div'); d.className = 'am
 // le bouton 👥 en haut (à côté du 👤 du profil)
 function amisBouton() {
   if (typeof document === 'undefined' || !document.body) return;
-  if (window.AMIS_SANS_BOUTON) { if (typeof window.amisPastille === 'function') { const E = AMIS.etat; window.amisPastille(E ? E.amis.filter(a => a.enLigne).length : 0, (E ? E.demandes.length : 0) + (AMIS.boite || []).length); } return; }
+  if (window.AMIS_SANS_BOUTON) { if (typeof window.amisPastille === 'function') { const E = AMIS.etat; window.amisPastille(E ? E.amis.filter(a => a.enLigne).length : 0, E ? E.demandes.length : 0); } amisBoiteBouton(); return; }
   let b = document.getElementById('amis-bouton'); if (!b) { b = document.createElement('button'); b.id = 'amis-bouton'; b.onclick = amisFenetre; b.setAttribute('aria-label', 'Mes amis'); document.body.appendChild(b); }
-  const E = AMIS.etat, n = E ? E.amis.filter(a => a.enLigne).length : 0, dem = (E ? E.demandes.length : 0) + (AMIS.boite || []).length;
+  const E = AMIS.etat, n = E ? E.amis.filter(a => a.enLigne).length : 0, dem = E ? E.demandes.length : 0;
   b.innerHTML = `👥${dem ? `<span class="pt rouge">${dem}</span>` : n ? `<span class="pt">${n}</span>` : ''}`;
   b.title = !AMIS.carte ? 'Mes amis' : `${n} ami${n > 1 ? 's' : ''} en ligne`;
+  amisBoiteBouton();
+}
+// 17/11 (l'utilisateur : « la boîte devrait être une icône, pas cachée dans mes amis ; un cadeau = une pastille d'une autre couleur ») :
+// l'icône 📬, sous le 👤 ; dans le menu toujours, ailleurs seulement quand un cadeau attend ; pastille DORÉE
+function amisBoiteBouton() {
+  if (typeof document === 'undefined' || !document.body) return;
+  const n = (AMIS.boite || []).length, voir = !!AMIS.carte && (window.AMIS_SANS_BOUTON || n > 0);
+  let b = document.getElementById('boite-bouton');
+  if (!voir) { if (b) b.remove(); return; }
+  if (!b) { b = document.createElement('button'); b.id = 'boite-bouton'; b.onclick = amisBoite; b.setAttribute('aria-label', 'Boîte aux lettres'); document.body.appendChild(b); }
+  b.innerHTML = `📬${n ? `<span class="pt or">${n}</span>` : ''}`; b.title = n ? `${n} cadeau${n > 1 ? 'x' : ''} à récupérer` : 'Boîte aux lettres';
 }
 // les invitations reçues : un bandeau en haut de l'écran
 function amisInvitations() {
@@ -111,7 +125,7 @@ function amisFen(h) { let f = document.getElementById('amis-fen'); if (!f) { f =
     if (premier) setTimeout(() => { const x = amisAttente; amisAttente = null; if (x && AMIS.ouvert) amisFen(x); }, 1600); return; }
   amisAttente = null;
   amisDernierHTML = h || null;
-  f.innerHTML = h ? `<div class="am-voile" onclick="if(event.target===this)amisFermer()"><div class="am-fen">${h}</div></div>` : ''; }
+  f.innerHTML = h ? `<div class="am-voile" onclick="if(event.target===this)amisFermer()"><div class="am-fen"><button class="am-x" onclick="amisFermer()" aria-label="Fermer">✕</button>${h}</div></div>` : ''; } // 17/11 : une croix en haut à droite au lieu d'un « Fermer » tout en bas
 // la carte de profil d'un ami (les décors viennent de profil.js s'il est chargé, sinon un fond simple)
 const amisPortrait = k => { if (!k) return ['portraits/gorm.webp', 'portraits/gorm.webp']; const m = /^av-([a-z]+)-[hf]$/.exec(k); return [`portraits/${k}.webp`, `portraits/${m ? m[1] : 'gorm'}.webp`]; };
 function amisCarteHTML(a) {
@@ -144,7 +158,7 @@ async function amisFenetre() {
   if (!AMIS.carte) {
     amisFen(`<h2>👥 Mes amis</h2><p class="doux">Crée ta carte de joueur : un <b>pseudo</b>, et tu reçois un <b>code ami</b> à donner à tes amis. Pas de compte, pas d’e-mail.</p>
       <input id="am-pseudo" maxlength="24" placeholder="Ton pseudo" value="${amisEsc(localStorage.getItem('guilde-pseudo') || '')}">
-      <p id="am-info"></p><button class="am-bt go large" id="am-cree" onclick="amisCree()">Créer ma carte</button><button class="am-bt large" onclick="amisFermer()">Fermer</button>`); return;
+      <p id="am-info"></p><button class="am-bt go large" id="am-cree" onclick="amisCree()">Créer ma carte</button>`); return;
   }
   if (!AMIS.etat) { amisFen('<h2>👥 Mes amis</h2><p class="doux" style="text-align:center">Un instant…</p>'); await amisAgir('signal'); }
   amisDessine();
@@ -152,12 +166,11 @@ async function amisFenetre() {
 function amisDessine() {
   if (!AMIS.ouvert) return; const E = AMIS.etat;
   const foc = document.activeElement; if (foc && foc.tagName === 'INPUT' && foc.closest('#amis-fen') && foc.value) return; // on ne coupe pas la saisie
-  if (!E) { amisFen(`<h2>👥 Mes amis</h2><p class="doux">${AMIS.erreur ? 'Pas de réseau, ou le serveur ne répond pas.' : 'Un instant…'}</p><button class="am-bt large" onclick="amisFermer()">Fermer</button>`); return; }
+  if (!E) { amisFen(`<h2>👥 Mes amis</h2><p class="doux">${AMIS.erreur ? 'Pas de réseau, ou le serveur ne répond pas.' : 'Un instant…'}</p>`); return; }
   const salle = amisSalle(), enL = E.amis.filter(a => a.enLigne);
   amisFen(`<h2>👥 Mes amis</h2>
     <p class="doux" style="text-align:center;margin:0">Ton code ami, à donner à tes amis :</p><div class="am-code">${E.code}</div>
-    <p class="doux" style="text-align:center;margin:0">Ton pseudo : <b>${amisEsc(E.pseudo)}</b> <button class="am-bt" style="padding:3px 8px" onclick="amisPseudo()">changer</button></p>
-    <button class="am-bt ${(AMIS.boite || []).length ? 'or' : ''} large" onclick="amisBoite()">📬 Boîte aux lettres${(AMIS.boite || []).length ? ` : <b>${AMIS.boite.length} cadeau${AMIS.boite.length > 1 ? 'x' : ''}</b> à récupérer` : ''}</button>
+    <p class="doux" style="text-align:center;margin:0">Ton pseudo : <b>${amisEsc(E.pseudo)}</b> <small>(il se change dans ton profil)</small></p>
     ${E.demandes.length ? `<h3>📩 Demandes d’amis</h3>${E.demandes.map(d => `<div class="am-ligne"><div class="p"><b>${amisEsc(d.pseudo)}</b><small>code ${d.code}</small></div><button class="am-bt go" onclick="amisFait('accepte','${d.code}')">Accepter</button><button class="am-bt" onclick="amisFait('refuse','${d.code}')">Non</button></div>`).join('')}` : ''}
     <h3>🟢 En ligne (${enL.length}) · ${E.amis.length} ami${E.amis.length > 1 ? 's' : ''}</h3>
     ${E.amis.length ? E.amis.map(a => `<div class="am-ligne"><span class="am-pt ${a.enLigne ? 'on' : ''}"></span><img src="${amisPortrait((a.profil || {}).portrait)[0]}" onerror="this.onerror=null;this.src='${amisPortrait((a.profil || {}).portrait)[1]}'" alt="" style="width:36px;height:36px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 2px ${(a.profil && a.profil.cadre && a.profil.cadre.c) || '#4b4580'};cursor:pointer" onclick="amisVoir('${a.code}')"><div class="p" style="cursor:pointer" onclick="amisVoir('${a.code}')"><b>${amisEsc(a.pseudo)}</b><small>${a.enLigne ? (a.salle ? `🎲 dans la salle ${amisEsc(a.salle)}` : 'en ligne dans la Guilde') : amisVuTxt(a.vu)}</small></div>
@@ -170,7 +183,7 @@ function amisDessine() {
     <p id="am-info"></p><div style="display:flex;gap:8px"><input id="am-ajout" class="code" maxlength="6" placeholder="CODE" autocomplete="off"><button class="am-bt go" onclick="amisAjoute()">Ajouter</button></div>
     ${salle ? '' : `<button class="am-bt or large" onclick="location.href='duel.html?ami=1'">⚔ Duel contre un ami</button><button class="am-bt or large" onclick="location.href='chroniques.html?ligne=1'">📜 Les Chroniques entre amis</button>`}
     ${window.GS ? `<button class="am-bt large" onclick="amisFermer();GS.ouvrir()">☁ Mon compte et ma sauvegarde</button>` : ''}
-    <button class="am-bt large" onclick="amisFermer()">Fermer</button>`);
+    `);
 }
 async function amisCree() {
   const p = (document.getElementById('am-pseudo').value || '').trim().slice(0, 24); if (!p) { amisMsg('Choisis un pseudo'); return; }
@@ -199,7 +212,7 @@ async function amisBoite() {
   AMIS.ouvert = false; await amisBoiteMaj(); const l = AMIS.boite || [];
   amisFen(`<h2>📬 Boîte aux lettres</h2>${l.length ? l.map(m => `<div class="am-ligne"><div class="p"><b>${amisEsc(m.titre)}</b><small>${amisEsc(m.message)}</small><small style="color:#f3c96b">${amisCadeauTxt(m.cadeau || {})}</small></div><button class="am-bt go" onclick="amisRecupere('${amisEsc(m.id)}')">Récupérer</button></div>`).join('')
     : '<p class="doux">Rien pour le moment. Les récompenses des parties en ligne arrivent ici.</p>'}
-    <button class="am-bt large" onclick="AMIS.ouvert=true;amisDessine()">‹ Mes amis</button>`);
+  `);
 }
 async function amisRecupere(id) {
   if (typeof avGagne !== 'function') { amisMsg('Ouvre ta boîte depuis le menu de la Guilde pour ranger les cadeaux.'); return; }
