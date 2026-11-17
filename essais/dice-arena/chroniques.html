@@ -387,7 +387,7 @@ async function pousse() {
       if (!S && LOB) { envoi = false; return lobbyPousse(); }
       const etat = S, j = JSON.stringify(S); L.dernier = j;
       const { statut, d } = await api('POST', `${API}/${L.code}`, { version:L.version, etat, joueurs:L.joueurs });
-      if (statut === 200) { L.version = d.version; L.prises = []; break; }
+      if (statut === 200) { L.version = d.version; L.prises = []; rangeEnLigne(); break; }
       if (statut === 409) { const prises = (L.prises || []).slice(); recoit(d); if (prises.length) { L.prises = prises; appliquePrises(); salleAJour(); continue; } bulle('Quelqu’un a joué en même temps : partie mise à jour.', true); break; }
       bulle(d.message || 'Le serveur ne répond pas.', true); break;
     }
@@ -396,6 +396,41 @@ async function pousse() {
   if (encore) { encore = false; pousse(); }
 }
 const salleAJour = () => { if ($('salleListe')) equipeEnLigne(); };
+// 17/11 (l'utilisateur, comme dans Sunderfolk) : L'HÔTE GARDE LA PARTIE EN LIGNE. À chaque coup, son téléphone la range (3 emplacements,
+// la plus ancienne remplacée ; rangé sous « guilde-… » donc aussi sur son compte du serveur). À l'accueil : « Rouvrir » = une nouvelle salle
+// avec la partie là où on s'est arrêtés ; chacun reprend tout seul le héros qu'il jouait (même prénom), sinon il le choisit.
+const CLE_ENLIGNE = 'guilde-chroniques-enligne-sauves';
+function sauvesEnLigne() { try { const l = JSON.parse(localStorage.getItem(CLE_ENLIGNE) || '[]'); return Array.isArray(l) ? l : []; } catch (e) { return []; } }
+function rangeEnLigne() {
+  if (!L || !S || !estHote() || S.scen === 'atelier') return;
+  if (!S.sid) S.sid = 's' + Date.now().toString(36);
+  let l = sauvesEnLigne().filter(x => x.id !== S.sid);
+  if (S.fin) { localStorage.setItem(CLE_ENLIGNE, JSON.stringify(l)); return; }
+  const noms = S.heros.map((z, i) => proprio(i) || (S.anciens || [])[i] || '');
+  const copie = JSON.parse(JSON.stringify(S)); copie.anciens = noms; delete copie.animM;
+  l.unshift({ id:S.sid, quand:Date.now(), titre:S.campagne != null ? CHAPITRES[S.campagne].titre : (SCX_TXT[S.scen] || {}).titre || S.scen,
+    heros:S.heros.map((z, i) => nomH(z) + (noms[i] ? ` (${noms[i]})` : '')).join(', '), S:copie });
+  localStorage.setItem(CLE_ENLIGNE, JSON.stringify(l.slice(0, 3)));
+}
+function oublierEnLigne(id) { if (!confirm('Effacer cette sauvegarde ?')) return; localStorage.setItem(CLE_ENLIGNE, JSON.stringify(sauvesEnLigne().filter(x => x.id !== id))); accueil(); }
+async function rouvrirEnLigne(id, nomDonne) {
+  const sv = sauvesEnLigne().find(x => x.id === id); if (!sv) return;
+  if (!nomDonne) { fenetre(`<h2>💾 Rouvrir « ${sv.titre} »</h2><p style="color:var(--doux)">Une nouvelle salle s'ouvre avec la partie là où vous vous êtes arrêtés. Tes amis la rejoignent avec le nouveau code et reprennent leur héros.</p><p style="color:var(--doux)">Ton prénom (ou pseudo) :</p>
+      <input id="fNom3" maxlength="24" value="${(localStorage.getItem('guilde-pseudo') || '').replace(/"/g, '')}" style="width:100%;font:1.1em Georgia;padding:10px;border-radius:12px;border:2px solid #45457a;background:#14122a;color:var(--texte)">
+      <button class="go" onclick="const n=($('fNom3').value||'').trim();if(!n){bulle('Ton prénom ?',true);return}fenetre('');rouvrirEnLigne('${id}', n)">Rouvrir la salle</button><button class="sec" onclick="fenetre('')">Annuler</button>`); return; }
+  const nom = String(nomDonne).trim().slice(0, 24); localStorage.setItem('guilde-pseudo', nom);
+  const moi = { id:'j' + Math.random().toString(36).slice(2, 10), nom };
+  const etat = JSON.parse(JSON.stringify(sv.S)); etat.hote = moi.id; etat.sid = sv.id;
+  const anciens = etat.anciens || [];
+  const joueurs = [{ id:moi.id, nom, heros:etat.heros.map((z, i) => anciens[i] === nom ? i : -1).filter(i => i >= 0) }];
+  try { const { statut, d } = await api('POST', API, { mode:'chroniques', etat, joueurs });
+    if (statut !== 200) { bulle(d.message || 'Impossible de rouvrir la salle.', true); return; }
+    S = etat; LOB = null; L = { code:d.code, version:d.version, joueurs, moi, dernier:JSON.stringify(S) };
+    localStorage.setItem(SALLE, JSON.stringify({ code:L.code, moi, quand:Date.now() }));
+    actif = Math.max(0, mesHeros()[0] || 0); sel = null; centrer = true; son('portail'); dessine(); rangeEnLigne();
+    fenetre(`<h2>💾 La partie est rouverte</h2><p style="text-align:center">Code à donner à tes amis :<br><b style="color:var(--or);font-size:2em;letter-spacing:.15em">${L.code}</b></p><p style="color:var(--doux)">Ils touchent 🔑 Rejoindre avec un code et reprennent leur héros tout seuls s'ils gardent le même prénom.</p><button class="go" onclick="equipeEnLigne()">Voir qui joue quel héros</button>`);
+  } catch (e) { bulle('Pas de réseau.', true); }
+}
 function recoit(d) {
   if (!d || !d.etat) return;
   if (d.etat.lobby) { LOB = d.etat.lobby; S = null; L.version = d.version; if (d.joueurs) L.joueurs = d.joueurs; L.dernier = ''; fenetre(''); salleAttente(); return; }
@@ -403,7 +438,7 @@ function recoit(d) {
   const avant = S && S.journal ? S.journal[0] : null, posAvant = S && S.heros ? S.heros.map(z => [z.x, z.y]) : null, desAvant = S && S.heros ? S.heros.map(z => z.des.length) : null;
   S = d.etat; L.version = d.version; if (d.joueurs) L.joueurs = d.joueurs; L.dernier = JSON.stringify(S);
   if (!mesHeros().includes(actif)) { const m = mesHeros().find(i => !S.heros[i].aTerre); if (m != null) actif = m; }
-  sel = null; dessine(); salleAJour();
+  sel = null; dessine(); salleAJour(); rangeEnLigne();
   // 16/11 (l'utilisateur) : la caméra de chacun reste sur SON héros ; les héros des autres qui bougent dans sa zone glissent case par case
   if (posAvant && !depart) { const qui = S.heros.findIndex((z, i) => !mesHeros().includes(i) && ((posAvant[i] && (posAvant[i][0] !== z.x || posAvant[i][1] !== z.y)) || (desAvant && desAvant[i] !== z.des.length)));
     if (qui >= 0 && !occupe) { suivi = qui; centrer = true; dessine(); }
@@ -463,6 +498,8 @@ async function rejoindre(code, moi) {
     localStorage.setItem(SALLE, JSON.stringify({ code, moi, quand:Date.now() }));
     if (d.etat && d.etat.lobby) { LOB = d.etat.lobby; S = null; son('portail'); salleAttente(); lobbyPousse(); return; }
     S = d.etat; LOB = null; actif = 0; sel = null; centrer = true;
+    // 17/11 : une partie rouverte par l'hôte → je reprends les héros que je jouais (même prénom), s'ils sont libres
+    if (S.anciens) { L.prises = S.heros.map((z, i) => i).filter(i => S.anciens[i] === moi.nom && !proprio(i)); appliquePrises(); if (mesHeros().length) actif = mesHeros()[0]; }
     dessine(); await pousse(); equipeEnLigne();
   } catch (e) { bulle('Pas de réseau.', true); }
 }
@@ -470,7 +507,7 @@ async function rejoindre(code, moi) {
 function equipeEnLigne() {
   if (!L) return;
   fenetre(`<h2>🌐 Salle ${L.code}</h2><p style="text-align:center;color:var(--doux)">Touche un héros pour le jouer depuis ce téléphone. La liste se met à jour toute seule quand un ami choisit.</p>
-    <div id="salleListe">${S.heros.map((z, i) => { const toi = mesHeros().includes(i); return `<button class="sec" style="${toi ? 'border-color:var(--ok)' : ''}" onclick="prendHeros(${i})"><b>${nomH(z)}</b> · ${(H[z.id] || {}).t || ''}<small>${proprio(i) ? (toi ? '✅ joué par toi' : '👤 joué par ' + proprio(i)) : 'libre'}</small></button>`; }).join('')}</div>
+    <div id="salleListe">${S.heros.map((z, i) => { const toi = mesHeros().includes(i); return `<button class="sec" style="${toi ? 'border-color:var(--ok)' : ''}" onclick="prendHeros(${i})"><b>${nomH(z)}</b> · ${(H[z.id] || {}).t || ''}<small>${proprio(i) ? (toi ? '✅ joué par toi' : '👤 joué par ' + proprio(i)) : 'libre' + (S.anciens && S.anciens[i] ? ` (joué par ${S.anciens[i]} la dernière fois)` : '')}</small></button>`; }).join('')}</div>
     <p style="color:var(--doux);font-size:.9em">Joueurs : ${L.joueurs.map(j => j.nom).join(', ')}</p><button class="go" onclick="fenetre('')">${mesHeros().length ? 'Jouer ▶' : 'Fermer'}</button>`);
 }
 function prendHeros(i) { L.prises = (L.prises || []).filter(x => x !== i).concat(i); appliquePrises(); actif = i; L.dernier = ''; dessine(); if (typeof pousse === 'function') pousse();
@@ -1065,6 +1102,7 @@ function accueil() { document.body.classList.remove('jeu'); sessionStorage.remov
     <button class="gros" style="background:#14223a;border-color:#7cd4ff;color:#7cd4ff" onclick="creerSalle()">🌐 Créer une partie à distance<small>Une salle d’attente : tu choisis le scénario, chacun ajoute son héros depuis son téléphone, tu lances pour tout le monde.</small></button>
     <button class="gros" style="background:#14223a;border-color:#7cd4ff;color:#7cd4ff" onclick="amisFenetre()">👥 Mes amis<small>Vois qui est en ligne, rejoins sa salle ou invite-le dans la tienne.</small></button>
     <button class="gros" style="background:#1c1c36;border-color:#45457a;color:var(--texte)" onclick="rejoindre()">🔑 Rejoindre avec un code<small>Un ami t’a donné un code de salle.</small></button>
+    ${(() => { const l = sauvesEnLigne(); if (!l.length) return ''; return `<h3 style="color:var(--or);margin:3cqw 0 1.5cqw">💾 Parties en ligne sauvegardées <small style="color:var(--doux);font-weight:normal">(tu étais l'hôte)</small></h3>` + l.map(x => `<button class="gros" style="background:#1d1a35;border-color:#b98cff;color:#d9c2ff" onclick="rouvrirEnLigne('${x.id}')">💾 Rouvrir : ${x.titre}<small>${x.heros} · ${new Date(x.quand).toLocaleString('fr-FR', { weekday:'long', day:'numeric', month:'long', hour:'2-digit', minute:'2-digit' })}</small></button><button onclick="oublierEnLigne('${x.id}')" style="display:block;margin:0 auto;background:none;border:0;color:var(--doux);font-size:3cqw;text-decoration:underline;padding:1cqw">✕ effacer cette sauvegarde</button>`).join(''); })()}
     ${(() => { try { const s = salleGardee(); return s ? `<button class="gros" style="background:#14322a;border-color:var(--ok);color:var(--ok)" onclick='rejoindre(${JSON.stringify(s.code)}, ${JSON.stringify(s.moi)})'>↩ Revenir dans la salle ${s.code}<small>en tant que ${s.moi.nom}</small></button><button onclick="oublierSalle()" style="display:block;margin:0 auto;background:none;border:0;color:var(--doux);font-size:3cqw;text-decoration:underline;padding:1cqw">✕ oublier cette salle</button>` : ''; } catch (e) { return ''; } })()}
     <p style="text-align:center;margin-top:4cqw"><a href="editeur.html" style="color:var(--or);font-size:3cqw">🛠 L’atelier des cartes</a> · <a href="chroniques-v1.html" style="color:var(--doux);font-size:3cqw">l’ancienne version (salles séparées)</a></p>
   </div>`;
