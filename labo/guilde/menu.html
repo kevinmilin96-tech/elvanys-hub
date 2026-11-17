@@ -8,7 +8,7 @@
 <title>La Guilde des Runes</title>
 <script>
 // Même mécanisme que le Duel : une nouvelle version = rechargement tout seul à l'ouverture (publier.sh change VERSION).
-const VERSION = '20261117-230540';
+const VERSION = '20261117-230959';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-menu-' + v)) { sessionStorage.setItem('recharge-menu-' + v, '1'); location.replace('menu.html?v=' + v); }
@@ -209,7 +209,7 @@ fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.te
 <script>window.AMIS_SANS_BOUTON = true; /* 15/11 : un seul bouton en haut à gauche (profil + amis) */</script>
 <script src="amis.js?v=782fc8dfb7"></script>
 <script src="heros-etoiles.js?v=07f78336f4"></script>
-<script src="donnees.js?v=20261117-230540"></script>
+<script src="donnees.js?v=20261117-230959"></script>
 <script>
 // ciel étoilé + runes du portail (symboles, pas des lettres), aux couleurs des héros
 const ciel = document.getElementById('ciel');
@@ -379,12 +379,12 @@ const car = document.getElementById('car');
 let courant = '';
 // 15/11 soir : onglets de catégorie au 1er étage (Tout, Duels, Aventures, Entre amis, Défis, Collection)
 const CATS = [['tout','✨ Tout'], ['duels','⚔️ Duels'], ['aventure','🗺️ Aventures'], ['amis','🤝 Entre amis'], ['defis','🎯 Défis'], ['collection','📚 Collection']];
-let cat = sessionStorage.getItem('guilde-cat') || 'tout';
+let cat = 'tout'; // 17/11 soir (l'utilisateur) : plus de filtres, la barre du bas a la grille « Portails »
 let PORTES = [];
 function choisirCat(c) { cat = c; sessionStorage.setItem('guilde-cat', c); montre(courant); }
 function ongletsCat() {
   const el = document.getElementById('cats'); if (!el) return;
-  el.style.display = courant ? 'none' : '';
+  el.style.display = 'none'; return; // 17/11 soir : filtres retirés
   el.innerHTML = CATS.map(([k, t]) => `<button class="${k === cat ? 'on' : ''}" onclick="choisirCat('${k}')">${t}</button>`).join('');
 }
 function particules(sorte, n) { let h = ''; for (let i = 0; i < n; i++) h += `<i style="left:${(i * 37 + 11) % 100}%;--dx:${(i % 2 ? 1 : -1) * (4 + i % 5 * 3)}cqw;animation-duration:${3 + (i * 7) % 5}s;animation-delay:${-(i * 1.3) % 6}s"></i>`; return `<div class="particules ${sorte}">${h}</div>`; }
@@ -498,14 +498,26 @@ function profilMenu() {
 // 17/11 (l'utilisateur : « un menu en bas avec paramètres, icône de profil, messagerie ») : LA BARRE DU BAS du menu ;
 // le haut de l'écran est dégagé (le 👤, le ⚙️ et le 📬 flottants sont cachés ici)
 { const st = document.createElement('style'); st.textContent = `#profil-bouton, #gm-bouton, #boite-bouton { display:none !important; }
-    #barre-bas { position:fixed; left:0; right:0; bottom:0; z-index:950; display:grid; grid-template-columns:repeat(4, 1fr); gap:4px; padding:6px 8px calc(6px + env(safe-area-inset-bottom)); background:#110e22f2; border-top:1px solid #f3c96b55; box-shadow:0 -6px 20px #0008; }
+    #barre-bas { position:fixed; left:0; right:0; bottom:0; z-index:950; display:grid; grid-template-columns:repeat(5, 1fr); gap:4px; padding:6px 8px calc(6px + env(safe-area-inset-bottom)); background:#110e22f2; border-top:1px solid #f3c96b55; box-shadow:0 -6px 20px #0008; }
     #barre-bas button { position:relative; background:none; border:0; color:#f1ecff; font:13px Georgia, serif; padding:4px 0; cursor:pointer; } #barre-bas button b { display:block; font-size:22px; line-height:1.2; }
     #barre-bas .pt { position:absolute; top:0; left:calc(50% + 6px); min-width:17px; height:17px; line-height:17px; border-radius:9px; font:bold 11px Georgia; padding:0 4px; }
     body { padding-bottom:calc(66px + env(safe-area-inset-bottom)); }
+    #monde { height:calc(100dvh - 66px - env(safe-area-inset-bottom)) !important; } body { overflow:hidden; } /* 17/11 soir : le monde tient au-dessus de la barre, rien ne défile */
+    #monde .carrousel { --w:min(70vw, 330px, calc((100dvh - 330px) / 1.49)) !important; }
+    #grille-p { position:fixed; inset:0; z-index:4500; background:#0d0a1cf2; overflow:auto; overscroll-behavior:contain; padding:14px 12px calc(84px + env(safe-area-inset-bottom)); box-sizing:border-box; animation:gpArr .25s ease-out; }
+    @keyframes gpArr { from { opacity:0; transform:translateY(20px); } }
+    #grille-p h2 { text-align:center; color:#f3c96b; font:bold 1.3em Georgia, serif; margin:2px 0 12px; }
+    #grille-p .gp { display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; max-width:520px; margin:0 auto; }
+    #grille-p button { position:relative; background:#1c1838; border:1px solid #6b5fb0; border-radius:14px; padding:6px 4px 8px; color:#f1ecff; font:12px/1.2 Georgia, serif; cursor:pointer; overflow:hidden; }
+    #grille-p button .im { aspect-ratio:1; border-radius:10px; overflow:hidden; margin-bottom:5px; background:#221d42; position:relative; }
+    #grille-p button .im img { width:100%; height:100%; object-fit:cover; object-position:50% 40%; display:block; }
+    #grille-p button .im .pro { width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:2.2em; }
+    #grille-p button.ferme { opacity:.55; } #grille-p button.ferme .im::after { content:'🔒'; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:1.8em; background:#0008; }
+    #grille-p .x { position:fixed; top:10px; right:12px; width:40px; height:40px; border-radius:50%; background:#1c1838; border:1px solid #f3c96b88; color:#fff; font-size:18px; padding:0; z-index:2; }
     body:has(#titre:not(.part)) #barre-bas { display:none; } /* 17/11 (l'utilisateur) : pas sur l'écran « Toucher pour entrer », seulement une fois dans le menu */
     #barre-bas { animation:bbArrive .4s ease-out; } @keyframes bbArrive { from { transform:translateY(100%); } }`; document.head.appendChild(st);
   const bb = document.createElement('nav'); bb.id = 'barre-bas';
-  bb.innerHTML = `<button id="bb-profil" onclick="try{sessionStorage.setItem('guilde-dans-mode','1')}catch(e){};location.href='profil.html'"><b>👤</b>Profil</button><button id="bb-amis" onclick="amisFenetre()"><b>👥</b>Amis</button><button id="bb-boite" onclick="amisBoite()"><b>📬</b>Boîte</button><button id="bb-param" onclick="GM.parametres()"><b>⚙️</b>Paramètres</button>`;
+  bb.innerHTML = `<button id="bb-profil" onclick="try{sessionStorage.setItem('guilde-dans-mode','1')}catch(e){};location.href='profil.html'"><b>👤</b>Profil</button><button id="bb-amis" onclick="amisFenetre()"><b>👥</b>Amis</button><button id="bb-portails" onclick="grillePortails()"><b>🌀</b>Portails</button><button id="bb-boite" onclick="amisBoite()"><b>📬</b>Boîte</button><button id="bb-param" onclick="GM.parametres()"><b>⚙️</b>Paramètres</button>`;
   document.body.appendChild(bb);
   const pastille = (id, n, coul, txt) => { const b = document.getElementById(id); if (!b) return; let s = b.querySelector('.pt'); if (!n) { if (s) s.remove(); return; } if (!s) { s = document.createElement('span'); s.className = 'pt'; b.appendChild(s); } s.textContent = n; s.style.background = coul; s.style.color = txt; };
   window.amisPastille = (n, dem) => pastille('bb-amis', dem || n, dem ? '#ff5a5a' : '#7dffb0', dem ? '#fff' : '#0a2a14');
@@ -513,6 +525,24 @@ function profilMenu() {
   // le petit menu du 👤 s'ouvre au-dessus de la barre
   if (typeof amisBouton === 'function') amisBouton();
   const pm = profilMenu; window.profilMenu = function () { pm(); const m = document.getElementById('profil-menu'); if (m) { m.style.top = 'auto'; m.style.bottom = 'calc(70px + env(safe-area-inset-bottom))'; } };
+}
+// 17/11 soir (l'utilisateur, « comme Genshin ») : la grille de tous les portails, en vignettes simples
+function grillePortails() {
+  let g = document.getElementById('grille-p'); if (g) { g.remove(); return; }
+  const L = (ETAGES[''] || { portes:[] }).portes;
+  const im = p => { if (p.avenir) return '<img src="menu-recu/mystere.webp" alt="">'; if (p.img) return `<img src="${p.img}" alt="">`;
+    if (PRO_IMG[p.pro] && !p.sansImg) return `<img src="menu-recu/${PRO_IMG[p.pro]}.webp?v=${PRO_V[p.pro] || 1}" alt="" loading="lazy">`;
+    const x = PRO[p.pro] || ['✨', '#221d42', '#fff']; return `<div class="pro" style="background:${x[1]}">${x[0]}</div>`; };
+  g = document.createElement('div'); g.id = 'grille-p';
+  g.innerHTML = `<button class="x" onclick="grillePortails()" aria-label="Fermer">✕</button><h2>🌀 Tous les portails</h2><div class="gp">${L.map((p, i) => `<button class="${p.ferme || p.avenir ? 'ferme' : ''}" onclick="grilleVa(${i})"><div class="im">${im(p)}</div>${p.nom}</button>`).join('')}</div>`;
+  document.body.appendChild(g); if (typeof GM !== 'undefined') GM.son('clic');
+}
+function grilleVa(i) {
+  const p = ETAGES[''].portes[i], b = document.querySelectorAll('#grille-p .gp button')[i];
+  if (p.ferme || p.avenir) { if (b) b.animate([{ translate:'0' }, { translate:'-6px' }, { translate:'6px' }, { translate:'0' }], { duration:300 }); return; }
+  document.getElementById('grille-p').remove();
+  if (p.href) { sessionStorage.setItem('guilde-dans-mode', '1'); location.href = p.href; return; }
+  location.hash = p.vers || '';
 }
 </script>
 </body>
