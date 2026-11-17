@@ -467,7 +467,9 @@ function profilMenu() {
     #barre-bas { position:fixed; left:0; right:0; bottom:0; z-index:950; display:grid; grid-template-columns:repeat(4, 1fr); gap:4px; padding:6px 8px calc(6px + env(safe-area-inset-bottom)); background:#110e22f2; border-top:1px solid #f3c96b55; box-shadow:0 -6px 20px #0008; }
     #barre-bas button { position:relative; background:none; border:0; color:#f1ecff; font:13px Georgia, serif; padding:4px 0; cursor:pointer; } #barre-bas button b { display:block; font-size:22px; line-height:1.2; }
     #barre-bas .pt { position:absolute; top:0; left:calc(50% + 6px); min-width:17px; height:17px; line-height:17px; border-radius:9px; font:bold 11px Georgia; padding:0 4px; }
-    body { padding-bottom:calc(66px + env(safe-area-inset-bottom)); }`; document.head.appendChild(st);
+    body { padding-bottom:calc(66px + env(safe-area-inset-bottom)); }
+    body:has(#titre:not(.part)) #barre-bas { display:none; } /* 17/11 (l'utilisateur) : pas sur l'écran « Toucher pour entrer », seulement une fois dans le menu */
+    #barre-bas { animation:bbArrive .4s ease-out; } @keyframes bbArrive { from { transform:translateY(100%); } }`; document.head.appendChild(st);
   const bb = document.createElement('nav'); bb.id = 'barre-bas';
   bb.innerHTML = `<button id="bb-profil" onclick="profilMenu()"><b>👤</b>Profil</button><button id="bb-amis" onclick="amisFenetre()"><b>👥</b>Amis</button><button id="bb-boite" onclick="amisBoite()"><b>📬</b>Boîte</button><button id="bb-param" onclick="GM.parametres()"><b>⚙️</b>Paramètres</button>`;
   document.body.appendChild(bb);
