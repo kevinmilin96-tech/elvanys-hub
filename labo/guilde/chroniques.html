@@ -220,12 +220,12 @@
 <script src="musique.js?v=10d773cb21"></script>
 <script src="rang.js?v=9729fcf665"></script>
 <script>window.AMIS_SANS_BOUTON = true;</script>
-<script src="amis.js?v=5aea568571"></script>
+<script src="amis.js?v=4c5658748c"></script>
 <script src="heros-etoiles.js?v=07f78336f4"></script>
 <script src="progression-modes.js?v=807b0f9ad5"></script>
 <script src="aventuriers.js?v=04b0962a08"></script>
 <script src="pouvoirs-heros.js?v=802cf2ec33"></script>
-<script src="chroniques-moteur.js?v=85cd093fee"></script>
+<script src="chroniques-moteur.js?v=ef166318b8"></script>
 <script src="chroniques-ambiance.js?v=cdc992dc3a"></script>
 <script>
 // =============================================================================================== LES CHRONIQUES DE LA GUILDE v2 (15/11, écran « façon HeroQuest »)
@@ -858,7 +858,7 @@ function ficheHeros(i, choix) {
       <div class="ps-centre">${imgH(h)}<b>${esc(nomH(h))}</b><small>❤ ${h.pv} / ${h.pvmax} · 🎲 ${(K.HEROS_C[h.id] ? K.HEROS_C[h.id].des : 3) + (h.desPlus || 0) + (h.objet === 'cle' ? 1 : 0)} dés par tour${h.bouclier ? ` · 🛡 ${h.bouclier}` : ''}</small></div>
       <div class="ps-col">${['torse', 'pieds', 'talisman'].map(slot).join('')}</div></div>
     <div class="ps-bloc"><b>${H[h.id] ? H[h.id].t : ''}</b> : ${H[h.id] ? H[h.id].d : ''}</div>
-    ${h.pw ? `<div class="ps-bloc"><h3>🃏 Ses pouvoirs (${S.pre === 'groupe' ? '👥 Groupe' : '🗡 Solo'})</h3><ul>${PW_EMP.map(E => { const D = pwDef(h, E.k); return D ? `<li><b>${E.e} ${E.n} · ${D.e} ${D.n}</b>${h.pw[E.k].rang ? ` ★${h.pw[E.k].rang}` : ''}${E.k === 'ultime' && h.ultUsed ? ' (déjà utilisé)' : ''} : ${D.chron}</li>` : ''; }).join('')}</ul><p class="ps-aide">Se choisissent dans <b>Mes héros → Pouvoirs</b>, entre deux parties.</p></div>` : ''}
+    ${h.pw ? `<div class="ps-bloc"><h3>🃏 Ses pouvoirs (${S.pre === 'groupe' ? '👥 Groupe' : '🗡 Solo'})</h3><ul>${PW_EMP.map(E => { const D = pwDef(h, E.k); return D ? `<li><b>${E.e} ${E.n} · ${D.e} ${D.n}</b>${h.pw[E.k].rang ? ` ★${h.pw[E.k].rang}` : ''}${E.k === 'ultime' && h.ultUsed ? ' (déjà utilisé)' : ''} : ${D.chron}${Math.floor((h.pw[E.k].rang || 0) / 2) ? ` <b style="color:var(--or)">(rang ${h.pw[E.k].rang} : +${Math.floor(h.pw[E.k].rang / 2)})</b>` : ''}</li>` : ''; }).join('')}</ul><p class="ps-aide">Se choisissent dans <b>Mes héros → Pouvoirs</b>, entre deux parties.</p></div>` : ''}
     <div class="ps-bloc"><h3>Ce que lui donne son équipement ici</h3>${B.length ? `<ul>${B.map(t => `<li>${t}</li>`).join('')}</ul>` : '<p class="ps-aide">Aucun bonus : ses dés comptent tels quels.</p>'}${tal ? `<h3>Ses talents</h3><ul>${tal}</ul>` : ''}</div>
     <div class="ps-bloc"><h3>Inventaire</h3><div class="ps-grille">${cases}</div>${det}</div>
     <p class="ps-aide">L’équipement se change dans <b>Mes héros</b> (menu), entre deux parties.</p></div>`;
@@ -1120,7 +1120,14 @@ function finPartie() {
   const salleBt = L ? (estHote() ? '<button class="go" onclick="retourSalle()">↩ Ramener tout le monde dans la salle d’attente</button>' : '<p style="text-align:center;color:var(--doux)">L’hôte peut ramener tout le monde dans la salle d’attente pour la suite.</p>') : '';
   // 16/11 : l'or et les pièces d'équipement trouvés vont dans la Forge des héros (si l'équipe a des héros d'aventure)
   let butin = '';
-  if (typeof avGagne === 'function' && !dejaFait) {
+  // 17/11 : EN LIGNE, l'or, la poussière et l'équipement passent par la BOÎTE AUX LETTRES (le serveur relit la partie et dépose
+  // les récompenses de chaque joueur une seule fois) : plus rien ne se perd si un téléphone plante ou se ferme
+  if (L && L.code) { const code = L.code; butin = `<p style="text-align:center">📬 Ton or, ta poussière de rune et ton équipement t’attendent dans ta <b>boîte aux lettres</b>.</p>${typeof amisBoite === 'function' ? '<button class="go" onclick="fenetre(\'\');amisBoite()">📬 Ouvrir ma boîte aux lettres</button>' : ''}`;
+    const finServeur = n => fetch(`${API}/${code}/fin`, { method:'POST', headers:{ 'Content-Type':'application/json' }, body:'{}' })
+      .then(r => { if (r.status === 400 && n < 4) setTimeout(() => finServeur(n + 1), 2500); else if (typeof amisBoiteMaj === 'function') setTimeout(amisBoiteMaj, 400); }) // 400 : la victoire n'est pas encore arrivée au serveur
+      .catch(() => { if (n < 4) setTimeout(() => finServeur(n + 1), 2500); });
+    setTimeout(() => finServeur(0), 1200); }
+  else if (typeof avGagne === 'function' && !dejaFait) {
     const or = (S.orAv || 0) + (gagne ? 25 : 5), pou = gagne ? 30 : 10, g = avGagne(or, (S.equipTrouve || 0) + (gagne ? 1 : 0), gagne);
     if (typeof donneRessources === 'function') donneRessources(0, pou, true); // 16/11 : la poussière de rune en plus (pour monter les héros)
     butin = `<p style="text-align:center">⚒ Pour tes héros : 🪙 +${or} or · 🔹 +${pou} poussière de rune${g.length ? ` · ${g.map(p => `<b style="color:${EQ_RARE[p.r].c}">${EQ_CASES.find(c => c.k === p.slot).e} ${p.nom}</b>`).join(', ')}` : ''}</p>`; }

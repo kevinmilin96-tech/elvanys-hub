@@ -73,9 +73,9 @@ function amisMsg(t) { const d = document.createElement('div'); d.className = 'am
 // le bouton 👥 en haut (à côté du 👤 du profil)
 function amisBouton() {
   if (typeof document === 'undefined' || !document.body) return;
-  if (window.AMIS_SANS_BOUTON) { if (typeof window.amisPastille === 'function') { const E = AMIS.etat; window.amisPastille(E ? E.amis.filter(a => a.enLigne).length : 0, E ? E.demandes.length : 0); } return; }
+  if (window.AMIS_SANS_BOUTON) { if (typeof window.amisPastille === 'function') { const E = AMIS.etat; window.amisPastille(E ? E.amis.filter(a => a.enLigne).length : 0, (E ? E.demandes.length : 0) + (AMIS.boite || []).length); } return; }
   let b = document.getElementById('amis-bouton'); if (!b) { b = document.createElement('button'); b.id = 'amis-bouton'; b.onclick = amisFenetre; b.setAttribute('aria-label', 'Mes amis'); document.body.appendChild(b); }
-  const E = AMIS.etat, n = E ? E.amis.filter(a => a.enLigne).length : 0, dem = E ? E.demandes.length : 0;
+  const E = AMIS.etat, n = E ? E.amis.filter(a => a.enLigne).length : 0, dem = (E ? E.demandes.length : 0) + (AMIS.boite || []).length;
   b.innerHTML = `👥${dem ? `<span class="pt rouge">${dem}</span>` : n ? `<span class="pt">${n}</span>` : ''}`;
   b.title = !AMIS.carte ? 'Mes amis' : `${n} ami${n > 1 ? 's' : ''} en ligne`;
 }
@@ -157,6 +157,7 @@ function amisDessine() {
   amisFen(`<h2>👥 Mes amis</h2>
     <p class="doux" style="text-align:center;margin:0">Ton code ami, à donner à tes amis :</p><div class="am-code">${E.code}</div>
     <p class="doux" style="text-align:center;margin:0">Ton pseudo : <b>${amisEsc(E.pseudo)}</b> <button class="am-bt" style="padding:3px 8px" onclick="amisPseudo()">changer</button></p>
+    <button class="am-bt ${(AMIS.boite || []).length ? 'or' : ''} large" onclick="amisBoite()">📬 Boîte aux lettres${(AMIS.boite || []).length ? ` : <b>${AMIS.boite.length} cadeau${AMIS.boite.length > 1 ? 'x' : ''}</b> à récupérer` : ''}</button>
     ${E.demandes.length ? `<h3>📩 Demandes d’amis</h3>${E.demandes.map(d => `<div class="am-ligne"><div class="p"><b>${amisEsc(d.pseudo)}</b><small>code ${d.code}</small></div><button class="am-bt go" onclick="amisFait('accepte','${d.code}')">Accepter</button><button class="am-bt" onclick="amisFait('refuse','${d.code}')">Non</button></div>`).join('')}` : ''}
     <h3>🟢 En ligne (${enL.length}) · ${E.amis.length} ami${E.amis.length > 1 ? 's' : ''}</h3>
     ${E.amis.length ? E.amis.map(a => `<div class="am-ligne"><span class="am-pt ${a.enLigne ? 'on' : ''}"></span><img src="${amisPortrait((a.profil || {}).portrait)[0]}" onerror="this.onerror=null;this.src='${amisPortrait((a.profil || {}).portrait)[1]}'" alt="" style="width:36px;height:36px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 2px ${(a.profil && a.profil.cadre && a.profil.cadre.c) || '#4b4580'};cursor:pointer" onclick="amisVoir('${a.code}')"><div class="p" style="cursor:pointer" onclick="amisVoir('${a.code}')"><b>${amisEsc(a.pseudo)}</b><small>${a.enLigne ? (a.salle ? `🎲 dans la salle ${amisEsc(a.salle)}` : 'en ligne dans la Guilde') : amisVuTxt(a.vu)}</small></div>
@@ -187,6 +188,31 @@ async function amisAjoute() {
   const d = await amisAgir('ajoute', { code:c }); if (!d) return;
   amisMsg(d.ami ? '🤝 Vous êtes amis !' : `📩 Demande envoyée à ${d.pseudoAmi || 'ton ami'}`); amisDessine();
 }
+// 17/11 (l'utilisateur : « Gilga n'a pas eu d'équipement en fin de partie… il faut un système de messages pour récupérer les cadeaux ») :
+// LA BOÎTE AUX LETTRES. À la fin d'une partie en ligne, le serveur y dépose les récompenses de chaque joueur ; on les récupère ici.
+async function amisBoiteMaj() {
+  if (!AMIS.carte) return;
+  try { const { statut, d } = await amisApi('/api/hub/guilde/boite', { cle:AMIS.carte.cle }); if (statut === 200) { AMIS.boite = d.messages || []; amisBouton(); } } catch (e) {}
+}
+function amisCadeauTxt(c) { return [c.or ? `🪙 +${c.or} or` : '', c.poussiere ? `🔹 +${c.poussiere} poussière de rune` : '', c.pieces ? `🎒 ${c.pieces} pièce${c.pieces > 1 ? 's' : ''} d’équipement` : ''].filter(Boolean).join(' · '); }
+async function amisBoite() {
+  AMIS.ouvert = false; await amisBoiteMaj(); const l = AMIS.boite || [];
+  amisFen(`<h2>📬 Boîte aux lettres</h2>${l.length ? l.map(m => `<div class="am-ligne"><div class="p"><b>${amisEsc(m.titre)}</b><small>${amisEsc(m.message)}</small><small style="color:#f3c96b">${amisCadeauTxt(m.cadeau || {})}</small></div><button class="am-bt go" onclick="amisRecupere('${amisEsc(m.id)}')">Récupérer</button></div>`).join('')
+    : '<p class="doux">Rien pour le moment. Les récompenses des parties en ligne arrivent ici.</p>'}
+    <button class="am-bt large" onclick="AMIS.ouvert=true;amisDessine()">‹ Mes amis</button>`);
+}
+async function amisRecupere(id) {
+  if (typeof avGagne !== 'function') { amisMsg('Ouvre ta boîte depuis le menu de la Guilde pour ranger les cadeaux.'); return; }
+  const { statut, d } = await amisApi('/api/hub/guilde/boite/recuperer', { cle:AMIS.carte.cle, id }).catch(() => ({ statut:0, d:{} }));
+  if (statut !== 200) { amisMsg((d && d.message) || 'Pas de réseau.'); await amisBoite(); return; }
+  const c = d.cadeau || {}, g = avGagne(c.or | 0, c.pieces | 0, !!c.gagne) || [];
+  if (c.poussiere && typeof donneRessources === 'function') donneRessources(0, c.poussiere | 0, true);
+  try { if (typeof GM !== 'undefined') GM.son('victoire'); } catch (e) {}
+  AMIS.boite = (AMIS.boite || []).filter(m => m.id !== id); amisBouton();
+  const R = typeof EQ_RARE !== 'undefined' ? EQ_RARE : [];
+  amisFen(`<h2>🎁 Récupéré !</h2><p style="text-align:center">${amisCadeauTxt(c)}</p>${g.length ? `<p style="text-align:center">${g.map(p => `<b style="color:${(R[p.r] || {}).c || '#f3c96b'}">${amisEsc(p.nom)}</b>`).join(' · ')} rejoint ton coffre.</p>` : ''}
+    <button class="am-bt go large" onclick="amisBoite()">📬 Retour à la boîte</button>`);
+}
 async function amisFait(action, code) { const d = await amisAgir(action, { code }); if (d && action === 'accepte') amisMsg('🤝 Vous êtes amis !'); amisDessine(); }
 async function amisInvite(code) { const d = await amisAgir('invite', { code, salle:amisSalle() }); if (d) amisMsg('🎲 Invitation envoyée !'); }
 async function amisPseudo() {
@@ -197,6 +223,7 @@ async function amisPseudoOk() { const p = (document.getElementById('am-pseudo2')
 function amisDemarre() {
   amisBouton(); if (location.protocol === 'file:') return;
   if (AMIS.carte) amisAgir('signal').then(() => { if (AMIS.ouvert) { AMIS_RAFRAICHI = true; amisDessine(); AMIS_RAFRAICHI = false; } });
+  amisBoiteMaj(); setInterval(() => { if (!document.hidden) amisBoiteMaj(); }, 60000);
   setInterval(() => { if (!document.hidden && AMIS.carte) amisAgir('signal').then(() => { if (AMIS.ouvert) { AMIS_RAFRAICHI = true; amisDessine(); AMIS_RAFRAICHI = false; } }); }, 20000);
   document.addEventListener('visibilitychange', () => { if (!document.hidden && AMIS.carte) amisAgir('signal'); });
 }

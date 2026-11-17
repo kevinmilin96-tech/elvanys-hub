@@ -902,7 +902,7 @@ function pause(S) {
 // =============================================================================================== LES POUVOIRS DES HÉROS DANS LES CHRONIQUES (16/11 nuit)
 // Chaque héros arrive avec h.pw = { garde:{ v, rang }, pouvoir, passif, ultime } (pouvoirs-heros.js, préréglage Groupe ou Solo).
 // Garde = la façon de PROTÉGER ; Pouvoir = une COMBINAISON de dés (bouton ✨) ; Passif = toujours actif ; Ultime = une combinaison, UNE fois par partie.
-// Le rang (0 à 10) ajoute +1 tous les 3 rangs au chiffre principal (sauf texte contraire). Sans h.pw (vieille partie) : rien ne change.
+// Le rang (0 à 10) ajoute +1 tous les 2 rangs au chiffre principal (sauf texte contraire ; 17/11, choix de l'utilisateur : avant, tous les 3 rangs, on ne voyait rien). Sans h.pw (vieille partie) : rien ne change.
 // 17/11 (choix de l'utilisateur, mesuré : « une fois par partie » était trop peu) : LA JAUGE D'ULTIME, comme le Duel : +1 par dé posé
 // (frapper, protéger, soigner, relever, levier, pouvoir) et +1 tous les 3 PV perdus ; pleine (12) = l'ultime est prêt ; il la vide.
 const JAUGE_ULT = 12;
@@ -911,7 +911,7 @@ function remplit(S, h, n) { if (!h || !h.pw || !h.pw.ultime || h.aTerre || !n) r
 const pwV = (h, e) => h && h.pw && h.pw[e] ? h.pw[e].v : null;
 const pwA = (h, e, v) => pwV(h, e) === v;
 const pwR = (h, e) => h && h.pw && h.pw[e] ? h.pw[e].rang || 0 : 0;
-const pwB3 = (h, e) => Math.floor(pwR(h, e) / 3);
+const pwB3 = (h, e) => Math.floor(pwR(h, e) / 2); // le nom reste « B3 » (ancien +1 tous les 3 rangs)
 const pwEv = (h, hi, emp, cibles) => ({ t:'pouvoir', cl:h.id, emp, v:pwV(h, emp), h:hi, cibles:cibles || [] });
 const COMBOS = ['paire', 'paire45', 'paire56', 'brelan', 'suite3', 'suite4', 'pairs3', 'impairs3', 'pi3', 'diff3', 'bas3', 'haut3', 'haut34', 'somme12'];
 // la combinaison de chaque pouvoir et ultime (les mêmes que le catalogue pouvoirs-heros.js)
@@ -1036,7 +1036,7 @@ function lancerPouvoir(S, hi, emp) {
 }
 // l'effet de chaque pouvoir et ultime ; essai = true : on regarde seulement (rien ne change)
 function pwEffet(S, hi, emp, des, essai) {
-  const h = S.heros[hi], R = S.R, v = pwV(h, emp), r = pwR(h, emp), b3 = Math.floor(r / 3), ev = [], k = `${h.id}:${emp}:${v}`;
+  const h = S.heros[hi], R = S.R, v = pwV(h, emp), r = pwR(h, emp), b3 = Math.floor(r / 2), ev = [], k = `${h.id}:${emp}:${v}`;
   const vals = des.map(d => d.v), debout = S.heros.filter(z => !z.aTerre), non = raison => ({ ok:false, raison });
   const fin = (cibles, texte) => { if (essai) return { ok:true, cible:texte }; ev.unshift(pwEv(h, hi, emp, cibles)); log(S, `✨ ${nm(h)} : ${texte}`); return { ok:true, ev }; };
   const unColle = () => collesA(S, h)[0];
