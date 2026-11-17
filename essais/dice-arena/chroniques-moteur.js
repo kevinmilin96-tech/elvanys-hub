@@ -472,7 +472,10 @@ function debutTour(S) {
     const v = m.att + 2, Q = S.heros.filter(h => !h.aTerre && contact(S, m, h));
     if (!Q.length) { log(S, `⚡ La charge de ${m.n} frappe dans le vide : personne n’est resté collé à lui.`); evC.push({ t:'charge', m:m.id, vide:true }); continue; }
     evC.push({ t:'charge', m:m.id }); Q.forEach(h => { const perdu = blesseHeros(S, h, Math.max(0, v - pwMoinsCoup(S, h))); evC.push({ t:'frappe', m:m.id, h:S.heros.indexOf(h), v:perdu }); pwApresCoup(S, m, h, evC); log(S, `⚡ La charge de ${m.n} frappe ${nm(h)} avant qu’il joue (−${perdu}).`); }); }
-  S.heros.forEach(h => { if (h.def && !h.aTerre) h.bouclier = Math.max(h.bouclier || 0, h.def); }); // 🛡 la Défense de l'équipement
+  // 17/11 (l'utilisateur : « on peut faire des tours en boucle et se mettre 80 de bouclier ») : comme Slay the Spire / Gloomhaven, le bouclier
+  // protège pendant le tour des monstres (et contre les charges juste au-dessus), puis il FOND au début du tour des héros ;
+  // seule la Défense de l'équipement revient à chaque tour
+  S.heros.forEach(h => { h.bouclier = h.def && !h.aTerre ? h.def : 0; }); // 🛡 la Défense de l'équipement
   S.heros.forEach(h => {
     let n = HEROS_C[h.id].des + (h.desPlus || 0) + (h.objet === 'cle' ? 1 : 0) - (S.sablier <= 0 ? 1 : 0) + (h.id === 'gorm' && pwA(h, 'passif', 'A') && h.pv < h.pvmax / 2 ? 1 : 0); // 16/11 nuit : Grand souffle
     h.des = []; if (h.aTerre) n = 0;
