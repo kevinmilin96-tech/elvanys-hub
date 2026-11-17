@@ -696,7 +696,7 @@
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
 // 14/11 : l'Odyssée sans fin a ses propres emplacements (odyssee.js lit SANSFIN)
 const SANSFIN = new URLSearchParams(location.search).get('sansfin') === '1', ROUTE_TITAN = new URLSearchParams(location.search).get('route') === '1', EPREUVE_PAGE = new URLSearchParams(location.search).get('epreuve') === '1', ODY_PAGE = EPREUVE_PAGE ? 'epreuves.html' : 'odyssee.html' + (SANSFIN ? '?sansfin=1' : ROUTE_TITAN ? '?route=1' : '');
-const VERSION = '20261117-220349';
+const VERSION = '20261117-225509';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -716,7 +716,7 @@ setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
 <script src="cartes.js?v=7736d873d3"></script>
-<script src="musique.js?v=10d773cb21"></script>
+<script src="musique.js?v=801f3b9324"></script>
 <script src="rang.js?v=9729fcf665"></script>
 <script src="heros-etoiles.js?v=07f78336f4"></script>
 <script src="heros-aventure.js?v=31db8c2ed4"></script>
@@ -2393,12 +2393,12 @@ document.addEventListener('pointerdown', () => { if (fxOn && !(S && S.tuto)) fxV
 <script src="tuto.js?v=526137818e"></script>
 <script src="deux.js?v=c55497a4b3"></script>
 <script>window.AMIS_SANS_BOUTON = true;</script>
-<script src="amis.js?v=0257cc9454"></script>
+<script src="amis.js?v=b593ac66e7"></script>
 <script src="duel-ligne.js?v=25f67537a4"></script>
 <script src="invasion.js?v=ee7ddf7052"></script>
 <script src="enigme-table.js?v=80c517ec18"></script>
 <script src="forge.js?v=beb857648f"></script>
-<script src="semaine.js?v=82213b653f"></script>
+<script src="semaine.js?v=7628cbea1f"></script>
 <script src="enigme.js?v=0eb8a726b7"></script>
 </body>
 </html>

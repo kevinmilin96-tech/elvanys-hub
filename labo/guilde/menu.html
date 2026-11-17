@@ -8,7 +8,7 @@
 <title>La Guilde des Runes</title>
 <script>
 // Même mécanisme que le Duel : une nouvelle version = rechargement tout seul à l'ouverture (publier.sh change VERSION).
-const VERSION = '20261117-220349';
+const VERSION = '20261117-225509';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-menu-' + v)) { sessionStorage.setItem('recharge-menu-' + v, '1'); location.replace('menu.html?v=' + v); }
@@ -109,6 +109,8 @@ fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.te
   @keyframes monteT { from { opacity:0; } }
   .sauves { margin:4px auto 8px; max-width:440px; padding:0 12px; display:flex; flex-direction:column; gap:6px; }
   .sauves .st { color:var(--or); font-weight:bold; text-align:center; font-size:.9em; }
+  .slotm { background:#15132bcc; border:1px solid #f3c96b66; border-radius:16px; padding:10px 12px; display:flex; flex-direction:column; gap:6px; } .slotm .sn { color:var(--or); font-weight:bold; } .slotm .vide { margin:0; color:var(--doux); font-style:italic; }
+  .sauves button.neuf { justify-content:center; border-style:dashed; background:#221d42cc; color:var(--or); font-weight:bold; } .sauves .chg { display:inline; margin-left:6px; padding:3px 10px; border:1px solid var(--or); border-radius:10px; background:#1d1b3acc; color:var(--or); font:inherit; font-size:.9em; }
   .sauves button { display:flex; flex-wrap:wrap; align-items:center; gap:2px 8px; text-align:left; background:#1d1b3acc; color:#fff; border:2px solid var(--or); border-radius:14px; padding:8px 12px; font:inherit; font-size:.9em; cursor:pointer; }
   .sauves button small { color:var(--doux); flex-basis:100%; order:3; } .sauves button i { margin-left:auto; color:var(--or); font-style:normal; font-weight:bold; }
   .points { display:flex; justify-content:center; gap:7px; margin:6px 0 2px; }
@@ -194,23 +196,20 @@ fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.te
   <div class="points" id="points"></div>
   <p class="desc" id="desc"></p>
   <div class="petits">
-    <a href="duel.html?parties=1"><b>📜</b>Mes parties</a>
-    <a href="a-valider.html"><b>📝</b>À valider</a>
     <a href="#" id="versmenu" style="display:none" onclick="location.hash = ''; return false"><b>🏰</b>Menu</a>
-    <a href="/"><b>⌂</b>Laboratoire</a>
   </div>
   <p class="bas">Prototype · images provisoires en attendant les peintures</p>
 </div>
 <div id="flash"></div>
 
-<script src="semaine.js?v=82213b653f"></script>
-<script src="musique.js?v=10d773cb21"></script>
+<script src="semaine.js?v=7628cbea1f"></script>
+<script src="musique.js?v=801f3b9324"></script>
 <script src="rang.js?v=9729fcf665"></script>
 <script src="profil.js?v=d50e2421e1"></script>
 <script>window.AMIS_SANS_BOUTON = true; /* 15/11 : un seul bouton en haut à gauche (profil + amis) */</script>
-<script src="amis.js?v=0257cc9454"></script>
+<script src="amis.js?v=b593ac66e7"></script>
 <script src="heros-etoiles.js?v=07f78336f4"></script>
-<script src="donnees.js?v=20261117-220349"></script>
+<script src="donnees.js?v=20261117-225509"></script>
 <script>
 // ciel étoilé + runes du portail (symboles, pas des lettres), aux couleurs des héros
 const ciel = document.getElementById('ciel');
@@ -272,8 +271,37 @@ try { const a = JSON.parse(localStorage.getItem('guilde-actes') || '{}'); let ch
   MES_ODY.forEach(({ r }) => { if ((r.acte === 'givre' || r.acte === 'abime') && !a.brulees) { a.brulees = true; ch = true; } if (r.acte === 'abime' && !a.givre) { a.givre = true; ch = true; } });
   if (ch) localStorage.setItem('guilde-actes', JSON.stringify(a)); } catch (e) {}
 function reprendreOdy(i) { const o = MES_ODY[i]; localStorage.setItem('guilde-odyssee-emplacement' + o.suf, String(o.n)); sessionStorage.setItem('guilde-dans-mode', '1'); location.href = o.href + (o.href.includes('?') ? '&' : '?') + 'reprendre=' + o.n; }
+// 17/11 (l'utilisateur : « en entrant dans l'Odyssée, d'abord les sauvegardes, comme un menu de jeu vidéo : 3 emplacements, nouvelle partie /
+// charger, et après les portails » ; puis : « attention, il y a 3 modes : l'Odyssée normale (Terres brûlées, Givre, Abîme), l'Odyssée sans fin,
+// la Route du Titan ») : 1) le MODE (3 portails) → 2) SES 3 emplacements (Charger / Nouvelle partie) → 3) pour l'Odyssée normale, l'île.
+let odyMode = null, odySlot = null;
+const ODY_MODES = { '':['L’Odyssée', 'odyssee.html'], '-sansfin':['L’Odyssée sans fin', 'odyssee.html?sansfin=1'], '-route':['La Route du Titan', 'odyssee.html?route=1'] };
+function odyPortes(L) { // L = les portails de l'étage : 3 îles, sans fin, route
+  if (odyMode === null) return [Object.assign({}, L[0], { nom:'L’Odyssée', mode:'', href:null, desc:'Les trois îles : les Terres brûlées, l’île du Givre, l’Abîme du Vide. Ici commence la Grande aventure.' }),
+    Object.assign({}, L[3], { mode:'-sansfin', href:null }), Object.assign({}, L[4], { mode:'-route', href:null })];
+  return L.slice(0, 3); // l'Odyssée normale, nouvelle partie : les îles
+}
+function nouvelleOdy(n) {
+  try { localStorage.setItem('guilde-odyssee-emplacement' + odyMode, String(n)); } catch (e) {}
+  if (odyMode === '') { odySlot = n; montre('odyssee'); return; }
+  sessionStorage.setItem('guilde-dans-mode', '1'); location.href = ODY_MODES[odyMode][1] + '&nouvelle=' + n; // sans fin et Route : directement le choix du héros
+}
+function slotsOdy() {
+  const b = document.getElementById('sauves');
+  const nomH = r => { const h = typeof HEROS !== 'undefined' && HEROS[r.heros]; return h ? h.nom : String(r.heros || '').startsWith('av:') ? 'Héros d’aventure' : 'Héros'; };
+  b.innerHTML = `<div class="st">💾 ${ODY_MODES[odyMode][0]} · choisis un emplacement <button class="chg" onclick="odyMode=null;montre('odyssee')">‹ Les modes</button></div>` + [1, 2, 3].map(n => { const P = MES_ODY.map((o, i) => [o, i]).filter(([o]) => o.suf === odyMode && o.n === n);
+    return `<div class="slotm"><div class="sn">Emplacement ${n}</div>${P.length ? P.map(([o, i]) => `<button onclick="reprendreOdy(${i})"><b>${nomH(o.r)}</b> · ${o.r.route ? 'Route du Titan' : (ILE_NOM[o.r.acte] || ILE_NOM.brulees)}<small>❤ ${o.r.pv}/${o.r.pvMax}${o.r.aventure ? ' · 🗺 Grande aventure' : ''}</small><i>▶ Charger</i></button>`).join('') : '<p class="vide">Vide</p>'}
+      <button class="neuf" onclick="nouvelleOdy(${n})">✨ Nouvelle partie${P.length ? ' (remplace celle-ci)' : ''}</button></div>`; }).join('');
+  b.style.display = '';
+}
 function sauvesOdy() {
   const b = document.getElementById('sauves'); if (!b) return;
+  const vuSlots = courant === 'odyssee' && odyMode !== null && !odySlot;
+  [car, document.getElementById('points'), document.getElementById('desc')].forEach(e => { if (e) e.style.display = vuSlots ? 'none' : ''; });
+  if (courant === 'odyssee') document.getElementById('eSous').textContent = odyMode === null ? 'Quel voyage ?' : vuSlots ? 'Choisis ta partie' : 'Quelle île veux-tu explorer ?';
+  if (courant === 'odyssee' && odyMode === null) { b.style.display = 'none'; return; }
+  if (vuSlots) return slotsOdy();
+  if (courant === 'odyssee' && odySlot) { b.innerHTML = `<div class="st">✨ Nouvelle partie · emplacement ${odySlot} · choisis ton île <button class="chg" onclick="odySlot=null;montre('odyssee')">‹ Emplacements</button></div>`; b.style.display = ''; return; }
   if (courant !== 'odyssee' || !MES_ODY.length) { b.style.display = 'none'; return; }
   const nomH = r => { const h = typeof HEROS !== 'undefined' && HEROS[r.heros]; return h ? h.nom : String(r.heros || '').startsWith('av:') ? 'Héros d’aventure' : 'Héros'; };
   b.innerHTML = '<div class="st">💾 Tes parties en cours</div>' + MES_ODY.map((o, i) => `<button onclick="reprendreOdy(${i})"><b>${nomH(o.r)}</b> · ${o.r.route ? 'Route du Titan' : (ILE_NOM[o.r.acte] || ILE_NOM.brulees)}${o.suf === '-sansfin' ? ' · sans fin' : ''}${o.r.aventure ? ' · 🗺 Grande aventure' : ''}<small>${o.mode} · emplacement ${o.n} · ❤ ${o.r.pv}/${o.r.pvMax}</small><i>▶ Continuer</i></button>`).join('');
@@ -371,8 +399,9 @@ function dessin(p) {
   return `<div class="pro" style="--fond:${fond};--g:${g}">${et}<b>${e}</b></div>`;
 }
 function montre(id) {
+  if (id !== 'odyssee') { odySlot = null; odyMode = null; }
   const E = ETAGES[id] || ETAGES['']; courant = ETAGES[id] ? id : '';
-  PORTES = !courant && cat !== 'tout' ? E.portes.filter(p => p.cat === cat) : E.portes; ongletsCat();
+  PORTES = !courant && cat !== 'tout' ? E.portes.filter(p => p.cat === cat) : E.portes; if (courant === 'odyssee') PORTES = odyPortes(E.portes); ongletsCat();
   document.getElementById('eTitre').textContent = E.titre; document.getElementById('eSous').textContent = E.sous;
   if (!courant && localStorage.getItem('guilde-odyssee-finie')) document.getElementById('eSous').innerHTML = '🌟 <b style="color:var(--or)">Héros de l’Odyssée</b> · ' + E.sous;
   document.getElementById('retour').classList.toggle('vu', !!courant);
@@ -405,9 +434,10 @@ function touche(i) {
   if (i !== auCentre()) return centre(i, true);
   // 15/11 nuit (l'utilisateur : « je peux accéder à chaque portail avec un cadenas ») : un portail fermé ne s'ouvre plus, jamais
   if (p.ferme || p.avenir) { const el = car.children[i]; el.animate([{ translate:'0' }, { translate:'-8px' }, { translate:'8px' }, { translate:'0' }], { duration:300 }); return; }
+  if (courant === 'odyssee' && p.mode !== undefined) { odyMode = p.mode; odySlot = null; GM.son('choisir'); montre('odyssee'); return; } // 17/11 : le mode → ses emplacements
   if (!GM.son('portail')) souffle(); car.children[i].classList.add('entre'); document.getElementById('flash').classList.add('go');
   setTimeout(() => {
-    if (p.href) { sessionStorage.setItem('guilde-dans-mode', '1'); location.href = p.href; return; }
+    if (p.href) { sessionStorage.setItem('guilde-dans-mode', '1'); location.href = courant === 'odyssee' && odySlot && p.href.startsWith('odyssee.html') ? p.href + (p.href.includes('?') ? '&' : '?') + 'nouvelle=' + odySlot : p.href; return; } // l'île choisie, dans l'emplacement choisi
     document.getElementById('flash').classList.remove('go'); location.hash = p.vers;
   }, 750);
 }
@@ -458,10 +488,30 @@ function profilMenu() {
   m.innerHTML = bt('👤 Mon profil', "try{sessionStorage.setItem('guilde-dans-mode','1')}catch(e){};location.href='profil.html'")
     + bt(`👥 Mes amis${dem ? ` <b style="color:#ff5a5a">· ${dem} demande${dem > 1 ? 's' : ''}</b>` : n ? ` <b style="color:#7dffb0">· ${n} en ligne</b>` : ''}`, 'amisFenetre()')
     + bt('🤝 Entre amis', "location.hash='enligne'")
+    + bt('📊 Mon parcours (mes parties)', "try{sessionStorage.setItem('guilde-dans-mode','1')}catch(e){};location.href='profil.html#parcours'")
     + bt('🏰 Mes héros', "try{sessionStorage.setItem('guilde-dans-mode','1')}catch(e){};location.href='mes-heros.html'")
     + bt('🃏 Les pouvoirs des héros', "try{sessionStorage.setItem('guilde-dans-mode','1')}catch(e){};location.href='pouvoirs.html?retour=menu.html'"); // 16/11 nuit : la page « build »
   document.body.appendChild(m);
   setTimeout(() => document.addEventListener('click', function f(e) { if (!m.contains(e.target) && e.target.id !== 'profil-bouton') { m.remove(); document.removeEventListener('click', f); } }), 0);
+}
+// 17/11 (l'utilisateur : « un menu en bas avec paramètres, icône de profil, messagerie ») : LA BARRE DU BAS du menu ;
+// le haut de l'écran est dégagé (le 👤, le ⚙️ et le 📬 flottants sont cachés ici)
+{ const st = document.createElement('style'); st.textContent = `#profil-bouton, #gm-bouton, #boite-bouton { display:none !important; }
+    #barre-bas { position:fixed; left:0; right:0; bottom:0; z-index:950; display:grid; grid-template-columns:repeat(4, 1fr); gap:4px; padding:6px 8px calc(6px + env(safe-area-inset-bottom)); background:#110e22f2; border-top:1px solid #f3c96b55; box-shadow:0 -6px 20px #0008; }
+    #barre-bas button { position:relative; background:none; border:0; color:#f1ecff; font:13px Georgia, serif; padding:4px 0; cursor:pointer; } #barre-bas button b { display:block; font-size:22px; line-height:1.2; }
+    #barre-bas .pt { position:absolute; top:0; left:calc(50% + 6px); min-width:17px; height:17px; line-height:17px; border-radius:9px; font:bold 11px Georgia; padding:0 4px; }
+    body { padding-bottom:calc(66px + env(safe-area-inset-bottom)); }
+    body:has(#titre:not(.part)) #barre-bas { display:none; } /* 17/11 (l'utilisateur) : pas sur l'écran « Toucher pour entrer », seulement une fois dans le menu */
+    #barre-bas { animation:bbArrive .4s ease-out; } @keyframes bbArrive { from { transform:translateY(100%); } }`; document.head.appendChild(st);
+  const bb = document.createElement('nav'); bb.id = 'barre-bas';
+  bb.innerHTML = `<button id="bb-profil" onclick="profilMenu()"><b>👤</b>Profil</button><button id="bb-amis" onclick="amisFenetre()"><b>👥</b>Amis</button><button id="bb-boite" onclick="amisBoite()"><b>📬</b>Boîte</button><button id="bb-param" onclick="GM.parametres()"><b>⚙️</b>Paramètres</button>`;
+  document.body.appendChild(bb);
+  const pastille = (id, n, coul, txt) => { const b = document.getElementById(id); if (!b) return; let s = b.querySelector('.pt'); if (!n) { if (s) s.remove(); return; } if (!s) { s = document.createElement('span'); s.className = 'pt'; b.appendChild(s); } s.textContent = n; s.style.background = coul; s.style.color = txt; };
+  window.amisPastille = (n, dem) => pastille('bb-amis', dem || n, dem ? '#ff5a5a' : '#7dffb0', dem ? '#fff' : '#0a2a14');
+  window.boitePastille = n => pastille('bb-boite', n, '#f3c96b', '#2b1d0a');
+  // le petit menu du 👤 s'ouvre au-dessus de la barre
+  if (typeof amisBouton === 'function') amisBouton();
+  const pm = profilMenu; window.profilMenu = function () { pm(); const m = document.getElementById('profil-menu'); if (m) { m.style.top = 'auto'; m.style.bottom = 'calc(70px + env(safe-area-inset-bottom))'; } };
 }
 </script>
 </body>

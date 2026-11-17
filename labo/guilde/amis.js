@@ -88,6 +88,7 @@ function amisBouton() {
 function amisBoiteBouton() {
   if (typeof document === 'undefined' || !document.body) return;
   const n = (AMIS.boite || []).length, voir = !!AMIS.carte && (window.AMIS_SANS_BOUTON || n > 0);
+  if (typeof window.boitePastille === 'function') window.boitePastille(n); // 17/11 : la barre du bas du menu
   let b = document.getElementById('boite-bouton');
   if (!voir) { if (b) b.remove(); return; }
   if (!b) { b = document.createElement('button'); b.id = 'boite-bouton'; b.onclick = amisBoite; b.setAttribute('aria-label', 'Boîte aux lettres'); document.body.appendChild(b); }

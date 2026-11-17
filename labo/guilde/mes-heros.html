@@ -19,6 +19,8 @@
   .recolte button { margin-left:auto; font:bold .95em Georgia, serif; padding:10px 14px; border-radius:12px; border:0; background:var(--or); color:#2b1d0a; cursor:pointer; }
   .recolte button[disabled] { opacity:.4; }
   .grille { display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; margin-top:10px; }
+  .carte-plus { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; min-height:170px; border:2px dashed #f3c96b88; border-radius:16px; background:#1c183888; color:#f3c96b; text-decoration:none; text-align:center; padding:10px; }
+  .carte-plus b { font-size:54px; line-height:1; font-weight:normal; } .carte-plus small { color:#c9c1ea; font-size:.85em; }
   .carte { position:relative; background:#1c1838; border:2px solid var(--rc); border-radius:16px; padding:8px 4px 6px; text-align:center; color:inherit; font:inherit; cursor:pointer; box-shadow:0 0 12px color-mix(in srgb, var(--rc) 40%, transparent); }
   .carte img { width:74px; height:74px; border-radius:50%; object-fit:cover; display:block; margin:0 auto 4px; box-shadow:0 0 0 3px var(--hc); }
   .carte b { display:block; font-size:.92em; } .carte small { display:block; color:var(--doux); font-size:.75em; }
@@ -34,7 +36,7 @@
 </head>
 <body>
 <main id="app"></main>
-<script src="musique.js?v=10d773cb21"></script>
+<script src="musique.js?v=801f3b9324"></script>
 <script src="rang.js?v=9729fcf665"></script>
 <script src="heros-etoiles.js?v=07f78336f4"></script>
 <script src="donnees.js?v=2afe6cf473"></script>
@@ -65,9 +67,7 @@ function liste() {
     <div class="recolte"><span class="e"><img src="ui/heros/recolte.webp?v=1" alt="" style="width:46px;height:46px;object-fit:contain" onerror="this.replaceWith(document.createTextNode('🧺'))"></span><div><b>La récolte du campement</b><small>Pendant que tu n’es pas là, la Guilde ramasse de l’or et de la poussière de rune (12 h au plus).</small><small>En attente : 🪙 ${r.or} · 🔹 ${r.pou} (${Math.floor(r.h)} h ${Math.floor((r.h % 1) * 60)} min)</small></div><button ${r.or < 1 ? 'disabled' : ''} onclick="recolte()">Ramasser</button></div>
     <p class="sous">Touche un héros pour sa fiche : niveau (or + poussière), rang (éclats), équipement (améliorer, fusionner), reliques.</p>
     <h2>⚔ Les héros de la Guilde</h2><div class="grille">${tri(H_GUILDE).map(carte).join('')}</div>
-    <h2>🗺 Tes héros d’aventure</h2><div class="grille">${tri(avs).map(carte).join('')}</div>
-    ${avs.length ? '' : '<p class="sous">Pas encore de héros d’aventure.</p>'}
-    <a class="lien" href="aventuriers.html?retour=mes-heros.html">⚒ Créer un héros d’aventure (la Forge des héros)</a>`;
+    <h2>🗺 Tes héros d’aventure</h2><div class="grille">${tri(avs).map(carte).join('')}<a class="carte-plus" href="aventuriers.html?retour=mes-heros.html" aria-label="Créer un héros d’aventure"><b>+</b><small>Créer un héros d’aventure</small></a></div>`; // 17/11 (l'utilisateur) : une case « + » au lieu d'un texte en bas
 }
 function recolte() { const r = recolter(); if (r.or) { fhSon('victoire'); fhBulle(`🧺 +${r.or} 🪙 · +${r.pou} 🔹`); } liste(); }
 function ouvre(id) {

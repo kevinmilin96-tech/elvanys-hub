@@ -53,6 +53,9 @@
   .cad small { color:var(--doux); font-size:.9em; }
   .devises { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; } .devises button { background:#1d1b3aee; border:1px solid #4b4580; border-radius:14px; padding:6px 10px; color:var(--texte); font:italic .85em Georgia, serif; cursor:pointer; }
   .fini { display:block; width:100%; margin-top:16px; padding:12px; border:0; border-radius:14px; background:var(--or); color:#2b1d0a; font:bold 1.05em Georgia, serif; cursor:pointer; }
+  .parc-total { display:grid; grid-template-columns:repeat(4, 1fr); gap:6px; margin:6px 0 10px; } .parc-total div { background:#1c1838; border:1px solid #45457a; border-radius:12px; padding:8px 4px; text-align:center; } .parc-total b { display:block; color:#f3c96b; font-size:1.25em; } .parc-total small { color:#c9c1ea; font-size:.78em; }
+  .parc { display:flex; align-items:center; gap:10px; width:100%; margin:5px 0; padding:10px 12px; border-radius:12px; border:1px solid #45457a; background:#1c1838; color:#f1ecff; font:inherit; text-align:left; cursor:pointer; }
+  .parc .e { font-size:1.5em; } .parc .n { flex:1; } .parc .n small { display:block; color:#c9c1ea; font-size:.85em; } .parc .f { color:#f3c96b; }
 </style>
 </head>
 <body>
@@ -61,7 +64,7 @@
   <div id="app"></div>
 </main>
 <script src="cartes.js?v=7736d873d3"></script>
-<script src="musique.js?v=10d773cb21"></script>
+<script src="musique.js?v=801f3b9324"></script>
 <script src="rang.js?v=9729fcf665"></script>
 <script src="heros-etoiles.js?v=07f78336f4"></script>
 <script src="donnees.js?v=2afe6cf473"></script>
@@ -79,6 +82,25 @@ let onglet = null; // null = la page ; sinon l'onglet de l'atelier
 const ONGLETS = [['portrait', '🖼', 'Portrait'], ['cadre', '🔲', 'Cadre'], ['titre', '🎖', 'Titre'], ['embleme', '🦁', 'Emblème'], ['couleur', '🎨', 'Nom'],
   ['fond', '🌌', 'Fond'], ['devise', '💬', 'Devise'], ['vitrine', '🏅', 'Vitrine'], ['des', '🎲', 'Dés']];
 function choisir(quoi, k) { const p = lireProfil(); p[quoi] = k; ecrireProfil(p); if (typeof GM !== 'undefined') GM.son('clic'); dessine(); }
+// 17/11 (l'utilisateur : « mes parties, mets-les dans le profil, un endroit où on retrouve l'historique de chaque mode, un récap global comme
+// dans beaucoup de jeux ») : MON PARCOURS = le récap des parties du carnet (les 60 dernières), mode par mode, et le journal de chacune
+function parcoursHTML() {
+  if (typeof Carnet === 'undefined') return '';
+  const L = Carnet.lit(), gagne = r => /gagn|victoire|win/i.test(String(r || '')), perd = r => /perd|defaite|défaite|mort/i.test(String(r || ''));
+  const FAM = [['duel', '⚔️', 'Duels', ['duel', 'duel-ami', 'duel-deux', 'duel-semaine', 'enigme', 'tutoriel']], ['odyssee', '🗺️', 'Odyssée', ['odyssee', 'odyssee-combat', 'odyssee-route', 'odyssee-sansfin', 'grande-aventure', 'epreuve']],
+    ['crypte', '🕯️', 'Crypte et Descente', ['crypte', 'descente-combat', 'descente']], ['defense', '🏰', 'Défense', ['defense', 'defense-sansfin']], ['fosse', '🕳️', 'Fosse', ['fosse']],
+    ['chroniques', '📖', 'Chroniques', ['chroniques', 'chroniques-aventure']], ['autres', '⛵', 'Expéditions et Invasion', ['expedition', 'invasion']]];
+  const v = L.filter(x => gagne(x.resultat)).length, p = L.filter(x => perd(x.resultat)).length;
+  const quand = iso => { try { return new Date(iso).toLocaleDateString('fr-FR', { day:'numeric', month:'short' }); } catch (e) { return ''; } };
+  const lignes = FAM.map(([k, e, n, modes]) => { const l = L.filter(x => modes.includes(x.mode)); if (!l.length) return '';
+    const g = l.filter(x => gagne(x.resultat)).length;
+    return `<button class="parc" onclick="Carnet.ouvrir('${k}')"><span class="e">${e}</span><span class="n"><b>${n}</b><small>${l.length} partie${l.length > 1 ? 's' : ''} · ${g} victoire${g > 1 ? 's' : ''} · dernière le ${quand(l[0].quand)}</small></span><span class="f">📜 ›</span></button>`; }).join('');
+  if (location.hash === '#parcours') setTimeout(() => { const h = document.getElementById('parcours'); if (h) h.scrollIntoView({ behavior:'smooth' }); }, 200);
+  return `<h2 id="parcours">📊 Mon parcours</h2>
+    <div class="parc-total"><div><b>${L.length}</b><small>parties</small></div><div><b>${v}</b><small>victoires</small></div><div><b>${p}</b><small>défaites</small></div><div><b>${v + p ? Math.round(100 * v / (v + p)) : 0} %</b><small>réussite</small></div></div>
+    ${lignes || '<p class="aide">Pas encore de partie finie : elles arrivent ici, mode par mode.</p>'}
+    <p class="aide">Touche un mode pour relire le journal de chaque partie (et le copier pour Claude). Le carnet garde les 60 dernières parties.</p>`;
+}
 function nom(v) { const p = lireProfil(); p.nom = v; ecrireProfil(p); const e = document.getElementById('nomv'); if (e) e.textContent = v.trim() || 'Toi'; pseudoEnLigne(v); }
 // 17/11 (l'utilisateur : « le changement de pseudo dans le profil, pas dans mes amis ») : le nom du profil EST le pseudo vu par les amis
 let pseudoMinuteur = null;
@@ -105,6 +127,7 @@ function dessine() {
   if (onglet) { document.getElementById('app').innerHTML = atelier(p, T); return; }
   document.getElementById('app').innerHTML = `${carteProfil(p)}
   <p class="aide" style="text-align:center;margin-top:6px">C’est ta carte : ton nom, ton titre et ton cadre te suivent en combat. Touche ✏️ pour la personnaliser.</p>
+  ${parcoursHTML()}
   ${typeof lireRang === 'function' ? rangHTML() : ''}
   <h2>🏆 Mes trophées</h2>
   ${tropheesHTML()}

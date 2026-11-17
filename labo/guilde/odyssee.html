@@ -175,7 +175,7 @@ const herosAventureOdy = () => haListe().map(a => haInfo('av:' + a.id)).map(i =>
   ? `<button onclick="location.href='duel.html?tuto=1'" style="opacity:.55">${haImg(i, 'filter:grayscale(1)')}🔒 ${haEsc(i.nom)}<br><small style="color:var(--doux)">Fais le tutoriel</small></button>`
   : `<button onclick="commence('${i.cle}')">${haImg(i, `box-shadow:0 0 0 2px ${i.couleur}`)}${haEsc(i.nom)}<small class="ha-t">⚔ ${haEsc(i.titre)}</small><small style="color:var(--doux)">${Math.round(HEROS[i.voie].pv * (ODY_PV[i.voie] || 1.8))} PV en Odyssée</small></button>`).join('');
 
-const VERSION = '20261117-220349';
+const VERSION = '20261117-225509';
 function verifieVersion() {
   fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
     v = (v || '').trim(); if (!v || v === VERSION || document.getElementById('majbar')) return;
@@ -189,7 +189,7 @@ setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
 <script src="cartes.js?v=7736d873d3"></script>
-<script src="musique.js?v=10d773cb21"></script>
+<script src="musique.js?v=801f3b9324"></script>
 <script src="rang.js?v=9729fcf665"></script>
 <script src="heros-etoiles.js?v=07f78336f4"></script>
 <script src="heros-aventure.js?v=31db8c2ed4"></script>
@@ -263,6 +263,8 @@ function recommencer(n) { const r = lireSlot(n); fenetre(`<h2>🔄 Recommencer ?
 function effacer(n) { const r = lireSlot(n); fenetre(`<h2>🗑 Effacer ?</h2><p>La partie de <b>${odyNom(r)}</b> (emplacement ${n}) sera effacée pour de bon. Elle ne compte pas comme une défaite.</p><div class="choixh"><button onclick="effacerSlot(${n});fermer();emplacements()">Oui, effacer</button><button class="or" onclick="fermer()">Non</button></div>`); }
 function accueil() {
   // 16/11 : « ▶ Continuer » du menu ouvre directement la partie choisie
+  // 17/11 : « ✨ Nouvelle partie » choisie dans le menu (emplacement d'abord, puis le portail) : directement le choix du héros
+  { const n = +Q.get('nouvelle'); if (n >= 1 && n <= ODY_SLOTS) { history.replaceState(null, '', location.pathname + location.search.replace(/[?&]nouvelle=\d/, '').replace(/^&/, '?')); choisirSlot(n); if (lireSlot(n)) { emplacements(); recommencer(n); } else ecran(); return; } }
   { const n = +Q.get('reprendre'); if (n >= 1 && n <= ODY_SLOTS && lireSlot(n)) { history.replaceState(null, '', location.pathname + location.search.replace(/[?&]reprendre=\d/, '').replace(/^&/, '?')); choisirSlot(n); reprendre(lireSlot(n)); return; } }
   const r = lireOdyssee();
   // 14/11 (l'utilisateur : « je ne peux pas recommencer ni quitter le combat ») : on ne revient seul que pour FINIR un combat terminé ;

@@ -8,7 +8,7 @@
 <title>La Guilde des Runes</title>
 <script>
 // Même mécanisme que le Duel : une nouvelle version = rechargement tout seul à l'ouverture (publier.sh change VERSION).
-const VERSION = '20261117-220349';
+const VERSION = '20261117-225509';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-menu-' + v)) { sessionStorage.setItem('recharge-menu-' + v, '1'); location.replace('menu.html?v=' + v); }
@@ -202,12 +202,12 @@ fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.te
 </div>
 <div id="flash"></div>
 
-<script src="semaine.js?v=82213b653f"></script>
-<script src="musique.js?v=10d773cb21"></script>
+<script src="semaine.js?v=7628cbea1f"></script>
+<script src="musique.js?v=801f3b9324"></script>
 <script src="rang.js?v=9729fcf665"></script>
 <script src="profil.js?v=d50e2421e1"></script>
 <script>window.AMIS_SANS_BOUTON = true; /* 15/11 : un seul bouton en haut à gauche (profil + amis) */</script>
-<script src="amis.js?v=0257cc9454"></script>
+<script src="amis.js?v=b593ac66e7"></script>
 <script src="heros-etoiles.js?v=07f78336f4"></script>
 <script src="donnees.js?v=2afe6cf473"></script>
 <script>
