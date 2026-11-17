@@ -266,7 +266,7 @@ function bordMur(R, x, y) {
 // remplit l'écran (avec ses murs et ses portes), une petite carte en haut montre tout le donjon découvert ; au tour des monstres, la caméra
 // visite chaque salle où un monstre agit. Les héros d'une même zone se voient.
 const COULOIRS_Z1 = { K1:{ r:[1, 5, 18, 1], n:'Le couloir du haut' }, K2:{ r:[1, 12, 18, 1], n:'Le couloir du bas' }, K3:{ r:[7, 6, 1, 6], n:'Le passage de l’ouest' }, K4:{ r:[13, 6, 1, 6], n:'Le passage de l’est' } };
-let vueForcee = null, suivi = null, zoneVue = null; // suivi : le héros d'un ami que la caméra regarde pendant qu'il joue (jeu à distance)
+let vueForcee = null, suivi = null, zoneVue = null, vueGardee = null; // suivi : le héros d'un ami que la caméra regarde pendant qu'il joue (jeu à distance)
 // 16/11 : l'Horloge en étages (plan 2) a ses propres couloirs et escaliers ; les parties commencées avant gardent l'ancienne carte
 const couloirsZ = () => S && S.R && S.R.plan === 2 ? K.COULOIRS_Z2 : COULOIRS_Z1;
 const esc = t => String(t == null ? '' : t).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
@@ -638,7 +638,7 @@ function dessine() {
   const SC = K.SCEN[S.scen || 'horloger'], peint = !!SC.image;
   // la zone regardée (salle ou bout de couloir) et son cadre d'une case de mur tout autour
   const hv = suivi != null && S.heros[suivi] ? S.heros[suivi] : h; // 16/11 : en coop à distance, la caméra suit l'ami qui joue
-  const ZV = modeZones() ? (vueForcee || zoneDe(R, hv.x, hv.y)) : null, RZ = ZV && zoneRect(ZV); zoneVue = ZV;
+  const ZV = modeZones() ? (vueForcee || vueGardee || zoneDe(R, hv.x, hv.y)) : null, RZ = ZV && zoneRect(ZV); zoneVue = ZV;
   let x0 = RZ ? Math.max(0, RZ[0] - 1) : 0, y0 = RZ ? Math.max(0, RZ[1] - 1) : 0, x1 = RZ ? Math.min(R.w - 1, RZ[0] + RZ[2]) : R.w - 1, y1 = RZ ? Math.min(R.h - 1, RZ[1] + RZ[3]) : R.h - 1;
   // 16/11 (l'utilisateur : « la porte est ouverte mais je n'arrive pas à sortir ») : devant chaque porte OUVERTE de la zone, la case
   // d'à côté (couloir ou salle voisine) s'affiche aussi : on voit où l'on sort, et on peut y marcher
@@ -763,7 +763,7 @@ function lancerAmi(i) {
   }));
 }
 function lanceDesH() {
-  suivi = null;
+  suivi = null; vueGardee = null;
   if (animeH || occupe || !S) return; if (L && pasMonTour()) return; if (L && !mesHeros().includes(actif)) { bulle(`${nomH(S.heros[actif])} n’est pas à toi`, true); return; }
   const i = actif, h = S.heros[i]; if (lanceOK(i)) return;
   if (!S.lances || S.lances.t !== S.tours) S.lances = { t:S.tours, l:[] };
@@ -806,7 +806,7 @@ function pasMonTour(dire) {
 let dernierTourVu = null;
 function annonceTour() { // à appeler après chaque réception : « À toi ! » quand mon tour arrive
   const c = tourDe(); const cle = S ? S.tours + ':' + c : null; if (c == null || cle === dernierTourVu) return; dernierTourVu = cle;
-  if (mesHeros().includes(c)) { actif = c; sel = null; centrer = true; son('portail'); bulle(`🎲 À toi de jouer avec ${nomH(S.heros[c])} !`); }
+  if (mesHeros().includes(c)) { actif = c; sel = null; centrer = true; vueGardee = null; suivi = null; son('portail'); bulle(`🎲 À toi de jouer avec ${nomH(S.heros[c])} !`); }
 }
 function aFini() {
   if (occupe || !S || S.fin) return;
@@ -858,7 +858,7 @@ function ficheHeros(i, choix) {
   if (avantPs) { const pg = document.querySelector('#perso .ps-page'); if (pg) pg.scrollTop = avantPs; }
 }
 function choisitHeros(i) {
-  suivi = null;
+  suivi = null; vueGardee = null;
   if (occupe) return;
   if (S && i === actif && !sel) return ficheHeros(i); // toucher le héros déjà choisi : sa fiche
   // 17/11 (l'utilisateur : « tour fini, pas de consultation possible de sa fiche ») : un héros qui a fini ce tour montre sa fiche (lecture)
@@ -893,7 +893,12 @@ function resultat(r) {
   if (typeof r === 'string') { son('erreur'); bulle(r, true); } return false;
 }
 function touche(x, y) {
-  if (suivi != null) { suivi = null; centrer = true; dessine(); return; } // un toucher pendant qu'on regarde un ami : retour à son héros
+  // 17/11 (l'utilisateur : « parfois, quand je touche un ennemi, ça me renvoie sur la vue de mon héros ») : pendant qu'on regarde un ami,
+  // toucher un MONSTRE ou un héros garde la vue et ouvre ce qu'on a touché ; toucher ailleurs ramène à son héros (comme avant)
+  if (suivi != null && S) { const R0 = S.R, quelquun = R0.monstres.some(z => z.x === x && z.y === y) || (R0.boss && R0.boss.x === x && R0.boss.y === y) || S.heros.some(z => z.x === x && z.y === y);
+    if (quelquun) { vueGardee = zoneDe(R0, S.heros[suivi].x, S.heros[suivi].y); suivi = null; }
+    else { suivi = null; vueGardee = null; centrer = true; dessine(); return; } }
+  else if (vueGardee && S && !S.R.monstres.some(z => z.x === x && z.y === y) && !(S.R.boss && S.R.boss.x === x && S.R.boss.y === y) && !S.heros.some(z => z.x === x && z.y === y)) { vueGardee = null; centrer = true; dessine(); return; }
   if (occupe || !S) return;
   const R = S.R, h = S.heros[actif], d = deSel(), c = K.cle(x, y);
   if (!R.vu[c]) return;
