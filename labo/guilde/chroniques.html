@@ -161,6 +161,8 @@
   .stats span { cursor:pointer; }
   .fen .sec { display:block; width:100%; padding:10px; border-radius:14px; border:1px solid #45457a; background:#1c1c36; color:var(--texte); margin-top:8px; text-align:left; }
   .fen .sec small { display:block; color:var(--doux); }
+  /* 17/11 (l'utilisateur : « bloc blanc ») : les boutons « sec » hors des fenêtres (salle d'attente : Retirer) avaient le style du téléphone */
+  .acc button.sec { padding:2cqw 3.5cqw; border-radius:3cqw; border:1px solid #45457a; background:#2a2650; color:var(--texte); font:bold 3.6cqw Georgia, serif; cursor:pointer; }
   .lu { background:#2a2440; border-left:4px solid #c084fc; padding:8px 12px; border-radius:0 10px 10px 0; font-style:italic; margin:8px 0; }
   @keyframes apparait { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
   .moust { display:flex; gap:10px; align-items:flex-start; } .moust img { width:58px; height:58px; border-radius:50%; object-fit:cover; flex:none; border:2px solid var(--or); }
@@ -207,7 +209,7 @@
 <body>
 <div id="app"></div>
 <div id="fen"></div><div id="perso"></div>
-<script src="musique.js?v=37b288d2f5"></script>
+<script src="musique.js?v=10d773cb21"></script>
 <script src="rang.js?v=9729fcf665"></script>
 <script>window.AMIS_SANS_BOUTON = true;</script>
 <script src="amis.js?v=5aea568571"></script>
