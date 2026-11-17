@@ -14,7 +14,7 @@
   button { font:inherit; color:inherit; cursor:pointer; }
   .haut { display:flex; align-items:center; gap:2cqw; padding:2cqw 0 1cqw; font-size:3.4cqw; }
   .haut a, .haut button { color:var(--doux); text-decoration:none; background:#1c1c36; border:1px solid #45457a; border-radius:20px; padding:1cqw 2.6cqw; }
-  .haut .t { flex:1; text-align:center; color:var(--or); font-weight:bold; font-size:.85em; line-height:1.15; min-width:0; } .haut a { flex:none; }
+  .haut .t { flex:1; text-align:center; color:var(--or); font-weight:bold; font-size:.85em; line-height:1.15; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; } .haut a { flex:none; }
   .stats { display:flex; justify-content:space-around; font-size:3.2cqw; color:var(--doux); margin-bottom:1.2cqw; } .stats b { color:var(--texte); }
   .but { font-size:2.8cqw; color:var(--doux); background:#1c1c36; border-left:3px solid var(--or); border-radius:0 2cqw 2cqw 0; padding:1.2cqw 2cqw; margin-bottom:1.2cqw; }
   /* ---------------------------------------------------------------- la carte (elle défile ; 🗺 pour la voir en entier) */
@@ -161,6 +161,12 @@
   .stats span { cursor:pointer; }
   .fen .sec { display:block; width:100%; padding:10px; border-radius:14px; border:1px solid #45457a; background:#1c1c36; color:var(--texte); margin-top:8px; text-align:left; }
   .fen .sec small { display:block; color:var(--doux); }
+  .lancer-ami { position:fixed; left:50%; bottom:calc(30vh + env(safe-area-inset-bottom)); transform:translateX(-50%); z-index:800; background:#1b1838; border:2px solid var(--or); border-radius:16px; padding:10px 14px; box-shadow:0 8px 24px #000c; text-align:center; color:var(--texte); font:15px Georgia, serif; animation:laEntre .25s ease-out; pointer-events:none; max-width:94vw; }
+  .lancer-ami.part { opacity:0; transition:opacity .3s; }
+  .lancer-ami .la-des { display:flex; gap:8px; justify-content:center; margin-top:8px; flex-wrap:wrap; }
+  .lancer-ami .de { width:48px; height:48px; display:inline-block; } .lancer-ami .de img { width:100%; height:100%; }
+  .lancer-ami .de.tourne { transform:rotate(12deg) scale(.95); }
+  @keyframes laEntre { from { transform:translate(-50%, 20px); opacity:0; } }
   /* 17/11 (l'utilisateur : « bloc blanc ») : les boutons « sec » hors des fenêtres (salle d'attente : Retirer) avaient le style du téléphone */
   .acc button.sec { padding:2cqw 3.5cqw; border-radius:3cqw; border:1px solid #45457a; background:#2a2650; color:var(--texte); font:bold 3.6cqw Georgia, serif; cursor:pointer; }
   .lu { background:#2a2440; border-left:4px solid #c084fc; padding:8px 12px; border-radius:0 10px 10px 0; font-style:italic; margin:8px 0; }
@@ -444,6 +450,7 @@ function recoit(d) {
   if (!d || !d.etat) return;
   if (d.etat.lobby) { LOB = d.etat.lobby; S = null; L.version = d.version; if (d.joueurs) L.joueurs = d.joueurs; L.dernier = ''; fenetre(''); salleAttente(); return; }
   const depart = !S; LOB = null;
+  const lancesAvant = S && S.lances ? { t:S.lances.t, l:S.lances.l.slice() } : null;
   const avant = S && S.journal ? S.journal[0] : null, posAvant = S && S.heros ? S.heros.map(z => [z.x, z.y]) : null, desAvant = S && S.heros ? S.heros.map(z => z.des.length) : null;
   S = d.etat; L.version = d.version; if (d.joueurs) L.joueurs = d.joueurs; L.dernier = JSON.stringify(S);
   if (!mesHeros().includes(actif)) { const m = mesHeros().find(i => !S.heros[i].aTerre); if (m != null) actif = m; }
@@ -455,6 +462,8 @@ function recoit(d) {
   if (posAvant && !depart) S.heros.forEach((z, i) => { const a = posAvant[i]; if (a && (a[0] !== z.x || a[1] !== z.y) && !mesHeros().includes(i)) glisse('j-h' + i, a, [z.x, z.y]); });
   if (S.animM && S.animM.n !== vuAnim) { const A = S.animM; vuAnim = A.n; if (!depart && !occupe) { occupe = true; animeMonstres(A.ev.map(e => Object.assign({}, e))).then(() => { occupe = false; centrer = true; dessine(); if (S.fin) finPartie(); }); return; } }
   if (depart) { son('portail'); dialogue(S.campagne != null ? CHAPITRES[S.campagne].titre : SCT().titre, [S.campagne != null ? CHAPITRES[S.campagne].avant : SCT().ouverture, SCT().entree()]); return; }
+  // 17/11 (l'utilisateur : « pour les tours des amis, j'aimerais voir les lancers de dés ») : le lancer d'un ami se rejoue chez moi
+  if (!depart && S.lances && S.lances.t === S.tours) S.lances.l.filter(i => !mesHeros().includes(i) && !(lancesAvant && lancesAvant.t === S.lances.t && lancesAvant.l.includes(i))).forEach(i => lancerAmi(i));
   if (S.journal[0] && S.journal[0] !== avant) bulle(S.journal[0].replace(/^[^ ]+ /, ''));
   if (S.fin) finPartie();
 }
@@ -725,6 +734,25 @@ function dessine() {
 // le lancer des dés d'un héros (une fois par tour ; gardé dans la partie, donc aussi à distance)
 const lanceOK = i => !!(S && S.lances && S.lances.t === S.tours && S.lances.l.includes(i));
 let animeH = false;
+// le lancer d'un ami : un bandeau au-dessus des boutons, ses dés qui roulent puis s'arrêtent sur les vraies faces (2,6 s ; à la suite s'il y en a plusieurs)
+let fileLancers = Promise.resolve();
+function lancerAmi(i) {
+  const h = S && S.heros[i]; if (!h || !h.des || !h.des.length) return;
+  const faces = h.des.filter(z => !z.pas).map(z => z.v), qui = proprio(i) || 'Un ami', nom = nomH(h), id = h.id;
+  if (!faces.length) return;
+  fileLancers = fileLancers.then(() => new Promise(fin => {
+    const d = document.createElement('div'); d.className = 'lancer-ami';
+    d.innerHTML = `<div class="la-t">🎲 <b>${qui}</b>${qui === nom ? '' : ` lance pour <b>${nom}</b>`}</div><div class="la-des"></div>`;
+    document.body.appendChild(d); son('relance');
+    const z = d.querySelector('.la-des'), stop = Date.now() + 650;
+    const tick = () => {
+      if (Date.now() < stop) { z.innerHTML = faces.map(() => `<span class="de tourne"><img src="faces-${id}/face-${1 + Math.floor(Math.random() * 6)}.webp" alt=""></span>`).join(''); setTimeout(tick, 70); return; }
+      z.innerHTML = faces.map(v => `<span class="de"><img src="faces-${id}/face-${v}.webp" alt="${v}"></span>`).join('');
+      setTimeout(() => { d.classList.add('part'); setTimeout(() => { d.remove(); fin(); }, 300); }, 1900);
+    };
+    tick();
+  }));
+}
 function lanceDesH() {
   suivi = null;
   if (animeH || occupe || !S) return; if (L && !mesHeros().includes(actif)) { bulle(`${nomH(S.heros[actif])} n’est pas à toi`, true); return; }
