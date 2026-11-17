@@ -79,7 +79,13 @@ let onglet = null; // null = la page ; sinon l'onglet de l'atelier
 const ONGLETS = [['portrait', '🖼', 'Portrait'], ['cadre', '🔲', 'Cadre'], ['titre', '🎖', 'Titre'], ['embleme', '🦁', 'Emblème'], ['couleur', '🎨', 'Nom'],
   ['fond', '🌌', 'Fond'], ['devise', '💬', 'Devise'], ['vitrine', '🏅', 'Vitrine'], ['des', '🎲', 'Dés']];
 function choisir(quoi, k) { const p = lireProfil(); p[quoi] = k; ecrireProfil(p); if (typeof GM !== 'undefined') GM.son('clic'); dessine(); }
-function nom(v) { const p = lireProfil(); p.nom = v; ecrireProfil(p); const e = document.getElementById('nomv'); if (e) e.textContent = v.trim() || 'Toi'; }
+function nom(v) { const p = lireProfil(); p.nom = v; ecrireProfil(p); const e = document.getElementById('nomv'); if (e) e.textContent = v.trim() || 'Toi'; pseudoEnLigne(v); }
+// 17/11 (l'utilisateur : « le changement de pseudo dans le profil, pas dans mes amis ») : le nom du profil EST le pseudo vu par les amis
+let pseudoMinuteur = null;
+function pseudoEnLigne(v) { clearTimeout(pseudoMinuteur); const net = String(v || '').trim().slice(0, 18); if (!net) return;
+  pseudoMinuteur = setTimeout(async () => { let c = null; try { c = JSON.parse(localStorage.getItem('guilde-carte') || 'null'); } catch (e) {} if (!c || !c.cle || c.pseudo === net) return;
+    try { const r = await fetch('/api/hub/guilde/joueur/moi', { method:'POST', headers:{ 'Content-Type':'application/json' }, body:JSON.stringify({ cle:c.cle, action:'pseudo', pseudo:net }) }); const d = await r.json();
+      if (r.ok && d.pseudo) { c.pseudo = d.pseudo; localStorage.setItem('guilde-carte', JSON.stringify(c)); localStorage.setItem('guilde-pseudo', d.pseudo); } } catch (e) {} }, 1200); }
 function devise(v) { const p = lireProfil(); p.devise = v; ecrireProfil(p); const e = document.getElementById('devv'); if (e) e.textContent = v ? `« ${v} »` : ''; }
 function vitrine(k) { const p = lireProfil(); const v = p.vitrine || []; p.vitrine = v.includes(k) ? v.filter(x => x !== k) : v.length >= 3 ? v : v.concat(k); if (!v.includes(k) && v.length >= 3) { alert('3 titres au plus dans la vitrine : retire-en un d’abord.'); return; } ecrireProfil(p); if (typeof GM !== 'undefined') GM.son('clic'); dessine(); }
 function carteProfil(p, edit) {
@@ -115,7 +121,7 @@ function atelier(p, T) {
       <button class="cad ${!p.portrait ? 'choisi' : ''}" onclick="choisir('portrait',null)"><img class="rond" src="${IMG(dernier)}" alt="">Mon dernier héros</button>
       ${ORDRE.filter(id => id !== 'zephine' || localStorage.getItem('guilde-tuto') === 'fait').map(id => `<button class="cad ${p.portrait === id ? 'choisi' : ''}" onclick="choisir('portrait','${id}')"><img class="rond" src="portraits/${id}.webp" alt="">${HEROS[id].nom}</button>`).join('')}
       ${av.map(a => `<button class="cad ${p.portrait === 'av:' + a.id ? 'choisi' : ''}" onclick="choisir('portrait','av:${a.id}')"><img class="rond" src="${avPortrait(a)}" onerror="this.onerror=null;this.src='${avPortraitSecours(a)}'" alt="">${a.nom}</button>`).join('')}</div>
-      <h3>✏️ Mon nom</h3><input maxlength="18" placeholder="Ton nom d’aventurier (sinon : « Toi »)" value="${(p.nom || '').replace(/"/g, '&quot;')}" oninput="nom(this.value)">`;
+      <h3>✏️ Mon nom</h3><p class="aide">C’est aussi ton pseudo en ligne, celui que voient tes amis.</p><input maxlength="18" placeholder="Ton nom d’aventurier (sinon : « Toi »)" value="${(p.nom || '').replace(/"/g, '&quot;')}" oninput="nom(this.value)">`;
   } else if (onglet === 'cadre') {
     corps = `<p class="aide">Il entoure ton portrait, ici et en combat. Chaque titre gagné débloque son cadre.</p><div class="grille">
       <button class="cad ${p.cadre === 'aucun' ? 'choisi' : ''}" onclick="choisir('cadre','aucun')"><span class="rond" style="box-shadow:0 0 0 2px #4b4580">—</span>Aucun</button>
