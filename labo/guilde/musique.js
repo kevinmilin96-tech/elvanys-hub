@@ -321,3 +321,29 @@ const Carnet = (() => {
   }
   return { garde, ouvrir, lit };
 })();
+
+// ----------------------------------------------------------------------------------------------- 17/11 nuit (l'utilisateur : « le scroll à travers les fenêtres, c'est partout ») :
+// dès qu'une fenêtre plein écran est ouverte (voile sombre, fenêtre, page de récit, carnet, paramètres…), la page derrière ne défile plus.
+// Règle commune à tous les modes : un élément « fixe » qui couvre tout l'écran, visible, touchable et avec un fond = une fenêtre.
+(() => {
+  if (typeof document === 'undefined' || window.__verrouFenetres) return; window.__verrouFenetres = true;
+  const st = document.createElement('style');
+  st.textContent = 'html.fen-ouverte, html.fen-ouverte body { overflow:hidden !important; overscroll-behavior:none; } html.fen-ouverte .fen-voile, html.fen-ouverte .fen-voile * { overscroll-behavior:contain; }';
+  document.head.appendChild(st);
+  const opaque = c => { const m = /rgba?\(([^)]+)\)/.exec(c || ''); if (!m) return c && c !== 'transparent' && c !== 'none'; const p = m[1].split(',').map(Number); return p.length < 4 || p[3] > .25; };
+  const estFenetre = el => {
+    if (!(el instanceof HTMLElement) || el.id === 'barre-bas') return false;
+    const s = getComputedStyle(el); if (s.position !== 'fixed' || s.display === 'none' || s.visibility === 'hidden' || +s.opacity < .05 || s.pointerEvents === 'none') return false;
+    const r = el.getBoundingClientRect(); if (r.width < innerWidth * .95 || r.height < innerHeight * .9) return false;
+    return opaque(s.backgroundColor) || (s.backgroundImage && s.backgroundImage !== 'none');
+  };
+  let prevu = false;
+  const verifie = () => { prevu = false; let ok = false;
+    const cand = []; for (const a of document.body.children) { cand.push(a); for (const b of a.children) { cand.push(b); for (const c of b.children) cand.push(c); } }
+    document.querySelectorAll('.fen-voile').forEach(e => e.classList.remove('fen-voile'));
+    for (const el of cand) if (estFenetre(el)) { ok = true; el.classList.add('fen-voile'); }
+    document.documentElement.classList.toggle('fen-ouverte', ok); };
+  const plus_tard = () => { if (!prevu) { prevu = true; setTimeout(verifie, 120); } };
+  const go = () => { new MutationObserver(plus_tard).observe(document.body, { childList:true, subtree:true, attributes:true, attributeFilter:['class', 'style', 'hidden'] }); addEventListener('resize', plus_tard); ['animationend', 'transitionend'].forEach(t => document.addEventListener(t, plus_tard, true)); verifie(); }; // une fenêtre qui s'efface en fondu
+  if (document.body) go(); else addEventListener('DOMContentLoaded', go);
+})();
