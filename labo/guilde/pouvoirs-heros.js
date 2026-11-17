@@ -12,7 +12,7 @@ const PW_EMP = [
   { k:'garde', n:'Garde', e:'🛡', niv:5, d:'un dé pour protéger' },
   { k:'pouvoir', n:'Pouvoir', e:'✨', niv:10, d:'une combinaison de dés' },
   { k:'passif', n:'Passif', e:'♾', niv:20, d:'toujours actif' },
-  { k:'ultime', n:'Ultime', e:'🌟', niv:100, d:'une combinaison rare, une fois par partie' },
+  { k:'ultime', n:'Ultime', e:'🌟', niv:100, d:'une combinaison rare, quand la jauge ⚡ est pleine' },
 ];
 const PW_RANG_MAX = 10;
 // les rôles classiques (demande de l'utilisateur, 16/11 nuit : « pour ne pas perdre les joueurs »)
@@ -44,13 +44,13 @@ const POUVOIRS_H = {
       P('C', 'Ronces vives', 'controle', 'ronces', '#2f8f3f', '🌿', 'pairs3', '3 dés de 3 ou moins → 2 unités adverses Enracinées et Épines 2 sur ton héros.', 'Trois dés pairs → tous les monstres à 4 cases de Pip sont entravés 1 tour (rang 10 : 2 tours).', 'thick living vines bursting out of the ground and wrapping around'),
     ],
     passif:[
-      P('A', 'L’Appel de l’Alpha', 'degats', 'louve', '#b07cff', '🐾', null, 'Chaque 6 lancé pose un marqueur de Meute ; à 3, la Louve arrive et attaque seule à chaque tour.', 'Chaque 6 lancé par Pip pose un marqueur ; à 3 (rang 10 : 2), la louve rejoint Pip : à chaque fin de tour, elle brise un sceau d’un monstre collé à Pip.', 'three glowing wolf paw prints on mossy stone'),
-      P('B', 'Ronces vivantes', 'controle', 'ronces', '#4caf50', '🥀', null, 'Tes unités ont Épines 1.', 'Un monstre qui frappe Pip perd un sceau (ses épines le blessent).', 'a thorny rose vine coiled like a protective bracelet'),
-      P('C', 'Sève partagée', 'soin', 'soin', '#b5f58a', '💧', null, 'Chaque soin donne aussi +1 bouclier à la cible.', 'Chaque soin de Pip donne aussi bouclier 2 à l’allié soigné.', 'a glowing drop of golden-green tree sap'),
+      P('A', 'L’Appel de l’Alpha', 'degats', 'louve', '#b07cff', '🐾', null, 'Chaque 6 lancé pose un marqueur de Meute ; à 3, la Louve arrive et attaque seule à chaque tour.', 'Chaque 6 lancé par Pip pose un marqueur ; à 3 (rang 10 : 2), la louve rejoint Pip pour 3 tours : à chaque fin de tour, elle brise un sceau d’un monstre collé à Pip. Puis elle repart (les marqueurs recommencent à zéro).', 'three glowing wolf paw prints on mossy stone'),
+      P('B', 'Ronces vivantes', 'controle', 'ronces', '#4caf50', '🥀', null, 'Tes unités ont Épines 1.', 'Un monstre qui frappe Pip perd un sceau et reste pris dans les ronces : il ne fait rien au tour suivant (sauf le boss).', 'a thorny rose vine coiled like a protective bracelet'),
+      P('C', 'Sève partagée', 'soin', 'soin', '#b5f58a', '💧', null, 'Chaque soin donne aussi +1 bouclier à la cible.', 'Chaque soin de Pip donne aussi bouclier 3 à l’allié soigné.', 'a glowing drop of golden-green tree sap'),
     ],
     ultime:[
       P('A', 'L’Éveil du Grand Arbre', 'soin', 'soin', '#7dffb0', '🌳', 'bas3', '3 dés de 3 ou moins → ton héros se soigne de 15, tes unités retrouvent toute leur vie.', 'Trois dés de 3 ou moins → tout le groupe revient à ses PV max ; les héros à terre se relèvent.', 'an immense ancient tree awakening with glowing green light in its branches'),
-      P('B', 'La Grande Chasse', 'degats', 'louve', '#a46bff', '🌕', 'haut3', '3 dés de 5 ou plus → la Louve arrive tout de suite en Alpha (6 / 10) et attaque deux fois.', 'Trois dés de 5 ou plus → pendant 3 tours (rang 10 : 4), une louve géante accompagne Pip : à chaque fin de tour, elle brise un sceau de chaque monstre collé à Pip.', 'a giant spectral wolf leaping under a full moon'),
+      P('B', 'La Grande Chasse', 'degats', 'louve', '#a46bff', '🌕', 'haut34', '3 dés de 5 ou plus → la Louve arrive tout de suite en Alpha (6 / 10) et attaque deux fois.', 'Trois dés de 4 ou plus → pendant 3 tours (rang 10 : 4), une louve géante accompagne Pip : à chaque fin de tour, elle brise un sceau de chaque monstre collé à Pip.', 'a giant spectral wolf leaping under a full moon'),
     ],
   },
   // ------------------------------------------------------------------ MAËLLE, la Guerrière (Forge) : dégâts · tank · soutien (la forge)
@@ -62,7 +62,7 @@ const POUVOIRS_H = {
     ],
     pouvoir:[
       P('A', 'Coup d’enclume', 'degats', 'feu', '#ff8a2a', '🔨', 'paire', '3 identiques → dégâts = la somme.', 'Une paire → un sceau d’un monstre collé à Maëlle se brise ; une paire de 6 en brise deux.', 'a forge hammer striking with a burst of orange sparks'),
-      P('B', 'Marteau-pilon', 'degats', 'feu', '#ff4a1a', '⚒', 'brelan', '3 dés de 5+ → 12 dégâts, ignore le bouclier.', 'Trois dés identiques → tous les sceaux « ≥ » d’un monstre collé se brisent (s’il n’en a pas : deux sceaux).', 'a giant steam-powered drop hammer slamming down'),
+      P('B', 'Marteau-pilon', 'degats', 'feu', '#ff4a1a', '⚒', 'paire56', '3 dés de 5+ → 12 dégâts, ignore le bouclier.', 'Une paire de 5 ou de 6 → tous les sceaux « ≥ » d’un monstre collé se brisent (s’il n’en a pas : deux sceaux).', 'a giant steam-powered drop hammer slamming down'),
       P('C', 'Forge de campagne', 'soutien', 'feu', '#ffb84a', '⚙', 'suite3', 'Suite de 3 → tes unités +2 attaque et Bouclier 3.', 'Une suite de 3 → Maëlle et chaque allié collé à elle ont +1 sur les sceaux « ≥ » et « Σ » pendant 3 tours.', 'a small portable forge with glowing coals and tools'),
     ],
     passif:[
@@ -72,7 +72,7 @@ const POUVOIRS_H = {
     ],
     ultime:[
       P('A', 'Le Grand Martelage', 'degats', 'feu', '#ff7a1a', '🌋', 'haut34', '3 dés de 4+ → 16 dégâts, unités +2 attaque.', 'Trois dés de 4 ou plus → trois sceaux d’un monstre collé se brisent (le boss d’abord s’il est collé).', 'a colossal glowing hammer coming down in a shower of molten sparks'),
-      P('B', 'Rempart vivant', 'tank', 'halo', '#ffc06a', '🏰', 'brelan', '3 dés identiques → tout le groupe ne prend que la moitié des coups 2 tours.', 'Trois dés identiques → pendant 2 tours, tout le groupe ne prend que la moitié des coups.', 'a wall of interlocking shields forged from glowing metal'),
+      P('B', 'Rempart vivant', 'tank', 'halo', '#ffc06a', '🏰', 'haut34', '3 dés identiques → tout le groupe ne prend que la moitié des coups 2 tours.', 'Trois dés de 4 ou plus → pendant 2 tours, tout le groupe ne prend que la moitié des coups.', 'a wall of interlocking shields forged from glowing metal'),
     ],
   },
   // ------------------------------------------------------------------ ALDRIC, le Paladin (Lanterne) : tank · lumière (dégâts sacrés) · soutien (commander)
@@ -93,7 +93,7 @@ const POUVOIRS_H = {
       P('C', 'Serment', 'tank', 'halo', '#ffe9a8', '🤝', null, 'Une fois par combat, une unité qui tombe reste à 1 PV.', 'Une fois par partie, Aldric ou un allié à côté de lui qui devait tomber reste à 1 PV.', 'a knight hand on a sword hilt swearing an oath with a golden glow'),
     ],
     ultime:[
-      P('A', 'La Lame de l’Aube', 'degats', 'lumiere', '#fff1a8', '⚔', 'brelan', '3 identiques → 16 dégâts et Handicap.', 'Trois dés identiques → deux sceaux d’un monstre collé se brisent et il est entravé 1 tour.', 'a radiant longsword blazing like the rising sun'),
+      P('A', 'La Lame de l’Aube', 'degats', 'lumiere', '#fff1a8', '⚔', 'haut34', '3 identiques → 16 dégâts et Handicap.', 'Trois dés de 4 ou plus → deux sceaux d’un monstre collé se brisent et il est entravé 1 tour.', 'a radiant longsword blazing like the rising sun'),
       P('B', 'Bastion', 'tank', 'halo', '#ffe08a', '🏯', 'haut34', '3 dés de 4+ → personne ne prend de dégât pendant un tour.', 'Trois dés de 4 ou plus → personne du groupe ne prend de dégât jusqu’au prochain tour.', 'a fortress tower of golden light rising around the party'),
     ],
   },
@@ -105,7 +105,7 @@ const POUVOIRS_H = {
       P('C', 'Sac de voyage', 'soutien', 'etoile', '#ffd27a', '🎒', null, 'Bouclier = valeur, et pioche une carte sur un 6.', 'Protéger : bouclier = la valeur ; sur un 6, Oria trouve 5 pièces d’or (bourse du groupe).', 'a traveler backpack overflowing with maps and a few gold coins'),
     ],
     pouvoir:[
-      P('A', 'Tracé parfait', 'controle', 'etoile', '#7fe9ff', '🧭', 'suite3', 'Suite de 4 → choisir une face, 2 cartes, 12 dégâts.', 'Une suite de 3 → chaque allié debout : son plus petit dé devient un 5.', 'a glowing compass rose drawing a perfect golden path'),
+      P('A', 'Tracé parfait', 'controle', 'etoile', '#7fe9ff', '🧭', 'paire', 'Suite de 4 → choisir une face, 2 cartes, 12 dégâts.', 'Une paire → chaque allié debout : son plus petit dé devient un 5.', 'a glowing compass rose drawing a perfect golden path'),
       P('B', 'Flèche longue', 'degats', 'fleches', '#5ff5e6', '🏹', 'paire', 'Paire de 5+ → 9 dégâts à une unité cachée ou au héros.', 'Une paire → une flèche brise un sceau d’un monstre à 4 cases.', 'a single long arrow flying with a cyan light trail'),
       P('C', 'Coup d’œil', 'soutien', 'etoile', '#a8f5ff', '👁', 'pairs3', 'Tout pair → pioche 3 cartes.', 'Trois dés pairs → Oria voit ce que cachent les meubles à 4 cases (écrit dans le journal) et tous les pièges à 4 cases.', 'a sharp keen eye reflected in a spyglass lens'),
     ],
@@ -116,7 +116,7 @@ const POUVOIRS_H = {
     ],
     ultime:[
       P('A', 'La Carte du monde', 'controle', 'etoile', '#7fe9ff', '🌍', 'suite3', 'Suite de 3 → 15 dégâts et Silence.', 'Une suite de 3 → tous les pièges de la carte se dévoilent et le sablier gagne 3 grains.', 'a huge glowing world map unfolding in the air'),
-      P('B', 'Pluie de flèches', 'degats', 'fleches', '#5ff5e6', '☔', 'haut3', '3 dés de 5+ → 6 dégâts à chaque ennemi.', 'Trois dés de 5 ou plus → une pluie de flèches brise un sceau de chaque monstre à 4 cases.', 'a rain of glowing arrows falling from the sky'),
+      P('B', 'Pluie de flèches', 'degats', 'fleches', '#5ff5e6', '☔', 'haut34', '3 dés de 5+ → 6 dégâts à chaque ennemi.', 'Trois dés de 4 ou plus → une pluie de flèches brise un sceau de chaque monstre à 4 cases.', 'a rain of glowing arrows falling from the sky'),
     ],
   },
   // ------------------------------------------------------------------ GORM, le Barde (Cor) : soutien (chant) · tank (dés en plus) · contrôle (tonnerre)
@@ -128,8 +128,8 @@ const POUVOIRS_H = {
     ],
     pouvoir:[
       P('A', 'Chant de guerre', 'soutien', 'onde', '#4f8bff', '📯', 'pi3', '4 pairs ou impairs → dégâts, unités +2.', 'Trois dés pairs ou trois impairs → tout le groupe a +1 sur les sceaux « ≥ » et « Σ » jusqu’à la fin du tour.', 'a great war horn blowing powerful blue sound waves'),
-      P('B', 'Second souffle', 'tank', 'onde', '#8ab4ff', '🎲', 'paire', 'Paire → relance tous tes autres dés.', 'Une paire → Gorm relance ses autres dés, avec 2 dés de plus.', 'a bard taking a deep breath with swirling blue air around'),
-      P('C', 'Coup de tonnerre', 'controle', 'eclair', '#7fa0ff', '⚡', 'suite3', 'Suite de 3 → 4 dégâts à chaque unité adverse.', 'Une suite de 3 → un sceau de chaque monstre collé à Gorm se brise.', 'a thunderclap shockwave bursting from a drum'),
+      P('B', 'Second souffle', 'tank', 'onde', '#8ab4ff', '🎲', 'paire', 'Paire → relance tous tes autres dés.', 'Une paire → Gorm relance ses autres dés, avec 1 dé de plus (une fois par tour).', 'a bard taking a deep breath with swirling blue air around'),
+      P('C', 'Coup de tonnerre', 'controle', 'eclair', '#7fa0ff', '⚡', 'suite3', 'Suite de 3 → 4 dégâts à chaque unité adverse.', 'Une suite de 3 → un sceau de 2 monstres collés à Gorm se brise (les deux plus proches de tomber).', 'a thunderclap shockwave bursting from a drum'),
     ],
     passif:[
       P('A', 'Grand souffle', 'tank', 'onde', '#4f8bff', '🌬', null, 'Moins de PV → Pouvoir +2.', 'Son trait (4 dés), renforcé : sous la moitié de ses PV, il lance un 5e dé.', 'a mighty gust of wind coming out of a horn'),
@@ -137,8 +137,8 @@ const POUVOIRS_H = {
       P('C', 'Voix de la montagne', 'controle', 'onde', '#5f7fff', '⛰', null, '+1 dégât à chaque attaque de zone.', 'Le Carillon ne le touche pas, et ses dés comptent +1 sur les sceaux « Σ ».', 'a snowy mountain peak with a voice echoing as blue waves'),
     ],
     ultime:[
-      P('A', 'Le Grand Souffle', 'controle', 'eclair', '#4f8bff', '🌪', 'pi3', '3 pairs ou impairs → 14 dégâts et 4 à chaque unité.', 'Trois dés pairs ou trois impairs → deux sceaux de chaque monstre à 3 cases se brisent.', 'a colossal blast of wind and thunder from a giant horn'),
-      P('B', 'Le grand cor', 'soutien', 'onde', '#8ab4ff', '🎺', 'suite4', 'Suite de 4 → rejoue tout son tour.', 'Une suite de 4 → tout le groupe relance ses dés (ceux qui lui restent).', 'a giant ornate horn glowing with golden and blue light'),
+      P('A', 'Le Grand Souffle', 'controle', 'eclair', '#4f8bff', '🌪', 'pi3', '3 pairs ou impairs → 14 dégâts et 4 à chaque unité.', 'Trois dés pairs ou trois impairs → un sceau de chaque monstre à 3 cases se brise (deux à l’Horloger).', 'a colossal blast of wind and thunder from a giant horn'),
+      P('B', 'Le grand cor', 'soutien', 'onde', '#8ab4ff', '🎺', 'suite3', 'Suite de 4 → rejoue tout son tour.', 'Une suite de 3 → tout le groupe relance ses dés (ceux qui lui restent).', 'a giant ornate horn glowing with golden and blue light'),
     ],
   },
   // ------------------------------------------------------------------ ZÉPHINE, la Mage (Tempête) : soutien (alchimie) · dégâts (foudre) · contrôle (vent)
@@ -160,7 +160,7 @@ const POUVOIRS_H = {
     ],
     ultime:[
       P('A', 'La Pierre philosophale', 'soutien', 'alchimie', '#e0a0ff', '💎', 'somme12', 'Somme 12 → 12 dégâts, Poison 4, unités 1 / 1.', 'Trois dés qui font 12 ou plus → chaque monstre à 4 cases perd tous ses sceaux « Σ ».', 'a radiant red philosopher stone floating above a flask'),
-      P('B', 'Le grand orage', 'degats', 'eclair', '#ff3030', '⛈', 'haut3', '3 dés de 5+ → 2 tours : −1 dé à l’adversaire, +1 dégât à toi.', 'Trois dés de 5 ou plus → pendant 2 tours, les monstres frappent de 1 de moins et le groupe a +1 sur les sceaux « ≥ » et « Σ ».', 'a huge thunderstorm with many red lightning bolts'),
+      P('B', 'Le grand orage', 'degats', 'eclair', '#ff3030', '⛈', 'haut34', '3 dés de 5+ → 2 tours : −1 dé à l’adversaire, +1 dégât à toi.', 'Trois dés de 4 ou plus → pendant 2 tours, les monstres frappent de 1 de moins et le groupe a +1 sur les sceaux « ≥ » et « Σ ».', 'a huge thunderstorm with many red lightning bolts'),
     ],
   },
 };

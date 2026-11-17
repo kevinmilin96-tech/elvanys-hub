@@ -97,6 +97,7 @@
   .equipe button { flex:1; background:#1c1c36; border:2px solid #45457a; border-radius:2.5cqw; padding:1cqw .5cqw; font-size:2.6cqw; }
   .equipe button.on { border-color:var(--or); background:#3a2f12; }
   .equipe button { position:relative; } .equipe button.fini { opacity:.45; } .equipe .ok-f { position:absolute; top:2px; right:4px; color:var(--ok); font-weight:bold; }
+  .equipe .jg { display:block; height:1.4cqw; margin:.6cqw .8cqw 0; border-radius:1cqw; background:#2a2a4a; overflow:hidden; } .equipe .jg i { display:block; height:100%; background:linear-gradient(90deg, #f3c96b, #fff4b0); } .equipe .jg.plein { box-shadow:0 0 1.5cqw #ffe680; animation:jgb 1.2s ease-in-out infinite alternate; } @keyframes jgb { to { box-shadow:0 0 .3cqw #ffe680; } }
   .equipe img { width:9cqw; height:9cqw; border-radius:50%; object-fit:cover; display:block; margin:0 auto .5cqw; }
   .equipe .terre img { filter:grayscale(1); }
   .des { display:flex; gap:2cqw; justify-content:center; margin:1.5cqw 0 1cqw; min-height:13cqw; align-items:center; flex-wrap:wrap; }
@@ -213,8 +214,8 @@
 <script src="heros-etoiles.js?v=07f78336f4"></script>
 <script src="progression-modes.js?v=807b0f9ad5"></script>
 <script src="aventuriers.js?v=04b0962a08"></script>
-<script src="pouvoirs-heros.js?v=059cef811d"></script>
-<script src="chroniques-moteur.js?v=3676404dbf"></script>
+<script src="pouvoirs-heros.js?v=802cf2ec33"></script>
+<script src="chroniques-moteur.js?v=2fd33cbfc1"></script>
 <script src="chroniques-ambiance.js?v=cdc992dc3a"></script>
 <script>
 // =============================================================================================== LES CHRONIQUES DE LA GUILDE v2 (15/11, écran « façon HeroQuest »)
@@ -620,7 +621,7 @@ function dessine() {
     const hi = S.heros.findIndex(z => z.x === x && z.y === y), m = R.monstres.find(z => z.x === x && z.y === y), B = R.boss && R.boss.x === x && R.boss.y === y ? R.boss : null;
     if (hi >= 0) { const z = S.heros[hi]; inner += `<div class="jeton ${hi === actif ? 'actif' : ''} ${z.aTerre ? 'terre' : ''}" id="j-h${hi}" style="--c:${coulH(z)}">${imgH(z)}<span class="pv">${z.aTerre ? '✋' : '❤' + z.pv}${z.bouclier ? '🛡' + z.bouclier : ''}${z.porte ? '⚙️' : ''}</span></div>`; }
     const mm = B || m;
-    if (mm && vu && (B || vueForcee || eclaire(x, y))) { const it = mm.entrave >= R.tour ? '🌵' : mm.it === 'frappe' ? `⚔${mm.att}` : mm.it === 'garde' ? '🛡' : mm.it === 'soin' ? '💚' : mm.it === 'fuit' ? '🏃' : mm.it === 'remonte' ? '⏳' : mm.it === 'levier' ? '🎚' : mm.it === 'elan' ? '⚡' : mm.it === 'gros' ? `💥${mm.att + 2}` : '';
+    if (mm && vu && (B || vueForcee || eclaire(x, y))) { const it = mm.entrave >= R.tour ? '🌵' : mm.it === 'frappe' ? `⚔${mm.att}` : mm.it === 'garde' ? '🛡' : mm.it === 'soin' ? '💚' : mm.it === 'fuit' ? '🏃' : mm.it === 'remonte' ? '⏳' : mm.it === 'levier' ? '🎚' : mm.it === 'elan' ? '⚡' : mm.it === 'charge' ? `⚡${mm.att + 2}` : mm.it === 'gros' ? `💥${mm.att + 2}` : '';
       inner += `<div class="jeton ${B ? 'boss' : ''}" id="j-${mm.id}" style="--c:${B ? '#ff7a4a' : K.BETES[mm.b].elite ? '#f3c96b' : '#8a98b8'}"><img src="portraits/m-${mm.img}.webp" alt="" onerror="this.onerror=null;this.src='portraits/m-coucou.webp'"><span class="it">${it}</span><span class="sc">🔒${mm.sceaux.filter(s => !s.ok).length}</span></div>`;
       if (d && !d.pas && K.aPortee(S, h, mm)) cl += ' cible'; }
     if ((mur === 'O' || mur === 'o') && R.plan === 2 && R.statuesOk && !h.flamme) cl += ' autel-cible'; // 16/11 soir : on voit qu'on peut toucher le feu
@@ -644,7 +645,7 @@ function dessine() {
     <div class="zonebar"><span class="zt">${RZ ? `${esc(zoneNom(ZV))}${vueForcee ? ' · 👹 les monstres' : suivi != null && S.heros[suivi] ? ` · 👀 ${esc(nomH(S.heros[suivi]))} joue` : ''}` : ''}</span><button onclick="${RZ ? 'grandeCarte()' : 'petit=!petit;centrer=true;dessine()'}">${petit ? '🔍 Zoom' : '🗺 Carte'}</button></div>
     <div style="position:relative"><div class="vue" id="vue"><div class="plateau ${S.scen === 'labyrinthe' ? 'laby' : (S.scen || 'horloger') === 'horloger' ? 'horloge' : ''}${RZ ? ' zonee' : ''}" style="grid-template-columns:repeat(${nCol}, ${t});--t:${t};${peint ? `background:url('${SC.image}${SC.image.startsWith('data:') ? '' : '?v=1'}') 0 0/100% 100% no-repeat` : ''}">${cases}</div></div>
 </div>
-    <div class="equipe">${S.heros.map((z, i) => `<button class="${i === actif ? 'on' : ''} ${z.aTerre ? 'terre' : ''} ${fini(i) ? 'fini' : ''}" onclick="choisitHeros(${i})">${fini(i) ? '<span class="ok-f">✓</span>' : ''}${imgH(z)}${nomH(z).replace('Sire ', '')}<br>${z.aTerre ? '✋ à terre' : `❤${z.pv} · 🎲${z.des.length}`}${invH(z) ? `<small class="inv-h">${invH(z)}</small>` : ''}${L ? `<small class="qui${mesHeros().includes(i) ? ' moi' : ''}">${mesHeros().includes(i) ? 'toi' : proprio(i) || 'libre'}</small>` : ''}</button>`).join('')}</div>
+    <div class="equipe">${S.heros.map((z, i) => `<button class="${i === actif ? 'on' : ''} ${z.aTerre ? 'terre' : ''} ${fini(i) ? 'fini' : ''}" onclick="choisitHeros(${i})">${fini(i) ? '<span class="ok-f">✓</span>' : ''}${imgH(z)}${nomH(z).replace('Sire ', '')}<br>${z.aTerre ? '✋ à terre' : `❤${z.pv} · 🎲${z.des.length}`}${invH(z) ? `<small class="inv-h">${invH(z)}</small>` : ''}${z.pw && z.pw.ultime ? `<span class="jg ${(z.jauge || 0) >= (K.JAUGE_ULT || 12) ? 'plein' : ''}" title="Jauge d’Ultime" onclick="event.stopPropagation();infoJauge(${i})"><i style="width:${Math.min(100, (z.jauge || 0) / (K.JAUGE_ULT || 12) * 100)}%"></i></span>` : ''}${L ? `<small class="qui${mesHeros().includes(i) ? ' moi' : ''}">${mesHeros().includes(i) ? 'toi' : proprio(i) || 'libre'}</small>` : ''}</button>`).join('')}</div>
     <div class="des" id="desH">${L && !mesHeros().includes(actif) ? `<span class="aide">👤 ${nomH(h)} est joué par <b>${proprio(actif) || 'personne'}</b>${proprio(actif) ? '' : ' : touche 🌐 en haut pour le prendre'}.</span>` : h.aTerre ? `<span class="aide">${nomH(h)} est à terre : un ami à côté peut le relever avec un dé.</span>` : h.des.length && !lanceOK(actif) ? h.des.map(() => `<button class="de cache" onclick="lanceDesH()"></button>`).join('') + `<button class="lancerH" onclick="lanceDesH()">🎲 Lancer</button>` : h.des.map(z => z.pas ? `<button class="de pas ${sel === z.id ? 'sel' : ''}" onclick="choisitDe('${z.id}')" title="${z.v} pas qui restent">👣${z.v}</button>` : `<button class="de ${sel === z.id ? 'sel' : ''}" onclick="choisitDe('${z.id}')"><img src="faces-${h.id}/face-${z.v}.webp" alt="${z.v}"></button>`).join('') || '<span class="aide">Plus de dés pour ce héros : passe au suivant.</span>'}</div>
     ${d && !h.aTerre ? `<div class="pasinfo">${d.pas ? `👣 ${d.v} pas : 1 par case, ou 1 pour fouiller (porte gratuite)` : `👣 ce dé : <b>${K.pasDe(h, d.v).n} pas</b> (1 par case ou par fouille) · ou frapper`}</div>` : ''}
     <div class="actions" ${L && !mesHeros().includes(actif) ? 'style="display:none"' : ''}>${pwBoutons(h, d)}${d ? '<button onclick="cherche()">🔍 Pièges (2 cases)</button>' : ''}<button class="fin" onclick="aFini()">${libres().length <= 1 ? `✋ ${nomH(S.heros[actif]).replace('Sire ', '')} a fini ▶ les monstres` : `✋ ${nomH(S.heros[actif]).replace('Sire ', '')} a fini`}</button>${libres().length > 1 ? `<button class="sec" style="flex:none" onclick="finTour()" title="Tout le groupe a fini">▶ Monstres</button>` : ''}</div>`;
@@ -810,14 +811,17 @@ function cherche() { if (!sel) return; son('livre'); resultat(K.fouiller(S, acti
 const pwDef = (h, emp) => { if (!h || !h.pw || !h.pw[emp] || typeof POUVOIRS_H === 'undefined' || !POUVOIRS_H[h.id]) return null; return POUVOIRS_H[h.id][emp].find(x => x.v === h.pw[emp].v) || null; };
 function pwBoutons(h, d) {
   if (!h || !h.pw || h.aTerre || !lanceOK(actif)) return '';
-  const b = ['pouvoir', 'ultime'].map(emp => { const D = pwDef(h, emp); if (!D) return ''; const I = K.pwInfo(S, actif, emp), used = emp === 'ultime' && h.ultUsed;
+  const b = ['pouvoir', 'ultime'].map(emp => { const D = pwDef(h, emp); if (!D) return ''; const I = K.pwInfo(S, actif, emp), used = false;
     return used ? '' : `<button class="pw ${I.ok ? 'on' : ''}" style="--pc:${D.c}" onclick="pwOuvre('${emp}')">${emp === 'ultime' ? '🌟 Ultime' : '✨ Pouvoir'}</button>`; }).join('');
   const tr = h.id === 'zephine' && h.pw.passif && h.pw.passif.v === 'A' && d && !d.pas && h.transT !== S.R.tour ? `<button class="pw on" style="--pc:#c58bff" onclick="pwRetourne()">🔄 Retourner ce ${d.v}</button>` : '';
   return b + tr;
 }
+// 17/11 (choix de l'utilisateur) : la JAUGE D'ULTIME sous chaque portrait, expliquée au toucher
+function infoJauge(i) { const z = S.heros[i], M = K.JAUGE_ULT || 12, D = pwDef(z, 'ultime'), n = Math.min(M, z.jauge || 0);
+  fenetre(`<h2>⚡ La jauge d’Ultime de ${nomH(z)}</h2><div class="sceaux" style="justify-content:center"><b style="font-size:1.4em">${n} / ${M}</b></div><p>Elle gagne <b>1 point par dé posé</b> (frapper un sceau, protéger, soigner, relever, baisser un levier, chaque dé d’un Pouvoir) et <b>1 point tous les 3 PV perdus</b>.</p><p>Pleine, l’Ultime${D ? ` <b>${D.e} ${D.n}</b>` : ''} est prêt : quand ses dés forment la combinaison${D ? ` (<b>${PW_COMBOS[D.co] || D.co}</b>)` : ''}, touche « 🌟 Ultime ». Il vide la jauge, qui se remplit à nouveau : l’Ultime revient plusieurs fois par partie.</p><div class="choixh"><button onclick="fenetre('')">Compris</button></div>`); }
 function pwOuvre(emp) {
   const h = S.heros[actif], D = pwDef(h, emp); if (!D) return; const I = K.pwInfo(S, actif, emp), R0 = PW_ROLES[D.r] || ['', ''];
-  const dit = `<p style="text-align:center;margin:4px 0">${R0[0]} ${R0[1]} · ${emp === 'ultime' ? 'une fois par partie' : 'autant de fois que les dés le permettent'}</p><p>${D.chron}</p><p class="doux" style="font-size:.9em">Il faut : <b>${PW_COMBOS[D.co] || D.co}</b>.</p>`;
+  const dit = `<p style="text-align:center;margin:4px 0">${R0[0]} ${R0[1]} · ${emp === 'ultime' ? `quand la jauge ⚡ est pleine (${Math.min(K.JAUGE_ULT || 12, h.jauge || 0)} / ${K.JAUGE_ULT || 12})` : h.id === 'gorm' && h.pw.pouvoir.v === 'B' ? 'une fois par tour' : 'autant de fois que les dés le permettent'}</p><p>${D.chron}</p><p class="doux" style="font-size:.9em">Il faut : <b>${PW_COMBOS[D.co] || D.co}</b>.</p>`;
   if (!I.ok) { fenetre(`<div class="pwfen"><h2>${D.e} ${D.n}</h2>${dit}<p style="color:#ff9a9a;text-align:center">${I.raison}</p><div class="choixh"><button onclick="fenetre('')">Fermer</button></div></div>`); son('erreur'); return; }
   const des = I.des.map(id => h.des.find(z => z.id === id)).filter(Boolean);
   fenetre(`<div class="pwfen"><h2>${D.e} ${D.n}</h2>${dit}<p style="text-align:center">Dés utilisés :</p><div class="pwd">${des.map(z => `<b>${z.v}</b>`).join('')}</div>
@@ -848,14 +852,14 @@ function amiMenu(i) {
   if (z.aTerre) b.push(`<button class="sec" onclick="fenetre('');resultat(K.relever(S,actif,sel,${i}))">✋ Relever ${nomH(z)}<small>Il revient avec 4 PV.</small></button>`);
   else {
     b.push(`<button class="sec" onclick="fenetre('');son('bouclier');resultat(K.proteger(S,actif,sel,${i}))">🛡 Protéger ${moi ? '(soi-même)' : nomH(z)}<small>${pwDef(h, 'garde') ? `${pwDef(h, 'garde').e} ${pwDef(h, 'garde').n} : ${pwDef(h, 'garde').chron.replace(/^Protéger[^:]*: /, '')}` : `Bouclier ${Math.ceil(d.v / 2) + 1}${h.id === 'aldric' ? ', pour lui et tous ses voisins' : ''} jusqu’au prochain coup.`}</small></button>`);
-    if (h.id === 'pip' || (h.talents || []).includes('guerisseur')) b.push(`<button class="sec" onclick="fenetre('');resultat(K.soigner(S,actif,sel,${i}))">🌿 Soigner ${moi ? '(soi-même)' : nomH(z)}<small>+${d.v} PV.</small></button>`);
+    b.push(`<button class="sec" onclick="fenetre('');son('soin');resultat(K.soigner(S,actif,sel,${i}))">🌿 Soigner ${moi ? '(soi-même)' : nomH(z)}<small>+${h.id === 'pip' ? d.v : Math.ceil(d.v / 2)} PV${h.id === 'pip' ? '' : ' (la moitié du dé ; Pip soigne du dé entier)'}.</small></button>`);
     if (!moi && K.dist(h, z) === 1) b.push(`<button class="sec" onclick="fenetre('');son('pas');centrer=true;resultat(K.echanger(S,actif,sel,${i}))">↔ Changer de place avec ${nomH(z)}<small>1 pas : vous échangez vos cases.</small></button>`);
     if (!moi) b.push(`<button class="sec" onclick="fenetre('');son('carte');resultat(K.donner(S,actif,sel,${i}))">🤝 Donner ce ${d.v} à ${nomH(z)}<small>Il pourra le poser (il doit être à côté).</small></button>`);
   }
   fenetre(`<h2>${nomH(z)}</h2>${b.join('')}<button class="sec" onclick="fenetre('')">Annuler</button>`);
 }
 function infoMonstre(m) {
-  const it = { frappe:`⚔ va frapper (${m.att})`, garde:'🛡 va refermer un de ses sceaux', soin:'💚 va réparer un autre monstre', fuit:'🏃 va s’enfuir', remonte:'⏳ reprend son souffle', levier:'🎚 va remonter un levier', elan:'⚡ prend son élan', gros:`💥 GROS COUP : frappe de ${m.att + 2}, sauf si vous lui brisez un sceau avant`, rien:'ne fait rien' }[m.it] || '';
+  const it = { frappe:`⚔ va frapper (${m.att})`, garde:'🛡 va refermer un de ses sceaux', soin:'💚 va réparer un autre monstre', fuit:'🏃 va s’enfuir', remonte:'⏳ reprend son souffle', levier:'🎚 va remonter un levier', elan:'⚡ prend son élan', charge:`⚡ IL CHARGE : au début de votre prochain tour, AVANT que vous jouiez, il frappera ${m.att + 2} chaque héros collé à lui. Pour l’éviter : ne finissez pas votre tour collé à lui (éloignez-vous), ou protégez-vous (le bouclier encaisse)`, gros:`💥 GROS COUP : frappe de ${m.att + 2}, sauf si vous lui brisez un sceau avant`, rien:'ne fait rien' }[m.it] || '';
   fenetre(`<h2>${m.n}</h2><p style="text-align:center">Ce tour-ci : <b>${it}</b>.</p><div class="sceaux">${m.sceaux.map(s => `<div class="sx ${s.ok ? 'ok' : ''}">${sceauTxt(s, m.sceaux)}</div>`).join('')}</div><p style="color:var(--doux);font-size:.9em">${m.id === 'boss' ? 'Il frappe au contact (une case autour, diagonales comprises), un tour sur deux.' : `Il avance de ${(K.BETES[m.b] || {}).mv || 1} case${((K.BETES[m.b] || {}).mv || 1) > 1 ? 's' : ''} par tour vers le héros le plus proche et frappe au contact (une case autour, diagonales comprises), seulement quand sa salle est dévoilée.`}</p>${Object.keys(K.CAPA).filter(k => (K.BETES[m.b] || {})[k]).map(k => `<p style="font-size:.9em;margin:4px 0">✦ ${K.CAPA[k]}</p>`).join('')}<p style="color:var(--doux);font-size:.9em">Choisis un dé, puis touche le monstre pour poser le dé sur un sceau. Tous ses sceaux brisés : il tombe.</p><button class="go" onclick="fenetre('')">Compris</button>`);
 }
 async function finTour(tousFinis) {
@@ -896,6 +900,8 @@ async function animeMonstres(ev) {
     else if (e.t === 'levierRemonte') { son('tour-batir'); flash('j-' + e.m); bulle(S.journal.find(l => l.startsWith('🗿')) || '🗿 Un levier remonte !', true, true); await attends(1400); }
     else if (e.t === 'garde') { flash('j-' + e.m); await attends(250); }
     else if (e.t === 'pouvoir') { animPw(e); await attends(900); }
+    else if (e.t === 'charge') { son(e.vide ? 'pas' : 'gros'); flash('j-' + e.m); bulle(S.journal.find(l => l.startsWith('⚡ La charge')) || '⚡ La charge !', true, true); await attends(e.vide ? 900 : 1100); }
+    else if (e.t === 'jauge') { son('ultime'); flash('j-h' + e.h); bulle(`⚡ L’Ultime de ${nomH(S.heros[e.h])} est prêt !`, true); await attends(700); }
     else if (e.t === 'elan') { son('ultime'); flash('j-' + e.m); bulle(S.journal.find(l => l.startsWith('⚡')) || '⚡ Il prend son élan !', true, true); await attends(1300); }
     else if (e.t === 'boss') { son('gros'); flash('j-boss'); bulle(S.R.boss && S.R.boss.b === 'roios' ? '💀 Le Roi des Os agit !' : '⏰ Le boss agit !'); await attends(600); }
   }
@@ -936,8 +942,10 @@ function regles() {
     <li><b>Fouiller un meuble</b> à côté (🧰 🗄️ 🛢️ 🪦 🛠️ 🔥, un dé, une fois) : potion, or, sablier, objet… ou piège, ou monstre caché. <b>Quatre rouages ⚙ sont cachés</b> dans des meubles : il en faut trois. <b>Un héros ne porte qu’un rouage à la fois</b> (⚙ sur son portrait). Ce que porte chaque héros (sac 🎒, objet, rouage) est écrit sous ses dés.</li>
     <li><b>Les 4 leviers</b> de la Salle des rouages (chacun « tel chiffre ou plus » ; un levier baissé remonte tout seul au bout de quelques tours, et le <b>Gardien de bronze</b> en remonte un quand il peut : il faut les quatre baissés en même temps) ouvrent la <b>porte de bronze</b> du Cœur de l’Horloge. Posez-y les 3 rouages sur l’axe ✹ : l’Horloger se réveille.</li>
     <li><b>Les énigmes</b> : la <b>Galerie des statues</b> (tourner les 4 statues vers l’autel ; chacune entraîne sa voisine ; un dé par poussée) et le <b>Cagibi grillagé</b> (un héros reste sur la dalle ⬛ du couloir pendant qu’un autre entre).</li>
-    <li><b>Les monstres ont des capacités</b> (touche un monstre pour les lire) : meute, attaque du héros seul, gros coup annoncé ⚡, régénération (il faut un 6), os qui se relèvent (il faut les achever avec un 6).</li>
-    <li><b>Un ami</b> (ou soi) : protéger, donner un dé (à côté), soigner (Pip), relever. <b>🔍 Pièges</b> (un dé) : dévoile les pièges cachés jusqu’à 2 cases autour du héros. <b>Une porte</b> s’ouvre gratuitement, par le héros choisi, s’il est juste à côté.</li>
+    <li><b>Les monstres ont des capacités</b> (touche un monstre pour les lire) : meute, attaque du héros seul, gros coup annoncé ⚡, <b>charge ⚡ des élites</b> (elle frappe au DÉBUT de votre tour suivant, avant que vous jouiez : finissez votre tour loin d’elles ou protégé), régénération (il faut un 6), os qui se relèvent (il faut les achever avec un 6).</li>
+    <li><b>Un ami</b> (ou soi) : protéger, donner un dé (à côté), <b>soigner</b> (tout héros : la moitié du dé ; Pip : le dé entier), relever. <b>🔍 Pièges</b> (un dé) : dévoile les pièges cachés jusqu’à 2 cases autour du héros. <b>Une porte</b> s’ouvre gratuitement, par le héros choisi, s’il est juste à côté.</li>
+    <li><b>Les pouvoirs</b> : « ✨ Pouvoir » s’allume quand les dés forment sa combinaison. <b>L’Ultime</b> a une <b>jauge ⚡</b> (la barre dorée sous chaque portrait) : +1 par dé posé, +1 tous les 3 PV perdus ; pleine (12), l’Ultime est prêt, et il revient à chaque jauge pleine.</li>
+    <li><b>Plus on est nombreux, plus les monstres sont costauds</b> : à 2, 3 ou 4 héros, les élites ont un sceau « Σ » de plus et frappent plus fort, les petits monstres ont un sceau de plus (à 4 héros), et l’Horloger un sceau « Σ » de plus à chaque phase. Seul, rien ne change.</li>
     <li><b>Ordre libre</b> : jouez vos héros dans l’ordre que vous voulez, même en alternant (touchez un héros pour le prendre). Quand un héros a terminé, touchez « ✋ … a fini ». Quand tous ont fini, les monstres jouent.</li>
     <li><b>Fin du tour</b> (après le dernier héros) : les monstres réveillés font ce qu’ils annoncent ; le <b>sablier</b> perd un grain (vide : un dé de moins pour tous). Le <b>Livre des heures</b> (bibliothèque, à deux) affaiblit l’Horloger.</li>
     <li>🗺 <b>Carte</b> : voir tout le donjon dévoilé. La partie est gardée ; si tout le groupe tombe, on repart du dernier point de passage (la dernière porte ouverte).</li></ol>

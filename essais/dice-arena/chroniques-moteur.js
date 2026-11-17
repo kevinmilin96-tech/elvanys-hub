@@ -40,14 +40,14 @@ const HEROS_C = {
 // 15/11 soir : les portraits peints des monstres de l'Horloger (portraits/m-<img>.webp) ; l'Horloger garde le sien en attendant le nouveau
 const BETES = {
   rouagelin: { n:'Rouagelin', img:'rouagelin', att:1, mv:2, s:() => [sceau('any'), sceau('min', 3)], meute:true },
-  gardien:   { n:'Gardien de bronze', img:'gardienbronze', att:2, mv:2, s:() => [sceau('pair'), sceau('pair'), sceau('tot', 7)], garde:.25, leviers:true, grosCoup:.3 },
+  gardien:   { n:'Gardien de bronze', img:'gardienbronze', att:2, mv:2, s:() => [sceau('pair'), sceau('pair'), sceau('tot', 7)], garde:.25, leviers:true, grosCoup:.3, charge:.3 },
   coucou:    { n:'Coucou furieux', img:'coucou', att:2, mv:3, s:() => [sceau('imp'), sceau('min', 4)], lache:true },
   page:      { n:'Page hurlante', img:'pagehurlante', att:1, mv:3, s:() => [sceau('imp'), sceau('imp')], fuit:.3 },
-  archiviste:{ n:'Archiviste de cuivre', img:'archiviste', att:3, mv:1, s:() => [sceau('dbl', 0, 1), sceau('dbl', 0, 1), sceau('min', 5), sceau('tot', 10)], soin:.35, elite:true, grosCoup:.3 },
+  archiviste:{ n:'Archiviste de cuivre', img:'archiviste', att:3, mv:1, s:() => [sceau('dbl', 0, 1), sceau('dbl', 0, 1), sceau('min', 5), sceau('tot', 10)], soin:.35, elite:true, grosCoup:.3, charge:.3 },
   mimique:   { n:'Mimique', img:'mimique', att:2, mv:2, s:() => [sceau('pair'), sceau('min', 4)], grosCoup:.2 }, // 16/11 : un meuble qui mord
   horloger:  { n:'L’Horloger', img:'horlogerboss', att:3, mv:1, s:() => [], boss:true },
   // 16/11 : les nouveaux venus (inspirés des archétypes troll, squelette, liche ; noms et règles à nous)
-  colosse:   { n:'Colosse à ressort', img:'colosseressort', att:3, mv:1, s:() => [sceau('min', 5), sceau('dbl', 0, 1), sceau('dbl', 0, 1), sceau('tot', 10)], elite:true, regen:true, grosCoup:.3 },
+  colosse:   { n:'Colosse à ressort', img:'colosseressort', att:3, mv:1, s:() => [sceau('min', 5), sceau('dbl', 0, 1), sceau('dbl', 0, 1), sceau('tot', 10)], elite:true, regen:true, grosCoup:.3, charge:.35 },
   osclaque:  { n:'Os-qui-claque', img:'osclaque', att:1, mv:2, s:() => [sceau('pair'), sceau('max', 4)], releve:true },
   reliquaire:{ n:'Le Reliquaire', img:'reliquaire', att:0, mv:0, s:() => [sceau('ex', 2), sceau('ex', 4), sceau('ex', 6)], immobile:true },
   roios:     { n:'Le Roi des Os', img:'roios', att:3, mv:1, s:() => [], boss:true },
@@ -64,6 +64,7 @@ const CAPA = {
   meute:'Meute : +1 dégât si un autre de ses semblables est déjà au contact de la même cible.',
   lache:'Lâche : +2 dégâts contre un héros SEUL (aucun ami à côté de lui).',
   grosCoup:'Gros coup : parfois il prend son élan (⚡) ; au tour suivant il frappe de +2, sauf si on lui a brisé un sceau entre-temps.',
+  charge:'Charge (⚡) : parfois il se ramasse pendant le tour des monstres ; au DÉBUT de votre tour suivant, avant que vous jouiez, il frappe de +2 tous les héros collés à lui. Pour l’éviter : éloignez-vous de lui (plus collé à la fin de votre tour) ou protégez-vous (bouclier).',
   regen:'Régénère : à la fin du tour, il referme un sceau brisé, SAUF si on lui a posé un 6 pendant ce tour.',
   releve:'Se relève : abattu, il revient au tour suivant avec un sceau, SAUF si on l’a achevé avec un 6.',
   leviers:'Il surveille les leviers : il en remonte un quand il peut.',
@@ -72,7 +73,7 @@ const CAPA = {
 const PHASES = [
   { n:'Le Ressort', s:() => [sceau('min', 5), sceau('min', 5), sceau('dbl', 0, 1), sceau('dbl', 0, 1)], d:'frappe tous les héros collés à lui et appelle 2 Rouagelins' },
   { n:'Le Carillon', s:() => [sceau('pair'), sceau('imp'), sceau('tot', 12)], d:'frappe tous ceux collés à lui et sonne : l’onde frappe à 2 cases (−2), et chaque héros qui n’est pas à côté d’un ami perd son plus gros dé au prochain tour' },
-  { n:'La Dernière Heure', s:() => [sceau('ex', 6), sceau('ex', 1), sceau('dbl', 0, 1), sceau('dbl', 0, 1), sceau('tot', 15)], d:'renvoie le héros le plus blessé dans le hall d’entrée, le frappe, puis frappe tous ceux collés à lui' },
+  { n:'La Dernière Heure', s:() => [sceau('ex', 6), sceau('ex', 1), sceau('dbl', 0, 1), sceau('dbl', 0, 1), sceau('tot', 15)], d:'rejette le héros le plus blessé hors du Cœur, sur le palier (jamais le dernier debout), le frappe, puis frappe tous ceux collés à lui' },
 ];
 
 // 16/11 : LE ROI DES OS (boss du Labyrinthe des Runes) : phase 2 = intouchable tant que son reliquaire, caché dans un meuble, n'est pas brisé
@@ -293,6 +294,7 @@ function sceauxBoss(S, k) {
   const L = phasesDe(S)[k].s(), n = S.nbHeros || S.heros.length; if (!L.length) return L;
   if (n <= 1) L.splice(-2, 2); else if (n === 2) L.pop(); else if (n >= 4) L.push(sceau('min', 4));
   if (k === 2 && S.livre) L.pop();
+  if (n >= 2 && !S.ancien) L.push(sceau('tot', GRANDIT.boss * (n - 1))); // 17/11 (équilibrage mesuré) : l'Horloger grandit avec chaque héros en plus du premier
   if (S.scen === 'labyrinthe' && n <= 1 && L.length > 2) L.pop(); // seul dans un grand labyrinthe : un sceau de moins
   return L;
 }
@@ -300,7 +302,7 @@ function adapte(S) {
   const R = S.R, n = Math.max(1, Math.min(4, S.heros.length)), A = ADAPTE[n];
   S.nbHeros = n; S.dureeLevier = A.levier; S.sablier += A.sablier;
   // 16/11 (retour de l'utilisateur : « pas de mise en danger » à 4) : à 3 héros et plus, chaque monstre frappe 1 de plus
-  S.forceM = n >= 3 ? 1 : 0; R.monstres.forEach(m => m.att = BETES[m.b].att + S.forceM);
+  S.forceM = n >= 3 ? 1 : 0; R.monstres.forEach(m => { m.att = BETES[m.b].att + S.forceM; grandit(S, m); });
   if (S.scen === 'labyrinthe') { S.sablier += [0, 20, 10, 0, 0][n]; if (n <= 2) R.monstres = R.monstres.filter(() => hasard(S) < .7); } // un donjon plus grand : plus de temps aux petits groupes
   if (A.garde < 1 && S.scen !== 'arene') R.monstres = R.monstres.filter(m => hasard(S) < A.garde); // une embuscade garde ses monstres (écrits pour l'aventure)
   if (A.renfort) { // à 4 : quelques monstres de plus, posés dans des couloirs (cases de sol hors salle, loin du départ)
@@ -380,7 +382,16 @@ function utiliser(S, hi, k, cible) {
 }
 const a_t = (h, k) => !!(h.talents && h.talents.includes(k)); // un talent de héros d'aventure (aventuriers.js, TALENTS) // le nom affiché (héros d'aventure ou héros de la Guilde)
 const log = (S, t) => { S.journal.unshift(t); S.journal.length = Math.min(S.journal.length, 40); };
-function ajouteMonstre(S, b, x, y) { const B = BETES[b]; const m = { id:'m' + S.seq++, b, n:B.n, img:B.img, x, y, att:B.att + (S.forceM || 0), sceaux:B.s(), it:'frappe' }; S.R.monstres.push(m); return m; }
+// 17/11 (retour de l'utilisateur : « un tour suffit à tuer un monstre, on n'a pas peur », mesuré au simulateur) : les monstres GRANDISSENT
+// avec chaque héros EN PLUS du premier (seul : rien ne change). Élites : un sceau « Σ » de 5 par héros en plus et +1 à leurs coups ;
+// ordinaires : +1 sceau « n'importe quel dé » à 4 héros ; l'Horloger : un sceau « Σ » de 4 par héros en plus à chaque phase. (Equilibrage-pouvoirs-17-11.md)
+const GRANDIT = { elite:5, eliteAtt:1, ordDes:4, boss:4 }; // réglé au simulateur le 17/11 (6/3/5 : 4 héros à 65 %, trop dur ; 5/4/4 : 77-92 %) // ordDes : nombre de héros à partir duquel les ordinaires ont un sceau de plus
+function grandit(S, m) {
+  if (!m || m.grandi || !S.nbHeros || S.ancien) return; m.grandi = true; const B = BETES[m.b], n = S.nbHeros; if (!B || B.boss || B.immobile || n < 2) return;
+  if (B.elite || B.leviers) { m.sceaux.push(sceau('tot', GRANDIT.elite * (n - 1))); m.att += GRANDIT.eliteAtt; }
+  else for (let i = GRANDIT.ordDes - 1; i < n; i++) m.sceaux.push(sceau('any'));
+}
+function ajouteMonstre(S, b, x, y) { const B = BETES[b]; const m = { id:'m' + S.seq++, b, n:B.n, img:B.img, x, y, att:B.att + (S.forceM || 0), sceaux:B.s(), it:'frappe' }; S.R.monstres.push(m); grandit(S, m); return m; }
 function libre(S, x, y, sauf) { const R = S.R; if (x < 0 || y < 0 || x >= R.w || y >= R.h || R.murs[cle(x, y)]) return false;
   const p = R.portes[cle(x, y)]; if (p && !p.ouverte) return false;
   if (R.grille && x === R.grille.x && y === R.grille.y && !grilleOuverte(S)) return false;
@@ -454,7 +465,13 @@ const reveille = (S, m) => visible(S, m.x, m.y) && (!S.R.salle[cle(m.x, m.y)] ||
 
 // ------------------------------------------------------------------ le tour du groupe
 function debutTour(S) {
-  const R = S.R; R.tour++; S.tours++;
+  const R = S.R, evC = []; R.tour++; S.tours++;
+  // 17/11 (idée de l'utilisateur, comme Dice Throne / les intentions de Slay the Spire) : un monstre qui CHARGE frappe au début du tour des héros,
+  // avant qu'ils jouent : +2, tous les héros collés à lui. On l'évite en s'éloignant ou en se protégeant pendant le tour d'avant.
+  for (const m of R.monstres.slice()) { if (m.it !== 'charge') continue; m.dejaCharge = true; if (m.entrave >= R.tour - 1 || !reveille(S, m)) { m.it = 'rien'; continue; }
+    const v = m.att + 2, Q = S.heros.filter(h => !h.aTerre && contact(S, m, h));
+    if (!Q.length) { log(S, `⚡ La charge de ${m.n} frappe dans le vide : personne n’est resté collé à lui.`); evC.push({ t:'charge', m:m.id, vide:true }); continue; }
+    evC.push({ t:'charge', m:m.id }); Q.forEach(h => { const perdu = blesseHeros(S, h, Math.max(0, v - pwMoinsCoup(S, h))); evC.push({ t:'frappe', m:m.id, h:S.heros.indexOf(h), v:perdu }); pwApresCoup(S, m, h, evC); log(S, `⚡ La charge de ${m.n} frappe ${nm(h)} avant qu’il joue (−${perdu}).`); }); }
   S.heros.forEach(h => { if (h.def && !h.aTerre) h.bouclier = Math.max(h.bouclier || 0, h.def); }); // 🛡 la Défense de l'équipement
   S.heros.forEach(h => {
     let n = HEROS_C[h.id].des + (h.desPlus || 0) + (h.objet === 'cle' ? 1 : 0) - (S.sablier <= 0 ? 1 : 0) + (h.id === 'gorm' && pwA(h, 'passif', 'A') && h.pv < h.pvmax / 2 ? 1 : 0); // 16/11 nuit : Grand souffle
@@ -471,10 +488,12 @@ function debutTour(S) {
   R.monstres.forEach(m => { const B = BETES[m.b], r = hasard(S);
     if (B.immobile) { m.it = 'rien'; return; }
     if (m.charge != null) { m.it = 'gros'; return; }
+    const r2 = hasard(S); if (B.charge && !m.dejaCharge && r2 < B.charge && !S.ancien) { m.it = 'charge'; return; } m.dejaCharge = false;
     m.it = B.grosCoup && r < B.grosCoup ? 'elan' : B.garde && r < B.garde ? 'garde' : B.soin && r < B.soin && R.monstres.length > 1 ? 'soin' : B.fuit && r < B.fuit ? 'fuit' : 'frappe';
     // 16/11 : le Gardien de bronze surveille ses leviers : s'il y en a de baissés, il en remonte un (une fois sur deux)
     if (B.leviers && !R.bronze && Object.keys(R.leviersTour).length && r < .5) m.it = 'levier'; });
   if (R.boss) R.boss.it = R.boss.repos && R.boss.b === 'roios' ? 'remonte' : 'frappe';
+  return evC;
 }
 function atteignables(S, h, v, pas) {
   const R = S.R, pasMax = pas ? v : pasDe(h, v).n, res = {}, file = [[h.x, h.y, 0]], vu = { [cle(h.x, h.y)]:1 };
@@ -545,7 +564,7 @@ function frapper(S, hi, idDe, mid, k) {
   const s = m.sceaux[k], pwB = s && (s.t === 'min' || s.t === 'tot') ? pwBonusSceau(S, h, m, s) : 0, bonus = s && (s.t === 'min' || s.t === 'tot') ? (h.att || 0) + flam + (d.b || 0) + pwB : 0, vA = d.v + bonus; // + les pouvoirs (16/11 nuit) // + le bonus forgé de la face // ⚔ l'Attaque de l'équipement compte sur les sceaux « ≥ » et « Σ »
   if (!s || !accepte(s, vA, m.sceaux)) return 'Ce dé ne va pas sur ce sceau.';
   if (m === R.boss && phasesDe(S)[m.phase].intouchable) return 'Il est intouchable : trouvez et brisez son reliquaire.';
-  prendDe(h, idDe); pose(s, vA); m.dernier = d.v; if (d.v === 6) m.six = R.tour; if (pwB) h.bonusP = 0;
+  prendDe(h, idDe); remplit(S, h, 1); pose(s, vA); m.dernier = d.v; if (d.v === 6) m.six = R.tour; if (pwB) h.bonusP = 0;
   log(S, `⚔ ${nm(h)} pose un ${d.v}${bonus ? ` +${bonus} (${[h.att ? 'équipement' : '', flam ? 'flamme' : '', d.b ? 'dé forgé' : '', pwB ? 'pouvoir' : ''].filter(Boolean).join(', ')}) = ${vA}` : ''} sur ${m.n}.`);
   const evPw = pwApresFrappe(S, hi, d);
   if ((h.id === 'maelle' && (d.v === 6 || (d.v === 5 && pwA(h, 'passif', 'C') && pwR(h, 'passif') >= 10))) || (a_t(h, 'brute') && d.v >= 5)) { const s2 = m.sceaux.find(z => !z.ok); if (s2) { brise(s2); log(S, `🔨 ${h.id === 'maelle' ? 'Coup de forge (un 6 de Maëlle)' : 'Brute (un 5 ou un 6)'} : un DEUXIÈME sceau se brise !`); } }
@@ -589,17 +608,17 @@ function cacheReliquaire(S) {
 function proteger(S, hi, idDe, cibleI) {
   const h = S.heros[hi], d = h.des.find(z => z.id === idDe), c = S.heros[cibleI]; if (!d || !c) return 'Personne à protéger.'; if (d.pas) return 'Un dé 👣 sert à marcher ou à agir, pas à protéger.';
   if (c !== h && !voisins(h, c)) return 'Il faut être à côté de l’ami.';
-  if (h.pw) return pwProteger(S, hi, idDe, cibleI);
+  if (h.pw) { remplit(S, h, 1); return pwProteger(S, hi, idDe, cibleI); }
   prendDe(h, idDe); const b = Math.ceil(d.v / 2) + 1 + (a_t(h, 'protecteur') ? 2 : 0);
   const qui = h.id === 'aldric' ? S.heros.filter(z => z === c || z === h || voisins(z, h)) : [c];
   qui.forEach(z => z.bouclier += b); log(S, `🛡 ${nm(h)} protège ${qui.map(z => nm(z)).join(', ')} (bouclier ${b}).`);
   return { ok:true, ev:[] };
 }
 function soigner(S, hi, idDe, cibleI) {
-  const h = S.heros[hi], d = h.des.find(z => z.id === idDe), c = S.heros[cibleI]; if (h.id !== 'pip' && !a_t(h, 'guerisseur')) return 'Ce héros ne sait pas soigner.';
+  const h = S.heros[hi], d = h.des.find(z => z.id === idDe), c = S.heros[cibleI]; // 17/11 (choix de l'utilisateur) : tout héros soigne un ami à côté de la moitié d'un dé ; Pip, du dé entier (et ses bonus)
   if (!d || !c || (c !== h && !voisins(h, c))) return 'Il faut être à côté de l’ami.'; if (d.pas) return 'Un dé 👣 sert à marcher ou à agir, pas à soigner.';
-  prendDe(h, idDe); const av = c.pv; c.pv = Math.min(c.pvmax, c.pv + (h.id === 'pip' ? d.v : Math.ceil(d.v / 2))); if (c.aTerre && c.pv > 0) c.aTerre = false;
-  const ev = [{ t:'soin', h:cibleI }]; if (h.id === 'pip' && pwA(h, 'passif', 'C')) { const b = 2 + pwB3(h, 'passif'); c.bouclier += b; ev.push(pwEv(h, hi, 'passif', ['h' + cibleI])); log(S, `💧 Sève partagée : ${nm(c)} gagne aussi bouclier ${b}.`); }
+  prendDe(h, idDe); remplit(S, h, 1); const av = c.pv; c.pv = Math.min(c.pvmax, c.pv + (h.id === 'pip' ? d.v : Math.ceil(d.v / 2))); if (c.aTerre && c.pv > 0) c.aTerre = false;
+  const ev = [{ t:'soin', h:cibleI }]; if (h.id === 'pip' && pwA(h, 'passif', 'C')) { const b = 3 + pwB3(h, 'passif'); c.bouclier += b; ev.push(pwEv(h, hi, 'passif', ['h' + cibleI])); log(S, `💧 Sève partagée : ${nm(c)} gagne aussi bouclier ${b}.`); }
   log(S, `🌿 ${nm(h)} soigne ${nm(c)} : +${c.pv - av} PV.`); return { ok:true, ev };
 }
 function donner(S, hi, idDe, cibleI) {
@@ -610,7 +629,7 @@ function donner(S, hi, idDe, cibleI) {
 function relever(S, hi, idDe, cibleI) {
   const h = S.heros[hi], c = S.heros[cibleI]; if (!c || !c.aTerre || !voisins(h, c)) return 'Il faut être à côté de l’ami à terre.';
   if ((S.releves || 0) >= 3) return 'Plus de relève possible : 3 par partie, c’est déjà fait. Une potion peut encore aider.'; // 16/11 (l'utilisateur)
-  if (!prendDe(h, idDe)) return 'Pas de dé.'; S.releves = (S.releves || 0) + 1; c.aTerre = false; c.pv = 4; log(S, `✋ ${nm(h)} relève ${nm(c)}.`); return { ok:true, ev:[{ t:'soin', h:cibleI }] };
+  if (!prendDe(h, idDe)) return 'Pas de dé.'; remplit(S, h, 1); S.releves = (S.releves || 0) + 1; c.aTerre = false; c.pv = 4; log(S, `✋ ${nm(h)} relève ${nm(c)}.`); return { ok:true, ev:[{ t:'soin', h:cibleI }] };
 }
 // chercher les pièges autour de soi (2 cases)
 function fouiller(S, hi, idDe) {
@@ -651,7 +670,7 @@ function agir(S, hi, idDe, x, y) {
   if (dist(h, { x, y }) > 1) return 'Il faut être à côté.';
   if (o.meuble) return fouilleMeuble(S, hi, idDe, x, y, o);
   if (o.t === 'levier') { if (d.v < o.v) return `Ce levier demande un ${o.v} ou plus.`; if (R.leviersTour[cle(x, y)]) return 'Ce levier est déjà baissé.';
-    prendDe(h, idDe); R.leviersTour[cle(x, y)] = S.dureeLevier || 2; const n = Object.keys(R.leviersTour).length;
+    prendDe(h, idDe); remplit(S, h, 1); R.leviersTour[cle(x, y)] = S.dureeLevier || 2; const n = Object.keys(R.leviersTour).length;
     const LV = [`${nm(h)} s’arc-boute sur le levier… CLAC ! Quelque part sous le sol, un engrenage se met à tourner`, `${nm(h)} tire le levier de tout son poids : un long grincement court dans les murs`, `${nm(h)} abaisse le levier : une aiguille de cuivre avance d’un cran au-dessus de la porte de bronze`, `${nm(h)} pousse le levier jusqu’en bas : les tuyaux crachent un jet de vapeur`];
     log(S, `🎚 ${LV[(n - 1) % LV.length]} (${n}/4 baissés, il tient ${S.dureeLevier || 2} tour${(S.dureeLevier || 2) > 1 ? 's' : ''}).`);
     if (n >= 4 && !R.bronze) { R.bronze = true; S.sablier += 3; log(S, '🎚🎚🎚🎚 Les quatre leviers sont baissés ensemble : un grondement sourd… la PORTE DE BRONZE s’est déverrouillée (+3 grains) !'); }
@@ -715,6 +734,7 @@ function blesseHeros(S, h, n, percant) {
   if (S.rempart >= S.R.tour) n = Math.ceil(n / 2); // Rempart vivant de Maëlle
   if (h.demi) { n = Math.ceil(n / 2); h.demi = false; } // Repli d'Oria
   const b = Math.min(h.bouclier, percant ? Math.floor(n / 2) : n); h.bouclier -= b; n -= b; h.pv -= n;
+  if (n > 0 && h.pw) { h.pertes = (h.pertes || 0) + n; const k = Math.floor(h.pertes / 3); if (k) { h.pertes -= 3 * k; remplit(S, h, k); } }
   if (h.pv <= 0 && !S.serment) { const al = S.heros.find(z => z.id === 'aldric' && !z.aTerre && pwA(z, 'passif', 'C') && (z === h || voisins(z, h))); if (al) { S.serment = true; h.pv = 1; log(S, `🤝 Le Serment d’Aldric : ${nm(h)} reste debout à 1 PV !`); (S.evPw = S.evPw || []).push(pwEv(al, S.heros.indexOf(al), 'passif', ['h' + S.heros.indexOf(h)])); } }
   if (h.pv <= 0) { h.pv = 0; h.aTerre = true; h.des = [];
     if (h.porte) { h.porte = false; const c = [[1, 0], [-1, 0], [0, 1], [0, -1]].map(([dx, dy]) => [h.x + dx, h.y + dy]).find(([x, y]) => libre(S, x, y) && !S.R.obj[cle(x, y)]); if (c) S.R.obj[cle(c[0], c[1])] = { t:'rouage' }; }
@@ -730,10 +750,12 @@ function finTour(S) {
   const plusProche = m => debout().filter(h => memeEtage(h, m)).sort((a, b) => dist(a, m) - dist(b, m))[0];
   const marche = (m, cible, n) => { const de = [m.x, m.y]; marche1(m, cible, n); if (m.x !== de[0] || m.y !== de[1]) ev.push({ t:'pas', m:m.id, de }); };
   const marche1 = (m, cible, n) => { for (let i = 0; i < n; i++) { if (!cible || contact(S, m, cible)) return;
-    const opts = [[1, 0], [-1, 0], [0, 1], [0, -1]].map(([dx, dy]) => [m.x + dx, m.y + dy]).filter(([x, y]) => libre(S, x, y, m) && !herosEn(S, x, y) && R.vu[cle(x, y)] && !(R.portes[cle(x, y)] && !R.portes[cle(x, y)].ouverte));
+    const opts = [[1, 0], [-1, 0], [0, 1], [0, -1]].map(([dx, dy]) => [m.x + dx, m.y + dy]).filter(([x, y]) => libre(S, x, y, m) && !herosEn(S, x, y) && R.vu[cle(x, y)] && !(R.portes[cle(x, y)] && !R.portes[cle(x, y)].ouverte) && !(R.liens && R.liens[cle(x, y)]));
     if (!opts.length) return; opts.sort((a, b) => dist({ x:a[0], y:a[1] }, cible) - dist({ x:b[0], y:b[1] }, cible));
     if (dist({ x:opts[0][0], y:opts[0][1] }, cible) >= dist(m, cible)) return; [m.x, m.y] = opts[0]; } };
   const fumee = R.fumee; R.fumee = false;
+  // 17/11 (bug mesuré) : un monstre posé sur un bout d'escalier ne voyait plus personne et bloquait le passage : il en descend d'une case
+  if (R.liens) for (const m of R.monstres) { if (!R.liens[cle(m.x, m.y)] || BETES[m.b].immobile) continue; const c = [[1, 0], [-1, 0], [0, 1], [0, -1]].map(([dx, dy]) => [m.x + dx, m.y + dy]).find(([x, y]) => libre(S, x, y, m) && !herosEn(S, x, y) && !R.liens[cle(x, y)]); if (c) [m.x, m.y] = c; }
   pwLouves(S, ev); // 16/11 nuit : la louve de Pip mord avant que les monstres jouent
   for (const m of R.monstres.slice()) {
     if (fumee) break;
@@ -748,6 +770,7 @@ function finTour(S) {
     const seul = B.lache ? debout().filter(h => memeEtage(h, m) && !S.heros.some(z => z !== h && !z.aTerre && voisins(z, h))).sort((a, b) => dist(a, m) - dist(b, m))[0] : null;
     const c = seul && dist(seul, m) <= B.mv + 2 ? seul : plusProche(m);
     if (!c || dist(m, c) > 8) continue;
+    if (m.it === 'charge') { log(S, `⚡ ${m.n} se ramasse pour charger : au début de votre tour, il frappera ${m.att + 2} chaque héros collé à lui (éloignez-vous ou protégez-vous).`); ev.push({ t:'elan', m:m.id }); continue; }
     if (m.it === 'elan') { m.charge = m.sceaux.filter(s => s.ok).length; log(S, `⚡ ${m.n} prend son élan… au prochain tour, il frappera de +2, sauf si vous lui brisez un sceau d’ici là !`); ev.push({ t:'elan', m:m.id }); marche(m, c, 1); continue; }
     if (m.it === 'garde') { const s = m.sceaux.find(x => x.ok && x.t !== 'tot'); if (s) { s.ok = false; s.val = 0; } ev.push({ t:'garde', m:m.id }); continue; }
     if (m.it === 'soin') { const o = R.monstres.find(z => z !== m && z.sceaux.some(s => s.ok) && dist(z, m) <= 4); if (o) { const s = o.sceaux.find(x => x.ok); s.ok = false; s.val = 0; s.reste = s.t === 'tot' ? s.v : 0; log(S, `💚 ${m.n} répare ${o.n}.`); } ev.push({ t:'soin', m:m.id }); continue; }
@@ -782,7 +805,10 @@ function finTour(S) {
       if (Bo.phase === 0) { marche(Bo, c, 1); balancier(Bo.att); for (let i = 0; i < 2; i++) { const p = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [-1, -1]].map(([dx, dy]) => [Bo.x + dx, Bo.y + dy]).find(([x, y]) => libre(S, x, y) && !herosEn(S, x, y)); if (p) ajouteMonstre(S, SCEN[S.scen || 'horloger'].renfort, p[0], p[1]); } log(S, `⏰ ${SCEN[S.scen || 'horloger'].phases[0]} : deux renforts !`); }
       else if (Bo.phase === 1) { marche(Bo, c, 1); balancier(Bo.att); debout().filter(h => !contact(S, Bo, h) && dist(h, Bo) <= 2).forEach(h => { const perdu = blesseHeros(S, h, 2, true); ev.push({ t:'frappe', m:'boss', h:S.heros.indexOf(h), v:perdu }); });
         debout().forEach(h => { if (!S.heros.some(z => z !== h && !z.aTerre && voisins(z, h))) h.carillon = true; }); log(S, '🔔 Le Carillon sonne ! L’onde frappe à 2 cases (−2) ; ceux qui sont seuls perdront leur plus gros dé.'); }
-      else { const bl = debout().sort((a, b) => a.pv - b.pv)[0]; if (bl) { const p = (R.depart || [[1, 1], [2, 1], [1, 2], [2, 2], [3, 1], [3, 2]]).find(([x, y]) => !herosEn(S, x, y) && libre(S, x, y)) || (R.depart ? R.depart[0] : [1, 1]); bl.x = p[0]; bl.y = p[1]; blesseHeros(S, bl, Bo.att + 1, true); log(S, `⏳ La Dernière Heure : ${nm(bl)} est renvoyé dans le hall d’entrée (−${Bo.att + 1}).`); } marche(Bo, plusProche(Bo), 1); balancier(Bo.att); }
+      else { const bl = debout().length >= 2 ? debout().sort((a, b) => a.pv - b.pv)[0] : null; // 17/11 (bug mesuré) : le dernier héros debout n'est jamais renvoyé ; on renvoie sur le PALIER DU SOMMET, plus dans le hall
+        if (bl) { const pal = []; if (R.plan === 2) for (let x = 3; x <= 20; x++) if (libre(S, x, 5) && !herosEn(S, x, 5)) pal.push([x, 5]); pal.sort((a, b) => Math.abs(a[0] - 15) - Math.abs(b[0] - 15));
+          const p = pal[0] || (R.depart || [[1, 1], [2, 1], [1, 2], [2, 2], [3, 1], [3, 2]]).find(([x, y]) => !herosEn(S, x, y) && libre(S, x, y)) || (R.depart ? R.depart[0] : [1, 1]); bl.x = p[0]; bl.y = p[1]; blesseHeros(S, bl, Bo.att + 1, true); log(S, `⏳ La Dernière Heure : ${nm(bl)} est rejeté hors du Cœur, sur le palier (−${Bo.att + 1}).`); }
+        marche(Bo, plusProche(Bo), 1); balancier(Bo.att); }
       ev.push({ t:'boss' });
     }
     Bo.repos = !Bo.repos; Bo.riposte = {};
@@ -791,7 +817,7 @@ function finTour(S) {
   S.sablier = Math.max(0, S.sablier - 1); if (S.sablier === 0) log(S, '⌛ Le sablier est vide : le temps se fige, chaque héros a un dé de moins.');
   if (!debout().length) { S.fin = 'perdu'; log(S, '❄ Tous les héros sont à terre…'); return ev; }
   R.frappeurs = {}; voir(S);
-  debutTour(S); return ev;
+  ev.push(...(debutTour(S) || [])); return ev;
 }
 
 // passer d'un étage à l'autre quand on est DÉJÀ sur le bout d'un escalier : gratuit
@@ -832,6 +858,11 @@ function pause(S) {
 // Chaque héros arrive avec h.pw = { garde:{ v, rang }, pouvoir, passif, ultime } (pouvoirs-heros.js, préréglage Groupe ou Solo).
 // Garde = la façon de PROTÉGER ; Pouvoir = une COMBINAISON de dés (bouton ✨) ; Passif = toujours actif ; Ultime = une combinaison, UNE fois par partie.
 // Le rang (0 à 10) ajoute +1 tous les 3 rangs au chiffre principal (sauf texte contraire). Sans h.pw (vieille partie) : rien ne change.
+// 17/11 (choix de l'utilisateur, mesuré : « une fois par partie » était trop peu) : LA JAUGE D'ULTIME, comme le Duel : +1 par dé posé
+// (frapper, protéger, soigner, relever, levier, pouvoir) et +1 tous les 3 PV perdus ; pleine (12) = l'ultime est prêt ; il la vide.
+const JAUGE_ULT = 12;
+const jaugeMax = S => S && S.jaugeMax || JAUGE_ULT;
+function remplit(S, h, n) { if (!h || !h.pw || !h.pw.ultime || h.aTerre || !n) return; const av = h.jauge || 0; h.jauge = Math.min(jaugeMax(S), av + n); if (av < jaugeMax(S) && h.jauge >= jaugeMax(S)) { log(S, `⚡ La jauge d’Ultime de ${nm(h)} est pleine !`); (S.evPw = S.evPw || []).push({ t:'jauge', h:S.heros.indexOf(h) }); } }
 const pwV = (h, e) => h && h.pw && h.pw[e] ? h.pw[e].v : null;
 const pwA = (h, e, v) => pwV(h, e) === v;
 const pwR = (h, e) => h && h.pw && h.pw[e] ? h.pw[e].rang || 0 : 0;
@@ -840,12 +871,12 @@ const pwEv = (h, hi, emp, cibles) => ({ t:'pouvoir', cl:h.id, emp, v:pwV(h, emp)
 const COMBOS = ['paire', 'paire45', 'paire56', 'brelan', 'suite3', 'suite4', 'pairs3', 'impairs3', 'pi3', 'diff3', 'bas3', 'haut3', 'haut34', 'somme12'];
 // la combinaison de chaque pouvoir et ultime (les mêmes que le catalogue pouvoirs-heros.js)
 const PW_CO = {
-  pip:{ pouvoir:{ A:'paire45', B:'suite3', C:'pairs3' }, ultime:{ A:'bas3', B:'haut3' } },
-  maelle:{ pouvoir:{ A:'paire', B:'brelan', C:'suite3' }, ultime:{ A:'haut34', B:'brelan' } },
-  aldric:{ pouvoir:{ A:'paire56', B:'impairs3', C:'suite3' }, ultime:{ A:'brelan', B:'haut34' } },
-  oria:{ pouvoir:{ A:'suite3', B:'paire', C:'pairs3' }, ultime:{ A:'suite3', B:'haut3' } },
-  gorm:{ pouvoir:{ A:'pi3', B:'paire', C:'suite3' }, ultime:{ A:'pi3', B:'suite4' } },
-  zephine:{ pouvoir:{ A:'diff3', B:'suite3', C:'impairs3' }, ultime:{ A:'somme12', B:'haut3' } },
+  pip:{ pouvoir:{ A:'paire45', B:'suite3', C:'pairs3' }, ultime:{ A:'bas3', B:'haut34' } }, // 17/11 : les ultimes trop rares → trois dés de 4 ou plus
+  maelle:{ pouvoir:{ A:'paire', B:'paire56', C:'suite3' }, ultime:{ A:'haut34', B:'haut34' } },
+  aldric:{ pouvoir:{ A:'paire56', B:'impairs3', C:'suite3' }, ultime:{ A:'haut34', B:'haut34' } },
+  oria:{ pouvoir:{ A:'paire', B:'paire', C:'pairs3' }, ultime:{ A:'suite3', B:'haut34' } },
+  gorm:{ pouvoir:{ A:'pi3', B:'paire', C:'suite3' }, ultime:{ A:'pi3', B:'suite3' } },
+  zephine:{ pouvoir:{ A:'diff3', B:'suite3', C:'impairs3' }, ultime:{ A:'somme12', B:'haut34' } },
 };
 // les dés qui forment la combinaison (ou null)
 function trouveCombo(des, co) {
@@ -924,7 +955,7 @@ function pwMoinsCoup(S, c) {
 function pwApresCoup(S, m, c, ev) {
   const hi = S.heros.indexOf(c);
   if (c.epines && touchable(S, m)) { c.epines = 0; briseN(S, m, 1, null, ev); log(S, `🌵 Les épines de ${nm(c)} : ${m.n} perd un sceau.`); ev.push({ t:'pouvoir', cl:c.id, emp:'garde', v:pwV(c, 'garde'), h:hi, cibles:[idM(S, m)] }); }
-  else if (c.id === 'pip' && pwA(c, 'passif', 'B') && touchable(S, m)) { briseN(S, m, 1, null, ev); log(S, `🥀 Ronces vivantes : ${m.n} perd un sceau en frappant Pip.`); ev.push(pwEv(c, hi, 'passif', [idM(S, m)])); }
+  else if (c.id === 'pip' && pwA(c, 'passif', 'B') && touchable(S, m)) { briseN(S, m, 1, null, ev); if (m !== S.R.boss) entrave(S, m, 2); log(S, `🥀 Ronces vivantes : ${m.n} perd un sceau en frappant Pip${m !== S.R.boss ? ' et reste pris dans les ronces au prochain tour' : ''}.`); ev.push(pwEv(c, hi, 'passif', [idM(S, m)])); }
   if (c.id === 'maelle' && pwA(c, 'passif', 'B') && !c.aTerre) c.bonusP = Math.min(3, (c.bonusP || 0) + 1);
 }
 const pwSansCarillon = (S, h) => (h.id === 'gorm' && pwA(h, 'passif', 'C')) || S.heros.some(z => z.id === 'aldric' && !z.aTerre && pwA(z, 'passif', 'A') && (z === h || voisins(z, h)));
@@ -932,29 +963,30 @@ const pwSansCarillon = (S, h) => (h.id === 'gorm' && pwA(h, 'passif', 'C')) || S
 function pwDebutTour(S) {
   S.heros.forEach((h, i) => {
     h.echo = !h.aTerre && S.heros.some(g => g !== h && g.id === 'gorm' && !g.aTerre && pwA(g, 'passif', 'B') && dist(g, h) <= 2);
-    if (h.id === 'pip' && pwA(h, 'passif', 'A') && !h.louve && !h.aTerre) { const six = h.des.filter(d => d.v === 6).length; if (six) { h.meute = (h.meute || 0) + six; const besoin = pwR(h, 'passif') >= 10 ? 2 : 3;
-      log(S, `🐾 L’Appel de l’Alpha : ${Math.min(h.meute, besoin)}/${besoin} marqueurs.`); if (h.meute >= besoin) { h.louve = true; log(S, '🐺 La louve rejoint Pip ! À chaque fin de tour, elle mord un monstre collé à Pip.'); (S.evPw = S.evPw || []).push(pwEv(h, i, 'passif', ['h' + i])); } } }
+    if (h.id === 'pip' && pwA(h, 'passif', 'A') && !(h.louve >= S.R.tour) && !h.aTerre) { const six = h.des.filter(d => d.v === 6).length; if (six) { h.meute = (h.meute || 0) + six; const besoin = pwR(h, 'passif') >= 10 ? 2 : 3;
+      log(S, `🐾 L’Appel de l’Alpha : ${Math.min(h.meute, besoin)}/${besoin} marqueurs.`); if (h.meute >= besoin) { h.louve = S.R.tour + 2; h.meute = 0; log(S, '🐺 La louve rejoint Pip pour 3 tours ! À chaque fin de tour, elle mord un monstre collé à Pip.'); (S.evPw = S.evPw || []).push(pwEv(h, i, 'passif', ['h' + i])); } } }
   });
 }
 // à la fin du tour, avant les monstres : la louve (passif) et la louve géante (ultime) de Pip
 function pwLouves(S, ev) {
   S.heros.forEach((h, i) => { if (h.aTerre) return;
     if (h.chasse >= S.R.tour) { const L = collesA(S, h); L.forEach(m => briseN(S, m, 1, null, ev)); if (L.length) { log(S, `🌕 La louve géante mord ${L.map(m => m.n).join(', ')}.`); ev.push(pwEv(h, i, 'ultime', L.map(m => idM(S, m)))); } }
-    else if (h.louve) { const m = collesA(S, h)[0]; if (m) { briseN(S, m, 1, null, ev); log(S, `🐺 La louve mord ${m.n} : un sceau se brise.`); ev.push(pwEv(h, i, 'passif', [idM(S, m)])); } }
+    else if (h.louve >= S.R.tour) { const m = collesA(S, h)[0]; if (m) { briseN(S, m, 1, null, ev); log(S, `🐺 La louve mord ${m.n} : un sceau se brise.`); ev.push(pwEv(h, i, 'passif', [idM(S, m)])); } }
   });
 }
 // ce qu'un pouvoir ou l'ultime ferait maintenant : { ok, raison, des, cible }
 function pwInfo(S, hi, emp) {
   const h = S.heros[hi]; if (!h || !h.pw || h.aTerre) return { ok:false, raison:'Pas de pouvoir.' };
   const v = pwV(h, emp), co = ((PW_CO[h.id] || {})[emp] || {})[v]; if (!co) return { ok:false, raison:'Pas de pouvoir.' };
-  if (emp === 'ultime' && h.ultUsed) return { ok:false, co, raison:'L’ultime a déjà servi dans cette partie.' };
+  if (emp === 'ultime' && (h.jauge || 0) < jaugeMax(S)) return { ok:false, co, raison:`La jauge d’Ultime n’est pas pleine (${h.jauge || 0} / ${jaugeMax(S)}) : +1 par dé posé, +1 tous les 3 PV perdus.` };
+  if (emp === 'pouvoir' && h.id === 'gorm' && v === 'B' && h.souffleT === S.R.tour) return { ok:false, co, raison:'Le Second souffle sert une fois par tour.' };
   const des = trouveCombo(h.des, co); if (!des) return { ok:false, co, raison:'Les dés ne forment pas la combinaison.' };
   const r = pwEffet(S, hi, emp, des, true); return Object.assign({ co, des:des.map(d => d.id) }, r);
 }
 // déclencher (après « Valider ») : les dés de la combinaison sont utilisés
 function lancerPouvoir(S, hi, emp) {
   const I = pwInfo(S, hi, emp); if (!I.ok) return I.raison;
-  const h = S.heros[hi], des = I.des.map(id => prendDe(h, id)); if (emp === 'ultime') h.ultUsed = true;
+  const h = S.heros[hi], des = I.des.map(id => prendDe(h, id)); if (emp === 'ultime') { h.jauge = 0; h.ultUsed = true; } else remplit(S, h, des.length); if (emp === 'pouvoir' && h.id === 'gorm') h.souffleT = S.R.tour;
   return pwEffet(S, hi, emp, des, false);
 }
 // l'effet de chaque pouvoir et ultime ; essai = true : on regarde seulement (rien ne change)
@@ -988,9 +1020,9 @@ function pwEffet(S, hi, emp, des, essai) {
     case 'oria:ultime:A': { const P2 = Object.values(R.obj).filter(o => o.t === 'piege' && !o.trouve); if (!essai) { P2.forEach(o => o.vu = true); S.sablier += 3; } return fin([], `la Carte du monde : ${P2.length} piège${P2.length > 1 ? 's' : ''} dévoilé${P2.length > 1 ? 's' : ''}, +3 grains au sablier.`); }
     case 'oria:ultime:B': { const L = aDist(S, h, 4); if (!L.length) return non('Aucun monstre à 4 cases.'); if (!essai) L.forEach(m => briseN(S, m, 1, null, ev)); return fin(L.map(m => idM(S, m)), `une pluie de flèches : un sceau de ${L.map(m => m.n).join(', ')}.`); }
     case 'gorm:pouvoir:A': { if (!essai) debout.forEach(z => z.bonusT = { v:1 + b3, fin:R.tour }); return fin(debout.map(z => 'h' + S.heros.indexOf(z)), `chant de guerre : +${1 + b3} sur les sceaux « ≥ » et « Σ » pour tout le groupe ce tour.`); }
-    case 'gorm:pouvoir:B': { const n = h.des.filter(d => !d.pas && !des.includes(d)).length + 2; if (!essai) { h.des = h.des.filter(d => d.pas); for (let i = 0; i < n; i++) h.des.push({ id:'d' + S.seq++, v:de6(S), b:0 }); } return fin(['h' + hi], `Gorm relance ${n} dés.`); }
-    case 'gorm:pouvoir:C': { const L = collesA(S, h); if (!L.length) return non('Aucun monstre collé à Gorm.'); if (!essai) L.forEach(m => briseN(S, m, 1, null, ev)); return fin(L.map(m => idM(S, m)), `coup de tonnerre : un sceau de ${L.map(m => m.n).join(', ')}.`); }
-    case 'gorm:ultime:A': { const L = aDist(S, h, 3); if (!L.length) return non('Aucun monstre à 3 cases.'); if (!essai) L.forEach(m => briseN(S, m, 2, null, ev)); return fin(L.map(m => idM(S, m)), `le Grand Souffle brise 2 sceaux de ${L.map(m => m.n).join(', ')}.`); }
+    case 'gorm:pouvoir:B': { if (h.souffleT === R.tour) return non('Le Second souffle sert une fois par tour.'); const n = h.des.filter(d => !d.pas && !des.includes(d)).length + 1; if (!essai) { h.des = h.des.filter(d => d.pas); for (let i = 0; i < n; i++) h.des.push({ id:'d' + S.seq++, v:de6(S), b:0 }); } return fin(['h' + hi], `Gorm relance ${n} dés.`); } // 17/11 : Second souffle une fois par tour, +1 dé (avant : +2, sans limite)
+    case 'gorm:pouvoir:C': { const L = collesA(S, h).slice(0, 2); if (!L.length) return non('Aucun monstre collé à Gorm.'); if (!essai) L.forEach(m => briseN(S, m, 1, null, ev)); return fin(L.map(m => idM(S, m)), `coup de tonnerre : un sceau de ${L.map(m => m.n).join(', ')}.`); }
+    case 'gorm:ultime:A': { const L = aDist(S, h, 3); if (!L.length) return non('Aucun monstre à 3 cases.'); if (!essai) L.forEach(m => briseN(S, m, m === R.boss ? 2 : 1, null, ev)); return fin(L.map(m => idM(S, m)), `le Grand Souffle brise un sceau de ${L.map(m => m.n).join(', ')}${L.includes(R.boss) ? ' (deux à l’Horloger)' : ''}.`); } // 17/11 : avant, 2 sceaux à chacun
     case 'gorm:ultime:B': { if (!essai) debout.forEach(z => { const n = z.des.filter(d => !d.pas && !des.includes(d)).length; z.des = z.des.filter(d => d.pas); for (let i = 0; i < n; i++) z.des.push({ id:'d' + S.seq++, v:de6(S), b:0 }); }); return fin(debout.map(z => 'h' + S.heros.indexOf(z)), 'le grand cor : tout le groupe relance ses dés.'); }
     case 'zephine:pouvoir:A': { let best = null; debout.filter(z => z === h || dist(z, h) <= 2).forEach(z => z.des.forEach(d => { if (!d.pas && !des.includes(d) && d.v < 6 && (!best || d.v < best.d.v)) best = { z, d }; })); if (!best) return non('Personne à 2 cases n’a un dé à changer.'); const av0 = best.d.v; if (!essai) { best.d.v = 6; best.d.mod = true; } return fin(['h' + S.heros.indexOf(best.z)], `le ${av0} de ${nm(best.z)} devient un 6.`); }
     case 'zephine:pouvoir:B': { const L = aDist(S, h, 3).slice(0, 3); if (!L.length) return non('Aucun monstre à 3 cases.'); if (!essai) L.forEach(m => briseN(S, m, 1, null, ev)); return fin(L.map(m => idM(S, m)), `la chaîne d’éclairs brise un sceau de ${L.map(m => m.n).join(', ')}.`); }
@@ -1006,7 +1038,7 @@ function transmuter(S, hi, idDe) {
   if (h.id !== 'zephine' || !pwA(h, 'passif', 'A')) return 'Seule Zéphine (Transmutation) sait retourner un dé.'; if (h.transT === S.R.tour) return 'Une fois par tour.';
   const av = d.v; d.v = 7 - d.v; d.mod = true; h.transT = S.R.tour; log(S, `🔄 Transmutation : le ${av} de Zéphine devient un ${d.v}.`); return { ok:true, ev:[pwEv(h, hi, 'passif', ['h' + hi])] };
 }
-const API = { miseAJour:S => { if (S && S.R && S.R.plan === 2) { elargitPortes(S); majBibliotheque(S); majBibliotheque3(S); majBibliotheque5(S); majAutel2(S); } return S; }, benir, ETAL, acheter, pause, echanger, prendreEscalier, moitiesPorte, presDePorte, rectSalle, etageDe, COULOIRS_Z2, CAPA, phasesDe, grilleOuverte, contact, pasDe, aPortee, SAC, utiliser, SCEN, HEROS_C, BETES, PHASES, SALLES, OBJETS, MEUBLE_N, nouvelle, atteignables, bouger, frapper, proteger, soigner, donner, relever, fouiller, agir, ouvrir,
+const API = { JAUGE_ULT, GRANDIT, miseAJour:S => { if (S && S.R && S.R.plan === 2) { elargitPortes(S); majBibliotheque(S); majBibliotheque3(S); majBibliotheque5(S); majAutel2(S); } return S; }, benir, ETAL, acheter, pause, echanger, prendreEscalier, moitiesPorte, presDePorte, rectSalle, etageDe, COULOIRS_Z2, CAPA, phasesDe, grilleOuverte, contact, pasDe, aPortee, SAC, utiliser, SCEN, HEROS_C, BETES, PHASES, SALLES, OBJETS, MEUBLE_N, nouvelle, atteignables, bouger, frapper, proteger, soigner, donner, relever, fouiller, agir, ouvrir,
   finTour, visible, accepte, voisins, dist, herosEn, cle, libre, reveille, pwInfo, lancerPouvoir, transmuter, trouveCombo, PW_CO, COMBOS };
 if (typeof module !== 'undefined' && module.exports) module.exports = API; else racine.CHRON = API;
 })(typeof window !== 'undefined' ? window : globalThis);
