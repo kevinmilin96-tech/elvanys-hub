@@ -148,6 +148,7 @@ const GM = (() => {
         ${window.GS ? `<button class="a" data-k="compte">☁ Mon compte et ma sauvegarde</button>` : ''}
         <button class="a" data-k="p">📜 Mes parties (le journal de chaque partie)</button>
         <a class="a" href="duel.html?tuto=1">🎓 Rejouer le tutoriel</a>
+        <a class="a" href="a-valider.html">🛠 Pages de travail : à valider</a>${location.hostname === 'perso.elvanys.fr' ? '<a class="a" href="/">🛠 Le laboratoire perso</a>' : ''}
         <a class="a" href="#" onclick="Object.keys(localStorage).filter(k => k.startsWith('guilde-guide-') || k === 'guilde-exp-guide').forEach(k => localStorage.removeItem(k)); this.textContent = '🐱 C’est fait : Moustache vous guidera à nouveau'; return false">🐱 Revoir les guides de Moustache</a>
         <button class="f" data-k="x">Fermer</button></div>`; };
       dessine(); document.body.appendChild(z);

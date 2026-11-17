@@ -194,10 +194,7 @@ fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.te
   <div class="points" id="points"></div>
   <p class="desc" id="desc"></p>
   <div class="petits">
-    <a href="duel.html?parties=1"><b>📜</b>Mes parties</a>
-    <a href="a-valider.html"><b>📝</b>À valider</a>
     <a href="#" id="versmenu" style="display:none" onclick="location.hash = ''; return false"><b>🏰</b>Menu</a>
-    <a href="https://demo-hub.elvanys.fr/"><b>⌂</b>Retour au Hub</a>
   </div>
   <p class="bas">Prototype · images provisoires en attendant les peintures</p>
 </div>
@@ -458,10 +455,28 @@ function profilMenu() {
   m.innerHTML = bt('👤 Mon profil', "try{sessionStorage.setItem('guilde-dans-mode','1')}catch(e){};location.href='profil.html'")
     + bt(`👥 Mes amis${dem ? ` <b style="color:#ff5a5a">· ${dem} demande${dem > 1 ? 's' : ''}</b>` : n ? ` <b style="color:#7dffb0">· ${n} en ligne</b>` : ''}`, 'amisFenetre()')
     + bt('🤝 Entre amis', "location.hash='enligne'")
+    + bt('📊 Mon parcours (mes parties)', "try{sessionStorage.setItem('guilde-dans-mode','1')}catch(e){};location.href='profil.html#parcours'")
     + bt('🏰 Mes héros', "try{sessionStorage.setItem('guilde-dans-mode','1')}catch(e){};location.href='mes-heros.html'")
     + bt('🃏 Les pouvoirs des héros', "try{sessionStorage.setItem('guilde-dans-mode','1')}catch(e){};location.href='pouvoirs.html?retour=menu.html'"); // 16/11 nuit : la page « build »
   document.body.appendChild(m);
   setTimeout(() => document.addEventListener('click', function f(e) { if (!m.contains(e.target) && e.target.id !== 'profil-bouton') { m.remove(); document.removeEventListener('click', f); } }), 0);
+}
+// 17/11 (l'utilisateur : « un menu en bas avec paramètres, icône de profil, messagerie ») : LA BARRE DU BAS du menu ;
+// le haut de l'écran est dégagé (le 👤, le ⚙️ et le 📬 flottants sont cachés ici)
+{ const st = document.createElement('style'); st.textContent = `#profil-bouton, #gm-bouton, #boite-bouton { display:none !important; }
+    #barre-bas { position:fixed; left:0; right:0; bottom:0; z-index:950; display:grid; grid-template-columns:repeat(4, 1fr); gap:4px; padding:6px 8px calc(6px + env(safe-area-inset-bottom)); background:#110e22f2; border-top:1px solid #f3c96b55; box-shadow:0 -6px 20px #0008; }
+    #barre-bas button { position:relative; background:none; border:0; color:#f1ecff; font:13px Georgia, serif; padding:4px 0; cursor:pointer; } #barre-bas button b { display:block; font-size:22px; line-height:1.2; }
+    #barre-bas .pt { position:absolute; top:0; left:calc(50% + 6px); min-width:17px; height:17px; line-height:17px; border-radius:9px; font:bold 11px Georgia; padding:0 4px; }
+    body { padding-bottom:calc(66px + env(safe-area-inset-bottom)); }`; document.head.appendChild(st);
+  const bb = document.createElement('nav'); bb.id = 'barre-bas';
+  bb.innerHTML = `<button id="bb-profil" onclick="profilMenu()"><b>👤</b>Profil</button><button id="bb-amis" onclick="amisFenetre()"><b>👥</b>Amis</button><button id="bb-boite" onclick="amisBoite()"><b>📬</b>Boîte</button><button id="bb-param" onclick="GM.parametres()"><b>⚙️</b>Paramètres</button>`;
+  document.body.appendChild(bb);
+  const pastille = (id, n, coul, txt) => { const b = document.getElementById(id); if (!b) return; let s = b.querySelector('.pt'); if (!n) { if (s) s.remove(); return; } if (!s) { s = document.createElement('span'); s.className = 'pt'; b.appendChild(s); } s.textContent = n; s.style.background = coul; s.style.color = txt; };
+  window.amisPastille = (n, dem) => pastille('bb-amis', dem || n, dem ? '#ff5a5a' : '#7dffb0', dem ? '#fff' : '#0a2a14');
+  window.boitePastille = n => pastille('bb-boite', n, '#f3c96b', '#2b1d0a');
+  // le petit menu du 👤 s'ouvre au-dessus de la barre
+  if (typeof amisBouton === 'function') amisBouton();
+  const pm = profilMenu; window.profilMenu = function () { pm(); const m = document.getElementById('profil-menu'); if (m) { m.style.top = 'auto'; m.style.bottom = 'calc(70px + env(safe-area-inset-bottom))'; } };
 }
 </script>
 </body>
