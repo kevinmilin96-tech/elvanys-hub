@@ -96,6 +96,8 @@ function vignettes(c, E, choisie, ouvert) {
     return `<button class="vig ${X.v === v ? 'vue' : ''} ${X.v === choisie ? 'choisi' : ''} ${f ? 'ferme' : ''}" style="--pc:${X.c}" onclick="vue['${E.k}']='${X.v}';fhSon('choisir');dessine()"><span class="em">${pwIcone(c, E.k, X, 34)}</span><span class="vn">${X.n}</span><span class="vb">${f ? '🔒' : X.v === choisie ? '✓' : ''}</span></button>`; }).join('')}</div>
     <div class="detail" style="--pc:${D.c}"><div class="ico"><span class="em">${pwIcone(c, E.k, D, 40)}</span><div><div class="nom">${D.n}</div><span class="role">${roleTxt(D.r)}</span></div></div>
       ${D.co ? `<p>🎲 <b>${PW_COMBOS[D.co]}</b></p>` : ''}<p><b>Duel :</b> ${D.duel}</p><p><b>Chroniques :</b> ${D.chron}</p>
+      ${(() => { const rg = ((pouvoirsDe(actuel, pre) || {})[E.k] || {}).rang || 0, b = Math.floor(rg / 2); // 17/11 (l'utilisateur : « les rangs ne changent rien ») : ce que le rang ajoute, en clair
+        return `<p style="color:#f3c96b">⭐ Rang ${rg} : ${b ? `<b>+${b}</b> au chiffre principal (bouclier, dégâts, soin, sceaux…)` : 'pas encore de bonus'}${rg < 10 ? ` · prochain +1 au rang ${rg + (rg % 2 ? 1 : 2)}` : ' (maximum)'}${/rang (5|10)/.test(D.chron) ? ' · et ce qui est écrit pour les rangs 5 et 10' : ''}.</p>`; })()}
       ${ferme ? `<p class="dv-ferme">🔒 Ce choix s’ouvre au niveau ${E.niv}.</p>` : D.v === choisie ? '<p class="dv-ok">✓ Version choisie</p>' : `<button class="dv-choisir" onclick="choisit('${E.k}','${D.v}')">Choisir cette version</button>`}</div>`;
 }
 function dessine() {
@@ -130,7 +132,7 @@ function choisit(emp, v) {
 function valideChoix(emp, v) { const r = choisirPouvoir(actuel, pre, emp, v); fhFen(''); if (r === 'ok') { fhSon('tour-fusion'); fhBulle('✓ Choisi !'); } else fhBulle(r); dessine(); }
 function rangDemande(emp) {
   const E = PW_EMP.find(x => x.k === emp), r = pouvoirsDe(actuel, pre)[emp].rang;
-  fhFen(`<h2>⬆ ${E.e} ${E.n} au rang ${r + 1}</h2><p>Ça coûte <b>1 point</b> (il en reste ${pointsPouvoirs(actuel)}). Le rang renforce cet emplacement, quelle que soit la version choisie : en général +1 tous les 3 rangs au chiffre principal, et ce qui est écrit dans le texte (rang 5, rang 10).</p>
+  fhFen(`<h2>⬆ ${E.e} ${E.n} au rang ${r + 1}</h2><p>Ça coûte <b>1 point</b> (il en reste ${pointsPouvoirs(actuel)}). Le rang renforce cet emplacement, quelle que soit la version choisie : +1 tous les 2 rangs au chiffre principal (rangs 2, 4, 6, 8, 10), et ce qui est écrit dans le texte (rang 5, rang 10).</p>
     <div class="fh-bts"><button class="fh-bt" onclick="fhFen('')">Annuler</button><button class="fh-bt or" onclick="valideRang('${emp}')">⬆ Valider</button></div>`);
 }
 function valideRang(emp) { const r = monterRang(actuel, emp); fhFen(''); if (r === 'ok') { fhSon('victoire'); fhBulle('⬆ Rang +1 !'); } else fhBulle(r); dessine(); }
