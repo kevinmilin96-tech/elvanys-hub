@@ -934,7 +934,7 @@ function pose(J, quoi, ds, k, indexMain) {
   if (c.t === 'e' && J.forgeGratuite) J.forgeGratuite = false;
   J.main.splice(indexMain, 1);
   log(`${J.nom} joue ${c.n} avec ${vs.length > 1 ? 'les dés' : 'le dé'} ${vs.join(', ')} · ${cout} PC (reste ${J.pc}).`);
-  const secret = !S.auto && J !== S.J && c.u && c.u.cachee;
+  const secret = !S.auto && J !== S.J && c.u && (c.u.cachee || S.salle.id === 'sem-brouillard'); // 17/11 : Brouillard de guerre (règle de la semaine) : toutes les créatures arrivent Cachées
   if (secret) S.log[0] = `${J.nom} pose une créature cachée · ${cout} PC.`;
   bilan(J, 'actions', secret ? '👁 une créature cachée' : `🂠 ${c.n}`);
   if (secret) fx({ t:'carte', key:'cachee', s:'O', nom:'Créature cachée', txt:'Une créature arrive dans l’ombre : on ne sait pas laquelle.', sorte:'Créature', cout });
