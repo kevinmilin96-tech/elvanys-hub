@@ -397,7 +397,8 @@ function libre(S, x, y, sauf) { const R = S.R; if (x < 0 || y < 0 || x >= R.w ||
   if (R.grille && x === R.grille.x && y === R.grille.y && !grilleOuverte(S)) return false;
   if (R.monstres.some(m => m !== sauf && m.x === x && m.y === y)) return false; if (R.boss && R.boss !== sauf && R.boss.x === x && R.boss.y === y) return false; return true; }
 const herosEn = (S, x, y) => S.heros.find(h => h.x === x && h.y === y);
-const grilleOuverte = S => !!(S.R.grille && S.heros.some(h => !h.aTerre && h.x === S.R.grille.dx && h.y === S.R.grille.dy));
+// 17/11 (l'utilisateur : « l'autre reste bloqué dedans, il faut retourner sur la dalle ») : un héros qui se tient SOUS la grille la retient ouverte
+const grilleOuverte = S => !!(S.R.grille && S.heros.some(h => !h.aTerre && ((h.x === S.R.grille.dx && h.y === S.R.grille.dy) || (h.x === S.R.grille.x && h.y === S.R.grille.y))));
 const voisins = (a, b) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y) === 1;
 const dist = (a, b) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
 // 16/11 (retour de l'utilisateur) : AU CONTACT = une case autour, DIAGONALES COMPRISES (pour les héros comme pour les monstres),
@@ -574,7 +575,9 @@ function bouger(S, hi, idDe, x, y) {
   if (o && o.t === 'rouage' && !h.porte) { delete S.R.obj[cle(x, y)]; h.porte = true; log(S, `⚙ ${nm(h)} ramasse un rouage.`); }
   else if (o && o.t === 'rouage') log(S, `⚙ ${nm(h)} porte déjà un rouage : il en laisse un par terre (un seul à la fois).`);
   if (S.R.grille && x === S.R.grille.dx && y === S.R.grille.dy) { log(S, `⬇ ${nm(h)} monte sur la dalle : CLONK… la grille du Cagibi remonte. Tant que ${nm(h)} reste dessus, elle reste ouverte.`); ev.push({ t:'grille' }); }
-  else if (S.R.grille && de0[0] === S.R.grille.dx && de0[1] === S.R.grille.dy && !grilleOuverte(S)) log(S, `⬆ ${nm(h)} quitte la dalle : la grille retombe dans un grand bruit de fer.`);
+  else if (S.R.grille && x === S.R.grille.x && y === S.R.grille.y) log(S, `✋ ${nm(h)} se tient sous la grille et la retient : elle reste ouverte tant qu’il ou elle est dessous.`);
+  if (S.R.grille && ((de0[0] === S.R.grille.dx && de0[1] === S.R.grille.dy) || (de0[0] === S.R.grille.x && de0[1] === S.R.grille.y)) && !grilleOuverte(S)) log(S, `⬆ ${nm(h)} s’en va : la grille retombe dans un grand bruit de fer.`);
+  else if (S.R.grille && de0[0] === S.R.grille.dx && de0[1] === S.R.grille.dy && grilleOuverte(S)) log(S, `⬆ ${nm(h)} quitte la dalle, mais la grille reste ouverte : quelqu’un la retient.`);
   voir(S); { const R = S.R, ici = R.salle[cle(x, y)]; if (!R.lus) R.lus = Object.assign({}, R.vuSalle); if (ici && !R.lus[ici]) { R.lus[ici] = true; ev.push({ t:'salle', salle:ici }); } }
   return { ok:true, ev };
 }
