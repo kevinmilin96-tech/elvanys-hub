@@ -191,7 +191,11 @@ function pwPourMoteur(id) {
   const f = pre => { const o = pouvoirsDe(id, pre); if (!o) return null; const r = {}; PW_EMP.forEach(E => r[E.k] = { v:o[E.k].v, rang:o[E.k].rang }); return r; };
   const g = f('groupe'); return g ? { groupe:g, solo:f('solo') } : null;
 }
-const rangsTotal = id => Object.values(pwBrut(id).rangs || {}).reduce((t, v) => t + (v || 0), 0);
+// 17/11 (l'utilisateur : « 40 points pour tout maxer, c'est rapide ? » ; choix : de plus en plus cher) : le rang N coûte 1 point (rangs 1-4),
+// 2 points (rangs 5-7), 3 points (rangs 8-10) : 19 points par emplacement, 76 pour les 4 (tout au maximum vers le niveau 77)
+const coutRang = n => n <= 4 ? 1 : n <= 7 ? 2 : 3;
+const coutJusqua = r => { let t = 0; for (let n = 1; n <= r; n++) t += coutRang(n); return t; };
+const rangsTotal = id => Object.values(pwBrut(id).rangs || {}).reduce((t, v) => t + coutJusqua(v || 0), 0); // points déjà dépensés
 const pointsPouvoirs = id => Math.max(0, nivDe(id) - 1 - rangsTotal(id));
 function pwEcrit(id, f) { const d = lireEtoiles(), h = etatHerosE(d, id); h.pw = h.pw || {}; ['groupe', 'solo'].forEach(k => h.pw[k] = h.pw[k] || {}); h.pw.rangs = h.pw.rangs || {}; f(h.pw); ecrireEtoiles(d); }
 // choisir une version (gratuit, hors partie) ; renvoie 'ok' ou une phrase qui dit pourquoi
@@ -202,8 +206,8 @@ function choisirPouvoir(id, pre, emp, v) {
   pwEcrit(id, P0 => { P0[pre === 'groupe' ? 'groupe' : 'solo'][emp] = v; }); return 'ok';
 }
 function monterRang(id, emp) {
-  if (!empDe(emp)) return 'Emplacement inconnu.'; if (pointsPouvoirs(id) < 1) return 'Plus de point à placer : monte le niveau du héros.';
-  if ((pwBrut(id).rangs || {})[emp] >= PW_RANG_MAX) return 'Déjà au rang 10.';
+  if (!empDe(emp)) return 'Emplacement inconnu.'; if ((pwBrut(id).rangs || {})[emp] >= PW_RANG_MAX) return 'Déjà au rang 10.';
+  const cout = coutRang(((pwBrut(id).rangs || {})[emp] || 0) + 1); if (pointsPouvoirs(id) < cout) return `Il faut ${cout} point${cout > 1 ? 's' : ''} pour ce rang : monte le niveau du héros.`;
   pwEcrit(id, P0 => { P0.rangs[emp] = (P0.rangs[emp] || 0) + 1; }); return 'ok';
 }
 // le préréglage selon la partie : Chroniques à 2 héros ou plus = Groupe ; le reste = Solo
@@ -217,6 +221,6 @@ function nomBuild(id, pre) {
 // l'icône peinte du pouvoir (decor/pw-<classe>-<emp>-<v>.webp) si elle existe, sinon l'émoji
 const pwIcone = (c, emp, d, px) => `<img src="decor/pw-${c}-${emp}-${d.v.toLowerCase()}.webp?v=1" alt="" style="width:${px || 34}px;height:${px || 34}px;object-fit:contain;vertical-align:middle;border-radius:8px" onerror="this.replaceWith(document.createTextNode('${d.e}'))">`;
 
-const API = { PW_EMP, PW_RANG_MAX, PW_ROLES, PW_CLASSES, PW_COMBOS, POUVOIRS_H, classeDe, pouvoirsDe, pwPourMoteur, pointsPouvoirs, choisirPouvoir, monterRang, prereglagePour, nomBuild, pwIcone, pwOuvert, pwEssai };
+const API = { PW_EMP, PW_RANG_MAX, PW_ROLES, PW_CLASSES, PW_COMBOS, POUVOIRS_H, classeDe, pouvoirsDe, pwPourMoteur, pointsPouvoirs, choisirPouvoir, monterRang, coutRang, coutJusqua, prereglagePour, nomBuild, pwIcone, pwOuvert, pwEssai };
 if (typeof module !== 'undefined' && module.exports) module.exports = API; else Object.assign(racine, API);
 })(typeof window !== 'undefined' ? window : globalThis);

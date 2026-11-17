@@ -696,7 +696,7 @@
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
 // 14/11 : l'Odyssée sans fin a ses propres emplacements (odyssee.js lit SANSFIN)
 const SANSFIN = new URLSearchParams(location.search).get('sansfin') === '1', ROUTE_TITAN = new URLSearchParams(location.search).get('route') === '1', EPREUVE_PAGE = new URLSearchParams(location.search).get('epreuve') === '1', ODY_PAGE = EPREUVE_PAGE ? 'epreuves.html' : 'odyssee.html' + (SANSFIN ? '?sansfin=1' : ROUTE_TITAN ? '?route=1' : '');
-const VERSION = '20261117-214441';
+const VERSION = '20261117-215140';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -2398,6 +2398,6 @@ document.addEventListener('pointerdown', () => { if (fxOn && !(S && S.tuto)) fxV
 <script src="enigme-table.js?v=80c517ec18"></script>
 <script src="forge.js?v=beb857648f"></script>
 <script src="semaine.js?v=87ff7142c0"></script>
-<script src="enigme.js?v=0b0a65edd7"></script>
+<script src="enigme.js?v=0eb8a726b7"></script>
 </body>
 </html>
