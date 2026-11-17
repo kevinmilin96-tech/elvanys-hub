@@ -271,27 +271,37 @@ try { const a = JSON.parse(localStorage.getItem('guilde-actes') || '{}'); let ch
   MES_ODY.forEach(({ r }) => { if ((r.acte === 'givre' || r.acte === 'abime') && !a.brulees) { a.brulees = true; ch = true; } if (r.acte === 'abime' && !a.givre) { a.givre = true; ch = true; } });
   if (ch) localStorage.setItem('guilde-actes', JSON.stringify(a)); } catch (e) {}
 function reprendreOdy(i) { const o = MES_ODY[i]; localStorage.setItem('guilde-odyssee-emplacement' + o.suf, String(o.n)); sessionStorage.setItem('guilde-dans-mode', '1'); location.href = o.href + (o.href.includes('?') ? '&' : '?') + 'reprendre=' + o.n; }
-// 17/11 (l'utilisateur : « en entrant dans l'Odyssée, d'abord les sauvegardes, sans les portails derrière, comme un menu de jeu vidéo :
-// 3 emplacements, nouvelle partie / charger, et après seulement les portails ») : odySlot = l'emplacement choisi pour une NOUVELLE partie
-let odySlot = null;
-const ODY_SUFS = ['', '-sansfin', '-route'];
-function partiesDuSlot(n) { return MES_ODY.map((o, i) => [o, i]).filter(([o]) => o.n === n); }
-function nouvelleOdy(n) { odySlot = n; ODY_SUFS.forEach(suf => { try { localStorage.setItem('guilde-odyssee-emplacement' + suf, String(n)); } catch (e) {} }); montre('odyssee'); }
+// 17/11 (l'utilisateur : « en entrant dans l'Odyssée, d'abord les sauvegardes, comme un menu de jeu vidéo : 3 emplacements, nouvelle partie /
+// charger, et après les portails » ; puis : « attention, il y a 3 modes : l'Odyssée normale (Terres brûlées, Givre, Abîme), l'Odyssée sans fin,
+// la Route du Titan ») : 1) le MODE (3 portails) → 2) SES 3 emplacements (Charger / Nouvelle partie) → 3) pour l'Odyssée normale, l'île.
+let odyMode = null, odySlot = null;
+const ODY_MODES = { '':['L’Odyssée', 'odyssee.html'], '-sansfin':['L’Odyssée sans fin', 'odyssee.html?sansfin=1'], '-route':['La Route du Titan', 'odyssee.html?route=1'] };
+function odyPortes(L) { // L = les portails de l'étage : 3 îles, sans fin, route
+  if (odyMode === null) return [Object.assign({}, L[0], { nom:'L’Odyssée', mode:'', href:null, desc:'Les trois îles : les Terres brûlées, l’île du Givre, l’Abîme du Vide. Ici commence la Grande aventure.' }),
+    Object.assign({}, L[3], { mode:'-sansfin', href:null }), Object.assign({}, L[4], { mode:'-route', href:null })];
+  return L.slice(0, 3); // l'Odyssée normale, nouvelle partie : les îles
+}
+function nouvelleOdy(n) {
+  try { localStorage.setItem('guilde-odyssee-emplacement' + odyMode, String(n)); } catch (e) {}
+  if (odyMode === '') { odySlot = n; montre('odyssee'); return; }
+  sessionStorage.setItem('guilde-dans-mode', '1'); location.href = ODY_MODES[odyMode][1] + '&nouvelle=' + n; // sans fin et Route : directement le choix du héros
+}
 function slotsOdy() {
   const b = document.getElementById('sauves');
   const nomH = r => { const h = typeof HEROS !== 'undefined' && HEROS[r.heros]; return h ? h.nom : String(r.heros || '').startsWith('av:') ? 'Héros d’aventure' : 'Héros'; };
-  b.innerHTML = '<div class="st">💾 Choisis un emplacement</div>' + [1, 2, 3].map(n => { const P = partiesDuSlot(n);
-    return `<div class="slotm"><div class="sn">Emplacement ${n}</div>${P.length ? P.map(([o, i]) => `<button onclick="reprendreOdy(${i})"><b>${nomH(o.r)}</b> · ${o.r.route ? 'Route du Titan' : (ILE_NOM[o.r.acte] || ILE_NOM.brulees)}${o.suf === '-sansfin' ? ' · sans fin' : ''}<small>${o.mode} · ❤ ${o.r.pv}/${o.r.pvMax}</small><i>▶ Charger</i></button>`).join('') : '<p class="vide">Vide</p>'}
-      <button class="neuf" onclick="nouvelleOdy(${n})">✨ Nouvelle partie</button></div>`; }).join('');
+  b.innerHTML = `<div class="st">💾 ${ODY_MODES[odyMode][0]} · choisis un emplacement <button class="chg" onclick="odyMode=null;montre('odyssee')">‹ Les modes</button></div>` + [1, 2, 3].map(n => { const P = MES_ODY.map((o, i) => [o, i]).filter(([o]) => o.suf === odyMode && o.n === n);
+    return `<div class="slotm"><div class="sn">Emplacement ${n}</div>${P.length ? P.map(([o, i]) => `<button onclick="reprendreOdy(${i})"><b>${nomH(o.r)}</b> · ${o.r.route ? 'Route du Titan' : (ILE_NOM[o.r.acte] || ILE_NOM.brulees)}<small>❤ ${o.r.pv}/${o.r.pvMax}${o.r.aventure ? ' · 🗺 Grande aventure' : ''}</small><i>▶ Charger</i></button>`).join('') : '<p class="vide">Vide</p>'}
+      <button class="neuf" onclick="nouvelleOdy(${n})">✨ Nouvelle partie${P.length ? ' (remplace celle-ci)' : ''}</button></div>`; }).join('');
   b.style.display = '';
 }
 function sauvesOdy() {
   const b = document.getElementById('sauves'); if (!b) return;
-  const vuSlots = courant === 'odyssee' && !odySlot;
+  const vuSlots = courant === 'odyssee' && odyMode !== null && !odySlot;
   [car, document.getElementById('points'), document.getElementById('desc')].forEach(e => { if (e) e.style.display = vuSlots ? 'none' : ''; });
-  if (courant === 'odyssee') document.getElementById('eSous').textContent = vuSlots ? 'Choisis ta partie' : 'Quelle île veux-tu explorer ?';
+  if (courant === 'odyssee') document.getElementById('eSous').textContent = odyMode === null ? 'Quel voyage ?' : vuSlots ? 'Choisis ta partie' : 'Quelle île veux-tu explorer ?';
+  if (courant === 'odyssee' && odyMode === null) { b.style.display = 'none'; return; }
   if (vuSlots) return slotsOdy();
-  if (courant === 'odyssee' && odySlot) { b.innerHTML = `<div class="st">✨ Nouvelle partie · emplacement ${odySlot} · choisis ton île <button class="chg" onclick="odySlot=null;montre('odyssee')">‹ Changer</button></div>`; b.style.display = ''; return; }
+  if (courant === 'odyssee' && odySlot) { b.innerHTML = `<div class="st">✨ Nouvelle partie · emplacement ${odySlot} · choisis ton île <button class="chg" onclick="odySlot=null;montre('odyssee')">‹ Emplacements</button></div>`; b.style.display = ''; return; }
   if (courant !== 'odyssee' || !MES_ODY.length) { b.style.display = 'none'; return; }
   const nomH = r => { const h = typeof HEROS !== 'undefined' && HEROS[r.heros]; return h ? h.nom : String(r.heros || '').startsWith('av:') ? 'Héros d’aventure' : 'Héros'; };
   b.innerHTML = '<div class="st">💾 Tes parties en cours</div>' + MES_ODY.map((o, i) => `<button onclick="reprendreOdy(${i})"><b>${nomH(o.r)}</b> · ${o.r.route ? 'Route du Titan' : (ILE_NOM[o.r.acte] || ILE_NOM.brulees)}${o.suf === '-sansfin' ? ' · sans fin' : ''}${o.r.aventure ? ' · 🗺 Grande aventure' : ''}<small>${o.mode} · emplacement ${o.n} · ❤ ${o.r.pv}/${o.r.pvMax}</small><i>▶ Continuer</i></button>`).join('');
@@ -389,9 +399,9 @@ function dessin(p) {
   return `<div class="pro" style="--fond:${fond};--g:${g}">${et}<b>${e}</b></div>`;
 }
 function montre(id) {
-  if (id !== 'odyssee') odySlot = null;
+  if (id !== 'odyssee') { odySlot = null; odyMode = null; }
   const E = ETAGES[id] || ETAGES['']; courant = ETAGES[id] ? id : '';
-  PORTES = !courant && cat !== 'tout' ? E.portes.filter(p => p.cat === cat) : E.portes; ongletsCat();
+  PORTES = !courant && cat !== 'tout' ? E.portes.filter(p => p.cat === cat) : E.portes; if (courant === 'odyssee') PORTES = odyPortes(E.portes); ongletsCat();
   document.getElementById('eTitre').textContent = E.titre; document.getElementById('eSous').textContent = E.sous;
   if (!courant && localStorage.getItem('guilde-odyssee-finie')) document.getElementById('eSous').innerHTML = '🌟 <b style="color:var(--or)">Héros de l’Odyssée</b> · ' + E.sous;
   document.getElementById('retour').classList.toggle('vu', !!courant);
@@ -424,9 +434,10 @@ function touche(i) {
   if (i !== auCentre()) return centre(i, true);
   // 15/11 nuit (l'utilisateur : « je peux accéder à chaque portail avec un cadenas ») : un portail fermé ne s'ouvre plus, jamais
   if (p.ferme || p.avenir) { const el = car.children[i]; el.animate([{ translate:'0' }, { translate:'-8px' }, { translate:'8px' }, { translate:'0' }], { duration:300 }); return; }
+  if (courant === 'odyssee' && p.mode !== undefined) { odyMode = p.mode; odySlot = null; GM.son('choisir'); montre('odyssee'); return; } // 17/11 : le mode → ses emplacements
   if (!GM.son('portail')) souffle(); car.children[i].classList.add('entre'); document.getElementById('flash').classList.add('go');
   setTimeout(() => {
-    if (p.href) { sessionStorage.setItem('guilde-dans-mode', '1'); location.href = courant === 'odyssee' && odySlot && p.href.startsWith('odyssee.html') ? p.href + (p.href.includes('?') ? '&' : '?') + 'nouvelle=' + odySlot : p.href; return; }
+    if (p.href) { sessionStorage.setItem('guilde-dans-mode', '1'); location.href = courant === 'odyssee' && odySlot && p.href.startsWith('odyssee.html') ? p.href + (p.href.includes('?') ? '&' : '?') + 'nouvelle=' + odySlot : p.href; return; } // l'île choisie, dans l'emplacement choisi
     document.getElementById('flash').classList.remove('go'); location.hash = p.vers;
   }, 750);
 }
