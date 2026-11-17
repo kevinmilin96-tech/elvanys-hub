@@ -432,7 +432,7 @@ async function creerSalle(nomDonne) {
   try { const { statut, d } = await api('POST', API, { mode:'chroniques', etat:{ lobby:LOB }, joueurs });
     if (statut !== 200) { bulle(d.message || 'Impossible de créer la salle.', true); L = null; LOB = null; return; }
     L.code = d.code; L.version = d.version;
-    localStorage.setItem(SALLE, JSON.stringify({ code:L.code, moi }));
+    localStorage.setItem(SALLE, JSON.stringify({ code:L.code, moi, quand:Date.now() }));
     son('portail'); salleAttente();
   } catch (e) { bulle('Pas de réseau.', true); L = null; LOB = null; }
 }
@@ -460,7 +460,7 @@ async function rejoindre(code, moi) {
     if (d.mode === 'duel') { location.href = 'duel.html?salle=' + code; return; } // 15/11 : un code de duel
     L = { code, version:d.version, joueurs:d.joueurs || [], moi, dernier:'' };
     if (!L.joueurs.some(j => j.id === moi.id)) L.joueurs.push({ id:moi.id, nom:moi.nom, heros:[] });
-    localStorage.setItem(SALLE, JSON.stringify({ code, moi }));
+    localStorage.setItem(SALLE, JSON.stringify({ code, moi, quand:Date.now() }));
     if (d.etat && d.etat.lobby) { LOB = d.etat.lobby; S = null; son('portail'); salleAttente(); lobbyPousse(); return; }
     S = d.etat; LOB = null; actif = 0; sel = null; centrer = true;
     dessine(); await pousse(); equipeEnLigne();
@@ -477,6 +477,21 @@ function prendHeros(i) { L.prises = (L.prises || []).filter(x => x !== i).concat
   // 16/11 nuit (l'utilisateur : « je sélectionne un personnage, derrière ça bouge mais rien sur l'écran, je suis bloqué ») : la fenêtre se ferme, on joue
   fenetre(''); bulle(`🎮 Tu joues ${nomH(S.heros[i])} ! (bouton 🌐 en haut pour changer)`); }
 function quitterSalle() { L = null; localStorage.removeItem(SALLE); }
+// 17/11 (l'utilisateur : « quand je quitte un salon, il reste en bas des Chroniques, même celui d'il y a 3 jours ») :
+// la salle gardée sur le téléphone est oubliée après 12 h, ou dès que le serveur ne la connaît plus, ou d'un toucher
+function salleGardee() {
+  let s = null; try { s = JSON.parse(localStorage.getItem(SALLE) || 'null'); } catch (e) {}
+  if (!s || !s.code || !s.moi) return null;
+  if (!s.quand || Date.now() - s.quand > 12 * 3600000) { localStorage.removeItem(SALLE); return null; }
+  return s;
+}
+function oublierSalle() { localStorage.removeItem(SALLE); accueil(); }
+let salleVerifiee = '';
+async function verifSalleGardee() {
+  const s = salleGardee(); if (!s || salleVerifiee === s.code) return; salleVerifiee = s.code;
+  try { const { statut } = await api('GET', `${API}/${s.code}`);
+    if (statut === 404 || statut === 410) { localStorage.removeItem(SALLE); if (!S && !L && !LOB) accueil(); } } catch (e) { /* pas de réseau : on garde */ }
+}
 const nomH = z => z.nom || (H[z.id] || {}).n || '?';
 const coulH = z => z.c || (H[z.id] || {}).c;
 const imgH = (z, cl) => `<img ${cl || ''} src="${z.portrait || `portraits/${z.id}.webp`}" onerror="this.onerror=null;this.src='portraits/${z.id}.webp'" alt="">`;
@@ -1026,7 +1041,7 @@ function campagneGagnee() {
 }
 
 // ------------------------------------------------------------------ l'accueil
-function accueil() { document.body.classList.remove('jeu'); sessionStorage.removeItem('chron-en-jeu');
+function accueil() { document.body.classList.remove('jeu'); sessionStorage.removeItem('chron-en-jeu'); setTimeout(verifSalleGardee, 0);
   const g = gardee(); let D = {}; try { D = JSON.parse(localStorage.getItem(CLE) || '{}'); } catch (e) {}
   choisis = choisis.filter(k => k !== 'zephine' || ZEPH_OK());
   $('app').innerHTML = `<div class="acc">
@@ -1050,7 +1065,7 @@ function accueil() { document.body.classList.remove('jeu'); sessionStorage.remov
     <button class="gros" style="background:#14223a;border-color:#7cd4ff;color:#7cd4ff" onclick="creerSalle()">🌐 Créer une partie à distance<small>Une salle d’attente : tu choisis le scénario, chacun ajoute son héros depuis son téléphone, tu lances pour tout le monde.</small></button>
     <button class="gros" style="background:#14223a;border-color:#7cd4ff;color:#7cd4ff" onclick="amisFenetre()">👥 Mes amis<small>Vois qui est en ligne, rejoins sa salle ou invite-le dans la tienne.</small></button>
     <button class="gros" style="background:#1c1c36;border-color:#45457a;color:var(--texte)" onclick="rejoindre()">🔑 Rejoindre avec un code<small>Un ami t’a donné un code de salle.</small></button>
-    ${(() => { try { const s = JSON.parse(localStorage.getItem(SALLE) || 'null'); return s ? `<button class="gros" style="background:#14322a;border-color:var(--ok);color:var(--ok)" onclick='rejoindre(${JSON.stringify(s.code)}, ${JSON.stringify(s.moi)})'>↩ Revenir dans la salle ${s.code}<small>en tant que ${s.moi.nom}</small></button>` : ''; } catch (e) { return ''; } })()}
+    ${(() => { try { const s = salleGardee(); return s ? `<button class="gros" style="background:#14322a;border-color:var(--ok);color:var(--ok)" onclick='rejoindre(${JSON.stringify(s.code)}, ${JSON.stringify(s.moi)})'>↩ Revenir dans la salle ${s.code}<small>en tant que ${s.moi.nom}</small></button><button onclick="oublierSalle()" style="display:block;margin:0 auto;background:none;border:0;color:var(--doux);font-size:3cqw;text-decoration:underline;padding:1cqw">✕ oublier cette salle</button>` : ''; } catch (e) { return ''; } })()}
     <p style="text-align:center;margin-top:4cqw"><a href="editeur.html" style="color:var(--or);font-size:3cqw">🛠 L’atelier des cartes</a> · <a href="chroniques-v1.html" style="color:var(--doux);font-size:3cqw">l’ancienne version (salles séparées)</a></p>
   </div>`;
 }
