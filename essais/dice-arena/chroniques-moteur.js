@@ -535,19 +535,39 @@ function ouvrir(S, hi, x, y) {
   // 16/11 (l'utilisateur : « sinon on se fait spoiler ») : Moustache ne raconte la salle qu'au PREMIER PAS dedans (voir bouger)
   return { ok:true, ev:[], point:true };
 }
+// 17/11 (l'utilisateur : « dans le couloir, Louve est passée sur le piège sans le prendre, moi oui après elle ») : le piège ne partait
+// que si l'on S'ARRÊTAIT dessus. Maintenant on suit le CHEMIN case par case (le plus court, qui évite les pièges déjà repérés si possible) :
+// le premier piège caché sur le chemin arrête le héros dessus (comme à HeroQuest).
+function chemin(S, h, x, y, pasMax, eviter) {
+  const R = S.R, par = { [cle(h.x, h.y)]:null }, file = [[h.x, h.y, 0]], but = cle(x, y);
+  const piegeVu = c => { const o = R.obj[c]; return o && o.t === 'piege' && !o.trouve && (!o.cache || o.vu); };
+  while (file.length) { const [cx, cy, d] = file.shift(); if (cle(cx, cy) === but) break; if (d >= pasMax) continue;
+    const ici = R.salle[cle(cx, cy)]; if (d > 0 && ici && !R.vuSalle[ici]) continue;
+    const vs = [[1, 0], [-1, 0], [0, 1], [0, -1]].map(([dx, dy]) => [cx + dx, cy + dy]);
+    if (R.liens && R.liens[cle(cx, cy)]) vs.push(R.liens[cle(cx, cy)].split(',').map(Number));
+    for (const [nx, ny] of vs) { const c = cle(nx, ny); if (c in par || !libre(S, nx, ny) || !R.vu[c]) continue; if (eviter && c !== but && piegeVu(c)) continue;
+      par[c] = cle(cx, cy); file.push([nx, ny, d + 1]); } }
+  if (!(but in par)) return null;
+  const l = []; for (let c = but; c && c !== cle(h.x, h.y); c = par[c]) l.unshift(c); return l;
+}
 function bouger(S, hi, idDe, x, y) {
   const h = S.heros[hi], d = h.des.find(z => z.id === idDe); if (!d || h.aTerre) return 'Ce héros ne peut pas bouger.';
   const A = atteignables(S, h, d.v, d.pas), fait = A[cle(x, y)]; if (!fait) return 'Trop loin pour ce dé.';
   const total = d.pas ? d.v : pasDe(h, d.v).n, reste = total - fait;
+  // le piège caché sur le chemin (avant la case d'arrivée) arrête le héros dessus
+  let piegeEnRoute = false;
+  { const ch = chemin(S, h, x, y, fait, true) || chemin(S, h, x, y, fait, false) || [];
+    const k = ch.findIndex((c, i) => i < ch.length - 1 && S.R.obj[c] && S.R.obj[c].t === 'piege' && !S.R.obj[c].trouve && !herosEn(S, ...c.split(',').map(Number)));
+    if (k >= 0) { [x, y] = ch[k].split(',').map(Number); piegeEnRoute = true; } }
   prendDe(h, idDe); const de0 = [h.x, h.y]; h.x = x; h.y = y; const ev = [{ t:'marche', h:hi, de:de0 }];
   // 16/11 (l'utilisateur : « je suis toujours là ») : marcher SUR le bout d'un escalier fait passer à l'autre étage, sans pas en plus
   { const l = S.R.liens && S.R.liens[cle(x, y)], venu = S.R.liens && S.R.liens[cle(...de0)] === cle(x, y);
-    if (l && !venu) { const [lx, ly] = l.split(',').map(Number); if (libre(S, lx, ly) && !herosEn(S, lx, ly)) { h.x = lx; h.y = ly; ev.push({ t:'etage', h:hi }); log(S, `${ly < y ? '⬆' : '⬇'} ${nm(h)} ${ly < y ? 'monte' : 'descend'} : ${etageDe(S, ly)}.`); } } }
+    if (l && !venu && !piegeEnRoute) { const [lx, ly] = l.split(',').map(Number); if (libre(S, lx, ly) && !herosEn(S, lx, ly)) { h.x = lx; h.y = ly; ev.push({ t:'etage', h:hi }); log(S, `${ly < y ? '⬆' : '⬇'} ${nm(h)} ${ly < y ? 'monte' : 'descend'} : ${etageDe(S, ly)}.`); } } }
   // 16/11 (retour de l'utilisateur : « un dé de 4 = 4 actions ») : les PAS PAS UTILISÉS restent dans un petit dé 👣
   // qui sert à marcher encore ou à agir (fouiller, levier, porte, axe, livre) ; il ne frappe pas et ne se donne pas.
-  if (reste > 0) h.des.push({ id:'d' + S.seq++, v:reste, pas:true });
+  if (reste > 0 && !piegeEnRoute) h.des.push({ id:'d' + S.seq++, v:reste, pas:true });
   const o = S.R.obj[cle(x, y)];
-  if (o && o.t === 'piege' && !o.trouve) { o.trouve = true; o.cache = false; blesseHeros(S, h, 3); ev.push({ t:'piege', h:hi }); log(S, `⚠ ${nm(h)} tombe dans un piège : −3 PV.`); }
+  if (o && o.t === 'piege' && !o.trouve) { o.trouve = true; o.cache = false; blesseHeros(S, h, 3); ev.push({ t:'piege', h:hi }); log(S, piegeEnRoute ? `⚠ ${nm(h)} marche sur un piège caché en chemin : −3 PV, et s’arrête là.` : `⚠ ${nm(h)} tombe dans un piège : −3 PV.`); }
   if (o && o.t === 'rouage' && !h.porte) { delete S.R.obj[cle(x, y)]; h.porte = true; log(S, `⚙ ${nm(h)} ramasse un rouage.`); }
   else if (o && o.t === 'rouage') log(S, `⚙ ${nm(h)} porte déjà un rouage : il en laisse un par terre (un seul à la fois).`);
   if (S.R.grille && x === S.R.grille.dx && y === S.R.grille.dy) { log(S, `⬇ ${nm(h)} monte sur la dalle : CLONK… la grille du Cagibi remonte. Tant que ${nm(h)} reste dessus, elle reste ouverte.`); ev.push({ t:'grille' }); }
