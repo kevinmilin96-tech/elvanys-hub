@@ -21,7 +21,7 @@ function accepte(s, d, L) {
   switch (s.t) {
     case 'ex': return d === s.v; case 'min': return d >= s.v; case 'max': return d <= s.v;
     case 'pair': return d % 2 === 0; case 'imp': return d % 2 === 1; case 'tot': case 'any': return true;
-    case 'dbl': { const j = L.find(x => x !== s && x.t === 'dbl' && x.g === s.g && x.ok); return !j || j.val === d; }
+    case 'dbl': { const j = L.find(x => x !== s && x.t === 'dbl' && x.g === s.g && x.ok); return !j || !j.val || j.val === d; } // 17/11 : jumeau brisé par un pouvoir (sans dé) = n'importe quel dé (avant : « = 0 », impossible)
   }
   return false;
 }
