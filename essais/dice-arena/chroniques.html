@@ -653,13 +653,16 @@ function dessine() {
       for (let k = 0, U = X, V = Y; k < 6 && U >= 0 && V >= 0 && U < R.w && V < R.h; k++, U += dx, V += dy) { if (k > 0 && !atteint[K.cle(U, V)]) break;
         devant.add(K.cle(U, V)); x0 = Math.min(x0, U); y0 = Math.min(y0, V); x1 = Math.max(x1, U); y1 = Math.max(y1, V); } } }
   const horsCadre = (x, y) => RZ && (x < RZ[0] - 1 || x > RZ[0] + RZ[2] || y < RZ[1] - 1 || y > RZ[1] + RZ[3]) && !devant.has(K.cle(x, y));
+  // 17/11 (l'utilisateur : « besoin de deux cases jaunes ») : la 2e moitié d'une porte peinte double s'allume aussi
+  const moitieDe = {}; if (R.plan === 2) Object.entries(R.portes).forEach(([pc, pp]) => { if (pp.ouverte || pp.moitie) return; const [px, py] = pc.split(',').map(Number); K.moitiesPorte(S, px, py).forEach(([a, b]) => { moitieDe[K.cle(a, b)] = [px, py]; }); });
   for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
     if (horsCadre(x, y)) { cases += '<div class="c vide"></div>'; continue; }
     const c = K.cle(x, y), mur = peint && (R.murs[c] === '#' || R.murs[c] === '~') ? null : R.murs[c], o = R.obj[c], p = R.portes[c], vu = R.vu[c];
     let cl = 'c', inner = '', stMur = '';
     if (!vu) cl += ' noir';
     else if (peint) cl += ' peint';
-    else if (p && fondSalle(S, x, y)) { cl += ' porte peinte' + (p.ouverte ? ' ouverte' : '') + (!p.ouverte && K.presDePorte(S, h, x, y) ? ' cible' : ''); if (p.bronze && !R.bronze) inner = '<span class="cad">🔒</span>'; } // 16/11 (l'utilisateur) : la porte PEINTE sur l'image se touche telle quelle, sans icône par-dessus
+    else if (p && fondSalle(S, x, y)) { cl += ' porte peinte' + (p.ouverte ? ' ouverte' : '') + (!p.ouverte && K.presDePorte(S, h, x, y) ? ' cible' : ''); if (p.bronze && !R.bronze) inner = '<span class="cad">🔒</span>'; }
+    else if (moitieDe[c] && fondSalle(S, x, y)) { const [px, py] = moitieDe[c]; cl += ' porte peinte' + (K.presDePorte(S, h, px, py) ? ' cible' : ''); } // 16/11 (l'utilisateur) : la porte PEINTE sur l'image se touche telle quelle, sans icône par-dessus
     else if (p) { cl += ' porte' + (p.ouverte ? ' ouverte' : '') + (p.bronze ? ' bronze' : '') + (p.ouverte ? '' : ' img'); if (!p.ouverte) inner = ((S.scen || 'horloger') === 'horloger' ? porteDessus(R, x, y, p.bronze) : objImg('porte', p.bronze ? 'bronze' : '')) + (p.bronze && !R.bronze ? '<span class="cad">🔒</span>' : ''); }
     else if (mur === '#') { cl += ' mur';
       // 16/11 (l'utilisateur : « des murs au lieu d'un trait noir ») : le long d'un couloir, la bande de pierres peinte (couloir-mur, découpée de l'image Gemini)
