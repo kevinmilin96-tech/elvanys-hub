@@ -36,7 +36,7 @@ const MERS = {
     elites:[{ n:'Le Chef de guerre gobelin', e:'👺', cle:'crique', av:[['Chef de guerre', 6, 30, 'barriere'], ['Gobelin chef', 3, 9]], ar:[['Gobelin lanceur', 2, 5, 'tireur'], ['Tambour gobelin', 2, 6, 'tireur']], meca:'rage', d:'Rage : il gagne +1 attaque à chaque round.' },
             { n:'La Matriarche de braise', e:'🐺', cle:'port', av:[['Matriarche de braise', 5, 26], ['Loup de braise', 4, 11]], ar:[['Louveteau', 3, 6], ['Louveteau', 3, 6]], meca:'meute', d:'Meute : quand un Louveteau tombe, la Matriarche hurle (+2 attaque).' }],
     boss:['titan', 'ignaros'] },
-  glaces: { n:'La Mer des glaces', e:'❄️', d:'Le grand nord : banquise, yétis et vouivres. Les monstres encaissent plus.', ouvre:'nuages', pv:1.12,
+  glaces: { n:'La Mer des glaces', e:'❄️', d:'Le grand nord : banquise, yétis et vouivres. Les monstres encaissent plus.', ouvre:'nuages', pv:1.06,
     decor:{ monstres:['falaises', 'foret', 'port'], fantome:['falaises'], evenement:['foret'], tresor:['crique'], port:['port'], elite:['falaises'], boss:['nid'] },
     groupes:[
       { n:'La Banquise des pingouins-guerriers', e:'🐧', cle:'falaises', av:[['Pingouin-guerrier', 3, 8], ['Pingouin-guerrier', 3, 8]], ar:[['Lanceur de glaçons', 2, 6, 'tireur']] },
@@ -46,9 +46,9 @@ const MERS = {
       { n:'La Faille de cristal', e:'💎', cle:'cratere', av:[['Golem de cristal', 5, 22, 'barriere'], ['Golem de cristal', 5, 18, 'barriere']], ar:[['Sorcière du blizzard', 5, 12, 'tireur'], ['Éclat vivant', 3, 5, 'charge'], ['Éclat vivant', 3, 5, 'charge']] },
     ],
     elites:[{ n:'Le Yéti ancien', e:'🦍', cle:'falaises', av:[['Yéti ancien', 7, 34, 'barriere']], ar:[['Petit yéti', 3, 8], ['Petit yéti', 3, 8]], meca:'rage', d:'Rage : il gagne +1 attaque à chaque round.' },
-            { n:'La Reine des neiges', e:'👸', cle:'foret', av:[['Garde de glace', 4, 14, 'barriere'], ['Garde de glace', 4, 14, 'barriere']], ar:[['La Reine des neiges', 5, 22, 'tireur']], meca:'gel', d:'Gel : à chaque round, ta recrue la plus forte est gelée (0 attaque ce round).' }],
+            { n:'La Reine des neiges', e:'👸', cle:'foret', av:[['Garde de glace', 4, 14, 'barriere'], ['Garde de glace', 4, 14, 'barriere']], ar:[['La Reine des neiges', 5, 22, 'tireur']], meca:'gel', d:'Gel : un round sur deux, ta recrue la plus forte est gelée (0 attaque ce round).' }],
     boss:['vouivre', 'titan'] },
-  tempetes: { n:'L’Archipel des tempêtes', e:'⛈️', d:'Pirates, harpies et krakens. La mer la plus dure, pour les équipages rodés.', ouvre:'glaces', pv:1.25,
+  tempetes: { n:'L’Archipel des tempêtes', e:'⛈️', d:'Pirates, harpies et krakens. La mer la plus dure, pour les équipages rodés.', ouvre:'glaces', pv:1.04,
     decor:{ monstres:['crique', 'port', 'falaises'], fantome:['falaises'], evenement:['crique'], tresor:['crique'], port:['port'], elite:['port'], boss:['nid'] },
     groupes:[
       { n:'La Crique des naufrageurs', e:'🏴‍☠️', cle:'crique', av:[['Naufrageur', 3, 9], ['Naufrageur', 3, 9]], ar:[['Pistolier', 3, 5, 'tireur']] },
@@ -58,7 +58,7 @@ const MERS = {
       { n:'Le Cimetière des navires', e:'💀', cle:'cratere', av:[['Capitaine noyé', 6, 22, 'barriere'], ['Matelot noyé', 4, 14]], ar:[['Canonnier fantôme', 6, 12, 'tireur'], ['Mouette spectrale', 3, 5, 'charge'], ['Mouette spectrale', 3, 5, 'charge']] },
     ],
     elites:[{ n:'Le Capitaine Barbe-Grise', e:'🦜', cle:'port', av:[['Barbe-Grise', 7, 32, 'barriere'], ['Pirate', 4, 10]], ar:[['Canonnier pirate', 5, 9, 'tireur']], meca:'rage', d:'Rage : il gagne +1 attaque à chaque round.' },
-            { n:'La Sirène noire', e:'🧜', cle:'crique', av:[['Matelot charmé', 4, 12], ['Matelot charmé', 4, 12]], ar:[['La Sirène noire', 4, 20, 'tireur']], meca:'gel', d:'Chant : à chaque round, ta recrue la plus forte est charmée (0 attaque ce round).' }],
+            { n:'La Sirène noire', e:'🧜', cle:'crique', av:[['Matelot charmé', 4, 12], ['Matelot charmé', 4, 12]], ar:[['La Sirène noire', 4, 20, 'tireur']], meca:'gel', d:'Chant : un round sur deux, ta recrue la plus forte est charmée (0 attaque ce round).' }],
     boss:['kraken', 'roi'] },
 };
 const ORDRE_MERS = ['nuages', 'glaces', 'tempetes'];
@@ -67,14 +67,14 @@ const ORDRE_MERS = ['nuages', 'glaces', 'tempetes'];
 const BOSS_V4 = {
   titan:   { n:'Le Titan de feu', e:'🔥', cle:'nid', av:[['Le Titan de feu', 8, 60, 'boss']], ar:[['Flammèche', 3, 5, 'charge'], ['Cultiste du feu', 4, 10, 'tireur'], ['Flammèche', 3, 5, 'charge']],
     meca:'eruption', d:'Éruption : tous les 3 rounds, la lave frappe toute ta rangée de devant (3 dégâts).' },
-  ignaros: { n:'Ignaros, le dragon ancien', e:'🐉', cle:'nid', av:[['Ignaros', 9, 66, 'boss']], ar:[['Dragonnet', 4, 8, 'tireur'], ['Dragonnet', 4, 8, 'tireur']],
-    meca:'souffle', d:'Souffle : au 2e round puis tous les 3 rounds, il brûle ta rangée de DERRIÈRE (4 dégâts).' },
+  ignaros: { n:'Ignaros, le dragon ancien', e:'🐉', cle:'nid', av:[['Ignaros', 8, 58, 'boss']], ar:[['Dragonnet', 4, 8, 'tireur'], ['Dragonnet', 4, 8, 'tireur']],
+    meca:'souffle', d:'Souffle : au 2e round puis tous les 3 rounds, il brûle ta rangée de DERRIÈRE (3 dégâts).' },
   vouivre: { n:'La Vouivre des glaces', e:'🐲', cle:'nid', av:[['La Vouivre', 8, 64, 'boss']], ar:[['Stalagmite vivante', 3, 10, 'barriere'], ['Givrelin', 3, 7, 'tireur']],
-    meca:'gel', d:'Gel : à chaque round, ta recrue la plus forte est gelée (0 attaque ce round).' },
-  kraken:  { n:'Le Kraken des brumes', e:'🦑', cle:'nid', av:[['Tentacule', 4, 14, 'barriere'], ['Le Kraken', 7, 58, 'boss'], ['Tentacule', 4, 14, 'barriere']], ar:[['Tentacule', 4, 12, 'tireur']],
-    meca:'tentacules', d:'Tentacules : tous les 2 rounds, une tentacule coupée repousse (à moitié vie).' },
+    meca:'gel', d:'Gel : à chaque round, ta recrue la plus forte est gelée (0 attaque ce round), un round sur deux.' },
+  kraken:  { n:'Le Kraken des brumes', e:'🦑', cle:'nid', av:[['Tentacule', 3, 11, 'barriere'], ['Le Kraken', 7, 42, 'boss'], ['Tentacule', 3, 11, 'barriere']], ar:[['Tentacule', 4, 12, 'tireur']],
+    meca:'tentacules', d:'Tentacules : tous les 3 rounds, une tentacule coupée repousse (à moitié vie).' },
   roi:     { n:'Le Roi sans visage', e:'👤', cle:'nid', av:[['Le Roi sans visage', 6, 62, 'boss']], ar:[['Reflet', 3, 8, 'tireur'], ['Reflet', 3, 8, 'tireur']],
-    meca:'miroir', d:'Miroir : il prend l’attaque de ta meilleure recrue (+2), et ses Reflets copient sa vie.' },
+    meca:'miroir', d:'Miroir : il prend l’attaque de ta meilleure4 recrue (+2), et ses Reflets copient sa vie.' },
 };
 
 // ----------------------------------------------------------------------------------------------- les règles du voyage (une tirée à chaque départ)
@@ -85,8 +85,8 @@ const REGLES_V4 = {
   calme:    { n:'Mer calme', e:'🌊', d:'Le navire part avec un 4e cœur.' },
   marche:   { n:'Grand marché', e:'🛒', d:'Le recruteur montre une recrue de plus.' },
   veterans: { n:'Vétérans à bord', e:'🎖', d:'Tu pars avec une recrue ★ déjà fusionnée.' },
-  tempete:  { n:'Mer démontée', e:'⛈', d:'Ton équipage commence chaque combat à −2 PV, mais les escales rapportent +3 💰.' },
-  rancon:   { n:'La rançon du boss', e:'👑', d:'Le boss a +20 % de vie, mais le voyage vaut double points.' },
+  tempete:  { n:'Mer démontée', e:'⛈', d:'Ton équipage commence chaque combat à −1 PV, mais les escales rapportent +3 💰.' },
+  rancon:   { n:'La rançon du boss', e:'👑', d:'Le boss a +15 % de vie, mais le voyage vaut double points.' },
 };
 
 // ----------------------------------------------------------------------------------------------- les événements à choix (escales « ❔ »)
@@ -99,7 +99,7 @@ const EVENEMENTS_V4 = {
     choix:[{ t:'Traverser l’orage', d:'Un cœur de moins, mais tu gagnes 6 💰 (le vent te pousse vers un trésor).', ok:X => X.coeurs > 1, f:X => { X.coeurs--; X.or += 6; return 'Le mât craque, mais au-delà des nuages, une épave pleine d’or vous attend.'; } },
            { t:'Contourner prudemment', d:'Tu perds 2 💰 de vivres.', f:X => { X.or = Math.max(0, X.or - 2); return 'Le détour est long : on mange les provisions du voyage.'; } }] },
   marchand: { n:'Le marchand pirate', e:'🦜', cle:'crique', texte:'Une barque peinte en rouge accoste. « Des épées, des runes, des secrets… Tout se vend, capitaine ! »',
-    choix:[{ t:'Acheter une rune d’attaque (5 💰)', d:'Ta recrue la plus forte gagne +2 attaque pour tout le voyage.', ok:X => X.or >= 5, f:X => { X.or -= 5; const u = meilleure(X); if (u) u.bonusA += 2; return u ? `${u.n} grave la rune sur sa lame : +2 attaque.` : 'Personne pour porter la rune…'; } },
+    choix:[{ t:'Acheter une rune d’attaque (5 💰)', d:'Ta recrue la plus forte gagne +2 attaque pour tout le voyage.', ok:X => X.or >= 5, f:X => { X.or -= 5; const u = meilleure4(X); if (u) u.bonusA += 2; return u ? `${u.n} grave la rune sur sa lame : +2 attaque.` : 'Personne pour porter la rune…'; } },
            { t:'Acheter une rune de vie (4 💰)', d:'Toute ta rangée de devant gagne +3 PV pour tout le voyage.', ok:X => X.or >= 4, f:X => { X.or -= 4; X.plateau.av.forEach(u => { if (u && u.key !== 'capitaine') u.bonusV += 3; }); return 'Les runes brillent sur les boucliers : +3 PV devant.'; } },
            { t:'Passer son chemin', d:'Rien ne change.', f:() => 'Le marchand hausse les épaules et repart en chantant.' }] },
   epave: { n:'L’épave fumante', e:'⚓', cle:'crique', texte:'Une épave flotte dans les nuages. Quelque chose bouge encore dans la cale.',
@@ -112,14 +112,14 @@ const EVENEMENTS_V4 = {
     choix:[{ t:'Se boucher les oreilles', d:'Rien ne se passe, mais tu gèles l’offre du recruteur pour le prochain port.', f:X => { X.gel = true; return 'Le navire passe au large. Le recruteur garde ses recrues pour toi.'; } },
            { t:'Écouter le chant', d:'Le prochain combat : tout l’équipage +1 attaque (ivre de courage)… mais −1 cœur.', ok:X => X.coeurs > 1, f:X => { X.coeurs--; X.prochain = { atq:1 }; return 'Le chant vous remplit de courage… et vous jette sur les récifs.'; } }] },
 };
-const meilleure = X => toutes(X).filter(u => u.key !== 'capitaine').sort((a, b) => (b.a + b.bonusA) - (a.a + a.bonusA))[0];
+const meilleure4 = X => toutes(X).filter(u => u.key !== 'capitaine').sort((a, b) => (b.a + b.bonusA) - (a.a + a.bonusA))[0];
 
 // ----------------------------------------------------------------------------------------------- la progression (gardée sur le téléphone)
 const CLE_META4 = 'guilde-expedition4-meta';
 const lireMeta4 = () => { try { return Object.assign({ mers:{}, gagnes:0, asc:{} }, JSON.parse(localStorage.getItem(CLE_META4) || '{}')); } catch (e) { return { mers:{}, gagnes:0, asc:{} }; } };
 const ecritMeta4 = m => { try { localStorage.setItem(CLE_META4, JSON.stringify(m)); } catch (e) {} };
 const merOuverte = (m, k) => !MERS[k].ouvre || !!m.mers[MERS[k].ouvre] || !!globalThis.TOUT_OUVERT;
-const ascMax = (m, k) => Math.min(10, (m.asc[k] || 0)); // cran le plus haut OUVERT sur cette mer (0 = de base)
+const ascMax4 = (m, k) => Math.min(10, (m.asc[k] || 0)); // cran le plus haut OUVERT sur cette mer (0 = de base)
 // les recrues du recruteur : les anciennes + celles débloquées (une par voyage gagné)
 function recruesDispo(X) { const g = X && X.debloques != null ? X.debloques : 99;
   return Object.keys(RECRUES).filter(k => !RECRUES[k].verrou || RECRUES[k].verrou <= g); }
@@ -204,8 +204,8 @@ adversaire = function (X) {
     return { nom:`Le navire de ${HEROS[f.heros].nom}`, camp:{ heros:f.heros, plateau:f.plateau, X:f.X }, fantome:f.heros }; }
   if (esc.type === 'elite') { const g = M.elites[esc.el || 0], P = plateauV4(X, g, DUR_V4[X.escale]); if (X.asc >= 2) [...P.av, ...P.ar].forEach(u => { if (u) u.a++; });
     return { nom:g.n, camp:{ heros:null, plateau:P, X:null, meca:g.meca, joueur:X }, meca:g.meca, mecaTxt:g.d }; }
-  if (esc.type === 'boss') { const B = BOSS_V4[X.boss], P = plateauV4(X, B, DUR_V4[5] * (X.regle === 'rancon' ? 1.2 : 1) * (X.asc >= 10 ? 1.2 : X.asc >= 4 ? 1.1 : 1));
-    if (B.meca === 'miroir') { const m = meilleure(X), a = m ? m.a + m.bonusA + 2 : 6, roi = P.av[0]; roi.a = Math.max(roi.a, a); P.ar.forEach(u => { if (u) u.v = Math.round(roi.v / 4); }); }
+  if (esc.type === 'boss') { const B = BOSS_V4[X.boss], P = plateauV4(X, B, DUR_V4[5] * (X.regle === 'rancon' ? 1.15 : 1) * (X.asc >= 10 ? 1.2 : X.asc >= 4 ? 1.1 : 1));
+    if (B.meca === 'miroir') { const m = meilleure4(X), a = m ? m.a + m.bonusA + 2 : 6, roi = P.av[0]; roi.a = Math.max(roi.a, a); P.ar.forEach(u => { if (u) u.v = Math.round(roi.v / 4); }); }
     return { nom:B.n, camp:{ heros:null, plateau:P, X:null, meca:B.meca, joueur:X }, meca:B.meca, mecaTxt:B.d }; }
   const g = M.groupes[esc.g || 0]; return { nom:g.n, camp:{ heros:null, plateau:plateauV4(X, g, DUR_V4[X.escale]), X:null } };
 };
@@ -214,9 +214,9 @@ const MECAS_V4 = {
   rage(r, J, E, ev) { const b = E.liste.find(u => !u.mort && u.barriere) || E.liste.find(u => !u.mort); if (b && r > 1) { b.a++; ev.push({ t:'meca', id:b.id, txt:'😡 Rage : +1 attaque' }); } },
   meute(r, J, E, ev) { const m = E.liste[0]; if (!m || m.mort) return; const morts = E.liste.filter(u => u.mort && /Louveteau/.test(u.n)).length; if (morts > (E.meuteVu || 0)) { m.a += 2 * (morts - (E.meuteVu || 0)); E.meuteVu = morts; ev.push({ t:'meca', id:m.id, txt:'🐺 La meute hurle : +2 attaque' }); } },
   eruption(r, J, E, ev, tue) { if (r % 3) return; ev.push({ t:'meca', id:E.liste[0].id, txt:'🌋 Éruption !' }); J.liste.filter(u => !u.mort && u.rang === 'av').forEach(u => { u.v -= 3; ev.push({ t:'epines', id:u.id, n:3, v:u.v }); tue(J, u); }); },
-  souffle(r, J, E, ev, tue) { if (r !== 2 && (r < 2 || (r - 2) % 3)) return; ev.push({ t:'meca', id:E.liste[0].id, txt:'🐉 Souffle de feu sur l’arrière !' }); J.liste.filter(u => !u.mort && u.rang === 'ar').forEach(u => { u.v -= 4; ev.push({ t:'epines', id:u.id, n:4, v:u.v }); tue(J, u); }); },
-  gel(r, J, E, ev) { J.liste.forEach(u => { if (u.gele) { u.a = u.aAvantGel; u.gele = false; } }); const c = J.liste.filter(u => !u.mort).sort((a, b) => b.a - a.a)[0]; if (c) { c.aAvantGel = c.a; c.a = 0; c.gele = true; ev.push({ t:'meca', id:c.id, txt:'❄ Gelé ce round' }); } },
-  tentacules(r, J, E, ev) { if (r < 2 || r % 2) return; const t = E.liste.find(u => u.mort && /Tentacule/.test(u.n)); if (t && E.liste.some(u => !u.mort && u.boss)) { t.mort = false; t.v = Math.ceil(t.vmax / 2); ev.push({ t:'releve', id:t.id, v:t.v, txt:'🦑 La tentacule repousse !' }); } },
+  souffle(r, J, E, ev, tue) { if (r !== 2 && (r < 2 || (r - 2) % 3)) return; ev.push({ t:'meca', id:E.liste[0].id, txt:'🐉 Souffle de feu sur l’arrière !' }); J.liste.filter(u => !u.mort && u.rang === 'ar').forEach(u => { u.v -= 3; ev.push({ t:'epines', id:u.id, n:3, v:u.v }); tue(J, u); }); },
+  gel(r, J, E, ev) { J.liste.forEach(u => { if (u.gele) { u.a = u.aAvantGel; u.gele = false; } }); if (r % 2 === 0) return; const c = J.liste.filter(u => !u.mort).sort((a, b) => b.a - a.a)[0]; if (c) { c.aAvantGel = c.a; c.a = 0; c.gele = true; ev.push({ t:'meca', id:c.id, txt:'❄ Gelé ce round' }); } },
+  tentacules(r, J, E, ev) { if (r < 3 || r % 3) return; const t = E.liste.find(u => u.mort && /Tentacule/.test(u.n)); if (t && E.liste.some(u => !u.mort && u.boss)) { t.mort = false; t.v = Math.ceil(t.vmax / 2); ev.push({ t:'releve', id:t.id, v:t.v, txt:'🦑 La tentacule repousse !' }); } },
   miroir() {},
 };
 // les règles du voyage et les mécaniques passent par le camp : on enveloppe joueEscale
@@ -238,7 +238,7 @@ combatExp = function (campJ, campE, R) {
   const X = campJ.X; if (!X || X.v !== 4) return _combat3(campJ, campE, R);
   // règle : Mer démontée (−2 PV au départ) et Vent arrière (Charge au 1er round) → passées par les ordres du capitaine
   const od = X.ordres || { u:{}, tous:null };
-  if (X.regle === 'tempete') od.tous = { a:(od.tous && od.tous.a) || 0, v:((od.tous && od.tous.v) || 0) - 2 };
+  if (X.regle === 'tempete') od.tous = { a:(od.tous && od.tous.a) || 0, v:((od.tous && od.tous.v) || 0) - 1 };
   X.ordres = od; if (X.regle === 'vent') X.prochain = Object.assign({}, X.prochain, { charge:true });
   globalThis.__MECA4 = campE.meca ? MECAS_V4[campE.meca] : null;
   try { return _combat3(campJ, campE, R); } finally { globalThis.__MECA4 = null; }
@@ -281,7 +281,7 @@ function finVoyageMeta(X) {
   const m = lireMeta4(), apport = [];
   if (X.fini === 'gagne') {
     if (!m.mers[X.mer]) { m.mers[X.mer] = 1; const s = ORDRE_MERS[ORDRE_MERS.indexOf(X.mer) + 1]; if (s) apport.push(`🗺 Nouvelle mer ouverte : ${MERS[s].e} ${MERS[s].n} !`); } else m.mers[X.mer]++;
-    if (X.asc >= ascMax(m, X.mer) && X.asc < 10) { m.asc[X.mer] = X.asc + 1; apport.push(`⛰ Ascension ${X.asc + 1} ouverte sur ${MERS[X.mer].n}.`); }
+    if (X.asc >= ascMax4(m, X.mer) && X.asc < 10) { m.asc[X.mer] = X.asc + 1; apport.push(`⛰ Ascension ${X.asc + 1} ouverte sur ${MERS[X.mer].n}.`); }
     m.gagnes = (m.gagnes || 0) + 1; const nv = Object.entries(RECRUES_V4).find(([, r]) => r.verrou === m.gagnes); if (nv) apport.push(`🎖 Nouvelle recrue au recruteur : ${nv[1].n} !`);
   }
   if (X.jour) { const j = new Date().toISOString().slice(0, 10), s = scoreV4(X); m.jour = m.jour && m.jour.j === j ? m.jour : { j, best:0, essais:0 }; m.jour.essais++; if (s > m.jour.best) { m.jour.best = s; apport.push(`📅 Meilleur score du voyage du jour : ${s} !`); } }

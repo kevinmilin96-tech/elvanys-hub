@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Expéditions v4 : la rejouabilité (à valider)</title>
+<style>
+  body { margin:0; background:#0d0a1c; color:#f1ecff; font:15px/1.5 Georgia, serif; }
+  main { max-width:760px; margin:0 auto; padding:16px 14px 60px; }
+  h1 { color:#f3c96b; text-align:center; font-size:1.6em; margin:.3em 0; } h2 { color:#f3c96b; border-bottom:1px solid #f3c96b55; padding-bottom:4px; margin-top:1.6em; }
+  .doux { opacity:.8; } .bloc { background:#1c1838; border:1px solid #6b5fb0; border-radius:14px; padding:10px 12px; margin:8px 0; }
+  .grille { display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:8px; }
+  .a-valider { background:#3a2a0e; border:1px solid #f3c96b; border-radius:14px; padding:10px 12px; margin:8px 0; }
+  table { width:100%; border-collapse:collapse; font-size:.88em; } td, th { border-bottom:1px solid #ffffff22; padding:4px 3px; text-align:left; vertical-align:top; }
+  .go { display:block; text-align:center; margin:14px auto; padding:12px; border-radius:14px; background:linear-gradient(#f6d77e, #c8902f); color:#2a1a08; font-weight:bold; text-decoration:none; max-width:360px; }
+  b.or { color:#f3c96b; } small { opacity:.8; }
+</style></head><body><main>
+<h1>⛵ Les Expéditions v4 : la rejouabilité</h1>
+<p class="doux" style="text-align:center">Séance « carte blanche » de la nuit du 17 au 18/11. Les 8 idées que tu as cochées sont construites dans une <b>version jouable à côté de l'ancienne</b>.
+Tout ce qui est en <span style="color:#f3c96b">encadré doré</span> est un choix que j'ai fait seul : à valider ou changer demain.</p>
+<a class="go" href="expedition-v4.html">▶ Jouer à la version v4</a>
+<p class="doux" style="text-align:center">L'ancienne version reste là : <a href="expedition.html" style="color:#f3c96b">expedition.html</a> (et le bouton « L’ancienne version » dans la v4).</p>
+
+<h2>1. Le voyage en un coup d'œil</h2>
+<div class="bloc">Au départ : tu choisis <b>la mer</b>, ton <b>cran d'ascension</b> (et si tu veux, <b>le voyage du jour</b>), puis ton capitaine.
+Le jeu tire <b>une règle du voyage</b> et <b>le boss final</b>, et te les montre tout de suite.<br>
+Puis <b>6 étapes</b> : à chacune, tu touches ta prochaine escale sur la carte parmi <b>2 ou 3</b>. Le port, le recruteur, les familles, la fusion et les ordres du capitaine ne changent pas.</div>
+<div class="a-valider">🟡 <b>À valider</b> : la carte montre l'étape en cours et la suivante ; le reste est « dans la brume » (sauf le boss, connu dès le départ, comme dans Slay the Spire). Le trésor « carte ancienne » dévoile toute la route.</div>
+<div id="etapes"></div>
+
+<h2>2. Les escales</h2>
+<div class="bloc"><table>
+<tr><td>⚔ Monstres</td><td>Un groupe de la mer, de plus en plus dur selon l'étape.</td></tr>
+<tr><td>💀 Élite</td><td>Un gros monstre avec une <b>mécanique</b> (Rage, Meute, Gel, Chant). Plus dur, mais <b>+4 💰</b> de prime.</td></tr>
+<tr><td>👻 Navire rival</td><td>Comme avant : l'équipage d'un autre capitaine.</td></tr>
+<tr><td>❔ Événement</td><td>Une page de récit à choix (voir partie 4). Pas de combat.</td></tr>
+<tr><td>💎 Trésor</td><td>Au choix : +7 💰, une recrue ★ de ta famille, ou la carte ancienne (+3 💰).</td></tr>
+<tr><td>🏝 Port franc</td><td>Au choix : +1 cœur, ou +5 💰 et une nouvelle offre au recruteur.</td></tr>
+</table></div>
+<div class="a-valider">🟡 <b>À valider</b> : une escale sans combat rapporte <b>4 💰</b> au port (au lieu de 8 après un combat). Une défaite ne fait plus que perdre un cœur et avancer, comme avant.</div>
+
+<h2>3. Les trois mers</h2>
+<div class="a-valider">🟡 <b>À valider</b> : la Mer des glaces s'ouvre en gagnant la Mer des nuages, l'Archipel des tempêtes en gagnant la Mer des glaces. Les noms des monstres, des élites et des escales sont de moi. Les décors réutilisent ceux de la v3 en attendant les images (partie 8).</div>
+<div id="mers"></div>
+
+<h2>4. Les boss (tirés au sort parmi ceux de la mer)</h2>
+<div id="boss" class="grille"></div>
+
+<h2>5. Les 8 règles du voyage (une tirée à chaque départ)</h2>
+<div id="regles" class="grille"></div>
+
+<h2>6. Les événements</h2>
+<div id="events"></div>
+
+<h2>7. Recrues à débloquer, ascension, voyage du jour</h2>
+<div class="bloc"><b class="or">🎖 Recrues à débloquer</b> : une nouvelle recrue arrive au recruteur à chaque voyage gagné (toutes mers confondues), dans cet ordre :<div id="recrues"></div></div>
+<div class="a-valider">🟡 <b>À valider</b> : les nouvelles recrues utilisent pour l'instant l'illustration d'une recrue proche (prompts prêts, partie 8).</div>
+<div class="bloc"><b class="or">⛰ Ascension</b> : 10 crans par mer ; gagner au cran N ouvre le cran N+1 sur cette mer. Les effets s'ajoutent :<ol id="asc" start="1"></ol>
+Le score est multiplié : +10 % par cran, +25 % par mer après la première.</div>
+<div class="bloc"><b class="or">📅 Le voyage du jour</b> : la même graine pour tout le monde ce jour-là (même carte, même règle, même boss, mêmes recrues proposées). Ton meilleur score du jour est gardé sur le téléphone.</div>
+<div class="a-valider">🟡 <b>Pas fait (demande ton accord)</b> : comparer les scores du jour <b>entre amis</b>. Il faut une petite table sur le serveur du labo perso (comme le carnet des parties). Je ne l'ai pas mise en ligne : rien n'a été touché sur le serveur cette nuit.</div>
+
+<h2>8. Le simulateur (réglage de la difficulté)</h2>
+<div class="bloc">Outil : <code>outils/simuler-expedition-v4.mjs</code> (le pilote de l'ordinateur choisit sa route comme un joueur raisonnable, sans les recrues débloquées). Pourcentage de voyages gagnés, 30 voyages par capitaine :
+<table><tr><th>Capitaine</th><th>☁️ Nuages</th><th>❄️ Glaces</th><th>⛈️ Tempêtes</th></tr>
+<tr><td>Maëlle</td><td>40 %</td><td>37 %</td><td>23 %</td></tr><tr><td>Aldric</td><td>33 %</td><td>47 %</td><td>37 %</td></tr>
+<tr><td>Pip</td><td>67 %</td><td>70 %</td><td>53 %</td></tr><tr><td>Oria</td><td>63 %</td><td>47 %</td><td>40 %</td></tr>
+<tr><td>Gorm</td><td>50 %</td><td>40 %</td><td>33 %</td></tr><tr><td>Zéphine</td><td>53 %</td><td>67 %</td><td>40 %</td></tr></table>
+<small>Mesures faites pendant le réglage (avant les derniers petits ajustements des Glaces et du Kraken) : à refaire sur 100 voyages quand tu auras joué.</small></div>
+<div class="a-valider">🟡 <b>À surveiller</b> : Pip toujours le plus fort, Maëlle la plus faible dans l'Archipel. La règle « La rançon du boss » et « Mer démontée » font baisser nettement les victoires (c'est voulu : ce sont les règles « dures », elles rapportent plus).</div>
+
+<h2>9. Les images à générer (Gemini)</h2>
+<div class="bloc">Les prompts sont <b>en tête de la page des prompts</b> (section « Expéditions v4 ») : fonds des deux nouvelles mers, 4 boss nouveaux, 4 élites, 6 recrues, 6 événements.
+<br><a href="prompts.html" style="color:#f3c96b">Ouvrir la page des prompts ›</a></div>
+
+<h2>10. Ce que je te propose de décider demain</h2>
+<ol class="bloc">
+<li>La carte : brume au-delà de l'étape suivante, ou toute la carte visible dès le départ ?</li>
+<li>Les escales sans combat : 4 💰 au port, c'est bien ?</li>
+<li>Le classement du voyage du jour entre amis : on le met sur le serveur du labo (petite table) ?</li>
+<li>Les noms (mers, élites, boss, recrues) : à garder ou à changer ?</li>
+<li>Remplacer l'ancienne version par la v4 dans le menu, ou garder les deux ?</li>
+</ol>
+</main>
+<script src="donnees.js?v=2afe6cf473"></script><script src="odyssee.js?v=3b40723744"></script><script src="expedition-moteur.js?v=dccf2c7473"></script><script src="expedition-v4.js?v=4f83dd8e8b"></script>
+<script>
+const typ = { monstres:'⚔ monstres', elite:'💀 élite', fantome:'👻 navire rival', evenement:'❔ événement', tresor:'💎 trésor', port:'🏝 port franc', boss:'👑 boss' };
+document.getElementById('etapes').innerHTML = `<div class="bloc"><b class="or">Les étapes</b> (une sorte tirée par case) :<table>${ETAPES_V4.map((e, k) => `<tr><td>Étape ${k + 1}</td><td>${e.map(c => c.map(t => typ[t]).join(' ou ')).join(' · ')}</td></tr>`).join('')}</table></div>`;
+document.getElementById('mers').innerHTML = ORDRE_MERS.map(k => { const M = MERS[k];
+  return `<div class="bloc"><b class="or">${M.e} ${M.n}</b> — ${M.d}${M.ouvre ? ` <small>(s'ouvre en gagnant ${MERS[M.ouvre].n})</small>` : ''}
+  <table>${M.groupes.map(g => `<tr><td>${g.e} ${g.n}</td><td>${[...g.av, ...g.ar].map(m => `${m[0]} <small>${m[1]}/${m[2]}${m[3] ? ' ' + m[3] : ''}</small>`).join(', ')}</td></tr>`).join('')}
+  ${M.elites.map(g => `<tr><td>💀 ${g.n}</td><td>${g.d}</td></tr>`).join('')}<tr><td>👑 Boss possibles</td><td>${M.boss.map(b => BOSS_V4[b].e + ' ' + BOSS_V4[b].n).join(' · ')}</td></tr></table></div>`; }).join('');
+document.getElementById('boss').innerHTML = Object.values(BOSS_V4).map(B => `<div class="bloc"><b class="or">${B.e} ${B.n}</b><br>${B.d}<br><small>${[...B.av, ...B.ar].map(m => m[0]).join(', ')}</small></div>`).join('');
+document.getElementById('regles').innerHTML = Object.values(REGLES_V4).map(R => `<div class="bloc"><b class="or">${R.e} ${R.n}</b><br>${R.d}</div>`).join('');
+document.getElementById('events').innerHTML = Object.values(EVENEMENTS_V4).map(E => `<div class="bloc"><b class="or">${E.e} ${E.n}</b><br><i>${E.texte}</i><ul>${E.choix.map(c => `<li><b>${c.t}</b> : ${c.d}</li>`).join('')}</ul></div>`).join('');
+document.getElementById('recrues').innerHTML = `<table>${Object.values(RECRUES_V4).sort((a, b) => a.verrou - b.verrou).map(r => `<tr><td>${r.verrou}<sup>e</sup> voyage gagné</td><td><b>${r.n}</b> <small>${FAMILLES[r.fam].e} ${ROLES[r.role]} · ⚔ ${r.a} ❤ ${r.v}</small><br><small>${r.d}</small></td></tr>`).join('')}</table>`;
+document.getElementById('asc').innerHTML = ASC_V4.slice(1).map(t => `<li>${t}</li>`).join('');
+</script></body></html>

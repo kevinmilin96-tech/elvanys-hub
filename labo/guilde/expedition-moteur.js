@@ -199,6 +199,7 @@ function combatExp(campJ, campE, R) {
   for (let round = 1; round <= 25; round++) {
     if (!vivants(J).length || !vivants(E).length) break;
     ev.push({ t:'round', n:round });
+    if (globalThis.__MECA4) globalThis.__MECA4(round, J, E, ev, tue); // 17/11 nuit : les mécaniques des boss et élites des Expéditions v4 (rien en v3)
     const ordre = []; const ja = vivants(J), ea = vivants(E), premier = R() < .5;
     for (let i = 0; i < Math.max(ja.length, ea.length); i++) { const p = premier ? [ja[i], ea[i]] : [ea[i], ja[i]]; p.forEach(x => x && ordre.push(x)); }
     if (round === 1) ordre.sort((x, y) => (y.charge ? 1 : 0) - (x.charge ? 1 : 0));
