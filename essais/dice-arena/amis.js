@@ -14,13 +14,13 @@ const AMIS_API = '/api/hub/guilde/joueur';
   #amis-bouton .pt { display:inline-block; min-width:18px; height:18px; line-height:18px; border-radius:9px; background:#7dffb0; color:#0a2a14; font-size:11px; margin-left:4px; padding:0 4px; }
   #amis-bouton .pt.rouge { background:#ff5a5a; color:#fff; }
   .am-voile { position:fixed; inset:0; background:#000c; z-index:5000; display:flex; align-items:center; justify-content:center; padding:4vw; }
-  .am-fen { width:min(94vw, 460px); max-height:88vh; overflow:auto; background:#1c1838; border:2px solid #7cd4ff; border-radius:18px; padding:16px; color:#f1ecff; font:15px/1.45 Georgia, serif; }
+  .am-fen { width:min(94vw, 460px); max-height:88vh; max-height:85dvh; overflow:auto; -webkit-overflow-scrolling:touch; background:#1c1838; border:2px solid #7cd4ff; border-radius:18px; padding:16px; color:#f1ecff; font:15px/1.45 Georgia, serif; }
   .am-fen h2 { margin:0 0 6px; text-align:center; color:#7cd4ff; font-size:1.2em; } .am-fen h3 { color:#f3c96b; font-size:1em; margin:14px 0 6px; }
   .am-fen .doux { color:#c9c1ea; font-size:.9em; }
   .am-code { text-align:center; font-size:1.8em; letter-spacing:.2em; color:#f3c96b; font-weight:bold; margin:4px 0; }
-  .am-fen input { width:100%; font:1.05em Georgia, serif; padding:9px 12px; border-radius:12px; border:2px solid #45457a; background:#14122a; color:#f1ecff; }
+  .am-fen input { width:100%; font:16px Georgia, serif; padding:9px 12px; border-radius:12px; border:2px solid #45457a; background:#14122a; color:#f1ecff; }
   .am-fen input.code { text-transform:uppercase; letter-spacing:.2em; text-align:center; font-weight:bold; }
-  .am-bt { font:bold .92em Georgia, serif; padding:8px 12px; border-radius:12px; border:1px solid #45457a; background:#221d42; color:#f1ecff; cursor:pointer; }
+  .am-bt { font:bold .92em Georgia, serif; padding:10px 14px; min-height:44px; border-radius:12px; border:1px solid #45457a; background:#221d42; color:#f1ecff; cursor:pointer; touch-action:manipulation; -webkit-tap-highlight-color:#7cd4ff55; }
   .am-bt.go { background:#7cd4ff; color:#0a1a2a; border:0; } .am-bt.or { background:#f3c96b; color:#2b1d0a; border:0; } .am-bt.large { display:block; width:100%; margin-top:8px; padding:11px; }
   .am-ligne { display:flex; align-items:center; gap:8px; padding:8px; border:1px solid #2e2a55; border-radius:12px; margin:6px 0; background:#14122a; }
   .am-ligne .p { flex:1; } .am-ligne small { display:block; color:#c9c1ea; }
@@ -98,8 +98,19 @@ async function amisRejoindre(salle) {
   else location.href = 'chroniques.html?salle=' + encodeURIComponent(salle);
 }
 // la fenêtre des amis
-function amisFermer() { AMIS.ouvert = false; const f = document.getElementById('amis-fen'); if (f) f.innerHTML = ''; }
+function amisFermer() { AMIS.ouvert = false; amisDernierHTML = null; const f = document.getElementById('amis-fen'); if (f) f.innerHTML = ''; }
+// 17/11 (un ami sur iPhone : « Accepter » ne répond pas) : la fenêtre était REDESSINÉE toutes les 20 s même sans changement ; sur iPhone,
+// un toucher pendant ce redessin est perdu. On ne redessine plus si rien n'a changé, ni pendant (et juste après) un toucher.
+let amisDernierHTML = null, amisToucheA = 0;
+document.addEventListener('touchstart', e => { if (e.target && e.target.closest && e.target.closest('#amis-fen')) amisToucheA = Date.now(); }, { passive:true, capture:true });
+let amisAttente = null, AMIS_RAFRAICHI = false;
 function amisFen(h) { let f = document.getElementById('amis-fen'); if (!f) { f = document.createElement('div'); f.id = 'amis-fen'; document.body.appendChild(f); }
+  if (h && h === amisDernierHTML && f.innerHTML) return;
+  if (AMIS_RAFRAICHI && h && f.innerHTML && Date.now() - amisToucheA < 1500) { // rafraîchissement automatique pendant un toucher : plus tard
+    const premier = amisAttente === null; amisAttente = h;
+    if (premier) setTimeout(() => { const x = amisAttente; amisAttente = null; if (x && AMIS.ouvert) amisFen(x); }, 1600); return; }
+  amisAttente = null;
+  amisDernierHTML = h || null;
   f.innerHTML = h ? `<div class="am-voile" onclick="if(event.target===this)amisFermer()"><div class="am-fen">${h}</div></div>` : ''; }
 // la carte de profil d'un ami (les décors viennent de profil.js s'il est chargé, sinon un fond simple)
 const amisPortrait = k => { if (!k) return ['portraits/gorm.webp', 'portraits/gorm.webp']; const m = /^av-([a-z]+)-[hf]$/.exec(k); return [`portraits/${k}.webp`, `portraits/${m ? m[1] : 'gorm'}.webp`]; };
@@ -185,8 +196,8 @@ async function amisPseudoOk() { const p = (document.getElementById('am-pseudo2')
 // le signal de présence : tout de suite, puis toutes les 20 s quand l'écran est visible
 function amisDemarre() {
   amisBouton(); if (location.protocol === 'file:') return;
-  if (AMIS.carte) amisAgir('signal').then(() => { if (AMIS.ouvert) amisDessine(); });
-  setInterval(() => { if (!document.hidden && AMIS.carte) amisAgir('signal').then(() => { if (AMIS.ouvert) amisDessine(); }); }, 20000);
+  if (AMIS.carte) amisAgir('signal').then(() => { if (AMIS.ouvert) { AMIS_RAFRAICHI = true; amisDessine(); AMIS_RAFRAICHI = false; } });
+  setInterval(() => { if (!document.hidden && AMIS.carte) amisAgir('signal').then(() => { if (AMIS.ouvert) { AMIS_RAFRAICHI = true; amisDessine(); AMIS_RAFRAICHI = false; } }); }, 20000);
   document.addEventListener('visibilitychange', () => { if (!document.hidden && AMIS.carte) amisAgir('signal'); });
 }
 if (typeof document !== 'undefined') { if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', amisDemarre); else amisDemarre(); }
