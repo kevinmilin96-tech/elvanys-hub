@@ -849,11 +849,30 @@ function prendreEscalier(S, hi) {
 }
 // 16/11 (l'utilisateur : « bloqué par Maëlle dans le couloir ») : changer de place avec un allié juste à côté, pour 1 pas
 // (comme traverser un allié dans D&D, ou l'échange de place de Baldur's Gate 3 / Gloomhaven)
+// 17/11 (l'utilisateur : « le changement de place se fait un par un, ça demande trop de gestes ») : on change de place avec N'IMPORTE
+// QUEL allié que le dé permet d'atteindre ; on paie les pas du trajet ; les alliés dépassés reculent chacun d'une case (le groupe se décale).
+function coutEchange(S, hi, idDe, ci) {
+  const h = S.heros[hi], z = S.heros[ci], d = h && h.des.find(x => x.id === idDe); if (!z || z === h || h.aTerre || z.aTerre || !d) return null;
+  const total = d.pas ? d.v : pasDe(h, d.v).n, ch = chemin(S, h, z.x, z.y, total, true) || chemin(S, h, z.x, z.y, total, false);
+  return ch && ch.length <= total ? ch.length : null;
+}
 function echanger(S, hi, idDe, ci) {
   const h = S.heros[hi], z = S.heros[ci]; if (!z || z === h || h.aTerre) return 'Personne avec qui changer de place.';
-  if (dist(h, z) !== 1) return 'Il faut être juste à côté.'; if (!h.des.find(d => d.id === idDe)) return 'Choisis d’abord un dé.';
-  unPas(S, h, idDe); const a = [h.x, h.y]; h.x = z.x; h.y = z.y; z.x = a[0]; z.y = a[1]; log(S, `↔ ${nm(h)} et ${nm(z)} changent de place.`); voir(S);
-  return { ok:true, ev:[{ t:'marche', h:hi, de:[z.x, z.y] }, { t:'marche', h:ci, de:[h.x, h.y] }] };
+  const d = h.des.find(x => x.id === idDe); if (!d) return 'Choisis d’abord un dé.';
+  const total = d.pas ? d.v : pasDe(h, d.v).n, ch = chemin(S, h, z.x, z.y, total, true) || chemin(S, h, z.x, z.y, total, false);
+  if (!ch || ch.length > total) return 'Trop loin pour ce dé.';
+  // un piège caché sur le chemin : on s'y arrête, comme en marchant (pas d'échange)
+  const k = ch.findIndex((c, i) => i < ch.length - 1 && S.R.obj[c] && S.R.obj[c].t === 'piege' && !S.R.obj[c].trouve && !herosEn(S, ...c.split(',').map(Number)));
+  if (k >= 0) { const [tx, ty] = ch[k].split(',').map(Number); return bouger(S, hi, idDe, tx, ty); }
+  prendDe(h, idDe); const reste = total - ch.length; if (reste > 0) h.des.push({ id:'d' + S.seq++, v:reste, pas:true });
+  const cases = [cle(h.x, h.y)].concat(ch), ev = [{ t:'marche', h:hi, de:[h.x, h.y] }], recule = [];
+  // les héros posés sur le chemin reculent d'une case (tous en même temps)
+  ch.forEach((c, i) => { const [cx, cy] = c.split(',').map(Number); S.heros.forEach((y, j) => { if (y !== h && y.x === cx && y.y === cy) recule.push([j, cases[i]]); }); });
+  const [fx, fy] = ch[ch.length - 1].split(',').map(Number); h.x = fx; h.y = fy;
+  recule.forEach(([j, c]) => { const y = S.heros[j], de = [y.x, y.y]; [y.x, y.y] = c.split(',').map(Number); ev.push({ t:'marche', h:j, de }); });
+  const noms = recule.map(([j]) => nm(S.heros[j]));
+  log(S, ch.length === 1 ? `↔ ${nm(h)} et ${nm(z)} changent de place.` : `↔ ${nm(h)} passe devant (${ch.length} pas) : ${noms.join(', ')} recule${noms.length > 1 ? 'nt' : ''} d’une case.`); voir(S);
+  return { ok:true, ev };
 }
 // 16/11 (choix de l'utilisateur) : LE COLPORTEUR (comme le marchand de Slay the Spire / le colporteur de Darkest Dungeon) : on paie avec la bourse du groupe
 const ETAL = { potion:12, parchemin:15, fumee:10 };
@@ -1059,6 +1078,6 @@ function transmuter(S, hi, idDe) {
   const av = d.v; d.v = 7 - d.v; d.mod = true; h.transT = S.R.tour; log(S, `🔄 Transmutation : le ${av} de Zéphine devient un ${d.v}.`); return { ok:true, ev:[pwEv(h, hi, 'passif', ['h' + hi])] };
 }
 const API = { JAUGE_ULT, GRANDIT, miseAJour:S => { if (S && S.R && S.R.plan === 2) { elargitPortes(S); majBibliotheque(S); majBibliotheque3(S); majBibliotheque5(S); majAutel2(S); } return S; }, benir, ETAL, acheter, pause, echanger, prendreEscalier, moitiesPorte, presDePorte, rectSalle, etageDe, COULOIRS_Z2, CAPA, phasesDe, grilleOuverte, contact, pasDe, aPortee, SAC, utiliser, SCEN, HEROS_C, BETES, PHASES, SALLES, OBJETS, MEUBLE_N, nouvelle, atteignables, bouger, frapper, proteger, soigner, donner, relever, fouiller, agir, ouvrir,
-  finTour, visible, accepte, voisins, dist, herosEn, cle, libre, reveille, pwInfo, lancerPouvoir, transmuter, trouveCombo, PW_CO, COMBOS };
+  finTour, visible, accepte, coutEchange, voisins, dist, herosEn, cle, libre, reveille, pwInfo, lancerPouvoir, transmuter, trouveCombo, PW_CO, COMBOS };
 if (typeof module !== 'undefined' && module.exports) module.exports = API; else racine.CHRON = API;
 })(typeof window !== 'undefined' ? window : globalThis);
