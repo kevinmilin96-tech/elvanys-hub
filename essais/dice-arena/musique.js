@@ -10,6 +10,15 @@
 // un bandeau propose « Mettre à jour » (recharge la page avec une adresse neuve) ou « Plus tard ». Les parties en cours sont gardées.
 // Duel, menu et Odyssée ont déjà leur propre bandeau (verifieVersion) : on ne double pas.
 // 16/11 : le COMPTE et la SAUVEGARDE SUR LE SERVEUR (sauvegarde.js), chargés sur toutes les pages du jeu par ce lecteur commun
+// 17/11 (l'utilisateur : « quand on reste appuyé sur une image », le menu du navigateur s'ouvre : télécharger, Google Lens…) :
+// dans le jeu, un appui long sur une image ne fait plus rien (toutes les pages du jeu chargent ce fichier)
+(() => { if (typeof document === 'undefined' || window.__sansMenuImage) return; window.__sansMenuImage = true;
+  const st = document.createElement('style');
+  st.textContent = 'img, svg, canvas, [style*="background-image"] { -webkit-touch-callout:none; -webkit-user-select:none; user-select:none; -webkit-user-drag:none; }';
+  (document.head || document.documentElement).appendChild(st);
+  document.addEventListener('contextmenu', e => { const t = e.target; if (t && (t.tagName === 'IMG' || t.tagName === 'CANVAS' || t.tagName === 'svg' || (t.closest && t.closest('svg')))) e.preventDefault(); }, { capture:true });
+  document.addEventListener('dragstart', e => { if (e.target && e.target.tagName === 'IMG') e.preventDefault(); }, { capture:true });
+})();
 (() => { try { if (window.GS || document.getElementById('gs-script')) return; const v = (document.currentScript && (document.currentScript.src.match(/[?&]v=([^&]+)/) || [])[1]) || '1';
   if (!/^\d{8}-\d{6}$/.test(v)) return; // pas sur les pages d'outils (prompts, calage…)
   const s = document.createElement('script'); s.id = 'gs-script'; s.src = 'sauvegarde.js?v=' + v; document.head.appendChild(s); } catch (e) {} })();
