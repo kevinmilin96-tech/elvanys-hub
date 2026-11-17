@@ -400,6 +400,10 @@ const salleAJour = () => { if ($('salleListe')) equipeEnLigne(); };
 // la plus ancienne remplacée ; rangé sous « guilde-… » donc aussi sur son compte du serveur). À l'accueil : « Rouvrir » = une nouvelle salle
 // avec la partie là où on s'est arrêtés ; chacun reprend tout seul le héros qu'il jouait (même prénom), sinon il le choisit.
 const CLE_ENLIGNE = 'guilde-chroniques-enligne-sauves';
+// 17/11 (l'utilisateur : « le prénom est lié au compte, c'est la première chose à faire en ouvrant la Guilde ») : le joueur EST son compte
+// (code ami fixe + pseudo) ; plus de prénom à taper, et on retrouve ses héros d'une fois sur l'autre même si le pseudo change
+function moiCompte() { const c = (typeof AMIS !== 'undefined' && AMIS.carte) || (() => { try { return JSON.parse(localStorage.getItem('guilde-carte') || 'null'); } catch (e) { return null; } })();
+  return c && c.code && c.pseudo ? { id:'c' + c.code, nom:String(c.pseudo).slice(0, 24) } : null; }
 function sauvesEnLigne() { try { const l = JSON.parse(localStorage.getItem(CLE_ENLIGNE) || '[]'); return Array.isArray(l) ? l : []; } catch (e) { return []; } }
 function rangeEnLigne() {
   if (!L || !S || !estHote() || S.scen === 'atelier') return;
@@ -407,7 +411,8 @@ function rangeEnLigne() {
   let l = sauvesEnLigne().filter(x => x.id !== S.sid);
   if (S.fin) { localStorage.setItem(CLE_ENLIGNE, JSON.stringify(l)); return; }
   const noms = S.heros.map((z, i) => proprio(i) || (S.anciens || [])[i] || '');
-  const copie = JSON.parse(JSON.stringify(S)); copie.anciens = noms; delete copie.animM;
+  const idDe = i => (L.joueurs.find(j => (j.heros || []).includes(i)) || {}).id || (S.anciensId || [])[i] || '';
+  const copie = JSON.parse(JSON.stringify(S)); copie.anciens = noms; copie.anciensId = S.heros.map((z, i) => idDe(i)); delete copie.animM;
   l.unshift({ id:S.sid, quand:Date.now(), titre:S.campagne != null ? CHAPITRES[S.campagne].titre : (SCX_TXT[S.scen] || {}).titre || S.scen,
     heros:S.heros.map((z, i) => nomH(z) + (noms[i] ? ` (${noms[i]})` : '')).join(', '), S:copie });
   localStorage.setItem(CLE_ENLIGNE, JSON.stringify(l.slice(0, 3)));
@@ -415,20 +420,22 @@ function rangeEnLigne() {
 function oublierEnLigne(id) { if (!confirm('Effacer cette sauvegarde ?')) return; localStorage.setItem(CLE_ENLIGNE, JSON.stringify(sauvesEnLigne().filter(x => x.id !== id))); accueil(); }
 async function rouvrirEnLigne(id, nomDonne) {
   const sv = sauvesEnLigne().find(x => x.id === id); if (!sv) return;
+  const cpt = moiCompte(); if (!nomDonne && cpt) nomDonne = cpt.nom;
   if (!nomDonne) { fenetre(`<h2>💾 Rouvrir « ${sv.titre} »</h2><p style="color:var(--doux)">Une nouvelle salle s'ouvre avec la partie là où vous vous êtes arrêtés. Tes amis la rejoignent avec le nouveau code et reprennent leur héros.</p><p style="color:var(--doux)">Ton prénom (ou pseudo) :</p>
       <input id="fNom3" maxlength="24" value="${(localStorage.getItem('guilde-pseudo') || '').replace(/"/g, '')}" style="width:100%;font:1.1em Georgia;padding:10px;border-radius:12px;border:2px solid #45457a;background:#14122a;color:var(--texte)">
       <button class="go" onclick="const n=($('fNom3').value||'').trim();if(!n){bulle('Ton prénom ?',true);return}fenetre('');rouvrirEnLigne('${id}', n)">Rouvrir la salle</button><button class="sec" onclick="fenetre('')">Annuler</button>`); return; }
   const nom = String(nomDonne).trim().slice(0, 24); localStorage.setItem('guilde-pseudo', nom);
-  const moi = { id:'j' + Math.random().toString(36).slice(2, 10), nom };
+  const moi = cpt || { id:'j' + Math.random().toString(36).slice(2, 10), nom };
   const etat = JSON.parse(JSON.stringify(sv.S)); etat.hote = moi.id; etat.sid = sv.id;
   const anciens = etat.anciens || [];
-  const joueurs = [{ id:moi.id, nom, heros:etat.heros.map((z, i) => anciens[i] === nom ? i : -1).filter(i => i >= 0) }];
+  const ids = etat.anciensId || [], cEst = i => ids[i] ? ids[i] === moi.id : anciens[i] === moi.nom;
+  const joueurs = [{ id:moi.id, nom:moi.nom, heros:etat.heros.map((z, i) => cEst(i) ? i : -1).filter(i => i >= 0) }];
   try { const { statut, d } = await api('POST', API, { mode:'chroniques', etat, joueurs });
     if (statut !== 200) { bulle(d.message || 'Impossible de rouvrir la salle.', true); return; }
     S = etat; LOB = null; L = { code:d.code, version:d.version, joueurs, moi, dernier:JSON.stringify(S) };
     localStorage.setItem(SALLE, JSON.stringify({ code:L.code, moi, quand:Date.now() }));
     actif = Math.max(0, mesHeros()[0] || 0); sel = null; centrer = true; son('portail'); dessine(); rangeEnLigne();
-    fenetre(`<h2>💾 La partie est rouverte</h2><p style="text-align:center">Code à donner à tes amis :<br><b style="color:var(--or);font-size:2em;letter-spacing:.15em">${L.code}</b></p><p style="color:var(--doux)">Ils touchent 🔑 Rejoindre avec un code et reprennent leur héros tout seuls s'ils gardent le même prénom.</p><button class="go" onclick="equipeEnLigne()">Voir qui joue quel héros</button>`);
+    fenetre(`<h2>💾 La partie est rouverte</h2><p style="text-align:center">Code à donner à tes amis :<br><b style="color:var(--or);font-size:2em;letter-spacing:.15em">${L.code}</b></p><p style="color:var(--doux)">Ils touchent 🔑 Rejoindre avec un code et reprennent leur héros tout seuls avec leur compte.</p><button class="go" onclick="equipeEnLigne()">Voir qui joue quel héros</button>`);
   } catch (e) { bulle('Pas de réseau.', true); }
 }
 function recoit(d) {
@@ -454,14 +461,15 @@ setInterval(async () => {
   try { const { statut, d } = await api('GET', `${API}/${L.code}?v=${L.version}`); if (statut === 200 && !d.pareil) recoit(d); } catch (e) {}
 }, 2000);
 async function creerSalle(nomDonne) {
+  const cpt = moiCompte(); if (!nomDonne && cpt) nomDonne = cpt.nom;
   if (!nomDonne) { fenetre(`<h2>🌐 Créer une partie à distance</h2><p style="color:var(--doux)">Ton prénom (ou pseudo), que tes amis verront :</p>
       <input id="fNom2" maxlength="24" value="${(localStorage.getItem('guilde-pseudo') || '').replace(/"/g, '')}" style="width:100%;font:1.1em Georgia;padding:10px;border-radius:12px;border:2px solid #7cd4ff;background:#14122a;color:var(--texte)">
       <button class="go" onclick="const n=($('fNom2').value||'').trim();if(!n){bulle('Ton prénom ?',true);return}fenetre('');creerSalle(n)">Créer la salle</button><button class="sec" onclick="fenetre('')">Annuler</button>`); return; }
   const nom = String(nomDonne).trim().slice(0, 24); if (!nom) return;
   localStorage.setItem('guilde-pseudo', nom);
   // 15/11 : une SALLE D'ATTENTE (l'hôte choisit le scénario, chacun ajoute son héros, l'hôte lance pour tout le monde)
-  const moi = { id:'j' + Math.random().toString(36).slice(2, 10), nom };
-  const joueurs = [{ id:moi.id, nom, heros:[] }];
+  const moi = cpt ? cpt : { id:'j' + Math.random().toString(36).slice(2, 10), nom };
+  const joueurs = [{ id:moi.id, nom:moi.nom, heros:[] }];
   S = null; L = { code:'', version:0, joueurs, moi, dernier:'' };
   LOB = { scen:scenChoisi, camp:null, equipe:choisis.slice(0, 4).map(entreeLobby).filter(Boolean), hote:moi.id };
   try { const { statut, d } = await api('POST', API, { mode:'chroniques', etat:{ lobby:LOB }, joueurs });
@@ -476,19 +484,20 @@ async function creerSalle(nomDonne) {
 function rejoindreForm() {
   fenetre(`<h2>🔑 Rejoindre une partie</h2><p style="color:var(--doux)">Le code de la salle (4 lettres), donné par ton ami :</p>
     <input id="fCode" maxlength="4" autocomplete="off" style="width:100%;font:bold 1.6em Georgia;text-align:center;letter-spacing:.3em;text-transform:uppercase;padding:10px;border-radius:12px;border:2px solid var(--or);background:#14122a;color:var(--texte)">
-    <p style="color:var(--doux);margin-top:12px">Ton prénom (ou pseudo) :</p>
-    <input id="fNom" maxlength="24" value="${(localStorage.getItem('guilde-pseudo') || '').replace(/"/g, '')}" style="width:100%;font:1.1em Georgia;padding:10px;border-radius:12px;border:2px solid #45457a;background:#14122a;color:var(--texte)">
+    ${moiCompte() ? `<p style="color:var(--doux);margin-top:12px">Tu joues avec ton compte : <b style="color:var(--texte)">${moiCompte().nom}</b></p>` : `<p style="color:var(--doux);margin-top:12px">Ton prénom (ou pseudo) :</p>
+    <input id="fNom" maxlength="24" value="${(localStorage.getItem('guilde-pseudo') || '').replace(/"/g, '')}" style="width:100%;font:1.1em Georgia;padding:10px;border-radius:12px;border:2px solid #45457a;background:#14122a;color:var(--texte)">`}
     <button class="go" onclick="rejoindreValide()">Rejoindre</button><button class="sec" onclick="fenetre('')">Annuler</button>`);
   setTimeout(() => { const i = $('fCode'); if (i) i.focus(); }, 100);
 }
 function rejoindreValide() {
-  const code = ($('fCode').value || '').toUpperCase().replace(/[^A-Z]/g, ''), nom = ($('fNom').value || '').trim().slice(0, 24);
+  const cpt = moiCompte(), code = ($('fCode').value || '').toUpperCase().replace(/[^A-Z]/g, ''), nom = cpt ? cpt.nom : (($('fNom') || {}).value || '').trim().slice(0, 24);
   if (code.length < 4) { bulle('Le code a 4 lettres', true); return; } if (!nom) { bulle('Ton prénom ?', true); return; }
-  localStorage.setItem('guilde-pseudo', nom); fenetre(''); rejoindre(code, { id:'j' + Math.random().toString(36).slice(2, 9), nom });
+  localStorage.setItem('guilde-pseudo', nom); fenetre(''); rejoindre(code, cpt || { id:'j' + Math.random().toString(36).slice(2, 9), nom });
 }
 async function rejoindre(code, moi) {
   if (!code) return rejoindreForm();
   code = String(code).toUpperCase().replace(/[^A-Z]/g, ''); if (code.length < 4) return;
+  { const cpt = moiCompte(); if (cpt) moi = cpt; } // le compte d'abord (invitations des amis, ?salle=, « Revenir dans la salle »)
   if (!moi) { const nom = (localStorage.getItem('guilde-pseudo') || 'Joueur').trim().slice(0, 24); if (!nom) return; localStorage.setItem('guilde-pseudo', nom); moi = { id:'j' + Math.random().toString(36).slice(2, 10), nom }; }
   try { const { statut, d } = await api('GET', `${API}/${code}`);
     if (statut !== 200) { bulle(d.message || 'Code inconnu.', true); return; }
@@ -499,7 +508,7 @@ async function rejoindre(code, moi) {
     if (d.etat && d.etat.lobby) { LOB = d.etat.lobby; S = null; son('portail'); salleAttente(); lobbyPousse(); return; }
     S = d.etat; LOB = null; actif = 0; sel = null; centrer = true;
     // 17/11 : une partie rouverte par l'hôte → je reprends les héros que je jouais (même prénom), s'ils sont libres
-    if (S.anciens) { L.prises = S.heros.map((z, i) => i).filter(i => S.anciens[i] === moi.nom && !proprio(i)); appliquePrises(); if (mesHeros().length) actif = mesHeros()[0]; }
+    if (S.anciens) { const ids = S.anciensId || []; L.prises = S.heros.map((z, i) => i).filter(i => (ids[i] ? ids[i] === moi.id : S.anciens[i] === moi.nom) && !proprio(i)); appliquePrises(); if (mesHeros().length) actif = mesHeros()[0]; }
     dessine(); await pousse(); equipeEnLigne();
   } catch (e) { bulle('Pas de réseau.', true); }
 }
@@ -1246,7 +1255,7 @@ if (ESSAI) essaiAtelier(ESSAI); else if (sessionStorage.getItem('chron-en-jeu') 
 // 15/11 : arrivée par une invitation d'un ami (« Rejoindre » dans la fenêtre des amis ou le bandeau d'invitation)
 { const q = new URLSearchParams(location.search); if (q.get('ligne')) { history.replaceState(null, '', location.pathname); creerSalle(); } else if (q.get('code')) { history.replaceState(null, '', location.pathname); rejoindreForm(); } }
 { const s = new URLSearchParams(location.search).get('salle'); if (s) { history.replaceState(null, '', location.pathname); const c = (typeof AMIS !== 'undefined' && AMIS.carte) || null, nom = (c && c.pseudo) || localStorage.getItem('guilde-pseudo');
-    if (nom) rejoindre(s, { id:'j' + Math.random().toString(36).slice(2, 10), nom }); else { rejoindreForm(); setTimeout(() => { const i = $('fCode'); if (i) i.value = s; }, 150); } } }
+    if (nom || moiCompte()) rejoindre(s, moiCompte() || { id:'j' + Math.random().toString(36).slice(2, 10), nom }); else { rejoindreForm(); setTimeout(() => { const i = $('fCode'); if (i) i.value = s; }, 150); } } }
 </script>
 <script src="chroniques-aventures.js?v=d6797cd442"></script>
 <script src="guide.js?v=f78db3b570"></script>
