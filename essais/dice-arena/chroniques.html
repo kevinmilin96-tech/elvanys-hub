@@ -161,6 +161,8 @@
   .stats span { cursor:pointer; }
   .fen .sec { display:block; width:100%; padding:10px; border-radius:14px; border:1px solid #45457a; background:#1c1c36; color:var(--texte); margin-top:8px; text-align:left; }
   .fen .sec small { display:block; color:var(--doux); }
+  .equipe button { position:relative; } .equipe .ini { position:absolute; left:4px; top:3px; font-size:.72em; color:var(--doux); } .equipe .ini.joue { color:var(--or); font-weight:bold; }
+  .tourbar { text-align:center; margin:.4em 0; padding:.35em; border-radius:10px; background:#1c1c36; border:1px solid #45457a; color:var(--doux); font-size:.9em; } .tourbar.moi { border-color:var(--or); color:var(--or); font-weight:bold; }
   .lancer-ami { position:fixed; left:50%; bottom:calc(30vh + env(safe-area-inset-bottom)); transform:translateX(-50%); z-index:800; background:#1b1838; border:2px solid var(--or); border-radius:16px; padding:10px 14px; box-shadow:0 8px 24px #000c; text-align:center; color:var(--texte); font:15px Georgia, serif; animation:laEntre .25s ease-out; pointer-events:none; max-width:94vw; }
   .lancer-ami.part { opacity:0; transition:opacity .3s; }
   .lancer-ami .la-des { display:flex; gap:8px; justify-content:center; margin-top:8px; flex-wrap:wrap; }
@@ -469,6 +471,7 @@ function recoit(d) {
   // 17/11 (l'utilisateur : « pour les tours des amis, j'aimerais voir les lancers de dés ») : le lancer d'un ami se rejoue chez moi
   if (!depart && S.lances && S.lances.t === S.tours) S.lances.l.filter(i => !mesHeros().includes(i) && !(lancesAvant && lancesAvant.t === S.lances.t && lancesAvant.l.includes(i))).forEach(i => lancerAmi(i));
   if (S.journal[0] && S.journal[0] !== avant) bulle(S.journal[0].replace(/^[^ ]+ /, ''));
+  if (L) annonceTour();
   if (S.fin) finPartie();
 }
 setInterval(async () => {
@@ -721,7 +724,9 @@ function dessine() {
     <div class="zonebar"><span class="zt">${RZ ? `${esc(zoneNom(ZV))}${vueForcee ? ' · 👹 les monstres' : suivi != null && S.heros[suivi] ? ` · 👀 ${esc(nomH(S.heros[suivi]))} joue` : ''}` : ''}</span><button onclick="${RZ ? 'grandeCarte()' : 'petit=!petit;centrer=true;dessine()'}">${petit ? '🔍 Zoom' : '🗺 Carte'}</button></div>
     <div style="position:relative"><div class="vue" id="vue"><div class="plateau ${S.scen === 'labyrinthe' ? 'laby' : (S.scen || 'horloger') === 'horloger' ? 'horloge' : ''}${RZ ? ' zonee' : ''}" style="grid-template-columns:repeat(${nCol}, ${t});--t:${t};${peint ? `background:url('${SC.image}${SC.image.startsWith('data:') ? '' : '?v=1'}') 0 0/100% 100% no-repeat` : ''}">${cases}</div></div>
 </div>
-    <div class="equipe">${S.heros.map((z, i) => `<button class="${i === actif ? 'on' : ''} ${z.aTerre ? 'terre' : ''} ${fini(i) ? 'fini' : ''}" onclick="choisitHeros(${i})">${fini(i) ? '<span class="ok-f">✓</span>' : ''}${imgH(z)}${nomH(z).replace('Sire ', '')}<br>${z.aTerre ? '✋ à terre' : `❤${z.pv}${z.bouclier ? ` · 🛡${z.bouclier}` : ''} · 🎲${z.des.length}`}${invH(z) ? `<small class="inv-h">${invH(z)}</small>` : ''}${z.pw && z.pw.ultime ? `<span class="jg ${(z.jauge || 0) >= (K.JAUGE_ULT || 12) ? 'plein' : ''}" title="Jauge d’Ultime" onclick="event.stopPropagation();infoJauge(${i})"><i style="width:${Math.min(100, (z.jauge || 0) / (K.JAUGE_ULT || 12) * 100)}%"></i></span>` : ''}${L ? `<small class="qui${mesHeros().includes(i) ? ' moi' : ''}">${mesHeros().includes(i) ? 'toi' : proprio(i) || 'libre'}</small>` : ''}</button>`).join('')}</div>
+    ${(() => { const c = tourDe(); if (c == null) return ''; const moi = mesHeros().includes(c), o = initiative(); // 17/11 : à qui le tour (en ligne)
+      return `<div class="tourbar ${moi ? 'moi' : ''}">${moi ? `🎲 À toi de jouer avec ${nomH(S.heros[c])}` : `⏳ Au tour de ${nomH(S.heros[c])}${proprio(c) ? ` (${proprio(c)})` : ' : personne ne le joue, touche 🌐 en haut pour le prendre'}`} · ${o.map(x => `${fini(x.i) ? '<s>' : ''}${nomH(S.heros[x.i]).replace('Sire ', '')} ${x.v}${fini(x.i) ? '</s>' : ''}`).join(' › ')}</div>`; })()}
+    <div class="equipe">${S.heros.map((z, i) => `<button class="${i === actif ? 'on' : ''} ${z.aTerre ? 'terre' : ''} ${fini(i) ? 'fini' : ''}" onclick="choisitHeros(${i})">${fini(i) ? '<span class="ok-f">✓</span>' : ''}${(() => { const o = initiative(); if (!o) return ''; const e = o.find(x => x.i === i); return e ? `<span class="ini ${tourDe() === i ? 'joue' : ''}">${tourDe() === i ? '▶ ' : ''}🎯${e.v}</span>` : ''; })()}${imgH(z)}${nomH(z).replace('Sire ', '')}<br>${z.aTerre ? '✋ à terre' : `❤${z.pv}${z.bouclier ? ` · 🛡${z.bouclier}` : ''} · 🎲${z.des.length}`}${invH(z) ? `<small class="inv-h">${invH(z)}</small>` : ''}${z.pw && z.pw.ultime ? `<span class="jg ${(z.jauge || 0) >= (K.JAUGE_ULT || 12) ? 'plein' : ''}" title="Jauge d’Ultime" onclick="event.stopPropagation();infoJauge(${i})"><i style="width:${Math.min(100, (z.jauge || 0) / (K.JAUGE_ULT || 12) * 100)}%"></i></span>` : ''}${L ? `<small class="qui${mesHeros().includes(i) ? ' moi' : ''}">${mesHeros().includes(i) ? 'toi' : proprio(i) || 'libre'}</small>` : ''}</button>`).join('')}</div>
     <div class="des" id="desH">${L && !mesHeros().includes(actif) ? `<span class="aide">👤 ${nomH(h)} est joué par <b>${proprio(actif) || 'personne'}</b>${proprio(actif) ? '' : ' : touche 🌐 en haut pour le prendre'}.</span>` : h.aTerre ? `<span class="aide">${nomH(h)} est à terre : un ami à côté peut le relever avec un dé.</span>` : h.des.length && !lanceOK(actif) ? h.des.map(() => `<button class="de cache" onclick="lanceDesH()"></button>`).join('') + `<button class="lancerH" onclick="lanceDesH()">🎲 Lancer</button>` : h.des.map(z => z.pas ? `<button class="de pas ${sel === z.id ? 'sel' : ''}" onclick="choisitDe('${z.id}')" title="${z.v} pas qui restent">👣${z.v}</button>` : `<button class="de ${sel === z.id ? 'sel' : ''}" onclick="choisitDe('${z.id}')"><img src="faces-${h.id}/face-${z.v}.webp" alt="${z.v}"></button>`).join('') || '<span class="aide">Plus de dés pour ce héros : passe au suivant.</span>'}</div>
     ${d && !h.aTerre ? `<div class="pasinfo">${d.pas ? `👣 ${d.v} pas : 1 par case, ou 1 pour fouiller (porte gratuite)` : `👣 ce dé : <b>${K.pasDe(h, d.v).n} pas</b> (1 par case ou par fouille) · ou frapper`}</div>` : ''}
     <div class="actions" ${L && !mesHeros().includes(actif) ? 'style="display:none"' : ''}>${pwBoutons(h, d)}${d ? '<button onclick="cherche()">🔍 Pièges (2 cases)</button>' : ''}<button class="fin" onclick="aFini()">${libres().length <= 1 ? `✋ ${nomH(S.heros[actif]).replace('Sire ', '')} a fini ▶ les monstres` : `✋ ${nomH(S.heros[actif]).replace('Sire ', '')} a fini`}</button>${libres().length > 1 ? `<button class="sec" style="flex:none" onclick="finTour()" title="Tout le groupe a fini">▶ Monstres</button>` : ''}</div>`;
@@ -759,7 +764,7 @@ function lancerAmi(i) {
 }
 function lanceDesH() {
   suivi = null;
-  if (animeH || occupe || !S) return; if (L && !mesHeros().includes(actif)) { bulle(`${nomH(S.heros[actif])} n’est pas à toi`, true); return; }
+  if (animeH || occupe || !S) return; if (L && pasMonTour()) return; if (L && !mesHeros().includes(actif)) { bulle(`${nomH(S.heros[actif])} n’est pas à toi`, true); return; }
   const i = actif, h = S.heros[i]; if (lanceOK(i)) return;
   if (!S.lances || S.lances.t !== S.tours) S.lances = { t:S.tours, l:[] };
   S.lances.l.push(i); animeH = true; son('relance'); const fin = Date.now() + 650;
@@ -776,8 +781,36 @@ function lanceDesH() {
 const fini = i => !!(S && S.finis && S.finis.t === S.tours && S.finis.l.includes(i));
 const libres = () => S ? S.heros.map((z, i) => i).filter(i => !S.heros[i].aTerre && !fini(i)) : [];
 const ordreOK = () => false; // (l'ancien dé d'initiative, retiré)
+// 17/11 (l'utilisateur : « on va faire à l'initiative : tout le monde joue en même temps et fait du retour en arrière ») : EN LIGNE,
+// chacun son tour. Au début de chaque tour, chaque héros a un dé d'initiative (le même calcul sur tous les téléphones : rien à attendre
+// du serveur) ; le plus haut joue d'abord. Pendant le tour d'un autre, on regarde (carte, fiches, monstres) mais on n'agit pas.
+// Sur un seul téléphone : l'ordre libre reste.
+function initiative() {
+  if (!L || !S || !S.heros) return null;
+  const g = String(S.graine || '') + '|' + S.tours, hache = t => { let x = 2166136261; for (const c of t) { x ^= c.charCodeAt(0); x = Math.imul(x, 16777619); } return x >>> 0; };
+  return S.heros.map((z, i) => ({ i, v:1 + hache(g + '|' + i) % 6, d:hache(g + '#' + i) })).filter(o => !S.heros[o.i].aTerre).sort((a, b) => b.v - a.v || b.d - a.d);
+}
+function tourDe() { const o = initiative(); if (!o) return null; const c = o.find(x => !fini(x.i)); return c ? c.i : null; }
+function pasMonTour(dire) {
+  const c = tourDe(); if (c == null) return false;
+  if (mesHeros().includes(c)) { if (actif !== c) { actif = c; sel = null; centrer = true; dessine(); } return false; }
+  if (dire !== false) bulle(`⏳ C’est au tour de ${nomH(S.heros[c])}${proprio(c) ? ` (${proprio(c)})` : ''} : attends ton tour.`, true);
+  return true;
+}
+// toutes les actions du moteur passent par la garde (en ligne seulement)
+['acheter', 'agir', 'bouger', 'donner', 'echanger', 'fouiller', 'ouvrir', 'prendreEscalier', 'proteger', 'relever', 'soigner', 'utiliser', 'frapper', 'lancerPouvoir', 'transmuter', 'benir'].forEach(n => {
+  const f = K[n]; if (typeof f !== 'function' || f.__garde) return;
+  const g = function (S0, hi) { const c = L ? tourDe() : null; if (c != null && (hi !== c || !mesHeros().includes(c))) return `⏳ C’est au tour de ${nomH(S.heros[c])}${proprio(c) ? ` (${proprio(c)})` : ''} : attends ton tour.`; return f.apply(this, arguments); };
+  g.__garde = true; K[n] = g;
+});
+let dernierTourVu = null;
+function annonceTour() { // à appeler après chaque réception : « À toi ! » quand mon tour arrive
+  const c = tourDe(); const cle = S ? S.tours + ':' + c : null; if (c == null || cle === dernierTourVu) return; dernierTourVu = cle;
+  if (mesHeros().includes(c)) { actif = c; sel = null; centrer = true; son('portail'); bulle(`🎲 À toi de jouer avec ${nomH(S.heros[c])} !`); }
+}
 function aFini() {
   if (occupe || !S || S.fin) return;
+  if (L && pasMonTour()) return;
   if (L && !mesHeros().includes(actif)) { bulle(`${nomH(S.heros[actif])} n’est pas à toi`, true); return; }
   const h = S.heros[actif], n = (h.des || []).length;
   if (n && lanceOK(actif) && !confirm(`Il reste ${n} dé${n > 1 ? 's' : ''} à ${nomH(h)} : ils seront perdus. ${nomH(h)} a fini ?`)) return;
@@ -785,7 +818,8 @@ function aFini() {
   S.finis.l.push(actif); h.des = []; sel = null;
   const reste = libres();
   if (!reste.length) return finTour(true);
-  actif = reste[0]; centrer = true; son('choisir'); bulle(`✋ ${nomH(h)} a fini · à qui le tour ?`);
+  { const c = L ? tourDe() : null; actif = c != null ? c : reste[0]; } centrer = true; son('choisir');
+  bulle(L && tourDe() != null ? `✋ ${nomH(h)} a fini · au tour de ${nomH(S.heros[tourDe()])}${proprio(tourDe()) ? ` (${proprio(tourDe())})` : ''}` : `✋ ${nomH(h)} a fini · à qui le tour ?`);
   if (L && typeof pousse === 'function') pousse();
   dessine();
 }
@@ -810,6 +844,8 @@ function ficheHeros(i, choix) {
   const cases = Array.from({ length:10 }, (_, k) => { const o = inv[k]; return `<div class="ps-inv ${o ? '' : 'vide'} ${choix === k ? 'on' : ''}" ${o ? `onclick="ficheHeros(${i}, ${k})"` : ''}>${o ? o.e : ''}</div>`; }).join('');
   const o = choix != null && inv[choix];
   const det = o ? `<div class="ps-det"><b>${o.e} ${o.n}</b><br>${o.d}${o.sac != null && i === actif && !h.aTerre ? `<br><button class="or" onclick="$('perso').innerHTML='';utiliseSac(${o.sac})">Utiliser</button>` : ''}</div>` : `<p class="ps-aide">Touche un objet pour le voir.</p>`;
+  // 17/11 (l'utilisateur : « quand je clique sur un objet, ça me remonte au début du profil ») : on garde la position de la page
+  const avantPs = choix != null && document.querySelector('#perso .ps-page') ? document.querySelector('#perso .ps-page').scrollTop : 0;
   $('perso').innerHTML = `<div class="ps-page"><div class="ps-haut"><button onclick="$('perso').innerHTML=''">‹ Retour au jeu</button><b>Personnage</b></div>
     <div class="ps-poupee"><div class="ps-col">${['arme', 'tete', 'anneau'].map(slot).join('')}</div>
       <div class="ps-centre">${imgH(h)}<b>${esc(nomH(h))}</b><small>❤ ${h.pv} / ${h.pvmax} · 🎲 ${(K.HEROS_C[h.id] ? K.HEROS_C[h.id].des : 3) + (h.desPlus || 0) + (h.objet === 'cle' ? 1 : 0)} dés par tour${h.bouclier ? ` · 🛡 ${h.bouclier}` : ''}</small></div>
@@ -819,6 +855,7 @@ function ficheHeros(i, choix) {
     <div class="ps-bloc"><h3>Ce que lui donne son équipement ici</h3>${B.length ? `<ul>${B.map(t => `<li>${t}</li>`).join('')}</ul>` : '<p class="ps-aide">Aucun bonus : ses dés comptent tels quels.</p>'}${tal ? `<h3>Ses talents</h3><ul>${tal}</ul>` : ''}</div>
     <div class="ps-bloc"><h3>Inventaire</h3><div class="ps-grille">${cases}</div>${det}</div>
     <p class="ps-aide">L’équipement se change dans <b>Mes héros</b> (menu), entre deux parties.</p></div>`;
+  if (avantPs) { const pg = document.querySelector('#perso .ps-page'); if (pg) pg.scrollTop = avantPs; }
 }
 function choisitHeros(i) {
   suivi = null;
@@ -828,7 +865,7 @@ function choisitHeros(i) {
   if (fini(i)) { bulle(`${nomH(S.heros[i])} a fini ce tour : voici sa fiche`); return ficheHeros(i); }
   actif = i; sel = null; centrer = true; son('choisir'); dessine();
 }
-function choisitDe(id) { if (occupe || animeH || !lanceOK(actif)) return; if (L && !mesHeros().includes(actif)) { bulle(`${nomH(S.heros[actif])} est joué par ${proprio(actif) || 'personne'} : touche 🌐 pour le prendre.`, true); return; } sel = sel === id ? null : id; son('choisir'); dessine(); }
+function choisitDe(id) { if (occupe || animeH || !lanceOK(actif)) return; if (L && pasMonTour()) return; if (L && !mesHeros().includes(actif)) { bulle(`${nomH(S.heros[actif])} est joué par ${proprio(actif) || 'personne'} : touche 🌐 pour le prendre.`, true); return; } sel = sel === id ? null : id; son('choisir'); dessine(); }
 function resultat(r) {
   if (r && r.ok) { sel = null;
     if (r.point) pointDePassage();
@@ -1044,6 +1081,7 @@ function regles() {
     <li><b>Un ami</b> (ou soi) : protéger, donner un dé (à côté), <b>soigner</b> (tout héros : la moitié du dé ; Pip : le dé entier), relever. <b>🔍 Pièges</b> (un dé) : dévoile les pièges cachés jusqu’à 2 cases autour du héros. <b>Une porte</b> s’ouvre gratuitement, par le héros choisi, s’il est juste à côté.</li>
     <li><b>Les pouvoirs</b> : « ✨ Pouvoir » s’allume quand les dés forment sa combinaison. <b>L’Ultime</b> a une <b>jauge ⚡</b> (la barre dorée sous chaque portrait) : +1 par dé posé, +1 tous les 3 PV perdus ; pleine (12), l’Ultime est prêt, et il revient à chaque jauge pleine.</li>
     <li><b>Plus on est nombreux, plus les monstres sont costauds</b> : à 2, 3 ou 4 héros, les élites ont un sceau « Σ » de plus et frappent plus fort, les petits monstres ont un sceau de plus (à 4 héros), et l’Horloger un sceau « Σ » de plus à chaque phase. Seul, rien ne change.</li>
+    <li><b>En ligne, chacun son tour</b> : au début de chaque tour, chaque héros a un dé d’initiative 🎯 ; le plus haut joue d’abord, puis le suivant (la barre au-dessus des héros dit à qui c’est). Pendant le tour d’un autre, on peut regarder la carte et les fiches. Sur un seul téléphone : l’ordre reste libre.</li>
     <li><b>Ordre libre</b> : jouez vos héros dans l’ordre que vous voulez, même en alternant (touchez un héros pour le prendre). Quand un héros a terminé, touchez « ✋ … a fini ». Quand tous ont fini, les monstres jouent.</li>
     <li><b>Fin du tour</b> (après le dernier héros) : les monstres réveillés font ce qu’ils annoncent ; le <b>sablier</b> perd un grain (vide : un dé de moins pour tous). Le <b>Livre des heures</b> (bibliothèque, à deux) affaiblit l’Horloger.</li>
     <li>🗺 <b>Carte</b> : voir tout le donjon dévoilé. La partie est gardée ; si tout le groupe tombe, on repart du dernier point de passage (la dernière porte ouverte).</li></ol>
