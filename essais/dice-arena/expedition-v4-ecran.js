@@ -32,7 +32,7 @@ function accueil() {
   <h2>Ton capitaine</h2><div class="heros6">${ORDRE.map(id => id === 'zephine' && localStorage.getItem('guilde-tuto') !== 'fait'
     ? `<button disabled style="opacity:.5"><img src="${IMG(id)}" alt="" style="filter:grayscale(1)">🔒 ${HEROS[id].nom}</button>`
     : `<button onclick="choixCapitaine('${id}')"><img src="${IMG(id)}" alt="">${HEROS[id].nom}<br><small style="color:var(--or)">${CAPITAINES[id].n}</small><br><small class="prise ${PRISE_EXP[id]}">${PRISE_TXT[PRISE_EXP[id]]}</small></button>`).join('')}${capitainesAventure()}</div>
-  <div class="choixh"><button onclick="location.href='expeditions-v4-proposition.html'">📖 Les règles</button><button onclick="records()">🏆 Mes expéditions</button><button onclick="location.href='menu.html'">⌂ Menu</button></div>`;
+  <button class="go" style="margin:8px 0" onclick="location.href='expedition-duel.html'">⚔ Nouveau mode : le Duel d’équipages contre l’ordinateur</button><div class="choixh"><button onclick="location.href='expeditions-v4-proposition.html'">📖 Les règles</button><button onclick="records()">🏆 Mes expéditions</button><button onclick="location.href='menu.html'">⌂ Menu</button></div>`;
 }
 function choixCapitaine(id) {
   const v = haVoie(id), i = haInfo(id); // 15/11 soir : un héros d'aventure → sa voie

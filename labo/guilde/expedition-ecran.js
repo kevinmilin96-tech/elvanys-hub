@@ -2,10 +2,10 @@
 // Le port : plateau en deux rangées + la cale + le recruteur ; toucher une recrue puis une place = la déplacer (ou échanger).
 // Le combat : le moteur (expedition-moteur.js) calcule tout, l'écran rejoue les événements avec les animations.
 const log = () => {}, degats = () => {}, soin = () => {}, altere = () => {}, invoque = () => {}, adv = () => ({}), fin = () => {};
-const CLE = 'guilde-expedition2';
+const CLE = globalThis.CLE_EXP || 'guilde-expedition2'; // 18/11 : le Duel d'équipages a sa propre sauvegarde
 let X = null, sel = null, vitesse = 1, enCours = false, tiroir = true;
 const sauve = () => localStorage.setItem(CLE, JSON.stringify(X));
-const lire = () => { try { const x = JSON.parse(localStorage.getItem(CLE) || 'null'); return x && x.v === 2 ? x : null; } catch (e) { return null; } };
+const lire = () => { try { const x = JSON.parse(localStorage.getItem(CLE) || 'null'); return x && x.v === 2 && !!x.duel === !!globalThis.CLE_EXP ? x : null; } catch (e) { return null; } };
 const fenetre = html => { document.getElementById('fen').innerHTML = `<div class="fenetre"><div>${html}</div></div>`; };
 const fermer = () => { document.getElementById('fen').innerHTML = ''; };
 const dodo = ms => new Promise(ok => setTimeout(ok, ms / vitesse));
@@ -31,7 +31,7 @@ function accueil() {
   <h2>Ton capitaine</h2><div class="heros6">${ORDRE.map(id => id === 'zephine' && localStorage.getItem('guilde-tuto') !== 'fait'
     ? `<button disabled style="opacity:.5"><img src="${IMG(id)}" alt="" style="filter:grayscale(1)">🔒 ${HEROS[id].nom}</button>`
     : `<button onclick="choixCapitaine('${id}')"><img src="${IMG(id)}" alt="">${HEROS[id].nom}<br><small style="color:var(--or)">${CAPITAINES[id].n}</small><br><small class="prise ${PRISE_EXP[id]}">${PRISE_TXT[PRISE_EXP[id]]}</small></button>`).join('')}${capitainesAventure()}</div>
-  <button class="go" style="margin:8px 0" onclick="location.href='expedition-v4.html'">✨ Essayer la nouvelle version (v4) : carte, 3 mers, boss tirés au sort</button><div class="choixh"><button onclick="location.href='expeditions-v2-regles.html'">📖 Les règles</button><button onclick="records()">🏆 Mes expéditions</button><button onclick="location.href='menu.html'">⌂ Menu</button></div>`;
+  <button class="go" style="margin:8px 0" onclick="location.href='expedition-v4.html'">✨ Essayer la nouvelle version (v4) : carte, 3 mers, boss tirés au sort</button><button class="go" style="margin:0 0 8px" onclick="location.href='expedition-duel.html'">⚔ Nouveau mode : le Duel d’équipages contre l’ordinateur</button><div class="choixh"><button onclick="location.href='expeditions-v2-regles.html'">📖 Les règles</button><button onclick="records()">🏆 Mes expéditions</button><button onclick="location.href='menu.html'">⌂ Menu</button></div>`;
 }
 function choixCapitaine(id) {
   const v = haVoie(id), i = haInfo(id); // 15/11 soir : un héros d'aventure → sa voie
@@ -310,6 +310,7 @@ async function partir() {
   enCours = false;
   const g = res.gagne; if (g) typeof guildeEvt === 'function' && guildeEvt('escale', 1, { heros:progX(), voie:X.heros });
   const lignes = [g ? '🏆 <b>Victoire !</b>' : '💔 <b>Défaite</b> : un cœur de moins.', res.forge ? `⚒ Forge : ${res.forge}.` : '', res.maelle ? `⚒ La forge du bord : ${res.maelle}.` : '', res.louve ? '🐺 La Louve rejoint l’équipage !' : '', !X.fini && res.gain ? `💰 +${res.gain} pièces${res.interet ? ` (dont ${res.interet} d’intérêts)` : ''}.` : ''].filter(Boolean).map(t => `<p>${t}</p>`).join('');
+  if (globalThis.FIN_COMBAT_EXP) return globalThis.FIN_COMBAT_EXP(res); // 18/11 : le Duel d'équipages a sa propre fin de combat
   if (X.fini) { setTimeout(() => finExp(), 600 / vitesse); return; }
   fenetre(`<h2>${g ? '🏆' : '💔'} ${esc.n}</h2>${lignes}<p class="doux">Les recrues tombées se relèvent au port : chaque combat commence à pleine vie.</p><div class="choixh"><button class="or" onclick="fermer();voyage()">⛵ Lever l’ancre</button></div>`);
 }
