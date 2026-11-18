@@ -304,5 +304,5 @@ function simuleVoyage(heros, graine, opts) {
     if (!ESCALE_COMBAT(esc.type)) { const s = escaleSansCombat(X); let i = s.choix.findIndex(c => c.possible); if (esc.type === 'tresor' && s.choix[1].possible) i = 1; resoutChoix(X, Math.max(0, i)); continue; }
     pilotePort(X); piloteOrdres(X, hasardX(X)); piloteCible(X); joueEscale(X, hasardX(X));
   }
-  return { gagne:X.fini === 'gagne', coeurs:X.coeurs, escale:X.escale, victoires:X.victoires, boss:X.boss, regle:X.regle, types, score:scoreV4(X) };
+  return { gagne:X.fini === 'gagne', coeurs:X.coeurs, escale:X.escale, victoires:X.victoires, boss:X.boss, regle:X.regle, types, score:scoreV4(X), fusions:toutes(X).filter(u => u.star).length, doubles:toutes(X).filter(u => u.star === 2).length };
 }
