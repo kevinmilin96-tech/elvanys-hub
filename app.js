@@ -969,6 +969,7 @@
     var hay = norm([a.prenom, a.nom, a.prenom && a.nom ? a.nom + ' ' + a.prenom : '', a.identifiant, a.email].concat(titres).join(' | '));
     return q.split(/\s+/).every(function (w) { return hay.indexOf(w) !== -1; });
   }
+  $('#admin-sort').addEventListener('change', function () { renderAdmin(); });
   $('#admin-search').addEventListener('input', function () { if (adminFilter === 'journal') renderJournal(); else renderAdmin(); });
 
   function renderAdmin() {

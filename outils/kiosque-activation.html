@@ -16,15 +16,16 @@
   h2 .n { flex: none; width: 30px; height: 30px; border-radius: 99px; background: var(--acc); color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 15px; }
   ol, ul { margin: 6px 0; padding-left: 22px; } li { margin: 4px 0; }
   .cmd { display: flex; gap: 8px; align-items: center; background: #14112b; color: #e8e4ff; border-radius: 10px; padding: 10px 12px; margin: 8px 0; font-family: ui-monospace, Consolas, monospace; font-size: 14.5px; overflow-x: auto; }
-  .cmd code { flex: 1; white-space: nowrap; }
+  .cmd code { flex: 1; min-width: 0; white-space: nowrap; overflow-x: auto; } /* 18/11 : ne déborde plus au téléphone */
   .cmd button { flex: none; border: 0; border-radius: 8px; padding: 6px 12px; background: #fff; color: var(--ink); font-weight: 700; cursor: pointer; }
   .ok { background: var(--okbg); color: var(--ok); border-radius: 10px; padding: 8px 12px; margin: 6px 0; }
   .note { color: var(--muted); font-size: 14px; }
   .warn { background: #fff6e0; border: 1px solid #f0c060; border-radius: 12px; padding: 10px 14px; }
   table { width: 100%; border-collapse: collapse; font-size: 14px; } td { border-top: 1px solid var(--line); padding: 8px 6px; vertical-align: top; }
-  td:first-child { font-family: ui-monospace, Consolas, monospace; color: var(--bad); width: 42%; }
+  td:first-child { font-family: ui-monospace, Consolas, monospace; color: var(--bad); width: 42%; overflow-wrap: anywhere; }
   .check { display: flex; gap: 10px; align-items: flex-start; } .check input { width: 20px; height: 20px; margin-top: 3px; flex: none; }
-  a { color: var(--acc); font-weight: 600; }
+  a { color: var(--acc); font-weight: 600; overflow-wrap: anywhere; }
+  .check span { min-width: 0; overflow-wrap: anywhere; }
 </style></head><body>
 <header>
   <h1>Activer le blocage total de la borne</h1>
@@ -72,7 +73,7 @@
     <p>L’application Kiosque Elvanys est déjà installée sur la tablette : il suffit de taper :</p>
     <div class="cmd"><code>.\adb shell dpm set-device-owner fr.elvanys.kiosque/.AdminReceiver</code><button type="button" data-copy=".\adb shell dpm set-device-owner fr.elvanys.kiosque/.AdminReceiver">Copier</button></div>
     <div class="ok">✓ Bonne réponse : elle commence par <b>Success: Device owner set to package…</b></div>
-    <p class="note">Si l’application n’était pas installée : copier d’abord le fichier <code>kiosque-elvanys-1.2.apk</code> (boîte à outils du Hub) dans le dossier platform-tools, puis taper <code>.\adb install kiosque-elvanys-1.2.apk</code>.</p>
+    <p class="note">Si l’application n’était pas installée : copier d’abord le fichier <code>kiosque-elvanys-1.14.apk</code> (boîte à outils du Hub) dans le dossier platform-tools, puis taper <code>.\adb install kiosque-elvanys-1.14.apk</code>.</p>
   </section>
 
   <section class="card">
