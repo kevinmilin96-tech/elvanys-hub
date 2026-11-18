@@ -352,5 +352,5 @@ const Carnet = (() => {
 })();
 
 // 18/11 : les entraînements guidés de Moustache (un par mode ; null = pas encore fait). Ordre choisi avec l'utilisateur.
-const ENTRAINEMENTS = [['duel', 'Le Duel (le tutoriel)', 'duel.html?tuto=1'], ['expedition', 'Les Expéditions', 'expedition.html?entrainement=1'], ['chroniques', 'Les Chroniques', null], ['odyssee', 'L’Odyssée', null],
+const ENTRAINEMENTS = [['duel', 'Le Duel (le tutoriel)', 'duel.html?tuto=1'], ['expedition', 'Les Expéditions', 'expedition.html?entrainement=1'], ['chroniques', 'Les Chroniques', 'chroniques.html?entrainement=1'], ['odyssee', 'L’Odyssée', null],
   ['crypte', 'La Crypte aux Sceaux', null], ['descente', 'La Descente', null], ['invasion', 'L’Invasion', null], ['defense', 'La Défense de la porte', null], ['fosse', 'La Fosse aux Runes', null]];

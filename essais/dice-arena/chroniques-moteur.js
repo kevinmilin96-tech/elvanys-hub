@@ -97,6 +97,8 @@ const SCEN = {
   // 15/11 soir : LES AVENTURES EN SCÈNES (chroniques-aventures.js) : une EMBUSCADE sur le chemin = un petit terrain ouvert, gagner = abattre tous les monstres
   // 16/11 : l'ESSAI d'une salle de l'atelier des cartes (editeur.html) : la salle seule, 2 monstres à battre
   atelier: { n:'Essai de l’atelier', boss:'titan', renfort:'rouagelin', objet:{ n:'rouage', e:'⚙️' }, axe:'', axeE:'', sablier:40, phases:['', '', ''], image:'', vue:0, hasard:true, objectif:'vaincre' },
+  // 18/11 : L'ENTRAÎNEMENT DE MOUSTACHE (chroniques-entrainement.js) : un mini-donjon fait exprès, Maëlle seule, dés imposés
+  entrainement: { n:'L’entraînement de Moustache', boss:'titan', renfort:'rouagelin', objet:{ n:'—', e:'🎓' }, axe:'', axeE:'', sablier:20, phases:['', '', ''], objectif:'vaincre' },
   arene: { n:'Embuscade', boss:'titan', renfort:'gobelin', objet:{ n:'—', e:'⚔' }, axe:'', axeE:'', sablier:40, phases:['', '', ''], vue:8, hasard:true, objectif:'vaincre' },
 };
 // la carte peinte, calée par l'utilisateur le 15/11 (28 × 36 ; . sol · # mur · ~ obstacle)
@@ -146,6 +148,30 @@ function construitAtelier(S, R, C) {
   libres.sort((a, b) => (Math.abs(a[0] - p0[0]) + Math.abs(a[1] - p0[1])) - (Math.abs(b[0] - p0[0]) + Math.abs(b[1] - p0[1])));
   S.heros.forEach((h, i) => { const c = libres[i] || libres[0]; h.x = c[0]; h.y = c[1]; });
   (C.monstres || ['rouagelin', 'gobelin']).forEach((b, i) => { const c = libres[libres.length - 1 - i]; if (c && BETES[b]) ajouteMonstre(S, b, c[0], c[1]); });
+}
+// ------------------------------------------------------------------ L'ENTRAÎNEMENT (18/11) : 9 × 12, deux salles dans le noir et un couloir
+//   y0  #########      T2 « La salle du Rouagelin » (x 1-7, y 1-2), le Rouagelin en (4,1)
+//   y3  ####B####      porte de bronze (4,3), ouverte par le levier
+//   y4  #....L..#      T1 « La salle du levier » (x 1-7, y 4-6), levier ≥ 4 en (5,4)
+//   y7  ####D####      porte en bois (4,7)
+//   y8  ###..^###      couloir (x 3-5, y 8-10) : piège à repérer en (5,8)
+//   y9  ###C^.###      coffre (3,9) avec une potion ; piège caché en (4,9) sur le chemin
+//   y10 ###.M.###      départ de Maëlle en (4,10)
+function construitEntrainement(S, R) {
+  const W2 = 9, H2 = 12; R.w = W2; R.h = H2;
+  for (let y = 0; y < H2; y++) for (let x = 0; x < W2; x++) R.murs[cle(x, y)] = '#';
+  R.rectsE = { T1:[1, 4, 7, 3], T2:[1, 1, 7, 2] }; R.nomsE = { T1:'La salle du levier', T2:'La salle du Rouagelin' };
+  Object.entries(R.rectsE).forEach(([id, [x0, y0, w, h]]) => { for (let y = y0; y < y0 + h; y++) for (let x = x0; x < x0 + w; x++) { delete R.murs[cle(x, y)]; R.salle[cle(x, y)] = id; } });
+  for (let y = 8; y <= 10; y++) for (let x = 3; x <= 5; x++) delete R.murs[cle(x, y)];
+  delete R.murs[cle(4, 7)]; R.portes[cle(4, 7)] = { salle:'T1', ouverte:false };
+  delete R.murs[cle(4, 3)]; R.portes[cle(4, 3)] = { salle:'T2', ouverte:false, bronze:true };
+  R.murs[cle(3, 9)] = 'M'; R.obj[cle(3, 9)] = { t:'coffre', meuble:true, fouille:false, verrou:0, cache:'potion' };
+  R.murs[cle(5, 4)] = 'L'; R.obj[cle(5, 4)] = { t:'levier', v:4 };
+  R.obj[cle(4, 9)] = { t:'piege', cache:true }; R.obj[cle(5, 8)] = { t:'piege', cache:true };
+  ajouteMonstre(S, 'rouagelin', 4, 1);
+  S.heros.forEach((h, i) => { h.x = 4 - i; h.y = 10; });
+  S.leviersBut = 1; S.objectif = 'vaincre';
+  S.desForces = [[3, 2, 1], [5, 4, 2], [4, 2, 6]]; // tour 1, 2, 3 : de quoi réussir à coup sûr
 }
 // ------------------------------------------------------------------ L'EMBUSCADE (15/11 soir) : 12 × 10, des arbres ou des rochers, les héros en bas, les monstres en haut
 function construitArene(S, R, opts) {
@@ -254,7 +280,7 @@ const RECTS = { S:[4, 1, 4, 3], H:[11, 1, 10, 3], B:[3, 10, 5, 4], E:[10, 10, 3,
 const SALLES = {}; Object.keys(RECTS).forEach(k => SALLES[k] = { n:NOMS_S[k], r:RECTS[k], lu:SALLES_LU[k] });
 // l'ancienne carte (20 × 18), pour les parties commencées avant le 16/11
 const SALLES_V1 = { A:[1, 1, 5, 3], C:[8, 1, 4, 3], G:[14, 1, 5, 3], B:[1, 7, 5, 4], E:[9, 7, 3, 3], F:[15, 7, 4, 4], S:[15, 14, 4, 3], P:[1, 14, 2, 3], H:[4, 14, 10, 3] };
-const rectSalle = (S, id) => (S && S.R && S.R.plan === 2 ? RECTS[id] : SALLES_V1[id]) || null;
+const rectSalle = (S, id) => (S && S.R && S.R.rectsE && S.R.rectsE[id]) || (S && S.R && S.R.plan === 2 ? RECTS[id] : SALLES_V1[id]) || null;
 // les couloirs et les escaliers (des zones à part, avec leur nom et leur étage)
 const COULOIRS_Z2 = {
   K5:{ r:[3, 5, 18, 1], n:'Le palier du sommet' }, X2:{ r:[21, 5, 2, 1], n:'L’escalier du sommet', esc:true },
@@ -329,6 +355,7 @@ function nouvelle(heros, s, scen, opts = {}) {
     if (!set && !opts.sansPouvoirs && typeof racine.pwPourMoteur === 'function') set = racine.pwPourMoteur(typeof src === 'string' ? src : (src.__g || src.av || src.voie));
     z.pw = set ? set[S.pre] : null; });
   if (scen === 'atelier') { construitAtelier(S, R, opts.salle || { w:4, h:3 }); S.objectif = 'vaincre'; log(S, `🛠 Essai de « ${(opts.salle && opts.salle.nom) || 'la salle'} » : déplacez-vous, fouillez, battez les monstres.`); debutTour(S); return S; }
+  if (scen === 'entrainement') { construitEntrainement(S, R); voir(S); log(S, '🎓 L’entraînement de Moustache : un petit donjon pour apprendre.'); debutTour(S); return S; }
   if (scen === 'arene') { construitArene(S, R, opts); adapte(S); S.objectif = 'vaincre'; log(S, '⚔ Embuscade ! Abattez tous les monstres.'); debutTour(S); return S; }
   if (scen === 'labyrinthe') { construitLabyrinthe(S, R); adapte(S); voir(S); log(S, '✦ Le Labyrinthe des Runes : un donjon jamais vu. Trouvez 3 fragments de rune dans les meubles et portez-les à l’autel, tout au fond.'); debutTour(S); return S; }
   if (scen === 'brulees') { construitCarte(S, R); adapte(S); voir(S); log(S, '🔥 Les Terres brûlées : trouvez 3 braises éternelles en fouillant les meubles et portez-les au grand brasier.'); debutTour(S); return S; }
@@ -485,6 +512,8 @@ function debutTour(S) {
     if (h.carillon && h.des.length) { h.des.sort((a, b) => b.v - a.v); h.des.shift(); h.carillon = false; log(S, `🔔 ${nm(h)} a perdu son plus gros dé.`); }
   });
   pwDebutTour(S);
+  // 18/11 : l'entraînement impose ses dés (S.desForces[tour]) pour que la leçon marche à coup sûr
+  if (S.desForces && S.desForces[R.tour - 1]) S.heros.forEach(h => { if (!h.aTerre) h.des = S.desForces[R.tour - 1].map(v => ({ id:'d' + S.seq++, v, b:0 })); });
   for (const c in R.leviersTour) { R.leviersTour[c]--; if (R.leviersTour[c] <= 0) { delete R.leviersTour[c]; if (!R.bronze) log(S, '🎚 Un levier remonte tout seul dans un claquement : il faut les baisser tous les quatre en même temps.'); } }
   // les tas d'os se relèvent (un tour après)
   (R.os || []).filter(o => o.t < R.tour).forEach(o => { if (libre(S, o.x, o.y) && !herosEn(S, o.x, o.y)) { const m = ajouteMonstre(S, 'osclaque', o.x, o.y); m.sceaux = [sceau('any')]; m.revenu = true; log(S, '🦴 Clac, clac, clac… le tas d’os se remonte : un Os-qui-claque revient (un seul sceau) !'); } });
@@ -527,7 +556,7 @@ function ouvrir(S, hi, x, y) {
   if (!p || p.ouverte) return 'Pas de porte fermée ici.'; if (h.aTerre || !presDePorte(S, h, x, y)) return 'Il faut être juste à côté de la porte.';
   if (p.entree) return 'Dehors, la ville est figée dans le temps : on ne repartira pas sans avoir réveillé l’Horloger.';
   if (p.essai) return 'Essai de l’atelier : cette porte mènera à la suite du donjon quand les salles seront assemblées (étape B).';
-  if (p.bronze && !R.bronze) return 'La porte de bronze est verrouillée : baissez ensemble les 4 leviers de la Salle des rouages.';
+  if (p.bronze && !R.bronze) return S.leviersBut ? 'Cette porte de bronze est verrouillée : baisse d’abord le levier de la salle.' : 'La porte de bronze est verrouillée : baissez ensemble les 4 leviers de la Salle des rouages.';
   p.ouverte = true; R.vu[cle(x, y)] = 1;
   // on regarde DERRIÈRE la porte, dans le sens où on l'ouvre : une salle se dévoile en entier, un couloir sur 3 cases
   const dx = x - h.x, dy = y - h.y, apres = cle(x + dx, y + dy); let neuve = false;
@@ -535,7 +564,7 @@ function ouvrir(S, hi, x, y) {
   else for (let k = 1; k <= 3; k++) { const cx = x + dx * k, cy = y + dy * k, c = cle(cx, cy); R.vu[c] = 1; R.vu[cle(cx + dy, cy + dx)] = 1; R.vu[cle(cx - dy, cy - dx)] = 1; if (R.murs[c] || R.portes[c]) break; }
   const salleOuverte = R.salle[apres] || p.salle; voir(S);
   S.heros.forEach(z => { if (z.objet === 'bouclier') z.bouclier += 3; });
-  log(S, R.salle[apres] ? `🚪 ${nm(h)} ouvre la porte : ${SALLES[R.salle[apres]].n}.` : `🚪 ${nm(h)} ouvre la porte : un couloir.`);
+  log(S, R.salle[apres] ? `🚪 ${nm(h)} ouvre la porte : ${(SALLES[R.salle[apres]] || { n:(R.nomsE && R.nomsE[R.salle[apres]]) || 'une salle' }).n}.` : `🚪 ${nm(h)} ouvre la porte : un couloir.`);
   // 16/11 (l'utilisateur : « sinon on se fait spoiler ») : Moustache ne raconte la salle qu'au PREMIER PAS dedans (voir bouger)
   return { ok:true, ev:[], point:true };
 }
@@ -611,7 +640,7 @@ function verifieMonstre(S, m) {
   R.monstres = R.monstres.filter(z => z !== m); S.score += BETES[m.b].elite ? 60 : 20; S.orAv = (S.orAv || 0) + (BETES[m.b].elite ? 5 : 2); // 16/11 : un peu d'or sur chaque monstre
   const duo = (R.frappeurs && R.frappeurs[m.id] || []).length >= 2; if (duo) { S.score += 25; log(S, `🤝 ${m.n} abattu à deux : +25 !`); }
   ev.push({ t:'tombe', m:m.id, duo }); log(S, `💀 ${m.n} tombe.`);
-  if (S.objectif === 'vaincre' && !R.monstres.length && !R.boss) { S.fin = 'gagne'; S.score += 100; log(S, '🏆 L’embuscade est repoussée !'); }
+  if (S.objectif === 'vaincre' && !R.monstres.length && !R.boss) { S.fin = 'gagne'; S.score += 100; log(S, S.scen === 'entrainement' ? '🏆 Le Rouagelin est vaincu : entraînement réussi !' : '🏆 L’embuscade est repoussée !'); }
   return ev;
 }
 function bossPhaseSuivante(S, ev) {
@@ -699,6 +728,7 @@ function agir(S, hi, idDe, x, y) {
     prendDe(h, idDe); remplit(S, h, 1); R.leviersTour[cle(x, y)] = S.dureeLevier || 2; const n = Object.keys(R.leviersTour).length;
     const LV = [`${nm(h)} s’arc-boute sur le levier… CLAC ! Quelque part sous le sol, un engrenage se met à tourner`, `${nm(h)} tire le levier de tout son poids : un long grincement court dans les murs`, `${nm(h)} abaisse le levier : une aiguille de cuivre avance d’un cran au-dessus de la porte de bronze`, `${nm(h)} pousse le levier jusqu’en bas : les tuyaux crachent un jet de vapeur`];
     log(S, `🎚 ${LV[(n - 1) % LV.length]} (${n}/4 baissés, il tient ${S.dureeLevier || 2} tour${(S.dureeLevier || 2) > 1 ? 's' : ''}).`);
+    if (S.leviersBut && n >= S.leviersBut && !R.bronze) { R.bronze = true; log(S, '🎚 CLONK ! Un verrou claque dans la porte de bronze : elle est déverrouillée.'); return { ok:true, ev:[{ t:'levier', bronze:true }] }; }
     if (n >= 4 && !R.bronze) { R.bronze = true; S.sablier += 3; log(S, '🎚🎚🎚🎚 Les quatre leviers sont baissés ensemble : un grondement sourd… la PORTE DE BRONZE s’est déverrouillée (+3 grains) !'); }
     return { ok:true, ev:[{ t:'levier', bronze:R.bronze && n >= 4 }] }; }
   if (o.t === 'livre') { if (d.v < 4) return 'Il faut un dé de 4 ou plus.';
@@ -736,10 +766,10 @@ function fouilleMeuble(S, hi, idDe, x, y, o) {
     default: log(S, `🔍 ${nom} fouille ${MEUBLE_N[o.t]}… de la poussière, rien d’autre.`);
   }
   // ⌛ le temps file (16/11) : toutes les 2 fouilles, le sablier perd un grain
-  S.fouilles = (S.fouilles || 0) + 1; if (S.scen !== 'atelier' && S.fouilles % 2 === 0) { S.sablier = Math.max(0, S.sablier - 1); log(S, '⌛ Fouiller prend du temps : le sablier perd un grain.'); }
+  S.fouilles = (S.fouilles || 0) + 1; if (S.scen !== 'atelier' && S.scen !== 'entrainement' && S.fouilles % 2 === 0) { S.sablier = Math.max(0, S.sablier - 1); log(S, '⌛ Fouiller prend du temps : le sablier perd un grain.'); }
   // 🔊 le bruit (16/11, façon « monstres errants ») : 1 fois sur 3, le monstre le plus proche du même étage accourt de 2 cases
   const pioche = h.id === 'oria' && pwA(h, 'passif', 'C'); if (pioche) { S.orAv = (S.orAv || 0) + 2; log(S, '🪙 Bonne pioche : +2 or, sans un bruit.'); }
-  if (!ev.mimique && !pioche && hasard(S) < 1 / 3) { const P = R.monstres.filter(m => !BETES[m.b].immobile && (!R.plan || etageDe(S, m.y) === etageDe(S, h.y)) && dist(m, h) > 1 && dist(m, h) <= 10).sort((a, b) => dist(a, h) - dist(b, h))[0];
+  if (!ev.mimique && !pioche && S.scen !== 'entrainement' && hasard(S) < 1 / 3) { const P = R.monstres.filter(m => !BETES[m.b].immobile && (!R.plan || etageDe(S, m.y) === etageDe(S, h.y)) && dist(m, h) > 1 && dist(m, h) <= 10).sort((a, b) => dist(a, h) - dist(b, h))[0];
     if (P) { for (let k = 0; k < 2; k++) { const o2 = [[1, 0], [-1, 0], [0, 1], [0, -1]].map(([dx, dy]) => [P.x + dx, P.y + dy]).filter(([a, b]) => libre(S, a, b, P) && !herosEn(S, a, b) && !(R.portes[cle(a, b)] && !R.portes[cle(a, b)].ouverte)).sort((a, b) => dist({ x:a[0], y:a[1] }, h) - dist({ x:b[0], y:b[1] }, h))[0];
         if (!o2 || dist({ x:o2[0], y:o2[1] }, h) >= dist(P, h)) break; [P.x, P.y] = o2; }
       R.vu[cle(P.x, P.y)] = 1; log(S, `🔊 Le bruit de la fouille attire ${P.n} !`); ev.bruit = P.id; } }
