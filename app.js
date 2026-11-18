@@ -1220,7 +1220,29 @@
     $('#catalogue-card').hidden = !cat;
     $('#catalogue-lien').href = cat;
     $('#catalogue-url').textContent = cat;
+    if (cat) etatCodeCatalogue();
     openSheet($('#tools-sheet'));
+  });
+  // Code bureau du catalogue (tests du 18/11, G10) : choisi par un administrateur du Hub ; le changer ferme toutes les
+  // sessions du bureau ouvertes. Le code n’est jamais réaffiché.
+  function etatCodeCatalogue() {
+    $('#catalogue-code-msg').textContent = '';
+    api('GET', '/api/hub/catalogue/code-bureau').then(function (r) {
+      $('#catalogue-code-etat').textContent = r.status !== 200 ? (r.data.message || 'État inconnu.') : r.data.choisi
+        ? 'Déjà choisi. En choisir un autre ici (code oublié) ferme toutes les sessions du bureau.'
+        : 'Pas encore choisi : choisissez-le pour que le bureau puisse ouvrir le catalogue.';
+    });
+  }
+  $('#catalogue-code-form').addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    var code = $('#catalogue-code').value.trim();
+    if (!/^\d{6,8}$/.test(code)) { $('#catalogue-code-msg').textContent = 'Le code bureau a 6 à 8 chiffres.'; return; }
+    if (!window.confirm('Choisir ce code bureau ? Les sessions du bureau déjà ouvertes seront fermées.')) return;
+    api('POST', '/api/hub/catalogue/code-bureau', { code: code }).then(function (r) {
+      $('#catalogue-code').value = '';
+      etatCodeCatalogue();
+      setTimeout(function () { $('#catalogue-code-msg').textContent = r.status === 200 ? 'Code bureau enregistré ✓ Donnez-le aux personnes du bureau.' : (r.data.message || 'Le serveur ne répond pas.'); }, 300);
+    });
   });
   document.querySelectorAll('[data-copy]').forEach(function (b) {
     b.addEventListener('click', function () {
