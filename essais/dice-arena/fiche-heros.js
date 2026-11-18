@@ -40,6 +40,15 @@ const FH = { apres:() => {}, choixRel:null };
   .fh-fen h2 { margin:0 0 8px; text-align:center; color:#f3c96b; font-size:1.15em; } .fh-fen .doux { color:#c9c1ea; font-size:.9em; }
   .fh-bulle { position:fixed; left:50%; top:40%; transform:translateX(-50%); z-index:90; background:#000d; color:#f3c96b; font-weight:bold; padding:10px 18px; border-radius:14px; animation:fhb 1.6s forwards; pointer-events:none; text-align:center; }
   @keyframes fhb { 0% { opacity:0; } 15% { opacity:1; } 80% { opacity:1; } 100% { opacity:0; } }
+  .fh-bt.fh-pret { border-color:#ff9a3c; box-shadow:0 0 10px #ff9a3c88; animation:fgPret 1.4s ease-in-out infinite; } @keyframes fgPret { 50% { box-shadow:0 0 18px #ffb347; } }
+  .fg-enclume { display:flex; justify-content:center; gap:8px; margin:10px 0 4px; padding:12px 8px 16px; border-radius:16px; background:radial-gradient(ellipse at 50% 110%, #ff7a1a55, #14122a 70%); border:2px solid #4b4580; }
+  .fg-enclume.pleine { border-color:#ff9a3c; }
+  .fg-enclume.frappe { animation:fgFrappe .9s; } @keyframes fgFrappe { 20%, 60% { transform:translateX(-3px); filter:brightness(1.8); } 40%, 80% { transform:translateX(3px); } 100% { filter:brightness(3); } }
+  .fg-place { width:30%; min-height:78px; border:2px solid #4b4580; border-radius:12px; background:#1c1838; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:4px; }
+  .fg-place span { font-size:26px; } .fg-place small { font-size:.72em; line-height:1.2; } .fg-place.vide { color:#4b4580; font-size:28px; border-style:dashed; }
+  .fg-fleche { text-align:center; color:#ff9a3c; font-size:22px; }
+  .fg-result { box-shadow:0 0 16px #ff9a3c66; } .fg-manque { opacity:.5; } .fg-sel { border-color:#ff9a3c !important; }
+  .fg-eclat { text-align:center; font-size:58px; animation:fgEclat .8s ease-out; filter:drop-shadow(0 0 14px #ffb347); } @keyframes fgEclat { from { transform:scale(.2) rotate(-30deg); opacity:0; } }
   .fh-monte { animation:fhm .7s; } @keyframes fhm { 30% { transform:scale(1.08); filter:brightness(1.5); } }`;
   if (typeof document !== 'undefined') document.head.insertAdjacentHTML('beforeend', `<style>${css}</style>`);
 })();
@@ -90,7 +99,7 @@ function ficheHerosHTML(id) {
         <div class="fh-bts"><button class="fh-bt or" ${H.e >= coutR && H.niv >= nivPourRang(H.rang + 1) ? '' : 'disabled'} onclick="fhRang('${id}')">⬆ Passer ${RANGS[H.rang + 1].n}${H.niv < nivPourRang(H.rang + 1) ? `<br><small>il faut le niveau ${nivPourRang(H.rang + 1)}</small>` : ''}</button>${lireEtoiles().libres ? `<button class="fh-bt" onclick="fhVerse('${id}')">💠 Verser des éclats de Guilde</button>` : ''}</div>` : '<p>Rang maximum : légende de la Guilde !</p>'}
       <ul class="fh-bonus">${RANGS.map((R0, r) => { if (!r) return ''; const b = BONUS_RANG.find(x => x[0] === r); /* 16/11 soir (l'utilisateur : « Ascendant ★, ★★, ★★★★ sont où ? ») : TOUS les rangs, ceux sans bonus disent ce qu'ils ouvrent */ return `<li class="${H.rang >= r ? 'on' : ''}">${H.rang >= r ? '✅' : '🔒'} <b>${R0.n}</b> : ${b ? `${b[1]} ${b[2]} · ` : ''}niveau max ${R0.max}</li>`; }).join('')}</ul>
       <p style="color:#8a84b0;font-size:.82em;margin:6px 0 0">Les éclats de ${I.nom} se gagnent en jouant avec : élite 2, boss 5, Titan 5, étage 3… Les quêtes donnent des éclats de Guilde 💠, à verser sur qui tu veux.</p></div>
-    <div class="fh-bts"><button class="fh-bt" onclick="fhCoffre('${id}')">${fhIco('coffre-heros', '🎒')} Le coffre (${avSac().pieces.length})${groupesFusion().length ? ' · ⚒ fusion !' : ''}</button><button class="fh-bt" onclick="fhForgeron('${id}')">⚒ Le forgeron</button></div>
+    <div class="fh-bts"><button class="fh-bt" onclick="fhCoffre('${id}')">${fhIco('coffre-heros', '🎒')} Le coffre (${avSac().pieces.length})</button><button class="fh-bt${groupesFusion().length ? ' fh-pret' : ''}" onclick="fhForge('${id}')">🔥 La Forge${groupesFusion().length ? ' · prête !' : ''}</button><button class="fh-bt" onclick="fhForgeron('${id}')">⚒ Le forgeron</button></div>
     ${typeof EQUIP !== 'undefined' && typeof equipHeros === 'function' ? fhReliques(id) : ''}`;
 }
 function fhReliques(id) {
@@ -121,6 +130,7 @@ function fhCase(id, k) {
   fhFen(`<h2>${C.e} ${C.n}</h2>
     ${p ? `<p class="doux">Porté (l’amélioration reste sur la case : changer de pièce ne fait rien perdre) :</p>${fhPiece(p, `${p.niv < eqNivMax(p) ? `<button onclick="fhAmelio('${id}','${k}','${p.id}')">⬆ ${eqPrixAmelio(p)} 🪙</button>` : '<small>max : fusionne</small>'}<button onclick="retirePiece('${id}','${k}');fhFen('');FH.apres()">Retirer</button>`)}
       ${p.niv < eqNivMax(p) ? `<p class="doux">Au niveau ${p.niv + 1} : ${eqTexte(Object.assign({}, p, { niv:p.niv + 1 }))}</p>` : ''}` : '<p class="doux">Rien dans cette case.</p>'}
+    ${fhForgeCase(id, k)}
     <p class="doux" style="margin-top:10px">Dans le coffre :</p>
     ${autres.length ? autres.map(x => fhPiece(x, `<button onclick="fhEquipe('${id}','${x.id}')">Équiper</button>`)).join('') : '<p class="doux">Aucune pièce de ce genre. Elles tombent des boss, des élites et des meubles des Chroniques ; le forgeron en vend.</p>'}
     <button class="fh-bt or" style="width:100%;margin-top:10px" onclick="fhFen('')">Fermer</button>`);
@@ -129,14 +139,51 @@ function fhEquipe(id, pid) { const r = equipePiece(id, pid); if (r === 'ok') { f
 function fhAmelio(id, k, pid) { const r = amelioPiece(pid); if (r === 'ok') { fhSon('tour-fusion'); fhBulle('⬆ Amélioré !'); FH.apres(); if (k) fhCase(id, k); else fhCoffre(id); } else fhBulle(r); }
 function fhCoffre(id) {
   const s = avSac(), G = groupesFusion();
-  fhFen(`<h2>🎒 Le coffre des héros</h2>${fhRess()}<p class="doux">Un seul coffre pour tous tes héros. Améliore avec l’or ; quand une pièce est au maximum de sa rareté, FUSIONNE-la : <b>3 pièces de la même case et de la même rareté = 1 pièce de la rareté au-dessus</b> (commune → rare → épique → légendaire → mythique).</p>
-    ${G.length ? `<div class="fh-bloc"><h4>⚒ Fusions possibles</h4>${G.map(g => { const C = EQ_CASES.find(c => c.k === g[0].slot); return `<div class="fh-piece fh-r${g[0].r + 1}"><span class="e">${C.e}</span><div><b>${g.length} × ${C.n} ${EQ_RARE[g[0].r].n}${g.length > 1 ? 's' : ''}</b><small>3 → 1 ${C.n.toLowerCase()} <b style="display:inline;color:${EQ_RARE[g[0].r + 1].c}">${EQ_RARE[g[0].r + 1].n}</b></small></div><div class="act"><button onclick="fhFusion('${id}','${g[0].slot}',${g[0].r})">⚒ Fusionner</button></div></div>`; }).join('')}</div>` : ''}
+  fhFen(`<h2>🎒 Le coffre des héros</h2>${fhRess()}<p class="doux">Un seul coffre pour tous tes héros. Améliore avec l’or ; pour monter de rareté, passe par <b>la Forge</b> : <b>3 pièces de la même case et de la même rareté = 1 pièce de la rareté au-dessus</b>.</p>
+    <button class="fh-bt${G.length ? ' fh-pret' : ''}" style="width:100%;margin:6px 0" onclick="fhForge('${id}')">🔥 La Forge${G.length ? ` · ${G.length} fusion${G.length > 1 ? 's' : ''} possible${G.length > 1 ? 's' : ''}` : ''}</button>
     ${s.pieces.filter(p => !porteurDe(p.id)).sort((x, y) => y.r - x.r || y.niv - x.niv).map(p => fhPiece(p, `<button onclick="fhEquipe('${id}','${p.id}')">Équiper</button>${p.niv < eqNivMax(p) ? `<button onclick="fhAmelio('${id}',null,'${p.id}')">⬆ ${eqPrixAmelio(p)} 🪙</button>` : ''}<button onclick="if(confirm('Revendre pour ${eqPrixVente(p)} pièces ?')){vendPiece('${p.id}');fhCoffre('${id}');FH.apres()}">Vendre ${eqPrixVente(p)}</button>`)).join('') || '<p class="doux">Le coffre est vide.</p>'}
     ${(() => { const P = s.pieces.filter(p => porteurDe(p.id)).sort((x, y) => y.r - x.r || y.niv - x.niv); // 17/11 (l'utilisateur : « un équipement porté devrait sortir du coffre ou dire équipé par ») : les pièces portées à part, en bas
       return P.length ? `<div class="fh-bloc"><h4>✅ Déjà équipées</h4>${P.map(p => fhPiece(p, p.niv < eqNivMax(p) ? `<button onclick="fhAmelio('${id}',null,'${p.id}')">⬆ ${eqPrixAmelio(p)} 🪙</button>` : '<small>max : fusionne</small>')).join('')}</div>` : ''; })()}
     <button class="fh-bt or" style="width:100%;margin-top:10px" onclick="fhFen('')">Fermer</button>`);
 }
 function fhFusion(id, slot, r) { const n = fusionnePiece(slot, r); if (n) { fhSon('victoire'); fhBulle(`⚒ ${n.nom} ${EQ_RARE[n.r].n} !`); FH.apres(); fhCoffre(id); } }
+// ----------------------------------------------------------------------------------------------- LA FORGE (18/11, demande de l'utilisateur : « mettre des équipements pour un supérieur, comme ailleurs »)
+// La fusion existait (3 pièces de la même case et de la même rareté → la rareté au-dessus) mais était cachée dans le coffre : la voici en vraie forge.
+// On touche un groupe : ses 3 meilleures pièces vont sur l'enclume, l'aperçu montre le résultat, « 🔥 Forger » confirme (règle : montrer avant d'agir).
+const FORGE = { sel:null };
+const fhGroupes = () => { const G = {}; avSac().pieces.forEach(p => { if (p.r >= EQ_RARE.length - 1 || !EQ_CASES.some(c => c.k === p.slot)) return; const k = p.slot + ':' + p.r; (G[k] = G[k] || []).push(p); });
+  return Object.values(G).map(g => g.sort((a, b) => b.niv - a.niv)).sort((a, b) => (b.length >= 3) - (a.length >= 3) || b[0].r - a[0].r || b.length - a.length); };
+function fhForgeCase(id, k) { const C = EQ_CASES.find(c => c.k === k), G = fhGroupes().filter(g => g[0].slot === k);
+  if (!G.length) return '';
+  return `<div class="fh-bloc"><h4>🔥 La Forge</h4>${G.map(g => { const n = Math.min(3, g.length), R = EQ_RARE[g[0].r], R2 = EQ_RARE[g[0].r + 1];
+    return `<p class="doux" style="margin:3px 0"><b style="color:${R.c}">${n}/3</b> pièces <span style="color:${R.c}">${R.n}s</span> pour une pièce <b style="color:${R2.c}">${R2.n}</b>${g.length >= 3 ? ` · <a href="#" onclick="FORGE.sel='${k}:${g[0].r}';fhForge('${id}');return false">forger ›</a>` : ''}</p>`; }).join('')}</div>`; }
+function fhForge(id) {
+  const G = fhGroupes(), prets = G.filter(g => g.length >= 3); let sel = prets.find(g => g[0].slot + ':' + g[0].r === FORGE.sel) || null;
+  const pose = sel ? sel.slice(0, 3) : [];
+  const caseE = p => { const C = EQ_CASES.find(c => c.k === p.slot); return `<div class="fg-place fh-r${p.r}"><span>${C.e}</span><small style="color:${EQ_RARE[p.r].c}">${p.nom}</small><small>+${p.niv}</small></div>`; };
+  let apercu = '';
+  if (sel) { const C = EQ_CASES.find(c => c.k === sel[0].slot), r2 = sel[0].r + 1, n = { slot:sel[0].slot, nom:sel[0].nom, r:r2, niv:Math.min(sel[0].niv, 5 * (sel[0].r + 2)) }, por = pose.map(p => porteurDe(p.id)).find(Boolean);
+    apercu = `<div class="fg-fleche">⬇</div><div class="fh-piece fh-r${r2} fg-result"><span class="e">${C.e}</span><div><b style="color:${EQ_RARE[r2].c}">${n.nom} <small style="display:inline">+${n.niv}/${eqNivMax(n)}</small></b><small>${C.n} ${EQ_RARE[r2].n} · ${eqTexte(n)}</small>${por ? `<small>Reste équipée par ${fhInfo(por).nom}.</small>` : ''}</div></div>
+      <p class="doux" style="text-align:center">Les 3 pièces de l’enclume disparaissent pour donner celle-ci. On garde le meilleur niveau.</p>
+      <button class="fh-bt or" style="width:100%" onclick="fhForger('${id}')">🔥 Forger</button>`; }
+  fhFen(`<h2>🔥 La Forge</h2><div style="text-align:center"><img src="ui/heros/pnj-forgeron.webp?v=1" alt="" style="width:22%;max-width:90px;border-radius:50%;border:2px solid #f3c96b;box-shadow:0 0 12px #f3a04a88" onerror="this.remove()"></div>
+    <p class="doux" style="text-align:center">« Trois pièces de la même sorte et de la même couleur sur l’enclume, et j’en tire une meilleure. »<br><b>Commune → rare → épique → légendaire → mythique.</b></p>
+    <div class="fg-enclume ${sel ? 'pleine' : ''}" id="fg-enclume">${[0, 1, 2].map(i => pose[i] ? caseE(pose[i]) : '<div class="fg-place vide">?</div>').join('')}</div>
+    ${apercu || `<p class="doux" style="text-align:center">${prets.length ? 'Touche une fusion possible ci-dessous pour la poser sur l’enclume.' : 'Aucune fusion possible pour l’instant : il faut 3 pièces de la même case et de la même rareté.'}</p>`}
+    ${G.length ? `<div class="fh-bloc"><h4>Tes pièces, par sorte</h4>${G.map(g => { const C = EQ_CASES.find(c => c.k === g[0].slot), R = EQ_RARE[g[0].r], R2 = EQ_RARE[g[0].r + 1], ok = g.length >= 3, k = g[0].slot + ':' + g[0].r;
+      return `<div class="fh-piece fh-r${g[0].r} ${ok ? '' : 'fg-manque'} ${sel && k === FORGE.sel ? 'fg-sel' : ''}" ${ok ? `onclick="FORGE.sel='${k}';fhForge('${id}')" style="cursor:pointer"` : ''}><span class="e">${C.e}</span><div><b>${C.n} · <span style="color:${R.c}">${R.n}</span> · ${Math.min(g.length, 3)}/3</b><small>${ok ? `→ 1 pièce <b style="display:inline;color:${R2.c}">${R2.n}</b>${g.length >= 6 ? ` (de quoi en faire ${Math.floor(g.length / 3)})` : ''}` : `il en manque ${3 - g.length}`}</small></div>${ok ? '<div class="act"><button>Poser</button></div>' : ''}</div>`; }).join('')}</div>` : ''}
+    <p class="doux">Les pièces tombent des boss, des élites et des meubles des Chroniques ; le forgeron en vend.</p>
+    <button class="fh-bt" style="width:100%;margin-top:6px" onclick="FORGE.sel=null;fhFen('')">Fermer</button>`);
+}
+function fhForger(id) {
+  const [slot, r] = String(FORGE.sel || '').split(':'); if (!slot) return;
+  const E = document.getElementById('fg-enclume'); if (E) E.classList.add('frappe');
+  fhSon('tour-fusion');
+  setTimeout(() => { const n = fusionnePiece(slot, +r); FORGE.sel = null; if (!n) { fhBulle('Impossible : il faut 3 pièces pareilles'); fhForge(id); return; }
+    fhSon('victoire'); FH.apres(); const C = EQ_CASES.find(c => c.k === n.slot);
+    fhFen(`<h2>🔥 Forgé !</h2><div class="fg-eclat">${C.e}</div>${fhPiece(n, '')}<p class="doux" style="text-align:center">Nouvelle pièce <b style="color:${EQ_RARE[n.r].c}">${EQ_RARE[n.r].n}</b>, rangée dans le coffre${porteurDe(n.id) ? ' et déjà équipée' : ''}.</p>
+      <div style="display:flex;gap:8px"><button class="fh-bt or" style="flex:1" onclick="fhForge('${id}')">🔥 Encore</button><button class="fh-bt" style="flex:1" onclick="fhFen('')">Fermer</button></div>`); }, 900);
+}
 function fhForgeron(id) {
   const s = avSac(); let deja = {}; try { deja = JSON.parse(localStorage.getItem('guilde-forgeron-achats') || '{}'); } catch (e) {}
   fhFen(`<h2>⚒ Le forgeron</h2><div style="text-align:center"><img src="ui/heros/pnj-forgeron.webp?v=1" alt="" style="width:30%;max-width:130px;border-radius:50%;border:2px solid #f3c96b;box-shadow:0 0 12px #f3a04a88" onerror="this.remove()"></div><p class="doux" style="text-align:center">« Trois pièces aujourd’hui, pas une de plus. Demain, autre chose. » · 🪙 ${s.or}</p>
