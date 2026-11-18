@@ -217,7 +217,7 @@
 <body>
 <div id="app"></div>
 <div id="fen"></div><div id="perso"></div>
-<script src="musique.js?v=41f022128a"></script>
+<script src="musique.js?v=97e5549185"></script>
 <script src="rang.js?v=bb0555ca3c"></script>
 <script>window.AMIS_SANS_BOUTON = true;</script>
 <script src="amis.js?v=c2f7821b28"></script>
@@ -225,7 +225,7 @@
 <script src="progression-modes.js?v=807b0f9ad5"></script>
 <script src="aventuriers.js?v=04b0962a08"></script>
 <script src="pouvoirs-heros.js?v=8d5918482a"></script>
-<script src="chroniques-moteur.js?v=ef166318b8"></script>
+<script src="chroniques-moteur.js?v=95b3001023"></script>
 <script src="chroniques-ambiance.js?v=cdc992dc3a"></script>
 <script>
 // =============================================================================================== LES CHRONIQUES DE LA GUILDE v2 (15/11, écran « façon HeroQuest »)
@@ -370,7 +370,7 @@ SCX_TXT.labyrinthe = { titre:'✦ Le Labyrinthe des Runes', duree:'30-60 min · 
 const SCT = () => (S && S.textes) || SCX_TXT[(S && S.scen) || scenChoisi]; // 15/11 soir : une aventure donne ses propres textes
 
 // ------------------------------------------------------------------ sauvegarde : tout l'état ; un POINT DE PASSAGE à chaque porte ouverte
-function sauve() { if (S && S.scen === 'atelier') return; try { if (S && !S.fin) localStorage.setItem(CLE_PARTIE, JSON.stringify(S)); else localStorage.removeItem(CLE_PARTIE); } catch (e) {} }
+function sauve() { if (S && (S.scen === 'atelier' || S.scen === 'entrainement')) return; try { if (S && !S.fin) localStorage.setItem(CLE_PARTIE, JSON.stringify(S)); else localStorage.removeItem(CLE_PARTIE); } catch (e) {} } // 18/11 : l'entraînement ne remplace jamais la vraie partie gardée
 const gardee = () => { try { const p = JSON.parse(localStorage.getItem(CLE_PARTIE) || 'null'); return p && p.heros && p.R && !p.fin ? K.miseAJour(p) : null; } catch (e) { return null; } }; // 16/11 soir : les corrections de la carte (portes doubles…) s'appliquent dès l'ouverture de la partie
 function pointDePassage() { const c = JSON.parse(JSON.stringify(S)); delete c.passage; S.passage = JSON.stringify(c); }
 
@@ -1007,7 +1007,7 @@ function amiMenu(i) {
 function infoMonstre(m) {
   const it = { frappe:`⚔ va frapper (${m.att})`, garde:'🛡 va refermer un de ses sceaux', soin:'💚 va réparer un autre monstre', fuit:'🏃 va s’enfuir', remonte:'⏳ reprend son souffle', levier:'🎚 va remonter un levier', elan:'⚡ prend son élan', charge:`⚡ IL CHARGE : au début de votre prochain tour, AVANT que vous jouiez, il frappera ${m.att + 2} chaque héros collé à lui. Pour l’éviter : ne finissez pas votre tour collé à lui (éloignez-vous), ou protégez-vous (le bouclier encaisse)`, gros:`💥 GROS COUP : frappe de ${m.att + 2}, sauf si vous lui brisez un sceau avant`, rien:'ne fait rien' }[m.it] || '';
   fenetre(`<h2>${m.n}</h2><p style="text-align:center">Ce tour-ci : <b>${it}</b>.</p><div class="sceaux">${m.sceaux.map(s => `<div class="sx ${s.ok ? 'ok' : ''}">${sceauTxt(s, m.sceaux)}</div>`).join('')}</div>${(() => { // 17/11 (l'utilisateur : « = 0, on fait comment ? ») : ce que demande chaque sorte de sceau, sous les sceaux
-      const T = new Set(m.sceaux.filter(z => !z.ok).map(z => z.t)), D = { dbl:'<b>Jumeaux</b> : le premier se brise avec n’importe quel dé ; l’autre demande ensuite <b>la même valeur</b> (« = 4 »).', min:'<b>≥ 5</b> : un dé de 5 ou plus.', tot:'<b>Σ</b> : plusieurs dés dont le total fait au moins ce chiffre.', ex:'<b>Chiffre seul</b> : exactement ce dé.', pair:'<b>Pair</b> : un dé pair.', imp:'<b>Impair</b> : un dé impair.' };
+      const T = new Set(m.sceaux.filter(z => !z.ok).map(z => z.t)), D = { dbl:'<b>Jumeaux</b> : le premier se brise avec n’importe quel dé ; l’autre demande ensuite <b>la même valeur</b> (« = 4 »).', min:(v => `<b>≥ ${v}</b> : un dé de ${v} ou plus.`)(Math.min(...m.sceaux.filter(z => !z.ok && z.t === 'min').map(z => z.v))), tot:'<b>Σ</b> : plusieurs dés dont le total fait au moins ce chiffre.', ex:'<b>Chiffre seul</b> : exactement ce dé.', pair:'<b>Pair</b> : un dé pair.', imp:'<b>Impair</b> : un dé impair.' };
       const l = [...T].map(t => D[t]).filter(Boolean); return l.length ? `<p style="font-size:.88em;color:var(--doux);margin:.3em 0">${l.join('<br>')}</p>` : ''; })()}<p style="color:var(--doux);font-size:.9em">${m.id === 'boss' ? 'Il frappe au contact (une case autour, diagonales comprises), un tour sur deux.' : `Il avance de ${(K.BETES[m.b] || {}).mv || 1} case${((K.BETES[m.b] || {}).mv || 1) > 1 ? 's' : ''} par tour vers le héros le plus proche et frappe au contact (une case autour, diagonales comprises), seulement quand sa salle est dévoilée.`}</p>${Object.keys(K.CAPA).filter(k => (K.BETES[m.b] || {})[k]).map(k => `<p style="font-size:.9em;margin:4px 0">✦ ${K.CAPA[k]}</p>`).join('')}<p style="color:var(--doux);font-size:.9em">Choisis un dé, puis touche le monstre pour poser le dé sur un sceau. Tous ses sceaux brisés : il tombe.</p><button class="go" onclick="fenetre('')">Compris</button>`);
 }
 async function finTour(tousFinis) {
@@ -1358,6 +1358,8 @@ if (ESSAI) essaiAtelier(ESSAI); else if (sessionStorage.getItem('chron-en-jeu') 
 <script src="chroniques-aventures.js?v=d6797cd442"></script>
 <script src="guide.js?v=f78db3b570"></script>
 <script src="guides-modes.js?v=485817c4ec"></script>
+<script src="entrainement.js?v=854139c476"></script>
+<script src="chroniques-entrainement.js?v=d0ae56c76f"></script>
 <script>
 // 15/11 : le guide de Moustache de ce mode (guides-modes.js)
 { const _a = accueil; accueil = function () { const r = _a.apply(this, arguments); guideMode('chroniques'); return r; }; }
