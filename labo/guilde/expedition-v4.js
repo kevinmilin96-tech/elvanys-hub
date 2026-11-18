@@ -29,51 +29,51 @@ const MERS = {
     groupes:[
       { n:'La Crique des gobelins', e:'🏴‍☠️', cle:'crique', av:[['Gobelin', 3, 7], ['Gobelin chef', 3, 9]], ar:[['Gobelin lanceur', 2, 5, 'tireur']] },
       { n:'La Lande des pillards', e:'🪓', cle:'crique', av:[['Pillard', 3, 8], ['Pillard', 3, 8]], ar:[['Frondeur', 2, 5, 'tireur'], ['Chien de pillard', 2, 5, 'charge']] },
-      { n:'Le Port de Marennes', e:'⚓', cle:'port', av:[['Loup de braise', 4, 11], ['Louveteau', 3, 6]], ar:[['Salamandre', 3, 8, 'tireur'], ['Louveteau', 3, 6]] },
-      { n:'Les Rizières de cendre', e:'🌾', cle:'foret', av:[['Épouvantail de braise', 3, 12, 'barriere'], ['Corbeau ardent', 4, 6, 'charge']], ar:[['Salamandre', 3, 8, 'tireur'], ['Corbeau ardent', 4, 6, 'charge']] },
-      { n:'Le Cratère', e:'🌋', cle:'cratere', av:[['Élémentaire de lave', 6, 18, 'barriere'], ['Golem de scories', 4, 14, 'barriere']], ar:[['Drake de cendre', 5, 14, 'tireur'], ['Flammèche', 3, 4, 'charge'], ['Flammèche', 3, 4, 'charge']] },
+      { n:'Le Port de Marennes', e:'⚓', cle:'port', av:[['Loup de braise', 4, 11], ['Louveteau', 3, 6]], ar:[['Salamandre', 3, 8, 'tireur'], ['Chaman de braise', 2, 7, 'tireur+soigne']] },
+      { n:'Les Rizières de cendre', e:'🌾', cle:'foret', av:[['Épouvantail de braise', 3, 12, 'barriere'], ['Corbeau ardent', 4, 6, 'charge']], ar:[['Salamandre', 3, 8, 'tireur'], ['Porte-étendard de cendre', 2, 8, 'etendard']] },
+      { n:'Le Cratère', e:'🌋', cle:'cratere', av:[['Élémentaire de lave', 6, 18, 'barriere'], ['Golem de scories', 4, 14, 'barriere']], ar:[['Drake de cendre', 5, 14, 'tireur'], ['Invocateur de cendre', 2, 9, 'invoque'], ['Flammèche', 3, 4, 'charge']] },
     ],
-    elites:[{ n:'Le Chef de guerre gobelin', e:'👺', cle:'crique', av:[['Chef de guerre', 6, 30, 'barriere'], ['Gobelin chef', 3, 9]], ar:[['Gobelin lanceur', 2, 5, 'tireur'], ['Tambour gobelin', 2, 6, 'tireur']], meca:'rage', d:'Rage : il gagne +1 attaque à chaque round.' },
-            { n:'La Matriarche de braise', e:'🐺', cle:'port', av:[['Matriarche de braise', 5, 26], ['Loup de braise', 4, 11]], ar:[['Louveteau', 3, 6], ['Louveteau', 3, 6]], meca:'meute', d:'Meute : quand un Louveteau tombe, la Matriarche hurle (+2 attaque).' }],
+    elites:[{ n:'Le Chef de guerre gobelin', e:'👺', cle:'crique', av:[['Chef de guerre', 6, 30, 'barriere+chef'], ['Gobelin chef', 3, 9]], ar:[['Gobelin lanceur', 2, 5, 'tireur'], ['Porte-étendard gobelin', 2, 7, 'etendard']], meca:'rage', d:'Rage : il gagne +1 attaque à chaque round.' },
+            { n:'La Matriarche de braise', e:'🐺', cle:'port', av:[['Matriarche de braise', 5, 26, 'chef'], ['Loup de braise', 4, 11]], ar:[['Louveteau', 3, 6], ['Totem de la meute', 1, 10, 'totem']], meca:'meute', d:'Meute : quand un Louveteau tombe, la Matriarche hurle (+2 attaque).' }],
     boss:['titan', 'ignaros'] },
   glaces: { n:'La Mer des glaces', e:'❄️', d:'Le grand nord : banquise, yétis et vouivres. Les monstres encaissent plus.', ouvre:'nuages', pv:1.05,
     decor:{ monstres:['falaises', 'foret', 'port'], fantome:['falaises'], evenement:['foret'], tresor:['crique'], port:['port'], elite:['falaises'], boss:['nid'] },
     groupes:[
       { n:'La Banquise des pingouins-guerriers', e:'🐧', cle:'falaises', av:[['Pingouin-guerrier', 3, 8], ['Pingouin-guerrier', 3, 8]], ar:[['Lanceur de glaçons', 2, 6, 'tireur']] },
       { n:'Le Col des loups blancs', e:'🐺', cle:'falaises', av:[['Loup blanc', 4, 9, 'charge'], ['Loup blanc', 4, 9, 'charge']], ar:[['Chaman du givre', 2, 7, 'tireur']] },
-      { n:'La Forêt pétrifiée', e:'🌲', cle:'foret', av:[['Ent de givre', 4, 18, 'barriere'], ['Feu follet bleu', 3, 6]], ar:[['Archer des neiges', 4, 7, 'tireur'], ['Feu follet bleu', 3, 6]] },
-      { n:'Le Fjord des trolls', e:'🧌', cle:'port', av:[['Troll des glaces', 6, 20, 'barriere'], ['Troll des glaces', 5, 16]], ar:[['Chaman du givre', 3, 8, 'tireur']] },
-      { n:'La Faille de cristal', e:'💎', cle:'cratere', av:[['Golem de cristal', 5, 22, 'barriere'], ['Golem de cristal', 5, 18, 'barriere']], ar:[['Sorcière du blizzard', 5, 12, 'tireur'], ['Éclat vivant', 3, 5, 'charge'], ['Éclat vivant', 3, 5, 'charge']] },
+      { n:'La Forêt pétrifiée', e:'🌲', cle:'foret', av:[['Ent de givre', 4, 18, 'barriere'], ['Feu follet bleu', 3, 6]], ar:[['Archer des neiges', 4, 7, 'tireur'], ['Nécromant des glaces', 2, 9, 'invoque']] },
+      { n:'Le Fjord des trolls', e:'🧌', cle:'port', av:[['Troll des glaces', 6, 20, 'barriere'], ['Troll des glaces', 5, 16]], ar:[['Chaman du givre', 3, 8, 'tireur+soigne']] },
+      { n:'La Faille de cristal', e:'💎', cle:'cratere', av:[['Golem de cristal', 5, 22, 'barriere'], ['Golem de cristal', 5, 18, 'barriere']], ar:[['Sorcière du blizzard', 5, 12, 'tireur'], ['Étendard de glace', 2, 9, 'etendard'], ['Éclat vivant', 3, 5, 'charge']] },
     ],
-    elites:[{ n:'Le Yéti ancien', e:'🦍', cle:'falaises', av:[['Yéti ancien', 7, 34, 'barriere']], ar:[['Petit yéti', 3, 8], ['Petit yéti', 3, 8]], meca:'rage', d:'Rage : il gagne +1 attaque à chaque round.' },
-            { n:'La Reine des neiges', e:'👸', cle:'foret', av:[['Garde de glace', 4, 14, 'barriere'], ['Garde de glace', 4, 14, 'barriere']], ar:[['La Reine des neiges', 5, 22, 'tireur']], meca:'gel', d:'Gel : un round sur deux, ta recrue la plus forte est gelée (0 attaque ce round).' }],
+    elites:[{ n:'Le Yéti ancien', e:'🦍', cle:'falaises', av:[['Yéti ancien', 7, 34, 'barriere+chef']], ar:[['Petit yéti', 3, 8], ['Chaman du givre', 2, 8, 'tireur+soigne']], meca:'rage', d:'Rage : il gagne +1 attaque à chaque round.' },
+            { n:'La Reine des neiges', e:'👸', cle:'foret', av:[['Garde de glace', 4, 14, 'barriere'], ['Garde de glace', 4, 14, 'barriere']], ar:[['La Reine des neiges', 5, 22, 'tireur+chef'], ['Totem de givre', 1, 10, 'totem']], meca:'gel', d:'Gel : un round sur deux, ta recrue la plus forte est gelée (0 attaque ce round).' }],
     boss:['vouivre', 'titan'] },
-  tempetes: { n:'L’Archipel des tempêtes', e:'⛈️', d:'Pirates, harpies et krakens. La mer la plus dure, pour les équipages rodés.', ouvre:'glaces', pv:1.02,
+  tempetes: { n:'L’Archipel des tempêtes', e:'⛈️', d:'Pirates, harpies et krakens. La mer la plus dure, pour les équipages rodés.', ouvre:'glaces', pv:1.1,
     decor:{ monstres:['crique', 'port', 'falaises'], fantome:['falaises'], evenement:['crique'], tresor:['crique'], port:['port'], elite:['port'], boss:['nid'] },
     groupes:[
       { n:'La Crique des naufrageurs', e:'🏴‍☠️', cle:'crique', av:[['Naufrageur', 3, 9], ['Naufrageur', 3, 9]], ar:[['Pistolier', 3, 5, 'tireur']] },
       { n:'Les Récifs des harpies', e:'🦅', cle:'falaises', av:[['Harpie', 4, 7, 'charge'], ['Harpie', 4, 7, 'charge']], ar:[['Harpie tireuse', 3, 6, 'tireur'], ['Harpie tireuse', 3, 6, 'tireur']] },
-      { n:'Le Repaire de Barbe-Grise', e:'⚓', cle:'port', av:[['Quartier-maître', 5, 16, 'barriere'], ['Pirate', 4, 10]], ar:[['Canonnier pirate', 5, 9, 'tireur'], ['Pirate', 4, 10]] },
-      { n:'L’Œil du cyclone', e:'🌀', cle:'falaises', av:[['Élémentaire d’orage', 6, 20, 'barriere'], ['Nuée électrique', 4, 8, 'charge']], ar:[['Sorcier des vents', 5, 12, 'tireur'], ['Nuée électrique', 4, 8, 'charge']] },
-      { n:'Le Cimetière des navires', e:'💀', cle:'cratere', av:[['Capitaine noyé', 6, 22, 'barriere'], ['Matelot noyé', 4, 14]], ar:[['Canonnier fantôme', 6, 12, 'tireur'], ['Mouette spectrale', 3, 5, 'charge'], ['Mouette spectrale', 3, 5, 'charge']] },
+      { n:'Le Repaire de Barbe-Grise', e:'⚓', cle:'port', av:[['Quartier-maître', 5, 16, 'barriere'], ['Pirate', 4, 10]], ar:[['Canonnier pirate', 5, 9, 'tireur'], ['Porte-drapeau pirate', 2, 9, 'etendard']] },
+      { n:'L’Œil du cyclone', e:'🌀', cle:'falaises', av:[['Élémentaire d’orage', 6, 20, 'barriere'], ['Nuée électrique', 4, 8, 'charge']], ar:[['Sorcier des vents', 4, 12, 'tireur+soigne'], ['Nuée électrique', 4, 8, 'charge']] },
+      { n:'Le Cimetière des navires', e:'💀', cle:'cratere', av:[['Capitaine noyé', 6, 22, 'barriere'], ['Matelot noyé', 4, 14]], ar:[['Canonnier fantôme', 6, 12, 'tireur'], ['Nécromancien noyé', 2, 10, 'invoque'], ['Mouette spectrale', 3, 5, 'charge']] },
     ],
-    elites:[{ n:'Le Capitaine Barbe-Grise', e:'🦜', cle:'port', av:[['Barbe-Grise', 7, 32, 'barriere'], ['Pirate', 4, 10]], ar:[['Canonnier pirate', 5, 9, 'tireur']], meca:'rage', d:'Rage : il gagne +1 attaque à chaque round.' },
-            { n:'La Sirène noire', e:'🧜', cle:'crique', av:[['Matelot charmé', 4, 12], ['Matelot charmé', 4, 12]], ar:[['La Sirène noire', 4, 20, 'tireur']], meca:'gel', d:'Chant : un round sur deux, ta recrue la plus forte est charmée (0 attaque ce round).' }],
+    elites:[{ n:'Le Capitaine Barbe-Grise', e:'🦜', cle:'port', av:[['Barbe-Grise', 7, 32, 'barriere+chef'], ['Pirate', 4, 10]], ar:[['Canonnier pirate', 5, 9, 'tireur'], ['Porte-drapeau pirate', 2, 9, 'etendard']], meca:'rage', d:'Rage : il gagne +1 attaque à chaque round.' },
+            { n:'La Sirène noire', e:'🧜', cle:'crique', av:[['Matelot charmé', 4, 12], ['Matelot charmé', 4, 12]], ar:[['La Sirène noire', 4, 20, 'tireur+chef'], ['Totem des abysses', 1, 10, 'totem']], meca:'gel', d:'Chant : un round sur deux, ta recrue la plus forte est charmée (0 attaque ce round).' }],
     boss:['kraken', 'roi'] },
 };
 const ORDRE_MERS = ['nuages', 'glaces', 'tempetes'];
 
 // ----------------------------------------------------------------------------------------------- les boss (tirés au sort parmi ceux de la mer, connus dès le départ)
 const BOSS_V4 = {
-  titan:   { n:'Le Titan de feu', e:'🔥', cle:'nid', av:[['Le Titan de feu', 8, 60, 'boss']], ar:[['Flammèche', 3, 5, 'charge'], ['Cultiste du feu', 4, 10, 'tireur'], ['Flammèche', 3, 5, 'charge']],
+  titan:   { n:'Le Titan de feu', e:'🔥', cle:'nid', av:[['Le Titan de feu', 8, 60, 'boss']], ar:[['Flammèche', 3, 5, 'charge'], ['Totem de lave', 1, 8, 'totem'], ['Cultiste du feu', 4, 10, 'tireur']],
     meca:'eruption', d:'Éruption : tous les 3 rounds, la lave frappe toute ta rangée de devant (3 dégâts).' },
-  ignaros: { n:'Ignaros, le dragon ancien', e:'🐉', cle:'nid', av:[['Ignaros', 8, 58, 'boss']], ar:[['Dragonnet', 4, 8, 'tireur'], ['Dragonnet', 4, 8, 'tireur']],
+  ignaros: { n:'Ignaros, le dragon ancien', e:'🐉', cle:'nid', av:[['Ignaros', 8, 58, 'boss']], ar:[['Dragonnet', 4, 8, 'tireur'], ['Prêtresse du dragon', 2, 10, 'tireur+soigne']],
     meca:'souffle', d:'Souffle : au 2e round puis tous les 3 rounds, il brûle ta rangée de DERRIÈRE (3 dégâts).' },
-  vouivre: { n:'La Vouivre des glaces', e:'🐲', cle:'nid', av:[['La Vouivre', 8, 64, 'boss']], ar:[['Stalagmite vivante', 3, 10, 'barriere'], ['Givrelin', 3, 7, 'tireur']],
+  vouivre: { n:'La Vouivre des glaces', e:'🐲', cle:'nid', av:[['La Vouivre', 8, 64, 'boss']], ar:[['Stalagmite vivante', 3, 10, 'barriere'], ['Totem de givre', 1, 8, 'totem']],
     meca:'gel', d:'Gel : à chaque round, ta recrue la plus forte est gelée (0 attaque ce round), un round sur deux.' },
-  kraken:  { n:'Le Kraken des brumes', e:'🦑', cle:'nid', av:[['Tentacule', 3, 11, 'barriere'], ['Le Kraken', 7, 42, 'boss'], ['Tentacule', 3, 11, 'barriere']], ar:[['Tentacule', 4, 12, 'tireur']],
+  kraken:  { n:'Le Kraken des brumes', e:'🦑', cle:'nid', av:[['Tentacule', 3, 11, 'barriere'], ['Le Kraken', 6, 30, 'boss'], ['Tentacule', 3, 11, 'barriere']], ar:[['Tentacule', 4, 12, 'tireur'], ['Sirène du Kraken', 2, 7, 'tireur+soigne']],
     meca:'tentacules', d:'Tentacules : tous les 3 rounds, une tentacule coupée repousse (à moitié vie).' },
-  roi:     { n:'Le Roi sans visage', e:'👤', cle:'nid', av:[['Le Roi sans visage', 6, 66, 'boss']], ar:[['Reflet', 3, 8, 'tireur'], ['Reflet', 3, 8, 'tireur']],
+  roi:     { n:'Le Roi sans visage', e:'👤', cle:'nid', av:[['Le Roi sans visage', 6, 76, 'boss']], ar:[['Reflet', 3, 8, 'tireur'], ['Héraut du Roi', 2, 10, 'etendard']],
     meca:'miroir', d:'Miroir : il prend l’attaque de ta meilleure4 recrue (+2), et ses Reflets copient sa vie.' },
 };
 
@@ -138,7 +138,7 @@ const ETAPES_V4 = [
   [['boss']],
 ];
 const TIER_ETAPE = [0, 1, 2, 3, 4, 5]; // groupe de monstres selon l'étape (0-1 faciles, 2-3 moyens, 4 durs)
-const DUR_V4 = [1.35, 1.3, 1.55, 1.5, 1.9, 2.05].map(x => +(x * 1.12).toFixed(3)); // 18/11 : ×1,12 (tireurs sur l'arrière + cible du capitaine)
+const DUR_V4 = [1.35, 1.3, 1.55, 1.5, 1.9, 2.05].map(x => +(x * 1.02).toFixed(3)); // 18/11 : ×1,02 (tireurs sur l'arrière + cible du capitaine)
 function escaleDe(X, type, etape, R) {
   const M = MERS[X.mer], cle = tire(R, M.decor[type] || ['crique']);
   if (type === 'monstres') { const tier = Math.min(4, etape === 0 ? tire(R, [0, 1]) : etape === 1 ? 1 : etape === 2 ? tire(R, [2, 3]) : etape === 3 ? 3 : 4); const g = M.groupes[tier]; return { type, etape, n:g.n, e:g.e, cle:g.cle, g:tier }; }
@@ -193,7 +193,7 @@ nouvelleOffre = function (X) {
 function plateauV4(X, def, mul) {
   const P = { av:[null, null, null], ar:[null, null, null] }, M = MERS[X.mer];
   const asc = 1 + (X.asc >= 1 ? .04 : 0) + (X.asc >= 6 ? .05 : 0), atq = (X.regle === 'enrages' ? 1 : 0) + (X.asc >= 7 ? 1 : 0);
-  const fait = ([n, a, v, tag]) => ({ id:uid(), key:'m', n, a:a + atq, v:Math.round(v * mul * M.pv * asc), star:0, role:tag === 'tireur' ? 'tireur' : 'lame', tireur:tag === 'tireur', barriere:tag === 'barriere', charge:tag === 'charge', boss:tag === 'boss', bonusA:0, bonusV:0 });
+  const fait = ([n, a, v, tag]) => ({ id:uid(), key:'m', n, a:a + atq, v:Math.round(v * mul * M.pv * asc), star:0, bonusA:0, bonusV:0, ...tagsMonstre(tag) });
   def.av.forEach((x, i) => { P.av[i] = fait(x); }); def.ar.forEach((x, i) => { P.ar[i] = fait(x); });
   return P;
 }
@@ -205,7 +205,7 @@ adversaire = function (X) {
   if (esc.type === 'elite') { const g = M.elites[esc.el || 0], P = plateauV4(X, g, DUR_V4[X.escale]); if (X.asc >= 2) [...P.av, ...P.ar].forEach(u => { if (u) u.a++; });
     return { nom:g.n, camp:{ heros:null, plateau:P, X:null, meca:g.meca }, meca:g.meca, mecaTxt:g.d }; }
   if (esc.type === 'boss') { const B = BOSS_V4[X.boss], P = plateauV4(X, B, DUR_V4[5] * (X.regle === 'rancon' ? 1.15 : 1) * (X.asc >= 10 ? 1.2 : X.asc >= 4 ? 1.08 : 1));
-    if (B.meca === 'miroir') { const m = meilleure4(X), a = m ? m.a + m.bonusA + 2 : 6, roi = P.av[0]; roi.a = Math.max(roi.a, a); P.ar.forEach(u => { if (u) u.v = Math.round(roi.v / 4); }); }
+    if (B.meca === 'miroir') { const m = meilleure4(X), a = m ? m.a + m.bonusA + 2 : 6, roi = P.av[0]; roi.a = Math.max(roi.a, a); P.ar.forEach(u => { if (u && u.n === 'Reflet') u.v = Math.round(roi.v / 4); }); }
     return { nom:B.n, camp:{ heros:null, plateau:P, X:null, meca:B.meca }, meca:B.meca, mecaTxt:B.d }; }
   const g = M.groupes[esc.g || 0]; return { nom:g.n, camp:{ heros:null, plateau:plateauV4(X, g, DUR_V4[X.escale]), X:null } };
 };

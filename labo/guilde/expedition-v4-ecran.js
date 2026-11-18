@@ -69,11 +69,11 @@ const ROLE_LONG = {
   tireur:'🏹 <b>Tireur</b> : tire de loin, DERRIÈRE (ou devant). Il frappe chaque round, même protégé par le devant.',
   soutien:'✚ <b>Soutien</b> : depuis DERRIÈRE, il aide l’équipage (bonus, soins) ET frappe avec sa petite attaque. Les bonus d’attaque du Clan et des Tambours sont pour les autres (sauf le Clan à 4).',
   capitaine:'🎲 <b>Capitaine</b> : lance 3 dés à chaque round et frappe avec le meilleur. S’il tombe, le combat continue sans lui.' };
-const ETIQ = { 'Barrière':'Les ennemis doivent le frapper avant les autres.', 'Charge':'Frappe en premier, avant tout le monde.', 'Poison':'Sa cible perd 1 PV à chaque round.',
-  'Soin':'Soigne de 2 l’allié le plus blessé à chaque round.', 'Soin à tous':'Soigne de 1 tout l’équipage à chaque round.', '+1 atq':'Tous les autres membres de l’équipage ont +1 attaque (plusieurs Tambours ne s’additionnent pas).',
+const ETIQ = { 'Totem':'Tant qu’il est debout, le chef (le boss, ou le chef de l’élite) prend MOITIÉ moins de dégâts. À abattre en premier !', 'Étendard':'Tant qu’il est debout, tous les autres de son camp ont +1 attaque.', 'Invocateur':'Tous les 2 rounds, il relève le dernier allié tombé (à moitié vie).', 'Barrière':'Les ennemis doivent le frapper avant les autres.', 'Charge':'Frappe en premier, avant tout le monde.', 'Poison':'Sa cible perd 1 PV à chaque round.',
+  'Soin':'Soigne l’allié le plus blessé à chaque round (2 chez le Faon, 3 chez les soigneurs ennemis).', 'Soin à tous':'Soigne de 1 tout l’équipage à chaque round.', '+1 atq':'Tous les autres membres de l’équipage ont +1 attaque (plusieurs Tambours ne s’additionnent pas).',
   'Épines':'Qui le frappe perd 1 PV.' };
 function etiquettes(u) { const r = RECRUES[u.key] || {};
-  return [u.barriere || r.barriere ? 'Barrière' : '', r.charge || u.charge ? 'Charge' : '', r.poison ? 'Poison' : '', r.soigneur ? 'Soin' : '', r.soinTous ? 'Soin à tous' : '', r.tambour ? '+1 atq' : '', r.epines ? 'Épines' : ''].filter(Boolean); }
+  return [u.barriere || r.barriere ? 'Barrière' : '', r.charge || u.charge ? 'Charge' : '', r.poison ? 'Poison' : '', r.soigneur || u.soigneur ? 'Soin' : '', u.totem ? 'Totem' : '', u.etendard ? 'Étendard' : '', u.invoque ? 'Invocateur' : '', r.soinTous ? 'Soin à tous' : '', r.tambour ? '+1 atq' : '', r.epines ? 'Épines' : ''].filter(Boolean); }
 function uniteHTML(u, opt) {
   if (!u) return '';
   const cap = u.key === 'capitaine', fam = u.fam && FAMILLES[u.fam] ? FAMILLES[u.fam].e : '', tags = etiquettes(u);
@@ -169,7 +169,7 @@ function medHTML(u, ennemi) {
   if (!u) return '<div class="med vide"></div>';
   const art = artU(u), a = u.a + (u.bonusA || 0), v = u.v + (u.bonusV || 0);
   return `<div class="u med ${ennemi ? 'ennemi' : ''} ${u.key === 'capitaine' ? 'capitaine' : ''} ${u.boss ? 'boss' : ''}" data-id="${u.id}" onclick="ficheUnite('${u.id}', event)">
-    <div class="rond" style="${art ? `background-image:${bgU(u, art)}` : ''}">${art ? '' : '👹'}</div><div class="pvb" data-max="${v}"><i style="width:100%"></i></div><span class="nm">${u.n}${u.star ? ' ' + '★'.repeat(u.star) : ''}</span><div class="av"><span>⚔ ${a}</span><span>❤ ${v}</span></div></div>`;
+    <div class="rond" style="${art ? `background-image:${bgU(u, art)}` : ''}">${art ? '' : '👹'}</div>${u.sbire ? `<span class="sbire" title="${{ soigne:'Soigneur', totem:'Totem', etendard:'Étendard', invoque:'Invocateur' }[u.sbire]}">${{ soigne:'✚', totem:'🗿', etendard:'🚩', invoque:'💀' }[u.sbire]}</span>` : ''}<div class="pvb" data-max="${v}"><i style="width:100%"></i></div><span class="nm">${u.n}${u.star ? ' ' + '★'.repeat(u.star) : ''}</span><div class="av"><span>⚔ ${a}</span><span>❤ ${v}</span></div></div>`;
 }
 function ligneMed(P, r, ennemi, top, dx) { return `<div class="lignemed" style="top:${top}%;left:${dx}%">${[0, 1, 2].map(i => medHTML(P[r][i], ennemi)).join('')}</div>`; }
 const elU = id => document.querySelector(`[data-id="${id}"]`);

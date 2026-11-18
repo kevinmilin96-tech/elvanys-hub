@@ -57,16 +57,22 @@ const ESCALES2 = [
 const DIFF_EXP = { facile:{ n:'Facile', e:'🌱', pv:.85, pts:.7 }, normal:{ n:'Normal', e:'⚔', pv:1, pts:1 }, difficile:{ n:'Difficile', e:'💀', pv:1.15, pts:1.5 } };
 // la prise en main de chaque capitaine (indication pour le joueur, ne change pas la difficulté)
 const PRISE_EXP = { maelle:'simple', aldric:'simple', gorm:'simple', oria:'moyenne', pip:'technique', zephine:'technique' };
-const DUR_EXP = [1.35, 1.25, 1.55, 1.25, 1.9, 2.05].map(x => +(x * 1.2).toFixed(3)); // 18/11 : ×1,2 (tireurs sur l'arrière + cible du capitaine ; avant : sans) // réglé au simulateur le 14/11 (avec les ordres du capitaine ; avant : 1.1, 1, 1.2, 1, 1.5, 1.55)
+const DUR_EXP = [1.35, 1.25, 1.55, 1.25, 1.9, 2.05].map(x => +(x * 1.05).toFixed(3)); // 18/11 : ×1,05 (tireurs sur l'arrière + cible du capitaine ; avant : sans) // réglé au simulateur le 14/11 (avec les ordres du capitaine ; avant : 1.1, 1, 1.2, 1, 1.5, 1.55)
 const MONSTRES_EXP = [
   { av:[['Gobelin', 3, 7], ['Gobelin chef', 3, 9]], ar:[['Gobelin lanceur', 2, 5, 'tireur']] },
   null,
-  { av:[['Loup de braise', 4, 11], ['Louveteau', 3, 6]], ar:[['Salamandre', 3, 8, 'tireur'], ['Louveteau', 3, 6]] },
+  { av:[['Loup de braise', 4, 11], ['Louveteau', 3, 6]], ar:[['Salamandre', 3, 8, 'tireur'], ['Chaman de braise', 2, 7, 'tireur+soigne']] },
   null,
-  { av:[['Élémentaire de lave', 6, 18, 'barriere'], ['Golem de scories', 4, 14, 'barriere']], ar:[['Drake de cendre', 5, 14, 'tireur'], ['Flammèche', 3, 4, 'charge'], ['Flammèche', 3, 4, 'charge']] },
-  { av:[['Le Titan de feu', 8, 60, 'boss']], ar:[['Flammèche', 3, 5, 'charge'], ['Cultiste du feu', 4, 10, 'tireur'], ['Flammèche', 3, 5, 'charge']] },
+  { av:[['Élémentaire de lave', 6, 18, 'barriere'], ['Golem de scories', 4, 14, 'barriere']], ar:[['Drake de cendre', 5, 14, 'tireur'], ['Porte-étendard de cendre', 2, 8, 'etendard'], ['Flammèche', 3, 4, 'charge']] },
+  { av:[['Le Titan de feu', 8, 60, 'boss']], ar:[['Flammèche', 3, 5, 'charge'], ['Totem de lave', 1, 8, 'totem'], ['Cultiste du feu', 4, 10, 'tireur']] },
 ];
 const uid = () => Math.random().toString(36).slice(2, 9);
+// 18/11 (choix de l'utilisateur) : LES SBIRES DE SOUTIEN, pour que la cible du capitaine compte. Étiquettes de monstre combinables avec « + » (ex. 'tireur+soigne').
+// soigne : soigne de 3 l'allié le plus blessé à chaque round · totem : tant qu'il est debout, le chef (boss, ou chef d'une élite) prend moitié moins de dégâts ·
+// etendard : +1 attaque à tous les autres ennemis tant qu'il vit · invoque : tous les 2 rounds, relève le dernier allié tombé (à moitié vie, jamais le boss)
+const SBIRES = { soigne:{ soigneur:3 }, totem:{ totem:true }, etendard:{ etendard:true }, invoque:{ invoque:true } };
+function tagsMonstre(tag) { const l = String(tag || '').split('+'), o = { role:l.includes('tireur') ? 'tireur' : 'lame', tireur:l.includes('tireur'), barriere:l.includes('barriere'), charge:l.includes('charge'), boss:l.includes('boss'), chef:l.includes('chef') || l.includes('boss') };
+  l.forEach(t => { if (SBIRES[t]) Object.assign(o, SBIRES[t], { sbire:t }); }); return o; }
 function nouvelleRecrue(k, star) {
   const r = RECRUES[k], m = star === 2 ? 3 : star === 1 ? 2 : 1;
   return { id:uid(), key:k, n:r.n, fam:r.fam, role:r.role, a:r.a * m, v:r.v * m, star:star || 0, bonusA:0, bonusV:0 };
@@ -165,7 +171,7 @@ function combattants(camp, cote) {
     c.a = u.a + (u.bonusA || 0) + (u.role === 'soutien' ? (clan >= 2 ? 1 : 0) : (clan ? 1 : 0) + tambours) + (cap === 'oria' && u.role === 'tireur' ? (globalThis.ORIA_TIR || 2) : 0);
     c.v = u.v + (u.bonusV || 0) + (u.fam === 'garde' ? [0, 3, 6][garde] : 0);
     c.barriere = !!(base.barriere || u.barriere); c.charge = !!(base.charge || u.charge); c.epines = (base.epines || 0) + (u.fam === 'garde' ? garde : 0);
-    c.poison = base.poison || 0; c.soigneur = base.soigneur || 0; c.soinTous = base.soinTous || 0;
+    c.poison = base.poison || 0; c.soigneur = base.soigneur || u.soigneur || 0; c.soinTous = base.soinTous || 0;
     c.embuscade = u.fam === 'ombre' && ombre >= 1; c.esquive = u.fam === 'ombre' && ombre >= 2;
     c.tireur = u.role === 'tireur' || !!u.tireur; c.vmax = c.v; out.push(c); }));
   return { liste:out, clairiere:palier(fam.clairiere || 0), serment:cap === 'aldric', cor:cap === 'gorm', fam };
@@ -206,7 +212,8 @@ function combatExp(campJ, campE, R) {
   for (let round = 1; round <= 25; round++) {
     if (!vivants(J).length || !vivants(E).length) break;
     ev.push({ t:'round', n:round });
-    if (globalThis.__MECA4) globalThis.__MECA4(round, J, E, ev, tue); // 17/11 nuit : les mécaniques des boss et élites des Expéditions v4 (rien en v3)
+    if (globalThis.__MECA4) globalThis.__MECA4(round, J, E, ev, tue);
+    if (round % 2 === 0) [J, E].forEach(C => vivants(C).filter(u => u.invoque).forEach(u => { const t = C.liste.filter(x => x.mort && !x.boss && x !== u).pop(); if (t) { t.mort = false; t.v = Math.ceil(t.vmax / 2); ev.push({ t:'releve', id:t.id, v:t.v, txt:`💀 ${u.n} relève ${t.n} !` }); } })); // 17/11 nuit : les mécaniques des boss et élites des Expéditions v4 (rien en v3)
     const ordre = []; const ja = vivants(J), ea = vivants(E), premier = R() < .5;
     for (let i = 0; i < Math.max(ja.length, ea.length); i++) { const p = premier ? [ja[i], ea[i]] : [ea[i], ja[i]]; p.forEach(x => x && ordre.push(x)); }
     if (round === 1) ordre.sort((x, y) => (y.charge ? 1 : 0) - (x.charge ? 1 : 0));
@@ -228,6 +235,8 @@ function combatExp(campJ, campE, R) {
         de = 1 + Math.floor(R() * 6); if (u.coupSur && !u.coupSurFait) { u.coupSurFait = true; de = 6; } dg = de === 6 ? u.a * 2 : de === 1 ? 0 : u.a; txt = de === 6 ? 'critique' : de === 1 ? 'raté' : ''; if (dg > 0 && u.rang === 'ar' && !u.tireur && u.role !== 'soutien') { dg = Math.ceil(dg / 2); txt += (txt ? ' · ' : '') + 'de derrière : moitié'; }
       }
       if (A.cor && round <= (A.corRounds || 3) && dg > 0) dg += (A.corBonus || 1);
+      if (dg > 0 && vivants(A).some(x => x.etendard && x !== u)) dg += 1; // l'Étendard
+      if (dg > 0 && c.chef && vivants(D).some(x => x.totem)) { dg = Math.ceil(dg / 2); txt += (txt ? ' · ' : '') + 'Totem : moitié'; } // le Totem protège le chef
       if (u.embuscade && !u.embuscadeFaite && dg > 0) { dg *= 2; u.embuscadeFaite = true; txt = 'Embuscade !'; }
       if (dg > 0 && c.esquive && !c.esquiveFaite) { c.esquiveFaite = true; ev.push({ t:'esquive', src:u.id, id:c.id, de }); continue; }
       c.v -= dg; ev.push({ t:'coup', src:u.id, id:c.id, dg, de, txt, v:c.v });
@@ -246,7 +255,7 @@ function combatExp(campJ, campE, R) {
 // ----------------------------------------------------------------------------------------------- les adversaires
 function plateauMonstres(k) {
   const m = MONSTRES_EXP[k], mul = DUR_EXP[k] || 1, P = { av:[null, null, null], ar:[null, null, null] };
-  const fait = ([n, a, v, tag]) => ({ id:uid(), key:'m', n, a, v:Math.round(v * mul), star:0, role:tag === 'tireur' ? 'tireur' : 'lame', tireur:tag === 'tireur', barriere:tag === 'barriere', charge:tag === 'charge', boss:tag === 'boss', bonusA:0, bonusV:0 });
+  const fait = ([n, a, v, tag]) => ({ id:uid(), key:'m', n, a, v:Math.round(v * mul), star:0, bonusA:0, bonusV:0, ...tagsMonstre(tag) });
   m.av.forEach((x, i) => { P.av[i] = fait(x); }); m.ar.forEach((x, i) => { P.ar[i] = fait(x); });
   return P;
 }
@@ -334,7 +343,8 @@ function piloteOrdres(X, R) {
   X.ordres = { u, tous:c ? { a:c.a || 0, v:c.v || 0 } : null };
 }
 // 18/11 : le pilote désigne aussi une cible dès le 1er round (le tireur ennemi qui frappe le plus, sinon rien), comme un joueur raisonnable
-function piloteCible(X) { if (globalThis.SANS_CIBLE) return; X.advPret = adversaire(X); const t = X.advPret.camp.plateau.ar.filter(u => u && u.tireur).sort((a, b) => b.a - a.a)[0]; X.ciblePrio = t ? [{ id:t.id, round:1 }] : null; }
+function piloteCible(X) { if (globalThis.SANS_CIBLE) return; X.advPret = adversaire(X); const P = X.advPret.camp.plateau, tous = [...P.av, ...P.ar].filter(Boolean), rang = { totem:4, soigne:3, invoque:2, etendard:1 };
+  const sb = tous.filter(u => u.sbire).sort((a, b) => rang[b.sbire] - rang[a.sbire])[0], t = sb || P.ar.filter(u => u && u.tireur).sort((a, b) => b.a - a.a)[0]; X.ciblePrio = t ? [{ id:t.id, round:1 }] : null; }
 function simuleExpedition(heros, graine) {
   const X = nouvelleExpedition(heros, graine); if (globalThis.DIFF_SIM) X.diff = globalThis.DIFF_SIM;
   for (let pas = 0; pas < 12 && !X.fini; pas++) { pilotePort(X); piloteOrdres(X, hasardX(X)); piloteCible(X); joueEscale(X, hasardX(X)); }

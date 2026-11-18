@@ -81,7 +81,7 @@ Le score est multiplié : +10 % par cran, +25 % par mer après la première.</di
 <li>Remplacer l'ancienne version par la v4 dans le menu, ou garder les deux ?</li>
 </ol>
 </main>
-<script src="donnees.js?v=2afe6cf473"></script><script src="odyssee.js?v=3b40723744"></script><script src="expedition-moteur.js?v=7b1082e3bc"></script><script src="expedition-v4.js?v=c1f74915fe"></script>
+<script src="donnees.js?v=2afe6cf473"></script><script src="odyssee.js?v=3b40723744"></script><script src="expedition-moteur.js?v=96aa06e446"></script><script src="expedition-v4.js?v=4b27864e9d"></script>
 <script>
 const typ = { monstres:'⚔ monstres', elite:'💀 élite', fantome:'👻 navire rival', evenement:'❔ événement', tresor:'💎 trésor', port:'🏝 port franc', boss:'👑 boss' };
 document.getElementById('etapes').innerHTML = `<div class="bloc"><b class="or">Les étapes</b> (une sorte tirée par case) :<table>${ETAPES_V4.map((e, k) => `<tr><td>Étape ${k + 1}</td><td>${e.map(c => c.map(t => typ[t]).join(' ou ')).join(' · ')}</td></tr>`).join('')}</table></div>`;
