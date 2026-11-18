@@ -284,6 +284,7 @@ async function partir() {
   ciblesTouch(A); if (!localStorage.getItem('guilde-exp-cible')) { localStorage.setItem('guilde-exp-cible', '1'); jl('🎯 Astuce : maintiens ton doigt sur un ennemi pour en faire la cible de tout l’équipage.'); await dodo(1800); }
   let EV = res.ev;
   for (let k = 0; k < EV.length; k++) { const e = EV[k];
+    while (typeof window.PAUSE_EXP === 'function' && window.PAUSE_EXP(e)) await new Promise(r => setTimeout(r, 150)); // 18/11 : l'entraînement attend que le joueur pose la cible
     // une cible désignée pendant le round : on rejoue le même combat avec elle à partir du round suivant (tout ce qui a déjà eu lieu reste identique)
     if (e.t === 'round' && CIBLE.att && CIBLE.att !== CIBLE.id) {
       const Xr = JSON.parse(JSON.stringify(avant)); Xr.ciblePrio = [...(CIBLE.liste || []), { id:CIBLE.att, round:e.n }];

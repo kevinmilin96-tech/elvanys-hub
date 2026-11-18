@@ -124,7 +124,7 @@ const GM = (() => {
       return actif;
     },
     // 13/11 soir : l'écran des PARAMÈTRES (demande de l'utilisateur) : musique, bruitages, volumes, vitesse des animations, rejouer le tutoriel
-    parametres() {
+    parametres() { // 18/11 : ENTRAINEMENTS (plus bas) = la liste des entraînements guidés, un par mode
       let z = document.getElementById('gm-param'); if (z) { z.remove(); return; }
       if (!document.getElementById('gm-param-css')) { const st = document.createElement('style'); st.id = 'gm-param-css'; st.textContent = `
         #gm-param{position:fixed;inset:0;z-index:950;background:#05030ccc;display:flex;align-items:center;justify-content:center;padding:16px;font-family:Georgia,serif}
@@ -147,7 +147,7 @@ const GM = (() => {
         ${window.Guide && Guide.dernier && Guide.dernier() ? '<button class="a" data-k="g">🐱 Le guide de cet écran</button>' : ''}
         ${window.GS ? `<button class="a" data-k="compte">☁ Mon compte et ma sauvegarde</button>` : ''}
         <button class="a" data-k="p">📜 Mes parties (le journal de chaque partie)</button>
-        <a class="a" href="duel.html?tuto=1">🎓 Rejouer le tutoriel</a>
+        <button class="a" data-k="entr">🎓 Les entraînements de Moustache</button>
         <a class="a" href="a-valider.html">🛠 Pages de travail : à valider</a>${location.hostname === 'perso.elvanys.fr' ? '<a class="a" href="/">🛠 Le laboratoire perso</a>' : ''}
         <a class="a" href="#" onclick="Object.keys(localStorage).filter(k => k.startsWith('guilde-guide-') || k === 'guilde-exp-guide').forEach(k => localStorage.removeItem(k)); this.textContent = '🐱 C’est fait : Moustache vous guidera à nouveau'; return false">🐱 Revoir les guides de Moustache</a>
         <button class="f" data-k="x">Fermer</button></div>`; };
@@ -157,7 +157,10 @@ const GM = (() => {
         const k = e.target.dataset && e.target.dataset.k; if (!k) return;
         if (k === 'x') { z.remove(); return; }
         if (k === 'compte') { z.remove(); GS.ouvrir(); return; } // 16/11 (l'utilisateur : « dans Paramètres comme beaucoup de jeux ») : le compte, la sauvegarde, le code de récupération
-        if (k === 'p') { z.remove(); Carnet.ouvrir(); return; } // 15/11 nuit : le carnet commun à tous les modes
+        if (k === 'p') { z.remove(); Carnet.ouvrir(); return; }
+        if (k === 'entr') { const f = (() => { try { return JSON.parse(localStorage.getItem('guilde-entrainements') || '{}'); } catch (e) { return {}; } })(); f.duel = f.duel || localStorage.getItem('guilde-tuto') === 'fait';
+          z.querySelector('.p').innerHTML = `<h2>🎓 Les entraînements de Moustache</h2><p style="color:#c9c1ea;font-size:.88em;margin:0 0 6px">Une courte partie guidée pour chaque mode. Refais celle que tu veux, quand tu veux.</p>`
+            + ENTRAINEMENTS.map(([c, n, h]) => h ? `<a class="a" href="${h}">${f[c] ? '✅' : '🎓'} ${n}</a>` : `<span class="a" style="opacity:.45">⏳ ${n} · bientôt</span>`).join('') + '<button class="f" data-k="x">Fermer</button>'; return; } // 18/11 : la liste des entraînements // 15/11 nuit : le carnet commun à tous les modes
         if (k === 'g') { z.remove(); Guide.rejoue(); return; } // 15/11 soir : Moustache réexplique l'écran en cours
         if (k === 'q') { z.remove(); window.GM_QUITTER.f(); return; } // 14/11 : quitter une partie en cours (posé par la page du combat)
         if (k === 'm') api.bascule();
@@ -347,3 +350,7 @@ const Carnet = (() => {
   const go = () => { new MutationObserver(plus_tard).observe(document.body, { childList:true, subtree:true, attributes:true, attributeFilter:['class', 'style', 'hidden'] }); addEventListener('resize', plus_tard); ['animationend', 'transitionend'].forEach(t => document.addEventListener(t, plus_tard, true)); verifie(); }; // une fenêtre qui s'efface en fondu
   if (document.body) go(); else addEventListener('DOMContentLoaded', go);
 })();
+
+// 18/11 : les entraînements guidés de Moustache (un par mode ; null = pas encore fait). Ordre choisi avec l'utilisateur.
+const ENTRAINEMENTS = [['duel', 'Le Duel (le tutoriel)', 'duel.html?tuto=1'], ['expedition', 'Les Expéditions', 'expedition.html?entrainement=1'], ['chroniques', 'Les Chroniques', null], ['odyssee', 'L’Odyssée', null],
+  ['crypte', 'La Crypte aux Sceaux', null], ['descente', 'La Descente', null], ['invasion', 'L’Invasion', null], ['defense', 'La Défense de la porte', null], ['fosse', 'La Fosse aux Runes', null]];
