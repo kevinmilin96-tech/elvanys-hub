@@ -65,7 +65,7 @@
 </main>
 <script src="cartes.js?v=7736d873d3"></script>
 <script src="musique.js?v=41f022128a"></script>
-<script src="rang.js?v=02102cc86e"></script>
+<script src="rang.js?v=bb0555ca3c"></script>
 <script src="heros-etoiles.js?v=07f78336f4"></script>
 <script src="donnees.js?v=2afe6cf473"></script>
 <script src="aventuriers.js?v=04b0962a08"></script>
@@ -188,9 +188,7 @@ function rangHTML() {
   return `<h2 id="rang">🏆 Rang de la Guilde · ${i.rang}${i.rang >= RANG_MAX ? ' (le plus haut)' : ''}</h2>
   <div class="rangbloc"><span class="barre-rang gros"><i style="width:${i.besoin ? Math.round(i.dans / i.besoin * 100) : 100}%"></i></span><small>${i.besoin ? `${i.dans} / ${i.besoin} XP pour le rang ${i.rang + 1}` : 'Tu as atteint le plus haut rang.'} · ${d.xp} XP en tout</small>
   <p class="aide">Chaque partie rapporte de l’expérience, même perdue : duel gagné 30 (perdu 10), salle vidée 5, élite 20, boss 60, escale 15, Titan 60, acte de l’Invasion 50, vague tenue 10, énigme 20, quête du jour 40, quête de la semaine 150.</p>
-  ${d.journal.length ? `<details><summary>Mes derniers gains</summary>${d.journal.slice(0, 12).map(j => `<div class="jr">+${j.xp} · ${j.raison} <small>${new Date(j.q).toLocaleString('fr-FR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' })}</small></div>`).join('')}</details>` : ''}</div>
-  <a class="lien" href="route.html">🎁 La route des rangs${typeof aRecuperer === 'function' && aRecuperer().length ? ` · <b>${aRecuperer().length} à récupérer</b>` : ''} ›</a>
-  <a class="lien" href="route.html#quetes">📜 Mes quêtes du jour et de la semaine ›</a>`; // 18/11 : quêtes et route dans leur propre page (route.html)
+  ${d.journal.length ? `<details><summary>Mes derniers gains</summary>${d.journal.slice(0, 12).map(j => `<div class="jr">+${j.xp} · ${j.raison} <small>${new Date(j.q).toLocaleString('fr-FR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' })}</small></div>`).join('')}</details>` : ''}</div>`; // 18/11 soir (l'utilisateur) : liens vers la route et les quêtes retirés du profil (déjà dans le menu)
 }
 dessine();
 if (location.hash === '#rang') setTimeout(() => { const e = document.getElementById('rang'); if (e) e.scrollIntoView(); }, 50);

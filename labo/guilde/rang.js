@@ -139,7 +139,7 @@ function gagneXP(xp, raison) {
   if (!xp || typeof localStorage === 'undefined') return;
   const d = lireRang(), avant = d.info.rang; d.xp += xp; d.journal.unshift({ q:Date.now(), xp, raison }); d.journal = d.journal.slice(0, 40); ecrireRang(d);
   const apres = rangDe(d.xp).rang; annonceRang(`+${xp} XP · ${raison}`);
-  for (let r = avant + 1; r <= apres; r++) { const x = ROUTE[r]; annonceRang(`🏆 Rang ${r} de la Guilde !${x ? ` ${x[2]} ${x[3]}${x[0] === 'carte' && typeof CARTES !== 'undefined' && CARTES[x[1]] ? ' : ' + CARTES[x[1]].n : ''}` : ''}`, true); }
+  for (let r = avant + 1; r <= apres; r++) { const x = ROUTE[r]; annonceRang(`🏆 Rang ${r} de la Guilde !${x ? ` 🎁 À récupérer : ${x[2]} ${x[3]}${x[0] === 'carte' && typeof CARTES !== 'undefined' && CARTES[x[1]] ? ' : ' + CARTES[x[1]].n : ''}` : ''}`, true); }
   if (apres > avant) { syncRecompenses(); if (typeof donneLibres === 'function') donneLibres(ECLATS_RANG * (apres - avant)); }
 }
 // les cartes gagnées avec le Rang entrent dans la collection (aussi au chargement, si le rang était déjà atteint)
@@ -193,7 +193,7 @@ function bandeauRangHTML() {
   const d = lireRang(), i = d.info, Q = lireQuetes(), fj = Q.j.filter(q => q.fait).length, fs = Q.s.filter(q => q.fait).length;
   // 18/11 (l'utilisateur : « le rang est trop caché ») : barre plus grande, un toucher ouvre la route des rangs ; les quêtes ont leur propre bouton
   const ar = aRecuperer().length;
-  return `<a class="bandeau-rang gros" href="route.html"><b>🏆 Rang ${i.rang}</b><span class="barre-rang"><i style="width:${i.besoin ? Math.round(i.dans / i.besoin * 100) : 100}%"></i><span class="txt">${i.besoin ? `${i.dans} / ${i.besoin} XP` : 'rang max'}</span></span>${ar ? `<em class="cadeau">🎁 ${ar}</em>` : '<em>›</em>'}</a>
+  return `<a class="bandeau-rang gros" href="route.html"><b>🏆 Rang ${i.rang}</b><span class="barre-rang"><i style="width:${i.besoin ? Math.round(i.dans / i.besoin * 100) : 100}%"></i><span class="txt">${i.besoin ? `${i.dans} / ${i.besoin} XP` : 'rang max'}</span></span>${ar ? `<em class="cadeau" title="Récompense à récupérer">🎁 Récupérer</em>` : '<em>›</em>'}</a>
   <a class="bandeau-quetes" href="route.html#quetes">📜 Quêtes du jour <b>${fj}/3</b> · de la semaine <b>${fs}/3</b> ›</a>`;
 }
 
@@ -206,7 +206,7 @@ if (typeof document !== 'undefined') {
   .bandeau-rang { display:flex; align-items:center; gap:8px; text-decoration:none; color:#f1ecff; background:#1d1838e6; border:1px solid #f3c96b66; border-radius:14px; padding:6px 10px; font:13px Georgia, serif; }
   .bandeau-rang b { color:#f3c96b; white-space:nowrap; } .bandeau-rang small { color:#c9c1ea; white-space:nowrap; font-size:.85em; } .bandeau-rang em { font-style:normal; white-space:nowrap; color:#f3c96b; }
   .bandeau-rang.gros { padding:9px 12px; font-size:15px; border-width:2px; } .bandeau-rang.gros .barre-rang { height:18px; position:relative; border-radius:9px; } .bandeau-rang.gros .barre-rang .txt { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:11px; color:#fff; text-shadow:0 1px 2px #000; }
-  .bandeau-rang em.cadeau { background:#f3c96b; color:#2a1a08; border-radius:10px; padding:1px 7px; font-weight:bold; animation:cadeauR 1.2s ease-in-out infinite; } @keyframes cadeauR { 50% { transform:scale(1.15); } }
+  .bandeau-rang em.cadeau { white-space:nowrap; font-style:normal; font-size:.72em; padding:2px 6px !important; flex:none; background:linear-gradient(#7dff8a, #2fbf47); color:#0b3a12; box-shadow:0 2px 0 #1a7a2a, 0 0 12px #7dff8a88; border-radius:10px; padding:1px 7px; font-weight:bold; animation:cadeauR 1.2s ease-in-out infinite; } @keyframes cadeauR { 50% { transform:scale(1.15); } }
   .bandeau-quetes { display:block; text-align:center; margin-top:5px; text-decoration:none; color:#f1ecff; background:#1d1838cc; border:1px solid #6b5fb0; border-radius:12px; padding:5px 10px; font:13px Georgia, serif; } .bandeau-quetes b { color:#f3c96b; }
   .barre-rang { flex:1; min-width:40px; height:8px; background:#0d0b1f; border-radius:6px; overflow:hidden; } .barre-rang i { display:block; height:100%; background:linear-gradient(90deg, #c78a2c, #f3c96b); border-radius:6px; }`;
   document.head.appendChild(st);
