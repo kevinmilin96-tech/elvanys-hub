@@ -192,7 +192,7 @@ function partieTuto() {
   rendu();
 }
 function tutoPasser() {
-  fenetre(`<h2>Passer le tutoriel ?</h2><p>Tu pourras le refaire quand tu veux depuis l’Arène. Zéphine reste verrouillée tant qu’il n’est pas fini.</p>
+  fenetre(`<h2>Passer le tutoriel ?</h2><p>Tu pourras le refaire quand tu veux depuis l’Arène ou ⚙️ Paramètres → Les entraînements de Moustache. Zéphine reste verrouillée tant qu’il n’est pas fini.</p>
     <div class="choixh"><button onclick="fermer();tutoMaj()">Continuer</button><button onclick="localStorage.setItem('guilde-tuto-vu','1');location.href='menu.html#arene'">Passer</button></div>`);
   projecteurCache();
 }
@@ -208,6 +208,7 @@ montrerFin = function () {
       <p><b>Moustache :</b> « Bravo. Je l’avais dit. Dans ma tête. Entre deux siestes. »</p>
       ${deja ? '<p>Tu connais déjà la maison : merci d’être revenu !</p>' : `<p>Tu reçois le <b>cadre de Diplômé</b> autour de ton portrait (🎓).</p>
       <p style="display:flex;gap:10px;align-items:center"><img src="${IMG('zephine')}" alt="" style="width:56px;height:56px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 2px ${HEROS.zephine.c}"> <span><b>Zéphine l’alchimiste</b> rejoint la Guilde ! Elle transforme les dés : la plus difficile à jouer.</span></p>`}
+      <p><b>Moustache :</b> « Et si jamais tu as besoin, retrouve-moi dans les <b>Paramètres</b> pour refaire une session ensemble. »</p>
       <div class="choixh"><button onclick="location.href='duel.html'">⚔ Un vrai duel</button><button onclick="location.href='menu.html'">⌂ Menu</button></div>`);
   } else {
     son('defaite');
