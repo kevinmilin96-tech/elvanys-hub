@@ -25,6 +25,7 @@ Puis <b>6 étapes</b> : à chacune, tu touches ta prochaine escale sur la carte 
 <div class="a-valider">🟡 <b>À valider</b> : la carte montre l'étape en cours et la suivante ; le reste est « dans la brume » (sauf le boss, connu dès le départ, comme dans Slay the Spire). Le trésor « carte ancienne » dévoile toute la route.</div>
 <div id="etapes"></div>
 
+<div class="bloc">🎯 <b>Les cibles (ta décision du 18/11)</b> : chacun frappe un ennemi vivant <b>au hasard</b>, devant ou derrière. Seules les Barrières (Remparts, golems…) attirent les coups. Un coup au corps à corps sur quelqu’un placé derrière fait moitié dégâts (« à couvert » : ajout de ma part pour que le placement compte encore). Le boss n’a plus Barrière : ses sbires peuvent tomber avant lui, et tes recrues de derrière peuvent être touchées aussi.</div>
 <h2>2. Les escales</h2>
 <div class="bloc"><table>
 <tr><td>⚔ Monstres</td><td>Un groupe de la mer, de plus en plus dur selon l'étape.</td></tr>
@@ -60,13 +61,13 @@ Le score est multiplié : +10 % par cran, +25 % par mer après la première.</di
 <h2>8. Le simulateur (réglage de la difficulté)</h2>
 <div class="bloc">Outil : <code>outils/simuler-expedition-v4.mjs</code> (le pilote de l'ordinateur choisit sa route comme un joueur raisonnable, sans les recrues débloquées). Pourcentage de voyages gagnés, 30 voyages par capitaine :
 <table><tr><th>Capitaine</th><th>☁️ Nuages</th><th>❄️ Glaces</th><th>⛈️ Tempêtes</th></tr>
-<tr><td>Maëlle</td><td>49 %</td><td>37 %</td><td>21 %</td></tr><tr><td>Aldric</td><td>49 %</td><td>46 %</td><td>48 %</td></tr>
-<tr><td>Pip</td><td>69 %</td><td>61 %</td><td>56 %</td></tr><tr><td>Oria</td><td>59 %</td><td>48 %</td><td>47 %</td></tr>
-<tr><td>Gorm</td><td>45 %</td><td>35 %</td><td>38 %</td></tr><tr><td>Zéphine</td><td>63 %</td><td>61 %</td><td>52 %</td></tr>
-<tr><td><b>Moyenne</b></td><td><b>56 %</b></td><td><b>49 %</b></td><td><b>44 %</b></td></tr></table>
-<small>100 voyages par capitaine et par mer, réglages définitifs de la nuit. Boss : Titan 54 %, Ignaros 58 % · Titan 50 %, Vouivre 46 % · Roi sans visage 46 %, Kraken 42 %.
-Pour comparer : l'ancienne version (v3) donne 43-77 %. Ascension 5 (Mer des nuages) : 13-42 % ; Ascension 10 : presque 0 % pour l'ordinateur (c'est le défi ultime, un vrai joueur avec ses recrues débloquées fera mieux).</small></div>
-<div class="a-valider">🟡 <b>À surveiller</b> : Pip et Zéphine les plus forts ; Maëlle très faible dans l'Archipel (21 %) et Gorm dans les Glaces (35 %). La règle « La rançon du boss » et « Mer démontée » font baisser nettement les victoires (c'est voulu : ce sont les règles « dures », elles rapportent plus).</div>
+<tr><td>Maëlle</td><td>42 %</td><td>33 %</td><td>31 %</td></tr><tr><td>Aldric</td><td>83 %</td><td>74 %</td><td>79 %</td></tr>
+<tr><td>Pip</td><td>74 %</td><td>51 %</td><td>55 %</td></tr><tr><td>Oria</td><td>37 %</td><td>46 %</td><td>37 %</td></tr>
+<tr><td>Gorm</td><td>37 %</td><td>40 %</td><td>39 %</td></tr><tr><td>Zéphine</td><td>72 %</td><td>65 %</td><td>53 %</td></tr>
+<tr><td><b>Moyenne</b></td><td><b>58 %</b></td><td><b>52 %</b></td><td><b>49 %</b></td></tr></table>
+<small>100 voyages par capitaine et par mer, AVEC les cibles au hasard (18/11). Monstres ×1,1 plus solides pour compenser (frapper au hasard rend l’équipage plus résistant : les monstres ne concentrent plus leurs coups).
+Ancienne version (v3) avec la même règle : 48-93 %.</small></div>
+<div class="a-valider">🟡 <b>À surveiller</b> : depuis les cibles au hasard, <b>Aldric est très fort</b> (74-83 %) et <b>Oria, Gorm, Maëlle faibles</b> (31-46 %) : à revoir avec tes parties (pistes : Serment moins fort, tireurs un peu plus solides). La règle « La rançon du boss » et « Mer démontée » font baisser nettement les victoires (c'est voulu : ce sont les règles « dures », elles rapportent plus).</div>
 
 <h2>9. Les images à générer (Gemini)</h2>
 <div class="bloc">Les prompts sont <b>en tête de la page des prompts</b> (section « Expéditions v4 ») : fonds des deux nouvelles mers, 4 boss nouveaux, 4 élites, 6 recrues, 6 événements.
@@ -81,7 +82,7 @@ Pour comparer : l'ancienne version (v3) donne 43-77 %. Ascension 5 (Mer des nuag
 <li>Remplacer l'ancienne version par la v4 dans le menu, ou garder les deux ?</li>
 </ol>
 </main>
-<script src="donnees.js?v=2afe6cf473"></script><script src="odyssee.js?v=3b40723744"></script><script src="expedition-moteur.js?v=dccf2c7473"></script><script src="expedition-v4.js?v=a5053d9ad2"></script>
+<script src="donnees.js?v=2afe6cf473"></script><script src="odyssee.js?v=3b40723744"></script><script src="expedition-moteur.js?v=a4badc09c7"></script><script src="expedition-v4.js?v=7e79fc652d"></script>
 <script>
 const typ = { monstres:'⚔ monstres', elite:'💀 élite', fantome:'👻 navire rival', evenement:'❔ événement', tresor:'💎 trésor', port:'🏝 port franc', boss:'👑 boss' };
 document.getElementById('etapes').innerHTML = `<div class="bloc"><b class="or">Les étapes</b> (une sorte tirée par case) :<table>${ETAPES_V4.map((e, k) => `<tr><td>Étape ${k + 1}</td><td>${e.map(c => c.map(t => typ[t]).join(' ou ')).join(' · ')}</td></tr>`).join('')}</table></div>`;

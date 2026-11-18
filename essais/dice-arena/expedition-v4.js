@@ -36,7 +36,7 @@ const MERS = {
     elites:[{ n:'Le Chef de guerre gobelin', e:'👺', cle:'crique', av:[['Chef de guerre', 6, 30, 'barriere'], ['Gobelin chef', 3, 9]], ar:[['Gobelin lanceur', 2, 5, 'tireur'], ['Tambour gobelin', 2, 6, 'tireur']], meca:'rage', d:'Rage : il gagne +1 attaque à chaque round.' },
             { n:'La Matriarche de braise', e:'🐺', cle:'port', av:[['Matriarche de braise', 5, 26], ['Loup de braise', 4, 11]], ar:[['Louveteau', 3, 6], ['Louveteau', 3, 6]], meca:'meute', d:'Meute : quand un Louveteau tombe, la Matriarche hurle (+2 attaque).' }],
     boss:['titan', 'ignaros'] },
-  glaces: { n:'La Mer des glaces', e:'❄️', d:'Le grand nord : banquise, yétis et vouivres. Les monstres encaissent plus.', ouvre:'nuages', pv:1,
+  glaces: { n:'La Mer des glaces', e:'❄️', d:'Le grand nord : banquise, yétis et vouivres. Les monstres encaissent plus.', ouvre:'nuages', pv:1.05,
     decor:{ monstres:['falaises', 'foret', 'port'], fantome:['falaises'], evenement:['foret'], tresor:['crique'], port:['port'], elite:['falaises'], boss:['nid'] },
     groupes:[
       { n:'La Banquise des pingouins-guerriers', e:'🐧', cle:'falaises', av:[['Pingouin-guerrier', 3, 8], ['Pingouin-guerrier', 3, 8]], ar:[['Lanceur de glaçons', 2, 6, 'tireur']] },
@@ -48,7 +48,7 @@ const MERS = {
     elites:[{ n:'Le Yéti ancien', e:'🦍', cle:'falaises', av:[['Yéti ancien', 7, 34, 'barriere']], ar:[['Petit yéti', 3, 8], ['Petit yéti', 3, 8]], meca:'rage', d:'Rage : il gagne +1 attaque à chaque round.' },
             { n:'La Reine des neiges', e:'👸', cle:'foret', av:[['Garde de glace', 4, 14, 'barriere'], ['Garde de glace', 4, 14, 'barriere']], ar:[['La Reine des neiges', 5, 22, 'tireur']], meca:'gel', d:'Gel : un round sur deux, ta recrue la plus forte est gelée (0 attaque ce round).' }],
     boss:['vouivre', 'titan'] },
-  tempetes: { n:'L’Archipel des tempêtes', e:'⛈️', d:'Pirates, harpies et krakens. La mer la plus dure, pour les équipages rodés.', ouvre:'glaces', pv:1.08,
+  tempetes: { n:'L’Archipel des tempêtes', e:'⛈️', d:'Pirates, harpies et krakens. La mer la plus dure, pour les équipages rodés.', ouvre:'glaces', pv:.92,
     decor:{ monstres:['crique', 'port', 'falaises'], fantome:['falaises'], evenement:['crique'], tresor:['crique'], port:['port'], elite:['port'], boss:['nid'] },
     groupes:[
       { n:'La Crique des naufrageurs', e:'🏴‍☠️', cle:'crique', av:[['Naufrageur', 3, 9], ['Naufrageur', 3, 9]], ar:[['Pistolier', 3, 5, 'tireur']] },
@@ -138,7 +138,7 @@ const ETAPES_V4 = [
   [['boss']],
 ];
 const TIER_ETAPE = [0, 1, 2, 3, 4, 5]; // groupe de monstres selon l'étape (0-1 faciles, 2-3 moyens, 4 durs)
-const DUR_V4 = [1.35, 1.3, 1.55, 1.5, 1.9, 2.05];
+const DUR_V4 = [1.35, 1.3, 1.55, 1.5, 1.9, 2.05].map(x => +(x * 1.1).toFixed(3)); // 18/11 : ×1,1 depuis les cibles au hasard
 function escaleDe(X, type, etape, R) {
   const M = MERS[X.mer], cle = tire(R, M.decor[type] || ['crique']);
   if (type === 'monstres') { const tier = Math.min(4, etape === 0 ? tire(R, [0, 1]) : etape === 1 ? 1 : etape === 2 ? tire(R, [2, 3]) : etape === 3 ? 3 : 4); const g = M.groupes[tier]; return { type, etape, n:g.n, e:g.e, cle:g.cle, g:tier }; }
@@ -193,7 +193,7 @@ nouvelleOffre = function (X) {
 function plateauV4(X, def, mul) {
   const P = { av:[null, null, null], ar:[null, null, null] }, M = MERS[X.mer];
   const asc = 1 + (X.asc >= 1 ? .04 : 0) + (X.asc >= 6 ? .05 : 0), atq = (X.regle === 'enrages' ? 1 : 0) + (X.asc >= 7 ? 1 : 0);
-  const fait = ([n, a, v, tag]) => ({ id:uid(), key:'m', n, a:a + atq, v:Math.round(v * mul * M.pv * asc), star:0, role:tag === 'tireur' ? 'tireur' : 'lame', tireur:tag === 'tireur', barriere:tag === 'barriere' || tag === 'boss', charge:tag === 'charge', boss:tag === 'boss', bonusA:0, bonusV:0 });
+  const fait = ([n, a, v, tag]) => ({ id:uid(), key:'m', n, a:a + atq, v:Math.round(v * mul * M.pv * asc), star:0, role:tag === 'tireur' ? 'tireur' : 'lame', tireur:tag === 'tireur', barriere:tag === 'barriere', charge:tag === 'charge', boss:tag === 'boss', bonusA:0, bonusV:0 });
   def.av.forEach((x, i) => { P.av[i] = fait(x); }); def.ar.forEach((x, i) => { P.ar[i] = fait(x); });
   return P;
 }

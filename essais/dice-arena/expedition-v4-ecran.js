@@ -64,7 +64,7 @@ function chroniqueEscale(apres) {
 const ART_EXP = { chien:'chien-garde' }; // illustrations : cartes/<clé>.webp (même nom que la carte du Duel, sauf exceptions)
 const ROLE_COURT = { rempart:'🛡 garde', lame:'⚔ mêlée', tireur:'🏹 tire', soutien:'✚ aide + frappe', capitaine:'🎲 3 dés' };
 const ROLE_LONG = {
-  rempart:'🛡 <b>Rempart</b> : se place DEVANT et prend les coups. Il attaque aussi, au corps à corps.',
+  rempart:'🛡 <b>Rempart</b> : a Barrière, les ennemis le frappent en premier, où qu’il soit. Il attaque aussi, au corps à corps.',
   lame:'⚔ <b>Lame</b> : attaque au corps à corps depuis le DEVANT. Placée DERRIÈRE, elle frappe quand même, mais à <b>moitié</b> de son attaque (et elle avance si tout le devant tombe).',
   tireur:'🏹 <b>Tireur</b> : tire de loin, DERRIÈRE (ou devant). Il frappe chaque round, même protégé par le devant.',
   soutien:'✚ <b>Soutien</b> : depuis DERRIÈRE, il aide l’équipage (bonus, soins) ET frappe avec sa petite attaque. Les bonus d’attaque du Clan et des Tambours sont pour les autres (sauf le Clan à 4).',
@@ -121,7 +121,7 @@ function port() {
   <p class="prochain">Prochaine escale : <b>${esc.e} ${esc.n}</b> · ${esc.type === 'fantome' ? '👻 un navire rival (un autre capitaine)' : esc.type === 'boss' ? '👑 le boss : ' + BOSS_V4[X.boss].d : esc.type === 'elite' ? '💀 une élite : ' + MERS[X.mer].elites[esc.el || 0].d : '⚔ des monstres'}</p>
   ${famillesHTML()}
   <div class="champ">
-    <div class="etiq">DEVANT · prennent les coups</div><div class="rangee">${[0, 1, 2].map(i => slotHTML('av', i)).join('')}</div>
+    <div class="etiq">DEVANT · frappent au corps à corps</div><div class="rangee">${[0, 1, 2].map(i => slotHTML('av', i)).join('')}</div>
     <div class="etiq">DERRIÈRE · 🏹 tirent, ✚ aident et frappent un peu</div><div class="rangee">${[0, 1, 2].map(i => slotHTML('ar', i)).join('')}</div>
   </div>
   <div class="etiq">LA CALE · ne combat pas</div><div class="cale">${[0, 1, 2].map(i => slotHTML('cale', i)).join('')}</div>
@@ -321,7 +321,7 @@ async function voyage() {
 const GUIDE_PORT = [
   [null, 'Bienvenue à bord, capitaine ! Ton but : traverser <b>6 étapes</b> jusqu’au boss du voyage (en haut de l’écran, avec la règle du voyage). Tu as <b>3 cœurs</b> : chaque combat perdu en coûte un. Touche la route pour revoir la carte.'],
   ['.tiroir', 'Ici, <b>le recruteur</b>. Touche une recrue pour lire sa fiche, puis « Recruter » (3 💰). Elle monte toute seule sur le pont. Tu gagnes des pièces après chaque escale.'],
-  ['.champ', 'Ton <b>équipage</b> se tient sur ces 6 places. <b>DEVANT</b> : ceux qui encaissent et frappent au corps à corps. <b>DERRIÈRE</b> : ceux qui tirent ou soignent. Tu places qui tu veux où tu veux : une Lame derrière frappe à moitié, un tireur devant prend les coups. Pour déplacer une recrue : touche-la, puis touche une place.'],
+  ['.champ', 'Ton <b>équipage</b> se tient sur ces 6 places. <b>DEVANT</b> : ceux qui frappent au corps à corps. <b>DERRIÈRE</b> : ceux qui tirent ou soignent. Les ennemis frappent au hasard, devant ou derrière : seuls les Remparts (Barrière) attirent les coups. Tu places qui tu veux où tu veux : une Lame derrière frappe à moitié, un tireur devant prend les coups. Pour déplacer une recrue : touche-la, puis touche une place.'],
   ['.cale', '<b>La cale</b>, c’est la réserve : ces recrues ne combattent pas, mais tu les gardes pour plus tard.'],
   ['.fams', '<b>Les familles</b> : 2 ou 4 recrues de la même famille donnent un bonus. Touche une pastille pour le voir. Et 3 recrues pareilles fusionnent en une plus forte ★ !'],
   ['.go', 'Quand ton équipage est prêt : <b>Partir</b> ! Le combat se joue tout seul, aux dés : tu regardes, et tu reviens au port te renforcer. Bonne traversée, miaou !'],

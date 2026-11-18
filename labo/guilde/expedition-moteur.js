@@ -57,7 +57,7 @@ const ESCALES2 = [
 const DIFF_EXP = { facile:{ n:'Facile', e:'🌱', pv:.85, pts:.7 }, normal:{ n:'Normal', e:'⚔', pv:1, pts:1 }, difficile:{ n:'Difficile', e:'💀', pv:1.15, pts:1.5 } };
 // la prise en main de chaque capitaine (indication pour le joueur, ne change pas la difficulté)
 const PRISE_EXP = { maelle:'simple', aldric:'simple', gorm:'simple', oria:'moyenne', pip:'technique', zephine:'technique' };
-const DUR_EXP = [1.35, 1.25, 1.55, 1.25, 1.9, 2.05]; // réglé au simulateur le 14/11 (avec les ordres du capitaine ; avant : 1.1, 1, 1.2, 1, 1.5, 1.55)
+const DUR_EXP = [1.35, 1.25, 1.55, 1.25, 1.9, 2.05].map(x => +(x * 1.1).toFixed(3)); // 18/11 : ×1,1 depuis les cibles au hasard (avant : sans le ×1,1) // réglé au simulateur le 14/11 (avec les ordres du capitaine ; avant : 1.1, 1, 1.2, 1, 1.5, 1.55)
 const MONSTRES_EXP = [
   { av:[['Gobelin', 3, 7], ['Gobelin chef', 3, 9]], ar:[['Gobelin lanceur', 2, 5, 'tireur']] },
   null,
@@ -187,7 +187,9 @@ function combatExp(campJ, campE, R) {
   const front = C => vivants(C).filter(u => u.rang === 'av');
   // si le devant est vide, les Lames et Remparts de derrière avancent
   const avance = C => { if (front(C).length) return; vivants(C).filter(u => u.rang === 'ar' && (u.role === 'lame' || u.role === 'rempart' || u.role === 'capitaine')).forEach(u => { u.rang = 'av'; ev.push({ t:'avance', id:u.id }); }); };
-  const cible = C => { avance(C); const f = front(C), l = f.length ? f : vivants(C); if (!l.length) return null; const b = l.filter(u => u.barriere); return (b.length ? b : l)[Math.floor(R() * (b.length || l.length))]; };
+  // 18/11 (choix de l'utilisateur : « on est obligé de taper le boss, ses sbires sont derrière ») : chacun frappe un ennemi vivant AU HASARD, devant ou derrière ;
+  // seules les Barrières (Remparts, golems…) restent prioritaires ; le boss n'a plus Barrière. Avant : la rangée de devant seulement.
+  const cible = C => { avance(C); const l = vivants(C); if (!l.length) return null; const b = l.filter(u => u.barriere), p = globalThis.BARRIERE_P ?? 1; const t = b.length && R() < p ? b : l; return t[Math.floor(R() * t.length)]; }; // les Barrières d'abord (globalThis.BARRIERE_P : essais au simulateur)
   const tue = (C, u) => {
     if (u.v > 0) return;
     if (C.serment && u.key !== 'capitaine' && (C.sermentFait || 0) < (C.sermentMax || 1)) { C.sermentFait = (C.sermentFait || 0) + 1; u.v = 1; ev.push({ t:'serment', id:u.id }); return; }
@@ -220,6 +222,8 @@ function combatExp(campJ, campE, R) {
       } else {
         de = 1 + Math.floor(R() * 6); if (u.coupSur && !u.coupSurFait) { u.coupSurFait = true; de = 6; } dg = de === 6 ? u.a * 2 : de === 1 ? 0 : u.a; txt = de === 6 ? 'critique' : de === 1 ? 'raté' : ''; if (dg > 0 && u.rang === 'ar' && !u.tireur && u.role !== 'soutien') { dg = Math.ceil(dg / 2); txt += (txt ? ' · ' : '') + 'de derrière : moitié'; }
       }
+      // 18/11 : derrière = « à couvert » : un coup au corps à corps (pas un tir) sur une unité de la rangée de derrière ne fait que la moitié des dégâts
+      if (dg > 0 && c.rang === 'ar' && !u.tireur && !globalThis.SANS_COUVERT) { dg = Math.ceil(dg / 2); txt += (txt ? ' · ' : '') + 'à couvert'; }
       if (A.cor && round <= (A.corRounds || 3) && dg > 0) dg += (A.corBonus || 1);
       if (u.embuscade && !u.embuscadeFaite && dg > 0) { dg *= 2; u.embuscadeFaite = true; txt = 'Embuscade !'; }
       if (dg > 0 && c.esquive && !c.esquiveFaite) { c.esquiveFaite = true; ev.push({ t:'esquive', src:u.id, id:c.id, de }); continue; }
@@ -239,7 +243,7 @@ function combatExp(campJ, campE, R) {
 // ----------------------------------------------------------------------------------------------- les adversaires
 function plateauMonstres(k) {
   const m = MONSTRES_EXP[k], mul = DUR_EXP[k] || 1, P = { av:[null, null, null], ar:[null, null, null] };
-  const fait = ([n, a, v, tag]) => ({ id:uid(), key:'m', n, a, v:Math.round(v * mul), star:0, role:tag === 'tireur' ? 'tireur' : 'lame', tireur:tag === 'tireur', barriere:tag === 'barriere' || tag === 'boss', charge:tag === 'charge', boss:tag === 'boss', bonusA:0, bonusV:0 });
+  const fait = ([n, a, v, tag]) => ({ id:uid(), key:'m', n, a, v:Math.round(v * mul), star:0, role:tag === 'tireur' ? 'tireur' : 'lame', tireur:tag === 'tireur', barriere:tag === 'barriere', charge:tag === 'charge', boss:tag === 'boss', bonusA:0, bonusV:0 });
   m.av.forEach((x, i) => { P.av[i] = fait(x); }); m.ar.forEach((x, i) => { P.ar[i] = fait(x); });
   return P;
 }
