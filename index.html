@@ -248,6 +248,14 @@
         <p>Le catalogue à feuilleter : les rayons collent un autocollant « RUPTURE » sur la page, avec le produit de remplacement s’il y en a un. Le bureau y dépose le PDF. À ouvrir sur les téléphones pros (et à partager avec l’accueil).</p>
         <a class="btn-main tool-dl" id="catalogue-lien" target="_blank" rel="noopener">Ouvrir le catalogue</a>
         <p class="tool-note">Adresse à partager : <code id="catalogue-url"></code> <button type="button" class="btn-soft tool-copy" data-copy="catalogue-url">Copier</button></p>
+        <!-- Tests du 18/11 (G10) : le code bureau du catalogue se choisit ici (la première fois, ou s’il est oublié) -->
+        <form class="tool-code" id="catalogue-code-form" novalidate>
+          <b>Code bureau du catalogue</b>
+          <small id="catalogue-code-etat">…</small>
+          <input type="password" inputmode="numeric" id="catalogue-code" placeholder="6 à 8 chiffres" autocomplete="off" maxlength="8">
+          <button type="submit" class="btn-soft">Choisir ce code bureau</button>
+          <small class="tool-code-msg" id="catalogue-code-msg" role="status"></small>
+        </form>
       </div>
       <div class="tool-card">
         <div class="tool-head">

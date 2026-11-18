@@ -405,3 +405,8 @@ a.tile:focus-visible { outline: 3px solid var(--tone); outline-offset: 3px; }
 .tile.tone-guilde { --tone: #8b5cf6; }
 .gu-a { color: #8b5cf6; } .gu-b { color: #c9962e; }
 .tile.tone-guilde .tile-name { font-size: 26px; }
+
+/* Code bureau du catalogue (tests du 18/11) */
+.tool-code { display: grid; gap: 6px; padding-top: 10px; border-top: 1px solid var(--border); }
+.tool-code input { padding: 10px 12px; border-radius: 12px; border: 1.5px solid var(--border); font: inherit; }
+.tool-code-msg { font-weight: 700; }
