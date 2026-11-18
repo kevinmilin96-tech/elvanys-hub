@@ -66,10 +66,16 @@ const PEAUX_DES = {
   givre:['Dés de givre', 'hue-rotate(185deg) saturate(.5) brightness(1.35)'], or:['Dés d’or', 'sepia(1) saturate(2.6) hue-rotate(-5deg) brightness(1.15) contrast(1.1)'],
 };
 
-function lireRang() { const d = Object.assign({ xp:0, journal:[], peau:'base' }, RJ(RANG_CLE, {})); d.info = rangDe(d.xp); return d; }
+function lireRang() { const d = Object.assign({ xp:0, journal:[], peau:'base' }, RJ(RANG_CLE, {})); d.info = rangDe(d.xp);
+  // 18/11 (l'utilisateur, « comme un battle pass ») : chaque récompense de la route se RÉCUPÈRE d'un toucher ; ce qui était déjà gagné avant reste acquis
+  if (!Array.isArray(d.recup)) { d.recup = Object.keys(ROUTE).map(Number).filter(n => n <= d.info.rang); try { const { info, ...rest } = d; localStorage.setItem(RANG_CLE, JSON.stringify(rest)); } catch (e) {} }
+  return d; }
+const aRecuperer = () => { const d = lireRang(); return Object.keys(ROUTE).map(Number).filter(n => n <= d.info.rang && !d.recup.includes(n)); };
+function recupererRang(n) { const d = lireRang(); n = +n; if (n > d.info.rang || d.recup.includes(n) || !ROUTE[n]) return null; d.recup.push(n); ecrireRang(d); syncRecompenses();
+  const x = ROUTE[n]; if (typeof annonceRang === 'function') annonceRang(`${x[2]} ${x[3]} récupéré !`, true); return x; }
 function ecrireRang(d) { const { info, ...rest } = d; localStorage.setItem(RANG_CLE, JSON.stringify(rest)); }
 // récompenses gagnées : tout ce qui est sur la route jusqu'au rang atteint
-const recompensesGagnees = () => { const r = lireRang().info.rang; return Object.entries(ROUTE).filter(([n]) => +n <= r).map(([n, x]) => ({ rang:+n, genre:x[0], cle:x[1], e:x[2], n:x[3], d:x[4] })); };
+const recompensesGagnees = () => { const d = lireRang(), r = d.info.rang; return Object.entries(ROUTE).filter(([n]) => +n <= r && d.recup.includes(+n)).map(([n, x]) => ({ rang:+n, genre:x[0], cle:x[1], e:x[2], n:x[3], d:x[4] })); };
 const rgRecompense = (genre, cle) => recompensesGagnees().some(x => x.genre === genre && x.cle === cle);
 // bonus de départ de l'Odyssée (lus par nouvelleOdyssee)
 function bonusDepart() { const g = recompensesGagnees().filter(x => x.genre === 'depart').map(x => x.cle); return { huile:g.includes('huile') ? 2 : 0, or:g.includes('or') ? 20 : 0, potion:g.includes('potion'), pv:g.includes('pv') ? 5 : 0, relance:g.includes('relance') ? 1 : 0 }; }
@@ -185,7 +191,10 @@ function choisirPeau(p) { const d = lireRang(); if (!rgPeauOk(p)) return; d.peau
 // le petit bandeau du menu : rang, barre, quêtes du jour
 function bandeauRangHTML() {
   const d = lireRang(), i = d.info, Q = lireQuetes(), fj = Q.j.filter(q => q.fait).length, fs = Q.s.filter(q => q.fait).length;
-  return `<a class="bandeau-rang" href="profil.html#rang"><b>🏆 Rang ${i.rang}</b><span class="barre-rang"><i style="width:${i.besoin ? Math.round(i.dans / i.besoin * 100) : 100}%"></i></span><small>${i.besoin ? `${i.dans} / ${i.besoin} XP` : 'rang max'}</small><em>📜 ${fj}/3 · ${fs}/3</em></a>`;
+  // 18/11 (l'utilisateur : « le rang est trop caché ») : barre plus grande, un toucher ouvre la route des rangs ; les quêtes ont leur propre bouton
+  const ar = aRecuperer().length;
+  return `<a class="bandeau-rang gros" href="route.html"><b>🏆 Rang ${i.rang}</b><span class="barre-rang"><i style="width:${i.besoin ? Math.round(i.dans / i.besoin * 100) : 100}%"></i><span class="txt">${i.besoin ? `${i.dans} / ${i.besoin} XP` : 'rang max'}</span></span>${ar ? `<em class="cadeau">🎁 ${ar}</em>` : '<em>›</em>'}</a>
+  <a class="bandeau-quetes" href="route.html#quetes">📜 Quêtes du jour <b>${fj}/3</b> · de la semaine <b>${fs}/3</b> ›</a>`;
 }
 
 if (typeof document !== 'undefined') {
@@ -196,6 +205,9 @@ if (typeof document !== 'undefined') {
   @keyframes annRang { to { opacity:1; transform:translate(-50%, 0); } }
   .bandeau-rang { display:flex; align-items:center; gap:8px; text-decoration:none; color:#f1ecff; background:#1d1838e6; border:1px solid #f3c96b66; border-radius:14px; padding:6px 10px; font:13px Georgia, serif; }
   .bandeau-rang b { color:#f3c96b; white-space:nowrap; } .bandeau-rang small { color:#c9c1ea; white-space:nowrap; font-size:.85em; } .bandeau-rang em { font-style:normal; white-space:nowrap; color:#f3c96b; }
+  .bandeau-rang.gros { padding:9px 12px; font-size:15px; border-width:2px; } .bandeau-rang.gros .barre-rang { height:18px; position:relative; border-radius:9px; } .bandeau-rang.gros .barre-rang .txt { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:11px; color:#fff; text-shadow:0 1px 2px #000; }
+  .bandeau-rang em.cadeau { background:#f3c96b; color:#2a1a08; border-radius:10px; padding:1px 7px; font-weight:bold; animation:cadeauR 1.2s ease-in-out infinite; } @keyframes cadeauR { 50% { transform:scale(1.15); } }
+  .bandeau-quetes { display:block; text-align:center; margin-top:5px; text-decoration:none; color:#f1ecff; background:#1d1838cc; border:1px solid #6b5fb0; border-radius:12px; padding:5px 10px; font:13px Georgia, serif; } .bandeau-quetes b { color:#f3c96b; }
   .barre-rang { flex:1; min-width:40px; height:8px; background:#0d0b1f; border-radius:6px; overflow:hidden; } .barre-rang i { display:block; height:100%; background:linear-gradient(90deg, #c78a2c, #f3c96b); border-radius:6px; }`;
   document.head.appendChild(st);
   appliquePeau(); syncRecompenses();

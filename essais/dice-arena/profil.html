@@ -65,7 +65,7 @@
 </main>
 <script src="cartes.js?v=7736d873d3"></script>
 <script src="musique.js?v=a66abd87f7"></script>
-<script src="rang.js?v=9729fcf665"></script>
+<script src="rang.js?v=02102cc86e"></script>
 <script src="heros-etoiles.js?v=07f78336f4"></script>
 <script src="donnees.js?v=2afe6cf473"></script>
 <script src="aventuriers.js?v=04b0962a08"></script>
@@ -189,11 +189,8 @@ function rangHTML() {
   <div class="rangbloc"><span class="barre-rang gros"><i style="width:${i.besoin ? Math.round(i.dans / i.besoin * 100) : 100}%"></i></span><small>${i.besoin ? `${i.dans} / ${i.besoin} XP pour le rang ${i.rang + 1}` : 'Tu as atteint le plus haut rang.'} · ${d.xp} XP en tout</small>
   <p class="aide">Chaque partie rapporte de l’expérience, même perdue : duel gagné 30 (perdu 10), salle vidée 5, élite 20, boss 60, escale 15, Titan 60, acte de l’Invasion 50, vague tenue 10, énigme 20, quête du jour 40, quête de la semaine 150.</p>
   ${d.journal.length ? `<details><summary>Mes derniers gains</summary>${d.journal.slice(0, 12).map(j => `<div class="jr">+${j.xp} · ${j.raison} <small>${new Date(j.q).toLocaleString('fr-FR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' })}</small></div>`).join('')}</details>` : ''}</div>
-  <h2>📜 Quêtes du jour</h2><p class="aide">Elles changent chaque jour à minuit. 🔄 : changer une quête (une fois par jour).</p>${Q.j.map((q, k) => ligneQ(q, true, k)).join('')}
-  <h2>🗓️ Quêtes de la semaine</h2><p class="aide">Elles changent chaque lundi.</p>${Q.s.map(q => ligneQ(q, false)).join('')}
-  <h2>🎁 La route des récompenses</h2><p class="aide">Une récompense à chaque rang. Les titres, cadres et dés se choisissent dans l’atelier du profil (✏️).</p>
-  <details ${i.rang < 6 ? 'open' : ''}><summary>Voir les 30 rangs</summary><div class="route">${Object.entries(ROUTE).map(([n, x]) => `<div class="etape ${+n <= i.rang ? 'ok' : ''}"><span class="num">${+n <= i.rang ? '✅' : n}</span><span class="e">${x[2]}</span><div>${x[0] === 'carte' && CARTES[x[1]] ? `<b>${CARTES[x[1]].n}</b> <em>Carte${CARTES[x[1]].heros ? ' de ' + HEROS[CARTES[x[1]].heros].nom : ' de la Guilde'}</em><small>${CARTES[x[1]].d} (🎲 ${CARTES[x[1]].txt}, ${CARTES[x[1]].c} PC)</small>` : `<b>${x[3]}</b> <em>${GENRE[x[0]]}</em><small>${x[4]}</small>`}</div></div>`).join('')}</div></details>
-  <p class="aide">🎲 L’apparence de tes dés se choisit dans l’atelier du profil (✏️ Modifier → Dés).</p>`;
+  <a class="lien" href="route.html">🎁 La route des rangs${typeof aRecuperer === 'function' && aRecuperer().length ? ` · <b>${aRecuperer().length} à récupérer</b>` : ''} ›</a>
+  <a class="lien" href="route.html#quetes">📜 Mes quêtes du jour et de la semaine ›</a>`; // 18/11 : quêtes et route dans leur propre page (route.html)
 }
 dessine();
 if (location.hash === '#rang') setTimeout(() => { const e = document.getElementById('rang'); if (e) e.scrollIntoView(); }, 50);

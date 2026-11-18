@@ -8,7 +8,7 @@
 <title>La Guilde des Runes</title>
 <script>
 // Même mécanisme que le Duel : une nouvelle version = rechargement tout seul à l'ouverture (publier.sh change VERSION).
-const VERSION = '20261118-062036';
+const VERSION = '20261118-062422';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-menu-' + v)) { sessionStorage.setItem('recharge-menu-' + v, '1'); location.replace('menu.html?v=' + v); }
@@ -204,7 +204,7 @@ fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.te
 
 <script src="semaine.js?v=7628cbea1f"></script>
 <script src="musique.js?v=a66abd87f7"></script>
-<script src="rang.js?v=9729fcf665"></script>
+<script src="rang.js?v=02102cc86e"></script>
 <script src="profil.js?v=d50e2421e1"></script>
 <script>window.AMIS_SANS_BOUTON = true; /* 15/11 : un seul bouton en haut à gauche (profil + amis) */</script>
 <script src="amis.js?v=c2f7821b28"></script>
@@ -471,7 +471,7 @@ if (revientDUnMode) { document.getElementById('titre').remove(); document.getEle
 // 13/11 soir : musique (titre sur l'écran du portail, puis le monde de la Guilde)
 GM.musique(document.getElementById('titre') ? 'titre' : 'menu'); GM.bouton({ haut:true });
 // 14/11 nuit : le Rang de la Guilde et les quêtes, sous le titre
-{ const rm = document.getElementById('rangmenu'); if (rm && typeof bandeauRangHTML === 'function') { rm.innerHTML = bandeauRangHTML() + (typeof butinHTML === 'function' ? butinHTML() : ''); rm.querySelector('a').onclick = () => { try { sessionStorage.setItem('guilde-dans-mode', '1'); } catch (e) {} }; } }
+{ const rm = document.getElementById('rangmenu'); if (rm && typeof bandeauRangHTML === 'function') { rm.innerHTML = bandeauRangHTML() + (typeof butinHTML === 'function' ? butinHTML() : ''); rm.querySelectorAll('a').forEach(a => { a.onclick = () => { try { sessionStorage.setItem('guilde-dans-mode', '1'); } catch (e) {} }; }); } }
 // 14/11 : bouton « Mon profil », en haut à gauche (le ⚙️ est en haut à droite)
 { const pb = document.createElement('a'); pb.id = 'profil-bouton'; pb.href = 'profil.html'; pb.title = 'Mon profil'; pb.setAttribute('aria-label', 'Mon profil'); pb.textContent = '👤';
   pb.style.cssText = 'position:fixed;left:10px;top:calc(10px + env(safe-area-inset-top));z-index:900;width:38px;height:38px;border-radius:50%;border:1px solid #f3c96b88;background:#15132bcc;color:#f3c96b;font-size:18px;line-height:36px;text-align:center;text-decoration:none';
@@ -506,6 +506,17 @@ function profilMenu() {
     body { padding-bottom:calc(66px + env(safe-area-inset-bottom)); }
     #monde { height:calc(100dvh - 66px - env(safe-area-inset-bottom)) !important; } body { overflow:hidden; } /* 17/11 soir : le monde tient au-dessus de la barre, rien ne défile */
     #monde .carrousel { --w:min(70vw, 330px, calc((100dvh - 330px) / 1.49)) !important; }
+    #barre-bas .ic4 { display:inline-grid; grid-template-columns:repeat(2, 9px); gap:4px; vertical-align:middle; } #barre-bas .ic4 i { width:9px; height:9px; border-radius:3px; background:#f3c96b; box-shadow:0 0 6px #f3c96b88; }
+    #grand-menu { position:fixed; inset:0; z-index:4600; background:#0d0a1cf5; overflow:auto; padding:12px 12px calc(20px + env(safe-area-inset-bottom)); box-sizing:border-box; animation:gpArr .25s ease-out; }
+    #grand-menu .gm-tete { display:flex; gap:12px; align-items:center; background:linear-gradient(135deg, #4a2a8c, #2a1d5c); border:1px solid #f3c96b66; border-radius:16px; padding:12px; max-width:520px; margin:0 auto 12px; }
+    #grand-menu .gm-tete img, #grand-menu .gm-tete .sans { width:64px; height:64px; border-radius:50%; object-fit:cover; box-shadow:0 0 0 3px #f3c96b; flex:none; background:#221d42; display:grid; place-items:center; font-size:30px; }
+    #grand-menu .gm-tete .nm { font:bold 1.15em Georgia, serif; } #grand-menu .gm-tete small { color:#c9c1ea; display:block; }
+    #grand-menu .gm-tete .barre-rang { display:block; height:10px; margin-top:5px; }
+    #grand-menu .gm-g { display:grid; grid-template-columns:repeat(4, 1fr); gap:8px; max-width:520px; margin:0 auto; }
+    #grand-menu .gm-g button { position:relative; aspect-ratio:1; background:#2a2650; border:1px solid #5a4aa0; border-radius:12px; color:#f1ecff; font:11px/1.15 Georgia, serif; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; padding:4px; cursor:pointer; }
+    #grand-menu .gm-g button b { font-size:26px; font-weight:normal; line-height:1; }
+    #grand-menu .gm-g button .pt { position:absolute; top:4px; right:4px; min-width:17px; height:17px; line-height:17px; border-radius:9px; font:bold 11px Georgia; padding:0 4px; background:#ff5a5a; color:#fff; }
+    #grand-menu .x { position:fixed; top:10px; right:12px; width:40px; height:40px; border-radius:50%; background:#1c1838; border:1px solid #f3c96b88; color:#fff; font-size:18px; padding:0; z-index:2; }
     #grille-p { position:fixed; inset:0; z-index:4500; background:#0d0a1cf2; overflow:auto; overscroll-behavior:contain; padding:14px 12px calc(84px + env(safe-area-inset-bottom)); box-sizing:border-box; animation:gpArr .25s ease-out; }
     @keyframes gpArr { from { opacity:0; transform:translateY(20px); } }
     #grille-p h2 { text-align:center; color:#f3c96b; font:bold 1.3em Georgia, serif; margin:2px 0 12px; }
@@ -519,7 +530,7 @@ function profilMenu() {
     body:has(#titre:not(.part)) #barre-bas { display:none; } /* 17/11 (l'utilisateur) : pas sur l'écran « Toucher pour entrer », seulement une fois dans le menu */
     #barre-bas { animation:bbArrive .4s ease-out; } @keyframes bbArrive { from { transform:translateY(100%); } }`; document.head.appendChild(st);
   const bb = document.createElement('nav'); bb.id = 'barre-bas';
-  bb.innerHTML = `<button id="bb-profil" onclick="try{sessionStorage.setItem('guilde-dans-mode','1')}catch(e){};location.href='profil.html'"><b>👤</b>Profil</button><button id="bb-amis" onclick="amisFenetre()"><b>👥</b>Amis</button><button id="bb-portails" onclick="grillePortails()"><b>🌀</b>Portails</button><button id="bb-boite" onclick="amisBoite()"><b>📬</b>Boîte</button><button id="bb-param" onclick="GM.parametres()"><b>⚙️</b>Paramètres</button>`;
+  bb.innerHTML = `<button id="bb-profil" onclick="try{sessionStorage.setItem('guilde-dans-mode','1')}catch(e){};location.href='profil.html'"><b>👤</b>Profil</button><button id="bb-amis" onclick="amisFenetre()"><b>👥</b>Amis</button><button id="bb-menu" onclick="grandMenu()"><b><span class="ic4"><i></i><i></i><i></i><i></i></span></b>Menu</button><button id="bb-boite" onclick="amisBoite()"><b>📬</b>Boîte</button><button id="bb-param" onclick="GM.parametres()"><b>⚙️</b>Paramètres</button>`;
   document.body.appendChild(bb);
   const pastille = (id, n, coul, txt) => { const b = document.getElementById(id); if (!b) return; let s = b.querySelector('.pt'); if (!n) { if (s) s.remove(); return; } if (!s) { s = document.createElement('span'); s.className = 'pt'; b.appendChild(s); } s.textContent = n; s.style.background = coul; s.style.color = txt; };
   window.amisPastille = (n, dem) => pastille('bb-amis', dem || n, dem ? '#ff5a5a' : '#7dffb0', dem ? '#fff' : '#0a2a14');
@@ -527,6 +538,24 @@ function profilMenu() {
   // le petit menu du 👤 s'ouvre au-dessus de la barre
   if (typeof amisBouton === 'function') amisBouton();
   const pm = profilMenu; window.profilMenu = function () { pm(); const m = document.getElementById('profil-menu'); if (m) { m.style.top = 'auto'; m.style.bottom = 'calc(70px + env(safe-area-inset-bottom))'; } };
+}
+// 18/11 (l'utilisateur, photo de Genshin Impact) : LE GRAND MENU du bouton à 4 points : ta fiche (portrait, nom, rang) puis une grille de tout ce qui était caché
+function grandMenu() {
+  let g = document.getElementById('grand-menu'); if (g) { g.remove(); return; }
+  const P = typeof lireProfil === 'function' ? lireProfil() : {}, R = typeof lireRang === 'function' ? lireRang().info : null, por = typeof portraitProfil === 'function' ? portraitProfil(P)[0] : null;
+  const Q = typeof lireQuetes === 'function' ? lireQuetes() : { j:[], s:[] }, qr = Q.j.filter(q => !q.fait).length, ar = typeof aRecuperer === 'function' ? aRecuperer().length : 0;
+  const E = typeof AMIS !== 'undefined' && AMIS.etat, dem = E ? E.demandes.length : 0;
+  const va = h => `try{sessionStorage.setItem('guilde-dans-mode','1')}catch(e){};location.href='${h}'`, ferme = "document.getElementById('grand-menu').remove();";
+  const T = [['🌀', 'Portails', ferme + 'grillePortails()'], ['📜', 'Quêtes', va('route.html#quetes'), qr], ['🎁', 'Route des rangs', va('route.html'), ar], ['🏰', 'Mes héros', va('mes-heros.html')],
+    ['🃏', 'Pouvoirs des héros', va('pouvoirs.html?retour=menu.html')], ['⚒', 'Forge des héros', va('aventuriers.html')], ['👤', 'Mon profil', va('profil.html')], ['📊', 'Mon parcours', va('profil.html#parcours')],
+    ['📖', 'Mes parties', ferme + 'Carnet.ouvrir()'], ['🏛', 'Panthéon', va('pantheon.html')], ['👥', 'Amis', ferme + 'amisFenetre()', dem], ['🤝', 'Entre amis', ferme + "location.hash='enligne'"],
+    ['📬', 'Boîte', ferme + 'amisBoite()'], ['🎓', 'Tutoriel', va('duel.html?tuto=1')], ['🔗', 'Tous les liens', "location.href='/liens.html'"], ['⚙️', 'Paramètres', ferme + 'GM.parametres()']];
+  g = document.createElement('div'); g.id = 'grand-menu';
+  g.innerHTML = `<button class="x" onclick="grandMenu()" aria-label="Fermer">✕</button>
+  <div class="gm-tete" onclick="${va('profil.html')}">${por ? `<img src="${por}" alt="">` : '<span class="sans">👤</span>'}<div style="flex:1"><div class="nm">${(P.nom || (E && E.moi && E.moi.pseudo) || 'Aventurier').replace(/</g, '&lt;')}</div>
+    ${R ? `<small>🏆 Rang de la Guilde <b style="color:#f3c96b">${R.rang}</b> · ${R.besoin ? `${R.dans} / ${R.besoin} XP` : 'rang max'}</small><span class="barre-rang"><i style="width:${R.besoin ? Math.round(R.dans / R.besoin * 100) : 100}%"></i></span>` : ''}</div></div>
+  <div class="gm-g">${T.map(([e, n, f, pt]) => `<button onclick="${f}"><b>${e}</b>${n}${pt ? `<span class="pt">${pt}</span>` : ''}</button>`).join('')}</div>`;
+  document.body.appendChild(g); if (typeof GM !== 'undefined') GM.son('clic');
 }
 // 17/11 soir (l'utilisateur, « comme Genshin ») : la grille de tous les portails, en vignettes simples
 function grillePortails() {

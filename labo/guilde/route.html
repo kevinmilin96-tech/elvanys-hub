@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>La Guilde des Runes · La route des rangs</title>
+<style>
+  /* 18/11 (l'utilisateur, « comme Brawl Stars ») : la route des rangs en grande ligne horizontale + les quêtes, en deux onglets */
+  :root { --or:#f3c96b; --texte:#f1ecff; --doux:#c9c1ea; }
+  * { box-sizing:border-box; }
+  html, body { height:100%; }
+  body { margin:0; color:var(--texte); font:15px/1.4 Georgia, 'Times New Roman', serif; background:radial-gradient(ellipse at 50% 0%, #4a2a8c, #1a1036 55%, #0d0a1c) fixed, #120f24; overflow-x:hidden; }
+  main { max-width:900px; margin:0 auto; padding:10px 0 40px; }
+  .haut { display:flex; align-items:center; gap:8px; padding:0 12px; } .haut a { color:var(--doux); text-decoration:none; font-size:.9em; background:#221d42; border:1px solid #4b4580; border-radius:20px; padding:5px 11px; white-space:nowrap; }
+  .onglets { display:flex; gap:4px; margin:0 auto; background:#0d0a1c99; border-radius:12px; padding:3px; }
+  .onglets button { font:bold 14px Georgia, serif; border:0; border-radius:10px; padding:8px 16px; background:transparent; color:var(--doux); cursor:pointer; position:relative; }
+  .onglets button.on { background:linear-gradient(#ffb04d, #e5742a); color:#fff; box-shadow:0 2px 0 #9a4410; }
+  .onglets .pt { position:absolute; top:-6px; right:-4px; background:#ff4d4d; color:#fff; border-radius:9px; font-size:11px; padding:0 5px; }
+  .xp { display:flex; align-items:center; gap:8px; margin:12px 12px 4px; background:#0d0a1ccc; border:1px solid #f3c96b66; border-radius:14px; padding:8px 12px; }
+  .xp .rg { font-weight:bold; color:var(--or); font-size:1.15em; white-space:nowrap; }
+  .xp .barre { flex:1; height:20px; background:#1d1838; border-radius:10px; position:relative; overflow:hidden; border:1px solid #4b4580; }
+  .xp .barre i { position:absolute; left:0; top:0; bottom:0; background:linear-gradient(90deg, #c78a2c, #f3c96b); border-radius:10px; }
+  .xp .barre span { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:12px; text-shadow:0 1px 2px #000; }
+  .xp .suiv { background:#221d42; border:1px solid #4b4580; border-radius:50%; width:34px; height:34px; display:grid; place-items:center; font-weight:bold; flex:none; }
+  .aide { color:var(--doux); font-size:.85em; margin:4px 12px 8px; text-align:center; }
+  /* la route : une piste qui défile de gauche à droite */
+  .piste { overflow-x:auto; overflow-y:hidden; padding:10px 14px 18px; scroll-snap-type:x proximity; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
+  .piste::-webkit-scrollbar { display:none; }
+  .rail { display:flex; gap:12px; position:relative; width:max-content; padding-bottom:46px; }
+  .rail::after { content:''; position:absolute; left:0; right:0; bottom:20px; height:8px; background:#2a2350; border-radius:4px; }
+  .rail .fait { position:absolute; left:0; bottom:20px; height:8px; background:linear-gradient(90deg, #e5742a, #f3c96b); border-radius:4px; z-index:1; }
+  .case { width:150px; flex:none; scroll-snap-align:center; position:relative; }
+  .rec { height:min(250px, 34vh); border-radius:16px; background:linear-gradient(160deg, #3d2a7a, #241a52); border:2px solid #5a4aa0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:8px 6px; gap:4px; position:relative; }
+  .rec .ic { font-size:56px; line-height:1.1; filter:drop-shadow(0 4px 6px #0008); }
+  .rec b { font-size:.82em; line-height:1.15; } .rec small { font-size:.68em; color:var(--doux); line-height:1.15; }
+  .rec .coche { position:absolute; top:-12px; left:50%; transform:translateX(-50%); font-size:24px; color:#5dff6a; text-shadow:0 2px 0 #145c1a; }
+  .case.prise .rec { opacity:.75; }
+  .case.dispo .rec { border-color:var(--or); box-shadow:0 0 18px #f3c96b88; animation:brille 1.6s ease-in-out infinite; } @keyframes brille { 50% { box-shadow:0 0 30px #f3c96bcc; } }
+  .case.verrou .rec { filter:grayscale(.65) brightness(.75); }
+  .rec .recup { margin-top:4px; font:bold 13px Georgia, serif; border:0; border-radius:10px; padding:6px 10px; background:linear-gradient(#7dff8a, #2fbf47); color:#0b3a12; box-shadow:0 3px 0 #1a7a2a; cursor:pointer; }
+  .num { position:absolute; bottom:6px; left:50%; transform:translateX(-50%); z-index:2; width:30px; height:30px; border-radius:50%; display:grid; place-items:center; font:bold 13px Georgia, serif; background:#2a2350; border:2px solid #5a4aa0; color:var(--doux); }
+  .case.prise .num, .case.dispo .num { background:var(--or); border-color:#fff3; color:#2a1a08; }
+  .tout { display:block; margin:6px auto 0; font:bold 14px Georgia, serif; border:0; border-radius:12px; padding:10px 18px; background:linear-gradient(#7dff8a, #2fbf47); color:#0b3a12; box-shadow:0 3px 0 #1a7a2a; }
+  /* les quêtes */
+  .quetes { max-width:620px; margin:0 auto; padding:0 12px; }
+  h2 { color:var(--or); font-size:1.08em; margin:16px 0 6px; border-bottom:1px solid #4b4580; padding-bottom:3px; }
+  .quete { display:flex; gap:8px; align-items:center; background:#1d1b3aee; border:1px solid #4b4580; border-radius:12px; padding:8px 10px; margin:6px 0; } .quete > div { flex:1; } .quete b { display:block; font-weight:normal; }
+  .quete .barre-rang { display:block; height:8px; margin:5px 0 3px; } .quete small { color:var(--doux); }
+  .quete.faite { border-color:#7dffb0; opacity:.85; } .chg { background:#2a2350; color:#fff; border:1px solid #4b4580; border-radius:10px; padding:6px 9px; font-size:1.1em; }
+  .gains { color:var(--doux); font-size:.85em; } .gains summary { color:var(--or); cursor:pointer; margin:8px 0; }
+</style>
+</head>
+<body>
+<main>
+  <div class="haut"><a href="menu.html">‹ Menu</a><div class="onglets" id="onglets"></div><a href="profil.html">👤</a></div>
+  <div id="app"></div>
+</main>
+<script src="cartes.js?v=7736d873d3"></script>
+<script src="musique.js?v=a66abd87f7"></script>
+<script src="rang.js?v=02102cc86e"></script>
+<script src="donnees.js?v=2afe6cf473"></script>
+<script>
+const GENRE = { des:'Dés', titre:'Titre et cadre', depart:'Bonus de départ', carte:'Carte', equip:'Équipement' };
+let onglet = location.hash === '#quetes' ? 'quetes' : 'route';
+function ouvre(o) { onglet = o; history.replaceState(null, '', o === 'quetes' ? '#quetes' : '#'); if (typeof GM !== 'undefined') GM.son('clic'); dessine(); }
+function onglets() { const ar = aRecuperer().length, Q = lireQuetes(), qr = Q.j.filter(q => !q.fait).length;
+  document.getElementById('onglets').innerHTML = `<button class="${onglet === 'route' ? 'on' : ''}" onclick="ouvre('route')">🎁 Récompenses${ar ? `<span class="pt">${ar}</span>` : ''}</button><button class="${onglet === 'quetes' ? 'on' : ''}" onclick="ouvre('quetes')">📜 Quêtes</button>`; }
+function enteteXP() { const d = lireRang(), i = d.info;
+  return `<div class="xp"><span class="rg">🏆 ${i.rang}</span><span class="barre"><i style="width:${i.besoin ? Math.round(i.dans / i.besoin * 100) : 100}%"></i><span>${i.besoin ? `${i.dans} / ${i.besoin} XP` : 'Rang le plus haut !'}</span></span>${i.rang < RANG_MAX ? `<span class="suiv">${i.rang + 1}</span>` : ''}</div>`; }
+function recHTML(n, x) {
+  if (x[0] === 'carte' && typeof CARTES !== 'undefined' && CARTES[x[1]]) { const c = CARTES[x[1]]; return `<span class="ic">🂠</span><b>${c.n}</b><small>Carte${c.heros && typeof HEROS !== 'undefined' ? ' de ' + HEROS[c.heros].nom : ' de la Guilde'}</small>`; }
+  return `<span class="ic">${x[2]}</span><b>${x[3]}</b><small>${GENRE[x[0]] || ''}</small>`;
+}
+function route() {
+  const d = lireRang(), r = d.info.rang, ar = aRecuperer();
+  const cases = Object.entries(ROUTE).map(([n, x]) => { n = +n; const etat = d.recup.includes(n) ? 'prise' : n <= r ? 'dispo' : 'verrou';
+    return `<div class="case ${etat}" id="c${n}" onclick="detail(${n})"><div class="rec">${etat === 'prise' ? '<span class="coche">✔</span>' : ''}${recHTML(n, x)}${etat === 'dispo' ? `<button class="recup" onclick="event.stopPropagation();prendre(${n})">Récupérer</button>` : etat === 'verrou' ? '<small>🔒</small>' : ''}</div><span class="num">${n}</span></div>`; }).join('');
+  // la ligne dorée : jusqu'au rang atteint (case de 132 px + 12 d'écart)
+  const fait = Math.max(0, Math.min(29, r - 2)) * 162 + 75;
+  return `${enteteXP()}<p class="aide">Glisse la route. Chaque rang débloque une récompense : touche « Récupérer ». Touche une récompense pour la lire.</p>
+  ${ar.length > 1 ? `<button class="tout" onclick="toutPrendre()">🎁 Tout récupérer (${ar.length})</button>` : ''}
+  <div class="piste" id="piste"><div class="rail"><span class="fait" style="width:${r >= 2 ? fait : 0}px"></span>${cases}</div></div>
+  <p class="aide">Les titres, cadres et dés récupérés se choisissent dans l’atelier du profil (👤 → ✏️).</p>`;
+}
+function detail(n) { const x = ROUTE[n], d = lireRang(); let t = x[4], nom = x[3];
+  if (x[0] === 'carte' && typeof CARTES !== 'undefined' && CARTES[x[1]]) { const c = CARTES[x[1]]; nom = c.n; t = `${c.d} (🎲 ${c.txt}, ${c.c} PC)`; }
+  const etat = d.recup.includes(n) ? '✔ Récupérée.' : n <= d.info.rang ? '🎁 À récupérer !' : `🔒 Au rang ${n}.`;
+  if (typeof annonceRang === 'function') annonceRang(`${x[2]} ${nom} : ${t} ${etat}`); }
+function prendre(n) { if (recupererRang(n)) { if (typeof GM !== 'undefined') GM.son('gagne'); dessine(n); } }
+function toutPrendre() { aRecuperer().forEach(n => recupererRang(n)); if (typeof GM !== 'undefined') GM.son('gagne'); dessine(); }
+function quetes() {
+  const d = lireRang(), Q = lireQuetes();
+  const ligneQ = (q, jour, idx) => { const def = defQuete(q, jour); return `<div class="quete ${q.fait ? 'faite' : ''}"><div><b>${q.fait ? '✅' : '📜'} ${texteQuete(q, jour)}</b><span class="barre-rang"><i style="width:${Math.round(q.prog / def[3] * 100)}%"></i></span><small>${q.prog} / ${def[3]} · +${jour ? 40 : 150} XP</small></div>${jour && !Q.change && !q.fait ? `<button class="chg" onclick="if (changeQuete(${idx})) dessine()">🔄</button>` : ''}</div>`; };
+  return `${enteteXP()}<div class="quetes">
+  <h2>📜 Quêtes du jour</h2><p class="aide" style="text-align:left;margin:0 0 4px">Elles changent chaque jour à minuit. 🔄 : changer une quête (une fois par jour).</p>${Q.j.map((q, k) => ligneQ(q, true, k)).join('')}
+  <h2>🗓️ Quêtes de la semaine</h2><p class="aide" style="text-align:left;margin:0 0 4px">Elles changent chaque lundi.</p>${Q.s.map(q => ligneQ(q, false)).join('')}
+  <details class="gains"><summary>Ce que rapporte chaque partie</summary>Chaque partie rapporte de l’expérience, même perdue : duel gagné 30 (perdu 10), salle vidée 5, élite 20, boss 60, escale 15, Titan 60, acte de l’Invasion 50, vague tenue 10, énigme 20, quête du jour 40, quête de la semaine 150.
+  ${d.journal.length ? `<p><b>Mes derniers gains</b></p>${d.journal.slice(0, 12).map(j => `<div>+${j.xp} · ${j.raison} <small>${new Date(j.q).toLocaleString('fr-FR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' })}</small></div>`).join('')}` : ''}</details></div>`;
+}
+function dessine(vise) {
+  onglets(); document.getElementById('app').innerHTML = onglet === 'quetes' ? quetes() : route();
+  if (onglet === 'route') { const r = lireRang().info.rang, ar = aRecuperer(), cible = vise || ar[0] || Math.min(r + 1, RANG_MAX), el = document.getElementById('c' + cible), p = document.getElementById('piste');
+    if (el && p) p.scrollLeft = el.offsetLeft - p.clientWidth / 2 + el.offsetWidth / 2; }
+}
+dessine();
+if (typeof GM !== 'undefined') { GM.musique('menu'); GM.bouton(); }
+</script>
+</body>
+</html>
