@@ -57,7 +57,7 @@ const ESCALES2 = [
 const DIFF_EXP = { facile:{ n:'Facile', e:'🌱', pv:.85, pts:.7 }, normal:{ n:'Normal', e:'⚔', pv:1, pts:1 }, difficile:{ n:'Difficile', e:'💀', pv:1.15, pts:1.5 } };
 // la prise en main de chaque capitaine (indication pour le joueur, ne change pas la difficulté)
 const PRISE_EXP = { maelle:'simple', aldric:'simple', gorm:'simple', oria:'moyenne', pip:'technique', zephine:'technique' };
-const DUR_EXP = [1.35, 1.25, 1.55, 1.25, 1.9, 2.05].map(x => +(x * 1.1).toFixed(3)); // 18/11 : ×1,1 depuis les cibles au hasard (avant : sans le ×1,1) // réglé au simulateur le 14/11 (avec les ordres du capitaine ; avant : 1.1, 1, 1.2, 1, 1.5, 1.55)
+const DUR_EXP = [1.35, 1.25, 1.55, 1.25, 1.9, 2.05].map(x => +(x * 1.2).toFixed(3)); // 18/11 : ×1,2 (tireurs sur l'arrière + cible du capitaine ; avant : sans) // réglé au simulateur le 14/11 (avec les ordres du capitaine ; avant : 1.1, 1, 1.2, 1, 1.5, 1.55)
 const MONSTRES_EXP = [
   { av:[['Gobelin', 3, 7], ['Gobelin chef', 3, 9]], ar:[['Gobelin lanceur', 2, 5, 'tireur']] },
   null,
@@ -187,9 +187,14 @@ function combatExp(campJ, campE, R) {
   const front = C => vivants(C).filter(u => u.rang === 'av');
   // si le devant est vide, les Lames et Remparts de derrière avancent
   const avance = C => { if (front(C).length) return; vivants(C).filter(u => u.rang === 'ar' && (u.role === 'lame' || u.role === 'rempart' || u.role === 'capitaine')).forEach(u => { u.rang = 'av'; ev.push({ t:'avance', id:u.id }); }); };
-  // 18/11 (choix de l'utilisateur : « on est obligé de taper le boss, ses sbires sont derrière ») : chacun frappe un ennemi vivant AU HASARD, devant ou derrière ;
-  // seules les Barrières (Remparts, golems…) restent prioritaires ; le boss n'a plus Barrière. Avant : la rangée de devant seulement.
-  const cible = C => { avance(C); const l = vivants(C); if (!l.length) return null; const b = l.filter(u => u.barriere), p = globalThis.BARRIERE_P ?? 1; const t = b.length && R() < p ? b : l; return t[Math.floor(R() * t.length)]; }; // les Barrières d'abord (globalThis.BARRIERE_P : essais au simulateur)
+  // 18/11 (choix de l'utilisateur, après un essai « au hasard » écarté) : les Lames, Remparts et le capitaine frappent la rangée de DEVANT (Barrières d'abord) ;
+  // les TIREURS visent la rangée de DERRIÈRE (s'il y reste quelqu'un) ; le boss n'a plus Barrière. Et la CIBLE DU CAPITAINE : l'ennemi désigné (doigt maintenu
+  // pendant le combat, X.ciblePrio = { id, round }) est visé en priorité par tout l'équipage à partir de ce round, tant qu'il est debout.
+  const prio = campJ.X && campJ.X.ciblePrio;
+  const cible = (C, u, round) => { avance(C); const viv = vivants(C); if (!viv.length) return null;
+    if (prio && u && u.cote === 'J') { const p = [].concat(prio).filter(x => round >= x.round).pop(); const d = p && viv.find(x => x.id === p.id); if (d) return d; } // la dernière cible désignée compte
+    if (u && u.tireur) { const ar = viv.filter(x => x.rang === 'ar'); if (ar.length) return ar[Math.floor(R() * ar.length)]; }
+    const f = front(C), l = f.length ? f : viv, b = l.filter(x => x.barriere); return (b.length ? b : l)[Math.floor(R() * (b.length || l.length))]; };
   const tue = (C, u) => {
     if (u.v > 0) return;
     if (C.serment && u.key !== 'capitaine' && (C.sermentFait || 0) < (C.sermentMax || 1)) { C.sermentFait = (C.sermentFait || 0) + 1; u.v = 1; ev.push({ t:'serment', id:u.id }); return; }
@@ -212,7 +217,7 @@ function combatExp(campJ, campE, R) {
       if (u.soigneur) { const b = vivants(A).filter(x => x.v < x.vmax).sort((x, y) => (x.v / x.vmax) - (y.v / y.vmax))[0]; if (b) { const n = Math.min(u.soigneur, b.vmax - b.v); b.v += n; ev.push({ t:'soin', id:b.id, n, src:u.id }); } }
       if (u.soinTous) vivants(A).forEach(b => { if (b.v < b.vmax) { b.v = Math.min(b.vmax, b.v + u.soinTous); ev.push({ t:'soin', id:b.id, n:u.soinTous, src:u.id }); } });
       if (!peutFrapper(u)) continue;
-      const c = cible(D); if (!c) break;
+      const c = cible(D, u, round); if (!c) break;
       let dg, de, txt = '';
       if (u.role === 'capitaine') {
         const ds = [1, 2, 3].map(() => 1 + Math.floor(R() * 6)), s = [...ds].sort((a, b) => a - b);
@@ -222,8 +227,6 @@ function combatExp(campJ, campE, R) {
       } else {
         de = 1 + Math.floor(R() * 6); if (u.coupSur && !u.coupSurFait) { u.coupSurFait = true; de = 6; } dg = de === 6 ? u.a * 2 : de === 1 ? 0 : u.a; txt = de === 6 ? 'critique' : de === 1 ? 'raté' : ''; if (dg > 0 && u.rang === 'ar' && !u.tireur && u.role !== 'soutien') { dg = Math.ceil(dg / 2); txt += (txt ? ' · ' : '') + 'de derrière : moitié'; }
       }
-      // 18/11 : derrière = « à couvert » : un coup au corps à corps (pas un tir) sur une unité de la rangée de derrière ne fait que la moitié des dégâts
-      if (dg > 0 && c.rang === 'ar' && !u.tireur && !globalThis.SANS_COUVERT) { dg = Math.ceil(dg / 2); txt += (txt ? ' · ' : '') + 'à couvert'; }
       if (A.cor && round <= (A.corRounds || 3) && dg > 0) dg += (A.corBonus || 1);
       if (u.embuscade && !u.embuscadeFaite && dg > 0) { dg *= 2; u.embuscadeFaite = true; txt = 'Embuscade !'; }
       if (dg > 0 && c.esquive && !c.esquiveFaite) { c.esquiveFaite = true; ev.push({ t:'esquive', src:u.id, id:c.id, de }); continue; }
@@ -263,8 +266,9 @@ function adversaire(X) {
 
 // ----------------------------------------------------------------------------------------------- une escale : combat + suite (or, cœurs, Forge, Louve)
 function joueEscale(X, R) {
-  const adv = adversaire(X), res = combatExp({ heros:X.heros, plateau:X.plateau, X }, adv.camp, R || hasardX(X));
-  const esc = ESCALES2[X.escale]; res.adv = adv; X.prochain = null; X.ordres = null;
+  // 18/11 : l'adversaire peut être préparé avant (X.advPret) pour que l'écran rejoue le même combat quand le joueur désigne une cible
+  const adv = X.advPret || adversaire(X), res = combatExp({ heros:X.heros, plateau:X.plateau, X }, adv.camp, R || hasardX(X));
+  const esc = ESCALES2[X.escale]; res.adv = adv; X.prochain = null; X.ordres = null; X.advPret = null; X.ciblePrio = null;
   if (res.gagne) {
     X.victoires++; X.journal.push(`🏆 ${esc.n} : victoire.`);
     const fam = compteFamilles(X, X.plateau), forges = surPlateau(X).filter(u => u.fam === 'forge');
@@ -329,9 +333,11 @@ function piloteOrdres(X, R) {
   const s = [...ds].sort((a, b) => a - b), c = s[0] === s[2] ? { a:2 } : s[0] === s[1] || s[1] === s[2] ? { a:1 } : s[1] === s[0] + 1 && s[2] === s[1] + 1 ? { v:3 } : null;
   X.ordres = { u, tous:c ? { a:c.a || 0, v:c.v || 0 } : null };
 }
+// 18/11 : le pilote désigne aussi une cible dès le 1er round (le tireur ennemi qui frappe le plus, sinon rien), comme un joueur raisonnable
+function piloteCible(X) { if (globalThis.SANS_CIBLE) return; X.advPret = adversaire(X); const t = X.advPret.camp.plateau.ar.filter(u => u && u.tireur).sort((a, b) => b.a - a.a)[0]; X.ciblePrio = t ? [{ id:t.id, round:1 }] : null; }
 function simuleExpedition(heros, graine) {
   const X = nouvelleExpedition(heros, graine); if (globalThis.DIFF_SIM) X.diff = globalThis.DIFF_SIM;
-  for (let pas = 0; pas < 12 && !X.fini; pas++) { pilotePort(X); piloteOrdres(X, hasardX(X)); joueEscale(X, hasardX(X)); }
+  for (let pas = 0; pas < 12 && !X.fini; pas++) { pilotePort(X); piloteOrdres(X, hasardX(X)); piloteCible(X); joueEscale(X, hasardX(X)); }
   return { gagne:X.fini === 'gagne', coeurs:X.coeurs, escale:X.escale, victoires:X.victoires, fusions:toutes(X).filter(u => u.star).length, fam:compteFamilles(X, X.plateau) };
 }
 

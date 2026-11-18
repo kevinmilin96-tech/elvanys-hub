@@ -48,7 +48,7 @@ const MERS = {
     elites:[{ n:'Le Yéti ancien', e:'🦍', cle:'falaises', av:[['Yéti ancien', 7, 34, 'barriere']], ar:[['Petit yéti', 3, 8], ['Petit yéti', 3, 8]], meca:'rage', d:'Rage : il gagne +1 attaque à chaque round.' },
             { n:'La Reine des neiges', e:'👸', cle:'foret', av:[['Garde de glace', 4, 14, 'barriere'], ['Garde de glace', 4, 14, 'barriere']], ar:[['La Reine des neiges', 5, 22, 'tireur']], meca:'gel', d:'Gel : un round sur deux, ta recrue la plus forte est gelée (0 attaque ce round).' }],
     boss:['vouivre', 'titan'] },
-  tempetes: { n:'L’Archipel des tempêtes', e:'⛈️', d:'Pirates, harpies et krakens. La mer la plus dure, pour les équipages rodés.', ouvre:'glaces', pv:.92,
+  tempetes: { n:'L’Archipel des tempêtes', e:'⛈️', d:'Pirates, harpies et krakens. La mer la plus dure, pour les équipages rodés.', ouvre:'glaces', pv:1.02,
     decor:{ monstres:['crique', 'port', 'falaises'], fantome:['falaises'], evenement:['crique'], tresor:['crique'], port:['port'], elite:['port'], boss:['nid'] },
     groupes:[
       { n:'La Crique des naufrageurs', e:'🏴‍☠️', cle:'crique', av:[['Naufrageur', 3, 9], ['Naufrageur', 3, 9]], ar:[['Pistolier', 3, 5, 'tireur']] },
@@ -138,7 +138,7 @@ const ETAPES_V4 = [
   [['boss']],
 ];
 const TIER_ETAPE = [0, 1, 2, 3, 4, 5]; // groupe de monstres selon l'étape (0-1 faciles, 2-3 moyens, 4 durs)
-const DUR_V4 = [1.35, 1.3, 1.55, 1.5, 1.9, 2.05].map(x => +(x * 1.1).toFixed(3)); // 18/11 : ×1,1 depuis les cibles au hasard
+const DUR_V4 = [1.35, 1.3, 1.55, 1.5, 1.9, 2.05].map(x => +(x * 1.12).toFixed(3)); // 18/11 : ×1,12 (tireurs sur l'arrière + cible du capitaine)
 function escaleDe(X, type, etape, R) {
   const M = MERS[X.mer], cle = tire(R, M.decor[type] || ['crique']);
   if (type === 'monstres') { const tier = Math.min(4, etape === 0 ? tire(R, [0, 1]) : etape === 1 ? 1 : etape === 2 ? tire(R, [2, 3]) : etape === 3 ? 3 : 4); const g = M.groupes[tier]; return { type, etape, n:g.n, e:g.e, cle:g.cle, g:tier }; }
@@ -203,10 +203,10 @@ adversaire = function (X) {
   if (esc.type === 'fantome') { const f = fantome(X, X.escale); const k = M.pv * (1 + (X.asc >= 1 ? .04 : 0) + (X.asc >= 6 ? .05 : 0)); [...f.plateau.av, ...f.plateau.ar].forEach(u => { if (u) u.v = Math.round(u.v * k); });
     return { nom:`Le navire de ${HEROS[f.heros].nom}`, camp:{ heros:f.heros, plateau:f.plateau, X:f.X }, fantome:f.heros }; }
   if (esc.type === 'elite') { const g = M.elites[esc.el || 0], P = plateauV4(X, g, DUR_V4[X.escale]); if (X.asc >= 2) [...P.av, ...P.ar].forEach(u => { if (u) u.a++; });
-    return { nom:g.n, camp:{ heros:null, plateau:P, X:null, meca:g.meca, joueur:X }, meca:g.meca, mecaTxt:g.d }; }
+    return { nom:g.n, camp:{ heros:null, plateau:P, X:null, meca:g.meca }, meca:g.meca, mecaTxt:g.d }; }
   if (esc.type === 'boss') { const B = BOSS_V4[X.boss], P = plateauV4(X, B, DUR_V4[5] * (X.regle === 'rancon' ? 1.15 : 1) * (X.asc >= 10 ? 1.2 : X.asc >= 4 ? 1.08 : 1));
     if (B.meca === 'miroir') { const m = meilleure4(X), a = m ? m.a + m.bonusA + 2 : 6, roi = P.av[0]; roi.a = Math.max(roi.a, a); P.ar.forEach(u => { if (u) u.v = Math.round(roi.v / 4); }); }
-    return { nom:B.n, camp:{ heros:null, plateau:P, X:null, meca:B.meca, joueur:X }, meca:B.meca, mecaTxt:B.d }; }
+    return { nom:B.n, camp:{ heros:null, plateau:P, X:null, meca:B.meca }, meca:B.meca, mecaTxt:B.d }; }
   const g = M.groupes[esc.g || 0]; return { nom:g.n, camp:{ heros:null, plateau:plateauV4(X, g, DUR_V4[X.escale]), X:null } };
 };
 // les mécaniques des boss et des élites : appelées au début de chaque round par combatExp (crochet campE.tour)
@@ -302,7 +302,7 @@ function simuleVoyage(heros, graine, opts) {
     if (doitChoisir(X)) piloteRoute(X, hasardX(X));
     const esc = X.route[X.escale]; types.push(esc.type);
     if (!ESCALE_COMBAT(esc.type)) { const s = escaleSansCombat(X); let i = s.choix.findIndex(c => c.possible); if (esc.type === 'tresor' && s.choix[1].possible) i = 1; resoutChoix(X, Math.max(0, i)); continue; }
-    pilotePort(X); piloteOrdres(X, hasardX(X)); joueEscale(X, hasardX(X));
+    pilotePort(X); piloteOrdres(X, hasardX(X)); piloteCible(X); joueEscale(X, hasardX(X));
   }
   return { gagne:X.fini === 'gagne', coeurs:X.coeurs, escale:X.escale, victoires:X.victoires, boss:X.boss, regle:X.regle, types, score:scoreV4(X) };
 }

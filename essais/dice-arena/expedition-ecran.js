@@ -146,6 +146,7 @@ function vendre() { if (sel && vend(X, sel)) { sel = null; sauve(); port(); } }
 function transmuter() { const n = transmute(X, sel); sel = null; sauve(); port(); if (n) fenetre(`<h2>⚗ Transmutation</h2><p>Ta recrue devient <b>${n.n}</b>.</p><div class="choixh"><button onclick="fermer()">OK</button></div>`); }
 function aideExp() { fenetre(`<h2>❓ Le port</h2><ul style="padding-left:1.1em">
   <li><b>Recruter</b> : touche une recrue du recruteur. 3 pareilles fusionnent en une ★ (doublée) ; 3 ★ font une ★★.</li>
+  <li><b>🎯 La cible du capitaine</b> : pendant un combat, maintiens ton doigt sur un ennemi : une cible apparaît dessus et tout l’équipage le vise en priorité (à partir du round suivant). Les 🏹 Tireurs visent d’eux-mêmes la rangée de derrière, les autres la rangée de devant.</li>
   <li><b>Placer</b> : touche une recrue puis une place. Devant : Remparts (Barrière) et Lames. Derrière : Tireurs (ils frappent de loin) et Soutiens (ils aident et frappent un peu). Une Lame derrière attend que le devant tombe.</li>
   <li><b>Les familles</b> (en haut) : 2 ou 4 recrues de la même famille sur le plateau donnent un bonus. Touche-les pour le voir.</li>
   <li><b>L’or</b> : +8 après chaque escale, +1 par tranche de 5 gardées (3 au plus). Relancer : 1. Geler : garder la même offre.</li>
@@ -264,8 +265,10 @@ function partirOk() {
 }
 async function partir() {
   if (enCours) return; enCours = true; sel = null;
+  // 18/11 : l'adversaire est préparé AVANT (même combat rejouable) : le joueur peut désigner une cible pendant le combat (doigt maintenu sur un ennemi)
+  if (!X.advPret) X.advPret = adversaire(X);
   const esc = ESCALES2[X.escale], avant = JSON.parse(JSON.stringify(X));
-  const res = joueEscale(X, hasardX(X)); sauve();
+  let res = joueEscale(X, hasardX(X)); sauve(); CIBLE = { id:null, att:null };
   // les unités du combat portent les mêmes identifiants que celles du plateau : on dessine l'état d'avant
   const A = res.adv.camp.plateau, noms = {}; [...avant.plateau.av, ...avant.plateau.ar, ...A.av, ...A.ar].filter(Boolean).forEach(u => { noms[u.id] = u.n; });
   ficheDe = {}; [...avant.plateau.av, ...avant.plateau.ar, ...A.av, ...A.ar].filter(Boolean).forEach(u => { ficheDe[u.id] = u; });
@@ -278,7 +281,15 @@ async function partir() {
     <div class="journal" id="jc"></div></div>`;
   const J = []; const jl = t => { J.unshift(t); const j = document.getElementById('jc'); if (j) j.innerHTML = J.slice(0, 2).map(x => `<div>${x}</div>`).join(''); };
   await dodo(500);
-  for (const e of res.ev) {
+  ciblesTouch(A); if (!localStorage.getItem('guilde-exp-cible')) { localStorage.setItem('guilde-exp-cible', '1'); jl('🎯 Astuce : maintiens ton doigt sur un ennemi pour en faire la cible de tout l’équipage.'); await dodo(1800); }
+  let EV = res.ev;
+  for (let k = 0; k < EV.length; k++) { const e = EV[k];
+    // une cible désignée pendant le round : on rejoue le même combat avec elle à partir du round suivant (tout ce qui a déjà eu lieu reste identique)
+    if (e.t === 'round' && CIBLE.att && CIBLE.att !== CIBLE.id) {
+      const Xr = JSON.parse(JSON.stringify(avant)); Xr.ciblePrio = [...(CIBLE.liste || []), { id:CIBLE.att, round:e.n }];
+      const r2 = joueEscale(Xr, hasardX(Xr)), k2 = r2.ev.findIndex(x => x.t === 'round' && x.n === e.n);
+      if (k2 >= 0) { X = Xr; X.ciblePrio = null; sauve(); res = r2; EV = r2.ev; k = k2; CIBLE.liste = Xr.ciblePrio || [...(CIBLE.liste || []), { id:CIBLE.att, round:e.n }]; CIBLE.id = CIBLE.att; jl(`🎯 Cible du capitaine : ${noms[CIBLE.id]} !`); }
+      CIBLE.att = null; }
     if (e.t === 'depart') { e.l.forEach(x => { const el = elU(x.id); if (!el) return; const sp = el.querySelectorAll('.av span'), b = el.querySelector('.pvb');
       const a0 = +(sp[0] && sp[0].textContent.replace(/\D/g, '')), v0 = +(sp[1] && sp[1].textContent.replace(/\D/g, ''));
       if (sp[0]) { sp[0].textContent = '⚔ ' + x.a; if (x.a > a0) sp[0].classList.add('monte'); } if (sp[1]) { sp[1].textContent = '❤ ' + x.v; if (x.v > v0) sp[1].classList.add('monte'); }
@@ -289,7 +300,7 @@ async function partir() {
     if (e.t === 'soin') { flotteU(e.id, '+' + e.n, 'sv'); GM.son('soin'); const el = elU(e.id); if (el) { fxPose(...centre(el), 'soin', 80, 600); const s = el.querySelector('.av span:last-child'); if (s) vieU(e.id, Math.max(0, +s.textContent.replace(/\D/g, '')) + e.n); } await dodo(220); continue; }
     if (e.t === 'epines') { vieU(e.id, e.v); flotteU(e.id, '−' + e.n); jl(`${noms[e.id]} se pique aux Épines (−${e.n}).`); await dodo(150); continue; }
     if (e.t === 'poison') { vieU(e.id, e.v); flotteU(e.id, '−' + e.n, 'dg poison'); GM.son('poison'); { const el = elU(e.id); if (el) fxPose(...centre(el), 'poison-tic', 70, 500); } jl(`${noms[e.id]} : Poison −${e.n}.`); await dodo(150); continue; }
-    if (e.t === 'mort') { const el = elU(e.id); if (el) { fxPose(...centre(el), 'mort', 90, 800); el.classList.add('mort'); } GM.son('tombe'); jl(`💀 ${noms[e.id]} tombe.`); await dodo(450); continue; }
+    if (e.t === 'mort') { const el = elU(e.id); if (el) { fxPose(...centre(el), 'mort', 90, 800); el.classList.add('mort'); const v = el.querySelector('.viseur'); if (v) v.remove(); } GM.son('tombe'); jl(`💀 ${noms[e.id]} tombe.`); await dodo(450); continue; }
     if (e.t === 'serment') { flotteU(e.id, '🛡 Serment', 'sv'); jl(`🛡 Serment d’Aldric : ${noms[e.id]} reste debout à 1 PV !`); await dodo(400); continue; }
     if (e.t === 'avance') { jl(`${noms[e.id]} avance au premier rang.`); continue; }
   }
@@ -300,6 +311,18 @@ async function partir() {
   fenetre(`<h2>${g ? '🏆' : '💔'} ${esc.n}</h2>${lignes}<p class="doux">Les recrues tombées se relèvent au port : chaque combat commence à pleine vie.</p><div class="choixh"><button class="or" onclick="fermer();voyage()">⛵ Lever l’ancre</button></div>`);
 }
 
+// 18/11 (l'utilisateur, « comme dans les jeux ») : LA CIBLE DU CAPITAINE : doigt maintenu sur un ennemi pendant le combat → 🎯 dessus, tout l'équipage le vise
+// en priorité à partir du round suivant (le moteur rejoue le même combat avec cette cible, voir partir()). Un simple toucher ouvre toujours sa fiche.
+let CIBLE = { id:null, att:null };
+function ciblesTouch(P) {
+  [...P.av, ...P.ar].filter(Boolean).forEach(u => { const el = elU(u.id); if (!el) return; let t = null, long = false;
+    const pose = () => { if (el.classList.contains('mort')) return; long = true; CIBLE.att = u.id; document.querySelectorAll('.viseur').forEach(v => v.remove());
+      el.insertAdjacentHTML('beforeend', '<span class="viseur">🎯</span>'); flotteU(u.id, '🎯 Cible !', 'sv'); try { navigator.vibrate && navigator.vibrate(40); } catch (e) {} GM.son('choisir'); };
+    el.addEventListener('pointerdown', () => { long = false; clearTimeout(t); t = setTimeout(pose, 450); });
+    ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => el.addEventListener(ev, () => clearTimeout(t)));
+    el.addEventListener('click', e => { if (long) { e.stopPropagation(); e.preventDefault(); long = false; } }, true);
+    el.addEventListener('contextmenu', e => e.preventDefault()); });
+}
 // 14/11 : le voyage entre deux escales : le décor glisse vers le bas, les nuages passent, l'escale suivante descend du haut
 async function voyage() {
   const sc = document.getElementById('scene'), suiv = ESCALES2[X.escale];
@@ -320,7 +343,7 @@ const GUIDE_PORT = [
   ['.champ', 'Ton <b>équipage</b> se tient sur ces 6 places. <b>DEVANT</b> : ceux qui frappent au corps à corps. <b>DERRIÈRE</b> : ceux qui tirent ou soignent. Les ennemis frappent au hasard, devant ou derrière : seuls les Remparts (Barrière) attirent les coups. Tu places qui tu veux où tu veux : une Lame derrière frappe à moitié, un tireur devant prend les coups. Pour déplacer une recrue : touche-la, puis touche une place.'],
   ['.cale', '<b>La cale</b>, c’est la réserve : ces recrues ne combattent pas, mais tu les gardes pour plus tard.'],
   ['.fams', '<b>Les familles</b> : 2 ou 4 recrues de la même famille donnent un bonus. Touche une pastille pour le voir. Et 3 recrues pareilles fusionnent en une plus forte ★ !'],
-  ['.go', 'Quand ton équipage est prêt : <b>Partir</b> ! Le combat se joue tout seul, aux dés : tu regardes, et tu reviens au port te renforcer. Bonne traversée, miaou !'],
+  ['.go', 'Quand ton équipage est prêt : <b>Partir</b> ! Le combat se joue tout seul, aux dés. Tes 🏹 Tireurs visent la rangée de derrière, les autres celle de devant. Et toi, <b>maintiens ton doigt sur un ennemi</b> : une 🎯 cible apparaît, tout l’équipage le vise en priorité ! Bonne traversée, miaou !'],
 ];
 function guidePort(force) {
   if (!tiroir) { tiroir = true; port(); }
