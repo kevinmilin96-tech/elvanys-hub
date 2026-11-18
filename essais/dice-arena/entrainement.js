@@ -56,11 +56,12 @@ const Entrainement = (() => {
     const bu = p.querySelector('.bulleT'); if (bu.dataset.h !== html) { bu.innerHTML = html; bu.dataset.h = html; bu.classList.remove('deja'); } else bu.classList.add('deja');
   }
   const cache = () => { const p = document.getElementById('projoE'); if (p) p.classList.add('cache'); };
+  // 18/11 (l'utilisateur : « plus immersif ») : la réplique du héros n'apparaît qu'après une petite flèche « › », le temps de lire Moustache
   function bulle(e) {
-    const txt = typeof e.c === 'function' ? e.c() : e.c, h = E.heros;
+    const txt = typeof e.c === 'function' ? e.c() : e.c, h = E.heros, attendRep = e.g && h && E.rep !== E.i;
     return `<div class="ligneT"><img class="av" src="ui/moustache.webp?v=1" alt="Moustache"><div><span class="qui">Moustache</span>${txt}</div></div>`
-      + (e.g && h ? `<div class="ligneT heros"><img class="av" src="${h.img}" alt=""><div><span class="qui">${h.nom}</span>${e.g}</div></div>` : '')
-      + `<div class="boutonsT"><a href="#" onclick="Entrainement.passer();return false">Passer l’entraînement</a>${e.ok ? '<span></span>' : '<button onclick="Entrainement.suivant()">Suivant ›</button>'}</div>`;
+      + (e.g && h && !attendRep ? `<div class="ligneT heros"><img class="av" src="${h.img}" alt=""><div><span class="qui">${h.nom}</span>${e.g}</div></div>` : '')
+      + `<div class="boutonsT"><a href="#" onclick="Entrainement.passer();return false">Passer l’entraînement</a>${attendRep ? '<button onclick="Entrainement.replique()">›</button>' : e.ok ? '<span></span>' : '<button onclick="Entrainement.suivant()">Suivant ›</button>'}</div>`;
   }
   function maj() {
     if (!E) { cache(); return; }
@@ -77,6 +78,7 @@ const Entrainement = (() => {
     // cle : le mode (ex. 'expedition') ; etapes : la liste ; o : { heros:{ nom, img }, fin:() => …, passer:() => … }
     lance(cle, etapes, o = {}) { E = { cle, etapes, i:0, heros:o.heros, fin:o.fin, passer:o.passer }; clearInterval(minuteur); minuteur = setInterval(maj, 250); maj(); },
     suivant() { if (!E) return; E.i++; maj(); },
+    replique() { if (!E) return; E.rep = E.i; maj(); },
     maj, arrete, en:() => !!E,
     passer() { if (!E) return; const p = E.passer; arrete(); E = null; if (p) p(); },
     // à la fin : marque l'entraînement comme fait (une récompense d'XP la 1re fois) et renvoie le texte de Moustache

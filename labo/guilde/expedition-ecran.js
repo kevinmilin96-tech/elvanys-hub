@@ -146,6 +146,7 @@ function vendre() { if (sel && vend(X, sel)) { sel = null; sauve(); port(); } }
 function transmuter() { const n = transmute(X, sel); sel = null; sauve(); port(); if (n) fenetre(`<h2>⚗ Transmutation</h2><p>Ta recrue devient <b>${n.n}</b>.</p><div class="choixh"><button onclick="fermer()">OK</button></div>`); }
 function aideExp() { fenetre(`<h2>❓ Le port</h2><ul style="padding-left:1.1em">
   <li><b>Recruter</b> : touche une recrue du recruteur. 3 pareilles fusionnent en une ★ (doublée) ; 3 ★ font une ★★.</li>
+  <li><b>🎲 Le calcul d’un coup</b> : chaque recrue lance un dé : 1 = raté, 2 à 5 = toute son attaque, 6 = critique (×2). Le chiffre ne s’ajoute pas. Une Lame ou un Rempart placé derrière frappe à moitié. Le capitaine lance 3 dés : brelan = chiffre + 3, paire = chiffre de la paire, suite = 4, sinon le plus fort − 2 (au moins 1), plus son bonus d’attaque.</li>
   <li><b>🎯 La cible du capitaine</b> : pendant un combat, maintiens ton doigt sur un ennemi : une cible apparaît dessus et tout l’équipage le vise en priorité (à partir du round suivant). Les 🏹 Tireurs visent d’eux-mêmes la rangée de derrière, les autres la rangée de devant.</li>
   <li><b>Placer</b> : touche une recrue puis une place. Devant : Remparts (Barrière) et Lames. Derrière : Tireurs (ils frappent de loin) et Soutiens (ils aident et frappent un peu). Une Lame derrière attend que le devant tombe.</li>
   <li><b>Les familles</b> (en haut) : 2 ou 4 recrues de la même famille sur le plateau donnent un bonus. Touche-les pour le voir.</li>
@@ -296,7 +297,7 @@ async function partir() {
       if (sp[0]) { sp[0].textContent = '⚔ ' + x.a; if (x.a > a0) sp[0].classList.add('monte'); } if (sp[1]) { sp[1].textContent = '❤ ' + x.v; if (x.v > v0) sp[1].classList.add('monte'); }
       if (b) b.dataset.max = x.v; if (x.o || x.sur) el.insertAdjacentHTML('beforeend', `<span class="ordre">🎲${x.sur ? ' coup sûr' : ''}</span>`); }); await dodo(500); continue; }
     if (e.t === 'round') { jl(`— Round ${e.n}`); await dodo(250); continue; }
-    if (e.t === 'coup') { if (e.de) await deU(e.src, e.de); await coupFx(e); await dodo(260); jl(`${noms[e.src]} → ${noms[e.id]} : ${e.dg > 0 ? e.dg : 'raté'}${e.txt ? ' (' + e.txt + ')' : ''}`); await dodo(150); continue; }
+    if (e.t === 'coup') { if (e.de) await deU(e.src, e.de); await coupFx(e); await dodo(260); jl(`${noms[e.src]} 🎲${Array.isArray(e.de) ? e.de.join('·') : e.de} → ${noms[e.id]} : ${e.dg > 0 ? e.dg : 'raté'}${e.txt ? ' (' + e.txt + ')' : Array.isArray(e.de) ? '' : ' (coup normal)'}`); await dodo(150); continue; }
     if (e.t === 'esquive') { if (e.de) await deU(e.src, e.de); await anim(e.src, 'frappe', 220); await anim(e.id, 'esq', 300); jl(`${noms[e.id]} esquive (Ombre).`); continue; }
     if (e.t === 'soin') { flotteU(e.id, '+' + e.n, 'sv'); GM.son('soin'); const el = elU(e.id); if (el) { fxPose(...centre(el), 'soin', 80, 600); const s = el.querySelector('.av span:last-child'); if (s) vieU(e.id, Math.max(0, +s.textContent.replace(/\D/g, '')) + e.n); } await dodo(220); continue; }
     if (e.t === 'epines') { vieU(e.id, e.v); flotteU(e.id, '−' + e.n); jl(`${noms[e.id]} se pique aux Épines (−${e.n}).`); await dodo(150); continue; }
