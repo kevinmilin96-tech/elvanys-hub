@@ -320,7 +320,7 @@
     if (box) box.open = true;
     var m = $('#password-form .auth-msg');
     m.classList.remove('is-ok');
-    m.textContent = 'Votre responsable vous a donné un mot de passe provisoire : choisissez le vôtre avant d’ouvrir les applications (tapez d’abord le mot de passe provisoire).';
+    m.textContent = 'Votre responsable vous a donné un mot de passe provisoire : choisissez le vôtre avant d’ouvrir les applications (tapez d’abord le mot de passe provisoire).';
   }
 
   var directTimer = null;
@@ -379,7 +379,7 @@
   // Administrateur sur un nouvel appareil : le serveur envoie un code par e-mail avant d'ouvrir la session
   function showCode(data) {
     codeTicket = data.ticket;
-    $('#code-lead').textContent = data.message || 'Nouvel appareil : un code à 6 chiffres vient de partir sur votre adresse e-mail.';
+    $('#code-lead').textContent = data.message || 'Nouvel appareil : un code à 6 chiffres vient de partir sur votre adresse e-mail.';
     $('#code-form').reset();
     $('#code-form .auth-msg').textContent = '';
     showAuthForm('#code-form');
@@ -494,24 +494,24 @@
       if (!show || box.dataset.loaded) return;
       box.textContent = 'Chargement…';
       api('GET', '/api/hub/rgpd').then(function (r) {
-        if (r.status !== 200) { box.textContent = 'Détail indisponible pour le moment : réessayez dans un instant.'; return; }
+        if (r.status !== 200) { box.textContent = 'Détail indisponible pour le moment : réessayez dans un instant.'; return; }
         var g = r.data || {};
         box.dataset.loaded = '1';
         box.innerHTML =
-          '<p><b>Ce qui est gardé :</b> vos prénom, nom, e-mail et secteur ; votre photo de profil si vous en ajoutez une ; ' +
-          'les actions faites sur votre compte (journal du Hub : validation, changement de mot de passe…). Puis, selon les ' +
-          'applications ouvertes pour vous : dans <b>Boost</b> votre progression (points, succès), vos parties et les mercis ; ' +
-          'dans <b>Agorys</b> ce que vous publiez, vos commentaires et vos messages ; dans <b>Vigilys / Maintys</b> votre fiche ' +
+          '<p><b>Ce qui est gardé :</b> vos prénom, nom, e-mail et secteur ; votre photo de profil si vous en ajoutez une ; ' +
+          'les actions faites sur votre compte (journal du Hub : validation, changement de mot de passe…). Puis, selon les ' +
+          'applications ouvertes pour vous : dans <b>Boost</b> votre progression (points, succès), vos parties et les mercis ; ' +
+          'dans <b>Agorys</b> ce que vous publiez, vos commentaires et vos messages ; dans <b>Vigilys / Maintys</b> votre fiche ' +
           'et vos appareils. Vos réponses aux questionnaires Pulse restent <b>anonymes</b>.</p>' +
-          '<p><b>Jamais utilisé</b> pour évaluer ou noter qui que ce soit : la direction ne voit que des totaux.</p>' +
-          '<p><b>Durée :</b> ' + esc(g.duree_compte || TODO) + ' (activité : ' + esc(g.duree_activite || TODO) + '). ' +
+          '<p><b>Jamais utilisé</b> pour évaluer ou noter qui que ce soit : la direction ne voit que des totaux.</p>' +
+          '<p><b>Durée :</b> ' + esc(g.duree_compte || TODO) + ' (activité : ' + esc(g.duree_activite || TODO) + '). ' +
           'Une demande de compte refusée est effacée 30 jours après, une demande jamais traitée 90 jours après. ' +
-          'Dans le journal du Hub, votre nom est remplacé par « Ancien collaborateur » 12 mois après votre départ.</p>' +
-          '<p><b>Compte inactif :</b> sans connexion pendant 12 mois, le compte est suspendu puis effacé 3 mois plus tard ; un e-mail vous prévient un mois avant, et une simple connexion suffit à le garder.</p>' +
-          '<p><b>Responsable :</b> ' + esc(g.responsable || TODO) + (g.adresse ? ', ' + esc(g.adresse) : '') +
-          '. <b>Contact :</b> ' + esc(g.contact || TODO) + '.</p>' +
-          '<p>Vous pouvez voir et télécharger toutes vos données, les faire corriger ou demander leur suppression : Hub → « Mon compte » → « Mes données ». ' +
-          'Une question ou un souci se règle d’abord avec le contact ci-dessus ; en dernier recours, la loi prévoit de pouvoir saisir la CNIL (cnil.fr).</p>';
+          'Dans le journal du Hub, votre nom est remplacé par « Ancien collaborateur » 12 mois après votre départ.</p>' +
+          '<p><b>Compte inactif :</b> sans connexion pendant 12 mois, le compte est suspendu puis effacé 3 mois plus tard ; un e-mail vous prévient un mois avant, et une simple connexion suffit à le garder.</p>' +
+          '<p><b>Responsable :</b> ' + esc(g.responsable || TODO) + (g.adresse ? ', ' + esc(g.adresse) : '') +
+          '. <b>Contact :</b> ' + esc(g.contact || TODO) + '.</p>' +
+          '<p>Vous pouvez voir et télécharger toutes vos données, les faire corriger ou demander leur suppression : Hub → « Mon compte » → « Mes données ». ' +
+          'Une question ou un souci se règle d’abord avec le contact ci-dessus ; en dernier recours, la loi prévoit de pouvoir saisir la CNIL (cnil.fr).</p>';
       });
     });
   })();
@@ -548,8 +548,8 @@
     if (!f.prenom.value.trim()) { msg.textContent = 'Indiquez votre prénom.'; return; }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email.value.trim())) { msg.textContent = 'Adresse e-mail invalide.'; return; }
     var sectorOn = !$('#signup-sector').hidden;
-    if (sectorOn && !f.secteur.value) { msg.textContent = 'Choisissez votre secteur (ou « Je ne trouve pas mon secteur »).'; return; }
-    if (f.password.value.length < 8) { msg.textContent = 'Mot de passe : 8 caractères minimum.'; return; }
+    if (sectorOn && !f.secteur.value) { msg.textContent = 'Choisissez votre secteur (ou « Je ne trouve pas mon secteur »).'; return; }
+    if (f.password.value.length < 8) { msg.textContent = 'Mot de passe : 8 caractères minimum.'; return; }
     busy(f, true);
     var secteur = sectorOn && f.secteur.value !== LATER ? f.secteur.value : '';
     api('POST', '/api/hub/signup', { prenom: f.prenom.value, nom: f.nom.value, email: f.email.value, password: f.password.value, secteur: secteur }).then(function (r) {
@@ -570,7 +570,7 @@
     $('#forgot-form .auth-msg').textContent = '';
     // G9 (18/11) : seulement une adresse e-mail est recopiée ; un identifiant (compte sans e-mail) est expliqué
     if (mail && mail.indexOf('@') !== -1) $('#forgot-form').email.value = mail;
-    else if (mail) $('#forgot-form .auth-msg').textContent = 'Vous vous connectez avec un identifiant (sans e-mail) : demandez à votre responsable un mot de passe provisoire.';
+    else if (mail) $('#forgot-form .auth-msg').textContent = 'Vous vous connectez avec un identifiant (sans e-mail) : demandez à votre responsable un mot de passe provisoire.';
   });
   document.querySelectorAll('[data-back-login]').forEach(function (b) {
     b.addEventListener('click', function () { switchTab('login'); });
@@ -579,7 +579,7 @@
     e.preventDefault();
     var f = e.target, msg = f.querySelector('.auth-msg');
     msg.textContent = '';
-    if (f.email.value.trim() && f.email.value.indexOf('@') === -1) { msg.textContent = 'Indiquez l’adresse e-mail de votre compte. Vous vous connectez avec un identifiant (sans e-mail) ? Demandez à votre responsable un mot de passe provisoire.'; return; }
+    if (f.email.value.trim() && f.email.value.indexOf('@') === -1) { msg.textContent = 'Indiquez l’adresse e-mail de votre compte. Vous vous connectez avec un identifiant (sans e-mail) ? Demandez à votre responsable un mot de passe provisoire.'; return; }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email.value.trim())) { msg.textContent = 'Adresse e-mail invalide.'; return; }
     busy(f, true);
     api('POST', '/api/hub/password/forgot', { email: f.email.value }).then(function (r) {
@@ -596,7 +596,7 @@
     e.preventDefault();
     var f = e.target, msg = f.querySelector('.auth-msg');
     msg.textContent = '';
-    if (f.password.value.length < 8) { msg.textContent = 'Mot de passe : 8 caractères minimum.'; return; }
+    if (f.password.value.length < 8) { msg.textContent = 'Mot de passe : 8 caractères minimum.'; return; }
     if (f.password.value !== f.password2.value) { msg.textContent = 'Les deux mots de passe ne sont pas identiques.'; return; }
     busy(f, true);
     api('POST', '/api/hub/password/reset', { token: resetToken, password: f.password.value }).then(function (r) {
@@ -633,10 +633,10 @@
     var direct = account.acces_direct && appById(account.acces_direct);
     $('#account-card').innerHTML =
       '<strong>' + esc(account.prenom + ' ' + (account.nom || '')) + '</strong>' +
-      '<span>' + esc(account.email || ('Identifiant : ' + (account.identifiant || ''))) + '</span>' +
+      '<span>' + esc(account.email || ('Identifiant : ' + (account.identifiant || ''))) + '</span>' +
       '<span>' + esc(profilName(account.profil) || 'Profil non défini') + (account.admin ? ' · Administrateur' : '') + '</span>' +
-      '<span>Applications : ' + esc(apps.join(', ') || 'aucune') + '</span>' +
-      (direct ? '<span>Ouverture directe : ' + esc(direct.nom) + '</span>' : '');
+      '<span>Applications : ' + esc(apps.join(', ') || 'aucune') + '</span>' +
+      (direct ? '<span>Ouverture directe : ' + esc(direct.nom) + '</span>' : '');
     $('#password-form .auth-msg').textContent = '';
     $('#photo-msg').textContent = '';
     renderPhoto();
@@ -717,7 +717,7 @@
     }).catch(function (err) { msg.textContent = err.message; });
   });
   $('#photo-remove').addEventListener('click', function () {
-    if (!window.confirm('Retirer votre photo de profil ? Elle disparaît de toutes les applis du magasin.')) return;
+    if (!window.confirm('Retirer votre photo de profil ? Elle disparaît de toutes les applis du magasin.')) return;
     var msg = $('#photo-msg'); msg.classList.remove('is-ok');
     photoSend('DELETE').then(function (r) {
       if (r.status === 200) { account.photo = ''; msg.textContent = 'Photo retirée.'; msg.classList.add('is-ok'); renderPhoto(); }
@@ -729,7 +729,7 @@
     e.preventDefault();
     var f = e.target, msg = f.querySelector('.auth-msg');
     msg.classList.remove('is-ok');
-    if (f.password.value.length < 8) { msg.textContent = 'Nouveau mot de passe : 8 caractères minimum.'; return; }
+    if (f.password.value.length < 8) { msg.textContent = 'Nouveau mot de passe : 8 caractères minimum.'; return; }
     if (f.password.value !== f.password2.value) { msg.textContent = 'Les deux nouveaux mots de passe ne sont pas identiques.'; return; }
     if (f.password.value === f.current.value) { msg.textContent = 'Choisissez un mot de passe différent de l’actuel.'; return; }
     busy(f, true);
@@ -765,7 +765,7 @@
       ligne('Profil Vigilys / Maintys', c.profil_vigilys) + ligne('Créé le', fmtDate(c.cree_le)) + ligne('Validé le', fmtDate(c.valide_le) + (c.valide_par ? ' par ' + c.valide_par : '')) +
       ligne('Dernière connexion', fmtDate(c.derniere_connexion)) + ligne('Photo de profil', c.photo_de_profil) + '</ul>';
     html += '<h3>Journal du Hub (' + (d.journal || []).length + ')</h3><ul class="donnees">' + (d.journal || []).slice(0, 50).map(function (j) { return '<li>' + esc(fmtDate(j.date)) + ' · ' + esc(j.action) + ' (' + esc(j.par) + ')</li>'; }).join('') + '</ul>';
-    if ((d.candidatures || []).length) html += '<h3>Candidatures</h3><ul class="donnees">' + d.candidatures.map(function (x) { return '<li>' + esc(ROLE_LABEL[x.role] || x.role) + ' · ' + esc(CAND_STATUS[x.statut] || x.statut) + ' · « ' + esc(x.motivation) + ' »</li>'; }).join('') + '</ul>';
+    if ((d.candidatures || []).length) html += '<h3>Candidatures</h3><ul class="donnees">' + d.candidatures.map(function (x) { return '<li>' + esc(ROLE_LABEL[x.role] || x.role) + ' · ' + esc(CAND_STATUS[x.statut] || x.statut) + ' · « ' + esc(x.motivation) + ' »</li>'; }).join('') + '</ul>';
     html += '<h3>Agorys</h3><ul class="donnees">' + ligne('Publications', (ag.publications || []).length) + ligne('Commentaires', (ag.commentaires || []).length) + ligne('Messages envoyés', (ag.messages_envoyes || []).length) +
       ligne('Réactions', ag.reactions) + ligne('Participations aux événements', ag.participations) + ligne('Présentation', ag.presentation) +
       (ag.profil ? ligne('Anniversaire', ag.profil.anniversaire) + ligne('Arrivée', ag.profil.arrivee) : '') + '</ul>';
@@ -783,7 +783,7 @@
     $('#donnees-suppr').addEventListener('click', function () {
       var m = $('#donnees-suppr-msg');
       api('POST', '/api/hub/mes-donnees/suppression', { preuve: donneesPreuve, text: $('#donnees-note').value }).then(function (r) {
-        m.textContent = r.status === 200 ? 'Demande envoyée : le magasin va vous recontacter.' : (r.data.message || 'Envoi impossible.');
+        m.textContent = r.status === 200 ? 'Demande envoyée : le magasin va vous recontacter.' : (r.data.message || 'Envoi impossible.');
         m.classList.toggle('is-ok', r.status === 200);
       });
     });
@@ -809,7 +809,7 @@
     leave('Vous êtes déconnecté de cet appareil.');
   });
   $('#logout-btn').addEventListener('click', function () {
-    if (!window.confirm('Vous déconnecter de TOUS vos appareils (téléphone, ordinateur, tablette) et de toutes les applis ouvertes ?')) return;
+    if (!window.confirm('Vous déconnecter de TOUS vos appareils (téléphone, ordinateur, tablette) et de toutes les applis ouvertes ?')) return;
     closeSheet($('#account-sheet'));
     api('POST', '/api/hub/logout').then(function () { leave('Vous êtes déconnecté de tous vos appareils.'); });
   });
@@ -845,14 +845,14 @@
     }).join('');
     var ficheOpts = '<option value="">Créer sa fiche toute seule à sa première ouverture</option>' + VIGILYS.fiches.map(function (f) {
       var pris = f.lie_a && f.lie_a !== a.id;
-      return '<option value="' + esc(f.id) + '"' + (a.vigilys_agent === f.id ? ' selected' : '') + (pris ? ' disabled' : '') + '>Relier à la fiche existante : ' + esc(f.name) + ' (' + esc(f.role) + ')' + (pris ? ' · déjà reliée' : '') + '</option>';
+      return '<option value="' + esc(f.id) + '"' + (a.vigilys_agent === f.id ? ' selected' : '') + (pris ? ' disabled' : '') + '>Relier à la fiche existante : ' + esc(f.name) + ' (' + esc(f.role) + ')' + (pris ? ' · déjà reliée' : '') + '</option>';
     }).join('');
     var cur = a.vigilys_agent && !VIGILYS.fiches.some(function (f) { return f.id === a.vigilys_agent; }) ? '<option value="' + esc(a.vigilys_agent) + '" selected>Sa fiche créée par le Hub</option>' : '';
     return '<fieldset class="vg-block"><legend>Vigilys / Maintys</legend>' +
-      '<label class="chk"><input type="checkbox" name="partage"' + (a.partage ? ' checked' : '') + '> Compte partagé du poste de sécurité (Gmail commun : chaque agent entre ensuite avec son nom et son code)</label>' +
-      '<label>Profil dans Vigilys et Maintys (compte personnel : il entre directement par la tuile, sans code)<select name="profil_vigilys">' + profOpts + '</select></label>' +
+      '<label class="chk"><input type="checkbox" name="partage"' + (a.partage ? ' checked' : '') + '> Compte partagé du poste de sécurité (Gmail commun : chaque agent entre ensuite avec son nom et son code)</label>' +
+      '<label>Profil dans Vigilys et Maintys (compte personnel : il entre directement par la tuile, sans code)<select name="profil_vigilys">' + profOpts + '</select></label>' +
       '<label>Fiche<select name="vigilys_agent">' + cur + ficheOpts + '</select></label>' +
-      '<p class="auth-hint">Les droits viennent du profil (comme dans Vigilys). Votre propre compte : reliez-le à votre fiche Superviseur pour garder votre historique.</p>' +
+      '<p class="auth-hint">Les droits viennent du profil (comme dans Vigilys). Votre propre compte : reliez-le à votre fiche Superviseur pour garder votre historique.</p>' +
       '</fieldset>';
   }
 
@@ -868,7 +868,7 @@
     var html = '<option value="">— Pas encore choisi —</option>' + SECTEURS.map(function (loc) {
       return loc.children.length ? '<optgroup label="' + esc(loc.name) + '">' + loc.children.map(opt).join('') + '</optgroup>' : opt(loc);
     }).join('');
-    return '<label>Secteur <small>(choisi à l’inscription ; il sert aux équipes de Boost)</small><select name="secteur">' + html + '</select></label>';
+    return '<label>Secteur <small>(choisi à l’inscription ; il sert aux équipes de Boost)</small><select name="secteur">' + html + '</select></label>';
   }
 
   function loadAdmin() {
@@ -898,7 +898,7 @@
       return '<option value="' + esc(p.id) + '"' + (a.profil === p.id ? ' selected' : '') + '>' + esc(p.nom) + '</option>';
     }).join('');
     var directOpts = '<option value="">Non (espace magasin)</option>' + (ent.applications || []).map(function (app) {
-      return '<option value="' + esc(app.id) + '"' + (a.acces_direct === app.id ? ' selected' : '') + '>Oui : ouvrir ' + esc(app.nom) + '</option>';
+      return '<option value="' + esc(app.id) + '"' + (a.acces_direct === app.id ? ' selected' : '') + '>Oui : ouvrir ' + esc(app.nom) + '</option>';
     }).join('');
     // Compte sans e-mail : accès d'un collaborateur seulement (décision du 12/10) → ni profil à changer, ni rôles
     if (!a.email) {
@@ -907,7 +907,7 @@
         '<label>Accès direct<select name="acces_direct">' + directOpts + '</select></label>' +
         secteurSelect(a) +
         vigilysBlock(a) +
-        '<p class="auth-hint">Compte sans e-mail : accès d’un collaborateur seulement (ni administrateur, ni animateur, ni modérateur, ni créateur). Mot de passe oublié : « Mot de passe provisoire ».</p>' +
+        '<p class="auth-hint">Compte sans e-mail : accès d’un collaborateur seulement (ni administrateur, ni animateur, ni modérateur, ni créateur). Mot de passe oublié : « Mot de passe provisoire ».</p>' +
         '</div>';
     }
     return '<div class="acc-fields">' +
@@ -917,10 +917,10 @@
       secteurSelect(a) +
       vigilysBlock(a) +
       '<label class="chk"><input type="checkbox" name="admin"' + (a.admin ? ' checked' : '') + (a.id === account.id ? ' disabled' : '') + '> Administrateur (gère les comptes)</label>' +
-      '<label class="chk"><input type="checkbox" name="moderateur"' + (a.moderateur ? ' checked' : '') + '> Modérateur de Boost (relit les propositions des collaborateurs dans Boost ; les modérateurs d’Agorys se choisissent dans Agorys ; à désigner avec la direction et le CSE)</label>' +
-      '<label class="chk"><input type="checkbox" name="createur"' + (a.createur ? ' checked' : '') + '> Créateur (crée des quiz dans le Studio ; sur candidature)</label>' +
+      '<label class="chk"><input type="checkbox" name="moderateur"' + (a.moderateur ? ' checked' : '') + '> Modérateur de Boost (relit les propositions des collaborateurs dans Boost ; les modérateurs d’Agorys se choisissent dans Agorys ; à désigner avec la direction et le CSE)</label>' +
+      '<label class="chk"><input type="checkbox" name="createur"' + (a.createur ? ' checked' : '') + '> Créateur (crée des quiz dans le Studio ; sur candidature)</label>' +
       '<label class="chk"><input type="checkbox" name="testeur"' + (a.testeur ? ' checked' : '') + '> Testeur (voit les démos express privées de Boost, pour les présentations au CSE et à la direction)</label>' +
-      '<label class="chk"><input type="checkbox" name="parcours_lecteur"' + (a.parcours_lecteur ? ' checked' : '') + '> Lit les résultats du parcours d’intégration (direction, RH : lecture seule, dans Boost → Profil)</label>' +
+      '<label class="chk"><input type="checkbox" name="parcours_lecteur"' + (a.parcours_lecteur ? ' checked' : '') + '> Lit les résultats du parcours d’intégration (direction, RH : lecture seule, dans Boost → Profil)</label>' +
       '<label class="chk"><input type="checkbox" name="animateur"' + (a.animateur ? ' checked' : '') + '> Animateur de Boost (entre dans l’espace animateur avec son mot de passe du hub, seulement dans les rubriques cochées)</label>' +
       animPermsBlock(a) +
       '</div>';
@@ -932,9 +932,9 @@
     ['questionnaires', 'Questionnaires'], ['validation', 'À valider (relecture des quiz)'], ['tokens', 'Jetons'], ['results', 'Résultats'], ['messages', 'Messages'],
     ['direct', 'En direct (mur de réponses)'], ['versus', 'Versus'], ['championnat', 'Championnat'], ['escape', 'Escape game'],
     ['raid', 'Raid du magasin'], ['pronos', 'Pronostics'], ['suggestions', 'Suggestions de quiz'], ['creations', 'Quiz des créateurs et Atelier'],
-    ['idees', 'Boîte à idées'], ['saviez', 'Le saviez-vous ?'], ['mercis', 'Mercis'], ['jauges', 'Jauges solidaires (montants privés)'], ['marche', 'Marche (défi de pas)'],
+    ['idees', 'Boîte à idées'], ['saviez', 'Le saviez-vous ?'], ['mercis', 'Mercis'], ['jauges', 'Jauges solidaires (montants privés)'], ['marche', 'Marche (défi de pas)'],
     ['modules', 'Modules à débloquer'], ['sectors', 'Secteurs'], ['indicateurs', 'Indicateurs de la direction'],
-    ['calendrier', 'Calendrier de l’année'], ['appearance', 'Apparence'], ['devices', 'Appareils'], ['settings', 'Réglages et « Mes données »'],
+    ['calendrier', 'Calendrier de l’année'], ['appearance', 'Apparence'], ['devices', 'Appareils'], ['settings', 'Réglages et « Mes données »'],
     ['testeurs', 'Testeurs (démo)'],
   ];
   var ANIM_PRESETS = {
@@ -948,8 +948,8 @@
       return '<label class="chk"><input type="checkbox" name="anim_perms" value="' + r[0] + '"' + (mine.indexOf(r[0]) !== -1 ? ' checked' : '') + '> ' + esc(r[1]) + '</label>';
     }).join('');
     return '<fieldset class="anim-perms"' + (a.animateur ? '' : ' style="display:none"') + '><legend>Rubriques de l’espace animateur</legend>' +
-      (a.admin ? '<p class="journal-note">Administrateur : il a déjà toutes les rubriques.</p>' : '') +
-      '<p class="anim-presets">Profil tout prêt : <button type="button" class="btn-soft" data-preset="animateur">Animateur</button> ' +
+      (a.admin ? '<p class="journal-note">Administrateur : il a déjà toutes les rubriques.</p>' : '') +
+      '<p class="anim-presets">Profil tout prêt : <button type="button" class="btn-soft" data-preset="animateur">Animateur</button> ' +
       '<button type="button" class="btn-soft" data-preset="chef">Chef d’équipe (En direct seulement)</button> ' +
       '<button type="button" class="btn-soft" data-preset="relecteur">Relecteur (À valider seulement)</button></p>' + boxes + '</fieldset>';
   }
@@ -998,7 +998,7 @@
     if (tri === 'connexion') list.sort(function (x, y) { return String(x.dernier_acces || '').localeCompare(String(y.dernier_acces || '')); });
     else if (tri !== 'recent') list.sort(function (x, y) { return cle(x).localeCompare(cle(y), 'fr'); });
     if (!list.length) {
-      $('#admin-list').innerHTML = '<p class="admin-empty">' + (q ? 'Aucun compte ne correspond à « ' + esc($('#admin-search').value.trim()) + ' ».'
+      $('#admin-list').innerHTML = '<p class="admin-empty">' + (q ? 'Aucun compte ne correspond à « ' + esc($('#admin-search').value.trim()) + ' ».'
         : adminFilter === 'en_attente' ? 'Aucune demande en attente.' : 'Aucun compte ici.') + '</p>';
       return;
     }
@@ -1013,11 +1013,11 @@
         : (a.valide_le ? 'Validé le ' + fmtDate(a.valide_le) + (a.valide_par ? ' par ' + a.valide_par : '') : STATUT_LABEL[a.statut]) +
           (a.dernier_acces ? ' · dernière connexion le ' + fmtDate(a.dernier_acces) : '');
       var infos = [];
-      if (a.secteur_nom) infos.push('Secteur : ' + a.secteur_nom);
-      if (a.profil_vigilys) infos.push('Vigilys / Maintys : ' + a.profil_vigilys);
+      if (a.secteur_nom) infos.push('Secteur : ' + a.secteur_nom);
+      if (a.profil_vigilys) infos.push('Vigilys / Maintys : ' + a.profil_vigilys);
       if (a.mdp_provisoire) infos.push('🔑 Mot de passe provisoire pas encore changé');
       // G7 (18/11) : le rappel d'inactivité est parti, la suspension approche
-      var alerte = a.inactif_prevenu_le ? '<p class="acc-alerte">⚠️ Pas de connexion depuis presque 12 mois : ' + (a.email ? 'prévenu par e-mail le ' : 'rappel noté le (sans e-mail : prévenez-le de vive voix) ') + esc(fmtDate(a.inactif_prevenu_le)) + '. Compte suspendu vers le ' + esc(fmtDate(a.inactif_suspendu_vers)) + ' s’il ne se connecte pas.</p>' : '';
+      var alerte = a.inactif_prevenu_le ? '<p class="acc-alerte">⚠️ Pas de connexion depuis presque 12 mois : ' + (a.email ? 'prévenu par e-mail le ' : 'rappel noté le (sans e-mail : prévenez-le de vive voix) ') + esc(fmtDate(a.inactif_prevenu_le)) + '. Compte suspendu vers le ' + esc(fmtDate(a.inactif_suspendu_vers)) + ' s’il ne se connecte pas.</p>' : '';
       var actions;
       if (a.statut === 'en_attente') {
         actions = '<button type="button" class="btn-main" data-act="valider">Valider</button>' +
@@ -1031,13 +1031,13 @@
         actions = '<button type="button" class="btn-main" data-act="valider">Réactiver</button>' +
           '<button type="button" class="btn-soft danger" data-act="supprimer">' + (a.statut === 'suspendu' ? 'Supprimer maintenant' : 'Supprimer') + '</button>';
       }
-      if (a.appareil_en_attente && !self) actions += '<button type="button" class="btn-soft" data-act="appareil" title="Le code par e-mail n’arrive pas ? Faites confiance à l’appareil qui l’a demandé.">Faire confiance à son nouvel appareil</button>';
+      if (a.appareil_en_attente && !self) actions += '<button type="button" class="btn-soft" data-act="appareil" title="Le code par e-mail n’arrive pas ? Faites confiance à l’appareil qui l’a demandé.">Faire confiance à son nouvel appareil</button>';
       // B1 (18/11) : une demande refusée montre aussi ses applications, pour pouvoir la réactiver
       var corps = accountForm(a) + '<p class="acc-msg" role="status"></p>' + '<div class="acc-actions">' + actions + '</div>';
-      if (a.statut === 'refuse') corps = '<p class="journal-note">Pour réactiver : cochez ses applications, puis « Réactiver ».</p>' + corps;
+      if (a.statut === 'refuse') corps = '<p class="journal-note">Pour réactiver : cochez ses applications, puis « Réactiver ».</p>' + corps;
       return '<article class="acc" data-id="' + esc(a.id) + '">' +
         '<div class="acc-head"><span class="acc-avatar" aria-hidden="true">' + esc((a.prenom || '?').charAt(0).toUpperCase()) + '</span>' +
-        '<div><strong>' + esc(a.prenom + ' ' + (a.nom || '')) + (self ? ' <em>(vous)</em>' : '') + '</strong><span>' + esc(a.email || ('🔑 Identifiant : ' + (a.identifiant || '') + ' · sans e-mail')) + '</span><small>' + esc(meta) + '</small>' +
+        '<div><strong>' + esc(a.prenom + ' ' + (a.nom || '')) + (self ? ' <em>(vous)</em>' : '') + '</strong><span>' + esc(a.email || ('🔑 Identifiant : ' + (a.identifiant || '') + ' · sans e-mail')) + '</span><small>' + esc(meta) + '</small>' +
         (infos.length ? '<small>' + esc(infos.join(' · ')) + '</small>' : '') + '</div></div>' + alerte +
         (replie(a) ? '<details class="acc-more"><summary>Modifier ses accès</summary>' + corps + '</details>' : corps) +
         '</article>';
@@ -1088,7 +1088,7 @@
       if (adminFilter !== 'candidatures') return;
       if (r.status !== 200) { $('#admin-list').innerHTML = '<p class="admin-empty">' + esc(r.data.message || 'Indisponible.') + '</p>'; return; }
       candPending = r.data.filter(function (c) { return c.status === 'en_attente'; }).length;
-      var intro = '<p class="journal-note">Les collaborateurs candidatent depuis leur Profil dans Boost. Décidez avec la direction et le CSE : accepter coche la case du compte ; refuser demande un mot d’explication, que la personne lira.</p>';
+      var intro = '<p class="journal-note">Les collaborateurs candidatent depuis leur Profil dans Boost. Décidez avec la direction et le CSE : accepter coche la case du compte ; refuser demande un mot d’explication, que la personne lira.</p>';
       if (!r.data.length) { $('#admin-list').innerHTML = intro + '<p class="admin-empty">Aucune candidature pour le moment.</p>'; return; }
       $('#admin-list').innerHTML = intro + r.data.map(function (c) {
         var a = c.account || {};
@@ -1096,7 +1096,7 @@
           '<div><strong>' + esc((a.prenom || '') + ' ' + (a.nom || '')) + ' · ' + esc(ROLE_LABEL[c.role] || c.role) + '</strong>' +
           '<span>' + esc(a.email || '') + (a.sector ? ' · ' + esc(a.sector) : '') + '</span>' +
           '<small>Candidature du ' + esc(fmtDate(c.created)) + (a.since ? ' · compte depuis le ' + esc(fmtDate(a.since)) : '') + '</small></div></div>';
-        var body = '<p class="cand-motivation">« ' + esc(c.motivation) + ' »</p>';
+        var body = '<p class="cand-motivation">« ' + esc(c.motivation) + ' »</p>';
         if (c.status !== 'en_attente') {
           return '<article class="acc">' + head + body + '<p class="acc-msg">' + esc(CAND_STATUS[c.status] || c.status) + (c.decided_by ? ' par ' + esc(c.decided_by) : '') + (c.note ? ' · « ' + esc(c.note) + ' »' : '') + '</p></article>';
         }
@@ -1113,7 +1113,7 @@
     var card = b.closest('[data-cand]');
     var decision = b.getAttribute('data-cand-act');
     var note = card.querySelector('textarea').value;
-    if (decision === 'acceptee' && !window.confirm('Accepter cette candidature ? La case sera cochée sur son compte.')) return;
+    if (decision === 'acceptee' && !window.confirm('Accepter cette candidature ? La case sera cochée sur son compte.')) return;
     b.disabled = true;
     api('POST', '/api/hub/admin/candidatures/' + card.getAttribute('data-cand'), { decision: decision, note: note }).then(function (r) {
       b.disabled = false;
@@ -1202,10 +1202,10 @@
   function renderJournal() {
     var q = norm($('#admin-search').value);
     var rows = (journalRows || []).map(journalLine).filter(function (x) { return !q || q.split(/\s+/).every(function (w) { return x.texte.indexOf(w) !== -1; }); });
-    var tete = '<p class="journal-note">Le journal ne peut être ni modifié ni effacé depuis le Hub. Le nom d’une personne partie devient « Ancien collaborateur » 12 mois après son départ.</p>' +
+    var tete = '<p class="journal-note">Le journal ne peut être ni modifié ni effacé depuis le Hub. Le nom d’une personne partie devient « Ancien collaborateur » 12 mois après son départ.</p>' +
       '<label class="chk journal-anim"><input type="checkbox" id="journal-anim"' + (journalAnim ? ' checked' : '') + '> Montrer aussi les entrées dans l’espace animateur de Boost</label>';
     var fin = journalPlus ? '<p><button type="button" class="btn-soft" id="journal-plus">Voir les plus anciennes</button></p>' : '';
-    $('#admin-list').innerHTML = tete + (rows.length ? rows.map(function (x) { return x.html; }).join('') : '<p class="admin-empty">' + (q ? 'Rien dans le journal pour « ' + esc($('#admin-search').value.trim()) + ' ».' : 'Rien dans le journal pour le moment.') + '</p>') + fin;
+    $('#admin-list').innerHTML = tete + (rows.length ? rows.map(function (x) { return x.html; }).join('') : '<p class="admin-empty">' + (q ? 'Rien dans le journal pour « ' + esc($('#admin-search').value.trim()) + ' ».' : 'Rien dans le journal pour le moment.') + '</p>') + fin;
     $('#journal-anim').addEventListener('change', function (e) { journalAnim = e.target.checked; loadJournal(0); });
     var plus = $('#journal-plus'); if (plus) plus.addEventListener('click', function () { loadJournal(journalPage + 1); });
   }
@@ -1221,7 +1221,7 @@
       busy(f, false);
       if (r.status !== 200) { msg.textContent = r.data.message || 'Création impossible.'; return; }
       var a = r.data.account;
-      msg.innerHTML = 'Compte de ' + esc(a.prenom) + ' créé. Identifiant : <code>' + esc(a.identifiant) + '</code> · mot de passe provisoire : <code>' + esc(r.data.password) + '</code><br>Remettez-les en main propre (sur papier) : la personne choisira son mot de passe à la première connexion. Le mot de passe ne sera plus affiché.';
+      msg.innerHTML = 'Compte de ' + esc(a.prenom) + ' créé. Identifiant : <code>' + esc(a.identifiant) + '</code> · mot de passe provisoire : <code>' + esc(r.data.password) + '</code><br>Remettez-les en main propre (sur papier) : la personne choisira son mot de passe à la première connexion. Le mot de passe ne sera plus affiché.';
       msg.classList.add('is-ok');
       f.prenom.value = ''; f.nom.value = '';
       loadAdmin();
@@ -1292,11 +1292,11 @@
     msg.classList.remove('is-ok');
 
     if (act === 'appareil') {
-      if (!confirmInline(b, 'Confirmer : c’est bien elle ou lui ?')) return;
+      if (!confirmInline(b, 'Confirmer : c’est bien elle ou lui ?')) return;
       api('POST', '/api/hub/admin/accounts/' + aid + '/appareil').then(function (r) {
         b.textContent = 'Faire confiance à son nouvel appareil';
         if (r.status !== 200) { msg.textContent = r.data.message || 'Impossible.'; return; }
-        msg.textContent = 'Appareil reconnu pour 30 jours : ' + acc.prenom + ' peut se reconnecter, sans code.';
+        msg.textContent = 'Appareil reconnu pour 30 jours : ' + acc.prenom + ' peut se reconnecter, sans code.';
         msg.classList.add('is-ok');
       });
       return;
@@ -1305,18 +1305,18 @@
       // Q1 (18/11) : avec e-mail, un lien part chez la personne (personne d'autre ne voit son mot de passe) ;
       // sans e-mail, un mot de passe provisoire à remettre en main propre (à changer avant d'ouvrir les applis)
       var label = acc.email ? 'Envoyer un lien de mot de passe' : 'Mot de passe provisoire';
-      if (!confirmInline(b, acc.email ? 'Confirmer : envoyer le lien ?' : 'Confirmer ?')) return;
+      if (!confirmInline(b, acc.email ? 'Confirmer : envoyer le lien ?' : 'Confirmer ?')) return;
       api('POST', '/api/hub/admin/accounts/' + aid + '/password').then(function (r) {
         b.textContent = label;
         if (r.status !== 200) { msg.textContent = r.data.message || 'Impossible.'; return; }
-        if (r.data.envoye) msg.textContent = 'Un lien pour choisir un nouveau mot de passe vient de partir sur l’adresse e-mail de ' + acc.prenom + ' (valable 30 minutes, une seule fois). Personne d’autre ne voit son mot de passe ; l’actuel reste valable tant qu’il n’a pas servi.';
-        else msg.innerHTML = 'Mot de passe provisoire de ' + esc(acc.prenom) + ' : <code>' + esc(r.data.password) + '</code><br>À remettre en main propre : à sa prochaine connexion, ' + esc(acc.prenom) + ' devra en choisir un (les applications restent fermées d’ici là). Il ne sera plus affiché.';
+        if (r.data.envoye) msg.textContent = 'Un lien pour choisir un nouveau mot de passe vient de partir sur l’adresse e-mail de ' + acc.prenom + ' (valable 30 minutes, une seule fois). Personne d’autre ne voit son mot de passe ; l’actuel reste valable tant qu’il n’a pas servi.';
+        else msg.innerHTML = 'Mot de passe provisoire de ' + esc(acc.prenom) + ' : <code>' + esc(r.data.password) + '</code><br>À remettre en main propre : à sa prochaine connexion, ' + esc(acc.prenom) + ' devra en choisir un (les applications restent fermées d’ici là). Il ne sera plus affiché.';
         msg.classList.add('is-ok');
       });
       return;
     }
     if (act === 'deconnecter') {
-      if (!confirmInline(b, 'Confirmer : tout fermer ?')) return;
+      if (!confirmInline(b, 'Confirmer : tout fermer ?')) return;
       api('POST', '/api/hub/admin/accounts/' + aid + '/deconnecter').then(function (r) {
         b.textContent = 'Déconnecter partout';
         if (r.status !== 200) { msg.textContent = r.data.message || 'Impossible.'; return; }
@@ -1333,7 +1333,7 @@
       });
       return;
     }
-    if (act === 'suspendre' && !confirmInline(b, 'Confirmer ?')) return;
+    if (act === 'suspendre' && !confirmInline(b, 'Confirmer ?')) return;
     if (act === 'refuser' && !confirmInline(b, 'Confirmer le refus')) return;
 
     var body = act === 'refuser' ? { statut: 'refuse' } : act === 'suspendre' ? { statut: 'suspendu' } : readForm(card);
@@ -1437,14 +1437,14 @@
     api('GET', '/api/hub/catalogue/code-bureau').then(function (r) {
       $('#catalogue-code-etat').textContent = r.status !== 200 ? (r.data.message || 'État inconnu.') : r.data.choisi
         ? 'Déjà choisi. En choisir un autre ici (code oublié) ferme toutes les sessions du bureau.'
-        : 'Pas encore choisi : choisissez-le pour que le bureau puisse ouvrir le catalogue.';
+        : 'Pas encore choisi : choisissez-le pour que le bureau puisse ouvrir le catalogue.';
     });
   }
   $('#catalogue-code-form').addEventListener('submit', function (ev) {
     ev.preventDefault();
     var code = $('#catalogue-code').value.trim();
     if (!/^\d{6,8}$/.test(code)) { $('#catalogue-code-msg').textContent = 'Le code bureau a 6 à 8 chiffres.'; return; }
-    if (!window.confirm('Choisir ce code bureau ? Les sessions du bureau déjà ouvertes seront fermées.')) { $('#catalogue-code-msg').textContent = ''; return; }
+    if (!window.confirm('Choisir ce code bureau ? Les sessions du bureau déjà ouvertes seront fermées.')) { $('#catalogue-code-msg').textContent = ''; return; }
     api('POST', '/api/hub/catalogue/code-bureau', { code: code }).then(function (r) {
       $('#catalogue-code').value = '';
       etatCodeCatalogue();
@@ -1527,7 +1527,7 @@
     if (tabletOff && !kioskApp) {
       tabletOff.hidden = false;
       tabletOff.addEventListener('click', function () {
-        if (!window.confirm('Cet appareil n’est pas la tablette du magasin ? Le hub gardera de nouveau votre connexion ici.')) return;
+        if (!window.confirm('Cet appareil n’est pas la tablette du magasin ? Le hub gardera de nouveau votre connexion ici.')) return;
         try { localStorage.removeItem(TABLET_KEY); } catch (e) { /* ignoré */ }
         location.reload();
       });
