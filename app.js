@@ -150,9 +150,18 @@
   function api(method, path, body) {
     var headers = { 'Content-Type': 'application/json' };
     if (token) headers.Authorization = token;
+    // Tests du 18/11 (D5) : l'identifiant de cet appareil accompagne chaque demande (le verrou de l'administration est
+    // tenu par le serveur, pour cet appareil)
+    headers['X-Hub-Device'] = deviceId();
     return fetch(API + path, { method: method, headers: headers, body: body ? JSON.stringify(body) : undefined, cache: 'no-store' })
       .then(function (r) {
-        return r.json().catch(function () { return {}; }).then(function (data) { return { status: r.status, data: data || {} }; });
+        return r.json().catch(function () { return {}; }).then(function (data) {
+          data = data || {};
+          // Le serveur refuse : administration verrouillée (10 min sans action), ou mot de passe provisoire à changer
+          if (r.status === 403 && data.code === 'verrou_admin') setTimeout(function () { verrouServeur(); }, 0);
+          if (r.status === 403 && data.code === 'mdp_provisoire' && account) setTimeout(askNewPassword, 0);
+          return { status: r.status, data: data };
+        });
       })
       .catch(function () { return { status: 0, data: { message: 'Pas de connexion au serveur. Réessayez.' } }; });
   }
@@ -213,7 +222,9 @@
   }
   function openApp(a) {
     if (!a.sso) { location.href = appLink(a); return; }
+    if (account && account.mdp_provisoire) { askNewPassword(); return; }
     api('POST', '/api/hub/sso/start', { app: a.id }).then(function (r) {
+      if (r.status === 403 && r.data.code === 'mdp_provisoire') return; // la fenêtre « Mon compte » s'ouvre
       location.href = appLink(a, r.status === 200 ? r.data.code : null);
     });
   }
@@ -248,7 +259,12 @@
       html += '<div class="tile is-soon" style="--i:' + mine.length + '"><span class="tile-ico">' + ICONS.bientot + '</span>' +
         '<span class="tile-name">Bientôt</span><span class="tile-desc">Les prochains outils du magasin apparaîtront ici.</span></div>';
     }
+    // D2 (18/11) : mot de passe provisoire : les applis restent fermées (le serveur refuse aussi) tant qu'il n'est pas changé
+    if (account.mdp_provisoire) {
+      html = '<div class="prov-note" role="alert"><b>🔑 Choisissez d’abord votre mot de passe</b><span>Votre responsable vous a donné un mot de passe provisoire. Les applications s’ouvrent dès que vous avez choisi le vôtre.</span><button type="button" class="btn-main" id="prov-go">Choisir mon mot de passe</button></div>' + html;
+    }
     $('#tiles').innerHTML = html;
+    var pg = $('#prov-go'); if (pg) pg.addEventListener('click', askNewPassword);
     pastilleAgorys();
   }
   // Agorys, lot 3 (06/11) : le nombre de messages non lus sur la tuile (un seul nombre, rien d'autre), redemandé
@@ -270,6 +286,7 @@
     var t = e.target.closest('a.tile[data-app]');
     if (!t) return;
     var a = appById(t.getAttribute('data-app'));
+    if (account && account.mdp_provisoire) { e.preventDefault(); askNewPassword(); return; }
     if (!a || !a.sso) return; // lien simple
     e.preventDefault();
     openApp(a);
@@ -303,7 +320,7 @@
     if (box) box.open = true;
     var m = $('#password-form .auth-msg');
     m.classList.remove('is-ok');
-    m.textContent = 'Votre mot de passe est provisoire : choisissez le vôtre (tapez d’abord le mot de passe provisoire).';
+    m.textContent = 'Votre responsable vous a donné un mot de passe provisoire : choisissez le vôtre avant d’ouvrir les applications (tapez d’abord le mot de passe provisoire).';
   }
 
   var directTimer = null;
@@ -464,7 +481,7 @@
   });
 
   // « Vos données » (formulaire Créer un compte) : la mention RGPD réglée par l'animateur de Boost (/api/hub/rgpd, public,
-  // aucune donnée sur les collaborateurs). Le détail complet est dans Boost → Profil → « Mes données ».
+  // aucune donnée sur les collaborateurs). Le détail complet est dans Hub → Mon compte → « Mes données » (18/11).
   (function () {
     var btn = document.getElementById('signup-rgpd-btn');
     var box = document.getElementById('signup-rgpd');
@@ -481,14 +498,19 @@
         var g = r.data || {};
         box.dataset.loaded = '1';
         box.innerHTML =
-          '<p><b>Ce qui est gardé :</b> vos prénom, nom, e-mail et secteur, et dans Boost votre progression (points, badges), ' +
-          'vos parties de Versus et les mercis envoyés. Vos réponses aux questionnaires Pulse restent <b>anonymes</b>.</p>' +
+          '<p><b>Ce qui est gardé :</b> vos prénom, nom, e-mail et secteur ; votre photo de profil si vous en ajoutez une ; ' +
+          'les actions faites sur votre compte (journal du Hub : validation, changement de mot de passe…). Puis, selon les ' +
+          'applications ouvertes pour vous : dans <b>Boost</b> votre progression (points, succès), vos parties et les mercis ; ' +
+          'dans <b>Agorys</b> ce que vous publiez, vos commentaires et vos messages ; dans <b>Vigilys / Maintys</b> votre fiche ' +
+          'et vos appareils. Vos réponses aux questionnaires Pulse restent <b>anonymes</b>.</p>' +
           '<p><b>Jamais utilisé</b> pour évaluer ou noter qui que ce soit : la direction ne voit que des totaux.</p>' +
-          '<p><b>Durée :</b> ' + esc(g.duree_compte || TODO) + ' (activité : ' + esc(g.duree_activite || TODO) + ').</p>' +
+          '<p><b>Durée :</b> ' + esc(g.duree_compte || TODO) + ' (activité : ' + esc(g.duree_activite || TODO) + '). ' +
+          'Une demande de compte refusée est effacée 30 jours après, une demande jamais traitée 90 jours après. ' +
+          'Dans le journal du Hub, votre nom est remplacé par « Ancien collaborateur » 12 mois après votre départ.</p>' +
           '<p><b>Compte inactif :</b> sans connexion pendant 12 mois, le compte est suspendu puis effacé 3 mois plus tard ; un e-mail vous prévient un mois avant, et une simple connexion suffit à le garder.</p>' +
           '<p><b>Responsable :</b> ' + esc(g.responsable || TODO) + (g.adresse ? ', ' + esc(g.adresse) : '') +
           '. <b>Contact :</b> ' + esc(g.contact || TODO) + '.</p>' +
-          '<p>Vous pouvez voir vos données, les faire corriger ou demander leur suppression (Boost → Profil → « Mes données »). ' +
+          '<p>Vous pouvez voir et télécharger toutes vos données, les faire corriger ou demander leur suppression : Hub → « Mon compte » → « Mes données ». ' +
           'Une question ou un souci se règle d’abord avec le contact ci-dessus ; en dernier recours, la loi prévoit de pouvoir saisir la CNIL (cnil.fr).</p>';
       });
     });
@@ -543,9 +565,12 @@
 
   // --- Mot de passe oublié ---
   $('#forgot-open').addEventListener('click', function () {
-    var mail = $('#login-form').email.value;
+    var mail = $('#login-form').email.value.trim();
     showAuthForm('#forgot-form');
-    if (mail) $('#forgot-form').email.value = mail;
+    $('#forgot-form .auth-msg').textContent = '';
+    // G9 (18/11) : seulement une adresse e-mail est recopiée ; un identifiant (compte sans e-mail) est expliqué
+    if (mail && mail.indexOf('@') !== -1) $('#forgot-form').email.value = mail;
+    else if (mail) $('#forgot-form .auth-msg').textContent = 'Vous vous connectez avec un identifiant (sans e-mail) : demandez à votre responsable un mot de passe provisoire.';
   });
   document.querySelectorAll('[data-back-login]').forEach(function (b) {
     b.addEventListener('click', function () { switchTab('login'); });
@@ -554,6 +579,7 @@
     e.preventDefault();
     var f = e.target, msg = f.querySelector('.auth-msg');
     msg.textContent = '';
+    if (f.email.value.trim() && f.email.value.indexOf('@') === -1) { msg.textContent = 'Indiquez l’adresse e-mail de votre compte. Vous vous connectez avec un identifiant (sans e-mail) ? Demandez à votre responsable un mot de passe provisoire.'; return; }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email.value.trim())) { msg.textContent = 'Adresse e-mail invalide.'; return; }
     busy(f, true);
     api('POST', '/api/hub/password/forgot', { email: f.email.value }).then(function (r) {
@@ -593,7 +619,7 @@
   });
   // Toucher à côté de la fenêtre la ferme (demande de l'utilisateur, 14/10 : la liste des comptes est longue).
   // Le geste doit commencer ET finir à côté : sélectionner un texte dans la fenêtre ne la ferme pas.
-  ['account-sheet', 'admin-sheet'].forEach(function (id) {
+  ['account-sheet', 'admin-sheet', 'tools-sheet', 'donnees-sheet'].forEach(function (id) {
     var d = document.getElementById(id);
     if (!d) return;
     var downOutside = false;
@@ -704,6 +730,8 @@
     var f = e.target, msg = f.querySelector('.auth-msg');
     msg.classList.remove('is-ok');
     if (f.password.value.length < 8) { msg.textContent = 'Nouveau mot de passe : 8 caractères minimum.'; return; }
+    if (f.password.value !== f.password2.value) { msg.textContent = 'Les deux nouveaux mots de passe ne sont pas identiques.'; return; }
+    if (f.password.value === f.current.value) { msg.textContent = 'Choisissez un mot de passe différent de l’actuel.'; return; }
     busy(f, true);
     api('POST', '/api/hub/password', { current: f.current.value, password: f.password.value }).then(function (r) {
       busy(f, false);
@@ -712,17 +740,78 @@
         f.reset();
         msg.textContent = 'Mot de passe modifié.';
         msg.classList.add('is-ok');
-        if (account) account.mdp_provisoire = false;
+        if (account && account.mdp_provisoire) { account.mdp_provisoire = false; renderApps(); }
       } else {
         msg.textContent = r.data.message || 'Modification impossible.';
       }
     });
   });
 
-  // Déconnexion partout : le serveur ferme aussi les sessions ouvertes dans les applis (Boost…).
-  $('#logout-btn').addEventListener('click', function () {
+  // DO4 (18/11) : « Mes données » pour tout compte (mot de passe redemandé), lisible et téléchargeable
+  var donneesPreuve = '', donneesJson = null;
+  $('#donnees-btn').addEventListener('click', function () {
+    $('#donnees-form').reset();
+    $('#donnees-form .auth-msg').textContent = '';
+    $('#donnees-form').hidden = false;
+    $('#donnees-vue').hidden = true;
+    openSheet($('#donnees-sheet'));
+  });
+  function ligne(t, v) { return v === '' || v == null ? '' : '<li><b>' + esc(t) + ' :</b> ' + esc(v) + '</li>'; }
+  function renderDonnees(d) {
+    var c = d.compte || {}, ag = d.agorys || {}, vg = d.vigilys || {}, bo = d.boost;
+    var appsN = (c.applications || []).map(function (x) { var a = appById(x); return a ? a.nom : x; }).join(', ');
+    var html = '<h3>Mon compte</h3><ul class="donnees">' + ligne('Prénom', c.prenom) + ligne('Nom', c.nom) + ligne('E-mail', c.email) + ligne('Identifiant', c.identifiant) +
+      ligne('Secteur', c.secteur) + ligne('Profil', profilName(c.profil)) + ligne('Applications', appsN || 'aucune') + ligne('Rôles', (c.roles || []).join(', ')) +
+      ligne('Profil Vigilys / Maintys', c.profil_vigilys) + ligne('Créé le', fmtDate(c.cree_le)) + ligne('Validé le', fmtDate(c.valide_le) + (c.valide_par ? ' par ' + c.valide_par : '')) +
+      ligne('Dernière connexion', fmtDate(c.derniere_connexion)) + ligne('Photo de profil', c.photo_de_profil) + '</ul>';
+    html += '<h3>Journal du Hub (' + (d.journal || []).length + ')</h3><ul class="donnees">' + (d.journal || []).slice(0, 50).map(function (j) { return '<li>' + esc(fmtDate(j.date)) + ' · ' + esc(j.action) + ' (' + esc(j.par) + ')</li>'; }).join('') + '</ul>';
+    if ((d.candidatures || []).length) html += '<h3>Candidatures</h3><ul class="donnees">' + d.candidatures.map(function (x) { return '<li>' + esc(ROLE_LABEL[x.role] || x.role) + ' · ' + esc(CAND_STATUS[x.statut] || x.statut) + ' · « ' + esc(x.motivation) + ' »</li>'; }).join('') + '</ul>';
+    html += '<h3>Agorys</h3><ul class="donnees">' + ligne('Publications', (ag.publications || []).length) + ligne('Commentaires', (ag.commentaires || []).length) + ligne('Messages envoyés', (ag.messages_envoyes || []).length) +
+      ligne('Réactions', ag.reactions) + ligne('Participations aux événements', ag.participations) + ligne('Présentation', ag.presentation) +
+      (ag.profil ? ligne('Anniversaire', ag.profil.anniversaire) + ligne('Arrivée', ag.profil.arrivee) : '') + '</ul>';
+    html += '<h3>Vigilys / Maintys</h3><ul class="donnees">' + (vg.fiche ? ligne('Fiche', vg.fiche.fiche + ' (' + vg.fiche.role + ')') : '<li>Aucune fiche reliée.</li>') + ligne('Appareils reliés', (vg.appareils || []).length) + '</ul>';
+    if (bo) html += '<h3>Boost</h3><ul class="donnees">' + ligne('Points', bo.xp) + ligne('Succès', bo.badges) + ligne('Quiz joués', bo.quiz_joues) + ligne('Parties de Versus', bo.parties_versus) + ligne('Mercis envoyés', bo.mercis_envoyes) + ligne('Mercis reçus', bo.mercis_recus) + '</ul>';
+    html += '<p class="auth-hint">' + esc(d.note || '') + '</p>' +
+      '<p><button type="button" class="btn-main" id="donnees-dl">Télécharger mes données (fichier)</button></p>' +
+      '<details class="donnees-suppr"><summary>Demander la suppression de mes données</summary><label>Un mot (facultatif)<textarea id="donnees-note" rows="2" maxlength="500"></textarea></label><button type="button" class="btn-soft danger" id="donnees-suppr">Envoyer la demande</button><p class="auth-msg" id="donnees-suppr-msg" role="status"></p></details>';
+    $('#donnees-vue').innerHTML = html;
+    $('#donnees-vue').hidden = false;
+    $('#donnees-dl').addEventListener('click', function () {
+      var blob = new Blob([JSON.stringify(donneesJson, null, 2)], { type: 'application/json' });
+      var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'mes-donnees.json'; document.body.appendChild(a); a.click(); a.remove();
+    });
+    $('#donnees-suppr').addEventListener('click', function () {
+      var m = $('#donnees-suppr-msg');
+      api('POST', '/api/hub/mes-donnees/suppression', { preuve: donneesPreuve, text: $('#donnees-note').value }).then(function (r) {
+        m.textContent = r.status === 200 ? 'Demande envoyée : le magasin va vous recontacter.' : (r.data.message || 'Envoi impossible.');
+        m.classList.toggle('is-ok', r.status === 200);
+      });
+    });
+  }
+  $('#donnees-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var f = e.target, msg = f.querySelector('.auth-msg');
+    if (!f.password.value) { msg.textContent = 'Indiquez votre mot de passe.'; return; }
+    busy(f, true);
+    api('POST', '/api/hub/mes-donnees', { password: f.password.value }).then(function (r) {
+      busy(f, false);
+      if (r.status !== 200) { msg.textContent = r.data.message || 'Impossible pour le moment.'; return; }
+      donneesPreuve = r.data.preuve || ''; donneesJson = r.data.donnees;
+      f.reset(); f.hidden = true;
+      renderDonnees(r.data.donnees || {});
+    });
+  });
+
+  // G8 (18/11) : « Me déconnecter de cet appareil » (seulement ici) ou « Me déconnecter partout » (tous les appareils et les
+  // applis ouvertes, après confirmation). Le serveur ferme alors aussi les sessions des applis (Boost…).
+  $('#logout-here').addEventListener('click', function () {
     closeSheet($('#account-sheet'));
-    api('POST', '/api/hub/logout').then(function () { leave(); });
+    leave('Vous êtes déconnecté de cet appareil.');
+  });
+  $('#logout-btn').addEventListener('click', function () {
+    if (!window.confirm('Vous déconnecter de TOUS vos appareils (téléphone, ordinateur, tablette) et de toutes les applis ouvertes ?')) return;
+    closeSheet($('#account-sheet'));
+    api('POST', '/api/hub/logout').then(function () { leave('Vous êtes déconnecté de tous vos appareils.'); });
   });
 
   // --- Administration des comptes ---
@@ -749,7 +838,9 @@
     }).catch(function () {});
   }
   function vigilysBlock(a) {
-    var profOpts = '<option value="">— Pas encore choisi —</option>' + VIGILYS.profils.map(function (p) {
+    var profOpts = '<option value="">— Pas encore choisi —</option>' + VIGILYS.profils.filter(function (p) {
+      return a.email || p !== 'Superviseur'; // un compte sans e-mail ne peut pas être Superviseur (refusé par le serveur)
+    }).map(function (p) {
       return '<option value="' + esc(p) + '"' + (a.profil_vigilys === p ? ' selected' : '') + '>' + esc(p) + '</option>';
     }).join('');
     var ficheOpts = '<option value="">Créer sa fiche toute seule à sa première ouverture</option>' + VIGILYS.fiches.map(function (f) {
@@ -765,10 +856,25 @@
       '</fieldset>';
   }
 
+  // G5 (18/11) : secteurs du magasin, pour voir et corriger celui d'un compte
+  var SECTEURS = null;
+  function loadSecteursAdmin() {
+    if (SECTEURS) return Promise.resolve();
+    return api('GET', '/api/hub/sectors').then(function (r) { SECTEURS = (r.status === 200 && r.data.tree) || []; }).catch(function () { SECTEURS = []; });
+  }
+  function secteurSelect(a) {
+    if (!SECTEURS || !SECTEURS.length) return '';
+    var opt = function (x) { return '<option value="' + esc(x.id) + '"' + (a.secteur === x.id ? ' selected' : '') + '>' + esc((x.emoji ? x.emoji + ' ' : '') + x.name) + '</option>'; };
+    var html = '<option value="">— Pas encore choisi —</option>' + SECTEURS.map(function (loc) {
+      return loc.children.length ? '<optgroup label="' + esc(loc.name) + '">' + loc.children.map(opt).join('') + '</optgroup>' : opt(loc);
+    }).join('');
+    return '<label>Secteur <small>(choisi à l’inscription ; il sert aux équipes de Boost)</small><select name="secteur">' + html + '</select></label>';
+  }
+
   function loadAdmin() {
     $('#admin-list').innerHTML = '<p class="admin-empty">Chargement…</p>';
     // Fiches Vigilys d'abord, pour que la liste « Fiche » soit remplie à l'affichage
-    return Promise.all([loadVigilys(), api('GET', '/api/hub/admin/accounts')]).then(function (res) {
+    return Promise.all([loadVigilys(), api('GET', '/api/hub/admin/accounts'), loadSecteursAdmin()]).then(function (res) {
       var r = res[1];
       if (r.status !== 200) { $('#admin-list').innerHTML = '<p class="admin-empty">' + esc(r.data.message || 'Liste indisponible.') + '</p>'; return; }
       adminList = r.data;
@@ -791,7 +897,7 @@
     var profilOpts = profils.map(function (p) {
       return '<option value="' + esc(p.id) + '"' + (a.profil === p.id ? ' selected' : '') + '>' + esc(p.nom) + '</option>';
     }).join('');
-    var directOpts = '<option value="">Non : il arrive sur l\'espace magasin</option>' + (ent.applications || []).map(function (app) {
+    var directOpts = '<option value="">Non (espace magasin)</option>' + (ent.applications || []).map(function (app) {
       return '<option value="' + esc(app.id) + '"' + (a.acces_direct === app.id ? ' selected' : '') + '>Oui : ouvrir ' + esc(app.nom) + '</option>';
     }).join('');
     // Compte sans e-mail : accès d'un collaborateur seulement (décision du 12/10) → ni profil à changer, ni rôles
@@ -799,6 +905,7 @@
       return '<div class="acc-fields">' +
         '<fieldset><legend>Applications</legend>' + apps + '</fieldset>' +
         '<label>Accès direct<select name="acces_direct">' + directOpts + '</select></label>' +
+        secteurSelect(a) +
         vigilysBlock(a) +
         '<p class="auth-hint">Compte sans e-mail : accès d’un collaborateur seulement (ni administrateur, ni animateur, ni modérateur, ni créateur). Mot de passe oublié : « Mot de passe provisoire ».</p>' +
         '</div>';
@@ -807,6 +914,7 @@
       '<label>Profil<select name="profil">' + profilOpts + '</select></label>' +
       '<fieldset><legend>Applications</legend>' + apps + '</fieldset>' +
       '<label>Accès direct<select name="acces_direct">' + directOpts + '</select></label>' +
+      secteurSelect(a) +
       vigilysBlock(a) +
       '<label class="chk"><input type="checkbox" name="admin"' + (a.admin ? ' checked' : '') + (a.id === account.id ? ' disabled' : '') + '> Administrateur (gère les comptes)</label>' +
       '<label class="chk"><input type="checkbox" name="moderateur"' + (a.moderateur ? ' checked' : '') + '> Modérateur de Boost (relit les propositions des collaborateurs dans Boost ; les modérateurs d’Agorys se choisissent dans Agorys ; à désigner avec la direction et le CSE)</label>' +
@@ -856,11 +964,12 @@
     var titres = [profilName(a.profil),
       a.admin ? 'administrateur admin' : '', a.animateur ? 'animateur' : '', a.moderateur ? 'moderateur' : '',
       a.testeur ? 'testeur' : '', a.parcours_lecteur ? 'parcours lecteur' : '', a.createur ? 'createur' : '',
+      a.profil_vigilys || '', a.profil_vigilys ? 'vigilys maintys' : '', a.partage ? 'partage poste de securite' : '', a.secteur_nom || '',
       (a.apps || []).map(function (id) { var x = appById(id); return x ? x.nom : id; }).join(' ')];
     var hay = norm([a.prenom, a.nom, a.prenom && a.nom ? a.nom + ' ' + a.prenom : '', a.identifiant, a.email].concat(titres).join(' | '));
     return q.split(/\s+/).every(function (w) { return hay.indexOf(w) !== -1; });
   }
-  $('#admin-search').addEventListener('input', function () { renderAdmin(); });
+  $('#admin-search').addEventListener('input', function () { if (adminFilter === 'journal') renderJournal(); else renderAdmin(); });
 
   function renderAdmin() {
     document.querySelectorAll('#admin-filter button').forEach(function (b) {
@@ -869,44 +978,68 @@
       b.classList.toggle('is-on', f === adminFilter);
       b.textContent = f === 'journal' ? 'Journal' : f === 'candidatures' ? 'Candidatures' + (candPending ? ' (' + candPending + ')' : '') : FILTER_LABEL[f] + ' (' + n + ')';
     });
-    $('#admin-search-box').hidden = adminFilter === 'journal' || adminFilter === 'candidatures';
-    if (adminFilter === 'journal') { loadJournal(); return; }
+    $('#admin-search-box').hidden = adminFilter === 'candidatures';
+    $('#admin-sort-box').hidden = adminFilter === 'journal' || adminFilter === 'candidatures';
+    if (adminFilter === 'journal') { if (journalRows && journalPour === adminFilter) renderJournal(); else loadJournal(0); return; }
     if (adminFilter === 'candidatures') { loadCandidatures(); return; }
     // Recherche (14/10) : quand on tape un nom, on cherche dans TOUS les comptes, quel que soit l'onglet
     var q = norm($('#admin-search').value);
     var list = q ? adminList.filter(function (a) { return matches(a, q); })
       : adminList.filter(function (a) { return inFilter(a, adminFilter); });
+    // G3 (18/11) : tri au choix (le plus récent d'abord par défaut)
+    var tri = ($('#admin-sort') || {}).value || 'recent';
+    var cle = function (a) {
+      if (tri === 'nom') return norm((a.nom || '') + ' ' + (a.prenom || ''));
+      if (tri === 'prenom') return norm((a.prenom || '') + ' ' + (a.nom || ''));
+      if (tri === 'profil') return norm(profilName(a.profil) + ' ' + (a.profil_vigilys || '') + ' ' + a.nom);
+      return '';
+    };
+    list = list.slice();
+    if (tri === 'connexion') list.sort(function (x, y) { return String(x.dernier_acces || '').localeCompare(String(y.dernier_acces || '')); });
+    else if (tri !== 'recent') list.sort(function (x, y) { return cle(x).localeCompare(cle(y), 'fr'); });
     if (!list.length) {
       $('#admin-list').innerHTML = '<p class="admin-empty">' + (q ? 'Aucun compte ne correspond à « ' + esc($('#admin-search').value.trim()) + ' ».'
         : adminFilter === 'en_attente' ? 'Aucune demande en attente.' : 'Aucun compte ici.') + '</p>';
       return;
     }
     var found = q ? '<p class="journal-note">' + list.length + ' compte' + (list.length > 1 ? 's' : '') + ' trouvé' + (list.length > 1 ? 's' : '') + ', tous statuts confondus.</p>' : '';
+    // G3 : au téléphone comme au PC, les comptes validés sont repliés (nom, e-mail, dates) ; on touche pour les modifier
+    var replie = function (a) { return a.statut === 'valide' && !(q && list.length === 1); };
     $('#admin-list').innerHTML = found + list.map(function (a) {
       var self = a.id === account.id;
-      var meta = a.statut === 'en_attente' ? 'Demande du ' + fmtDate(a.created)
+      var meta = a.statut === 'en_attente' ? 'Demande du ' + fmtDate(a.created) + (a.demande_effacee_le ? ' · effacée automatiquement le ' + fmtDate(a.demande_effacee_le) + ' si elle n’est pas traitée' : '')
+        : a.statut === 'refuse' ? 'Demande refusée' + (a.demande_effacee_le ? ' · effacée automatiquement le ' + fmtDate(a.demande_effacee_le) : '')
         : a.statut === 'suspendu' && a.suspendu_le ? 'Suspendu le ' + fmtDate(a.suspendu_le) + (a.efface_le ? ' · effacé automatiquement le ' + fmtDate(a.efface_le) + ' (avec ses données de Boost)' : '')
         : (a.valide_le ? 'Validé le ' + fmtDate(a.valide_le) + (a.valide_par ? ' par ' + a.valide_par : '') : STATUT_LABEL[a.statut]) +
           (a.dernier_acces ? ' · dernière connexion le ' + fmtDate(a.dernier_acces) : '');
+      var infos = [];
+      if (a.secteur_nom) infos.push('Secteur : ' + a.secteur_nom);
+      if (a.profil_vigilys) infos.push('Vigilys / Maintys : ' + a.profil_vigilys);
+      if (a.mdp_provisoire) infos.push('🔑 Mot de passe provisoire pas encore changé');
+      // G7 (18/11) : le rappel d'inactivité est parti, la suspension approche
+      var alerte = a.inactif_prevenu_le ? '<p class="acc-alerte">⚠️ Pas de connexion depuis presque 12 mois : ' + (a.email ? 'prévenu par e-mail le ' : 'rappel noté le (sans e-mail : prévenez-le de vive voix) ') + esc(fmtDate(a.inactif_prevenu_le)) + '. Compte suspendu vers le ' + esc(fmtDate(a.inactif_suspendu_vers)) + ' s’il ne se connecte pas.</p>' : '';
       var actions;
       if (a.statut === 'en_attente') {
         actions = '<button type="button" class="btn-main" data-act="valider">Valider</button>' +
           '<button type="button" class="btn-soft" data-act="refuser">Refuser</button>';
       } else if (a.statut === 'valide') {
         actions = '<button type="button" class="btn-main" data-act="enregistrer">Enregistrer</button>' +
-          (self ? '' : '<button type="button" class="btn-soft" data-act="mdp">Mot de passe provisoire</button>' +
+          (self ? '' : '<button type="button" class="btn-soft" data-act="mdp">' + (a.email ? 'Envoyer un lien de mot de passe' : 'Mot de passe provisoire') + '</button>' +
+            '<button type="button" class="btn-soft" data-act="deconnecter" title="Ferme toutes ses sessions (téléphone perdu…) sans suspendre le compte">Déconnecter partout</button>' +
             '<button type="button" class="btn-soft danger" data-act="suspendre">Suspendre</button>');
       } else {
         actions = '<button type="button" class="btn-main" data-act="valider">Réactiver</button>' +
           '<button type="button" class="btn-soft danger" data-act="supprimer">' + (a.statut === 'suspendu' ? 'Supprimer maintenant' : 'Supprimer') + '</button>';
       }
       if (a.appareil_en_attente && !self) actions += '<button type="button" class="btn-soft" data-act="appareil" title="Le code par e-mail n’arrive pas ? Faites confiance à l’appareil qui l’a demandé.">Faire confiance à son nouvel appareil</button>';
+      // B1 (18/11) : une demande refusée montre aussi ses applications, pour pouvoir la réactiver
+      var corps = accountForm(a) + '<p class="acc-msg" role="status"></p>' + '<div class="acc-actions">' + actions + '</div>';
+      if (a.statut === 'refuse') corps = '<p class="journal-note">Pour réactiver : cochez ses applications, puis « Réactiver ».</p>' + corps;
       return '<article class="acc" data-id="' + esc(a.id) + '">' +
         '<div class="acc-head"><span class="acc-avatar" aria-hidden="true">' + esc((a.prenom || '?').charAt(0).toUpperCase()) + '</span>' +
-        '<div><strong>' + esc(a.prenom + ' ' + (a.nom || '')) + (self ? ' <em>(vous)</em>' : '') + '</strong><span>' + esc(a.email || ('🔑 Identifiant : ' + (a.identifiant || '') + ' · sans e-mail')) + '</span><small>' + esc(meta) + '</small></div></div>' +
-        (a.statut === 'refuse' ? '' : accountForm(a)) +
-        '<p class="acc-msg" role="status"></p>' +
-        '<div class="acc-actions">' + actions + '</div>' +
+        '<div><strong>' + esc(a.prenom + ' ' + (a.nom || '')) + (self ? ' <em>(vous)</em>' : '') + '</strong><span>' + esc(a.email || ('🔑 Identifiant : ' + (a.identifiant || '') + ' · sans e-mail')) + '</span><small>' + esc(meta) + '</small>' +
+        (infos.length ? '<small>' + esc(infos.join(' · ')) + '</small>' : '') + '</div></div>' + alerte +
+        (replie(a) ? '<details class="acc-more"><summary>Modifier ses accès</summary>' + corps + '</details>' : corps) +
         '</article>';
     }).join('');
   }
@@ -1010,8 +1143,10 @@
     candidature: 'a envoyé une candidature',
     candidature_refusee: 'n’a pas retenu la candidature de',
     entree_animateur: 'a ouvert l’espace animateur de Boost',
+    lien_mot_de_passe_envoye: 'a envoyé un lien de nouveau mot de passe à',
+    deconnexion_partout_admin: 'a fermé toutes les sessions de',
   };
-  var FIELD_LABEL = { partage: 'Compte partagé du poste', profil_vigilys: 'Profil Vigilys / Maintys', vigilys_agent: 'Fiche Vigilys', statut: 'Statut', profil: 'Profil', apps: 'Applications', acces_direct: 'Accès direct', admin: 'Administrateur', moderateur: 'Modérateur de Boost', createur: 'Créateur', testeur: 'Testeur', parcours_lecteur: 'Lecteur du parcours', animateur: 'Animateur', anim_perms: 'Rubriques animateur' };
+  var FIELD_LABEL = { secteur: 'Secteur', partage: 'Compte partagé du poste', profil_vigilys: 'Profil Vigilys / Maintys', vigilys_agent: 'Fiche Vigilys', statut: 'Statut', profil: 'Profil', apps: 'Applications', acces_direct: 'Accès direct', admin: 'Administrateur', moderateur: 'Modérateur de Boost', createur: 'Créateur', testeur: 'Testeur', parcours_lecteur: 'Lecteur du parcours', animateur: 'Animateur', anim_perms: 'Rubriques animateur' };
   function shortName(label) { return String(label || '').replace(/s*<[^>]*>$/, '') || '(compte supprimé)'; }
   function fieldValue(k, v) {
     if (k === 'admin' || k === 'moderateur' || k === 'createur' || k === 'testeur' || k === 'parcours_lecteur' || k === 'animateur') return v ? 'oui' : 'non';
@@ -1023,34 +1158,58 @@
     if (k === 'apps') return v ? String(v).split(',').map(function (id) { var x = (ent.applications || []).filter(function (a) { return a.id === id; })[0]; return x ? x.nom : id; }).join(', ') : 'aucune';
     if (k === 'profil') { var p = profils.filter(function (x) { return x.id === v; })[0]; return p ? p.nom : v; }
     if (k === 'acces_direct' && v) { var ap = (ent.applications || []).filter(function (x) { return x.id === v; })[0]; return ap ? ap.nom : v; }
-    return v || 'non';
+    if (k === 'secteur') {
+      var nomS = '';
+      (SECTEURS || []).forEach(function (loc) { if (loc.id === v) nomS = loc.name; (loc.children || []).forEach(function (c) { if (c.id === v) nomS = c.name; }); });
+      return nomS || (v ? 'un secteur' : 'aucun');
+    }
+    return v || 'aucun';
   }
   function fmtDateTime(v) {
     var d = new Date(String(v || '').replace(' ', 'T'));
     return isNaN(d) ? '' : d.toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
   }
-  function loadJournal() {
-    $('#admin-list').innerHTML = '<p class="admin-empty">Chargement…</p>';
-    api('GET', '/api/hub/admin/audit').then(function (r) {
+  // G2 (18/11) : le journal se cherche (nom, action), cache par défaut les entrées dans l'espace animateur, et se lit page
+  // par page (« Voir les plus anciennes ») au-delà des 300 dernières lignes
+  var journalRows = null, journalPage = 0, journalPour = '', journalPlus = false;
+  function loadJournal(page) {
+    journalPage = page || 0;
+    if (!journalPage) $('#admin-list').innerHTML = '<p class="admin-empty">Chargement…</p>';
+    var sansAnim = !journalAnim;
+    api('GET', '/api/hub/admin/audit?page=' + journalPage + (sansAnim ? '&sans_anim=1' : '')).then(function (r) {
       if (adminFilter !== 'journal') return;
       if (r.status !== 200) { $('#admin-list').innerHTML = '<p class="admin-empty">' + esc(r.data.message || 'Journal indisponible.') + '</p>'; return; }
-      if (!r.data.length) { $('#admin-list').innerHTML = '<p class="admin-empty">Rien dans le journal pour le moment.</p>'; return; }
-      $('#admin-list').innerHTML = '<p class="journal-note">Les 300 dernières actions. Le journal ne peut être ni modifié ni effacé depuis le hub.</p>' + r.data.map(function (l) {
-        var who = l.actor ? shortName(l.actor) : (l.action === 'demande' ? shortName(l.target) : (l.action === 'suppression_auto' || l.action === 'inactivite_rappel' || l.action === 'suspension_inactivite') ? 'Le hub' : 'Sécurité');
-        var verb = ACTION_LABEL[l.action] || l.action;
-        var target = (l.action === 'demande' || l.action === 'mot_de_passe_modifie' || l.action === 'mot_de_passe_reinitialise' || l.action === 'entree_animateur') ? '' : ' ' + shortName(l.target);
-        var det = Object.keys(l.details || {}).filter(function (k) { return FIELD_LABEL[k] && Array.isArray(l.details[k]); }).map(function (k) {
-          return '<li>' + esc(FIELD_LABEL[k]) + ' : ' + esc(fieldValue(k, l.details[k][0])) + ' → <b>' + esc(fieldValue(k, l.details[k][1])) + '</b></li>';
-        }).join('');
-        var line = l.action === 'compte_bloque'
-          ? '🔒 Compte de <b>' + esc(shortName(l.target)) + '</b> bloqué 15 min après 5 mots de passe faux'
-          : '<b>' + esc(who) + '</b> ' + esc(verb) + '<b>' + esc(target) + '</b>';
-        return '<div class="journal-row"><span class="journal-date">' + esc(fmtDateTime(l.created)) + '</span>' +
-          '<p>' + line + '</p>' +
-          (det ? '<ul>' + det + '</ul>' : '') + '</div>';
-      }).join('');
+      journalRows = (journalPage ? (journalRows || []) : []).concat(r.data);
+      journalPlus = r.data.length === 300;
+      journalPour = 'journal';
+      renderJournal();
     });
   }
+  function journalLine(l) {
+    var who = l.actor ? shortName(l.actor) : (l.action === 'demande' ? shortName(l.target) : (l.action === 'suppression_auto' || l.action === 'inactivite_rappel' || l.action === 'suspension_inactivite') ? 'Le hub' : 'Sécurité');
+    var verb = ACTION_LABEL[l.action] || l.action;
+    var target = (l.action === 'demande' || l.action === 'mot_de_passe_modifie' || l.action === 'mot_de_passe_reinitialise' || l.action === 'entree_animateur') ? '' : ' ' + shortName(l.target);
+    var det = Object.keys(l.details || {}).filter(function (k) { return FIELD_LABEL[k] && Array.isArray(l.details[k]); }).map(function (k) {
+      return '<li>' + esc(FIELD_LABEL[k]) + ' : ' + esc(fieldValue(k, l.details[k][0])) + ' → <b>' + esc(fieldValue(k, l.details[k][1])) + '</b></li>';
+    }).join('');
+    var line = l.action === 'compte_bloque'
+      ? '🔒 Compte de <b>' + esc(shortName(l.target)) + '</b> bloqué 15 min' + (l.details && l.details.appareils ? ' après ' + esc(l.details.essais || 20) + ' mots de passe faux depuis ' + esc(l.details.appareils) + ' appareils' : ' après des mots de passe faux')
+      : '<b>' + esc(who) + '</b> ' + esc(verb) + '<b>' + esc(target) + '</b>';
+    if (l.action === 'suppression_auto' && l.details && l.details.motif) line += ' <small>(' + esc(l.details.motif) + ')</small>';
+    return { html: '<div class="journal-row"><span class="journal-date">' + esc(fmtDateTime(l.created)) + '</span><p>' + line + '</p>' + (det ? '<ul>' + det + '</ul>' : '') + '</div>',
+      texte: norm([who, verb, l.target, l.actor].join(' ')) };
+  }
+  function renderJournal() {
+    var q = norm($('#admin-search').value);
+    var rows = (journalRows || []).map(journalLine).filter(function (x) { return !q || q.split(/\s+/).every(function (w) { return x.texte.indexOf(w) !== -1; }); });
+    var tete = '<p class="journal-note">Le journal ne peut être ni modifié ni effacé depuis le Hub. Le nom d’une personne partie devient « Ancien collaborateur » 12 mois après son départ.</p>' +
+      '<label class="chk journal-anim"><input type="checkbox" id="journal-anim"' + (journalAnim ? ' checked' : '') + '> Montrer aussi les entrées dans l’espace animateur de Boost</label>';
+    var fin = journalPlus ? '<p><button type="button" class="btn-soft" id="journal-plus">Voir les plus anciennes</button></p>' : '';
+    $('#admin-list').innerHTML = tete + (rows.length ? rows.map(function (x) { return x.html; }).join('') : '<p class="admin-empty">' + (q ? 'Rien dans le journal pour « ' + esc($('#admin-search').value.trim()) + ' ».' : 'Rien dans le journal pour le moment.') + '</p>') + fin;
+    $('#journal-anim').addEventListener('change', function (e) { journalAnim = e.target.checked; loadJournal(0); });
+    var plus = $('#journal-plus'); if (plus) plus.addEventListener('click', function () { loadJournal(journalPage + 1); });
+  }
+  var journalAnim = false;
 
   $('#noemail-form').addEventListener('submit', function (e) {
     e.preventDefault();
@@ -1073,6 +1232,7 @@
     var b = e.target.closest('button[data-filter]');
     if (!b) return;
     adminFilter = b.getAttribute('data-filter');
+    journalPour = '';
     renderAdmin();
   });
 
@@ -1084,6 +1244,8 @@
     if (boxes.length) out.apps = Array.prototype.filter.call(boxes, function (b) { return b.checked; }).map(function (b) { return b.value; });
     var direct = card.querySelector('select[name="acces_direct"]');
     if (direct) out.acces_direct = direct.value;
+    var sect = card.querySelector('select[name="secteur"]');
+    if (sect) out.secteur = sect.value;
     var part = card.querySelector('input[name="partage"]');
     if (part) out.partage = part.checked;
     var pv = card.querySelector('select[name="profil_vigilys"]');
@@ -1140,11 +1302,25 @@
       return;
     }
     if (act === 'mdp') {
-      if (!confirmInline(b, 'Confirmer ?')) return;
+      // Q1 (18/11) : avec e-mail, un lien part chez la personne (personne d'autre ne voit son mot de passe) ;
+      // sans e-mail, un mot de passe provisoire à remettre en main propre (à changer avant d'ouvrir les applis)
+      var label = acc.email ? 'Envoyer un lien de mot de passe' : 'Mot de passe provisoire';
+      if (!confirmInline(b, acc.email ? 'Confirmer : envoyer le lien ?' : 'Confirmer ?')) return;
       api('POST', '/api/hub/admin/accounts/' + aid + '/password').then(function (r) {
-        b.textContent = 'Mot de passe provisoire';
+        b.textContent = label;
         if (r.status !== 200) { msg.textContent = r.data.message || 'Impossible.'; return; }
-        msg.innerHTML = 'Mot de passe provisoire de ' + esc(acc.prenom) + ' : <code>' + esc(r.data.password) + '</code><br>À remettre en main propre : la personne choisira le sien à la prochaine connexion. Il ne sera plus affiché.';
+        if (r.data.envoye) msg.textContent = 'Un lien pour choisir un nouveau mot de passe vient de partir sur l’adresse e-mail de ' + acc.prenom + ' (valable 30 minutes, une seule fois). Personne d’autre ne voit son mot de passe ; l’actuel reste valable tant qu’il n’a pas servi.';
+        else msg.innerHTML = 'Mot de passe provisoire de ' + esc(acc.prenom) + ' : <code>' + esc(r.data.password) + '</code><br>À remettre en main propre : à sa prochaine connexion, ' + esc(acc.prenom) + ' devra en choisir un (les applications restent fermées d’ici là). Il ne sera plus affiché.';
+        msg.classList.add('is-ok');
+      });
+      return;
+    }
+    if (act === 'deconnecter') {
+      if (!confirmInline(b, 'Confirmer : tout fermer ?')) return;
+      api('POST', '/api/hub/admin/accounts/' + aid + '/deconnecter').then(function (r) {
+        b.textContent = 'Déconnecter partout';
+        if (r.status !== 200) { msg.textContent = r.data.message || 'Impossible.'; return; }
+        msg.textContent = 'Toutes les sessions de ' + acc.prenom + ' sont fermées (Hub et applis, sur tous ses appareils). Son compte reste actif.';
         msg.classList.add('is-ok');
       });
       return;
@@ -1184,11 +1360,32 @@
   var ACTIVITY_KEY = 'hub_activity_' + id;
   var lastActivity = Number(store.get(ACTIVITY_KEY)) || 0;
   var savedAt = 0;
+  var pingAt = 0;
   function markActivity() {
     var now = Date.now();
     if (now - lastActivity > ADMIN_IDLE) return; // déjà verrouillé : seule la confirmation rouvre
     lastActivity = now;
     if (now - savedAt > 15000) { savedAt = now; store.set(ACTIVITY_KEY, String(now)); }
+    // D5 (18/11) : le verrou est tenu par le serveur ; tant qu'on se sert de l'administration (ou de la boîte à outils),
+    // on le lui dit toutes les 2 minutes au plus
+    if (now - pingAt > 120000 && ($('#admin-sheet').open || $('#tools-sheet').open)) { pingAt = now; api('POST', '/api/hub/admin/actif', {}); }
+  }
+  // Le serveur dit « verrouillé » (10 minutes sans action, redémarrage, autre appareil) : l'écran suit
+  var apresVerrou = null;
+  function verrouServeur() {
+    lastActivity = 0;
+    store.set(ACTIVITY_KEY, '0');
+    var ouvert = $('#tools-sheet').open ? 'outils' : 'comptes';
+    if ($('#admin-sheet').open) closeSheet($('#admin-sheet'));
+    if ($('#tools-sheet').open) closeSheet($('#tools-sheet'));
+    if (account && account.admin && !$('#admin-lock').open) demanderMotDePasse(ouvert);
+  }
+  function demanderMotDePasse(suite) {
+    apresVerrou = suite;
+    var f = $('#admin-lock-form');
+    f.reset();
+    f.querySelector('.auth-msg').textContent = '';
+    openSheet($('#admin-lock'));
   }
   function unlockAdmin() {
     lastActivity = Date.now();
@@ -1202,6 +1399,7 @@
   // Administration ouverte mais plus personne ne s'en sert : on la referme.
   setInterval(function () {
     if (adminLocked() && $('#admin-sheet').open) closeSheet($('#admin-sheet'));
+    if (adminLocked() && $('#tools-sheet').open) closeSheet($('#tools-sheet'));
   }, 10000);
 
   function openAdmin() {
@@ -1211,9 +1409,15 @@
   }
   // Boîte à outils (15/10) : Kiosque Elvanys, téléchargé depuis le site de Boost de l'entreprise
   $('#tools-btn').addEventListener('click', function () {
+    // D5 (18/11) : la boîte à outils est verrouillée comme les comptes (le code bureau du catalogue s'y change)
+    if (adminLocked()) { demanderMotDePasse('outils'); return; }
+    markActivity();
+    openTools();
+  });
+  function openTools() {
     // Le fichier est servi par le Hub lui-même (16/10) : passé par Boost, l'ancienne mémoire hors ligne d'un téléphone
     // pouvait détourner le lien vers l'accueil de Boost. Le Hub n'a pas de mémoire hors ligne.
-    $('#kiosque-dl').href = 'telecharger/kiosque-elvanys-1.14.apk?v=1';
+    $('#kiosque-dl').href = 'telecharger/kiosque-elvanys-' + KIOSQUE_VERSION + '.apk?v=1';
     $('#kiosque-ent').textContent = id;
     // Catalogue des promotions (03/11) : site à part, adresse « catalogue » de la fiche ; carte cachée tant que l'entreprise n'en a pas
     var cat = ent.catalogue || '';
@@ -1222,7 +1426,10 @@
     $('#catalogue-url').textContent = cat;
     if (cat) etatCodeCatalogue();
     openSheet($('#tools-sheet'));
-  });
+  }
+  // G6 (18/11) : une seule version du Kiosque, partout (titre, commande à copier, fichier téléchargé)
+  var KIOSQUE_VERSION = '1.14';
+  document.querySelectorAll('.kiosque-version').forEach(function (el) { el.textContent = KIOSQUE_VERSION; });
   // Code bureau du catalogue (tests du 18/11, G10) : choisi par un administrateur du Hub ; le changer ferme toutes les
   // sessions du bureau ouvertes. Le code n’est jamais réaffiché.
   function etatCodeCatalogue() {
@@ -1237,7 +1444,7 @@
     ev.preventDefault();
     var code = $('#catalogue-code').value.trim();
     if (!/^\d{6,8}$/.test(code)) { $('#catalogue-code-msg').textContent = 'Le code bureau a 6 à 8 chiffres.'; return; }
-    if (!window.confirm('Choisir ce code bureau ? Les sessions du bureau déjà ouvertes seront fermées.')) return;
+    if (!window.confirm('Choisir ce code bureau ? Les sessions du bureau déjà ouvertes seront fermées.')) { $('#catalogue-code-msg').textContent = ''; return; }
     api('POST', '/api/hub/catalogue/code-bureau', { code: code }).then(function (r) {
       $('#catalogue-code').value = '';
       etatCodeCatalogue();
@@ -1252,10 +1459,7 @@
   });
   $('#admin-btn').addEventListener('click', function () {
     if (!adminLocked()) { markActivity(); openAdmin(); return; }
-    var f = $('#admin-lock-form');
-    f.reset();
-    f.querySelector('.auth-msg').textContent = '';
-    openSheet($('#admin-lock'));
+    demanderMotDePasse('comptes');
   });
   $('#admin-lock-form').addEventListener('submit', function (e) {
     e.preventDefault();
@@ -1275,7 +1479,8 @@
         setSession(r.data.token);
         unlockAdmin();
         closeSheet($('#admin-lock'));
-        openAdmin();
+        if (apresVerrou === 'outils') openTools(); else openAdmin();
+        apresVerrou = null;
       } else {
         msg.textContent = r.status === 400 ? 'Mot de passe incorrect.' : (r.data.message || 'Vérification impossible.');
       }

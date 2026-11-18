@@ -223,13 +223,41 @@
       <details class="account-pwd">
         <summary>Changer mon mot de passe</summary>
         <form class="auth-form" id="password-form" novalidate>
-          <label>Mot de passe actuel<input type="password" name="current" autocomplete="current-password" required></label>
-          <label>Nouveau mot de passe <small>(8 caractères minimum)</small><input type="password" name="password" autocomplete="new-password" minlength="8" required></label>
+          <label>Mot de passe actuel
+            <span class="pwd"><input type="password" name="current" autocomplete="current-password" required><button type="button" class="pwd-eye" aria-label="Afficher le mot de passe">👁</button></span>
+          </label>
+          <label>Nouveau mot de passe <small>(8 caractères minimum, pas un mot courant ni votre prénom)</small>
+            <span class="pwd"><input type="password" name="password" autocomplete="new-password" minlength="8" required><button type="button" class="pwd-eye" aria-label="Afficher le mot de passe">👁</button></span>
+          </label>
+          <label>Confirmez le nouveau mot de passe
+            <span class="pwd"><input type="password" name="password2" autocomplete="new-password" minlength="8" required><button type="button" class="pwd-eye" aria-label="Afficher le mot de passe">👁</button></span>
+          </label>
           <p class="auth-msg" role="alert"></p>
           <button type="submit" class="btn-main">Enregistrer</button>
         </form>
       </details>
-      <button type="button" class="btn-danger-soft" id="logout-btn">Se déconnecter partout</button>
+      <!-- Tests du 18/11 (DO4) : « Mes données » pour tout compte, quelles que soient ses applis -->
+      <button type="button" class="btn-soft account-donnees" id="donnees-btn">🔒 Mes données</button>
+      <!-- G8 : se déconnecter d'ici seulement, ou de partout (avec confirmation) -->
+      <div class="account-logout">
+        <button type="button" class="btn-soft" id="logout-here">Me déconnecter de cet appareil</button>
+        <button type="button" class="btn-danger-soft" id="logout-btn">Me déconnecter partout</button>
+      </div>
+      <button type="button" class="sheet-close" data-close>Fermer</button>
+    </div>
+  </dialog>
+
+  <!-- Mes données (tests du 18/11, DO4) : tout ce que les applis gardent au nom du compte, mot de passe redemandé -->
+  <dialog class="sheet sheet-wide" id="donnees-sheet" aria-labelledby="donnees-title">
+    <div class="sheet-inner">
+      <h2 id="donnees-title">🔒 Mes données</h2>
+      <p class="auth-hint">Tout ce que les applications du magasin gardent à votre nom. Par sécurité, votre mot de passe est redemandé.</p>
+      <form class="auth-form" id="donnees-form" novalidate>
+        <label>Mot de passe<span class="pwd"><input type="password" name="password" autocomplete="current-password" required><button type="button" class="pwd-eye" aria-label="Afficher le mot de passe">👁</button></span></label>
+        <p class="auth-msg" role="alert"></p>
+        <button type="submit" class="btn-main">Voir mes données</button>
+      </form>
+      <div id="donnees-vue" hidden></div>
       <button type="button" class="sheet-close" data-close>Fermer</button>
     </div>
   </dialog>
@@ -260,7 +288,7 @@
       <div class="tool-card">
         <div class="tool-head">
           <span class="tool-ico" aria-hidden="true">📱</span>
-          <div><b>Kiosque Elvanys</b><small>📲 Application mobile à installer sur la tablette (Android) · version 1.9</small></div>
+          <div><b>Kiosque Elvanys</b><small>📲 Application mobile à installer sur la tablette (Android) · version <span class="kiosque-version">1.14</span></small></div>
         </div>
         <p>Application mobile à installer sur une tablette Android. Elle transforme une tablette en borne verrouillée, au choix : <b>borne Boost</b> (salle de pause : le hub puis Boost, aucun compte gardé) ou <b>poste de sécurité</b> (le hub avec le compte partagé du poste, puis Vigilys où chaque agent entre avec son nom et son code). On ne peut pas en sortir sans le code de sortie, les captures d’écran sont interdites, et elle démarre toute seule.</p>
         <a class="btn-main tool-dl" id="kiosque-dl" download>Télécharger l’application mobile (fichier .apk)</a>
@@ -269,7 +297,7 @@
           <ol>
             <li>Sur la tablette : retirer <b>tous les comptes</b> (Google et celui de la marque), désinstaller Fully, activer le mode développeur puis le <b>Débogage USB</b>.</li>
             <li>Sur un PC : installer « SDK Platform-Tools » d’Android, y copier le fichier .apk, brancher la tablette par câble.</li>
-            <li>Dans le Terminal du PC : <code>.\adb install kiosque-elvanys-1.9.apk</code></li>
+            <li>Dans le Terminal du PC : <code id="kiosque-install">.\adb install kiosque-elvanys-<span class="kiosque-version">1.14</span>.apk</code> <button type="button" class="btn-soft tool-copy" data-copy="kiosque-install">Copier</button></li>
             <li>Puis : <code id="kiosque-cmd">.\adb shell dpm set-device-owner fr.elvanys.kiosque/.AdminReceiver</code> <button type="button" class="btn-soft tool-copy" data-copy="kiosque-cmd">Copier</button></li>
             <li>Sur la tablette : ouvrir <b>Kiosque Elvanys</b>, entrer le nom de l’entreprise (<b id="kiosque-ent"></b>), choisir l’usage (borne Boost ou poste de sécurité) et un code de sortie, à ranger aussitôt dans le Proton Pass.</li>
             <li>Borne Boost : autoriser la tablette dans Boost (espace animateur → Appareils). Poste de sécurité : se connecter au hub avec le compte partagé du poste (case « Compte partagé du poste de sécurité » cochée sur sa fiche), toucher Vigilys, puis autoriser l’appareil dans Vigilys si demandé.</li>
@@ -325,7 +353,16 @@
       </div>
       <label class="admin-search" id="admin-search-box">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
-        <input type="search" id="admin-search" placeholder="Chercher : nom, prénom, e-mail, profil (Direction, Agent…), rôle (Administrateur…) ou appli" aria-label="Chercher un compte" autocomplete="off">
+        <input type="search" id="admin-search" placeholder="Nom, e-mail, profil, rôle, appli…" aria-label="Chercher : nom, prénom, e-mail, profil (Direction, Agent, Superviseur…), rôle (Administrateur…), secteur ou appli" title="Nom, prénom, e-mail, profil (Direction, Agent, Superviseur…), rôle (Administrateur…), secteur ou appli" autocomplete="off">
+      </label>
+      <label class="admin-sort" id="admin-sort-box">Trier
+        <select id="admin-sort">
+          <option value="recent">les plus récents d’abord</option>
+          <option value="nom">par nom</option>
+          <option value="prenom">par prénom</option>
+          <option value="profil">par profil</option>
+          <option value="connexion">dernière connexion la plus ancienne d’abord</option>
+        </select>
       </label>
       <div class="admin-list" id="admin-list"></div>
     </div>
