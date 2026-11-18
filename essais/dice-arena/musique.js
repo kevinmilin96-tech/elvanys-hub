@@ -328,7 +328,7 @@ const Carnet = (() => {
 (() => {
   if (typeof document === 'undefined' || window.__verrouFenetres) return; window.__verrouFenetres = true;
   const st = document.createElement('style');
-  st.textContent = 'html.fen-ouverte, html.fen-ouverte body { overflow:hidden !important; overscroll-behavior:none; } html.fen-ouverte .fen-voile, html.fen-ouverte .fen-voile * { overscroll-behavior:contain; }';
+  st.textContent = 'html.fen-ouverte, html.fen-ouverte body { overflow:hidden !important; }'; // 18/11 : sans « overscroll-behavior » sur le contenu (il empêchait la grille des portails de défiler)
   document.head.appendChild(st);
   const opaque = c => { const m = /rgba?\(([^)]+)\)/.exec(c || ''); if (!m) return c && c !== 'transparent' && c !== 'none'; const p = m[1].split(',').map(Number); return p.length < 4 || p[3] > .25; };
   const estFenetre = el => {

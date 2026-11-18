@@ -4,5 +4,5 @@
 <script src="donnees.js"></script><script src="cartes.js?v=7736d873d3"></script>
 <script>document.head.insertAdjacentHTML('beforeend', '<style>' + CSS_CARTE + '</style>');
 const ks = (new URLSearchParams(location.search).get('k') || 'seve,racines,faon,lien').split(',');
-document.getElementById('g').innerHTML = ks.map(k => carteGuilde(k, { heros:'pip', art:'portraits/pip.webp', w:+(new URLSearchParams(location.search).get('w') || 216) })).join('');</script><script src="musique.js?v=880e32a1ad"></script>
+document.getElementById('g').innerHTML = ks.map(k => carteGuilde(k, { heros:'pip', art:'portraits/pip.webp', w:+(new URLSearchParams(location.search).get('w') || 216) })).join('');</script><script src="musique.js?v=a66abd87f7"></script>
 </body></html>
