@@ -214,19 +214,26 @@ if (typeof document !== 'undefined') {
 }
 
 // =============================================================================================== LE BUTIN DU CAMPEMENT (14/11 nuit, comme les récompenses « pendant ton absence » d'AFK Arena)
-// Il se remplit tout seul : par heure, 8 XP et un demi éclat de Guilde, plus vite quand on monte dans la Tour des épreuves (+5 % par étage passé) ;
-// 12 heures au plus (au-delà, plus rien ne s'ajoute : il faut passer le ramasser). On le ramasse depuis le menu.
-const BUTIN_CLE = 'guilde-butin', BUTIN_MAX_H = 12;
+// Il se remplit tout seul : par heure, 8 XP, un demi éclat de Guilde, 30 🪙 d'or et 15 🔹 de poussière de rune, plus vite quand on monte dans la Tour
+// des épreuves (+5 % par étage passé) ; 12 heures au plus. On le ramasse depuis le menu.
+// 19/11 (l'utilisateur : « la récolte et le butin du campement sont deux choses à deux endroits : un seul endroit et la même chose ») :
+// la « récolte du campement » de Mes héros (or + poussière, heros-etoiles.js) est fondue ICI ; recolteDispo / recolter y renvoient.
+const BUTIN_CLE = 'guilde-butin', BUTIN_MAX_H = 12, BUTIN_H = { xp:8, eclats:.5, or:30, pou:15 };
 function butinCalcule() {
-  const b = RJ(BUTIN_CLE, null); if (!b) { localStorage.setItem(BUTIN_CLE, JSON.stringify({ depuis:Date.now() })); return { h:0, xp:0, eclats:0 }; }
+  const b = RJ(BUTIN_CLE, null); if (!b) { localStorage.setItem(BUTIN_CLE, JSON.stringify({ depuis:Date.now() })); return { h:0, xp:0, eclats:0, or:0, pou:0 }; }
   const etages = Math.max(0, (RJ('guilde-tour-epreuves', {}).etage || 1) - 1), vit = 1 + .05 * etages;
-  const h = Math.min(BUTIN_MAX_H, (Date.now() - b.depuis) / 36e5); return { h, xp:Math.floor(h * 8 * vit), eclats:Math.floor(h * .5 * vit), vit };
+  const h = Math.min(BUTIN_MAX_H, (Date.now() - b.depuis) / 36e5), f = k => Math.floor(h * BUTIN_H[k] * vit);
+  // l'ancienne récolte pas encore ramassée est ajoutée une fois
+  let or0 = 0, pou0 = 0; try { const t = +localStorage.getItem('guilde-recolte') || 0; if (t) { const hr = Math.min(12, (Date.now() - t) / 36e5); or0 = Math.floor(hr * 30); pou0 = Math.floor(hr * 15); } } catch (e) {}
+  return { h, xp:f('xp'), eclats:f('eclats'), or:f('or') + or0, pou:f('pou') + pou0, vit };
 }
 function butinRamasse() {
-  const g = butinCalcule(); if (g.xp < 1 && g.eclats < 1) return g;
-  localStorage.setItem(BUTIN_CLE, JSON.stringify({ depuis:Date.now() }));
-  if (g.xp) gagneXP(g.xp, 'Butin du campement'); if (g.eclats && typeof donneLibres === 'function') donneLibres(g.eclats); return g;
+  const g = butinCalcule(); if (g.xp < 1 && g.eclats < 1 && g.or < 1) return g;
+  localStorage.setItem(BUTIN_CLE, JSON.stringify({ depuis:Date.now() })); try { localStorage.removeItem('guilde-recolte'); } catch (e) {}
+  if (g.xp) gagneXP(g.xp, 'Butin du campement'); if (g.eclats && typeof donneLibres === 'function') donneLibres(g.eclats);
+  if ((g.or || g.pou) && typeof donneRessources === 'function') donneRessources(g.or, g.pou, true);
+  return g;
 }
 function butinHTML() { const g = butinCalcule(), plein = g.h >= BUTIN_MAX_H;
-  return `<button class="butin ${plein ? 'plein' : ''}" onclick="butinRamasse(); const rm = document.getElementById('rangmenu'); if (rm) rm.innerHTML = bandeauRangHTML() + butinHTML(); else this.outerHTML = butinHTML();">🎁 Butin du campement : <b>${g.xp} XP · 💠 ${g.eclats}</b>${plein ? ' · plein !' : ` · ${Math.floor(g.h)} h / ${BUTIN_MAX_H} h`}</button>`; }
+  return `<button class="butin ${plein ? 'plein' : ''}" onclick="butinRamasse(); const rm = document.getElementById('rangmenu'); if (rm) rm.innerHTML = bandeauRangHTML() + butinHTML(); else this.outerHTML = butinHTML();">🎁 Butin du campement : <b>${g.xp} XP · 💠 ${g.eclats} · 🪙 ${g.or} · 🔹 ${g.pou}</b>${plein ? ' · plein !' : ` · ${Math.floor(g.h)} h / ${BUTIN_MAX_H} h`}</button>`; }
 if (typeof document !== 'undefined') { const st = document.createElement('style'); st.textContent = `.butin { display:block; width:100%; margin-top:5px; font:12.5px Georgia, serif; color:#f1ecff; background:#1d1838e6; border:1px solid #4b4580; border-radius:12px; padding:5px 8px; } .butin b { color:#f3c96b; } .butin.plein { border-color:#f3c96b; box-shadow:0 0 12px #f3c96b88; animation:butinP 1.6s ease-in-out infinite; } @keyframes butinP { 50% { box-shadow:0 0 2px #f3c96b44; } }`; document.head.appendChild(st); }

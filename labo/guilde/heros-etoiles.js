@@ -85,10 +85,9 @@ function monteNiveau(id, fois = 1) {
   return fait;
 }
 // la récolte du campement (comme les jeux de héros : elle s'accumule pendant qu'on n'est pas là, 12 h au plus)
-const RECOLTE_H = { or:30, pou:15 }, RECOLTE_MAX = 12;
-function recolteDispo() { let t = 0; try { t = +localStorage.getItem('guilde-recolte') || 0; } catch (e) {} if (!t) { try { localStorage.setItem('guilde-recolte', Date.now() - 2 * 3600000); } catch (e) {} t = Date.now() - 2 * 3600000; }
-  const h = Math.min(RECOLTE_MAX, (Date.now() - t) / 3600000); return { h, or:Math.floor(h * RECOLTE_H.or), pou:Math.floor(h * RECOLTE_H.pou) }; }
-function recolter() { const r = recolteDispo(); if (r.or < 1) return r; donneRessources(r.or, r.pou, true); try { localStorage.setItem('guilde-recolte', Date.now()); } catch (e) {} return r; }
+// 19/11 : la récolte est fondue dans le BUTIN DU CAMPEMENT du menu (rang.js) : un seul compteur, un seul endroit
+function recolteDispo() { const g = typeof butinCalcule === 'function' ? butinCalcule() : { h:0, or:0, pou:0 }; return { h:g.h, or:g.or, pou:g.pou }; }
+function recolter() { return typeof butinRamasse === 'function' ? butinRamasse() : { or:0, pou:0 }; }
 
 // ----------------------------------------------------------------------------------------------- l'équipement (6 cases, 5 raretés, amélioration, fusion)
 const EQ_CASES = [
