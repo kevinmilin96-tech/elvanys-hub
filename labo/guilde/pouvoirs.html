@@ -30,6 +30,8 @@
   .emp-h { display:flex; align-items:center; gap:8px; flex-wrap:wrap; } .emp-h h2 { margin:0; font-size:1.05em; color:var(--or); } .emp-h small { color:var(--doux); }
   .rang { margin-left:auto; display:flex; align-items:center; gap:6px; } .rang .etoiles { color:var(--or); font-weight:bold; }
   .rang button { font:bold .9em Georgia, serif; padding:9px 12px; border-radius:12px; border:0; background:var(--or); color:#2b1d0a; cursor:pointer; } .rang button[disabled] { opacity:.35; }
+  /* 19/11 (l'utilisateur : « on voit pas bien les 2 points nécessaires ») : le coût en points, lisible sur le bouton doré, même grisé */
+  .rang { flex-shrink:0; } .rang .etoiles { white-space:nowrap; } .rang button small { display:block; color:#2b1d0a; font-size:.95em; font-weight:bold; margin-top:2px; } .rang button[disabled] { opacity:.6; filter:grayscale(.5); }
   .verrou { color:#ffb36a; font-size:.85em; margin:4px 2px 0; }
   .cases { display:flex; gap:8px; overflow-x:auto; scroll-snap-type:x mandatory; padding:8px 2px 8px; }
   .case { flex:0 0 min(78%, 270px); scroll-snap-align:start; position:relative; background:#14122a; border:2px solid #4b4580; border-radius:16px; padding:10px; text-align:left; color:inherit; font:inherit; cursor:pointer; }
