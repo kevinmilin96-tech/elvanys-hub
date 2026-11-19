@@ -28,10 +28,11 @@ function accueil() {
   const e = lire(); if (e && !e.fini) { X = e; port(); return; }
   app().innerHTML = `<h1>⛵ Les Expéditions</h1>
   <p class="doux" style="text-align:center">Le navire volant de la Guilde part pour six escales. Au port, tu recrutes et tu places ton équipage sur deux rangées ; à chaque escale, il combat tout seul aux dés. Trois cœurs : trois défaites et c’est fini.</p>
+  <div class="nouveaux"><button class="go" onclick="location.href='expedition-v4.html'">✨ La nouvelle version (v4)<small>carte, 3 mers, boss tirés au sort</small></button><button class="go" onclick="location.href='expedition-duel.html'">⚔ Le Duel d’équipages<small>contre l’ordinateur</small></button></div>
   <h2>Ton capitaine</h2><div class="heros6">${ORDRE.map(id => id === 'zephine' && localStorage.getItem('guilde-tuto') !== 'fait'
     ? `<button disabled style="opacity:.5"><img src="${IMG(id)}" alt="" style="filter:grayscale(1)">🔒 ${HEROS[id].nom}</button>`
     : `<button onclick="choixCapitaine('${id}')"><img src="${IMG(id)}" alt="">${HEROS[id].nom}<br><small style="color:var(--or)">${CAPITAINES[id].n}</small><br><small class="prise ${PRISE_EXP[id]}">${PRISE_TXT[PRISE_EXP[id]]}</small></button>`).join('')}${capitainesAventure()}</div>
-  <button class="go" style="margin:8px 0" onclick="location.href='expedition-v4.html'">✨ Essayer la nouvelle version (v4) : carte, 3 mers, boss tirés au sort</button><button class="go" style="margin:0 0 8px" onclick="location.href='expedition-duel.html'">⚔ Nouveau mode : le Duel d’équipages contre l’ordinateur</button><div class="choixh"><button onclick="location.href='expeditions-v2-regles.html'">📖 Les règles</button><button onclick="records()">🏆 Mes expéditions</button><button onclick="location.href='menu.html'">⌂ Menu</button></div>`;
+  <div class="choixh"><button onclick="location.href='expeditions-v2-regles.html'">📖 Les règles</button><button onclick="records()">🏆 Mes expéditions</button><button onclick="location.href='menu.html'">⌂ Menu</button></div>`;
 }
 function choixCapitaine(id) {
   const v = haVoie(id), i = haInfo(id); // 15/11 soir : un héros d'aventure → sa voie
@@ -147,7 +148,7 @@ function transmuter() { const n = transmute(X, sel); sel = null; sauve(); port()
 function aideExp() { fenetre(`<h2>❓ Le port</h2><ul style="padding-left:1.1em">
   <li><b>Recruter</b> : touche une recrue du recruteur. 3 pareilles fusionnent en une ★ (×2, pouvoir renforcé) ; la ★ avale ensuite chaque copie, et à 6 recrues (une ★ + 3 copies, ou deux ★) c’est une ★★ (×4). Le recruteur montre plus souvent les recrues que tu as déjà.</li>
   <li><b>🎲 Le calcul d’un coup</b> : chaque recrue lance un dé : 1 = raté, 2 à 5 = toute son attaque, 6 = critique (×2). Le chiffre ne s’ajoute pas. Une Lame ou un Rempart placé derrière frappe à moitié. Le capitaine lance 3 dés : brelan = chiffre + 3, paire = chiffre de la paire, suite = 4, sinon le plus fort − 2 (au moins 1), plus son bonus d’attaque.</li>
-  <li><b>🎯 La cible du capitaine</b> : pendant un combat, maintiens ton doigt sur un ennemi : une cible apparaît dessus et tout l’équipage le vise en priorité (à partir du round suivant). Les 🏹 Tireurs visent d’eux-mêmes la rangée de derrière, les autres la rangée de devant.</li>
+  <li><b>🎯 La cible du capitaine</b> : pendant un combat, maintiens ton doigt sur un ennemi : une cible apparaît dessus et tout l’équipage le vise en priorité, tout de suite (dès le coup suivant). Les 🏹 Tireurs visent d’eux-mêmes la rangée de derrière, les autres la rangée de devant.</li>
   <li><b>Placer</b> : touche une recrue puis une place. Devant : Remparts (Barrière) et Lames. Derrière : Tireurs (ils frappent de loin) et Soutiens (ils aident et frappent un peu). Une Lame derrière attend que le devant tombe.</li>
   <li><b>Les familles</b> (en haut) : 2 ou 4 recrues de la même famille sur le plateau donnent un bonus. Touche-les pour le voir.</li>
   <li><b>L’or</b> : +8 après chaque escale, +1 par tranche de 5 gardées (3 au plus). Relancer : 1. Geler : garder la même offre.</li>
@@ -286,11 +287,14 @@ async function partir() {
   let EV = res.ev;
   for (let k = 0; k < EV.length; k++) { const e = EV[k];
     while (typeof window.PAUSE_EXP === 'function' && window.PAUSE_EXP(e)) await new Promise(r => setTimeout(r, 150)); // 18/11 : l'entraînement attend que le joueur pose la cible
-    // une cible désignée pendant le round : on rejoue le même combat avec elle à partir du round suivant (tout ce qui a déjà eu lieu reste identique)
-    if (e.t === 'round' && CIBLE.att && CIBLE.att !== CIBLE.id) {
-      const Xr = JSON.parse(JSON.stringify(avant)); Xr.ciblePrio = [...(CIBLE.liste || []), { id:CIBLE.att, round:e.n }];
-      const r2 = joueEscale(Xr, hasardX(Xr)), k2 = r2.ev.findIndex(x => x.t === 'round' && x.n === e.n);
-      if (k2 >= 0) { X = Xr; X.ciblePrio = null; sauve(); res = r2; EV = r2.ev; k = k2; CIBLE.liste = Xr.ciblePrio || [...(CIBLE.liste || []), { id:CIBLE.att, round:e.n }]; CIBLE.id = CIBLE.att; jl(`🎯 Cible du capitaine : ${noms[CIBLE.id]} !`); }
+    // 19/11 (l'utilisateur : « je perds un tour entier ») : une cible désignée compte TOUT DE SUITE : on rejoue le même combat avec elle
+    // à partir du prochain coup du round en cours (tout ce qui a déjà été montré reste identique : mêmes dés, même ordre)
+    if (CIBLE.att && CIBLE.att !== CIBLE.id) {
+      let n = 1, c = 0; for (let i = k - 1; i >= 0; i--) { const x = EV[i]; if (x.t === 'round') { n = x.n; break; } if (x.t === 'coup' || x.t === 'esquive') c++; }
+      if (e.t === 'round') { n = e.n; c = 0; }
+      const pr = { id:CIBLE.att, round:n, coup:c }, Xr = JSON.parse(JSON.stringify(avant)); Xr.ciblePrio = [...(CIBLE.liste || []), pr];
+      const r2 = joueEscale(Xr, hasardX(Xr)), pareil = r2.ev.length > k && r2.ev.slice(0, k).every((x, i) => x.t === EV[i].t && x.id === EV[i].id);
+      if (pareil) { X = Xr; X.ciblePrio = null; sauve(); res = r2; EV = r2.ev; CIBLE.liste = [...(CIBLE.liste || []), pr]; CIBLE.id = CIBLE.att; jl(`🎯 Cible du capitaine : ${noms[CIBLE.id]} !`); k--; CIBLE.att = null; continue; }
       CIBLE.att = null; }
     if (e.t === 'depart') { e.l.forEach(x => { const el = elU(x.id); if (!el) return; const sp = el.querySelectorAll('.av span'), b = el.querySelector('.pvb');
       const a0 = +(sp[0] && sp[0].textContent.replace(/\D/g, '')), v0 = +(sp[1] && sp[1].textContent.replace(/\D/g, ''));
@@ -316,7 +320,7 @@ async function partir() {
 }
 
 // 18/11 (l'utilisateur, « comme dans les jeux ») : LA CIBLE DU CAPITAINE : doigt maintenu sur un ennemi pendant le combat → 🎯 dessus, tout l'équipage le vise
-// en priorité à partir du round suivant (le moteur rejoue le même combat avec cette cible, voir partir()). Un simple toucher ouvre toujours sa fiche.
+// en priorité dès le coup suivant (19/11 ; le moteur rejoue le même combat avec cette cible, voir partir()). Un simple toucher ouvre toujours sa fiche.
 let CIBLE = { id:null, att:null };
 function ciblesTouch(P) {
   [...P.av, ...P.ar].filter(Boolean).forEach(u => { const el = elU(u.id); if (!el) return; let t = null, long = false;

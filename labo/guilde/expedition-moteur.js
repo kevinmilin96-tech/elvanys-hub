@@ -229,10 +229,10 @@ function combatExp(campJ, campE, R) {
   const avance = C => { if (front(C).length) return; vivants(C).filter(u => u.rang === 'ar' && (u.role === 'lame' || u.role === 'rempart' || u.role === 'capitaine')).forEach(u => { u.rang = 'av'; ev.push({ t:'avance', id:u.id }); }); };
   // 18/11 (choix de l'utilisateur, après un essai « au hasard » écarté) : les Lames, Remparts et le capitaine frappent la rangée de DEVANT (Barrières d'abord) ;
   // les TIREURS visent la rangée de DERRIÈRE (s'il y reste quelqu'un) ; le boss n'a plus Barrière. Et la CIBLE DU CAPITAINE : l'ennemi désigné (doigt maintenu
-  // pendant le combat, X.ciblePrio = { id, round }) est visé en priorité par tout l'équipage à partir de ce round, tant qu'il est debout.
+  // pendant le combat, X.ciblePrio = { id, round }) est visé en priorité par tout l'équipage dès le coup suivant (19/11), tant qu'il est debout.
   const prio = campJ.X && campJ.X.ciblePrio;
   const cible = (C, u, round) => { avance(C); const viv = vivants(C); if (!viv.length) return null;
-    if (prio && u && u.cote === 'J') { const p = [].concat(prio).filter(x => round >= x.round).pop(); const d = p && viv.find(x => x.id === p.id); if (d) return d; } // la dernière cible désignée compte
+    if (prio && u && u.cote === 'J') { const p = [].concat(prio).filter(x => round > x.round || (round === x.round && nCoups >= (x.coup || 0))).pop(); const d = p && viv.find(x => x.id === p.id); if (d) return d; } // la dernière cible désignée compte
     if (u && u.tireur) { const ar = viv.filter(x => x.rang === 'ar'); if (ar.length) return ar[Math.floor(R() * ar.length)]; }
     const f = front(C), l = f.length ? f : viv, b = l.filter(x => x.barriere); return (b.length ? b : l)[Math.floor(R() * (b.length || l.length))]; };
   const tue = (C, u) => {
@@ -243,9 +243,13 @@ function combatExp(campJ, campE, R) {
   // 14/11 (choix de l'utilisateur, comme dans les autobattlers) : les Soutiens frappent aussi depuis derrière, en plus de leur pouvoir
   // 14/11 (l'utilisateur : « on ne bloque pas le joueur, il place qui il veut où il veut ») : tout le monde frappe ; une Lame ou un Rempart de derrière frappe à moitié
   const peutFrapper = u => true;
+  // 19/11 (l'utilisateur : « la cible ne compte qu'au round suivant, je perds un tour entier ») : la cible s'applique TOUT DE SUITE,
+  // au coup qui suit dans le round en cours. nCoups = nombre de coups (et d'esquives) déjà joués dans ce round ; une cible { id, round, coup }
+  // vaut pour tous les coups suivants (l'écran rejoue le même combat : tout ce qui précède reste identique).
+  let nCoups = 0;
   for (let round = 1; round <= 25; round++) {
     if (!vivants(J).length || !vivants(E).length) break;
-    ev.push({ t:'round', n:round });
+    ev.push({ t:'round', n:round }); nCoups = 0;
     if (globalThis.__MECA4) globalThis.__MECA4(round, J, E, ev, tue);
     if (round % 2 === 0) [J, E].forEach(C => vivants(C).filter(u => u.invoque).forEach(u => { const t = C.liste.filter(x => x.mort && !x.boss && x !== u).pop(); if (t) { t.mort = false; t.v = Math.ceil(t.vmax / 2); ev.push({ t:'releve', id:t.id, v:t.v, txt:`💀 ${u.n} relève ${t.n} !` }); } })); // 17/11 nuit : les mécaniques des boss et élites des Expéditions v4 (rien en v3)
     const ordre = []; const ja = vivants(J), ea = vivants(E), premier = R() < .5;
@@ -272,8 +276,8 @@ function combatExp(campJ, campE, R) {
       if (dg > 0 && vivants(A).some(x => x.etendard && x !== u)) dg += 1; // l'Étendard
       if (dg > 0 && c.chef && vivants(D).some(x => x.totem)) { dg = Math.ceil(dg / 2); txt += (txt ? ' · ' : '') + 'Totem : moitié'; } // le Totem protège le chef
       if (u.embuscade && !u.embuscadeFaite && dg > 0) { dg *= 2; u.embuscadeFaite = true; txt = 'Embuscade !'; }
-      if (dg > 0 && c.esquive && !c.esquiveFaite) { c.esquiveFaite = true; ev.push({ t:'esquive', src:u.id, id:c.id, de }); continue; }
-      c.v -= dg; ev.push({ t:'coup', src:u.id, id:c.id, dg, de, txt, v:c.v });
+      if (dg > 0 && c.esquive && !c.esquiveFaite) { c.esquiveFaite = true; ev.push({ t:'esquive', src:u.id, id:c.id, de }); nCoups++; continue; }
+      c.v -= dg; ev.push({ t:'coup', src:u.id, id:c.id, dg, de, txt, v:c.v }); nCoups++;
       if (dg > 0 && u.poison) c.poisonSur += u.poison;
       if (dg > 0 && c.epines) { u.v -= c.epines; ev.push({ t:'epines', id:u.id, n:c.epines, v:u.v }); tue(A, u); }
       tue(D, c);

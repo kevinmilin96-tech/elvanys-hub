@@ -391,6 +391,7 @@
   .unique .pastilles [data-k="pv"] { position:absolute; right:calc(100% + 30cqw); top:7cqw; font-size:3.8cqw; }
   .unique .pastilles [data-k="ultime"], .unique .pastilles [data-k="ultimefait"] { display:none; }
   /* 15/11 : les PC = un gros cristal avec le chiffre, dans le panneau de droite (sous le nom, au-dessus des cartes en main) */
+  .tapis .barre .pastilles .icopc { position:static; inset:auto; border-radius:0; box-shadow:none; flex:none; } /* 19/11 : le cristal se posait par-dessus le nom (règle des portraits) */
   .p.pc .icopc { width:1.6em; height:1.6em; vertical-align:middle; margin-right:.15em; filter:drop-shadow(0 0 4px #5fb0ff); }
   .plateau.tapis.unique:not(.scene) .barre .pastilles [data-k="pc"] { display:flex !important; align-items:center; gap:.2em; order:1; font-size:3.6cqw !important; font-weight:bold; color:#cfe8ff !important; text-shadow:0 0 6px #2a7fc1, 0 1px 2px #000; }
   .plateau.tapis.unique:not(.scene) .barre .pastilles [data-k="pc"] b { font-size:1.35em; color:#fff; }
@@ -452,7 +453,7 @@
   .transbt.ok { box-shadow:0 0 0 2px #7dffb0, 0 0 12px #7dffb0; } .transbt.fait { opacity:.4; }
   .bas .b0 sup { font-size:10px; }
   .bas .b2 { white-space:nowrap; min-width:0; } /* 14/11 : avec les boutons de l'Odyssée (🎒, 🩸), « Fin du tour » n'est plus écrasé */
-  .bas:has(.b0:nth-of-type(3)) .b0 { width:40px; } .bas:has(.b0:nth-of-type(3)) .b1 { flex:.8; } .bas:has(.b0:nth-of-type(3)) .b1 .mot { display:none; }
+  .bas:has(.b0:nth-of-type(3)) .b0 { width:38px; } .bas:has(.b0:nth-of-type(3)) .b1 .nb { font-size:.7em; } .bas:has(.b0:nth-of-type(4)) .b1 { flex:.8; } .bas:has(.b0:nth-of-type(4)) .b1 .mot { display:none; } /* 19/11 : ⚙️ est passé en bas (il recouvrait la lanterne en haut à droite) */
   /* ===== habillage peint (planche d'interface Gemini, 11/11) ===== */
   .unique .barre { left:41cqw; width:18cqw; height:18cqw; }
   .unique #b-O { top:5.5cqh; } .unique #b-J { top:64cqh; }
@@ -696,7 +697,7 @@
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
 // 14/11 : l'Odyssée sans fin a ses propres emplacements (odyssee.js lit SANSFIN)
 const SANSFIN = new URLSearchParams(location.search).get('sansfin') === '1', ROUTE_TITAN = new URLSearchParams(location.search).get('route') === '1', EPREUVE_PAGE = new URLSearchParams(location.search).get('epreuve') === '1', ODY_PAGE = EPREUVE_PAGE ? 'epreuves.html' : 'odyssee.html' + (SANSFIN ? '?sansfin=1' : ROUTE_TITAN ? '?route=1' : '');
-const VERSION = '20261118-164604';
+const VERSION = '20261119-192319';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -1759,8 +1760,7 @@ function dessine() {
   else bandeau = 'Tous tes dés sont posés : touche « Fin du tour ».';
   document.getElementById('app').classList.toggle('compagnon', !!(S.coop && J.ordi));
   document.getElementById('app').innerHTML = `
-  <div class="salle"><span class="st">${S.coop ? `<b>⚔️ L’Invasion</b> · ${J.ordi ? `${J.nom} (compagnon) joue…` : J.qui === 'toi' ? 'à toi' : `au tour de ${J.nom}`} · ${S.salle.n}` : S.ody ? `<b>${S.ody.titre}</b> · ${S.salle.n} : ${S.salle.d}${J.reliques.length ? ' <span class="rel">' + J.reliques.map(r => `<i title="${RELIQUES[r].n}" onclick="aideRelique('${r}')">${RELIQUES[r].e}</i>`).join('') + '</span>' : ''}` : `<b>${S.salle.n}</b> · ${S.salle.d}`}</span><span class="sons">
-    <button class="sonbt" onclick="GM.parametres()" aria-label="Paramètres" title="Paramètres" style="font-size:18px;line-height:1">⚙️</button></span></div>
+  <div class="salle"><span class="st">${S.coop ? `<b>⚔️ L’Invasion</b> · ${J.ordi ? `${J.nom} (compagnon) joue…` : J.qui === 'toi' ? 'à toi' : `au tour de ${J.nom}`} · ${S.salle.n}` : S.ody ? `<b>${S.ody.titre}</b> · ${S.salle.n} : ${S.salle.d}${J.reliques.length ? ' <span class="rel">' + J.reliques.map(r => `<i title="${RELIQUES[r].n}" onclick="aideRelique('${r}')">${RELIQUES[r].e}</i>`).join('') + '</span>' : ''}` : `<b>${S.salle.n}</b> · ${S.salle.d}`}</span></div>
   <div class="plateau tapis unique ${S.lieu ? 'avecLieu' : ''} ${plateauIle() ? 'ile-' + plateauIle() : ''}">${effetsHTML()}${plateauIle() ? animIle(plateauIle()) : S.lieu ? `<div class="champLieu lieu-${S.lieu}"></div>` : ''}${barre(O, true)}${front(O, true)}${front(J, false)}${barre(J, false)}
     ${colonneActions(J, h)}
     <div class="des" ontouchstart="glisseDebut(event)" ontouchend="glisseFin(event)">${J.des.map((d, i) => `<div class="d ${sel.includes(d) ? 'sel' : ''} ${d.pose ? 'pose' : ''} ${d.mod ? 'mod' : ''} ${J.aLancer ? 'cache' : ''} ${i === J.neuf && (J.aLancer || Date.now() < (J.neufJusque || 0)) ? 'neuf' : ''}" onclick="choisirDe(${i})"><img src="${FACE(J.id, d.v || 1)}" alt="${d.v || '?'}">${d.sp && !J.aLancer && typeof FACES_FORGE !== 'undefined' ? `<span class="spf">${FACES_FORGE[d.sp].e}</span>` : ''}<div class="sac">${i === J.neuf && (J.aLancer || Date.now() < (J.neufJusque || 0)) ? '✨ neuf' : sacPastilles(J, d)}</div></div>`).join('')}${[...Array(Math.max(0, 5 - J.des.length)).keys()].map(k => { const i = J.des.length + k, t = i - 1;
@@ -1769,6 +1769,7 @@ function dessine() {
     <div class="main" style="left:${zoneMain().x1}%;width:${zoneMain().x2 - zoneMain().x1}%;top:${zoneMain().y1}%;height:${zoneMain().y2 - zoneMain().y1}%" onclick="if(event.target===this){carteVue=null;rendu();}">${mainEnEventail(J)}</div>
   </div>
   <div class="bas">
+    <button class="b0" onclick="GM.parametres()" aria-label="Paramètres" title="Paramètres">⚙️</button>
     <button class="b0" onclick="regles()" aria-label="Règles">❓</button>
     <button class="b0" onclick="voirJournal()" aria-label="Journal">📜</button>
     ${S.coop ? '<button class="b0" onclick="voirEquipe()" aria-label="Équipe">👥</button>' : ''}
@@ -2393,7 +2394,7 @@ document.addEventListener('pointerdown', () => { if (fxOn && !(S && S.tuto)) fxV
 <script src="tuto.js?v=a852c1ee75"></script>
 <script src="deux.js?v=c55497a4b3"></script>
 <script>window.AMIS_SANS_BOUTON = true;</script>
-<script src="amis.js?v=c2f7821b28"></script>
+<script src="amis.js?v=da00ccb367"></script>
 <script src="duel-ligne.js?v=25f67537a4"></script>
 <script src="invasion.js?v=ee7ddf7052"></script>
 <script src="enigme-table.js?v=80c517ec18"></script>

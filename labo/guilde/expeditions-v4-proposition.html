@@ -21,8 +21,8 @@ Tout ce qui est en <span style="color:#f3c96b">encadré doré</span> est un choi
 <h2>1. Le voyage en un coup d'œil</h2>
 <div class="bloc">Au départ : tu choisis <b>la mer</b>, ton <b>cran d'ascension</b> (et si tu veux, <b>le voyage du jour</b>), puis ton capitaine.
 Le jeu tire <b>une règle du voyage</b> et <b>le boss final</b>, et te les montre tout de suite.<br>
-Puis <b>6 étapes</b> : à chacune, tu touches ta prochaine escale sur la carte parmi <b>2 ou 3</b>. Le port, le recruteur, les familles, la fusion et les ordres du capitaine ne changent pas.</div>
-<div class="a-valider">🟡 <b>À valider</b> : la carte montre l'étape en cours et la suivante ; le reste est « dans la brume » (sauf le boss, connu dès le départ, comme dans Slay the Spire). Le trésor « carte ancienne » dévoile toute la route.</div>
+Puis la carte (<b>nouvelle carte du 19/11</b>, ta décision) : <b>4 points de choix</b> 🧭, sans combat (❔ événement, 💎 trésor, 🏝 port franc : tu en choisis un parmi 2 ou 3) ; entre deux points de choix, une <b>suite obligatoire de 2 ou 3 combats</b> ⚔ qui finit par une 💀 <b>élite</b> ; au bout, 👑 <b>le boss, une seule chance</b> (perdu = le voyage s’arrête). 10 ou 11 escales avant le boss. Le port, le recruteur, les familles, la fusion et les ordres du capitaine ne changent pas.</div>
+<div class="a-valider">🟡 <b>La brume</b> : les combats des suites se voient toujours ; les points de choix après le prochain restent « dans la brume » (sauf le boss, connu dès le départ, comme dans Slay the Spire). Le trésor « carte ancienne » dévoile toute la route.</div>
 <div id="etapes"></div>
 
 <div class="bloc">🎯 <b>Les cibles (ta décision du 18/11)</b> : les Lames, Remparts et capitaines frappent la rangée de devant (Barrières d’abord), les 🏹 Tireurs visent la rangée de derrière (des deux côtés). Le boss n’a plus Barrière. <b>La cible du capitaine</b> : pendant le combat, maintiens ton doigt sur un ennemi, une 🎯 apparaît, et tout l’équipage le vise en priorité à partir du round suivant.</div>
@@ -81,10 +81,10 @@ Le score est multiplié : +10 % par cran, +25 % par mer après la première.</di
 <li>Remplacer l'ancienne version par la v4 dans le menu, ou garder les deux ?</li>
 </ol>
 </main>
-<script src="donnees.js?v=2afe6cf473"></script><script src="odyssee.js?v=3b40723744"></script><script src="expedition-moteur.js?v=922eaadead"></script><script src="expedition-v4.js?v=7635cbbf96"></script>
+<script src="donnees.js?v=2afe6cf473"></script><script src="odyssee.js?v=3b40723744"></script><script src="expedition-moteur.js?v=ea489b216d"></script><script src="expedition-v4.js?v=615ce55c22"></script>
 <script>
 const typ = { monstres:'⚔ monstres', elite:'💀 élite', fantome:'👻 navire rival', evenement:'❔ événement', tresor:'💎 trésor', port:'🏝 port franc', boss:'👑 boss' };
-document.getElementById('etapes').innerHTML = `<div class="bloc"><b class="or">Les étapes</b> (une sorte tirée par case) :<table>${ETAPES_V4.map((e, k) => `<tr><td>Étape ${k + 1}</td><td>${e.map(c => c.map(t => typ[t]).join(' ou ')).join(' · ')}</td></tr>`).join('')}</table></div>`;
+document.getElementById('etapes').innerHTML = `<div class="bloc"><b class="or">La route</b> : 🧭 point de choix (${CHOIX_V4.filter((x, i, l) => l.indexOf(x) === i).map(t => typ[t]).join(', ')}) → ${SUITES_V4.map((S, k) => `⚔ suite ${k + 1} : ${S.combats.length + (S.troisieme ? 0 : 0) > 1 ? '1 ou 2 combats' : '1 combat'} puis 💀 une élite → 🧭 point de choix`).join(' → ')} → 👑 le boss (une seule chance).</div>`;
 document.getElementById('mers').innerHTML = ORDRE_MERS.map(k => { const M = MERS[k];
   return `<div class="bloc"><b class="or">${M.e} ${M.n}</b> — ${M.d}${M.ouvre ? ` <small>(s'ouvre en gagnant ${MERS[M.ouvre].n})</small>` : ''}
   <table>${M.groupes.map(g => `<tr><td>${g.e} ${g.n}</td><td>${[...g.av, ...g.ar].map(m => `${m[0]} <small>${m[1]}/${m[2]}${m[3] ? ' ' + m[3] : ''}</small>`).join(', ')}</td></tr>`).join('')}

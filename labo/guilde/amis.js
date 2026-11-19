@@ -88,7 +88,12 @@ function amisBouton() {
 // l'icône 📬, sous le 👤 ; dans le menu toujours, ailleurs seulement quand un cadeau attend ; pastille DORÉE
 function amisBoiteBouton() {
   if (typeof document === 'undefined' || !document.body) return;
-  const n = (AMIS.boite || []).length, voir = !!AMIS.carte && (window.AMIS_SANS_BOUTON || n > 0);
+  // 19/11 (l'utilisateur : « le 📬 s'affiche par-dessus le plateau en plein combat ») : l'icône flottante n'existe plus que dans le menu ;
+  // ailleurs (Duel, Chroniques, Crypte…), un cadeau qui arrive est annoncé par un petit bandeau, une seule fois
+  const n = (AMIS.boite || []).length, menu = /menu\.html$|\/guilde\/?$/.test(location.pathname), voir = !!AMIS.carte && menu;
+  if (!menu) { let vu = 0; try { vu = +sessionStorage.getItem('guilde-boite-annoncee') || 0; } catch (e) {}
+    if (n > vu) amisMsg(`📬 ${n > 1 ? n + ' cadeaux t’attendent' : 'Un cadeau t’attend'} dans la boîte aux lettres du menu.`);
+    try { sessionStorage.setItem('guilde-boite-annoncee', String(n)); } catch (e) {} }
   if (typeof window.boitePastille === 'function') window.boitePastille(n); // 17/11 : la barre du bas du menu
   let b = document.getElementById('boite-bouton');
   if (!voir) { if (b) b.remove(); return; }

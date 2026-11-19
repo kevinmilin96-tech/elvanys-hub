@@ -118,7 +118,7 @@ function port() {
   <div class="entete">${avX() ? haImg(avX()) : `<img src="${IMG(X.heros)}" alt="">`}<div><b>${nomX()}</b>, capitaine · <span class="p">💰 ${X.or}</span> <span class="p coeurs">${'❤'.repeat(X.coeurs)}${'🖤'.repeat(Math.max(0, (X.coeursMax || 3) - X.coeurs))}</span><br><span class="doux">${CAPITAINES[X.heros].n}</span></div><span class="ic" onclick="journalExp()">📜</span><span class="ic" onclick="quitter()">⏏</span></div>
   <div class="route">${ESCALES2.map((x, i) => `<div class="esc ${i < X.escale ? 'faite' : i === X.escale ? 'ici' : ''}" onclick="carteVoyage()"><b>${x.type === 'fantome' ? '👻' : x.e}</b>${i + 1}</div>`).join('')}</div>
   <p class="regle4" onclick="infoRegle()">${REGLES_V4[X.regle].e} <b>${REGLES_V4[X.regle].n}</b> · ${MERS[X.mer].e} ${MERS[X.mer].n}${X.asc ? ' · ⛰ ' + X.asc : ''}${X.jour ? ' · 📅 voyage du jour' : ''} · boss : ${BOSS_V4[X.boss].e} <u>${BOSS_V4[X.boss].n}</u></p>
-  <p class="prochain">Prochaine escale : <b>${esc.e} ${esc.n}</b> · ${esc.type === 'fantome' ? '👻 un navire rival (un autre capitaine)' : esc.type === 'boss' ? '👑 le boss : ' + BOSS_V4[X.boss].d : esc.type === 'elite' ? '💀 une élite : ' + MERS[X.mer].elites[esc.el || 0].d : '⚔ des monstres'}</p>
+  <p class="prochain">Prochaine escale : <b>${esc.e} ${esc.n}</b> · ${esc.type === 'fantome' ? '👻 un navire rival (un autre capitaine)' : esc.type === 'boss' ? '👑 le boss, <b>une seule chance</b> : ' + BOSS_V4[X.boss].d : esc.type === 'elite' ? '💀 une élite : ' + MERS[X.mer].elites[esc.el || 0].d : '⚔ des monstres'}</p>
   ${famillesHTML()}
   <div class="champ">
     <div class="etiq">DEVANT · frappent au corps à corps</div><div class="rangee">${[0, 1, 2].map(i => slotHTML('av', i)).join('')}</div>
@@ -149,11 +149,11 @@ function transmuter() { const n = transmute(X, sel); sel = null; sauve(); port()
 function aideExp() { fenetre(`<h2>❓ Le port</h2><ul style="padding-left:1.1em">
   <li><b>Recruter</b> : touche une recrue du recruteur. 3 pareilles fusionnent en une ★ (×2, pouvoir renforcé) ; la ★ avale ensuite chaque copie, et à 6 recrues (une ★ + 3 copies, ou deux ★) c’est une ★★ (×4). Le recruteur montre plus souvent les recrues que tu as déjà.</li>
   <li><b>🎲 Le calcul d’un coup</b> : chaque recrue lance un dé : 1 = raté, 2 à 5 = toute son attaque, 6 = critique (×2). Le chiffre ne s’ajoute pas. Une Lame ou un Rempart placé derrière frappe à moitié. Le capitaine lance 3 dés : brelan = chiffre + 3, paire = chiffre de la paire, suite = 4, sinon le plus fort − 2 (au moins 1), plus son bonus d’attaque.</li>
-  <li><b>🎯 La cible du capitaine</b> : pendant un combat, maintiens ton doigt sur un ennemi : une cible apparaît dessus et tout l’équipage le vise en priorité (à partir du round suivant). Les 🏹 Tireurs visent d’eux-mêmes la rangée de derrière, les autres la rangée de devant.</li>
+  <li><b>🎯 La cible du capitaine</b> : pendant un combat, maintiens ton doigt sur un ennemi : une cible apparaît dessus et tout l’équipage le vise en priorité, tout de suite (dès le coup suivant). Les 🏹 Tireurs visent d’eux-mêmes la rangée de derrière, les autres la rangée de devant.</li>
   <li><b>Placer</b> : touche une recrue puis une place. Devant : Remparts (Barrière) et Lames. Derrière : Tireurs (ils frappent de loin) et Soutiens (ils aident et frappent un peu). Une Lame derrière attend que le devant tombe.</li>
   <li><b>Les familles</b> (en haut) : 2 ou 4 recrues de la même famille sur le plateau donnent un bonus. Touche-les pour le voir.</li>
   <li><b>L’or</b> : +8 après chaque escale, +1 par tranche de 5 gardées (3 au plus). Relancer : 1. Geler : garder la même offre.</li>
-  <li><b>Les cœurs</b> : perdre une escale coûte un cœur ; on continue. Le boss se rejoue tant qu’il reste un cœur.</li></ul><div class="choixh"><button onclick="fermer();guidePort(true)">🐱 Revoir le guide</button><button class="or" onclick="fermer()">OK</button></div>`); }
+  <li><b>Les cœurs</b> : perdre un combat coûte un cœur ; on continue. Mais contre <b>le boss, une seule chance</b> : perdu, le voyage s’arrête.</li></ul><div class="choixh"><button onclick="fermer();guidePort(true)">🐱 Revoir le guide</button><button class="or" onclick="fermer()">OK</button></div>`); }
 
 // ----------------------------------------------------------------------------------------------- le combat rejoué
 // 14/11 (décision de l'utilisateur) : le combat se regarde de haut en bas sur le décor de l'escale (Gemini) : les ennemis sur le lieu, l'équipage
@@ -264,7 +264,7 @@ function valideOrdres() {
 }
 function partirOk() {
   const esc = ESCALES2[X.escale], n = surPlateau(X).length;
-  fenetre(`<h2>⚔ Partir pour ${esc.e} ${esc.n} ?</h2><p>Ton équipage : <b>${n} recrue${n > 1 ? 's' : ''}</b> sur le pont${X.or ? ` · il te reste <b>${X.or} 💰</b>` : ''}.</p>${X.or ? '<p class="doux">Ton or est gardé pour la prochaine escale, et il rapporte : +1 💰 par tranche de 5 pièces gardées (3 au plus), en plus des 8 💰 gagnées après chaque escale.</p>' : ''}<p class="doux">Une fois parti, le combat se joue tout seul.</p><div class="choixh"><button onclick="fermer()">Pas encore</button><button class="or" onclick="fermer();ordres()">⚔ On y va !</button></div>`);
+  fenetre(`<h2>⚔ Partir pour ${esc.e} ${esc.n} ?</h2><p>Ton équipage : <b>${n} recrue${n > 1 ? 's' : ''}</b> sur le pont${X.or ? ` · il te reste <b>${X.or} 💰</b>` : ''}.</p>${X.or ? '<p class="doux">Ton or est gardé pour la prochaine escale, et il rapporte : +1 💰 par tranche de 5 pièces gardées (3 au plus), en plus des 8 💰 gagnées après chaque escale.</p>' : ''}${esc.type === 'boss' ? '<p class="boss1">👑 <b>Une seule chance</b> : contre le boss, perdre arrête le voyage (les cœurs qui restent ne permettent pas de le rejouer). Prépare bien ton équipage !</p>' : ''}<p class="doux">Une fois parti, le combat se joue tout seul.</p><div class="choixh"><button onclick="fermer()">Pas encore</button><button class="or" onclick="fermer();ordres()">⚔ On y va !</button></div>`);
 }
 async function partir() {
   if (enCours) return; enCours = true; sel = null;
@@ -288,11 +288,14 @@ async function partir() {
   let EV = res.ev;
   for (let k = 0; k < EV.length; k++) { const e = EV[k];
     while (typeof window.PAUSE_EXP === 'function' && window.PAUSE_EXP(e)) await new Promise(r => setTimeout(r, 150)); // 18/11 : l'entraînement attend que le joueur pose la cible
-    // une cible désignée pendant le round : on rejoue le même combat avec elle à partir du round suivant (tout ce qui a déjà eu lieu reste identique)
-    if (e.t === 'round' && CIBLE.att && CIBLE.att !== CIBLE.id) {
-      const Xr = JSON.parse(JSON.stringify(avant)); Xr.ciblePrio = [...(CIBLE.liste || []), { id:CIBLE.att, round:e.n }];
-      const r2 = joueEscale(Xr, hasardX(Xr)), k2 = r2.ev.findIndex(x => x.t === 'round' && x.n === e.n);
-      if (k2 >= 0) { X = Xr; X.ciblePrio = null; sauve(); res = r2; EV = r2.ev; k = k2; CIBLE.liste = Xr.ciblePrio || [...(CIBLE.liste || []), { id:CIBLE.att, round:e.n }]; CIBLE.id = CIBLE.att; jl(`🎯 Cible du capitaine : ${noms[CIBLE.id]} !`); }
+    // 19/11 (l'utilisateur : « je perds un tour entier ») : une cible désignée compte TOUT DE SUITE : on rejoue le même combat avec elle
+    // à partir du prochain coup du round en cours (tout ce qui a déjà été montré reste identique : mêmes dés, même ordre)
+    if (CIBLE.att && CIBLE.att !== CIBLE.id) {
+      let n = 1, c = 0; for (let i = k - 1; i >= 0; i--) { const x = EV[i]; if (x.t === 'round') { n = x.n; break; } if (x.t === 'coup' || x.t === 'esquive') c++; }
+      if (e.t === 'round') { n = e.n; c = 0; }
+      const pr = { id:CIBLE.att, round:n, coup:c }, Xr = JSON.parse(JSON.stringify(avant)); Xr.ciblePrio = [...(CIBLE.liste || []), pr];
+      const r2 = joueEscale(Xr, hasardX(Xr)), pareil = r2.ev.length > k && r2.ev.slice(0, k).every((x, i) => x.t === EV[i].t && x.id === EV[i].id);
+      if (pareil) { X = Xr; X.ciblePrio = null; sauve(); res = r2; EV = r2.ev; CIBLE.liste = [...(CIBLE.liste || []), pr]; CIBLE.id = CIBLE.att; jl(`🎯 Cible du capitaine : ${noms[CIBLE.id]} !`); k--; CIBLE.att = null; continue; }
       CIBLE.att = null; }
     if (e.t === 'depart') { e.l.forEach(x => { const el = elU(x.id); if (!el) return; const sp = el.querySelectorAll('.av span'), b = el.querySelector('.pvb');
       const a0 = +(sp[0] && sp[0].textContent.replace(/\D/g, '')), v0 = +(sp[1] && sp[1].textContent.replace(/\D/g, ''));
@@ -318,7 +321,7 @@ async function partir() {
 }
 
 // 18/11 (l'utilisateur, « comme dans les jeux ») : LA CIBLE DU CAPITAINE : doigt maintenu sur un ennemi pendant le combat → 🎯 dessus, tout l'équipage le vise
-// en priorité à partir du round suivant (le moteur rejoue le même combat avec cette cible, voir partir()). Un simple toucher ouvre toujours sa fiche.
+// en priorité dès le coup suivant (19/11 ; le moteur rejoue le même combat avec cette cible, voir partir()). Un simple toucher ouvre toujours sa fiche.
 let CIBLE = { id:null, att:null };
 function ciblesTouch(P) {
   [...P.av, ...P.ar].filter(Boolean).forEach(u => { const el = elU(u.id); if (!el) return; let t = null, long = false;
@@ -344,7 +347,7 @@ async function voyage() {
 // 14/11 (l'utilisateur : « il faut expliquer quoi faire quand on lance l'expédition ») : Moustache guide le premier passage au port,
 // une zone à la fois (le reste de l'écran est assombri). Revoir : bouton « Aide ».
 const GUIDE_PORT = [
-  [null, 'Bienvenue à bord, capitaine ! Ton but : traverser <b>6 étapes</b> jusqu’au boss du voyage (en haut de l’écran, avec la règle du voyage). Tu as <b>3 cœurs</b> : chaque combat perdu en coûte un. Touche la route pour revoir la carte.'],
+  [null, 'Bienvenue à bord, capitaine ! Ton but : traverser la carte jusqu’au boss du voyage (en haut de l’écran, avec la règle du voyage). <b>4 points de choix</b> (sans combat) et, entre eux, des <b>suites de combats obligatoires</b> qui finissent par une élite. Tu as <b>3 cœurs</b> : chaque combat perdu en coûte un. Contre le boss : <b>une seule chance</b>. Touche la route pour revoir la carte.'],
   ['.tiroir', 'Ici, <b>le recruteur</b>. Touche une recrue pour lire sa fiche, puis « Recruter » (3 💰). Elle monte toute seule sur le pont. Tu gagnes des pièces après chaque escale.'],
   ['.champ', 'Ton <b>équipage</b> se tient sur ces 6 places. <b>DEVANT</b> : ceux qui frappent au corps à corps. <b>DERRIÈRE</b> : ceux qui tirent ou soignent. Les ennemis frappent au hasard, devant ou derrière : seuls les Remparts (Barrière) attirent les coups. Tu places qui tu veux où tu veux : une Lame derrière frappe à moitié, un tireur devant prend les coups. Pour déplacer une recrue : touche-la, puis touche une place.'],
   ['.cale', '<b>La cale</b>, c’est la réserve : ces recrues ne combattent pas, mais tu les gardes pour plus tard.'],
@@ -396,7 +399,7 @@ function introVoyage() { const R = REGLES_V4[X.regle], B = BOSS_V4[X.boss];
   fenetre(`<h2>⛵ ${MERS[X.mer].e} ${MERS[X.mer].n}</h2><p class="doux">${MERS[X.mer].d}</p>
   <div class="carte4 r"><b>${R.e} Règle du voyage : ${R.n}</b><br>${R.d}</div>
   <div class="carte4 b"><b>${B.e} Au bout de la route : ${B.n}</b><br>${B.d}</div>
-  <p class="doux">À chaque étape, tu choisis ta prochaine escale sur la carte. 💀 Élites = plus dur, plus de pièces. ❔ Événements, 💎 trésors et 🏝 ports francs : pas de combat.</p>
+  <p class="doux">🧭 4 points de choix : ❔ événements, 💎 trésors et 🏝 ports francs, sans combat. Entre eux, ⚔ une suite de 2 ou 3 combats obligatoires, finie par une 💀 élite (plus dure, +4 💰). 👑 Au bout, le boss : <b>une seule chance</b>.</p>
   <div class="choixh"><button class="or" onclick="fermer();reprendre()">🗺 Voir la carte</button></div>`); }
 // reprendre : choisir la route si besoin, sinon le port (ou l'escale sans combat)
 function reprendre() { synchroRoute(X); if (doitChoisir(X)) return carteVoyage(true); const esc = X.route[X.escale]; if (esc && !ESCALE_COMBAT(esc.type)) return escaleCalme(); port(); }
@@ -404,16 +407,33 @@ function reprendre() { synchroRoute(X); if (doitChoisir(X)) return carteVoyage(t
 function carteVoyage(choisir) {
   const ici = X.escale, peut = choisir && doitChoisir(X);
   const type = { monstres:'⚔ monstres', elite:'💀 élite', fantome:'👻 navire rival', evenement:'❔ événement', tresor:'💎 trésor', port:'🏝 port franc', boss:'👑 boss' };
-  fenetre(`<h2>🗺 La carte du voyage</h2><div class="carte4l">${X.carte.map((opts, k) => {
-    const fait = X.route[k], vue = k <= ici + 1 || X.carteVue || k === 5;
-    return `<div class="etape4 ${k < ici ? 'passe' : k === ici ? 'ici' : ''}"><span class="num">${k + 1}</span>${opts.map((o, i) => {
-      const pris = fait && fait === o || (fait && fait.n === o.n && fait.type === o.type), clic = peut && k === ici;
-      return `<button class="esc4 ${pris ? 'pris' : ''} ${fait && !pris ? 'non' : ''}" ${clic ? `onclick="fermer();choisitEscale(X, ${i});sauve();reprendre()"` : 'disabled'}><b>${vue ? o.e : '❔'}</b><small>${vue ? o.n : 'dans la brume'}</small><i>${vue ? type[o.type] : ''}</i></button>`; }).join('')}</div>`; }).join('')}</div>
+  if (!X.carte4b) { // voyage commencé avant le 19/11 : l'ancienne carte (6 étapes au choix)
+    fenetre(`<h2>🗺 La carte du voyage</h2><div class="carte4l">${X.carte.map((opts, k) => {
+      const fait = X.route[k], vue = k <= ici + 1 || X.carteVue || k === X.carte.length - 1;
+      return `<div class="etape4 ${k < ici ? 'passe' : k === ici ? 'ici' : ''}"><span class="num">${k + 1}</span>${opts.map((o, i) => {
+        const pris = fait && fait === o || (fait && fait.n === o.n && fait.type === o.type), clic = peut && k === ici;
+        return `<button class="esc4 ${pris ? 'pris' : ''} ${fait && !pris ? 'non' : ''}" ${clic ? `onclick="fermer();choisitEscale(X, ${i});sauve();reprendre()"` : 'disabled'}><b>${vue ? o.e : '❔'}</b><small>${vue ? o.n : 'dans la brume'}</small><i>${vue ? type[o.type] : ''}</i></button>`; }).join('')}</div>`; }).join('')}</div>
+    ${peut ? '<p class="doux" style="text-align:center">👆 Touche ta prochaine escale.</p>' : '<div class="choixh"><button onclick="fermer()">Fermer</button></div>'}`); return; }
+  // 19/11 : la nouvelle carte. Un POINT DE CHOIX = une rangée d'escales sans combat (au choix) ; une SUITE = une rangée de combats enchaînés
+  // (obligatoires, toujours visibles) ; le boss au bout. La brume garde le mystère des points de choix après le prochain.
+  const blocs = []; X.carte.forEach((opts, k) => { if (estChoix4(opts) || opts[0].type === 'boss') blocs.push({ k:[k], choix:estChoix4(opts) }); else { const d = blocs[blocs.length - 1]; if (d && !d.choix && !d.boss && d.suite) d.k.push(k); else blocs.push({ k:[k], suite:true }); } });
+  const prochainChoix = X.carte.findIndex((o, k) => k >= ici && estChoix4(o));
+  const html = blocs.map(B => {
+    if (B.suite) { const fin = B.k[B.k.length - 1];
+      return `<div class="etape4 suite4 ${fin < ici ? 'passe' : B.k.includes(ici) ? 'ici' : ''}"><span class="num">⚔</span><div class="enchaine">${B.k.map((k, n) => { const o = X.carte[k][0];
+        return `${n ? '<span class="fleche">➜</span>' : ''}<div class="esc4 combat ${k < ici ? 'pris' : k === ici ? 'maintenant' : ''}"><b>${o.e}</b><small>${o.n}</small><i>${k < ici ? '✔ fait' : type[o.type]}</i></div>`; }).join('')}</div></div>`; }
+    const k = B.k[0], opts = X.carte[k], fait = X.route[k];
+    if (!B.choix) return `<div class="etape4 boss4 ${k === ici ? 'ici' : ''}"><span class="num">👑</span><div class="esc4 combat ${k === ici ? 'maintenant' : ''}"><b>${opts[0].e}</b><small>${opts[0].n}</small><i>👑 boss · une seule chance</i></div></div>`;
+    const vue = k <= prochainChoix || X.carteVue || k < ici;
+    return `<div class="etape4 ${k < ici ? 'passe' : k === ici ? 'ici' : ''}"><span class="num">🧭</span>${opts.map((o, i) => {
+      const pris = fait && (fait === o || (fait.n === o.n && fait.type === o.type)), clic = peut && k === ici;
+      return `<button class="esc4 ${pris ? 'pris' : ''} ${fait && !pris ? 'non' : ''}" ${clic ? `onclick="fermer();choisitEscale(X, ${i});sauve();reprendre()"` : 'disabled'}><b>${vue ? o.e : '❔'}</b><small>${vue ? o.n : 'dans la brume'}</small><i>${vue ? type[o.type] : ''}</i></button>`; }).join('')}</div>`; }).join('');
+  fenetre(`<h2>🗺 La carte du voyage</h2><p class="doux" style="text-align:center;margin:0 0 6px">🧭 point de choix (sans combat) · ⚔ suite de combats obligatoire, finie par une 💀 élite · 👑 le boss</p><div class="carte4l">${html}</div>
   ${peut ? '<p class="doux" style="text-align:center">👆 Touche ta prochaine escale.</p>' : '<div class="choixh"><button onclick="fermer()">Fermer</button></div>'}`); }
 function infoRegle() { fenetre(`<h2>${REGLES_V4[X.regle].e} ${REGLES_V4[X.regle].n}</h2><p>${REGLES_V4[X.regle].d}</p><h2>${BOSS_V4[X.boss].e} ${BOSS_V4[X.boss].n}</h2><p>${BOSS_V4[X.boss].d}</p>${X.asc ? `<p class="doux">⛰ Ascension ${X.asc} : ${ASC_V4.slice(1, X.asc + 1).join(' · ')}.</p>` : ''}<div class="choixh"><button onclick="fermer()">OK</button></div>`); }
 // les escales sans combat : une page de récit à choix
 function escaleCalme() { const s = escaleSansCombat(X);
-  chronique([{ sur:`Expédition · étape ${X.escale + 1} sur 6`, titre:s.titre.replace(/^\S+\s/, ''), illu:{ cle:X.route[X.escale].cle, fond:'mer', sym:s.titre.split(' ')[0] }, texte:[s.texte],
+  chronique([{ sur:`Expédition · escale ${X.escale + 1} sur ${X.carte.length}`, titre:s.titre.replace(/^\S+\s/, ''), illu:{ cle:X.route[X.escale].cle, fond:'mer', sym:s.titre.split(' ')[0] }, texte:[s.texte],
     choix:s.choix.map((c, i) => ({ t:c.t, d:c.d, ok:c.possible, f:() => { const r = resoutChoix(X, i); sauve(); return { texte:r ? r.texte + ` Au port, on encaisse ${r.gain} 💰.` : 'Le navire passe son chemin.' }; } })) }], () => { sauve(); reprendre(); }); }
 chroniqueEscale = function (apres) { apres(); }; // les pages de récit de la v3 parlent des 6 escales fixes : la v4 a les siennes (escales sans combat)
 const _voyage3 = voyage; voyage = async function () { if (X && X.fini) return; await _voyage3(); }; // _voyage3 finit par chroniqueEscale → port
@@ -423,8 +443,8 @@ finExp = function () {
   const gagne = X.fini === 'gagne', parfait = gagne && X.coeurs === X.coeursMax, score = scoreV4(X), apport = finVoyageMeta(X);
   const l = lireRec(); l.unshift({ quand:new Date().toISOString(), heros:X.heros, nom:avX() ? avX().nom : null, mer:X.mer, asc:X.asc, boss:X.boss, regle:X.regle, jour:X.jour, gagne, parfait, score, escales:X.victoires });
   localStorage.setItem(CLE + '-records', JSON.stringify(l.slice(0, 50))); localStorage.removeItem(CLE); if (gagne) typeof guildeEvt === 'function' && guildeEvt('titan', 1, { heros:progX(), voie:X.heros });
-  const h = nomX(), B = BOSS_V4[X.boss]; X = null;
-  fenetre(`<h2>${parfait ? '🌟 Traversée parfaite !' : gagne ? `🏆 ${B.n} est tombé !` : '💀 Le navire rentre au port'}</h2><p>${gagne ? `L’équipage de ${h} a vaincu ${B.n}.` : `Plus de cœurs : l’équipage de ${h} rentre à la Guilde.`}</p>
+  const h = nomX(), B = BOSS_V4[X.boss], perduBoss = !!X.perduBoss; X = null;
+  fenetre(`<h2>${parfait ? '🌟 Traversée parfaite !' : gagne ? `🏆 ${B.n} est tombé !` : '💀 Le navire rentre au port'}</h2><p>${gagne ? `L’équipage de ${h} a vaincu ${B.n}.` : perduBoss ? `${B.n} a eu raison de l’équipage de ${h} : une seule chance contre le boss, le voyage s’arrête là.` : `Plus de cœurs : l’équipage de ${h} rentre à la Guilde.`}</p>
   ${apport.map(t => `<p class="ok">${t}</p>`).join('')}<p style="font-size:1.5em;color:var(--or);text-align:center">${score} points</p><div class="choixh"><button class="or" onclick="fermer();accueil()">⛵ Nouveau voyage</button><button onclick="location.href='menu.html'">⌂ Menu</button></div>`);
 };
 records = function () { const l = lireRec(); fenetre(`<h2>🏆 Mes voyages (${l.length})</h2>${l.length ? `<table>${l.map(r => `<tr><td>${r.parfait ? '🌟' : r.gagne ? '🏆' : '💀'} ${new Date(r.quand).toLocaleDateString('fr-FR')} · ${r.nom ? haEsc(r.nom) : HEROS[r.heros].nom} · ${MERS[r.mer] ? MERS[r.mer].e : ''}${r.asc ? ' ⛰' + r.asc : ''}${r.jour ? ' 📅' : ''} · ${BOSS_V4[r.boss] ? BOSS_V4[r.boss].e : ''}</td><td>${r.score}</td></tr>`).join('')}</table>` : '<p>Aucun encore.</p>'}<div class="choixh"><button onclick="fermer()">Fermer</button></div>`); };

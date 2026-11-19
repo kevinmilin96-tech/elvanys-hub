@@ -8,7 +8,7 @@
 <title>La Guilde des Runes</title>
 <script>
 // Même mécanisme que le Duel : une nouvelle version = rechargement tout seul à l'ouverture (publier.sh change VERSION).
-const VERSION = '20261118-164604';
+const VERSION = '20261119-192319';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-menu-' + v)) { sessionStorage.setItem('recharge-menu-' + v, '1'); location.replace('menu.html?v=' + v); }
@@ -207,7 +207,7 @@ fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.te
 <script src="rang.js?v=bb0555ca3c"></script>
 <script src="profil.js?v=d50e2421e1"></script>
 <script>window.AMIS_SANS_BOUTON = true; /* 15/11 : un seul bouton en haut à gauche (profil + amis) */</script>
-<script src="amis.js?v=c2f7821b28"></script>
+<script src="amis.js?v=da00ccb367"></script>
 <script src="heros-etoiles.js?v=07f78336f4"></script>
 <script src="donnees.js?v=2afe6cf473"></script>
 <script>
@@ -419,8 +419,12 @@ function montre(id) {
   car.querySelectorAll('.porte').forEach(el => el.onclick = () => touche(+el.dataset.i));
   const garde = Math.min(PORTES.length - 1, +(sessionStorage.getItem('guilde-porte-' + courant + (courant ? '' : cat)) || 0));
   car.classList.add('cache');
-  requestAnimationFrame(() => { centre(garde, false); echelle(); car.classList.remove('cache'); });
+  requestAnimationFrame(() => { tailleCarrousel(); centre(garde, false); echelle(); car.classList.remove('cache'); });
 }
+// 19/11 (l'utilisateur : « le titre du portail est coupé en bas par les points ») : la taille des portails se calcule sur la place
+// vraiment libre (les étages ont plus ou moins de bandeaux au-dessus), au lieu d'une estimation fixe
+function tailleCarrousel() { const h = car.clientHeight - 10; if (h > 60) car.style.setProperty('--w', Math.floor(Math.min(innerWidth * .7, 330, h / 1.4906)) + 'px', 'important'); }
+addEventListener('resize', () => { tailleCarrousel(); centre(auCentre(), false); });
 function centre(i, doux) { const el = car.children[i]; if (el) car.scrollTo({ left:el.offsetLeft + el.offsetWidth / 2 - car.clientWidth / 2, behavior:doux ? 'smooth' : 'instant' }); }
 function auCentre() { const m = car.scrollLeft + car.clientWidth / 2; let best = 0, d = 1e9; [...car.children].forEach((el, i) => { const x = Math.abs(el.offsetLeft + el.offsetWidth / 2 - m); if (x < d) { d = x; best = i; } }); return best; }
 function echelle() {

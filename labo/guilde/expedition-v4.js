@@ -36,7 +36,7 @@ const MERS = {
     elites:[{ n:'Le Chef de guerre gobelin', e:'👺', cle:'crique', av:[['Chef de guerre', 6, 30, 'barriere+chef'], ['Gobelin chef', 3, 9]], ar:[['Gobelin lanceur', 2, 5, 'tireur'], ['Porte-étendard gobelin', 2, 7, 'etendard']], meca:'rage', d:'Rage : il gagne +1 attaque à chaque round.' },
             { n:'La Matriarche de braise', e:'🐺', cle:'port', av:[['Matriarche de braise', 5, 26, 'chef'], ['Loup de braise', 4, 11]], ar:[['Louveteau', 3, 6], ['Totem de la meute', 1, 10, 'totem']], meca:'meute', d:'Meute : quand un Louveteau tombe, la Matriarche hurle (+2 attaque).' }],
     boss:['titan', 'ignaros'] },
-  glaces: { n:'La Mer des glaces', e:'❄️', d:'Le grand nord : banquise, yétis et vouivres. Les monstres encaissent plus.', ouvre:'nuages', pv:1.05,
+  glaces: { n:'La Mer des glaces', e:'❄️', d:'Le grand nord : banquise, yétis et vouivres. Les monstres encaissent plus.', ouvre:'nuages', pv:1, /* 19/11 : 1,05 avant la nouvelle carte */
     decor:{ monstres:['falaises', 'foret', 'port'], fantome:['falaises'], evenement:['foret'], tresor:['crique'], port:['port'], elite:['falaises'], boss:['nid'] },
     groupes:[
       { n:'La Banquise des pingouins-guerriers', e:'🐧', cle:'falaises', av:[['Pingouin-guerrier', 3, 8], ['Pingouin-guerrier', 3, 8]], ar:[['Lanceur de glaçons', 2, 6, 'tireur']] },
@@ -48,7 +48,7 @@ const MERS = {
     elites:[{ n:'Le Yéti ancien', e:'🦍', cle:'falaises', av:[['Yéti ancien', 7, 34, 'barriere+chef']], ar:[['Petit yéti', 3, 8], ['Chaman du givre', 2, 8, 'tireur+soigne']], meca:'rage', d:'Rage : il gagne +1 attaque à chaque round.' },
             { n:'La Reine des neiges', e:'👸', cle:'foret', av:[['Garde de glace', 4, 14, 'barriere'], ['Garde de glace', 4, 14, 'barriere']], ar:[['La Reine des neiges', 5, 22, 'tireur+chef'], ['Totem de givre', 1, 10, 'totem']], meca:'gel', d:'Gel : un round sur deux, ta recrue la plus forte est gelée (0 attaque ce round).' }],
     boss:['vouivre', 'titan'] },
-  tempetes: { n:'L’Archipel des tempêtes', e:'⛈️', d:'Pirates, harpies et krakens. La mer la plus dure, pour les équipages rodés.', ouvre:'glaces', pv:1.1,
+  tempetes: { n:'L’Archipel des tempêtes', e:'⛈️', d:'Pirates, harpies et krakens. La mer la plus dure, pour les équipages rodés.', ouvre:'glaces', pv:.9, /* 19/11 : 1,1 avant la nouvelle carte */
     decor:{ monstres:['crique', 'port', 'falaises'], fantome:['falaises'], evenement:['crique'], tresor:['crique'], port:['port'], elite:['port'], boss:['nid'] },
     groupes:[
       { n:'La Crique des naufrageurs', e:'🏴‍☠️', cle:'crique', av:[['Naufrageur', 3, 9], ['Naufrageur', 3, 9]], ar:[['Pistolier', 3, 5, 'tireur']] },
@@ -128,34 +128,58 @@ const ASC_V4 = ['De base', '+4 % de vie aux monstres', 'les élites ont +1 attaq
   '+5 % de vie encore', 'les monstres ont +1 attaque', 'les événements coûtent plus', 'le navire part avec 2 cœurs', 'le boss a +20 % de vie'];
 
 // ----------------------------------------------------------------------------------------------- la carte du voyage
-// 6 étapes ; à chaque étape (sauf la dernière), 2 ou 3 escales au choix. Les sortes possibles par étape (une de chaque est tirée) :
-const ETAPES_V4 = [
-  [['monstres'], ['monstres', 'evenement']],
-  [['fantome'], ['evenement', 'tresor'], ['monstres']],
-  [['monstres'], ['elite'], ['port', 'evenement']],
-  [['fantome', 'monstres'], ['evenement', 'tresor'], ['elite']],
-  [['monstres'], ['elite'], ['port']],
-  [['boss']],
+// 19/11 (décision de l'utilisateur, après ses essais : « on pouvait atteindre le boss sans aucun combat ») : NOUVELLE CARTE.
+// 4 POINTS DE CHOIX (les escales sans combat : ❔ événement, 💎 trésor, 🏝 port franc) ; entre deux points de choix, une SUITE OBLIGATOIRE
+// de 2 ou 3 combats dont UNE ÉLITE (la dernière de la suite) ; au bout, le boss (une seule chance). 10 ou 11 escales avant le boss.
+// SUITES_V4 : pour chaque suite, les combats avant l'élite ([sortes possibles, groupes de monstres possibles, multiplicateur de vie]) puis l'élite.
+// Réglé au simulateur le 19/11 (40 voyages par capitaine) : avec 7 à 8 combats et 4 escales calmes, l'équipage gagne bien plus d'or et de ★★
+// qu'avant (≈ 2,4 ★★ par voyage au lieu de 0,6) : les vies des monstres sont donc environ deux fois plus grandes qu'avec l'ancienne carte.
+const SUITES_V4 = [
+  { combats:[[['monstres'], [0, 1], 2.6]], elite:2.6 },
+  { combats:[[['monstres'], [1, 2], 2.9], [['monstres', 'fantome'], [2, 3], 3.1]], elite:3.1, troisieme:true },
+  { combats:[[['monstres'], [3], 3.5]], elite:3.7 },
 ];
-const TIER_ETAPE = [0, 1, 2, 3, 4, 5]; // groupe de monstres selon l'étape (0-1 faciles, 2-3 moyens, 4 durs)
-const DUR_V4 = [1.35, 1.3, 1.55, 1.5, 1.9, 2.05].map(x => +(x * 1.02).toFixed(3)); // 18/11 : ×1,02 (tireurs sur l'arrière + cible du capitaine)
-function escaleDe(X, type, etape, R) {
+let DUR_BOSS4 = +(2.05 * 1.02 * 1.3).toFixed(3); // le boss : une seule chance (avant : ×2,09 et on le rejouait tant qu'il restait un cœur)
+const DUR_V4 = [1.35, 1.3, 1.55, 1.5, 1.9, 2.05].map(x => +(x * 1.02).toFixed(3)); // ancienne carte (voyages commencés avant le 19/11)
+const CHOIX_V4 = ['evenement', 'evenement', 'tresor', 'port'];
+function escaleDe(X, type, etape, R, tiers, dur) {
   const M = MERS[X.mer], cle = tire(R, M.decor[type] || ['crique']);
-  if (type === 'monstres') { const tier = Math.min(4, etape === 0 ? tire(R, [0, 1]) : etape === 1 ? 1 : etape === 2 ? tire(R, [2, 3]) : etape === 3 ? 3 : 4); const g = M.groupes[tier]; return { type, etape, n:g.n, e:g.e, cle:g.cle, g:tier }; }
-  if (type === 'elite') { const i = Math.floor(R() * M.elites.length), g = M.elites[i]; return { type, etape, n:g.n, e:g.e, cle:g.cle, el:i }; }
-  if (type === 'fantome') return { type, etape, n:'Un navire rival', e:'👻', cle };
+  if (type === 'monstres') { const tier = Math.min(4, tiers ? tire(R, tiers) : etape === 0 ? tire(R, [0, 1]) : etape === 1 ? 1 : etape === 2 ? tire(R, [2, 3]) : etape === 3 ? 3 : 4); const g = M.groupes[tier]; return { type, etape, n:g.n, e:g.e, cle:g.cle, g:tier, dur }; }
+  if (type === 'elite') { const i = Math.floor(R() * M.elites.length), g = M.elites[i]; return { type, etape, n:g.n, e:g.e, cle:g.cle, el:i, dur }; }
+  if (type === 'fantome') return { type, etape, n:'Un navire rival', e:'👻', cle, dur };
   if (type === 'evenement') { const k = tire(R, Object.keys(EVENEMENTS_V4)), ev = EVENEMENTS_V4[k]; return { type, etape, n:ev.n, e:'❔', cle:ev.cle, ev:k }; }
   if (type === 'tresor') return { type, etape, n:'L’île au trésor', e:'💎', cle };
   if (type === 'port') return { type, etape, n:'Le port franc', e:'🏝', cle:'port' };
   return { type:'boss', etape, n:BOSS_V4[X.boss].n, e:BOSS_V4[X.boss].e, cle:'nid' };
 }
-function carteV4(X) {
-  const R = rngDe(X.graine + '/carte4');
-  return ETAPES_V4.map((sortes, etape) => sortes.map(choix => escaleDe(X, tire(R, choix), etape, R)));
+// un point de choix : 2 ou 3 escales sans combat, de sortes différentes (deux événements possibles, jamais le même) ; pas de port franc au départ
+function pointDeChoix(X, etape, R, premier) {
+  const n = premier ? 2 : (R() < .5 ? 2 : 3), l = [], vus = new Set();
+  for (let essai = 0; essai < 30 && l.length < n; essai++) {
+    const t = tire(R, CHOIX_V4.filter(x => !(premier && x === 'port'))); if (t !== 'evenement' && vus.has(t)) continue;
+    const o = escaleDe(X, t, etape, R); if (t === 'evenement' && l.some(x => x.ev === o.ev)) continue; vus.add(t); l.push(o); }
+  return l.map(o => Object.assign(o, { choix:true }));
 }
+function carteV4(X) {
+  const R = rngDe(X.graine + '/carte4'), C = [], deja = new Set(), M = MERS[X.mer], elites = [...M.elites.keys()].sort(() => R() - .5);
+  SUITES_V4.forEach((S, s) => {
+    C.push(pointDeChoix(X, C.length, R, s === 0));
+    const combats = S.combats.slice(0, S.troisieme && R() < .5 ? 2 : 1); // la suite du milieu : 2 ou 3 combats (élite comprise)
+    combats.forEach(([sortes, tiers, dur]) => { const t2 = tiers.filter(t => !deja.has(t)); const o = escaleDe(X, tire(R, sortes), C.length, R, t2.length ? t2 : tiers, dur); if (o.g != null) deja.add(o.g); C.push([Object.assign(o, { suite:s })]); }); // jamais deux fois le même groupe de monstres
+    const el = escaleDe(X, 'elite', C.length, R, null, S.elite); const k = elites[s % elites.length]; const g = M.elites[k];
+    C.push([Object.assign(el, { el:k, n:g.n, e:g.e, cle:g.cle, suite:s })]);
+  });
+  C.push(pointDeChoix(X, C.length, R, false));
+  C.push([escaleDe(X, 'boss', C.length, R)]);
+  return C;
+}
+// une étape de la carte est-elle un point de choix (escales sans combat) ?
+const estChoix4 = opts => opts.length > 1 || (opts[0] && opts[0].choix);
 // la route jouée → les tableaux du moteur (l'écran lit ESCALES2[X.escale])
 function synchroRoute(X) {
   if (!X || X.v !== 4) return;
+  // 19/11 : une étape à une seule escale (combat d'une suite obligatoire, boss) se prend toute seule, sans passer par la carte
+  X.carte.forEach((o, k) => { if (k <= X.escale && o.length === 1 && !X.route[k]) X.route[k] = o[0]; });
   const l = X.carte.map((opts, k) => X.route[k] || (opts.length === 1 ? opts[0] : { type:'?', n:'Au choix', e:'❔', cle:'falaises', etape:k }));
   ESCALES2.splice(0, ESCALES2.length, ...l);
 }
@@ -170,7 +194,7 @@ function nouveauVoyage(heros, opts) {
   const R = rngDe(graine + '/v4');
   X.v = 4; X.mer = opts.mer || 'nuages'; X.asc = opts.asc || 0; X.jour = !!opts.jour; X.debloques = opts.debloques != null ? opts.debloques : meta.gagnes;
   X.boss = tire(R, MERS[X.mer].boss); X.regle = opts.regle || tire(R, Object.keys(REGLES_V4));
-  X.coeursMax = 3; X.route = []; X.carte = carteV4(X);
+  X.coeursMax = 3; X.route = []; X.carte4b = true; X.carte = carteV4(X);
   if (X.regle === 'calme') { X.coeurs = 4; X.coeursMax = 4; }
   if (X.asc >= 9) { X.coeurs = Math.min(X.coeurs, 2); X.coeursMax = Math.min(X.coeursMax, 2); }
   if (X.asc >= 3) X.or = Math.max(0, X.or - 2);
@@ -180,13 +204,13 @@ function nouveauVoyage(heros, opts) {
 }
 // choisir l'escale de l'étape en cours (parmi les options de la carte)
 function choisitEscale(X, i) { const o = X.carte[X.escale][i]; if (!o) return false; X.route[X.escale] = o; X.journal.push(`🧭 Cap sur ${o.e} ${o.n}.`); synchroRoute(X); return true; }
-const doitChoisir = X => X && X.v === 4 && !X.fini && !X.route[X.escale] && X.carte[X.escale];
+const doitChoisir = X => X && X.v === 4 && !X.fini && !X.route[X.escale] && X.carte[X.escale] && X.carte[X.escale].length > 1;
 
 // ----------------------------------------------------------------------------------------------- remplacements dans le moteur
 const _offre3 = nouvelleOffre, _adv3 = adversaire, _joue3 = joueEscale;
 nouvelleOffre = function (X) {
   if (X.v !== 4) return _offre3(X);
-  const R = hasardX(X), tier = Math.min(3, 1 + Math.floor(X.escale / 2)), pool = recruesDispo(X).filter(k => RECRUES[k].t <= tier);
+  const R = hasardX(X), e6 = X.carte4b ? X.escale * 6 / X.carte.length : X.escale, tier = Math.min(3, 1 + Math.floor(e6 / 2)), pool = recruesDispo(X).filter(k => RECRUES[k].t <= tier);
   const n = (X.heros === 'oria' ? 5 : 4) + (X.regle === 'marche' ? 1 : 0) - (X.asc >= 5 ? 1 : 0);
   X.offre = Array.from({ length:n }, () => tire(R, pool));
 };
@@ -200,14 +224,14 @@ function plateauV4(X, def, mul) {
 adversaire = function (X) {
   if (X.v !== 4) return _adv3(X);
   const esc = X.route[X.escale] || ESCALES2[X.escale], M = MERS[X.mer];
-  if (esc.type === 'fantome') { const f = fantome(X, X.escale); const k = M.pv * (1 + (X.asc >= 1 ? .04 : 0) + (X.asc >= 6 ? .05 : 0)); [...f.plateau.av, ...f.plateau.ar].forEach(u => { if (u) u.v = Math.round(u.v * k); });
+  if (esc.type === 'fantome') { const f = fantome(X, X.carte4b ? Math.round(X.escale * 6 / X.carte.length) : X.escale); const k = M.pv * (1 + (X.asc >= 1 ? .04 : 0) + (X.asc >= 6 ? .05 : 0)); [...f.plateau.av, ...f.plateau.ar].forEach(u => { if (u) u.v = Math.round(u.v * k); });
     return { nom:`Le navire de ${HEROS[f.heros].nom}`, camp:{ heros:f.heros, plateau:f.plateau, X:f.X }, fantome:f.heros }; }
-  if (esc.type === 'elite') { const g = M.elites[esc.el || 0], P = plateauV4(X, g, DUR_V4[X.escale]); if (X.asc >= 2) [...P.av, ...P.ar].forEach(u => { if (u) u.a++; });
+  if (esc.type === 'elite') { const g = M.elites[esc.el || 0], P = plateauV4(X, g, esc.dur || DUR_V4[X.escale]); if (X.asc >= 2) [...P.av, ...P.ar].forEach(u => { if (u) u.a++; });
     return { nom:g.n, camp:{ heros:null, plateau:P, X:null, meca:g.meca }, meca:g.meca, mecaTxt:g.d }; }
-  if (esc.type === 'boss') { const B = BOSS_V4[X.boss], P = plateauV4(X, B, DUR_V4[5] * (X.regle === 'rancon' ? 1.15 : 1) * (X.asc >= 10 ? 1.2 : X.asc >= 4 ? 1.08 : 1));
+  if (esc.type === 'boss') { const B = BOSS_V4[X.boss], P = plateauV4(X, B, (X.carte4b ? DUR_BOSS4 : DUR_V4[5]) * (X.regle === 'rancon' ? 1.15 : 1) * (X.asc >= 10 ? 1.2 : X.asc >= 4 ? 1.08 : 1));
     if (B.meca === 'miroir') { const m = meilleure4(X), a = m ? m.a + m.bonusA + 2 : 6, roi = P.av[0]; roi.a = Math.max(roi.a, a); P.ar.forEach(u => { if (u && u.n === 'Reflet') u.v = Math.round(roi.v / 4); }); }
     return { nom:B.n, camp:{ heros:null, plateau:P, X:null, meca:B.meca }, meca:B.meca, mecaTxt:B.d }; }
-  const g = M.groupes[esc.g || 0]; return { nom:g.n, camp:{ heros:null, plateau:plateauV4(X, g, DUR_V4[X.escale]), X:null } };
+  const g = M.groupes[esc.g || 0]; return { nom:g.n, camp:{ heros:null, plateau:plateauV4(X, g, esc.dur || DUR_V4[X.escale]), X:null } };
 };
 // les mécaniques des boss et des élites : appelées au début de chaque round par combatExp (crochet campE.tour)
 const MECAS_V4 = {
@@ -229,6 +253,8 @@ joueEscale = function (X, R) {
   if (!X.fini && X.regle === 'bourse') { X.or += 2; res.gain = (res.gain || 0) + 2; }
   if (!X.fini && X.regle === 'tempete') { X.or += 3; res.gain = (res.gain || 0) + 3; }
   if (res.gagne && esc.type === 'elite') { X.or += 4; res.elite = '+4 💰 (prime de l’élite)'; }
+  // 19/11 (décision de l'utilisateur) : perdre contre le boss = FIN DU VOYAGE (plus de nouvel essai avec les cœurs qui restent)
+  if (!res.gagne && esc.type === 'boss' && !X.fini) { X.fini = 'perdu'; X.perduBoss = true; res.finBoss = true; X.journal.push(`💀 ${esc.n} a eu raison de l’équipage : le voyage s’arrête là.`); }
   if (X.coeurs > X.coeursMax) X.coeurs = X.coeursMax;
   synchroRoute(X); return res;
 };
@@ -298,7 +324,7 @@ function piloteRoute(X, R) {
 function simuleVoyage(heros, graine, opts) {
   const X = nouveauVoyage(heros, Object.assign({ graine, debloques:0 }, opts || {})); if (globalThis.DIFF_SIM) X.diff = globalThis.DIFF_SIM;
   const types = [];
-  for (let pas = 0; pas < 14 && !X.fini; pas++) {
+  for (let pas = 0; pas < 20 && !X.fini; pas++) {
     if (doitChoisir(X)) piloteRoute(X, hasardX(X));
     const esc = X.route[X.escale]; types.push(esc.type);
     if (!ESCALE_COMBAT(esc.type)) { const s = escaleSansCombat(X); let i = s.choix.findIndex(c => c.possible); if (esc.type === 'tresor' && s.choix[1].possible) i = 1; resoutChoix(X, Math.max(0, i)); continue; }

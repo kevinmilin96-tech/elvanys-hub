@@ -41,7 +41,10 @@ const nomIA = X => HEROS[X.ia.heros].nom;
 const _advDuel = adversaire, _joueDuel = joueEscale;
 adversaire = function (X) {
   if (!X.duel) return _advDuel(X);
-  return { nom:`L’équipage de ${nomIA(X)}`, camp:{ heros:X.ia.heros, plateau:X.ia.plateau, X:X.ia }, fantome:X.ia.heros };
+  // 19/11 (l'utilisateur : « undefined tombe », et des recrues rivales encore debout après une manche gagnée) : on fige une COPIE de l'équipage
+  // rival au moment du combat ; sinon l'écran rejouait le combat avec l'équipage déjà racheté pour la manche suivante (autres recrues, autres noms)
+  const plateau = JSON.parse(JSON.stringify(X.ia.plateau)), Y = Object.assign({}, X.ia, { plateau });
+  return { nom:`L’équipage de ${nomIA(X)}`, camp:{ heros:X.ia.heros, plateau, X:Y }, fantome:X.ia.heros };
 };
 joueEscale = function (X, R) {
   if (!X.duel) return _joueDuel(X, R);
@@ -126,7 +129,8 @@ if (typeof document !== 'undefined' && document.getElementById('app')) {
   records = function () { const l = lireRec(); fenetre(`<h2>🏆 Mes duels d’équipages (${l.length})</h2>${l.length ? `<table>${l.map(r => `<tr><td>${r.gagne ? '🏆' : '💀'} ${new Date(r.quand).toLocaleDateString('fr-FR')} · ${r.nom ? haEsc(r.nom) : HEROS[r.heros].nom} contre ${HEROS[r.rival] ? HEROS[r.rival].nom : '?'} · ${(NIVEAUX_DUEL[r.diff] || NIVEAUX_DUEL.normal).e} · ${r.escales} manche${r.escales > 1 ? 's' : ''}</td><td>${r.score}</td></tr>`).join('')}</table>` : '<p>Aucun encore.</p>'}<div class="choixh"><button onclick="fermer()">Fermer</button></div>`); };
   globalThis.aideDuel = function () { fenetre(`<h2>📖 Le Duel d’équipages</h2><ul style="padding-left:1.1em">
     <li><b>Une manche</b> : tu recrutes au port (comme dans les Expéditions), tu donnes les ordres de ton capitaine, puis ton équipage combat celui du rival, tout seul aux dés.</li>
-    <li><b>Les cœurs</b> : 5 chacun. Le perdant d’une manche perd 1 ❤, puis 2 ❤ à partir de la manche 5. Égalité (les deux équipages encore debout) : personne ne perd.</li>
+    <li><b>Gagner une manche</b> : il faut faire tomber TOUT l’équipage rival, son capitaine ET toutes ses recrues (comme dans les Expéditions).</li>
+    <li><b>Les cœurs</b> : 5 chacun. Le perdant d’une manche perd 1 ❤, puis 2 ❤ à partir de la manche 5. Égalité (les deux équipages encore debout au bout de 25 rounds, ou tombés en même temps) : personne ne perd.</li>
     <li><b>Les pièces</b> : 8 💰 après chaque manche, +2 si tu as perdu, +1 par tranche de 5 gardées (3 au plus).</li>
     <li><b>Le rival</b> recrute en même temps que toi, avec les mêmes règles. Tu découvres son équipage au combat. 🎯 Garde ton doigt sur un ennemi pour en faire la cible de tout ton équipage.</li>
     <li><b>Familles, fusions ★ / ★★, Forge, Louve de Pip</b> : comme dans les Expéditions.</li>

@@ -198,6 +198,10 @@
   .etape4.passe { opacity:.45; } .esc4 { flex:1; padding:5px 3px; border-radius:10px; background:#162238; border:2px solid #2f4a6b; color:inherit; font:inherit; font-size:.72em; line-height:1.15; } .esc4 b { display:block; font-size:1.6em; } .esc4 i { display:block; opacity:.7; font-style:normal; }
   .etape4.ici .esc4:not([disabled]) { border-color:var(--or); box-shadow:0 0 10px var(--or); animation:pulse4 1.4s infinite; } @keyframes pulse4 { 50% { transform:scale(1.04); } }
   .esc4.pris { border-color:var(--ok); } .esc4.non { opacity:.35; }
+  /* 19/11 : la nouvelle carte (suites de combats enchaînés) */
+  .suite4 .enchaine { flex:1; display:flex; align-items:center; gap:2px; } .suite4 .esc4, .boss4 .esc4 { background:#2a1620; border-color:#6b2f3a; } .suite4 .fleche { color:var(--or); font-size:.9em; flex:none; }
+  .esc4.combat.maintenant { border-color:var(--or); box-shadow:0 0 10px var(--or); } .esc4.combat.pris { border-color:var(--ok); opacity:.55; } .boss4 .esc4 { border-color:#c0392b; }
+  .esc4 small { display:block; } .boss1 { background:#3a1212; border:1px solid #c0392b; border-radius:10px; padding:6px 8px; }
   .viseur { position:absolute; left:50%; top:30%; transform:translate(-50%, -50%); font-size:min(9vw, 40px); pointer-events:none; filter:drop-shadow(0 0 6px #ff3030); animation:viseur 1s ease-in-out infinite; z-index:5; } @keyframes viseur { 50% { transform:translate(-50%, -50%) scale(1.2) rotate(45deg); } }
   .med { -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }
   .sbire { position:absolute; right:-4px; top:-4px; z-index:4; font-size:min(5vw, 20px); background:#1c1838; border:2px solid #ff6b6b; border-radius:50%; width:1.4em; height:1.4em; display:grid; place-items:center; box-shadow:0 0 8px #ff6b6b99; }
@@ -214,10 +218,10 @@
 <script src="donnees.js?v=2afe6cf473"></script>
 <script src="odyssee.js?v=3b40723744"></script>
 <script src="chronique.js?v=ecf982cfcc"></script>
-<script src="expedition-moteur.js?v=922eaadead"></script>
+<script src="expedition-moteur.js?v=ea489b216d"></script>
 <script src="guide.js?v=f78db3b570"></script>
-<script src="expedition-v4.js?v=7635cbbf96"></script>
-<script src="expedition-v4-ecran.js?v=633617baca"></script>
+<script src="expedition-v4.js?v=615ce55c22"></script>
+<script src="expedition-v4-ecran.js?v=99212897da"></script>
 <script>// 13/11 soir : musique
 GM.musique('expeditions'); GM.bouton();
 </script>
