@@ -391,6 +391,16 @@
   .unique .pastilles [data-k="pv"] { position:absolute; right:calc(100% + 30cqw); top:7cqw; font-size:3.8cqw; }
   .unique .pastilles [data-k="ultime"], .unique .pastilles [data-k="ultimefait"] { display:none; }
   /* 15/11 : les PC = un gros cristal avec le chiffre, dans le panneau de droite (sous le nom, au-dessus des cartes en main) */
+  /* 19/11 : l'Invasion — la pastille de l'autre héros, les Gardes A / B, le plan des cibles */
+  .pastA { position:absolute; left:1.5cqw; top:1.2cqw; z-index:6; display:flex; align-items:center; gap:1cqw; padding:.8cqw 2cqw .8cqw .8cqw; border-radius:99px; background:#15132bd9; border:1px solid #f3c96b88; box-shadow:0 2px 8px #000a; font-size:3cqw; color:#fff; cursor:pointer; max-width:40cqw; }
+  .pastA img { width:9cqw; height:9cqw; border-radius:50%; object-fit:cover; box-shadow:0 0 0 2px #f3c96b; } .pastA .p.pv { background:none !important; padding:0; font-weight:bold; font-size:3.6cqw; } .pastA small { font-size:3cqw; }
+  .pastA .vie { position:absolute; left:11cqw; right:3cqw; bottom:.6cqw; height:.8cqw; background:#0006; border-radius:2px; overflow:hidden; } .pastA .vie i { display:block; height:100%; background:#e5262c; }
+  .pastA b { font-size:2.6cqw; color:#f3c96b; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:14cqw; } .pastA.terre { filter:grayscale(1); }
+  .barre.vise > img { animation:vise .9s ease-out; } @keyframes vise { 0% { box-shadow:0 0 0 0 #ff5a5a; transform:scale(1.12); } 100% { box-shadow:0 0 0 14px #ff5a5a00; transform:none; } }
+  .p.jum { display:flex !important; gap:.25em; padding:0 !important; background:none !important; } .p.jum i { font-style:normal; padding:.1em .45em; border-radius:9px; background:#3a3f5a; border:1px solid #8a93b8; cursor:pointer; } .p.jum i.sel { background:#7a2a2a; border-color:#ff9d7a; color:#fff; } .p.jum i.terre { opacity:.6; }
+  .jumv { margin:.3em 0; } .jumb { display:flex; gap:5px; margin:.25em 0; } .jumb button { flex:1; font:inherit; font-size:.85em; border:1px solid #8a93b8; background:#2a2650; color:#fff; border-radius:10px; padding:5px 3px; } .jumb button.sel { background:#7a2a2a; border-color:#ff9d7a; } .jumb button[disabled] { opacity:.4; }
+  .planE .lp { display:flex; flex-direction:column; gap:4px; background:#1d1b3a; border:1px solid #4b4580; border-radius:12px; padding:7px 9px; margin:5px 0; } .planE .ok { color:#7dffb0; } .planE button { font:inherit; font-weight:bold; border:0; border-radius:12px; padding:7px; background:linear-gradient(#7cc8ff, #2a7fc1); color:#08172a; } .planE button.sel { background:#3a3570; color:#fff; }
+  .combos { display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; } .combos button { font:inherit; font-weight:bold; border:0; border-radius:14px; padding:6px 12px; background:linear-gradient(#ffe27a, #e8a21f); color:#2b1d0a; }
   .tapis .barre .pastilles .icopc { position:static; inset:auto; border-radius:0; box-shadow:none; flex:none; } /* 19/11 : le cristal se posait par-dessus le nom (règle des portraits) */
   .p.pc .icopc { width:1.6em; height:1.6em; vertical-align:middle; margin-right:.15em; filter:drop-shadow(0 0 4px #5fb0ff); }
   .plateau.tapis.unique:not(.scene) .barre .pastilles [data-k="pc"] { display:flex !important; align-items:center; gap:.2em; order:1; font-size:3.6cqw !important; font-weight:bold; color:#cfe8ff !important; text-shadow:0 0 6px #2a7fc1, 0 1px 2px #000; }
@@ -697,7 +707,7 @@
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
 // 14/11 : l'Odyssée sans fin a ses propres emplacements (odyssee.js lit SANSFIN)
 const SANSFIN = new URLSearchParams(location.search).get('sansfin') === '1', ROUTE_TITAN = new URLSearchParams(location.search).get('route') === '1', EPREUVE_PAGE = new URLSearchParams(location.search).get('epreuve') === '1', ODY_PAGE = EPREUVE_PAGE ? 'epreuves.html' : 'odyssee.html' + (SANSFIN ? '?sansfin=1' : ROUTE_TITAN ? '?route=1' : '');
-const VERSION = '20261119-192319';
+const VERSION = '20261119-195349';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -721,8 +731,8 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden) veri
 <script src="rang.js?v=bb0555ca3c"></script>
 <script src="heros-etoiles.js?v=07f78336f4"></script>
 <script src="heros-aventure.js?v=31db8c2ed4"></script>
-<script src="donnees.js?v=2afe6cf473"></script>
-<script src="odyssee.js?v=3b40723744"></script>
+<script src="donnees.js?v=6b3166c8e1"></script>
+<script src="odyssee.js?v=d23b52bb6c"></script>
 <script src="bestiaire.js?v=f0f3165c93"></script>
 <script src="aventure.js?v=09133a6200"></script>
 <script src="odyssee-sansfin.js?v=9fe2efc30f"></script>
@@ -737,7 +747,8 @@ let FX = [], fxOn = false, fxApres = [], fxVite = 1;
 const fx = e => { if (S && !S.auto) FX.push(e); };
 // bilan du tour de l'ordinateur (montré à la fin de son tour)
 const bilan = (J, cle, txt) => { if (!S || S.auto || !S.bilan || J !== S.O) return; S.bilan[cle].push(txt); };
-const ref = k => ({ s:k.J === S.J ? 'J' : 'O', uid:k.u ? k.u.id : null });
+const ref = k => ({ s:k.J === S.J ? 'J' : (S.coop && S.equipe && S.equipe.includes(k.J) ? 'A' : 'O'), uid:k.u ? k.u.id : null }); // 19/11 : 'A' = l'autre héros de l'Invasion (sa pastille)
+let VISE_P = null, PAST_P = null; // 19/11 : pendant le tour des ennemis, le héros montré dans le cercle et celui de la pastille
 function joueur(id, ordi, auto) {
   const h = HEROS[id];
   return { id, ordi, nom:h.nom, c:h.c, pv:h.pv, pvMax:h.pv, pc:1, deck:melange(ordi || auto ? deckBase(id) : deckDe(id)), main:[], des:[], front:[], tours:0,
@@ -924,7 +935,7 @@ function pose(J, quoi, ds, k, indexMain) {
   if (quoi === 'garde') { J.gardeFaite = true; const g0 = J.gardeB, e0 = J.gardeE, q0 = J.esquive; h.garde.f(J, vs, k, ds);
     if (J.benes.includes('gardex2') && !J.gardeX2 && J.gardeB > g0) { J.gardeB += J.gardeB - g0; J.gardeX2 = true; log('Première parade : Garde doublée.'); }
     const quoiG = J.gardeB > g0 ? `Bouclier ${J.gardeB}` : J.gardeE > e0 ? `Épines ${J.gardeE}` : J.esquive && !q0 ? 'Esquive' : h.garde.n;
-    fx({ t:'garde', s:J === S.J ? 'J' : 'O', nom:h.garde.n, quoi:quoiG, vs }); bilan(J, 'gardes', `Garde : ${quoiG}`); return; }
+    fx({ t:'garde', s:J === S.J ? 'J' : 'O', nom:h.garde.n, quoi:quoiG, vs, plus:J.gardeB > g0 ? J.gardeB - g0 : 0, regle:h.garde.d }); bilan(J, 'gardes', `Garde : ${quoiG}`); return; }
   if (quoi === 'frappe') { log(`${J.nom} : Frappe (${vs.join(', ')}) : ${frappeDe(J).dg(vs)} dégâts.`); fx({ t:'tir', id:J.id, s:J === S.J ? 'J' : 'O', vers:k && ref(k), nom:'Frappe', vs, dg:frappeDe(J).dg(vs), cible:k && (k.u ? k.u.n : k.J.nom) }); bilan(J, 'actions', `⚔ Frappe (${vs.join('·')}) : ${frappeDe(J).dg(vs)} dégâts`); frappeDe(J).f(J, vs, k); return; }
   if (quoi === 'technique') { log(`${J.nom} : Technique (${vs.join(', ')}) : ${techDg(vs)} dégâts.`); fx({ t:'tir', id:J.id, s:J === S.J ? 'J' : 'O', vers:k && ref(k), nom:'Technique', vs, dg:techDg(vs), cible:k && (k.u ? k.u.n : k.J.nom) }); bilan(J, 'actions', `⚔ Technique (${vs.join('·')}) : ${techDg(vs)} dégâts`); TECHNIQUE.f(J, vs, k); return; }
   if (quoi === 'pouvoir') { log(`${J.nom} : ${h.pouvoir.n} !`); bilan(J, 'actions', `✨ Pouvoir : ${h.pouvoir.n} (${vs.join('·')})`); fx({ t:'carte', key:'pouvoir', id:J.id, s:J === S.J ? 'J' : 'O', nom:h.pouvoir.n, txt:h.pouvoir.d, sorte:'Pouvoir', vers:k && k.J && ref(k), vs }); h.pouvoir.f(J, vs, k, ds); return; }
@@ -1452,7 +1463,11 @@ function suiteCamp() {
     fx({ t:'annonce', txt:`📱 Passe le téléphone à ${h.nom}` }); debutTour(h); sel = []; attaquant = null; ciblage = null; rendu(); return;
   }
   if (S.J.aTerre) S.J = S.equipe.find(x => !x.aTerre);
-  joueOrdi(); if (S.fini) { rendu(); return; }
+  preparerTourEnnemis(() => { joueOrdi(); finSuiteCamp(); }); // 19/11 : tirage des cibles du livre (1-3-5 / 2-4-6) et Interception, invasion.js
+}
+let preparerTourEnnemis = f => f();
+function finSuiteCamp() {
+  if (S.fini) { rendu(); return; }
   const p = S.equipe.find(x => !x.aTerre); S.J = p; sel = []; attaquant = null; ciblage = null;
   fx({ t:'tour', s:'J', nom:p.ordi ? p.nom : (p.qui === 'toi' ? 'toi' : p.nom) }); debutTour(p);
   if (p.ordi) { if (!S.fini) joueAuto(p); if (!S.fini) fxApres.push(suiteCamp); }
@@ -1581,7 +1596,7 @@ function touche(k) {
   if (attaquant && estCible(k)) { attaque(S.J, attaquant, k); attaquant = null; rendu(); return; }
   // 11/11 : toucher SON portrait = l'Ultime (avec les dés choisis) ou son explication
   if (k.J === S.J && !k.u && !ciblage && !attaquant && !S.J.aLancer && !S.coop) { vise('ultime'); return; }
-  if (k.J === S.J && !k.u && !ciblage && !attaquant && !S.J.aLancer && S.coop && S.J.qui === 'toi') { vise('ultime'); return; }
+  if (k.J === S.J && !k.u && !ciblage && !attaquant && !S.J.aLancer && S.coop && !S.J.ordi) { vise('ultime'); return; } // 19/11 : aussi le 2e joueur (avant : seulement « toi », le portrait du joueur 2 ne faisait rien)
   if (k.J === S.J && k.u && k.u.louve && k.u.pret && !ciblage && !S.J.aLancer) { attaquant = null; attaqueLouve(S.J); rendu(); return; }
   if (k.J === S.J && k.u && k.u.pret && !k.u.louve && !ciblage) {
     if (attaquant === k.u) { attaquant = null; rendu(); return; }
@@ -1697,7 +1712,7 @@ function infoProtection(s) {
 }
 function barre(P, haut) {
   const ref = `{J:S.${haut ? 'O' : 'J'}}`;
-  return `<div class="barre ${estCible({ J:P }) ? 'cible' : ''} ${!P.ultimeFait && P.jauge >= JAUGE.max ? 'ultpret' : ''} ${P.gardeB || P.bouclier ? 'protege' : ''}" data-bouclier="${(P.gardeB || 0) + (P.bouclier || 0)}" id="b-${haut ? 'O' : 'J'}" style="--c:${P.c}" onclick="touche(${ref})"><img src="${P.img || HEROS[P.id].img || IMG(P.id)}"${P.imgSec ? ` onerror="this.onerror=null;this.src='${P.imgSec}'"` : ''} alt=""><img class="cadre" src="ui/cadre.webp?v=1" alt="">${anneauDe(P)}${etatsHTML(P)}${!haut && !P.ultimeFait && P.jauge >= JAUGE.max && !S.J.aLancer ? `<span class="ultbtn ${P.pc >= 3 ? '' : 'manque'}" onclick="event.stopPropagation(); vise('ultime')">⚡ ULTIME PRÊT${P.pc >= 3 ? '' : ' · 3 PC'}</span>` : ''}<span class="bdg bg" hidden>${P.gardeB}</span><span class="bdg bb ${P.gardeB ? 'tempo' : ''}" ${(P.gardeB || 0) + (P.bouclier || 0) ? '' : 'hidden'} onclick="event.stopPropagation();infoProtection('${haut ? 'O' : 'J'}')">${protTxt(P.gardeB || 0, P.bouclier || 0)}</span><div style="flex:1"><div class="nom">${P.nom}<small class="sous">${P.ordi ? (S.lieu ? (HEROS[P.id].titre || 'ennemi') : 'ordinateur') : (P.qui && P.qui !== 'toi' ? P.qui : '')}</small></div><div class="vie"><b style="width:${Math.max(0, P.pv) / P.pvMax * 100}%"></b><i style="width:${Math.max(0, P.pv) / P.pvMax * 100}%"></i></div><div class="pastilles">
+  return `<div class="barre ${estCible({ J:P }) ? 'cible' : ''} ${!P.ultimeFait && P.jauge >= JAUGE.max ? 'ultpret' : ''} ${P.gardeB || P.bouclier ? 'protege' : ''}" data-bouclier="${(P.gardeB || 0) + (P.bouclier || 0)}" id="b-${haut ? 'O' : 'J'}" style="--c:${P.c}" onclick="touche(${ref})"><img src="${P.img || HEROS[P.id].img || IMG(P.id)}"${P.imgSec ? ` onerror="this.onerror=null;this.src='${P.imgSec}'"` : ''} alt=""><img class="cadre" src="ui/cadre.webp?v=1" alt="">${anneauDe(P)}${etatsHTML(P)}${!haut && !P.ultimeFait && P.jauge >= JAUGE.max && !S.J.aLancer && carteVue === null ? `<span class="ultbtn ${P.pc >= 3 ? '' : 'manque'}" onclick="event.stopPropagation(); vise('ultime')">⚡ ULTIME PRÊT${P.pc >= 3 ? '' : ' · 3 PC'}</span>` : ''}<span class="bdg bg" hidden>${P.gardeB}</span><span class="bdg bb ${P.gardeB ? 'tempo' : ''}" ${(P.gardeB || 0) + (P.bouclier || 0) ? '' : 'hidden'} onclick="event.stopPropagation();infoProtection('${haut ? 'O' : 'J'}')">${protTxt(P.gardeB || 0, P.bouclier || 0)}</span><div style="flex:1"><div class="nom">${P.nom}<small class="sous">${P.ordi ? (S.lieu ? (HEROS[P.id].titre || 'ennemi') : 'ordinateur') : (P.qui && P.qui !== 'toi' ? P.qui : '')}</small></div><div class="vie"><b style="width:${Math.max(0, P.pv) / P.pvMax * 100}%"></b><i style="width:${Math.max(0, P.pv) / P.pvMax * 100}%"></i></div><div class="pastilles">
     <span data-k="pv" class="p pv">${Math.max(0, P.pv)}</span><span data-k="pc" class="p pc"><img class="icopc" src="ui/cristal.webp?v=1" alt=""><b>${P.pc}</b> PC</span>
     ${P.gardeB ? `<span data-k="garde" class="p g pg"><img class="icopb" src="ui/equip/icone-garde.webp?v=1" alt="">Garde ${P.gardeB}</span>` : ''}${P.gardeE ? `<span data-k="epines" class="p g">🌿 Épines ${P.gardeE}</span>` : ''}${P.esquive ? '<span data-k="esquive" class="p g">💨 Esquive</span>' : ''}
     ${P.bouclier ? `<span data-k="bouclier" class="p g pb"><img class="icopb" src="ui/equip/icone-bouclier.webp?v=1" alt="">Bouclier ${P.bouclier}</span>` : ''}${P.contre ? '<span data-k="contre" class="p g">⚔ Contre-attaque : 6 à la 1re créature</span>' : ''}${P.piege ? '<span data-k="piege" class="p g">🪤 Piège</span>' : ''}
@@ -1858,6 +1873,15 @@ function aide(quoi, info) {
   fenetre(`<h2>${info ? 'Comment ça marche' : 'Pas encore possible'}</h2><p>${t}</p>${info ? '' : `<p style="color:#f3c96b"><b>${raison(quoi)}</b></p>`}<div class="choixh"><button onclick="fermer()">Compris</button></div>`);
 }
 // pourquoi une action est refusée, en une phrase
+// 19/11 (l'utilisateur : « l'Ultime de Zéphine refusé alors que des dés faisaient 12 ») : on montre les combinaisons possibles avec SES dés libres
+const EX_ULTIME = { zephine:'6 + 5 + 1, 6 + 4 + 2, 5 + 4 + 3 ou 4 + 4 + 4' };
+function combosUltime(J) {
+  const h = HEROS[J.id], libres = J.des.filter(d => !d.pose), vus = new Set(), l = [];
+  sousEnsembles(libres).forEach(ds => { if (!h.ultime.cond(vals(ds), ds)) return; const t = vals(ds).sort((a, b) => b - a).join(' + '); if (vus.has(t)) return; vus.add(t); l.push(ds); });
+  if (!l.length) return '<br><span style="color:#c9c1ea">Avec tes dés libres, aucune combinaison ne marche ce tour : relance, ou change un dé (+1 / −1, Transmutation).</span>';
+  window.COMBOS_ULT = l.slice(0, 4);
+  return `<br><span style="color:#7dffb0">Avec tes dés, ça marche :</span><span class="combos">${COMBOS_ULT.map((ds, i) => `<button onclick="fermer();sel=COMBOS_ULT[${i}];vise('ultime')">${vals(ds).sort((a, b) => b - a).join(' + ')}</button>`).join('')}</span>`;
+}
 function raison(quoi) {
   const J = S.J, vs = vals(sel), h = HEROS[J.id];
   const des = vs.length ? `Tu as choisi ${vs.length > 1 ? 'les dés' : 'le dé'} ${vs.join(', ')}` : 'Tu n’as choisi aucun dé';
@@ -1868,11 +1892,11 @@ function raison(quoi) {
     if (c.t === 'u' && J.front.length >= 5) return 'Ta ligne de front est pleine (5 unités).';
     if (manque > 0) return `Il te manque ${manque} PC (tu en as ${J.pc}).`;
     if (!vs.length) return `Choisis d’abord ${/^(1 )?dé( |$)/.test(c.txt) ? 'un dé' : 'les dés'} : ${c.txt}.`;
-    if (!c.cond(vs, sel)) return `${des} : il faut ${c.txt}.`;
+    if (!c.cond(vs, sel)) return `${des} : il faut ${c.txt}.${/modifi/.test(c.txt) ? ' <br><span style="color:#c9c1ea">Un dé « modifié » = un dé que tu as changé CE tour : +1 / −1 (bouton à PC), Transmutation (⚗, Zéphine) ou une carte comme Précipité. Il est entouré de rouge.</span>' : ''}`;
     if (c.cible) return 'Il n’y a pas de cible possible pour cette carte.';
     return '';
   }
-  if (quoi === 'ultime') { if (J.ultimeFait) return 'Tu as déjà joué ton Ultime dans ce combat.'; if (J.jauge < JAUGE.max) return `Ta jauge d’Ultime n’est pas pleine (${J.jauge} / ${JAUGE.max}).`; if (J.pc < 3) return `Il te manque ${3 - J.pc} PC.`; return `${des} : il faut ${h.ultime.txt}.`; }
+  if (quoi === 'ultime') { if (J.ultimeFait) return 'Tu as déjà joué ton Ultime dans ce combat.'; if (J.jauge < JAUGE.max) return `Ta jauge d’Ultime n’est pas pleine (${J.jauge} / ${JAUGE.max}).`; if (J.pc < 3) return `Il te manque ${3 - J.pc} PC.`; return `${des} : il faut ${h.ultime.txt}${EX_ULTIME[J.id] ? ` (par exemple ${EX_ULTIME[J.id]})` : ''}.` + combosUltime(J); }
   if (quoi === 'garde' && J.gardeFaite) return 'Ta Garde est déjà posée ce tour.';
   if (quoi === 'pcRelance' || quoi === 'pcAjuste') { const n = quoi === 'pcRelance' ? 1 : coutAjuste(J); if (J.pc < n) return `Il te manque ${n - J.pc} PC.`; return 'Choisis un seul dé.'; }
   if (quoi === 'pcSoins') return J.pc < 2 ? `Il te manque ${2 - J.pc} PC.` : 'Tu n’as aucune altération à retirer.';
@@ -1895,7 +1919,7 @@ function rappelDebut() {
   <li><b>Tes dés sont lancés.</b> Tu peux en relancer (2 fois, bouton 🎲 Relancer).</li>
   <li><b>Touche des dés, puis une action</b> (colonne de gauche) :<br>⚔ <b>Frappe</b> : 2 dés pareils ou plus<br>🛡 <b>Garde</b> : ${h.garde.txt}<br>✦ <b>Pouvoir</b> : ${h.pouvoir.txt}<br>⚡ <b>Ultime</b> : quand l’anneau doré est plein, ${h.ultime.txt}, 3 PC</li>
   <li><b>Une carte ?</b> Il faut un dé qui remplit sa condition et assez de PC (chiffre bleu). Puis <b>Fin du tour ▶</b>.</li></ol>
-  ${S.coop ? `<p style="margin:.3em 0;font-size:.9em">Le boss frappe <b>le dernier héros qui a joué</b>.</p>` : ''}
+  ${S.coop ? `<p style="margin:.3em 0;font-size:.9em">Au tour des ennemis, <b>chacun lance un dé</b> : 1-3-5 → il vise ${S.equipe[0].nom}, 2-4-6 → ${S.equipe[1].nom}. L’autre héros peut <b>prendre le coup à sa place</b> (1 🤝).</p>` : ''}
   <p style="margin:.3em 0;font-size:.85em;color:#c9c1ea">Les règles complètes : le bouton <b style="color:#ff6b6b">❓</b> tout en bas à gauche de l’écran.</p>
   <div class="choixh"><button onclick="fermer()">Jouer ▶</button><button onclick="fermer();regles()">❓ Toutes les règles</button></div>`);
 }
@@ -1919,7 +1943,7 @@ function regles(court) {
   <li>Tes <b>unités</b> attaquent à partir du tour suivant leur arrivée : touche ton unité (contour jaune), puis sa cible. Les unités <b>Barrière</b> doivent être attaquées d’abord par les unités. Les unités <b>Cachées</b> ne peuvent pas être visées tant qu’elles n’ont pas attaqué.</li>
   <li>La <b>Garde</b> = ta défense : tu poses un dé et ton héros gagne un Bouclier (ou une autre protection selon le héros). Ce Bouclier absorbe les prochains dégâts que tu reçois pendant le tour de l’adversaire, puis disparaît. Exemple : Garde 4, l’adversaire frappe à 6, tu ne perds que 2 PV.</li><li>Tes <b>créatures</b> attaquent au tour suivant leur arrivée (sauf Charge) : touche-en une puis sa cible ; celles que tu ne fais pas attaquer frappent le héros adverse à « Fin du tour », sauf les créatures 👁 Cachées, qui restent dans l’ombre tant que tu ne leur demandes pas d’attaquer. Le Bouclier et la Garde de l’adversaire absorbent leurs coups.</li><li>Une créature <b>Cachée</b> 👁 ne peut être ni attaquée ni visée tant qu’elle n’a pas attaqué ; sa première attaque depuis l’ombre est une <b>Embuscade</b> (+2 dégâts), puis elle se montre.</li><li>Une créature prête peut aussi se mettre <b>en défense</b> (touche-la) : elle n’attaque pas ce tour, mais elle protège ton héros comme une Barrière jusqu’à ton prochain tour : les créatures adverses doivent l’attaquer d’abord.</li></ul>
   <h2>${h.nom}, ${h.titre} (${h.pv} PV)</h2><p><b>Passif</b> : ${h.passif}</p><p><b>Garde · ${h.garde.n}</b> (${h.garde.txt}) : ${h.garde.d}</p><p><b>Pouvoir · ${h.pouvoir.n}</b> (${h.pouvoir.txt}) : ${h.pouvoir.d}</p><p><b>Ultime · ${h.ultime.n}</b> (jauge pleine, ${h.ultime.txt}, 3 PC) : ${h.ultime.d}</p>
-  ${S.coop ? `<h2>⚔️ L’Invasion</h2><p>${S.equipe[0].nom} et ${S.equipe[1].nom} contre <b>${S.O.nom}</b> (${S.O.pvMax} PV). Chaque héros joue son tour, puis le boss frappe <b>le dernier qui a joué</b>. Tous les 2 tours, il appelle des Racines (Barrière). La <b>Cohésion</b> monte quand un héros pose 3 dés ou plus ; elle sert à relever un héros à terre (3), à crier le ralliement (2 : +2 PC chacun) ou à soigner l’autre (2 : +6 PV). Les deux à terre = défaite.</p>` : ''}${S.ody || S.coop ? `<h2>${S.O.nom}, ${HEROS[S.O.id].titre || ''} (${S.O.pvMax} PV)</h2><p>${HEROS[S.O.id].role || ''}</p><p><b>Garde · ${HEROS[S.O.id].garde.n}</b> (${HEROS[S.O.id].garde.txt}) : ${HEROS[S.O.id].garde.d}</p><p><b>Pouvoir · ${HEROS[S.O.id].pouvoir.n}</b> (${HEROS[S.O.id].pouvoir.txt}) : ${HEROS[S.O.id].pouvoir.d}</p>${S.ody && S.ody.defi ? `<p><b>🎯 Défi du combat · ${S.ody.defi.n}</b> : ${S.ody.defi.d} Réussi = +30 or.</p>` : ''}` : ''}
+  ${S.coop ? `<h2>⚔️ L’Invasion</h2><p>${S.equipe[0].nom} et ${S.equipe[1].nom} contre <b>${S.O.nom}</b> (${S.O.pvMax} PV). Chaque héros joue son tour, puis les ennemis : <b>chacun lance un dé</b> (1-3-5 → ${S.equipe[0].nom}, 2-4-6 → ${S.equipe[1].nom}) ; l’autre héros peut prendre le coup à sa place pour 1 🤝. Tous les 2 tours, il appelle des Racines (Barrière). La <b>Cohésion</b> monte quand un héros pose 3 dés ou plus ; elle sert à relever un héros à terre (3), à crier le ralliement (2 : +2 PC chacun) ou à soigner l’autre (2 : +6 PV). Les deux à terre = défaite.</p>` : ''}${S.ody || S.coop ? `<h2>${S.O.nom}, ${HEROS[S.O.id].titre || ''} (${S.O.pvMax} PV)</h2><p>${HEROS[S.O.id].role || ''}</p><p><b>Garde · ${HEROS[S.O.id].garde.n}</b> (${HEROS[S.O.id].garde.txt}) : ${HEROS[S.O.id].garde.d}</p><p><b>Pouvoir · ${HEROS[S.O.id].pouvoir.n}</b> (${HEROS[S.O.id].pouvoir.txt}) : ${HEROS[S.O.id].pouvoir.d}</p>${S.ody && S.ody.defi ? `<p><b>🎯 Défi du combat · ${S.ody.defi.n}</b> : ${S.ody.defi.d} Réussi = +30 or.</p>` : ''}` : ''}
   <div class="choixh"><button onclick="fermer()">Jouer</button>${S.ody ? '' : '<button onclick="fermer();accueil()">Changer de héros</button>'}</div><div class="choixh"><button onclick="mesParties()">📜 Mes parties</button>${S.ody ? `<button onclick="location.href='odyssee.html'">🗺 L’île</button>` : S.coop ? `<button onclick="location.href='campement.html'">🔥 Le campement</button>` : `<button onclick="location.href='menu.html'">⌂ Menu</button>`}</div>`);
 }
 // historique des parties, gardé sur le téléphone (les 50 dernières) : sert à l'équilibrage
@@ -2139,7 +2163,7 @@ const nb = t => { const m = /(-?\d+)/.exec(t || ''); return m ? +m[1] : 0; };
 function majVie(c, ev) {
   const e = el(c); if (!e || e.classList.contains('mystere')) return;
   if (ev.pv !== undefined && !c.uid) {
-    const P = c.s === 'J' ? S.J : S.O, pill = e.querySelector('.p.pv'), barre = e.querySelector('.vie i');
+    const P = c.s === 'J' ? (VISE_P || S.J) : c.s === 'A' ? (PAST_P || S.J) : S.O, pill = e.querySelector('.p.pv'), barre = e.querySelector('.vie i');
     const avant = pill ? nb(pill.textContent) : ev.pv, fant = e.querySelector('.vie b');
     defile(pill, avant, ev.pv, v => `${v}`, ev.pv > avant ? 'v' : 'r');
     { const an = e.querySelector('.anneau'); if (an) an.outerHTML = anneauDe(P, Math.max(0, ev.pv), Math.max(0, avant)); }
@@ -2280,7 +2304,7 @@ function effet(nom, cible, f) {
 let bandeauPrec = null;
 async function bandeauAction(s, html, ms) {
   const base = localStorage.getItem('guilde-vitesse') === 'rapide' ? .8 : 1.3, lu = (ms || 1300) * base;
-  if (bandeauPrec) { const reste = bandeauPrec.t + lu - performance.now(); if (reste > 0) await new Promise(r => setTimeout(r, reste)); const v = bandeauPrec.d; v.classList.add('part'); setTimeout(() => v.remove(), 400); }
+  if (bandeauPrec) { const reste = bandeauPrec.t + lu - performance.now(); if (reste > 0) await new Promise(r => setTimeout(r, reste)); const v = bandeauPrec && bandeauPrec.d; if (v) { v.classList.add('part'); setTimeout(() => v.remove(), 400); } } // 19/11 : le bandeau d'avant a pu partir pendant l'attente
   const d = document.createElement('div'); d.className = 'bandact ' + (s === 'O' ? 'ordi' : 'moi'); d.innerHTML = html; couche().appendChild(d);
   const moi = bandeauPrec = { d, t:performance.now() };
   setTimeout(() => { if (bandeauPrec === moi) { d.classList.add('part'); setTimeout(() => d.remove(), 400); bandeauPrec = null; } }, lu + 1600);
@@ -2333,7 +2357,7 @@ async function joue1(e) {
   }
   if (e.t === 'tir') {
     const de = el({ s:e.s }), vers = el(e.vers) || el({ s:e.s === 'J' ? 'O' : 'J' }); if (!de || !vers) return;
-    await bandeauAction(e.s, `<b>${QUI(e.s)}</b> · ${e.nom} <span class="vs">🎲 ${e.vs.join(' · ')}</span> → <b>${e.cible === S.J.nom ? 'toi' : e.cible || ''}</b> : <span class="dg">${e.dg} dégâts</span>`);
+    await bandeauAction(e.s, `<b>${QUI(e.s)}</b> · ${e.nom} <span class="vs">🎲 ${e.vs.join(' · ')}</span> → <b>${(e.cible === S.J.nom && !S.coop) ? 'toi' : e.cible || ''}</b> : <span class="dg">${e.dg} dégâts</span>`);
     await mire(de, vers);
     son('tir'); flotte(de, `${e.nom} ${e.vs.join('·')}`, 'nom');
     const b = document.createElement('div'); b.className = 'boule'; b.style.setProperty('--c', (e.s === 'J' ? S.J : S.O).c);
@@ -2341,7 +2365,7 @@ async function joue1(e) {
   }
   if (e.t === 'coup' || e.t === 'louve') {
     const de = el(e.de), vers = el(e.vers) || el({ s:e.de.s === 'J' ? 'O' : 'J' }); if (!de || !vers) return;
-    await bandeauAction(e.de.s, e.t === 'louve' ? `🐺 <b>La Louve</b> bondit → <b>${e.cible === S.J.nom ? 'toi' : e.cible}</b> : <span class="dg">${e.n} dégâts</span>` : `🐾 <b>${e.nom}</b>${e.emb ? ' <b style="color:#c084fc">EMBUSCADE !</b>' : ''} attaque → <b>${e.cible === S.J.nom ? 'toi' : e.cible}</b> : <span class="dg">${e.a} dégâts</span>`);
+    await bandeauAction(e.de.s, e.t === 'louve' ? `🐺 <b>La Louve</b> bondit → <b>${(e.cible === S.J.nom && !S.coop) ? 'toi' : e.cible}</b> : <span class="dg">${e.n} dégâts</span>` : `🐾 <b>${e.nom}</b>${e.emb ? ' <b style="color:#c084fc">EMBUSCADE !</b>' : ''} attaque → <b>${(e.cible === S.J.nom && !S.coop) ? 'toi' : e.cible}</b> : <span class="dg">${e.a} dégâts</span>`);
     await mire(de, vers);
     if (e.t === 'louve') { son('louve'); flotte(de, `🐺 ${e.r.join(' · ')}`, 'nom'); await dodo(500); }
     const a = centre(de), b = centre(vers), dx = (b.x - a.x) * .8, dy = (b.y - a.y) * .8;
@@ -2362,7 +2386,7 @@ async function joue1(e) {
   }
   if (e.t === 'soin') { const c = el(e.c); son('soin'); effetImage('coeur', c, .9); flotte(c, `+${e.n}`, 'soin'); if (c) { c.classList.remove('brille'); void c.offsetWidth; c.classList.add('brille'); } majVie(e.c, e); await dodo(450); return; }
   if (e.t === 'tombe') { const c = el(e.c); if (!c) return; son('tombe'); effetImage('mort', c, 1); await c.animate([{ transform:'none', opacity:1 }, { transform:'translateY(14px) rotate(14deg) scale(.7)', opacity:0 }], { duration:450 * fxVite, fill:'forwards' }).finished.catch(() => {}); return; }
-  if (e.t === 'garde') { const c = el({ s:e.s }); son('garde'); await bandeauAction(e.s, `🛡 <b>${QUI(e.s)}</b> pose sa Garde <span class="vs">🎲 ${(e.vs || []).join(' · ')}</span> : <b>${e.quoi}</b> jusqu’au prochain tour`); effetImage('armure', c, .9); flotte(c, `🛡 ${e.quoi || e.nom}`, 'bleu'); if (c) { c.classList.remove('garde'); void c.offsetWidth; c.classList.add('garde'); } await dodo(450); return; }
+  if (e.t === 'garde') { const c = el({ s:e.s }); son('garde'); await bandeauAction(e.s, e.plus ? `🛡 <b>${QUI(e.s)}</b> pose sa Garde « ${e.nom} » <span class="vs">🎲 ${(e.vs || []).join(' · ')}</span> : <b>+${e.plus} de bouclier</b>${e.regle ? ` <small>(${e.regle.replace(/\.$/, '')})</small>` : ''}. Il prend les prochains coups et <b>part au début de son prochain tour</b>.` : `🛡 <b>${QUI(e.s)}</b> pose sa Garde <span class="vs">🎲 ${(e.vs || []).join(' · ')}</span> : <b>${e.quoi}</b> jusqu’au prochain tour`, e.plus ? 2600 : undefined); effetImage('armure', c, .9); flotte(c, `🛡 ${e.quoi || e.nom}`, 'bleu'); if (c) { c.classList.remove('garde'); void c.offsetWidth; c.classList.add('garde'); } await dodo(450); return; }
   if (e.t === 'defense') { const c = el(e.c); if (!c) return; son('garde'); if (!effetImage('armure', c, .7)) effet('bouclier', c); flotte(c, '🛡 En défense', 'bleu'); await dodo(500); return; }
   if (e.t === 'transforme') {
     const c = el(e.c); if (!c || c.classList.contains('mystere')) return; son('ultime'); effet('alchimie', c, 1.2);
@@ -2396,7 +2420,7 @@ document.addEventListener('pointerdown', () => { if (fxOn && !(S && S.tuto)) fxV
 <script>window.AMIS_SANS_BOUTON = true;</script>
 <script src="amis.js?v=da00ccb367"></script>
 <script src="duel-ligne.js?v=25f67537a4"></script>
-<script src="invasion.js?v=ee7ddf7052"></script>
+<script src="invasion.js?v=0edddd9d93"></script>
 <script src="enigme-table.js?v=80c517ec18"></script>
 <script src="forge.js?v=beb857648f"></script>
 <script src="semaine.js?v=7628cbea1f"></script>

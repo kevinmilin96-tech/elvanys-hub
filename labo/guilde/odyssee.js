@@ -879,7 +879,7 @@ const VAGUES_EVEIL = {
         pouvoir:{ n:'Dernière morsure', txt:'2 dés identiques', d:'5 dégâts et 1 Souillure (le dernier Gobelin) ; il récupère 5 PV par PC volé.', cond:vs => vs.length === 2 && vs[0] === vs[1], cible:'ennemi', f:(J, vs, k) => { degats(k, 5); if (k && k.J && !k.u) { souille(k.J, 1); const v = volePC(J, k.J, 1); if (v) J.pv = Math.min(Math.ceil(J.pvMax / 3), J.pv + 5 * v); } } } },
     ],
     ultime:{ n:'—', txt:'jamais', d:'La Meute n’a pas d’Ultime.', cond:() => false }, renforts:[] },
-  duo: { nom:'Les Gardes corrompus', titre:'le Duo d’acier', emoji:'🛡️', c:'#4a4a6a', pv:90, boss:true, jumeaux:true, ile:'invasion', role:'Deux Gardes de 45 PV liés par une chaîne d’ombre : les dégâts se partagent, un dé de bouclier retire 2 dégâts sur 4-5-6, et celui qui tombe se relève avec 20 PV si son jumeau est encore debout à la fin du tour. Il faut les abattre DANS LE MÊME TOUR.', cit:'« Nous sommes un. »',
+  duo: { nom:'Les Gardes corrompus', titre:'le Duo d’acier', emoji:'🛡️', c:'#4a4a6a', pv:90, boss:true, jumeaux:true, ile:'invasion', role:'Deux Gardes de 45 PV, le Garde A et le Garde B : tu choisis lequel frapper (🎯 sur leur panneau), ou moitié-moitié. Chaque Garde touché lance son dé de bouclier (4-5-6 : −2). Un Garde à 0 tombe en léthargie : seul, son jumeau n’attaque qu’avec 3 dés, mais à la fin de son tour il le relève avec 15 PV. Pour gagner : les DEUX à 0 en même temps.', cit:'« Nous sommes un. »',
     phases:[ { seuil:1, garde:{ n:'Boucliers liés', txt:'1 dé', d:'Bouclier = la valeur du dé.', cond:vs => vs.length === 1, val:vs => vs[0], f:(J, vs) => { J.gardeB += vs[0]; log(`Les Gardes : Boucliers liés, Bouclier ${vs[0]}.`); } },
       pouvoir:{ n:'Brise-Garde', txt:'3 dés identiques', d:'10 dégâts et Handicap (un dé de moins au prochain tour).', cond:vs => vs.length === 3 && vs[0] === vs[1] && vs[1] === vs[2], cible:'ennemi', f:(J, vs, k) => { degats(k, 10); if (k && k.J && !k.u) altere(k.J, 'handicap'); } } } ],
     ultime:{ n:'Poids de l’Abîme', txt:'2 dés identiques', d:'6 dégâts et le héros ne gagne pas de PC à son prochain tour.', cond:vs => vs.length === 2 && vs[0] === vs[1], cible:'ennemi', f:(J, vs, k) => { degats({ J:adv(J) }, 6); adv(J).sansPC = true; } }, renforts:[] },
@@ -905,7 +905,7 @@ BOSS_CAMP.eveil = { nom:'L’Éveil de l’Abîme', titre:'Invasion · Acte I (3
 // La JAUGE DE SÈVE de l'Arbre-Monde (100 %) : −5 % au début de chaque tour du Titan, −10 % sur l'Onde de stase ; à 0 % le monde est pétrifié (défaite).
 // Chaque héros peut soigner l'Arbre : 2 PC → +10 %. La corruption de l'Arbre aggrave le combat (≤ 49 % : le Titan réduit encore les dégâts de 1 ; ≤ 24 % : 1 dégât à chaque héros au début de son tour).
 const VAGUES_REVEIL = {
-  eclaireurs: { nom:'Les Éclaireurs de silex', titre:'deux sentinelles de pierre', emoji:'🗿', c:'#8a7a6a', pv:56, boss:true, ile:'invasion', role:'Deux Éclaireurs de 28 PV (l’un tombe à la moitié). Leur Poussière de pierre réduit vos prochains soins.', cit:'« Immobile. Éternel. »',
+  eclaireurs: { nom:'Les Éclaireurs de silex', titre:'deux sentinelles de pierre', emoji:'🗿', c:'#8a7a6a', pv:40, boss:true, ile:'invasion', role:'Deux Éclaireurs de 20 PV (l’un tombe à la moitié). Leur Poussière de pierre réduit vos prochains soins.', cit:'« Immobile. Éternel. »',
     phases:[
       { seuil:1, garde:{ n:'Croûte de silex', txt:'1 dé', d:'Bouclier = la valeur du dé.', cond:vs => vs.length === 1, val:vs => vs[0], f:(J, vs) => { J.gardeB += vs[0]; log(`Les Éclaireurs : Croûte de silex, Bouclier ${vs[0]}.`); } },
         pouvoir:{ n:'Lance-pierre', txt:'3 dés identiques', d:'10 dégâts, Handicap et Poussière (prochain soin −2).', cond:vs => vs.length === 3 && vs[0] === vs[1] && vs[1] === vs[2], cible:'ennemi', f:(J, vs, k) => { degats(k, 10); if (k && k.J && !k.u) { altere(k.J, 'handicap'); poussiere(k.J); } } } },
@@ -913,13 +913,13 @@ const VAGUES_REVEIL = {
         pouvoir:{ n:'Lacération', txt:'2 dés identiques', d:'6 dégâts et Poussière (le dernier Éclaireur).', cond:vs => vs.length === 2 && vs[0] === vs[1], cible:'ennemi', f:(J, vs, k) => { degats(k, 6); if (k && k.J && !k.u) poussiere(k.J); } } },
     ],
     ultime:{ n:'—', txt:'jamais', d:'Pas d’Ultime.', cond:() => false }, renforts:[] },
-  colosse2: { nom:'Le Colosse des racines', titre:'l’Étreinte des profondeurs', emoji:'🌳', c:'#3f8a3a', pv:55, boss:true, racines:true, ile:'invasion', role:'Lien de terre : tant qu’une Micro-racine vit, il réduit chaque coup de 3. Une racine qui meurt lui inflige un choc de 5 et repousse une fois avec 5 PV.', cit:'« Les racines tiennent le monde. »',
+  colosse2: { nom:'Le Colosse des racines', titre:'l’Étreinte des profondeurs', emoji:'🌳', c:'#3f8a3a', pv:40, boss:true, racines:true, ile:'invasion', role:'Lien de terre : tant qu’une Micro-racine vit, il réduit chaque coup de 3. Une racine qui meurt lui inflige un choc de 5 et repousse une fois avec 5 PV.', cit:'« Les racines tiennent le monde. »',
     phases:[
       { seuil:1, garde:{ n:'Écorce', txt:'1 dé', d:'Bouclier = la valeur du dé.', cond:vs => vs.length === 1, val:vs => vs[0], f:(J, vs) => { J.gardeB += vs[0]; log(`Le Colosse : Écorce, Bouclier ${vs[0]}.`); } },
         pouvoir:{ n:'Coup de branche', txt:'2 dés identiques', d:'8 dégâts ; chaque 6 fait Saigner.', cond:vs => vs.length === 2 && vs[0] === vs[1], cible:'ennemi', f:(J, vs, k) => { degats(k, 8); if (k && k.J && !k.u) vs.filter(v => v === 6).forEach(() => altere(k.J, 'saigne')); } } } ],
     ultime:{ n:'Étreinte', txt:'3 dés identiques', d:'12 dégâts, une seule relance et pas de PC au prochain tour du héros visé.', cond:vs => vs.length === 3 && vs[0] === vs[1] && vs[1] === vs[2], cible:'ennemi', f:(J, vs, k) => { const D = k && k.J && !k.u ? k.J : adv(J); degats({ J:D }, 12); D.entrave1 = true; D.sansPC = true; } },
     renforts:[{ n:'Micro-racine', a:0, v:10, barriere:true }, { n:'Micro-racine', a:0, v:10, barriere:true }] },
-  titanp: { nom:'Le Titan primordial', titre:'le Jugement de pierre', emoji:'⛰️', c:'#7a5ad9', pv:160, boss:true, granit:true, stase:true, ile:'invasion', role:'Peau de granit (−3 à chaque coup). Au début de chacun de ses tours, l’Arbre perd 5 % de Sève ; seul, il appelle un Éclaireur de silex.', cit:'« Le monde sera une statue. Parfaite. Immobile. »',
+  titanp: { nom:'Le Titan primordial', titre:'le Jugement de pierre', emoji:'⛰️', c:'#7a5ad9', pv:120, boss:true, granit:true, stase:true, ile:'invasion', role:'Peau de granit (−3 à chaque coup). Au début de chacun de ses tours, l’Arbre perd 5 % de Sève ; seul, il appelle un Éclaireur de silex.', cit:'« Le monde sera une statue. Parfaite. Immobile. »',
     phases:[
       { seuil:1, garde:{ n:'Peau de granit', txt:'1 dé', d:'Bouclier = la valeur du dé.', cond:vs => vs.length === 1, val:vs => vs[0], f:(J, vs) => { J.gardeB += vs[0]; log(`Le Titan : Peau de granit, Bouclier ${vs[0]}.`); } },
         pouvoir:{ n:'Éclat de quartz', txt:'2 dés identiques', d:'7 dégâts.', cond:vs => vs.length === 2 && vs[0] === vs[1], cible:'ennemi', f:(J, vs, k) => degats(k, 7) } },
@@ -934,7 +934,7 @@ const VAGUES_REVEIL = {
 function poussiere(D) { if (!D) return; D.poussiere = Math.min(3, (D.poussiere || 0) + 1); log(`🪨 Poussière de pierre sur ${D.nom} : prochain soin −${D.poussiere * 2}.`); }
 function seve(n) { if (!S || S.seve === undefined || S.fini) return; S.seve = Math.max(0, Math.min(100, S.seve + n)); log(`🌳 Sève de l’Arbre-Monde : ${S.seve} %.`); if (S.seve <= 0) { log('🌳 L’Arbre-Monde est pétrifié…'); S.fini = 'perdu'; } }
 Object.assign(BOSS, VAGUES_REVEIL);
-BOSS_CAMP.reveil = { nom:'Le Réveil des Primordiaux', titre:'Invasion · Acte II (3 vagues)', emoji:'🌳', c:'#7a5ad9', pv:271, boss:true, vagues:['eclaireurs', 'colosse2', 'titanp'], seve:true,
+BOSS_CAMP.reveil = { nom:'Le Réveil des Primordiaux', titre:'Invasion · Acte II (3 vagues)', emoji:'🌳', c:'#7a5ad9', pv:200, boss:true, vagues:['eclaireurs', 'colosse2', 'titanp'], seve:true,
   role:'Le livre papier : les Éclaireurs de silex, le Colosse des racines et ses Micro-racines, puis le Titan primordial. Et la jauge de Sève de l’Arbre-Monde : à 0 %, le monde est pétrifié.', cit:'« La sève se change en quartz. »',
   phases:VAGUES_REVEIL.eclaireurs.phases, ultime:VAGUES_REVEIL.eclaireurs.ultime, renforts:[] };
 const COHESION = { depart:4, max:8, relever:3, cri:2, soin:2, concertee:3 };  // 10/11 : Frappe concertée = 4 dégâts à CHAQUE créature du boss (les racines)
