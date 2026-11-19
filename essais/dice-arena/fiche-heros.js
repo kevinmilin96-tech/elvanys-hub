@@ -37,6 +37,7 @@ const FH = { apres:() => {}, choixRel:null };
   .fh-rel button.sel { border-color:#f3c96b; } .fh-rel img { display:block; margin:0 auto 2px; }
   .fh-voile { position:fixed; inset:0; background:#000c; z-index:80; display:flex; align-items:center; justify-content:center; padding:4vw; }
   .fh-fen { width:min(94vw, 480px); max-height:88vh; overflow:auto; background:#1c1838; border:2px solid #f3c96b; border-radius:18px; padding:16px; color:#f1ecff; font:15px/1.4 Georgia, serif; }
+  .fh-fen { position:relative; } .fh-x { position:sticky; top:-6px; float:right; margin:-8px -8px 0 8px; z-index:2; width:40px; height:40px; border-radius:50%; border:2px solid #f3c96b; background:#2a2650; color:#f3c96b; font:bold 22px/1 Georgia, serif; cursor:pointer; box-shadow:0 2px 8px #000a; }
   .fh-fen h2 { margin:0 0 8px; text-align:center; color:#f3c96b; font-size:1.15em; } .fh-fen .doux { color:#c9c1ea; font-size:.9em; }
   .fh-bulle { position:fixed; left:50%; top:40%; transform:translateX(-50%); z-index:90; background:#000d; color:#f3c96b; font-weight:bold; padding:10px 18px; border-radius:14px; animation:fhb 1.6s forwards; pointer-events:none; text-align:center; }
   @keyframes fhb { 0% { opacity:0; } 15% { opacity:1; } 80% { opacity:1; } 100% { opacity:0; } }
@@ -55,7 +56,7 @@ const FH = { apres:() => {}, choixRel:null };
 const fhSon = k => { try { if (typeof GM !== 'undefined') GM.son(k); } catch (e) {} };
 function fhBulle(x) { const b = document.createElement('div'); b.className = 'fh-bulle'; b.textContent = x; document.body.appendChild(b); setTimeout(() => b.remove(), 1600); }
 function fhFen(h) { let f = document.getElementById('fh-fen'); if (!f) { f = document.createElement('div'); f.id = 'fh-fen'; document.body.appendChild(f); }
-  f.innerHTML = h ? `<div class="fh-voile" onclick="if(event.target===this)fhFen('')"><div class="fh-fen">${h}</div></div>` : ''; }
+  f.innerHTML = h ? `<div class="fh-voile" onclick="if(event.target===this)fhFen('')"><div class="fh-fen"><button class="fh-x" aria-label="Fermer" onclick="fhFen('')">✕</button>${h}</div></div>` : ''; }
 const fhGuilde = id => typeof HEROS !== 'undefined' && HEROS[id] && !String(id).startsWith('av');
 function fhInfo(id) {
   if (fhGuilde(id)) return { nom:HEROS[id].nom, titre:HEROS[id].titre || '', c:HEROS[id].c, img:`portraits/${id}.webp`, secours:`portraits/${id}.webp`, pvBase:HEROS[id].pv };
