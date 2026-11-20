@@ -104,7 +104,7 @@
   @keyframes tremble { 25% { transform:translateX(-4px); } 75% { transform:translateX(4px); } }
   /* 14/11 : plan sur parchemin */
   svg.ile { background:#cdb88c !important; border:3px solid #6b4a2a !important; box-shadow:inset 0 0 40px #5a3d1c88, 0 0 0 1px #00000080 !important; }
-  .roc { fill:url(#hach); } .bord { fill:#3b2716; stroke:#3b2716; stroke-width:9; stroke-linejoin:round; }
+  .roc { fill:url(#hach); } .suite { fill:none; stroke:#15803d; stroke-width:2.6; stroke-linecap:round; stroke-linejoin:round; opacity:.85; } .bord { fill:#3b2716; stroke:#3b2716; stroke-width:9; stroke-linejoin:round; }
   .dalle .fond { fill:#c9b48c; } .dalle .grille { fill:url(#quad); } .dalle:not(.visite) .fond { fill:#b6a17a; }
   body.givre .dalle .fond { fill:#c4d2d8; } body.givre .dalle:not(.visite) .fond { fill:#a9b9c1; }
   body.abime .dalle .fond { fill:#bcaecb; } body.abime .dalle:not(.visite) .fond { fill:#a495b4; }
@@ -175,7 +175,7 @@ const herosAventureOdy = () => haListe().map(a => haInfo('av:' + a.id)).map(i =>
   ? `<button onclick="location.href='duel.html?tuto=1'" style="opacity:.55">${haImg(i, 'filter:grayscale(1)')}🔒 ${haEsc(i.nom)}<br><small style="color:var(--doux)">Fais le tutoriel</small></button>`
   : `<button onclick="commence('${i.cle}')">${haImg(i, `box-shadow:0 0 0 2px ${i.couleur}`)}${haEsc(i.nom)}<small class="ha-t">⚔ ${haEsc(i.titre)}</small><small style="color:var(--doux)">${Math.round(HEROS[i.voie].pv * (ODY_PV[i.voie] || 1.8))} PV en Odyssée</small></button>`).join('');
 
-const VERSION = '20261120-192307';
+const VERSION = '20261120-192652';
 function verifieVersion() {
   fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
     v = (v || '').trim(); if (!v || v === VERSION || document.getElementById('majbar')) return;
@@ -514,7 +514,7 @@ function peutCible(c) {
 }
 // 14/11 (l'utilisateur, d'après un plan de donjon de jeu de rôle) : la carte devient un PLAN SUR PARCHEMIN : salles dallées à quadrillage,
 // couloirs étroits, roche hachurée autour, et une brume qui se dissipe sur ce qu'on découvre. Les règles ne changent pas.
-const ouvert = v => !!v && !(v.t === 'roche' && v.vu);
+const ouvert = v => !!v && v.t !== 'roche'; // 20/11 : plus d'ouverture dessinée vers une roche cachée
 function rectD(x, y, w, h) { return `M${x},${y}h${w}v${h}h${-w}z`; }
 function formeSol(c) {
   const x = c.x * CEL, y = c.y * CEL, cx = x + CEL / 2, cy = y + CEL / 2, L = 11, salle = c.t !== 'chemin';
@@ -531,7 +531,16 @@ function planCase(c, neuf) {
   if (!c.vu) return { roche:'', bord:'', sol:'' };
   if (c.t === 'roche') return { roche:`<rect id="r-${k}" class="roc ${neuf ? 'neuf' : ''}" x="${c.x * CEL}" y="${c.y * CEL}" width="${CEL}" height="${CEL}"/>`, bord:'', sol:'' };
   const d = formeSol(c);
-  return { roche:'', bord:`<path id="o-${k}" class="bord ${neuf ? 'neuf' : ''}" d="${d}"/>`, sol:`<g id="s-${k}" class="dalle ${c.visite ? 'visite' : ''} ${neuf ? 'neuf' : ''}"><path class="fond" d="${d}"/><path class="grille" d="${d}"/></g>` };
+  // 20/11 (l'utilisateur : « on a l'impression d'avoir des impasses et en fait non ») : un couloir qui part vers une case encore dans la brume
+  // n'a plus de mur au bout (le trait est recouvert par le sol) et une petite flèche montre que le chemin continue
+  const suite = R.sansfin || c.ouv ? '' : [[1, 0], [-1, 0], [0, 1], [0, -1]].map(([dx, dy]) => {
+    const v = caseA(R, c.x + dx, c.y + dy); if (!v || v.vu || v.t === 'roche') return '';
+    const cx = c.x * CEL + CEL / 2, cy = c.y * CEL + CEL / 2, L = 11, ex = cx + dx * CEL / 2, ey = cy + dy * CEL / 2;
+    const trou = dx ? rectD(dx > 0 ? ex - 4 : ex - 10, cy - L, 14, 2 * L) : rectD(cx - L, dy > 0 ? ey - 4 : ey - 10, 2 * L, 14);
+    const ang = dx > 0 ? 0 : dx < 0 ? 180 : dy > 0 ? 90 : -90;
+    return `<path class="fond" d="${trou}"/><path class="suite" transform="translate(${ex - dx * 7},${ey - dy * 7}) rotate(${ang})" d="M-3,-5L3,0L-3,5"/>`;
+  }).join('');
+  return { roche:'', bord:`<path id="o-${k}" class="bord ${neuf ? 'neuf' : ''}" d="${d}"/>`, sol:`<g id="s-${k}" class="dalle ${c.visite ? 'visite' : ''} ${neuf ? 'neuf' : ''}"><path class="fond" d="${d}"/><path class="grille" d="${d}"/>${suite}</g>` };
 }
 function poseCase(c, neuf) {
   const k = c.x + '-' + c.y, P = planCase(c, neuf);
