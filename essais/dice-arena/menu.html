@@ -296,6 +296,12 @@ function nouvelleOdy(n) {
   if (sufOdy() === '') { odySlot = n; montre('odyssee'); return; }
   sessionStorage.setItem('guilde-dans-mode', '1'); location.href = ODY_MODES[odyMode][1] + '&nouvelle=' + n; // sans fin et Route : directement le choix du héros
 }
+function ajusteSauves() {
+  const b = document.getElementById('sauves'); if (!b || b.style.display === 'none' || !(courant === 'odyssee' && odyMode !== null && !odySlot)) return;
+  const bas = document.getElementById('barre-bas'), h = (bas && getComputedStyle(bas).display !== 'none' ? bas.getBoundingClientRect().top : innerHeight) - b.getBoundingClientRect().top - 8;
+  b.style.maxHeight = Math.max(160, h) + 'px'; b.style.overflowY = 'auto'; b.style.overscrollBehavior = 'contain'; b.style.touchAction = 'pan-y';
+}
+addEventListener('resize', () => ajusteSauves());
 function slotsOdy() {
   const b = document.getElementById('sauves');
   const nomH = r => { const h = typeof HEROS !== 'undefined' && HEROS[r.heros]; return h ? h.nom : String(r.heros || '').startsWith('av:') ? 'Héros d’aventure' : 'Héros'; };
@@ -310,8 +316,8 @@ function slotsOdy() {
       <button class="neuf" onclick="nouvelleOdy(${n})">✨ Nouvelle partie${P.length ? ' (remplace celle-ci)' : ''}</button></div>`; }).join('');
   b.style.display = '';
   // 20/11 (l'utilisateur : « je ne peux pas descendre », le 3e emplacement coupé par la barre du bas) : la liste défile dans la place qui reste
-  requestAnimationFrame(() => { const bas = document.getElementById('barre-bas'), h = (bas ? bas.getBoundingClientRect().top : innerHeight) - b.getBoundingClientRect().top - 8;
-    b.style.maxHeight = Math.max(160, h) + 'px'; b.style.overflowY = 'auto'; b.style.overscrollBehavior = 'contain'; b.style.touchAction = 'pan-y'; });
+  // (20/11, 2e essai) les bandeaux du rang et des quêtes arrivent APRÈS : on recalcule la place plusieurs fois, et à chaque changement de taille
+  ajusteSauves(); [60, 300, 900, 2000].forEach(t => setTimeout(ajusteSauves, t));
 }
 function sauvesOdy() {
   const b = document.getElementById('sauves'); if (!b) return;
