@@ -697,6 +697,11 @@
   .effets { position:absolute; inset:0; pointer-events:none; z-index:5; } .effets .effet { position:absolute; transform:translate(-50%, -50%); pointer-events:auto; white-space:nowrap; font:bold 2.4cqw Georgia, serif; color:#f6e7c1; text-shadow:0 1px 2px #000; background:#15102aea; border:1px solid #f3c96b88; border-radius:8px; padding:.3cqw 1.2cqw; box-shadow:0 2px 6px #000a; }
   /* 14/11 nuit : ces effets sont maintenant des étiquettes placées (effetsHTML) : plus de lignes dans le cadre de droite (elles le faisaient déborder) */
   .unique .pastilles :is([data-k="contre"], [data-k="piege"], [data-k="fournaise"], [data-k="paillasse"], [data-k="esquive"], [data-k="cor"], [data-k="epines"], [data-k="poison"], [data-k="saigne"], [data-k="handicap"], [data-k="silence"]) { display:none !important; }
+  /* 20/11 : PC sous le cœur, dans le cadre de gauche (voir nomsDansPanneau) */
+  .plateau.tapis.unique:not(.scene) .pastilles [data-k="pv"].avecpc { transform:translateY(-2.9cqw); overflow:visible !important; }
+  .plateau.tapis.unique:not(.scene) .pastilles [data-k="pv"].avecpc > [data-k="pc"] { position:absolute !important; left:50%; top:calc(100% - .4cqw); transform:translateX(-50%); display:flex !important; align-items:center; gap:.15em; white-space:nowrap; font:bold 2.9cqw Georgia, serif !important; color:#cfe8ff !important; text-shadow:0 0 6px #2a7fc1, 0 1px 2px #000; background:none !important; border:none !important; box-shadow:none !important; padding:0 !important; width:auto !important; height:auto !important; }
+  .plateau.tapis.unique:not(.scene) .pastilles [data-k="pv"].avecpc > [data-k="pc"] b { font-size:1.3em; color:#fff; }
+  .plateau.tapis.unique:not(.scene) .pastilles [data-k="pv"].avecpc > [data-k="pc"] .icopc { width:4.6cqw; height:auto; }
 </style>
 </head>
 <body>
@@ -707,7 +712,7 @@
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
 // 14/11 : l'Odyssée sans fin a ses propres emplacements (odyssee.js lit SANSFIN)
 const SANSFIN = new URLSearchParams(location.search).get('sansfin') === '1', ROUTE_TITAN = new URLSearchParams(location.search).get('route') === '1', EPREUVE_PAGE = new URLSearchParams(location.search).get('epreuve') === '1', ODY_PAGE = EPREUVE_PAGE ? 'epreuves.html' : 'odyssee.html' + (SANSFIN ? '?sansfin=1' : ROUTE_TITAN ? '?route=1' : '');
-const VERSION = '20261120-193653';
+const VERSION = '20261120-194010';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -1755,7 +1760,10 @@ function rendu() {
 }
 // 14/11 (l'utilisateur : « le titre sur le portrait cache la vie et l'Ultime ») : sur l'écran unique, le nom (et le titre du profil)
 // passe en haut du panneau de droite, au-dessus de « N en main » ; il suit donc aussi les placements des îles
-function nomsDansPanneau() { if (!document.querySelector('.plateau.unique')) return; document.querySelectorAll('.unique .barre').forEach(b => { const n = b.querySelector(':scope > div > .nom'), p = b.querySelector('.pastilles'); if (n && p) p.prepend(n); }); }
+// 20/11 (l'utilisateur : « l'UI des personnages sort des cadres » ; choix : répartir sur les deux cadres) : le cristal des PC passe
+// dans le cadre de GAUCHE, sous le cœur ; le cadre de droite garde le nom, le titre, les compteurs et les cartes en main
+function nomsDansPanneau() { if (!document.querySelector('.plateau.unique')) return; document.querySelectorAll('.unique .barre').forEach(b => { const n = b.querySelector(':scope > div > .nom'), p = b.querySelector('.pastilles'); if (n && p) p.prepend(n);
+  const pv = b.querySelector('.pastilles [data-k="pv"]'), pc = b.querySelector('.pastilles [data-k="pc"]'); if (pv && pc && document.querySelector('.plateau.tapis.unique:not(.scene)')) { pv.classList.add('avecpc'); pv.appendChild(pc); } }); }
 function dessine() {
   if (!ciblage || !ciblage.choisi) enleveConfirme();
   if (S && !S.fini && !S.auto && typeof GM !== 'undefined') demarreMusique(); // 13/11 soir : la musique dès que la partie s'affiche
