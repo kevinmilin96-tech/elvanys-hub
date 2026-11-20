@@ -8,7 +8,7 @@
 <title>La Guilde des Runes</title>
 <script>
 // Même mécanisme que le Duel : une nouvelle version = rechargement tout seul à l'ouverture (publier.sh change VERSION).
-const VERSION = '20261120-065943';
+const VERSION = '20261120-192307';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-menu-' + v)) { sessionStorage.setItem('recharge-menu-' + v, '1'); location.replace('menu.html?v=' + v); }
@@ -190,7 +190,7 @@ fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.te
   <div id="rangmenu" style="max-width:520px;margin:6px auto 0;padding:0 14px;width:100%;box-sizing:border-box"></div>
   <div class="heros" id="heros"></div>
   <div class="cats" id="cats"></div>
-  <button class="retour" id="retour" onclick="location.hash = ''">‹ Retour</button>
+  <button class="retour" id="retour" onclick="retourEtage()">‹ Retour</button>
   <div class="sauves" id="sauves" style="display:none"></div>
   <div class="carrousel" id="car"></div>
   <div class="points" id="points"></div>
@@ -209,7 +209,7 @@ fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.te
 <script>window.AMIS_SANS_BOUTON = true; /* 15/11 : un seul bouton en haut à gauche (profil + amis) */</script>
 <script src="amis.js?v=da00ccb367"></script>
 <script src="heros-etoiles.js?v=8b13b4b4ee"></script>
-<script src="donnees.js?v=20261120-065943"></script>
+<script src="donnees.js?v=20261120-192307"></script>
 <script>
 // ciel étoilé + runes du portail (symboles, pas des lettres), aux couleurs des héros
 const ciel = document.getElementById('ciel');
@@ -399,6 +399,13 @@ function dessin(p) {
   const [e, fond, g] = PRO[p.pro]; let et = '';
   for (let i = 0; i < 9; i++) et += `<i class="et" style="left:${(i * 37) % 100}%;top:${(i * 23) % 60}%;animation-delay:${i * .3}s"></i>`;
   return `<div class="pro" style="--fond:${fond};--g:${g}">${et}<b>${e}</b></div>`;
+}
+// 20/11 (l'utilisateur : « Retour me ramène au menu principal au lieu des différentes Odyssées ») :
+// dans l'Odyssée, « Retour » remonte d'abord au choix du mode, puis seulement au menu principal
+function retourEtage() {
+  if (courant === 'odyssee' && odySlot !== null) { odySlot = null; montre('odyssee'); }   // choix de l'île → les emplacements
+  else if (courant === 'odyssee' && odyMode !== null) { odyMode = null; montre('odyssee'); } // emplacements → les modes
+  else location.hash = '';
 }
 function montre(id) {
   if (id !== 'odyssee') { odySlot = null; odyMode = null; }
