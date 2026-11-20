@@ -607,7 +607,9 @@ function choisirSlot(n) { localStorage.setItem(ODY_SLOT_CLE + sufPage(), String(
 function lireSlot(n) { try { return JSON.parse(localStorage.getItem(odyCle(n)) || 'null'); } catch (e) { return null; } }
 function effacerSlot(n) { localStorage.removeItem(odyCle(n)); }
 function lireOdyssee() { return lireSlot(slotActif()); }
-function ecrireOdyssee(r) { const k = odyCle(slotActif()); if (r) { r.maj = Date.now(); localStorage.setItem(k, JSON.stringify(r)); } else localStorage.removeItem(k); }
+// 20/11 (l'utilisateur : « la durée compte mal » : 8 741 min pour une partie reprise sur plusieurs jours) : on compte le temps de JEU,
+// pas le temps écoulé depuis le début : chaque enregistrement ajoute l'écart avec le précédent, 30 min au plus (au-delà = une pause)
+function ecrireOdyssee(r) { const k = odyCle(slotActif()); if (r) { const t = Date.now(); r.jeu = (r.jeu || 0) + Math.min(30 * 60000, Math.max(0, t - (r.maj || r.debut || t))); r.maj = t; localStorage.setItem(k, JSON.stringify(r)); } else localStorage.removeItem(k); }
 function lireCollection() { try { return JSON.parse(localStorage.getItem(COLLECTION_CLE) || '[]'); } catch (e) { return []; } }
 function ajouteCollection(cles) { const c = lireCollection(); let n = 0; cles.forEach(k => { if (!c.includes(k) && CARTES[k] && rarete(k) !== 'm') { c.push(k); n++; } }); localStorage.setItem(COLLECTION_CLE, JSON.stringify(c)); return n; }
 function lireRecords() { try { return JSON.parse(localStorage.getItem(RECORDS_CLE) || '[]'); } catch (e) { return []; } }
@@ -777,7 +779,7 @@ function ouvrePorte(r) { const p = caseA(r, r.porte.x, r.porte.y); if (p.fait) r
 // fin de l'Odyssée : score, collection, record
 function finOdysseeRun(r, gagne) {
   if (!r.journalEnvoye && typeof guildeJournal === 'function' && !r.simu) { r.journalEnvoye = true; guildeJournal(r.route ? 'odyssee-route' : r.sansfin ? 'odyssee-sansfin' : r.aventure ? 'grande-aventure' : r.epreuve ? 'epreuve' : 'odyssee', { heros:r.heros + (r.av ? ' (aventure)' : ''), resultat:gagne ? 'gagne' : 'perdu', journal:r.journal || [], resume:{ acte:r.acte, pv:r.pv, pvMax:r.pvMax, or:r.or, cases:r.stats && r.stats.cases, combats:r.stats && r.stats.combats, victoires:r.stats && r.stats.victoires, reliques:r.reliques, deck:r.deck && r.deck.length, suivi:r.fs || 1 } }); } // 15/11 soir : carnet des parties
-  const duree = Math.round((Date.now() - r.debut) / 60000);
+  const duree = Math.max(1, Math.round((r.jeu !== undefined ? r.jeu + Math.min(30 * 60000, Math.max(0, Date.now() - (r.maj || Date.now()))) : Math.min(Date.now() - r.debut, 3 * 3600000)) / 60000));
   const etage = r.sansfin ? r.sansfin.etage || 1 : 0;
   const score = r.stats.victoires * 50 + r.stats.cases * 5 + r.or + (gagne ? 300 : 0) + r.stats.defis * 30 - r.stats.tours * 2 + Math.max(0, etage - 1) * 500;
   const base = deckBase(r.heros), nouvelles = r.deck.filter(k => !base.includes(k) && rarete(k) !== 'm');
