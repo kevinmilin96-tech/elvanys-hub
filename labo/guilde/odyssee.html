@@ -175,7 +175,7 @@ const herosAventureOdy = () => haListe().map(a => haInfo('av:' + a.id)).map(i =>
   ? `<button onclick="location.href='duel.html?tuto=1'" style="opacity:.55">${haImg(i, 'filter:grayscale(1)')}🔒 ${haEsc(i.nom)}<br><small style="color:var(--doux)">Fais le tutoriel</small></button>`
   : `<button onclick="commence('${i.cle}')">${haImg(i, `box-shadow:0 0 0 2px ${i.couleur}`)}${haEsc(i.nom)}<small class="ha-t">⚔ ${haEsc(i.titre)}</small><small style="color:var(--doux)">${Math.round(HEROS[i.voie].pv * (ODY_PV[i.voie] || 1.8))} PV en Odyssée</small></button>`).join('');
 
-const VERSION = '20261120-200122';
+const VERSION = '20261120-200441';
 function verifieVersion() {
   fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
     v = (v || '').trim(); if (!v || v === VERSION || document.getElementById('majbar')) return;
@@ -293,12 +293,13 @@ function ecran() {
   ${SANSFIN || ROUTE_TITAN ? '' : `<div class="modeav"><button class="${MODE_AV ? 'on' : ''}" onclick="choixModeAv(true)">🗺 <b>La Grande aventure</b><small>les 3 îles à la suite : ton héros garde son deck, monte de niveau et trouve de l’équipement</small></button><button class="${MODE_AV ? '' : 'on'}" onclick="choixModeAv(false)">🏝 <b>Une île seule</b><small>une partie, l’île du jour, l’Ascension</small></button></div>`}
   <p style="text-align:center"><b style="color:var(--or)">Choisis ton héros</b></p>
   <div class="heros6">${ORDRE.map(id => id === 'zephine' && !ZOK() ? `<button onclick="location.href='duel.html?tuto=1'" style="opacity:.55"><img src="${IMG(id)}" alt="" style="filter:grayscale(1)">🔒 ${HEROS[id].nom}<br><small style="color:var(--doux)">Fais le tutoriel</small></button>` : `<button onclick="commence('${id}')"><img src="${IMG(id)}" alt="">${HEROS[id].nom}<br><small style="color:var(--doux)">${Math.round(HEROS[id].pv * (ODY_PV[id] || 1.8))} PV en Odyssée</small></button>`).join('')}${herosAventureOdy()}</div>
-  ${!ROUTE_TITAN && (SANSFIN || !MODE_AV) ? `<p style="text-align:center;font-size:.86em"><label><input type="checkbox" id="jour"> 🗓 L’île du jour (la même île pour tout le monde aujourd’hui)</label></p>` : ''}
+  ${!ROUTE_TITAN && (SANSFIN || !MODE_AV) ? `<p style="text-align:center;font-size:.86em"><label><input type="checkbox" id="jour"${JOUR_URL ? ' checked' : ''}> 🗓 L’île du jour (la même île pour tout le monde aujourd’hui)</label></p>` : ''}
   <div class="choixh"><button onclick="records()">🏆 Mes Odyssées (${rec.length})</button><button onclick="collection()">📚 Ma collection (${col.length})</button></div>
   <div class="choixh"><button onclick="location.href='odyssee-regles.html'">📖 Les règles complètes</button><button onclick="emplacements()">← Emplacements</button></div>`;
 }
 // 14/11 nuit : la Grande aventure ou une île seule (choix gardé sur le téléphone)
-let MODE_AV = localStorage.getItem('guilde-mode-av') !== 'ile';
+const JOUR_URL = Q.get('jour') === '1'; // 20/11 : arrivé par le portail « L’île du jour » : île seule, case cochée
+let MODE_AV = JOUR_URL ? false : localStorage.getItem('guilde-mode-av') !== 'ile';
 function choixModeAv(v) { MODE_AV = v; localStorage.setItem('guilde-mode-av', v ? 'av' : 'ile'); ecran(); }
 function commence(id) {
   const jour = document.getElementById('jour') && document.getElementById('jour').checked;
