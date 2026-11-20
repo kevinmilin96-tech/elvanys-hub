@@ -713,6 +713,11 @@
   .plateau.tapis.unique:not(.scene) .barre .pastilles:has(> :nth-child(5)) .p:not(.pv) { font-size:2.15cqw !important; line-height:1.08 !important; }
   .plateau.tapis.unique:not(.scene) .barre .pastilles:has(> :nth-child(5)) > .nom { font-size:2.2cqw !important; line-height:1.05 !important; margin-bottom:0 !important; }
   .plateau.tapis.unique:not(.scene) .barre .pastilles:has(> :nth-child(6)) .p:not(.pv) { font-size:1.95cqw !important; }
+  /* 20/11 (l'utilisateur : « je ne peux pas annuler l'attaque ») : le lien « Annuler » était au bout du texte, coupé quand le texte est long ;
+     c'est maintenant un vrai bouton sous le bandeau, toujours visible, et le bandeau défile s'il est trop long */
+  .annulB { position:absolute; left:50%; transform:translateX(-50%); z-index:6; padding:.5em 1.4em; border-radius:999px; border:1px solid #f3c96b; background:#2a1f3dee; color:#f3c96b; font:bold 3.2cqw Georgia, serif; box-shadow:0 2px 8px #000a; cursor:pointer; }
+  .plateau:not(.tapis):not(.unique) .annulB { position:static; transform:none; display:block; margin:4px auto; }
+  .unique .bandeau { overflow-y:auto !important; }
 </style>
 </head>
 <body>
@@ -723,7 +728,7 @@
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
 // 14/11 : l'Odyssée sans fin a ses propres emplacements (odyssee.js lit SANSFIN)
 const SANSFIN = new URLSearchParams(location.search).get('sansfin') === '1', ROUTE_TITAN = new URLSearchParams(location.search).get('route') === '1', EPREUVE_PAGE = new URLSearchParams(location.search).get('epreuve') === '1', ODY_PAGE = EPREUVE_PAGE ? 'epreuves.html' : 'odyssee.html' + (SANSFIN ? '?sansfin=1' : ROUTE_TITAN ? '?route=1' : '');
-const VERSION = '20261120-201234';
+const VERSION = '20261120-204833';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -742,7 +747,7 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=7736d873d3"></script>
+<script src="cartes.js?v=6e9721bdf9"></script>
 <script src="musique.js?v=97e5549185"></script>
 <script src="rang.js?v=34d82e0c22"></script>
 <script src="heros-etoiles.js?v=8b13b4b4ee"></script>
@@ -1659,6 +1664,9 @@ function glisseFin(e) {
   if (dy < -40 && S.J.aLancer) lancerMesDes();
 }
 function annuler() { sel = []; ciblage = null; attaquant = null; rendu(); }
+// 20/11 : le bouton « Annuler » se pose juste sous le bandeau, quelle que soit l'île (chaque plateau place son bandeau ailleurs)
+function placeAnnul() { const a = document.querySelector('.annulB'), b = document.querySelector('.bandeau'); if (!a || !b || !a.offsetParent || getComputedStyle(a).position !== 'absolute') return;
+  const P = a.offsetParent.getBoundingClientRect(), r = b.getBoundingClientRect(); a.style.top = (r.bottom - P.top + 6) + 'px'; }
 
 // ce que veut dire chaque étiquette sous la barre de vie (on la touche pour savoir)
 const PASTILLES = {
@@ -1689,7 +1697,9 @@ const PASTILLES = {
 // toucher une étiquette : son explication (sauf pendant qu'on vise : le toucher sert alors à viser le héros)
 document.addEventListener('click', e => {
   const p = e.target.closest && e.target.closest('.pastilles [data-k], .etats [data-k]'); if (!p || ciblage || attaquant || fxOn) return;
-  const x = PASTILLES[p.dataset.k]; if (!x) return; e.stopPropagation();
+  // 20/11 (l'utilisateur : « je ne peux pas toucher l'Égide pour savoir ce qu'elle fait ») : l'Ombre majeure et l'Anomalie ont aussi leur explication
+  const O = S && S.O, x = PASTILLES[p.dataset.k] || (p.dataset.k === 'ombre' && O && O.ombre && typeof OMBRES !== 'undefined' ? ['🌑 ' + OMBRES[O.ombre].n + ' (Ombre majeure)', OMBRES[O.ombre].d + ' Une Ombre majeure est un ennemi plus dangereux que les autres : vaincue, elle donne le double du butin (+40 or et deux cartes).']
+    : p.dataset.k === 'anomalie' && O && O.anomalie && typeof ANOMALIE !== 'undefined' ? ['🌀 Anomalie ' + O.anomalie, 'Cet ennemi a ' + O.anomalie + ' particularité' + (O.anomalie > 1 ? 's' : '') + ' : ' + ANOMALIE.slice(1, O.anomalie + 1).join(', ') + '. Vaincu, il rapporte plus d’or.'] : null); if (!x) return; e.stopPropagation();
   fenetre(`<h2>${x[0]}</h2><p><b>${p.textContent.trim()}</b></p><p>${x[1]}</p><div class="choixh"><button onclick="fermer()">Compris</button></div>`);
 }, true);
 // 14/11 (l'utilisateur : « la Contre-attaque, je ne la vois nulle part ») : les protections et réactions actives en icônes autour du portrait
@@ -1737,7 +1747,7 @@ function barre(P, haut) {
     ${P.bouclier ? `<span data-k="bouclier" class="p g pb"><img class="icopb" src="ui/equip/icone-bouclier.webp?v=1" alt="">Bouclier ${P.bouclier}</span>` : ''}${P.contre ? '<span data-k="contre" class="p g">⚔ Contre-attaque : 6 à la 1re créature</span>' : ''}${P.piege ? '<span data-k="piege" class="p g">🪤 Piège</span>' : ''}
     ${P.cor ? '<span data-k="cor" class="p g">📯 Cor</span>' : ''}${P.fournaise ? '<span data-k="fournaise" class="p g">🔥 Fournaise</span>' : ''}${P.paillasse ? '<span data-k="paillasse" class="p g">⚗ Paillasse</span>' : ''}
     ${P.id === 'pip' && !P.front.some(u => u.louve) ? `<span data-k="meute" class="p m">🐺 Meute ${P.meute}/3</span>` : ''}${P.braiseT ? `<span data-k="braiset" class="p al">♨ Brûlures ${P.braiseT}/3</span>` : ''}${P.corruption ? `<span data-k="corruption" class="p al">🟣 Corruption ${P.corruption}/${(P.reliques || []).includes('sel') ? 4 : 3}</span>` : ''}${P.givre ? `<span data-k="givre" class="p al">❄ Givre ${P.givre}/${(P.reliques || []).includes('braise') ? 4 : 3}</span>` : ''}${P.id === 'maelle' ? `<span data-k="braises" class="p m">🔥 Braises ${P.braise}/3${P.forgeGratuite ? ' · prochain Équipement à 0 PC' : ''}</span>` : ''}
-    ${P.purete ? `<span data-k="purete" class="p pu">✦ Pureté ${P.purete}</span>` : ''}${P.handicap ? '<span data-k="handicap" class="p al">Handicap</span>' : ''}${P.saigne ? `<span data-k="saigne" class="p al">Saignement ${P.saigne}</span>` : ''}
+    ${P.purete && P.ombre !== 1 ? `<span data-k="purete" class="p pu">✦ Pureté ${P.purete}</span>` : ''}${P.handicap ? '<span data-k="handicap" class="p al">Handicap</span>' : ''}${P.saigne ? `<span data-k="saigne" class="p al">Saignement ${P.saigne}</span>` : ''}
     ${P.poison ? `<span data-k="poison" class="p al">Poison ${P.poison}</span>` : ''}${P.silence ? '<span data-k="silence" class="p al">Silence</span>' : ''}${P.oeuvre ? `<span data-k="oeuvre" class="p pu">Grand œuvre : ${P.oeuvre}</span>` : ''}
     ${P.ultimeFait ? '<span data-k="ultimefait" class="p">Ultime utilisé</span>' : `<span data-k="ultime" class="p ${P.jauge >= JAUGE.max ? 'pu' : ''}">⚡ Ultime ${P.jauge}/${JAUGE.max}</span>`}<span data-k="main" class="p">🂠 ${P.main.length} en main</span></div></div></div>`;
 }
@@ -1806,7 +1816,7 @@ function dessine() {
     ${colonneActions(J, h)}
     <div class="des" ontouchstart="glisseDebut(event)" ontouchend="glisseFin(event)">${J.des.map((d, i) => `<div class="d ${sel.includes(d) ? 'sel' : ''} ${d.pose ? 'pose' : ''} ${d.mod ? 'mod' : ''} ${J.aLancer ? 'cache' : ''} ${i === J.neuf && (J.aLancer || Date.now() < (J.neufJusque || 0)) ? 'neuf' : ''}" onclick="choisirDe(${i})"><img src="${FACE(J.id, d.v || 1)}" alt="${d.v || '?'}">${d.sp && !J.aLancer && typeof FACES_FORGE !== 'undefined' ? `<span class="spf">${FACES_FORGE[d.sp].e}</span>` : ''}<div class="sac">${i === J.neuf && (J.aLancer || Date.now() < (J.neufJusque || 0)) ? '✨ neuf' : sacPastilles(J, d)}</div></div>`).join('')}${[...Array(Math.max(0, 5 - J.des.length)).keys()].map(k => { const i = J.des.length + k, t = i - 1;
       return `<div class="d verrou"><div class="cad">🔒</div><div class="sac">${J.tours >= t ? 'Handicap' : 'tour ' + t}</div></div>`; }).join('')}</div>
-    ${J.aLancer ? '<button class="lancer" onclick="lancerMesDes()">🎲 Lancer les dés</button>' : `<div class="bandeau">${bandeau}${sel.length || ciblage || attaquant ? ' <a href="#" onclick="annuler();return false" style="color:#f3c96b">Annuler</a>' : ''}</div>`}
+    ${J.aLancer ? '<button class="lancer" onclick="lancerMesDes()">🎲 Lancer les dés</button>' : `<div class="bandeau">${bandeau}</div>${sel.length || ciblage || attaquant ? '<button class="annulB" onclick="annuler()">✕ Annuler</button>' : ''}`}
     <div class="main" style="left:${zoneMain().x1}%;width:${zoneMain().x2 - zoneMain().x1}%;top:${zoneMain().y1}%;height:${zoneMain().y2 - zoneMain().y1}%" onclick="if(event.target===this){carteVue=null;rendu();}">${mainEnEventail(J)}</div>
   </div>
   <div class="bas">
@@ -1820,7 +1830,7 @@ function dessine() {
     <button class="b2" onclick="finDeMonTour()">${finEnAttente || finTourDe === S || (S.deux && S.deuxFinFaite === S.J) ? '⏳ Fin du tour…' : 'Fin du tour ▶'}</button>
   </div>`;
   if (S.fini && !S.finPrevue) { S.finPrevue = true; setTimeout(montrerFin, 2200); } // 14/11 : 2,2 s pour voir les derniers dégâts avant la fenêtre de fin
-  nomsDansPanneau();
+  nomsDansPanneau(); placeAnnul();
 }
 // ================= écran unique (11/11) : actions en icônes à gauche, dés à droite, anneaux autour des portraits =================
 const ICONES = { frappe:['⚔', 'Frappe'], technique:['⚔⚔', 'Technique'], garde:['🛡', 'Garde'], pouvoir:['✦', 'Pouvoir'], ultime:['⚡', 'Ultime'], transmu:['⚗', ''], vendre:['◆', 'Vendre'] };
