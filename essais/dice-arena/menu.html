@@ -283,11 +283,11 @@ function reprendreOdy(i) { const o = MES_ODY[i]; localStorage.setItem('guilde-od
 // la Route du Titan ») : 1) le MODE (3 portails) → 2) SES 3 emplacements (Charger / Nouvelle partie) → 3) pour l'Odyssée normale, l'île.
 let odyMode = null, odySlot = null;
 const sufOdy = () => odyMode === 'jour' ? '' : odyMode; // l'île du jour range ses parties avec l'Odyssée
-const ODY_MODES = { jour:['L’île du jour', 'odyssee.html'], '':['L’Odyssée', 'odyssee.html'], '-sansfin':['L’Odyssée sans fin', 'odyssee.html?sansfin=1'], '-route':['La Route du Titan', 'odyssee.html?route=1'] };
+const ODY_MODES = { jour:['L’île du jour', 'odyssee.html'], '':['L’Odyssée · Saison 1', 'odyssee.html'], '-sansfin':['L’Odyssée sans fin', 'odyssee.html?sansfin=1'], '-route':['La Route du Titan', 'odyssee.html?route=1'] };
 function odyPortes(L) { // L = les portails de l'étage : 3 îles, sans fin, route
   // 20/11 (l'utilisateur : « l'île du jour, il faut aller dans Odyssée, nouvelle partie… ; mettre son portail en premier ») : 4e mode, en tête ;
   // il partage les emplacements de l'Odyssée, puis l'île choisie part directement en « île seule, île du jour »
-  if (odyMode === null) return [Object.assign({}, L[0], { nom:'L’île du jour', mode:'jour', href:null, desc:'La même île pour tout le monde aujourd’hui : une partie, une île, et ton score à comparer.' }), Object.assign({}, L[0], { nom:'L’Odyssée', mode:'', href:null, desc:'Les trois îles : les Terres brûlées, l’île du Givre, l’Abîme du Vide. Ici commence la Grande aventure.' }),
+  if (odyMode === null) return [Object.assign({}, L[0], { nom:'L’île du jour', mode:'jour', href:null, desc:'La même île pour tout le monde aujourd’hui : une partie, une île, et ton score à comparer.' }), Object.assign({}, L[0], { nom:'Saison 1', mode:'', href:null, desc:'L’Odyssée, saison 1 : une histoire en trois chapitres, les Terres brûlées, l’île du Givre, l’Abîme du Vide. Ici commence la Grande aventure.' }),
     Object.assign({}, L[3], { mode:'-sansfin', href:null }), Object.assign({}, L[4], { mode:'-route', href:null })];
   return L.slice(0, 3); // l'Odyssée normale, nouvelle partie : les îles
 }
@@ -302,7 +302,7 @@ function slotsOdy() {
   // 20/11 (l'utilisateur : « je ne sais pas combien il y a d'Odyssées, ni si je suis aux Terres brûlées, au Givre ou à l'Abîme ») :
   // la route des 3 îles, avec ce qui est gagné / ouvert / fermé, et l'île de chaque partie bien visible
   const fini = (() => { try { return !!localStorage.getItem('guilde-odyssee-finie'); } catch (e) { return false; } })();
-  const iles3 = sufOdy() !== '' ? '' : `<div class="iles3"><p>L’Odyssée, ce sont <b>3 îles à la suite</b> : on gagne l’une pour ouvrir la suivante.</p><div>${
+  const iles3 = sufOdy() !== '' ? '' : `<div class="iles3"><p>La saison 1, ce sont <b>3 îles à la suite</b> : on gagne l’une pour ouvrir la suivante.</p><div>${
     [['brulees', GIVRE_OK, true], ['givre', ABIME_OK, GIVRE_OK], ['abime', fini, ABIME_OK]].map(([k, gagnee, ouverte], i) =>
       `<span class="${gagnee ? 'ok' : ouverte ? 'ouv' : 'ferm'}">${ILE_EMO[k]} ${i + 1}. ${ILE_NOM[k]}<small>${gagnee ? '✅ gagnée' : ouverte ? 'ouverte' : '🔒 fermée'}</small></span>`).join('<i>›</i>')}</div></div>`;
   b.innerHTML = `<div class="st">💾 ${ODY_MODES[odyMode][0]} · choisis un emplacement <button class="chg" onclick="odyMode=null;montre('odyssee')">‹ Les modes</button></div>` + iles3 + [1, 2, 3].map(n => { const P = MES_ODY.map((o, i) => [o, i]).filter(([o]) => o.suf === sufOdy() && o.n === n);
