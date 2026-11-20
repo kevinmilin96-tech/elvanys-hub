@@ -110,6 +110,11 @@ fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.te
   .sauves { margin:4px auto 8px; max-width:440px; padding:0 12px; display:flex; flex-direction:column; gap:6px; }
   .sauves .st { color:var(--or); font-weight:bold; text-align:center; font-size:.9em; }
   .slotm { background:#15132bcc; border:1px solid #f3c96b66; border-radius:16px; padding:10px 12px; display:flex; flex-direction:column; gap:6px; } .slotm .sn { color:var(--or); font-weight:bold; } .slotm .vide { margin:0; color:var(--doux); font-style:italic; }
+  .iles3 { background:#15132bcc; border:1px solid #f3c96b66; border-radius:16px; padding:8px 10px; text-align:center; } .iles3 p { margin:0 0 6px; font-size:.9em; color:var(--doux); }
+  .iles3 > div { display:flex; align-items:center; justify-content:center; gap:4px; } .iles3 > div > i { color:var(--or); font-style:normal; }
+  .iles3 span { flex:1; border-radius:10px; padding:4px 2px; font-size:.82em; line-height:1.2; border:1px solid #ffffff22; } .iles3 small { display:block; font-size:.85em; opacity:.85; }
+  .iles3 .ok { background:#2e7d3233; border-color:#66bb6a88; } .iles3 .ouv { background:#f3c96b22; border-color:#f3c96b99; } .iles3 .ferm { opacity:.5; }
+  .iln { font-style:normal; font-size:.8em; color:var(--or); margin-left:4px; white-space:nowrap; }
   .sauves button.neuf { justify-content:center; border-style:dashed; background:#221d42cc; color:var(--or); font-weight:bold; } .sauves .chg { display:inline; margin-left:6px; padding:3px 10px; border:1px solid var(--or); border-radius:10px; background:#1d1b3acc; color:var(--or); font:inherit; font-size:.9em; }
   .sauves button { display:flex; flex-wrap:wrap; align-items:center; gap:2px 8px; text-align:left; background:#1d1b3acc; color:#fff; border:2px solid var(--or); border-radius:14px; padding:8px 12px; font:inherit; font-size:.9em; cursor:pointer; }
   .sauves button small { color:var(--doux); flex-basis:100%; order:3; } .sauves button i { margin-left:auto; color:var(--or); font-style:normal; font-weight:bold; }
@@ -266,6 +271,8 @@ const PRO_IMG = { epreuves:'mode-epreuves', arene:'mode-arene', odyssee:'mode-od
 // n'avaient pas noté l'île vaincue ; on la note ici d'après les sauvegardes. Et les sauvegardes s'affichent AVANT les portails.
 const ODY_PAGES = [['', 'odyssee.html', 'L’Odyssée'], ['-sansfin', 'odyssee.html?sansfin=1', 'L’Odyssée sans fin'], ['-route', 'odyssee.html?route=1', 'La Route du Titan']];
 const ILE_NOM = { brulees:'Terres brûlées', givre:'Île du Givre', abime:'L’Abîme du Vide' };
+const ILE_EMO = { brulees:'🔥', givre:'❄️', abime:'🌌' };
+const ileLigne = r => { const k = ILE_NOM[r.acte] ? r.acte : 'brulees'; return `${ILE_EMO[k]} ${ILE_NOM[k]} <em class="iln">île ${['brulees', 'givre', 'abime'].indexOf(k) + 1} sur 3</em>`; };
 const MES_ODY = (() => { const l = []; ODY_PAGES.forEach(([suf, href, mode]) => { for (let n = 1; n <= 3; n++) { try { const r = JSON.parse(localStorage.getItem('guilde-odyssee' + suf + (n > 1 ? '-' + n : '')) || 'null'); if (r && r.ile) l.push({ suf, href, mode, n, r }); } catch (e) {} } }); return l.sort((a, b) => (b.r.maj || b.r.debut || 0) - (a.r.maj || a.r.debut || 0)); })();
 try { const a = JSON.parse(localStorage.getItem('guilde-actes') || '{}'); let ch = false;
   MES_ODY.forEach(({ r }) => { if ((r.acte === 'givre' || r.acte === 'abime') && !a.brulees) { a.brulees = true; ch = true; } if (r.acte === 'abime' && !a.givre) { a.givre = true; ch = true; } });
@@ -289,8 +296,14 @@ function nouvelleOdy(n) {
 function slotsOdy() {
   const b = document.getElementById('sauves');
   const nomH = r => { const h = typeof HEROS !== 'undefined' && HEROS[r.heros]; return h ? h.nom : String(r.heros || '').startsWith('av:') ? 'Héros d’aventure' : 'Héros'; };
-  b.innerHTML = `<div class="st">💾 ${ODY_MODES[odyMode][0]} · choisis un emplacement <button class="chg" onclick="odyMode=null;montre('odyssee')">‹ Les modes</button></div>` + [1, 2, 3].map(n => { const P = MES_ODY.map((o, i) => [o, i]).filter(([o]) => o.suf === odyMode && o.n === n);
-    return `<div class="slotm"><div class="sn">Emplacement ${n}</div>${P.length ? P.map(([o, i]) => `<button onclick="reprendreOdy(${i})"><b>${nomH(o.r)}</b> · ${o.r.route ? 'Route du Titan' : (ILE_NOM[o.r.acte] || ILE_NOM.brulees)}<small>❤ ${o.r.pv}/${o.r.pvMax}${o.r.aventure ? ' · 🗺 Grande aventure' : ''}</small><i>▶ Charger</i></button>`).join('') : '<p class="vide">Vide</p>'}
+  // 20/11 (l'utilisateur : « je ne sais pas combien il y a d'Odyssées, ni si je suis aux Terres brûlées, au Givre ou à l'Abîme ») :
+  // la route des 3 îles, avec ce qui est gagné / ouvert / fermé, et l'île de chaque partie bien visible
+  const fini = (() => { try { return !!localStorage.getItem('guilde-odyssee-finie'); } catch (e) { return false; } })();
+  const iles3 = odyMode !== '' ? '' : `<div class="iles3"><p>L’Odyssée, ce sont <b>3 îles à la suite</b> : on gagne l’une pour ouvrir la suivante.</p><div>${
+    [['brulees', GIVRE_OK, true], ['givre', ABIME_OK, GIVRE_OK], ['abime', fini, ABIME_OK]].map(([k, gagnee, ouverte], i) =>
+      `<span class="${gagnee ? 'ok' : ouverte ? 'ouv' : 'ferm'}">${ILE_EMO[k]} ${i + 1}. ${ILE_NOM[k]}<small>${gagnee ? '✅ gagnée' : ouverte ? 'ouverte' : '🔒 fermée'}</small></span>`).join('<i>›</i>')}</div></div>`;
+  b.innerHTML = `<div class="st">💾 ${ODY_MODES[odyMode][0]} · choisis un emplacement <button class="chg" onclick="odyMode=null;montre('odyssee')">‹ Les modes</button></div>` + iles3 + [1, 2, 3].map(n => { const P = MES_ODY.map((o, i) => [o, i]).filter(([o]) => o.suf === odyMode && o.n === n);
+    return `<div class="slotm"><div class="sn">Emplacement ${n}</div>${P.length ? P.map(([o, i]) => `<button onclick="reprendreOdy(${i})"><b>${nomH(o.r)}</b> · ${o.r.route ? 'Route du Titan' : ileLigne(o.r)}<small>❤ ${o.r.pv}/${o.r.pvMax}${o.r.aventure ? ' · 🗺 Grande aventure' : ''}</small><i>▶ Charger</i></button>`).join('') : '<p class="vide">Vide</p>'}
       <button class="neuf" onclick="nouvelleOdy(${n})">✨ Nouvelle partie${P.length ? ' (remplace celle-ci)' : ''}</button></div>`; }).join('');
   b.style.display = '';
 }
