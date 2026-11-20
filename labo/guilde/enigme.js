@@ -200,6 +200,7 @@ function eniCache(iso) {
   return p;
 }
 function partieEnigme(iso) {
+  window.GM_RECOMMENCER = { t:'Recommencer l’énigme', f:() => { if (typeof fermer === 'function') fermer(); eniDemarre(); } }; // 20/11 : ⚙️ → recommencer tout de suite
   const auj = eniIso(new Date());
   if (!iso || iso === '1' || iso > auj) iso = auj;
   document.getElementById('app').innerHTML = '<div style="padding:30vh 8vw;text-align:center;color:#e8dcc0;font-size:5vw">🐾 Moustache prépare l’énigme…</div>';

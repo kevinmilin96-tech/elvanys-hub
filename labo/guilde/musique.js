@@ -143,7 +143,7 @@ const GM = (() => {
         <div class="l"><span>🔊 Bruitages<input type="range" min="0" max="100" value="${Math.round(volS() * 100)}" data-v="guilde-vol-sons"></span><button class="t ${sonOn() ? 'on' : ''}" data-k="s">${sonOn() ? 'Allumés' : 'Éteints'}</button></div>
         <div class="l"><span>⚡ Vitesse des animations</span><button class="t on" data-k="v">${rapide() ? 'Rapide' : 'Normale'}</button></div>
         <div class="l"><span>✅ Confirmer les actions en combat</span><button class="t ${localStorage.getItem('guilde-confirme-actions') !== 'non' ? 'on' : ''}" data-k="c">${localStorage.getItem('guilde-confirme-actions') !== 'non' ? 'Oui' : 'Non'}</button></div>
-        ${window.GM_QUITTER ? `<button class="a q" data-k="q">🚪 ${window.GM_QUITTER.t}</button>` : ''}
+        ${window.GM_RECOMMENCER ? `<button class="a" data-k="rec">↺ ${window.GM_RECOMMENCER.t}</button>` : ''}        ${window.GM_QUITTER ? `<button class="a q" data-k="q">🚪 ${window.GM_QUITTER.t}</button>` : ''}
         ${window.Guide && Guide.dernier && Guide.dernier() ? '<button class="a" data-k="g">🐱 Le guide de cet écran</button>' : ''}
         ${window.GS ? `<button class="a" data-k="compte">☁ Mon compte et ma sauvegarde</button>` : ''}
         <button class="a" data-k="p">📜 Mes parties (le journal de chaque partie)</button>
@@ -162,6 +162,7 @@ const GM = (() => {
           z.querySelector('.p').innerHTML = `<h2>🎓 Les entraînements de Moustache</h2><p style="color:#c9c1ea;font-size:.88em;margin:0 0 6px">Une courte partie guidée pour chaque mode. Refais celle que tu veux, quand tu veux.</p>`
             + ENTRAINEMENTS.map(([c, n, h]) => h ? `<a class="a" href="${h}">${f[c] ? '✅' : '🎓'} ${n}</a>` : `<span class="a" style="opacity:.45">⏳ ${n} · bientôt</span>`).join('') + '<button class="f" data-k="x">Fermer</button>'; return; } // 18/11 : la liste des entraînements // 15/11 nuit : le carnet commun à tous les modes
         if (k === 'g') { z.remove(); Guide.rejoue(); return; } // 15/11 soir : Moustache réexplique l'écran en cours
+        if (k === 'rec') { z.remove(); window.GM_RECOMMENCER.f(); return; } // 20/11 (l'utilisateur) : recommencer tout de suite (énigme du jour…), posé par la page
         if (k === 'q') { z.remove(); window.GM_QUITTER.f(); return; } // 14/11 : quitter une partie en cours (posé par la page du combat)
         if (k === 'm') api.bascule();
         if (k === 's') { localStorage.setItem('guilde-son', sonOn() ? '0' : '1'); api.son('ok'); }
