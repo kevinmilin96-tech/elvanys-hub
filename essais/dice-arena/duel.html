@@ -1697,7 +1697,9 @@ const PASTILLES = {
 // toucher une étiquette : son explication (sauf pendant qu'on vise : le toucher sert alors à viser le héros)
 document.addEventListener('click', e => {
   const p = e.target.closest && e.target.closest('.pastilles [data-k], .etats [data-k]'); if (!p || ciblage || attaquant || fxOn) return;
-  const x = PASTILLES[p.dataset.k]; if (!x) return; e.stopPropagation();
+  // 20/11 (l'utilisateur : « je ne peux pas toucher l'Égide pour savoir ce qu'elle fait ») : l'Ombre majeure et l'Anomalie ont aussi leur explication
+  const O = S && S.O, x = PASTILLES[p.dataset.k] || (p.dataset.k === 'ombre' && O && O.ombre && typeof OMBRES !== 'undefined' ? ['🌑 ' + OMBRES[O.ombre].n + ' (Ombre majeure)', OMBRES[O.ombre].d + ' Une Ombre majeure est un ennemi plus dangereux que les autres : vaincue, elle donne le double du butin (+40 or et deux cartes).']
+    : p.dataset.k === 'anomalie' && O && O.anomalie && typeof ANOMALIE !== 'undefined' ? ['🌀 Anomalie ' + O.anomalie, 'Cet ennemi a ' + O.anomalie + ' particularité' + (O.anomalie > 1 ? 's' : '') + ' : ' + ANOMALIE.slice(1, O.anomalie + 1).join(', ') + '. Vaincu, il rapporte plus d’or.'] : null); if (!x) return; e.stopPropagation();
   fenetre(`<h2>${x[0]}</h2><p><b>${p.textContent.trim()}</b></p><p>${x[1]}</p><div class="choixh"><button onclick="fermer()">Compris</button></div>`);
 }, true);
 // 14/11 (l'utilisateur : « la Contre-attaque, je ne la vois nulle part ») : les protections et réactions actives en icônes autour du portrait
