@@ -782,6 +782,9 @@ function invoque(J, base, key) {
   u.vmax = u.v; J.front.push(u);
   if (base.louve) fx({ t:'invoque', s:J === S.J ? 'J' : 'O', nom:base.n });
 }
+// 20/11 (l'utilisateur : « quand j'ai ciblé un ennemi caché, j'ai vu son nom ») : une créature Cachée de l'adversaire reste sans nom
+// partout où on la vise (aperçu avant validation, bandeau du coup, journal), tant qu'elle n'est pas sortie de l'ombre
+function nomVu(k) { if (!k.u) return k.J.nom; return k.u.cachee && k.J !== S.J && !S.auto ? 'la créature cachée' : k.u.n; }
 function renvoie(k) { k.J.front = k.J.front.filter(x => x !== k.u); if (k.u.key && k.J.main.length < 7) k.J.main.push(k.u.key); log(`${k.u.n} retourne dans la main.`); }
 function altere(J, quoi, n) {
   if (J.purete > 0) { J.purete--; log(`${J.nom} utilise un jeton de Pureté : ${quoi} annulé.`); return; }
@@ -791,7 +794,7 @@ function altere(J, quoi, n) {
 }
 const atk = (J, u) => Math.max(0, u.a + (J.banniere && u.barriere ? 2 : 0) + (u.tmp || 0) + J.front.filter(x => x.tambour && x !== u).length);
 function soin(J, n) { const a = J.pv; J.pv = Math.min(J.pvMax, J.pv + n); if (J.pv > a) { log(`${J.nom} se soigne de ${J.pv - a}.`); fx({ t:'soin', c:ref({ J }), n:J.pv - a, pv:J.pv }); } }
-function soinCible(k, n) { if (k.u) { const a = k.u.v; k.u.v = Math.min(k.u.vmax, k.u.v + n); log(`${k.u.n} se soigne.`); if (k.u.v > a) fx({ t:'soin', c:ref(k), n:k.u.v - a, v:k.u.v }); } else soin(k.J, n); }
+function soinCible(k, n) { if (k.u) { const a = k.u.v; k.u.v = Math.min(k.u.vmax, k.u.v + n); log(`${nomVu(k)} se soigne.`); if (k.u.v > a) fx({ t:'soin', c:ref(k), n:k.u.v - a, v:k.u.v }); } else soin(k.J, n); }
 // k = { J, u? } : la cible. ignore = passe Bouclier et Barrière (Instinct de la Louve)
 function degats(k, n, ignore) {
   if (S.fini || n <= 0) return;
@@ -805,11 +808,11 @@ function degats(k, n, ignore) {
     let r = n;
     let abs = 0;
     if (!ignore && k.u.bouclier) { const b = Math.min(k.u.bouclier, r); k.u.bouclier -= b; r -= b; abs = b; }
-    k.u.v -= r; if (r) log(`${k.u.n} subit ${r} dégât(s).`);
+    k.u.v -= r; if (r) log(`${nomVu(k)} subit ${r} dégât(s).`);
     fx({ t:'degat', c:ref(k), n:r, abs, v:Math.max(0, k.u.v) });
     if (k.u.v <= 0) {
-      if (k.J.cor) { k.J.cor = false; k.u.v = 1; log(`Cor de ralliement : ${k.u.n} reste debout à 1 vie.`); }
-      else { fx({ t:'tombe', c:ref(k) }); k.J.front = k.J.front.filter(x => x !== k.u); log(`${k.u.n} tombe.`); }
+      if (k.J.cor) { k.J.cor = false; k.u.v = 1; log(`Cor de ralliement : ${nomVu(k)} reste debout à 1 vie.`); }
+      else { fx({ t:'tombe', c:ref(k) }); k.J.front = k.J.front.filter(x => x !== k.u); log(`${nomVu(k)} tombe.`); }
     }
   } else {
     const J = k.J; let r = n, abs = 0;
@@ -936,8 +939,8 @@ function pose(J, quoi, ds, k, indexMain) {
     if (J.benes.includes('gardex2') && !J.gardeX2 && J.gardeB > g0) { J.gardeB += J.gardeB - g0; J.gardeX2 = true; log('Première parade : Garde doublée.'); }
     const quoiG = J.gardeB > g0 ? `Bouclier ${J.gardeB}` : J.gardeE > e0 ? `Épines ${J.gardeE}` : J.esquive && !q0 ? 'Esquive' : h.garde.n;
     fx({ t:'garde', s:J === S.J ? 'J' : 'O', nom:h.garde.n, quoi:quoiG, vs, plus:J.gardeB > g0 ? J.gardeB - g0 : 0, regle:h.garde.d }); bilan(J, 'gardes', `Garde : ${quoiG}`); return; }
-  if (quoi === 'frappe') { log(`${J.nom} : Frappe (${vs.join(', ')}) : ${frappeDe(J).dg(vs)} dégâts.`); fx({ t:'tir', id:J.id, s:J === S.J ? 'J' : 'O', vers:k && ref(k), nom:'Frappe', vs, dg:frappeDe(J).dg(vs), cible:k && (k.u ? k.u.n : k.J.nom) }); bilan(J, 'actions', `⚔ Frappe (${vs.join('·')}) : ${frappeDe(J).dg(vs)} dégâts`); frappeDe(J).f(J, vs, k); return; }
-  if (quoi === 'technique') { log(`${J.nom} : Technique (${vs.join(', ')}) : ${techDg(vs)} dégâts.`); fx({ t:'tir', id:J.id, s:J === S.J ? 'J' : 'O', vers:k && ref(k), nom:'Technique', vs, dg:techDg(vs), cible:k && (k.u ? k.u.n : k.J.nom) }); bilan(J, 'actions', `⚔ Technique (${vs.join('·')}) : ${techDg(vs)} dégâts`); TECHNIQUE.f(J, vs, k); return; }
+  if (quoi === 'frappe') { log(`${J.nom} : Frappe (${vs.join(', ')}) : ${frappeDe(J).dg(vs)} dégâts.`); fx({ t:'tir', id:J.id, s:J === S.J ? 'J' : 'O', vers:k && ref(k), nom:'Frappe', vs, dg:frappeDe(J).dg(vs), cible:k && nomVu(k) }); bilan(J, 'actions', `⚔ Frappe (${vs.join('·')}) : ${frappeDe(J).dg(vs)} dégâts`); frappeDe(J).f(J, vs, k); return; }
+  if (quoi === 'technique') { log(`${J.nom} : Technique (${vs.join(', ')}) : ${techDg(vs)} dégâts.`); fx({ t:'tir', id:J.id, s:J === S.J ? 'J' : 'O', vers:k && ref(k), nom:'Technique', vs, dg:techDg(vs), cible:k && nomVu(k) }); bilan(J, 'actions', `⚔ Technique (${vs.join('·')}) : ${techDg(vs)} dégâts`); TECHNIQUE.f(J, vs, k); return; }
   if (quoi === 'pouvoir') { log(`${J.nom} : ${h.pouvoir.n} !`); bilan(J, 'actions', `✨ Pouvoir : ${h.pouvoir.n} (${vs.join('·')})`); fx({ t:'carte', key:'pouvoir', id:J.id, s:J === S.J ? 'J' : 'O', nom:h.pouvoir.n, txt:h.pouvoir.d, sorte:'Pouvoir', vers:k && k.J && ref(k), vs }); h.pouvoir.f(J, vs, k, ds); return; }
   if (quoi === 'ultime') { J.pc -= 3; J.ultimeFait = true; log(`${J.nom} : ULTIME, ${h.ultime.n} !`); bilan(J, 'actions', `⚡ ULTIME : ${h.ultime.n}`); fx({ t:'ultime', s:J === S.J ? 'J' : 'O', id:J.id, nom:h.ultime.n, d:h.ultime.d, cit:h.cit, vers:k && k.J && ref(k) }); h.ultime.f(J, vs, k, ds); return; }
   const c = CARTES[quoi];
@@ -1567,7 +1570,7 @@ function prevision(J, quoi, vs, k) {
   return { n, vie, exact, lignes, d:def.d || '', nom:def.n || quoi };
 }
 function montreConfirme() {
-  const c = ciblage; if (!c || !c.choisi) return; const k = c.choisi, P = prevision(S.J, c.quoi, vals(c.ds), k), cible = k.u ? k.u.n : k.J.nom;
+  const c = ciblage; if (!c || !c.choisi) return; const k = c.choisi, P = prevision(S.J, c.quoi, vals(c.ds), k), cible = nomVu(k);
   let z = document.getElementById('conf'); if (!z) { z = document.createElement('div'); z.id = 'conf'; document.body.appendChild(z); }
   if (P.soin) z.innerHTML = `<div class="t">💚 ${P.nom} sur <b>${k.u ? cible : (k.J === S.J ? 'toi' : cible)}</b></div><div class="n soin">+${P.n} PV</div>
     ${P.gain ? `<div class="l v soin">❤ Tu remontes à ${P.apres} / ${P.max}</div>` : `<div class="l v">Tu es déjà au maximum (${P.max}) : ce soin ne servirait à rien</div>`}${P.perdu && P.gain ? `<div class="l">${P.perdu} point${P.perdu > 1 ? 's' : ''} perdu${P.perdu > 1 ? 's' : ''} : tu es presque au maximum</div>` : ''}
