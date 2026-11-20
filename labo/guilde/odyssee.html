@@ -175,7 +175,7 @@ const herosAventureOdy = () => haListe().map(a => haInfo('av:' + a.id)).map(i =>
   ? `<button onclick="location.href='duel.html?tuto=1'" style="opacity:.55">${haImg(i, 'filter:grayscale(1)')}🔒 ${haEsc(i.nom)}<br><small style="color:var(--doux)">Fais le tutoriel</small></button>`
   : `<button onclick="commence('${i.cle}')">${haImg(i, `box-shadow:0 0 0 2px ${i.couleur}`)}${haEsc(i.nom)}<small class="ha-t">⚔ ${haEsc(i.titre)}</small><small style="color:var(--doux)">${Math.round(HEROS[i.voie].pv * (ODY_PV[i.voie] || 1.8))} PV en Odyssée</small></button>`).join('');
 
-const VERSION = '20261120-201108';
+const VERSION = '20261120-201234';
 function verifieVersion() {
   fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
     v = (v || '').trim(); if (!v || v === VERSION || document.getElementById('majbar')) return;
@@ -290,7 +290,7 @@ function ecran() {
   document.getElementById('app').innerHTML = `<h1>${ROUTE_TITAN ? '🛤 La Route du Titan' : ({ givre:'❄️ L’Odyssée · l’île du Givre', abime:'🌀 L’Odyssée · l’Abîme du Vide' }[ACTE_URL] || '🏰 L’Odyssée · les Terres brûlées') + (SANSFIN ? ' · 🧩 sans fin' : '')}</h1>${SANSFIN ? '<p style="text-align:center;color:var(--or);font-size:.9em">L’île se construit tuile par tuile : à chaque pas, tu choisis une tuile parmi 3 et tu la raccordes au donjon.</p>' : ''}
   ${ROUTE_TITAN ? `<p style="text-align:center;color:var(--doux);font-size:.9em">Les Terres brûlées, vues d’en haut : <b>tout le chemin jusqu’au Titan de feu se voit dès le départ</b>. ${ROUTE_ETAPES} étapes, des chemins qui se séparent et se rejoignent : à toi de choisir ta route (combats, élites, coffres, marchand, feu de camp…). On ne revient pas en arrière. Pas d’huile ici : ta vie, ton or et ton deck. Le combat, c’est le Duel.</p>` : `<p style="text-align:center;color:var(--doux);font-size:.9em">Une île tirée au sort, à explorer case par case. Le combat, c’est le Duel. Tes PV ne remontent pas tout seuls : sources, potions et marchand. Une lanterne de 20 doses d’huile pour fouiller. Deux fragments de rune ouvrent la porte ${{ givre:"de la Vouivre des glaces. Ici, le Givre ❄ s’accumule sur toi : à trois, tu es gelé", abime:"du Roi sans visage. Ici, la Corruption 🟣 s’accumule : à trois, le Vide te dévore (Silence) et nourrit l’ennemi" }[ACTE_URL] || "du Titan de feu"}.</p>`}
   ${ascMax(ACTE_URL) && (SANSFIN || ROUTE_TITAN || !MODE_AV) ? `<p style="text-align:center;font-size:.9em">⛰ <b style="color:var(--or)">Ascension</b> : ${Array.from({ length:ascMax(ACTE_URL) + 1 }, (_, n) => `<button class="asc ${ASC_CHOIX === n ? 'on' : ''}" onclick="ASC_CHOIX=${n};ecran()">${n || 'normal'}</button>`).join(' ')}${ASC_CHOIX ? `<br><small style="color:var(--doux)">${Array.from({ length:ASC_CHOIX }, (_, i) => ASCENSION[i + 1].n).join(' · ')}</small>` : ''}</p>` : ''}
-  ${SANSFIN || ROUTE_TITAN || JOUR_URL ? '' : `<div class="modeav"><button class="${MODE_AV ? 'on' : ''}" onclick="choixModeAv(true)">🗺 <b>La Grande aventure</b><small>les 3 îles à la suite : ton héros garde son deck, monte de niveau et trouve de l’équipement</small></button><button class="${MODE_AV ? '' : 'on'}" onclick="choixModeAv(false)">🏝 <b>Une île seule</b><small>une partie, une île, l’Ascension</small></button></div>`}
+  ${SANSFIN || ROUTE_TITAN || JOUR_URL || ACTE_URL !== 'brulees' ? '' : `<div class="modeav"><button class="${MODE_AV ? 'on' : ''}" onclick="choixModeAv(true)">🗺 <b>La Grande aventure</b><small>les 3 îles à la suite : ton héros garde son deck, monte de niveau et trouve de l’équipement</small></button><button class="${MODE_AV ? '' : 'on'}" onclick="choixModeAv(false)">🏝 <b>Une île seule</b><small>une partie, une île, l’Ascension</small></button></div>`}
   <p style="text-align:center"><b style="color:var(--or)">Choisis ton héros</b></p>
   <div class="heros6">${ORDRE.map(id => id === 'zephine' && !ZOK() ? `<button onclick="location.href='duel.html?tuto=1'" style="opacity:.55"><img src="${IMG(id)}" alt="" style="filter:grayscale(1)">🔒 ${HEROS[id].nom}<br><small style="color:var(--doux)">Fais le tutoriel</small></button>` : `<button onclick="commence('${id}')"><img src="${IMG(id)}" alt="">${HEROS[id].nom}<br><small style="color:var(--doux)">${Math.round(HEROS[id].pv * (ODY_PV[id] || 1.8))} PV en Odyssée</small></button>`).join('')}${herosAventureOdy()}</div>
   ${JOUR_URL ? '<p style="text-align:center;color:var(--or)">🗓 <b>L’île du jour</b> : la même île pour tout le monde aujourd’hui. Une partie, un score à comparer.</p><input type="checkbox" id="jour" checked hidden>' : ''}${!ROUTE_TITAN && SANSFIN && !JOUR_URL ? `<p style="text-align:center;font-size:.86em"><label><input type="checkbox" id="jour"> 🗓 L’île du jour (la même île pour tout le monde aujourd’hui)</label></p>` : ''}
@@ -299,7 +299,9 @@ function ecran() {
 }
 // 14/11 nuit : la Grande aventure ou une île seule (choix gardé sur le téléphone)
 const JOUR_URL = Q.get('jour') === '1'; // 20/11 : arrivé par le portail « L’île du jour » : île seule, case cochée
-let MODE_AV = JOUR_URL ? false : localStorage.getItem('guilde-mode-av') !== 'ile';
+// 20/11 (l'utilisateur : « j'ai lancé l'Abîme et je me retrouve dans le tuto des Terres brûlées ») : la Grande aventure commence TOUJOURS
+// aux Terres brûlées : sur le Givre et l'Abîme, on joue l'île choisie, seule
+let MODE_AV = JOUR_URL || ACTE_URL !== 'brulees' ? false : localStorage.getItem('guilde-mode-av') !== 'ile';
 function choixModeAv(v) { MODE_AV = v; localStorage.setItem('guilde-mode-av', v ? 'av' : 'ile'); ecran(); }
 function commence(id) {
   const jour = document.getElementById('jour') && document.getElementById('jour').checked;
