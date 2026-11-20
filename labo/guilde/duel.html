@@ -687,8 +687,8 @@
   .barre .etat b { position:absolute; right:-6px; bottom:-5px; background:#b91c1c; color:#fff; border-radius:99px; font:bold 11px/1 Georgia, serif; padding:2px 4px; }
   @keyframes etatbrille { 50% { box-shadow:0 0 18px #f3c96bcc; } }
   /* 14/11 : les dés de l'ennemi pendant son tour, dans la colonne de droite */
-  .des.desennemi { gap:1.2cqh !important; } .des .desetiq { font-size:2.3cqw; color:#ff9d8a; text-align:center; text-shadow:0 1px 2px #000; line-height:1.1; }
-  .des .deO { width:9cqw; height:9cqw; margin:0 auto; border-radius:18%; box-shadow:0 0 10px #ff4a2e99; transition:opacity .3s, transform .3s; }
+  .des.desennemi { gap:.9cqh !important; overflow:visible !important; } .des .desetiq { position:absolute; left:50%; top:-.6cqh; transform:translate(-50%, -100%); white-space:nowrap; font-size:2.3cqw; color:#ff9d8a; text-align:center; text-shadow:0 1px 2px #000, 0 0 4px #000; line-height:1.1; background:#1d1626d9; border-radius:8px; padding:.2cqh 1.2cqw; } /* 20/11 : l'étiquette au-dessus de la colonne (elle ne prend plus de place dedans) */
+  .des .deO { width:7.6cqw; height:7.6cqw; flex:none; margin:0 auto; border-radius:18%; box-shadow:0 0 10px #ff4a2e99; transition:opacity .3s, transform .3s; }
   .des .deO img, .des .deO svg { width:100%; height:100%; display:block; border-radius:18%; } .des .deO img { outline:2px solid #ff6b5a; }
   .des .deO.utilise { opacity:.3; transform:scale(.85); filter:grayscale(.6); } .des .deO.roule { animation:deroule .5s ease-out; } @keyframes deroule { from { transform:rotate(-200deg) scale(.6); } }
   .icopb { width:1.35em; height:1.35em; vertical-align:-.35em; margin-right:2px; } /* 14/11 nuit : icônes Gemini de la Garde (temporaire) et du Bouclier (permanent) */
@@ -718,7 +718,7 @@
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
 // 14/11 : l'Odyssée sans fin a ses propres emplacements (odyssee.js lit SANSFIN)
 const SANSFIN = new URLSearchParams(location.search).get('sansfin') === '1', ROUTE_TITAN = new URLSearchParams(location.search).get('route') === '1', EPREUVE_PAGE = new URLSearchParams(location.search).get('epreuve') === '1', ODY_PAGE = EPREUVE_PAGE ? 'epreuves.html' : 'odyssee.html' + (SANSFIN ? '?sansfin=1' : ROUTE_TITAN ? '?route=1' : '');
-const VERSION = '20261120-194259';
+const VERSION = '20261120-194516';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
