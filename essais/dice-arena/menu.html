@@ -282,15 +282,18 @@ function reprendreOdy(i) { const o = MES_ODY[i]; localStorage.setItem('guilde-od
 // charger, et après les portails » ; puis : « attention, il y a 3 modes : l'Odyssée normale (Terres brûlées, Givre, Abîme), l'Odyssée sans fin,
 // la Route du Titan ») : 1) le MODE (3 portails) → 2) SES 3 emplacements (Charger / Nouvelle partie) → 3) pour l'Odyssée normale, l'île.
 let odyMode = null, odySlot = null;
-const ODY_MODES = { '':['L’Odyssée', 'odyssee.html'], '-sansfin':['L’Odyssée sans fin', 'odyssee.html?sansfin=1'], '-route':['La Route du Titan', 'odyssee.html?route=1'] };
+const sufOdy = () => odyMode === 'jour' ? '' : odyMode; // l'île du jour range ses parties avec l'Odyssée
+const ODY_MODES = { jour:['L’île du jour', 'odyssee.html'], '':['L’Odyssée', 'odyssee.html'], '-sansfin':['L’Odyssée sans fin', 'odyssee.html?sansfin=1'], '-route':['La Route du Titan', 'odyssee.html?route=1'] };
 function odyPortes(L) { // L = les portails de l'étage : 3 îles, sans fin, route
-  if (odyMode === null) return [Object.assign({}, L[0], { nom:'L’Odyssée', mode:'', href:null, desc:'Les trois îles : les Terres brûlées, l’île du Givre, l’Abîme du Vide. Ici commence la Grande aventure.' }),
+  // 20/11 (l'utilisateur : « l'île du jour, il faut aller dans Odyssée, nouvelle partie… ; mettre son portail en premier ») : 4e mode, en tête ;
+  // il partage les emplacements de l'Odyssée, puis l'île choisie part directement en « île seule, île du jour »
+  if (odyMode === null) return [Object.assign({}, L[0], { nom:'L’île du jour', mode:'jour', href:null, desc:'La même île pour tout le monde aujourd’hui : une partie, une île, et ton score à comparer.' }), Object.assign({}, L[0], { nom:'L’Odyssée', mode:'', href:null, desc:'Les trois îles : les Terres brûlées, l’île du Givre, l’Abîme du Vide. Ici commence la Grande aventure.' }),
     Object.assign({}, L[3], { mode:'-sansfin', href:null }), Object.assign({}, L[4], { mode:'-route', href:null })];
   return L.slice(0, 3); // l'Odyssée normale, nouvelle partie : les îles
 }
 function nouvelleOdy(n) {
-  try { localStorage.setItem('guilde-odyssee-emplacement' + odyMode, String(n)); } catch (e) {}
-  if (odyMode === '') { odySlot = n; montre('odyssee'); return; }
+  try { localStorage.setItem('guilde-odyssee-emplacement' + sufOdy(), String(n)); } catch (e) {}
+  if (sufOdy() === '') { odySlot = n; montre('odyssee'); return; }
   sessionStorage.setItem('guilde-dans-mode', '1'); location.href = ODY_MODES[odyMode][1] + '&nouvelle=' + n; // sans fin et Route : directement le choix du héros
 }
 function slotsOdy() {
@@ -299,10 +302,10 @@ function slotsOdy() {
   // 20/11 (l'utilisateur : « je ne sais pas combien il y a d'Odyssées, ni si je suis aux Terres brûlées, au Givre ou à l'Abîme ») :
   // la route des 3 îles, avec ce qui est gagné / ouvert / fermé, et l'île de chaque partie bien visible
   const fini = (() => { try { return !!localStorage.getItem('guilde-odyssee-finie'); } catch (e) { return false; } })();
-  const iles3 = odyMode !== '' ? '' : `<div class="iles3"><p>L’Odyssée, ce sont <b>3 îles à la suite</b> : on gagne l’une pour ouvrir la suivante.</p><div>${
+  const iles3 = sufOdy() !== '' ? '' : `<div class="iles3"><p>L’Odyssée, ce sont <b>3 îles à la suite</b> : on gagne l’une pour ouvrir la suivante.</p><div>${
     [['brulees', GIVRE_OK, true], ['givre', ABIME_OK, GIVRE_OK], ['abime', fini, ABIME_OK]].map(([k, gagnee, ouverte], i) =>
       `<span class="${gagnee ? 'ok' : ouverte ? 'ouv' : 'ferm'}">${ILE_EMO[k]} ${i + 1}. ${ILE_NOM[k]}<small>${gagnee ? '✅ gagnée' : ouverte ? 'ouverte' : '🔒 fermée'}</small></span>`).join('<i>›</i>')}</div></div>`;
-  b.innerHTML = `<div class="st">💾 ${ODY_MODES[odyMode][0]} · choisis un emplacement <button class="chg" onclick="odyMode=null;montre('odyssee')">‹ Les modes</button></div>` + iles3 + [1, 2, 3].map(n => { const P = MES_ODY.map((o, i) => [o, i]).filter(([o]) => o.suf === odyMode && o.n === n);
+  b.innerHTML = `<div class="st">💾 ${ODY_MODES[odyMode][0]} · choisis un emplacement <button class="chg" onclick="odyMode=null;montre('odyssee')">‹ Les modes</button></div>` + iles3 + [1, 2, 3].map(n => { const P = MES_ODY.map((o, i) => [o, i]).filter(([o]) => o.suf === sufOdy() && o.n === n);
     return `<div class="slotm"><div class="sn">Emplacement ${n}</div>${P.length ? P.map(([o, i]) => `<button onclick="reprendreOdy(${i})"><b>${nomH(o.r)}</b> · ${o.r.route ? 'Route du Titan' : ileLigne(o.r)}<small>❤ ${o.r.pv}/${o.r.pvMax}${o.r.aventure ? ' · 🗺 Grande aventure' : ''}</small><i>▶ Charger</i></button>`).join('') : '<p class="vide">Vide</p>'}
       <button class="neuf" onclick="nouvelleOdy(${n})">✨ Nouvelle partie${P.length ? ' (remplace celle-ci)' : ''}</button></div>`; }).join('');
   b.style.display = '';
@@ -467,7 +470,7 @@ function touche(i) {
   if (courant === 'odyssee' && p.mode !== undefined) { odyMode = p.mode; odySlot = null; GM.son('choisir'); montre('odyssee'); return; } // 17/11 : le mode → ses emplacements
   if (!GM.son('portail')) souffle(); car.children[i].classList.add('entre'); document.getElementById('flash').classList.add('go');
   setTimeout(() => {
-    if (p.href) { sessionStorage.setItem('guilde-dans-mode', '1'); location.href = courant === 'odyssee' && odySlot && p.href.startsWith('odyssee.html') ? p.href + (p.href.includes('?') ? '&' : '?') + 'nouvelle=' + odySlot : p.href; return; } // l'île choisie, dans l'emplacement choisi
+    if (p.href) { sessionStorage.setItem('guilde-dans-mode', '1'); location.href = courant === 'odyssee' && odySlot && p.href.startsWith('odyssee.html') ? p.href + (p.href.includes('?') ? '&' : '?') + 'nouvelle=' + odySlot + (odyMode === 'jour' ? '&jour=1' : '') : p.href; return; } // l'île choisie, dans l'emplacement choisi
     document.getElementById('flash').classList.remove('go'); location.hash = p.vers;
   }, 750);
 }
