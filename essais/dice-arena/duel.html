@@ -702,6 +702,12 @@
   .plateau.tapis.unique:not(.scene) .pastilles [data-k="pv"].avecpc > [data-k="pc"] { position:absolute !important; left:50%; top:calc(100% - .4cqw); transform:translateX(-50%); display:flex !important; align-items:center; gap:.15em; white-space:nowrap; font:bold 2.9cqw Georgia, serif !important; color:#cfe8ff !important; text-shadow:0 0 6px #2a7fc1, 0 1px 2px #000; background:none !important; border:none !important; box-shadow:none !important; padding:0 !important; width:auto !important; height:auto !important; }
   .plateau.tapis.unique:not(.scene) .pastilles [data-k="pv"].avecpc > [data-k="pc"] b { font-size:1.3em; color:#fff; }
   .plateau.tapis.unique:not(.scene) .pastilles [data-k="pv"].avecpc > [data-k="pc"] .icopc { width:4.6cqw; height:auto; }
+  /* 20/11 : créature entravée = ronces sur la carte */
+  .u.entrave { filter:saturate(.75); } .u.entrave .ronces { position:absolute; inset:-14% -12% -6%; width:124%; height:120%; object-fit:cover; pointer-events:none; z-index:2; transform-origin:50% 100%; animation:roncesBouge 2.6s ease-in-out infinite; filter:hue-rotate(-10deg) saturate(1.3) drop-shadow(0 0 3px #3f7d2a); }
+  .u.entrave .ronces.pousse { animation:roncesPousse .9s cubic-bezier(.2,1.4,.4,1) both, roncesBouge 2.6s ease-in-out .9s infinite; }
+  @keyframes roncesPousse { 0% { transform:scaleY(0) scaleX(.6); opacity:0; } 60% { opacity:1; } 100% { transform:none; opacity:1; } }
+  @keyframes roncesBouge { 0%, 100% { transform:rotate(-1.2deg); } 50% { transform:rotate(1.2deg) scaleY(1.03); } }
+  .u.entrave .tg { color:#b9f5a0 !important; } .u.entrave > b, .u.entrave .tg, .u.entrave .av { position:relative; z-index:3; text-shadow:0 1px 2px #000, 0 0 4px #000; }
 </style>
 </head>
 <body>
@@ -868,7 +874,7 @@ function debutTour(J) {
   if (J.oeuvre) { J.des.forEach(d => { d.v = J.oeuvre; }); log(`Grand œuvre : tous les dés de ${J.nom} montrent ${J.oeuvre}.`); J.oeuvre = 0; }
   else if (!J.ordi && !S.auto) J.aLancer = true;
   else J.des.forEach(d => lance(J, d));
-  J.front.forEach(u => { u.pret = !u.entrave; u.entrave = false; u.defense = false; });
+  J.front.forEach(u => { u.prise = !!u.entrave; u.pret = !u.entrave; u.entrave = false; u.defense = false; }); // 20/11 : prise = bloquée PENDANT ce tour (les ronces se voient)
   log(J.aLancer ? `— Tour ${J.tours} de ${J.nom}` : `— Tour ${J.tours} de ${J.nom} : ${J.des.map(d => d.v).join(' · ')}`);
 }
 function coutCarte(J, k) {
@@ -999,7 +1005,7 @@ function ficheUnite(P, u) {
   const effet = u.louve ? 'La Louve de Pip. Elle attaque toute seule (ou quand on la touche) : elle lance 3 dés. Brelan = 9 dégâts + Saignement ; paire = 5 dégâts qui ignorent Barrière et Bouclier (Instinct) ; sinon 2 dégâts ; +1 par 6.'
     : c ? c.d : '';
   const mots = Object.keys(MOTS).filter(m => u[m]).map(m => `<li><b>${MOTS[m][0]}</b> : ${MOTS[m][1]}</li>`).join('');
-  const etat = P === S.J ? (u.defense ? '🛡 En défense jusqu’à ton prochain tour.' : u.pret ? '⚔ Prête : elle peut attaquer ce tour.' : '💤 Au repos : elle pourra attaquer à ton prochain tour.') : (u.defense ? '🛡 En défense : elle protège son héros.' : '');
+  const etat = u.prise ? '🌿 Prise dans les ronces : elle ne peut pas attaquer ce tour. Elle sera libre au tour suivant.' : u.entrave ? '🌿 Entravée : les ronces la retiendront, elle ne pourra pas attaquer à son prochain tour.' : P === S.J ? (u.defense ? '🛡 En défense jusqu’à ton prochain tour.' : u.pret ? '⚔ Prête : elle peut attaquer ce tour.' : '💤 Au repos : elle pourra attaquer à ton prochain tour.') : (u.defense ? '🛡 En défense : elle protège son héros.' : '');
   fenetre(`<h2>${u.n} <span style="color:#c9c1ea;font-size:.7em">· ${P === S.J ? 'à toi' : 'à ' + P.nom}</span></h2>${art}
     <p style="font-size:1.15em"><b style="color:#ff9a5a">⚔ ${atk(P, u)}</b> attaque · <b style="color:#7dffb0">❤ ${u.v}${u.vmax && u.vmax !== u.v ? ' / ' + u.vmax : ''}</b> vie${u.bouclier ? ` · <b style="color:#8fd3ff">🛡 ${u.bouclier}</b>` : ''}${u.epines ? ` · 🌿 Épines ${u.epines}` : ''}</p>
     <p>${effet}</p>${mots ? `<ul style="padding-left:1.1em">${mots}</ul>` : ''}${etat ? `<p style="color:#f3c96b">${etat}</p>` : ''}
@@ -1730,14 +1736,18 @@ function barre(P, haut) {
     ${P.poison ? `<span data-k="poison" class="p al">Poison ${P.poison}</span>` : ''}${P.silence ? '<span data-k="silence" class="p al">Silence</span>' : ''}${P.oeuvre ? `<span data-k="oeuvre" class="p pu">Grand œuvre : ${P.oeuvre}</span>` : ''}
     ${P.ultimeFait ? '<span data-k="ultimefait" class="p">Ultime utilisé</span>' : `<span data-k="ultime" class="p ${P.jauge >= JAUGE.max ? 'pu' : ''}">⚡ Ultime ${P.jauge}/${JAUGE.max}</span>`}<span data-k="main" class="p">🂠 ${P.main.length} en main</span></div></div></div>`;
 }
+// 20/11 (l'utilisateur : « ma créature est entravée : il faut une animation, des ronces qui la bloquent, et son état quand je la touche ») :
+// des ronces poussent sur la carte quand elle est entravée (une seule fois), puis restent et bougent un peu tant qu'elle est bloquée
+const RONCES_VUES = new Set();
 function front(P, haut) {
   const cote = haut ? 'O' : 'J';
   return `<div class="front${P.front.length ? '' : ' vide'}" id="f-${cote}">${P.front.map((u, i) => {
-    const cls = [u.cachee ? 'cachee' : '', u.defense ? 'defense' : '', estCible({ J:P, u }) ? 'cible' : '', attaquant === u ? 'choisi' : '', !haut && u.pret ? 'pret' : '', !u.pret ? 'dort' : ''].join(' ');
-    const tags = [u.defense ? '🛡 EN DÉFENSE' : '', u.barriere ? 'Barrière' : '', u.cachee ? '👁 Cachée' : '', u.charge ? 'Charge' : '', u.epines ? `Épines ${u.epines}` : '', u.bouclier ? `🛡${u.bouclier}` : '', u.entrave ? 'Entravé' : '', u.louve && haut ? 'Louve' : '', !haut ? (u.pret ? (u.louve ? '🐺 touche-la !' : '⚔ prête') : '💤 repos') : S.vueDirect && !u.pret ? '💤 repos' : ''].filter(Boolean).join(' · ');
+    const lie = u.entrave || u.prise, neufR = lie && !RONCES_VUES.has(u.id); if (lie) RONCES_VUES.add(u.id); else RONCES_VUES.delete(u.id);
+    const cls = [lie ? 'entrave' : '', u.cachee ? 'cachee' : '', u.defense ? 'defense' : '', estCible({ J:P, u }) ? 'cible' : '', attaquant === u ? 'choisi' : '', !haut && u.pret ? 'pret' : '', !u.pret ? 'dort' : ''].join(' ');
+    const tags = [u.defense ? '🛡 EN DÉFENSE' : '', u.barriere ? 'Barrière' : '', u.cachee ? '👁 Cachée' : '', u.charge ? 'Charge' : '', u.epines ? `Épines ${u.epines}` : '', u.bouclier ? `🛡${u.bouclier}` : '', u.entrave || u.prise ? '🌿 Entravée' : '', u.louve && haut ? 'Louve' : '', !haut ? (u.pret ? (u.louve ? '🐺 touche-la !' : '⚔ prête') : u.prise ? '' : '💤 repos') : S.vueDirect && !u.pret ? '💤 repos' : ''].filter(Boolean).join(' · ');
     if (haut && u.cachee) return `<div class="u mystere ${estCible({ J:P, u }) ? 'cible' : ''}" data-uid="${u.id}" onclick="touche({J:S.${cote},u:S.${cote}.front[${i}]})"><b>?</b><div class="tg">👁 Cachée</div><div class="av"><span>⚔ ?</span><span>❤ ?</span></div></div>`;
     const art = u.louve ? 'louve' : u.key, img = typeof ARTS !== 'undefined' && ARTS.includes(art) ? ` style="background:linear-gradient(#0000 30%, #000c 85%), url('cartes/${art}.webp?v=1') center 30%/cover;color:#fff"` : RENFORT_IMG[u.n] ? ` style="background:linear-gradient(#0000 30%, #000c 85%), url('portraits/${RENFORT_IMG[u.n]}.webp') center 25%/cover;color:#fff"` : '';
-    return `<div class="u ${cls}${img ? ' illu' : ''}" data-uid="${u.id}"${img} onclick="touche({J:S.${cote},u:S.${cote}.front[${i}]})"><b class="${u.n.length > 9 ? 'long' : ''}">${u.n}</b><div class="tg">${tags}</div><div class="av"><span class="${atk(P, u) >= 10 ? 'n2' : ''}">⚔ ${atk(P, u)}</span><span class="${u.v >= 10 ? 'n2' : ''}">❤ ${u.v}</span></div></div>`;
+    return `<div class="u ${cls}${img ? ' illu' : ''}" data-uid="${u.id}"${img} onclick="touche({J:S.${cote},u:S.${cote}.front[${i}]})"><b class="${u.n.length > 9 ? 'long' : ''}">${u.n}</b><div class="tg">${tags}</div><div class="av"><span class="${atk(P, u) >= 10 ? 'n2' : ''}">⚔ ${atk(P, u)}</span><span class="${u.v >= 10 ? 'n2' : ''}">❤ ${u.v}</span></div>${lie ? `<img class="ronces ${neufR ? 'pousse' : ''}" src="effets/ronces.webp?v=1" alt="">` : ''}</div>`;
   }).join('')}${'<div class="place"></div>'.repeat(Math.max(0, 5 - P.front.length))}</div>`;
 }
 function actSoins() { const ok = permis(S.J, 'pcSoins', []); return `<button class="act ${ok ? 'ok' : 'non'}" onclick="vise('pcSoins')"><span class="info" onclick="event.stopPropagation();aide('pcSoins', true)">i</span><b>Premiers soins</b>2 PC · retire tes altérations</button>`; }
