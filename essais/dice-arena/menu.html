@@ -306,6 +306,9 @@ function slotsOdy() {
     return `<div class="slotm"><div class="sn">Emplacement ${n}</div>${P.length ? P.map(([o, i]) => `<button onclick="reprendreOdy(${i})"><b>${nomH(o.r)}</b> · ${o.r.route ? 'Route du Titan' : ileLigne(o.r)}<small>❤ ${o.r.pv}/${o.r.pvMax}${o.r.aventure ? ' · 🗺 Grande aventure' : ''}</small><i>▶ Charger</i></button>`).join('') : '<p class="vide">Vide</p>'}
       <button class="neuf" onclick="nouvelleOdy(${n})">✨ Nouvelle partie${P.length ? ' (remplace celle-ci)' : ''}</button></div>`; }).join('');
   b.style.display = '';
+  // 20/11 (l'utilisateur : « je ne peux pas descendre », le 3e emplacement coupé par la barre du bas) : la liste défile dans la place qui reste
+  requestAnimationFrame(() => { const bas = document.getElementById('barre-bas'), h = (bas ? bas.getBoundingClientRect().top : innerHeight) - b.getBoundingClientRect().top - 8;
+    b.style.maxHeight = Math.max(160, h) + 'px'; b.style.overflowY = 'auto'; b.style.overscrollBehavior = 'contain'; b.style.touchAction = 'pan-y'; });
 }
 function sauvesOdy() {
   const b = document.getElementById('sauves'); if (!b) return;
@@ -313,6 +316,7 @@ function sauvesOdy() {
   [car, document.getElementById('points'), document.getElementById('desc')].forEach(e => { if (e) e.style.display = vuSlots ? 'none' : ''; });
   if (courant === 'odyssee') document.getElementById('eSous').textContent = odyMode === null ? 'Quel voyage ?' : vuSlots ? 'Choisis ta partie' : 'Quelle île veux-tu explorer ?';
   if (courant === 'odyssee' && odyMode === null) { b.style.display = 'none'; return; }
+  b.style.maxHeight = ''; b.style.overflowY = '';
   if (vuSlots) return slotsOdy();
   if (courant === 'odyssee' && odySlot) { b.innerHTML = `<div class="st">✨ Nouvelle partie · emplacement ${odySlot} · choisis ton île <button class="chg" onclick="odySlot=null;montre('odyssee')">‹ Emplacements</button></div>`; b.style.display = ''; return; }
   if (courant !== 'odyssee' || !MES_ODY.length) { b.style.display = 'none'; return; }
