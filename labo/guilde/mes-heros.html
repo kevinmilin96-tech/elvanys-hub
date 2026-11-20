@@ -38,13 +38,13 @@
 <main id="app"></main>
 <script src="musique.js?v=97e5549185"></script>
 <script src="rang.js?v=34d82e0c22"></script>
-<script src="heros-etoiles.js?v=fdd95d60ec"></script>
+<script src="heros-etoiles.js?v=8b13b4b4ee"></script>
 <script src="donnees.js?v=6b3166c8e1"></script>
 <script src="odyssee.js?v=d23b52bb6c"></script>
 <script src="aventure.js?v=09133a6200"></script>
-<script src="aventuriers.js?v=04b0962a08"></script>
-<script src="pouvoirs-heros.js?v=8d5918482a"></script>
-<script src="fiche-heros.js?v=cf69961643"></script>
+<script src="aventuriers.js?v=5679a4a045"></script>
+<script src="pouvoirs-heros.js?v=1adf3b588a"></script>
+<script src="fiche-heros.js?v=3490f6733b"></script>
 <script>
 // =============================================================================================== MES HÉROS (15/11 ~17 h 45) : le système des héros unifié
 // Tous les héros (les 6 de la Guilde + les héros d'aventure de la Forge), triés par puissance, et la récolte du campement.
@@ -75,16 +75,16 @@ function ouvre(id) {
   const I = fhInfo(id), av = !fhGuilde(id);
   // 16/11 soir (l'utilisateur : « le lien en bas est trop petit, il faut une icône sur la fiche ») : un gros bouton en haut à droite, et un vrai bouton en bas
   const ou = av ? `aventuriers.html?h=${id}&retour=mes-heros.html` : `heros.html?h=${id}`;
-  $('app').innerHTML = `<div class="haut"><a href="#" onclick="liste();return false">‹ Mes héros</a><h1>${I.nom}</h1><a class="hcartes" href="${ou}">${av ? '🎲<small>Son dé</small>' : '🂠<small>Cartes et dés</small>'}</a></div>
+  $('app').innerHTML = `<div class="haut"><a href="#" onclick="liste();return false">‹ Mes héros</a><h1>${I.nom}</h1>${av ? `<a class="hcartes" href="#fh-de" onclick="fhVaAuDe('${id}');return false">🎲<small>Son dé</small></a>` : `<a class="hcartes" href="${ou}">🂠<small>Cartes et dés</small></a>`}</div>
     ${ficheHerosHTML(id)}
-    <a class="gros-lien" href="${ou}">${av ? '🎲 Son dé personnel et ses talents (la Forge)' : '🂠 Ses cartes, ses dés, son histoire et son deck'}</a>`;
+    ${av ? '' : `<a class="gros-lien" href="${ou}">🂠 Ses cartes, ses dés, son histoire et son deck</a>`}`; // 19/11 : le dé et les talents d'un héros d'aventure sont dans la fiche (bandeau « 🎲 Son dé et ses talents »)
 }
 FH.apres = () => actuel ? ouvre(actuel) : liste();
 if (typeof GM !== 'undefined') { try { GM.musique('menu'); GM.bouton(); } catch (e) {} }
 actuel && fhInfo(actuel) ? ouvre(actuel) : liste();
 </script>
 <script src="guide.js?v=f78db3b570"></script>
-<script src="guides-modes.js?v=a2164e4035"></script>
+<script src="guides-modes.js?v=4174fd7ae1"></script>
 <script>
 // 15/11 : le guide de Moustache de ce mode (guides-modes.js)
 { const _l = liste; liste = function () { const r = _l.apply(this, arguments); guideMode('mes-heros'); return r; }; }

@@ -50,11 +50,13 @@ const GUIDES_MODES = {
     ['.fh-scene', 'La <b>fiche du héros</b> : au centre, le héros et son rang ; autour, ses <b>6 cases d’équipement</b>. Touche une case pour équiper ou améliorer une pièce.'],
     ['.fh-stats', 'Ses <b>caractéristiques</b>. La <b>puissance</b> ✊ résume tout en un seul chiffre.'],
     ['.fh-bloc', 'Le <b>niveau</b> se monte avec l’or et la poussière, jusqu’au plafond de son rang. Le <b>rang</b> (juste dessous) se monte avec ses éclats et relève ce plafond.'],
-    [null, 'Dans le <b>coffre</b> : 3 pièces de la même case et de la même rareté <b>fusionnent</b> en une pièce plus rare. Et le <b>forgeron</b> en vend 3 nouvelles chaque jour. Miaou !'],
+    [null, 'Dans le <b>coffre</b> : 3 pièces de la même case et de la même rareté <b>fusionnent</b> en une pièce plus rare. Et le <b>forgeron</b> en vend 3 nouvelles chaque jour.'],
+    ['#fh-de', 'Un héros d’aventure a ici <b>son dé et ses talents</b> : touche le bandeau pour forger une face (un point tous les 5 niveaux). Ses talents sont des choix de son <b>Passif</b>, dans ses pouvoirs.'],
+    [null, 'Touche une <b>relique</b> pour savoir ce qu’elle fait et où elle compte. Tout en bas, « 🔄 Remettre à zéro » rend tout ce que tu as mis dans un héros, une fois par jour. Miaou !'],
   ],
   forge:[
     [null, 'La <b>Forge des héros</b> : ici, tu crées TON héros d’aventure, comme dans un jeu de rôle. Une voie, un nom, un portrait, une couleur.'],
-    [null, 'Il a un <b>dé personnel</b> : chaque niveau d’expérience gagné en aventure donne un point de forge pour renforcer une face. Et aux niveaux 2, 4 et 6, il choisit un <b>talent</b>.'],
+    [null, 'Il a un <b>dé personnel</b> : un point de forge tous les 5 niveaux pour renforcer une face (+2 au plus, plus avec les grands rangs). Ses <b>talents</b> se choisissent dans le <b>Passif</b> de ses pouvoirs (dès les niveaux 5, 10 et 20). Tout est sur sa fiche, dans « Mes héros ».'],
     [null, 'Ses niveaux, son rang et son équipement se gèrent avec tous les autres héros dans <b>« Mes héros »</b>. Il joue dans les Chroniques et les Aventures.'],
   ],
   epreuves:[

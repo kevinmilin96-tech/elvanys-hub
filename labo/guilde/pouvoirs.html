@@ -64,11 +64,11 @@
 <main id="app"></main>
 <script src="musique.js?v=97e5549185"></script>
 <script src="rang.js?v=34d82e0c22"></script>
-<script src="heros-etoiles.js?v=fdd95d60ec"></script>
+<script src="heros-etoiles.js?v=8b13b4b4ee"></script>
 <script src="donnees.js?v=6b3166c8e1"></script>
-<script src="aventuriers.js?v=04b0962a08"></script>
-<script src="pouvoirs-heros.js?v=8d5918482a"></script>
-<script src="fiche-heros.js?v=cf69961643"></script>
+<script src="aventuriers.js?v=5679a4a045"></script>
+<script src="pouvoirs-heros.js?v=1adf3b588a"></script>
+<script src="fiche-heros.js?v=3490f6733b"></script>
 <script>
 // =============================================================================================== LA PAGE « BUILD » (16/11 nuit, demande de l'utilisateur)
 // Une page par héros : choix du héros (portraits), onglets 👥 Groupe / 🗡 Solo, une ligne par emplacement avec ses versions en cases à cocher,
@@ -93,14 +93,14 @@ function caseHTML(c, E, D, choisi, ouvert) {
 // une rangée de vignettes (une par version) ; la vignette touchée montre sa fiche en dessous, avec « Choisir cette version »
 let vue = {};
 function vignettes(c, E, choisie, ouvert) {
-  const L = POUVOIRS_H[c][E.k], v = L.some(D => D.v === vue[E.k]) ? vue[E.k] : choisie, D = L.find(x => x.v === v) || L[0], ferme = D.v !== 'A' && !ouvert;
-  return `<div class="vignettes" style="grid-template-columns:repeat(${L.length}, 1fr)">${L.map(X => { const f = X.v !== 'A' && !ouvert;
+  const L = versionsDe(actuel, E.k), v = L.some(D => D.v === vue[E.k]) ? vue[E.k] : choisie, D = L.find(x => x.v === v) || L[0], ferme = !versionOuverte(actuel, E.k, D), nivD = D.talent ? D.niv : E.niv;
+  return `<div class="vignettes" style="grid-template-columns:repeat(${Math.min(L.length, 3)}, 1fr)">${L.map(X => { const f = !versionOuverte(actuel, E.k, X);
     return `<button class="vig ${X.v === v ? 'vue' : ''} ${X.v === choisie ? 'choisi' : ''} ${f ? 'ferme' : ''}" style="--pc:${X.c}" onclick="vue['${E.k}']='${X.v}';fhSon('choisir');dessine()"><span class="em">${pwIcone(c, E.k, X, 34)}</span><span class="vn">${X.n}</span><span class="vb">${f ? '🔒' : X.v === choisie ? '✓' : ''}</span></button>`; }).join('')}</div>
     <div class="detail" style="--pc:${D.c}"><div class="ico"><span class="em">${pwIcone(c, E.k, D, 40)}</span><div><div class="nom">${D.n}</div><span class="role">${roleTxt(D.r)}</span></div></div>
       ${D.co ? `<p>🎲 <b>${PW_COMBOS[D.co]}</b></p>` : ''}<p><b>Duel :</b> ${D.duel}</p><p><b>Chroniques :</b> ${D.chron}</p>
       ${(() => { const rg = ((pouvoirsDe(actuel, pre) || {})[E.k] || {}).rang || 0, b = Math.floor(rg / 2); // 17/11 (l'utilisateur : « les rangs ne changent rien ») : ce que le rang ajoute, en clair
         return `<p style="color:#f3c96b">⭐ Rang ${rg} : ${b ? `<b>+${b}</b> au chiffre principal (bouclier, dégâts, soin, sceaux…)` : 'pas encore de bonus'}${rg < 10 ? ` · prochain +1 au rang ${rg + (rg % 2 ? 1 : 2)}` : ' (maximum)'}${/rang (5|10)/.test(D.chron) ? ' · et ce qui est écrit pour les rangs 5 et 10' : ''}.</p>`; })()}
-      ${ferme ? `<p class="dv-ferme">🔒 Ce choix s’ouvre au niveau ${E.niv}.</p>` : D.v === choisie ? '<p class="dv-ok">✓ Version choisie</p>' : `<button class="dv-choisir" onclick="choisit('${E.k}','${D.v}')">Choisir cette version</button>`}</div>`;
+      ${D.talent ? '<p style="color:#7dffb0">🎲 Talent de héros d’aventure (ancien talent de la Forge), à la place du passif de sa voie.</p>' : ''}${ferme ? `<p class="dv-ferme">🔒 Ce choix s’ouvre au niveau ${nivD}.</p>` : D.v === choisie ? '<p class="dv-ok">✓ Version choisie</p>' : `<button class="dv-choisir" onclick="choisit('${E.k}','${D.v}')">Choisir cette version</button>`}</div>`;
 }
 function dessine() {
   if (!tous().includes(actuel)) actuel = tous()[0];
@@ -126,7 +126,7 @@ function dessine() {
 
 }
 function choisit(emp, v) {
-  const c = classeDe(actuel), E = PW_EMP.find(x => x.k === emp), o = pouvoirsDe(actuel, pre), D = POUVOIRS_H[c][emp].find(x => x.v === v);
+  const c = classeDe(actuel), E = PW_EMP.find(x => x.k === emp), o = pouvoirsDe(actuel, pre), D = versionsDe(actuel, emp).find(x => x.v === v);
   fhFen(`<h2>${D.e} ${D.n}</h2><p class="doux" style="text-align:center">${E.e} ${E.n} · ${pre === 'groupe' ? '👥 Groupe' : '🗡 Solo'}</p>
     <p>À la place de <b>${o[emp].def.n}</b>. C’est gratuit, tu pourras revenir quand tu veux.</p><p><b>Chroniques :</b> ${D.chron}</p>
     <div class="fh-bts"><button class="fh-bt" onclick="fhFen('')">Annuler</button><button class="fh-bt or" onclick="valideChoix('${emp}','${v}')">✓ Valider</button></div>`);

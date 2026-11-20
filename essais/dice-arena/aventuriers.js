@@ -31,6 +31,10 @@ function avChoisitTalent(id, niv, k) { return !!avMaj(id, a => { if (avNiv(a) < 
 // (pour les paires et les suites) et chaque face reçoit un BONUS +1 (2 au plus) qui compte pour frapper les sceaux « ≥ » et « Σ » ;
 // 1 point de forge tous les 5 niveaux. Les faces déjà montées l'ancienne façon deviennent des bonus.
 const AV_BONUS_MAX = 2, NIV_TALENT = { 2:5, 4:10, 6:20 };
+// 19/11 (décision de l'utilisateur) : après le niveau 60, le dé grandit avec le RANG du héros (heros-etoiles.js) : +2 au plus par face,
+// +3 au rang Élite, +4 Légendaire, +5 Mythique, +6 Ascendant, puis +1 par étoile d'Ascendant (+11 à Ascendant ★★★★★) ; toujours 1 point de forge tous les 5 niveaux
+const AV_PALIERS_DE = [[3, 'Élite'], [5, 'Légendaire'], [7, 'Mythique'], [9, 'Ascendant'], [10, 'Ascendant ★'], [11, 'Ascendant ★★'], [12, 'Ascendant ★★★'], [13, 'Ascendant ★★★★'], [14, 'Ascendant ★★★★★']];
+const avBonusMax = a => AV_BONUS_MAX + AV_PALIERS_DE.filter(([r]) => (typeof niveauHeros === 'function' ? niveauHeros(a.id) : 0) >= r).length;
 function avNormalise(a) { if (!a.bonus) { a.bonus = (a.faces || [1, 2, 3, 4, 5, 6]).map((v, k) => Math.max(0, Math.min(AV_BONUS_MAX, v - (k + 1)))); a.faces = [1, 2, 3, 4, 5, 6]; } return a; }
 function avLire() { try { return JSON.parse(localStorage.getItem(AV_CLE) || '[]').map(avNormalise); } catch (e) { return []; } }
 function avEcrire(l) { try { localStorage.setItem(AV_CLE, JSON.stringify(l)); } catch (e) {} }
@@ -52,11 +56,11 @@ function avGagneXP(id, xp, gagne) {
   return gain;
 }
 // forger une face : +1 (jusqu'à 6), un point de forge
-function avForge(id, k) { let ok = false; avMaj(id, a => { if (avPointsForge(a) < 1 || a.bonus[k] >= AV_BONUS_MAX) return; a.bonus[k]++; ok = true; }); return ok; }
+function avForge(id, k) { let ok = false; avMaj(id, a => { if (avPointsForge(a) < 1 || a.bonus[k] >= avBonusMax(a)) return; a.bonus[k]++; ok = true; }); return ok; }
 // ce que le héros apporte en jeu
 function avStats(a) {
   const n = avNiv(a), base = { maelle:15, aldric:16, pip:12, oria:15, gorm:16, zephine:15 }[a.voie] || 15, paliers = [5, 10, 20, 35, 50].filter(x => n >= x).length;
-  return { niveau:n, pv:base + 2 * paliers + (avTalents(a).includes('robuste') ? 4 : 0), desPlus:n >= 10 ? 1 : 0, faces:[1, 2, 3, 4, 5, 6], bonus:(a.bonus || [0, 0, 0, 0, 0, 0]).slice(), talents:avTalents(a) };
+  return { niveau:n, pv:base + 2 * paliers, /* 19/11 : Robuste est devenu un Passif, compté par les Chroniques */ desPlus:n >= 10 ? 1 : 0, faces:[1, 2, 3, 4, 5, 6], bonus:(a.bonus || [0, 0, 0, 0, 0, 0]).slice(), talents:avTalents(a) };
 }
 // le portrait : ceux de la galerie (Gemini) s'ils existent, sinon le héros modèle de la voie
 const avPortrait = a => `portraits/av-${a.voie}-${a.genre}.webp`;

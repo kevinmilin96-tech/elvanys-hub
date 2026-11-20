@@ -165,6 +165,33 @@ const POUVOIRS_H = {
   },
 };
 
+// ------------------------------------------------------------------ 19/11 (décision de l'utilisateur) : les TALENTS des héros d'aventure (ex. aventuriers.js TALENTS)
+// deviennent des choix de plus de l'emplacement PASSIF, avec les rangs et les points comme les autres : une seule progression.
+// Réservés aux HÉROS D'AVENTURE (ils servaient à ce que deux héros de la même voie ne se ressemblent pas ; les héros de la Guilde ont leur passif à eux).
+// niv = le niveau où le talent s'ouvre (comme avant : 5, 10, 20) ; un talent déjà choisi avant le 19/11 reste ouvert (a.talents).
+const T = (v, n, r, a, c, e, niv, chron, img) => Object.assign(P(v, n, r, a, c, e, null, 'les héros d’aventure ne vont pas dans le Duel.', chron, img), { talent:true, niv });
+const PW_TALENTS = [
+  T('robuste', 'Robuste', 'tank', 'bouclier', '#e07a5f', '💪', 5, '+4 PV, et +1 PV de plus tous les 2 rangs.', 'a sturdy leather belt with a heart-shaped buckle'),
+  T('eclaireur', 'Pied léger', 'controle', 'vent', '#7ad3c8', '🥾', 5, '+1 case à chaque déplacement (+2 au rang 10).', 'a pair of light travelling boots with small wings'),
+  T('protecteur', 'Protecteur', 'tank', 'bouclier', '#ffd27a', '🛡', 10, 'Quand il protège un ami, le bouclier donné est plus fort de 2 (+1 tous les 2 rangs).', 'a wide round shield raised to cover a friend'),
+  T('chanceux', 'Chanceux', 'soutien', 'lumiere', '#7dffb0', '🍀', 10, 'Les pièges cachés dans les meubles ne le touchent jamais (le rang n’ajoute rien à ce talent).', 'a glowing four-leaf clover'),
+  T('brute', 'Coup puissant', 'degats', 'impact', '#ff6b5a', '🔨', 20, 'Quand il frappe avec un 5 ou un 6, il brise DEUX sceaux (dès le rang 10 : aussi avec un 4).', 'a heavy war hammer cracking a stone'),
+  T('guerisseur', 'Herboriste', 'soin', 'soin', '#9be38f', '🌿', 20, 'Ses soins rendent la moitié du dé +2 PV (+1 tous les 2 rangs), à lui ou à un voisin.', 'a bundle of healing herbs and a small mortar'),
+];
+const estAventurier = id => !POUVOIRS_H[id] && !!classeDe(id);
+// les versions proposées pour un emplacement : celles de la classe, + les talents dans le Passif des héros d'aventure
+const versionsDe = (id, emp) => { const c = classeDe(id); if (!c) return []; return emp === 'passif' && estAventurier(id) ? [...POUVOIRS_H[c][emp], ...PW_TALENTS] : POUVOIRS_H[c][emp]; };
+const talentAcquis = (id, v) => { if (typeof avTrouve !== 'function') return false; const a = avTrouve(id); return !!(a && a.talents && Object.values(a.talents).includes(v)); };
+// une version est-elle ouverte ? A toujours ; un talent à son niveau (ou déjà choisi avant) ; le reste au niveau de l'emplacement
+const versionOuverte = (id, emp, X) => !X || X.v === 'A' || pwEssai() || (X.talent ? nivDe(id) >= X.niv || talentAcquis(id, X.v) : nivDe(id) >= empDe(emp).niv);
+// la reprise : le talent choisi avant devient le Passif choisi (dans les deux préréglages) si rien n'est encore choisi
+function repriseTalents(id) {
+  if (!aLs() || !estAventurier(id) || typeof avTrouve !== 'function') return; const a = avTrouve(id); if (!a || !a.talents) return;
+  const l = Object.keys(a.talents).sort((x, y) => y - x).map(k => a.talents[k]).filter(Boolean); if (!l.length) return; // le plus haut talent choisi
+  const P0 = pwBrut(id); if (P0.repriseT) return;
+  pwEcrit(id, Q => { ['groupe', 'solo'].forEach(pre => { if (!Q[pre].passif) Q[pre].passif = l[0]; }); Q.repriseT = 1; });
+}
+
 // ------------------------------------------------------------------ le stockage (guilde-etoiles)
 const aLs = () => typeof localStorage !== 'undefined' && typeof lireEtoiles === 'function';
 function classeDe(id) {
@@ -180,9 +207,9 @@ const pwEssai = () => { try { return typeof localStorage !== 'undefined' && loca
 const pwOuvert = (id, emp) => pwEssai() || nivDe(id) >= empDe(emp).niv;
 // les 4 pouvoirs actifs d'un héros pour un préréglage : { garde:{ v, rang, def }, … }
 function pouvoirsDe(id, pre) {
-  const c = classeDe(id); if (!c) return null;
+  const c = classeDe(id); if (!c) return null; repriseTalents(id);
   const P0 = pwBrut(id), ch = P0[pre === 'groupe' ? 'groupe' : 'solo'] || {}, R = P0.rangs || {}, o = {};
-  PW_EMP.forEach(E => { const L = POUVOIRS_H[c][E.k]; const v = pwOuvert(id, E.k) && ch[E.k] && L.some(x => x.v === ch[E.k]) ? ch[E.k] : 'A';
+  PW_EMP.forEach(E => { const L = versionsDe(id, E.k), X = L.find(x => x.v === ch[E.k]); const v = X && versionOuverte(id, E.k, X) ? ch[E.k] : 'A';
     o[E.k] = { v, rang:Math.min(PW_RANG_MAX, R[E.k] || 0), def:L.find(x => x.v === v) }; });
   return o;
 }
@@ -201,8 +228,8 @@ function pwEcrit(id, f) { const d = lireEtoiles(), h = etatHerosE(d, id); h.pw =
 // choisir une version (gratuit, hors partie) ; renvoie 'ok' ou une phrase qui dit pourquoi
 function choisirPouvoir(id, pre, emp, v) {
   const c = classeDe(id), E = empDe(emp); if (!c || !E) return 'Héros inconnu.';
-  if (!POUVOIRS_H[c][emp].some(x => x.v === v)) return 'Version inconnue.';
-  if (v !== 'A' && !pwOuvert(id, emp)) return `Le choix du ${E.n.toLowerCase()} s’ouvre au niveau ${E.niv}.`;
+  const X = versionsDe(id, emp).find(x => x.v === v); if (!X) return 'Version inconnue.';
+  if (!versionOuverte(id, emp, X)) return `Ce choix s’ouvre au niveau ${X.talent ? X.niv : E.niv}.`;
   pwEcrit(id, P0 => { P0[pre === 'groupe' ? 'groupe' : 'solo'][emp] = v; }); return 'ok';
 }
 function monterRang(id, emp) {
@@ -221,6 +248,6 @@ function nomBuild(id, pre) {
 // l'icône peinte du pouvoir (decor/pw-<classe>-<emp>-<v>.webp) si elle existe, sinon l'émoji
 const pwIcone = (c, emp, d, px) => `<img src="decor/pw-${c}-${emp}-${d.v.toLowerCase()}.webp?v=1" alt="" style="width:${px || 34}px;height:${px || 34}px;object-fit:contain;vertical-align:middle;border-radius:8px" onerror="this.replaceWith(document.createTextNode('${d.e}'))">`;
 
-const API = { PW_EMP, PW_RANG_MAX, PW_ROLES, PW_CLASSES, PW_COMBOS, POUVOIRS_H, classeDe, pouvoirsDe, pwPourMoteur, pointsPouvoirs, choisirPouvoir, monterRang, coutRang, coutJusqua, prereglagePour, nomBuild, pwIcone, pwOuvert, pwEssai };
+const API = { PW_TALENTS, versionsDe, versionOuverte, estAventurier, repriseTalents, PW_EMP, PW_RANG_MAX, PW_ROLES, PW_CLASSES, PW_COMBOS, POUVOIRS_H, classeDe, pouvoirsDe, pwPourMoteur, pointsPouvoirs, choisirPouvoir, monterRang, coutRang, coutJusqua, prereglagePour, nomBuild, pwIcone, pwOuvert, pwEssai };
 if (typeof module !== 'undefined' && module.exports) module.exports = API; else Object.assign(racine, API);
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -239,3 +239,35 @@ const equipHeros = id => Object.assign({ arme:null, armure:null, talisman:null }
 function equipeHeros(id, pl, k) { const d = lireEtoiles(); if (k && !d.armurerie[k]) return false; d.equip[id] = Object.assign({ arme:null, armure:null, talisman:null }, d.equip[id] || {}); d.equip[id][pl] = k || null; ecrireEtoiles(d); return true; }
 // prochain exemplaire pour la fusion : « 2 / 3 »
 function fusionTxt(k) { const c = lireEtoiles().armurerie[k] || 0; return c >= 5 ? '★★★ (au maximum)' : c >= 3 ? `★★ · ${c} / 5 pour ★★★` : `★ · ${c} / 3 pour ★★`; }
+
+// =============================================================================================== 19/11 (décision de l'utilisateur) : REMETTRE UN HÉROS À ZÉRO (comme le « Repos des héros » d'AFK Arena)
+// Gratuit, une fois par jour (tous héros confondus). Rendu : 100 % de l'or et de la poussière dépensés en niveaux (calculés exactement avec coutNiveau),
+// les éclats dépensés pour les rangs (COUT_NIV) en éclats de Guilde 💠, l'équipement porté au coffre AVEC son niveau (la case ne le garde plus : pas de double),
+// les points de pouvoirs (rangs effacés) et de forge du dé. Le héros repart niveau 1, rang Commun. Ce qui ne bouge PAS : les reliques, les éclats
+// pas encore dépensés du héros, les trophées, l'XP du rang de la Guilde. Un héros d'aventure garde son nom, son apparence et son histoire ; son Passif repasse à choisir.
+const ZERO_CLE = 'guilde-zero-jour';
+const jourZero = () => { const d = new Date(); return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); };
+const zeroDispo = () => { try { return localStorage.getItem(ZERO_CLE) !== jourZero(); } catch (e) { return false; } };
+function bilanZero(id) {
+  const d = lireEtoiles(), h = etatHerosE(JSON.parse(JSON.stringify(d)), id), s = avSac(); let or = 0, pou = 0, ec = 0;
+  for (let n = 1; n < (h.niv || 1); n++) { const c = coutNiveau(n); or += c.or; pou += c.pou; }
+  for (let r = 0; r < (h.rang || 0); r++) ec += COUT_NIV[r] || 0;
+  const pieces = EQ_CASES.map(c => { const pid = (h.gear || {})[c.k]; const p = pid && s.pieces.find(x => x.id === pid); return p ? Object.assign({}, p, { niv:Math.min(eqNivMax(p), Math.max(p.niv, ((h.lv || {})[c.k]) || 0)) }) : null; }).filter(Boolean);
+  const rangsPw = h.pw && h.pw.rangs ? Object.values(h.pw.rangs).reduce((t, v) => t + (v || 0), 0) : 0;
+  const a = typeof avTrouve === 'function' ? avTrouve(id) : null, forge = a && a.bonus ? a.bonus.reduce((t, v) => t + v, 0) : 0;
+  return { or, pou, ec, pieces, rangsPw, forge, niv:h.niv || 1, rang:h.rang || 0, rien:!or && !pou && !ec && !pieces.length && !rangsPw && !forge };
+}
+function remetAZero(id) {
+  if (!zeroDispo()) return 'Déjà utilisé aujourd’hui : reviens demain.';
+  const B = bilanZero(id); if (B.rien) return 'Ce héros est déjà au départ : rien à rendre.';
+  const d = lireEtoiles(), h = etatHerosE(d, id), s = avSac();
+  // l'équipement porté : au coffre avec son niveau ; la case oublie ce niveau (sinon la case ET la pièce le garderaient)
+  EQ_CASES.forEach(c => { const pid = h.gear[c.k]; const p = pid && s.pieces.find(x => x.id === pid); if (p) { p.niv = Math.min(eqNivMax(p), Math.max(p.niv, (h.lv || {})[c.k] || 0)); if (h.lv) delete h.lv[c.k]; } h.gear[c.k] = null; });
+  s.or += B.or; d.poussiere = (d.poussiere || 0) + B.pou; d.libres = (d.libres || 0) + B.ec;
+  h.niv = 1; h.rang = 0; h.n = 0;
+  if (h.pw) { h.pw.rangs = {}; if (typeof avTrouve === 'function' && avTrouve(id)) { ['groupe', 'solo'].forEach(k => { if (h.pw[k]) delete h.pw[k].passif; }); h.pw.repriseT = 1; } }
+  avSacEcrire(s); ecrireEtoiles(d);
+  if (typeof avMaj === 'function' && typeof avTrouve === 'function' && avTrouve(id)) avMaj(id, a => { a.bonus = [0, 0, 0, 0, 0, 0]; a.talents = {}; });
+  try { localStorage.setItem(ZERO_CLE, jourZero()); } catch (e) {}
+  return 'ok';
+}

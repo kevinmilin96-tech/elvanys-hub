@@ -353,7 +353,8 @@ function nouvelle(heros, s, scen, opts = {}) {
   S.pre = S.heros.length >= 2 ? 'groupe' : 'solo';
   S.heros.forEach((z, i) => { const src = heros[i]; let set = src && typeof src === 'object' && src.pwSet || null;
     if (!set && !opts.sansPouvoirs && typeof racine.pwPourMoteur === 'function') set = racine.pwPourMoteur(typeof src === 'string' ? src : (src.__g || src.av || src.voie));
-    z.pw = set ? set[S.pre] : null; });
+    z.pw = set ? set[S.pre] : null;
+    if (a_t(z, 'robuste')) { const b = 4 + pwB3(z, 'passif'); z.pv += b; z.pvmax += b; } }); // 19/11 : le talent Robuste (Passif d'un héros d'aventure)
   if (scen === 'atelier') { construitAtelier(S, R, opts.salle || { w:4, h:3 }); S.objectif = 'vaincre'; log(S, `🛠 Essai de « ${(opts.salle && opts.salle.nom) || 'la salle'} » : déplacez-vous, fouillez, battez les monstres.`); debutTour(S); return S; }
   if (scen === 'entrainement') { construitEntrainement(S, R); voir(S); log(S, '🎓 L’entraînement de Moustache : un petit donjon pour apprendre.'); debutTour(S); return S; }
   if (scen === 'arene') { construitArene(S, R, opts); adapte(S); S.objectif = 'vaincre'; log(S, '⚔ Embuscade ! Abattez tous les monstres.'); debutTour(S); return S; }
@@ -407,7 +408,7 @@ function utiliser(S, hi, k, cible) {
   if (it === 'fumee') { R.fumee = true; log(S, `💨 ${nm(h)} lance une bombe fumigène : les monstres ne frapperont pas ce tour-ci.`); h.sac.splice(k, 1); return { ok:true, ev:[] }; }
   return 'Rien à utiliser.';
 }
-const a_t = (h, k) => !!(h.talents && h.talents.includes(k)); // un talent de héros d'aventure (aventuriers.js, TALENTS) // le nom affiché (héros d'aventure ou héros de la Guilde)
+const a_t = (h, k) => pwA(h, 'passif', k); // 19/11 : un TALENT de héros d'aventure = une version de son Passif (pouvoirs-heros.js, PW_TALENTS) ; il monte avec le rang du Passif // le nom affiché (héros d'aventure ou héros de la Guilde)
 const log = (S, t) => { S.journal.unshift(t); S.journal.length = Math.min(S.journal.length, 40); };
 // 17/11 (retour de l'utilisateur : « un tour suffit à tuer un monstre, on n'a pas peur », mesuré au simulateur) : les monstres GRANDISSENT
 // avec chaque héros EN PLUS du premier (seul : rien ne change). Élites : un sceau « Σ » de 5 par héros en plus et +1 à leurs coups ;
@@ -440,7 +441,7 @@ function pasDe(h, v) {
   if (h.agi) { n += h.agi; det.push(`${h.agi > 0 ? '+' : ''}${h.agi} équipement`); }
   if (h.id === 'oria') { n += 2; det.push('+2 éclaireuse'); if (pwA(h, 'passif', 'A') && pwR(h, 'passif') >= 5) { n += 1; det.push('+1 œil du cartographe'); } }
   if (h.echo) { n += 1; det.push('+1 écho du cor'); }
-  if (a_t(h, 'eclaireur')) { n += 1; det.push('+1 talent'); }
+  if (a_t(h, 'eclaireur')) { const p = pwR(h, 'passif') >= 10 ? 2 : 1; n += p; det.push(`+${p} Pied léger`); }
   if (h.porte) { n -= 1; det.push('−1 rouage porté'); }
   return { n:Math.max(1, n), det };
 }
@@ -622,7 +623,7 @@ function frapper(S, hi, idDe, mid, k) {
   prendDe(h, idDe); remplit(S, h, 1); pose(s, vA); m.dernier = d.v; if (d.v === 6) m.six = R.tour; if (pwB) h.bonusP = 0;
   log(S, `⚔ ${nm(h)} pose un ${d.v}${bonus ? ` +${bonus} (${[h.att ? 'équipement' : '', flam ? 'flamme' : '', d.b ? 'dé forgé' : '', pwB ? 'pouvoir' : ''].filter(Boolean).join(', ')}) = ${vA}` : ''} sur ${m.n}.`);
   const evPw = pwApresFrappe(S, hi, d);
-  if ((h.id === 'maelle' && (d.v === 6 || (d.v === 5 && pwA(h, 'passif', 'C') && pwR(h, 'passif') >= 10))) || (a_t(h, 'brute') && d.v >= 5)) { const s2 = m.sceaux.find(z => !z.ok); if (s2) { brise(s2); log(S, `🔨 ${h.id === 'maelle' ? 'Coup de forge (un 6 de Maëlle)' : 'Brute (un 5 ou un 6)'} : un DEUXIÈME sceau se brise !`); } }
+  if ((h.id === 'maelle' && (d.v === 6 || (d.v === 5 && pwA(h, 'passif', 'C') && pwR(h, 'passif') >= 10))) || (a_t(h, 'brute') && d.v >= (pwR(h, 'passif') >= 10 ? 4 : 5))) { const s2 = m.sceaux.find(z => !z.ok); if (s2) { brise(s2); log(S, `🔨 ${h.id === 'maelle' ? 'Coup de forge (un 6 de Maëlle)' : 'Brute (un 5 ou un 6)'} : un DEUXIÈME sceau se brise !`); } }
   // 16/11 soir : actions légendaires (comme les boss de D&D 5e) : la 1re fois qu'un héros frappe l'Horloger dans le tour, il riposte (−2, perçant)
   const riposte = m === R.boss && m.b !== 'roios' && !(m.riposte || {})[hi] && contact(S, m, h); if (riposte) { m.riposte = m.riposte || {}; m.riposte[hi] = true; }
   R.frappeurs = R.frappeurs || {}; R.frappeurs[m.id] = (R.frappeurs[m.id] || []); if (!R.frappeurs[m.id].includes(hi)) R.frappeurs[m.id].push(hi);
@@ -664,7 +665,7 @@ function proteger(S, hi, idDe, cibleI) {
   const h = S.heros[hi], d = h.des.find(z => z.id === idDe), c = S.heros[cibleI]; if (!d || !c) return 'Personne à protéger.'; if (d.pas) return 'Un dé 👣 sert à marcher ou à agir, pas à protéger.';
   if (c !== h && !voisins(h, c)) return 'Il faut être à côté de l’ami.';
   if (h.pw) { remplit(S, h, 1); return pwProteger(S, hi, idDe, cibleI); }
-  prendDe(h, idDe); const b = Math.ceil(d.v / 2) + 1 + (a_t(h, 'protecteur') ? 2 : 0);
+  prendDe(h, idDe); const b = Math.ceil(d.v / 2) + 1 + (a_t(h, 'protecteur') ? 2 + pwB3(h, 'passif') : 0);
   const qui = h.id === 'aldric' ? S.heros.filter(z => z === c || z === h || voisins(z, h)) : [c];
   qui.forEach(z => z.bouclier += b); log(S, `🛡 ${nm(h)} protège ${qui.map(z => nm(z)).join(', ')} (bouclier ${b}).`);
   return { ok:true, ev:[] };
@@ -672,7 +673,7 @@ function proteger(S, hi, idDe, cibleI) {
 function soigner(S, hi, idDe, cibleI) {
   const h = S.heros[hi], d = h.des.find(z => z.id === idDe), c = S.heros[cibleI]; // 17/11 (choix de l'utilisateur) : tout héros soigne un ami à côté de la moitié d'un dé ; Pip, du dé entier (et ses bonus)
   if (!d || !c || (c !== h && !voisins(h, c))) return 'Il faut être à côté de l’ami.'; if (d.pas) return 'Un dé 👣 sert à marcher ou à agir, pas à soigner.';
-  prendDe(h, idDe); remplit(S, h, 1); const av = c.pv; c.pv = Math.min(c.pvmax, c.pv + (h.id === 'pip' ? d.v : Math.ceil(d.v / 2))); if (c.aTerre && c.pv > 0) c.aTerre = false;
+  prendDe(h, idDe); remplit(S, h, 1); const av = c.pv; c.pv = Math.min(c.pvmax, c.pv + (h.id === 'pip' ? d.v : Math.ceil(d.v / 2) + (a_t(h, 'guerisseur') ? 2 + pwB3(h, 'passif') : 0))); if (c.aTerre && c.pv > 0) c.aTerre = false;
   const ev = [{ t:'soin', h:cibleI }]; if (h.id === 'pip' && pwA(h, 'passif', 'C')) { const b = 3 + pwB3(h, 'passif'); c.bouclier += b; ev.push(pwEv(h, hi, 'passif', ['h' + cibleI])); log(S, `💧 Sève partagée : ${nm(c)} gagne aussi bouclier ${b}.`); }
   log(S, `🌿 ${nm(h)} soigne ${nm(c)} : +${c.pv - av} PV.`); return { ok:true, ev };
 }
@@ -978,7 +979,7 @@ function briseN(S, m, n, f, ev) { let k = 0; for (const s of m.sceaux) { if (k >
 const entrave = (S, m, n) => { m.entrave = S.R.tour + n - 1; };
 // la Garde choisie (remplace « protéger » quand le héros a ses pouvoirs)
 function pwProteger(S, hi, idDe, cibleI) {
-  const h = S.heros[hi], d = prendDe(h, idDe), c = S.heros[cibleI], v = d.v, g = pwV(h, 'garde'), bo = pwB3(h, 'garde') + (a_t(h, 'protecteur') ? 2 : 0), R = S.R, ev = [];
+  const h = S.heros[hi], d = prendDe(h, idDe), c = S.heros[cibleI], v = d.v, g = pwV(h, 'garde'), bo = pwB3(h, 'garde') + (a_t(h, 'protecteur') ? 2 + pwB3(h, 'passif') : 0), R = S.R, ev = [];
   let qui = h.id === 'aldric' ? S.heros.filter(z => z === c || z === h || voisins(z, h)) : [c], val = Math.ceil(v / 2) + 1, plus = '';
   const proche = z => collesA(S, z).filter(m => m !== R.boss)[0];
   switch (h.id + g) {

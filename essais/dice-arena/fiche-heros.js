@@ -24,6 +24,10 @@ const FH = { apres:() => {}, choixRel:null };
   .fh-stats b { display:block; font-size:1.2em; color:#f1ecff; } .fh-stats span { color:#c9c1ea; }
   .fh-bloc { background:#1c1838e6; border:1px solid #4b4580; border-radius:14px; padding:12px; margin:10px 0; }
   .fh-bloc h4 { margin:0 0 6px; color:#f3c96b; font-size:1em; }
+  .fh-de-mini { display:flex; gap:4px; } .fh-de-mini span { position:relative; width:30px; } .fh-de-mini img { width:30px; height:30px; display:block; } .fh-de-mini b { position:absolute; right:-4px; bottom:-4px; font-size:11px; background:#1f4d2e; color:#7dffb0; border-radius:8px; padding:0 3px; }
+  .fh-de { display:grid; grid-template-columns:repeat(6, 1fr); gap:5px; } .fh-de button { background:#15132b; border:2px solid #4b4580; border-radius:10px; padding:4px 2px; color:#fff; font:inherit; } .fh-de button img { width:100%; max-width:44px; display:block; margin:0 auto 2px; } .fh-de button.peut { border-color:#7dffb0; box-shadow:0 0 8px #7dffb066; } .fh-de button span { font-weight:bold; color:#7dffb0; }
+  .fh-tal { margin:0; padding-left:1.1em; font-size:.85em; } .fh-tal li { margin:3px 0; } .fh-tal li.lock { opacity:.55; }
+  .fh-zero { background:none; border:1px solid #6b5fb0; color:#c9c1ea; border-radius:20px; padding:7px 16px; font:inherit; font-size:.85em; } .fh-zero[disabled] { opacity:.45; }
   .fh-barre { height:8px; border-radius:4px; background:#000a; overflow:hidden; margin:6px 0 4px; } .fh-barre i { display:block; height:100%; background:linear-gradient(90deg, #f3c96b, #ffb02e); }
   .fh-bts { display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
   .fh-bt { flex:1; min-width:120px; font:bold .95em Georgia, serif; padding:10px; border-radius:12px; border:1px solid #4b4580; background:#221d42; color:#f1ecff; cursor:pointer; }
@@ -89,6 +93,7 @@ function ficheHerosHTML(id) {
     </div>
     <p class="doux" style="font-size:.82em;color:#c9c1ea;margin:6px 2px">Tout cela compte contre les monstres (Odyssée, Crypte, Descente, Fosse, Chroniques, Défense, épreuves). Le Duel de l’Arène reste équitable.</p>
     ${typeof pouvoirsDe === 'function' ? fhPouvoirs(id) : ''}
+    ${I.av && typeof avForge === 'function' ? fhDe(I.av) : ''}
     ${fhRess()}
     <div class="fh-bloc"><h4>📈 Niveau ${H.niv} / ${R.max}</h4>
       <div class="fh-barre"><i style="width:${Math.round(100 * H.niv / R.max)}%"></i></div>
@@ -101,13 +106,15 @@ function ficheHerosHTML(id) {
       <ul class="fh-bonus">${RANGS.map((R0, r) => { if (!r) return ''; const b = BONUS_RANG.find(x => x[0] === r); /* 16/11 soir (l'utilisateur : « Ascendant ★, ★★, ★★★★ sont où ? ») : TOUS les rangs, ceux sans bonus disent ce qu'ils ouvrent */ return `<li class="${H.rang >= r ? 'on' : ''}">${H.rang >= r ? '✅' : '🔒'} <b>${R0.n}</b> : ${b ? `${b[1]} ${b[2]} · ` : ''}niveau max ${R0.max}</li>`; }).join('')}</ul>
       <p style="color:#8a84b0;font-size:.82em;margin:6px 0 0">Les éclats de ${I.nom} se gagnent en jouant avec : élite 2, boss 5, Titan 5, étage 3… Les quêtes donnent des éclats de Guilde 💠, à verser sur qui tu veux.</p></div>
     <div class="fh-bts"><button class="fh-bt" onclick="fhCoffre('${id}')">${fhIco('coffre-heros', '🎒')} Le coffre (${avSac().pieces.length})</button><button class="fh-bt${groupesFusion().length ? ' fh-pret' : ''}" onclick="fhForge('${id}')">🔥 La Forge${groupesFusion().length ? ' · prête !' : ''}</button><button class="fh-bt" onclick="fhForgeron('${id}')">⚒ Le forgeron</button></div>
-    ${typeof EQUIP !== 'undefined' && typeof equipHeros === 'function' ? fhReliques(id) : ''}`;
+    ${typeof EQUIP !== 'undefined' && typeof equipHeros === 'function' ? fhReliques(id) : ''}
+    ${fhBoutonZero(id)}`;
 }
 function fhReliques(id) {
   const D = lireEtoiles(), eq = equipHeros(id), pl = FH.choixRel;
   const arm = Object.keys(D.armurerie).filter(k => D.armurerie[k] && EQUIP[k] && (!pl || EQUIP[k][0] === pl));
   return `<div class="fh-bloc"><h4>🏺 Les reliques <small style="color:#c9c1ea;font-weight:normal">(Odyssée, Grande aventure, Crypte…)</small></h4>
-    <div class="fh-rel">${Object.keys(RELIQUES_PL).map(p => `<button class="${pl === p ? 'sel' : ''}" onclick="FH.choixRel = FH.choixRel === '${p}' ? null : '${p}';FH.apres()"><small>${RELIQUES_PL[p]}</small>${eq[p] ? `${typeof eqImg === 'function' ? eqImg(eq[p], 34) : ''}<b>${EQUIP[eq[p]][2]} ${'★'.repeat(niveauEquip(eq[p]))}</b>` : '<br><span style="opacity:.4">vide</span>'}</button>`).join('')}</div>
+    <p class="doux" style="font-size:.82em;color:#c9c1ea;margin:0 0 6px">Gardées de tes aventures : elles comptent contre les monstres dans l’Odyssée, la Grande aventure et le Tour des épreuves (et certaines aussi dans la Crypte, la Descente et la Fosse), jamais dans le Duel de l’Arène. Touche-en une pour tout savoir.</p>
+    <div class="fh-rel">${Object.keys(RELIQUES_PL).map(p => `<button class="${pl === p ? 'sel' : ''}" onclick="${eq[p] ? `fhRelique('${id}','${p}')` : `FH.choixRel = FH.choixRel === '${p}' ? null : '${p}';FH.apres()`}"><small>${RELIQUES_PL[p]}</small>${eq[p] ? `${typeof eqImg === 'function' ? eqImg(eq[p], 34) : ''}<b>${EQUIP[eq[p]][2]} ${'★'.repeat(niveauEquip(eq[p]))}</b>` : '<br><span style="opacity:.4">vide</span>'}</button>`).join('')}</div>
     ${pl ? `<p class="doux" style="color:#c9c1ea;font-size:.85em">Touche une relique pour l’équiper.${eq[pl] ? ` <button class="fh-bt" style="min-width:0;flex:none;padding:4px 10px" onclick="equipeHeros('${id}','${pl}',null);FH.apres()">Retirer</button>` : ''}</p>
       <div class="fh-rel">${arm.length ? arm.map(k => `<button onclick="equipeHeros('${id}','${pl}','${k}');FH.choixRel=null;fhSon('tour-fusion');FH.apres()">${typeof eqImg === 'function' ? eqImg(k, 34) : ''}<b>${EQUIP[k][2]}</b><small>${fusionTxt(k)}</small></button>`).join('') : '<p class="doux">Aucune relique de ce genre : elles tombent des élites et des boss de l’Odyssée. 3 exemplaires = ★★, 5 = ★★★.</p>'}</div>` : ''}</div>`;
 }
@@ -192,3 +199,62 @@ function fhForgeron(id) {
     <button class="fh-bt or" style="width:100%;margin-top:10px" onclick="fhFen('')">Fermer</button>`);
 }
 function fhAchete(id, i) { const r = forgeronAchete(i, id); if (r === 'ok') { fhSon('tour-fusion'); fhBulle('Acheté : dans le coffre !'); FH.apres(); fhForgeron(id); } else fhBulle(r); }
+
+// ----------------------------------------------------------------------------------------------- 19/11 : LE DÉ ET LES TALENTS D'UN HÉROS D'AVENTURE, sur place
+// (l'utilisateur : « le bouton Son dé ouvre une autre page où tout est en bas : pas ergonomique ») : un bandeau dépliable sous « Ses pouvoirs ».
+// Les TALENTS sont devenus des choix du PASSIF (pouvoirs-heros.js, PW_TALENTS) ; le bonus maximum par face monte avec le rang (aventuriers.js, avBonusMax).
+function fhDe(a) {
+  const ouvert = FH.deOuvert === a.id, pts = avPointsForge(a), max = avBonusMax(a), voie = a.voie;
+  const pas = AV_PALIERS_DE.map(([r, n], i) => `${n} +${AV_BONUS_MAX + i + 1}`).slice(0, 4).join(', ');
+  const o = typeof pouvoirsDe === 'function' ? pouvoirsDe(a.id, 'groupe') : null, P = o && o.passif.def;
+  return `<div class="fh-bloc fh-debloc" id="fh-de"><h4 onclick="FH.deOuvert = FH.deOuvert === '${a.id}' ? null : '${a.id}';FH.apres();setTimeout(() => { const e = document.getElementById('fh-de'); if (e) e.scrollIntoView({ block:'start', behavior:'smooth' }); }, 60)" style="cursor:pointer">🎲 Son dé et ses talents ${pts ? `<span style="color:#7dffb0">· ⚒ ${pts} point${pts > 1 ? 's' : ''}</span>` : ''}<span style="float:right">${ouvert ? '▲' : '▼'}</span></h4>
+    <div class="fh-de-mini">${[1, 2, 3, 4, 5, 6].map((v, k) => `<span><img src="faces-${voie}/face-${v}.webp" alt="${v}">${a.bonus[k] ? `<b>+${a.bonus[k]}</b>` : ''}</span>`).join('')}</div>
+    ${ouvert ? `<p class="doux" style="font-size:.85em;color:#c9c1ea;margin:6px 0">⚒ Un <b>point de forge</b> tous les 5 niveaux du héros. Touche une face pour lui donner <b>+1</b> : elle garde son chiffre (pour les paires et les suites), le bonus compte pour frapper les sceaux « ≥ » et « Σ » des Chroniques. <b>+${AV_BONUS_MAX} au plus par face</b>, puis un cran de plus à chaque grand rang : ${pas}, puis +1 par étoile d’Ascendant (jusqu’à +${AV_BONUS_MAX + AV_PALIERS_DE.length}). Aujourd’hui : <b>+${max} au plus</b>, <b style="color:#7dffb0">${pts}</b> point${pts > 1 ? 's' : ''} à placer.</p>
+      <div class="fh-de">${[1, 2, 3, 4, 5, 6].map((v, k) => `<button class="${pts && a.bonus[k] < max ? 'peut' : ''}" onclick="fhForgeFace('${a.id}',${k})"><img src="faces-${voie}/face-${v}.webp" alt="${v}"><span>${a.bonus[k] ? '+' + a.bonus[k] : '·'}</span></button>`).join('')}</div>
+      <p style="margin:10px 0 4px"><b style="color:#f3c96b">✨ Ses talents = son Passif</b></p>
+      <p class="doux" style="font-size:.85em;color:#c9c1ea;margin:0 0 6px">Les talents de la Forge sont des choix de l’emplacement <b>♾ Passif</b> de ses pouvoirs (un seul actif à la fois, il monte avec les rangs du Passif). Passif aujourd’hui : <b>${P ? P.e + ' ' + P.n : '—'}</b>.</p>
+      <ul class="fh-tal">${(typeof PW_TALENTS !== 'undefined' ? PW_TALENTS : []).map(T => { const ok = typeof versionOuverte === 'function' && versionOuverte(a.id, 'passif', T); return `<li class="${ok ? '' : 'lock'}">${ok ? '' : '🔒 '}<b>${T.e} ${T.n}</b>${ok ? '' : ` <small>(niveau ${T.niv})</small>`} : ${T.chron}</li>`; }).join('')}</ul>
+      <a class="fh-bt or" style="display:block;text-align:center;text-decoration:none;margin-top:6px" href="pouvoirs.html?h=${a.id}&retour=${encodeURIComponent(location.pathname.split('/').pop() + location.search)}">♾ Choisir son Passif (talents)</a>` : ''}</div>`;
+}
+function fhForgeFace(id, k) { const a = avTrouve(id); if (!a) return; const pts = avPointsForge(a), max = avBonusMax(a);
+  if (!pts) return fhBulle('Pas de point de forge : un point tous les 5 niveaux'); if (a.bonus[k] >= max) return fhBulle(`Cette face est déjà à +${max} : monte de rang pour aller plus haut`);
+  fhFen(`<h2>⚒ Forger la face ${k + 1}</h2><p>La face <b>${k + 1}</b> passe de <b>+${a.bonus[k]}</b> à <b>+${a.bonus[k] + 1}</b> (elle garde son chiffre ${k + 1}). Ça coûte 1 point de forge (il en reste ${pts}).</p>
+    <div class="fh-bts"><button class="fh-bt" onclick="fhFen('')">Annuler</button><button class="fh-bt or" onclick="fhFen('');if(avForge('${id}',${k})){fhSon('tour-fusion');fhBulle('⚒ +1 !')}FH.apres()">⚒ Forger</button></div>`); }
+// le bouton « Son dé » du haut : ouvre le bandeau et y descend
+function fhVaAuDe(id) { FH.deOuvert = id; FH.apres(); setTimeout(() => { const e = document.getElementById('fh-de'); if (e) e.scrollIntoView({ block:'start', behavior:'smooth' }); }, 80); }
+
+// ----------------------------------------------------------------------------------------------- 19/11 : UNE RELIQUE, EN CLAIR (l'utilisateur : « on ne sait ni ce qu'elle fait ni à quoi elle sert »)
+// où chaque relique compte VRAIMENT (vérifié dans le code le 19/11) : aventure.js equipeCombat / recompenseCombat / ileAventure, odyssee.js, progression-modes.js bonusMode
+const REL_PARTOUT = ['heaume', 'cuir', 'cotte', 'trefle']; // aussi lues par la Crypte, la Descente et la Fosse (bonusMode)
+function fhRelique(id, pl) {
+  const eq = equipHeros(id), k = eq[pl]; if (!k) return; const e = EQUIP[k], niv = niveauEquip(k), D = lireEtoiles(), nb = D.armurerie[k] || 0;
+  const autres = Object.keys(D.armurerie).filter(x => D.armurerie[x] && EQUIP[x] && EQUIP[x][0] === pl && x !== k);
+  const ou = REL_PARTOUT.includes(k) ? 'l’<b>Odyssée</b> (et sans fin, Route du Titan), la <b>Grande aventure</b>, le <b>Tour des épreuves</b>, et aussi la <b>Crypte</b>, la <b>Descente</b> et la <b>Fosse aux Runes</b>'
+    : 'l’<b>Odyssée</b> (et sans fin, Route du Titan), la <b>Grande aventure</b> et le <b>Tour des épreuves</b>';
+  const pas = REL_PARTOUT.includes(k) ? 'les Chroniques, l’Invasion, la Défense de la porte, les Expéditions et le Duel de l’Arène (équitable)' : 'la Crypte, la Descente, la Fosse, les Chroniques, l’Invasion, la Défense, les Expéditions et le Duel de l’Arène (équitable)';
+  fhFen(`<h2>${typeof eqImg === 'function' ? eqImg(k, 40) : e[1]} ${e[2]} ${'★'.repeat(niv)}</h2><p class="doux" style="text-align:center">${RELIQUES_PL[pl]}</p>
+    <p>✨ <b>Effet</b> (${'★'.repeat(niv)}) : ${descEquip(k, niv)}</p>
+    <p>🗺 <b>Où elle compte</b> : ${ou}.<br>🚫 <b>Où elle ne compte pas</b> : ${pas}.</p>
+    <p>★ <b>Les étoiles</b> : chaque exemplaire trouvé s’ajoute à ton armurerie (tu en as <b>${nb}</b>). 3 exemplaires = ★★, 5 = ★★★ : ${[1, 2, 3].map(n => `${'★'.repeat(n)} ${descEquip(k, n).replace(/\.$/, '')}`).join(' · ')}.</p>
+    <p>🎁 <b>En gagner d’autres</b> : elles tombent des élites et des boss de l’Odyssée et de la Grande aventure, tous les 5 étages du Tour des épreuves, et parfois à la victoire dans la Crypte, la Descente, la Fosse et les Chroniques.</p>
+    ${autres.length ? `<p><b>Changer</b> (gratuit) :</p><div class="fh-rel">${autres.map(x => `<button onclick="fhRelChange('${id}','${pl}','${x}')">${typeof eqImg === 'function' ? eqImg(x, 30) : EQUIP[x][1]}<b>${EQUIP[x][2]} ${'★'.repeat(niveauEquip(x))}</b></button>`).join('')}</div>` : '<p class="doux">Tu n’as pas d’autre relique pour cette case.</p>'}
+    <div class="fh-bts"><button class="fh-bt" onclick="fhFen('');equipeHeros('${id}','${pl}',null);FH.apres()">Retirer</button><button class="fh-bt or" onclick="fhFen('')">Fermer</button></div>`);
+}
+function fhRelChange(id, pl, k) { const e = EQUIP[k];
+  fhFen(`<h2>🏺 Mettre ${e[2]} ?</h2><p>${descEquip(k, niveauEquip(k))}</p><p class="doux">L’ancienne relique retourne dans ton armurerie (rien n’est perdu).</p>
+    <div class="fh-bts"><button class="fh-bt" onclick="fhRelique('${id}','${pl}')">Annuler</button><button class="fh-bt or" onclick="equipeHeros('${id}','${pl}','${k}');fhSon('tour-fusion');fhFen('');FH.apres()">✓ Mettre</button></div>`); }
+
+// ----------------------------------------------------------------------------------------------- 19/11 : REMETTRE À ZÉRO (heros-etoiles.js, remetAZero)
+function fhBoutonZero(id) { if (typeof remetAZero !== 'function') return ''; const ok = zeroDispo();
+  return `<div style="text-align:center;margin:26px 0 8px"><button class="fh-zero" ${ok ? `onclick="fhZero('${id}')"` : 'disabled'}>🔄 Remettre à zéro${ok ? '' : ' · demain'}</button><br><small style="color:#8a84b0">Gratuit, une fois par jour (tous héros confondus).</small></div>`; }
+function fhZero(id) {
+  const B = bilanZero(id), I = fhInfo(id); if (B.rien) return fhBulle('Ce héros est déjà au départ : rien à rendre');
+  fhFen(`<h2>🔄 Remettre ${I.nom} à zéro ?</h2><p>${I.nom} repart <b>niveau 1, rang Commun</b> (aujourd’hui : niveau ${B.niv}, ${RANGS[B.rang].n}). Tu récupères <b>tout</b> :</p>
+    <ul class="fh-bonus"><li class="on">🪙 <b>${B.or}</b> pièces d’or et 🔹 <b>${B.pou}</b> poussière de rune (les niveaux)</li><li class="on">💠 <b>${B.ec}</b> éclats de Guilde, à verser sur qui tu veux (les rangs)</li>
+    <li class="on">🎒 ${B.pieces.length ? `<b>${B.pieces.length}</b> pièce${B.pieces.length > 1 ? 's' : ''} au coffre, avec leur niveau : ${B.pieces.map(p => `${p.nom} +${p.niv}`).join(', ')}` : 'aucune pièce portée'}</li>
+    <li class="on">🃏 les points de pouvoirs (${B.rangsPw} rang${B.rangsPw > 1 ? 's' : ''} effacé${B.rangsPw > 1 ? 's' : ''}) ${I.av ? `et ⚒ les ${B.forge} point${B.forge > 1 ? 's' : ''} de forge du dé ; son Passif (talents) repasse à choisir` : ''}</li></ul>
+    <p class="doux">Restent comme avant : ses <b>reliques</b>, ses éclats pas encore dépensés, tes trophées et l’XP du rang de la Guilde${I.av ? ` ; son nom, son apparence et son histoire` : ''}.</p>
+    <p style="color:#ffb36a">Une seule remise à zéro par jour, tous héros confondus.</p>
+    <div class="fh-bts"><button class="fh-bt" onclick="fhFen('')">Annuler</button><button class="fh-bt or" onclick="fhZeroOk('${id}')">🔄 Remettre à zéro</button></div>`);
+}
+function fhZeroOk(id) { const r = remetAZero(id); fhFen(''); if (r === 'ok') { fhSon('magie'); fhBulle('🔄 Remis à zéro : tout est rendu'); } else fhBulle(r); FH.apres(); }

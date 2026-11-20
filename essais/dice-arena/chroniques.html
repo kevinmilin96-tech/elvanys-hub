@@ -221,11 +221,11 @@
 <script src="rang.js?v=34d82e0c22"></script>
 <script>window.AMIS_SANS_BOUTON = true;</script>
 <script src="amis.js?v=da00ccb367"></script>
-<script src="heros-etoiles.js?v=fdd95d60ec"></script>
+<script src="heros-etoiles.js?v=8b13b4b4ee"></script>
 <script src="progression-modes.js?v=807b0f9ad5"></script>
-<script src="aventuriers.js?v=04b0962a08"></script>
-<script src="pouvoirs-heros.js?v=8d5918482a"></script>
-<script src="chroniques-moteur.js?v=95b3001023"></script>
+<script src="aventuriers.js?v=5679a4a045"></script>
+<script src="pouvoirs-heros.js?v=1adf3b588a"></script>
+<script src="chroniques-moteur.js?v=4ee01c25a4"></script>
 <script src="chroniques-ambiance.js?v=cdc992dc3a"></script>
 <script>
 // =============================================================================================== LES CHRONIQUES DE LA GUILDE v2 (15/11, écran « façon HeroQuest »)
@@ -833,7 +833,7 @@ function aFini() {
 // 16/11 (l'utilisateur : « on ne sait pas pourquoi on fait 2 ou 3 cases ») : la FICHE du héros, son équipement et ce qu'il change ici
 function ficheHeros(i, choix) {
   const h = S.heros[i], pid = h.av || h.id, B = [];
-  const tal = (h.talents || []).map(k => { const t = typeof TALENTS !== 'undefined' && Object.values(TALENTS).flat().find(z => z[0] === k); return t ? `<li><b>${t[1]}</b> : ${t[2]}</li>` : ''; }).join('');
+  const tal = (() => { const D = pwDef(h, 'passif'); return D && D.talent ? `<li><b>${D.e} ${D.n}</b> (son passif) : ${D.chron}</li>` : ''; })(); // 19/11 : le talent = une version du Passif
   let E = {}; try { if (typeof equipementDe === 'function') E = equipementDe(pid); } catch (e) { E = {}; }
   const ico = (k, e) => `<img src="ui/heros/eq-${k}.webp?v=1" alt="" onerror="this.replaceWith(document.createTextNode('${e}'))">`;
   const slot = k => { const c = typeof EQ_CASES !== 'undefined' && EQ_CASES.find(z => z.k === k); if (!c) return ''; const q = E[k];
@@ -953,7 +953,7 @@ function utiliseSac(k) {
 }
 function cherche() { if (!sel) return; son('livre'); resultat(K.fouiller(S, actif, sel)); }
 // ------------------------------------------------------------------ 16/11 nuit : LES POUVOIRS DES HÉROS (pouvoirs-heros.js + moteur)
-const pwDef = (h, emp) => { if (!h || !h.pw || !h.pw[emp] || typeof POUVOIRS_H === 'undefined' || !POUVOIRS_H[h.id]) return null; return POUVOIRS_H[h.id][emp].find(x => x.v === h.pw[emp].v) || null; };
+const pwDef = (h, emp) => { if (!h || !h.pw || !h.pw[emp] || typeof POUVOIRS_H === 'undefined' || !POUVOIRS_H[h.id]) return null; return POUVOIRS_H[h.id][emp].find(x => x.v === h.pw[emp].v) || (typeof PW_TALENTS !== 'undefined' && emp === 'passif' && PW_TALENTS.find(x => x.v === h.pw[emp].v)) || null; };
 function pwBoutons(h, d) {
   if (!h || !h.pw || h.aTerre || !lanceOK(actif)) return '';
   const b = ['pouvoir', 'ultime'].map(emp => { const D = pwDef(h, emp); if (!D) return ''; const I = K.pwInfo(S, actif, emp), used = false;
@@ -976,7 +976,7 @@ function pwValide(emp) { fenetre(''); const r = K.lancerPouvoir(S, actif, emp); 
 function pwRetourne() { const r = K.transmuter(S, actif, sel); if (r && r.ok) son('magie'); resultat(r); }
 const PW_SONS = { halo:'bouclier', soin:'soin', ronces:'magie', louve:'coup', eclair:'gros', fleches:'coup', onde:'ultime', feu:'coup', lumiere:'magie', vent:'magie', alchimie:'magie', etoile:'rune' };
 function animPw(e) {
-  if (typeof POUVOIRS_H === 'undefined' || !POUVOIRS_H[e.cl]) return; const D = (POUVOIRS_H[e.cl][e.emp] || []).find(x => x.v === e.v); if (!D) return;
+  if (typeof POUVOIRS_H === 'undefined' || !POUVOIRS_H[e.cl]) return; const D = (POUVOIRS_H[e.cl][e.emp] || []).find(x => x.v === e.v) || (typeof PW_TALENTS !== 'undefined' && PW_TALENTS.find(x => x.v === e.v)); if (!D) return;
   son(PW_SONS[D.a] || 'magie');
   const bn = document.createElement('div'); bn.className = 'pwban'; bn.style.setProperty('--c', D.c); bn.textContent = `${D.e} ${D.n}`; document.body.appendChild(bn); setTimeout(() => bn.remove(), 1900);
   const sym = { soin:['✚', '✚', '✚', '✚'], ronces:['🌿', '🌵', '🌿'], louve:['🐺'], eclair:['⚡'], fleches:['➶', '➶', '➶'], onde:['', '', ''], feu:['✦', '✦', '✦', '✦', '✦', '✦'], vent:['🌀'], alchimie:['◍', '○', '◍', '○'], etoile:['✦', '✧', '✦'], halo:[], lumiere:[] }[D.a] || [];
@@ -1357,7 +1357,7 @@ if (ESSAI) essaiAtelier(ESSAI); else if (sessionStorage.getItem('chron-en-jeu') 
 </script>
 <script src="chroniques-aventures.js?v=d6797cd442"></script>
 <script src="guide.js?v=f78db3b570"></script>
-<script src="guides-modes.js?v=a2164e4035"></script>
+<script src="guides-modes.js?v=4174fd7ae1"></script>
 <script src="entrainement.js?v=854139c476"></script>
 <script src="chroniques-entrainement.js?v=d0ae56c76f"></script>
 <script>
