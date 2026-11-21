@@ -643,7 +643,7 @@ function nouvelleOdyssee(heros, graine, acte, niveau, avent) {
   // 14/11 nuit : les étoiles et l'équipement du héros (heros-etoiles.js) ; la Grande aventure gère son équipement elle-même
   // 15/11 soir : les ennemis suivent la force du héros, à 30 % (mesuré : débutant 72 %, héros niveau 50 ≈ 83 %, niveau 250 ≈ 86 % ;
   // suivi entier = 8-58 %, beaucoup trop dur). Pas encore dans la Grande aventure (elle ne donne pas les PV du héros : à mesurer à part).
-  if (!avent && typeof forceSuiveuse === 'function' && typeof localStorage !== 'undefined') { const f = forceSuiveuse(run.av || heros); if (f > 1.05) run.fs = Math.round((1 + 0.3 * (f - 1)) * 100) / 100; }
+  if (!avent && typeof forceSuiveuse === 'function' && typeof localStorage !== 'undefined') { const f = forceSuiveuse(run.av || heros); if (f > 1.05) run.fs = Math.round((1 + 0.4 * (f - 1)) * 100) / 100; }
   if (!avent && typeof bonusHerosPvE === 'function' && typeof localStorage !== 'undefined') { const b = bonusHerosPvE(run.av || heros); if (b.pv) { run.pvMax += b.pv; run.pv += b.pv; }
     run.equipH = equipHeros(run.av || heros); if (run.equipH.armure === 'heaume') { run.pvMax += valEquip('heaume'); run.pv += valEquip('heaume'); }
     if (run.equipH.armure === 'cape') run.vivres += valEquip('cape');
@@ -787,6 +787,14 @@ function finOdysseeRun(r, gagne) {
   const avant = typeof localStorage !== 'undefined' ? lireCollection() : [];
   const ajoutees = typeof localStorage !== 'undefined' ? ajouteCollection([...new Set([...nouvelles, ...r.stats.cartesVues])]) : 0;
   const neuves = typeof localStorage !== 'undefined' ? lireCollection().filter(k => !avant.includes(k)) : [];
+  // 21/11 (décision du 20/11 : « on ne gagne pas assez d'or en finalité ; plus d'or avec la difficulté ») : chaque Odyssée finie verse
+  // de l'OR et de la POUSSIÈRE au coffre des héros (pour monter de niveau) ; plus avec les victoires et chaque cran d'Ascension (+25 %)
+  let butinH = null;
+  if (!r.simu && typeof avGagne === 'function' && typeof lireEtoiles === 'function' && typeof localStorage !== 'undefined') {
+    const k = (1 + 0.25 * (r.asc || 0)) * (gagne ? 1 : 0.4), v = r.stats.victoires || 0;
+    butinH = { or:Math.round((60 + 15 * v) * k), pou:Math.round((40 + 8 * v) * k) };
+    avGagne(butinH.or, 0); const d = lireEtoiles(); d.poussiere = (d.poussiere || 0) + butinH.pou; ecrireEtoiles(d);
+  }
   const duJour = String(r.graine || '').startsWith('jour-'); // 21/11 : l'île du jour (ouverte à tous) ne fait pas avancer le scénario, l'Ascension ni le Panthéon
   if (gagne && !duJour && typeof localStorage !== 'undefined') { const a = actesFaits(); a[r.acte || 'brulees'] = true; localStorage.setItem(ACTES_CLE, JSON.stringify(a)); }
   let ascNouveau = 0, premiereFin = false, inscrit = null, briseMiroir = false;
@@ -798,7 +806,7 @@ function finOdysseeRun(r, gagne) {
   }
   const rec = { quand:new Date().toISOString(), acte:r.acte || 'brulees', asc:r.asc || 0, heros:r.heros, av:r.av || null, gagne, score, cases:r.stats.cases, combats:r.stats.combats, combatsIle:r.sansfin || r.route || !r.ile ? null : r.ile.flat().filter(c => ['monstre', 'elite', 'boss'].includes(c.t)).length, victoires:r.stats.victoires, tours:r.stats.tours, defis:r.stats.defis, or:r.or, duree, graine:r.graine, pv:r.pv, etage, sansfin:!!r.sansfin, route:!!r.route, regle:r.sansfin ? r.sansfin.regle : null, aventure:r.aventure ? { chapitre:r.aventure.chapitre, niveau:r.aventure.niveau } : null };
   if (typeof localStorage !== 'undefined') { const l = lireRecords(); l.unshift(rec); localStorage.setItem(RECORDS_CLE, JSON.stringify(l.slice(0, 50))); ecrireOdyssee(null); }
-  return { ...rec, ajoutees, nouvelles:neuves, ascNouveau, premiereFin, inscrit, briseMiroir };
+  return { ...rec, butinH, ajoutees, nouvelles:neuves, ascNouveau, premiereFin, inscrit, briseMiroir };
 }
 
 // ----------------------------------------------------------------------------------------------- pilote automatique (simulations d'équilibrage : l'ordinateur explore l'île)
