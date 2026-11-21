@@ -787,9 +787,10 @@ function finOdysseeRun(r, gagne) {
   const avant = typeof localStorage !== 'undefined' ? lireCollection() : [];
   const ajoutees = typeof localStorage !== 'undefined' ? ajouteCollection([...new Set([...nouvelles, ...r.stats.cartesVues])]) : 0;
   const neuves = typeof localStorage !== 'undefined' ? lireCollection().filter(k => !avant.includes(k)) : [];
-  if (gagne && typeof localStorage !== 'undefined') { const a = actesFaits(); a[r.acte || 'brulees'] = true; localStorage.setItem(ACTES_CLE, JSON.stringify(a)); }
+  const duJour = String(r.graine || '').startsWith('jour-'); // 21/11 : l'île du jour (ouverte à tous) ne fait pas avancer le scénario, l'Ascension ni le Panthéon
+  if (gagne && !duJour && typeof localStorage !== 'undefined') { const a = actesFaits(); a[r.acte || 'brulees'] = true; localStorage.setItem(ACTES_CLE, JSON.stringify(a)); }
   let ascNouveau = 0, premiereFin = false, inscrit = null, briseMiroir = false;
-  if (gagne && typeof localStorage !== 'undefined') {
+  if (gagne && !duJour && typeof localStorage !== 'undefined') {
     const A = JSON.parse(localStorage.getItem(ASC_CLE) || '{}'), k = r.acte || 'brulees', n = Math.min(10, (r.asc || 0) + 1);
     if (n > (A[k] || 0)) { A[k] = n; ascNouveau = n; localStorage.setItem(ASC_CLE, JSON.stringify(A)); }
     if (k === 'abime' && !localStorage.getItem('guilde-odyssee-finie')) { localStorage.setItem('guilde-odyssee-finie', '1'); premiereFin = true; }
