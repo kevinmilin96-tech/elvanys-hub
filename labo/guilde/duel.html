@@ -730,7 +730,7 @@
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
 // 14/11 : l'Odyssée sans fin a ses propres emplacements (odyssee.js lit SANSFIN)
 const SANSFIN = new URLSearchParams(location.search).get('sansfin') === '1', ROUTE_TITAN = new URLSearchParams(location.search).get('route') === '1', EPREUVE_PAGE = new URLSearchParams(location.search).get('epreuve') === '1', ODY_PAGE = EPREUVE_PAGE ? 'epreuves.html' : 'odyssee.html' + (SANSFIN ? '?sansfin=1' : ROUTE_TITAN ? '?route=1' : '');
-const VERSION = '20261121-211253';
+const VERSION = '20261121-211535';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -1696,6 +1696,7 @@ const PASTILLES = {
   ultime:['⚡ Jauge d’Ultime', '+1 par dé posé (pas vendu), +1 tous les 5 dégâts reçus. Pleine (20), elle permet l’Ultime du héros : 3 PC + sa combinaison de dés, une fois par partie.'],
   ultimefait:['Ultime utilisé', 'Ce héros a déjà lancé son Ultime : une seule fois par partie.'],
   main:['🂠 Cartes en main', '+1 carte au début de chaque tour, 7 au plus.'],
+  piegecache:['🪤 Piège caché', 'L’adversaire a posé un piège (une Réaction). Tu ne sais pas lequel : il se déclenchera quand tu feras ce qu’il attend (par exemple attaquer avec une créature). À toi de deviner…'],
 };
 // toucher une étiquette : son explication (sauf pendant qu'on vise : le toucher sert alors à viser le héros)
 document.addEventListener('click', e => {
@@ -1721,7 +1722,8 @@ function placeEffet(R, c, i) {
 }
 function effetsHTML() {
   if (!S || !S.J || !S.O) return ''; const R = (typeof plateauIle === 'function' && plateauIle() && PLACEMENTS_ILE[plateauIle()]) || (typeof PLACEMENT_DUEL !== 'undefined' ? PLACEMENT_DUEL : null);
-  const h = [['haut', S.O], ['bas', S.J]].map(([c, P]) => { const l = effetsListe(P); if (l.length > 6) l.splice(5, l.length - 5, ['plus', '➕', `${l.length - 5} autres`]);
+  // 21/11 (l'utilisateur : « un piège : moi je le sais, l'adversaire ne doit pas savoir lequel ») : en face, un piège posé s'affiche « 🪤 Piège », sans dire lequel
+  const h = [['haut', S.O], ['bas', S.J]].map(([c, P]) => { let l = effetsListe(P); if (c === 'haut') { const secrets = ['piege', 'paillasse']; const n = l.filter(x => secrets.includes(x[0])).length; l = l.filter(x => !secrets.includes(x[0])); if (n) l.unshift(['piegecache', '🪤', n > 1 ? `${n} pièges` : 'Piège']); } if (l.length > 6) l.splice(5, l.length - 5, ['plus', '➕', `${l.length - 5} autres`]);
     return l.map(([k, e, t], i) => { const [x, y] = placeEffet(R, c, i); return `<span data-k="${k}" class="effet" style="left:${x}cqw;top:${y}cqh">${e} ${t}</span>`; }).join(''); }).join('');
   return h ? `<div class="etats effets">${h}</div>` : '';
 }

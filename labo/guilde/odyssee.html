@@ -160,6 +160,7 @@
   svg.route .rnoeud.ok { stroke:#15803d; stroke-width:4.5; animation:rok 1.6s ease-in-out infinite; }
   @keyframes rok { 50% { stroke-width:7; } }
   svg.route .retape { fill:#7a1f1a; font-size:18px; text-anchor:middle; opacity:.7; }
+  .rel .tout { font-style:normal; font-size:.75em; padding:1px 7px; border:1px solid var(--or); border-radius:10px; margin-right:4px; color:var(--or); cursor:pointer; }
 </style>
 </head>
 <body>
@@ -175,7 +176,7 @@ const herosAventureOdy = () => haListe().map(a => haInfo('av:' + a.id)).map(i =>
   ? `<button onclick="location.href='duel.html?tuto=1'" style="opacity:.55">${haImg(i, 'filter:grayscale(1)')}🔒 ${haEsc(i.nom)}<br><small style="color:var(--doux)">Fais le tutoriel</small></button>`
   : `<button onclick="commence('${i.cle}')">${haImg(i, `box-shadow:0 0 0 2px ${i.couleur}`)}${haEsc(i.nom)}<small class="ha-t">⚔ ${haEsc(i.titre)}</small><small style="color:var(--doux)">${Math.round(HEROS[i.voie].pv * (ODY_PV[i.voie] || 1.8))} PV en Odyssée</small></button>`).join('');
 
-const VERSION = '20261121-211253';
+const VERSION = '20261121-211535';
 function verifieVersion() {
   fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
     v = (v || '').trim(); if (!v || v === VERSION || document.getElementById('majbar')) return;
@@ -493,7 +494,7 @@ function enteteHTML() {
   const r = R, h = HEROS[r.heros];
   return `<div class="entete">${imgR(r, ' onclick="monDeck()"')}<div class="st"><b>${odyNom(r)}</b> · ${r.deck.length} cartes${r.asc ? ` · ⛰ Ascension ${r.asc}` : ''}${r.aventure ? ` · <span onclick="equipFen()" style="color:var(--or);cursor:pointer">🗺 ch. ${r.aventure.chapitre}/3 · niv. ${r.aventure.niveau} · 🎒 ${Object.values(r.aventure.equip).filter(Boolean).map(k => eqImg(k, 18)).join('') || 'équipement'}</span>` : ''}
     <br><span class="p pv">❤ ${r.pv} / ${r.pvMax}</span><span class="p or">💰 ${r.or}</span>${r.route ? `<span class="p">🗝 ${r.cles}</span><span class="p">🛤 étape ${r.route.etape}/${ROUTE_ETAPES}</span>` : `<span class="p vivres ${r.vivres ? '' : 'zero'}" title="Huile de la lanterne">🪔 ${r.vivres}</span><span class="p">🗝 ${r.cles}</span><span class="p">🔮 ${r.fragments}/2</span>`}
-    <br><span class="rel">${r.reliques.map(k => `<i onclick="info('${RELIQUES[k].e} ${RELIQUES[k].n}', '${RELIQUES[k].d.replace(/'/g, '’')}')">${RELIQUES[k].e}</i>`).join('')}${r.sacoche.map((k, i) => `<i onclick="sacocheIle(${i})">${SACOCHE[k].e}</i>`).join('')}${r.benes.map(k => `<i onclick="info('✨ ${BENEDICTIONS[k].n}', '${BENEDICTIONS[k].d.replace(/'/g, '’')}')">✨</i>`).join('')}${r.males.map(k => `<i onclick="info('🕯 ${MALEDICTIONS[k].n}', '${MALEDICTIONS[k].d.replace(/'/g, '’')}')">🕯</i>`).join('')}</span></div></div>`;
+    <br><span class="rel">${r.reliques.length + r.sacoche.length + r.benes.length + r.males.length ? '<i class="tout" onclick="sacTout()" title="Tout voir">🎒 Tout voir</i>' : ''}${r.reliques.map(k => `<i onclick="info('${RELIQUES[k].e} ${RELIQUES[k].n}', '${RELIQUES[k].d.replace(/'/g, '’')}')">${RELIQUES[k].e}</i>`).join('')}${r.sacoche.map((k, i) => `<i onclick="sacocheIle(${i})">${SACOCHE[k].e}</i>`).join('')}${r.benes.map(k => `<i onclick="info('✨ ${BENEDICTIONS[k].n}', '${BENEDICTIONS[k].d.replace(/'/g, '’')}')">✨</i>`).join('')}${r.males.map(k => `<i onclick="info('🕯 ${MALEDICTIONS[k].n}', '${MALEDICTIONS[k].d.replace(/'/g, '’')}')">🕯</i>`).join('')}</span></div></div>`;
 }
 // =============================================================================================== la carte à l'encre (10/11 soir, idée de l'utilisateur d'après une vidéo)
 // L'île se dessine au fur et à mesure : murs tracés à main levée autour des cases praticables, ouvertures sombres vers l'inconnu,
@@ -884,6 +885,18 @@ function autel(c) {
   fenetre(`<h2>🔥 L’autel</h2><p>Trois bénédictions brillent. En échange, l’autel te marque d’une malédiction : <b>${MALEDICTIONS[o.male].n}</b> (${MALEDICTIONS[o.male].d})</p>
   <div class="choixv">${o.benes.map(b => `<button onclick="autelChoisit(R,R.ile[${c.y}][${c.x}],'${b}');sauve();fermer();dessine()">✨ <b>${BENEDICTIONS[b].n}</b><small>${BENEDICTIONS[b].d}</small></button>`).join('')}</div>
   <div class="choixh"><button onclick="fermer()">Passer son chemin</button></div>`);
+}
+// 21/11 (l'utilisateur : « la sacoche lisible ») : tout ce que porte le héros, avec le NOM et l'EFFET, en une fenêtre
+function sacTout() {
+  const r = R, l = (titre, items) => items.length ? `<h3 style="margin:.6em 0 .2em;color:var(--or)">${titre}</h3>${items.join('')}` : '';
+  const ligne = (e, n, d, bt) => `<p style="margin:.25em 0">${e} <b>${n}</b> : ${d}${bt || ''}</p>`;
+  fenetre(`<h2>🎒 Ce que tu portes</h2>
+    ${l(`🎒 Ta sacoche (${r.sacoche.length}/2)`, r.sacoche.map((k, i) => ligne(SACOCHE[k].e, SACOCHE[k].n, SACOCHE[k].d, k === 'soin' ? ` <button onclick="fermer();sacocheIle(${i})">Boire</button>` : '')))}
+    ${l('🏺 Tes reliques', r.reliques.map(k => ligne(RELIQUES[k].e, RELIQUES[k].n, RELIQUES[k].d)))}
+    ${l('✨ Tes bénédictions', r.benes.map(k => ligne('✨', BENEDICTIONS[k].n, BENEDICTIONS[k].d)))}
+    ${l('🕯 Tes malédictions', r.males.map(k => ligne('🕯', MALEDICTIONS[k].n, MALEDICTIONS[k].d)))}
+    <p style="color:var(--doux);font-size:.85em">Les objets de la sacoche se servent pendant les combats (bouton 🎒 en bas) ; la potion de soin se boit aussi sur la carte.</p>
+    <div class="choixh"><button onclick="fermer()">Fermer</button></div>`);
 }
 function sacocheIle(i) { const k = R.sacoche[i]; if (k === 'soin') { fenetre(`<h2>🧪 Potion de soin</h2><p>La boire maintenant : +10 PV (❤ ${R.pv} → ${Math.min(R.pvMax, R.pv + 10)}).</p><div class="choixh"><button class="or" onclick="R.sacoche.splice(${i},1);R.pv=Math.min(R.pvMax,R.pv+10);R.journal.push('🧪 Potion bue sur la carte : +10 PV.');sauve();fermer();dessine()">Boire</button><button onclick="fermer()">Garder</button></div>`); } else info(SACOCHE[k].e + ' ' + SACOCHE[k].n, SACOCHE[k].d); }
 function monDeck() { const n = {}; R.deck.forEach(k => n[k] = (n[k] || 0) + 1); fenetre(`<h2>🂠 Mon deck (${R.deck.length} cartes)</h2><div class="cartes3">${Object.keys(n).map(k => carteHTML(k, '', n[k] > 1 ? '× ' + n[k] : '')).join('')}</div><div class="choixh"><button onclick="fermer()">Fermer</button></div>`); }
