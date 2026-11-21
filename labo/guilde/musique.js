@@ -175,6 +175,9 @@ const GM = (() => {
     },
     bouton(o = {}) {
       if (document.getElementById('gm-bouton')) return;
+      // 21/11 (l'utilisateur : « les Paramètres sont dans le menu principal, pas besoin de les voir partout ») : pas de ⚙️ flottant sur les pages
+      // de collection (héros, profil, route des rangs, forge, pouvoirs, Panthéon) ; il reste dans les parties (Quitter, Mes parties, volumes)
+      if (/(mes-heros|heros|profil|route|forge|pouvoirs|pantheon|aventuriers)\.html$/.test(location.pathname)) return;
       const st = document.createElement('style');
       st.textContent = '#gm-bouton{position:fixed;right:10px;bottom:calc(10px + env(safe-area-inset-bottom));z-index:900;width:38px;height:38px;border-radius:50%;border:1px solid #f3c96b88;background:#15132bcc;color:#f3c96b;font-size:18px;line-height:36px;text-align:center;padding:0;cursor:pointer}';
       document.head.appendChild(st);
@@ -355,3 +358,26 @@ const Carnet = (() => {
 // 18/11 : les entraînements guidés de Moustache (un par mode ; null = pas encore fait). Ordre choisi avec l'utilisateur.
 const ENTRAINEMENTS = [['duel', 'Le Duel (le tutoriel)', 'duel.html?tuto=1'], ['expedition', 'Les Expéditions', 'expedition.html?entrainement=1'], ['chroniques', 'Les Chroniques', 'chroniques.html?entrainement=1'], ['odyssee', 'L’Odyssée', null],
   ['crypte', 'La Crypte aux Sceaux', null], ['descente', 'La Descente', null], ['invasion', 'L’Invasion', null], ['defense', 'La Défense de la porte', null], ['fosse', 'La Fosse aux Runes', null]];
+
+// 21/11 (l'utilisateur : « on garde la croix et on supprime le bouton Fermer ; s'il n'y a pas de croix, on en met une ») : pour TOUTES les fenêtres du jeu,
+// une croix ✕ en haut à droite (elle ferme comme un toucher à côté de la fenêtre), et les boutons qui disent seulement « Fermer » disparaissent.
+// Les fenêtres qu'on ne doit pas pouvoir fermer d'un toucher à côté (choix obligatoire) ne reçoivent pas de croix et gardent leurs boutons.
+(function () {
+  if (typeof document === 'undefined' || typeof MutationObserver === 'undefined') return;
+  const st = document.createElement('style');
+  st.textContent = '.xferme { position:sticky; top:0; float:right; z-index:5; width:38px; height:38px; margin:-4px -6px 0 8px; border-radius:50%; border:1px solid #f3c96b; background:#1c1838; color:#f3c96b; font-size:18px; line-height:1; padding:0; cursor:pointer; box-shadow:0 2px 6px #0008; }';
+  document.head.appendChild(st);
+  const traite = () => {
+    document.querySelectorAll('.fenetre > div, .voile-f > .fen, .fh-fen').forEach(f => {
+      const voile = f.parentElement; if (!voile) return;
+      const fermable = f.classList.contains('fh-fen') || (voile.getAttribute('onclick') || '').includes('event.target===this');
+      if (!fermable) return;
+      // le bouton « Fermer » de la fenêtre est caché (pas supprimé) : la croix le déclenche, pour garder ce qu'il fait en plus (redessiner…)
+      let fb = null; f.querySelectorAll('button').forEach(b => { if (b.classList.contains('xferme') || b.classList.contains('fh-x')) return; if (/^fermer$/i.test(b.textContent.trim())) { fb = fb || b; b.style.display = 'none'; const p = b.parentElement; if (p && p.classList.contains('choixh') && ![...p.querySelectorAll('button')].some(x => x.style.display !== 'none')) p.style.display = 'none'; } });
+      const fx = f.querySelector(':scope > .fh-x'); if (fx && fb && !fx.dataset.relie) { fx.dataset.relie = '1'; fx.onclick = e => { e.stopPropagation(); fb.click(); }; }
+      if (!f.querySelector(':scope > .fh-x, :scope > .xferme')) { const b = document.createElement('button'); b.className = 'xferme'; b.setAttribute('aria-label', 'Fermer'); b.textContent = '✕'; b.onclick = e => { e.stopPropagation(); const h = [...f.querySelectorAll('button')].find(x => x.style.display === 'none' && /^fermer$/i.test(x.textContent.trim())); if (h) h.click(); else voile.click(); }; f.prepend(b); }
+    });
+  };
+  const go = () => { traite(); new MutationObserver(traite).observe(document.body, { childList:true, subtree:true }); };
+  if (document.body) go(); else addEventListener('DOMContentLoaded', go);
+})();
