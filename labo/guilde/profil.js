@@ -5,10 +5,13 @@
 // Cadres provisoires dessinés en code (anneau de couleur + emblème), en attendant des cadres en image.
 const PROFIL_CLE = 'guilde-profil';
 const JL = (cle, def) => { try { return JSON.parse(localStorage.getItem(cle) || 'null') || def; } catch (e) { return def; } };
+// la plus longue suite de jours d'énigmes réussies (dates « AAAA-MM-JJ » qui se suivent)
+function serieMaxEnigme(eni) { const j = Object.keys(eni || {}).filter(k => eni[k] && eni[k].ok).sort(); let best = 0, n = 0, prev = null;
+  for (const k of j) { const t = Date.parse(k + 'T12:00:00Z'); n = prev !== null && Math.round((t - prev) / 864e5) === 1 ? n + 1 : 1; prev = t; if (n > best) best = n; } return best; }
 // titre = [clé, emblème, nom, comment l'obtenir, gagné ?, couleur du cadre]
 function titresGuilde() {
   const P = typeof lirePantheon === 'function' ? lirePantheon() : { heros:{} }, exp = JL('guilde-expedition2-records', []), inv = JL('guilde-invasion', {});
-  const eni = JL('guilde-enigmes', {}), eniDim = Object.keys(eni).filter(k => eni[k].ok && new Date(k + 'T12:00:00').getDay() === 0).length;
+  const eni = JL('guilde-enigmes', {}), serieMax = serieMaxEnigme(eni), eniDim = Object.keys(eni).filter(k => eni[k].ok && new Date(k + 'T12:00:00').getDay() === 0).length;
   return [
     ['diplome',   '🎓', 'Diplômé de la Guilde', 'Finir le tutoriel avec Moustache.', localStorage.getItem('guilde-tuto') === 'fait', '#f3c96b'],
     ['odyssee',   '🌟', 'Héros de l’Odyssée', 'Libérer les trois îles de l’Odyssée.', !!localStorage.getItem('guilde-odyssee-finie'), '#7cc8ff'],
@@ -21,6 +24,10 @@ function titresGuilde() {
     ['abysses',   '🕳', 'Roi des abysses', 'Gagner une Descente en profondeur 5 ou plus.', (JL('guilde-descente', {}).profMax || 0) >= 6, '#7a4aff'],
     ['chroniques', '📜', 'Héros des Chroniques', 'Finir la Campagne des Chroniques (les trois chapitres).', (JL('guilde-chroniques', {}).campagnes || 0) > 0, '#c084fc'],
     ['fosse',     '🔥', 'Tueur de Titan', 'Abattre le Titan de feu dans la Fosse aux Runes.', (JL('guilde-fosse3', {}).victoires || 0) > 0, '#ff6a3a'],
+    // 21/11 (accord de l'utilisateur) : les SÉRIES de l'énigme du jour (la meilleure série jamais faite, jours qui se suivent)
+    ['serie7',    '🔥', 'Fidèle de l’énigme', 'Réussir l’énigme du jour 7 jours de suite.', serieMax >= 7, '#ffb347'],
+    ['serie30',   '🌙', 'Esprit affûté', 'Réussir l’énigme du jour 30 jours de suite.', serieMax >= 30, '#8ab4ff'],
+    ['serie100',  '🏛', 'Grand Sphinx', 'Réussir l’énigme du jour 100 jours de suite.', serieMax >= 100, '#ffd75e'],
     ['sphinx',    '🧩', 'Sphinx de la Guilde', 'Résoudre une énigme du dimanche (la plus redoutable de la semaine).', eniDim > 0, '#9be37a'],
     // 14/11 nuit : les titres du Rang de la Guilde (rang.js)
     ...(typeof ROUTE !== 'undefined' ? Object.entries(ROUTE).filter(([, x]) => x[0] === 'titre').map(([n, x]) => [x[1], x[2], x[3], `Atteindre le rang ${n} de la Guilde.`, rgRecompense('titre', x[1]), COULEUR_TITRE_RANG[x[1]] || '#f3c96b']) : []),
@@ -48,11 +55,12 @@ const FONDS = {
   iles:['Les trois îles', 'linear-gradient(180deg, #ff8a3a 0%, #8ad4ff 50%, #3a1a6a 100%)', { t:'odyssee' }],
   grimoire:['Le grimoire', 'linear-gradient(90deg, #3a2814, #c9a46a 48%, #8a6a3a 50%, #c9a46a 52%, #3a2814)', { t:'chroniques' }],
   vide:['Le Néant', 'radial-gradient(circle at 50% 50%, #a855f7 0%, #2a0a4a 35%, #000 75%)', { t:'neant' }],
+  enigmes:['La nuit des énigmes', 'radial-gradient(circle at 30% 30%, #9be37a33 0%, transparent 25%), radial-gradient(circle at 70% 70%, #8ab4ff33 0%, transparent 25%), linear-gradient(160deg, #0f1a2a, #1a2a4a 50%, #0a0f1a)', { t:'serie30' }],
   profondeurs:['Les profondeurs', 'radial-gradient(ellipse at 50% 120%, #ff9a4a55, #14100c 60%), #14100c', { t:'profondeurs' }],
 };
 const EMBLEMES = [['aucun', '—'], ['lion', '🦁'], ['loup', '🐺'], ['dragon', '🐉'], ['hibou', '🦉'], ['chat', '🐱'], ['epee', '⚔️'], ['bouclier', '🛡️'], ['etoile', '⭐'],
   ['flamme', '🔥', { r:4 }], ['eclair', '⚡', { r:7 }], ['couronne', '👑', { r:12 }], ['diamant', '💎', { r:18 }], ['comete', '☄️', { r:25 }],
-  ['de', '🎲', { t:'diplome' }], ['vague', '🌊', { t:'traversee' }], ['crane', '💀', { t:'fosse' }], ['parchemin', '📜', { t:'chroniques' }], ['lune', '🌑', { t:'neant' }], ['sphinx', '🧩', { t:'sphinx' }]];
+  ['de', '🎲', { t:'diplome' }], ['vague', '🌊', { t:'traversee' }], ['crane', '💀', { t:'fosse' }], ['parchemin', '📜', { t:'chroniques' }], ['lune', '🌑', { t:'neant' }], ['sphinx', '🧩', { t:'sphinx' }], ['cle', '🗝️', { t:'serie7' }], ['oeil', '👁️', { t:'serie100' }]];
 const COULEURS_NOM = [['blanc', '#f1ecff'], ['or', '#f3c96b'], ['ciel', '#7cd4ff'], ['menthe', '#7dffb0'], ['rose', '#ff8ad4', { r:5 }], ['braise', '#ff7a3a', { r:8 }],
   ['amethyste', '#c084fc', { r:11 }], ['arcenciel', 'linear-gradient(90deg,#ff5a5a,#f3c96b,#7dffb0,#7cd4ff,#c084fc)', { r:22 }]];
 const DEVISES = ['Ce qui est forgé ne casse pas.', 'Un dé, une chance.', 'Toujours un 6 dans la manche.', 'La Guilde avant tout.', 'Je lance, donc je suis.',
