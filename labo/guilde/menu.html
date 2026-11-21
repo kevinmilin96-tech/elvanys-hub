@@ -8,7 +8,7 @@
 <title>La Guilde des Runes</title>
 <script>
 // Même mécanisme que le Duel : une nouvelle version = rechargement tout seul à l'ouverture (publier.sh change VERSION).
-const VERSION = '20261121-202832';
+const VERSION = '20261121-203258';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-menu-' + v)) { sessionStorage.setItem('recharge-menu-' + v, '1'); location.replace('menu.html?v=' + v); }
@@ -214,7 +214,7 @@ fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.te
 <script>window.AMIS_SANS_BOUTON = true; /* 15/11 : un seul bouton en haut à gauche (profil + amis) */</script>
 <script src="amis.js?v=da00ccb367"></script>
 <script src="heros-etoiles.js?v=9a3eb2459b"></script>
-<script src="donnees.js?v=20261121-202832"></script>
+<script src="donnees.js?v=20261121-203258"></script>
 <script>
 // ciel étoilé + runes du portail (symboles, pas des lettres), aux couleurs des héros
 const ciel = document.getElementById('ciel');
@@ -282,6 +282,7 @@ function reprendreOdy(i) { const o = MES_ODY[i]; localStorage.setItem('guilde-od
 // charger, et après les portails » ; puis : « attention, il y a 3 modes : l'Odyssée normale (Terres brûlées, Givre, Abîme), l'Odyssée sans fin,
 // la Route du Titan ») : 1) le MODE (3 portails) → 2) SES 3 emplacements (Charger / Nouvelle partie) → 3) pour l'Odyssée normale, l'île.
 let odyMode = null, odySlot = null;
+const ileDuJour = () => ['brulees', 'givre', 'abime'][Math.floor(Date.now() / 864e5) % 3]; // même calcul pour tout le monde (jour UTC, comme la graine)
 const sufOdy = () => odyMode === 'jour' ? '' : odyMode; // l'île du jour range ses parties avec l'Odyssée
 const ODY_MODES = { jour:['L’île du jour', 'odyssee.html'], '':['L’Odyssée · Saison 1', 'odyssee.html'], '-sansfin':['L’Odyssée sans fin', 'odyssee.html?sansfin=1'], '-route':['La Route du Titan', 'odyssee.html?route=1'] };
 function odyPortes(L) { // L = les portails de l'étage : 3 îles, sans fin, route
@@ -293,6 +294,9 @@ function odyPortes(L) { // L = les portails de l'étage : 3 îles, sans fin, rou
 }
 function nouvelleOdy(n) {
   try { localStorage.setItem('guilde-odyssee-emplacement' + sufOdy(), String(n)); } catch (e) {}
+  // 21/11 (l'utilisateur : « la même carte pour tout le monde, on change chaque jour les boss, les monstres et la carte ; une seule île ») :
+  // l'île du jour n'a plus de choix d'île : chaque jour, une des trois îles (la même pour tous), sa carte et ses monstres tirés par la graine du jour
+  if (odyMode === 'jour') { sessionStorage.setItem('guilde-dans-mode', '1'); location.href = `odyssee.html?ile=${ileDuJour()}&jour=1&nouvelle=${n}`; return; }
   if (sufOdy() === '') { odySlot = n; montre('odyssee'); return; }
   sessionStorage.setItem('guilde-dans-mode', '1'); location.href = ODY_MODES[odyMode][1] + '&nouvelle=' + n; // sans fin et Route : directement le choix du héros
 }
@@ -308,7 +312,7 @@ function slotsOdy() {
   // 20/11 (l'utilisateur : « je ne sais pas combien il y a d'Odyssées, ni si je suis aux Terres brûlées, au Givre ou à l'Abîme ») :
   // la route des 3 îles, avec ce qui est gagné / ouvert / fermé, et l'île de chaque partie bien visible
   const fini = (() => { try { return !!localStorage.getItem('guilde-odyssee-finie'); } catch (e) { return false; } })();
-  const iles3 = odyMode === 'jour' ? '<div class="iles3"><p>🗓 <b>L’île du jour</b> : la même île pour tout le monde aujourd’hui, une partie, un score à comparer. Choisis un emplacement, puis l’île (chaque île a son île du jour).</p></div>' : odyMode !== '' ? '' : `<div class="iles3"><p>La saison 1, ce sont <b>3 îles à la suite</b> : on gagne l’une pour ouvrir la suivante.</p><div>${
+  const iles3 = odyMode === 'jour' ? '<div class="iles3"><p>🗓 <b>L’île du jour</b> : la même île pour tout le monde aujourd’hui, une partie, un score à comparer. Aujourd’hui : <b>' + ({ brulees:'🔥 les Terres brûlées', givre:'❄️ l’île du Givre', abime:'🌌 l’Abîme du Vide' })[ileDuJour()] + '</b> (une île différente chaque jour, avec sa carte, ses monstres et son boss).</p></div>' : odyMode !== '' ? '' : `<div class="iles3"><p>La saison 1, ce sont <b>3 îles à la suite</b> : on gagne l’une pour ouvrir la suivante.</p><div>${
     [['brulees', GIVRE_OK, true], ['givre', ABIME_OK, GIVRE_OK], ['abime', fini, ABIME_OK]].map(([k, gagnee, ouverte], i) =>
       `<span class="${gagnee ? 'ok' : ouverte ? 'ouv' : 'ferm'}">${ILE_EMO[k]} ${i + 1}. ${ILE_NOM[k]}<small>${gagnee ? '✅ gagnée' : ouverte ? 'ouverte' : '🔒 fermée'}</small></span>`).join('<i>›</i>')}</div></div>`;
   b.innerHTML = `<div class="st">💾 ${ODY_MODES[odyMode][0]} · choisis un emplacement</div>` + iles3 + [1, 2, 3].map(n => { const P = MES_ODY.map((o, i) => [o, i]).filter(([o]) => o.suf === sufOdy() && o.n === n);
