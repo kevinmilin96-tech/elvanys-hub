@@ -168,7 +168,7 @@ function achete(X, i) {
   const f = fusionne(X); X.cale = X.cale.slice(0, 3).concat(Array(Math.max(0, 3 - X.cale.length)).fill(null)).slice(0, 3);
   return { ok:true, u, fusion:f };
 }
-function vend(X, id) { const p = ouEst(X, id); if (!p) return false; const u = aEn(X, p); if (!u || u.key === 'capitaine') return false; poseA(X, p, null); X.or += u.star ? 1 + copies(u) : 1; X.journal.push(`💰 ${u.n} vendu.`); return true; }
+function vend(X, id) { const p = ouEst(X, id); if (!p) return false; const u = aEn(X, p); if (!u || u.key === 'capitaine') return false; poseA(X, p, null); X.or += u.star ? 1 + copies(u) : 1; X.journal.push(`💰 Vente : ${u.n}.`); return true; }
 function relance(X) { if (X.or < 1) return false; X.or--; nouvelleOffre(X); X.gel = false; return true; }
 function deplace(X, id, vers) { const p = ouEst(X, id); if (!p) return false; const a = aEn(X, p), b = aEn(X, vers); poseA(X, vers, a); poseA(X, p, b); return true; }
 function transmute(X, id) {
