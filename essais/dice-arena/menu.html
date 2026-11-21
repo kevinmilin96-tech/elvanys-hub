@@ -346,7 +346,7 @@ const ETAGES = {
     { cat:'duels', nom:'L’Arène', pro:'arene', vers:'arene', desc:'Les Duels : un héros contre un autre. Dés, cartes, créatures : le premier à zéro perd.' },
     { cat:'amis', nom:'Entre amis', pro:'enligne', vers:'enligne', desc:'Jouer avec tes amis : chacun sur son téléphone, ou à deux sur le même.' },
     { cat:'aventure', nom:'L’Odyssée', pro:'odyssee', vers:'odyssee', desc:'Seul sur une île : explore case par case, fais grandir ton deck, vaincs le gardien de l’île.' },
-    { cat:'aventure', nom:'Expéditions', pro:'expeditions', href:'expedition.html', desc:'Le navire volant : recrute ton équipage et vogue d’escale en escale jusqu’au Nid du Titan.' },
+    { cat:'aventure', nom:'Expéditions', pro:'expeditions', vers:'expeditions', desc:'Le navire volant : recrute ton équipage, place-le sur deux rangées, et il combat tout seul aux dés.' }, // 21/11 : un étage à trois portes
     { cat:'amis', nom:'L’Invasion', pro:'invasion', vers:'invasion', desc:'À deux contre les vagues du livre : l’Éveil de l’Abîme, le Réveil des Primordiaux, les grands boss.' },
     { cat:'defis', nom:'Les épreuves', pro:'epreuves', href:'epreuves.html', desc:'La Tour des épreuves, étage par étage, et la Chasse au boss de la semaine.' },
     { cat:'aventure', nom:'La Crypte aux Sceaux', pro:'crypte', href:'crypte.html', desc:'Un solitaire de dés : brise les sceaux des monstres. Et la Descente, le grand voyage en 3 étages.' },
@@ -374,6 +374,13 @@ const ETAGES = {
     { nom:'Contre un ami (en ligne)', pro:'duelami', href:'duel.html?ami=1', desc:'Chacun sur son téléphone, où qu’il soit : une salle, un code ou une invitation de la fenêtre des amis.' },
     { nom:'Contre l’ordinateur', pro:'ordinateur', href:'duel.html', desc:'Choisis ton héros et affronte l’automate de la Guilde.' },
     { nom:'Le tutoriel', pro:'tuto', href:'duel.html?tuto=1', desc:'Un premier duel guidé par Moustache, avec Gorm (5 minutes). À la clé : Zéphine et le cadre de Diplômé.' },
+  ] },
+  // 21/11 (l'utilisateur : « obligé de mettre nouvelle version ? ») : la v4 devient L'Expédition ; l'ancienne (v3) est rangée ;
+  // les vaisseaux fantômes (équipages d'autres joueurs, contre lesquels on se bat sans qu'ils soient là) sont annoncés « À venir »
+  expeditions:{ titre:'Les Expéditions', sous:'Quel voyage ?', portes:[
+    { nom:'L’Expédition', pro:'expeditions', href:'expedition-v4.html', desc:'La carte à embranchements : trois mers, des élites, des escales, des suites de combats et un boss tiré au sort.' },
+    { nom:'Duel d’équipages', pro:'expeditions', href:'expedition-duel.html', desc:'Ton équipage contre celui de l’ordinateur, en plusieurs manches, avec des cœurs. Trois niveaux.' },
+    { nom:'Vaisseaux fantômes', avenir:true, desc:'Bientôt : affronte les équipages enregistrés par les autres joueurs de la Guilde, comme un duel en ligne sans attendre personne.' },
   ] },
   invasion:{ titre:'L’Invasion', sous:'Quel front veux-tu tenir ?', portes:[
     { nom:'Acte I · L’Éveil', pro:'inv1', href:'campement.html?boss=eveil', desc:'La Meute corrompue, les Gardes jumeaux à abattre dans le même tour, le Nécromancien du Vide.' },
