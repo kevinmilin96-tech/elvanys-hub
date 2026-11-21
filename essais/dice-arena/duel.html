@@ -361,7 +361,7 @@
   .tapis .front > .u { flex:0 1 15.6cqw; width:auto; min-width:0; height:22cqw; }
   .tapis .u .av { left:-.6cqw; right:-.6cqw; }
   .tapis .u b { overflow-wrap:normal; hyphens:manual; word-break:normal; } /* 14/11 : plus de « Tam-bour » */
-  .tapis .u b.long { font-size:.85em; overflow-wrap:anywhere; }
+  .tapis .u b.long { font-size:.85em; overflow-wrap:anywhere; } .tapis .u b.tlong { font-size:.72em; } /* 21/11 : « Homoncule » (9 lettres) dépassait */
   .u .av span.n2 { font-size:.72em; letter-spacing:-.5px; } /* 14/11 : deux chiffres (12) dans la pastille */
   /* deux protections, deux badges : 🛡 Garde temporaire (pointillés) · 🛡 Bouclier permanent (plein) */
   .bdg { position:absolute; z-index:4; font-weight:bold; color:#fff; border-radius:12px; padding:0 7px; font-size:.78em; box-shadow:0 2px 6px #000a; white-space:nowrap; }
@@ -1762,7 +1762,7 @@ function front(P, haut) {
     const tags = [u.defense ? '🛡 EN DÉFENSE' : '', u.barriere ? 'Barrière' : '', u.cachee ? '👁 Cachée' : '', u.charge ? 'Charge' : '', u.epines ? `Épines ${u.epines}` : '', u.bouclier ? `🛡${u.bouclier}` : '', u.entrave || u.prise ? '🌿 Entravée' : '', u.louve && haut ? 'Louve' : '', !haut ? (u.pret ? (u.louve ? '🐺 touche-la !' : '⚔ prête') : u.prise ? '' : '💤 repos') : S.vueDirect && !u.pret ? '💤 repos' : ''].filter(Boolean).join(' · ');
     if (haut && u.cachee) return `<div class="u mystere ${estCible({ J:P, u }) ? 'cible' : ''}" data-uid="${u.id}" onclick="touche({J:S.${cote},u:S.${cote}.front[${i}]})"><b>?</b><div class="tg">👁 Cachée</div><div class="av"><span>⚔ ?</span><span>❤ ?</span></div></div>`;
     const art = u.louve ? 'louve' : u.key, img = typeof ARTS !== 'undefined' && ARTS.includes(art) ? ` style="background:linear-gradient(#0000 30%, #000c 85%), url('cartes/${art}.webp?v=1') center 30%/cover;color:#fff"` : RENFORT_IMG[u.n] ? ` style="background:linear-gradient(#0000 30%, #000c 85%), url('portraits/${RENFORT_IMG[u.n]}.webp') center 25%/cover;color:#fff"` : '';
-    return `<div class="u ${cls}${img ? ' illu' : ''}" data-uid="${u.id}"${img} onclick="touche({J:S.${cote},u:S.${cote}.front[${i}]})"><b class="${u.n.length > 9 ? 'long' : ''}">${u.n}</b><div class="tg">${tags}</div><div class="av"><span class="${atk(P, u) >= 10 ? 'n2' : ''}">⚔ ${atk(P, u)}</span><span class="${u.v >= 10 ? 'n2' : ''}">❤ ${u.v}</span></div>${lie ? `<img class="ronces ${neufR ? 'pousse' : ''}" src="effets/ronces.webp?v=1" alt="">` : ''}</div>`;
+    return `<div class="u ${cls}${img ? ' illu' : ''}" data-uid="${u.id}"${img} onclick="touche({J:S.${cote},u:S.${cote}.front[${i}]})"><b class="${u.n.length > 12 ? 'long tlong' : u.n.length > 8 ? 'long' : ''}">${u.n}</b><div class="tg">${tags}</div><div class="av"><span class="${atk(P, u) >= 10 ? 'n2' : ''}">⚔ ${atk(P, u)}</span><span class="${u.v >= 10 ? 'n2' : ''}">❤ ${u.v}</span></div>${lie ? `<img class="ronces ${neufR ? 'pousse' : ''}" src="effets/ronces.webp?v=1" alt="">` : ''}</div>`;
   }).join('')}${'<div class="place"></div>'.repeat(Math.max(0, 5 - P.front.length))}</div>`;
 }
 function actSoins() { const ok = permis(S.J, 'pcSoins', []); return `<button class="act ${ok ? 'ok' : 'non'}" onclick="vise('pcSoins')"><span class="info" onclick="event.stopPropagation();aide('pcSoins', true)">i</span><b>Premiers soins</b>2 PC · retire tes altérations</button>`; }

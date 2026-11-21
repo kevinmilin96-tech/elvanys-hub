@@ -61,6 +61,12 @@ const NIV_RANG = [0, 10, 20, 30, 40, 60, 80, 100, 120, 140, 160, 180, 200, 215, 
 const nivPourRang = r => NIV_RANG[Math.min(r, NIV_RANG.length - 1)] || 0;
 function peutPromouvoir(id) { const h = etatH(id); return h.rang < RANGH_MAX && h.e >= COUT_NIV[h.rang] && (h.niv || 1) >= nivPourRang(h.rang + 1); }
 function promouvoir(id) { const d = lireEtoiles(), h = etatHerosE(d, id); if (h.rang >= RANGH_MAX || h.e < COUT_NIV[h.rang] || (h.niv || 1) < nivPourRang(h.rang + 1)) return false; h.e -= COUT_NIV[h.rang]; h.rang++; h.n = Math.min(6, (h.n || 0) + 1); ecrireEtoiles(d); return true; }
+// 21/11 (décision de l'utilisateur : « les rangs montent trop vite, les niveaux trop lentement ; la conversion, j'aime bien ») :
+// les éclats EN TROP (au-delà de ce que demande le prochain rang) se changent en poussière de rune, 1 éclat = 2 poussière
+const ECLAT_POU = 2;
+const eclatsEnTrop = id => { const h = etatH(id); return h.rang >= RANGH_MAX ? h.e : Math.max(0, h.e - COUT_NIV[h.rang]); };
+function convertitEclats(id, n) { const d = lireEtoiles(), h = etatHerosE(d, id); n = Math.min(n || eclatsEnTrop(id), eclatsEnTrop(id)); if (n <= 0) return 0;
+  h.e -= n; d.poussiere = (d.poussiere || 0) + n * ECLAT_POU; ecrireEtoiles(d); return n * ECLAT_POU; }
 // l'or (commun à tous, même coffre que la Forge) et la poussière de rune
 const AV_SAC_CLE = 'guilde-aventuriers-sac';
 function avSac() { try { return Object.assign({ or:0, pieces:[] }, JSON.parse(localStorage.getItem(AV_SAC_CLE) || '{}')); } catch (e) { return { or:0, pieces:[] }; } }
