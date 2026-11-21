@@ -83,7 +83,9 @@ function sfPose(r, i, n, x, y) {
     SF_DIR.forEach(([dx, dy], k) => { const v = caseA(r, x + dx, y + dy); if (v && v.pose) { c.ouv[k] = 1; v.ouv[(k + 2) % 4] = 1; } }); S.eboulement = false; }
   S.poses++; typeof guildeEvt === 'function' && guildeEvt('tuile', 1);
   if (S.regle === 'cendres' && r.pv > 1) { r.pv--; } // règle du jour : −1 PV par tuile posée
-  if (t.t === 'monstre') { c.niv = S.poses <= 10 ? 1 : S.poses <= 22 ? 2 : 3; /* 14/11 nuit : 6 / 14 avant (simulateur : 1er étage passé 18 % seulement) */ c.ennemi = tire(R, I.pools[c.niv - 1]); }
+  if (t.t === 'monstre') { c.niv = S.poses <= 10 ? 1 : S.poses <= 22 ? 2 : 3; /* 14/11 nuit : 6 / 14 avant (simulateur : 1er étage passé 18 % seulement) */ { // 21/11 (l'utilisateur : « que des loups et des louveteaux ») : jamais deux fois le même monstre de suite, et l'étage pioche aussi un cran plus haut
+    const pool = [...new Set([...I.pools[c.niv - 1], ...(I.pools[c.niv] || [])])], recents = S.recents || [], l = pool.filter(m => !recents.includes(m));
+    c.ennemi = tire(R, l.length ? l : pool); S.recents = [c.ennemi, ...recents].slice(0, 2); } }
   if (t.t === 'elite') { c.niv = 2; const s = ['heros', 'monstre', 'heros'][S.elites++ % 3]; if (s === 'monstre') c.ennemi = tire(R, I.elites); else { c.ennemi = 'heros'; c.renfort = tire(R, ['pc', 'pv', 'bouclier']); } }
   if (t.t === 'evenement') { const deja = r.ile.flat().map(k => k.ev).filter(Boolean), l = EVENEMENTS.filter(e => (I.evenements ? I.evenements.includes(e.id) : !e.ile) && !deja.includes(e.id) && !SF_SANS_EVENEMENT.includes(e.id)); c.ev = (l.length ? tire(R, l) : tire(R, EVENEMENTS.filter(e => !e.ile))).id; }
   if (t.t === 'boss') { c.ennemi = I.boss2 && R() < .5 ? I.boss2 : I.boss; c.niv = 1; S.bossFait = true; S.bossId = c.ennemi; } // 14/11 nuit : un boss sur deux est le second boss de l'île (bestiaire.js)

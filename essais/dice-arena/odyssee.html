@@ -178,7 +178,7 @@ const herosAventureOdy = () => haListe().map(a => haInfo('av:' + a.id)).map(i =>
   ? `<button onclick="location.href='duel.html?tuto=1'" style="opacity:.55">${haImg(i, 'filter:grayscale(1)')}🔒 ${haEsc(i.nom)}<br><small style="color:var(--doux)">Fais le tutoriel</small></button>`
   : `<button onclick="commence('${i.cle}')">${haImg(i, `box-shadow:0 0 0 2px ${i.couleur}`)}${haEsc(i.nom)}<small class="ha-t">⚔ ${haEsc(i.titre)}</small><small style="color:var(--doux)">${Math.round(HEROS[i.voie].pv * (ODY_PV[i.voie] || 1.8))} PV en Odyssée</small></button>`).join('');
 
-const VERSION = '20261121-211632';
+const VERSION = '20261121-220850';
 function verifieVersion() {
   fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
     v = (v || '').trim(); if (!v || v === VERSION || document.getElementById('majbar')) return;
@@ -201,7 +201,7 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden) veri
 <script src="odyssee.js?v=913cf4e82c"></script>
 <script src="bestiaire.js?v=f0f3165c93"></script>
 <script src="aventure.js?v=09133a6200"></script>
-<script src="odyssee-sansfin.js?v=9fe2efc30f"></script>
+<script src="odyssee-sansfin.js?v=7b3807249c"></script>
 <script src="pantheon.js?v=1a6f59e92e"></script>
 <script src="chronique.js?v=ecf982cfcc"></script>
 <script>

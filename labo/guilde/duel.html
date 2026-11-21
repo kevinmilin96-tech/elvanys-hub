@@ -730,7 +730,7 @@
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
 // 14/11 : l'Odyssée sans fin a ses propres emplacements (odyssee.js lit SANSFIN)
 const SANSFIN = new URLSearchParams(location.search).get('sansfin') === '1', ROUTE_TITAN = new URLSearchParams(location.search).get('route') === '1', EPREUVE_PAGE = new URLSearchParams(location.search).get('epreuve') === '1', ODY_PAGE = EPREUVE_PAGE ? 'epreuves.html' : 'odyssee.html' + (SANSFIN ? '?sansfin=1' : ROUTE_TITAN ? '?route=1' : '');
-const VERSION = '20261121-211632';
+const VERSION = '20261121-220850';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -758,7 +758,7 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden) veri
 <script src="odyssee.js?v=913cf4e82c"></script>
 <script src="bestiaire.js?v=f0f3165c93"></script>
 <script src="aventure.js?v=09133a6200"></script>
-<script src="odyssee-sansfin.js?v=9fe2efc30f"></script>
+<script src="odyssee-sansfin.js?v=7b3807249c"></script>
 <script src="chronique.js?v=ecf982cfcc"></script>
 <script>
 // =============================================================================================== moteur
@@ -1809,7 +1809,9 @@ function dessine() {
       bandeau = `🎯 ${d}<br>${defA.length ? `🛡 ${defA.map(u => u.n).join(', ')} ${defA.length > 1 ? 'sont' : 'est'} <b>en défense</b> : ${defA.length > 1 ? 'ils prennent' : 'il prend'} tous tes coups jusqu’à son prochain tour. Touche ${defA.length > 1 ? 'l’une d’elles' : 'la créature'} (en vert).` : (q === 'frappe' || q === 'technique' || ciblage.type === 'ennemi' ? 'Touche la cible en vert : le héros (son cadre brille) ou une créature.' + (q === 'frappe' || q === 'technique' ? '<br><small>Ton héros frappe avec ses dés : la créature touchée ne riposte pas (seules les créatures se rendent les coups entre elles).</small>' : '') : 'Touche la cible (en vert).')}`; }
   }
   else if (attaquant) bandeau = `⚔ ${attaquant.n} attaque : touche une cible en vert.`;
-  else if (sel.length) bandeau = `Dés choisis : ${vals(sel).join(', ')}. Touche maintenant une action ou une carte qui s’allume en vert.${sel.length === 1 && J.id === 'zephine' && !J.transmu ? `<br><small>⚗ Transmutation : ce ${sel[0].v} deviendrait un <b>${opp(sel[0].v)}</b> (face opposée).</small>` : ''}${sel.length === 1 && sel[0].sac && !sel[0].extra && J.id !== 'oria' ? `<br><small>🎲 Ce dé peut encore faire : ${sel[0].sac.length ? [...sel[0].sac].sort().join(' · ') : 'tout (sac neuf)'}</small>` : ''}`;
+  // 21/11 (l'utilisateur : « je dois faire défiler pour voir ce que le dé peut encore faire ») : texte court, et les deux infos du dé sur UNE ligne
+  else if (sel.length) { const d = sel.length === 1 ? sel[0] : null, info = [d && d.sac && !d.extra && J.id !== 'oria' ? `🎲 encore possible : ${d.sac.length ? [...d.sac].sort().join('·') : 'tout'}` : '', d && J.id === 'zephine' && !J.transmu ? `⚗ retourné = <b>${opp(d.v)}</b>` : ''].filter(Boolean).join(' · ');
+    bandeau = `Dés choisis : ${vals(sel).join(', ')}. Touche une action ou une carte verte.${info ? `<br><small>${info}</small>` : ''}`; }
   else if (J.des.some(d => !d.pose)) bandeau = 'Touche un ou plusieurs dés, puis ce que tu veux en faire : une action à gauche (⚔ 🛡 ✦ ⚡) ou une carte en bas.';
   else if (J.front.some(u => u.pret && u.louve)) bandeau = '🐺 Touche la Louve : elle lance ses 3 dés et attaque. Sinon, elle attaque seule à « Fin du tour ».';
   else if (J.front.some(u => u.pret && !u.louve)) bandeau = '⚔ Touche une créature dorée : attaquer (puis sa cible) ou se mettre en défense. Sinon, elles attaquent le héros à « Fin du tour » (sauf les 👁 cachées, qui restent dans l’ombre).';
