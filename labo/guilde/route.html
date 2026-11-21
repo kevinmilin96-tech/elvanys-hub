@@ -49,6 +49,8 @@
   .quete .barre-rang { display:block; height:8px; margin:5px 0 3px; } .quete small { color:var(--doux); }
   .quete.faite { border-color:#7dffb0; opacity:.85; } .chg { background:#2a2350; color:#fff; border:1px solid #4b4580; border-radius:10px; padding:6px 9px; font-size:1.1em; }
   .gains { color:var(--doux); font-size:.85em; } .gains summary { color:var(--or); cursor:pointer; margin:8px 0; }
+  .recupQ { flex:none; align-self:center; padding:.55em .9em; border-radius:12px; border:none; background:linear-gradient(#ffd27a, #e0a33a); color:#2a1a05; font:bold .95em Georgia, serif; box-shadow:0 0 12px #f3c96b99; animation:recupPulse 1.2s ease-in-out infinite; }
+  @keyframes recupPulse { 50% { transform:scale(1.06); box-shadow:0 0 20px #f3c96bcc; } }
 </style>
 </head>
 <body>
@@ -58,7 +60,7 @@
 </main>
 <script src="cartes.js?v=6e9721bdf9"></script>
 <script src="musique.js?v=454c0f48ef"></script>
-<script src="rang.js?v=34d82e0c22"></script>
+<script src="rang.js?v=768c1f2d3b"></script><script src="heros-etoiles.js?v=80a6cac830"></script>
 <script src="donnees.js?v=7c4f716d6e"></script>
 <script>
 const GENRE = { des:'Dés', titre:'Titre et cadre', depart:'Bonus de départ', carte:'Carte', equip:'Équipement' };
@@ -91,7 +93,7 @@ function prendre(n) { if (recupererRang(n)) { if (typeof GM !== 'undefined') GM.
 function toutPrendre() { aRecuperer().forEach(n => recupererRang(n)); if (typeof GM !== 'undefined') GM.son('gagne'); dessine(); }
 function quetes() {
   const d = lireRang(), Q = lireQuetes();
-  const ligneQ = (q, jour, idx) => { const def = defQuete(q, jour); return `<div class="quete ${q.fait ? 'faite' : ''}"><div><b>${q.fait ? '✅' : '📜'} ${texteQuete(q, jour)}</b><span class="barre-rang"><i style="width:${Math.round(q.prog / def[3] * 100)}%"></i></span><small>${q.prog} / ${def[3]} · +${jour ? 40 : 150} XP</small></div>${jour && !Q.change && !q.fait ? `<button class="chg" onclick="if (changeQuete(${idx})) dessine()">🔄</button>` : ''}</div>`; };
+  const ligneQ = (q, jour, idx) => { const def = defQuete(q, jour); return `<div class="quete ${q.fait ? 'faite' : ''}"><div><b>${q.fait ? '✅' : '📜'} ${texteQuete(q, jour)}</b><span class="barre-rang"><i style="width:${Math.round(q.prog / def[3] * 100)}%"></i></span><small>${q.prog} / ${def[3]} · +${GAIN_QUETE[jour ? 'jour' : 'semaine'].xp} XP · 🪙 ${GAIN_QUETE[jour ? 'jour' : 'semaine'].or} · 🔹 ${GAIN_QUETE[jour ? 'jour' : 'semaine'].pou}</small></div>${q.fait && q.recup === false ? `<button class="recupQ" onclick="const g = recupQuete(${jour}, ${idx}); if (g) { if (typeof GM !== 'undefined') GM.son('victoire'); dessine(); }">🎁 Récupérer</button>` : ''}${jour && !Q.change && !q.fait ? `<button class="chg" onclick="if (changeQuete(${idx})) dessine()">🔄</button>` : ''}</div>`; };
   return `${enteteXP()}<div class="quetes">
   <h2>📜 Quêtes du jour</h2><p class="aide" style="text-align:left;margin:0 0 4px">Elles changent chaque jour à minuit. 🔄 : changer une quête (une fois par jour).</p>${Q.j.map((q, k) => ligneQ(q, true, k)).join('')}
   <h2>🗓️ Quêtes de la semaine</h2><p class="aide" style="text-align:left;margin:0 0 4px">Elles changent chaque lundi.</p>${Q.s.map(q => ligneQ(q, false)).join('')}
