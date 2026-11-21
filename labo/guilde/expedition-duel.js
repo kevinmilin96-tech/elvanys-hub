@@ -82,7 +82,7 @@ if (typeof document !== 'undefined' && document.getElementById('app')) {
     <h2>Ton capitaine</h2><div class="heros6">${ORDRE.map(id => id === 'zephine' && localStorage.getItem('guilde-tuto') !== 'fait'
       ? `<button disabled style="opacity:.5"><img src="${IMG(id)}" alt="" style="filter:grayscale(1)">🔒 ${HEROS[id].nom}</button>`
       : `<button onclick="choixCapitaine('${id}')"><img src="${IMG(id)}" alt="">${HEROS[id].nom}<br><small style="color:var(--or)">${CAPITAINES[id].n}</small><br><small class="prise ${PRISE_EXP[id]}">${PRISE_TXT[PRISE_EXP[id]]}</small></button>`).join('')}${capitainesAventure()}</div>
-    <div class="choixh"><button onclick="aideDuel()">📖 Les règles</button><button onclick="records()">🏆 Mes duels</button><button onclick="location.href='expedition.html'">⛵ Les Expéditions</button><button onclick="location.href='menu.html'">⌂ Menu</button></div>`;
+    <div class="choixh"><button onclick="aideDuel()">📖 Les règles</button><button onclick="records()">🏆 Mes duels</button><button onclick="location.href='menu.html#expeditions'">⛵ Les Expéditions</button><button onclick="location.href='menu.html'">⌂ Menu</button></div>`;
   };
   choixCapitaine = function (id) {
     const v = haVoie(id), i = haInfo(id);

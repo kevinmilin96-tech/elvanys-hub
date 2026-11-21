@@ -390,7 +390,7 @@ accueil = function () {
   <h2>Ton capitaine</h2><div class="heros6">${ORDRE.map(id => id === 'zephine' && localStorage.getItem('guilde-tuto') !== 'fait'
     ? `<button disabled style="opacity:.5"><img src="${IMG(id)}" alt="" style="filter:grayscale(1)">🔒 ${HEROS[id].nom}</button>`
     : `<button onclick="choixCapitaine('${id}')"><img src="${IMG(id)}" alt="">${HEROS[id].nom}<br><small style="color:var(--or)">${CAPITAINES[id].n}</small><br><small class="prise ${PRISE_EXP[id]}">${PRISE_TXT[PRISE_EXP[id]]}</small></button>`).join('')}${capitainesAventure()}</div>
-  <div class="choixh"><button onclick="location.href='expeditions-v4-proposition.html'">📖 Comment ça marche</button><button onclick="records()">🏆 Mes voyages</button><button onclick="location.href='expedition.html'">⛵ L’ancienne version</button><button onclick="location.href='menu.html'">⌂ Menu</button></div>`;
+  <div class="choixh"><button onclick="location.href='expeditions-v4-proposition.html'">📖 Comment ça marche</button><button onclick="records()">🏆 Mes voyages</button><button onclick="location.href='menu.html#expeditions'">⛵ Les Expéditions</button><button onclick="location.href='menu.html'">⌂ Menu</button></div>`;
 };
 depart = function (id) { const i = haInfo(id); X = nouveauVoyage(haVoie(id), jourChoisi ? { mer:'nuages', asc:0, jour:true } : { mer:merChoisie, asc:ascChoisi }); // le voyage du jour : le même pour tous (Mer des nuages, sans ascension) X.diff = diffChoisie;
   if (i) { X.av = i.id; const cap = X.plateau.av[1]; if (cap && cap.key === 'capitaine') { cap.n = i.nom; cap.av = i.id; } }
