@@ -118,8 +118,16 @@ function tireQuetes(liste, n, graine, sauf = []) {
   while (out.length < n && l.length) { const q = l.splice(Math.floor(R() * l.length), 1)[0]; const heros = q[4] === 'heros' && typeof ORDRE !== 'undefined' ? ORDRE.filter(h => h !== 'zephine')[Math.floor(R() * 5)] : null; out.push({ id:q[0], prog:0, fait:false, heros }); }
   return out;
 }
+// 21/11 (l'utilisateur : « un bouton Récupérer quand une quête est finie, pour la satisfaction ; et de l'or ») : la récompense d'une quête
+const GAIN_QUETE = { jour:{ xp:40, or:60, pou:30 }, semaine:{ xp:150, or:250, pou:120 } };
+function donneQuete(jour) { const g = GAIN_QUETE[jour ? 'jour' : 'semaine']; gagneXP(g.xp, jour ? NOM_EVT.quete_jour : NOM_EVT.quete_semaine);
+  if (typeof donneLibres === 'function') donneLibres(jour ? ECLATS_QUETE.jour : ECLATS_QUETE.semaine); if (typeof donneRessources === 'function') donneRessources(g.or, g.pou); return g; }
+function recupQuete(jour, i) { const Q = lireQuetes(), q = (jour ? Q.j : Q.s)[i]; if (!q || !q.fait || q.recup !== false) return null; q.recup = true; localStorage.setItem(QUETES_CLE, JSON.stringify(Q)); return donneQuete(jour); }
 function lireQuetes() {
   const Q = RJ(QUETES_CLE, {}), j = rgJourCle(), s = semaineCle(); let change = false;
+  // une quête finie pas récupérée avant le changement de jour / de semaine est récupérée toute seule (rien n'est perdu)
+  if (Q.jour !== j && Q.j) Q.j.forEach(q => { if (q.fait && q.recup === false) { q.recup = true; donneQuete(true); } });
+  if (Q.semaine !== s && Q.s) Q.s.forEach(q => { if (q.fait && q.recup === false) { q.recup = true; donneQuete(false); } });
   if (Q.jour !== j) { Q.jour = j; Q.j = tireQuetes(QUETES_JOUR, 3, 'j' + j); Q.change = false; change = true; }
   if (Q.semaine !== s) { Q.semaine = s; Q.s = tireQuetes(QUETES_SEMAINE, 3, 's' + s); change = true; }
   if (change) localStorage.setItem(QUETES_CLE, JSON.stringify(Q));
@@ -161,10 +169,10 @@ function guildeEvt(type, n = 1, info = {}) {
       const d = defQuete(q, jour); if (!d || q.fait || d[2] !== type) return;
       if (d[4] === 'heros' && info.heros !== q.heros && info.voie !== q.heros) return; // 15/11 soir : un héros d'aventure compte pour le héros de sa voie
       q.prog = d[4] === 'max' ? Math.max(q.prog, n) : q.prog + n;
-      if (q.prog >= d[3]) { q.prog = d[3]; q.fait = true; fini.push([texteQuete(q, jour), jour]); }
+      if (q.prog >= d[3]) { q.prog = d[3]; q.fait = true; q.recup = false; fini.push([texteQuete(q, jour), jour]); }
     }));
     localStorage.setItem(QUETES_CLE, JSON.stringify(Q));
-    fini.forEach(([t, jour]) => { annonceRang(`📜 Quête accomplie : ${t}`, true); gagneXP(jour ? 40 : 150, jour ? NOM_EVT.quete_jour : NOM_EVT.quete_semaine); if (typeof donneLibres === 'function') donneLibres(jour ? ECLATS_QUETE.jour : ECLATS_QUETE.semaine); if (typeof donneRessources === 'function') donneRessources(jour ? 60 : 250, jour ? 30 : 120); });
+    fini.forEach(([t]) => annonceRang(`📜 Quête accomplie : ${t} · va la récupérer 🎁`, true)); // 21/11 : la récompense se RÉCUPÈRE (route des rangs, onglet Quêtes)
   } catch (e) { console.error(e); }
 }
 
@@ -192,9 +200,9 @@ function choisirPeau(p) { const d = lireRang(); if (!rgPeauOk(p)) return; d.peau
 function bandeauRangHTML() {
   const d = lireRang(), i = d.info, Q = lireQuetes(), fj = Q.j.filter(q => q.fait).length, fs = Q.s.filter(q => q.fait).length;
   // 18/11 (l'utilisateur : « le rang est trop caché ») : barre plus grande, un toucher ouvre la route des rangs ; les quêtes ont leur propre bouton
-  const ar = aRecuperer().length;
+  const ar = aRecuperer().length, qr = [...Q.j, ...Q.s].filter(q => q.fait && q.recup === false).length;
   return `<a class="bandeau-rang gros" href="route.html"><b>🏆 Rang ${i.rang}</b><span class="barre-rang"><i style="width:${i.besoin ? Math.round(i.dans / i.besoin * 100) : 100}%"></i><span class="txt">${i.besoin ? `${i.dans} / ${i.besoin} XP` : 'rang max'}</span></span>${ar ? `<em class="cadeau" title="Récompense à récupérer">🎁 Récupérer</em>` : '<em>›</em>'}</a>
-  <a class="bandeau-quetes" href="route.html#quetes">📜 Quêtes du jour <b>${fj}/3</b> · de la semaine <b>${fs}/3</b> ›</a>`;
+  <a class="bandeau-quetes" href="route.html#quetes">📜 Quêtes du jour <b>${fj}/3</b> · de la semaine <b>${fs}/3</b>${qr ? ` · <b style="color:#ffd27a">🎁 ${qr} à récupérer</b>` : ''} ›</a>`;
 }
 
 if (typeof document !== 'undefined') {
