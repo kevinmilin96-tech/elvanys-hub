@@ -64,7 +64,7 @@ const CARTES = {
   // ---- Gorm
   grave:    { n:'Note grave', t:'s', c:1, txt:'dé pair', d:'Chacune de tes créatures gagne de la vie : la moitié du dé (6 → +3 ❤), pour toute la partie.', cond:vs => un(vs) && pair(vs[0]), f:(J, vs) => { J.front.forEach(u => { u.v += vs[0] / 2; u.vmax += vs[0] / 2; }); log('Note grave : tes unités se renforcent.'); }, ia:(J, vs) => J.front.length * vs[0] * 2 },
   aigue:    { n:'Note aiguë', t:'s', c:0, txt:'dé impair', d:'Une unité gagne + la valeur du dé en attaque ce tour.', cond:vs => un(vs) && !pair(vs[0]), cible:'uniteA', f:(J, vs, k) => { k.u.tmp = (k.u.tmp || 0) + vs[0]; log(`${k.u.n} : +${vs[0]} attaque ce tour.`); }, ia:(J, vs) => J.front.some(u => u.pret) ? 14 + vs[0] * 4 : 0 },
-  echo:     { n:'Écho', t:'s', c:1, txt:'1 dé', d:'Rejoue l’effet du dernier Sort que tu as joué ce tour (pas une créature).', cond:un, f:J => { const e = J.dernierSort; if (!e || ['distil', 'precipite', 'fiole', 'chance', 'retremper'].includes(e.key)) return; log(`Écho : ${CARTES[e.key].n} une nouvelle fois.`); const c = CARTES[e.key]; const k2 = c.cible ? cibleValide(J, e.k, c.cible) : null; if (c.cible && !k2) return; c.f(J, e.vs, k2, []); }, ia:J => J.dernierSort ? 30 : 0 },
+  echo:     { n:'Écho', t:'s', c:1, txt:'1 dé', d:'Rejoue l’effet du dernier Sort que tu as joué ce tour (pas une créature).', cond:un, f:J => { const e = J.dernierSort; if (!e || ['distil', 'precipite', 'fiole', 'chance', 'retremper', 'gu_gel'].includes(e.key)) return; log(`Écho : ${CARTES[e.key].n} une nouvelle fois.`); const c = CARTES[e.key]; const ct = typeof cibleDeCarte === 'function' ? cibleDeCarte(c, e.vs) : c.cible; const k2 = ct ? cibleValide(J, e.k, ct) : null; if (ct && !k2) return; c.f(J, e.vs, k2, []); }, ia:J => J.dernierSort ? 30 : 0 },
   tambour:  { n:'Tambour de clan', t:'u', c:2, txt:'dé pair', d:'Unité 2 / 4. Tes autres unités ont +1 attaque.', cond:vs => un(vs) && pair(vs[0]), u:{ n:'Tambour', a:2, v:4, tambour:true } },
   flute:    { n:'Joueuse de flûte', t:'u', c:2, txt:'dé impair', d:'Unité 3 / 3. À son arrivée, une autre de tes unités peut attaquer tout de suite.', cond:vs => un(vs) && !pair(vs[0]), u:{ n:'Flûtiste', a:3, v:3 }, f:J => { const u = J.front.find(x => !x.pret && x.n !== 'Flûtiste'); if (u) { u.pret = true; log(`${u.n} peut attaquer tout de suite.`); } } },
   colosse:  { n:'Colosse des collines', t:'u', c:4, txt:'dé = 6', d:'Unité 7 / 9, Charge.', cond:vs => un(vs) && vs[0] === 6, u:{ n:'Colosse', a:7, v:9, charge:true } },
@@ -280,3 +280,35 @@ const NEUVES_BASE = { maelle:['lame', 'm_rivets', 'm_automate'], aldric:['a_remp
   oria:['o_fumee', 'o_dague', 'o_faucon'], gorm:['g_cornemuse', 'g_barde', 'cor'], zephine:['z_nuee', 'z_acide', 'z_golem'] };
 Object.entries(NEUVES_BASE).forEach(([h, l]) => { if (HEROS[h] && HEROS[h].deck.length < 15) HEROS[h].deck.push(...l); });
 if (!GUILDE.includes('gu_epee')) GUILDE.push('gu_epee', 'gu_milice', 'gu_pain', 'gu_carnet', 'gu_lance', 'gu_filet');
+
+// =============================================================================================== 21/11 (choix de l'utilisateur) : LOT 1 des CARTES NOUVELLES
+// D'après ~/perso/dice-arena/Idees-cartes-et-monstres-21-11.md (les 10 ★, inspirées de Hearthstone). Cartes de la Guilde, pour tous les héros,
+// à TROUVER (tirages de l'Odyssée, coffres, marchand) puis rangées dans la collection (éditeur de deck). Pas dans les decks de base.
+// Garde-fous du fichier (partie C) : l'échange attaque ↔ vie donne 6 d'attaque au plus ; un seul dé gelé par tour ; Grand Renversement épique.
+// Le moteur (renverse, tombe et Dernier souffle, Paratonnerre, dé gelé, Découverte, cible selon le dé) est dans duel.html.
+const IA_RENV = (J, k) => typeof gainRenverse === 'function' ? gainRenverse(J, k) : 0;
+Object.assign(CARTES, {
+  gu_renverse:  { n:'Fiole du Renversement', t:'s', c:1, r:'r', txt:'2 dés qui font 7', d:'Une créature (à toi ou à l’adversaire) échange son attaque et sa vie (6 d’attaque au plus). Une créature à 0 d’attaque tombe.', cond:vs => vs.length === 2 && somme(vs) === 7, cible:'uniteT',
+    f:(J, vs, k) => renverse(k), ia:J => { if (typeof ciblesPossibles !== 'function') return 0; const g = Math.max(0, ...ciblesPossibles(J, 'uniteT').map(k => IA_RENV(J, k))); return g >= 8 ? 14 + g : 0; } },
+  gu_grandrenv: { n:'Grand Renversement', t:'s', c:3, r:'e', txt:'3 dés différents', d:'TOUTES les créatures (des deux côtés) échangent leur attaque et leur vie (6 d’attaque au plus).', cond:vs => vs.length === 3 && compte(vs)[0] === 1,
+    f:J => { fx({ t:'annonce', txt:'⇅ Grand Renversement !' }); [J, adv(J)].forEach(P => [...P.front].forEach(u => renverse({ J:P, u }))); },
+    ia:J => { const s = [J, adv(J)].reduce((t, P) => t + P.front.reduce((x, u) => x + IA_RENV(J, { J:P, u }), 0), 0); return s >= 15 ? 10 + s : 0; } },
+  gu_humilite:  { n:'Humilité runique', t:'s', c:1, r:'c', txt:'dé ≤ 2', d:'Une créature adverse n’a plus que 1 d’attaque (sa vie ne change pas).', cond:vs => un(vs) && vs[0] <= 2, cible:'uniteE',
+    f:(J, vs, k) => { if (!k || !k.u) return; const a0 = atk(k.J, k.u); k.u.a = 1; k.u.tmp = 0; log(`${nomVu(k)} n’a plus que 1 d’attaque (Humilité runique).`); fx({ t:'transforme', c:ref(k), txt:'⬇ 1 d’attaque', a0, v0:k.u.v, a1:atk(k.J, k.u), v1:k.u.v }); },
+    ia:J => { const D = adv(J), m = Math.max(0, ...D.front.filter(u => !u.cachee).map(u => atk(D, u))); return m >= 4 ? 10 + (m - 1) * 6 : 0; } },
+  gu_paratonnerre:{ n:'Paratonnerre', t:'r', c:1, r:'r', txt:'dé = 6', d:'Garde : la prochaine fois qu’une créature adverse gagne de l’attaque, elle perd ce bonus et c’est TA créature la plus faible qui le reçoit. Dure jusqu’à ton prochain tour.', cond:vs => un(vs) && vs[0] === 6,
+    f:J => { J.paratonnerre = true; }, ia:J => ['gorm', 'maelle'].includes(adv(J).id) ? 22 : adv(J).front.length ? 12 : 3 },
+  gu_gel:       { n:'Rune de gel', t:'s', c:1, r:'r', txt:'1 dé', d:'Ce dé est gelé : à ton prochain tour, tu le reprends avec la même face, EN PLUS de ton lancer. Un seul dé gelé à la fois.', cond:un,
+    f:(J, vs) => { if (J.gel) return; J.gel = vs[0]; log(`❄ ${J.nom} gèle un ${vs[0]} pour son prochain tour.`); fx({ t:'annonce', txt:`❄ Un ${vs[0]} gelé pour plus tard` }); },
+    ia:(J, vs) => J.gel ? 0 : vs[0] === 6 ? 26 : vs[0] === 5 ? 12 : 0 },
+  gu_porteban:  { n:'Porte-bannière mourant', t:'u', c:1, r:'c', txt:'dé ≤ 3', d:'Unité 2 / 2. Dernier souffle : quand il tombe, tes autres créatures gagnent +1 attaque et +1 vie.', cond:vs => un(vs) && vs[0] <= 3, u:{ n:'Porte-bannière', a:2, v:2, souffle:'banniere' } },
+  gu_sangsue:   { n:'Lame-sangsue', t:'e', c:2, r:'r', txt:'2 dés impairs', d:'Pour toute la partie : ta première Frappe de chaque tour te soigne de la moitié de ses dégâts.', cond:vs => vs.length === 2 && vs.every(v => !pair(v)),
+    f:J => { J.sangsue = true; log(`🩸 ${J.nom} s’équipe de la Lame-sangsue.`); }, ia:J => J.sangsue ? 0 : 26 },
+  gu_grimoire:  { n:'Grimoire de la Guilde', t:'s', c:1, r:'r', txt:'1 dé', d:'Découverte : trois cartes de ta famille (ton héros ou la Guilde) s’ouvrent, tu en gardes une dans ta main. Elle coûte 1 PC de moins ce tour.', cond:un,
+    f:J => decouverte(J), ia:J => J.main.length < 6 ? 22 : 4 },
+  gu_crapaud:   { n:'Métamorphose en crapaud', t:'s', c:3, r:'e', txt:'3 dés qui se suivent', d:'Une créature adverse devient un Crapaud 0 / 1 : elle perd tout (attaque, vie, Barrière, pouvoirs).', cond:vs => suite(vs, 3), cible:'uniteE',
+    f:(J, vs, k) => crapaud(k), ia:J => { const D = adv(J), m = Math.max(0, ...D.front.filter(u => !u.cachee).map(u => atk(D, u) + u.v)); return m >= 9 ? 25 + m * 3 : m >= 7 ? 14 : 0; } },
+  gu_parchemin2:{ n:'Parchemin à deux faces', t:'s', c:1, r:'c', txt:'1 dé (pair ou impair)', d:'Dé pair : pioche 1 carte et soigne ton héros de 2. Dé impair : 3 dégâts à une cible.', cond:un, cibleSi:vs => pair(vs[0]) ? null : 'ennemi',
+    f:(J, vs, k) => { if (pair(vs[0])) { pioche(J, 1); soin(J, 2); return; } const c = k && k.J ? k : (typeof cibleAuto === 'function' ? cibleAuto(J, 'ennemi') : { J:adv(J) }); if (c) degats(c, 3); },
+    ia:(J, vs) => pair(vs[0]) ? (J.pv < J.pvMax - 2 ? 22 : 16) : 20 },
+});

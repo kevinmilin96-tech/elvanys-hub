@@ -178,7 +178,7 @@ const herosAventureOdy = () => haListe().map(a => haInfo('av:' + a.id)).map(i =>
   ? `<button onclick="location.href='duel.html?tuto=1'" style="opacity:.55">${haImg(i, 'filter:grayscale(1)')}🔒 ${haEsc(i.nom)}<br><small style="color:var(--doux)">Fais le tutoriel</small></button>`
   : `<button onclick="commence('${i.cle}')">${haImg(i, `box-shadow:0 0 0 2px ${i.couleur}`)}${haEsc(i.nom)}<small class="ha-t">⚔ ${haEsc(i.titre)}</small><small style="color:var(--doux)">${Math.round(HEROS[i.voie].pv * (ODY_PV[i.voie] || 1.8))} PV en Odyssée</small></button>`).join('');
 
-const VERSION = '20261121-220850';
+const VERSION = '20261121-224051';
 function verifieVersion() {
   fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
     v = (v || '').trim(); if (!v || v === VERSION || document.getElementById('majbar')) return;
@@ -196,7 +196,7 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden) veri
 <script src="rang.js?v=34d82e0c22"></script>
 <script src="heros-etoiles.js?v=80a6cac830"></script>
 <script src="heros-aventure.js?v=31db8c2ed4"></script>
-<script src="donnees.js?v=6b3166c8e1"></script>
+<script src="donnees.js?v=7c4f716d6e"></script>
 <script src="guide.js?v=f78db3b570"></script>
 <script src="odyssee.js?v=913cf4e82c"></script>
 <script src="bestiaire.js?v=f0f3165c93"></script>
@@ -254,7 +254,7 @@ function emplacements() {
     const n = i + 1, r = lireSlot(n);
     if (!r) return `<div class="slot vide"><div class="sn">Emplacement ${n}</div><p>Vide</p><button class="or" onclick="choisirSlot(${n});ecran()">✨ ${ROUTE_TITAN ? 'Nouvelle Route' : 'Nouvelle Odyssée' + (SANSFIN ? ' sans fin' : '')}<br><small>${ILES[ACTE_URL].court}</small></button></div>`;
     const I = ILES[r.acte || 'brulees'] || ILES.brulees, vues = r.ile.flat().filter(c => c.visite).length;
-    return `<div class="slot"><div class="sn">Emplacement ${n}</div><div class="sl">${imgR(r)}<div><b>${odyNom(r)}</b> · ${I.court}${r.asc ? ` · ⛰ ${r.asc}` : ''}<br><span class="p pv">❤ ${r.pv} / ${r.pvMax}</span>${r.route ? `<span class="p">🛤 étape ${r.route.etape}/${ROUTE_ETAPES}</span>` : `<span class="p">🔮 ${r.fragments}/2</span><span class="p">🗺 ${vues} case${vues > 1 ? 's' : ''}</span>`}<br><small>Joué ${ilDYa(r.maj || r.debut)}${r.combat && !r.combat.resultat ? ` · <b style="color:#ffb347">⚔ combat en cours${HEROS[r.combat.ennemi] ? ' contre ' + HEROS[r.combat.ennemi].nom : ''}</b>` : ''}</small></div></div>
+    return `<div class="slot"><div class="sn">Emplacement ${n}</div><div class="sl">${imgR(r)}<div><b>${odyNom(r)}</b> · ${I.court}${r.asc ? ` · ⛰ ${r.asc}` : ''}<br><span class="p pv">❤ ${r.pv} / ${r.pvMax}</span>${r.route ? `<span class="p">🛤 étape ${Math.min(r.route.etape, ROUTE_ETAPES)}/${ROUTE_ETAPES}</span>` : `<span class="p">🔮 ${r.fragments}/2</span><span class="p">🗺 ${vues} case${vues > 1 ? 's' : ''}</span>`}<br><small>Joué ${ilDYa(r.maj || r.debut)}${r.combat && !r.combat.resultat ? ` · <b style="color:#ffb347">⚔ combat en cours${HEROS[r.combat.ennemi] ? ' contre ' + HEROS[r.combat.ennemi].nom : ''}</b>` : ''}</small></div></div>
     <div class="choixh"><button class="or" onclick="choisirSlot(${n});reprendre(lireSlot(${n}))">▶ Continuer</button></div>
     <div class="choixh"><button onclick="recommencer(${n})">🔄 Recommencer</button><button onclick="effacer(${n})">🗑 Effacer</button></div></div>`;
   }).join('');
@@ -495,7 +495,7 @@ const GUIDE_ROUTE = [
 function enteteHTML() {
   const r = R, h = HEROS[r.heros];
   return `<div class="entete">${imgR(r, ' onclick="monDeck()"')}<div class="st"><b>${odyNom(r)}</b> · ${r.deck.length} cartes${r.asc ? ` · ⛰ Ascension ${r.asc}` : ''}${r.aventure ? ` · <span onclick="equipFen()" style="color:var(--or);cursor:pointer">🗺 ch. ${r.aventure.chapitre}/3 · niv. ${r.aventure.niveau} · 🎒 ${Object.values(r.aventure.equip).filter(Boolean).map(k => eqImg(k, 18)).join('') || 'équipement'}</span>` : ''}
-    <br><span class="p pv">❤ ${r.pv} / ${r.pvMax}</span><span class="p or">💰 ${r.or}</span>${r.route ? `<span class="p">🗝 ${r.cles}</span><span class="p">🛤 étape ${r.route.etape}/${ROUTE_ETAPES}</span>` : `<span class="p vivres ${r.vivres ? '' : 'zero'}" title="Huile de la lanterne">🪔 ${r.vivres}</span><span class="p">🗝 ${r.cles}</span><span class="p">🔮 ${r.fragments}/2</span>`}
+    <br><span class="p pv">❤ ${r.pv} / ${r.pvMax}</span><span class="p or">💰 ${r.or}</span>${r.route ? `<span class="p">🗝 ${r.cles}</span><span class="p">🛤 étape ${Math.min(r.route.etape, ROUTE_ETAPES)}/${ROUTE_ETAPES}</span>` : `<span class="p vivres ${r.vivres ? '' : 'zero'}" title="Huile de la lanterne">🪔 ${r.vivres}</span><span class="p">🗝 ${r.cles}</span><span class="p">🔮 ${r.fragments}/2</span>`}
     <br><span class="rel">${r.reliques.length + r.sacoche.length + r.benes.length + r.males.length ? '<i class="tout" onclick="sacTout()" title="Tout voir">🎒 Tout voir</i>' : ''}${r.reliques.map(k => `<i onclick="info('${RELIQUES[k].e} ${RELIQUES[k].n}', '${RELIQUES[k].d.replace(/'/g, '’')}')">${RELIQUES[k].e}</i>`).join('')}${r.sacoche.map((k, i) => `<i onclick="sacocheIle(${i})">${SACOCHE[k].e}</i>`).join('')}${r.benes.map(k => `<i onclick="info('✨ ${BENEDICTIONS[k].n}', '${BENEDICTIONS[k].d.replace(/'/g, '’')}')">✨</i>`).join('')}${r.males.map(k => `<i onclick="info('🕯 ${MALEDICTIONS[k].n}', '${MALEDICTIONS[k].d.replace(/'/g, '’')}')">🕯</i>`).join('')}</span></div></div>`;
 }
 // =============================================================================================== la carte à l'encre (10/11 soir, idée de l'utilisateur d'après une vidéo)
@@ -806,6 +806,9 @@ function tirage(cartes, titre, apres, deux) {
 }
 function prendsCarte(i) { const k = window._tir[i]; gardeCarte(R, k); window._pris.push(k); sauve(); if (window._pris.length >= window._deux) { fermer(); window._apres(); } else { window._tir.splice(i, 1); tirage(window._tir, 'Encore une', window._apres, false); } }
 function coffre(c) {
+  // 21/11 (l'utilisateur : « sur la Route du Titan, sans élite avant, le coffre ne sert à rien ») : on ne revient pas en arrière sur la Route,
+  // donc sans clé on peut FORCER la serrure (−8 PV) ou laisser le coffre
+  if (R.cles < 1 && R.route) { window._coffreC = c; fenetre(`<h2>🗝 Un coffre fermé</h2><p>Une serrure de fer, et pas de clé dans ta poche. Sur la Route, on ne revient pas en arrière : tu peux <b>forcer la serrure</b> (tu te blesses : −8 PV), ou laisser le coffre.</p><div class="choixh"><button class="or" onclick="R.pv=Math.max(1,R.pv-8);R.cles++;R.journal.push('🗝 Serrure forcée : −8 PV.');fermer();coffre(window._coffreC)">Forcer (−8 ❤)</button><button onclick="fermer()">Laisser</button></div>`); return; }
   if (R.cles < 1) { fenetre('<h2>🗝 Un coffre fermé</h2><p>Une serrure de fer. Les clés se gagnent sur les élites 💀 et dans certains événements. Tu pourras revenir.</p><div class="choixh"><button onclick="fermer()">Compris</button></div>'); return; }
   const o = ouvreCoffre(R, c); sauve(); dessine();
   if (o.relique) { fenetre(`<h2>🗝 Le coffre s’ouvre</h2><p>Dedans : ${RELIQUES[o.relique].e} <b>${RELIQUES[o.relique].n}</b>. ${RELIQUES[o.relique].d}</p><div class="choixh"><button class="or" onclick="fermer()">Formidable</button></div>`); return; }

@@ -81,7 +81,7 @@ Le score est multiplié : +10 % par cran, +25 % par mer après la première.</di
 <li>Remplacer l'ancienne version par la v4 dans le menu, ou garder les deux ?</li>
 </ol>
 </main>
-<script src="donnees.js?v=6b3166c8e1"></script><script src="odyssee.js?v=913cf4e82c"></script><script src="expedition-moteur.js?v=ea489b216d"></script><script src="expedition-v4.js?v=615ce55c22"></script>
+<script src="donnees.js?v=7c4f716d6e"></script><script src="odyssee.js?v=913cf4e82c"></script><script src="expedition-moteur.js?v=ea489b216d"></script><script src="expedition-v4.js?v=615ce55c22"></script>
 <script>
 const typ = { monstres:'⚔ monstres', elite:'💀 élite', fantome:'👻 navire rival', evenement:'❔ événement', tresor:'💎 trésor', port:'🏝 port franc', boss:'👑 boss' };
 document.getElementById('etapes').innerHTML = `<div class="bloc"><b class="or">La route</b> : 🧭 point de choix (${CHOIX_V4.filter((x, i, l) => l.indexOf(x) === i).map(t => typ[t]).join(', ')}) → ${SUITES_V4.map((S, k) => `⚔ suite ${k + 1} : ${S.combats.length + (S.troisieme ? 0 : 0) > 1 ? '1 ou 2 combats' : '1 combat'} puis 💀 une élite → 🧭 point de choix`).join(' → ')} → 👑 le boss (une seule chance).</div>`;
