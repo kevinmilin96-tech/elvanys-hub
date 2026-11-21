@@ -214,7 +214,9 @@ function guildeJournal(mode, info) {
     if (!/^(perso\.elvanys\.fr|localhost|127\.0\.0\.1)$/.test(location.hostname)) return;
     info = info || {};
     const pseudo = ((typeof AMIS !== 'undefined' && AMIS && AMIS.carte && AMIS.carte.pseudo) || localStorage.getItem('guilde-pseudo') || '').slice(0, 40);
-    const corps = JSON.stringify({ mode, heros:String(info.heros || ''), resultat:String(info.resultat || ''), joueur:pseudo,
+    // 21/11 : la clé de la carte de joueur part avec le journal → le serveur compte ce jour comme « joué » (fidélité, colis du lundi)
+    let cle = ''; try { cle = (typeof AMIS !== 'undefined' && AMIS && AMIS.carte && AMIS.carte.cle) || (JSON.parse(localStorage.getItem('guilde-carte') || 'null') || {}).cle || ''; } catch (e) { cle = ''; }
+    const corps = JSON.stringify({ mode, heros:String(info.heros || ''), resultat:String(info.resultat || ''), joueur:pseudo, cle:cle || undefined,
       version:typeof VERSION !== 'undefined' ? VERSION : '', resume:info.resume || {}, journal:(info.journal || []).map(String).slice(-3000) });
     fetch('/api/hub/guilde/journal', { method:'POST', headers:{ 'Content-Type':'application/json' }, body:corps, keepalive:corps.length < 60000 }).catch(() => {});
   } catch (e) { /* jamais bloquant */ }
