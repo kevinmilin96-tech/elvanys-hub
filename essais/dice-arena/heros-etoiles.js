@@ -125,7 +125,8 @@ function eqStats(p) {
 }
 const eqTexte = p => Object.entries(eqStats(p)).map(([k, v]) => `${EQ_ST[k][0]} ${k === 'des' ? '+1 dé' : '+' + v + ' ' + EQ_ST[k][1]}`).join(' · ');
 const eqPrixAmelio = p => 12 * p.niv * (1 + p.r);
-const eqPrixVente = p => 5 * (1 + p.r) * p.niv;
+const eqPrixVente = p => 8 * (1 + p.r) * p.niv; // 21/11 : 5 → 8 (« on ne gagne pas assez d'or »)
+const eqPoussiereRecyclage = p => 5 * (1 + p.r) * p.niv; // 21/11 : recycler une pièce = de la poussière de rune
 function eqNouvelle(slot, r) {
   const C = slot ? EQ_CASES.find(c => c.k === slot) : EQ_CASES[Math.floor(Math.random() * EQ_CASES.length)];
   if (r == null) { const x = Math.random(); r = x < .1 ? 2 : x < .4 ? 1 : 0; }
@@ -162,6 +163,11 @@ function amelioPiece(pid) {
   s.or -= c; p.niv = n + 1; avSacEcrire(s);
   if (qui) { const d = lireEtoiles(), h = etatHerosE(d, qui); h.lv = h.lv || {}; h.lv[p.slot] = Math.max(h.lv[p.slot] || 0, n + 1); ecrireEtoiles(d); }
   return 'ok';
+}
+function recyclePiece(pid) {
+  const s = avSac(), i = s.pieces.findIndex(x => x.id === pid); if (i < 0) return 0; const p = s.pieces[i];
+  const d = lireEtoiles(), v = eqPoussiereRecyclage(p); Object.keys(d.heros).forEach(hid => { const h = d.heros[hid]; if (h.gear && h.gear[p.slot] === pid) { laisseNiveau(d, s, hid, p.slot); h.gear[p.slot] = null; } });
+  s.pieces.splice(i, 1); d.poussiere = (d.poussiere || 0) + v; avSacEcrire(s); ecrireEtoiles(d); return v;
 }
 function vendPiece(pid) {
   const s = avSac(), i = s.pieces.findIndex(x => x.id === pid); if (i < 0) return; const p = s.pieces[i];
