@@ -177,7 +177,10 @@ const GM = (() => {
       if (document.getElementById('gm-bouton')) return;
       // 21/11 (l'utilisateur : « les Paramètres sont dans le menu principal, pas besoin de les voir partout ») : pas de ⚙️ flottant sur les pages
       // de collection (héros, profil, route des rangs, forge, pouvoirs, Panthéon) ; il reste dans les parties (Quitter, Mes parties, volumes)
-      if (/(mes-heros|heros|profil|route|forge|pouvoirs|pantheon|aventuriers)\.html$/.test(location.pathname)) return;
+      // 21/11 soir (2e retour : « dans l'Expédition je retrouve l'icône Paramètres ») : plus de ⚙️ flottant nulle part ; les Paramètres sont dans la
+      // barre du bas du menu, et les combats ont leur propre bouton ⚙ dans leur barre (GM.parametres() reste appelable).
+      // Gardé seulement là où il n'y a pas d'autre moyen de quitter en pleine partie (Fosse en temps réel, Campement / Invasion, épreuves).
+      if (!/(fosse|campement|epreuves)\.html$/.test(location.pathname)) return;
       const st = document.createElement('style');
       st.textContent = '#gm-bouton{position:fixed;right:10px;bottom:calc(10px + env(safe-area-inset-bottom));z-index:900;width:38px;height:38px;border-radius:50%;border:1px solid #f3c96b88;background:#15132bcc;color:#f3c96b;font-size:18px;line-height:36px;text-align:center;padding:0;cursor:pointer}';
       document.head.appendChild(st);
