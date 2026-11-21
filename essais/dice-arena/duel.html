@@ -578,6 +578,8 @@
   .unique .colG .r5 { left:3.86cqw; top:calc(54.07cqh - 5.5cqw); }
   .unique .colG .r6 { left:3.86cqw; top:calc(60.9cqh - 5.5cqw); }
   .plateau.tapis.unique:not(.scene) .des { left:86.8cqw; top:24.2cqh; width:7.6cqw; height:28.2cqh; grid-template-rows:repeat(5, 1fr); }
+  .plateau.tapis.unique:not(.scene) .des.six { grid-template-rows:repeat(6, 1fr); } .unique:not(.scene) .des.six .d img { width:5.6cqw; height:5.6cqw; } /* 21/11 : un 6e dé (Rune de gel, Précipité) */
+  .d.gele img { box-shadow:0 0 0 2px #8fe3ff, 0 0 10px #8fe3ff; border-radius:18%; } /* 21/11 : le dé gelé par la Rune de gel */
   .unique:not(.scene) .des .d { width:7.6cqw; }
   .unique:not(.scene) .d img, .unique:not(.scene) .d .cad { width:6.8cqw; height:6.8cqw; }
   /* plus de rubans peints : étiquettes de l'adversaire en petites pastilles à droite du portrait */
@@ -786,7 +788,7 @@ function pioche(J, n) { for (let i = 0; i < n; i++) { if (!J.deck.length) break;
 // Dés « équitables » : chaque dé a un sac de 6 faces mélangé ; il sort ses faces dans l'ordre et se remplit quand il est vide.
 function lance(J, d) {
   if (!d.sac.length) d.sac.push(...melange([1, 2, 3, 4, 5, 6]));
-  d.v = d.sac.shift(); d.mod = false;
+  d.v = d.sac.shift(); d.mod = false; d.gele = false;
   if (J.id === 'pip' && d.v === 6) ajouteMeute(J, 1);
 }
 function modifie(J, d, v) { d.v = v; d.mod = true; if (J.catalyseur && !S.fini) degats({ J:adv(J) }, 1); }
@@ -835,7 +837,7 @@ function degats(k, n, ignore) {
     fx({ t:'degat', c:ref(k), n:r, abs, v:Math.max(0, k.u.v) });
     if (k.u.v <= 0) {
       if (k.J.cor) { k.J.cor = false; k.u.v = 1; log(`Cor de ralliement : ${nomVu(k)} reste debout à 1 vie.`); }
-      else { fx({ t:'tombe', c:ref(k) }); k.J.front = k.J.front.filter(x => x !== k.u); log(`${nomVu(k)} tombe.`); }
+      else tombe(k);
     }
   } else {
     const J = k.J; let r = n, abs = 0;
@@ -856,6 +858,68 @@ function degats(k, n, ignore) {
   }
   fin();
 }
+// 21/11 (lot 1 des cartes nouvelles) : une créature qui tombe, et son « Dernier souffle » (Porte-bannière mourant)
+function tombe(k) {
+  if (!k.J.front.includes(k.u)) return;
+  fx({ t:'tombe', c:ref(k) }); k.J.front = k.J.front.filter(x => x !== k.u); log(`${nomVu(k)} tombe.`);
+  if (k.u.souffle && !k.u.souffleFait) { k.u.souffleFait = true; dernierSouffle(k.J, k.u); }
+}
+function dernierSouffle(J, u) {
+  if (u.souffle === 'banniere') { if (!J.front.length) { log(`🚩 Dernier souffle de ${u.n} : personne pour relever la bannière.`); return; }
+    J.front.forEach(x => { x.a += 1; x.v += 1; x.vmax += 1; fx({ t:'soin', c:ref({ J, u:x }), n:1, v:x.v }); });
+    log(`🚩 Dernier souffle de ${u.n} : les autres créatures de ${J.nom} gagnent +1 attaque et +1 vie.`); fx({ t:'annonce', txt:'🚩 Dernier souffle : +1 / +1 !' }); }
+}
+// 21/11 : la créature échange son attaque et sa vie (Fiole du Renversement, Grand Renversement). Garde-fou : 6 d'attaque au plus.
+// Une créature à 0 d'attaque se retrouve à 0 vie : elle tombe (comme chez Hearthstone).
+function renverse(k) {
+  const u = k && k.u; if (!u || !k.J.front.includes(u)) return;
+  const aff0 = atk(k.J, u), a0 = Math.max(0, u.a + (u.tmp || 0)), v0 = u.v;
+  if (S.renv) S.renv.add(u); u.a = Math.min(6, v0); u.tmp = 0; u.v = a0; u.vmax = a0; // l'échange n'est pas un « bonus » pour le Paratonnerre
+  log(`⇅ ${nomVu(k)} échange son attaque et sa vie : ${u.a} / ${u.v}.`);
+  fx({ t:'transforme', c:ref(k), txt:`⇅ ${atk(k.J, u)} / ${u.v}`, a0:aff0, v0, a1:atk(k.J, u), v1:u.v });
+  if (u.v <= 0) tombe(k);
+}
+// ce que l'échange rapporte à J (pour l'ordinateur) : affaiblir ou tuer une créature adverse, armer une des siennes
+function gainRenverse(J, k) {
+  const u = k.u; if (!u) return 0; const a0 = Math.max(0, u.a + (u.tmp || 0)), na = Math.min(6, u.v), nv = a0;
+  if (k.J !== J) return nv <= 0 ? 20 + a0 * 4 + u.v : (a0 - na) * 5;
+  if (nv <= 0) return -60;
+  return u.pret || u.charge ? (na - a0) * 4 - Math.max(0, u.v - nv) * 1.5 : (na - a0) * 2 - Math.max(0, u.v - nv) * 2;
+}
+// 21/11 : Métamorphose en crapaud : la créature perd tout et devient un Crapaud 0 / 1
+function crapaud(k) {
+  const u = k && k.u; if (!u || !k.J.front.includes(u)) return;
+  const aff0 = atk(k.J, u), v0 = u.v, id = u.id, ancien = nomVu(k);
+  Object.keys(u).forEach(x => { delete u[x]; }); Object.assign(u, { id, n:'Crapaud', a:0, v:1, vmax:1, pret:false, crapaud:true });
+  log(`🐸 ${ancien} devient un Crapaud 0 / 1.`); fx({ t:'transforme', c:ref(k), txt:'🐸 Crapaud', a0:aff0, v0, a1:0, v1:1 });
+}
+// 21/11 : Découverte (Grimoire de la Guilde) : 3 cartes de la famille du héros (son deck, ses cartes à trouver, la Guilde), il en garde une
+function famille(J) {
+  const h = HEROS[J.id] || {}, l = new Set([...(h.deck || []), ...GUILDE]);
+  Object.keys(CARTES).forEach(x => { const c = CARTES[x]; if (c.heros === J.id && !c.nouv) l.add(x); });
+  return [...l].filter(x => CARTES[x] && x !== 'gu_grimoire' && !(CARTES[x].r === 'm') && !(CARTES[x].heros && CARTES[x].heros !== J.id));
+}
+function decouverte(J) {
+  const trois = melange(famille(J)).slice(0, 3); if (!trois.length) return;
+  const garde = x => { if (J.main.length >= 7) { log('Main pleine : la carte découverte est perdue.'); return; } J.main.push(x); J.remise = { k:x, t:J.tours }; log(`📖 ${J.nom} découvre ${J === S.J || S.auto ? CARTES[x].n : 'une carte'} (1 PC de moins ce tour).`); };
+  if (J.ordi || S.auto || J !== S.J) { garde([...trois].sort((a, b) => (CARTES[b].c - CARTES[a].c) || (b.length - a.length))[0]); return; }
+  window._cbDec = i => { fermer(); garde(trois[i]); rendu(); };
+  const cartes = trois.map((x, i) => `<div onclick="_cbDec(${i})" style="cursor:pointer">${typeof carteGuilde === 'function' ? carteGuilde(x, { w:104, cout:Math.max(0, CARTES[x].c - 1) }) : `<button>${CARTES[x].n}</button>`}</div>`).join('');
+  fenetre(`<h2>📖 Grimoire de la Guilde</h2><p>Choisis une carte : elle va dans ta main et coûte 1 PC de moins ce tour.</p><div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap">${cartes}</div>`);
+  const f = document.querySelector('#fen .fenetre'); if (f) f.onclick = null; // on doit choisir : pas de fermeture en touchant à côté
+}
+// 21/11 : une carte dont la cible dépend du dé (Parchemin à deux faces : pair = rien à viser, impair = une cible)
+const cibleDeCarte = (def, vs) => def && (def.cibleSi ? def.cibleSi(vs || []) : def.cible);
+// 21/11 : le Paratonnerre (Réaction) : on regarde l'attaque des créatures de celui qui joue avant et après son action
+function paraAvant(J) { const D = S && !S.coop && adv(J); if (!D || !D.paratonnerre) return null; S.renv = new Set(); return J.front.map(u => [u, u.a, u.tmp || 0]); }
+function paraApres(J, avant) {
+  const D = adv(J); if (!avant || !D.paratonnerre || S.fini) return;
+  let da = 0, dt = 0; const renv = S.renv || new Set(); S.renv = null; avant.forEach(([u, a, t]) => { if (!J.front.includes(u) || renv.has(u)) return; if (u.a > a) { da += u.a - a; u.a = a; } if ((u.tmp || 0) > t) { dt += u.tmp - t; u.tmp = t; } });
+  if (!da && !dt) return;
+  D.paratonnerre = false; const r = [...D.front].sort((x, y) => atk(D, x) - atk(D, y))[0];
+  log(`⚡ Paratonnerre de ${D.nom} : le bonus d’attaque (+${da + dt}) est détourné${r ? ` vers ${r.n}` : ' et se perd'}.`); fx({ t:'annonce', txt:'⚡ Paratonnerre !' });
+  if (r) { r.a += da; r.tmp = (r.tmp || 0) + dt; fx({ t:'transforme', c:ref({ J:D, u:r }), txt:`⚡ +${da + dt} attaque`, a0:atk(D, r) - da - dt, v0:r.v, a1:atk(D, r), v1:r.v }); }
+}
 // le boss change de phase (Garde et Pouvoir) quand il passe sous 2/3 puis 1/3 de ses PV
 function phaseBoss(J) {
   const h = HEROS[J.id], ph = h.phases; let p = 0;
@@ -873,7 +937,7 @@ function fin() { if (S.fini) return;
 function debutTour(J) {
   if (S.chasse && J === S.J && J.tours >= S.chasse && !S.fini) { S.fini = 'gagne'; log(`🎯 Fin de la chasse : ${S.O.pvMax - Math.max(0, S.O.pv)} dégâts infligés.`); return; } // 14/11 nuit : la Chasse au boss (epreuves.html)
   if (J.gardeB > 0 || J.gardeE > 0) fx({ t:'finGarde', s:J === S.J ? 'J' : 'O', n:J.gardeB });
-  J.tours++; J.gardeB = 0; J.gardeE = 0; J.contre = J.piege = J.cor = J.fournaise = J.paillasse = J.esquive = false;
+  J.tours++; J.gardeB = 0; J.gardeE = 0; J.contre = J.piege = J.cor = J.fournaise = J.paillasse = J.esquive = J.paratonnerre = J.sangsueTour = false; J.remise = null;
   J.relance = 2 + (J.relanceRang || 0) + (J.boussole ? 1 : 0) + (J.reliques.includes('oeil') ? 1 : 0) + (J.benes.includes('relance') ? 1 : 0); S.acteur = null; J.cartesJouees = 0; J.six = 0; J.pureteTour = false; J.transmu = false; J.dernierSort = null; J.gardeFaite = false;
   if (J.tours > 1) { J.pc = Math.min(6, J.pc + 1); pioche(J, 1); if (J === S.J && !S.auto && !J.ordi) son('pioche'); }
   if (J.saigne) { log(`${J.nom} saigne : −${J.saigne * 2} PV.`); J.pv -= J.saigne * 2; fx({ t:'degat', c:ref({ J }), n:J.saigne * 2, abs:0, pv:Math.max(0, J.pv), mot:'Saignement' }); fin(); }
@@ -886,6 +950,7 @@ function debutTour(J) {
   if (J.oeuvre) { J.des.forEach(d => { d.v = J.oeuvre; }); log(`Grand œuvre : tous les dés de ${J.nom} montrent ${J.oeuvre}.`); J.oeuvre = 0; }
   else if (!J.ordi && !S.auto) J.aLancer = true;
   else J.des.forEach(d => lance(J, d));
+  if (J.gel) { J.des.push({ sac:[], v:J.gel, pose:false, mod:false, gele:true, i:J.des.length }); log(`❄ ${J.nom} reprend son dé gelé : un ${J.gel}.`); J.gel = 0; } // 21/11 : Rune de gel
   J.front.forEach(u => { u.prise = !!u.entrave; u.pret = !u.entrave; u.entrave = false; u.defense = false; }); // 20/11 : prise = bloquée PENDANT ce tour (les ronces se voient)
   log(J.aLancer ? `— Tour ${J.tours} de ${J.nom}` : `— Tour ${J.tours} de ${J.nom} : ${J.des.map(d => d.v).join(' · ')}`);
 }
@@ -893,7 +958,8 @@ function coutCarte(J, k) {
   const c = CARTES[k]; let n = c.c;
   if (S.salle.id === 'echos' && J.cartesJouees === 0) n = Math.max(0, n - 1);
   if (c.t === 'e' && J.forgeGratuite) n = 0;
-  if (J.ameliorees && J.ameliorees.includes(k)) n = Math.max(0, n - 1); // 14/11 nuit : carte améliorée au camp de la Grande aventure
+  if (J.ameliorees && J.ameliorees.includes(k)) n = Math.max(0, n - 1);
+  if (J.remise && J.remise.k === k && J.remise.t === J.tours) n = Math.max(0, n - 1); // 21/11 : carte découverte par le Grimoire // 14/11 nuit : carte améliorée au camp de la Grande aventure
   return n;
 }
 // les monstres de l'Odyssée ont leur propre Frappe (plus faible) ; les héros gardent la Frappe commune
@@ -908,6 +974,7 @@ function ciblesPossibles(J, type) {
   if (type === 'uniteE') return vis.map(u => ({ J:D, u }));
   // 15/11 soir (l'utilisateur : « je ne peux pas jouer la Torche, pourquoi ? » : sa seule cible était Cachée) : la Torche éclaire, elle VOIT les Cachées
   if (type === 'uniteEC') return D.front.map(u => ({ J:D, u }));
+  if (type === 'uniteT') return [...(def.length ? def : vis).map(u => ({ J:D, u })), ...J.front.map(u => ({ J, u }))]; // 21/11 : toute créature, à toi ou à l'adversaire (Fiole du Renversement)
   if (type === 'allie') return [{ J }, ...J.front.map(u => ({ J, u }))];
   if (type === 'uniteA') return J.front.map(u => ({ J, u }));
   if (type === 'barriereA') return J.front.filter(u => u.barriere).map(u => ({ J, u }));
@@ -916,7 +983,7 @@ function ciblesPossibles(J, type) {
 function cibleValide(J, k, type) { if (k && (!k.u || k.J.front.includes(k.u))) return k; return cibleAuto(J, type); }
 // Zéphine, l'alchimiste : son +1 / −1 ne coûte qu'1 PC (sa spécialité reste plus forte que celle des autres)
 const coutAjuste = J => J.id === 'zephine' ? 1 : 2;
-const ECHO_NON = ['distil', 'precipite', 'fiole', 'chance', 'retremper'];
+const ECHO_NON = ['distil', 'precipite', 'fiole', 'chance', 'retremper', 'gu_gel'];
 function echoPossible(J) { return !!(J.dernierSort && !ECHO_NON.includes(J.dernierSort.key)); }
 function permis(J, quoi, vs, ds) {
   if (quoi === 'pcSoins') return false;
@@ -934,7 +1001,8 @@ function permis(J, quoi, vs, ds) {
   const c = CARTES[quoi];
   if (c.t === 's' && J.silence) return false;
   if (c.t === 'u' && J.front.length >= 5) return false;
-  if (c.cible && c.cible !== 'de' && !ciblesPossibles(J, c.cible).length) return false;
+  const ct = cibleDeCarte(c, vs); if (ct && ct !== 'de' && !ciblesPossibles(J, ct).length) return false;
+  if ((quoi === 'gu_gel' && J.gel) || (quoi === 'gu_sangsue' && J.sangsue)) return false; // 21/11 : un seul dé gelé à la fois ; une seule Lame-sangsue
   if (c.cible === 'de' && !J.des.some(d => !d.pose && !(ds || []).includes(d))) return false;
   if (quoi === 'echo' && !echoPossible(J)) return false; // 13/11 soir : Écho sans Sort à rejouer partait dans le vide
   return J.pc >= coutCarte(J, quoi) && c.cond(vs, ds);
@@ -942,7 +1010,9 @@ function permis(J, quoi, vs, ds) {
 // 14/11 (l'utilisateur : « je veux voir les dés de l'ennemi : la colonne de droite est inutile pendant son tour ») :
 // on note l'état de ses dés (lancés, relancés, posés) dans la file d'animations ; joue1 les dessine dans la colonne de droite
 function desO(quoi) { if (S && S.O && !S.coop) fx({ t:'desO', quoi:quoi || '', v:S.O.des.map(d => d.v), p:S.O.des.map(d => !!d.pose), id:S.O.id }); }
-function pose(J, quoi, ds, k, indexMain) {
+// 21/11 : pose passe par le Paratonnerre (une créature de celui qui joue gagne de l'attaque → le bonus est détourné)
+function pose(J, quoi, ds, k, indexMain) { const avant = paraAvant(J); poseAction(J, quoi, ds, k, indexMain); paraApres(J, avant); }
+function poseAction(J, quoi, ds, k, indexMain) {
   const vs = vals(ds); S.acteur = J; if (J === S.J && !S.auto && !J.ordi && quoi !== 'pcRelance') son('poser');
   if (quoi === 'pcRelance') { J.pc -= 1; const a = ds[0].v; lance(J, ds[0]); log(`${J.nom} paie 1 PC et relance un ${a} : ${ds[0].v}.`); return; }
   if (quoi === 'pcAjuste') { const c = coutAjuste(J); J.pc -= c; const a = ds[0].v, v = Math.max(1, Math.min(6, a + (k && k.sens || 1))); modifie(J, ds[0], v); log(`${J.nom} paie ${c} PC : ${a} devient ${v}.`); return; }
@@ -962,13 +1032,14 @@ function pose(J, quoi, ds, k, indexMain) {
     if (J.benes.includes('gardex2') && !J.gardeX2 && J.gardeB > g0) { J.gardeB += J.gardeB - g0; J.gardeX2 = true; log('Première parade : Garde doublée.'); }
     const quoiG = J.gardeB > g0 ? `Bouclier ${J.gardeB}` : J.gardeE > e0 ? `Épines ${J.gardeE}` : J.esquive && !q0 ? 'Esquive' : h.garde.n;
     fx({ t:'garde', s:J === S.J ? 'J' : 'O', nom:h.garde.n, quoi:quoiG, vs, plus:J.gardeB > g0 ? J.gardeB - g0 : 0, regle:h.garde.d }); bilan(J, 'gardes', `Garde : ${quoiG}`); return; }
-  if (quoi === 'frappe') { log(`${J.nom} : Frappe (${vs.join(', ')}) : ${frappeDe(J).dg(vs)} dégâts.`); fx({ t:'tir', id:J.id, s:J === S.J ? 'J' : 'O', vers:k && ref(k), nom:'Frappe', vs, dg:frappeDe(J).dg(vs), cible:k && nomVu(k) }); bilan(J, 'actions', `⚔ Frappe (${vs.join('·')}) : ${frappeDe(J).dg(vs)} dégâts`); frappeDe(J).f(J, vs, k); return; }
+  if (quoi === 'frappe') { log(`${J.nom} : Frappe (${vs.join(', ')}) : ${frappeDe(J).dg(vs)} dégâts.`); fx({ t:'tir', id:J.id, s:J === S.J ? 'J' : 'O', vers:k && ref(k), nom:'Frappe', vs, dg:frappeDe(J).dg(vs), cible:k && nomVu(k) }); bilan(J, 'actions', `⚔ Frappe (${vs.join('·')}) : ${frappeDe(J).dg(vs)} dégâts`); frappeDe(J).f(J, vs, k);
+    if (J.sangsue && !J.sangsueTour && !S.fini) { J.sangsueTour = true; const m = Math.floor(frappeDe(J).dg(vs) / 2); if (m) { log(`🩸 Lame-sangsue : ${J.nom} récupère ${m}.`); soin(J, m); } } return; } // 21/11
   if (quoi === 'technique') { log(`${J.nom} : Technique (${vs.join(', ')}) : ${techDg(vs)} dégâts.`); fx({ t:'tir', id:J.id, s:J === S.J ? 'J' : 'O', vers:k && ref(k), nom:'Technique', vs, dg:techDg(vs), cible:k && nomVu(k) }); bilan(J, 'actions', `⚔ Technique (${vs.join('·')}) : ${techDg(vs)} dégâts`); TECHNIQUE.f(J, vs, k); return; }
   if (quoi === 'pouvoir') { log(`${J.nom} : ${h.pouvoir.n} !`); bilan(J, 'actions', `✨ Pouvoir : ${h.pouvoir.n} (${vs.join('·')})`); fx({ t:'carte', key:'pouvoir', id:J.id, s:J === S.J ? 'J' : 'O', nom:h.pouvoir.n, txt:h.pouvoir.d, sorte:'Pouvoir', vers:k && k.J && ref(k), vs }); h.pouvoir.f(J, vs, k, ds); return; }
   if (quoi === 'ultime') { J.pc -= 3; J.ultimeFait = true; log(`${J.nom} : ULTIME, ${h.ultime.n} !`); bilan(J, 'actions', `⚡ ULTIME : ${h.ultime.n}`); fx({ t:'ultime', s:J === S.J ? 'J' : 'O', id:J.id, nom:h.ultime.n, d:h.ultime.d, cit:h.cit, vers:k && k.J && ref(k) }); h.ultime.f(J, vs, k, ds); return; }
   const c = CARTES[quoi];
   const cout = coutCarte(J, quoi);
-  J.pc -= cout; J.cartesJouees++; if (J === S.J && !S.auto) typeof guildeEvt === 'function' && guildeEvt('carte', 1);
+  J.pc -= cout; J.cartesJouees++; if (J.remise && J.remise.k === quoi) J.remise = null; // 21/11 : la remise du Grimoire ne sert qu'une fois if (J === S.J && !S.auto) typeof guildeEvt === 'function' && guildeEvt('carte', 1);
   if (c.t === 'e' && J.forgeGratuite) J.forgeGratuite = false;
   J.main.splice(indexMain, 1);
   log(`${J.nom} joue ${c.n} avec ${vs.length > 1 ? 'les dés' : 'le dé'} ${vs.join(', ')} · ${cout} PC (reste ${J.pc}).`);
@@ -1010,7 +1081,8 @@ const protege = u => u.barriere || u.defense;
 const ciblesAttaque = D => { const vis = D.front.filter(u => !u.cachee); if (vis.some(u => u.defense)) return vis.filter(u => u.defense).map(u => ({ J:D, u })); return vis.some(protege) ? vis.filter(protege).map(u => ({ J:D, u })) : [{ J:D }, ...vis.map(u => ({ J:D, u }))]; };
 // fiche d'une créature : ce qu'elle fait, ses mots-clés expliqués, son état
 const MOTS = { barriere:['Barrière', 'les CRÉATURES adverses doivent l’attaquer d’abord. Attention : les Frappes, Techniques, Pouvoirs et sorts passent par-dessus (seule une créature EN DÉFENSE les arrête).'], cachee:['Cachée', 'on ne peut ni l’attaquer ni la viser tant qu’elle n’a pas attaqué. Sa première attaque depuis l’ombre est une EMBUSCADE : +2 dégâts. Ensuite elle se montre (les cartes qui « révèlent » la font sortir de l’ombre plus tôt).'],
-  charge:['Charge', 'peut attaquer dès son arrivée.'], defense:['En défense', 'n’attaque pas ce tour ; jusqu’à ton prochain tour, elle prend TOUS les coups qui visent ton camp : attaques des créatures, Frappes, Techniques, Pouvoirs et sorts.'], entrave:['Entravée', 'ne pourra pas attaquer au prochain tour.'] };
+  charge:['Charge', 'peut attaquer dès son arrivée.'], defense:['En défense', 'n’attaque pas ce tour ; jusqu’à ton prochain tour, elle prend TOUS les coups qui visent ton camp : attaques des créatures, Frappes, Techniques, Pouvoirs et sorts.'], entrave:['Entravée', 'ne pourra pas attaquer au prochain tour.'],
+  souffle:['Dernier souffle', 'quand cette créature tombe, son effet se déclenche (il est écrit sur sa carte). Renvoyée dans la main, elle ne tombe pas : rien ne se passe.'], crapaud:['Crapaud', 'une créature transformée par la Métamorphose : elle a tout perdu (attaque, vie, Barrière, pouvoirs).'] }; // 21/11
 function ficheUnite(P, u) {
   if (P !== S.J && u.cachee) { fenetre('<h2>👁 Créature cachée</h2><p>On ne sait pas ce que c’est : ni son nom, ni son attaque, ni sa vie.</p><p>Tu ne peux ni l’attaquer ni la viser. Elle se montrera quand elle attaquera (avec une <b>Embuscade</b> : +2 dégâts), ou si tu joues une carte qui <b>révèle</b> les Cachées (Torche, Lanterne runique, Flèche de repérage).</p><div class="choixh"><button onclick="fermer()">Compris</button></div>'); return; }
   const c = u.key && CARTES[u.key], art = typeof ARTS !== 'undefined' && ARTS.includes(u.louve ? 'louve' : u.key) ? `<img src="cartes/${u.louve ? 'louve' : u.key}.webp?v=1" style="width:100%;border-radius:10px;margin:4px 0" alt="">` : RENFORT_IMG[u.n] ? `<img src="portraits/${RENFORT_IMG[u.n]}.webp" style="width:100%;border-radius:10px;margin:4px 0" alt="">` : '';
@@ -1117,6 +1189,7 @@ function cibleAuto(J, type) {
   if (!l.length) return null;
   if (type === 'ennemi') { const u = l.find(x => x.u && (x.u.louve || x.u.a >= 6)); return u && Math.random() < .35 ? u : l[0]; }
   if (type === 'uniteE' || type === 'uniteEC') return [...l].sort((a, b) => atk(D, b.u) - atk(D, a.u))[0];
+  if (type === 'uniteT') return [...l].sort((a, b) => gainRenverse(J, b) - gainRenverse(J, a))[0]; // 21/11
   if (type === 'allie') { const u = J.front.find(x => x.v < x.vmax - 2); return J.pv < J.pvMax - 5 || !u ? { J } : { J, u }; }
   if (type === 'uniteA') return [...l].sort((a, b) => (b.u.pret - a.u.pret) || (b.u.a - a.u.a))[0];
   return l[0];
@@ -1159,7 +1232,7 @@ function joueAuto(J) {
   for (let i = 0; i < 10; i++) {
     transmutationAuto(J);
     b = meilleurCoup(J); if (!b || b.score < 8) break;
-    const def = defDe(J, b.quoi), t = def && def.cible;
+    const def = defDe(J, b.quoi), t = cibleDeCarte(def, vals(b.ds));
     let k = null;
     if (t === 'de' && b.quoi === 'ajuste' && J._ajuste && !J._ajuste.d.pose && !b.ds.includes(J._ajuste.d)) k = { d:J._ajuste.d, sens:J._ajuste.sens };
     else if (t === 'de') { const autres = J.des.filter(d => !d.pose && !b.ds.includes(d)).sort((x, y) => x.v - y.v); k = { d:autres[0] }; }
@@ -1202,6 +1275,9 @@ function raisonCarte(J, k) {
   if (c.cible === 'barriereA' && !J.front.some(u => u.barriere)) return 'Il te faut une de tes créatures à Barrière';
   if ((c.cible === 'uniteE' || c.cible === 'uniteEC') && !ciblesPossibles(J, c.cible).length) return c.cible === 'uniteE' && adv(J).front.some(u => u.cachee) ? 'Les créatures adverses sont Cachées : on ne peut pas les viser (la Torche, elle, les voit)' : 'Aucune créature adverse à viser';
   if (c.cible === 'de' && !J.des.some(d => !d.pose && !sel.includes(d))) return 'Il te faut un autre dé libre';
+  if (c.cible === 'uniteT' && !ciblesPossibles(J, 'uniteT').length) return 'Aucune créature à viser'; // 21/11
+  if (k === 'gu_gel' && J.gel) return 'Tu as déjà un dé gelé pour ton prochain tour';
+  if (k === 'gu_sangsue' && J.sangsue) return 'Tu portes déjà la Lame-sangsue';
   if (k === 'echo' && !echoPossible(J)) return J.dernierSort ? `Écho ne peut pas rejouer ${CARTES[J.dernierSort.key].n}` : 'Joue d’abord un Sort ce tour-ci (une créature ne compte pas) : Écho le rejouera';
   if (!c.cond(vs, sel)) return vs.length > 1 && /1 dé|dé [≤≥=]|dé pair|dé impair/.test(c.txt) ? 'Choisis un seul dé' : `Il faut : ${txtLisible(c.txt)}`;
   if (J.pc < cout) return `Il te manque ${cout - J.pc} PC`;
@@ -1554,7 +1630,7 @@ function vise(quoi, im) {
   if (quoi === 'pcRelance' && permis(S.J, quoi, vals(sel), sel)) { const ds = sel; sel = []; rouler(ds, () => { pose(S.J, 'pcRelance', ds); rendu(); }); return; }
   if (quoi === 'pcAjuste' && permis(S.J, quoi, vals(sel), sel)) { const d = sel; choix(`Ton ${d[0].v} devient…`, [d[0].v > 1 ? `${d[0].v - 1} (−1)` : '—', d[0].v < 6 ? `${d[0].v + 1} (+1)` : '—'], i => { if ((i === 0 && d[0].v === 1) || (i === 1 && d[0].v === 6)) return; pose(S.J, 'pcAjuste', d, { sens:i === 0 ? -1 : 1 }); sel = []; rendu(); }); return; }
   if (!permis(S.J, quoi, vals(sel), sel)) { aide(quoi); return; }
-  const def = defDe(S.J, quoi), t = def && def.cible;
+  const def = defDe(S.J, quoi), t = cibleDeCarte(def, vals(sel));
   if (t && quoi !== 'garde') { ciblage = { quoi, ds:sel, im, type:t }; rendu(); return; }
   if (CARTES[quoi] && soinPrevu(quoi, vals(sel)) !== null) { ciblage = { quoi, ds:sel, im, type:'soin', choisi:{ J:S.J } }; montreConfirme(); return; }
   // 15/11 (l'utilisateur : « on touche le bouclier, l'effet est immédiat ; si on ne sait pas, c'est problématique ») : une CONFIRMATION
@@ -1648,7 +1724,7 @@ function rouler(ds, ensuite) {
 function lancerMesDes() {
   const J = S.J; if (!J.aLancer || roule) return;
   demarreMusique();
-  rouler(J.des, () => { J.des.forEach(d => lance(J, d)); J.aLancer = false; if (J.neuf >= 0) { J.neufJusque = Date.now() + 3500; setTimeout(() => { if (!fxOn && S && S.J === J) dessine(); }, 3600); } log(`Tu lances : ${J.des.map(d => d.v).join(' · ')}`); rendu(); });
+  rouler(J.des.filter(d => !d.gele), () => { J.des.filter(d => !d.gele).forEach(d => lance(J, d)); J.aLancer = false; if (J.neuf >= 0) { J.neufJusque = Date.now() + 3500; setTimeout(() => { if (!fxOn && S && S.J === J) dessine(); }, 3600); } log(`Tu lances : ${J.des.map(d => d.v).join(' · ')}`); rendu(); });
 }
 // 11/11 : d'abord les relances gratuites du tour ; ensuite chaque dé relancé coûte 1 PC
 function relancer() {
@@ -1696,6 +1772,9 @@ const PASTILLES = {
   ultime:['⚡ Jauge d’Ultime', '+1 par dé posé (pas vendu), +1 tous les 5 dégâts reçus. Pleine (20), elle permet l’Ultime du héros : 3 PC + sa combinaison de dés, une fois par partie.'],
   ultimefait:['Ultime utilisé', 'Ce héros a déjà lancé son Ultime : une seule fois par partie.'],
   main:['🂠 Cartes en main', '+1 carte au début de chaque tour, 7 au plus.'],
+  paratonnerre:['⚡ Paratonnerre', 'La prochaine fois qu’une créature adverse gagne de l’attaque, elle perd ce bonus et c’est la créature la plus faible de ce héros qui le reçoit. Dure jusqu’à son prochain tour.'],
+  sangsue:['🩸 Lame-sangsue', 'Pour toute la partie : la première Frappe de chaque tour soigne ce héros de la moitié de ses dégâts.'],
+  gel:['❄ Dé gelé', 'Ce héros a gelé un dé avec la Rune de gel : à son prochain tour, il le reprend avec la même face, en plus de son lancer.'],
   piegecache:['🪤 Piège caché', 'L’adversaire a posé un piège (une Réaction). Tu ne sais pas lequel : il se déclenchera quand tu feras ce qu’il attend (par exemple attaquer avec une créature). À toi de deviner…'],
 };
 // toucher une étiquette : son explication (sauf pendant qu'on vise : le toucher sert alors à viser le héros)
@@ -1712,7 +1791,8 @@ document.addEventListener('click', e => {
 function effetsListe(P) {
   return [P.contre && ['contre', '⚔', 'Contre-attaque 6'], P.piege && ['piege', '🪤', 'Piège'], P.fournaise && ['fournaise', '🔥', 'Fournaise'], P.paillasse && ['paillasse', '⚗', 'Paillasse'],
     P.esquive && ['esquive', '💨', 'Esquive'], P.cor && ['cor', '📯', 'Cor'], P.gardeE && ['epines', '🌿', `Épines ${P.gardeE}`], P.poison && ['poison', '☠', `Poison ${P.poison}`],
-    P.saigne && ['saigne', '🩸', `Saignement ${P.saigne}`], P.handicap && ['handicap', '🎲', 'Handicap'], P.silence && ['silence', '🤐', 'Silence']].filter(Boolean);
+    P.saigne && ['saigne', '🩸', `Saignement ${P.saigne}`], P.handicap && ['handicap', '🎲', 'Handicap'], P.silence && ['silence', '🤐', 'Silence'],
+    P.paratonnerre && ['paratonnerre', '⚡', 'Paratonnerre'], P.sangsue && ['sangsue', '🩸', 'Lame-sangsue'], P.gel && ['gel', '❄', `Dé gelé : ${P.gel}`]].filter(Boolean);
 }
 const ETQ_DEFAUT = { haut:[79.3, 15.85], bas:[79.3, 74.65] };
 function placeEffet(R, c, i) {
@@ -1723,7 +1803,7 @@ function placeEffet(R, c, i) {
 function effetsHTML() {
   if (!S || !S.J || !S.O) return ''; const R = (typeof plateauIle === 'function' && plateauIle() && PLACEMENTS_ILE[plateauIle()]) || (typeof PLACEMENT_DUEL !== 'undefined' ? PLACEMENT_DUEL : null);
   // 21/11 (l'utilisateur : « un piège : moi je le sais, l'adversaire ne doit pas savoir lequel ») : en face, un piège posé s'affiche « 🪤 Piège », sans dire lequel
-  const h = [['haut', S.O], ['bas', S.J]].map(([c, P]) => { let l = effetsListe(P); if (c === 'haut') { const secrets = ['piege', 'paillasse']; const n = l.filter(x => secrets.includes(x[0])).length; l = l.filter(x => !secrets.includes(x[0])); if (n) l.unshift(['piegecache', '🪤', n > 1 ? `${n} pièges` : 'Piège']); } if (l.length > 6) l.splice(5, l.length - 5, ['plus', '➕', `${l.length - 5} autres`]);
+  const h = [['haut', S.O], ['bas', S.J]].map(([c, P]) => { let l = effetsListe(P); if (c === 'haut') { const secrets = ['piege', 'paillasse', 'paratonnerre']; const n = l.filter(x => secrets.includes(x[0])).length; l = l.filter(x => !secrets.includes(x[0])); if (n) l.unshift(['piegecache', '🪤', n > 1 ? `${n} pièges` : 'Piège']); } if (l.length > 6) l.splice(5, l.length - 5, ['plus', '➕', `${l.length - 5} autres`]);
     return l.map(([k, e, t], i) => { const [x, y] = placeEffet(R, c, i); return `<span data-k="${k}" class="effet" style="left:${x}cqw;top:${y}cqh">${e} ${t}</span>`; }).join(''); }).join('');
   return h ? `<div class="etats effets">${h}</div>` : '';
 }
@@ -1810,7 +1890,7 @@ function dessine() {
   }
   else if (attaquant) bandeau = `⚔ ${attaquant.n} attaque : touche une cible en vert.`;
   // 21/11 (l'utilisateur : « je dois faire défiler pour voir ce que le dé peut encore faire ») : texte court, et les deux infos du dé sur UNE ligne
-  else if (sel.length) { const d = sel.length === 1 ? sel[0] : null, info = [d && d.sac && !d.extra && J.id !== 'oria' ? `🎲 encore possible : ${d.sac.length ? [...d.sac].sort().join('·') : 'tout'}` : '', d && J.id === 'zephine' && !J.transmu ? `⚗ retourné = <b>${opp(d.v)}</b>` : ''].filter(Boolean).join(' · ');
+  else if (sel.length) { const d = sel.length === 1 ? sel[0] : null, info = [d && d.sac && !d.extra && J.id !== 'oria' ? `<span style="white-space:nowrap">🎲 encore possible : ${d.sac.length ? [...d.sac].sort().join('·') : 'tout'}</span>` : '', d && J.id === 'zephine' && !J.transmu ? `<span style="white-space:nowrap">⚗ retourné = <b>${opp(d.v)}</b></span>` : ''].filter(Boolean).join(' · ');
     bandeau = `Dés choisis : ${vals(sel).join(', ')}. Touche une action ou une carte verte.${info ? `<br><small>${info}</small>` : ''}`; }
   else if (J.des.some(d => !d.pose)) bandeau = 'Touche un ou plusieurs dés, puis ce que tu veux en faire : une action à gauche (⚔ 🛡 ✦ ⚡) ou une carte en bas.';
   else if (J.front.some(u => u.pret && u.louve)) bandeau = '🐺 Touche la Louve : elle lance ses 3 dés et attaque. Sinon, elle attaque seule à « Fin du tour ».';
@@ -1821,7 +1901,7 @@ function dessine() {
   <div class="salle"><span class="st">${S.coop ? `<b>⚔️ L’Invasion</b> · ${J.ordi ? `${J.nom} (compagnon) joue…` : J.qui === 'toi' ? 'à toi' : `au tour de ${J.nom}`} · ${S.salle.n}` : S.ody ? `<b>${S.ody.titre}</b> · ${S.salle.n} : ${S.salle.d}${J.reliques.length ? ' <span class="rel">' + J.reliques.map(r => `<i title="${RELIQUES[r].n}" onclick="aideRelique('${r}')">${RELIQUES[r].e}</i>`).join('') + '</span>' : ''}` : `<b>${S.salle.n}</b> · ${S.salle.d}`}</span></div>
   <div class="plateau tapis unique ${S.lieu ? 'avecLieu' : ''} ${plateauIle() ? 'ile-' + plateauIle() : ''}">${effetsHTML()}${plateauIle() ? animIle(plateauIle()) : S.lieu ? `<div class="champLieu lieu-${S.lieu}"></div>` : ''}${barre(O, true)}${front(O, true)}${front(J, false)}${barre(J, false)}
     ${colonneActions(J, h)}
-    <div class="des" ontouchstart="glisseDebut(event)" ontouchend="glisseFin(event)">${J.des.map((d, i) => `<div class="d ${sel.includes(d) ? 'sel' : ''} ${d.pose ? 'pose' : ''} ${d.mod ? 'mod' : ''} ${J.aLancer ? 'cache' : ''} ${i === J.neuf && (J.aLancer || Date.now() < (J.neufJusque || 0)) ? 'neuf' : ''}" onclick="choisirDe(${i})"><img src="${FACE(J.id, d.v || 1)}" alt="${d.v || '?'}">${d.sp && !J.aLancer && typeof FACES_FORGE !== 'undefined' ? `<span class="spf">${FACES_FORGE[d.sp].e}</span>` : ''}<div class="sac">${i === J.neuf && (J.aLancer || Date.now() < (J.neufJusque || 0)) ? '✨ neuf' : sacPastilles(J, d)}</div></div>`).join('')}${[...Array(Math.max(0, 5 - J.des.length)).keys()].map(k => { const i = J.des.length + k, t = i - 1;
+    <div class="des${J.des.length > 5 ? ' six' : ''}" ontouchstart="glisseDebut(event)" ontouchend="glisseFin(event)">${J.des.map((d, i) => `<div class="d ${sel.includes(d) ? 'sel' : ''} ${d.pose ? 'pose' : ''} ${d.mod ? 'mod' : ''} ${d.gele ? 'gele' : ''} ${J.aLancer && !d.gele ? 'cache' : ''} ${i === J.neuf && (J.aLancer || Date.now() < (J.neufJusque || 0)) ? 'neuf' : ''}" onclick="choisirDe(${i})"><img src="${FACE(J.id, d.v || 1)}" alt="${d.v || '?'}">${d.sp && !J.aLancer && typeof FACES_FORGE !== 'undefined' ? `<span class="spf">${FACES_FORGE[d.sp].e}</span>` : ''}<div class="sac">${i === J.neuf && (J.aLancer || Date.now() < (J.neufJusque || 0)) ? '✨ neuf' : sacPastilles(J, d)}</div></div>`).join('')}${[...Array(Math.max(0, 5 - J.des.length)).keys()].map(k => { const i = J.des.length + k, t = i - 1;
       return `<div class="d verrou"><div class="cad">🔒</div><div class="sac">${J.tours >= t ? 'Handicap' : 'tour ' + t}</div></div>`; }).join('')}</div>
     ${J.aLancer ? '<button class="lancer" onclick="lancerMesDes()">🎲 Lancer les dés</button>' : `<div class="bandeau">${bandeau}</div>${sel.length || ciblage || attaquant ? '<button class="annulB" onclick="annuler()">✕ Annuler</button>' : ''}`}
     <div class="main" style="left:${zoneMain().x1}%;width:${zoneMain().x2 - zoneMain().x1}%;top:${zoneMain().y1}%;height:${zoneMain().y2 - zoneMain().y1}%" onclick="if(event.target===this){carteVue=null;rendu();}">${mainEnEventail(J)}</div>
@@ -2437,8 +2517,8 @@ async function joue1(e) {
     c.animate([{ transform:'scale(1)', filter:'none' }, { transform:'scale(1.25)', filter:'hue-rotate(80deg) brightness(1.6)', offset:.25 }, { transform:'scale(.82)', filter:'hue-rotate(80deg) brightness(1.2)', offset:.8 }, { transform:'scale(.9)', filter:'none' }], { duration:2000 * fxVite, fill:'forwards', easing:'ease-in-out' });
     const sp = c.querySelectorAll('.av span'); flotte(c, e.txt, 'nom');
     await dodo(350);
-    defile(sp[0], e.a0 ?? nb(sp[0] && sp[0].textContent), 1, v => `⚔ ${v}`, 'r');
-    defile(sp[1], e.v0 ?? nb(sp[1] && sp[1].textContent), 1, v => `❤ ${v}`, 'r');
+    defile(sp[0], e.a0 ?? nb(sp[0] && sp[0].textContent), e.a1 ?? 1, v => `⚔ ${v}`, 'r');
+    defile(sp[1], e.v0 ?? nb(sp[1] && sp[1].textContent), e.v1 ?? 1, v => `❤ ${v}`, 'r');
     await dodo(1500); c.style.zIndex = ''; return;
   }
   if (e.t === 'nouveauDe') { son('tour'); const d = document.createElement('div'); d.className = 'annonce'; d.innerHTML = `🎲 Nouveau dé !<div style="font-size:.55em;color:#fff">Tu lances maintenant ${e.n} dés${e.n >= 5 ? ' (le maximum)' : ''}</div>`; couche().appendChild(d); await dodo(1300); d.remove(); return; }
