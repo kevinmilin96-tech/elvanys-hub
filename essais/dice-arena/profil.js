@@ -28,6 +28,9 @@ function titresGuilde() {
     ['serie7',    '🔥', 'Fidèle de l’énigme', 'Réussir l’énigme du jour 7 jours de suite.', serieMax >= 7, '#ffb347'],
     ['serie30',   '🌙', 'Esprit affûté', 'Réussir l’énigme du jour 30 jours de suite.', serieMax >= 30, '#8ab4ff'],
     ['serie100',  '🏛', 'Grand Sphinx', 'Réussir l’énigme du jour 100 jours de suite.', serieMax >= 100, '#ffd75e'],
+    // 21/11 : les titres de FIDÉLITÉ, reçus dans la boîte aux lettres aux paliers de 30 et 100 jours joués (amis.js)
+    ['fidele30',  '🏅', 'Pilier de la Guilde', 'Jouer 30 jours (pas forcément à la suite) : cadeau de la boîte aux lettres.', JL('guilde-titres-boite', []).includes('fidele30'), '#e0a84a'],
+    ['fidele100', '👑', 'Légende fidèle', 'Jouer 100 jours (pas forcément à la suite) : cadeau de la boîte aux lettres.', JL('guilde-titres-boite', []).includes('fidele100'), '#ffd75e'],
     ['sphinx',    '🧩', 'Sphinx de la Guilde', 'Résoudre une énigme du dimanche (la plus redoutable de la semaine).', eniDim > 0, '#9be37a'],
     // 14/11 nuit : les titres du Rang de la Guilde (rang.js)
     ...(typeof ROUTE !== 'undefined' ? Object.entries(ROUTE).filter(([, x]) => x[0] === 'titre').map(([n, x]) => [x[1], x[2], x[3], `Atteindre le rang ${n} de la Guilde.`, rgRecompense('titre', x[1]), COULEUR_TITRE_RANG[x[1]] || '#f3c96b']) : []),

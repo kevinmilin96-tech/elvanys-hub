@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Guilde : un cadeau à tous</title>
+<style>
+  body { margin:0; background:#120f24; color:#eee6ff; font:16px/1.45 Georgia, serif; }
+  main { max-width:520px; margin:0 auto; padding:18px 16px 40px; }
+  h1 { color:#f3c96b; font-size:22px; margin:6px 0 4px; }
+  p.doux { color:#b9b0d8; font-size:14px; margin:4px 0 14px; }
+  label { display:block; margin:12px 0 4px; color:#f3c96b; font-size:14px; }
+  input, textarea, select { width:100%; box-sizing:border-box; padding:10px; border-radius:10px; border:1px solid #f3c96b55; background:#1d1838; color:#fff; font:16px Georgia, serif; }
+  textarea { min-height:80px; }
+  .ligne { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  button { margin-top:18px; width:100%; padding:13px; border-radius:12px; border:0; background:#f3c96b; color:#2b1d0a; font:bold 17px Georgia, serif; cursor:pointer; }
+  button:disabled { opacity:.5; }
+  #msg { margin-top:14px; padding:10px; border-radius:10px; display:none; }
+  #msg.ok { display:block; background:#1f4a2a; } #msg.ko { display:block; background:#5a1a1a; }
+  a { color:#8ab4ff; }
+</style>
+</head>
+<body>
+<main>
+  <h1>🎁 Un cadeau à tous les joueurs</h1>
+  <p class="doux">Réservé à l’administrateur du laboratoire. Le cadeau arrive dans la boîte aux lettres 📬 de chaque joueur qui a un compte (<span id="nb">…</span>). Pour les fêtes, ou pour s’excuser après un bug.</p>
+  <div id="pasco" style="display:none"><p>Il faut d’abord se connecter avec le compte administrateur du laboratoire.</p><p><a id="lien-co" href="#">Me connecter</a></p></div>
+  <form id="f" style="display:none">
+    <label for="titre">Titre</label><input id="titre" maxlength="120" placeholder="Joyeux Noël !" required>
+    <label for="message">Message</label><textarea id="message" maxlength="600" placeholder="Moustache vous souhaite de belles fêtes…"></textarea>
+    <div class="ligne">
+      <div><label for="or">🪙 Or</label><input id="or" type="number" min="0" max="5000" value="0"></div>
+      <div><label for="poussiere">🔹 Poussière de rune</label><input id="poussiere" type="number" min="0" max="5000" value="0"></div>
+      <div><label for="eclats">💠 Éclats de Guilde</label><input id="eclats" type="number" min="0" max="200" value="0"></div>
+      <div><label for="pieces">🎒 Pièces d’équipement</label><input id="pieces" type="number" min="0" max="5" value="0"></div>
+    </div>
+    <label for="rarete">Rareté des pièces</label>
+    <select id="rarete"><option value="0">commune</option><option value="1">rare</option><option value="2" selected>épique</option><option value="3">légendaire</option><option value="4">mythique</option></select>
+    <label for="mdp">Ton mot de passe (redemandé à chaque envoi)</label><input id="mdp" type="password" autocomplete="current-password" required>
+    <button id="b" type="submit">Envoyer à tous</button>
+  </form>
+  <div id="msg"></div>
+  <p class="doux" style="margin-top:22px"><a href="menu.html">‹ Retour au menu de la Guilde</a></p>
+</main>
+<script>
+// 21/11/2026 (décision de l'utilisateur) : la page d'administration de la BOÎTE AUX LETTRES. L'administrateur du labo dépose un cadeau
+// dans la boîte de tous les joueurs (route POST /api/hub/guilde/admin/cadeau : compte administrateur du Hub du labo + mot de passe redemandé).
+// La session est celle de la porte du laboratoire (connexion.html range le jeton dans « hub_session_<entreprise> »).
+const ENT = location.hostname.split('.')[0].replace(/-hub$/, '');
+const JETON = localStorage.getItem('hub_session_' + ENT) || '';
+const $ = (id) => document.getElementById(id);
+const msg = (t, ok) => { const m = $('msg'); m.textContent = t; m.className = ok ? 'ok' : 'ko'; };
+const versCo = () => { $('f').style.display = 'none'; $('pasco').style.display = ''; $('lien-co').href = '/connexion.html?changer=1&retour=' + encodeURIComponent(location.pathname); };
+async function api(chemin, corps) {
+  const r = await fetch(chemin, { method: corps ? 'POST' : 'GET', headers: { 'Content-Type': 'application/json', Authorization: JETON }, body: corps ? JSON.stringify(corps) : undefined });
+  let d = {}; try { d = await r.json(); } catch (e) {} return { s: r.status, d };
+}
+(async () => {
+  if (!JETON) { versCo(); return; }
+  const { s, d } = await api('/api/hub/guilde/admin/joueurs').catch(() => ({ s: 0, d: {} }));
+  if (s === 401) { versCo(); return; }
+  if (s !== 200) { msg(d.message || 'Le serveur ne répond pas.'); if (s === 403) versCo(); return; }
+  $('nb').textContent = `${d.joueurs} joueur${d.joueurs > 1 ? 's' : ''}`; $('f').style.display = '';
+})();
+$('f').addEventListener('submit', async (ev) => {
+  ev.preventDefault();
+  const c = { titre: $('titre').value.trim(), message: $('message').value.trim(), or: +$('or').value || 0, poussiere: +$('poussiere').value || 0, eclats: +$('eclats').value || 0, pieces: +$('pieces').value || 0, rarete: +$('rarete').value || 0, password: $('mdp').value };
+  if (!c.or && !c.poussiere && !c.eclats && !c.pieces) { msg('Le cadeau est vide.'); return; }
+  if (!confirm(`Envoyer « ${c.titre} » à ${$('nb').textContent} ?`)) return;
+  $('b').disabled = true;
+  const { s, d } = await api('/api/hub/guilde/admin/cadeau', c).catch(() => ({ s: 0, d: {} }));
+  $('b').disabled = false; $('mdp').value = '';
+  if (s === 200) msg(`✅ Cadeau déposé dans ${d.envoyes} boîte${d.envoyes > 1 ? 's' : ''} aux lettres.`, true);
+  else if (s === 401) versCo(); else msg(d.message || 'Pas de réseau.');
+});
+</script>
+</body>
+</html>

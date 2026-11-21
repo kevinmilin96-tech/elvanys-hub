@@ -212,21 +212,31 @@ async function amisAjoute() {
 // LA BOÎTE AUX LETTRES. À la fin d'une partie en ligne, le serveur y dépose les récompenses de chaque joueur ; on les récupère ici.
 async function amisBoiteMaj() {
   if (!AMIS.carte) return;
-  try { const { statut, d } = await amisApi('/api/hub/guilde/boite', { cle:AMIS.carte.cle }); if (statut === 200) { AMIS.boite = d.messages || []; amisBouton(); } } catch (e) {}
+  try { const { statut, d } = await amisApi('/api/hub/guilde/boite', { cle:AMIS.carte.cle }); if (statut === 200) { AMIS.boite = d.messages || []; AMIS.jours = d.jours || null; amisBouton(); } } catch (e) {}
 }
-function amisCadeauTxt(c) { return [c.or ? `🪙 +${c.or} or` : '', c.poussiere ? `🔹 +${c.poussiere} poussière de rune` : '', c.pieces ? `🎒 ${c.pieces} pièce${c.pieces > 1 ? 's' : ''} d’équipement` : ''].filter(Boolean).join(' · '); }
+// 21/11 : les nouveaux cadeaux (colis du lundi, paliers de fidélité, cadeau à tous) ajoutent des éclats de Guilde, des pièces d'une rareté
+// choisie (« rarete » : 1 rare, 2 épique…) et parfois un titre de profil
+const AMIS_TITRES_BOITE = { fidele30:'Pilier de la Guilde', fidele100:'Légende fidèle' };
+function amisCadeauTxt(c) { const R = typeof EQ_RARE !== 'undefined' ? EQ_RARE : [], rare = c.rarete != null && R[c.rarete] ? ` ${R[c.rarete].n}${c.pieces > 1 ? 's' : ''}` : '';
+  return [c.or ? `🪙 +${c.or} or` : '', c.poussiere ? `🔹 +${c.poussiere} poussière de rune` : '', c.eclats ? `💠 +${c.eclats} éclats de Guilde` : '',
+    c.pieces ? `🎒 ${c.pieces} pièce${c.pieces > 1 ? 's' : ''} d’équipement${rare}` : '', c.titre && AMIS_TITRES_BOITE[c.titre] ? `🏅 titre « ${AMIS_TITRES_BOITE[c.titre]} »` : ''].filter(Boolean).join(' · '); }
+// « Jours joués : N · prochain palier à M jours » (un jour compte quand on finit une partie)
+function amisJoursTxt() { const j = AMIS.jours; if (!j) return ''; return `<p class="doux" style="text-align:center">📅 Jours joués : <b>${j.joues | 0}</b> · prochain palier à <b>${j.prochain | 0}</b> jours</p>`; }
 async function amisBoite() {
   AMIS.ouvert = false; await amisBoiteMaj(); const l = AMIS.boite || [];
-  amisFen(`<h2>📬 Boîte aux lettres</h2>${l.length ? l.map(m => `<div class="am-ligne"><div class="p"><b>${amisEsc(m.titre)}</b><small>${amisEsc(m.message)}</small><small style="color:#f3c96b">${amisCadeauTxt(m.cadeau || {})}</small></div><button class="am-bt go" onclick="amisRecupere('${amisEsc(m.id)}')">Récupérer</button></div>`).join('')
-    : '<p class="doux">Rien pour le moment. Les récompenses des parties en ligne arrivent ici.</p>'}
+  amisFen(`<h2>📬 Boîte aux lettres</h2>${amisJoursTxt()}${l.length ? l.map(m => `<div class="am-ligne"><div class="p"><b>${amisEsc(m.titre)}</b><small>${amisEsc(m.message)}</small><small style="color:#f3c96b">${amisCadeauTxt(m.cadeau || {})}</small></div><button class="am-bt go" onclick="amisRecupere('${amisEsc(m.id)}')">Récupérer</button></div>`).join('')
+    : '<p class="doux">Rien pour le moment. Les récompenses des parties en ligne, le colis du lundi et les cadeaux de fidélité arrivent ici.</p>'}
   `);
 }
 async function amisRecupere(id) {
   if (typeof avGagne !== 'function') { amisMsg('Ouvre ta boîte depuis le menu de la Guilde pour ranger les cadeaux.'); return; }
   const { statut, d } = await amisApi('/api/hub/guilde/boite/recuperer', { cle:AMIS.carte.cle, id }).catch(() => ({ statut:0, d:{} }));
   if (statut !== 200) { amisMsg((d && d.message) || 'Pas de réseau.'); await amisBoite(); return; }
-  const c = d.cadeau || {}, g = avGagne(c.or | 0, c.pieces | 0, !!c.gagne) || [];
+  const c = d.cadeau || {}, choisie = c.rarete != null && typeof eqNouvelle === 'function', g = avGagne(c.or | 0, choisie ? 0 : c.pieces | 0, !!c.gagne) || [];
+  if (choisie && c.pieces) { const s = avSac(); for (let i = 0; i < (c.pieces | 0); i++) { const p = eqNouvelle(null, Math.max(0, Math.min(4, c.rarete | 0))); s.pieces.push(p); g.push(p); } avSacEcrire(s); }
   if (c.poussiere && typeof donneRessources === 'function') donneRessources(0, c.poussiere | 0, true);
+  if (c.eclats && typeof donneLibres === 'function') donneLibres(c.eclats | 0);
+  if (c.titre && AMIS_TITRES_BOITE[c.titre]) { try { const t = JSON.parse(localStorage.getItem('guilde-titres-boite') || '[]'); if (!t.includes(c.titre)) { t.push(c.titre); localStorage.setItem('guilde-titres-boite', JSON.stringify(t)); } } catch (e) {} }
   try { if (typeof GM !== 'undefined') GM.son('victoire'); } catch (e) {}
   AMIS.boite = (AMIS.boite || []).filter(m => m.id !== id); amisBouton();
   const R = typeof EQ_RARE !== 'undefined' ? EQ_RARE : [];
