@@ -372,8 +372,10 @@ const ENTRAINEMENTS = [['duel', 'Le Duel (le tutoriel)', 'duel.html?tuto=1'], ['
       const voile = f.parentElement; if (!voile) return;
       const fermable = f.classList.contains('fh-fen') || (voile.getAttribute('onclick') || '').includes('event.target===this');
       if (!fermable) return;
-      if (!f.querySelector(':scope > .fh-x, :scope > .xferme')) { const b = document.createElement('button'); b.className = 'xferme'; b.setAttribute('aria-label', 'Fermer'); b.textContent = '✕'; b.onclick = e => { e.stopPropagation(); voile.click(); }; f.prepend(b); }
-      f.querySelectorAll('button').forEach(b => { if (b.classList.contains('xferme') || b.classList.contains('fh-x')) return; if (/^fermer$/i.test(b.textContent.trim())) { const p = b.parentElement; b.remove(); if (p && p.classList.contains('choixh') && !p.querySelector('button')) p.remove(); } });
+      // le bouton « Fermer » de la fenêtre est caché (pas supprimé) : la croix le déclenche, pour garder ce qu'il fait en plus (redessiner…)
+      let fb = null; f.querySelectorAll('button').forEach(b => { if (b.classList.contains('xferme') || b.classList.contains('fh-x')) return; if (/^fermer$/i.test(b.textContent.trim())) { fb = fb || b; b.style.display = 'none'; const p = b.parentElement; if (p && p.classList.contains('choixh') && ![...p.querySelectorAll('button')].some(x => x.style.display !== 'none')) p.style.display = 'none'; } });
+      const fx = f.querySelector(':scope > .fh-x'); if (fx && fb && !fx.dataset.relie) { fx.dataset.relie = '1'; fx.onclick = e => { e.stopPropagation(); fb.click(); }; }
+      if (!f.querySelector(':scope > .fh-x, :scope > .xferme')) { const b = document.createElement('button'); b.className = 'xferme'; b.setAttribute('aria-label', 'Fermer'); b.textContent = '✕'; b.onclick = e => { e.stopPropagation(); const h = [...f.querySelectorAll('button')].find(x => x.style.display === 'none' && /^fermer$/i.test(x.textContent.trim())); if (h) h.click(); else voile.click(); }; f.prepend(b); }
     });
   };
   const go = () => { traite(); new MutationObserver(traite).observe(document.body, { childList:true, subtree:true }); };
