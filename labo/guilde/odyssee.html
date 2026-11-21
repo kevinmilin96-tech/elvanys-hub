@@ -176,7 +176,7 @@ const herosAventureOdy = () => haListe().map(a => haInfo('av:' + a.id)).map(i =>
   ? `<button onclick="location.href='duel.html?tuto=1'" style="opacity:.55">${haImg(i, 'filter:grayscale(1)')}🔒 ${haEsc(i.nom)}<br><small style="color:var(--doux)">Fais le tutoriel</small></button>`
   : `<button onclick="commence('${i.cle}')">${haImg(i, `box-shadow:0 0 0 2px ${i.couleur}`)}${haEsc(i.nom)}<small class="ha-t">⚔ ${haEsc(i.titre)}</small><small style="color:var(--doux)">${Math.round(HEROS[i.voie].pv * (ODY_PV[i.voie] || 1.8))} PV en Odyssée</small></button>`).join('');
 
-const VERSION = '20261121-211535';
+const VERSION = '20261121-211632';
 function verifieVersion() {
   fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
     v = (v || '').trim(); if (!v || v === VERSION || document.getElementById('majbar')) return;
@@ -918,7 +918,10 @@ function finPartie(gagne, texte) {
   <p>${f.ajoutees ? `📚 <b>${f.ajoutees}</b> carte${f.ajoutees > 1 ? 's' : ''} rejoi${f.ajoutees > 1 ? 'gnent' : 'nt'} ta collection : ${f.nouvelles.map(k => CARTES[k].n).join(', ')}.` : 'Aucune carte nouvelle pour la collection cette fois.'}</p>
   <div class="choixh"><button class="or" onclick="fermer();emplacements()">💾 Emplacements</button><button onclick="location.href='menu.html'">⌂ Menu</button></div>`));
 }
-function records() { const l = lireRecords(); fenetre(`<h2>🏆 Mes Odyssées (${l.length})</h2>${l.length ? `<table>${l.map(r => `<tr><td>${r.gagne ? '🏆' : '💀'} ${new Date(r.quand).toLocaleDateString('fr-FR')} · ${odyNom(r)}${r.sansfin ? ` · 🧩 étage ${r.etage || 1}` : ''}${r.route ? ' · 🛤 Route' : ''}${r.aventure ? ` · 🗺 aventure, ch. ${r.aventure.chapitre} (niv. ${r.aventure.niveau})` : ''} · ${r.cases} cases, ${r.victoires} victoires, ${r.duree} min</td><td>${r.score}</td></tr>`).join('')}</table>` : '<p>Aucune Odyssée finie.</p>'}<div class="choixh"><button onclick="fermer()">Fermer</button></div>`); }
+// 21/11 (l'utilisateur : « dans Mes Odyssées, il faudrait le mode : infini, du jour, saison… ») ; les anciennes durées fausses (plusieurs jours) ne s'affichent plus
+const ILE_REC = { brulees:'🔥 Terres brûlées', givre:'❄️ Givre', abime:'🌌 Abîme' };
+function modeRec(r) { const ile = ILE_REC[r.acte] || ILE_REC.brulees; return r.route ? '🛤 Route du Titan' : r.sansfin ? '🧩 Sans fin' : String(r.graine || '').startsWith('jour-') ? `🗓 Île du jour (${ile})` : r.aventure ? '🗺 Grande aventure' : `Saison 1 · ${ile}`; }
+function records() { const l = lireRecords(); fenetre(`<h2>🏆 Mes Odyssées (${l.length})</h2>${l.length ? `<table>${l.map(r => `<tr><td>${r.gagne ? '🏆' : '💀'} ${new Date(r.quand).toLocaleDateString('fr-FR')} · <b>${modeRec(r)}</b> · ${odyNom(r)}${r.sansfin ? ` · 🧩 étage ${r.etage || 1}` : ''}${r.aventure ? ` · ch. ${r.aventure.chapitre} (niv. ${r.aventure.niveau})` : ''}${r.asc ? ` · ⛰ ${r.asc}` : ''} · ${r.cases} cases, ${r.victoires} victoires${r.duree && r.duree < 600 ? `, ${r.duree} min` : ''}</td><td>${r.score}</td></tr>`).join('')}</table>` : '<p>Aucune Odyssée finie.</p>'}<div class="choixh"><button onclick="fermer()">Fermer</button></div>`); }
 function collection() { const l = lireCollection(); fenetre(`<h2>📚 Ma collection (${l.length})</h2><p style="font-size:.86em;color:var(--doux)">Les cartes rencontrées en Odyssée. Elles s’ajoutent à l’éditeur de deck de la Tour des héros.</p><div class="cartes3">${l.map(k => carteHTML(k)).join('') || '<i>Rien encore : pars en Odyssée !</i>'}</div><div class="choixh"><button onclick="fermer()">Fermer</button></div>`); }
 accueil();
 // 13/11 soir : musique de la carte (Terres brûlées : folk médiéval ; Givre et Abîme : la vallée des vents) ; le marchand a la sienne jusqu'à la fermeture de sa fenêtre
