@@ -182,7 +182,7 @@ const GM = (() => {
       // Gardé seulement là où il n'y a pas d'autre moyen de quitter en pleine partie (Fosse en temps réel, Campement / Invasion, épreuves).
       if (!/(fosse|campement|epreuves)\.html$/.test(location.pathname)) return;
       const st = document.createElement('style');
-      st.textContent = '#gm-bouton{position:fixed;right:10px;bottom:calc(10px + env(safe-area-inset-bottom));z-index:900;width:38px;height:38px;border-radius:50%;border:1px solid #f3c96b88;background:#15132bcc;color:#f3c96b;font-size:18px;line-height:36px;text-align:center;padding:0;cursor:pointer}';
+      st.textContent = '#gm-bouton{position:fixed;right:10px;top:calc(10px + env(safe-area-inset-top));z-index:900;width:38px;height:38px;border-radius:50%;border:1px solid #f3c96b88;background:#15132bcc;color:#f3c96b;font-size:18px;line-height:36px;text-align:center;padding:0;cursor:pointer}';
       document.head.appendChild(st);
       const b = document.createElement('button'); b.id = 'gm-bouton'; b.type = 'button'; b.title = 'Musique'; b.setAttribute('aria-label', 'Musique'); b.textContent = '⚙️'; b.title = 'Paramètres'; b.setAttribute('aria-label', 'Paramètres');
       if (o.haut) { b.style.bottom = 'auto'; b.style.top = 'calc(10px + env(safe-area-inset-top))'; } // le menu : en haut à droite, pour ne cacher aucun bouton
