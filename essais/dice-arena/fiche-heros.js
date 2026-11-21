@@ -148,10 +148,24 @@ function fhCase(id, k) {
 }
 function fhEquipe(id, pid) { const r = equipePiece(id, pid); if (r === 'ok') { fhSon('tour-fusion'); fhBulle('Équipé !'); fhFen(''); FH.apres(); } else fhBulle(r); }
 function fhAmelio(id, k, pid) { const r = amelioPiece(pid); if (r === 'ok') { fhSon('tour-fusion'); fhBulle('⬆ Amélioré !'); FH.apres(); if (k) fhCase(id, k); else fhCoffre(id); } else fhBulle(r); }
+// 21/11 (l'utilisateur : « un bouton vendre tout par rareté, blanc, bleu… comme dans beaucoup de jeux ») : on vend (or) ou on recycle (poussière)
+// d'un coup toutes les pièces NON PORTÉES d'une rareté ; confirmation avec le total
+function fhVenteLot(id) {
+  const libres = avSac().pieces.filter(p => !porteurDe(p.id)); if (!libres.length) return '';
+  const R = EQ_RARE.map((x, r) => [r, libres.filter(p => p.r === r)]).filter(([, l]) => l.length);
+  return `<div class="fh-bloc"><h4>🧹 Vider le coffre par rareté <small style="display:inline;font-weight:normal">(pièces non portées)</small></h4>${R.map(([r, l]) => `<div style="display:flex;gap:6px;align-items:center;margin:4px 0;flex-wrap:wrap"><b style="color:${EQ_RARE[r].c};min-width:7em">${l.length} ${EQ_RARE[r].n}${l.length > 1 ? 's' : ''}</b><button class="fh-bt" onclick="fhLot('${id}',${r},'or')">Vendre : ${l.reduce((t, p) => t + eqPrixVente(p), 0)} 🪙</button><button class="fh-bt" onclick="fhLot('${id}',${r},'pou')">Recycler : ${l.reduce((t, p) => t + eqPoussiereRecyclage(p), 0)} 🔹</button></div>`).join('')}</div>`;
+}
+function fhLot(id, r, quoi) {
+  const l = avSac().pieces.filter(p => !porteurDe(p.id) && p.r === r); if (!l.length) return;
+  const tot = l.reduce((t, p) => t + (quoi === 'or' ? eqPrixVente(p) : eqPoussiereRecyclage(p)), 0);
+  if (!confirm(`${quoi === 'or' ? 'Vendre' : 'Recycler'} les ${l.length} pièce${l.length > 1 ? 's' : ''} ${EQ_RARE[r].n}${l.length > 1 ? 's' : ''} non portée${l.length > 1 ? 's' : ''} pour ${tot} ${quoi === 'or' ? 'or' : 'poussière'} ?`)) return;
+  l.forEach(p => quoi === 'or' ? vendPiece(p.id) : recyclePiece(p.id)); fhSon('choisir'); fhBulle(`${quoi === 'or' ? '🪙' : '🔹'} +${tot}`); fhCoffre(id); FH.apres();
+}
 function fhCoffre(id) {
   const s = avSac(), G = groupesFusion();
   fhFen(`<h2>🎒 Le coffre des héros</h2>${fhRess()}<p class="doux">Un seul coffre pour tous tes héros. Améliore avec l’or ; pour monter de rareté, passe par <b>la Forge</b> : <b>3 pièces de la même case et de la même rareté = 1 pièce de la rareté au-dessus</b>.</p>
     <button class="fh-bt${G.length ? ' fh-pret' : ''}" style="width:100%;margin:6px 0" onclick="fhForge('${id}')">🔥 La Forge${G.length ? ` · ${G.length} fusion${G.length > 1 ? 's' : ''} possible${G.length > 1 ? 's' : ''}` : ''}</button>
+    ${fhVenteLot(id)}
     ${s.pieces.filter(p => !porteurDe(p.id)).sort((x, y) => y.r - x.r || y.niv - x.niv).map(p => fhPiece(p, `<button onclick="fhEquipe('${id}','${p.id}')">Équiper</button>${p.niv < eqNivMax(p) ? `<button onclick="fhAmelio('${id}',null,'${p.id}')">⬆ ${eqPrixAmelio(p)} 🪙</button>` : ''}<button onclick="if(confirm('Revendre pour ${eqPrixVente(p)} pièces ?')){vendPiece('${p.id}');fhCoffre('${id}');FH.apres()}">Vendre ${eqPrixVente(p)} 🪙</button><button onclick="if(confirm('Recycler en ${eqPoussiereRecyclage(p)} poussière de rune ?')){recyclePiece('${p.id}');fhCoffre('${id}');FH.apres()}">Recycler ${eqPoussiereRecyclage(p)} 🔹</button>`)).join('') || '<p class="doux">Le coffre est vide.</p>'}
     ${(() => { const P = s.pieces.filter(p => porteurDe(p.id)).sort((x, y) => y.r - x.r || y.niv - x.niv); // 17/11 (l'utilisateur : « un équipement porté devrait sortir du coffre ou dire équipé par ») : les pièces portées à part, en bas
       return P.length ? `<div class="fh-bloc"><h4>✅ Déjà équipées</h4>${P.map(p => fhPiece(p, p.niv < eqNivMax(p) ? `<button onclick="fhAmelio('${id}',null,'${p.id}')">⬆ ${eqPrixAmelio(p)} 🪙</button>` : '<small>max : fusionne</small>')).join('')}</div>` : ''; })()}
