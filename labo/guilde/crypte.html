@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261122-145753">
+<head><meta name="guilde-version" content="20261122-145958">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="robots" content="noindex">
@@ -157,7 +157,7 @@
 <script src="profil.js?v=f65ec35808"></script>
 <script>window.AMIS_SANS_BOUTON = true; /* 15/11 soir : la crypte du jour se compare entre amis */</script>
 <script src="amis.js?v=6675200291"></script>
-<script src="crypte-moteur.js?v=aab15fb105"></script>
+<script src="crypte-moteur.js?v=e95efb3b15"></script>
 <script src="descente-moteur.js?v=783a91f811"></script>
 <script>
 // =============================================================================================== LA CRYPTE AUX SCEAUX (15/11, écran)
@@ -365,8 +365,8 @@ function apresCoup(avant) {
   const n = S.tombes - avant;
   if (S.gardien && S.gardien.relevé) { delete S.gardien.relevé; S.gardien.neuve = true; son('vague'); bulle(`♛ ${S.gardien.nom.split(' ').slice(-1)[0]} se relève !`, true); tremble();
     // 22/11 : la 2e phase du Gardien s'annonce en grand, avec ce qui change
-    if (S.gardien.phase === 2 && !S.gardien.phaseVue) { S.gardien.phaseVue = true; const g = S.gardien, T = C.TRAITS[g.trait], ligne = (S.journal.find(l => l.includes('se relève')) || '').split('!')[0];
-      setTimeout(() => fenetre(`<div style="text-align:center"><img src="portraits/m-${g.m}.webp" alt="" style="width:120px;height:120px;object-fit:cover;border-radius:16px;box-shadow:0 0 0 3px #ff6b5a,0 0 30px #ff6b5a99"><h2 style="color:#ff8a7a">♛ Phase 2</h2><p>${ligne.replace('♛ ', '')} !</p><p>Nouveaux sceaux, et une nouvelle arme :<br><b>${T.e} ${T.n}</b> : ${T.d}</p><button class="go" onclick="fenetre('')">À l’attaque !</button></div>`), 900); } }
+    if (S.gardien.phase >= 2 && S.gardien.phaseVue !== S.gardien.phase) { S.gardien.phaseVue = S.gardien.phase; const g = S.gardien, T = C.TRAITS[g.trait], ligne = (S.journal.find(l => l.includes('se relève')) || '').replace(/^♛ /, '').split('!')[0];
+      setTimeout(() => fenetre(`<div style="text-align:center"><img src="portraits/m-${g.m}.webp" alt="" style="width:120px;height:120px;object-fit:cover;border-radius:16px;box-shadow:0 0 0 3px #ff6b5a,0 0 30px #ff6b5a99"><h2 style="color:#ff8a7a">♛ Phase ${g.phase}${g.phase === g.viesMax ? " · la dernière" : ""}</h2><p>${ligne.replace('♛ ', '')} !</p><p>Nouveaux sceaux, et une nouvelle arme :<br><b>${T.e} ${T.n}</b> : ${T.d}</p><button class="go" onclick="fenetre('')">À l’attaque !</button></div>`), 900); } }
   if (n > 0) {
     son('tombe'); if (S.chaine > 1) bulle(`Chaîne ×${S.chaine} !`); else bulle('💀 Il tombe !');
     if (typeof guildeEvt === 'function') guildeEvt('salle', n, { heros:herosS(S).prog, voie:S.heros });
@@ -440,7 +440,7 @@ function regles() {
       <li><b>Ton héros</b> : pose des dés sur les sceaux de son pouvoir ; quand ils sont tous brisés, le pouvoir est prêt.</li>
       <li><b>Fin du tour</b> : chaque monstre visible fait ce qu’il annonce sur sa carte (⚔ frapper, ⏳ préparer un coup double, 🛡 se protéger, 💚 soigner un voisin). La ligne du milieu te dit combien tu vas perdre.</li>
       <li><b>Chaîne</b> : plusieurs monstres tombés dans le même tour multiplient les points.</li>
-      <li><b>Victoire</b> : vide les colonnes, puis bats le <b>Gardien</b> de la crypte, en <b>2 phases</b> : quand ses sceaux sont brisés, il se relève avec de nouveaux sceaux et une nouvelle arme (un pouvoir différent pour chaque Gardien). Les élites ★ dorment au fond des colonnes.</li>
+      <li><b>Victoire</b> : vide les colonnes, puis bats le <b>Gardien</b> de la crypte, en <b>3 phases</b> (2 dans la crypte du jour) : quand ses sceaux sont brisés, il se relève avec de nouveaux sceaux et une nouvelle arme, différente pour chaque Gardien. Les élites ★ dorment au fond des colonnes.</li>
       <li><b>Le plateau change</b> : trois colonnes, quatre colonnes, l’escalier ou les deux tours. Une <b>carte spéciale</b> se cache aussi dans les colonnes : 🧰 un coffre, 🕯️ un autel qui charge ton pouvoir, ou ⚙️ un piège qui frappe tant qu’il n’est pas désamorcé.</li>
       <li><b>Les étoiles</b> : chaque crypte a 3 <b>défis</b> (en haut de l’écran, touche-les pour les lire). Gagne, et chaque défi réussi vaut une étoile. ↩ annule le dernier dé posé.</li>
     </ol>
@@ -527,7 +527,7 @@ function lance(j) {
   // 15/11 soir : un plateau (variante), une carte spéciale et 3 défis à étoiles ; la crypte du jour tire tout de la date
   const vh = Object.keys(C.VARIANTES)[Math.floor(Math.random() * Object.keys(C.VARIANTES).length)];
   S = C.nouvelle(vJ(), j ? 'crypte-' + jour() : 'crypte-' + Date.now() + Math.random(), B, Object.assign({ variante:j ? C.varianteDuJour('c' + jour()) : vh, speciales:1, defis:true },
-    j ? { regle:C.regleDuJour('c' + jour()), maitre:C.regleDuJour('c' + jour()) === 'presse' ? 8 : 0 } : {}));
+    j ? { vies:2, regle:C.regleDuJour('c' + jour()), maitre:C.regleDuJour('c' + jour()) === 'presse' ? 8 : 0 } : {}));
   S.av = haInfo(choixH) ? haInfo(choixH).id : null; // 15/11 soir : le héros d'aventure (gardé dans la sauvegarde)
   oublie();
   S.des.forEach(d => d.neuf = true); visibles().forEach(c => c.neuve = true); sel = null; mode = null;
