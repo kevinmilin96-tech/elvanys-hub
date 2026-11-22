@@ -109,9 +109,8 @@ function envieInstalle(E, PRO) {
     { nom:'L’énigme du jour', pro:'enigme', href:'duel.html?enigme=1', desc:'Trouve le coup parfait qui fait tomber l’adversaire en un seul tour. Une nouvelle chaque jour.' },
     { nom:'La Crypte aux Sceaux', pro:'crypte', href:'crypte.html', desc:'Un solitaire de dés : brise les sceaux des monstres. Et la crypte du jour, la même pour tous.' },
     { nom:'La Fosse aux Runes', pro:'fosse', href:'fosse.html', desc:'Tes balles sont des dés : renvoie-les, forme des combos, tiens 5 minutes jusqu’au Titan.' },
-    { nom:'La Chasse au boss', pro:'chasse', href:'epreuves.html#chasse', desc:'Le boss de la semaine : un combat, un score, recommence pour faire mieux.' },
     { nom:'Duel d’équipages', pro:'duelequip', href:'expedition-duel.html', desc:'Ton équipage contre celui de l’ordinateur, en plusieurs manches, avec des cœurs.' },
-    { nom:'La Tour des épreuves', pro:'epreuves', href:'epreuves.html', desc:'Un étage, un combat : monte aussi haut que tu peux.' },
+    { nom:'Les épreuves', pro:'epreuves', href:'epreuves.html', desc:'La Tour (un étage, un combat : monte aussi haut que tu peux) et la Chasse au boss de la semaine.' }, // 22/11 (l'utilisateur) : la Tour et la Chasse sont la même page : un seul portail
     { nom:'Le tutoriel', pro:'tuto', href:'duel.html?tuto=1', desc:zok ? 'Le premier duel guidé par Moustache, à refaire quand tu veux.' : 'Un premier duel guidé par Moustache (5 minutes). À la clé : Zéphine et le cadre de Diplômé.' },
   ] };
   E.aventure = { titre:'🗺 Partir à l’aventure', sous:'30 à 45 minutes, ta partie est gardée.', portes:[
