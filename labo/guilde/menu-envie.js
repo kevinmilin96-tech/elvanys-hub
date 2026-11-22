@@ -27,7 +27,7 @@ function envieRendezVous() {
   const eniNiv = (new Date().getDay() + 6) % 7 + 1, eniEt = ` · ${'★'.repeat(eniNiv)}${'☆'.repeat(7 - eniNiv)} ${['', 'très facile', 'facile', 'moyenne', 'moyenne', 'corsée', 'difficile', 'redoutable'][eniNiv]}`; // même règle que enigme.js : lundi 1★ → dimanche 7★
   L.push(['enigme', '🧩', 'L’énigme du jour', (eni.ok ? 'Résolue' : eni.essais ? `${eni.essais} essai(s)` : 'Un coup parfait à trouver') + eniEt, !!eni.ok, "envieVa('duel.html?enigme=1')"]);
   const cr = (ENV_J('guilde-crypte', {}).jours || {})[envJourLocal()];
-  L.push(['crypte', '🪦', 'La crypte du jour', cr ? `Score ${cr.score}` : 'La même crypte pour tout le monde', !!cr, "envieVa('crypte.html')"]);
+  L.push(['crypte', '🪦', 'La crypte du jour', cr ? `Score ${cr.score}` : 'La même crypte pour tout le monde', !!cr, "envieVa('crypte.html#jour')"]);
   const ile = ENV_J('guilde-odyssee-records', []).find(r => r.graine === 'jour-' + envJourUTC());
   const ileN = ({ brulees:'les Terres brûlées', givre:'l’île du Givre', abime:'l’Abîme du Vide' })[envIleDuJour()];
   L.push(['ile', '🏝', 'L’île du jour', ile ? `${ile.gagne ? 'Gagnée' : 'Jouée'} · score ${ile.score}` : `Aujourd’hui : ${ileN}`, !!ile, 'envieIleDuJour()']);

@@ -1,5 +1,9 @@
 [
 {
+"v": "20261122-210554",
+"m": "La Crypte a une nouvelle entrée : tu choisis le mode (crypte du jour, au hasard, la Descente), ton héros, puis tes options, et ▶ Jouer. Dans la crypte au hasard, tu peux maintenant choisir le plateau et ajouter une règle."
+},
+{
 "v": "20261122-202657",
 "m": "La Crypte et la Descente sont séparées : la Descente s’ouvre par son portail dans « Partir à l’aventure »"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261122-181415",
 "m": "Rejoindre avec un code : on arrive directement sur la saisie du code"
-},
-{
-"v": "20261122-181203",
-"m": "Énigme du jour : fermer la fenêtre ne bloque plus l’écran"
 }
 ]
