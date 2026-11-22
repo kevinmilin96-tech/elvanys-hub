@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261122-182717"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
+<head><meta name="guilde-version" content="20261122-183529"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex">
@@ -51,6 +51,7 @@
   .quete.faite { border-color:#7dffb0; opacity:.85; } .chg { background:#2a2350; color:#fff; border:1px solid #4b4580; border-radius:10px; padding:6px 9px; font-size:1.1em; }
   .gains { color:var(--doux); font-size:.85em; } .gains summary { color:var(--or); cursor:pointer; margin:8px 0; }
   .recupQ { flex:none; align-self:center; padding:.55em .9em; border-radius:12px; border:none; background:linear-gradient(#ffd27a, #e0a33a); color:#2a1a05; font:bold .95em Georgia, serif; box-shadow:0 0 12px #f3c96b99; animation:recupPulse 1.2s ease-in-out infinite; }
+  .recuQ { flex:none; align-self:center; color:#7dffb0; font:bold .85em Georgia, serif; white-space:nowrap; } /* 22/11 (l'utilisateur) : une quête finie dit qu'elle a été récupérée */
   @keyframes recupPulse { 50% { transform:scale(1.06); box-shadow:0 0 20px #f3c96bcc; } }
 </style>
 </head>
@@ -95,7 +96,7 @@ function prendre(n) { if (recupererRang(n)) { if (typeof GM !== 'undefined') GM.
 function toutPrendre() { aRecuperer().forEach(n => recupererRang(n)); if (typeof GM !== 'undefined') GM.son('gagne'); dessine(); }
 function quetes() {
   const d = lireRang(), Q = lireQuetes();
-  const ligneQ = (q, jour, idx) => { const def = defQuete(q, jour); return `<div class="quete ${q.fait ? 'faite' : ''}"><div><b>${q.fait ? '✅' : '📜'} ${texteQuete(q, jour)}</b><span class="barre-rang"><i style="width:${Math.round(q.prog / def[3] * 100)}%"></i></span><small>${q.prog} / ${def[3]} · +${GAIN_QUETE[jour ? 'jour' : 'semaine'].xp} XP · 🪙 ${GAIN_QUETE[jour ? 'jour' : 'semaine'].or} · 🔹 ${GAIN_QUETE[jour ? 'jour' : 'semaine'].pou}</small></div>${q.fait && q.recup === false ? `<button class="recupQ" onclick="const g = recupQuete(${jour}, ${idx}); if (g) { if (typeof GM !== 'undefined') GM.son('victoire'); dessine(); }">🎁 Récupérer</button>` : ''}${jour && !Q.change && !q.fait ? `<button class="chg" onclick="if (changeQuete(${idx})) dessine()">🔄</button>` : ''}</div>`; };
+  const ligneQ = (q, jour, idx) => { const def = defQuete(q, jour); return `<div class="quete ${q.fait ? 'faite' : ''}"><div><b>${q.fait ? '✅' : '📜'} ${texteQuete(q, jour)}</b><span class="barre-rang"><i style="width:${Math.round(q.prog / def[3] * 100)}%"></i></span><small>${q.prog} / ${def[3]} · +${GAIN_QUETE[jour ? 'jour' : 'semaine'].xp} XP · 🪙 ${GAIN_QUETE[jour ? 'jour' : 'semaine'].or} · 🔹 ${GAIN_QUETE[jour ? 'jour' : 'semaine'].pou}</small></div>${q.fait && q.recup === false ? `<button class="recupQ" onclick="const g = recupQuete(${jour}, ${idx}); if (g) { if (typeof GM !== 'undefined') GM.son('victoire'); dessine(); }">🎁 Récupérer</button>` : q.fait ? '<span class="recuQ">✔ Récupérée</span>' : ''}${jour && !Q.change && !q.fait ? `<button class="chg" onclick="if (changeQuete(${idx})) dessine()">🔄</button>` : ''}</div>`; };
   return `${enteteXP()}<div class="quetes">
   <h2>📜 Quêtes du jour</h2><p class="aide" style="text-align:left;margin:0 0 4px">Elles changent chaque jour à minuit. 🔄 : changer une quête (une fois par jour).</p>${Q.j.map((q, k) => ligneQ(q, true, k)).join('')}
   <h2>🗓️ Quêtes de la semaine</h2><p class="aide" style="text-align:left;margin:0 0 4px">Elles changent chaque lundi.</p>${Q.s.map(q => ligneQ(q, false)).join('')}
