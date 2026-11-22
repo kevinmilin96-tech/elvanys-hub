@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="fr">
 <head>
+<script>/* 22/11 : l'adresse courte perso.elvanys.fr/tv (tapée avec la télécommande) ouvre l'écran de la table des Chroniques ; /tv/ABCD avec le code */ if (/^\/tv\b/i.test(location.pathname)) location.replace('/guilde/chroniques.html?ecran=' + ((location.pathname.split('/')[2] || '').replace(/[^A-Za-z]/g, '').slice(0, 4) || '1'));</script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
