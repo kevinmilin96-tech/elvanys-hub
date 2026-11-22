@@ -75,7 +75,7 @@ function ouvre(id) {
   const I = fhInfo(id), av = !fhGuilde(id);
   // 16/11 soir (l'utilisateur : « le lien en bas est trop petit, il faut une icône sur la fiche ») : un gros bouton en haut à droite, et un vrai bouton en bas
   const ou = av ? `aventuriers.html?h=${id}&retour=mes-heros.html` : `heros.html?h=${id}`;
-  $('app').innerHTML = `<div class="haut"><a href="#" onclick="liste();return false">‹ Mes héros</a><h1>${I.nom}</h1>${av ? `<a class="hcartes" href="#fh-de" onclick="fhVaAuDe('${id}');return false">🎲<small>Son dé</small></a>` : `<a class="hcartes" href="${ou}">🂠<small>Cartes et dés</small></a>`}</div>
+  $('app').innerHTML = `<div class="haut"><a href="#" onclick="liste();return false">‹ Mes héros</a><h1>${I.nom}</h1>${av ? `<span class="hcartes" style="visibility:hidden" aria-hidden="true">🎲<small>Son dé</small></span>` /* 22/11 (l'utilisateur) : plus de bouton « Son dé » en haut, le bandeau est dans la fiche ; la place reste pour garder le nom centré */ : `<a class="hcartes" href="${ou}">🂠<small>Cartes et dés</small></a>`}</div>
     ${ficheHerosHTML(id)}
     ${av ? '' : `<a class="gros-lien" href="${ou}">🂠 Ses cartes, ses dés, son histoire et son deck</a>`}`; // 19/11 : le dé et les talents d'un héros d'aventure sont dans la fiche (bandeau « 🎲 Son dé et ses talents »)
 }
