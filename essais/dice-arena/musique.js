@@ -80,7 +80,7 @@ window.GuildeMaj = (() => {
   const marqueVu = () => { try { const m = [ici, neufV, vu()].sort().pop(); if (m) localStorage.setItem('guilde-param-vu', m); } catch (e) {} points(); };
   // le bloc en haut des Paramètres
   function bloc() {
-    return `<div class="maj${attend() ? ' neuve' : ''}"><div><b>📦 Version du jeu</b><br><small>${fmt(ici)}</small></div>${attend()
+    return `<div class="maj${attend() ? ' neuve' : ''}"><div data-k="ver"><b data-k="ver">📦 Version du jeu</b><br><small>${fmt(ici)}</small></div>${attend()
       ? `<button class="majb" data-k="maj">✨ Mettre à jour<br><small>version du ${fmt(enLigne)}</small></button>` : '<span class="ok">✅ À jour</span>'}</div>
       ${appliIci() ? `<div class="maj${appliAttend() ? ' neuve' : ''}"><div><b>📱 Appli Android</b><br><small>version ${appliIci()}</small></div>${appliAttend() ? `<a class="majb" href="appli/la-guilde-${appliEnLigne}.apk" style="text-decoration:none">📥 Nouvelle appli ${appliEnLigne}</a>` : '<span class="ok">✅ À jour</span>'}</div>` : ''}
       <details class="neuf"${nouveau() ? ' open' : ''}><summary>🆕 Quoi de neuf${nouveau() ? ' <span class="nv">nouveau</span>' : ''}</summary><div id="neuf-liste"><small>Chargement…</small></div></details>`;
@@ -210,7 +210,7 @@ const GM = (() => {
         ${window.GuildeMaj && !GuildeMaj.installe() ? '<button class="a" data-k="inst">📲 Installer le jeu sur ton téléphone</button>' : ''}
         <button class="a" data-k="p">📜 Mes parties (le journal de chaque partie)</button>
         <button class="a" data-k="entr">🎓 Les entraînements de Moustache</button>
-        <a class="a" href="a-valider.html">🛠 Pages de travail : à valider</a>${location.hostname === 'perso.elvanys.fr' ? '<a class="a" href="/">🛠 Le laboratoire perso</a>' : ''}
+        ${localStorage.getItem('guilde-atelier') === '1' ? `<a class="a" href="a-valider.html">🛠 Pages de travail : à valider</a>${location.hostname === 'perso.elvanys.fr' ? '<a class="a" href="/">🛠 Le laboratoire perso</a>' : ''}` : ''}
         <a class="a" href="#" onclick="Object.keys(localStorage).filter(k => k.startsWith('guilde-guide-') || k === 'guilde-exp-guide').forEach(k => localStorage.removeItem(k)); this.textContent = '🐱 C’est fait : Moustache vous guidera à nouveau'; return false">🐱 Revoir les guides de Moustache</a>
         <button class="f" data-k="x">Fermer</button></div>`; };
       dessine(); document.body.appendChild(z); if (window.GuildeMaj) { GuildeMaj.chargeNeuf(); setTimeout(() => GuildeMaj.marqueVu(), 400); }
@@ -218,6 +218,8 @@ const GM = (() => {
         if (e.target === z) { z.remove(); return; }
         const k = e.target.dataset && e.target.dataset.k; if (!k) return;
         if (k === 'x') { z.remove(); return; }
+        // 22/11 : les pages de travail sont cachées aux joueurs ; 7 touchers sur « Version du jeu » les montrent (ou les recachent) sur ce téléphone
+        if (k === 'ver') { z._ver = (z._ver || 0) + 1; if (z._ver >= 7) { z._ver = 0; const on = localStorage.getItem('guilde-atelier') === '1'; localStorage.setItem('guilde-atelier', on ? '0' : '1'); dessine(); if (window.GuildeMaj) GuildeMaj.chargeNeuf(); } return; }
         if (k === 'maj') { GuildeMaj.majMaintenant(); return; } // 22/11 : la mise à jour depuis les Paramètres
         if (k === 'inst') { z.querySelector('.p').innerHTML = `<h2>📲 Installer le jeu</h2>${GuildeMaj.aideInstall()}<button class="f" data-k="x">Fermer</button>`; return; }
         if (k === 'installer') { GuildeMaj.installer().then(ok => { if (ok) z.remove(); }); return; }

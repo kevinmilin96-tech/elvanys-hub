@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261122-171421"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
+<head><meta name="guilde-version" content="20261122-172117"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="robots" content="noindex">
@@ -218,8 +218,8 @@
 <body>
 <div id="app"></div>
 <div id="fen"></div><div id="perso"></div>
-<script src="musique.js?v=6116de1af9"></script>
-<script src="rang.js?v=82b0bff726"></script>
+<script src="musique.js?v=58e6b4a09e"></script>
+<script src="rang.js?v=7c952608c2"></script>
 <script>window.AMIS_SANS_BOUTON = true;</script>
 <script src="amis.js?v=d4158692ce"></script>
 <script src="heros-etoiles.js?v=48da21e34c"></script>
@@ -1213,7 +1213,7 @@ function accueil() { document.body.classList.remove('jeu'); sessionStorage.remov
     <button class="gros" style="background:#1c1c36;border-color:#45457a;color:var(--texte)" onclick="rejoindre()">🔑 Rejoindre avec un code<small>Un ami t’a donné un code de salle.</small></button>
     ${(() => { const l = sauvesEnLigne(); if (!l.length) return ''; return `<h3 style="color:var(--or);margin:3cqw 0 1.5cqw">💾 Parties en ligne sauvegardées <small style="color:var(--doux);font-weight:normal">(tu étais l'hôte)</small></h3>` + l.map(x => `<button class="gros" style="background:#1d1a35;border-color:#b98cff;color:#d9c2ff" onclick="rouvrirEnLigne('${x.id}')">💾 Rouvrir : ${x.titre}<small>${x.heros} · ${new Date(x.quand).toLocaleString('fr-FR', { weekday:'long', day:'numeric', month:'long', hour:'2-digit', minute:'2-digit' })}</small></button><button onclick="oublierEnLigne('${x.id}')" style="display:block;margin:0 auto;background:none;border:0;color:var(--doux);font-size:3cqw;text-decoration:underline;padding:1cqw">✕ effacer cette sauvegarde</button>`).join(''); })()}
     ${(() => { try { const s = salleGardee(); return s ? `<button class="gros" style="background:#14322a;border-color:var(--ok);color:var(--ok)" onclick='rejoindre(${JSON.stringify(s.code)}, ${JSON.stringify(s.moi)})'>↩ Revenir dans la salle ${s.code}<small>en tant que ${s.moi.nom}</small></button><button onclick="oublierSalle()" style="display:block;margin:0 auto;background:none;border:0;color:var(--doux);font-size:3cqw;text-decoration:underline;padding:1cqw">✕ oublier cette salle</button>` : ''; } catch (e) { return ''; } })()}
-    <p style="text-align:center;margin-top:4cqw"><a href="editeur.html" style="color:var(--or);font-size:3cqw">🛠 L’atelier des cartes</a> · <a href="chroniques-v1.html" style="color:var(--doux);font-size:3cqw">l’ancienne version (salles séparées)</a></p>
+    ${localStorage.getItem('guilde-atelier') === '1' ? `<p style="text-align:center;margin-top:4cqw"><a href="editeur.html" style="color:var(--or);font-size:3cqw">🛠 L’atelier des cartes</a> · <a href="chroniques-v1.html" style="color:var(--doux);font-size:3cqw">l’ancienne version (salles séparées)</a></p>` : ''}
   </div>`;
 }
 // un choix de l'accueil → ce que le moteur attend (une voie, ou un héros d'aventure avec ses stats)
@@ -1359,7 +1359,7 @@ if (ESSAI) essaiAtelier(ESSAI); else if (sessionStorage.getItem('chron-en-jeu') 
 </script>
 <script src="chroniques-aventures.js?v=d6797cd442"></script>
 <script src="guide.js?v=f78db3b570"></script>
-<script src="guides-modes.js?v=4174fd7ae1"></script>
+<script src="guides-modes.js?v=866dc88860"></script>
 <script src="entrainement.js?v=854139c476"></script>
 <script src="chroniques-entrainement.js?v=d0ae56c76f"></script>
 <script>

@@ -250,10 +250,10 @@ function butinCalcule() {
 function butinRamasse() {
   const g = butinCalcule(); if (g.xp < 1 && g.eclats < 1 && g.or < 1) return g;
   localStorage.setItem(BUTIN_CLE, JSON.stringify({ depuis:Date.now() })); try { localStorage.removeItem('guilde-recolte'); } catch (e) {}
-  if (g.xp) gagneXP(g.xp, 'Butin du campement'); if (g.eclats && typeof donneLibres === 'function') donneLibres(g.eclats);
+  if (g.xp) gagneXP(g.xp, 'Butin de la Guilde'); if (g.eclats && typeof donneLibres === 'function') donneLibres(g.eclats);
   if ((g.or || g.pou) && typeof donneRessources === 'function') donneRessources(g.or, g.pou, true);
   return g;
 }
 function butinHTML() { const g = butinCalcule(), plein = g.h >= BUTIN_MAX_H;
-  return `<button class="butin ${plein ? 'plein' : ''}" onclick="butinRamasse(); const rm = document.getElementById('rangmenu'); if (rm) rm.innerHTML = bandeauRangHTML() + butinHTML(); else this.outerHTML = butinHTML();">🎁 Butin du campement : <span style="white-space:nowrap"><b>${g.xp} XP · 💠 ${g.eclats} · 🪙 ${g.or} · 🔹 ${g.pou}</b></span>${plein ? ' · plein !' : ` · <span style="white-space:nowrap">${Math.floor(g.h)} h / ${BUTIN_MAX_H} h</span>`}</button>`; }
+  return `<button class="butin ${plein ? 'plein' : ''}" onclick="butinRamasse(); const rm = document.getElementById('rangmenu'); if (rm) rm.innerHTML = bandeauRangHTML() + butinHTML(); else this.outerHTML = butinHTML();">🎁 Butin de la Guilde : <span style="white-space:nowrap"><b>${g.xp} XP · 💠 ${g.eclats} · 🪙 ${g.or} · 🔹 ${g.pou}</b></span>${plein ? ' · plein !' : ` · <span style="white-space:nowrap">${Math.floor(g.h)} h / ${BUTIN_MAX_H} h</span>`}</button>`; }
 if (typeof document !== 'undefined') { const st = document.createElement('style'); st.textContent = `.butin { display:block; width:100%; margin-top:5px; font:12.5px Georgia, serif; color:#f1ecff; background:#1d1838e6; border:1px solid #4b4580; border-radius:12px; padding:5px 8px; } .butin b { color:#f3c96b; } .butin.plein { border-color:#f3c96b; box-shadow:0 0 12px #f3c96b88; animation:butinP 1.6s ease-in-out infinite; } @keyframes butinP { 50% { box-shadow:0 0 2px #f3c96b44; } }`; document.head.appendChild(st); }

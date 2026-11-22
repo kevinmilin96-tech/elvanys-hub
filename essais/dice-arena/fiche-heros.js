@@ -180,7 +180,7 @@ const fhGroupes = () => { const G = {}; avSac().pieces.forEach(p => { if (p.r >=
   return Object.values(G).map(g => g.sort((a, b) => b.niv - a.niv)).sort((a, b) => (b.length >= 3) - (a.length >= 3) || b[0].r - a[0].r || b.length - a.length); };
 function fhForgeCase(id, k) { const C = EQ_CASES.find(c => c.k === k), G = fhGroupes().filter(g => g[0].slot === k);
   if (!G.length) return '';
-  return `<div class="fh-bloc"><h4>🔥 La Forge</h4>${G.map(g => { const n = Math.min(3, g.length), R = EQ_RARE[g[0].r], R2 = EQ_RARE[g[0].r + 1];
+  return `<div class="fh-bloc"><h4>🔥 La fusion</h4>${G.map(g => { const n = Math.min(3, g.length), R = EQ_RARE[g[0].r], R2 = EQ_RARE[g[0].r + 1];
     return `<p class="doux" style="margin:3px 0"><b style="color:${R.c}">${n}/3</b> pièces <span style="color:${R.c}">${R.n}s</span> pour une pièce <b style="color:${R2.c}">${R2.n}</b>${g.length >= 3 ? ` · <a href="#" onclick="FORGE.sel='${k}:${g[0].r}';fhForge('${id}');return false">forger ›</a>` : ''}</p>`; }).join('')}</div>`; }
 function fhForge(id) {
   const G = fhGroupes(), prets = G.filter(g => g.length >= 3); let sel = prets.find(g => g[0].slot + ':' + g[0].r === FORGE.sel) || null;
@@ -191,7 +191,7 @@ function fhForge(id) {
     apercu = `<div class="fg-fleche">⬇</div><div class="fh-piece fh-r${r2} fg-result"><span class="e">${C.e}</span><div><b style="color:${EQ_RARE[r2].c}">${n.nom} <small style="display:inline">+${n.niv}/${eqNivMax(n)}</small></b><small>${C.n} ${EQ_RARE[r2].n} · ${eqTexte(n)}</small>${por ? `<small>Reste équipée par ${fhInfo(por).nom}.</small>` : ''}</div></div>
       <p class="doux" style="text-align:center">Les 3 pièces de l’enclume disparaissent pour donner celle-ci. On garde le meilleur niveau.</p>
       <button class="fh-bt or" style="width:100%" onclick="fhForger('${id}')">🔥 Forger</button>`; }
-  fhFen(`<h2>🔥 La Forge</h2><div style="text-align:center"><img src="ui/heros/pnj-forgeron.webp?v=1" alt="" style="width:22%;max-width:90px;border-radius:50%;border:2px solid #f3c96b;box-shadow:0 0 12px #f3a04a88" onerror="this.remove()"></div>
+  fhFen(`<h2>🔥 La fusion</h2><div style="text-align:center"><img src="ui/heros/pnj-forgeron.webp?v=1" alt="" style="width:22%;max-width:90px;border-radius:50%;border:2px solid #f3c96b;box-shadow:0 0 12px #f3a04a88" onerror="this.remove()"></div>
     <p class="doux" style="text-align:center">« Trois pièces de la même sorte et de la même couleur sur l’enclume, et j’en tire une meilleure. »<br><b>Commune → rare → épique → légendaire → mythique.</b></p>
     <div class="fg-enclume ${sel ? 'pleine' : ''}" id="fg-enclume">${[0, 1, 2].map(i => pose[i] ? caseE(pose[i]) : '<div class="fg-place vide">?</div>').join('')}</div>
     ${apercu || `<p class="doux" style="text-align:center">${prets.length ? 'Touche une fusion possible ci-dessous pour la poser sur l’enclume.' : 'Aucune fusion possible pour l’instant : il faut 3 pièces de la même case et de la même rareté.'}</p>`}

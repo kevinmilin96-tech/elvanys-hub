@@ -43,7 +43,7 @@ const GUIDES_MODES = {
   'mes-heros':[
     [null, 'Voici <b>tous tes héros</b> : ceux de la Guilde et tes héros d’aventure. Ici, tu les rends plus forts contre les monstres (le Duel de l’Arène, lui, reste équitable).'],
     ['.fh-ress', 'Tes ressources : 🪙 <b>or</b>, 🔹 <b>poussière de rune</b> (pour les niveaux) et 💠 <b>éclats de Guilde</b> (pour le rang du héros de ton choix).'],
-    ['.recolte', 'Le <b>butin du campement</b> : pendant que tu n’es pas là, la Guilde ramasse de l’or, de la poussière, de l’XP et des éclats (12 h au plus). Il se ramasse dans le menu, sous ton rang.'],
+    ['.recolte', 'Le <b>butin de la Guilde</b> : pendant que tu n’es pas là, la Guilde ramasse de l’or, de la poussière, de l’XP et des éclats (12 h au plus). Il se ramasse dans le menu, sous ton rang.'],
     ['.grille', 'Touche un héros pour ouvrir sa <b>fiche</b> : niveau, rang, équipement. La pastille ⬆ veut dire qu’il peut monter.'],
   ],
   'fiche-heros':[

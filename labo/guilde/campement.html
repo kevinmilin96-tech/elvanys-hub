@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261122-171421"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
+<head><meta name="guilde-version" content="20261122-172117"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="robots" content="noindex">
@@ -31,8 +31,8 @@
 <script src="guide.js?v=f78db3b570"></script>
 <script src="cartes.js?v=4f4c03174c"></script>
 <script src="heros-aventure.js?v=31db8c2ed4"></script>
-<script src="musique.js?v=6116de1af9"></script>
-<script src="rang.js?v=82b0bff726"></script>
+<script src="musique.js?v=58e6b4a09e"></script>
+<script src="rang.js?v=7c952608c2"></script>
 <script src="donnees.js?v=41849a41e8"></script>
 <script src="odyssee.js?v=2dd4974f8b"></script>
 <script src="chronique.js?v=ecf982cfcc"></script>
@@ -58,7 +58,7 @@ function dessine() {
   <p class="doux" style="text-align:center">Deux héros de la Guilde tiennent le front ensemble : les actes de l’Invasion (plusieurs vagues à la suite) ou un grand boss. Il faudra se serrer les coudes.</p>
   <h2>Le boss</h2>${Object.keys(BOSS_CAMP).map(k => { const x = HEROS[k]; if (!bossOk(k)) return `<div class="boss" style="opacity:.45;filter:grayscale(.8)"><div class="e">🔒</div><div><b>${x.nom}</b>, ${x.titre}<small>${bossCond(k)}</small></div></div>`; return `<div class="boss ${C.boss === k ? 'sel' : ''}" onclick="C.boss='${k}';dessine()" style="cursor:pointer;${C.boss === k ? 'outline:3px solid #7dffb0;' : 'opacity:.75;'}"><div class="e">${x.emoji}</div><div><b>${x.nom}</b>, ${x.titre} · ${x.pv} PV<small>${x.role}</small></div></div>`; }).join('')}
   <p class="doux">Pas encore de partie en ligne : on joue <b>à deux sur ce téléphone</b> (on se le passe à chaque tour), ou avec un <b>compagnon joué par l’ordinateur</b>. Le boss joue après les deux héros et se retourne contre le dernier qui l’a frappé. La <b>Cohésion</b> (réserve commune) permet de relever un héros à terre, de crier le ralliement ou de soigner l’autre.</p>
-  <h2>1. Ton héros</h2><div class="heros6">${ORDRE.map(id => id === 'zephine' && !ZOK() ? `<button disabled style="opacity:.5"><img src="${IMG(id)}" alt="" style="filter:grayscale(1)">🔒 ${HEROS[id].nom}</button>` : `<button class="${C.a === id ? 'sel' : ''}" onclick="C.a='${id}';if(C.b===C.a)C.b=null;dessine()"><img src="${IMG(id)}" alt="">${HEROS[id].nom}</button>`).join('')}${avC('a')}</div>
+  <h2>1. Ton héros</h2><div class="heros6">${ORDRE.map(id => id === 'zephine' && !ZOK() ? `<button disabled style="opacity:.5"><img src="${IMG(id)}" alt="" style="filter:grayscale(1)">🔒 ${HEROS[id].nom}<br><small>Fais le tutoriel</small></button>` : `<button class="${C.a === id ? 'sel' : ''}" onclick="C.a='${id}';if(C.b===C.a)C.b=null;dessine()"><img src="${IMG(id)}" alt="">${HEROS[id].nom}</button>`).join('')}${avC('a')}</div>
   <h2>2. Le second héros</h2><div class="modes"><button class="${C.modeB === 'ordi' ? 'sel' : ''}" onclick="C.modeB='ordi';dessine()">🤖 Un compagnon (ordinateur)</button><button class="${C.modeB === 'humain' ? 'sel' : ''}" onclick="C.modeB='humain';dessine()">📱 Un ami, sur ce téléphone</button></div>
   <div class="heros6">${ORDRE.map(id => `<button class="${C.b === id ? 'sel' : ''}" ${C.a === id || (id === 'zephine' && !ZOK()) ? 'disabled' : ''} onclick="C.b='${id}';dessine()"><img src="${IMG(id)}" alt="">${HEROS[id].nom}</button>`).join('')}${avC('b')}</div>
   <button class="go" ${C.a && C.b ? '' : 'disabled'} onclick="localStorage.setItem('guilde-campement', JSON.stringify(C));chronique([(CHRON_CAMP_B[C.boss] || CHRON_CAMP).intro(haEsc(nomC(C.a)), haEsc(nomC(C.b)))], () => location.href='duel.html?campement=1')">🔥 Au feu de camp !</button>

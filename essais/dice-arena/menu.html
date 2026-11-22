@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261122-171421"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
+<head><meta name="guilde-version" content="20261122-172117"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex">
@@ -8,7 +8,7 @@
 <title>La Guilde des Runes</title>
 <script>
 // Même mécanisme que le Duel : une nouvelle version = rechargement tout seul à l'ouverture (publier.sh change VERSION).
-const VERSION = '20261122-171421';
+const VERSION = '20261122-172117';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-menu-' + v)) { sessionStorage.setItem('recharge-menu-' + v, '1'); location.replace('menu.html?v=' + v); }
@@ -208,8 +208,8 @@ fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.te
 <div id="flash"></div>
 
 <script src="semaine.js?v=910ee6442a"></script>
-<script src="musique.js?v=6116de1af9"></script>
-<script src="rang.js?v=82b0bff726"></script>
+<script src="musique.js?v=58e6b4a09e"></script>
+<script src="rang.js?v=7c952608c2"></script>
 <script src="succes.js?v=d6910350b3"></script>
 <script src="profil.js?v=4a45d06dad"></script>
 <script>window.AMIS_SANS_BOUTON = true; /* 15/11 : un seul bouton en haut à gauche (profil + amis) */</script>
@@ -617,11 +617,11 @@ function grandMenu() {
   const E = typeof AMIS !== 'undefined' && AMIS.etat, dem = E ? E.demandes.length : 0;
   const va = h => `try{sessionStorage.setItem('guilde-dans-mode','1')}catch(e){};location.href='${h}'`, ferme = "document.getElementById('grand-menu').remove();";
   const T = [['🌀', 'Portails', ferme + 'grillePortails()'], ['📜', 'Quêtes', va('route.html#quetes'), qr], ['🎁', 'Route des rangs', va('route.html'), ar], ['🏰', 'Mes héros', va('mes-heros.html')], ['🂠', 'Mes decks', va('mes-decks.html')], // 22/11 : la page des decks (deck-proposition.html)
-    ['🃏', 'Pouvoirs des héros', va('pouvoirs.html?retour=menu.html')], ['⚒', 'La Forge', va('forge.html'), typeof groupesFusion === 'function' ? groupesFusion().length : 0], ['🗺', 'Héros d’aventure', va('aventuriers.html')], ['👤', 'Mon profil', va('profil.html'), typeof succesARecuperer === 'function' ? succesARecuperer() : 0], ['📊', 'Mon parcours', va('profil.html#parcours')],
+    ['🃏', 'Pouvoirs des héros', va('pouvoirs.html?retour=menu.html')], ['⚒', 'Le Forgeron', va('forge.html'), typeof groupesFusion === 'function' ? groupesFusion().length : 0], ['🗺', 'Héros d’aventure', va('aventuriers.html')], ['👤', 'Mon profil', va('profil.html'), typeof succesARecuperer === 'function' ? succesARecuperer() : 0], ['📊', 'Mon parcours', va('profil.html#parcours')],
     ['📖', 'Mes parties', ferme + 'Carnet.ouvrir()'], ['🏛', 'Panthéon', va('pantheon.html')], ['👥', 'Amis', ferme + 'amisFenetre()', dem], ['🤝', 'Entre amis', ferme + "location.hash='enligne'"],
     ['📬', 'Boîte', ferme + 'amisBoite()'], ['🎓', 'Tutoriel', va('duel.html?tuto=1')], ['⚙️', 'Paramètres', ferme + 'GM.parametres()', window.GuildeMaj && GuildeMaj.aVoir() ? '!' : 0]];
   // 22/11 : les icônes peintes (images Gemini, ui/menu/m-*.webp) ; sans image, l'émoji reste
-  const GM_IMG = { 'Portails':'m-portails', 'Quêtes':'m-quetes', 'Route des rangs':'m-route', 'Mes héros':'m-heros', 'Pouvoirs des héros':'m-pouvoirs', 'La Forge':'m-forge', 'Mon profil':'m-profil', 'Mon parcours':'m-parcours',
+  const GM_IMG = { 'Portails':'m-portails', 'Quêtes':'m-quetes', 'Route des rangs':'m-route', 'Mes héros':'m-heros', 'Pouvoirs des héros':'m-pouvoirs', 'Le Forgeron':'m-forge', 'Mon profil':'m-profil', 'Mon parcours':'m-parcours',
     'Panthéon':'m-pantheon', 'Amis':'m-amis', 'Entre amis':'m-entreamis', 'Boîte':'m-boite', 'Mes parties':'m-parties', 'Tutoriel':'m-tuto', 'Paramètres':'m-param' };
   g = document.createElement('div'); g.id = 'grand-menu';
   g.innerHTML = `<button class="x" onclick="grandMenu()" aria-label="Fermer">✕</button>

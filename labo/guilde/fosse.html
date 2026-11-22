@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261122-171421"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
+<head><meta name="guilde-version" content="20261122-172117"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="robots" content="noindex">
@@ -59,8 +59,8 @@
 <body>
 <div id="app"></div>
 <div id="fen"></div>
-<script src="musique.js?v=6116de1af9"></script>
-<script src="rang.js?v=82b0bff726"></script>
+<script src="musique.js?v=58e6b4a09e"></script>
+<script src="rang.js?v=7c952608c2"></script>
 <script src="heros-etoiles.js?v=48da21e34c"></script>
 <script src="progression-modes.js?v=807b0f9ad5"></script>
 <script src="heros-aventure.js?v=31db8c2ed4"></script>
@@ -500,7 +500,7 @@ function accueil() {
     <div class="pv-h">${haInfo(choixH) ? `⚔ <b>${haEsc(haInfo(choixH).nom)}</b>, ${haEsc(haInfo(choixH).titre)} · la voie de ${HER[vJ()].n}.<br>` : ''}✦ <b>${HER[vJ()].t}</b> : ${HER[vJ()].d}<br>${typeof texteBonus === 'function' ? '✨ ' + texteBonus(pJ()) : ''}</div>
     <button class="gros" onclick="commence()">⚔ Descendre dans la Fosse</button>
     <p class="record">Meilleur score : ${D.meilleur} · plus longue survie : ${Math.floor(D.meilleurTemps / 60)}:${String(D.meilleurTemps % 60).padStart(2, '0')} · ${D.victoires} victoire${D.victoires > 1 ? 's' : ''} sur ${D.parties}<br>
-      <a href="fosse-v2.html" style="color:var(--doux)">l’ancien casse-briques</a> · <a href="fosse-v1.html" style="color:var(--doux)">la version tour par tour</a></p></div>`;
+      ${localStorage.getItem('guilde-atelier') === '1' ? '<a href="fosse-v2.html" style="color:var(--doux)">l’ancien casse-briques</a> · <a href="fosse-v1.html" style="color:var(--doux)">la version tour par tour</a>' : ''}</p></div>`;
 }
 function commence() { const D = lire(); D.heros = choixH; ecrire(D); nouvelle(choixH); ecranJeu(); son('portail', true); if (!localStorage.getItem('guilde-fosse3-guide')) { localStorage.setItem('guilde-fosse3-guide', '1'); regles(true); } }
 if (typeof GM !== 'undefined') { try { GM.musique('combat2'); GM.bouton(); } catch (e) {} }
