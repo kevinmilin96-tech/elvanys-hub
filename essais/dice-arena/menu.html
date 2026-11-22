@@ -557,8 +557,10 @@ function profilMenu() {
     #monde { height:calc(100dvh - 66px - env(safe-area-inset-bottom)) !important; } body { overflow:hidden; } /* 17/11 soir : le monde tient au-dessus de la barre, rien ne défile */
     #monde .carrousel { --w:min(70vw, 330px, calc((100dvh - 330px) / 1.49)) !important; }
     #barre-bas .ic4 { display:inline-grid; grid-template-columns:repeat(2, 9px); gap:4px; vertical-align:middle; } #barre-bas .ic4 i { width:9px; height:9px; border-radius:3px; background:#f3c96b; box-shadow:0 0 6px #f3c96b88; }
-    #grand-menu { position:fixed; inset:0; z-index:4600; background:#0d0a1cf5; overflow:auto; padding:12px 12px calc(20px + env(safe-area-inset-bottom)); box-sizing:border-box; animation:gpArr .25s ease-out; }
-    #grand-menu .gm-tete { display:flex; gap:12px; align-items:center; background:linear-gradient(135deg, #4a2a8c, #2a1d5c); border:1px solid #f3c96b66; border-radius:16px; padding:12px; max-width:520px; margin:0 auto 12px; }
+    #grand-menu { position:fixed; inset:0; z-index:4600; background:linear-gradient(#0d0a1cb0, #0d0a1cd8), url('ui/menu/fond-grandmenu.webp?v=1') center / cover, #0d0a1c; overflow:auto; padding:12px 12px calc(20px + env(safe-area-inset-bottom)); box-sizing:border-box; animation:gpArr .25s ease-out; }
+    #grand-menu .gm-tete .embl-rang img { width:100%; height:100%; border-radius:0; box-shadow:none; background:none; object-fit:contain; }
+    #grand-menu .gm-g b img { width:52px; height:52px; object-fit:contain; display:block; margin:0 auto; filter:drop-shadow(0 3px 5px #0009); }
+    #grand-menu .gm-tete { display:flex; gap:12px; align-items:center; background:linear-gradient(90deg, #1d1838d0, #1d183840), url('ui/menu/banniere-menu.webp?v=1') center / cover, #2a1d5c; border:1px solid #f3c96b66; border-radius:16px; padding:12px; max-width:520px; margin:0 auto 12px; }
     #grand-menu .gm-tete img, #grand-menu .gm-tete .sans { width:64px; height:64px; border-radius:50%; object-fit:cover; box-shadow:0 0 0 3px #f3c96b; flex:none; background:#221d42; display:grid; place-items:center; font-size:30px; }
     #grand-menu .gm-tete .nm { font:bold 1.15em Georgia, serif; } #grand-menu .gm-tete small { color:#c9c1ea; display:block; }
     #grand-menu .gm-tete .barre-rang { display:block; height:10px; margin-top:5px; }
@@ -600,11 +602,14 @@ function grandMenu() {
     ['🃏', 'Pouvoirs des héros', va('pouvoirs.html?retour=menu.html')], ['⚒', 'La Forge', va('forge.html'), typeof groupesFusion === 'function' ? groupesFusion().length : 0], ['🗺', 'Héros d’aventure', va('aventuriers.html')], ['👤', 'Mon profil', va('profil.html')], ['📊', 'Mon parcours', va('profil.html#parcours')],
     ['📖', 'Mes parties', ferme + 'Carnet.ouvrir()'], ['🏛', 'Panthéon', va('pantheon.html')], ['👥', 'Amis', ferme + 'amisFenetre()', dem], ['🤝', 'Entre amis', ferme + "location.hash='enligne'"],
     ['📬', 'Boîte', ferme + 'amisBoite()'], ['🎓', 'Tutoriel', va('duel.html?tuto=1')], ['🔗', 'Tous les liens', "location.href='/liens.html'"], ['⚙️', 'Paramètres', ferme + 'GM.parametres()']];
+  // 22/11 : les icônes peintes (images Gemini, ui/menu/m-*.webp) ; sans image, l'émoji reste
+  const GM_IMG = { 'Portails':'m-portails', 'Quêtes':'m-quetes', 'Route des rangs':'m-route', 'Mes héros':'m-heros', 'Pouvoirs des héros':'m-pouvoirs', 'La Forge':'m-forge', 'Mon profil':'m-profil', 'Mon parcours':'m-parcours',
+    'Panthéon':'m-pantheon', 'Amis':'m-amis', 'Entre amis':'m-entreamis', 'Boîte':'m-boite', 'Tous les liens':'m-liens', 'Paramètres':'m-param' };
   g = document.createElement('div'); g.id = 'grand-menu';
   g.innerHTML = `<button class="x" onclick="grandMenu()" aria-label="Fermer">✕</button>
   <div class="gm-tete" onclick="${va('profil.html')}">${por ? `<img src="${por}" alt="">` : '<span class="sans">👤</span>'}<div style="flex:1"><div class="nm">${(P.nom || (E && E.moi && E.moi.pseudo) || 'Aventurier').replace(/</g, '&lt;')}</div>
-    ${R ? `<small>🏆 Rang de la Guilde <b style="color:#f3c96b">${R.rang}</b> · ${R.besoin ? `${R.dans} / ${R.besoin} XP` : 'rang max'}</small><span class="barre-rang"><i style="width:${R.besoin ? Math.round(R.dans / R.besoin * 100) : 100}%"></i></span>` : ''}</div></div>
-  <div class="gm-g">${T.map(([e, n, f, pt]) => `<button onclick="${f}"><b>${e}</b>${n}${pt ? `<span class="pt">${pt}</span>` : ''}</button>`).join('')}</div>`;
+    ${R ? `<small>${typeof emblemeRang === 'function' ? emblemeRang(R.rang, 26) : '🏆'} Rang de la Guilde <b style="color:#f3c96b">${R.rang}</b> · ${R.besoin ? `${R.dans} / ${R.besoin} XP` : 'rang max'}</small><span class="barre-rang"><i style="width:${R.besoin ? Math.round(R.dans / R.besoin * 100) : 100}%"></i></span>` : ''}</div></div>
+  <div class="gm-g">${T.map(([e, n, f, pt]) => `<button onclick="${f}"><b>${GM_IMG[n] ? `<img src="ui/menu/${GM_IMG[n]}.webp?v=1" alt="" draggable="false">` : e}</b>${n}${pt ? `<span class="pt">${pt}</span>` : ''}</button>`).join('')}</div>`;
   document.body.appendChild(g); if (typeof GM !== 'undefined') GM.son('clic');
 }
 // 17/11 soir (l'utilisateur, « comme Genshin ») : la grille de tous les portails, en vignettes simples
