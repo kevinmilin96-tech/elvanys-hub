@@ -415,7 +415,7 @@ function fin() {
     <div class="choixh"><button class="or" onclick="fermer();demarre('${cleD()}')">↺ Rejouer</button><button onclick="fermer();accueil()">Changer de héros</button><button onclick="location.href='menu.html'">⌂ Menu</button></div>`);
 }
 function journal() { fenetre(`<h2>📖 Journal</h2><div class="journal">${D.log.map(t => `<div>${t}</div>`).join('')}</div><div class="choixh"><button onclick="fermer()">Fermer</button></div>`); }
-function quitter() { if (D && !D.fini && !confirm('Quitter la partie ?')) return; location.href = 'menu.html'; }
+function quitter() { if (D && !D.fini && !confirm('Quitter ? Ta partie est gardée : « Reprendre » à l’accueil de la Défense.')) return; location.href = 'menu.html'; }
 function regles() {
   fenetre(`<h2>📜 La Défense de la porte</h2>
   <p>Les monstres descendent les 3 chemins. À la fin de chaque tour, <b>tes tours tirent</b> sur le monstre le plus avancé de leur colonne, puis <b>les monstres avancent</b>. Celui qui sort du chemin frappe la porte.</p>
@@ -432,6 +432,17 @@ function regles() {
   <p class="doux">Règles complètes : <a href="defense-proposition.html" style="color:#7cc8ff">la page de la proposition</a>.</p>
   <div class="choixh"><button onclick="fermer()">Compris</button></div>`);
 }
+// 22/11 (carte de l'application : « la Défense n'a pas de reprise ») : la partie en cours est gardée sur le téléphone à chaque geste ;
+// à l'accueil, « ▶ Reprendre » la remet là où on s'est arrêté (le hasard repart de zéro, comme dans les autres modes)
+const CLE_EN_COURS = 'guilde-defense-en-cours';
+function gardeD() { try { if (D && !D.fini) { const c = Object.assign({}, D, { fx:[] }); delete c.rng; localStorage.setItem(CLE_EN_COURS, JSON.stringify({ quand:Date.now(), D:c, modeSF })); } else localStorage.removeItem(CLE_EN_COURS); } catch (e) {} }
+function enCoursD() { try { const g = JSON.parse(localStorage.getItem(CLE_EN_COURS) || 'null'); return g && g.D && !g.D.fini ? g : null; } catch (e) { return null; } }
+function reprendD() { const g = enCoursD(); if (!g) return; D = g.D; D.rng = Math.random; D.fx = []; modeSF = !!g.modeSF; sel = []; selTour = -1; attente = null; dis('Partie reprise : à toi de jouer.'); app.classList.add('jeu'); rendu(); }
+{ const _r = rendu; rendu = function () { const x = _r.apply(this, arguments); gardeD(); return x; }; }
+{ const _a = accueil; accueil = function () { const x = _a.apply(this, arguments); const g = enCoursD();
+    if (g) { const nom = g.D.av && typeof haInfo === 'function' && haInfo('av:' + g.D.av) ? haInfo('av:' + g.D.av).nom : (HEROS[g.D.heros] || {}).nom || '';
+      app.querySelector('h1').insertAdjacentHTML('afterend', `<div class="choixh" style="margin:8px 0"><button class="or" onclick="reprendD()">▶ Reprendre ta partie<br><small>${nom} · vague ${g.D.vague || 1}${g.D.sansFin ? ' ♾' : ''} · porte ${g.D.porte}/${g.D.porteMax}</small></button><button onclick="if(confirm('Abandonner la partie en cours ?')){localStorage.removeItem(CLE_EN_COURS);accueil()}">✕ Abandonner</button></div>`); }
+    return x; }; }
 accueil();
 // 13/11 soir : musique
 GM.musique('duel'); GM.bouton();
