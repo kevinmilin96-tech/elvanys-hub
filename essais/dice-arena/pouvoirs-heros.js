@@ -35,132 +35,132 @@ const POUVOIRS_H = {
   pip:{
     garde:[
       P('A', 'Écorce bénie', 'controle', 'ronces', '#5fd36a', '🌳', null, 'Un 1 ou un 2 → Épines 3 ; sinon Bouclier = la valeur.', 'Protéger : bouclier = la valeur du dé ; sur un 1 ou un 2, le protégé gagne aussi des Épines (le prochain monstre qui le frappe perd un sceau).', 'a shield of living tree bark covered in small thorns'),
-      P('B', 'Mousse douce', 'soin', 'soin', '#9be38f', '🍃', null, 'Bouclier = la moitié de la valeur, et soigne autant.', 'Protéger : bouclier = la moitié du dé, et le protégé reprend 2 PV.', 'a soft cushion of glowing green moss with tiny healing sparkles'),
-      P('C', 'Ronce-garde', 'controle', 'ronces', '#3fa34d', '🌵', null, 'Un 1 à 3 → Bouclier = valeur × 2 ; un 4 à 6 → Bouclier = valeur et une unité adverse est Enracinée.', 'Protéger : bouclier = la valeur ; sur un 1 à 3, le monstre le plus proche du protégé est entravé 1 tour (il ne fait rien).', 'a ring of thorny brambles rising from the ground like a wall'),
+      P('B', 'Mousse douce', 'soin', 'soin', '#9be38f', '🍃', null, '1 dé → Bouclier = la moitié de la valeur (arrondie au-dessus), et ton héros se soigne d’autant.', 'Protéger : bouclier = la moitié du dé, et le protégé reprend 2 PV.', 'a soft cushion of glowing green moss with tiny healing sparkles'),
+      P('C', 'Ronce-garde', 'controle', 'ronces', '#3fa34d', '🌵', null, '1 dé → Un 1, 2 ou 3 : Bouclier = la valeur × 2. Un 4, 5 ou 6 : Bouclier = la valeur, et la créature adverse la plus forte est Entravée.', 'Protéger : bouclier = la valeur ; sur un 1 à 3, le monstre le plus proche du protégé est entravé 1 tour (il ne fait rien).', 'a ring of thorny brambles rising from the ground like a wall'),
     ],
     pouvoir:[
       P('A', 'Appel de la Louve', 'degats', 'louve', '#c58bff', '🐺', 'paire45', '4 dés de 4 ou 5 → 7 dégâts, Bouclier 3, +1 marqueur de Meute.', 'Une paire de 4 ou de 5 → la louve mord : un sceau d’un monstre collé à Pip se brise, et Pip gagne bouclier 3.', 'a spectral violet wolf head howling with glowing eyes'),
-      P('B', 'Cercle de vie', 'soin', 'soin', '#7dffb0', '🌸', 'suite3', 'Suite de 3 → soigne ton héros de 6 et chacune de tes unités de 3.', 'Une suite de 3 → Pip et chaque allié à 2 cases reprennent 3 PV (rang 5 : 4 PV ; rang 10 : jusqu’à 3 cases).', 'a glowing circle of blooming flowers with rising green light'),
-      P('C', 'Ronces vives', 'controle', 'ronces', '#2f8f3f', '🌿', 'pairs3', '3 dés de 3 ou moins → 2 unités adverses Enracinées et Épines 2 sur ton héros.', 'Trois dés pairs → tous les monstres à 4 cases de Pip sont entravés 1 tour (rang 10 : 2 tours).', 'thick living vines bursting out of the ground and wrapping around'),
+      P('B', 'Cercle de vie', 'soin', 'soin', '#7dffb0', '🌸', 'suite3', '3 dés qui se suivent → Ton héros se soigne de 6 et chacune de tes créatures de 3.', 'Une suite de 3 → Pip et chaque allié à 2 cases reprennent 3 PV (rang 5 : 4 PV ; rang 10 : jusqu’à 3 cases).', 'a glowing circle of blooming flowers with rising green light'),
+      P('C', 'Ronces vives', 'controle', 'ronces', '#2f8f3f', '🌿', 'pairs3', '3 dés de 3 ou moins → Les 2 créatures adverses les plus fortes sont Entravées ; ton héros gagne Épines 2 et 3 dégâts partent au héros adverse.', 'Trois dés pairs → tous les monstres à 4 cases de Pip sont entravés 1 tour (rang 10 : 2 tours).', 'thick living vines bursting out of the ground and wrapping around'),
     ],
     passif:[
       P('A', 'L’Appel de l’Alpha', 'degats', 'louve', '#b07cff', '🐾', null, 'Chaque 6 lancé pose un marqueur de Meute ; à 3, la Louve arrive et attaque seule à chaque tour.', 'Chaque 6 lancé par Pip pose un marqueur ; à 3 (rang 10 : 2), la louve rejoint Pip pour 3 tours : à chaque fin de tour, elle brise un sceau d’un monstre collé à Pip. Puis elle repart (les marqueurs recommencent à zéro).', 'three glowing wolf paw prints on mossy stone'),
-      P('B', 'Ronces vivantes', 'controle', 'ronces', '#4caf50', '🥀', null, 'Tes unités ont Épines 1.', 'Un monstre qui frappe Pip perd un sceau et reste pris dans les ronces : il ne fait rien au tour suivant (sauf le boss).', 'a thorny rose vine coiled like a protective bracelet'),
-      P('C', 'Sève partagée', 'soin', 'soin', '#b5f58a', '💧', null, 'Chaque soin donne aussi +1 bouclier à la cible.', 'Chaque soin de Pip donne aussi bouclier 3 à l’allié soigné.', 'a glowing drop of golden-green tree sap'),
+      P('B', 'Ronces vivantes', 'controle', 'ronces', '#4caf50', '🥀', null, 'Chaque 6 que tu lances pique le héros adverse : 2 dégâts. Ton héros a toujours Épines 2, et tes créatures Épines 1.', 'Un monstre qui frappe Pip perd un sceau et reste pris dans les ronces : il ne fait rien au tour suivant (sauf le boss).', 'a thorny rose vine coiled like a protective bracelet'),
+      P('C', 'Sève partagée', 'soin', 'soin', '#b5f58a', '💧', null, 'Chaque fois que ton héros se soigne, il gagne aussi un Bouclier de 3 ; au début de ton tour, il se soigne de 1.', 'Chaque soin de Pip donne aussi bouclier 3 à l’allié soigné.', 'a glowing drop of golden-green tree sap'),
     ],
     ultime:[
       P('A', 'L’Éveil du Grand Arbre', 'soin', 'soin', '#7dffb0', '🌳', 'bas3', '3 dés de 3 ou moins → ton héros se soigne de 15, tes unités retrouvent toute leur vie.', 'Trois dés de 3 ou moins → tout le groupe revient à ses PV max ; les héros à terre se relèvent.', 'an immense ancient tree awakening with glowing green light in its branches'),
-      P('B', 'La Grande Chasse', 'degats', 'louve', '#a46bff', '🌕', 'haut34', '3 dés de 5 ou plus → la Louve arrive tout de suite en Alpha (6 / 10) et attaque deux fois.', 'Trois dés de 4 ou plus → pendant 3 tours (rang 10 : 4), une louve géante accompagne Pip : à chaque fin de tour, elle brise un sceau de chaque monstre collé à Pip.', 'a giant spectral wolf leaping under a full moon'),
+      P('B', 'La Grande Chasse', 'degats', 'louve', '#a46bff', '🌕', 'haut34', '3 dés de 5 ou plus → La Louve arrive tout de suite en Alpha (6 / 10) et attaque deux fois.', 'Trois dés de 4 ou plus → pendant 3 tours (rang 10 : 4), une louve géante accompagne Pip : à chaque fin de tour, elle brise un sceau de chaque monstre collé à Pip.', 'a giant spectral wolf leaping under a full moon'),
     ],
   },
   // ------------------------------------------------------------------ MAËLLE, la Guerrière (Forge) : dégâts · tank · soutien (la forge)
   maelle:{
     garde:[
       P('A', 'Enclume', 'tank', 'halo', '#ff9a3a', '🛡', null, 'Bouclier = valeur, +2 sur 5-6.', 'Protéger : bouclier = la valeur du dé, +2 sur un 5 ou un 6.', 'a heavy iron anvil glowing hot at the edges'),
-      P('B', 'Fer rouge', 'degats', 'feu', '#ff5a2a', '🔥', null, 'Bouclier = valeur −1 et la prochaine attaque +2.', 'Protéger : bouclier = la valeur −1, et +1 sur son prochain sceau « ≥ » ou « Σ ».', 'a glowing red-hot iron bar with sparks'),
-      P('C', 'Armure partagée', 'soutien', 'halo', '#ffc06a', '⚙', null, 'Bouclier = valeur, partagé avec une unité.', 'Protéger un allié : lui ET Maëlle reçoivent chacun la moitié du dé (arrondi au-dessus) en bouclier.', 'two interlocking metal pauldrons joined by a chain'),
+      P('B', 'Fer rouge', 'degats', 'feu', '#ff5a2a', '🔥', null, '1 dé → Bouclier = la valeur −1, et ta prochaine attaque fait +2 dégâts.', 'Protéger : bouclier = la valeur −1, et +1 sur son prochain sceau « ≥ » ou « Σ ».', 'a glowing red-hot iron bar with sparks'),
+      P('C', 'Armure partagée', 'soutien', 'halo', '#ffc06a', '⚙', null, '1 dé → Bouclier = la valeur pour ton héros, et la même chose pour une de tes créatures (la plus abîmée).', 'Protéger un allié : lui ET Maëlle reçoivent chacun la moitié du dé (arrondi au-dessus) en bouclier.', 'two interlocking metal pauldrons joined by a chain'),
     ],
     pouvoir:[
       P('A', 'Coup d’enclume', 'degats', 'feu', '#ff8a2a', '🔨', 'paire', '3 identiques → dégâts = la somme.', 'Une paire → un sceau d’un monstre collé à Maëlle se brise ; une paire de 6 en brise deux.', 'a forge hammer striking with a burst of orange sparks'),
-      P('B', 'Marteau-pilon', 'degats', 'feu', '#ff4a1a', '⚒', 'paire56', '3 dés de 5+ → 12 dégâts, ignore le bouclier.', 'Une paire de 5 ou de 6 → tous les sceaux « ≥ » d’un monstre collé se brisent (s’il n’en a pas : deux sceaux).', 'a giant steam-powered drop hammer slamming down'),
-      P('C', 'Forge de campagne', 'soutien', 'feu', '#ffb84a', '⚙', 'suite3', 'Suite de 3 → tes unités +2 attaque et Bouclier 3.', 'Une suite de 3 → Maëlle et chaque allié collé à elle ont +1 sur les sceaux « ≥ » et « Σ » pendant 3 tours.', 'a small portable forge with glowing coals and tools'),
+      P('B', 'Marteau-pilon', 'degats', 'feu', '#ff4a1a', '⚒', 'paire56', '3 dés de 5 ou plus → 12 dégâts à une cible, qui passent à travers les boucliers.', 'Une paire de 5 ou de 6 → tous les sceaux « ≥ » d’un monstre collé se brisent (s’il n’en a pas : deux sceaux).', 'a giant steam-powered drop hammer slamming down'),
+      P('C', 'Forge de campagne', 'soutien', 'feu', '#ffb84a', '⚙', 'suite3', '3 dés qui se suivent → Tes créatures gagnent +2 attaque pour toute la partie, et ton héros un Bouclier de 3.', 'Une suite de 3 → Maëlle et chaque allié collé à elle ont +1 sur les sceaux « ≥ » et « Σ » pendant 3 tours.', 'a small portable forge with glowing coals and tools'),
     ],
     passif:[
       P('A', 'Métal chaud', 'soutien', 'feu', '#ff9a3a', '♨', null, 'Un 6 sur une carte = 1 Braise, 3 Braises = Équipement gratuit.', 'Chaque 6 posé sur un sceau donne une braise ; à 3 braises, tout le groupe gagne bouclier 3.', 'three glowing embers floating above an ingot'),
-      P('B', 'Rancune', 'tank', 'halo', '#ff6a3a', '💢', null, 'Frappé → +1 au prochain dé.', 'Chaque fois qu’elle est frappée : +1 sur son prochain sceau « ≥ » ou « Σ » (3 au plus).', 'a dented steel breastplate glowing with angry red light'),
-      P('C', 'Coup de forge', 'degats', 'feu', '#ffd27a', '💥', null, 'Tes 6 font +2.', 'Le trait de Maëlle, renforcé : un 6 brise deux sceaux, et au rang 10 un 5 aussi.', 'a hammer head wrapped in golden fire'),
+      P('B', 'Rancune', 'tank', 'halo', '#ff6a3a', '💢', null, 'Chaque fois qu’on lui fait perdre des PV, sa prochaine attaque gagne +1 dégât (3 au plus).', 'Chaque fois qu’elle est frappée : +1 sur son prochain sceau « ≥ » ou « Σ » (3 au plus).', 'a dented steel breastplate glowing with angry red light'),
+      P('C', 'Coup de forge', 'degats', 'feu', '#ffd27a', '💥', null, 'Une Frappe, une Technique, un Pouvoir ou un Ultime qui utilise au moins un 6 fait +2 dégâts.', 'Le trait de Maëlle, renforcé : un 6 brise deux sceaux, et au rang 10 un 5 aussi.', 'a hammer head wrapped in golden fire'),
     ],
     ultime:[
       P('A', 'Le Grand Martelage', 'degats', 'feu', '#ff7a1a', '🌋', 'haut34', '3 dés de 4+ → 16 dégâts, unités +2 attaque.', 'Trois dés de 4 ou plus → trois sceaux d’un monstre collé se brisent (le boss d’abord s’il est collé).', 'a colossal glowing hammer coming down in a shower of molten sparks'),
-      P('B', 'Rempart vivant', 'tank', 'halo', '#ffc06a', '🏰', 'haut34', '3 dés identiques → tout le groupe ne prend que la moitié des coups 2 tours.', 'Trois dés de 4 ou plus → pendant 2 tours, tout le groupe ne prend que la moitié des coups.', 'a wall of interlocking shields forged from glowing metal'),
+      P('B', 'Rempart vivant', 'tank', 'halo', '#ffc06a', '🏰', 'haut34', '3 dés identiques → Pendant 2 tours de l’adversaire, ton héros et tes créatures ne prennent que la moitié des dégâts.', 'Trois dés de 4 ou plus → pendant 2 tours, tout le groupe ne prend que la moitié des coups.', 'a wall of interlocking shields forged from glowing metal'),
     ],
   },
   // ------------------------------------------------------------------ ALDRIC, le Paladin (Lanterne) : tank · lumière (dégâts sacrés) · soutien (commander)
   aldric:{
     garde:[
       P('A', 'Parade de fer', 'tank', 'halo', '#ffd27a', '🛡', null, 'Paire → bouclier × 2, sinon le plus haut.', 'Protéger : bouclier = la valeur ; si un autre de ses dés a la même valeur, il est utilisé aussi et le bouclier double. (Son trait couvre aussi ses voisins.)', 'a polished steel kite shield deflecting a strike with a flash'),
-      P('B', 'Contre-attaque', 'degats', 'lumiere', '#fff1a8', '☀', null, 'Bouclier = valeur, renvoie 2 dégâts au prochain coup reçu.', 'Protéger : bouclier habituel, et les protégés gagnent des Épines (le prochain monstre qui les frappe perd un sceau).', 'a shield with a sunburst emblem radiating a counterstrike of light'),
-      P('C', 'Bannière', 'soutien', 'lumiere', '#ffe08a', '🚩', null, 'Bouclier = valeur −1 à chacune de tes unités.', 'Protéger : Aldric et chaque allié à 2 cases reçoivent bouclier = la moitié du dé + 1.', 'a tall golden banner with a lantern emblem waving'),
+      P('B', 'Contre-attaque', 'degats', 'lumiere', '#fff1a8', '☀', null, '1 dé → Bouclier = la valeur ; le prochain qui te frappe reçoit 2 dégâts en retour.', 'Protéger : bouclier habituel, et les protégés gagnent des Épines (le prochain monstre qui les frappe perd un sceau).', 'a shield with a sunburst emblem radiating a counterstrike of light'),
+      P('C', 'Bannière', 'soutien', 'lumiere', '#ffe08a', '🚩', null, '1 dé → Bouclier = la valeur −1 pour ton héros ET pour chacune de tes créatures.', 'Protéger : Aldric et chaque allié à 2 cases reçoivent bouclier = la moitié du dé + 1.', 'a tall golden banner with a lantern emblem waving'),
     ],
     pouvoir:[
       P('A', 'Mur de lumière', 'tank', 'lumiere', '#fff6c0', '🧱', 'paire56', 'Deux paires → dégâts, unités Barrière.', 'Une paire de 5 ou de 6 → un mur de lumière : aucun monstre ne frappe à la fin de ce tour.', 'a shimmering wall of golden holy light'),
-      P('B', 'Rayon de l’aube', 'degats', 'lumiere', '#ffe36a', '🌅', 'impairs3', '3 dés impairs → 10 dégâts et Handicap.', 'Trois dés impairs → un rayon brise un sceau d’un monstre à 3 cases.', 'a piercing beam of dawn light from a lantern'),
-      P('C', 'En avant !', 'soutien', 'onde', '#ffd27a', '📣', 'suite3', 'Suite de 3 → toutes tes unités attaquent tout de suite +1.', 'Une suite de 3 → chaque allié debout reçoit un dé 👣 de 2 pas et +1 sur son prochain sceau « ≥ » ou « Σ ».', 'a raised knight sword pointing forward with golden light trails'),
+      P('B', 'Rayon de l’aube', 'degats', 'lumiere', '#ffe36a', '🌅', 'impairs3', '3 dés impairs → 6 dégâts à une cible, et Handicap au héros adverse (un dé de moins à son prochain tour).', 'Trois dés impairs → un rayon brise un sceau d’un monstre à 3 cases.', 'a piercing beam of dawn light from a lantern'),
+      P('C', 'En avant !', 'soutien', 'onde', '#ffd27a', '📣', 'suite3', '3 dés qui se suivent → 7 dégâts au héros adverse ; toutes tes créatures gagnent +1 attaque ce tour et peuvent attaquer tout de suite.', 'Une suite de 3 → chaque allié debout reçoit un dé 👣 de 2 pas et +1 sur son prochain sceau « ≥ » ou « Σ ».', 'a raised knight sword pointing forward with golden light trails'),
     ],
     passif:[
       P('A', 'Pureté', 'soutien', 'lumiere', '#fffbe0', '🕊', null, 'Deux 6 → jeton anti-altération.', 'Le Carillon de l’Horloger ne touche jamais Aldric ni les alliés à côté de lui (ils gardent leur plus gros dé).', 'a white dove made of soft light'),
-      P('B', 'Lanterne vive', 'degats', 'lumiere', '#ffd96a', '🏮', null, 'Tes dégâts contre les unités Cachées +2.', 'Ses dés comptent +1 sur les sceaux « ≥ » et « Σ » des élites et des boss.', 'a bright brass lantern blazing with holy light'),
-      P('C', 'Serment', 'tank', 'halo', '#ffe9a8', '🤝', null, 'Une fois par combat, une unité qui tombe reste à 1 PV.', 'Une fois par partie, Aldric ou un allié à côté de lui qui devait tomber reste à 1 PV.', 'a knight hand on a sword hilt swearing an oath with a golden glow'),
+      P('B', 'Lanterne vive', 'degats', 'lumiere', '#ffd96a', '🏮', null, 'Tes coups contre les créatures adverses font +2 dégâts, et ta Garde donne 1 de Bouclier de plus.', 'Ses dés comptent +1 sur les sceaux « ≥ » et « Σ » des élites et des boss.', 'a bright brass lantern blazing with holy light'),
+      P('C', 'Serment', 'tank', 'halo', '#ffe9a8', '🤝', null, 'Une fois par combat, ta première créature qui devrait tomber reste debout à 1 vie.', 'Une fois par partie, Aldric ou un allié à côté de lui qui devait tomber reste à 1 PV.', 'a knight hand on a sword hilt swearing an oath with a golden glow'),
     ],
     ultime:[
       P('A', 'La Lame de l’Aube', 'degats', 'lumiere', '#fff1a8', '⚔', 'haut34', '3 identiques → 16 dégâts et Handicap.', 'Trois dés de 4 ou plus → deux sceaux d’un monstre collé se brisent et il est entravé 1 tour.', 'a radiant longsword blazing like the rising sun'),
-      P('B', 'Bastion', 'tank', 'halo', '#ffe08a', '🏯', 'haut34', '3 dés de 4+ → personne ne prend de dégât pendant un tour.', 'Trois dés de 4 ou plus → personne du groupe ne prend de dégât jusqu’au prochain tour.', 'a fortress tower of golden light rising around the party'),
+      P('B', 'Bastion', 'tank', 'halo', '#ffe08a', '🏯', 'haut34', '3 dés de 4 ou plus → Jusqu’à ton prochain tour, ni ton héros ni tes créatures ne perdent de vie.', 'Trois dés de 4 ou plus → personne du groupe ne prend de dégât jusqu’au prochain tour.', 'a fortress tower of golden light rising around the party'),
     ],
   },
   // ------------------------------------------------------------------ ORIA, la Rôdeuse (Carte) : contrôle (prévoir) · dégâts à distance · soutien (trésors)
   oria:{
     garde:[
       P('A', 'Repli', 'controle', 'vent', '#5ff5e6', '🌀', null, 'Impair → Esquive, pair → bouclier.', 'Protéger : sur un dé impair, le prochain coup reçu par le protégé est divisé par 2 ; sur un dé pair, bouclier = la valeur.', 'a swirling cloak of wind blurring a figure'),
-      P('B', 'Pas de côté', 'degats', 'fleches', '#6fe0ff', '👣', null, 'Bouclier = valeur et 1 dégât à une unité.', 'Protéger Oria : bouclier = la valeur −1, et elle gagne un dé 👣 de 1 pas.', 'a light leather boot leaping sideways with motion lines'),
-      P('C', 'Sac de voyage', 'soutien', 'etoile', '#ffd27a', '🎒', null, 'Bouclier = valeur, et pioche une carte sur un 6.', 'Protéger : bouclier = la valeur ; sur un 6, Oria trouve 5 pièces d’or (bourse du groupe).', 'a traveler backpack overflowing with maps and a few gold coins'),
+      P('B', 'Pas de côté', 'degats', 'fleches', '#6fe0ff', '👣', null, '1 dé → Bouclier = la valeur, et 1 dégât à la créature adverse la plus forte (ou au héros adverse s’il n’en a pas).', 'Protéger Oria : bouclier = la valeur −1, et elle gagne un dé 👣 de 1 pas.', 'a light leather boot leaping sideways with motion lines'),
+      P('C', 'Sac de voyage', 'soutien', 'etoile', '#ffd27a', '🎒', null, '1 dé → Bouclier = la valeur ; sur un 5 ou un 6, pioche aussi une carte.', 'Protéger : bouclier = la valeur ; sur un 6, Oria trouve 5 pièces d’or (bourse du groupe).', 'a traveler backpack overflowing with maps and a few gold coins'),
     ],
     pouvoir:[
       P('A', 'Tracé parfait', 'controle', 'etoile', '#7fe9ff', '🧭', 'paire', 'Suite de 4 → choisir une face, 2 cartes, 12 dégâts.', 'Une paire → chaque allié debout : son plus petit dé devient un 5.', 'a glowing compass rose drawing a perfect golden path'),
-      P('B', 'Flèche longue', 'degats', 'fleches', '#5ff5e6', '🏹', 'paire', 'Paire de 5+ → 9 dégâts à une unité cachée ou au héros.', 'Une paire → une flèche brise un sceau d’un monstre à 4 cases.', 'a single long arrow flying with a cyan light trail'),
-      P('C', 'Coup d’œil', 'soutien', 'etoile', '#a8f5ff', '👁', 'pairs3', 'Tout pair → pioche 3 cartes.', 'Trois dés pairs → Oria voit ce que cachent les meubles à 4 cases (écrit dans le journal) et tous les pièges à 4 cases.', 'a sharp keen eye reflected in a spyglass lens'),
+      P('B', 'Flèche longue', 'degats', 'fleches', '#5ff5e6', '🏹', 'paire', '2 dés de 5 ou plus → 7 dégâts à une cible.', 'Une paire → une flèche brise un sceau d’un monstre à 4 cases.', 'a single long arrow flying with a cyan light trail'),
+      P('C', 'Coup d’œil', 'soutien', 'etoile', '#a8f5ff', '👁', 'pairs3', '3 dés pairs → 7 dégâts à une cible, pioche 2 cartes et gagne 1 PC.', 'Trois dés pairs → Oria voit ce que cachent les meubles à 4 cases (écrit dans le journal) et tous les pièges à 4 cases.', 'a sharp keen eye reflected in a spyglass lens'),
     ],
     passif:[
       P('A', 'Œil du cartographe', 'controle', 'vent', '#5ff5e6', '🗺', null, 'Voit les 2 prochaines faces.', 'Son trait (+2 cases, voit les pièges à 2 cases), renforcé : au rang 5, +1 case de plus à chaque déplacement.', 'an unrolled explorer map with a glowing route'),
-      P('B', 'Archère', 'degats', 'fleches', '#4fd6ff', '🎯', null, '+1 dégât à distance.', 'Elle frappe un monstre jusqu’à 2 cases de distance.', 'a curved hunting bow with a nocked arrow'),
-      P('C', 'Bonne pioche', 'soutien', 'etoile', '#ffd27a', '🪙', null, '+1 PC au début.', 'Chaque meuble qu’elle fouille donne +2 or au groupe, et sa fouille ne fait jamais de bruit.', 'a small open treasure pouch with gold coins'),
+      P('B', 'Archère', 'degats', 'fleches', '#4fd6ff', '🎯', null, 'Ta Frappe, ta Technique, ton Pouvoir et ton Ultime font +1 dégât.', 'Elle frappe un monstre jusqu’à 2 cases de distance.', 'a curved hunting bow with a nocked arrow'),
+      P('C', 'Bonne pioche', 'soutien', 'etoile', '#ffd27a', '🪙', null, 'Tu commences chaque combat avec 1 PC de plus et une carte de plus.', 'Chaque meuble qu’elle fouille donne +2 or au groupe, et sa fouille ne fait jamais de bruit.', 'a small open treasure pouch with gold coins'),
     ],
     ultime:[
       P('A', 'La Carte du monde', 'controle', 'etoile', '#7fe9ff', '🌍', 'suite3', 'Suite de 3 → 15 dégâts et Silence.', 'Une suite de 3 → tous les pièges de la carte se dévoilent et le sablier gagne 3 grains.', 'a huge glowing world map unfolding in the air'),
-      P('B', 'Pluie de flèches', 'degats', 'fleches', '#5ff5e6', '☔', 'haut34', '3 dés de 5+ → 6 dégâts à chaque ennemi.', 'Trois dés de 4 ou plus → une pluie de flèches brise un sceau de chaque monstre à 4 cases.', 'a rain of glowing arrows falling from the sky'),
+      P('B', 'Pluie de flèches', 'degats', 'fleches', '#5ff5e6', '☔', 'haut34', '3 dés de 5 ou plus → 6 dégâts au héros adverse et à chacune de ses créatures.', 'Trois dés de 4 ou plus → une pluie de flèches brise un sceau de chaque monstre à 4 cases.', 'a rain of glowing arrows falling from the sky'),
     ],
   },
   // ------------------------------------------------------------------ GORM, le Barde (Cor) : soutien (chant) · tank (dés en plus) · contrôle (tonnerre)
   gorm:{
     garde:[
       P('A', 'Peau épaisse', 'tank', 'halo', '#4f8bff', '🐻', null, 'Bouclier = somme des impairs, 6 → Épines 2.', 'Protéger : bouclier = la valeur, +1 sur un dé impair ; sur un 6, le protégé gagne aussi des Épines.', 'a thick bear-fur cloak with a bronze clasp'),
-      P('B', 'Chant protecteur', 'soutien', 'onde', '#6fa8ff', '🎶', null, 'Bouclier = valeur à chaque unité −2.', 'Protéger : Gorm et chaque allié à 2 cases reçoivent bouclier = la moitié du dé.', 'glowing blue musical waves forming a protective dome'),
-      P('C', 'Grondement', 'controle', 'onde', '#3f6bff', '🌩', null, 'Bouclier = valeur et l’unité en face perd 1 attaque.', 'Protéger Gorm : bouclier = la valeur, et le monstre collé le plus proche est repoussé d’une case.', 'a deep rumbling sound wave cracking the ground'),
+      P('B', 'Chant protecteur', 'soutien', 'onde', '#6fa8ff', '🎶', null, '1 dé → Bouclier = la valeur −1 pour ton héros, et la valeur −2 pour chacune de tes créatures.', 'Protéger : Gorm et chaque allié à 2 cases reçoivent bouclier = la moitié du dé.', 'glowing blue musical waves forming a protective dome'),
+      P('C', 'Grondement', 'controle', 'onde', '#3f6bff', '🌩', null, '1 dé → Bouclier = la valeur, et la créature adverse la plus forte perd 1 attaque pour toute la partie.', 'Protéger Gorm : bouclier = la valeur, et le monstre collé le plus proche est repoussé d’une case.', 'a deep rumbling sound wave cracking the ground'),
     ],
     pouvoir:[
       P('A', 'Chant de guerre', 'soutien', 'onde', '#4f8bff', '📯', 'pi3', '4 pairs ou impairs → dégâts, unités +2.', 'Trois dés pairs ou trois impairs → tout le groupe a +1 sur les sceaux « ≥ » et « Σ » jusqu’à la fin du tour.', 'a great war horn blowing powerful blue sound waves'),
-      P('B', 'Second souffle', 'tank', 'onde', '#8ab4ff', '🎲', 'paire', 'Paire → relance tous tes autres dés.', 'Une paire → Gorm relance ses autres dés, avec 1 dé de plus (une fois par tour).', 'a bard taking a deep breath with swirling blue air around'),
-      P('C', 'Coup de tonnerre', 'controle', 'eclair', '#7fa0ff', '⚡', 'suite3', 'Suite de 3 → 4 dégâts à chaque unité adverse.', 'Une suite de 3 → un sceau de 2 monstres collés à Gorm se brise (les deux plus proches de tomber).', 'a thunderclap shockwave bursting from a drum'),
+      P('B', 'Second souffle', 'tank', 'onde', '#8ab4ff', '🎲', 'paire', '2 dés identiques, une fois par tour → 6 dégâts au héros adverse, puis tous tes autres dés libres sont relancés.', 'Une paire → Gorm relance ses autres dés, avec 1 dé de plus (une fois par tour).', 'a bard taking a deep breath with swirling blue air around'),
+      P('C', 'Coup de tonnerre', 'controle', 'eclair', '#7fa0ff', '⚡', 'suite3', '3 dés qui se suivent → 4 dégâts au héros adverse et à chacune de ses créatures.', 'Une suite de 3 → un sceau de 2 monstres collés à Gorm se brise (les deux plus proches de tomber).', 'a thunderclap shockwave bursting from a drum'),
     ],
     passif:[
       P('A', 'Grand souffle', 'tank', 'onde', '#4f8bff', '🌬', null, 'Moins de PV → Pouvoir +2.', 'Son trait (4 dés), renforcé : sous la moitié de ses PV, il lance un 5e dé.', 'a mighty gust of wind coming out of a horn'),
-      P('B', 'Écho du cor', 'soutien', 'onde', '#9ec0ff', '🔊', null, 'Une fusion ou un Pouvoir donne +2 aux voisins.', 'Ses alliés à 2 cases ont +1 case à chaque déplacement.', 'an echoing horn with concentric blue rings'),
-      P('C', 'Voix de la montagne', 'controle', 'onde', '#5f7fff', '⛰', null, '+1 dégât à chaque attaque de zone.', 'Le Carillon ne le touche pas, et ses dés comptent +1 sur les sceaux « Σ ».', 'a snowy mountain peak with a voice echoing as blue waves'),
+      P('B', 'Écho du cor', 'soutien', 'onde', '#9ec0ff', '🔊', null, 'Après ton Pouvoir, tes créatures gagnent +2 attaque pour ce tour.', 'Ses alliés à 2 cases ont +1 case à chaque déplacement.', 'an echoing horn with concentric blue rings'),
+      P('C', 'Voix de la montagne', 'controle', 'onde', '#5f7fff', '⛰', null, 'Tes coups qui touchent tout le camp adverse (Grand Souffle, Coup de tonnerre) font +1 dégât à chaque cible.', 'Le Carillon ne le touche pas, et ses dés comptent +1 sur les sceaux « Σ ».', 'a snowy mountain peak with a voice echoing as blue waves'),
     ],
     ultime:[
       P('A', 'Le Grand Souffle', 'controle', 'eclair', '#4f8bff', '🌪', 'pi3', '3 pairs ou impairs → 14 dégâts et 4 à chaque unité.', 'Trois dés pairs ou trois impairs → un sceau de chaque monstre à 3 cases se brise (deux à l’Horloger).', 'a colossal blast of wind and thunder from a giant horn'),
-      P('B', 'Le grand cor', 'soutien', 'onde', '#8ab4ff', '🎺', 'suite3', 'Suite de 4 → rejoue tout son tour.', 'Une suite de 3 → tout le groupe relance ses dés (ceux qui lui restent).', 'a giant ornate horn glowing with golden and blue light'),
+      P('B', 'Le grand cor', 'soutien', 'onde', '#8ab4ff', '🎺', 'suite3', '4 dés qui se suivent → Tous tes dés reviennent et sont relancés, avec 2 relances : tu rejoues ton tour (Garde comprise).', 'Une suite de 3 → tout le groupe relance ses dés (ceux qui lui restent).', 'a giant ornate horn glowing with golden and blue light'),
     ],
   },
   // ------------------------------------------------------------------ ZÉPHINE, la Mage (Tempête) : soutien (alchimie) · dégâts (foudre) · contrôle (vent)
   zephine:{
     garde:[
       P('A', 'Fumée', 'soutien', 'alchimie', '#c58bff', '💨', null, 'Bouclier = valeur, +3 si le dé a été modifié.', 'Protéger : bouclier = la valeur, +2 si ce dé a été changé (retourné, Tracé parfait, Grand œuvre).', 'a puff of violet alchemical smoke from a flask'),
-      P('B', 'Éclair-réflexe', 'degats', 'eclair', '#ff4a6a', '⚡', null, 'Bouclier = valeur −1, 2 dégâts à l’attaquant.', 'Protéger Zéphine : bouclier = la valeur −1, et elle gagne des Épines (le prochain monstre qui la frappe perd un sceau).', 'a crackling red lightning aura around raised hands'),
-      P('C', 'Bourrasque', 'controle', 'vent', '#ff8a9a', '🌬', null, 'Bouclier = valeur, renvoie une unité sur un 6.', 'Protéger : bouclier = la valeur, et le monstre collé le plus proche du protégé est repoussé de 2 cases.', 'a violent gust of wind pushing everything back'),
+      P('B', 'Éclair-réflexe', 'degats', 'eclair', '#ff4a6a', '⚡', null, '1 dé → Bouclier = la valeur −1 ; le prochain qui te frappe reçoit 2 dégâts.', 'Protéger Zéphine : bouclier = la valeur −1, et elle gagne des Épines (le prochain monstre qui la frappe perd un sceau).', 'a crackling red lightning aura around raised hands'),
+      P('C', 'Bourrasque', 'controle', 'vent', '#ff8a9a', '🌬', null, '1 dé → Bouclier = la valeur ; sur un 6, la créature adverse la plus forte est renvoyée (dans la main de son joueur).', 'Protéger : bouclier = la valeur, et le monstre collé le plus proche du protégé est repoussé de 2 cases.', 'a violent gust of wind pushing everything back'),
     ],
     pouvoir:[
       P('A', 'Grand œuvre', 'soutien', 'alchimie', '#d08bff', '⚗', 'diff3', '5 différents → 6 dégâts et tous tes dés au choix au prochain tour.', 'Trois dés différents → l’allié à 2 cases qui a le plus petit dé (ou Zéphine) : ce dé devient un 6.', 'a bubbling alchemical flask turning into gold'),
-      P('B', 'Chaîne d’éclairs', 'degats', 'eclair', '#ff4040', '🌩', 'suite3', 'Suite de 3 → 5 dégâts à 3 cibles.', 'Une suite de 3 → un éclair saute et brise un sceau sur 3 monstres à 3 cases.', 'a chain of red lightning jumping between three points'),
-      P('C', 'Tornade', 'controle', 'vent', '#ff7a8a', '🌪', 'impairs3', 'Tout impair → les unités adverses reculent.', 'Trois dés impairs → jusqu’à 3 monstres à 3 cases sont repoussés de 2 cases.', 'a small fierce tornado spinning with red sparks'),
+      P('B', 'Chaîne d’éclairs', 'degats', 'eclair', '#ff4040', '🌩', 'suite3', '3 dés qui se suivent → 5 dégâts au héros adverse et à 2 de ses créatures (les plus fortes).', 'Une suite de 3 → un éclair saute et brise un sceau sur 3 monstres à 3 cases.', 'a chain of red lightning jumping between three points'),
+      P('C', 'Tornade', 'controle', 'vent', '#ff7a8a', '🌪', 'impairs3', '3 dés impairs → Toutes les créatures adverses sont Entravées et le héros adverse perd 4 PV.', 'Trois dés impairs → jusqu’à 3 monstres à 3 cases sont repoussés de 2 cases.', 'a small fierce tornado spinning with red sparks'),
     ],
     passif:[
       P('A', 'Transmutation', 'soutien', 'alchimie', '#c58bff', '🔄', null, 'Retourne un dé (1↔6…) une fois par tour.', 'Une fois par tour, elle retourne un de ses dés (1↔6, 2↔5, 3↔4) : bouton ⚗ sous ses dés.', 'a glowing alchemical symbol of transformation in a circle of light'),
-      P('B', 'Vent', 'degats', 'eclair', '#ff4040', '🌩', null, '+1 dégât à la 2e attaque du tour.', 'Son trait (frappe à 2 cases), renforcé : au rang 10, jusqu’à 3 cases.', 'a red storm cloud with a lightning bolt'),
-      P('C', 'Œil du cyclone', 'controle', 'vent', '#ffa0b0', '🌀', null, '−1 dégât par attaque reçue au-delà de la première.', 'Quand 2 monstres ou plus lui sont collés, chaque coup qu’elle reçoit fait 1 de moins.', 'the calm eye at the center of a swirling storm'),
+      P('B', 'Vent', 'degats', 'eclair', '#ff4040', '🌩', null, 'Ta deuxième attaque du tour (Frappe, Technique, Pouvoir ou Ultime) fait +1 dégât.', 'Son trait (frappe à 2 cases), renforcé : au rang 10, jusqu’à 3 cases.', 'a red storm cloud with a lightning bolt'),
+      P('C', 'Œil du cyclone', 'controle', 'vent', '#ffa0b0', '🌀', null, 'À chaque tour de l’adversaire, chaque coup reçu après le premier fait 1 dégât de moins.', 'Quand 2 monstres ou plus lui sont collés, chaque coup qu’elle reçoit fait 1 de moins.', 'the calm eye at the center of a swirling storm'),
     ],
     ultime:[
       P('A', 'La Pierre philosophale', 'soutien', 'alchimie', '#e0a0ff', '💎', 'somme12', 'Somme 12 → 12 dégâts, Poison 4, unités 1 / 1.', 'Trois dés qui font 12 ou plus → chaque monstre à 4 cases perd tous ses sceaux « Σ ».', 'a radiant red philosopher stone floating above a flask'),
-      P('B', 'Le grand orage', 'degats', 'eclair', '#ff3030', '⛈', 'haut34', '3 dés de 5+ → 2 tours : −1 dé à l’adversaire, +1 dégât à toi.', 'Trois dés de 4 ou plus → pendant 2 tours, les monstres frappent de 1 de moins et le groupe a +1 sur les sceaux « ≥ » et « Σ ».', 'a huge thunderstorm with many red lightning bolts'),
+      P('B', 'Le grand orage', 'degats', 'eclair', '#ff3030', '⛈', 'haut34', '3 dés de 5 ou plus → Pendant 2 tours : l’adversaire lance un dé de moins, et tous tes coups font +1 dégât.', 'Trois dés de 4 ou plus → pendant 2 tours, les monstres frappent de 1 de moins et le groupe a +1 sur les sceaux « ≥ » et « Σ ».', 'a huge thunderstorm with many red lightning bolts'),
     ],
   },
 };
@@ -169,7 +169,10 @@ const POUVOIRS_H = {
 // deviennent des choix de plus de l'emplacement PASSIF, avec les rangs et les points comme les autres : une seule progression.
 // Réservés aux HÉROS D'AVENTURE (ils servaient à ce que deux héros de la même voie ne se ressemblent pas ; les héros de la Guilde ont leur passif à eux).
 // niv = le niveau où le talent s'ouvre (comme avant : 5, 10, 20) ; un talent déjà choisi avant le 19/11 reste ouvert (a.talents).
-const T = (v, n, r, a, c, e, niv, chron, img) => Object.assign(P(v, n, r, a, c, e, null, 'les héros d’aventure ne vont pas dans le Duel.', chron, img), { talent:true, niv });
+// 22/11 : l'effet des talents dans les combats contre les monstres (Odyssée, Invasion… ; pouvoirs-duel.js, PW_TALENTS_DUEL)
+const TAL_COMBAT = { robuste:'Commence chaque combat avec un Bouclier de 4.', eclaireur:'Une relance de plus à chaque tour.', protecteur:'Ta Garde donne 2 de Bouclier de plus.',
+  chanceux:'La première altération du combat (Poison, Saignement, Handicap) est annulée.', brute:'Une Frappe avec un 5 ou un 6 fait +2 dégâts.', guerisseur:'Tes soins rendent 2 PV de plus.' };
+const T = (v, n, r, a, c, e, niv, chron, img) => Object.assign(P(v, n, r, a, c, e, null, TAL_COMBAT[v] || '—', chron, img), { talent:true, niv });
 const PW_TALENTS = [
   T('robuste', 'Robuste', 'tank', 'bouclier', '#e07a5f', '💪', 5, '+4 PV, et +1 PV de plus tous les 2 rangs.', 'a sturdy leather belt with a heart-shaped buckle'),
   T('eclaireur', 'Pied léger', 'controle', 'vent', '#7ad3c8', '🥾', 5, '+1 case à chaque déplacement (+2 au rang 10).', 'a pair of light travelling boots with small wings'),

@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261122-160938">
+<head><meta name="guilde-version" content="20261122-165006">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="robots" content="noindex">
@@ -738,7 +738,7 @@
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
 // 14/11 : l'Odyssée sans fin a ses propres emplacements (odyssee.js lit SANSFIN)
 const SANSFIN = new URLSearchParams(location.search).get('sansfin') === '1', ROUTE_TITAN = new URLSearchParams(location.search).get('route') === '1', EPREUVE_PAGE = new URLSearchParams(location.search).get('epreuve') === '1', ODY_PAGE = EPREUVE_PAGE ? 'epreuves.html' : 'odyssee.html' + (SANSFIN ? '?sansfin=1' : ROUTE_TITAN ? '?route=1' : '');
-const VERSION = '20261122-160938';
+const VERSION = '20261122-165006';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -762,7 +762,9 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden) veri
 <script src="rang.js?v=82b0bff726"></script>
 <script src="heros-etoiles.js?v=48da21e34c"></script>
 <script src="heros-aventure.js?v=31db8c2ed4"></script>
-<script src="donnees.js?v=1513808a25"></script>
+<script src="pouvoirs-heros.js?v=ec2fa41e9e"></script>
+<script src="donnees.js?v=41849a41e8"></script>
+<script src="pouvoirs-duel.js?v=84906c8572"></script>
 <script src="odyssee.js?v=2dd4974f8b"></script>
 <script src="bestiaire.js?v=f0f3165c93"></script>
 <script src="aventure.js?v=09133a6200"></script>
@@ -811,7 +813,8 @@ function echangeMain(J, idx) {
 function lance(J, d) {
   if (!d.sac.length) d.sac.push(...melange([1, 2, 3, 4, 5, 6]));
   d.v = d.sac.shift(); d.mod = false; d.gele = false;
-  if (J.id === 'pip' && d.v === 6) ajouteMeute(J, 1);
+  if (J.id === 'pip' && pa(J) === 'A' && d.v === 6) ajouteMeute(J, 1);
+  else if (J.id === 'pip' && pa(J) === 'B' && d.v === 6 && S && !S.fini && adv(J)) { log('🌹 Ronces vivantes : un 6, les ronces piquent (2).'); const a0 = S.acteur; S.acteur = J; degats({ J:adv(J) }, 2); S.acteur = a0; }
 }
 function modifie(J, d, v) { d.v = v; d.mod = true; if (J.catalyseur && !S.fini) degats({ J:adv(J) }, 1); }
 function ajouteMeute(J, n) {
@@ -826,6 +829,7 @@ function invoque(J, base, key) {
   const u = { ...base, key, id:Math.random().toString(36).slice(2), pret:!!base.charge || S.salle.id === 'sem-charge' };
   if (S.salle.id === 'caserne') u.v += 1;
   if (J.reliques.includes('cor')) u.v += 1;
+  if (typeof pwInvoque === 'function') pwInvoque(J, u);
   u.vmax = u.v; J.front.push(u);
   if (base.louve) fx({ t:'invoque', s:J === S.J ? 'J' : 'O', nom:base.n });
 }
@@ -840,11 +844,12 @@ function altere(J, quoi, n) {
   if (quoi === 'poison') { J.poison += n; log(`${J.nom} reçoit Poison ${n}.`); }
 }
 const atk = (J, u) => Math.max(0, u.a + (J.banniere && u.barriere ? 2 : 0) + (u.tmp || 0) + J.front.filter(x => x.tambour && x !== u).length);
-function soin(J, n) { const a = J.pv; J.pv = Math.min(J.pvMax, J.pv + n); if (J.pv > a) { log(`${J.nom} se soigne de ${J.pv - a}.`); fx({ t:'soin', c:ref({ J }), n:J.pv - a, pv:J.pv }); } }
+function soin(J, n) { if (typeof pwSoinN === 'function') n = pwSoinN(J, n); const a = J.pv; J.pv = Math.min(J.pvMax, J.pv + n); if (J.pv > a) { log(`${J.nom} se soigne de ${J.pv - a}.`); fx({ t:'soin', c:ref({ J }), n:J.pv - a, pv:J.pv }); } if (typeof pwSoinApres === 'function') pwSoinApres(J, J.pv - a); }
 function soinCible(k, n) { if (k.u) { const a = k.u.v; k.u.v = Math.min(k.u.vmax, k.u.v + n); log(`${nomVu(k)} se soigne.`); if (k.u.v > a) fx({ t:'soin', c:ref(k), n:k.u.v - a, v:k.u.v }); } else soin(k.J, n); }
 // k = { J, u? } : la cible. ignore = passe Bouclier et Barrière (Instinct de la Louve)
 function degats(k, n, ignore) {
   if (S.fini || n <= 0) return;
+  if (typeof pwDegats === 'function') { n = pwDegats(k, n); if (n <= 0 || S.fini) { fin(); return; } } // 22/11 : les pouvoirs du build (pouvoirs-duel.js)
   if (S.ody) { // Odyssée : reliques du héros
     if (S.acteur === S.J && k.J === S.O && S.J.reliques.includes('brassards')) { n += 2; log('💪 Brassards de la Guilde : +2 dégâts.'); }
     if (k.J === S.J && !k.u && S.J.reliques.includes('armure')) n = Math.max(0, n - 1);
@@ -859,7 +864,7 @@ function degats(k, n, ignore) {
     fx({ t:'degat', c:ref(k), n:r, abs, v:Math.max(0, k.u.v) });
     if (k.u.v <= 0) {
       if (k.J.cor) { k.J.cor = false; k.u.v = 1; log(`Cor de ralliement : ${nomVu(k)} reste debout à 1 vie.`); }
-      else tombe(k);
+      else if (!(typeof pwSerment === 'function' && pwSerment(k))) tombe(k);
     }
   } else {
     const J = k.J; let r = n, abs = 0;
@@ -961,6 +966,7 @@ function debutTour(J) {
   if (J.gardeB > 0 || J.gardeE > 0) fx({ t:'finGarde', s:J === S.J ? 'J' : 'O', n:J.gardeB });
   J.tours++; J.gardeB = 0; J.gardeE = 0; J.contre = J.piege = J.cor = J.fournaise = J.paillasse = J.esquive = J.paratonnerre = J.sangsueTour = false; J.remise = null;
   J.relance = 2 + (J.relanceRang || 0) + (J.boussole ? 1 : 0) + (J.reliques.includes('oeil') ? 1 : 0) + (J.benes.includes('relance') ? 1 : 0); S.acteur = null; J.cartesJouees = 0; J.six = 0; J.pureteTour = false; J.transmu = false; J.dernierSort = null; J.gardeFaite = false;
+  S.uAtt = null; if (typeof pwDebut === 'function') pwDebut(J); // 22/11 : les effets du build qui s'usent (pouvoirs-duel.js)
   if (J.tours > 1) { J.pc = Math.min(6, J.pc + 1); pioche(J, 1); if (J === S.J && !S.auto && !J.ordi) son('pioche'); }
   if (J.saigne) { log(`${J.nom} saigne : −${J.saigne * 2} PV.`); J.pv -= J.saigne * 2; fx({ t:'degat', c:ref({ J }), n:J.saigne * 2, abs:0, pv:Math.max(0, J.pv), mot:'Saignement' }); fin(); }
   if (J.poison) { log(`${J.nom} : Poison, −${J.poison} PV.`); J.pv -= J.poison; fx({ t:'degat', c:ref({ J }), n:J.poison, abs:0, pv:Math.max(0, J.pv), mot:'Poison', vert:true }); J.poison--; fin(); }
@@ -985,8 +991,11 @@ function coutCarte(J, k) {
   return n;
 }
 // les monstres de l'Odyssée ont leur propre Frappe (plus faible) ; les héros gardent la Frappe commune
+// 22/11 : la fiche du héros PROPRE À CE JOUEUR (les versions de son build, pouvoirs-duel.js) ; sans build = la fiche commune
+const hDe = J => (J && J.pwv && typeof ficheBuild === 'function' && ficheBuild(J)) || HEROS[J.id];
+const pa = J => (J && J.pwv && J.pwv.passif) || 'A'; // la version du Passif
 const frappeDe = J => HEROS[J.id].frappe || FRAPPE;
-function defDe(J, quoi) { const h = HEROS[J.id]; return quoi === 'frappe' ? frappeDe(J) : quoi === 'technique' ? TECHNIQUE : quoi === 'pouvoir' ? h.pouvoir : quoi === 'ultime' ? h.ultime : quoi === 'garde' ? h.garde : CARTES[quoi]; }
+function defDe(J, quoi) { const h = hDe(J); return quoi === 'frappe' ? frappeDe(J) : quoi === 'technique' ? TECHNIQUE : quoi === 'pouvoir' ? h.pouvoir : quoi === 'ultime' ? h.ultime : quoi === 'garde' ? h.garde : CARTES[quoi]; }
 function ciblesPossibles(J, type) {
   const D = adv(J), vis = D.front.filter(u => !u.cachee);
   // 10/11 (décision de l'utilisateur) : une créature EN DÉFENSE prend TOUT ce qui vise son camp (Frappe, Technique, Pouvoir, sorts à cible)
@@ -1004,15 +1013,15 @@ function ciblesPossibles(J, type) {
 }
 function cibleValide(J, k, type) { if (k && (!k.u || k.J.front.includes(k.u))) return k; return cibleAuto(J, type); }
 // Zéphine, l'alchimiste : son +1 / −1 ne coûte qu'1 PC (sa spécialité reste plus forte que celle des autres)
-const coutAjuste = J => J.id === 'zephine' ? 1 : 2;
+const coutAjuste = J => J.id === 'zephine' && pa(J) === 'A' ? 1 : 2;
 const ECHO_NON = ['distil', 'precipite', 'fiole', 'chance', 'retremper', 'gu_gel'];
 function echoPossible(J) { return !!(J.dernierSort && !ECHO_NON.includes(J.dernierSort.key)); }
 function permis(J, quoi, vs, ds) {
   if (quoi === 'pcSoins') return false;
   if (!vs.length) return false;
-  const h = HEROS[J.id];
+  const h = hDe(J);
   if (quoi === 'vendre') return J.pc < 6; // 12/11 : vente pendant le tour ; inutile à 6 PC (le plafond)
-  if (quoi === 'transmu') return J.id === 'zephine' && !J.transmu && vs.length === 1;
+  if (quoi === 'transmu') return J.id === 'zephine' && pa(J) === 'A' && !J.transmu && vs.length === 1;
   if (quoi === 'pcRelance') return vs.length === 1 && J.pc >= 1;
   if (quoi === 'pcAjuste') return false;
   if (quoi === 'garde') return !J.gardeFaite && h.garde.cond(vs, ds);
@@ -1033,7 +1042,7 @@ function permis(J, quoi, vs, ds) {
 // on note l'état de ses dés (lancés, relancés, posés) dans la file d'animations ; joue1 les dessine dans la colonne de droite
 function desO(quoi) { if (S && S.O && !S.coop) fx({ t:'desO', quoi:quoi || '', v:S.O.des.map(d => d.v), p:S.O.des.map(d => !!d.pose), id:S.O.id }); }
 // 21/11 : pose passe par le Paratonnerre (une créature de celui qui joue gagne de l'attaque → le bonus est détourné)
-function pose(J, quoi, ds, k, indexMain) { const avant = paraAvant(J); poseAction(J, quoi, ds, k, indexMain); paraApres(J, avant); }
+function pose(J, quoi, ds, k, indexMain) { const avant = paraAvant(J); S.uAtt = null; if (typeof pwAvantAction === 'function') pwAvantAction(J, quoi, ds && vals(ds)); poseAction(J, quoi, ds, k, indexMain); if (typeof pwApresAction === 'function') pwApresAction(J, quoi); paraApres(J, avant); }
 function poseAction(J, quoi, ds, k, indexMain) {
   const vs = vals(ds); S.acteur = J; if (J === S.J && !S.auto && !J.ordi && quoi !== 'pcRelance') son('poser');
   if (quoi === 'pcRelance') { J.pc -= 1; const a = ds[0].v; lance(J, ds[0]); log(`${J.nom} paie 1 PC et relance un ${a} : ${ds[0].v}.`); return; }
@@ -1042,14 +1051,14 @@ function poseAction(J, quoi, ds, k, indexMain) {
   if (quoi === 'transmu') { J.transmu = true; const d = ds[0]; const a = d.v; modifie(J, d, opp(a)); log(`${J.nom} transmute un ${a} en ${d.v}.`); return; }
   ds.forEach(d => { d.pose = true; });
   if (J === S.O && !S.coop) desO();
-  const h = HEROS[J.id]; J.dernier = quoi;
+  const h = hDe(J); J.dernier = quoi;
   if (S.coop && J !== S.O && vs.length >= 3 && S.cohesion < COHESION.max) { S.cohesion++; log(`🤝 Cohésion ${S.cohesion}/${COHESION.max}.`); }
   if (quoi === 'garde' && vs.includes(6)) J.garde6 = true;
   if (quoi === 'technique' && vs.length >= 4) J.tech4 = true;
   if (quoi === 'vendre') { let g = 0; vs.forEach(v => g += ((S.salle.id === 'autel' && v === 6) || S.salle.id === 'sem-marche') ? 2 : 1); J.pc = Math.min(6, J.pc + g); log(`${J.nom} vend ${vs.length} dé(s) : +${g} PC.`); fx({ t:'pc', s:J === S.J ? 'J' : 'O', n:g, nb:vs.length }); return; }
   const six = vs.filter(v => v === 6).length; J.six += six;
   if (quoi !== 'ultime') remplit(J, vs.length * JAUGE.parDe);
-  if (J.id === 'aldric' && J.six >= 2 && !J.pureteTour && J.purete < 2) { J.purete++; J.pureteTour = true; log('✦ Deux 6 posés : Aldric gagne un jeton de Pureté.'); }
+  if (J.id === 'aldric' && pa(J) === 'A' && J.six >= 2 && !J.pureteTour && J.purete < 2) { J.purete++; J.pureteTour = true; log('✦ Deux 6 posés : Aldric gagne un jeton de Pureté.'); }
   if (quoi === 'garde') { J.gardeFaite = true; const g0 = J.gardeB, e0 = J.gardeE, q0 = J.esquive; h.garde.f(J, vs, k, ds);
     if (J.benes.includes('gardex2') && !J.gardeX2 && J.gardeB > g0) { J.gardeB += J.gardeB - g0; J.gardeX2 = true; log('Première parade : Garde doublée.'); }
     const quoiG = J.gardeB > g0 ? `Bouclier ${J.gardeB}` : J.gardeE > e0 ? `Épines ${J.gardeE}` : J.esquive && !q0 ? 'Esquive' : h.garde.n;
@@ -1070,7 +1079,7 @@ function poseAction(J, quoi, ds, k, indexMain) {
   bilan(J, 'actions', secret ? '👁 une créature cachée' : `🂠 ${c.n}`);
   if (secret) fx({ t:'carte', key:'cachee', s:'O', nom:'Créature cachée', txt:'Une créature arrive dans l’ombre : on ne sait pas laquelle.', sorte:'Créature', cout });
   else fx({ t:'carte', key:quoi, s:J === S.J ? 'J' : 'O', nom:c.n, txt:c.d, sorte:{ u:'Créature', s:'Sort', e:'Équipement', r:'Piège' }[c.t], cout, vers:k && k.J && ref(k), vs });
-  if (J.id === 'maelle' && six) {
+  if (J.id === 'maelle' && pa(J) === 'A' && six) {
     J.braise += six * (1 + J.front.filter(u => u.apprenti).length);
     if (J.braise >= 3) { J.braise = 0; J.forgeGratuite = true; log('🔥 3 Braises : la prochaine carte Équipement de Maëlle (Lame trempée, Plastron rivé) coûte 0 PC.'); }
   }
@@ -1079,7 +1088,7 @@ function poseAction(J, quoi, ds, k, indexMain) {
   if (c.t === 's' && quoi !== 'echo') J.dernierSort = { key:quoi, vs, k };
 }
 function attaque(J, u, k) {
-  const D = adv(J); S.acteur = J; J.dernier = 'creature';
+  const D = adv(J); S.acteur = J; S.uAtt = u; J.dernier = 'creature';
   const embuscade = !!u.cachee; u.pret = false; u.cachee = false;
   if (D.contre) { D.contre = false; log('Contre-attaque : 6 dégâts d’abord !'); degats({ J, u }, 6); if (!J.front.includes(u)) return; }
   if (D.piege) { D.piege = false; log('Piège à mâchoires !'); degats({ J, u }, 3); if (!J.front.includes(u)) return; u.entrave = true; }
@@ -1217,7 +1226,7 @@ function cibleAuto(J, type) {
   return l[0];
 }
 function transmutationAuto(J) {
-  if (J.id !== 'zephine' || J.transmu) return;
+  if (J.id !== 'zephine' || pa(J) !== 'A' || J.transmu) return;
   const avant = (meilleurCoup(J) || { score:0 }).score; let mieux = null;
   J.des.filter(d => !d.pose).forEach(d => { const a = d.v; d.v = opp(a); const s = (meilleurCoup(J) || { score:0 }).score; d.v = a; if (s > avant + 8 && (!mieux || s > mieux.s)) mieux = { d, s }; });
   if (mieux) pose(J, 'transmu', [mieux.d]);
@@ -1264,7 +1273,7 @@ function joueAuto(J) {
     if (S.fini) return;
   }
   // garde : le meilleur groupe de dés libres, puis vente du reste
-  const libres = J.des.filter(d => !d.pose), h = HEROS[J.id];
+  const libres = J.des.filter(d => !d.pose), h = hDe(J);
   let g = null;
   sousEnsembles(libres).forEach(ds => { if (ds.length <= 2 && h.garde.cond(vals(ds), ds)) { const v = h.garde.val(vals(ds), ds); if (!g || v > g.v) g = { ds, v }; } });
   if (g && !J.gardeFaite) pose(J, 'garde', g.ds);
@@ -1364,6 +1373,7 @@ function prepareCombatOdyssee(run, cb, auto) {
   J.deck = melange([...run.deck]); J.pv = run.pv; J.pvMax = run.pvMax; J.reliques = [...run.reliques]; J.benes = [...run.benes]; J.sacoche = [...run.sacoche];
   mainDeDepart(J, 4 + (J.reliques.includes('souvenir') ? 1 : 0) + (J.benes.includes('main') ? 1 : 0)); J.fatigueOK = true; O.fatigueOK = O.deck.length > 0; S.mullPossible = !auto; if (auto) mulliganOrdi(J);
   if (J.benes.includes('pcplus')) J.pc += 1;
+  if (typeof appliqueBuild === 'function') appliqueBuild(J, 'solo'); // 22/11 : les pouvoirs choisis dans la page des pouvoirs
   if (J.reliques.includes('etoile')) { J.pc = Math.min(6, J.pc + 1); log('🌟 Étoile captive : +1 PC.'); }
   if (J.reliques.includes('fourrure')) { J.bouclier = (J.bouclier || 0) + 3; log('🧥 Manteau de fourrure : Bouclier 3.'); }
   // l'ennemi : un monstre (PV et créatures selon le niveau) ou un héros rival (avec son renfort d'élite)
@@ -1564,6 +1574,7 @@ function partieCampement() {
   if (!cfg || !HEROS[cfg.a] || !HEROS[cfg.b]) { location.href = 'campement.html'; return; }
   const boss = HEROS[cfg.boss] ? cfg.boss : 'colosseracines', h = HEROS[boss]; if (h.phases) { h.garde = h.phases[0].garde; h.pouvoir = h.phases[0].pouvoir; }
   const A = joueur(cfg.a, false, false), B = joueur(cfg.b, cfg.modeB === 'ordi', cfg.modeB === 'ordi');
+  if (typeof appliqueBuild === 'function') { appliqueBuild(A, 'groupe'); appliqueBuild(B, 'groupe'); } // 22/11 : les pouvoirs du build (préréglage Groupe)
   [[A, avA], [B, avB]].forEach(([P, i]) => { if (i) { P.nom = i.nom; P.img = i.img; P.imgSec = i.sec; P.av = i.id; } });
   A.qui = 'toi'; B.qui = cfg.modeB === 'ordi' ? 'compagnon' : 'joueur 2'; B.nomCourt = B.nom;
   S = { J:A, O:joueur(h.vagues ? h.vagues[0] : boss, true), choix:boss, salle:SALLES[Math.floor(Math.random() * SALLES.length)], log:[], fini:null, auto:false, coop:true, equipe:[A, B], cohesion:COHESION.depart, lieu:h.lieu || 'brume', vagues:h.vagues || null, vague:0, seve:h.seve ? 100 : undefined };
@@ -1867,7 +1878,7 @@ function barre(P, haut) {
     ${P.gardeB ? `<span data-k="garde" class="p g pg"><img class="icopb" src="ui/equip/icone-garde.webp?v=1" alt="">Garde ${P.gardeB}</span>` : ''}${P.gardeE ? `<span data-k="epines" class="p g">🌿 Épines ${P.gardeE}</span>` : ''}${P.esquive ? '<span data-k="esquive" class="p g">💨 Esquive</span>' : ''}
     ${P.bouclier ? `<span data-k="bouclier" class="p g pb"><img class="icopb" src="ui/equip/icone-bouclier.webp?v=1" alt="">Bouclier ${P.bouclier}</span>` : ''}${P.contre ? '<span data-k="contre" class="p g">⚔ Contre-attaque : 6 à la 1re créature</span>' : ''}${P.piege ? '<span data-k="piege" class="p g">🪤 Piège</span>' : ''}
     ${P.cor ? '<span data-k="cor" class="p g">📯 Cor</span>' : ''}${P.fournaise ? '<span data-k="fournaise" class="p g">🔥 Fournaise</span>' : ''}${P.paillasse ? '<span data-k="paillasse" class="p g">⚗ Paillasse</span>' : ''}
-    ${P.id === 'pip' && !P.front.some(u => u.louve) ? `<span data-k="meute" class="p m">🐺 Meute ${P.meute}/3</span>` : ''}${P.braiseT ? `<span data-k="braiset" class="p al">♨ Brûlures ${P.braiseT}/3</span>` : ''}${P.corruption ? `<span data-k="corruption" class="p al">🟣 Corruption ${P.corruption}/${(P.reliques || []).includes('sel') ? 4 : 3}</span>` : ''}${P.givre ? `<span data-k="givre" class="p al">❄ Givre ${P.givre}/${(P.reliques || []).includes('braise') ? 4 : 3}</span>` : ''}${P.id === 'maelle' ? `<span data-k="braises" class="p m">🔥 Braises ${P.braise}/3${P.forgeGratuite ? ' · prochain Équipement à 0 PC' : ''}</span>` : ''}
+    ${P.id === 'pip' && pa(P) === 'A' && !P.front.some(u => u.louve) ? `<span data-k="meute" class="p m">🐺 Meute ${P.meute}/3</span>` : ''}${P.braiseT ? `<span data-k="braiset" class="p al">♨ Brûlures ${P.braiseT}/3</span>` : ''}${P.corruption ? `<span data-k="corruption" class="p al">🟣 Corruption ${P.corruption}/${(P.reliques || []).includes('sel') ? 4 : 3}</span>` : ''}${P.givre ? `<span data-k="givre" class="p al">❄ Givre ${P.givre}/${(P.reliques || []).includes('braise') ? 4 : 3}</span>` : ''}${P.id === 'maelle' ? `<span data-k="braises" class="p m">🔥 Braises ${P.braise}/3${P.forgeGratuite ? ' · prochain Équipement à 0 PC' : ''}</span>` : ''}
     ${P.purete && P.ombre !== 1 ? `<span data-k="purete" class="p pu">✦ Pureté ${P.purete}</span>` : ''}${P.handicap ? '<span data-k="handicap" class="p al">Handicap</span>' : ''}${P.saigne ? `<span data-k="saigne" class="p al">Saignement ${P.saigne}</span>` : ''}
     ${P.poison ? `<span data-k="poison" class="p al">Poison ${P.poison}</span>` : ''}${P.silence ? '<span data-k="silence" class="p al">Silence</span>' : ''}${P.oeuvre ? `<span data-k="oeuvre" class="p pu">Grand œuvre : ${P.oeuvre}</span>` : ''}
     ${P.ultimeFait ? '<span data-k="ultimefait" class="p">Ultime utilisé</span>' : `<span data-k="ultime" class="p ${P.jauge >= JAUGE.max ? 'pu' : ''}">⚡ Ultime ${P.jauge}/${JAUGE.max}</span>`}<span data-k="main" class="p${P.fatigueOK && P.deck.length <= 3 ? ' paqbas' : ''}">🂠 ${P.main.length} en main${P.fatigueOK ? ` · 📚 ${P.deck.length}` : ''}</span></div></div></div>`;
@@ -1893,7 +1904,7 @@ function act(quoi, titre, cout, txt) {
 }
 function sacTxt(J, d) {
   if (!d.sac || d.extra) return '';
-  if (J.id === 'oria') return `ensuite : ${d.sac.length ? d.sac.slice(0, 2).join(', ') : 'sac neuf'}`;
+  if (J.id === 'oria' && pa(J) === 'A') return `ensuite : ${d.sac.length ? d.sac.slice(0, 2).join(', ') : 'sac neuf'}`;
   return `sac : ${d.sac.length ? [...d.sac].sort().join(' ') : 'neuf au prochain'}`;
 }
 function rendu() {
@@ -1913,7 +1924,7 @@ function nomsDansPanneau() { if (!document.querySelector('.plateau.unique')) ret
 function dessine() {
   if (!ciblage || !ciblage.choisi) enleveConfirme();
   if (S && !S.fini && !S.auto && typeof GM !== 'undefined') demarreMusique(); // 13/11 soir : la musique dès que la partie s'affiche
-  const J = S.J, O = S.O, h = HEROS[J.id];
+  const J = S.J, O = S.O, h = hDe(J);
   let bandeau = '';
   if (J.aLancer) bandeau = 'Ton tour commence : lance tes dés !';
   else if (ciblage && ciblage.type === 'de') bandeau = ciblage.quoi === 'ajuste' ? '🎲 Touche le dé à ajuster.' : ciblage.quoi === 'retremper' ? '🎲 Touche le dé qui gagne +2.' : '🎲 Touche le dé à retourner.';
@@ -1926,7 +1937,7 @@ function dessine() {
   }
   else if (attaquant) bandeau = `⚔ ${attaquant.n} attaque : touche une cible en vert.`;
   // 21/11 (l'utilisateur : « je dois faire défiler pour voir ce que le dé peut encore faire ») : texte court, et les deux infos du dé sur UNE ligne
-  else if (sel.length) { const d = sel.length === 1 ? sel[0] : null, info = [d && d.sac && !d.extra && J.id !== 'oria' ? `<span style="white-space:nowrap">🎲 encore possible : ${d.sac.length ? [...d.sac].sort().join('·') : 'tout'}</span>` : '', d && J.id === 'zephine' && !J.transmu ? `<span style="white-space:nowrap">⚗ retourné = <b>${opp(d.v)}</b></span>` : ''].filter(Boolean).join(' · ');
+  else if (sel.length) { const d = sel.length === 1 ? sel[0] : null, info = [d && d.sac && !d.extra && !(J.id === 'oria' && pa(J) === 'A') ? `<span style="white-space:nowrap">🎲 encore possible : ${d.sac.length ? [...d.sac].sort().join('·') : 'tout'}</span>` : '', d && J.id === 'zephine' && !J.transmu ? `<span style="white-space:nowrap">⚗ retourné = <b>${opp(d.v)}</b></span>` : ''].filter(Boolean).join(' · ');
     bandeau = `Dés choisis : ${vals(sel).join(', ')}. Touche une action ou une carte verte.${info ? `<br><small>${info}</small>` : ''}`; }
   else if (J.des.some(d => !d.pose)) bandeau = 'Touche un ou plusieurs dés, puis ce que tu veux en faire : une action à gauche (⚔ 🛡 ✦ ⚡) ou une carte en bas.';
   else if (J.front.some(u => u.pret && u.louve)) bandeau = '🐺 Touche la Louve : elle lance ses 3 dés et attaque. Sinon, elle attaque seule à « Fin du tour ».';
@@ -1980,7 +1991,7 @@ function voirEquipe() { fenetre(`<h2>🤝 L’équipe</h2>${equipeHTML()}<div cl
 // le sac de faces en pastilles 1 à 6 : pâle = déjà sortie, à revenir au prochain sac
 function sacPastilles(J, d) {
   if (!d.sac || d.extra) return '';
-  if (J.id === 'oria') return `<span class="sacoria">ensuite : ${d.sac.length ? d.sac.slice(0, 2).join(', ') : 'neuf'}</span>`;
+  if (J.id === 'oria' && pa(J) === 'A') return `<span class="sacoria">ensuite : ${d.sac.length ? d.sac.slice(0, 2).join(', ') : 'neuf'}</span>`;
   if (!d.sac.length) return '<span class="sacoria">sac neuf</span>';
   const fg = typeof forgeDe === 'function' ? forgeDe(J, d) : null; return `<span class="sacp">${[1, 2, 3, 4, 5, 6].map(f => `<i class="${d.sac.includes(f) ? '' : 'u'}">${fg && fg[f] ? FACES_FORGE[fg[f]].e : f}</i>`).join('')}</span>`;
 }
@@ -2012,7 +2023,7 @@ function anneauSVG(pv, max, prot, jauge, pc, fait, avant, haut) {
 }
 function anneauDe(P, pv, avant) { return anneauSVG(pv === undefined ? Math.max(0, P.pv) : pv, P.pvMax, (P.gardeB || 0) + (P.bouclier || 0), P.jauge, P.pc, P.ultimeFait, avant, typeof S !== 'undefined' && S && P === S.O); }
 function aide(quoi, info) {
-  const J = S.J, h = HEROS[J.id];
+  const J = S.J, h = hDe(J);
   let t = '';
   if (quoi === 'garde') t = `<b>${h.garde.n}</b> (0 PC, ${h.garde.txt}) : ${h.garde.d}${J.gardeFaite ? '<br><i>Déjà posée ce tour.</i>' : ''}`;
   else if (quoi === 'pouvoir') t = `<b>${h.pouvoir.n}</b> (0 PC, ${h.pouvoir.txt}) : ${h.pouvoir.d}`;
@@ -2035,14 +2046,14 @@ function aide(quoi, info) {
 // 19/11 (l'utilisateur : « l'Ultime de Zéphine refusé alors que des dés faisaient 12 ») : on montre les combinaisons possibles avec SES dés libres
 const EX_ULTIME = { zephine:'6 + 5 + 1, 6 + 4 + 2, 5 + 4 + 3 ou 4 + 4 + 4' };
 function combosUltime(J) {
-  const h = HEROS[J.id], libres = J.des.filter(d => !d.pose), vus = new Set(), l = [];
+  const h = hDe(J), libres = J.des.filter(d => !d.pose), vus = new Set(), l = [];
   sousEnsembles(libres).forEach(ds => { if (!h.ultime.cond(vals(ds), ds)) return; const t = vals(ds).sort((a, b) => b - a).join(' + '); if (vus.has(t)) return; vus.add(t); l.push(ds); });
   if (!l.length) return '<br><span style="color:#c9c1ea">Avec tes dés libres, aucune combinaison ne marche ce tour : relance, ou change un dé (+1 / −1, Transmutation).</span>';
   window.COMBOS_ULT = l.slice(0, 4);
   return `<br><span style="color:#7dffb0">Avec tes dés, ça marche :</span><span class="combos">${COMBOS_ULT.map((ds, i) => `<button onclick="fermer();sel=COMBOS_ULT[${i}];vise('ultime')">${vals(ds).sort((a, b) => b - a).join(' + ')}</button>`).join('')}</span>`;
 }
 function raison(quoi) {
-  const J = S.J, vs = vals(sel), h = HEROS[J.id];
+  const J = S.J, vs = vals(sel), h = hDe(J);
   const des = vs.length ? `Tu as choisi ${vs.length > 1 ? 'les dés' : 'le dé'} ${vs.join(', ')}` : 'Tu n’as choisi aucun dé';
   const c = CARTES[quoi];
   if (c) {
@@ -2071,7 +2082,7 @@ function choix(titre, options, cb) {
 }
 // 14/11 (l'utilisateur : « le comment on joue prend trop de place ») : au début d'une partie, un RAPPEL court ; le ❓ ouvre les règles complètes
 function rappelDebut() {
-  const h = HEROS[S.J.id];
+  const h = hDe(S.J);
   fenetre(`<h2>⚔ ${S.J.nom || h.nom} contre ${S.O.nom}</h2>
   <p style="margin:.2em 0 .5em">Le premier à 0 ❤ perd. <b>Ton tour en 3 gestes :</b></p>
   <ol style="margin:0 0 .4em;padding-left:1.3em;line-height:1.45">
@@ -2100,7 +2111,7 @@ function mullValide() {
 }
 function regles(court) {
   if (court) return rappelDebut();
-  const h = HEROS[S.J.id];
+  const h = hDe(S.J);
   fenetre(`<h2>Comment on joue</h2><ul>
   <li><b>Les dés ne coûtent rien.</b> Ce sont les <b>cartes</b> qui coûtent des PC (le chiffre bleu). Pour jouer une carte, il faut <b>les deux</b> : assez de PC, et un dé qui remplit sa condition.</li>
   <li><b>Les dés</b> : tu lances 3 dés au tour 1, 4 au tour 2, puis 5 à partir du tour 3 (les emplacements 🔒 montrent quand ils arrivent). Chaque dé a son <b>sac</b> de 6 faces mélangées : il sort chaque face une fois avant que le sac se remplisse (« sac : 1 3 4 » = les faces qui restent).</li>

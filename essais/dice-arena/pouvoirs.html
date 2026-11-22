@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261122-160938">
+<head><meta name="guilde-version" content="20261122-165006">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex">
@@ -65,9 +65,9 @@
 <script src="musique.js?v=2acde000cd"></script>
 <script src="rang.js?v=82b0bff726"></script>
 <script src="heros-etoiles.js?v=48da21e34c"></script>
-<script src="donnees.js?v=1513808a25"></script>
+<script src="donnees.js?v=41849a41e8"></script>
 <script src="aventuriers.js?v=5679a4a045"></script>
-<script src="pouvoirs-heros.js?v=1adf3b588a"></script>
+<script src="pouvoirs-heros.js?v=ec2fa41e9e"></script>
 <script src="fiche-heros.js?v=cb1cb4488c"></script>
 <script>
 // =============================================================================================== LA PAGE « BUILD » (16/11 nuit, demande de l'utilisateur)
@@ -87,7 +87,7 @@ function caseHTML(c, E, D, choisi, ouvert) {
     <span class="coche">${ferme ? '🔒' : choisi ? '✓' : ''}</span>
     <div class="ico"><span class="em">${pwIcone(c, E.k, D, 40)}</span><div><div class="nom">${D.n}</div><span class="role">${roleTxt(D.r)}</span></div></div>
     ${D.co ? `<p>🎲 <b>${PW_COMBOS[D.co]}</b></p>` : ''}
-    <p><b>Duel :</b> ${D.duel}</p><p><b>Chroniques :</b> ${D.chron}</p>${ferme ? `<p style="color:#ffb36a">🔒 au niveau ${E.niv}</p>` : ''}</button>`;
+    <p><b>Combats</b> <small>(Odyssée, Invasion, épreuves)</small> : ${D.duel}</p><p><b>Chroniques :</b> ${D.chron}</p>${ferme ? `<p style="color:#ffb36a">🔒 au niveau ${E.niv}</p>` : ''}</button>`;
 }
 // 17/11 (l'utilisateur : « trois petites vignettes, je touche et j'ai la description, sans glisser à droite ou à gauche ») :
 // une rangée de vignettes (une par version) ; la vignette touchée montre sa fiche en dessous, avec « Choisir cette version »
@@ -97,7 +97,7 @@ function vignettes(c, E, choisie, ouvert) {
   return `<div class="vignettes" style="grid-template-columns:repeat(${Math.min(L.length, 3)}, 1fr)">${L.map(X => { const f = !versionOuverte(actuel, E.k, X);
     return `<button class="vig ${X.v === v ? 'vue' : ''} ${X.v === choisie ? 'choisi' : ''} ${f ? 'ferme' : ''}" style="--pc:${X.c}" onclick="vue['${E.k}']='${X.v}';fhSon('choisir');dessine()"><span class="em">${pwIcone(c, E.k, X, 34)}</span><span class="vn">${X.n}</span><span class="vb">${f ? '🔒' : X.v === choisie ? '✓' : ''}</span></button>`; }).join('')}</div>
     <div class="detail" style="--pc:${D.c}"><div class="ico"><span class="em">${pwIcone(c, E.k, D, 40)}</span><div><div class="nom">${D.n}</div><span class="role">${roleTxt(D.r)}</span></div></div>
-      ${D.co ? `<p>🎲 <b>${PW_COMBOS[D.co]}</b></p>` : ''}<p><b>Duel :</b> ${D.duel}</p><p><b>Chroniques :</b> ${D.chron}</p>
+      ${D.co ? `<p>🎲 <b>${PW_COMBOS[D.co]}</b></p>` : ''}<p><b>Combats</b> <small>(Odyssée, Invasion, épreuves)</small> : ${D.duel}</p><p><b>Chroniques :</b> ${D.chron}</p>
       ${(() => { const rg = ((pouvoirsDe(actuel, pre) || {})[E.k] || {}).rang || 0, b = Math.floor(rg / 2); // 17/11 (l'utilisateur : « les rangs ne changent rien ») : ce que le rang ajoute, en clair
         return `<p style="color:#f3c96b">⭐ Rang ${rg} : ${b ? `<b>+${b}</b> au chiffre principal (bouclier, dégâts, soin, sceaux…)` : 'pas encore de bonus'}${rg < 10 ? ` · prochain +1 au rang ${rg + (rg % 2 ? 1 : 2)}` : ' (maximum)'}${/rang (5|10)/.test(D.chron) ? ' · et ce qui est écrit pour les rangs 5 et 10' : ''}.</p>`; })()}
       ${D.talent ? '<p style="color:#7dffb0">🎲 Talent de héros d’aventure (ancien talent de la Forge), à la place du passif de sa voie.</p>' : ''}${ferme ? `<p class="dv-ferme">🔒 Ce choix s’ouvre au niveau ${nivD}.</p>` : D.v === choisie ? '<p class="dv-ok">✓ Version choisie</p>' : `<button class="dv-choisir" onclick="choisit('${E.k}','${D.v}')">Choisir cette version</button>`}</div>`;
