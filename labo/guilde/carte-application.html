@@ -1,0 +1,144 @@
+<!doctype html><html lang="fr"><head><meta name="guilde-version" content="20261122-171326"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>La carte de la Guilde (à valider)</title>
+<style>
+body{font-family:system-ui,sans-serif;max-width:860px;margin:auto;padding:14px;background:#f6f4fb;color:#1d1626;line-height:1.45}
+h1{font-size:1.35rem;color:#6b2bd9}h2{font-size:1.12rem;margin-top:28px;padding-top:10px;border-top:3px solid #6b2bd9}h3{font-size:1rem;margin:16px 0 4px;color:#4a1e9e}
+.t{overflow-x:auto}table{border-collapse:collapse;width:100%;background:#fff;font-size:.86rem}th,td{border:1px solid #ddd6fe;padding:5px 6px;vertical-align:top;text-align:left}th{background:#ede9fe}
+.q{background:#fff7e0;border:2px solid #f3c96b;border-radius:10px;padding:10px 14px}.q li{margin-bottom:8px}.avis{color:#6b4a00}
+.note{background:#eef7ee;border-left:4px solid #5fb84a;padding:8px 12px;border-radius:6px}.alerte{background:#fdecec;border-left:4px solid #e5262c;padding:8px 12px;border-radius:6px}
+.r{color:#1a7f37;font-weight:bold}.m{color:#b26a00;font-weight:bold}.l{color:#b3261e;font-weight:bold}
+/* le schéma */
+.sch{display:grid;gap:8px;margin:10px 0}.sch .bloc{background:#fff;border:2px solid #c4b5fd;border-radius:12px;padding:8px 10px}.sch .bloc b{color:#4a1e9e}
+.sch .tete{background:#6b2bd9;color:#fff;border-color:#6b2bd9;text-align:center}.sch .tete b{color:#fff}
+.g4{grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}.pt{font-size:.82rem;color:#5b5470}
+.prop .bloc{border-color:#5fb84a}.prop .tete{background:#2e7d32;border-color:#2e7d32}
+</style></head><body>
+<h1>La carte de la Guilde des Runes (à valider, 22/11/2026)</h1>
+<p>Ta demande&nbsp;: savoir exactement <b>ce qui fait quoi et où va quoi</b> dans toute l’application, avant les testeurs et avant l’écran partagé des Chroniques. J’ai fait tout l’inventaire du jeu tel qu’il est aujourd’hui&nbsp;: menus, modes, monnaies, ce qui fait revenir, entraînements. En bas&nbsp;: les problèmes trouvés et ma proposition de rangement.</p>
+<div class="alerte"><b>En une phrase</b>&nbsp;: il y a aujourd’hui <b>28 façons de jouer</b> derrière <b>14 portails</b>, avec <b>6 monnaies</b> de héros et <b>6 rendez-vous «&nbsp;du jour&nbsp;»</b>. Ce n’est pas la quantité qui perd le joueur, c’est qu’elles ne sont pas rangées <b>par envie</b> («&nbsp;j’ai 5 minutes&nbsp;», «&nbsp;je pars à l’aventure&nbsp;», «&nbsp;on joue entre amis&nbsp;»).</div>
+
+<h2>1. Le chemin d’aujourd’hui</h2>
+<div class="sch"><div class="bloc tete"><b>Écran titre</b> «&nbsp;Toucher pour entrer&nbsp;» → (1re fois&nbsp;: Moustache propose le tutoriel)</div></div>
+<div class="sch g4">
+ <div class="bloc"><b>En haut du menu</b><br><span class="pt">Bandeau du rang (→ Route des rangs) · ligne des quêtes (→ Quêtes) · Butin du campement</span></div>
+ <div class="bloc"><b>Le carrousel&nbsp;: 14 portails</b><br><span class="pt">Arène · Entre amis · Odyssée · Expéditions · Invasion · Épreuves · Crypte · Chroniques · Fosse · Énigme du jour · Duel de la semaine · Défense · Panthéon · Mes héros</span></div>
+ <div class="bloc"><b>Barre du bas</b><br><span class="pt">Profil · Amis · Menu (grand menu de 17 tuiles) · Boîte · Paramètres</span></div>
+</div>
+<div class="sch g4">
+ <div class="bloc"><b>⚔ Arène</b><br><span class="pt">Contre l’ordinateur · contre un ami en ligne · tutoriel</span></div>
+ <div class="bloc"><b>🤝 Entre amis</b><br><span class="pt">Duel contre un ami · Chroniques entre amis · rejoindre avec un code · contre un proche (même téléphone) · mes amis</span></div>
+ <div class="bloc"><b>🏰 Odyssée</b><br><span class="pt">Île du jour · Saison 1 (3 îles, île seule ou Grande aventure) · Odyssée sans fin 🔒 · Route du Titan → 3 sauvegardes → l’île</span></div>
+ <div class="bloc"><b>⛵ Expéditions</b><br><span class="pt">L’Expédition · voyage du jour · Duel d’équipages · Vaisseaux fantômes (à venir)</span></div>
+ <div class="bloc"><b>🛡 Invasion</b><br><span class="pt">Acte I · Acte II 🔒 · Les grands boss 🔒</span></div>
+ <div class="bloc"><b>Portails directs</b><br><span class="pt">Épreuves (Tour + Chasse au boss) · Crypte (crypte du jour, au hasard, Descente) · Chroniques · Fosse · Énigme · Duel de la semaine · Défense</span></div>
+</div>
+<p class="pt">Le grand menu (17 tuiles)&nbsp;: Portails, Quêtes, Route des rangs, Mes héros, Mes decks, Pouvoirs, La Forge, Héros d’aventure, Mon profil, Mon parcours, Mes parties, Panthéon, Amis, Entre amis, Boîte, Tutoriel, Paramètres.</p>
+
+<h2>2. Toutes les façons de jouer</h2>
+<p class="pt">Durée&nbsp;: <span class="r">rapide</span> ≤ 10 min · <span class="m">moyen</span> 10-30 min · <span class="l">long</span> 30 min et plus. «&nbsp;Reprise&nbsp;» = on peut arrêter et reprendre plus tard. 📖 = entraînement guidé · 🐱 = seulement les bulles de Moustache.</p>
+<div class="t"><table><tr><th>Mode</th><th>Ce qu’on fait</th><th>Joueurs</th><th>Durée</th><th>Reprise</th><th>Rythme</th><th>Aide</th></tr>
+<tr><td>Énigme du jour</td><td>Trouver le coup parfait en un tour</td><td>solo</td><td class="r">1-5 min</td><td>—</td><td>chaque jour</td><td>indices</td></tr>
+<tr><td>Fosse aux Runes</td><td>Survie en temps réel, dés-balles</td><td>solo</td><td class="r">5 min</td><td>non</td><td>à la demande</td><td>🐱</td></tr>
+<tr><td>Chasse au boss</td><td>Le plus de dégâts en 8 tours</td><td>solo</td><td class="r">5 min</td><td>—</td><td>2 essais/jour, boss de la semaine</td><td>🐱</td></tr>
+<tr><td>Tutoriel</td><td>Un duel guidé</td><td>solo</td><td class="r">5 min</td><td>non</td><td>une fois</td><td>📖</td></tr>
+<tr><td>Duel contre l’ordinateur</td><td>Duel cartes + dés</td><td>solo</td><td class="r">~10 min</td><td>non</td><td>à la demande</td><td>tutoriel à part</td></tr>
+<tr><td>Duel de la semaine</td><td>Le duel avec une règle qui change le lundi</td><td>solo</td><td class="r">~10 min</td><td>non</td><td>chaque semaine</td><td>—</td></tr>
+<tr><td>Contre un proche</td><td>Le duel à deux sur un téléphone</td><td>2 / 1 tél.</td><td class="r">~10 min</td><td>non</td><td>à la demande</td><td>— (ne rapporte rien)</td></tr>
+<tr><td>Duel contre un ami</td><td>Le duel, chacun son téléphone</td><td>en ligne</td><td class="m">10 min +</td><td>oui</td><td>à la demande</td><td>—</td></tr>
+<tr><td>Crypte du jour / au hasard</td><td>Solitaire de dés sur des sceaux</td><td>solo</td><td class="r">~10 min</td><td>oui</td><td>chaque jour</td><td>🐱</td></tr>
+<tr><td>Duel d’équipages</td><td>Ton équipage contre celui de l’ordinateur</td><td>solo</td><td class="r">~10 min</td><td>oui</td><td>à la demande</td><td>🐱</td></tr>
+<tr><td>Tour des épreuves</td><td>Un combat par étage, de plus en plus dur</td><td>solo</td><td class="r">5-10 min/étage</td><td>oui</td><td>à la demande</td><td>🐱</td></tr>
+<tr><td>Défense de la porte</td><td>Défense de tours avec des dés, 6 vagues + Titan</td><td>solo</td><td class="m">15-20 min</td><td class="l">non</td><td>+ défi du jour</td><td>🐱</td></tr>
+<tr><td>L’Expédition / voyage du jour</td><td>Recruter un équipage qui combat seul, carte à chemins</td><td>solo</td><td class="m">15-25 min</td><td>oui</td><td>+ voyage du jour</td><td>📖 (mais l’ancien écran&nbsp;!)</td></tr>
+<tr><td>Île du jour</td><td>Une île de l’Odyssée, la même pour tous</td><td>solo</td><td class="l">~30 min</td><td>oui</td><td>chaque jour</td><td>🐱</td></tr>
+<tr><td>Saison 1 · une île</td><td>Explorer une île, combats, boss</td><td>solo</td><td class="l">30-45 min</td><td>oui</td><td>à la demande</td><td>🐱</td></tr>
+<tr><td>Route du Titan</td><td>Carte à chemins de 10 étapes</td><td>solo</td><td class="l">30-45 min</td><td>oui</td><td>à la demande</td><td>🐱</td></tr>
+<tr><td>Grande aventure</td><td>Les 3 îles à la suite, niveaux, équipement</td><td>solo</td><td class="l">soirée (1 h 30-2 h)</td><td>oui</td><td>à la demande</td><td>🐱</td></tr>
+<tr><td>Odyssée sans fin</td><td>Île tuile par tuile, étages de plus en plus durs</td><td>solo</td><td class="l">sans limite</td><td>oui</td><td>+ règle du jour</td><td>🐱</td></tr>
+<tr><td>Descente</td><td>La Crypte en aventure&nbsp;: 3 étages, marchand, boss</td><td>solo</td><td class="l">45-75 min</td><td>oui</td><td>à la demande</td><td>🐱</td></tr>
+<tr><td>Invasion · actes / grands boss</td><td>2 héros contre des vagues puis un boss</td><td>solo + ordi, ou 2 / 1 tél.</td><td class="l">20-75 min</td><td class="l">non</td><td>à la demande</td><td>🐱</td></tr>
+<tr><td>Chroniques · scénarios, Labyrinthe</td><td>Donjon dans le noir à 1-4 héros (façon HeroQuest)</td><td>1-4 / 1 tél.</td><td class="l">30-60 min</td><td>oui</td><td>à la demande</td><td>📖</td></tr>
+<tr><td>Chroniques · campagne, aventure en scènes</td><td>Plusieurs scénarios à la suite, ou taverne + carte + donjon</td><td>1-4 / 1 tél.</td><td class="l">soirée(s)</td><td>oui</td><td>à la demande</td><td>📖</td></tr>
+<tr><td>Chroniques à distance</td><td>Les Chroniques, chacun son téléphone</td><td>en ligne</td><td class="l">45 min +</td><td>oui</td><td>à la demande</td><td>📖</td></tr>
+</table></div>
+
+<h3>Les familles qui se ressemblent</h3>
+<ul>
+<li><b>Le même duel, servi 7 fois</b>&nbsp;: contre l’ordinateur, Roi sans visage, contre un proche, ami en ligne, Duel de la semaine, Tour des épreuves, Chasse au boss.</li>
+<li><b>L’Odyssée en 6 entrées</b>&nbsp;: île du jour, île seule, Grande aventure, sans fin, Route du Titan, Ascension (même carte, même combat).</li>
+<li><b>Trois cartes à chemins</b> à la Slay the Spire&nbsp;: Route du Titan, Descente, Expédition (trois moteurs différents).</li>
+<li><b>La famille des sceaux</b>&nbsp;: Crypte, Descente, Chroniques.</li>
+<li><b>Tenir face aux vagues jusqu’au Titan</b>&nbsp;: Défense et Fosse (et le Titan de feu est le boss presque partout).</li>
+<li><b>Deux coops</b>&nbsp;: Invasion (pas en ligne) et Chroniques (en ligne).</li>
+<li><b>Six «&nbsp;… du jour&nbsp;»</b>&nbsp;: énigme, île, voyage, crypte, défi de la Défense, règle du sans fin&nbsp;; tous les scores restent sur le téléphone, sauf la crypte.</li>
+</ul>
+<h3>Les trous</h3>
+<ul>
+<li>Pas de <b>mode en ligne court</b> (le duel en ligne dépend de la vitesse de l’autre&nbsp;; les Vaisseaux fantômes ne sont pas faits).</li>
+<li>Pas de <b>coop en ligne courte</b>&nbsp;: l’Invasion n’est pas en ligne.</li>
+<li><b>Invasion et Défense ne se reprennent pas</b>, alors que l’Invasion dure jusqu’à 75 min.</li>
+<li>Les <b>entraînements</b> n’existent que pour le Duel, les Chroniques et les Expéditions (et celui-là ouvre l’ancien écran)&nbsp;; 6 sont «&nbsp;bientôt&nbsp;».</li>
+<li>Pas de <b>classement partagé</b> des rendez-vous du jour (sauf la crypte).</li>
+</ul>
+
+<h2>3. Les monnaies&nbsp;: où on gagne, où on dépense</h2>
+<div class="t"><table><tr><th>Monnaie</th><th>On la gagne</th><th>On la dépense</th></tr>
+<tr><td>⭐ XP du Rang</td><td>presque partout (duel 30, boss 60, quêtes, butin, cœurs…)</td><td>ne se dépense pas&nbsp;: fait monter le rang (route des rangs, 5 éclats de Guilde par rang)</td></tr>
+<tr><td>🪙 Or</td><td>moments forts, fin d’Odyssée, quêtes, butin, succès, vente, boîte</td><td>niveaux des héros, amélioration et forgeron</td></tr>
+<tr><td>🔹 Poussière de rune</td><td>idem (la moitié de l’or), recyclage, éclats en trop</td><td>niveaux des héros seulement</td></tr>
+<tr><td>✨ Éclats d’un héros</td><td>en jouant CE héros (duel gagné, élite, boss…)</td><td>monter son rang (Commun → Ascendant)</td></tr>
+<tr><td>💠 Éclats de Guilde</td><td>quêtes, rangs, butin, Chasse, Tour, succès</td><td>versés sur le héros de son choix</td></tr>
+<tr><td>Points de forge / de pouvoirs</td><td>viennent du niveau du héros</td><td>faces du dé (héros d’aventure) · rangs des pouvoirs</td></tr>
+<tr><td>Objets</td><td colspan="2">Équipement (6 cases, 5 raretés), reliques (★ par doublons), équipement de la Grande aventure, cartes de la collection, faces forgées (pendant l’Odyssée), apparences de dés, titres, cadres, emblèmes, fonds, sceaux, breloques.</td></tr>
+</table></div>
+<p class="pt">L’équipement et les reliques ne comptent que contre les monstres, jamais en Duel. Reliques et équipement se ressemblent («&nbsp;Cotte&nbsp;», «&nbsp;Anneau&nbsp;» existent dans les deux).</p>
+
+<h2>4. Ce qui fait revenir</h2>
+<p>Quêtes du jour (3) et de la semaine (3) · route des rangs (30) · succès (≈ 45 à paliers) · butin du campement (12 h) · énigme du jour · Duel de la semaine (sceaux) · île du jour · voyage du jour · crypte du jour · défi du jour de la Défense · Chasse au boss de la semaine · Tour des épreuves · forgeron (3 pièces/jour) · boîte aux lettres (colis du lundi, fidélité, coffret de l’amitié) · cœurs entre amis · Némésis, Ascension, Panthéon.</p>
+
+<h2>5. Ce qui perd le joueur (constats)</h2>
+<ol>
+<li><b>Trois «&nbsp;Forges&nbsp;»</b>&nbsp;: la Forge (forgeron et fusion), la «&nbsp;Forge des héros&nbsp;» (titre de la page Héros d’aventure) et la Forge des dés (pendant l’Odyssée).</li>
+<li><b>Trois «&nbsp;Tours&nbsp;» et deux «&nbsp;campements&nbsp;»</b>&nbsp;: Tour des héros (doublon de Mes héros), Tour des épreuves, image «&nbsp;tour&nbsp;» de Mes héros&nbsp;; le «&nbsp;Butin du campement&nbsp;» n’a rien à voir avec le Campement = l’Invasion.</li>
+<li><b>Le duel contre un ami a 3 entrées</b>, «&nbsp;Rejoindre avec un code&nbsp;» ouvre les Chroniques même pour un duel, et les Chroniques sont à la fois au 1er étage (un téléphone) et dans Entre amis (en ligne).</li>
+<li><b>Les quêtes sont à 3 endroits</b>, le rang à 4&nbsp;; les succès seulement par le profil.</li>
+<li><b>Le tutoriel a 4 entrées</b>&nbsp;; Zéphine reste fermée sans que le menu dise pourquoi.</li>
+<li><b>L’entraînement des Expéditions ouvre l’ancienne Expédition</b>, pas celle du menu.</li>
+<li><b>Les pages de travail sont ouvertes à tous les joueurs</b> (⚙️ → «&nbsp;Pages de travail&nbsp;: à valider&nbsp;»&nbsp;: prompts, propositions, réglages). Avec l’appli donnée à tes amis, c’est à fermer.</li>
+<li><b>Des anciennes versions restent accessibles</b> (Fosse v1/v2, Chroniques v1) et une vingtaine de pages traînent sans lien.</li>
+<li><b>L’Odyssée a des noms trop proches</b>&nbsp;: Saison 1, île du jour, sans fin, Route du Titan, Grande aventure.</li>
+<li><b>Six monnaies de héros</b> qui ne valent que contre les monstres.</li>
+</ol>
+
+<h2>6. Ma proposition&nbsp;: ranger par ENVIE, pas par mode</h2>
+<p>On garde tous les modes (rien n’est jeté), mais l’écran du menu propose <b>4 grandes portes</b> selon l’envie du moment, plus un panneau <b>«&nbsp;Aujourd’hui&nbsp;»</b>.</p>
+<div class="sch g4 prop">
+ <div class="bloc"><b>☀ Aujourd’hui</b> <span class="pt">(un panneau, pas un portail)</span><br><span class="pt">Les rendez-vous du jour en une liste cochable&nbsp;: énigme · crypte du jour · île du jour · voyage du jour · défi de la Défense · quêtes · butin · Duel de la semaine. Coché quand c’est fait.</span></div>
+ <div class="bloc"><b>⚡ Jouer vite</b> <span class="pt">(≤ 10 min)</span><br><span class="pt">Duel contre l’ordinateur · Duel de la semaine · énigme · Crypte · Fosse · Chasse au boss · Duel d’équipages · Tour des épreuves</span></div>
+ <div class="bloc"><b>🗺 Partir à l’aventure</b> <span class="pt">(30-45 min, on reprend quand on veut)</span><br><span class="pt">L’Odyssée (Saison 1, île du jour, Route, sans fin, Grande aventure) · L’Expédition · La Descente · La Défense</span></div>
+ <div class="bloc"><b>👥 Entre amis</b> <span class="pt">(sur un téléphone ou en ligne)</span><br><span class="pt">Les Chroniques (le mode soirée, bientôt sur grand écran) · Duel contre un ami · Contre un proche · L’Invasion · mes amis · rejoindre avec un code</span></div>
+ <div class="bloc"><b>🏛 Ma Guilde</b> <span class="pt">(tout ce qui n’est pas une partie)</span><br><span class="pt">Mes héros (avec decks, pouvoirs, équipement dans la fiche) · La Forge · Héros d’aventure · Profil et succès · Panthéon · Route des rangs et quêtes</span></div>
+</div>
+<h3>Les petites corrections que je ferais tout de suite (sans débat)</h3>
+<ul>
+<li>Cacher «&nbsp;Pages de travail&nbsp;» et le laboratoire aux joueurs (visibles seulement pour toi).</li>
+<li>Fermer les liens vers les anciennes versions (Fosse v1/v2, Chroniques v1) et ranger les pages sans lien hors du jeu.</li>
+<li>Renommer&nbsp;: «&nbsp;La Forge&nbsp;» → <b>«&nbsp;Le Forgeron&nbsp;»</b>&nbsp;; la page des héros d’aventure → <b>«&nbsp;L’atelier des héros d’aventure&nbsp;»</b>&nbsp;; «&nbsp;Butin du campement&nbsp;» → <b>«&nbsp;Butin de la Guilde&nbsp;»</b>&nbsp;; fondre la «&nbsp;Tour des héros&nbsp;» dans Mes héros.</li>
+<li>«&nbsp;Rejoindre avec un code&nbsp;»&nbsp;: une seule fenêtre qui envoie au duel OU aux Chroniques selon le code.</li>
+<li>Dire au menu pourquoi Zéphine est fermée («&nbsp;fais le tutoriel&nbsp;»).</li>
+<li>«&nbsp;Contre un proche&nbsp;» rapporte de l’XP comme un duel.</li>
+</ul>
+<h3>Les vrais chantiers (à choisir)</h3>
+<ul>
+<li>Les <b>4 portes par envie + le panneau Aujourd’hui</b> (le menu change de forme, les modes ne changent pas).</li>
+<li><b>Reprise</b> de l’Invasion et de la Défense (on arrête et on reprend).</li>
+<li><b>Entraînement des Expéditions</b> sur l’écran actuel, puis ceux de l’Odyssée et de la Crypte en priorité.</li>
+<li>Plus tard&nbsp;: simplifier les monnaies (par exemple fondre la poussière dans l’or), classement du jour entre amis.</li>
+</ul>
+
+<h2>7. À valider</h2>
+<div class="q"><ol>
+<li>Le rangement <b>par envie</b> (Aujourd’hui · Jouer vite · Partir à l’aventure · Entre amis · Ma Guilde) te parle&nbsp;? Un mode mal rangé&nbsp;?</li>
+<li>Les <b>petites corrections</b>&nbsp;: je les fais toutes&nbsp;? <span class="avis">Mon avis&nbsp;: oui, surtout cacher les pages de travail avant de donner l’appli à tes amis.</span></li>
+<li>Ordre des vrais chantiers après ça. <span class="avis">Mon avis&nbsp;: 1) les 4 portes + Aujourd’hui&nbsp;; 2) l’écran partagé des Chroniques (déjà décidé)&nbsp;; 3) les testeurs simulés sur le menu rangé&nbsp;; 4) reprises et entraînements.</span></li>
+</ol></div>
+</body></html>
