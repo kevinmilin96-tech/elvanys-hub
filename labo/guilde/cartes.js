@@ -25,6 +25,12 @@ function carteGuilde(k, opt = {}) {
 const CSS_CARTE = `
 .carteG { position:relative; width:var(--w); aspect-ratio:864/1216; font-family:Georgia, serif; container-type:inline-size; }
 .carteG > * { position:absolute; box-sizing:border-box; }
+/* 22/11 (l'utilisateur : « la description des cartes dépasse quand elles sont petites ») : sur téléphone, Android grossit de lui-même les textes
+   minuscules (ici 3-4 px) et ils sortaient de la carte. Plus de grossissement automatique, rien ne dépasse, et sous 110 px de large
+   la carte ne montre que son nom, son coût et son image : on la touche pour la lire en grand. Vaut pour tous les modes. */
+.carteG { -webkit-text-size-adjust:none; text-size-adjust:none; }
+.cg-nom, .cg-bande, .cg-effet { overflow:hidden; }
+@container (max-width:110px) { .cg-effet, .cg-bande { visibility:hidden; } .cg-nom { font-size:11.5cqw; line-height:.95; } }
 .cg-cadre { inset:0; width:100%; height:100%; pointer-events:none; }
 .cg-art { background-size:cover; background-position:center 30%; border-radius:1.5%; box-shadow:inset 0 0 0 1px #0006, inset 0 0 12px #0008; }
 .cg-art:not([style*='background-image']) { background:radial-gradient(circle at 50% 40%, #3a2a55, #160f24 75%); display:flex; align-items:center; justify-content:center; }
