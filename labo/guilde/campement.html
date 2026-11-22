@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head>
+<head><meta name="guilde-version" content="20261122-110308">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="robots" content="noindex">
@@ -31,7 +31,7 @@
 <script src="guide.js?v=f78db3b570"></script>
 <script src="cartes.js?v=6e9721bdf9"></script>
 <script src="heros-aventure.js?v=31db8c2ed4"></script>
-<script src="musique.js?v=d927158b76"></script>
+<script src="musique.js?v=2acde000cd"></script>
 <script src="rang.js?v=01acb4f369"></script>
 <script src="donnees.js?v=7c4f716d6e"></script>
 <script src="odyssee.js?v=913cf4e82c"></script>
@@ -62,7 +62,8 @@ function dessine() {
   <h2>2. Le second héros</h2><div class="modes"><button class="${C.modeB === 'ordi' ? 'sel' : ''}" onclick="C.modeB='ordi';dessine()">🤖 Un compagnon (ordinateur)</button><button class="${C.modeB === 'humain' ? 'sel' : ''}" onclick="C.modeB='humain';dessine()">📱 Un ami, sur ce téléphone</button></div>
   <div class="heros6">${ORDRE.map(id => `<button class="${C.b === id ? 'sel' : ''}" ${C.a === id || (id === 'zephine' && !ZOK()) ? 'disabled' : ''} onclick="C.b='${id}';dessine()"><img src="${IMG(id)}" alt="">${HEROS[id].nom}</button>`).join('')}${avC('b')}</div>
   <button class="go" ${C.a && C.b ? '' : 'disabled'} onclick="localStorage.setItem('guilde-campement', JSON.stringify(C));chronique([(CHRON_CAMP_B[C.boss] || CHRON_CAMP).intro(haEsc(nomC(C.a)), haEsc(nomC(C.b)))], () => location.href='duel.html?campement=1')">🔥 Au feu de camp !</button>
-  <button class="lien" onclick="location.href='menu.html#invasion'">⌂ Menu</button>`;
+`;
+  GM.retour('menu.html#invasion'); // 22/11 (l'utilisateur) : le retour en haut à gauche, vers l'Invasion ; plus de « ⌂ Menu » en bas
 }
 dessine();
 // 14/11 : le guide de Moustache

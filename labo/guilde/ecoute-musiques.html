@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<html lang="fr"><head><meta name="guilde-version" content="20261122-110308"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Musiques d'ambiance · La Guilde des Runes</title>
 <style>
   /* Page d'écoute des musiques (11/11) : l'utilisateur choisit ce qu'il garde. */
@@ -24,5 +24,5 @@
 <script>
 function raccord(id) { document.querySelectorAll('audio').forEach(a => { if (a.id !== id) a.pause(); }); const a = document.getElementById(id); const go = () => { a.currentTime = Math.max(0, a.duration - 10); a.play(); }; if (isNaN(a.duration)) a.addEventListener('loadedmetadata', go, { once:true }); else go(); }
 </script>
-</main><script src="musique.js?v=d927158b76"></script>
+</main><script src="musique.js?v=2acde000cd"></script>
 </body></html>

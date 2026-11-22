@@ -390,9 +390,9 @@ accueil = function () {
   <h2>Ton capitaine</h2><div class="heros6">${ORDRE.map(id => id === 'zephine' && localStorage.getItem('guilde-tuto') !== 'fait'
     ? `<button disabled style="opacity:.5"><img src="${IMG(id)}" alt="" style="filter:grayscale(1)">🔒 ${HEROS[id].nom}</button>`
     : `<button onclick="choixCapitaine('${id}')"><img src="${IMG(id)}" alt="">${HEROS[id].nom}<br><small style="color:var(--or)">${CAPITAINES[id].n}</small><br><small class="prise ${PRISE_EXP[id]}">${PRISE_TXT[PRISE_EXP[id]]}</small></button>`).join('')}${capitainesAventure()}</div>
-  <div class="choixh"><button onclick="location.href='expeditions-v4-proposition.html'">📖 Comment ça marche</button><button onclick="records()">🏆 Mes voyages</button><button onclick="location.href='menu.html#expeditions'">⛵ Les Expéditions</button><button onclick="location.href='menu.html'">⌂ Menu</button></div>`;
+  <div class="choixh"><button onclick="location.href='expeditions-v4-proposition.html'">📖 Comment ça marche</button><button onclick="records()">🏆 Mes voyages</button></div>`; // 22/11 : « ⛵ Les Expéditions » et « ⌂ Menu » du bas retirés (retour en haut à gauche)
 };
-depart = function (id) { const i = haInfo(id); X = nouveauVoyage(haVoie(id), jourChoisi ? { mer:'nuages', asc:0, jour:true } : { mer:merChoisie, asc:ascChoisi }); // le voyage du jour : le même pour tous (Mer des nuages, sans ascension) X.diff = diffChoisie;
+depart = function (id) { GM.retour(null); /* 22/11 : le voyage commence */ const i = haInfo(id); X = nouveauVoyage(haVoie(id), jourChoisi ? { mer:'nuages', asc:0, jour:true } : { mer:merChoisie, asc:ascChoisi }); // le voyage du jour : le même pour tous (Mer des nuages, sans ascension) X.diff = diffChoisie;
   if (i) { X.av = i.id; const cap = X.plateau.av[1]; if (cap && cap.key === 'capitaine') { cap.n = i.nom; cap.av = i.id; } }
   sel = null; sauve(); introVoyage(); };
 function introVoyage() { const R = REGLES_V4[X.regle], B = BOSS_V4[X.boss];
@@ -473,8 +473,9 @@ accueil = function () {
     const l = a.querySelector('.jour4'); if (l) l.outerHTML = '<p class="jour4" style="text-align:center">🗓️ <b>Le voyage du jour</b> : la même carte, la même règle du voyage et le même boss pour tout le monde aujourd’hui, sur la Mer des nuages, sans Ascension. Un score à comparer !</p>';
     const h1 = a.querySelector('h1'); if (h1) h1.innerHTML = '🗓️ Le voyage du jour';
   } else { jourChoisi = false; const l = a.querySelector('label.jour4'); if (l) l.remove(); const h1 = a.querySelector('h1'); if (h1) h1.innerHTML = '⛵ L’Expédition'; }
-  if (!document.getElementById('retour4')) { const b = document.createElement('button'); b.id = 'retour4'; b.textContent = '‹ Retour'; b.onclick = () => { location.href = 'menu.html#expeditions'; };
-    b.style.cssText = 'position:fixed;top:calc(8px + env(safe-area-inset-top));left:8px;z-index:50;padding:6px 12px;border-radius:999px;border:1px solid #f3c96b88;background:#15132bdd;color:#f3c96b;font:inherit;font-size:.9em'; a.prepend(b); } // dans l'écran d'accueil : il disparaît quand le voyage commence
+  // 22/11 : le bouton commun de musique.js (GM.retour) ; il s'en va tout seul dès que l'écran d'accueil est remplacé (le voyage commence)
+  GM.retour('menu.html#expeditions');
+  if (!a.dataset.gmRetour) { a.dataset.gmRetour = '1'; new MutationObserver(() => { if (!a.querySelector('.heros6')) GM.retour(null); }).observe(a, { childList:true }); }
 };
 // l'accueil a déjà été affiché au chargement : on le refait avec les changements ci-dessus
 setTimeout(() => { const a = app(); if (a && a.querySelector('.heros6')) accueil(); }, 0);

@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head>
+<head><meta name="guilde-version" content="20261122-110308">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="robots" content="noindex">
@@ -127,7 +127,7 @@
 <div id="fen"></div>
 <script src="guide.js?v=f78db3b570"></script>
 <script src="cartes.js?v=6e9721bdf9"></script>
-<script src="musique.js?v=d927158b76"></script>
+<script src="musique.js?v=2acde000cd"></script>
 <script src="rang.js?v=01acb4f369"></script>
 <script src="heros-etoiles.js?v=80a6cac830"></script>
 <script src="donnees.js?v=7c4f716d6e"></script>
@@ -155,7 +155,8 @@ function accueil() {
   <p class="doux" style="text-align:center">🎯 Défi du jour : <b style="color:var(--or)">${defiDuJourD().n}</b>${lesEtoiles()[jourCle()] ? ` · aujourd’hui : ${'★'.repeat(lesEtoiles()[jourCle()])}` : ''}</p>
   <p class="doux" style="text-align:center">Chaque héros a son passif, son pouvoir, son ultime et sa Rune.</p>
   ${records()}
-  <div class="choixh"><button onclick="regles()">📜 Les règles</button><button onclick="location.href='menu.html'">⌂ Menu</button></div>`;
+  <div class="choixh"><button onclick="regles()">📜 Les règles</button></div>`;
+  GM.retour('menu.html'); // 22/11 (l'utilisateur) : le retour en haut à gauche ; plus de « ⌂ Menu » en bas
 }
 const REC = 'guilde-defense';
 const lesRecords = () => { try { return JSON.parse(localStorage.getItem(REC) || '[]'); } catch (e) { return []; } };
@@ -237,6 +238,7 @@ function rendu() {
   const chemin = []; for (let r = 0; r < DEF.chemin; r++) for (let col = 0; col < 3; col++) chemin.push({ r, col });
   const besoinMonstre = attente && attente.cible === 'monstre', besoinTour = attente && attente.cible === 'tour', besoinDe = attente && attente.cible === 'de';
   const un = sel.length === 1 ? sel[0] : null;
+  GM.retour(null); // 22/11 : la partie commence
   app.innerHTML = `
   <div class="entete">${imgD()}
     <div class="bloc">🚪 Porte <b>${D.porte}</b>/${D.porteMax}<div class="barre"><i style="width:${D.porte / D.porteMax * 100}%"></i></div></div>

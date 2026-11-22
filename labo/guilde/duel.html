@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head>
+<head><meta name="guilde-version" content="20261122-110308">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="robots" content="noindex">
@@ -732,7 +732,7 @@
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
 // 14/11 : l'Odyssée sans fin a ses propres emplacements (odyssee.js lit SANSFIN)
 const SANSFIN = new URLSearchParams(location.search).get('sansfin') === '1', ROUTE_TITAN = new URLSearchParams(location.search).get('route') === '1', EPREUVE_PAGE = new URLSearchParams(location.search).get('epreuve') === '1', ODY_PAGE = EPREUVE_PAGE ? 'epreuves.html' : 'odyssee.html' + (SANSFIN ? '?sansfin=1' : ROUTE_TITAN ? '?route=1' : '');
-const VERSION = '20261122-105645';
+const VERSION = '20261122-110308';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -752,7 +752,7 @@ setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
 <script src="cartes.js?v=6e9721bdf9"></script>
-<script src="musique.js?v=d927158b76"></script>
+<script src="musique.js?v=2acde000cd"></script>
 <script src="rang.js?v=01acb4f369"></script>
 <script src="heros-etoiles.js?v=80a6cac830"></script>
 <script src="heros-aventure.js?v=31db8c2ed4"></script>
@@ -1307,6 +1307,7 @@ function toucheCarte(i) {
   if (sel.length && permis(S.J, k, vals(sel), sel)) { carteVue = null; vise(k, i); } else { son('erreur'); aide(k); }
 }
 function nouvellePartie(id, idO, auto) {
+  if (typeof GM !== 'undefined' && GM.retour) GM.retour(null); // 22/11 : la partie commence, le retour de l'accueil s'en va
   const autres = ORDRE.filter(x => x !== id);
   idO = idO || autres[Math.floor(Math.random() * autres.length)];
   S = { J:joueur(id, false, !!auto), O:joueur(idO, true), salle:SALLES[Math.floor(Math.random() * SALLES.length)], log:[], fini:null, auto:!!auto };
@@ -2128,10 +2129,12 @@ let monHeros = null;
 function accueil() {
   fenetre(`<h2>Duel · prototype</h2><p>1. Choisis ton héros.</p>
   <div class="heros6">${ORDRE.map(id => id === 'zephine' && localStorage.getItem('guilde-tuto') !== 'fait' ? `<button onclick="typeof tutoVerrou === 'function' ? tutoVerrou() : location.href='duel.html?tuto=1'" style="opacity:.55;position:relative"><img src="${IMG(id)}" alt="" style="filter:grayscale(1)">🔒 ${HEROS[id].nom}<br><small>Fais le tutoriel</small></button>` : `<button onclick="monHeros='${id}';adversaire()"><img src="${IMG(id)}" alt="">${HEROS[id].nom}</button>`).join('')}</div>
-  <div class="choixh"><button onclick="mesParties()">📜 Mes parties</button><button onclick="location.href='menu.html'">⌂ Menu</button></div>
+  <div class="choixh"><button onclick="mesParties()">📜 Mes parties</button></div>
   <p style="color:#c9c1ea;font-size:.85em">Prototype pour essayer les règles : dessins provisoires, chiffres à équilibrer.</p>`);
+  GM.retour('menu.html#arene'); // 22/11 (l'utilisateur) : le retour en haut à gauche, vers l'Arène ; plus de « ⌂ Menu » en bas
 }
 function adversaire() {
+  GM.retour(accueil); // 22/11 : revenir au choix du héros
   fenetre(`<h2>Duel · prototype</h2><p>2. Contre qui ? (l’ordinateur)</p>
   <div class="heros6">${ORDRE.filter(id => id !== monHeros).map(id => `<button onclick="fermer();nouvellePartie(monHeros,'${id}');regles(true)"><img src="${IMG(id)}" alt="">${HEROS[id].nom}</button>`).join('')}
   <button onclick="fermer();nouvellePartie(monHeros);regles(true)" style="display:flex;align-items:center;justify-content:center;font-size:2em;min-height:110px">🎲<br><span style="font-size:.4em">au hasard</span></button></div>

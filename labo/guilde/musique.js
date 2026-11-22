@@ -205,6 +205,20 @@ const GM = (() => {
   addEventListener('DOMContentLoaded', () => { insecables(document.body);
     new MutationObserver(ms => ms.forEach(x => { if (x.type === 'characterData') { const p = x.target.parentNode; if (p) insecables(p); } else x.addedNodes.forEach(a => insecables(a.nodeType === 3 ? a.parentNode : a)); }))
       .observe(document.body, { childList:true, subtree:true, characterData:true }); });
+  // 22/11 (l'utilisateur : « le retour en haut à gauche, comme dans les jeux ») : UN bouton « ‹ Retour » commun, fixe en haut à gauche,
+  // posé par l'écran d'accueil de chaque mode. GM.retour(adresse ou fonction, texte) le pose ; GM.retour(null) le retire (la partie commence).
+  // La page reçoit la classe gm-retour-on : les titres qui en ont besoin se décalent (règle .gm-retour-on … dans la page).
+  api.retour = (ou, texte) => {
+    if (!document.body) { addEventListener('DOMContentLoaded', () => api.retour(ou, texte)); return; }
+    let b = document.getElementById('gm-retour');
+    if (!ou) { if (b) b.remove(); document.body.classList.remove('gm-retour-on'); return; }
+    if (!b) { b = document.createElement('button'); b.id = 'gm-retour'; b.type = 'button';
+      b.style.cssText = 'position:fixed;top:calc(8px + env(safe-area-inset-top));left:8px;z-index:920;padding:6px 12px;border-radius:999px;border:1px solid #f3c96b88;background:#15132bdd;color:#f3c96b;font:inherit;font-size:15px;line-height:1.2;cursor:pointer;box-shadow:0 2px 8px #0008';
+      document.body.appendChild(b); }
+    b.textContent = '‹ ' + (texte || 'Retour');
+    b.onclick = () => { api.son && api.son('ok'); if (typeof ou === 'function') ou(); else location.href = ou; };
+    document.body.classList.add('gm-retour-on');
+  };
   return api;
 })();
 
@@ -385,4 +399,17 @@ const ENTRAINEMENTS = [['duel', 'Le Duel (le tutoriel)', 'duel.html?tuto=1'], ['
   };
   const go = () => { traite(); new MutationObserver(traite).observe(document.body, { childList:true, subtree:true }); };
   if (document.body) go(); else addEventListener('DOMContentLoaded', go);
+})();
+
+// 22/11 (l'utilisateur voyait encore d'anciennes pages après les mises en ligne) : à l'ouverture d'une page, si une version plus récente existe
+// (version.txt, jamais gardée en mémoire), la page se recharge UNE fois toute seule. Seulement au chargement : jamais en pleine partie.
+(function () {
+  try {
+    const m = document.querySelector('meta[name="guilde-version"]'); if (!m || typeof fetch === 'undefined') return;
+    const ici = m.getAttribute('content');
+    fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(t => {
+      const v = String(t || '').trim(); if (!v || v === ici || sessionStorage.getItem('guilde-recharge-' + v)) return;
+      sessionStorage.setItem('guilde-recharge-' + v, '1'); location.reload();
+    }).catch(() => {});
+  } catch (e) {}
 })();

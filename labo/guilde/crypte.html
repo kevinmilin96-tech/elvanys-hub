@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head>
+<head><meta name="guilde-version" content="20261122-110308">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="robots" content="noindex">
@@ -144,7 +144,7 @@
 <div id="jeu"></div>
 <div class="flash" id="flash"></div>
 <div id="fen"></div>
-<script src="musique.js?v=d927158b76"></script>
+<script src="musique.js?v=2acde000cd"></script>
 <script src="rang.js?v=01acb4f369"></script>
 <script src="heros-etoiles.js?v=80a6cac830"></script>
 <script src="progression-modes.js?v=807b0f9ad5"></script>
@@ -491,7 +491,7 @@ function accueil() {
   const D = lire(), j = D.jours[jour()];
   choixH = haValide(choixH, ZEPH_OK());
   $('jeu').innerHTML = `<div class="acc">
-    <div class="haut"><a href="menu.html">‹ Menu</a><span class="titre"></span><button onclick="regles()">❓ Règles</button></div>
+    <div class="haut"><a href="menu.html">‹ Retour</a><span class="titre"></span><button onclick="regles()">❓ Règles</button></div>
     <h1>🪦 La Crypte aux Sceaux</h1>
     <p class="sous">Un solitaire de dés : brise les sceaux des monstres, carte après carte, jusqu’au Gardien.</p>
     <div class="heros">${choixHerosHTML('accueil')}</div>
@@ -523,7 +523,7 @@ if (typeof GM !== 'undefined') { try { GM.musique('carte') /* 16/11 soir : la pi
 accueil();
 if (typeof AMIS !== 'undefined' && AMIS.carte) setTimeout(() => { if (!S && (typeof DR === 'undefined' || !DR) && AMIS.etat) accueil(); }, 2500);
 </script>
-<script src="descente-ecran.js?v=ade04a0883"></script>
+<script src="descente-ecran.js?v=ec65da23a1"></script>
 <script src="guide.js?v=f78db3b570"></script>
 <script src="guides-modes.js?v=4174fd7ae1"></script>
 <script>

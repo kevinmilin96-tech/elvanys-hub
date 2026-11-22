@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head>
+<head><meta name="guilde-version" content="20261122-110308">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="robots" content="noindex">
@@ -217,7 +217,7 @@
 <body>
 <div id="app"></div>
 <div id="fen"></div><div id="perso"></div>
-<script src="musique.js?v=d927158b76"></script>
+<script src="musique.js?v=2acde000cd"></script>
 <script src="rang.js?v=01acb4f369"></script>
 <script>window.AMIS_SANS_BOUTON = true;</script>
 <script src="amis.js?v=ed23bed544"></script>
@@ -1189,7 +1189,7 @@ function accueil() { document.body.classList.remove('jeu'); sessionStorage.remov
   const g = gardee(); let D = {}; try { D = JSON.parse(localStorage.getItem(CLE) || '{}'); } catch (e) {}
   choisis = choisis.filter(k => k !== 'zephine' || ZEPH_OK());
   $('app').innerHTML = `<div class="acc">
-    <div class="haut"><a href="menu.html">‹ Menu</a><span class="t"></span><button onclick="regles()">❓ Règles</button></div>
+    <div class="haut"><a href="menu.html">‹ Retour</a><span class="t"></span><button onclick="regles()">❓ Règles</button></div>
     <h1>📜 Les Chroniques de la Guilde</h1>
     <p class="sous">Jusqu’à 4 héros, un donjon dans le noir, des portes à ouvrir, des meubles à fouiller, une histoire. Un seul téléphone : passez-le à celui dont c’est le tour.</p>
     ${g ? `<button class="gros" style="border-color:var(--ok);color:var(--ok);background:#14322a" onclick="reprend()">▶ Reprendre la partie<small>${g.heros.map(z => nomH(z)).join(', ')} · ⚙ ${g.R.rouagesPoses}/3 · ⌛ ${g.sablier}</small></button><button onclick="if(confirm('Abandonner cette partie ? Elle sera effacée.')){try{localStorage.removeItem('guilde-chroniques2-partie')}catch(e){};accueil()}" style="display:block;margin:0 auto;background:none;border:0;color:var(--doux);font-size:3cqw;text-decoration:underline;padding:1cqw;text-align:center">✕ abandonner cette partie</button>` : ''}

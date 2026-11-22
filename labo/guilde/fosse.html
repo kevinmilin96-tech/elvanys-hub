@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head>
+<head><meta name="guilde-version" content="20261122-110308">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="robots" content="noindex">
@@ -59,7 +59,7 @@
 <body>
 <div id="app"></div>
 <div id="fen"></div>
-<script src="musique.js?v=d927158b76"></script>
+<script src="musique.js?v=2acde000cd"></script>
 <script src="rang.js?v=01acb4f369"></script>
 <script src="heros-etoiles.js?v=80a6cac830"></script>
 <script src="progression-modes.js?v=807b0f9ad5"></script>
@@ -494,7 +494,7 @@ function fin(gagne) {
 }
 function accueil() {
   const D = lire(); choixH = haValide(choixH, ZEPH_OK()); window.onresize = null;
-  $('app').innerHTML = `<div class="acc"><div class="top"><a href="menu.html">‹ Menu</a><button onclick="regles()">❓ Règles</button></div>
+  $('app').innerHTML = `<div class="acc"><div class="top"><a href="menu.html">‹ Retour</a><button onclick="regles()">❓ Règles</button></div>
     <h1>🕳️ La Fosse aux Runes</h1><p class="sous">Ça grouille. Tes dés partent tout seuls, les monstres attaquent, chaque niveau t’offre une amélioration. Tiens 5 minutes… et abats le Titan.</p>
     <div class="heros">${Object.entries(HER).map(([k, h]) => `<button class="${choixH === k ? 'on' : ''}" ${k === 'zephine' && !ZEPH_OK() ? 'disabled' : ''} onclick="choixH='${k}';accueil()"><img src="portraits/${k}.webp" alt="">${h.n}${k === 'zephine' && !ZEPH_OK() ? '<br>🔒 tutoriel' : ''}</button>`).join('')}${haBoutons(choixH, k => `choixH='${k}';accueil()`, ZEPH_OK())}</div>
     <div class="pv-h">${haInfo(choixH) ? `⚔ <b>${haEsc(haInfo(choixH).nom)}</b>, ${haEsc(haInfo(choixH).titre)} · la voie de ${HER[vJ()].n}.<br>` : ''}✦ <b>${HER[vJ()].t}</b> : ${HER[vJ()].d}<br>${typeof texteBonus === 'function' ? '✨ ' + texteBonus(pJ()) : ''}</div>
