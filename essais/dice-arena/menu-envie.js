@@ -150,6 +150,8 @@ function envieGrille(E) {
   return L;
 }
 
+// 22/11 : la quête du jour « Passe à la Guilde » se valide à l'ouverture du menu (une fois par jour)
+try { if (typeof guildeEvt === 'function' && localStorage.getItem('guilde-connexion-jour') !== envJourLocal()) { localStorage.setItem('guilde-connexion-jour', envJourLocal()); setTimeout(() => guildeEvt('connexion', 1), 800); } } catch (e) {}
 if (typeof document !== 'undefined' && MENU_ENVIE) {
   const st = document.createElement('style');
   st.textContent = `
