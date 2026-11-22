@@ -33,6 +33,8 @@ function titresGuilde() {
     ['fidele100', '👑', 'Légende fidèle', 'Jouer 100 jours (pas forcément à la suite) : cadeau de la boîte aux lettres.', JL('guilde-titres-boite', []).includes('fidele100'), '#ffd75e'],
     ['sphinx',    '🧩', 'Sphinx de la Guilde', 'Résoudre une énigme du dimanche (la plus redoutable de la semaine).', eniDim > 0, '#9be37a'],
     // 14/11 nuit : les titres du Rang de la Guilde (rang.js)
+    // 22/11 : les titres des SUCCÈS (dernier palier) et des points de succès ; seulement ceux qui sont gagnés, pour ne pas allonger les listes
+    ...(typeof succesTitres === 'function' ? succesTitres().filter(t => t[4]) : []),
     ...(typeof ROUTE !== 'undefined' ? Object.entries(ROUTE).filter(([, x]) => x[0] === 'titre').map(([n, x]) => [x[1], x[2], x[3], `Atteindre le rang ${n} de la Guilde.`, rgRecompense('titre', x[1]), COULEUR_TITRE_RANG[x[1]] || '#f3c96b']) : []),
   ];
 }

@@ -156,8 +156,14 @@ function syncRecompenses() {
     recompensesGagnees().filter(x => x.genre === 'carte').forEach(x => { if (!col.includes(x.cle)) { col.push(x.cle); n++; } });
     if (n) localStorage.setItem('guilde-collection', JSON.stringify(col)); } catch (e) {}
 }
+// 22/11 (décision de l'utilisateur) : LES SUCCÈS. Un compteur commun pour ce que le jeu ne gardait pas ailleurs (succes.js lit ces compteurs).
+// guildeEvt compte tout seul chaque moment fort ; les modes appellent succesCompte(cle) pour le reste (duel contre un ami, fusions…).
+const SUCCES_CLE = 'guilde-succes';
+function lireSucces() { try { return Object.assign({ c:{}, base:{}, max:{}, recup:{}, coffres:0 }, JSON.parse(localStorage.getItem(SUCCES_CLE) || '{}')); } catch (e) { return { c:{}, base:{}, max:{}, recup:{}, coffres:0 }; } }
+function succesCompte(cle, n = 1) { if (typeof localStorage === 'undefined' || !n) return; try { const d = lireSucces(); d.c[cle] = (d.c[cle] || 0) + n; localStorage.setItem(SUCCES_CLE, JSON.stringify(d)); } catch (e) {} }
 function guildeEvt(type, n = 1, info = {}) {
   if (typeof localStorage === 'undefined') return;
+  succesCompte(type, n);
   try {
     if (info.heros && typeof ECLATS_EVT !== 'undefined' && ECLATS_EVT[type]) donneEclats(info.heros, ECLATS_EVT[type]); // 14/11 nuit : éclats du héros
     // 15/11 : le système des héros : de l'or 🪙 et de la poussière de rune 🔹 à chaque moment fort, et parfois une pièce d'équipement sur un boss ou une élite
@@ -171,6 +177,8 @@ function guildeEvt(type, n = 1, info = {}) {
       q.prog = d[4] === 'max' ? Math.max(q.prog, n) : q.prog + n;
       if (q.prog >= d[3]) { q.prog = d[3]; q.fait = true; q.recup = false; fini.push([texteQuete(q, jour), jour]); }
     }));
+    fini.forEach(([, jour]) => { if (jour) succesCompte('quete_jour'); });
+    if (Q.s && Q.s.length && Q.s.every(q => q.fait) && Q.sParfaite !== Q.semaine) { Q.sParfaite = Q.semaine; succesCompte('semaine_parfaite'); }
     localStorage.setItem(QUETES_CLE, JSON.stringify(Q));
     fini.forEach(([t]) => annonceRang(`📜 Quête accomplie : ${t} · va la récupérer 🎁`, true)); // 21/11 : la récompense se RÉCUPÈRE (route des rangs, onglet Quêtes)
   } catch (e) { console.error(e); }

@@ -179,7 +179,7 @@ function groupesFusion() { const G = {}; avSac().pieces.forEach(p => { if (p.r >
 function fusionnePiece(slot, r) {
   const s = avSac(), g = s.pieces.filter(p => p.slot === slot && p.r === r).sort((a, b) => b.niv - a.niv).slice(0, 3); if (g.length < 3 || r >= EQ_RARE.length - 1) return null;
   const d = lireEtoiles(), porteur = Object.keys(d.heros).find(id => g.some(p => (d.heros[id].gear || {})[slot] === p.id));
-  const n = { id:'eq' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), slot, nom:g[0].nom, r:r + 1, niv:Math.min(g[0].niv, 5 * (r + 2)) };
+  const n = { id:'eq' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), slot, nom:g[0].nom, r:r + 1, niv:Math.min(g[0].niv, 5 * (r + 2)) }; if (typeof succesCompte === 'function') succesCompte('forge_fusion'); // 22/11 : succès « Forgeron »
   s.pieces = s.pieces.filter(p => !g.includes(p)); s.pieces.push(n); avSacEcrire(s);
   Object.values(d.heros).forEach(h => { if (h.gear && g.some(p => h.gear[slot] === p.id)) h.gear[slot] = null; });
   if (porteur) { const h = d.heros[porteur]; h.gear[slot] = n.id; h.lv = h.lv || {}; h.lv[slot] = Math.max(h.lv[slot] || 0, ...g.map(p => p.niv)); } ecrireEtoiles(d); return n;

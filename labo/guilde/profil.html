@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261122-145958">
+<head><meta name="guilde-version" content="20261122-150925">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex">
@@ -66,12 +66,13 @@
 </main>
 <script src="cartes.js?v=4f4c03174c"></script>
 <script src="musique.js?v=2acde000cd"></script>
-<script src="rang.js?v=031054aa99"></script>
-<script src="heros-etoiles.js?v=80a6cac830"></script>
+<script src="rang.js?v=82b0bff726"></script>
+<script src="heros-etoiles.js?v=7f5e7be05f"></script>
 <script src="donnees.js?v=7c4f716d6e"></script>
 <script src="aventuriers.js?v=5679a4a045"></script>
-<script src="odyssee.js?v=913cf4e82c"></script>
-<script src="profil.js?v=f65ec35808"></script>
+<script src="odyssee.js?v=8a56e82770"></script>
+<script src="succes.js?v=d6910350b3"></script>
+<script src="profil.js?v=4a45d06dad"></script>
 <script src="pantheon.js?v=1a6f59e92e"></script>
 <script>
 const log = () => {};
@@ -128,6 +129,7 @@ function dessine() {
   if (onglet) { document.getElementById('app').innerHTML = atelier(p, T); return; }
   document.getElementById('app').innerHTML = `${carteProfil(p)}
   <p class="aide" style="text-align:center;margin-top:6px">C’est ta carte : ton nom, ton titre et ton cadre te suivent en combat. Touche ✏️ pour la personnaliser.</p>
+  ${typeof succesPoints === 'function' ? (n => `<a class="lien" href="succes.html" style="display:flex;align-items:center;gap:10px;font-size:1.05em;border:1px solid #f3c96b88;border-radius:14px;padding:10px 12px;margin:12px 0;background:#1d1838e8;text-decoration:none;text-align:left;color:var(--texte)"><span style="font-size:1.6em">🏆</span><span style="flex:1"><b>Mes succès</b><br><small style="color:var(--doux)">${succesPoints()} points de succès · ${SUCCES.length} succès à paliers</small></span>${n ? `<span style="background:#ff5a5a;color:#fff;border-radius:10px;padding:1px 8px;font-weight:bold">🎁 ${n}</span>` : ''}<span>›</span></a>`)(succesARecuperer()) : ''}
   ${parcoursHTML()}
   ${typeof lireRang === 'function' ? rangHTML() : ''}
   <h2>🏆 Mes trophées</h2>

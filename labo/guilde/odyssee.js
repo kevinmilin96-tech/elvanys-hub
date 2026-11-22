@@ -806,6 +806,7 @@ function finOdysseeRun(r, gagne) {
   }
   const rec = { quand:new Date().toISOString(), acte:r.acte || 'brulees', asc:r.asc || 0, heros:r.heros, av:r.av || null, gagne, score, cases:r.stats.cases, combats:r.stats.combats, combatsIle:r.sansfin || r.route || !r.ile ? null : r.ile.flat().filter(c => ['monstre', 'elite', 'boss'].includes(c.t)).length, victoires:r.stats.victoires, tours:r.stats.tours, defis:r.stats.defis, or:r.or, duree, graine:r.graine, pv:r.pv, etage, sansfin:!!r.sansfin, route:!!r.route, regle:r.sansfin ? r.sansfin.regle : null, aventure:r.aventure ? { chapitre:r.aventure.chapitre, niveau:r.aventure.niveau } : null };
   if (typeof localStorage !== 'undefined') { const l = lireRecords(); l.unshift(rec); localStorage.setItem(RECORDS_CLE, JSON.stringify(l.slice(0, 50))); ecrireOdyssee(null); }
+  if (gagne && typeof succesCompte === 'function') { if (duJour) succesCompte('ody_jour'); else if (r.route) succesCompte('ody_route'); else if (!r.sansfin) succesCompte('ody_gagne'); } // 22/11 : les succès
   return { ...rec, butinH, ajoutees, nouvelles:neuves, ascNouveau, premiereFin, inscrit, briseMiroir };
 }
 
