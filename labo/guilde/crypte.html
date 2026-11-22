@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261122-172117"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
+<head><meta name="guilde-version" content="20261122-173116"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="robots" content="noindex">
@@ -547,6 +547,8 @@ if (typeof AMIS !== 'undefined' && AMIS.carte) setTimeout(() => { if (!S && (typ
 // 15/11 : le guide de Moustache de ce mode (guides-modes.js)
 { const _d = dessine; dessine = function () { const r = _d.apply(this, arguments); if (typeof S !== 'undefined' && S) guideMode('crypte'); return r; }; }
 { const _a = descenteAccueil; descenteAccueil = function () { const r = _a.apply(this, arguments); guideMode('descente'); return r; }; }
+// 22/11 (menu rangé par envie) : la porte « Partir à l’aventure » ouvre directement la Descente (crypte.html#descente)
+if (location.hash === '#descente' && !S && (typeof DR === 'undefined' || !DR)) descenteAccueil();
 { const _e = descenteEcran; descenteEcran = function () { const r = _e.apply(this, arguments); if (DR && DR.ecran === 'carte') guideMode('descente-carte'); return r; }; }
 </script>
 </body>

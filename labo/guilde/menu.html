@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261122-172117"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
+<head><meta name="guilde-version" content="20261122-173116"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex">
@@ -8,7 +8,7 @@
 <title>La Guilde des Runes</title>
 <script>
 // Même mécanisme que le Duel : une nouvelle version = rechargement tout seul à l'ouverture (publier.sh change VERSION).
-const VERSION = '20261122-172117';
+const VERSION = '20261122-173116';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-menu-' + v)) { sessionStorage.setItem('recharge-menu-' + v, '1'); location.replace('menu.html?v=' + v); }
@@ -215,7 +215,8 @@ fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.te
 <script>window.AMIS_SANS_BOUTON = true; /* 15/11 : un seul bouton en haut à gauche (profil + amis) */</script>
 <script src="amis.js?v=d4158692ce"></script>
 <script src="heros-etoiles.js?v=48da21e34c"></script>
-<script src="donnees.js?v=20261122-172117"></script>
+<script src="donnees.js?v=20261122-173116"></script>
+<script src="menu-envie.js"></script>
 <script>
 // ciel étoilé + runes du portail (symboles, pas des lettres), aux couleurs des héros
 const ciel = document.getElementById('ciel');
@@ -405,19 +406,7 @@ const ETAGES = {
     INV.reveil ? { nom:'Les grands boss', pro:'invboss', href:'campement.html', desc:'Le Colosse des racines, le Kraken des brumes, Ignaros le dragon ancien : un seul boss, géant.' }
       : { nom:'Les grands boss', pro:'invboss', ferme:'Grands boss', essai:'campement.html', desc:'S’ouvrent quand tu as gagné l’Acte II.' },
   ] },
-  // 13/11 : BOUSSOLE DU JEU (Boussole-du-jeu.md) : cœur = Tutoriel, Duel, Odyssée, Invasion, Expéditions + Tour des héros ;
-  // les autres modes sont rangés ici, cachés du 1er étage, rien n'est effacé (lien « 🧪 En attente » en bas du menu).
-  attente:{ titre:'En attente', sous:'Ces modes existent mais attendent leur tour : la boussole du jeu les garde de côté.', portes:[
-    { nom:'Défense de la porte', pro:'defense', href:'defense.html', desc:'Tes dés deviennent des tours qui fusionnent : tiens la porte face aux vagues de monstres.' },
-    { nom:'L’énigme du jour', pro:'enigme', href:'duel.html?enigme=1', desc:'Trouve le coup parfait qui fait tomber l’adversaire en un seul tour. Une nouvelle chaque jour.' },
-    { nom:'Le Panthéon', pro:'pantheon', href:'pantheon.html', desc:'Le Tableau d’honneur, tes titres, les récompenses du défi Brise-Miroir et tes trophées de tous les modes.' },
-    { nom:'Le Duel de la semaine', pro:'semaine', href:'duel.html?semaine=1', desc:`Cette semaine : « ${regleDeLaSemaine().n} ». ${regleDeLaSemaine().d} Gagne pour le Sceau de la semaine.` },
-    { nom:'Contre un proche', pro:'proche', href:'duel.html?deux=1', desc:'À deux sur le même téléphone : chacun son héros, on se passe le téléphone à chaque tour.' },
-  ] },
-  rdv:{ titre:'Les rendez-vous', sous:'Une énigme chaque jour, une règle nouvelle chaque semaine.', portes:[
-    { nom:'L’énigme du jour', pro:'enigme', href:'duel.html?enigme=1', desc:'Trouve le coup parfait qui fait tomber l’adversaire en un seul tour. Une nouvelle chaque jour.' },
-    { nom:'Le Duel de la semaine', pro:'semaine', href:'duel.html?semaine=1', desc:`Cette semaine : « ${regleDeLaSemaine().n} ». ${regleDeLaSemaine().d} Gagne pour le Sceau de la semaine.` },
-  ] },
+  // 22/11 : les étages morts « En attente » et « Les rendez-vous » sont retirés (leurs portails sont au menu depuis le 15/11 et le 17/11)
   odyssee:{ titre:'L’Odyssée', sous:'Quelle île veux-tu explorer ?', portes:[
     { nom:'Terres brûlées', fx:'lave', img:'menu-recu/ody-terres-brulees.webp', href:'odyssee.html', desc:'Acte I · L’île de cendre et de lave du Titan de feu. Ici commence la Grande aventure.' },
     GIVRE_OK ? { nom:'Île du Givre', fx:'aurore', img:'menu-recu/ody-givre.webp', href:'odyssee.html?ile=givre', desc:'Acte II · Des falaises de glace sous l’aurore, gardées par la Vouivre des glaces.' }
@@ -430,6 +419,7 @@ const ETAGES = {
     { nom:'La Route du Titan', pro:'route', href:'odyssee.html?route=1', desc:'Toute la route jusqu’au Titan se voit : 10 étapes, des chemins qui se croisent. Choisis la tienne.' },
   ] },
 };
+envieInstalle(ETAGES, PRO); // 22/11 : le menu rangé par envie (menu-envie.js), en aperçu seulement tant que l'utilisateur n'a pas validé
 const car = document.getElementById('car');
 let courant = '';
 // 15/11 soir : onglets de catégorie au 1er étage (Tout, Duels, Aventures, Entre amis, Défis, Collection)
@@ -458,7 +448,7 @@ function dessin(p) {
 function retourEtage() {
   if (courant === 'odyssee' && odySlot !== null) { odySlot = null; montre('odyssee'); }   // choix de l'île → les emplacements
   else if (courant === 'odyssee' && odyMode !== null) { odyMode = null; montre('odyssee'); } // emplacements → les modes
-  else location.hash = '';
+  else location.hash = MENU_ENVIE && ENVIE_PARENT[courant] || ''; // 22/11 : un étage du fond remonte à sa porte
 }
 function montre(id) {
   if (id !== 'odyssee') { odySlot = null; odyMode = null; }
@@ -469,7 +459,7 @@ function montre(id) {
   document.getElementById('retour').classList.toggle('vu', !!courant);
   { const m = document.getElementById('versmenu'); if (m) m.style.display = courant ? '' : 'none'; }
   document.getElementById('heros').style.display = 'none';
-  sauvesOdy();
+  sauvesOdy(); envieBandeau();
   car.innerHTML = PORTES.map((p, i) => `<div class="porte ${p.ferme ? 'ferme' : ''}" data-i="${i}">
     <div class="halo"></div><div class="dedans ${p.avenir ? 'tourne' : ''}">${dessin(p)}${p.ferme ? '<div class="verrou"><img src="menu-recu/cadenas.webp?v=2" alt="Verrouillé"></div>' : ''}</div>
     <img class="arche" src="menu-recu/arche-vide.webp?v=1" alt=""><img class="runes" src="menu-recu/fx-runes.webp?v=1" alt=""><div class="reflet"></div>
@@ -633,7 +623,7 @@ function grandMenu() {
 // 17/11 soir (l'utilisateur, « comme Genshin ») : la grille de tous les portails, en vignettes simples
 function grillePortails() {
   let g = document.getElementById('grille-p'); if (g) { g.remove(); return; }
-  const L = (ETAGES[''] || { portes:[] }).portes;
+  const L = window.GRILLE_L = MENU_ENVIE ? envieGrille(ETAGES) : (ETAGES[''] || { portes:[] }).portes;
   const im = p => { if (p.avenir) return '<img src="menu-recu/mystere.webp" alt="">'; if (p.img) return `<img src="${p.img}" alt="">`;
     if (PRO_IMG[p.pro] && !p.sansImg) return `<img src="menu-recu/${PRO_IMG[p.pro]}.webp?v=${PRO_V[p.pro] || 1}" alt="" loading="lazy">`;
     const x = PRO[p.pro] || ['✨', '#221d42', '#fff']; return `<div class="pro" style="background:${x[1]}">${x[0]}</div>`; };
@@ -642,7 +632,7 @@ function grillePortails() {
   document.body.appendChild(g); if (typeof GM !== 'undefined') GM.son('clic');
 }
 function grilleVa(i) {
-  const p = ETAGES[''].portes[i], b = document.querySelectorAll('#grille-p .gp button')[i];
+  const p = (window.GRILLE_L || ETAGES[''].portes)[i], b = document.querySelectorAll('#grille-p .gp button')[i];
   if (p.ferme || p.avenir) { if (b) b.animate([{ translate:'0' }, { translate:'-6px' }, { translate:'6px' }, { translate:'0' }], { duration:300 }); return; }
   document.getElementById('grille-p').remove();
   if (p.href) { sessionStorage.setItem('guilde-dans-mode', '1'); location.href = p.href; return; }
