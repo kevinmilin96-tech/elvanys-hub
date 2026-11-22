@@ -206,8 +206,12 @@ function fhForger(id) {
   fhSon('tour-fusion');
   setTimeout(() => { const n = fusionnePiece(slot, +r); FORGE.sel = null; if (!n) { fhBulle('Impossible : il faut 3 pièces pareilles'); fhForge(id); return; }
     fhSon('victoire'); FH.apres(); const C = EQ_CASES.find(c => c.k === n.slot);
-    fhFen(`<h2>🔥 Forgé !</h2><div class="fg-eclat">${C.e}</div>${fhPiece(n, '')}<p class="doux" style="text-align:center">Nouvelle pièce <b style="color:${EQ_RARE[n.r].c}">${EQ_RARE[n.r].n}</b>, rangée dans le coffre${porteurDe(n.id) ? ' et déjà équipée' : ''}.</p>
-      <div style="display:flex;gap:8px"><button class="fh-bt or" style="flex:1" onclick="fhForge('${id}')">🔥 Encore</button><button class="fh-bt" style="flex:1" onclick="fhFen('')">Fermer</button></div>`); }, 900);
+    fhFen(`<h2>🔥 Forgé !</h2><div class="fg-eclat">${C.e}</div>${fhPiece(n, '')}<p class="doux" style="text-align:center">Nouvelle pièce <b style="color:${EQ_RARE[n.r].c}">${EQ_RARE[n.r].n}</b>, rangée dans le coffre.</p>
+      ${(q => q && fhInfo(q) ? `<div style="margin:8px 0;padding:10px;border-radius:12px;border:1px solid #f3c96b88;background:#2a2412;text-align:center"><p style="margin:0 0 8px">${fhInfo(q).nom} portait une des pièces fondues : sa case ${C.n} est vide.<br><b>Veux-tu l’équiper maintenant ?</b></p><div style="display:flex;gap:8px"><button class="fh-bt or" style="flex:1" onclick="fhEquipeForge('${q}','${n.id}','${id}')">✅ Oui, sur ${fhInfo(q).nom}</button><button class="fh-bt" style="flex:1" onclick="fhForge('${id}')">Plus tard</button></div></div>`
+        : `<div style="display:flex;gap:8px;margin-bottom:8px"><button class="fh-bt or" style="flex:1" onclick="fhEquipeForge('${id}','${n.id}','${id}')">✅ L’équiper sur ${fhInfo(id).nom}</button></div>`)(n.porteur)}
+      <div style="display:flex;gap:8px"><button class="fh-bt" style="flex:1" onclick="fhForge('${id}')">🔥 Encore</button><button class="fh-bt" style="flex:1" onclick="fhFen('')">Fermer</button></div>`); }, 900);
+}
+function fhEquipeForge(h, pid, id) { const r = equipePiece(h, pid); if (r === 'ok') { fhSon('tour-fusion'); fhBulle(`Équipé sur ${fhInfo(h).nom} !`); FH.apres(); fhForge(id); } else fhBulle(r);
 }
 function fhForgeron(id) {
   const s = avSac(); let deja = {}; try { deja = JSON.parse(localStorage.getItem('guilde-forgeron-achats') || '{}'); } catch (e) {}
