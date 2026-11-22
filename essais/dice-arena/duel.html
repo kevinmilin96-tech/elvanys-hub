@@ -725,6 +725,13 @@
      c'est maintenant un vrai bouton sous le bandeau, toujours visible, et le bandeau défile s'il est trop long */
   .annulB { position:absolute; left:50%; transform:translateX(-50%); z-index:6; padding:.5em 1.4em; border-radius:999px; border:1px solid #f3c96b; background:#2a1f3dee; color:#f3c96b; font:bold 3.2cqw Georgia, serif; box-shadow:0 2px 8px #000a; cursor:pointer; }
   .plateau:not(.tapis):not(.unique) .annulB { position:static; transform:none; display:block; margin:4px auto; }
+  .annulB.dansBas { position:static; transform:none; margin:0; font-size:14px; padding:0 .7em; white-space:nowrap; flex:none; }
+  /* 22/11 (l'utilisateur : « le bouton Fin du tour n'est pas entier ») : sur son téléphone les textes sont plus gros ; le bouton « Relancer »
+     (parfois seulement caché) prenait la place et poussait « Fin du tour » hors de l'écran. Désormais « Fin du tour » garde toujours sa place
+     entière ; c'est « Relancer » qui rétrécit ; et le téléphone ne grossit plus les textes de lui-même. */
+  html { -webkit-text-size-adjust:100%; text-size-adjust:100%; }
+  .bas { overflow:hidden; } .bas > * { min-width:0; } .bas .b0 { flex:0 0 auto !important; } .bas .b2 { flex:0 0 auto !important; padding-left:14px; padding-right:14px; } .bas .annulB.dansBas { flex:0 1 auto; overflow:hidden; text-overflow:ellipsis; }
+  .bas .b1 { flex:1 1 0 !important; overflow:hidden; text-overflow:ellipsis; }
   .unique .bandeau { overflow-y:auto !important; }
   /* 21/11 : le héros rival en Odyssée = son OMBRE (portrait assombri, teinté de violet, halo sombre) */
   .barre.ombreh > img:first-child { filter:grayscale(.55) brightness(.62) contrast(1.15) sepia(.3) hue-rotate(215deg) saturate(1.6) drop-shadow(0 0 6px #7a2cff); }
@@ -1787,7 +1794,11 @@ function glisseFin(e) {
 }
 function annuler() { sel = []; ciblage = null; attaquant = null; rendu(); }
 // 20/11 : le bouton « Annuler » se pose juste sous le bandeau, quelle que soit l'île (chaque plateau place son bandeau ailleurs)
-function placeAnnul() { const a = document.querySelector('.annulB'), b = document.querySelector('.bandeau'); if (!a || !b || !a.offsetParent || getComputedStyle(a).position !== 'absolute') return;
+// 22/11 (l'utilisateur : « le bouton Annuler passe au-dessus des créatures et gêne quand je dois en choisir une ») : sur le plateau, il va dans
+// la barre du bas, juste avant « Fin du tour » ; il ne recouvre plus jamais les créatures (les miennes sous le bandeau, celles d'en face au-dessus)
+function placeAnnul() { const a = document.querySelector('.annulB'), bas = document.querySelector('.bas'), f = bas && bas.querySelector('.b2');
+  if (a && f && document.querySelector('.plateau.unique')) { a.classList.add('dansBas'); bas.insertBefore(a, f); return; }
+  const b = document.querySelector('.bandeau'); if (!a || !b || !a.offsetParent || getComputedStyle(a).position !== 'absolute') return;
   const P = a.offsetParent.getBoundingClientRect(), r = b.getBoundingClientRect(); a.style.top = (r.bottom - P.top + 6) + 'px'; }
 
 // ce que veut dire chaque étiquette sous la barre de vie (on la touche pour savoir)
