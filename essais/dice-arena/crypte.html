@@ -372,6 +372,7 @@ function apresCoup(avant) {
   if (n > 0) {
     son('tombe'); if (S.chaine > 1) bulle(`Chaîne ×${S.chaine} !`); else bulle('💀 Il tombe !');
     if (typeof guildeEvt === 'function') guildeEvt('salle', n, { heros:herosS(S).prog, voie:S.heros });
+    if (typeof guildeEvt === 'function' && !(typeof DR !== 'undefined' && DR)) guildeEvt('crypte_tombe', n); // 22/11 : quête du jour
     visibles().forEach(c => c.neuve = true);
   }
   if (S.fin) return finPartie();

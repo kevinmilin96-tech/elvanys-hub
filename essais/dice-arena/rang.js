@@ -93,12 +93,12 @@ const QUETES_JOUR = [
   ['dg', 'Gagne un Duel dans l’Arène', 'duel_gagne', 1],
   ['ca5', 'Joue 5 cartes, tous modes confondus', 'carte', 5],
   ['es1', 'Gagne 1 escale d’Expédition', 'escale', 1],
-  ['sa3', 'Vide 3 salles dans l’Odyssée', 'salle', 3],
+  ['cr3', 'Fais tomber 3 monstres dans la Crypte aux Sceaux', 'crypte_tombe', 3], // 22/11 (l'utilisateur : « 3 salles d'Odyssée, c'est long ») : la Crypte, 2-3 minutes
   ['dv2', 'Tiens 2 vagues dans la Défense de la porte', 'defense_vague', 2],
   ['to1', 'Passe 1 étage de la Tour des épreuves', 'tour_etage', 1],
 ];
 const QUETE_VA = { butin:'menu.html', coeur:'menu.html?amis=1', enigme:'duel.html?enigme=1', duel_gagne:'duel.html', carte:'duel.html', escale:'expedition-v4.html',
-  salle:'menu.html#odyssee', elite:'menu.html#odyssee', boss:'menu.html#odyssee', defense_vague:'defense.html', tour_etage:'epreuves.html', titan:'expedition-v4.html',
+  crypte_tombe:'crypte.html', salle:'menu.html#odyssee', elite:'menu.html#odyssee', boss:'menu.html#odyssee', defense_vague:'defense.html', tour_etage:'epreuves.html', titan:'expedition-v4.html',
   invasion_acte:'menu.html#invasion', etage_atteint:'menu.html#odyssee', chasse:'epreuves.html#chasse', tuile:'menu.html#odyssee', or:'menu.html#odyssee' };
 const QUETES_SEMAINE = [
   ['el3', 'Bats 3 élites', 'elite', 3],
