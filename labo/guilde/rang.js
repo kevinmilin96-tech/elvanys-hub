@@ -196,17 +196,21 @@ function appliquePeau() {
 const rgPeauOk = p => p === 'base' || rgRecompense('des', p);
 function choisirPeau(p) { const d = lireRang(); if (!rgPeauOk(p)) return; d.peau = p; ecrireRang(d); appliquePeau(); }
 
+// 22/11 : l'emblème peint du rang (ui/rangs/rang-NN.webp, 30 images Gemini), le numéro écrit par le jeu sur la plaque du centre
+function emblemeRang(r, px = 40, cls = '') { r = Math.max(1, Math.min(RANG_MAX, r | 0)); const k = String(r).padStart(2, '0');
+  return `<span class="embl-rang ${cls}" style="width:${px}px;height:${px}px;font-size:${Math.round(px * .3)}px" title="Rang ${r}"><img src="ui/rangs/rang-${k}.webp?v=2" alt="" draggable="false"><b>${r}</b></span>`; }
 // le petit bandeau du menu : rang, barre, quêtes du jour
 function bandeauRangHTML() {
   const d = lireRang(), i = d.info, Q = lireQuetes(), fj = Q.j.filter(q => q.fait).length, fs = Q.s.filter(q => q.fait).length;
   // 18/11 (l'utilisateur : « le rang est trop caché ») : barre plus grande, un toucher ouvre la route des rangs ; les quêtes ont leur propre bouton
   const ar = aRecuperer().length, qr = [...Q.j, ...Q.s].filter(q => q.fait && q.recup === false).length;
-  return `<a class="bandeau-rang gros" href="route.html"><b>🏆 Rang ${i.rang}</b><span class="barre-rang"><i style="width:${i.besoin ? Math.round(i.dans / i.besoin * 100) : 100}%"></i><span class="txt">${i.besoin ? `${i.dans} / ${i.besoin} XP` : 'rang max'}</span></span>${ar ? `<em class="cadeau" title="Récompense à récupérer">🎁 Récupérer</em>` : '<em>›</em>'}</a>
+  return `<a class="bandeau-rang gros" href="route.html">${emblemeRang(i.rang, 40)}<b>Rang ${i.rang}</b><span class="barre-rang"><i style="width:${i.besoin ? Math.round(i.dans / i.besoin * 100) : 100}%"></i><span class="txt">${i.besoin ? `${i.dans} / ${i.besoin} XP` : 'rang max'}</span></span>${ar ? `<em class="cadeau" title="Récompense à récupérer">🎁 Récupérer</em>` : '<em>›</em>'}</a>
   <a class="bandeau-quetes" href="route.html#quetes">📜 Quêtes du jour <b>${fj}/3</b> · de la semaine <b>${fs}/3</b>${qr ? ` · <b style="color:#ffd27a">🎁 ${qr} à récupérer</b>` : ''} ›</a>`;
 }
 
 if (typeof document !== 'undefined') {
   const st = document.createElement('style'); st.textContent = `
+  .embl-rang { position:relative; display:inline-block; flex:none; vertical-align:middle; line-height:1; } .embl-rang img { width:100%; height:100%; object-fit:contain; display:block; -webkit-user-select:none; user-select:none; } .embl-rang b { position:absolute; left:0; right:0; top:50.5%; transform:translateY(-50%); text-align:center; font-family:Georgia, serif; font-weight:bold; color:#fff; text-shadow:0 1px 2px #000, 0 0 3px #000, 0 0 1px #000; }
   .annonce-rang { position:fixed; left:50%; top:calc(10px + env(safe-area-inset-top)); transform:translate(-50%, -8px); opacity:0; z-index:9999; background:#1d1838f2; color:#f1ecff; border:1px solid #f3c96b88; border-radius:14px; padding:7px 14px; font:14px Georgia, serif; box-shadow:0 6px 22px #0009; animation:annRang .3s forwards; pointer-events:none; max-width:92vw; text-align:center; }
   .annonce-rang.fort { border-color:#f3c96b; color:#f3c96b; font-weight:bold; font-size:15px; box-shadow:0 0 22px #f3c96b66, 0 6px 22px #0009; }
   .annonce-rang.part { transition:.4s; opacity:0; transform:translate(-50%, -14px); }
