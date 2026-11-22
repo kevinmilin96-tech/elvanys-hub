@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261122-174914">
+<head><meta name="guilde-version" content="20261122-175544">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex">
@@ -21,6 +21,8 @@
 </style>
 </head>
 <body>
+<!-- 22/11 (l'utilisateur : « une fois ici, pas d'icône de retour pour sortir ») : un bouton de retour en haut à gauche -->
+<a id="retour-jeu" href="menu.html" onclick="if(document.referrer&&document.referrer.indexOf(location.host)>=0&&history.length>1){history.back();return false}" style="position:fixed;left:10px;top:calc(10px + env(safe-area-inset-top));z-index:50;padding:8px 14px;border-radius:20px;border:1px solid #f3c96b88;background:#15132bcc;color:#f3c96b;font:15px Georgia,serif;text-decoration:none">‹ Retour au jeu</a>
 <main>
   <img class="ico" src="icone-192.png" alt="">
   <h1>La Guilde des Runes</h1>
