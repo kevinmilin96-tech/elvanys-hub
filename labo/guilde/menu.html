@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261122-184925"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
+<head><meta name="guilde-version" content="20261122-185141"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex">
@@ -8,7 +8,7 @@
 <title>La Guilde des Runes</title>
 <script>
 // Même mécanisme que le Duel : une nouvelle version = rechargement tout seul à l'ouverture (publier.sh change VERSION).
-const VERSION = '20261122-184925';
+const VERSION = '20261122-185141';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-menu-' + v)) { sessionStorage.setItem('recharge-menu-' + v, '1'); location.replace('menu.html?v=' + v); }
@@ -215,7 +215,7 @@ fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.te
 <script>window.AMIS_SANS_BOUTON = true; /* 15/11 : un seul bouton en haut à gauche (profil + amis) */</script>
 <script src="amis.js?v=d4158692ce"></script>
 <script src="heros-etoiles.js?v=48da21e34c"></script>
-<script src="donnees.js?v=20261122-184925"></script>
+<script src="donnees.js?v=20261122-185141"></script>
 <script src="menu-envie.js?v=7fc4a5a738"></script>
 <script>
 // ciel étoilé + runes du portail (symboles, pas des lettres), aux couleurs des héros
@@ -574,6 +574,12 @@ function profilMenu() {
     #grand-menu .gm-tete img, #grand-menu .gm-tete .sans { width:64px; height:64px; border-radius:50%; object-fit:cover; box-shadow:0 0 0 3px #f3c96b; flex:none; background:#221d42; display:grid; place-items:center; font-size:30px; }
     #grand-menu .gm-tete .nm { font:bold 1.15em Georgia, serif; } #grand-menu .gm-tete small { color:#c9c1ea; display:block; }
     #grand-menu .gm-tete .barre-rang { display:block; height:10px; margin-top:5px; }
+    #grand-menu .gm-plus { border-style:dashed !important; color:#f3c96b !important; } #grand-menu .gm-plus b { font-size:30px; }
+    #gm-perso { position:fixed; inset:0; z-index:9000; background:#05030ccc; display:flex; align-items:center; justify-content:center; padding:14px; font-family:Georgia, serif; }
+    #gm-perso .b { position:relative; width:100%; max-width:400px; max-height:86vh; overflow:auto; overscroll-behavior:contain; background:#1d1838; border:1px solid #f3c96b; border-radius:16px; padding:14px; color:#f1ecff; }
+    #gm-perso h3 { margin:0 0 4px; color:#f3c96b; } #gm-perso p { margin:0 0 8px; font-size:.9em; opacity:.85; } #gm-perso .x { position:absolute; right:10px; top:8px; width:34px; height:34px; border-radius:50%; border:1px solid #f3c96b88; background:#15132b; color:#f3c96b; }
+    #gm-perso .l { display:grid; grid-template-columns:1fr 1fr; gap:6px; } #gm-perso label { display:flex; gap:6px; align-items:center; padding:7px; border-radius:10px; background:#2a2650; font-size:.92em; }
+    #gm-perso input { width:20px; height:20px; accent-color:#f3c96b; } #gm-perso .bt { display:flex; gap:8px; margin-top:10px; } #gm-perso .bt button { flex:1; padding:10px; border-radius:12px; border:1px solid #4b4580; background:#2a2650; color:#fff; font:15px Georgia, serif; } #gm-perso .bt .ok { background:#f3c96b; color:#2a1a08; border:0; font-weight:bold; }
     #grand-menu .gm-g { display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:8px; max-width:520px; margin:0 auto; }
     #grand-menu .gm-g button { position:relative; aspect-ratio:1; min-width:0; overflow-wrap:anywhere; background:#2a2650; border:1px solid #5a4aa0; border-radius:12px; color:#f1ecff; font:11px/1.15 Georgia, serif; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; padding:4px; cursor:pointer; }
     #grand-menu .gm-g button b { font-size:26px; font-weight:normal; line-height:1; }
@@ -617,13 +623,26 @@ function grandMenu() {
   // 22/11 : les icônes peintes (images Gemini, ui/menu/m-*.webp) ; sans image, l'émoji reste
   const GM_IMG = { 'Portails':'m-portails', 'Quêtes':'m-quetes', 'Route des rangs':'m-route', 'Mes héros':'m-heros', 'Les pouvoirs':'m-pouvoirs', 'Le Forgeron':'m-forge', 'Profil et succès':'m-profil', 'Mon parcours':'m-parcours',
     'Panthéon':'m-pantheon', 'Amis':'m-amis', 'Entre amis':'m-entreamis', 'Boîte':'m-boite', 'Mes parties':'m-parties', 'Tutoriel':'m-tuto', 'Paramètres':'m-param' };
+  window.GM_TOUS = T.map(x => x[1]);
   g = document.createElement('div'); g.id = 'grand-menu';
   g.innerHTML = `<button class="x" onclick="grandMenu()" aria-label="Fermer">✕</button>
   <div class="gm-tete" onclick="${va('profil.html')}">${por ? `<img src="${por}" alt="">` : '<span class="sans">👤</span>'}<div style="flex:1"><div class="nm">${(P.nom || (E && E.moi && E.moi.pseudo) || 'Aventurier').replace(/</g, '&lt;')}</div>
     ${R ? `<small>${typeof emblemeRang === 'function' ? emblemeRang(R.rang, 26) : '🏆'} Rang de la Guilde <b style="color:#f3c96b">${R.rang}</b> · ${R.besoin ? `${R.dans} / ${R.besoin} XP` : 'rang max'}</small><span class="barre-rang"><i style="width:${R.besoin ? Math.round(R.dans / R.besoin * 100) : 100}%"></i></span>` : ''}</div></div>
-  <div class="gm-g">${T.map(([e, n, f, pt]) => `<button onclick="${f}"><b>${GM_IMG[n] ? `<img src="ui/menu/${GM_IMG[n]}.webp?v=1" alt="" draggable="false">` : e}</b>${n}${pt ? `<span class="pt">${pt}</span>` : ''}</button>`).join('')}</div>`;
+  <div class="gm-g">${T.filter(([e, n]) => !gmCaches().includes(n)).map(([e, n, f, pt]) => `<button data-n="${n}" onclick="${f}"><b>${GM_IMG[n] ? `<img src="ui/menu/${GM_IMG[n]}.webp?v=1" alt="" draggable="false">` : e}</b>${n}${pt ? `<span class="pt">${pt}</span>` : ''}</button>`).join('')}<button class="gm-plus" onclick="gmPerso()"><b>＋</b>Personnaliser</button></div>`;
   document.body.appendChild(g); if (typeof GM !== 'undefined') GM.son('clic');
 }
+// 22/11 (l'utilisateur : « un carré + pour laisser les gens décider ce qu'ils veulent ») : on choisit les icônes du grand menu.
+// Par défaut tout est affiché ; « guilde-grandmenu-caches » garde les noms décochés (sur le compte, comme le reste du jeu).
+function gmCaches() { try { return JSON.parse(localStorage.getItem('guilde-grandmenu-caches') || '[]'); } catch (e) { return []; } }
+function gmPerso() {
+  const noms = [...document.querySelectorAll('#grand-menu .gm-g button:not(.gm-plus)')].map(b => b.dataset.n).filter(Boolean), tous = window.GM_TOUS || noms, c = gmCaches();
+  let f = document.getElementById('gm-perso'); if (f) f.remove(); f = document.createElement('div'); f.id = 'gm-perso';
+  f.innerHTML = `<div class="b"><button class="x" onclick="document.getElementById('gm-perso').remove()" aria-label="Fermer">✕</button><h3>＋ Mon grand menu</h3><p>Coche les icônes que tu veux voir.</p>
+    <div class="l">${tous.map(n => `<label><input type="checkbox" ${c.includes(n) ? '' : 'checked'} onchange="gmBascule(this.dataset.n, this.checked)" data-n="${n.replace(/"/g, '&quot;')}"> ${n}</label>`).join('')}</div>
+    <div class="bt"><button onclick="localStorage.removeItem('guilde-grandmenu-caches');document.getElementById('gm-perso').remove();grandMenu();grandMenu()">↺ Tout remettre</button><button class="ok" onclick="document.getElementById('gm-perso').remove();grandMenu();grandMenu()">✓ C'est bon</button></div></div>`;
+  document.body.appendChild(f);
+}
+function gmBascule(n, voir) { const c = gmCaches().filter(x => x !== n); if (!voir) c.push(n); localStorage.setItem('guilde-grandmenu-caches', JSON.stringify(c)); }
 // 17/11 soir (l'utilisateur, « comme Genshin ») : la grille de tous les portails, en vignettes simples
 function grillePortails() {
   let g = document.getElementById('grille-p'); if (g) { g.remove(); return; }

@@ -1,5 +1,9 @@
 [
 {
+"v": "20261122-185141",
+"m": "Grand menu : le carré ＋ Personnaliser pour choisir tes icônes"
+},
+{
 "v": "20261122-184925",
 "m": "Le grand menu retrouve toutes ses icônes"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261122-160938",
 "m": "Le deck devient un vrai jeu de cartes : decks de 20 cartes, cartes légendaires, page « Mes decks », mulligan, paquet et défausse visibles, fatigue."
-},
-{
-"v": "20261122-150925",
-"m": "Emblèmes de rang, sceaux de la semaine, bibliothèque des succès, cœurs entre amis, Gardien de la Crypte en 3 phases."
 }
 ]
