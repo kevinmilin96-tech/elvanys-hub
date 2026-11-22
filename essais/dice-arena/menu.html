@@ -451,6 +451,7 @@ function retourEtage() {
   else location.hash = MENU_ENVIE && ENVIE_PARENT[courant] || ''; // 22/11 : un étage du fond remonte à sa porte
 }
 function montre(id) {
+  if (MENU_ENVIE && ENVIE_REMPLACE[id]) { id = ENVIE_REMPLACE[id]; try { history.replaceState(null, '', '#' + id); } catch (e) {} }
   if (id !== 'odyssee') { odySlot = null; odyMode = null; }
   const E = ETAGES[id] || ETAGES['']; courant = ETAGES[id] ? id : '';
   PORTES = !courant && cat !== 'tout' ? E.portes.filter(p => p.cat === cat) : E.portes; if (courant === 'odyssee') PORTES = odyPortes(E.portes); ongletsCat();
@@ -493,7 +494,7 @@ function touche(i) {
   if (courant === 'odyssee' && p.mode !== undefined) { odyMode = p.mode; odySlot = null; GM.son('choisir'); montre('odyssee'); return; } // 17/11 : le mode → ses emplacements
   if (!GM.son('portail')) souffle(); car.children[i].classList.add('entre'); document.getElementById('flash').classList.add('go');
   setTimeout(() => {
-    if (p.href) { sessionStorage.setItem('guilde-dans-mode', '1'); location.href = courant === 'odyssee' && odySlot && p.href.startsWith('odyssee.html') ? p.href + (p.href.includes('?') ? '&' : '?') + 'nouvelle=' + odySlot + (odyMode === 'jour' ? '&jour=1' : '') : p.href; return; } // l'île choisie, dans l'emplacement choisi
+    if (p.href) { sessionStorage.setItem('guilde-dans-mode', '1'); sessionStorage.setItem('guilde-etage-depart', courant); /* 22/11 (testeurs) : au retour, on revient à cet étage */ location.href = courant === 'odyssee' && odySlot && p.href.startsWith('odyssee.html') ? p.href + (p.href.includes('?') ? '&' : '?') + 'nouvelle=' + odySlot + (odyMode === 'jour' ? '&jour=1' : '') : p.href; return; } // l'île choisie, dans l'emplacement choisi
     document.getElementById('flash').classList.remove('go'); location.hash = p.vers;
   }, 750);
 }
@@ -522,7 +523,8 @@ function entrer() { const t = document.getElementById('titre'); if (t.classList.
 const revientDUnMode = sessionStorage.getItem('guilde-dans-mode'); sessionStorage.removeItem('guilde-dans-mode');
 addEventListener('click', e => { const a = e.target.closest && e.target.closest('#monde a'); if (a && !/^\/$|demo-hub/.test(a.getAttribute('href') || '') && !(a.getAttribute('href') || '').startsWith('#')) sessionStorage.setItem('guilde-dans-mode', '1'); }, true);
 // 22/11 (l'utilisateur : « le bouton Expéditions renvoie au portail principal ») : une adresse menu.html#étage va directement à l'étage, sans l'écran « Toucher pour entrer »
-if (revientDUnMode || location.hash.length > 1) { document.getElementById('titre').remove(); document.getElementById('monde').classList.add('vu'); montre(location.hash.slice(1)); }
+if (revientDUnMode || location.hash.length > 1) { document.getElementById('titre').remove(); document.getElementById('monde').classList.add('vu');
+  const dep = location.hash.length > 1 ? location.hash.slice(1) : (revientDUnMode && MENU_ENVIE && sessionStorage.getItem('guilde-etage-depart')) || ''; if (dep && dep !== location.hash.slice(1)) history.replaceState(null, '', '#' + dep); montre(dep); }
 // 13/11 soir : musique (titre sur l'écran du portail, puis le monde de la Guilde)
 GM.musique(document.getElementById('titre') ? 'titre' : 'menu'); GM.bouton({ haut:true });
 // 14/11 nuit : le Rang de la Guilde et les quêtes, sous le titre
@@ -606,7 +608,10 @@ function grandMenu() {
   const Q = typeof lireQuetes === 'function' ? lireQuetes() : { j:[], s:[] }, qr = Q.j.concat(Q.s).filter(q => q.fait && q.recup === false).length /* 22/11 (l'utilisateur) : la pastille rouge = quelque chose à RÉCUPÉRER, pas une quête à faire */, ar = typeof aRecuperer === 'function' ? aRecuperer().length : 0;
   const E = typeof AMIS !== 'undefined' && AMIS.etat, dem = E ? E.demandes.length : 0;
   const va = h => `try{sessionStorage.setItem('guilde-dans-mode','1')}catch(e){};location.href='${h}'`, ferme = "document.getElementById('grand-menu').remove();";
-  const T = [['🌀', 'Portails', ferme + 'grillePortails()'], ['📜', 'Quêtes', va('route.html#quetes'), qr], ['🎁', 'Route des rangs', va('route.html'), ar], ['🏰', 'Mes héros', va('mes-heros.html')], ['🂠', 'Mes decks', va('mes-decks.html')], // 22/11 : la page des decks (deck-proposition.html)
+  // 22/11 (testeurs + choix de l'utilisateur A1) : le grand menu ne répète plus les 4 portes ni la barre du bas
+  const T = MENU_ENVIE ? [['🌀', 'Portails', ferme + 'grillePortails()'], ['📜', 'Quêtes', va('route.html#quetes'), qr], ['🎁', 'Route des rangs', va('route.html'), ar], ['🏛', 'Ma Guilde', ferme + "location.hash='guilde'"],
+    ['📊', 'Mon parcours', va('profil.html#parcours')], ['📖', 'Mes parties', ferme + 'Carnet.ouvrir()'], ['🎓', 'Tutoriel', va('duel.html?tuto=1')]] :
+    [['🌀', 'Portails', ferme + 'grillePortails()'], ['📜', 'Quêtes', va('route.html#quetes'), qr], ['🎁', 'Route des rangs', va('route.html'), ar], ['🏰', 'Mes héros', va('mes-heros.html')], ['🂠', 'Mes decks', va('mes-decks.html')], // 22/11 : la page des decks (deck-proposition.html)
     ['🃏', 'Pouvoirs des héros', va('pouvoirs.html?retour=menu.html')], ['⚒', 'Le Forgeron', va('forge.html'), typeof groupesFusion === 'function' ? groupesFusion().length : 0], ['🗺', 'Héros d’aventure', va('aventuriers.html')], ['👤', 'Mon profil', va('profil.html'), typeof succesARecuperer === 'function' ? succesARecuperer() : 0], ['📊', 'Mon parcours', va('profil.html#parcours')],
     ['📖', 'Mes parties', ferme + 'Carnet.ouvrir()'], ['🏛', 'Panthéon', va('pantheon.html')], ['👥', 'Amis', ferme + 'amisFenetre()', dem], ['🤝', 'Entre amis', ferme + "location.hash='enligne'"],
     ['📬', 'Boîte', ferme + 'amisBoite()'], ['🎓', 'Tutoriel', va('duel.html?tuto=1')], ['⚙️', 'Paramètres', ferme + 'GM.parametres()', window.GuildeMaj && GuildeMaj.aVoir() ? '!' : 0]];

@@ -15,13 +15,17 @@ const MENU_ENVIE = (() => {
 const ENV_J = (k, d) => { try { return JSON.parse(localStorage.getItem(k) || 'null') ?? d; } catch (e) { return d; } };
 const envJourLocal = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
 const envJourUTC = () => new Date().toISOString().slice(0, 10);
+// 22/11 (testeurs) : les noms des défis du jour de la Défense (même liste et même calcul que defense-moteur.js, DEFIS_D)
+const ENV_DEFIS_D = ['Gagner avec 4 canons au plus', 'Gagner sans jouer une seule carte', 'Poser au moins 6 pièges', 'Aucun dégât pendant la dernière vague', 'Placer au moins 5 coups de héros'];
+const envDefiD = () => { const d = new Date(); return ENV_DEFIS_D[Math.floor(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / 864e5) % ENV_DEFIS_D.length]; };
 const envIleDuJour = () => ['brulees', 'givre', 'abime'][Math.floor(Date.now() / 864e5) % 3];
 
 // chaque rendez-vous : [clé, émoji, nom, détail, fait ?, action]
 function envieRendezVous() {
   const L = [];
   const eni = ENV_J('guilde-enigmes', {})[envJourLocal()] || {};
-  L.push(['enigme', '🧩', 'L’énigme du jour', eni.ok ? 'Résolue' : eni.essais ? `${eni.essais} essai(s), pas encore trouvée` : 'Un coup parfait à trouver', !!eni.ok, "envieVa('duel.html?enigme=1')"]);
+  const eniNiv = (new Date().getDay() + 6) % 7 + 1, eniEt = ` · ${'★'.repeat(eniNiv)}${'☆'.repeat(7 - eniNiv)} ${['', 'très facile', 'facile', 'moyenne', 'moyenne', 'corsée', 'difficile', 'redoutable'][eniNiv]}`; // même règle que enigme.js : lundi 1★ → dimanche 7★
+  L.push(['enigme', '🧩', 'L’énigme du jour', (eni.ok ? 'Résolue' : eni.essais ? `${eni.essais} essai(s)` : 'Un coup parfait à trouver') + eniEt, !!eni.ok, "envieVa('duel.html?enigme=1')"]);
   const cr = (ENV_J('guilde-crypte', {}).jours || {})[envJourLocal()];
   L.push(['crypte', '🪦', 'La crypte du jour', cr ? `Score ${cr.score}` : 'La même crypte pour tout le monde', !!cr, "envieVa('crypte.html')"]);
   const ile = ENV_J('guilde-odyssee-records', []).find(r => r.graine === 'jour-' + envJourUTC());
@@ -31,8 +35,8 @@ function envieRendezVous() {
   const vf = vj && vj.j === envJourUTC() && vj.essais > 0;
   L.push(['voyage', '⛵', 'Le voyage du jour', vf ? `Meilleur score ${vj.best}` : 'Une carte, un boss pour tous', !!vf, "envieVa('expedition-v4.html?jour=1')"]);
   const de = ENV_J('guilde-defense-etoiles', {})[envJourUTC()];
-  const defi = typeof defiDuJourD === 'function' ? defiDuJourD().n : '';
-  L.push(['defense', '🏰', 'Le défi de la Défense', de ? '★'.repeat(de) : (defi || 'Tiens la porte'), !!de, "envieVa('defense.html')"]);
+  const defi = typeof defiDuJourD === 'function' ? defiDuJourD().n : envDefiD();
+  L.push(['defense', '🏰', 'Le défi de la Défense', de ? '★'.repeat(de) + ' · ' + defi : 'Défi : ' + defi, !!de, "envieVa('defense.html')"]);
   const sem = typeof regleDeLaSemaine === 'function' ? regleDeLaSemaine() : null, sc = sem && ENV_J('guilde-sceaux', {})[sem.semaine];
   L.push(['semaine', '🔏', 'Le Duel de la semaine', sc ? 'Sceau gagné cette semaine' : sem ? `« ${sem.n} »` : 'Une règle nouvelle chaque semaine', !!sc, "envieVa('duel.html?semaine=1')"]);
   if (typeof lireQuetes === 'function') {
@@ -41,13 +45,13 @@ function envieRendezVous() {
   }
   if (typeof butinCalcule === 'function') {
     const g = butinCalcule(), plein = g.h >= 12;
-    L.push(['butin', '🎁', 'Le butin de la Guilde', plein ? 'Plein : à ramasser !' : g.h >= 1 ? `${Math.floor(g.h)} h sur 12 : tu peux ramasser` : 'Ramassé, il se remplit', g.h < 1, 'envieButin()']);
+    L.push(['butin', '🎁', 'Le butin de la Guilde', plein ? 'Plein : à ramasser !' : g.h >= 1 ? `${Math.floor(g.h)} h sur 12 : tu peux ramasser` : (localStorage.getItem('guilde-butin-jour') === envJourLocal() ? 'Ramassé aujourd’hui, il se remplit' : 'Il se remplit : reviens dans 1 h'), localStorage.getItem('guilde-butin-jour') === envJourLocal() && g.h < 1, 'envieButin()']);
   }
   return L;
 }
 function envieVa(h) { try { sessionStorage.setItem('guilde-dans-mode', '1'); } catch (e) {} location.href = h; }
 function envieIleDuJour() { const p = document.getElementById('env-auj'); if (p) p.remove(); odyMode = 'jour'; odySlot = null; if (location.hash === '#odyssee') montre('odyssee'); else location.hash = 'odyssee'; }
-function envieButin() { if (typeof butinRamasse === 'function') butinRamasse(); if (typeof GM !== 'undefined') GM.son('choisir'); const rm = document.getElementById('rangmenu'); if (rm && typeof bandeauRangHTML === 'function') rm.innerHTML = bandeauRangHTML(); envieAujourdhui(true); envieBandeau(); }
+function envieButin() { if (typeof butinRamasse === 'function') butinRamasse(); try { localStorage.setItem('guilde-butin-jour', envJourLocal()); } catch (e) {} if (typeof GM !== 'undefined') GM.son('choisir'); const rm = document.getElementById('rangmenu'); if (rm && typeof bandeauRangHTML === 'function') rm.innerHTML = bandeauRangHTML(); envieAujourdhui(true); envieBandeau(); }
 
 // le bouton « ☀ Aujourd'hui » au-dessus des portes (seulement au 1er étage)
 function envieBandeau() {
@@ -64,7 +68,9 @@ function envieAujourdhui(rouvre) {
   p = document.createElement('div'); p.id = 'env-auj';
   p.innerHTML = `<div class="boite"><button class="x" onclick="envieAujourdhui()" aria-label="Fermer">✕</button>
     <h2><img src="ui/aujourdhui.webp?v=1" alt="" style="width:38px;height:38px;vertical-align:middle;margin-right:6px">Aujourd’hui</h2><p class="sous">Les rendez-vous du jour : la même chose pour tous, une nouvelle chaque jour. <b>${f}/${L.length}</b></p>
-    <div class="liste">${L.map(([k, e, n, d, fait, a]) => `<button class="${fait ? 'fait' : ''}" onclick="${a}"><span class="e">${e}</span><span class="t"><b>${n}</b><small>${d}</small></span><span class="c">${fait ? '✓' : '›'}</span></button>`).join('')}</div></div>`;
+    ${(() => { const RAP = ['enigme', 'semaine', 'quetes', 'butin'], ligne = ([k, e, n, d, fait, a]) => `<button class="${fait ? 'fait' : ''}" onclick="${a}"><span class="e">${e}</span><span class="t"><b>${n}</b><small>${d}</small></span><span class="c">${fait ? '✓' : '›'}</span></button>`;
+      return `<h3 class="grp">⚡ Rapide <small>quelques minutes</small></h3><div class="liste">${L.filter(x => RAP.includes(x[0])).map(ligne).join('')}</div><h3 class="grp">🗺 Si tu as le temps <small>une vraie partie</small></h3><div class="liste">${L.filter(x => !RAP.includes(x[0])).map(ligne).join('')}</div>`; })()}
+    <div class="liste" style="display:none">${L.map(([k, e, n, d, fait, a]) => `<button class="${fait ? 'fait' : ''}" onclick="${a}"><span class="e">${e}</span><span class="t"><b>${n}</b><small>${d}</small></span><span class="c">${fait ? '✓' : '›'}</span></button>`).join('')}</div></div>`;
   p.onclick = ev => { if (ev.target === p) envieAujourdhui(); };
   document.body.appendChild(p); if (typeof GM !== 'undefined') GM.son('clic');
 }
@@ -135,6 +141,7 @@ function envieInstalle(E, PRO) {
   // les étages « Entre amis » et « Arène » d'avant restent joignables par leur adresse, mais ne sont plus au menu
 }
 // « Retour » d'un étage du fond remonte à sa porte
+const ENVIE_REMPLACE = { arene:'vite', enligne:'amis' }; // 22/11 (testeurs) : une adresse menu.html#arene ou #enligne d'une page mène à la nouvelle porte
 const ENVIE_PARENT = { odyssee:'aventure', expeditions:'aventure', invasion:'amis', enligne:'amis', arene:'vite' };
 // la grille 🌀 « Tous les portails » : tous les portails des 4 portes, sans doublon
 function envieGrille(E) {
@@ -159,6 +166,7 @@ if (typeof document !== 'undefined' && MENU_ENVIE) {
   @keyframes envMonte { from { transform:translateY(40%); opacity:0; } }
   #env-auj h2 { margin:0 0 4px; color:#ffd27a; text-align:center; } #env-auj .sous { margin:0 0 12px; text-align:center; font-size:13px; opacity:.85; } #env-auj .sous b { color:#ffd27a; }
   #env-auj .x { position:absolute; right:12px; top:10px; width:34px; height:34px; border-radius:50%; border:1px solid #f3c96b88; background:#15132b; color:#f3c96b; font-size:16px; }
+  #env-auj h3.grp { margin:12px 2px 6px; color:#ffd27a; font-size:15px; } #env-auj h3.grp small { color:#b9b1e0; font-weight:normal; font-size:12px; margin-left:6px; }
   #env-auj .liste { display:flex; flex-direction:column; gap:8px; }
   #env-auj .liste button { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:12px; border:1px solid #4b4580; background:#1d1838; color:#f1ecff; text-align:left; font:14px Georgia, serif; }
   #env-auj .liste .e { font-size:24px; width:32px; text-align:center; } #env-auj .liste .t { flex:1; display:flex; flex-direction:column; } #env-auj .liste small { opacity:.75; font-size:12px; }

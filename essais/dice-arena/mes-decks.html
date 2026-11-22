@@ -106,7 +106,7 @@ function liste() {
     ${ligneDeck(-1, 'Le deck de base', '📜', deckBase(id), true)}
     <div class="boutons">${D.decks.length < DECKS_MAX ? `<button class="bt" onclick="nouveau()">＋ Nouveau deck</button>` : `<span class="aide">${DECKS_MAX} decks au plus par héros : supprime-en un pour en faire un autre.</span>`}</div>
     <p class="aide">⭐ = le deck qui part au combat (Duel, Odyssée, épreuves). On le choisit aussi juste avant un Duel.<br>${DECK_TAILLE} cartes par deck · 2 exemplaires au plus · <span style="color:#ffb347">1 seul pour une légendaire ★</span></p>
-    <div class="boutons"><button class="bt sombre" onclick="location.href='duel.html?h=${id}'">⚔ Jouer avec ${HEROS[id].nom}</button><button class="bt sombre" onclick="location.href='heros.html?h=${id}'">📖 La Tour des héros</button></div>`;
+    <div class="boutons"><button class="bt sombre" onclick="location.href='duel.html?h=${id}'">⚔ Jouer avec ${HEROS[id].nom}</button><button class="bt sombre" onclick="location.href='heros.html?h=${id}'">📖 Mes héros</button></div>`;
 }
 function etoile(i) { const D = lireDecks(actuel); D.actif = i; ecrisDecks(actuel, D); if (typeof son === 'function') son('ok'); liste(); }
 function pasPret() { fen(`<h3>Ce deck n’est pas prêt</h3><p>Il doit avoir exactement ${DECK_TAILLE} cartes pour partir au combat. Ouvre-le pour le finir.</p><div class="boutons"><button class="bt" onclick="fen('')">Compris</button></div>`); }
