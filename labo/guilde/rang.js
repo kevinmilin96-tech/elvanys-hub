@@ -82,20 +82,24 @@ function bonusDepart() { const g = recompensesGagnees().filter(x => x.genre === 
 
 // ----------------------------------------------------------------------------------------------- les quêtes
 // [clé, texte, événement compté, nombre, filtre éventuel]
+// 22/11 (l'utilisateur : « en quêtes du jour, dans beaucoup de jeux c'est connexion journalière, envoie 3 cœurs, des gestes simples ;
+// quand on touche la quête, on est envoyé dans la bonne rubrique ») : toujours « Passe à la Guilde » + 2 gestes courts tirés au hasard ;
+// QUETE_VA dit où mène chaque quête (route.html). Les anciennes quêtes longues restent dans celles de la SEMAINE.
 const QUETES_JOUR = [
-  ['dg', 'Gagne un Duel dans l’Arène', 'duel_gagne', 1],
-  ['dg2', 'Gagne 2 Duels dans l’Arène', 'duel_gagne', 2],
-  ['dh', 'Gagne un Duel avec %H', 'duel_gagne', 1, 'heros'],
-  ['sa', 'Vide 8 salles dans l’Odyssée', 'salle', 8],
-  ['el', 'Bats une élite dans l’Odyssée', 'elite', 1],
-  ['es', 'Gagne 2 escales d’Expédition', 'escale', 2],
+  ['cx', 'Passe à la Guilde aujourd’hui', 'connexion', 1],
+  ['bu', 'Ramasse le butin de la Guilde', 'butin', 1],
+  ['co', 'Envoie un cœur à un ami', 'coeur', 1],
   ['en', 'Résous l’énigme du jour', 'enigme', 1],
-  ['tu', 'Pose 12 tuiles dans l’Odyssée sans fin', 'tuile', 12],
-  ['dv', 'Tiens 4 vagues dans la Défense de la porte', 'defense_vague', 4],
-  ['or', 'Gagne 200 or dans l’Odyssée', 'or', 200],
-  ['ca', 'Joue 15 cartes, tous modes confondus', 'carte', 15],
-  ['to2', 'Passe 2 étages de la Tour des épreuves', 'tour_etage', 2],
+  ['dg', 'Gagne un Duel dans l’Arène', 'duel_gagne', 1],
+  ['ca5', 'Joue 5 cartes, tous modes confondus', 'carte', 5],
+  ['es1', 'Gagne 1 escale d’Expédition', 'escale', 1],
+  ['sa3', 'Vide 3 salles dans l’Odyssée', 'salle', 3],
+  ['dv2', 'Tiens 2 vagues dans la Défense de la porte', 'defense_vague', 2],
+  ['to1', 'Passe 1 étage de la Tour des épreuves', 'tour_etage', 1],
 ];
+const QUETE_VA = { butin:'menu.html', coeur:'menu.html?amis=1', enigme:'duel.html?enigme=1', duel_gagne:'duel.html', carte:'duel.html', escale:'expedition-v4.html',
+  salle:'menu.html#odyssee', elite:'menu.html#odyssee', boss:'menu.html#odyssee', defense_vague:'defense.html', tour_etage:'epreuves.html', titan:'expedition-v4.html',
+  invasion_acte:'menu.html#invasion', etage_atteint:'menu.html#odyssee', chasse:'epreuves.html#chasse', tuile:'menu.html#odyssee', or:'menu.html#odyssee' };
 const QUETES_SEMAINE = [
   ['el3', 'Bats 3 élites', 'elite', 3],
   ['bo2', 'Bats 2 boss de l’Odyssée', 'boss', 2],
@@ -128,7 +132,9 @@ function lireQuetes() {
   // une quête finie pas récupérée avant le changement de jour / de semaine est récupérée toute seule (rien n'est perdu)
   if (Q.jour !== j && Q.j) Q.j.forEach(q => { if (q.fait && q.recup === false) { q.recup = true; donneQuete(true); } });
   if (Q.semaine !== s && Q.s) Q.s.forEach(q => { if (q.fait && q.recup === false) { q.recup = true; donneQuete(false); } });
-  if (Q.jour !== j) { Q.jour = j; Q.j = tireQuetes(QUETES_JOUR, 3, 'j' + j); Q.change = false; change = true; }
+  // 22/11 : nouvelle liste du jour (v:2) : « Passe à la Guilde » toujours, puis 2 gestes courts ; la liste d'aujourd'hui est refaite une fois
+  if (Q.jour !== j || Q.vj !== 2) { const garde = Q.jour === j ? (Q.j || []).filter(q => q.fait && QUETES_JOUR.some(x => x[0] === q.id)) : [];
+    Q.jour = j; Q.vj = 2; Q.j = garde.concat(tireQuetes(QUETES_JOUR.filter(q => q[0] === 'cx'), 1, 'j' + j, garde.map(q => q.id)), tireQuetes(QUETES_JOUR.filter(q => q[0] !== 'cx'), 3, 'j' + j, garde.map(q => q.id))).slice(0, 3); Q.change = false; change = true; }
   if (Q.semaine !== s) { Q.semaine = s; Q.s = tireQuetes(QUETES_SEMAINE, 3, 's' + s); change = true; }
   if (change) localStorage.setItem(QUETES_CLE, JSON.stringify(Q));
   return Q;
@@ -137,8 +143,8 @@ const defQuete = (q, jour) => (jour ? QUETES_JOUR : QUETES_SEMAINE).find(x => x[
 function texteQuete(q, jour) { const d = defQuete(q, jour); return d ? d[1].replace('%H', q.heros && typeof HEROS !== 'undefined' ? HEROS[q.heros].nom : 'ton héros') : '?'; }
 // changer UNE quête du jour par jour
 function changeQuete(i) {
-  const Q = lireQuetes(); if (Q.change || !Q.j[i] || Q.j[i].fait) return false;
-  const n = tireQuetes(QUETES_JOUR, 1, 'c' + Q.jour + Date.now(), Q.j.map(q => q.id))[0]; if (!n) return false;
+  const Q = lireQuetes(); if (Q.change || !Q.j[i] || Q.j[i].fait || Q.j[i].id === 'cx') return false;
+  const n = tireQuetes(QUETES_JOUR.filter(q => q[0] !== 'cx'), 1, 'c' + Q.jour + Date.now(), Q.j.map(q => q.id))[0]; if (!n) return false;
   Q.j[i] = n; Q.change = true; localStorage.setItem(QUETES_CLE, JSON.stringify(Q)); return true;
 }
 
@@ -248,6 +254,7 @@ function butinCalcule() {
   return { h, xp:f('xp'), eclats:f('eclats'), or:f('or') + or0, pou:f('pou') + pou0, vit };
 }
 function butinRamasse() {
+  try { if (typeof guildeEvt === 'function') setTimeout(() => guildeEvt('butin', 1), 0); } catch (e) {} // 22/11 : quête du jour « Ramasse le butin »
   const g = butinCalcule(); if (g.xp < 1 && g.eclats < 1 && g.or < 1) return g;
   localStorage.setItem(BUTIN_CLE, JSON.stringify({ depuis:Date.now() })); try { localStorage.removeItem('guilde-recolte'); } catch (e) {}
   if (g.xp) gagneXP(g.xp, 'Butin de la Guilde'); if (g.eclats && typeof donneLibres === 'function') donneLibres(g.eclats);
