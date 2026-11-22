@@ -228,7 +228,9 @@ function puissanceHeros(id, pvBase) {
 // ACTIF dans la Crypte et la Descente (force + sceaux des monstres, réglé au simulateur : héros montés 87-89 %, débutant 82 %).
 // PAS dans la Défense (mesuré : la force vient des tours ; monstres ×2 = 0 %). Odyssée et Fosse : prêts (run.fs, J.fs) mais coupés, à mesurer. Jamais en Duel.
 const SUIVI = 0.7;
-function gainHeros(id) { const S = statsHeros(id), base = PV_BASE[id] || 44; return Math.max(0, (S.pv + 1.5 * S.bouclier + 3 * S.def + 4 * S.att + 2 * S.agi + 8 * (S.des + S.main) + 5 * S.relance + 5 * S.pc) / base); }
+// 22/11 (l'utilisateur : « le mode se met au niveau de l'aventurier choisi ») : les faces FORGÉES du dé (héros d'aventure) comptent aussi, 1,5 par point
+const forgeHeros = id => { try { const a = typeof avTrouve === 'function' ? avTrouve(id) : null; return a && a.bonus ? a.bonus.reduce((t, v) => t + (v | 0), 0) : 0; } catch (e) { return 0; } };
+function gainHeros(id) { const S = statsHeros(id), base = PV_BASE[id] || 44; return Math.max(0, (S.pv + 1.5 * S.bouclier + 3 * S.def + 4 * S.att + 2 * S.agi + 8 * (S.des + S.main) + 5 * S.relance + 5 * S.pc + 1.5 * forgeHeros(id)) / base); }
 function forceSuiveuse(id) { if (typeof localStorage === 'undefined') return 1; try { return Math.round((1 + SUIVI * gainHeros(id)) * 100) / 100; } catch (e) { return 1; } }
 // (ancien nom) les bonus contre les monstres, utilisés par l'Odyssée, la Grande aventure, les épreuves…
 function bonusHerosPvE(id) { const S = statsHeros(id); return { pv:S.pv, bouclier:S.bouclier + S.def, pc:S.pc, relance:S.relance, main:S.main + S.des, att:S.att, agi:S.agi }; }
