@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261122-151423">
+<head><meta name="guilde-version" content="20261122-151747">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex">
@@ -44,6 +44,8 @@
   .carte .dev { color:#e8e2ff; font-style:italic; font-size:.9em; min-height:1em; text-align:center; text-shadow:0 1px 3px #000; }
   .carte .vit { display:flex; flex-wrap:wrap; gap:6px; justify-content:center; } .carte .vit span { border:1.5px solid; border-radius:14px; padding:2px 8px; font-size:.75em; background:#0008; }
   .carte .nom, .carte .tit { text-shadow:0 1px 3px #000; }
+  /* 22/11 (l'utilisateur : « quand on défile, la carte doit rester en haut pour voir le changement en direct ») : dans l'atelier, la carte reste collée en haut, en plus petit */
+  .colle { position:sticky; top:0; z-index:6; padding:6px 0; background:linear-gradient(#120f24 85%, #120f2400); } .colle .carte { zoom:.62; margin:0; }
   .haut2 { display:flex; align-items:center; gap:10px; margin:10px 0 0; } .haut2 button { color:var(--doux); background:#221d42; border:1px solid #4b4580; border-radius:20px; padding:5px 12px; font:inherit; font-size:.9em; } .haut2 b { color:var(--or); }
   .onglets { display:grid; grid-template-columns:repeat(5, 1fr); gap:6px; margin:12px 0 8px; }
   .onglets button { background:#1d1b3aee; border:2px solid #4b4580; border-radius:12px; padding:6px 2px; color:var(--texte); font:inherit; font-size:1.2em; cursor:pointer; } .onglets button small { display:block; font-size:.55em; color:var(--doux); }
@@ -83,7 +85,7 @@ const dernier = (parties.length && parties[parties.length - 1].moi) || 'gorm';
 let onglet = null; // null = la page ; sinon l'onglet de l'atelier
 const ONGLETS = [['portrait', '🖼', 'Portrait'], ['cadre', '🔲', 'Cadre'], ['titre', '🎖', 'Titre'], ['embleme', '🦁', 'Emblème'], ['couleur', '🎨', 'Nom'],
   ['fond', '🌌', 'Fond'], ['devise', '💬', 'Devise'], ['vitrine', '🏅', 'Vitrine'], ['des', '🎲', 'Dés']];
-function choisir(quoi, k) { const p = lireProfil(); p[quoi] = k; ecrireProfil(p); if (typeof GM !== 'undefined') GM.son('clic'); dessine(); }
+function choisir(quoi, k) { const p = lireProfil(); p[quoi] = k; ecrireProfil(p); if (typeof GM !== 'undefined') GM.son('clic'); const y = scrollY; dessine(); scrollTo(0, y); }
 // 17/11 (l'utilisateur : « mes parties, mets-les dans le profil, un endroit où on retrouve l'historique de chaque mode, un récap global comme
 // dans beaucoup de jeux ») : MON PARCOURS = le récap des parties du carnet (les 60 dernières), mode par mode, et le journal de chacune
 function parcoursHTML() {
@@ -112,7 +114,7 @@ function pseudoEnLigne(v) { clearTimeout(pseudoMinuteur); const net = String(v |
     try { const r = await fetch('/api/hub/guilde/joueur/moi', { method:'POST', headers:{ 'Content-Type':'application/json' }, body:JSON.stringify({ cle:c.cle, action:'pseudo', pseudo:net }) }); const d = await r.json();
       if (r.ok && d.pseudo) { c.pseudo = d.pseudo; localStorage.setItem('guilde-carte', JSON.stringify(c)); localStorage.setItem('guilde-pseudo', d.pseudo); } } catch (e) {} }, 1200); }
 function devise(v) { const p = lireProfil(); p.devise = v; ecrireProfil(p); const e = document.getElementById('devv'); if (e) e.textContent = v ? `« ${v} »` : ''; }
-function vitrine(k) { const p = lireProfil(); const v = p.vitrine || []; p.vitrine = v.includes(k) ? v.filter(x => x !== k) : v.length >= 3 ? v : v.concat(k); if (!v.includes(k) && v.length >= 3) { alert('3 titres au plus dans la vitrine : retire-en un d’abord.'); return; } ecrireProfil(p); if (typeof GM !== 'undefined') GM.son('clic'); dessine(); }
+function vitrine(k) { const p = lireProfil(); const v = p.vitrine || []; p.vitrine = v.includes(k) ? v.filter(x => x !== k) : v.length >= 3 ? v : v.concat(k); if (!v.includes(k) && v.length >= 3) { alert('3 titres au plus dans la vitrine : retire-en un d’abord.'); return; } ecrireProfil(p); if (typeof GM !== 'undefined') GM.son('clic'); const y = scrollY; dessine(); scrollTo(0, y); }
 function carteProfil(p, edit) {
   const c = p.cadre !== 'aucun' && titreDe(p.cadre), t = p.titre && titreDe(p.titre), [src, sec] = portraitProfil(p), img = src || IMG(dernier), sc = sec || IMG(dernier);
   const em = (EMBLEMES.find(x => x[0] === p.embleme) || [])[1], f = (FONDS[p.fond] || FONDS.nuit)[1], r = rangGuilde();
@@ -181,7 +183,7 @@ function atelier(p, T) {
       ${Object.entries(PEAUX_DES).map(([k, x]) => { const ok = rgPeauOk(k); return `<button class="cad ${d.peau === k ? 'choisi' : ''}" ${ok ? '' : 'disabled'} onclick="choisirPeau('${k}');dessine()"><span class="rond" style="background:none"><img src="faces-${dernier}/face-6.webp" alt="" style="width:40px;height:40px;border-radius:8px;filter:${x[1] || 'none'}"></span>${x[0]}${ok ? '' : '<small>🔒 route des rangs</small>'}</button>`; }).join('')}</div>`;
   }
   return `<div class="haut2"><button onclick="onglet=null;dessine()">‹ Ma carte</button><b>✏️ L’atelier du profil</b></div>
-    ${carteProfil(p, true)}${tabs}<div class="corps">${corps}</div>
+    <div class="colle">${carteProfil(p, true)}</div>${tabs}<div class="corps">${corps}</div>
     <button class="fini" onclick="onglet=null;dessine()">✅ C’est bon</button>`;
 }
 // 14/11 nuit : le Rang de la Guilde, les quêtes, la route des récompenses, l'apparence des dés
