@@ -1,5 +1,9 @@
 [
 {
+"v": "20261122-190616",
+"m": "Chroniques en ligne : si le téléphone se met en veille et recharge le jeu, tu reviens tout seul dans ta salle"
+},
+{
 "v": "20261122-190202",
 "m": "Chroniques sur la télé : l’adresse courte perso.elvanys.fr/tv, et plus de guide de Moustache sur la télé"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261122-165959",
 "m": "L’appli Android « La Guilde » est arrivée : plein écran, et le bouton retour du téléphone marche dans le jeu. Pour l’installer : ⚙️ Paramètres → Installer le jeu."
-},
-{
-"v": "20261122-165645",
-"m": "Le jeu s’installe sur ton téléphone (plein écran, sans les barres du navigateur) ; dans ⚙️ Paramètres : la version du jeu, « Mettre à jour » et « Quoi de neuf », avec un point rouge quand il y a du nouveau."
 }
 ]

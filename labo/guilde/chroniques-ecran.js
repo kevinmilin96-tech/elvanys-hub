@@ -194,3 +194,16 @@ function teleco(on) { TELECO = on; try { localStorage.setItem('guilde-chron-tele
       s.insertAdjacentHTML('afterend', `<button id="acc-ecran" class="gros" style="background:#14223a;border-color:#7cd4ff;color:#7cd4ff;margin:2cqw 0" onclick="ecranForm()">📺 Montrer la partie sur une télé<small>Cet écran (télé, ordinateur) affiche la partie d’une salle en grand ; chacun joue sur son téléphone.</small></button>`); }
     return r; }; }
 if (!S && !ECRAN && document.querySelector('#app .acc')) accueil();
+// 22/11 (l'utilisateur : « je ne me rappelle pas être sorti de la salle ») : quand le téléphone se met en veille (on prend la télécommande),
+// Android peut recharger l'appli au réveil, et la page repartait de l'accueil, hors de la salle. La salle est gardée sur le téléphone (12 h) :
+// si on ne l'a pas quittée exprès (« Quitter » l'efface), on y revient tout seul.
+setTimeout(() => {
+  try {
+    if (ECRAN || L || S || LOB || location.search) return;
+    const s = typeof salleGardee === 'function' ? salleGardee() : null; if (!s || !s.code || !s.moi || s.quitte) return;
+    if (typeof bulle === 'function') bulle(`🌐 Retour dans ta salle ${s.code}…`);
+    rejoindre(s.code, s.moi);
+  } catch (e) { console.warn('[chroniques] retour dans la salle', e); }
+}, 400);
+// « ‹ Quitter » pendant une partie en ligne : la salle reste proposée (bouton « Revenir dans la salle »), mais on n'y retourne plus tout seul
+{ const _q = quitter; quitter = function () { try { if (L && !ECRAN) { const s = JSON.parse(localStorage.getItem(SALLE) || 'null'); if (s) { s.quitte = true; localStorage.setItem(SALLE, JSON.stringify(s)); } } } catch (e) {} return _q.apply(this, arguments); }; }
