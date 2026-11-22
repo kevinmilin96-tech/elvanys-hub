@@ -87,6 +87,8 @@ function ecranZoom() {
     if (!ECRAN && L && LOB) { const s = document.querySelector('.acc .sous'); if (s && !document.getElementById('astuce-ecran')) s.insertAdjacentHTML('afterend', `<p id="astuce-ecran" style="text-align:center;color:var(--doux);font-size:.88em;margin:.3em 0 0">📺 Une télé ou un ordinateur ? Ouvre <b>perso.elvanys.fr/guilde/chroniques.html?ecran=1</b> et tape ce code : la partie s’y voit en grand.</p>`); }
     return r; };
 }
+// la fenêtre « Rejoindre » ouverte au démarrage (portail « Rejoindre avec un code ») est arrivée avant ce fichier : on lui ajoute le bouton de l'écran
+if (document.getElementById('fCode') && !document.getElementById('vers-ecran')) { const b = document.querySelector('#fen .go'); if (b) b.insertAdjacentHTML('afterend', `<button class="sec" id="vers-ecran" onclick="const c=($('fCode').value||'').toUpperCase();c.length>=4?ecranDemarre(c):ecranForm()">📺 Cet écran est l’écran de la table<small style="display:block;font-size:.8em;opacity:.8">Il montre la partie en grand, chacun joue sur son téléphone</small></button>`); }
 { const q = new URLSearchParams(location.search).get('ecran'); if (q) { if (/^[A-Za-z]{4}$/.test(q)) ecranDemarre(q); else ecranForm(); } }
 
 if (typeof document !== 'undefined') {

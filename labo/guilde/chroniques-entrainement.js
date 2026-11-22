@@ -92,7 +92,10 @@ const _guideModeEntr = guideMode;
 guideMode = function () { if (ENTR_C || (S && S.scen === 'entrainement')) return false; return _guideModeEntr.apply(this, arguments); };
 // au premier passage dans le mode : Moustache propose l'entraînement (avec « Passer »)
 function proposeEntrC() {
+  // 22/11 (l'utilisateur : « Rejoindre avec un code m'amène sur la proposition d'entraînement ») : l'adresse ?code= est effacée
+  // avant ce moment ; on ne propose donc rien si une fenêtre est déjà ouverte (le code, une salle…) ou si on est dans une salle
   if (S || Entrainement.fait()[ENTR_CLE_C] || localStorage.getItem('guilde-chron-entr-propose') || location.search) return;
+  if ((typeof L !== 'undefined' && L) || (typeof LOB !== 'undefined' && LOB) || (document.getElementById('fen') && document.getElementById('fen').innerHTML.trim())) return;
   localStorage.setItem('guilde-chron-entr-propose', '1');
   fenetre(`<div style="text-align:center"><img src="ui/moustache.webp?v=1" alt="" style="width:84px;height:84px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 3px #f3c96b"></div><h2>Premières Chroniques ?</h2>
     <p><b>Moustache :</b> « On visite un petit donjon d’entraînement ensemble ? Trois minutes, et tu sais tout : marcher, les pièges, fouiller, les portes, les leviers, battre un monstre. »</p>
