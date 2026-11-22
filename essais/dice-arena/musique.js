@@ -400,3 +400,16 @@ const ENTRAINEMENTS = [['duel', 'Le Duel (le tutoriel)', 'duel.html?tuto=1'], ['
   const go = () => { traite(); new MutationObserver(traite).observe(document.body, { childList:true, subtree:true }); };
   if (document.body) go(); else addEventListener('DOMContentLoaded', go);
 })();
+
+// 22/11 (l'utilisateur voyait encore d'anciennes pages après les mises en ligne) : à l'ouverture d'une page, si une version plus récente existe
+// (version.txt, jamais gardée en mémoire), la page se recharge UNE fois toute seule. Seulement au chargement : jamais en pleine partie.
+(function () {
+  try {
+    const m = document.querySelector('meta[name="guilde-version"]'); if (!m || typeof fetch === 'undefined') return;
+    const ici = m.getAttribute('content');
+    fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(t => {
+      const v = String(t || '').trim(); if (!v || v === ici || sessionStorage.getItem('guilde-recharge-' + v)) return;
+      sessionStorage.setItem('guilde-recharge-' + v, '1'); location.reload();
+    }).catch(() => {});
+  } catch (e) {}
+})();
