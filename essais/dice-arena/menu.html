@@ -316,13 +316,27 @@ function slotsOdy() {
     [['brulees', GIVRE_OK, true], ['givre', ABIME_OK, GIVRE_OK], ['abime', fini, ABIME_OK]].map(([k, gagnee, ouverte], i) =>
       `<span class="${gagnee ? 'ok' : ouverte ? 'ouv' : 'ferm'}">${ILE_EMO[k]} ${i + 1}. ${ILE_NOM[k]}<small>${gagnee ? '✅ gagnée' : ouverte ? 'ouverte' : '🔒 fermée'}</small></span>`).join('<i>›</i>')}</div></div>`;
   b.innerHTML = `<div class="st">💾 ${ODY_MODES[odyMode][0]} · choisis un emplacement</div>` + iles3 + [1, 2, 3].map(n => { const P = MES_ODY.map((o, i) => [o, i]).filter(([o]) => o.suf === sufOdy() && o.n === n);
-    return `<div class="slotm"><div class="sn">Emplacement ${n}</div>${P.length ? P.map(([o, i]) => `<button onclick="reprendreOdy(${i})"><b>${nomH(o.r)}</b> · ${o.r.route ? 'Route du Titan' : ileLigne(o.r)}<small>❤ ${o.r.pv}/${o.r.pvMax}${o.r.aventure ? ' · 🗺 Grande aventure' : ''}</small><i>▶ Charger</i></button>`).join('') : '<p class="vide">Vide</p>'}
-      <button class="neuf" onclick="nouvelleOdy(${n})">✨ Nouvelle partie${P.length ? ' (remplace celle-ci)' : ''}</button></div>`; }).join('');
+    return `<div class="slotm"><div class="sn">Emplacement ${n}</div>${P.length ? P.map(([o, i]) => `<button data-sel="c${i}" onclick="slotChoix(this, 'c', ${i}, ${n})"><b>${nomH(o.r)}</b> · ${o.r.route ? 'Route du Titan' : ileLigne(o.r)}<small>${modeSave(o.r)} · ❤ ${o.r.pv}/${o.r.pvMax}${o.r.aventure ? ' · 🗺 Grande aventure' : ''}</small><i>▶ Charger</i></button>`).join('') : '<p class="vide">Vide</p>'}
+      <button class="neuf" data-sel="n${n}" onclick="slotChoix(this, 'n', ${P.length ? P[0][1] : -1}, ${n})">✨ Nouvelle partie${P.length ? ' (remplace celle-ci)' : ''}</button></div>`; }).join('') + '<div id="slotOk" style="display:none"></div>';
   b.style.display = '';
   // 20/11 (l'utilisateur : « je ne peux pas descendre », le 3e emplacement coupé par la barre du bas) : la liste défile dans la place qui reste
   // (20/11, 2e essai) les bandeaux du rang et des quêtes arrivent APRÈS : on recalcule la place plusieurs fois, et à chaque changement de taille
   ajusteSauves(); [60, 300, 900, 2000].forEach(t => setTimeout(ajusteSauves, t));
 }
+// 22/11 (l'utilisateur : « j'ai touché l'île du jour, ça m'a envoyé directement dans le jeu avec un héros que je ne voulais pas ») :
+// un toucher sur une partie ou sur « Nouvelle partie » la met seulement en surbrillance, avec ce qui va se passer ; un bouton confirme
+const modeSave = r => r.route ? '🛤 Route du Titan' : r.sansfin ? '🧩 Sans fin' : String(r.graine || '').startsWith('jour-') ? '🗓 Île du jour' : '📖 Saison 1';
+function slotChoix(el, t, i, n) {
+  document.querySelectorAll('#sauves [data-sel]').forEach(b => b.classList.toggle('sel', b === el));
+  const ok = document.getElementById('slotOk'); if (!ok) return; GM.son && GM.son('choisir');
+  const o = i >= 0 ? MES_ODY[i] : null, nomH = r => { const h = typeof HEROS !== 'undefined' && HEROS[r.heros]; return h ? h.nom : 'ton héros d’aventure'; };
+  const ileJ = ({ brulees:'🔥 les Terres brûlées', givre:'❄️ l’île du Givre', abime:'🌌 l’Abîme du Vide' })[ileDuJour()];
+  ok.innerHTML = t === 'c'
+    ? `<p>▶ <b>Reprendre</b> cette partie : ${modeSave(o.r)}, avec <b>${nomH(o.r)}</b> (❤ ${o.r.pv}/${o.r.pvMax}). Tu repars avec ce héros, là où tu t’étais arrêté.</p><div class="choixh"><button onclick="reprendreOdy(${i})">▶ Reprendre</button><button class="non" onclick="slotAnnule()">Annuler</button></div>`
+    : `<p>✨ <b>Nouvelle partie</b> · ${ODY_MODES[odyMode][0]}${odyMode === 'jour' ? ` (aujourd’hui ${ileJ})` : ''}, emplacement ${n}. <b>Tu choisiras ton héros</b> à l’étape suivante.</p>${o ? `<p style="color:#ff9a7a">⚠️ Elle remplace la partie de cet emplacement : ${modeSave(o.r)}, ${nomH(o.r)}, ❤ ${o.r.pv}/${o.r.pvMax}.</p>` : ''}<div class="choixh"><button onclick="nouvelleOdy(${n})">✨ Commencer</button><button class="non" onclick="slotAnnule()">Annuler</button></div>`;
+  ok.style.display = ''; ok.scrollIntoView({ block:'nearest', behavior:'smooth' });
+}
+function slotAnnule() { document.querySelectorAll('#sauves [data-sel]').forEach(b => b.classList.remove('sel')); const ok = document.getElementById('slotOk'); if (ok) ok.style.display = 'none'; }
 function sauvesOdy() {
   const b = document.getElementById('sauves'); if (!b) return;
   const vuSlots = courant === 'odyssee' && odyMode !== null && !odySlot;
@@ -557,6 +571,9 @@ function profilMenu() {
     #monde { height:calc(100dvh - 66px - env(safe-area-inset-bottom)) !important; } body { overflow:hidden; } /* 17/11 soir : le monde tient au-dessus de la barre, rien ne défile */
     #monde .carrousel { --w:min(70vw, 330px, calc((100dvh - 330px) / 1.49)) !important; }
     #barre-bas .ic4 { display:inline-grid; grid-template-columns:repeat(2, 9px); gap:4px; vertical-align:middle; } #barre-bas .ic4 i { width:9px; height:9px; border-radius:3px; background:#f3c96b; box-shadow:0 0 6px #f3c96b88; }
+    #sauves [data-sel].sel { outline:3px solid #f3c96b; box-shadow:0 0 14px #f3c96b99; }
+    #slotOk { position:sticky; bottom:0; background:#1d1838f5; border:1px solid #f3c96b; border-radius:12px; padding:8px 10px; margin-top:8px; font-size:.92em; }
+    #slotOk p { margin:4px 0; } #slotOk .choixh { display:flex; gap:8px; justify-content:center; } #slotOk button { padding:8px 14px; } #slotOk button.non { opacity:.8; }
     #grand-menu { position:fixed; inset:0; z-index:4600; background:linear-gradient(#0d0a1cb0, #0d0a1cd8), url('ui/menu/fond-grandmenu.webp?v=1') center / cover, #0d0a1c; overflow:auto; padding:12px 12px calc(20px + env(safe-area-inset-bottom)); box-sizing:border-box; animation:gpArr .25s ease-out; }
     #grand-menu .gm-tete .embl-rang img { width:100%; height:100%; border-radius:0; box-shadow:none; background:none; object-fit:contain; }
     #grand-menu .gm-g b img { width:52px; height:52px; object-fit:contain; display:block; margin:0 auto; filter:drop-shadow(0 3px 5px #0009); }
