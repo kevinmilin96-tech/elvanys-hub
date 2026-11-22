@@ -56,12 +56,19 @@ function ecranDialogue(titre, lignes) {
 ecranDialogue.n = 0;
 // la carte remplit l'écran : on agrandit le plateau jusqu'à la place libre
 function ecranZoom() {
+  // 22/11 (l'utilisateur, à la télé : « c'est très petit ») : on cadre seulement la partie DÉCOUVERTE de la carte (les cases dans le noir ne
+  // comptent pas), avec une case de marge : elle remplit l'écran et le cadre s'élargit au fil de l'exploration
   const V = $('vue'), P = V && V.querySelector('.plateau'); if (!P) return;
-  P.style.zoom = ''; const w = P.offsetWidth, h = P.offsetHeight; if (!w || !h) return;
-  const z = Math.max(.5, Math.min((V.clientWidth - 8) / w, (V.clientHeight - 8) / h, 4));
-  P.style.zoom = z;
-  const hv = suivi != null && S.heros[suivi] ? S.heros[suivi] : S.heros[actif], e = hv && $(`c-${hv.x}-${hv.y}`);
-  if (e) { V.scrollLeft = e.offsetLeft * z - V.clientWidth / 2; V.scrollTop = e.offsetTop * z - V.clientHeight / 2; }
+  P.style.zoom = ''; P.style.translate = ''; const cs = [...P.querySelectorAll('.c:not(.noir):not(.vide)')]; if (!cs.length) return;
+  let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
+  cs.forEach(c => { x0 = Math.min(x0, c.offsetLeft); y0 = Math.min(y0, c.offsetTop); x1 = Math.max(x1, c.offsetLeft + c.offsetWidth); y1 = Math.max(y1, c.offsetTop + c.offsetHeight); });
+  const m = cs[0].offsetWidth; x0 -= m; y0 -= m; x1 += m; y1 += m;
+  const z = Math.max(.5, Math.min((V.clientWidth - 8) / (x1 - x0), (V.clientHeight - 8) / (y1 - y0), 5));
+  P.style.translate = ''; P.style.zoom = z; V.scrollLeft = 0; V.scrollTop = 0;
+  // puis on fait glisser le plateau pour que la partie découverte soit au milieu de l'écran
+  const rv = V.getBoundingClientRect(); let a = 1e9, b = 1e9, c = -1e9, d = -1e9;
+  cs.forEach(e => { const r = e.getBoundingClientRect(); a = Math.min(a, r.left); b = Math.min(b, r.top); c = Math.max(c, r.right); d = Math.max(d, r.bottom); });
+  P.style.translate = `${Math.round((rv.left + rv.width / 2 - (a + c) / 2) / z)}px ${Math.round((rv.top + rv.height / 2 - (b + d) / 2) / z)}px`;
 }
 
 // ------------------------------------------------------------------------------------- les branchements (seulement en mode écran)
@@ -109,8 +116,8 @@ if (typeof document !== 'undefined') {
     display:grid !important; grid-template-columns:minmax(0, 1fr) clamp(220px, 24vw, 460px); grid-template-rows:auto auto minmax(0, 1fr) auto; column-gap:1.2vw; align-content:stretch; }
   body.ecran-table.jeu #app > * { grid-column:2; min-width:0; }
   body.ecran-table #app > .haut { grid-column:1 / -1; grid-row:1; }
-  body.ecran-table #app > .zonebar { grid-column:1; grid-row:2; }
-  body.ecran-table #app > div[style*="position:relative"] { grid-column:1; grid-row:3 / span 2; min-height:0; display:flex; flex-direction:column; }
+  body.ecran-table #app > .zonebar { grid-column:1; grid-row:2; position:relative; z-index:3; pointer-events:none; align-self:start; }
+  body.ecran-table #app > div[style*="position:relative"] { grid-column:1; grid-row:2 / -1; min-height:0; display:flex; flex-direction:column; } /* 22/11 : la carte prend toute la hauteur */
   body.ecran-table .vue { height:auto !important; flex:1; min-height:0; overflow:hidden; }
   body.ecran-table #app > .des, body.ecran-table #app > .actions, body.ecran-table #app > .pasinfo, body.ecran-table .haut a, body.ecran-table .zonebar button, body.ecran-table #gm-bouton { display:none !important; }
   body.ecran-table #app { pointer-events:none; } body.ecran-table #fen { pointer-events:none; }
@@ -183,6 +190,8 @@ function teleco(on) { TELECO = on; try { localStorage.setItem('guilde-chron-tele
   .fm-liste img { width:52px; height:52px; border-radius:50%; object-fit:cover; box-shadow:0 0 0 2px #ff7a4a; } .fm-liste span { flex:1; display:flex; flex-direction:column; } .fm-liste small { color:var(--doux); font-size:.85em; }
   .fm-liste .sx { flex:none; color:#ffb0b0; font-weight:bold; }
   .haut .b-monstres b { color:#ff9f8a; }
+  /* 22/11 (l'utilisateur : « en haut à droite je ne vois pas toutes les étiquettes ») : la barre du haut passe sur deux lignes au lieu de sortir de l'écran */
+  body.jeu:not(.ecran-table) .haut { flex-wrap:wrap; justify-content:center; row-gap:1.2cqw; } body.jeu:not(.ecran-table) .haut .t { order:-1; flex:1 1 100%; } body.jeu:not(.ecran-table) .haut .t:empty { display:none; }
   body.telecommande .vue { height:34vh !important; flex:none !important; } body.telecommande #app > div[style*="position:relative"] { flex:none !important; }
   body.telecommande .equipe { flex-wrap:wrap; } body.telecommande .equipe > button { font-size:4.2cqw; padding:2cqw 1cqw; } body.telecommande .equipe img { width:24cqw; height:24cqw; }
   body.telecommande .des { min-height:16cqw; } body.telecommande .des .de, body.telecommande .des button { transform:scale(1.15); }`;
