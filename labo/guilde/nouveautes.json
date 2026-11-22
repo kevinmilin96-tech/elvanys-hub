@@ -1,5 +1,9 @@
 [
 {
+"v": "20261122-212119",
+"m": "La Défense de la porte a la nouvelle entrée : le mode (6 vagues ou sans fin), ton héros, puis le défi du jour, et ▶ Jouer."
+},
+{
 "v": "20261122-211949",
 "m": "Les Expéditions ont la nouvelle entrée : le mode (l'Expédition, le voyage du jour, le Duel d'équipages), ton capitaine, puis la mer, l'Ascension ou le niveau de l'ordinateur."
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261122-183529",
 "m": "Quêtes : la pastille rouge montre ce qu’il y a à récupérer, et une quête déjà récupérée le dit"
-},
-{
-"v": "20261122-182448",
-"m": "Cartes : les noms se lisent sur les petites cartes de la main"
 }
 ]

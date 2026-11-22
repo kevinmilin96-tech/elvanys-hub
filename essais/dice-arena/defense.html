@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261122-211949"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
+<head><meta name="guilde-version" content="20261122-212119"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="robots" content="noindex">
@@ -132,6 +132,7 @@
 <script src="heros-etoiles.js?v=48da21e34c"></script>
 <script src="donnees.js?v=41849a41e8"></script>
 <script src="defense-moteur.js?v=47542eed4c"></script>
+<script src="configurateur.js?v=924f21d9ab"></script>
 <script src="heros-aventure.js?v=31db8c2ed4"></script>
 <script>
 // =============================================================================================== LA DÉFENSE DE LA PORTE · l'ÉCRAN (13/11)
@@ -443,6 +444,34 @@ function reprendD() { const g = enCoursD(); if (!g) return; D = g.D; D.rng = Mat
     if (g) { const nom = g.D.av && typeof haInfo === 'function' && haInfo('av:' + g.D.av) ? haInfo('av:' + g.D.av).nom : (HEROS[g.D.heros] || {}).nom || '';
       app.querySelector('h1').insertAdjacentHTML('afterend', `<div class="choixh" style="margin:8px 0"><button class="or" onclick="reprendD()">▶ Reprendre ta partie<br><small>${nom} · vague ${g.D.vague || 1}${g.D.sansFin ? ' ♾' : ''} · porte ${g.D.porte}/${g.D.porteMax}</small></button><button onclick="if(confirm('Abandonner la partie en cours ?')){localStorage.removeItem(CLE_EN_COURS);accueil()}">✕ Abandonner</button></div>`); }
     return x; }; }
+// 22/11 (configurateur validé : « déploie-le aux autres modes ») : l'entrée de la Défense = le configurateur commun (configurateur.js) :
+// 1. le mode (6 vagues et le Titan, vagues sans fin) → 2. le héros (retenu) → 3. ce qui t'attend → ▶ Jouer. Une seule partie gardée à la fois.
+let choixD = (() => { try { return localStorage.getItem('guilde-config-defense-heros') || 'maelle'; } catch (e) { return 'maelle'; } })();
+const okD = k => { const z = localStorage.getItem('guilde-tuto') === 'fait'; if (String(k).startsWith('av:')) { const i = haInfo(k); return !!i && (i.voie !== 'zephine' || z); } return !!DHEROS[k] && (k !== 'zephine' || z); };
+function choisitD(k) { choixD = k; try { localStorage.setItem('guilde-config-defense-heros', k); } catch (e) {} CFG.dessine(); }
+function defDefense() {
+  const g = enCoursD(), z = localStorage.getItem('guilde-tuto') === 'fait', r = lesRecords(), gg = r.filter(x => x.gagne);
+  const nomG = g ? (g.D.av && haInfo('av:' + g.D.av) ? haEsc(haInfo('av:' + g.D.av).nom) : (HEROS[g.D.heros] || {}).nom || '') : '';
+  const partie = sf => g && !!g.modeSF === sf ? { texte:`${nomG} · vague ${g.D.vague || 1} · porte ${g.D.porte}/${g.D.porteMax}`, reprendre:'reprendD()', abandonner:`localStorage.removeItem('${CLE_EN_COURS}')` } : null;
+  const recSF = (() => { try { return JSON.parse(localStorage.getItem('guilde-defense-sansfin') || '{}').vague || 0; } catch (e) { return 0; } })();
+  return { jeu:'defense', racine:'app', titre:'🏰 La Défense de la porte', retour:'menu.html', regles:'regles()',
+    heros:() => ['maelle', 'gorm', 'aldric', 'pip', 'oria', 'zephine'].map(h => h === 'zephine' && !z ? `<button disabled><img src="${IMG(h)}" alt="" style="filter:grayscale(1)">🔒 ${HEROS[h].nom}</button>`
+        : `<button class="${choixD === h ? 'on' : ''}" onclick="choisitD('${h}')"><img src="${IMG(h)}" alt="">${HEROS[h].nom}<small>✨ ${DHEROS[h].rune.n}</small></button>`).join('')
+      + haListe().map(a => haInfo('av:' + a.id)).filter(i => i && (i.voie !== 'zephine' || z)).map(i => `<button class="${choixD === i.cle ? 'on' : ''}" onclick="choisitD('${i.cle}')">${haImg(i, `box-shadow:0 0 0 2px ${i.couleur}`)}${haEsc(i.nom)}<small>✨ ${DHEROS[i.voie].rune.n}</small></button>`).join(''),
+    fiche:() => { const v = haVoie(choixD), i = haInfo(choixD), H = DHEROS[v]; return `🛡 <b>${i ? haEsc(i.nom) : HEROS[v].nom}</b>${i ? ` · la voie de ${HEROS[v].nom}` : ''}<br>${H.passif}<br>✨ <b>Rune : ${H.rune.n}</b> · ${H.rune.d}`; },
+    modes:[
+      { k:'vagues', e:'🌊', n:'6 vagues', img:'menu-recu/mode-defense.webp', desc:() => 'Les monstres descendent trois chemins vers la porte de la Guilde. Tes dés deviennent des tours… ou des coups tout de suite. Six vagues, puis le Titan.',
+        pas:() => [`🎯 Défi du jour : ${defiDuJourD().n}${lesEtoiles()[jourCle()] ? ' · ' + '★'.repeat(lesEtoiles()[jourCle()]) : ''}`, `🏆 ${gg.length} victoire${gg.length > 1 ? 's' : ''} sur ${r.length}`], partie:() => partie(false) },
+      { k:'sansfin', e:'♾', n:'Sans fin', img:'menu-recu/mode-defense.webp', desc:() => 'Les vagues ne s’arrêtent jamais, toujours plus fortes ; le Titan revient toutes les 6 vagues. Jusqu’où tiendras-tu ?',
+        pas:() => [`Ton record : ${recSF} vague${recSF > 1 ? 's' : ''}`], partie:() => partie(true) } ],
+    options:m => m === 'vagues' ? [{ k:'d', titre:`🎯 Le défi du jour : ${defiDuJourD().n}`, verrou:'le même pour tous', aide:'★ la victoire · ★ la porte à 15 PV ou plus · ★ le défi du jour.' }]
+      : [{ k:'r', titre:'♾ Les vagues sans fin', aide:`Ton record : ${recSF} vagues. Le Titan revient toutes les 6 vagues.` }],
+    resume:m => `${m === 'sansfin' ? '♾ Sans fin' : '🌊 6 vagues et le Titan'} · <b>${haInfo(choixD) ? haEsc(haInfo(choixD).nom) : HEROS[haVoie(choixD)].nom}</b>`,
+    lancer:m => { if (!okD(choixD)) { alert('Choisis ton héros.'); return CFG.va(2); } modeSF = m === 'sansfin'; try { localStorage.removeItem(CLE_EN_COURS); } catch (e) {} demarre(choixD); } };
+}
+accueil = function () { D = null; app.classList.remove('jeu'); if (!okD(choixD)) choixD = 'maelle'; CFG.ouvre(defDefense()); try { GM.retour(null); } catch (e) {} };
+{ const _rd = reprendD; reprendD = function () { CFG.ferme(); return _rd.apply(this, arguments); }; }
+{ const _dm = demarre; demarre = function () { CFG.ferme(); return _dm.apply(this, arguments); }; }
 accueil();
 // 13/11 soir : musique
 GM.musique('duel'); GM.bouton();
