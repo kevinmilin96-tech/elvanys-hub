@@ -217,7 +217,7 @@ async function amisAjoute() {
 // LA BOÎTE AUX LETTRES. À la fin d'une partie en ligne, le serveur y dépose les récompenses de chaque joueur ; on les récupère ici.
 async function amisBoiteMaj() {
   if (!AMIS.carte) return;
-  try { const { statut, d } = await amisApi('/api/hub/guilde/boite', { cle:AMIS.carte.cle }); if (statut === 200) { AMIS.boite = d.messages || []; AMIS.jours = d.jours || null; if (d.jours && d.jours.joues) try { localStorage.setItem('guilde-jours-joues', String(Math.max(d.jours.joues | 0, +localStorage.getItem('guilde-jours-joues') || 0))); } catch (e) {} amisBouton(); } } catch (e) {}
+  try { const { statut, d } = await amisApi('/api/hub/guilde/boite', { cle:AMIS.carte.cle }); if (statut === 200) { AMIS.boite = d.messages || []; AMIS.jours = d.jours || null; if (d.jours && d.jours.joues) try { localStorage.setItem('guilde-jours-joues', String(Math.max(d.jours.joues | 0, +localStorage.getItem('guilde-jours-joues') || 0))); localStorage.setItem('guilde-jours-prochain', String(d.jours.prochain | 0)); } catch (e) {} amisBouton(); } } catch (e) {}
 }
 // 21/11 : les nouveaux cadeaux (colis du lundi, paliers de fidélité, cadeau à tous) ajoutent des éclats de Guilde, des pièces d'une rareté
 // choisie (« rarete » : 1 rare, 2 épique…) et parfois un titre de profil
@@ -229,7 +229,7 @@ function amisCadeauTxt(c) { const R = typeof EQ_RARE !== 'undefined' ? EQ_RARE :
 function amisJoursTxt() { const j = AMIS.jours; if (!j) return ''; return `<p class="doux" style="text-align:center">🗓️ Jours joués : <b>${j.joues | 0}</b> · prochain palier à <b>${j.prochain | 0}</b> jours</p>`; }
 async function amisBoite() {
   AMIS.ouvert = false; await amisBoiteMaj(); const l = AMIS.boite || [];
-  amisFen(`<h2>📬 Boîte aux lettres</h2>${amisJoursTxt()}${l.length ? l.map(m => `<div class="am-ligne"><div class="p"><b>${amisEsc(m.titre)}</b><small>${amisEsc(m.message)}</small><small style="color:#f3c96b">${amisCadeauTxt(m.cadeau || {})}</small></div><button class="am-bt go" onclick="amisRecupere('${amisEsc(m.id)}')">Récupérer</button></div>`).join('')
+  amisFen(`<h2>📬 Boîte aux lettres</h2>${l.length ? l.map(m => `<div class="am-ligne"><div class="p"><b>${amisEsc(m.titre)}</b><small>${amisEsc(m.message)}</small><small style="color:#f3c96b">${amisCadeauTxt(m.cadeau || {})}</small></div><button class="am-bt go" onclick="amisRecupere('${amisEsc(m.id)}')">Récupérer</button></div>`).join('')
     : '<p class="doux">Rien pour le moment. Les récompenses des parties en ligne, le colis du lundi et les cadeaux de fidélité arrivent ici.</p>'}
   `);
 }

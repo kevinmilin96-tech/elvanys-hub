@@ -99,6 +99,7 @@ function parcoursHTML() {
     return `<button class="parc" onclick="Carnet.ouvrir('${k}')"><span class="e">${e}</span><span class="n"><b>${n}</b><small>${l.length} partie${l.length > 1 ? 's' : ''} · ${g} victoire${g > 1 ? 's' : ''} · dernière le ${quand(l[0].quand)}</small></span><span class="f">📜 ›</span></button>`; }).join('');
   if (location.hash === '#parcours') setTimeout(() => { const h = document.getElementById('parcours'); if (h) h.scrollIntoView({ behavior:'smooth' }); }, 200);
   return `<h2 id="parcours">📊 Mon parcours</h2>
+    ${(j => j ? `<p class="aide" style="text-align:center">🗓️ Jours joués : <b>${j}</b>${+localStorage.getItem('guilde-jours-prochain') ? ` · prochain cadeau de fidélité à <b>${localStorage.getItem('guilde-jours-prochain')}</b> jours` : ''}</p>` : '')(+localStorage.getItem('guilde-jours-joues') || 0)}
     <div class="parc-total"><div><b>${L.length}</b><small>parties</small></div><div><b>${v}</b><small>victoires</small></div><div><b>${p}</b><small>défaites</small></div><div><b>${v + p ? Math.round(100 * v / (v + p)) : 0} %</b><small>réussite</small></div></div>
     ${lignes || '<p class="aide">Pas encore de partie finie : elles arrivent ici, mode par mode.</p>'}
     <p class="aide">Touche un mode pour relire le journal de chaque partie (et le copier pour Claude). Le carnet garde les 60 dernières parties.</p>`;
