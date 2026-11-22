@@ -22,13 +22,16 @@
   .cfg .etape { text-align:center; color:var(--doux, #c9c1ea); font-size:3.3cqw; margin-bottom:2.5cqw; }
   .cfg .modes { display:flex; gap:2cqw; }
   .cfg .mode { flex:1; border-radius:3.5cqw; overflow:hidden; border:2px solid #ffffff22; background:#00000055; position:relative; cursor:pointer; padding:0; color:inherit; text-align:center; }
-  .cfg .mode img { width:100%; height:24cqw; object-fit:cover; display:block; filter:brightness(.7) saturate(.8); }
+  .cfg .mode img { width:100%; height:auto; aspect-ratio:3 / 4; object-fit:cover; display:block; filter:brightness(.7) saturate(.8); }
   .cfg .mode b { display:block; padding:1.4cqw 1cqw 2cqw; font-size:3cqw; }
   .cfg .mode.on { border-color:var(--or, #ffd98a); box-shadow:0 0 4cqw #ffd98a55; } .cfg .mode.on img { filter:none; }
   /* 22/11 (l'utilisateur : « le bouton Reprendre gêne en haut à droite ») : petite pastille posée en bas de l'image, juste au-dessus du nom */
   .cfg .mode .rep { position:absolute; top:19.5cqw; left:50%; transform:translateX(-50%); white-space:nowrap; background:#163a2aee; border:1px solid #5fdc8f; color:#7ff0a8; border-radius:3cqw; font-size:2.4cqw; padding:.3cqw 1.8cqw; font-weight:bold; z-index:2; }
   .cfg .cfg-grand { border-radius:4cqw; overflow:hidden; border:2px solid var(--or, #ffd98a); margin-top:3cqw; background:#1a1230; animation:cfgEntre .35s ease-out; }
-  .cfg .cfg-grand img { width:100%; height:44cqw; object-fit:cover; display:block; }
+  /* 22/11 (l'utilisateur : « les images sont coupées ») : l'image entière, sur un fond flou fait de la même image */
+  .cfg .cfg-grand .fond { position:relative; overflow:hidden; display:flex; justify-content:center; background:#0d0a18; }
+  .cfg .cfg-grand .fond i { position:absolute; inset:-10%; background-size:cover; background-position:center; filter:blur(14px) brightness(.55); }
+  .cfg .cfg-grand .fond img { position:relative; height:70cqw; max-width:100%; width:auto; object-fit:contain; display:block; }
   .cfg .cfg-grand .t { padding:2.5cqw 3cqw 3cqw; } .cfg .cfg-grand .t b { color:var(--or, #ffd98a); font-size:4.4cqw; }
   .cfg .cfg-grand .t p { margin:1.2cqw 0 0; font-size:3.3cqw; color:#ddd3ff; line-height:1.35; }
   .cfg .pas { display:inline-block; background:#ffffff14; border-radius:2cqw; padding:.5cqw 2cqw; margin:1.4cqw 1.2cqw 0 0; font-size:2.9cqw; }
@@ -104,7 +107,7 @@
     if (E === 1) {
       corps = `<div class="etape">1 · Choisis ton mode</div>
         <div class="modes"${D.modes.length < 2 ? ' style="display:none"' : ''}>${D.modes.map(m => `<button class="mode ${m.k === M.k ? 'on' : ''}" onclick="CFG.mode_('${m.k}')">${enCours(m)}<img src="${m.img}" alt="" onerror="this.style.visibility='hidden'"><b>${m.e} ${esc(m.n)}</b></button>`).join('')}</div>
-        <div class="cfg-grand" id="cfg-grand"><img src="${M.img}" alt="" onerror="this.remove()"><div class="t"><b>${M.e} ${esc(M.n)}</b><p>${M.desc ? M.desc() : ''}</p>${(M.pas ? M.pas() : []).map(p => `<span class="pas">${p}</span>`).join('')}${parties.length === 1 ? `<span class="pas" style="background:#163a2a;color:#7ff0a8">Partie en cours : ${partie.texte}</span>` : ''}${verrou ? `<span class="pas" style="background:#3a1a1a;color:#ffb3a8">🔒 ${verrou}</span>` : ''}</div></div>`;
+        <div class="cfg-grand" id="cfg-grand"><div class="fond"><i style="background-image:url('${M.img}')"></i><img src="${M.img}" alt="" onerror="this.remove()"></div><div class="t"><b>${M.e} ${esc(M.n)}</b><p>${M.desc ? M.desc() : ''}</p>${(M.pas ? M.pas() : []).map(p => `<span class="pas">${p}</span>`).join('')}${parties.length === 1 ? `<span class="pas" style="background:#163a2a;color:#7ff0a8">Partie en cours : ${partie.texte}</span>` : ''}${verrou ? `<span class="pas" style="background:#3a1a1a;color:#ffb3a8">🔒 ${verrou}</span>` : ''}</div></div>`;
       bas = verrou && !parties.length ? `<button class="go" disabled>🔒 ${verrou}</button>`
         : parties.length > 1 ? parties.map(x => `<div class="lig"><button class="go2" onclick="CFG.ferme();${x.reprendre}">▶ ${x.texte}</button><button class="x" onclick="if(confirm('Effacer cette partie ? Elle sera perdue.')){${x.abandonner};CFG.dessine()}">✕</button></div>`).join('') + (verrou ? '' : `<button class="go3" onclick="CFG.va(2)">Nouvelle partie ›</button>`)
         : partie ? `<button class="go2" onclick="CFG.ferme();${partie.reprendre}">▶ Reprendre</button><button class="go3" onclick="CFG.va(2)">Nouvelle partie ›</button><button class="ab" onclick="if(confirm('Abandonner cette partie ? Elle sera effacée.')){${partie.abandonner};CFG.dessine()}">✕ abandonner la partie en cours</button>`
