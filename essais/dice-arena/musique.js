@@ -57,17 +57,19 @@
 window.GuildeMaj = (() => {
   const meta = document.querySelector && document.querySelector('meta[name="guilde-version"]');
   const ici = (meta && meta.getAttribute('content')) || '';
-  let enLigne = '';
+  let enLigne = '', neufV = ''; // neufV = la version de la dernière vraie nouveauté (nouveautes.json)
   const vu = () => { try { return localStorage.getItem('guilde-param-vu') || ''; } catch (e) { return ''; } };
   const fmt = v => /^\d{8}-\d{6}$/.test(v || '') ? `${v.slice(6, 8)}/${v.slice(4, 6)}/${v.slice(0, 4)} · ${+v.slice(9, 11)} h ${v.slice(11, 13)}` : '—';
   const attend = () => !!(enLigne && ici && enLigne > ici);
-  const aVoir = () => attend() || !!(ici && vu() < ici) || (typeof appliAttend === 'function' && appliAttend());
+  const nouveau = () => !!(neufV && vu() < neufV);
+  const aVoir = () => attend() || nouveau() || (typeof appliAttend === 'function' && appliAttend());
   function points() {
     const on = aVoir();
     document.querySelectorAll('#bb-param, #gm-bouton, [data-param]').forEach(b => b.classList.toggle('point-rouge', on));
   }
   function verifie() { if (typeof fetch === 'undefined' || !ici) return;
     fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(t => { const v = String(t || '').trim(); if (/^\d{8}-\d{6}$/.test(v)) enLigne = v; points(); }).catch(() => {});
+    fetch('nouveautes.json?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.json() : []).then(l => { neufV = (l && l[0] && l[0].v) || ''; points(); }).catch(() => {});
     if (window.GuildeAppli) fetch('appli/version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(t => { appliEnLigne = String(t || '').trim(); points(); }).catch(() => {}); }
   if (document.head) { const st = document.createElement('style');
     st.textContent = '.point-rouge{position:relative}.point-rouge::after{content:"";position:absolute;top:3px;right:calc(50% - 22px);width:11px;height:11px;border-radius:50%;background:#ff3b3b;box-shadow:0 0 0 2px #120f24, 0 0 8px #ff3b3b;animation:prPulse 1.6s ease-in-out infinite;pointer-events:none}#gm-bouton.point-rouge::after{top:-2px;right:-2px}@keyframes prPulse{50%{transform:scale(1.25)}}';
@@ -75,13 +77,13 @@ window.GuildeMaj = (() => {
   addEventListener('load', () => { points(); setTimeout(verifie, 1200); new MutationObserver(() => { if (document.querySelector('#bb-param:not(.point-rouge), [data-param]:not(.point-rouge)') && aVoir()) points(); }).observe(document.body, { childList:true, subtree:true }); });
   setInterval(verifie, 120000); document.addEventListener('visibilitychange', () => { if (!document.hidden) verifie(); });
   const majMaintenant = () => { const v = enLigne || ici, q = new URLSearchParams(location.search); q.set('v', v); location.replace(location.pathname + '?' + q + location.hash); };
-  const marqueVu = () => { try { if (ici) localStorage.setItem('guilde-param-vu', ici > vu() ? ici : vu()); } catch (e) {} points(); };
+  const marqueVu = () => { try { const m = [ici, neufV, vu()].sort().pop(); if (m) localStorage.setItem('guilde-param-vu', m); } catch (e) {} points(); };
   // le bloc en haut des Paramètres
   function bloc() {
     return `<div class="maj${attend() ? ' neuve' : ''}"><div><b>📦 Version du jeu</b><br><small>${fmt(ici)}</small></div>${attend()
       ? `<button class="majb" data-k="maj">✨ Mettre à jour<br><small>version du ${fmt(enLigne)}</small></button>` : '<span class="ok">✅ À jour</span>'}</div>
       ${appliIci() ? `<div class="maj${appliAttend() ? ' neuve' : ''}"><div><b>📱 Appli Android</b><br><small>version ${appliIci()}</small></div>${appliAttend() ? `<a class="majb" href="appli/la-guilde-${appliEnLigne}.apk" style="text-decoration:none">📥 Nouvelle appli ${appliEnLigne}</a>` : '<span class="ok">✅ À jour</span>'}</div>` : ''}
-      <details class="neuf"${ici && vu() < ici ? ' open' : ''}><summary>🆕 Quoi de neuf${ici && vu() < ici ? ' <span class="nv">nouveau</span>' : ''}</summary><div id="neuf-liste"><small>Chargement…</small></div></details>`;
+      <details class="neuf"${nouveau() ? ' open' : ''}><summary>🆕 Quoi de neuf${nouveau() ? ' <span class="nv">nouveau</span>' : ''}</summary><div id="neuf-liste"><small>Chargement…</small></div></details>`;
   }
   function chargeNeuf() { const z = document.getElementById('neuf-liste'); if (!z) return;
     fetch('nouveautes.json?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.json() : []).then(l => {
