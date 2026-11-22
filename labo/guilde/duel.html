@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261122-174243"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
+<head><meta name="guilde-version" content="20261122-174602"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="robots" content="noindex">
@@ -738,7 +738,7 @@
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
 // 14/11 : l'Odyssée sans fin a ses propres emplacements (odyssee.js lit SANSFIN)
 const SANSFIN = new URLSearchParams(location.search).get('sansfin') === '1', ROUTE_TITAN = new URLSearchParams(location.search).get('route') === '1', EPREUVE_PAGE = new URLSearchParams(location.search).get('epreuve') === '1', ODY_PAGE = EPREUVE_PAGE ? 'epreuves.html' : 'odyssee.html' + (SANSFIN ? '?sansfin=1' : ROUTE_TITAN ? '?route=1' : '');
-const VERSION = '20261122-174243';
+const VERSION = '20261122-174602';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -1568,6 +1568,15 @@ function finDeMonTour() {
 // =============================================================================================== le Campement : rotation héros 1 → héros 2 → boss
 function partieCampement() {
   const cfg = lireCampement();
+  // 22/11 : un combat de l'Invasion laissé en cours (page fermée, téléphone éteint) contre le même boss : on propose de le reprendre
+  try { const sv = JSON.parse(localStorage.getItem('guilde-invasion-combat') || 'null');
+    if (sv && sv.coop && !sv.fini && cfg && sv.choix === (HEROS[cfg.boss] ? cfg.boss : 'colosseracines') && Date.now() - (sv.quand || 0) < 7 * 864e5) {
+      if (confirm(`Reprendre ton combat de l’Invasion contre ${sv.O && sv.O.nom || 'le boss'}${sv.vagues ? ` (vague ${(sv.vague || 0) + 1})` : ''}, là où tu l’as laissé ?\n(Annuler = recommencer depuis le début)`)) {
+        const h = HEROS[sv.choix]; if (h && h.phases) { h.garde = h.phases[0].garde; h.pouvoir = h.phases[0].pouvoir; }
+        S = sv; S.J = S.equipe[sv.jIdx >= 0 ? sv.jIdx : 0] || S.equipe[0]; delete S.jIdx; delete S.quand;
+        if (HEROS[S.O.id] && HEROS[S.O.id].phases) { const ph = S.O.phase || 0; S.O.phase = 0; phaseBoss(S.O); if (!S.O.phase) S.O.phase = ph; }
+        FX = []; fxApres = []; fxOn = false; sel = []; attaquant = null; ciblage = null; arreteMusique(); log('↩ Combat repris.'); rendu(); return; }
+      localStorage.removeItem('guilde-invasion-combat'); } } catch (e) { console.warn('[invasion] reprise', e); }
   // 15/11 soir : un HÉROS D'AVENTURE 'av:<id>' (heros-aventure.js) joue sa voie, avec son nom et son portrait (supprimé → Maëlle)
   const avA = cfg && typeof haInfo === 'function' ? haInfo(cfg.a) : null, avB = cfg && typeof haInfo === 'function' ? haInfo(cfg.b) : null;
   if (cfg && typeof haVoie === 'function') { cfg.a = haVoie(cfg.a); cfg.b = haVoie(cfg.b); }
@@ -1913,6 +1922,8 @@ function rendu() {
   // 14/11 : si le dessin ou l'enregistrement échoue (mémoire du téléphone pleine…), la suite du tour part QUAND MÊME (avant : « Fin du tour » restait bloqué)
   try { dessine(); } catch (x) { console.error(x); }
   try { if (S.ody && !S.fini) localStorage.setItem('guilde-combat', JSON.stringify(S)); } catch (x) { console.error(x); }
+  // 22/11 (carte de l'application : « l'Invasion n'a pas de reprise ») : le combat de l'Invasion est gardé aussi ; S.J est un des héros de S.equipe (on note lequel)
+  try { if (S.coop && !S.auto) { if (S.fini) localStorage.removeItem('guilde-invasion-combat'); else localStorage.setItem('guilde-invasion-combat', JSON.stringify(Object.assign({}, S, { jIdx:S.equipe.indexOf(S.J), quand:Date.now() }))); } } catch (x) { console.error(x); }
   const f = fxApres.shift(); if (f && !S.fini) setTimeout(() => { try { f(); } catch (x) { signaleErreur(x); finTourDe = null; } }, 350);
 }
 // 14/11 (l'utilisateur : « le titre sur le portrait cache la vie et l'Ultime ») : sur l'écran unique, le nom (et le titre du profil)
