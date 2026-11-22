@@ -182,7 +182,9 @@ function fusionnePiece(slot, r) {
   const n = { id:'eq' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), slot, nom:g[0].nom, r:r + 1, niv:Math.min(g[0].niv, 5 * (r + 2)) }; if (typeof succesCompte === 'function') succesCompte('forge_fusion'); // 22/11 : succès « Forgeron »
   s.pieces = s.pieces.filter(p => !g.includes(p)); s.pieces.push(n); avSacEcrire(s);
   Object.values(d.heros).forEach(h => { if (h.gear && g.some(p => h.gear[slot] === p.id)) h.gear[slot] = null; });
-  if (porteur) { const h = d.heros[porteur]; h.gear[slot] = n.id; h.lv = h.lv || {}; h.lv[slot] = Math.max(h.lv[slot] || 0, ...g.map(p => p.niv)); } ecrireEtoiles(d); return n;
+  // 22/11 (l'utilisateur : « au lieu de l'équiper directement, une validation : voulez-vous l'équiper maintenant ? ») : on garde le niveau de la case,
+  // mais la nouvelle pièce n'est PAS équipée ; l'écran le propose à l'ancien porteur (n.porteur)
+  if (porteur) { const h = d.heros[porteur]; h.lv = h.lv || {}; h.lv[slot] = Math.max(h.lv[slot] || 0, ...g.map(p => p.niv)); n.porteur = porteur; } ecrireEtoiles(d); return n;
 }
 // le forgeron : 3 pièces par jour.
 // 15/11 soir (l'utilisateur : « le forgeron donne en fonction du niveau ? à Élite + et niveau 50, des équipements en fonction ? ») :
