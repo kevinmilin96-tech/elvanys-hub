@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261122-211122"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
+<head><meta name="guilde-version" content="20261122-211626"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="robots" content="noindex">
@@ -178,7 +178,7 @@ const herosAventureOdy = () => haListe().map(a => haInfo('av:' + a.id)).map(i =>
   ? `<button onclick="location.href='duel.html?tuto=1'" style="opacity:.55">${haImg(i, 'filter:grayscale(1)')}🔒 ${haEsc(i.nom)}<br><small style="color:var(--doux)">Fais le tutoriel</small></button>`
   : `<button onclick="commence('${i.cle}')">${haImg(i, `box-shadow:0 0 0 2px ${i.couleur}`)}${haEsc(i.nom)}<small class="ha-t">⚔ ${haEsc(i.titre)}</small><small style="color:var(--doux)">${Math.round(HEROS[i.voie].pv * (ODY_PV[i.voie] || 1.8))} PV en Odyssée</small></button>`).join('');
 
-const VERSION = '20261122-211122';
+const VERSION = '20261122-211626';
 function verifieVersion() {
   fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
     v = (v || '').trim(); if (!v || v === VERSION || document.getElementById('majbar')) return;
@@ -203,6 +203,8 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden) veri
 <script src="aventure.js?v=09133a6200"></script>
 <script src="odyssee-sansfin.js?v=7b3807249c"></script>
 <script src="pantheon.js?v=1a6f59e92e"></script>
+<script src="configurateur.js?v=5fcd28f9dc"></script>
+<script src="odyssee-config.js?v=5efbd245a1"></script>
 <script src="chronique.js?v=ecf982cfcc"></script>
 <script>
 // le moteur du Duel n'est pas chargé ici : les cartes de l'Odyssée appellent degats/soin seulement en combat (dans duel.html)
@@ -248,6 +250,7 @@ const CORBIN_GIVRE = {
 function reprendre(r) { R = r; dejaDessine = new Set(); R.ile.flat().forEach(c => { if (c.vu) dejaDessine.add(c.x + ',' + c.y); }); if (R.combat && !R.combat.resultat) { location.href = 'duel.html?odyssee=1' + SUF_URL; return; } if (R.combat && R.combat.resultat) { dessine(); apresCombat(); return; } dessine(); }
 const ilDYa = t => { if (!t) return ''; const m = Math.round((Date.now() - t) / 60000); return m < 2 ? 'à l’instant' : m < 60 ? `il y a ${m} min` : m < 1440 ? `il y a ${Math.round(m / 60)} h` : `il y a ${Math.round(m / 1440)} jour${m >= 2880 ? 's' : ''}`; };
 function emplacements() {
+  if (typeof odyConfig === 'function') return odyConfig(); // 22/11 : l'entrée de l'Odyssée = le configurateur (odyssee-config.js)
   if (SANSFIN && !actesFaits().brulees) return ecran(); // 15/11 nuit : verrouillée tant que le Titan de feu n'est pas vaincu
   document.body.classList.remove('givre', 'abime');
   const cartes = Array.from({ length:ODY_SLOTS }, (_, i) => {
@@ -260,11 +263,14 @@ function emplacements() {
   }).join('');
   document.getElementById('app').innerHTML = `<h1>${ROUTE_TITAN ? '🛤 La Route du Titan' : SANSFIN ? '🧩 L’Odyssée sans fin' : '🏰 L’Odyssée'}</h1><p style="text-align:center;color:var(--doux);font-size:.9em">Trois emplacements pour trois parties. Continue une partie, ou recommence-la de zéro.</p>${cartes}
   <div class="choixh"><button onclick="records()">🏆 Mes Odyssées (${lireRecords().length})</button><button onclick="collection()">📚 Ma collection (${lireCollection().length})</button></div>`;
-  GM.retour('menu.html#odyssee'); // 22/11 (l'utilisateur) : le retour en haut à gauche, vers l'étage de l'Odyssée ; plus de « ⌂ Menu » en bas
+  GM.retour('odyssee.html'); // 22/11 (l'utilisateur) : le retour en haut à gauche, vers l'étage de l'Odyssée ; plus de « ⌂ Menu » en bas
 }
 function recommencer(n) { const r = lireSlot(n); fenetre(`<h2>🔄 Recommencer ?</h2><p>La partie de <b>${odyNom(r)}</b> (emplacement ${n}) sera effacée et tu choisiras un héros pour une île neuve. Elle ne compte pas comme une défaite. Les cartes déjà gagnées restent dans ta collection.</p><div class="choixh"><button class="or" onclick="effacerSlot(${n});choisirSlot(${n});fermer();ecran()">Oui, recommencer</button><button onclick="fermer()">Non</button></div>`); }
 function effacer(n) { const r = lireSlot(n); fenetre(`<h2>🗑 Effacer ?</h2><p>La partie de <b>${odyNom(r)}</b> (emplacement ${n}) sera effacée pour de bon. Elle ne compte pas comme une défaite.</p><div class="choixh"><button onclick="effacerSlot(${n});fermer();emplacements()">Oui, effacer</button><button class="or" onclick="fermer()">Non</button></div>`); }
 function accueil() {
+  // 22/11 (configurateur) : « ▶ Jouer » arrive ici avec le héros, l'emplacement, l'Ascension et le voyage choisis
+  { const go = Q.get('go'), n = +Q.get('slot'); if (go && n >= 1 && n <= ODY_SLOTS) { history.replaceState(null, '', location.pathname + (SANSFIN ? '?sansfin=1' : ROUTE_TITAN ? '?route=1' : Q.get('ile') ? '?ile=' + Q.get('ile') : ''));
+    choisirSlot(n); ASC_CHOIX = +Q.get('asc') || 0; if (!JOUR_URL && ACTE_URL === 'brulees' && !SANSFIN && !ROUTE_TITAN) MODE_AV = Q.get('av') === '1'; effacerSlot(n); commence(go); return; } }
   // 16/11 : « ▶ Continuer » du menu ouvre directement la partie choisie
   // 17/11 : « ✨ Nouvelle partie » choisie dans le menu (emplacement d'abord, puis le portail) : directement le choix du héros
   { const n = +Q.get('nouvelle'); if (n >= 1 && n <= ODY_SLOTS) { history.replaceState(null, '', location.pathname + location.search.replace(/[?&]nouvelle=\d/, '').replace(/^&/, '?')); choisirSlot(n); if (lireSlot(n)) { emplacements(); recommencer(n); } else ecran(); return; } }
@@ -281,15 +287,15 @@ function ecran() {
   // 15/11 nuit (l'utilisateur) : plus d'« essayer quand même » ; l'Odyssée sans fin attend la victoire contre le Titan de feu
   if (SANSFIN && !actesFaits().brulees) {
     document.getElementById('app').innerHTML = `<h1>🧩 L’Odyssée sans fin</h1><p style="text-align:center">🔒 Elle s’ouvre quand tu as vaincu <b>le Titan de feu</b> (acte I, les Terres brûlées), avec n’importe quel héros.</p>
-    <div class="choixh"><button onclick="location.href='odyssee.html'">🌋 Aller aux Terres brûlées</button></div>`; GM.retour('menu.html#odyssee'); return; }
+    <div class="choixh"><button onclick="location.href='odyssee.html'">🌋 Aller aux Terres brûlées</button></div>`; GM.retour('odyssee.html'); return; }
   if (r) { reprendre(r); return; }
   document.body.classList.toggle('givre', ACTE_URL === 'givre'); document.body.classList.toggle('abime', ACTE_URL === 'abime');
   if (ACTE_URL === 'abime' && !actesFaits().givre && Q.get('jour') !== '1') { // 21/11 : l'île du jour est ouverte à tous
     document.getElementById('app').innerHTML = `<h1>🌀 L’Odyssée · l’Abîme du Vide</h1><p style="text-align:center">🔒 L’acte III s’ouvre quand tu as vaincu <b>la Vouivre des glaces</b> (acte II, l’île du Givre).</p>
-    <div class="choixh"><button onclick="location.href='odyssee.html?ile=givre'">❄️ Aller à l’île du Givre</button></div>`; GM.retour('menu.html#odyssee'); return; }
+    <div class="choixh"><button onclick="location.href='odyssee.html?ile=givre'">❄️ Aller à l’île du Givre</button></div>`; GM.retour('odyssee.html'); return; }
   if (ACTE_URL === 'givre' && !actesFaits().brulees && Q.get('jour') !== '1') {
     document.getElementById('app').innerHTML = `<h1>❄️ L’Odyssée · l’île du Givre</h1><p style="text-align:center">🔒 L’acte II s’ouvre quand tu as vaincu <b>le Titan de feu</b> (acte I, les Terres brûlées), avec n’importe quel héros.</p>
-    <div class="choixh"><button onclick="location.href='odyssee.html'">🌋 Aller aux Terres brûlées</button></div>`; GM.retour('menu.html#odyssee'); return; }
+    <div class="choixh"><button onclick="location.href='odyssee.html'">🌋 Aller aux Terres brûlées</button></div>`; GM.retour('odyssee.html'); return; }
   document.getElementById('app').innerHTML = `<h1>${ROUTE_TITAN ? '🛤 La Route du Titan' : ({ givre:'❄️ L’Odyssée · l’île du Givre', abime:'🌀 L’Odyssée · l’Abîme du Vide' }[ACTE_URL] || '🏰 L’Odyssée · les Terres brûlées') + (SANSFIN ? ' · 🧩 sans fin' : '')}</h1>${SANSFIN ? '<p style="text-align:center;color:var(--or);font-size:.9em">L’île se construit tuile par tuile : à chaque pas, tu choisis une tuile parmi 3 et tu la raccordes au donjon.</p>' : ''}
   ${ROUTE_TITAN ? `<p style="text-align:center;color:var(--doux);font-size:.9em">Les Terres brûlées, vues d’en haut : <b>tout le chemin jusqu’au Titan de feu se voit dès le départ</b>. ${ROUTE_ETAPES} étapes, des chemins qui se séparent et se rejoignent : à toi de choisir ta route (combats, élites, coffres, marchand, feu de camp…). On ne revient pas en arrière. Pas d’huile ici : ta vie, ton or et ton deck. Le combat, c’est le Duel.</p>` : `<p style="text-align:center;color:var(--doux);font-size:.9em">Une île tirée au sort, à explorer case par case. Le combat, c’est le Duel. Tes PV ne remontent pas tout seuls : sources, potions et marchand. Une lanterne de 20 doses d’huile pour fouiller. Deux fragments de rune ouvrent la porte ${{ givre:"de la Vouivre des glaces. Ici, le Givre ❄ s’accumule sur toi : à trois, tu es gelé", abime:"du Roi sans visage. Ici, la Corruption 🟣 s’accumule : à trois, le Vide te dévore (Silence) et nourrit l’ennemi" }[ACTE_URL] || "du Titan de feu"}.</p>`}
   ${(SANSFIN || ROUTE_TITAN || !MODE_AV) && !JOUR_URL ? `<p style="text-align:center;font-size:.82em;color:var(--doux);margin:.2em 1em">⛰ <b>L’Ascension</b>, ce sont des crans de difficulté en plus, pour les héros qui veulent un vrai défi : il y en a 10, et chacun ajoute une règle plus dure aux précédentes (ennemis plus coriaces, moins d’huile…). Chaque victoire sur l’île débloque le cran suivant.${ascMax(ACTE_URL) ? '' : ' <b style="color:var(--or)">Gagne cette île une fois pour débloquer l’Ascension 1.</b>'}</p>` : ''}
@@ -309,7 +315,7 @@ const JOUR_URL = Q.get('jour') === '1'; // 20/11 : arrivé par le portail « L�
 let MODE_AV = JOUR_URL || ACTE_URL !== 'brulees' ? false : localStorage.getItem('guilde-mode-av') !== 'ile';
 function choixModeAv(v) { MODE_AV = v; localStorage.setItem('guilde-mode-av', v ? 'av' : 'ile'); ecran(); }
 function commence(id) {
-  const jour = document.getElementById('jour') && document.getElementById('jour').checked;
+  const jour = JOUR_URL || (document.getElementById('jour') && document.getElementById('jour').checked);
   R = ROUTE_TITAN ? nouvelleRoute(id, ASC_CHOIX) : !SANSFIN && MODE_AV ? nouvelleAventure(id) : SANSFIN ? nouvelleSansFin(id, ACTE_URL, ASC_CHOIX) : nouvelleOdyssee(id, jour ? graineDuJour() + (ACTE_URL !== 'brulees' ? '-' + ACTE_URL : '') : null, ACTE_URL, jour ? 0 : ASC_CHOIX); if (!R) { alert('Impossible de tirer une île : réessaie.'); return; }
   dejaDessine = new Set(); bulles = []; sauve(); dessine();
   chronique([CH().arrivee(odyNom(R))], () => { dialogue('depart'); fenetre(`<h2>⛵ Débarquement</h2><p>${odyNom(R)} pose le pied sur ${ILE(R).nom}. ${{ givre:'La glace craque, le vent mord, l’aurore danse au-dessus du château de glace.', abime:'Le silence est total. Sous tes pieds, le gouffre ; au-dessus, un trône.' }[R.acte] || 'Le ciel est rouge, la roche fume.'}</p>

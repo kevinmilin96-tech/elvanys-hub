@@ -11,7 +11,8 @@
 (function () {
   const css = document.createElement('style');
   css.textContent = `
-  .cfg { padding-bottom:26cqw; }
+  .cfg-boite { max-width:520px; margin:0 auto; container-type:inline-size; padding:0 2cqw; }
+  .cfg { padding-bottom:30cqw; }
   .cfg .haut { display:flex; justify-content:space-between; align-items:center; padding:2cqw 0; font-size:3.4cqw; }
   .cfg .haut a, .cfg .haut button { color:var(--doux, #c9c1ea); background:none; border:0; font-size:3.4cqw; text-decoration:none; cursor:pointer; }
   .cfg h1 { text-align:center; color:var(--or, #ffd98a); margin:1cqw 0; font-size:6.4cqw; font-family:Georgia, serif; }
@@ -32,6 +33,11 @@
   .cfg .grand .t p { margin:1.2cqw 0 0; font-size:3.3cqw; color:#ddd3ff; line-height:1.35; }
   .cfg .pas { display:inline-block; background:#ffffff14; border-radius:2cqw; padding:.5cqw 2cqw; margin:1.4cqw 1.2cqw 0 0; font-size:2.9cqw; }
   @keyframes cfgEntre { from { opacity:.3; transform:scale(.96); } to { opacity:1; transform:none; } }
+  .cfg .heros { display:grid; grid-template-columns:repeat(3, 1fr); gap:2cqw; }
+  .cfg .heros button { background:#221d42; border:2px solid #4b4580; border-radius:3cqw; padding:2cqw 1cqw; font-size:3.2cqw; color:#efe6ff; cursor:pointer; }
+  .cfg .heros button.on { border-color:var(--or, #ffd98a); background:#3a2f12; } .cfg .heros button:disabled { opacity:.35; }
+  .cfg .heros img { width:16cqw; height:16cqw; border-radius:50%; object-fit:cover; display:block; margin:0 auto 1cqw; }
+  .cfg .heros small { display:block; font-size:2.5cqw; color:var(--doux, #c9c1ea); }
   .cfg .fiche { background:#ffffff0d; border-radius:3cqw; padding:2.5cqw 3cqw; margin-top:3cqw; font-size:3.2cqw; color:#ddd3ff; line-height:1.4; }
   .cfg .opt { background:#ffffff0c; border:1px solid #ffffff1c; border-radius:3cqw; padding:2.4cqw 3cqw; margin-bottom:2.4cqw; }
   .cfg .opt h4 { margin:0 0 1.5cqw; font-size:3.7cqw; color:var(--or, #ffd98a); } .cfg .opt h4 i { font-style:normal; font-weight:normal; color:var(--doux, #c9c1ea); font-size:2.9cqw; }
@@ -47,6 +53,9 @@
   .cfg-bas .go { background:linear-gradient(#f7b23a, #e07a12); color:#2a1400; }
   .cfg-bas .go2 { background:#163a2a; border:2px solid #5fdc8f; color:#7ff0a8; }
   .cfg-bas .go3 { background:#ffffff18; color:#efe6ff; }
+  .cfg-bas .go:disabled { background:#ffffff18; color:var(--doux, #c9c1ea); font-size:3.6cqw; }
+  .cfg-bas .lig { display:flex; gap:2cqw; align-items:center; } .cfg-bas .lig .go2 { flex:1; text-align:left; font-size:3.6cqw; padding:2.4cqw 3cqw; } .cfg-bas .lig .x { width:auto; flex:none; background:none; color:var(--doux, #c9c1ea); font-size:4cqw; padding:2cqw; margin:0; }
+  .cfg .ch button:disabled { opacity:.45; }
   .cfg-bas .ab { background:none; color:var(--doux, #c9c1ea); font-size:3cqw; font-weight:normal; text-decoration:underline; padding:1cqw; margin:0; }`;
   document.head.appendChild(css);
 
@@ -76,7 +85,7 @@
   // les options du mode, avec leur valeur (gardée, ou celle par défaut)
   CFG.valeurs = function () {
     const L = CFG.def.options ? CFG.def.options(CFG.mode) : [], o = CFG.opts[CFG.mode] || {}, r = {};
-    L.forEach(x => { if (!x.choix) return; const v = o[x.k]; r[x.k] = x.choix.some(c => String(c.v) === String(v)) ? x.choix.find(c => String(c.v) === String(v)).v : (x.def !== undefined ? x.def : x.choix[0].v); });
+    L.forEach(x => { if (!x.choix) return; const v = o[x.k]; const ok = x.choix.filter(c => !c.dis), t = ok.find(c => String(c.v) === String(v)); r[x.k] = t ? t.v : (x.def !== undefined && ok.some(c => c.v === x.def) ? x.def : (ok[0] || x.choix[0]).v); });
     return r;
   };
   CFG.jouer = function () { const v = CFG.valeurs(); bip('melange'); CFG.ferme(); CFG.def.lancer(CFG.mode, v); };
@@ -84,16 +93,20 @@
   CFG.ferme = function () { const b = document.getElementById('cfg-bas'); if (b) b.remove(); CFG.etape = 1; };
 
   CFG.dessine = function () {
-    const D = CFG.def, M = leMode(), E = CFG.etape, jeu = document.getElementById('jeu');
+    const D = CFG.def, M = leMode(), E = CFG.etape, jeu = document.getElementById(D.racine || 'jeu');
     const fil = `<div class="fil">${[1, 2, 3].map(i => `<span class="${i < E ? 'fait' : i === E ? 'on' : ''}"></span>`).join('')}</div>`;
     const retour = E === 1 ? `<a href="${D.retour || 'menu.html'}">‹ Retour</a>` : `<button onclick="CFG.va(${E - 1})">‹ ${E === 2 ? 'Mode' : 'Héros'}</button>`;
     let corps = '', bas = '';
-    const partie = M.partie ? M.partie() : null;
+    // une partie en cours (partie) ou plusieurs (parties : les emplacements de l'Odyssée) ; un mode fermé (verrou) ne va pas plus loin
+    const parties = M.parties ? M.parties() : M.partie && M.partie() ? [M.partie()] : [], partie = parties[0] || null, verrou = M.verrou ? M.verrou() : null;
+    const enCours = m => (m.parties ? m.parties().length : m.partie && m.partie()) ? '<span class="rep">▶ En cours</span>' : '';
     if (E === 1) {
       corps = `<div class="etape">1 · Choisis ton mode</div>
-        <div class="modes">${D.modes.map(m => `<button class="mode ${m.k === M.k ? 'on' : ''}" onclick="CFG.mode_('${m.k}')">${m.partie && m.partie() ? '<span class="rep">▶ En cours</span>' : ''}<img src="${m.img}" alt="" onerror="this.style.visibility='hidden'"><b>${m.e} ${esc(m.n)}</b></button>`).join('')}</div>
-        <div class="grand" id="cfg-grand"><img src="${M.img}" alt="" onerror="this.remove()"><div class="t"><b>${M.e} ${esc(M.n)}</b><p>${M.desc ? M.desc() : ''}</p>${(M.pas ? M.pas() : []).map(p => `<span class="pas">${p}</span>`).join('')}${partie ? `<span class="pas" style="background:#163a2a;color:#7ff0a8">Partie en cours : ${partie.texte}</span>` : ''}</div></div>`;
-      bas = partie ? `<button class="go2" onclick="CFG.ferme();${partie.reprendre}">▶ Reprendre</button><button class="go3" onclick="CFG.va(2)">Nouvelle partie ›</button><button class="ab" onclick="if(confirm('Abandonner cette partie ? Elle sera effacée.')){${partie.abandonner};CFG.dessine()}">✕ abandonner la partie en cours</button>`
+        <div class="modes">${D.modes.map(m => `<button class="mode ${m.k === M.k ? 'on' : ''}" onclick="CFG.mode_('${m.k}')">${enCours(m)}<img src="${m.img}" alt="" onerror="this.style.visibility='hidden'"><b>${m.e} ${esc(m.n)}</b></button>`).join('')}</div>
+        <div class="grand" id="cfg-grand"><img src="${M.img}" alt="" onerror="this.remove()"><div class="t"><b>${M.e} ${esc(M.n)}</b><p>${M.desc ? M.desc() : ''}</p>${(M.pas ? M.pas() : []).map(p => `<span class="pas">${p}</span>`).join('')}${parties.length === 1 ? `<span class="pas" style="background:#163a2a;color:#7ff0a8">Partie en cours : ${partie.texte}</span>` : ''}${verrou ? `<span class="pas" style="background:#3a1a1a;color:#ffb3a8">🔒 ${verrou}</span>` : ''}</div></div>`;
+      bas = verrou && !parties.length ? `<button class="go" disabled>🔒 ${verrou}</button>`
+        : parties.length > 1 ? parties.map(x => `<div class="lig"><button class="go2" onclick="CFG.ferme();${x.reprendre}">▶ ${x.texte}</button><button class="x" onclick="if(confirm('Effacer cette partie ? Elle sera perdue.')){${x.abandonner};CFG.dessine()}">✕</button></div>`).join('') + (verrou ? '' : `<button class="go3" onclick="CFG.va(2)">Nouvelle partie ›</button>`)
+        : partie ? `<button class="go2" onclick="CFG.ferme();${partie.reprendre}">▶ Reprendre</button><button class="go3" onclick="CFG.va(2)">Nouvelle partie ›</button><button class="ab" onclick="if(confirm('Abandonner cette partie ? Elle sera effacée.')){${partie.abandonner};CFG.dessine()}">✕ abandonner la partie en cours</button>`
         : `<button class="go" onclick="CFG.va(2)">Suivant ›</button>`;
     } else if (E === 2) {
       corps = `<div class="etape">2 · Avec qui ?</div><div class="heros">${D.heros()}</div>${D.fiche ? `<div class="fiche">${D.fiche()}</div>` : ''}`;
@@ -103,11 +116,11 @@
       corps = `<div class="etape">3 · Les options</div>${L.length ? L.map(x => {
         if (!x.choix) return `<div class="opt"><h4>${x.titre}${x.verrou ? ` <i>🔒 ${x.verrou}</i>` : ''}</h4>${x.aide ? `<div class="aide">${x.aide}</div>` : ''}</div>`;
         const c = x.choix.find(c => c.v === V[x.k]);
-        return `<div class="opt"><h4>${x.titre}</h4>${x.aide ? `<div class="aide" style="margin-bottom:1.6cqw">${x.aide}</div>` : ''}<div class="ch">${x.choix.map(c => `<button class="${c.v === V[x.k] ? 'on' : ''}" onclick='CFG.choix(${JSON.stringify(x.k)}, ${JSON.stringify(c.v)})'>${c.n}</button>`).join('')}</div>${c && c.d ? `<div class="ch-d">${c.d}</div>` : ''}</div>`;
+        return `<div class="opt"><h4>${x.titre}</h4>${x.aide ? `<div class="aide" style="margin-bottom:1.6cqw">${x.aide}</div>` : ''}<div class="ch">${x.choix.map(c => `<button class="${c.v === V[x.k] ? 'on' : ''}" ${c.dis ? 'disabled' : ''} onclick='CFG.choix(${JSON.stringify(x.k)}, ${JSON.stringify(c.v)})'>${c.dis ? '🔒 ' : ''}${c.n}</button>`).join('')}</div>${c && c.d ? `<div class="ch-d">${c.d}</div>` : ''}</div>`;
       }).join('') : '<div class="opt"><div class="aide">Pas d’option pour ce mode.</div></div>'}`;
-      bas = `<div class="recap">${D.resume ? D.resume(M.k, V) : ''}</div>${partie ? '<div class="recap" style="color:#ffb3a8">⚠ Ta partie en cours sera abandonnée.</div>' : ''}<button class="go" onclick="CFG.jouer()">▶ Jouer</button>`;
+      bas = `<div class="recap">${D.resume ? D.resume(M.k, V) : ''}</div>${partie && !D.plusieurs ? '<div class="recap" style="color:#ffb3a8">⚠ Ta partie en cours sera abandonnée.</div>' : ''}<button class="go" onclick="CFG.jouer()">▶ Jouer</button>`;
     }
-    jeu.innerHTML = `<div class="cfg"><div class="haut">${retour}<span></span><button onclick="${D.regles || ''}">❓ Règles</button></div><h1>${D.titre}</h1>${fil}${corps}</div>`;
+    jeu.innerHTML = `<div class="cfg-boite"><div class="cfg"><div class="haut">${retour}<span></span><button onclick="${D.regles || ''}">❓ Règles</button></div><h1>${D.titre}</h1>${fil}${corps}</div></div>`;
     let b = document.getElementById('cfg-bas');
     if (!b) { b = document.createElement('div'); b.id = 'cfg-bas'; b.className = 'cfg-bas'; document.body.appendChild(b); }
     b.innerHTML = `<div>${bas}</div>`;

@@ -50,7 +50,7 @@ function envieRendezVous() {
   return L;
 }
 function envieVa(h) { try { sessionStorage.setItem('guilde-dans-mode', '1'); } catch (e) {} location.href = h; }
-function envieIleDuJour() { const p = document.getElementById('env-auj'); if (p) p.remove(); odyMode = 'jour'; odySlot = null; if (location.hash === '#odyssee') montre('odyssee'); else location.hash = 'odyssee'; }
+function envieIleDuJour() { sessionStorage.setItem('guilde-dans-mode', '1'); location.href = 'odyssee.html?jour=1'; } // 22/11 : directement le configurateur, mode « île du jour »
 function envieButin() { if (typeof butinRamasse === 'function') butinRamasse(); try { localStorage.setItem('guilde-butin-jour', envJourLocal()); } catch (e) {} if (typeof GM !== 'undefined') GM.son('choisir'); const rm = document.getElementById('rangmenu'); if (rm && typeof bandeauRangHTML === 'function') rm.innerHTML = bandeauRangHTML(); envieAujourdhui(true); envieBandeau(); }
 
 // le bouton « ☀ Aujourd'hui » au-dessus des portes (seulement au 1er étage)
@@ -114,7 +114,7 @@ function envieInstalle(E, PRO) {
     { nom:'Le tutoriel', pro:'tuto', href:'duel.html?tuto=1', desc:zok ? 'Le premier duel guidé par Moustache, à refaire quand tu veux.' : 'Un premier duel guidé par Moustache (5 minutes). À la clé : Zéphine et le cadre de Diplômé.' },
   ] };
   E.aventure = { titre:'🗺 Partir à l’aventure', sous:'30 à 45 minutes, ta partie est gardée.', portes:[
-    { nom:'L’Odyssée', pro:'odyssee', vers:'odyssee', desc:'Seul sur une île : explore case par case, fais grandir ton deck, vaincs le gardien de l’île.' },
+    { nom:'L’Odyssée', pro:'odyssee', href:'odyssee.html' /* 22/11 : le configurateur (odyssee-config.js) remplace l'étage des modes et des emplacements */, desc:'Seul sur une île : explore case par case, fais grandir ton deck, vaincs le gardien de l’île.' },
     { nom:'L’Expédition', pro:'expeditions', vers:'expeditions', desc:'Le navire volant : recrute ton équipage, choisis ta route sur la carte, affronte un boss tiré au sort.' },
     { nom:'La Descente', pro:'descente', href:'crypte.html#descente', desc:'Le grand voyage en 3 étages sous la Crypte : tu choisis tes salles, ton compagnon, tes objets.' },
     { nom:'Défense de la porte', pro:'defense', href:'defense.html', desc:'Tes dés deviennent des tours qui fusionnent : tiens la porte face aux vagues de monstres.' },
