@@ -609,14 +609,13 @@ function grandMenu() {
   const E = typeof AMIS !== 'undefined' && AMIS.etat, dem = E ? E.demandes.length : 0;
   const va = h => `try{sessionStorage.setItem('guilde-dans-mode','1')}catch(e){};location.href='${h}'`, ferme = "document.getElementById('grand-menu').remove();";
   // 22/11 (testeurs + choix de l'utilisateur A1) : le grand menu ne répète plus les 4 portes ni la barre du bas
-  const T = MENU_ENVIE ? [['🌀', 'Portails', ferme + 'grillePortails()'], ['📜', 'Quêtes', va('route.html#quetes'), qr], ['🎁', 'Route des rangs', va('route.html'), ar], ['🏛', 'Ma Guilde', ferme + "location.hash='guilde'"],
-    ['📊', 'Mon parcours', va('profil.html#parcours')], ['📖', 'Mes parties', ferme + 'Carnet.ouvrir()'], ['🎓', 'Tutoriel', va('duel.html?tuto=1')]] :
-    [['🌀', 'Portails', ferme + 'grillePortails()'], ['📜', 'Quêtes', va('route.html#quetes'), qr], ['🎁', 'Route des rangs', va('route.html'), ar], ['🏰', 'Mes héros', va('mes-heros.html')], ['🂠', 'Mes decks', va('mes-decks.html')], // 22/11 : la page des decks (deck-proposition.html)
-    ['🃏', 'Pouvoirs des héros', va('pouvoirs.html?retour=menu.html')], ['⚒', 'Le Forgeron', va('forge.html'), typeof groupesFusion === 'function' ? groupesFusion().length : 0], ['🗺', 'Héros d’aventure', va('aventuriers.html')], ['👤', 'Mon profil', va('profil.html'), typeof succesARecuperer === 'function' ? succesARecuperer() : 0], ['📊', 'Mon parcours', va('profil.html#parcours')],
+  // 22/11 (l'utilisateur : « dans le menu je dois retrouver plein d'icônes ») : le grand menu reste COMPLET (le choix A1 « allégé » est annulé)
+  const T = [['🌀', 'Portails', ferme + 'grillePortails()'], ['📜', 'Quêtes', va('route.html#quetes'), qr], ['🎁', 'Route des rangs', va('route.html'), ar], ['🏰', 'Mes héros', va('mes-heros.html')], ['🂠', 'Mes decks', va('mes-decks.html')], // 22/11 : la page des decks (deck-proposition.html)
+    ['🃏', 'Les pouvoirs', va('pouvoirs.html?retour=menu.html')], ['⚒', 'Le Forgeron', va('forge.html'), typeof groupesFusion === 'function' ? groupesFusion().length : 0], ['🗺', 'Héros d’aventure', va('aventuriers.html')], ['👤', 'Profil et succès', va('profil.html'), typeof succesARecuperer === 'function' ? succesARecuperer() : 0], ['📊', 'Mon parcours', va('profil.html#parcours')],
     ['📖', 'Mes parties', ferme + 'Carnet.ouvrir()'], ['🏛', 'Panthéon', va('pantheon.html')], ['👥', 'Amis', ferme + 'amisFenetre()', dem], ['🤝', 'Entre amis', ferme + "location.hash='enligne'"],
     ['📬', 'Boîte', ferme + 'amisBoite()'], ['🎓', 'Tutoriel', va('duel.html?tuto=1')], ['⚙️', 'Paramètres', ferme + 'GM.parametres()', window.GuildeMaj && GuildeMaj.aVoir() ? '!' : 0]];
   // 22/11 : les icônes peintes (images Gemini, ui/menu/m-*.webp) ; sans image, l'émoji reste
-  const GM_IMG = { 'Portails':'m-portails', 'Quêtes':'m-quetes', 'Route des rangs':'m-route', 'Mes héros':'m-heros', 'Pouvoirs des héros':'m-pouvoirs', 'Le Forgeron':'m-forge', 'Mon profil':'m-profil', 'Mon parcours':'m-parcours',
+  const GM_IMG = { 'Portails':'m-portails', 'Quêtes':'m-quetes', 'Route des rangs':'m-route', 'Mes héros':'m-heros', 'Les pouvoirs':'m-pouvoirs', 'Le Forgeron':'m-forge', 'Profil et succès':'m-profil', 'Mon parcours':'m-parcours',
     'Panthéon':'m-pantheon', 'Amis':'m-amis', 'Entre amis':'m-entreamis', 'Boîte':'m-boite', 'Mes parties':'m-parties', 'Tutoriel':'m-tuto', 'Paramètres':'m-param' };
   g = document.createElement('div'); g.id = 'grand-menu';
   g.innerHTML = `<button class="x" onclick="grandMenu()" aria-label="Fermer">✕</button>
