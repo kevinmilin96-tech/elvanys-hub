@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261122-144358">
+<head><meta name="guilde-version" content="20261122-144618">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="robots" content="noindex">
@@ -101,7 +101,10 @@
   .de.cache::after { content:'?'; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:6cqw; color:#c9c1ea88; font-weight:bold; }
   .de.tourne img { animation:tourne .26s linear infinite; } @keyframes tourne { 0% { transform:rotate(0) translateY(0) scale(1); } 50% { transform:rotate(190deg) translateY(-2.4cqw) scale(1.1); } 100% { transform:rotate(360deg) translateY(0) scale(1); } }
   .actions .lancer { flex:2; background:var(--or); color:#2b1d0a; border-color:var(--or); animation:pulse 1s infinite; }
-  .actions { display:flex; gap:2.5cqw; }
+  /* 22/11 (l'utilisateur : « tout le bas de l'écran s'est décalé, je suis obligé de défiler ») : les boutons restent collés en bas de l'écran,
+     et la place des dés disparaît quand il n'y a plus de dé */
+  .actions { display:flex; gap:2.5cqw; position:sticky; bottom:0; z-index:5; padding:2cqw 0 calc(2cqw + env(safe-area-inset-bottom)); background:linear-gradient(#0d0b1800, #0d0b18 35%); }
+  .plateau:empty { min-height:0; margin:0; }
   .actions button { flex:1; border-radius:3cqw; padding:2.6cqw; font-size:3.8cqw; font-weight:bold; border:2px solid #4b4580; background:#221d42; }
   .actions .fin { background:var(--or); color:#2b1d0a; border-color:var(--or); }
   .actions button:disabled { opacity:.35; }
@@ -499,7 +502,7 @@ function accueil() {
     <div class="choix">
       ${partieGardee() ? `<button onclick="reprend()" style="border-color:var(--ok);color:var(--ok);background:#163a2a">▶ Reprendre ta crypte<small>${haEsc(herosS(partieGardee().S).nom)} · tour ${partieGardee().S.tour} · ❤ ${partieGardee().S.pv}</small></button><button onclick="if(confirm('Abandonner cette partie ? Elle sera effacée.')){try{localStorage.removeItem('guilde-crypte-partie')}catch(e){};accueil()}" style="display:block;margin:0 auto;background:none;border:0;color:var(--doux);font-size:3cqw;text-decoration:underline;padding:1cqw;text-align:center">✕ abandonner cette partie</button>` : ''}
       <button onclick="descenteAccueil()" style="border-color:#ff9a4a;background:#3a1f10;color:#ffb070">🗺️ NOUVEAU · La Descente<small>Le grand voyage : 3 étages, tu choisis tes salles (combats, marchand, feu de camp, événements), objets, compagnons, dés de couleur, boss et breloques.</small></button>
-      <button onclick="lance(true)">📅 La crypte du jour<small>${(v => `${v.e} Plateau du jour : <b>${v.n}</b> · `)(C.VARIANTES[C.varianteDuJour('c' + jour())])}${(r => `${r.e} Règle du jour : <b>${r.n}</b> (${r.d}) · `)(C.REGLES[C.regleDuJour('c' + jour())])}La même pour tout le monde aujourd’hui. ${j ? `Ton record du jour : ${j.score} ${'★'.repeat(j.etoiles)}` : 'Pas encore tentée.'}</small></button>
+      <button onclick="lance(true)">🗓️ La crypte du jour<small>${(v => `${v.e} Plateau du jour : <b>${v.n}</b> · `)(C.VARIANTES[C.varianteDuJour('c' + jour())])}${(r => `${r.e} Règle du jour : <b>${r.n}</b> (${r.d}) · `)(C.REGLES[C.regleDuJour('c' + jour())])}La même pour tout le monde aujourd’hui. ${j ? `Ton record du jour : ${j.score} ${'★'.repeat(j.etoiles)}` : 'Pas encore tentée.'}</small></button>
       <button class="b2" onclick="lance(false)">🎲 Une crypte au hasard<small>Une nouvelle à chaque fois, avec un plateau au hasard, une carte spéciale et 3 défis à étoiles.</small></button>
     </div>
     ${amisJourHTML()}
