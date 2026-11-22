@@ -1,0 +1,171 @@
+<!doctype html><html lang="fr"><head><meta name="guilde-version" content="20261122-205654"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>Le configurateur de partie (à valider)</title>
+<style>
+body{font-family:system-ui,sans-serif;max-width:780px;margin:auto;padding:14px;background:#f6f4fb;color:#1d1626;line-height:1.45}
+h1{font-size:1.3rem;color:#6b2bd9}h2{font-size:1.1rem;margin-top:28px;padding-top:10px;border-top:3px solid #6b2bd9}
+.q{background:#fff7e0;border:2px solid #f3c96b;border-radius:10px;padding:10px 14px}.q li{margin-bottom:10px}.avis{color:#6b4a00}
+.note{background:#eef7ee;border-left:4px solid #5fb84a;padding:8px 12px;border-radius:6px}
+.rangee{display:flex;flex-wrap:wrap;gap:14px;justify-content:center}
+.bloc{text-align:center}.leg{color:#5b5470;font-size:.85rem;max-width:300px;margin:4px auto 0}
+.tel{width:300px;height:600px;border-radius:26px;border:8px solid #1b1428;background:radial-gradient(circle at 50% 0,#2b1f4a,#0f0a1c 70%);color:#efe6ff;padding:10px;box-shadow:0 8px 24px #0004;font-size:.8rem;position:relative;overflow:hidden;box-sizing:border-box;text-align:left}
+.haut{display:flex;justify-content:space-between;align-items:center;font-size:.75rem;color:#c9c1ea}
+.titre{font-family:Georgia,serif;color:#ffd98a;text-align:center;font-size:1.05rem;margin:4px 0 2px}
+.fil{display:flex;justify-content:center;gap:4px;margin:4px 0 8px}.fil span{width:52px;height:5px;border-radius:3px;background:#ffffff22}.fil span.on{background:#ffd98a}.fil span.fait{background:#5fb84a}
+.etape{text-align:center;font-size:.72rem;color:#c9c1ea;margin-bottom:6px}
+.modes{display:flex;gap:6px}
+.mode{flex:1;border-radius:12px;overflow:hidden;border:2px solid #ffffff22;background:#00000055;position:relative}
+.mode img{width:100%;height:92px;object-fit:cover;display:block;filter:brightness(.75)}
+.mode b{display:block;padding:4px 4px 6px;font-size:.7rem;text-align:center}
+.mode.on{border-color:#ffd98a;box-shadow:0 0 12px #ffd98a66}.mode.on img{filter:none}
+.grand{border-radius:14px;overflow:hidden;border:2px solid #ffd98a;margin-top:8px;background:#1a1230}
+.grand img{width:100%;height:118px;object-fit:cover;display:block}
+.grand .t{padding:8px 10px}.grand .t b{color:#ffd98a;font-size:.95rem}.grand .t p{margin:4px 0 0;font-size:.74rem;color:#ddd3ff}
+.pas{display:inline-block;background:#ffffff14;border-radius:8px;padding:1px 6px;margin:3px 3px 0 0;font-size:.68rem}
+.reprendre{position:absolute;top:4px;left:4px;right:4px;background:#163a2a;border:1px solid #5fdc8f;color:#7ff0a8;border-radius:8px;font-size:.62rem;text-align:center;padding:2px;font-weight:bold}
+.bas{position:absolute;left:10px;right:10px;bottom:10px}
+.go{display:block;text-align:center;border-radius:14px;padding:11px;background:linear-gradient(#f7b23a,#e07a12);color:#2a1400;font-weight:bold;font-size:.95rem}
+.go2{display:block;text-align:center;border-radius:14px;padding:9px;background:#ffffff14;color:#efe6ff;font-weight:bold;margin-bottom:6px}
+.heros{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.heros div{background:#221d42;border:2px solid #4b4580;border-radius:12px;padding:6px 2px;text-align:center;font-size:.72rem}
+.heros div.on{border-color:#ffd98a;background:#3a2f12}.heros img{width:58px;height:58px;border-radius:50%;object-fit:cover;display:block;margin:0 auto 3px}
+.fiche{background:#ffffff0d;border-radius:10px;padding:8px;margin-top:8px;font-size:.72rem}
+.opt{background:#ffffff0c;border:1px solid #ffffff1c;border-radius:10px;padding:7px 8px;margin-bottom:6px}
+.opt h4{margin:0 0 4px;font-size:.78rem;color:#ffd98a}.opt small{color:#c9c1ea}
+.choix{display:flex;gap:4px;flex-wrap:wrap}.choix span{background:#ffffff12;border:1px solid #ffffff22;border-radius:8px;padding:3px 6px;font-size:.68rem}.choix span.on{border-color:#ffd98a;background:#3a2f12;color:#ffe9b0}
+.verrou{opacity:.9}.verrou h4::after{content:' 🔒 imposé aujourd’hui';color:#c9c1ea;font-weight:normal;font-size:.66rem}
+.recap{background:#ffffff10;border-radius:10px;padding:6px 8px;font-size:.7rem;margin-bottom:6px;color:#ddd3ff}
+.recap b{color:#fff}
+.menuporte{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}
+.menuporte div{border-radius:12px;overflow:hidden;border:2px solid #ffffff22;position:relative}
+.menuporte img{width:100%;height:110px;object-fit:cover;display:block}
+.menuporte b{position:absolute;left:0;right:0;bottom:0;background:#000a;text-align:center;font-size:.7rem;padding:3px}
+.menuporte div.on{border-color:#ffd98a}
+.main{position:absolute;font-size:1.6rem;filter:drop-shadow(0 2px 3px #000)}
+</style></head><body>
+<h1>Le configurateur de partie (à valider, 22/11/2026)</h1>
+<p>Ton idée du 22/11&nbsp;: on <b>garde les 4 portes</b>&nbsp;; dans chaque porte, <b>un portail par jeu</b>&nbsp;; en touchant un jeu, un <b>configurateur commun</b> à tous les jeux&nbsp;: <b>1. le mode</b> → <b>2. le héros</b> → <b>3. les options</b> → <b>▶ Jouer</b>. Cette page montre les écrans sur l’exemple de la <b>Crypte</b>, avec les vraies images du jeu. Rien n’est construit&nbsp;: j’attends ton accord.</p>
+<div class="note">Un seul code pour tous les jeux (<code>configurateur.js</code>)&nbsp;: chaque jeu ne donne que sa liste de modes, ses options et sa fonction «&nbsp;lancer&nbsp;». Les accueils actuels (Crypte, Descente, Odyssée, Expéditions, Défense, Duel) disparaissent au profit de ce même écran.</div>
+
+<h2>0. Comment on y arrive</h2>
+<div class="rangee">
+<div class="bloc"><div class="tel" style="height:400px">
+ <div class="haut"><span>‹ Retour</span><span>⚡ Jouer vite</span><span>⚙️</span></div>
+ <div class="titre">⚡ Jouer vite</div>
+ <div class="menuporte">
+  <div class="on"><img src="menu-recu/mode-crypte.webp" alt=""><b>🪦 La Crypte</b></div>
+  <div><img src="menu-recu/mode-arene.webp" alt=""><b>⚔ Le Duel</b></div>
+  <div><img src="menu-recu/mode-fosse.webp" alt=""><b>🕳 La Fosse</b></div>
+  <div><img src="menu-recu/mode-chasse.webp" alt=""><b>🐉 Chasse au boss</b></div>
+ </div>
+ <span class="main" style="left:95px;top:150px">👆</span>
+ <p class="etape" style="margin-top:10px">Un portail = un jeu. Plus de portail par mode.</p>
+</div><p class="leg">La porte garde ses portails, mais chacun ouvre un <b>jeu</b> (la Crypte), plus un mode précis.</p></div>
+</div>
+
+<h2>1. Le mode (grandes cartes illustrées)</h2>
+<div class="rangee">
+<div class="bloc"><div class="tel">
+ <div class="haut"><span>‹ Retour</span><span></span><span>❓ Règles</span></div>
+ <div class="titre">🪦 La Crypte aux Sceaux</div>
+ <div class="fil"><span class="on"></span><span></span><span></span></div>
+ <div class="etape">1 · Choisis ton mode</div>
+ <div class="modes">
+  <div class="mode on"><img src="menu-recu/mode-crypte.webp" alt=""><b>🗓️ Crypte du jour</b></div>
+  <div class="mode"><img src="decor/crypte-table.webp" alt=""><b>🎲 Au hasard</b></div>
+  <div class="mode"><span class="reprendre">▶ Reprendre</span><img src="menu-recu/mode-descente.webp" alt=""><b>🗺️ La Descente</b></div>
+ </div>
+ <div class="grand"><img src="menu-recu/mode-crypte.webp" alt=""><div class="t"><b>🗓️ La crypte du jour</b><p>La même pour tout le monde aujourd’hui. Compare ton score avec tes amis.</p><span class="pas">🗼 Plateau : Les deux tours</span><span class="pas">🔥 Creuset bouillant</span><span class="pas">Record du jour : pas encore tentée</span></div></div>
+ <div class="bas"><div class="go">Suivant ›</div></div>
+</div><p class="leg">En haut, les 3 modes en petites cartes&nbsp;; celle qu’on touche s’affiche <b>en grand</b> avec sa description. «&nbsp;▶ Reprendre&nbsp;» seulement sur la carte du mode où une partie est en cours.</p></div>
+
+<div class="bloc"><div class="tel">
+ <div class="haut"><span>‹ Retour</span><span></span><span>❓ Règles</span></div>
+ <div class="titre">🪦 La Crypte aux Sceaux</div>
+ <div class="fil"><span class="on"></span><span></span><span></span></div>
+ <div class="etape">1 · Choisis ton mode</div>
+ <div class="modes">
+  <div class="mode"><img src="menu-recu/mode-crypte.webp" alt=""><b>🗓️ Crypte du jour</b></div>
+  <div class="mode"><img src="decor/crypte-table.webp" alt=""><b>🎲 Au hasard</b></div>
+  <div class="mode on"><span class="reprendre">▶ Reprendre</span><img src="menu-recu/mode-descente.webp" alt=""><b>🗺️ La Descente</b></div>
+ </div>
+ <div class="grand"><img src="menu-recu/mode-descente.webp" alt=""><div class="t"><b>🗺️ La Descente</b><p>Trois étages de cryptes, des haltes, un boss par étage. Ta vie ne remonte presque pas.</p><span class="pas">Partie en cours : Fez · étage 2 · ❤ 31</span></div></div>
+ <div class="bas"><div class="go2">▶ Reprendre ma descente</div><div class="go" style="background:#ffffff18;color:#efe6ff">Nouvelle descente ›</div></div>
+</div><p class="leg">Une partie en cours&nbsp;: deux boutons. «&nbsp;Reprendre&nbsp;» va <b>directement au jeu</b>&nbsp;; «&nbsp;Nouvelle&nbsp;» passe aux étapes 2 et 3 et prévient que l’ancienne sera abandonnée.</p></div>
+</div>
+
+<h2>2. Le héros</h2>
+<div class="rangee">
+<div class="bloc"><div class="tel">
+ <div class="haut"><span>‹ Mode</span><span></span><span>❓ Règles</span></div>
+ <div class="titre">🪦 La Crypte du jour</div>
+ <div class="fil"><span class="fait"></span><span class="on"></span><span></span></div>
+ <div class="etape">2 · Avec qui ?</div>
+ <div class="heros">
+  <div class="on"><img src="portraits/maelle.webp" alt="">Maëlle</div>
+  <div><img src="portraits/aldric.webp" alt="">Aldric</div>
+  <div><img src="portraits/pip.webp" alt="">Pip</div>
+  <div><img src="portraits/oria.webp" alt="">Oria</div>
+  <div><img src="portraits/gorm.webp" alt="">Gorm</div>
+  <div><img src="portraits/zephine.webp" alt="">Zéphine</div>
+ </div>
+ <div class="fiche">⚡ <b>Coup d’enclume</b> : brise 3 sceaux d’un monstre.<br>❤ 55 PV · niveau 48 · ★★★<br><small style="color:#c9c1ea">+ tes héros d’aventure en dessous (Fez…)</small></div>
+ <div class="bas"><div class="go">Suivant ›</div></div>
+</div><p class="leg">Le héros choisi est <b>retenu</b> pour ce jeu&nbsp;: la prochaine fois il est déjà sélectionné, un toucher sur «&nbsp;Suivant&nbsp;» suffit. Il n’y a plus deux choix du héros (Crypte puis Descente).</p></div>
+</div>
+
+<h2>3. Les options (selon le mode)</h2>
+<div class="rangee">
+<div class="bloc"><div class="tel">
+ <div class="haut"><span>‹ Héros</span><span></span><span>❓ Règles</span></div>
+ <div class="titre">🪦 La Crypte du jour</div>
+ <div class="fil"><span class="fait"></span><span class="fait"></span><span class="on"></span></div>
+ <div class="etape">3 · Les options</div>
+ <div class="opt verrou"><h4>🗼 Le plateau</h4><small>Les deux tours : 2 colonnes de 6 cartes.</small></div>
+ <div class="opt verrou"><h4>🔥 La règle du jour</h4><small>Creuset bouillant : le creuset plein donne 2 Runes.</small></div>
+ <div class="opt verrou"><h4>♛ Le Gardien</h4><small>3 phases.</small></div>
+ <div class="bas"><div class="recap">🗓️ Crypte du jour · <b>Maëlle</b> · Les deux tours · Creuset bouillant</div><div class="go">▶ Jouer</div></div>
+</div><p class="leg">Crypte du jour&nbsp;: tout est <b>imposé</b> (c’est la même pour tous)&nbsp;; on le <b>montre</b> quand même, pour savoir à quoi s’attendre.</p></div>
+
+<div class="bloc"><div class="tel">
+ <div class="haut"><span>‹ Héros</span><span></span><span>❓ Règles</span></div>
+ <div class="titre">🪦 Une crypte au hasard</div>
+ <div class="fil"><span class="fait"></span><span class="fait"></span><span class="on"></span></div>
+ <div class="etape">3 · Les options</div>
+ <div class="opt"><h4>Le plateau</h4><div class="choix"><span class="on">🎲 Au hasard</span><span>🂠 Trois colonnes</span><span>🃏 Quatre</span><span>🪜 L’escalier</span><span>🗼 Deux tours</span></div></div>
+ <div class="opt"><h4>Une règle en plus ?</h4><div class="choix"><span class="on">Aucune</span><span>🪙 Fortune</span><span>🏋 Main lourde</span><span>🎯 Main sûre</span><span>⛓ Chaînes d’or</span><span>…</span></div></div>
+ <div class="opt"><h4>⭐ 3 défis à étoiles</h4><small>Tirés au lancement.</small></div>
+ <div class="bas"><div class="recap">🎲 Au hasard · <b>Maëlle</b> · plateau au hasard</div><div class="go">▶ Jouer</div></div>
+</div><p class="leg">Crypte au hasard&nbsp;: <b>nouveau</b>, on peut choisir le plateau et ajouter une règle (aujourd’hui tout est tiré au hasard). Par défaut tout reste «&nbsp;au hasard&nbsp;».</p></div>
+
+<div class="bloc"><div class="tel">
+ <div class="haut"><span>‹ Héros</span><span></span><span>❓ Règles</span></div>
+ <div class="titre">🗺️ La Descente</div>
+ <div class="fil"><span class="fait"></span><span class="fait"></span><span class="on"></span></div>
+ <div class="etape">3 · Les options</div>
+ <div class="opt"><h4>🔮 Ta breloque</h4><div class="choix"><span>Aucune</span><span class="on">❤ Cœur de braise</span><span>🪙 Bourse pleine</span></div></div>
+ <div class="opt"><h4>🩸 Un pacte ?</h4><div class="choix"><span class="on">Pas de pacte</span><span>🩸 Sang ×1,3</span><span>🥀 Verre ×1,25</span><span>🌑 Nuit ×1,2</span></div></div>
+ <div class="opt"><h4>🕳 Profondeur</h4><div class="choix"><span class="on">0</span><span>1</span><span>2</span><span>3</span></div></div>
+ <div class="opt"><h4>Descente du jour ?</h4><div class="choix"><span class="on">Non, au hasard</span><span>🗓️ Celle du jour</span></div></div>
+ <div class="bas"><div class="recap">🗺️ Descente · <b>Maëlle</b> · ❤ · sans pacte · prof. 0</div><div class="go">▶ Jouer</div></div>
+</div><p class="leg">La Descente&nbsp;: les options d’aujourd’hui (breloque, pacte, profondeur) rangées au même endroit, chacune dans sa case.</p></div>
+</div>
+
+<h2>4. Ce que ça change partout ensuite</h2>
+<ul>
+<li><b>La Crypte</b> (pilote)&nbsp;: Crypte du jour · Au hasard · La Descente. La porte «&nbsp;Partir à l’aventure&nbsp;» garde son portail «&nbsp;La Descente&nbsp;», qui ouvre ce même configurateur avec la Descente <b>déjà choisie</b>.</li>
+<li><b>L’Odyssée</b>&nbsp;: île du jour · Saison 1 · sans fin · Route du Titan (les 3 emplacements de sauvegarde deviennent le «&nbsp;Reprendre&nbsp;» de la carte).</li>
+<li><b>Les Expéditions</b>&nbsp;: L’Expédition · Duel d’équipages · voyage du jour.</li>
+<li><b>La Défense</b>&nbsp;: partie normale · défi du jour.</li>
+<li><b>Le Duel</b>&nbsp;: contre l’ordinateur · Duel de la semaine · énigme du jour · tutoriel (le choix du deck devient une option de l’étape 3).</li>
+<li><b>Les scénarios flash</b> (ton idée)&nbsp;: plus tard, un mode de plus dans chaque configurateur.</li>
+</ul>
+
+<h2>5. Tes réponses</h2>
+<div class="q"><ol>
+<li><b>La forme</b>&nbsp;: 3 écrans à la suite (comme ici, avec «&nbsp;Suivant&nbsp;») ou une seule page qui défile (mode, héros, options l’un sous l’autre, «&nbsp;▶ Jouer&nbsp;» toujours en bas)&nbsp;?<br><span class="avis">Mon avis&nbsp;: 3 écrans, comme tu l’as décrit. Sur téléphone c’est plus lisible et la grande image du mode a la place de respirer.</span></li>
+<li><b>Le héros retenu</b>&nbsp;: un héros par jeu (Maëlle pour la Crypte, Gorm pour l’Odyssée…) ou un seul pour tous les jeux&nbsp;?<br><span class="avis">Mon avis&nbsp;: un par jeu. On ne joue pas forcément le même héros partout.</span></li>
+<li><b>Crypte au hasard</b>&nbsp;: d’accord pour pouvoir choisir le plateau et ajouter une règle (par défaut tout au hasard)&nbsp;?<br><span class="avis">Mon avis&nbsp;: oui, ça donne enfin des options à ce mode, sans rien imposer.</span></li>
+<li><b>La Descente du jour</b>&nbsp;: une option de la Descente (comme ici) ou un 4e mode à part «&nbsp;Descente du jour&nbsp;»&nbsp;?<br><span class="avis">Mon avis&nbsp;: une option, pour garder 3 cartes lisibles.</span></li>
+<li><b>Les images</b>&nbsp;: la carte «&nbsp;Au hasard&nbsp;» prend l’image de la table de la crypte en attendant. Tu veux un prompt Gemini pour une vraie image «&nbsp;crypte au hasard&nbsp;»&nbsp;?<br><span class="avis">Mon avis&nbsp;: oui, plus tard&nbsp;; on peut construire sans.</span></li>
+</ol></div>
+<p>Réponds simplement «&nbsp;1 oui, 2 …&nbsp;» ou «&nbsp;OK pour tout&nbsp;». Ensuite je construis la Crypte en pilote, je te montre une planche, puis les autres jeux un par un.</p>
+</body></html>
