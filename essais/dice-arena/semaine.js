@@ -38,10 +38,8 @@ function regleActive() { const f = typeof window !== 'undefined' && window.REGLE
 const SCEAUX_CLE = 'guilde-sceaux';
 // 14/11 : le Sceau peint par Gemini a un creux vide ; le jeu y pose la VRAIE face 6 du dé du héros (Gemini n'arrive pas à peindre nos dés)
 // 17/11 (choix de l'utilisateur) : un sceau dessiné par RÈGLE (portraits/sceau-<id de la règle>.webp) ; tant qu'il n'est pas arrivé, l'ancien sceau commun
-// 22/11 : le creux n'est pas au même endroit sur chaque sceau peint : [centre x %, centre y %, taille %] de la face posée
-const SCEAU_CREUX = { 'sem-riposte':[50,56,28], 'sem-brouillard':[50,55,27], 'sem-relance':[50,54,30], 'sem-marche':[50,54,32], 'sem-sang':[50,53,36], 'sem-eclair':[51,54,36], 'sem-soif':[50,56,36] };
-const sceauHTML = (heros, px, regle) => { const [cx, cy, t] = regle ? (SCEAU_CREUX[regle] || [50, 53, 34]) : [50, 50, 42];
-  return `<span style="position:relative;display:inline-block;width:${px}px;height:${px}px;vertical-align:middle"><img src="${regle ? `portraits/sceau-${regle}.webp?v=2` : 'portraits/sceau-semaine.webp?v=1'}" onerror="this.onerror=null;this.src='portraits/sceau-semaine.webp?v=1'" alt="" style="width:100%;height:100%"><img src="faces-${heros || 'gorm'}/face-6.webp" alt="" style="position:absolute;left:${cx - t / 2}%;top:${cy - t / 2}%;width:${t}%;height:${t}%;border-radius:18%"></span>`; };
+// 22/11 (l'utilisateur : « mettre un gros dé dessus, ça casse le visuel ») : le sceau peint seul, sans la face du dé ; le héros est écrit à côté
+const sceauHTML = (heros, px, regle) => `<img src="${regle ? `portraits/sceau-${regle}.webp?v=2` : 'portraits/sceau-semaine.webp?v=1'}" onerror="this.onerror=null;this.src='portraits/sceau-semaine.webp?v=1'" alt="" style="width:${px}px;height:${px}px;vertical-align:middle">`;
 const lesSceaux = () => { try { return JSON.parse(localStorage.getItem(SCEAUX_CLE) || '{}'); } catch (e) { return {}; } };
 
 // ---------------------------------------------------------------- branchements dans le Duel (seulement quand S.semaine est posé)
@@ -120,7 +118,7 @@ if (typeof nouvellePartie === 'function') {
     if (S && S.semaine && !S.sceauVu && !regleActive().forcee) {
       S.sceauVu = true;
       if (S.fini === 'gagne') { const m = lesSceaux(), neuf = !m[S.semaine]; if (neuf) { m[S.semaine] = { regle:regleDeLaSemaine().n, id:regleDeLaSemaine().id, heros:S.J.id }; try { localStorage.setItem(SCEAUX_CLE, JSON.stringify(m)); } catch (e) {} }
-        _finSem(); if (neuf) setTimeout(() => fenetre(`<div style="text-align:center">${sceauHTML(S.J.id, 120, regleDeLaSemaine().id)}</div><h2>🔏 Le Sceau de la semaine !</h2><p>« ${regleDeLaSemaine().n} » rejoint ta collection : ${Object.keys(lesSceaux()).length} sceau${Object.keys(lesSceaux()).length > 1 ? 'x' : ''} au Panthéon.</p><div class="corbin" style="font-style:italic">Moustache : « Un sceau de plus. Tu vas finir par en faire une collection. Oh, attends. »</div><div class="choixh"><button onclick="fermer();nouvellePartie(S.J.id, S.O.id)">Rejouer</button><button onclick="location.href='pantheon.html'">🏛 Le Panthéon</button><button onclick="location.href='menu.html'">⌂ Menu</button></div>`) || (() => { const f = document.querySelector('#fen .fenetre'); if (f) f.onclick = null; })(), 2600); // 17/11 : + Menu, et la fenêtre ne se ferme plus à côté
+        _finSem(); if (neuf) setTimeout(() => fenetre(`<div style="text-align:center">${sceauHTML(S.J.id, 120, regleDeLaSemaine().id)}</div><h2>🔏 Le Sceau de la semaine !</h2><p>« ${regleDeLaSemaine().n} », gagné avec ${(typeof HEROS !== 'undefined' && HEROS[S.J.id] && HEROS[S.J.id].nom) || 'ton héros'}, rejoint ta collection : ${Object.keys(lesSceaux()).length} sceau${Object.keys(lesSceaux()).length > 1 ? 'x' : ''} au Panthéon.</p><div class="corbin" style="font-style:italic">Moustache : « Un sceau de plus. Tu vas finir par en faire une collection. Oh, attends. »</div><div class="choixh"><button onclick="fermer();nouvellePartie(S.J.id, S.O.id)">Rejouer</button><button onclick="location.href='pantheon.html'">🏛 Le Panthéon</button><button onclick="location.href='menu.html'">⌂ Menu</button></div>`) || (() => { const f = document.querySelector('#fen .fenetre'); if (f) f.onclick = null; })(), 2600); // 17/11 : + Menu, et la fenêtre ne se ferme plus à côté
         return; }
     }
     _finSem();
