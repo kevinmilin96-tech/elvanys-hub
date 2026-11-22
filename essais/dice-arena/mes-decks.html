@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="fr">
+<head><meta name="guilde-version" content="20261122-160938">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#120f24">
+<title>La Guilde des Runes · Mes decks</title>
+<style>
+  /* 22/11 (décisions de l'utilisateur, deck-proposition.html) : la page « Mes decks » et l'atelier du deck, façon Hearthstone */
+  :root { --or:#f3c96b; --texte:#f1ecff; --doux:#c9c1ea; --c:#8b5cf6; }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body { margin:0; color:var(--texte); font:15px/1.4 Georgia, 'Times New Roman', serif;
+    background:radial-gradient(ellipse at 50% -10%, color-mix(in srgb, var(--c) 35%, #120f24), #120f24 60%) fixed, #120f24; transition:background .4s; }
+  main { max-width:620px; margin:0 auto; padding:12px 12px 80px; }
+  h1 { margin:4px 0 10px; text-align:center; color:var(--or); font-size:1.35em; }
+  button { font:inherit; color:inherit; cursor:pointer; }
+  .bande { display:flex; gap:6px; overflow-x:auto; padding:4px 2px 10px; scrollbar-width:none; }
+  .bande button { flex:0 0 auto; width:62px; border-radius:12px; border:2px solid #ffffff22; background:#000; padding:0; overflow:hidden; position:relative; }
+  .bande img { width:100%; aspect-ratio:1; object-fit:cover; display:block; filter:saturate(.7) brightness(.75); }
+  .bande span { position:absolute; left:0; right:0; bottom:0; font-size:.68em; background:#000b; text-align:center; padding:1px 0; }
+  .bande .on { border-color:var(--hc); box-shadow:0 0 12px var(--hc); } .bande .on img { filter:none; }
+  .bande .verrou { opacity:.45; }
+  .deckc { display:flex; align-items:center; gap:10px; width:100%; text-align:left; background:#ffffff0d; border:1px solid #ffffff22; border-radius:14px; padding:10px; margin-bottom:8px; }
+  .deckc.actif { border-color:var(--or); box-shadow:0 0 0 1px #f3c96b66; }
+  .deckc .ic { font-size:1.7em; width:1.4em; text-align:center; }
+  .deckc .tx { flex:1; } .deckc small { color:var(--doux); } .deckc .ko { color:#ffb0b0; }
+  .etoile { background:none; border:none; font-size:1.5em; padding:4px; filter:grayscale(1) opacity(.5); } .etoile.on { filter:none; }
+  .bt { border:none; border-radius:12px; padding:10px 14px; font-weight:bold; background:#6b2bd9; color:#fff; }
+  .bt.sombre { background:#2a2650; border:1px solid #4b4580; color:var(--doux); } .bt.or { background:linear-gradient(#f3c96b, #d99a2b); color:#2a1a00; } .bt.rouge { background:#5a1a24; color:#ffc9c9; }
+  .bt:disabled { opacity:.4; }
+  .boutons { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin:10px 0; }
+  .aide { color:var(--doux); font-size:.85em; text-align:center; }
+  /* l'atelier */
+  .tete { display:flex; gap:8px; align-items:center; }
+  .tete input { flex:1; font:inherit; font-weight:bold; color:#fff; background:#ffffff10; border:1px solid #4b4580; border-radius:10px; padding:8px; }
+  .icones { display:flex; gap:4px; flex-wrap:wrap; margin:6px 0; } .icones button { background:#ffffff10; border:1px solid transparent; border-radius:8px; font-size:1.2em; padding:2px 6px; } .icones .on { border-color:var(--or); }
+  .compte { display:flex; justify-content:space-between; align-items:center; margin:8px 0 4px; } .compte b { font-size:1.15em; } .compte .ok { color:#7ee07e; } .compte .ko { color:#ffb0b0; }
+  .liste { display:flex; flex-direction:column; gap:3px; }
+  .ligne { display:flex; align-items:center; gap:6px; background:#ffffff10; border:none; border-radius:8px; padding:4px 8px; text-align:left; width:100%; }
+  .ligne .co { width:22px; height:22px; border-radius:50%; background:#2a7fc1; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:.78em; flex:0 0 auto; }
+  .ligne .nm { flex:1; } .ligne .x { color:var(--or); font-weight:bold; } .ligne.leg .nm, .ligne.leg .x { color:#ffb347; } .ligne .moins { color:#ff9b9b; font-size:.8em; }
+  .courbe { display:flex; align-items:flex-end; gap:6px; height:74px; padding:18px 8px 18px; background:#ffffff0a; border-radius:10px; margin:8px 0; }
+  .courbe div { flex:1; background:linear-gradient(#ffd98a, #f7862a); border-radius:4px 4px 0 0; position:relative; min-height:2px; }
+  .courbe div span { position:absolute; top:-16px; left:0; right:0; text-align:center; font-size:.72em; }
+  .courbe div i { position:absolute; bottom:-17px; left:0; right:0; text-align:center; font-size:.72em; color:var(--doux); font-style:normal; }
+  .filtres { display:flex; gap:4px; flex-wrap:wrap; margin:10px 0 6px; } .filtres button { background:#ffffff12; border:1px solid transparent; border-radius:10px; padding:3px 9px; font-size:.82em; } .filtres .on { border-color:var(--or); color:var(--or); }
+  .coll { display:grid; grid-template-columns:repeat(3, 1fr); gap:6px; justify-items:center; }
+  .coll .c { position:relative; cursor:pointer; transition:transform .12s; } .coll .c:active { transform:scale(.96); }
+  .coll .c.plein { opacity:.4; }
+  .coll .leg .carteG { filter:drop-shadow(0 0 6px #ffb347); }
+  .pastille { position:absolute; bottom:5px; left:50%; transform:translateX(-50%); background:#000c; border:1px solid var(--or); color:var(--or); border-radius:10px; padding:0 7px; font-size:.75em; font-weight:bold; z-index:3; white-space:nowrap; }
+  .pastille.max { border-color:#888; color:#bbb; } .pastille.legp { border-color:#ffb347; color:#ffb347; }
+  .simple { border-radius:8px; padding:5px; background:linear-gradient(#5a3b8f, #2b1b4a); border:2px solid #b58cff; aspect-ratio:864/1216; font-size:.62em; display:flex; flex-direction:column; gap:2px; }
+  .simple .co { align-self:flex-end; width:18px; height:18px; border-radius:50%; background:#2a7fc1; text-align:center; font-weight:bold; }
+  .simple .n { font-weight:bold; color:#fff; }
+  .fen { position:fixed; inset:0; background:#000c; z-index:20; display:flex; align-items:center; justify-content:center; padding:14px; }
+  .fen > div { background:#2a2650; border-radius:16px; padding:14px 16px; max-width:420px; max-height:90vh; overflow:auto; }
+</style>
+</head>
+<body>
+<main>
+  <h1>🂠 Mes decks</h1>
+  <div class="bande" id="bande"></div>
+  <div id="zone"></div>
+</main>
+<div id="fen"></div>
+<script src="guide.js"></script>
+<script src="musique.js"></script>
+<script src="donnees.js"></script>
+<script src="cartes.js"></script>
+<script>
+document.head.insertAdjacentHTML('beforeend', '<style>' + CSS_CARTE + '</style>');
+const SORTE = { u:'Créature', s:'Sort', e:'Équipement', r:'Piège' };
+const ICONES = ['🂠', '🔥', '🛡', '⚔', '🐺', '🌿', '⭐', '🎲', '⚗', '🎵', '🧭', '💀'];
+const q = new URLSearchParams(location.search);
+const ZOK = () => localStorage.getItem('guilde-tuto') === 'fait';
+const verrouille = id => id === 'zephine' && !ZOK();
+let actuel = HEROS[q.get('heros')] ? q.get('heros') : (localStorage.getItem('guilde-tour') || ORDRE[0]);
+let ed = null; // l'atelier ouvert : { i (n° du deck, -1 = nouveau), nom, ic, cartes }
+let filtre = 'tout';
+const compter = d => { const n = {}; d.forEach(k => n[k] = (n[k] || 0) + 1); return n; };
+const moyenne = l => l.length ? (l.reduce((a, k) => a + CARTES[k].c, 0) / l.length).toFixed(1).replace('.', ',') : '0';
+const fen = h => { document.getElementById('fen').innerHTML = h ? `<div class="fen" onclick="if(event.target===this)fen('')"><div>${h}</div></div>` : ''; };
+function carte(k, w) { return CADRES_OK.includes(CADRE_DE(k)) ? carteGuilde(k, { w }) : `<div class="simple" style="width:${w}px"><span class="co">${CARTES[k].c}</span><span class="n">${CARTES[k].n}</span><span>${SORTE[CARTES[k].t]}</span><span>🎲 ${txtLisible(CARTES[k].txt)}</span><span>${CARTES[k].d}</span></div>`; }
+
+function bande() {
+  document.getElementById('bande').innerHTML = ORDRE.map(id => `<button class="${id === actuel ? 'on' : ''} ${verrouille(id) ? 'verrou' : ''}" style="--hc:${HEROS[id].c}" onclick="choisir('${id}')"><img src="portraits/${id}.webp" alt=""><span>${verrouille(id) ? '🔒 ' : ''}${HEROS[id].nom}</span></button>`).join('');
+}
+function choisir(id) {
+  if (verrouille(id)) { fen(`<h3>🔒 ${HEROS[id].nom}</h3><p>Elle se débloque en finissant le tutoriel.</p><div class="boutons"><button class="bt" onclick="fen('')">Compris</button></div>`); return; }
+  if (ed && !confirm('Quitter l’atelier sans enregistrer ?')) return;
+  ed = null; actuel = id; localStorage.setItem('guilde-tour', id); history.replaceState(null, '', '?heros=' + id); bande(); dessine();
+}
+function dessine() { document.documentElement.style.setProperty('--c', HEROS[actuel].c); if (ed) atelier(); else liste(); }
+
+// ---------------------------------------------------------------- la liste des decks du héros
+function liste() {
+  const id = actuel, D = lireDecks(id);
+  const ligneDeck = (i, nom, ic, l, ok) => `<div class="deckc ${D.actif === i ? 'actif' : ''}">
+    <button class="etoile ${D.actif === i ? 'on' : ''}" onclick="${ok ? `etoile(${i})` : 'pasPret()'}" title="Partir au combat avec ce deck">⭐</button>
+    <button style="all:unset;flex:1;display:flex;align-items:center;gap:10px;cursor:pointer" onclick="${i >= 0 ? `ouvre(${i})` : 'voirBase()'}"><span class="ic">${ic}</span><span class="tx"><b>${nom}</b><br>
+    <small>${i < 0 ? 'Donné par la Guilde, toujours là · ' : ''}${ok ? `${l.length} / ${DECK_TAILLE} · coût moyen ${moyenne(l)}` : `<span class="ko">${l.length} / ${DECK_TAILLE} : ${l.length > DECK_TAILLE ? `retire ${l.length - DECK_TAILLE} carte${l.length - DECK_TAILLE > 1 ? 's' : ''}` : 'à finir'}</span>`}${D.actif === i ? ' · <b style="color:var(--or)">part au combat</b>' : ''}</small></span><span>›</span></button></div>`;
+  document.getElementById('zone').innerHTML = `
+    ${D.decks.map((d, i) => ligneDeck(i, d.nom, d.ic || '🂠', d.cartes, deckValide(id, d.cartes))).join('')}
+    ${ligneDeck(-1, 'Le deck de base', '📜', deckBase(id), true)}
+    <div class="boutons">${D.decks.length < DECKS_MAX ? `<button class="bt" onclick="nouveau()">＋ Nouveau deck</button>` : `<span class="aide">${DECKS_MAX} decks au plus par héros : supprime-en un pour en faire un autre.</span>`}</div>
+    <p class="aide">⭐ = le deck qui part au combat (Duel, Odyssée, épreuves). On le choisit aussi juste avant un Duel.<br>${DECK_TAILLE} cartes par deck · 2 exemplaires au plus · <span style="color:#ffb347">1 seul pour une légendaire ★</span></p>
+    <div class="boutons"><button class="bt sombre" onclick="location.href='duel.html?h=${id}'">⚔ Jouer avec ${HEROS[id].nom}</button><button class="bt sombre" onclick="location.href='heros.html?h=${id}'">📖 La Tour des héros</button></div>`;
+}
+function etoile(i) { const D = lireDecks(actuel); D.actif = i; ecrisDecks(actuel, D); if (typeof son === 'function') son('ok'); liste(); }
+function pasPret() { fen(`<h3>Ce deck n’est pas prêt</h3><p>Il doit avoir exactement ${DECK_TAILLE} cartes pour partir au combat. Ouvre-le pour le finir.</p><div class="boutons"><button class="bt" onclick="fen('')">Compris</button></div>`); }
+function voirBase() {
+  const n = compter(deckBase(actuel)), u = Object.keys(n).sort((a, b) => CARTES[a].c - CARTES[b].c || CARTES[a].n.localeCompare(CARTES[b].n));
+  fen(`<h3>📜 Le deck de base de ${HEROS[actuel].nom}</h3><div class="liste">${u.map(k => `<div class="ligne"><span class="co">${CARTES[k].c}</span><span class="nm">${CARTES[k].n}</span><span class="x">×${n[k]}</span></div>`).join('')}</div>
+  <p class="aide">On ne peut pas le changer : fais un nouveau deck en partant de lui.</p><div class="boutons"><button class="bt" onclick="fen('')">Fermer</button></div>`);
+}
+function nouveau() {
+  fen(`<h3>＋ Nouveau deck</h3><p>Tu pars de quoi ?</p><div class="boutons" style="flex-direction:column">
+  <button class="bt" onclick="fen('');creer(true)">📜 Une copie du deck de base</button><button class="bt sombre" onclick="fen('');creer(false)">Un deck vide</button></div>`);
+}
+function creer(base) { const D = lireDecks(actuel); ed = { i:-1, nom:`Deck ${D.decks.length + 1}`, ic:'🂠', cartes:base ? deckBase(actuel).filter((k, j, a) => a.slice(0, j).filter(x => x === k).length < maxDe(k)) : [] }; atelier(); scrollTo(0, 0); }
+function ouvre(i) { const d = lireDecks(actuel).decks[i]; ed = { i, nom:d.nom, ic:d.ic || '🂠', cartes:d.cartes.filter(k => CARTES[k]) }; atelier(); scrollTo(0, 0); }
+
+// ---------------------------------------------------------------- l'atelier du deck
+function atelier() {
+  const id = actuel, n = compter(ed.cartes), t = ed.cartes.length, ok = deckValide(id, ed.cartes);
+  const u = Object.keys(n).sort((a, b) => CARTES[a].c - CARTES[b].c || CARTES[a].n.localeCompare(CARTES[b].n));
+  const cb = [0, 0, 0, 0, 0]; ed.cartes.forEach(k => cb[Math.min(4, CARTES[k].c)]++); const mx = Math.max(1, ...cb);
+  const pool = poolDe(id).filter(k => {
+    const c = CARTES[k]; if (filtre === 'tout') return true; if (filtre === 'heros') return !GUILDE.includes(k); if (filtre === 'guilde') return GUILDE.includes(k);
+    if (filtre === '3') return c.c >= 3; if (/^\d$/.test(filtre)) return c.c === +filtre; return c.t === filtre; })
+    .sort((a, b) => (HEROS[id].deck.includes(b) - HEROS[id].deck.includes(a)) || CARTES[a].c - CARTES[b].c || CARTES[a].n.localeCompare(CARTES[b].n));
+  const F = [['tout', 'Tout'], ['heros', HEROS[id].nom], ['guilde', 'Guilde'], ['0', '0'], ['1', '1'], ['2', '2'], ['3', '3+'], ['u', '⚔ Créatures'], ['s', '✦ Sorts'], ['e', '⚒ Équipements'], ['r', '⛓ Pièges']];
+  document.getElementById('zone').innerHTML = `
+    <div class="tete"><button class="bt sombre" onclick="ferme()">‹</button><input id="nom" value="${ed.nom.replace(/"/g, '&quot;')}" maxlength="28" oninput="ed.nom=this.value"></div>
+    <div class="icones">${ICONES.map(c => `<button class="${ed.ic === c ? 'on' : ''}" onclick="ed.ic='${c}';atelier()">${c}</button>`).join('')}</div>
+    <div class="compte"><span>Cartes · coût moyen ${moyenne(ed.cartes)}</span><b class="${ok ? 'ok' : 'ko'}">${t} / ${DECK_TAILLE} ${ok ? '✔' : ''}</b></div>
+    ${t > DECK_TAILLE ? `<p class="aide" style="color:#ffb0b0">Retire ${t - DECK_TAILLE} carte${t - DECK_TAILLE > 1 ? 's' : ''} (touche une ligne).</p>` : ''}
+    <div class="liste">${u.length ? u.map(k => `<button class="ligne ${estLegendaire(k) ? 'leg' : ''}" onclick="retire('${k}')"><span class="co">${CARTES[k].c}</span><span class="nm">${CARTES[k].n}${estLegendaire(k) ? ' ★' : ''}</span><span class="x">×${n[k]}</span><span class="moins">−</span></button>`).join('') : '<p class="aide">Ton deck est vide : touche des cartes plus bas pour les ajouter.</p>'}</div>
+    <div style="font-size:.8em;color:var(--doux);margin-top:8px">Courbe des coûts (en PC)</div>
+    <div class="courbe">${cb.map((v, i) => `<div style="height:${v / mx * 100}%"><span>${v}</span><i>${i === 4 ? '4+' : i}</i></div>`).join('')}</div>
+    <div class="boutons"><button class="bt sombre" onclick="complete()" ${t >= DECK_TAILLE ? 'disabled' : ''}>🪄 Compléter pour moi</button><button class="bt or" onclick="enregistre()">✔ Enregistrer</button></div>
+    <h3 style="margin:14px 0 2px;color:var(--or)">Ta collection</h3><p class="aide" style="text-align:left;margin:0">Touche une carte pour l’ajouter. Sous chaque carte : combien tu en as mis.</p>
+    <div class="filtres">${F.map(([k, l]) => `<button class="${filtre === k ? 'on' : ''}" onclick="filtre='${k}';atelier()">${l}</button>`).join('')}</div>
+    <div class="coll">${pool.map(k => { const m = maxDe(k), a = n[k] || 0, plein = a >= m || t >= DECK_TAILLE;
+      return `<div class="c ${plein ? 'plein' : ''} ${estLegendaire(k) ? 'leg' : ''}" onclick="ajoute('${k}')">${carte(k, 108)}<span class="pastille ${a >= m ? 'max' : estLegendaire(k) ? 'legp' : ''}">${estLegendaire(k) ? '★ ' : ''}${a}/${m}</span></div>`; }).join('') || '<p class="aide">Aucune carte avec ce filtre.</p>'}</div>
+    ${ed.i >= 0 ? `<div class="boutons"><button class="bt rouge" onclick="supprime()">🗑 Supprimer ce deck</button></div>` : ''}`;
+}
+function ajoute(k) {
+  const a = ed.cartes.filter(x => x === k).length;
+  if (ed.cartes.length >= DECK_TAILLE) return fen(`<p>Ton deck a déjà ${DECK_TAILLE} cartes : retire d’abord une carte (touche une ligne en haut).</p><div class="boutons"><button class="bt" onclick="fen('')">Compris</button></div>`);
+  if (a >= maxDe(k)) return fen(`<p>${estLegendaire(k) ? `<b style="color:#ffb347">${CARTES[k].n}</b> est légendaire : <b>une seule</b> par deck.` : `Déjà <b>${DECK_MAX}</b> fois ${CARTES[k].n} : c’est le maximum.`}</p><div class="boutons"><button class="bt" onclick="fen('')">Compris</button></div>`);
+  ed.cartes.push(k); if (typeof son === 'function') son('pioche'); const y = scrollY; atelier(); scrollTo(0, y);
+}
+function retire(k) { const i = ed.cartes.lastIndexOf(k); if (i >= 0) ed.cartes.splice(i, 1); const y = scrollY; atelier(); scrollTo(0, y); }
+// « Compléter pour moi » : d'abord les cartes du deck de base qui manquent, puis les cartes du héros, puis la Guilde, les moins chères d'abord
+function complete() {
+  const id = actuel, n = compter(ed.cartes), prend = k => { if (ed.cartes.length < DECK_TAILLE && (n[k] || 0) < maxDe(k)) { ed.cartes.push(k); n[k] = (n[k] || 0) + 1; return true; } return false; };
+  deckBase(id).forEach(prend);
+  const reste = poolDe(id).sort((a, b) => (HEROS[id].deck.includes(b) - HEROS[id].deck.includes(a)) || CARTES[a].c - CARTES[b].c);
+  for (let tour = 0; tour < 2; tour++) reste.forEach(prend);
+  atelier();
+}
+function enregistre() {
+  const D = lireDecks(actuel), d = { nom:(ed.nom || '').trim() || 'Mon deck', ic:ed.ic, cartes:ed.cartes.slice() };
+  if (ed.i >= 0) D.decks[ed.i] = d; else { if (D.decks.length >= DECKS_MAX) return; D.decks.push(d); ed.i = D.decks.length - 1; }
+  const ok = deckValide(actuel, d.cartes);
+  if (ok && D.actif < 0) D.actif = ed.i; // le premier deck complet devient celui qui part au combat
+  if (!ok && D.actif === ed.i) D.actif = -1;
+  ecrisDecks(actuel, D); ed = null; if (typeof son === 'function') son('ok'); liste(); scrollTo(0, 0);
+  if (!ok) fen(`<p>Deck enregistré, mais <b>pas encore prêt</b> : il lui faut exactement ${DECK_TAILLE} cartes pour partir au combat.</p><div class="boutons"><button class="bt" onclick="fen('')">Compris</button></div>`);
+}
+function ferme() { if (!confirm('Quitter l’atelier sans enregistrer ?')) return; ed = null; liste(); }
+function supprime() {
+  fen(`<h3>🗑 Supprimer « ${ed.nom} » ?</h3><div class="boutons"><button class="bt sombre" onclick="fen('')">Non</button><button class="bt rouge" onclick="supprimeOui()">Oui, supprimer</button></div>`);
+}
+function supprimeOui() { const D = lireDecks(actuel); D.decks.splice(ed.i, 1); if (D.actif === ed.i) D.actif = -1; else if (D.actif > ed.i) D.actif--; ecrisDecks(actuel, D); ed = null; fen(''); liste(); }
+
+if (verrouille(actuel)) actuel = ORDRE[0];
+bande(); dessine();
+if (typeof GM !== 'undefined') { GM.retour(q.get('retour') || 'menu.html'); GM.musique('heros'); GM.bouton(); }
+if (typeof Guide !== 'undefined') Guide.lance('mesdecks', [
+  [null, 'Mes decks : chaque héros peut avoir jusqu’à 3 decks à toi, en plus de son deck de base.'],
+  ['#bande', 'Touche un portrait pour voir les decks de ce héros.'],
+  ['#zone', 'L’étoile ⭐ choisit le deck qui part au combat. Touche un deck pour l’ouvrir dans l’atelier : 20 cartes, 2 exemplaires au plus, une seule légendaire. Miaou !'],
+]);
+</script>
+</body>
+</html>

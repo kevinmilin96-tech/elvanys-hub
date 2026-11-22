@@ -121,13 +121,13 @@ function eniFabrique(iso, depuis) {
     const x = connu.x; nouvellePartie(x.h, x.o, true);
     S.salle = { id:'aucune', n:'', d:'' }; S.log = []; S.auto = true;
     const J = S.J, O = S.O;
-    J.tours = x.t; J.relance = 0; J.aLancer = false; J.deck = []; J.meute = 0;
+    J.tours = x.t; J.relance = 0; J.aLancer = false; J.deck = []; J.meute = 0; J.fatigueOK = false;
     J.des = x.d.map((v, i) => ({ sac:[], v, pose:false, mod:false, i }));
     J.main = [...x.c]; J.pc = x.pc; J.jauge = x.j;
     J.front = x.a.map((n, i) => ({ ...ENI_ALLIES.find(u => u.n === n), id:'a' + i, pret:true })); J.front.forEach(u => u.vmax = u.v);
     O.front = x.g.map((n, i) => ({ ...ENI_GARDES.find(u => u.n === n), id:'o' + i, pret:false })); O.front.forEach(u => u.vmax = u.v);
     if (x.df && O.front.length) O.front[0].defense = true;
-    O.gardeB = x.gb; O.bouclier = 0; O.main = []; O.deck = [];
+    O.gardeB = x.gb; O.bouclier = 0; O.main = []; O.deck = []; O.fatigueOK = false;
     const etat = structuredClone(S); etat.O.pv = connu.m; etat.auto = false; etat.log = [];
     return { iso, niv, essai:connu.e, etat, sol:connu.s, max:connu.m, noeuds:0 };
   }
@@ -138,7 +138,7 @@ function eniFabrique(iso, depuis) {
     nouvellePartie(h, o, true);
     S.salle = { id:'aucune', n:'', d:'' }; S.log = []; S.auto = true;
     const J = S.J, O = S.O;
-    J.tours = P.des - 2; J.relance = 0; J.aLancer = false; J.deck = []; J.meute = 0;
+    J.tours = P.des - 2; J.relance = 0; J.aLancer = false; J.deck = []; J.meute = 0; J.fatigueOK = false;
     J.des = Array.from({ length:P.des }, (_, i) => ({ sac:[], v:1 + Math.floor(r() * 6), pose:false, mod:false, i }));
     // 14/11 nuit : les cartes ajoutées au deck de 30 (préfixes m_, a_, p_, o_, g_, z_, gu_) n'entrent PAS dans l'énigme : ses mains et ses solutions sont calculées d'avance avec les anciennes cartes
     const pot = [...new Set([...HEROS[h].deck, ...GUILDE])].filter(k => !ENI_EXCLU.includes(k) && !/^(m|a|p|o|g|z|gu|n)_/.test(k));
@@ -155,7 +155,7 @@ function eniFabrique(iso, depuis) {
     O.front.forEach(u => u.vmax = u.v);
     if (niv >= 5 && O.front.length && r() < .35) O.front[0].defense = true;
     O.gardeB = niv >= 4 && r() < .4 ? 2 + Math.floor(r() * 5) : 0; O.bouclier = 0;
-    O.main = []; O.deck = []; O.pv = O.pvMax;
+    O.main = []; O.deck = []; O.fatigueOK = false; O.pv = O.pvMax;
     const etat = structuredClone(S);
     if (connu && essai === connu.e) { etat.O.pv = connu.m; etat.auto = false; etat.log = []; return { iso, niv, essai, etat, sol:connu.s, max:connu.m, noeuds:0 }; }
     const sol = eniResous(etat, 40000);

@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261122-155226">
+<head><meta name="guilde-version" content="20261122-160938">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="robots" content="noindex">
@@ -73,6 +73,12 @@
   .journal { background:#0006; border-radius:10px; padding:6px 9px; font-size:.78em; color:var(--doux); max-height:130px; overflow:auto; margin-top:6px; }
   .journal div { margin:2px 0; }
   .fenetre { position:fixed; inset:0; background:#000c; z-index:10; display:flex; align-items:center; justify-content:center; padding:14px; }
+  .paqliste { display:flex; flex-direction:column; gap:3px; } .paqliste > div { display:flex; align-items:center; gap:6px; background:#ffffff10; border-radius:7px; padding:3px 6px; }
+  .paqliste .co { width:20px; height:20px; border-radius:50%; background:#2a7fc1; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:.75em; } .paqliste .nm { flex:1; }
+  .pastilles [data-k="main"].paqbas { color:#ffb0b0 !important; border-color:#ff6b6b !important; animation:paqbas 1.4s ease-in-out infinite; } @keyframes paqbas { 50% { box-shadow:0 0 10px #ff6b6b; } }
+  .choixdecks { display:flex; flex-direction:column; gap:6px; margin:8px 0; } .choixdeck { display:flex; align-items:center; gap:10px; text-align:left; padding:8px 10px; border-radius:12px; background:#ffffff12 !important; color:#f1ecff !important; border:1px solid #ffffff2a !important; } .choixdeck b { color:#fff; } .choixdeck > span:first-child { font-size:1.6em; } .choixdeck small { color:#c9c1ea; } .choixdeck.actif { box-shadow:0 0 0 2px #ffd98a; }
+  .mullmain { display:flex; flex-wrap:wrap; justify-content:center; gap:6px; margin:10px 0; } .mullc { position:relative; cursor:pointer; transition:transform .15s; }
+  .mullc.rejet { transform:translateY(-8px); } .mullc.rejet::after { content:'↺'; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:2.4em; color:#ff6b6b; text-shadow:0 0 6px #000; background:#0007; border-radius:6px; }
   .fenetre > div { background:#2a2650; border-radius:16px; padding:14px 16px; max-width:520px; max-height:90vh; overflow:auto; }
   .fenetre h2 { color:var(--or); margin:.1em 0 .4em; font-size:1.2em; }
   .fenetre li { margin:.35em 0; }
@@ -732,7 +738,7 @@
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
 // 14/11 : l'Odyssée sans fin a ses propres emplacements (odyssee.js lit SANSFIN)
 const SANSFIN = new URLSearchParams(location.search).get('sansfin') === '1', ROUTE_TITAN = new URLSearchParams(location.search).get('route') === '1', EPREUVE_PAGE = new URLSearchParams(location.search).get('epreuve') === '1', ODY_PAGE = EPREUVE_PAGE ? 'epreuves.html' : 'odyssee.html' + (SANSFIN ? '?sansfin=1' : ROUTE_TITAN ? '?route=1' : '');
-const VERSION = '20261122-155226';
+const VERSION = '20261122-160938';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -756,8 +762,8 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden) veri
 <script src="rang.js?v=82b0bff726"></script>
 <script src="heros-etoiles.js?v=48da21e34c"></script>
 <script src="heros-aventure.js?v=31db8c2ed4"></script>
-<script src="donnees.js?v=7c4f716d6e"></script>
-<script src="odyssee.js?v=8a56e82770"></script>
+<script src="donnees.js?v=1513808a25"></script>
+<script src="odyssee.js?v=2dd4974f8b"></script>
 <script src="bestiaire.js?v=f0f3165c93"></script>
 <script src="aventure.js?v=09133a6200"></script>
 <script src="odyssee-sansfin.js?v=7b3807249c"></script>
@@ -776,7 +782,7 @@ const ref = k => ({ s:k.J === S.J ? 'J' : (S.coop && S.equipe && S.equipe.includ
 let VISE_P = null, PAST_P = null; // 19/11 : pendant le tour des ennemis, le héros montré dans le cercle et celui de la pastille
 function joueur(id, ordi, auto) {
   const h = HEROS[id];
-  return { id, ordi, nom:h.nom, c:h.c, pv:h.pv, pvMax:h.pv, pc:1, deck:melange(ordi || auto ? deckBase(id) : deckDe(id)), main:[], des:[], front:[], tours:0,
+  return { id, ordi, nom:h.nom, c:h.c, pv:h.pv, pvMax:h.pv, pc:1, deck:melange(ordi || auto ? deckBase(id) : deckDe(id)), main:[], des:[], front:[], tours:0, defausse:[], fatigue:0, fatigueOK:false,
     sacs:[0, 1, 2, 3, 4].map(() => []), reliques:[], benes:[], sacoche:[], potionsUtilisees:0, jauge:0, degSubis:0, bouclier:0, gardeB:0, gardeE:0, purete:0, handicap:0, saigne:0, poison:0, meute:0, braise:0, relance:1 };
 }
 function melange(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
@@ -784,7 +790,23 @@ function melange(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.fl
 function mainDeDepart(J, n) { pioche(J, n); if (J.main.some(k => CARTES[k] && CARTES[k].t === 'u')) return;
   const iu = J.deck.findIndex(k => CARTES[k] && CARTES[k].t === 'u'); if (iu < 0 || !J.main.length) return;
   const u = J.deck.splice(iu, 1)[0], sortie = J.main.pop(); J.main.push(u); J.deck.splice(Math.floor(Math.random() * (J.deck.length + 1)), 0, sortie); }
-function pioche(J, n) { for (let i = 0; i < n; i++) { if (!J.deck.length) break; if (J.main.length >= 7) { J.deck.pop(); continue; } J.main.push(J.deck.pop()); } }
+// 22/11 (décision de l'utilisateur) : la FATIGUE, comme Hearthstone : paquet vide = chaque pioche manquée fait perdre 1 PV, puis 2, puis 3…
+// (seulement dans les combats à deck : Duel, Odyssée, épreuves ; fatigueOK posé au lancement). Une carte piochée main pleine part à la défausse.
+function pioche(J, n) { for (let i = 0; i < n; i++) {
+  if (!J.deck.length) { if (!J.fatigueOK || !S || S.fini) break; J.fatigue = (J.fatigue || 0) + 1; J.pv -= J.fatigue;
+    log(`💀 Fatigue : ${J.nom} n’a plus de carte à piocher, −${J.fatigue} PV.`); fx({ t:'degat', c:ref({ J }), n:J.fatigue, abs:0, pv:Math.max(0, J.pv), mot:'Fatigue' }); bilan(J, 'actions', `💀 Fatigue −${J.fatigue} PV`); fin(); continue; }
+  if (J.main.length >= 7) { const k = J.deck.pop(); (J.defausse || (J.defausse = [])).push(k); log(`Main pleine : ${J === S.J || S.auto ? CARTES[k].n : 'une carte'} part à la défausse.`); continue; }
+  J.main.push(J.deck.pop()); } }
+// 22/11 : le MULLIGAN de l'ordinateur (tout seul) : il rend les cartes chères (3 PC et plus) s'il n'a pas de carte à 0-1 PC, ou la 2e copie d'une carte
+function mulliganOrdi(J) {
+  const rend = []; const pasCher = J.main.some(k => CARTES[k] && CARTES[k].c <= 1);
+  J.main.forEach((k, i) => { const c = CARTES[k]; if (!c) return; if ((!pasCher && c.c >= 3) || J.main.indexOf(k) !== i) rend.push(i); });
+  echangeMain(J, rend.slice(0, 2));
+}
+function echangeMain(J, idx) {
+  if (!idx.length) return; const rendues = idx.map(i => J.main[i]); J.main = J.main.filter((k, i) => !idx.includes(i));
+  J.deck.push(...rendues); melange(J.deck); for (let i = 0; i < rendues.length; i++) if (J.deck.length) J.main.push(J.deck.pop());
+}
 // Dés « équitables » : chaque dé a un sac de 6 faces mélangé ; il sort ses faces dans l'ordre et se remplit quand il est vide.
 function lance(J, d) {
   if (!d.sac.length) d.sac.push(...melange([1, 2, 3, 4, 5, 6]));
@@ -1041,7 +1063,7 @@ function poseAction(J, quoi, ds, k, indexMain) {
   const cout = coutCarte(J, quoi);
   J.pc -= cout; J.cartesJouees++; if (J.remise && J.remise.k === quoi) J.remise = null; // 21/11 : la remise du Grimoire ne sert qu'une fois if (J === S.J && !S.auto) typeof guildeEvt === 'function' && guildeEvt('carte', 1);
   if (c.t === 'e' && J.forgeGratuite) J.forgeGratuite = false;
-  J.main.splice(indexMain, 1);
+  J.main.splice(indexMain, 1); (J.defausse || (J.defausse = [])).push(quoi);
   log(`${J.nom} joue ${c.n} avec ${vs.length > 1 ? 'les dés' : 'le dé'} ${vs.join(', ')} · ${cout} PC (reste ${J.pc}).`);
   const secret = !S.auto && J !== S.J && c.u && (c.u.cachee || S.salle.id === 'sem-brouillard'); // 17/11 : Brouillard de guerre (règle de la semaine) : toutes les créatures arrivent Cachées
   if (secret) S.log[0] = `${J.nom} pose une créature cachée · ${cout} PC.`;
@@ -1314,7 +1336,7 @@ function nouvellePartie(id, idO, auto) {
   FX = []; fxApres = []; fxOn = false; arreteMusique();
   // le second joueur (l'ordinateur) compense : 2 PC et 1 carte de plus au départ (v2.4)
   if (idO === 'roi') { S.O.pv = S.O.pvMax = 42; const h = HEROS.roi; h.garde = h.phases[0].garde; h.pouvoir = h.phases[0].pouvoir; } // 13/11 : le défi du Panthéon, 42 PV en Duel (62 dans l'Odyssée), réglé au simulateur
-  mainDeDepart(S.J, 4); mainDeDepart(S.O, 5); S.O.pc = typeof PC_SECOND === 'number' ? PC_SECOND : 4; // 12/11 nuit : 4 PC (au lieu de 3) : celui qui commence gagnait 56 %, maintenant 52 %
+  S.mullPossible = !auto; mainDeDepart(S.J, 4); mainDeDepart(S.O, 5); S.J.fatigueOK = S.O.fatigueOK = true; mulliganOrdi(S.O); if (auto) mulliganOrdi(S.J); S.O.pc = typeof PC_SECOND === 'number' ? PC_SECOND : 4; // 12/11 nuit : 4 PC (au lieu de 3) : celui qui commence gagnait 56 %, maintenant 52 %
   log(`Salle : ${S.salle.n}. ${S.salle.d}`);
   sel = []; attaquant = null; ciblage = null;
   debutTour(S.J);
@@ -1340,7 +1362,7 @@ function prepareCombatOdyssee(run, cb, auto) {
   // 15/11 soir : un HÉROS D'AVENTURE (run.av, heros-aventure.js) : son nom et son portrait dans le combat ; le jeu reste celui de sa voie
   if (typeof odyAvInfo === 'function' && odyAvInfo(run)) { const i = odyAvInfo(run); J.nom = i.nom; J.img = i.img; J.imgSec = i.sec; J.av = i.id; }
   J.deck = melange([...run.deck]); J.pv = run.pv; J.pvMax = run.pvMax; J.reliques = [...run.reliques]; J.benes = [...run.benes]; J.sacoche = [...run.sacoche];
-  mainDeDepart(J, 4 + (J.reliques.includes('souvenir') ? 1 : 0) + (J.benes.includes('main') ? 1 : 0));
+  mainDeDepart(J, 4 + (J.reliques.includes('souvenir') ? 1 : 0) + (J.benes.includes('main') ? 1 : 0)); J.fatigueOK = true; O.fatigueOK = O.deck.length > 0; S.mullPossible = !auto; if (auto) mulliganOrdi(J);
   if (J.benes.includes('pcplus')) J.pc += 1;
   if (J.reliques.includes('etoile')) { J.pc = Math.min(6, J.pc + 1); log('🌟 Étoile captive : +1 PC.'); }
   if (J.reliques.includes('fourrure')) { J.bouclier = (J.bouclier || 0) + 3; log('🧥 Manteau de fourrure : Bouclier 3.'); }
@@ -1781,11 +1803,24 @@ const PASTILLES = {
 // toucher une étiquette : son explication (sauf pendant qu'on vise : le toucher sert alors à viser le héros)
 document.addEventListener('click', e => {
   const p = e.target.closest && e.target.closest('.pastilles [data-k], .etats [data-k]'); if (!p || ciblage || attaquant || fxOn) return;
+  if (p.dataset.k === 'main' && S) { const b = p.closest('.barre'); return paquetFen(b && b.id === 'b-O' ? S.O : S.J); } // 22/11 : le paquet et la défausse
   // 20/11 (l'utilisateur : « je ne peux pas toucher l'Égide pour savoir ce qu'elle fait ») : l'Ombre majeure et l'Anomalie ont aussi leur explication
   const O = S && S.O, x = PASTILLES[p.dataset.k] || (p.dataset.k === 'ombre' && O && O.ombre && typeof OMBRES !== 'undefined' ? ['🌑 ' + OMBRES[O.ombre].n + ' (Ombre majeure)', OMBRES[O.ombre].d + ' Une Ombre majeure est un ennemi plus dangereux que les autres : vaincue, elle donne le double du butin (+40 or et deux cartes).']
     : p.dataset.k === 'anomalie' && O && O.anomalie && typeof ANOMALIE !== 'undefined' ? ['🌀 Anomalie ' + O.anomalie, 'Cet ennemi a ' + O.anomalie + ' particularité' + (O.anomalie > 1 ? 's' : '') + ' : ' + ANOMALIE.slice(1, O.anomalie + 1).join(', ') + '. Vaincu, il rapporte plus d’or.'] : null); if (!x) return; e.stopPropagation();
   fenetre(`<h2>${x[0]}</h2><p><b>${p.textContent.trim()}</b></p><p>${x[1]}</p><div class="choixh"><button onclick="fermer()">Compris</button></div>`);
 }, true);
+// 22/11 (décision de l'utilisateur) : le PAQUET (ce qu'il reste, mélangé, jamais l'ordre) et la DÉFAUSSE (les cartes jouées), au toucher de l'étiquette 🂠
+function paquetFen(P) {
+  const moi = P === S.J || S.deux, liste = l => { const n = {}; l.forEach(k => { if (CARTES[k]) n[k] = (n[k] || 0) + 1; });
+    const u = Object.keys(n).sort((a, b) => CARTES[a].c - CARTES[b].c || CARTES[a].n.localeCompare(CARTES[b].n));
+    return u.length ? `<div class="paqliste">${u.map(k => `<div><span class="co">${CARTES[k].c}</span><span class="nm">${CARTES[k].n}${CARTES[k].leg ? ' ★' : ''}</span><b>×${n[k]}</b></div>`).join('')}</div>` : '<p style="color:#c9c1ea"><i>Aucune.</i></p>'; };
+  const fat = P.fatigueOK ? (P.deck.length ? `<p style="font-size:.85em;color:#c9c1ea">Quand le paquet sera vide, chaque carte qui manque fera perdre des PV (<b>Fatigue</b> : 1, puis 2, puis 3…).</p>` : `<p style="color:#ff9b9b"><b>💀 Paquet vide</b> : prochaine pioche = −${(P.fatigue || 0) + 1} PV (Fatigue).</p>`) : '';
+  fenetre(`<h2>🂠 ${P.nom} : ${P.main.length} en main</h2>
+  <h3 style="margin:.4em 0 .2em">📚 Le paquet : ${P.deck.length} carte${P.deck.length > 1 ? 's' : ''}</h3>${moi ? liste(P.deck) : '<p style="color:#c9c1ea">Le paquet de l’adversaire reste secret.</p>'}${fat}
+  <h3 style="margin:.6em 0 .2em">🗑 La défausse : ${(P.defausse || []).length} carte${(P.defausse || []).length > 1 ? 's' : ''} jouée${(P.defausse || []).length > 1 ? 's' : ''}</h3>${liste(P.defausse || [])}
+  <p style="font-size:.82em;color:#c9c1ea">+1 carte au début de chaque tour, 7 en main au plus (une carte piochée main pleine part à la défausse). Les cartes jouées ne reviennent pas.</p>
+  <div class="choixh"><button onclick="fermer()">Compris</button></div>`);
+}
 // 14/11 (l'utilisateur : « la Contre-attaque, je ne la vois nulle part ») : les protections et réactions actives en icônes autour du portrait
 // 14/11 nuit (l'utilisateur : « mets les noms, et plusieurs effets que je place un par un dans les cadres ; à 3 ou 4 ça déborde ») :
 // chaque effet = une étiquette « icône + nom », posée à sa place (effet_haut_1…6 / effet_bas_1…6 de la page de placement)
@@ -1835,7 +1870,7 @@ function barre(P, haut) {
     ${P.id === 'pip' && !P.front.some(u => u.louve) ? `<span data-k="meute" class="p m">🐺 Meute ${P.meute}/3</span>` : ''}${P.braiseT ? `<span data-k="braiset" class="p al">♨ Brûlures ${P.braiseT}/3</span>` : ''}${P.corruption ? `<span data-k="corruption" class="p al">🟣 Corruption ${P.corruption}/${(P.reliques || []).includes('sel') ? 4 : 3}</span>` : ''}${P.givre ? `<span data-k="givre" class="p al">❄ Givre ${P.givre}/${(P.reliques || []).includes('braise') ? 4 : 3}</span>` : ''}${P.id === 'maelle' ? `<span data-k="braises" class="p m">🔥 Braises ${P.braise}/3${P.forgeGratuite ? ' · prochain Équipement à 0 PC' : ''}</span>` : ''}
     ${P.purete && P.ombre !== 1 ? `<span data-k="purete" class="p pu">✦ Pureté ${P.purete}</span>` : ''}${P.handicap ? '<span data-k="handicap" class="p al">Handicap</span>' : ''}${P.saigne ? `<span data-k="saigne" class="p al">Saignement ${P.saigne}</span>` : ''}
     ${P.poison ? `<span data-k="poison" class="p al">Poison ${P.poison}</span>` : ''}${P.silence ? '<span data-k="silence" class="p al">Silence</span>' : ''}${P.oeuvre ? `<span data-k="oeuvre" class="p pu">Grand œuvre : ${P.oeuvre}</span>` : ''}
-    ${P.ultimeFait ? '<span data-k="ultimefait" class="p">Ultime utilisé</span>' : `<span data-k="ultime" class="p ${P.jauge >= JAUGE.max ? 'pu' : ''}">⚡ Ultime ${P.jauge}/${JAUGE.max}</span>`}<span data-k="main" class="p">🂠 ${P.main.length} en main</span></div></div></div>`;
+    ${P.ultimeFait ? '<span data-k="ultimefait" class="p">Ultime utilisé</span>' : `<span data-k="ultime" class="p ${P.jauge >= JAUGE.max ? 'pu' : ''}">⚡ Ultime ${P.jauge}/${JAUGE.max}</span>`}<span data-k="main" class="p${P.fatigueOK && P.deck.length <= 3 ? ' paqbas' : ''}">🂠 ${P.main.length} en main${P.fatigueOK ? ` · 📚 ${P.deck.length}` : ''}</span></div></div></div>`;
 }
 // 20/11 (l'utilisateur : « ma créature est entravée : il faut une animation, des ronces qui la bloquent, et son état quand je la touche ») :
 // des ronces poussent sur la carte quand elle est entravée (une seule fois), puis restent et bougent un peu tant qu'elle est bloquée
@@ -2045,7 +2080,23 @@ function rappelDebut() {
   <li><b>Une carte ?</b> Il faut un dé qui remplit sa condition et assez de PC (chiffre bleu). Puis <b>Fin du tour ▶</b>.</li></ol>
   ${S.coop ? `<p style="margin:.3em 0;font-size:.9em">Au tour des ennemis, <b>chacun lance un dé</b> : 1-3-5 → il vise ${S.equipe[0].nom}, 2-4-6 → ${S.equipe[1].nom}. L’autre héros peut <b>prendre le coup à sa place</b> (1 🤝).</p>` : ''}
   <p style="margin:.3em 0;font-size:.85em;color:#c9c1ea">Les règles complètes : le bouton <b style="color:#ff6b6b">❓</b> tout en bas à gauche de l’écran.</p>
-  <div class="choixh"><button onclick="fermer()">Jouer ▶</button><button onclick="fermer();regles()">❓ Toutes les règles</button></div>`);
+  <div class="choixh"><button onclick="fermer();mulligan()">Jouer ▶</button><button onclick="fermer();regles()">❓ Toutes les règles</button></div>`);
+}
+// 22/11 (décision de l'utilisateur) : le MULLIGAN. Au début du combat, on touche les cartes de sa main de départ qu'on veut changer ;
+// elles repartent dans le paquet (mélangé) et on en repioche autant. Une seule fois. Pas en coop, à deux sur un téléphone ni en ligne.
+let mullSel = [];
+function mulligan() {
+  if (!S || S.auto || S.fini || !S.mullPossible || S.mullFait || S.deux || S.coop || !S.J.main.length || S.J.tours > 1) return;
+  const J = S.J, carteM = (k, i) => `<div class="mullc${mullSel.includes(i) ? ' rejet' : ''}" onclick="mullToucher(${i})">${typeof CADRES_OK !== 'undefined' && CADRES_OK.includes(CADRE_DE(k)) ? carteGuilde(k, { w:78 }) : `<div class="c ${CARTES[k].t}2" style="position:relative;width:78px;height:110px"><span class="cout">${CARTES[k].c}</span><div class="n">${CARTES[k].n}</div></div>`}</div>`;
+  fenetre(`<h2>🂠 Ta main de départ</h2><p style="margin:.2em 0">Touche les cartes que tu veux <b>changer</b> : elles repartent dans le paquet et tu en pioches d’autres. Une seule fois.</p>
+  <div class="mullmain">${J.main.map(carteM).join('')}</div>
+  <div class="choixh">${mullSel.length ? `<button onclick="mullValide()" style="background:linear-gradient(#f3c96b,#d99a2b);color:#2a1a00;font-weight:bold">↺ Changer ${mullSel.length} carte${mullSel.length > 1 ? 's' : ''}</button>` : ''}<button onclick="mullSel=[];S.mullFait=true;fermer();rendu()">${mullSel.length ? 'Finalement, garder ma main' : 'Garder ma main ✔'}</button></div>`);
+  const f = document.querySelector('#fen .fenetre'); if (f) f.onclick = null;
+}
+function mullToucher(i) { mullSel = mullSel.includes(i) ? mullSel.filter(x => x !== i) : [...mullSel, i]; son('agrandir'); mulligan(); }
+function mullValide() {
+  const n = mullSel.length; echangeMain(S.J, mullSel); mullSel = []; S.mullFait = true; log(`↺ ${S.J.nom} change ${n} carte${n > 1 ? 's' : ''} de sa main de départ.`);
+  fermer(); son('melange'); rendu();
 }
 function regles(court) {
   if (court) return rappelDebut();
@@ -2133,11 +2184,23 @@ function montrerFin() {
 let monHeros = null;
 function accueil() {
   fenetre(`<h2>Duel · prototype</h2><p>1. Choisis ton héros.</p>
-  <div class="heros6">${ORDRE.map(id => id === 'zephine' && localStorage.getItem('guilde-tuto') !== 'fait' ? `<button onclick="typeof tutoVerrou === 'function' ? tutoVerrou() : location.href='duel.html?tuto=1'" style="opacity:.55;position:relative"><img src="${IMG(id)}" alt="" style="filter:grayscale(1)">🔒 ${HEROS[id].nom}<br><small>Fais le tutoriel</small></button>` : `<button onclick="monHeros='${id}';adversaire()"><img src="${IMG(id)}" alt="">${HEROS[id].nom}</button>`).join('')}</div>
+  <div class="heros6">${ORDRE.map(id => id === 'zephine' && localStorage.getItem('guilde-tuto') !== 'fait' ? `<button onclick="typeof tutoVerrou === 'function' ? tutoVerrou() : location.href='duel.html?tuto=1'" style="opacity:.55;position:relative"><img src="${IMG(id)}" alt="" style="filter:grayscale(1)">🔒 ${HEROS[id].nom}<br><small>Fais le tutoriel</small></button>` : `<button onclick="monHeros='${id}';choixDeck()"><img src="${IMG(id)}" alt="">${HEROS[id].nom}</button>`).join('')}</div>
   <div class="choixh"><button onclick="mesParties()">📜 Mes parties</button></div>
   <p style="color:#c9c1ea;font-size:.85em">Prototype pour essayer les règles : dessins provisoires, chiffres à équilibrer.</p>`);
   GM.retour('menu.html#arene'); // 22/11 (l'utilisateur) : le retour en haut à gauche, vers l'Arène ; plus de « ⌂ Menu » en bas
 }
+// 22/11 (décision de l'utilisateur) : avant le Duel, « Avec quel deck ? » (le dernier utilisé déjà choisi). Sauté s'il n'y a que le deck de base.
+function choixDeck() {
+  if (typeof lireDecks !== 'function') return adversaire();
+  const D = lireDecks(monHeros), ok = D.decks.map((d, i) => deckValide(monHeros, d.cartes) ? i : -1).filter(i => i >= 0);
+  if (!ok.length) return adversaire();
+  GM.retour(accueil);
+  const moy = l => (l.reduce((a, k) => a + (CARTES[k] ? CARTES[k].c : 0), 0) / l.length).toFixed(1).replace('.', ',');
+  const ligne = (i, nom, ic, l) => `<button class="choixdeck${D.actif === i ? ' actif' : ''}" onclick="choisitDeck(${i})"><span>${ic}</span><span><b>${nom}</b>${D.actif === i ? ' ⭐' : ''}<br><small>${l.length} cartes · coût moyen ${moy(l)}</small></span></button>`;
+  fenetre(`<h2>⚔ Duel · ${HEROS[monHeros].nom}</h2><p>Avec quel deck ?</p><div class="choixdecks">${ok.map(i => ligne(i, D.decks[i].nom, D.decks[i].ic || '🂠', D.decks[i].cartes)).join('')}${ligne(-1, 'Le deck de base', '📜', deckBase(monHeros))}</div>
+  <div class="choixh"><button onclick="location.href='mes-decks.html?heros=${monHeros}'">🂠 Mes decks</button></div>`);
+}
+function choisitDeck(i) { const D = lireDecks(monHeros); D.actif = i; ecrisDecks(monHeros, D); adversaire(); }
 function adversaire() {
   GM.retour(accueil); // 22/11 : revenir au choix du héros
   fenetre(`<h2>Duel · prototype</h2><p>2. Contre qui ? (l’ordinateur)</p>
@@ -2556,6 +2619,6 @@ document.addEventListener('pointerdown', () => { if (fxOn && !(S && S.tuto)) fxV
 <script src="enigme-table.js?v=80c517ec18"></script>
 <script src="forge.js?v=beb857648f"></script>
 <script src="semaine.js?v=910ee6442a"></script>
-<script src="enigme.js?v=5542d4dc99"></script>
+<script src="enigme.js?v=a090b10b74"></script>
 </body>
 </html>

@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261122-155226">
+<head><meta name="guilde-version" content="20261122-160938">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex">
@@ -8,7 +8,7 @@
 <title>La Guilde des Runes</title>
 <script>
 // Même mécanisme que le Duel : une nouvelle version = rechargement tout seul à l'ouverture (publier.sh change VERSION).
-const VERSION = '20261122-155226';
+const VERSION = '20261122-160938';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-menu-' + v)) { sessionStorage.setItem('recharge-menu-' + v, '1'); location.replace('menu.html?v=' + v); }
@@ -215,7 +215,7 @@ fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.te
 <script>window.AMIS_SANS_BOUTON = true; /* 15/11 : un seul bouton en haut à gauche (profil + amis) */</script>
 <script src="amis.js?v=d4158692ce"></script>
 <script src="heros-etoiles.js?v=48da21e34c"></script>
-<script src="donnees.js?v=7c4f716d6e"></script>
+<script src="donnees.js?v=1513808a25"></script>
 <script>
 // ciel étoilé + runes du portail (symboles, pas des lettres), aux couleurs des héros
 const ciel = document.getElementById('ciel');
@@ -616,7 +616,7 @@ function grandMenu() {
   const Q = typeof lireQuetes === 'function' ? lireQuetes() : { j:[], s:[] }, qr = Q.j.filter(q => !q.fait).length, ar = typeof aRecuperer === 'function' ? aRecuperer().length : 0;
   const E = typeof AMIS !== 'undefined' && AMIS.etat, dem = E ? E.demandes.length : 0;
   const va = h => `try{sessionStorage.setItem('guilde-dans-mode','1')}catch(e){};location.href='${h}'`, ferme = "document.getElementById('grand-menu').remove();";
-  const T = [['🌀', 'Portails', ferme + 'grillePortails()'], ['📜', 'Quêtes', va('route.html#quetes'), qr], ['🎁', 'Route des rangs', va('route.html'), ar], ['🏰', 'Mes héros', va('mes-heros.html')],
+  const T = [['🌀', 'Portails', ferme + 'grillePortails()'], ['📜', 'Quêtes', va('route.html#quetes'), qr], ['🎁', 'Route des rangs', va('route.html'), ar], ['🏰', 'Mes héros', va('mes-heros.html')], ['🂠', 'Mes decks', va('mes-decks.html')], // 22/11 : la page des decks (deck-proposition.html)
     ['🃏', 'Pouvoirs des héros', va('pouvoirs.html?retour=menu.html')], ['⚒', 'La Forge', va('forge.html'), typeof groupesFusion === 'function' ? groupesFusion().length : 0], ['🗺', 'Héros d’aventure', va('aventuriers.html')], ['👤', 'Mon profil', va('profil.html'), typeof succesARecuperer === 'function' ? succesARecuperer() : 0], ['📊', 'Mon parcours', va('profil.html#parcours')],
     ['📖', 'Mes parties', ferme + 'Carnet.ouvrir()'], ['🏛', 'Panthéon', va('pantheon.html')], ['👥', 'Amis', ferme + 'amisFenetre()', dem], ['🤝', 'Entre amis', ferme + "location.hash='enligne'"],
     ['📬', 'Boîte', ferme + 'amisBoite()'], ['🎓', 'Tutoriel', va('duel.html?tuto=1')], ['⚙️', 'Paramètres', ferme + 'GM.parametres()']];

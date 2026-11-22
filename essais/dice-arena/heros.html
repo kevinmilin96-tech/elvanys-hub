@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261122-155226">
+<head><meta name="guilde-version" content="20261122-160938">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex">
@@ -166,8 +166,8 @@
 <script src="musique.js?v=2acde000cd"></script>
 <script src="rang.js?v=82b0bff726"></script>
 <script src="heros-etoiles.js?v=48da21e34c"></script>
-<script src="donnees.js?v=7c4f716d6e"></script>
-<script src="odyssee.js?v=8a56e82770"></script>
+<script src="donnees.js?v=1513808a25"></script>
+<script src="odyssee.js?v=2dd4974f8b"></script>
 <script src="aventure.js?v=09133a6200"></script>
 <script src="cartes.js?v=4f4c03174c"></script>
 <script>
@@ -192,7 +192,7 @@ function grille() {
 }
 function choisir(id) { if (edition && !confirm('Quitter la modification du deck sans l’enregistrer ?')) return; edition = null; actuel = id; localStorage.setItem('guilde-tour', id); history.replaceState(null, '', '?h=' + id); grille(); fiche(); }
 function fiche() {
-  const id = actuel, h = HEROS[id], P = PROFILS[id], [joue, gagne] = parties(id), perso = localStorage.getItem('guilde-deck-' + id) && deckValide(id, deckDe(id));
+  const id = actuel, h = HEROS[id], P = PROFILS[id], [joue, gagne] = parties(id), perso = nomDeckActif(id) !== 'Le deck de base';
   document.documentElement.style.setProperty('--c', h.c);
   const deck = compter(deckDe(id));
   document.getElementById('fiche').innerHTML = `<div class="livre">
@@ -224,9 +224,9 @@ function fiche() {
 </div>` : ''}
   ${verrouille(id) ? '' : etoilesHTML(id)}
   <div class="suite">
-      <h3>🂠 ${perso ? 'Ton deck' : 'Son deck de base'} <small>${DECK_TAILLE} cartes</small></h3>
+      <h3>🂠 ${perso ? nomDeckActif(id) : 'Son deck de base'} <small>${DECK_TAILLE} cartes</small></h3>
       <div id="deckzone">${edition ? '' : `<div class="deck">${ordreCartes(id, Object.keys(deck)).map(k => `<div class="cg">${deck[k] > 1 ? `<span class="nb">×${deck[k]}</span>` : ''}${vignette(id, k)}</div>`).join('')}</div>`}</div>
-      <div class="boutons" id="bts">${edition || verrouille(id) ? '' : `<button class="bt sombre" onclick="editer()">✏️ Modifier mon deck</button>${perso ? '<button class="bt sombre" onclick="deBase()">↺ Deck de base</button>' : ''}<button class="bt or" onclick="location.href='duel.html?h=${id}'">⚔ Jouer avec ${h.nom}</button>`}</div>
+      <div class="boutons" id="bts">${edition || verrouille(id) ? '' : `<button class="bt sombre" onclick="location.href='mes-decks.html?heros=${id}'">🂠 Mes decks</button><button class="bt or" onclick="location.href='duel.html?h=${id}'">⚔ Jouer avec ${h.nom}</button>`}</div>
     </div>`;
   if (edition) dessineEditeur();
 }
@@ -261,7 +261,7 @@ Guide.lance('tour', [
   [null, 'La Tour des héros : ici, tu fais connaissance avec les héros de la Guilde, et tu prépares leurs cartes.'],
   ['#grille', 'Touche un portrait pour ouvrir la page de ce héros. Ceux qui ont un cadenas se débloquent en jouant.'],
   ['#fiche', 'Le livre : son histoire, sa vie, ses dés. « Détails » ouvre tout le reste : pouvoirs, Ultime, passif.'],
-  ['#bts', '« Modifier mon deck » : choisis les cartes que ton héros emporte au combat. Un deck compte toujours le même nombre de cartes. Bonne lecture, miaou !'],
+  ['#bts', '« Mes decks » : prépare les cartes que ton héros emporte au combat (20 cartes, plusieurs decks au choix). Bonne lecture, miaou !'],
 ]);
 // 13/11 soir : musique
 GM.musique('heros'); GM.bouton();

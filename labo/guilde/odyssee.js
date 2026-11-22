@@ -372,7 +372,7 @@ function draft(R, richesse, deja, heros) {
   const tirables = cartesTirables(heros), out = [];
   for (let n = 0; n < 60 && out.length < 3; n++) {
     const x = R() * 100, r = x < poids.c ? 'c' : x < poids.c + poids.r ? 'r' : 'e';
-    const l = tirables.filter(k => rarete(k) === r && !out.includes(k) && (deja || []).filter(d => d === k).length < 2);
+    const l = tirables.filter(k => rarete(k) === r && !out.includes(k) && (deja || []).filter(d => d === k).length < (typeof maxDe === 'function' ? maxDe(k) : 2));
     if (l.length) out.push(tire(R, l));
   }
   return out;
@@ -634,8 +634,9 @@ function nouvelleOdyssee(heros, graine, acte, niveau, avent) {
   const ile = genereIle(graine, null, acte); if (!ile) return null;
   const h = HEROS[heros], pv = Math.round(h.pv * (ODY_PV[heros] || 1.8)); // en Odyssée le héros a 1,8 × ses PV du Duel (le papier disait 75 pour 44) : il enchaîne 5 à 6 combats sans soin automatique
   const run = { v:1, heros, av:HA_.av, graine, acte, asc:Math.max(0, Math.min(10, niveau || 0)), ile:ile.cases, pos:{ ...ile.dep }, porte:ile.porte, bossPos:ile.boss, direct:ile.direct, debut:Date.now(),
-    pv, pvMax:pv, or:OR_DEPART, vivres:VIVRES_DEPART, deck:deckBase(heros), reliques:[], sacoche:['soin'], benes:[], males:[], fragments:0, cles:0,
+    pv, pvMax:pv, or:OR_DEPART, vivres:VIVRES_DEPART, deck:(typeof deckDe === 'function' ? deckDe(heros) : deckBase(heros)), reliques:[], sacoche:['soin'], benes:[], males:[], fragments:0, cles:0,
     stats:{ cases:1, combats:0, victoires:0, tours:0, defis:0, cartesVues:[] }, combat:null, journal:[`Débarquement sur ${ILES[acte].nom} (${HA_.nom})${niveau ? ` · Ascension ${niveau}` : ''}.`] };
+  run.deckDepart = run.deck.slice(); // 22/11 : le deck choisi au départ (les cartes en plus vont à la collection en fin d'Odyssée)
   if (asc(run, 3)) run.vivres -= 4;
   if (asc(run, 8)) donneMalediction(run, Object.keys(MALEDICTIONS)[0]);
   if (asc(run, 10)) { run.pvMax = Math.round(run.pvMax * .9); run.pv = run.pvMax; }
@@ -782,7 +783,7 @@ function finOdysseeRun(r, gagne) {
   const duree = Math.max(1, Math.round((r.jeu !== undefined ? r.jeu + Math.min(30 * 60000, Math.max(0, Date.now() - (r.maj || Date.now()))) : Math.min(Date.now() - r.debut, 3 * 3600000)) / 60000));
   const etage = r.sansfin ? r.sansfin.etage || 1 : 0;
   const score = r.stats.victoires * 50 + r.stats.cases * 5 + r.or + (gagne ? 300 : 0) + r.stats.defis * 30 - r.stats.tours * 2 + Math.max(0, etage - 1) * 500;
-  const base = deckBase(r.heros), nouvelles = r.deck.filter(k => !base.includes(k) && rarete(k) !== 'm');
+  const base = r.deckDepart || deckBase(r.heros), nouvelles = r.deck.filter(k => !base.includes(k) && rarete(k) !== 'm');
   // 14/11 (vu par l'utilisateur : « 10 cartes » puis 13 noms, avec des doublons) : on liste seulement les cartes vraiment nouvelles dans la collection, une fois chacune
   const avant = typeof localStorage !== 'undefined' ? lireCollection() : [];
   const ajoutees = typeof localStorage !== 'undefined' ? ajouteCollection([...new Set([...nouvelles, ...r.stats.cartesVues])]) : 0;
