@@ -212,8 +212,25 @@ function fhForger(id) {
 function fhForgeron(id) {
   const s = avSac(); let deja = {}; try { deja = JSON.parse(localStorage.getItem('guilde-forgeron-achats') || '{}'); } catch (e) {}
   fhFen(`<h2>⚒ Le forgeron</h2><div style="text-align:center"><img src="ui/heros/pnj-forgeron.webp?v=1" alt="" style="width:30%;max-width:130px;border-radius:50%;border:2px solid #f3c96b;box-shadow:0 0 12px #f3a04a88" onerror="this.remove()"></div><p class="doux" style="text-align:center">« Trois pièces aujourd’hui, pas une de plus. Demain, autre chose. » · 🪙 ${s.or}</p>
-    ${forgeronStock(id).map((x, i) => fhPiece(x, deja[x.id] ? '<small>vendu</small>' : `<button ${s.or < x.prix ? 'disabled style="opacity:.4"' : ''} onclick="fhAchete('${id}',${i})">${x.prix} 🪙</button>`)).join('')}
+    ${forgeronStock(id).map((x, i) => deja[x.id] ? fhPiece(x, '<small>vendu</small>') : `<div onclick="fhCompare('${id}',${i})" style="cursor:pointer">${fhPiece(x, `<button>${x.prix} 🪙</button>`)}</div>`).join('')}
+    <p class="doux" style="text-align:center;margin:6px 0 0">Touche une pièce pour la comparer à celle que porte ${fhInfo(id).nom}.</p>
     <button class="fh-bt or" style="width:100%;margin-top:10px" onclick="fhFen('')">Fermer</button>`);
+}
+// 22/11 (l'utilisateur : « quand je touche un équipement, j'aimerais un comparatif avec celui que j'ai déjà, pour savoir si ça vaut la peine ») :
+// la pièce du forgeron face à celle que porte le héros sur la même case, ce qu'on gagne et ce qu'on perd, puis « Acheter » (rien n'est payé avant)
+function fhCompare(id, i) {
+  const x = forgeronStock(id)[i]; if (!x) return; const s = avSac(), cur = equipementDe(id)[x.slot], C = EQ_CASES.find(c => c.k === x.slot);
+  const a = cur ? eqStats(cur) : {}, b = eqStats(x), cles = Object.keys(EQ_ST).filter(k => a[k] || b[k]);
+  const lignes = cles.map(k => { const d = (b[k] || 0) - (a[k] || 0), nom = k === 'des' ? 'dé de plus' : EQ_ST[k][1];
+    return `<div style="display:flex;justify-content:space-between;gap:8px;padding:4px 0;border-bottom:1px solid #2e2a55"><span>${EQ_ST[k][0]} ${nom}</span><span>${a[k] || 0} → <b>${b[k] || 0}</b> <b style="color:${d > 0 ? '#7dffb0' : d < 0 ? '#ff8a7a' : '#c9c1ea'}">${d > 0 ? '+' + d : d < 0 ? d : '='}</b></span></div>`; }).join('');
+  const mieux = cles.reduce((t, k) => t + Math.sign((b[k] || 0) - (a[k] || 0)), 0);
+  const verdict = !cur ? `✨ ${fhInfo(id).nom} n’a rien sur la case ${C.n} : tout est gagné.` : mieux > 0 ? '👍 Meilleure que ta pièce actuelle.' : mieux < 0 ? '👎 Moins bonne que ta pièce actuelle.' : '⚖️ Ni mieux ni moins bien : à toi de voir.';
+  fhFen(`<h2>⚒ Comparer</h2><p class="doux" style="text-align:center;margin:0 0 6px">${C.e} ${C.n} de ${fhInfo(id).nom}</p>
+    <p class="doux" style="margin:4px 0">Porté aujourd’hui :</p>${cur ? fhPiece(cur, '') : '<p class="doux" style="text-align:center">— rien —</p>'}
+    <p class="doux" style="margin:8px 0 4px">Chez le forgeron :</p>${fhPiece(x, '')}
+    <div style="margin:10px 0;padding:8px 12px;border-radius:12px;background:#14122a">${lignes}<p style="margin:8px 0 0;text-align:center"><b>${verdict}</b></p></div>
+    <div style="display:flex;gap:8px"><button class="fh-bt" style="flex:1" onclick="fhForgeron('${id}')">‹ Retour</button><button class="fh-bt or" style="flex:2" ${s.or < x.prix ? 'disabled style="flex:2;opacity:.4"' : ''} onclick="fhAchete('${id}',${i})">Acheter · ${x.prix} 🪙</button></div>
+    ${s.or < x.prix ? '<p class="doux" style="text-align:center">Pas assez d’or.</p>' : ''}<p class="doux" style="text-align:center;margin-top:6px">L’achat va dans le coffre ; on l’équipe ensuite dans la fiche du héros.</p>`);
 }
 function fhAchete(id, i) { const r = forgeronAchete(i, id); if (r === 'ok') { fhSon('tour-fusion'); fhBulle('Acheté : dans le coffre !'); FH.apres(); fhForgeron(id); } else fhBulle(r); }
 
