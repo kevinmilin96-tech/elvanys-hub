@@ -2,13 +2,12 @@
 // Validé par l'utilisateur (carte de l'application, 22/11) : au 1er étage, 4 PORTES rangées par envie + un panneau « ☀ Aujourd'hui ».
 //   ⚡ Jouer vite (≤ 10 min) · 🗺 Partir à l'aventure (30-45 min, avec reprise) · 👥 Entre amis · 🏛 Ma Guilde
 // Aucun mode n'est retiré : chaque porte mène à un étage qui reprend les portails d'avant.
-// TANT QUE L'UTILISATEUR N'A PAS VALIDÉ, le nouveau menu ne se voit qu'en aperçu : menu.html?envie=1 (ou le mode atelier) ;
-// menu.html?envie=0 revient à l'ancien. Les joueurs gardent l'ancien menu.
+// Validé le 22/11 : c'est le menu de tous ; menu.html?envie=0 revient à l'ancien (retenu sur le téléphone), ?envie=1 le remet.
 const MENU_ENVIE = (() => {
   try {
     const q = new URLSearchParams(location.search).get('envie');
     if (q === '1' || q === '0') localStorage.setItem('guilde-menu-envie', q);
-    return localStorage.getItem('guilde-menu-envie') === '1';
+    return localStorage.getItem('guilde-menu-envie') !== '0'; // 22/11 : validé par l'utilisateur (« C'est ok pour moi ») → par défaut pour tous
   } catch (e) { return false; }
 })();
 
