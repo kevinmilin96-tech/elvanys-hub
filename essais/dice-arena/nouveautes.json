@@ -1,5 +1,9 @@
 [
 {
+"v": "20261122-185645",
+"m": "Chroniques : dans la salle d’attente, le lien pour la télé (avec le code) et un bouton pour l’envoyer"
+},
+{
 "v": "20261122-185141",
 "m": "Grand menu : le carré ＋ Personnaliser pour choisir tes icônes"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261122-165006",
 "m": "Les pouvoirs choisis dans ton build agissent maintenant dans l’Odyssée, la Grande aventure, les épreuves et l’Invasion."
-},
-{
-"v": "20261122-160938",
-"m": "Le deck devient un vrai jeu de cartes : decks de 20 cartes, cartes légendaires, page « Mes decks », mulligan, paquet et défausse visibles, fatigue."
 }
 ]
