@@ -795,6 +795,7 @@ const ordreOK = () => false; // (l'ancien dé d'initiative, retiré)
 // Sur un seul téléphone : l'ordre libre reste.
 function initiative() {
   if (!L || !S || !S.heros) return null;
+  if (S.sansIni) return null; // 22/11 (l'utilisateur) : partie lancée « sans initiative » : chacun joue quand il veut, dans l'ordre qu'il veut
   const g = String(S.graine || '') + '|' + S.tours, hache = t => { let x = 2166136261; for (const c of t) { x ^= c.charCodeAt(0); x = Math.imul(x, 16777619); } return x >>> 0; };
   return S.heros.map((z, i) => ({ i, v:1 + hache(g + '|' + i) % 6, d:hache(g + '#' + i) })).filter(o => !S.heros[o.i].aTerre).sort((a, b) => b.v - a.v || b.d - a.d);
 }
@@ -1307,6 +1308,9 @@ function salleAttente() {
       : '<p class="sous">Personne encore : chacun ajoute son héros ci-dessous.</p>'}
     ${LOB.equipe.length < 4 ? `<h3 style="color:var(--or);margin:3cqw 0 1.5cqw">＋ Ajoute ton héros</h3>
       <div class="choixH">${dispo.filter(([k]) => !pris.has(k)).map(([k, n, s, sec]) => `<button onclick="ajouteLobby('${k}')"><img src="${s}" onerror="this.onerror=null;this.src='${sec}'" alt="">${n}<small>${k.startsWith('av:') ? 'ton héros d’aventure' : 'héros de la Guilde'}</small></button>`).join('')}</div>` : ''}
+    <h3 style="color:var(--or);margin:3cqw 0 1.5cqw">🎯 L’ordre de jeu${hote ? '' : ' <small style="color:var(--doux);font-weight:normal">(choisi par l’hôte)</small>'}</h3>
+    <div style="display:flex;gap:2cqw"><button class="gros" style="flex:1;margin:0;${!LOB.sansIni ? 'border-color:var(--or);background:#3a2f12' : ''}" ${hote ? '' : 'disabled'} onclick="lobbyPousse(l => { l.sansIni = false; })">🎯 Avec initiative<small>Un dé par héros à chaque tour : le plus haut joue en premier, chacun son tour.</small></button>
+      <button class="gros" style="flex:1;margin:0;${LOB.sansIni ? 'border-color:var(--or);background:#3a2f12' : ''}" ${hote ? '' : 'disabled'} onclick="lobbyPousse(l => { l.sansIni = true; })">🔀 Sans initiative<small>Chacun joue quand il veut : lancer, passer la main, revenir finir.</small></button></div>
     ${hote ? `<button class="gros" style="margin-top:4cqw" ${LOB.equipe.length ? '' : 'disabled'} onclick="lanceSalle()">▶ Lancer la partie pour tout le monde<small>${LOB.equipe.length ? `${LOB.equipe.length} héros · ${titreScen}` : 'il faut au moins un héros'}</small></button>`
       : `<p class="sous" style="margin-top:4cqw;font-size:1.05em">⏳ En attente du lancement par <b>${nomJoueur(LOB.hote)}</b>… La partie démarrera toute seule sur ton téléphone.</p>`}
   </div>`;
@@ -1320,6 +1324,7 @@ async function lanceSalle() {
   const scen = chap != null ? CHAPITRES[chap].scen : LOB.scen, c = chap != null ? lireCamp() : null;
   S = K.nouvelle(LOB.equipe.map(e => e.m), 'chron-' + Date.now(), scen);
   S.hote = LOB.hote; S.equipeLob = LOB.equipe;
+  S.sansIni = !!LOB.sansIni;
   if (chap != null) { S.campagne = chap; S.heros.forEach((h, i) => { h.pvmax += 2 * chap; h.pv += 2 * chap; if (c && c.sacs[i]) h.sac = c.sacs[i].slice(); }); }
   L.joueurs.forEach(j => { j.heros = LOB.equipe.map((e, i) => e.owner === j.id ? i : -1).filter(i => i >= 0); });
   L.prises = []; LOB = null; pointDePassage(); actif = Math.max(0, mesHeros()[0] || 0); sel = null; centrer = true;
