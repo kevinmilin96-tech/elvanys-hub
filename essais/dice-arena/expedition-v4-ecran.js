@@ -456,3 +456,25 @@ Object.assign(PORTRAIT_M, { 'Pillard':'d-gobelin', 'Frondeur':'m-gobelin', 'Chie
   'Harpie':'m-harpie', 'Harpie tireuse':'m-harpie', 'Élémentaire d’orage':'m-esprit', 'Nuée électrique':'m-esprit', 'Matelot noyé':'m-osclaque', 'Capitaine noyé':'m-liche', 'Mouette spectrale':'m-esprit',
   'Canonnier fantôme':'m-osclaque', 'Tentacule':'u-tentacule', 'Le Kraken':'m-kraken', 'Le Roi sans visage':'m-roi', 'Reflet':'m-miroir', 'Ignaros':'m-ignaros', 'Dragonnet':'u-dragonnet', 'Sorcier des vents':'m-chaman' });
 if (document.getElementById('app')) accueil();
+
+// 21/11 (l'utilisateur : « le voyage du jour, un portail directement ; et le retour en haut à gauche, par habitude ») :
+// · arrivé par le portail « Le voyage du jour » (?jour=1) : pas de choix de mer ni d'Ascension, le voyage du jour est imposé ;
+// · arrivé par « L'Expédition » : plus de case « voyage du jour » (il a son portail) ;
+// · un bouton « ‹ Retour » en haut à gauche ramène aux portes des Expéditions.
+const JOUR4 = new URLSearchParams(location.search).get('jour') === '1';
+if (JOUR4) jourChoisi = true;
+const _accueil4 = accueil;
+accueil = function () {
+  _accueil4();
+  const a = app(); if (!a || !a.querySelector('.heros6')) return; // une partie en cours : rien à changer
+  if (JOUR4) {
+    jourChoisi = true;
+    a.querySelectorAll('.mers4, .asc4').forEach(e => { const h = e.previousElementSibling; if (h && h.tagName === 'H2') h.remove(); const p = e.nextElementSibling; if (e.classList.contains('asc4') && p && p.tagName === 'P') p.remove(); e.remove(); });
+    const l = a.querySelector('.jour4'); if (l) l.outerHTML = '<p class="jour4" style="text-align:center">🗓️ <b>Le voyage du jour</b> : la même carte, la même règle du voyage et le même boss pour tout le monde aujourd’hui, sur la Mer des nuages, sans Ascension. Un score à comparer !</p>';
+    const h1 = a.querySelector('h1'); if (h1) h1.innerHTML = '🗓️ Le voyage du jour';
+  } else { jourChoisi = false; const l = a.querySelector('label.jour4'); if (l) l.remove(); const h1 = a.querySelector('h1'); if (h1) h1.innerHTML = '⛵ L’Expédition'; }
+  if (!document.getElementById('retour4')) { const b = document.createElement('button'); b.id = 'retour4'; b.textContent = '‹ Retour'; b.onclick = () => { location.href = 'menu.html#expeditions'; };
+    b.style.cssText = 'position:fixed;top:calc(8px + env(safe-area-inset-top));left:8px;z-index:50;padding:6px 12px;border-radius:999px;border:1px solid #f3c96b88;background:#15132bdd;color:#f3c96b;font:inherit;font-size:.9em'; a.prepend(b); } // dans l'écran d'accueil : il disparaît quand le voyage commence
+};
+// l'accueil a déjà été affiché au chargement : on le refait avec les changements ci-dessus
+setTimeout(() => { const a = app(); if (a && a.querySelector('.heros6')) accueil(); }, 0);
