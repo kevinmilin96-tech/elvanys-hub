@@ -206,8 +206,11 @@ function partieEnigme(iso) {
   document.getElementById('app').innerHTML = '<div style="padding:30vh 8vw;text-align:center;color:#e8dcc0;font-size:5vw">🐾 Moustache prépare l’énigme…</div>';
   setTimeout(() => {
     const p = eniCache(iso);
-    if (!p) { fenetre('<h2>Pas d’énigme aujourd’hui</h2><p>Moustache n’a rien trouvé de bon. Il a dormi toute la nuit. Reviens demain !</p><div class="choixh"><button onclick="location.href=\'menu.html\'">⌂ Menu</button></div>'); return; }
-    ENI = { p, iso }; eniAccueil();
+    if (!p) { document.getElementById('app').innerHTML = '<div style="padding:30vh 8vw;text-align:center;color:#e8dcc0;font-size:5vw">Pas d’énigme aujourd’hui.<div class="choixh" style="margin-top:6vw;justify-content:center"><button onclick="location.href=\'menu.html\'">⌂ Menu</button></div></div>'; fenetre('<h2>Pas d’énigme aujourd’hui</h2><p>Moustache n’a rien trouvé de bon. Il a dormi toute la nuit. Reviens demain !</p><div class="choixh"><button onclick="location.href=\'menu.html\'">⌂ Menu</button></div>'); return; }
+    ENI = { p, iso };
+    // 22/11 (l'utilisateur : « j'ai fermé la fenêtre avec la croix, je suis bloqué sur cet écran ») : derrière la fenêtre, un vrai écran avec ses boutons
+    document.getElementById('app').innerHTML = `<div style="padding:28vh 8vw 0;text-align:center;color:#e8dcc0;font-size:5vw">🧩 L’énigme du ${eniDateTxt(iso)}<div class="choixh" style="margin-top:6vw;justify-content:center"><button onclick="eniAccueil()">🧩 Voir l’énigme</button><button onclick="eniDemarre()">▶ Jouer</button><button onclick="location.href='menu.html'">⌂ Menu</button></div></div>`;
+    eniAccueil();
   }, 30);
 }
 function eniDemarre() {
