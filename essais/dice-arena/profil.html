@@ -71,6 +71,7 @@
 <script src="donnees.js?v=7c4f716d6e"></script>
 <script src="aventuriers.js?v=5679a4a045"></script>
 <script src="odyssee.js?v=913cf4e82c"></script>
+<script src="succes.js?v=1"></script>
 <script src="profil.js?v=f65ec35808"></script>
 <script src="pantheon.js?v=1a6f59e92e"></script>
 <script>
@@ -128,6 +129,7 @@ function dessine() {
   if (onglet) { document.getElementById('app').innerHTML = atelier(p, T); return; }
   document.getElementById('app').innerHTML = `${carteProfil(p)}
   <p class="aide" style="text-align:center;margin-top:6px">C’est ta carte : ton nom, ton titre et ton cadre te suivent en combat. Touche ✏️ pour la personnaliser.</p>
+  ${typeof succesPoints === 'function' ? (n => `<a class="lien" href="succes.html" style="display:flex;align-items:center;gap:10px;font-size:1.05em;border:1px solid #f3c96b88;border-radius:14px;padding:10px 12px;margin:12px 0;background:#1d1838e8;text-decoration:none;text-align:left;color:var(--texte)"><span style="font-size:1.6em">🏆</span><span style="flex:1"><b>Mes succès</b><br><small style="color:var(--doux)">${succesPoints()} points de succès · ${SUCCES.length} succès à paliers</small></span>${n ? `<span style="background:#ff5a5a;color:#fff;border-radius:10px;padding:1px 8px;font-weight:bold">🎁 ${n}</span>` : ''}<span>›</span></a>`)(succesARecuperer()) : ''}
   ${parcoursHTML()}
   ${typeof lireRang === 'function' ? rangHTML() : ''}
   <h2>🏆 Mes trophées</h2>

@@ -210,6 +210,7 @@ fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.te
 <script src="semaine.js?v=910ee6442a"></script>
 <script src="musique.js?v=2acde000cd"></script>
 <script src="rang.js?v=031054aa99"></script>
+<script src="succes.js?v=1"></script>
 <script src="profil.js?v=f65ec35808"></script>
 <script>window.AMIS_SANS_BOUTON = true; /* 15/11 : un seul bouton en haut à gauche (profil + amis) */</script>
 <script src="amis.js?v=6675200291"></script>
@@ -616,7 +617,7 @@ function grandMenu() {
   const E = typeof AMIS !== 'undefined' && AMIS.etat, dem = E ? E.demandes.length : 0;
   const va = h => `try{sessionStorage.setItem('guilde-dans-mode','1')}catch(e){};location.href='${h}'`, ferme = "document.getElementById('grand-menu').remove();";
   const T = [['🌀', 'Portails', ferme + 'grillePortails()'], ['📜', 'Quêtes', va('route.html#quetes'), qr], ['🎁', 'Route des rangs', va('route.html'), ar], ['🏰', 'Mes héros', va('mes-heros.html')],
-    ['🃏', 'Pouvoirs des héros', va('pouvoirs.html?retour=menu.html')], ['⚒', 'La Forge', va('forge.html'), typeof groupesFusion === 'function' ? groupesFusion().length : 0], ['🗺', 'Héros d’aventure', va('aventuriers.html')], ['👤', 'Mon profil', va('profil.html')], ['📊', 'Mon parcours', va('profil.html#parcours')],
+    ['🃏', 'Pouvoirs des héros', va('pouvoirs.html?retour=menu.html')], ['⚒', 'La Forge', va('forge.html'), typeof groupesFusion === 'function' ? groupesFusion().length : 0], ['🗺', 'Héros d’aventure', va('aventuriers.html')], ['👤', 'Mon profil', va('profil.html'), typeof succesARecuperer === 'function' ? succesARecuperer() : 0], ['📊', 'Mon parcours', va('profil.html#parcours')],
     ['📖', 'Mes parties', ferme + 'Carnet.ouvrir()'], ['🏛', 'Panthéon', va('pantheon.html')], ['👥', 'Amis', ferme + 'amisFenetre()', dem], ['🤝', 'Entre amis', ferme + "location.hash='enligne'"],
     ['📬', 'Boîte', ferme + 'amisBoite()'], ['🎓', 'Tutoriel', va('duel.html?tuto=1')], ['⚙️', 'Paramètres', ferme + 'GM.parametres()']];
   // 22/11 : les icônes peintes (images Gemini, ui/menu/m-*.webp) ; sans image, l'émoji reste

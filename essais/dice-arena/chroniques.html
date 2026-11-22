@@ -1111,6 +1111,7 @@ function finPartie() {
   sauve(); const gagne = S.fin === 'gagne'; let objet = null, niv = [];
   // 17/11 : chacun reçoit ses récompenses sur son téléphone, une seule fois (avant : le 1er téléphone notait « fait » dans la partie partagée)
   const cleFin = 'guilde-chron-fini-' + (S.graine || '') + '-' + S.tours; let dejaFait = false; try { dejaFait = !!localStorage.getItem(cleFin); localStorage.setItem(cleFin, '1'); } catch (e) {}
+  if (!dejaFait && L && typeof succesCompte === 'function') { succesCompte('en_ligne'); if (gagne) succesCompte('chron_amis'); } // 22/11 : les succès
   if (!dejaFait) S.heros.forEach(z => { if (z.av && avTrouve(z.av)) { const g = avGagneXP(z.av, gagne ? 120 : 40, gagne); if (g) niv.push(nomH(z)); } });
   if (niv.length) setTimeout(() => bulle(`⬆ Niveau gagné : ${niv.join(', ')} ! (à forger dans la Forge des héros)`), 900);
   if (gagne) { son('victoire'); try { GM.jingle('victoire'); } catch (e) {} if (!dejaFait) S.heros.forEach((z, i) => { if (L && !mesHeros().includes(i)) return; if (typeof guildeEvt === 'function') guildeEvt('boss', 1, { heros:z.av || z.id }); }); objet = dejaFait ? null : butinArmurerie(S.sablier > 0 ? 3 : 1, S.score);

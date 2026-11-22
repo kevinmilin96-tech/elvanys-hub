@@ -57,7 +57,7 @@ joueEscale = function (X, R) {
   else { X.coeurs = Math.max(0, X.coeurs - perte); X.journal.push(`💔 Manche ${D.manche} perdue : ${perte} ❤ de moins.`); }
   D.bilan.push(res.gagne ? 'g' : egal ? 'e' : 'p');
   if (X.coeurs <= 0) { X.fini = 'perdu'; return res; }
-  if (D.coeursIA <= 0) { X.fini = 'gagne'; return res; }
+  if (D.coeursIA <= 0) { X.fini = 'gagne'; if (typeof succesCompte === 'function') succesCompte('eq_gagne'); return res; }
   const n = NIVEAUX_DUEL[D.niveau] || NIVEAUX_DUEL.normal;
   Object.assign(res, apresManche(X, res.gagne, 0)); apresManche(X.ia, !res.gagne && !egal, n.or);
   if (res.louve) X.journal.push('🐺 La Louve rejoint l’équipage !');

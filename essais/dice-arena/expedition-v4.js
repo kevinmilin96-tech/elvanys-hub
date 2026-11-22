@@ -308,6 +308,7 @@ function finVoyageMeta(X) {
   if (X.fini === 'gagne') {
     if (!m.mers[X.mer]) { m.mers[X.mer] = 1; const s = ORDRE_MERS[ORDRE_MERS.indexOf(X.mer) + 1]; if (s) apport.push(`🗺 Nouvelle mer ouverte : ${MERS[s].e} ${MERS[s].n} !`); } else m.mers[X.mer]++;
     if (X.asc >= ascMax4(m, X.mer) && X.asc < 10) { m.asc[X.mer] = X.asc + 1; apport.push(`⛰ Ascension ${X.asc + 1} ouverte sur ${MERS[X.mer].n}.`); }
+    m.bossVus = Array.from(new Set((m.bossVus || []).concat(X.boss && (X.boss.n || X.boss.id || X.boss) || []))); // 22/11 : succès « Chasseur de boss »
     m.gagnes = (m.gagnes || 0) + 1; const nv = Object.entries(RECRUES_V4).find(([, r]) => r.verrou === m.gagnes); if (nv) apport.push(`🎖 Nouvelle recrue au recruteur : ${nv[1].n} !`);
   }
   if (X.jour) { const j = new Date().toISOString().slice(0, 10), s = scoreV4(X); m.jour = m.jour && m.jour.j === j ? m.jour : { j, best:0, essais:0 }; m.jour.essais++; if (s > m.jour.best) { m.jour.best = s; apport.push(`📅 Meilleur score du voyage du jour : ${s} !`); } }

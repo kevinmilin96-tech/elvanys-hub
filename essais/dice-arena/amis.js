@@ -27,6 +27,9 @@ const AMIS_API = '/api/hub/guilde/joueur';
   .am-bt { font:bold .92em Georgia, serif; padding:10px 14px; min-height:44px; border-radius:12px; border:1px solid #45457a; background:#221d42; color:#f1ecff; cursor:pointer; touch-action:manipulation; -webkit-tap-highlight-color:#7cd4ff55; }
   .am-bt.go { background:#7cd4ff; color:#0a1a2a; border:0; } .am-bt.or { background:#f3c96b; color:#2b1d0a; border:0; } .am-bt.large { display:block; width:100%; margin-top:8px; padding:11px; }
   .am-ligne { display:flex; align-items:center; gap:8px; padding:8px; border:1px solid #2e2a55; border-radius:12px; margin:6px 0; background:#14122a; }
+  .am-coeurs { display:flex; align-items:center; gap:10px; padding:10px; border:1px solid #ff7aa055; border-radius:12px; background:#2a1430; margin:6px 0; } .am-coeurs > div { flex:1; }
+  .am-jauge { height:7px; border-radius:4px; background:#0d0b18; margin-top:5px; overflow:hidden; } .am-jauge i { display:block; height:100%; background:linear-gradient(90deg, #ff5a8a, #ffb0c8); }
+  .am-coeur { flex:none; width:44px; height:44px; border-radius:50%; border:1px solid #ff7aa088; background:#3a1630; color:#ff5a8a; font-size:20px; cursor:pointer; padding:0; } .am-coeur.fait { display:grid; place-items:center; opacity:.6; border-color:transparent; background:none; }
   .am-ligne .p { flex:1; } .am-ligne small { display:block; color:#c9c1ea; }
   .am-pt { width:11px; height:11px; border-radius:50%; background:#5a5680; flex:none; } .am-pt.on { background:#7dffb0; box-shadow:0 0 8px #7dffb0; }
   .am-invit { position:fixed; left:50%; transform:translateX(-50%); top:calc(60px + env(safe-area-inset-top)); z-index:4990; width:min(92vw, 420px); background:#14223a; border:2px solid #7cd4ff; border-radius:16px; padding:10px 12px; color:#f1ecff; font:15px Georgia, serif; box-shadow:0 8px 30px #000a; animation:amIn .4s; }
@@ -180,7 +183,9 @@ function amisDessine() {
     <p class="doux" style="text-align:center;margin:0">Ton pseudo : <b>${amisEsc(E.pseudo)}</b> <small>(il se change dans ton profil)</small></p>
     ${E.demandes.length ? `<h3>📩 Demandes d’amis</h3>${E.demandes.map(d => `<div class="am-ligne"><div class="p"><b>${amisEsc(d.pseudo)}</b><small>code ${d.code}</small></div><button class="am-bt go" onclick="amisFait('accepte','${d.code}')">Accepter</button><button class="am-bt" onclick="amisFait('refuse','${d.code}')">Non</button></div>`).join('')}` : ''}
     <h3>🟢 En ligne (${enL.length}) · ${E.amis.length} ami${E.amis.length > 1 ? 's' : ''}</h3>
-    ${E.amis.length ? E.amis.map(a => `<div class="am-ligne"><span class="am-pt ${a.enLigne ? 'on' : ''}"></span><img src="${amisPortrait((a.profil || {}).portrait)[0]}" onerror="this.onerror=null;this.src='${amisPortrait((a.profil || {}).portrait)[1]}'" alt="" style="width:36px;height:36px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 2px ${(a.profil && a.profil.cadre && a.profil.cadre.c) || '#4b4580'};cursor:pointer" onclick="amisVoir('${a.code}')"><div class="p" style="cursor:pointer" onclick="amisVoir('${a.code}')"><b>${amisEsc(a.pseudo)}</b><small>${a.enLigne ? (a.salle ? `🎲 dans la salle ${amisEsc(a.salle)}` : 'en ligne dans la Guilde') : amisVuTxt(a.vu)}</small></div>
+    ${E.amis.length && E.coeurs ? (C => `<div class="am-coeurs"><div><b>❤ Les cœurs du jour</b> : ${C.envoyes}/${C.max} envoyés <small>(+5 XP chacun)</small><br><small>💝 Coffret de l’amitié : ${C.jauge}/${C.coffret} cœurs reçus${C.recusAujourdhui ? ` · ${C.recusAujourdhui} reçu${C.recusAujourdhui > 1 ? 's' : ''} aujourd’hui` : ''}</small><div class="am-jauge"><i style="width:${Math.round(100 * C.jauge / C.coffret)}%"></i></div></div>${C.envoyes < C.max && E.amis.some(a => !a.coeurEnvoye) ? '<button class="am-bt or" onclick="amisCoeur()">❤ À tous</button>' : ''}</div>`)(E.coeurs) : ''}
+    ${E.amis.length ? E.amis.map(a => `<div class="am-ligne"><span class="am-pt ${a.enLigne ? 'on' : ''}"></span><img src="${amisPortrait((a.profil || {}).portrait)[0]}" onerror="this.onerror=null;this.src='${amisPortrait((a.profil || {}).portrait)[1]}'" alt="" style="width:36px;height:36px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 2px ${(a.profil && a.profil.cadre && a.profil.cadre.c) || '#4b4580'};cursor:pointer" onclick="amisVoir('${a.code}')"><div class="p" style="cursor:pointer" onclick="amisVoir('${a.code}')"><b>${amisEsc(a.pseudo)}</b><small>${a.enLigne ? (a.salle ? `🎲 dans la salle ${amisEsc(a.salle)}` : 'en ligne dans la Guilde') : amisVuTxt(a.vu)}${a.coeurRecu ? ' · ❤ t’a envoyé un cœur' : ''}</small></div>
+        ${E.coeurs ? (a.coeurEnvoye ? '<span class="am-coeur fait" title="Cœur envoyé aujourd’hui">💗</span>' : E.coeurs.envoyes < E.coeurs.max ? `<button class="am-coeur" title="Envoyer un cœur (+5 XP)" onclick="amisCoeur('${a.code}')">❤</button>` : '') : ''}
         ${a.enLigne && a.salle && a.salle !== salle ? `<button class="am-bt go" onclick="amisRejoindre('${amisEsc(a.salle)}')">Rejoindre</button>` : ''}
         ${a.enLigne && salle && a.salle !== salle ? `<button class="am-bt or" onclick="amisInvite('${a.code}')">Inviter</button>` : ''}
         <button class="am-bt" style="padding:6px 8px" title="Retirer" onclick="if(confirm('Retirer ${amisEsc(a.pseudo).replace(/'/g, '')} de tes amis ?'))amisFait('retire','${a.code}')">✕</button></div>`).join('')
@@ -212,7 +217,7 @@ async function amisAjoute() {
 // LA BOÎTE AUX LETTRES. À la fin d'une partie en ligne, le serveur y dépose les récompenses de chaque joueur ; on les récupère ici.
 async function amisBoiteMaj() {
   if (!AMIS.carte) return;
-  try { const { statut, d } = await amisApi('/api/hub/guilde/boite', { cle:AMIS.carte.cle }); if (statut === 200) { AMIS.boite = d.messages || []; AMIS.jours = d.jours || null; amisBouton(); } } catch (e) {}
+  try { const { statut, d } = await amisApi('/api/hub/guilde/boite', { cle:AMIS.carte.cle }); if (statut === 200) { AMIS.boite = d.messages || []; AMIS.jours = d.jours || null; if (d.jours && d.jours.joues) try { localStorage.setItem('guilde-jours-joues', String(Math.max(d.jours.joues | 0, +localStorage.getItem('guilde-jours-joues') || 0))); } catch (e) {} amisBouton(); } } catch (e) {}
 }
 // 21/11 : les nouveaux cadeaux (colis du lundi, paliers de fidélité, cadeau à tous) ajoutent des éclats de Guilde, des pièces d'une rareté
 // choisie (« rarete » : 1 rare, 2 épique…) et parfois un titre de profil
@@ -221,7 +226,7 @@ function amisCadeauTxt(c) { const R = typeof EQ_RARE !== 'undefined' ? EQ_RARE :
   return [c.or ? `🪙 +${c.or} or` : '', c.poussiere ? `🔹 +${c.poussiere} poussière de rune` : '', c.eclats ? `💠 +${c.eclats} éclats de Guilde` : '',
     c.pieces ? `🎒 ${c.pieces} pièce${c.pieces > 1 ? 's' : ''} d’équipement${rare}` : '', c.titre && AMIS_TITRES_BOITE[c.titre] ? `🏅 titre « ${AMIS_TITRES_BOITE[c.titre]} »` : ''].filter(Boolean).join(' · '); }
 // « Jours joués : N · prochain palier à M jours » (un jour compte quand on finit une partie)
-function amisJoursTxt() { const j = AMIS.jours; if (!j) return ''; return `<p class="doux" style="text-align:center">📅 Jours joués : <b>${j.joues | 0}</b> · prochain palier à <b>${j.prochain | 0}</b> jours</p>`; }
+function amisJoursTxt() { const j = AMIS.jours; if (!j) return ''; return `<p class="doux" style="text-align:center">🗓️ Jours joués : <b>${j.joues | 0}</b> · prochain palier à <b>${j.prochain | 0}</b> jours</p>`; }
 async function amisBoite() {
   AMIS.ouvert = false; await amisBoiteMaj(); const l = AMIS.boite || [];
   amisFen(`<h2>📬 Boîte aux lettres</h2>${amisJoursTxt()}${l.length ? l.map(m => `<div class="am-ligne"><div class="p"><b>${amisEsc(m.titre)}</b><small>${amisEsc(m.message)}</small><small style="color:#f3c96b">${amisCadeauTxt(m.cadeau || {})}</small></div><button class="am-bt go" onclick="amisRecupere('${amisEsc(m.id)}')">Récupérer</button></div>`).join('')
@@ -244,6 +249,16 @@ async function amisRecupere(id) {
     <button class="am-bt go large" onclick="amisBoite()">📬 Retour à la boîte</button>`);
 }
 async function amisFait(action, code) { const d = await amisAgir(action, { code }); if (d && action === 'accepte') amisMsg('🤝 Vous êtes amis !'); amisDessine(); }
+// 22/11 (décision de l'utilisateur) : LES CŒURS. Un cœur par ami et par jour (10 au plus), +5 XP de rang chacun ; tous les 10 cœurs reçus,
+// le serveur dépose un « coffret de l'amitié » dans la boîte aux lettres. Le total envoyé est aussi gardé ici pour les succès.
+async function amisCoeur(code) {
+  const d = await amisAgir('coeur', code ? { code } : { tous:true }); if (!d) return;
+  const n = d.coeursEnvoyes | 0; if (!n) { amisMsg('Plus de cœur à envoyer aujourd’hui.'); amisDessine(); return; }
+  try { localStorage.setItem('guilde-coeurs-env', String((+localStorage.getItem('guilde-coeurs-env') || 0) + n)); } catch (e) {}
+  if (typeof gagneXP === 'function') gagneXP(5 * n, n > 1 ? `${n} cœurs envoyés` : 'cœur envoyé');
+  if (typeof guildeEvt === 'function') guildeEvt('coeur', n);
+  amisMsg(n > 1 ? `❤ ${n} cœurs envoyés !` : '❤ Cœur envoyé !'); amisDessine();
+}
 async function amisInvite(code) { const d = await amisAgir('invite', { code, salle:amisSalle() }); if (d) amisMsg('🎲 Invitation envoyée !'); }
 async function amisPseudo() {
   amisFen(`<h2>✏️ Ton pseudo</h2><input id="am-pseudo2" maxlength="24" value="${amisEsc(AMIS.etat.pseudo)}"><button class="am-bt go large" onclick="amisPseudoOk()">Enregistrer</button><button class="am-bt large" onclick="amisDessine()">Annuler</button>`);
