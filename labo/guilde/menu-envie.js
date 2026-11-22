@@ -55,7 +55,7 @@ function envieBandeau() {
   if (!MENU_ENVIE || (typeof courant !== 'undefined' && courant)) { if (b) b.remove(); return; }
   const L = envieRendezVous(), f = L.filter(x => x[4]).length;
   if (!b) { b = document.createElement('button'); b.id = 'env-bandeau'; b.onclick = () => envieAujourdhui(); const car = document.getElementById('car'); car.parentNode.insertBefore(b, car); }
-  b.innerHTML = `<span class="sol">☀</span><span class="t"><b>Aujourd’hui</b><small>${f === L.length ? 'Tout est fait, bravo !' : `${f} sur ${L.length} faits · ${L.filter(x => !x[4]).slice(0, 3).map(x => x[1]).join(' ')} t’attendent`}</small></span><span class="n">${f}/${L.length}</span>`;
+  b.innerHTML = `<span class="sol"><img src="ui/aujourdhui.webp?v=1" alt="" onerror="this.replaceWith('☀')"></span><span class="t"><b>Aujourd’hui</b><small>${f === L.length ? 'Tout est fait, bravo !' : `${f} sur ${L.length} faits · ${L.filter(x => !x[4]).slice(0, 3).map(x => x[1]).join(' ')} t’attendent`}</small></span><span class="n">${f}/${L.length}</span>`;
 }
 // le panneau
 function envieAujourdhui(rouvre) {
@@ -63,7 +63,7 @@ function envieAujourdhui(rouvre) {
   const L = envieRendezVous(), f = L.filter(x => x[4]).length;
   p = document.createElement('div'); p.id = 'env-auj';
   p.innerHTML = `<div class="boite"><button class="x" onclick="envieAujourdhui()" aria-label="Fermer">✕</button>
-    <h2>☀ Aujourd’hui</h2><p class="sous">Les rendez-vous du jour : la même chose pour tous, une nouvelle chaque jour. <b>${f}/${L.length}</b></p>
+    <h2><img src="ui/aujourdhui.webp?v=1" alt="" style="width:38px;height:38px;vertical-align:middle;margin-right:6px">Aujourd’hui</h2><p class="sous">Les rendez-vous du jour : la même chose pour tous, une nouvelle chaque jour. <b>${f}/${L.length}</b></p>
     <div class="liste">${L.map(([k, e, n, d, fait, a]) => `<button class="${fait ? 'fait' : ''}" onclick="${a}"><span class="e">${e}</span><span class="t"><b>${n}</b><small>${d}</small></span><span class="c">${fait ? '✓' : '›'}</span></button>`).join('')}</div></div>`;
   p.onclick = ev => { if (ev.target === p) envieAujourdhui(); };
   document.body.appendChild(p); if (typeof GM !== 'undefined') GM.son('clic');
@@ -87,6 +87,8 @@ function envieInstalle(E, PRO) {
     rangs:['🎖', 'linear-gradient(180deg, #2a1a5c 0%, #5a2a6a 50%, #c8902f 100%)', '#ffd27a'],
     duelequip:['🪽', 'linear-gradient(180deg, #7cc8ff 0%, #2a5a9a 50%, #0f1a33 100%)', '#fff3c4'],
   });
+  // 22/11 : les portails peints par Gemini (menu-recu/mode-*.webp) ; la Descente attend encore son image
+  if (typeof PRO_IMG !== 'undefined') ['vite', 'aventure', 'entreamis', 'maguilde', 'decks', 'pouvoirs', 'forgeron', 'aventuriers', 'profil', 'chasse', 'rangs', 'duelequip'].forEach(k => { PRO_IMG[k] = 'mode-' + k; });
   const S = typeof regleDeLaSemaine === 'function' ? regleDeLaSemaine().n : '';
   const zok = localStorage.getItem('guilde-tuto') === 'fait';
   E[''] = { titre:'Le monde de la Guilde', sous:'De quoi as-tu envie ?', portes:[
@@ -147,7 +149,7 @@ if (typeof document !== 'undefined' && MENU_ENVIE) {
   #env-bandeau { display:flex; align-items:center; gap:10px; width:calc(100% - 28px); max-width:492px; margin:6px auto 0; padding:8px 12px; box-sizing:border-box;
     border-radius:14px; border:1px solid #f3c96b99; background:linear-gradient(90deg, #3a2a10e6, #1d1838e6); color:#f1ecff; font:13px Georgia, serif; text-align:left; cursor:pointer;
     box-shadow:0 0 14px #f3c96b33; }
-  #env-bandeau .sol { font-size:26px; animation:envSol 6s linear infinite; filter:drop-shadow(0 0 6px #ffd27a); }
+  #env-bandeau .sol { font-size:26px; display:inline-flex; } #env-bandeau .sol img { width:38px; height:38px; } #env-bandeau .sol { animation:envSol 6s linear infinite; filter:drop-shadow(0 0 6px #ffd27a); }
   @keyframes envSol { to { transform:rotate(360deg); } }
   #env-bandeau .t { flex:1; display:flex; flex-direction:column; } #env-bandeau .t b { color:#ffd27a; font-size:15px; } #env-bandeau small { opacity:.85; }
   #env-bandeau .n { font-weight:bold; color:#2b1d0a; background:#f3c96b; border-radius:10px; padding:3px 8px; }
