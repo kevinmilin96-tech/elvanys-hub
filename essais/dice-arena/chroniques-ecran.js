@@ -84,7 +84,14 @@ function ecranZoom() {
     return r; };
   // la salle d'attente de l'hôte rappelle qu'un grand écran peut suivre la partie
   const _s2 = salleAttente; salleAttente = function () { const r = _s2.apply(this, arguments);
-    if (!ECRAN && L && LOB) { const s = document.querySelector('.acc .sous'); if (s && !document.getElementById('astuce-ecran')) s.insertAdjacentHTML('afterend', `<p id="astuce-ecran" style="text-align:center;color:var(--doux);font-size:.88em;margin:.3em 0 0">📺 Une télé ou un ordinateur ? Ouvre <b>perso.elvanys.fr/guilde/chroniques.html?ecran=1</b> et tape ce code : la partie s’y voit en grand.</p>`); }
+    // 22/11 (l'utilisateur : « le lien ne s'affiche jamais sur le téléphone ») : un encadré bien visible, juste sous le code, avec le lien
+    // complet (code compris) à ouvrir sur la télé, et un bouton pour l'envoyer (partage du téléphone, sinon copie)
+    if (!ECRAN && L && LOB && L.code) { const lien = location.origin + location.pathname.replace(/[^/]*$/, '') + 'chroniques.html?ecran=' + L.code;
+      const ici = document.getElementById('astuce-ecran'), html = `<div id="astuce-ecran" style="margin:2cqw 0;padding:2.5cqw;border-radius:3cqw;border:2px solid #7cd4ff;background:#14223a;text-align:center">
+        <b style="color:#7cd4ff">📺 La partie sur une télé ou un ordinateur</b><br><span style="font-size:.85em;color:var(--doux)">Ouvre ce lien dans son navigateur :</span>
+        <div style="margin:1.5cqw 0;font:bold .95em monospace;color:var(--texte);word-break:break-all;user-select:all">${lien}</div>
+        <button class="sec" style="margin:0" onclick="(navigator.share ? navigator.share({ title:'Les Chroniques sur grand écran', url:'${lien}' }) : navigator.clipboard.writeText('${lien}').then(() => bulle('Lien copié ✓'))).catch(() => {})">📤 Envoyer le lien</button></div>`;
+      if (ici) ici.outerHTML = html; else { const s = document.querySelector('.acc .sous') || document.querySelector('.acc h1'); if (s) s.insertAdjacentHTML('afterend', html); } }
     return r; };
 }
 // la fenêtre « Rejoindre » ouverte au démarrage (portail « Rejoindre avec un code ») est arrivée avant ce fichier : on lui ajoute le bouton de l'écran
