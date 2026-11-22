@@ -216,3 +216,20 @@ setTimeout(() => {
 }, 400);
 // « ‹ Quitter » pendant une partie en ligne : la salle reste proposée (bouton « Revenir dans la salle »), mais on n'y retourne plus tout seul
 { const _q = quitter; quitter = function () { try { if (L && !ECRAN) { const s = JSON.parse(localStorage.getItem(SALLE) || 'null'); if (s) { s.quitte = true; localStorage.setItem(SALLE, JSON.stringify(s)); } } } catch (e) {} return _q.apply(this, arguments); }; }
+// 22/11 (l'utilisateur, à la télé : « les textes sont super rapides, par exemple quand un ennemi meurt » ; « 3-4 secondes de latence »)
+// 1) sur la télé, chaque message reste 3 fois plus longtemps, et un JOURNAL fixe (les 7 derniers événements) est affiché sous les héros ;
+// 2) la télé relit la partie toutes les secondes (au lieu de 2) : elle ne fait que lire, la demande est légère (« rien de neuf » le plus souvent).
+{ const _b = bulle; bulle = function (t, rouge, longue) { if (!ECRAN) return _b.apply(this, arguments);
+    const b = document.createElement('div'); b.className = 'bulle longue'; b.textContent = t; if (rouge) b.style.color = '#ff8a7a'; document.body.appendChild(b); setTimeout(() => b.remove(), 6000); }; }
+{ const _d = dessine; dessine = function () { const r = _d.apply(this, arguments);
+    if (ECRAN && S && S.journal) { const app = $('app'); if (app && !app.querySelector('.ecran-journal')) { const j = document.createElement('div'); j.className = 'ecran-journal'; app.appendChild(j); }
+      const j = app && app.querySelector('.ecran-journal'); if (j) j.innerHTML = '<b>📜 Ce qui vient de se passer</b>' + S.journal.slice(0, 7).map((t, i) => `<div style="opacity:${1 - i * .11}">${esc(String(t))}</div>`).join(''); }
+    return r; }; }
+setInterval(async () => {
+  if (!ECRAN || !L || occupe || document.hidden) return;
+  try { const { statut, d } = await api('GET', `${API}/${L.code}?v=${L.version}`); if (statut === 200 && !d.pareil) recoit(d); } catch (e) {}
+}, 1000);
+{ const st = document.createElement('style'); st.textContent = `
+  body.ecran-table .ecran-journal { grid-column:2; align-self:end; margin-top:1vh; padding:1vh .8vw; border-radius:12px; background:#14122acc; border:1px solid #45457a; font-size:clamp(12px, 1.05vw, 20px); line-height:1.3; overflow:hidden; max-height:34vh; }
+  body.ecran-table .ecran-journal b { color:var(--or); display:block; margin-bottom:.4vh; } body.ecran-table .ecran-journal div { margin:.3vh 0; }
+  body.ecran-table .bulle { font-size:clamp(18px, 2vw, 34px) !important; }`; document.head.appendChild(st); }
