@@ -11,12 +11,12 @@
 
 // ----------------------------------------------------------------------------------------------- les recrues à débloquer (une par voyage gagné, dans l'ordre)
 const RECRUES_V4 = {
-  pirate:    { n:'Pirate abordeur', fam:'clan', role:'lame', a:4, v:5, charge:true, t:1, verrou:1, art:'milicien', d:'Charge : frappe en premier au 1er round.' },
-  sirene:    { n:'Sirène des brumes', fam:'clairiere', role:'soutien', a:1, v:4, soigneur:3, t:2, verrou:2, art:'faon', d:'Soigne de 3 l’allié le plus blessé à chaque round.' },
-  harpie:    { n:'Harpie des falaises', fam:'ombre', role:'tireur', a:3, v:4, t:2, verrou:3, art:'lynx', d:'Tireuse de l’Ombre : son 1er tir peut faire double dégât (Embuscade).' },
-  ours:      { n:'Ours des glaces', fam:'garde', role:'rempart', a:3, v:10, barriere:true, epines:1, t:2, verrou:4, art:'gardien', d:'Barrière et Épines 1.' },
-  canonnier: { n:'Canonnier du bord', fam:'forge', role:'tireur', a:5, v:4, t:3, gros:true, verrou:5, art:'automate', d:'Le plus gros tir de la Forge.' },
-  yeti:      { n:'Yéti des cimes', fam:'clan', role:'lame', a:5, v:10, charge:true, t:3, gros:true, verrou:6, art:'colosse', d:'Charge, et de quoi encaisser.' },
+  pirate:    { n:'Pirate abordeur', fam:'clan', role:'lame', a:4, v:5, charge:true, t:1, verrou:1, art:'xp-pirate', d:'Charge : frappe en premier au 1er round.' },
+  sirene:    { n:'Sirène des brumes', fam:'clairiere', role:'soutien', a:1, v:4, soigneur:3, t:2, verrou:2, art:'xp-sirene', d:'Soigne de 3 l’allié le plus blessé à chaque round.' },
+  harpie:    { n:'Harpie des falaises', fam:'ombre', role:'tireur', a:3, v:4, t:2, verrou:3, art:'xp-harpie', d:'Tireuse de l’Ombre : son 1er tir peut faire double dégât (Embuscade).' },
+  ours:      { n:'Ours des glaces', fam:'garde', role:'rempart', a:3, v:10, barriere:true, epines:1, t:2, verrou:4, art:'xp-ours', d:'Barrière et Épines 1.' },
+  canonnier: { n:'Canonnier du bord', fam:'forge', role:'tireur', a:5, v:4, t:3, gros:true, verrou:5, art:'xp-canonnier', d:'Le plus gros tir de la Forge.' },
+  yeti:      { n:'Yéti des cimes', fam:'clan', role:'lame', a:5, v:10, charge:true, t:3, gros:true, verrou:6, art:'xp-yeti', d:'Charge, et de quoi encaisser.' },
 };
 Object.assign(RECRUES, RECRUES_V4);
 if (typeof ART_EXP !== 'undefined') Object.keys(RECRUES_V4).forEach(k => { ART_EXP[k] = RECRUES_V4[k].art; });

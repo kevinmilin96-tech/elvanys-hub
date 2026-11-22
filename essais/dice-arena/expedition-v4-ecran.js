@@ -132,7 +132,7 @@ function port() {
   <div class="actions"><button onclick="relancer()" ${X.or >= 1 ? '' : 'disabled'}>🔄 Relancer (1)</button><button class="${X.gel ? 'on' : ''}" onclick="X.gel=!X.gel;sauve();port()">❄ ${X.gel ? 'Offre gelée' : 'Geler l’offre'}</button><button onclick="aideExp()">❓ Aide</button></div></div>
   <button class="go" onclick="partirOk()">⚔ Partir pour l’escale ${X.escale + 1}</button></div>`;
   if (!localStorage.getItem('guilde-exp-guide')) guidePort(false);
-  document.body.style.setProperty('--decor', `url('decor/escale-${esc.cle}.webp?v=1')`);
+  document.body.style.setProperty('--decor', `url('decor/escale-${fondDe(esc)}.webp?v=1')`);
 }
 function voirRecrue(i) {
   const k = X.offre[i]; if (!k) return; const r = RECRUES[k], n = toutes(X).filter(u => u.key === k && u.star === 0).length, et = toutes(X).filter(u => u.key === k && u.star === 1).sort((a, b) => copies(b) - copies(a))[0];
@@ -165,6 +165,11 @@ const artU = u => u.key === 'capitaine' ? capArt(u) : u.key === 'm' ? (PORTRAIT_
 // 14/11 : les plateaux vus du dessus (s'il y en a un pour l'escale, il remplace le décor en perspective) : [rangée du fond, rangée de devant] des ennemis, puis de l'équipage
 const PLATEAUX_EXP = { crique:{ enn:[10, 26], equ:[62, 78] }, falaises:{ enn:[11, 26], equ:[63, 79] }, port:{ enn:[13, 29], equ:[63, 79] }, foret:{ enn:[11, 26], equ:[64, 80] }, cratere:{ enn:[10, 26], equ:[63, 79] }, nid:{ enn:[13, 29], equ:[65, 81] } };
 const fondEscale = cle => PLATEAUX_EXP[cle] ? `decor/plateau-${cle}.webp?v=1` : `decor/escale-${cle}.webp?v=1`;
+// 22/11 : les décors peints des nouvelles mers (images Gemini reçues) ; une escale qui en a un le prend, sinon son décor d'avant
+const FOND_V4 = { 'La Banquise des pingouins-guerriers':'banquise', 'La Forêt pétrifiée':'banquise', 'Le Col des loups blancs':'fjord', 'Le Fjord des trolls':'fjord', 'Le Yéti ancien':'fjord',
+  'La Faille de cristal':'faille', 'La Reine des neiges':'faille', 'Les Récifs des harpies':'recifs', 'La Crique des naufrageurs':'recifs', 'Le Capitaine Barbe-Grise':'recifs',
+  'L’Œil du cyclone':'cyclone', 'Le Cimetière des navires':'cimetiere', 'La Sirène noire':'cimetiere' };
+const fondDe = esc => (esc && FOND_V4[esc.n]) || (esc && esc.cle);
 const LIEU_ENN = { crique:[29, 41, 0], falaises:[27, 39, 14], port:[28, 39, 0], foret:[20, 31, 4], cratere:[25, 36, 0], nid:[18, 29, 0] };
 function medHTML(u, ennemi) {
   if (!u) return '<div class="med vide"></div>';
@@ -275,8 +280,8 @@ async function partir() {
   // les unités du combat portent les mêmes identifiants que celles du plateau : on dessine l'état d'avant
   const A = res.adv.camp.plateau, noms = {}; [...avant.plateau.av, ...avant.plateau.ar, ...A.av, ...A.ar].filter(Boolean).forEach(u => { noms[u.id] = u.n; });
   ficheDe = {}; [...avant.plateau.av, ...avant.plateau.ar, ...A.av, ...A.ar].filter(Boolean).forEach(u => { ficheDe[u.id] = u; });
-  const PL = PLATEAUX_EXP[esc.cle], L = PL ? [PL.enn[0], PL.enn[1], 0] : (LIEU_ENN[esc.cle] || [25, 36, 0]), Q = PL ? PL.equ : [63, 77];
-  app().innerHTML = `<div class="scene ${PL ? 'plat' : ''}" id="scene" style="background-image:url('${fondEscale(esc.cle)}')">
+  const FK = fondDe(esc), PL = PLATEAUX_EXP[FK], L = PL ? [PL.enn[0], PL.enn[1], 0] : (LIEU_ENN[FK] || [25, 36, 0]), Q = PL ? PL.equ : [63, 77];
+  app().innerHTML = `<div class="scene ${PL ? 'plat' : ''}" id="scene" style="background-image:url('${fondEscale(FK)}')">
     <div class="haut"><b>${esc.e} ${res.adv.nom}</b>${res.adv.mecaTxt ? `<br><span class="doux">${res.adv.mecaTxt}</span>` : ''}${res.adv.fantome ? `<br><span class="doux">capitaine rival : ${HEROS[res.adv.fantome].nom} · ${CAPITAINES[res.adv.fantome].n}</span>` : ''}
     <div class="vitesse">${[1, 2, 4].map(v => `<button class="${vitesse === v ? 'sel' : ''}" onclick="vitesse=${v};document.querySelectorAll('.vitesse button').forEach(b=>b.classList.toggle('sel', b.textContent==='×${v}'))">×${v}</button>`).join('')}</div></div>
     ${ligneMed(A, 'ar', true, L[0], L[2])}${ligneMed(A, 'av', true, L[1], L[2])}
@@ -339,7 +344,7 @@ async function voyage() {
   const pause = ms => new Promise(r => setTimeout(r, ms));
   sc.querySelectorAll('.lignemed, .journal, .haut').forEach(e => e.classList.add('part'));
   sc.insertAdjacentHTML('beforeend', `<div class="brouillard"></div><div class="cap">⛵ En route vers <b>${suiv.e} ${suiv.n}</b>…</div>`);
-  new Image().src = fondEscale(suiv.cle);
+  new Image().src = fondEscale(fondDe(suiv));
   await pause(350); sc.classList.add('avance'); sc.querySelector('.brouillard').classList.add('monte');
   // on reste dans la brume jusqu'à la page de récit : le décor de l'escale suivante ne se découvre qu'au combat (pas de surprise gâchée)
   await pause(2200); chroniqueEscale(() => port());
@@ -449,12 +454,12 @@ finExp = function () {
 };
 records = function () { const l = lireRec(); fenetre(`<h2>🏆 Mes voyages (${l.length})</h2>${l.length ? `<table>${l.map(r => `<tr><td>${r.parfait ? '🌟' : r.gagne ? '🏆' : '💀'} ${new Date(r.quand).toLocaleDateString('fr-FR')} · ${r.nom ? haEsc(r.nom) : HEROS[r.heros].nom} · ${MERS[r.mer] ? MERS[r.mer].e : ''}${r.asc ? ' ⛰' + r.asc : ''}${r.jour ? ' 📅' : ''} · ${BOSS_V4[r.boss] ? BOSS_V4[r.boss].e : ''}</td><td>${r.score}</td></tr>`).join('')}</table>` : '<p>Aucun encore.</p>'}<div class="choixh"><button onclick="fermer()">Fermer</button></div>`); };
 // les monstres des nouvelles mers prennent un portrait déjà peint quand il y en a un proche (les autres gardent la pastille simple, en attendant les images)
-Object.assign(PORTRAIT_M, { 'Pillard':'d-gobelin', 'Frondeur':'m-gobelin', 'Chien de pillard':'m-loup', 'Corbeau ardent':'m-phenix', 'Chef de guerre':'m-chefgobelin', 'Tambour gobelin':'m-gobelin',
-  'Matriarche de braise':'m-loup', 'Lanceur de glaçons':'m-givrelin', 'Loup blanc':'m-loupblanc', 'Chaman du givre':'m-chaman', 'Ent de givre':'m-golemglace', 'Feu follet bleu':'m-esprit',
-  'Archer des neiges':'m-givrelin', 'Troll des glaces':'m-golemglace', 'Golem de cristal':'m-golemglace', 'Sorcière du blizzard':'m-reinefrimas', 'Éclat vivant':'m-givrelin', 'Yéti ancien':'m-yeti',
-  'Petit yéti':'m-yeti', 'Garde de glace':'m-golemglace', 'La Reine des neiges':'m-reinefrimas', 'La Vouivre':'m-vouivre', 'Stalagmite vivante':'m-golemglace', 'Givrelin':'m-givrelin',
+Object.assign(PORTRAIT_M, { 'Pillard':'d-gobelin', 'Frondeur':'m-gobelin', 'Chien de pillard':'m-loup', 'Corbeau ardent':'m-phenix', 'Chef de guerre':'el-chefguerre', 'Tambour gobelin':'m-gobelin',
+  'Matriarche de braise':'el-matriarche', 'Lanceur de glaçons':'m-givrelin', 'Loup blanc':'m-loupblanc', 'Chaman du givre':'m-chaman', 'Ent de givre':'m-golemglace', 'Feu follet bleu':'m-esprit',
+  'Archer des neiges':'m-givrelin', 'Troll des glaces':'m-golemglace', 'Golem de cristal':'m-golemglace', 'Sorcière du blizzard':'m-reinefrimas', 'Éclat vivant':'m-givrelin', 'Yéti ancien':'el-yeti',
+  'Petit yéti':'m-yeti', 'Garde de glace':'m-golemglace', 'La Reine des neiges':'el-reine', 'La Vouivre':'m-vouivre', 'Stalagmite vivante':'m-golemglace', 'Givrelin':'m-givrelin',
   'Harpie':'m-harpie', 'Harpie tireuse':'m-harpie', 'Élémentaire d’orage':'m-esprit', 'Nuée électrique':'m-esprit', 'Matelot noyé':'m-osclaque', 'Capitaine noyé':'m-liche', 'Mouette spectrale':'m-esprit',
-  'Canonnier fantôme':'m-osclaque', 'Tentacule':'u-tentacule', 'Le Kraken':'m-kraken', 'Le Roi sans visage':'m-roi', 'Reflet':'m-miroir', 'Ignaros':'m-ignaros', 'Dragonnet':'u-dragonnet', 'Sorcier des vents':'m-chaman' });
+  'Canonnier fantôme':'m-osclaque', 'Tentacule':'u-tentacule', 'Le Kraken':'m-kraken', 'Le Roi sans visage':'m-roi', 'Reflet':'m-miroir', 'Ignaros':'m-ignaros', 'Dragonnet':'u-dragonnet', 'Sorcier des vents':'m-chaman', 'Barbe-Grise':'el-barbegrise', 'La Sirène noire':'el-sirene' });
 if (document.getElementById('app')) accueil();
 
 // 21/11 (l'utilisateur : « le voyage du jour, un portail directement ; et le retour en haut à gauche, par habitude ») :

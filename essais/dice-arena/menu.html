@@ -288,7 +288,7 @@ const ODY_MODES = { jour:['L’île du jour', 'odyssee.html'], '':['L’Odyssée
 function odyPortes(L) { // L = les portails de l'étage : 3 îles, sans fin, route
   // 20/11 (l'utilisateur : « l'île du jour, il faut aller dans Odyssée, nouvelle partie… ; mettre son portail en premier ») : 4e mode, en tête ;
   // il partage les emplacements de l'Odyssée, puis l'île choisie part directement en « île seule, île du jour »
-  if (odyMode === null) return [Object.assign({}, L[0], { nom:'L’île du jour', mode:'jour', href:null, desc:'La même île pour tout le monde aujourd’hui : une partie, une île, et ton score à comparer.' }), Object.assign({}, L[0], { nom:'Saison 1', mode:'', href:null, desc:'L’Odyssée, saison 1 : une histoire en trois chapitres, les Terres brûlées, l’île du Givre, l’Abîme du Vide. Ici commence la Grande aventure.' }),
+  if (odyMode === null) return [Object.assign({}, L[0], { nom:'L’île du jour', mode:'jour', href:null, img:'menu-recu/ody-jour.webp?v=1', pro:undefined, fx:undefined, desc:'La même île pour tout le monde aujourd’hui : une partie, une île, et ton score à comparer.' }), Object.assign({}, L[0], { nom:'Saison 1', mode:'', href:null, desc:'L’Odyssée, saison 1 : une histoire en trois chapitres, les Terres brûlées, l’île du Givre, l’Abîme du Vide. Ici commence la Grande aventure.' }),
     Object.assign({}, L[3], { mode:'-sansfin', href:null }), Object.assign({}, L[4], { mode:'-route', href:null })];
   return L.slice(0, 3); // l'Odyssée normale, nouvelle partie : les îles
 }
