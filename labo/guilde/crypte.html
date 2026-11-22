@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261122-152216">
+<head><meta name="guilde-version" content="20261122-152707">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="robots" content="noindex">
@@ -143,6 +143,7 @@
   .record { text-align:center; font-size:3.2cqw; color:var(--doux); margin-top:3cqw; }
   .fiche-sc li { display:flex; align-items:center; gap:8px; margin:4px 0; font-size:.92em; } .fiche-sc .sc { flex:none; min-width:3em; height:2.2em; display:grid; place-items:center; font-size:15px; }
   .carte .img { cursor:pointer; }
+  .de .fb { position:absolute; right:-1cqw; bottom:-1cqw; background:#1f8a4a; color:#fff; font:bold 2.8cqw Georgia; border-radius:2cqw; padding:0 1cqw; box-shadow:0 0 0 .4cqw #0d0b18; } /* 22/11 : le bonus forgé de la face */
 </style>
 </head>
 <body>
@@ -151,14 +152,14 @@
 <div id="fen"></div>
 <script src="musique.js?v=2acde000cd"></script>
 <script src="rang.js?v=82b0bff726"></script>
-<script src="heros-etoiles.js?v=70f4049ebf"></script>
+<script src="heros-etoiles.js?v=48da21e34c"></script>
 <script src="progression-modes.js?v=807b0f9ad5"></script>
 <script src="heros-aventure.js?v=31db8c2ed4"></script>
 <script src="succes.js?v=d6910350b3"></script>
 <script src="profil.js?v=4a45d06dad"></script>
 <script>window.AMIS_SANS_BOUTON = true; /* 15/11 soir : la crypte du jour se compare entre amis */</script>
 <script src="amis.js?v=d4158692ce"></script>
-<script src="crypte-moteur.js?v=e95efb3b15"></script>
+<script src="crypte-moteur.js?v=2a4f6b1ce4"></script>
 <script src="descente-moteur.js?v=783a91f811"></script>
 <script>
 // =============================================================================================== LA CRYPTE AUX SCEAUX (15/11, écran)
@@ -204,7 +205,7 @@ function sceauHTML(s, S_, ici, etat) {
   return `<div class="sc ${s.ok ? 'ok' : ''} ${etat || ''}" ${ici ? `onclick="${ici}"` : ''}>${t}</div>`;
 }
 const deVal = () => { const d = sel && S.des.find(x => x.id === sel); return d ? d.v : 0; };
-const etatSceau = (s, liste) => { if (mode === 'rune') return s.ok ? 'non' : 'rune'; const v = deVal(); if (!v) return ''; return C.accepte(s, v, liste) ? 'peut' : 'non'; };
+const etatSceau = (s, liste) => { if (mode === 'rune') return s.ok ? 'non' : 'rune'; const v = deVal(); if (!v) return ''; const fb = S.bonusF && liste !== S.pouvoir && !(S.comp && liste === S.comp.sceaux) ? S.bonusF[v - 1] | 0 : 0; return C.accepte(s, v, liste, fb) ? 'peut' : 'non'; };
 
 // ------------------------------------------------------------------ une carte de monstre
 function carteHTML(c) {
@@ -282,7 +283,7 @@ function dessine() {
       <div class="bloc besace"><h4>🎒 Besace</h4><div class="cases">${besace}</div></div>
       <div class="bloc runes"><button ${S.runes ? '' : 'disabled'} class="${mode === 'rune' ? 'on' : ''}" onclick="modeRune()">✦</button><small>${S.runes} Rune${S.runes > 1 ? 's' : ''}</small></div>
     </div>
-    <div class="plateau" id="plateau">${S.aLancer ? S.des.map(d => `<button class="de cache" onclick="lanceDes()"></button>`).join('') : S.des.map(d => `<button class="de ${sel === d.id ? 'sel' : ''} ${d.neuf ? 'roule' : ''} ${d.c ? 'c-' + d.c : ''}" onclick="choisit('${d.id}')"><img src="faces-${S.heros}/face-${d.v}.webp" alt="${d.v}">${d.garde ? '<span class="g">🎒</span>' : ''}${d.c ? `<span class="cc">${C.COULEURS[d.c].e}</span>` : ''}</button>`).join('')}</div>
+    <div class="plateau" id="plateau">${S.aLancer ? S.des.map(d => `<button class="de cache" onclick="lanceDes()"></button>`).join('') : S.des.map(d => `<button class="de ${sel === d.id ? 'sel' : ''} ${d.neuf ? 'roule' : ''} ${d.c ? 'c-' + d.c : ''}" onclick="choisit('${d.id}')"><img src="faces-${S.heros}/face-${d.v}.webp" alt="${d.v}">${S.bonusF && S.bonusF[d.v - 1] ? `<span class="fb">+${S.bonusF[d.v - 1]}</span>` : ''}${d.garde ? '<span class="g">🎒</span>' : ''}${d.c ? `<span class="cc">${C.COULEURS[d.c].e}</span>` : ''}</button>`).join('')}</div>
     ${btnEffet()}
     <div class="consigne">${consigne()}</div>
     <div class="actions">${S.aLancer ? `<button class="lancer" onclick="lanceDes()">🎲 Lancer les dés</button>` : `${histo.length ? '<button class="annule" onclick="annule()" title="Annuler le dernier dé posé">↩</button>' : ''}<button onclick="relance()" ${S.relance && S.des.some(d => !d.garde) ? '' : 'disabled'}>🎲 Relancer (${S.relance})</button><button class="fin" onclick="finTour()">Fin du tour ▶</button>`}</div>
@@ -527,7 +528,7 @@ function lance(j) {
   const B = bonusMode(pJ());
   // 15/11 soir : un plateau (variante), une carte spéciale et 3 défis à étoiles ; la crypte du jour tire tout de la date
   const vh = Object.keys(C.VARIANTES)[Math.floor(Math.random() * Object.keys(C.VARIANTES).length)];
-  S = C.nouvelle(vJ(), j ? 'crypte-' + jour() : 'crypte-' + Date.now() + Math.random(), B, Object.assign({ variante:j ? C.varianteDuJour('c' + jour()) : vh, speciales:1, defis:true },
+  S = C.nouvelle(vJ(), j ? 'crypte-' + jour() : 'crypte-' + Date.now() + Math.random(), B, Object.assign({ bonusF:(typeof avTrouve === 'function' && avTrouve(choixH) && avTrouve(choixH).bonus) || null,  variante:j ? C.varianteDuJour('c' + jour()) : vh, speciales:1, defis:true },
     j ? { vies:2, regle:C.regleDuJour('c' + jour()), maitre:C.regleDuJour('c' + jour()) === 'presse' ? 8 : 0 } : {}));
   S.av = haInfo(choixH) ? haInfo(choixH).id : null; // 15/11 soir : le héros d'aventure (gardé dans la sauvegarde)
   oublie();

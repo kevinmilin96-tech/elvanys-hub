@@ -27,11 +27,12 @@ const pick = (R, l) => l[Math.floor(R() * l.length)];
 const SCEAU_TXT = { ex:'exactement', min:'ou plus', max:'ou moins', pair:'un dé pair', imp:'un dé impair', tot:'total', dbl:'jumeaux', any:'n’importe quel dé' };
 function sceau(t, v, g) { return { t, v:v || 0, reste:t === 'tot' ? v : 0, ok:false, val:0, g:g || 0 }; }
 // le dé d peut-il aller sur le sceau s ? (S = tous les sceaux de la carte, pour les jumeaux)
-function accepte(s, d, S) {
+// 22/11 : b = le bonus forgé de la face (héros d'aventure), qui compte seulement pour les sceaux « ≥ » et « Σ » des monstres (comme dans les Chroniques)
+function accepte(s, d, S, b) {
   if (s.ok) return false;
   switch (s.t) {
     case 'ex': return d === s.v;
-    case 'min': return d >= s.v;
+    case 'min': return d + (b || 0) >= s.v;
     case 'max': return d <= s.v;
     case 'pair': return d % 2 === 0;
     case 'imp': return d % 2 === 1;
@@ -280,7 +281,7 @@ function nouvelle(heros, graine, bonus = {}, opts = {}) {
     tombes:0, fin:null, journal:[], seq:0, rs:Math.floor(R() * 4294967296),
     // la Descente
     or:opts.or || 0, orGagne:0, obj, etage, maitre:opts.maitre || 0, couleur:opts.couleur != null ? opts.couleur : .07, gardienMode:opts.gardien == null ? 'fin' : opts.gardien,
-    vies:opts.vies || (opts.gardien == null ? 3 : 1), regle:opts.regle || null, consos:opts.consos ? opts.consos.slice() : null, comp:opts.comp && COMPAGNONS[opts.comp.id] ? { id:opts.comp.id, pv:opts.comp.pv, pvmax:COMPAGNONS[opts.comp.id].pv, sceaux:COMPAGNONS[opts.comp.id].s(), pret:false } : null,
+    bonusF:Array.isArray(opts.bonusF) && opts.bonusF.some(Boolean) ? opts.bonusF.slice(0, 6).map(x => x | 0) : null, vies:opts.vies || (opts.gardien == null ? 3 : 1), regle:opts.regle || null, consos:opts.consos ? opts.consos.slice() : null, comp:opts.comp && COMPAGNONS[opts.comp.id] ? { id:opts.comp.id, pv:opts.comp.pv, pvmax:COMPAGNONS[opts.comp.id].pv, sceaux:COMPAGNONS[opts.comp.id].s(), pret:false } : null,
     secours:!!opts.secours, paires:{}, variante:opts.variante || null, st:{}, nbSpeciales:cols.reduce((t, k) => t + k.filter(c => c.special).length, 0),
     defis:opts.defis ? (() => { const l = Object.keys(DEFIS).slice(); const out = []; while (out.length < 3) out.push(l.splice(Math.floor(R() * l.length), 1)[0]); return out; })() : null };
   if (S.couleur && obj.prisme) S.couleur *= 1 + obj.prisme;
@@ -344,8 +345,8 @@ function placer(S, idDe, ou) {
   if (ou.comp != null) { const C = S.comp; if (!C || C.pv <= 0) return 'Pas de compagnon.'; const s = C.sceaux[ou.comp]; if (!s || !accepte(s, v, C.sceaux)) return 'Ce dé ne va pas sur ce sceau.'; pose(s, v, S.obj.aiguise); S.des.splice(i, 1);
     if (C.sceaux.every(x => x.ok)) { C.pret = true; log(S, `${COMPAGNONS[C.id].e} ${COMPAGNONS[C.id].n} est prêt !`); } return 'ok'; }
   const c = trouve(S, ou.carte); if (!c) return 'Ce monstre est caché.';
-  const s = c.sceaux[ou.s]; if (!s || !accepte(s, v, c.sceaux)) return 'Ce dé ne va pas sur ce sceau.';
-  pose(s, v, S.obj.aiguise); S.des.splice(i, 1);
+  const s = c.sceaux[ou.s], fb = S.bonusF ? S.bonusF[v - 1] | 0 : 0; if (!s || !accepte(s, v, c.sceaux, fb)) return 'Ce dé ne va pas sur ce sceau.';
+  pose(s, v, (S.obj.aiguise || 0) + (s.t === 'tot' ? fb : 0)); S.des.splice(i, 1); if (fb && (s.t === 'min' || s.t === 'tot')) log(S, `⚒ Dé forgé : ${v} +${fb} = ${v + fb}.`);
   if (c.trait === 'epines') { degats(S, 1); log(S, `🌵 Épines : −1 PV.`); }
   if (c.trait === 'faible' && D.c === 'rouge') { c.sceaux.forEach(brise); log(S, `🎯 Point faible ! ${c.nom} s’effondre.`); }
   if (v === 6 && S.obj.six) S.bouclier += S.obj.six;
