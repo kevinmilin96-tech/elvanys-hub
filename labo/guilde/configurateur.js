@@ -24,7 +24,8 @@
   .cfg .mode img { width:100%; height:24cqw; object-fit:cover; display:block; filter:brightness(.7) saturate(.8); }
   .cfg .mode b { display:block; padding:1.4cqw 1cqw 2cqw; font-size:3cqw; }
   .cfg .mode.on { border-color:var(--or, #ffd98a); box-shadow:0 0 4cqw #ffd98a55; } .cfg .mode.on img { filter:none; }
-  .cfg .mode .rep { position:absolute; top:1.2cqw; left:1.2cqw; right:1.2cqw; background:#163a2a; border:1px solid #5fdc8f; color:#7ff0a8; border-radius:2cqw; font-size:2.6cqw; padding:.6cqw; font-weight:bold; z-index:2; }
+  /* 22/11 (l'utilisateur : « le bouton Reprendre gêne en haut à droite ») : petite pastille posée en bas de l'image, juste au-dessus du nom */
+  .cfg .mode .rep { position:absolute; top:19.5cqw; left:50%; transform:translateX(-50%); white-space:nowrap; background:#163a2aee; border:1px solid #5fdc8f; color:#7ff0a8; border-radius:3cqw; font-size:2.4cqw; padding:.3cqw 1.8cqw; font-weight:bold; z-index:2; }
   .cfg .grand { border-radius:4cqw; overflow:hidden; border:2px solid var(--or, #ffd98a); margin-top:3cqw; background:#1a1230; animation:cfgEntre .35s ease-out; }
   .cfg .grand img { width:100%; height:44cqw; object-fit:cover; display:block; }
   .cfg .grand .t { padding:2.5cqw 3cqw 3cqw; } .cfg .grand .t b { color:var(--or, #ffd98a); font-size:4.4cqw; }
@@ -90,7 +91,7 @@
     const partie = M.partie ? M.partie() : null;
     if (E === 1) {
       corps = `<div class="etape">1 · Choisis ton mode</div>
-        <div class="modes">${D.modes.map(m => `<button class="mode ${m.k === M.k ? 'on' : ''}" onclick="CFG.mode_('${m.k}')">${m.partie && m.partie() ? '<span class="rep">▶ Reprendre</span>' : ''}<img src="${m.img}" alt="" onerror="this.style.visibility='hidden'"><b>${m.e} ${esc(m.n)}</b></button>`).join('')}</div>
+        <div class="modes">${D.modes.map(m => `<button class="mode ${m.k === M.k ? 'on' : ''}" onclick="CFG.mode_('${m.k}')">${m.partie && m.partie() ? '<span class="rep">▶ En cours</span>' : ''}<img src="${m.img}" alt="" onerror="this.style.visibility='hidden'"><b>${m.e} ${esc(m.n)}</b></button>`).join('')}</div>
         <div class="grand" id="cfg-grand"><img src="${M.img}" alt="" onerror="this.remove()"><div class="t"><b>${M.e} ${esc(M.n)}</b><p>${M.desc ? M.desc() : ''}</p>${(M.pas ? M.pas() : []).map(p => `<span class="pas">${p}</span>`).join('')}${partie ? `<span class="pas" style="background:#163a2a;color:#7ff0a8">Partie en cours : ${partie.texte}</span>` : ''}</div></div>`;
       bas = partie ? `<button class="go2" onclick="CFG.ferme();${partie.reprendre}">▶ Reprendre</button><button class="go3" onclick="CFG.va(2)">Nouvelle partie ›</button><button class="ab" onclick="if(confirm('Abandonner cette partie ? Elle sera effacée.')){${partie.abandonner};CFG.dessine()}">✕ abandonner la partie en cours</button>`
         : `<button class="go" onclick="CFG.va(2)">Suivant ›</button>`;
