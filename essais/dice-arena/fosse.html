@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261122-212350"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
+<head><meta name="guilde-version" content="20261122-212942"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="robots" content="noindex">
@@ -63,6 +63,7 @@
 <script src="rang.js?v=e19ab6f328"></script>
 <script src="heros-etoiles.js?v=48da21e34c"></script>
 <script src="progression-modes.js?v=807b0f9ad5"></script>
+<script src="configurateur.js?v=735db7f4d2"></script>
 <script src="heros-aventure.js?v=31db8c2ed4"></script>
 <script>
 // =============================================================================================== LA FOSSE AUX RUNES v3 (15/11) : SURVIE NERVEUSE façon Vampire Survivors
@@ -492,17 +493,20 @@ function fin(gagne) {
     <p style="text-align:center;color:var(--doux);font-size:.9em">Meilleur score : ${D.meilleur} · plus longue survie : ${Math.floor(D.meilleurTemps / 60)}:${String(D.meilleurTemps % 60).padStart(2, '0')}</p>
     <button class="go" onclick="fenetre('');cancelAnimationFrame(boucle);J=null;accueil()">Retour au bord de la Fosse</button>`, false);
 }
+// 22/11 (configurateur validé : « déploie-le aux autres modes ») : l'entrée de la Fosse = le configurateur commun (configurateur.js)
 function accueil() {
   const D = lire(); choixH = haValide(choixH, ZEPH_OK()); window.onresize = null;
-  $('app').innerHTML = `<div class="acc"><div class="top"><a href="menu.html">‹ Retour</a><button onclick="regles()">❓ Règles</button></div>
-    <h1>🕳️ La Fosse aux Runes</h1><p class="sous">Ça grouille. Tes dés partent tout seuls, les monstres attaquent, chaque niveau t’offre une amélioration. Tiens 5 minutes… et abats le Titan.</p>
-    <div class="heros">${Object.entries(HER).map(([k, h]) => `<button class="${choixH === k ? 'on' : ''}" ${k === 'zephine' && !ZEPH_OK() ? 'disabled' : ''} onclick="choixH='${k}';accueil()"><img src="portraits/${k}.webp" alt="">${h.n}${k === 'zephine' && !ZEPH_OK() ? '<br>🔒 tutoriel' : ''}</button>`).join('')}${haBoutons(choixH, k => `choixH='${k}';accueil()`, ZEPH_OK())}</div>
-    <div class="pv-h">${haInfo(choixH) ? `⚔ <b>${haEsc(haInfo(choixH).nom)}</b>, ${haEsc(haInfo(choixH).titre)} · la voie de ${HER[vJ()].n}.<br>` : ''}✦ <b>${HER[vJ()].t}</b> : ${HER[vJ()].d}<br>${typeof texteBonus === 'function' ? '✨ ' + texteBonus(pJ()) : ''}</div>
-    <button class="gros" onclick="commence()">⚔ Descendre dans la Fosse</button>
-    <p class="record">Meilleur score : ${D.meilleur} · plus longue survie : ${Math.floor(D.meilleurTemps / 60)}:${String(D.meilleurTemps % 60).padStart(2, '0')} · ${D.victoires} victoire${D.victoires > 1 ? 's' : ''} sur ${D.parties}<br>
-      ${localStorage.getItem('guilde-atelier') === '1' ? '<a href="fosse-v2.html" style="color:var(--doux)">l’ancien casse-briques</a> · <a href="fosse-v1.html" style="color:var(--doux)">la version tour par tour</a>' : ''}</p></div>`;
+  CFG.ouvre({ jeu:'fosse', racine:'app', place:'13cqw' /* le ⚙️ flottant en haut à droite */, titre:'🕳️ La Fosse aux Runes', retour:'menu.html', regles:'regles()',
+    heros:() => Object.entries(HER).map(([k, h]) => `<button class="${choixH === k ? 'on' : ''}" ${k === 'zephine' && !ZEPH_OK() ? 'disabled' : ''} onclick="choixH='${k}';accueil()"><img src="portraits/${k}.webp" alt="">${h.n}${k === 'zephine' && !ZEPH_OK() ? '<small>🔒 tutoriel</small>' : ''}</button>`).join('') + haBoutons(choixH, k => `choixH='${k}';accueil()`, ZEPH_OK()),
+    fiche:() => `${haInfo(choixH) ? `⚔ <b>${haEsc(haInfo(choixH).nom)}</b>, ${haEsc(haInfo(choixH).titre)} · la voie de ${HER[vJ()].n}.<br>` : ''}✦ <b>${HER[vJ()].t}</b> : ${HER[vJ()].d}${typeof texteBonus === 'function' ? '<br>✨ ' + texteBonus(pJ()) : ''}`,
+    modes:[{ k:'fosse', e:'🕳️', n:'La Fosse', img:'menu-recu/mode-fosse.webp', desc:() => 'Ça grouille. Tes dés partent tout seuls, les monstres attaquent, chaque niveau t’offre une amélioration. Tiens 5 minutes… et abats le Titan.',
+      pas:() => [`Meilleur score : ${D.meilleur}`, `Plus longue survie : ${Math.floor(D.meilleurTemps / 60)}:${String(D.meilleurTemps % 60).padStart(2, '0')}`, `${D.victoires} victoire${D.victoires > 1 ? 's' : ''} sur ${D.parties}`]
+        .concat(localStorage.getItem('guilde-atelier') === '1' ? ['<a href="fosse-v2.html" style="color:inherit">l’ancien casse-briques</a>', '<a href="fosse-v1.html" style="color:inherit">la version tour par tour</a>'] : []) }],
+    options:() => [{ k:'t', titre:'⏱ 5 minutes, puis le Titan', aide:'Un niveau gagné = une amélioration au choix parmi 3, dont toujours une sur tes dés.' }],
+    resume:() => `🕳️ La Fosse · <b>${haInfo(choixH) ? haEsc(haInfo(choixH).nom) : HER[vJ()].n}</b>`,
+    lancer:() => commence() });
 }
-function commence() { const D = lire(); D.heros = choixH; ecrire(D); nouvelle(choixH); ecranJeu(); son('portail', true); if (!localStorage.getItem('guilde-fosse3-guide')) { localStorage.setItem('guilde-fosse3-guide', '1'); regles(true); } }
+function commence() { if (window.CFG) CFG.ferme(); const D = lire(); D.heros = choixH; ecrire(D); nouvelle(choixH); ecranJeu(); son('portail', true); if (!localStorage.getItem('guilde-fosse3-guide')) { localStorage.setItem('guilde-fosse3-guide', '1'); regles(true); } }
 if (typeof GM !== 'undefined') { try { GM.musique('combat2'); GM.bouton(); } catch (e) {} }
 document.addEventListener('visibilitychange', () => { if (document.hidden && J && J.etat === 'jeu') pause(); });
 accueil();

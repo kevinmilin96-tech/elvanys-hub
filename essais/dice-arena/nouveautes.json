@@ -1,5 +1,9 @@
 [
 {
+"v": "20261122-212942",
+"m": "La Fosse aux Runes et les épreuves (la Tour, la Chasse au boss) ont aussi la nouvelle entrée : le mode, ton héros, ce qui t'attend, puis Jouer."
+},
+{
 "v": "20261122-212350",
 "m": "Le Duel a la nouvelle entrée : un seul portail, puis le mode (contre l'ordinateur, Duel de la semaine, énigme du jour, tutoriel), ton héros, ton deck et ton adversaire. Le Duel d'équipages s'ouvre dans les Expéditions."
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261122-184404",
 "m": "Menu : réparé sur les téléphones qui gardaient une ancienne copie"
-},
-{
-"v": "20261122-184033",
-"m": "Menu : « Retour » te ramène à ta porte ; « Aujourd’hui » en deux groupes (Rapide / Si tu as le temps) avec le défi et la difficulté du jour ; grand menu allégé ; 📺 en haut des Chroniques"
 }
 ]

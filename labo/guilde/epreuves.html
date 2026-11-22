@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261122-212350"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
+<head><meta name="guilde-version" content="20261122-212942"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex">
@@ -39,6 +39,7 @@
 <script src="musique.js?v=7c0d58ffd7"></script>
 <script src="rang.js?v=e19ab6f328"></script>
 <script src="heros-etoiles.js?v=48da21e34c"></script>
+<script src="configurateur.js?v=735db7f4d2"></script>
 <script src="heros-aventure.js?v=31db8c2ed4"></script>
 <script src="donnees.js?v=41849a41e8"></script>
 <script src="odyssee.js?v=2dd4974f8b"></script>
@@ -135,6 +136,27 @@ function retour() {
     RESULTAT = `<div class="res">🎯 <b>${d} dégâts</b> avec ${h}.${gains.length ? ` Palier${gains.length > 1 ? 's' : ''} atteint${gains.length > 1 ? 's' : ''} : ${gains.join(', ')} !` : ''}</div>`;
   }
 }
+// 22/11 (configurateur validé : « déploie-le aux autres modes ») : l'entrée des épreuves = le configurateur commun (configurateur.js) :
+// 1. le mode (la Tour, la Chasse au boss) → 2. le héros (retenu) → 3. ce qui t'attend → ⚔. Les onglets du haut s'effacent.
+dessine = function () {
+  document.querySelector('.onglets').style.display = 'none'; document.querySelectorAll('.haut > a, .haut > h1').forEach(e => e.style.display = 'none'); document.querySelector('.haut').style.justifyContent = 'flex-end';
+  const T = lireTour(), e = etageTour(T.etage), C = lireChasse(), b = bossSemaine(), r = essaisRestants(C), res = RESULTAT;
+  const mode = CFG.def && CFG.def.jeu === 'epreuves' ? CFG.mode : ONG;
+  CFG.ouvre({ jeu:'epreuves', racine:'app', titre:'🏯 Les épreuves', retour:'menu.html', regles:"guideMode('epreuves', true)",
+    heros:() => herosHTML().replace(/^<div class="heros">/, '').replace(/<\/div>$/, ''),
+    fiche:() => `⚔ <b>${nomChoisi()}</b> · record à la Tour : étage ${T.records[HEROS_CHOISI] || '—'}<br>Tes étoiles et ton équipement comptent ici. Perdre ne coûte rien.`,
+    modes:[
+      { k:'tour', e:'🏯', n:'La Tour', img:'menu-recu/mode-epreuves.webp', desc:() => `${mode === 'tour' ? res : ''}Monte étage par étage. Chaque combat est fixe (le même pour tout le monde) et de plus en plus dur ; un boss tous les 5 étages.`,
+        pas:() => [`🏯 Étage ${T.etage}`, `${HEROS[e.ennemi].nom}${e.t === 'boss' ? ' 👑' : e.t === 'elite' ? ' 💀' : ''}`] },
+      { k:'chasse', e:'🎯', n:'Chasse au boss', img:'menu-recu/mode-chasse.webp', desc:() => `${mode === 'chasse' ? res : ''}Le boss de la semaine a 999 PV : tu ne le battras pas. Le but : lui faire le plus de dégâts possible en 8 tours. Deux essais par jour.`,
+        pas:() => [`👑 ${HEROS[b].nom}`, `Meilleur : ${C.meilleur} dégâts`, `Essais aujourd’hui : ${Math.max(0, r)} / 2`], verrou:() => r > 0 ? null : 'Plus d’essai aujourd’hui : reviens demain' } ],
+    options:m => m === 'tour' ? [{ k:'e', titre:`🏯 Étage ${T.etage}`, aide:ligneEnnemi(e, true) + `<p class="aide">Récompense : 15 XP et 2 éclats du héros${e.t === 'boss' ? ' · boss : un objet pour l’armurerie et 5 éclats de Guilde' : ''}.</p>` },
+        { k:'p', titre:'👀 Plus haut', aide:`<div class="liste">${[1, 2, 3, 4, 5].map(k => ligneEnnemi(etageTour(T.etage + k))).join('')}</div>` }]
+      : [{ k:'b', titre:'🎯 Le boss de la semaine', aide:ligneEnnemi({ n:'—', acte:HEROS[b].ile || 'brulees', t:'boss', ennemi:b, niv:1, force:1 }, true).replace('Étage — · ', 'Cette semaine · ').replace(' · ennemis ×1 de vie', '') },
+        { k:'p', titre:'🏅 Les paliers de la semaine', aide:`<div class="paliers">${PALIERS.map(([d, x, xp], i) => `<div class="${C.paliers.includes(i) ? 'ok' : ''}">${C.paliers.includes(i) ? '✅' : '🎯'} ${d} dégâts<br><small>💠 ${x} · ${xp} XP</small></div>`).join('')}</div>` }],
+    resume:m => `${m === 'tour' ? `🏯 Étage ${T.etage}` : '🎯 Chasse au boss'} · <b>${nomChoisi()}</b>`,
+    lancer:m => { RESULTAT = ''; if (m === 'tour') combatTour(); else combatChasse(); } }, CFG.def && CFG.def.jeu === 'epreuves' ? null : { mode:ONG });
+};
 retour(); dessine();
 if (typeof GM !== 'undefined') { GM.musique('menu'); GM.bouton(); }
 // 22/11 (l'utilisateur : le ⚙️ flottant recouvrait l'onglet « La Chasse » / le bouton « Héros ») : il prend sa place dans la barre du haut, après « Héros »

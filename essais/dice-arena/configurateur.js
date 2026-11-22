@@ -11,7 +11,7 @@
 (function () {
   const css = document.createElement('style');
   css.textContent = `
-  .cfg-boite { max-width:520px; margin:0 auto; container-type:inline-size; padding:0 2cqw; }
+  .cfg-boite { max-width:520px; width:100%; box-sizing:border-box; margin:0 auto; container-type:inline-size; padding:0 2cqw; flex:1 1 auto; min-height:0; overflow-y:auto; } /* la Fosse : #app en colonne, sans défilement de la page */
   .cfg { padding-bottom:30cqw; }
   .cfg .haut { display:flex; justify-content:space-between; align-items:center; padding:2cqw 0; font-size:3.4cqw; }
   .cfg .haut a, .cfg .haut button { color:var(--doux, #c9c1ea); background:none; border:0; font-size:3.4cqw; text-decoration:none; cursor:pointer; }
@@ -27,10 +27,10 @@
   .cfg .mode.on { border-color:var(--or, #ffd98a); box-shadow:0 0 4cqw #ffd98a55; } .cfg .mode.on img { filter:none; }
   /* 22/11 (l'utilisateur : « le bouton Reprendre gêne en haut à droite ») : petite pastille posée en bas de l'image, juste au-dessus du nom */
   .cfg .mode .rep { position:absolute; top:19.5cqw; left:50%; transform:translateX(-50%); white-space:nowrap; background:#163a2aee; border:1px solid #5fdc8f; color:#7ff0a8; border-radius:3cqw; font-size:2.4cqw; padding:.3cqw 1.8cqw; font-weight:bold; z-index:2; }
-  .cfg .grand { border-radius:4cqw; overflow:hidden; border:2px solid var(--or, #ffd98a); margin-top:3cqw; background:#1a1230; animation:cfgEntre .35s ease-out; }
-  .cfg .grand img { width:100%; height:44cqw; object-fit:cover; display:block; }
-  .cfg .grand .t { padding:2.5cqw 3cqw 3cqw; } .cfg .grand .t b { color:var(--or, #ffd98a); font-size:4.4cqw; }
-  .cfg .grand .t p { margin:1.2cqw 0 0; font-size:3.3cqw; color:#ddd3ff; line-height:1.35; }
+  .cfg .cfg-grand { border-radius:4cqw; overflow:hidden; border:2px solid var(--or, #ffd98a); margin-top:3cqw; background:#1a1230; animation:cfgEntre .35s ease-out; }
+  .cfg .cfg-grand img { width:100%; height:44cqw; object-fit:cover; display:block; }
+  .cfg .cfg-grand .t { padding:2.5cqw 3cqw 3cqw; } .cfg .cfg-grand .t b { color:var(--or, #ffd98a); font-size:4.4cqw; }
+  .cfg .cfg-grand .t p { margin:1.2cqw 0 0; font-size:3.3cqw; color:#ddd3ff; line-height:1.35; }
   .cfg .pas { display:inline-block; background:#ffffff14; border-radius:2cqw; padding:.5cqw 2cqw; margin:1.4cqw 1.2cqw 0 0; font-size:2.9cqw; }
   @keyframes cfgEntre { from { opacity:.3; transform:scale(.96); } to { opacity:1; transform:none; } }
   .cfg .heros { display:grid; grid-template-columns:repeat(3, 1fr); gap:2cqw; }
@@ -103,8 +103,8 @@
     const enCours = m => (m.parties ? m.parties().length : m.partie && m.partie()) ? '<span class="rep">▶ En cours</span>' : '';
     if (E === 1) {
       corps = `<div class="etape">1 · Choisis ton mode</div>
-        <div class="modes">${D.modes.map(m => `<button class="mode ${m.k === M.k ? 'on' : ''}" onclick="CFG.mode_('${m.k}')">${enCours(m)}<img src="${m.img}" alt="" onerror="this.style.visibility='hidden'"><b>${m.e} ${esc(m.n)}</b></button>`).join('')}</div>
-        <div class="grand" id="cfg-grand"><img src="${M.img}" alt="" onerror="this.remove()"><div class="t"><b>${M.e} ${esc(M.n)}</b><p>${M.desc ? M.desc() : ''}</p>${(M.pas ? M.pas() : []).map(p => `<span class="pas">${p}</span>`).join('')}${parties.length === 1 ? `<span class="pas" style="background:#163a2a;color:#7ff0a8">Partie en cours : ${partie.texte}</span>` : ''}${verrou ? `<span class="pas" style="background:#3a1a1a;color:#ffb3a8">🔒 ${verrou}</span>` : ''}</div></div>`;
+        <div class="modes"${D.modes.length < 2 ? ' style="display:none"' : ''}>${D.modes.map(m => `<button class="mode ${m.k === M.k ? 'on' : ''}" onclick="CFG.mode_('${m.k}')">${enCours(m)}<img src="${m.img}" alt="" onerror="this.style.visibility='hidden'"><b>${m.e} ${esc(m.n)}</b></button>`).join('')}</div>
+        <div class="cfg-grand" id="cfg-grand"><img src="${M.img}" alt="" onerror="this.remove()"><div class="t"><b>${M.e} ${esc(M.n)}</b><p>${M.desc ? M.desc() : ''}</p>${(M.pas ? M.pas() : []).map(p => `<span class="pas">${p}</span>`).join('')}${parties.length === 1 ? `<span class="pas" style="background:#163a2a;color:#7ff0a8">Partie en cours : ${partie.texte}</span>` : ''}${verrou ? `<span class="pas" style="background:#3a1a1a;color:#ffb3a8">🔒 ${verrou}</span>` : ''}</div></div>`;
       bas = verrou && !parties.length ? `<button class="go" disabled>🔒 ${verrou}</button>`
         : parties.length > 1 ? parties.map(x => `<div class="lig"><button class="go2" onclick="CFG.ferme();${x.reprendre}">▶ ${x.texte}</button><button class="x" onclick="if(confirm('Effacer cette partie ? Elle sera perdue.')){${x.abandonner};CFG.dessine()}">✕</button></div>`).join('') + (verrou ? '' : `<button class="go3" onclick="CFG.va(2)">Nouvelle partie ›</button>`)
         : partie ? `<button class="go2" onclick="CFG.ferme();${partie.reprendre}">▶ Reprendre</button><button class="go3" onclick="CFG.va(2)">Nouvelle partie ›</button><button class="ab" onclick="if(confirm('Abandonner cette partie ? Elle sera effacée.')){${partie.abandonner};CFG.dessine()}">✕ abandonner la partie en cours</button>`
@@ -121,7 +121,7 @@
       }).join('') : '<div class="opt"><div class="aide">Pas d’option pour ce mode.</div></div>'}`;
       bas = `<div class="recap">${D.resume ? D.resume(M.k, V) : ''}</div>${partie && !D.plusieurs ? '<div class="recap" style="color:#ffb3a8">⚠ Ta partie en cours sera abandonnée.</div>' : ''}<button class="go" onclick="CFG.jouer()">▶ Jouer</button>`;
     }
-    jeu.innerHTML = `<div class="cfg-boite"><div class="cfg"><div class="haut">${retour}<span></span><button onclick="${D.regles || ''}">❓ Règles</button></div><h1>${D.titre}</h1>${fil}${corps}</div></div>`;
+    jeu.innerHTML = `<div class="cfg-boite"><div class="cfg"><div class="haut"${D.place ? ` style="padding-right:${D.place}"` : ''}>${retour}<span></span><button onclick="${D.regles || ''}">❓ Règles</button></div><h1>${D.titre}</h1>${fil}${corps}</div></div>`;
     let b = document.getElementById('cfg-bas');
     if (!b) { b = document.createElement('div'); b.id = 'cfg-bas'; b.className = 'cfg-bas'; document.body.appendChild(b); }
     b.innerHTML = `<div>${bas}</div>`;
