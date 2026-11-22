@@ -1,0 +1,160 @@
+<!doctype html><html lang="fr"><head><meta name="guilde-version" content="20261122-155226"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>Le deck en vrai jeu de cartes (à valider)</title>
+<style>
+body{font-family:system-ui,sans-serif;max-width:780px;margin:auto;padding:14px;background:#f6f4fb;color:#1d1626;line-height:1.45}
+h1{font-size:1.3rem;color:#6b2bd9}h2{font-size:1.1rem;margin-top:28px;padding-top:10px;border-top:3px solid #6b2bd9}
+.q{background:#fff7e0;border:2px solid #f3c96b;border-radius:10px;padding:10px 14px}.q li{margin-bottom:8px}.avis{color:#6b4a00}
+.note{background:#eef7ee;border-left:4px solid #5fb84a;padding:8px 12px;border-radius:6px}
+/* les écrans de téléphone */
+.tel{width:330px;max-width:100%;margin:12px auto;border-radius:26px;border:8px solid #1b1428;background:linear-gradient(#21173a,#120c20);color:#efe6ff;padding:12px 10px;box-shadow:0 8px 24px #0004;font-size:.86rem;position:relative;overflow:hidden}
+.tel h3{margin:0 0 8px;font-family:Georgia,serif;text-align:center;color:#ffd98a;font-size:1.05rem}
+.leg{text-align:center;color:#5b5470;font-size:.85rem;margin-top:-4px}
+.onglets{display:flex;gap:4px;justify-content:center;margin-bottom:8px}.onglets span{padding:3px 7px;border-radius:12px;background:#ffffff14;font-size:.75rem}.onglets .on{background:#6b2bd9;color:#fff}
+.deckc{display:flex;align-items:center;gap:8px;background:#ffffff10;border:1px solid #ffffff22;border-radius:12px;padding:8px;margin-bottom:6px}
+.deckc.actif{border-color:#ffd98a;box-shadow:0 0 0 1px #ffd98a55}.deckc b{color:#fff}.deckc small{color:#c9c1ea}.deckc .ic{font-size:1.5rem}
+.btn{display:block;text-align:center;border-radius:12px;padding:8px;background:#6b2bd9;color:#fff;font-weight:bold;margin-top:6px}.btn.gris{background:#ffffff18;color:#c9c1ea}
+.ligne{display:flex;align-items:center;gap:6px;background:#ffffff0d;border-radius:7px;padding:3px 6px;margin-bottom:3px}
+.ligne .co{width:20px;height:20px;border-radius:50%;background:#2a7fc1;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:.75rem}
+.ligne .nm{flex:1}.ligne .x{color:#ffd98a;font-weight:bold}.ligne.leg1 .nm{color:#ffb347}.ligne.leg1 .x{color:#ffb347}
+.courbe{display:flex;align-items:flex-end;gap:5px;height:70px;padding:4px 6px;background:#ffffff0a;border-radius:8px;margin:6px 0}
+.courbe div{flex:1;background:linear-gradient(#ffd98a,#f7862a);border-radius:4px 4px 0 0;position:relative;min-height:2px}
+.courbe div span{position:absolute;top:-16px;left:0;right:0;text-align:center;font-size:.7rem;color:#fff}
+.courbe div i{position:absolute;bottom:-16px;left:0;right:0;text-align:center;font-size:.7rem;color:#c9c1ea;font-style:normal}
+.compte{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}.compte b{color:#5fb84a;font-size:1rem}
+.coll{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:8px}.coll .c{position:relative}
+.pastille{position:absolute;bottom:4px;left:50%;transform:translateX(-50%);background:#000c;border:1px solid #ffd98a;color:#ffd98a;border-radius:10px;padding:0 6px;font-size:.7rem;font-weight:bold;z-index:3}
+.pastille.max{border-color:#888;color:#aaa}.c.plein{opacity:.45}
+.filtres{display:flex;gap:3px;flex-wrap:wrap}.filtres span{background:#ffffff14;border-radius:8px;padding:1px 6px;font-size:.72rem}
+.main{display:flex;justify-content:center;gap:4px;margin:10px 0}.main .c{position:relative}.main .c.rejet{transform:translateY(-10px)}
+.main .c.rejet::after{content:'↺';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:2.4rem;color:#ff6b6b;text-shadow:0 0 6px #000;background:#0006;border-radius:6px;z-index:4}
+.plateau{height:250px;border-radius:12px;background:radial-gradient(circle at 50% 40%,#3a2a55,#140d24);position:relative;margin-top:4px}
+.paquet,.defausse{position:absolute;bottom:12px;width:58px;height:80px;border-radius:7px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:bold}
+.paquet{right:12px;background:repeating-linear-gradient(45deg,#4b2a8a,#4b2a8a 6px,#3a1f6e 6px,#3a1f6e 12px);border:2px solid #ffd98a;box-shadow:3px 3px 0 #2a184e,6px 6px 0 #1d1138}
+.defausse{left:12px;background:#ffffff10;border:2px dashed #ffffff55;color:#c9c1ea}
+.paquet b,.defausse b{font-size:1.3rem;color:#fff}.paquet small,.defausse small{font-size:.65rem;font-weight:normal}
+.bulle{position:absolute;left:50%;top:40%;transform:translate(-50%,-50%);background:#2a0d0d;border:2px solid #ff6b6b;color:#ffd0d0;border-radius:12px;padding:10px 12px;text-align:center;width:78%}
+.bulle b{color:#fff;font-size:1rem}
+.liste{position:absolute;left:8px;right:8px;top:8px;background:#1b1230f2;border:1px solid #ffd98a88;border-radius:10px;padding:8px}
+.liste .ligne{background:#ffffff10}
+.cfaux{width:94px;height:132px;border-radius:7px;background:linear-gradient(#5a3b8f,#2b1b4a);border:2px solid #b58cff;display:flex;flex-direction:column;justify-content:space-between;padding:5px;box-sizing:border-box;font-family:Georgia,serif;font-size:.68rem}
+.cfaux .k{align-self:flex-end;width:18px;height:18px;border-radius:50%;background:#2a7fc1;text-align:center;font-weight:bold}
+</style></head><body>
+<h1>Le deck en vrai jeu de cartes (à valider, 22/11/2026)</h1>
+<p>Ce que tu as décidé le 22/11&nbsp;: le deck devient un vrai deck façon Hearthstone. Cette page montre les <b>écrans</b> avant que je construise quoi que ce soit. Les cartes dessinées sont les vraies cartes du jeu.</p>
+
+<h2>1. Les règles</h2>
+<ul>
+<li><b>20 cartes</b> par deck (aujourd’hui 30). Au plus <b>2 exemplaires</b> d’une carte, <b>1 seul</b> pour une carte <b style="color:#d97a00">légendaire</b>.</li>
+<li>Main de départ&nbsp;: 4 cartes, puis 1 par tour, 7 au plus (comme aujourd’hui).</li>
+<li><b>Mulligan</b>&nbsp;: au début du combat, tu touches les cartes de ta main que tu ne veux pas&nbsp;; elles repartent dans le paquet, il est mélangé, tu en repioches autant. Une seule fois.</li>
+<li><b>Fatigue</b>&nbsp;: quand le paquet est vide, chaque pioche manquée fait perdre 1 PV, puis 2, puis 3… (comme Hearthstone). Les cartes jouées ne reviennent pas.</li>
+<li>Pendant le combat&nbsp;: le <b>paquet</b> (dos de carte + nombre restant) et la <b>défausse</b> (nombre de cartes jouées) sont visibles&nbsp;; on les touche pour voir la liste.</li>
+<li>Une vraie page <b>«&nbsp;Mes decks&nbsp;»</b>&nbsp;: plusieurs decks par héros, un nom pour chacun, et on choisit son deck <b>avant chaque combat</b>. L’Odyssée part du deck choisi.</li>
+</ul>
+<div class="note"><b>Mesuré au simulateur aujourd’hui</b>&nbsp;: un Duel dure en moyenne <b>6 tours par joueur</b>, donc on pioche environ 10 cartes. Avec 20 cartes, la fatigue n’arrive <b>que dans les combats longs</b> (un boss qui traîne)&nbsp;: elle sert à finir un combat, pas à punir. Je referai la mesure avec les vrais decks de 20 après ton accord.</div>
+
+<h2>2. Écran «&nbsp;Mes decks&nbsp;»</h2>
+<p>Ouvert depuis le grand menu (tuile «&nbsp;🂠 Mes decks&nbsp;») et depuis la fiche du héros. Un onglet par héros.</p>
+<div class="tel">
+ <h3>🂠 Mes decks</h3>
+ <div class="onglets"><span class="on">Maëlle</span><span>Aldric</span><span>Pip</span><span>Oria</span><span>Gorm</span><span>Zéphine</span></div>
+ <div class="deckc actif"><span class="ic">🔨</span><div><b>La forge brûlante</b> ⭐<br><small>20 / 20 · coût moyen 1,2 · deck choisi</small></div></div>
+ <div class="deckc"><span class="ic">🛡</span><div><b>Plaque et golems</b><br><small>20 / 20 · coût moyen 1,9</small></div></div>
+ <div class="deckc"><span class="ic">📜</span><div><b>Le deck de base</b><br><small>donné par la Guilde, toujours là, on ne peut pas le changer</small></div></div>
+ <div class="btn">＋ Nouveau deck</div>
+</div>
+<p class="leg">Le deck marqué ⭐ est celui qui part au combat. Toucher un deck = l’ouvrir dans l’atelier.</p>
+
+<h2>3. L’atelier du deck</h2>
+<p>En haut, le deck en <b>liste</b> (coût, nom, nombre) avec le compte et la <b>courbe des coûts</b>. En bas, ta collection en <b>grandes cartes</b>, filtrables. Toucher une carte de la collection l’ajoute&nbsp;; toucher une ligne du deck la retire.</p>
+<div class="tel" id="atelier">
+ <h3>La forge brûlante ✏️</h3>
+ <div class="compte"><span>Cartes</span><b id="compte">20 / 20 ✔</b></div>
+ <div id="liste"></div>
+ <div style="font-size:.75rem;color:#c9c1ea;margin-top:6px">Courbe des coûts</div>
+ <div class="courbe" id="courbe"></div>
+ <div style="height:14px"></div>
+ <div class="filtres"><span>Tout</span><span>0</span><span>1</span><span>2</span><span>3+</span><span>⚔ Créatures</span><span>✦ Sorts</span><span>⚒ Équipements</span></div>
+ <div class="coll" id="coll"></div>
+ <div class="btn gris">🪄 Compléter pour moi</div>
+</div>
+<p class="leg">Sous chaque carte&nbsp;: <b>1/2</b> = combien tu en as mis. Grisée = déjà au maximum. La carte <span style="color:#d97a00">orange</span> est légendaire (1 seule).<br>«&nbsp;Compléter pour moi&nbsp;» remplit les places vides avec des cartes du héros (pratique pour débuter). On ne peut pas jouer un deck qui n’a pas 20 cartes.</p>
+
+<h2>4. Avant le combat&nbsp;: choisir son deck</h2>
+<div class="tel">
+ <h3>⚔ Duel · Maëlle</h3>
+ <div style="text-align:center;color:#c9c1ea;margin-bottom:6px">Avec quel deck&nbsp;?</div>
+ <div class="deckc actif"><span class="ic">🔨</span><div><b>La forge brûlante</b><br><small>20 cartes · coût moyen 1,2</small></div></div>
+ <div class="deckc"><span class="ic">🛡</span><div><b>Plaque et golems</b><br><small>20 cartes · coût moyen 1,9</small></div></div>
+ <div class="deckc"><span class="ic">📜</span><div><b>Le deck de base</b></div></div>
+ <div class="btn">Au combat&nbsp;!</div>
+</div>
+<p class="leg">Le dernier deck utilisé est déjà choisi&nbsp;: un seul toucher suffit si on ne change rien. Si le héros n’a que le deck de base, cet écran est sauté.</p>
+
+<h2>5. Le mulligan</h2>
+<div class="tel">
+ <h3>Ta main de départ</h3>
+ <div style="text-align:center;color:#c9c1ea">Touche les cartes que tu veux changer</div>
+ <div class="main" id="mainmull"></div>
+ <div class="btn">Changer 1 carte</div>
+ <div class="btn gris">Garder ma main</div>
+</div>
+<p class="leg">La carte touchée montre ↺. Une seule fois par combat. L’ordinateur fait son mulligan tout seul.</p>
+
+<h2>6. En combat&nbsp;: le paquet, la défausse, la fatigue</h2>
+<div class="tel">
+ <h3>Le plateau (bas de l’écran)</h3>
+ <div class="plateau" style="height:330px">
+  <div class="defausse"><small>Défausse</small><b>5</b><small>jouées</small></div>
+  <div class="paquet"><small style="color:#ffd98a">Paquet</small><b>11</b><small style="color:#ffd98a">restantes</small></div>
+  <div class="liste" id="listepaquet"><div style="text-align:center;color:#ffd98a;margin-bottom:4px"><b>Il te reste 11 cartes</b> (ordre caché)</div></div>
+ </div>
+ <p style="margin:8px 0 0;text-align:center;font-size:.78rem;color:#c9c1ea">Toucher le paquet&nbsp;: ce qu’il reste (mélangé, jamais l’ordre). Toucher la défausse&nbsp;: ce que tu as joué.</p>
+</div>
+<div class="tel">
+ <h3>Le paquet est vide</h3>
+ <div class="plateau">
+  <div class="defausse"><small>Défausse</small><b>16</b><small>jouées</small></div>
+  <div class="paquet" style="opacity:.35"><small style="color:#ffd98a">Paquet</small><b>0</b></div>
+  <div class="bulle">💀 <b>Fatigue</b><br>Plus de carte à piocher&nbsp;: <b>−2 PV</b><br><small>La prochaine fois&nbsp;: −3 PV</small></div>
+ </div>
+</div>
+<p class="leg">Le paquet devient rouge quand il reste 3 cartes ou moins, pour prévenir.</p>
+
+<h2>7. Ce qui se passe pour tes decks actuels</h2>
+<ul>
+<li>Ton deck de 30 cartes déjà fait n’est pas perdu&nbsp;: il apparaît dans «&nbsp;Mes decks&nbsp;» avec <b>«&nbsp;30 / 20&nbsp;: retire 10 cartes&nbsp;»</b>. En attendant, le combat part du deck de base.</li>
+<li>Les modes concernés&nbsp;: Duel, Duel de la semaine, Duel contre un ami, Odyssée et Grande aventure, Tour des épreuves (tous ceux qui jouent avec des cartes). Le reste ne change pas.</li>
+<li>Après ton accord&nbsp;: je construis, je règle au simulateur (20 cartes, mulligan de l’ordinateur, fatigue), puis une planche avant la mise en ligne.</li>
+</ul>
+
+<h2>8. À valider</h2>
+<div class="q"><ol>
+<li><b>Les écrans</b> te vont (Mes decks, atelier, choix avant combat, mulligan, paquet et défausse)&nbsp;?</li>
+<li><b>Les légendaires</b>&nbsp;: je propose que les <b>7 cartes du Rang de la Guilde</b> (Coup de l’enclume, Louve blanche, Carnet du cartographe, Aube protectrice, Chant des ancêtres, Élixir explosif, Rune d’éveil), épiques aujourd’hui, deviennent les premières légendaires (1 seule par deck, bordure orange). <span class="avis">Mon avis&nbsp;: oui, ce sont déjà des cartes à part, gagnées au Rang.</span></li>
+<li><b>Combien de decks par héros</b>&nbsp;? <span class="avis">Mon avis&nbsp;: 3 (plus le deck de base). Assez pour essayer, pas trop pour s’y perdre.</span></li>
+<li><b>L’ordinateur</b> joue lui aussi un deck de 20 (tiré de son deck de base), avec son mulligan automatique. <span class="avis">Mon avis&nbsp;: oui, sinon le combat n’est pas équitable.</span></li>
+<li><b>L’Odyssée</b>&nbsp;: on part du deck choisi (20 cartes) et les cartes gagnées en route s’ajoutent (le deck grandit pendant l’île, comme aujourd’hui). La fatigue compte aussi. <span class="avis">Mon avis&nbsp;: oui&nbsp;; un deck qui grossit pioche moins souvent ses meilleures cartes, c’est le choix «&nbsp;prendre ou passer&nbsp;» qui devient intéressant.</span></li>
+<li>Un bouton <b>«&nbsp;🪄 Compléter pour moi&nbsp;»</b> dans l’atelier, et l’entrée «&nbsp;Mes decks&nbsp;» dans le grand menu&nbsp;? <span class="avis">Mon avis&nbsp;: oui aux deux.</span></li>
+</ol></div>
+<p>Tu peux répondre en une ligne&nbsp;: «&nbsp;1 oui, 2 oui, 3&nbsp;: 5 decks…&nbsp;».</p>
+
+<script src="donnees.js"></script>
+<script src="cartes.js"></script>
+<script>
+document.head.insertAdjacentHTML('beforeend', '<style>' + CSS_CARTE + '</style>');
+const LEG = ['n_maelle','n_pip','n_oria','n_aldric','n_gorm','n_zephine','n_guilde'];
+const DECK = ['etincelles','etincelles','gu_pain','rond','marteau','marteau','lame','lame','retremper','fournaise','potion','potion','pierre','gu_epee','torche','apprenti','apprenti','plastron','n_maelle','golem'];
+const n = {}; DECK.forEach(k => n[k] = (n[k] || 0) + 1);
+const uniq = [...new Set(DECK)].sort((a, b) => CARTES[a].c - CARTES[b].c || CARTES[a].n.localeCompare(CARTES[b].n));
+document.getElementById('liste').innerHTML = uniq.map(k => `<div class="ligne${LEG.includes(k) ? ' leg1' : ''}"><span class="co">${CARTES[k].c}</span><span class="nm">${CARTES[k].n}${LEG.includes(k) ? ' ★' : ''}</span><span class="x">×${n[k]}</span></div>`).join('');
+const cb = [0,0,0,0,0]; DECK.forEach(k => cb[Math.min(4, CARTES[k].c)]++); const mx = Math.max(...cb);
+document.getElementById('courbe').innerHTML = cb.map((v, i) => `<div style="height:${v / mx * 100}%"><span>${v}</span><i>${i === 4 ? '4+' : i}</i></div>`).join('');
+const dessine = (k, w) => { try { return carteGuilde(k, { w }); } catch (e) { return `<div class="cfaux"><span class="k">${CARTES[k].c}</span><span>${CARTES[k].n}</span></div>`; } };
+const COLL = ['marteau','golem','n_maelle','apprenti','m_automate','gu_lance'];
+document.getElementById('coll').innerHTML = COLL.map(k => { const m = LEG.includes(k) ? 1 : 2, a = n[k] || 0;
+  return `<div class="c${a >= m ? ' plein' : ''}">${dessine(k, 96)}<span class="pastille${a >= m ? ' max' : ''}">${a}/${m}</span></div>`; }).join('');
+document.getElementById('mainmull').innerHTML = ['golem','etincelles','marteau','potion'].map((k, i) => `<div class="c${i === 0 ? ' rejet' : ''}">${dessine(k, 72)}</div>`).join('');
+const reste = ['marteau','lame','retremper','fournaise','potion','pierre','gu_epee','torche','apprenti','plastron','golem'];
+document.getElementById('listepaquet').insertAdjacentHTML('beforeend', [...new Set(reste)].sort((a, b) => CARTES[a].c - CARTES[b].c).map(k => `<div class="ligne"><span class="co">${CARTES[k].c}</span><span class="nm">${CARTES[k].n}</span><span class="x">×${reste.filter(x => x === k).length}</span></div>`).slice(0, 5).join('') + '<div style="text-align:center;font-size:.7rem;color:#c9c1ea">… et 6 autres</div>');
+</script>
+</body></html>
