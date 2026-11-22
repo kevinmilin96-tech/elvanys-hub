@@ -1,5 +1,9 @@
 [
 {
+"v": "20261122-201024",
+"m": "Jouer vite : la Tour et la Chasse au boss réunies dans le portail « Les épreuves »"
+},
+{
 "v": "20261122-200752",
 "m": "Quêtes du jour : des gestes simples (passer à la Guilde, ramasser le butin, envoyer un cœur…), et toucher une quête t’emmène au bon endroit"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261122-174914",
 "m": "Le nouveau menu a ses images : un portail peint pour chaque porte, et le soleil d’Aujourd’hui"
-},
-{
-"v": "20261122-174602",
-"m": "Défense de la porte et Invasion : ta partie est gardée si tu quittes ; « Reprendre » la remet là où tu l’avais laissée"
 }
 ]
