@@ -363,7 +363,10 @@ function cible(id) { const avant = S.tombes; if (C.pouvoir(S, { carte:id })) { o
 // après un coup : les monstres tombés se replient, la carte du dessous se retourne
 function apresCoup(avant) {
   const n = S.tombes - avant;
-  if (S.gardien && S.gardien.relevé) { delete S.gardien.relevé; S.gardien.neuve = true; son('vague'); bulle(`♛ ${S.gardien.nom.split(' ').slice(-1)[0]} se relève !`, true); tremble(); }
+  if (S.gardien && S.gardien.relevé) { delete S.gardien.relevé; S.gardien.neuve = true; son('vague'); bulle(`♛ ${S.gardien.nom.split(' ').slice(-1)[0]} se relève !`, true); tremble();
+    // 22/11 : la 2e phase du Gardien s'annonce en grand, avec ce qui change
+    if (S.gardien.phase === 2 && !S.gardien.phaseVue) { S.gardien.phaseVue = true; const g = S.gardien, T = C.TRAITS[g.trait], ligne = (S.journal.find(l => l.includes('se relève')) || '').split('!')[0];
+      setTimeout(() => fenetre(`<div style="text-align:center"><img src="portraits/m-${g.m}.webp" alt="" style="width:120px;height:120px;object-fit:cover;border-radius:16px;box-shadow:0 0 0 3px #ff6b5a,0 0 30px #ff6b5a99"><h2 style="color:#ff8a7a">♛ Phase 2</h2><p>${ligne.replace('♛ ', '')} !</p><p>Nouveaux sceaux, et une nouvelle arme :<br><b>${T.e} ${T.n}</b> : ${T.d}</p><button class="go" onclick="fenetre('')">À l’attaque !</button></div>`), 900); } }
   if (n > 0) {
     son('tombe'); if (S.chaine > 1) bulle(`Chaîne ×${S.chaine} !`); else bulle('💀 Il tombe !');
     if (typeof guildeEvt === 'function') guildeEvt('salle', n, { heros:herosS(S).prog, voie:S.heros });
@@ -437,7 +440,7 @@ function regles() {
       <li><b>Ton héros</b> : pose des dés sur les sceaux de son pouvoir ; quand ils sont tous brisés, le pouvoir est prêt.</li>
       <li><b>Fin du tour</b> : chaque monstre visible fait ce qu’il annonce sur sa carte (⚔ frapper, ⏳ préparer un coup double, 🛡 se protéger, 💚 soigner un voisin). La ligne du milieu te dit combien tu vas perdre.</li>
       <li><b>Chaîne</b> : plusieurs monstres tombés dans le même tour multiplient les points.</li>
-      <li><b>Victoire</b> : vide les colonnes, puis bats le <b>Gardien</b> de la crypte. Les élites ★ dorment au fond des colonnes.</li>
+      <li><b>Victoire</b> : vide les colonnes, puis bats le <b>Gardien</b> de la crypte, en <b>2 phases</b> : quand ses sceaux sont brisés, il se relève avec de nouveaux sceaux et une nouvelle arme (un pouvoir différent pour chaque Gardien). Les élites ★ dorment au fond des colonnes.</li>
       <li><b>Le plateau change</b> : trois colonnes, quatre colonnes, l’escalier ou les deux tours. Une <b>carte spéciale</b> se cache aussi dans les colonnes : 🧰 un coffre, 🕯️ un autel qui charge ton pouvoir, ou ⚙️ un piège qui frappe tant qu’il n’est pas désamorcé.</li>
       <li><b>Les étoiles</b> : chaque crypte a 3 <b>défis</b> (en haut de l’écran, touche-les pour les lire). Gagne, et chaque défi réussi vaut une étoile. ↩ annule le dernier dé posé.</li>
     </ol>
