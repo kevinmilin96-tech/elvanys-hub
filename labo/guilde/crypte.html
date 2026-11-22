@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261122-202126"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
+<head><meta name="guilde-version" content="20261122-202657"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="robots" content="noindex">
@@ -516,7 +516,7 @@ function accueil() {
     <div class="pv-h">${haInfo(choixH) ? `⚔ <b>${haEsc(haInfo(choixH).nom)}</b>, ${haEsc(haInfo(choixH).titre)} · la voie de ${HER[vJ()].n}.<br>` : ''}⚡ <b>${C.POUVOIRS[vJ()].n}</b> : ${C.POUVOIRS[vJ()].d}<br>❤ ${C.PV_HEROS} PV dans la crypte.<br>✨ ${texteBonus(pJ())}</div>
     <div class="choix">
       ${partieGardee() ? `<button onclick="reprend()" style="border-color:var(--ok);color:var(--ok);background:#163a2a">▶ Reprendre ta crypte<small>${haEsc(herosS(partieGardee().S).nom)} · tour ${partieGardee().S.tour} · ❤ ${partieGardee().S.pv}</small></button><button onclick="if(confirm('Abandonner cette partie ? Elle sera effacée.')){try{localStorage.removeItem('guilde-crypte-partie')}catch(e){};accueil()}" style="display:block;margin:0 auto;background:none;border:0;color:var(--doux);font-size:3cqw;text-decoration:underline;padding:1cqw;text-align:center">✕ abandonner cette partie</button>` : ''}
-      <button onclick="descenteAccueil()" style="border-color:#ff9a4a;background:#3a1f10;color:#ffb070">🗺️ NOUVEAU · La Descente<small>Le grand voyage : 3 étages, tu choisis tes salles (combats, marchand, feu de camp, événements), objets, compagnons, dés de couleur, boss et breloques.</small></button>
+      <!-- 22/11 (l'utilisateur) : la Descente a son portail dans « Partir à l’aventure » ; plus de bouton ici (on choisissait deux fois son héros) -->
       <button onclick="lance(true)">🗓️ La crypte du jour<small>${(v => `${v.e} Plateau du jour : <b>${v.n}</b> · `)(C.VARIANTES[C.varianteDuJour('c' + jour())])}${(r => `${r.e} Règle du jour : <b>${r.n}</b> (${r.d}) · `)(C.REGLES[C.regleDuJour('c' + jour())])}La même pour tout le monde aujourd’hui. ${j ? `Ton record du jour : ${j.score} ${'★'.repeat(j.etoiles)}` : 'Pas encore tentée.'}</small></button>
       <button class="b2" onclick="lance(false)">🎲 Une crypte au hasard<small>Une nouvelle à chaque fois, avec un plateau au hasard, une carte spéciale et 3 défis à étoiles.</small></button>
     </div>
@@ -541,7 +541,7 @@ if (typeof GM !== 'undefined') { try { GM.musique('carte') /* 16/11 soir : la pi
 accueil();
 if (typeof AMIS !== 'undefined' && AMIS.carte) setTimeout(() => { if (!S && (typeof DR === 'undefined' || !DR) && AMIS.etat) accueil(); }, 2500);
 </script>
-<script src="descente-ecran.js?v=ec65da23a1"></script>
+<script src="descente-ecran.js?v=656ee3c1ba"></script>
 <script src="guide.js?v=f78db3b570"></script>
 <script src="guides-modes.js?v=866dc88860"></script>
 <script>

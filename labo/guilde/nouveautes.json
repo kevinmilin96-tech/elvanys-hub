@@ -1,5 +1,9 @@
 [
 {
+"v": "20261122-202657",
+"m": "La Crypte et la Descente sont séparées : la Descente s’ouvre par son portail dans « Partir à l’aventure »"
+},
+{
 "v": "20261122-202126",
 "m": "Crypte du jour : le Gardien a maintenant ses 3 phases"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261122-181203",
 "m": "Énigme du jour : fermer la fenêtre ne bloque plus l’écran"
-},
-{
-"v": "20261122-175744",
-"m": "Ton compte et ta sauvegarde reviennent dans ⚙️ Paramètres (☁ Mon compte)"
 }
 ]
