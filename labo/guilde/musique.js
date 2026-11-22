@@ -83,7 +83,7 @@ window.GuildeMaj = (() => {
     return `<div class="maj${attend() ? ' neuve' : ''}"><div data-k="ver"><b data-k="ver">📦 Version du jeu</b><br><small>${fmt(ici)}</small></div>${attend()
       ? `<button class="majb" data-k="maj">✨ Mettre à jour<br><small>version du ${fmt(enLigne)}</small></button>` : '<span class="ok">✅ À jour</span>'}</div>
       ${appliIci() ? `<div class="maj${appliAttend() ? ' neuve' : ''}"><div><b>📱 Appli Android</b><br><small>version ${appliIci()}</small></div>${appliAttend() ? `<a class="majb" href="appli/la-guilde-${appliEnLigne}.apk" style="text-decoration:none">📥 Nouvelle appli ${appliEnLigne}</a>` : '<span class="ok">✅ À jour</span>'}</div>` : ''}
-      <details class="neuf"${nouveau() ? ' open' : ''}><summary>🆕 Quoi de neuf${nouveau() ? ' <span class="nv">nouveau</span>' : ''}</summary><div id="neuf-liste"><small>Chargement…</small></div></details>`;
+      <details class="neuf"><summary>🆕 Quoi de neuf${nouveau() ? ' <span class="nv">nouveau</span>' : ''}</summary><div id="neuf-liste"><small>Chargement…</small></div></details>`;
   }
   function chargeNeuf() { const z = document.getElementById('neuf-liste'); if (!z) return;
     fetch('nouveautes.json?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.json() : []).then(l => {
@@ -189,7 +189,7 @@ const GM = (() => {
         #gm-param .p{width:100%;max-width:400px;max-height:calc(100dvh - 32px);overflow-y:auto;overscroll-behavior:contain;background:#1d1838;border:1px solid #f3c96b66;border-radius:18px;padding:16px 16px 12px;color:#efe9ff;box-shadow:0 10px 30px #000c}
         #gm-param h2{margin:0 0 10px;color:#f3c96b;font-size:1.3em;text-align:center}
         #gm-param .l{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid #ffffff14}
-        #gm-param .l>span{flex:1} #gm-param input[type=range]{width:100%;accent-color:#f3c96b;margin:4px 0 0}
+        #gm-param .l>span{flex:1;min-width:0;display:flex;flex-direction:column;align-items:stretch} #gm-param input[type=range]{display:block;width:100% !important;max-width:100%;box-sizing:border-box;accent-color:#f3c96b;margin:6px 0 0} #gm-param .l>button{flex:none} #gm-param .neuf p, #gm-param .neuf{white-space:normal;overflow-wrap:anywhere} /* 22/11 (l'utilisateur) : la barre du son sous son titre, jamais derrière le bouton ; les nouveautés vont à la ligne */
         #gm-param .t{min-width:76px;border:none;border-radius:20px;padding:7px 12px;font:bold 14px Georgia;background:#3a3570;color:#fff} #gm-param .t.on{background:#f3c96b;color:#2a1a08}
         #gm-param .a{display:block;margin:12px 0 0;padding:11px;border-radius:12px;background:#2a2650;border:1px solid #4b4580;color:#fff;text-decoration:none;text-align:center}
         #gm-param button.a{width:100%;font:15px Georgia;cursor:pointer;white-space:normal;overflow-wrap:break-word} #gm-param .a.q{background:#4a1b24;border-color:#a3404a}
