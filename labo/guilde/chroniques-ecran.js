@@ -178,3 +178,9 @@ function teleco(on) { TELECO = on; try { localStorage.setItem('guilde-chron-tele
   body.telecommande .des { min-height:16cqw; } body.telecommande .des .de, body.telecommande .des button { transform:scale(1.15); }`;
   document.head.appendChild(st);
 }
+// 22/11 (testeurs + choix de l'utilisateur E1) : le bouton de l'écran de la table en haut de l'accueil des Chroniques, plus tout en bas
+{ const _a = accueil; accueil = function () { const r = _a.apply(this, arguments);
+    if (!ECRAN && !S && !LOB) { const s = document.querySelector('#app .acc .sous') || document.querySelector('#app .acc h1'); if (s && !document.getElementById('acc-ecran'))
+      s.insertAdjacentHTML('afterend', `<button id="acc-ecran" class="gros" style="background:#14223a;border-color:#7cd4ff;color:#7cd4ff;margin:2cqw 0" onclick="ecranForm()">📺 Montrer la partie sur une télé<small>Cet écran (télé, ordinateur) affiche la partie d’une salle en grand ; chacun joue sur son téléphone.</small></button>`); }
+    return r; }; }
+if (!S && !ECRAN && document.querySelector('#app .acc')) accueil();

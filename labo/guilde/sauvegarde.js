@@ -84,12 +84,12 @@
   // à la 1re ouverture du menu sans compte : créer son compte (pseudo) ou retrouver le sien (code de récupération)
   function proposerCompte(force) {
     if (!force && !/menu\.html$|\/guilde\/?$/.test(location.pathname)) return;
-    if (!force && sessionStorage.getItem('guilde-sauve-plustard')) return;
+    if (!force && (sessionStorage.getItem('guilde-sauve-plustard') || Date.now() - (+LS.getItem('guilde-sauve-plustard') || 0) < 3 * 864e5)) return; // 22/11 (testeurs) : « Plus tard » vaut 3 jours, plus seulement la session
     fen(`<h2>☁ Ton compte de la Guilde</h2><p>Pour ne <b>jamais perdre ta progression</b> (Odyssée, héros, cartes…), elle est gardée sur le serveur. Il suffit d’un pseudo.</p>${Object.keys(donnees()).length ? '<p>✅ <b>Ce que tu as déjà joué sur ce téléphone est gardé</b> : ta progression en cours sera rattachée à ton nouveau compte.</p>' : ''}
       <input id="gs-pseudo" maxlength="24" placeholder="Ton pseudo" autocomplete="off" value="${esc(LS.getItem('guilde-pseudo') || '')}">
       <div id="gs-msg"></div><button class="gs-go" id="gs-cree" onclick="GS.creer()">Créer mon compte</button>
       <button onclick="GS.ecranRetrouver()">J’ai déjà un compte (code de récupération)</button>
-      <button onclick="sessionStorage.setItem('guilde-sauve-plustard','1');GS.fermer()">Plus tard</button><p><small>Plus tard : tu peux jouer, et créer ton compte quand tu veux dans ⚙️ Paramètres → ☁ Mon compte ; rien de ce que tu joues d’ici là n’est perdu… tant que ce navigateur n’est pas effacé.</small></p>`, false);
+      <button onclick="sessionStorage.setItem('guilde-sauve-plustard','1');try{localStorage.setItem('guilde-sauve-plustard',String(Date.now()))}catch(e){};GS.fermer()">Plus tard</button><p><small>Plus tard : tu peux jouer, et créer ton compte quand tu veux dans ⚙️ Paramètres → ☁ Mon compte ; rien de ce que tu joues d’ici là n’est perdu… tant que ce navigateur n’est pas effacé.</small></p>`, false);
   }
   function montreRecup(code, neuf) {
     fen(`<h2>🔑 Ton code de récupération</h2><p>${neuf ? 'Ton compte est créé, et tout ce que tu as déjà joué y est rattaché et part sur le serveur. ' : ''}Note ce code (dans tes notes, une photo…) : il permet de retrouver ton compte <b>sur un autre téléphone</b> ou si ce navigateur s’efface.</p>
