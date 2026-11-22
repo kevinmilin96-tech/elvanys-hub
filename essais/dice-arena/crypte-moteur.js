@@ -110,13 +110,15 @@ function sceauxGardien(R, etage) {
 }
 // 15/11 soir (l'utilisateur : « le boss de la Descente, super simple, il est tombé en deux trois tours ») : un gardien peut avoir PLUSIEURS VIES ;
 // quand tous ses sceaux sont brisés, il se relève avec de nouveaux sceaux et frappe 1 de plus.
+const PHASE3 = { titan:['rancune', 'son cœur de magma va exploser !'], vouivre:['furie', 'folle de rage !'], roi:['repousse', 'son masque se reforme sans cesse !'],
+  hydre:['epines', 'couverte d’écailles tranchantes !'], devoreur:['rancune', 'son ventre gronde, prêt à tout recracher !'], hiver:['gel', 'l’hiver éternel tombe !'] };
 // 22/11 : la 2e phase de chaque Gardien (une particularité déjà connue du jeu, qui remplace sa Furie)
 const PHASE2 = { titan:['epines', 'la lave coule de ses blessures !'], vouivre:['gel', 'son souffle glace tout !'], roi:['silence', 'son masque se fend et le silence tombe !'],
   hydre:['repousse', 'deux têtes repoussent à la place d’une !'], devoreur:['voleur', 'sa gueule s’ouvre sur ton or !'], hiver:['plafond', 'des chaînes de glace se referment !'] };
 function gardien(R, etage = 0, vies = 1, fsPlus = 0) {
   const [m, nom] = pick(R, GARDIENS);
   // 22/11 : dans la Crypte classique (étage 0, 2 phases), la 1re phase est plus courte (4 sceaux) et la frappe de départ reste de 2
-  const deuxPhases = !etage && vies === 2, sc = sceauxGardien(R, etage); if (deuxPhases) sc.splice(4, 2);
+  const deuxPhases = !etage && vies >= 2, sc = sceauxGardien(R, etage); if (deuxPhases) sc.splice(4, 2);
   return { id:'g', m, nom, niv:5, att:(vies > 1 && !deuxPhases ? 3 : 2) + Math.max(0, etage - 1) + fsPlus, trait:'furie', gardien:true, vue:true, sceaux:sc, age:0, vies, viesMax:vies };
 }
 
@@ -278,7 +280,7 @@ function nouvelle(heros, graine, bonus = {}, opts = {}) {
     tombes:0, fin:null, journal:[], seq:0, rs:Math.floor(R() * 4294967296),
     // la Descente
     or:opts.or || 0, orGagne:0, obj, etage, maitre:opts.maitre || 0, couleur:opts.couleur != null ? opts.couleur : .07, gardienMode:opts.gardien == null ? 'fin' : opts.gardien,
-    vies:opts.vies || (opts.gardien == null ? 2 : 1), regle:opts.regle || null, consos:opts.consos ? opts.consos.slice() : null, comp:opts.comp && COMPAGNONS[opts.comp.id] ? { id:opts.comp.id, pv:opts.comp.pv, pvmax:COMPAGNONS[opts.comp.id].pv, sceaux:COMPAGNONS[opts.comp.id].s(), pret:false } : null,
+    vies:opts.vies || (opts.gardien == null ? 3 : 1), regle:opts.regle || null, consos:opts.consos ? opts.consos.slice() : null, comp:opts.comp && COMPAGNONS[opts.comp.id] ? { id:opts.comp.id, pv:opts.comp.pv, pvmax:COMPAGNONS[opts.comp.id].pv, sceaux:COMPAGNONS[opts.comp.id].s(), pret:false } : null,
     secours:!!opts.secours, paires:{}, variante:opts.variante || null, st:{}, nbSpeciales:cols.reduce((t, k) => t + k.filter(c => c.special).length, 0),
     defis:opts.defis ? (() => { const l = Object.keys(DEFIS).slice(); const out = []; while (out.length < 3) out.push(l.splice(Math.floor(R() * l.length), 1)[0]); return out; })() : null };
   if (S.couleur && obj.prisme) S.couleur *= 1 + obj.prisme;
@@ -383,8 +385,10 @@ function verifie(S, c) {
   if (c.trait === 'tresor') { const vides = S.creuset.map((x, k) => x ? -1 : k).filter(k => k >= 0); if (vides.length) { S.creuset[pick(RS(S), vides)] = true; log(S, '💎 Trésor : une case du creuset se remplit.');
       if (S.creuset.every(Boolean)) creusetPlein(S); } }
   if (c.gardien && (c.vies || 1) > 1) {
-    c.vies--; c.sceaux = sceauxGardien(RS(S), S.etage + (S.etage ? 1 : 0)); if (!S.etage) c.sceaux.pop(); c.att = S.etage ? c.att + 1 : 3; c.relevé = true; // 22/11 : Crypte classique : 2e phase à 5 sceaux, sa Furie repart de 3
+    c.vies--; c.sceaux = sceauxGardien(RS(S), S.etage + (S.etage ? 1 : 0)); if (!S.etage) c.sceaux.splice(c.viesMax - c.vies >= 2 ? 3 : 4, 9); c.att = S.etage ? c.att + 1 : 3; c.relevé = true; // 22/11 : Crypte classique : 2e phase à 5 sceaux, sa Furie repart de 3
     // 22/11 (l'utilisateur : « dommage que le boss n'ait qu'une seule phase ») : à sa 2e phase, chaque Gardien change de comportement
+    // 22/11 (l'utilisateur : « normalement c'est toujours 3 phases ») : 3e phase, une seconde arme
+    const P3 = !S.etage && PHASE3[c.m]; if (P3 && c.viesMax - c.vies === 2) { c.trait = P3[0]; c.phase = 3; log(S, `♛ ${c.nom} se relève une dernière fois, ${P3[1]} Nouveaux sceaux, et une nouvelle arme : ${TRAITS[P3[0]].e} ${TRAITS[P3[0]].n} : ${TRAITS[P3[0]].d}`); return; }
     const P2 = PHASE2[c.m]; if (P2 && c.viesMax - c.vies === 1) { c.trait = P2[0]; c.phase = 2; log(S, `♛ ${c.nom} se relève, ${P2[1]} Nouveaux sceaux, et une nouvelle arme : ${TRAITS[P2[0]].e} ${TRAITS[P2[0]].n} : ${TRAITS[P2[0]].d}`); return; }
     log(S, `♛ ${c.nom} se relève ! Nouveaux sceaux, et il frappe 1 de plus (encore ${c.vies} vie${c.vies > 1 ? 's' : ''}).`); return;
   }
