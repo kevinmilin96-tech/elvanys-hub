@@ -564,8 +564,8 @@ function profilMenu() {
     #grand-menu .gm-tete img, #grand-menu .gm-tete .sans { width:64px; height:64px; border-radius:50%; object-fit:cover; box-shadow:0 0 0 3px #f3c96b; flex:none; background:#221d42; display:grid; place-items:center; font-size:30px; }
     #grand-menu .gm-tete .nm { font:bold 1.15em Georgia, serif; } #grand-menu .gm-tete small { color:#c9c1ea; display:block; }
     #grand-menu .gm-tete .barre-rang { display:block; height:10px; margin-top:5px; }
-    #grand-menu .gm-g { display:grid; grid-template-columns:repeat(4, 1fr); gap:8px; max-width:520px; margin:0 auto; }
-    #grand-menu .gm-g button { position:relative; aspect-ratio:1; background:#2a2650; border:1px solid #5a4aa0; border-radius:12px; color:#f1ecff; font:11px/1.15 Georgia, serif; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; padding:4px; cursor:pointer; }
+    #grand-menu .gm-g { display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:8px; max-width:520px; margin:0 auto; }
+    #grand-menu .gm-g button { position:relative; aspect-ratio:1; min-width:0; overflow-wrap:anywhere; background:#2a2650; border:1px solid #5a4aa0; border-radius:12px; color:#f1ecff; font:11px/1.15 Georgia, serif; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; padding:4px; cursor:pointer; }
     #grand-menu .gm-g button b { font-size:26px; font-weight:normal; line-height:1; }
     #grand-menu .gm-g button .pt { position:absolute; top:4px; right:4px; min-width:17px; height:17px; line-height:17px; border-radius:9px; font:bold 11px Georgia; padding:0 4px; background:#ff5a5a; color:#fff; }
     #grand-menu .x { position:fixed; top:10px; right:12px; width:40px; height:40px; border-radius:50%; background:#1c1838; border:1px solid #f3c96b88; color:#fff; font-size:18px; padding:0; z-index:2; }
@@ -601,10 +601,10 @@ function grandMenu() {
   const T = [['🌀', 'Portails', ferme + 'grillePortails()'], ['📜', 'Quêtes', va('route.html#quetes'), qr], ['🎁', 'Route des rangs', va('route.html'), ar], ['🏰', 'Mes héros', va('mes-heros.html')],
     ['🃏', 'Pouvoirs des héros', va('pouvoirs.html?retour=menu.html')], ['⚒', 'La Forge', va('forge.html'), typeof groupesFusion === 'function' ? groupesFusion().length : 0], ['🗺', 'Héros d’aventure', va('aventuriers.html')], ['👤', 'Mon profil', va('profil.html')], ['📊', 'Mon parcours', va('profil.html#parcours')],
     ['📖', 'Mes parties', ferme + 'Carnet.ouvrir()'], ['🏛', 'Panthéon', va('pantheon.html')], ['👥', 'Amis', ferme + 'amisFenetre()', dem], ['🤝', 'Entre amis', ferme + "location.hash='enligne'"],
-    ['📬', 'Boîte', ferme + 'amisBoite()'], ['🎓', 'Tutoriel', va('duel.html?tuto=1')], ['🔗', 'Tous les liens', "location.href='/liens.html'"], ['⚙️', 'Paramètres', ferme + 'GM.parametres()']];
+    ['📬', 'Boîte', ferme + 'amisBoite()'], ['🎓', 'Tutoriel', va('duel.html?tuto=1')], ['⚙️', 'Paramètres', ferme + 'GM.parametres()']];
   // 22/11 : les icônes peintes (images Gemini, ui/menu/m-*.webp) ; sans image, l'émoji reste
   const GM_IMG = { 'Portails':'m-portails', 'Quêtes':'m-quetes', 'Route des rangs':'m-route', 'Mes héros':'m-heros', 'Pouvoirs des héros':'m-pouvoirs', 'La Forge':'m-forge', 'Mon profil':'m-profil', 'Mon parcours':'m-parcours',
-    'Panthéon':'m-pantheon', 'Amis':'m-amis', 'Entre amis':'m-entreamis', 'Boîte':'m-boite', 'Tous les liens':'m-liens', 'Paramètres':'m-param' };
+    'Panthéon':'m-pantheon', 'Amis':'m-amis', 'Entre amis':'m-entreamis', 'Boîte':'m-boite', 'Mes parties':'m-parties', 'Tutoriel':'m-tuto', 'Paramètres':'m-param' };
   g = document.createElement('div'); g.id = 'grand-menu';
   g.innerHTML = `<button class="x" onclick="grandMenu()" aria-label="Fermer">✕</button>
   <div class="gm-tete" onclick="${va('profil.html')}">${por ? `<img src="${por}" alt="">` : '<span class="sans">👤</span>'}<div style="flex:1"><div class="nm">${(P.nom || (E && E.moi && E.moi.pseudo) || 'Aventurier').replace(/</g, '&lt;')}</div>
