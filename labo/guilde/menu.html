@@ -8,7 +8,7 @@
 <title>La Guilde des Runes</title>
 <script>
 // Même mécanisme que le Duel : une nouvelle version = rechargement tout seul à l'ouverture (publier.sh change VERSION).
-const VERSION = '20261121-231724';
+const VERSION = '20261122-105419';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-menu-' + v)) { sessionStorage.setItem('recharge-menu-' + v, '1'); location.replace('menu.html?v=' + v); }
@@ -214,7 +214,7 @@ fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.te
 <script>window.AMIS_SANS_BOUTON = true; /* 15/11 : un seul bouton en haut à gauche (profil + amis) */</script>
 <script src="amis.js?v=ed23bed544"></script>
 <script src="heros-etoiles.js?v=80a6cac830"></script>
-<script src="donnees.js?v=20261121-231724"></script>
+<script src="donnees.js?v=20261122-105419"></script>
 <script>
 // ciel étoilé + runes du portail (symboles, pas des lettres), aux couleurs des héros
 const ciel = document.getElementById('ciel');
@@ -379,6 +379,7 @@ const ETAGES = {
   // les vaisseaux fantômes (équipages d'autres joueurs, contre lesquels on se bat sans qu'ils soient là) sont annoncés « À venir »
   expeditions:{ titre:'Les Expéditions', sous:'Quel voyage ?', portes:[
     { nom:'L’Expédition', pro:'expeditions', href:'expedition-v4.html', desc:'La carte à embranchements : trois mers, des élites, des escales, des suites de combats et un boss tiré au sort.' },
+    { nom:'Le voyage du jour', pro:'expeditions', href:'expedition-v4.html?jour=1', desc:'La même carte, la même règle et le même boss pour tout le monde aujourd’hui. Un voyage, un score à comparer.' },
     { nom:'Duel d’équipages', pro:'expeditions', href:'expedition-duel.html', desc:'Ton équipage contre celui de l’ordinateur, en plusieurs manches, avec des cœurs. Trois niveaux.' },
     { nom:'Vaisseaux fantômes', avenir:true, desc:'Bientôt : affronte les équipages enregistrés par les autres joueurs de la Guilde, comme un duel en ligne sans attendre personne.' },
   ] },
