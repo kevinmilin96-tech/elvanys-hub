@@ -96,6 +96,9 @@ function ecranZoom() {
 }
 // la fenêtre « Rejoindre » ouverte au démarrage (portail « Rejoindre avec un code ») est arrivée avant ce fichier : on lui ajoute le bouton de l'écran
 if (document.getElementById('fCode') && !document.getElementById('vers-ecran')) { const b = document.querySelector('#fen .go'); if (b) b.insertAdjacentHTML('afterend', `<button class="sec" id="vers-ecran" onclick="const c=($('fCode').value||'').toUpperCase();c.length>=4?ecranDemarre(c):ecranForm()">📺 Cet écran est l’écran de la table<small style="display:block;font-size:.8em;opacity:.8">Il montre la partie en grand, chacun joue sur son téléphone</small></button>`); }
+// 22/11 (l'utilisateur, à la télé : « j'ai le tuto de Moustache ») : sur l'écran de la table, jamais de guide de Moustache (personne ne touche la télé) ;
+// celui lancé par l'accueil avant ce fichier est retiré, et le guide est coupé pour toute la suite
+if (new URLSearchParams(location.search).get('ecran')) { try { const g = document.getElementById('guide'); if (g) g.remove(); document.querySelectorAll('.guide-on').forEach(e => e.classList.remove('guide-on')); if (typeof Guide !== 'undefined') Guide.lance = () => false; } catch (e) {} }
 { const q = new URLSearchParams(location.search).get('ecran'); if (q) { if (/^[A-Za-z]{4}$/.test(q)) ecranDemarre(q); else ecranForm(); } }
 
 if (typeof document !== 'undefined') {
