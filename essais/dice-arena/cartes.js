@@ -30,7 +30,7 @@ const CSS_CARTE = `
    la carte ne montre que son nom, son coût et son image : on la touche pour la lire en grand. Vaut pour tous les modes. */
 .carteG { -webkit-text-size-adjust:none; text-size-adjust:none; }
 .cg-nom, .cg-bande, .cg-effet { overflow:hidden; }
-@container (max-width:110px) { .cg-effet, .cg-bande { visibility:hidden; } .cg-nom { font-size:11.5cqw; line-height:.95; } }
+@container (max-width:110px) { .cg-effet, .cg-bande { visibility:hidden; } .cg-nom { overflow:visible !important; font-size:11.5cqw !important; line-height:.9 !important; padding:0 !important; text-shadow:0 1px 0 #000, 0 0 3px #000, 0 0 6px #b58cff; } } /* 22/11 : sur une petite carte, le nom reste entier (2 lignes s'il le faut) */
 .cg-cadre { inset:0; width:100%; height:100%; pointer-events:none; }
 .cg-art { background-size:cover; background-position:center 30%; border-radius:1.5%; box-shadow:inset 0 0 0 1px #0006, inset 0 0 12px #0008; }
 .cg-art:not([style*='background-image']) { background:radial-gradient(circle at 50% 40%, #3a2a55, #160f24 75%); display:flex; align-items:center; justify-content:center; }
