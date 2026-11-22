@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261122-110308">
+<head><meta name="guilde-version" content="20261122-120411">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex">
@@ -8,7 +8,7 @@
 <title>La Guilde des Runes</title>
 <script>
 // Même mécanisme que le Duel : une nouvelle version = rechargement tout seul à l'ouverture (publier.sh change VERSION).
-const VERSION = '20261122-110308';
+const VERSION = '20261122-120411';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-menu-' + v)) { sessionStorage.setItem('recharge-menu-' + v, '1'); location.replace('menu.html?v=' + v); }
@@ -214,7 +214,7 @@ fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.te
 <script>window.AMIS_SANS_BOUTON = true; /* 15/11 : un seul bouton en haut à gauche (profil + amis) */</script>
 <script src="amis.js?v=ed23bed544"></script>
 <script src="heros-etoiles.js?v=80a6cac830"></script>
-<script src="donnees.js?v=20261122-110308"></script>
+<script src="donnees.js?v=20261122-120411"></script>
 <script>
 // ciel étoilé + runes du portail (symboles, pas des lettres), aux couleurs des héros
 const ciel = document.getElementById('ciel');
@@ -288,7 +288,7 @@ const ODY_MODES = { jour:['L’île du jour', 'odyssee.html'], '':['L’Odyssée
 function odyPortes(L) { // L = les portails de l'étage : 3 îles, sans fin, route
   // 20/11 (l'utilisateur : « l'île du jour, il faut aller dans Odyssée, nouvelle partie… ; mettre son portail en premier ») : 4e mode, en tête ;
   // il partage les emplacements de l'Odyssée, puis l'île choisie part directement en « île seule, île du jour »
-  if (odyMode === null) return [Object.assign({}, L[0], { nom:'L’île du jour', mode:'jour', href:null, desc:'La même île pour tout le monde aujourd’hui : une partie, une île, et ton score à comparer.' }), Object.assign({}, L[0], { nom:'Saison 1', mode:'', href:null, desc:'L’Odyssée, saison 1 : une histoire en trois chapitres, les Terres brûlées, l’île du Givre, l’Abîme du Vide. Ici commence la Grande aventure.' }),
+  if (odyMode === null) return [Object.assign({}, L[0], { nom:'L’île du jour', mode:'jour', href:null, img:'menu-recu/ody-jour.webp?v=1', pro:undefined, fx:undefined, desc:'La même île pour tout le monde aujourd’hui : une partie, une île, et ton score à comparer.' }), Object.assign({}, L[0], { nom:'Saison 1', mode:'', href:null, desc:'L’Odyssée, saison 1 : une histoire en trois chapitres, les Terres brûlées, l’île du Givre, l’Abîme du Vide. Ici commence la Grande aventure.' }),
     Object.assign({}, L[3], { mode:'-sansfin', href:null }), Object.assign({}, L[4], { mode:'-route', href:null })];
   return L.slice(0, 3); // l'Odyssée normale, nouvelle partie : les îles
 }
