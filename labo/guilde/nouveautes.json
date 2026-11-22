@@ -1,5 +1,9 @@
 [
 {
+"v": "20261122-190202",
+"m": "Chroniques sur la télé : l’adresse courte perso.elvanys.fr/tv, et plus de guide de Moustache sur la télé"
+},
+{
 "v": "20261122-185645",
 "m": "Chroniques : dans la salle d’attente, le lien pour la télé (avec le code) et un bouton pour l’envoyer"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261122-165645",
 "m": "Le jeu s’installe sur ton téléphone (plein écran, sans les barres du navigateur) ; dans ⚙️ Paramètres : la version du jeu, « Mettre à jour » et « Quoi de neuf », avec un point rouge quand il y a du nouveau."
-},
-{
-"v": "20261122-165006",
-"m": "Les pouvoirs choisis dans ton build agissent maintenant dans l’Odyssée, la Grande aventure, les épreuves et l’Invasion."
 }
 ]
