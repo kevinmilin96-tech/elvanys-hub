@@ -603,7 +603,7 @@ function profilMenu() {
 function grandMenu() {
   let g = document.getElementById('grand-menu'); if (g) { g.remove(); return; }
   const P = typeof lireProfil === 'function' ? lireProfil() : {}, R = typeof lireRang === 'function' ? lireRang().info : null, por = typeof portraitProfil === 'function' ? portraitProfil(P)[0] : null;
-  const Q = typeof lireQuetes === 'function' ? lireQuetes() : { j:[], s:[] }, qr = Q.j.filter(q => !q.fait).length, ar = typeof aRecuperer === 'function' ? aRecuperer().length : 0;
+  const Q = typeof lireQuetes === 'function' ? lireQuetes() : { j:[], s:[] }, qr = Q.j.concat(Q.s).filter(q => q.fait && q.recup === false).length /* 22/11 (l'utilisateur) : la pastille rouge = quelque chose à RÉCUPÉRER, pas une quête à faire */, ar = typeof aRecuperer === 'function' ? aRecuperer().length : 0;
   const E = typeof AMIS !== 'undefined' && AMIS.etat, dem = E ? E.demandes.length : 0;
   const va = h => `try{sessionStorage.setItem('guilde-dans-mode','1')}catch(e){};location.href='${h}'`, ferme = "document.getElementById('grand-menu').remove();";
   const T = [['🌀', 'Portails', ferme + 'grillePortails()'], ['📜', 'Quêtes', va('route.html#quetes'), qr], ['🎁', 'Route des rangs', va('route.html'), ar], ['🏰', 'Mes héros', va('mes-heros.html')], ['🂠', 'Mes decks', va('mes-decks.html')], // 22/11 : la page des decks (deck-proposition.html)
