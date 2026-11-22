@@ -1,5 +1,9 @@
 [
 {
+"v": "20261122-212350",
+"m": "Le Duel a la nouvelle entrée : un seul portail, puis le mode (contre l'ordinateur, Duel de la semaine, énigme du jour, tutoriel), ton héros, ton deck et ton adversaire. Le Duel d'équipages s'ouvre dans les Expéditions."
+},
+{
 "v": "20261122-212119",
 "m": "La Défense de la porte a la nouvelle entrée : le mode (6 vagues ou sans fin), ton héros, puis le défi du jour, et ▶ Jouer."
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261122-184033",
 "m": "Menu : « Retour » te ramène à ta porte ; « Aujourd’hui » en deux groupes (Rapide / Si tu as le temps) avec le défi et la difficulté du jour ; grand menu allégé ; 📺 en haut des Chroniques"
-},
-{
-"v": "20261122-183529",
-"m": "Quêtes : la pastille rouge montre ce qu’il y a à récupérer, et une quête déjà récupérée le dit"
 }
 ]

@@ -104,14 +104,12 @@ function envieInstalle(E, PRO) {
     { nom:'Ma Guilde', pro:'maguilde', vers:'guilde', desc:'Tes héros, leurs decks et leurs pouvoirs, le Forgeron, ton profil, le Panthéon et la route des rangs.' },
   ] };
   E.vite = { titre:'⚡ Jouer vite', sous:'10 minutes ou moins.', portes:[
-    { nom:'Duel contre l’ordinateur', pro:'ordinateur', href:'duel.html', desc:'Choisis ton héros et affronte l’automate de la Guilde.' },
-    { nom:'Le Duel de la semaine', pro:'semaine', href:'duel.html?semaine=1', desc:`Cette semaine : « ${S} ». Gagne pour le Sceau de la semaine.` },
-    { nom:'L’énigme du jour', pro:'enigme', href:'duel.html?enigme=1', desc:'Trouve le coup parfait qui fait tomber l’adversaire en un seul tour. Une nouvelle chaque jour.' },
+    // 22/11 (configurateur) : UN portail pour le Duel ; le mode (ordinateur, Duel de la semaine, énigme du jour, tutoriel) se choisit dans son configurateur (duel-config.js)
+    { nom:'Le Duel', pro:'ordinateur', href:'duel.html', desc:`Contre l’ordinateur, le Duel de la semaine (« ${S} »), l’énigme du jour ou le tutoriel : choisis ton mode, ton héros et ton deck.` },
     { nom:'La Crypte aux Sceaux', pro:'crypte', href:'crypte.html', desc:'Un solitaire de dés : brise les sceaux des monstres. Et la crypte du jour, la même pour tous.' },
     { nom:'La Fosse aux Runes', pro:'fosse', href:'fosse.html', desc:'Tes balles sont des dés : renvoie-les, forme des combos, tiens 5 minutes jusqu’au Titan.' },
-    { nom:'Duel d’équipages', pro:'duelequip', href:'expedition-duel.html', desc:'Ton équipage contre celui de l’ordinateur, en plusieurs manches, avec des cœurs.' },
+    { nom:'Duel d’équipages', pro:'duelequip', href:'expedition-v4.html?mode=duel', desc:'Ton équipage contre celui de l’ordinateur, en plusieurs manches, avec des cœurs.' },
     { nom:'Les épreuves', pro:'epreuves', href:'epreuves.html', desc:'La Tour (un étage, un combat : monte aussi haut que tu peux) et la Chasse au boss de la semaine.' }, // 22/11 (l'utilisateur) : la Tour et la Chasse sont la même page : un seul portail
-    { nom:'Le tutoriel', pro:'tuto', href:'duel.html?tuto=1', desc:zok ? 'Le premier duel guidé par Moustache, à refaire quand tu veux.' : 'Un premier duel guidé par Moustache (5 minutes). À la clé : Zéphine et le cadre de Diplômé.' },
   ] };
   E.aventure = { titre:'🗺 Partir à l’aventure', sous:'30 à 45 minutes, ta partie est gardée.', portes:[
     { nom:'L’Odyssée', pro:'odyssee', href:'odyssee.html' /* 22/11 : le configurateur (odyssee-config.js) remplace l'étage des modes et des emplacements */, desc:'Seul sur une île : explore case par case, fais grandir ton deck, vaincs le gardien de l’île.' },

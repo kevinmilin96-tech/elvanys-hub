@@ -46,7 +46,7 @@
   .cfg .ch button { background:#ffffff12; border:1.5px solid #ffffff2a; border-radius:2.5cqw; padding:1.6cqw 2.6cqw; font-size:3.1cqw; color:inherit; cursor:pointer; }
   .cfg .ch button.on { border-color:var(--or, #ffd98a); background:#3a2f12; color:#ffe9b0; font-weight:bold; }
   .cfg .ch-d { margin-top:1.6cqw; font-size:3cqw; color:#ddd3ff; line-height:1.35; }
-  .cfg-bas { position:fixed; left:0; right:0; bottom:0; padding:2.5cqw 3cqw calc(2.5cqw + env(safe-area-inset-bottom)); background:linear-gradient(transparent, #0d0a18 30%); z-index:20; }
+  .cfg-bas { position:fixed; left:0; right:0; bottom:0; z-index:60 !important; padding:2.5cqw 3cqw calc(2.5cqw + env(safe-area-inset-bottom)); background:linear-gradient(transparent, #0d0a18 30%); z-index:20; }
   .cfg-bas > div { max-width:520px; margin:0 auto; container-type:inline-size; }
   .cfg-bas .recap { background:#ffffff10; border-radius:3cqw; padding:1.6cqw 3cqw; font-size:3cqw; margin-bottom:2cqw; color:#ddd3ff; }
   .cfg-bas button { display:block; width:100%; border-radius:4cqw; padding:3.2cqw; font-size:4.6cqw; font-weight:bold; border:0; cursor:pointer; margin-top:1.6cqw; }
@@ -80,7 +80,8 @@
     CFG.dessine();
   };
   CFG.mode_ = k => { if (CFG.mode !== k) bip('choisir'); CFG.mode = k; garde(); CFG.dessine(); };
-  CFG.va = n => { CFG.etape = n; bip('choisir'); CFG.dessine(); try { window.scrollTo(0, 0); } catch (e) {} };
+  // un mode sans choix du héros (sansHeros : l'énigme, le tutoriel) saute l'étape 2
+  CFG.va = n => { const M = leMode(); if (n === 2 && M.sansHeros) n = CFG.etape === 3 ? 1 : 3; CFG.etape = n; bip('choisir'); CFG.dessine(); try { window.scrollTo(0, 0); } catch (e) {} };
   CFG.choix = (k, v) => { const o = CFG.opts[CFG.mode] = CFG.opts[CFG.mode] || {}; o[k] = v; garde(); bip('choisir'); CFG.dessine(); };
   // les options du mode, avec leur valeur (gardée, ou celle par défaut)
   CFG.valeurs = function () {
@@ -94,8 +95,8 @@
 
   CFG.dessine = function () {
     const D = CFG.def, M = leMode(), E = CFG.etape, jeu = document.getElementById(D.racine || 'jeu');
-    const fil = `<div class="fil">${[1, 2, 3].map(i => `<span class="${i < E ? 'fait' : i === E ? 'on' : ''}"></span>`).join('')}</div>`;
-    const retour = E === 1 ? `<a href="${D.retour || 'menu.html'}">‹ Retour</a>` : `<button onclick="CFG.va(${E - 1})">‹ ${E === 2 ? 'Mode' : 'Héros'}</button>`;
+    const fil = `<div class="fil">${(M.sansHeros ? [1, 3] : [1, 2, 3]).map(i => `<span class="${i < E ? 'fait' : i === E ? 'on' : ''}"></span>`).join('')}</div>`;
+    const retour = E === 1 ? `<a href="${D.retour || 'menu.html'}">‹ Retour</a>` : `<button onclick="CFG.va(${E - 1})">‹ ${E === 2 || M.sansHeros ? 'Mode' : 'Héros'}</button>`;
     let corps = '', bas = '';
     // une partie en cours (partie) ou plusieurs (parties : les emplacements de l'Odyssée) ; un mode fermé (verrou) ne va pas plus loin
     const parties = M.parties ? M.parties() : M.partie && M.partie() ? [M.partie()] : [], partie = parties[0] || null, verrou = M.verrou ? M.verrou() : null;
