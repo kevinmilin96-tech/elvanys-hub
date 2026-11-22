@@ -1367,5 +1367,6 @@ if (ESSAI) essaiAtelier(ESSAI); else if (sessionStorage.getItem('chron-en-jeu') 
 { const _a = accueil; accueil = function () { const r = _a.apply(this, arguments); guideMode('chroniques'); return r; }; }
 { const _d = dessine; dessine = function () { const r = _d.apply(this, arguments); if (S && !LOB) guideMode('chroniques-jeu'); musiqueDuMoment(); return r; }; }
 </script>
+<script src="chroniques-ecran.js"></script>
 </body>
 </html>
