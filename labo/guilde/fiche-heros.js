@@ -216,12 +216,18 @@ function fhEquipeForge(h, pid, id) { const r = equipePiece(h, pid); if (r === 'o
 function fhForgeron(id) {
   const s = avSac(); let deja = {}; try { deja = JSON.parse(localStorage.getItem('guilde-forgeron-achats') || '{}'); } catch (e) {}
   fhFen(`<h2>⚒ Le forgeron</h2><div style="text-align:center"><img src="ui/heros/pnj-forgeron.webp?v=1" alt="" style="width:30%;max-width:130px;border-radius:50%;border:2px solid #f3c96b;box-shadow:0 0 12px #f3a04a88" onerror="this.remove()"></div><p class="doux" style="text-align:center">« Trois pièces aujourd’hui, pas une de plus. Demain, autre chose. » · 🪙 ${s.or}</p>
-    ${forgeronStock(id).map((x, i) => deja[x.id] ? fhPiece(x, '<small>vendu</small>') : `<div onclick="fhCompare('${id}',${i})" style="cursor:pointer">${fhPiece(x, `<button>${x.prix} 🪙</button>`)}</div>`).join('')}
+    ${forgeronStock(id).map((x, i) => deja[x.id] ? fhPiece(x, '<small>vendu</small>') : `<div onclick="fhCompare('${id}',${i})" style="cursor:pointer">${fhPiece(x, `<button>${x.prix} 🪙</button>`)}${fhStockTxt(x)}</div>`).join('')}
     <p class="doux" style="text-align:center;margin:6px 0 0">Touche une pièce pour la comparer à celle que porte ${fhInfo(id).nom}.</p>
     <button class="fh-bt or" style="width:100%;margin-top:10px" onclick="fhFen('')">Fermer</button>`);
 }
 // 22/11 (l'utilisateur : « quand je touche un équipement, j'aimerais un comparatif avec celui que j'ai déjà, pour savoir si ça vaut la peine ») :
 // la pièce du forgeron face à celle que porte le héros sur la même case, ce qu'on gagne et ce qu'on perd, puis « Acheter » (rien n'est payé avant)
+// 22/11 (l'utilisateur : « savoir combien j'ai de pièces bleues, violettes ou légendaires dans mon coffre, pour savoir s'il faut en acheter une pour fusionner ») :
+// pour chaque pièce du forgeron, combien le coffre en a déjà de la même case ET de la même rareté (3 pareilles = une fusion)
+const fhMemes = x => avSac().pieces.filter(p => p.slot === x.slot && p.r === x.r).length;
+function fhStockTxt(x) { const n = fhMemes(x), C = EQ_CASES.find(c => c.k === x.slot), rr = EQ_RARE[x.r];
+  const fin = x.r >= EQ_RARE.length - 1 ? '(rareté la plus haute : pas de fusion)' : n % 3 === 2 ? '<b style="color:#7dffb0">→ avec celle-ci : 3, de quoi fusionner !</b>' : `(encore ${3 - (n % 3)} pour une fusion${n >= 3 ? ' ; une fusion est déjà possible' : ''})`;
+  return `<small style="display:block;margin:-4px 0 8px 14px;color:#c9c1ea">🎒 Dans ton coffre : <b style="color:${rr.c}">${n}</b> ${C.n.toLowerCase()} ${rr.n}${n > 1 ? 's' : ''} ${fin}</small>`; }
 function fhCompare(id, i) {
   const x = forgeronStock(id)[i]; if (!x) return; const s = avSac(), cur = equipementDe(id)[x.slot], C = EQ_CASES.find(c => c.k === x.slot);
   const a = cur ? eqStats(cur) : {}, b = eqStats(x), cles = Object.keys(EQ_ST).filter(k => a[k] || b[k]);
@@ -231,7 +237,7 @@ function fhCompare(id, i) {
   const verdict = !cur ? `✨ ${fhInfo(id).nom} n’a rien sur la case ${C.n} : tout est gagné.` : mieux > 0 ? '👍 Meilleure que ta pièce actuelle.' : mieux < 0 ? '👎 Moins bonne que ta pièce actuelle.' : '⚖️ Ni mieux ni moins bien : à toi de voir.';
   fhFen(`<h2>⚒ Comparer</h2><p class="doux" style="text-align:center;margin:0 0 6px">${C.e} ${C.n} de ${fhInfo(id).nom}</p>
     <p class="doux" style="margin:4px 0">Porté aujourd’hui :</p>${cur ? fhPiece(cur, '') : '<p class="doux" style="text-align:center">— rien —</p>'}
-    <p class="doux" style="margin:8px 0 4px">Chez le forgeron :</p>${fhPiece(x, '')}
+    <p class="doux" style="margin:8px 0 4px">Chez le forgeron :</p>${fhPiece(x, '')}${fhStockTxt(x)}
     <div style="margin:10px 0;padding:8px 12px;border-radius:12px;background:#14122a">${lignes}<p style="margin:8px 0 0;text-align:center"><b>${verdict}</b></p></div>
     <div style="display:flex;gap:8px"><button class="fh-bt" style="flex:1" onclick="fhForgeron('${id}')">‹ Retour</button><button class="fh-bt or" style="flex:2" ${s.or < x.prix ? 'disabled style="flex:2;opacity:.4"' : ''} onclick="fhAchete('${id}',${i})">Acheter · ${x.prix} 🪙</button></div>
     ${s.or < x.prix ? '<p class="doux" style="text-align:center">Pas assez d’or.</p>' : ''}<p class="doux" style="text-align:center;margin-top:6px">L’achat va dans le coffre ; on l’équipe ensuite dans la fiche du héros.</p>`);
