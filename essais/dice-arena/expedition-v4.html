@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261122-211626"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
+<head><meta name="guilde-version" content="20261122-211949"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="robots" content="noindex">
@@ -210,6 +210,7 @@
 <body>
 <div id="app"></div>
 <div id="fen"></div>
+<script>globalThis.CFG_EXP = true; // 22/11 : l'accueil est le configurateur (expedition-config.js)</script>
 <script src="cartes.js?v=706d783c9e"></script>
 <script src="musique.js?v=7c0d58ffd7"></script>
 <script src="rang.js?v=e19ab6f328"></script>
@@ -221,7 +222,9 @@
 <script src="expedition-moteur.js?v=6ed6d5445c"></script>
 <script src="guide.js?v=f78db3b570"></script>
 <script src="expedition-v4.js?v=d28920c5e5"></script>
-<script src="expedition-v4-ecran.js?v=6ca2785cbb"></script>
+<script src="expedition-v4-ecran.js?v=caee169437"></script>
+<script src="configurateur.js?v=924f21d9ab"></script>
+<script src="expedition-config.js?v=6490dec742"></script>
 <script>// 13/11 soir : musique
 GM.musique('expeditions'); GM.bouton();
 </script>

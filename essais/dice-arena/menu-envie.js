@@ -115,7 +115,7 @@ function envieInstalle(E, PRO) {
   ] };
   E.aventure = { titre:'🗺 Partir à l’aventure', sous:'30 à 45 minutes, ta partie est gardée.', portes:[
     { nom:'L’Odyssée', pro:'odyssee', href:'odyssee.html' /* 22/11 : le configurateur (odyssee-config.js) remplace l'étage des modes et des emplacements */, desc:'Seul sur une île : explore case par case, fais grandir ton deck, vaincs le gardien de l’île.' },
-    { nom:'L’Expédition', pro:'expeditions', vers:'expeditions', desc:'Le navire volant : recrute ton équipage, choisis ta route sur la carte, affronte un boss tiré au sort.' },
+    { nom:'L’Expédition', pro:'expeditions', href:'expedition-v4.html' /* 22/11 : le configurateur (expedition-config.js) */, desc:'Le navire volant : recrute ton équipage, choisis ta route sur la carte, affronte un boss tiré au sort.' },
     { nom:'La Descente', pro:'descente', href:'crypte.html#descente', desc:'Le grand voyage en 3 étages sous la Crypte : tu choisis tes salles, ton compagnon, tes objets.' },
     { nom:'Défense de la porte', pro:'defense', href:'defense.html', desc:'Tes dés deviennent des tours qui fusionnent : tiens la porte face aux vagues de monstres.' },
   ] };

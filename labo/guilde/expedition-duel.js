@@ -85,7 +85,7 @@ if (typeof document !== 'undefined' && document.getElementById('app')) {
     <div class="choixh"><button onclick="aideDuel()">📖 Les règles</button><button onclick="records()">🏆 Mes duels</button></div>`;
     // 22/11 (l'utilisateur) : le retour en haut à gauche (vers les Expéditions) remplace « ⛵ Les Expéditions » et « ⌂ Menu » du bas ;
     // il s'en va dès que l'accueil est remplacé (le duel commence)
-    const a = app(); GM.retour('menu.html#expeditions');
+    const a = app(); GM.retour('expedition-v4.html?mode=duel');
     if (!a.dataset.gmRetour) { a.dataset.gmRetour = '1'; new MutationObserver(() => { if (!a.querySelector('.heros6')) GM.retour(null); }).observe(a, { childList:true }); }
   };
   choixCapitaine = function (id) {

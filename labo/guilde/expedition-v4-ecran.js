@@ -460,7 +460,7 @@ Object.assign(PORTRAIT_M, { 'Pillard':'d-gobelin', 'Frondeur':'m-gobelin', 'Chie
   'Petit yéti':'m-yeti', 'Garde de glace':'m-golemglace', 'La Reine des neiges':'el-reine', 'La Vouivre':'m-vouivre', 'Stalagmite vivante':'m-golemglace', 'Givrelin':'m-givrelin',
   'Harpie':'m-harpie', 'Harpie tireuse':'m-harpie', 'Élémentaire d’orage':'m-esprit', 'Nuée électrique':'m-esprit', 'Matelot noyé':'m-osclaque', 'Capitaine noyé':'m-liche', 'Mouette spectrale':'m-esprit',
   'Canonnier fantôme':'m-osclaque', 'Tentacule':'u-tentacule', 'Le Kraken':'m-kraken', 'Le Roi sans visage':'m-roi', 'Reflet':'m-miroir', 'Ignaros':'m-ignaros', 'Dragonnet':'u-dragonnet', 'Sorcier des vents':'m-chaman', 'Barbe-Grise':'el-barbegrise', 'La Sirène noire':'el-sirene' });
-if (document.getElementById('app')) accueil();
+if (document.getElementById('app') && !globalThis.CFG_EXP) accueil(); // 22/11 : expedition-config.js (le configurateur) ouvre l'accueil lui-même
 
 // 21/11 (l'utilisateur : « le voyage du jour, un portail directement ; et le retour en haut à gauche, par habitude ») :
 // · arrivé par le portail « Le voyage du jour » (?jour=1) : pas de choix de mer ni d'Ascension, le voyage du jour est imposé ;

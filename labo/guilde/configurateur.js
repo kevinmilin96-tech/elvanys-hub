@@ -38,7 +38,7 @@
   .cfg .heros button.on { border-color:var(--or, #ffd98a); background:#3a2f12; } .cfg .heros button:disabled { opacity:.35; }
   .cfg .heros img { width:16cqw; height:16cqw; border-radius:50%; object-fit:cover; display:block; margin:0 auto 1cqw; }
   .cfg .heros small { display:block; font-size:2.5cqw; color:var(--doux, #c9c1ea); }
-  .cfg .fiche { background:#ffffff0d; border-radius:3cqw; padding:2.5cqw 3cqw; margin-top:3cqw; font-size:3.2cqw; color:#ddd3ff; line-height:1.4; }
+  .cfg .fiche { display:block !important; text-align:left; background:#ffffff0d; border-radius:3cqw; padding:2.5cqw 3cqw; margin-top:3cqw; font-size:3.2cqw; color:#ddd3ff; line-height:1.4; }
   .cfg .opt { background:#ffffff0c; border:1px solid #ffffff1c; border-radius:3cqw; padding:2.4cqw 3cqw; margin-bottom:2.4cqw; }
   .cfg .opt h4 { margin:0 0 1.5cqw; font-size:3.7cqw; color:var(--or, #ffd98a); } .cfg .opt h4 i { font-style:normal; font-weight:normal; color:var(--doux, #c9c1ea); font-size:2.9cqw; }
   .cfg .opt .aide { font-size:3cqw; color:var(--doux, #c9c1ea); line-height:1.35; }
