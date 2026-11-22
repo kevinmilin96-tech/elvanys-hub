@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261122-151259">
+<head><meta name="guilde-version" content="20261122-151423">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex">
@@ -50,8 +50,8 @@
 const ROMS = ['I', 'II', 'III', 'IV', 'V'];
 const ouvertes = new Set();
 function bulle(t) { const b = document.createElement('div'); b.className = 'bulle'; b.innerHTML = t; document.body.appendChild(b); setTimeout(() => b.remove(), 2600); }
-function recup(id) { const t = recuperePalier(id); if (t) { if (typeof GM !== 'undefined') GM.son('victoire'); bulle('🏆 ' + t); } dessine(); }
-function coffre() { const t = recupereCoffre(); if (t) { if (typeof GM !== 'undefined') GM.son('victoire'); bulle(t); } dessine(); }
+function recup(id) { const t = recuperePalier(id); if (t) { if (typeof GM !== 'undefined') GM.son('clic'); bulle('🏆 ' + t); } dessine(); }
+function coffre() { const t = recupereCoffre(); if (t) { if (typeof GM !== 'undefined') GM.son('clic'); bulle(t); } dessine(); }
 function ligne(s) {
   const v = succesValeur(s), a = succesAtteints(s, v), r = succesRecuperes(s), n = s[4].length, prochain = s[4][a], fini = a >= n;
   const pct = fini ? 100 : Math.round(100 * (v - (a ? s[4][a - 1] : 0)) / (prochain - (a ? s[4][a - 1] : 0)));
