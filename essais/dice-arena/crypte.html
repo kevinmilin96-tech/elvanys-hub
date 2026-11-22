@@ -530,7 +530,7 @@ function lance(j) {
   // 15/11 soir : un plateau (variante), une carte spéciale et 3 défis à étoiles ; la crypte du jour tire tout de la date
   const vh = Object.keys(C.VARIANTES)[Math.floor(Math.random() * Object.keys(C.VARIANTES).length)];
   S = C.nouvelle(vJ(), j ? 'crypte-' + jour() : 'crypte-' + Date.now() + Math.random(), B, Object.assign({ bonusF:(typeof avTrouve === 'function' && avTrouve(choixH) && avTrouve(choixH).bonus) || null,  variante:j ? C.varianteDuJour('c' + jour()) : vh, speciales:1, defis:true },
-    j ? { vies:2, regle:C.regleDuJour('c' + jour()), maitre:C.regleDuJour('c' + jour()) === 'presse' ? 8 : 0 } : {}));
+    j ? { vies:3 /* 22/11 (l'utilisateur) : le Gardien de la crypte du jour a aussi ses 3 phases */, regle:C.regleDuJour('c' + jour()), maitre:C.regleDuJour('c' + jour()) === 'presse' ? 8 : 0 } : {}));
   S.av = haInfo(choixH) ? haInfo(choixH).id : null; // 15/11 soir : le héros d'aventure (gardé dans la sauvegarde)
   oublie();
   S.des.forEach(d => d.neuf = true); visibles().forEach(c => c.neuve = true); sel = null; mode = null;
