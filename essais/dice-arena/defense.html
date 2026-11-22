@@ -155,7 +155,8 @@ function accueil() {
   <p class="doux" style="text-align:center">🎯 Défi du jour : <b style="color:var(--or)">${defiDuJourD().n}</b>${lesEtoiles()[jourCle()] ? ` · aujourd’hui : ${'★'.repeat(lesEtoiles()[jourCle()])}` : ''}</p>
   <p class="doux" style="text-align:center">Chaque héros a son passif, son pouvoir, son ultime et sa Rune.</p>
   ${records()}
-  <div class="choixh"><button onclick="regles()">📜 Les règles</button><button onclick="location.href='menu.html'">⌂ Menu</button></div>`;
+  <div class="choixh"><button onclick="regles()">📜 Les règles</button></div>`;
+  GM.retour('menu.html'); // 22/11 (l'utilisateur) : le retour en haut à gauche ; plus de « ⌂ Menu » en bas
 }
 const REC = 'guilde-defense';
 const lesRecords = () => { try { return JSON.parse(localStorage.getItem(REC) || '[]'); } catch (e) { return []; } };
@@ -237,6 +238,7 @@ function rendu() {
   const chemin = []; for (let r = 0; r < DEF.chemin; r++) for (let col = 0; col < 3; col++) chemin.push({ r, col });
   const besoinMonstre = attente && attente.cible === 'monstre', besoinTour = attente && attente.cible === 'tour', besoinDe = attente && attente.cible === 'de';
   const un = sel.length === 1 ? sel[0] : null;
+  GM.retour(null); // 22/11 : la partie commence
   app.innerHTML = `
   <div class="entete">${imgD()}
     <div class="bloc">🚪 Porte <b>${D.porte}</b>/${D.porteMax}<div class="barre"><i style="width:${D.porte / D.porteMax * 100}%"></i></div></div>

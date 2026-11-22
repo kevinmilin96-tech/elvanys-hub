@@ -82,7 +82,11 @@ if (typeof document !== 'undefined' && document.getElementById('app')) {
     <h2>Ton capitaine</h2><div class="heros6">${ORDRE.map(id => id === 'zephine' && localStorage.getItem('guilde-tuto') !== 'fait'
       ? `<button disabled style="opacity:.5"><img src="${IMG(id)}" alt="" style="filter:grayscale(1)">🔒 ${HEROS[id].nom}</button>`
       : `<button onclick="choixCapitaine('${id}')"><img src="${IMG(id)}" alt="">${HEROS[id].nom}<br><small style="color:var(--or)">${CAPITAINES[id].n}</small><br><small class="prise ${PRISE_EXP[id]}">${PRISE_TXT[PRISE_EXP[id]]}</small></button>`).join('')}${capitainesAventure()}</div>
-    <div class="choixh"><button onclick="aideDuel()">📖 Les règles</button><button onclick="records()">🏆 Mes duels</button><button onclick="location.href='menu.html#expeditions'">⛵ Les Expéditions</button><button onclick="location.href='menu.html'">⌂ Menu</button></div>`;
+    <div class="choixh"><button onclick="aideDuel()">📖 Les règles</button><button onclick="records()">🏆 Mes duels</button></div>`;
+    // 22/11 (l'utilisateur) : le retour en haut à gauche (vers les Expéditions) remplace « ⛵ Les Expéditions » et « ⌂ Menu » du bas ;
+    // il s'en va dès que l'accueil est remplacé (le duel commence)
+    const a = app(); GM.retour('menu.html#expeditions');
+    if (!a.dataset.gmRetour) { a.dataset.gmRetour = '1'; new MutationObserver(() => { if (!a.querySelector('.heros6')) GM.retour(null); }).observe(a, { childList:true }); }
   };
   choixCapitaine = function (id) {
     const v = haVoie(id), i = haInfo(id);
@@ -92,7 +96,7 @@ if (typeof document !== 'undefined' && document.getElementById('app')) {
       <div class="diffs">${Object.entries(NIVEAUX_DUEL).map(([k, d]) => `<button class="${niveauDuel === k ? 'sel' : ''}" onclick="niveauDuel='${k}';localStorage.setItem('guilde-duel-eq-niveau','${k}');choixCapitaine('${id}')">${d.e} ${d.n}<br><small>${d.d}</small></button>`).join('')}</div>
       <div class="choixh"><button onclick="fermer()">Autre capitaine</button><button class="or" onclick="fermer();depart('${id}')">⚔ Lancer le duel</button></div>`);
   };
-  depart = function (id) { const i = haInfo(id); X = nouveauDuel(haVoie(id), niveauDuel);
+  depart = function (id) { GM.retour(null); /* 22/11 : le voyage commence */ const i = haInfo(id); X = nouveauDuel(haVoie(id), niveauDuel);
     if (i) { X.av = i.id; const cap = X.plateau.av[1]; if (cap && cap.key === 'capitaine') { cap.n = i.nom; cap.av = i.id; } }
     sel = null; sauve(); fenetre(`<h2>⚔ Ton rival : ${nomIA(X)}</h2><p style="text-align:center"><img src="${IMG(X.ia.heros)}" alt="" style="width:90px;height:90px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 3px var(--mal, #c0392b)"></p><p><b style="color:var(--or)">${CAPITAINES[X.ia.heros].n}</b> : ${CAPITAINES[X.ia.heros].d}</p><p class="doux">Il recrute en même temps que toi. Tu découvriras son équipage au moment du combat.</p><div class="choixh"><button class="or" onclick="fermer();port()">⚓ Au port !</button></div>`); };
   // le port du Duel : le même que celui des Expéditions, avec les cœurs des deux camps à la place de la route des escales

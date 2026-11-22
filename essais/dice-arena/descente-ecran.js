@@ -97,7 +97,7 @@ function descenteAccueil() {
   choixH = haValide(choixH, ZEPH_OK()); // 15/11 soir : un héros d'aventure supprimé ou verrouillé → Maëlle
   const mesB = Object.keys(E.breloques).filter(k => E.breloques[k] > 0);
   $('jeu').innerHTML = `<div class="dsc">
-    <div class="haut"><a href="#" onclick="S=null;DR=null;accueil();return false">‹ Crypte</a><span class="titre"></span><button onclick="descenteRegles()">❓ Règles</button></div>
+    <div class="haut"><a href="#" onclick="S=null;DR=null;accueil();return false">‹ Retour</a><span class="titre"></span><button onclick="descenteRegles()">❓ Règles</button></div>
     <img src="menu-recu/mode-descente.webp?v=1" alt="" style="display:block;width:46%;max-width:220px;margin:6px auto 0;border-radius:14px;box-shadow:0 0 18px #ff9a4a55" onerror="this.remove()"><h1>🗺️ La Descente</h1>
     <p class="sous">Trois étages de cryptes : <b>des combats obligatoires</b> (combat ou élite, à toi de voir), des <b>haltes</b> au choix (marchand, feu de camp, événement, trésor), puis le boss de l’étage. Ta vie ne remonte presque pas toute seule !</p>
     ${(() => { const ren = lireRen(), i = D.palierDe(ren), P = D.PALIERS, suiv = P[i + 1];
