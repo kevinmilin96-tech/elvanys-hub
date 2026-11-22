@@ -61,13 +61,14 @@ window.GuildeMaj = (() => {
   const vu = () => { try { return localStorage.getItem('guilde-param-vu') || ''; } catch (e) { return ''; } };
   const fmt = v => /^\d{8}-\d{6}$/.test(v || '') ? `${v.slice(6, 8)}/${v.slice(4, 6)}/${v.slice(0, 4)} · ${+v.slice(9, 11)} h ${v.slice(11, 13)}` : '—';
   const attend = () => !!(enLigne && ici && enLigne > ici);
-  const aVoir = () => attend() || !!(ici && vu() < ici);
+  const aVoir = () => attend() || !!(ici && vu() < ici) || (typeof appliAttend === 'function' && appliAttend());
   function points() {
     const on = aVoir();
     document.querySelectorAll('#bb-param, #gm-bouton, [data-param]').forEach(b => b.classList.toggle('point-rouge', on));
   }
   function verifie() { if (typeof fetch === 'undefined' || !ici) return;
-    fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(t => { const v = String(t || '').trim(); if (/^\d{8}-\d{6}$/.test(v)) enLigne = v; points(); }).catch(() => {}); }
+    fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(t => { const v = String(t || '').trim(); if (/^\d{8}-\d{6}$/.test(v)) enLigne = v; points(); }).catch(() => {});
+    if (window.GuildeAppli) fetch('appli/version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(t => { appliEnLigne = String(t || '').trim(); points(); }).catch(() => {}); }
   if (document.head) { const st = document.createElement('style');
     st.textContent = '.point-rouge{position:relative}.point-rouge::after{content:"";position:absolute;top:3px;right:calc(50% - 22px);width:11px;height:11px;border-radius:50%;background:#ff3b3b;box-shadow:0 0 0 2px #120f24, 0 0 8px #ff3b3b;animation:prPulse 1.6s ease-in-out infinite;pointer-events:none}#gm-bouton.point-rouge::after{top:-2px;right:-2px}@keyframes prPulse{50%{transform:scale(1.25)}}';
     document.head.appendChild(st); }
@@ -79,6 +80,7 @@ window.GuildeMaj = (() => {
   function bloc() {
     return `<div class="maj${attend() ? ' neuve' : ''}"><div><b>📦 Version du jeu</b><br><small>${fmt(ici)}</small></div>${attend()
       ? `<button class="majb" data-k="maj">✨ Mettre à jour<br><small>version du ${fmt(enLigne)}</small></button>` : '<span class="ok">✅ À jour</span>'}</div>
+      ${appliIci() ? `<div class="maj${appliAttend() ? ' neuve' : ''}"><div><b>📱 Appli Android</b><br><small>version ${appliIci()}</small></div>${appliAttend() ? `<a class="majb" href="appli/la-guilde-${appliEnLigne}.apk" style="text-decoration:none">📥 Nouvelle appli ${appliEnLigne}</a>` : '<span class="ok">✅ À jour</span>'}</div>` : ''}
       <details class="neuf"${ici && vu() < ici ? ' open' : ''}><summary>🆕 Quoi de neuf${ici && vu() < ici ? ' <span class="nv">nouveau</span>' : ''}</summary><div id="neuf-liste"><small>Chargement…</small></div></details>`;
   }
   function chargeNeuf() { const z = document.getElementById('neuf-liste'); if (!z) return;
@@ -87,18 +89,22 @@ window.GuildeMaj = (() => {
     }).catch(() => { z.innerHTML = '<small>Pas de réseau.</small>'; }); }
   // 22/11 : installer le jeu comme une appli (plein écran, sans barres du navigateur)
   let invite = null; addEventListener('beforeinstallprompt', e => { e.preventDefault(); invite = e; });
-  const installe = () => (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
+  const installe = () => !!window.GuildeAppli || (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
+  const appliIci = () => { try { return window.GuildeAppli ? String(GuildeAppli.version()) : ''; } catch (e) { return ''; } };
+  let appliEnLigne = '';
+  const vNum = v => String(v || '0').split('.').map(Number).reduce((t, x) => t * 1000 + (x || 0), 0);
+  const appliAttend = () => !!(appliIci() && appliEnLigne && vNum(appliEnLigne) > vNum(appliIci()));
   const iphone = () => /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   function aideInstall() {
     if (installe()) return '<p>✅ Le jeu est déjà installé : tu l’as ouvert depuis son icône, sans les barres du navigateur.</p>';
     if (iphone()) return `<p><b>Sur iPhone (avec Safari)</b> :</p><ol style="padding-left:1.2em;line-height:1.6"><li>Touche le bouton <b>Partager</b> (le carré avec une flèche ⬆, en bas ou en haut de Safari).</li>
       <li>Descends et touche <b>« Sur l’écran d’accueil »</b>.</li><li>Touche <b>Ajouter</b>.</li></ol><p>L’icône de Moustache apparaît : ouvre le jeu par elle, il prend tout l’écran, sans les barres de Safari.</p>
       <p style="color:#c9c1ea;font-size:.88em">Avec Chrome sur iPhone : menu ⋯ puis « Ajouter à l’écran d’accueil ».</p>`;
-    return `${invite ? '<button class="f" data-k="installer">📲 Installer maintenant</button>' : ''}<p><b>Sur Android (avec Chrome)</b> :</p><ol style="padding-left:1.2em;line-height:1.6"><li>Touche le menu <b>⋮</b> en haut à droite.</li>
+    return `<p><b>Sur Android, le mieux : l’appli « La Guilde »</b> (plein écran, le bouton retour du téléphone marche dans le jeu).</p><a class="f" style="display:block;text-align:center;text-decoration:none" href="installer.html">📥 Télécharger l’appli Android</a><p style="margin-top:14px"><b>Ou sans appli</b>, l’icône sur l’écran d’accueil :</p>${invite ? '<button class="f" data-k="installer">📲 Installer maintenant</button>' : ''}<ol style="padding-left:1.2em;line-height:1.6"><li>Touche le menu <b>⋮</b> en haut à droite.</li>
       <li>Touche <b>« Installer l’application »</b> (ou « Ajouter à l’écran d’accueil »).</li><li>Confirme.</li></ol><p>L’icône de Moustache apparaît : ouvre le jeu par elle, il prend tout l’écran, sans les barres du navigateur.</p>`;
   }
   async function installer() { if (!invite) return false; invite.prompt(); const r = await invite.userChoice.catch(() => null); invite = null; return !!(r && r.outcome === 'accepted'); }
-  return { installe, aideInstall, installer, ici:() => ici, enLigne:() => enLigne, attend, aVoir, points, verifie, bloc, chargeNeuf, marqueVu, majMaintenant, fmt };
+  return { appliIci, appliAttend, installe, aideInstall, installer, ici:() => ici, enLigne:() => enLigne, attend, aVoir, points, verifie, bloc, chargeNeuf, marqueVu, majMaintenant, fmt };
 })();
 const GM = (() => {
   const VOL = { titre:.5, menu:.45, heros:.45, duel:.4, elite:.42, boss:.45, carte:.45, recit:.45, marchand:.45, campement:.45, expeditions:.45, tuto:.45, mer:.45, victoire:.6, defaite:.6, feu:.5, vent:.45 };
@@ -275,6 +281,16 @@ const GM = (() => {
     b.textContent = '‹ ' + (texte || 'Retour');
     b.onclick = () => { api.son && api.son('ok'); if (typeof ou === 'function') ou(); else location.href = ou; };
     document.body.classList.add('gm-retour-on');
+  };
+  // 22/11 : le BOUTON RETOUR DU TÉLÉPHONE dans l'appli Android (android/ du dépôt guilde-des-runes) : d'abord fermer ce qui est ouvert
+  // par-dessus (paramètres, grand menu, fenêtre), sinon le « ‹ Retour » du jeu. Renvoie true si le jeu s'en est occupé.
+  api.retourAppli = () => {
+    for (const id of ['gm-param', 'grand-menu', 'grille-p', 'profil-menu']) { const z = document.getElementById(id); if (z) { z.remove(); return true; } }
+    const x = document.querySelector('.fenetre .xferme, .fenetre .fh-x, .fen .x, #fen .x');
+    if (x) { x.click(); return true; }
+    const f = document.getElementById('fen'); if (f && f.textContent.trim()) { if (typeof fermer === 'function') fermer(); else f.innerHTML = ''; return true; }
+    const r = document.getElementById('gm-retour'); if (r) { r.click(); return true; }
+    return false;
   };
   return api;
 })();

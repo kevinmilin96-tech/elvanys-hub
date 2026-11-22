@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="fr">
+<head><meta name="guilde-version" content="20261122-165959">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#120f24">
+<title>Installer La Guilde des Runes</title>
+<style>
+  /* 22/11 (demande de l'utilisateur) : installer le jeu sur son téléphone, pour lui et ses amis : l'appli Android, ou l'icône sur l'iPhone */
+  * { box-sizing:border-box; } body { margin:0; color:#f1ecff; font:16px/1.5 Georgia, serif; background:radial-gradient(ellipse at 50% -10%, #3a2a6a, #120f24 60%) fixed, #120f24; }
+  main { max-width:520px; margin:0 auto; padding:18px 16px 50px; }
+  h1 { text-align:center; color:#f3c96b; margin:6px 0 4px; } .sous { text-align:center; color:#c9c1ea; margin:0 0 16px; }
+  .ico { display:block; width:96px; height:96px; border-radius:22px; margin:0 auto 10px; box-shadow:0 6px 20px #000a; }
+  .carte { background:#1d1838; border:1px solid #f3c96b44; border-radius:16px; padding:14px 16px; margin:12px 0; }
+  .carte h2 { margin:0 0 6px; font-size:1.15em; color:#f3c96b; } .carte.moi { border-color:#f3c96b; box-shadow:0 0 16px #f3c96b44; }
+  .bt { display:block; text-align:center; text-decoration:none; padding:13px; border-radius:14px; background:#f3c96b; color:#2a1a08; font-weight:bold; margin:10px 0 4px; }
+  .bt.sombre { background:#2a2650; color:#fff; border:1px solid #4b4580; }
+  ol { padding-left:1.25em; margin:6px 0; } li { margin:4px 0; } small { color:#c9c1ea; }
+  .qr { text-align:center; } .qr img { width:220px; max-width:70%; border-radius:12px; background:#fff; padding:6px; }
+</style>
+</head>
+<body>
+<main>
+  <img class="ico" src="icone-192.png" alt="">
+  <h1>La Guilde des Runes</h1>
+  <p class="sous">Le jeu de dés et de cartes, en plein écran sur ton téléphone.</p>
+
+  <div class="carte" id="android"><h2>🤖 Sur Android : l’appli « La Guilde »</h2>
+    <a class="bt" id="apk" href="appli/la-guilde-1.0.apk">📥 Télécharger l’appli (version <span id="vapk">1.0</span>)</a>
+    <small>Elle ne passe pas par le Play Store : la première fois, Android demande une autorisation.</small>
+    <ol><li>Touche <b>Télécharger</b>, puis ouvre le fichier reçu (« la-guilde… »).</li>
+      <li>Si Android dit « pour votre sécurité… » : touche <b>Paramètres</b>, active <b>« Autoriser cette source »</b>, puis reviens.</li>
+      <li>Touche <b>Installer</b>. Si Play Protect s’inquiète (appli inconnue de lui) : <b>« Installer quand même »</b>.</li>
+      <li>Ouvre <b>La Guilde</b> par son icône (Moustache).</li></ol>
+    <small>Les mises à jour du jeu arrivent toutes seules dans l’appli. Si un jour l’appli elle-même change, un point rouge s’allume sur ⚙️ Paramètres.</small>
+  </div>
+
+  <div class="carte" id="iphone"><h2>🍏 Sur iPhone : l’icône sur l’écran d’accueil</h2>
+    <small>Apple n’autorise pas d’appli en dehors de son magasin, mais ceci donne le même plein écran.</small>
+    <ol><li>Ouvre cette page dans <b>Safari</b>.</li><li>Touche <b>Partager</b> (le carré avec une flèche ⬆).</li><li>Touche <b>« Sur l’écran d’accueil »</b>, puis <b>Ajouter</b>.</li>
+      <li>Ouvre le jeu par l’icône de Moustache : plus de barres de Safari.</li></ol>
+    <a class="bt sombre" href="menu.html">▶ Ouvrir le jeu</a>
+  </div>
+
+  <div class="carte"><h2>💾 Ta progression</h2>
+    <p style="margin:0">L’appli (ou l’icône) garde sa propre mémoire. Pour retrouver tes héros : dans le jeu, <b>⚙️ Paramètres → ☁ Mon compte et ma sauvegarde</b>, puis <b>« J’ai déjà un compte »</b> avec ton <b>code de récupération</b>.</p>
+  </div>
+
+  <div class="carte qr"><h2>📷 Pour tes amis</h2><p style="margin:0 0 8px">Ils scannent ce code avec l’appareil photo de leur téléphone :</p><img src="appli/qr-installer.png" alt="QR code de cette page"><br><small>perso.elvanys.fr/guilde/installer.html</small></div>
+</main>
+<script>
+  // le bon encadré en premier selon le téléphone ; dans l'appli, rien à installer
+  const iOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const m = document.querySelector('main'), a = document.getElementById('android'), i = document.getElementById('iphone');
+  if (iOS) { m.insertBefore(i, a); i.classList.add('moi'); } else a.classList.add('moi');
+  fetch('appli/version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => { v = v.trim(); if (/^\d+(\.\d+)*$/.test(v)) { document.getElementById('vapk').textContent = v; document.getElementById('apk').href = 'appli/la-guilde-' + v + '.apk'; } }).catch(() => {});
+  if (window.GuildeAppli) { a.innerHTML = '<h2>✅ Tu es déjà dans l’appli</h2><p style="margin:0">Version ' + GuildeAppli.version() + '. Montre le QR code ci-dessous à tes amis.</p>'; i.remove(); }
+</script>
+</body>
+</html>
