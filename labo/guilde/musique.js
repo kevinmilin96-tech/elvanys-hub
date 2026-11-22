@@ -20,7 +20,7 @@
   document.addEventListener('dragstart', e => { if (e.target && e.target.tagName === 'IMG') e.preventDefault(); }, { capture:true });
 })();
 (() => { try { if (window.GS || document.getElementById('gs-script')) return; const v = (document.currentScript && (document.currentScript.src.match(/[?&]v=([^&]+)/) || [])[1]) || '1';
-  if (!/^\d{8}-\d{6}$/.test(v)) return; // pas sur les pages d'outils (prompts, calage…)
+  if (!/^(\d{8}-\d{6}|[0-9a-f]{10})$/.test(v)) return; // pas sur les pages d'outils (prompts, calage…) ; 22/11 : les versions sont devenues des empreintes de 10 signes (publier.sh), le compte ne se chargeait plus
   const s = document.createElement('script'); s.id = 'gs-script'; s.src = 'sauvegarde.js?v=' + v; document.head.appendChild(s); } catch (e) {} })();
 (() => { try {
   let moi = document.currentScript && (document.currentScript.src.match(/[?&]v=([^&]+)/) || [])[1];
