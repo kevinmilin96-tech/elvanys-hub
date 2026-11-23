@@ -2426,6 +2426,19 @@ ${Q} #f-O { top:${f(a[1] + .6)}cqh; } ${Q} #f-J { top:calc(${f(b[1] - .8)}cqh - 
 ${Q} .bandeau, ${Q} .lancer { top:${f(mil)}cqh; left:${f(a[0] + .5)}cqw; right:${f(100 - b[0] + .5)}cqw; }`; }
   return css;
 }
+// 23/11 (l'utilisateur : « ton image ne correspond pas à la mienne ») : sur un plateau LONG, le cœur va EXACTEMENT où il a été placé
+// (l'ancien calcul le décalait selon le bouclier et la hauteur du panneau de texte) : on mesure après chaque affichage et on recale
+function recaleCoeurs() {
+  const pl = document.querySelector('.plateau.unique'), k = typeof plateauIle === 'function' && plateauIle(); if (!pl || !k || !k.startsWith('long')) return;
+  const R = PLACEMENTS_ILE[k], P = pl.getBoundingClientRect();
+  for (const [id, c] of [['b-O', 'haut'], ['b-J', 'bas']]) {
+    const e = pl.querySelector(`#${id} .pastilles [data-k="pv"]`), v = R['coeur_' + c]; if (!e || !v) continue;
+    e.style.translate = '0px 0px'; const r = e.getBoundingClientRect(), dx = P.left + P.width * v[0] / 100 - (r.left + r.width / 2), dy = P.top + P.height * v[1] / 100 - (r.top + r.height / 2);
+    const own = parseFloat(getComputedStyle(e).scale) || 1, sc = r.width / (e.offsetWidth || 1) / own || 1; // le décalage subit l'agrandissement des parents, pas le sien
+    e.style.translate = `${(dx / sc).toFixed(1)}px ${(dy / sc).toFixed(1)}px`;
+  }
+}
+if (typeof document !== 'undefined') { let t = null; new MutationObserver(() => { cancelAnimationFrame(t); t = requestAnimationFrame(recaleCoeurs); }).observe(document.documentElement, { childList:true, subtree:true }); addEventListener('resize', () => requestAnimationFrame(recaleCoeurs)); }
 // 23/11 : chaque plateau LONG placé (688 × 1536) prend toute la largeur ; sur un écran plus court, on perd au plus 18 % de sa hauteur (le décor), jamais l'interface
 const cssLong = k => { const n = k.slice(4); return `.plateau.tapis.unique.ile-${k}:not(.scene) { background-image:url('decor/plateau-long-${n}.webp?v=1'); aspect-ratio:688/1536; width:min(100%, calc((100dvh - 80px) * 688 / 1536 / .82)); margin:0 auto; flex:none; }
 #app:has(> .plateau.unique.ile-${k}:not(.scene))::before { background-image:url('decor/plateau-long-${n}.webp?v=1'); }`; };
