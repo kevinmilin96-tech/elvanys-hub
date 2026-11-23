@@ -1,5 +1,9 @@
 [
 {
+"v": "20261123-070234",
+"m": "Chroniques en ligne : l’initiative se lance en bas, comme tes dés habituels : un seul dé par héros au début du tour."
+},
+{
 "v": "20261123-065608",
 "m": "Chroniques en ligne : au début de chaque tour, chacun lance lui-même son dé d’initiative ! Le plus haut joue en premier, égalité = on relance."
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261122-190202",
 "m": "Chroniques sur la télé : l’adresse courte perso.elvanys.fr/tv, et plus de guide de Moustache sur la télé"
-},
-{
-"v": "20261122-185645",
-"m": "Chroniques : dans la salle d’attente, le lien pour la télé (avec le code) et un bouton pour l’envoyer"
 }
 ]
