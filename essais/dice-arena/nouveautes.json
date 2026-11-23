@@ -1,5 +1,9 @@
 [
 {
+"v": "20261123-194837",
+"m": "Chroniques : les médailles d’or, d’argent et de bronze ont maintenant le même dessin."
+},
+{
 "v": "20261123-194631",
 "m": "Chroniques : le panneau de l’initiative sur la table de la Guilde peinte."
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261123-070557",
 "m": "Chroniques en ligne : l’initiative revient en grand, avec les vrais dés de vos héros : chacun voit qui a lancé, qui on attend, et sa place dans l’ordre."
-},
-{
-"v": "20261123-070234",
-"m": "Chroniques en ligne : l’initiative se lance en bas, comme tes dés habituels : un seul dé par héros au début du tour."
 }
 ]

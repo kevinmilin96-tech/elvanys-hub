@@ -139,7 +139,7 @@ function iniMaj() {
     if (!iniMaj.prog || iniMaj.prog !== S.tours) { iniMaj.prog = S.tours; if (!iniFermeA) iniFermeA = Date.now() + 3200; setTimeout(() => { iniMaj(); if (typeof dessine === 'function') dessine(); if (typeof annonceTour === 'function') annonceTour(); }, 3300); }
     // 23/11 : les médailles peintes (or, argent, bronze) à la place des émojis
     const ordre = iniOrdre(), med = ['🥇', '🥈', '🥉', '4'], MED = ['or', 'argent', 'bronze'];
-    ordre.forEach((x, k) => { const r = document.getElementById('ini-r' + x.i); if (r) r.innerHTML = MED[k] ? `<img class="ini-med" src="ui/ini/med-${MED[k]}.webp?v=1" alt="${med[k]}">` : (k + 1); });
+    ordre.forEach((x, k) => { const r = document.getElementById('ini-r' + x.i); if (r) r.innerHTML = MED[k] ? `<img class="ini-med" src="ui/ini/med-${MED[k]}.webp?v=2" alt="${med[k]}">` : (k + 1); });
     st.textContent = 'Tous les dés sont lancés !';
     setTimeout(() => { if (o) o.innerHTML = ordre.map((x, k) => `${med[k] || k + 1} <b>${nomH(S.heros[x.i])}</b>`).join(' › '); }, 1500);
   }
