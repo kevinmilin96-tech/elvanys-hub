@@ -1,5 +1,9 @@
 [
 {
+"v": "20261123-193944",
+"m": "Nouvelles images : la crypte au hasard, le flash du jour, et le panneau de l’initiative des Chroniques (cadres, emblème, médailles d’or, d’argent et de bronze)."
+},
+{
 "v": "20261123-192007",
 "m": "Cartes : les noms longs tiennent sur une ligne dans leur bandeau."
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261123-063527",
 "m": "Les Chroniques ont leur nouvel accueil : choisis ta façon de jouer (une partie, la campagne, les aventures, chacun chez soi), coche de 1 à 4 héros, puis le scénario."
-},
-{
-"v": "20261122-213439",
-"m": "Les images des modes s'affichent maintenant en entier, sans être coupées."
 }
 ]

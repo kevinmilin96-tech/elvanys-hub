@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261123-192630"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
+<head><meta name="guilde-version" content="20261123-193944"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="robots" content="noindex">
@@ -528,11 +528,11 @@ function defCrypte() {
         desc:() => 'La même crypte pour tout le monde aujourd’hui : compare ton score avec tes amis.' + amisJourHTML(),
         pas:() => [`${vj.e} Plateau : ${vj.n}`, `${rj.e} ${rj.n}`, j ? `Ton record du jour : ${j.score} ${'★'.repeat(j.etoiles)}` : 'Pas encore tentée'],
         partie:() => pg && pg.duJour ? { texte:`${haEsc(herosS(pg.S).nom)} · tour ${pg.S.tour} · ❤ ${pg.S.pv}`, reprendre:'reprend()', abandonner:"localStorage.removeItem('guilde-crypte-partie')" } : null },
-      { k:'flash', e:'⚡', n:'Flash du jour', img:'menu-recu/mode-vite.webp',
+      { k:'flash', e:'⚡', n:'Flash du jour', img:'menu-recu/mode-flash.webp?v=1',
         desc:() => '≈ 3 minutes : 3 petites colonnes, puis le Gardien, avec 30 PV. La même pour tout le monde aujourd’hui. Ton premier essai compte (étoiles, panneau « Aujourd’hui ») ; ensuite, rejoue pour le plaisir.',
         pas:() => { const f = flashDuJour(); return f ? [`Aujourd’hui : ${f.gagne ? '★'.repeat(f.etoiles) + '☆'.repeat(3 - f.etoiles) : 'perdu'}`, 'Rejouable pour le plaisir'] : ['Pas encore tenté aujourd’hui']; },
         partie:() => pg && pg.S.flash ? { texte:`⚡ ${haEsc(herosS(pg.S).nom)} · tour ${pg.S.tour} · ❤ ${pg.S.pv}`, reprendre:'reprend()', abandonner:"localStorage.removeItem('guilde-crypte-partie')" } : null },
-      { k:'hasard', e:'🎲', n:'Au hasard', img:'decor/crypte-table.webp',
+      { k:'hasard', e:'🎲', n:'Au hasard', img:'menu-recu/mode-crypte-hasard.webp?v=1',
         desc:() => 'Une nouvelle crypte à chaque fois, avec une carte spéciale et 3 défis à étoiles. Tu peux choisir le plateau et ajouter une règle.',
         pas:() => [`Meilleur score : ${D.meilleur}`, `${D.victoires} victoire${D.victoires > 1 ? 's' : ''} sur ${D.parties}`],
         partie:() => pg && !pg.duJour && !pg.S.flash ? { texte:`${haEsc(herosS(pg.S).nom)} · tour ${pg.S.tour} · ❤ ${pg.S.pv}`, reprendre:'reprend()', abandonner:"localStorage.removeItem('guilde-crypte-partie')" } : null },
