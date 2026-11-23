@@ -26,7 +26,7 @@ function optionsDuel() {
 function defDuel() {
   const z = localStorage.getItem('guilde-tuto') === 'fait';
   const sem = typeof regleActive === 'function' ? regleActive() : null, sceaux = typeof lesSceaux === 'function' ? lesSceaux() : {};
-  return { jeu:'duel', racine:'cfg-duel', titre:'⚔ Le Duel', retour:'menu.html', regles:'voileDuel(false);regles()',
+  return { jeu:'duel', racine:'cfg-duel', titre:'⚔ Le Duel', retour:'menu.html', retourFixe:window.DUEL_RETOUR || null, regles:'voileDuel(false);regles()',
     heros:() => ORDRE.map(id => id === 'zephine' && !z ? `<button disabled><img src="${IMG(id)}" alt="" style="filter:grayscale(1)">🔒 ${HEROS[id].nom}<small>Fais le tutoriel</small></button>`
       : `<button class="${choixDuel === id ? 'on' : ''}" onclick="choisitDuel('${id}')"><img src="${IMG(id)}" alt="">${HEROS[id].nom}</button>`).join(''),
     fiche:() => { const H = HEROS[choixDuel] || HEROS.maelle; return `⚔ <b>${H.nom}</b><br>${H.role || ""}<br>❤ ${H.pv} PV au départ du Duel.`; },
@@ -84,4 +84,8 @@ function eclairFait() { try { return (JSON.parse(localStorage.getItem('guilde-ec
 accueil = function (o) { fermer(); if (!okDuel(choixDuel)) choixDuel = 'maelle'; voileDuel(true); try { GM.retour(null); } catch (e) {} CFG.ouvre(defDuel(), o); };
 window.partieSemaine = function () { accueil({ mode:'semaine' }); };
 // au chargement sans paramètre particulier, l'ancien accueil vient de s'ouvrir : on le remplace par le configurateur
-{ const q = new URLSearchParams(location.search); if (q.get('eclair')) setTimeout(() => accueil({ mode:'eclair' }), 0); if (!['tuto', 'enigme', 'semaine', 'eclair', 'deux', 'ami', 'salle', 'odyssee', 'campement', 'parties', 'h'].some(k => q.get(k))) accueil(); }
+{ const q = new URLSearchParams(location.search); if (q.get('eclair')) setTimeout(() => accueil({ mode:'eclair' }), 0);
+  // 23/11 (l'utilisateur : « Jouer avec Pip » depuis Mes decks : directement le choix de l'adversaire ; fermer ramène à Mes decks) :
+  // duel.html?h=<héros>&retour=decks ouvre le configurateur à l'étape des options, mode « contre l'ordinateur », héros présélectionné
+  if (q.get('h') && typeof HEROS !== 'undefined' && HEROS[q.get('h')]) { const h = q.get('h'); if (q.get('retour') === 'decks') window.DUEL_RETOUR = { href:`mes-decks.html?heros=${h}`, n:'Mes decks' };
+    setTimeout(() => { if (okDuel(h)) choixDuel = h; accueil({ mode:'ordi', etape:3 }); }, 0); } if (!['tuto', 'enigme', 'semaine', 'eclair', 'deux', 'ami', 'salle', 'odyssee', 'campement', 'parties', 'h'].some(k => q.get(k))) accueil(); }

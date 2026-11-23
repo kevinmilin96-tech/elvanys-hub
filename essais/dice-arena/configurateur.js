@@ -99,7 +99,8 @@
   CFG.dessine = function () {
     const D = CFG.def, M = leMode(), E = CFG.etape, jeu = document.getElementById(D.racine || 'jeu');
     const fil = `<div class="fil">${(M.sansHeros ? [1, 3] : [1, 2, 3]).map(i => `<span class="${i < E ? 'fait' : i === E ? 'on' : ''}"></span>`).join('')}</div>`;
-    const retour = E === 1 ? `<a href="${D.retour || 'menu.html'}">‹ Retour</a>` : `<button onclick="CFG.va(${E - 1})">‹ ${E === 2 || M.sansHeros ? 'Mode' : 'Héros'}</button>`;
+    // 23/11 : un jeu ouvert depuis une autre page (ex. « Jouer avec Pip » de Mes decks) y ramène à toutes les étapes (D.retourFixe)
+    const retour = D.retourFixe ? `<a href="${D.retourFixe.href}">‹ ${D.retourFixe.n}</a>` : E === 1 ? `<a href="${D.retour || 'menu.html'}">‹ Retour</a>` : `<button onclick="CFG.va(${E - 1})">‹ ${E === 2 || M.sansHeros ? 'Mode' : 'Héros'}</button>`;
     let corps = '', bas = '';
     // une partie en cours (partie) ou plusieurs (parties : les emplacements de l'Odyssée) ; un mode fermé (verrou) ne va pas plus loin
     const parties = M.parties ? M.parties() : M.partie && M.partie() ? [M.partie()] : [], partie = parties[0] || null, verrou = M.verrou ? M.verrou() : null;
