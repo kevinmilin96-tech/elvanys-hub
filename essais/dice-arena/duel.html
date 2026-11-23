@@ -765,6 +765,10 @@
      (parfois seulement caché) prenait la place et poussait « Fin du tour » hors de l'écran. Désormais « Fin du tour » garde toujours sa place
      entière ; c'est « Relancer » qui rétrécit ; et le téléphone ne grossit plus les textes de lui-même. */
   html { -webkit-text-size-adjust:100%; text-size-adjust:100%; }
+  /* 23/11 (l'utilisateur : « les cases sont trop petites une fois un dé choisi ») : pendant un choix, ❓ et 📜 s'effacent pour laisser
+     « ✕ Annuler » et « 🎲 Relancer » en entier ; ils reviennent dès que le choix est fini */
+  .bas:has(.annulB.dansBas) .b0:not(:first-child) { display:none; } .bas:has(.annulB.dansBas) .annulB.dansBas { flex:0 0 auto !important; text-overflow:clip !important; }
+  .bas:has(.annulB.dansBas) .b1 .mot { display:none; }
   .bas { overflow:hidden; } .bas > * { min-width:0; } .bas .b0 { flex:0 0 auto !important; } .bas .b2 { flex:0 0 auto !important; padding-left:14px; padding-right:14px; } .bas .annulB.dansBas { flex:0 1 auto; overflow:hidden; text-overflow:ellipsis; }
   .bas .b1 { flex:1 1 0 !important; overflow:hidden; text-overflow:ellipsis; }
   .unique .bandeau { overflow-y:auto !important; }
