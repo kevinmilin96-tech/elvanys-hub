@@ -1,5 +1,9 @@
 [
 {
+"v": "20261123-202753",
+"m": "Duel : nouveau plateau qui remplit tout l’écran des téléphones longs (plus de bande en haut, cercles bien ronds)."
+},
+{
 "v": "20261123-195649",
 "m": "Combat : les effets (Contre-attaque, Épines, Poison…) sont des pastilles avec leur chiffre ; touche-en une pour l’explication, ou la grille pour la liste complète."
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261123-091436",
 "m": "Petites corrections : le forgeron propose 3 pièces différentes, une croix sur les fenêtres de Mes decks, le Retour des Héros d’aventure ramène à Ma Guilde, l’or de l’île au trésor plus clair dans les Expéditions."
-},
-{
-"v": "20261123-090822",
-"m": "Plus simple pour les nouveaux : une seule fenêtre à la fois en arrivant, des flèches ‹ › pour passer d’une porte à l’autre, et les guides de Moustache en 2 étapes (le guide complet dans ⚙️)."
 }
 ]
