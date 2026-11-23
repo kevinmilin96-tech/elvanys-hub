@@ -1,5 +1,9 @@
 [
 {
+"v": "20261123-190415",
+"m": "Combat : la main de départ s’affiche en bas de l’écran, le plateau reste visible au-dessus."
+},
+{
 "v": "20261123-190259",
 "m": "Combat : la main de départ se propose toujours (et « ↺ Changer ma main » sur ton paquet au 1er tour), le texte des petites cartes n’est plus déformé, plus de bande noire en haut."
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261122-211949",
 "m": "Les Expéditions ont la nouvelle entrée : le mode (l'Expédition, le voyage du jour, le Duel d'équipages), ton capitaine, puis la mer, l'Ascension ou le niveau de l'ordinateur."
-},
-{
-"v": "20261122-211626",
-"m": "L'Odyssée a la même nouvelle entrée que la Crypte : le mode (île du jour, Saison 1, sans fin, Route du Titan) avec tes parties en cours, ton héros, puis l'île, le voyage, l'Ascension et l'emplacement."
 }
 ]
