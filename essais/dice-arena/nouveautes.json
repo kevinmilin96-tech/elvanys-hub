@@ -1,5 +1,9 @@
 [
 {
+"v": "20261123-213718",
+"m": "Aujourd’hui : le Duel de la semaine a sa partie « Cette semaine », à part des rendez-vous du jour."
+},
+{
 "v": "20261123-213546",
 "m": "Duel de la semaine réparé : depuis le 22/11, la règle de la semaine ne s’appliquait pas et le Sceau n’était pas donné. Rejoue-le pour gagner ton Sceau."
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261123-193944",
 "m": "Nouvelles images : la crypte au hasard, le flash du jour, et le panneau de l’initiative des Chroniques (cadres, emblème, médailles d’or, d’argent et de bronze)."
-},
-{
-"v": "20261123-192007",
-"m": "Cartes : les noms longs tiennent sur une ligne dans leur bandeau."
 }
 ]
