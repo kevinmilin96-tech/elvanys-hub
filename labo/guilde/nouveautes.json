@@ -1,5 +1,9 @@
 [
 {
+"v": "20261123-212255",
+"m": "Main de départ : plus de croix, on garde ou on change sa main."
+},
+{
 "v": "20261123-211948",
 "m": "Appli Android 1.2 : elle annonce son vrai numéro de version (la 1.1 se croyait encore en 1.0)."
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261123-190415",
 "m": "Combat : la main de départ s’affiche en bas de l’écran, le plateau reste visible au-dessus."
-},
-{
-"v": "20261123-190259",
-"m": "Combat : la main de départ se propose toujours (et « ↺ Changer ma main » sur ton paquet au 1er tour), le texte des petites cartes n’est plus déformé, plus de bande noire en haut."
 }
 ]

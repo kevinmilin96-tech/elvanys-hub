@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261123-211948"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
+<head><meta name="guilde-version" content="20261123-212255"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="robots" content="noindex">
@@ -780,7 +780,7 @@
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
 // 14/11 : l'Odyssée sans fin a ses propres emplacements (odyssee.js lit SANSFIN)
 const SANSFIN = new URLSearchParams(location.search).get('sansfin') === '1', ROUTE_TITAN = new URLSearchParams(location.search).get('route') === '1', EPREUVE_PAGE = new URLSearchParams(location.search).get('epreuve') === '1', ODY_PAGE = EPREUVE_PAGE ? 'epreuves.html' : 'odyssee.html' + (SANSFIN ? '?sansfin=1' : ROUTE_TITAN ? '?route=1' : '');
-const VERSION = '20261123-211948';
+const VERSION = '20261123-212255';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -2225,7 +2225,7 @@ function mulligan() {
   fenetre(`<h2 style="margin:0 0 .2em;font-size:1.1em">🂠 La partie commence : ta main de départ</h2><p style="margin:.1em 0;font-size:.9em">Touche les cartes que tu veux <b>changer</b> (elles repartent dans le paquet, tu en pioches d’autres), ou garde ta main. Une seule fois. <b>Appui long</b> sur une carte pour la lire en grand.</p>
   <div class="mullmain">${J.main.map(carteM).join('')}</div>
   <div class="choixh" id="mullBt">${mullBoutons()}</div>`);
-  const f = document.querySelector('#fen .fenetre'); if (f) { f.onclick = null; f.classList.add('mullF'); } // 23/11 (l'utilisateur : « j'ai cru à un tuto, je ne voyais pas le plateau ») : panneau en bas, plateau visible au-dessus
+  const f = document.querySelector('#fen .fenetre'); if (f) { f.onclick = null; f.removeAttribute('onclick'); f.classList.add('mullF'); f.querySelectorAll('.xferme').forEach(x => x.remove()); } // 23/11 (l'utilisateur) : pas de croix, on choisit sa main avant de jouer // 23/11 (l'utilisateur : « j'ai cru à un tuto, je ne voyais pas le plateau ») : panneau en bas, plateau visible au-dessus
 }
 const mullBoutons = () => `${mullSel.length ? `<button onclick="mullValide()" style="background:linear-gradient(#f3c96b,#d99a2b);color:#2a1a00;font-weight:bold">↺ Changer ${mullSel.length} carte${mullSel.length > 1 ? 's' : ''}</button>` : ''}<button onclick="mullSel=[];S.mullFait=true;fermer();rendu()">${mullSel.length ? 'Finalement, garder ma main' : 'Garder ma main ✔'}</button>`;
 // 23/11 (l'utilisateur) : toucher une carte la coche SANS redessiner la fenêtre (plus de cartes qui disparaissent et redescendent)
