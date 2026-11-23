@@ -29,8 +29,8 @@ const GUIDES_MODES = {
   ],
   chroniques:[
     [null, 'Les <b>Chroniques de la Guilde</b> : jusqu’à 4 héros explorent un donjon dans le noir, ouvrent des portes, fouillent des meubles et affrontent le boss du scénario.'],
-    ['.choixH', 'Choisis le <b>scénario</b>, puis tes <b>héros</b> (de la Guilde, ou tes héros d’aventure de la Forge). Seul, tu peux en jouer plusieurs.'],
-    [null, 'Plus bas : les <b>Aventures</b> en scènes (une vraie histoire), la <b>Campagne</b> (3 chapitres à la suite), et 🌐 <b>chacun chez soi</b> pour jouer entre amis sur vos téléphones.'],
+    ['.modes', '4 façons de jouer : <b>une partie</b> sur ce téléphone, <b>la campagne</b> (3 chapitres à la suite), <b>les aventures</b> en scènes, ou 🌐 <b>chacun chez soi</b> entre amis.'],
+    [null, 'Ensuite tu coches de 1 à 4 <b>héros</b> (de la Guilde, ou tes héros d’aventure de la Forge), puis tu choisis le scénario. Seul, tu peux en jouer plusieurs.'],
   ],
   'chroniques-jeu':[
     ['.stats', 'En haut : le <b>sablier</b> ⌛ (il descend à chaque tour des monstres : à zéro, c’est perdu !) et ce qu’il reste à trouver.'],

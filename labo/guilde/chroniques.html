@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261122-213439"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
+<head><meta name="guilde-version" content="20261123-063527"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="robots" content="noindex">
@@ -228,6 +228,8 @@
 <script src="pouvoirs-heros.js?v=ec2fa41e9e"></script>
 <script src="chroniques-moteur.js?v=4ee01c25a4"></script>
 <script src="chroniques-ambiance.js?v=cdc992dc3a"></script>
+<script src="configurateur.js?v=4c269ea5e9"></script>
+<script src="chroniques-config.js?v=58b468ce8a"></script>
 <script>
 // =============================================================================================== LES CHRONIQUES DE LA GUILDE v2 (15/11, écran « façon HeroQuest »)
 // Une grande carte qui défile : les salles restent dans le noir jusqu'à ce qu'on ouvre leur porte ; les couloirs se dévoilent en avançant ;
@@ -494,7 +496,8 @@ async function creerSalle(nomDonne) {
   const moi = cpt ? cpt : { id:'j' + Math.random().toString(36).slice(2, 10), nom };
   const joueurs = [{ id:moi.id, nom:moi.nom, heros:[] }];
   S = null; L = { code:'', version:0, joueurs, moi, dernier:'' };
-  LOB = { scen:scenChoisi, camp:null, equipe:choisis.slice(0, 4).map(entreeLobby).filter(Boolean), hote:moi.id };
+  LOB = { scen:scenChoisi, camp:chPre.camp, sansIni:chPre.sansIni, equipe:choisis.slice(0, 4).map(entreeLobby).filter(Boolean), hote:moi.id };
+  chPre.camp = null; chPre.sansIni = false; // 23/11 : choisis dans le configurateur, une seule fois
   try { const { statut, d } = await api('POST', API, { mode:'chroniques', etat:{ lobby:LOB }, joueurs });
     if (statut !== 200) { bulle(d.message || 'Impossible de créer la salle.', true); L = null; LOB = null; return; }
     L.code = d.code; L.version = d.version;
@@ -528,7 +531,10 @@ async function rejoindre(code, moi) {
     L = { code, version:d.version, joueurs:d.joueurs || [], moi, dernier:'' };
     if (!L.joueurs.some(j => j.id === moi.id)) L.joueurs.push({ id:moi.id, nom:moi.nom, heros:[] });
     localStorage.setItem(SALLE, JSON.stringify({ code, moi, quand:Date.now() }));
-    if (d.etat && d.etat.lobby) { LOB = d.etat.lobby; S = null; son('portail'); salleAttente(); lobbyPousse(); return; }
+    if (d.etat && d.etat.lobby) { LOB = d.etat.lobby; S = null; son('portail'); salleAttente();
+      // 23/11 : arrivé par le configurateur (« Rejoindre avec un code ») : les héros cochés entrent dans la salle avec moi, s'il reste de la place
+      const apporte = chPre.apporte ? choisis.slice() : []; chPre.apporte = false;
+      lobbyPousse(apporte.length ? X => { apporte.forEach(k => { if (X.equipe.length >= 4 || X.equipe.some(x => x.owner === L.moi.id && x.cle === k)) return; const e = entreeLobby(k); if (e) X.equipe.push(e); }); } : undefined); return; }
     S = d.etat; LOB = null; actif = 0; sel = null; centrer = true;
     // 17/11 : une partie rouverte par l'hôte → je reprends les héros que je jouais (même prénom), s'ils sont libres
     if (S.anciens) { const ids = S.anciensId || []; L.prises = S.heros.map((z, i) => i).filter(i => (ids[i] ? ids[i] === moi.id : S.anciens[i] === moi.nom) && !proprio(i)); appliquePrises(); if (mesHeros().length) actif = mesHeros()[0]; }
@@ -1188,34 +1194,9 @@ function campagneGagnee() {
 }
 
 // ------------------------------------------------------------------ l'accueil
-function accueil() { document.body.classList.remove('jeu'); sessionStorage.removeItem('chron-en-jeu'); setTimeout(verifSalleGardee, 0);
-  const g = gardee(); let D = {}; try { D = JSON.parse(localStorage.getItem(CLE) || '{}'); } catch (e) {}
-  choisis = choisis.filter(k => k !== 'zephine' || ZEPH_OK());
-  $('app').innerHTML = `<div class="acc">
-    <div class="haut"><a href="menu.html">‹ Retour</a><span class="t"></span><button onclick="regles()">❓ Règles</button></div>
-    <h1>📜 Les Chroniques de la Guilde</h1>
-    <p class="sous">Jusqu’à 4 héros, un donjon dans le noir, des portes à ouvrir, des meubles à fouiller, une histoire. Un seul téléphone : passez-le à celui dont c’est le tour.</p>
-    ${g ? `<button class="gros" style="border-color:var(--ok);color:var(--ok);background:#14322a" onclick="reprend()">▶ Reprendre la partie<small>${g.heros.map(z => nomH(z)).join(', ')} · ⚙ ${g.R.rouagesPoses}/3 · ⌛ ${g.sablier}</small></button><button onclick="if(confirm('Abandonner cette partie ? Elle sera effacée.')){try{localStorage.removeItem('guilde-chroniques2-partie')}catch(e){};accueil()}" style="display:block;margin:0 auto;background:none;border:0;color:var(--doux);font-size:3cqw;text-decoration:underline;padding:1cqw;text-align:center">✕ abandonner cette partie</button>` : ''}
-    <h3 style="color:var(--or);margin:4cqw 0 1.5cqw">📖 Le scénario</h3>
-    <div class="choixH" style="grid-template-columns:1fr 1fr">${Object.entries(SCX_TXT).map(([k, s]) => `<button class="${scenChoisi === k ? 'on' : ''}" onclick="scenChoisi='${k}';accueil()" style="font-size:3.4cqw">${s.titre}<small>${s.duree}${k === 'horloger' && D.horloger ? ` · ✓ ${D.horloger}` : ''}</small></button>`).join('')}</div>
-    <p style="text-align:center;color:var(--doux);font-size:3cqw;margin:0 0 2cqw">Choisis de 1 à 4 héros (un par joueur ; seul, tu peux en jouer plusieurs).</p>
-    <h3 style="color:var(--or);margin:3cqw 0 1.5cqw">⚒ Tes héros d’aventure</h3>
-    <div class="choixH">${avLire().map(a => { const s = avStats(a); return `<button class="${choisis.includes('av:' + a.id) ? 'on' : ''}" onclick="basculeHeros('av:${a.id}')"><img src="${avPortrait(a)}" onerror="this.onerror=null;this.src='${avPortraitSecours(a)}'" alt="" style="box-shadow:0 0 0 3px ${a.couleur}">${a.nom}<small>${avTitre(a)} · niv. ${s.niveau}</small></button>`; }).join('')}
-      <button onclick="location.href='aventuriers.html?retour=chroniques.html'">＋<small>Créer un héros dans la Forge des héros</small></button></div>
-    <h3 style="color:var(--or);margin:3cqw 0 1.5cqw">Les héros de la Guilde</h3>
-    <div class="choixH">${Object.entries(H).map(([k, h]) => `<button class="${choisis.includes(k) ? 'on' : ''}" ${k === 'zephine' && !ZEPH_OK() ? 'disabled' : ''} onclick="basculeHeros('${k}')"><img src="portraits/${k}.webp" alt="">${h.n}<small>${h.t}</small>${k === 'zephine' && !ZEPH_OK() ? '<small>🔒 tutoriel</small>' : ''}</button>`).join('')}</div>
-    ${typeof aventuresHTML === 'function' ? aventuresHTML() : ''}
-    ${campagneHTML()}
-    <h3 style="color:var(--or);margin:3cqw 0 1cqw">⚔ Une partie seule</h3>
-    <button class="gros" ${choisis.length ? '' : 'disabled'} onclick="commence()">⚔ Commencer avec ${choisis.length} héros<small>${choisis.map(nomChoix).join(', ') || 'choisis au moins un héros'}</small></button>
-    <h3 style="color:var(--or);text-align:center;margin:5cqw 0 1cqw">🌐 Chacun chez soi</h3>
-    <button class="gros" style="background:#14223a;border-color:#7cd4ff;color:#7cd4ff" onclick="creerSalle()">🌐 Créer une partie à distance<small>Une salle d’attente : tu choisis le scénario, chacun ajoute son héros depuis son téléphone, tu lances pour tout le monde.</small></button>
-    <button class="gros" style="background:#14223a;border-color:#7cd4ff;color:#7cd4ff" onclick="amisFenetre()">👥 Mes amis<small>Vois qui est en ligne, rejoins sa salle ou invite-le dans la tienne.</small></button>
-    <button class="gros" style="background:#1c1c36;border-color:#45457a;color:var(--texte)" onclick="rejoindre()">🔑 Rejoindre avec un code<small>Un ami t’a donné un code de salle.</small></button>
-    ${(() => { const l = sauvesEnLigne(); if (!l.length) return ''; return `<h3 style="color:var(--or);margin:3cqw 0 1.5cqw">💾 Parties en ligne sauvegardées <small style="color:var(--doux);font-weight:normal">(tu étais l'hôte)</small></h3>` + l.map(x => `<button class="gros" style="background:#1d1a35;border-color:#b98cff;color:#d9c2ff" onclick="rouvrirEnLigne('${x.id}')">💾 Rouvrir : ${x.titre}<small>${x.heros} · ${new Date(x.quand).toLocaleString('fr-FR', { weekday:'long', day:'numeric', month:'long', hour:'2-digit', minute:'2-digit' })}</small></button><button onclick="oublierEnLigne('${x.id}')" style="display:block;margin:0 auto;background:none;border:0;color:var(--doux);font-size:3cqw;text-decoration:underline;padding:1cqw">✕ effacer cette sauvegarde</button>`).join(''); })()}
-    ${(() => { try { const s = salleGardee(); return s ? `<button class="gros" style="background:#14322a;border-color:var(--ok);color:var(--ok)" onclick='rejoindre(${JSON.stringify(s.code)}, ${JSON.stringify(s.moi)})'>↩ Revenir dans la salle ${s.code}<small>en tant que ${s.moi.nom}</small></button><button onclick="oublierSalle()" style="display:block;margin:0 auto;background:none;border:0;color:var(--doux);font-size:3cqw;text-decoration:underline;padding:1cqw">✕ oublier cette salle</button>` : ''; } catch (e) { return ''; } })()}
-    ${localStorage.getItem('guilde-atelier') === '1' ? `<p style="text-align:center;margin-top:4cqw"><a href="editeur.html" style="color:var(--or);font-size:3cqw">🛠 L’atelier des cartes</a> · <a href="chroniques-v1.html" style="color:var(--doux);font-size:3cqw">l’ancienne version (salles séparées)</a></p>` : ''}
-  </div>`;
+// 23/11 : l'accueil = le CONFIGURATEUR commun (chroniques-config.js : 4 modes, de 1 à 4 héros, les options) ; l'ancien accueil en une page est retiré
+function accueil(o) { document.body.classList.remove('jeu'); sessionStorage.removeItem('chron-en-jeu'); setTimeout(verifSalleGardee, 0);
+  CFG.ouvre(defChron(), o);
 }
 // un choix de l'accueil → ce que le moteur attend (une voie, ou un héros d'aventure avec ses stats)
 const nomChoix = k => k.startsWith('av:') ? ((avTrouve(k.slice(3)) || {}).nom || '?') : H[k].n;
@@ -1364,7 +1345,7 @@ if (ESSAI) essaiAtelier(ESSAI); else if (sessionStorage.getItem('chron-en-jeu') 
 </script>
 <script src="chroniques-aventures.js?v=d6797cd442"></script>
 <script src="guide.js?v=f78db3b570"></script>
-<script src="guides-modes.js?v=866dc88860"></script>
+<script src="guides-modes.js?v=a2446dac12"></script>
 <script src="entrainement.js?v=854139c476"></script>
 <script src="chroniques-entrainement.js?v=2855db80cd"></script>
 <script>

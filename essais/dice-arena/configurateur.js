@@ -114,7 +114,9 @@
         : `<button class="go" onclick="CFG.va(2)">Suivant ›</button>`;
     } else if (E === 2) {
       corps = `<div class="etape">2 · Avec qui ?</div><div class="heros">${D.heros()}</div>${D.fiche ? `<div class="fiche">${D.fiche()}</div>` : ''}`;
-      bas = `<button class="go" onclick="CFG.va(3)">Suivant ›</button>`;
+      // 23/11 (les Chroniques : de 1 à 4 héros) : un jeu peut dire qu'il manque un héros (herosOk : '' = bon, sinon le message)
+      const manque = D.herosOk ? D.herosOk() : '';
+      bas = manque ? `<button class="go" disabled>${manque}</button>` : `<button class="go" onclick="CFG.va(3)">Suivant ›</button>`;
     } else {
       const L = D.options ? D.options(M.k) : [], V = CFG.valeurs();
       corps = `<div class="etape">3 · Les options</div>${L.length ? L.map(x => {

@@ -1,5 +1,9 @@
 [
 {
+"v": "20261123-063527",
+"m": "Les Chroniques ont leur nouvel accueil : choisis ta façon de jouer (une partie, la campagne, les aventures, chacun chez soi), coche de 1 à 4 héros, puis le scénario."
+},
+{
 "v": "20261122-213439",
 "m": "Les images des modes s'affichent maintenant en entier, sans être coupées."
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261122-185141",
 "m": "Grand menu : le carré ＋ Personnaliser pour choisir tes icônes"
-},
-{
-"v": "20261122-184925",
-"m": "Le grand menu retrouve toutes ses icônes"
 }
 ]
