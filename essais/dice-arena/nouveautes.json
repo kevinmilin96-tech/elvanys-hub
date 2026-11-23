@@ -1,5 +1,9 @@
 [
 {
+"v": "20261123-212717",
+"m": "Combat : quand tu choisis des dés, la barre du bas montre Annuler et Relancer en entier."
+},
+{
 "v": "20261123-212545",
 "m": "Combat : le bas du plateau (ta main, le paquet) n’est plus caché par la barre ; cœurs et PC à la bonne taille."
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261123-190928",
 "m": "Main de départ : choisir une carte ne fait plus disparaître les autres, et un appui long montre la carte en grand."
-},
-{
-"v": "20261123-190653",
-"m": "Main de départ : chaque carte montre son effet."
 }
 ]
