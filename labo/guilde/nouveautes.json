@@ -1,5 +1,9 @@
 [
 {
+"v": "20261123-220017",
+"m": "Mes decks : « Jouer avec… » mène directement au choix de l’adversaire, et le retour ramène à tes decks."
+},
+{
 "v": "20261123-215702",
 "m": "Mes decks : tous les héros visibles d’un coup, sans faire défiler."
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261123-203402",
 "m": "Odyssée : les combats des Terres brûlées passent sur le nouveau plateau qui remplit tout l’écran."
-},
-{
-"v": "20261123-202753",
-"m": "Duel : nouveau plateau qui remplit tout l’écran des téléphones longs (plus de bande en haut, cercles bien ronds)."
 }
 ]
