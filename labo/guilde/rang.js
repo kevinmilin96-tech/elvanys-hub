@@ -197,6 +197,7 @@ function annonceRang(t, fort) {
   fileRang.push([t, fort]); if (!annonceEnCours) suiteAnnonce();
 }
 function suiteAnnonce() {
+  if (document.querySelector('#titre:not(.part), #propTuto, #gs-voile')) { annonceEnCours = true; setTimeout(suiteAnnonce, 1200); return; } // 23/11 (B1) : pas par-dessus l'accueil
   const x = fileRang.shift(); if (!x) { annonceEnCours = false; return; } annonceEnCours = true;
   const d = document.createElement('div'); d.className = 'annonce-rang' + (x[1] ? ' fort' : ''); d.textContent = x[0]; document.body.appendChild(d);
   setTimeout(() => d.classList.add('part'), x[1] ? 2600 : 1500); setTimeout(() => { d.remove(); suiteAnnonce(); }, x[1] ? 3000 : 1900);

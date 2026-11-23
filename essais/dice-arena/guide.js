@@ -33,7 +33,10 @@
   }
   window.Guide = {
     vu:k => !!localStorage.getItem('guilde-guide-' + k),
-    lance(k, e, force, apres) { dernier = { k, e }; if (!force && this.vu(k)) return false; if (document.getElementById('guide')) return false; cle = k; etapes = e; n = 0; fini = apres || null; setTimeout(montre, 350); return true; },
+    lance(k, e, force, apres) { dernier = { k, e }; if (!force && this.vu(k)) return false; if (document.getElementById('guide')) return false; cle = k; etapes = e; n = 0;
+      // 23/11 (testeurs simulés, décision B1 de l'utilisateur) : un guide qui s'ouvre tout seul tient en 2 étapes au plus (on saute celles absentes de l'écran) ;
+      // le guide entier reste dans ⚙️ → « 🐱 Le guide de cet écran »
+      if (!force && e.length > 2) { const l = e.filter(x => !x[0] || document.querySelector(x[0])).slice(0, 2); if (l.length) { const d = l[l.length - 1]; l[l.length - 1] = [d[0], d[1] + ' <small style="opacity:.75">(Tout le guide : ⚙️ → 🐱 Le guide de cet écran.)</small>', d[2]]; etapes = l; } } fini = apres || null; setTimeout(montre, 350); return true; },
     suivant() { n++; montre(); },
     passe() { n = etapes.length; montre(); },
     // 15/11 soir (idée notée : « un bouton Aide dans chaque écran ») : revoir le guide de l'écran en cours, depuis le menu ⚙️

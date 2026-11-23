@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261123-072800"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
+<head><meta name="guilde-version" content="20261123-090822"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex">
@@ -8,7 +8,7 @@
 <title>La Guilde des Runes</title>
 <script>
 // Même mécanisme que le Duel : une nouvelle version = rechargement tout seul à l'ouverture (publier.sh change VERSION).
-const VERSION = '20261123-072800';
+const VERSION = '20261123-090822';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-menu-' + v)) { sessionStorage.setItem('recharge-menu-' + v, '1'); location.replace('menu.html?v=' + v); }
@@ -209,13 +209,13 @@ fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.te
 
 <script src="semaine.js?v=910ee6442a"></script>
 <script src="musique.js?v=7c0d58ffd7"></script>
-<script src="rang.js?v=e19ab6f328"></script>
+<script src="rang.js?v=1f7a7b47c7"></script>
 <script src="succes.js?v=d6910350b3"></script>
 <script src="profil.js?v=4a45d06dad"></script>
 <script>window.AMIS_SANS_BOUTON = true; /* 15/11 : un seul bouton en haut à gauche (profil + amis) */</script>
 <script src="amis.js?v=d4158692ce"></script>
 <script src="heros-etoiles.js?v=48da21e34c"></script>
-<script src="donnees.js?v=20261123-072800"></script>
+<script src="donnees.js?v=20261123-090822"></script>
 <script src="menu-envie.js?v=4c5c7862e7"></script>
 <script>
 // ciel étoilé + runes du portail (symboles, pas des lettres), aux couleurs des héros
@@ -501,6 +501,7 @@ function touche(i) {
 // 12/11 : au premier passage, Moustache (ex-Corbin, 13/11) propose le tutoriel (avec « passer »)
 function proposeTuto() {
   if (localStorage.getItem('guilde-tuto') === 'fait' || localStorage.getItem('guilde-tuto-vu')) return;
+  sessionStorage.setItem('guilde-tuto-propose', '1'); // 23/11 (B1) : la seule fenêtre de cette visite (le compte attendra)
   const d = document.createElement('div'); d.id = 'propTuto';
   d.innerHTML = `<div><img src="ui/moustache.webp?v=1" alt="Moustache" style="width:84px;height:84px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 3px #f3c96b, 0 6px 16px #000a"><h3>Miaou ! Première visite ?</h3><p>Moi c’est Moustache, chat d’aventure. Je te montre comment on se bat à la Guilde : <b>un duel guidé de 5 minutes</b> avec Gorm. À la fin, <b>Zéphine</b> rejoint la Guilde.</p>
     <button onclick="location.href='duel.html?tuto=1'">🎓 Faire le tutoriel</button><a href="#" onclick="localStorage.setItem('guilde-tuto-vu','1');this.closest('#propTuto').remove();return false">Passer (je le ferai plus tard depuis l’Arène)</a></div>`;
@@ -662,5 +663,6 @@ function grilleVa(i) {
   location.hash = p.vers || '';
 }
 </script>
+<script src="menu-aide.js?v=76021f11b5"></script>
 </body>
 </html>

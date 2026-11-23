@@ -84,11 +84,18 @@
   // à la 1re ouverture du menu sans compte : créer son compte (pseudo) ou retrouver le sien (code de récupération)
   function proposerCompte(force) {
     if (!force && !/menu\.html$|\/guilde\/?$/.test(location.pathname)) return;
+    // 23/11 (testeurs simulés, B1 : « 3 fenêtres avant de jouer ») : UNE seule fenêtre par visite. Jamais par-dessus l'écran « Toucher pour entrer »
+    // (on attend d'être entré) ; et à la toute première visite, c'est Moustache et le tutoriel : le compte attendra la visite suivante.
+    if (!force) {
+      const t = document.getElementById('titre'); if (t && !t.classList.contains('part')) { setTimeout(() => proposerCompte(), 1500); return; }
+      if (document.getElementById('propTuto') || sessionStorage.getItem('guilde-tuto-propose')) return;
+      if (localStorage.getItem('guilde-tuto') !== 'fait' && !localStorage.getItem('guilde-tuto-vu')) return;
+    }
     if (!force && (sessionStorage.getItem('guilde-sauve-plustard') || Date.now() - (+LS.getItem('guilde-sauve-plustard') || 0) < 3 * 864e5)) return; // 22/11 (testeurs) : « Plus tard » vaut 3 jours, plus seulement la session
     fen(`<h2>☁ Ton compte de la Guilde</h2><p>Pour ne <b>jamais perdre ta progression</b> (Odyssée, héros, cartes…), elle est gardée sur le serveur. Il suffit d’un pseudo.</p>${Object.keys(donnees()).length ? '<p>✅ <b>Ce que tu as déjà joué sur ce téléphone est gardé</b> : ta progression en cours sera rattachée à ton nouveau compte.</p>' : ''}
       <input id="gs-pseudo" maxlength="24" placeholder="Ton pseudo" autocomplete="off" value="${esc(LS.getItem('guilde-pseudo') || '')}">
       <div id="gs-msg"></div><button class="gs-go" id="gs-cree" onclick="GS.creer()">Créer mon compte</button>
-      <button onclick="GS.ecranRetrouver()">J’ai déjà un compte (code de récupération)</button>
+      <button onclick="GS.ecranRetrouver()">J’ai déjà un compte (sur un autre téléphone)</button>
       <button onclick="sessionStorage.setItem('guilde-sauve-plustard','1');try{localStorage.setItem('guilde-sauve-plustard',String(Date.now()))}catch(e){};GS.fermer()">Plus tard</button><p><small>Plus tard : tu peux jouer, et créer ton compte quand tu veux dans ⚙️ Paramètres → ☁ Mon compte ; rien de ce que tu joues d’ici là n’est perdu… tant que ce navigateur n’est pas effacé.</small></p>`, false);
   }
   function montreRecup(code, neuf) {
