@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261123-190653"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
+<head><meta name="guilde-version" content="20261123-190928"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="robots" content="noindex">
@@ -80,6 +80,9 @@
   .mullmain { display:flex; flex-wrap:wrap; justify-content:center; gap:6px; margin:10px 0; } .mullc { position:relative; cursor:pointer; transition:transform .15s; }
   .mullc.rejet { transform:translateY(-8px); } .mullc.rejet::after { content:'↺'; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:2.4em; color:#ff6b6b; text-shadow:0 0 6px #000; background:#0007; border-radius:6px; }
   .fenetre.mullF { background:linear-gradient(transparent 35%, #000b 70%); align-items:flex-end; padding-bottom:calc(64px + env(safe-area-inset-bottom)); }
+  .mullZoom { position:fixed; inset:0; z-index:200; background:#000c; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; animation:mullMonte .2s ease-out; }
+  .mullZoom p { color:#c9c1ea; font-size:.9em; margin:0; }
+  .fenetre.mullF .mullc { -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }
   .fenetre.mullF > div { box-shadow:0 -6px 24px #000c; border:1px solid #f3c96b55; animation:mullMonte .3s ease-out; } @keyframes mullMonte { from { transform:translateY(40px); opacity:0; } }
   .fenetre > div { background:#2a2650; border-radius:16px; padding:14px 16px; max-width:520px; max-height:90vh; overflow:auto; }
   .fenetre h2 { color:var(--or); margin:.1em 0 .4em; font-size:1.2em; }
@@ -770,7 +773,7 @@
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
 // 14/11 : l'Odyssée sans fin a ses propres emplacements (odyssee.js lit SANSFIN)
 const SANSFIN = new URLSearchParams(location.search).get('sansfin') === '1', ROUTE_TITAN = new URLSearchParams(location.search).get('route') === '1', EPREUVE_PAGE = new URLSearchParams(location.search).get('epreuve') === '1', ODY_PAGE = EPREUVE_PAGE ? 'epreuves.html' : 'odyssee.html' + (SANSFIN ? '?sansfin=1' : ROUTE_TITAN ? '?route=1' : '');
-const VERSION = '20261123-190653';
+const VERSION = '20261123-190928';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -2163,13 +2166,32 @@ let mullSel = [];
 const carteMini = (k, w, o = {}) => `<div style="width:${w}px;height:${Math.round(w * 1216 / 864)}px;overflow:visible"><div class="cg-mini" style="transform:scale(${(w / 164).toFixed(4)})">${carteGuilde(k, Object.assign({ w:164 }, o))}</div></div>`;
 function mulligan() {
   if (!S || S.auto || S.fini || !S.mullPossible || S.mullFait || S.deux || S.coop || !S.J.main.length || S.J.tours > 1) return;
-  const J = S.J, carteM = (k, i) => `<div class="mullc${mullSel.includes(i) ? ' rejet' : ''}" onclick="mullToucher(${i})">${typeof CADRES_OK !== 'undefined' && CADRES_OK.includes(CADRE_DE(k)) ? carteMini(k, 78) : `<div class="c ${CARTES[k].t}2" style="position:relative;width:78px;height:110px"><span class="cout">${CARTES[k].c}</span><div class="n">${CARTES[k].n}</div></div>`}</div>`;
-  fenetre(`<h2 style="margin:0 0 .2em;font-size:1.1em">🂠 La partie commence : ta main de départ</h2><p style="margin:.1em 0;font-size:.9em">Touche les cartes que tu veux <b>changer</b> (elles repartent dans le paquet, tu en pioches d’autres), ou garde ta main. Une seule fois.</p>
+  const J = S.J, carteM = (k, i) => `<div class="mullc${mullSel.includes(i) ? ' rejet' : ''}" data-i="${i}" onclick="mullToucher(${i})" oncontextmenu="return false">${typeof CADRES_OK !== 'undefined' && CADRES_OK.includes(CADRE_DE(k)) ? carteMini(k, 78) : `<div class="c ${CARTES[k].t}2" style="position:relative;width:78px;height:110px"><span class="cout">${CARTES[k].c}</span><div class="n">${CARTES[k].n}</div></div>`}</div>`;
+  fenetre(`<h2 style="margin:0 0 .2em;font-size:1.1em">🂠 La partie commence : ta main de départ</h2><p style="margin:.1em 0;font-size:.9em">Touche les cartes que tu veux <b>changer</b> (elles repartent dans le paquet, tu en pioches d’autres), ou garde ta main. Une seule fois. <b>Appui long</b> sur une carte pour la lire en grand.</p>
   <div class="mullmain">${J.main.map(carteM).join('')}</div>
-  <div class="choixh">${mullSel.length ? `<button onclick="mullValide()" style="background:linear-gradient(#f3c96b,#d99a2b);color:#2a1a00;font-weight:bold">↺ Changer ${mullSel.length} carte${mullSel.length > 1 ? 's' : ''}</button>` : ''}<button onclick="mullSel=[];S.mullFait=true;fermer();rendu()">${mullSel.length ? 'Finalement, garder ma main' : 'Garder ma main ✔'}</button></div>`);
-  const f = document.querySelector('#fen .fenetre'); if (f) { f.onclick = null; f.classList.add('mullF'); } // 23/11 (l'utilisateur : « j'ai cru à un tuto, je ne voyais pas le plateau ») : panneau en bas, plateau visible au-dessus
+  <div class="choixh" id="mullBt">${mullBoutons()}</div>`);
+  const f = document.querySelector('#fen .fenetre'); if (f) { f.onclick = null; f.classList.add('mullF'); mullLong(f); } // 23/11 (l'utilisateur : « j'ai cru à un tuto, je ne voyais pas le plateau ») : panneau en bas, plateau visible au-dessus
 }
-function mullToucher(i) { mullSel = mullSel.includes(i) ? mullSel.filter(x => x !== i) : [...mullSel, i]; son('agrandir'); mulligan(); }
+const mullBoutons = () => `${mullSel.length ? `<button onclick="mullValide()" style="background:linear-gradient(#f3c96b,#d99a2b);color:#2a1a00;font-weight:bold">↺ Changer ${mullSel.length} carte${mullSel.length > 1 ? 's' : ''}</button>` : ''}<button onclick="mullSel=[];S.mullFait=true;fermer();rendu()">${mullSel.length ? 'Finalement, garder ma main' : 'Garder ma main ✔'}</button>`;
+// 23/11 (l'utilisateur) : toucher une carte la coche SANS redessiner la fenêtre (plus de cartes qui disparaissent et redescendent)
+function mullToucher(i) {
+  if (mullLu) { mullLu = false; return; } // le doigt se lève après un appui long : ce n'est pas un choix
+  mullSel = mullSel.includes(i) ? mullSel.filter(x => x !== i) : [...mullSel, i]; son('agrandir');
+  document.querySelectorAll('#fen .mullc').forEach(e => e.classList.toggle('rejet', mullSel.includes(+e.dataset.i)));
+  const b = document.getElementById('mullBt'); if (b) b.innerHTML = mullBoutons();
+}
+// appui long sur une carte = la carte en grand par-dessus, tant que le doigt reste (ou jusqu'au toucher suivant)
+let mullLu = false;
+function mullLong(f) {
+  let t = null;
+  f.querySelectorAll('.mullc').forEach(e => {
+    const fin = () => clearTimeout(t);
+    e.addEventListener('pointerdown', () => { t = setTimeout(() => { mullLu = true; const k = S.J.main[+e.dataset.i]; const z = document.createElement('div'); z.className = 'mullZoom';
+      z.innerHTML = `<div>${carteGuilde(k, { w:Math.min(260, innerWidth - 60), cout:coutCarte(S.J, k) })}</div><p>Touche pour fermer</p>`;
+      z.onclick = () => { z.remove(); mullLu = false; }; document.body.appendChild(z); son('agrandir'); }, 420); });
+    ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => e.addEventListener(ev, fin));
+  });
+}
 function mullValide() {
   const n = mullSel.length; echangeMain(S.J, mullSel); mullSel = []; S.mullFait = true; log(`↺ ${S.J.nom} change ${n} carte${n > 1 ? 's' : ''} de sa main de départ.`);
   fermer(); son('melange'); rendu();

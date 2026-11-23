@@ -1,5 +1,9 @@
 [
 {
+"v": "20261123-190928",
+"m": "Main de départ : choisir une carte ne fait plus disparaître les autres, et un appui long montre la carte en grand."
+},
+{
 "v": "20261123-190653",
 "m": "Main de départ : chaque carte montre son effet."
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261122-212350",
 "m": "Le Duel a la nouvelle entrée : un seul portail, puis le mode (contre l'ordinateur, Duel de la semaine, énigme du jour, tutoriel), ton héros, ton deck et ton adversaire. Le Duel d'équipages s'ouvre dans les Expéditions."
-},
-{
-"v": "20261122-212119",
-"m": "La Défense de la porte a la nouvelle entrée : le mode (6 vagues ou sans fin), ton héros, puis le défi du jour, et ▶ Jouer."
 }
 ]
