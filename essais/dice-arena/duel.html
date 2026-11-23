@@ -675,6 +675,16 @@
   /* la main dans sa zone (style posé par mainEnEventail) */
   .plateau.tapis.unique .main { right:auto; bottom:auto; overflow:visible; }
   .plateau.tapis.unique .main .c:not(.vue) { bottom:0; }
+  /* 23/11 : le paquet (dos des cartes) et la défausse, de chaque côté de la main ; un toucher = la liste */
+  .main .tas { position:absolute; bottom:4px; z-index:0; cursor:pointer; border-radius:6px; }
+  .main .tas.paquet { left:0; background:url('decor/crypte-dos.webp?v=1') center/100% 100%; box-shadow:0 2px 6px #000a; }
+  .main .tas.paquet i { position:absolute; inset:0; border-radius:6px; background:url('decor/crypte-dos.webp?v=1') center/100% 100%; transform:translate(-3px,-3px); z-index:-1; filter:brightness(.7); }
+  .main .tas.paquet i + i { transform:translate(-6px,-6px); filter:brightness(.5); }
+  .main .tas.defausse { right:0; filter:saturate(.55) brightness(.8); }
+  .main .tas.paquet.vide { background:none; box-shadow:none; border:1.5px dashed #f3c96b66; }
+  .main .tas.defausse.vide { border:1.5px dashed #f3c96b66; filter:none; }
+  .main .tas b { position:absolute; left:50%; bottom:-6px; transform:translateX(-50%); min-width:18px; padding:0 4px; border-radius:9px; background:#15132b; border:1px solid #f3c96b; color:#f3c96b; font:bold 11px/16px Georgia, serif; text-align:center; z-index:2; }
+  .main .tas.defausse b { filter:none; }
   .plateau.tapis.unique .main .c.vue { width:164px; height:auto; min-height:206px; font-size:.8em; }
   .anneau .fantome { animation:fantome 1.1s ease-in .45s forwards; } @keyframes fantome { to { opacity:0; } }
   .anneau .gagne { animation:gagne 1.2s ease-out forwards; } @keyframes gagne { 0% { opacity:1; } 100% { opacity:0; } }
@@ -1325,14 +1335,23 @@ function raisonCarte(J, k) {
   if (J.pc < cout) return `Il te manque ${cout - J.pc} PC`;
   return 'Impossible pour le moment';
 }
+function tas(J, w, h) {
+  if (!J.deck || !w || !(J.fatigueOK || J.deck.length || (J.defausse || []).length)) return ''; // pas de paquet (énigme…) = rien
+  const d = J.defausse || [], der = d[d.length - 1], ouvre = `onclick="event.stopPropagation();paquetFen(S.J)"`;
+  const paquet = `<div class="tas paquet ${J.deck.length ? '' : 'vide'}" style="width:${w}px;height:${h}px" ${ouvre}>${J.deck.length > 1 ? '<i></i>' : ''}${J.deck.length > 4 ? '<i></i>' : ''}<b>${J.deck.length}</b></div>`;
+  const def = `<div class="tas defausse ${der ? '' : 'vide'}" style="width:${w}px;height:${h}px" ${ouvre}>${der && typeof carteGuilde === 'function' ? carteGuilde(der, { w, entiere:true }) : ''}<b>${d.length}</b></div>`;
+  return paquet + def;
+}
 function mainEnEventail(J) {
-  const n = J.main.length; if (!n) return '<i style="color:#c9c1ea;position:absolute;left:0;right:0;text-align:center;top:60px">Main vide</i>';
+  const n = J.main.length; if (!n) return '<i style="color:#c9c1ea;position:absolute;left:0;right:0;text-align:center;top:60px">Main vide</i>' + tas(J, 52, 74);
   if (carteVue !== null && carteVue >= n) carteVue = null;
   // 11/11 : la main tient DANS sa zone du plateau (ZONE_MAIN, en % du plateau, réglable par la page placer.html) : taille des cartes = hauteur de la zone
   const pl = document.querySelector('.plateau.unique'), PW = pl ? pl.clientWidth : Math.min(innerWidth, 560), PH = pl ? pl.clientHeight : innerHeight - 90;
   const Z = zoneMain(), zw = (Z.x2 - Z.x1) / 100 * PW, zh = (Z.y2 - Z.y1) / 100 * PH;
   const CH = Math.max(60, Math.min(150, zh * .96)), CW = Math.round(CH * .7), FS = (CW / 80 * .5).toFixed(3);
-  const mil = (n - 1) / 2, pas = n > 1 ? Math.min(CW * .82, (zw - CW) / (n - 1)) : 0, ang = n > 1 ? Math.min(4, 14 / (n - 1)) : 0;
+  // 23/11 (décidé au plan du deck le 22/11) : le paquet face cachée à gauche de la main, la défausse à droite ; la main s'étale entre les deux
+  const PW_ = J.deck && (J.fatigueOK || J.deck.length || (J.defausse || []).length) ? Math.round(CW * .62) : 0, zwM = zw - 2 * (PW_ + 6);
+  const mil = (n - 1) / 2, pas = n > 1 ? Math.min(CW * .82, (zwM - CW) / (n - 1)) : 0, ang = n > 1 ? Math.min(4, 14 / (n - 1)) : 0;
   return J.main.map((k, i) => {
     const c = CARTES[k], ok = sel.length && permis(J, k, vals(sel), sel), vue = carteVue === i, d = i - mil;
     const style = vue ? `left:calc(50% - 82px);bottom:${Math.round(zh)}px;z-index:60`
@@ -1340,7 +1359,7 @@ function mainEnEventail(J) {
     const pied = vue ? `<div class="jouer">${ok ? '👆 Touche encore pour la jouer' : raisonCarte(J, k)}</div>` : '';
     if (typeof CADRES_OK !== 'undefined' && CADRES_OK.includes(CADRE_DE(k))) return `<div class="c neuve ${ok ? 'ok' : sel.length ? 'non' : ''} ${vue ? 'vue' : ''}" style="${style}" onclick="toucheCarte(${i})">${vue ? carteGuilde(k, { w:164, cout:coutCarte(J, k), pied:`<div class="cg-pied">${ok ? '👆 Touche encore pour la jouer' : raisonCarte(J, k)}</div>` }) : carteGuilde(k, { w:CW, cout:coutCarte(J, k), entiere:true })}</div>`;
     return `<div class="c ${c.t}2 ${ok ? 'ok' : sel.length ? 'non' : ''} ${vue ? 'vue' : ''}" style="${style}" onclick="toucheCarte(${i})"><span class="cout">${coutCarte(J, k)}</span><div class="n">${c.n}</div><span class="cd">🎲 ${c.txt}</span><div class="dd">${c.d}</div>${pied}</div>`;
-  }).join('');
+  }).join('') + tas(J, PW_, Math.round(CH * .62));
 }
 function toucheCarte(i) {
   if (S.fini || roule) return;
