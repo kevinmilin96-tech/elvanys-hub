@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261123-185020"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
+<head><meta name="guilde-version" content="20261123-190259"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="robots" content="noindex">
@@ -389,7 +389,13 @@
   /* 23/11 (l'utilisateur : « les cercles sont plutôt ovales ») : le plateau peint garde SES proportions (768 × 1376) au lieu d'être étiré sur les téléphones longs ;
      la place en trop va au-dessus, sur un fond de bois sombre */
   .plateau.tapis.unique:not(.scene) { flex:none; width:min(100%, calc((100dvh - 80px) * 768 / 1376)); height:auto; aspect-ratio:768/1376; margin:auto auto 0; }
-  #app:has(> .plateau.unique:not(.scene)) { background:#1a130b; }
+  #app:has(> .plateau.unique:not(.scene)) { background:#1a130b; position:relative; isolation:isolate; overflow:hidden; }
+  /* la bande en trop au-dessus = le bois du plateau, flou et assombri (plus de rectangle noir) */
+  #app:has(> .plateau.unique:not(.scene))::before { content:''; position:absolute; inset:0; z-index:-1; background:url('decor/plateau-duel-definitif.webp?v=1') center top/100% auto no-repeat; filter:blur(10px) brightness(.55); transform:scale(1.15); }
+  #app:has(> .plateau.unique.ile-brulees:not(.scene))::before { background-image:url('decor/plateau-brulees.webp?v=3'); }
+  #app:has(> .plateau.unique.ile-givre:not(.scene))::before { background-image:url('decor/plateau-givre.webp?v=4'); }
+  #app:has(> .plateau.unique.ile-abime:not(.scene))::before { background-image:url('decor/plateau-abime.webp?v=3'); }
+  #app:has(> .plateau.unique.ile-invasion:not(.scene))::before { background-image:url('decor/plateau-invasion.webp?v=1'); }
   .plateau.tapis.unique.scene { background-size:cover; }
   .unique .barre { left:39.5cqw; width:21cqw; height:21cqw; }
   .unique #b-O { top:4.5cqh; } .unique #b-J { top:63.5cqh; }
@@ -680,6 +686,9 @@
   .main .tas.paquet { left:0; background:url('decor/crypte-dos.webp?v=1') center/100% 100%; box-shadow:0 2px 6px #000a; }
   .main .tas.paquet i { position:absolute; inset:0; border-radius:6px; background:url('decor/crypte-dos.webp?v=1') center/100% 100%; transform:translate(-3px,-3px); z-index:-1; filter:brightness(.7); }
   .main .tas.paquet i + i { transform:translate(-6px,-6px); filter:brightness(.5); }
+  .main .tas.paquet em { position:absolute; left:50%; bottom:calc(100% + 4px); transform:translateX(-50%); white-space:nowrap; font:bold 10px/1.15 Georgia, serif; font-style:normal; text-align:center; color:#2a1a00; background:linear-gradient(#f3c96b,#d99a2b); border-radius:8px; padding:3px 6px; box-shadow:0 2px 6px #000a; animation:halo 1s ease-in-out infinite alternate; }
+  /* 23/11 : une petite carte = la grande carte (164 px) réduite d'un bloc : Android ne grossit plus ses lettres (taille minimale) */
+  .cg-mini { width:164px; transform-origin:0 0; pointer-events:none; }
   .main .tas.defausse { right:0; filter:saturate(.55) brightness(.8); }
   .main .tas.paquet.vide { background:none; box-shadow:none; border:1.5px dashed #f3c96b66; }
   .main .tas.defausse.vide { border:1.5px dashed #f3c96b66; filter:none; }
@@ -759,7 +768,7 @@
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
 // 14/11 : l'Odyssée sans fin a ses propres emplacements (odyssee.js lit SANSFIN)
 const SANSFIN = new URLSearchParams(location.search).get('sansfin') === '1', ROUTE_TITAN = new URLSearchParams(location.search).get('route') === '1', EPREUVE_PAGE = new URLSearchParams(location.search).get('epreuve') === '1', ODY_PAGE = EPREUVE_PAGE ? 'epreuves.html' : 'odyssee.html' + (SANSFIN ? '?sansfin=1' : ROUTE_TITAN ? '?route=1' : '');
-const VERSION = '20261123-185020';
+const VERSION = '20261123-190259';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -1337,9 +1346,9 @@ function raisonCarte(J, k) {
 }
 function tas(J, w, h) {
   if (!J.deck || !w || !(J.fatigueOK || J.deck.length || (J.defausse || []).length)) return ''; // pas de paquet (énigme…) = rien
-  const d = J.defausse || [], der = d[d.length - 1], ouvre = `onclick="event.stopPropagation();paquetFen(S.J)"`;
-  const paquet = `<div class="tas paquet ${J.deck.length ? '' : 'vide'}" style="width:${w}px;height:${h}px" ${ouvre}>${J.deck.length > 1 ? '<i></i>' : ''}${J.deck.length > 4 ? '<i></i>' : ''}<b>${J.deck.length}</b></div>`;
-  const def = `<div class="tas defausse ${der ? '' : 'vide'}" style="width:${w}px;height:${h}px" ${ouvre}>${der && typeof carteGuilde === 'function' ? carteGuilde(der, { w, entiere:true }) : ''}<b>${d.length}</b></div>`;
+  const d = J.defausse || [], der = d[d.length - 1], ouvre = `onclick="event.stopPropagation();paquetFen(S.J)"`, mu = J === S.J && mullDispo();
+  const paquet = `<div class="tas paquet ${J.deck.length ? '' : 'vide'}" style="width:${w}px;height:${h}px" ${ouvre}>${J.deck.length > 1 ? '<i></i>' : ''}${J.deck.length > 4 ? '<i></i>' : ''}<b>${J.deck.length}</b>${mu ? '<em>↺ Changer<br>ma main</em>' : ''}</div>`.replace(mu ? ouvre : '§', 'onclick="event.stopPropagation();mulligan()"');
+  const def = `<div class="tas defausse ${der ? '' : 'vide'}" style="width:${w}px;height:${h}px" ${ouvre}>${der && typeof carteGuilde === 'function' ? `<div class="cg-mini" style="transform:scale(${(w / 164).toFixed(4)})">${carteGuilde(der, { w:164 })}</div>` : ''}<b>${d.length}</b></div>`;
   return paquet + def;
 }
 function mainEnEventail(J) {
@@ -1357,7 +1366,7 @@ function mainEnEventail(J) {
     const style = vue ? `left:calc(50% - 82px);bottom:${Math.round(zh)}px;z-index:60`
       : `left:calc(50% - ${CW / 2}px + ${d * pas}px);width:${CW}px;height:${CH}px;font-size:${FS}em;transform:translateY(${Math.round(d * d * 1.2) - (ok ? 8 : 0)}px) rotate(${d * ang}deg);z-index:${ok ? 40 + i : i + 1}`;
     const pied = vue ? `<div class="jouer">${ok ? '👆 Touche encore pour la jouer' : raisonCarte(J, k)}</div>` : '';
-    if (typeof CADRES_OK !== 'undefined' && CADRES_OK.includes(CADRE_DE(k))) return `<div class="c neuve ${ok ? 'ok' : sel.length ? 'non' : ''} ${vue ? 'vue' : ''}" style="${style}" onclick="toucheCarte(${i})">${vue ? carteGuilde(k, { w:164, cout:coutCarte(J, k), pied:`<div class="cg-pied">${ok ? '👆 Touche encore pour la jouer' : raisonCarte(J, k)}</div>` }) : carteGuilde(k, { w:CW, cout:coutCarte(J, k), entiere:true })}</div>`;
+    if (typeof CADRES_OK !== 'undefined' && CADRES_OK.includes(CADRE_DE(k))) return `<div class="c neuve ${ok ? 'ok' : sel.length ? 'non' : ''} ${vue ? 'vue' : ''}" style="${style}" onclick="toucheCarte(${i})">${vue ? carteGuilde(k, { w:164, cout:coutCarte(J, k), pied:`<div class="cg-pied">${ok ? '👆 Touche encore pour la jouer' : raisonCarte(J, k)}</div>` }) : `<div class="cg-mini" style="transform:scale(${(CW / 164).toFixed(4)})">${carteGuilde(k, { w:164, cout:coutCarte(J, k) })}</div>`}</div>`;
     return `<div class="c ${c.t}2 ${ok ? 'ok' : sel.length ? 'non' : ''} ${vue ? 'vue' : ''}" style="${style}" onclick="toucheCarte(${i})"><span class="cout">${coutCarte(J, k)}</span><div class="n">${c.n}</div><span class="cd">🎲 ${c.txt}</span><div class="dd">${c.d}</div>${pied}</div>`;
   }).join('') + tas(J, PW_, Math.round(CH * .62));
 }
@@ -2124,14 +2133,17 @@ function raison(quoi) {
   const def = defDe(J, quoi); return def ? `${des} : il faut ${def.txt}.` : '';
 }
 function fenetre(html) { document.getElementById('fen').innerHTML = `<div class="fenetre" onclick="if(event.target===this)fermer()"><div>${html}</div></div>`; }
-function fermer() { document.getElementById('fen').innerHTML = ''; }
+function fermer() { document.getElementById('fen').innerHTML = '';
+  // 23/11 (l'utilisateur : « j'ai eu le message du mulligan mais je n'ai pas pu le faire ») : la main de départ se propose dès que le rappel est fermé, PAR N'IMPORTE QUEL MOYEN (croix comprise)
+  if (typeof S !== 'undefined' && S && S.mullApres) { S.mullApres = false; setTimeout(() => { if (!document.getElementById('fen').innerHTML) mulligan(); }, 60); } }
+const mullDispo = () => typeof S !== 'undefined' && S && !S.auto && !S.fini && S.mullPossible && !S.mullFait && !S.deux && !S.coop && S.J.main.length && S.J.tours <= 1;
 function choix(titre, options, cb) {
   window._cb = cb;
   fenetre(`<h2>${titre}</h2><div class="grille6">${options.map((o, i) => `<button onclick="fermer();_cb(${i})">${o}</button>`).join('')}</div>`);
 }
 // 14/11 (l'utilisateur : « le comment on joue prend trop de place ») : au début d'une partie, un RAPPEL court ; le ❓ ouvre les règles complètes
 function rappelDebut() {
-  const h = hDe(S.J);
+  const h = hDe(S.J); if (mullDispo()) S.mullApres = true;
   fenetre(`<h2>⚔ ${S.J.nom || h.nom} contre ${S.O.nom}</h2>
   <p style="margin:.2em 0 .5em">Le premier à 0 ❤ perd. <b>Ton tour en 3 gestes :</b></p>
   <ol style="margin:0 0 .4em;padding-left:1.3em;line-height:1.45">

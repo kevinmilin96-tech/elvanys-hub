@@ -1,5 +1,9 @@
 [
 {
+"v": "20261123-190259",
+"m": "Combat : la main de départ se propose toujours (et « ↺ Changer ma main » sur ton paquet au 1er tour), le texte des petites cartes n’est plus déformé, plus de bande noire en haut."
+},
+{
 "v": "20261123-185020",
 "m": "Combat : ton paquet (cartes de dos, avec le nombre restant) à gauche de ta main, ta défausse à droite ; touche-les pour voir la liste."
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261122-211626",
 "m": "L'Odyssée a la même nouvelle entrée que la Crypte : le mode (île du jour, Saison 1, sans fin, Route du Titan) avec tes parties en cours, ton héros, puis l'île, le voyage, l'Ascension et l'emplacement."
-},
-{
-"v": "20261122-211122",
-"m": "Crypte : la partie en cours est signalée par une petite pastille « ▶ En cours » en bas de l'image du mode."
 }
 ]
