@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261123-190415"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
+<head><meta name="guilde-version" content="20261123-190653"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="robots" content="noindex">
@@ -770,7 +770,7 @@
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
 // 14/11 : l'Odyssée sans fin a ses propres emplacements (odyssee.js lit SANSFIN)
 const SANSFIN = new URLSearchParams(location.search).get('sansfin') === '1', ROUTE_TITAN = new URLSearchParams(location.search).get('route') === '1', EPREUVE_PAGE = new URLSearchParams(location.search).get('epreuve') === '1', ODY_PAGE = EPREUVE_PAGE ? 'epreuves.html' : 'odyssee.html' + (SANSFIN ? '?sansfin=1' : ROUTE_TITAN ? '?route=1' : '');
-const VERSION = '20261123-190415';
+const VERSION = '20261123-190653';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -2159,9 +2159,11 @@ function rappelDebut() {
 // 22/11 (décision de l'utilisateur) : le MULLIGAN. Au début du combat, on touche les cartes de sa main de départ qu'on veut changer ;
 // elles repartent dans le paquet (mélangé) et on en repioche autant. Une seule fois. Pas en coop, à deux sur un téléphone ni en ligne.
 let mullSel = [];
+// 23/11 : une petite carte complète (nom, dés, effet) = la grande carte réduite d'un bloc, dans une boîte de sa vraie taille
+const carteMini = (k, w, o = {}) => `<div style="width:${w}px;height:${Math.round(w * 1216 / 864)}px;overflow:visible"><div class="cg-mini" style="transform:scale(${(w / 164).toFixed(4)})">${carteGuilde(k, Object.assign({ w:164 }, o))}</div></div>`;
 function mulligan() {
   if (!S || S.auto || S.fini || !S.mullPossible || S.mullFait || S.deux || S.coop || !S.J.main.length || S.J.tours > 1) return;
-  const J = S.J, carteM = (k, i) => `<div class="mullc${mullSel.includes(i) ? ' rejet' : ''}" onclick="mullToucher(${i})">${typeof CADRES_OK !== 'undefined' && CADRES_OK.includes(CADRE_DE(k)) ? carteGuilde(k, { w:78 }) : `<div class="c ${CARTES[k].t}2" style="position:relative;width:78px;height:110px"><span class="cout">${CARTES[k].c}</span><div class="n">${CARTES[k].n}</div></div>`}</div>`;
+  const J = S.J, carteM = (k, i) => `<div class="mullc${mullSel.includes(i) ? ' rejet' : ''}" onclick="mullToucher(${i})">${typeof CADRES_OK !== 'undefined' && CADRES_OK.includes(CADRE_DE(k)) ? carteMini(k, 78) : `<div class="c ${CARTES[k].t}2" style="position:relative;width:78px;height:110px"><span class="cout">${CARTES[k].c}</span><div class="n">${CARTES[k].n}</div></div>`}</div>`;
   fenetre(`<h2 style="margin:0 0 .2em;font-size:1.1em">🂠 La partie commence : ta main de départ</h2><p style="margin:.1em 0;font-size:.9em">Touche les cartes que tu veux <b>changer</b> (elles repartent dans le paquet, tu en pioches d’autres), ou garde ta main. Une seule fois.</p>
   <div class="mullmain">${J.main.map(carteM).join('')}</div>
   <div class="choixh">${mullSel.length ? `<button onclick="mullValide()" style="background:linear-gradient(#f3c96b,#d99a2b);color:#2a1a00;font-weight:bold">↺ Changer ${mullSel.length} carte${mullSel.length > 1 ? 's' : ''}</button>` : ''}<button onclick="mullSel=[];S.mullFait=true;fermer();rendu()">${mullSel.length ? 'Finalement, garder ma main' : 'Garder ma main ✔'}</button></div>`);
