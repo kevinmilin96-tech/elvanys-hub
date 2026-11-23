@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261123-212717"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
+<head><meta name="guilde-version" content="20261123-212915"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="robots" content="noindex">
@@ -374,7 +374,7 @@
   .tapis .u .av { left:-.6cqw; right:-.6cqw; }
   .tapis .u b { overflow-wrap:normal; hyphens:manual; word-break:normal; } /* 14/11 : plus de « Tam-bour » */
   .tapis .u b.long { font-size:.85em; overflow-wrap:anywhere; } .tapis .u b.tlong { font-size:.72em; } /* 21/11 : « Homoncule » (9 lettres) dépassait */
-  .u .av span.n2 { font-size:.72em; letter-spacing:-.5px; } /* 14/11 : deux chiffres (12) dans la pastille */
+  .u .av span { white-space:nowrap; } .u .av span.n2 { font-size:.66em; letter-spacing:-.6px; } /* 23/11 (l'utilisateur) : « ❤ 10 » sur une ligne, jamais le cœur au-dessus du chiffre */ /* 14/11 : deux chiffres (12) dans la pastille */
   /* deux protections, deux badges : 🛡 Garde temporaire (pointillés) · 🛡 Bouclier permanent (plein) */
   .bdg { position:absolute; z-index:4; font-weight:bold; color:#fff; border-radius:12px; padding:0 7px; font-size:.78em; box-shadow:0 2px 6px #000a; white-space:nowrap; }
   .bdg[hidden] { display:none; }
@@ -784,7 +784,7 @@
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
 // 14/11 : l'Odyssée sans fin a ses propres emplacements (odyssee.js lit SANSFIN)
 const SANSFIN = new URLSearchParams(location.search).get('sansfin') === '1', ROUTE_TITAN = new URLSearchParams(location.search).get('route') === '1', EPREUVE_PAGE = new URLSearchParams(location.search).get('epreuve') === '1', ODY_PAGE = EPREUVE_PAGE ? 'epreuves.html' : 'odyssee.html' + (SANSFIN ? '?sansfin=1' : ROUTE_TITAN ? '?route=1' : '');
-const VERSION = '20261123-212717';
+const VERSION = '20261123-212915';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }

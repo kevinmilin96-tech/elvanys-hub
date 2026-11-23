@@ -1,5 +1,9 @@
 [
 {
+"v": "20261123-212915",
+"m": "Combat : la vie et l’attaque à deux chiffres des créatures restent bien rangées dans leur pastille."
+},
+{
 "v": "20261123-212717",
 "m": "Combat : quand tu choisis des dés, la barre du bas montre Annuler et Relancer en entier."
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261123-191519",
 "m": "Combat : garde le doigt sur une carte (ta main, ta défausse, ta main de départ) pour la voir en grand ; le toucher simple ne change pas."
-},
-{
-"v": "20261123-190928",
-"m": "Main de départ : choisir une carte ne fait plus disparaître les autres, et un appui long montre la carte en grand."
 }
 ]
