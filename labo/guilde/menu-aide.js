@@ -3,7 +3,7 @@
 (function () {
   if (typeof car === 'undefined' || !car) return;
   const st = document.createElement('style');
-  st.textContent = `.car-fl { position:fixed; z-index:8; width:40px; height:64px; border:0; border-radius:14px; background:#15132bb8; color:#f3c96b; font:bold 34px/64px Georgia, serif; padding:0; cursor:pointer; box-shadow:0 0 0 1px #f3c96b55, 0 4px 14px #0008; transition:opacity .25s; }
+  st.textContent = `.car-fl { position:fixed; z-index:8; width:40px; height:64px; border:0; border-radius:14px; background:#15132bb8; color:#f3c96b; font:bold 30px/64px Georgia, serif; padding:0; cursor:pointer; box-shadow:0 0 0 1px #f3c96b55, 0 4px 14px #0008; transition:opacity .25s; }
   .car-fl.non { opacity:0; pointer-events:none; }
   .car-fl:active { transform:scale(.92); }
   #car-main { position:fixed; z-index:9; font-size:44px; pointer-events:none; filter:drop-shadow(0 3px 6px #000c); animation:carGlisse 2.2s ease-in-out infinite; }
@@ -25,7 +25,13 @@
     if (!vu) { if (main) main.style.display = 'none'; return; }
     const y = r.top + r.height / 2 - 32, el = car.children[c], er = el ? el.getBoundingClientRect() : r;
     g.style.top = d.style.top = y + 'px';
-    g.style.left = Math.max(4, er.left - 46) + 'px'; d.style.left = Math.min(innerWidth - 44, er.right + 6) + 'px';
+    // 23/11 (retour de l'utilisateur) : chaque flèche se pose DANS L'ESPACE entre le portail du centre et son voisin, sans toucher ni l'un ni l'autre
+    const bord = 0.035 * er.width, vg = car.children[c - 1], vd = car.children[c + 1];
+    const gG = vg ? vg.getBoundingClientRect().right - bord : 0, gD = vd ? vd.getBoundingClientRect().left + bord : innerWidth;
+    const aG = er.left + bord, aD = er.right - bord;
+    const lg = Math.max(22, Math.min(34, aG - gG - 6)), ld = Math.max(22, Math.min(34, gD - aD - 6));
+    g.style.width = lg + 'px'; d.style.width = ld + 'px';
+    g.style.left = Math.max(2, (gG + aG) / 2 - lg / 2) + 'px'; d.style.left = Math.min(innerWidth - ld - 2, (aD + gD) / 2 - ld / 2) + 'px';
     g.classList.toggle('non', c <= 0); d.classList.toggle('non', c >= car.children.length - 1);
     if (!dejaGlisse()) {
       if (!main) { main = document.createElement('div'); main.id = 'car-main'; main.textContent = '👆'; document.body.appendChild(main); }

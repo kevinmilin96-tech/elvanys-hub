@@ -1,5 +1,9 @@
 [
 {
+"v": "20261123-183312",
+"m": "Les flèches ‹ › du menu se posent maintenant entre les portails, sans les cacher."
+},
+{
 "v": "20261123-095111",
 "m": "Nouveau : les flashs du jour ! Une Crypte et une Expédition en 3 minutes, les mêmes pour tous. Ton premier essai compte (étoiles, XP, or), ensuite rejoue pour le plaisir. Dans « Aujourd’hui » → ⚡ Rapide."
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261122-201024",
 "m": "Jouer vite : la Tour et la Chasse au boss réunies dans le portail « Les épreuves »"
-},
-{
-"v": "20261122-200752",
-"m": "Quêtes du jour : des gestes simples (passer à la Guilde, ramasser le butin, envoyer un cœur…), et toucher une quête t’emmène au bon endroit"
 }
 ]
