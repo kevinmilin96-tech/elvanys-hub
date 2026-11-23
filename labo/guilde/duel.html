@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261123-205525"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
+<head><meta name="guilde-version" content="20261123-210749"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="robots" content="noindex">
@@ -780,7 +780,7 @@
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
 // 14/11 : l'Odyssée sans fin a ses propres emplacements (odyssee.js lit SANSFIN)
 const SANSFIN = new URLSearchParams(location.search).get('sansfin') === '1', ROUTE_TITAN = new URLSearchParams(location.search).get('route') === '1', EPREUVE_PAGE = new URLSearchParams(location.search).get('epreuve') === '1', ODY_PAGE = EPREUVE_PAGE ? 'epreuves.html' : 'odyssee.html' + (SANSFIN ? '?sansfin=1' : ROUTE_TITAN ? '?route=1' : '');
-const VERSION = '20261123-205525';
+const VERSION = '20261123-210749';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -2376,6 +2376,8 @@ const PLATEAUX_ILE = { brulees:1, givre:1, abime:1, invasion:1 }; // îles dont 
 // 14/11 : l'interface de chaque plateau d'île est PLACÉE PAR L'UTILISATEUR (placer.html?plateau=<île> → « PLACEMENT <ÎLE> {…} »), recopiée ici telle quelle.
 // Tant qu'une île n'a pas son placement, c'est celui du Duel qui sert. Le CSS est fabriqué à partir de ces chiffres (cssPlacement).
 const PLACEMENTS_ILE = {
+  // PLACEMENT LONG-INVASION de l'utilisateur (23/11 ~21 h 07), recopié tel quel (sans les anciens effet_*)
+  longinvasion:{"taille_medaillon":11.2,"taille_portrait":16.9,"frappe":[10.55,35.19],"technique":[10.61,40.68],"garde":[10.58,46],"pouvoir":[10.68,51.39],"transmu":[10.68,56.73],"equipe":[10.74,62.17],"de_premier":[89.5,38.75],"de_dernier":[89.5,57.57],"portrait_haut":[49.98,22.78],"portrait_bas":[50.16,72.13],"coeur_haut":[15.97,24.03],"bouclier_haut":[28.07,23.47],"etiquettes_haut":[79.64,24.35],"coeur_bas":[14.42,70.38],"bouclier_bas":[27.62,69.69],"etiquettes_bas":[81.1,71.03],"main_haut_gauche":[31.56,79.71],"main_bas_droit":[70.75,87.2],"tailles":{"effets_haut":58,"de_premier":80,"de_dernier":80,"cadre_haut":94,"anneau_haut":84,"portrait_haut":86,"effets_bas":58,"cadre_bas":92,"anneau_bas":84,"portrait_bas":88,"transmu":96,"equipe":96,"pouvoir":96,"garde":96,"technique":96,"frappe":96},"champ_haut_gauche":[19.35,31.91],"champ_bas_droit":[81.25,64.89],"anneau_haut":[50.07,22.78],"anneau_bas":[50.18,72.17],"cadre_haut":[50.15,23.04],"cadre_bas":[50.14,72.31],"pc_haut":[16.09,27.38],"pc_bas":[14.37,73.71],"paquet":[26.52,83.17],"defausse":[75.58,82.55],"garde_haut":[28.17,27.08],"garde_bas":[27.76,73.29],"effets_haut":[79.9,27.1],"effets_bas":[79.77,73.27]},
   // PLACEMENT LONG-ABIME de l'utilisateur (23/11 ~20 h 54), recopié tel quel (sans les anciens effet_*)
   longabime:{"taille_medaillon":10.6,"taille_portrait":16.9,"frappe":[11.67,32.96],"technique":[11.44,38.36],"garde":[11.57,43.75],"pouvoir":[11.57,49.19],"transmu":[11.74,54.59],"equipe":[11.64,60.01],"de_premier":[89.19,36.65],"de_dernier":[89.19,57.25],"portrait_haut":[50.08,21.03],"portrait_bas":[49.89,69.54],"coeur_haut":[14.41,22.66],"bouclier_haut":[26.85,22.25],"etiquettes_haut":[81.76,22.73],"coeur_bas":[15.04,67.72],"bouclier_bas":[26.95,67.47],"etiquettes_bas":[80.44,67.44],"main_haut_gauche":[31.6,75.21],"main_bas_droit":[71.19,86.35],"tailles":{"effets_bas":52,"bouclier_bas":94,"garde_bas":94,"de_dernier":88,"de_premier":96,"effets_haut":58,"cadre_haut":110,"portrait_haut":104,"cadre_bas":104,"anneau_bas":96},"champ_haut_gauche":[20.05,30.52],"champ_bas_droit":[79.72,62.2],"anneau_haut":[50.17,21.08],"anneau_bas":[49.78,69.57],"cadre_haut":[50.25,21.49],"cadre_bas":[49.95,69.84],"pc_haut":[14.37,26.06],"pc_bas":[14.99,71.33],"paquet":[26.93,78.78],"defausse":[75.88,78.96],"garde_haut":[26.78,25.78],"garde_bas":[26.8,70.71],"effets_haut":[79.62,25.48],"effets_bas":[80.66,70.59]},
   // PLACEMENT LONG-DUEL de l'utilisateur (23/11 ~20 h 48), recopié tel quel (sans les anciens effet_*)
