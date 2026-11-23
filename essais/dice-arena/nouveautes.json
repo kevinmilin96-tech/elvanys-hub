@@ -1,5 +1,9 @@
 [
 {
+"v": "20261123-204839",
+"m": "Duel : le cœur et les PC chacun à leur place."
+},
+{
 "v": "20261123-204318",
 "m": "Combat : les cœurs de vie sont exactement à leur place sur les nouveaux plateaux."
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261123-183648",
 "m": "Combat : les portraits sont bien ronds (le plateau n’est plus étiré sur les longs téléphones) et le nom des cartes de ta main reste dans la carte."
-},
-{
-"v": "20261123-183312",
-"m": "Les flèches ‹ › du menu se posent maintenant entre les portails, sans les cacher."
 }
 ]
