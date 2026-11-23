@@ -1,5 +1,9 @@
 [
 {
+"v": "20261123-184136",
+"m": "Le choix du mode ne défile plus quand tout tient sur l’écran."
+},
+{
 "v": "20261123-183648",
 "m": "Combat : les portraits sont bien ronds (le plateau n’est plus étiré sur les longs téléphones) et le nom des cartes de ta main reste dans la carte."
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261122-202657",
 "m": "La Crypte et la Descente sont séparées : la Descente s’ouvre par son portail dans « Partir à l’aventure »"
-},
-{
-"v": "20261122-202126",
-"m": "Crypte du jour : le Gardien a maintenant ses 3 phases"
 }
 ]
