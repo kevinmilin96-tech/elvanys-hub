@@ -41,6 +41,7 @@
   .el.effGr::before { top:0; }
   .tasP { width:9cqw; height:12.7cqw; border-radius:1cqw; background:url('decor/crypte-dos.webp?v=1') center/100% 100%; box-shadow:-.6cqw -.6cqw 0 #2a1f4a, 0 1cqw 2cqw #000a; } .tasP b { position:absolute; left:50%; bottom:-1.6cqw; transform:translateX(-50%); font:bold 2.4cqw Georgia; background:#15132b; color:#f3c96b; border:1px solid #f3c96b; border-radius:2cqw; padding:0 1cqw; }
   .tasP.defP { background:none; box-shadow:none; border:2px dashed #f3c96b99; }
+  .pcP { padding:.3cqw 1cqw; font:bold 4.2cqw Georgia; color:#fff; text-shadow:0 1px 2px #000; white-space:nowrap; } .pcP small { font-size:2.6cqw; color:#bfe3ff; }
   .bouc.gardeP { background-image:url('ui/equip/icone-garde.webp?v=1'); } /* 14/11 nuit : la Garde (temporaire) a sa place à elle */
 </style>
 </head>
@@ -84,12 +85,12 @@ const ELEMENTS = [
   ['pouvoir', 'med', 'ui/pouvoir.webp?v=2'], ['transmu', 'med', 'ui/transmu.webp?v=2'], ['equipe', 'med', 'ui/equipe.webp?v=2'],
   ['de_premier', 'de'], ['de_dernier', 'de'],
   ['portrait_haut', 'por', 'portraits/maelle.webp'], ['portrait_bas', 'por', 'portraits/zephine.webp'],
-  ['coeur_haut', 'coeur', '', '20'], ['bouclier_haut', 'bouc', '', '6'], ['garde_haut', 'bouc gardeP', '', '4'], ['etiquettes_haut', 'etq', '', '🔥 Braises 0/3<br>🂠 5 en main'],
+  ['coeur_haut', 'coeur', '', '20'], ['pc_haut', 'pcP', '', '💎 4 <small>PC</small>'], ['bouclier_haut', 'bouc', '', '6'], ['garde_haut', 'bouc gardeP', '', '4'], ['etiquettes_haut', 'etq', '', '🔥 Braises 0/3<br>🂠 5 en main'],
   ['main_haut_gauche', 'coin', '', '◤'], ['main_bas_droit', 'coin', '', '◢'],
   // 23/11 : le paquet (dos des cartes) et la défausse, chacun à sa place
   ['paquet', 'tasP', '', '<b>16</b>'], ['defausse', 'tasP defP', '', '<b>0</b>'],
   ...(PLATEAU || LONG ? [['champ_haut_gauche', 'coin', '', '◸'], ['champ_bas_droit', 'coin', '', '◿']] : []),
-  ['coeur_bas', 'coeur', '', '30'], ['bouclier_bas', 'bouc', '', '6'], ['garde_bas', 'bouc gardeP', '', '4'], ['etiquettes_bas', 'etq', '', '🂠 4 en main'],
+  ['coeur_bas', 'coeur', '', '30'], ['pc_bas', 'pcP', '', '💎 2 <small>PC</small>'], ['bouclier_bas', 'bouc', '', '6'], ['garde_bas', 'bouc gardeP', '', '4'], ['etiquettes_bas', 'etq', '', '🂠 4 en main'],
   // 14/11 nuit : les effets, un par un (6 par joueur) : chacun s'affiche « icône + nom » à sa place
   // 23/11 : les effets = UNE grille de 6 pastilles par joueur (icône + chiffre), placée d'un bloc (son point rouge = le milieu de son bord haut)
   ['effets_haut', 'effGr', '', GRILLE_EFF], ['effets_bas', 'effGr', '', GRILLE_EFF],
@@ -109,6 +110,7 @@ function dessine() {
   if (!R.cadre_haut) R.cadre_haut = [...R.portrait_haut]; if (!R.cadre_bas) R.cadre_bas = [...R.portrait_bas];
   if ((PLATEAU || LONG) && !R.champ_haut_gauche) { R.champ_haut_gauche = [19, 22]; R.champ_bas_droit = [81, 67]; }
   if (!R.main_haut_gauche) { R.main_haut_gauche = [25, 83.5]; R.main_bas_droit = [82, 97.5]; }
+  for (const c of ['haut', 'bas']) if (!R['pc_' + c] && R['coeur_' + c]) R['pc_' + c] = [R['coeur_' + c][0], +(R['coeur_' + c][1] + 3.5).toFixed(2)]; // 23/11 : les PC, sous le cœur au départ
   if (!R.paquet) { const a = R.main_haut_gauche, b = R.main_bas_droit, ym = +((a[1] + b[1]) / 2).toFixed(2); R.paquet = [+(a[0] + 4).toFixed(2), ym]; R.defausse = [+(b[0] - 4).toFixed(2), ym]; }
   for (const c of ['haut', 'bas']) if (!R['garde_' + c] && R['bouclier_' + c]) R['garde_' + c] = [+(R['bouclier_' + c][0] - 8).toFixed(2), R['bouclier_' + c][1]];
   // places des effets par défaut : sous (en haut) ou au-dessus (en bas) du cadre des étiquettes, sur deux colonnes
@@ -127,7 +129,7 @@ function dessine() {
   tm.value = R.taille_medaillon; vm.textContent = R.taille_medaillon; tp.value = R.taille_portrait; vp.textContent = R.taille_portrait;
 }
 let cour = null, choisi = null;
-const NOMS = { paquet:'Paquet (cartes de dos)', defausse:'Défausse', effets_haut:'Effets du haut (grille de pastilles)', effets_bas:'Effets du bas (grille de pastilles)', garde_haut:'Garde du haut (bouclier temporaire, bulle bleue)', garde_bas:'Garde du bas (bouclier temporaire, bulle bleue)', ...Object.fromEntries(['haut', 'bas'].flatMap(c => [1, 2, 3, 4, 5, 6].map(i => [`effet_${c}_${i}`, `effet ${i} du ${c}`]))), anneau_haut:'anneaux vie + Ultime du haut', anneau_bas:'anneaux vie + Ultime du bas', cadre_haut:'cadre du portrait du haut', cadre_bas:'cadre du portrait du bas', champ_haut_gauche:'coin haut gauche de la zone centrale', champ_bas_droit:'coin bas droit de la zone centrale', frappe:'Frappe', technique:'Technique', garde:'Garde', pouvoir:'Pouvoir', transmu:'Transmuter', equipe:'Équipe', de_premier:'1er dé', de_dernier:'dernier dé', portrait_haut:'portrait du haut', portrait_bas:'portrait du bas', coeur_haut:'cœur du haut', bouclier_haut:'Bouclier du haut (permanent, écu doré)', etiquettes_haut:'étiquettes du haut', coeur_bas:'cœur du bas', bouclier_bas:'Bouclier du bas (permanent, écu doré)', etiquettes_bas:'étiquettes du bas', main_haut_gauche:'coin haut-gauche des cartes', main_bas_droit:'coin bas-droit des cartes' };
+const NOMS = { pc_haut:'PC du haut (points de compétence)', pc_bas:'PC du bas (points de compétence)', paquet:'Paquet (cartes de dos)', defausse:'Défausse', effets_haut:'Effets du haut (grille de pastilles)', effets_bas:'Effets du bas (grille de pastilles)', garde_haut:'Garde du haut (bouclier temporaire, bulle bleue)', garde_bas:'Garde du bas (bouclier temporaire, bulle bleue)', ...Object.fromEntries(['haut', 'bas'].flatMap(c => [1, 2, 3, 4, 5, 6].map(i => [`effet_${c}_${i}`, `effet ${i} du ${c}`]))), anneau_haut:'anneaux vie + Ultime du haut', anneau_bas:'anneaux vie + Ultime du bas', cadre_haut:'cadre du portrait du haut', cadre_bas:'cadre du portrait du bas', champ_haut_gauche:'coin haut gauche de la zone centrale', champ_bas_droit:'coin bas droit de la zone centrale', frappe:'Frappe', technique:'Technique', garde:'Garde', pouvoir:'Pouvoir', transmu:'Transmuter', equipe:'Équipe', de_premier:'1er dé', de_dernier:'dernier dé', portrait_haut:'portrait du haut', portrait_bas:'portrait du bas', coeur_haut:'cœur du haut', bouclier_haut:'Bouclier du haut (permanent, écu doré)', etiquettes_haut:'étiquettes du haut', coeur_bas:'cœur du bas', bouclier_bas:'Bouclier du bas (permanent, écu doré)', etiquettes_bas:'étiquettes du bas', main_haut_gauche:'coin haut-gauche des cartes', main_bas_droit:'coin bas-droit des cartes' };
 function choisir(e) { document.querySelectorAll('.el.choisi').forEach(x => x.classList.remove('choisi')); choisi = e; e.classList.add('choisi'); choix.textContent = `Choisi : ${NOMS[e.dataset.k]} (${R[e.dataset.k].join(' ; ')}) · taille ${(R.tailles || {})[e.dataset.k] || 100} %`; }
 // flèches : 0,1 % de l'image par toucher
 // taille propre à l'élément choisi (en % de sa taille de départ), gardée dans R.tailles

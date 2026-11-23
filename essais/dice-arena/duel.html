@@ -2432,11 +2432,13 @@ function recaleCoeurs() {
   const pl = document.querySelector('.plateau.unique'), k = typeof plateauIle === 'function' && plateauIle(); if (!pl || !k || !k.startsWith('long')) return;
   const R = PLACEMENTS_ILE[k], P = pl.getBoundingClientRect();
   for (const [id, c] of [['b-O', 'haut'], ['b-J', 'bas']]) {
-    const e = pl.querySelector(`#${id} .pastilles [data-k="pv"]`), v = R['coeur_' + c]; if (!e || !v) continue;
+    for (const [sel, cle] of [['[data-k="pv"]', 'coeur_'], ['[data-k="pc"]', 'pc_']]) { // 23/11 : les PC aussi, s'ils ont été placés
+    const e = pl.querySelector(`#${id} .pastilles ${sel}`), v = R[cle + c]; if (!e || !v) continue;
+    if (cle === 'pc_') { const t = ((R.tailles || {})[cle + c] || 100) / 100; e.style.scale = t; }
     e.style.translate = '0px 0px'; const r = e.getBoundingClientRect(), dx = P.left + P.width * v[0] / 100 - (r.left + r.width / 2), dy = P.top + P.height * v[1] / 100 - (r.top + r.height / 2);
     const own = parseFloat(getComputedStyle(e).scale) || 1, sc = r.width / (e.offsetWidth || 1) / own || 1; // le décalage subit l'agrandissement des parents, pas le sien
     e.style.translate = `${(dx / sc).toFixed(1)}px ${(dy / sc).toFixed(1)}px`;
-  }
+  } }
 }
 if (typeof document !== 'undefined') { let t = null; new MutationObserver(() => { cancelAnimationFrame(t); t = requestAnimationFrame(recaleCoeurs); }).observe(document.documentElement, { childList:true, subtree:true }); addEventListener('resize', () => requestAnimationFrame(recaleCoeurs)); }
 // 23/11 : chaque plateau LONG placé (688 × 1536) prend toute la largeur ; sur un écran plus court, on perd au plus 18 % de sa hauteur (le décor), jamais l'interface
