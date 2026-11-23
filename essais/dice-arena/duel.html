@@ -733,7 +733,7 @@
   .unique #b-J .bdg.bg:not([hidden]) ~ .bdg.bb, .unique #b-O .bdg.bg:not([hidden]) ~ .bdg.bb { transform:translateX(8.5cqw); }
   .effets { position:absolute; inset:0; pointer-events:none; z-index:5; } .effets .effet { position:absolute; transform:translate(-50%, -50%); pointer-events:auto; white-space:nowrap; font:bold 2.4cqw Georgia, serif; color:#f6e7c1; text-shadow:0 1px 2px #000; background:#15102aea; border:1px solid #f3c96b88; border-radius:8px; padding:.3cqw 1.2cqw; box-shadow:0 2px 6px #000a; }
   /* 23/11 : la grille des effets (3 × 2 pastilles rondes), centrée sur sa place */
-  .effets .effGr { position:absolute; transform-origin:50% 0; display:grid; grid-template-columns:repeat(3, 6.4cqw); gap:.9cqw; pointer-events:auto; }
+  .effets .effGr { position:absolute; transform-origin:50% 0; display:grid; grid-auto-flow:column; grid-auto-columns:6.4cqw; gap:.9cqw; pointer-events:auto; }
   .effets .effet.pastE { position:relative; transform:none; width:6.4cqw; height:6.4cqw; padding:0; border-radius:50%; display:grid; place-items:center; font-size:3.4cqw; line-height:1; background:radial-gradient(circle at 40% 35%, #2c2350, #120d24); border:1.5px solid #f3c96b; }
   .effets .effet.pastE b { position:absolute; right:-1cqw; bottom:-1cqw; min-width:3.4cqw; height:3.4cqw; border-radius:1.7cqw; background:#f3c96b; color:#1d1400; font:bold 2.4cqw/3.4cqw Georgia, serif; text-align:center; text-shadow:none; padding:0 .5cqw; }
   /* 14/11 nuit : ces effets sont maintenant des étiquettes placées (effetsHTML) : plus de lignes dans le cadre de droite (elles le faisaient déborder) */
@@ -1918,7 +1918,7 @@ function effetsHTML() {
   if (!S || !S.J || !S.O) return ''; const R = (typeof plateauIle === 'function' && plateauIle() && PLACEMENTS_ILE[plateauIle()]) || (typeof PLACEMENT_DUEL !== 'undefined' ? PLACEMENT_DUEL : null);
   // 21/11 (l'utilisateur : « un piège : moi je le sais, l'adversaire ne doit pas savoir lequel ») : en face, un piège posé s'affiche « 🪤 Piège », sans dire lequel
   const h = [['haut', S.O], ['bas', S.J]].map(([c, P]) => { let l = effetsListe(P); if (c === 'haut') { const secrets = ['piege', 'paillasse', 'paratonnerre']; const n = l.filter(x => secrets.includes(x[0])).length; l = l.filter(x => !secrets.includes(x[0])); if (n) l.unshift(['piegecache', '🪤', n > 1 ? `${n} pièges` : 'Piège']); } if (l.length > 6) l.splice(5, l.length - 5, ['plus', '➕', `${l.length - 5} autres`]);
-    // 23/11 (choix de l'utilisateur) : les effets = des PASTILLES (icône + chiffre) sur une grille de 3 × 2, à une seule place (effets_haut / effets_bas) ;
+    // 23/11 (choix de l'utilisateur) : les effets = des PASTILLES (icône + chiffre) sur UNE ligne (23/11, demande de l'utilisateur), à une seule place (effets_haut / effets_bas) ;
     // toucher une pastille = son explication, toucher la grille = la liste complète
     if (!l.length) return ''; const b = (R && R['effets_' + c]) || (() => { const e = (R && R['etiquettes_' + c]) || ETQ_DEFAUT[c]; return [e[0], e[1] + 4.2]; })();
     const tl = ((R && R.tailles) || {})['effets_' + c] || 100;
