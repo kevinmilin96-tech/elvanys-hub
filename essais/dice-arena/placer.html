@@ -37,6 +37,8 @@
   .bas button { flex:1; border:none; border-radius:10px; padding:9px; font:bold 13px Georgia; background:#3a3570; color:#fff; }
   .bas button.ok { background:#f3c96b; color:#1d1626; }
   #msg { font-size:12px; color:#7dffb0; min-height:15px; text-align:center; }
+  .effGr { display:grid; grid-template-columns:repeat(3, 6.4cqw); gap:.9cqw; transform-origin:50% 0; } .effGr span { position:relative; width:6.4cqw; height:6.4cqw; border-radius:50%; display:grid; place-items:center; font-size:3.4cqw; background:#1a1430; border:1.5px solid #f3c96b; } .effGr b { position:absolute; right:-1cqw; bottom:-1cqw; font:bold 2.4cqw Georgia; background:#f3c96b; color:#1d1400; border-radius:1.7cqw; padding:0 .5cqw; }
+  .el.effGr::before { top:0; }
   .bouc.gardeP { background-image:url('ui/equip/icone-garde.webp?v=1'); } /* 14/11 nuit : la Garde (temporaire) a sa place à elle */
 </style>
 </head>
@@ -73,6 +75,7 @@ else if (PLATEAU) { document.getElementById('pl').style.backgroundImage = `url('
   document.querySelector('.haut b').textContent = 'Placer les éléments · plateau ' + PLATEAU; }
 let R = JSON.parse(localStorage.getItem(CLE) || 'null') || JSON.parse(JSON.stringify(DEFAUT));
 const pl = document.getElementById('pl');
+const GRILLE_EFF = ['⚔<b>6</b>', '🔥', '🪤', '💨', '🌿<b>2</b>', '☠<b>3</b>'].map(x => `<span>${x}</span>`).join('');
 const ELEMENTS = [
   ['cadre_haut', 'cadreP'], ['cadre_bas', 'cadreP'], ['anneau_haut', 'anneauP'], ['anneau_bas', 'anneauP'],
   ['frappe', 'med', 'ui/frappe.webp?v=2'], ['technique', 'med', 'ui/technique.webp?v=2'], ['garde', 'med', 'ui/garde.webp?v=2'],
@@ -84,7 +87,8 @@ const ELEMENTS = [
   ...(PLATEAU || LONG ? [['champ_haut_gauche', 'coin', '', '◸'], ['champ_bas_droit', 'coin', '', '◿']] : []),
   ['coeur_bas', 'coeur', '', '30'], ['bouclier_bas', 'bouc', '', '6'], ['garde_bas', 'bouc gardeP', '', '4'], ['etiquettes_bas', 'etq', '', '🂠 4 en main'],
   // 14/11 nuit : les effets, un par un (6 par joueur) : chacun s'affiche « icône + nom » à sa place
-  ...['haut', 'bas'].flatMap(c => ['⚔ Contre-attaque 6', '🔥 Fournaise', '🪤 Piège', '💨 Esquive', '🌿 Épines 2', '☠ Poison 3'].map((t, i) => [`effet_${c}_${i + 1}`, 'etq', '', `${i + 1} · ${t}`])),
+  // 23/11 : les effets = UNE grille de 6 pastilles par joueur (icône + chiffre), placée d'un bloc (son point rouge = le milieu de son bord haut)
+  ['effets_haut', 'effGr', '', GRILLE_EFF], ['effets_bas', 'effGr', '', GRILLE_EFF],
 ];
 function zone() { let z = document.getElementById('zm'); if (!z) { z = document.createElement('div'); z.id = 'zm'; z.className = 'zone'; z.textContent = 'cartes en main'; pl.prepend(z); }
   const a = R.main_haut_gauche || [25, 83.5], b = R.main_bas_droit || [82, 97.5]; z.style.left = a[0] + '%'; z.style.top = a[1] + '%'; z.style.width = (b[0] - a[0]) + '%'; z.style.height = (b[1] - a[1]) + '%'; }
@@ -103,6 +107,7 @@ function dessine() {
   if (!R.main_haut_gauche) { R.main_haut_gauche = [25, 83.5]; R.main_bas_droit = [82, 97.5]; }
   for (const c of ['haut', 'bas']) if (!R['garde_' + c] && R['bouclier_' + c]) R['garde_' + c] = [+(R['bouclier_' + c][0] - 8).toFixed(2), R['bouclier_' + c][1]];
   // places des effets par défaut : sous (en haut) ou au-dessus (en bas) du cadre des étiquettes, sur deux colonnes
+  for (const c of ['haut', 'bas']) if (!R['effets_' + c]) { const e = R['etiquettes_' + c] || [79.3, c === 'haut' ? 15.85 : 74.65]; R['effets_' + c] = [e[0], +(e[1] + 4.2).toFixed(2)]; }
   for (const c of ['haut', 'bas']) for (let i = 0; i < 6; i++) { const k = `effet_${c}_${i + 1}`; if (R[k]) continue; const b = R['etiquettes_' + c] || [79.3, c === 'haut' ? 15.85 : 74.65], sens = c === 'haut' ? 1 : -1; R[k] = [+(b[0] + (i % 2 ? 7 : -7)).toFixed(2), +(b[1] + sens * (7 + Math.floor(i / 2) * 3.4)).toFixed(2)]; }
   pl.style.setProperty('--m', R.taille_medaillon + 'cqw'); pl.style.setProperty('--p', R.taille_portrait + 'cqw');
   for (const [k, cls, img, txt] of ELEMENTS) {
@@ -117,11 +122,11 @@ function dessine() {
   tm.value = R.taille_medaillon; vm.textContent = R.taille_medaillon; tp.value = R.taille_portrait; vp.textContent = R.taille_portrait;
 }
 let cour = null, choisi = null;
-const NOMS = { garde_haut:'Garde du haut (bouclier temporaire, bulle bleue)', garde_bas:'Garde du bas (bouclier temporaire, bulle bleue)', ...Object.fromEntries(['haut', 'bas'].flatMap(c => [1, 2, 3, 4, 5, 6].map(i => [`effet_${c}_${i}`, `effet ${i} du ${c}`]))), anneau_haut:'anneaux vie + Ultime du haut', anneau_bas:'anneaux vie + Ultime du bas', cadre_haut:'cadre du portrait du haut', cadre_bas:'cadre du portrait du bas', champ_haut_gauche:'coin haut gauche de la zone centrale', champ_bas_droit:'coin bas droit de la zone centrale', frappe:'Frappe', technique:'Technique', garde:'Garde', pouvoir:'Pouvoir', transmu:'Transmuter', equipe:'Équipe', de_premier:'1er dé', de_dernier:'dernier dé', portrait_haut:'portrait du haut', portrait_bas:'portrait du bas', coeur_haut:'cœur du haut', bouclier_haut:'Bouclier du haut (permanent, écu doré)', etiquettes_haut:'étiquettes du haut', coeur_bas:'cœur du bas', bouclier_bas:'Bouclier du bas (permanent, écu doré)', etiquettes_bas:'étiquettes du bas', main_haut_gauche:'coin haut-gauche des cartes', main_bas_droit:'coin bas-droit des cartes' };
+const NOMS = { effets_haut:'Effets du haut (grille de pastilles)', effets_bas:'Effets du bas (grille de pastilles)', garde_haut:'Garde du haut (bouclier temporaire, bulle bleue)', garde_bas:'Garde du bas (bouclier temporaire, bulle bleue)', ...Object.fromEntries(['haut', 'bas'].flatMap(c => [1, 2, 3, 4, 5, 6].map(i => [`effet_${c}_${i}`, `effet ${i} du ${c}`]))), anneau_haut:'anneaux vie + Ultime du haut', anneau_bas:'anneaux vie + Ultime du bas', cadre_haut:'cadre du portrait du haut', cadre_bas:'cadre du portrait du bas', champ_haut_gauche:'coin haut gauche de la zone centrale', champ_bas_droit:'coin bas droit de la zone centrale', frappe:'Frappe', technique:'Technique', garde:'Garde', pouvoir:'Pouvoir', transmu:'Transmuter', equipe:'Équipe', de_premier:'1er dé', de_dernier:'dernier dé', portrait_haut:'portrait du haut', portrait_bas:'portrait du bas', coeur_haut:'cœur du haut', bouclier_haut:'Bouclier du haut (permanent, écu doré)', etiquettes_haut:'étiquettes du haut', coeur_bas:'cœur du bas', bouclier_bas:'Bouclier du bas (permanent, écu doré)', etiquettes_bas:'étiquettes du bas', main_haut_gauche:'coin haut-gauche des cartes', main_bas_droit:'coin bas-droit des cartes' };
 function choisir(e) { document.querySelectorAll('.el.choisi').forEach(x => x.classList.remove('choisi')); choisi = e; e.classList.add('choisi'); choix.textContent = `Choisi : ${NOMS[e.dataset.k]} (${R[e.dataset.k].join(' ; ')}) · taille ${(R.tailles || {})[e.dataset.k] || 100} %`; }
 // flèches : 0,1 % de l'image par toucher
 // taille propre à l'élément choisi (en % de sa taille de départ), gardée dans R.tailles
-function appliqueTaille(e) { const t = (R.tailles || {})[e.dataset.k]; e.style.transform = `translate(-50%, -50%) scale(${(t || 100) / 100})`; }
+function appliqueTaille(e) { const t = (R.tailles || {})[e.dataset.k]; e.style.transform = `translate(-50%, ${e.classList.contains('effGr') ? '0' : '-50%'}) scale(${(t || 100) / 100})`; }
 function taille(sens) { if (!choisi) { choix.textContent = 'Touche d’abord un élément.'; return; } R.tailles = R.tailles || {}; const k = choisi.dataset.k;
   R.tailles[k] = sens ? Math.max(30, Math.min(300, (R.tailles[k] || 100) + sens * 2)) : 100; appliqueTaille(choisi); localStorage.setItem(CLE, JSON.stringify(R)); choisir(choisi); }
 function pousse(dx, dy) { if (!choisi) { choix.textContent = 'Touche d’abord un élément.'; return; } const k = choisi.dataset.k; R[k] = [+(R[k][0] + dx * pas).toFixed(2), +(R[k][1] + dy * pas).toFixed(2)]; memeColonne(k); choisi.style.left = R[k][0] + '%'; choisi.style.top = R[k][1] + '%'; zone(); zoneChamp(); localStorage.setItem(CLE, JSON.stringify(R)); choisir(choisi); }
