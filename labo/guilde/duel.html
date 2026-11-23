@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261123-204318"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
+<head><meta name="guilde-version" content="20261123-204442"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="robots" content="noindex">
@@ -780,7 +780,7 @@
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
 // 14/11 : l'Odyssée sans fin a ses propres emplacements (odyssee.js lit SANSFIN)
 const SANSFIN = new URLSearchParams(location.search).get('sansfin') === '1', ROUTE_TITAN = new URLSearchParams(location.search).get('route') === '1', EPREUVE_PAGE = new URLSearchParams(location.search).get('epreuve') === '1', ODY_PAGE = EPREUVE_PAGE ? 'epreuves.html' : 'odyssee.html' + (SANSFIN ? '?sansfin=1' : ROUTE_TITAN ? '?route=1' : '');
-const VERSION = '20261123-204318';
+const VERSION = '20261123-204442';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -2432,11 +2432,13 @@ function recaleCoeurs() {
   const pl = document.querySelector('.plateau.unique'), k = typeof plateauIle === 'function' && plateauIle(); if (!pl || !k || !k.startsWith('long')) return;
   const R = PLACEMENTS_ILE[k], P = pl.getBoundingClientRect();
   for (const [id, c] of [['b-O', 'haut'], ['b-J', 'bas']]) {
-    const e = pl.querySelector(`#${id} .pastilles [data-k="pv"]`), v = R['coeur_' + c]; if (!e || !v) continue;
+    for (const [sel, cle] of [['[data-k="pv"]', 'coeur_'], ['[data-k="pc"]', 'pc_']]) { // 23/11 : les PC aussi, s'ils ont été placés
+    const e = pl.querySelector(`#${id} .pastilles ${sel}`), v = R[cle + c]; if (!e || !v) continue;
+    if (cle === 'pc_') { const t = ((R.tailles || {})[cle + c] || 100) / 100; e.style.scale = t; }
     e.style.translate = '0px 0px'; const r = e.getBoundingClientRect(), dx = P.left + P.width * v[0] / 100 - (r.left + r.width / 2), dy = P.top + P.height * v[1] / 100 - (r.top + r.height / 2);
     const own = parseFloat(getComputedStyle(e).scale) || 1, sc = r.width / (e.offsetWidth || 1) / own || 1; // le décalage subit l'agrandissement des parents, pas le sien
     e.style.translate = `${(dx / sc).toFixed(1)}px ${(dy / sc).toFixed(1)}px`;
-  }
+  } }
 }
 if (typeof document !== 'undefined') { let t = null; new MutationObserver(() => { cancelAnimationFrame(t); t = requestAnimationFrame(recaleCoeurs); }).observe(document.documentElement, { childList:true, subtree:true }); addEventListener('resize', () => requestAnimationFrame(recaleCoeurs)); }
 // 23/11 : chaque plateau LONG placé (688 × 1536) prend toute la largeur ; sur un écran plus court, on perd au plus 18 % de sa hauteur (le décor), jamais l'interface
