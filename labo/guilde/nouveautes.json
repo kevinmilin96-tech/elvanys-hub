@@ -1,5 +1,9 @@
 [
 {
+"v": "20261123-211948",
+"m": "Appli Android 1.2 : elle annonce son vrai numéro de version (la 1.1 se croyait encore en 1.0)."
+},
+{
 "v": "20261123-210749",
 "m": "Invasion : le nouveau plateau qui remplit tout l’écran. Tous les combats ont maintenant leur plateau long."
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261123-190259",
 "m": "Combat : la main de départ se propose toujours (et « ↺ Changer ma main » sur ton paquet au 1er tour), le texte des petites cartes n’est plus déformé, plus de bande noire en haut."
-},
-{
-"v": "20261123-185020",
-"m": "Combat : ton paquet (cartes de dos, avec le nombre restant) à gauche de ta main, ta défausse à droite ; touche-les pour voir la liste."
 }
 ]
