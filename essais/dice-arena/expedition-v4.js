@@ -173,6 +173,14 @@ function carteV4(X) {
   C.push([escaleDe(X, 'boss', C.length, R)]);
   return C;
 }
+// 23/11 : LE FLASH DU JOUR (≈ 3 minutes, le même pour tous aujourd'hui) : 12 💰 au départ, 2 cœurs, une règle simple,
+// puis 3 combats à la suite (des monstres, une élite, le boss). FLASH_DUR = la vie des ennemis de chaque combat (réglée au simulateur)
+let FLASH_DUR = [1.3, 1.5, 1.0]; // simulateur 23/11 (/tmp/cfg/sim-expf.mjs, 60 voyages par héros) : 63-87 % de victoires, 42-75 % sans perdre de cœur
+const FLASH_REGLES = ['vent', 'marche', 'veterans', 'enrages'];
+function carteFlash(X) {
+  const R = rngDe(X.graine + '/flash');
+  return [[escaleDe(X, 'monstres', 0, R, [0, 1], FLASH_DUR[0])], [escaleDe(X, 'elite', 1, R, null, FLASH_DUR[1])], [escaleDe(X, 'boss', 2, R)]];
+}
 // une étape de la carte est-elle un point de choix (escales sans combat) ?
 const estChoix4 = opts => opts.length > 1 || (opts[0] && opts[0].choix);
 // la route jouée → les tableaux du moteur (l'écran lit ESCALES2[X.escale])
@@ -189,12 +197,13 @@ const ESCALE_COMBAT = t => ['monstres', 'elite', 'fantome', 'boss'].includes(t);
 // opts : { mer, asc, jour (true = voyage du jour), graine }
 function nouveauVoyage(heros, opts) {
   opts = opts || {}; const meta = typeof localStorage !== 'undefined' ? lireMeta4() : { gagnes:99 };
-  const graine = opts.graine || (opts.jour ? 'jour-' + new Date().toISOString().slice(0, 10) : uid());
+  const graine = opts.graine || (opts.flash ? 'flash-' + new Date().toISOString().slice(0, 10) : opts.jour ? 'jour-' + new Date().toISOString().slice(0, 10) : uid());
   const X = nouvelleExpedition(heros, graine);
   const R = rngDe(graine + '/v4');
   X.v = 4; X.mer = opts.mer || 'nuages'; X.asc = opts.asc || 0; X.jour = !!opts.jour; X.debloques = opts.debloques != null ? opts.debloques : meta.gagnes;
-  X.boss = tire(R, MERS[X.mer].boss); X.regle = opts.regle || tire(R, Object.keys(REGLES_V4));
+  X.boss = tire(R, MERS[X.mer].boss); X.regle = opts.regle || tire(R, opts.flash ? FLASH_REGLES : Object.keys(REGLES_V4));
   X.coeursMax = 3; X.route = []; X.carte4b = true; X.carte = carteV4(X);
+  if (opts.flash) { X.flash = true; X.carte = carteFlash(X); X.coeurs = X.coeursMax = 2; X.or = 12; }
   if (X.regle === 'calme') { X.coeurs = 4; X.coeursMax = 4; }
   if (X.asc >= 9) { X.coeurs = Math.min(X.coeurs, 2); X.coeursMax = Math.min(X.coeursMax, 2); }
   if (X.asc >= 3) X.or = Math.max(0, X.or - 2);
@@ -228,7 +237,7 @@ adversaire = function (X) {
     return { nom:`Le navire de ${HEROS[f.heros].nom}`, camp:{ heros:f.heros, plateau:f.plateau, X:f.X }, fantome:f.heros }; }
   if (esc.type === 'elite') { const g = M.elites[esc.el || 0], P = plateauV4(X, g, esc.dur || DUR_V4[X.escale]); if (X.asc >= 2) [...P.av, ...P.ar].forEach(u => { if (u) u.a++; });
     return { nom:g.n, camp:{ heros:null, plateau:P, X:null, meca:g.meca }, meca:g.meca, mecaTxt:g.d }; }
-  if (esc.type === 'boss') { const B = BOSS_V4[X.boss], P = plateauV4(X, B, (X.carte4b ? DUR_BOSS4 : DUR_V4[5]) * (X.regle === 'rancon' ? 1.15 : 1) * (X.asc >= 10 ? 1.2 : X.asc >= 4 ? 1.08 : 1));
+  if (esc.type === 'boss') { const B = BOSS_V4[X.boss], P = plateauV4(X, B, (X.flash ? FLASH_DUR[2] : X.carte4b ? DUR_BOSS4 : DUR_V4[5]) * (X.regle === 'rancon' ? 1.15 : 1) * (X.asc >= 10 ? 1.2 : X.asc >= 4 ? 1.08 : 1));
     if (B.meca === 'miroir') { const m = meilleure4(X), a = m ? m.a + m.bonusA + 2 : 6, roi = P.av[0]; roi.a = Math.max(roi.a, a); P.ar.forEach(u => { if (u && u.n === 'Reflet') u.v = Math.round(roi.v / 4); }); }
     return { nom:B.n, camp:{ heros:null, plateau:P, X:null, meca:B.meca }, meca:B.meca, mecaTxt:B.d }; }
   const g = M.groupes[esc.g || 0]; return { nom:g.n, camp:{ heros:null, plateau:plateauV4(X, g, esc.dur || DUR_V4[X.escale]), X:null } };
@@ -305,6 +314,20 @@ function scoreV4(X) {
 // à la fin d'un voyage gagné : mer suivante ouverte, cran d'ascension suivant, une recrue débloquée
 function finVoyageMeta(X) {
   const m = lireMeta4(), apport = [];
+  // 23/11 : le flash du jour : son 1er essai compte (étoiles, panneau « Aujourd'hui », quête, petite récompense) ; il n'ouvre ni mer ni Ascension
+  if (X.flash) {
+    const j = new Date().toISOString().slice(0, 10), gagne = X.fini === 'gagne', et = !gagne ? 0 : 1 + (X.coeurs >= X.coeursMax ? 1 : 0) + (X.coeurs >= X.coeursMax && X.or >= 6 ? 1 : 0);
+    m.flash = m.flash || {};
+    if (!m.flash[j] && !X.flashLibre) {
+      m.flash[j] = { gagne, etoiles:et, score:scoreV4(X) }; Object.keys(m.flash).sort().slice(0, -30).forEach(k => delete m.flash[k]);
+      const xp = 10 + 5 * et, or = 5 * et; if (typeof gagneXP === 'function') gagneXP(xp, 'Flash du jour');
+      if (or && typeof donneRessources === 'function') try { donneRessources(or, 0); } catch (e) {}
+      if (typeof guildeEvt === 'function') try { guildeEvt('flash', 1); } catch (e) {}
+      apport.push(`⚡ Flash du jour compté : ${gagne ? '★'.repeat(et) + '☆'.repeat(3 - et) : 'perdu'} · +${xp} XP${or ? ` · 🪙 +${or}` : ''}. Reviens demain !`);
+    } else apport.push('⚡ Essai pour le plaisir : ton flash du jour était déjà compté.');
+    if (gagne) apport.push('★★ : sans perdre de cœur · ★★★ : sans perdre de cœur, et 6 💰 ou plus à l’arrivée.');
+    ecritMeta4(m); return apport;
+  }
   if (X.fini === 'gagne') {
     if (!m.mers[X.mer]) { m.mers[X.mer] = 1; const s = ORDRE_MERS[ORDRE_MERS.indexOf(X.mer) + 1]; if (s) apport.push(`🗺 Nouvelle mer ouverte : ${MERS[s].e} ${MERS[s].n} !`); } else m.mers[X.mer]++;
     if (X.asc >= ascMax4(m, X.mer) && X.asc < 10) { m.asc[X.mer] = X.asc + 1; apport.push(`⛰ Ascension ${X.asc + 1} ouverte sur ${MERS[X.mer].n}.`); }

@@ -397,14 +397,14 @@ accueil = function () {
     : `<button onclick="choixCapitaine('${id}')"><img src="${IMG(id)}" alt="">${HEROS[id].nom}<br><small style="color:var(--or)">${CAPITAINES[id].n}</small><br><small class="prise ${PRISE_EXP[id]}">${PRISE_TXT[PRISE_EXP[id]]}</small></button>`).join('')}${capitainesAventure()}</div>
   <div class="choixh"><button onclick="location.href='expeditions-v4-proposition.html'">📖 Comment ça marche</button><button onclick="records()">🏆 Mes voyages</button></div>`; // 22/11 : « ⛵ Les Expéditions » et « ⌂ Menu » du bas retirés (retour en haut à gauche)
 };
-depart = function (id) { GM.retour(null); /* 22/11 : le voyage commence */ const i = haInfo(id); X = nouveauVoyage(haVoie(id), jourChoisi ? { mer:'nuages', asc:0, jour:true } : { mer:merChoisie, asc:ascChoisi }); // le voyage du jour : le même pour tous (Mer des nuages, sans ascension) X.diff = diffChoisie;
+depart = function (id) { GM.retour(null); /* 22/11 : le voyage commence */ const i = haInfo(id); X = nouveauVoyage(haVoie(id), typeof flashChoisi !== 'undefined' && flashChoisi ? { mer:'nuages', asc:0, flash:true } : jourChoisi ? { mer:'nuages', asc:0, jour:true } : { mer:merChoisie, asc:ascChoisi }); if (X.flash) { const fm = lireMeta4().flash || {}; X.flashLibre = !!fm[new Date().toISOString().slice(0, 10)]; } // le voyage du jour : le même pour tous (Mer des nuages, sans ascension) X.diff = diffChoisie;
   if (i) { X.av = i.id; const cap = X.plateau.av[1]; if (cap && cap.key === 'capitaine') { cap.n = i.nom; cap.av = i.id; } }
   sel = null; sauve(); introVoyage(); };
 function introVoyage() { const R = REGLES_V4[X.regle], B = BOSS_V4[X.boss];
   fenetre(`<h2>⛵ ${MERS[X.mer].e} ${MERS[X.mer].n}</h2><p class="doux">${MERS[X.mer].d}</p>
   <div class="carte4 r"><b>${R.e} Règle du voyage : ${R.n}</b><br>${R.d}</div>
   <div class="carte4 b"><b>${B.e} Au bout de la route : ${B.n}</b><br>${B.d}</div>
-  <p class="doux">🧭 4 points de choix : ❔ événements, 💎 trésors et 🏝 ports francs, sans combat. Entre eux, ⚔ une suite de 2 ou 3 combats obligatoires, finie par une 💀 élite (plus dure, +4 💰). 👑 Au bout, le boss : <b>une seule chance</b>.</p>
+  ${X.flash ? '<p class="doux">⚡ <b>Le flash du jour</b> : 3 combats à la suite, sans escale entre eux : ⚔ des monstres, 💀 une élite, puis 👑 le boss (<b>une seule chance</b>). 2 cœurs. Recrute bien avec tes 12 💰 !</p>' : `<p class="doux">🧭 4 points de choix : ❔ événements, 💎 trésors et 🏝 ports francs, sans combat. Entre eux, ⚔ une suite de 2 ou 3 combats obligatoires, finie par une 💀 élite (plus dure, +4 💰). 👑 Au bout, le boss : <b>une seule chance</b>.</p>`}
   <div class="choixh"><button class="or" onclick="fermer();reprendre()">🗺 Voir la carte</button></div>`); }
 // reprendre : choisir la route si besoin, sinon le port (ou l'escale sans combat)
 function reprendre() { synchroRoute(X); if (doitChoisir(X)) return carteVoyage(true); const esc = X.route[X.escale]; if (esc && !ESCALE_COMBAT(esc.type)) return escaleCalme(); port(); }

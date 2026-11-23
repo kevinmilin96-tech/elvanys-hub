@@ -96,8 +96,9 @@ const QUETES_JOUR = [
   ['cr3', 'Fais tomber 3 monstres dans la Crypte aux Sceaux', 'crypte_tombe', 3], // 22/11 (l'utilisateur : « 3 salles d'Odyssée, c'est long ») : la Crypte, 2-3 minutes
   ['dv2', 'Tiens 2 vagues dans la Défense de la porte', 'defense_vague', 2],
   ['to1', 'Passe 1 étage de la Tour des épreuves', 'tour_etage', 1],
+  ['fl1', 'Fais un flash du jour (Crypte ou Expédition)', 'flash', 1], // 23/11 : les flashs du jour (3 minutes)
 ];
-const QUETE_VA = { butin:'menu.html', coeur:'menu.html?amis=1', enigme:'duel.html?enigme=1', duel_gagne:'duel.html', carte:'duel.html', escale:'expedition-v4.html',
+const QUETE_VA = { flash:'crypte.html#flash', butin:'menu.html', coeur:'menu.html?amis=1', enigme:'duel.html?enigme=1', duel_gagne:'duel.html', carte:'duel.html', escale:'expedition-v4.html',
   crypte_tombe:'crypte.html', salle:'menu.html#odyssee', elite:'menu.html#odyssee', boss:'menu.html#odyssee', defense_vague:'defense.html', tour_etage:'epreuves.html', titan:'expedition-v4.html',
   invasion_acte:'menu.html#invasion', etage_atteint:'menu.html#odyssee', chasse:'epreuves.html#chasse', tuile:'menu.html#odyssee', or:'menu.html#odyssee' };
 const QUETES_SEMAINE = [

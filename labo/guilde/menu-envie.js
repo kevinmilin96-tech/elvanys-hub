@@ -26,6 +26,12 @@ function envieRendezVous() {
   const eni = ENV_J('guilde-enigmes', {})[envJourLocal()] || {};
   const eniNiv = (new Date().getDay() + 6) % 7 + 1, eniEt = ` · ${'★'.repeat(eniNiv)}${'☆'.repeat(7 - eniNiv)} ${['', 'très facile', 'facile', 'moyenne', 'moyenne', 'corsée', 'difficile', 'redoutable'][eniNiv]}`; // même règle que enigme.js : lundi 1★ → dimanche 7★
   L.push(['enigme', '🧩', 'L’énigme du jour', (eni.ok ? 'Résolue' : eni.essais ? `${eni.essais} essai(s)` : 'Un coup parfait à trouver') + eniEt, !!eni.ok, "envieVa('duel.html?enigme=1')"]);
+  // 23/11 : LES FLASHS DU JOUR (≈ 3 minutes) dans « ⚡ Rapide » ; les versions longues restent dans « Si tu as le temps »
+  const et = f => f.gagne ? '★'.repeat(f.etoiles) + '☆'.repeat(3 - f.etoiles) : 'Perdu · rejoue pour le plaisir';
+  const fc = (ENV_J('guilde-crypte', {}).flash || {})[envJourLocal()];
+  L.push(['flashcrypte', '⚡', 'Le flash de la Crypte', fc ? et(fc) : '3 minutes, le même pour tous', !!fc, "envieVa('crypte.html#flash')"]);
+  const fe = ((ENV_J('guilde-expedition4-meta', {}) || {}).flash || {})[envJourUTC()];
+  L.push(['flashvoyage', '⚡', 'Le flash des Expéditions', fe ? et(fe) : '3 combats, le même pour tous', !!fe, "envieVa('expedition-v4.html?flash=1')"]);
   const cr = (ENV_J('guilde-crypte', {}).jours || {})[envJourLocal()];
   L.push(['crypte', '🪦', 'La crypte du jour', cr ? `Score ${cr.score}` : 'La même crypte pour tout le monde', !!cr, "envieVa('crypte.html#jour')"]);
   const ile = ENV_J('guilde-odyssee-records', []).find(r => r.graine === 'jour-' + envJourUTC());
@@ -68,7 +74,7 @@ function envieAujourdhui(rouvre) {
   p = document.createElement('div'); p.id = 'env-auj';
   p.innerHTML = `<div class="boite"><button class="x" onclick="envieAujourdhui()" aria-label="Fermer">✕</button>
     <h2><img src="ui/aujourdhui.webp?v=1" alt="" style="width:38px;height:38px;vertical-align:middle;margin-right:6px">Aujourd’hui</h2><p class="sous">Les rendez-vous du jour : la même chose pour tous, une nouvelle chaque jour. <b>${f}/${L.length}</b></p>
-    ${(() => { const RAP = ['quetes', 'enigme', 'semaine', 'butin'] /* 22/11 : les quêtes du jour sont devenues des gestes courts → « Rapide » */, ligne = ([k, e, n, d, fait, a]) => `<button class="${fait ? 'fait' : ''}" onclick="${a}"><span class="e">${e}</span><span class="t"><b>${n}</b><small>${d}</small></span><span class="c">${fait ? '✓' : '›'}</span></button>`;
+    ${(() => { const RAP = ['quetes', 'enigme', 'flashcrypte', 'flashvoyage', 'semaine', 'butin'] /* 22/11 : les quêtes du jour sont devenues des gestes courts → « Rapide » */, ligne = ([k, e, n, d, fait, a]) => `<button class="${fait ? 'fait' : ''}" onclick="${a}"><span class="e">${e}</span><span class="t"><b>${n}</b><small>${d}</small></span><span class="c">${fait ? '✓' : '›'}</span></button>`;
       return `<h3 class="grp">⚡ Rapide <small>quelques minutes</small></h3><div class="liste">${L.filter(x => RAP.includes(x[0])).map(ligne).join('')}</div><h3 class="grp">🗺 Si tu as le temps <small>une vraie partie</small></h3><div class="liste">${L.filter(x => !RAP.includes(x[0])).map(ligne).join('')}</div>`; })()}
     <div class="liste" style="display:none">${L.map(([k, e, n, d, fait, a]) => `<button class="${fait ? 'fait' : ''}" onclick="${a}"><span class="e">${e}</span><span class="t"><b>${n}</b><small>${d}</small></span><span class="c">${fait ? '✓' : '›'}</span></button>`).join('')}</div></div>`;
   p.onclick = ev => { if (ev.target === p) envieAujourdhui(); };

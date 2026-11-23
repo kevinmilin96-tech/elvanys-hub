@@ -464,7 +464,7 @@ function finTour(S) {
 }
 // les étoiles d'une victoire
 // 15/11 soir : avec des défis, une étoile par défi réussi (victoire obligatoire) ; sinon l'ancienne règle (la Descente)
-const etoiles = S => S.fin !== 'gagne' ? 0 : S.defis ? defisEtat(S).filter(x => x.ok).length : 1 + (S.pv >= 12 ? 1 : 0) + (S.pv >= 25 ? 1 : 0);
+const etoiles = S => S.fin !== 'gagne' ? 0 : S.defis ? defisEtat(S).filter(x => x.ok).length : S.flash ? 1 + (S.pv >= 10 ? 1 : 0) + (S.pv >= 18 ? 1 : 0) /* 23/11 : le flash du jour (30 PV) */ : 1 + (S.pv >= 12 ? 1 : 0) + (S.pv >= 25 ? 1 : 0);
 
 const API = { reglerSuivi:(f, sc) => { SUIVI_FORCE = f; SUIVI_SCEAU = sc; }, INTENTIONS, intentions, NB_DES, NB_COL, PROF, RESERVE, RUNES_MAX, PV_HEROS, SCEAU_TXT, TRAITS, POUVOIRS, COMPAGNONS, COULEURS,
   REGLES, regleDuJour, VARIANTES, varianteDuJour, SPECIALES, GAINS_COFFRE, DEFIS, defisEtat, CONSOS, conso, nouvelle, lancer, relancer, placer, rune, pouvoir, competence, finTour, visibles, menace, menaceComp, accepte, etoiles, trouve, force, silence, plafond, rng };

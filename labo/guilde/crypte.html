@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261123-092203"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
+<head><meta name="guilde-version" content="20261123-095111"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="robots" content="noindex">
@@ -151,7 +151,7 @@
 <div class="flash" id="flash"></div>
 <div id="fen"></div>
 <script src="musique.js?v=7c0d58ffd7"></script>
-<script src="rang.js?v=1f7a7b47c7"></script>
+<script src="rang.js?v=ecf7c43404"></script>
 <script src="heros-etoiles.js?v=c027cdd26b"></script>
 <script src="progression-modes.js?v=807b0f9ad5"></script>
 <script src="heros-aventure.js?v=31db8c2ed4"></script>
@@ -159,7 +159,7 @@
 <script src="profil.js?v=4a45d06dad"></script>
 <script>window.AMIS_SANS_BOUTON = true; /* 15/11 soir : la crypte du jour se compare entre amis */</script>
 <script src="amis.js?v=d4158692ce"></script>
-<script src="crypte-moteur.js?v=2a4f6b1ce4"></script>
+<script src="crypte-moteur.js?v=01b2dd2f50"></script>
 <script src="descente-moteur.js?v=783a91f811"></script>
 <script>
 // =============================================================================================== LA CRYPTE AUX SCEAUX (15/11, écran)
@@ -477,6 +477,14 @@ function finPartie() {
   const D = lire(), gagne = S.fin === 'gagne', et = C.etoiles(S);
   D.parties++; if (gagne) D.victoires++; D.meilleur = Math.max(D.meilleur, S.score);
   if (duJour) { const j = D.jours[jour()]; if (!j || S.score > j.score) D.jours[jour()] = { score:S.score, etoiles:et, heros:S.heros }; }
+  let flashTxt = '';
+  if (S.flash === 'compte' && !(D.flash || {})[jour()]) { D.flash = D.flash || {}; D.flash[jour()] = { gagne, etoiles:et, score:S.score, pv:S.pv, tours:S.tour };
+    Object.keys(D.flash).sort().slice(0, -30).forEach(k => delete D.flash[k]);
+    const xp = 10 + 5 * et, or = 5 * et; if (typeof gagneXP === 'function') gagneXP(xp, 'Flash du jour');
+    if (or && typeof donneRessources === 'function') try { donneRessources(or, 0); } catch (e) {}
+    if (typeof guildeEvt === 'function') try { guildeEvt('flash', 1); } catch (e) {}
+    flashTxt = `<p style="text-align:center">⚡ <b>Flash du jour compté</b> : +${xp} XP${or ? ` · 🪙 +${or}` : ''}. Reviens demain pour le prochain !</p>`; }
+  else if (S.flash) flashTxt = '<p style="text-align:center;color:var(--doux)">⚡ Essai pour le plaisir : ton flash du jour était déjà compté.</p>';
   ecrire(D);
   if (duJour && typeof amisAgir === 'function') try { amisAgir('signal'); } catch (e) {} // la carte de profil (avec le score du jour) part chez les amis
   let objet = null;
@@ -488,8 +496,8 @@ function finPartie() {
     <p style="text-align:center;font-size:2em;margin:6px 0">${gagne ? '★'.repeat(et) + '☆'.repeat(3 - et) : ''}</p>
     <p style="text-align:center">Score : <b style="color:var(--or)">${S.score}</b> · ${S.tombes} monstre${S.tombes > 1 ? 's' : ''} · plus longue chaîne ×${S.chaineMax} · ${S.tour} tours${gagne ? ` · ❤ ${S.pv} restants` : ''}</p>
     ${S.defis ? `<div style="font-size:.92em">${C.defisEtat(S).map(d => `<p style="margin:4px 0">${d.ok ? '⭐' : '☆'} ${d.e} <b>${d.n}</b> : ${d.d}</p>`).join('')}</div>${gagne ? '' : '<p style="color:var(--doux);font-size:.9em;text-align:center">Les étoiles se gagnent seulement avec une victoire.</p>'}` : ''}
-    ${duJour ? amisJourHTML() : ''}
-    ${gagne ? (S.defis ? '' : `<p style="color:var(--doux);font-size:.9em;text-align:center">★★ : finir avec 12 PV ou plus · ★★★ : 25 PV ou plus.</p>`) : `<p style="color:var(--doux);text-align:center">${S.gardien ? 'Tu étais devant le Gardien !' : `Il restait ${S.cols.reduce((t, c) => t + c.length, 0)} monstres.`} Astuce : vide d’abord les monstres qui frappent fort, et garde le creuset pour les sceaux difficiles.</p>`}
+    ${duJour ? amisJourHTML() : ''}${flashTxt}
+    ${gagne ? (S.defis ? '' : S.flash ? `<p style="color:var(--doux);font-size:.9em;text-align:center">★★ : finir avec 10 PV ou plus · ★★★ : 18 PV ou plus.</p>` : `<p style="color:var(--doux);font-size:.9em;text-align:center">★★ : finir avec 12 PV ou plus · ★★★ : 25 PV ou plus.</p>`) : `<p style="color:var(--doux);text-align:center">${S.gardien ? 'Tu étais devant le Gardien !' : `Il restait ${S.cols.reduce((t, c) => t + c.length, 0)} monstres.`} Astuce : vide d’abord les monstres qui frappent fort, et garde le creuset pour les sceaux difficiles.</p>`}
     ${gagne ? `<p style="text-align:center">✨ +5 éclats de ${herosS(S).nom}${objet ? ` · 🎒 <b>${objet}</b> rejoint ton armurerie` : ''}</p>` : ''}
     <p style="text-align:center;color:var(--doux);font-size:.9em">Meilleur score : ${D.meilleur} · ${D.victoires} victoire${D.victoires > 1 ? 's' : ''} sur ${D.parties}</p>
     <button class="go" onclick="fenetre('');S=null;accueil()">Retour à l’entrée de la crypte</button>`);
@@ -520,10 +528,14 @@ function defCrypte() {
         desc:() => 'La même crypte pour tout le monde aujourd’hui : compare ton score avec tes amis.' + amisJourHTML(),
         pas:() => [`${vj.e} Plateau : ${vj.n}`, `${rj.e} ${rj.n}`, j ? `Ton record du jour : ${j.score} ${'★'.repeat(j.etoiles)}` : 'Pas encore tentée'],
         partie:() => pg && pg.duJour ? { texte:`${haEsc(herosS(pg.S).nom)} · tour ${pg.S.tour} · ❤ ${pg.S.pv}`, reprendre:'reprend()', abandonner:"localStorage.removeItem('guilde-crypte-partie')" } : null },
+      { k:'flash', e:'⚡', n:'Flash du jour', img:'menu-recu/mode-vite.webp',
+        desc:() => '≈ 3 minutes : 3 petites colonnes, puis le Gardien, avec 30 PV. La même pour tout le monde aujourd’hui. Ton premier essai compte (étoiles, panneau « Aujourd’hui ») ; ensuite, rejoue pour le plaisir.',
+        pas:() => { const f = flashDuJour(); return f ? [`Aujourd’hui : ${f.gagne ? '★'.repeat(f.etoiles) + '☆'.repeat(3 - f.etoiles) : 'perdu'}`, 'Rejouable pour le plaisir'] : ['Pas encore tenté aujourd’hui']; },
+        partie:() => pg && pg.S.flash ? { texte:`⚡ ${haEsc(herosS(pg.S).nom)} · tour ${pg.S.tour} · ❤ ${pg.S.pv}`, reprendre:'reprend()', abandonner:"localStorage.removeItem('guilde-crypte-partie')" } : null },
       { k:'hasard', e:'🎲', n:'Au hasard', img:'decor/crypte-table.webp',
         desc:() => 'Une nouvelle crypte à chaque fois, avec une carte spéciale et 3 défis à étoiles. Tu peux choisir le plateau et ajouter une règle.',
         pas:() => [`Meilleur score : ${D.meilleur}`, `${D.victoires} victoire${D.victoires > 1 ? 's' : ''} sur ${D.parties}`],
-        partie:() => pg && !pg.duJour ? { texte:`${haEsc(herosS(pg.S).nom)} · tour ${pg.S.tour} · ❤ ${pg.S.pv}`, reprendre:'reprend()', abandonner:"localStorage.removeItem('guilde-crypte-partie')" } : null },
+        partie:() => pg && !pg.duJour && !pg.S.flash ? { texte:`${haEsc(herosS(pg.S).nom)} · tour ${pg.S.tour} · ❤ ${pg.S.pv}`, reprendre:'reprend()', abandonner:"localStorage.removeItem('guilde-crypte-partie')" } : null },
       { k:'descente', e:'🗺️', n:'La Descente', img:'menu-recu/mode-descente.webp',
         desc:() => 'Trois étages de cryptes : des combats obligatoires, des haltes au choix (marchand, feu de camp, événement, trésor), puis le boss de l’étage. Ta vie ne remonte presque pas toute seule !',
         pas:() => { const ren = lireRen(), P = D_PAL(); return [`🏅 Renommée ${ren} · ${P}`, `Étage le plus profond : ${E.etageMax || '—'}`]; },
@@ -532,6 +544,7 @@ function defCrypte() {
         { k:'p', titre:`${vj.e} Le plateau : ${vj.n}`, verrou:'imposé aujourd’hui', aide:vj.d },
         { k:'r', titre:`${rj.e} La règle du jour : ${rj.n}`, verrou:'imposée', aide:rj.d },
         { k:'g', titre:'♛ Le Gardien', verrou:'imposé', aide:'3 phases : quand ses sceaux sont brisés, il se relève avec une nouvelle arme.' } ]
+      : m === 'flash' ? [ { k:'f', titre:'⚡ Le flash du jour', verrou:'imposé', aide:`3 colonnes de 2 cartes, le Gardien (une seule vie), 30 PV. ★★ : finir avec 10 PV ou plus · ★★★ : 18 PV ou plus.${flashDuJour() ? '<br>Ton essai du jour est déjà compté : celui-ci est pour le plaisir.' : ''}` } ]
       : m === 'hasard' ? [
         { k:'plateau', titre:'Le plateau', choix:[{ v:'hasard', n:'🎲 Au hasard', d:'Un des 4 plateaux, tiré au lancement.' }].concat(Object.entries(C.VARIANTES).map(([k, v]) => ({ v:k, n:`${v.e} ${v.n}`, d:v.d }))) },
         { k:'regle', titre:'Une règle en plus ?', choix:[{ v:'aucune', n:'Aucune', d:'La crypte normale.' }].concat(Object.entries(C.REGLES).map(([k, r]) => ({ v:k, n:`${r.e} ${r.n}`, d:r.d }))) },
@@ -543,16 +556,29 @@ function defCrypte() {
           .concat([{ k:'duJour', titre:'🗓️ La descente du jour ?', choix:[{ v:'non', n:'Non, au hasard', d:'3 étages · 5 combats, 3 haltes et un boss par étage.' }, { v:'oui', n:'🗓️ Celle du jour', d:`${rjD.e} Règle du jour : ${rjD.n} (${rjD.d}). La même pour tout le monde aujourd’hui (toute la réserve est ouverte). ${(E.jours || {})[jour()] ? `Ton record du jour : ${E.jours[jour()].score}` : 'Pas encore tentée.'}` }] }]),
     resume:(m, v) => { const h = haInfo(choixH) ? haEsc(haInfo(choixH).nom) : HER[vJ()].n;
       if (m === 'jour') return `🗓️ Crypte du jour · <b>${h}</b> · ${vj.n} · ${rj.n}`;
+      if (m === 'flash') return `⚡ Flash du jour · <b>${h}</b>${flashDuJour() ? ' · pour le plaisir' : ''}`;
       if (m === 'hasard') return `🎲 Au hasard · <b>${h}</b> · ${v.plateau === 'hasard' ? 'plateau au hasard' : C.VARIANTES[v.plateau].n}${v.regle !== 'aucune' ? ' · ' + C.REGLES[v.regle].n : ''}`;
       return `🗺️ Descente${v.duJour === 'oui' ? ' du jour' : ''} · <b>${h}</b>${v.breloque !== 'aucune' ? ' · ' + D_.BRELOQUES[v.breloque].e : ''} · ${v.pacte === 'aucun' ? 'sans pacte' : D_.PACTES[v.pacte].n}${v.prof ? ' · profondeur ' + v.prof : ''}`; },
     lancer:(m, v) => {
       if (m === 'descente') { equipeSans(v.breloque === 'aucune' ? null : v.breloque); choixPacte = v.pacte === 'aucun' ? null : v.pacte; choixProf = +(v.prof || 0); try { localStorage.removeItem('guilde-descente-partie'); } catch (e) {} return lanceDescente(v.duJour === 'oui'); }
       try { localStorage.removeItem(CLE_PARTIE); } catch (e) {}
+      if (m === 'flash') return lanceFlash();
       lance(m === 'jour', m === 'hasard' ? { variante:v.plateau === 'hasard' ? null : v.plateau, regle:v.regle === 'aucune' ? null : v.regle } : null);
     } };
 }
 const D_PAL = () => { const ren = lireRen(), i = D_.palierDe(ren); return D_.PALIERS[i].n; };
 function accueil(o) { S = null; if (typeof DR !== 'undefined') DR = null; choixH = haValide(choixH, ZEPH_OK()); CFG.ouvre(defCrypte(), o); }
+// 23/11 : LE FLASH DU JOUR (idée de l'utilisateur, « scénarios flash » ; choix : 1er essai compté puis libre, petite récompense + quête) :
+// ≈ 3 minutes, la même pour tous aujourd'hui : 3 petites colonnes (2 cartes), le Gardien à une seule vie, 30 PV.
+// Réglé au simulateur (/tmp/cfg/sim-flash.mjs, pilote glouton) : ≈ 7 tours (13 pour une crypte normale), 92-98 % de victoires, ≈ 12 PV restants.
+const FLASH_COLS = [[3, 2], [3, 2], [2, 1]], FLASH_PV = 30;
+const flashDuJour = () => (lire().flash || {})[jour()] || null;
+function lanceFlash() {
+  duJour = false; const D = lire(); D.heros = choixH; ecrire(D);
+  S = C.nouvelle(vJ(), 'flash-' + jour(), bonusMode(pJ()), { bonusF:(typeof avTrouve === 'function' && avTrouve(choixH) && avTrouve(choixH).bonus) || null, cols:FLASH_COLS, gardien:'fin', vies:1, pv:FLASH_PV, pvmax:FLASH_PV });
+  S.flash = flashDuJour() ? 'libre' : 'compte'; S.av = haInfo(choixH) ? haInfo(choixH).id : null;
+  oublie(); S.des.forEach(d => d.neuf = true); visibles().forEach(c => c.neuve = true); sel = null; mode = null; son('melange'); dessine();
+}
 function lance(j, o) {
   duJour = j; const D = lire(); D.heros = choixH; ecrire(D);
   const B = bonusMode(pJ());
@@ -583,7 +609,7 @@ descenteAccueil = function () { accueil({ mode:'descente' }); };
 { const _d = dessine; dessine = function () { const r = _d.apply(this, arguments); if (typeof S !== 'undefined' && S) guideMode('crypte'); return r; }; }
 { const _a = descenteAccueil; descenteAccueil = function () { const r = _a.apply(this, arguments); guideMode('descente'); return r; }; }
 // 22/11 (menu rangé par envie) : la porte « Partir à l’aventure » ouvre directement la Descente (crypte.html#descente)
-if (location.hash === '#descente') descenteAccueil(); else accueil(location.hash === '#jour' ? { mode:'jour' } : null);
+if (location.hash === '#descente') descenteAccueil(); else accueil(location.hash === '#jour' ? { mode:'jour' } : location.hash === '#flash' ? { mode:'flash' } : null);
 if (typeof AMIS !== 'undefined' && AMIS.carte) setTimeout(() => { if (!S && !DR && AMIS.etat && CFG.etape === 1) accueil(); }, 2500);
 { const _e = descenteEcran; descenteEcran = function () { const r = _e.apply(this, arguments); if (DR && DR.ecran === 'carte') guideMode('descente-carte'); return r; }; }
 </script>
