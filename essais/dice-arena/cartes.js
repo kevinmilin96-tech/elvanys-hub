@@ -14,7 +14,7 @@ function carteGuilde(k, opt = {}) {
   return `<div class="carteG${opt.entiere ? ' entiere' : ''}" style="--w:${opt.w || 216}px">
     <img class="cg-cadre" src="${cadre}" alt="">
     <div class="cg-art" style="left:${pc(z.fenetre, 0)};top:${pc(z.fenetre, 1)};width:${pc(z.fenetre, 2)};height:${pc(z.fenetre, 3)};${art ? `background-image:url('${art}')` : ''}">${art ? '' : `<span class="cg-vide">${ICONE_SORTE[c.t] || ''}<small>illustration à venir</small></span>`}</div>
-    <div class="cg-nom" style="left:${pc(z.nom, 0)};top:${pc(z.nom, 1)};width:${pc(z.nom, 2)};height:${pc(z.nom, 3)}"><span>${c.n}</span></div>
+    <div class="cg-nom" style="left:${pc(z.nom, 0)};top:${pc(z.nom, 1)};width:${pc(z.nom, 2)};height:${pc(z.nom, 3)};--fn:${Math.min(6.2, 58 / (c.n.length * .6)).toFixed(2)}cqw"><span>${c.n}</span></div>
     <div class="cg-cout" style="left:${pc(z.cout, 0)};top:${pc(z.cout, 1)}">${opt.cout !== undefined ? opt.cout : c.c}</div>
     <div class="cg-bande${((NOM_SORTE[c.t] || '') + txtLisible(c.txt)).length > 36 ? ' long tlong' : ((NOM_SORTE[c.t] || '') + txtLisible(c.txt)).length > 24 ? ' long' : ''}" style="left:${pc(z.bande, 0)};top:${pc(z.bande, 1)};width:${pc(z.bande, 2)};height:${pc(z.bande, 3)}">${NOM_SORTE[c.t] ? `<b class="cg-type">${ICONE_SORTE[c.t]} ${NOM_SORTE[c.t]}</b> · ` : ''}🎲 ${txtLisible(c.txt)}</div>
     <div class="cg-effet${c.d.length > 120 ? ' tlong' : c.d.length > 95 ? ' long' : ''}" style="left:${pc(z.effet, 0)};top:${pc(z.effet, 1)};width:${pc(z.effet, 2)};height:${pc(z.effet, 3)}">${c.d}</div>
@@ -30,15 +30,15 @@ const CSS_CARTE = `
    la carte ne montre que son nom, son coût et son image : on la touche pour la lire en grand. Vaut pour tous les modes. */
 .carteG { -webkit-text-size-adjust:none; text-size-adjust:none; }
 .cg-nom, .cg-bande, .cg-effet { overflow:hidden; }
-@container (max-width:110px) { .cg-effet, .cg-bande { visibility:hidden; } .cg-nom { overflow:visible !important; font-size:9cqw !important; line-height:.9 !important; padding:0 !important; text-shadow:0 1px 0 #000, 0 0 3px #000, 0 0 6px #b58cff; } } /* 22/11 : sur une petite carte, le nom reste entier (2 lignes s'il le faut) */
+@container (max-width:110px) { .cg-effet, .cg-bande { visibility:hidden; } .cg-nom { overflow:visible !important; white-space:normal; font-size:9cqw !important; line-height:.9 !important; padding:0 !important; text-shadow:0 1px 0 #000, 0 0 3px #000, 0 0 6px #b58cff; } } /* 22/11 : sur une petite carte, le nom reste entier (2 lignes s'il le faut) */
 /* 23/11 (l'utilisateur : « on garde la carte entière, juste réduite ») : une carte « entiere » reste la grande carte en miniature (nom, dés, effet), même toute petite */
-@container (max-width:110px) { .carteG.entiere .cg-effet, .carteG.entiere .cg-bande { visibility:visible; } .carteG.entiere .cg-nom { overflow:hidden !important; font-size:6.2cqw !important; line-height:1 !important; padding:0 2% !important; text-shadow:0 1px 0 #000, 0 0 6px #b58cff; } }
+@container (max-width:110px) { .carteG.entiere .cg-effet, .carteG.entiere .cg-bande { visibility:visible; } .carteG.entiere .cg-nom { overflow:hidden !important; font-size:var(--fn, 6.2cqw) !important; line-height:1 !important; padding:0 2% !important; text-shadow:0 1px 0 #000, 0 0 6px #b58cff; } }
 .cg-cadre { inset:0; width:100%; height:100%; pointer-events:none; }
 .cg-art { background-size:cover; background-position:center 30%; border-radius:1.5%; box-shadow:inset 0 0 0 1px #0006, inset 0 0 12px #0008; }
 .cg-art:not([style*='background-image']) { background:radial-gradient(circle at 50% 40%, #3a2a55, #160f24 75%); display:flex; align-items:center; justify-content:center; }
 .cg-vide { color:#ffffff30; font-size:22cqw; text-align:center; line-height:1; }
 .cg-vide small { display:block; font-size:4.5cqw; color:#ffffff55; margin-top:4%; font-style:italic; }
-.cg-nom { display:flex; align-items:center; justify-content:center; text-align:center; color:#f6ecff; font-weight:bold; font-size:6.2cqw; line-height:1; text-shadow:0 1px 0 #000, 0 0 6px #b58cff; padding:0 2%; }
+.cg-nom { display:flex; align-items:center; justify-content:center; text-align:center; color:#f6ecff; font-weight:bold; font-size:var(--fn, 6.2cqw); white-space:nowrap; /* 23/11 : un nom long rétrécit pour tenir sur UNE ligne dans le bandeau */ line-height:1; text-shadow:0 1px 0 #000, 0 0 6px #b58cff; padding:0 2%; }
 .cg-cout { transform:translate(-50%,-50%); width:12cqw; height:12cqw; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:8.5cqw; color:#fff; text-shadow:0 0 4px #2a7fc1, 0 2px 0 #000; background:radial-gradient(circle, #10162ae6 0%, #10162ad0 62%, #10162a00 72%); } /* 12/11 : disque sombre sous le chiffre, lisible même quand la pierre de Gemini est pleine */
 .cg-bande { display:flex; align-items:center; justify-content:center; gap:.25em; color:#ffe9a8; font-weight:bold; font-size:4.6cqw; text-shadow:0 1px 0 #000; white-space:nowrap; }
 .cg-bande .cg-type { color:#fff; font-weight:bold; } .cg-bande.long { font-size:3.7cqw; } .cg-bande.tlong { font-size:3.2cqw; white-space:normal; flex-wrap:wrap; text-align:center; line-height:1.05; gap:0 .25em; } /* 20/11 : « 1 dé modifié ce tour, ou un 1 ou un 2 » dépassait : 2 lignes */
