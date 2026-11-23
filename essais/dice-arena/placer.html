@@ -61,8 +61,15 @@
 const DEFAUT = {"taille_medaillon":11.2,"taille_portrait":16.9,"frappe":[11.01,25.03],"technique":[11.05,32.8],"garde":[11.09,40.47],"pouvoir":[11.09,48.07],"transmu":[11.08,55.71],"equipe":[11.08,63.55],"de_premier":[89.73,27.42],"de_dernier":[89.45,61.6],"portrait_haut":[50.17,10.03],"portrait_bas":[50.28,76.27],"coeur_haut":[16.15,15.85],"bouclier_haut":[26.95,15.85],"etiquettes_haut":[79.3,15.85],"coeur_bas":[16.15,74.65],"bouclier_bas":[26.95,74.65],"etiquettes_bas":[79.3,74.65],"main_haut_gauche":[25,83.5],"main_bas_droit":[82,97.5],"tailles":{}};
 // 14/11 : ?plateau=<île> = la même page sur le plateau peint d'une île de l'Odyssée (réglages gardés à part ; en plus, la zone centrale à placer)
 const PLATEAU = (new URLSearchParams(location.search).get('plateau') || '').replace(/[^a-z]/g, '');
-const CLE = 'guilde-placement' + (PLATEAU ? '-' + PLATEAU : '');
-if (PLATEAU) { document.getElementById('pl').style.backgroundImage = `url('decor/plateau-${PLATEAU}.webp?v=5')`; DEFAUT.champ_haut_gauche = [19, 22]; DEFAUT.champ_bas_droit = [81, 67];
+// 23/11 : ?plateau=<nom>&long=1 = le plateau en FORMAT LONG (9:20, téléphones récents) : image plateau-long-<nom>, réglages à part
+const LONG = new URLSearchParams(location.search).get('long') === '1';
+const CLE = 'guilde-placement' + (LONG ? '-long' : '') + (PLATEAU ? '-' + PLATEAU : '');
+if (LONG) { const P = PLATEAU || 'duel', el = document.getElementById('pl'); el.style.backgroundImage = `url('decor/plateau-long-${P}.webp?v=1')`; el.style.aspectRatio = '688/1536';
+  // positions de départ : celles d'aujourd'hui, recalées dans la bande du milieu de l'image longue (à corriger au doigt)
+  const Y = v => +(9.7 + v * 0.806).toFixed(2); for (const k in DEFAUT) if (Array.isArray(DEFAUT[k])) DEFAUT[k] = [DEFAUT[k][0], Y(DEFAUT[k][1])];
+  DEFAUT.champ_haut_gauche = [19, Y(22)]; DEFAUT.champ_bas_droit = [81, Y(67)]; DEFAUT.main_haut_gauche = [25, Y(84)]; DEFAUT.main_bas_droit = [82, Y(97.5)];
+  document.querySelector('.haut b').textContent = 'Placer les éléments · plateau LONG ' + P; }
+else if (PLATEAU) { document.getElementById('pl').style.backgroundImage = `url('decor/plateau-${PLATEAU}.webp?v=5')`; DEFAUT.champ_haut_gauche = [19, 22]; DEFAUT.champ_bas_droit = [81, 67];
   document.querySelector('.haut b').textContent = 'Placer les éléments · plateau ' + PLATEAU; }
 let R = JSON.parse(localStorage.getItem(CLE) || 'null') || JSON.parse(JSON.stringify(DEFAUT));
 const pl = document.getElementById('pl');
@@ -74,14 +81,14 @@ const ELEMENTS = [
   ['portrait_haut', 'por', 'portraits/maelle.webp'], ['portrait_bas', 'por', 'portraits/zephine.webp'],
   ['coeur_haut', 'coeur', '', '20'], ['bouclier_haut', 'bouc', '', '6'], ['garde_haut', 'bouc gardeP', '', '4'], ['etiquettes_haut', 'etq', '', '🔥 Braises 0/3<br>🂠 5 en main'],
   ['main_haut_gauche', 'coin', '', '◤'], ['main_bas_droit', 'coin', '', '◢'],
-  ...(PLATEAU ? [['champ_haut_gauche', 'coin', '', '◸'], ['champ_bas_droit', 'coin', '', '◿']] : []),
+  ...(PLATEAU || LONG ? [['champ_haut_gauche', 'coin', '', '◸'], ['champ_bas_droit', 'coin', '', '◿']] : []),
   ['coeur_bas', 'coeur', '', '30'], ['bouclier_bas', 'bouc', '', '6'], ['garde_bas', 'bouc gardeP', '', '4'], ['etiquettes_bas', 'etq', '', '🂠 4 en main'],
   // 14/11 nuit : les effets, un par un (6 par joueur) : chacun s'affiche « icône + nom » à sa place
   ...['haut', 'bas'].flatMap(c => ['⚔ Contre-attaque 6', '🔥 Fournaise', '🪤 Piège', '💨 Esquive', '🌿 Épines 2', '☠ Poison 3'].map((t, i) => [`effet_${c}_${i + 1}`, 'etq', '', `${i + 1} · ${t}`])),
 ];
 function zone() { let z = document.getElementById('zm'); if (!z) { z = document.createElement('div'); z.id = 'zm'; z.className = 'zone'; z.textContent = 'cartes en main'; pl.prepend(z); }
   const a = R.main_haut_gauche || [25, 83.5], b = R.main_bas_droit || [82, 97.5]; z.style.left = a[0] + '%'; z.style.top = a[1] + '%'; z.style.width = (b[0] - a[0]) + '%'; z.style.height = (b[1] - a[1]) + '%'; }
-function zoneChamp() { if (!PLATEAU) return; let z = document.getElementById('zc'); if (!z) { z = document.createElement('div'); z.id = 'zc'; z.className = 'zone'; z.style.borderColor = '#f3c96b'; z.style.background = '#f3c96b18'; z.textContent = 'zone centrale (créatures)'; pl.prepend(z); }
+function zoneChamp() { if (!PLATEAU && !LONG) return; let z = document.getElementById('zc'); if (!z) { z = document.createElement('div'); z.id = 'zc'; z.className = 'zone'; z.style.borderColor = '#f3c96b'; z.style.background = '#f3c96b18'; z.textContent = 'zone centrale (créatures)'; pl.prepend(z); }
   const a = R.champ_haut_gauche, b = R.champ_bas_droit; z.style.left = a[0] + '%'; z.style.top = a[1] + '%'; z.style.width = (b[0] - a[0]) + '%'; z.style.height = (b[1] - a[1]) + '%'; }
 const ANNEAU_SVG = (() => { const arc = (r, a0, a1) => { const q = a => [50 + r * Math.sin(a * 2 * Math.PI), 50 - r * Math.cos(a * 2 * Math.PI)], [x0, y0] = q(a0), [x1, y1] = q(a1); return `M${x0.toFixed(2)} ${y0.toFixed(2)}A${r} ${r} 0 ${a1 - a0 > .5 ? 1 : 0} 1 ${x1.toFixed(2)} ${y1.toFixed(2)}`; };
   let g = '<circle cx="50" cy="50" r="31.6" fill="none" stroke="#120407" stroke-opacity=".75" stroke-width="4.6"/>' + `<path d="${arc(31.6, 0, .9999)}" fill="none" stroke="#e5262c" stroke-width="4"/>`; // 14/11 : vie et Ultime PLEINS (demande de l'utilisateur)
@@ -92,7 +99,7 @@ function dessine() {
   pl.innerHTML = '';
   if (!R.anneau_haut) R.anneau_haut = [...(R.cadre_haut || R.portrait_haut)]; if (!R.anneau_bas) R.anneau_bas = [...(R.cadre_bas || R.portrait_bas)];
   if (!R.cadre_haut) R.cadre_haut = [...R.portrait_haut]; if (!R.cadre_bas) R.cadre_bas = [...R.portrait_bas];
-  if (PLATEAU && !R.champ_haut_gauche) { R.champ_haut_gauche = [19, 22]; R.champ_bas_droit = [81, 67]; }
+  if ((PLATEAU || LONG) && !R.champ_haut_gauche) { R.champ_haut_gauche = [19, 22]; R.champ_bas_droit = [81, 67]; }
   if (!R.main_haut_gauche) { R.main_haut_gauche = [25, 83.5]; R.main_bas_droit = [82, 97.5]; }
   for (const c of ['haut', 'bas']) if (!R['garde_' + c] && R['bouclier_' + c]) R['garde_' + c] = [+(R['bouclier_' + c][0] - 8).toFixed(2), R['bouclier_' + c][1]];
   // places des effets par défaut : sous (en haut) ou au-dessus (en bas) du cadre des étiquettes, sur deux colonnes
@@ -137,7 +144,7 @@ tm.oninput = () => { R.taille_medaillon = +tm.value; vm.textContent = tm.value; 
 tp.oninput = () => { R.taille_portrait = +tp.value; vp.textContent = tp.value; pl.style.setProperty('--p', tp.value + 'cqw'); localStorage.setItem(CLE, JSON.stringify(R)); };
 function reinit() { R = JSON.parse(JSON.stringify(DEFAUT)); localStorage.removeItem(CLE); dessine(); msg.textContent = 'Positions de départ remises.'; }
 function copier() {
-  const t = 'PLACEMENT ' + (PLATEAU ? PLATEAU.toUpperCase() : 'GUILDE') + ' ' + JSON.stringify(R);
+  const t = 'PLACEMENT ' + (LONG ? 'LONG-' + (PLATEAU || 'duel').toUpperCase() : PLATEAU ? PLATEAU.toUpperCase() : 'GUILDE') + ' ' + JSON.stringify(R);
   (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => { msg.textContent = 'Copié ✓ : colle-le dans la discussion avec Claude.'; })
     .catch(() => { prompt('Copie ce texte et colle-le à Claude :', t); });
 }

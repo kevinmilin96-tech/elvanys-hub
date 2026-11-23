@@ -53,7 +53,7 @@ function iniRoule(i, v) {
 }
 (function () {
   const st = document.createElement('style');
-  st.textContent = `#ini { position:fixed; inset:0; z-index:45; background:radial-gradient(circle at 50% 35%, #2a1f5cee, #0b0918f5); display:flex; flex-direction:column; align-items:center; justify-content:center; padding:4vw; box-sizing:border-box; animation:iniEntre .35s ease-out; }
+  st.textContent = `#ini { position:fixed; inset:0; z-index:45; background:radial-gradient(circle at 50% 45%, #0b091855, #0b0918dd), url('ui/ini/fond.webp?v=1') center/cover; /* 23/11 : la table de la Guilde peinte */ display:flex; flex-direction:column; align-items:center; justify-content:center; padding:4vw; box-sizing:border-box; animation:iniEntre .35s ease-out; }
   @keyframes iniEntre { from { opacity:0; transform:scale(1.05); } to { opacity:1; transform:none; } }
   #ini > div { max-width:560px; width:100%; container-type:inline-size; }
   #ini h2 { text-align:center; color:var(--or, #ffd98a); font:bold 7cqw Georgia, serif; margin:0; }
