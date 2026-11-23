@@ -34,9 +34,12 @@ function defDuel() {
       { k:'ordi', e:'🗿', n:'Contre l’ordinateur', img:'menu-recu/arene-ordinateur.webp', desc:() => 'Choisis ton héros et ton deck, et affronte l’automate de la Guilde.' },
       { k:'semaine', e:'🔏', n:'Duel de la semaine', img:'menu-recu/mode-semaine.webp', desc:() => sem ? `Cette semaine : <b>${sem.n}</b>. ${sem.d} La règle vaut pour toi ET pour l’ordinateur, jusqu’à dimanche soir.` : 'Une règle nouvelle chaque semaine.',
         pas:() => [sem && sceaux[sem.semaine] ? '✅ Sceau de la semaine gagné' : '🔏 Gagne un duel pour le Sceau de la semaine'] },
+      { k:'eclair', e:'⚡', n:'Duel éclair du jour', img:'menu-recu/arene-ordinateur.webp', sansHeros:true, desc:() => { const d = eclairDuJour(); return `≈ 3 minutes : <b>${HEROS[d.h].nom}</b> contre <b>${HEROS[d.o].nom}</b>, les deux à moitié de leurs PV. Le même pour tout le monde aujourd’hui. Ton premier essai compte (étoiles, XP, or) ; ensuite, rejoue pour le plaisir.`; },
+        pas:() => { const f = eclairFait(); return f ? [`Aujourd’hui : ${f.gagne ? '★'.repeat(f.etoiles) + '☆'.repeat(3 - f.etoiles) : 'perdu'}`, 'Rejouable pour le plaisir'] : ['Pas encore tenté aujourd’hui']; } },
       { k:'enigme', e:'🧩', n:'Énigme du jour', img:'menu-recu/mode-enigme.webp', sansHeros:true, desc:() => 'Trouve le coup parfait qui fait tomber l’adversaire en un seul tour. Une nouvelle chaque jour, la même pour tous.' },
       { k:'tuto', e:'🐱', n:'Le tutoriel', img:'menu-recu/arene-tuto.webp', sansHeros:true, desc:() => z ? 'Le premier duel guidé par Moustache, à refaire quand tu veux.' : 'Un premier duel guidé par Moustache (5 minutes). À la clé : Zéphine et le cadre « Diplômé de la Guilde ».' } ],
-    options:m => m === 'enigme' ? [{ k:'i', titre:'🧩 L’énigme du jour', verrou:'la même pour tous', aide:'Le héros, les cartes et l’adversaire sont imposés : à toi de trouver le bon ordre.' }]
+    options:m => m === 'eclair' ? [{ k:'i', titre:'⚡ Héros et adversaire du jour', verrou:'les mêmes pour tous', aide:'★ : gagner · ★★ : finir avec 40 % de tes PV ou plus · ★★★ : 70 % ou plus.' }]
+      : m === 'enigme' ? [{ k:'i', titre:'🧩 L’énigme du jour', verrou:'la même pour tous', aide:'Le héros, les cartes et l’adversaire sont imposés : à toi de trouver le bon ordre.' }]
       : m === 'tuto' ? [{ k:'i', titre:'🐱 Avec Gorm et Moustache', verrou:'guidé', aide:'Moustache te montre chaque geste, un tour après l’autre.' }]
       : (m === 'semaine' && sem ? [{ k:'r', titre:`🔏 La règle : ${sem.n}`, verrou:'cette semaine', aide:sem.d }] : []).concat(optionsDuel()),
     resume:(m, v) => m === 'enigme' ? '🧩 L’énigme du jour' : m === 'tuto' ? '🐱 Le tutoriel' : `${m === 'semaine' ? '🔏 Duel de la semaine' : '🗿 Contre l’ordinateur'} · <b>${HEROS[choixDuel].nom}</b> contre ${v.adv === 'hasard' ? 'un adversaire au hasard' : v.adv === 'roi' ? 'le Roi sans visage' : HEROS[v.adv].nom}`,
@@ -44,6 +47,9 @@ function defDuel() {
       voileDuel(false);
       if (m === 'enigme') return partieEnigme('1');
       if (m === 'tuto') return partieTuto();
+      window.REGLE_FORCEE = null;
+      if (m === 'eclair') { const d = eclairDuJour(); window.REGLE_FORCEE = 'sem-eclair'; if (typeof window.semaineActive === 'function') window.semaineActive(true);
+        monHeros = d.h; fermer(); nouvellePartie(d.h, d.o); S.eclairJour = eclairFait() ? 'plaisir' : 'compte'; regles(true); return; }
       if (!okDuel(choixDuel)) { voileDuel(true); alert('Choisis ton héros.'); return CFG.ouvre(defDuel(), { etape:2 }); }
       // 23/11 (l'utilisateur : « j'ai gagné le Duel de la semaine et je n'ai rien eu ») : SEMAINE_ACTIVE est enfermée dans semaine.js, invisible d'ici ;
       // depuis le configurateur (22/11), la règle de la semaine ne s'allumait donc JAMAIS. On passe par la porte prévue.
@@ -53,7 +59,29 @@ function defDuel() {
       fermer(); nouvellePartie(monHeros, v.adv === 'hasard' ? undefined : v.adv); regles(true);
     } };
 }
+// 23/11 (10e rendez-vous rapide, choisi par l'utilisateur) : LE DUEL ÉCLAIR DU JOUR : héros et adversaire tirés pour la journée (les mêmes pour tous),
+// règle « Duel éclair » (moitié des PV, réglée au simulateur pour le Duel de la semaine) ; 1er essai compté comme les flashs
+function eclairJour() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
+function eclairDuJour() { const L = ORDRE.filter(x => x !== 'zephine'), j = eclairJour(); let h = 2166136261; for (const c of j + 'eclair') { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } h >>>= 0;
+  const a = h % L.length, b = (a + 1 + (Math.floor(h / 7) % (L.length - 1))) % L.length; return { h:L[a], o:L[b] }; }
+function eclairFait() { try { return (JSON.parse(localStorage.getItem('guilde-eclair') || '{}'))[eclairJour()] || null; } catch (e) { return null; } }
+{ const _finE = montrerFin;
+  montrerFin = function () {
+    _finE();
+    if (!S || !S.eclairJour || S.eclairVu) return; S.eclairVu = true;
+    const gagne = S.fini === 'gagne', r = S.J.pv / (S.J.pvMax || 1), et = gagne ? (r >= .7 ? 3 : r >= .4 ? 2 : 1) : 0;
+    let txt;
+    if (S.eclairJour === 'compte' && !eclairFait()) {
+      const m = (() => { try { return JSON.parse(localStorage.getItem('guilde-eclair') || '{}'); } catch (e) { return {}; } })(); m[eclairJour()] = { gagne, etoiles:et, heros:S.J.id };
+      Object.keys(m).sort().slice(0, -30).forEach(k => delete m[k]); try { localStorage.setItem('guilde-eclair', JSON.stringify(m)); } catch (e) {}
+      const xp = 10 + 5 * et, or = 5 * et; if (typeof gagneXP === 'function') try { gagneXP(xp, 'Duel éclair du jour'); } catch (e) {}
+      if (or && typeof donneRessources === 'function') try { donneRessources(or, 0); } catch (e) {}
+      if (typeof guildeEvt === 'function') try { guildeEvt('flash', 1); } catch (e) {}
+      txt = `⚡ <b>Duel éclair du jour compté</b> : ${gagne ? '★'.repeat(et) + '☆'.repeat(3 - et) : 'perdu'} · +${xp} XP${or ? ` · 🪙 +${or}` : ''}. Reviens demain pour le prochain !`;
+    } else txt = '⚡ Essai pour le plaisir : ton duel éclair du jour était déjà compté.';
+    const f = document.querySelector('#fen .fenetre > div'); if (f) f.insertAdjacentHTML('afterbegin', `<p style="text-align:center;background:#2a2150;border:1px solid #f3c96b88;border-radius:10px;padding:8px">${txt}</p>`);
+  }; }
 accueil = function (o) { fermer(); if (!okDuel(choixDuel)) choixDuel = 'maelle'; voileDuel(true); try { GM.retour(null); } catch (e) {} CFG.ouvre(defDuel(), o); };
 window.partieSemaine = function () { accueil({ mode:'semaine' }); };
 // au chargement sans paramètre particulier, l'ancien accueil vient de s'ouvrir : on le remplace par le configurateur
-{ const q = new URLSearchParams(location.search); if (!['tuto', 'enigme', 'semaine', 'deux', 'ami', 'salle', 'odyssee', 'campement', 'parties', 'h'].some(k => q.get(k))) accueil(); }
+{ const q = new URLSearchParams(location.search); if (q.get('eclair')) setTimeout(() => accueil({ mode:'eclair' }), 0); if (!['tuto', 'enigme', 'semaine', 'eclair', 'deux', 'ami', 'salle', 'odyssee', 'campement', 'parties', 'h'].some(k => q.get(k))) accueil(); }
