@@ -63,19 +63,20 @@ function envieButin() { if (typeof butinRamasse === 'function') butinRamasse(); 
 function envieBandeau() {
   let b = document.getElementById('env-bandeau');
   if (!MENU_ENVIE || (typeof courant !== 'undefined' && courant)) { if (b) b.remove(); return; }
-  const L = envieRendezVous(), f = L.filter(x => x[4]).length;
+  // 23/11 (l'utilisateur : « si c'est un duel de la semaine, pourquoi je le retrouve en journalier ? ») : le Duel de la semaine a sa partie à lui et ne compte pas dans le total du jour
+  const L = envieRendezVous(), LJ = L.filter(x => x[0] !== 'semaine'), f = LJ.filter(x => x[4]).length;
   if (!b) { b = document.createElement('button'); b.id = 'env-bandeau'; b.onclick = () => envieAujourdhui(); const car = document.getElementById('car'); car.parentNode.insertBefore(b, car); }
-  b.innerHTML = `<span class="sol"><img src="ui/aujourdhui.webp?v=1" alt="" onerror="this.replaceWith('☀')"></span><span class="t"><b>Aujourd’hui</b><small>${f === L.length ? 'Tout est fait, bravo !' : `${f} sur ${L.length} faits · ${L.filter(x => !x[4]).slice(0, 3).map(x => x[1]).join(' ')} t’attendent`}</small></span><span class="n">${f}/${L.length}</span>`;
+  b.innerHTML = `<span class="sol"><img src="ui/aujourdhui.webp?v=1" alt="" onerror="this.replaceWith('☀')"></span><span class="t"><b>Aujourd’hui</b><small>${f === LJ.length ? 'Tout est fait, bravo !' : `${f} sur ${LJ.length} faits · ${LJ.filter(x => !x[4]).slice(0, 3).map(x => x[1]).join(' ')} t’attendent`}</small></span><span class="n">${f}/${LJ.length}</span>`;
 }
 // le panneau
 function envieAujourdhui(rouvre) {
   let p = document.getElementById('env-auj'); if (p) { p.remove(); if (!rouvre) return; }
-  const L = envieRendezVous(), f = L.filter(x => x[4]).length;
+  const L = envieRendezVous(), LJ = L.filter(x => x[0] !== 'semaine'), f = LJ.filter(x => x[4]).length;
   p = document.createElement('div'); p.id = 'env-auj';
   p.innerHTML = `<div class="boite"><button class="x" onclick="envieAujourdhui()" aria-label="Fermer">✕</button>
-    <h2><img src="ui/aujourdhui.webp?v=1" alt="" style="width:38px;height:38px;vertical-align:middle;margin-right:6px">Aujourd’hui</h2><p class="sous">Les rendez-vous du jour : la même chose pour tous, une nouvelle chaque jour. <b>${f}/${L.length}</b></p>
-    ${(() => { const RAP = ['quetes', 'enigme', 'flashcrypte', 'flashvoyage', 'semaine', 'butin'] /* 22/11 : les quêtes du jour sont devenues des gestes courts → « Rapide » */, ligne = ([k, e, n, d, fait, a]) => `<button class="${fait ? 'fait' : ''}" onclick="${a}"><span class="e">${e}</span><span class="t"><b>${n}</b><small>${d}</small></span><span class="c">${fait ? '✓' : '›'}</span></button>`;
-      return `<h3 class="grp">⚡ Rapide <small>quelques minutes</small></h3><div class="liste">${L.filter(x => RAP.includes(x[0])).map(ligne).join('')}</div><h3 class="grp">🗺 Si tu as le temps <small>une vraie partie</small></h3><div class="liste">${L.filter(x => !RAP.includes(x[0])).map(ligne).join('')}</div>`; })()}
+    <h2><img src="ui/aujourdhui.webp?v=1" alt="" style="width:38px;height:38px;vertical-align:middle;margin-right:6px">Aujourd’hui</h2><p class="sous">Les rendez-vous du jour : la même chose pour tous, une nouvelle chaque jour. <b>${f}/${LJ.length}</b></p>
+    ${(() => { const RAP = ['quetes', 'enigme', 'flashcrypte', 'flashvoyage', 'butin'], SEM = ['semaine'] /* 22/11 : les quêtes du jour sont devenues des gestes courts → « Rapide » */, ligne = ([k, e, n, d, fait, a]) => `<button class="${fait ? 'fait' : ''}" onclick="${a}"><span class="e">${e}</span><span class="t"><b>${n}</b><small>${d}</small></span><span class="c">${fait ? '✓' : '›'}</span></button>`;
+      return `<h3 class="grp">⚡ Rapide <small>quelques minutes</small></h3><div class="liste">${L.filter(x => RAP.includes(x[0])).map(ligne).join('')}</div><h3 class="grp">🗺 Si tu as le temps <small>une vraie partie</small></h3><div class="liste">${L.filter(x => !RAP.includes(x[0]) && !SEM.includes(x[0])).map(ligne).join('')}</div><h3 class="grp">🗓️ Cette semaine <small>jusqu’à dimanche soir</small></h3><div class="liste">${L.filter(x => SEM.includes(x[0])).map(ligne).join('')}</div>`; })()}
     <div class="liste" style="display:none">${L.map(([k, e, n, d, fait, a]) => `<button class="${fait ? 'fait' : ''}" onclick="${a}"><span class="e">${e}</span><span class="t"><b>${n}</b><small>${d}</small></span><span class="c">${fait ? '✓' : '›'}</span></button>`).join('')}</div></div>`;
   p.onclick = ev => { if (ev.target === p) envieAujourdhui(); };
   document.body.appendChild(p); if (typeof GM !== 'undefined') GM.son('clic');
