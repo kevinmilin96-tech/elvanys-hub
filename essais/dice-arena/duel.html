@@ -390,7 +390,7 @@
      Gauche : les actions en icônes · droite : le bac des dés vertical · centre : créatures et consigne · bas : la main. ================= */
   html:has(.plateau.unique), body:has(.plateau.unique) { height:100%; overflow:hidden; overscroll-behavior:none; }
   #app:has(> .plateau.unique) { height:100dvh; min-height:0 !important; display:flex; flex-direction:column; padding:0 0 54px !important; overflow:hidden; }
-  #app:has(> .plateau.unique) > .salle { flex:none; margin:0; border-radius:0; padding:4px 8px; }
+  #app:has(> .plateau.unique) > .salle { flex:none; margin:0; border-radius:0; padding:4px 8px; position:relative; z-index:7; } /* 23/11 : la ligne de la salle reste devant le plateau long remonté */
   .plateau.tapis.unique { flex:1; min-height:0; aspect-ratio:auto; container-type:size; border-radius:0; background-size:100% 100%; overflow:visible; }
   /* 23/11 (l'utilisateur : « les cercles sont plutôt ovales ») : le plateau peint garde SES proportions (768 × 1376) au lieu d'être étiré sur les téléphones longs ;
      la place en trop va au-dessus, sur un fond de bois sombre */
@@ -2432,21 +2432,38 @@ ${Q} .bandeau, ${Q} .lancer { top:${f(mil)}cqh; left:${f(a[0] + .5)}cqw; right:$
 }
 // 23/11 (l'utilisateur : « ton image ne correspond pas à la mienne ») : sur un plateau LONG, le cœur va EXACTEMENT où il a été placé
 // (l'ancien calcul le décalait selon le bouclier et la hauteur du panneau de texte) : on mesure après chaque affichage et on recale
+// 23/11 (l'utilisateur : « le menu du bas empiète sur le bas du plateau ») : le plateau LONG se cale pour que tout ce qui sert
+// (des portraits du haut jusqu'au bas de la main, du paquet et de la défausse) soit visible au-dessus de la barre ; on coupe le décor, et en haut d'abord
+function calePlateauLong() {
+  const pl = document.querySelector('.plateau.unique'), k = typeof plateauIle === 'function' && plateauIle(), app = document.getElementById('app'); if (!pl || !app) return;
+  if (!k || !k.startsWith('long')) { pl.style.marginTop = ''; pl.style.width = ''; return; }
+  const R = PLACEMENTS_ILE[k], cs = getComputedStyle(app), haut = pl.previousElementSibling ? pl.previousElementSibling.getBoundingClientRect().bottom - app.getBoundingClientRect().top : 0;
+  const A = app.clientHeight - parseFloat(cs.paddingBottom || 0) - haut - 4; // la place entre la ligne de la salle et la barre du bas
+  const yHaut = Math.min(R.portrait_haut[1], (R.cadre_haut || R.portrait_haut)[1]) - 9, yBas = Math.max(R.main_bas_droit[1], (R.paquet || [0, 0])[1] + 6, (R.defausse || [0, 0])[1] + 6) + 1.5;
+  let W = app.clientWidth, H = W * 1536 / 688; const utile = (yBas - yHaut) / 100 * H;
+  if (utile > A) { W = W * A / utile; H = W * 1536 / 688; } // vraiment trop court : le plateau rétrécit un peu
+  const tMin = A - yBas / 100 * H, tMax = -yHaut / 100 * H; // tMin ≤ t ≤ tMax
+  let t = H <= A ? (A - H) / 2 : Math.min(tMax, Math.max(tMin, (A - H) / 2)); if (H > A) t = Math.max(tMin, Math.min(tMax, t));
+  pl.style.width = W + 'px'; pl.style.marginTop = t.toFixed(1) + 'px';
+}
 function recaleCoeurs() {
   const pl = document.querySelector('.plateau.unique'), k = typeof plateauIle === 'function' && plateauIle(); if (!pl || !k || !k.startsWith('long')) return;
   const R = PLACEMENTS_ILE[k], P = pl.getBoundingClientRect();
   for (const [id, c] of [['b-O', 'haut'], ['b-J', 'bas']]) {
     for (const [sel, cle] of [['[data-k="pv"]', 'coeur_'], ['[data-k="pc"]', 'pc_']]) { // 23/11 : les PC aussi, s'ils ont été placés
     const e = pl.querySelector(`#${id} .pastilles ${sel}`), v = R[cle + c]; if (!e || !v) continue;
-    if (cle === 'pc_') { const t = ((R.tailles || {})[cle + c] || 100) / 100; e.style.scale = t; }
-    e.style.translate = '0px 0px'; const r = e.getBoundingClientRect(), dx = P.left + P.width * v[0] / 100 - (r.left + r.width / 2), dy = P.top + P.height * v[1] / 100 - (r.top + r.height / 2);
-    const own = parseFloat(getComputedStyle(e).scale) || 1, sc = r.width / (e.offsetWidth || 1) / own || 1; // le décalage subit l'agrandissement des parents, pas le sien
+    // la taille choisie, sans l'agrandissement du panneau de texte qui le contient (23/11 : « les cœurs sont quand même sur le cadre »)
+    e.style.translate = '0px 0px'; e.style.scale = '1'; const ps = e.getBoundingClientRect().width / (e.offsetWidth || 1) || 1;
+    e.style.scale = String((((R.tailles || {})[cle + c] || 100) / 100) / ps);
+    const r = e.getBoundingClientRect(), dx = P.left + P.width * v[0] / 100 - (r.left + r.width / 2), dy = P.top + P.height * v[1] / 100 - (r.top + r.height / 2);
+    const sc = ps; // le décalage subit l'agrandissement des parents, pas le sien
     e.style.translate = `${(dx / sc).toFixed(1)}px ${(dy / sc).toFixed(1)}px`;
   } }
 }
 if (typeof document !== 'undefined') { let t = null; new MutationObserver(() => { cancelAnimationFrame(t); t = requestAnimationFrame(recaleCoeurs); }).observe(document.documentElement, { childList:true, subtree:true }); addEventListener('resize', () => requestAnimationFrame(recaleCoeurs)); }
+if (typeof document !== 'undefined') { let t2 = null; new MutationObserver(() => { cancelAnimationFrame(t2); t2 = requestAnimationFrame(calePlateauLong); }).observe(document.documentElement, { childList:true, subtree:true }); addEventListener('resize', () => requestAnimationFrame(calePlateauLong)); }
 // 23/11 : chaque plateau LONG placé (688 × 1536) prend toute la largeur ; sur un écran plus court, on perd au plus 18 % de sa hauteur (le décor), jamais l'interface
-const cssLong = k => { const n = k.slice(4); return `.plateau.tapis.unique.ile-${k}:not(.scene) { background-image:url('decor/plateau-long-${n}.webp?v=1'); aspect-ratio:688/1536; width:min(100%, calc((100dvh - 80px) * 688 / 1536 / .82)); margin:0 auto; flex:none; }
+const cssLong = k => { const n = k.slice(4); return `.plateau.tapis.unique.ile-${k}:not(.scene) { background-image:url('decor/plateau-long-${n}.webp?v=1'); aspect-ratio:688/1536; width:100%; margin:0 auto; flex:none; }
 #app:has(> .plateau.unique.ile-${k}:not(.scene))::before { background-image:url('decor/plateau-long-${n}.webp?v=1'); }`; };
 if (typeof document !== 'undefined') { const st = document.createElement('style'); st.id = 'plateaux-longs'; st.textContent = Object.keys(PLACEMENTS_ILE).filter(k => k.startsWith('long')).map(cssLong).join('\n'); document.head.appendChild(st); }
 if (typeof document !== 'undefined') { const st = document.createElement('style'); st.id = 'placements-iles'; st.textContent = Object.entries(PLACEMENTS_ILE).map(([k, R]) => cssPlacement(k, R)).join('\n'); document.head.appendChild(st); } // îles dont le plateau est reçu (givre, abime : à venir)
