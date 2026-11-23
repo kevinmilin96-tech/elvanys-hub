@@ -45,7 +45,9 @@ function defDuel() {
       if (m === 'enigme') return partieEnigme('1');
       if (m === 'tuto') return partieTuto();
       if (!okDuel(choixDuel)) { voileDuel(true); alert('Choisis ton héros.'); return CFG.ouvre(defDuel(), { etape:2 }); }
-      if (typeof SEMAINE_ACTIVE !== 'undefined') SEMAINE_ACTIVE = m === 'semaine';
+      // 23/11 (l'utilisateur : « j'ai gagné le Duel de la semaine et je n'ai rien eu ») : SEMAINE_ACTIVE est enfermée dans semaine.js, invisible d'ici ;
+      // depuis le configurateur (22/11), la règle de la semaine ne s'allumait donc JAMAIS. On passe par la porte prévue.
+      if (typeof window.semaineActive === 'function') window.semaineActive(m === 'semaine');
       monHeros = choixDuel;
       if (v.deck !== undefined && typeof lireDecks === 'function') { const D = lireDecks(monHeros); D.actif = v.deck; ecrisDecks(monHeros, D); }
       fermer(); nouvellePartie(monHeros, v.adv === 'hasard' ? undefined : v.adv); regles(true);
