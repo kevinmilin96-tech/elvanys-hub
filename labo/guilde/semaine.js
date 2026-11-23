@@ -51,7 +51,7 @@ if (typeof nouvellePartie === 'function') {
   nouvellePartie = function (id, idO, auto) {
     if (!SEMAINE_ACTIVE) return _np(id, idO, auto);
     const r = regleActive(), garde = SALLES.slice();
-    SALLES.length = 0; SALLES.push({ id:r.id, n:`Règle de la semaine : ${r.n}`, d:r.d, sem:true });
+    SALLES.length = 0; SALLES.push({ id:r.id, n:r.id === 'sem-eclair' && r.forcee ? '⚡ Duel éclair du jour' : `Règle de la semaine : ${r.n}`, d:r.d, sem:true }); // 23/11 : le duel éclair du jour n'est pas « la règle de la semaine »
     // la partie démarre avec la règle déjà en place (le premier tour en tient compte) ; le deck préparé dans la Tour des héros est gardé
     try { _np(id, idO, auto); } finally { SALLES.length = 0; SALLES.push(...garde); }
     S.semaine = r.semaine;
