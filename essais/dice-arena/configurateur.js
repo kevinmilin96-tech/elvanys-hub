@@ -94,7 +94,7 @@
   };
   CFG.jouer = function () { const v = CFG.valeurs(); bip('melange'); CFG.ferme(); CFG.def.lancer(CFG.mode, v); };
   // quand le jeu s'affiche : la barre du bas disparaît, et au retour on repart du choix du mode
-  CFG.ferme = function () { const b = document.getElementById('cfg-bas'); if (b) b.remove(); CFG.etape = 1; };
+  CFG.ferme = function () { const b = document.getElementById('cfg-bas'); if (b) b.remove(); CFG.etape = 1; document.documentElement.classList.remove('cfg-fige'); };
 
   CFG.dessine = function () {
     const D = CFG.def, M = leMode(), E = CFG.etape, jeu = document.getElementById(D.racine || 'jeu');
@@ -130,5 +130,18 @@
     let b = document.getElementById('cfg-bas');
     if (!b) { b = document.createElement('div'); b.id = 'cfg-bas'; b.className = 'cfg-bas'; document.body.appendChild(b); }
     b.innerHTML = `<div>${bas}</div>`;
+    // 23/11 (l'utilisateur : « que le scroll soit bloqué ») : si tout tient sur l'écran au-dessus de la barre du bas, la page ne défile plus du tout
+    fige(); jeu.querySelectorAll('img').forEach(i => i.complete || i.addEventListener('load', fige, { once:true }));
   };
+  function fige() {
+    const cfg = document.querySelector('.cfg'), b = document.getElementById('cfg-bas'), H = document.documentElement;
+    if (!cfg || !b) { H.classList.remove('cfg-fige'); return; }
+    let bas = 0; [...cfg.children].forEach(e => { bas = Math.max(bas, e.getBoundingClientRect().bottom + scrollY); });
+    const tient = bas <= innerHeight - b.getBoundingClientRect().height + 4;
+    H.classList.toggle('cfg-fige', tient); if (tient) scrollTo(0, 0);
+  }
+  addEventListener('resize', () => requestAnimationFrame(fige));
+  const st2 = document.createElement('style');
+  st2.textContent = 'html.cfg-fige, html.cfg-fige body { overflow:hidden !important; overscroll-behavior:none; } html.cfg-fige .cfg-boite { overflow:hidden; }';
+  document.head.appendChild(st2);
 })();
