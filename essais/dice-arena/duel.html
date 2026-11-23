@@ -398,6 +398,10 @@
   #app:has(> .plateau.unique:not(.scene)) { background:#1a130b; position:relative; isolation:isolate; overflow:hidden; }
   /* la bande en trop au-dessus = le bois du plateau, flou et assombri (plus de rectangle noir) */
   #app:has(> .plateau.unique:not(.scene))::before { content:''; position:absolute; inset:0; z-index:-1; background:url('decor/plateau-duel-definitif.webp?v=1') center top/100% auto no-repeat; filter:blur(10px) brightness(.55); transform:scale(1.15); }
+  /* 23/11 : le plateau du Duel en FORMAT LONG (688 × 1536) : il prend toute la largeur ; sur un écran plus court, on perd au plus 18 % de sa hauteur
+     (le décor du haut et du bas), jamais l'interface ; plus de bande, plus d'étirement */
+  .plateau.tapis.unique.ile-longduel:not(.scene) { background-image:url('decor/plateau-long-duel.webp?v=1'); aspect-ratio:688/1536; width:min(100%, calc((100dvh - 80px) * 688 / 1536 / .82)); margin:0 auto; flex:none; }
+  #app:has(> .plateau.unique.ile-longduel:not(.scene))::before { background-image:url('decor/plateau-long-duel.webp?v=1'); }
   #app:has(> .plateau.unique.ile-brulees:not(.scene))::before { background-image:url('decor/plateau-brulees.webp?v=3'); }
   #app:has(> .plateau.unique.ile-givre:not(.scene))::before { background-image:url('decor/plateau-givre.webp?v=4'); }
   #app:has(> .plateau.unique.ile-abime:not(.scene))::before { background-image:url('decor/plateau-abime.webp?v=3'); }
@@ -2374,6 +2378,8 @@ const PLATEAUX_ILE = { brulees:1, givre:1, abime:1, invasion:1 }; // îles dont 
 // 14/11 : l'interface de chaque plateau d'île est PLACÉE PAR L'UTILISATEUR (placer.html?plateau=<île> → « PLACEMENT <ÎLE> {…} »), recopiée ici telle quelle.
 // Tant qu'une île n'a pas son placement, c'est celui du Duel qui sert. Le CSS est fabriqué à partir de ces chiffres (cssPlacement).
 const PLACEMENTS_ILE = {
+  // PLACEMENT LONG-DUEL de l'utilisateur (23/11 ~20 h 30, plateau du Duel en format long 9:20), recopié tel quel (sans les anciens effet_* remplacés par la grille)
+  longduel:{"taille_medaillon":11.2,"taille_portrait":16.9,"frappe":[12.69,35.86],"technique":[12.76,41.55],"garde":[12.59,47.17],"pouvoir":[12.56,52.84],"transmu":[12.63,58.45],"equipe":[12.66,64.09],"de_premier":[87.67,39.25],"de_dernier":[87.67,59.41],"portrait_haut":[49.87,23.28],"portrait_bas":[50.08,74.07],"coeur_haut":[14.97,27.1],"bouclier_haut":[26.58,25.48],"etiquettes_haut":[80.54,26.11],"coeur_bas":[15.13,73.32],"bouclier_bas":[26.12,71.79],"etiquettes_bas":[80.11,73.51],"main_haut_gauche":[31.92,81.56],"main_bas_droit":[74.56,88.83],"tailles":{"cadre_haut":104,"anneau_haut":94,"portrait_haut":96,"effets_haut":52,"etiquettes_haut":118,"garde_bas":96,"bouclier_bas":96,"coeur_bas":150,"garde_haut":96,"bouclier_haut":96,"coeur_haut":150,"effets_bas":52,"anneau_bas":92,"portrait_bas":92},"champ_haut_gauche":[22.22,33.59],"champ_bas_droit":[77.74,66.19],"anneau_haut":[49.97,23.28],"anneau_bas":[50.08,74.07],"cadre_haut":[50.1,23.59],"cadre_bas":[50.28,74.38],"garde_haut":[26.59,28.8],"garde_bas":[26.26,75.34],"effets_haut":[80.68,28.79],"effets_bas":[80.68,75.15],"paquet":[27.13,85.45],"defausse":[79.2,85.45]},
   // PLACEMENT INVASION de l'utilisateur (14/11 ~23 h 45), recopié tel quel
   invasion:{"taille_medaillon":11.2,"taille_portrait":16.9,"frappe":[12.96,31.8],"technique":[12.99,38.91],"garde":[13.01,46.09],"pouvoir":[13.12,53.22],"transmu":[13.01,60.43],"equipe":[12.98,67.57],"de_premier":[87.48,37.38],"de_dernier":[87.48,60.45],"portrait_haut":[49.83,10.89],"portrait_bas":[50.18,77.47],"coeur_haut":[16.15,20.45],"bouclier_haut":[28.13,20.52],"etiquettes_haut":[79.32,20.6],"coeur_bas":[16.64,77.6],"bouclier_bas":[27.01,77.44],"etiquettes_bas":[79.68,78.08],"main_haut_gauche":[20.82,87.58],"main_bas_droit":[80.51,96.95],"tailles":{"equipe":76,"transmu":76,"pouvoir":76,"garde":76,"technique":76,"frappe":76,"cadre_haut":74,"portrait_haut":66,"anneau_haut":66,"portrait_bas":64,"anneau_bas":64,"cadre_bas":68},"champ_haut_gauche":[23.11,28.93],"champ_bas_droit":[77.34,69.7],"anneau_haut":[49.84,10.83],"anneau_bas":[50.18,77.37],"cadre_haut":[49.9,11.21],"cadre_bas":[49.98,77.67]},
   // PLACEMENT ABIME de l'utilisateur (plateau v3, 14/11 ~12 h 50), recopié tel quel
@@ -2401,7 +2407,8 @@ ${P} #${id} .pastilles { width:27.4cqw !important; left:${f(pl)}cqw !important; 
 ${P} #${id} .pastilles [data-k="pv"] { left:${f(coeur[0] - 5.5 - bl - pl + 4.55)}cqw !important; top:calc(${f(coeur[1] - etq[1] + 3.35)}cqh - 5cqw) !important; }
 ${P} #${id}:has(.bdg:not([hidden])) .pastilles [data-k="pv"] { left:${f(coeur[0] - 5.5 - bl - pl)}cqw !important; }
 ${P} #${id} .bdg.bg, ${P} #${id} .bdg.bb { left:${f(bouc[0] - 3.8 - bl)}cqw; top:calc(${f(bouc[1] - por[1])}cqh + ${f(p / 2 - 4.3)}cqw); }
-${P} #${id} .bdg.bg:not([hidden]) + .bdg.bb { left:${f(bouc[0] - 3.8 - bl + 8.2)}cqw; }${garde ? `
+${P} #${id} .bdg.bg:not([hidden]) + .bdg.bb { left:${f(bouc[0] - 3.8 - bl + 8.2)}cqw; }${(() => { const c = id === 'b-O' ? 'haut' : 'bas', tc = T('coeur_' + c), tb = T('bouclier_' + c), tg = T('garde_' + c), te = T('etiquettes_' + c); /* 23/11 : les tailles réglées dans la page de placement */
+  return `\n${P} #${id} .pastilles [data-k="pv"] { scale:${tc}; } ${P} #${id} .bdg.bb { scale:${tb}; } ${P} #${id} .bdg.bg { scale:${tg}; } ${P} #${id} .pastilles { scale:${te}; transform-origin:50% 50%; }`; })()}${garde ? `
 ${P} #${id} .bdg.bg { left:${f(garde[0] - 3.8 - bl)}cqw; top:calc(${f(garde[1] - por[1])}cqh + ${f(p / 2 - 4.3)}cqw); }
 ${P} #${id} .bdg.bg:not([hidden]) + .bdg.bb, ${P} #${id} .bdg.bg:not([hidden]) ~ .bdg.bb { left:${f(bouc[0] - 3.8 - bl)}cqw; transform:none; }` : ''}`; };
   const dp = R.de_premier, dd = R.de_dernier;
@@ -2418,7 +2425,8 @@ ${Q} .bandeau, ${Q} .lancer { top:${f(mil)}cqh; left:${f(a[0] + .5)}cqw; right:$
   return css;
 }
 if (typeof document !== 'undefined') { const st = document.createElement('style'); st.id = 'placements-iles'; st.textContent = Object.entries(PLACEMENTS_ILE).map(([k, R]) => cssPlacement(k, R)).join('\n'); document.head.appendChild(st); } // îles dont le plateau est reçu (givre, abime : à venir)
-const plateauIle = () => S && S.coop ? 'invasion' : S && S.ody && PLATEAUX_ILE[S.ile || 'brulees'] ? (S.ile || 'brulees') : null;
+// 23/11 : hors Odyssée et Invasion, sans lieu peint, le Duel se joue sur le plateau du Duel en FORMAT LONG (placement LONG-DUEL de l'utilisateur)
+const plateauIle = () => S && S.coop ? 'invasion' : S && S.ody && PLATEAUX_ILE[S.ile || 'brulees'] ? (S.ile || 'brulees') : S && !S.lieu ? 'longduel' : null;
 const BRAISES = [...Array(26)].map((_, i) => ({ x:(i * 37 + 11) % 97 + 1.5, d:5 + (i * 7) % 6, t:(i * 1.37) % 9, s:2 + (i * 5) % 4, dx:((i * 13) % 9) - 4 }));
 function animIle(ile) {
   const ph = T => `-${((Date.now() / 1000) % T).toFixed(2)}s`;
