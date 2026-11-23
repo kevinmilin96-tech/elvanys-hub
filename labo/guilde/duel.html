@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261123-201822"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
+<head><meta name="guilde-version" content="20261123-202507"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="robots" content="noindex">
@@ -778,7 +778,7 @@
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
 // 14/11 : l'Odyssée sans fin a ses propres emplacements (odyssee.js lit SANSFIN)
 const SANSFIN = new URLSearchParams(location.search).get('sansfin') === '1', ROUTE_TITAN = new URLSearchParams(location.search).get('route') === '1', EPREUVE_PAGE = new URLSearchParams(location.search).get('epreuve') === '1', ODY_PAGE = EPREUVE_PAGE ? 'epreuves.html' : 'odyssee.html' + (SANSFIN ? '?sansfin=1' : ROUTE_TITAN ? '?route=1' : '');
-const VERSION = '20261123-201822';
+const VERSION = '20261123-202507';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -1354,11 +1354,17 @@ function raisonCarte(J, k) {
   if (J.pc < cout) return `Il te manque ${cout - J.pc} PC`;
   return 'Impossible pour le moment';
 }
+// 23/11 : le placement en cours (plateau d'île, ou plateau du Duel une fois placé) ; paquet et défausse ont leur place à eux s'ils sont placés
+const placementCourant = () => (typeof plateauIle === 'function' && plateauIle() && PLACEMENTS_ILE[plateauIle()]) || (typeof PLACEMENT_DUEL !== 'undefined' ? PLACEMENT_DUEL : null);
+function tasPos(k) {
+  const R = placementCourant(); if (!R || !R[k]) return ''; const Z = zoneMain(), t = ((R.tailles || {})[k] || 100) / 100;
+  return `left:${((R[k][0] - Z.x1) / (Z.x2 - Z.x1) * 100).toFixed(2)}%;top:${((R[k][1] - Z.y1) / (Z.y2 - Z.y1) * 100).toFixed(2)}%;right:auto;bottom:auto;transform:translate(-50%, -50%) scale(${t});`;
+}
 function tas(J, w, h) {
   if (!J.deck || !w || !(J.fatigueOK || J.deck.length || (J.defausse || []).length)) return ''; // pas de paquet (énigme…) = rien
   const d = J.defausse || [], der = d[d.length - 1], ouvre = `onclick="event.stopPropagation();paquetFen(S.J)"`, mu = J === S.J && mullDispo();
-  const paquet = `<div class="tas paquet ${J.deck.length ? '' : 'vide'}" style="width:${w}px;height:${h}px" ${ouvre}>${J.deck.length > 1 ? '<i></i>' : ''}${J.deck.length > 4 ? '<i></i>' : ''}<b>${J.deck.length}</b>${mu ? '<em>↺ Changer<br>ma main</em>' : ''}</div>`.replace(mu ? ouvre : '§', 'onclick="event.stopPropagation();mulligan()"');
-  const def = `<div class="tas defausse ${der ? '' : 'vide'}" style="width:${w}px;height:${h}px" ${ouvre}>${der && typeof carteGuilde === 'function' ? `<div class="cg-mini" style="transform:scale(${(w / 164).toFixed(4)})">${carteGuilde(der, { w:164 })}</div>` : ''}<b>${d.length}</b></div>`;
+  const paquet = `<div class="tas paquet ${J.deck.length ? '' : 'vide'}" style="width:${w}px;height:${h}px;${tasPos('paquet')}" ${ouvre}>${J.deck.length > 1 ? '<i></i>' : ''}${J.deck.length > 4 ? '<i></i>' : ''}<b>${J.deck.length}</b>${mu ? '<em>↺ Changer<br>ma main</em>' : ''}</div>`.replace(mu ? ouvre : '§', 'onclick="event.stopPropagation();mulligan()"');
+  const def = `<div class="tas defausse ${der ? '' : 'vide'}" style="width:${w}px;height:${h}px;${tasPos('defausse')}" ${ouvre}>${der && typeof carteGuilde === 'function' ? `<div class="cg-mini" style="transform:scale(${(w / 164).toFixed(4)})">${carteGuilde(der, { w:164 })}</div>` : ''}<b>${d.length}</b></div>`;
   return paquet + def;
 }
 function mainEnEventail(J) {
@@ -1370,7 +1376,7 @@ function mainEnEventail(J) {
   const Z = zoneMain(), zw = (Z.x2 - Z.x1) / 100 * PW, zh = (Z.y2 - Z.y1) / 100 * PH;
   const CH = Math.max(60, Math.min(150, zh * .96)), CW = Math.round(CH * .7), FS = (CW / 80 * .5).toFixed(3);
   // 23/11 (décidé au plan du deck le 22/11) : le paquet face cachée à gauche de la main, la défausse à droite ; la main s'étale entre les deux
-  const PW_ = J.deck && (J.fatigueOK || J.deck.length || (J.defausse || []).length) ? Math.round(CW * .62) : 0, zwM = zw - 2 * (PW_ + 6);
+  const PW_ = J.deck && (J.fatigueOK || J.deck.length || (J.defausse || []).length) ? Math.round(CW * .62) : 0, zwM = zw - ((placementCourant() || {}).paquet ? 0 : 2 * (PW_ + 6)); // placés ailleurs : la main garde toute sa zone
   const mil = (n - 1) / 2, pas = n > 1 ? Math.min(CW * .82, (zwM - CW) / (n - 1)) : 0, ang = n > 1 ? Math.min(4, 14 / (n - 1)) : 0;
   return J.main.map((k, i) => {
     const c = CARTES[k], ok = sel.length && permis(J, k, vals(sel), sel), vue = carteVue === i, d = i - mil;
