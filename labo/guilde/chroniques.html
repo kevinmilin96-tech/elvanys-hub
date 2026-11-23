@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261123-063527"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
+<head><meta name="guilde-version" content="20261123-065608"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="robots" content="noindex">
@@ -229,7 +229,7 @@
 <script src="chroniques-moteur.js?v=4ee01c25a4"></script>
 <script src="chroniques-ambiance.js?v=cdc992dc3a"></script>
 <script src="configurateur.js?v=4c269ea5e9"></script>
-<script src="chroniques-config.js?v=58b468ce8a"></script>
+<script src="chroniques-config.js?v=2881910c6a"></script>
 <script>
 // =============================================================================================== LES CHRONIQUES DE LA GUILDE v2 (15/11, écran « façon HeroQuest »)
 // Une grande carte qui défile : les salles restent dans le noir jusqu'à ce qu'on ouvre leur porte ; les couloirs se dévoilent en avançant ;
@@ -405,7 +405,7 @@ async function pousse() {
       const etat = S, j = JSON.stringify(S); L.dernier = j;
       const { statut, d } = await api('POST', `${API}/${L.code}`, { version:L.version, etat, joueurs:L.joueurs });
       if (statut === 200) { L.version = d.version; L.prises = []; rangeEnLigne(); break; }
-      if (statut === 409) { const prises = (L.prises || []).slice(); recoit(d); if (prises.length) { L.prises = prises; appliquePrises(); salleAJour(); continue; } bulle('Quelqu’un a joué en même temps : partie mise à jour.', true); break; }
+      if (statut === 409) { const prises = (L.prises || []).slice(); recoit(d); if (prises.length) { L.prises = prises; appliquePrises(); salleAJour(); continue; } if (typeof iniFusion !== 'undefined' && iniFusion) iniFusion = false; else bulle('Quelqu’un a joué en même temps : partie mise à jour.', true); break; }
       bulle(d.message || 'Le serveur ne répond pas.', true); break;
     }
   } catch (e) { bulle('Pas de réseau : le coup n’est pas parti.', true); }
@@ -1290,7 +1290,7 @@ function salleAttente() {
     ${LOB.equipe.length < 4 ? `<h3 style="color:var(--or);margin:3cqw 0 1.5cqw">＋ Ajoute ton héros</h3>
       <div class="choixH">${dispo.filter(([k]) => !pris.has(k)).map(([k, n, s, sec]) => `<button onclick="ajouteLobby('${k}')"><img src="${s}" onerror="this.onerror=null;this.src='${sec}'" alt="">${n}<small>${k.startsWith('av:') ? 'ton héros d’aventure' : 'héros de la Guilde'}</small></button>`).join('')}</div>` : ''}
     <h3 style="color:var(--or);margin:3cqw 0 1.5cqw">🎯 L’ordre de jeu${hote ? '' : ' <small style="color:var(--doux);font-weight:normal">(choisi par l’hôte)</small>'}</h3>
-    <div style="display:flex;gap:2cqw"><button class="gros" style="flex:1;margin:0;${!LOB.sansIni ? 'border-color:var(--or);background:#3a2f12' : ''}" ${hote ? '' : 'disabled'} onclick="lobbyPousse(l => { l.sansIni = false; })">🎯 Avec initiative<small>Un dé par héros à chaque tour : le plus haut joue en premier, chacun son tour.</small></button>
+    <div style="display:flex;gap:2cqw"><button class="gros" style="flex:1;margin:0;${!LOB.sansIni ? 'border-color:var(--or);background:#3a2f12' : ''}" ${hote ? '' : 'disabled'} onclick="lobbyPousse(l => { l.sansIni = false; })">🎯 Avec initiative<small>Au début de chaque tour, chacun lance son dé pour ses héros : le plus haut joue en premier.</small></button>
       <button class="gros" style="flex:1;margin:0;${LOB.sansIni ? 'border-color:var(--or);background:#3a2f12' : ''}" ${hote ? '' : 'disabled'} onclick="lobbyPousse(l => { l.sansIni = true; })">🔀 Sans initiative<small>Chacun joue quand il veut : lancer, passer la main, revenir finir.</small></button></div>
     ${hote ? `<button class="gros" style="margin-top:4cqw" ${LOB.equipe.length ? '' : 'disabled'} onclick="lanceSalle()">▶ Lancer la partie pour tout le monde<small>${LOB.equipe.length ? `${LOB.equipe.length} héros · ${titreScen}` : 'il faut au moins un héros'}</small></button>`
       : `<p class="sous" style="margin-top:4cqw;font-size:1.05em">⏳ En attente du lancement par <b>${nomJoueur(LOB.hote)}</b>… La partie démarrera toute seule sur ton téléphone.</p>`}
@@ -1354,5 +1354,6 @@ if (ESSAI) essaiAtelier(ESSAI); else if (sessionStorage.getItem('chron-en-jeu') 
 { const _d = dessine; dessine = function () { const r = _d.apply(this, arguments); if (S && !LOB) guideMode('chroniques-jeu'); musiqueDuMoment(); return r; }; }
 </script>
 <script src="chroniques-ecran.js?v=5cd2236b49"></script>
+<script src="chroniques-initiative.js?v=6598a89092"></script>
 </body>
 </html>

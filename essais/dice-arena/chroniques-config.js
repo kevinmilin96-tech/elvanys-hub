@@ -91,7 +91,7 @@ function defChron() {
           { k:'scen', titre:'📖 Le scénario', aide:'Tu pourras encore le changer dans la salle d’attente.', def:scenChoisi,
             choix:scenChoix().concat([c ? { v:'camp', n:`📜 Suite de la campagne`, d:`${CHAPITRES[c.chap].titre}, avec les sacs de ta campagne.` } : { v:'camp', n:'📜 Commencer la campagne', d:'Les 3 chapitres à la suite, entre amis.' }]) },
           { k:'ini', titre:'🎯 L’ordre de jeu', aide:'Tu pourras encore le changer dans la salle d’attente.', choix:[
-            { v:'avec', n:'🎯 Avec initiative', d:'Un dé par héros à chaque tour : le plus haut joue en premier, chacun son tour.' },
+            { v:'avec', n:'🎯 Avec initiative', d:'Au début de chaque tour, chacun lance son dé 🎯 pour ses héros : le plus haut joue en premier. Égalité : on relance !' },
             { v:'sans', n:'🔀 Sans initiative', d:'Chacun joue quand il veut : lancer, passer la main, revenir finir.' }] }]);
     },
     resume:(m, v) => {

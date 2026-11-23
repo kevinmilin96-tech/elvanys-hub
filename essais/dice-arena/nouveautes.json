@@ -1,5 +1,9 @@
 [
 {
+"v": "20261123-065608",
+"m": "Chroniques en ligne : au début de chaque tour, chacun lance lui-même son dé d’initiative ! Le plus haut joue en premier, égalité = on relance."
+},
+{
 "v": "20261123-063527",
 "m": "Les Chroniques ont leur nouvel accueil : choisis ta façon de jouer (une partie, la campagne, les aventures, chacun chez soi), coche de 1 à 4 héros, puis le scénario."
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261122-185645",
 "m": "Chroniques : dans la salle d’attente, le lien pour la télé (avec le code) et un bouton pour l’envoyer"
-},
-{
-"v": "20261122-185141",
-"m": "Grand menu : le carré ＋ Personnaliser pour choisir tes icônes"
 }
 ]
