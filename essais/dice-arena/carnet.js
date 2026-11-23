@@ -11,6 +11,8 @@
   const st = document.createElement('style');
   st.textContent = `
   .bandeau-quetes { display:none !important; }
+  /* 23/11 (l'utilisateur : « bizarre de passer de l'un à l'autre et voir le menu descendre plus petit ») : le carnet garde TOUJOURS la même hauteur */
+  #env-auj .boite { height:88vh; height:88dvh; max-height:none; }
   #env-auj .ongl { display:flex; gap:6px; margin:0 0 10px; } #env-auj .ongl button { flex:1; border:1px solid #6b5fb0; background:#1d1838; color:#d9d0ff; border-radius:12px; padding:9px 4px; font:bold 14px Georgia, serif; }
   #env-auj .ongl button.on { background:linear-gradient(#f3c96b, #d99a2b); color:#2a1a00; border-color:#f3c96b; }
   #env-auj .ongl button i { font-style:normal; font-size:11px; margin-left:4px; opacity:.85; }
@@ -42,9 +44,10 @@
 
   let onglet = 'jour';
   window.carnetOuvre = function (o) {
-    if (o) onglet = o; let p = document.getElementById('env-auj'); if (p) p.remove();
+    if (o) onglet = o; let p = document.getElementById('env-auj'); const garde = p && o; // changer d'onglet : on remplace le contenu sans refaire la fenêtre (ni animation, ni saut)
+    const haut = garde ? p.querySelector('.boite').scrollTop : 0; if (p && !garde) p.remove();
     const C = compte(), L = envieRendezVous().filter(x => x[0] !== 'quetes'), RAP = ['enigme', 'flashcrypte', 'flashvoyage', 'eclair', 'butin'];
-    p = document.createElement('div'); p.id = 'env-auj';
+    if (!garde) { p = document.createElement('div'); p.id = 'env-auj'; }
     const corps = onglet === 'jour'
       ? `<h3 class="grp">⚡ Rapide <small>quelques minutes</small></h3><div class="liste">${L.filter(x => RAP.includes(x[0])).map(ligne).join('')}</div>
          <h3 class="grp">📜 Les quêtes du jour <small>elles changent à minuit</small></h3>${quetesHTML(true)}
@@ -53,11 +56,12 @@
          <h3 class="grp">🗓️ Les rendez-vous de la semaine <small>jusqu’à dimanche soir</small></h3><div class="liste">
          ${ligne(['semaine', '🔏', 'Le Duel de la semaine', C.sc ? 'Sceau gagné cette semaine' : C.sem ? `« ${C.sem.n} » : gagne pour le Sceau` : 'Une règle nouvelle chaque semaine', !!C.sc, "envieVa('duel.html?semaine=1')"])}
          ${ligne(['chasse', '🎯', 'La Chasse au boss de la semaine', 'Le même boss pour tous, jusqu’à dimanche', false, "envieVa('epreuves.html')"])}</div>`;
-    p.innerHTML = `<div class="boite"><button class="x" onclick="document.getElementById('env-auj').remove()" aria-label="Fermer">✕</button>
+    const html = `<div class="boite"><button class="x" onclick="document.getElementById('env-auj').remove()" aria-label="Fermer">✕</button>
       <h2>📜 Le carnet de la Guilde</h2>
       <div class="ongl"><button class="${onglet === 'jour' ? 'on' : ''}" onclick="carnetOuvre('jour')">☀ Aujourd’hui<i>${C.jf}/${C.jn}</i></button><button class="${onglet === 'semaine' ? 'on' : ''}" onclick="carnetOuvre('semaine')">🗓️ Cette semaine<i>${C.sf}/${C.sn}</i></button></div>
       ${corps}</div>`;
-    p.onclick = ev => { if (ev.target === p) p.remove(); };
+    if (garde) { const b = p.querySelector('.boite'), t = document.createElement('div'); t.innerHTML = html; b.innerHTML = t.firstElementChild.innerHTML; b.scrollTop = o === onglet && haut ? 0 : 0; return; }
+    p.innerHTML = html; p.onclick = ev => { if (ev.target === p) p.remove(); };
     document.body.appendChild(p);
   };
   window.envieAujourdhui = function (rouvre) { const p = document.getElementById('env-auj'); if (p && !rouvre) { p.remove(); return; } carnetOuvre(); };
