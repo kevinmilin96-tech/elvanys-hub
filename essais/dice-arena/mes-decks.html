@@ -15,10 +15,11 @@
   main { max-width:620px; margin:0 auto; padding:12px 12px 80px; }
   h1 { margin:4px 0 10px; text-align:center; color:var(--or); font-size:1.35em; }
   button { font:inherit; color:inherit; cursor:pointer; }
-  .bande { display:flex; gap:6px; overflow-x:auto; padding:4px 2px 10px; scrollbar-width:none; }
-  .bande button { flex:0 0 auto; width:62px; border-radius:12px; border:2px solid #ffffff22; background:#000; padding:0; overflow:hidden; position:relative; }
+  /* 23/11 (l'utilisateur : « pas de défilement vers la droite, je veux voir tous les héros ») : tous les héros sur la largeur, plusieurs lignes s'il le faut */
+  .bande { display:grid; grid-template-columns:repeat(auto-fit, minmax(52px, 1fr)); gap:5px; padding:4px 2px 10px; }
+  .bande button { width:100%; border-radius:12px; border:2px solid #ffffff22; background:#000; padding:0; overflow:hidden; position:relative; }
   .bande img { width:100%; aspect-ratio:1; object-fit:cover; display:block; filter:saturate(.7) brightness(.75); }
-  .bande span { position:absolute; left:0; right:0; bottom:0; font-size:.68em; background:#000b; text-align:center; padding:1px 0; }
+  .bande span { position:absolute; left:0; right:0; bottom:0; font-size:.6em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; background:#000b; text-align:center; padding:1px 0; }
   .bande .on { border-color:var(--hc); box-shadow:0 0 12px var(--hc); } .bande .on img { filter:none; }
   .bande .verrou { opacity:.45; }
   .deckc { display:flex; align-items:center; gap:10px; width:100%; text-align:left; background:#ffffff0d; border:1px solid #ffffff22; border-radius:14px; padding:10px; margin-bottom:8px; }
