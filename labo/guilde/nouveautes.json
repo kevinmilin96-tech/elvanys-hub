@@ -1,5 +1,9 @@
 [
 {
+"v": "20261123-204318",
+"m": "Combat : les cœurs de vie sont exactement à leur place sur les nouveaux plateaux."
+},
+{
 "v": "20261123-204045",
 "m": "Odyssée : les combats du Givre passent sur le nouveau plateau qui remplit tout l’écran."
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261123-183312",
 "m": "Les flèches ‹ › du menu se posent maintenant entre les portails, sans les cacher."
-},
-{
-"v": "20261123-095111",
-"m": "Nouveau : les flashs du jour ! Une Crypte et une Expédition en 3 minutes, les mêmes pour tous. Ton premier essai compte (étoiles, XP, or), ensuite rejoue pour le plaisir. Dans « Aujourd’hui » → ⚡ Rapide."
 }
 ]
