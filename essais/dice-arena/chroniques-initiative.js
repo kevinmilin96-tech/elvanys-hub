@@ -65,6 +65,12 @@ function iniRoule(i, v) {
   #ini .ini-c img.ini-po { width:10cqw; height:10cqw; border-radius:50%; object-fit:cover; position:absolute; top:2cqw; left:2cqw; box-shadow:0 0 0 2px #ffffff44; }
   #ini .ini-c .ini-rang { position:absolute; top:2cqw; right:2.5cqw; font:bold 5cqw Georgia, serif; color:var(--or, #ffd98a); text-shadow:0 0 3cqw #ffd98a; }
   #ini .ini-c button { margin-top:2cqw; width:100%; border:0; border-radius:3cqw; padding:2.4cqw; font:bold 3.8cqw Georgia, serif; cursor:pointer; background:linear-gradient(#f7b23a, #e07a12); color:#2a1400; animation:iniPulse 1.2s ease-in-out infinite; }
+  #ini h2 .ini-emb { width:11cqw; height:11cqw; vertical-align:middle; margin-right:1cqw; filter:drop-shadow(0 0 2cqw #ffd98a66); }
+  #ini .ini-c { background:url('ui/ini/carte.webp?v=1') center/100% 100% no-repeat !important; border:0 !important; padding:5cqw 4cqw 4cqw !important; border-radius:0 !important; }
+  #ini .ini-c.moi { filter:drop-shadow(0 0 2.5cqw #7ff0a8); } #ini .ini-c.attend { box-shadow:none !important; filter:drop-shadow(0 0 3cqw #ffd98a88); }
+  #ini .ini-c img.ini-po { top:4.5cqw !important; left:4cqw !important; }
+  #ini .ini-c .ini-rang { top:3cqw !important; right:3cqw !important; } #ini .ini-c .ini-rang img.ini-med { width:11cqw; height:11cqw; display:block; filter:drop-shadow(0 1cqw 1.5cqw #000a); animation:iniMed .5s ease-out; }
+  @keyframes iniMed { from { transform:scale(2.2) rotate(-20deg); opacity:0; } }
   #ini .ini-c button.pour { background:#ffffff18; color:#efe6ff; animation:none; font-size:3cqw; }
   @keyframes iniPulse { 50% { transform:scale(1.05); } }
   #ini .ini-val { font:bold 4.4cqw Georgia, serif; color:#ffe9b0; min-height:5.6cqw; margin-top:1.5cqw; }
@@ -106,7 +112,7 @@ function iniMaj() {
     if (iniTour !== S.tours) { iniTour = S.tours; iniDebut = Date.now(); iniFermeA = 0; }
     if (P) P.remove();
     P = document.createElement('div'); P.id = 'ini';
-    P.innerHTML = `<div><h2>🎯 L’initiative · tour ${Math.max(1, S.tours)}</h2><div class="ini-st" id="ini-st"></div><div class="ini-cartes">${iniVivants().map(i => { const z = S.heros[i];
+    P.innerHTML = `<div><h2><img class="ini-emb" src="ui/ini/embleme.webp?v=1" alt=""> L’initiative · tour ${Math.max(1, S.tours)}</h2><div class="ini-st" id="ini-st"></div><div class="ini-cartes">${iniVivants().map(i => { const z = S.heros[i];
       return `<div class="ini-c" id="ini-c${i}"><span class="ini-rang" id="ini-r${i}"></span>${z.portrait ? `<img class="ini-po" src="${z.portrait}" alt="" onerror="this.remove()">` : (typeof H !== 'undefined' && H[z.id] ? `<img class="ini-po" src="portraits/${z.id}.webp" alt="" onerror="this.remove()">` : '')}
         <div class="ini-n">${nomH(z)}</div><div class="ini-q" id="ini-q${i}"></div>${iniDe(i)}<div class="ini-val" id="ini-v${i}"></div><div id="ini-b${i}"></div></div>`; }).join('')}</div><div class="ini-ordre" id="ini-o"></div></div>`;
     document.body.appendChild(P);
@@ -131,8 +137,9 @@ function iniMaj() {
     o.innerHTML = '';
   } else {
     if (!iniMaj.prog || iniMaj.prog !== S.tours) { iniMaj.prog = S.tours; if (!iniFermeA) iniFermeA = Date.now() + 3200; setTimeout(() => { iniMaj(); if (typeof dessine === 'function') dessine(); if (typeof annonceTour === 'function') annonceTour(); }, 3300); }
-    const ordre = iniOrdre(), med = ['🥇', '🥈', '🥉', '4'];
-    ordre.forEach((x, k) => { const r = document.getElementById('ini-r' + x.i); if (r) r.textContent = med[k] || ''; });
+    // 23/11 : les médailles peintes (or, argent, bronze) à la place des émojis
+    const ordre = iniOrdre(), med = ['🥇', '🥈', '🥉', '4'], MED = ['or', 'argent', 'bronze'];
+    ordre.forEach((x, k) => { const r = document.getElementById('ini-r' + x.i); if (r) r.innerHTML = MED[k] ? `<img class="ini-med" src="ui/ini/med-${MED[k]}.webp?v=1" alt="${med[k]}">` : (k + 1); });
     st.textContent = 'Tous les dés sont lancés !';
     setTimeout(() => { if (o) o.innerHTML = ordre.map((x, k) => `${med[k] || k + 1} <b>${nomH(S.heros[x.i])}</b>`).join(' › '); }, 1500);
   }
