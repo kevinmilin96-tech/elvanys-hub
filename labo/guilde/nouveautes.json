@@ -1,5 +1,9 @@
 [
 {
+"v": "20261123-194631",
+"m": "Chroniques : le panneau de l’initiative sur la table de la Guilde peinte."
+},
+{
 "v": "20261123-194127",
 "m": "Appli Android 1.1 : le jeu ne passe plus sous l’appareil photo du téléphone (mise à jour proposée dans ⚙️)."
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261123-070234",
 "m": "Chroniques en ligne : l’initiative se lance en bas, comme tes dés habituels : un seul dé par héros au début du tour."
-},
-{
-"v": "20261123-065608",
-"m": "Chroniques en ligne : au début de chaque tour, chacun lance lui-même son dé d’initiative ! Le plus haut joue en premier, égalité = on relance."
 }
 ]
