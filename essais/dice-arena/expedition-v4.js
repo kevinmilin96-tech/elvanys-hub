@@ -92,7 +92,7 @@ const REGLES_V4 = {
 // ----------------------------------------------------------------------------------------------- les événements à choix (escales « ❔ »)
 // f(X) applique l'effet et renvoie le texte de suite ; ok(X) : le choix est-il possible ?
 const EVENEMENTS_V4 = {
-  passager: { n:'Le passager mystérieux', e:'🧥', cle:'foret', texte:'Un voyageur encapuchonné attend sur le quai. « Emmenez-moi jusqu’à la prochaine escale. Je paierai… à ma façon. »',
+  passager: { n:'Le passager mystérieux', e:'🧥', cle:'port' /* 23/11 (testeurs) : il attend « sur le quai » (avant : la forêt et son golem) */, texte:'Un voyageur encapuchonné attend sur le quai. « Emmenez-moi jusqu’à la prochaine escale. Je paierai… à ma façon. »',
     choix:[{ t:'Le prendre à bord', d:'Une recrue au hasard rejoint gratuitement l’équipage (s’il reste une place).', f:X => { const k = tire(hasardX(X), recruesDispo(X).filter(k => RECRUES[k].t <= 2)), p = placeLibre(X, ['tireur', 'soutien'].includes(RECRUES[k].role) ? 'ar' : 'av'); if (!p) { X.or += 3; return 'Plus de place : il laisse 3 💰 sur la table et disparaît.'; } poseA(X, p, nouvelleRecrue(k, 0)); fusionne(X); return `Il retire sa capuche : ${RECRUES[k].n} ! « Je me battrai pour vous. »`; } },
            { t:'Lui demander de payer d’avance', d:'+4 💰.', f:X => { X.or += 4; return 'Il compte quatre pièces d’or, sans un mot, et redescend à terre.'; } }] },
   tempete: { n:'La tempête', e:'⛈', cle:'falaises', texte:'Le ciel noircit d’un coup. Les voiles claquent, le navire volant tangue.',

@@ -196,7 +196,8 @@ function forgeronStock(hid) {
   const H = hid ? etatH(hid) : { rang:0, niv:1 }, base = H.rang >= 7 ? 3 : H.rang >= 5 ? 2 : H.rang >= 3 ? 1 : 0;
   const j = new Date().toISOString().slice(0, 10); let h = 0; for (const ch of j + (hid || '')) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
   const R = () => { h = (Math.imul(h, 1103515245) + 12345) >>> 0; return h / 4294967296; };
-  return [0, 1, 2].map(i => { const C = EQ_CASES[Math.floor(R() * EQ_CASES.length)], r = Math.min(EQ_RARE.length - 1, i === 2 ? base + (R() < .35 ? 2 : 1) : base + i); // 1re : sa rareté, 2e : celle au-dessus, 3e : au-dessus ou deux au-dessus
+  const cases = EQ_CASES.map(c => [R(), c]).sort((a, b) => a[0] - b[0]).map(x => x[1]); // 23/11 (testeurs : « deux fois la même bague ») : 3 cases différentes
+  return [0, 1, 2].map(i => { const C = cases[i % cases.length], r = Math.min(EQ_RARE.length - 1, i === 2 ? base + (R() < .35 ? 2 : 1) : base + i); // 1re : sa rareté, 2e : celle au-dessus, 3e : au-dessus ou deux au-dessus
     const niv = Math.max(1, Math.min(5 * (r + 1), Math.floor((H.niv || 1) / 5)));
     return { id:'f' + j + (hid || '') + i, slot:C.k, nom:C.noms[Math.floor(R() * C.noms.length)], r, niv, prix:FORGE_PRIX[r] + 4 * (niv - 1) * (1 + r) }; });
 }

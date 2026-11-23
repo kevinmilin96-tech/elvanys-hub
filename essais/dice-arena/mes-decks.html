@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261123-090822"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
+<head><meta name="guilde-version" content="20261123-091436"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex">
@@ -55,7 +55,9 @@
   .simple .co { align-self:flex-end; width:18px; height:18px; border-radius:50%; background:#2a7fc1; text-align:center; font-weight:bold; }
   .simple .n { font-weight:bold; color:#fff; }
   .fen { position:fixed; inset:0; background:#000c; z-index:20; display:flex; align-items:center; justify-content:center; padding:14px; }
-  .fen > div { background:#2a2650; border-radius:16px; padding:14px 16px; max-width:420px; max-height:90vh; overflow:auto; }
+  .fen > div { background:#2a2650; border-radius:16px; padding:14px 16px; max-width:420px; max-height:90vh; overflow:auto; position:relative; }
+  .fen .fen-x { position:absolute; top:8px; right:8px; width:34px; height:34px; border-radius:50%; border:1px solid #f3c96b88; background:#15132b; color:#f3c96b; font-size:16px; cursor:pointer; } /* 23/11 (testeurs) : une croix ✕ sur toutes les fenêtres */
+  .fen h3 { padding-right:38px; }
 </style>
 </head>
 <body>
@@ -81,7 +83,7 @@ let ed = null; // l'atelier ouvert : { i (n° du deck, -1 = nouveau), nom, ic, c
 let filtre = 'tout';
 const compter = d => { const n = {}; d.forEach(k => n[k] = (n[k] || 0) + 1); return n; };
 const moyenne = l => l.length ? (l.reduce((a, k) => a + CARTES[k].c, 0) / l.length).toFixed(1).replace('.', ',') : '0';
-const fen = h => { document.getElementById('fen').innerHTML = h ? `<div class="fen" onclick="if(event.target===this)fen('')"><div>${h}</div></div>` : ''; };
+const fen = h => { document.getElementById('fen').innerHTML = h ? `<div class="fen" onclick="if(event.target===this)fen('')"><div><button class="fen-x" onclick="fen('')" aria-label="Fermer">✕</button>${h}</div></div>` : ''; };
 function carte(k, w) { return CADRES_OK.includes(CADRE_DE(k)) ? carteGuilde(k, { w }) : `<div class="simple" style="width:${w}px"><span class="co">${CARTES[k].c}</span><span class="n">${CARTES[k].n}</span><span>${SORTE[CARTES[k].t]}</span><span>🎲 ${txtLisible(CARTES[k].txt)}</span><span>${CARTES[k].d}</span></div>`; }
 
 function bande() {
