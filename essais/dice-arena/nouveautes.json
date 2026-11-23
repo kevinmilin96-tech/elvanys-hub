@@ -1,5 +1,9 @@
 [
 {
+"v": "20261123-183648",
+"m": "Combat : les portraits sont bien ronds (le plateau n’est plus étiré sur les longs téléphones) et le nom des cartes de ta main reste dans la carte."
+},
+{
 "v": "20261123-183312",
 "m": "Les flèches ‹ › du menu se posent maintenant entre les portails, sans les cacher."
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261122-202126",
 "m": "Crypte du jour : le Gardien a maintenant ses 3 phases"
-},
-{
-"v": "20261122-201024",
-"m": "Jouer vite : la Tour et la Chasse au boss réunies dans le portail « Les épreuves »"
 }
 ]

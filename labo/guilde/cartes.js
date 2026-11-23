@@ -30,7 +30,7 @@ const CSS_CARTE = `
    la carte ne montre que son nom, son coût et son image : on la touche pour la lire en grand. Vaut pour tous les modes. */
 .carteG { -webkit-text-size-adjust:none; text-size-adjust:none; }
 .cg-nom, .cg-bande, .cg-effet { overflow:hidden; }
-@container (max-width:110px) { .cg-effet, .cg-bande { visibility:hidden; } .cg-nom { overflow:visible !important; font-size:9cqw !important; line-height:.9 !important; padding:0 !important; text-shadow:0 1px 0 #000, 0 0 3px #000, 0 0 6px #b58cff; } } /* 22/11 : sur une petite carte, le nom reste entier (2 lignes s'il le faut) */
+@container (max-width:110px) { .cg-effet, .cg-bande { visibility:hidden; } .cg-nom { overflow:visible !important; height:auto !important; min-height:6.3%; align-items:flex-start; font-size:9cqw !important; line-height:.95 !important; padding:1cqw 1.5cqw !important; border-radius:2.5cqw; background:#1a1030e6; box-shadow:0 0 0 .6cqw #b58cff66; text-shadow:0 1px 0 #000; z-index:2; } } /* 23/11 (l'utilisateur : le nom dépassait de la carte) : le nom part du haut du bandeau et descend sur l'illustration, sur un fond sombre, sans jamais sortir de la carte */ /* 22/11 : sur une petite carte, le nom reste entier (2 lignes s'il le faut) */
 .cg-cadre { inset:0; width:100%; height:100%; pointer-events:none; }
 .cg-art { background-size:cover; background-position:center 30%; border-radius:1.5%; box-shadow:inset 0 0 0 1px #0006, inset 0 0 12px #0008; }
 .cg-art:not([style*='background-image']) { background:radial-gradient(circle at 50% 40%, #3a2a55, #160f24 75%); display:flex; align-items:center; justify-content:center; }
