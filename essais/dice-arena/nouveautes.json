@@ -1,5 +1,9 @@
 [
 {
+"v": "20261123-212545",
+"m": "Combat : le bas du plateau (ta main, le paquet) n’est plus caché par la barre ; cœurs et PC à la bonne taille."
+},
+{
 "v": "20261123-212255",
 "m": "Main de départ : plus de croix, on garde ou on change sa main."
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261123-190653",
 "m": "Main de départ : chaque carte montre son effet."
-},
-{
-"v": "20261123-190415",
-"m": "Combat : la main de départ s’affiche en bas de l’écran, le plateau reste visible au-dessus."
 }
 ]
