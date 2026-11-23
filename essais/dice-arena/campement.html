@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261123-091436"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
+<head><meta name="guilde-version" content="20261123-092203"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="robots" content="noindex">
@@ -52,16 +52,29 @@ const INVP = (() => { try { return JSON.parse(localStorage.getItem('guilde-invas
 const bossOk = k => k === 'eveil' ? true : k === 'reveil' ? !!INVP.eveil : !!INVP.reveil;
 const bossCond = k => k === 'reveil' ? 'Gagne l’Acte I pour l’ouvrir.' : 'Gagne l’Acte II pour l’ouvrir.';
 { const b = new URLSearchParams(location.search).get('boss'); if (b && HEROS[b]) C.boss = b; if (!bossOk(C.boss)) C.boss = 'eveil'; }
+// 23/11 (testeurs : « reprise par une fenêtre du navigateur après avoir rechoisi les héros ») : un combat gardé se reprend d'un toucher, ici
+try { sessionStorage.removeItem('guilde-inv-actif'); } catch (e) {} // revenu sur cette page : un nouveau lancement est une NOUVELLE partie
+const INV_SV = (() => { try { const s = JSON.parse(localStorage.getItem('guilde-invasion-combat') || 'null'); return s && s.coop && !s.fini && HEROS[s.choix] && Date.now() - (s.quand || 0) < 7 * 864e5 ? s : null; } catch (e) { return null; } })();
+function repriseInv() {
+  let c = null; try { c = JSON.parse(localStorage.getItem('guilde-campement') || 'null'); } catch (e) {}
+  c = Object.assign({ a:'maelle', b:'gorm', modeB:'ordi' }, c || {}, { boss:INV_SV.choix });
+  localStorage.setItem('guilde-campement', JSON.stringify(c)); sessionStorage.setItem('guilde-invasion-reprendre', '1'); location.href = 'duel.html?campement=1';
+}
+function oublieInv() { if (!confirm('Abandonner ce combat ? Il sera effacé.')) return; localStorage.removeItem('guilde-invasion-combat'); location.reload(); }
+const repriseHTML = () => !INV_SV ? '' : `<div style="background:#14322a;border:2px solid #7dffb0;border-radius:14px;padding:10px 12px;margin:10px 0;text-align:center">
+  <button class="go" style="margin:0;background:linear-gradient(#5fdc8f,#2f9e5f);color:#062012" onclick="repriseInv()">▶ Reprendre ton combat</button>
+  <div class="doux" style="margin-top:6px">${HEROS[INV_SV.choix].nom}${INV_SV.vagues ? ` · vague ${(INV_SV.vague || 0) + 1}` : ''} · ${(INV_SV.equipe || []).map(h => haEsc(h.nom)).join(' et ')} · ❤ ${(INV_SV.equipe || []).map(h => Math.max(0, h.pv)).join(' / ')}</div>
+  <a href="#" onclick="oublieInv();return false" style="color:#c9c1ea;font-size:.85em">✕ abandonner ce combat</a></div>`;
 function dessine() {
   const b = HEROS[C.boss];
   document.getElementById('app').innerHTML = `<h1>⚔️ L’Invasion</h1>
   <p class="doux" style="text-align:center">Deux héros de la Guilde tiennent le front ensemble : les actes de l’Invasion (plusieurs vagues à la suite) ou un grand boss. Il faudra se serrer les coudes.</p>
-  <h2>Le boss</h2>${Object.keys(BOSS_CAMP).map(k => { const x = HEROS[k]; if (!bossOk(k)) return `<div class="boss" style="opacity:.45;filter:grayscale(.8)"><div class="e">🔒</div><div><b>${x.nom}</b>, ${x.titre}<small>${bossCond(k)}</small></div></div>`; return `<div class="boss ${C.boss === k ? 'sel' : ''}" onclick="C.boss='${k}';dessine()" style="cursor:pointer;${C.boss === k ? 'outline:3px solid #7dffb0;' : 'opacity:.75;'}"><div class="e">${x.emoji}</div><div><b>${x.nom}</b>, ${x.titre} · ${x.pv} PV<small>${x.role}</small></div></div>`; }).join('')}
+  ${repriseHTML()}${INV_SV ? '<h2>Ou une nouvelle partie</h2>' : ''}<h2>Le boss</h2>${Object.keys(BOSS_CAMP).map(k => { const x = HEROS[k]; if (!bossOk(k)) return `<div class="boss" style="opacity:.45;filter:grayscale(.8)"><div class="e">🔒</div><div><b>${x.nom}</b>, ${x.titre}<small>${bossCond(k)}</small></div></div>`; return `<div class="boss ${C.boss === k ? 'sel' : ''}" onclick="C.boss='${k}';dessine()" style="cursor:pointer;${C.boss === k ? 'outline:3px solid #7dffb0;' : 'opacity:.75;'}"><div class="e">${x.emoji}</div><div><b>${x.nom}</b>, ${x.titre} · ${x.pv} PV<small>${x.role}</small></div></div>`; }).join('')}
   <p class="doux">Pas encore de partie en ligne : on joue <b>à deux sur ce téléphone</b> (on se le passe à chaque tour), ou avec un <b>compagnon joué par l’ordinateur</b>. Le boss joue après les deux héros et se retourne contre le dernier qui l’a frappé. La <b>Cohésion</b> (réserve commune) permet de relever un héros à terre, de crier le ralliement ou de soigner l’autre.</p>
   <h2>1. Ton héros</h2><div class="heros6">${ORDRE.map(id => id === 'zephine' && !ZOK() ? `<button disabled style="opacity:.5"><img src="${IMG(id)}" alt="" style="filter:grayscale(1)">🔒 ${HEROS[id].nom}<br><small>Fais le tutoriel</small></button>` : `<button class="${C.a === id ? 'sel' : ''}" onclick="C.a='${id}';if(C.b===C.a)C.b=null;dessine()"><img src="${IMG(id)}" alt="">${HEROS[id].nom}</button>`).join('')}${avC('a')}</div>
   <h2>2. Le second héros</h2><div class="modes"><button class="${C.modeB === 'ordi' ? 'sel' : ''}" onclick="C.modeB='ordi';dessine()">🤖 Un compagnon (ordinateur)</button><button class="${C.modeB === 'humain' ? 'sel' : ''}" onclick="C.modeB='humain';dessine()">📱 Un ami, sur ce téléphone</button></div>
   <div class="heros6">${ORDRE.map(id => `<button class="${C.b === id ? 'sel' : ''}" ${C.a === id || (id === 'zephine' && !ZOK()) ? 'disabled' : ''} onclick="C.b='${id}';dessine()"><img src="${IMG(id)}" alt="">${HEROS[id].nom}</button>`).join('')}${avC('b')}</div>
-  <button class="go" ${C.a && C.b ? '' : 'disabled'} onclick="localStorage.setItem('guilde-campement', JSON.stringify(C));chronique([(CHRON_CAMP_B[C.boss] || CHRON_CAMP).intro(haEsc(nomC(C.a)), haEsc(nomC(C.b)))], () => location.href='duel.html?campement=1')">🔥 Au feu de camp !</button>
+  <button class="go" ${C.a && C.b ? '' : 'disabled'} onclick="localStorage.setItem('guilde-campement', JSON.stringify(C));chronique([(CHRON_CAMP_B[C.boss] || CHRON_CAMP).intro(haEsc(nomC(C.a)), haEsc(nomC(C.b)))], () => location.href='duel.html?campement=1')">🔥 Au feu de camp !</button>${INV_SV ? '<p class="doux" style="text-align:center">⚠ Ton combat gardé sera remplacé par cette nouvelle partie.</p>' : ''}
 `;
   GM.retour('menu.html#invasion'); // 22/11 (l'utilisateur) : le retour en haut à gauche, vers l'Invasion ; plus de « ⌂ Menu » en bas
 }

@@ -1,5 +1,9 @@
 [
 {
+"v": "20261123-092203",
+"m": "Invasion : ton combat gardé se reprend d’un toucher, en haut de la page de l’Invasion, sans rechoisir tes héros."
+},
+{
 "v": "20261123-091436",
 "m": "Petites corrections : le forgeron propose 3 pièces différentes, une croix sur les fenêtres de Mes decks, le Retour des Héros d’aventure ramène à Ma Guilde, l’or de l’île au trésor plus clair dans les Expéditions."
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261122-191805",
 "m": "Chroniques entre amis : l’hôte choisit de jouer avec ou sans initiative"
-},
-{
-"v": "20261122-191349",
-"m": "Chroniques sur la télé : un journal des derniers événements, des messages qui restent plus longtemps, et moins de délai"
 }
 ]
