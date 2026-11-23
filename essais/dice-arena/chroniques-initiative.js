@@ -1,8 +1,7 @@
 // 23/11 (l'utilisateur : « je veux que le dé soit visible, 6 faces, et que chaque joueur lance le dé, comme Mario Party au début, à chaque tour ;
 // pas tiré automatiquement : c'est pour le côté ludique et l'immersion ») : L'INITIATIVE SE LANCE À LA MAIN, EN LIGNE.
-// Au début de chaque tour, chacun lance UN dé pour chacun de SES héros, en bas, comme les dés habituels (même dé du héros, même lancer animé ;
-// 23/11, 2e retour de l'utilisateur : « prends le fonctionnement des dés normal en bas, et au lieu d'en lancer 3-4-5, tu en lances 1 »).
-// Le tirage se fait sur SON téléphone, jamais par le serveur ; une barre « 🎯 Initiative » au-dessus des héros montre les résultats de chacun.
+// Au début de chaque tour, un panneau 🎯 s'ouvre sur tous les téléphones : un vrai dé à 6 faces en relief par héros ; chacun touche « Lancer »
+// pour SES héros (le tirage se fait sur SON téléphone, jamais par le serveur), les autres voient le dé rouler chez eux.
 // Le plus haut joue d'abord ; à égalité, les héros à égalité relancent (comme Mario Party). Quand tout le monde a lancé : le classement, puis on joue.
 // Un héros que personne ne joue, ou un joueur absent depuis 20 s : l'hôte peut lancer à sa place (un bouton, jamais tout seul).
 // Rangé dans la partie : S.ini = { t:<n° du tour>, v:{ <héros>:[1er lancer, relance si égalité…] } }. Une partie « sans initiative » n'a rien de tout ça.
@@ -36,89 +35,111 @@ pasMonTour = function (dire) { if (iniEnCours()) { if (dire !== false) bulle('�
 });
 // aFini passe par pasMonTour ; lanceDesH aussi (seulement en ligne) : rien d'autre à garder
 
-// ------------------------------------------------------------------ l'affichage : la zone des dés habituelle, avec UN dé
+// ------------------------------------------------------------------ le dé : LE DÉ DU HÉROS (ses faces faces-<héros>/face-N.webp), comme dans la zone des dés
+// 23/11 (l'utilisateur : « l'idée que chaque joueur voie le dé des autres, avec l'attente des autres, c'est important : que chacun sache où il se situe ;
+// c'est juste ton dé blanc et rouge qui ne correspond pas aux dés des joueurs ») : le panneau reste, avec les vrais dés des héros
+let iniPose = 0; // tant qu'un dé roule : ni « Égalité », ni boutons, ni classement (pas de surprise gâchée)
+const iniFace = (i, v) => `faces-${S.heros[i].id}/face-${v}.webp`;
+const iniDe = i => `<div class="ini-de cache" id="ini-d${i}"><img alt="" style="visibility:hidden"></div>`;
+// le dé roule 1 s (faces qui changent, comme le lancer habituel), puis s'arrête sur sa face
+function iniRoule(i, v) {
+  const el = document.getElementById('ini-d' + i); if (!el) return; const img = el.querySelector('img');
+  el.classList.remove('cache'); el.classList.add('tourne'); img.style.visibility = 'visible';
+  const fin = Date.now() + 1000; iniPose = Math.max(iniPose, fin + 80); setTimeout(() => { try { iniMaj(); } catch (e) {} }, 1100);
+  const tick = () => { if (!document.body.contains(el)) return;
+    if (Date.now() >= fin) { el.classList.remove('tourne'); el.classList.add('pose'); img.src = iniFace(i, v); return; }
+    img.src = iniFace(i, 1 + Math.floor(Math.random() * 6)); setTimeout(tick, 70); };
+  tick();
+}
 (function () {
   const st = document.createElement('style');
-  st.textContent = `.tourbar.ini { color:var(--texte, #efe6ff); }
-  .tourbar.ini .ch { display:inline-flex; align-items:center; gap:.25em; margin:0 .35em; white-space:nowrap; }
-  .tourbar.ini .ch img { width:1.7em; height:1.7em; object-fit:contain; vertical-align:middle; filter:drop-shadow(0 1px 2px #000a); }
-  .tourbar.ini .ch.tourne img { animation:tourneD .26s linear infinite; }
-  .tourbar.ini .ch.att { color:var(--doux, #c9c1ea); }
-  .tourbar.ini button { background:#ffffff18; border:1px solid #ffffff33; color:inherit; border-radius:8px; font-size:.85em; padding:.1em .5em; margin-left:.2em; cursor:pointer; }`;
+  st.textContent = `#ini { position:fixed; inset:0; z-index:45; background:radial-gradient(circle at 50% 35%, #2a1f5cee, #0b0918f5); display:flex; flex-direction:column; align-items:center; justify-content:center; padding:4vw; box-sizing:border-box; animation:iniEntre .35s ease-out; }
+  @keyframes iniEntre { from { opacity:0; transform:scale(1.05); } to { opacity:1; transform:none; } }
+  #ini > div { max-width:560px; width:100%; container-type:inline-size; }
+  #ini h2 { text-align:center; color:var(--or, #ffd98a); font:bold 7cqw Georgia, serif; margin:0; }
+  #ini .ini-st { text-align:center; color:var(--doux, #c9c1ea); font-size:3.6cqw; margin:1.5cqw 0 4cqw; min-height:5cqw; }
+  #ini .ini-cartes { display:grid; grid-template-columns:1fr 1fr; gap:3cqw; }
+  #ini .ini-c, #ini .ini-c * { box-sizing:border-box; } #ini .ini-c > div { display:block; } #ini .ini-c { display:block; background:#ffffff0d; border:2px solid #ffffff22; border-radius:4cqw; padding:3cqw 2cqw; text-align:center; position:relative; }
+  #ini .ini-c.moi { border-color:#7ff0a8; } #ini .ini-c.attend { box-shadow:0 0 5cqw #ffd98a33; }
+  #ini .ini-c .ini-n { font:bold 3.8cqw Georgia, serif; color:#efe6ff; } #ini .ini-c .ini-q { font-size:2.8cqw; color:var(--doux, #c9c1ea); min-height:3.6cqw; }
+  #ini .ini-c img.ini-po { width:10cqw; height:10cqw; border-radius:50%; object-fit:cover; position:absolute; top:2cqw; left:2cqw; box-shadow:0 0 0 2px #ffffff44; }
+  #ini .ini-c .ini-rang { position:absolute; top:2cqw; right:2.5cqw; font:bold 5cqw Georgia, serif; color:var(--or, #ffd98a); text-shadow:0 0 3cqw #ffd98a; }
+  #ini .ini-c button { margin-top:2cqw; width:100%; border:0; border-radius:3cqw; padding:2.4cqw; font:bold 3.8cqw Georgia, serif; cursor:pointer; background:linear-gradient(#f7b23a, #e07a12); color:#2a1400; animation:iniPulse 1.2s ease-in-out infinite; }
+  #ini .ini-c button.pour { background:#ffffff18; color:#efe6ff; animation:none; font-size:3cqw; }
+  @keyframes iniPulse { 50% { transform:scale(1.05); } }
+  #ini .ini-val { font:bold 4.4cqw Georgia, serif; color:#ffe9b0; min-height:5.6cqw; margin-top:1.5cqw; }
+  #ini .ini-de { width:20cqw; height:20cqw; margin:3cqw auto 1cqw; border-radius:3cqw; position:relative; }
+  #ini .ini-de img { width:100%; height:100%; object-fit:contain; filter:drop-shadow(0 1.4cqw 1.4cqw #000a); }
+  #ini .ini-de.cache { background:radial-gradient(circle at 35% 30%, #5a4e8a, #2a2448); box-shadow:inset 0 0 0 .6cqw #8a7ec4, 0 1.4cqw 1.6cqw #000a; }
+  #ini .ini-de.cache::after { content:'?'; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:8cqw; color:#c9c1ea88; font-weight:bold; }
+  #ini .ini-de.tourne img { animation:tourneD .26s linear infinite; }
+  #ini .ini-de.pose img { animation:iniPose .35s ease-out; } @keyframes iniPose { 0% { transform:scale(1.25); } 100% { transform:none; } }
+  #ini .ini-ordre { text-align:center; margin-top:4cqw; font-size:4cqw; color:#ffe9b0; line-height:1.6; }
+  body.ecran-table #ini .ini-cartes { grid-template-columns:repeat(4, 1fr); } body.ecran-table #ini > div { max-width:1100px; }`;
   document.head.appendChild(st);
 })();
+
+// ------------------------------------------------------------------ le panneau
 var iniFusion = false; // un lancer gardé après un envoi croisé : pas de message « quelqu'un a joué en même temps »
-const iniVu = {}, iniRecent = {};   // « tour:héros » → nombre de lancers déjà vus ; héros → heure du dernier lancer vu (pour le faire rouler)
-let iniTour = null, iniDebut = 0, iniFermeA = 0, iniAnime = null, iniEtaitEnCours = false;
+const iniVu = {};          // ce qui est déjà montré : « tour:héros » → nombre de lancers déjà animés
+let iniTour = null, iniDebut = 0, iniFermeA = 0;
 function iniPeut(i) { // ce téléphone peut-il lancer pour ce héros ?
   if (typeof ECRAN !== 'undefined' && ECRAN) return false;
   if (mesHeros().includes(i)) return true;
   return estHote() && (!proprio(i) || Date.now() - iniDebut > 20000);
 }
-const iniFace = (i, v) => `faces-${S.heros[i].id}/face-${v}.webp`;
-// le lancer : le dé du héros roule 0,65 s dans la zone des dés (comme « 🎲 Lancer »), puis s'arrête sur sa face
 function iniLance(i) {
-  if (iniAnime != null || !iniActive() || !iniBesoin().includes(i) || !iniPeut(i)) return;
-  iniAnime = i; son('relance'); if (navigator.vibrate) try { navigator.vibrate(30); } catch (e) {}
-  const fin = Date.now() + 650;
-  const tick = () => {
-    const z = $('desH');
-    if (Date.now() >= fin || !z || !S) {
-      iniAnime = null; if (!S) return;
-      if (!S.ini || S.ini.t !== S.tours) S.ini = { t:S.tours, v:{} };
-      const v = 1 + Math.floor(Math.random() * 6);
-      S.ini.v[i] = (S.ini.v[i] || []).concat(v); iniVu[S.tours + ':' + i] = S.ini.v[i].length;
-      son('choisir'); bulle(`🎯 ${nomH(S.heros[i])} : ${v} !`);
-      dessine(); if (typeof pousse === 'function') pousse(); return;
-    }
-    z.innerHTML = `<button class="de tourne"><img src="${iniFace(i, 1 + Math.floor(Math.random() * 6))}" alt=""></button>`;
-    setTimeout(tick, 70);
-  };
-  tick();
-}
-// la barre « 🎯 Initiative » au-dessus des héros, et la zone des dés du héros choisi
-function iniAffiche() {
-  const bar = document.getElementById('ini-bar'); if (bar) bar.remove();
-  if (!iniActive() || !iniEnCours() || !$('desH')) return;
-  const I = iniDuTour() || { v:{} }, besoin = iniBesoin(), egal = besoin.length && besoin.every(i => (I.v[i] || []).length);
-  const chips = iniVivants().map(i => { const l = I.v[i] || [], r = iniRecent[i] && Date.now() - iniRecent[i] < 650;
-    const pour = besoin.includes(i) && !mesHeros().includes(i) && iniPeut(i) ? `<button onclick="iniLance(${i})">🎲 à sa place</button>` : '';
-    return `<span class="ch ${l.length ? '' : 'att'} ${r ? 'tourne' : ''}">${nomH(S.heros[i]).replace('Sire ', '')} ${l.length ? `<img src="${iniFace(i, r ? 1 + Math.floor(Math.random() * 6) : l[l.length - 1])}" alt="">${l.length > 1 ? `<small>(${l.slice(0, -1).join('·')})</small>` : ''}` : '⏳'}${pour}</span>`; }).join('');
-  const eq = document.querySelector('#app .equipe');
-  if (eq) eq.insertAdjacentHTML('beforebegin', `<div class="tourbar ini moi" id="ini-bar">🎯 ${egal ? 'Égalité : on relance !' : 'Initiative'} · ${chips}</div>`);
-  document.querySelectorAll('#app .pasinfo, #app .actions').forEach(e => { e.style.display = 'none'; });
-  // la zone des dés : UN dé à lancer pour le héros choisi (pendant qu'il roule, on le laisse rouler)
-  const z = $('desH');
-  if (iniAnime != null) { z.innerHTML = `<button class="de tourne"><img src="${iniFace(iniAnime, 1 + Math.floor(Math.random() * 6))}" alt=""></button>`; return; }
-  const i = actif, l = I.v[i] || [];
-  if (L && !mesHeros().includes(i)) z.innerHTML = `<span class="aide">👤 ${nomH(S.heros[i])} : ${proprio(i) ? `${proprio(i)} lance son dé d’initiative` : 'personne ne le joue'}.</span>`;
-  else if (besoin.includes(i)) z.innerHTML = `<button class="de cache" onclick="iniLance(${i})"></button><button class="lancerH" onclick="iniLance(${i})">🎯 ${l.length ? 'Relancer (égalité)' : 'Lancer l’initiative'}</button>`;
-  else { const att = besoin.filter(x => !mesHeros().includes(x)).map(x => nomH(S.heros[x]).replace('Sire ', ''));
-    z.innerHTML = `<button class="de"><img src="${iniFace(i, l[l.length - 1])}" alt=""></button><span class="aide">🎯 ${l[l.length - 1]} · ${att.length ? `⏳ on attend ${att.join(', ')}…` : 'à tes autres héros !'}</span>`; }
+  if (!iniActive() || !iniBesoin().includes(i) || !iniPeut(i)) return;
+  if (!S.ini || S.ini.t !== S.tours) S.ini = { t:S.tours, v:{} };
+  const v = 1 + Math.floor(Math.random() * 6);
+  S.ini.v[i] = (S.ini.v[i] || []).concat(v);
+  son('relance'); if (navigator.vibrate) try { navigator.vibrate(30); } catch (e) {}
+  iniMaj(); if (typeof pousse === 'function') pousse();
 }
 function iniMaj() {
-  if (!iniActive()) return;
-  if (iniTour !== S.tours) { iniTour = S.tours; iniDebut = Date.now(); iniFermeA = 0; iniEtaitEnCours = iniEnCours(); }
-  const I = iniDuTour() || { v:{} };
-  iniVivants().forEach(i => { const n = (I.v[i] || []).length, cle = S.tours + ':' + i;
-    if (n > (iniVu[cle] || 0)) { iniVu[cle] = n; if (!mesHeros().includes(i) || !iniPeut(i)) { iniRecent[i] = Date.now(); son('relance'); setTimeout(() => { if (S && iniAnime == null) dessine(); }, 700); /* le résultat se lit dans la barre 🎯 */ } } });
-  const enCours = iniEnCours();
-  if (iniEtaitEnCours && !enCours) { // le dernier dé est tombé : l'ordre du tour, puis « À toi de jouer »
-    iniEtaitEnCours = false; const med = ['🥇', '🥈', '🥉', '4.'];
-    iniFermeA = Date.now() + 2600;
-    setTimeout(() => bulle('🎯 ' + iniOrdre().map((x, k) => `${med[k]} ${nomH(S.heros[x.i]).replace('Sire ', '')}`).join(' › '), false, true), 1500);
-    setTimeout(() => { if (S) { dessine(); if (typeof annonceTour === 'function') annonceTour(); } }, 2700);
+  let P = document.getElementById('ini');
+  // le dernier dé vient d'être lancé : le panneau reste encore un peu pour montrer le classement
+  if (P && iniTour === (S && S.tours) && !iniFermeA && iniActive() && !iniEnCours()) iniFermeA = Date.now() + 4300;
+  const montrer = iniActive() && !occupe && (iniEnCours() || Date.now() < iniFermeA);
+  if (!montrer) { if (P) P.remove(); return; }
+  if (iniTour !== S.tours || !P) {
+    if (iniTour !== S.tours) { iniTour = S.tours; iniDebut = Date.now(); iniFermeA = 0; }
+    if (P) P.remove();
+    P = document.createElement('div'); P.id = 'ini';
+    P.innerHTML = `<div><h2>🎯 L’initiative · tour ${Math.max(1, S.tours)}</h2><div class="ini-st" id="ini-st"></div><div class="ini-cartes">${iniVivants().map(i => { const z = S.heros[i];
+      return `<div class="ini-c" id="ini-c${i}"><span class="ini-rang" id="ini-r${i}"></span>${z.portrait ? `<img class="ini-po" src="${z.portrait}" alt="" onerror="this.remove()">` : (typeof H !== 'undefined' && H[z.id] ? `<img class="ini-po" src="portraits/${z.id}.webp" alt="" onerror="this.remove()">` : '')}
+        <div class="ini-n">${nomH(z)}</div><div class="ini-q" id="ini-q${i}"></div>${iniDe(i)}<div class="ini-val" id="ini-v${i}"></div><div id="ini-b${i}"></div></div>`; }).join('')}</div><div class="ini-ordre" id="ini-o"></div></div>`;
+    document.body.appendChild(P);
   }
-  if (enCours) iniEtaitEnCours = true;
+  const roule = Date.now() < iniPose;
+  const I = iniDuTour() || { v:{} }, besoin = iniBesoin(), egalite = besoin.length && besoin.every(i => (I.v[i] || []).length);
+  iniVivants().forEach(i => {
+    const c = document.getElementById('ini-c' + i); if (!c) return;
+    const l = I.v[i] || [], cle = S.tours + ':' + i, deja = iniVu[cle] || 0, moi = mesHeros().includes(i), doit = besoin.includes(i);
+    if (l.length > deja) { iniVu[cle] = l.length; iniRoule(i, l[l.length - 1]); if (!mesHeros().includes(i)) son('relance'); setTimeout(() => { const v = document.getElementById('ini-v' + i); if (v) v.textContent = l.join(' · '); son('choisir'); }, 1050); }
+    else if (!l.length) { const v = document.getElementById('ini-v' + i); if (v) v.textContent = ''; }
+    c.classList.toggle('moi', moi); c.classList.toggle('attend', doit);
+    document.getElementById('ini-q' + i).textContent = moi ? 'ton héros' : proprio(i) ? 'joué par ' + proprio(i) : 'personne ne le joue';
+    const b = document.getElementById('ini-b' + i), html = !roule && doit && iniPeut(i) ? (moi ? `<button onclick="iniLance(${i})">🎲 ${l.length ? 'Relancer' : 'Lancer'}</button>` : `<button class="pour" onclick="iniLance(${i})">🎲 Lancer à sa place</button>`) : '';
+    if (b.innerHTML !== html) b.innerHTML = html;
+  });
+  const st = document.getElementById('ini-st'), o = document.getElementById('ini-o');
+  if (roule) { st.textContent = '🎲 …'; return; }
+  if (besoin.length) {
+    const mien = besoin.some(i => iniPeut(i) && mesHeros().includes(i));
+    st.textContent = egalite ? '⚖ Égalité ! Les héros à égalité relancent leur dé.' : mien ? 'À toi : touche « Lancer » sous ton héros !' : '⏳ On attend les autres joueurs…';
+    o.innerHTML = '';
+  } else {
+    if (!iniMaj.prog || iniMaj.prog !== S.tours) { iniMaj.prog = S.tours; if (!iniFermeA) iniFermeA = Date.now() + 3200; setTimeout(() => { iniMaj(); if (typeof dessine === 'function') dessine(); if (typeof annonceTour === 'function') annonceTour(); }, 3300); }
+    const ordre = iniOrdre(), med = ['🥇', '🥈', '🥉', '4'];
+    ordre.forEach((x, k) => { const r = document.getElementById('ini-r' + x.i); if (r) r.textContent = med[k] || ''; });
+    st.textContent = 'Tous les dés sont lancés !';
+    setTimeout(() => { if (o) o.innerHTML = ordre.map((x, k) => `${med[k] || k + 1} <b>${nomH(S.heros[x.i])}</b>`).join(' › '); }, 1500);
+  }
 }
-// à chaque affichage : on choisit d'abord un de MES héros qui doit lancer, puis on remplace la zone des dés
-{ const _d = dessine; dessine = function () {
-    try { if (iniActive()) { iniMaj(); if (iniEnCours() && iniAnime == null) { const b = iniBesoin().filter(i => mesHeros().includes(i)); if (b.length && !b.includes(actif)) actif = b[0]; } } } catch (e) {}
-    const r = _d.apply(this, arguments);
-    try { iniAffiche(); } catch (e) { console.warn('[initiative]', e); }
-    return r; }; }
-// le bouton de l'hôte « à sa place » apparaît après 20 s : on redessine une fois à ce moment-là
-setInterval(() => { try { if (typeof S !== 'undefined' && S && iniActive() && iniEnCours() && estHote() && !occupe && iniAnime == null) { const t = Date.now() - iniDebut; if (t > 20000 && t < 20600) dessine(); } } catch (e) {} }, 500);
+// on recalcule après chaque affichage, à chaque réception, et toutes les demi-secondes (fin d'une animation des monstres, bouton de l'hôte après 20 s)
+{ const _d = dessine; dessine = function () { const r = _d.apply(this, arguments); try { iniMaj(); } catch (e) { console.warn('[initiative]', e); } return r; }; }
+setInterval(() => { try { if (typeof S !== 'undefined' && S) iniMaj(); else { const P = document.getElementById('ini'); if (P) P.remove(); } } catch (e) {} }, 500);
 // deux téléphones qui lancent en même temps : la partie reçue ne doit pas effacer mon lancer (on garde, pour chaque héros, la suite la plus longue)
 { const _r = recoit; recoit = function (d) {
     const mien = S && S.ini ? JSON.parse(JSON.stringify(S.ini)) : null;
@@ -129,6 +150,7 @@ setInterval(() => { try { if (typeof S !== 'undefined' && S && iniActive() && in
       Object.keys(mien.v).forEach(i => { const a = mien.v[i] || [], b = S.ini.v[i] || []; if (a.length > b.length && iniPrefixe(b, a)) { S.ini.v[i] = a; change = true; } });
       if (change) { iniFusion = true; if (typeof pousse === 'function') pousse(); }
     }
+    try { iniMaj(); } catch (e) {}
     return r; }; }
 // l'annonce « À toi de jouer » attend la fin des lancers
 { const _a = annonceTour; annonceTour = function () { if (iniEnCours() || Date.now() < iniFermeA) return; return _a.apply(this, arguments); }; }
