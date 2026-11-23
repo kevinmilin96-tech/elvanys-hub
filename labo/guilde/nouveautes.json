@@ -1,5 +1,9 @@
 [
 {
+"v": "20261123-205525",
+"m": "Odyssée : les combats de l’Abîme passent sur le nouveau plateau qui remplit tout l’écran."
+},
+{
 "v": "20261123-205002",
 "m": "Odyssée : cœur et PC chacun à leur place sur les Terres brûlées et le Givre."
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261123-184717",
 "m": "Combat : les cartes de ta main sont la grande carte en miniature (nom, dé, effet), sans cadre ajouté."
-},
-{
-"v": "20261123-184136",
-"m": "Le choix du mode ne défile plus quand tout tient sur l’écran."
 }
 ]
