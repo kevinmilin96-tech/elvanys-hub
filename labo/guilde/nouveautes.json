@@ -1,5 +1,9 @@
 [
 {
+"v": "20261123-214917",
+"m": "Butin de la Guilde : ramasse-le 3 fois par jour, dès qu’il y a quelque chose (plus besoin d’attendre 1 h)."
+},
+{
 "v": "20261123-214015",
 "m": "Nouveau : le duel éclair du jour ! ≈ 3 minutes, le même pour tous (héros et adversaire du jour, moitié des PV). Ton premier essai compte : étoiles, XP, or. Dans Aujourd’hui → ⚡ Rapide."
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261123-194631",
 "m": "Chroniques : le panneau de l’initiative sur la table de la Guilde peinte."
-},
-{
-"v": "20261123-194127",
-"m": "Appli Android 1.1 : le jeu ne passe plus sous l’appareil photo du téléphone (mise à jour proposée dans ⚙️)."
 }
 ]

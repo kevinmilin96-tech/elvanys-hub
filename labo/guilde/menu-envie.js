@@ -52,7 +52,9 @@ function envieRendezVous() {
   }
   if (typeof butinCalcule === 'function') {
     const g = butinCalcule(), plein = g.h >= 12;
-    L.push(['butin', '🎁', 'Le butin de la Guilde', plein ? 'Plein : à ramasser !' : g.h >= 1 ? `${Math.floor(g.h)} h sur 12 : tu peux ramasser` : (localStorage.getItem('guilde-butin-jour') === envJourLocal() ? 'Ramassé aujourd’hui, il se remplit' : 'Il se remplit : reviens dans 1 h'), localStorage.getItem('guilde-butin-jour') === envJourLocal() && g.h < 1, 'envieButin()']);
+    // 23/11 : « Ramasse le butin 3 fois » ; on peut ramasser dès qu'il y a quelque chose (plus besoin d'attendre 1 h)
+    const n = typeof butinFois === 'function' ? butinFois() : 0, dispo = g.xp >= 1 || g.eclats >= 1 || g.or >= 1;
+    L.push(['butin', '🎁', 'Ramasse le butin 3 fois', `${Math.min(n, 3)}/3 · ${plein ? 'Plein : à ramasser !' : dispo ? `🪙 ${g.or} · 🔹 ${g.pou}${g.xp ? ` · ${g.xp} XP` : ''} à ramasser` : 'Il se remplit, reviens dans quelques minutes'}`, n >= 3, 'envieButin()']);
   }
   return L;
 }
