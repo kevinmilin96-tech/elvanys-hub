@@ -1,5 +1,9 @@
 [
 {
+"v": "20261123-185020",
+"m": "Combat : ton paquet (cartes de dos, avec le nombre restant) à gauche de ta main, ta défausse à droite ; touche-les pour voir la liste."
+},
+{
 "v": "20261123-184717",
 "m": "Combat : les cartes de ta main sont la grande carte en miniature (nom, dé, effet), sans cadre ajouté."
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261122-211122",
 "m": "Crypte : la partie en cours est signalée par une petite pastille « ▶ En cours » en bas de l'image du mode."
-},
-{
-"v": "20261122-210554",
-"m": "La Crypte a une nouvelle entrée : tu choisis le mode (crypte du jour, au hasard, la Descente), ton héros, puis tes options, et ▶ Jouer. Dans la crypte au hasard, tu peux maintenant choisir le plateau et ajouter une règle."
 }
 ]
