@@ -1116,7 +1116,7 @@ function poseAction(J, quoi, ds, k, indexMain) {
   if (quoi === 'ultime') { J.pc -= 3; J.ultimeFait = true; log(`${J.nom} : ULTIME, ${h.ultime.n} !`); bilan(J, 'actions', `⚡ ULTIME : ${h.ultime.n}`); fx({ t:'ultime', s:J === S.J ? 'J' : 'O', id:J.id, nom:h.ultime.n, d:h.ultime.d, cit:h.cit, vers:k && k.J && ref(k) }); h.ultime.f(J, vs, k, ds); return; }
   const c = CARTES[quoi];
   const cout = coutCarte(J, quoi);
-  J.pc -= cout; J.cartesJouees++; if (J.remise && J.remise.k === quoi) J.remise = null; // 21/11 : la remise du Grimoire ne sert qu'une fois if (J === S.J && !S.auto) typeof guildeEvt === 'function' && guildeEvt('carte', 1);
+  J.pc -= cout; J.cartesJouees++; if (J.remise && J.remise.k === quoi) J.remise = null; if (J === S.J && !S.auto) typeof guildeEvt === 'function' && guildeEvt('carte', 1); // 21/11 : la remise du Grimoire ne sert qu'une fois ; 23/11 : le compte des cartes jouées était tombé DANS ce commentaire (quête « Joue 5 cartes » bloquée à 0)
   if (c.t === 'e' && J.forgeGratuite) J.forgeGratuite = false;
   J.main.splice(indexMain, 1); (J.defausse || (J.defausse = [])).push(quoi);
   log(`${J.nom} joue ${c.n} avec ${vs.length > 1 ? 'les dés' : 'le dé'} ${vs.join(', ')} · ${cout} PC (reste ${J.pc}).`);
