@@ -1,5 +1,9 @@
 [
 {
+"v": "20261123-215547",
+"m": "Mise à jour : tout le bandeau (et tout le bouton dans ⚙️) se touche, il bat doucement et s’enfonce sous le doigt."
+},
+{
 "v": "20261123-215044",
 "m": "Quête « Joue 5 cartes » réparée : chaque carte jouée compte de nouveau."
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261123-195649",
 "m": "Combat : les effets (Contre-attaque, Épines, Poison…) sont des pastilles avec leur chiffre ; touche-en une pour l’explication, ou la grille pour la liste complète."
-},
-{
-"v": "20261123-194837",
-"m": "Chroniques : les médailles d’or, d’argent et de bronze ont maintenant le même dessin."
 }
 ]

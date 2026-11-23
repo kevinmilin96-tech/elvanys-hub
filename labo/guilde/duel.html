@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261123-215329"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
+<head><meta name="guilde-version" content="20261123-215547"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="robots" content="noindex">
@@ -90,7 +90,10 @@
   .fenetre li { margin:.35em 0; }
   .lignep { display:block; width:100%; text-align:left; background:#1d1b3a; color:#fff; border:1px solid #4b4580; border-radius:10px; padding:7px 9px; margin:4px 0; font-size:.88em; }
   #majbar { position:fixed; left:8px; right:8px; top:8px; z-index:90; background:#2a7fc1; color:#fff; border-radius:14px; padding:9px 12px; display:flex; align-items:center; gap:10px; box-shadow:0 8px 24px #000a; font-size:.88em; }
-  #majbar span { flex:1; } #majbar button { background:#fff; color:#1d4f80; border:none; border-radius:10px; padding:8px 12px; font-weight:bold; }
+  #majbar span { flex:1; } #majbar button { background:#fff; color:#1d4f80; border:none; border-radius:10px; padding:10px 14px; font-weight:bold; animation:majPulse 1.3s ease-in-out infinite; transition:transform .1s; }
+  /* 23/11 (l'utilisateur : « il faut cliquer à droite du bouton ; tout le bouton cliquable, et animé ») : TOUT le bandeau met à jour, et il s'enfonce au toucher */
+  #majbar { cursor:pointer; transition:transform .1s; -webkit-tap-highlight-color:transparent; } #majbar:active { transform:scale(.97); } #majbar:active button { transform:scale(.92); }
+  @keyframes majPulse { 0%, 100% { box-shadow:0 0 0 0 #ffffffaa; } 50% { box-shadow:0 0 0 6px #ffffff00; } }
   .ordre { width:min(88vw, 380px); }
   .ordre-tete { display:flex; align-items:center; gap:10px; padding:12px; margin:-4px -6px 12px; border-radius:14px; background:#1d1b3a center/cover; border:1px solid #4b4580; }
   .ordre-tete > div { flex:1; } .ordre-nom { font-size:1.3em; font-weight:bold; color:var(--or); }
@@ -784,7 +787,7 @@
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
 // 14/11 : l'Odyssée sans fin a ses propres emplacements (odyssee.js lit SANSFIN)
 const SANSFIN = new URLSearchParams(location.search).get('sansfin') === '1', ROUTE_TITAN = new URLSearchParams(location.search).get('route') === '1', EPREUVE_PAGE = new URLSearchParams(location.search).get('epreuve') === '1', ODY_PAGE = EPREUVE_PAGE ? 'epreuves.html' : 'odyssee.html' + (SANSFIN ? '?sansfin=1' : ROUTE_TITAN ? '?route=1' : '');
-const VERSION = '20261123-215329';
+const VERSION = '20261123-215547';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -796,7 +799,7 @@ function verifieVersion() {
     v = (v || '').trim(); if (!v || v === VERSION || document.getElementById('majbar')) return;
     const b = document.createElement('div'); b.id = 'majbar';
     b.innerHTML = `<span><b>Nouvelle version du jeu</b><br>${S && S.ligne ? 'Le duel est gardé : il reprend juste après, à ta place.' : 'La partie en cours sera perdue, l’historique est gardé.'}</span><button>Mettre à jour</button>`; // 15/11 soir : le duel à distance reprend
-    b.querySelector('button').onclick = () => { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); }; // 13/11 soir : on reste dans le même mode (tutoriel…)
+    b.onclick = () => { b.style.opacity = '.7'; const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); }; // 13/11 soir : on reste dans le même mode (tutoriel…)
     document.body.appendChild(b);
   }).catch(() => {});
 }
@@ -804,7 +807,7 @@ setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
 <script src="cartes.js?v=ee6cc90836"></script>
-<script src="musique.js?v=7c0d58ffd7"></script>
+<script src="musique.js?v=1ae6d96233"></script>
 <script src="rang.js?v=6528e79f2c"></script>
 <script src="heros-etoiles.js?v=c027cdd26b"></script>
 <script src="heros-aventure.js?v=31db8c2ed4"></script>
