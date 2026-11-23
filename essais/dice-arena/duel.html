@@ -386,6 +386,10 @@
   #app:has(> .plateau.unique) { height:100dvh; min-height:0 !important; display:flex; flex-direction:column; padding:0 0 54px !important; overflow:hidden; }
   #app:has(> .plateau.unique) > .salle { flex:none; margin:0; border-radius:0; padding:4px 8px; }
   .plateau.tapis.unique { flex:1; min-height:0; aspect-ratio:auto; container-type:size; border-radius:0; background-size:100% 100%; overflow:visible; }
+  /* 23/11 (l'utilisateur : « les cercles sont plutôt ovales ») : le plateau peint garde SES proportions (768 × 1376) au lieu d'être étiré sur les téléphones longs ;
+     la place en trop va au-dessus, sur un fond de bois sombre */
+  .plateau.tapis.unique:not(.scene) { flex:none; width:min(100%, calc((100dvh - 80px) * 768 / 1376)); height:auto; aspect-ratio:768/1376; margin:auto auto 0; }
+  #app:has(> .plateau.unique:not(.scene)) { background:#1a130b; }
   .plateau.tapis.unique.scene { background-size:cover; }
   .unique .barre { left:39.5cqw; width:21cqw; height:21cqw; }
   .unique #b-O { top:4.5cqh; } .unique #b-J { top:63.5cqh; }
