@@ -11,7 +11,7 @@ const NOM_SORTE = { u:'Créature', s:'Sort', e:'Équipement', r:'Réaction' }; /
 function carteGuilde(k, opt = {}) {
   const c = CARTES[k], h = opt.heros || CADRE_DE(k), z = ZONES, pc = (a, i) => a[i] + '%';
   const cadre = `cadres/${h}.webp?v=1`, art = opt.art || (ARTS.includes(k) ? `cartes/${k}.webp?v=1` : null);
-  return `<div class="carteG" style="--w:${opt.w || 216}px">
+  return `<div class="carteG${opt.entiere ? ' entiere' : ''}" style="--w:${opt.w || 216}px">
     <img class="cg-cadre" src="${cadre}" alt="">
     <div class="cg-art" style="left:${pc(z.fenetre, 0)};top:${pc(z.fenetre, 1)};width:${pc(z.fenetre, 2)};height:${pc(z.fenetre, 3)};${art ? `background-image:url('${art}')` : ''}">${art ? '' : `<span class="cg-vide">${ICONE_SORTE[c.t] || ''}<small>illustration à venir</small></span>`}</div>
     <div class="cg-nom" style="left:${pc(z.nom, 0)};top:${pc(z.nom, 1)};width:${pc(z.nom, 2)};height:${pc(z.nom, 3)}"><span>${c.n}</span></div>
@@ -30,7 +30,9 @@ const CSS_CARTE = `
    la carte ne montre que son nom, son coût et son image : on la touche pour la lire en grand. Vaut pour tous les modes. */
 .carteG { -webkit-text-size-adjust:none; text-size-adjust:none; }
 .cg-nom, .cg-bande, .cg-effet { overflow:hidden; }
-@container (max-width:110px) { .cg-effet, .cg-bande { visibility:hidden; } .cg-nom { overflow:visible !important; height:auto !important; min-height:6.3%; align-items:flex-start; font-size:9cqw !important; line-height:.95 !important; padding:1cqw 1.5cqw !important; border-radius:2.5cqw; background:#1a1030e6; box-shadow:0 0 0 .6cqw #b58cff66; text-shadow:0 1px 0 #000; z-index:2; } } /* 23/11 (l'utilisateur : le nom dépassait de la carte) : le nom part du haut du bandeau et descend sur l'illustration, sur un fond sombre, sans jamais sortir de la carte */ /* 22/11 : sur une petite carte, le nom reste entier (2 lignes s'il le faut) */
+@container (max-width:110px) { .cg-effet, .cg-bande { visibility:hidden; } .cg-nom { overflow:visible !important; font-size:9cqw !important; line-height:.9 !important; padding:0 !important; text-shadow:0 1px 0 #000, 0 0 3px #000, 0 0 6px #b58cff; } } /* 22/11 : sur une petite carte, le nom reste entier (2 lignes s'il le faut) */
+/* 23/11 (l'utilisateur : « on garde la carte entière, juste réduite ») : une carte « entiere » reste la grande carte en miniature (nom, dés, effet), même toute petite */
+@container (max-width:110px) { .carteG.entiere .cg-effet, .carteG.entiere .cg-bande { visibility:visible; } .carteG.entiere .cg-nom { overflow:hidden !important; font-size:6.2cqw !important; line-height:1 !important; padding:0 2% !important; text-shadow:0 1px 0 #000, 0 0 6px #b58cff; } }
 .cg-cadre { inset:0; width:100%; height:100%; pointer-events:none; }
 .cg-art { background-size:cover; background-position:center 30%; border-radius:1.5%; box-shadow:inset 0 0 0 1px #0006, inset 0 0 12px #0008; }
 .cg-art:not([style*='background-image']) { background:radial-gradient(circle at 50% 40%, #3a2a55, #160f24 75%); display:flex; align-items:center; justify-content:center; }

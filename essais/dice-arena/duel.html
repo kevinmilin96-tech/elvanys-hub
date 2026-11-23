@@ -1338,7 +1338,7 @@ function mainEnEventail(J) {
     const style = vue ? `left:calc(50% - 82px);bottom:${Math.round(zh)}px;z-index:60`
       : `left:calc(50% - ${CW / 2}px + ${d * pas}px);width:${CW}px;height:${CH}px;font-size:${FS}em;transform:translateY(${Math.round(d * d * 1.2) - (ok ? 8 : 0)}px) rotate(${d * ang}deg);z-index:${ok ? 40 + i : i + 1}`;
     const pied = vue ? `<div class="jouer">${ok ? '👆 Touche encore pour la jouer' : raisonCarte(J, k)}</div>` : '';
-    if (typeof CADRES_OK !== 'undefined' && CADRES_OK.includes(CADRE_DE(k))) return `<div class="c neuve ${ok ? 'ok' : sel.length ? 'non' : ''} ${vue ? 'vue' : ''}" style="${style}" onclick="toucheCarte(${i})">${carteGuilde(k, { w:vue ? 164 : CW, cout:coutCarte(J, k), pied:vue ? `<div class="cg-pied">${ok ? '👆 Touche encore pour la jouer' : raisonCarte(J, k)}</div>` : '' })}</div>`;
+    if (typeof CADRES_OK !== 'undefined' && CADRES_OK.includes(CADRE_DE(k))) return `<div class="c neuve ${ok ? 'ok' : sel.length ? 'non' : ''} ${vue ? 'vue' : ''}" style="${style}" onclick="toucheCarte(${i})">${vue ? carteGuilde(k, { w:164, cout:coutCarte(J, k), pied:`<div class="cg-pied">${ok ? '👆 Touche encore pour la jouer' : raisonCarte(J, k)}</div>` }) : carteGuilde(k, { w:CW, cout:coutCarte(J, k), entiere:true })}</div>`;
     return `<div class="c ${c.t}2 ${ok ? 'ok' : sel.length ? 'non' : ''} ${vue ? 'vue' : ''}" style="${style}" onclick="toucheCarte(${i})"><span class="cout">${coutCarte(J, k)}</span><div class="n">${c.n}</div><span class="cd">🎲 ${c.txt}</span><div class="dd">${c.d}</div>${pied}</div>`;
   }).join('');
 }
