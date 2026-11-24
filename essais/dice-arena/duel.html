@@ -507,7 +507,7 @@
   .unique .barre .bdg.bb { pointer-events:auto; cursor:pointer; }
   .unique .barre .bdg.bb .tmp { position:absolute; left:50%; transform:translateX(-50%); bottom:-3.4cqw; font:bold 3cqw Georgia, serif; font-style:normal; color:#cfeaff; background:#0a1a2acc; border:1px dashed #cfeaff; border-radius:8px; padding:0 .5cqw; white-space:nowrap; }
   .unique .barre .bdg.bb.tempo { filter:drop-shadow(0 0 3px #8fd0ff); }
-  .ic { background:center/contain no-repeat; border:none; box-shadow:none; filter:drop-shadow(0 2px 4px #000c); }
+  .ic { background:center/contain no-repeat; border:none; box-shadow:none; filter:drop-shadow(0 2px 4px #000c); } .ic.pw { background-size:92%; }
   .ic.ok { box-shadow:none; filter:drop-shadow(0 0 4px #7dffb0) drop-shadow(0 0 8px #7dffb0); }
   .ic.non { opacity:.45; filter:grayscale(.6) drop-shadow(0 2px 4px #000c); }
   .ic small { background:#1d1626e6; color:#f3e3b8; }
@@ -2061,9 +2061,18 @@ function dessine() {
 }
 // ================= écran unique (11/11) : actions en icônes à gauche, dés à droite, anneaux autour des portraits =================
 const ICONES = { frappe:['⚔', 'Frappe'], technique:['⚔⚔', 'Technique'], garde:['🛡', 'Garde'], pouvoir:['✦', 'Pouvoir'], ultime:['⚡', 'Ultime'], transmu:['⚗', ''], vendre:['◆', 'Vendre'] };
+// 24/11 : l'icône peinte de la version choisie (decor/pw-<héros>-<emplacement>-<a|b|c>.webp) ; chargée une fois, l'icône commune reste tant qu'elle n'existe pas
+const _ICO_BUILD = {};
+function icoBuild(J, emp) {
+  if (!J || typeof PW_CLASSES === 'undefined' || !PW_CLASSES[J.id]) return null;
+  const v = ((J.pwv && J.pwv[emp]) || 'A').toLowerCase(), src = `decor/pw-${J.id}-${emp}-${v}.webp?v=1`;
+  if (!(src in _ICO_BUILD)) { _ICO_BUILD[src] = null; const im = new Image(); im.onload = () => { _ICO_BUILD[src] = src; if (typeof rendu === 'function' && S && !fxOn) try { rendu(); } catch (e) {} }; im.src = src; }
+  return _ICO_BUILD[src];
+}
 function icone(quoi, lib, J, extra) {
   const ok = sel.length && permis(J, quoi, vals(sel), sel), [sym, nom] = ICONES[quoi];
-  return `<button class="ic ${ok ? 'ok' : sel.length ? 'non' : ''} ${extra || ''}" style="background-image:url(ui/${quoi === 'vendre' ? 'pc' : quoi}.webp?v=2)" onclick="vise('${quoi}')" aria-label="${lib || nom}"><small>${lib || nom}</small></button>`;
+  const pwI = (quoi === 'garde' || quoi === 'pouvoir') && icoBuild(J, quoi); // 24/11 (l'utilisateur) : la Garde et le Pouvoir prennent l'icône peinte de la version du build
+  return `<button class="ic ${ok ? 'ok' : sel.length ? 'non' : ''} ${extra || ''}${pwI ? ' pw' : ''}" style="background-image:url(${pwI || `ui/${quoi === 'vendre' ? 'pc' : quoi}.webp?v=2`})" onclick="vise('${quoi}')" aria-label="${lib || nom}"><small>${lib || nom}</small></button>`;
 }
 function colonneActions(J, h) {
   return `<div class="colG">${icone('frappe', '', J, 'r1')}${icone('technique', '', J, 'r2')}${icone('garde', '', J, 'r3')}${icone('pouvoir', '', J, 'r4')}${h.action ? icone('transmu', h.action.n, J, 'r5' + (J.transmu ? ' fait' : '')) : ''}
