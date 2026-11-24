@@ -151,6 +151,7 @@ function atelier(p, T) {
     corps = `<p class="aide">Le visage de ta carte de profil (tu joues toujours le héros que tu veux).</p><div class="grille">
       <button class="cad ${!p.portrait ? 'choisi' : ''}" onclick="choisir('portrait',null)"><img class="rond" src="${IMG(dernier)}" alt="">Mon dernier héros</button>
       ${ORDRE.filter(id => id !== 'zephine' || localStorage.getItem('guilde-tuto') === 'fait').map(id => `<button class="cad ${p.portrait === id ? 'choisi' : ''}" onclick="choisir('portrait','${id}')"><img class="rond" src="portraits/${id}.webp" alt="">${HEROS[id].nom}</button>`).join('')}
+      ${(typeof AVATARS_PROFIL !== 'undefined' ? AVATARS_PROFIL : []).map(([n, nom]) => `<button class="cad ${p.portrait === 'avatar-' + n ? 'choisi' : ''}" onclick="choisir('portrait','avatar-${n}')"><img class="rond" src="portraits/avatar-${n}.webp?v=1" alt="">${nom}</button>`).join('')}
       ${av.map(a => `<button class="cad ${p.portrait === 'av:' + a.id ? 'choisi' : ''}" onclick="choisir('portrait','av:${a.id}')"><img class="rond" src="${avPortrait(a)}" onerror="this.onerror=null;this.src='${avPortraitSecours(a)}'" alt="">${a.nom}</button>`).join('')}</div>
       <h3>✏️ Mon nom</h3><p class="aide">C’est aussi ton pseudo en ligne, celui que voient tes amis.</p><input maxlength="18" placeholder="Ton nom d’aventurier (sinon : « Toi »)" value="${(p.nom || '').replace(/"/g, '&quot;')}" oninput="nom(this.value)">`;
   } else if (onglet === 'cadre') {

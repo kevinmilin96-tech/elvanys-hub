@@ -560,7 +560,7 @@ function profilMenu() {
 // le haut de l'écran est dégagé (le 👤, le ⚙️ et le 📬 flottants sont cachés ici)
 { const st = document.createElement('style'); st.textContent = `#profil-bouton, #gm-bouton, #boite-bouton { display:none !important; }
     #barre-bas { position:fixed; left:0; right:0; bottom:0; z-index:950; display:grid; grid-template-columns:repeat(5, 1fr); gap:4px; padding:6px 8px calc(6px + env(safe-area-inset-bottom)); background:#110e22f2; border-top:1px solid #f3c96b55; box-shadow:0 -6px 20px #0008; }
-    #barre-bas button { position:relative; background:none; border:0; color:#f1ecff; font:13px Georgia, serif; padding:4px 0; cursor:pointer; } #barre-bas button b { display:block; font-size:22px; line-height:1.2; }
+    #barre-bas button { position:relative; background:none; border:0; color:#f1ecff; font:13px Georgia, serif; padding:4px 0; cursor:pointer; } #barre-bas button b { display:block; font-size:22px; line-height:1.2; } #barre-bas .bb-ic { width:30px; height:30px; object-fit:contain; display:block; margin:0 auto; filter:drop-shadow(0 1px 2px #000a); }
     #barre-bas .pt { position:absolute; top:0; left:calc(50% + 6px); min-width:17px; height:17px; line-height:17px; border-radius:9px; font:bold 11px Georgia; padding:0 4px; }
     body { padding-bottom:calc(66px + env(safe-area-inset-bottom)); }
     #monde { height:calc(100dvh - 66px - env(safe-area-inset-bottom)) !important; } body { overflow:hidden; } /* 17/11 soir : le monde tient au-dessus de la barre, rien ne défile */
@@ -600,7 +600,9 @@ function profilMenu() {
     body:has(#titre:not(.part)) #barre-bas { display:none; } /* 17/11 (l'utilisateur) : pas sur l'écran « Toucher pour entrer », seulement une fois dans le menu */
     #barre-bas { animation:bbArrive .4s ease-out; } @keyframes bbArrive { from { transform:translateY(100%); } }`; document.head.appendChild(st);
   const bb = document.createElement('nav'); bb.id = 'barre-bas';
-  bb.innerHTML = `<button id="bb-profil" onclick="try{sessionStorage.setItem('guilde-dans-mode','1')}catch(e){};location.href='profil.html'"><b>👤</b>Profil</button><button id="bb-amis" onclick="amisFenetre()"><b>👥</b>Amis</button><button id="bb-menu" onclick="grandMenu()"><b><span class="ic4"><i></i><i></i><i></i><i></i></span></b>Menu</button><button id="bb-boite" onclick="amisBoite()"><b>📬</b>Boîte</button><button id="bb-param" onclick="GM.parametres()"><b>⚙️</b>Paramètres</button>`;
+  // 24/11 : les icônes peintes de la barre du bas (ui/barre/*.webp, Gemini) ; l'émoji reste si l'image manque (les Amis attendent la leur)
+  const bbIc = (k, e) => `<img class="bb-ic" src="ui/barre/${k}.webp?v=1" alt="" draggable="false" onerror="this.outerHTML='${e.replace(/"/g, '&quot;')}'">`;
+  bb.innerHTML = `<button id="bb-profil" onclick="try{sessionStorage.setItem('guilde-dans-mode','1')}catch(e){};location.href='profil.html'"><b>${bbIc('ui-profil', '👤')}</b>Profil</button><button id="bb-amis" onclick="amisFenetre()"><b>👥</b>Amis</button><button id="bb-menu" onclick="grandMenu()"><b>${bbIc('ui-menu', '<span class="ic4"><i></i><i></i><i></i><i></i></span>')}</b>Menu</button><button id="bb-boite" onclick="amisBoite()"><b>${bbIc('ui-boite', '📬')}</b>Boîte</button><button id="bb-param" onclick="GM.parametres()"><b>${bbIc('ui-parametres', '⚙️')}</b>Paramètres</button>`;
   document.body.appendChild(bb);
   const pastille = (id, n, coul, txt) => { const b = document.getElementById(id); if (!b) return; let s = b.querySelector('.pt'); if (!n) { if (s) s.remove(); return; } if (!s) { s = document.createElement('span'); s.className = 'pt'; b.appendChild(s); } s.textContent = n; s.style.background = coul; s.style.color = txt; };
   window.amisPastille = (n, dem) => pastille('bb-amis', dem || n, dem ? '#ff5a5a' : '#7dffb0', dem ? '#fff' : '#0a2a14');
@@ -624,7 +626,7 @@ function grandMenu() {
     ['📬', 'Boîte', ferme + 'amisBoite()'], ['🎓', 'Tutoriel', va('duel.html?tuto=1')], ['⚙️', 'Paramètres', ferme + 'GM.parametres()', window.GuildeMaj && GuildeMaj.aVoir() ? '!' : 0]];
   // 22/11 : les icônes peintes (images Gemini, ui/menu/m-*.webp) ; sans image, l'émoji reste
   const GM_IMG = { 'Portails':'m-portails', 'Quêtes':'m-quetes', 'Route des rangs':'m-route', 'Mes héros':'m-heros', 'Les pouvoirs':'m-pouvoirs', 'Le Forgeron':'m-forge', 'Profil et succès':'m-profil', 'Mon parcours':'m-parcours',
-    'Panthéon':'m-pantheon', 'Amis':'m-amis', 'Entre amis':'m-entreamis', 'Boîte':'m-boite', 'Mes parties':'m-parties', 'Tutoriel':'m-tuto', 'Paramètres':'m-param' };
+    'Panthéon':'m-pantheon', 'Amis':'m-amis', 'Mes decks':'../barre/ui-decks', 'Entre amis':'m-entreamis', 'Boîte':'m-boite', 'Mes parties':'m-parties', 'Tutoriel':'m-tuto', 'Paramètres':'m-param' };
   window.GM_TOUS = T.map(x => x[1]);
   g = document.createElement('div'); g.id = 'grand-menu';
   g.innerHTML = `<button class="x" onclick="grandMenu()" aria-label="Fermer">✕</button>

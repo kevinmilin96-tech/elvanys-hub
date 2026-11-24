@@ -71,8 +71,11 @@ const COULEURS_NOM = [['blanc', '#f1ecff'], ['or', '#f3c96b'], ['ciel', '#7cd4ff
 const DEVISES = ['Ce qui est forgé ne casse pas.', 'Un dé, une chance.', 'Toujours un 6 dans la manche.', 'La Guilde avant tout.', 'Je lance, donc je suis.',
   'Ni peur, ni reproche.', 'Le sort sourit aux audacieux.', 'Pas de sieste avant le boss.', 'Moustache a toujours raison.', 'Une rune à la fois.', 'Au bout du donjon, la gloire.', 'Les dés sont jetés.'];
 function nomStyle(p) { const c = (COULEURS_NOM.find(x => x[0] === p.couleur) || COULEURS_NOM[0])[1]; return c.startsWith('linear') ? `background:${c};-webkit-background-clip:text;background-clip:text;color:transparent` : `color:${c}`; }
+// 24/11 : 10 AVATARS DE PROFIL (Gemini, portraits/avatar-NN.webp) : des aventuriers qui ne sont pas des héros ; le n° 2 (forgeron nain) est à refaire
+const AVATARS_PROFIL = [['01', 'La voyageuse'], ['03', 'L’archer elfe'], ['04', 'La cuisinière'], ['05', 'La mage des étoiles'], ['06', 'L’écuyer'], ['07', 'Le bricoleur'], ['08', 'Le nomade'], ['09', 'La capitaine'], ['10', 'La guerrière']];
 function portraitProfil(p) {
   if (p.portrait && p.portrait.startsWith('av:') && typeof avTrouve === 'function') { const a = avTrouve(p.portrait.slice(3)); if (a) return [avPortrait(a), avPortraitSecours(a)]; }
+  if (p.portrait && /^avatar-\d\d$/.test(p.portrait)) return [`portraits/${p.portrait}.webp?v=1`, 'portraits/gorm.webp']; // 24/11 : les avatars de profil (personnages qui ne sont pas des héros)
   const id = p.portrait && typeof HEROS !== 'undefined' && HEROS[p.portrait] ? p.portrait : null;
   if (id) return [`portraits/${id}.webp`, `portraits/${id}.webp`];
   return [null, null];
