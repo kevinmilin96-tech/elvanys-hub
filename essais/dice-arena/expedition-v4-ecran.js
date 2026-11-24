@@ -118,7 +118,7 @@ function port() {
   <div class="entete">${avX() ? haImg(avX()) : `<img src="${IMG(X.heros)}" alt="">`}<div><b>${nomX()}</b>, capitaine · <span class="p">💰 ${X.or}</span> <span class="p coeurs">${'❤'.repeat(X.coeurs)}${'🖤'.repeat(Math.max(0, (X.coeursMax || 3) - X.coeurs))}</span><br><span class="doux">${CAPITAINES[X.heros].n}</span></div><span class="ic" onclick="journalExp()">📜</span><span class="ic" onclick="quitter()">⏏</span></div>
   <div class="route">${ESCALES2.map((x, i) => `<div class="esc ${i < X.escale ? 'faite' : i === X.escale ? 'ici' : ''}" onclick="carteVoyage()"><b>${x.type === 'fantome' ? '👻' : x.e}</b>${i + 1}</div>`).join('')}</div>
   <p class="regle4" onclick="infoRegle()">${REGLES_V4[X.regle].e} <b>${REGLES_V4[X.regle].n}</b> · ${MERS[X.mer].e} ${MERS[X.mer].n}${X.asc ? ' · ⛰ ' + X.asc : ''}${X.jour ? ' · 🗓️ voyage du jour' : ''} · boss : ${BOSS_V4[X.boss].e} <u>${BOSS_V4[X.boss].n}</u></p>
-  <p class="prochain">Prochaine escale : <b>${esc.e} ${esc.n}</b> · ${esc.type === 'fantome' ? '👻 un navire rival (un autre capitaine)' : esc.type === 'boss' ? '👑 le boss, <b>une seule chance</b> : ' + BOSS_V4[X.boss].d : esc.type === 'elite' ? '💀 une élite : ' + MERS[X.mer].elites[esc.el || 0].d : '⚔ des monstres'}</p>
+  <p class="prochain">Prochaine escale : <b>${esc.e} ${esc.n}</b> · ${esc.type === 'fantome' ? '👻 un navire rival (un autre capitaine)' : esc.type === 'boss' ? '👑 le boss : ' + BOSS_V4[X.boss].d : esc.type === 'elite' ? '💀 une élite : ' + MERS[X.mer].elites[esc.el || 0].d : '⚔ des monstres'}</p>
   ${famillesHTML()}
   <div class="champ">
     <div class="etiq">DEVANT · frappent au corps à corps</div><div class="rangee">${[0, 1, 2].map(i => slotHTML('av', i)).join('')}</div>
@@ -153,7 +153,7 @@ function aideExp() { fenetre(`<h2>❓ Le port</h2><ul style="padding-left:1.1em"
   <li><b>Placer</b> : touche une recrue puis une place. Devant : Remparts (Barrière) et Lames. Derrière : Tireurs (ils frappent de loin) et Soutiens (ils aident et frappent un peu). Une Lame derrière attend que le devant tombe.</li>
   <li><b>Les familles</b> (en haut) : 2 ou 4 recrues de la même famille sur le plateau donnent un bonus. Touche-les pour le voir.</li>
   <li><b>L’or</b> : +8 après chaque escale, +1 par tranche de 5 gardées (3 au plus). Relancer : 1. Geler : garder la même offre.</li>
-  <li><b>Les cœurs</b> : perdre un combat coûte un cœur ; on continue. Mais contre <b>le boss, une seule chance</b> : perdu, le voyage s’arrête.</li></ul><div class="choixh"><button onclick="fermer();guidePort(true)">🐱 Revoir le guide</button><button class="or" onclick="fermer()">OK</button></div>`); }
+  <li><b>Les cœurs</b> : perdre un combat coûte un cœur, et on le <b>rejoue</b> (on ne passe jamais un combat sans l’avoir gagné, boss compris). Plus de cœur : le voyage s’arrête.</li></ul><div class="choixh"><button onclick="fermer();guidePort(true)">🐱 Revoir le guide</button><button class="or" onclick="fermer()">OK</button></div>`); }
 
 // ----------------------------------------------------------------------------------------------- le combat rejoué
 // 14/11 (décision de l'utilisateur) : le combat se regarde de haut en bas sur le décor de l'escale (Gemini) : les ennemis sur le lieu, l'équipage
@@ -352,7 +352,7 @@ async function voyage() {
 // 14/11 (l'utilisateur : « il faut expliquer quoi faire quand on lance l'expédition ») : Moustache guide le premier passage au port,
 // une zone à la fois (le reste de l'écran est assombri). Revoir : bouton « Aide ».
 const GUIDE_PORT = [
-  [null, 'Bienvenue à bord, capitaine ! Ton but : traverser la carte jusqu’au boss du voyage (en haut de l’écran, avec la règle du voyage). <b>4 points de choix</b> (sans combat) et, entre eux, des <b>suites de combats obligatoires</b> qui finissent par une élite. Tes <b>cœurs ❤</b> sont en haut de l’écran (3, ou plus selon la mer et la règle du voyage) : chaque combat perdu en coûte un. Contre le boss : <b>une seule chance</b>. Touche la route pour revoir la carte.'],
+  [null, 'Bienvenue à bord, capitaine ! Ton but : traverser la carte jusqu’au boss du voyage (en haut de l’écran, avec la règle du voyage). <b>4 points de choix</b> (sans combat) et, entre eux, des <b>suites de combats obligatoires</b> qui finissent par une élite. Tes <b>cœurs ❤</b> sont en haut de l’écran (3, ou plus selon la mer et la règle du voyage) : chaque combat perdu en coûte un. Un combat perdu coûte un cœur et se rejoue, boss compris. Touche la route pour revoir la carte.'],
   ['.tiroir', 'Ici, <b>le recruteur</b>. Touche une recrue pour lire sa fiche, puis « Recruter » (3 💰). Elle monte toute seule sur le pont. Tu gagnes des pièces après chaque escale.'],
   ['.champ', 'Ton <b>équipage</b> se tient sur ces 6 places. <b>DEVANT</b> : ceux qui frappent au corps à corps. <b>DERRIÈRE</b> : ceux qui tirent ou soignent. Les ennemis frappent au hasard, devant ou derrière : seuls les Remparts (Barrière) attirent les coups. Tu places qui tu veux où tu veux : une Lame derrière frappe à moitié, un tireur devant prend les coups. Pour déplacer une recrue : touche-la, puis touche une place.'],
   ['.cale', '<b>La cale</b>, c’est la réserve : ces recrues ne combattent pas, mais tu les gardes pour plus tard.'],
@@ -404,7 +404,7 @@ function introVoyage() { const R = REGLES_V4[X.regle], B = BOSS_V4[X.boss];
   fenetre(`<h2>⛵ ${MERS[X.mer].e} ${MERS[X.mer].n}</h2><p class="doux">${MERS[X.mer].d}</p>
   <div class="carte4 r"><b>${R.e} Règle du voyage : ${R.n}</b><br>${R.d}</div>
   <div class="carte4 b"><b>${B.e} Au bout de la route : ${B.n}</b><br>${B.d}</div>
-  ${X.flash ? '<p class="doux">⚡ <b>Le flash du jour</b> : 3 combats à la suite, sans escale entre eux : ⚔ des monstres, 💀 une élite, puis 👑 le boss (<b>une seule chance</b>). 2 cœurs. Recrute bien avec tes 12 💰 !</p>' : `<p class="doux">🧭 4 points de choix : ❔ événements, 💎 trésors et 🏝 ports francs, sans combat. Entre eux, ⚔ une suite de 2 ou 3 combats obligatoires, finie par une 💀 élite (plus dure, +4 💰). 👑 Au bout, le boss : <b>une seule chance</b>.</p>`}
+  ${X.flash ? '<p class="doux">⚡ <b>Le flash du jour</b> : 3 combats à la suite, sans escale entre eux : ⚔ des monstres, 💀 une élite, puis 👑 le boss. 2 cœurs : un combat perdu coûte un cœur et se rejoue. Recrute bien avec tes 12 💰 !</p>' : `<p class="doux">🧭 4 points de choix : ❔ événements, 💎 trésors et 🏝 ports francs, sans combat. Entre eux, ⚔ une suite de 2 ou 3 combats obligatoires, finie par une 💀 élite (plus dure, +4 💰). 👑 Au bout, le boss : <b>une seule chance</b>.</p>`}
   <div class="choixh"><button class="or" onclick="fermer();reprendre()">🗺 Voir la carte</button></div>`); }
 // reprendre : choisir la route si besoin, sinon le port (ou l'escale sans combat)
 function reprendre() { synchroRoute(X); if (doitChoisir(X)) return carteVoyage(true); const esc = X.route[X.escale]; if (esc && !ESCALE_COMBAT(esc.type)) return escaleCalme(); port(); }

@@ -335,7 +335,8 @@ function joueEscale(X, R) {
   } else {
     X.coeurs--; X.journal.push(`💔 ${esc.n} : défaite, un cœur de moins.`);
     if (X.coeurs <= 0) { X.fini = 'perdu'; return res; }
-    if (esc.type !== 'boss') X.escale++; X.or += 2;
+    X.or += 2; // 24/11 (décision de l'utilisateur) : partout, un combat perdu se REJOUE (un cœur de moins) : on ne passe jamais un combat sans le gagner
+    try { X.journal.push(`↺ On repart à l’assaut : ${esc.n} sera rejoué.`); } catch (e) {}
   }
   // le port : pièces + intérêts, nouvelle offre (sauf si gelée), Louve de Pip à l'escale 3
   const interet = Math.min(3, Math.floor(X.or / 5)); X.or += 8 + interet; res.gain = 8 + interet + (res.gagne ? 0 : 2); res.interet = interet;
