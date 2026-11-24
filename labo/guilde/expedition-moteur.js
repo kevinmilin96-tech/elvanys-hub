@@ -163,7 +163,7 @@ function achete(X, i) {
   const deja = toutes(X).filter(u => u.key === k && u.star === 0).length, absorbe = toutes(X).some(u => u.key === k && u.star === 1);
   let place = placeLibre(X, ['tireur', 'soutien'].includes(RECRUES[k].role) ? 'ar' : 'av');
   if (!place && deja < 2 && !absorbe) return { ok:false, raison:'Plus de place : vends une recrue d’abord.' };
-  X.or -= p; X.offre[i] = null; const u = nouvelleRecrue(k, 0);
+  X.or -= p; X.offre[i] = null; const u = nouvelleRecrue(k, 0); try { X.journal.push(`🛒 Recrue : ${RECRUES[k].n} (${p} 💰).`); } catch (e) {}
   if (place) poseA(X, place, u); else { X.cale.push(u); }
   const f = fusionne(X); X.cale = X.cale.slice(0, 3).concat(Array(Math.max(0, 3 - X.cale.length)).fill(null)).slice(0, 3);
   return { ok:true, u, fusion:f };
@@ -312,9 +312,17 @@ function adversaire(X) {
 }
 
 // ----------------------------------------------------------------------------------------------- une escale : combat + suite (or, cœurs, Forge, Louve)
+// 24/11 (l'utilisateur : « il n'y a rien d'écrit dans le journal ») : chaque combat note l'équipage, l'adversaire et le déroulé
+const uTxt = u => `${u.n}${u.star ? ' ' + '★'.repeat(u.star) : ''} ${(u.a || 0) + (u.bonusA || 0)}⚔/${(u.v || 0) + (u.bonusV || 0)}❤`;
+const rangTxt = P => { const av = (P.av || []).filter(Boolean).map(uTxt), ar = (P.ar || []).filter(Boolean).map(uTxt); return `devant : ${av.join(', ') || '—'} · derrière : ${ar.join(', ') || '—'}`; };
 function joueEscale(X, R) {
   // 18/11 : l'adversaire peut être préparé avant (X.advPret) pour que l'écran rejoue le même combat quand le joueur désigne une cible
-  const adv = X.advPret || adversaire(X), res = combatExp({ heros:X.heros, plateau:X.plateau, X }, adv.camp, R || hasardX(X));
+  const adv = X.advPret || adversaire(X);
+  try { X.journal.push(`⚓ Ton équipage (${X.coeurs} ❤, ${X.or} 💰) : ${rangTxt(X.plateau)}`); X.journal.push(`👹 En face, ${adv.nom} : ${rangTxt(adv.camp.plateau)}`); } catch (e) {}
+  const res = combatExp({ heros:X.heros, plateau:X.plateau, X }, adv.camp, R || hasardX(X));
+  try { const ev = res.ev || [], rounds = ev.filter(e => e.t === 'round').length, ids = new Set(Object.values(X.plateau).flat().filter(Boolean).map(u => u.id));
+    const donne = ev.filter(e => e.t === 'coup' && ids.has(e.src)).reduce((t, e) => t + (e.dg || 0), 0), recu = ev.filter(e => e.t === 'coup' && !ids.has(e.src)).reduce((t, e) => t + (e.dg || 0), 0);
+    X.journal.push(`⚔ ${rounds} round${rounds > 1 ? 's' : ''} · dégâts donnés ${donne}, reçus ${recu} · il te reste ${res.restant} combattant${res.restant > 1 ? 's' : ''}, en face ${res.restantE}.`); } catch (e) {}
   const esc = ESCALES2[X.escale]; res.adv = adv; X.prochain = null; X.ordres = null; X.advPret = null; X.ciblePrio = null;
   if (res.gagne) {
     X.victoires++; X.journal.push(`🏆 ${esc.n} : victoire.`);
