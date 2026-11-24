@@ -1,5 +1,9 @@
 [
 {
+"v": "20261124-205337",
+"m": "Les 11 pouvoirs de Maëlle ont leur icône peinte."
+},
+{
 "v": "20261124-205112",
 "m": "Les pouvoirs de Pip et de Maëlle ont leurs icônes peintes, dans la page des pouvoirs et à gauche du plateau en combat."
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261123-215547",
 "m": "Mise à jour : tout le bandeau (et tout le bouton dans ⚙️) se touche, il bat doucement et s’enfonce sous le doigt."
-},
-{
-"v": "20261123-215044",
-"m": "Quête « Joue 5 cartes » réparée : chaque carte jouée compte de nouveau."
 }
 ]
