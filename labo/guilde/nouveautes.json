@@ -1,5 +1,9 @@
 [
 {
+"v": "20261124-210515",
+"m": "Les pouvoirs de Sire Aldric ont leurs icônes peintes."
+},
+{
 "v": "20261124-205337",
 "m": "Les 11 pouvoirs de Maëlle ont leur icône peinte."
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261123-215702",
 "m": "Mes decks : tous les héros visibles d’un coup, sans faire défiler."
-},
-{
-"v": "20261123-215547",
-"m": "Mise à jour : tout le bandeau (et tout le bouton dans ⚙️) se touche, il bat doucement et s’enfonce sous le doigt."
 }
 ]
