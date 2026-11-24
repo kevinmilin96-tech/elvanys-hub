@@ -319,11 +319,10 @@ function finVoyageMeta(X) {
     const j = new Date().toISOString().slice(0, 10), gagne = X.fini === 'gagne', et = !gagne ? 0 : 1 + (X.coeurs >= X.coeursMax ? 1 : 0) + (X.coeurs >= X.coeursMax && X.or >= 6 ? 1 : 0);
     m.flash = m.flash || {};
     if (!m.flash[j] && !X.flashLibre) {
-      m.flash[j] = { gagne, etoiles:et, score:scoreV4(X) }; Object.keys(m.flash).sort().slice(0, -30).forEach(k => delete m.flash[k]);
-      const xp = 10 + 5 * et, or = 5 * et; if (typeof gagneXP === 'function') gagneXP(xp, 'Flash du jour');
-      if (or && typeof donneRessources === 'function') try { donneRessources(or, 0); } catch (e) {}
+      const xp = 10 + 5 * et, or = 5 * et; // 24/11 : à récupérer dans le carnet
+      m.flash[j] = { gagne, etoiles:et, score:scoreV4(X), rec:{ xp, or }, recup:false }; Object.keys(m.flash).sort().slice(0, -30).forEach(k => delete m.flash[k]);
       if (typeof guildeEvt === 'function') try { guildeEvt('flash', 1); } catch (e) {}
-      apport.push(`⚡ Flash du jour compté : ${gagne ? '★'.repeat(et) + '☆'.repeat(3 - et) : 'perdu'} · +${xp} XP${or ? ` · 🪙 +${or}` : ''}. Reviens demain !`);
+      apport.push(`⚡ Flash du jour compté : ${gagne ? '★'.repeat(et) + '☆'.repeat(3 - et) : 'perdu'} · +${xp} XP${or ? ` · 🪙 +${or}` : ''} à récupérer dans 📜 le carnet. Reviens demain !`);
     } else apport.push('⚡ Essai pour le plaisir : ton flash du jour était déjà compté.');
     if (gagne) apport.push('★★ : sans perdre de cœur · ★★★ : sans perdre de cœur, et 6 💰 ou plus à l’arrivée.');
     ecritMeta4(m); return apport;

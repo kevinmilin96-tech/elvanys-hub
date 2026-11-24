@@ -1,5 +1,9 @@
 [
 {
+"v": "20261124-192008",
+"m": "Crypte : les étoiles du flash s'affichent en jeu (touche-les pour les objectifs), 3e étoile = gagner en 6 tours ou moins ; creuset plein = une Rune OU 6 de bouclier. Le carnet montre ce que rapporte chaque flash, et la récompense se récupère avec 🎁."
+},
+{
 "v": "20261124-190558",
 "m": "Ton profil s'affiche de nouveau (il restait vide)."
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261123-205002",
 "m": "Odyssée : cœur et PC chacun à leur place sur les Terres brûlées et le Givre."
-},
-{
-"v": "20261123-204839",
-"m": "Duel : le cœur et les PC chacun à leur place."
 }
 ]
