@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261124-185411"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
+<head><meta name="guilde-version" content="20261124-185938"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="robots" content="noindex">
@@ -263,7 +263,7 @@ function dessine() {
   const dePeut = deVal();
   const besace = S.reserve.map(x => { const v = x && typeof x === 'object' ? x.v : x; return `<div class="cs ${v ? 'plein' : dePeut ? 'peut' : ''}" onclick="versBesace()">${v ? `<img src="faces-${S.heros}/face-${v}.webp" alt="${v}">` : ''}</div>`; }).join('');
   const creuset = S.creuset.map((p, k) => `<div class="cs ${p ? 'plein' : dePeut === k + 1 ? 'peut' : ''}" onclick="versCreuset()">${k + 1}</div>`).join('');
-  $('jeu').innerHTML = `
+  $('jeu').innerHTML = sansComp(`
     <div class="haut"><a href="#" onclick="${typeof DR !== 'undefined' && DR ? `if(confirm('Quitter ? Ta descente est gardée.')){DR=null;descenteAccueil()}` : `location.href='menu.html'`};return false">‹ ${typeof DR !== 'undefined' && DR ? 'Quitter' : 'Menu'}</a><span class="titre">${typeof DR !== 'undefined' && DR ? `🗺️ Étage ${DR.etage} · ${D.SALLES[DR.salle.type].e} ${D.SALLES[DR.salle.type].n}` : '🪦 La Crypte aux Sceaux'}</span><button onclick="regles()">❓</button></div>
     <div class="stats"><span>Tour <b>${S.tour}</b></span><span>⭐ <b>${S.score}</b></span><span>${S.gardien ? '♛ Gardien' : `Cartes restantes <b>${S.cols.reduce((t, c) => t + c.length, 0)}</b>`}</span><span>🪙 <b>${S.or}</b></span></div>${S.regle ? `<div class="maitre" style="color:var(--or)">${C.REGLES[S.regle].e} Règle du jour : ${C.REGLES[S.regle].n} — ${C.REGLES[S.regle].d}</div>` : ''}${S.maitreLa ? '<div class="maitre">👹 Le Maître des cryptes est là : chaque tour, tous les monstres +1 de force !</div>' : S.maitre ? `<div class="maitre" style="color:var(--doux)">👹 Maître des cryptes au tour ${S.maitre + 1}</div>` : ''}
     ${defisHTML()}
@@ -288,7 +288,7 @@ function dessine() {
     ${btnEffet()}
     <div class="consigne">${consigne()}</div>
     <div class="actions">${S.aLancer ? `<button class="lancer" onclick="lanceDes()">🎲 Lancer les dés</button>` : `${histo.length ? '<button class="annule" onclick="annule()" title="Annuler le dernier dé posé">↩</button>' : ''}<button onclick="relance()" ${S.relance && S.des.some(d => !d.garde) ? '' : 'disabled'}>🎲 Relancer (${S.relance})</button><button class="fin" onclick="finTour()">Fin du tour ▶</button>`}</div>
-    <div class="journal">${S.journal[0] || ''}</div>`;
+    <div class="journal">${S.journal[0] || ''}</div>`);
   S.des.forEach(d => delete d.neuf); visibles().forEach(c => delete c.neuve);
   sauve();
 }
@@ -416,7 +416,11 @@ function effetCouleur() { if (!sel) return; const r = C.placer(S, sel, { couleur
 // ------------------------------------------------------------------ petits effets
 function bulle(t, rouge) { const b = document.createElement('div'); b.className = 'bulle'; b.textContent = t; if (rouge) b.style.color = '#ff8a7a'; document.body.appendChild(b); setTimeout(() => b.remove(), 1400); }
 function tremble() { $('jeu').classList.remove('tremble'); void $('jeu').offsetWidth; $('jeu').classList.add('tremble'); }
-function fenetre(h) { $('fen').innerHTML = h ? `<div class="voile-f" onclick="if(event.target===this)fenetre('')"><div class="fen">${h}</div></div>` : ''; }
+// 24/11 (l'utilisateur : « on parle de compagnon mais on le débloque comment ? ») : sans compagnon (crypte du jour, crypte au hasard,
+// Descente avant d'en avoir un), les textes communs ne parlent plus du compagnon
+function sansComp(h) { if (!h || (typeof S !== 'undefined' && S && S.comp)) return h;
+  return String(h).replace(/ \(ou de ton compagnon\)/g, '').replace(/ton pouvoir et ton compagnon ne peuvent pas agir/g, 'ton pouvoir ne peut pas agir'); }
+function fenetre(h) { h = sansComp(h); $('fen').innerHTML = h ? `<div class="voile-f" onclick="if(event.target===this)fenetre('')"><div class="fen">${h}</div></div>` : ''; }
 function explique(id) {
   const c = C.trouve(S, id); if (!c) return;
   if (c.special) { const P = C.SPECIALES[c.special], G = c.special === 'coffre' && C.GAINS_COFFRE[c.gain]; return fenetre(`<h2>${c.e} ${c.nom}</h2><p>${P.d}</p>${G ? `<p style="text-align:center">Dans ce coffre : <b>${G.e} ${G.n}</b>.</p>` : ''}<p style="color:var(--doux);font-size:.9em">Brise ses sceaux avec tes dés, comme ceux d’un monstre. Tant qu’elle est sur le dessus, elle bloque la carte du dessous.</p><button class="go" onclick="fenetre('')">Compris</button>`); }
@@ -598,7 +602,7 @@ if (typeof GM !== 'undefined') { try { GM.musique('carte') /* 16/11 soir : la pi
 <script src="configurateur.js?v=bad5465180"></script>
 <script src="descente-ecran.js?v=656ee3c1ba"></script>
 <script src="guide.js?v=ceb10204e9"></script>
-<script src="guides-modes.js?v=a2446dac12"></script>
+<script src="guides-modes.js?v=e111523360"></script>
 <script>
 // 22/11 (configurateur) : la Descente s'ouvre dans le même configurateur, mode « La Descente » déjà choisi
 const D_ = DESCENTE;
