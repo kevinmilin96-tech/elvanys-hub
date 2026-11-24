@@ -31,6 +31,7 @@
   .s p { margin:2px 0 6px; font-size:.85em; color:var(--doux); }
   .pal { display:flex; gap:4px; margin-top:6px; }
   .pal span { flex:1; text-align:center; font-size:.72em; padding:3px 0; border-radius:6px; background:#0d0b18; color:#8a83b4; border:1px solid #2e2a55; }
+  .fid .pal { flex-wrap:wrap; } .fid .pal span { flex:1 0 17%; } .fid .pal span.ok { color:var(--ok); border-color:#3f8a5c; }
   .pal span.ok { background:#3a2f12; color:var(--or); border-color:#f3c96b88; } .pal span.dispo { background:#f3c96b; color:#2b1d0a; font-weight:bold; }
   .s .fin { color:var(--ok); font-size:.85em; } .s .recup { margin-top:8px; width:100%; }
   .bulle { position:fixed; left:50%; top:18%; transform:translateX(-50%); z-index:50; background:#1d1838; border:2px solid var(--or); border-radius:14px; padding:12px 16px; max-width:90vw; text-align:center; box-shadow:0 10px 30px #000c; }
@@ -74,7 +75,15 @@ function dessine() {
     const faits = L.reduce((t, s) => t + succesRecuperes(s), 0), totP = L.reduce((t, s) => t + s[4].length, 0);
     return `<details class="fam" ${ouvertes.has(k) ? 'open' : ''} ontoggle="this.open ? ouvertes.add('${k}') : ouvertes.delete('${k}')"><summary><span class="e">${e}</span><span class="n">${n}<br><small>${faits} / ${totP} paliers</small></span>${dispo ? `<span class="pt">${dispo}</span>` : ''}<span>›</span></summary>${L.map(ligne).join('')}</details>`;
   }).join('');
-  document.getElementById('app').innerHTML = tete + fams;
+  // 24/11 (choix de l'utilisateur) : la ligne « 🏅 Fidélité » = les cadeaux de la boîte aux lettres selon les jours joués (mêmes paliers que le serveur, guilde_fidelite_logic.js)
+  const jours = +(localStorage.getItem('guilde-jours-joues') || 0), PAL = [3, 7, 14, 21, 30, 45, 60, 75, 100], proch = PAL.find(p => p > jours) || (Math.floor(jours / 50) + 1) * 50;
+  const avant = [0, ...PAL].filter(p => p <= jours).pop() || 0, pctF = Math.round(100 * (jours - avant) / Math.max(1, proch - avant));
+  const fid = `<div class="tete fid"><div><b>🏅 Fidélité</b> · <span class="pts" style="font-size:1.15em">${jours}</span> jour(s) joué(s)</div>
+    <p style="margin:6px 0 0;font-size:.85em;color:var(--doux)">Un jour compte quand tu finis au moins une partie (pas forcément à la suite). À chaque palier, Moustache dépose un cadeau dans ta 📬 boîte aux lettres (le compte ☁ doit être relié).</p>
+    <div class="barre"><i style="width:${Math.max(0, Math.min(100, pctF))}%"></i></div>
+    <div class="pal">${PAL.map(p => `<span class="${p <= jours ? 'ok' : ''}">${p <= jours ? '✓ ' : ''}${p} j${p === 30 ? ' 🏅' : p === 100 ? ' 👑' : ''}</span>`).join('')}${jours >= 100 ? '<span>puis tous les 50</span>' : ''}</div>
+    <p style="margin:6px 0 0;font-size:.85em">Prochain cadeau à <b>${proch} jours</b> (encore ${proch - jours}).${jours < 30 ? ' À 30 jours : le titre 🏅 Pilier de la Guilde.' : jours < 100 ? ' À 100 jours : le titre 👑 Légende fidèle.' : ''}</p></div>`;
+  document.getElementById('app').innerHTML = tete + fid + fams;
 }
 dessine();
 </script>

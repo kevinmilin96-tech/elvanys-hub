@@ -236,12 +236,16 @@ function eniResultat() {
   const m = eniMem(), x = m[ENI.iso] || { ok:false, essais:0 };
   if (!x.ok) x.essais = (x.essais || 0) + 1;
   const gagne = S.fini === 'gagne' || S.O.pv <= 0;
-  if (gagne && !x.ok) { x.ok = true; typeof guildeEvt === 'function' && guildeEvt('enigme', 1); }
+  // 24/11 (choix de l'utilisateur) : la récompense de l'énigme du jour attend dans le carnet (« 🎁 Récupérer »), comme les flashs
+  let enAttente = false;
+  if (gagne && !x.ok) { x.ok = true; if (ENI.iso === eniIso(new Date()) && typeof XP_EVT !== 'undefined' && XP_EVT.enigme) { x.rec = { xp:XP_EVT.enigme }; x.recup = false; enAttente = true; }
+    typeof guildeEvt === 'function' && guildeEvt('enigme', 1, { sansXP:enAttente }); }
   m[ENI.iso] = x; eniEcrit(m);
   arreteMusique(.8); son(gagne ? 'victoire' : 'defaite');
   if (gagne) {
     effetImage('victoire', document.getElementById('app'), 2.2);
     fenetre(`<h2>🏆 Énigme résolue !</h2><p>${x.essais > 1 ? `En ${x.essais} essais.` : 'Du premier coup !'} 🔥 Série : <b>${eniSerie()}</b> jour(s).${[7, 30, 100].includes(eniSerie()) ? ` <b style="color:var(--or)">🏆 Nouveau titre de série gagné : regarde ton profil !</b>` : [7, 30, 100].filter(n => n > eniSerie())[0] ? ` <span style="color:var(--doux)">Prochain titre de série à ${[7, 30, 100].filter(n => n > eniSerie())[0]} jours.</span>` : ''}</p>
+      ${enAttente ? (localStorage.getItem('guilde-carnet-apercu') === '1' ? `<p>🎁 Ta récompense (+${x.rec.xp} XP) t’attend dans le <b>📜 carnet</b> : touche « Récupérer ».</p>` : `<p>🎁 +${x.rec.xp} XP en revenant au menu.</p>`) : ''}
       <p style="font-style:italic">Moustache : « ${['Pas mal, pour quelqu’un sans moustaches.', 'Miaou ! Je l’aurais trouvé aussi. Après ma sieste. Peut-être.', 'Propre. Net. Presque élégant.', 'Tu vois ? Réfléchir, ça ne fait pas mal.'][x.essais % 4]} »</p>
       <div class="choixh"><button onclick="eniAccueil()">🧩 Les autres jours</button><button onclick="location.href='menu.html'">⌂ Menu</button></div>`);
     eniFenFixe(); return;

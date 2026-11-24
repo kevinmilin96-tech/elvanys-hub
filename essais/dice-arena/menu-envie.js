@@ -178,7 +178,11 @@ if (typeof document !== 'undefined' && MENU_ENVIE) {
   @keyframes envMonte { from { transform:translateY(40%); opacity:0; } }
   #env-auj h2 { margin:0 0 4px; color:#ffd27a; text-align:center; } #env-auj .sous { margin:0 0 12px; text-align:center; font-size:13px; opacity:.85; } #env-auj .sous b { color:#ffd27a; }
   #env-auj .x { position:absolute; right:12px; top:10px; width:34px; height:34px; border-radius:50%; border:1px solid #f3c96b88; background:#15132b; color:#f3c96b; font-size:16px; }
-  #env-auj h3.grp { margin:12px 2px 6px; color:#ffd27a; font-size:15px; } #env-auj h3.grp small { color:#b9b1e0; font-weight:normal; font-size:12px; margin-left:6px; }
+  #env-auj h3.grp { margin:12px 2px 6px; color:#ffd27a; font-size:15px; } #env-auj h3.grp small { color:#b9b1e0; font-weight:normal; font-size:12px; margin-left:6px; } #env-auj h3.grp .aide-rec { float:right; background:none; border:1px solid #6d5fb0; border-radius:50%; width:26px; height:26px; padding:0; font-size:13px; line-height:24px; cursor:pointer; }
+  #carnet-aide { position:fixed; inset:0; z-index:10001; background:rgba(8,5,20,.72); display:flex; align-items:center; justify-content:center; padding:16px; }
+  #carnet-aide .boite { position:relative; max-width:440px; width:100%; background:#1d1638; border:1px solid #6d5fb0; border-radius:16px; padding:18px 16px; color:#efe9ff; font-size:14px; }
+  #carnet-aide h2 { font-size:17px; margin:0 26px 10px 0; color:#ffd27a; } #carnet-aide .x { position:absolute; top:8px; right:10px; background:none; border:0; color:#fff; font-size:20px; cursor:pointer; }
+  #carnet-aide table { width:100%; border-collapse:collapse; margin:8px 0; } #carnet-aide th, #carnet-aide td { padding:5px 6px; border-bottom:1px solid #3a2f6a; text-align:center; } #carnet-aide th { color:#ffd27a; }
   #env-auj .liste { display:flex; flex-direction:column; gap:8px; }
   #env-auj .liste button { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:12px; border:1px solid #4b4580; background:#1d1838; color:#f1ecff; text-align:left; font:14px Georgia, serif; }
   #env-auj .liste .e { font-size:24px; width:32px; text-align:center; } #env-auj .liste .t { flex:1; display:flex; flex-direction:column; } #env-auj .liste small { opacity:.75; font-size:12px; }

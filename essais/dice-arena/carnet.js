@@ -8,6 +8,16 @@
   // 24/11 : l'aperçu avait la clé « guilde-carnet », déjà prise par le journal des parties (musique.js) : il l'écrasait et le profil restait vide
   try { if (localStorage.getItem('guilde-carnet') === '1') { localStorage.setItem('guilde-carnet-apercu', '1'); localStorage.removeItem('guilde-carnet'); } } catch (e) {}
   window.CARNET = localStorage.getItem('guilde-carnet-apercu') === '1';
+  // 24/11 : sans le carnet (joueurs hors aperçu), les récompenses des flashs et de l'énigme ne restent pas bloquées : elles sont données à l'ouverture du menu
+  if (!window.CARNET) { try { const J = c => { try { return JSON.parse(localStorage.getItem(c) || 'null') || {}; } catch (e) { return {}; } };
+    const jl = typeof envJourLocal === 'function' ? envJourLocal() : null, ju = typeof envJourUTC === 'function' ? envJourUTC() : jl; let xp = 0, or = 0;
+    [['guilde-crypte', o => o.flash], ['guilde-expedition4-meta', o => o.flash], ['guilde-eclair', o => o], ['guilde-enigmes', o => o]].forEach(([cle, acc]) => {
+      const o = J(cle), m = acc(o) || {}; let chg = false;
+      Object.keys(m).forEach(k => { const f = m[k]; if (f && f.rec && f.recup === false) { f.recup = true; xp += f.rec.xp | 0; or += f.rec.or | 0; chg = true; } });
+      if (chg) localStorage.setItem(cle, JSON.stringify(o)); });
+    if (xp && typeof gagneXP === 'function') gagneXP(xp, 'Rendez-vous du jour'); if (or && typeof donneRessources === 'function') donneRessources(or, 0);
+    if ((xp || or) && typeof annonceRang === 'function') setTimeout(() => annonceRang(`🎁 Rendez-vous du jour : +${xp} XP${or ? ` · 🪙 +${or}` : ''}`, true), 1500);
+  } catch (e) {} }
   if (!window.CARNET || typeof envieRendezVous !== 'function') return;
 
   const st = document.createElement('style');
@@ -50,15 +60,26 @@
   // 24/11 : la récompense des flashs du jour se récupère ici
   const FLASH = { flashcrypte:() => [ENV_J('guilde-crypte', {}), 'guilde-crypte', o => (o.flash || {}), envJourLocal()],
     flashvoyage:() => [ENV_J('guilde-expedition4-meta', {}) || {}, 'guilde-expedition4-meta', o => (o.flash || {}), envJourUTC()],
-    eclair:() => [ENV_J('guilde-eclair', {}), 'guilde-eclair', o => o, envJourLocal()] };
+    eclair:() => [ENV_J('guilde-eclair', {}), 'guilde-eclair', o => o, envJourLocal()],
+    enigme:() => [ENV_J('guilde-enigmes', {}), 'guilde-enigmes', o => o, envJourLocal()] }; // 24/11 : l'énigme du jour aussi
   const flashRec = k => { if (!FLASH[k]) return null; const [o, , acc, j] = FLASH[k](); const f = acc(o)[j]; return f && f.rec && f.recup === false ? f : null; };
   window.carnetFlash = k => { const [o, cle, acc, j] = FLASH[k](), f = acc(o)[j]; if (!f || !f.rec || f.recup !== false) return;
     f.recup = true; try { localStorage.setItem(cle, JSON.stringify(o)); } catch (e) { return; }
-    if (typeof gagneXP === 'function') try { gagneXP(f.rec.xp, 'Flash du jour'); } catch (e) {}
+    const nom = k === 'enigme' ? 'Énigme du jour' : 'Flash du jour';
+    if (typeof gagneXP === 'function') try { gagneXP(f.rec.xp, nom); } catch (e) {}
     if (f.rec.or && typeof donneRessources === 'function') try { donneRessources(f.rec.or, 0); } catch (e) {}
     if (typeof GM !== 'undefined') GM.son('choisir');
-    if (typeof annonceRang === 'function') annonceRang(`🎁 Flash du jour : +${f.rec.xp} XP${f.rec.or ? ` · 🪙 +${f.rec.or}` : ''}`, true);
+    if (typeof annonceRang === 'function') annonceRang(`🎁 ${nom} : +${f.rec.xp} XP${f.rec.or ? ` · 🪙 +${f.rec.or}` : ''}`, true);
     setTimeout(() => { carnetOuvre(onglet); if (typeof envieBandeau === 'function') envieBandeau(); }, 60); };
+  // 24/11 (choix de l'utilisateur) : un ❓ explique ce que rapportent les flashs et l'énigme
+  window.carnetAide = () => { if (document.getElementById('carnet-aide')) return; const a = document.createElement('div'); a.id = 'carnet-aide';
+    a.innerHTML = `<div class="boite"><button class="x" onclick="document.getElementById('carnet-aide').remove()" aria-label="Fermer">✕</button><h2>❓ Ce que rapportent les rendez-vous rapides</h2>
+      <p>Les <b>3 flashs du jour</b> (Crypte, Expéditions, duel éclair) rapportent la même chose, <b>au 1er essai du jour</b> :</p>
+      <table><tr><th>Résultat</th><th>XP</th><th>🪙 Or</th></tr><tr><td>Perdu</td><td>+10</td><td>0</td></tr><tr><td>★</td><td>+15</td><td>+5</td></tr><tr><td>★★</td><td>+20</td><td>+10</td></tr><tr><td>★★★</td><td>+25</td><td>+15</td></tr></table>
+      <p>Les essais suivants sont « pour le plaisir » : ils ne rapportent rien de plus.</p>
+      <p>🧩 <b>L’énigme du jour</b> résolue : <b>+${typeof XP_EVT !== 'undefined' && XP_EVT.enigme || 20} XP</b>, et ta série de jours avance (titres à 7, 30 et 100 jours).</p>
+      <p>La récompense <b>attend ici</b> : touche « 🎁 Récupérer » sur la ligne.</p></div>`;
+    a.onclick = ev => { if (ev.target === a) a.remove(); }; document.body.appendChild(a); };
   const ligne = ([k, e, n, d, fait, a]) => { if (flashRec(k)) return `<button onclick="carnetFlash('${k}')"><span class="e">${e}</span><span class="t"><b>${n}</b><small>${d}</small></span><span class="rec" style="flex:none">🎁 Récupérer</span></button>`;
     const rec = k === 'butin' && butinDispo();
     return `<button class="${fait && !rec ? 'fait' : ''}" onclick="${rec ? 'carnetButin()' : a}"><span class="e">${e}</span><span class="t"><b>${n}</b><small>${d}</small></span>${rec ? '<span class="rec" style="flex:none">🎁 Récupérer</span>' : `<span class="c">${fait ? '✓' : '›'}</span>`}</button>`; };
@@ -74,7 +95,7 @@
     const C = compte(), L = envieRendezVous().filter(x => x[0] !== 'quetes'), RAP = ['enigme', 'flashcrypte', 'flashvoyage', 'eclair', 'butin'];
     if (!garde) { p = document.createElement('div'); p.id = 'env-auj'; }
     const corps = onglet === 'jour'
-      ? `<h3 class="grp">⚡ Rapide <small>quelques minutes</small></h3><div class="liste">${L.filter(x => RAP.includes(x[0])).map(ligne).join('')}</div>
+      ? `<h3 class="grp">⚡ Rapide <small>quelques minutes</small><button class="aide-rec" onclick="carnetAide()" aria-label="Ce que ça rapporte">❓</button></h3><div class="liste">${L.filter(x => RAP.includes(x[0])).map(ligne).join('')}</div>
          <h3 class="grp">📜 Les quêtes du jour <small>elles changent à minuit</small></h3>${quetesHTML(true)}
          <h3 class="grp">🗺 Si tu as le temps <small>une vraie partie</small></h3><div class="liste">${L.filter(x => !RAP.includes(x[0])).map(ligne).join('')}</div>`
       : `<h3 class="grp">📜 Les quêtes de la semaine <small>elles changent le lundi</small></h3>${quetesHTML(false)}

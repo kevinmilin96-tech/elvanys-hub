@@ -139,14 +139,23 @@ function fhPiece(p, actions) { const C = EQ_CASES.find(c => c.k === p.slot), por
 function fhCase(id, k) {
   const E = equipementDe(id), p = E[k], C = EQ_CASES.find(c => c.k === k), autres = avSac().pieces.filter(x => x.slot === k && x.id !== (p && p.id)).sort((a, b) => b.r - a.r || b.niv - a.niv);
   fhFen(`<h2>${C.e} ${C.n}</h2>
-    ${p ? `<p class="doux">Porté (l’amélioration reste sur la case : changer de pièce ne fait rien perdre) :</p>${fhPiece(p, `${p.niv < eqNivMax(p) ? `<button onclick="fhAmelio('${id}','${k}','${p.id}')">⬆ ${eqPrixAmelio(p)} 🪙</button>` : '<small>max : fusionne</small>'}<button onclick="retirePiece('${id}','${k}');fhFen('');FH.apres()">Retirer</button>`)}
+    ${p ? `<p class="doux">Porté (l’amélioration reste sur la case : changer de pièce ne fait rien perdre) :</p>${fhPiece(p, `${p.niv < eqNivMax(p) ? `<button onclick="fhAmelio('${id}','${k}','${p.id}')">⬆ ${eqPrixAmelio(p)} 🪙</button>` : '<small>max : fusionne</small>'}<button onclick="fhRetire('${id}','${k}')">Retirer</button>`)}
       ${p.niv < eqNivMax(p) ? `<p class="doux">Au niveau ${p.niv + 1} : ${eqTexte(Object.assign({}, p, { niv:p.niv + 1 }))}</p>` : ''}` : '<p class="doux">Rien dans cette case.</p>'}
     ${fhForgeCase(id, k)}
     <p class="doux" style="margin-top:10px">Dans le coffre :</p>
-    ${autres.length ? autres.map(x => fhPiece(x, `<button onclick="fhEquipe('${id}','${x.id}')">Équiper</button>`)).join('') : '<p class="doux">Aucune pièce de ce genre. Elles tombent des boss, des élites et des meubles des Chroniques ; le forgeron en vend.</p>'}
+    ${autres.length ? autres.map(x => fhPiece(x, `<button onclick="fhEquipe('${id}','${x.id}')">Équiper</button>`) + fhNoteCase(id, x, p)).join('') : '<p class="doux">Aucune pièce de ce genre. Elles tombent des boss, des élites et des meubles des Chroniques ; le forgeron en vend.</p>'}
     <button class="fh-bt or" style="width:100%;margin-top:10px" onclick="fhFen('')">Fermer</button>`);
 }
-function fhEquipe(id, pid) { const r = equipePiece(id, pid); if (r === 'ok') { fhSon('tour-fusion'); fhBulle('Équipé !'); fhFen(''); FH.apres(); } else fhBulle(r); }
+// 24/11 (choix de l'utilisateur) : des messages pour le « +N » : la CASE garde son niveau, la pièce posée le prend (jusqu'au maximum de sa rareté)
+function fhNoteCase(id, x, porte) { const n = nivPorte(id, x), l = [];
+  if (porte && x.nom === porte.nom && x.r === porte.r) l.push('🟰 Identique à celle portée');
+  const plaf = lvCase(id, x.slot) > n ? ` ; la case est à +${lvCase(id, x.slot)}, mais sa rareté s’arrête à +${n} : fusionne pour aller plus haut` : '';
+  if (n > x.niv) l.push(`ici, elle passerait <b>+${n}</b> (la case garde son niveau${plaf})`);
+  else if (plaf) l.push(`ici, elle reste à <b>+${n}</b>${plaf}`);
+  return l.length ? `<p class="doux" style="margin:-4px 0 8px 10px;font-size:.85em">↳ ${l.join(' · ')}</p>` : ''; }
+function fhEquipe(id, pid) { const x = avSac().pieces.find(q => q.id === pid), avant = x ? x.niv : 0, r = equipePiece(id, pid);
+  if (r === 'ok') { fhSon('tour-fusion'); const n = x ? nivPorte(id, Object.assign({}, x, { niv:avant })) : 0; fhBulle(n > avant ? `Équipé ! La case garde son niveau : +${n}` : 'Équipé !'); fhFen(''); FH.apres(); } else fhBulle(r); }
+function fhRetire(id, k) { const p = equipementDe(id)[k]; retirePiece(id, k); fhFen(''); FH.apres(); if (p && p.niv > 1) fhBulle(`Retirée. La case garde son +${p.niv} pour la prochaine pièce ; ${p.nom} retourne au coffre en +1.`); }
 function fhAmelio(id, k, pid) { const r = amelioPiece(pid); if (r === 'ok') { fhSon('tour-fusion'); fhBulle('⬆ Amélioré !'); FH.apres(); if (k) fhCase(id, k); else fhCoffre(id); } else fhBulle(r); }
 // 21/11 (l'utilisateur : « un bouton vendre tout par rareté, blanc, bleu… comme dans beaucoup de jeux ») : on vend (or) ou on recycle (poussière)
 // d'un coup toutes les pièces NON PORTÉES d'une rareté ; confirmation avec le total
