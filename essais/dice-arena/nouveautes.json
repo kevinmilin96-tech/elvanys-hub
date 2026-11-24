@@ -1,5 +1,9 @@
 [
 {
+"v": "20261124-203334",
+"m": "En combat, les icônes Garde et Pouvoir à gauche du plateau montrent le pouvoir que tu as choisi dans ton build (Zéphine pour commencer, les autres héros au fil des images)."
+},
+{
 "v": "20261124-203015",
 "m": "Les pouvoirs de Zéphine ont leurs icônes peintes."
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261123-214015",
 "m": "Nouveau : le duel éclair du jour ! ≈ 3 minutes, le même pour tous (héros et adversaire du jour, moitié des PV). Ton premier essai compte : étoiles, XP, or. Dans Aujourd’hui → ⚡ Rapide."
-},
-{
-"v": "20261123-213718",
-"m": "Aujourd’hui : le Duel de la semaine a sa partie « Cette semaine », à part des rendez-vous du jour."
 }
 ]
