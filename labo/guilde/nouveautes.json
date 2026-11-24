@@ -1,5 +1,9 @@
 [
 {
+"v": "20261124-195929",
+"m": "Expéditions : le début du voyage est plus doux (le boss se défend un peu plus). Carnet : un ❓ explique ce que rapportent les flashs, et l'énigme du jour se récupère avec 🎁. Mes succès : la ligne 🏅 Fidélité (jours joués et cadeaux). Équipement : ce que devient le +N de la case quand tu changes de pièce."
+},
+{
 "v": "20261124-193829",
 "m": "Expéditions : un combat perdu coûte un cœur et se rejoue (on ne passe jamais un combat sans l'avoir gagné, boss compris)."
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261123-212545",
 "m": "Combat : le bas du plateau (ta main, le paquet) n’est plus caché par la barre ; cœurs et PC à la bonne taille."
-},
-{
-"v": "20261123-212255",
-"m": "Main de départ : plus de croix, on garde ou on change sa main."
 }
 ]

@@ -135,11 +135,11 @@ const ASC_V4 = ['De base', '+4 % de vie aux monstres', 'les élites ont +1 attaq
 // Réglé au simulateur le 19/11 (40 voyages par capitaine) : avec 7 à 8 combats et 4 escales calmes, l'équipage gagne bien plus d'or et de ★★
 // qu'avant (≈ 2,4 ★★ par voyage au lieu de 0,6) : les vies des monstres sont donc environ deux fois plus grandes qu'avec l'ancienne carte.
 const SUITES_V4 = [
-  { combats:[[['monstres'], [0, 1], 2.6]], elite:2.6 },
+  { combats:[[['monstres'], [0, 1], 2.2]], elite:2.0 }, // 24/11 : début adouci (2,6 / 2,6 avant : on butait sur la 1re élite)
   { combats:[[['monstres'], [1, 2], 2.9], [['monstres', 'fantome'], [2, 3], 3.1]], elite:3.1, troisieme:true },
   { combats:[[['monstres'], [3], 3.5]], elite:3.7 },
 ];
-let DUR_BOSS4 = +(2.05 * 1.02 * 1.3).toFixed(3); // le boss : une seule chance (avant : ×2,09 et on le rejouait tant qu'il restait un cœur)
+let DUR_BOSS4 = +(2.05 * 1.02 * 1.3 * 1.25).toFixed(3); // 24/11 : ×1,25 pour compenser le début adouci (simulateur ≈ 77 %, les défaites à la fin et plus à la 1re élite) // le boss : une seule chance (avant : ×2,09 et on le rejouait tant qu'il restait un cœur)
 const DUR_V4 = [1.35, 1.3, 1.55, 1.5, 1.9, 2.05].map(x => +(x * 1.02).toFixed(3)); // ancienne carte (voyages commencés avant le 19/11)
 const CHOIX_V4 = ['evenement', 'evenement', 'tresor', 'port'];
 function escaleDe(X, type, etape, R, tiers, dur) {
