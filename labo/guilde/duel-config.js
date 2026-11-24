@@ -42,7 +42,7 @@ function defDuel() {
       : m === 'enigme' ? [{ k:'i', titre:'🧩 L’énigme du jour', verrou:'la même pour tous', aide:'Le héros, les cartes et l’adversaire sont imposés : à toi de trouver le bon ordre.' }]
       : m === 'tuto' ? [{ k:'i', titre:'🐱 Avec Gorm et Moustache', verrou:'guidé', aide:'Moustache te montre chaque geste, un tour après l’autre.' }]
       : (m === 'semaine' && sem ? [{ k:'r', titre:`🔏 La règle : ${sem.n}`, verrou:'cette semaine', aide:sem.d }] : []).concat(optionsDuel()),
-    resume:(m, v) => m === 'enigme' ? '🧩 L’énigme du jour' : m === 'tuto' ? '🐱 Le tutoriel' : `${m === 'semaine' ? '🔏 Duel de la semaine' : '🗿 Contre l’ordinateur'} · <b>${HEROS[choixDuel].nom}</b> contre ${v.adv === 'hasard' ? 'un adversaire au hasard' : v.adv === 'roi' ? 'le Roi sans visage' : HEROS[v.adv].nom}`,
+    resume:(m, v) => m === 'enigme' ? '🧩 L’énigme du jour' : m === 'tuto' ? '🐱 Le tutoriel' : m === 'eclair' ? (() => { const d = eclairDuJour(); return `⚡ Duel éclair du jour · <b>${HEROS[d.h].nom}</b> contre ${HEROS[d.o].nom}`; })() /* 24/11 : le résumé plantait (pas d'adversaire choisi) */ : `${m === 'semaine' ? '🔏 Duel de la semaine' : '🗿 Contre l’ordinateur'} · <b>${HEROS[choixDuel].nom}</b> contre ${v.adv === 'hasard' ? 'un adversaire au hasard' : v.adv === 'roi' ? 'le Roi sans visage' : HEROS[v.adv].nom}`,
     lancer:(m, v) => {
       voileDuel(false);
       if (m === 'enigme') return partieEnigme('1');
