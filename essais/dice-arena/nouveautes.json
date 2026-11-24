@@ -1,5 +1,9 @@
 [
 {
+"v": "20261124-211728",
+"m": "Les 66 pouvoirs des 6 héros ont leur icône peinte (Oria et Gorm aujourd'hui)."
+},
+{
 "v": "20261124-210515",
 "m": "Les pouvoirs de Sire Aldric ont leurs icônes peintes."
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261123-220017",
 "m": "Mes decks : « Jouer avec… » mène directement au choix de l’adversaire, et le retour ramène à tes decks."
-},
-{
-"v": "20261123-215702",
-"m": "Mes decks : tous les héros visibles d’un coup, sans faire défiler."
 }
 ]
