@@ -1,5 +1,9 @@
 [
 {
+"v": "20261124-202002",
+"m": "L'icône Amis de la barre du bas et un 10e avatar de profil : le forgeron."
+},
+{
 "v": "20261124-201705",
 "m": "Nouvelles icônes peintes dans la barre du bas, le carnet et Mes decks. Dans l'atelier du profil (✏️ Modifier → Portrait) : 9 avatars d'aventuriers au choix, visibles aussi par tes amis."
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261123-213546",
 "m": "Duel de la semaine réparé : depuis le 22/11, la règle de la semaine ne s’appliquait pas et le Sceau n’était pas donné. Rejoue-le pour gagner ton Sceau."
-},
-{
-"v": "20261123-212915",
-"m": "Combat : la vie et l’attaque à deux chiffres des créatures restent bien rangées dans leur pastille."
 }
 ]
