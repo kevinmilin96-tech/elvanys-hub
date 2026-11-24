@@ -19,7 +19,7 @@
   #env-auj .qt { display:flex; align-items:center; gap:10px; width:100%; text-align:left; background:#1d1838; border:1px solid #4b4580; border-radius:12px; padding:9px 10px; margin-bottom:6px; color:#f1ecff; font:14px Georgia, serif; box-sizing:border-box; }
   #env-auj .qt.fait { background:#133024; border-color:#2fbf47; } #env-auj .qt .e { font-size:20px; } #env-auj .qt .t { flex:1; min-width:0; } #env-auj .qt .t small { display:block; color:#b9b1e0; font-size:12px; }
   #env-auj .qt .barre { height:5px; background:#0d0b1f; border-radius:3px; margin-top:4px; overflow:hidden; } #env-auj .qt .barre i { display:block; height:100%; background:linear-gradient(90deg, #c78a2c, #f3c96b); }
-  #env-auj .qt .rec { border:0; border-radius:10px; padding:7px 10px; font:bold 13px Georgia, serif; background:linear-gradient(#7dff8a, #2fbf47); color:#0b3a12; white-space:nowrap; animation:halo 1s ease-in-out infinite alternate; }
+  #env-auj .qt .rec, #env-auj .liste .rec { border:0; border-radius:10px; padding:7px 10px; font:bold 13px Georgia, serif; background:linear-gradient(#7dff8a, #2fbf47); color:#0b3a12; white-space:nowrap; animation:halo 1s ease-in-out infinite alternate; }
   #env-auj .qt .ok { color:#7ff0a8; font-size:18px; }`;
   document.head.appendChild(st);
 
@@ -36,7 +36,15 @@
     if (g && typeof annonceRang === 'function') annonceRang(`🎁 Quête récupérée : +${g.xp} XP${g.or ? ` · 🪙 +${g.or}` : ''}`, true);
     if (typeof GM !== 'undefined') try { GM.son('pieces'); } catch (e) {} carnetOuvre(jour ? 'jour' : 'semaine'); envieBandeau(); };
 
-  const ligne = ([k, e, n, d, fait, a]) => `<button class="${fait ? 'fait' : ''}" onclick="${a}"><span class="e">${e}</span><span class="t"><b>${n}</b><small>${d}</small></span><span class="c">${fait ? '✓' : '›'}</span></button>`;
+  // 24/11 (l'utilisateur : « récupérer les récompenses directement dans cette fenêtre avec le bouton cadeau ») : le butin se ramasse sur place
+  const butinDispo = () => { if (typeof butinCalcule !== 'function') return false; const g = butinCalcule(); return g.xp >= 1 || g.eclats >= 1 || g.or >= 1; };
+  window.carnetButin = () => { const g = typeof butinRamasse === 'function' ? butinRamasse() : null;
+    try { localStorage.setItem('guilde-butin-jour', envJourLocal()); } catch (e) {} if (typeof GM !== 'undefined') GM.son('choisir');
+    if (g && typeof annonceRang === 'function') annonceRang(`🎁 Butin ramassé${g.or ? ` · 🪙 +${g.or}` : ''}${g.pou ? ` · 🔹 +${g.pou}` : ''}${g.xp ? ` · +${g.xp} XP` : ''}`, true);
+    const rm = document.getElementById('rangmenu'); if (rm && typeof bandeauRangHTML === 'function') rm.innerHTML = bandeauRangHTML() + (typeof butinHTML === 'function' ? butinHTML() : '');
+    setTimeout(() => { carnetOuvre(onglet); if (typeof envieBandeau === 'function') envieBandeau(); }, 60); };
+  const ligne = ([k, e, n, d, fait, a]) => { const rec = k === 'butin' && butinDispo();
+    return `<button class="${fait && !rec ? 'fait' : ''}" onclick="${rec ? 'carnetButin()' : a}"><span class="e">${e}</span><span class="t"><b>${n}</b><small>${d}</small></span>${rec ? '<span class="rec" style="flex:none">🎁 Récupérer</span>' : `<span class="c">${fait ? '✓' : '›'}</span>`}</button>`; };
   const compte = () => { const L = envieRendezVous().filter(x => x[0] !== 'quetes'), Q = typeof lireQuetes === 'function' ? lireQuetes() : { j:[], s:[] };
     const sem = typeof regleDeLaSemaine === 'function' ? regleDeLaSemaine() : null, sc = sem && ENV_J('guilde-sceaux', {})[sem.semaine];
     const jf = L.filter(x => x[4]).length + Q.j.filter(x => x.fait).length, jn = L.length + Q.j.length, sf = Q.s.filter(x => x.fait).length + (sc ? 1 : 0), sn = Q.s.length + 1;
