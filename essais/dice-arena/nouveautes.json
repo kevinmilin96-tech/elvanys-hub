@@ -1,5 +1,9 @@
 [
 {
+"v": "20261124-205112",
+"m": "Les pouvoirs de Pip et de Maëlle ont leurs icônes peintes, dans la page des pouvoirs et à gauche du plateau en combat."
+},
+{
 "v": "20261124-203617",
 "m": "Les 11 pouvoirs de Zéphine ont maintenant tous leur icône peinte."
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261123-215044",
 "m": "Quête « Joue 5 cartes » réparée : chaque carte jouée compte de nouveau."
-},
-{
-"v": "20261123-214917",
-"m": "Butin de la Guilde : ramasse-le 3 fois par jour, dès qu’il y a quelque chose (plus besoin d’attendre 1 h)."
 }
 ]
