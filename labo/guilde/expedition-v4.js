@@ -263,7 +263,7 @@ joueEscale = function (X, R) {
   if (!X.fini && X.regle === 'tempete') { X.or += 3; res.gain = (res.gain || 0) + 3; }
   if (res.gagne && esc.type === 'elite') { X.or += 4; res.elite = '+4 💰 (prime de l’élite)'; }
   // 19/11 (décision de l'utilisateur) : perdre contre le boss = FIN DU VOYAGE (plus de nouvel essai avec les cœurs qui restent)
-  if (!res.gagne && esc.type === 'boss' && !X.fini) { X.fini = 'perdu'; X.perduBoss = true; res.finBoss = true; X.journal.push(`💀 ${esc.n} a eu raison de l’équipage : le voyage s’arrête là.`); }
+  // 24/11 (décision de l'utilisateur) : le boss aussi se rejoue tant qu'il reste des cœurs (comme tous les combats)
   if (X.coeurs > X.coeursMax) X.coeurs = X.coeursMax;
   synchroRoute(X); return res;
 };

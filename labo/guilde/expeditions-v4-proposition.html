@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr"><head><meta name="guilde-version" content="20261124-193500"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<html lang="fr"><head><meta name="guilde-version" content="20261124-193829"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Expéditions v4 : la rejouabilité (à valider)</title>
 <style>
   body { margin:0; background:#0d0a1c; color:#f1ecff; font:15px/1.5 Georgia, serif; }
@@ -81,7 +81,7 @@ Le score est multiplié : +10 % par cran, +25 % par mer après la première.</di
 <li>Remplacer l'ancienne version par la v4 dans le menu, ou garder les deux ?</li>
 </ol>
 </main>
-<script src="donnees.js?v=41849a41e8"></script><script src="odyssee.js?v=2dd4974f8b"></script><script src="expedition-moteur.js?v=ad44c5cb01"></script><script src="expedition-v4.js?v=d62b3d6ce3"></script>
+<script src="donnees.js?v=41849a41e8"></script><script src="odyssee.js?v=2dd4974f8b"></script><script src="expedition-moteur.js?v=c78f914273"></script><script src="expedition-v4.js?v=5d525d2e2a"></script>
 <script>
 const typ = { monstres:'⚔ monstres', elite:'💀 élite', fantome:'👻 navire rival', evenement:'❔ événement', tresor:'💎 trésor', port:'🏝 port franc', boss:'👑 boss' };
 document.getElementById('etapes').innerHTML = `<div class="bloc"><b class="or">La route</b> : 🧭 point de choix (${CHOIX_V4.filter((x, i, l) => l.indexOf(x) === i).map(t => typ[t]).join(', ')}) → ${SUITES_V4.map((S, k) => `⚔ suite ${k + 1} : ${S.combats.length + (S.troisieme ? 0 : 0) > 1 ? '1 ou 2 combats' : '1 combat'} puis 💀 une élite → 🧭 point de choix`).join(' → ')} → 👑 le boss (une seule chance).</div>`;

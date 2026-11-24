@@ -1,5 +1,9 @@
 [
 {
+"v": "20261124-193829",
+"m": "Expéditions : un combat perdu coûte un cœur et se rejoue (on ne passe jamais un combat sans l'avoir gagné, boss compris)."
+},
+{
 "v": "20261124-193500",
 "m": "Le duel éclair du jour s'ouvre de nouveau sans erreur."
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261123-212255",
 "m": "Main de départ : plus de croix, on garde ou on change sa main."
-},
-{
-"v": "20261123-211948",
-"m": "Appli Android 1.2 : elle annonce son vrai numéro de version (la 1.1 se croyait encore en 1.0)."
 }
 ]
