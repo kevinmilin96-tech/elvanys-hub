@@ -115,7 +115,7 @@ const POUVOIRS_H = {
       P('C', 'Bonne pioche', 'soutien', 'etoile', '#ffd27a', '🪙', null, 'Tu commences chaque combat avec 1 PC de plus et une carte de plus.', 'Chaque meuble qu’elle fouille donne +2 or au groupe, et sa fouille ne fait jamais de bruit.', 'a small open treasure pouch with gold coins'),
     ],
     ultime:[
-      P('A', 'La Carte du monde', 'controle', 'etoile', '#7fe9ff', '🌍', 'suite3', 'Suite de 3 → 15 dégâts et Silence.', 'Une suite de 3 → tous les pièges de la carte se dévoilent et le sablier gagne 3 grains.', 'a huge glowing world map unfolding in the air'),
+      P('A', 'La Carte du monde', 'controle', 'etoile', '#7fe9ff', '🌍', 'suite3', 'Suite de 3 → 15 dégâts et Silence.', 'Une suite de 3 → tous les pièges de la carte se dévoilent et le sablier gagne 3 grains.', 'a huge glowing fantasy map unfolding in the air, showing IMAGINARY invented islands and continents (NOT the real Earth, NO real countries or continents), with tiny mountains, forests, a winding river and a glowing dotted route ; NO letters, NO words on the map'),
       P('B', 'Pluie de flèches', 'degats', 'fleches', '#5ff5e6', '☔', 'haut34', '3 dés de 5 ou plus → 6 dégâts au héros adverse et à chacune de ses créatures.', 'Trois dés de 4 ou plus → une pluie de flèches brise un sceau de chaque monstre à 4 cases.', 'a rain of glowing arrows falling from the sky'),
     ],
   },
