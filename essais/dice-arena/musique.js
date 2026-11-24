@@ -335,7 +335,7 @@ const Carnet = (() => {
     crypte:'Crypte aux Sceaux', 'descente-combat':'Combat de la Descente', descente:'Descente', defense:'Défense de la porte', 'defense-sansfin':'Défense sans fin', fosse:'Fosse aux Runes',
     chroniques:'Chroniques', 'chroniques-aventure':'Aventure des Chroniques', expedition:'Expédition', invasion:'Invasion' };
   const famDe = m => (FAM.find(f => f[2].includes(m)) || ['autres'])[0];
-  const lit = () => { try { return JSON.parse(localStorage.getItem(CLE) || '[]'); } catch (e) { return []; } };
+  const lit = () => { try { const l = JSON.parse(localStorage.getItem(CLE) || '[]'); return Array.isArray(l) ? l : []; } catch (e) { return []; } }; // 24/11 : jamais autre chose qu'une liste
   const ecrit = l => { try { localStorage.setItem(CLE, JSON.stringify(l.slice(0, MAX))); } catch (e) { // trop gros : on raccourcit les journaux
     try { localStorage.setItem(CLE, JSON.stringify(l.slice(0, 30).map(p => ({ ...p, journal:(p.journal || []).slice(-150) })))); } catch (e2) {} } };
   const esc = t => String(t == null ? '' : t).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));

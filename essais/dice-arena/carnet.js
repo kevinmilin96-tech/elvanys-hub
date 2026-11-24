@@ -4,8 +4,10 @@
 // APERÇU d'abord : menu.html?carnet=1 (retenu sur le téléphone ; ?carnet=0 pour revenir). Les autres joueurs gardent l'ancien affichage.
 (function () {
   const q = new URLSearchParams(location.search);
-  try { if (q.get('carnet') === '1') localStorage.setItem('guilde-carnet', '1'); if (q.get('carnet') === '0') localStorage.removeItem('guilde-carnet'); } catch (e) {}
-  window.CARNET = localStorage.getItem('guilde-carnet') === '1';
+  try { if (q.get('carnet') === '1') localStorage.setItem('guilde-carnet-apercu', '1'); if (q.get('carnet') === '0') localStorage.removeItem('guilde-carnet-apercu'); } catch (e) {}
+  // 24/11 : l'aperçu avait la clé « guilde-carnet », déjà prise par le journal des parties (musique.js) : il l'écrasait et le profil restait vide
+  try { if (localStorage.getItem('guilde-carnet') === '1') { localStorage.setItem('guilde-carnet-apercu', '1'); localStorage.removeItem('guilde-carnet'); } } catch (e) {}
+  window.CARNET = localStorage.getItem('guilde-carnet-apercu') === '1';
   if (!window.CARNET || typeof envieRendezVous !== 'function') return;
 
   const st = document.createElement('style');
