@@ -154,7 +154,7 @@ const POUVOIRS_H = {
       P('C', 'Tornade', 'controle', 'vent', '#ff7a8a', '🌪', 'impairs3', '3 dés impairs → Toutes les créatures adverses sont Entravées et le héros adverse perd 4 PV.', 'Trois dés impairs → jusqu’à 3 monstres à 3 cases sont repoussés de 2 cases.', 'a small fierce tornado spinning with red sparks'),
     ],
     passif:[
-      P('A', 'Transmutation', 'soutien', 'alchimie', '#c58bff', '🔄', null, 'Retourne un dé (1↔6…) une fois par tour.', 'Une fois par tour, elle retourne un de ses dés (1↔6, 2↔5, 3↔4) : bouton ⚗ sous ses dés.', 'a glowing alchemical symbol of transformation in a circle of light'),
+      P('A', 'Transmutation', 'soutien', 'alchimie', '#c58bff', '🔄', null, 'Retourne un dé (1↔6…) une fois par tour.', 'Une fois par tour, elle retourne un de ses dés (1↔6, 2↔5, 3↔4) : bouton ⚗ sous ses dés.', 'a dull grey lump of lead turning into shining gold in a circle of light (one half still grey, the other half already golden, with sparkles where it changes) ; NO star shape, NO hexagram, NO pentagram, NO astrological or religious symbol'),
       P('B', 'Vent', 'degats', 'eclair', '#ff4040', '🌩', null, 'Ta deuxième attaque du tour (Frappe, Technique, Pouvoir ou Ultime) fait +1 dégât.', 'Son trait (frappe à 2 cases), renforcé : au rang 10, jusqu’à 3 cases.', 'a red storm cloud with a lightning bolt'),
       P('C', 'Œil du cyclone', 'controle', 'vent', '#ffa0b0', '🌀', null, 'À chaque tour de l’adversaire, chaque coup reçu après le premier fait 1 dégât de moins.', 'Quand 2 monstres ou plus lui sont collés, chaque coup qu’elle reçoit fait 1 de moins.', 'the calm eye at the center of a swirling storm'),
     ],
