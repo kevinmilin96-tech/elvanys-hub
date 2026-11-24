@@ -20,6 +20,7 @@ const GUIDES_MODES = {
     ['.heros', 'Choisis ton <b>héros</b>. Sa progression (niveau, rang, équipement de « Mes héros ») compte ici aussi.'],
     ['.breloques', 'Une <b>breloque</b> à emporter : un petit avantage que tu gardes toute la descente. On en débloque de nouvelles en jouant.'],
     ['.etages', 'La <b>profondeur</b> : plus tu descends profond, plus c’est dur… et plus ça rapporte.'],
+    [null, 'Les <b>compagnons</b> 🐾 n’existent que dans la Descente : une petite créature qui se bat à côté de ton héros, avec sa vie et sa compétence (tu la charges avec tes dés). Pour en avoir un : l’événement « Un compagnon égaré », le <b>marchand</b>, ou la breloque <b>Sifflet</b>. On en débloque de nouveaux avec la <b>renommée</b> (Luciole à 40, Filou à 120, Chouette à 250).'],
     [null, 'Ensuite, une <b>carte à embranchements</b> : tu choisis ton chemin case par case (combats, élites, marchand, feu de camp, événements, trésors). Les combats sont obligatoires sur certaines rangées.'],
   ],
   'descente-carte':[
