@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261124-200531"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
+<head><meta name="guilde-version" content="20261124-201705"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex">
@@ -74,7 +74,7 @@
 <script src="aventuriers.js?v=5679a4a045"></script>
 <script src="odyssee.js?v=2dd4974f8b"></script>
 <script src="succes.js?v=d6910350b3"></script>
-<script src="profil.js?v=4a45d06dad"></script>
+<script src="profil.js?v=9968f6da4b"></script>
 <script src="pantheon.js?v=1a6f59e92e"></script>
 <script>
 const log = () => {};
@@ -151,6 +151,7 @@ function atelier(p, T) {
     corps = `<p class="aide">Le visage de ta carte de profil (tu joues toujours le héros que tu veux).</p><div class="grille">
       <button class="cad ${!p.portrait ? 'choisi' : ''}" onclick="choisir('portrait',null)"><img class="rond" src="${IMG(dernier)}" alt="">Mon dernier héros</button>
       ${ORDRE.filter(id => id !== 'zephine' || localStorage.getItem('guilde-tuto') === 'fait').map(id => `<button class="cad ${p.portrait === id ? 'choisi' : ''}" onclick="choisir('portrait','${id}')"><img class="rond" src="portraits/${id}.webp" alt="">${HEROS[id].nom}</button>`).join('')}
+      ${(typeof AVATARS_PROFIL !== 'undefined' ? AVATARS_PROFIL : []).map(([n, nom]) => `<button class="cad ${p.portrait === 'avatar-' + n ? 'choisi' : ''}" onclick="choisir('portrait','avatar-${n}')"><img class="rond" src="portraits/avatar-${n}.webp?v=1" alt="">${nom}</button>`).join('')}
       ${av.map(a => `<button class="cad ${p.portrait === 'av:' + a.id ? 'choisi' : ''}" onclick="choisir('portrait','av:${a.id}')"><img class="rond" src="${avPortrait(a)}" onerror="this.onerror=null;this.src='${avPortraitSecours(a)}'" alt="">${a.nom}</button>`).join('')}</div>
       <h3>✏️ Mon nom</h3><p class="aide">C’est aussi ton pseudo en ligne, celui que voient tes amis.</p><input maxlength="18" placeholder="Ton nom d’aventurier (sinon : « Toi »)" value="${(p.nom || '').replace(/"/g, '&quot;')}" oninput="nom(this.value)">`;
   } else if (onglet === 'cadre') {

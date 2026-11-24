@@ -103,7 +103,7 @@
          ${ligne(['semaine', '🔏', 'Le Duel de la semaine', C.sc ? 'Sceau gagné cette semaine' : C.sem ? `« ${C.sem.n} » : gagne pour le Sceau` : 'Une règle nouvelle chaque semaine', !!C.sc, "envieVa('duel.html?semaine=1')"])}
          ${ligne(['chasse', '🎯', 'La Chasse au boss de la semaine', 'Le même boss pour tous, jusqu’à dimanche', false, "envieVa('epreuves.html')"])}</div>`;
     const html = `<div class="boite"><button class="x" onclick="document.getElementById('env-auj').remove()" aria-label="Fermer">✕</button>
-      <h2>📜 Le carnet de la Guilde</h2>
+      <h2><img src="ui/barre/ui-carnet.webp?v=1" alt="" style="width:34px;height:34px;object-fit:contain;vertical-align:middle" onerror="this.outerHTML='📜'"> Le carnet de la Guilde</h2>
       <div class="ongl"><button class="${onglet === 'jour' ? 'on' : ''}" onclick="carnetOuvre('jour')">☀ Aujourd’hui<i>${C.jf}/${C.jn}</i></button><button class="${onglet === 'semaine' ? 'on' : ''}" onclick="carnetOuvre('semaine')">🗓️ Cette semaine<i>${C.sf}/${C.sn}</i></button></div>
       ${corps}</div>`;
     if (garde) { const b = p.querySelector('.boite'), t = document.createElement('div'); t.innerHTML = html; b.innerHTML = t.firstElementChild.innerHTML; b.scrollTop = o === onglet && haut ? 0 : 0; return; }
@@ -116,6 +116,6 @@
   const _band = envieBandeau;
   window.envieBandeau = envieBandeau = function () {
     _band(); const b = document.getElementById('env-bandeau'); if (!b) return; const C = compte();
-    b.innerHTML = `<span class="sol" style="font-size:28px">📜</span><span class="t"><b>Le carnet de la Guilde</b><small>Aujourd’hui <b style="color:#ffd27a">${C.jf}/${C.jn}</b> · Semaine <b style="color:#ffd27a">${C.sf}/${C.sn}</b>${C.rec ? ` · <b style="color:#7dff8a">🎁 ${C.rec} à récupérer</b>` : ''}</small></span><span class="n">${C.jf}/${C.jn}</span>`;
+    b.innerHTML = `<span class="sol" style="font-size:28px"><img src="ui/barre/ui-carnet.webp?v=1" alt="" draggable="false" style="width:40px;height:40px;object-fit:contain;display:block" onerror="this.outerHTML='📜'"></span><span class="t"><b>Le carnet de la Guilde</b><small>Aujourd’hui <b style="color:#ffd27a">${C.jf}/${C.jn}</b> · Semaine <b style="color:#ffd27a">${C.sf}/${C.sn}</b>${C.rec ? ` · <b style="color:#7dff8a">🎁 ${C.rec} à récupérer</b>` : ''}</small></span><span class="n">${C.jf}/${C.jn}</span>`;
   };
 })();
