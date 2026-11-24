@@ -72,12 +72,11 @@ function eclairFait() { try { return (JSON.parse(localStorage.getItem('guilde-ec
     const gagne = S.fini === 'gagne', r = S.J.pv / (S.J.pvMax || 1), et = gagne ? (r >= .7 ? 3 : r >= .4 ? 2 : 1) : 0;
     let txt;
     if (S.eclairJour === 'compte' && !eclairFait()) {
-      const m = (() => { try { return JSON.parse(localStorage.getItem('guilde-eclair') || '{}'); } catch (e) { return {}; } })(); m[eclairJour()] = { gagne, etoiles:et, heros:S.J.id };
+      const xp = 10 + 5 * et, or = 5 * et; // 24/11 : à récupérer dans le carnet
+      const m = (() => { try { return JSON.parse(localStorage.getItem('guilde-eclair') || '{}'); } catch (e) { return {}; } })(); m[eclairJour()] = { gagne, etoiles:et, heros:S.J.id, rec:{ xp, or }, recup:false };
       Object.keys(m).sort().slice(0, -30).forEach(k => delete m[k]); try { localStorage.setItem('guilde-eclair', JSON.stringify(m)); } catch (e) {}
-      const xp = 10 + 5 * et, or = 5 * et; if (typeof gagneXP === 'function') try { gagneXP(xp, 'Duel éclair du jour'); } catch (e) {}
-      if (or && typeof donneRessources === 'function') try { donneRessources(or, 0); } catch (e) {}
       if (typeof guildeEvt === 'function') try { guildeEvt('flash', 1); } catch (e) {}
-      txt = `⚡ <b>Duel éclair du jour compté</b> : ${gagne ? '★'.repeat(et) + '☆'.repeat(3 - et) : 'perdu'} · +${xp} XP${or ? ` · 🪙 +${or}` : ''}. Reviens demain pour le prochain !`;
+      txt = `⚡ <b>Duel éclair du jour compté</b> : ${gagne ? '★'.repeat(et) + '☆'.repeat(3 - et) : 'perdu'} · +${xp} XP${or ? ` · 🪙 +${or}` : ''} <b>à récupérer</b> dans 📜 le carnet. Reviens demain pour le prochain !`;
     } else txt = '⚡ Essai pour le plaisir : ton duel éclair du jour était déjà compté.';
     const f = document.querySelector('#fen .fenetre > div'); if (f) f.insertAdjacentHTML('afterbegin', `<p style="text-align:center;background:#2a2150;border:1px solid #f3c96b88;border-radius:10px;padding:8px">${txt}</p>`);
   }; }

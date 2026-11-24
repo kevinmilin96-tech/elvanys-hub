@@ -27,11 +27,14 @@ function envieRendezVous() {
   const eniNiv = (new Date().getDay() + 6) % 7 + 1, eniEt = ` · ${'★'.repeat(eniNiv)}${'☆'.repeat(7 - eniNiv)} ${['', 'très facile', 'facile', 'moyenne', 'moyenne', 'corsée', 'difficile', 'redoutable'][eniNiv]}`; // même règle que enigme.js : lundi 1★ → dimanche 7★
   L.push(['enigme', '🧩', 'L’énigme du jour', (eni.ok ? 'Résolue' : eni.essais ? `${eni.essais} essai(s)` : 'Un coup parfait à trouver') + eniEt, !!eni.ok, "envieVa('duel.html?enigme=1')"]);
   // 23/11 : LES FLASHS DU JOUR (≈ 3 minutes) dans « ⚡ Rapide » ; les versions longues restent dans « Si tu as le temps »
-  const et = f => f.gagne ? '★'.repeat(f.etoiles) + '☆'.repeat(3 - f.etoiles) : 'Perdu · rejoue pour le plaisir';
+  // 24/11 (l'utilisateur) : sous chaque flash, ce qu'il rapporte ; la récompense se récupère dans le carnet
+  const gain = f => f && f.rec ? ` · +${f.rec.xp} XP${f.rec.or ? ` · 🪙 ${f.rec.or}` : ''}${f.recup === false ? ' à récupérer' : ''}` : '';
+  const et = f => (f.gagne ? '★'.repeat(f.etoiles) + '☆'.repeat(3 - f.etoiles) : 'Perdu · rejoue pour le plaisir') + gain(f);
+  const prix = ' · +10 XP, puis +5 XP et 🪙 5 par ★';
   const fc = (ENV_J('guilde-crypte', {}).flash || {})[envJourLocal()];
-  L.push(['flashcrypte', '⚡', 'Le flash de la Crypte', fc ? et(fc) : '3 minutes, le même pour tous', !!fc, "envieVa('crypte.html#flash')"]);
+  L.push(['flashcrypte', '⚡', 'Le flash de la Crypte', fc ? et(fc) : '3 minutes, le même pour tous' + prix, !!fc, "envieVa('crypte.html#flash')"]);
   const fe = ((ENV_J('guilde-expedition4-meta', {}) || {}).flash || {})[envJourUTC()];
-  L.push(['flashvoyage', '⚡', 'Le flash des Expéditions', fe ? et(fe) : '3 combats, le même pour tous', !!fe, "envieVa('expedition-v4.html?flash=1')"]);
+  L.push(['flashvoyage', '⚡', 'Le flash des Expéditions', fe ? et(fe) : '3 combats, le même pour tous' + prix, !!fe, "envieVa('expedition-v4.html?flash=1')"]);
   const cr = (ENV_J('guilde-crypte', {}).jours || {})[envJourLocal()];
   L.push(['crypte', '🪦', 'La crypte du jour', cr ? `Score ${cr.score}` : 'La même crypte pour tout le monde', !!cr, "envieVa('crypte.html#jour')"]);
   const ile = ENV_J('guilde-odyssee-records', []).find(r => r.graine === 'jour-' + envJourUTC());
@@ -45,7 +48,7 @@ function envieRendezVous() {
   L.push(['defense', '🏰', 'Le défi de la Défense', de ? '★'.repeat(de) + ' · ' + defi : 'Défi : ' + defi, !!de, "envieVa('defense.html')"]);
   // 23/11 (l'utilisateur : « le panneau Aujourd'hui ne peut pas avoir de truc hebdomadaire ») : le Duel de la semaine en sort ; à la place, le duel éclair du jour
   const ec = ENV_J('guilde-eclair', {})[envJourLocal()];
-  L.push(['eclair', '⚡', 'Le duel éclair du jour', ec ? et(ec) : '≈ 3 minutes, le même pour tous', !!ec, "envieVa('duel.html?eclair=1')"]);
+  L.push(['eclair', '⚡', 'Le duel éclair du jour', ec ? et(ec) : '≈ 3 minutes, le même pour tous' + prix, !!ec, "envieVa('duel.html?eclair=1')"]);
   if (typeof lireQuetes === 'function') {
     const Q = lireQuetes(), f = Q.j.filter(q => q.fait).length, r = Q.j.filter(q => q.fait && q.recup === false).length;
     L.push(['quetes', '📜', 'Les quêtes du jour', r ? `${f}/${Q.j.length} · 🎁 ${r} à récupérer` : `${f}/${Q.j.length} faites`, f >= Q.j.length && !r, "envieVa('route.html#quetes')"]);

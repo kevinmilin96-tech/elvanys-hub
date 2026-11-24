@@ -39,13 +39,28 @@
     if (typeof GM !== 'undefined') try { GM.son('pieces'); } catch (e) {} carnetOuvre(jour ? 'jour' : 'semaine'); envieBandeau(); };
 
   // 24/11 (l'utilisateur : « récupérer les récompenses directement dans cette fenêtre avec le bouton cadeau ») : le butin se ramasse sur place
-  const butinDispo = () => { if (typeof butinCalcule !== 'function') return false; const g = butinCalcule(); return g.xp >= 1 || g.eclats >= 1 || g.or >= 1; };
+  // 24/11 : après les 3 ramassages de la quête, le bouton ne revient que pour au moins une heure de butin (pas pour 3 pièces)
+  const butinDispo = () => { if (typeof butinCalcule !== 'function') return false; const g = butinCalcule(), n = typeof butinFois === 'function' ? butinFois() : 0;
+    return (g.xp >= 1 || g.eclats >= 1 || g.or >= 1) && (n < 3 || g.h >= 1); };
   window.carnetButin = () => { const g = typeof butinRamasse === 'function' ? butinRamasse() : null;
     try { localStorage.setItem('guilde-butin-jour', envJourLocal()); } catch (e) {} if (typeof GM !== 'undefined') GM.son('choisir');
     if (g && typeof annonceRang === 'function') annonceRang(`🎁 Butin ramassé${g.or ? ` · 🪙 +${g.or}` : ''}${g.pou ? ` · 🔹 +${g.pou}` : ''}${g.xp ? ` · +${g.xp} XP` : ''}`, true);
     const rm = document.getElementById('rangmenu'); if (rm && typeof bandeauRangHTML === 'function') rm.innerHTML = bandeauRangHTML() + (typeof butinHTML === 'function' ? butinHTML() : '');
     setTimeout(() => { carnetOuvre(onglet); if (typeof envieBandeau === 'function') envieBandeau(); }, 60); };
-  const ligne = ([k, e, n, d, fait, a]) => { const rec = k === 'butin' && butinDispo();
+  // 24/11 : la récompense des flashs du jour se récupère ici
+  const FLASH = { flashcrypte:() => [ENV_J('guilde-crypte', {}), 'guilde-crypte', o => (o.flash || {}), envJourLocal()],
+    flashvoyage:() => [ENV_J('guilde-expedition4-meta', {}) || {}, 'guilde-expedition4-meta', o => (o.flash || {}), envJourUTC()],
+    eclair:() => [ENV_J('guilde-eclair', {}), 'guilde-eclair', o => o, envJourLocal()] };
+  const flashRec = k => { if (!FLASH[k]) return null; const [o, , acc, j] = FLASH[k](); const f = acc(o)[j]; return f && f.rec && f.recup === false ? f : null; };
+  window.carnetFlash = k => { const [o, cle, acc, j] = FLASH[k](), f = acc(o)[j]; if (!f || !f.rec || f.recup !== false) return;
+    f.recup = true; try { localStorage.setItem(cle, JSON.stringify(o)); } catch (e) { return; }
+    if (typeof gagneXP === 'function') try { gagneXP(f.rec.xp, 'Flash du jour'); } catch (e) {}
+    if (f.rec.or && typeof donneRessources === 'function') try { donneRessources(f.rec.or, 0); } catch (e) {}
+    if (typeof GM !== 'undefined') GM.son('choisir');
+    if (typeof annonceRang === 'function') annonceRang(`🎁 Flash du jour : +${f.rec.xp} XP${f.rec.or ? ` · 🪙 +${f.rec.or}` : ''}`, true);
+    setTimeout(() => { carnetOuvre(onglet); if (typeof envieBandeau === 'function') envieBandeau(); }, 60); };
+  const ligne = ([k, e, n, d, fait, a]) => { if (flashRec(k)) return `<button onclick="carnetFlash('${k}')"><span class="e">${e}</span><span class="t"><b>${n}</b><small>${d}</small></span><span class="rec" style="flex:none">🎁 Récupérer</span></button>`;
+    const rec = k === 'butin' && butinDispo();
     return `<button class="${fait && !rec ? 'fait' : ''}" onclick="${rec ? 'carnetButin()' : a}"><span class="e">${e}</span><span class="t"><b>${n}</b><small>${d}</small></span>${rec ? '<span class="rec" style="flex:none">🎁 Récupérer</span>' : `<span class="c">${fait ? '✓' : '›'}</span>`}</button>`; };
   const compte = () => { const L = envieRendezVous().filter(x => x[0] !== 'quetes'), Q = typeof lireQuetes === 'function' ? lireQuetes() : { j:[], s:[] };
     const sem = typeof regleDeLaSemaine === 'function' ? regleDeLaSemaine() : null, sc = sem && ENV_J('guilde-sceaux', {})[sem.semaine];

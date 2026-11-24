@@ -325,9 +325,19 @@ function relancer(S) {
   S.relance--; compte(S, 'relances'); S.des.forEach(d => { if (!d.garde) d.v = de6(RS(S)); }); return true;
 }
 function gagneOr(S, n, pourquoi) { if (n <= 0) return; if (S.regle === 'riche') n *= 2; S.or += n; S.orGagne += n; if (pourquoi) log(S, `🪙 +${n} or (${pourquoi}).`); }
+// 24/11 (l'utilisateur) : creuset plein = choisir une Rune OU 🛡 +6 ; l'écran pose S.choixCreuset = true (les simulateurs, non : Rune d'office)
 function creusetPlein(S) {
+  if (S.choixCreuset) { S.creuset = Array(6).fill(false); compte(S, 'creusets'); S.creusetAChoisir = (S.creusetAChoisir || 0) + 1; log(S, '✦ Le creuset est plein : une Rune ou du bouclier ?');
+    if (S.obj.creusetor) { gagneOr(S, 3 * S.obj.creusetor, 'creuset doré'); S.bouclier += 3 * S.obj.creusetor; } return; }
   S.creuset = Array(6).fill(false); compte(S, 'creusets'); if (S.runes < RUNES_MAX) S.runes++; if (S.regle === 'creuset' && S.runes < RUNES_MAX) S.runes++; log(S, S.regle === 'creuset' ? '✦ Creuset bouillant : deux Runes !' : '✦ Le creuset est plein : une Rune !');
   if (S.obj.creusetor) { gagneOr(S, 3 * S.obj.creusetor, 'creuset doré'); S.bouclier += 3 * S.obj.creusetor; }
+}
+function choisirCreuset(S, quoi) {
+  if (!S.creusetAChoisir) return false; S.creusetAChoisir--;
+  const fois = S.regle === 'creuset' ? 2 : 1;
+  if (quoi === 'bouclier') { S.bouclier += 6 * fois; log(S, `🛡 Le creuset te protège : +${6 * fois} de bouclier.`); }
+  else { for (let k = 0; k < fois; k++) if (S.runes < RUNES_MAX) S.runes++; log(S, fois > 1 ? '✦ Creuset bouillant : deux Runes !' : '✦ Une Rune !'); }
+  return true;
 }
 // poser le dé id sur : { carte:id, s:index } · { pouvoir:index } · { comp:index } · { creuset:true } · { reserve:true } · { couleur:true } (effet spécial)
 function placer(S, idDe, ou) {
@@ -464,9 +474,9 @@ function finTour(S) {
 }
 // les étoiles d'une victoire
 // 15/11 soir : avec des défis, une étoile par défi réussi (victoire obligatoire) ; sinon l'ancienne règle (la Descente)
-const etoiles = S => S.fin !== 'gagne' ? 0 : S.defis ? defisEtat(S).filter(x => x.ok).length : S.flash ? 1 + (S.pv >= 10 ? 1 : 0) + (S.pv >= 18 ? 1 : 0) /* 23/11 : le flash du jour (30 PV) */ : 1 + (S.pv >= 12 ? 1 : 0) + (S.pv >= 25 ? 1 : 0);
+const etoiles = S => S.fin !== 'gagne' ? 0 : S.defis ? defisEtat(S).filter(x => x.ok).length : S.flash ? 1 + (S.pv >= 10 ? 1 : 0) + (S.tour <= 6 ? 1 : 0) /* 23/11 : le flash du jour (30 PV) ; 24/11 (l'utilisateur) : 3e étoile = gagner en 6 tours ou moins */ : 1 + (S.pv >= 12 ? 1 : 0) + (S.pv >= 25 ? 1 : 0);
 
-const API = { reglerSuivi:(f, sc) => { SUIVI_FORCE = f; SUIVI_SCEAU = sc; }, INTENTIONS, intentions, NB_DES, NB_COL, PROF, RESERVE, RUNES_MAX, PV_HEROS, SCEAU_TXT, TRAITS, POUVOIRS, COMPAGNONS, COULEURS,
+const API = { choisirCreuset, reglerSuivi:(f, sc) => { SUIVI_FORCE = f; SUIVI_SCEAU = sc; }, INTENTIONS, intentions, NB_DES, NB_COL, PROF, RESERVE, RUNES_MAX, PV_HEROS, SCEAU_TXT, TRAITS, POUVOIRS, COMPAGNONS, COULEURS,
   REGLES, regleDuJour, VARIANTES, varianteDuJour, SPECIALES, GAINS_COFFRE, DEFIS, defisEtat, CONSOS, conso, nouvelle, lancer, relancer, placer, rune, pouvoir, competence, finTour, visibles, menace, menaceComp, accepte, etoiles, trouve, force, silence, plafond, rng };
 if (typeof module !== 'undefined' && module.exports) module.exports = API; else racine.CRYPTE = API;
 })(typeof window !== 'undefined' ? window : globalThis);
