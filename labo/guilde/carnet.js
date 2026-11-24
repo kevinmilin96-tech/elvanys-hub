@@ -1,13 +1,13 @@
 // 23/11 (l'utilisateur : « on a deux endroits : Aujourd'hui, quêtes du jour, quêtes de la semaine… il faut tout regrouper ») :
 // LE CARNET DE LA GUILDE = un seul endroit, deux onglets : ☀ Aujourd'hui (les rendez-vous du jour + les 3 quêtes du jour, récupérées sur place)
 // et 🗓️ Cette semaine (les 3 quêtes de la semaine, le Duel de la semaine, la Chasse au boss). Sur le menu, UN bandeau (le butin garde le sien, choix de l'utilisateur).
-// APERÇU d'abord : menu.html?carnet=1 (retenu sur le téléphone ; ?carnet=0 pour revenir). Les autres joueurs gardent l'ancien affichage.
+// 24/11 : POUR TOUS (d'abord en aperçu). menu.html?carnet=0 = l'ancien affichage sur ce téléphone, ?carnet=1 pour revenir au carnet.
 (function () {
   const q = new URLSearchParams(location.search);
-  try { if (q.get('carnet') === '1') localStorage.setItem('guilde-carnet-apercu', '1'); if (q.get('carnet') === '0') localStorage.removeItem('guilde-carnet-apercu'); } catch (e) {}
+  try { if (q.get('carnet') === '1') localStorage.setItem('guilde-carnet-apercu', '1'); if (q.get('carnet') === '0') localStorage.setItem('guilde-carnet-apercu', 'non'); } catch (e) {}
   // 24/11 : l'aperçu avait la clé « guilde-carnet », déjà prise par le journal des parties (musique.js) : il l'écrasait et le profil restait vide
   try { if (localStorage.getItem('guilde-carnet') === '1') { localStorage.setItem('guilde-carnet-apercu', '1'); localStorage.removeItem('guilde-carnet'); } } catch (e) {}
-  window.CARNET = localStorage.getItem('guilde-carnet-apercu') === '1';
+  window.CARNET = localStorage.getItem('guilde-carnet-apercu') !== 'non'; // 24/11 ~20 h : le carnet est POUR TOUS (accord de l'utilisateur) ; ?carnet=0 = l'ancien affichage, ce téléphone seulement
   // 24/11 : sans le carnet (joueurs hors aperçu), les récompenses des flashs et de l'énigme ne restent pas bloquées : elles sont données à l'ouverture du menu
   if (!window.CARNET) { try { const J = c => { try { return JSON.parse(localStorage.getItem(c) || 'null') || {}; } catch (e) { return {}; } };
     const jl = typeof envJourLocal === 'function' ? envJourLocal() : null, ju = typeof envJourUTC === 'function' ? envJourUTC() : jl; let xp = 0, or = 0;

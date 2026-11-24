@@ -1,5 +1,9 @@
 [
 {
+"v": "20261124-200531",
+"m": "Le carnet de la Guilde arrive pour tout le monde : les rendez-vous du jour, les quêtes du jour et de la semaine au même endroit, et les récompenses se récupèrent avec 🎁."
+},
+{
 "v": "20261124-195929",
 "m": "Expéditions : le début du voyage est plus doux (le boss se défend un peu plus). Carnet : un ❓ explique ce que rapportent les flashs, et l'énigme du jour se récupère avec 🎁. Mes succès : la ligne 🏅 Fidélité (jours joués et cadeaux). Équipement : ce que devient le +N de la case quand tu changes de pièce."
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261123-212717",
 "m": "Combat : quand tu choisis des dés, la barre du bas montre Annuler et Relancer en entier."
-},
-{
-"v": "20261123-212545",
-"m": "Combat : le bas du plateau (ta main, le paquet) n’est plus caché par la barre ; cœurs et PC à la bonne taille."
 }
 ]
