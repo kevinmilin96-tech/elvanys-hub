@@ -1,5 +1,9 @@
 [
 {
+"v": "20261124-193122",
+"m": "Expéditions : le journal de partie raconte chaque combat (ton équipage, l'adversaire, les rounds, les dégâts) et tes recrues."
+},
+{
 "v": "20261124-193002",
 "m": "Expéditions : le journal de partie raconte chaque combat (ton équipage, l'adversaire, les rounds, les dégâts) et tes recrues."
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261123-210749",
 "m": "Invasion : le nouveau plateau qui remplit tout l’écran. Tous les combats ont maintenant leur plateau long."
-},
-{
-"v": "20261123-205525",
-"m": "Odyssée : les combats de l’Abîme passent sur le nouveau plateau qui remplit tout l’écran."
 }
 ]
