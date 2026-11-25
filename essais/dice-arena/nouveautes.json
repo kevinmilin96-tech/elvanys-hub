@@ -1,5 +1,9 @@
 [
 {
+"v": "20261125-191408",
+"m": "Le cadre de l’adversaire ne déborde plus quand il a beaucoup d’effets"
+},
+{
 "v": "20261125-191049",
 "m": "La barre du bas des combats tient dans l’écran, même avec la sacoche et le sacrifice"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261124-203015",
 "m": "Les pouvoirs de Zéphine ont leurs icônes peintes."
-},
-{
-"v": "20261124-202002",
-"m": "L'icône Amis de la barre du bas et un 10e avatar de profil : le forgeron."
 }
 ]
