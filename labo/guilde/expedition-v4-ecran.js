@@ -62,6 +62,7 @@ function chroniqueEscale(apres) {
 // 14/11 (l'utilisateur : « je ne peux pas cliquer sur les créatures, ni sur les étiquettes ; plus sympa que des cases jaunes ; sur une page ») :
 // de vraies cartes (illustration en fond, ce que fait la carte en un mot), une FICHE au toucher, tout l'écran du port sans défilement.
 const ART_EXP = { chien:'chien-garde' }; // illustrations : cartes/<clé>.webp (même nom que la carte du Duel, sauf exceptions)
+if (typeof RECRUES_V4 !== 'undefined') Object.keys(RECRUES_V4).forEach(k => { ART_EXP[k] = RECRUES_V4[k].art; }); // 25/11 : les images des recrues de la v4 (Pirate abordeur…) se perdaient : ce fichier est chargé après expedition-v4.js
 const ROLE_COURT = { rempart:'🛡 garde', lame:'⚔ mêlée', tireur:'🏹 tire', soutien:'✚ aide + frappe', capitaine:'🎲 3 dés' };
 const ROLE_LONG = {
   rempart:'🛡 <b>Rempart</b> : a Barrière, les ennemis le frappent en premier, où qu’il soit. Il attaque aussi, au corps à corps.',
@@ -454,6 +455,8 @@ finExp = function () {
 };
 records = function () { const l = lireRec(); fenetre(`<h2>🏆 Mes voyages (${l.length})</h2>${l.length ? `<table>${l.map(r => `<tr><td>${r.parfait ? '🌟' : r.gagne ? '🏆' : '💀'} ${new Date(r.quand).toLocaleDateString('fr-FR')} · ${r.nom ? haEsc(r.nom) : HEROS[r.heros].nom} · ${MERS[r.mer] ? MERS[r.mer].e : ''}${r.asc ? ' ⛰' + r.asc : ''}${r.jour ? ' 🗓️' : ''} · ${BOSS_V4[r.boss] ? BOSS_V4[r.boss].e : ''}</td><td>${r.score}</td></tr>`).join('')}</table>` : '<p>Aucun encore.</p>'}<div class="choixh"><button onclick="fermer()">Fermer</button></div>`); };
 // les monstres des nouvelles mers prennent un portrait déjà peint quand il y en a un proche (les autres gardent la pastille simple, en attendant les images)
+// 25/11 (l'utilisateur : « manque une image ») : des portraits déjà peints pour les ennemis qui n'en avaient pas ; les autres ont leur prompt (section expeditions-ennemis-25-11)
+Object.assign(PORTRAIT_M, { 'Chaman de braise':'m21-chaman-cendres', 'Épouvantail de braise':'m-brasero', 'Invocateur de cendre':'m-cultiste', 'Totem de la meute':'m21-totem-rage', 'Nécromant des glaces':'m21-necromancienne-neiges', 'Nécromancien noyé':'m-necro', 'Prêtresse du dragon':'m-cultiste', 'Sirène du Kraken':'el-sirene', 'Héraut du Roi':'m-heraut' });
 Object.assign(PORTRAIT_M, { 'Pillard':'d-gobelin', 'Frondeur':'m-gobelin', 'Chien de pillard':'m-loup', 'Corbeau ardent':'m-phenix', 'Chef de guerre':'el-chefguerre', 'Tambour gobelin':'m-gobelin',
   'Matriarche de braise':'el-matriarche', 'Lanceur de glaçons':'m-givrelin', 'Loup blanc':'m-loupblanc', 'Chaman du givre':'m-chaman', 'Ent de givre':'m-golemglace', 'Feu follet bleu':'m-esprit',
   'Archer des neiges':'m-givrelin', 'Troll des glaces':'m-golemglace', 'Golem de cristal':'m-golemglace', 'Sorcière du blizzard':'m-reinefrimas', 'Éclat vivant':'m-givrelin', 'Yéti ancien':'el-yeti',
