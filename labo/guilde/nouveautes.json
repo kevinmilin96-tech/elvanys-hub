@@ -1,5 +1,9 @@
 [
 {
+"v": "20261125-213840",
+"m": "Le carnet de la Guilde ne remonte plus en haut quand tu touches « Récupérer »"
+},
+{
 "v": "20261125-213137",
 "m": "La Chasse au boss : écran de fin clair (ton score, pas une « victoire »), l'or du défi vraiment donné, les paliers à récupérer 🎁 dans le carnet, et un nouveau mode « 💀 Chasse jusqu'à la mort » sans limite de tours"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261125-162741",
 "m": "Le cadre de l’adversaire : cartes en main et cartes à piocher sur deux lignes"
-},
-{
-"v": "20261125-162444",
-"m": "Les noms longs des cartes de mode ne sont plus coupés"
 }
 ]

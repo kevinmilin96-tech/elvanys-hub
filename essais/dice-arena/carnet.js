@@ -121,6 +121,7 @@
 
   let onglet = 'jour';
   window.carnetOuvre = function (o) {
+    const memeOnglet = !o || o === onglet; // 25/11 (l'utilisateur : « quand je clique sur récupérer ça remonte en haut ») : même onglet = on garde la place
     if (o) onglet = o; let p = document.getElementById('env-auj'); const garde = p && o; // changer d'onglet : on remplace le contenu sans refaire la fenêtre (ni animation, ni saut)
     const haut = garde ? p.querySelector('.boite').scrollTop : 0; if (p && !garde) p.remove();
     const C = compte(), L = envieRendezVous().filter(x => x[0] !== 'quetes'), RAP = ['enigme', 'flashcrypte', 'flashvoyage', 'eclair', 'butin'];
@@ -137,7 +138,7 @@
       <h2><img src="ui/barre/ui-carnet.webp?v=1" alt="" style="width:34px;height:34px;object-fit:contain;vertical-align:middle" onerror="this.outerHTML='📜'"> Le carnet de la Guilde</h2>
       <div class="ongl"><button class="${onglet === 'jour' ? 'on' : ''}" onclick="carnetOuvre('jour')">☀ Aujourd’hui<i>${C.jf}/${C.jn}</i></button><button class="${onglet === 'semaine' ? 'on' : ''}" onclick="carnetOuvre('semaine')">🗓️ Cette semaine<i>${C.sf}/${C.sn}</i></button></div>
       ${corps}</div>`;
-    if (garde) { const b = p.querySelector('.boite'), t = document.createElement('div'); t.innerHTML = html; b.innerHTML = t.firstElementChild.innerHTML; b.scrollTop = o === onglet && haut ? 0 : 0; return; }
+    if (garde) { const b = p.querySelector('.boite'), t = document.createElement('div'); t.innerHTML = html; b.innerHTML = t.firstElementChild.innerHTML; b.scrollTop = memeOnglet ? haut : 0; return; }
     p.innerHTML = html; p.onclick = ev => { if (ev.target === p) p.remove(); };
     document.body.appendChild(p);
   };
