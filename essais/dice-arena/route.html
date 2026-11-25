@@ -43,8 +43,9 @@
   .num { position:absolute !important; bottom:0; left:50%; transform:translateX(-50%); z-index:2; }
   .case.verrou .num img { filter:grayscale(.85) brightness(.75); } .suiv-e img { filter:grayscale(.6) brightness(.85); }
   .tout { display:block; margin:6px auto 0; font:bold 14px Georgia, serif; border:0; border-radius:12px; padding:10px 18px; background:linear-gradient(#7dff8a, #2fbf47); color:#0b3a12; box-shadow:0 3px 0 #1a7a2a; }
-  /* les quêtes */
-  .quetes { max-width:620px; margin:0 auto; padding:0 12px; }
+  /* 25/11 : l'onglet Saison */
+  .saison { max-width:620px; margin:0 auto; padding:0 14px; color:#f1ecff; line-height:1.45; } .saison ul { padding-left:20px; } .saison li { margin:6px 0; }
+  .saison .bientot { text-align:center; font-size:1.1em; background:#1d1b3aee; border:1px solid var(--or); border-radius:12px; padding:10px; }
   h2 { color:var(--or); font-size:1.08em; margin:16px 0 6px; border-bottom:1px solid #4b4580; padding-bottom:3px; }
   .quete { display:flex; gap:8px; align-items:center; background:#1d1b3aee; border:1px solid #4b4580; border-radius:12px; padding:8px 10px; margin:6px 0; } .quete > div { flex:1; } .quete b { display:block; font-weight:normal; }
   .quete .barre-rang { display:block; height:8px; margin:5px 0 3px; } .quete small { color:var(--doux); }
@@ -67,10 +68,12 @@
 <script src="donnees.js?v=8a39c05326"></script>
 <script>
 const GENRE = { des:'Dés', titre:'Titre et cadre', depart:'Bonus de départ', carte:'Carte', equip:'Équipement' };
-let onglet = location.hash === '#quetes' ? 'quetes' : 'route';
-function ouvre(o) { onglet = o; history.replaceState(null, '', o === 'quetes' ? '#quetes' : '#'); if (typeof GM !== 'undefined') GM.son('clic'); dessine(); }
-function onglets() { const ar = aRecuperer().length, Q = lireQuetes(), qr = Q.j.filter(q => !q.fait).length;
-  document.getElementById('onglets').innerHTML = `<button class="${onglet === 'route' ? 'on' : ''}" onclick="ouvre('route')">🎁 Récompenses${ar ? `<span class="pt">${ar}</span>` : ''}</button><button class="${onglet === 'quetes' ? 'on' : ''}" onclick="ouvre('quetes')">📜 Quêtes</button>`; }
+// 25/11 (choix de l'utilisateur) : 2 onglets 🏆 Rang et 🗓️ Saison ; les quêtes sont dans le carnet (l'ancienne adresse #quetes y mène)
+if (location.hash === '#quetes') { sessionStorage.setItem('guilde-dans-mode', '1'); location.replace('menu.html?ouvrir=carnet'); }
+let onglet = location.hash === '#saison' ? 'saison' : 'route';
+function ouvre(o) { onglet = o; history.replaceState(null, '', o === 'saison' ? '#saison' : '#'); if (typeof GM !== 'undefined') GM.son('clic'); dessine(); }
+function onglets() { const ar = aRecuperer().length;
+  document.getElementById('onglets').innerHTML = `<button class="${onglet === 'route' ? 'on' : ''}" onclick="ouvre('route')">🏆 Rang${ar ? `<span class="pt">${ar}</span>` : ''}</button><button class="${onglet === 'saison' ? 'on' : ''}" onclick="ouvre('saison')">🗓️ Saison</button>`; }
 function enteteXP() { const d = lireRang(), i = d.info;
   return `<div class="xp"><span class="rg">${emblemeRang(i.rang, 52)}</span><span class="barre"><i style="width:${i.besoin ? Math.round(i.dans / i.besoin * 100) : 100}%"></i><span>${i.besoin ? `${i.dans} / ${i.besoin} XP` : 'Rang le plus haut !'}</span></span>${i.rang < RANG_MAX ? emblemeRang(i.rang + 1, 40, 'suiv-e') : ''}</div>`; }
 function recHTML(n, x) {
@@ -95,18 +98,23 @@ function detail(n) { const x = ROUTE[n], d = lireRang(); let t = x[4], nom = x[3
   if (typeof annonceRang === 'function') annonceRang(`${x[2]} ${nom} : ${t} ${etat}`); }
 function prendre(n) { if (recupererRang(n)) { if (typeof GM !== 'undefined') GM.son('gagne'); dessine(n); } }
 function toutPrendre() { aRecuperer().forEach(n => recupererRang(n)); if (typeof GM !== 'undefined') GM.son('gagne'); dessine(); }
-function quetes() {
-  const d = lireRang(), Q = lireQuetes();
-  // 22/11 (l'utilisateur) : toucher une quête pas finie emmène là où elle se fait (QUETE_VA, rang.js)
-  const ligneQ = (q, jour, idx) => { const def = defQuete(q, jour), va = !q.fait && typeof QUETE_VA !== 'undefined' && QUETE_VA[def[2]]; return `<div class="quete ${q.fait ? 'faite' : ''}${va ? ' va' : ''}"${va ? ` onclick="try{sessionStorage.setItem('guilde-dans-mode','1')}catch(e){};location.href='${va}'"` : ''}><div><b>${q.fait ? '✅' : '📜'} ${texteQuete(q, jour)}</b><span class="barre-rang"><i style="width:${Math.round(q.prog / def[3] * 100)}%"></i></span><small>${q.prog} / ${def[3]} · +${GAIN_QUETE[jour ? 'jour' : 'semaine'].xp} XP · 🪙 ${GAIN_QUETE[jour ? 'jour' : 'semaine'].or} · 🔹 ${GAIN_QUETE[jour ? 'jour' : 'semaine'].pou}</small></div>${q.fait && q.recup === false ? `<button class="recupQ" onclick="const g = recupQuete(${jour}, ${idx}); if (g) { if (typeof GM !== 'undefined') GM.son('victoire'); dessine(); }">🎁 Récupérer</button>` : q.fait ? '<span class="recuQ">✔ Récupérée</span>' : ''}${jour && !Q.change && !q.fait ? `<button class="chg" onclick="event.stopPropagation();if (changeQuete(${idx})) dessine()">🔄</button>` : ''}</div>`; };
-  return `${enteteXP()}<div class="quetes">
-  <h2>📜 Quêtes du jour</h2><p class="aide" style="text-align:left;margin:0 0 4px">Elles changent chaque jour à minuit. 🔄 : changer une quête (une fois par jour).</p>${Q.j.map((q, k) => ligneQ(q, true, k)).join('')}
-  <h2>🗓️ Quêtes de la semaine</h2><p class="aide" style="text-align:left;margin:0 0 4px">Elles changent chaque lundi.</p>${Q.s.map(q => ligneQ(q, false)).join('')}
-  <details class="gains"><summary>Ce que rapporte chaque partie</summary>Chaque partie rapporte de l’expérience, même perdue : duel gagné 30 (perdu 10), salle vidée 5, élite 20, boss 60, escale 15, Titan 60, acte de l’Invasion 50, vague tenue 10, énigme 20, quête du jour 40, quête de la semaine 150.
-  ${d.journal.length ? `<p><b>Mes derniers gains</b></p>${d.journal.slice(0, 12).map(j => `<div>+${j.xp} · ${j.raison} <small>${new Date(j.q).toLocaleString('fr-FR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' })}</small></div>`).join('')}` : ''}</details></div>`;
+function saison() {
+  // 25/11 : l'Almanach ouvre le 1er décembre ; d'ici là, l'onglet l'annonce
+  const j = Math.max(0, Math.ceil((new Date(2026, 11, 1) - new Date()) / 864e5));
+  return `${enteteXP()}<div class="saison">
+  <h2>❄ Saison 1 · L’Hiver des runes</h2>
+  <p class="bientot">L’Almanach ouvre le <b>1er décembre</b>${j > 0 ? ` (dans ${j} jour${j > 1 ? 's' : ''})` : ''}.</p>
+  <p>Toute l’expérience que tu gagnes remplit <b>en même temps</b> ton rang de la Guilde et l’Almanach de la saison : rien à faire de plus.</p>
+  <ul>
+    <li><b>30 paliers</b>, un tous les 500 XP, pendant 8 semaines (jusqu’au 25 janvier).</li>
+    <li>Des récompenses à chaque palier : or, poussière, équipement (paliers 5, 15, 25), un cadre (10), des faces de dés (20) et un <b>skin d’hiver</b> au palier 30.</li>
+    <li>Une aventure en chapitres dans les Chroniques : <b>« Les Cloches de givre »</b>, contre le Roi de l’Hiver.</li>
+    <li>La règle de la saison, <b>le froid</b> : un dé qui fait 1 gèle et ne peut pas être relancé ce tour.</li>
+  </ul>
+  <p class="aide" style="text-align:left">Une saison finie te donne un Feuillet, pour rattraper plus tard ce que tu as manqué.</p></div>`;
 }
 function dessine(vise) {
-  onglets(); document.getElementById('app').innerHTML = onglet === 'quetes' ? quetes() : route();
+  onglets(); document.getElementById('app').innerHTML = onglet === 'saison' ? saison() : route();
   if (onglet === 'route') { const r = lireRang().info.rang, ar = aRecuperer(), cible = vise || ar[0] || Math.min(r + 1, RANG_MAX), el = document.getElementById('c' + cible), p = document.getElementById('piste');
     if (el && p) p.scrollLeft = el.offsetLeft - p.clientWidth / 2 + el.offsetWidth / 2; }
 }
