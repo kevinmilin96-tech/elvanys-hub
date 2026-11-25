@@ -1,5 +1,9 @@
 [
 {
+"v": "20261125-163817",
+"m": "Lame trempée et cartes du même genre : avec une seule créature, elle est choisie toute seule, il reste à valider"
+},
+{
 "v": "20261125-162741",
 "m": "Le cadre de l’adversaire : cartes en main et cartes à piocher sur deux lignes"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261124-193500",
 "m": "Le duel éclair du jour s'ouvre de nouveau sans erreur."
-},
-{
-"v": "20261124-193122",
-"m": "Expéditions : le journal de partie raconte chaque combat (ton équipage, l'adversaire, les rounds, les dégâts) et tes recrues."
 }
 ]
