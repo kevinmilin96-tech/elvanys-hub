@@ -1,5 +1,9 @@
 [
 {
+"v": "20261125-191049",
+"m": "La barre du bas des combats tient dans l’écran, même avec la sacoche et le sacrifice"
+},
+{
 "v": "20261125-190256",
 "m": "Zéphine : l’indication « retourné » n’apparaît plus quand son build n’a pas la Transmutation"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261124-202002",
 "m": "L'icône Amis de la barre du bas et un 10e avatar de profil : le forgeron."
-},
-{
-"v": "20261124-201705",
-"m": "Nouvelles icônes peintes dans la barre du bas, le carnet et Mes decks. Dans l'atelier du profil (✏️ Modifier → Portrait) : 9 avatars d'aventuriers au choix, visibles aussi par tes amis."
 }
 ]
