@@ -1,5 +1,9 @@
 [
 {
+"v": "20261125-190256",
+"m": "Zéphine : l’indication « retourné » n’apparaît plus quand son build n’a pas la Transmutation"
+},
+{
 "v": "20261125-190140",
 "m": "Tes créatures ne passent plus sous ton portrait : la rangée est remontée"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261124-201705",
 "m": "Nouvelles icônes peintes dans la barre du bas, le carnet et Mes decks. Dans l'atelier du profil (✏️ Modifier → Portrait) : 9 avatars d'aventuriers au choix, visibles aussi par tes amis."
-},
-{
-"v": "20261124-200531",
-"m": "Le carnet de la Guilde arrive pour tout le monde : les rendez-vous du jour, les quêtes du jour et de la semaine au même endroit, et les récompenses se récupèrent avec 🎁."
 }
 ]
