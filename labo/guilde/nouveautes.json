@@ -1,5 +1,9 @@
 [
 {
+"v": "20261125-190140",
+"m": "Tes créatures ne passent plus sous ton portrait : la rangée est remontée"
+},
+{
 "v": "20261125-171700",
 "m": "Flashs et duel éclair : les étoiles se gagnent avec 2 défis du jour (les mêmes pour tous, écrits avant de jouer)"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261124-200531",
 "m": "Le carnet de la Guilde arrive pour tout le monde : les rendez-vous du jour, les quêtes du jour et de la semaine au même endroit, et les récompenses se récupèrent avec 🎁."
-},
-{
-"v": "20261124-195929",
-"m": "Expéditions : le début du voyage est plus doux (le boss se défend un peu plus). Carnet : un ❓ explique ce que rapportent les flashs, et l'énigme du jour se récupère avec 🎁. Mes succès : la ligne 🏅 Fidélité (jours joués et cadeaux). Équipement : ce que devient le +N de la case quand tu changes de pièce."
 }
 ]
