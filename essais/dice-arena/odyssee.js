@@ -697,6 +697,10 @@ function lanceCombat(r, c) {
 function recompenseCombat(r) {
   const cb = r.combat, res = cb.resultat, c = caseA(r, cb.x, cb.y); if (!res) return null;
   r.stats.combats++; r.stats.tours += res.tours; r.combat = null;
+  // 25/11 (l'utilisateur : « le journal n'est pas complet ») : chaque combat est raconté dans le journal de l'Odyssée, avec son déroulé
+  if (r.journal) { const typ = { boss:'👑 boss', elite:'💀 élite' }[cb.type] || '⚔ monstres', nomE = (HEROS[cb.ennemi] || {}).nom || cb.ennemi;
+    r.journal.push(`⚔ Combat (${typ}) contre ${nomE} : ${res.gagne ? 'GAGNÉ' : 'PERDU'} en ${res.tours} tours · ${res.pv} PV restants${res.degats !== undefined ? ` · ${res.degats} dégâts infligés` : ''}${cb.defi ? ` · défi ${res.defiOk ? 'réussi' : 'raté'}` : ''}`);
+    (res.journal || []).slice(-30).forEach(l => r.journal.push('   · ' + String(l).replace(/<[^>]+>/g, ''))); }
   if (!res.gagne) { r.journal.push(`💀 ${HEROS[cb.ennemi].nom} a eu raison de toi.`);
     let nemesis = null;
     if (typeof ORDRE !== 'undefined' && ORDRE.includes(cb.ennemi) && typeof localStorage !== 'undefined') { const N = lireNemesis(), avant = N[r.heros]; N[r.heros] = { rival:cb.ennemi, niv:avant && avant.rival === cb.ennemi ? Math.min(3, avant.niv + 1) : 1 }; ecrireNemesis(N); nemesis = N[r.heros]; }
@@ -779,7 +783,7 @@ function ouvreCoffre(r, c) { const fievre = r.sansfin && r.sansfin.regle === 'fi
 function ouvrePorte(r) { const p = caseA(r, r.porte.x, r.porte.y); if (p.fait) return true; if (r.fragments >= 2) { p.fait = true; const a = r.pv; r.pv = Math.min(r.pvMax, r.pv + 15); r.journal.push(`🚪 Les deux fragments s’assemblent : la porte s’ouvre. Bivouac devant la porte : +${r.pv - a} PV.`); return true; } return false; }
 // fin de l'Odyssée : score, collection, record
 function finOdysseeRun(r, gagne) {
-  if (!r.journalEnvoye && typeof guildeJournal === 'function' && !r.simu) { r.journalEnvoye = true; guildeJournal(r.route ? 'odyssee-route' : r.sansfin ? 'odyssee-sansfin' : r.aventure ? 'grande-aventure' : r.epreuve ? 'epreuve' : 'odyssee', { heros:r.heros + (r.av ? ' (aventure)' : ''), resultat:gagne ? 'gagne' : 'perdu', journal:r.journal || [], resume:{ acte:r.acte, pv:r.pv, pvMax:r.pvMax, or:r.or, cases:r.stats && r.stats.cases, combats:r.stats && r.stats.combats, victoires:r.stats && r.stats.victoires, reliques:r.reliques, deck:r.deck && r.deck.length, suivi:r.fs || 1 } }); } // 15/11 soir : carnet des parties
+  // (le journal est envoyé à la fin, avec le bilan : voir plus bas)
   const duree = Math.max(1, Math.round((r.jeu !== undefined ? r.jeu + Math.min(30 * 60000, Math.max(0, Date.now() - (r.maj || Date.now()))) : Math.min(Date.now() - r.debut, 3 * 3600000)) / 60000));
   const etage = r.sansfin ? r.sansfin.etage || 1 : 0;
   const score = r.stats.victoires * 50 + r.stats.cases * 5 + r.or + (gagne ? 300 : 0) + r.stats.defis * 30 - r.stats.tours * 2 + Math.max(0, etage - 1) * 500;
@@ -808,6 +812,12 @@ function finOdysseeRun(r, gagne) {
   const rec = { quand:new Date().toISOString(), acte:r.acte || 'brulees', asc:r.asc || 0, heros:r.heros, av:r.av || null, gagne, score, cases:r.stats.cases, combats:r.stats.combats, combatsIle:r.sansfin || r.route || !r.ile ? null : r.ile.flat().filter(c => ['monstre', 'elite', 'boss'].includes(c.t)).length, victoires:r.stats.victoires, tours:r.stats.tours, defis:r.stats.defis, or:r.or, duree, graine:r.graine, pv:r.pv, etage, sansfin:!!r.sansfin, route:!!r.route, regle:r.sansfin ? r.sansfin.regle : null, aventure:r.aventure ? { chapitre:r.aventure.chapitre, niveau:r.aventure.niveau } : null };
   if (typeof localStorage !== 'undefined') { const l = lireRecords(); l.unshift(rec); localStorage.setItem(RECORDS_CLE, JSON.stringify(l.slice(0, 50))); ecrireOdyssee(null); }
   if (gagne && typeof succesCompte === 'function') { if (duJour) succesCompte('ody_jour'); else if (r.route) succesCompte('ody_route'); else if (!r.sansfin) succesCompte('ody_gagne'); } // 22/11 : les succès
+  // 25/11 : le bilan de fin dans le journal, puis l'envoi au carnet des parties
+  if (r.journal && !r.journalEnvoye) { r.journal.push(`🏁 ${gagne ? 'Victoire' : 'Défaite'} · ${score} points · ${r.stats.cases} cases · ${r.stats.victoires} combats gagnés sur ${r.stats.combats} · ${r.stats.tours} tours · ${r.stats.defis} défis · ${r.or} or restant · ${duree} min`);
+    if (butinH) r.journal.push(`🎁 Pour tes héros : +${butinH.or} or, +${butinH.pou} poussière.`);
+    if (neuves.length) r.journal.push(`📚 Nouvelles cartes dans ta collection : ${neuves.map(k => (typeof CARTES !== 'undefined' && CARTES[k] ? CARTES[k].n : k)).join(', ')}.`);
+    r.journal.push(`🂠 Deck final (${r.deck.length} cartes) : ${r.deck.map(k => (typeof CARTES !== 'undefined' && CARTES[k] ? CARTES[k].n : k)).join(', ')}.`); }
+  if (!r.journalEnvoye && typeof guildeJournal === 'function' && !r.simu) { r.journalEnvoye = true; guildeJournal(r.route ? 'odyssee-route' : r.sansfin ? 'odyssee-sansfin' : r.aventure ? 'grande-aventure' : r.epreuve ? 'epreuve' : 'odyssee', { heros:r.heros + (r.av ? ' (aventure)' : ''), resultat:gagne ? 'gagne' : 'perdu', journal:r.journal || [], resume:{ acte:r.acte, pv:r.pv, pvMax:r.pvMax, or:r.or, cases:r.stats && r.stats.cases, combats:r.stats && r.stats.combats, victoires:r.stats && r.stats.victoires, reliques:r.reliques, deck:r.deck && r.deck.length, suivi:r.fs || 1 } }); } // 15/11 soir : carnet des parties
   return { ...rec, butinH, ajoutees, nouvelles:neuves, ascNouveau, premiereFin, inscrit, briseMiroir };
 }
 

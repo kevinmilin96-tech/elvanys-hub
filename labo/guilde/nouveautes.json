@@ -1,5 +1,9 @@
 [
 {
+"v": "20261125-193046",
+"m": "Le journal de l’Odyssée raconte chaque combat et finit par le bilan"
+},
+{
 "v": "20261125-192238",
 "m": "Les textes longs des cartes rétrécissent pour tenir dans la carte (nom, condition, effet)"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261124-205112",
 "m": "Les pouvoirs de Pip et de Maëlle ont leurs icônes peintes, dans la page des pouvoirs et à gauche du plateau en combat."
-},
-{
-"v": "20261124-203617",
-"m": "Les 11 pouvoirs de Zéphine ont maintenant tous leur icône peinte."
 }
 ]
