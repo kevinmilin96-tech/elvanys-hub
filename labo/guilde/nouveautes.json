@@ -1,5 +1,9 @@
 [
 {
+"v": "20261125-215206",
+"m": "Mes decks : les cartes montrent à nouveau leur description"
+},
+{
 "v": "20261125-214233",
 "m": "La Défense de la porte change : chaque face de dé donne sa sorte de tour (givre, poison, archers, canon, foudre, grande tour), les Runes renforcent leurs voisines, plus de cartes, et 1 PC tous les 3 monstres abattus"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261125-171057",
 "m": "Le carnet : la Chasse au boss de la semaine ouvre bien la Chasse (et non la Tour)"
-},
-{
-"v": "20261125-163817",
-"m": "Lame trempée et cartes du même genre : avec une seule créature, elle est choisie toute seule, il reste à valider"
 }
 ]

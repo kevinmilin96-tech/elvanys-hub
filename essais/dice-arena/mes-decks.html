@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261125-214756"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
+<head><meta name="guilde-version" content="20261125-215206"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex">
@@ -85,7 +85,7 @@ let filtre = 'tout';
 const compter = d => { const n = {}; d.forEach(k => n[k] = (n[k] || 0) + 1); return n; };
 const moyenne = l => l.length ? (l.reduce((a, k) => a + CARTES[k].c, 0) / l.length).toFixed(1).replace('.', ',') : '0';
 const fen = h => { document.getElementById('fen').innerHTML = h ? `<div class="fen" onclick="if(event.target===this)fen('')"><div><button class="fen-x" onclick="fen('')" aria-label="Fermer">✕</button>${h}</div></div>` : ''; };
-function carte(k, w) { return CADRES_OK.includes(CADRE_DE(k)) ? carteGuilde(k, { w }) : `<div class="simple" style="width:${w}px"><span class="co">${CARTES[k].c}</span><span class="n">${CARTES[k].n}</span><span>${SORTE[CARTES[k].t]}</span><span>🎲 ${txtLisible(CARTES[k].txt)}</span><span>${CARTES[k].d}</span></div>`; }
+function carte(k, w) { return CADRES_OK.includes(CADRE_DE(k)) ? carteGuilde(k, { w, entiere:true }) /* 25/11 (l’utilisateur : « aucune description ») */ : `<div class="simple" style="width:${w}px"><span class="co">${CARTES[k].c}</span><span class="n">${CARTES[k].n}</span><span>${SORTE[CARTES[k].t]}</span><span>🎲 ${txtLisible(CARTES[k].txt)}</span><span>${CARTES[k].d}</span></div>`; }
 
 function bande() {
   document.getElementById('bande').innerHTML = ORDRE.map(id => `<button class="${id === actuel ? 'on' : ''} ${verrouille(id) ? 'verrou' : ''}" style="--hc:${HEROS[id].c}" onclick="choisir('${id}')"><img src="portraits/${id}.webp" alt=""><span>${verrouille(id) ? '🔒 ' : ''}${HEROS[id].nom}</span></button>`).join('');
