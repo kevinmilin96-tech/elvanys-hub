@@ -1,5 +1,9 @@
 [
 {
+"v": "20261125-162444",
+"m": "Les noms longs des cartes de mode ne sont plus coupés"
+},
+{
 "v": "20261125-162129",
 "m": "La quête « Gagne un Duel » ouvre bien le Duel contre l’ordinateur"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261124-193002",
 "m": "Expéditions : le journal de partie raconte chaque combat (ton équipage, l'adversaire, les rounds, les dégâts) et tes recrues."
-},
-{
-"v": "20261124-192008",
-"m": "Crypte : les étoiles du flash s'affichent en jeu (touche-les pour les objectifs), 3e étoile = gagner en 6 tours ou moins ; creuset plein = une Rune OU 6 de bouclier. Le carnet montre ce que rapporte chaque flash, et la récompense se récupère avec 🎁."
 }
 ]

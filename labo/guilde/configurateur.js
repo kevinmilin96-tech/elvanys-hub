@@ -66,7 +66,9 @@
   const cle = () => 'guilde-config-' + CFG.def.jeu;
   const garde = () => { try { localStorage.setItem(cle(), JSON.stringify({ mode:CFG.mode, opts:CFG.opts })); } catch (e) {} };
   const leMode = () => CFG.def.modes.find(m => m.k === CFG.mode) || CFG.def.modes[0];
-  const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
+  // 25/11 : un mot trop long pour la carte (« l’ordinateur ») : le nom rétrécit au lieu d’être coupé
+const taillNom = n => { const L = Math.max(...String(n).split(/[\s-]+/).map(w => w.length)); return L > 10 ? ` style="font-size:${Math.max(2.2, 3 * 10.5 / L).toFixed(2)}cqw"` : ''; };
+const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
   const bip = k => { try { if (typeof son === 'function') son(k); } catch (e) {} };
 
   // ouvre le configurateur (def), en gardant l'étape si on redessine le même jeu ; o.mode = mode présélectionné, o.etape = étape
@@ -107,7 +109,7 @@
     const enCours = m => (m.parties ? m.parties().length : m.partie && m.partie()) ? '<span class="rep">▶ En cours</span>' : '';
     if (E === 1) {
       corps = `<div class="etape">1 · Choisis ton mode</div>
-        <div class="modes"${D.modes.length < 2 ? ' style="display:none"' : ''}>${D.modes.map(m => `<button class="mode ${m.k === M.k ? 'on' : ''}" onclick="CFG.mode_('${m.k}')">${enCours(m)}<img src="${m.img}" alt="" onerror="this.style.visibility='hidden'"><b>${m.e} ${esc(m.n)}</b></button>`).join('')}</div>
+        <div class="modes"${D.modes.length < 2 ? ' style="display:none"' : ''}>${D.modes.map(m => `<button class="mode ${m.k === M.k ? 'on' : ''}" onclick="CFG.mode_('${m.k}')">${enCours(m)}<img src="${m.img}" alt="" onerror="this.style.visibility='hidden'"><b${taillNom(m.n)}>${m.e} ${esc(m.n)}</b></button>`).join('')}</div>
         <div class="cfg-grand" id="cfg-grand"><div class="fond"><i style="background-image:url('${M.img}')"></i><img src="${M.img}" alt="" onerror="this.remove()"></div><div class="t"><b>${M.e} ${esc(M.n)}</b><p>${M.desc ? M.desc() : ''}</p>${(M.pas ? M.pas() : []).map(p => `<span class="pas">${p}</span>`).join('')}${parties.length === 1 ? `<span class="pas" style="background:#163a2a;color:#7ff0a8">Partie en cours : ${partie.texte}</span>` : ''}${verrou ? `<span class="pas" style="background:#3a1a1a;color:#ffb3a8">🔒 ${verrou}</span>` : ''}</div></div>`;
       bas = verrou && !parties.length ? `<button class="go" disabled>🔒 ${verrou}</button>`
         : parties.length > 1 ? parties.map(x => `<div class="lig"><button class="go2" onclick="CFG.ferme();${x.reprendre}">▶ ${x.texte}</button><button class="x" onclick="if(confirm('Effacer cette partie ? Elle sera perdue.')){${x.abandonner};CFG.dessine()}">✕</button></div>`).join('') + (verrou ? '' : `<button class="go3" onclick="CFG.va(2)">Nouvelle partie ›</button>`)
