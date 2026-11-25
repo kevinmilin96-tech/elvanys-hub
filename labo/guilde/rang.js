@@ -98,7 +98,7 @@ const QUETES_JOUR = [
   ['to1', 'Passe 1 étage de la Tour des épreuves', 'tour_etage', 1],
   ['fl1', 'Fais un flash du jour (Crypte ou Expédition)', 'flash', 1], // 23/11 : les flashs du jour (3 minutes)
 ];
-const QUETE_VA = { flash:'crypte.html#flash', butin:'menu.html', coeur:'menu.html?amis=1', enigme:'duel.html?enigme=1', duel_gagne:'duel.html', carte:'duel.html', escale:'expedition-v4.html',
+const QUETE_VA = { flash:'crypte.html#flash', butin:'menu.html', coeur:'menu.html?amis=1', enigme:'duel.html?enigme=1', duel_gagne:'duel.html?ordi=1', carte:'duel.html?ordi=1', escale:'expedition-v4.html',
   crypte_tombe:'crypte.html', salle:'menu.html#odyssee', elite:'menu.html#odyssee', boss:'menu.html#odyssee', defense_vague:'defense.html', tour_etage:'epreuves.html', titan:'expedition-v4.html',
   invasion_acte:'menu.html#invasion', etage_atteint:'menu.html#odyssee', chasse:'epreuves.html#chasse', tuile:'menu.html#odyssee', or:'menu.html#odyssee' };
 const QUETES_SEMAINE = [

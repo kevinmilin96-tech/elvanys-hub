@@ -1,5 +1,9 @@
 [
 {
+"v": "20261125-162129",
+"m": "La quête « Gagne un Duel » ouvre bien le Duel contre l’ordinateur"
+},
+{
 "v": "20261125-155600",
 "m": "Nouvelles images : canons des 4 héros dans la Défense, cases et événements de la Descente, consommables et pactes, et pour le profil : cadres peints, fonds de carte et emblèmes"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261124-192008",
 "m": "Crypte : les étoiles du flash s'affichent en jeu (touche-les pour les objectifs), 3e étoile = gagner en 6 tours ou moins ; creuset plein = une Rune OU 6 de bouclier. Le carnet montre ce que rapporte chaque flash, et la récompense se récupère avec 🎁."
-},
-{
-"v": "20261124-190558",
-"m": "Ton profil s'affiche de nouveau (il restait vide)."
 }
 ]

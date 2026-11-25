@@ -84,7 +84,9 @@ accueil = function (o) { fermer(); if (!okDuel(choixDuel)) choixDuel = 'maelle';
 window.partieSemaine = function () { accueil({ mode:'semaine' }); };
 // au chargement sans paramètre particulier, l'ancien accueil vient de s'ouvrir : on le remplace par le configurateur
 { const q = new URLSearchParams(location.search); if (q.get('eclair')) setTimeout(() => accueil({ mode:'eclair' }), 0);
+  // 25/11 : duel.html?ordi=1 (quêtes « Gagne un Duel », « Joue des cartes ») ouvre toujours le mode « contre l'ordinateur », pas le dernier mode choisi
+  if (q.get('ordi')) setTimeout(() => accueil({ mode:'ordi' }), 0);
   // 23/11 (l'utilisateur : « Jouer avec Pip » depuis Mes decks : directement le choix de l'adversaire ; fermer ramène à Mes decks) :
   // duel.html?h=<héros>&retour=decks ouvre le configurateur à l'étape des options, mode « contre l'ordinateur », héros présélectionné
   if (q.get('h') && typeof HEROS !== 'undefined' && HEROS[q.get('h')]) { const h = q.get('h'); if (q.get('retour') === 'decks') window.DUEL_RETOUR = { href:`mes-decks.html?heros=${h}`, n:'Mes decks' };
-    setTimeout(() => { if (okDuel(h)) choixDuel = h; accueil({ mode:'ordi', etape:3 }); }, 0); } if (!['tuto', 'enigme', 'semaine', 'eclair', 'deux', 'ami', 'salle', 'odyssee', 'campement', 'parties', 'h'].some(k => q.get(k))) accueil(); }
+    setTimeout(() => { if (okDuel(h)) choixDuel = h; accueil({ mode:'ordi', etape:3 }); }, 0); } if (!['tuto', 'enigme', 'semaine', 'eclair', 'deux', 'ami', 'salle', 'odyssee', 'campement', 'parties', 'h', 'ordi'].some(k => q.get(k))) accueil(); }
