@@ -1,5 +1,9 @@
 [
 {
+"v": "20261125-192238",
+"m": "Les textes longs des cartes rétrécissent pour tenir dans la carte (nom, condition, effet)"
+},
+{
 "v": "20261125-191859",
 "m": "Les créatures invoquées par l’ennemi apparaissent au moment où il les pose"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261124-203617",
 "m": "Les 11 pouvoirs de Zéphine ont maintenant tous leur icône peinte."
-},
-{
-"v": "20261124-203334",
-"m": "En combat, les icônes Garde et Pouvoir à gauche du plateau montrent le pouvoir que tu as choisi dans ton build (Zéphine pour commencer, les autres héros au fil des images)."
 }
 ]

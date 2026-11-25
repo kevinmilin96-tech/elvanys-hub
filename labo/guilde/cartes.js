@@ -50,3 +50,22 @@ const CSS_CARTE = `
 .cg-pied { left:6%; right:6%; bottom:-2%; background:#2b2117ee; color:#f3c96b; border-radius:8px; padding:3px 5px; text-align:center; font-weight:bold; font-size:5.6cqw; }
 .cg-vie { right:2%; background:radial-gradient(circle at 35% 30%, #8df0a0, #1f7a35); }
 `;
+
+// 25/11 (l'utilisateur : textes coupés sur les cartes du butin de l'Odyssée : « Fiole du Renversement », « 2 dés qui font… », l'effet de la Torche) :
+// chaque texte d'une carte qui déborde de sa zone rétrécit jusqu'à tenir (nom, condition, effet), sur toutes les cartes affichées.
+function ajusteCartesG(racine) {
+  (racine || document).querySelectorAll('.carteG:not([data-aj])').forEach(c => {
+    if (!c.clientWidth) return; c.dataset.aj = '1';
+    [['.cg-nom', '.cg-nom > span'], ['.cg-bande', '.cg-bande'], ['.cg-effet', '.cg-effet']].forEach(([zone, txt]) => {
+      const z = c.querySelector(zone), t = c.querySelector(txt); if (!z || !t) return;
+      let fs = parseFloat(getComputedStyle(t).fontSize), n = 0;
+      while ((z.scrollHeight > z.clientHeight + 1 || z.scrollWidth > z.clientWidth + 1) && n < 14 && fs > 5) { fs *= .92; t.style.fontSize = fs.toFixed(2) + 'px'; if (t !== z) z.style.fontSize = fs.toFixed(2) + 'px'; n++; }
+    });
+  });
+}
+if (typeof document !== 'undefined' && typeof MutationObserver !== 'undefined') {
+  let _ajP = false;
+  const _ajObs = new MutationObserver(() => { if (_ajP) return; _ajP = true; requestAnimationFrame(() => { _ajP = false; try { ajusteCartesG(); } catch (e) {} }); });
+  const _ajGo = () => _ajObs.observe(document.body, { childList:true, subtree:true });
+  if (document.body) _ajGo(); else document.addEventListener('DOMContentLoaded', _ajGo);
+}
