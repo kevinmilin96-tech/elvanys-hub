@@ -221,7 +221,7 @@ function bandeauRangHTML() {
   // 18/11 (l'utilisateur : « le rang est trop caché ») : barre plus grande, un toucher ouvre la route des rangs ; les quêtes ont leur propre bouton
   const ar = aRecuperer().length, qr = [...Q.j, ...Q.s].filter(q => q.fait && q.recup === false).length;
   return `<a class="bandeau-rang gros" href="route.html">${emblemeRang(i.rang, 40)}<b>Rang ${i.rang}</b><span class="barre-rang"><i style="width:${i.besoin ? Math.round(i.dans / i.besoin * 100) : 100}%"></i><span class="txt">${i.besoin ? `${i.dans} / ${i.besoin} XP` : 'rang max'}</span></span>${ar ? `<em class="cadeau" title="Récompense à récupérer">🎁 Récupérer</em>` : '<em>›</em>'}</a>
-  <a class="bandeau-quetes" href="route.html#quetes">📜 Quêtes du jour <b>${fj}/3</b> · de la semaine <b>${fs}/3</b>${qr ? ` · <b style="color:#ffd27a">🎁 ${qr} à récupérer</b>` : ''} ›</a>`;
+  <a class="bandeau-quetes" href="menu.html?ouvrir=carnet">📜 Quêtes du jour <b>${fj}/3</b> · de la semaine <b>${fs}/3</b>${qr ? ` · <b style="color:#ffd27a">🎁 ${qr} à récupérer</b>` : ''} ›</a>`;
 }
 
 if (typeof document !== 'undefined') {

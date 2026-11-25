@@ -51,7 +51,7 @@ function envieRendezVous() {
   L.push(['eclair', '⚡', 'Le duel éclair du jour', ec ? et(ec) : '≈ 3 minutes, le même pour tous' + prix, !!ec, "envieVa('duel.html?eclair=1')"]);
   if (typeof lireQuetes === 'function') {
     const Q = lireQuetes(), f = Q.j.filter(q => q.fait).length, r = Q.j.filter(q => q.fait && q.recup === false).length;
-    L.push(['quetes', '📜', 'Les quêtes du jour', r ? `${f}/${Q.j.length} · 🎁 ${r} à récupérer` : `${f}/${Q.j.length} faites`, f >= Q.j.length && !r, "envieVa('route.html#quetes')"]);
+    L.push(['quetes', '📜', 'Les quêtes du jour', r ? `${f}/${Q.j.length} · 🎁 ${r} à récupérer` : `${f}/${Q.j.length} faites`, f >= Q.j.length && !r, "carnetOuvre()"]);
   }
   if (typeof butinCalcule === 'function') {
     const g = butinCalcule(), plein = g.h >= 12;
@@ -146,7 +146,7 @@ function envieInstalle(E, PRO) {
     { nom:'Héros d’aventure', pro:'aventuriers', href:'aventuriers.html', desc:'L’atelier des héros d’aventure : crée et fais grandir les tiens.' },
     { nom:'Profil et succès', pro:'profil', href:'profil.html', desc:'Ta carte de joueur, ton parcours et la bibliothèque des succès.' },
     { nom:'Le Panthéon', pro:'pantheon', href:'pantheon.html', desc:'Le Tableau d’honneur, tes titres et tes trophées de tous les modes.' },
-    { nom:'Route des rangs et quêtes', pro:'rangs', href:'route.html', desc:'Les 30 rangs de la Guilde et leurs récompenses, les quêtes du jour et de la semaine.' },
+    { nom:'Route des rangs et quêtes', pro:'rangs', href:'route.html', desc:'Les 30 rangs de la Guilde et leurs récompenses, et la saison (l’Almanach).' },
   ] };
   // les étages « Entre amis » et « Arène » d'avant restent joignables par leur adresse, mais ne sont plus au menu
 }

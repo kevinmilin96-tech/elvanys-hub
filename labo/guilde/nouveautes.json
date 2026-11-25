@@ -1,5 +1,9 @@
 [
 {
+"v": "20261125-220230",
+"m": "La page des rangs a deux onglets : 🏆 Rang et 🗓️ Saison (l’Almanach arrive le 1er décembre). Les quêtes sont toutes dans le carnet."
+},
+{
 "v": "20261125-215542",
 "m": "Mes decks : garde le doigt sur une carte pour la voir en grand"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261125-190256",
 "m": "Zéphine : l’indication « retourné » n’apparaît plus quand son build n’a pas la Transmutation"
-},
-{
-"v": "20261125-190140",
-"m": "Tes créatures ne passent plus sous ton portrait : la rangée est remontée"
 }
 ]

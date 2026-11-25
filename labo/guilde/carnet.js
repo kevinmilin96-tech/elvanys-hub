@@ -4,6 +4,8 @@
 // 24/11 : POUR TOUS (d'abord en aperçu). menu.html?carnet=0 = l'ancien affichage sur ce téléphone, ?carnet=1 pour revenir au carnet.
 (function () {
   const q = new URLSearchParams(location.search);
+  // 25/11 : menu.html?ouvrir=carnet ouvre le carnet (tuile Quêtes, ancienne adresse route.html#quetes)
+  if (q.get('ouvrir') === 'carnet') { try { sessionStorage.setItem('guilde-dans-mode', '1'); } catch (e) {} history.replaceState(null, '', location.pathname + location.hash); addEventListener('load', () => setTimeout(() => { if (typeof carnetOuvre === 'function') carnetOuvre(); }, 300)); }
   try { if (q.get('carnet') === '1') localStorage.setItem('guilde-carnet-apercu', '1'); if (q.get('carnet') === '0') localStorage.setItem('guilde-carnet-apercu', 'non'); } catch (e) {}
   // 24/11 : l'aperçu avait la clé « guilde-carnet », déjà prise par le journal des parties (musique.js) : il l'écrasait et le profil restait vide
   try { if (localStorage.getItem('guilde-carnet') === '1') { localStorage.setItem('guilde-carnet-apercu', '1'); localStorage.removeItem('guilde-carnet'); } } catch (e) {}
@@ -108,7 +110,8 @@
       <p>Les essais suivants sont « pour le plaisir » : ils ne rapportent rien de plus.</p>
       <p>🧩 <b>L’énigme du jour</b> résolue : <b>+${typeof XP_EVT !== 'undefined' && XP_EVT.enigme || 20} XP</b>, et ta série de jours avance (titres à 7, 30 et 100 jours).</p>
       <p>🗺 <b>Si tu as le temps</b> (crypte du jour, île du jour, voyage du jour, défi de la Défense) : la 1re partie du jour de chacun rapporte <b>+30 XP, 🪙 30 et 🔹 20 poussière</b>.</p>
-      <p>La récompense <b>attend ici</b> : touche « 🎁 Récupérer » sur la ligne.</p></div>`;
+      <p>La récompense <b>attend ici</b> : touche « 🎁 Récupérer » sur la ligne.</p>
+      <details class="gains"><summary><b>Ce que rapporte chaque partie</b></summary><p>Chaque partie rapporte de l’expérience, même perdue : duel gagné 30 (perdu 10), salle vidée 5, élite 20, boss 60, escale 15, Titan 60, acte de l’Invasion 50, vague tenue 10, énigme 20, quête du jour 40, quête de la semaine 150.</p>${(() => { const d = typeof lireRang === 'function' ? lireRang() : null; return d && d.journal && d.journal.length ? `<p><b>Mes derniers gains</b></p>${d.journal.slice(0, 12).map(j => `<div>+${j.xp} · ${j.raison} <small>${new Date(j.q).toLocaleString('fr-FR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' })}</small></div>`).join('')}` : ''; })()}</details></div>`;
     a.onclick = ev => { if (ev.target === a) a.remove(); }; document.body.appendChild(a); };
   const ligne = ([k, e, n, d, fait, a]) => { if (tempsRec(k, fait)) return `<button onclick="carnetTemps('${k}')"><span class="e">${e}</span><span class="t"><b>${n}</b><small>${d} · +${TEMPS_REC.xp} XP · 🪙 ${TEMPS_REC.or} · 🔹 ${TEMPS_REC.pou}</small></span><span class="rec" style="flex:none">🎁 Récupérer</span></button>`;
     if (flashRec(k)) return `<button onclick="carnetFlash('${k}')"><span class="e">${e}</span><span class="t"><b>${n}</b><small>${d}</small></span><span class="rec" style="flex:none">🎁 Récupérer</span></button>`;
