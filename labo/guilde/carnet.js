@@ -97,7 +97,7 @@
     if (typeof annonceRang === 'function') annonceRang(`🎁 Chasse au boss : +${xp} XP · 💠 +${ecl}`, true);
     setTimeout(() => { carnetOuvre(onglet); if (typeof envieBandeau === 'function') envieBandeau(); }, 60); };
   const chasseLigne = () => { const c = chasseLit(), fait = !!c && ((c.meilleur || 0) > 0 || (c.mortMax || 0) > 0), rec = c && (c.aRec || []).length;
-    const d = !c ? 'Le même boss pour tous, jusqu’à dimanche' : `Meilleur : ${c.meilleur || 0} dégâts${c.mortMax ? ` · jusqu’à la mort : ${c.tue ? 'tombé ✅' : c.mortMax}` : ''}${(c.paliers || []).length ? ` · paliers ${c.paliers.length}/3` : ''}`;
+    const d = !c ? 'Le même boss pour tous, jusqu’à dimanche' : `Meilleur : ${c.meilleur || 0} dégâts${c.mortMax ? ` · jusqu’à la mort : ${c.tue ? 'tombé ✅' : c.mortMax}` : ''}${(c.paliers || []).length ? ` · paliers ${c.paliers.length}/3${(c.aRec || []).length ? '' : ' · récompenses déjà reçues'}` : ''}`;
     if (rec) return `<button onclick="carnetChasse()"><span class="e">🎯</span><span class="t"><b>La Chasse au boss de la semaine</b><small>${d}</small></span><span class="rec" style="flex:none">🎁 Récupérer</span></button>`;
     return ligne(['chasse', '🎯', 'La Chasse au boss de la semaine', d, fait, "envieVa('epreuves.html#chasse')"]); };
   // 24/11 (choix de l'utilisateur) : un ❓ explique ce que rapportent les flashs et l'énigme
