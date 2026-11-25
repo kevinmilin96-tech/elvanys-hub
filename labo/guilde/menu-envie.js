@@ -39,7 +39,7 @@ function envieRendezVous() {
   L.push(['crypte', '🪦', 'La crypte du jour', cr ? `Score ${cr.score}` : 'La même crypte pour tout le monde', !!cr, "envieVa('crypte.html#jour')"]);
   const ile = ENV_J('guilde-odyssee-records', []).find(r => r.graine === 'jour-' + envJourUTC());
   const ileN = ({ brulees:'les Terres brûlées', givre:'l’île du Givre', abime:'l’Abîme du Vide' })[envIleDuJour()];
-  L.push(['ile', '🏝', 'L’île du jour', ile ? `${ile.gagne ? 'Gagnée' : 'Jouée'} · score ${ile.score}` : `Aujourd’hui : ${ileN}`, !!ile, 'envieIleDuJour()']);
+  L.push(['ile', '🏝', 'L’île du jour', ile ? `${ile.gagne ? 'Gagnée' : 'Jouée'} · score ${ile.score}` : `${ileN[0].toUpperCase() + ileN.slice(1)}, la même carte pour tous (mode « L’île du jour »)`, !!ile, 'envieIleDuJour()']);
   const vj = (ENV_J('guilde-expedition4-meta', {}) || {}).jour;
   const vf = vj && vj.j === envJourUTC() && vj.essais > 0;
   L.push(['voyage', '⛵', 'Le voyage du jour', vf ? `Meilleur score ${vj.best}` : 'Une carte, un boss pour tous', !!vf, "envieVa('expedition-v4.html?jour=1')"]);
