@@ -1,5 +1,9 @@
 [
 {
+"v": "20261125-145444",
+"m": "Les derniers objets de la Descente sont peints : sac de dés, gobelet de relance, six béni, trophée de chasse"
+},
+{
 "v": "20261125-141359",
 "m": "Nouvelles images : la carte d’Oria, Moustache et la Chouette, les objets et les breloques de la Descente, le sol, les murs et l’autel du Labyrinthe des Runes"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261124-185938",
 "m": "La Crypte ne parle plus de compagnon quand tu n'en as pas ; dans la Descente, Moustache explique comment en avoir un."
-},
-{
-"v": "20261124-185411",
-"m": "Le carnet de la Guilde : le butin se ramasse directement avec « 🎁 Récupérer »."
 }
 ]
