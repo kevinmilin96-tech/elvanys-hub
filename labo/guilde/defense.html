@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261125-213840"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
+<head><meta name="guilde-version" content="20261125-214233"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="robots" content="noindex">
@@ -49,7 +49,8 @@
   .piege { position:absolute; left:50%; top:50%; transform:translate(-50%, -50%); font-size:1.4em; opacity:.9; pointer-events:none; filter:drop-shadow(0 1px 2px #000); }
   .piege small { position:absolute; right:-9px; bottom:-4px; font:bold 10px Georgia; color:#fff; background:#000a; border-radius:6px; padding:0 3px; }
   .rc img.runeimg.niv8 { filter:drop-shadow(0 0 6px #ffd76b) saturate(1.3); } .rc img.runeimg.niv9 { filter:drop-shadow(0 0 10px #fff) drop-shadow(0 0 6px #ffd76b) saturate(1.6); }
-  .rc .nivr { position:absolute; top:1px; left:50%; transform:translateX(-50%); color:#ffd76b; font-size:.7em; text-shadow:0 0 4px #000; letter-spacing:-1px; }
+  .rc .sorte { position:absolute; left:2px; bottom:2px; z-index:2; background:#000a; border-radius:7px; padding:0 3px; font-size:.95em; line-height:1.3; box-shadow:0 1px 3px #000; } .rc .sorte small { color:var(--or); font-weight:bold; font-size:.75em; margin-left:1px; }
+  .rc.soutenue { box-shadow:0 0 9px #c084fc; } .rc .nivr { position:absolute; top:1px; left:50%; transform:translateX(-50%); color:#ffd76b; font-size:.7em; text-shadow:0 0 4px #000; letter-spacing:-1px; }
   .bonus3 { display:flex; flex-direction:column; gap:7px; } .bonus3 button { background:#120f1f; color:#fff; border:2px solid #3e3370; border-radius:13px; padding:9px 10px; text-align:left; display:grid; grid-template-columns:auto 1fr; column-gap:9px; }
   .bonus3 .be { grid-row:span 2; font-size:1.8em; align-self:center; } .bonus3 small { color:var(--doux); }
   .etoiles { text-align:center; font-size:2.4em; letter-spacing:6px; color:#3e3370; } .etoiles .on { color:var(--or); text-shadow:0 0 12px var(--or); }
@@ -131,7 +132,7 @@
 <script src="rang.js?v=21c3729362"></script>
 <script src="heros-etoiles.js?v=c027cdd26b"></script>
 <script src="donnees.js?v=41849a41e8"></script>
-<script src="defense-moteur.js?v=795fc7b9d6"></script>
+<script src="defense-moteur.js?v=11ea90d590"></script>
 <script src="configurateur.js?v=a276a42cee"></script>
 <script src="heros-aventure.js?v=31db8c2ed4"></script>
 <script>
@@ -249,10 +250,10 @@ function rendu() {
   ${bandeVague()}
   <div class="zoneP">${PD ? '<div class="plateauD">' : ''}<div class="${PD ? 'cheminD' : 'chemin'}">${chemin.map(({ r, col }) => `<div class="cc ${okPiege(r, col) ? 'ok' : ''}" style="${PD ? posCC(r, col) : ''}" onclick="toucheChemin(event, ${r}, ${col})">${piegeHTML(r, col)}${D.monstres.filter(m => m.row === r && m.col === col).map(m => { const M = MONSTRES[m.t];
       return `<div class="mo ${M.boss ? 'boss' : ''} ${besoinMonstre ? 'cible' : ''}" data-m="${m.id}" onclick="toucheMonstre(${m.id})">${IMG_D[m.t] ? `<img class="e" src="${IMG_D[m.t]}" alt="">` : `<span class="e">${M.e}</span>`}<span class="pv">${m.pv}</span>${M.vit > 1 ? '<span class="vit">💨</span>' : M.vol ? '<span class="vit">🪽</span>' : M.armure ? '<span class="vit">🛡</span>' : ''}${tete.has(m.id) && !M.boss ? '' : ''}</div>`; }).join('')}</div>`).join('')}</div>
-  <div class="${PD ? 'rempartD' : 'rempart'}">${D.rempart.map((t, c) => { const okVide = !t && un && !attente && D.pc >= DEF.coutBatir; const okFus = t && ((!t.rune && un && un.v === t.v && !attente) || (selTour >= 0 && selTour !== c && voisinsD(selTour).includes(c) && D.rempart[selTour] && D.rempart[selTour].v === t.v && t.v < NIV_MAX));
+  <div class="${PD ? 'rempartD' : 'rempart'}">${D.rempart.map((t, c) => { const okVide = !t && un && !attente && D.pc >= DEF.coutBatir; const okFus = t && ((!t.rune && un && un.v === t.v && t.niv < NIV_MAX && !attente) || (selTour >= 0 && selTour !== c && voisinsD(selTour).includes(c) && fusionPossible(D.rempart[selTour], t)));
       const okDep = !t && selTour >= 0 && !D.deplace && voisinsD(selTour).includes(c);
       if (!t) return `<div class="rc vide ${okVide || okDep ? 'ok' : ''}" data-c="${c}" style="${PD ? posRC(c) : ''}" onclick="toucheCase(${c})"></div>`;
-      return `<div class="rc ${t.rune ? 'rune' : ''} ${selTour === c ? 'sel' : ''} ${okFus || besoinTour ? 'ok' : ''}" data-c="${c}" style="${PD ? posRC(c) : ''}" onclick="toucheCase(${c})">${t.rune ? (RUNE_IMG[D.heros] ? `<img class="runeimg niv${t.v}" src="${RUNE_IMG[D.heros]}" alt="">` : `<img class="runeimg niv${t.v}" src="${FACE(D.heros, 6)}" alt="" style="filter:drop-shadow(0 0 6px #c084fc) drop-shadow(0 0 2px #fff)">`) + (t.v > 7 ? `<span class="nivr">${'✦'.repeat(t.v - 6)}</span>` : '') : `<img class="canon" src="tours/canon-${D.heros}-${t.v <= 2 ? 1 : t.v <= 4 ? 2 : 3}.webp?v=2" onerror="this.onerror=null;this.src='tours/canon-${['aldric', 'oria'].includes(D.heros) ? 'gorm' : 'maelle'}-${t.v <= 2 ? 1 : t.v <= 4 ? 2 : 3}.webp?v=2'" alt="Canon de ${t.v}" style="transform:rotate(${ANGLE[c] || 0}deg)"><img class="tourde" src="${FACE(D.heros, t.v)}" alt="${t.v}">`}<span class="pw">${puissanceTour(D, c, t)}</span>${t.bonus ? `<span class="bn">+${t.bonus}</span>` : ''}</div>`; }).join('')}</div>
+      return `<div class="rc ${t.rune ? 'rune' : ''} ${!t.rune && runesVoisD(D, c).length ? 'soutenue' : ''} ${selTour === c ? 'sel' : ''} ${okFus || besoinTour ? 'ok' : ''}" data-c="${c}" style="${PD ? posRC(c) : ''}" onclick="toucheCase(${c})">${t.rune ? (RUNE_IMG[D.heros] ? `<img class="runeimg niv${6 + t.rv}" src="${RUNE_IMG[D.heros]}" alt="">` : `<img class="runeimg niv${6 + t.rv}" src="${FACE(D.heros, 6)}" alt="" style="filter:drop-shadow(0 0 6px #c084fc) drop-shadow(0 0 2px #fff)">`) + (t.rv > 1 ? `<span class="nivr">${'✦'.repeat(t.rv)}</span>` : '') : `<img class="canon" src="tours/canon-${D.heros}-${Math.min(3, t.niv)}.webp?v=2" onerror="this.onerror=null;this.src='tours/canon-${['aldric', 'oria'].includes(D.heros) ? 'gorm' : 'maelle'}-${Math.min(3, t.niv)}.webp?v=2'" alt="${nomTourD(t)}" style="transform:rotate(${ANGLE[c] || 0}deg)"><span class="sorte">${SORTES[t.v].e}<small>${t.niv}</small></span>`}<span class="pw">${t.rune ? `+${Math.round((D.heros === 'gorm' ? 1 : DEF.runeSoutien) * t.rv * 100)} %` : puissanceTour(D, c, t)}</span>${t.bonus ? `<span class="bn">+${t.bonus}</span>` : ''}</div>`; }).join('')}</div>
   ${PD ? `<div class="porte porteD" id="porte" style="left:${PD.porte[0]}%;top:${PD.porte[1]}%">🚪 ${D.porte}/${D.porteMax}</div></div>` : '<div class="porte" id="porte">🚪 La porte de la Guilde</div>'}</div>
   <div class="msg ${err ? 'err' : ''}">${attente || sel.length || selTour >= 0 ? '<button class="annuleM" onclick="annule()">✖ Annuler</button> ' : ''}${msg}</div>
   <div class="des" id="desD">${D.lanceT !== D.tour ? D.des.map(() => `<div class="de cacheD" onclick="lanceDesD()"></div>`).join('') + `<button class="lancerD" onclick="lanceDesD()">🎲 Lancer</button>` : ''}${D.lanceT !== D.tour ? '' : D.des.map((d, i) => `<div class="de ${d.pose ? 'pose' : ''} ${sel.includes(d) ? 'sel' : ''} ${besoinDe && !d.pose && !sel.includes(d) ? 'cible' : ''}" onclick="toucheDe(${i})"><img src="${FACE(D.heros, d.v)}" alt="${d.v}"></div>`).join('')}</div>
@@ -261,8 +262,6 @@ function rendu() {
     <button class="${sel.length && !attente ? 'ok' : ''}" ${sel.length && !attente ? '' : 'disabled'} onclick="agir('vendre')">◆ Vendre<br><small>+1 PC / dé</small></button>
     <button ${D.relance && sel.length && !attente ? '' : 'disabled'} onclick="relance()">🎲 Relancer<br><small>${D.relance} restante${D.relance > 1 ? 's' : ''}</small></button>
     <button class="fin" onclick="finTour()">Fin du tour ▶</button></div>
-  <div class="main">${D.main.map((k, i) => { const c = DCARTES[k]; const ok = !attente && sel.length && permisD(D, i, sel);
-      return `<div class="carte ${ok ? 'ok' : ''} ${attente && attente.quoi === i ? 'attente' : ''}" onclick="toucheCarte(${i})"><span class="c">${c.c}</span><b>${c.n}</b><span class="tx">${c.txt}</span><br>${texteCarteD(D, c)}</div>`; }).join('')}</div>
   `;
   app.classList.add('jeu');
   joueFx();
@@ -275,7 +274,7 @@ const GUIDE_DEF = [
   ['.bandeV', 'Ici, la <b>prochaine vague</b> : qui arrive et quand. Touche-la pour voir les monstres. Prépare-toi en avance !'],
   ['.des', 'Tes dés du tour. Touche un dé pour le choisir. Un dé posé sur une <b>case vide du rempart</b> devient un canon (1 PC) qui tire tout seul à chaque tour. Un dé sur un chemin pose un <b>piège</b>.'],
   ['.acts', 'Ou bien tu frappes toi-même : dés identiques = <b>Frappe</b>, une suite = <b>Technique</b>, sur tout un chemin. ◆ Vendre un dé donne 1 PC. Puis <b>Fin du tour</b> : les monstres avancent.'],
-  ['.main', 'Tes cartes : choisis d’abord un dé, puis touche une carte en vert pour la jouer. Deux canons pareils côte à côte fusionnent, et deux 6 font une Rune. Bonne garde, miaou !'],
+  ['.rempartD, .rempart', 'Chaque face de dé donne une sorte de tour : ❄ 1 givre, ☠ 2 poison, 🏹 3 archers, 💣 4 canon, ⚡ 5 foudre, 🗼 6 grande tour. Un dé de sa face posé dessus, ou deux tours pareilles côte à côte, la font monter d’un niveau. Deux tours au niveau 4 = une Rune qui renforce ses voisines. Bonne garde, miaou !'],
 ];
 // 15/11 soir (l'utilisateur : « je ne peux pas lancer mon Ultime, il demande 3 dés de 4 ou plus ») : l'Ultime demande AUSSI la jauge pleine
 // (8 monstres tombés) et 3 PC, une fois par partie ; le bouton dit maintenant ce qui manque
@@ -313,24 +312,24 @@ function joueFx() {
 function toucheDe(i) {
   if (D.lanceT !== D.tour || animeD) return;
   const d = D.des[i]; if (d.pose) return;
-  if (attente && attente.cible === 'de') { if (sel.includes(d)) return; if (attente.quoi !== undefined && D.main[attente.quoi] === 'ajuste') { choixSens(d); return; } finit({ d }); return; }
+  if (attente && attente.cible === 'de') { if (sel.includes(d)) return; finit({ d }); return; }
   if (attente) return;
   selTour = -1; sel = sel.includes(d) ? sel.filter(x => x !== d) : [...sel, d];
-  dis(sel.length === 1 ? `Un ${d.v} : touche une case verte pour bâtir (${DEF.coutBatir} PC), une tour de ${d.v} pour fusionner, ou une action en vert.` : sel.length ? 'Les actions en vert acceptent ces dés.' : '');
+  dis(sel.length === 1 ? `Un ${d.v} = ${SORTES[d.v].e} ${SORTES[d.v].n.toLowerCase()} : touche une case verte pour la bâtir (${DEF.coutBatir} PC), une tour de la même sorte pour la monter d’un niveau, un chemin pour un piège, ou une action en vert.` : sel.length ? 'Les actions en vert acceptent ces dés.' : '');
   rendu();
 }
 function toucheCase(c) {
   const t = D.rempart[c];
   if (attente) { if (attente.cible === 'tour' && t) finit({ t }); return; }
-  if (sel.length === 1) { const e = batirD(D, sel[0], c); if (e) dis(e, true); else { sel = []; GM.son(t ? (D.rempart[c].rune ? 'rune' : 'tour-fusion') : 'tour-batir'); dis(t ? 'Fusion !' : 'Tour bâtie.'); } rendu(); return; }
+  if (sel.length === 1) { const e = batirD(D, sel[0], c); if (e) dis(e, true); else { sel = []; GM.son(t ? 'tour-fusion' : 'tour-batir'); dis(`${SORTES[D.rempart[c].v].e} ${nomTourD(D.rempart[c])}${t ? '' : ' bâtie'}. ${t ? '' : SORTES[D.rempart[c].v].d}`); } rendu(); return; }
   if (selTour >= 0 && selTour !== c) {
     const a = selTour; selTour = -1;
     const e = t ? fusionD(D, a, c) : deplacerD(D, a, c);
     if (!e && t) GM.son(D.rempart[c].rune ? 'rune' : 'tour-fusion');
-    if (e) dis(e, true); else dis(t ? (D.rempart[c].rune ? `✨ ${NOM_RUNE(D.rempart[c].v)} ${DHEROS[D.heros].rune.n} !` : 'Fusion !') : 'Tour déplacée.'); rendu(); return;
+    if (e) dis(e, true); else dis(t ? (D.rempart[c].rune ? `✨ ${NOM_RUNE(D.rempart[c].rv)} ${DHEROS[D.heros].rune.n} !` : `Fusion : ${nomTourD(D.rempart[c])}.`) : 'Tour déplacée.'); rendu(); return;
   }
   if (t) { selTour = selTour === c ? -1 : c; sel = [];
-    dis(selTour >= 0 ? `${t.rune ? `Rune ${DHEROS[D.heros].rune.n} : ${DHEROS[D.heros].rune.d}` : `Tour de ${t.v} : tire ${puissanceTour(D, c, t)} sur le monstre le plus avancé de sa colonne.`} Touche une tour voisine identique pour fusionner${D.deplace ? '' : ', ou une case libre voisine pour la déplacer'}.` : ''); rendu(); return; }
+    dis(selTour >= 0 ? `${t.rune ? `✨ ${NOM_RUNE(t.rv)} ${DHEROS[D.heros].rune.n} (ne tire pas) : ${DHEROS[D.heros].rune.d}` : `${SORTES[t.v].e} ${nomTourD(t)} : ${puissanceTour(D, c, t)} par tir. ${SORTES[t.v].d}${t.niv < NIV_MAX ? ` Un dé de ${t.v} la monte d’un niveau.` : ' Niveau max : à côté d’une autre tour au niveau max, elle devient une Rune.'}`} Touche une tour voisine en vert pour fusionner${D.deplace ? '' : ', ou une case libre voisine pour la déplacer'}.` : ''); rendu(); return; }
   dis('Choisis d’abord UN dé, puis cette case pour bâtir.'); rendu();
 }
 function toucheMonstre(id) {
@@ -346,14 +345,9 @@ function agir(q) {
   if (!cible) { const e = agitD(D, q, sel, {}); sel = []; dis(e || ''); if (e) err = true; rendu(); return; }
   attente = { quoi:q, cible }; dis(cible === 'monstre' ? (q === 'frappe' || q === 'technique' ? 'Touche un monstre : tout son chemin prend le coup.' : 'Touche un monstre.') : cible === 'tour' ? 'Touche une de tes tours.' : 'Touche un autre de tes dés.'); rendu();
 }
-function toucheCarte(i) {
-  const k = D.main[i], c = DCARTES[k];
-  if (attente && attente.quoi === i) { annule(); return; }
-  if (!sel.length || attente) { dis(`${c.n} (${c.c} PC, ${c.txt}) : ${c.d} Choisis d’abord le dé.`); rendu(); return; }
-  if (!permisD(D, i, sel)) { dis(D.pc < c.c ? `Il faut ${c.c} PC.` : `Il faut : ${c.txt}.`, true); rendu(); return; }
-  agir(i);
-}
-function choixSens(d) { fenetre(`<h2>Pierre d’ajustement</h2><p>Le ${d.v} devient…</p><div class="choixh">${d.v > 1 ? `<button onclick="fermer();finit({ d:D.des[${d.i}], sens:-1 })">${d.v - 1}</button>` : ''}${d.v < 6 ? `<button onclick="fermer();finit({ d:D.des[${d.i}], sens:1 })">${d.v + 1}</button>` : ''}</div>`); }
+// 25/11 (v3) : la fusion possible entre deux tours voisines (mêmes règles que fusionD)
+function fusionPossible(a, b) { if (!a || !b) return false; if (a.rune || b.rune) return a.rune && b.rune && a.rv === b.rv && b.rv < RUNE_MAX;
+  return (a.niv >= NIV_MAX && b.niv >= NIV_MAX) || (a.v === b.v && a.niv === b.niv && b.niv < NIV_MAX); }
 function finit(k) { const q = attente.quoi; attente = null; const e = agitD(D, q, sel, k); if (e) dis(e, true); else { sel = []; dis(''); } rendu(); }
 function annule() { attente = null; sel = []; selTour = -1; dis(''); rendu(); }
 function relance() { const e = relancerD(D, sel); sel = []; dis(e || 'Relancé.', !!e); rendu(); }
@@ -422,12 +416,13 @@ function regles() {
   <p>Les monstres descendent les 3 chemins. À la fin de chaque tour, <b>tes tours tirent</b> sur le monstre le plus avancé de leur colonne, puis <b>les monstres avancent</b>. Celui qui sort du chemin frappe la porte.</p>
   <p><b>Ton tour :</b> 5 dés, 2 relances. Avec tes dés :</p>
   <ul style="padding-left:1.1em;margin:.3em 0">
-  <li><b>Bâtir</b> (${DEF.coutBatir} PC) : un dé, puis une case verte : la tour garde la face du dé. Sa force double à chaque niveau : 1, 2, 4, 8, 16, 32.</li>
-  <li><b>Fusionner</b> : un dé sur un canon de même valeur (${DEF.coutBatir} PC), ou un canon sur son voisin identique (gratuit) : valeur +1. <b>Deux 6 = une Rune</b> ; deux Runes voisines du même niveau = <b>Rune ancienne ✦✦</b>, puis <b>légendaire ✦✦✦</b>.</li>
+  <li><b>Bâtir</b> (${DEF.coutBatir} PC) : un dé, puis une case verte. <b>Chaque face donne une sorte de tour</b> : ${Object.entries(SORTES).map(([v, S]) => `${S.e} ${v} ${S.n.toLowerCase()} (${S.d.charAt(0).toLowerCase() + S.d.slice(1, -1)})`).join(' ; ')}.</li>
+  <li><b>Monter de niveau</b> (1 à ${NIV_MAX}) : un dé de sa face posé sur la tour (${DEF.coutBatir} PC), ou deux tours pareilles du même niveau côte à côte (gratuit). La force grandit à chaque niveau : ${BASE_NIV.slice(1).join(', ')}.</li>
+  <li><b>Les Runes</b> : deux tours au niveau ${NIV_MAX} qui se touchent (de n’importe quelle sorte) font une <b>Rune</b> de ton héros. Elle ne tire pas : elle <b>renforce ses tours voisines</b> (halo violet) et leur donne son pouvoir. Deux Runes du même niveau = <b>Rune ancienne ✦✦</b>, puis <b>légendaire ✦✦✦</b>.</li>
   <li><b>Piège</b> (${DEF.coutBatir} PC) : un dé, puis une case de chemin : 🟫 1 = boue (arrête un monstre un tour), 🌿 2 à 5 = ronces (valeur × 3), 🪨 6 = barricade (le monstre change de chemin). Les chauves-souris volent au-dessus de la boue et des ronces ; le Titan écrase tout.</li>
   <li><b>Déplacer</b> une tour d’une case (une fois par tour) : touche-la, puis une case libre voisine.</li>
-  <li><b>Coups de héros</b> : ⚔ <b>Frappe</b> (dés identiques) touche <b>tout un chemin</b> : valeur × nombre de dés × 2 ; ⚔⚔ <b>Technique</b> (suite) touche tout un chemin et fait <b>reculer</b> les monstres d’une case. Plus forts à chaque vague. Aussi : Pouvoir, Ultime, et les <b>cartes</b>.</li>
-  <li><b>Vendre</b> : +1 PC par dé. Les dés pas utilisés sont vendus à la fin du tour.</li></ul>
+  <li><b>Coups de héros</b> : ⚔ <b>Frappe</b> (dés identiques) touche <b>tout un chemin</b> : valeur × nombre de dés × 2 ; ⚔⚔ <b>Technique</b> (suite) touche tout un chemin et fait <b>reculer</b> les monstres d’une case. Plus forts à chaque vague. Aussi : Pouvoir et Ultime.</li>
+  <li><b>PC</b> : +1 à chaque tour, et <b>+1 tous les ${DEF.killsPC} monstres abattus</b>. <b>Vendre</b> un dé donne aussi 1 PC ; les dés pas utilisés sont vendus à la fin du tour. Tu as ${DEF.relances} relances par tour pour chercher les dés qui te manquent.</li></ul>
   <p>En haut, la bande 🌊 montre <b>la vague qui arrive</b>. Après chaque vague, tu choisis <b>un bonus parmi 3</b>. À la victoire : jusqu’à <b>3 étoiles</b> (porte à 15 PV ou plus, défi du jour).</p>
   <p>Monstres : 👺 Gobelin (💨 avance de 2), 🐗 Sanglier (solide), 🛡 Porte-bouclier (−3 à chaque tir de tour), 🦇 Chauve-souris (🪽 ta tour de devant ne la voit pas), 🌋 le Titan (vague 6 : avance une case tous les 2 tours, fait fondre ta tour la plus faible de sa colonne ; s’il touche la porte, elle tombe).</p>
   <p class="doux">Règles complètes : <a href="defense-proposition.html" style="color:#7cc8ff">la page de la proposition</a>.</p>
@@ -437,7 +432,7 @@ function regles() {
 // à l'accueil, « ▶ Reprendre » la remet là où on s'est arrêté (le hasard repart de zéro, comme dans les autres modes)
 const CLE_EN_COURS = 'guilde-defense-en-cours';
 function gardeD() { try { if (D && !D.fini) { const c = Object.assign({}, D, { fx:[] }); delete c.rng; localStorage.setItem(CLE_EN_COURS, JSON.stringify({ quand:Date.now(), D:c, modeSF })); } else localStorage.removeItem(CLE_EN_COURS); } catch (e) {} }
-function enCoursD() { try { const g = JSON.parse(localStorage.getItem(CLE_EN_COURS) || 'null'); return g && g.D && !g.D.fini ? g : null; } catch (e) { return null; } }
+function enCoursD() { try { const g = JSON.parse(localStorage.getItem(CLE_EN_COURS) || 'null'); return g && g.D && !g.D.fini && g.D.v3 ? g : null; } catch (e) { return null; } } // 25/11 : une partie d'avant la v3 ne se reprend pas
 function reprendD() { const g = enCoursD(); if (!g) return; D = g.D; D.rng = Math.random; D.fx = []; modeSF = !!g.modeSF; sel = []; selTour = -1; attente = null; dis('Partie reprise : à toi de jouer.'); app.classList.add('jeu'); rendu(); }
 { const _r = rendu; rendu = function () { const x = _r.apply(this, arguments); gardeD(); return x; }; }
 { const _a = accueil; accueil = function () { const x = _a.apply(this, arguments); const g = enCoursD();

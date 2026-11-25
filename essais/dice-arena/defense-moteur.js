@@ -5,13 +5,26 @@
 // Moteur sans dessin (sert à l'écran defense.html et au simulateur outils/simuler-defense.mjs). Utilise donnees.js (HEROS, egaux, suite).
 // Chiffres réglés au simulateur : ~/perso/dice-arena/Equilibrage-personnages.md (chapitre « La Défense de la porte »).
 
+// 25/11 : VERSION 3 (defense-v3-proposition.html, choix de l'utilisateur) : chaque face de dé = une SORTE de tour (1 givre, 2 poison, 3 archers,
+// 4 canon, 5 foudre, 6 grande tour) ; la force vient du NIVEAU (fusion de deux tours pareilles, ou un dé de sa face posé dessus) ;
+// deux tours au niveau max qui se touchent = une RUNE, qui ne tire pas mais RENFORCE ses voisines avec le pouvoir du héros ;
+// PLUS DE CARTES ; 1 PC tous les 3 monstres abattus ; les relances restent (2 par tour).
 const DEF = {
-  porte:20, pcDepart:2, pcMax:6, mainDepart:3, mainMax:5, relances:2, jaugeMax:8, chemin:4, // le chemin a 4 cases (rangées 0 à 3)
+  porte:20, pcDepart:2, pcMax:6, relances:2, jaugeMax:8, chemin:4, nivMax:4, killsPC:3, runeSoutien:0.5, // le chemin a 4 cases (rangées 0 à 3)
   hpVague:1.7, hpBase:3.9, coutBatir:1, repit:0, runeGorm:15, runeMaelle:0.75, // v2 : bonus de la Rune de Gorm aux voisins (× niveau au-dessus de 6) ; part des dégâts de la Rune de Maëlle sur chaque monstre du chemin // PV des monstres × hpBase × hpVague^(vague) ; bâtir (poser un dé en tour, ou dans une tour) coûte 1 PC
 };
-const PUISSANCE = v => v >= 7 ? 32 * Math.pow(2, v - 7) : Math.pow(2, v - 1); // 1, 2, 4, 8, 16, 32 ; la Rune (7) 32 + son pouvoir, la Rune ancienne (8) 64, la Rune légendaire (9) 128
-// 14/11 (v2, remarque de l'utilisateur : « à la fin toutes mes tourelles sont au max ») : deux Runes de même niveau fusionnent encore, jusqu'au niveau 9
-const NIV_MAX = 9, NOM_RUNE = v => ({ 7:'Rune', 8:'Rune ancienne', 9:'Rune légendaire' })[v] || '';
+// la force d'une tour selon son niveau (1 à 4), avant le multiplicateur de sa sorte
+const BASE_NIV = [0, 10, 22, 46, 95];
+const SORTES = {
+  1:{ n:'Tour de givre', e:'❄', mul:0.6, d:'Gèle sa cible : au prochain pas, elle avance d’une case de moins (le Titan ne gèle pas).' },
+  2:{ n:'Tour de poison', e:'☠', mul:0.4, poison:0.8, d:'Empoisonne sa cible : le poison la ronge à chaque tour (il traverse l’armure, puis faiblit de moitié).' },
+  3:{ n:'Tour d’archers', e:'🏹', mul:0.6, d:'Tire deux flèches, et voit les chauves-souris même en première ligne.' },
+  4:{ n:'Canon', e:'💣', mul:1, eclats:0.5, d:'Touche sa cible et, à moitié, les monstres juste devant et derrière elle.' },
+  5:{ n:'Tour de foudre', e:'⚡', mul:0.9, saut:0.6, d:'L’éclair saute sur le monstre de tête d’un chemin voisin.' },
+  6:{ n:'Grande tour', e:'🗼', mul:1.4, perce:true, d:'Le plus gros tir sur un seul monstre ; traverse l’armure.' },
+};
+const NIV_MAX = DEF.nivMax, RUNE_MAX = 3, NOM_RUNE = rv => ({ 1:'Rune', 2:'Rune ancienne', 3:'Rune légendaire' })[rv] || '';
+const nomTourD = t => t.rune ? NOM_RUNE(t.rv) : `${SORTES[t.v].n} niv. ${t.niv}`;
 const MONSTRES = {
   gobelin:{ n:'Gobelin', e:'👺', pv:5, vit:2, dg:2, d:'Peu de PV, rapide : avance de 2 cases.' },
   sanglier:{ n:'Sanglier', e:'🐗', pv:16, vit:1, dg:4, d:'Beaucoup de PV, lent.' },
@@ -31,28 +44,24 @@ const VAGUES = [
 // 15/11 soir (l'utilisateur : « tu fais des équilibrages généraux, pas individuels ») : LA FICHE DE RÉGLAGE DE CHAQUE HÉROS.
 // Tous les chiffres propres à un héros sont ici, réglés UN PAR UN au simulateur (simuler-defense.mjs avec HEROS=… et REG=…), cible ≈ 70 % de victoires.
 // Les dégâts des Pouvoirs et Ultimes sont multipliés par l'échelle des vagues (×1,7 par vague).
-// le paquet d'un héros (la fiche REG peut le retoucher)
-const deckD = h => { const d = [...DHEROS[h].deck]; if (h === 'oria' && REG.oria.deckSansAjuste) d[d.indexOf('ajuste')] = 'mortier'; return d; };
 const REG = {
   maelle: { passif:2, acier:4, pouvoirX:3, ultime:70 },                        // 74 % (gardé)                       // passif : +2 aux canons de 5-6 (Acier trempé : +4) ; Pouvoir = pouvoirX × la somme des 3 dés
-  gorm:   { echo:2, echoBonus:4, runeVoisins:10, pouvoir:20, cri:2, ultime:30 },   // 90 % → 73 % // echo : bonus aux voisines à chaque fusion ; runeVoisins : par niveau de Rune au-dessus de 6
-  aldric: { porte:6, porteVague:4, titan:2.5, pouvoirPorte:8, pouvoirCri:12, ultime:60, ultimePorte:6 }, // 47 % → 71 %
-  pip:    { ronces:1.5, pouvoir:6, ultime:30 },                                 // 63-68 % (gardé)
-  oria:   { passif:1, eclat:10, ultime:20, pioche:1, pc:0, deckSansAjuste:false }, // 93 % → 86-88 % : sa force de base vient de son paquet + Runes à pleine force (78 % sans aucune capacité), à revoir                                    // eclat : les tirs touchent aussi la tête des autres chemins (puissance ÷ eclat)
+  gorm:   { echo:6, echoBonus:10, pouvoir:40, cri:2, ultime:60 },  // v3 (25/11) : 49 % → 70 %   // 90 % → 73 % // echo : bonus aux voisines à chaque fusion ; runeVoisins : par niveau de Rune au-dessus de 6
+  aldric: { porte:6, porteVague:4, titan:4, /* v3 : 56 % → 71 % */ pouvoirPorte:8, pouvoirCri:12, ultime:60, ultimePorte:6 }, // 47 % → 71 %
+  pip:    { ronces:1.5, pouvoir:9, ultime:40 }, // v3 (25/11) : 63 % → ≈ 70 %                                 // 63-68 % (gardé)
+  oria:   { passif:1, eclat:12, ultime:20, pc:2, relance:1 }, // 93 % → 86-88 % : sa force de base vient de son paquet + Runes à pleine force (78 % sans aucune capacité), à revoir                                    // eclat : les tirs touchent aussi la tête des autres chemins (puissance ÷ eclat)
   zephine:{ passif:2, pouvoir:12, ultime:12, ultimeRecul:2 },                    // 91 % → 69 %
 };
 // les héros de la Défense (leurs Pouvoirs et Ultimes gardent les conditions du Duel ; les effets sont adaptés aux vagues)
 const DHEROS = {
-  maelle:{ passif:'Métal chaud : tes tours de 5 et de 6 tirent +2.',
+  maelle:{ passif:'Métal chaud : tes tours de foudre ⚡ et tes grandes tours 🗼 tirent +2.',
     pouvoir:{ n:'Coup d’enclume', txt:'3 dés identiques', d:'Dégâts égaux à 3 fois leur somme sur un monstre (54 dégâts avec trois 6).', cond:vs => vs.length === 3 && egaux(vs), cible:'monstre' },
     ultime:{ n:'Le Grand Martelage', txt:'3 dés de 4 ou plus', d:'70 dégâts à un monstre, et toutes tes tours tirent deux fois ce tour.', cond:vs => vs.length === 3 && vs.every(v => v >= 4), cible:'monstre' },
-    rune:{ n:'Enclume runique', d:'Frappe TOUS les monstres de son chemin (les trois quarts de sa force). Deux Runes du même niveau fusionnent : ancienne, puis légendaire.' },
-    deck:['marteau', 'marteau', 'etincelles', 'etincelles', 'lame', 'retremper', 'retremper', 'torche', 'ajuste', 'pierre', 'mortier'] },
+    rune:{ n:'Enclume runique', d:'Ses tours voisines tirent +50 %, et chacun de leurs tirs frappe aussi tous les autres monstres de leur chemin (moitié de la force).' } },
   gorm:{ passif:'Écho du cor : chaque fusion donne +2 aux tours voisines jusqu’à la fin du tour.',
     pouvoir:{ n:'Chant de guerre', txt:'4 dés tous pairs ou tous impairs', d:'20 dégâts à un monstre, et toutes tes tours +2 ce tour.', cond:vs => vs.length === 4 && (vs.every(v => v % 2 === 0) || vs.every(v => v % 2 === 1)), cible:'monstre' },
     ultime:{ n:'Le Grand Souffle', txt:'3 dés tous pairs ou tous impairs', d:'30 dégâts au monstre de tête de chaque chemin.', cond:vs => vs.length === 3 && (vs.every(v => v % 2 === 0) || vs.every(v => v % 2 === 1)) },
-    rune:{ n:'Grand Cor', d:'Tire, et donne +15 aux canons voisins (+30 ancienne, +45 légendaire).' },
-    deck:['trancheV', 'trancheV', 'aigue', 'aigue', 'torche', 'ajuste', 'ajuste', 'pierre', 'pierre', 'mortier', 'etincelles'] },
+    rune:{ n:'Grand Cor', d:'Ses tours voisines tirent deux fois plus fort (+100 %, +200 % ancienne, +300 % légendaire).' } },
 };
 // 16/11 nuit (l'utilisateur : « regarde les autres modes, ce que tu peux apporter », ex. la Défense) : LES 4 AUTRES HÉROS
 const deuxPaires = vs => { if (vs.length !== 4) return false; const s = [...vs].sort((a, b) => a - b); return s[0] === s[1] && s[2] === s[3]; };
@@ -60,63 +69,42 @@ Object.assign(DHEROS, {
   aldric:{ passif:'Rempart béni : la porte a +6 PV et en reprend 4 à chaque vague ; tes canons font +150 % au Titan.',
     pouvoir:{ n:'Bouclier de lumière', txt:'2 paires', d:'La porte reprend 8 PV, et tous tes canons tirent +12 ce tour.', cond:vs => deuxPaires(vs) },
     ultime:{ n:'Jugement', txt:'5 dés tous différents', d:'60 dégâts à chaque monstre, et la porte reprend 6 PV.', cond:vs => vs.length === 5 && new Set(vs).size === 5 },
-    rune:{ n:'Phare sacré', d:'Tire, et répare la porte de 1 PV à chaque tour (2 ancienne, 3 légendaire).' },
-    deck:['mortier', 'mortier', 'pierre', 'pierre', 'torche', 'ajuste', 'retremper', 'lame', 'etincelles', 'marteau', 'aigue'] },
+    rune:{ n:'Phare sacré', d:'Ses tours voisines tirent +50 %, et la porte reprend 1 PV à chaque tour (2 ancienne, 3 légendaire).' } },
   pip:{ passif:'Ronces vivantes : tes pièges de ronces font 50 % de plus.',
     pouvoir:{ n:'Racines', txt:'2 dés qui se suivent', d:'Les monstres d’un chemin (sauf le Titan) restent sur place un tour et prennent 6 dégâts.', cond:vs => vs.length === 2 && Math.abs(vs[0] - vs[1]) === 1, cible:'monstre' },
     ultime:{ n:'Forêt vivante', txt:'4 dés tous différents', d:'Tous les monstres (sauf le Titan) restent sur place un tour, et chacun prend 30 dégâts.', cond:vs => vs.length === 4 && new Set(vs).size === 4 },
-    rune:{ n:'Arbre-cœur', d:'Tire, et ses racines retiennent sa cible un tour (sauf le Titan).' },
-    deck:['etincelles', 'etincelles', 'aigue', 'aigue', 'retremper', 'ajuste', 'mortier', 'pierre', 'torche', 'lame', 'trancheV'] },
+    rune:{ n:'Arbre-cœur', d:'Ses tours voisines tirent +50 %, et leurs racines retiennent leur cible un tour (sauf le Titan).' } },
   oria:{ passif:'Longue-vue : tes canons de la dernière rangée (contre la porte) tirent +1.',
-    pouvoir:{ n:'Repérage', txt:'un 1 et un 6', d:'Pioche 1 carte.', cond:vs => vs.length === 2 && vs.includes(1) && vs.includes(6) },
+    pouvoir:{ n:'Repérage', txt:'un 1 et un 6', d:'+2 PC et une relance de plus ce tour.', cond:vs => vs.length === 2 && vs.includes(1) && vs.includes(6) },
     ultime:{ n:'Pluie d’étoiles', txt:'3 dés impairs', d:'20 dégâts au premier monstre de deux chemins : celui que tu touches et son voisin.', cond:vs => vs.length === 3 && vs.every(v => v % 2 === 1), cible:'monstre' },
-    rune:{ n:'Astrolabe', d:'Tire sur le premier monstre de CHAQUE chemin (le dixième de sa force sur les deux autres).' },
-    deck:['torche', 'torche', 'ajuste', 'ajuste', 'pierre', 'lame', 'retremper', 'mortier', 'etincelles', 'marteau', 'aigue'] },
-  zephine:{ passif:'Vent glacé : tes canons de 1, 2 et 3 tirent +2.',
+    rune:{ n:'Astrolabe', d:'Ses tours voisines tirent +50 %, et chacun de leurs tirs touche aussi le monstre de tête des deux autres chemins (un quart de la force).' } },
+  zephine:{ passif:'Vent glacé : tes tours de givre ❄, de poison ☠ et d’archers 🏹 tirent +2.',
     pouvoir:{ n:'Rafale', txt:'3 dés qui se suivent', d:'Les monstres d’un chemin reculent d’une case et prennent 12 dégâts.', cond:vs => suite(vs, 3), cible:'monstre' },
     ultime:{ n:'Tempête', txt:'deux 6', d:'Tous les monstres (sauf le Titan) reculent de 2 cases et prennent 12 dégâts.', cond:vs => vs.length === 2 && vs[0] === 6 && vs[1] === 6 },
-    rune:{ n:'Œil du cyclone', d:'Tire, et sa cible recule d’une case (sauf le Titan).' },
-    deck:['aigue', 'aigue', 'etincelles', 'torche', 'torche', 'retremper', 'ajuste', 'pierre', 'lame', 'mortier', 'trancheV'] },
+    rune:{ n:'Œil du cyclone', d:'Ses tours voisines tirent +50 %, et leur cible recule d’une case (sauf le Titan).' } },
 });
-// les cartes de la Défense (noms et conditions du Duel ; effets adaptés). cible : monstre | tour | de | (rien)
-// 15/11 soir (l'utilisateur : « Marteau de forge 10 dégâts pour un 6, c'est inutile, les ennemis ont 200 PV ») : les cartes de DÉGÂTS
-// montent avec les vagues comme Frappe et Technique (× echelleD : ×1,7 par vague) ; la carte affiche la vraie valeur (texteCarteD)
 const dgC = (D, n) => Math.round(n * echelleD(D));
 // les « N dégâts » d'un Pouvoir ou d'un Ultime, à la valeur de la vague en cours
 const texteCoupD = (D, t) => String(t).replace(/(\d+) dégâts/g, (x, n) => `${dgC(D, +n)} dégâts`);
-const texteCarteD = (D, c) => c.echelle ? c.d.replace(/\d+/g, n => dgC(D, +n)) : c.d;
-const DCARTES = {
-  marteau:{ n:'Marteau de forge', c:2, txt:'dé = 6', d:'10 dégâts à un monstre.', echelle:true, cond:vs => vs.length === 1 && vs[0] === 6, cible:'monstre', f:(D, vs, k) => blesse(D, k.m, dgC(D, 10)) },
-  etincelles:{ n:'Étincelles', c:0, txt:'dé ≤ 2', d:'2 dégâts à chaque monstre.', echelle:true, cond:vs => vs.length === 1 && vs[0] <= 2, f:D => [...D.monstres].forEach(m => blesse(D, m, dgC(D, 2))) },
-  lame:{ n:'Lame trempée', c:1, txt:'dé ≥ 4', d:'Une de tes tours tire + la valeur du dé, pour toute la partie.', cond:vs => vs.length === 1 && vs[0] >= 4, cible:'tour', f:(D, vs, k) => { k.t.bonus = (k.t.bonus || 0) + vs[0]; } },
-  retremper:{ n:'Retremper', c:1, txt:'1 dé', d:'Un autre de tes dés gagne +2 (6 au plus).', cond:vs => vs.length === 1, cible:'de', f:(D, vs, k) => { k.d.v = Math.min(6, k.d.v + 2); } },
-  torche:{ n:'Torche', c:1, txt:'dé ≥ 4', d:'4 dégâts à un monstre (6 à une chauve-souris).', echelle:true, cond:vs => vs.length === 1 && vs[0] >= 4, cible:'monstre', f:(D, vs, k) => blesse(D, k.m, dgC(D, MONSTRES[k.m.t].vol ? 6 : 4)) },
-  ajuste:{ n:'Pierre d’ajustement', c:0, txt:'1 dé', d:'Un autre de tes dés gagne +1 ou −1 (tu choisis).', cond:vs => vs.length === 1, cible:'de', f:(D, vs, k) => { k.d.v = Math.max(1, Math.min(6, k.d.v + (k.sens || 1))); } },
-  pierre:{ n:'Pierre à aiguiser', c:1, txt:'1 dé', d:'Une de tes tours tire +2, pour toute la partie.', cond:vs => vs.length === 1, cible:'tour', f:(D, vs, k) => { k.t.bonus = (k.t.bonus || 0) + 2; } },
-  mortier:{ n:'Mortier frais', c:1, txt:'1 dé', d:'Répare la porte : + la valeur du dé + 2 PV.', cond:vs => vs.length === 1, f:(D, vs) => { D.porte = Math.min(D.porteMax, D.porte + vs[0] + 2); } },
-  trancheV:{ n:'Tranche-vent', c:2, txt:'3, 4 ou 5 identiques', d:'7, 10 ou 15 dégâts à un monstre.', echelle:true, cond:vs => vs.length >= 3 && egaux(vs), cible:'monstre', f:(D, vs, k) => blesse(D, k.m, dgC(D, [0, 0, 0, 7, 10, 15][vs.length])) },
-  aigue:{ n:'Note aiguë', c:0, txt:'dé impair', d:'Une de tes tours tire + la valeur du dé ce tour.', cond:vs => vs.length === 1 && vs[0] % 2 === 1, cible:'tour', f:(D, vs, k) => { k.t.tmp = (k.t.tmp || 0) + vs[0]; } },
-};
 
 // ---------------------------------------------------------------- la partie
 let DID = 0;
 function melangeD(a, rng) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rng() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
 function nouvelleDefense(heros, rng) {
   rng = rng || Math.random;
-  const D = { heros, rng, porte:DEF.porte, porteMax:DEF.porte, pc:DEF.pcDepart, main:[], pioche:melangeD(deckD(heros), rng), defausse:[], des:[], relance:0,
+  const D = { v3:true, heros, rng, porte:DEF.porte, porteMax:DEF.porte, pc:DEF.pcDepart, des:[], relance:0, sortesVues:[], killsPC:0,
     rempart:Array(9).fill(null), monstres:[], vague:0, pas:0, repit:0, tour:0, jauge:0, ultimeFait:false, deplace:false, double:false, cri:0,
     kills:0, sansDegats:0, degatsVague:0, log:[], fini:null, fx:[],
-    pieges:{}, bonus:{}, choix:null, cartesJouees:0, piegesPoses:0, coups:0, maxCanons:0, degatsDerniere:0 };
+    pieges:{}, bonus:{}, choix:null, piegesPoses:0, coups:0, maxCanons:0, degatsDerniere:0 };
   if (heros === 'aldric') { D.porte += REG.aldric.porte; D.porteMax += REG.aldric.porte; }
-  piocheD(D, DEF.mainDepart); apparitionsD(D); debutTourD(D); return D;
+  apparitionsD(D); debutTourD(D); return D;
 }
 const logD = (D, t) => { D.log.unshift(t); if (D.log.length > 120) D.log.length = 120; };
 const fxD = (D, e) => { D.fx.push(e); };
-function piocheD(D, n) { for (let i = 0; i < n; i++) { if (D.main.length >= DEF.mainMax) return; if (!D.pioche.length) { D.pioche = melangeD(D.defausse, D.rng); D.defausse = []; } if (!D.pioche.length) return; D.main.push(D.pioche.pop()); } }
 function lanceD(D, d) { d.v = 1 + Math.floor(D.rng() * 6); }
 function debutTourD(D) {
   D.tour++;
-  if (D.tour > 1) { D.pc = Math.min(DEF.pcMax, D.pc + 1); piocheD(D, 1); }
+  if (D.tour > 1) D.pc = Math.min(DEF.pcMax, D.pc + 1);
   D.des = Array.from({ length:5 }, (_, i) => ({ i, v:0, pose:false })); D.des.forEach(d => lanceD(D, d));
   D.relance = DEF.relances + (D.bonus.relance || 0); D.deplace = false; D.double = !!D.bonus.doubleProchain; D.bonus.doubleProchain = false; D.cri = 0;
   D.rempart.forEach(t => { if (t) t.tmp = 0; });
@@ -130,29 +118,37 @@ const valsD = ds => ds.map(d => d.v);
 
 // ---------------------------------------------------------------- les actions du joueur (renvoient un message d'erreur, ou rien si c'est fait)
 function relancerD(D, ds) { if (D.fini) return 'Partie finie.'; if (!D.relance) return 'Plus de relance ce tour.'; if (!ds.length || ds.some(d => d.pose)) return 'Choisis des dés libres.'; ds.forEach(d => lanceD(D, d)); D.relance--; logD(D, `Relance : ${D.des.map(d => d.v).join(' · ')}`); }
-function niveauFusion(v) { return Math.min(NIV_MAX, v + 1); } // 6 + 6 = 7 = la Rune ; 7 + 7 = 8 ; 8 + 8 = 9
-function poseTour(D, c, v) { D.rempart[c] = { id:++DID, v, rune:v >= 7, tmp:0, bonus:0 }; }
-// bâtir : un dé sur une case libre ; sur une tour de même valeur (pas une Rune) : fusion du dé dans la tour
+function poseTour(D, c, v) { D.rempart[c] = { id:++DID, v, niv:1, rune:false, rv:0, tmp:0, bonus:0 }; if (!D.sortesVues.includes(v)) D.sortesVues.push(v); }
+// bâtir : un dé sur une case libre = une tour de la sorte de sa face (niveau 1) ; sur une tour de la même sorte : elle monte d'un niveau
 function batirD(D, d, c) {
   if (D.fini) return 'Partie finie.'; if (!d || d.pose) return 'Choisis un dé.';
   const t = D.rempart[c];
   if (D.pc < DEF.coutBatir) return `Bâtir coûte ${DEF.coutBatir} PC (vends un dé pour en gagner).`;
-  if (t && (t.rune || t.v !== d.v)) return t.rune ? 'Une Rune ne prend pas de dé : fusionne-la avec une autre Rune du même niveau.' : `Il faut un dé de ${t.v} pour fusionner avec ce canon.`;
-  D.pc -= DEF.coutBatir;
-  if (!t) { d.pose = true; poseTour(D, c, d.v); logD(D, `Tour de ${d.v} bâtie.`); fxD(D, { t:'batit', c }); return; }
-  d.pose = true; fusionneD(D, c, t, null); return;
+  if (t && t.rune) return 'Une Rune ne prend pas de dé : fusionne-la avec une autre Rune du même niveau.';
+  if (t && t.v !== d.v) return `Cette ${SORTES[t.v].n.toLowerCase()} monte avec un dé de ${t.v}.`;
+  if (t && t.niv >= NIV_MAX) return `Tour au niveau max : fusionne-la avec une voisine au niveau max pour une Rune.`;
+  D.pc -= DEF.coutBatir; d.pose = true;
+  if (!t) { poseTour(D, c, d.v); logD(D, `${SORTES[d.v].e} ${SORTES[d.v].n} bâtie.`); fxD(D, { t:'batit', c }); return; }
+  t.niv++; logD(D, `${SORTES[t.v].e} ${SORTES[t.v].n} : niveau ${t.niv}.`); fxD(D, { t:'fusion', c }); echoGorm(D, c); return;
 }
-function fusionneD(D, c, t, depuis) {
-  const v = niveauFusion(t.v); t.v = v; t.rune = v >= 7; t.bonus = (t.bonus || 0); if (depuis !== null) { const a = D.rempart[depuis]; t.bonus += a.bonus || 0; D.rempart[depuis] = null; }
-  logD(D, t.rune ? `✨ ${v === 7 ? 'Deux 6' : 'Deux Runes'} : ${NOM_RUNE(v).toUpperCase()} ${DHEROS[D.heros].rune.n} !` : `Fusion : un canon de ${v}.`); fxD(D, { t:t.rune ? 'rune' : 'fusion', c });
-  if (D.heros === 'gorm') voisinsD(c).forEach(x => { if (D.rempart[x]) D.rempart[x].tmp += D.bonus.echo ? REG.gorm.echoBonus : REG.gorm.echo; });
-}
+const echoGorm = (D, c) => { if (D.heros === 'gorm') voisinsD(c).forEach(x => { if (D.rempart[x]) D.rempart[x].tmp += D.bonus.echo ? REG.gorm.echoBonus : REG.gorm.echo; }); };
+// fusionner deux tours voisines : même sorte et même niveau → niveau +1 ; deux tours au niveau max (n'importe quelle sorte) → une Rune ;
+// deux Runes du même niveau → Rune ancienne, puis légendaire
 function fusionD(D, a, b) {
   if (D.fini) return 'Partie finie.';
   const ta = D.rempart[a], tb = D.rempart[b];
   if (!ta || !tb) return 'Il faut deux tours.'; if (!voisinsD(a).includes(b)) return 'Les deux tours doivent se toucher.';
-  if (ta.v !== tb.v) return ta.rune || tb.rune ? 'Deux Runes du même niveau seulement.' : 'Il faut deux canons de même valeur.'; if (ta.v >= NIV_MAX) return 'La Rune légendaire est au plus haut.';
-  fusionneD(D, b, tb, a);
+  if (ta.rune || tb.rune) {
+    if (!(ta.rune && tb.rune) || ta.rv !== tb.rv) return 'Une Rune fusionne seulement avec une Rune du même niveau.';
+    if (tb.rv >= RUNE_MAX) return 'La Rune légendaire est au plus haut.';
+    tb.rv++;
+  } else if (ta.niv >= NIV_MAX && tb.niv >= NIV_MAX) { tb.rune = true; tb.rv = 1; tb.v = 0; tb.bonus = 0; }
+  else if (ta.v !== tb.v) return 'Il faut deux tours de la même sorte (ou deux tours au niveau max pour une Rune).';
+  else if (ta.niv !== tb.niv) return 'Il faut deux tours du même niveau.';
+  else { tb.niv++; tb.bonus = (tb.bonus || 0) + (ta.bonus || 0); }
+  D.rempart[a] = null;
+  logD(D, tb.rune ? `✨ ${NOM_RUNE(tb.rv).toUpperCase()} ${DHEROS[D.heros].rune.n} !` : `Fusion : ${nomTourD(tb)}.`); fxD(D, { t:tb.rune ? 'rune' : 'fusion', c:b });
+  echoGorm(D, b);
 }
 function deplacerD(D, a, b) {
   if (D.fini) return 'Partie finie.'; if (D.deplace) return 'Une seule tour déplacée par tour.';
@@ -163,7 +159,8 @@ function blesse(D, m, n, tir) {
   if (!m || !D.monstres.includes(m) || n <= 0) return 0;
   const M = MONSTRES[m.t]; const r = Math.max(0, n - (tir && M.armure ? M.armure : 0));
   m.pv -= r; fxD(D, { t:'touche', id:m.id, n:r });
-  if (m.pv <= 0) { D.monstres = D.monstres.filter(x => x !== m); D.kills++; if (!D.ultimeFait) D.jauge = Math.min(DEF.jaugeMax, D.jauge + 1); logD(D, `${M.e} ${M.n} tombe.`); fxD(D, { t:'mort', id:m.id }); verifieFinD(D); }
+  if (m.pv <= 0) { D.monstres = D.monstres.filter(x => x !== m); D.kills++; if (!D.ultimeFait) D.jauge = Math.min(DEF.jaugeMax, D.jauge + 1);
+    if (++D.killsPC >= DEF.killsPC) { D.killsPC = 0; if (D.pc < DEF.pcMax) { D.pc++; fxD(D, { t:'pc', n:1 }); logD(D, `◆ ${DEF.killsPC} monstres abattus : +1 PC.`); } } logD(D, `${M.e} ${M.n} tombe.`); fxD(D, { t:'mort', id:m.id }); verifieFinD(D); }
   return r;
 }
 function utiliseD(D, ds) { ds.forEach(d => { d.pose = true; }); }
@@ -175,10 +172,9 @@ function permisD(D, quoi, ds) {
   const H = DHEROS[D.heros];
   if (quoi === 'pouvoir') return H.pouvoir.cond(vs);
   if (quoi === 'ultime') return !D.ultimeFait && D.jauge >= DEF.jaugeMax && D.pc >= 3 && H.ultime.cond(vs);
-  const k = D.main[quoi]; if (k === undefined) return false; const c = DCARTES[k];
-  return D.pc >= c.c && c.cond(vs);
+  return false;
 }
-const cibleDe = (D, quoi) => { if (quoi === 'frappe' || quoi === 'technique') return 'monstre'; if (quoi === 'vendre') return null; const H = DHEROS[D.heros]; if (quoi === 'pouvoir') return H.pouvoir.cible || null; if (quoi === 'ultime') return H.ultime.cible || null; return DCARTES[D.main[quoi]].cible || null; };
+const cibleDe = (D, quoi) => { if (quoi === 'frappe' || quoi === 'technique') return 'monstre'; if (quoi === 'vendre') return null; const H = DHEROS[D.heros]; if (quoi === 'pouvoir') return H.pouvoir.cible || null; if (quoi === 'ultime') return H.ultime.cible || null; return null; };
 function agitD(D, quoi, ds, k) {
   if (D.fini) return 'Partie finie.';
   if (!permisD(D, quoi, ds)) return 'Ces dés ne conviennent pas.';
@@ -197,7 +193,7 @@ function agitD(D, quoi, ds, k) {
     else if (D.heros === 'gorm') { blesse(D, k.m, Math.round(REG.gorm.pouvoir * e)); D.cri += REG.gorm.cri; }
     else if (D.heros === 'aldric') { D.porte = Math.min(D.porteMax, D.porte + REG.aldric.pouvoirPorte); D.cri += REG.aldric.pouvoirCri; }
     else if (D.heros === 'pip') D.monstres.filter(m => m.col === colM).forEach(m => { if (!MONSTRES[m.t].boss) m.colle = Math.max(m.colle || 0, 1); blesse(D, m, Math.round(REG.pip.pouvoir * e)); });
-    else if (D.heros === 'oria') { piocheD(D, REG.oria.pioche); D.pc = Math.min(DEF.pcMax, D.pc + REG.oria.pc); }
+    else if (D.heros === 'oria') { D.pc = Math.min(DEF.pcMax, D.pc + REG.oria.pc); D.relance += REG.oria.relance; }
     else if (D.heros === 'zephine') D.monstres.filter(m => m.col === colM).forEach(m => { blesse(D, m, Math.round(REG.zephine.pouvoir * e)); recule(m, 1); });
     return; }
   if (quoi === 'ultime') { D.pc -= 3; D.ultimeFait = true; D.jauge = 0; logD(D, `⚡ ULTIME : ${H.ultime.n} !`); fxD(D, { t:'annonce', txt:H.ultime.n });
@@ -210,9 +206,6 @@ function agitD(D, quoi, ds, k) {
     else if (D.heros === 'oria') { const c = k.m.col, cols = [c, c === 2 ? 1 : c + 1]; cols.forEach(cc => { const m = teteD(D, cc); if (m) blesse(D, m, u(REG.oria.ultime)); }); }
     else if (D.heros === 'zephine') tous().forEach(m => { blesse(D, m, u(REG.zephine.ultime)); if (D.monstres.includes(m) && !MONSTRES[m.t].boss) m.row = Math.max(0, m.row - REG.zephine.ultimeRecul); });
     return; }
-  const key = D.main[quoi], c = DCARTES[key];
-  D.pc -= c.c; D.main.splice(quoi, 1); D.defausse.push(key); D.cartesJouees++; logD(D, `🂠 ${c.n} (${vs.join('·')}).`); fxD(D, { t:'carte', n:c.n });
-  c.f(D, vs, k);
 }
 const teteD = (D, col, sauf) => D.monstres.filter(m => m.col === col && m !== sauf).sort((a, b) => b.row - a.row || a.id - b.id)[0];
 
@@ -223,43 +216,65 @@ function verifieFinD(D) {
   if (D.sansFin) return;
   if (D.vague >= VAGUES.length && !D.monstres.length) { D.fini = 'gagne'; logD(D, '🏆 La porte a tenu !'); }
 }
+// les Runes voisines d'une case (elles ne tirent pas : elles renforcent)
+const runesVoisD = (D, c) => voisinsD(c).map(x => D.rempart[x]).filter(u => u && u.rune);
 function puissanceTour(D, c, t) {
-  let n = PUISSANCE(t.v) + (t.bonus || 0) + (t.tmp || 0) + D.cri + (D.bonus.forge || 0);
-  if (D.heros === 'maelle' && t.v >= 5 && !t.rune) n += D.bonus.acier ? REG.maelle.acier : REG.maelle.passif;
+  if (t.rune) return 0;
+  let n = BASE_NIV[t.niv] + (t.bonus || 0) + (t.tmp || 0) + D.cri + (D.bonus.forge || 0);
+  if (D.heros === 'maelle' && t.v >= 5) n += D.bonus.acier ? REG.maelle.acier : REG.maelle.passif;
   if (D.heros === 'oria' && rangD(c) === 2) n += REG.oria.passif;
-  if (D.heros === 'zephine' && t.v <= 3 && !t.rune) n += REG.zephine.passif;
-  voisinsD(c).forEach(x => { const u = D.rempart[x]; if (u && u.rune && D.heros === 'gorm') n += REG.gorm.runeVoisins * (u.v - 6); });
-  return n;
+  if (D.heros === 'zephine' && t.v <= 3) n += REG.zephine.passif;
+  let mul = SORTES[t.v].mul;
+  runesVoisD(D, c).forEach(u => { mul *= 1 + (D.heros === 'gorm' ? 1 : DEF.runeSoutien) * u.rv; });
+  return Math.max(1, Math.round(n * mul));
+}
+// un tir d'une tour sur un monstre, avec l'effet de sa sorte et celui des Runes voisines
+function tirSurD(D, c, t, m, pw) {
+  const S = SORTES[t.v], boss = MONSTRES[m.t].boss, col = m.col, row = m.row;
+  fxD(D, { t:'tir', c, id:m.id });
+  blesse(D, m, D.heros === 'aldric' && boss ? Math.round(pw * REG.aldric.titan) : pw, !S.perce);
+  const vivant = D.monstres.includes(m);
+  if (S.poison && vivant) m.poison = (m.poison || 0) + Math.round(pw / S.mul * S.poison);
+  if (t.v === 1 && vivant && !boss) m.gel = 1;
+  if (S.eclats) D.monstres.filter(x => x !== m && x.col === col && Math.abs(x.row - row) <= 1).forEach(x => blesse(D, x, Math.round(pw * S.eclats), true));
+  if (S.saut) { const o = [col - 1, col + 1].filter(x => x >= 0 && x <= 2).map(x => teteD(D, x)).filter(Boolean).sort((a, b) => b.row - a.row)[0]; if (o) { fxD(D, { t:'tir', c, id:o.id }); blesse(D, o, Math.round(pw * S.saut), true); } }
+  runesVoisD(D, c).forEach(u => {
+    if (D.heros === 'maelle') D.monstres.filter(x => x !== m && x.col === col).forEach(x => blesse(D, x, Math.round(pw * .5), true));
+    if (D.heros === 'oria') [0, 1, 2].filter(x => x !== col).forEach(x => { const o = teteD(D, x); if (o) { fxD(D, { t:'tir', c, id:o.id }); blesse(D, o, Math.round(pw / REG.oria.eclat), true); } });
+    if (D.monstres.includes(m) && !boss) { if (D.heros === 'pip') m.colle = Math.max(m.colle || 0, 1); if (D.heros === 'zephine' && !m.recule) { m.row = Math.max(0, m.row - 1); m.recule = true; } }
+  });
 }
 function tirsD(D) {
+  D.monstres.forEach(m => { m.recule = false; });
   for (let fois = 0; fois < (D.double ? 2 : 1); fois++)
     for (const r of [0, 1, 2]) for (const col of [0, 1, 2]) {
       if (D.fini) return;
-      const c = r * 3 + col, t = D.rempart[c]; if (!t) continue;
-      if (t.rune && D.heros === 'maelle') { const ms = D.monstres.filter(m => m.col === col); if (ms.length) { fxD(D, { t:'tir', c, rune:true, ids:ms.map(m => m.id) }); ms.forEach(m => blesse(D, m, Math.round(puissanceTour(D, c, t) * DEF.runeMaelle), true)); } continue; }
-      // la chauve-souris : la tour de devant (la première de la colonne) ne la voit pas
-      const devant = [0, 1, 2].map(rr => rr * 3 + col).find(x => D.rempart[x]);
-      const m = D.monstres.filter(x => x.col === col && !(MONSTRES[x.t].vol && devant === c)).sort((a, b) => b.row - a.row || a.id - b.id)[0];
-      if (!m) continue;
-      fxD(D, { t:'tir', c, id:m.id }); const pw = puissanceTour(D, c, t); blesse(D, m, D.heros === 'aldric' && MONSTRES[m.t].boss ? Math.round(pw * REG.aldric.titan) : pw, true);
-      if (t.rune && fois === 0) {
-        if (D.heros === 'aldric') D.porte = Math.min(D.porteMax, D.porte + (t.v - 6));
-        if (D.heros === 'pip' && D.monstres.includes(m) && !MONSTRES[m.t].boss) m.colle = Math.max(m.colle || 0, 1);
-        if (D.heros === 'zephine' && D.monstres.includes(m) && !MONSTRES[m.t].boss) m.row = Math.max(0, m.row - 1);
-        if (D.heros === 'oria') [0, 1, 2].filter(x => x !== col).forEach(x => { const o = teteD(D, x); if (o) { fxD(D, { t:'tir', c, id:o.id }); blesse(D, o, Math.round(pw / REG.oria.eclat), true); } });
-      }
+      const c = r * 3 + col, t = D.rempart[c]; if (!t || t.rune) continue;
+      // la chauve-souris : la tour de devant (la première de la colonne) ne la voit pas, sauf les archers
+      const devant = [0, 1, 2].map(rr => rr * 3 + col).find(x => D.rempart[x] && !D.rempart[x].rune);
+      const cible = () => D.monstres.filter(x => x.col === col && !(MONSTRES[x.t].vol && devant === c && t.v !== 3)).sort((a, b) => b.row - a.row || a.id - b.id)[0];
+      const pw = puissanceTour(D, c, t);
+      for (let k = 0; k < (t.v === 3 ? 2 : 1); k++) { const m = cible(); if (!m || D.fini) break; tirSurD(D, c, t, m, pw); }
     }
+  if (D.fini) return;
+  // le poison ronge (il traverse l'armure), puis faiblit de moitié
+  [...D.monstres].forEach(m => { if (m.poison > 0) { const n = m.poison; m.poison = Math.floor(m.poison / 2); fxD(D, { t:'poison', id:m.id }); blesse(D, m, n); } });
+  // le Phare sacré d'Aldric : la porte reprend des PV
+  if (D.heros === 'aldric') D.rempart.forEach(u => { if (u && u.rune) D.porte = Math.min(D.porteMax, D.porte + u.rv); });
 }
 function avanceD(D) {
   for (const m of [...D.monstres]) {
     const M = MONSTRES[m.t];
     if (M.fond) { // le Titan fait fondre la tour la plus faible de sa colonne
-      const cs = [0, 1, 2].map(r => r * 3 + m.col).filter(c => D.rempart[c]).sort((a, b) => D.rempart[a].v - D.rempart[b].v);
-      if (cs.length) { const t = D.rempart[cs[0]]; t.v--; t.rune = t.v >= 7; logD(D, `🌋 Le Titan fait fondre une tour (${t.v + 1} → ${t.v || 'détruite'}).`); fxD(D, { t:'fond', c:cs[0] }); if (t.v <= 0) D.rempart[cs[0]] = null; }
+      const poids = t => t.rune ? 10 + t.rv : t.niv;
+      const cs = [0, 1, 2].map(r => r * 3 + m.col).filter(c => D.rempart[c]).sort((a, b) => poids(D.rempart[a]) - poids(D.rempart[b]));
+      if (cs.length) { const t = D.rempart[cs[0]], nom = nomTourD(t); if (t.rune) t.rv--; else t.niv--; const reste = t.rune ? t.rv : t.niv;
+        logD(D, `🌋 Le Titan fait fondre ${nom}${reste ? '' : ' : détruite'}.`); fxD(D, { t:'fond', c:cs[0] }); if (reste <= 0) D.rempart[cs[0]] = null; }
     }
     if (M.lent) { m.attente = (m.attente || 0) + 1; if (m.attente < M.lent) continue; m.attente = 0; }
     if (m.colle > 0) { m.colle--; continue; }
-    for (let pas = 0; pas < M.vit && D.monstres.includes(m) && m.row < DEF.chemin; pas++) { if (marcheD(D, m)) break; }
+    const vit = M.vit - (m.gel ? 1 : 0); m.gel = 0; // 25/11 (v3) : la tour de givre retire un pas
+    for (let pas = 0; pas < vit && D.monstres.includes(m) && m.row < DEF.chemin; pas++) { if (marcheD(D, m)) break; }
     if (D.fini) return;
     if (!D.monstres.includes(m)) continue;
     if (m.row >= DEF.chemin) { D.monstres = D.monstres.filter(x => x !== m); D.porte -= M.dg; D.degatsVague += M.dg; if (D.vague >= VAGUES.length - 1) D.degatsDerniere += M.dg; logD(D, `🚪 ${M.e} ${M.n} frappe la porte : −${M.dg} PV.`); fxD(D, { t:'porte', n:M.dg }); verifieFinD(D); if (D.fini) return; }
@@ -354,7 +369,6 @@ const BONUS_D = {
   forge:{ e:'🔧', n:'Forge', d:'Tous tes canons tirent +2, pour toute la partie.', f:D => { D.bonus.forge = (D.bonus.forge || 0) + 2; } },
   porte:{ e:'🧱', n:'Maçons', d:'La porte récupère 5 PV.', f:D => { D.porte = Math.min(D.porteMax, D.porte + 5); } },
   pc:{ e:'◆', n:'Trésor', d:'+2 PC tout de suite.', f:D => { D.pc = Math.min(DEF.pcMax, D.pc + 2); } },
-  cartes:{ e:'🂠', n:'Messager', d:'Pioche 2 cartes.', f:D => piocheD(D, 2) },
   relance:{ e:'🎲', n:'Dés chanceux', d:'Une relance de plus à chaque tour.', f:D => { D.bonus.relance = (D.bonus.relance || 0) + 1; D.relance++; } },
   ronces:{ e:'🌿', n:'Épines', d:'Tes ronces font +3 (plus fort à chaque vague).', f:D => { D.bonus.ronces = (D.bonus.ronces || 0) + 3; } },
   coups:{ e:'⚔', n:'Bras de héros', d:'Tes coups de héros (Frappe, Technique) font +25 %.', f:D => { D.bonus.coups = (D.bonus.coups || 0) + 1; } },
@@ -372,7 +386,7 @@ function choisirBonusD(D, k) { if (!D.choix || !D.choix.includes(k)) return 'Cho
 // ---- 4. Trois étoiles : la victoire, la porte à 15 PV ou plus, le défi du jour (le même pour tout le monde ce jour-là)
 const DEFIS_D = [
   { id:'canons4', n:'Gagner avec 4 canons au plus en même temps', ok:D => D.maxCanons <= 4 },
-  { id:'sansCarte', n:'Gagner sans jouer une seule carte', ok:D => D.cartesJouees === 0 },
+  { id:'sortes', n:'Bâtir au moins 4 sortes de tours différentes', ok:D => (D.sortesVues || []).length >= 4 },
   { id:'pieges', n:'Poser au moins 4 pièges', ok:D => D.piegesPoses >= 4 }, // 25/11 (l'utilisateur : « 3 pièges, impossible d'en avoir 6 »)
   { id:'boss', n:'Aucun dégât à la porte pendant la dernière vague', ok:D => D.degatsDerniere === 0 },
   { id:'coups', n:'Placer au moins 5 coups de héros', ok:D => D.coups >= 5 },

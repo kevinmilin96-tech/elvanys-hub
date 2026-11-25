@@ -1,5 +1,9 @@
 [
 {
+"v": "20261125-214233",
+"m": "La Défense de la porte change : chaque face de dé donne sa sorte de tour (givre, poison, archers, canon, foudre, grande tour), les Runes renforcent leurs voisines, plus de cartes, et 1 PC tous les 3 monstres abattus"
+},
+{
 "v": "20261125-213840",
 "m": "Le carnet de la Guilde ne remonte plus en haut quand tu touches « Récupérer »"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261125-163817",
 "m": "Lame trempée et cartes du même genre : avec une seule créature, elle est choisie toute seule, il reste à valider"
-},
-{
-"v": "20261125-162741",
-"m": "Le cadre de l’adversaire : cartes en main et cartes à piocher sur deux lignes"
 }
 ]
