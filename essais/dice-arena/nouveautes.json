@@ -1,5 +1,9 @@
 [
 {
+"v": "20261125-215542",
+"m": "Mes decks : garde le doigt sur une carte pour la voir en grand"
+},
+{
 "v": "20261125-215416",
 "m": "Une nouvelle carte gagnée s'annonce : point rouge sur le Menu et sur « Mes decks », « ✨ Nouveau » et en tête de ta collection"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261125-190140",
 "m": "Tes créatures ne passent plus sous ton portrait : la rangée est remontée"
-},
-{
-"v": "20261125-171700",
-"m": "Flashs et duel éclair : les étoiles se gagnent avec 2 défis du jour (les mêmes pour tous, écrits avant de jouer)"
 }
 ]

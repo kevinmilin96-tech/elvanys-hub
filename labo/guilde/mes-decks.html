@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261125-215416"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
+<head><meta name="guilde-version" content="20261125-215542"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex">
@@ -21,6 +21,9 @@
   .bande img { width:100%; aspect-ratio:1; object-fit:cover; display:block; filter:saturate(.7) brightness(.75); }
   .bande span { position:absolute; left:0; right:0; bottom:0; font-size:.6em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; background:#000b; text-align:center; padding:1px 0; }
   .bande .on { border-color:var(--hc); box-shadow:0 0 12px var(--hc); } .bande .on img { filter:none; }
+  .zoomD { position:fixed; inset:0; z-index:90; background:#000c; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; animation:zoomDin .18s ease-out; }
+  .zoomD p { color:#ffffffaa; margin:0; font-size:.85em; } @keyframes zoomDin { from { opacity:0; transform:scale(.9); } }
+  .coll .c { -webkit-touch-callout:none; user-select:none; }
   .bande .verrou { opacity:.45; } .bande .nv, .c .nv { position:absolute; z-index:3; background:#ff4d4d; color:#fff; font:bold 11px Georgia, serif; border-radius:9px; padding:1px 6px; box-shadow:0 0 8px #ff4d4d; }
   .bande .nv { top:3px; right:3px; } .c .nv { top:-4px; left:50%; transform:translateX(-50%); white-space:nowrap; animation:nvPulse 1.2s ease-in-out infinite alternate; } @keyframes nvPulse { to { box-shadow:0 0 14px #ff8a8a; } }
   .deckc { display:flex; align-items:center; gap:10px; width:100%; text-align:left; background:#ffffff0d; border:1px solid #ffffff22; border-radius:14px; padding:10px; margin-bottom:8px; }
@@ -147,10 +150,10 @@ function atelier() {
     <div style="font-size:.8em;color:var(--doux);margin-top:8px">Courbe des coûts (en PC)</div>
     <div class="courbe">${cb.map((v, i) => `<div style="height:${v / mx * 100}%"><span>${v}</span><i>${i === 4 ? '4+' : i}</i></div>`).join('')}</div>
     <div class="boutons"><button class="bt sombre" onclick="complete()" ${t >= DECK_TAILLE ? 'disabled' : ''}>🪄 Compléter pour moi</button><button class="bt or" onclick="enregistre()">✔ Enregistrer</button></div>
-    <h3 style="margin:14px 0 2px;color:var(--or)">Ta collection</h3><p class="aide" style="text-align:left;margin:0">Touche une carte pour l’ajouter. Sous chaque carte : combien tu en as mis.</p>
+    <h3 style="margin:14px 0 2px;color:var(--or)">Ta collection</h3><p class="aide" style="text-align:left;margin:0">Touche une carte pour l’ajouter ; garde le doigt dessus pour la voir en grand. Sous chaque carte : combien tu en as mis.</p>
     <div class="filtres">${F.map(([k, l]) => `<button class="${filtre === k ? 'on' : ''}" onclick="filtre='${k}';atelier()">${l}</button>`).join('')}</div>
     <div class="coll">${pool.map(k => { const m = maxDe(k), a = n[k] || 0, plein = a >= m || t >= DECK_TAILLE;
-      return `<div class="c ${plein ? 'plein' : ''} ${estLegendaire(k) ? 'leg' : ''}" onclick="ajoute('${k}')">${NOUV.includes(k) ? '<span class="nv">✨ Nouveau</span>' : ''}${carte(k, 108)}<span class="pastille ${a >= m ? 'max' : estLegendaire(k) ? 'legp' : ''}">${estLegendaire(k) ? '★ ' : ''}${a}/${m}</span></div>`; }).join('') || '<p class="aide">Aucune carte avec ce filtre.</p>'}</div>
+      return `<div class="c ${plein ? 'plein' : ''} ${estLegendaire(k) ? 'leg' : ''}" data-zoom="${k}" onclick="ajoute('${k}')">${NOUV.includes(k) ? '<span class="nv">✨ Nouveau</span>' : ''}${carte(k, 108)}<span class="pastille ${a >= m ? 'max' : estLegendaire(k) ? 'legp' : ''}">${estLegendaire(k) ? '★ ' : ''}${a}/${m}</span></div>`; }).join('') || '<p class="aide">Aucune carte avec ce filtre.</p>'}</div>
     ${ed.i >= 0 ? `<div class="boutons"><button class="bt rouge" onclick="supprime()">🗑 Supprimer ce deck</button></div>` : ''}`;
 }
 function ajoute(k) {
@@ -191,6 +194,17 @@ if (typeof Guide !== 'undefined') Guide.lance('mesdecks', [
   ['#bande', 'Touche un portrait pour voir les decks de ce héros.'],
   ['#zone', 'L’étoile ⭐ choisit le deck qui part au combat. Touche un deck pour l’ouvrir dans l’atelier : 20 cartes, 2 exemplaires au plus, une seule légendaire. Miaou !'],
 ]);
+// 25/11 (l'utilisateur : « le maintien sur la carte pour l'afficher en grand dans le deck ») : comme en combat, GARDER LE DOIGT sur une carte
+// de la collection = la carte en grand ; le toucher simple l'ajoute toujours au deck
+let zoomLuD = false;
+(() => { let t = null;
+  document.addEventListener('pointerdown', e => { const el = e.target.closest && e.target.closest('[data-zoom]'); if (!el || !CARTES[el.dataset.zoom]) return; const k = el.dataset.zoom;
+    clearTimeout(t); t = setTimeout(() => { zoomLuD = true; const z = document.createElement('div'); z.className = 'zoomD';
+      z.innerHTML = `<div>${carteGuilde(k, { w:Math.min(280, innerWidth - 60) })}</div><p>Touche pour fermer</p>`; z.onclick = ev => { ev.stopPropagation(); z.remove(); zoomLuD = false; }; document.body.appendChild(z); }, 420); });
+  ['pointerup', 'pointercancel', 'pointermove'].forEach(ev => document.addEventListener(ev, e => { if (ev !== 'pointermove' || Math.abs(e.movementX) + Math.abs(e.movementY) > 6) clearTimeout(t); }));
+  document.addEventListener('click', e => { if (zoomLuD && !e.target.closest('.zoomD')) { zoomLuD = false; e.stopPropagation(); e.preventDefault(); } }, true);
+  document.addEventListener('contextmenu', e => { if (e.target.closest && e.target.closest('[data-zoom]')) e.preventDefault(); });
+})();
 </script>
 </body>
 </html>
