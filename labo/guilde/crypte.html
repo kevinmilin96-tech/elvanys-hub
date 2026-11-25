@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261125-145444"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
+<head><meta name="guilde-version" content="20261125-155600"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="robots" content="noindex">
@@ -156,7 +156,7 @@
 <script src="progression-modes.js?v=807b0f9ad5"></script>
 <script src="heros-aventure.js?v=31db8c2ed4"></script>
 <script src="succes.js?v=d6910350b3"></script>
-<script src="profil.js?v=4742bf7122"></script>
+<script src="profil.js?v=39f2a1d4f4"></script>
 <script>window.AMIS_SANS_BOUTON = true; /* 15/11 soir : la crypte du jour se compare entre amis */</script>
 <script src="amis.js?v=d4158692ce"></script>
 <script src="crypte-moteur.js?v=60afb59a24"></script>
@@ -280,7 +280,7 @@ function dessine() {
     </div>
     ${compHTML()}
     ${typeof DR !== 'undefined' && DR ? sacHTML() : ''}
-    ${S.consos && S.consos.length ? `<div class="sac">🎒 ${S.consos.map((k, i) => `<span onclick="utiliseConso(${i})" style="border-color:var(--or)">${C.CONSOS[k].e} <small>${C.CONSOS[k].n} : ${C.CONSOS[k].d}</small></span>`).join('')}</div>` : ''}
+    ${S.consos && S.consos.length ? `<div class="sac">🎒 ${S.consos.map((k, i) => `<span onclick="utiliseConso(${i})" style="border-color:var(--or)"><img src="objets/conso-${k}.webp?v=1" alt="" style="width:1.4em;height:1.4em;object-fit:contain;vertical-align:middle" onerror="this.outerHTML='${C.CONSOS[k].e}'"> <small>${C.CONSOS[k].n} : ${C.CONSOS[k].d}</small></span>`).join('')}</div>` : ''}
     <div class="rangee">
       <div class="bloc creuset"><h4>🔥 Le creuset · plein = une Rune</h4><div class="cases">${creuset}</div></div>
       <div class="bloc besace"><h4>🎒 Besace</h4><div class="cases">${besace}</div></div>
@@ -613,7 +613,7 @@ if (typeof GM !== 'undefined') { try { GM.musique('carte') /* 16/11 soir : la pi
 // 22/11 : le premier accueil est lancé après descente-ecran.js (le configurateur montre aussi la Descente)
 </script>
 <script src="configurateur.js?v=bad5465180"></script>
-<script src="descente-ecran.js?v=b3d297f181"></script>
+<script src="descente-ecran.js?v=ccd00821a7"></script>
 <script src="guide.js?v=ceb10204e9"></script>
 <script src="guides-modes.js?v=e111523360"></script>
 <script>

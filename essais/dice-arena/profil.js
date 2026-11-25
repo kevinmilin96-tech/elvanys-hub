@@ -47,22 +47,27 @@ const titreGagne = k => titresGuilde().some(x => x[0] === k && x[4]);
 const condOk = c => !c || (c.r ? rangGuilde() >= c.r : true) && (c.t ? titreGagne(c.t) : true);
 const condTxt = c => !c ? '' : c.r ? `rang ${c.r} de la Guilde` : c.t ? `titre « ${(titreDe(c.t) || [])[2] || c.t} »` : '';
 const FONDS = {
-  nuit:['Nuit étoilée', 'radial-gradient(ellipse at 50% 0%, #3a2a5c, #120f24 75%)'],
-  forge:['La forge', 'radial-gradient(ellipse at 50% 100%, #8a3a12, #2a1208 70%)'],
-  foret:['La forêt', 'linear-gradient(180deg, #1f4a2a, #0c1f12)'],
-  ocean:['L’océan', 'linear-gradient(180deg, #13406a, #081a30)'],
-  aube:['L’aube', 'linear-gradient(180deg, #ff9a6a, #6a3a8a 60%, #1a1430)', { r:3 }],
-  aurore:['L’aurore', 'linear-gradient(160deg, #0a3a3a, #2a8a6a 40%, #6a3aaa 70%, #120f24)', { r:6 }],
-  orage:['L’orage', 'radial-gradient(ellipse at 30% 20%, #6a7aaa, #1a2040 50%, #08080f)', { r:10 }],
-  royal:['La salle du trône', 'linear-gradient(180deg, #6a1a2a, #3a0a14 50%, #c9a03a 51%, #3a0a14 53%, #1a0408)', { r:15 }],
-  etoiles:['La voie lactée', 'radial-gradient(ellipse at 70% 30%, #fff3 0%, transparent 20%), linear-gradient(135deg, #0a0420, #3a1a6a, #0a0420)', { r:20 }],
-  lave:['La lave', 'radial-gradient(ellipse at 50% 110%, #ff6a1a, #8a1a0a 40%, #1a0804 75%)', { t:'fosse' }],
-  iles:['Les trois îles', 'linear-gradient(180deg, #ff8a3a 0%, #8ad4ff 50%, #3a1a6a 100%)', { t:'odyssee' }],
-  grimoire:['Le grimoire', 'linear-gradient(90deg, #3a2814, #c9a46a 48%, #8a6a3a 50%, #c9a46a 52%, #3a2814)', { t:'chroniques' }],
-  vide:['Le Néant', 'radial-gradient(circle at 50% 50%, #a855f7 0%, #2a0a4a 35%, #000 75%)', { t:'neant' }],
+  nuit:['Nuit étoilée', 'url(fonds/carte-nuit.webp?v=1) center/cover, radial-gradient(ellipse at 50% 0%, #3a2a5c, #120f24 75%)'],
+  forge:['La forge', 'url(fonds/carte-forge.webp?v=1) center/cover, radial-gradient(ellipse at 50% 100%, #8a3a12, #2a1208 70%)'],
+  foret:['La forêt', 'url(fonds/carte-foret.webp?v=1) center/cover, linear-gradient(180deg, #1f4a2a, #0c1f12)'],
+  ocean:['L’océan', 'url(fonds/carte-ocean.webp?v=1) center/cover, linear-gradient(180deg, #13406a, #081a30)'],
+  aube:['L’aube', 'url(fonds/carte-aube.webp?v=1) center/cover, linear-gradient(180deg, #ff9a6a, #6a3a8a 60%, #1a1430)', { r:3 }],
+  aurore:['L’aurore', 'url(fonds/carte-aurore.webp?v=1) center/cover, linear-gradient(160deg, #0a3a3a, #2a8a6a 40%, #6a3aaa 70%, #120f24)', { r:6 }],
+  orage:['L’orage', 'url(fonds/carte-orage.webp?v=1) center/cover, radial-gradient(ellipse at 30% 20%, #6a7aaa, #1a2040 50%, #08080f)', { r:10 }],
+  royal:['La salle du trône', 'url(fonds/carte-royal.webp?v=1) center/cover, linear-gradient(180deg, #6a1a2a, #3a0a14 50%, #c9a03a 51%, #3a0a14 53%, #1a0408)', { r:15 }],
+  etoiles:['La voie lactée', 'url(fonds/carte-etoiles.webp?v=1) center/cover, radial-gradient(ellipse at 70% 30%, #fff3 0%, transparent 20%), linear-gradient(135deg, #0a0420, #3a1a6a, #0a0420)', { r:20 }],
+  lave:['La lave', 'url(fonds/carte-lave.webp?v=1) center/cover, radial-gradient(ellipse at 50% 110%, #ff6a1a, #8a1a0a 40%, #1a0804 75%)', { t:'fosse' }],
+  iles:['Les trois îles', 'url(fonds/carte-iles.webp?v=1) center/cover, linear-gradient(180deg, #ff8a3a 0%, #8ad4ff 50%, #3a1a6a 100%)', { t:'odyssee' }],
+  grimoire:['Le grimoire', 'url(fonds/carte-grimoire.webp?v=1) center/cover, linear-gradient(90deg, #3a2814, #c9a46a 48%, #8a6a3a 50%, #c9a46a 52%, #3a2814)', { t:'chroniques' }],
+  vide:['Le Néant', 'url(fonds/carte-vide.webp?v=1) center/cover, radial-gradient(circle at 50% 50%, #a855f7 0%, #2a0a4a 35%, #000 75%)', { t:'neant' }],
   enigmes:['La nuit des énigmes', 'radial-gradient(circle at 30% 30%, #9be37a33 0%, transparent 25%), radial-gradient(circle at 70% 70%, #8ab4ff33 0%, transparent 25%), linear-gradient(160deg, #0f1a2a, #1a2a4a 50%, #0a0f1a)', { t:'serie30' }],
-  profondeurs:['Les profondeurs', 'radial-gradient(ellipse at 50% 120%, #ff9a4a55, #14100c 60%), #14100c', { t:'profondeurs' }],
+  profondeurs:['Les profondeurs', 'url(fonds/carte-profondeurs.webp?v=1) center/cover, radial-gradient(ellipse at 50% 120%, #ff9a4a55, #14100c 60%), #14100c', { t:'profondeurs' }],
 };
+// 25/11 : les cadres peints des titres (cadres/profil-<titre>.webp), posés par-dessus le portrait
+const CADRES_PEINTS = ['diplome', 'odyssee', 'neant', 'traversee', 'rempart', 'sceaux', 'profondeurs', 'chroniques', 'fosse', 'sphinx', 'apprenti', 'compagnon', 'maitre', 'champion', 'legende', 'archimage'];
+// 25/11 : les emblèmes peints (ui/emblemes/emb-<clé>.webp), l'émoji sinon
+const EMB_PEINTS = ['lion', 'loup', 'dragon', 'hibou', 'chat', 'epee', 'bouclier', 'etoile', 'flamme', 'eclair', 'couronne', 'diamant', 'comete'];
+const emIco = (k, e, px) => EMB_PEINTS.includes(k) ? `<img src="ui/emblemes/emb-${k}.webp?v=1" alt="" style="width:${px}px;height:${px}px;object-fit:contain;vertical-align:middle;box-shadow:none;border-radius:0">` : e;
 const EMBLEMES = [['aucun', '—'], ['lion', '🦁'], ['loup', '🐺'], ['dragon', '🐉'], ['hibou', '🦉'], ['chat', '🐱'], ['epee', '⚔️'], ['bouclier', '🛡️'], ['etoile', '⭐'],
   ['flamme', '🔥', { r:4 }], ['eclair', '⚡', { r:7 }], ['couronne', '👑', { r:12 }], ['diamant', '💎', { r:18 }], ['comete', '☄️', { r:25 }],
   ['de', '🎲', { t:'diplome' }], ['vague', '🌊', { t:'traversee' }], ['crane', '💀', { t:'fosse' }], ['parchemin', '📜', { t:'chroniques' }], ['lune', '🌑', { t:'neant' }], ['sphinx', '🧩', { t:'sphinx' }], ['cle', '🗝️', { t:'serie7' }], ['oeil', '👁️', { t:'serie100' }]];

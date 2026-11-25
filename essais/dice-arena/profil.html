@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261125-145444"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
+<head><meta name="guilde-version" content="20261125-155600"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex">
@@ -17,6 +17,8 @@
   .carte { display:flex; flex-direction:column; align-items:center; gap:6px; background:#1d1b3aee; border:1px solid #4b4580; border-radius:16px; padding:16px 10px 12px; margin-top:12px; }
   .port { position:relative; width:110px; height:110px; }
   .port img { width:110px; height:110px; border-radius:50%; object-fit:cover; display:block; box-shadow:0 0 0 3px #4b4580; transition:box-shadow .3s; }
+  .port.cp { margin:36px 0 34px; }
+  .port img.cadrep { position:absolute; left:-40px; top:-40px; width:190px; height:190px; border-radius:0; box-shadow:none; object-fit:contain; pointer-events:none; }
   .port .em { position:absolute; left:-4px; top:-4px; font-size:28px; filter:drop-shadow(0 2px 3px #000); }
   .carte .nom { font-size:1.25em; font-weight:bold; } .carte .tit { color:var(--or); font-size:.92em; min-height:1.2em; }
   .carte .h { color:var(--doux); font-size:.78em; }
@@ -74,7 +76,7 @@
 <script src="aventuriers.js?v=5679a4a045"></script>
 <script src="odyssee.js?v=2dd4974f8b"></script>
 <script src="succes.js?v=d6910350b3"></script>
-<script src="profil.js?v=4742bf7122"></script>
+<script src="profil.js?v=39f2a1d4f4"></script>
 <script src="pantheon.js?v=1a6f59e92e"></script>
 <script>
 const log = () => {};
@@ -120,7 +122,7 @@ function carteProfil(p, edit) {
   const em = (EMBLEMES.find(x => x[0] === p.embleme) || [])[1], f = (FONDS[p.fond] || FONDS.nuit)[1], r = rangGuilde();
   return `<div class="carte" style="background:${f};border-color:${c ? c[5] : '#4b4580'}">
     ${edit ? '' : `<button class="crayon" onclick="ouvre('portrait')" aria-label="Modifier mon profil">✏️ Modifier</button>`}
-    <div class="port" ${edit ? '' : `onclick="ouvre('portrait')"`}><img src="${img}" onerror="this.onerror=null;this.src='${sc}'" alt="" style="${c ? `box-shadow:0 0 0 4px ${c[5]}, 0 0 22px ${c[5]}` : ''}">${em && em !== '—' ? `<span class="em">${em}</span>` : c ? `<span class="em">${c[1]}</span>` : ''}${typeof emblemeRang === 'function' ? emblemeRang(r, 38, 'rg-e') : `<span class="rg" title="Rang de la Guilde">RG ${r}</span>`}</div>
+    <div class="port${c && CADRES_PEINTS.includes(p.cadre) ? ' cp' : ''}" ${edit ? '' : `onclick="ouvre('portrait')"`}><img src="${img}" onerror="this.onerror=null;this.src='${sc}'" alt="" style="${c && !CADRES_PEINTS.includes(p.cadre) ? `box-shadow:0 0 0 4px ${c[5]}, 0 0 22px ${c[5]}` : ''}">${c && CADRES_PEINTS.includes(p.cadre) ? `<img class="cadrep" src="cadres/profil-${p.cadre}.webp?v=1" alt="">` : ''}${em && em !== '—' ? `<span class="em">${emIco(p.embleme, em, 36)}</span>` : c ? `<span class="em">${c[1]}</span>` : ''}${typeof emblemeRang === 'function' ? emblemeRang(r, 38, 'rg-e') : `<span class="rg" title="Rang de la Guilde">RG ${r}</span>`}</div>
     <div class="nom" id="nomv" style="${nomStyle(p)}">${p.nom || 'Toi'}</div><div class="tit">${t ? `${t[1]} ${t[2]}` : ''}</div>
     <div class="dev" id="devv">${p.devise ? `« ${p.devise.replace(/</g, '&lt;')} »` : ''}</div>
     ${(p.vitrine || []).length ? `<div class="vit">${p.vitrine.map(k => { const x = titreDe(k); return x ? `<span style="border-color:${x[5]}">${x[1]} ${x[2]}</span>` : ''; }).join('')}</div>` : ''}
@@ -164,7 +166,7 @@ function atelier(p, T) {
       ${T.map(x => `<button class="ligne ${p.titre === x[0] ? 'choisi' : ''}" ${x[4] ? '' : 'disabled'} onclick="choisir('titre','${x[0]}')"><div class="e">${x[4] ? x[1] : '🔒'}</div><div><b>${x[2]}</b><small>${x[3]}</small></div></button>`).join('')}`;
   } else if (onglet === 'embleme') {
     corps = `<p class="aide">Un petit emblème sur ton portrait et devant ton nom en combat.</p><div class="grille">
-      ${EMBLEMES.map(([k, e, c]) => `<button class="cad ${p.embleme === k ? 'choisi' : ''}" ${condOk(c) ? '' : 'disabled'} onclick="choisir('embleme','${k}')"><span class="rond">${condOk(c) ? e : '🔒'}</span>${condOk(c) ? '' : verrou(c)}</button>`).join('')}</div>`;
+      ${EMBLEMES.map(([k, e, c]) => `<button class="cad ${p.embleme === k ? 'choisi' : ''}" ${condOk(c) ? '' : 'disabled'} onclick="choisir('embleme','${k}')"><span class="rond">${condOk(c) ? emIco(k, e, 30) : '🔒'}</span>${condOk(c) ? '' : verrou(c)}</button>`).join('')}</div>`;
   } else if (onglet === 'couleur') {
     corps = `<p class="aide">La couleur de ton nom, sur ta carte et en combat.</p><div class="grille">
       ${COULEURS_NOM.map(([k, c, cd]) => `<button class="cad ${p.couleur === k ? 'choisi' : ''}" ${condOk(cd) ? '' : 'disabled'} onclick="choisir('couleur','${k}')"><span class="rond" style="background:${c}">${condOk(cd) ? '' : '🔒'}</span>${condOk(cd) ? (k === 'arcenciel' ? 'Arc-en-ciel' : k[0].toUpperCase() + k.slice(1)) : verrou(cd)}</button>`).join('')}</div>`;

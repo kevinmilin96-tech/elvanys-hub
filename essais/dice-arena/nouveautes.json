@@ -1,5 +1,9 @@
 [
 {
+"v": "20261125-155600",
+"m": "Nouvelles images : canons des 4 héros dans la Défense, cases et événements de la Descente, consommables et pactes, et pour le profil : cadres peints, fonds de carte et emblèmes"
+},
+{
 "v": "20261125-145444",
 "m": "Les derniers objets de la Descente sont peints : sac de dés, gobelet de relance, six béni, trophée de chasse"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261124-190558",
 "m": "Ton profil s'affiche de nouveau (il restait vide)."
-},
-{
-"v": "20261124-185938",
-"m": "La Crypte ne parle plus de compagnon quand tu n'en as pas ; dans la Descente, Moustache explique comment en avoir un."
 }
 ]
