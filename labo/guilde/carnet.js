@@ -41,7 +41,7 @@
     const Q = lireQuetes(), L = jour ? Q.j : Q.s, g = (typeof GAIN_QUETE !== 'undefined' && GAIN_QUETE[jour ? 'jour' : 'semaine']) || {};
     return L.map((qq, i) => { const def = defQuete(qq, jour) || ['', '', '', 1], va = !qq.fait && typeof QUETE_VA !== 'undefined' && QUETE_VA[def[2]], aRec = qq.fait && qq.recup === false;
       return `<div class="qt ${qq.fait && !aRec ? 'fait' : ''}"${va ? ` onclick="envieVa('${va}')" style="cursor:pointer"` : ''}><span class="e">${qq.fait ? '✅' : '📜'}</span><span class="t"><b>${texteQuete(qq, jour)}</b>
-        <small>${qq.prog || 0} / ${def[3]} · +${g.xp || 0} XP${g.or ? ` · 🪙 ${g.or}` : ''}</small><span class="barre"><i style="width:${Math.min(100, Math.round((qq.prog || 0) / def[3] * 100))}%"></i></span></span>
+        <small>${qq.prog || 0} / ${def[3]} · ${qq.fait && !aRec ? '<b style="color:#7ff0a8">récompense déjà récupérée</b>' : `+${g.xp || 0} XP${g.or ? ` · 🪙 ${g.or}` : ''}`}</small><span class="barre"><i style="width:${Math.min(100, Math.round((qq.prog || 0) / def[3] * 100))}%"></i></span></span>
         ${aRec ? `<button class="rec" onclick="event.stopPropagation();carnetRecup(${jour}, ${i})">🎁 Récupérer</button>` : qq.fait ? '<span class="ok">✓</span>' : '<span class="ok" style="color:#f3c96b">›</span>'}</div>`; }).join('');
   };
   window.carnetRecup = (jour, i) => { const g = typeof recupQuete === 'function' && recupQuete(!!jour, i);
@@ -85,6 +85,21 @@
     if (typeof GM !== 'undefined') GM.son('choisir');
     if (typeof annonceRang === 'function') annonceRang(`🎁 ${x[2]} : +${TEMPS_REC.xp} XP · 🪙 +${TEMPS_REC.or} · 🔹 +${TEMPS_REC.pou}`, true);
     setTimeout(() => { carnetOuvre(onglet); if (typeof envieBandeau === 'function') envieBandeau(); }, 60); };
+  // 25/11 (l'utilisateur : « pas eu la validation et le cadeau ») : la Chasse au boss de la semaine : ✓ quand on a chassé cette semaine,
+  // et les paliers atteints (40, 80, 130 dégâts) ou le boss tombé (jusqu'à la mort) attendent ici, « 🎁 Récupérer »
+  const CH_PAL = [[40, 4, 30], [80, 8, 60], [130, 15, 100]], CH_TUE = [10, 200];
+  const chasseLit = () => { const c = ENV_J('guilde-chasse', {}) || {}; return c.semaine === (typeof semaineCle === 'function' ? semaineCle() : '') ? c : null; };
+  window.carnetChasse = () => { const c = chasseLit(); if (!c || !(c.aRec || []).length) return; let xp = 0, ecl = 0;
+    c.aRec.forEach(i => { const g = i === 'tue' ? CH_TUE : [CH_PAL[i][1], CH_PAL[i][2]]; ecl += g[0]; xp += g[1]; }); c.aRec = [];
+    try { localStorage.setItem('guilde-chasse', JSON.stringify(c)); } catch (e) { return; }
+    if (typeof gagneXP === 'function') try { gagneXP(xp, 'Chasse au boss'); } catch (e) {} if (typeof donneLibres === 'function') try { donneLibres(ecl); } catch (e) {}
+    if (typeof GM !== 'undefined') GM.son('choisir');
+    if (typeof annonceRang === 'function') annonceRang(`🎁 Chasse au boss : +${xp} XP · 💠 +${ecl}`, true);
+    setTimeout(() => { carnetOuvre(onglet); if (typeof envieBandeau === 'function') envieBandeau(); }, 60); };
+  const chasseLigne = () => { const c = chasseLit(), fait = !!c && ((c.meilleur || 0) > 0 || (c.mortMax || 0) > 0), rec = c && (c.aRec || []).length;
+    const d = !c ? 'Le même boss pour tous, jusqu’à dimanche' : `Meilleur : ${c.meilleur || 0} dégâts${c.mortMax ? ` · jusqu’à la mort : ${c.tue ? 'tombé ✅' : c.mortMax}` : ''}${(c.paliers || []).length ? ` · paliers ${c.paliers.length}/3` : ''}`;
+    if (rec) return `<button onclick="carnetChasse()"><span class="e">🎯</span><span class="t"><b>La Chasse au boss de la semaine</b><small>${d}</small></span><span class="rec" style="flex:none">🎁 Récupérer</span></button>`;
+    return ligne(['chasse', '🎯', 'La Chasse au boss de la semaine', d, fait, "envieVa('epreuves.html#chasse')"]); };
   // 24/11 (choix de l'utilisateur) : un ❓ explique ce que rapportent les flashs et l'énigme
   window.carnetAide = () => { if (document.getElementById('carnet-aide')) return; const a = document.createElement('div'); a.id = 'carnet-aide';
     a.innerHTML = `<div class="boite"><button class="x" onclick="document.getElementById('carnet-aide').remove()" aria-label="Fermer">✕</button><h2>❓ Ce que rapportent les rendez-vous rapides</h2>
@@ -101,8 +116,8 @@
     return `<button class="${fait && !rec ? 'fait' : ''}" onclick="${rec ? 'carnetButin()' : a}"><span class="e">${e}</span><span class="t"><b>${n}</b><small>${d}</small></span>${rec ? '<span class="rec" style="flex:none">🎁 Récupérer</span>' : `<span class="c">${fait ? '✓' : '›'}</span>`}</button>`; };
   const compte = () => { const L = envieRendezVous().filter(x => x[0] !== 'quetes'), Q = typeof lireQuetes === 'function' ? lireQuetes() : { j:[], s:[] };
     const sem = typeof regleDeLaSemaine === 'function' ? regleDeLaSemaine() : null, sc = sem && ENV_J('guilde-sceaux', {})[sem.semaine];
-    const jf = L.filter(x => x[4]).length + Q.j.filter(x => x.fait).length, jn = L.length + Q.j.length, sf = Q.s.filter(x => x.fait).length + (sc ? 1 : 0), sn = Q.s.length + 1;
-    return { jf, jn, sf, sn, rec:[...Q.j, ...Q.s].filter(x => x.fait && x.recup === false).length, sem, sc }; };
+    const jf = L.filter(x => x[4]).length + Q.j.filter(x => x.fait).length, jn = L.length + Q.j.length, ch = chasseLit(), sf = Q.s.filter(x => x.fait).length + (sc ? 1 : 0) + (ch && ((ch.meilleur || 0) > 0 || (ch.mortMax || 0) > 0) ? 1 : 0), sn = Q.s.length + 2;
+    return { jf, jn, sf, sn, rec:[...Q.j, ...Q.s].filter(x => x.fait && x.recup === false).length + (ch && (ch.aRec || []).length ? 1 : 0), sem, sc }; };
 
   let onglet = 'jour';
   window.carnetOuvre = function (o) {
@@ -117,7 +132,7 @@
       : `<h3 class="grp">📜 Les quêtes de la semaine <small>elles changent le lundi</small></h3>${quetesHTML(false)}
          <h3 class="grp">🗓️ Les rendez-vous de la semaine <small>jusqu’à dimanche soir</small></h3><div class="liste">
          ${ligne(['semaine', '🔏', 'Le Duel de la semaine', C.sc ? 'Sceau gagné cette semaine' : C.sem ? `« ${C.sem.n} » : gagne pour le Sceau` : 'Une règle nouvelle chaque semaine', !!C.sc, "envieVa('duel.html?semaine=1')"])}
-         ${ligne(['chasse', '🎯', 'La Chasse au boss de la semaine', 'Le même boss pour tous, jusqu’à dimanche', false, "envieVa('epreuves.html#chasse')"])}</div>`;
+         ${chasseLigne()}</div>`;
     const html = `<div class="boite"><button class="x" onclick="document.getElementById('env-auj').remove()" aria-label="Fermer">✕</button>
       <h2><img src="ui/barre/ui-carnet.webp?v=1" alt="" style="width:34px;height:34px;object-fit:contain;vertical-align:middle" onerror="this.outerHTML='📜'"> Le carnet de la Guilde</h2>
       <div class="ongl"><button class="${onglet === 'jour' ? 'on' : ''}" onclick="carnetOuvre('jour')">☀ Aujourd’hui<i>${C.jf}/${C.jn}</i></button><button class="${onglet === 'semaine' ? 'on' : ''}" onclick="carnetOuvre('semaine')">🗓️ Cette semaine<i>${C.sf}/${C.sn}</i></button></div>

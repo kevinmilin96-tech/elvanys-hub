@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261125-212502"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
+<head><meta name="guilde-version" content="20261125-213137"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex">
@@ -67,10 +67,13 @@ function etageTour(n) {
 // la Chasse de la semaine
 const bossSemaine = () => BOSS_TOUR[[...semaineCle()].reduce((a, c) => a + c.charCodeAt(0), 0) % 6];
 const PALIERS = [[40, 4, 30], [80, 8, 60], [130, 15, 100]]; // [dégâts, éclats de Guilde, XP]
-function lireChasse() { const c = Object.assign({ semaine:'', meilleur:0, paliers:[], essais:{} }, RJ(CHASSE_CLE, {})); if (c.semaine !== semaineCle()) { c.semaine = semaineCle(); c.meilleur = 0; c.paliers = []; } return c; }
+// 25/11 (l'utilisateur : « pas eu la validation ni le cadeau ») : les paliers atteints ATTENDENT dans le carnet (aRec), « 🎁 Récupérer » ;
+// et la Chasse « jusqu'à la mort » (sans limite de tours) : son propre record (mortMax), faire tomber le boss = 💠 10 + 200 XP, une fois par semaine
+const CHASSE_TUE = [10, 200];
+function lireChasse() { const c = Object.assign({ semaine:'', meilleur:0, paliers:[], essais:{}, aRec:[], mortMax:0, tue:false }, RJ(CHASSE_CLE, {})); if (c.semaine !== semaineCle()) { c.semaine = semaineCle(); c.meilleur = 0; c.paliers = []; c.mortMax = 0; c.tue = false; } return c; }
 const essaisRestants = c => 2 - (c.essais[rgJourCle()] || 0);
 
-let ONG = location.hash === '#chasse' ? 'chasse' : 'tour', HEROS_CHOISI = haValide(localStorage.getItem('guilde-epreuve-heros') || 'gorm', ZOK(), 'gorm'), RESULTAT = '';
+let ONG = location.hash === '#chasse' ? 'chasse' : location.hash === '#mort' ? 'mort' : 'tour', HEROS_CHOISI = haValide(localStorage.getItem('guilde-epreuve-heros') || 'gorm', ZOK(), 'gorm'), RESULTAT = '';
 // 15/11 soir : HEROS_CHOISI peut être un HÉROS D'AVENTURE 'av:<id>' (heros-aventure.js) : nouvelleOdyssee joue sa voie, sa progression compte
 const nomChoisi = () => haInfo(HEROS_CHOISI) ? haEsc(haInfo(HEROS_CHOISI).nom) : HEROS[haVoie(HEROS_CHOISI, 'gorm')].nom;
 function onglet(o) { ONG = o; location.hash = o; dessine(); }
@@ -115,8 +118,8 @@ function lance(e, epreuve) {
   sessionStorage.setItem('guilde-dans-mode', '1'); location.href = 'duel.html?odyssee=1&epreuve=1';
 }
 function combatTour() { const T = lireTour(), e = etageTour(T.etage); lance(e, { type:'tour', etage:T.etage, force:e.force }); }
-function combatChasse() { const C = lireChasse(); if (essaisRestants(C) <= 0) return; C.essais[rgJourCle()] = (C.essais[rgJourCle()] || 0) + 1; localStorage.setItem(CHASSE_CLE, JSON.stringify(C));
-  const b = bossSemaine(); lance({ acte:HEROS[b].ile || 'brulees', t:'boss', ennemi:b, niv:1 }, { type:'chasse', chasse:8 }); }
+function combatChasse(mort) { const C = lireChasse(); if (essaisRestants(C) <= 0) return; C.essais[rgJourCle()] = (C.essais[rgJourCle()] || 0) + 1; localStorage.setItem(CHASSE_CLE, JSON.stringify(C));
+  const b = bossSemaine(); lance({ acte:HEROS[b].ile || 'brulees', t:'boss', ennemi:b, niv:1 }, { type:'chasse', chasse:mort ? 0 : 8 }); }
 // au retour du combat : le résultat
 function retour() {
   const run = lireOdyssee(); if (!run || !run.combat || !run.combat.resultat || !run.epreuve) return;
@@ -130,10 +133,12 @@ function retour() {
       RESULTAT = `<div class="res">🏆 <b>Étage ${E.etage} passé</b> avec ${h} ! +15 XP, +2 éclats.${plus}</div>`;
     } else RESULTAT = `<div class="res perdu">💀 ${h} est tombé à l’étage ${E.etage}. Rien n’est perdu : réessaie, ou change de héros.</div>`;
   } else {
-    const C = lireChasse(), d = res.degats || 0; C.meilleur = Math.max(C.meilleur, d); let gains = [];
-    PALIERS.forEach(([s, e, x], i) => { if (C.meilleur >= s && !C.paliers.includes(i)) { C.paliers.push(i); donneLibres(e); gagneXP(x, 'Palier de la Chasse'); gains.push(`${s} dégâts`); } });
+    const C = lireChasse(), d = res.degats || 0, mort = !E.chasse; let gains = [];
+    if (mort) { C.mortMax = Math.max(C.mortMax, d); if (d >= 999 && !C.tue) { C.tue = true; C.aRec.push('tue'); gains.push('le boss est tombé'); } }
+    else { C.meilleur = Math.max(C.meilleur, d); PALIERS.forEach(([s], i) => { if (C.meilleur >= s && !C.paliers.includes(i)) { C.paliers.push(i); C.aRec.push(i); gains.push(`${s} dégâts`); } }); }
     localStorage.setItem(CHASSE_CLE, JSON.stringify(C)); guildeEvt('chasse', d);
-    RESULTAT = `<div class="res">🎯 <b>${d} dégâts</b> avec ${h}.${gains.length ? ` Palier${gains.length > 1 ? 's' : ''} atteint${gains.length > 1 ? 's' : ''} : ${gains.join(', ')} !` : ''}</div>`;
+    if (res.defiOk && typeof donneRessources === 'function') donneRessources(30, 0); // l'or du défi du combat (il était annoncé mais perdu)
+    RESULTAT = `<div class="res">🎯 <b>${d} dégâts</b> avec ${h}${mort ? ' (jusqu’à la mort)' : ''}.${gains.length ? ` ${gains.join(', ')} ! <b>🎁 À récupérer dans le carnet</b> (cette semaine).` : ''}</div>`;
   }
 }
 // 22/11 (configurateur validé : « déploie-le aux autres modes ») : l'entrée des épreuves = le configurateur commun (configurateur.js) :
@@ -149,13 +154,16 @@ dessine = function () {
       { k:'tour', e:'🏯', n:'La Tour', img:'menu-recu/mode-epreuves.webp', desc:() => `${mode === 'tour' ? res : ''}Monte étage par étage. Chaque combat est fixe (le même pour tout le monde) et de plus en plus dur ; un boss tous les 5 étages.`,
         pas:() => [`🏯 Étage ${T.etage}`, `${HEROS[e.ennemi].nom}${e.t === 'boss' ? ' 👑' : e.t === 'elite' ? ' 💀' : ''}`] },
       { k:'chasse', e:'🎯', n:'Chasse au boss', img:'menu-recu/mode-chasse.webp', desc:() => `${mode === 'chasse' ? res : ''}Le boss de la semaine a 999 PV : tu ne le battras pas. Le but : lui faire le plus de dégâts possible en 8 tours. Deux essais par jour.`,
-        pas:() => [`👑 ${HEROS[b].nom}`, `Meilleur : ${C.meilleur} dégâts`, `Essais aujourd’hui : ${Math.max(0, r)} / 2`], verrou:() => r > 0 ? null : 'Plus d’essai aujourd’hui : reviens demain' } ],
-    options:m => m === 'tour' ? [{ k:'e', titre:`🏯 Étage ${T.etage}`, aide:ligneEnnemi(e, true) + `<p class="aide">Récompense : 15 XP et 2 éclats du héros${e.t === 'boss' ? ' · boss : un objet pour l’armurerie et 5 éclats de Guilde' : ''}.</p>` },
+        pas:() => [`👑 ${HEROS[b].nom}`, `Meilleur : ${C.meilleur} dégâts`, `Essais aujourd’hui : ${Math.max(0, r)} / 2`], verrou:() => r > 0 ? null : 'Plus d’essai aujourd’hui : reviens demain' },
+      { k:'mort', e:'💀', n:'Chasse jusqu’à la mort', img:'menu-recu/mode-chasse.webp', desc:() => `${mode === 'mort' ? res : ''}Le même boss, 999 PV, mais <b>sans limite de tours</b> : tu combats jusqu’à ce que l’un de vous tombe. Le faire tomber = 💠 ${CHASSE_TUE[0]} et ${CHASSE_TUE[1]} XP (une fois par semaine). Mêmes 2 essais par jour que la Chasse.`,
+        pas:() => [`👑 ${HEROS[b].nom}`, C.tue ? '✅ Déjà tombé cette semaine' : `Record : ${C.mortMax} / 999`, `Essais aujourd’hui : ${Math.max(0, r)} / 2`], verrou:() => r > 0 ? null : 'Plus d’essai aujourd’hui : reviens demain' } ],
+    options:m => m === 'mort' ? [{ k:'b', titre:'💀 Le boss de la semaine', aide:ligneEnnemi({ n:'—', acte:HEROS[b].ile || 'brulees', t:'boss', ennemi:b, niv:1, force:1 }, true).replace('Étage — · ', 'Cette semaine · ').replace(' · ennemis ×1 de vie', '') }]
+      : m === 'tour' ? [{ k:'e', titre:`🏯 Étage ${T.etage}`, aide:ligneEnnemi(e, true) + `<p class="aide">Récompense : 15 XP et 2 éclats du héros${e.t === 'boss' ? ' · boss : un objet pour l’armurerie et 5 éclats de Guilde' : ''}.</p>` },
         { k:'p', titre:'👀 Plus haut', aide:`<div class="liste">${[1, 2, 3, 4, 5].map(k => ligneEnnemi(etageTour(T.etage + k))).join('')}</div>` }]
       : [{ k:'b', titre:'🎯 Le boss de la semaine', aide:ligneEnnemi({ n:'—', acte:HEROS[b].ile || 'brulees', t:'boss', ennemi:b, niv:1, force:1 }, true).replace('Étage — · ', 'Cette semaine · ').replace(' · ennemis ×1 de vie', '') },
         { k:'p', titre:'🏅 Les paliers de la semaine', aide:`<div class="paliers">${PALIERS.map(([d, x, xp], i) => `<div class="${C.paliers.includes(i) ? 'ok' : ''}">${C.paliers.includes(i) ? '✅' : '🎯'} ${d} dégâts<br><small>💠 ${x} · ${xp} XP</small></div>`).join('')}</div>` }],
-    resume:m => `${m === 'tour' ? `🏯 Étage ${T.etage}` : '🎯 Chasse au boss'} · <b>${nomChoisi()}</b>`,
-    lancer:m => { RESULTAT = ''; if (m === 'tour') combatTour(); else combatChasse(); } }, CFG.def && CFG.def.jeu === 'epreuves' ? null : { mode:ONG });
+    resume:m => `${m === 'tour' ? `🏯 Étage ${T.etage}` : m === 'mort' ? '💀 Chasse jusqu’à la mort' : '🎯 Chasse au boss'} · <b>${nomChoisi()}</b>`,
+    lancer:m => { RESULTAT = ''; if (m === 'tour') combatTour(); else combatChasse(m === 'mort'); } }, CFG.def && CFG.def.jeu === 'epreuves' ? null : { mode:ONG });
 };
 retour(); dessine();
 if (typeof GM !== 'undefined') { GM.musique('menu'); GM.bouton(); }

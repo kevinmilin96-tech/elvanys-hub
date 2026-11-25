@@ -1,5 +1,9 @@
 [
 {
+"v": "20261125-213137",
+"m": "La Chasse au boss : écran de fin clair (ton score, pas une « victoire »), l'or du défi vraiment donné, les paliers à récupérer 🎁 dans le carnet, et un nouveau mode « 💀 Chasse jusqu'à la mort » sans limite de tours"
+},
+{
 "v": "20261125-212330",
 "m": "Carnet : « Si tu as le temps » se récupère avec le cadeau (+30 XP, 30 or, 20 poussière par jour)"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261125-162444",
 "m": "Les noms longs des cartes de mode ne sont plus coupés"
-},
-{
-"v": "20261125-162129",
-"m": "La quête « Gagne un Duel » ouvre bien le Duel contre l’ordinateur"
 }
 ]
