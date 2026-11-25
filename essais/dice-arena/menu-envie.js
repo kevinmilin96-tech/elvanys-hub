@@ -16,7 +16,7 @@ const ENV_J = (k, d) => { try { return JSON.parse(localStorage.getItem(k) || 'nu
 const envJourLocal = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
 const envJourUTC = () => new Date().toISOString().slice(0, 10);
 // 22/11 (testeurs) : les noms des défis du jour de la Défense (même liste et même calcul que defense-moteur.js, DEFIS_D)
-const ENV_DEFIS_D = ['Gagner avec 4 canons au plus', 'Gagner sans jouer une seule carte', 'Poser au moins 6 pièges', 'Aucun dégât pendant la dernière vague', 'Placer au moins 5 coups de héros'];
+const ENV_DEFIS_D = ['Gagner avec 4 canons au plus', 'Gagner sans jouer une seule carte', 'Poser au moins 4 pièges', 'Aucun dégât pendant la dernière vague', 'Placer au moins 5 coups de héros'];
 const envDefiD = () => { const d = new Date(); return ENV_DEFIS_D[Math.floor(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / 864e5) % ENV_DEFIS_D.length]; };
 const envIleDuJour = () => ['brulees', 'givre', 'abime'][Math.floor(Date.now() / 864e5) % 3];
 

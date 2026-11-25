@@ -373,7 +373,7 @@ function choisirBonusD(D, k) { if (!D.choix || !D.choix.includes(k)) return 'Cho
 const DEFIS_D = [
   { id:'canons4', n:'Gagner avec 4 canons au plus en même temps', ok:D => D.maxCanons <= 4 },
   { id:'sansCarte', n:'Gagner sans jouer une seule carte', ok:D => D.cartesJouees === 0 },
-  { id:'pieges', n:'Poser au moins 6 pièges', ok:D => D.piegesPoses >= 6 },
+  { id:'pieges', n:'Poser au moins 4 pièges', ok:D => D.piegesPoses >= 4 }, // 25/11 (l'utilisateur : « 3 pièges, impossible d'en avoir 6 »)
   { id:'boss', n:'Aucun dégât à la porte pendant la dernière vague', ok:D => D.degatsDerniere === 0 },
   { id:'coups', n:'Placer au moins 5 coups de héros', ok:D => D.coups >= 5 },
 ];
