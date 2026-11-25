@@ -211,14 +211,24 @@ function nouveauVoyage(heros, opts) {
   const X = nouvelleExpedition(heros, graine);
   const R = rngDe(graine + '/v4');
   X.v = 4; X.mer = opts.mer || 'nuages'; X.asc = opts.asc || 0; X.jour = !!opts.jour; X.debloques = opts.debloques != null ? opts.debloques : meta.gagnes;
+  // 25/11 (choix de l'utilisateur : « trop de choix de monstres dans mon magasin ») : le recruteur ne propose que 6 SORTES de recrues par voyage
+  // (3 de base, 2 moyennes, 1 forte), tirées au départ : on retrouve plus souvent les mêmes, donc plus de fusions
+  if (!globalThis.SANS_SORTES) { const R2 = rngDe(graine + '/sortes'), d = recruesDispo(X); X.sortes = [];
+    // 2 FAMILLES par voyage (toutes leurs recrues) : moins de sortes donc plus de fusions, et les bonus de famille restent possibles
+    const fams = [...new Set(d.map(k => RECRUES[k].fam).filter(f => f && d.some(k => RECRUES[k].fam === f && RECRUES[k].t === 1)))], choisies = [];
+    for (let i = 0; i < 2 && fams.length; i++) choisies.push(fams.splice(Math.floor(R2() * fams.length), 1)[0]);
+    X.sortes = d.filter(k => choisies.includes(RECRUES[k].fam)); X.familles = choisies;
+    if (globalThis.SORTES_SIX) { X.sortes = []; X.familles = null; const prend = l => { if (l.length) X.sortes.push(l.splice(Math.floor(R2() * l.length), 1)[0]); };
+      [['rempart'], ['lame'], ['tireur', 'soutien']].forEach(roles => prend(d.filter(k => RECRUES[k].t === 1 && roles.includes(RECRUES[k].role) && !X.sortes.includes(k))));
+      [[2, 2], [3, 1]].forEach(([t, n]) => { const l = d.filter(k => RECRUES[k].t === t); for (let i = 0; i < n; i++) prend(l); }); } }
   X.boss = tire(R, MERS[X.mer].boss); X.regle = opts.regle || tire(R, opts.flash ? FLASH_REGLES : Object.keys(REGLES_V4));
   X.coeursMax = 3; X.route = []; X.carte4b = true; X.carte = carteV4(X);
   if (opts.flash) { X.flash = true; if (typeof defisJourTire === 'function') X.fdefis = defisJourTire('expedition', FLASH_DEFIS_EXP); X.carte = carteFlash(X); X.coeurs = X.coeursMax = 2; X.or = 12; }
   if (X.regle === 'calme') { X.coeurs = 4; X.coeursMax = 4; }
   if (X.asc >= 9) { X.coeurs = Math.min(X.coeurs, 2); X.coeursMax = Math.min(X.coeursMax, 2); }
   if (X.asc >= 3) X.or = Math.max(0, X.or - 2);
-  if (X.regle === 'veterans') { const k = tire(R, recruesDispo(X).filter(k => RECRUES[k].t === 1)), p = placeLibre(X, ['tireur', 'soutien'].includes(RECRUES[k].role) ? 'ar' : 'av'); if (p) poseA(X, p, nouvelleRecrue(k, 1)); }
-  X.journal = [`Le navire de ${HEROS[heros].nom} quitte la Guilde pour ${MERS[X.mer].n}. Règle du voyage : ${REGLES_V4[X.regle].e} ${REGLES_V4[X.regle].n}.`];
+  if (X.regle === 'veterans') { const k = tire(R, (X.sortes && X.sortes.length ? X.sortes : recruesDispo(X)).filter(k => RECRUES[k].t === 1)), p = placeLibre(X, ['tireur', 'soutien'].includes(RECRUES[k].role) ? 'ar' : 'av'); if (p) poseA(X, p, nouvelleRecrue(k, 1)); }
+  X.journal = [`Le navire de ${HEROS[heros].nom} quitte la Guilde pour ${MERS[X.mer].n}. Règle du voyage : ${REGLES_V4[X.regle].e} ${REGLES_V4[X.regle].n}.`, `🧭 Le recruteur de ce voyage propose : ${(X.sortes || []).map(k => RECRUES[k].n).join(', ')}.`];
   nouvelleOffre(X); synchroRoute(X); return X;
 }
 // choisir l'escale de l'étape en cours (parmi les options de la carte)
@@ -229,11 +239,14 @@ const doitChoisir = X => X && X.v === 4 && !X.fini && !X.route[X.escale] && X.ca
 const _offre3 = nouvelleOffre, _adv3 = adversaire, _joue3 = joueEscale;
 nouvelleOffre = function (X) {
   if (X.v !== 4) return _offre3(X);
-  const R = hasardX(X), e6 = X.carte4b ? X.escale * 6 / X.carte.length : X.escale, tier = Math.min(3, 1 + Math.floor(e6 / 2)), pool = recruesDispo(X).filter(k => RECRUES[k].t <= tier);
+  const R = hasardX(X), e6 = X.carte4b ? X.escale * 6 / X.carte.length : X.escale, tier = Math.min(3, 1 + Math.floor(e6 / 2)), pool = (X.sortes && X.sortes.length ? X.sortes : recruesDispo(X)).filter(k => RECRUES[k].t <= tier);
   const n = (X.heros === 'oria' ? 5 : 4) + (X.regle === 'marche' ? 1 : 0) - (X.asc >= 5 ? 1 : 0);
   X.offre = Array.from({ length:n }, () => tire(R, pool));
 };
+// 25/11 : avec le recruteur à 2 familles, l'équipage est bien plus fort (fusions + bonus de famille) : les monstres ont plus de vie (réglé au simulateur)
+const DUR_FAM = 1.35; // simulateur 25/11 : 1,3 → ≈ 83 %, 1,45 → ≈ 75 %
 function plateauV4(X, def, mul) {
+  if (X.familles && !X.flash) mul *= (globalThis.DURF || DUR_FAM);
   const P = { av:[null, null, null], ar:[null, null, null] }, M = MERS[X.mer];
   const asc = 1 + (X.asc >= 1 ? .04 : 0) + (X.asc >= 6 ? .05 : 0), atq = (X.regle === 'enrages' ? 1 : 0) + (X.asc >= 7 ? 1 : 0);
   const fait = ([n, a, v, tag]) => ({ id:uid(), key:'m', n, a:a + atq, v:Math.round(v * mul * M.pv * asc), star:0, bonusA:0, bonusV:0, ...tagsMonstre(tag) });

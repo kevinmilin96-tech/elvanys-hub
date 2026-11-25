@@ -75,7 +75,7 @@ function tagsMonstre(tag) { const l = String(tag || '').split('+'), o = { role:l
   l.forEach(t => { if (SBIRES[t]) Object.assign(o, SBIRES[t], { sbire:t }); }); return o; }
 // 18/11 (choix de l'utilisateur, façon Super Auto Pets) : ★ = 3 recrues (attaque et vie ×2) ; ★★ = 6 recrues (×4) : une ★ + 3 copies, ou deux ★.
 // u.cop = le nombre de recrues fondues dedans (une ★ « mange » chaque nouvelle copie : ★ 4/6, ★ 5/6, puis ★★). Les POUVOIRS montent aussi avec les étoiles.
-const MUL_ETOILE = [1, 2, 4], COP_ETOILE = [1, 3, 6];
+const MUL_ETOILE = [1, 2, 4, 6], COP_ETOILE = [1, 3, 6, 9]; // 25/11 (choix de l'utilisateur) : ★★★ = 9 copies, ×6
 function nouvelleRecrue(k, star) {
   const r = RECRUES[k], s = star || 0, m = MUL_ETOILE[s];
   return { id:uid(), key:k, n:r.n, fam:r.fam, role:r.role, a:r.a * m, v:r.v * m, star:s, cop:COP_ETOILE[s], bonusA:0, bonusV:0 };
@@ -86,10 +86,10 @@ function pouvoirsEtoile(k, star) {
   const b = RECRUES[k] || {}, s = star || 0, l = [];
   if (!s) return { poison:b.poison || 0, soigneur:b.soigneur || 0, soinTous:b.soinTous || 0, epines:b.epines || 0, renvoi:0, charge2:false, chargeSur:false, tambour:b.tambour ? 1 : 0, l };
   const o = { poison:b.poison ? b.poison + s : 0, soigneur:b.soigneur ? b.soigneur + s : 0, soinTous:b.soinTous ? b.soinTous + s : 0, epines:b.epines ? b.epines + s : 0,
-    renvoi:b.barriere && s >= 2 ? 1 : 0, charge2:!!b.charge, chargeSur:!!b.charge && s >= 2, tambour:b.tambour ? (s >= 2 ? 2 : 1) : 0, l };
+    renvoi:b.barriere && s >= 2 ? 1 : 0, charge2:!!b.charge, chargeSur:!!b.charge && s >= 2, tambour:b.tambour ? (s >= 3 ? 3 : s >= 2 ? 2 : 1) : 0, l };
   if (b.poison) l.push(`Poison ${o.poison}`); if (b.soigneur) l.push(`soigne de ${o.soigneur}`); if (b.soinTous) l.push(`soigne tout l’équipage de ${o.soinTous}`);
   if (b.epines) l.push(`Épines ${o.epines}`); if (o.renvoi) l.push('Barrière qui renvoie 1 dégât'); if (b.charge) l.push(`Charge : 2 coups au 1er round${o.chargeSur ? ', le premier sûr (6)' : ''}`);
-  if (b.tambour && s >= 2) l.push('Tambour : +2 attaque aux autres');
+  if (b.tambour && s >= 2) l.push(`Tambour : +${s >= 3 ? 3 : 2} attaque aux autres`);
   return o;
 }
 function capitaineUnite(h) { const H = HEROS[h]; return { id:uid(), key:'capitaine', hid:h, n:H.nom, role:'capitaine', a:3, v:Math.round(H.pv * .6), star:0, bonusA:0, bonusV:0 }; }
@@ -111,7 +111,7 @@ function nouvelleOffre(X) {
 // 18/11 (choix de l'utilisateur) : le recruteur montre plus souvent une recrue qu'on possède déjà (pas encore ★★), pour que les fusions arrivent
 const CHANCE_DEJA = 0.35;
 function tireOffre(X, R, pool) {
-  const deja = [...new Set(toutes(X).filter(u => u.key !== 'capitaine' && (u.star || 0) < 2 && pool.includes(u.key)).map(u => u.key))];
+  const deja = [...new Set(toutes(X).filter(u => u.key !== 'capitaine' && (u.star || 0) < 3 && pool.includes(u.key)).map(u => u.key))];
   return deja.length && R() < (globalThis.CHANCE_DEJA ?? CHANCE_DEJA) ? tire(R, deja) : tire(R, pool);
 }
 const toutes = X => [...X.plateau.av, ...X.plateau.ar, ...X.cale].filter(Boolean);
@@ -141,15 +141,18 @@ function fusionne(X) {
     const groupes = {}; let change = false;
     toutes(X).filter(u => u.key !== 'capitaine' && u.key !== 'louve' && RECRUES[u.key]).forEach(u => { (groupes[u.key] = groupes[u.key] || []).push(u); });
     for (const k in groupes) {
-      const g = groupes[k], etoiles = g.filter(u => u.star === 1).sort((a, b) => copies(b) - copies(a)), zeros = g.filter(u => !u.star);
-      if (etoiles.length) { // la ★ la plus avancée absorbe les autres ★ et les copies, jusqu'à 6
-        const base = etoiles[0], mange = [base]; let cop = copies(base);
-        for (const u of [...etoiles.slice(1), ...zeros]) { if (cop >= 6) break; mange.push(u); cop += copies(u); }
+      const g = groupes[k], zeros = g.filter(u => !u.star); let fusion = false;
+      // la recrue étoilée la plus haute avale les autres (★ jusqu'à 6 copies = ★★ ; ★★ jusqu'à 9 = ★★★, 25/11)
+      for (const lvl of [2, 1]) {
+        const etoiles = g.filter(u => u.star === lvl).sort((a, b) => copies(b) - copies(a)); if (!etoiles.length) continue;
+        const max = COP_ETOILE[lvl + 1], base = etoiles[0], mange = [base]; let cop = copies(base);
+        for (const u of [...etoiles.slice(1), ...g.filter(u => (u.star || 0) < lvl)]) { if (cop >= max) break; mange.push(u); cop += copies(u); }
         if (mange.length === 1) continue;
-        const n = remplace(mange, cop >= 6 ? 2 : 1, Math.min(6, cop)); change = true;
-        if (n.star === 2) { fait = n; X.journal.push(`✨ Fusion : ${n.n} ★★ !`); } else if (!fait) fait = n;
+        const n = remplace(mange, cop >= max ? lvl + 1 : lvl, Math.min(max, cop)); change = true; fusion = true;
+        if (n.star > lvl) { fait = n; X.journal.push(`✨ Fusion : ${n.n} ${'★'.repeat(n.star)} !`); } else if (!fait) fait = n;
         break;
       }
+      if (fusion) break;
       if (zeros.length >= 3) { const n = remplace(zeros.slice(0, 3), 1, 3); fait = n; change = true; X.journal.push(`✨ Fusion : ${n.n} ★ !`); break; }
     }
     if (!change) break;
@@ -322,7 +325,17 @@ function joueEscale(X, R) {
   const res = combatExp({ heros:X.heros, plateau:X.plateau, X }, adv.camp, R || hasardX(X));
   try { const ev = res.ev || [], rounds = ev.filter(e => e.t === 'round').length, ids = new Set(Object.values(X.plateau).flat().filter(Boolean).map(u => u.id));
     const donne = ev.filter(e => e.t === 'coup' && ids.has(e.src)).reduce((t, e) => t + (e.dg || 0), 0), recu = ev.filter(e => e.t === 'coup' && !ids.has(e.src)).reduce((t, e) => t + (e.dg || 0), 0);
-    X.journal.push(`⚔ ${rounds} round${rounds > 1 ? 's' : ''} · dégâts donnés ${donne}, reçus ${recu} · il te reste ${res.restant} combattant${res.restant > 1 ? 's' : ''}, en face ${res.restantE}.`); } catch (e) {}
+    X.journal.push(`⚔ ${rounds} round${rounds > 1 ? 's' : ''} · dégâts donnés ${donne}, reçus ${recu} · il te reste ${res.restant} combattant${res.restant > 1 ? 's' : ''}, en face ${res.restantE}.`);
+    // 25/11 (l'utilisateur : « je pense pas avoir le combat entier ») : le déroulé, coup par coup, round par round
+    const nomU = {}; [X.plateau, adv.camp.plateau].forEach(P => Object.values(P || {}).flat().filter(Boolean).forEach(u => { nomU[u.id] = u.n + (u.star ? ' ' + '★'.repeat(u.star) : ''); }));
+    const nm = id => nomU[id] || (id === 'capitaine' ? HEROS[X.heros].nom : '?'); let lig = null; const fin = () => { if (lig && lig.length > 1) X.journal.push('   ' + lig[0] + ' ' + lig.slice(1).join(' · ')); };
+    ev.forEach(e => {
+      if (e.t === 'round') { fin(); lig = [`R${e.n} :`]; return; } if (!lig) return;
+      if (e.t === 'coup') lig.push(`${nm(e.src)}${e.de ? ' 🎲' + e.de : ''} → ${nm(e.id)} −${e.dg || 0}${e.v <= 0 ? ' 💀' : ''}`);
+      else if (e.t === 'soin') lig.push(`✚ ${nm(e.id)} +${e.n}`);
+      else if (e.t === 'esquive') lig.push(`${nm(e.id)} esquive`);
+      else if (e.t === 'epines' || e.t === 'poison') lig.push(`${e.t === 'poison' ? '☠' : '🌵'} ${nm(e.id)} −${e.n}`);
+    }); fin(); } catch (e) {}
   const esc = ESCALES2[X.escale]; res.adv = adv; X.prochain = null; X.ordres = null; X.advPret = null; X.ciblePrio = null;
   if (res.gagne) {
     X.victoires++; X.journal.push(`🏆 ${esc.n} : victoire.`);
@@ -349,6 +362,7 @@ function joueEscale(X, R) {
 const FAM_PREF = { maelle:'forge', aldric:'garde', pip:'ombre', oria:'forge', gorm:'clan', zephine:null };
 function pilotePort(X) {
   const pref = X.famPref || (X.famPref = FAM_PREF[X.heros] || tire(hasardX(X), Object.keys(FAMILLES)));
+  if (X.sortes && X.sortes.length && !X.sortes.some(k => RECRUES[k].fam === X.famPref)) { const c = {}; X.sortes.forEach(k => { c[RECRUES[k].fam] = (c[RECRUES[k].fam] || 0) + 1; }); X.famPref = Object.keys(c).sort((a, b) => c[b] - c[a])[0]; return pilotePort(X); } // 25/11 : le recruteur n'a que quelques sortes
   for (let tour = 0; tour < 12; tour++) {
     const libre = !!placeLibre(X), n = k => toutes(X).filter(u => u.key === k && u.star === 0).length, et = k => toutes(X).some(u => u.key === k && u.star === 1);
     let best = -1, bs = 0;

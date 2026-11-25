@@ -82,7 +82,7 @@ function uniteHTML(u, opt) {
   const art = cap ? capArt(u) : u.key === 'm' ? '' : `cartes/${ART_EXP[u.key] || u.key}.webp?v=2`;
   const clic = opt && opt.clic ? `onclick="toucheUnite('${u.id}', event)"` : `onclick="ficheUnite('${u.id}', event)"`;
   return `<div class="u carte ${cap ? 'capitaine' : ''} ${ennemi ? 'ennemi' : ''} ${u.role === 'soutien' ? 'soutien' : ''} ${sel === u.id ? 'sel' : ''}" data-id="${u.id}" ${clic} style="${art ? `background-image:${bgU(u, art)}` : ''}">
-    ${art ? '' : `<span class="sansart">${ennemi ? '👹' : '❔'}</span>`}<span class="nm">${u.n}${u.star ? ` <span class="st">${'★'.repeat(u.star)}${u.star === 1 && copies(u) > 3 ? `<small>${copies(u)}/6</small>` : ''}</span>` : ''}</span>${fam ? `<span class="fm">${fam}</span>` : ''}
+    ${art ? '' : `<span class="sansart">${ennemi ? '👹' : '❔'}</span>`}<span class="nm">${u.n}${u.star ? ` <span class="st">${'★'.repeat(u.star)}${u.star && u.star < 3 && copies(u) > COP_ETOILE[u.star] ? `<small>${copies(u)}/${COP_ETOILE[u.star + 1]}</small>` : ''}</span>` : ''}</span>${fam ? `<span class="fm">${fam}</span>` : ''}
     <span class="rl">${ROLE_COURT[u.role] || ''}${tags.length ? '<br>' + tags.join(' · ') : ''}</span>
     <div class="av"><span>⚔ ${a}</span><span>❤ ${v}</span></div></div>`;
 }
@@ -94,7 +94,7 @@ function ficheHTML(u, r) {
     <p>${ROLE_LONG[u.role] || (u.tireur ? ROLE_LONG.tireur : ROLE_LONG.lame)}</p>
     ${cap && CAPITAINES[u.hid] ? `<p>🧭 <b>${CAPITAINES[u.hid].n}</b> : ${CAPITAINES[u.hid].d}</p>` : ''}
     ${tags.map(t => `<p>🏷 <b>${t}</b> : ${ETIQ[t] || ''}</p>`).join('')}${r && r.d && !tags.length ? `<p>${r.d}</p>` : ''}
-    ${u.star ? `<p class="doux">${u.star === 2 ? '★★ = six recrues pareilles fondues : attaque et vie ×4.' : `★ = trois recrues pareilles fusionnées : attaque et vie ×2. Elle avale chaque nouvelle copie : ${copies(u)}/6 vers la ★★ (×4).`}${pouvoirsEtoile(u.key, u.star).l.length ? ` Pouvoirs renforcés : ${pouvoirsEtoile(u.key, u.star).l.join(', ')}.` : ''}</p>` : (RECRUES[u.key] && pouvoirsEtoile(u.key, 1).l.length ? `<p class="doux">En ★ : ${pouvoirsEtoile(u.key, 1).l.join(', ')}. En ★★ : ${pouvoirsEtoile(u.key, 2).l.join(', ')}.</p>` : '')}`;
+    ${u.star ? `<p class="doux">${u.star === 3 ? '★★★ = neuf recrues pareilles fondues : attaque et vie ×6.' : u.star === 2 ? `★★ = six recrues pareilles fondues : attaque et vie ×4. Elle avale chaque nouvelle copie : ${copies(u)}/9 vers la ★★★ (×6).` : `★ = trois recrues pareilles fusionnées : attaque et vie ×2. Elle avale chaque nouvelle copie : ${copies(u)}/6 vers la ★★ (×4).`}${pouvoirsEtoile(u.key, u.star).l.length ? ` Pouvoirs renforcés : ${pouvoirsEtoile(u.key, u.star).l.join(', ')}.` : ''}</p>` : (RECRUES[u.key] && pouvoirsEtoile(u.key, 1).l.length ? `<p class="doux">En ★ : ${pouvoirsEtoile(u.key, 1).l.join(', ')}. En ★★ : ${pouvoirsEtoile(u.key, 2).l.join(', ')}.</p>` : '')}`;
 }
 let ficheDe = {};
 function ficheUnite(id, e) { if (e) e.stopPropagation(); const u = ficheDe[id] || (X && toutes(X).find(x => x.id === id)); if (!u) return;
@@ -114,7 +114,7 @@ function slotHTML(r, i) {
 function port() {
   if (!X) { accueil(); return; }
   const esc = ESCALES2[X.escale], selU = sel && aEn(X, ouEst(X, sel) || { r:'cale', i:9 });
-  const paires = k => toutes(X).filter(u => u.key === k && u.star === 0).length >= 2 || toutes(X).some(u => u.key === k && u.star === 1);
+  const paires = k => toutes(X).filter(u => u.key === k && u.star === 0).length >= 2 || toutes(X).some(u => u.key === k && (u.star === 1 || u.star === 2));
   app().innerHTML = `
   <div class="entete">${avX() ? haImg(avX()) : `<img src="${IMG(X.heros)}" alt="">`}<div><b>${nomX()}</b>, capitaine · <span class="p">💰 ${X.or}</span> <span class="p coeurs">${'❤'.repeat(X.coeurs)}${'🖤'.repeat(Math.max(0, (X.coeursMax || 3) - X.coeurs))}</span><br><span class="doux">${CAPITAINES[X.heros].n}</span></div><span class="ic" onclick="journalExp()">📜</span><span class="ic" onclick="quitter()">⏏</span></div>
   <div class="route">${ESCALES2.map((x, i) => `<div class="esc ${i < X.escale ? 'faite' : i === X.escale ? 'ici' : ''}" onclick="carteVoyage()"><b>${x.type === 'fantome' ? '👻' : x.e}</b>${i + 1}</div>`).join('')}</div>
@@ -127,7 +127,7 @@ function port() {
   </div>
   <div class="etiq">LA CALE · ne combat pas</div><div class="cale">${[0, 1, 2].map(i => slotHTML('cale', i)).join('')}</div>
   ${selU ? `<div class="feuille">${ficheHTML(selU, RECRUES[selU.key])}<p class="ok">👉 Touche une place pour la déplacer.</p></div><div class="actions">${selU.key !== 'capitaine' ? `<button onclick="vendre()">💰 Vendre (+${selU.star ? 1 + copies(selU) : 1})</button>` : ''}${X.heros === 'zephine' && X.transmuOk && selU.key !== 'capitaine' ? '<button onclick="transmuter()">⚗ Transmuter</button>' : ''}<button onclick="sel=null;port()">Annuler</button></div>` : ''}
-  <div class="tiroir ${tiroir ? '' : 'ferme'}"><div class="poignee" onclick="tiroir=!tiroir;port()">🧭 LE RECRUTEUR · 3 💰 · 3 pareilles = ★ · 6 = ★★ <b>${tiroir ? '▼' : '▲'}</b></div>
+  <div class="tiroir ${tiroir ? '' : 'ferme'}"><div class="poignee" onclick="tiroir=!tiroir;port()">🧭 LE RECRUTEUR · 3 💰 · 3 pareilles = ★ · 6 = ★★ · 9 = ★★★ <b>${tiroir ? '▼' : '▲'}</b></div>
   <div class="contenu"><div class="boutique ${X.offre.length > 4 ? 'cinq' : ''}">${X.offre.map((k, i) => { if (!k) return '<div class="offre vide"></div>'; const r = RECRUES[k];
     return `<div class="offre carte ${paires(k) ? 'paire' : ''} ${r.role === 'soutien' ? 'soutien' : ''}" onclick="voirRecrue(${i})" style="background-image:url('cartes/${ART_EXP[k] || k}.webp?v=2')"><span class="prix">${prixRecrue(k)}</span><span class="nm">${r.n}</span><span class="fm">${FAMILLES[r.fam].e}</span><span class="rl">${ROLE_COURT[r.role]}</span><div class="av"><span>⚔ ${r.a}</span><span>❤ ${r.v}</span></div></div>`; }).join('')}</div>
   <div class="actions"><button onclick="relancer()" ${X.or >= 1 ? '' : 'disabled'}>🔄 Relancer (1)</button><button class="${X.gel ? 'on' : ''}" onclick="X.gel=!X.gel;sauve();port()">❄ ${X.gel ? 'Offre gelée' : 'Geler l’offre'}</button><button onclick="aideExp()">❓ Aide</button></div></div>
@@ -136,9 +136,9 @@ function port() {
   document.body.style.setProperty('--decor', `url('decor/escale-${fondDe(esc)}.webp?v=1')`);
 }
 function voirRecrue(i) {
-  const k = X.offre[i]; if (!k) return; const r = RECRUES[k], n = toutes(X).filter(u => u.key === k && u.star === 0).length, et = toutes(X).filter(u => u.key === k && u.star === 1).sort((a, b) => copies(b) - copies(a))[0];
+  const k = X.offre[i]; if (!k) return; const r = RECRUES[k], n = toutes(X).filter(u => u.key === k && u.star === 0).length, et = toutes(X).filter(u => u.key === k && (u.star === 1 || u.star === 2)).sort((a, b) => (b.star - a.star) || (copies(b) - copies(a)))[0];
   fenetre(`${ficheHTML({ key:k, n:r.n, fam:r.fam, role:r.role, a:r.a, v:r.v, star:0 }, r)}
-    ${et ? `<p style="color:var(--ok)">Ta recrue ★ (${r.n}) l’avale : ${Math.min(6, copies(et) + 1)}/6${copies(et) + 1 >= 6 ? ' : elle devient ★★ (×4) !' : ' vers la ★★.'}</p>` : n ? `<p style="color:var(--ok)">Tu en as déjà ${n} : ${n === 2 ? 'en l’achetant, les trois fusionnent en une recrue ★ !' : 'encore deux pour une ★.'}</p>` : ''}
+    ${et ? (() => { const mx = COP_ETOILE[et.star + 1], st = '★'.repeat(et.star), st2 = '★'.repeat(et.star + 1); return `<p style="color:var(--ok)">Ta recrue ${st} (${r.n}) l’avale : ${Math.min(mx, copies(et) + 1)}/${mx}${copies(et) + 1 >= mx ? ` : elle devient ${st2} (×${MUL_ETOILE[et.star + 1]}) !` : ` vers la ${st2}.`}</p>`; })() : n ? `<p style="color:var(--ok)">Tu en as déjà ${n} : ${n === 2 ? 'en l’achetant, les trois fusionnent en une recrue ★ !' : 'encore deux pour une ★.'}</p>` : ''}
     <div class="choixh"><button onclick="fermer()">Fermer</button><button class="or" ${X.or >= prixRecrue(k) ? '' : 'disabled'} onclick="acheter(${i})">Recruter (${prixRecrue(k)} 💰)</button></div>`);
 }
 function acheter(i) { const r = achete(X, i); fermer(); if (!r.ok) { fenetre(`<p>${r.raison}</p><div class="choixh"><button onclick="fermer()">OK</button></div>`); return; } sauve(); port(); if (r.fusion) { const el = document.querySelector(`[data-id="${r.fusion.id}"]`); if (el) el.animate([{ transform:'scale(1.6)', filter:'brightness(2)' }, { transform:'scale(1)', filter:'none' }], { duration:700 }); } }
