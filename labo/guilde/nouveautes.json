@@ -1,5 +1,9 @@
 [
 {
+"v": "20261125-191859",
+"m": "Les créatures invoquées par l’ennemi apparaissent au moment où il les pose"
+},
+{
 "v": "20261125-191408",
 "m": "Le cadre de l’adversaire ne déborde plus quand il a beaucoup d’effets"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261124-203334",
 "m": "En combat, les icônes Garde et Pouvoir à gauche du plateau montrent le pouvoir que tu as choisi dans ton build (Zéphine pour commencer, les autres héros au fil des images)."
-},
-{
-"v": "20261124-203015",
-"m": "Les pouvoirs de Zéphine ont leurs icônes peintes."
 }
 ]

@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261125-191408"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
+<head><meta name="guilde-version" content="20261125-191859"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="robots" content="noindex">
@@ -788,7 +788,7 @@
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
 // 14/11 : l'Odyssée sans fin a ses propres emplacements (odyssee.js lit SANSFIN)
 const SANSFIN = new URLSearchParams(location.search).get('sansfin') === '1', ROUTE_TITAN = new URLSearchParams(location.search).get('route') === '1', EPREUVE_PAGE = new URLSearchParams(location.search).get('epreuve') === '1', ODY_PAGE = EPREUVE_PAGE ? 'epreuves.html' : 'odyssee.html' + (SANSFIN ? '?sansfin=1' : ROUTE_TITAN ? '?route=1' : '');
-const VERSION = '20261125-191408';
+const VERSION = '20261125-191859';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -882,6 +882,9 @@ function invoque(J, base, key) {
   if (typeof pwInvoque === 'function') pwInvoque(J, u);
   u.vmax = u.v; J.front.push(u);
   if (base.louve) fx({ t:'invoque', s:J === S.J ? 'J' : 'O', nom:base.n });
+  // 25/11 (l'utilisateur : « les créatures invoquées par l'ennemi apparaissent à la fin du tour et attaquent invisibles ») : pendant le rejeu du tour adverse
+  // le plateau n'est pas redessiné ; la créature est posée dans sa rangée au moment où elle arrive
+  if (J !== S.J && !S.auto) fx({ t:'apparait', s:'O', u:JSON.parse(JSON.stringify(u)) });
 }
 // 20/11 (l'utilisateur : « quand j'ai ciblé un ennemi caché, j'ai vu son nom ») : une créature Cachée de l'adversaire reste sans nom
 // partout où on la vise (aperçu avant validation, bandeau du coup, journal), tant qu'elle n'est pas sortie de l'ombre
@@ -2739,6 +2742,9 @@ async function joue1(e) {
       document.getElementById('amoi').onclick = () => { fermer(); ok(); }; });
     return;
   }
+  if (e.t === 'apparait') { const f = document.getElementById('f-' + e.s); if (!f || f.querySelector(`[data-uid="${e.u.id}"]`)) return;
+    const t = document.createElement('div'); t.innerHTML = front(Object.assign({}, e.s === 'O' ? S.O : S.J, { front:[e.u] }), e.s === 'O'); const n = t.querySelector('.u'); if (!n) return;
+    n.removeAttribute('onclick'); f.classList.remove('vide'); f.appendChild(n); n.animate([{ transform:'scale(.3)', opacity:0 }, { transform:'scale(1)', opacity:1 }], { duration:350 * fxVite, easing:'ease-out' }); await dodo(380); return; }
   if (e.t === 'finGarde') { const c = el({ s:e.s }); if (c) flotte(c, '🛡 Garde terminée', 'bleu'); await dodo(500); return; }
   if (e.t === 'annonce') { son('tour'); const d = document.createElement('div'); d.className = 'annonce'; d.textContent = e.txt; couche().appendChild(d); await dodo(1100); d.remove(); return; }
   if (e.t === 'tour') {
