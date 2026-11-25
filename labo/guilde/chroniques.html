@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261124-212837"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
+<head><meta name="guilde-version" content="20261125-141359"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="robots" content="noindex">
@@ -35,8 +35,8 @@
   .c.peint { background:none !important; filter:none !important; } .c.peint .o { font-size:calc(var(--t) * .42); opacity:.9; }
   .c.couloir { filter:brightness(.8) saturate(.8); }
   /* 15/11 soir : le Labyrinthe des Runes a son sol et ses murs (s'ils sont déjà peints ; sinon ceux des Terres brûlées) */
-  .laby .c { background:url('decor/tuile-sol-labyrinthe.webp') 0 0 / calc(var(--t) * 4) calc(var(--t) * 4), url('decor/tuile-sol-brulees.webp') 0 0 / calc(var(--t) * 4) calc(var(--t) * 4); }
-  .laby .c.mur { background:url('decor/tuile-mur-labyrinthe.webp') 0 0 / calc(var(--t) * 4) calc(var(--t) * 4), url('decor/tuile-roche-brulees.webp') 0 0 / calc(var(--t) * 4) calc(var(--t) * 4); }
+  .laby .c { background:url('decor/tuile-sol-labyrinthe.webp?v=1') 0 0 / calc(var(--t) * 4) calc(var(--t) * 4), url('decor/tuile-sol-brulees.webp') 0 0 / calc(var(--t) * 4) calc(var(--t) * 4); }
+  .laby .c.mur { background:url('decor/tuile-mur-labyrinthe.webp?v=1') 0 0 / calc(var(--t) * 4) calc(var(--t) * 4), url('decor/tuile-roche-brulees.webp') 0 0 / calc(var(--t) * 4) calc(var(--t) * 4); }
   /* 15/11 soir : les salles de l'Horloge ont leur sol et leurs murs peints */
   .horloge .c { background:url('decor/tuile-sol-horloge.webp?v=1') 0 0 / calc(var(--t) * 4) calc(var(--t) * 4); }
   .horloge .c.mur { background:#0d0c12; filter:none; box-shadow:inset 0 0 0 .5px #ffffff0d; } /* 16/11 : façon carte de donjon (exemple de l'utilisateur) : vide noir quadrillé, murs = bordure de pierre */ /* 16/11 : mur sombre pour séparer les salles dessinées */
@@ -225,7 +225,7 @@
 <script src="heros-etoiles.js?v=c027cdd26b"></script>
 <script src="progression-modes.js?v=807b0f9ad5"></script>
 <script src="aventuriers.js?v=5679a4a045"></script>
-<script src="pouvoirs-heros.js?v=5f6ac9c1bb"></script>
+<script src="pouvoirs-heros.js?v=a14bbdf318"></script>
 <script src="chroniques-moteur.js?v=4ee01c25a4"></script>
 <script src="chroniques-ambiance.js?v=cdc992dc3a"></script>
 <script src="configurateur.js?v=bad5465180"></script>
@@ -248,7 +248,7 @@ function objetRecu(icone, titre, texte) { const d = document.createElement('div'
   d.onclick = () => d.remove(); document.body.appendChild(d); setTimeout(() => d.classList.add('part'), 2300); setTimeout(() => d.remove(), 2900); }
 let statueBrille = []; // les deux statues qui viennent de tourner, allumées un instant
 const SOCLES = { '4,1':[-47, -24], '7,1':[44, -24], '4,3':[-35, 49], '7,3':[33, 49] }; // en % de l'image (88 % de la case)
-const OBJ_PEINTS = ['coffre', 'armoire', 'tonneaux', 'tombeau', 'etabli', 'cheminee', 'etagere', 'levier', 'rouage', 'axe', 'porte', 'statue', 'autel', 'grille', 'dalle', 'tasdos'];
+const OBJ_PEINTS = ['coffre', 'armoire', 'tonneaux', 'tombeau', 'etabli', 'cheminee', 'etagere', 'levier', 'rouage', 'axe', 'porte', 'statue', 'autel', 'grille', 'dalle', 'tasdos', 'autelrunes', 'fragment'];
 // 16/11 : LES SALLES DESSINÉES de l'Horloger (Gemini, vues du dessus) : chaque salle reçoit son image, étalée sur ses cases de sol
 const SALLE_IMG = { A:'hall', C:'reserve', G:'crypte', B:'rouages', E:'atelier', F:'bibliotheque', H:'coeur', S:'galerie', P:'cagibi' };
 // 16/11 : la porte vue du dessus (poutre en travers du passage) : tournée d'un quart de tour quand le passage est horizontal
@@ -699,7 +699,7 @@ function dessine() {
       // regarde (verte quand c'est vers l'autel), un petit repère doré montre où elle doit regarder, la voisine qui tourne avec elle s'allume
       inner = `<div class="stat-socle" style="transform:translate(${dec[0]}%, ${dec[1]}%)"><img class="oi statue ${R.statuesOk ? 'fait-ok' : ''} ${statueBrille.includes(ti) ? 'brille' : ''}" src="decor/obj-statue.webp?v=1" alt="" style="transform:rotate(${a * 90}deg)">${R.statuesOk ? '' : `<span class="stat-but" style="transform:rotate(${t.veut * 90}deg)"></span><span class="stat-regard ${bon ? 'ok' : ''}" style="transform:rotate(${a * 90}deg)"></span>`}</div>`; }
     else if (mur === 'O') inner = R.plan === 2 && SALLE_MURS.includes('S') && !R.statuesOk ? '' : (R.plan === 2 && SALLE_MURS.includes('S') ? objImg('autel', R.statuesOk ? 'brille' : '').replace('<img ', '<img style="transform:translate(55%, 0)" ') : objImg('autel', R.statuesOk ? 'brille' : '')); // le cercle de laiton peint fait l'autel ; 16/11 soir (l'utilisateur : « feu à centrer ») : le feu posé au milieu du cercle peint, qui est à cheval sur deux cases
-    else if (mur === 'A') inner = `${(S.scen || 'horloger') === 'horloger' ? objImg('axe') : `<span class="o">${K.SCEN[S.scen || 'horloger'].axeE}</span>`}<span class="lv">${R.rouagesPoses}/3</span>`;
+    else if (mur === 'A') inner = `${(S.scen || 'horloger') === 'horloger' ? objImg('axe') : S.scen === 'labyrinthe' ? objImg('autelrunes') : `<span class="o">${K.SCEN[S.scen || 'horloger'].axeE}</span>`}<span class="lv">${R.rouagesPoses}/3</span>`;
     else { if (!R.salle[c]) { cl += ' couloir'; if (!fondSalle(S, x, y)) stMur += `background-position:calc(var(--t) * ${-x}) calc(var(--t) * ${-y});`; } // 17/11 (« pas d'escalier ») : pas sur le dessin de l'escalier, qui a sa propre position // 16/11 soir (l'utilisateur : « on voit chaque case ») : le sol du couloir continue d'une case à l'autre au lieu de répéter le même morceau
       if (o && o.t === 'piege' && !o.trouve && (o.vu || voitPieges || h.id === 'oria' && Math.abs(h.x - x) + Math.abs(h.y - y) <= 2)) inner = `<span class="o">${o.vu ? '⚠️' : '👓'}</span>`;
       if (o && o.t === 'rouage') inner = objImg('rouage');

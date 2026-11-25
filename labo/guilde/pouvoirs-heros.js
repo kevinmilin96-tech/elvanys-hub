@@ -249,7 +249,8 @@ function nomBuild(id, pre) {
   return { tank:'protectrice', soin:'soigneuse', degats:'frappeuse', controle:'stratège', soutien:'meneuse' }[r] || '';
 }
 // l'icône peinte du pouvoir (decor/pw-<classe>-<emp>-<v>.webp) si elle existe, sinon l'émoji
-const pwIcone = (c, emp, d, px) => `<img src="decor/pw-${c}-${emp}-${d.v.toLowerCase()}.webp?v=1" alt="" style="width:${px || 34}px;height:${px || 34}px;object-fit:contain;vertical-align:middle;border-radius:8px" onerror="this.replaceWith(document.createTextNode('${d.e}'))">`;
+const PW_VER = { 'oria-ultime-a':2 }; // image refaite = nouvelle adresse
+const pwIcone = (c, emp, d, px) => `<img src="decor/pw-${c}-${emp}-${d.v.toLowerCase()}.webp?v=${PW_VER[c + '-' + emp + '-' + d.v.toLowerCase()] || 1}" alt="" style="width:${px || 34}px;height:${px || 34}px;object-fit:contain;vertical-align:middle;border-radius:8px" onerror="this.replaceWith(document.createTextNode('${d.e}'))">`;
 
 const API = { PW_TALENTS, versionsDe, versionOuverte, estAventurier, repriseTalents, PW_EMP, PW_RANG_MAX, PW_ROLES, PW_CLASSES, PW_COMBOS, POUVOIRS_H, classeDe, pouvoirsDe, pwPourMoteur, pointsPouvoirs, choisirPouvoir, monterRang, coutRang, coutJusqua, prereglagePour, nomBuild, pwIcone, pwOuvert, pwEssai };
 if (typeof module !== 'undefined' && module.exports) module.exports = API; else Object.assign(racine, API);
