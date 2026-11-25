@@ -1,5 +1,9 @@
 [
 {
+"v": "20261125-162741",
+"m": "Le cadre de l’adversaire : cartes en main et cartes à piocher sur deux lignes"
+},
+{
 "v": "20261125-162444",
 "m": "Les noms longs des cartes de mode ne sont plus coupés"
 },
@@ -73,10 +77,6 @@
 },
 {
 "v": "20261124-193122",
-"m": "Expéditions : le journal de partie raconte chaque combat (ton équipage, l'adversaire, les rounds, les dégâts) et tes recrues."
-},
-{
-"v": "20261124-193002",
 "m": "Expéditions : le journal de partie raconte chaque combat (ton équipage, l'adversaire, les rounds, les dégâts) et tes recrues."
 }
 ]
