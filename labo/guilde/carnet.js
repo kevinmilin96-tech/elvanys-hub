@@ -101,7 +101,7 @@
       : `<h3 class="grp">📜 Les quêtes de la semaine <small>elles changent le lundi</small></h3>${quetesHTML(false)}
          <h3 class="grp">🗓️ Les rendez-vous de la semaine <small>jusqu’à dimanche soir</small></h3><div class="liste">
          ${ligne(['semaine', '🔏', 'Le Duel de la semaine', C.sc ? 'Sceau gagné cette semaine' : C.sem ? `« ${C.sem.n} » : gagne pour le Sceau` : 'Une règle nouvelle chaque semaine', !!C.sc, "envieVa('duel.html?semaine=1')"])}
-         ${ligne(['chasse', '🎯', 'La Chasse au boss de la semaine', 'Le même boss pour tous, jusqu’à dimanche', false, "envieVa('epreuves.html')"])}</div>`;
+         ${ligne(['chasse', '🎯', 'La Chasse au boss de la semaine', 'Le même boss pour tous, jusqu’à dimanche', false, "envieVa('epreuves.html#chasse')"])}</div>`;
     const html = `<div class="boite"><button class="x" onclick="document.getElementById('env-auj').remove()" aria-label="Fermer">✕</button>
       <h2><img src="ui/barre/ui-carnet.webp?v=1" alt="" style="width:34px;height:34px;object-fit:contain;vertical-align:middle" onerror="this.outerHTML='📜'"> Le carnet de la Guilde</h2>
       <div class="ongl"><button class="${onglet === 'jour' ? 'on' : ''}" onclick="carnetOuvre('jour')">☀ Aujourd’hui<i>${C.jf}/${C.jn}</i></button><button class="${onglet === 'semaine' ? 'on' : ''}" onclick="carnetOuvre('semaine')">🗓️ Cette semaine<i>${C.sf}/${C.sn}</i></button></div>

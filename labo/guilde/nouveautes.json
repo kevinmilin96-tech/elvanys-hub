@@ -1,5 +1,9 @@
 [
 {
+"v": "20261125-171057",
+"m": "Le carnet : la Chasse au boss de la semaine ouvre bien la Chasse (et non la Tour)"
+},
+{
 "v": "20261125-163817",
 "m": "Lame trempée et cartes du même genre : avec une seule créature, elle est choisie toute seule, il reste à valider"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261124-193829",
 "m": "Expéditions : un combat perdu coûte un cœur et se rejoue (on ne passe jamais un combat sans l'avoir gagné, boss compris)."
-},
-{
-"v": "20261124-193500",
-"m": "Le duel éclair du jour s'ouvre de nouveau sans erreur."
 }
 ]
