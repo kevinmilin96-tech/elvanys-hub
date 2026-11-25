@@ -1,5 +1,9 @@
 [
 {
+"v": "20261125-212330",
+"m": "Carnet : « Si tu as le temps » se récupère avec le cadeau (+30 XP, 30 or, 20 poussière par jour)"
+},
+{
 "v": "20261125-211242",
 "m": "Défense : le défi du jour demande 4 pièges au lieu de 6"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261125-162129",
 "m": "La quête « Gagne un Duel » ouvre bien le Duel contre l’ordinateur"
-},
-{
-"v": "20261125-155600",
-"m": "Nouvelles images : canons des 4 héros dans la Défense, cases et événements de la Descente, consommables et pactes, et pour le profil : cadres peints, fonds de carte et emblèmes"
 }
 ]

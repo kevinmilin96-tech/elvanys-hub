@@ -71,6 +71,20 @@
     if (typeof GM !== 'undefined') GM.son('choisir');
     if (typeof annonceRang === 'function') annonceRang(`🎁 ${nom} : +${f.rec.xp} XP${f.rec.or ? ` · 🪙 +${f.rec.or}` : ''}`, true);
     setTimeout(() => { carnetOuvre(onglet); if (typeof envieBandeau === 'function') envieBandeau(); }, 60); };
+  // 25/11 (choix de l'utilisateur) : « Si tu as le temps » (crypte du jour, île du jour, voyage du jour, défi de la Défense) : la 1re partie du jour
+  // de chacun donne +30 XP, 🪙 30 et 🔹 20 poussière, à récupérer ici avec le cadeau
+  const TEMPS = ['crypte', 'ile', 'voyage', 'defense'], TEMPS_REC = { xp:30, or:30, pou:20 }, TEMPS_CLE = 'guilde-temps-rec';
+  const tempsJour = () => new Date().toISOString().slice(0, 10);
+  const tempsPris = () => { try { return (JSON.parse(localStorage.getItem(TEMPS_CLE) || '{}'))[tempsJour()] || []; } catch (e) { return []; } };
+  const tempsRec = (k, fait) => TEMPS.includes(k) && fait && !tempsPris().includes(k);
+  window.carnetTemps = k => { const L = envieRendezVous(), x = L.find(y => y[0] === k); if (!x || !tempsRec(k, x[4])) return;
+    let o = {}; try { o = JSON.parse(localStorage.getItem(TEMPS_CLE) || '{}'); } catch (e) {} const j = tempsJour(); o[j] = (o[j] || []).concat(k);
+    Object.keys(o).sort().slice(0, -7).forEach(d => delete o[d]); try { localStorage.setItem(TEMPS_CLE, JSON.stringify(o)); } catch (e) { return; }
+    if (typeof gagneXP === 'function') try { gagneXP(TEMPS_REC.xp, x[2]); } catch (e) {}
+    if (typeof donneRessources === 'function') try { donneRessources(TEMPS_REC.or, TEMPS_REC.pou, true); } catch (e) {}
+    if (typeof GM !== 'undefined') GM.son('choisir');
+    if (typeof annonceRang === 'function') annonceRang(`🎁 ${x[2]} : +${TEMPS_REC.xp} XP · 🪙 +${TEMPS_REC.or} · 🔹 +${TEMPS_REC.pou}`, true);
+    setTimeout(() => { carnetOuvre(onglet); if (typeof envieBandeau === 'function') envieBandeau(); }, 60); };
   // 24/11 (choix de l'utilisateur) : un ❓ explique ce que rapportent les flashs et l'énigme
   window.carnetAide = () => { if (document.getElementById('carnet-aide')) return; const a = document.createElement('div'); a.id = 'carnet-aide';
     a.innerHTML = `<div class="boite"><button class="x" onclick="document.getElementById('carnet-aide').remove()" aria-label="Fermer">✕</button><h2>❓ Ce que rapportent les rendez-vous rapides</h2>
@@ -78,9 +92,11 @@
       <table><tr><th>Résultat</th><th>XP</th><th>🪙 Or</th></tr><tr><td>Perdu</td><td>+10</td><td>0</td></tr><tr><td>★</td><td>+15</td><td>+5</td></tr><tr><td>★★</td><td>+20</td><td>+10</td></tr><tr><td>★★★</td><td>+25</td><td>+15</td></tr></table>
       <p>Les essais suivants sont « pour le plaisir » : ils ne rapportent rien de plus.</p>
       <p>🧩 <b>L’énigme du jour</b> résolue : <b>+${typeof XP_EVT !== 'undefined' && XP_EVT.enigme || 20} XP</b>, et ta série de jours avance (titres à 7, 30 et 100 jours).</p>
+      <p>🗺 <b>Si tu as le temps</b> (crypte du jour, île du jour, voyage du jour, défi de la Défense) : la 1re partie du jour de chacun rapporte <b>+30 XP, 🪙 30 et 🔹 20 poussière</b>.</p>
       <p>La récompense <b>attend ici</b> : touche « 🎁 Récupérer » sur la ligne.</p></div>`;
     a.onclick = ev => { if (ev.target === a) a.remove(); }; document.body.appendChild(a); };
-  const ligne = ([k, e, n, d, fait, a]) => { if (flashRec(k)) return `<button onclick="carnetFlash('${k}')"><span class="e">${e}</span><span class="t"><b>${n}</b><small>${d}</small></span><span class="rec" style="flex:none">🎁 Récupérer</span></button>`;
+  const ligne = ([k, e, n, d, fait, a]) => { if (tempsRec(k, fait)) return `<button onclick="carnetTemps('${k}')"><span class="e">${e}</span><span class="t"><b>${n}</b><small>${d} · +${TEMPS_REC.xp} XP · 🪙 ${TEMPS_REC.or} · 🔹 ${TEMPS_REC.pou}</small></span><span class="rec" style="flex:none">🎁 Récupérer</span></button>`;
+    if (flashRec(k)) return `<button onclick="carnetFlash('${k}')"><span class="e">${e}</span><span class="t"><b>${n}</b><small>${d}</small></span><span class="rec" style="flex:none">🎁 Récupérer</span></button>`;
     const rec = k === 'butin' && !fait && butinDispo(); // 25/11 (l'utilisateur) : 3/3 = quête finie, plus de bouton (le butin se ramasse encore depuis le menu)
     return `<button class="${fait && !rec ? 'fait' : ''}" onclick="${rec ? 'carnetButin()' : a}"><span class="e">${e}</span><span class="t"><b>${n}</b><small>${d}</small></span>${rec ? '<span class="rec" style="flex:none">🎁 Récupérer</span>' : `<span class="c">${fait ? '✓' : '›'}</span>`}</button>`; };
   const compte = () => { const L = envieRendezVous().filter(x => x[0] !== 'quetes'), Q = typeof lireQuetes === 'function' ? lireQuetes() : { j:[], s:[] };
