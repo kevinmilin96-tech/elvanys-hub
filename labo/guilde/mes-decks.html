@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261125-215206"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
+<head><meta name="guilde-version" content="20261125-215416"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex">
@@ -21,7 +21,8 @@
   .bande img { width:100%; aspect-ratio:1; object-fit:cover; display:block; filter:saturate(.7) brightness(.75); }
   .bande span { position:absolute; left:0; right:0; bottom:0; font-size:.6em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; background:#000b; text-align:center; padding:1px 0; }
   .bande .on { border-color:var(--hc); box-shadow:0 0 12px var(--hc); } .bande .on img { filter:none; }
-  .bande .verrou { opacity:.45; }
+  .bande .verrou { opacity:.45; } .bande .nv, .c .nv { position:absolute; z-index:3; background:#ff4d4d; color:#fff; font:bold 11px Georgia, serif; border-radius:9px; padding:1px 6px; box-shadow:0 0 8px #ff4d4d; }
+  .bande .nv { top:3px; right:3px; } .c .nv { top:-4px; left:50%; transform:translateX(-50%); white-space:nowrap; animation:nvPulse 1.2s ease-in-out infinite alternate; } @keyframes nvPulse { to { box-shadow:0 0 14px #ff8a8a; } }
   .deckc { display:flex; align-items:center; gap:10px; width:100%; text-align:left; background:#ffffff0d; border:1px solid #ffffff22; border-radius:14px; padding:10px; margin-bottom:8px; }
   .deckc.actif { border-color:var(--or); box-shadow:0 0 0 1px #f3c96b66; }
   .deckc .ic { font-size:1.7em; width:1.4em; text-align:center; }
@@ -70,7 +71,7 @@
 <div id="fen"></div>
 <script src="guide.js?v=ceb10204e9"></script>
 <script src="musique.js?v=1c69ba47a7"></script>
-<script src="donnees.js?v=41849a41e8"></script>
+<script src="donnees.js?v=8a39c05326"></script>
 <script src="cartes.js?v=94ea5cc1ba"></script>
 <script>
 document.head.insertAdjacentHTML('beforeend', '<style>' + CSS_CARTE + '</style>');
@@ -88,7 +89,7 @@ const fen = h => { document.getElementById('fen').innerHTML = h ? `<div class="f
 function carte(k, w) { return CADRES_OK.includes(CADRE_DE(k)) ? carteGuilde(k, { w, entiere:true }) /* 25/11 (l’utilisateur : « aucune description ») */ : `<div class="simple" style="width:${w}px"><span class="co">${CARTES[k].c}</span><span class="n">${CARTES[k].n}</span><span>${SORTE[CARTES[k].t]}</span><span>🎲 ${txtLisible(CARTES[k].txt)}</span><span>${CARTES[k].d}</span></div>`; }
 
 function bande() {
-  document.getElementById('bande').innerHTML = ORDRE.map(id => `<button class="${id === actuel ? 'on' : ''} ${verrouille(id) ? 'verrou' : ''}" style="--hc:${HEROS[id].c}" onclick="choisir('${id}')"><img src="portraits/${id}.webp" alt=""><span>${verrouille(id) ? '🔒 ' : ''}${HEROS[id].nom}</span></button>`).join('');
+  document.getElementById('bande').innerHTML = ORDRE.map(id => `<button class="${id === actuel ? 'on' : ''} ${verrouille(id) ? 'verrou' : ''}" style="--hc:${HEROS[id].c}" onclick="choisir('${id}')"><img src="portraits/${id}.webp" alt="">${!verrouille(id) && cartesNouvelles(id).filter(k => CARTES[k].heros === id).length ? '<span class="nv">!</span>' : ''}<span>${verrouille(id) ? '🔒 ' : ''}${HEROS[id].nom}</span></button>`).join('');
 }
 function choisir(id) {
   if (verrouille(id)) { fen(`<h3>🔒 ${HEROS[id].nom}</h3><p>Elle se débloque en finissant le tutoriel.</p><div class="boutons"><button class="bt" onclick="fen('')">Compris</button></div>`); return; }
@@ -107,6 +108,7 @@ function liste() {
   document.getElementById('zone').innerHTML = `
     ${D.decks.map((d, i) => ligneDeck(i, d.nom, d.ic || '🂠', d.cartes, deckValide(id, d.cartes))).join('')}
     ${ligneDeck(-1, 'Le deck de base', '📜', deckBase(id), true)}
+    ${cartesNouvelles(id).length ? `<p class="aide" style="color:#ff8a8a">✨ ${cartesNouvelles(id).length === 1 ? 'Une nouvelle carte' : cartesNouvelles(id).length + ' nouvelles cartes'} : ouvre un deck (ou « ＋ Nouveau deck ») pour la voir dans ta collection.</p>` : ''}
     <div class="boutons">${D.decks.length < DECKS_MAX ? `<button class="bt" onclick="nouveau()">＋ Nouveau deck</button>` : `<span class="aide">${DECKS_MAX} decks au plus par héros : supprime-en un pour en faire un autre.</span>`}</div>
     <p class="aide">⭐ = le deck qui part au combat (Duel, Odyssée, épreuves). On le choisit aussi juste avant un Duel.<br>${DECK_TAILLE} cartes par deck · 2 exemplaires au plus · <span style="color:#ffb347">1 seul pour une légendaire ★</span></p>
     <div class="boutons"><button class="bt sombre" onclick="location.href='duel.html?h=${id}&retour=decks'">⚔ Jouer avec ${HEROS[id].nom}</button><button class="bt sombre" onclick="location.href='heros.html?h=${id}'">📖 Mes héros</button></div>`;
@@ -130,10 +132,11 @@ function atelier() {
   const id = actuel, n = compter(ed.cartes), t = ed.cartes.length, ok = deckValide(id, ed.cartes);
   const u = Object.keys(n).sort((a, b) => CARTES[a].c - CARTES[b].c || CARTES[a].n.localeCompare(CARTES[b].n));
   const cb = [0, 0, 0, 0, 0]; ed.cartes.forEach(k => cb[Math.min(4, CARTES[k].c)]++); const mx = Math.max(1, ...cb);
+  const NOUV = cartesNouvelles(id); // 25/11 : les nouvelles cartes en tête, avec « Nouveau »
   const pool = poolDe(id).filter(k => {
     const c = CARTES[k]; if (filtre === 'tout') return true; if (filtre === 'heros') return !GUILDE.includes(k); if (filtre === 'guilde') return GUILDE.includes(k);
     if (filtre === '3') return c.c >= 3; if (/^\d$/.test(filtre)) return c.c === +filtre; return c.t === filtre; })
-    .sort((a, b) => (HEROS[id].deck.includes(b) - HEROS[id].deck.includes(a)) || CARTES[a].c - CARTES[b].c || CARTES[a].n.localeCompare(CARTES[b].n));
+    .sort((a, b) => (NOUV.includes(b) - NOUV.includes(a)) || (HEROS[id].deck.includes(b) - HEROS[id].deck.includes(a)) || CARTES[a].c - CARTES[b].c || CARTES[a].n.localeCompare(CARTES[b].n));
   const F = [['tout', 'Tout'], ['heros', HEROS[id].nom], ['guilde', 'Guilde'], ['0', '0'], ['1', '1'], ['2', '2'], ['3', '3+'], ['u', '⚔ Créatures'], ['s', '✦ Sorts'], ['e', '⚒ Équipements'], ['r', '⛓ Pièges']];
   document.getElementById('zone').innerHTML = `
     <div class="tete"><button class="bt sombre" onclick="ferme()">‹</button><input id="nom" value="${ed.nom.replace(/"/g, '&quot;')}" maxlength="28" oninput="ed.nom=this.value"></div>
@@ -147,7 +150,7 @@ function atelier() {
     <h3 style="margin:14px 0 2px;color:var(--or)">Ta collection</h3><p class="aide" style="text-align:left;margin:0">Touche une carte pour l’ajouter. Sous chaque carte : combien tu en as mis.</p>
     <div class="filtres">${F.map(([k, l]) => `<button class="${filtre === k ? 'on' : ''}" onclick="filtre='${k}';atelier()">${l}</button>`).join('')}</div>
     <div class="coll">${pool.map(k => { const m = maxDe(k), a = n[k] || 0, plein = a >= m || t >= DECK_TAILLE;
-      return `<div class="c ${plein ? 'plein' : ''} ${estLegendaire(k) ? 'leg' : ''}" onclick="ajoute('${k}')">${carte(k, 108)}<span class="pastille ${a >= m ? 'max' : estLegendaire(k) ? 'legp' : ''}">${estLegendaire(k) ? '★ ' : ''}${a}/${m}</span></div>`; }).join('') || '<p class="aide">Aucune carte avec ce filtre.</p>'}</div>
+      return `<div class="c ${plein ? 'plein' : ''} ${estLegendaire(k) ? 'leg' : ''}" onclick="ajoute('${k}')">${NOUV.includes(k) ? '<span class="nv">✨ Nouveau</span>' : ''}${carte(k, 108)}<span class="pastille ${a >= m ? 'max' : estLegendaire(k) ? 'legp' : ''}">${estLegendaire(k) ? '★ ' : ''}${a}/${m}</span></div>`; }).join('') || '<p class="aide">Aucune carte avec ce filtre.</p>'}</div>
     ${ed.i >= 0 ? `<div class="boutons"><button class="bt rouge" onclick="supprime()">🗑 Supprimer ce deck</button></div>` : ''}`;
 }
 function ajoute(k) {
@@ -161,7 +164,7 @@ function retire(k) { const i = ed.cartes.lastIndexOf(k); if (i >= 0) ed.cartes.s
 function complete() {
   const id = actuel, n = compter(ed.cartes), prend = k => { if (ed.cartes.length < DECK_TAILLE && (n[k] || 0) < maxDe(k)) { ed.cartes.push(k); n[k] = (n[k] || 0) + 1; return true; } return false; };
   deckBase(id).forEach(prend);
-  const reste = poolDe(id).sort((a, b) => (HEROS[id].deck.includes(b) - HEROS[id].deck.includes(a)) || CARTES[a].c - CARTES[b].c);
+  const reste = poolDe(id).sort((a, b) => (NOUV.includes(b) - NOUV.includes(a)) || (HEROS[id].deck.includes(b) - HEROS[id].deck.includes(a)) || CARTES[a].c - CARTES[b].c);
   for (let tour = 0; tour < 2; tour++) reste.forEach(prend);
   atelier();
 }
@@ -171,10 +174,10 @@ function enregistre() {
   const ok = deckValide(actuel, d.cartes);
   if (ok && D.actif < 0) D.actif = ed.i; // le premier deck complet devient celui qui part au combat
   if (!ok && D.actif === ed.i) D.actif = -1;
-  ecrisDecks(actuel, D); ed = null; if (typeof son === 'function') son('ok'); liste(); scrollTo(0, 0);
+  ecrisDecks(actuel, D); ed = null; marqueVues(cartesNouvelles(actuel)); bande(); if (typeof son === 'function') son('ok'); liste(); scrollTo(0, 0);
   if (!ok) fen(`<p>Deck enregistré, mais <b>pas encore prêt</b> : il lui faut exactement ${DECK_TAILLE} cartes pour partir au combat.</p><div class="boutons"><button class="bt" onclick="fen('')">Compris</button></div>`);
 }
-function ferme() { if (!confirm('Quitter l’atelier sans enregistrer ?')) return; ed = null; liste(); }
+function ferme() { if (!confirm('Quitter l’atelier sans enregistrer ?')) return; ed = null; marqueVues(cartesNouvelles(actuel)); bande(); liste(); }
 function supprime() {
   fen(`<h3>🗑 Supprimer « ${ed.nom} » ?</h3><div class="boutons"><button class="bt sombre" onclick="fen('')">Non</button><button class="bt rouge" onclick="supprimeOui()">Oui, supprimer</button></div>`);
 }

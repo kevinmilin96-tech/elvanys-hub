@@ -200,6 +200,12 @@ const estLegendaire = k => !!(CARTES[k] && CARTES[k].leg);
 const maxDe = k => estLegendaire(k) ? 1 : DECK_MAX;
 // la collection : les cartes rencontrées pendant les Odyssées (gardées sur le téléphone), utilisables dans l'atelier du deck
 const collectionCartes = () => { try { return JSON.parse(localStorage.getItem('guilde-collection') || '[]').filter(k => CARTES[k]); } catch (e) { return []; } };
+// 25/11 (l'utilisateur : « un point rouge sur les decks et Nouveau sur la nouvelle carte ») : une carte de la collection jamais vue dans Mes decks
+// est « nouvelle » ; au premier passage, tout ce qui est déjà là compte comme vu, sauf les cartes légendaires du Rang
+const VUES_CLE = 'guilde-cartes-vues';
+function cartesVues() { try { let v = JSON.parse(localStorage.getItem(VUES_CLE) || 'null'); if (!Array.isArray(v)) { v = collectionCartes().filter(k => !CARTES[k].leg); localStorage.setItem(VUES_CLE, JSON.stringify(v)); } return v; } catch (e) { return []; } }
+const cartesNouvelles = id => { const v = cartesVues(); return collectionCartes().filter(k => !v.includes(k) && (!id || !CARTES[k].heros || CARTES[k].heros === id)); };
+function marqueVues(ks) { if (!ks || !ks.length) return; try { const v = cartesVues(); ks.forEach(k => { if (!v.includes(k)) v.push(k); }); localStorage.setItem(VUES_CLE, JSON.stringify(v)); } catch (e) {} }
 const poolDe = id => [...new Set([...HEROS[id].deck, ...(POOL_PLUS[id] || []), ...GUILDE, ...collectionCartes().filter(k => !CARTES[k].heros || CARTES[k].heros === id)])];
 function deckValide(id, d) {
   if (!Array.isArray(d) || d.length !== DECK_TAILLE) return false; const pool = poolDe(id), n = {};

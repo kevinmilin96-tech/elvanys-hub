@@ -1,5 +1,9 @@
 [
 {
+"v": "20261125-215416",
+"m": "Une nouvelle carte gagnée s'annonce : point rouge sur le Menu et sur « Mes decks », « ✨ Nouveau » et en tête de ta collection"
+},
+{
 "v": "20261125-215206",
 "m": "Mes decks : les cartes montrent à nouveau leur description"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261125-171700",
 "m": "Flashs et duel éclair : les étoiles se gagnent avec 2 défis du jour (les mêmes pour tous, écrits avant de jouer)"
-},
-{
-"v": "20261125-171057",
-"m": "Le carnet : la Chasse au boss de la semaine ouvre bien la Chasse (et non la Tour)"
 }
 ]
