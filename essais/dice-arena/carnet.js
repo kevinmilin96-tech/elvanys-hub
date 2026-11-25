@@ -81,7 +81,7 @@
       <p>La récompense <b>attend ici</b> : touche « 🎁 Récupérer » sur la ligne.</p></div>`;
     a.onclick = ev => { if (ev.target === a) a.remove(); }; document.body.appendChild(a); };
   const ligne = ([k, e, n, d, fait, a]) => { if (flashRec(k)) return `<button onclick="carnetFlash('${k}')"><span class="e">${e}</span><span class="t"><b>${n}</b><small>${d}</small></span><span class="rec" style="flex:none">🎁 Récupérer</span></button>`;
-    const rec = k === 'butin' && butinDispo();
+    const rec = k === 'butin' && !fait && butinDispo(); // 25/11 (l'utilisateur) : 3/3 = quête finie, plus de bouton (le butin se ramasse encore depuis le menu)
     return `<button class="${fait && !rec ? 'fait' : ''}" onclick="${rec ? 'carnetButin()' : a}"><span class="e">${e}</span><span class="t"><b>${n}</b><small>${d}</small></span>${rec ? '<span class="rec" style="flex:none">🎁 Récupérer</span>' : `<span class="c">${fait ? '✓' : '›'}</span>`}</button>`; };
   const compte = () => { const L = envieRendezVous().filter(x => x[0] !== 'quetes'), Q = typeof lireQuetes === 'function' ? lireQuetes() : { j:[], s:[] };
     const sem = typeof regleDeLaSemaine === 'function' ? regleDeLaSemaine() : null, sc = sem && ENV_J('guilde-sceaux', {})[sem.semaine];
