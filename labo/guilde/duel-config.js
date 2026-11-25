@@ -38,7 +38,7 @@ function defDuel() {
         pas:() => { const f = eclairFait(); return f ? [`Aujourd’hui : ${f.gagne ? '★'.repeat(f.etoiles) + '☆'.repeat(3 - f.etoiles) : 'perdu'}`, 'Rejouable pour le plaisir'] : ['Pas encore tenté aujourd’hui']; } },
       { k:'enigme', e:'🧩', n:'Énigme du jour', img:'menu-recu/mode-enigme.webp', sansHeros:true, desc:() => 'Trouve le coup parfait qui fait tomber l’adversaire en un seul tour. Une nouvelle chaque jour, la même pour tous.' },
       { k:'tuto', e:'🐱', n:'Le tutoriel', img:'menu-recu/arene-tuto.webp', sansHeros:true, desc:() => z ? 'Le premier duel guidé par Moustache, à refaire quand tu veux.' : 'Un premier duel guidé par Moustache (5 minutes). À la clé : Zéphine et le cadre « Diplômé de la Guilde ».' } ],
-    options:m => m === 'eclair' ? [{ k:'i', titre:'⚡ Héros et adversaire du jour', verrou:'les mêmes pour tous', aide:'★ : gagner · ★★ : finir avec 40 % de tes PV ou plus · ★★★ : 70 % ou plus.' }]
+    options:m => m === 'eclair' ? [{ k:'i', titre:'⚡ Héros et adversaire du jour', verrou:'les mêmes pour tous', aide:defisJourTexte(ECLAIR_DEFIS, defisJourTire('eclair', ECLAIR_DEFIS), null, '<br>') }]
       : m === 'enigme' ? [{ k:'i', titre:'🧩 L’énigme du jour', verrou:'la même pour tous', aide:'Le héros, les cartes et l’adversaire sont imposés : à toi de trouver le bon ordre.' }]
       : m === 'tuto' ? [{ k:'i', titre:'🐱 Avec Gorm et Moustache', verrou:'guidé', aide:'Moustache te montre chaque geste, un tour après l’autre.' }]
       : (m === 'semaine' && sem ? [{ k:'r', titre:`🔏 La règle : ${sem.n}`, verrou:'cette semaine', aide:sem.d }] : []).concat(optionsDuel()),
@@ -49,7 +49,7 @@ function defDuel() {
       if (m === 'tuto') return partieTuto();
       window.REGLE_FORCEE = null;
       if (m === 'eclair') { const d = eclairDuJour(); window.REGLE_FORCEE = 'sem-eclair'; if (typeof window.semaineActive === 'function') window.semaineActive(true);
-        monHeros = d.h; fermer(); nouvellePartie(d.h, d.o); S.eclairJour = eclairFait() ? 'plaisir' : 'compte'; regles(true); return; }
+        monHeros = d.h; fermer(); nouvellePartie(d.h, d.o); S.eclairJour = eclairFait() ? 'plaisir' : 'compte'; S.edDefis = defisJourTire('eclair', ECLAIR_DEFIS); S.ed = {}; regles(true); return; }
       if (!okDuel(choixDuel)) { voileDuel(true); alert('Choisis ton héros.'); return CFG.ouvre(defDuel(), { etape:2 }); }
       // 23/11 (l'utilisateur : « j'ai gagné le Duel de la semaine et je n'ai rien eu ») : SEMAINE_ACTIVE est enfermée dans semaine.js, invisible d'ici ;
       // depuis le configurateur (22/11), la règle de la semaine ne s'allumait donc JAMAIS. On passe par la porte prévue.
@@ -64,19 +64,36 @@ function defDuel() {
 function eclairJour() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
 function eclairDuJour() { const L = ORDRE.filter(x => x !== 'zephine'), j = eclairJour(); let h = 2166136261; for (const c of j + 'eclair') { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } h >>>= 0;
   const a = h % L.length, b = (a + 1 + (Math.floor(h / 7) % (L.length - 1))) % L.length; return { h:L[a], o:L[b] }; }
+// 25/11 (l'utilisateur, choix « défis du jour ») : ★ = gagner, +★ par défi réussi ; 2 défis tirés chaque jour (defis-jour.js), comptés pendant la partie (S.ed)
+const ECLAIR_DEFIS = {
+  sansUltime:{ e:'⚡', n:'Gagner sans utiliser ton Ultime', ok:S => !S.J.ultimeFait },
+  cartes:    { e:'🂠', n:'Jouer 3 cartes ou plus', ok:S => ((S.ed || {}).cartes || 0) >= 3 },
+  frappe6:   { e:'⚔', n:'Porter une Frappe avec au moins un 6', ok:S => !!(S.ed || {}).frappe6 },
+  unite:     { e:'🐾', n:'Invoquer une créature', ok:S => ((S.ed || {}).unites || 0) >= 1 },
+  gardes:    { e:'🛡', n:'Faire 2 Gardes', ok:S => ((S.ed || {}).gardes || 0) >= 2 },
+  rapide:    { e:'⏱', n:'Gagner en 6 tours ou moins', ok:S => S.J.tours <= 6 },
+};
+{ const _poseE = pose;
+  pose = function (J, quoi, ds, k, im) {
+    if (S && S.eclairJour && J === S.J) { const e = S.ed || (S.ed = {}), vs = (ds || []).map(d => d && d.v);
+      if (typeof CARTES !== 'undefined' && CARTES[quoi]) { e.cartes = (e.cartes || 0) + 1; if (CARTES[quoi].t === 'u') e.unites = (e.unites || 0) + 1; }
+      if (quoi === 'frappe' && vs.includes(6)) e.frappe6 = true;
+      if (quoi === 'garde') e.gardes = (e.gardes || 0) + 1; }
+    return _poseE.apply(this, arguments);
+  }; }
 function eclairFait() { try { return (JSON.parse(localStorage.getItem('guilde-eclair') || '{}'))[eclairJour()] || null; } catch (e) { return null; } }
 { const _finE = montrerFin;
   montrerFin = function () {
     _finE();
     if (!S || !S.eclairJour || S.eclairVu) return; S.eclairVu = true;
-    const gagne = S.fini === 'gagne', r = S.J.pv / (S.J.pvMax || 1), et = gagne ? (r >= .7 ? 3 : r >= .4 ? 2 : 1) : 0;
+    const gagne = S.fini === 'gagne', dj = S.edDefis || defisJourTire('eclair', ECLAIR_DEFIS), et = gagne ? 1 + defisJourCompte(ECLAIR_DEFIS, dj, S) : 0;
     let txt;
     if (S.eclairJour === 'compte' && !eclairFait()) {
       const xp = 10 + 5 * et, or = 5 * et; // 24/11 : à récupérer dans le carnet
       const m = (() => { try { return JSON.parse(localStorage.getItem('guilde-eclair') || '{}'); } catch (e) { return {}; } })(); m[eclairJour()] = { gagne, etoiles:et, heros:S.J.id, rec:{ xp, or }, recup:false };
       Object.keys(m).sort().slice(0, -30).forEach(k => delete m[k]); try { localStorage.setItem('guilde-eclair', JSON.stringify(m)); } catch (e) {}
       if (typeof guildeEvt === 'function') try { guildeEvt('flash', 1); } catch (e) {}
-      txt = `⚡ <b>Duel éclair du jour compté</b> : ${gagne ? '★'.repeat(et) + '☆'.repeat(3 - et) : 'perdu'} · +${xp} XP${or ? ` · 🪙 +${or}` : ''} <b>à récupérer</b> dans 📜 le carnet. Reviens demain pour le prochain !`;
+      txt = `⚡ <b>Duel éclair du jour compté</b> : ${gagne ? '★'.repeat(et) + '☆'.repeat(3 - et) : 'perdu'} · +${xp} XP${or ? ` · 🪙 +${or}` : ''} <b>à récupérer</b> dans 📜 le carnet. Reviens demain pour le prochain !<br><small>${defisJourTexte(ECLAIR_DEFIS, dj, S)}</small>`;
     } else txt = '⚡ Essai pour le plaisir : ton duel éclair du jour était déjà compté.';
     const f = document.querySelector('#fen .fenetre > div'); if (f) f.insertAdjacentHTML('afterbegin', `<p style="text-align:center;background:#2a2150;border:1px solid #f3c96b88;border-radius:10px;padding:8px">${txt}</p>`);
   }; }

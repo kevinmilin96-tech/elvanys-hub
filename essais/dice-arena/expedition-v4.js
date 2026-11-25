@@ -177,6 +177,16 @@ function carteV4(X) {
 // puis 3 combats à la suite (des monstres, une élite, le boss). FLASH_DUR = la vie des ennemis de chaque combat (réglée au simulateur)
 let FLASH_DUR = [1.3, 1.5, 1.0]; // simulateur 23/11 (/tmp/cfg/sim-expf.mjs, 60 voyages par héros) : 63-87 % de victoires, 42-75 % sans perdre de cœur
 const FLASH_REGLES = ['vent', 'marche', 'veterans', 'enrages'];
+// 25/11 (l'utilisateur, choix « défis du jour ») : les défis du FLASH ; 2 tirés chaque jour (defis-jour.js), +★ par défi réussi
+const bordFlash = X => [...X.plateau.av, ...X.plateau.ar, ...X.cale].filter(Boolean);
+const FLASH_DEFIS_EXP = {
+  sansCoeur: { e:'❤', n:'Ne perdre aucun cœur', ok:X => X.coeurs >= X.coeursMax },
+  tresor:    { e:'💰', n:'Arriver avec 6 💰 ou plus', ok:X => X.or >= 6 },
+  fusion:    { e:'★', n:'Avoir une recrue ★ à bord (fusion)', ok:X => bordFlash(X).some(u => u.star >= 1) },
+  familles:  { e:'🧭', n:'Avoir 3 familles différentes à bord', ok:X => new Set(bordFlash(X).map(u => u.fam)).size >= 3 },
+  avant:     { e:'⚔', n:'Finir avec la rangée de devant complète', ok:X => X.plateau.av.every(Boolean) },
+  econome:   { e:'🪙', n:'Ne recruter que 3 recrues ou moins', ok:X => bordFlash(X).length <= 3 },
+};
 function carteFlash(X) {
   const R = rngDe(X.graine + '/flash');
   return [[escaleDe(X, 'monstres', 0, R, [0, 1], FLASH_DUR[0])], [escaleDe(X, 'elite', 1, R, null, FLASH_DUR[1])], [escaleDe(X, 'boss', 2, R)]];
@@ -203,7 +213,7 @@ function nouveauVoyage(heros, opts) {
   X.v = 4; X.mer = opts.mer || 'nuages'; X.asc = opts.asc || 0; X.jour = !!opts.jour; X.debloques = opts.debloques != null ? opts.debloques : meta.gagnes;
   X.boss = tire(R, MERS[X.mer].boss); X.regle = opts.regle || tire(R, opts.flash ? FLASH_REGLES : Object.keys(REGLES_V4));
   X.coeursMax = 3; X.route = []; X.carte4b = true; X.carte = carteV4(X);
-  if (opts.flash) { X.flash = true; X.carte = carteFlash(X); X.coeurs = X.coeursMax = 2; X.or = 12; }
+  if (opts.flash) { X.flash = true; if (typeof defisJourTire === 'function') X.fdefis = defisJourTire('expedition', FLASH_DEFIS_EXP); X.carte = carteFlash(X); X.coeurs = X.coeursMax = 2; X.or = 12; }
   if (X.regle === 'calme') { X.coeurs = 4; X.coeursMax = 4; }
   if (X.asc >= 9) { X.coeurs = Math.min(X.coeurs, 2); X.coeursMax = Math.min(X.coeursMax, 2); }
   if (X.asc >= 3) X.or = Math.max(0, X.or - 2);
@@ -316,13 +326,14 @@ function finVoyageMeta(X) {
   const m = lireMeta4(), apport = [];
   // 23/11 : le flash du jour : son 1er essai compte (étoiles, panneau « Aujourd'hui », quête, petite récompense) ; il n'ouvre ni mer ni Ascension
   if (X.flash) {
-    const j = new Date().toISOString().slice(0, 10), gagne = X.fini === 'gagne', et = !gagne ? 0 : 1 + (X.coeurs >= X.coeursMax ? 1 : 0) + (X.coeurs >= X.coeursMax && X.or >= 6 ? 1 : 0);
+    const j = new Date().toISOString().slice(0, 10), gagne = X.fini === 'gagne', et = !gagne ? 0 : 1 + (X.fdefis ? X.fdefis.filter(k => FLASH_DEFIS_EXP[k] && FLASH_DEFIS_EXP[k].ok(X)).length : (X.coeurs >= X.coeursMax ? 1 : 0) + (X.coeurs >= X.coeursMax && X.or >= 6 ? 1 : 0));
     m.flash = m.flash || {};
     if (!m.flash[j] && !X.flashLibre) {
       const xp = 10 + 5 * et, or = 5 * et; // 24/11 : à récupérer dans le carnet
       m.flash[j] = { gagne, etoiles:et, score:scoreV4(X), rec:{ xp, or }, recup:false }; Object.keys(m.flash).sort().slice(0, -30).forEach(k => delete m.flash[k]);
       if (typeof guildeEvt === 'function') try { guildeEvt('flash', 1); } catch (e) {}
       apport.push(`⚡ Flash du jour compté : ${gagne ? '★'.repeat(et) + '☆'.repeat(3 - et) : 'perdu'} · +${xp} XP${or ? ` · 🪙 +${or}` : ''} à récupérer dans 📜 le carnet. Reviens demain !`);
+      if (X.fdefis && typeof defisJourTexte === 'function') apport.push(defisJourTexte(FLASH_DEFIS_EXP, X.fdefis, X));
     } else apport.push('⚡ Essai pour le plaisir : ton flash du jour était déjà compté.');
     if (gagne) apport.push('★★ : sans perdre de cœur · ★★★ : sans perdre de cœur, et 6 💰 ou plus à l’arrivée.');
     ecritMeta4(m); return apport;

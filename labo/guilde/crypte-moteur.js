@@ -157,6 +157,15 @@ const DEFIS = {
   heroique:  { e:'⚡', n:'Héroïque', d:'Utiliser 3 fois le pouvoir de ton héros.', ok:S => (st(S).pouvoir || 0) >= 3 },
   prudent:   { e:'🛡', n:'Prudent', d:'Ne jamais descendre sous 15 PV.', ok:S => (st(S).pvMin == null ? S.pv : st(S).pvMin) >= 15 },
 };
+// 25/11 (l'utilisateur, choix « défis du jour ») : les défis du FLASH ; 2 tirés chaque jour (defis-jour.js), +★ par défi réussi
+const FLASH_DEFIS = {
+  sansBesace: { e:'🎒', n:'Ne jamais ranger de dé dans la besace', ok:S => !st(S).besace },
+  sansRune:   { e:'✦', n:'Ne jamais utiliser de Rune', ok:S => !st(S).runes },
+  sansRelance:{ e:'🎲', n:'Ne jamais relancer les dés', ok:S => !st(S).relances },
+  chaine:     { e:'⛓', n:'Faire tomber 2 cartes dans le même tour', ok:S => S.chaineMax >= 2 },
+  heroique:   { e:'⚡', n:'Utiliser 2 fois le pouvoir de ton héros', ok:S => (st(S).pouvoir || 0) >= 2 },
+  rapide:     { e:'⏱', n:'Gagner en 6 tours ou moins', ok:S => S.tour <= 6 },
+};
 const st = S => S.st || (S.st = {});
 const compte = (S, k) => { st(S)[k] = (st(S)[k] || 0) + 1; };
 // l'état de chaque défi de la partie : [{ k, e, n, d, ok }]
@@ -474,9 +483,9 @@ function finTour(S) {
 }
 // les étoiles d'une victoire
 // 15/11 soir : avec des défis, une étoile par défi réussi (victoire obligatoire) ; sinon l'ancienne règle (la Descente)
-const etoiles = S => S.fin !== 'gagne' ? 0 : S.defis ? defisEtat(S).filter(x => x.ok).length : S.flash ? 1 + (S.pv >= 10 ? 1 : 0) + (S.tour <= 6 ? 1 : 0) /* 23/11 : le flash du jour (30 PV) ; 24/11 (l'utilisateur) : 3e étoile = gagner en 6 tours ou moins */ : 1 + (S.pv >= 12 ? 1 : 0) + (S.pv >= 25 ? 1 : 0);
+const etoiles = S => S.fin !== 'gagne' ? 0 : S.defis ? defisEtat(S).filter(x => x.ok).length : S.flash ? 1 + (S.fdefis ? S.fdefis.filter(k => FLASH_DEFIS[k] && FLASH_DEFIS[k].ok(S)).length : (S.pv >= 10 ? 1 : 0) + (S.tour <= 6 ? 1 : 0)) /* 23/11 : le flash du jour (30 PV) ; 24/11 (l'utilisateur) : 3e étoile = gagner en 6 tours ou moins */ : 1 + (S.pv >= 12 ? 1 : 0) + (S.pv >= 25 ? 1 : 0);
 
 const API = { choisirCreuset, reglerSuivi:(f, sc) => { SUIVI_FORCE = f; SUIVI_SCEAU = sc; }, INTENTIONS, intentions, NB_DES, NB_COL, PROF, RESERVE, RUNES_MAX, PV_HEROS, SCEAU_TXT, TRAITS, POUVOIRS, COMPAGNONS, COULEURS,
-  REGLES, regleDuJour, VARIANTES, varianteDuJour, SPECIALES, GAINS_COFFRE, DEFIS, defisEtat, CONSOS, conso, nouvelle, lancer, relancer, placer, rune, pouvoir, competence, finTour, visibles, menace, menaceComp, accepte, etoiles, trouve, force, silence, plafond, rng };
+  FLASH_DEFIS, REGLES, regleDuJour, VARIANTES, varianteDuJour, SPECIALES, GAINS_COFFRE, DEFIS, defisEtat, CONSOS, conso, nouvelle, lancer, relancer, placer, rune, pouvoir, competence, finTour, visibles, menace, menaceComp, accepte, etoiles, trouve, force, silence, plafond, rng };
 if (typeof module !== 'undefined' && module.exports) module.exports = API; else racine.CRYPTE = API;
 })(typeof window !== 'undefined' ? window : globalThis);

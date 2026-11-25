@@ -1,5 +1,9 @@
 [
 {
+"v": "20261125-171700",
+"m": "Flashs et duel éclair : les étoiles se gagnent avec 2 défis du jour (les mêmes pour tous, écrits avant de jouer)"
+},
+{
 "v": "20261125-171057",
 "m": "Le carnet : la Chasse au boss de la semaine ouvre bien la Chasse (et non la Tour)"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261124-195929",
 "m": "Expéditions : le début du voyage est plus doux (le boss se défend un peu plus). Carnet : un ❓ explique ce que rapportent les flashs, et l'énigme du jour se récupère avec 🎁. Mes succès : la ligne 🏅 Fidélité (jours joués et cadeaux). Équipement : ce que devient le +N de la case quand tu changes de pièce."
-},
-{
-"v": "20261124-193829",
-"m": "Expéditions : un combat perdu coûte un cœur et se rejoue (on ne passe jamais un combat sans l'avoir gagné, boss compris)."
 }
 ]
