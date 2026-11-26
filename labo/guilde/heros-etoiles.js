@@ -32,7 +32,8 @@ const EQUIP_VAL = { hache:[2, 3, 4], lame:[10, 15, 20], arc:[5, 8, 11], marteau:
 
 // 26/11 : la médaille peinte du rang (ui/heros/rang-<clé>.webp), d'après le nom du rang (Commun, Rare, Élite, Légendaire, Mythique, Ascendant…)
 const RANG_MED = { Commun:'commun', Rare:'rare', 'Élite':'elite', 'Légendaire':'legendaire', Mythique:'mythique', Ascendant:'ascendant' };
-function rangMedaille(R, px = 26) { const k = RANG_MED[(R && R.n || '').split(' ')[0]]; return k ? `<img src="ui/heros/rang-${k}.webp?v=1" alt="" style="width:${px}px;height:${px}px;object-fit:contain;vertical-align:middle;margin-right:3px">` : ''; }
+function rangMedaille(R, px = 26) { return ''; // 26/11 : retirées (l'utilisateur n'est pas satisfait des médailles, à refaire)
+  const k = RANG_MED[(R && R.n || '').split(' ')[0]]; return k ? `<img src="ui/heros/rang-${k}.webp?v=1" alt="" style="width:${px}px;height:${px}px;object-fit:contain;vertical-align:middle;margin-right:3px">` : ''; }
 function lireEtoiles() { let d; try { d = Object.assign({ heros:{}, libres:0, armurerie:{}, equip:{}, poussiere:0 }, JSON.parse(localStorage.getItem(ETOILES_CLE) || '{}')); } catch (e) { d = { heros:{}, libres:0, armurerie:{}, equip:{}, poussiere:0 }; }
   if (!d.v2) migreV2(d); return d; }
 function ecrireEtoiles(d) { localStorage.setItem(ETOILES_CLE, JSON.stringify(d)); }
