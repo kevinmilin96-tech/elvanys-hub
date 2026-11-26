@@ -261,6 +261,7 @@ function finAventure() {
   const sc = sceneAV(); let niv = [];
   AV.equipe.forEach(k => { if (k.startsWith('av:') && typeof avGagneXP === 'function') { const g = avGagneXP(k.slice(3), sc.xp || 150, true); if (g) niv.push(nomChoix(k)); } });
   if (typeof gagneXP === 'function') gagneXP(sc.xp || 150, 'Aventure des Chroniques');
+  if (AVENTURES[AV.id].saison && typeof guildeEvt === 'function') guildeEvt('chapitre_saison', 1, { sansXP:true }); // 26/11 : la quête de saison « finis un chapitre »
   const o = typeof butinArmurerie === 'function' ? butinArmurerie(3, Date.now()) : null;
   const gEq = typeof avGagne === 'function' ? avGagne(60, 1, true) : [];
   try { const D = JSON.parse(localStorage.getItem(CLE) || '{}'); D.aventures = D.aventures || {}; D.aventures[AV.id] = (D.aventures[AV.id] || 0) + 1; localStorage.setItem(CLE, JSON.stringify(D)); } catch (e) {}

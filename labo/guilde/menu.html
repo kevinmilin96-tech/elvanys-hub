@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261126-081952"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
+<head><meta name="guilde-version" content="20261126-084634"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex">
@@ -8,7 +8,7 @@
 <title>La Guilde des Runes</title>
 <script>
 // Même mécanisme que le Duel : une nouvelle version = rechargement tout seul à l'ouverture (publier.sh change VERSION).
-const VERSION = '20261126-081952';
+const VERSION = '20261126-084634';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-menu-' + v)) { sessionStorage.setItem('recharge-menu-' + v, '1'); location.replace('menu.html?v=' + v); }
@@ -209,15 +209,24 @@ fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.te
 
 <script src="semaine.js?v=17bb6dac69"></script>
 <script src="musique.js?v=1c69ba47a7"></script>
-<script src="rang.js?v=380ef435ee"></script>
+<script src="rang.js?v=edd998b56c"></script>
 <script src="succes.js?v=d6910350b3"></script>
 <script src="profil.js?v=4844bf8f93"></script>
 <script>window.AMIS_SANS_BOUTON = true; /* 15/11 : un seul bouton en haut à gauche (profil + amis) */</script>
 <script src="amis.js?v=d4158692ce"></script>
 <script src="heros-etoiles.js?v=c027cdd26b"></script>
-<script src="donnees.js?v=20261126-081952"></script>
+<script src="donnees.js?v=20261126-084634"></script>
 <script src="menu-envie.js?v=c0b65290fe"></script>
-<script src="carnet.js?v=cee8b14764"></script>
+<script>
+// 26/11 : LE DÉCOR D'HIVER de la Saison 1 (Almanach) : de la neige qui tombe sur le menu, seulement pendant la saison (jamais sur les écrans de jeu)
+addEventListener('load', () => { if (typeof saisonActive !== 'function' || !saisonActive() || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const n = document.createElement('div'); n.id = 'neige-saison'; n.setAttribute('aria-hidden', 'true');
+  n.innerHTML = Array.from({ length:36 }, () => `<i style="left:${Math.random() * 100}%;width:${3 + Math.random() * 5}px;height:${3 + Math.random() * 5}px;opacity:${.35 + Math.random() * .5};animation-duration:${7 + Math.random() * 9}s,${3 + Math.random() * 3}s;animation-delay:-${Math.random() * 16}s,-${Math.random() * 3}s"></i>`).join('');
+  const st = document.createElement('style'); st.textContent = `#neige-saison { position:fixed; inset:0; pointer-events:none; z-index:5; overflow:hidden; } #neige-saison i { position:absolute; top:-10px; border-radius:50%; background:#fff; box-shadow:0 0 4px #fff; animation:nsTombe linear infinite, nsBalance ease-in-out infinite alternate; }
+    @keyframes nsTombe { to { transform:translateY(110vh); } } @keyframes nsBalance { from { margin-left:-12px; } to { margin-left:12px; } }`;
+  document.head.appendChild(st); document.body.appendChild(n); });
+</script>
+<script src="carnet.js?v=2e93945794"></script>
 <script>
 // ciel étoilé + runes du portail (symboles, pas des lettres), aux couleurs des héros
 const ciel = document.getElementById('ciel');
@@ -617,7 +626,7 @@ function profilMenu() {
 function grandMenu() {
   let g = document.getElementById('grand-menu'); if (g) { g.remove(); return; }
   const P = typeof lireProfil === 'function' ? lireProfil() : {}, R = typeof lireRang === 'function' ? lireRang().info : null, por = typeof portraitProfil === 'function' ? portraitProfil(P)[0] : null;
-  const Q = typeof lireQuetes === 'function' ? lireQuetes() : { j:[], s:[] }, qr = Q.j.concat(Q.s).filter(q => q.fait && q.recup === false).length /* 22/11 (l'utilisateur) : la pastille rouge = quelque chose à RÉCUPÉRER, pas une quête à faire */, ar = (typeof aRecuperer === 'function' ? aRecuperer().length : 0) + (typeof almARecuperer === 'function' ? almARecuperer() : 0);
+  const Q = typeof lireQuetes === 'function' ? lireQuetes() : { j:[], s:[] }, qr = Q.j.concat(Q.s, Q.z || []).filter(q => q.fait && q.recup === false).length /* 22/11 (l'utilisateur) : la pastille rouge = quelque chose à RÉCUPÉRER, pas une quête à faire */, ar = (typeof aRecuperer === 'function' ? aRecuperer().length : 0) + (typeof almARecuperer === 'function' ? almARecuperer() : 0);
   const E = typeof AMIS !== 'undefined' && AMIS.etat, dem = E ? E.demandes.length : 0;
   const va = h => `try{sessionStorage.setItem('guilde-dans-mode','1')}catch(e){};location.href='${h}'`, ferme = "document.getElementById('grand-menu').remove();";
   // 22/11 (testeurs + choix de l'utilisateur A1) : le grand menu ne répète plus les 4 portes ni la barre du bas
