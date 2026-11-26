@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261126-084634"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
+<head><meta name="guilde-version" content="20261126-092304"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex">
@@ -8,7 +8,7 @@
 <title>La Guilde des Runes</title>
 <script>
 // Même mécanisme que le Duel : une nouvelle version = rechargement tout seul à l'ouverture (publier.sh change VERSION).
-const VERSION = '20261126-084634';
+const VERSION = '20261126-092304';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-menu-' + v)) { sessionStorage.setItem('recharge-menu-' + v, '1'); location.replace('menu.html?v=' + v); }
@@ -209,13 +209,13 @@ fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.te
 
 <script src="semaine.js?v=17bb6dac69"></script>
 <script src="musique.js?v=1c69ba47a7"></script>
-<script src="rang.js?v=edd998b56c"></script>
+<script src="rang.js?v=b6ce38396d"></script>
 <script src="succes.js?v=d6910350b3"></script>
-<script src="profil.js?v=4844bf8f93"></script>
+<script src="profil.js?v=dcaa28a44a"></script>
 <script>window.AMIS_SANS_BOUTON = true; /* 15/11 : un seul bouton en haut à gauche (profil + amis) */</script>
 <script src="amis.js?v=d4158692ce"></script>
 <script src="heros-etoiles.js?v=c027cdd26b"></script>
-<script src="donnees.js?v=20261126-084634"></script>
+<script src="donnees.js?v=20261126-092304"></script>
 <script src="menu-envie.js?v=c0b65290fe"></script>
 <script>
 // 26/11 : LE DÉCOR D'HIVER de la Saison 1 (Almanach) : de la neige qui tombe sur le menu, seulement pendant la saison (jamais sur les écrans de jeu)

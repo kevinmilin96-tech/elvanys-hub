@@ -46,8 +46,8 @@ function titresGuilde() {
 // Chaque choix a sa condition : libre, un rang de la Guilde (r), ou un titre gagné (t). Rien ne donne d'avantage en jeu.
 const rangGuilde = () => typeof lireRang === 'function' ? lireRang().info.rang : 1;
 const titreGagne = k => titresGuilde().some(x => x[0] === k && x[4]);
-const condOk = c => !c || (c.r ? rangGuilde() >= c.r : true) && (c.t ? titreGagne(c.t) : true);
-const condTxt = c => !c ? '' : c.r ? `rang ${c.r} de la Guilde` : c.t ? `titre « ${(titreDe(c.t) || [])[2] || c.t} »` : '';
+const condOk = c => !c || (c.r ? rangGuilde() >= c.r : true) && (c.t ? titreGagne(c.t) : true) && (c.alm ? typeof almGagne === 'function' && almGagne(c.alm[0], c.alm[1]) : true); // 26/11 : alm = gagné dans l'Almanach
+const condTxt = c => !c ? '' : c.alm ? 'Almanach, palier 30' : c.r ? `rang ${c.r} de la Guilde` : c.t ? `titre « ${(titreDe(c.t) || [])[2] || c.t} »` : '';
 const FONDS = {
   nuit:['Nuit étoilée', 'url(fonds/carte-nuit.webp?v=1) center/cover, radial-gradient(ellipse at 50% 0%, #3a2a5c, #120f24 75%)'],
   forge:['La forge', 'url(fonds/carte-forge.webp?v=1) center/cover, radial-gradient(ellipse at 50% 100%, #8a3a12, #2a1208 70%)'],
@@ -63,6 +63,8 @@ const FONDS = {
   grimoire:['Le grimoire', 'url(fonds/carte-grimoire.webp?v=1) center/cover, linear-gradient(90deg, #3a2814, #c9a46a 48%, #8a6a3a 50%, #c9a46a 52%, #3a2814)', { t:'chroniques' }],
   vide:['Le Néant', 'url(fonds/carte-vide.webp?v=1) center/cover, radial-gradient(circle at 50% 50%, #a855f7 0%, #2a0a4a 35%, #000 75%)', { t:'neant' }],
   enigmes:['La nuit des énigmes', 'radial-gradient(circle at 30% 30%, #9be37a33 0%, transparent 25%), radial-gradient(circle at 70% 70%, #8ab4ff33 0%, transparent 25%), linear-gradient(160deg, #0f1a2a, #1a2a4a 50%, #0a0f1a)', { t:'serie30' }],
+  // 26/11 : la Saison 1 de l'Almanach (palier 30) : un fond où la neige tombe (classe fond-neige, profil.html)
+  blizzard:['Le blizzard (Saison 1)', 'url(fonds/carte-blizzard.webp?v=1) center/cover, radial-gradient(ellipse at 50% 0%, #5a7aa8, #1a2640 60%, #0a0f1c)', { alm:['fond', 'blizzard'] }],
   profondeurs:['Les profondeurs', 'url(fonds/carte-profondeurs.webp?v=1) center/cover, radial-gradient(ellipse at 50% 120%, #ff9a4a55, #14100c 60%), #14100c', { t:'profondeurs' }],
 };
 // 25/11 : les cadres peints des titres (cadres/profil-<titre>.webp), posés par-dessus le portrait
@@ -72,7 +74,7 @@ const EMB_PEINTS = ['lion', 'loup', 'dragon', 'hibou', 'chat', 'epee', 'bouclier
 const emIco = (k, e, px) => EMB_PEINTS.includes(k) ? `<img src="ui/emblemes/emb-${k}.webp?v=1" alt="" style="width:${px}px;height:${px}px;object-fit:contain;vertical-align:middle;box-shadow:none;border-radius:0">` : e;
 const EMBLEMES = [['aucun', '—'], ['lion', '🦁'], ['loup', '🐺'], ['dragon', '🐉'], ['hibou', '🦉'], ['chat', '🐱'], ['epee', '⚔️'], ['bouclier', '🛡️'], ['etoile', '⭐'],
   ['flamme', '🔥', { r:4 }], ['eclair', '⚡', { r:7 }], ['couronne', '👑', { r:12 }], ['diamant', '💎', { r:18 }], ['comete', '☄️', { r:25 }],
-  ['de', '🎲', { t:'diplome' }], ['vague', '🌊', { t:'traversee' }], ['crane', '💀', { t:'fosse' }], ['parchemin', '📜', { t:'chroniques' }], ['lune', '🌑', { t:'neant' }], ['sphinx', '🧩', { t:'sphinx' }], ['cle', '🗝️', { t:'serie7' }], ['oeil', '👁️', { t:'serie100' }]];
+  ['flocon', '❄️', { alm:['embleme', 'flocon'] }], ['de', '🎲', { t:'diplome' }], ['vague', '🌊', { t:'traversee' }], ['crane', '💀', { t:'fosse' }], ['parchemin', '📜', { t:'chroniques' }], ['lune', '🌑', { t:'neant' }], ['sphinx', '🧩', { t:'sphinx' }], ['cle', '🗝️', { t:'serie7' }], ['oeil', '👁️', { t:'serie100' }]];
 const COULEURS_NOM = [['blanc', '#f1ecff'], ['or', '#f3c96b'], ['ciel', '#7cd4ff'], ['menthe', '#7dffb0'], ['rose', '#ff8ad4', { r:5 }], ['braise', '#ff7a3a', { r:8 }],
   ['amethyste', '#c084fc', { r:11 }], ['arcenciel', 'linear-gradient(90deg,#ff5a5a,#f3c96b,#7dffb0,#7cd4ff,#c084fc)', { r:22 }]];
 const DEVISES = ['Ce qui est forgé ne casse pas.', 'Un dé, une chance.', 'Toujours un 6 dans la manche.', 'La Guilde avant tout.', 'Je lance, donc je suis.',

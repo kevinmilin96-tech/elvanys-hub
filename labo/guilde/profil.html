@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261126-084634"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
+<head><meta name="guilde-version" content="20261126-092304"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex">
@@ -61,6 +61,13 @@
   .parc-total { display:grid; grid-template-columns:repeat(4, 1fr); gap:6px; margin:6px 0 10px; } .parc-total div { background:#1c1838; border:1px solid #45457a; border-radius:12px; padding:8px 4px; text-align:center; } .parc-total b { display:block; color:#f3c96b; font-size:1.25em; } .parc-total small { color:#c9c1ea; font-size:.78em; }
   .parc { display:flex; align-items:center; gap:10px; width:100%; margin:5px 0; padding:10px 12px; border-radius:12px; border:1px solid #45457a; background:#1c1838; color:#f1ecff; font:inherit; text-align:left; cursor:pointer; }
   .parc .e { font-size:1.5em; } .parc .n { flex:1; } .parc .n small { display:block; color:#c9c1ea; font-size:.85em; } .parc .f { color:#f3c96b; }
+  /* 26/11 : le fond animé de la Saison 1 (Almanach, palier 30) : de la neige qui tombe derrière la carte */
+  .carte.fond-neige { position:relative; overflow:hidden; } .carte.fond-neige > * { position:relative; z-index:1; }
+  .carte.fond-neige::before { content:''; position:absolute; inset:-40px 0 0 0; z-index:0; pointer-events:none; opacity:.85;
+    background-image:radial-gradient(2px 2px at 20px 30px, #fff, transparent), radial-gradient(3px 3px at 80px 70px, #fff, transparent), radial-gradient(2px 2px at 140px 20px, #fffc, transparent), radial-gradient(2.5px 2.5px at 200px 90px, #fff, transparent), radial-gradient(2px 2px at 260px 50px, #fffb, transparent), radial-gradient(3px 3px at 50px 110px, #fff, transparent);
+    background-size:300px 130px; animation:fondNeige 9s linear infinite; }
+  @keyframes fondNeige { from { background-position:0 0; } to { background-position:40px 130px; } }
+  @media (prefers-reduced-motion: reduce) { .carte.fond-neige::before { animation:none; } }
 </style>
 </head>
 <body>
@@ -70,13 +77,13 @@
 </main>
 <script src="cartes.js?v=94ea5cc1ba"></script>
 <script src="musique.js?v=1c69ba47a7"></script>
-<script src="rang.js?v=edd998b56c"></script>
+<script src="rang.js?v=b6ce38396d"></script>
 <script src="heros-etoiles.js?v=c027cdd26b"></script>
 <script src="donnees.js?v=8a39c05326"></script>
 <script src="aventuriers.js?v=5679a4a045"></script>
 <script src="odyssee.js?v=99b81500e2"></script>
 <script src="succes.js?v=d6910350b3"></script>
-<script src="profil.js?v=4844bf8f93"></script>
+<script src="profil.js?v=dcaa28a44a"></script>
 <script src="pantheon.js?v=1a6f59e92e"></script>
 <script>
 const log = () => {};
@@ -120,7 +127,7 @@ function vitrine(k) { const p = lireProfil(); const v = p.vitrine || []; p.vitri
 function carteProfil(p, edit) {
   const c = p.cadre !== 'aucun' && titreDe(p.cadre), t = p.titre && titreDe(p.titre), [src, sec] = portraitProfil(p), img = src || IMG(dernier), sc = sec || IMG(dernier);
   const em = (EMBLEMES.find(x => x[0] === p.embleme) || [])[1], f = (FONDS[p.fond] || FONDS.nuit)[1], r = rangGuilde();
-  return `<div class="carte" style="background:${f};border-color:${c ? c[5] : '#4b4580'}">
+  return `<div class="carte${p.fond === 'blizzard' ? ' fond-neige' : ''}" style="background:${f};border-color:${c ? c[5] : '#4b4580'}">
     ${edit ? '' : `<button class="crayon" onclick="ouvre('portrait')" aria-label="Modifier mon profil">✏️ Modifier</button>`}
     <div class="port${c && CADRES_PEINTS.includes(p.cadre) ? ' cp' : ''}" ${edit ? '' : `onclick="ouvre('portrait')"`}><img src="${img}" onerror="this.onerror=null;this.src='${sc}'" alt="" style="${c && !CADRES_PEINTS.includes(p.cadre) ? `box-shadow:0 0 0 4px ${c[5]}, 0 0 22px ${c[5]}` : ''}">${c && CADRES_PEINTS.includes(p.cadre) ? `<img class="cadrep" src="cadres/profil-${p.cadre}.webp?v=1" alt="">` : ''}${em && em !== '—' ? `<span class="em">${emIco(p.embleme, em, 36)}</span>` : c ? `<span class="em">${c[1]}</span>` : ''}${typeof emblemeRang === 'function' ? emblemeRang(r, 38, 'rg-e') : `<span class="rg" title="Rang de la Guilde">RG ${r}</span>`}</div>
     <div class="nom" id="nomv" style="${nomStyle(p)}">${p.nom || 'Toi'}</div><div class="tit">${t ? `${t[1]} ${t[2]}` : ''}</div>

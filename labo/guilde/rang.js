@@ -170,10 +170,10 @@ function changeQuete(i) {
 
 // ----------------------------------------------------------------------------------------------- L'ALMANACH (25/11, saisons de 8 semaines)
 // Une seule XP, deux barres : chaque XP gagnée pendant une saison remplit aussi l'Almanach (500 XP par palier, 30 paliers, puis un coffre tous les 1 000 XP).
-// Ici : les saisons et le compteur. L'écran, les récompenses et le choix du skin : almanach.js (route.html, onglet 🗓️ Saison).
+// Ici : les saisons et le compteur. L'écran et les récompenses : almanach.js (route.html, onglet 🗓️ Saison).
 const ALM_CLE = 'guilde-almanach', ALM_PALIER = 500, ALM_NB = 30, ALM_BONUS = 1000;
 const SAISONS = [
-  { id:'s1', n:1, nom:'L’Hiver des runes', e:'❄', debut:'2026-12-01', fin:'2027-01-26', aventure:'Les Cloches de givre', titre:'hiver1', des:'glace', skins:['maelle', 'aldric'] }, // fin = premier jour APRÈS la saison
+  { id:'s1', n:1, nom:'L’Hiver des runes', e:'❄', debut:'2026-12-01', fin:'2027-01-26', aventure:'Les Cloches de givre', titre:'hiver1', des:'glace', emb:'flocon', fond:'blizzard' }, // 26/11 (l'utilisateur) : au palier 30, l'emblème et le fond animé de la saison, plus de skin de héros // fin = premier jour APRÈS la saison
 ];
 const almJour = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 function saisonActive(d = new Date()) { const j = almJour(d); return SAISONS.find(s => j >= s.debut && j < s.fin) || null; }
@@ -189,7 +189,7 @@ function almAjoute(xp) { const S = saisonActive(); if (!S || !xp) return; const 
   for (let p = avant + 1; p <= Math.min(apres, ALM_NB); p++) annonceRang(`${S.e} Almanach : palier ${p} atteint ! 🎁 À récupérer`, true); }
 const almARecuperer = () => { const S = saisonActive(); if (!S) return 0; const i = almInfo(S.id); return i.aRec.length + i.bonusARec; };
 const almGagne = (genre, cle) => SAISONS.some(S => { const x = (lireAlm().s || {})[S.id]; if (!x) return false;
-  if (genre === 'titre') return S.titre === cle && x.recup.includes(10); if (genre === 'des') return S.des === cle && x.recup.includes(20); if (genre === 'skin') return x.skin === cle; return false; });
+  if (genre === 'titre') return S.titre === cle && x.recup.includes(10); if (genre === 'des') return S.des === cle && x.recup.includes(20); if (genre === 'embleme') return S.emb === cle && x.recup.includes(30); if (genre === 'fond') return S.fond === cle && x.recup.includes(30); return false; });
 
 // ----------------------------------------------------------------------------------------------- l'entrée commune : un moment fort
 function gagneXP(xp, raison) {
