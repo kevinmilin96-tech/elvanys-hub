@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="fr"><head><meta name="guilde-version" content="20261126-171725"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<html lang="fr"><head><meta name="guilde-version" content="20261126-172422"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Musiques d'ambiance · La Guilde des Runes</title>
 <style>
   /* Page d'écoute des musiques (11/11) : l'utilisateur choisit ce qu'il garde. */
@@ -24,5 +24,5 @@
 <script>
 function raccord(id) { document.querySelectorAll('audio').forEach(a => { if (a.id !== id) a.pause(); }); const a = document.getElementById(id); const go = () => { a.currentTime = Math.max(0, a.duration - 10); a.play(); }; if (isNaN(a.duration)) a.addEventListener('loadedmetadata', go, { once:true }); else go(); }
 </script>
-</main><script src="musique.js?v=1c69ba47a7"></script>
+</main><script src="musique.js?v=52d2750bfc"></script>
 </body></html>

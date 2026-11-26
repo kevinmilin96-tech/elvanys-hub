@@ -173,7 +173,7 @@ function changeQuete(i) {
 // Ici : les saisons et le compteur. L'écran et les récompenses : almanach.js (route.html, onglet 🗓️ Saison).
 const ALM_CLE = 'guilde-almanach', ALM_PALIER = 500, ALM_NB = 30, ALM_BONUS = 1000;
 const SAISONS = [
-  { id:'s1', n:1, nom:'L’Hiver des runes', e:'❄', debut:'2026-12-01', fin:'2027-01-26', aventure:'Les Cloches de givre', titre:'hiver1', des:'glace', emb:'flocon', fond:'blizzard' }, // 26/11 (l'utilisateur) : au palier 30, l'emblème et le fond animé de la saison, plus de skin de héros // fin = premier jour APRÈS la saison
+  { id:'s1', n:1, nom:'L’Hiver des runes', e:'❄', debut:'2026-12-01', fin:'2027-01-26', aventure:'Les Cloches de givre', titre:'hiver1', des:'glace', emb:'flocon', fond:'blizzard', heros:'maelle', skin:'hiver' }, // 26/11 (l'utilisateur, « comme LoL ») : chaque saison met UN héros en avant : son costume + l'emblème + le fond animé au palier 30 // fin = premier jour APRÈS la saison
 ];
 const almJour = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 function saisonActive(d = new Date()) { const j = almJour(d); return SAISONS.find(s => j >= s.debut && j < s.fin) || null; }
