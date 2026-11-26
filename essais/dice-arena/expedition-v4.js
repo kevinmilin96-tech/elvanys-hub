@@ -221,7 +221,10 @@ function nouveauVoyage(heros, opts) {
     if (globalThis.SORTES_SIX) { X.sortes = []; X.familles = null; const prend = l => { if (l.length) X.sortes.push(l.splice(Math.floor(R2() * l.length), 1)[0]); };
       [['rempart'], ['lame'], ['tireur', 'soutien']].forEach(roles => prend(d.filter(k => RECRUES[k].t === 1 && roles.includes(RECRUES[k].role) && !X.sortes.includes(k))));
       [[2, 2], [3, 1]].forEach(([t, n]) => { const l = d.filter(k => RECRUES[k].t === t); for (let i = 0; i < n; i++) prend(l); }); } }
-  X.boss = tire(R, MERS[X.mer].boss); X.regle = opts.regle || tire(R, opts.flash ? FLASH_REGLES : Object.keys(REGLES_V4));
+  X.boss = tire(R, MERS[X.mer].boss);
+  // 26/11 (l'utilisateur : « je n'ai qu'Ignaros dans le flash ») : le boss du flash change chaque jour parmi les 5 boss (le même pour tous ce jour-là)
+  if (opts.flash) { const L = Object.keys(BOSS_V4), j = Math.floor(Date.UTC(...new Date().toISOString().slice(0, 10).split('-').map((v, i) => i === 1 ? v - 1 : +v)) / 864e5); X.boss = opts.flashBoss || L[j % L.length]; }
+  X.regle = opts.regle || tire(R, opts.flash ? FLASH_REGLES : Object.keys(REGLES_V4));
   X.coeursMax = 3; X.route = []; X.carte4b = true; X.carte = carteV4(X);
   if (opts.flash) { X.flash = true; if (typeof defisJourTire === 'function') X.fdefis = defisJourTire('expedition', FLASH_DEFIS_EXP); X.carte = carteFlash(X); X.coeurs = X.coeursMax = 2; X.or = 12; }
   if (X.regle === 'calme') { X.coeurs = 4; X.coeursMax = 4; }
