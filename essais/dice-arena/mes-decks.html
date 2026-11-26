@@ -191,7 +191,7 @@ function supprimeOui() { const D = lireDecks(actuel); D.decks.splice(ed.i, 1); i
 
 if (verrouille(actuel)) actuel = ORDRE[0];
 bande(); dessine();
-if (typeof GM !== 'undefined') { GM.retour(q.get('retour') || 'menu.html'); GM.musique('heros'); GM.bouton(); }
+if (typeof GM !== 'undefined') { GM.retour(() => { if (ed) { ferme(); return; } const r = q.get('retour') || 'menu.html'; if (/^menu\.html/.test(r)) sessionStorage.setItem('guilde-dans-mode', '1'); location.href = r; }); GM.musique('heros'); GM.bouton(); } // 26/11 : dans un deck ouvert, Retour = la liste
 if (typeof Guide !== 'undefined') Guide.lance('mesdecks', [
   [null, 'Mes decks : chaque héros peut avoir jusqu’à 3 decks à toi, en plus de son deck de base.'],
   ['#bande', 'Touche un portrait pour voir les decks de ce héros.'],
