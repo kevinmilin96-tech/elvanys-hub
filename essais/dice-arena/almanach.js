@@ -1,14 +1,14 @@
 // 25/11 : L'ALMANACH, l'écran et les récompenses (le compteur et les saisons sont dans rang.js).
 // Décisions de l'utilisateur (saisons-proposition.html, almanach-saison1-scenario.html) : 30 paliers de 500 XP, saison de 8 semaines ;
 // or (≈ 300) ou poussière (≈ 150) en alternance ; équipement rare / épique / légendaire aux paliers 5, 15, 25 ; un titre et son cadre au 10 ;
-// des dés de la saison au 20 ; au 30, l'emblème et le fond animé de la saison (26/11 : à la place du skin de héros, trop dur à peindre pour chaque héros) ;
+// des dés de la saison au 20 ; au 30, le costume du héros de la saison (26/11, « comme LoL » : un seul héros par saison), l'emblème et le fond animé ;
 // ensuite un coffre tous les 1 000 XP jusqu'à la fin.
 const ALM_EQUIP = { 5:1, 15:2, 25:3 };
 function almRecompense(S, p) {
   if (ALM_EQUIP[p] != null) { const r = ALM_EQUIP[p]; return { e:'🛡', n:`Pièce ${typeof EQ_RARE !== 'undefined' ? EQ_RARE[r].n : ''}`, d:'Une pièce d’équipement pour un de tes héros.', genre:'equip', r }; }
   if (p === 10) return { e:'🖼', n:'Titre et cadre de la saison', d:`Le titre « ${typeof titreDe === 'function' && titreDe(S.titre) ? titreDe(S.titre)[2] : 'Veilleur de l’Hiver'} » et son cadre (atelier du profil).`, genre:'titre' };
   if (p === 20) return { e:'🎲', n:'Dés de la saison', d:'Une nouvelle apparence pour tes dés (Mon profil).', genre:'des' };
-  if (p === 30) return { e:'❄', n:'Emblème et fond animé', d:'L’emblème de la saison et un fond de carte de profil où la neige tombe (atelier du profil).', genre:'profil' };
+  if (p === 30) { const nh = typeof HEROS !== 'undefined' && HEROS[S.heros] ? HEROS[S.heros].nom : S.heros; return { e:'👘', n:`Le costume d’hiver de ${nh}`, d:`Le costume d’hiver de ${nh} (son portrait change partout), avec l’emblème de la saison et un fond de carte de profil où la neige tombe.`, genre:'profil' }; }
   return p % 2 ? { e:'🪙', n:'300 d’or', d:'De quoi faire monter tes héros.', genre:'or', or:300 } : { e:'🔹', n:'150 poussière', d:'De la poussière de rune pour les niveaux de tes héros.', genre:'pou', pou:150 };
 }
 const ALM_COFFRE = { or:150, pou:75 };
@@ -20,7 +20,9 @@ function almPrendre(p) {
   if (R.genre === 'equip' && typeof eqNouvelle === 'function') { const s = avSac(), piece = eqNouvelle(null, R.r); s.pieces.push(piece); avSacEcrire(s); annonceRang(`🛡 ${piece.nom} (${EQ_RARE[piece.r].n}) dans ton coffre`, true); }
   if (R.genre === 'titre') annonceRang('🖼 Nouveau titre et son cadre : choisis-les dans l’atelier du profil', true);
   if (R.genre === 'des') annonceRang('🎲 Dés de la saison : choisis-les dans Mon profil', true);
-  if (R.genre === 'profil') annonceRang('❄ L’emblème et le fond animé de la saison : choisis-les dans l’atelier du profil', true);
+  if (R.genre === 'profil') { try { const k = S.heros + '-' + S.skin, G = JSON.parse(localStorage.getItem('guilde-skins-gagnes') || '[]'); if (!G.includes(k)) G.push(k); localStorage.setItem('guilde-skins-gagnes', JSON.stringify(G));
+      const P = JSON.parse(localStorage.getItem('guilde-skins') || '{}'); P[S.heros] = S.skin; localStorage.setItem('guilde-skins', JSON.stringify(P)); } catch (e) {}
+    annonceRang('👘 Costume d’hiver, emblème et fond animé : ils t’attendent dans l’atelier du profil', true); }
   const a2 = lireAlm(); almSaison(a2, S.id).recup.push(p); localStorage.setItem(ALM_CLE, JSON.stringify(a2)); return true;
 }
 function almPrendreCoffre() { const S = saisonActive(); if (!S) return false; const i = almInfo(S.id); if (!i.bonusARec) return false;
@@ -36,7 +38,7 @@ function almPageHTML() {
   const cases = Array.from({ length:ALM_NB }, (_, k) => { const p = k + 1, R = almRecompense(S, p), pris = i.x.recup.includes(p), dispo = actif && p <= i.palier && !pris, grand = [5, 10, 15, 20, 25, 30].includes(p);
     return `<div class="acase ${pris ? 'prise' : dispo ? 'dispo' : 'verrou'}${grand ? ' grand' : ''}" id="a${p}" onclick="almDetail(${p})"><div class="rec">${pris ? '<span class="coche">✔</span>' : ''}<span class="ic">${R.e}</span><b>${R.n}</b>${dispo ? `<button class="recup" onclick="event.stopPropagation();if(almPrendre(${p}))dessine(${p})">Récupérer</button>` : !pris ? '<small>🔒</small>' : ''}</div><span class="anum">${p}</span></div>`; }).join('');
   const nb = i.aRec.length + i.bonusARec;
-  return `<div class="alm"><div class="alm-banniere" style="background-image:url('decor/almanach-${S.id}-fond.webp?v=1')"><img src="ui/almanach.webp?v=1" alt="" onerror="this.remove()"><b>${S.e} Saison ${S.n} · ${S.nom}</b></div><div class="alm-tete">
+  return `<div class="alm"><div class="alm-banniere" style="background-image:url('decor/almanach-${S.id}-fond.webp?v=1')"><img src="ui/almanach.webp?v=1" alt="" onerror="this.remove()"><b>${S.e} Saison ${S.n} · ${S.nom}${S.heros ? `<small>la saison de ${typeof HEROS !== 'undefined' && HEROS[S.heros] ? HEROS[S.heros].nom : S.heros}</small>` : ''}</b></div><div class="alm-tete">
     ${actif ? `<p class="alm-fin">Palier <b>${i.palier}</b> / ${ALM_NB} · fin dans <b>${j}</b> jour${j > 1 ? 's' : ''}</p>
     <div class="xp"><span class="barre"><i style="width:${Math.round(i.dans / i.besoin * 100)}%"></i><span>${i.dans} / ${i.besoin} XP ${i.palier >= ALM_NB ? 'vers le prochain coffre' : `vers le palier ${i.palier + 1}`}</span></span></div>`
     : `<p class="alm-fin bientot">L’Almanach ouvre le <b>1er décembre</b>${j > 0 ? ` (dans ${j} jour${j > 1 ? 's' : ''})` : ''}. Voici ce qui t’attend.</p>`}</div>
@@ -52,7 +54,7 @@ function almDetail(p) { const S = saisonActive() || saisonProchaine(); if (!S) r
   annonceRang(`${R.e} Palier ${p} · ${R.n} : ${R.d} ${x.x.recup.includes(p) ? '✔ Récupérée.' : saisonActive() && p <= x.palier ? '🎁 À récupérer !' : '🔒'}`); }
 
 if (typeof document !== 'undefined') { const st = document.createElement('style'); st.textContent = `
-  .alm-banniere { max-width:620px; margin:4px auto 6px; aspect-ratio:16/6; border-radius:14px; background:#16213a center/cover; border:1px solid #9fdcff88; display:flex; align-items:flex-end; gap:8px; padding:8px 10px; box-shadow:inset 0 -40px 40px -10px #000a; } .alm-banniere img { width:54px; height:54px; filter:drop-shadow(0 2px 4px #000); } .alm-banniere b { color:#fff; font:bold 17px Georgia, serif; text-shadow:0 2px 4px #000; }
+  .alm-banniere { max-width:620px; margin:4px auto 6px; aspect-ratio:16/6; border-radius:14px; background:#16213a center/cover; border:1px solid #9fdcff88; display:flex; align-items:flex-end; gap:8px; padding:8px 10px; box-shadow:inset 0 -40px 40px -10px #000a; } .alm-banniere img { width:54px; height:54px; filter:drop-shadow(0 2px 4px #000); } .alm-banniere b { color:#fff; font:bold 17px Georgia, serif; text-shadow:0 2px 4px #000; } .alm-banniere small { display:block; font-weight:normal; font-size:13px; color:#cfeeff; }
   .alm .alm-tete { max-width:620px; margin:0 auto; padding:0 12px; } .alm h2 { margin:6px 0 4px; } .alm-fin { text-align:center; margin:4px 0 6px; color:#f1ecff; } .alm-fin.bientot { background:#1d1b3aee; border:1px solid #f3c96b; border-radius:12px; padding:9px; }
   .alm .acase { flex:none; width:118px; position:relative; padding-bottom:30px; } .alm .acase .rec { height:auto; min-height:150px; } .alm .acase.grand .rec { border-color:#9fdcff; box-shadow:0 0 12px #9fdcff55; }
   .alm .acase .ic { font-size:34px; display:block; margin:4px 0; } .alm .anum { position:absolute; bottom:0; left:50%; transform:translateX(-50%); background:#2a3e66; color:#fff; border:2px solid #9fdcff; border-radius:50%; width:28px; height:28px; display:flex; align-items:center; justify-content:center; font:bold 13px Georgia, serif; }

@@ -490,3 +490,20 @@ const ENTRAINEMENTS = [['duel', 'Le Duel (le tutoriel)', 'duel.html?tuto=1'], ['
     }).catch(() => {});
   } catch (e) {}
 })();
+
+// 26/11 (choix de l'utilisateur, « comme LoL ») : LES SKINS DE SAISON. Chaque saison de l'Almanach met un héros en avant et donne son costume
+// au palier 30 (Saison 1 : Maëlle en hiver). Un skin porté remplace le portrait du héros PARTOUT (images et fonds), sans toucher au code des modes.
+// guilde-skins = { maelle:'hiver' } (porté), guilde-skins-gagnes = ['maelle-hiver'] ; rien d'autre ne change en jeu.
+(function () {
+  if (typeof document === 'undefined' || typeof localStorage === 'undefined') return;
+  let S = {}; try { S = JSON.parse(localStorage.getItem('guilde-skins') || '{}') || {}; } catch (e) {}
+  const H = Object.keys(S).filter(h => S[h]); if (!H.length) return;
+  const re = new RegExp('portraits/(' + H.join('|') + ')\\.webp(\\?[^"\')\\s]*)?', 'g');
+  const remplace = s => s.replace(re, (m, h) => `portraits/skin-${h}-${S[h]}.webp?v=1`);
+  const traite = el => { if (el.nodeType !== 1) return;
+    const un = n => { if (n.tagName === 'IMG' && n.getAttribute('src') && re.test(n.getAttribute('src'))) { re.lastIndex = 0; n.setAttribute('src', remplace(n.getAttribute('src'))); } re.lastIndex = 0;
+      const st = n.getAttribute && n.getAttribute('style'); if (st && st.includes('portraits/') && re.test(st)) { re.lastIndex = 0; n.setAttribute('style', remplace(st)); } re.lastIndex = 0; };
+    un(el); if (el.querySelectorAll) el.querySelectorAll('img[src*="portraits/"], [style*="portraits/"]').forEach(un); };
+  const go = () => { traite(document.body); new MutationObserver(L => L.forEach(m => { if (m.type === 'attributes') traite(m.target); else m.addedNodes.forEach(traite); })).observe(document.body, { childList:true, subtree:true, attributes:true, attributeFilter:['src', 'style'] }); };
+  if (document.body) go(); else addEventListener('DOMContentLoaded', go);
+})();

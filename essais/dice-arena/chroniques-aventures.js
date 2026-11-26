@@ -49,7 +49,7 @@ const AVENTURES = {
   // 26/11 : L'ALMANACH · Saison 1 « L'Hiver des runes », l'aventure « Les Cloches de givre », chapitre 1 (scénario validé : almanach-saison1-scenario.html).
   // Ouvert du 1er décembre à la fin de la saison (mode atelier : toujours). froid:1 = la règle de la saison dans les embuscades (le donjon l'a dans son scénario).
   cloches1: {
-    titre:'🔔 Les Cloches de givre · Chapitre 1', resume:'Le blizzard qui ne s’arrête pas : les trois cloches du monastère des Veilleurs se sont tues le même soir.', duree:'30-45 min',
+    titre:'🔔 Les Cloches de givre · Chapitre 1', resume:'La saison de Maëlle. Le blizzard qui ne s’arrête pas : les trois cloches que sa famille a fondues se sont tues le même soir.', duree:'30-45 min',
     saison:'s1', froid:1, xp:250,
     scenes:[
       { t:'taverne', lieu:'L’auberge du Col, au pied de la montagne', fond:'taverne-hiver', pnj:{ n:'Ilse, la passeuse du col', e:'🧣', img:'pnj-ilse' },
@@ -58,15 +58,17 @@ const AVENTURES = {
           '« Là-haut, sur la montagne, il y a le monastère des Veilleurs. Depuis cent ans, ils sonnent trois grandes cloches, et le son tient l’hiver à distance de la vallée. »',
           '« Il y a sept nuits, les trois cloches se sont tues. Le même soir. Depuis, un blizzard descend, et il ne s’arrête plus. Le village ne voit plus le soleil. »',
           '« Trois cloches. Une seule a suffi pendant cent ans à tenir l’hiver dans la montagne. Les trois se sont tues le même soir. Ça, ce n’est pas le vent. »',
+          'Ilse se tourne vers la forgeronne assise près du feu : « Maëlle… ces cloches, c’est ton grand-père qui les a coulées, dans votre forge. Si quelqu’un peut les faire chanter à nouveau, c’est toi. »',
           '« Je connais le col. Je vous mène jusqu’aux portes. Après, c’est à vous : trouvez la corde de la première cloche, et faites-la sonner. »',
         ],
         questions:[
           { n:'« Pourquoi les cloches ? »', r:'« Le son des cloches porte loin, très loin. Les Veilleurs disaient qu’il “rappelle au froid où est sa place”. Moi, je sais juste que tant qu’elles sonnaient, on avait des printemps. »' },
           { n:'« Et les Veilleurs, alors ? »', r:'« Personne n’est redescendu. Pas un. C’est pour ça que je vous parle à voix basse. »' },
+          { n:'« Et Maëlle ? »', r:'Maëlle pose son marteau sur la table : « Trois cloches de bronze, et une rune dans chacune : je les connais par cœur, j’ai grandi à côté du moule. Si elles se sont tues toutes ensemble, c’est qu’on les a fait taire. Je viens. »' },
           { n:'« Et Moustache, il vient ? »', r:'Moustache, roulé en boule contre la cheminée : « Je viens. Mais je proteste. Le froid, c’est une insulte faite aux chats. Quelqu’un a une écharpe ? »' },
         ],
         accepter:'Partir vers le monastère' },
-      { t:'recit', titre:'La porte de l’auberge', fond:'monastere', texte:'Dehors, le monde est blanc. La neige tombe de côté, poussée par un vent qui siffle comme une bouilloire. Ilse ajuste sa lanterne et montre la montagne : tout là-haut, une silhouette sombre, le monastère. « On marche en file. On ne lâche personne. » Moustache s’enfonce jusqu’au ventre dans la neige : « Formidable. Je vais arriver là-haut en sorbet. »' },
+      { t:'recit', titre:'La porte de l’auberge', fond:'monastere', texte:'Dehors, le monde est blanc. La neige tombe de côté, poussée par un vent qui siffle comme une bouilloire. Ilse ajuste sa lanterne et montre la montagne : tout là-haut, une silhouette sombre, le monastère. « On marche en file. On ne lâche personne. » Maëlle remonte son écharpe : « Grand-père disait qu’on entendait les cloches jusqu’au village. Ce soir, on n’entend que le vent. » Moustache s’enfonce jusqu’au ventre dans la neige : « Formidable. Je vais arriver là-haut en sorbet. »' },
       { t:'carte', titre:'Le col enneigé', fond:'monastere', carte:'carte-col-enneige', etapes:[
         { t:'route', n:'Le pont de glace', txt:'Un vieux pont de bois, couvert de glace, au-dessus d’un torrent gelé. Ilse passe la première, à petits pas. Moustache traverse d’une traite en criant : « Je glisse, je glisse, je GLISSE ! » Il arrive de l’autre côté sur le dos.' },
         { t:'embuscade', n:'Les loups des neiges', txt:'Des hurlements dans le blizzard. Des loups blancs comme la neige sortent de nulle part, les yeux brillants. « Dos à dos ! » crie Ilse. Moustache, perché sur sa tête : « Moi je surveille d’en haut. »', monstres:['loupblanc', 'loupblanc', 'spectregivre'], obstacles:8 },
@@ -83,14 +85,14 @@ const AVENTURES = {
         but:'Fouillez les meubles (un dé) pour trouver <b>la corde de la cloche 🪢</b>, puis portez-la jusqu’à <b>la cloche gelée 🔔</b>, au fond du cloître. <b>❄ Le froid</b> : un dé qui fait 1 gèle et revient tel quel au tour suivant.',
         porter:'Portez la corde jusqu’à la cloche 🔔, au fond du cloître.',
         gagne:['🔔 La première cloche sonne !', '« DONG… Le son roule sur toute la montagne. Dehors, le blizzard faiblit un peu. Et sous nos pieds… quelque chose a répondu. Vous avez entendu ? Moi, non. Je n’ai rien entendu. Rien du tout. »'] } },
-      { t:'fin', titre:'Une cloche sur trois', fond:'monastere', texte:'Quand vous ressortez, Ilse lève sa lanterne vers le ciel : entre deux rafales, on aperçoit une étoile. La première depuis sept nuits. « Une cloche sur trois… c’est un début. » Mais au même moment, très loin sous la terre, un grondement répond au son de la cloche. Long. Lent. Comme quelqu’un qui se réveille. Moustache a les poils hérissés : « Je propose qu’on rentre. Tout de suite. » <br><br><b>À suivre : chapitre 2, « Le festin des goules », le 15 décembre.</b>', xp:250 },
+      { t:'fin', titre:'Une cloche sur trois', fond:'monastere', texte:'Quand vous ressortez, Ilse lève sa lanterne vers le ciel : entre deux rafales, on aperçoit une étoile. La première depuis sept nuits. « Une cloche sur trois… c’est un début. » Maëlle a gardé la main posée sur le bronze : « Quelqu’un a limé la rune de la cloche. Exprès. Ce n’est pas le froid qui les a fait taire. » Mais au même moment, très loin sous la terre, un grondement répond au son de la cloche. Long. Lent. Comme quelqu’un qui se réveille. Moustache a les poils hérissés : « Je propose qu’on rentre. Tout de suite. » <br><br><b>À suivre : chapitre 2, « Le festin des goules », le 15 décembre.</b>', xp:250 },
     ] },
   // 26/11 : chapitre 2 « Le festin des goules » (à partir du 15 décembre) : le récit qui relie, le réfectoire, la fin
   cloches2: {
     titre:'🔔 Les Cloches de givre · Chapitre 2', resume:'Le festin des goules : un réfectoire gelé, un coffre qui ment, quatre statues à tourner vers la deuxième cloche.', duree:'30-45 min',
     saison:'s1', ouvre:'2026-12-15', froid:1, xp:250,
     scenes:[
-      { t:'recit', titre:'Précédemment…', fond:'monastere', texte:'La première cloche a sonné, et le blizzard a faibli. Mais sous la montagne, quelque chose a répondu. Ilse vous attend au pied du monastère, sa lanterne à la main : « La neige a recouvert vos traces. Cette fois, il faut aller plus loin : le réfectoire des Veilleurs, et la deuxième cloche. On raconte que le dernier repas y est resté servi… et que quelqu’un s’est invité. » Moustache, les oreilles en arrière : « Un festin ? Pour moi ? … Non. Je le sens mal. »' },
+      { t:'recit', titre:'Précédemment…', fond:'monastere', texte:'La première cloche a sonné, et le blizzard a faibli. Mais sous la montagne, quelque chose a répondu. Ilse vous attend au pied du monastère, sa lanterne à la main : « La neige a recouvert vos traces. Cette fois, il faut aller plus loin : le réfectoire des Veilleurs, et la deuxième cloche. On raconte que le dernier repas y est resté servi… et que quelqu’un s’est invité. » Maëlle serre son marteau : « Et j’ai trouvé ça sur la première cloche : la rune limée. Quelqu’un ne veut pas qu’elles sonnent. » Moustache, les oreilles en arrière : « Un festin ? Pour moi ? … Non. Je le sens mal. »' },
       { t:'donjon', scen:'refectoire', textes:{
         titre:'🍽 Le Réfectoire gelé', duree:'',
         ouverture:'« Les tables sont encore dressées. Les assiettes sont pleines… de glace. Et dans l’ombre, ça mâche. »',
@@ -98,7 +100,7 @@ const AVENTURES = {
         but:'Trouvez <b>la corde 🪢</b> dans le bon <b>coffre gravé</b> (un seul dit vrai : le mauvais libère une goule), tournez les <b>quatre statues</b> vers la cloche, puis sonnez <b>la deuxième cloche 🔔</b>. <b>❄ Le froid</b> : un dé qui fait 1 gèle et revient tel quel au tour suivant.',
         porter:'Portez la corde jusqu’à la cloche 🔔 (les quatre statues doivent la regarder).',
         gagne:['🔔 La deuxième cloche sonne !', '« Deux cloches sur trois. Écoutez… ça ne répond plus sous la terre. Ça PARLE. Une voix glacée : « Qui ose ? » … Et là-haut, dans une cellule, quelqu’un frappe contre les barreaux. Le dernier Veilleur est vivant ! »'] } },
-      { t:'fin', titre:'Deux cloches sur trois', fond:'monastere', texte:'Dehors, le vent est tombé d’un coup. Ilse vous regarde, puis la crypte, puis vous : « Une voix sous la terre, un Veilleur enfermé… On ne l’abandonnera pas. » Moustache s’ébroue : « Je propose qu’on le libère vite. Et qu’on parte encore plus vite. » <br><br><b>À suivre : chapitre 3, « Le dernier Veilleur », le 29 décembre.</b>', xp:250 },
+      { t:'fin', titre:'Deux cloches sur trois', fond:'monastere', texte:'Dehors, le vent est tombé d’un coup. Ilse vous regarde, puis la crypte, puis vous : « Une voix sous la terre, un Veilleur enfermé… On ne l’abandonnera pas. » Maëlle frappe deux fois la cloche du plat de la main, comme un salut : « Deux sur trois, grand-père. La dernière, je te la sonne moi-même. » Moustache s’ébroue : « Je propose qu’on le libère vite. Et qu’on parte encore plus vite. » <br><br><b>À suivre : chapitre 3, « Le dernier Veilleur », le 29 décembre.</b>', xp:250 },
     ] },
 };
 // 26/11 : une aventure de saison n'est ouverte que pendant sa saison (le mode atelier l'ouvre toujours, pour les essais)

@@ -126,6 +126,12 @@ function pseudoEnLigne(v) { clearTimeout(pseudoMinuteur); const net = String(v |
       if (r.ok && d.pseudo) { c.pseudo = d.pseudo; localStorage.setItem('guilde-carte', JSON.stringify(c)); localStorage.setItem('guilde-pseudo', d.pseudo); } } catch (e) {} }, 1200); }
 function devise(v) { const p = lireProfil(); p.devise = v; ecrireProfil(p); const e = document.getElementById('devv'); if (e) e.textContent = v ? `« ${v} »` : ''; }
 function vitrine(k) { const p = lireProfil(); const v = p.vitrine || []; p.vitrine = v.includes(k) ? v.filter(x => x !== k) : v.length >= 3 ? v : v.concat(k); if (!v.includes(k) && v.length >= 3) { alert('3 titres au plus dans la vitrine : retire-en un d’abord.'); return; } ecrireProfil(p); if (typeof GM !== 'undefined') GM.son('clic'); const y = scrollY; dessine(); scrollTo(0, y); }
+// 26/11 : LES COSTUMES DE SAISON gagnés (Almanach, palier 30) : porter ou non ; le portrait du héros change partout (musique.js)
+function costumesHTML() { let G = [], P = {}; try { G = JSON.parse(localStorage.getItem('guilde-skins-gagnes') || '[]'); P = JSON.parse(localStorage.getItem('guilde-skins') || '{}'); } catch (e) {}
+  if (!G.length) return '';
+  return `<h3>👘 Mes costumes</h3><p class="aide">Un costume remplace le portrait du héros partout (profil, combats). Rien ne change en jeu.</p><div class="grille">${G.map(k => { const [h, s] = k.split('-'), on = P[h] === s, nom = typeof HEROS !== 'undefined' && HEROS[h] ? HEROS[h].nom : h;
+    return `<button class="cad ${on ? 'choisi' : ''}" onclick="porteCostume('${h}', '${on ? '' : s}')"><img class="rond" src="portraits/skin-${k}.webp?v=1" alt="">${nom} · ${({ hiver:'hiver', ete:'été', halloween:'Halloween', fete:'fête', kawaii:'kawaii', neon:'néon' })[s] || s}<small>${on ? '✔ porté (toucher pour l’enlever)' : 'toucher pour le porter'}</small></button>`; }).join('')}</div>`; }
+function porteCostume(h, s) { let P = {}; try { P = JSON.parse(localStorage.getItem('guilde-skins') || '{}'); } catch (e) {} if (s) P[h] = s; else delete P[h]; localStorage.setItem('guilde-skins', JSON.stringify(P)); location.reload(); }
 function carteProfil(p, edit) {
   const c = p.cadre !== 'aucun' && titreDe(p.cadre), t = p.titre && titreDe(p.titre), [src, sec] = portraitProfil(p), img = src || IMG(dernier), sc = sec || IMG(dernier);
   const em = (EMBLEMES.find(x => x[0] === p.embleme) || [])[1], f = (FONDS[p.fond] || FONDS.nuit)[1], r = rangGuilde();
@@ -159,7 +165,7 @@ function atelier(p, T) {
   let corps = '';
   if (onglet === 'portrait') {
     const av = typeof avLire === 'function' ? avLire() : [];
-    corps = `<p class="aide">Le visage de ta carte de profil (tu joues toujours le héros que tu veux).</p><div class="grille">
+    corps = `${costumesHTML()}<p class="aide">Le visage de ta carte de profil (tu joues toujours le héros que tu veux).</p><div class="grille">
       <button class="cad ${!p.portrait ? 'choisi' : ''}" onclick="choisir('portrait',null)"><img class="rond" src="${IMG(dernier)}" alt="">Mon dernier héros</button>
       ${ORDRE.filter(id => id !== 'zephine' || localStorage.getItem('guilde-tuto') === 'fait').map(id => `<button class="cad ${p.portrait === id ? 'choisi' : ''}" onclick="choisir('portrait','${id}')"><img class="rond" src="portraits/${id}.webp" alt="">${HEROS[id].nom}</button>`).join('')}
       ${(typeof AVATARS_PROFIL !== 'undefined' ? AVATARS_PROFIL : []).map(([n, nom]) => `<button class="cad ${p.portrait === 'avatar-' + n ? 'choisi' : ''}" onclick="choisir('portrait','avatar-${n}')"><img class="rond" src="portraits/avatar-${n}.webp?v=1" alt="">${nom}</button>`).join('')}
