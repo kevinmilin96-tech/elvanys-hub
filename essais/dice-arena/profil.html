@@ -198,7 +198,7 @@ function atelier(p, T) {
   } else if (onglet === 'des') {
     const d = lireRang();
     corps = `<p class="aide">L’apparence de tes dés, dans tous les modes. Pour le plaisir des yeux : aucun avantage.</p><div class="grille">
-      ${Object.entries(PEAUX_DES).map(([k, x]) => { const ok = rgPeauOk(k); return `<button class="cad ${d.peau === k ? 'choisi' : ''}" ${ok ? '' : 'disabled'} onclick="choisirPeau('${k}');dessine()"><span class="rond" style="background:none"><img src="faces-${dernier}/face-6.webp" alt="" style="width:40px;height:40px;border-radius:8px;filter:${x[1] || 'none'}"></span>${x[0]}${ok ? '' : `<small>🔒 ${k === 'glace' ? 'Almanach, palier 20' : 'route des rangs'}</small>`}</button>`; }).join('')}</div>`;
+      ${Object.entries(PEAUX_DES).map(([k, x]) => { const ok = rgPeauOk(k); return `<button class="cad ${d.peau === k ? 'choisi' : ''}" ${ok ? '' : 'disabled'} onclick="choisirPeau('${k}');dessine()"><span class="rond" style="background:none">${x[2] ? `<span style="display:inline-block;width:40px;height:40px;border-radius:8px;background:url(des/matieres/m-${x[2]}.webp?v=1) center/100% 100%"><img src="des/symboles/${dernier}-6.webp?v=1" alt="" style="width:40px;height:40px"></span>` : `<img src="faces-${dernier}/face-6.webp" alt="" style="width:40px;height:40px;border-radius:8px;content:normal;background:none;filter:${x[1] || 'none'}">`}</span>${x[0]}${ok ? '' : `<small>🔒 ${k === 'glace' ? 'Almanach, palier 20' : x[2] ? 'une prochaine saison' : 'route des rangs'}</small>`}</button>`; }).join('')}</div>`;
   }
   return `<div class="haut2"><button onclick="onglet=null;dessine()">‹ Ma carte</button><b>✏️ L’atelier du profil</b></div>
     <div class="colle">${carteProfil(p, true)}</div>${tabs}<div class="corps">${corps}</div>

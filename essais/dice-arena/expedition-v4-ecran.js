@@ -466,6 +466,8 @@ Object.assign(PORTRAIT_M, { 'Pillard':'d-gobelin', 'Frondeur':'m-gobelin', 'Chie
   'Petit yéti':'m-yeti', 'Garde de glace':'m-golemglace', 'La Reine des neiges':'el-reine', 'La Vouivre':'m-vouivre', 'Stalagmite vivante':'m-golemglace', 'Givrelin':'m-givrelin',
   'Harpie':'m-harpie', 'Harpie tireuse':'m-harpie', 'Élémentaire d’orage':'m-esprit', 'Nuée électrique':'m-esprit', 'Matelot noyé':'m-osclaque', 'Capitaine noyé':'m-liche', 'Mouette spectrale':'m-esprit',
   'Canonnier fantôme':'m-osclaque', 'Tentacule':'u-tentacule', 'Le Kraken':'m-kraken', 'Le Roi sans visage':'m-roi', 'Reflet':'m-miroir', 'Ignaros':'m-ignaros', 'Dragonnet':'u-dragonnet', 'Sorcier des vents':'m-chaman', 'Barbe-Grise':'el-barbegrise', 'La Sirène noire':'el-sirene' });
+// 26/11 : les portraits peints des ennemis qui n'en avaient pas (m22-*)
+Object.assign(PORTRAIT_M, { 'Porte-étendard gobelin':'m22-etendard-gobelin', 'Porte-étendard de cendre':'m22-etendard-cendre', 'Étendard de glace':'m22-etendard-glace', 'Porte-drapeau pirate':'m22-drapeau-pirate', 'Pingouin-guerrier':'m22-pingouin', 'Totem de givre':'m22-totem-givre', 'Totem des abysses':'m22-totem-abysses', 'Totem de lave':'m22-totem-lave', 'Naufrageur':'m22-naufrageur', 'Pistolier':'m22-pistolier', 'Quartier-maître':'m22-quartier-maitre', 'Pirate':'m22-pirate', 'Canonnier pirate':'m22-canonnier-pirate', 'Matelot charmé':'m22-matelot-charme' });
 if (document.getElementById('app') && !globalThis.CFG_EXP) accueil(); // 22/11 : expedition-config.js (le configurateur) ouvre l'accueil lui-même
 
 // 21/11 (l'utilisateur : « le voyage du jour, un portail directement ; et le retour en haut à gauche, par habitude ») :
