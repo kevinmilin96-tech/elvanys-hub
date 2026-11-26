@@ -82,7 +82,7 @@ function defChron() {
     options:m => {
       if (m === 'partie') return [{ k:'scen', titre:'📖 Le scénario', choix:scenChoix(), def:scenChoisi }];
       if (m === 'campagne') { const c = lireCamp(); return [{ k:'i', titre:'📜 Trois chapitres', aide:CHAPITRES.map(x => x.titre).join('<br>') + '<br><br>+2 PV max à chaque héros par chapitre gagné.' + (c ? '<br><b style="color:#ffb3a8">Ta campagne en cours sera remplacée par une nouvelle.</b>' : '') }]; }
-      if (m === 'aventures') return [{ k:'av', titre:'📖 L’aventure', choix:Object.entries(ADV).map(([k, a]) => ({ v:k, n:a.titre, d:`${a.resume}<br><i>${a.duree}</i>${(D.aventures || {})[k] ? ` · ✓ finie ${D.aventures[k]} fois` : ''}` })) }];
+      if (m === 'aventures') return [{ k:'av', titre:'📖 L’aventure', choix:Object.entries(ADV).filter(([k, a]) => typeof avOuverte !== 'function' || avOuverte(a)).map(([k, a]) => ({ v:k, n:a.titre, d:`${a.saison ? '❄ <b>Saison 1 de l’Almanach</b> · ' : ''}${a.resume}<br><i>${a.duree}</i>${(D.aventures || {})[k] ? ` · ✓ finie ${D.aventures[k]} fois` : ''}` })) }];
       const action = (CFG.opts.ligne || {}).action || 'creer', c = lireCamp();
       return [{ k:'action', titre:'🌐 Que veux-tu faire ?', choix:[
           { v:'creer', n:'👑 Créer une salle', d:'Tu es l’hôte : tu reçois un code de 4 lettres à donner à tes amis, et tu lances quand tout le monde est là.' },
