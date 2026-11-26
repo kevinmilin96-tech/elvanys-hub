@@ -46,7 +46,48 @@ const AVENTURES = {
         gagne:['🗝 La Clé des Brumes est reformée !', '« La clé tourne toute seule dans l’autel. Un grand souffle traverse la tour… et le gardien de pierre tombe en poussière. Dehors, on entend les couleurs revenir. Oui, on les entend. Ça fait comme une chanson. »'] } },
       { t:'fin', titre:'Les couleurs reviennent', fond:'aube', texte:'Quand vous sortez, le soleil est jaune, l’herbe est verte, et les saules ont repris leur air triste mais coloré. À la taverne, Anselme a déjà déplié une nouvelle carte. « Bravo. Mais regardez ça : une autre tour, au nord… » Moustache soupire : « Je commande d’abord un poisson. »', xp:150 },
     ] },
+  // 26/11 : L'ALMANACH · Saison 1 « L'Hiver des runes », l'aventure « Les Cloches de givre », chapitre 1 (scénario validé : almanach-saison1-scenario.html).
+  // Ouvert du 1er décembre à la fin de la saison (mode atelier : toujours). froid:1 = la règle de la saison dans les embuscades (le donjon l'a dans son scénario).
+  cloches1: {
+    titre:'🔔 Les Cloches de givre · Chapitre 1', resume:'Le blizzard qui ne s’arrête pas : les trois cloches du monastère des Veilleurs se sont tues le même soir.', duree:'30-45 min',
+    saison:'s1', froid:1, xp:250,
+    scenes:[
+      { t:'taverne', lieu:'L’auberge du Col, au pied de la montagne', fond:'taverne-hiver', pnj:{ n:'Ilse, la passeuse du col', e:'🧣', img:'pnj-ilse' },
+        lignes:[
+          '« Fermez la porte, vite ! Le vent rentre partout. Asseyez-vous près du feu, vous en aurez besoin. »',
+          '« Là-haut, sur la montagne, il y a le monastère des Veilleurs. Depuis cent ans, ils sonnent trois grandes cloches, et le son tient l’hiver à distance de la vallée. »',
+          '« Il y a sept nuits, les trois cloches se sont tues. Le même soir. Depuis, un blizzard descend, et il ne s’arrête plus. Le village ne voit plus le soleil. »',
+          '« Trois cloches. Une seule a suffi pendant cent ans à tenir l’hiver dans la montagne. Les trois se sont tues le même soir. Ça, ce n’est pas le vent. »',
+          '« Je connais le col. Je vous mène jusqu’aux portes. Après, c’est à vous : trouvez la corde de la première cloche, et faites-la sonner. »',
+        ],
+        questions:[
+          { n:'« Pourquoi les cloches ? »', r:'« Le son des cloches porte loin, très loin. Les Veilleurs disaient qu’il “rappelle au froid où est sa place”. Moi, je sais juste que tant qu’elles sonnaient, on avait des printemps. »' },
+          { n:'« Et les Veilleurs, alors ? »', r:'« Personne n’est redescendu. Pas un. C’est pour ça que je vous parle à voix basse. »' },
+          { n:'« Et Moustache, il vient ? »', r:'Moustache, roulé en boule contre la cheminée : « Je viens. Mais je proteste. Le froid, c’est une insulte faite aux chats. Quelqu’un a une écharpe ? »' },
+        ],
+        accepter:'Partir vers le monastère' },
+      { t:'recit', titre:'La porte de l’auberge', fond:'monastere', texte:'Dehors, le monde est blanc. La neige tombe de côté, poussée par un vent qui siffle comme une bouilloire. Ilse ajuste sa lanterne et montre la montagne : tout là-haut, une silhouette sombre, le monastère. « On marche en file. On ne lâche personne. » Moustache s’enfonce jusqu’au ventre dans la neige : « Formidable. Je vais arriver là-haut en sorbet. »' },
+      { t:'carte', titre:'Le col enneigé', fond:'monastere', carte:'carte-col-enneige', etapes:[
+        { t:'route', n:'Le pont de glace', txt:'Un vieux pont de bois, couvert de glace, au-dessus d’un torrent gelé. Ilse passe la première, à petits pas. Moustache traverse d’une traite en criant : « Je glisse, je glisse, je GLISSE ! » Il arrive de l’autre côté sur le dos.' },
+        { t:'embuscade', n:'Les loups des neiges', txt:'Des hurlements dans le blizzard. Des loups blancs comme la neige sortent de nulle part, les yeux brillants. « Dos à dos ! » crie Ilse. Moustache, perché sur sa tête : « Moi je surveille d’en haut. »', monstres:['loupblanc', 'loupblanc', 'spectregivre'], obstacles:8 },
+        { t:'source', n:'La cabane du bûcheron', txt:'Une petite cabane, un poêle encore tiède, une marmite de soupe oubliée. Vous vous réchauffez un moment : chaque héros reprend 5 PV. Moustache refuse de ressortir pendant dix bonnes minutes.', soin:5 },
+        { t:'evenement', n:'La crevasse', txt:'Le sentier se sépare. Tout droit, un raccourci par une crevasse : on y voit briller un sac abandonné… et des ombres qui bougent. À gauche, le long chemin, plus sûr, qui fait le tour de la falaise.',
+          choix:[{ n:'⚔ Le raccourci (un combat, mais une potion)', sac:'potion', combat:{ txt:'Dans la crevasse, le sac est bien là… mais deux spectres de givre glissent hors de la glace pour le garder. « Évidemment, » soupire Moustache.', monstres:['spectregivre', 'spectregivre', 'loupblanc'], obstacles:6 } },
+                 { n:'🥾 Le long chemin (rien de spécial)' }] },
+        { t:'fin', n:'Les portes du monastère', txt:'Deux grandes portes de bois cerclées de fer, à moitié enfouies sous la neige. Elles ne sont pas fermées. Ilse s’arrête : « Moi, je reste ici avec la lanterne, pour que vous retrouviez le chemin. » Moustache : « Excellente idée. Je reste avec elle. » Il vous suit quand même.' },
+      ] },
+      { t:'donjon', scen:'cloitre', textes:{
+        titre:'🔔 Le Cloître gelé', duree:'',
+        ouverture:'« Le cloître des Veilleurs. Tout est blanc, tout craque, et pas un bruit. Quelque part dans ces salles, la corde de la première cloche a été cachée. Sans elle, la cloche reste muette… et le blizzard continue. »',
+        entree:() => '« Attention au froid : un dé qui fait 1 se couvre de givre ❄. Au tour suivant, il revient tel quel, à la place d’un dé neuf. »',
+        but:'Fouillez les meubles (un dé) pour trouver <b>la corde de la cloche 🪢</b>, puis portez-la jusqu’à <b>la cloche gelée 🔔</b>, au fond du cloître. <b>❄ Le froid</b> : un dé qui fait 1 gèle et revient tel quel au tour suivant.',
+        porter:'Portez la corde jusqu’à la cloche 🔔, au fond du cloître.',
+        gagne:['🔔 La première cloche sonne !', '« DONG… Le son roule sur toute la montagne. Dehors, le blizzard faiblit un peu. Et sous nos pieds… quelque chose a répondu. Vous avez entendu ? Moi, non. Je n’ai rien entendu. Rien du tout. »'] } },
+      { t:'fin', titre:'Une cloche sur trois', fond:'monastere', texte:'Quand vous ressortez, Ilse lève sa lanterne vers le ciel : entre deux rafales, on aperçoit une étoile. La première depuis sept nuits. « Une cloche sur trois… c’est un début. » Mais au même moment, très loin sous la terre, un grondement répond au son de la cloche. Long. Lent. Comme quelqu’un qui se réveille. Moustache a les poils hérissés : « Je propose qu’on rentre. Tout de suite. » <br><br><b>À suivre : chapitre 2, « Le festin des goules », le 15 décembre.</b>', xp:250 },
+    ] },
 };
+// 26/11 : une aventure de saison n'est ouverte que pendant sa saison (le mode atelier l'ouvre toujours, pour les essais)
+const avOuverte = a => !a.saison || localStorage.getItem('guilde-atelier') === '1' || (typeof saisonActive === 'function' && saisonActive() && saisonActive().id === a.saison);
 
 // ------------------------------------------------------------------ l'aventure en cours
 const CLE_AV = 'guilde-aventure-en-cours';
@@ -63,6 +104,9 @@ const sceneAV = () => AV && AVENTURES[AV.id].scenes[AV.scene];
   /* 15/11 nuit : les images reçues passent DEVANT le dégradé (avant, le dégradé opaque les cachait) */
   .scn.taverne { background:linear-gradient(180deg, #0004, #0009), url('decor/scene-taverne.webp?v=2') center/cover, radial-gradient(ellipse at 50% 30%, #6a3a12cc, #1a0d06 75%); }
   .scn.brume { background:linear-gradient(180deg, #0004, #0009), url('decor/scene-brume.webp?v=1') center/cover, radial-gradient(ellipse at 50% 40%, #8a8e9a, #2a2c34 80%); }
+  .scn.taverne-hiver { background:linear-gradient(180deg, #0004, #000a), url('decor/scene-taverne-hiver.webp?v=1') center/cover, linear-gradient(#9fdcff22, #9fdcff22), url('decor/scene-taverne.webp?v=2') center/cover, #1a1420; }
+  .scn.monastere { background:linear-gradient(180deg, #0003, #0009), url('decor/scene-monastere.webp?v=1') center/cover, radial-gradient(ellipse at 50% 30%, #b8cde0, #4a5a72 55%, #1a2232 95%); }
+  .scn.finhiver { background:linear-gradient(180deg, #0003, #0008), url('decor/scene-fin-hiver.webp?v=1') center/cover, radial-gradient(ellipse at 50% 20%, #ffe9c4, #9fb8d8 50%, #2a3450 95%); }
   .scn.marais { background:linear-gradient(180deg, #3a4a3a, #1a221c); }
   .scn.aube { background:linear-gradient(180deg, #0004, #0009), url('decor/scene-aube.webp?v=1') center/cover, radial-gradient(ellipse at 50% 20%, #ffd27a, #ff8a4a 40%, #3a1a3a 90%); }
   .scn h2 { color:var(--or); text-align:center; margin:2cqw 0 3cqw; text-shadow:0 0 2cqw #000; }
@@ -149,7 +193,7 @@ function joueCarte(sc, tete) {
   }
   const [px, py] = P[ici];
   $('app').innerHTML = `${tete}<div class="scn ${sc.fond || 'marais'}"><h2>🗺 ${sc.titre}</h2>
-    <div class="carte-m"><svg viewBox="0 0 100 133">
+    <div class="carte-m"${sc.carte ? ` style="background-image:url('decor/${sc.carte}.webp?v=1'), url('decor/carte-route-saules.webp?v=1');${sc.carte.includes('col') ? 'filter:hue-rotate(160deg) saturate(.45) brightness(1.15)' : ''}"` : ''}><svg viewBox="0 0 100 133">
       <path d="${chemin}" fill="none" stroke="#6a4a2a" stroke-width="1.6" stroke-dasharray="2.4 1.6" stroke-linecap="round"/>
       ${P.map(([x, y], k) => `<g><circle cx="${x}" cy="${y}" r="${k <= ici ? 4.6 : 4}" fill="${k < ici ? '#7dbf6a' : k === ici ? '#f3c96b' : '#f3e6c8'}" stroke="#3a2a14" stroke-width=".6"/><text x="${x}" y="${y + 1.5}" font-size="4" text-anchor="middle">${ICO[E[k].t]}</text></g>`).join('')}
       <g class="pion" id="pion" style="transform:translate(${px}px, ${py - 8}px)"><circle r="4.2" fill="#2a1a10" stroke="#f3c96b" stroke-width="1"/><text y="1.6" font-size="4.6" text-anchor="middle">🛡</text></g>
@@ -173,7 +217,8 @@ function avance() {
 }
 function choixEvt(k) {
   const e = sceneAV().etapes[AV.etape], c = e.choix[k];
-  if (c.sac) { AV.sacs[0] = (AV.sacs[0] || []).concat([c.sac]); AV.resultat = `${c.n} : dans le sac de ${nomChoix(AV.equipe[0])}.`; }
+  if (c.sac) { AV.sacs[0] = (AV.sacs[0] || []).concat([c.sac]); AV.resultat = `${c.n.replace(/ \(.*\)$/, '')} : ${c.sac === 'potion' ? 'une potion' : 'un objet'} dans le sac de ${nomChoix(AV.equipe[0])}.`; }
+  if (c.combat) { AV.combat = k; sauveAV(); return embuscade(); } // 26/11 : un choix qui coûte un combat (la crevasse du chapitre 1)
   AV.fait = true; son('pioche'); sauveAV(); joueScene();
 }
 
@@ -183,10 +228,11 @@ function prepareHeros() {
   S.aventure = AV.id; pointDePassage(); actif = 0; sel = null; centrer = true;
 }
 function embuscade() {
-  const e = sceneAV().etapes[AV.etape], eq = AV.equipe.map(versMoteur).filter(Boolean);
+  const e0 = sceneAV().etapes[AV.etape], e = AV.combat != null && e0.choix ? Object.assign({ n:e0.n }, e0.choix[AV.combat].combat) : e0, eq = AV.equipe.map(versMoteur).filter(Boolean);
   S = K.nouvelle(eq, 'av-' + AV.debut + '-' + AV.scene + '-' + AV.etape, 'arene', { monstres:e.monstres, obstacles:e.obstacles });
   S.textes = { titre:'⚔ ' + e.n, duree:'', ouverture:e.txt, entree:() => '« Tous ensemble ! Abattez-les tous, et on reprend la route. »',
     but:'<b>Embuscade !</b> Abattez tous les monstres pour reprendre la route.', porter:'Abattez tous les monstres.', gagne:['⚔ L’embuscade est repoussée !', '« Bien joué. On souffle un peu, et on repart. Personne n’a vu mon poil se hérisser, hein ? »'] };
+  if (AVENTURES[AV.id].froid) S.froid = AVENTURES[AV.id].froid; // 26/11 : le froid de la saison aussi dans les embuscades
   prepareHeros(); son('vague'); dessine(); dialogue(S.textes.titre, [e.txt]);
 }
 function lanceDonjonAV(sc) {
@@ -209,7 +255,7 @@ function aventureFinCombat() {
   try { localStorage.removeItem(CLE_PARTIE); } catch (e) {}
   son('victoire'); const sc = sceneAV(), T = S.textes;
   fenetre(`<h2>${T.gagne[0]}</h2><div class="moust"><img src="ui/moustache.webp" alt=""><div class="lu">${T.gagne[1]}</div></div>${butin}
-    <button class="go" onclick="fenetre('');${sc.t === 'carte' ? 'AV.fait=true;sauveAV();joueScene()' : 'sceneSuivante()'}">${sc.t === 'carte' ? 'Reprendre la route ▶' : 'Sortir de la tour ▶'}</button>`, false);
+    <button class="go" onclick="fenetre('');${sc.t === 'carte' ? 'AV.fait=true;AV.combat=null;sauveAV();joueScene()' : 'sceneSuivante()'}">${sc.t === 'carte' ? 'Reprendre la route ▶' : AVENTURES[AV.id].saison ? 'Sortir du cloître ▶' : 'Sortir de la tour ▶'}</button>`, false);
 }
 function finAventure() {
   const sc = sceneAV(); let niv = [];
@@ -227,7 +273,7 @@ function aventuresHTML() {
   return `<h3 style="color:var(--or);margin:4cqw 0 1.5cqw">📖 Les Aventures <small style="color:var(--doux);font-weight:normal">(taverne, chemin, embuscades, donjon)</small></h3>
     ${g ? `<button class="gros" style="border-color:var(--ok);color:var(--ok);background:#14322a" onclick="reprendAventure()">▶ Reprendre : ${AVENTURES[g.id].titre}<small>${g.equipe.map(nomChoix).join(', ')} · scène ${g.scene + 1}/${AVENTURES[g.id].scenes.length}</small></button>
       <button onclick="abandonneAventure()" style="display:block;margin:0 auto;background:none;border:0;color:var(--doux);font-size:3cqw;text-decoration:underline">✕ abandonner cette aventure</button>` : ''}
-    ${Object.entries(AVENTURES).map(([k, a]) => `<button class="gros" style="background:#2a1f10;border-color:#ffb070;color:#ffd9a8" ${choisis.length ? '' : 'disabled'} onclick="lanceAventure('${k}')">${a.titre}<small>${a.resume} · ${a.duree}${(D.aventures || {})[k] ? ` · ✓ ${D.aventures[k]}` : ''}${choisis.length ? '' : ' · choisis tes héros plus bas'}</small></button>`).join('')}`;
+    ${Object.entries(AVENTURES).filter(([k, a]) => avOuverte(a) || (a.saison && typeof saisonProchaine === 'function' && saisonProchaine() && saisonProchaine().id === a.saison)).map(([k, a]) => !avOuverte(a) ? `<button class="gros" disabled style="background:#16213a;border-color:#9fdcff;color:#cfeeff">${a.titre}<small>❄ Saison 1 de l’Almanach : ouvre le 1er décembre</small></button>` : `<button class="gros" style="${a.saison ? 'background:#16213a;border-color:#9fdcff;color:#cfeeff' : 'background:#2a1f10;border-color:#ffb070;color:#ffd9a8'}" ${choisis.length ? '' : 'disabled'} onclick="lanceAventure('${k}')">${a.titre}<small>${a.resume} · ${a.duree}${(D.aventures || {})[k] ? ` · ✓ ${D.aventures[k]}` : ''}${choisis.length ? '' : ' · choisis tes héros plus bas'}</small></button>`).join('')}`;
 }
 
 // la page d'accueil a été dessinée avant ce fichier : on la redessine pour montrer les aventures

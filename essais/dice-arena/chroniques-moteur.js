@@ -48,6 +48,10 @@ const BETES = {
   horloger:  { n:'L’Horloger', img:'horlogerboss', att:3, mv:1, s:() => [], boss:true },
   // 16/11 : les nouveaux venus (inspirés des archétypes troll, squelette, liche ; noms et règles à nous)
   colosse:   { n:'Colosse à ressort', img:'colosseressort', att:3, mv:1, s:() => [sceau('min', 5), sceau('dbl', 0, 1), sceau('dbl', 0, 1), sceau('tot', 10)], elite:true, regen:true, grosCoup:.3, charge:.35 },
+  // 26/11 : les monstres du Cloître gelé (Saison 1) ; le spectre de givre attend son image (m-spectregivre), l'esprit des glaces en attendant
+  spectregivre:{ n:'Spectre de givre', img:'spectregivre', att:1, mv:3, s:() => [sceau('imp'), sceau('min', 3)], fuit:.25 },
+  loupblanc: { n:'Loup des neiges', img:'loupblanc', att:2, mv:3, s:() => [sceau('pair'), sceau('min', 4)], meute:true },
+  golemglace:{ n:'Golem de glace', img:'golemglace', att:3, mv:1, s:() => [sceau('dbl', 0, 1), sceau('min', 5), sceau('tot', 9)], garde:.3, elite:true, grosCoup:.3, charge:.3 },
   osclaque:  { n:'Os-qui-claque', img:'osclaque', att:1, mv:2, s:() => [sceau('pair'), sceau('max', 4)], releve:true },
   reliquaire:{ n:'Le Reliquaire', img:'reliquaire', att:0, mv:0, s:() => [sceau('ex', 2), sceau('ex', 4), sceau('ex', 6)], immobile:true },
   roios:     { n:'Le Roi des Os', img:'roios', att:3, mv:1, s:() => [], boss:true },
@@ -94,6 +98,10 @@ const SCEN = {
   // 15/11 soir : LE LABYRINTHE DES RUNES, un donjon TIRÉ AU HASARD à chaque partie (salles, couloirs, meubles, monstres, pièges) : on rejoue sans fin
   labyrinthe: { n:'Le Labyrinthe des Runes (donjon au hasard)', boss:'roios', renfort:'osclaque', objet:{ n:'fragment de rune', e:'✦' }, axe:'l’autel des runes', axeE:'✦', sablier:30,
     phases:['L’Appel des os', 'Le Reliquaire', 'La Dernière Danse'], vue:5, hasard:true },
+  // 26/11 : L'ALMANACH, Saison 1, chapitre 1 « Le blizzard qui ne s'arrête pas » : le donjon du Labyrinthe (tiré au hasard), habillé en CLOÎTRE GELÉ ;
+  // une seule corde à trouver puis la cloche à sonner, pas de boss (il viendra au chapitre 4). froid:1 = la règle de la saison (un dé qui fait 1 gèle)
+  cloitre: { n:'Le Cloître gelé', boss:'roios', renfort:'spectregivre', objet:{ n:'corde de la cloche', e:'🪢' }, axe:'la cloche gelée', axeE:'🔔', sablier:30,
+    phases:['', '', ''], vue:5, hasard:true, nbObj:1, sansBoss:true, froid:1 },
   // 15/11 soir : LES AVENTURES EN SCÈNES (chroniques-aventures.js) : une EMBUSCADE sur le chemin = un petit terrain ouvert, gagner = abattre tous les monstres
   // 16/11 : l'ESSAI d'une salle de l'atelier des cartes (editeur.html) : la salle seule, 2 monstres à battre
   atelier: { n:'Essai de l’atelier', boss:'titan', renfort:'rouagelin', objet:{ n:'rouage', e:'⚙️' }, axe:'', axeE:'', sablier:40, phases:['', '', ''], image:'', vue:0, hasard:true, objectif:'vaincre' },
@@ -225,21 +233,24 @@ function construitLabyrinthe(S, R) {
   }
   for (let y = 0; y < H2; y++) for (let x = 0; x < W2; x++) if (G[y][x] === '#') R.murs[cle(x, y)] = '#';
   const tirage = ['potion', 'grains', 'objet', 'piege', 'monstre', 'parchemin', 'or', 'fumee', 'rien'];
-  const caches = meubles.map((m, i) => i).sort(() => hasard(S) - .5).slice(0, 4);
+  // 26/11 : au Cloître gelé, UNE seule corde, cachée dans un meuble de la moitié la plus éloignée du départ (il faut traverser le cloître)
+  const loinM = meubles.map((m, i) => [i, D[m[0] + ',' + m[1]] || 0]).sort((a, b) => b[1] - a[1]).slice(0, Math.ceil(meubles.length / 2)).map(x => x[0]);
+  const caches = S.scen === 'cloitre' ? [loinM[rnd(loinM.length)]] : meubles.map((m, i) => i).sort(() => hasard(S) - .5).slice(0, 4);
   meubles.forEach(([x, y, t2], i) => { R.murs[cle(x, y)] = 'M'; R.obj[cle(x, y)] = { t:t2, meuble:true, fouille:false, cache:caches.includes(i) ? 'rouage' : tirage[rnd(tirage.length)] }; });
   R.murs[cle(fin.cx, fin.cy)] = 'A'; R.axe = [fin.cx, fin.cy]; R.bronze = true;
   // les pièges : dans les couloirs (hors salles)
   const couloirs = []; for (let y = 0; y < H2; y++) for (let x = 0; x < W2; x++) if (G[y][x] === '.' && !salles.some(s => dans(s, x, y))) couloirs.push([x, y]);
   for (let i = 0; i < 5 && couloirs.length; i++) { const [x, y] = couloirs.splice(rnd(couloirs.length), 1)[0]; R.obj[cle(x, y)] = { t:'piege', cache:true }; }
   // les monstres : dans les salles (pas le départ), plus forts près de l'autel
-  const faibles = ['gobelin', 'loup', 'scarabee', 'rouagelin', 'page', 'coucou', 'osclaque'], forts = ['salamandre', 'golem', 'colosse', 'elementaire', 'archiviste'];
-  for (let i = 0; i < 13; i++) {
+  const hiver = S.scen === 'cloitre', faibles = hiver ? ['spectregivre', 'spectregivre', 'loupblanc', 'osclaque'] : ['gobelin', 'loup', 'scarabee', 'rouagelin', 'page', 'coucou', 'osclaque'], forts = hiver ? ['golemglace', 'loupblanc'] : ['salamandre', 'golem', 'colosse', 'elementaire', 'archiviste'];
+  for (let i = 0; i < (hiver ? 10 : 13); i++) {
     const s = salles[1 + rnd(salles.length - 1)]; let x, y, k = 0;
     do { x = s.x + rnd(s.w); y = s.y + rnd(s.h); } while (k++ < 20 && (G[y][x] !== '.' || R.monstres.some(m => m.x === x && m.y === y) || (x === fin.cx && y === fin.cy)));
     if (G[y][x] !== '.') continue;
     const loin = (D[x + ',' + y] || 0) > 22;
     ajouteMonstre(S, loin && hasard(S) < .6 ? forts[rnd(forts.length)] : faibles[rnd(faibles.length)], x, y);
   }
+  if (S.scen === 'cloitre') { const g = [[fin.cx, fin.cy + 1], [fin.cx - 1, fin.cy], [fin.cx + 1, fin.cy], [fin.cx, fin.cy - 1]].find(([x, y]) => G[y] && G[y][x] === '.' && !R.monstres.some(m => m.x === x && m.y === y)); if (g) ajouteMonstre(S, 'golemglace', g[0], g[1]); } // le gardien de la cloche
   [[0, 0], [1, 0], [0, 1], [1, 1]].forEach(([dx, dy], i) => { if (S.heros[i]) { S.heros[i].x = Math.min(D0.x + D0.w - 1, D0.cx - 1 + dx); S.heros[i].y = Math.min(D0.y + D0.h - 1, D0.cy - 1 + dy); } });
   S.salles = salles.length;
 }
@@ -321,7 +332,7 @@ function sceauxBoss(S, k) {
   if (n <= 1) L.splice(-2, 2); else if (n === 2) L.pop(); else if (n >= 4) L.push(sceau('min', 4));
   if (k === 2 && S.livre) L.pop();
   if (n >= 2 && !S.ancien) L.push(sceau('tot', GRANDIT.boss * (n - 1))); // 17/11 (équilibrage mesuré) : l'Horloger grandit avec chaque héros en plus du premier
-  if (S.scen === 'labyrinthe' && n <= 1 && L.length > 2) L.pop(); // seul dans un grand labyrinthe : un sceau de moins
+  if ((S.scen === 'labyrinthe' || S.scen === 'cloitre') && n <= 1 && L.length > 2) L.pop(); // seul dans un grand labyrinthe : un sceau de moins
   return L;
 }
 function adapte(S) {
@@ -329,11 +340,11 @@ function adapte(S) {
   S.nbHeros = n; S.dureeLevier = A.levier; S.sablier += A.sablier;
   // 16/11 (retour de l'utilisateur : « pas de mise en danger » à 4) : à 3 héros et plus, chaque monstre frappe 1 de plus
   S.forceM = n >= 3 ? 1 : 0; R.monstres.forEach(m => { m.att = BETES[m.b].att + S.forceM; grandit(S, m); });
-  if (S.scen === 'labyrinthe') { S.sablier += [0, 20, 10, 0, 0][n]; if (n <= 2) R.monstres = R.monstres.filter(() => hasard(S) < .7); } // un donjon plus grand : plus de temps aux petits groupes
+  if (S.scen === 'labyrinthe' || S.scen === 'cloitre') { S.sablier += [0, 20, 10, 0, 0][n]; if (n <= 2) R.monstres = R.monstres.filter(() => hasard(S) < .7); } // un donjon plus grand : plus de temps aux petits groupes
   if (A.garde < 1 && S.scen !== 'arene') R.monstres = R.monstres.filter(m => hasard(S) < A.garde); // une embuscade garde ses monstres (écrits pour l'aventure)
   if (A.renfort) { // à 4 : quelques monstres de plus, posés dans des couloirs (cases de sol hors salle, loin du départ)
     const libres = []; for (let y = 0; y < R.h; y++) for (let x = 0; x < R.w; x++) { const c = cle(x, y); if (!R.murs[c] && !R.salle[c] && !R.portes[c] && !R.obj[c] && !S.heros.some(h => dist(h, { x, y }) < 8) && !R.monstres.some(m => m.x === x && m.y === y)) libres.push([x, y]); }
-    const sorte = S.scen === 'brulees' ? ['loup', 'gobelin', 'salamandre'] : S.scen === 'labyrinthe' ? ['gobelin', 'osclaque', 'page'] : ['rouagelin', 'coucou', 'rouagelin'];
+    const sorte = S.scen === 'brulees' ? ['loup', 'gobelin', 'salamandre'] : S.scen === 'labyrinthe' ? ['gobelin', 'osclaque', 'page'] : S.scen === 'cloitre' ? ['spectregivre', 'loupblanc', 'spectregivre'] : ['rouagelin', 'coucou', 'rouagelin'];
     for (let i = 0; i < A.renfort && libres.length; i++) { const [x, y] = libres.splice(Math.floor(hasard(S) * libres.length), 1)[0]; ajouteMonstre(S, sorte[i % sorte.length], x, y); }
   }
 }
@@ -358,6 +369,7 @@ function nouvelle(heros, s, scen, opts = {}) {
   if (scen === 'atelier') { construitAtelier(S, R, opts.salle || { w:4, h:3 }); S.objectif = 'vaincre'; log(S, `🛠 Essai de « ${(opts.salle && opts.salle.nom) || 'la salle'} » : déplacez-vous, fouillez, battez les monstres.`); debutTour(S); return S; }
   if (scen === 'entrainement') { construitEntrainement(S, R); voir(S); log(S, '🎓 L’entraînement de Moustache : un petit donjon pour apprendre.'); debutTour(S); return S; }
   if (scen === 'arene') { construitArene(S, R, opts); adapte(S); S.objectif = 'vaincre'; log(S, '⚔ Embuscade ! Abattez tous les monstres.'); debutTour(S); return S; }
+  if (scen === 'cloitre') { construitLabyrinthe(S, R); adapte(S); voir(S); S.froid = SCEN.cloitre.froid; log(S, '🔔 Le Cloître gelé : trouvez la corde de la cloche dans les meubles et sonnez la cloche, tout au fond. ❄ Le froid : un dé qui fait 1 gèle et revient tel quel au tour suivant.'); debutTour(S); return S; }
   if (scen === 'labyrinthe') { construitLabyrinthe(S, R); adapte(S); voir(S); log(S, '✦ Le Labyrinthe des Runes : un donjon jamais vu. Trouvez 3 fragments de rune dans les meubles et portez-les à l’autel, tout au fond.'); debutTour(S); return S; }
   if (scen === 'brulees') { construitCarte(S, R); adapte(S); voir(S); log(S, '🔥 Les Terres brûlées : trouvez 3 braises éternelles en fouillant les meubles et portez-les au grand brasier.'); debutTour(S); return S; }
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) R.murs[cle(x, y)] = '#';
@@ -507,8 +519,13 @@ function debutTour(S) {
   S.heros.forEach(h => { h.bouclier = h.def && !h.aTerre ? h.def : 0; }); // 🛡 la Défense de l'équipement
   S.heros.forEach(h => {
     let n = HEROS_C[h.id].des + (h.desPlus || 0) + (h.objet === 'cle' ? 1 : 0) - (S.sablier <= 0 ? 1 : 0) + (h.id === 'gorm' && pwA(h, 'passif', 'A') && h.pv < h.pvmax / 2 ? 1 : 0); // 16/11 nuit : Grand souffle
-    h.des = []; if (h.aTerre) n = 0;
-    for (let i = 0; i < Math.max(0, n); i++) { const r = de6(S); h.des.push({ id:'d' + S.seq++, v:h.faces ? h.faces[r - 1] : r, b:h.bonusF ? h.bonusF[r - 1] || 0 : 0 }); } // dé personnel : ses chiffres + le bonus forgé de la face (16/11 soir)
+    h.des = []; if (h.aTerre) { n = 0; h.gelV = []; }
+    // 26/11 (choix de l'utilisateur) : LE FROID de la Saison 1. Un dé qui fait 1 (et 2 pendant le blizzard) se couvre de givre : au tour suivant,
+    // il revient TEL QUEL à la place d'un dé neuf (il ne regèle pas). On peut quand même s'en servir pendant le tour où il est sorti.
+    const gel = S.froid ? (h.gelV || []).slice(0, Math.max(0, n)) : []; h.gelV = []; n -= gel.length;
+    gel.forEach(([v, b]) => h.des.push({ id:'d' + S.seq++, v, b, degel:true }));
+    for (let i = 0; i < Math.max(0, n); i++) { const r = de6(S), d = { id:'d' + S.seq++, v:h.faces ? h.faces[r - 1] : r, b:h.bonusF ? h.bonusF[r - 1] || 0 : 0 }; if (S.froid && r <= S.froid) { d.gel = true; h.gelV.push([d.v, d.b]); } h.des.push(d); }
+    if (gel.length) log(S, `❄ ${nm(h)} : ${gel.length > 1 ? gel.length + ' dés gelés reviennent' : 'un dé gelé revient'} tel quel.`); // dé personnel : ses chiffres + le bonus forgé de la face (16/11 soir)
     if (h.carillon && pwSansCarillon(S, h)) { h.carillon = false; log(S, `🕊 ${nm(h)} n’entend pas le Carillon.`); }
     if (h.carillon && h.des.length) { h.des.sort((a, b) => b.v - a.v); h.des.shift(); h.carillon = false; log(S, `🔔 ${nm(h)} a perdu son plus gros dé.`); }
   });
@@ -707,9 +724,12 @@ function agir(S, hi, idDe, x, y) {
   if (p && !p.ouverte) return ouvrir(S, hi, x, y);
   const d = h.des.find(z => z.id === idDe); if (!d) return 'Choisis d’abord un dé.';
   if (R.axe && x === R.axe[0] && y === R.axe[1]) {
-    if (!h.porte) return 'Il faut porter un rouage (on les trouve en fouillant les meubles).'; if (dist(h, { x, y }) !== 1) return 'Il faut être à côté de l’axe.';
-    unPas(S, h, idDe); h.porte = false; R.rouagesPoses++; S.sablier += 2; log(S, `⚙ Rouage posé sur l’axe (${R.rouagesPoses}/3) : +2 grains.`);
-    if (R.rouagesPoses >= 3) reveilBoss(S); return { ok:true, ev:[{ t:'rouage', boss:R.rouagesPoses >= 3 }] };
+    const sc0 = SCEN[S.scen || 'horloger'], nb = sc0.nbObj || 3;
+    if (!h.porte) return sc0.nbObj ? `Il faut porter la ${sc0.objet.n} (on la trouve en fouillant les meubles).` : 'Il faut porter un rouage (on les trouve en fouillant les meubles).'; if (dist(h, { x, y }) !== 1) return sc0.nbObj ? `Il faut être à côté de ${sc0.axe}.` : 'Il faut être à côté de l’axe.';
+    unPas(S, h, idDe); h.porte = false; R.rouagesPoses++; S.sablier += 2;
+    if (sc0.sansBoss && R.rouagesPoses >= nb) { S.fin = 'gagne'; S.score += 300 + S.sablier * 10; log(S, `${sc0.axeE} ${nm(h)} attache la corde et tire de toutes ses forces… DONG ! La cloche sonne à travers la montagne.`); return { ok:true, ev:[{ t:'rouage', boss:false }] }; }
+    log(S, `⚙ Rouage posé sur l’axe (${R.rouagesPoses}/${nb}) : +2 grains.`);
+    if (R.rouagesPoses >= nb) reveilBoss(S); return { ok:true, ev:[{ t:'rouage', boss:R.rouagesPoses >= nb }] };
   }
   const st = R.statues ? R.statues.findIndex(t => t.x === x && t.y === y) : -1;
   if (st >= 0) {
@@ -748,7 +768,7 @@ function fouilleMeuble(S, hi, idDe, x, y, o) {
   o.fouille = true; const nom = nm(h), ev = { t:'fouille', quoi:o.cache, meuble:o.t, h:hi };
   const Le = MEUBLE_N[o.t][0].toUpperCase() + MEUBLE_N[o.t].slice(1);
   switch (o.cache) {
-    case 'rouage': { h.porte = true; S.rouagesTrouves++; const sc = SCEN[S.scen || 'horloger']; log(S, `${sc.objet.e} ${nom} trouve ${sc.objet.n === 'rouage' ? 'un ROUAGE' : 'une BRAISE ÉTERNELLE'} dans ${MEUBLE_N[o.t] || 'le meuble'} ! À porter jusqu’à ${sc.axe}.`); break; }
+    case 'rouage': { h.porte = true; S.rouagesTrouves++; const sc = SCEN[S.scen || 'horloger']; log(S, `${sc.objet.e} ${nom} trouve ${sc.objet.n === 'rouage' ? 'un ROUAGE' : S.scen === 'cloitre' ? 'la CORDE DE LA CLOCHE' : 'une BRAISE ÉTERNELLE'} dans ${MEUBLE_N[o.t] || 'le meuble'} ! À porter jusqu’à ${sc.axe}.`); break; }
     case 'potion': case 'parchemin': case 'fumee': (h.sac = h.sac || []).push(o.cache); log(S, `🎒 ${nom} met ${SAC[o.cache].n.toLowerCase()} dans son sac (trouvée dans ${MEUBLE_N[o.t]}).`); break;
     case 'potion2': (h.sac = h.sac || []).push('potion', 'potion'); ev.quoi = 'potion'; log(S, `🎒 ${nom} trouve DEUX potions de soin dans ${MEUBLE_N[o.t]} ! (dans son sac)`); break;
     case 'reliquaire': { const p = [[1, 0], [-1, 0], [0, 1], [0, -1]].map(([dx, dy]) => [x + dx, y + dy]).find(([a, b]) => libre(S, a, b) && !herosEn(S, a, b)) || [h.x, h.y];
@@ -761,7 +781,7 @@ function fouilleMeuble(S, hi, idDe, x, y, o) {
       const k = ['bouclier', 'cle', 'lunettes'][Math.floor(hasard(S) * 3)]; h.objet = k; ev.objet = k; log(S, `🎁 ${nom} trouve ${OBJETS[k].n} : ${OBJETS[k].d}`); break; }
     case 'piege': if (a_t(h, 'chanceux')) { log(S, `🍀 ${nm(h)} évite le piège caché dans ${MEUBLE_N[o.t]}.`); break; } blesseHeros(S, h, 2); log(S, `⚠ ${Le} était piégé : ${nom} −2 PV.`); break;
     case 'monstre': { const p = [[1, 0], [-1, 0], [0, 1], [0, -1]].map(([dx, dy]) => [x + dx, y + dy]).find(([a, b]) => libre(S, a, b) && !herosEn(S, a, b));
-      if (p) { const m = ajouteMonstre(S, S.scen === 'horloger' || !S.scen ? 'rouagelin' : 'gobelin', p[0], p[1]); m.it = 'frappe'; R.vu[cle(p[0], p[1])] = 1; } log(S, `👹 Un Rouagelin jaillit de ${MEUBLE_N[o.t]} !`); break; }
+      if (p) { const m = ajouteMonstre(S, S.scen === 'horloger' || !S.scen ? 'rouagelin' : S.scen === 'cloitre' ? 'spectregivre' : 'gobelin', p[0], p[1]); m.it = 'frappe'; R.vu[cle(p[0], p[1])] = 1; } log(S, `👹 Un Rouagelin jaillit de ${MEUBLE_N[o.t]} !`); break; }
     case 'mimique': { const p = [[1, 0], [-1, 0], [0, 1], [0, -1]].map(([dx, dy]) => [x + dx, y + dy]).find(([a, b]) => libre(S, a, b) && !herosEn(S, a, b));
       if (p) { const m = ajouteMonstre(S, 'mimique', p[0], p[1]); m.it = 'frappe'; R.vu[cle(p[0], p[1])] = 1; } log(S, `👄 ${Le} ouvre une gueule pleine de dents : c’est une MIMIQUE !`); ev.mimique = true; break; }
     default: log(S, `🔍 ${nom} fouille ${MEUBLE_N[o.t]}… de la poussière, rien d’autre.`);
