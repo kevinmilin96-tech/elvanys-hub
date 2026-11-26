@@ -1,13 +1,14 @@
 // 25/11 : L'ALMANACH, l'écran et les récompenses (le compteur et les saisons sont dans rang.js).
 // Décisions de l'utilisateur (saisons-proposition.html, almanach-saison1-scenario.html) : 30 paliers de 500 XP, saison de 8 semaines ;
 // or (≈ 300) ou poussière (≈ 150) en alternance ; équipement rare / épique / légendaire aux paliers 5, 15, 25 ; un titre et son cadre au 10 ;
-// des dés de la saison au 20 ; un skin de la saison au 30, au choix parmi 2 héros ; ensuite un coffre tous les 1 000 XP jusqu'à la fin.
+// des dés de la saison au 20 ; au 30, l'emblème et le fond animé de la saison (26/11 : à la place du skin de héros, trop dur à peindre pour chaque héros) ;
+// ensuite un coffre tous les 1 000 XP jusqu'à la fin.
 const ALM_EQUIP = { 5:1, 15:2, 25:3 };
 function almRecompense(S, p) {
   if (ALM_EQUIP[p] != null) { const r = ALM_EQUIP[p]; return { e:'🛡', n:`Pièce ${typeof EQ_RARE !== 'undefined' ? EQ_RARE[r].n : ''}`, d:'Une pièce d’équipement pour un de tes héros.', genre:'equip', r }; }
   if (p === 10) return { e:'🖼', n:'Titre et cadre de la saison', d:`Le titre « ${typeof titreDe === 'function' && titreDe(S.titre) ? titreDe(S.titre)[2] : 'Veilleur de l’Hiver'} » et son cadre (atelier du profil).`, genre:'titre' };
   if (p === 20) return { e:'🎲', n:'Dés de la saison', d:'Une nouvelle apparence pour tes dés (Mon profil).', genre:'des' };
-  if (p === 30) return { e:'👑', n:'Skin de la saison', d:`Un costume d’hiver pour ${S.skins.map(h => typeof HEROS !== 'undefined' && HEROS[h] ? HEROS[h].nom : h).join(' ou ')}, au choix.`, genre:'skin' };
+  if (p === 30) return { e:'❄', n:'Emblème et fond animé', d:'L’emblème de la saison et un fond de carte de profil où la neige tombe (atelier du profil).', genre:'profil' };
   return p % 2 ? { e:'🪙', n:'300 d’or', d:'De quoi faire monter tes héros.', genre:'or', or:300 } : { e:'🔹', n:'150 poussière', d:'De la poussière de rune pour les niveaux de tes héros.', genre:'pou', pou:150 };
 }
 const ALM_COFFRE = { or:150, pou:75 };
@@ -15,25 +16,17 @@ function almPrendre(p) {
   const S = saisonActive(); if (!S) return false; const a = lireAlm(), x = almSaison(a, S.id), i = almInfo(S.id);
   if (p > i.palier || x.recup.includes(p)) return false;
   const R = almRecompense(S, p);
-  if (R.genre === 'skin' && !x.skin) { almChoixSkin(p); return false; }
   if (R.genre === 'or' || R.genre === 'pou') { if (typeof donneRessources === 'function') donneRessources(R.or || 0, R.pou || 0); }
   if (R.genre === 'equip' && typeof eqNouvelle === 'function') { const s = avSac(), piece = eqNouvelle(null, R.r); s.pieces.push(piece); avSacEcrire(s); annonceRang(`🛡 ${piece.nom} (${EQ_RARE[piece.r].n}) dans ton coffre`, true); }
   if (R.genre === 'titre') annonceRang('🖼 Nouveau titre et son cadre : choisis-les dans l’atelier du profil', true);
   if (R.genre === 'des') annonceRang('🎲 Dés de la saison : choisis-les dans Mon profil', true);
+  if (R.genre === 'profil') annonceRang('❄ L’emblème et le fond animé de la saison : choisis-les dans l’atelier du profil', true);
   const a2 = lireAlm(); almSaison(a2, S.id).recup.push(p); localStorage.setItem(ALM_CLE, JSON.stringify(a2)); return true;
 }
 function almPrendreCoffre() { const S = saisonActive(); if (!S) return false; const i = almInfo(S.id); if (!i.bonusARec) return false;
   const a = lireAlm(), x = almSaison(a, S.id); x.bonus = (x.bonus || 0) + i.bonusARec; localStorage.setItem(ALM_CLE, JSON.stringify(a));
   if (typeof donneRessources === 'function') donneRessources(ALM_COFFRE.or * i.bonusARec, ALM_COFFRE.pou * i.bonusARec); return true; }
-function almToutPrendre() { const S = saisonActive(); if (!S) return; almInfo(S.id).aRec.filter(p => p !== 30 || almSaison(lireAlm(), S.id).skin).forEach(p => almPrendre(p)); almPrendreCoffre(); }
-function almChoixSkin(p) {
-  const S = saisonActive(); if (!S) return; const v = document.createElement('div'); v.id = 'alm-skin'; v.className = 'alm-voile';
-  v.innerHTML = `<div class="alm-boite"><button class="x" onclick="this.closest('.alm-voile').remove()" aria-label="Fermer">✕</button><h3>👑 Ton skin de la saison</h3><p>Choisis le héros qui portera le costume d’hiver. Le choix est définitif pour cette saison.</p>
-    <div class="alm-skins">${S.skins.map(h => `<button onclick="almSkin('${h}', ${p})"><img src="portraits/${h}.webp" alt=""><b>${typeof HEROS !== 'undefined' && HEROS[h] ? HEROS[h].nom : h}</b></button>`).join('')}</div>
-    <p class="aide">Le costume habillera ton héros dès que son image sera peinte.</p></div>`;
-  v.onclick = e => { if (e.target === v) v.remove(); }; document.body.appendChild(v); }
-function almSkin(h, p) { const S = saisonActive(); if (!S) return; const a = lireAlm(), x = almSaison(a, S.id); if (!x.skin) x.skin = h; localStorage.setItem(ALM_CLE, JSON.stringify(a));
-  const v = document.getElementById('alm-skin'); if (v) v.remove(); almPrendre(p); annonceRang(`👑 Skin d’hiver pour ${typeof HEROS !== 'undefined' && HEROS[h] ? HEROS[h].nom : h} !`, true); if (typeof dessine === 'function') dessine(); }
+function almToutPrendre() { const S = saisonActive(); if (!S) return; almInfo(S.id).aRec.forEach(p => almPrendre(p)); almPrendreCoffre(); }
 const almJoursRestants = S => Math.max(0, Math.ceil((new Date(S.fin + 'T00:00:00') - new Date()) / 864e5));
 
 // la page (onglet 🗓️ Saison de route.html) ; S = la saison montrée, actif = elle a commencé
