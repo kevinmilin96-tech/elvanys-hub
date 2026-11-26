@@ -31,6 +31,8 @@ function titresGuilde() {
     // 21/11 : les titres de FIDÉLITÉ, reçus dans la boîte aux lettres aux paliers de 30 et 100 jours joués (amis.js)
     ['fidele30',  '🏅', 'Pilier de la Guilde', 'Jouer 30 jours (pas forcément à la suite) : cadeau de la boîte aux lettres.', JL('guilde-titres-boite', []).includes('fidele30'), '#e0a84a'],
     ['fidele100', '👑', 'Légende fidèle', 'Jouer 100 jours (pas forcément à la suite) : cadeau de la boîte aux lettres.', JL('guilde-titres-boite', []).includes('fidele100'), '#ffd75e'],
+    // 25/11 : L'ALMANACH (palier 10 de chaque saison : un titre et son cadre)
+    ['hiver1',    '❄', 'Veilleur de l’Hiver', 'Atteindre le palier 10 de l’Almanach · Saison 1 (L’Hiver des runes).', typeof almGagne === 'function' && almGagne('titre', 'hiver1'), '#9fdcff'],
     ['sphinx',    '🧩', 'Sphinx de la Guilde', 'Résoudre une énigme du dimanche (la plus redoutable de la semaine).', eniDim > 0, '#9be37a'],
     // 14/11 nuit : les titres du Rang de la Guilde (rang.js)
     // 22/11 : les titres des SUCCÈS (dernier palier) et des points de succès ; seulement ceux qui sont gagnés, pour ne pas allonger les listes
