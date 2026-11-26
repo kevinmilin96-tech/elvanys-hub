@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261126-185503"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
+<head><meta name="guilde-version" content="20261126-203704"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="robots" content="noindex">
@@ -788,7 +788,7 @@
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
 // 14/11 : l'Odyssée sans fin a ses propres emplacements (odyssee.js lit SANSFIN)
 const SANSFIN = new URLSearchParams(location.search).get('sansfin') === '1', ROUTE_TITAN = new URLSearchParams(location.search).get('route') === '1', EPREUVE_PAGE = new URLSearchParams(location.search).get('epreuve') === '1', ODY_PAGE = EPREUVE_PAGE ? 'epreuves.html' : 'odyssee.html' + (SANSFIN ? '?sansfin=1' : ROUTE_TITAN ? '?route=1' : '');
-const VERSION = '20261126-185503';
+const VERSION = '20261126-203704';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -815,8 +815,8 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden) veri
 <script src="pouvoirs-heros.js?v=a14bbdf318"></script>
 <script src="donnees.js?v=8a39c05326"></script>
 <script src="pouvoirs-duel.js?v=84906c8572"></script>
-<script src="odyssee.js?v=99b81500e2"></script>
-<script src="bestiaire.js?v=f0f3165c93"></script>
+<script src="odyssee.js?v=c5228219fc"></script>
+<script src="bestiaire.js?v=202461b072"></script>
 <script src="aventure.js?v=09133a6200"></script>
 <script src="odyssee-sansfin.js?v=7b3807249c"></script>
 <script src="chronique.js?v=ecf982cfcc"></script>
@@ -873,7 +873,7 @@ function ajouteMeute(J, n) {
   if (J.meute >= 3 && J.front.length < 5) { J.meute = 0; invoque(J, { n:'La Louve', a:4, v:7, louve:true }); log('🐺 La Louve arrive sur la ligne de front !'); }
 }
 // 14/11 (l'utilisateur : « Louveteau n'a pas d'image ») : les renforts des monstres prennent le portrait du monstre le plus proche
-const RENFORT_IMG = { 'Racine':'u-racine', 'Micro-racine':'u-microracine', 'Tentacule':'u-tentacule', 'Débris du Vide':'u-debris', 'Éclaireur de silex':'u-eclaireur', 'Dragonnet':'u-dragonnet', 'Louveteau':'m-loup', 'Louveteau blanc':'m-loupblanc', 'Flammèche':'m-salamandre', 'Gobelin':'m-gobelin', 'Éclat de scories':'m-golem', 'Éclat de basalte':'m-golem', 'Stalagmite':'m-golemglace', 'Éclat de cristal':'m-golemglace' };
+const RENFORT_IMG = { 'Racine':'u-racine', 'Micro-racine':'u-microracine', 'Tentacule':'u-tentacule', 'Débris du Vide':'u-debris', 'Éclaireur de silex':'u-eclaireur', 'Dragonnet':'u-dragonnet', 'Louveteau':'m-loup', 'Louveteau blanc':'m-loupblanc', 'Flammèche':'m-salamandre', 'Gobelin':'m-gobelin', 'Éclat de scories':'m-golem', 'Éclat de basalte':'m-golem', 'Stalagmite':'m-golemglace', 'Spectre de givre':'m-spectregivre', 'Éclat de cristal':'m-golemglace' };
 function invoque(J, base, key) {
   if (J.front.length >= 5) { log('Ligne de front pleine.'); return; }
   const u = { ...base, key, id:Math.random().toString(36).slice(2), pret:!!base.charge || S.salle.id === 'sem-charge' };

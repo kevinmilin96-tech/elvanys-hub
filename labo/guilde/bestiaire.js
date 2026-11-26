@@ -115,6 +115,19 @@ Object.assign(BOSS, {
     pouvoir:{ n:'Lance de glace', txt:'2 dés identiques', d:'8 dégâts à une cible.', cond:vs => vs.length === 2 && vs[0] === vs[1], cible:'ennemi', f:(J, vs, k) => degats(k, 8) },
     ultime:{ n:'Hiver sans fin', txt:'3 dés', d:'13 dégâts au héros et Handicap.', cond:vs => vs.length === 3, cible:'ennemi', f:J => { degats({ J:adv(J) }, 13); altere(adv(J), 'handicap'); } },
     renforts:[{ n:'Stalagmite', a:1, v:7, barriere:true }] },
+  // 26/11 : LA SAISON 1 (L'Hiver des runes) : le Roi de l'Hiver, boss de la Chasse du 15 au 28 décembre (epreuves.html, bossSemaine).
+  // Le froid (la règle de la saison) : un tour sur deux, il gèle un de tes dés (Handicap). Après 60 dégâts, le BLIZZARD se lève :
+  // son portrait change, il gèle un dé À CHAQUE tour et le vent glacé fait 2 dégâts à tes créatures.
+  roihiver: { nom:'Le Roi de l’Hiver', titre:'la couronne de givre', emoji:'👑', c:'#9fdcff', pv:50, boss:true, ile:'givre', part:{ n:'Le froid, puis le blizzard', d:'Un tour sur deux, il gèle un de tes dés (tu en lances un de moins). Quand il a perdu 60 PV, le blizzard se lève : il gèle un dé à chaque tour et ses rafales font 2 dégâts à tes créatures.',
+      debut:J => { const D = adv(J);
+        if (!J.blizzard && J.pvMax - J.pv >= 60) { J.blizzard = true; J.img = 'portraits/m-roihiver-blizzard.webp?v=1'; P_(J, '❄️ LE BLIZZARD SE LÈVE !'); log('❄️ Le Roi de l’Hiver déchaîne le blizzard : un dé gelé à chaque tour.'); }
+        if (J.blizzard) { altere(D, 'handicap'); [...D.front].forEach(u => degats({ J:D, u }, 2)); log('❄️ Le blizzard gèle un de tes dés.'); }
+        else if (J.tours % 2 === 0) { altere(D, 'handicap'); log('❄️ Le froid gèle un de tes dés.'); } } },
+    role:'Particularité · Le froid : un tour sur deux, un de tes dés gèle (un dé de moins). Après 60 dégâts, le blizzard : un dé gelé à chaque tour et 2 dégâts à tes créatures.', cit:'« Vos cloches se sont tues. »',
+    garde:G1('Couronne de givre', 'Bouclier = la valeur du dé + 2.', vs => vs[0] + 2),
+    pouvoir:{ n:'Lame de givre', txt:'2 dés identiques', d:'8 dégâts à une cible.', cond:vs => vs.length === 2 && vs[0] === vs[1], cible:'ennemi', f:(J, vs, k) => degats(k, 8) },
+    ultime:{ n:'Hiver éternel', txt:'3 dés', d:'14 dégâts au héros et un dé gelé.', cond:vs => vs.length === 3, cible:'ennemi', f:J => { degats({ J:adv(J) }, 14); altere(adv(J), 'handicap'); } },
+    renforts:[{ n:'Spectre de givre', a:2, v:6 }] },
   devoreur: { nom:'Le Dévoreur d’étoiles', titre:'la faim sans fin', emoji:'🌌', c:'#5a2aa8', pv:50, boss:true, ile:'abime', part:{ n:'Faim sans fin', d:'Chaque fois qu’il perd 8 PV ou plus d’un coup, il dévore une carte de ta main. Au début de son tour, ta créature la plus forte perd 3 vie.',
       apres:(J, r) => { const D = adv(J); if (r >= 8 && D.main && D.main.length && J.pv > 0) { const k = D.main.splice(Math.floor(Math.random() * D.main.length), 1)[0]; P_(J, `🌌 Le Dévoreur avale ${CARTES[k] ? CARTES[k].n : 'une carte'} !`); } },
       debut:J => { const D = adv(J), u = [...D.front].sort((a, b) => b.a - a.a)[0]; if (u) { log(`🌌 Trou noir : ${u.n} perd 3 vie.`); degats({ J:D, u }, 3); } } },
