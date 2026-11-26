@@ -65,7 +65,10 @@ function etageTour(n) {
   const niv = pos === 0 ? 1 : pos === 1 ? 2 : 3; return { n, acte, t:'monstre', ennemi:tire(R, I.pools[niv - 1]), niv, force:forceEtage2(n) };
 }
 // la Chasse de la semaine
-const bossSemaine = () => BOSS_TOUR[[...semaineCle()].reduce((a, c) => a + c.charCodeAt(0), 0) % 6];
+// 26/11 : Saison 1 de l'Almanach : du 15 au 28 décembre, le boss de la Chasse est le Roi de l'Hiver (bestiaire.js)
+const ROI_HIVER = ['2026-12-15', '2026-12-28'];
+const roiHiverActif = () => { const d = new Date(), j = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; return j >= ROI_HIVER[0] && j <= ROI_HIVER[1] && !!HEROS.roihiver; };
+const bossSemaine = () => roiHiverActif() ? 'roihiver' : BOSS_TOUR[[...semaineCle()].reduce((a, c) => a + c.charCodeAt(0), 0) % 6];
 const PALIERS = [[40, 4, 30], [80, 8, 60], [130, 15, 100]]; // [dégâts, éclats de Guilde, XP]
 // 25/11 (l'utilisateur : « pas eu la validation ni le cadeau ») : les paliers atteints ATTENDENT dans le carnet (aRec), « 🎁 Récupérer » ;
 // et la Chasse « jusqu'à la mort » (sans limite de tours) : son propre record (mortMax), faire tomber le boss = 💠 10 + 200 XP, une fois par semaine

@@ -873,7 +873,7 @@ function ajouteMeute(J, n) {
   if (J.meute >= 3 && J.front.length < 5) { J.meute = 0; invoque(J, { n:'La Louve', a:4, v:7, louve:true }); log('🐺 La Louve arrive sur la ligne de front !'); }
 }
 // 14/11 (l'utilisateur : « Louveteau n'a pas d'image ») : les renforts des monstres prennent le portrait du monstre le plus proche
-const RENFORT_IMG = { 'Racine':'u-racine', 'Micro-racine':'u-microracine', 'Tentacule':'u-tentacule', 'Débris du Vide':'u-debris', 'Éclaireur de silex':'u-eclaireur', 'Dragonnet':'u-dragonnet', 'Louveteau':'m-loup', 'Louveteau blanc':'m-loupblanc', 'Flammèche':'m-salamandre', 'Gobelin':'m-gobelin', 'Éclat de scories':'m-golem', 'Éclat de basalte':'m-golem', 'Stalagmite':'m-golemglace', 'Éclat de cristal':'m-golemglace' };
+const RENFORT_IMG = { 'Racine':'u-racine', 'Micro-racine':'u-microracine', 'Tentacule':'u-tentacule', 'Débris du Vide':'u-debris', 'Éclaireur de silex':'u-eclaireur', 'Dragonnet':'u-dragonnet', 'Louveteau':'m-loup', 'Louveteau blanc':'m-loupblanc', 'Flammèche':'m-salamandre', 'Gobelin':'m-gobelin', 'Éclat de scories':'m-golem', 'Éclat de basalte':'m-golem', 'Stalagmite':'m-golemglace', 'Spectre de givre':'m-spectregivre', 'Éclat de cristal':'m-golemglace' };
 function invoque(J, base, key) {
   if (J.front.length >= 5) { log('Ligne de front pleine.'); return; }
   const u = { ...base, key, id:Math.random().toString(36).slice(2), pret:!!base.charge || S.salle.id === 'sem-charge' };
