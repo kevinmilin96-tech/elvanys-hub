@@ -19,6 +19,8 @@
   .port img { width:110px; height:110px; border-radius:50%; object-fit:cover; display:block; box-shadow:0 0 0 3px #4b4580; transition:box-shadow .3s; }
   .port.cp { margin:36px 0 34px; }
   .port img.cadrep { position:absolute; left:-40px; top:-40px; width:190px; height:190px; border-radius:0; box-shadow:none; object-fit:contain; pointer-events:none; }
+  /* 26/11 (l'utilisateur : « le ruban, on a l'impression qu'on doit écrire quelque chose ») : le mot écrit par le jeu sur le ruban du cadre (mesuré sur l'image : centre 50 % / 83 %, largeur 50 %) */
+  .port .ruban { position:absolute; left:55px; top:122px; transform:translate(-50%, -50%); width:92px; text-align:center; pointer-events:none; font:italic bold 12.5px Georgia, serif; color:#5a3a12; letter-spacing:.3px; text-shadow:0 1px 0 #f6e3b4aa; white-space:nowrap; }
   .port .em { position:absolute; left:-4px; top:-4px; font-size:28px; filter:drop-shadow(0 2px 3px #000); }
   .carte .nom { font-size:1.25em; font-weight:bold; } .carte .tit { color:var(--or); font-size:.92em; min-height:1.2em; }
   .carte .h { color:var(--doux); font-size:.78em; }
@@ -129,7 +131,7 @@ function carteProfil(p, edit) {
   const em = (EMBLEMES.find(x => x[0] === p.embleme) || [])[1], f = (FONDS[p.fond] || FONDS.nuit)[1], r = rangGuilde();
   return `<div class="carte${p.fond === 'blizzard' ? ' fond-neige' : ''}" style="background:${f};border-color:${c ? c[5] : '#4b4580'}">
     ${edit ? '' : `<button class="crayon" onclick="ouvre('portrait')" aria-label="Modifier mon profil">✏️ Modifier</button>`}
-    <div class="port${c && CADRES_PEINTS.includes(p.cadre) ? ' cp' : ''}" ${edit ? '' : `onclick="ouvre('portrait')"`}><img src="${img}" onerror="this.onerror=null;this.src='${sc}'" alt="" style="${c && !CADRES_PEINTS.includes(p.cadre) ? `box-shadow:0 0 0 4px ${c[5]}, 0 0 22px ${c[5]}` : ''}">${c && CADRES_PEINTS.includes(p.cadre) ? `<img class="cadrep" src="cadres/profil-${p.cadre}.webp?v=1" alt="">` : ''}${em && em !== '—' ? `<span class="em">${emIco(p.embleme, em, 36)}</span>` : c ? `<span class="em">${c[1]}</span>` : ''}${typeof emblemeRang === 'function' ? emblemeRang(r, 38, 'rg-e') : `<span class="rg" title="Rang de la Guilde">RG ${r}</span>`}</div>
+    <div class="port${c && CADRES_PEINTS.includes(p.cadre) ? ' cp' : ''}" ${edit ? '' : `onclick="ouvre('portrait')"`}><img src="${img}" onerror="this.onerror=null;this.src='${sc}'" alt="" style="${c && !CADRES_PEINTS.includes(p.cadre) ? `box-shadow:0 0 0 4px ${c[5]}, 0 0 22px ${c[5]}` : ''}">${c && CADRES_PEINTS.includes(p.cadre) ? `<img class="cadrep" src="cadres/profil-${p.cadre}.webp?v=1" alt="">${CADRES_RUBAN[p.cadre] ? `<span class="ruban">${CADRES_RUBAN[p.cadre]}</span>` : ''}` : ''}${em && em !== '—' ? `<span class="em">${emIco(p.embleme, em, 36)}</span>` : c ? `<span class="em">${c[1]}</span>` : ''}${typeof emblemeRang === 'function' ? emblemeRang(r, 38, 'rg-e') : `<span class="rg" title="Rang de la Guilde">RG ${r}</span>`}</div>
     <div class="nom" id="nomv" style="${nomStyle(p)}">${p.nom || 'Toi'}</div><div class="tit">${t ? `${t[1]} ${t[2]}` : ''}</div>
     <div class="dev" id="devv">${p.devise ? `« ${p.devise.replace(/</g, '&lt;')} »` : ''}</div>
     ${(p.vitrine || []).length ? `<div class="vit">${p.vitrine.map(k => { const x = titreDe(k); return x ? `<span style="border-color:${x[5]}">${x[1]} ${x[2]}</span>` : ''; }).join('')}</div>` : ''}
