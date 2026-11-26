@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261126-173604"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
+<head><meta name="guilde-version" content="20261126-174410"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="robots" content="noindex">
@@ -374,17 +374,17 @@ const SCX_TXT = {
 const SAISON1_CHAP = [['cloitre', 'Chapitre 1 · Le blizzard qui ne s’arrête pas', '2026-12-01'], ['refectoire', 'Chapitre 2 · Le festin des goules', '2026-12-15'], [null, 'Chapitre 3 · Le dernier Veilleur', '2026-12-29'], [null, 'Chapitre 4 · Le Roi de l’Hiver', '2027-01-12']];
 const scenVisible = k => { const c = SAISON1_CHAP.find(x => x[0] === k); return !c || typeof avOuverte !== 'function' || avOuverte({ saison:'s1', ouvre:c[2] }); };
 SCX_TXT.cloitre = { titre:'❄ Saison 1 · Chapitre 1 : Le blizzard', duree:'30-45 min · Saison 1 de l’Almanach',
-  ouverture:'Ilse, la passeuse du col : « Là-haut, les Veilleurs sonnaient trois cloches pour tenir l’hiver loin de la vallée. Il y a sept nuits, elles se sont tues, et le blizzard ne s’arrête plus. » Maëlle, la forgeronne de la Guilde : « C’est mon grand-père qui les a coulées. Trouvons la corde de la première, et faisons-la sonner. » Le cloître est tout blanc, tout craque…',
+  ouverture:'Ilse, la passeuse du col : « Là-haut, les Veilleurs sonnaient trois cloches pour tenir l’hiver loin de la vallée. Il y a sept nuits, elles se sont tues, et le blizzard ne s’arrête plus. » Maëlle, la forgeronne de la Guilde : « C’est ma famille qui les a coulées, et tous les dix ans l’un de nous monte retremper leurs runes. Cette fois, c’est moi. Trouvons la corde de la première, et faisons-la sonner. » Le cloître est tout blanc, tout craque…',
   entree:() => '« Attention au froid : un dé qui fait 1 se couvre de givre. Il reviendra tel quel au tour suivant, à la place d’un dé neuf. »',
   but:'Fouillez les meubles (un dé) pour trouver <b>la corde de la cloche 🪢</b>, puis portez-la jusqu’à <b>la cloche gelée 🔔</b>, au fond du cloître. <b>❄ Le froid</b> : un dé qui fait 1 gèle et revient tel quel au tour suivant.',
   porter:'Portez la corde jusqu’à la cloche 🔔, au fond du cloître.',
   gagne:['🔔 La première cloche sonne !', '« DONG… Le son roule sur toute la montagne. Dehors, le blizzard faiblit un peu. Et sous nos pieds… quelque chose a répondu. Vous avez entendu ? Moi, non. Je n’ai rien entendu. »'] };
 SCX_TXT.refectoire = { titre:'❄ Saison 1 · Chapitre 2 : Le festin', duree:'30-45 min · Saison 1 de l’Almanach',
-  ouverture:'Précédemment : la première cloche a sonné, et sous la montagne quelque chose a répondu. Maëlle a trouvé la rune de la cloche limée, exprès. Ilse : « Cette fois, c’est le réfectoire des Veilleurs, et la deuxième cloche. On dit que le dernier repas y est resté servi… et que quelqu’un s’est invité. »',
+  ouverture:'Précédemment : la première cloche a sonné, et sous la montagne quelque chose a répondu. Au pied de la première cloche, Maëlle a trouvé des marques de lime toutes fraîches : quelqu’un est monté avant eux. Ilse : « Cette fois, c’est le réfectoire des Veilleurs, et la deuxième cloche. On dit que le dernier repas y est resté servi… et que quelqu’un s’est invité. »',
   entree:() => '« Deux coffres gravés gardent la corde : lisez leurs phrases (touchez 📋 en haut), un seul dit vrai. La cloche est prise dans la glace tant que les quatre statues ne la regardent pas. »',
   but:'Trouvez <b>la corde 🪢</b> dans le bon <b>coffre gravé</b> (un seul dit vrai : le mauvais libère une goule), tournez les <b>quatre statues</b> vers la cloche, puis sonnez <b>la deuxième cloche 🔔</b>. <b>❄ Le froid</b> : un dé qui fait 1 gèle et revient tel quel au tour suivant.',
   porter:'Portez la corde jusqu’à la cloche 🔔 (les quatre statues doivent la regarder).',
-  gagne:['🔔 La deuxième cloche sonne !', '« Deux cloches sur trois. Sous la terre, une voix glacée : « Qui ose ? » … Et là-haut, quelqu’un frappe contre des barreaux : le dernier Veilleur est vivant ! »'] };
+  gagne:['🔔 La deuxième cloche sonne !', '« Deux cloches sur trois, et les loups remontent vers la montagne. Au pied de la cloche, une lime abandonnée : Maëlle reconnaît le poinçon de son père. Sous la terre, une voix glacée : « Qui ose ? » … Et là-haut, quelqu’un frappe contre des barreaux : le dernier Veilleur est vivant ! »'] };
 SCX_TXT.labyrinthe = { titre:'✦ Le Labyrinthe des Runes', duree:'30-60 min · un donjon NEUF à chaque partie',
   ouverture:'« Un escalier qui descend… et un labyrinthe que personne n’a jamais vu. Il change à chaque fois qu’on y entre, paraît-il. Trois fragments de rune dorment dans les meubles : rapportez-les à l’autel, tout au fond. Moi, je reste près de l’escalier. »',
   entree:() => '« On ne voit que ce qui est en vue. Avancez prudemment : chaque labyrinthe est différent. »',
@@ -1371,7 +1371,7 @@ if (ESSAI) essaiAtelier(ESSAI); else if (sessionStorage.getItem('chron-en-jeu') 
 { const s = new URLSearchParams(location.search).get('salle'); if (s) { history.replaceState(null, '', location.pathname); const c = (typeof AMIS !== 'undefined' && AMIS.carte) || null, nom = (c && c.pseudo) || localStorage.getItem('guilde-pseudo');
     if (nom || moiCompte()) rejoindre(s, moiCompte() || { id:'j' + Math.random().toString(36).slice(2, 10), nom }); else { rejoindreForm(); setTimeout(() => { const i = $('fCode'); if (i) i.value = s; }, 150); } } }
 </script>
-<script src="chroniques-aventures.js?v=de4e39e4dc"></script>
+<script src="chroniques-aventures.js?v=39b764b5e7"></script>
 <script src="guide.js?v=ceb10204e9"></script>
 <script src="guides-modes.js?v=e111523360"></script>
 <script src="entrainement.js?v=854139c476"></script>
