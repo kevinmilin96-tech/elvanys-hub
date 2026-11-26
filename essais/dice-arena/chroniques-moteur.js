@@ -49,6 +49,7 @@ const BETES = {
   // 16/11 : les nouveaux venus (inspirés des archétypes troll, squelette, liche ; noms et règles à nous)
   colosse:   { n:'Colosse à ressort', img:'colosseressort', att:3, mv:1, s:() => [sceau('min', 5), sceau('dbl', 0, 1), sceau('dbl', 0, 1), sceau('tot', 10)], elite:true, regen:true, grosCoup:.3, charge:.35 },
   // 26/11 : les monstres du Cloître gelé (Saison 1) ; le spectre de givre attend son image (m-spectregivre), l'esprit des glaces en attendant
+  goule:     { n:'Goule gelée', img:'goule', att:2, mv:2, s:() => [sceau('pair'), sceau('tot', 6)], meute:true },
   spectregivre:{ n:'Spectre de givre', img:'spectregivre', att:1, mv:3, s:() => [sceau('imp'), sceau('min', 3)], fuit:.25 },
   loupblanc: { n:'Loup des neiges', img:'loupblanc', att:2, mv:3, s:() => [sceau('pair'), sceau('min', 4)], meute:true },
   golemglace:{ n:'Golem de glace', img:'golemglace', att:3, mv:1, s:() => [sceau('dbl', 0, 1), sceau('min', 5), sceau('tot', 9)], garde:.3, elite:true, grosCoup:.3, charge:.3 },
@@ -101,6 +102,11 @@ const SCEN = {
   // 26/11 : L'ALMANACH, Saison 1, chapitre 1 « Le blizzard qui ne s'arrête pas » : le donjon du Labyrinthe (tiré au hasard), habillé en CLOÎTRE GELÉ ;
   // une seule corde à trouver puis la cloche à sonner, pas de boss (il viendra au chapitre 4). froid:1 = la règle de la saison (un dé qui fait 1 gèle)
   cloitre: { n:'Le Cloître gelé', boss:'roios', renfort:'spectregivre', objet:{ n:'corde de la cloche', e:'🪢' }, axe:'la cloche gelée', axeE:'🔔', sablier:30,
+    phases:['', '', ''], vue:5, hasard:true, nbObj:1, sansBoss:true, froid:1 },
+  // 26/11 : chapitre 2 « Le festin des goules » : le Labyrinthe habillé en réfectoire gelé ; la corde est dans le COFFRE MENTEUR (deux coffres
+  // gravés, un seul a la corde : le mauvais libère une goule, puis l'autre s'ouvre) ; la cloche est prise dans la glace tant que les 4 STATUES
+  // ne la regardent pas (chacune tourne seule d'un quart de tour : choix de l'utilisateur)
+  refectoire: { n:'Le Réfectoire gelé', boss:'roios', renfort:'goule', objet:{ n:'corde de la cloche', e:'🪢' }, axe:'la deuxième cloche', axeE:'🔔', sablier:32,
     phases:['', '', ''], vue:5, hasard:true, nbObj:1, sansBoss:true, froid:1 },
   // 15/11 soir : LES AVENTURES EN SCÈNES (chroniques-aventures.js) : une EMBUSCADE sur le chemin = un petit terrain ouvert, gagner = abattre tous les monstres
   // 16/11 : l'ESSAI d'une salle de l'atelier des cartes (editeur.html) : la salle seule, 2 monstres à battre
@@ -235,14 +241,14 @@ function construitLabyrinthe(S, R) {
   const tirage = ['potion', 'grains', 'objet', 'piege', 'monstre', 'parchemin', 'or', 'fumee', 'rien'];
   // 26/11 : au Cloître gelé, UNE seule corde, cachée dans un meuble de la moitié la plus éloignée du départ (il faut traverser le cloître)
   const loinM = meubles.map((m, i) => [i, D[m[0] + ',' + m[1]] || 0]).sort((a, b) => b[1] - a[1]).slice(0, Math.ceil(meubles.length / 2)).map(x => x[0]);
-  const caches = S.scen === 'cloitre' ? [loinM[rnd(loinM.length)]] : meubles.map((m, i) => i).sort(() => hasard(S) - .5).slice(0, 4);
+  const caches = S.scen === 'refectoire' ? [] : S.scen === 'cloitre' ? [loinM[rnd(loinM.length)]] : meubles.map((m, i) => i).sort(() => hasard(S) - .5).slice(0, 4);
   meubles.forEach(([x, y, t2], i) => { R.murs[cle(x, y)] = 'M'; R.obj[cle(x, y)] = { t:t2, meuble:true, fouille:false, cache:caches.includes(i) ? 'rouage' : tirage[rnd(tirage.length)] }; });
   R.murs[cle(fin.cx, fin.cy)] = 'A'; R.axe = [fin.cx, fin.cy]; R.bronze = true;
   // les pièges : dans les couloirs (hors salles)
   const couloirs = []; for (let y = 0; y < H2; y++) for (let x = 0; x < W2; x++) if (G[y][x] === '.' && !salles.some(s => dans(s, x, y))) couloirs.push([x, y]);
   for (let i = 0; i < 5 && couloirs.length; i++) { const [x, y] = couloirs.splice(rnd(couloirs.length), 1)[0]; R.obj[cle(x, y)] = { t:'piege', cache:true }; }
   // les monstres : dans les salles (pas le départ), plus forts près de l'autel
-  const hiver = S.scen === 'cloitre', faibles = hiver ? ['spectregivre', 'spectregivre', 'loupblanc', 'osclaque'] : ['gobelin', 'loup', 'scarabee', 'rouagelin', 'page', 'coucou', 'osclaque'], forts = hiver ? ['golemglace', 'loupblanc'] : ['salamandre', 'golem', 'colosse', 'elementaire', 'archiviste'];
+  const hiver = S.scen === 'cloitre' || S.scen === 'refectoire', faibles = S.scen === 'refectoire' ? ['goule', 'goule', 'spectregivre', 'osclaque'] : hiver ? ['spectregivre', 'spectregivre', 'loupblanc', 'osclaque'] : ['gobelin', 'loup', 'scarabee', 'rouagelin', 'page', 'coucou', 'osclaque'], forts = S.scen === 'refectoire' ? ['goule', 'loupblanc'] : hiver ? ['golemglace', 'loupblanc'] : ['salamandre', 'golem', 'colosse', 'elementaire', 'archiviste'];
   for (let i = 0; i < (hiver ? 10 : 13); i++) {
     const s = salles[1 + rnd(salles.length - 1)]; let x, y, k = 0;
     do { x = s.x + rnd(s.w); y = s.y + rnd(s.h); } while (k++ < 20 && (G[y][x] !== '.' || R.monstres.some(m => m.x === x && m.y === y) || (x === fin.cx && y === fin.cy)));
@@ -250,9 +256,49 @@ function construitLabyrinthe(S, R) {
     const loin = (D[x + ',' + y] || 0) > 22;
     ajouteMonstre(S, loin && hasard(S) < .6 ? forts[rnd(forts.length)] : faibles[rnd(faibles.length)], x, y);
   }
-  if (S.scen === 'cloitre') { const g = [[fin.cx, fin.cy + 1], [fin.cx - 1, fin.cy], [fin.cx + 1, fin.cy], [fin.cx, fin.cy - 1]].find(([x, y]) => G[y] && G[y][x] === '.' && !R.monstres.some(m => m.x === x && m.y === y)); if (g) ajouteMonstre(S, 'golemglace', g[0], g[1]); } // le gardien de la cloche
+  if (S.scen === 'refectoire') construitRefectoire(S, R, G, salles, fin, D, sol, rnd);
+  if (S.scen === 'cloitre') { const g = [[fin.cx, fin.cy + 1], [fin.cx - 1, fin.cy], [fin.cx + 1, fin.cy], [fin.cx, fin.cy - 1]].find(([x, y]) => G[y] && G[y][x] === '.' && !R.murs[cle(x, y)] && !R.monstres.some(m => m.x === x && m.y === y)); if (g) ajouteMonstre(S, 'golemglace', g[0], g[1]); } // le gardien de la cloche
   [[0, 0], [1, 0], [0, 1], [1, 1]].forEach(([dx, dy], i) => { if (S.heros[i]) { S.heros[i].x = Math.min(D0.x + D0.w - 1, D0.cx - 1 + dx); S.heros[i].y = Math.min(D0.y + D0.h - 1, D0.cy - 1 + dy); } });
   S.salles = salles.length;
+}
+// 26/11 : LE RÉFECTOIRE (chapitre 2) : les 4 statues autour de la cloche et les deux coffres gravés (coffre menteur)
+// Les énigmes : toujours une seule réponse par la logique ; gauche / droite tirées au hasard. [règle affichée, phrase du coffre A, phrase du coffre B, bon]
+const COFFRES_MENTEURS = [
+  ['', '« La corde est ici. »', '« Un seul de nous deux dit vrai. »', 'B'],
+  ['', '« La corde n’est pas ici. »', '« Nous mentons tous les deux. »', 'B'],
+  ['Sur le mur, une fresque : « De ces deux coffres, un seul dit vrai. »', '« La corde est ici. »', '« Nous disons vrai tous les deux. »', 'A'],
+];
+function construitRefectoire(S, R, G, salles, fin, D, sol, rnd) {
+  // les statues : en diagonale autour de la cloche, chacune doit la regarder (celles du haut vers le bas, celles du bas vers le haut)
+  // 26/11 : chaque statue doit rester atteignable (une case libre à côté, reliée au départ) et la cloche aussi : sinon on essaie d'autres places
+  const D0 = salles[0], H2 = G.length, W2 = G[0].length;
+  const atteint = bloque => { const V = {}, f = [[D0.cx, D0.cy]]; V[D0.cx + ',' + D0.cy] = 1;
+    while (f.length) { const [x, y] = f.shift(); for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const nx = x + dx, ny = y + dy, k = nx + ',' + ny;
+      if (V[k] || nx < 0 || ny < 0 || nx >= W2 || ny >= H2 || G[ny][nx] !== '.' || bloque.has(k) || (nx === fin.cx && ny === fin.cy)) continue; V[k] = 1; f.push([nx, ny]); } } return V; };
+  // les statues : une à une, dans la salle de la cloche (au plus près d'elle), chacune gardée seulement si tout reste atteignable ; elle doit regarder la cloche
+  const cases = []; for (let y = fin.y; y < fin.y + fin.h; y++) for (let x = fin.x; x < fin.x + fin.w; x++) if (G[y][x] === '.' && !R.murs[cle(x, y)] && !(x === fin.cx && y === fin.cy)) cases.push([x, y]);
+  cases.sort((a, b) => (Math.max(Math.abs(a[0] - fin.cx), Math.abs(a[1] - fin.cy)) - Math.max(Math.abs(b[0] - fin.cx), Math.abs(b[1] - fin.cy))) || hasard(S) - .5);
+  const choix = [], bloque = new Set();
+  for (const [x, y] of cases) { if (choix.length >= 4) break; if (Math.abs(x - fin.cx) + Math.abs(y - fin.cy) === 1) continue; // jamais collée à la cloche par un côté
+    bloque.add(x + ',' + y); const V = atteint(bloque);
+    const ok = choix.concat([[x, y]]).every(([a, b]) => { for (let u = -1; u <= 1; u++) for (let v = -1; v <= 1; v++) if ((u || v) && V[(a + u) + ',' + (b + v)]) return true; return false; })
+      && [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => V[(fin.cx + dx) + ',' + (fin.cy + dy)]) && Object.keys(V).length >= Object.keys(atteint(new Set())).length - bloque.size;
+    if (ok) choix.push([x, y]); else bloque.delete(x + ',' + y); }
+  R.statues = [];
+  choix.forEach(([x, y]) => { const dx = fin.cx - x, dy = fin.cy - y, veut = Math.abs(dy) >= Math.abs(dx) ? (dy > 0 ? 2 : 0) : (dx > 0 ? 1 : 3); let d = rnd(4); if (d === veut) d = (d + 1 + rnd(3)) % 4; R.statues.push({ x, y, d, veut }); R.murs[cle(x, y)] = 'T'; G[y][x] = 'T'; });
+  // les deux coffres gravés : dans une salle du milieu du chemin, contre un mur, côte à côte
+  const milieu = salles.slice(1).filter(s => s !== fin).sort((a, b) => Math.abs((D[a.cx + ',' + a.cy] || 0) - (D[fin.cx + ',' + fin.cy] || 0) / 2) - Math.abs((D[b.cx + ',' + b.cy] || 0) - (D[fin.cx + ',' + fin.cy] || 0) / 2));
+  const E = COFFRES_MENTEURS[rnd(COFFRES_MENTEURS.length)], inverse = hasard(S) < .5;
+  for (const s of milieu) { const places = [];
+    for (let y = s.y; y < s.y + s.h; y++) for (let x = s.x; x < s.x + s.w - 1; x++) { if (G[y][x] !== '.' || G[y][x + 1] !== '.' || R.murs[cle(x, y)] || R.murs[cle(x + 1, y)]) continue;
+      const libreC = (a, b) => sol(a, b) && !R.murs[cle(a, b)] && !(R.obj[cle(a, b)] && R.obj[cle(a, b)].meuble); // 26/11 : chaque coffre garde une case libre devant lui (sinon il était coincé)
+      if ((!sol(x, y - 1) && !sol(x + 1, y - 1) && libreC(x, y + 1) && libreC(x + 1, y + 1)) || (!sol(x, y + 1) && !sol(x + 1, y + 1) && libreC(x, y - 1) && libreC(x + 1, y - 1))) places.push([x, y]); }
+    if (!places.length) continue; const [x, y] = places[rnd(places.length)];
+    const txt = inverse ? [E[2], E[1]] : [E[1], E[2]], bonG = inverse ? E[3] === 'B' : E[3] === 'A';
+    [[x, 'gauche', txt[0], bonG], [x + 1, 'droite', txt[1], !bonG]].forEach(([cx, cote, phrase, bon]) => {
+      delete R.obj[cle(cx, y)]; R.murs[cle(cx, y)] = 'M'; R.obj[cle(cx, y)] = { t:'coffre', meuble:true, fouille:false, nom:`le coffre gravé de ${cote}`, menteur:{ cote, phrase, bon }, cache:bon ? 'rouage' : 'goule' }; });
+    R.menteur = { regle:E[0], gauche:txt[0], droite:txt[1], x, y }; break; }
+  S.statuesBut = true;
 }
 // le brouillard « à vue » (carte peinte) : on voit les cases à moins de N cases, si aucun mur ne cache la ligne de vue
 function voirAVue(S) {
@@ -332,7 +378,7 @@ function sceauxBoss(S, k) {
   if (n <= 1) L.splice(-2, 2); else if (n === 2) L.pop(); else if (n >= 4) L.push(sceau('min', 4));
   if (k === 2 && S.livre) L.pop();
   if (n >= 2 && !S.ancien) L.push(sceau('tot', GRANDIT.boss * (n - 1))); // 17/11 (équilibrage mesuré) : l'Horloger grandit avec chaque héros en plus du premier
-  if ((S.scen === 'labyrinthe' || S.scen === 'cloitre') && n <= 1 && L.length > 2) L.pop(); // seul dans un grand labyrinthe : un sceau de moins
+  if (['labyrinthe', 'cloitre', 'refectoire'].includes(S.scen) && n <= 1 && L.length > 2) L.pop(); // seul dans un grand labyrinthe : un sceau de moins
   return L;
 }
 function adapte(S) {
@@ -340,11 +386,11 @@ function adapte(S) {
   S.nbHeros = n; S.dureeLevier = A.levier; S.sablier += A.sablier;
   // 16/11 (retour de l'utilisateur : « pas de mise en danger » à 4) : à 3 héros et plus, chaque monstre frappe 1 de plus
   S.forceM = n >= 3 ? 1 : 0; R.monstres.forEach(m => { m.att = BETES[m.b].att + S.forceM; grandit(S, m); });
-  if (S.scen === 'labyrinthe' || S.scen === 'cloitre') { S.sablier += [0, 20, 10, 0, 0][n]; if (n <= 2) R.monstres = R.monstres.filter(() => hasard(S) < .7); } // un donjon plus grand : plus de temps aux petits groupes
+  if (['labyrinthe', 'cloitre', 'refectoire'].includes(S.scen)) { S.sablier += [0, 20, 10, 0, 0][n]; if (n <= 2) R.monstres = R.monstres.filter(() => hasard(S) < .7); } // un donjon plus grand : plus de temps aux petits groupes
   if (A.garde < 1 && S.scen !== 'arene') R.monstres = R.monstres.filter(m => hasard(S) < A.garde); // une embuscade garde ses monstres (écrits pour l'aventure)
   if (A.renfort) { // à 4 : quelques monstres de plus, posés dans des couloirs (cases de sol hors salle, loin du départ)
     const libres = []; for (let y = 0; y < R.h; y++) for (let x = 0; x < R.w; x++) { const c = cle(x, y); if (!R.murs[c] && !R.salle[c] && !R.portes[c] && !R.obj[c] && !S.heros.some(h => dist(h, { x, y }) < 8) && !R.monstres.some(m => m.x === x && m.y === y)) libres.push([x, y]); }
-    const sorte = S.scen === 'brulees' ? ['loup', 'gobelin', 'salamandre'] : S.scen === 'labyrinthe' ? ['gobelin', 'osclaque', 'page'] : S.scen === 'cloitre' ? ['spectregivre', 'loupblanc', 'spectregivre'] : ['rouagelin', 'coucou', 'rouagelin'];
+    const sorte = S.scen === 'brulees' ? ['loup', 'gobelin', 'salamandre'] : S.scen === 'labyrinthe' ? ['gobelin', 'osclaque', 'page'] : S.scen === 'cloitre' ? ['spectregivre', 'loupblanc', 'spectregivre'] : S.scen === 'refectoire' ? ['goule', 'spectregivre', 'goule'] : ['rouagelin', 'coucou', 'rouagelin'];
     for (let i = 0; i < A.renfort && libres.length; i++) { const [x, y] = libres.splice(Math.floor(hasard(S) * libres.length), 1)[0]; ajouteMonstre(S, sorte[i % sorte.length], x, y); }
   }
 }
@@ -369,6 +415,7 @@ function nouvelle(heros, s, scen, opts = {}) {
   if (scen === 'atelier') { construitAtelier(S, R, opts.salle || { w:4, h:3 }); S.objectif = 'vaincre'; log(S, `🛠 Essai de « ${(opts.salle && opts.salle.nom) || 'la salle'} » : déplacez-vous, fouillez, battez les monstres.`); debutTour(S); return S; }
   if (scen === 'entrainement') { construitEntrainement(S, R); voir(S); log(S, '🎓 L’entraînement de Moustache : un petit donjon pour apprendre.'); debutTour(S); return S; }
   if (scen === 'arene') { construitArene(S, R, opts); adapte(S); S.objectif = 'vaincre'; log(S, '⚔ Embuscade ! Abattez tous les monstres.'); debutTour(S); return S; }
+  if (scen === 'refectoire') { construitLabyrinthe(S, R); adapte(S); voir(S); S.froid = SCEN.refectoire.froid; log(S, `🔔 Le Réfectoire gelé : trouvez la corde dans l’un des deux coffres gravés (attention, un seul dit vrai), tournez les quatre statues vers la cloche, puis sonnez-la. ❄ Le froid : un dé qui fait 1 gèle.`); if (R.menteur) log(S, `📜 Les deux coffres gravés : à gauche ${R.menteur.gauche} ; à droite ${R.menteur.droite}${R.menteur.regle ? ' ' + R.menteur.regle : ''}`); debutTour(S); return S; }
   if (scen === 'cloitre') { construitLabyrinthe(S, R); adapte(S); voir(S); S.froid = SCEN.cloitre.froid; log(S, '🔔 Le Cloître gelé : trouvez la corde de la cloche dans les meubles et sonnez la cloche, tout au fond. ❄ Le froid : un dé qui fait 1 gèle et revient tel quel au tour suivant.'); debutTour(S); return S; }
   if (scen === 'labyrinthe') { construitLabyrinthe(S, R); adapte(S); voir(S); log(S, '✦ Le Labyrinthe des Runes : un donjon jamais vu. Trouvez 3 fragments de rune dans les meubles et portez-les à l’autel, tout au fond.'); debutTour(S); return S; }
   if (scen === 'brulees') { construitCarte(S, R); adapte(S); voir(S); log(S, '🔥 Les Terres brûlées : trouvez 3 braises éternelles en fouillant les meubles et portez-les au grand brasier.'); debutTour(S); return S; }
@@ -726,12 +773,20 @@ function agir(S, hi, idDe, x, y) {
   if (R.axe && x === R.axe[0] && y === R.axe[1]) {
     const sc0 = SCEN[S.scen || 'horloger'], nb = sc0.nbObj || 3;
     if (!h.porte) return sc0.nbObj ? `Il faut porter la ${sc0.objet.n} (on la trouve en fouillant les meubles).` : 'Il faut porter un rouage (on les trouve en fouillant les meubles).'; if (dist(h, { x, y }) !== 1) return sc0.nbObj ? `Il faut être à côté de ${sc0.axe}.` : 'Il faut être à côté de l’axe.';
+    if (S.statuesBut && !R.statuesOk) return 'La cloche est prise dans la glace : les quatre statues doivent d’abord la regarder.';
     unPas(S, h, idDe); h.porte = false; R.rouagesPoses++; S.sablier += 2;
-    if (sc0.sansBoss && R.rouagesPoses >= nb) { S.fin = 'gagne'; S.score += 300 + S.sablier * 10; log(S, `${sc0.axeE} ${nm(h)} attache la corde et tire de toutes ses forces… DONG ! La cloche sonne à travers la montagne.`); return { ok:true, ev:[{ t:'rouage', boss:false }] }; }
+    if (sc0.sansBoss && R.rouagesPoses >= nb) { S.fin = 'gagne'; S.score += 300 + S.sablier * 10; log(S, `${sc0.axeE} ${nm(h)} attache la corde et tire de toutes ses forces… DONG ! ${S.scen === 'refectoire' ? 'La deuxième cloche répond à la première.' : 'La cloche sonne à travers la montagne.'}`); return { ok:true, ev:[{ t:'rouage', boss:false }] }; }
     log(S, `⚙ Rouage posé sur l’axe (${R.rouagesPoses}/${nb}) : +2 grains.`);
     if (R.rouagesPoses >= nb) reveilBoss(S); return { ok:true, ev:[{ t:'rouage', boss:R.rouagesPoses >= nb }] };
   }
   const st = R.statues ? R.statues.findIndex(t => t.x === x && t.y === y) : -1;
+  if (st >= 0 && S.statuesBut) {
+    if (R.statuesOk) return 'Les statues regardent déjà la cloche.'; const tt = R.statues[st]; if (Math.max(Math.abs(h.x - tt.x), Math.abs(h.y - tt.y)) > 1) return 'Il faut être juste à côté de la statue.';
+    unPas(S, h, idDe); tt.a = (tt.a == null ? tt.d : tt.a) + 1; tt.d = (tt.d + 1) % 4; const bonnes = R.statues.filter(z => z.d === z.veut).length;
+    log(S, `🗿 ${nm(h)} pousse une statue gelée : elle pivote d’un quart de tour. ${bonnes}/${R.statues.length} regardent la cloche.`);
+    if (bonnes === R.statues.length) { R.statuesOk = true; S.score += 80; S.sablier += 3; log(S, '✨ Les quatre statues regardent la cloche : la glace qui l’emprisonnait craque et tombe en morceaux (+3 grains).'); return { ok:true, ev:[{ t:'enigme' }] }; }
+    return { ok:true, ev:[{ t:'statue', i:st, j:st }] };
+  }
   if (st >= 0) {
     if (R.statuesOk) return 'Les statues regardent déjà l’autel.'; if (R.salle[cle(h.x, h.y)] !== R.salle[cle(x, y)]) return 'Il faut être dans la Galerie des statues.'; // 16/11 : depuis n'importe quelle case de la Galerie (une statue était coincée entre les autres)
     unPas(S, h, idDe); tourneStatue(R, st); const bonnes = R.statues.filter(t => t.d === t.veut).length;
@@ -767,8 +822,13 @@ function fouilleMeuble(S, hi, idDe, x, y, o) {
     prendDe(h, idDe); o.crochete = true; log(S, `🔓 ${nm(h)} crochète ${MEUBLE_N[o.t]}… CLIC !`); } else unPas(S, h, idDe);
   o.fouille = true; const nom = nm(h), ev = { t:'fouille', quoi:o.cache, meuble:o.t, h:hi };
   const Le = MEUBLE_N[o.t][0].toUpperCase() + MEUBLE_N[o.t].slice(1);
+  // 26/11 : le coffre menteur (chapitre 2) : le bon donne la corde (et l'autre se referme pour de bon) ; le mauvais libère une goule, puis l'autre s'entrouvre
+  if (o.menteur) { const autre = Object.values(R.obj).find(z => z.menteur && z !== o); if (o.menteur.bon && autre) autre.fouille = true;
+    if (!o.menteur.bon) { const p = [[1, 0], [-1, 0], [0, 1], [0, -1]].map(([dx, dy]) => [x + dx, y + dy]).find(([a, b]) => libre(S, a, b) && !herosEn(S, a, b)) || [h.x, h.y];
+      const m = ajouteMonstre(S, 'goule', p[0], p[1]); m.it = 'frappe'; R.vu[cle(p[0], p[1])] = 1; ev.quoi = 'monstre';
+      log(S, `🧟 ${nom} soulève le couvercle du coffre gravé de ${o.menteur.cote}… c’était le menteur ! Une goule gelée en jaillit. Dans un craquement de glace, l’autre coffre s’entrouvre : la corde y est.`); return { ok:true, ev:[ev] }; } }
   switch (o.cache) {
-    case 'rouage': { h.porte = true; S.rouagesTrouves++; const sc = SCEN[S.scen || 'horloger']; log(S, `${sc.objet.e} ${nom} trouve ${sc.objet.n === 'rouage' ? 'un ROUAGE' : S.scen === 'cloitre' ? 'la CORDE DE LA CLOCHE' : 'une BRAISE ÉTERNELLE'} dans ${MEUBLE_N[o.t] || 'le meuble'} ! À porter jusqu’à ${sc.axe}.`); break; }
+    case 'rouage': { h.porte = true; S.rouagesTrouves++; const sc = SCEN[S.scen || 'horloger']; log(S, `${sc.objet.e} ${nom} trouve ${sc.objet.n === 'rouage' ? 'un ROUAGE' : S.scen === 'cloitre' || S.scen === 'refectoire' ? 'la CORDE DE LA CLOCHE' : 'une BRAISE ÉTERNELLE'} dans ${MEUBLE_N[o.t] || 'le meuble'} ! À porter jusqu’à ${sc.axe}.`); break; }
     case 'potion': case 'parchemin': case 'fumee': (h.sac = h.sac || []).push(o.cache); log(S, `🎒 ${nom} met ${SAC[o.cache].n.toLowerCase()} dans son sac (trouvée dans ${MEUBLE_N[o.t]}).`); break;
     case 'potion2': (h.sac = h.sac || []).push('potion', 'potion'); ev.quoi = 'potion'; log(S, `🎒 ${nom} trouve DEUX potions de soin dans ${MEUBLE_N[o.t]} ! (dans son sac)`); break;
     case 'reliquaire': { const p = [[1, 0], [-1, 0], [0, 1], [0, -1]].map(([dx, dy]) => [x + dx, y + dy]).find(([a, b]) => libre(S, a, b) && !herosEn(S, a, b)) || [h.x, h.y];

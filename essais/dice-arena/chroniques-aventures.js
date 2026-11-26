@@ -85,9 +85,24 @@ const AVENTURES = {
         gagne:['🔔 La première cloche sonne !', '« DONG… Le son roule sur toute la montagne. Dehors, le blizzard faiblit un peu. Et sous nos pieds… quelque chose a répondu. Vous avez entendu ? Moi, non. Je n’ai rien entendu. Rien du tout. »'] } },
       { t:'fin', titre:'Une cloche sur trois', fond:'monastere', texte:'Quand vous ressortez, Ilse lève sa lanterne vers le ciel : entre deux rafales, on aperçoit une étoile. La première depuis sept nuits. « Une cloche sur trois… c’est un début. » Mais au même moment, très loin sous la terre, un grondement répond au son de la cloche. Long. Lent. Comme quelqu’un qui se réveille. Moustache a les poils hérissés : « Je propose qu’on rentre. Tout de suite. » <br><br><b>À suivre : chapitre 2, « Le festin des goules », le 15 décembre.</b>', xp:250 },
     ] },
+  // 26/11 : chapitre 2 « Le festin des goules » (à partir du 15 décembre) : le récit qui relie, le réfectoire, la fin
+  cloches2: {
+    titre:'🔔 Les Cloches de givre · Chapitre 2', resume:'Le festin des goules : un réfectoire gelé, un coffre qui ment, quatre statues à tourner vers la deuxième cloche.', duree:'30-45 min',
+    saison:'s1', ouvre:'2026-12-15', froid:1, xp:250,
+    scenes:[
+      { t:'recit', titre:'Précédemment…', fond:'monastere', texte:'La première cloche a sonné, et le blizzard a faibli. Mais sous la montagne, quelque chose a répondu. Ilse vous attend au pied du monastère, sa lanterne à la main : « La neige a recouvert vos traces. Cette fois, il faut aller plus loin : le réfectoire des Veilleurs, et la deuxième cloche. On raconte que le dernier repas y est resté servi… et que quelqu’un s’est invité. » Moustache, les oreilles en arrière : « Un festin ? Pour moi ? … Non. Je le sens mal. »' },
+      { t:'donjon', scen:'refectoire', textes:{
+        titre:'🍽 Le Réfectoire gelé', duree:'',
+        ouverture:'« Les tables sont encore dressées. Les assiettes sont pleines… de glace. Et dans l’ombre, ça mâche. »',
+        entree:() => '« Deux coffres gravés gardent la corde de la deuxième cloche : lisez bien leurs phrases (touchez 📋 en haut), un seul dit vrai. Et la cloche est prise dans la glace tant que les quatre statues ne la regardent pas. »',
+        but:'Trouvez <b>la corde 🪢</b> dans le bon <b>coffre gravé</b> (un seul dit vrai : le mauvais libère une goule), tournez les <b>quatre statues</b> vers la cloche, puis sonnez <b>la deuxième cloche 🔔</b>. <b>❄ Le froid</b> : un dé qui fait 1 gèle et revient tel quel au tour suivant.',
+        porter:'Portez la corde jusqu’à la cloche 🔔 (les quatre statues doivent la regarder).',
+        gagne:['🔔 La deuxième cloche sonne !', '« Deux cloches sur trois. Écoutez… ça ne répond plus sous la terre. Ça PARLE. Une voix glacée : « Qui ose ? » … Et là-haut, dans une cellule, quelqu’un frappe contre les barreaux. Le dernier Veilleur est vivant ! »'] } },
+      { t:'fin', titre:'Deux cloches sur trois', fond:'monastere', texte:'Dehors, le vent est tombé d’un coup. Ilse vous regarde, puis la crypte, puis vous : « Une voix sous la terre, un Veilleur enfermé… On ne l’abandonnera pas. » Moustache s’ébroue : « Je propose qu’on le libère vite. Et qu’on parte encore plus vite. » <br><br><b>À suivre : chapitre 3, « Le dernier Veilleur », le 29 décembre.</b>', xp:250 },
+    ] },
 };
 // 26/11 : une aventure de saison n'est ouverte que pendant sa saison (le mode atelier l'ouvre toujours, pour les essais)
-const avOuverte = a => !a.saison || localStorage.getItem('guilde-atelier') === '1' || (typeof saisonActive === 'function' && saisonActive() && saisonActive().id === a.saison);
+const avOuverte = a => !a.saison || localStorage.getItem('guilde-atelier') === '1' || (typeof saisonActive === 'function' && saisonActive() && saisonActive().id === a.saison && (!a.ouvre || almJour() >= a.ouvre)); // ouvre = la date du chapitre
 
 // ------------------------------------------------------------------ l'aventure en cours
 const CLE_AV = 'guilde-aventure-en-cours';
@@ -193,7 +208,7 @@ function joueCarte(sc, tete) {
   }
   const [px, py] = P[ici];
   $('app').innerHTML = `${tete}<div class="scn ${sc.fond || 'marais'}"><h2>🗺 ${sc.titre}</h2>
-    <div class="carte-m"${sc.carte ? ` style="background-image:url('decor/${sc.carte}.webp?v=1'), url('decor/carte-route-saules.webp?v=1');${sc.carte.includes('col') ? 'filter:hue-rotate(160deg) saturate(.45) brightness(1.15)' : ''}"` : ''}><svg viewBox="0 0 100 133">
+    <div class="carte-m"${sc.carte ? ` style="background-image:url('decor/${sc.carte}.webp?v=1'), url('decor/carte-route-saules.webp?v=1');"` : ''}><svg viewBox="0 0 100 133">
       <path d="${chemin}" fill="none" stroke="#6a4a2a" stroke-width="1.6" stroke-dasharray="2.4 1.6" stroke-linecap="round"/>
       ${P.map(([x, y], k) => `<g><circle cx="${x}" cy="${y}" r="${k <= ici ? 4.6 : 4}" fill="${k < ici ? '#7dbf6a' : k === ici ? '#f3c96b' : '#f3e6c8'}" stroke="#3a2a14" stroke-width=".6"/><text x="${x}" y="${y + 1.5}" font-size="4" text-anchor="middle">${ICO[E[k].t]}</text></g>`).join('')}
       <g class="pion" id="pion" style="transform:translate(${px}px, ${py - 8}px)"><circle r="4.2" fill="#2a1a10" stroke="#f3c96b" stroke-width="1"/><text y="1.6" font-size="4.6" text-anchor="middle">🛡</text></g>

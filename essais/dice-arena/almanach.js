@@ -36,7 +36,7 @@ function almPageHTML() {
   const cases = Array.from({ length:ALM_NB }, (_, k) => { const p = k + 1, R = almRecompense(S, p), pris = i.x.recup.includes(p), dispo = actif && p <= i.palier && !pris, grand = [5, 10, 15, 20, 25, 30].includes(p);
     return `<div class="acase ${pris ? 'prise' : dispo ? 'dispo' : 'verrou'}${grand ? ' grand' : ''}" id="a${p}" onclick="almDetail(${p})"><div class="rec">${pris ? '<span class="coche">✔</span>' : ''}<span class="ic">${R.e}</span><b>${R.n}</b>${dispo ? `<button class="recup" onclick="event.stopPropagation();if(almPrendre(${p}))dessine(${p})">Récupérer</button>` : !pris ? '<small>🔒</small>' : ''}</div><span class="anum">${p}</span></div>`; }).join('');
   const nb = i.aRec.length + i.bonusARec;
-  return `<div class="alm"><div class="alm-tete"><h2>${S.e} Saison ${S.n} · ${S.nom}</h2>
+  return `<div class="alm"><div class="alm-banniere" style="background-image:url('decor/almanach-${S.id}-fond.webp?v=1')"><img src="ui/almanach.webp?v=1" alt="" onerror="this.remove()"><b>${S.e} Saison ${S.n} · ${S.nom}</b></div><div class="alm-tete">
     ${actif ? `<p class="alm-fin">Palier <b>${i.palier}</b> / ${ALM_NB} · fin dans <b>${j}</b> jour${j > 1 ? 's' : ''}</p>
     <div class="xp"><span class="barre"><i style="width:${Math.round(i.dans / i.besoin * 100)}%"></i><span>${i.dans} / ${i.besoin} XP ${i.palier >= ALM_NB ? 'vers le prochain coffre' : `vers le palier ${i.palier + 1}`}</span></span></div>`
     : `<p class="alm-fin bientot">L’Almanach ouvre le <b>1er décembre</b>${j > 0 ? ` (dans ${j} jour${j > 1 ? 's' : ''})` : ''}. Voici ce qui t’attend.</p>`}</div>
@@ -52,6 +52,7 @@ function almDetail(p) { const S = saisonActive() || saisonProchaine(); if (!S) r
   annonceRang(`${R.e} Palier ${p} · ${R.n} : ${R.d} ${x.x.recup.includes(p) ? '✔ Récupérée.' : saisonActive() && p <= x.palier ? '🎁 À récupérer !' : '🔒'}`); }
 
 if (typeof document !== 'undefined') { const st = document.createElement('style'); st.textContent = `
+  .alm-banniere { max-width:620px; margin:4px auto 6px; aspect-ratio:16/6; border-radius:14px; background:#16213a center/cover; border:1px solid #9fdcff88; display:flex; align-items:flex-end; gap:8px; padding:8px 10px; box-shadow:inset 0 -40px 40px -10px #000a; } .alm-banniere img { width:54px; height:54px; filter:drop-shadow(0 2px 4px #000); } .alm-banniere b { color:#fff; font:bold 17px Georgia, serif; text-shadow:0 2px 4px #000; }
   .alm .alm-tete { max-width:620px; margin:0 auto; padding:0 12px; } .alm h2 { margin:6px 0 4px; } .alm-fin { text-align:center; margin:4px 0 6px; color:#f1ecff; } .alm-fin.bientot { background:#1d1b3aee; border:1px solid #f3c96b; border-radius:12px; padding:9px; }
   .alm .acase { flex:none; width:118px; position:relative; padding-bottom:30px; } .alm .acase .rec { height:auto; min-height:150px; } .alm .acase.grand .rec { border-color:#9fdcff; box-shadow:0 0 12px #9fdcff55; }
   .alm .acase .ic { font-size:34px; display:block; margin:4px 0; } .alm .anum { position:absolute; bottom:0; left:50%; transform:translateX(-50%); background:#2a3e66; color:#fff; border:2px solid #9fdcff; border-radius:50%; width:28px; height:28px; display:flex; align-items:center; justify-content:center; font:bold 13px Georgia, serif; }
