@@ -47,7 +47,7 @@ function titresGuilde() {
 const rangGuilde = () => typeof lireRang === 'function' ? lireRang().info.rang : 1;
 const titreGagne = k => titresGuilde().some(x => x[0] === k && x[4]);
 const condOk = c => !c || (c.r ? rangGuilde() >= c.r : true) && (c.t ? titreGagne(c.t) : true) && (c.alm ? typeof almGagne === 'function' && almGagne(c.alm[0], c.alm[1]) : true); // 26/11 : alm = gagné dans l'Almanach
-const condTxt = c => !c ? '' : c.alm ? 'Almanach, palier 30' : c.r ? `rang ${c.r} de la Guilde` : c.t ? `titre « ${(titreDe(c.t) || [])[2] || c.t} »` : '';
+const condTxt = c => !c ? '' : c.avenir ? 'une prochaine saison de l’Almanach' : c.alm ? 'Almanach, palier 30' : c.r ? `rang ${c.r} de la Guilde` : c.t ? `titre « ${(titreDe(c.t) || [])[2] || c.t} »` : '';
 const FONDS = {
   nuit:['Nuit étoilée', 'url(fonds/carte-nuit.webp?v=1) center/cover, radial-gradient(ellipse at 50% 0%, #3a2a5c, #120f24 75%)'],
   forge:['La forge', 'url(fonds/carte-forge.webp?v=1) center/cover, radial-gradient(ellipse at 50% 100%, #8a3a12, #2a1208 70%)'],
@@ -66,9 +66,17 @@ const FONDS = {
   // 26/11 : la Saison 1 de l'Almanach (palier 30) : un fond où la neige tombe (classe fond-neige, profil.html)
   blizzard:['Le blizzard (Saison 1)', 'url(fonds/carte-blizzard.webp?v=1) center/cover, radial-gradient(ellipse at 50% 0%, #5a7aa8, #1a2640 60%, #0a0f1c)', { alm:['fond', 'blizzard'] }],
   profondeurs:['Les profondeurs', 'url(fonds/carte-profondeurs.webp?v=1) center/cover, radial-gradient(ellipse at 50% 120%, #ff9a4a55, #14100c 60%), #14100c', { t:'profondeurs' }],
+  // 26/11 : les fonds peints des SAISONS À VENIR de l'Almanach (calendrier de la Bible des héros) : visibles, verrouillés jusqu'à leur saison
+  feux:['Nuit de fête', 'url(fonds/carte-feux.webp?v=1) center/cover, #0d1030', { alm:['fond', 'feux'], avenir:1 }],
+  kawaii:['Kawaii', 'url(fonds/carte-kawaii.webp?v=1) center/cover, #f6c6dc', { alm:['fond', 'kawaii'], avenir:1 }],
+  sakura:['Les cerisiers', 'url(fonds/carte-sakura.webp?v=1) center/cover, #f3c1d3', { alm:['fond', 'sakura'], avenir:1 }],
+  plage:['Plage d’été', 'url(fonds/carte-plage.webp?v=1) center/cover, #3ac4d4', { alm:['fond', 'plage'], avenir:1 }],
+  neon:['Ville néon', 'url(fonds/carte-neon.webp?v=1) center/cover, #120a2a', { alm:['fond', 'neon'], avenir:1 }],
+  citrouilles:['Champ de citrouilles', 'url(fonds/carte-citrouilles.webp?v=1) center/cover, #1a0f24', { alm:['fond', 'citrouilles'], avenir:1 }],
+  neige:['Village enneigé', 'url(fonds/carte-neige.webp?v=1) center/cover, #1a2640', { alm:['fond', 'neige'], avenir:1 }],
 };
 // 25/11 : les cadres peints des titres (cadres/profil-<titre>.webp), posés par-dessus le portrait
-const CADRES_PEINTS = ['veteran', 'abysses', 'diplome', 'odyssee', 'neant', 'traversee', 'rempart', 'sceaux', 'profondeurs', 'chroniques', 'fosse', 'sphinx', 'apprenti', 'compagnon', 'maitre', 'champion', 'legende', 'archimage'];
+const CADRES_PEINTS = ['hiver1', 'veteran', 'abysses', 'diplome', 'odyssee', 'neant', 'traversee', 'rempart', 'sceaux', 'profondeurs', 'chroniques', 'fosse', 'sphinx', 'apprenti', 'compagnon', 'maitre', 'champion', 'legende', 'archimage'];
 // 26/11 : les cadres qui ont un ruban peint : le mot que le jeu écrit dessus (profil.html, .ruban)
 const CADRES_RUBAN = {}; // 26/11 (l'utilisateur) : pas de mot écrit par le jeu sur un ruban : rien, ou c'est Gemini qui l'écrit
 // 25/11 : les emblèmes peints (ui/emblemes/emb-<clé>.webp), l'émoji sinon

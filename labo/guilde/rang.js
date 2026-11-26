@@ -66,7 +66,10 @@ const PEAUX_DES = {
   base:['Dés du héros', ''], bronze:['Dés de bronze', 'sepia(.7) saturate(1.6) hue-rotate(-12deg) brightness(.95)'],
   jade:['Dés de jade', 'hue-rotate(95deg) saturate(1.3)'], cristal:['Dés de cristal', 'hue-rotate(170deg) saturate(.7) brightness(1.25) contrast(1.1)'],
   obsidienne:['Dés d’obsidienne', 'grayscale(.85) brightness(.7) contrast(1.4)'], braise:['Dés de braise', 'sepia(.6) saturate(3) hue-rotate(-35deg) brightness(1.05)'],
-  givre:['Dés de givre', 'hue-rotate(185deg) saturate(.5) brightness(1.35)'], glace:['Dés de glace (Saison 1)', 'hue-rotate(160deg) saturate(.35) brightness(1.5) contrast(1.15) drop-shadow(0 0 3px #bfe9ff)'], or:['Dés d’or', 'sepia(1) saturate(2.6) hue-rotate(-5deg) brightness(1.15) contrast(1.1)'],
+  givre:['Dés de givre', 'hue-rotate(185deg) saturate(.5) brightness(1.35)'], glace:['Dés de glace (Saison 1)', '', 'glace'], or:['Dés d’or', 'sepia(1) saturate(2.6) hue-rotate(-5deg) brightness(1.15) contrast(1.1)'],
+  // 26/11 : les MATIÈRES peintes (des/matieres/m-<clé>.webp) posées SOUS les symboles des faces (des/symboles/<héros>-<n>.webp, tirés des « lueurs ») ; saisons à venir
+  etoiles:['Dés du ciel étoilé', '', 'etoiles'], fleurs:['Dés du printemps', '', 'fleurs'], bonbon:['Dés bonbon', '', 'bonbon'], arcenciel:['Dés de nacre', '', 'arcenciel'],
+  neon:['Dés néon', '', 'neon'], citrouille:['Dés citrouille', '', 'citrouille'], lave:['Dés de lave', '', 'lave'],
 };
 
 function lireRang() { const d = Object.assign({ xp:0, journal:[], peau:'base' }, RJ(RANG_CLE, {})); d.info = rangDe(d.xp);
@@ -250,7 +253,9 @@ function suiteAnnonce() {
 function appliquePeau() {
   if (typeof document === 'undefined') return; let st = document.getElementById('peau-des'); if (!st) { st = document.createElement('style'); st.id = 'peau-des'; document.head.appendChild(st); }
   const p = lireRang().peau, f = PEAUX_DES[p] && rgPeauOk(p) ? PEAUX_DES[p][1] : '';
-  st.textContent = f ? `img[src*="faces-"][src*="face-"] { filter:${f}; }` : '';
+  const m = PEAUX_DES[p] && rgPeauOk(p) ? PEAUX_DES[p][2] : '';
+  st.textContent = m ? ['aldric', 'gorm', 'maelle', 'oria', 'pip', 'zephine'].map(h => [1, 2, 3, 4, 5, 6].map(n => `img[src*="faces-${h}/face-${n}."] { content:url(des/symboles/${h}-${n}.webp?v=1); background:url(des/matieres/m-${m}.webp?v=1) center/100% 100%; }`).join('\n')).join('\n')
+    : f ? `img[src*="faces-"][src*="face-"] { filter:${f}; }` : '';
 }
 const rgPeauOk = p => p === 'base' || rgRecompense('des', p) || almGagne('des', p);
 function choisirPeau(p) { const d = lireRang(); if (!rgPeauOk(p)) return; d.peau = p; ecrireRang(d); appliquePeau(); }

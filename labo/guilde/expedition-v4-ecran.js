@@ -410,6 +410,9 @@ function introVoyage() { const R = REGLES_V4[X.regle], B = BOSS_V4[X.boss];
 // reprendre : choisir la route si besoin, sinon le port (ou l'escale sans combat)
 function reprendre() { synchroRoute(X); if (doitChoisir(X)) return carteVoyage(true); const esc = X.route[X.escale]; if (esc && !ESCALE_COMBAT(esc.type)) return escaleCalme(); port(); }
 // la carte à embranchements : les étapes faites, l'étape en cours (choix), les suivantes (brouillard, sauf carte ancienne)
+// 26/11 : les jetons peints de la carte (ui/voyage/jeton-<sorte>.webp) à la place des émojis, et le parchemin marin en fond
+const JET4 = { monstres:'monstres', elite:'elite', fantome:'rival', evenement:'evenement', tresor:'tresor', port:'port', boss:'boss', choix:'choix', brume:'brume' };
+const jet4 = (t, e) => JET4[t] ? `<img class="jet4" src="ui/voyage/jeton-${JET4[t]}.webp?v=1" alt="${e || ''}">` : (e || '');
 function carteVoyage(choisir) {
   const ici = X.escale, peut = choisir && doitChoisir(X);
   const type = { monstres:'⚔ monstres', elite:'💀 élite', fantome:'👻 navire rival', evenement:'❔ événement', tresor:'💎 trésor', port:'🏝 port franc', boss:'👑 boss' };
@@ -418,7 +421,7 @@ function carteVoyage(choisir) {
       const fait = X.route[k], vue = k <= ici + 1 || X.carteVue || k === X.carte.length - 1;
       return `<div class="etape4 ${k < ici ? 'passe' : k === ici ? 'ici' : ''}"><span class="num">${k + 1}</span>${opts.map((o, i) => {
         const pris = fait && fait === o || (fait && fait.n === o.n && fait.type === o.type), clic = peut && k === ici;
-        return `<button class="esc4 ${pris ? 'pris' : ''} ${fait && !pris ? 'non' : ''}" ${clic ? `onclick="fermer();choisitEscale(X, ${i});sauve();reprendre()"` : 'disabled'}><b>${vue ? o.e : '❔'}</b><small>${vue ? o.n : 'dans la brume'}</small><i>${vue ? type[o.type] : ''}</i></button>`; }).join('')}</div>`; }).join('')}</div>
+        return `<button class="esc4 ${pris ? 'pris' : ''} ${fait && !pris ? 'non' : ''}" ${clic ? `onclick="fermer();choisitEscale(X, ${i});sauve();reprendre()"` : 'disabled'}><b>${vue ? jet4(o.type, o.e) : jet4('brume', '❔')}</b><small>${vue ? o.n : 'dans la brume'}</small><i>${vue ? type[o.type] : ''}</i></button>`; }).join('')}</div>`; }).join('')}</div>
     ${peut ? '<p class="doux" style="text-align:center">👆 Touche ta prochaine escale.</p>' : '<div class="choixh"><button onclick="fermer()">Fermer</button></div>'}`); return; }
   // 19/11 : la nouvelle carte. Un POINT DE CHOIX = une rangée d'escales sans combat (au choix) ; une SUITE = une rangée de combats enchaînés
   // (obligatoires, toujours visibles) ; le boss au bout. La brume garde le mystère des points de choix après le prochain.
@@ -426,14 +429,14 @@ function carteVoyage(choisir) {
   const prochainChoix = X.carte.findIndex((o, k) => k >= ici && estChoix4(o));
   const html = blocs.map(B => {
     if (B.suite) { const fin = B.k[B.k.length - 1];
-      return `<div class="etape4 suite4 ${fin < ici ? 'passe' : B.k.includes(ici) ? 'ici' : ''}"><span class="num">⚔</span><div class="enchaine">${B.k.map((k, n) => { const o = X.carte[k][0];
-        return `${n ? '<span class="fleche">➜</span>' : ''}<div class="esc4 combat ${k < ici ? 'pris' : k === ici ? 'maintenant' : ''}"><b>${o.e}</b><small>${o.n}</small><i>${k < ici ? '✔ fait' : type[o.type]}</i></div>`; }).join('')}</div></div>`; }
+      return `<div class="etape4 suite4 ${fin < ici ? 'passe' : B.k.includes(ici) ? 'ici' : ''}"><span class="num">${jet4('monstres', '⚔')}</span><div class="enchaine">${B.k.map((k, n) => { const o = X.carte[k][0];
+        return `${n ? '<span class="fleche">➜</span>' : ''}<div class="esc4 combat ${k < ici ? 'pris' : k === ici ? 'maintenant' : ''}"><b>${jet4(o.type, o.e)}</b><small>${o.n}</small><i>${k < ici ? '✔ fait' : type[o.type]}</i></div>`; }).join('')}</div></div>`; }
     const k = B.k[0], opts = X.carte[k], fait = X.route[k];
-    if (!B.choix) return `<div class="etape4 boss4 ${k === ici ? 'ici' : ''}"><span class="num">👑</span><div class="esc4 combat ${k === ici ? 'maintenant' : ''}"><b>${opts[0].e}</b><small>${opts[0].n}</small><i>👑 boss · une seule chance</i></div></div>`;
+    if (!B.choix) return `<div class="etape4 boss4 ${k === ici ? 'ici' : ''}"><span class="num">${jet4('boss', '👑')}</span><div class="esc4 combat ${k === ici ? 'maintenant' : ''}"><b>${jet4('boss', opts[0].e)}</b><small>${opts[0].n}</small><i>👑 boss · une seule chance</i></div></div>`;
     const vue = k <= prochainChoix || X.carteVue || k < ici;
-    return `<div class="etape4 ${k < ici ? 'passe' : k === ici ? 'ici' : ''}"><span class="num">🧭</span>${opts.map((o, i) => {
+    return `<div class="etape4 ${k < ici ? 'passe' : k === ici ? 'ici' : ''}"><span class="num">${jet4('choix', '🧭')}</span>${opts.map((o, i) => {
       const pris = fait && (fait === o || (fait.n === o.n && fait.type === o.type)), clic = peut && k === ici;
-      return `<button class="esc4 ${pris ? 'pris' : ''} ${fait && !pris ? 'non' : ''}" ${clic ? `onclick="fermer();choisitEscale(X, ${i});sauve();reprendre()"` : 'disabled'}><b>${vue ? o.e : '❔'}</b><small>${vue ? o.n : 'dans la brume'}</small><i>${vue ? type[o.type] : ''}</i></button>`; }).join('')}</div>`; }).join('');
+      return `<button class="esc4 ${pris ? 'pris' : ''} ${fait && !pris ? 'non' : ''}" ${clic ? `onclick="fermer();choisitEscale(X, ${i});sauve();reprendre()"` : 'disabled'}><b>${vue ? jet4(o.type, o.e) : jet4('brume', '❔')}</b><small>${vue ? o.n : 'dans la brume'}</small><i>${vue ? type[o.type] : ''}</i></button>`; }).join('')}</div>`; }).join('');
   fenetre(`<h2>🗺 La carte du voyage</h2><p class="doux" style="text-align:center;margin:0 0 6px">🧭 point de choix (sans combat) · ⚔ suite de combats obligatoire, finie par une 💀 élite · 👑 le boss</p><div class="carte4l">${html}</div>
   ${peut ? '<p class="doux" style="text-align:center">👆 Touche ta prochaine escale.</p>' : '<div class="choixh"><button onclick="fermer()">Fermer</button></div>'}`); }
 function infoRegle() { fenetre(`<h2>${REGLES_V4[X.regle].e} ${REGLES_V4[X.regle].n}</h2><p>${REGLES_V4[X.regle].d}</p><h2>${BOSS_V4[X.boss].e} ${BOSS_V4[X.boss].n}</h2><p>${BOSS_V4[X.boss].d}</p>${X.asc ? `<p class="doux">⛰ Ascension ${X.asc} : ${ASC_V4.slice(1, X.asc + 1).join(' · ')}.</p>` : ''}<div class="choixh"><button onclick="fermer()">OK</button></div>`); }
@@ -463,6 +466,8 @@ Object.assign(PORTRAIT_M, { 'Pillard':'d-gobelin', 'Frondeur':'m-gobelin', 'Chie
   'Petit yéti':'m-yeti', 'Garde de glace':'m-golemglace', 'La Reine des neiges':'el-reine', 'La Vouivre':'m-vouivre', 'Stalagmite vivante':'m-golemglace', 'Givrelin':'m-givrelin',
   'Harpie':'m-harpie', 'Harpie tireuse':'m-harpie', 'Élémentaire d’orage':'m-esprit', 'Nuée électrique':'m-esprit', 'Matelot noyé':'m-osclaque', 'Capitaine noyé':'m-liche', 'Mouette spectrale':'m-esprit',
   'Canonnier fantôme':'m-osclaque', 'Tentacule':'u-tentacule', 'Le Kraken':'m-kraken', 'Le Roi sans visage':'m-roi', 'Reflet':'m-miroir', 'Ignaros':'m-ignaros', 'Dragonnet':'u-dragonnet', 'Sorcier des vents':'m-chaman', 'Barbe-Grise':'el-barbegrise', 'La Sirène noire':'el-sirene' });
+// 26/11 : les portraits peints des ennemis qui n'en avaient pas (m22-*)
+Object.assign(PORTRAIT_M, { 'Porte-étendard gobelin':'m22-etendard-gobelin', 'Porte-étendard de cendre':'m22-etendard-cendre', 'Étendard de glace':'m22-etendard-glace', 'Porte-drapeau pirate':'m22-drapeau-pirate', 'Pingouin-guerrier':'m22-pingouin', 'Totem de givre':'m22-totem-givre', 'Totem des abysses':'m22-totem-abysses', 'Totem de lave':'m22-totem-lave', 'Naufrageur':'m22-naufrageur', 'Pistolier':'m22-pistolier', 'Quartier-maître':'m22-quartier-maitre', 'Pirate':'m22-pirate', 'Canonnier pirate':'m22-canonnier-pirate', 'Matelot charmé':'m22-matelot-charme' });
 if (document.getElementById('app') && !globalThis.CFG_EXP) accueil(); // 22/11 : expedition-config.js (le configurateur) ouvre l'accueil lui-même
 
 // 21/11 (l'utilisateur : « le voyage du jour, un portail directement ; et le retour en haut à gauche, par habitude ») :
