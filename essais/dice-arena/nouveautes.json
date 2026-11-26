@@ -1,5 +1,9 @@
 [
 {
+"v": "20261126-183844",
+"m": "De nouvelles images : emblèmes, cadres, médailles des rangs des héros, le dé d’or et le joueur de dés de la Descente."
+},
+{
 "v": "20261126-093941",
 "m": "Profil : le ruban du cadre « Diplômé de la Guilde » porte maintenant son nom."
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261125-191859",
 "m": "Les créatures invoquées par l’ennemi apparaissent au moment où il les pose"
-},
-{
-"v": "20261125-191408",
-"m": "Le cadre de l’adversaire ne déborde plus quand il a beaucoup d’effets"
 }
 ]

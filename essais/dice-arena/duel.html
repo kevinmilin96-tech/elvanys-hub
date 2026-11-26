@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261126-180743"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
+<head><meta name="guilde-version" content="20261126-183844"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="robots" content="noindex">
@@ -788,7 +788,7 @@
 // Si le téléphone a gardé une ancienne page en mémoire, elle se recharge toute seule sur la nouvelle.
 // 14/11 : l'Odyssée sans fin a ses propres emplacements (odyssee.js lit SANSFIN)
 const SANSFIN = new URLSearchParams(location.search).get('sansfin') === '1', ROUTE_TITAN = new URLSearchParams(location.search).get('route') === '1', EPREUVE_PAGE = new URLSearchParams(location.search).get('epreuve') === '1', ODY_PAGE = EPREUVE_PAGE ? 'epreuves.html' : 'odyssee.html' + (SANSFIN ? '?sansfin=1' : ROUTE_TITAN ? '?route=1' : '');
-const VERSION = '20261126-180743';
+const VERSION = '20261126-183844';
 fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = (v || '').trim();
   if (v && v !== VERSION && !sessionStorage.getItem('recharge-' + v)) { sessionStorage.setItem('recharge-' + v, '1'); { const q = new URLSearchParams(location.search); q.set('v', v); location.replace('duel.html?' + q); } }
@@ -810,7 +810,7 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden) veri
 <script src="cartes.js?v=94ea5cc1ba"></script>
 <script src="musique.js?v=52d2750bfc"></script>
 <script src="rang.js?v=5c92e11ef0"></script>
-<script src="heros-etoiles.js?v=c027cdd26b"></script>
+<script src="heros-etoiles.js?v=283f9a7668"></script>
 <script src="heros-aventure.js?v=31db8c2ed4"></script>
 <script src="pouvoirs-heros.js?v=a14bbdf318"></script>
 <script src="donnees.js?v=8a39c05326"></script>
@@ -2828,7 +2828,7 @@ async function joueFX() {
 document.addEventListener('pointerdown', () => { if (fxOn && !(S && S.tuto)) fxVite = .5; }, true); // 14/11 : plus d'accélération dans le tutoriel
 </script>
 <script src="succes.js?v=d6910350b3"></script>
-<script src="profil.js?v=12ca9621ec"></script>
+<script src="profil.js?v=d94448d224"></script>
 <script src="pantheon.js?v=1a6f59e92e"></script>
 <script src="tuto.js?v=3c6eefd6ff"></script>
 <script src="deux.js?v=c55497a4b3"></script>

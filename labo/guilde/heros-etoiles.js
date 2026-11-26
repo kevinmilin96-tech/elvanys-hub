@@ -30,6 +30,9 @@ const ECLATS_QUETE = { jour:3, semaine:10 }, ECLATS_RANG = 5;
 // la force des reliques selon leur niveau (★, ★★, ★★★)
 const EQUIP_VAL = { hache:[2, 3, 4], lame:[10, 15, 20], arc:[5, 8, 11], marteau:[1, 1, 2], cuir:[4, 6, 8], cape:[6, 9, 12], cotte:[7, 10, 13], heaume:[12, 18, 24], trefle:[1, 1, 2], bourse:[12, 18, 24], griffe:[4, 6, 8], anneau:[1, 1, 2] };
 
+// 26/11 : la médaille peinte du rang (ui/heros/rang-<clé>.webp), d'après le nom du rang (Commun, Rare, Élite, Légendaire, Mythique, Ascendant…)
+const RANG_MED = { Commun:'commun', Rare:'rare', 'Élite':'elite', 'Légendaire':'legendaire', Mythique:'mythique', Ascendant:'ascendant' };
+function rangMedaille(R, px = 26) { const k = RANG_MED[(R && R.n || '').split(' ')[0]]; return k ? `<img src="ui/heros/rang-${k}.webp?v=1" alt="" style="width:${px}px;height:${px}px;object-fit:contain;vertical-align:middle;margin-right:3px">` : ''; }
 function lireEtoiles() { let d; try { d = Object.assign({ heros:{}, libres:0, armurerie:{}, equip:{}, poussiere:0 }, JSON.parse(localStorage.getItem(ETOILES_CLE) || '{}')); } catch (e) { d = { heros:{}, libres:0, armurerie:{}, equip:{}, poussiere:0 }; }
   if (!d.v2) migreV2(d); return d; }
 function ecrireEtoiles(d) { localStorage.setItem(ETOILES_CLE, JSON.stringify(d)); }
