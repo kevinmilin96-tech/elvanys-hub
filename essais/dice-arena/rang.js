@@ -19,8 +19,11 @@ const NOM_EVT = { duel_gagne:'Duel gagné', duel_perdu:'Duel joué', salle:'Sall
   invasion_acte:'Acte de l’Invasion', defense_vague:'Vague tenue', enigme:'Énigme résolue', etage:'Nouvel étage', tour_etage:'Étage de la Tour', chasse:'Chasse au boss', quete_jour:'Quête du jour', quete_semaine:'Quête de la semaine' };
 
 // XP pour passer du rang r au rang r+1 : 200, 250, 300… (rang 30 ≈ 27 000 XP ≈ deux mois de jeu régulier)
-const XP_RANG = r => 150 + 50 * r, RANG_MAX = 30;
-function rangDe(xp) { let r = 1, reste = xp; while (r < RANG_MAX && reste >= XP_RANG(r)) { reste -= XP_RANG(r); r++; } return { rang:r, dans:reste, besoin:r < RANG_MAX ? XP_RANG(r) : 0 }; }
+// 25/11 (décision de l'utilisateur, saisons-proposition.html) : le rang est « à vie » : après le rang 30, 1 500 XP par rang, sans fin ; chaque rang au-delà de 30 donne un coffre
+const XP_RANG = r => r < 30 ? 150 + 50 * r : 1500, RANG_MAX = 30;
+function rangDe(xp) { let r = 1, reste = xp; while (reste >= XP_RANG(r)) { reste -= XP_RANG(r); r++; } return { rang:r, dans:reste, besoin:XP_RANG(r) }; }
+const COFFRE_RANG = { or:100, pou:50 };
+const routeDe = n => ROUTE[n] || (n > RANG_MAX ? ['coffre', 'rang', '🎁', 'Coffre de rang', `🪙 ${COFFRE_RANG.or} d’or et 🔹 ${COFFRE_RANG.pou} poussière de rune.`] : null);
 
 // LA ROUTE DES RÉCOMPENSES : une par rang (genre, clé, emblème, nom, explication)
 // genres : titre (titre + cadre dans le profil), des (apparence des dés), depart (bonus au départ de l'Odyssée et du sans fin),
@@ -63,16 +66,16 @@ const PEAUX_DES = {
   base:['Dés du héros', ''], bronze:['Dés de bronze', 'sepia(.7) saturate(1.6) hue-rotate(-12deg) brightness(.95)'],
   jade:['Dés de jade', 'hue-rotate(95deg) saturate(1.3)'], cristal:['Dés de cristal', 'hue-rotate(170deg) saturate(.7) brightness(1.25) contrast(1.1)'],
   obsidienne:['Dés d’obsidienne', 'grayscale(.85) brightness(.7) contrast(1.4)'], braise:['Dés de braise', 'sepia(.6) saturate(3) hue-rotate(-35deg) brightness(1.05)'],
-  givre:['Dés de givre', 'hue-rotate(185deg) saturate(.5) brightness(1.35)'], or:['Dés d’or', 'sepia(1) saturate(2.6) hue-rotate(-5deg) brightness(1.15) contrast(1.1)'],
+  givre:['Dés de givre', 'hue-rotate(185deg) saturate(.5) brightness(1.35)'], glace:['Dés de glace (Saison 1)', 'hue-rotate(160deg) saturate(.35) brightness(1.5) contrast(1.15) drop-shadow(0 0 3px #bfe9ff)'], or:['Dés d’or', 'sepia(1) saturate(2.6) hue-rotate(-5deg) brightness(1.15) contrast(1.1)'],
 };
 
 function lireRang() { const d = Object.assign({ xp:0, journal:[], peau:'base' }, RJ(RANG_CLE, {})); d.info = rangDe(d.xp);
   // 18/11 (l'utilisateur, « comme un battle pass ») : chaque récompense de la route se RÉCUPÈRE d'un toucher ; ce qui était déjà gagné avant reste acquis
   if (!Array.isArray(d.recup)) { d.recup = Object.keys(ROUTE).map(Number).filter(n => n <= d.info.rang); try { const { info, ...rest } = d; localStorage.setItem(RANG_CLE, JSON.stringify(rest)); } catch (e) {} }
   return d; }
-const aRecuperer = () => { const d = lireRang(); return Object.keys(ROUTE).map(Number).filter(n => n <= d.info.rang && !d.recup.includes(n)); };
-function recupererRang(n) { const d = lireRang(); n = +n; if (n > d.info.rang || d.recup.includes(n) || !ROUTE[n]) return null; d.recup.push(n); ecrireRang(d); syncRecompenses();
-  const x = ROUTE[n]; if (typeof annonceRang === 'function') annonceRang(`${x[2]} ${x[3]} récupéré !`, true); return x; }
+const aRecuperer = () => { const d = lireRang(), L = Object.keys(ROUTE).map(Number); for (let n = RANG_MAX + 1; n <= d.info.rang; n++) L.push(n); return L.filter(n => n <= d.info.rang && !d.recup.includes(n)); };
+function recupererRang(n) { const d = lireRang(); n = +n; if (n > d.info.rang || d.recup.includes(n) || !routeDe(n)) return null; d.recup.push(n); ecrireRang(d); syncRecompenses();
+  const x = routeDe(n); if (x[0] === 'coffre' && typeof donneRessources === 'function') donneRessources(COFFRE_RANG.or, COFFRE_RANG.pou, true); if (typeof annonceRang === 'function') annonceRang(`${x[2]} ${x[3]} récupéré !`, true); return x; }
 function ecrireRang(d) { const { info, ...rest } = d; localStorage.setItem(RANG_CLE, JSON.stringify(rest)); }
 // récompenses gagnées : tout ce qui est sur la route jusqu'au rang atteint
 const recompensesGagnees = () => { const d = lireRang(), r = d.info.rang; return Object.entries(ROUTE).filter(([n]) => +n <= r && d.recup.includes(+n)).map(([n, x]) => ({ rang:+n, genre:x[0], cle:x[1], e:x[2], n:x[3], d:x[4] })); };
@@ -149,12 +152,36 @@ function changeQuete(i) {
   Q.j[i] = n; Q.change = true; localStorage.setItem(QUETES_CLE, JSON.stringify(Q)); return true;
 }
 
+// ----------------------------------------------------------------------------------------------- L'ALMANACH (25/11, saisons de 8 semaines)
+// Une seule XP, deux barres : chaque XP gagnée pendant une saison remplit aussi l'Almanach (500 XP par palier, 30 paliers, puis un coffre tous les 1 000 XP).
+// Ici : les saisons et le compteur. L'écran, les récompenses et le choix du skin : almanach.js (route.html, onglet 🗓️ Saison).
+const ALM_CLE = 'guilde-almanach', ALM_PALIER = 500, ALM_NB = 30, ALM_BONUS = 1000;
+const SAISONS = [
+  { id:'s1', n:1, nom:'L’Hiver des runes', e:'❄', debut:'2026-12-01', fin:'2027-01-26', aventure:'Les Cloches de givre', titre:'hiver1', des:'glace', skins:['maelle', 'aldric'] }, // fin = premier jour APRÈS la saison
+];
+const almJour = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+function saisonActive(d = new Date()) { const j = almJour(d); return SAISONS.find(s => j >= s.debut && j < s.fin) || null; }
+function saisonProchaine(d = new Date()) { const j = almJour(d); return SAISONS.find(s => j < s.debut) || null; }
+function lireAlm() { const a = RJ(ALM_CLE, {}); a.s = a.s || {}; return a; }
+function almSaison(a, id) { return a.s[id] = Object.assign({ xp:0, recup:[], bonus:0, skin:null }, a.s[id] || {}); }
+function almInfo(id) { const S = SAISONS.find(x => x.id === id), x = almSaison(lireAlm(), id), p = Math.min(ALM_NB, Math.floor(x.xp / ALM_PALIER));
+  const bonusDispo = p >= ALM_NB ? Math.floor((x.xp - ALM_NB * ALM_PALIER) / ALM_BONUS) : 0;
+  return { S, x, palier:p, dans:p >= ALM_NB ? (x.xp - ALM_NB * ALM_PALIER) % ALM_BONUS : x.xp % ALM_PALIER, besoin:p >= ALM_NB ? ALM_BONUS : ALM_PALIER, bonusDispo, bonusARec:Math.max(0, bonusDispo - (x.bonus || 0)),
+    aRec:Array.from({ length:p }, (_, i) => i + 1).filter(n => !x.recup.includes(n)) }; }
+function almAjoute(xp) { const S = saisonActive(); if (!S || !xp) return; const a = lireAlm(), x = almSaison(a, S.id), avant = Math.floor(x.xp / ALM_PALIER);
+  x.xp += xp; localStorage.setItem(ALM_CLE, JSON.stringify(a)); const apres = Math.floor(x.xp / ALM_PALIER);
+  for (let p = avant + 1; p <= Math.min(apres, ALM_NB); p++) annonceRang(`${S.e} Almanach : palier ${p} atteint ! 🎁 À récupérer`, true); }
+const almARecuperer = () => { const S = saisonActive(); if (!S) return 0; const i = almInfo(S.id); return i.aRec.length + i.bonusARec; };
+const almGagne = (genre, cle) => SAISONS.some(S => { const x = (lireAlm().s || {})[S.id]; if (!x) return false;
+  if (genre === 'titre') return S.titre === cle && x.recup.includes(10); if (genre === 'des') return S.des === cle && x.recup.includes(20); if (genre === 'skin') return x.skin === cle; return false; });
+
 // ----------------------------------------------------------------------------------------------- l'entrée commune : un moment fort
 function gagneXP(xp, raison) {
   if (!xp || typeof localStorage === 'undefined') return;
   const d = lireRang(), avant = d.info.rang; d.xp += xp; d.journal.unshift({ q:Date.now(), xp, raison }); d.journal = d.journal.slice(0, 40); ecrireRang(d);
   const apres = rangDe(d.xp).rang; annonceRang(`+${xp} XP · ${raison}`);
-  for (let r = avant + 1; r <= apres; r++) { const x = ROUTE[r]; annonceRang(`🏆 Rang ${r} de la Guilde !${x ? ` 🎁 À récupérer : ${x[2]} ${x[3]}${x[0] === 'carte' && typeof CARTES !== 'undefined' && CARTES[x[1]] ? ' : ' + CARTES[x[1]].n : ''}` : ''}`, true); }
+  for (let r = avant + 1; r <= apres; r++) { const x = routeDe(r); annonceRang(`🏆 Rang ${r} de la Guilde !${x ? ` 🎁 À récupérer : ${x[2]} ${x[3]}${x[0] === 'carte' && typeof CARTES !== 'undefined' && CARTES[x[1]] ? ' : ' + CARTES[x[1]].n : ''}` : ''}`, true); }
+  if (typeof almAjoute === 'function') almAjoute(xp);
   if (apres > avant) { syncRecompenses(); if (typeof donneLibres === 'function') donneLibres(ECLATS_RANG * (apres - avant)); }
 }
 // les cartes gagnées avec le Rang entrent dans la collection (aussi au chargement, si le rang était déjà atteint)
@@ -209,18 +236,19 @@ function appliquePeau() {
   const p = lireRang().peau, f = PEAUX_DES[p] && rgPeauOk(p) ? PEAUX_DES[p][1] : '';
   st.textContent = f ? `img[src*="faces-"][src*="face-"] { filter:${f}; }` : '';
 }
-const rgPeauOk = p => p === 'base' || rgRecompense('des', p);
+const rgPeauOk = p => p === 'base' || rgRecompense('des', p) || almGagne('des', p);
 function choisirPeau(p) { const d = lireRang(); if (!rgPeauOk(p)) return; d.peau = p; ecrireRang(d); appliquePeau(); }
 
 // 22/11 : l'emblème peint du rang (ui/rangs/rang-NN.webp, 30 images Gemini), le numéro écrit par le jeu sur la plaque du centre
-function emblemeRang(r, px = 40, cls = '') { r = Math.max(1, Math.min(RANG_MAX, r | 0)); const k = String(r).padStart(2, '0');
+function emblemeRang(r, px = 40, cls = '') { r = Math.max(1, r | 0); const k = String(Math.min(RANG_MAX, r)).padStart(2, '0'); // 25/11 : au-delà de 30, l'emblème du 30 avec le vrai numéro
   return `<span class="embl-rang ${cls}" style="width:${px}px;height:${px}px;font-size:${Math.round(px * .3)}px" title="Rang ${r}"><img src="ui/rangs/rang-${k}.webp?v=2" alt="" draggable="false"><b>${r}</b></span>`; }
 // le petit bandeau du menu : rang, barre, quêtes du jour
 function bandeauRangHTML() {
   const d = lireRang(), i = d.info, Q = lireQuetes(), fj = Q.j.filter(q => q.fait).length, fs = Q.s.filter(q => q.fait).length;
   // 18/11 (l'utilisateur : « le rang est trop caché ») : barre plus grande, un toucher ouvre la route des rangs ; les quêtes ont leur propre bouton
   const ar = aRecuperer().length, qr = [...Q.j, ...Q.s].filter(q => q.fait && q.recup === false).length;
-  return `<a class="bandeau-rang gros" href="route.html">${emblemeRang(i.rang, 40)}<b>Rang ${i.rang}</b><span class="barre-rang"><i style="width:${i.besoin ? Math.round(i.dans / i.besoin * 100) : 100}%"></i><span class="txt">${i.besoin ? `${i.dans} / ${i.besoin} XP` : 'rang max'}</span></span>${ar ? `<em class="cadeau" title="Récompense à récupérer">🎁 Récupérer</em>` : '<em>›</em>'}</a>
+  const sr = typeof almARecuperer === 'function' && !ar ? almARecuperer() : 0; // 25/11 : un palier de l'Almanach à récupérer mène à l'onglet Saison
+  return `<a class="bandeau-rang gros" href="route.html${sr ? '#saison' : ''}">${emblemeRang(i.rang, 40)}<b>Rang ${i.rang}</b><span class="barre-rang"><i style="width:${i.besoin ? Math.round(i.dans / i.besoin * 100) : 100}%"></i><span class="txt">${i.besoin ? `${i.dans} / ${i.besoin} XP` : 'rang max'}</span></span>${ar || sr ? `<em class="cadeau" title="Récompense à récupérer">🎁 Récupérer</em>` : '<em>›</em>'}</a>
   <a class="bandeau-quetes" href="menu.html?ouvrir=carnet">📜 Quêtes du jour <b>${fj}/3</b> · de la semaine <b>${fs}/3</b>${qr ? ` · <b style="color:#ffd27a">🎁 ${qr} à récupérer</b>` : ''} ›</a>`;
 }
 

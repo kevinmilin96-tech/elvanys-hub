@@ -66,57 +66,46 @@
 <script src="musique.js?v=1c69ba47a7"></script>
 <script src="rang.js?v=8d8a56b6f5"></script><script src="heros-etoiles.js?v=c027cdd26b"></script>
 <script src="donnees.js?v=8a39c05326"></script>
+<script src="almanach.js"></script>
 <script>
 const GENRE = { des:'Dés', titre:'Titre et cadre', depart:'Bonus de départ', carte:'Carte', equip:'Équipement' };
 // 25/11 (choix de l'utilisateur) : 2 onglets 🏆 Rang et 🗓️ Saison ; les quêtes sont dans le carnet (l'ancienne adresse #quetes y mène)
 if (location.hash === '#quetes') { sessionStorage.setItem('guilde-dans-mode', '1'); location.replace('menu.html?ouvrir=carnet'); }
 let onglet = location.hash === '#saison' ? 'saison' : 'route';
 function ouvre(o) { onglet = o; history.replaceState(null, '', o === 'saison' ? '#saison' : '#'); if (typeof GM !== 'undefined') GM.son('clic'); dessine(); }
-function onglets() { const ar = aRecuperer().length;
-  document.getElementById('onglets').innerHTML = `<button class="${onglet === 'route' ? 'on' : ''}" onclick="ouvre('route')">🏆 Rang${ar ? `<span class="pt">${ar}</span>` : ''}</button><button class="${onglet === 'saison' ? 'on' : ''}" onclick="ouvre('saison')">🗓️ Saison</button>`; }
+function onglets() { const ar = aRecuperer().length, sr = typeof almARecuperer === 'function' ? almARecuperer() : 0;
+  document.getElementById('onglets').innerHTML = `<button class="${onglet === 'route' ? 'on' : ''}" onclick="ouvre('route')">🏆 Rang${ar ? `<span class="pt">${ar}</span>` : ''}</button><button class="${onglet === 'saison' ? 'on' : ''}" onclick="ouvre('saison')">🗓️ Saison${sr ? `<span class="pt">${sr}</span>` : ''}</button>`; }
 function enteteXP() { const d = lireRang(), i = d.info;
   return `<div class="xp"><span class="rg">${emblemeRang(i.rang, 52)}</span><span class="barre"><i style="width:${i.besoin ? Math.round(i.dans / i.besoin * 100) : 100}%"></i><span>${i.besoin ? `${i.dans} / ${i.besoin} XP` : 'Rang le plus haut !'}</span></span>${i.rang < RANG_MAX ? emblemeRang(i.rang + 1, 40, 'suiv-e') : ''}</div>`; }
 function recHTML(n, x) {
   if (x[0] === 'carte' && typeof CARTES !== 'undefined' && CARTES[x[1]]) { const c = CARTES[x[1]]; return `<span class="ic">🂠</span><b>${c.n}</b><small>Carte${c.heros && typeof HEROS !== 'undefined' ? ' de ' + HEROS[c.heros].nom : ' de la Guilde'}</small>`; }
-  const im = x[0] === 'des' ? 'rr-des' : x[0] === 'titre' ? 'rr-titre' : { huile:'rr-lanterne', or:'rr-bourse', potion:'rr-potion', pv:'rr-coeur', relance:'rr-main', cotte:'rr-cotte', heaume:'rr-heaume', anneau:'rr-anneau' }[x[1]];
+  const im = x[0] === 'coffre' ? 'rr-bourse' : x[0] === 'des' ? 'rr-des' : x[0] === 'titre' ? 'rr-titre' : { huile:'rr-lanterne', or:'rr-bourse', potion:'rr-potion', pv:'rr-coeur', relance:'rr-main', cotte:'rr-cotte', heaume:'rr-heaume', anneau:'rr-anneau' }[x[1]];
   return `<span class="ic">${im ? `<img src="ui/menu/${im}.webp?v=1" alt="" draggable="false">` : x[2]}</span><b>${x[3]}</b><small>${GENRE[x[0]] || ''}</small>`;
 }
 function route() {
   const d = lireRang(), r = d.info.rang, ar = aRecuperer();
-  const cases = Object.entries(ROUTE).map(([n, x]) => { n = +n; const etat = d.recup.includes(n) ? 'prise' : n <= r ? 'dispo' : 'verrou';
+  const L = Object.entries(ROUTE); for (let n = RANG_MAX + 1; n <= Math.max(RANG_MAX + 1, r + 1); n++) L.push([n, routeDe(n)]);
+  const cases = L.map(([n, x]) => { n = +n; const etat = d.recup.includes(n) ? 'prise' : n <= r ? 'dispo' : 'verrou';
     return `<div class="case ${etat}" id="c${n}" onclick="detail(${n})"><div class="rec">${etat === 'prise' ? '<span class="coche">✔</span>' : ''}${recHTML(n, x)}${etat === 'dispo' ? `<button class="recup" onclick="event.stopPropagation();prendre(${n})">Récupérer</button>` : etat === 'verrou' ? '<small>🔒</small>' : ''}</div>${emblemeRang(n, 40, 'num')}</div>`; }).join('');
   // la ligne dorée : jusqu'au rang atteint (case de 132 px + 12 d'écart)
-  const fait = Math.max(0, Math.min(29, r - 2)) * 162 + 75;
+  const fait = Math.max(0, Math.min(L.length - 1, r - 2)) * 162 + 75;
   return `${enteteXP()}<p class="aide">Glisse la route. Chaque rang débloque une récompense : touche « Récupérer ». Touche une récompense pour la lire.</p>
   ${ar.length > 1 ? `<button class="tout" onclick="toutPrendre()">🎁 Tout récupérer (${ar.length})</button>` : ''}
   <div class="piste" id="piste"><div class="rail"><span class="fait" style="width:${r >= 2 ? fait : 0}px"></span>${cases}</div></div>
   <p class="aide">Les titres, cadres et dés récupérés se choisissent dans l’atelier du profil (👤 → ✏️).</p>`;
 }
-function detail(n) { const x = ROUTE[n], d = lireRang(); let t = x[4], nom = x[3];
+function detail(n) { const x = routeDe(n), d = lireRang(); let t = x[4], nom = x[3];
   if (x[0] === 'carte' && typeof CARTES !== 'undefined' && CARTES[x[1]]) { const c = CARTES[x[1]]; nom = c.n; t = `${c.d} (🎲 ${c.txt}, ${c.c} PC)`; }
   const etat = d.recup.includes(n) ? '✔ Récupérée.' : n <= d.info.rang ? '🎁 À récupérer !' : `🔒 Au rang ${n}.`;
   if (typeof annonceRang === 'function') annonceRang(`${x[2]} ${nom} : ${t} ${etat}`); }
 function prendre(n) { if (recupererRang(n)) { if (typeof GM !== 'undefined') GM.son('gagne'); dessine(n); } }
 function toutPrendre() { aRecuperer().forEach(n => recupererRang(n)); if (typeof GM !== 'undefined') GM.son('gagne'); dessine(); }
-function saison() {
-  // 25/11 : l'Almanach ouvre le 1er décembre ; d'ici là, l'onglet l'annonce
-  const j = Math.max(0, Math.ceil((new Date(2026, 11, 1) - new Date()) / 864e5));
-  return `${enteteXP()}<div class="saison">
-  <h2>❄ Saison 1 · L’Hiver des runes</h2>
-  <p class="bientot">L’Almanach ouvre le <b>1er décembre</b>${j > 0 ? ` (dans ${j} jour${j > 1 ? 's' : ''})` : ''}.</p>
-  <p>Toute l’expérience que tu gagnes remplit <b>en même temps</b> ton rang de la Guilde et l’Almanach de la saison : rien à faire de plus.</p>
-  <ul>
-    <li><b>30 paliers</b>, un tous les 500 XP, pendant 8 semaines (jusqu’au 25 janvier).</li>
-    <li>Des récompenses à chaque palier : or, poussière, équipement (paliers 5, 15, 25), un cadre (10), des faces de dés (20) et un <b>skin d’hiver</b> au palier 30.</li>
-    <li>Une aventure en chapitres dans les Chroniques : <b>« Les Cloches de givre »</b>, contre le Roi de l’Hiver.</li>
-    <li>La règle de la saison, <b>le froid</b> : un dé qui fait 1 gèle et ne peut pas être relancé ce tour.</li>
-  </ul>
-  <p class="aide" style="text-align:left">Une saison finie te donne un Feuillet, pour rattraper plus tard ce que tu as manqué.</p></div>`;
-}
+function saison() { return almPageHTML(); } // 25/11 : l'Almanach (almanach.js)
 function dessine(vise) {
   onglets(); document.getElementById('app').innerHTML = onglet === 'saison' ? saison() : route();
   if (onglet === 'route') { const r = lireRang().info.rang, ar = aRecuperer(), cible = vise || ar[0] || Math.min(r + 1, RANG_MAX), el = document.getElementById('c' + cible), p = document.getElementById('piste');
     if (el && p) p.scrollLeft = el.offsetLeft - p.clientWidth / 2 + el.offsetWidth / 2; }
+  if (onglet === 'saison' && typeof saisonActive === 'function') { const S = saisonActive(), p = document.getElementById('apiste'); if (S && p) { const i = almInfo(S.id), c = vise || i.aRec[0] || Math.min(i.palier + 1, ALM_NB), el = document.getElementById('a' + c); if (el) p.scrollLeft = el.offsetLeft - p.clientWidth / 2 + el.offsetWidth / 2; } }
 }
 dessine();
 if (typeof GM !== 'undefined') { GM.musique('menu'); GM.bouton(); }
