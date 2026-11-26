@@ -7,6 +7,7 @@
 <meta name="theme-color" content="#120f24">
 <title>La Guilde des Runes · Mes decks</title>
 <style>
+  .cg-mini { width:164px; transform-origin:0 0; pointer-events:none; } html { -webkit-text-size-adjust:100%; text-size-adjust:100%; }
   /* 22/11 (décisions de l'utilisateur, deck-proposition.html) : la page « Mes decks » et l'atelier du deck, façon Hearthstone */
   :root { --or:#f3c96b; --texte:#f1ecff; --doux:#c9c1ea; --c:#8b5cf6; }
   * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
@@ -54,7 +55,7 @@
   .coll .c { position:relative; cursor:pointer; transition:transform .12s; } .coll .c:active { transform:scale(.96); }
   .coll .c.plein { opacity:.4; }
   .coll .leg .carteG { filter:drop-shadow(0 0 6px #ffb347); }
-  .pastille { position:absolute; bottom:5px; left:50%; transform:translateX(-50%); background:#000c; border:1px solid var(--or); color:var(--or); border-radius:10px; padding:0 7px; font-size:.75em; font-weight:bold; z-index:3; white-space:nowrap; }
+  .pastille { position:static; display:block; width:max-content; margin:3px auto 0; background:#000c; border:1px solid var(--or); color:var(--or); border-radius:10px; padding:0 7px; font-size:.75em; font-weight:bold; z-index:3; white-space:nowrap; }
   .pastille.max { border-color:#888; color:#bbb; } .pastille.legp { border-color:#ffb347; color:#ffb347; }
   .simple { border-radius:8px; padding:5px; background:linear-gradient(#5a3b8f, #2b1b4a); border:2px solid #b58cff; aspect-ratio:864/1216; font-size:.62em; display:flex; flex-direction:column; gap:2px; }
   .simple .co { align-self:flex-end; width:18px; height:18px; border-radius:50%; background:#2a7fc1; text-align:center; font-weight:bold; }
@@ -89,7 +90,9 @@ let filtre = 'tout';
 const compter = d => { const n = {}; d.forEach(k => n[k] = (n[k] || 0) + 1); return n; };
 const moyenne = l => l.length ? (l.reduce((a, k) => a + CARTES[k].c, 0) / l.length).toFixed(1).replace('.', ',') : '0';
 const fen = h => { document.getElementById('fen').innerHTML = h ? `<div class="fen" onclick="if(event.target===this)fen('')"><div><button class="fen-x" onclick="fen('')" aria-label="Fermer">✕</button>${h}</div></div>` : ''; };
-function carte(k, w) { return CADRES_OK.includes(CADRE_DE(k)) ? carteGuilde(k, { w, entiere:true }) /* 25/11 (l’utilisateur : « aucune description ») */ : `<div class="simple" style="width:${w}px"><span class="co">${CARTES[k].c}</span><span class="n">${CARTES[k].n}</span><span>${SORTE[CARTES[k].t]}</span><span>🎲 ${txtLisible(CARTES[k].txt)}</span><span>${CARTES[k].d}</span></div>`; }
+// 26/11 (l'utilisateur : vie, attaque, titres et descriptions mal dimensionnés) : comme la main du combat, la GRANDE carte (164 px) réduite d'un bloc :
+// les textes gardent leurs proportions (Android ne les grossit plus un par un)
+function carte(k, w) { return CADRES_OK.includes(CADRE_DE(k)) ? `<div style="width:${w}px;height:${Math.round(w * 1216 / 864)}px;overflow:hidden"><div class="cg-mini" style="transform:scale(${(w / 164).toFixed(4)})">${carteGuilde(k, { w:164 })}</div></div>` : `<div class="simple" style="width:${w}px"><span class="co">${CARTES[k].c}</span><span class="n">${CARTES[k].n}</span><span>${SORTE[CARTES[k].t]}</span><span>🎲 ${txtLisible(CARTES[k].txt)}</span><span>${CARTES[k].d}</span></div>`; }
 
 function bande() {
   document.getElementById('bande').innerHTML = ORDRE.map(id => `<button class="${id === actuel ? 'on' : ''} ${verrouille(id) ? 'verrou' : ''}" style="--hc:${HEROS[id].c}" onclick="choisir('${id}')"><img src="portraits/${id}.webp" alt="">${!verrouille(id) && cartesNouvelles(id).filter(k => CARTES[k].heros === id).length ? '<span class="nv">!</span>' : ''}<span>${verrouille(id) ? '🔒 ' : ''}${HEROS[id].nom}</span></button>`).join('');
