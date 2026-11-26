@@ -1,5 +1,9 @@
 [
 {
+"v": "20261126-210246",
+"m": "Fenêtre des amis allégée"
+},
+{
 "v": "20261126-205312",
 "m": "Le flash des Expéditions change de boss chaque jour"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261125-211242",
 "m": "Défense : le défi du jour demande 4 pièges au lieu de 6"
-},
-{
-"v": "20261125-205555",
-"m": "Carnet : « Ramasse le butin 3 fois » reste terminé une fois à 3/3"
 }
 ]

@@ -190,11 +190,9 @@ function amisDessine() {
         ${a.enLigne && salle && a.salle !== salle ? `<button class="am-bt or" onclick="amisInvite('${a.code}')">Inviter</button>` : ''}
         <button class="am-bt" style="padding:6px 8px" title="Retirer" onclick="if(confirm('Retirer ${amisEsc(a.pseudo).replace(/'/g, '')} de tes amis ?'))amisFait('retire','${a.code}')">✕</button></div>`).join('')
       : '<p class="doux">Pas encore d’amis : demande leur code, ou donne-leur le tien.</p>'}
-    ${salle ? `<p class="doux">Tu es dans la salle <b>${salle}</b> : touche « Inviter » à côté d’un ami en ligne.</p>` : '<p class="doux">Pour jouer ensemble : crée une salle (Duel contre un ami, ou les Chroniques), puis invite tes amis.</p>'}
+    ${salle ? `<p class="doux">Tu es dans la salle <b>${salle}</b> : touche « Inviter » à côté d’un ami en ligne.</p>` : '<p class="doux">Pour jouer ensemble : porte « 👥 Entre amis » du menu (Duel contre un ami, Chroniques), puis invite tes amis depuis la salle.</p>'}
     <h3>＋ Ajouter un ami</h3>
     <p id="am-info"></p><div style="display:flex;gap:8px"><input id="am-ajout" class="code" maxlength="6" placeholder="CODE" autocomplete="off"><button class="am-bt go" onclick="amisAjoute()">Ajouter</button></div>
-    ${salle ? '' : `<button class="am-bt or large" onclick="location.href='duel.html?ami=1'">⚔ Duel contre un ami</button><button class="am-bt or large" onclick="location.href='chroniques.html?ligne=1'">📜 Les Chroniques entre amis</button>`}
-    ${window.GS ? `<button class="am-bt large" onclick="amisFermer();GS.ouvrir()">☁ Mon compte et ma sauvegarde</button>` : ''}
     `);
 }
 async function amisCree() {
