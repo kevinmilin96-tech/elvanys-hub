@@ -68,11 +68,11 @@ const FONDS = {
   profondeurs:['Les profondeurs', 'url(fonds/carte-profondeurs.webp?v=1) center/cover, radial-gradient(ellipse at 50% 120%, #ff9a4a55, #14100c 60%), #14100c', { t:'profondeurs' }],
 };
 // 25/11 : les cadres peints des titres (cadres/profil-<titre>.webp), posés par-dessus le portrait
-const CADRES_PEINTS = ['diplome', 'odyssee', 'neant', 'traversee', 'rempart', 'sceaux', 'profondeurs', 'chroniques', 'fosse', 'sphinx', 'apprenti', 'compagnon', 'maitre', 'champion', 'legende', 'archimage'];
+const CADRES_PEINTS = ['veteran', 'abysses', 'diplome', 'odyssee', 'neant', 'traversee', 'rempart', 'sceaux', 'profondeurs', 'chroniques', 'fosse', 'sphinx', 'apprenti', 'compagnon', 'maitre', 'champion', 'legende', 'archimage'];
 // 26/11 : les cadres qui ont un ruban peint : le mot que le jeu écrit dessus (profil.html, .ruban)
 const CADRES_RUBAN = {}; // 26/11 (l'utilisateur) : pas de mot écrit par le jeu sur un ruban : rien, ou c'est Gemini qui l'écrit
 // 25/11 : les emblèmes peints (ui/emblemes/emb-<clé>.webp), l'émoji sinon
-const EMB_PEINTS = ['flocon', 'lion', 'loup', 'dragon', 'hibou', 'chat', 'epee', 'bouclier', 'etoile', 'flamme', 'eclair', 'couronne', 'diamant', 'comete'];
+const EMB_PEINTS = ['flocon', 'de', 'vague', 'crane', 'parchemin', 'lune', 'sphinx', 'lion', 'loup', 'dragon', 'hibou', 'chat', 'epee', 'bouclier', 'etoile', 'flamme', 'eclair', 'couronne', 'diamant', 'comete'];
 const emIco = (k, e, px) => EMB_PEINTS.includes(k) ? `<img src="ui/emblemes/emb-${k}.webp?v=1" alt="" style="width:${px}px;height:${px}px;object-fit:contain;vertical-align:middle;box-shadow:none;border-radius:0">` : e;
 const EMBLEMES = [['aucun', '—'], ['lion', '🦁'], ['loup', '🐺'], ['dragon', '🐉'], ['hibou', '🦉'], ['chat', '🐱'], ['epee', '⚔️'], ['bouclier', '🛡️'], ['etoile', '⭐'],
   ['flamme', '🔥', { r:4 }], ['eclair', '⚡', { r:7 }], ['couronne', '👑', { r:12 }], ['diamant', '💎', { r:18 }], ['comete', '☄️', { r:25 }],
