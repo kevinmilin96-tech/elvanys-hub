@@ -39,7 +39,7 @@ function defChron() {
   choisis = choisis.filter(k => k !== 'zephine' || ZEPH_OK());
   let D = {}; try { D = JSON.parse(localStorage.getItem(CLE) || '{}'); } catch (e) {}
   const ADV = typeof AVENTURES !== 'undefined' ? AVENTURES : {};
-  const scenChoix = () => Object.entries(SCX_TXT).map(([k, s]) => ({ v:k, n:s.titre, d:`<i>${s.duree}</i>${k === 'horloger' && D.horloger ? ` · ✓ réussi ${D.horloger} fois` : ''}<br>${s.but}` }));
+  const scenChoix = () => Object.entries(SCX_TXT).filter(([k]) => typeof scenVisible !== 'function' || scenVisible(k)).map(([k, s]) => ({ v:k, n:s.titre, d:`<i>${s.duree}</i>${k === 'horloger' && D.horloger ? ` · ✓ réussi ${D.horloger} fois` : ''}<br>${s.but}` }));
   return { jeu:'chroniques', titre:'📜 Les Chroniques', retour:'menu.html', regles:'regles()', racine:'app',
     heros:() => {
       const b = (k, img, sec, nom, sous, dis, coul) => `<button class="${choisis.includes(k) ? 'on' : ''}" ${dis ? 'disabled' : ''} onclick="chBascule('${k}')">${choisis.includes(k) ? `<span class="ch-n">${choisis.indexOf(k) + 1}</span>` : ''}<img src="${img}" onerror="this.onerror=null;this.src='${sec}'" alt=""${coul ? ` style="box-shadow:0 0 0 3px ${coul}"` : ''}>${nom}<small>${sous}</small></button>`;
@@ -55,7 +55,7 @@ function defChron() {
       { k:'partie', e:'⚔', n:'Une partie', img:'menu-recu/mode-chroniques.webp',
         desc:() => 'Un donjon dans le noir, un scénario, de 1 à 4 héros sur ce téléphone : passez-le à celui qui joue. Ouvrez les portes, fouillez les meubles, réveillez le boss.'
           + (localStorage.getItem('guilde-atelier') === '1' ? `<span class="ch-liens"><button onclick="location.href='editeur.html'">🛠 L’atelier des cartes</button></span>` : ''),
-        pas:() => [`${Object.keys(SCX_TXT).length} scénarios`, D.horloger ? `⏳ Horloger réveillé ${D.horloger} fois` : '⏳ Horloger pas encore réveillé'],
+        pas:() => [`${Object.keys(SCX_TXT).filter(k => typeof scenVisible !== 'function' || scenVisible(k)).length} scénarios`, D.horloger ? `⏳ Horloger réveillé ${D.horloger} fois` : '⏳ Horloger pas encore réveillé'],
         partie:() => { const x = chGardee(); if (!x || x.mode !== 'partie') return null; const g = x.g;
           return { texte:`${chEsc((SCX_TXT[g.scen] || {}).titre || 'Chroniques')} · ${g.heros.map(z => chEsc(nomH(z))).join(', ')} · ⌛ ${g.sablier}`, reprendre:'reprend()', abandonner:'localStorage.removeItem(CLE_PARTIE)' }; } },
       { k:'campagne', e:'📜', n:'La campagne', img:'decor/chron-horloger-debut.webp',
