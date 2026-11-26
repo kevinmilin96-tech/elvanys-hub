@@ -283,7 +283,7 @@ const GM = (() => {
       b.style.cssText = 'position:fixed;top:calc(8px + env(safe-area-inset-top));left:8px;z-index:920;padding:6px 12px;border-radius:999px;border:1px solid #f3c96b88;background:#15132bdd;color:#f3c96b;font:inherit;font-size:15px;line-height:1.2;cursor:pointer;box-shadow:0 2px 8px #0008';
       document.body.appendChild(b); }
     b.textContent = '‹ ' + (texte || 'Retour');
-    b.onclick = () => { api.son && api.son('ok'); if (typeof ou === 'function') ou(); else location.href = ou; };
+    b.onclick = () => { api.son && api.son('ok'); if (typeof ou === 'function') ou(); else { if (/^menu\.html/.test(ou)) sessionStorage.setItem('guilde-dans-mode', '1'); location.href = ou; } }; // 26/11 (l'utilisateur) : un Retour vers le menu ne repasse pas par « Toucher pour entrer »
     document.body.classList.add('gm-retour-on');
   };
   // 22/11 : le BOUTON RETOUR DU TÉLÉPHONE dans l'appli Android (android/ du dépôt guilde-des-runes) : d'abord fermer ce qui est ouvert

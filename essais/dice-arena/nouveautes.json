@@ -1,5 +1,9 @@
 [
 {
+"v": "20261126-204136",
+"m": "Le bouton Retour ramène au menu sans repasser par l'écran d'accueil"
+},
+{
 "v": "20261126-203843",
 "m": "Mes decks : les cartes de la collection gardent leurs proportions"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261125-193302",
 "m": "Carnet : l’île du jour sur le Givre et l’Abîme est bien cochée"
-},
-{
-"v": "20261125-193145",
-"m": "Carnet : l’île du jour précise qu’il faut jouer le mode « L’île du jour »"
 }
 ]
