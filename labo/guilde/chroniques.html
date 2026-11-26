@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261126-131003"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
+<head><meta name="guilde-version" content="20261126-131322"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="robots" content="noindex">
@@ -187,6 +187,7 @@
   .acc h1 { text-align:center; color:var(--or); margin:3cqw 0 1cqw; font-size:6.5cqw; } .acc .sous { text-align:center; color:var(--doux); font-size:3.4cqw; margin:0 3cqw 3cqw; }
   .choixH { display:grid; grid-template-columns:repeat(3, 1fr); gap:2cqw; }
   .choixH button { background:#1c1c36; border:2px solid #45457a; border-radius:3cqw; padding:2cqw 1cqw; font-size:3cqw; }
+  .grpH { color:var(--or); font-size:3.6cqw; margin:3cqw 0 1.5cqw; } .grpH small { color:var(--doux); font-weight:normal; font-size:.85em; } .saisonH button { border-color:#6aa8d8; background:#16213a; }
   .choixH button.on { border-color:var(--or); background:#3a2f12; } .choixH button:disabled { opacity:.35; }
   .choixH img { width:15cqw; height:15cqw; border-radius:50%; object-fit:cover; display:block; margin:0 auto 1cqw; }
   .choixH small { display:block; color:var(--doux); font-size:2.4cqw; }
@@ -369,8 +370,10 @@ const SCX_TXT = {
     gagne:['🏆 Le Titan de feu s’éteint !', '« Le Titan vacille, fume, et s’effondre en un tas de braises tièdes. Les trois braises éternelles brillent au cœur du brasier : l’île est sauvée. Je peux sortir de la barque ? Il fait encore un peu chaud, non ? »'] },
 };
 // 26/11 : l'histoire de la saison se joue aussi EN LIGNE (salle) : le donjon du chapitre, ouvert par le récit d'Ilse ; visible seulement pendant la saison
+// 26/11 (l'utilisateur) : dans la salle, la saison a son propre bloc avec ses chapitres, à part des scénarios classiques
+const SAISON1_CHAP = [['cloitre', 'Chapitre 1 · Le blizzard qui ne s’arrête pas', '2026-12-01'], [null, 'Chapitre 2 · Le festin des goules', '2026-12-15'], [null, 'Chapitre 3 · Le dernier Veilleur', '2026-12-29'], [null, 'Chapitre 4 · Le Roi de l’Hiver', '2027-01-12']];
 const scenVisible = k => k !== 'cloitre' || typeof avOuverte !== 'function' || avOuverte({ saison:'s1' });
-SCX_TXT.cloitre = { titre:'❄ Les Cloches de givre · Chapitre 1', duree:'30-45 min · Saison 1 de l’Almanach',
+SCX_TXT.cloitre = { titre:'❄ Saison 1 · Chapitre 1 : Le blizzard', duree:'30-45 min · Saison 1 de l’Almanach',
   ouverture:'Ilse, la passeuse du col : « Là-haut, les Veilleurs sonnaient trois cloches pour tenir l’hiver loin de la vallée. Il y a sept nuits, elles se sont tues, et le blizzard ne s’arrête plus. Je vous ai menés jusqu’aux portes du monastère : trouvez la corde de la première cloche, et faites-la sonner. » Le cloître est tout blanc, tout craque…',
   entree:() => '« Attention au froid : un dé qui fait 1 se couvre de givre. Il reviendra tel quel au tour suivant, à la place d’un dé neuf. »',
   but:'Fouillez les meubles (un dé) pour trouver <b>la corde de la cloche 🪢</b>, puis portez-la jusqu’à <b>la cloche gelée 🔔</b>, au fond du cloître. <b>❄ Le froid</b> : un dé qui fait 1 gèle et revient tel quel au tour suivant.',
@@ -1293,7 +1296,8 @@ function salleAttente() {
     ${(() => { const E = typeof AMIS !== 'undefined' && AMIS.etat, enL = E ? E.amis.filter(x => x.enLigne && x.salle !== L.code) : [];
       return `<button class="gros" style="background:#14223a;border-color:#7cd4ff;color:#7cd4ff;margin-top:2cqw" onclick="amisFenetre()">👥 Inviter des amis<small>${!E ? 'Crée ta carte de joueur pour voir tes amis en ligne.' : enL.length ? `${enL.length} ami${enL.length > 1 ? 's' : ''} en ligne : ${enL.map(x => amisEsc(x.pseudo)).join(', ')}` : 'Aucun ami en ligne pour l’instant (le code de la salle marche aussi).'}</small></button>`; })()}
     <h3 style="color:var(--or);margin:3cqw 0 1.5cqw">📖 Le scénario${hote ? '' : ' <small style="color:var(--doux);font-weight:normal">(choisi par l’hôte)</small>'}</h3>
-    ${hote ? `<div class="choixH" style="grid-template-columns:1fr 1fr">${Object.entries(SCX_TXT).filter(([k]) => scenVisible(k)).map(([k, s]) => `<button class="${LOB.camp == null && LOB.scen === k ? 'on' : ''}" onclick="choixScenLobby('${k}')" style="font-size:3.4cqw">${s.titre}<small>${s.duree}</small></button>`).join('')}
+    ${hote ? `${scenVisible('cloitre') ? `<h4 class="grpH">❄ Saison 1 · L’Hiver des runes <small>Les Cloches de givre</small></h4><div class="choixH saisonH" style="grid-template-columns:1fr 1fr">${SAISON1_CHAP.map(([k, n, date]) => { const ouvert = k && SCX_TXT[k]; return `<button class="${ouvert && LOB.camp == null && LOB.scen === k ? 'on' : ''}" ${ouvert ? `onclick="choixScenLobby('${k}')"` : 'disabled'} style="font-size:3.2cqw">${n}<small>${ouvert ? SCX_TXT[k].duree.split(' · ')[0] : '🔒 le ' + new Date(date + 'T12:00:00').toLocaleDateString('fr-FR', { day:'numeric', month:'long' })}</small></button>`; }).join('')}</div>` : ''}
+      <h4 class="grpH">📖 Les scénarios classiques</h4><div class="choixH" style="grid-template-columns:1fr 1fr">${Object.entries(SCX_TXT).filter(([k]) => scenVisible(k) && k !== 'cloitre').map(([k, s]) => `<button class="${LOB.camp == null && LOB.scen === k ? 'on' : ''}" onclick="choixScenLobby('${k}')" style="font-size:3.4cqw">${s.titre}<small>${s.duree}</small></button>`).join('')}
       ${c ? `<button class="${LOB.camp === c.chap ? 'on' : ''}" onclick="choixScenLobby('${CHAPITRES[c.chap].scen}', ${c.chap})" style="font-size:3.4cqw">📜 Campagne · ${CHAPITRES[c.chap].titre}<small>la suite de ta campagne</small></button>`
         : `<button class="${LOB.camp === 'nouvelle' ? 'on' : ''}" onclick="choixScenLobby('horloger', 'nouvelle')" style="font-size:3.4cqw">📜 Commencer la campagne<small>3 chapitres à la suite</small></button>`}</div>`
       : `<p class="gros" style="text-align:center;padding:3cqw;border:1px solid #45457a;border-radius:3cqw">${titreScen}</p>`}
