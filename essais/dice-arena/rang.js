@@ -103,7 +103,7 @@ const QUETES_JOUR = [
 ];
 const QUETE_VA = { flash:'crypte.html#flash', butin:'menu.html', coeur:'menu.html?amis=1', enigme:'duel.html?enigme=1', duel_gagne:'duel.html?ordi=1', carte:'duel.html?ordi=1', escale:'expedition-v4.html',
   crypte_tombe:'crypte.html', salle:'menu.html#odyssee', elite:'menu.html#odyssee', boss:'menu.html#odyssee', defense_vague:'defense.html', tour_etage:'epreuves.html', titan:'expedition-v4.html',
-  invasion_acte:'menu.html#invasion', etage_atteint:'menu.html#odyssee', chasse:'epreuves.html#chasse', tuile:'menu.html#odyssee', or:'menu.html#odyssee' };
+  invasion_acte:'menu.html#invasion', etage_atteint:'menu.html#odyssee', chasse:'epreuves.html#chasse', chapitre_saison:'chroniques.html', tuile:'menu.html#odyssee', or:'menu.html#odyssee' };
 const QUETES_SEMAINE = [
   ['el3', 'Bats 3 élites', 'elite', 3],
   ['bo2', 'Bats 2 boss de l’Odyssée', 'boss', 2],
@@ -117,6 +117,17 @@ const QUETES_SEMAINE = [
   ['ch100', 'Inflige 100 dégâts au boss de la Chasse', 'chasse', 100, 'max'],
   ['to5', 'Passe 5 étages de la Tour des épreuves', 'tour_etage', 5],
 ];
+// 26/11 : LES QUÊTES DE SAISON (Almanach) : pendant une saison, 2 quêtes de plus chaque semaine (Q.z) : toujours le chapitre de la saison,
+// plus une tirée au hasard ; elles rapportent plus d'XP (donc l'Almanach avance vite). Le paramètre « jour » vaut 'z' pour elles.
+const QUETES_SAISON = [
+  ['zch', '❄ Finis un chapitre de la saison dans les Chroniques', 'chapitre_saison', 1],
+  ['zen', '❄ Résous 4 énigmes du jour, au chaud', 'enigme', 4],
+  ['zdg', '❄ Gagne 5 Duels au coin du feu', 'duel_gagne', 5],
+  ['zdv', '❄ Tiens 10 vagues face au blizzard (Défense de la porte)', 'defense_vague', 10],
+  ['zel', '❄ Bats 3 élites malgré le froid', 'elite', 3],
+  ['zes', '❄ Gagne 3 escales d’Expédition dans les mers gelées', 'escale', 3],
+  ['zcr', '❄ Fais tomber 10 monstres dans la Crypte aux Sceaux', 'crypte_tombe', 10],
+];
 const rgJourCle = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 function semaineCle(d = new Date()) { const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); const j = t.getUTCDay() || 7; t.setUTCDate(t.getUTCDate() + 4 - j); const a = new Date(Date.UTC(t.getUTCFullYear(), 0, 1)); return `${t.getUTCFullYear()}-S${Math.ceil(((t - a) / 864e5 + 1) / 7)}`; }
 // petit tirage déterministe (la même liste toute la journée)
@@ -127,23 +138,28 @@ function tireQuetes(liste, n, graine, sauf = []) {
   return out;
 }
 // 21/11 (l'utilisateur : « un bouton Récupérer quand une quête est finie, pour la satisfaction ; et de l'or ») : la récompense d'une quête
-const GAIN_QUETE = { jour:{ xp:40, or:60, pou:30 }, semaine:{ xp:150, or:250, pou:120 } };
-function donneQuete(jour) { const g = GAIN_QUETE[jour ? 'jour' : 'semaine']; gagneXP(g.xp, jour ? NOM_EVT.quete_jour : NOM_EVT.quete_semaine);
-  if (typeof donneLibres === 'function') donneLibres(jour ? ECLATS_QUETE.jour : ECLATS_QUETE.semaine); if (typeof donneRessources === 'function') donneRessources(g.or, g.pou); return g; }
-function recupQuete(jour, i) { const Q = lireQuetes(), q = (jour ? Q.j : Q.s)[i]; if (!q || !q.fait || q.recup !== false) return null; q.recup = true; localStorage.setItem(QUETES_CLE, JSON.stringify(Q)); return donneQuete(jour); }
+const GAIN_QUETE = { jour:{ xp:40, or:60, pou:30 }, semaine:{ xp:150, or:250, pou:120 }, saison:{ xp:250, or:150, pou:80 } };
+const cleGain = jour => jour === 'z' ? 'saison' : jour ? 'jour' : 'semaine';
+function donneQuete(jour) { const g = GAIN_QUETE[cleGain(jour)]; gagneXP(g.xp, jour === 'z' ? 'Quête de saison' : jour ? NOM_EVT.quete_jour : NOM_EVT.quete_semaine);
+  if (typeof donneLibres === 'function') donneLibres(jour && jour !== 'z' ? ECLATS_QUETE.jour : ECLATS_QUETE.semaine); if (typeof donneRessources === 'function') donneRessources(g.or, g.pou); return g; }
+function recupQuete(jour, i) { const Q = lireQuetes(), q = (jour === 'z' ? Q.z || [] : jour ? Q.j : Q.s)[i]; if (!q || !q.fait || q.recup !== false) return null; q.recup = true; localStorage.setItem(QUETES_CLE, JSON.stringify(Q)); return donneQuete(jour); }
 function lireQuetes() {
   const Q = RJ(QUETES_CLE, {}), j = rgJourCle(), s = semaineCle(); let change = false;
   // une quête finie pas récupérée avant le changement de jour / de semaine est récupérée toute seule (rien n'est perdu)
   if (Q.jour !== j && Q.j) Q.j.forEach(q => { if (q.fait && q.recup === false) { q.recup = true; donneQuete(true); } });
   if (Q.semaine !== s && Q.s) Q.s.forEach(q => { if (q.fait && q.recup === false) { q.recup = true; donneQuete(false); } });
+  const zs = typeof saisonActive === 'function' && saisonActive() ? s + ':' + saisonActive().id : null;
+  if (Q.zsem !== zs && Q.z) Q.z.forEach(q => { if (q.fait && q.recup === false) { q.recup = true; donneQuete('z'); } });
   // 22/11 : nouvelle liste du jour (v:2) : « Passe à la Guilde » toujours, puis 2 gestes courts ; la liste d'aujourd'hui est refaite une fois
   if (Q.jour !== j || Q.vj !== 2) { const garde = Q.jour === j ? (Q.j || []).filter(q => q.fait && QUETES_JOUR.some(x => x[0] === q.id)) : [];
     Q.jour = j; Q.vj = 2; Q.j = garde.concat(tireQuetes(QUETES_JOUR.filter(q => q[0] === 'cx'), 1, 'j' + j, garde.map(q => q.id)), tireQuetes(QUETES_JOUR.filter(q => q[0] !== 'cx'), 3, 'j' + j, garde.map(q => q.id))).slice(0, 3); Q.change = false; change = true; }
   if (Q.semaine !== s) { Q.semaine = s; Q.s = tireQuetes(QUETES_SEMAINE, 3, 's' + s); change = true; }
+  if (Q.zsem !== zs) { Q.zsem = zs; Q.z = zs ? tireQuetes(QUETES_SAISON.filter(q => q[0] === 'zch'), 1, 'z' + zs).concat(tireQuetes(QUETES_SAISON.filter(q => q[0] !== 'zch'), 1, 'z' + zs)) : []; change = true; }
+  if (!Q.z) Q.z = [];
   if (change) localStorage.setItem(QUETES_CLE, JSON.stringify(Q));
   return Q;
 }
-const defQuete = (q, jour) => (jour ? QUETES_JOUR : QUETES_SEMAINE).find(x => x[0] === q.id);
+const defQuete = (q, jour) => (jour === 'z' ? QUETES_SAISON : jour ? QUETES_JOUR : QUETES_SEMAINE).find(x => x[0] === q.id);
 function texteQuete(q, jour) { const d = defQuete(q, jour); return d ? d[1].replace('%H', q.heros && typeof HEROS !== 'undefined' ? HEROS[q.heros].nom : 'ton héros') : '?'; }
 // changer UNE quête du jour par jour
 function changeQuete(i) {
@@ -205,13 +221,13 @@ function guildeEvt(type, n = 1, info = {}) {
       const ch = { boss:.5, titan:.6, elite:.2, etage:.25 }[type]; if (ch && Math.random() < ch && typeof avGagne === 'function') { const p = avGagne(0, 1, type !== 'elite')[0]; if (p && typeof annonceRang === 'function') annonceRang(`⚒ Équipement trouvé : ${p.nom} (${EQ_RARE[p.r].n})`, true); } }
     if (XP_EVT[type] && !info.sansXP) gagneXP(XP_EVT[type] * (type === 'salle' || type === 'defense_vague' ? n : 1), NOM_EVT[type]); // 24/11 : sansXP = l'XP attend d'être récupérée dans le carnet (énigme du jour)
     const Q = lireQuetes(); let fini = [];
-    [['j', true], ['s', false]].forEach(([k, jour]) => Q[k].forEach(q => {
+    [['j', true], ['s', false], ['z', 'z']].forEach(([k, jour]) => (Q[k] || []).forEach(q => {
       const d = defQuete(q, jour); if (!d || q.fait || d[2] !== type) return;
       if (d[4] === 'heros' && info.heros !== q.heros && info.voie !== q.heros) return; // 15/11 soir : un héros d'aventure compte pour le héros de sa voie
       q.prog = d[4] === 'max' ? Math.max(q.prog, n) : q.prog + n;
       if (q.prog >= d[3]) { q.prog = d[3]; q.fait = true; q.recup = false; fini.push([texteQuete(q, jour), jour]); }
     }));
-    fini.forEach(([, jour]) => { if (jour) succesCompte('quete_jour'); });
+    fini.forEach(([, jour]) => { if (jour === true) succesCompte('quete_jour'); });
     if (Q.s && Q.s.length && Q.s.every(q => q.fait) && Q.sParfaite !== Q.semaine) { Q.sParfaite = Q.semaine; succesCompte('semaine_parfaite'); }
     localStorage.setItem(QUETES_CLE, JSON.stringify(Q));
     fini.forEach(([t]) => annonceRang(`📜 Quête accomplie : ${t} · va la récupérer 🎁`, true)); // 21/11 : la récompense se RÉCUPÈRE (route des rangs, onglet Quêtes)
@@ -246,9 +262,11 @@ function emblemeRang(r, px = 40, cls = '') { r = Math.max(1, r | 0); const k = S
 function bandeauRangHTML() {
   const d = lireRang(), i = d.info, Q = lireQuetes(), fj = Q.j.filter(q => q.fait).length, fs = Q.s.filter(q => q.fait).length;
   // 18/11 (l'utilisateur : « le rang est trop caché ») : barre plus grande, un toucher ouvre la route des rangs ; les quêtes ont leur propre bouton
-  const ar = aRecuperer().length, qr = [...Q.j, ...Q.s].filter(q => q.fait && q.recup === false).length;
+  const ar = aRecuperer().length, qr = [...Q.j, ...Q.s, ...(Q.z || [])].filter(q => q.fait && q.recup === false).length;
   const sr = typeof almARecuperer === 'function' && !ar ? almARecuperer() : 0; // 25/11 : un palier de l'Almanach à récupérer mène à l'onglet Saison
   return `<a class="bandeau-rang gros" href="route.html${sr ? '#saison' : ''}">${emblemeRang(i.rang, 40)}<b>Rang ${i.rang}</b><span class="barre-rang"><i style="width:${i.besoin ? Math.round(i.dans / i.besoin * 100) : 100}%"></i><span class="txt">${i.besoin ? `${i.dans} / ${i.besoin} XP` : 'rang max'}</span></span>${ar || sr ? `<em class="cadeau" title="Récompense à récupérer">🎁 Récupérer</em>` : '<em>›</em>'}</a>
+  ${(() => { const S = typeof saisonActive === 'function' && saisonActive(); if (!S) return ''; const a = almInfo(S.id), r = a.aRec.length + a.bonusARec; // 26/11 : la ligne de l'Almanach pendant la saison
+    return `<a class="bandeau-alm" href="route.html#saison">${S.e} <b>Almanach</b> · palier ${a.palier}/${ALM_NB}<span class="barre-rang"><i style="width:${Math.round(a.dans / a.besoin * 100)}%"></i></span>${r ? `<em>🎁 ${r}</em>` : '<em>›</em>'}</a>`; })()}
   <a class="bandeau-quetes" href="menu.html?ouvrir=carnet">📜 Quêtes du jour <b>${fj}/3</b> · de la semaine <b>${fs}/3</b>${qr ? ` · <b style="color:#ffd27a">🎁 ${qr} à récupérer</b>` : ''} ›</a>`;
 }
 
@@ -263,6 +281,7 @@ if (typeof document !== 'undefined') {
   .bandeau-rang b { color:#f3c96b; white-space:nowrap; } .bandeau-rang small { color:#c9c1ea; white-space:nowrap; font-size:.85em; } .bandeau-rang em { font-style:normal; white-space:nowrap; color:#f3c96b; }
   .bandeau-rang.gros { padding:9px 12px; font-size:15px; border-width:2px; } .bandeau-rang.gros .barre-rang { height:18px; position:relative; border-radius:9px; } .bandeau-rang.gros .barre-rang .txt { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:11px; color:#fff; text-shadow:0 1px 2px #000; }
   .bandeau-rang em.cadeau { white-space:nowrap; font-style:normal; font-size:.72em; padding:2px 6px !important; flex:none; background:linear-gradient(#7dff8a, #2fbf47); color:#0b3a12; box-shadow:0 2px 0 #1a7a2a, 0 0 12px #7dff8a88; border-radius:10px; padding:1px 7px; font-weight:bold; animation:cadeauR 1.2s ease-in-out infinite; } @keyframes cadeauR { 50% { transform:scale(1.15); } }
+  .bandeau-alm { display:flex; align-items:center; gap:7px; margin-top:5px; text-decoration:none; color:#e8f7ff; background:linear-gradient(90deg, #16305acc, #1d1838cc); border:1px solid #9fdcff99; border-radius:12px; padding:5px 10px; font:13px Georgia, serif; } .bandeau-alm b { color:#bfe9ff; } .bandeau-alm .barre-rang { flex:1; } .bandeau-alm .barre-rang i { background:linear-gradient(90deg, #7fc8ff, #e8f7ff); } .bandeau-alm em { font-style:normal; color:#ffd27a; white-space:nowrap; }
   .bandeau-quetes { display:block; text-align:center; margin-top:5px; text-decoration:none; color:#f1ecff; background:#1d1838cc; border:1px solid #6b5fb0; border-radius:12px; padding:5px 10px; font:13px Georgia, serif; } .bandeau-quetes b { color:#f3c96b; }
   .barre-rang { flex:1; min-width:40px; height:8px; background:#0d0b1f; border-radius:6px; overflow:hidden; } .barre-rang i { display:block; height:100%; background:linear-gradient(90deg, #c78a2c, #f3c96b); border-radius:6px; }`;
   document.head.appendChild(st);

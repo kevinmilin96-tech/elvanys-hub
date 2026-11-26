@@ -40,15 +40,15 @@
   // les quêtes (rang.js) : une ligne = le texte, la barre, ce qu'elle rapporte, et « Récupérer » sur place
   const quetesHTML = jour => {
     if (typeof lireQuetes !== 'function') return '';
-    const Q = lireQuetes(), L = jour ? Q.j : Q.s, g = (typeof GAIN_QUETE !== 'undefined' && GAIN_QUETE[jour ? 'jour' : 'semaine']) || {};
+    const Q = lireQuetes(), L = jour === 'z' ? Q.z || [] : jour ? Q.j : Q.s, g = (typeof GAIN_QUETE !== 'undefined' && GAIN_QUETE[jour === 'z' ? 'saison' : jour ? 'jour' : 'semaine']) || {};
     return L.map((qq, i) => { const def = defQuete(qq, jour) || ['', '', '', 1], va = !qq.fait && typeof QUETE_VA !== 'undefined' && QUETE_VA[def[2]], aRec = qq.fait && qq.recup === false;
-      return `<div class="qt ${qq.fait && !aRec ? 'fait' : ''}"${va ? ` onclick="envieVa('${va}')" style="cursor:pointer"` : ''}><span class="e">${qq.fait ? '✅' : '📜'}</span><span class="t"><b>${texteQuete(qq, jour)}</b>
+      return `<div class="qt ${qq.fait && !aRec ? 'fait' : ''}"${va ? ` onclick="envieVa('${va}')" style="cursor:pointer"` : ''}><span class="e">${qq.fait ? '✅' : jour === 'z' ? '❄' : '📜'}</span><span class="t"><b>${texteQuete(qq, jour).replace(/^❄ /, '')}</b>
         <small>${qq.prog || 0} / ${def[3]} · ${qq.fait && !aRec ? '<b style="color:#7ff0a8">récompense déjà récupérée</b>' : `+${g.xp || 0} XP${g.or ? ` · 🪙 ${g.or}` : ''}`}</small><span class="barre"><i style="width:${Math.min(100, Math.round((qq.prog || 0) / def[3] * 100))}%"></i></span></span>
-        ${aRec ? `<button class="rec" onclick="event.stopPropagation();carnetRecup(${jour}, ${i})">🎁 Récupérer</button>` : qq.fait ? '<span class="ok">✓</span>' : '<span class="ok" style="color:#f3c96b">›</span>'}</div>`; }).join('');
+        ${aRec ? `<button class="rec" onclick="event.stopPropagation();carnetRecup(${jour === 'z' ? "'z'" : jour}, ${i})">🎁 Récupérer</button>` : qq.fait ? '<span class="ok">✓</span>' : '<span class="ok" style="color:#f3c96b">›</span>'}</div>`; }).join('');
   };
-  window.carnetRecup = (jour, i) => { const g = typeof recupQuete === 'function' && recupQuete(!!jour, i);
+  window.carnetRecup = (jour, i) => { const g = typeof recupQuete === 'function' && recupQuete(jour === 'z' ? 'z' : !!jour, i);
     if (g && typeof annonceRang === 'function') annonceRang(`🎁 Quête récupérée : +${g.xp} XP${g.or ? ` · 🪙 +${g.or}` : ''}`, true);
-    if (typeof GM !== 'undefined') try { GM.son('pieces'); } catch (e) {} carnetOuvre(jour ? 'jour' : 'semaine'); envieBandeau(); };
+    if (typeof GM !== 'undefined') try { GM.son('pieces'); } catch (e) {} carnetOuvre(jour === true ? 'jour' : 'semaine'); envieBandeau(); };
 
   // 24/11 (l'utilisateur : « récupérer les récompenses directement dans cette fenêtre avec le bouton cadeau ») : le butin se ramasse sur place
   // 24/11 : après les 3 ramassages de la quête, le bouton ne revient que pour au moins une heure de butin (pas pour 3 pièces)
@@ -119,8 +119,8 @@
     return `<button class="${fait && !rec ? 'fait' : ''}" onclick="${rec ? 'carnetButin()' : a}"><span class="e">${e}</span><span class="t"><b>${n}</b><small>${d}</small></span>${rec ? '<span class="rec" style="flex:none">🎁 Récupérer</span>' : `<span class="c">${fait ? '✓' : '›'}</span>`}</button>`; };
   const compte = () => { const L = envieRendezVous().filter(x => x[0] !== 'quetes'), Q = typeof lireQuetes === 'function' ? lireQuetes() : { j:[], s:[] };
     const sem = typeof regleDeLaSemaine === 'function' ? regleDeLaSemaine() : null, sc = sem && ENV_J('guilde-sceaux', {})[sem.semaine];
-    const jf = L.filter(x => x[4]).length + Q.j.filter(x => x.fait).length, jn = L.length + Q.j.length, ch = chasseLit(), sf = Q.s.filter(x => x.fait).length + (sc ? 1 : 0) + (ch && ((ch.meilleur || 0) > 0 || (ch.mortMax || 0) > 0) ? 1 : 0), sn = Q.s.length + 2;
-    return { jf, jn, sf, sn, rec:[...Q.j, ...Q.s].filter(x => x.fait && x.recup === false).length + (ch && (ch.aRec || []).length ? 1 : 0), sem, sc }; };
+    const jf = L.filter(x => x[4]).length + Q.j.filter(x => x.fait).length, jn = L.length + Q.j.length, ch = chasseLit(), sf = Q.s.filter(x => x.fait).length + (Q.z || []).filter(x => x.fait).length + (sc ? 1 : 0) + (ch && ((ch.meilleur || 0) > 0 || (ch.mortMax || 0) > 0) ? 1 : 0), sn = Q.s.length + (Q.z || []).length + 2;
+    return { jf, jn, sf, sn, rec:[...Q.j, ...Q.s, ...(Q.z || [])].filter(x => x.fait && x.recup === false).length + (ch && (ch.aRec || []).length ? 1 : 0), sem, sc }; };
 
   let onglet = 'jour';
   window.carnetOuvre = function (o) {
@@ -133,7 +133,7 @@
       ? `<h3 class="grp">⚡ Rapide <small>quelques minutes</small><button class="aide-rec" onclick="carnetAide()" aria-label="Ce que ça rapporte">❓</button></h3><div class="liste">${L.filter(x => RAP.includes(x[0])).map(ligne).join('')}</div>
          <h3 class="grp">📜 Les quêtes du jour <small>elles changent à minuit</small></h3>${quetesHTML(true)}
          <h3 class="grp">🗺 Si tu as le temps <small>une vraie partie</small></h3><div class="liste">${L.filter(x => !RAP.includes(x[0])).map(ligne).join('')}</div>`
-      : `<h3 class="grp">📜 Les quêtes de la semaine <small>elles changent le lundi</small></h3>${quetesHTML(false)}
+      : `${(lireQuetes().z || []).length ? `<h3 class="grp">❄ Les quêtes de la saison <small>L’Hiver des runes · elles changent le lundi</small></h3>${quetesHTML('z')}` : ''}<h3 class="grp">📜 Les quêtes de la semaine <small>elles changent le lundi</small></h3>${quetesHTML(false)}
          <h3 class="grp">🗓️ Les rendez-vous de la semaine <small>jusqu’à dimanche soir</small></h3><div class="liste">
          ${ligne(['semaine', '🔏', 'Le Duel de la semaine', C.sc ? 'Sceau gagné cette semaine' : C.sem ? `« ${C.sem.n} » : gagne pour le Sceau` : 'Une règle nouvelle chaque semaine', !!C.sc, "envieVa('duel.html?semaine=1')"])}
          ${chasseLigne()}</div>`;
