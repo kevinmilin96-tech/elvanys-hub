@@ -1,5 +1,9 @@
 [
 {
+"v": "20261126-205312",
+"m": "Le flash des Expéditions change de boss chaque jour"
+},
+{
 "v": "20261126-204438",
 "m": "Mes decks : une nouvelle carte n'est plus « Nouveau » une fois vue"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261125-205555",
 "m": "Carnet : « Ramasse le butin 3 fois » reste terminé une fois à 3/3"
-},
-{
-"v": "20261125-203547",
-"m": "Expéditions : le recruteur ne propose que 2 familles par voyage (plus de fusions), ★★★ à 9 copies, monstres un peu plus solides ; le journal raconte chaque coup"
 }
 ]
