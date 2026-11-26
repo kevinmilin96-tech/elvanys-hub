@@ -25,7 +25,7 @@ function envieRendezVous() {
   const L = [];
   const eni = ENV_J('guilde-enigmes', {})[envJourLocal()] || {};
   const eniNiv = (new Date().getDay() + 6) % 7 + 1, eniEt = ` · ${'★'.repeat(eniNiv)}${'☆'.repeat(7 - eniNiv)} ${['', 'très facile', 'facile', 'moyenne', 'moyenne', 'corsée', 'difficile', 'redoutable'][eniNiv]}`; // même règle que enigme.js : lundi 1★ → dimanche 7★
-  L.push(['enigme', '🧩', 'L’énigme du jour', (eni.ok ? 'Résolue' : eni.essais ? `${eni.essais} essai(s)` : 'Un coup parfait à trouver') + eniEt, !!eni.ok, "envieVa('duel.html?enigme=1')"]);
+  L.push(['enigme', '🧩', 'L’énigme du jour', (eni.ok ? `Résolue · +${typeof XP_EVT !== 'undefined' && XP_EVT.enigme || 20} XP` : `${eni.essais ? `${eni.essais} essai(s)` : 'Un coup parfait à trouver'} · +${typeof XP_EVT !== 'undefined' && XP_EVT.enigme || 20} XP`) + eniEt /* 26/11 (l'utilisateur) : le gain écrit, comme les flashs */, !!eni.ok, "envieVa('duel.html?enigme=1')"]);
   // 23/11 : LES FLASHS DU JOUR (≈ 3 minutes) dans « ⚡ Rapide » ; les versions longues restent dans « Si tu as le temps »
   // 24/11 (l'utilisateur) : sous chaque flash, ce qu'il rapporte ; la récompense se récupère dans le carnet
   const gain = f => f && f.rec ? ` · +${f.rec.xp} XP${f.rec.or ? ` · 🪙 ${f.rec.or}` : ''}${f.recup === false ? ' à récupérer' : ''}` : '';

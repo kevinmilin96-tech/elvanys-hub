@@ -1,5 +1,9 @@
 [
 {
+"v": "20261126-204239",
+"m": "Le carnet affiche ce que rapporte l'énigme du jour"
+},
+{
 "v": "20261126-204136",
 "m": "Le bouton Retour ramène au menu sans repasser par l'écran d'accueil"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261125-195800",
 "m": "Images des recrues de la v4 (Pirate abordeur…) et de 9 ennemis des Expéditions ; prompts de la carte du voyage et de 14 ennemis"
-},
-{
-"v": "20261125-193302",
-"m": "Carnet : l’île du jour sur le Givre et l’Abîme est bien cochée"
 }
 ]
