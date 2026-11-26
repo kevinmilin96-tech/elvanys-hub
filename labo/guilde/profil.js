@@ -72,7 +72,7 @@ const CADRES_PEINTS = ['diplome', 'odyssee', 'neant', 'traversee', 'rempart', 's
 // 26/11 : les cadres qui ont un ruban peint : le mot que le jeu écrit dessus (profil.html, .ruban)
 const CADRES_RUBAN = {}; // 26/11 (l'utilisateur) : pas de mot écrit par le jeu sur un ruban : rien, ou c'est Gemini qui l'écrit
 // 25/11 : les emblèmes peints (ui/emblemes/emb-<clé>.webp), l'émoji sinon
-const EMB_PEINTS = ['lion', 'loup', 'dragon', 'hibou', 'chat', 'epee', 'bouclier', 'etoile', 'flamme', 'eclair', 'couronne', 'diamant', 'comete'];
+const EMB_PEINTS = ['flocon', 'lion', 'loup', 'dragon', 'hibou', 'chat', 'epee', 'bouclier', 'etoile', 'flamme', 'eclair', 'couronne', 'diamant', 'comete'];
 const emIco = (k, e, px) => EMB_PEINTS.includes(k) ? `<img src="ui/emblemes/emb-${k}.webp?v=1" alt="" style="width:${px}px;height:${px}px;object-fit:contain;vertical-align:middle;box-shadow:none;border-radius:0">` : e;
 const EMBLEMES = [['aucun', '—'], ['lion', '🦁'], ['loup', '🐺'], ['dragon', '🐉'], ['hibou', '🦉'], ['chat', '🐱'], ['epee', '⚔️'], ['bouclier', '🛡️'], ['etoile', '⭐'],
   ['flamme', '🔥', { r:4 }], ['eclair', '⚡', { r:7 }], ['couronne', '👑', { r:12 }], ['diamant', '💎', { r:18 }], ['comete', '☄️', { r:25 }],
