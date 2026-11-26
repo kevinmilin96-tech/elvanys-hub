@@ -1,5 +1,9 @@
 [
 {
+"v": "20261126-093941",
+"m": "Profil : le ruban du cadre « Diplômé de la Guilde » porte maintenant son nom."
+},
+{
 "v": "20261126-074617",
 "m": "L’Almanach est prêt pour le 1er décembre : 30 paliers de récompenses pendant la saison « L’Hiver des runes ». Et le rang de la Guilde continue après le rang 30, avec un coffre à chaque rang."
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261125-191408",
 "m": "Le cadre de l’adversaire ne déborde plus quand il a beaucoup d’effets"
-},
-{
-"v": "20261125-191049",
-"m": "La barre du bas des combats tient dans l’écran, même avec la sacoche et le sacrifice"
 }
 ]

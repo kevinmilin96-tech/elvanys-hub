@@ -69,6 +69,8 @@ const FONDS = {
 };
 // 25/11 : les cadres peints des titres (cadres/profil-<titre>.webp), posés par-dessus le portrait
 const CADRES_PEINTS = ['diplome', 'odyssee', 'neant', 'traversee', 'rempart', 'sceaux', 'profondeurs', 'chroniques', 'fosse', 'sphinx', 'apprenti', 'compagnon', 'maitre', 'champion', 'legende', 'archimage'];
+// 26/11 : les cadres qui ont un ruban peint : le mot que le jeu écrit dessus (profil.html, .ruban)
+const CADRES_RUBAN = { diplome:'Diplômé' };
 // 25/11 : les emblèmes peints (ui/emblemes/emb-<clé>.webp), l'émoji sinon
 const EMB_PEINTS = ['lion', 'loup', 'dragon', 'hibou', 'chat', 'epee', 'bouclier', 'etoile', 'flamme', 'eclair', 'couronne', 'diamant', 'comete'];
 const emIco = (k, e, px) => EMB_PEINTS.includes(k) ? `<img src="ui/emblemes/emb-${k}.webp?v=1" alt="" style="width:${px}px;height:${px}px;object-fit:contain;vertical-align:middle;box-shadow:none;border-radius:0">` : e;
