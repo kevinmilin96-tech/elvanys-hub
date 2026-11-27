@@ -369,7 +369,7 @@ function dessineBas() {
   // les drapeaux des vagues sur la barre (le grand drapeau = la grande vague)
   const pb = document.getElementById('progB'); if (pb) { const sg = S.vT.map(t => Math.round(t)).join(',') + '|' + S.vagueVue;
     if (pb.dataset.sig !== sg) { pb.dataset.sig = sg; pb.querySelectorAll('.dr').forEach(x => x.remove());
-      S.vT.forEach((t, k) => { const f = document.createElement('span'); const g = k === S.nbVagues - 1; f.className = 'dr' + (g ? ' g' : '') + (k <= S.vagueVue ? ' passe' : ''); f.textContent = g ? '🚩' : '⚑'; f.style.left = (100 * P.posVague(S, k)) + '%'; pb.appendChild(f); }); } }
+      S.vT.forEach((t, k) => { const f = document.createElement('span'); const g = S.grosses.includes(k); f.className = 'dr' + (g ? ' g' : '') + (k <= S.vagueVue ? ' passe' : ''); f.textContent = g ? '🚩' : '⚑'; f.style.left = (100 * P.posVague(S, k)) + '%'; pb.appendChild(f); }); } }
   const sb = document.getElementById('sortB'); if (sb) { sb.disabled = S.sortT > 0; sb.classList.toggle('pret', S.sortT <= 0); sb.classList.toggle('on', !!sel && sel.t === 'sort'); sb.querySelector('small').textContent = S.sortT > 0 ? Math.ceil(S.sortT) + ' s' : 'prêt'; }
   const ap = document.getElementById('appel'); if (ap) { const A = P.appelInfo(S); ap.style.display = A ? '' : 'none'; if (A) ap.textContent = nbsp(`⏩ +${A.bonus} ◆`); }
 }
@@ -503,7 +503,8 @@ function joueFx() {
     else if (f.t === 'puits') { const p = caseXY(f.i); gain(p.x, p.y - 18, '+◆ à toucher'); }
     else if (f.t === 'bowling') { const pl = document.getElementById('plateau'), b = document.createElement('div'); b.className = 'bowl'; b.textContent = '🎳'; b.style.left = xPx(f.c) + 'px'; b.style.top = (G.H - G.RH) + 'px'; pl.appendChild(b);
       b.animate([{ top:(G.H - G.RH) + 'px' }, { top:'0px' }], { duration:1000, easing:'ease-in' }).onfinish = () => b.remove(); }
-    else if (f.t === 'annonce') { banniere('🚩 Une énorme vague approche !'); son('vague'); try { navigator.vibrate && navigator.vibrate([40, 60, 40]); } catch (e) {} }
+    else if (f.t === 'calme') { banniere(`🌿 Accalmie : ${f.dt} s pour bâtir`, true); }
+    else if (f.t === 'annonce') { banniere(f.derniere ? '🚩 La dernière grosse vague approche !' : `🚩 Grosse vague ${f.n} sur ${f.sur} dans 8 s !`); son('vague'); try { navigator.vibrate && navigator.vibrate([40, 60, 40]); } catch (e) {} }
     // la grande vague : une musique plus intense (le lecteur commun ne sait pas accélérer une musique : on passe à celle des boss)
     else if (f.t === 'vide') { const pl = document.getElementById('plateau'), z = document.createElement('div'); z.className = 'vide-al'; z.style.left = xPx(f.c) + 'px'; z.innerHTML = '⚠<small>Aucune tour<br>sur ce chemin</small>'; pl.appendChild(z); setTimeout(() => z.remove(), 2600); }
     else if (f.t === 'grande') { banniere('🚩 La dernière vague !', true); try { GM.temporaire('boss'); } catch (e) {} }
