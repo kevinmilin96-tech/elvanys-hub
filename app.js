@@ -1125,6 +1125,7 @@
 
   // --- Journal : qui a fait quoi sur les comptes (lecture seule) ---
   var ACTION_LABEL = {
+    boost_resultats_effaces: 'a effacé les résultats d’un questionnaire de Boost',
     demande: 'a demandé un compte',
     validation: 'a validé le compte de',
     reactivation: 'a réactivé le compte de',
