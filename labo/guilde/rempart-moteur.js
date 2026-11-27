@@ -166,7 +166,7 @@ function batir(S, v, i) {
   const p = prixDe(S, v); if (S.energie < p) return `Il faut ${p} ◆.`;
   S.energie -= p; if (v === 'puits') S.puitsBatis = (S.puitsBatis || 0) + 1; else { S.bati++; S.batiSortes[v] = (S.batiSortes[v] || 0) + 1; }
   if (v === 'puits') { S.cases[i] = { id:++MID, puits:true, acc:0, paye:p }; S.puitsGratuit = false; log(S, '🔮 Puits de runes bâti.'); }
-  else { S.cases[i] = { id:++MID, v, niv:1, et:0, cd:0.3, paye:p, pw:0 }; log(S, `${SORTES[v].e} ${SORTES[v].n} bâtie.`); }
+  else { S.cases[i] = { id:++MID, v, niv:1, et:0, cd:0.3, paye:p, pw:Math.max(0, ...S.cases.filter(x => x && x.v === v && !x.puits && !x.rune).map(x => x.pw || 0)) }; /* 28/11 : une tour neuve attend la même recharge que ses sœurs */ log(S, `${SORTES[v].e} ${SORTES[v].n} bâtie.`); }
   fx(S, { t:'batit', i });
 }
 function deplacer(S, a, b) {

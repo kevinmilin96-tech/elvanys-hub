@@ -1,5 +1,9 @@
 [
 {
+"v": "20261128-002827",
+"m": "Rempart : une tour neuve attend aussi la recharge du pouvoir de sa sorte"
+},
+{
 "v": "20261128-002348",
 "m": "Rempart : le pouvoir se recharge pour toutes les tours de la même sorte à la fois (un Grand gel toutes les 20 s au plus)"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261127-174116",
 "m": "Saison 1 plus corsée : les monstres des Chroniques suivent la force de ton héros ; 2 quêtes de la semaine au forgeron"
-},
-{
-"v": "20261127-151123",
-"m": "Défense de la porte : les Runes deviennent des Tours-runes, bâties avec une paire de dés. Elles ne tirent pas, mais renforcent leurs voisines et leur donnent l'effet de la paire (gel, poison, flèche de plus, éclats, éclair, armure percée), avec le pouvoir de ton héros."
 }
 ]
