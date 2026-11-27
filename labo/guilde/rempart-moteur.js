@@ -12,7 +12,7 @@ const NC = 5, NR = 5;               // 5 chemins, 5 cases de tours par chemin (r
 const HAUT = 10;                    // les monstres naissent à y = 10 (cases), le rempart est à y = 0 ; les tours sont entre 0 et 5
 const R = {
   rempart:20, energieDepart:12 /* 27/11 nuit : 8 → 12, l'utilisateur manquait d'énergie au début */, energieMax:60, regenE:2.4 /* s par ◆ */, deDelai:8, desMax:3, jaugeMax:14,
-  niv:[0, 1, 1.75, 2.8, 4.2], nivMax:4, etoileMax:5, etoile:0.35, pouvoirRecharge:20, pouvoirNiv:2, etire:1 /* 28/11 : les temps de NIVEAUX sont écrits pour des niveaux de 4-5 min avec accalmies (avant : ×1,35) */,
+  niv:[0, 1, 1.75, 2.8, 4.2], nivMax:4, etoileMax:5, etoile:0.35, pouvoirRecharge:20, pouvoirNiv:2, besaceMax:2, accalmie:25, etire:1 /* 28/11 : les temps de NIVEAUX sont écrits pour des niveaux de 4-5 min avec accalmies (avant : ×1,35) */,
   runeBonus:0.25, pv:5, nombre:3 /* 28/11 : 3 fois plus de monstres, chacun bien moins solide */, runeMax:3, puitsDelai:6, comboBonus:0.3, bowling:90,
   // 27/11 soir (plus d'action) : les runes ◆ à toucher, l'appel de la vague, le sort du héros
   suivi:0.9, cristalVie:6, cristalPuits:2, cristalMonstre:2, cristalChance:1 / 3, puitsDelaiC:10, appelMin:3, appelMax:8, sortRecharge:30, sortDepart:12,
@@ -133,7 +133,7 @@ function nouvelle(heros, niveau, o) {
   const S = { heros, niveau, L, rng, f, puiss:Math.max(1, o.force || 1), fBoss:fs * (o.pvBoss || 1), t:0, energie:R.energieDepart, eAcc:0, rempart:R.rempart, rempartMax:R.rempart,
     cases:Array(NC * NR).fill(null), monstres:[], file:[], des:[], deT:R.deDelai, jauge:0, ultimes:0, bowling:L.bowling ? 1 : 0,
     kills:0, fini:null, fx:[], log:[], effets:{}, vus:{}, puitsGratuit:heros === 'pip', gelPartout:0,
-    cristaux:[], ramasses:0, perdus:0, sortT:R.sortDepart, sorts:0, murs:[], appels:0, bati:0, bowlings:0, perteMax:0,
+    cristaux:[], ramasses:0, perdus:0, sortT:R.sortDepart, sorts:0, murs:[], pieges:[], detours:[], besace:[], deObjet:0, appels:0, bati:0, bowlings:0, perteMax:0,
     batiSortes:{}, passes:0, passe:{}, tues:{}, runesBaties:0, speFaites:0, annonce:false, vagueVue:-1,
     adapt:1, adaptOn:o.adapt !== false, vStat:L.vagues.map(() => ({ pertes:0, morts:[], vus:0, finis:0, n:0 })), adaptLog:[] };
   L.vagues.forEach((v, iv) => { S.vStat[iv].n = v[1].length; });
@@ -275,6 +275,38 @@ function appelVague(S) {
   S.energie = Math.min(R.energieMax, S.energie + A.bonus); S.jauge = Math.min(R.jaugeMax, S.jauge + A.jauge); S.appels++;
   fx(S, { t:'appel', bonus:A.bonus }); log(S, `⏩ Vague appelée en avance (+${A.bonus} ◆).`);
 }
+// 28/11 (idée de l'utilisateur, façon Vampire Survivors) : LA BESACE. Après chaque grosse vague, un dé à lancer ; sa face donne un OBJET DE CONTRÔLE
+// rangé dans la besace (2 places). On le pose au doigt sur le plateau. Le 6 est un joker (on choisit l'objet en le posant).
+const OBJETS = {
+  givre:{ f:1, e:'🧊', n:'Piège de givre', d:'Posé sur un chemin : le premier monstre qui passe dessus reste gelé 4 s (le boss est ralenti).' },
+  epines:{ f:2, e:'🌵', n:'Piège d’épines', d:'Posé sur un chemin : pendant 12 s, chaque monstre qui le traverse est blessé et ralenti.' },
+  barricade:{ f:3, e:'🧱', n:'Barricade', d:'Un mur sur un chemin : il bloque les monstres 6 s (le boss passe, ralenti).' },
+  repousse:{ f:4, e:'💨', n:'Souffle', d:'Les monstres du chemin touché remontent de 2 cases (le boss d’une demi-case).' },
+  detour:{ f:5, e:'↪️', n:'Détour', d:'Les monstres du chemin touché passent sur le chemin voisin le mieux défendu, et ceux qui arrivent dans les 8 s aussi.' },
+  appat:{ f:6, e:'🥩', n:'Appât', d:'Les monstres tout autour (3 cases) viennent sur le chemin touché : regroupe-les sous tes meilleures tours.' },
+};
+const FACE_OBJET = ['', 'givre', 'epines', 'barricade', 'repousse', 'detour', 'joker'];
+function lancerObjet(S) {
+  if (S.fini) return 'Le niveau est fini.'; if (!S.deObjet) return 'Pas de dé à lancer : il en vient un après chaque grosse vague.';
+  if (S.besace.length >= R.besaceMax) return 'Ta besace est pleine : pose d’abord un objet.';
+  const f = 1 + Math.floor(S.rng() * 6), k = FACE_OBJET[f]; S.deObjet--; S.besace.push({ id:++MID, k, f });
+  log(S, `🎒 Dé de la besace : ${f} → ${k === 'joker' ? '🃏 joker (au choix)' : OBJETS[k].e + ' ' + OBJETS[k].n}.`); fx(S, { t:'objet', f, k }); return null;
+}
+// mieux défendu = plus de dégâts par seconde des tours du chemin
+const forceChemin = (S, c) => { let x = 0; for (let r = 0; r < NR; r++) { const t = S.cases[ix(c, r)]; if (t && !t.puits && !t.rune) x += degat(S, t, ix(c, r)) / cadence(S, t, ix(c, r)); } return x; };
+function voisinFort(S, c) { const v = [c - 1, c + 1].filter(x => x >= 0 && x < NC); return v.sort((a, b) => forceChemin(S, b) - forceChemin(S, a))[0]; }
+function poserObjet(S, n, c, y, choix) {
+  if (S.fini) return 'Le niveau est fini.'; const o = S.besace[n]; if (!o) return 'Choisis un objet de la besace.';
+  const k = o.k === 'joker' ? choix : o.k; if (!OBJETS[k]) return 'Choisis l’objet du joker.';
+  c = Math.max(0, Math.min(NC - 1, Math.round(c))); y = Math.max(0.3, Math.min(HAUT, y)); const vivants = S.monstres.filter(atteint);
+  if (k === 'givre' || k === 'epines') S.pieges.push({ id:++MID, k, c, y, t:k === 'givre' ? 40 : 12 });
+  else if (k === 'barricade') S.murs.push({ c, y, t:6, k:'barricade' });
+  else if (k === 'repousse') vivants.filter(m => m.c === c).forEach(m => { m.y = Math.min(HAUT, m.y + (M(m).boss ? .5 : 2)); });
+  else if (k === 'detour') { const v = voisinFort(S, c); S.detours.push({ c, v, t:8 }); vivants.filter(m => m.c === c && !M(m).boss).forEach(m => { m.c = v; }); }
+  else if (k === 'appat') vivants.filter(m => !M(m).boss && Math.abs(m.y - y) <= 3).forEach(m => { m.c = c; });
+  S.besace.splice(n, 1); S.objets = (S.objets || 0) + 1;
+  fx(S, { t:'pose', k, c, y }); log(S, `${OBJETS[k].e} ${OBJETS[k].n} posé${k === 'barricade' ? 'e' : ''} (chemin ${c + 1}).`); return null;
+}
 // 27/11 soir : le SORT du héros posé au doigt (c = chemin 0-4, y = hauteur en cases)
 function sort(S, c, y) {
   if (S.fini) return 'Le niveau est fini.'; if (S.sortT > 0) return `Le sort se recharge (${Math.ceil(S.sortT)} s).`;
@@ -304,7 +336,10 @@ function specialiser(S, i, k) {
 // 27/11 nuit : maxN1 vaut pour les niveaux 1 ET 2 (ils ne durcissent jamais, retour de l'utilisateur battu au niveau 2)
 const ADAPT = { min:.8, max:1.25, maxN1:1, monte:.08, monteDoux:.04, baisse:.07, baisseFort:.1 };
 // 28/11 : après une grosse vague finie, si la suivante est encore loin, on annonce l'accalmie (le temps de bâtir)
-function calme(S, iv) { if (!S.grosses.includes(iv) || iv >= S.nbVagues - 1) return; const dt = Math.round(S.vT[iv + 1] - S.t); if (dt >= 10) { fx(S, { t:'calme', dt }); log(S, `🌿 Accalmie : ${dt} s avant la vague suivante.`); } }
+function calme(S, iv) { if (!S.grosses.includes(iv) || iv >= S.nbVagues - 1) return; S.deObjet++; fx(S, { t:'deObjet' }); log(S, '🎲 Un dé pour la besace !');
+  // une VRAIE accalmie : la vague suivante attend au moins R.accalmie s après la fin de la grosse vague (on décale toute la suite)
+  const dec = Math.max(0, S.t + R.accalmie - S.vT[iv + 1]); if (dec > 0) { S.file.forEach(x => { if (x.vague > iv) x.t += dec; }); S.vT = S.vT.map((t, k) => k > iv ? t + dec : t); S.fin += dec; }
+  const dt = Math.round(S.vT[iv + 1] - S.t); if (dt >= 10) { fx(S, { t:'calme', dt }); log(S, `🌿 Accalmie : ${dt} s avant la vague suivante.`); } }
 function bilanVague(S, iv) {
   const V = S.vStat[iv]; if (V.fait) return; V.fait = true; if (!S.adaptOn) { calme(S, iv); return; }
   const loin = V.morts.length ? V.morts.reduce((a, y) => a + y, 0) / V.morts.length : 0, avant = S.adapt; let txt;
@@ -420,6 +455,8 @@ function etape(S) {
   for (const x of S.cristaux) x.t -= PAS;
   const eteintes = S.cristaux.filter(x => x.t <= 0); if (eteintes.length) { S.perdus += eteintes.length; S.cristaux = S.cristaux.filter(x => x.t > 0); eteintes.forEach(x => fx(S, { t:'eteint', id:x.id })); }
   for (const w of S.murs) w.t -= PAS; S.murs = S.murs.filter(w => w.t > 0);
+  for (const x of S.pieges) x.t -= PAS; S.pieges = S.pieges.filter(x => x.t > 0 && !x.fini);
+  for (const x of S.detours) x.t -= PAS; S.detours = S.detours.filter(x => x.t > 0);
   // les annonces de vague : « une énorme vague approche » 5 s avant la dernière
   // 28/11 : chaque GROSSE vague (3e champ « true » dans NIVEAUX) est annoncée 8 s avant ; après elle, une accalmie (voir bilanVague)
   S.grosses.forEach(k => { const tg = S.vT[k]; if (!S.annoncees.includes(k) && S.t >= tg - 8 && S.t < tg + 1) { S.annoncees.push(k); fx(S, { t:'annonce', derniere:k === S.nbVagues - 1, n:S.grosses.indexOf(k) + 1, sur:S.grosses.length }); } });
@@ -450,6 +487,11 @@ function etape(S) {
       S.monstres.forEach(x => { if (x !== m && atteint(x) && !M(x).boss && x.pv < x.pvMax && Math.hypot(x.c - m.c, x.y - m.y) <= 1.6) { x.pv = Math.min(x.pvMax, x.pv + x.pvMax * .12); n++; } }); if (n) fx(S, { t:'soin', id:m.id }); } } }
     const y0 = m.y; m.y -= v * PAS;
     // le mur de ronces de Pip : arrêté (le boss passe ralenti, le mineur passe dessous)
+    // 28/11 : les objets de la besace (pièges, détour)
+    if (!sousTerre(m)) for (const x of S.pieges) if (x.c === m.c && !x.fini) {
+      if (x.k === 'givre' && y0 >= x.y && m.y < x.y) { x.fini = true; if (B.boss) m.lent = Math.max(m.lent, 4); else m.racine = Math.max(m.racine, 4); m.y = x.y; fx(S, { t:'piege', id:m.id }); }
+      else if (x.k === 'epines' && Math.abs(m.y - x.y) <= .6) { m.lent = Math.max(m.lent, .3); frappe(S, m, S.f * 12 * PAS, { perce:true }); } }
+    if (!B.boss && m.y < HAUT - .5) for (const x of S.detours) if (x.c === m.c) m.c = x.v;
     if (!sousTerre(m)) for (const w of S.murs) if (w.c === m.c && y0 >= w.y && m.y < w.y) { if (B.boss) m.y = y0 - v * PAS * .3; else m.y = w.y; frappe(S, m, S.f * 6 * PAS, { perce:true }); }
     if (B.mineur && y0 > 5 && m.y <= 5) fx(S, { t:'creuse', id:m.id }); if (B.mineur && y0 > 3 && m.y <= 3) fx(S, { t:'ressort', id:m.id });
     if (B.boss) {
@@ -470,7 +512,7 @@ const etoiles = S => S.fini !== 'gagne' ? 0 : S.rempart >= S.rempartMax * .75 ? 
 const avancement = S => Math.min(1, S.t / (S.fin + 8));
 const posVague = (S, k) => Math.min(1, S.vT[k] / (S.fin + 8)); // la place du drapeau de la vague k sur la barre
 
-const API = { pouvoirPret, PAS, NC, NR, HAUT, R, SORTES, PUITS, EFFET_PAIRE, POUVOIRS, MONSTRES, ELITE, HEROS_R, NIVEAUX, SORTS_R, SPE, DEFIS,
+const API = { pouvoirPret, OBJETS, lancerObjet, poserObjet, voisinFort, PAS, NC, NR, HAUT, R, SORTES, PUITS, EFFET_PAIRE, POUVOIRS, MONSTRES, ELITE, HEROS_R, NIVEAUX, SORTS_R, SPE, DEFIS,
   nouvelle, batir, deplacer, demolir, rendDemolir, poserDe, poserPaire, jeterDe, bowling, ultime, pouvoir, etape, avance,
   ramasser, monterEnergie, acheterDe, prixMonter, PRIX_DE, appelInfo, appelVague, sort, specialiser, medailles, sousTerre, revele, posVague,
   annonces, defendu, etoiles, avancement, prixDe, nomTour, voisins, comboChemin, runesAutour, degat, cadence, ix };
