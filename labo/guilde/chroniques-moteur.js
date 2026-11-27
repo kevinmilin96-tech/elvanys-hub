@@ -58,6 +58,7 @@ const BETES = {
   // 27/11 : chapitre 3 « Le dernier Veilleur » : le Chevalier de glace, c'est BRAN, le père de Maëlle, pris dans une ARMURE DE GIVRE (ses sceaux) ;
   // à 0, l'armure éclate et Bran est libre (jamais « tué »)
   bran:      { n:'Le Chevalier de glace', img:'chevalierglace', att:3, mv:1, s:() => [sceau('dbl', 0, 1), sceau('dbl', 0, 1), sceau('min', 5), sceau('tot', 10)], elite:true, garde:.2, grosCoup:.3, charge:.3, armure:true },
+  roihiver:  { n:'Le Roi de l’Hiver', img:'roihiver', att:3, mv:1, s:() => [], boss:true },
   roios:     { n:'Le Roi des Os', img:'roios', att:3, mv:1, s:() => [], boss:true },
   // les Terres brûlées (scénario d'essai sur la carte peinte, 15/11)
   gobelin:   { n:'Gobelin des cendres', img:'gobelin', att:1, mv:2, s:() => [sceau('any'), sceau('min', 3)], fuit:.2 },
@@ -91,7 +92,14 @@ const PHASES_ROI = [
   { n:'Le Reliquaire', s:() => [], d:'ne peut plus être touché : son reliquaire est caché dans un meuble ; fouillez, brisez-le (2, 4, 6)', intouchable:true },
   { n:'La Dernière Danse', s:() => [sceau('ex', 6), sceau('imp'), sceau('dbl', 0, 1), sceau('dbl', 0, 1), sceau('tot', 12)], d:'frappe de 4 au contact et vole 1 PV à chaque héros à 2 cases' },
 ];
-const phasesDe = S => S && S.R && S.R.boss && S.R.boss.b === 'roios' ? PHASES_ROI : (S && SCEN[S.scen || 'horloger'].boss === 'roios' ? PHASES_ROI : PHASES);
+// 27/11 : LE ROI DE L'HIVER (chapitre 4) : la couronne de givre, le blizzard, puis son CŒUR DE GLACE (la rune de Bran le fait éclater d'un coup ;
+// le reliquaire brisé le rend fragile aux dés)
+const PHASES_HIVER = [
+  { n:'La Couronne de givre', s:() => [sceau('min', 4), sceau('pair'), sceau('dbl', 0, 1), sceau('dbl', 0, 1), sceau('min', 3), sceau('tot', 9)], d:'frappe au contact et appelle un spectre de givre un tour sur deux (chaque tour à 3 héros et plus)' },
+  { n:'Le Blizzard', s:() => [sceau('imp'), sceau('min', 5), sceau('dbl', 0, 1), sceau('dbl', 0, 1), sceau('pair'), sceau('tot', 12)], d:'déchaîne le blizzard : les 1 ET les 2 gèlent, et le froid ronge 1 PV par tour à chaque héros ; il frappe au contact' },
+  { n:'Le Cœur de glace', s:() => [sceau('ex', 6), sceau('min', 5), sceau('pair'), sceau('tot', 10)], d:'montre son cœur de glace : seule la rune de Bran le brise d’un coup ; si le reliquaire est brisé, on peut aussi le frapper avec les dés (sinon il se reforme)', intouchable:true, coeur:true },
+];
+const phasesDe = S => S && S.R && S.R.boss && S.R.boss.b === 'roihiver' ? PHASES_HIVER : S && SCEN[S.scen || 'horloger'] && SCEN[S.scen || 'horloger'].boss === 'roihiver' ? PHASES_HIVER : S && S.R && S.R.boss && S.R.boss.b === 'roios' ? PHASES_ROI : (S && SCEN[S.scen || 'horloger'].boss === 'roios' ? PHASES_ROI : PHASES);
 // ------------------------------------------------------------------ LES SCÉNARIOS (15/11) : chacun a sa carte, ses textes, son objet à trouver et son boss.
 // « horloger » : la carte construite en salles et couloirs (portes) ; « brulees » : la CARTE PEINTE des Terres brûlées (decor/carte-brulees.webp)
 // calée au doigt par l'utilisateur (placer-chroniques.html), brouillard « à vue » (les murs peints cachent ce qu'il y a derrière).
@@ -114,6 +122,9 @@ const SCEN = {
     phases:['', '', ''], vue:5, hasard:true, nbObj:1, sansBoss:true, froid:1 },
   // 27/11 : chapitre 3 « Le dernier Veilleur » : délivrer frère Aubin (escorte), le Chevalier de glace (Bran) garde la clé du clocher,
   // les murs fissurés qu'Aubin seul ouvre, puis les LEVIERS CHANTANTS : Aubin fredonne l'air une seule fois (façon Simon) en entrant dans le clocher
+  // 27/11 : chapitre 4 « Le Roi de l'Hiver » : la crypte, les sarcophages, Bran qui forge la rune pendant le combat, le Roi en 3 phases
+  crypte: { n:'La Crypte du Roi', boss:'roihiver', renfort:'spectregivre', objet:{ n:'rune de braise', e:'🔥' }, axe:'', axeE:'👑', sablier:36,
+    phases:['La Couronne de givre', 'Le Blizzard', 'Le Cœur de glace'], vue:5, hasard:true, froid:1 },
   cellules: { n:'Les Cellules gelées', boss:'roios', renfort:'spectregivre', objet:{ n:'clé du clocher', e:'🗝' }, axe:'la troisième cloche', axeE:'🔔', sablier:34,
     phases:['', '', ''], vue:5, hasard:true, nbObj:1, sansBoss:true, froid:1 },
   // 15/11 soir : LES AVENTURES EN SCÈNES (chroniques-aventures.js) : une EMBUSCADE sur le chemin = un petit terrain ouvert, gagner = abattre tous les monstres
@@ -249,15 +260,15 @@ function construitLabyrinthe(S, R) {
   const tirage = ['potion', 'grains', 'objet', 'piege', 'monstre', 'parchemin', 'or', 'fumee', 'rien'];
   // 26/11 : au Cloître gelé, UNE seule corde, cachée dans un meuble de la moitié la plus éloignée du départ (il faut traverser le cloître)
   const loinM = meubles.map((m, i) => [i, D[m[0] + ',' + m[1]] || 0]).sort((a, b) => b[1] - a[1]).slice(0, Math.ceil(meubles.length / 2)).map(x => x[0]);
-  const caches = S.scen === 'refectoire' || S.scen === 'cellules' ? [] : S.scen === 'cloitre' ? [loinM[rnd(loinM.length)]] : meubles.map((m, i) => i).sort(() => hasard(S) - .5).slice(0, 4);
+  const caches = S.scen === 'refectoire' || S.scen === 'cellules' || S.scen === 'crypte' ? [] : S.scen === 'cloitre' ? [loinM[rnd(loinM.length)]] : meubles.map((m, i) => i).sort(() => hasard(S) - .5).slice(0, 4);
   meubles.forEach(([x, y, t2], i) => { R.murs[cle(x, y)] = 'M'; R.obj[cle(x, y)] = { t:t2, meuble:true, fouille:false, cache:caches.includes(i) ? 'rouage' : tirage[rnd(tirage.length)] }; });
   R.murs[cle(fin.cx, fin.cy)] = 'A'; R.axe = [fin.cx, fin.cy]; R.bronze = true;
   // les pièges : dans les couloirs (hors salles)
   const couloirs = []; for (let y = 0; y < H2; y++) for (let x = 0; x < W2; x++) if (G[y][x] === '.' && !salles.some(s => dans(s, x, y))) couloirs.push([x, y]);
   for (let i = 0; i < 5 && couloirs.length; i++) { const [x, y] = couloirs.splice(rnd(couloirs.length), 1)[0]; R.obj[cle(x, y)] = { t:'piege', cache:true }; }
   // les monstres : dans les salles (pas le départ), plus forts près de l'autel
-  const hiver = S.scen === 'cloitre' || S.scen === 'refectoire' || S.scen === 'cellules', faibles = S.scen === 'refectoire' ? ['goule', 'goule', 'spectregivre', 'osclaque'] : S.scen === 'cellules' ? ['spectregivre', 'goule', 'loupblanc', 'osclaque'] : hiver ? ['spectregivre', 'spectregivre', 'loupblanc', 'osclaque'] : ['gobelin', 'loup', 'scarabee', 'rouagelin', 'page', 'coucou', 'osclaque'], forts = S.scen === 'refectoire' ? ['goule', 'loupblanc'] : S.scen === 'cellules' ? ['goule', 'loupblanc', 'golemglace'] : hiver ? ['golemglace', 'loupblanc'] : ['salamandre', 'golem', 'colosse', 'elementaire', 'archiviste'];
-  for (let i = 0; i < (S.scen === 'cellules' ? 12 : hiver ? 10 : 13); i++) {
+  const hiver = S.scen === 'cloitre' || S.scen === 'refectoire' || S.scen === 'cellules' || S.scen === 'crypte', faibles = S.scen === 'refectoire' ? ['goule', 'goule', 'spectregivre', 'osclaque'] : S.scen === 'crypte' ? ['osclaque', 'osclaque', 'spectregivre', 'goule', 'loupblanc'] : S.scen === 'cellules' ? ['spectregivre', 'goule', 'loupblanc', 'osclaque'] : hiver ? ['spectregivre', 'spectregivre', 'loupblanc', 'osclaque'] : ['gobelin', 'loup', 'scarabee', 'rouagelin', 'page', 'coucou', 'osclaque'], forts = S.scen === 'refectoire' ? ['goule', 'loupblanc'] : S.scen === 'crypte' ? ['golemglace', 'goule', 'loupblanc'] : S.scen === 'cellules' ? ['goule', 'loupblanc', 'golemglace'] : hiver ? ['golemglace', 'loupblanc'] : ['salamandre', 'golem', 'colosse', 'elementaire', 'archiviste'];
+  for (let i = 0; i < (S.scen === 'cellules' || S.scen === 'crypte' ? 12 : hiver ? 10 : 13); i++) {
     const s = salles[1 + rnd(salles.length - 1)]; let x, y, k = 0;
     do { x = s.x + rnd(s.w); y = s.y + rnd(s.h); } while (k++ < 20 && (G[y][x] !== '.' || R.monstres.some(m => m.x === x && m.y === y) || (x === fin.cx && y === fin.cy)));
     if (G[y][x] !== '.') continue;
@@ -266,6 +277,7 @@ function construitLabyrinthe(S, R) {
   }
   if (S.scen === 'refectoire') construitRefectoire(S, R, G, salles, fin, D, sol, rnd);
   if (S.scen === 'cellules') construitCellules(S, R, G, salles, fin, D, sol, rnd);
+  if (S.scen === 'crypte') construitCrypte(S, R, G, salles, fin, D, sol, rnd);
   if (S.scen === 'cloitre') { const g = [[fin.cx, fin.cy + 1], [fin.cx - 1, fin.cy], [fin.cx + 1, fin.cy], [fin.cx, fin.cy - 1]].find(([x, y]) => G[y] && G[y][x] === '.' && !R.murs[cle(x, y)] && !R.monstres.some(m => m.x === x && m.y === y)); if (g) ajouteMonstre(S, 'golemglace', g[0], g[1]); } // le gardien de la cloche
   [[0, 0], [1, 0], [0, 1], [1, 1]].forEach(([dx, dy], i) => { if (S.heros[i]) { S.heros[i].x = Math.min(D0.x + D0.w - 1, D0.cx - 1 + dx); S.heros[i].y = Math.min(D0.y + D0.h - 1, D0.cy - 1 + dy); } });
   S.salles = salles.length;
@@ -375,7 +387,7 @@ function placeBran(S) {
     if (g) ajouteMonstre(S, 'golemglace', g[0], g[1]); }
 }
 const dansClocher = (S, z) => { const C0 = S.R.clocher; return !!(C0 && z && z.x >= C0.x && z.x < C0.x + C0.w && z.y >= C0.y && z.y < C0.y + C0.h); };
-const aubinEn = (S, x, y) => !!(S.R.aubin && S.R.aubin.x === x && S.R.aubin.y === y);
+const aubinEn = (S, x, y) => [S.R.aubin, S.R.forgeron].some(P => P && P.x === x && P.y === y);
 const pres = (a, b) => Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y)) <= 1; // une case autour, diagonales comprises
 // ---- frère Aubin SUIT le héros le plus proche (jusqu'à 4 pas après chaque déplacement d'un héros) ; à côté d'un mur fissuré, il l'ouvre ;
 // en entrant dans le clocher, il fredonne l'air des cloches UNE SEULE FOIS
@@ -401,6 +413,8 @@ function suitAubin(S) {
   if (dansClocher(S, A) && !R.chante) { R.chante = true; R.chantN = (R.chantN || 0) + 1; log(S, '🎵 Frère Aubin a fredonné l’air des cloches.'); ev.push({ t:'chant' }); }
   return ev;
 }
+function blesseForgeron(S, n) { const F = S.R.forgeron; if (!F || F.aTerre || n <= 0) return 0; F.pv -= n;
+  if (F.pv <= 0) { F.pv = 0; F.aTerre = true; log(S, '💫 Bran est à terre ! La forge s’arrête. Un héros juste à côté peut le relever (un dé).'); } return n; }
 function blesseAubin(S, n) { const A = S.R.aubin; if (!A || A.aTerre || n <= 0) return 0; A.pv -= n;
   if (A.pv <= 0) { A.pv = 0; A.aTerre = true; log(S, '💫 Frère Aubin est à terre ! Un héros juste à côté peut le relever (un dé).'); } return n; }
 // toucher Aubin avec un dé : ouvrir sa cellule (un pas), le relever (un dé), ou lui demander de fredonner l'air (un pas, dans le clocher)
@@ -424,6 +438,62 @@ function parler(S, hi, idDe) {
   unPas(S, h, idDe); remplit(S, h, 1); S.parleT = R.tour; m.hesite = R.tour; m.it = 'hesite'; S.parles = (S.parles || 0) + 1;
   log(S, `💬 Maëlle : ${PAROLES[(S.parles - 1) % PAROLES.length]} Le Chevalier de glace s’arrête, son épée tremble : il hésite, il ne frappera pas ce tour.`); return { ok:true, ev:[{ t:'parle' }] };
 }
+// 27/11 : LA CRYPTE (chapitre 4 « Le Roi de l'Hiver ») : 6 sarcophages (un seul garde le reliquaire, là où le givre ne fond pas près de sa torche ;
+// les autres libèrent un squelette), l'enclume où Bran forge la rune PENDANT le combat, le Roi de l'Hiver qui dort au fond de la crypte
+function construitCrypte(S, R, G, salles, fin, D, sol, rnd) {
+  const dansS = (s, x, y) => x >= s.x && x < s.x + s.w && y >= s.y && y < s.y + s.h, D0 = salles[0];
+  R.crypte = { x:fin.x, y:fin.y, w:fin.w, h:fin.h };
+  // la crypte du Roi : vide (ni meubles ni monstres), plus de cloche
+  Object.keys(R.obj).forEach(c => { const [x, y] = c.split(',').map(Number); if (dansS(fin, x, y) && R.obj[c].meuble) { delete R.obj[c]; delete R.murs[c]; G[y][x] = '.'; } });
+  R.monstres = R.monstres.filter(m => !dansS(fin, m.x, m.y)); delete R.murs[cle(fin.cx, fin.cy)]; G[fin.cy][fin.cx] = '.'; R.axe = null; R.trone = [fin.cx, fin.cy];
+  // les sarcophages : 6 meubles hors du départ et de la crypte, dans des salles différentes si possible
+  Object.values(R.obj).forEach(o => { if (o.meuble && o.t === 'tombeau') o.t = 'coffre'; });
+  const M = Object.entries(R.obj).filter(([c, o]) => { const [x, y] = c.split(',').map(Number); return o.meuble && !dansS(D0, x, y) && !dansS(fin, x, y); }).map(([c]) => c).sort(() => hasard(S) - .5);
+  const salleDe = c => { const [x, y] = c.split(',').map(Number); return salles.findIndex(s => dansS(s, x, y)); };
+  const choix = []; M.forEach(c => { if (choix.length < 6 && !choix.some(z => salleDe(z) === salleDe(c))) choix.push(c); }); M.forEach(c => { if (choix.length < 6 && !choix.includes(c)) choix.push(c); });
+  const loin = choix.slice().sort((a, b) => (D[b] || 0) - (D[a] || 0)).slice(0, Math.max(1, Math.ceil(choix.length / 2)));
+  const bon = loin[rnd(loin.length)];
+  choix.forEach(c => { const o = R.obj[c]; o.t = 'tombeau'; o.sarco = true; o.torche = true; o.nom = 'le sarcophage'; o.cache = c === bon ? 'reliquaire' : 'squelette'; if (c === bon) o.givre = true; });
+  // l'enclume des Veilleurs : contre un mur de la crypte, loin du trône ; Bran l'attend à côté
+  const cases = []; for (let y = fin.y; y < fin.y + fin.h; y++) for (let x = fin.x; x < fin.x + fin.w; x++) if (G[y][x] === '.' && Math.max(Math.abs(x - fin.cx), Math.abs(y - fin.cy)) >= 2) cases.push([x, y]);
+  cases.sort((a, b) => [[1, 0], [-1, 0], [0, 1], [0, -1]].filter(([dx, dy]) => !sol(b[0] + dx, b[1] + dy)).length - [[1, 0], [-1, 0], [0, 1], [0, -1]].filter(([dx, dy]) => !sol(a[0] + dx, a[1] + dy)).length || (Math.abs(b[0] - fin.cx) + Math.abs(b[1] - fin.cy)) - (Math.abs(a[0] - fin.cx) + Math.abs(a[1] - fin.cy)));
+  for (const [x, y] of cases) { const p = [[1, 0], [-1, 0], [0, 1], [0, -1]].map(([dx, dy]) => [x + dx, y + dy]).find(([a, b]) => G[b] && G[b][a] === '.' && dansS(fin, a, b) && !(a === fin.cx && b === fin.cy));
+    if (!p) continue; R.murs[cle(x, y)] = 'Y'; G[y][x] = 'Y'; R.enclume = [x, y]; R.forgeron = { pnj:'bran', x:p[0], y:p[1], pv:8, pvmax:8, aTerre:false }; break; }
+  // frère Aubin, libre : il suit le groupe depuis le départ
+  R.aubin = { aubin:true, pnj:'aubin', x:D0.cx, y:Math.min(D0.y + D0.h - 1, D0.cy + 1), pv:6, pvmax:6, libre:true, aTerre:false }; R.fissures = [];
+  S.forge = 0;
+}
+// après l'adaptation au nombre de héros : le Roi de l'Hiver sur son trône (il dort tant qu'aucun héros n'entre dans la crypte)
+function placeRoi(S) {
+  const R = S.R, [x, y] = R.trone, B = BETES.roihiver, n = S.nbHeros || S.heros.length;
+  { const h0 = S.heros[0], A = R.aubin; for (let r = 1; r <= 3; r++) { const p = []; for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) if (Math.max(Math.abs(dx), Math.abs(dy)) === r) p.push([h0.x + dx, h0.y + dy]);
+    const q = p.find(([a, b]) => libre(S, a, b, A) && !herosEn(S, a, b)); if (q) { A.x = q[0]; A.y = q[1]; break; } } }
+  R.boss = { id:'boss', b:'roihiver', n:B.n, img:B.img, x, y, att:n <= 1 ? 2 : n >= 4 ? 4 : 3, phase:0, sceaux:sceauxBoss(S, 0), repos:false, it:'frappe', dort:true };
+  // un peu plus de monde sur le chemin (un cran plus dur que les chapitres 1-3) : un golem de glace devant l'entrée de la crypte
+  if (n >= 2) { const C = R.crypte, p = []; for (let yy = C.y - 1; yy <= C.y + C.h; yy++) for (let xx = C.x - 1; xx <= C.x + C.w; xx++) { const dedans = xx >= C.x && xx < C.x + C.w && yy >= C.y && yy < C.y + C.h; if (!dedans && libre(S, xx, yy) && !herosEn(S, xx, yy)) p.push([xx, yy]); }
+    if (p.length) { const [a, b] = p[Math.floor(hasard(S) * p.length)]; ajouteMonstre(S, 'golemglace', a, b); } }
+}
+const dansCrypte = (S, z) => { const C0 = S.R.crypte; return !!(C0 && z && z.x >= C0.x && z.x < C0.x + C0.w && z.y >= C0.y && z.y < C0.y + C0.h); };
+// le Roi se réveille quand un héros entre dans la crypte (alors Bran commence à forger)
+function eveilRoi(S) { const R = S.R, Bo = R.boss; if (!Bo || !Bo.dort || !S.heros.some(h => !h.aTerre && dansCrypte(S, h))) return [];
+  Bo.dort = false; R.vu[cle(Bo.x, Bo.y)] = 1; log(S, '👑 Sur son trône de glace, le ROI DE L’HIVER ouvre les yeux. « La forge… encore la forge. Cette fois, je l’éteins pour de bon. » À l’enclume, Bran saisit son marteau : « Tenez-le loin de moi trois tours, et la rune sera prête ! »'); return [{ t:'roiEveil' }]; }
+// toucher Bran avec un dé (chapitre 4) : le relever (le dé entier) ou prendre la rune quand elle est prête (un pas)
+function forgeron(S, hi, idDe, quoi) {
+  const h = S.heros[hi], R = S.R, F = R.forgeron, d = h.des.find(z => z.id === idDe); if (!F) return 'Bran n’est pas là.'; if (!d) return 'Choisis d’abord un dé.'; if (h.aTerre) return `${nm(h)} est à terre.`;
+  if (!pres(h, F)) return 'Il faut être juste à côté de Bran.';
+  if (quoi === 'relever') { if (!F.aTerre) return 'Bran est debout.'; prendDe(h, idDe); remplit(S, h, 1); F.aTerre = false; F.pv = 4; log(S, `✋ ${nm(h)} relève Bran (4 PV) : il reprend son marteau, la forge repart.`); return { ok:true, ev:[{ t:'forgeron', quoi:'releve' }] }; }
+  if (quoi === 'rune') { if (!S.runePrete) return 'La rune n’est pas encore prête.'; if (S.runePrise) return 'La rune a déjà été prise.'; unPas(S, h, idDe); h.rune = true; S.runePrise = true;
+    log(S, `🔥 ${nm(h)} prend la rune de braise, brûlante entre ses mains. Bran : « Le cœur. Frappe au cœur, quand il se montrera. »`); return { ok:true, ev:[{ t:'forgeron', quoi:'rune' }] }; }
+  return 'Rien à faire.';
+}
+// frapper le cœur de glace avec la rune (un dé, au contact, phase 3) : le cœur éclate d'un coup
+function runeCoeur(S, hi, idDe) {
+  const h = S.heros[hi], R = S.R, Bo = R.boss; if (!h.rune) return 'Ce héros ne porte pas la rune.'; if (!Bo || Bo.b !== 'roihiver' || !phasesDe(S)[Bo.phase].coeur) return 'La rune ne sert qu’au cœur de glace, quand il se montre.';
+  if (!contact(S, h, Bo)) return 'Il faut être au contact du Roi.'; if (!prendDe(h, idDe)) return 'Choisis d’abord un dé.';
+  h.rune = false; Bo.sceaux.forEach(brise); log(S, `🔥 ${nm(h)} plante la rune de braise dans le cœur de glace du Roi !`); const ev = [{ t:'rune', h:hi }]; ev.push(...verifieMonstre(S, Bo)); return { ok:true, ev };
+}
+// le cœur est-il hors d'atteinte ? (phase « cœur de glace » : seulement si le reliquaire n'est pas brisé)
+const bossIntouchable = (S, m) => m === S.R.boss && !!phasesDe(S)[m.phase] && phasesDe(S)[m.phase].intouchable && !(phasesDe(S)[m.phase].coeur && S.R.reliquaireBrise);
 // le brouillard « à vue » (carte peinte) : on voit les cases à moins de N cases, si aucun mur ne cache la ligne de vue
 function voirAVue(S) {
   const R = S.R, sc = SCEN[S.scen];
@@ -502,7 +572,7 @@ function sceauxBoss(S, k) {
   if (n <= 1) L.splice(-2, 2); else if (n === 2) L.pop(); else if (n >= 4) L.push(sceau('min', 4));
   if (k === 2 && S.livre) L.pop();
   if (n >= 2 && !S.ancien) L.push(sceau('tot', GRANDIT.boss * (n - 1))); // 17/11 (équilibrage mesuré) : l'Horloger grandit avec chaque héros en plus du premier
-  if (['labyrinthe', 'cloitre', 'refectoire', 'cellules'].includes(S.scen) && n <= 1 && L.length > 2) L.pop(); // seul dans un grand labyrinthe : un sceau de moins
+  if (['labyrinthe', 'cloitre', 'refectoire', 'cellules', 'crypte'].includes(S.scen) && n <= 1 && L.length > 2) L.pop(); // seul dans un grand labyrinthe : un sceau de moins
   return L;
 }
 function adapte(S) {
@@ -510,11 +580,11 @@ function adapte(S) {
   S.nbHeros = n; S.dureeLevier = A.levier; S.sablier += A.sablier;
   // 16/11 (retour de l'utilisateur : « pas de mise en danger » à 4) : à 3 héros et plus, chaque monstre frappe 1 de plus
   S.forceM = n >= 3 ? 1 : 0; R.monstres.forEach(m => { m.att = BETES[m.b].att + S.forceM; grandit(S, m); });
-  if (['labyrinthe', 'cloitre', 'refectoire', 'cellules'].includes(S.scen)) { S.sablier += [0, 20, 10, 0, 0][n]; if (n <= 2 && !(S.scen === 'cellules' && n === 2)) R.monstres = R.monstres.filter(() => hasard(S) < .7); } // 27/11 : au chapitre 3, à deux, on garde un peu plus de monstres (réglé au simulateur) // un donjon plus grand : plus de temps aux petits groupes
+  if (['labyrinthe', 'cloitre', 'refectoire', 'cellules', 'crypte'].includes(S.scen)) { S.sablier += [0, 20, 10, 0, 0][n]; if (n <= 2 && !(S.scen === 'cellules' && n === 2)) R.monstres = R.monstres.filter(() => hasard(S) < .7); } // 27/11 : au chapitre 3, à deux, on garde un peu plus de monstres (réglé au simulateur) // un donjon plus grand : plus de temps aux petits groupes
   if (A.garde < 1 && S.scen !== 'arene') R.monstres = R.monstres.filter(m => hasard(S) < A.garde); // une embuscade garde ses monstres (écrits pour l'aventure)
   if (A.renfort) { // à 4 : quelques monstres de plus, posés dans des couloirs (cases de sol hors salle, loin du départ)
     const libres = []; for (let y = 0; y < R.h; y++) for (let x = 0; x < R.w; x++) { const c = cle(x, y); if (!R.murs[c] && !R.salle[c] && !R.portes[c] && !R.obj[c] && !S.heros.some(h => dist(h, { x, y }) < 8) && !R.monstres.some(m => m.x === x && m.y === y)) libres.push([x, y]); }
-    const sorte = S.scen === 'brulees' ? ['loup', 'gobelin', 'salamandre'] : S.scen === 'labyrinthe' ? ['gobelin', 'osclaque', 'page'] : S.scen === 'cloitre' ? ['spectregivre', 'loupblanc', 'spectregivre'] : S.scen === 'refectoire' ? ['goule', 'spectregivre', 'goule'] : S.scen === 'cellules' ? ['spectregivre', 'goule', 'loupblanc'] : ['rouagelin', 'coucou', 'rouagelin'];
+    const sorte = S.scen === 'brulees' ? ['loup', 'gobelin', 'salamandre'] : S.scen === 'labyrinthe' ? ['gobelin', 'osclaque', 'page'] : S.scen === 'cloitre' ? ['spectregivre', 'loupblanc', 'spectregivre'] : S.scen === 'refectoire' ? ['goule', 'spectregivre', 'goule'] : S.scen === 'cellules' ? ['spectregivre', 'goule', 'loupblanc'] : S.scen === 'crypte' ? ['osclaque', 'spectregivre', 'goule'] : ['rouagelin', 'coucou', 'rouagelin'];
     for (let i = 0; i < A.renfort && libres.length; i++) { const [x, y] = libres.splice(Math.floor(hasard(S) * libres.length), 1)[0]; ajouteMonstre(S, sorte[i % sorte.length], x, y); }
   }
 }
@@ -540,6 +610,7 @@ function nouvelle(heros, s, scen, opts = {}) {
   if (scen === 'entrainement') { construitEntrainement(S, R); voir(S); log(S, '🎓 L’entraînement de Moustache : un petit donjon pour apprendre.'); debutTour(S); return S; }
   if (scen === 'arene') { construitArene(S, R, opts); adapte(S); S.objectif = 'vaincre'; log(S, '⚔ Embuscade ! Abattez tous les monstres.'); debutTour(S); return S; }
   if (scen === 'refectoire') { construitLabyrinthe(S, R); adapte(S); voir(S); S.froid = SCEN.refectoire.froid; log(S, `🔔 Le Réfectoire gelé : trouvez la corde dans l’un des deux coffres gravés (attention, un seul dit vrai), tournez les quatre statues vers la cloche, puis sonnez-la. ❄ Le froid : un dé qui fait 1 gèle.`); if (R.menteur) log(S, `📜 Les deux coffres gravés : à gauche ${R.menteur.gauche} ; à droite ${R.menteur.droite}${R.menteur.regle ? ' ' + R.menteur.regle : ''}`); debutTour(S); return S; }
+  if (scen === 'crypte') { construitLabyrinthe(S, R); adapte(S); placeRoi(S); voir(S); S.froid = SCEN.crypte.froid; log(S, '👑 La Crypte du Roi : trouvez son reliquaire dans les sarcophages (frère Aubin : « c’est là où la glace ne fond pas »), puis entrez dans la crypte. Pendant le combat, Bran forge la rune à l’enclume : protégez-le. Le Roi a trois phases ; la dernière, son cœur de glace, ne se brise qu’avec la rune (ou les dés, si le reliquaire est brisé). ❄ Le froid : un dé qui fait 1 gèle.'); debutTour(S); return S; }
   if (scen === 'cellules') { construitLabyrinthe(S, R); adapte(S); placeBran(S); voir(S); S.froid = SCEN.cellules.froid; log(S, '🔔 Les Cellules gelées : délivrez frère Aubin de sa cellule, escortez-le (il suit le héros le plus proche, il ouvre les murs fissurés), libérez le Chevalier de glace de son armure pour prendre la clé du clocher, puis tirez les leviers chantants dans l’ordre de l’air qu’Aubin fredonne. ❄ Le froid : un dé qui fait 1 gèle.'); debutTour(S); return S; }
   if (scen === 'cloitre') { construitLabyrinthe(S, R); adapte(S); voir(S); S.froid = SCEN.cloitre.froid; log(S, '🔔 Le Cloître gelé : trouvez la corde de la cloche dans les meubles et sonnez la cloche, tout au fond. ❄ Le froid : un dé qui fait 1 gèle et revient tel quel au tour suivant.'); debutTour(S); return S; }
   if (scen === 'labyrinthe') { construitLabyrinthe(S, R); adapte(S); voir(S); log(S, '✦ Le Labyrinthe des Runes : un donjon jamais vu. Trouvez 3 fragments de rune dans les meubles et portez-les à l’autel, tout au fond.'); debutTour(S); return S; }
@@ -608,7 +679,7 @@ function ajouteMonstre(S, b, x, y) { const B = BETES[b]; const m = { id:'m' + S.
 function libre(S, x, y, sauf, sauf2) { const R = S.R; if (x < 0 || y < 0 || x >= R.w || y >= R.h || R.murs[cle(x, y)]) return false;
   const p = R.portes[cle(x, y)]; if (p && !p.ouverte) return false;
   if (R.grille && x === R.grille.x && y === R.grille.y && !grilleOuverte(S)) return false;
-  if (R.monstres.some(m => m !== sauf && m.x === x && m.y === y)) return false; if (R.aubin && R.aubin !== sauf && !sauf2 && R.aubin.x === x && R.aubin.y === y) return false; if (R.boss && R.boss !== sauf && R.boss.x === x && R.boss.y === y) return false; return true; }
+  if (R.monstres.some(m => m !== sauf && m.x === x && m.y === y)) return false; if (!sauf2 && [R.aubin, R.forgeron].some(P => P && P !== sauf && P.x === x && P.y === y)) return false; if (R.boss && R.boss !== sauf && R.boss.x === x && R.boss.y === y) return false; return true; }
 const herosEn = (S, x, y) => S.heros.find(h => h.x === x && h.y === y);
 // 17/11 (l'utilisateur : « l'autre reste bloqué dedans, il faut retourner sur la dalle ») : un héros qui se tient SOUS la grille la retient ouverte
 const grilleOuverte = S => !!(S.R.grille && S.heros.some(h => !h.aTerre && ((h.x === S.R.grille.dx && h.y === S.R.grille.dy) || (h.x === S.R.grille.x && h.y === S.R.grille.y))));
@@ -799,7 +870,7 @@ function bouger(S, hi, idDe, x, y) {
   if (S.R.grille && ((de0[0] === S.R.grille.dx && de0[1] === S.R.grille.dy) || (de0[0] === S.R.grille.x && de0[1] === S.R.grille.y)) && !grilleOuverte(S)) log(S, `⬆ ${nm(h)} s’en va : la grille retombe dans un grand bruit de fer.`);
   else if (S.R.grille && de0[0] === S.R.grille.dx && de0[1] === S.R.grille.dy && grilleOuverte(S)) log(S, `⬆ ${nm(h)} quitte la dalle, mais la grille reste ouverte : quelqu’un la retient.`);
   voir(S); { const R = S.R, ici = R.salle[cle(x, y)]; if (!R.lus) R.lus = Object.assign({}, R.vuSalle); if (ici && !R.lus[ici]) { R.lus[ici] = true; ev.push({ t:'salle', salle:ici }); } }
-  ev.push(...suitAubin(S)); return { ok:true, ev };
+  ev.push(...suitAubin(S)); ev.push(...eveilRoi(S)); return { ok:true, ev };
 }
 function frapper(S, hi, idDe, mid, k) {
   const h = S.heros[hi], d = h.des.find(z => z.id === idDe), R = S.R;
@@ -809,7 +880,7 @@ function frapper(S, hi, idDe, mid, k) {
   const flam = m === R.boss && h.flamme ? 1 : 0; // 16/11 soir : la bénédiction du feu de la Galerie (+1 contre l'Horloger)
   const s = m.sceaux[k], pwB = s && (s.t === 'min' || s.t === 'tot') ? pwBonusSceau(S, h, m, s) : 0, bonus = s && (s.t === 'min' || s.t === 'tot') ? (h.att || 0) + flam + (d.b || 0) + pwB : 0, vA = d.v + bonus; // + les pouvoirs (16/11 nuit) // + le bonus forgé de la face // ⚔ l'Attaque de l'équipement compte sur les sceaux « ≥ » et « Σ »
   if (!s || !accepte(s, vA, m.sceaux)) return 'Ce dé ne va pas sur ce sceau.';
-  if (m === R.boss && phasesDe(S)[m.phase].intouchable) return 'Il est intouchable : trouvez et brisez son reliquaire.';
+  if (bossIntouchable(S, m)) return R.boss.b === 'roihiver' ? 'Son cœur de glace est hors d’atteinte : il faut la rune de Bran (ou briser son reliquaire, caché dans un sarcophage).' : 'Il est intouchable : trouvez et brisez son reliquaire.';
   prendDe(h, idDe); remplit(S, h, 1); pose(s, vA); m.dernier = d.v; if (d.v === 6) m.six = R.tour; if (pwB) h.bonusP = 0;
   log(S, `⚔ ${nm(h)} pose un ${d.v}${bonus ? ` +${bonus} (${[h.att ? 'équipement' : '', flam ? 'flamme' : '', d.b ? 'dé forgé' : '', pwB ? 'pouvoir' : ''].filter(Boolean).join(', ')}) = ${vA}` : ''} sur ${m.n}.`);
   const evPw = pwApresFrappe(S, hi, d);
@@ -826,6 +897,7 @@ function verifieMonstre(S, m) {
   const R = S.R, ev = [];
   if (!m.sceaux.length || !m.sceaux.every(s => s.ok)) return ev;
   if (m === R.boss) return bossPhaseSuivante(S, ev);
+  if (m.b === 'reliquaire' && S.scen === 'crypte') { R.monstres = R.monstres.filter(z => z !== m); S.score += 80; R.reliquaireBrise = true; log(S, '💥 Le reliquaire du Roi éclate ! Quelque part sous vos pieds, un cri de rage. Son cœur de glace sera fragile : on pourra le frapper avec les dés, et il ne se reformera plus.'); ev.push({ t:'tombe', m:m.id }, { t:'reliquaire' }); return ev; }
   if (m.b === 'reliquaire') { R.monstres = R.monstres.filter(z => z !== m); S.score += 60; log(S, '💥 Le Reliquaire éclate en mille éclats d’os !'); ev.push({ t:'tombe', m:m.id }); if (R.boss && phasesDe(S)[R.boss.phase].intouchable) bossPhaseSuivante(S, ev); return ev; }
   if (BETES[m.b].armure) { R.monstres = R.monstres.filter(z => z !== m); S.score += 120; S.sablier += 3; S.cleClocher = true; S.branLibre = true;
     log(S, '❄ L’armure de givre éclate en mille éclats ! Dessous, un homme à genoux, la barbe blanche de givre, libre : c’est Bran, le père de Maëlle. Il vous tend une grosse clé de fer : la clé du clocher. (+3 grains)');
@@ -839,6 +911,7 @@ function verifieMonstre(S, m) {
 }
 function bossPhaseSuivante(S, ev) {
   const R = S.R, P = phasesDe(S), roi = R.boss.b === 'roios';
+  if (R.boss.b === 'roihiver') return phaseHiver(S, ev);
   R.boss.phase++; ev.push({ t:'phase', m:'boss' });
   if (R.boss.phase >= P.length) { R.boss = null; S.fin = 'gagne'; S.score += 500 + S.sablier * 10; log(S, roi ? '🏆 Le Roi des Os tombe en poussière… et le Labyrinthe se tait.' : '🏆 L’Horloger s’arrête… et s’excuse !'); return ev; }
   if (!roi) { S.heros.filter(h => !h.aTerre).forEach(h => { h.bouclier = Math.floor(h.bouclier / 2); }); log(S, '⏳ Le temps s’accélère : tous les boucliers fondent de moitié.'); } // 16/11 soir
@@ -846,6 +919,14 @@ function bossPhaseSuivante(S, ev) {
   log(S, `${roi ? '💀' : '⏰'} ${R.boss.n} passe à la phase « ${P[R.boss.phase].n} » : il ${P[R.boss.phase].d}.`);
   if (P[R.boss.phase].intouchable) cacheReliquaire(S);
   return ev;
+}
+function phaseHiver(S, ev) {
+  const R = S.R, P = PHASES_HIVER, Bo = R.boss; Bo.phase++; ev.push({ t:'phase', m:'boss' });
+  if (Bo.phase >= P.length) { R.boss = null; S.froid = 1; S.fin = 'gagne'; S.score += 600 + S.sablier * 10; log(S, '🏆 Le cœur de glace éclate en mille éclats ! Le Roi de l’Hiver se fige… et tombe en neige. Dehors, le blizzard s’arrête net.'); return ev; }
+  Bo.sceaux = sceauxBoss(S, Bo.phase);
+  if (Bo.phase === 1) { Bo.img = 'roihiver-blizzard'; S.froid = 2; log(S, '🌨 LE BLIZZARD SE LÈVE ! Les 1 ET les 2 gèlent, et le froid ronge 1 PV par tour à chaque héros.'); }
+  if (Bo.phase === 2) { Bo.img = 'roihiver'; S.froid = 1; log(S, `💠 Le blizzard retombe… et la poitrine du Roi s’ouvre sur son CŒUR DE GLACE. ${R.reliquaireBrise ? 'Le reliquaire est brisé : le cœur est fragile, frappez-le avec vos dés… ou avec la rune de Bran.' : 'Seule la rune de Bran peut le briser !'}`); }
+  log(S, `👑 ${Bo.n} passe à la phase « ${P[Bo.phase].n} » : il ${P[Bo.phase].d}.`); return ev;
 }
 // le reliquaire va dans le meuble pas fouillé le plus proche du boss (sinon il roule à côté de lui)
 function cacheReliquaire(S) {
@@ -979,7 +1060,7 @@ function fouilleMeuble(S, hi, idDe, x, y, o) {
     case 'potion2': (h.sac = h.sac || []).push('potion', 'potion'); ev.quoi = 'potion'; log(S, `🎒 ${nom} trouve DEUX potions de soin dans ${MEUBLE_N[o.t]} ! (dans son sac)`); break;
     case 'reliquaire': { const p = [[1, 0], [-1, 0], [0, 1], [0, -1]].map(([dx, dy]) => [x + dx, y + dy]).find(([a, b]) => libre(S, a, b) && !herosEn(S, a, b)) || [h.x, h.y];
       const m = ajouteMonstre(S, 'reliquaire', p[0], p[1]); m.att = 0; R.vu[cle(p[0], p[1])] = 1; ev.quoi = 'monstre';
-      log(S, `💀 ${nom} renverse ${MEUBLE_N[o.t]} : LE RELIQUAIRE du Roi des Os roule sur le sol ! Brisez-le (un 2, un 4, un 6).`); break; }
+      log(S, S.scen === 'crypte' ? `💀 ${nom} ouvre le sarcophage où le givre ne fondait pas : LE RELIQUAIRE DU ROI DE L’HIVER, un cœur de glace qui bat ! Brisez-le (un 2, un 4, un 6).` : `💀 ${nom} renverse ${MEUBLE_N[o.t]} : LE RELIQUAIRE du Roi des Os roule sur le sol ! Brisez-le (un 2, un 4, un 6).`); break; }
     case 'grains': S.sablier += 3; log(S, `⌛ Un petit sablier dans ${MEUBLE_N[o.t]} : +3 grains !`); break;
     case 'or': S.score += 50; S.orAv = (S.orAv || 0) + 10; log(S, `💰 Des pièces d’or dans ${MEUBLE_N[o.t]} : +10 or dans la bourse du groupe.`); break;
     case 'objet': { if (hasard(S) < (h.av ? .6 : .35)) { S.equipTrouve = (S.equipTrouve || 0) + 1; ev.quoi = 'equip'; log(S, `🗡 ${nom} trouve une PIÈCE D’ÉQUIPEMENT dans ${MEUBLE_N[o.t]} ! (elle t’attend dans le coffre des héros)`); break; }
@@ -988,6 +1069,8 @@ function fouilleMeuble(S, hi, idDe, x, y, o) {
     case 'piege': if (a_t(h, 'chanceux')) { log(S, `🍀 ${nm(h)} évite le piège caché dans ${MEUBLE_N[o.t]}.`); break; } blesseHeros(S, h, 2); log(S, `⚠ ${Le} était piégé : ${nom} −2 PV.`); break;
     case 'monstre': { const p = [[1, 0], [-1, 0], [0, 1], [0, -1]].map(([dx, dy]) => [x + dx, y + dy]).find(([a, b]) => libre(S, a, b) && !herosEn(S, a, b));
       if (p) { const m = ajouteMonstre(S, S.scen === 'horloger' || !S.scen ? 'rouagelin' : S.scen === 'cloitre' || S.scen === 'cellules' ? 'spectregivre' : S.scen === 'refectoire' ? 'goule' : 'gobelin', p[0], p[1]); m.it = 'frappe'; R.vu[cle(p[0], p[1])] = 1; log(S, `👹 ${m.n} jaillit de ${MEUBLE_N[o.t]} !`); } break; }
+    case 'squelette': { const p = [[1, 0], [-1, 0], [0, 1], [0, -1]].map(([dx, dy]) => [x + dx, y + dy]).find(([a, b]) => libre(S, a, b) && !herosEn(S, a, b));
+      if (p) { const m = ajouteMonstre(S, 'osclaque', p[0], p[1]); m.it = 'frappe'; R.vu[cle(p[0], p[1])] = 1; } ev.quoi = 'monstre'; log(S, `💀 ${nom} fait glisser le couvercle du sarcophage… pas de reliquaire : un squelette se redresse en claquant des dents ! (Aubin : « Là où la glace ne fond pas… »)`); break; }
     case 'mimique': { const p = [[1, 0], [-1, 0], [0, 1], [0, -1]].map(([dx, dy]) => [x + dx, y + dy]).find(([a, b]) => libre(S, a, b) && !herosEn(S, a, b));
       if (p) { const m = ajouteMonstre(S, 'mimique', p[0], p[1]); m.it = 'frappe'; R.vu[cle(p[0], p[1])] = 1; } log(S, `👄 ${Le} ouvre une gueule pleine de dents : c’est une MIMIQUE !`); ev.mimique = true; break; }
     default: log(S, `🔍 ${nom} fouille ${MEUBLE_N[o.t]}… de la poussière, rien d’autre.`);
@@ -1033,7 +1116,9 @@ function finTour(S) {
   const plusProche0 = m => debout().filter(h => memeEtage(h, m)).sort((a, b) => dist(a, m) - dist(b, m))[0];
   // 27/11 : frère Aubin (libre, debout) peut être visé s'il est PLUS PRÈS que tous les héros
   // les SPECTRES DE GIVRE en veulent au dernier Veilleur : ils le visent dès qu'il est à 6 cases ou moins
-  const plusProche = m => { const h = plusProche0(m), A = R.aubin; return A && A.libre && !A.aTerre && m !== R.boss && (!h || dist(A, m) < dist(h, m) || (m.b === 'spectregivre' && dist(A, m) <= 6)) ? A : h; };
+  const plusProche = m => { const h = plusProche0(m); if (m === R.boss) return h; let c = h;
+    [R.aubin, R.forgeron].forEach(P => { if (!P || (P.aubin && !P.libre) || P.aTerre || (P.pnj === 'bran' && (!R.boss || R.boss.dort))) return; // Bran n'est visé que pendant la forge
+      if (!c || dist(P, m) < dist(c, m) || (P.aubin && m.b === 'spectregivre' && dist(P, m) <= 6)) c = P; }); return c; };
   const marche = (m, cible, n) => { const de = [m.x, m.y]; marche1(m, cible, n); if (m.x !== de[0] || m.y !== de[1]) ev.push({ t:'pas', m:m.id, de }); };
   const marche1 = (m, cible, n) => { for (let i = 0; i < n; i++) { if (!cible || contact(S, m, cible)) return;
     const opts = [[1, 0], [-1, 0], [0, 1], [0, -1]].map(([dx, dy]) => [m.x + dx, m.y + dy]).filter(([x, y]) => libre(S, x, y, m) && !herosEn(S, x, y) && R.vu[cle(x, y)] && !(R.portes[cle(x, y)] && !R.portes[cle(x, y)].ouverte) && !(R.liens && R.liens[cle(x, y)]));
@@ -1042,7 +1127,7 @@ function finTour(S) {
   const fumee = R.fumee; R.fumee = false;
   // 17/11 (bug mesuré) : un monstre posé sur un bout d'escalier ne voyait plus personne et bloquait le passage : il en descend d'une case
   if (R.liens) for (const m of R.monstres) { if (!R.liens[cle(m.x, m.y)] || BETES[m.b].immobile) continue; const c = [[1, 0], [-1, 0], [0, 1], [0, -1]].map(([dx, dy]) => [m.x + dx, m.y + dy]).find(([x, y]) => libre(S, x, y, m) && !herosEn(S, x, y) && !R.liens[cle(x, y)]); if (c) [m.x, m.y] = c; }
-  ev.push(...suitAubin(S)); // 27/11 : à la fin du tour des héros, frère Aubin rejoint le héros le plus proche (s'il vient d'être relevé, par exemple)
+  ev.push(...suitAubin(S)); ev.push(...eveilRoi(S)); // 27/11 : à la fin du tour des héros, frère Aubin rejoint le héros le plus proche (s'il vient d'être relevé, par exemple)
   pwLouves(S, ev); // 16/11 nuit : la louve de Pip mord avant que les monstres jouent
   for (const m of R.monstres.slice()) {
     if (fumee) break;
@@ -1071,16 +1156,22 @@ function finTour(S) {
     if (m.it === 'gros') { const casse = m.sceaux.filter(s => s.ok).length > m.charge; m.charge = null; if (casse) log(S, `💥 Le gros coup de ${m.n} est brisé : vous lui avez cassé un sceau à temps !`); else { plus += 2; pourquoi.push('gros coup +2'); } }
     if (B.meute && R.monstres.some(z => z !== m && z.b === m.b && contact(S, z, c))) { plus += 1; pourquoi.push('meute +1'); }
     if (B.lache && !S.heros.some(z => z !== c && !z.aTerre && voisins(z, c))) { plus += 2; pourquoi.push('héros seul +2'); }
-    if (c.aubin) { if (contact(S, m, c)) { const perdu = blesseAubin(S, m.att + plus); ev.push({ t:'frappeA', m:m.id, v:perdu }); log(S, `⚔ ${m.n} frappe frère Aubin (−${perdu}).`); } continue; }
+    if (c.pnj || c.aubin) { if (contact(S, m, c)) { const perdu = c.aubin ? blesseAubin(S, m.att + plus) : blesseForgeron(S, m.att + plus); ev.push({ t:'frappeA', m:m.id, v:perdu, qui:c.aubin ? 'aubin' : 'bran' }); log(S, `⚔ ${m.n} frappe ${c.aubin ? 'frère Aubin' : 'Bran'} (−${perdu}).`); } continue; }
     if (contact(S, m, c)) { const perdu = blesseHeros(S, c, Math.max(0, m.att + plus - pwMoinsCoup(S, c))); ev.push({ t:'frappe', m:m.id, h:S.heros.indexOf(c), v:perdu }); log(S, `⚔ ${m.n} frappe ${nm(c)} (−${perdu}${pourquoi.length ? ' : ' + pourquoi.join(', ') : ''}).`); pwApresCoup(S, m, c, ev); }
   }
   if (R.boss && !S.fin && (S.mur === R.tour || R.boss.entrave >= R.tour)) log(S, S.mur === R.tour ? '🧱 Le mur de lumière tient : le boss ne frappe pas ce tour.' : '🌵 Le boss est entravé : il ne fait rien ce tour.');
   else if (R.boss && !S.fin) {
     const Bo = R.boss;
-    if (Bo.repos) { const s = Bo.sceaux.find(x => x.ok && x.t !== 'tot'); if (s) { s.ok = false; s.val = 0; } log(S, Bo.b === 'roios' ? '💀 Le Roi des Os reprend son souffle (un sceau se referme).' : '⏰ L’Horloger remonte son ressort (un sceau se referme)… et frappe quand même.'); ev.push({ t:'garde', m:'boss' }); }
+    if (Bo.repos && Bo.b !== 'roihiver') { const s = Bo.sceaux.find(x => x.ok && x.t !== 'tot'); if (s) { s.ok = false; s.val = 0; } log(S, Bo.b === 'roios' ? '💀 Le Roi des Os reprend son souffle (un sceau se referme).' : '⏰ L’Horloger remonte son ressort (un sceau se referme)… et frappe quand même.'); ev.push({ t:'garde', m:'boss' }); }
     // 16/11 soir : l'Horloger ne se repose plus (comme les boss de Gloomhaven, il agit à chaque tour) ; il frappe TOUS les héros collés à lui (coup de balancier)
     const balancier = n => debout().filter(h => contact(S, Bo, h)).forEach(h => { const perdu = blesseHeros(S, h, Math.max(0, n - pwMoinsCoup(S, h)), true); pwApresCoup(S, Bo, h, ev); ev.push({ t:'frappe', m:'boss', h:S.heros.indexOf(h), v:perdu }); log(S, `⚔ Coup de balancier sur ${nm(h)} (−${perdu}, perce la moitié du bouclier).`); });
     if (Bo.repos && Bo.b === 'roios') {}
+    else if (Bo.b === 'roihiver') { if (!Bo.dort) { const c = plusProche0(Bo); marche(Bo, c, 1);
+        if (c && contact(S, Bo, c)) { const n = Bo.att + (Bo.phase === 2 ? 1 : 0), perdu = blesseHeros(S, c, Math.max(0, n - pwMoinsCoup(S, c))); pwApresCoup(S, Bo, c, ev); ev.push({ t:'frappe', m:'boss', h:S.heros.indexOf(c), v:perdu }); log(S, `⚔ ${Bo.n} frappe ${nm(c)} (−${perdu}).`); }
+        if (Bo.phase === 0 && (R.tour % 2 === 0 || (S.nbHeros || 1) >= 3) && R.monstres.filter(m => m.b === 'spectregivre').length < Math.min(3, S.nbHeros || 1)) { const p = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [-1, -1], [1, -1], [-1, 1]].map(([dx, dy]) => [Bo.x + dx, Bo.y + dy]).find(([x, y]) => libre(S, x, y) && !herosEn(S, x, y)); if (p) { ajouteMonstre(S, 'spectregivre', p[0], p[1]); R.vu[cle(p[0], p[1])] = 1; log(S, '👑 « Levez-vous, mes spectres ! » Un spectre de givre sort de la glace.'); } }
+        if (Bo.phase === 1) { debout().forEach(h => blesseHeros(S, h, 1, true)); log(S, '🌨 Le blizzard ronge : chaque héros perd 1 PV.'); }
+        if (Bo.phase === 2 && !R.reliquaireBrise) { const s = Bo.sceaux.find(x => x.ok); if (s) { s.ok = false; s.val = 0; s.reste = s.t === 'tot' ? s.v : 0; log(S, '💠 Le cœur de glace se reforme (un sceau se referme).'); } }
+        ev.push({ t:'boss' }); } }
     else if (Bo.b === 'roios') {
       const c = plusProche(Bo); marche(Bo, c, 1);
       const coup = n => { if (c && contact(S, Bo, c)) { const perdu = blesseHeros(S, c, Math.max(0, n - pwMoinsCoup(S, c))); pwApresCoup(S, Bo, c, ev); ev.push({ t:'frappe', m:'boss', h:S.heros.indexOf(c), v:perdu }); log(S, `⚔ ${Bo.n} frappe ${nm(c)} (−${perdu}).`); } };
@@ -1103,6 +1194,14 @@ function finTour(S) {
     Bo.repos = !Bo.repos; Bo.riposte = {};
   }
   if (S.evPw) { ev.push(...S.evPw); S.evPw = null; }
+  if (R.forgeron && R.boss && !R.boss.dort && !S.runePrete && !S.fin) { const F = R.forgeron;
+    if (F.aTerre) log(S, '🔨 La forge est arrêtée : Bran est à terre.');
+    else { const ma = S.heros.some(h => h.id === 'maelle' && !h.aTerre && pres(h, F)); S.forge = Math.min(3, (S.forge || 0) + 1 + (ma ? 1 : 0));
+      if (S.forge >= 3) { S.runePrete = true; const q = S.heros.filter(h => !h.aTerre).sort((a, b) => dist(a, F) - dist(b, F))[0];
+        if (q) { q.rune = true; S.runePrise = true; log(S, `🔥 CLANG ! Bran trempe la rune dans la neige : elle siffle et brille. LA RUNE EST PRÊTE ! « ${nm(q)}, attrape ! » ${nm(q)} la porte maintenant : au contact du Roi, quand son cœur de glace se montrera, un dé suffit à le briser.`); }
+        else log(S, '🔥 CLANG ! LA RUNE EST PRÊTE ! Un héros juste à côté de Bran peut la prendre (un pas).');
+        ev.push({ t:'runePrete', h:q ? S.heros.indexOf(q) : -1 }); }
+      else log(S, `🔨 Bran frappe l’enclume${ma ? ', Maëlle tient la pince à côté de lui' : ''} : la rune avance (${S.forge}/3).`); } }
   S.sablier = Math.max(0, S.sablier - 1); if (S.sablier === 0) log(S, '⌛ Le sablier est vide : le temps se fige, chaque héros a un dé de moins.');
   if (!debout().length) { S.fin = 'perdu'; log(S, '❄ Tous les héros sont à terre…'); return ev; }
   R.frappeurs = {}; voir(S);
@@ -1155,6 +1254,7 @@ function acheter(S, hi, k) {
 // 16/11 : LA PAUSE AU FEU DE CAMP (comme le repos court de D&D / le feu de camp de Darkest Dungeon) : 2 fois par partie, +4 PV à chacun, le sablier perd 3 grains
 function pause(S) {
   const R = S.R; if ((S.pauses || 0) >= 2) return 'Plus de pause possible : 2 par partie.';
+  if (R.boss && R.boss.b === 'roihiver' && !R.boss.dort) return 'Pas de pause : le Roi de l’Hiver est réveillé.';
   const proche = R.monstres.some(m => reveille(S, m) && S.heros.some(h => !h.aTerre && dist(h, m) <= 5 && (!R.plan || etageDe(S, h.y) === etageDe(S, m.y))));
   if (proche) return 'Des monstres rôdent trop près : impossible de se reposer.';
   S.pauses = (S.pauses || 0) + 1; S.sablier = Math.max(0, S.sablier - 3);
@@ -1202,7 +1302,7 @@ function trouveCombo(des, co) {
   return null;
 }
 // les monstres
-const touchable = (S, m) => m && m.sceaux && m.sceaux.some(s => !s.ok) && !(m === S.R.boss && phasesDe(S)[m.phase].intouchable);
+const touchable = (S, m) => m && m.sceaux && m.sceaux.some(s => !s.ok) && !bossIntouchable(S, m);
 const tousMonstres = S => S.R.monstres.concat(S.R.boss ? [S.R.boss] : []);
 const collesA = (S, h) => tousMonstres(S).filter(m => touchable(S, m) && contact(S, h, m)).sort((a, b) => (b === S.R.boss) - (a === S.R.boss) || a.sceaux.filter(s => !s.ok).length - b.sceaux.filter(s => !s.ok).length);
 const aDist = (S, h, n) => tousMonstres(S).filter(m => touchable(S, m) && visible(S, m.x, m.y) && dist(h, m) <= n).sort((a, b) => dist(h, a) - dist(h, b));
@@ -1346,7 +1446,7 @@ function transmuter(S, hi, idDe) {
   if (h.id !== 'zephine' || !pwA(h, 'passif', 'A')) return 'Seule Zéphine (Transmutation) sait retourner un dé.'; if (h.transT === S.R.tour) return 'Une fois par tour.';
   const av = d.v; d.v = 7 - d.v; d.mod = true; h.transT = S.R.tour; log(S, `🔄 Transmutation : le ${av} de Zéphine devient un ${d.v}.`); return { ok:true, ev:[pwEv(h, hi, 'passif', ['h' + hi])] };
 }
-const API = { aubin, parler, suitAubin, dansClocher, LEVIERS_C, JAUGE_ULT, GRANDIT, miseAJour:S => { if (S && S.R && S.R.plan === 2) { elargitPortes(S); majBibliotheque(S); majBibliotheque3(S); majBibliotheque5(S); majAutel2(S); } return S; }, benir, ETAL, acheter, pause, echanger, prendreEscalier, moitiesPorte, presDePorte, rectSalle, etageDe, COULOIRS_Z2, CAPA, phasesDe, grilleOuverte, contact, pasDe, aPortee, SAC, utiliser, SCEN, HEROS_C, BETES, PHASES, SALLES, OBJETS, MEUBLE_N, nouvelle, atteignables, bouger, frapper, proteger, soigner, donner, relever, fouiller, agir, ouvrir,
+const API = { verifieMonstre, forgeron, runeCoeur, bossIntouchable, dansCrypte, PHASES_HIVER, aubin, parler, suitAubin, dansClocher, LEVIERS_C, JAUGE_ULT, GRANDIT, miseAJour:S => { if (S && S.R && S.R.plan === 2) { elargitPortes(S); majBibliotheque(S); majBibliotheque3(S); majBibliotheque5(S); majAutel2(S); } return S; }, benir, ETAL, acheter, pause, echanger, prendreEscalier, moitiesPorte, presDePorte, rectSalle, etageDe, COULOIRS_Z2, CAPA, phasesDe, grilleOuverte, contact, pasDe, aPortee, SAC, utiliser, SCEN, HEROS_C, BETES, PHASES, SALLES, OBJETS, MEUBLE_N, nouvelle, atteignables, bouger, frapper, proteger, soigner, donner, relever, fouiller, agir, ouvrir,
   finTour, visible, accepte, coutEchange, voisins, dist, herosEn, cle, libre, reveille, pwInfo, lancerPouvoir, transmuter, trouveCombo, PW_CO, COMBOS };
 if (typeof module !== 'undefined' && module.exports) module.exports = API; else racine.CHRON = API;
 })(typeof window !== 'undefined' ? window : globalThis);

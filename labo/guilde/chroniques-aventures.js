@@ -122,6 +122,27 @@ const AVENTURES = {
         gagne:['🔔 Les trois cloches sonnent ensemble !', '« Les trois cloches sonnent ensemble… le sol tremble : la crypte s’ouvre. » Frère Aubin, tout pâle : « Il dort sous nos pieds depuis cent ans. Vous l’avez réveillé tout à fait. Désolé. »'] } },
       { t:'fin', titre:'Les trois cloches', fond:'monastere', texte:'Les trois cloches sonnent ensemble, et le son roule jusqu’au village. Puis le sol tremble : tout au fond du monastère, la dalle de la crypte se fend en deux. Frère Aubin, tout pâle : « Il dort sous nos pieds depuis cent ans. Vous l’avez réveillé tout à fait. Désolé. » Au pied de l’escalier, Bran attend, enroulé dans une couverture qu’Ilse lui a apportée. Il regarde sa fille longtemps, puis il se lève, même s’il tremble encore : « Le Roi de l’Hiver m’a pris dix ans. Cette fois, on descend ensemble. » Maëlle sourit pour la première fois depuis le col : « Ensemble. Mais c’est moi qui porte le marteau. » Moustache, la queue gonflée : « Une crypte. Bien sûr. Pourquoi pas une crypte. » <br><br><b>À suivre : chapitre 4, « Le Roi de l’Hiver », le 12 janvier.</b>', xp:250 },
     ] },
+  // 27/11 : chapitre 4 « Le Roi de l'Hiver » (à partir du 12 janvier) et l'épilogue de la saison
+  cloches4: {
+    titre:'🔔 Les Cloches de givre · Chapitre 4', resume:'Le Roi de l’Hiver : la crypte, le reliquaire, la rune forgée par Bran. Et l’épilogue de la saison.', duree:'45-60 min',
+    saison:'s1', ouvre:'2027-01-12', froid:1, xp:300,
+    scenes:[
+      { t:'recit', titre:'Précédemment…', fond:'monastere', texte:'Les trois cloches que la famille de Maëlle a coulées il y a cent ans s’étaient tues. La première s’était usée : Maëlle l’a retrempée. La deuxième avait été limée : il a fallu déjouer un coffre menteur et tourner quatre statues. Pour la troisième, vous avez délivré frère Aubin, le dernier Veilleur, et sous l’armure du Chevalier de glace, Maëlle a retrouvé son père, Bran, disparu depuis dix ans : le Roi de l’Hiver l’avait pris dans la glace pour limer les runes. Les trois cloches ont sonné ensemble… et la crypte s’est ouverte. Bran est descendu le premier : « L’enclume des Veilleurs est en bas. Je forgerai la rune qui le brise. » Moustache, la queue gonflée : « Une crypte. Bien sûr. »' },
+      { t:'carte', titre:'L’escalier de la crypte', fond:'monastere', carte:'carte-col-enneige', etapes:[
+        { t:'route', n:'Les marches de glace', txt:'Un escalier en colimaçon s’enfonce sous le monastère. Chaque marche est plus froide que la précédente. Aubin descend en comptant tout bas : « Cent marches. Les Veilleurs disaient : cent marches, et l’hiver est en dessous. »' },
+        { t:'embuscade', n:'Les gardiens d’os', txt:'Sur le palier, des squelettes en armure de givre se lèvent en claquant des dents. Ils gardent la crypte depuis cent ans. « Pas de panique, » dit Moustache, « ce ne sont que des os. Des os qui veulent nous manger, d’accord. »', monstres:['osclaque', 'osclaque', 'spectregivre'], obstacles:6 },
+        { t:'fin', n:'La crypte', txt:'Une immense salle voûtée, des sarcophages alignés, chacun près de sa torche. Tout au fond, un trône de glace. Et sur le trône, quelque chose qui respire lentement. Aubin murmure : « Son reliquaire est dans un des sarcophages. Les vieux livres disent : c’est là où la glace ne fond pas. »' },
+      ] },
+      { t:'donjon', scen:'crypte', textes:{
+        titre:'👑 La Crypte du Roi', duree:'',
+        ouverture:'« La crypte des Veilleurs. Des sarcophages, des torches… et le Roi de l’Hiver, endormi sur son trône. Bran vous attend à l’enclume, au fond. »',
+        entree:() => '« Un seul sarcophage garde son givre malgré la torche : c’est lui qui cache le reliquaire. Quand vous entrerez dans la crypte, le Roi se réveillera : protégez Bran pendant qu’il forge la rune (trois tours), puis frappez le cœur du Roi avec elle. »',
+        but:'Trouvez <b>le reliquaire</b> du Roi dans le bon <b>sarcophage</b> (là où le givre ne fond pas près de la torche) et brisez-le, puis entrez dans la crypte : <b>Bran forge la rune</b> pendant le combat (protégez-le), et <b>le Roi de l’Hiver</b> a trois phases. La dernière, son <b>cœur de glace</b>, ne se brise qu’avec la rune (ou avec les dés si le reliquaire est brisé). <b>❄ Le froid</b> : un dé qui fait 1 gèle ; pendant le blizzard, les 1 et les 2.',
+        porter:'Frappez le cœur de glace du Roi avec la rune de Bran.',
+        gagne:['❄ Le cœur de glace éclate !', '« Le Roi de l’Hiver se fige, se fend… et tombe en neige. Dehors, d’un coup, le blizzard s’arrête. »'] } },
+      { t:'epilogue' },
+      { t:'fin', titre:'Briseur de l’Hiver', fond:'aube', texte:'La Saison 1 est finie : le Roi de l’Hiver est brisé, les cloches sonnent, Bran est rentré à la forge, et Maëlle porte son manteau. Tu as gagné le titre <b>« Briseur de l’Hiver »</b>. Moustache s’étire au soleil : « Bon. Le Carnaval, maintenant. J’espère qu’il y aura du poisson. »<br><br><b>À suivre : la Saison 2, « Le Grand Carnaval », la saison de Gorm.</b>', xp:300 },
+    ] },
 };
 // 26/11 : une aventure de saison n'est ouverte que pendant sa saison (le mode atelier l'ouvre toujours, pour les essais)
 const avOuverte = a => !a.saison || localStorage.getItem('guilde-atelier') === '1' || (typeof saisonActive === 'function' && saisonActive() && saisonActive().id === a.saison && (!a.ouvre || almJour() >= a.ouvre)); // ouvre = la date du chapitre
@@ -209,6 +230,7 @@ function joueScene() {
   }
   if (sc.t === 'carte') return joueCarte(sc, tete);
   if (sc.t === 'donjon') return lanceDonjonAV(sc);
+  if (sc.t === 'epilogue') { $('app').innerHTML = `${tete}<div class="scn aube"></div>`; return epilogueS1(() => sceneSuivante()); } // 27/11 : l'épilogue de la Saison 1
 }
 
 // ------------------------------------------------------------------ la carte du monde : le chemin en étapes, le pion qui avance
@@ -316,3 +338,58 @@ function aventuresHTML() {
 
 // la page d'accueil a été dessinée avant ce fichier : on la redessine pour montrer les aventures
 if (typeof S !== 'undefined' && !S && typeof accueil === 'function') accueil();
+
+// =============================================================================================== 27/11 : L'ÉPILOGUE DE LA SAISON 1 (validé le 26/11)
+// « Le chant des trois cloches » : 3 pages illustrées ; à la 2e, LA FORGE DES RUNES à jouer (3 dés à lancer, un par rune, sans échec possible) ;
+// le titre « Briseur de l'Hiver » ; sur la dernière page, un ÉCLAT DE GLACE caché : 3 touchers = Zéphine dans son laboratoire + succès secret.
+function briseurHiver() { try { const d = JSON.parse(localStorage.getItem('guilde-saison1') || '{}'); if (!d.briseur) { d.briseur = Date.now(); localStorage.setItem('guilde-saison1', JSON.stringify(d)); } } catch (e) {} }
+const EPI_S1 = [
+  { img:'decor/scene-monastere.webp', titre:'Le chant des trois cloches', texte:'Le cœur de glace se brise avec un bruit de rivière qui dégèle. Le Roi de l’Hiver tombe en neige, et la neige ne remonte plus. Dehors, d’un coup, le blizzard s’arrête. Pour la première fois depuis des semaines, on entend… le silence. Puis un oiseau.' },
+  { img:'decor/scene-monastere.webp', chaud:true, titre:'La forge des Veilleurs', texte:'Au sommet du monastère, Bran et Maëlle rallument la vieille forge des Veilleurs. Trois nouvelles runes de braise, forgées à deux : celles-là tiendront bien plus de dix ans. Lance un dé pour chaque rune.', forge:true },
+  { img:'decor/scene-fin-hiver.webp', titre:'L’aube', texte:'À l’aube, les trois cloches sonnent ensemble, et la vallée entière sort sur le pas des portes. Frère Aubin rouvre les grandes portes du monastère : « Il y aura de nouveau des Veilleurs. Il le faut. » Au village, Bran pose sur les épaules de Maëlle son vieux manteau de fourrure : « Il est à toi. Il a assez attendu. » (le costume d’hiver de Maëlle, au palier 30 de l’Almanach). Et dans la foule, Gorm porte son grand cor à ses lèvres : « Et maintenant… LE GRAND CARNAVAL ! »', fin:true },
+];
+let EPI = null;
+function epilogueS1(fini) {
+  briseurHiver(); EPI = { p:0, runes:[], eclat:0, fini:fini || null };
+  let el = document.getElementById('epi'); if (!el) { el = document.createElement('div'); el.id = 'epi'; document.body.appendChild(el); }
+  if (!document.getElementById('epi-style')) { const st = document.createElement('style'); st.id = 'epi-style'; st.textContent = `
+    #epi { position:fixed; inset:0; z-index:2147483000; background:#07091a; color:#f4ead2; overflow:hidden; display:flex; flex-direction:column; }
+    #epi .im { flex:0 0 38%; background-size:cover; background-position:center; position:relative; }
+    #epi .im::after { content:''; position:absolute; inset:0; background:linear-gradient(180deg, transparent 55%, #07091a); }
+    #epi .tx { flex:1; padding:3vw 5vw; overflow:auto; font-size:4vw; line-height:1.45; } #epi h2 { color:#f3c96b; margin:.2em 0 .4em; font-size:6vw; text-align:center; }
+    #epi .bas { padding:3vw 5vw 6vw; display:flex; gap:3vw; } #epi .bas button { flex:1; padding:3.4vw; font-size:4.2vw; border-radius:3vw; border:0; background:#f3c96b; color:#2a1a08; font-weight:bold; }
+    #epi .runes { display:flex; justify-content:center; gap:4vw; margin:3vw 0; } #epi .rune { width:20vw; text-align:center; font-size:3.2vw; color:#ffcf9a; }
+    #epi .rune .de { width:18vw; height:18vw; border-radius:3vw; background:#1a1430 center/cover; box-shadow:0 0 0 2px #ffb07066; margin:0 auto 1.5vw; transition:box-shadow .3s; }
+    #epi .rune.ok .de { box-shadow:0 0 18px #ff9a3a, 0 0 0 2px #ffb070; }
+    #epi .lancer { display:block; margin:0 auto; padding:2.6vw 6vw; border-radius:3vw; border:0; background:#ff8a2a; color:#fff; font-weight:bold; font-size:4vw; }
+    #epi .titre-g { text-align:center; margin:3vw 0 0; padding:2.4vw; border:1px solid #9fdcff66; border-radius:3vw; background:#0f1a30; color:#cfeeff; }
+    #epi .eclat { position:absolute; right:4vw; bottom:5vw; width:4.2vw; height:4.2vw; transform:rotate(45deg); background:linear-gradient(135deg, #fff, #9fdcff); box-shadow:0 0 8px #9fdcff; opacity:.75; animation:epiEc 2.4s infinite; cursor:pointer; }
+    @keyframes epiEc { 0%, 100% { opacity:.35; } 50% { opacity:.9; } }
+    #epi .zeph { position:absolute; inset:0; background:#0b0716f2; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:6vw; text-align:center; }
+    #epi .zeph img { width:34vw; height:34vw; border-radius:50%; object-fit:cover; border:3px solid #ff4040; box-shadow:0 0 30px #9fdcff; }`; document.head.appendChild(st); }
+  epiDessine();
+}
+function epiDessine() {
+  const el = document.getElementById('epi'), P = EPI_S1[EPI.p], n = EPI_S1.length;
+  const forge = P.forge ? `<div class="runes">${[0, 1, 2].map(i => { const v = EPI.runes[i]; return `<div class="rune ${v ? 'ok' : ''}"><div class="de" id="epi-de${i}" style="background-image:url('faces-maelle/face-${v || 1}.webp')"></div>${v ? ['La rune de la première cloche', 'La rune de la deuxième', 'La rune de la troisième'][i] : '…'}</div>`; }).join('')}</div>
+    ${EPI.runes.length < 3 ? `<button class="lancer" onclick="epiLance()">🎲 ${EPI.runes.length === 2 ? 'Le dernier coup, Maëlle' : 'Lancer le dé'} (rune ${EPI.runes.length + 1}/3)</button>` : `<p style="text-align:center;color:#ffcf9a">Bran a posé son marteau pour le dernier coup : « Le rite, c’est toi maintenant. » Maëlle frappe. Les trois runes brillent comme des braises.</p>`}` : '';
+  el.innerHTML = `<div class="im" style="background-image:url('${P.img}?v=1')${P.chaud ? ';filter:sepia(.55) saturate(1.6) hue-rotate(-15deg) brightness(.95)' : ''}"></div><div class="tx"><h2>${P.titre}</h2><p>${P.texte}</p>${forge}
+    ${P.fin ? `<div class="titre-g">❄ Titre gagné : <b>« Briseur de l’Hiver »</b> (Mon profil)</div><p style="text-align:center;color:#f3c96b;margin-top:3vw">🎭 La Saison 2, <b>Le Grand Carnaval</b>, la saison de Gorm, commence en février.</p>` : ''}</div>
+    <div class="bas">${EPI.p > 0 ? '<button style="background:#2a2448;color:#f4ead2" onclick="EPI.p--;epiDessine()">‹</button>' : ''}<button ${P.forge && EPI.runes.length < 3 ? 'disabled style="opacity:.45"' : ''} onclick="${EPI.p < n - 1 ? 'EPI.p++;epiDessine()' : 'epiFin()'}">${EPI.p < n - 1 ? 'Continuer ▶' : 'Terminer'}</button></div>
+    ${P.fin ? '<div class="eclat" onclick="epiEclat()" aria-label=""></div>' : ''}`;
+  if (typeof son === 'function') try { son(P.fin ? 'victoire' : 'portail'); } catch (e) {}
+}
+function epiLance() {
+  if (EPI.lance) return; EPI.lance = true; const i = EPI.runes.length, de = document.getElementById('epi-de' + i); let k = 0;
+  if (typeof son === 'function') try { son('relance'); } catch (e) {}
+  const t = setInterval(() => { k++; const v = 1 + Math.floor(Math.random() * 6); if (de) de.style.backgroundImage = `url('faces-maelle/face-${v}.webp')`;
+    if (k >= 12) { clearInterval(t); EPI.runes.push(v); EPI.lance = false; if (typeof son === 'function') try { son('rune'); } catch (e) {} epiDessine(); } }, 70);
+}
+function epiEclat() {
+  EPI.eclat++; if (EPI.eclat < 3) return;
+  const premiere = !localStorage.getItem('guilde-eclat-zephine'); localStorage.setItem('guilde-eclat-zephine', String(Date.now()));
+  const z = document.createElement('div'); z.className = 'zeph';
+  z.innerHTML = `<img src="portraits/zephine.webp?v=1" alt=""><p style="font-size:4vw;line-height:1.45;margin:5vw 0">Bien plus tard, la nuit, dans un laboratoire plein de fioles. Zéphine est seule, penchée sur un petit éclat de glace posé sur sa table. Il ne fond pas. Il palpite, doucement, comme un cœur.</p><p style="font-size:5vw;color:#9fdcff"><i>« Intéressant… très intéressant. »</i></p>${premiere ? '<p style="color:#f3c96b">✨ Succès secret : « L’éclat qui ne fondait pas »</p>' : ''}<button class="lancer" onclick="this.parentElement.remove()">Fermer</button>`;
+  document.getElementById('epi').appendChild(z); if (typeof son === 'function') try { son('magie'); } catch (e) {}
+}
+function epiFin() { const el = document.getElementById('epi'); if (el) el.remove(); const f = EPI && EPI.fini; EPI = null; if (f) f(); }

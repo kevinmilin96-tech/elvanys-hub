@@ -78,6 +78,8 @@ const SUCCES = [
   ['coeurs', 'amis', 'Cœurs envoyés', 'Envoyer un cœur à tes amis, chaque jour.', [10, 50, 150, 300, 500], () => +(localStorage.getItem('guilde-coeurs-env') || 0), ['💝', 'Cœur de la Guilde']],
   ['enligne', 'amis', 'Parties en ligne', 'Finir des parties avec des amis.', [1, 10, 25, 50, 100], () => ev('en_ligne'), ['🌐', 'Âme de la Guilde']],
 
+  // 27/11 : un succès SECRET (8e champ = true) : caché tant qu'il n'est pas atteint ; l'éclat de glace de l'épilogue de la Saison 1
+  ['eclat', 'chron', 'L’éclat qui ne fondait pas', 'Trouver l’éclat de glace caché à la fin de la Saison 1… et le toucher trois fois.', [1], () => localStorage.getItem('guilde-eclat-zephine') ? 1 : 0, ['✨', 'L’œil curieux'], true],
   ['rang', 'guilde', 'Rang de la Guilde', 'Monter les rangs de la Guilde.', [5, 10, 15, 20, 30], () => { try { return lireRang().info.rang; } catch (e) { return 0; } }, ['👑', 'Pilier de la Guilde']],
   ['jours', 'guilde', 'Jours joués', 'Finir au moins une partie dans la journée (pas forcément à la suite).', [7, 30, 60, 100, 365], () => +(localStorage.getItem('guilde-jours-joues') || 0), ['🏅', 'Légende fidèle']],
   ['quetes', 'guilde', 'Quêtes du jour', 'Accomplir des quêtes du jour.', [10, 50, 150, 300, 500], () => ev('quete_jour'), ['📜', 'Infatigable']],
