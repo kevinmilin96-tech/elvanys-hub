@@ -1363,7 +1363,7 @@ const nomChoix = k => k.startsWith('av:') ? ((avTrouve(k.slice(3)) || {}).nom ||
 function versMoteur(k) {
   if (!k.startsWith('av:')) return k;
   const a = avTrouve(k.slice(3)); if (!a) return null; const s = avStats(a);
-  return { voie:a.voie, nom:a.nom, pv:s.pv, faces:s.faces, bonusF:s.bonus, desPlus:s.desPlus, talents:s.talents, av:a.id, c:a.couleur, portrait:avPortrait(a), att:s.att || 0, def:s.def || 0, agi:s.agi || 0, pwSet:typeof pwPourMoteur === 'function' ? pwPourMoteur(a.id) : null };
+  return { voie:a.voie, nom:a.nom, pv:s.pv, faces:s.faces, bonusF:s.bonus, desPlus:s.desPlus, talents:s.talents, av:a.id, c:a.couleur, portrait:avPortrait(a), att:s.att || 0, def:s.def || 0, agi:s.agi || 0, fs:typeof forceSuiveuse === 'function' ? forceSuiveuse(a.id) : 1, pwSet:typeof pwPourMoteur === 'function' ? pwPourMoteur(a.id) : null };
 }
 const equipeChoisie = () => choisis.map(versMoteur).filter(Boolean);
 function basculeHeros(k) { if (choisis.includes(k)) choisis = choisis.filter(x => x !== k); else if (choisis.length < 4) choisis.push(k); else { bulle('4 héros au plus', true); return; } son('choisir'); accueil(); }
@@ -1415,7 +1415,7 @@ async function lobbyPousse(f) {
 function entreeLobby(k) {
   const id = 'e' + Math.random().toString(36).slice(2, 8);
   if (k.startsWith('av:')) { const a = avTrouve(k.slice(3)); if (!a) return null; return { id, cle:k, owner:L.moi.id, nom:a.nom, img:avPortrait(a), sec:avPortraitSecours(a), c:a.couleur, m:versMoteur(k) }; }
-  return { id, cle:k, owner:L.moi.id, nom:H[k].n, img:`portraits/${k}.webp`, sec:`portraits/${k}.webp`, c:(H[k] || {}).c, m:{ g:k, B:typeof bonusHerosPvE === 'function' ? bonusHerosPvE(k) : { pv:0 }, pwSet:typeof pwPourMoteur === 'function' ? pwPourMoteur(k) : null } };
+  return { id, cle:k, owner:L.moi.id, nom:H[k].n, img:`portraits/${k}.webp`, sec:`portraits/${k}.webp`, c:(H[k] || {}).c, m:{ g:k, B:typeof bonusHerosPvE === 'function' ? bonusHerosPvE(k) : { pv:0 }, fs:typeof forceSuiveuse === 'function' ? forceSuiveuse(k) : 1, pwSet:typeof pwPourMoteur === 'function' ? pwPourMoteur(k) : null } };
 }
 const nomJoueur = id => (L.joueurs.find(j => j.id === id) || {}).nom || '?';
 function ajouteLobby(k) {

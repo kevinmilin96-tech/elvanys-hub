@@ -183,7 +183,7 @@ function groupesFusion() { const G = {}; avSac().pieces.forEach(p => { if (p.r >
 function fusionnePiece(slot, r) {
   const s = avSac(), g = s.pieces.filter(p => p.slot === slot && p.r === r).sort((a, b) => b.niv - a.niv).slice(0, 3); if (g.length < 3 || r >= EQ_RARE.length - 1) return null;
   const d = lireEtoiles(), porteur = Object.keys(d.heros).find(id => g.some(p => (d.heros[id].gear || {})[slot] === p.id));
-  const n = { id:'eq' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), slot, nom:g[0].nom, r:r + 1, niv:Math.min(g[0].niv, 5 * (r + 2)) }; if (typeof succesCompte === 'function') succesCompte('forge_fusion'); // 22/11 : succès « Forgeron »
+  const n = { id:'eq' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), slot, nom:g[0].nom, r:r + 1, niv:Math.min(g[0].niv, 5 * (r + 2)) }; if (typeof guildeEvt === 'function') guildeEvt('forge_fusion'); else if (typeof succesCompte === 'function') succesCompte('forge_fusion'); // 27/11 : compte aussi pour la quête de la semaine // 22/11 : succès « Forgeron »
   s.pieces = s.pieces.filter(p => !g.includes(p)); s.pieces.push(n); avSacEcrire(s);
   Object.values(d.heros).forEach(h => { if (h.gear && g.some(p => h.gear[slot] === p.id)) h.gear[slot] = null; });
   // 22/11 (l'utilisateur : « au lieu de l'équiper directement, une validation : voulez-vous l'équiper maintenant ? ») : on garde le niveau de la case,
@@ -209,7 +209,7 @@ function forgeronAchete(i, hid) {
   const s = avSac(), x = forgeronStock(hid)[i]; let deja = {}; try { deja = JSON.parse(localStorage.getItem('guilde-forgeron-achats') || '{}'); } catch (e) {}
   if (!x || deja[x.id]) return 'Déjà acheté.'; if (s.or < x.prix) return `Il faut ${x.prix} pièces d’or.`;
   s.or -= x.prix; const p = Object.assign({}, x, { id:'eq' + Date.now().toString(36) + i }); delete p.prix; s.pieces.push(p); avSacEcrire(s);
-  deja[x.id] = 1; try { localStorage.setItem('guilde-forgeron-achats', JSON.stringify(deja)); } catch (e) {} return 'ok';
+  deja[x.id] = 1; try { localStorage.setItem('guilde-forgeron-achats', JSON.stringify(deja)); } catch (e) {} if (typeof guildeEvt === 'function') guildeEvt('forge_achat'); return 'ok'; // 27/11 : quête de la semaine
 }
 
 // ----------------------------------------------------------------------------------------------- les caractéristiques et la puissance

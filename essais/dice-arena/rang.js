@@ -106,7 +106,7 @@ const QUETES_JOUR = [
 ];
 const QUETE_VA = { flash:'crypte.html#flash', butin:'menu.html', coeur:'menu.html?amis=1', enigme:'duel.html?enigme=1', duel_gagne:'duel.html?ordi=1', carte:'duel.html?ordi=1', escale:'expedition-v4.html',
   crypte_tombe:'crypte.html', salle:'menu.html#odyssee', elite:'menu.html#odyssee', boss:'menu.html#odyssee', defense_vague:'defense.html', tour_etage:'epreuves.html', titan:'expedition-v4.html',
-  invasion_acte:'menu.html#invasion', etage_atteint:'menu.html#odyssee', chasse:'epreuves.html#chasse', chapitre_saison:'chroniques.html', tuile:'menu.html#odyssee', or:'menu.html#odyssee' };
+  invasion_acte:'menu.html#invasion', etage_atteint:'menu.html#odyssee', chasse:'epreuves.html#chasse', chapitre_saison:'chroniques.html', tuile:'menu.html#odyssee', or:'menu.html#odyssee', forge_achat:'forge.html', forge_fusion:'forge.html#fabrication' };
 const QUETES_SEMAINE = [
   ['el3', 'Bats 3 élites', 'elite', 3],
   ['bo2', 'Bats 2 boss de l’Odyssée', 'boss', 2],
@@ -119,6 +119,8 @@ const QUETES_SEMAINE = [
   ['dv15', 'Tiens 15 vagues dans la Défense de la porte', 'defense_vague', 15],
   ['ch100', 'Inflige 100 dégâts au boss de la Chasse', 'chasse', 100, 'max'],
   ['to5', 'Passe 5 étages de la Tour des épreuves', 'tour_etage', 5],
+  ['fa3', 'Achète 3 pièces d’équipement au forgeron', 'forge_achat', 3], // 27/11 (idée de l'utilisateur) : les quêtes du forgeron
+  ['ff1', 'Forge une pièce d’équipement (3 pareilles → 1 au-dessus)', 'forge_fusion', 1],
 ];
 // 26/11 : LES QUÊTES DE SAISON (Almanach) : pendant une saison, 2 quêtes de plus chaque semaine (Q.z) : toujours le chapitre de la saison,
 // plus une tirée au hasard ; elles rapportent plus d'XP (donc l'Almanach avance vite). Le paramètre « jour » vaut 'z' pour elles.
