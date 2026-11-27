@@ -129,6 +129,7 @@ function envieInstalle(E, PRO) {
     { nom:'L’Expédition', pro:'expeditions', href:'expedition-v4.html' /* 22/11 : le configurateur (expedition-config.js) */, desc:'Le navire volant : recrute ton équipage, choisis ta route sur la carte, affronte un boss tiré au sort.' },
     { nom:'La Descente', pro:'descente', href:'crypte.html#descente', desc:'Le grand voyage en 3 étages sous la Crypte : tu choisis tes salles, ton compagnon, tes objets.' },
     { nom:'Défense de la porte', pro:'defense', href:'defense.html', desc:'Tes dés deviennent des tours qui fusionnent : tiens la porte face aux vagues de monstres.' },
+    { nom:'Le Rempart des runes', pro:'rempart', href:'rempart.html', desc:'En temps réel : les monstres descendent cinq chemins, bâtis tes tours et fais-les monter avec les dés. Cinq niveaux, le Titan au bout.' }, // 27/11 : nouveau mode (tower defense en temps réel)
   ] };
   E.amis = { titre:'👥 Entre amis', sous:'Chacun sur son téléphone, ou à plusieurs sur le même.', portes:[
     { nom:'Les Chroniques', pro:'chroniques', href:'chroniques.html', desc:'La soirée entre amis : jusqu’à 4 héros, un donjon dans le noir, des portes, des meubles à fouiller.' },

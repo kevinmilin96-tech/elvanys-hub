@@ -267,6 +267,7 @@ const PRO = { // dessins provisoires : [émoji, fond, lueur]
   inv2:['🌳', 'linear-gradient(180deg, #1a1433 0%, #3a2a5c 55%, #1f3b2b 100%)', '#c084fc'], invboss:['🐲', 'linear-gradient(180deg, #3a0a0a 0%, #7a1f1a 55%, #0d1f2a 100%)', '#ff7a4a'],
   pantheon:['🏛', 'linear-gradient(180deg, #1a1433 0%, #3a2a5c 50%, #c8902f 100%)', '#f3c96b'],
   defense:['🏰', 'linear-gradient(180deg, #2a1d10 0%, #5a3a1a 45%, #1f3b2b 46%, #14281d 100%)', '#7dffb0'],
+  rempart:['🏯', 'linear-gradient(180deg, #bfe6ff 0%, #d9f2d0 30%, #6fbf5c 55%, #c8b07a 85%, #8a6f3d 100%)', '#f3c96b'], // 27/11 : le Rempart des runes (dessin provisoire, en attendant son image)
   semaine:['🗓️', 'linear-gradient(180deg, #3a1f5c 0%, #7a3a8a 45%, #e7c48a 46%, #c99a5b 100%)', '#f3c96b'],
   enigme:['🧩', 'linear-gradient(180deg, #14213d 0%, #2b3a67 50%, #e9c46a 100%)', '#ffe08a'],
   rdv:['🗓️', 'linear-gradient(180deg, #14213d 0%, #3a1f5c 50%, #e9c46a 100%)', '#ffe08a'], // 15/11 soir : les rendez-vous (dessin provisoire)
@@ -278,7 +279,7 @@ const PRO_V = { chroniques:2 }; // 15/11 soir : version d'une image refaite (le 
 const PRO_IMG = { epreuves:'mode-epreuves', arene:'mode-arene', odyssee:'mode-odyssee', expeditions:'mode-expeditions', campement:'mode-campement', tour:'mode-mesheros', /* 15/11 nuit : portail « Mes héros » reçu */
   ordinateur:'arene-ordinateur', tuto:'arene-tuto', proche:'arene-proche', abime:'ody-abime',
   invasion:'mode-invasion', inv1:'inv-acte1', inv2:'inv-acte2', invboss:'inv-boss', pantheon:'mode-pantheon', defense:'mode-defense', enigme:'mode-enigme', semaine:'mode-semaine',
-  crypte:'mode-crypte', fosse:'mode-fosse', chroniques:'mode-chroniques', enligne:'mode-enligne', amis:'mode-amis', codesalle:'mode-codesalle', route:'mode-route', duelami:'mode-duelami', rdv:'mode-rdv' }; // 15/11 nuit : portail du duel entre amis reçu (2e essai) // 15/11 nuit : portail de la Route du Titan reçu // 15/11 soir : 3 portails « Entre amis » reçus // 15/11 soir : portails de la Crypte, de la Fosse et des Chroniques reçus // 14/11 : portails de l'Invasion et du Panthéon reçus
+  crypte:'mode-crypte', descente:'mode-descente', /* 27/11 : portail de la Descente (image reçue le 15/11, oubliée ici) */ fosse:'mode-fosse', chroniques:'mode-chroniques', enligne:'mode-enligne', amis:'mode-amis', codesalle:'mode-codesalle', route:'mode-route', duelami:'mode-duelami', rdv:'mode-rdv' }; // 15/11 nuit : portail du duel entre amis reçu (2e essai) // 15/11 nuit : portail de la Route du Titan reçu // 15/11 soir : 3 portails « Entre amis » reçus // 15/11 soir : portails de la Crypte, de la Fosse et des Chroniques reçus // 14/11 : portails de l'Invasion et du Panthéon reçus
 // 16/11 (l'utilisateur : « Terres brûlées terminée, île du Givre bloquée ») : les parties de la Grande aventure déjà passées à l'île suivante
 // n'avaient pas noté l'île vaincue ; on la note ici d'après les sauvegardes. Et les sauvegardes s'affichent AVANT les portails.
 const ODY_PAGES = [['', 'odyssee.html', 'L’Odyssée'], ['-sansfin', 'odyssee.html?sansfin=1', 'L’Odyssée sans fin'], ['-route', 'odyssee.html?route=1', 'La Route du Titan']];
@@ -384,6 +385,7 @@ const ETAGES = {
     { cat:'defis', nom:'L’énigme du jour', pro:'enigme', href:'duel.html?enigme=1', desc:'Trouve le coup parfait qui fait tomber l’adversaire en un seul tour. Une nouvelle chaque jour.' },
     { cat:'defis', nom:'Le Duel de la semaine', pro:'semaine', href:'duel.html?semaine=1', desc:`Cette semaine : « ${regleDeLaSemaine().n} ». Gagne pour le Sceau de la semaine.` },
     { cat:'defis', nom:'Défense de la porte', pro:'defense', href:'defense.html', desc:'Tes dés deviennent des tours qui fusionnent : tiens la porte face aux vagues de monstres.' },
+    { cat:'defis', nom:'Le Rempart des runes', pro:'rempart', href:'rempart.html', desc:'En temps réel : bâtis tes tours sur cinq chemins et fais-les monter avec les dés.' },
     { cat:'collection', nom:'Le Panthéon', pro:'pantheon', href:'pantheon.html', desc:'Le Tableau d’honneur, tes titres, les récompenses du défi Brise-Miroir et tes trophées de tous les modes.' },
     // 15/11 soir (l'utilisateur : « Mes héros et la Tour des héros font la même chose ») : un seul portail ; la fiche de chaque héros mène à son histoire, ses pouvoirs et son deck
     { cat:'collection', nom:'Mes héros', pro:'tour', href:'mes-heros.html', desc:'Tous tes héros : niveau, rang, équipement, histoire, pouvoirs et deck.' },
