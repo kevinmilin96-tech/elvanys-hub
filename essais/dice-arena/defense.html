@@ -234,9 +234,8 @@ const cleD = () => D && D.av && haInfo('av:' + D.av) ? 'av:' + D.av : D.heros;  
 const imgD = () => { const i = D && D.av ? haInfo('av:' + D.av) : null; return i ? haImg(i) : `<img src="${IMG(D.heros)}" alt="">`; };
 function demarre(h) { const i = haInfo(h); D = nouvelleDefense(haVoie(h)); D.av = i ? i.id : null; D.sansFin = modeSF;
   // 15/11 : le système des héros : la porte gagne les PV du héros (niveau, rang, équipement), et ses PC de départ
-  // 15/11 soir : PAS de suivi des monstres ici (mesuré : la force vient des tours, pas du héros ; monstres ×2 = 0 % de victoires) ;
-  // le bonus de porte est plafonné à +20 (avec +81, la porte d'Aldric dépassait les 99 de dégâts du Titan : 100 % de victoires)
-  if (typeof bonusHerosPvE === 'function') { const B = bonusHerosPvE(haProg(h)), bp = Math.min(20, B.pv); D.porte += bp; D.porteMax += bp; D.pc += B.pc; } sel = []; selTour = -1; attente = null; dis('Touche 🎲 Lancer, puis choisis un dé : bâtis une tour (touche une case verte) ou pose un piège sur un chemin.'); vagueAnnonce(); rendu(); }
+  // 15/11 soir : le bonus de porte est plafonné à +20 (avec +81, la porte d'Aldric dépassait les 99 de dégâts du Titan : 100 % de victoires)
+  if (typeof bonusHerosPvE === 'function') suiviDefense(D, bonusHerosPvE(haProg(h))); /* 27/11 soir : la porte suit le héros, et les monstres suivent la porte (defense-moteur.js) */ sel = []; selTour = -1; attente = null; dis('Touche 🎲 Lancer, puis choisis un dé : bâtis une tour (touche une case verte) ou pose un piège sur un chemin.'); vagueAnnonce(); rendu(); }
 function dis(t, e) { msg = t; err = !!e; }
 function vagueAnnonce() { const v = D.fx.find(f => f.t === 'vague'); if (v) GM.son('vague');
   const txt = v && (v.boss && (D.sansFin || v.n > VAGUES.length) ? MOUSTACHE_M[v.boss] : CORBIN[v.n]);

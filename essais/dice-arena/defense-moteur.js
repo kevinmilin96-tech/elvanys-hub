@@ -226,7 +226,20 @@ function deplacerD(D, a, b) {
   D.pc -= cout; D.rempart[b] = D.rempart[a]; D.rempart[a] = null; if (!cout) D.deplace = true; logD(D, `Une tour change de place${cout ? ` (−${cout} PC)` : ''}.`);
 }
 const armureM = m => (MONSTRES[m.t].armure || 0) + (m.pouv === 'armure' ? 3 : 0);
-const dgM = m => m.dg || MONSTRES[m.t].dg;
+// 27/11 soir : D.fd = les coups des monstres suivent le héros monté (sa porte plus solide), voir suiviDefense
+// 27/11 soir (l'utilisateur : « mon personnage a +200 PV, certains modes sont faciles ») : LE SUIVI DU HÉROS MONTÉ dans la Défense.
+// Avant : la porte gagnait jusqu'à +20 PV (le double) et +1 PC, sans rien en face → 100 % de victoires pour un héros très monté.
+// Maintenant : la porte gagne au plus +15 PV, les coups sur la porte suivent ce bonus (× 1 + 0,5 × bonus / porte de base)
+// et la vie des monstres monte un peu (+12 % au plafond, +12 % par PC de plus). Simulateur (500 parties) : débutant 84 %, moyen 85 %, très monté 91 %.
+const SUIVI_DEF = { porteMax:15, deg:0.5, vie:0.12, viePC:0.12 };
+function suiviDefense(D, B) {
+  const bp = Math.min(SUIVI_DEF.porteMax, Math.max(0, B.pv || 0)), pc = Math.max(0, B.pc || 0), r = bp / DEF.porte;
+  D.porte += bp; D.porteMax += bp; D.pc += pc;
+  D.fd = Math.round((1 + SUIVI_DEF.deg * r) * 100) / 100;
+  D.fs = Math.round((1 + SUIVI_DEF.vie * r + SUIVI_DEF.viePC * pc) * 100) / 100;
+  return { bp, pc };
+}
+const dgM = (m, D) => { const d = m.dg || MONSTRES[m.t].dg; return D && D.fd > 1 ? Math.round(d * D.fd) : d; };
 function blesse(D, m, n, tir, secousse) {
   if (!m || !D.monstres.includes(m) || n <= 0) return 0;
   if (m.sous && !secousse) return 0; // 27/11 : le Mineur sous terre (seuls les éclats du canon l'atteignent)
@@ -441,7 +454,7 @@ function avanceD(D) {
     for (let pas = 0; pas < vit && D.monstres.includes(m) && m.row < DEF.chemin; pas++) { if (marcheD(D, m)) break; }
     if (D.fini) return;
     if (!D.monstres.includes(m)) continue;
-    if (m.row >= DEF.chemin) { const dg = dgM(m); D.monstres = D.monstres.filter(x => x !== m); D.porte -= dg; D.degatsVague += dg; if (D.vague >= VAGUES.length - 1) D.degatsDerniere += dg; logD(D, `🚪 ${M.e} ${M.n} frappe la porte : −${dg} PV.`); fxD(D, { t:'porte', n:dg }); verifieFinD(D); if (D.fini) return; }
+    if (m.row >= DEF.chemin) { const dg = dgM(m, D); D.monstres = D.monstres.filter(x => x !== m); D.porte -= dg; D.degatsVague += dg; if (D.vague >= VAGUES.length - 1) D.degatsDerniere += dg; logD(D, `🚪 ${M.e} ${M.n} frappe la porte : −${dg} PV.`); fxD(D, { t:'porte', n:dg }); verifieFinD(D); if (D.fini) return; }
   }
 }
 // 16/11 nuit : LE MODE SANS FIN. 27/11 : après les 6 vagues du mode normal, des vagues tirées dans TOUS les monstres déjà vus
@@ -527,7 +540,7 @@ function marcheD(D, m) {
   else if (p && !M.vol && p.k === 'ronces') { const n = Math.round((p.dg != null ? p.dg : p.v * 3 + (D.bonus.ronces || 0)) * echelleD(D) * (D.heros === 'pip' ? REG.pip.ronces : 1)); /* p.dg : les ronces de la Rune de Pip */ usePiege(D, key); m.row = nr; logD(D, `🌿 Les ronces griffent ${M.n} : ${n}.`); fxD(D, { t:'ronces', r:nr, col:m.col }); blesse(D, m, n); return !D.monstres.includes(m); }
   m.row = nr;
   if (m.sous && m.row >= DEF.sortieMineur) { m.sous = false; logD(D, `⛏ Le Mineur sort de terre sur le chemin ${m.col + 1} !`); fxD(D, { t:'surgit', id:m.id }); return true; }
-  if (m.row >= DEF.chemin) { const dg = dgM(m); D.monstres = D.monstres.filter(x => x !== m); D.porte -= dg; D.degatsVague += dg; if (D.vague >= VAGUES.length - 1) D.degatsDerniere += dg; logD(D, `🚪 ${M.e} ${M.n} frappe la porte : −${dg >= 99 ? 'tout' : dg} PV.`); fxD(D, { t:'porte', n:dg }); verifieFinD(D); return true; }
+  if (m.row >= DEF.chemin) { const dg = dgM(m, D); D.monstres = D.monstres.filter(x => x !== m); D.porte -= dg; D.degatsVague += dg; if (D.vague >= VAGUES.length - 1) D.degatsDerniere += dg; logD(D, `🚪 ${M.e} ${M.n} frappe la porte : −${dg >= 99 ? 'tout' : dg} PV.`); fxD(D, { t:'porte', n:dg }); verifieFinD(D); return true; }
   return false;
 }
 // ---- 1. La prochaine vague : ce qui arrive au prochain tour, et le reste de la vague en cours

@@ -136,6 +136,10 @@
   .d.cache::after { content:'?'; position:absolute; top:9px; left:0; right:0; font-size:1.7em; font-weight:bold; color:#fff; pointer-events:none; }
   .d.roule img { animation:roule .28s linear infinite; }
   @keyframes roule { 0% { transform:rotate(0) translateY(0) scale(1); } 50% { transform:rotate(190deg) translateY(-10px) scale(1.08); } 100% { transform:rotate(360deg) translateY(0) scale(1); } }
+  .bas .finB { flex:1; min-height:54px; border:none; border-radius:16px; font:bold 1.25em Georgia, serif; color:#2b2117; background:linear-gradient(#ffe08a, #f3c96b 55%, #c99a3a); box-shadow:0 0 18px #f3c96baa, inset 0 1px 0 #fff8; animation:lueur 1.6s ease-in-out infinite; }
+  .b2.pasLance { opacity:.45; filter:grayscale(.6); }
+  .lancer.appel { animation:appelLance .45s ease-in-out 3; }
+  @keyframes appelLance { 50% { filter:brightness(1.35); box-shadow:0 0 34px #f3c96b, 0 0 0 4px #fff8; } }
   .lancer { display:block; width:100%; background:var(--or); color:#2b2117; border:none; border-radius:14px; padding:14px; font-size:1.15em; font-weight:bold; margin:6px 0; box-shadow:0 0 14px #f3c96b88; }
   .vie { height:5px; background:#0008; border-radius:3px; margin:2px 0 1px; overflow:hidden; }
   .vie { position:relative; height:9px !important; }
@@ -866,7 +870,7 @@ function lance(J, d) {
   if (J.id === 'pip' && pa(J) === 'A' && d.v === 6) ajouteMeute(J, 1);
   else if (J.id === 'pip' && pa(J) === 'B' && d.v === 6 && S && !S.fini && adv(J)) { log('🌹 Ronces vivantes : un 6, les ronces piquent (2).'); const a0 = S.acteur; S.acteur = J; degats({ J:adv(J) }, 2); S.acteur = a0; }
 }
-function modifie(J, d, v) { d.v = v; d.mod = true; if (J.catalyseur && !S.fini) degats({ J:adv(J) }, 1); }
+function modifie(J, d, v) { d.v = v; d.mod = true; if (J.catalyseur && !S.fini) { fx({ t:'eclatE', s:J === S.J ? 'J' : 'O', k:'catalyseur', txt:'⚗ Catalyseur : 1 dégât' }); degats({ J:adv(J) }, 1); } }
 function ajouteMeute(J, n) {
   if (J.id !== 'pip' || J.front.some(u => u.louve)) return;
   J.meute = Math.min(3, J.meute + n); log(`Meute : ${J.meute} sur 3.`);
@@ -905,6 +909,7 @@ function degats(k, n, ignore) {
   if (typeof pwDegats === 'function') { n = pwDegats(k, n); if (n <= 0 || S.fini) { fin(); return; } } // 22/11 : les pouvoirs du build (pouvoirs-duel.js)
   if (S.ody) { // Odyssée : reliques du héros
     if (S.acteur === S.J && k.J === S.O && S.J.reliques.includes('brassards')) { n += 2; log('💪 Brassards de la Guilde : +2 dégâts.'); }
+    if (k.J === S.J && !k.u && S.ody.fd > 1 && S.acteur !== S.J) n = Math.round(n * S.ody.fd); // 27/11 soir : les coups des ennemis suivent le héros monté (suiviOdyssee)
     if (k.J === S.J && !k.u && S.J.reliques.includes('armure')) n = Math.max(0, n - 1);
     if (n <= 0) return;
   }
@@ -925,7 +930,7 @@ function degats(k, n, ignore) {
       if (J.esquive) { J.esquive = false; r = Math.floor(r / 2); log(`${J.nom} esquive : dégâts divisés par 2.`); }
       const g = Math.min(J.gardeB, r); J.gardeB -= g; r -= g;
       const b = Math.min(J.bouclier, r); J.bouclier -= b; r -= b;
-      if (g + b) log(`Les boucliers de ${J.nom} absorbent ${g + b}.`); abs = g + b; if (S.bilan && J === S.J) S.bilan.abs += g + b;
+      if (g + b) log(`Les boucliers de ${J.nom} absorbent ${g + b}.`); abs = g + b; if (S.bilan && J === S.J) S.bilan.abs += g + b; if (S.bilan && S.coop && S.equipe && S.equipe.includes(J)) { const m = S.bilan.absH || (S.bilan.absH = {}); m[J.nom] = (m[J.nom] || 0) + g + b; } // 27/11 soir : dans l'Invasion, QUI a bloqué
     }
     const pt = typeof particularite === 'function' && particularite(J); if (pt && pt.recoit) r = Math.max(0, pt.recoit(J, r));
     J.pv -= r; log(r ? `${J.nom} perd ${r} PV.` : `${J.nom} ne perd aucun PV.`);
@@ -1009,8 +1014,14 @@ function phaseBoss(J) {
   log(`🔥 ${J.nom} entre en phase ${p + 1} : ${ph[p].pouvoir.n} !`); fx({ t:'annonce', txt:`🔥 Phase ${p + 1} : ${ph[p].pouvoir.n} !` });
 }
 function remplit(J, n) { if (J.ultimeFait || J.jauge >= JAUGE.max) return; J.jauge = Math.min(JAUGE.max, (J.jauge || 0) + n); if (J.jauge >= JAUGE.max) { J.jaugeTour = J.tours; if (typeof S !== 'undefined' && S && J === S.J && !S.auto) son('jauge'); log(`⚡ La jauge d’Ultime de ${J.nom} est pleine !`); fx({ t:'jauge', s:J === S.J ? 'J' : 'O' }); } }
+const RELEVE_PV = 12;
 function fin() { if (S.fini) return;
-  if (S.coop) { S.equipe.forEach(h => { if (h.pv <= 0 && !h.aTerre) { h.aTerre = true; h.front = []; log(`💀 ${h.nom} est à terre !`); fx({ t:'annonce', txt:`💀 ${h.nom} est à terre !` }); } });
+  // 27/11 soir (l'utilisateur : « j'étais mort, j'ai lancé mes dés, reçu de la vie et reparti, je n'ai pas compris ») : un héros qui tombe est
+  // RELEVÉ tout de suite par la Cohésion s'il y en a assez (3 🤝), et on le MONTRE ; sinon on dit clairement qu'il reste à terre et ne joue plus
+  if (S.coop) { S.equipe.forEach(h => { if (h.pv <= 0 && !h.aTerre) { h.aTerre = true; h.front = []; log(`💀 ${h.nom} est à terre !`); const autre = S.equipe.find(x => x !== h && !x.aTerre);
+      if (autre && S.O.pv > 0 && S.cohesion >= COHESION.relever) { S.cohesion -= COHESION.relever; h.aTerre = false; h.pv = RELEVE_PV; log(`🤝 ${autre.nom} relève ${h.nom} grâce à la Cohésion : ${h.nom} revient avec ${RELEVE_PV} PV (−${COHESION.relever} 🤝, reste ${S.cohesion}).`);
+        fx({ t:'annonce', txt:`💀 ${h.nom} est à terre…<br><small>🤝 ${autre.nom} le relève grâce à la Cohésion (−${COHESION.relever} 🤝) : ${h.nom} revient avec ${RELEVE_PV} PV</small>`, html:true }); fx({ t:'soin', c:ref({ J:h }), n:RELEVE_PV, pv:h.pv }); }
+      else { fx({ t:'annonce', txt:`💀 ${h.nom} est à terre !<br><small>${autre ? `Pas assez de Cohésion pour le relever (${COHESION.relever} 🤝). Il ne joue plus : ${autre.nom} continue seul.` : ''}</small>`, html:true }); if (autre) log(`${h.nom} reste à terre (Cohésion ${S.cohesion}/${COHESION.relever}) : il ne joue plus tant qu’on ne le relève pas (👥 → Relever).`); } } });
     if (S.O.pv <= 0) S.fini = 'gagne'; else if (S.equipe.every(h => h.aTerre)) S.fini = 'perdu'; return; }
   if (S.J.pv <= 0 || S.O.pv <= 0) S.fini = S.J.pv > 0 ? 'gagne' : 'perdu'; }
 
@@ -1095,7 +1106,12 @@ function permis(J, quoi, vs, ds) {
 // on note l'état de ses dés (lancés, relancés, posés) dans la file d'animations ; joue1 les dessine dans la colonne de droite
 function desO(quoi) { if (S && S.O && !S.coop) fx({ t:'desO', quoi:quoi || '', v:S.O.des.map(d => d.v), p:S.O.des.map(d => !!d.pose), id:S.O.id }); }
 // 21/11 : pose passe par le Paratonnerre (une créature de celui qui joue gagne de l'attaque → le bonus est détourné)
-function pose(J, quoi, ds, k, indexMain) { const avant = paraAvant(J); S.uAtt = null; if (typeof pwAvantAction === 'function') pwAvantAction(J, quoi, ds && vals(ds)); poseAction(J, quoi, ds, k, indexMain); if (typeof pwApresAction === 'function') pwApresAction(J, quoi); paraApres(J, avant); }
+// 27/11 soir (l'utilisateur : « quand une créature reçoit un bonus d'attaque, le nouveau ⚔ n'apparaît qu'à la fin de son tour ») :
+// chaque action note l'attaque de toutes les créatures avant / après ; un changement devient une petite animation tout de suite
+// (le chiffre ⚔ défile et brille), au bon moment dans la suite des animations, même pendant le tour de l'adversaire
+function atkPhoto() { const m = new Map(); if (S && !S.auto) [S.J, S.O].forEach(P => P && P.front && P.front.forEach(u => m.set(u, [P, atk(P, u)]))); return m; }
+function atkCompare(m) { if (!S || S.auto) return; m.forEach(([P, a0], u) => { if (!P.front.includes(u) || u.cachee) return; const a1 = atk(P, u); if (a1 !== a0) fx({ t:'atk', c:ref({ J:P, u }), a0, a1 }); }); }
+function pose(J, quoi, ds, k, indexMain) { const avant = paraAvant(J), ph = atkPhoto(); S.uAtt = null; if (typeof pwAvantAction === 'function') pwAvantAction(J, quoi, ds && vals(ds)); poseAction(J, quoi, ds, k, indexMain); if (typeof pwApresAction === 'function') pwApresAction(J, quoi); paraApres(J, avant); atkCompare(ph); }
 function poseAction(J, quoi, ds, k, indexMain) {
   const vs = vals(ds); S.acteur = J; if (J === S.J && !S.auto && !J.ordi && quoi !== 'pcRelance') son('poser');
   if (quoi === 'pcRelance') { J.pc -= 1; const a = ds[0].v; lance(J, ds[0]); log(`${J.nom} paie 1 PC et relance un ${a} : ${ds[0].v}.`); return; }
@@ -1148,7 +1164,7 @@ function attaque(J, u, k) {
   if (D.paillasse) { D.paillasse = false; altere(J, 'poison', 3); }
   const a = atk(J, u) + (embuscade ? 2 : 0);
   log(`${u.n} attaque ${k.u ? k.u.n : D.nom}${embuscade ? ' : EMBUSCADE, +2 dégâts (elle sort de l’ombre et n’est plus cachée)' : ''}.`);
-  fx({ t:'coup', de:ref({ J, u }), vers:ref(k), uk:u.louve ? 'louve' : u.key, nom:u.n, a, emb:embuscade, cible:k.u ? k.u.n : D.nom }); bilan(J, 'actions', `🐾 ${u.n} attaque ${k.u ? k.u.n : 'toi'} (${a})`);
+  fx({ t:'coup', de:ref({ J, u }), vers:ref(k), uk:u.louve ? 'louve' : u.key, nom:u.n, a, emb:embuscade, cible:k.u ? k.u.n : D.nom }); bilan(J, 'actions', `🐾 ${u.n} attaque ${k.u ? k.u.n : S.coop ? k.J.nom : 'toi'} (${a})`);
   if (k.u) {
     if (k.u.gardien) { D.pc = Math.min(6, D.pc + 1); log('Le Gardien rapporte 1 PC.'); }
     const riposte = atk(D, k.u) + (k.u.epines || 0);
@@ -1292,7 +1308,7 @@ function joueOrdi() {
   S.bilan = { actions:[], gardes:[], pv0:S.J.pv, pvO0:S.O.pv, abs:0, front0:S.J.front.length };
   debutTour(S.O); if (!S.coop) desO(); if (S.coop) sbiresCamp(); if (!S.fini) joueAuto(S.O);
   const b = S.bilan; S.bilan = null;
-  if (!S.fini) fx({ t:'recap', nom:S.O.nom, actions:b.actions, gardes:b.gardes, perdu:b.pv0 - S.J.pv, abs:b.abs, soinO:S.O.pv - b.pvO0, morts:b.front0 - S.J.front.length });
+  if (!S.fini) fx({ t:'recap', nom:S.O.nom, actions:b.actions, gardes:b.gardes, perdu:b.pv0 - S.J.pv, abs:b.abs, absH:b.absH || null, soinO:S.O.pv - b.pvO0, morts:b.front0 - S.J.front.length });
 }
 // Campement : le compagnon (ou la simulation) lance la Frappe concertée quand le boss a au moins 3 créatures et qu'il reste de quoi relever un héros
 function concerteeAuto(J) { if (!S.coop || J === S.O || !(J.ordi || S.auto) || S.O.front.length < 3 || S.cohesion < COHESION.concertee + COHESION.relever) return; S.cohesion -= COHESION.concertee; log(`🤝 ${J.nom} lance la Frappe concertée : 4 dégâts à chaque créature du boss !`); fx({ t:'annonce', txt:'🤝 Frappe concertée !' }); [...S.O.front].forEach(u => degats({ J:S.O, u }, 4)); }
@@ -1406,6 +1422,20 @@ function toucheCarte(i) {
   const k = S.J.main[i];
   if (sel.length && permis(S.J, k, vals(sel), sel)) { carteVue = null; vise(k, i); } else { son('erreur'); aide(k); }
 }
+// 27/11 soir (validé le 22/11 : « le Duel aux versions, même rang ») : dans le Duel aussi, chaque héros joue les VERSIONS choisies dans
+// la page des pouvoirs (préréglage Solo) ; l'ordinateur tire une version au hasard pour chaque emplacement. Les RANGS ne comptent pas
+// dans le Duel : même rang pour les deux (équité). Pas dans le duel à deux sur un téléphone ni à distance (window._sansBuild), ni l'énigme,
+// ni le tutoriel, ni le Roi sans visage. DUEL_BUILD_HASARD (simulateur) = les deux camps tirent au hasard.
+function buildsDuel(auto) {
+  const _sb = window._sansBuild; window._sansBuild = false;
+  if (_sb || typeof appliqueBuild !== 'function' || typeof PW_DUEL === 'undefined') return;
+  const hasard = P => { const D = PW_DUEL[P.id]; if (!D) return; const t = e => { const l = ['A', ...Object.keys(D[e] || {})]; return l[Math.floor(Math.random() * l.length)]; };
+    const v = { garde:t('garde'), pouvoir:t('pouvoir'), passif:t('passif'), ultime:t('ultime') }; if (Object.values(v).every(x => x === 'A')) return;
+    P.pwv = v; if (v.passif === 'C' && P.id === 'oria') { P.pc = Math.min(6, P.pc + 1); pioche(P, 1); } };
+  if (auto) { if (window.DUEL_BUILD_HASARD) { hasard(S.J); hasard(S.O); } return; } // l'énigme (auto) garde les fiches communes
+  if (S.O.id !== 'roi' && HEROS[S.O.id] && !HEROS[S.O.id].monstre) hasard(S.O);
+  appliqueBuild(S.J, 'solo');
+}
 function nouvellePartie(id, idO, auto) {
   if (typeof GM !== 'undefined' && GM.retour) GM.retour(null); // 22/11 : la partie commence, le retour de l'accueil s'en va
   const autres = ORDRE.filter(x => x !== id);
@@ -1415,6 +1445,7 @@ function nouvellePartie(id, idO, auto) {
   // le second joueur (l'ordinateur) compense : 2 PC et 1 carte de plus au départ (v2.4)
   if (idO === 'roi') { S.O.pv = S.O.pvMax = 42; const h = HEROS.roi; h.garde = h.phases[0].garde; h.pouvoir = h.phases[0].pouvoir; } // 13/11 : le défi du Panthéon, 42 PV en Duel (62 dans l'Odyssée), réglé au simulateur
   S.mullPossible = !auto; mainDeDepart(S.J, 4); mainDeDepart(S.O, 5); S.J.fatigueOK = S.O.fatigueOK = true; mulliganOrdi(S.O); if (auto) mulliganOrdi(S.J); S.O.pc = typeof PC_SECOND === 'number' ? PC_SECOND : 4; // 12/11 nuit : 4 PC (au lieu de 3) : celui qui commence gagnait 56 %, maintenant 52 %
+  buildsDuel(auto);
   log(`Salle : ${S.salle.n}. ${S.salle.d}`);
   sel = []; attaquant = null; ciblage = null;
   debutTour(S.J);
@@ -1462,6 +1493,7 @@ function prepareCombatOdyssee(run, cb, auto) {
     if (run.sansfin) { const f = Math.floor(((run.sansfin.etage || 1) - 1) / 3); if (f) { O.pvMax = Math.round(O.pvMax * (1 + .25 * f)); log(`🪜 Étage ${run.sansfin.etage} : ennemis +${25 * f} % de vie.`); } }
     if (run.epreuve && run.epreuve.force) { O.pvMax = Math.round(O.pvMax * run.epreuve.force); }
     if (run.fs > 1.05 && !(run.epreuve && run.epreuve.chasse)) { O.pvMax = Math.round(O.pvMax * run.fs); log(`👹 L’ennemi suit ta force : vie ×${String(run.fs).replace('.', ',')}.`); } // 15/11 soir
+    if (run.fd > 1.05 && !(run.epreuve && run.epreuve.type === 'chasse')) { S.ody.fd = run.fd; log(`👹 Ses coups suivent ta vie : dégâts sur toi ×${String(run.fd).replace('.', ',')}.`); } // 27/11 soir
     if (run.epreuve && run.epreuve.type === 'chasse') { O.pvMax = 999; S.chasse = run.epreuve.chasse || 0; S.enChasse = true; log(S.chasse ? `🎯 Chasse : fais le plus de dégâts possible en ${S.chasse} tours.` : '🎯 Chasse jusqu’à la mort : pas de limite de tours, fais tomber ses 999 PV si tu peux.'); } // 25/11 : chasse:0 = sans limite (demande de l'utilisateur)
     if (cb.mimique) { O.pvMax = Math.round(O.pvMax * 1.2); log('🗝 Le coffre avait des dents : c’était un monstre déguisé !'); }
     if (cb.grandDefi) log('🎯 Salle du défi : réussis le défi pour +90 or et une carte plus rare.');
@@ -1612,7 +1644,14 @@ let blocageDepuis = 0;
 // 15/11 soir (l'utilisateur : « Fin du tour : obligé d'appuyer deux fois ») : un appui PENDANT l'animation de ma dernière action
 // était ignoré sans rien dire. Il est maintenant GARDÉ : le tour se termine tout seul dès que l'animation est finie (si c'est toujours mon tour).
 let finEnAttente = null;
-setInterval(() => { if (finEnAttente && S && !fxOn && !roule) { const qui = finEnAttente; finEnAttente = null; if (S.J === qui && !S.fini && finTourDe !== S) finDeMonTour(); } }, 150);
+// 27/11 soir (l'utilisateur : « Fin du tour est actif avant d'avoir lancé les dés, on saute le lancer ») : tant que les dés du tour
+// ne sont pas lancés, « Fin du tour » est grisé et ne fait JAMAIS passer le tour : il rappelle de lancer (bouton 🎲 qui clignote) ;
+// un appui gardé d'un autre moment ne fait plus passer un tour dont les dés ne sont pas encore lancés
+function pasEncoreLance() {
+  finEnAttente = null; const b = document.querySelector('.bas .b2'); if (b) b.textContent = 'Fin du tour ▶';
+  const l = document.querySelector('.lancer'); if (l) { l.classList.remove('appel'); void l.offsetWidth; l.classList.add('appel'); }
+}
+setInterval(() => { if (finEnAttente && S && S.J && S.J.aLancer) finEnAttente = null; if (finEnAttente && S && !fxOn && !roule) { const qui = finEnAttente; finEnAttente = null; if (S.J === qui && !S.fini && finTourDe !== S) finDeMonTour(); } }, 150);
 // 15/11 soir (« obligé d'appuyer deux fois ») : l'appui se VOIT tout de suite (⏳), même si les animations de fin de tour durent quelques secondes
 function finVu() { const b = document.querySelector('.bas .b2'); if (b && S && !S.fini && !S.J.aLancer) b.textContent = '⏳ Fin du tour…'; }
 function finDeMonTour() {
@@ -1628,7 +1667,7 @@ function finDeMonTour() {
     return; }
   blocageDepuis = 0;
   if (S.fini || roule || finTourDe === S || (fxOn && !S.J.aLancer)) return;
-  if (S.J.aLancer) { lancerMesDes(); return; }
+  if (S.J.aLancer) { pasEncoreLance(); return; }
   const libres = S.J.des.filter(d => !d.pose);
   if (libres.length) pose(S.J, 'vendre', libres);
   attaquesRestantes(S.J); if (S.fini) { rendu(); return; }
@@ -1681,7 +1720,8 @@ function suiteCamp() {
   while (n < S.equipe.length && S.equipe[n].aTerre) n++;
   if (n < S.equipe.length) {
     const h = S.equipe[n]; S.J = h;
-    if (h.ordi) { fx({ t:'tour', s:'J', nom:h.nom }); debutTour(h); if (!S.fini) joueAuto(h); if (!S.fini) fxApres.push(suiteCamp); rendu(); return; }
+    // 27/11 soir (l'utilisateur : « pendant le tour du compagnon, je vois encore mon héros en bas ») : le plateau passe TOUT DE SUITE au compagnon
+    if (h.ordi) { fx({ t:'tour', s:'J', nom:h.nom, comp:true }); debutTour(h); try { if (!S.auto) { sel = []; attaquant = null; ciblage = null; dessine(); } } catch (x) { console.error(x); } if (!S.fini) joueAuto(h); if (!S.fini) fxApres.push(suiteCamp); rendu(); return; }
     fx({ t:'annonce', txt:`📱 Passe le téléphone à ${h.nom}` }); debutTour(h); sel = []; attaquant = null; ciblage = null; rendu(); return;
   }
   if (S.J.aTerre) S.J = S.equipe.find(x => !x.aTerre);
@@ -1692,6 +1732,7 @@ function finSuiteCamp() {
   if (S.fini) { rendu(); return; }
   const p = S.equipe.find(x => !x.aTerre); S.J = p; sel = []; attaquant = null; ciblage = null;
   fx({ t:'tour', s:'J', nom:p.ordi ? p.nom : (p.qui === 'toi' ? 'toi' : p.nom) }); debutTour(p);
+  if (p.aTerre && !S.fini) { p.aLancer = false; log(`${p.nom} est à terre : son tour passe.`); fxApres.push(suiteCamp); rendu(); return; } // 27/11 soir : à terre = il ne joue pas
   if (p.ordi) { if (!S.fini) joueAuto(p); if (!S.fini) fxApres.push(suiteCamp); }
   rendu();
 }
@@ -1899,6 +1940,9 @@ const PASTILLES = {
   ultimefait:['Ultime utilisé', 'Ce héros a déjà lancé son Ultime : une seule fois par partie.'],
   main:['🂠 Cartes en main', '+1 carte au début de chaque tour, 7 au plus.'],
   paratonnerre:['⚡ Paratonnerre', 'La prochaine fois qu’une créature adverse gagne de l’attaque, elle perd ce bonus et c’est la créature la plus faible de ce héros qui le reçoit. Dure jusqu’à son prochain tour.'],
+  catalyseur:['⚗ Catalyseur (équipement)', 'Posé pour toute la partie : chaque fois que ce héros modifie un dé (le retourne, l’ajuste, le transmute…), le héros adverse perd 1 PV.'],
+  banniere:['🚩 Bannière de l’aube (équipement)', 'Posée pour toute la partie : les créatures Barrière de ce héros ont +2 attaque.'],
+  boussole:['🧭 Boussole runique (équipement)', 'Posée pour toute la partie : une relance de plus à chacun des tours de ce héros.'],
   sangsue:['🩸 Lame-sangsue', 'Pour toute la partie : la première Frappe de chaque tour soigne ce héros de la moitié de ses dégâts.'],
   gel:['❄ Dé gelé', 'Ce héros a gelé un dé avec la Rune de gel : à son prochain tour, il le reprend avec la même face, en plus de son lancer.'],
   piegecache:['🪤 Piège caché', 'L’adversaire a posé un piège (une Réaction). Tu ne sais pas lequel : il se déclenchera quand tu feras ce qu’il attend (par exemple attaquer avec une créature). À toi de deviner…'],
@@ -1931,7 +1975,7 @@ function effetsListe(P) {
   return [P.contre && ['contre', '⚔', 'Contre-attaque 6'], P.piege && ['piege', '🪤', 'Piège'], P.fournaise && ['fournaise', '🔥', 'Fournaise'], P.paillasse && ['paillasse', '⚗', 'Paillasse'],
     P.esquive && ['esquive', '💨', 'Esquive'], P.cor && ['cor', '📯', 'Cor'], P.gardeE && ['epines', '🌿', `Épines ${P.gardeE}`], P.poison && ['poison', '☠', `Poison ${P.poison}`],
     P.saigne && ['saigne', '🩸', `Saignement ${P.saigne}`], P.handicap && ['handicap', '🎲', 'Handicap'], P.silence && ['silence', '🤐', 'Silence'],
-    P.paratonnerre && ['paratonnerre', '⚡', 'Paratonnerre'], P.sangsue && ['sangsue', '🩸', 'Lame-sangsue'], P.gel && ['gel', '❄', `Dé gelé : ${P.gel}`]].filter(Boolean);
+    P.paratonnerre && ['paratonnerre', '⚡', 'Paratonnerre'], P.sangsue && ['sangsue', '🩸', 'Lame-sangsue'], P.catalyseur && ['catalyseur', '⚗', 'Catalyseur'], P.banniere && ['banniere', '🚩', 'Bannière'], P.boussole && ['boussole', '🧭', 'Boussole'], P.gel && ['gel', '❄', `Dé gelé : ${P.gel}`]].filter(Boolean);
 }
 const ETQ_DEFAUT = { haut:[79.3, 15.85], bas:[79.3, 74.65] };
 function placeEffet(R, c, i) {
@@ -2013,6 +2057,7 @@ function rendu() {
   if (FX.length) { joueFX(); return; }
   // 14/11 : si le dessin ou l'enregistrement échoue (mémoire du téléphone pleine…), la suite du tour part QUAND MÊME (avant : « Fin du tour » restait bloqué)
   try { dessine(); } catch (x) { console.error(x); }
+  try { bandeauFinDuel(); } catch (x) {}
   try { if (S.ody && !S.fini) localStorage.setItem('guilde-combat', JSON.stringify(S)); } catch (x) { console.error(x); }
   // 22/11 (carte de l'application : « l'Invasion n'a pas de reprise ») : le combat de l'Invasion est gardé aussi ; S.J est un des héros de S.equipe (on note lequel)
   try { if (S.coop && !S.auto) { if (S.fini) localStorage.removeItem('guilde-invasion-combat'); else localStorage.setItem('guilde-invasion-combat', JSON.stringify(Object.assign({}, S, { jIdx:S.equipe.indexOf(S.J), quand:Date.now() }))); } } catch (x) { console.error(x); }
@@ -2029,7 +2074,8 @@ function dessine() {
   if (S && !S.fini && !S.auto && typeof GM !== 'undefined') demarreMusique(); // 13/11 soir : la musique dès que la partie s'affiche
   const J = S.J, O = S.O, h = hDe(J);
   let bandeau = '';
-  if (J.aLancer) bandeau = 'Ton tour commence : lance tes dés !';
+  if (S.coop && J.ordi) bandeau = `🤝 Tour de ${J.nom} (compagnon) : regarde-la jouer, puis ce sera aux ennemis.`;
+  else if (J.aLancer) bandeau = 'Ton tour commence : lance tes dés !';
   else if (ciblage && ciblage.type === 'de') bandeau = ciblage.quoi === 'ajuste' ? '🎲 Touche le dé à ajuster.' : ciblage.quoi === 'retremper' ? '🎲 Touche le dé qui gagne +2.' : '🎲 Touche le dé à retourner.';
   else if (ciblage && ciblage.type === 'soin') bandeau = '💚 Regarde le soin, puis « Valider ».';
   else if (ciblage) {
@@ -2040,7 +2086,7 @@ function dessine() {
   }
   else if (attaquant) bandeau = `⚔ ${attaquant.n} attaque : touche une cible en vert.`;
   // 21/11 (l'utilisateur : « je dois faire défiler pour voir ce que le dé peut encore faire ») : texte court, et les deux infos du dé sur UNE ligne
-  else if (sel.length) { const d = sel.length === 1 ? sel[0] : null, info = [d && d.sac && !d.extra && !(J.id === 'oria' && pa(J) === 'A') ? `<span style="white-space:nowrap">🎲 encore possible : ${d.sac.length ? [...d.sac].sort().join('·') : 'tout'}</span>` : '', d && J.id === 'zephine' && pa(J) === 'A' && !J.transmu ? `<span style="white-space:nowrap">⚗ retourné = <b>${opp(d.v)}</b></span>` : ''].filter(Boolean).join(' · ');
+  else if (sel.length) { const d = sel.length === 1 ? sel[0] : null, info = [d && d.sac && !d.extra && !(J.id === 'oria' && pa(J) === 'A') ? `<span style="white-space:nowrap">🎲 encore possible : ${d.sac.length ? [...d.sac].sort().join('·') : 'tout'}</span>` : '', d && d.sac && !d.extra && J.id === 'oria' && pa(J) === 'A' ? `<span style="white-space:nowrap">🔮 ce dé fera ensuite : ${d.sac.length ? d.sac.slice(0, 2).join(', puis ') : 'un tirage neuf'}</span>` : '', /* 27/11 soir : avec Oria (duel éclair du jour), l'aide du dé avait disparu */ d && J.id === 'zephine' && pa(J) === 'A' && !J.transmu ? `<span style="white-space:nowrap">⚗ retourné = <b>${opp(d.v)}</b></span>` : ''].filter(Boolean).join(' · ');
     bandeau = `Dés choisis : ${vals(sel).join(', ')}. Touche une action ou une carte verte.${info ? `<br><small>${info}</small>` : ''}`; }
   else if (J.des.some(d => !d.pose)) bandeau = 'Touche un ou plusieurs dés, puis ce que tu veux en faire : une action à gauche (⚔ 🛡 ✦ ⚡) ou une carte en bas.';
   else if (J.front.some(u => u.pret && u.louve)) bandeau = '🐺 Touche la Louve : elle lance ses 3 dés et attaque. Sinon, elle attaque seule à « Fin du tour ».';
@@ -2064,7 +2110,7 @@ function dessine() {
     ${S.ody && J.sacoche.length ? `<button class="b0" onclick="voirSacoche()" aria-label="Sacoche">🎒<sup>${J.sacoche.length}</sup></button>` : ''}
     ${S.ody && !J.sacrifie && J.pv > 10 && J.pc < 6 ? '<button class="b0" onclick="sacrifice()" aria-label="Sacrifice" title="Sacrifice : −10 PV, +2 PC">🩸</button>' : ''}
     <button class="b1" onclick="relancer()" ${sel.length && (J.relance || J.pc >= sel.length) ? '' : 'disabled style="opacity:.4"'}>🎲<span class="mot"> Relancer</span> <small class="nb">${J.relance ? `(${J.relance})` : '· 1 PC/dé'}</small></button>
-    <button class="b2" onclick="finDeMonTour()">${finEnAttente || finTourDe === S || (S.deux && S.deuxFinFaite === S.J) ? '⏳ Fin du tour…' : 'Fin du tour ▶'}</button>
+    <button class="b2 ${J.aLancer ? 'pasLance' : ''}" onclick="finDeMonTour()">${finEnAttente || finTourDe === S || (S.deux && S.deuxFinFaite === S.J) ? '⏳ Fin du tour…' : 'Fin du tour ▶'}</button>
   </div>`;
   if (S.fini && !S.finPrevue) { S.finPrevue = true; setTimeout(montrerFin, 2200); } // 14/11 : 2,2 s pour voir les derniers dégâts avant la fenêtre de fin
   nomsDansPanneau(); placeAnnul();
@@ -2186,8 +2232,15 @@ function raison(quoi) {
   if (quoi === 'vendre') return 'Tu as déjà 6 PC, le maximum : vendre ne rapporterait rien.';
   const def = defDe(J, quoi); return def ? `${des} : il faut ${def.txt}.` : '';
 }
-function fenetre(html) { document.getElementById('fen').innerHTML = `<div class="fenetre" onclick="if(event.target===this)fermer()"><div>${html}</div></div>`; }
-function fermer() { document.getElementById('fen').innerHTML = '';
+// 27/11 soir (BLOQUANT, l'utilisateur : « je ferme la fenêtre du score et je reste sur le plateau figé, sans bouton ») : comme dans le Rempart,
+// on peut fermer la fenêtre de fin pour regarder le plateau ; un grand bandeau doré « Voir le résultat » remplace alors la barre du bas
+let finHTMLDuel = '', finSDuel = null;
+function fenetre(html) { if (typeof S !== 'undefined' && S && S.fini && !S.auto && /location\.href|nouvellePartie|Rejouer|Continuer|Menu|Revanche/i.test(html)) { finHTMLDuel = html; finSDuel = S; } document.getElementById('fen').innerHTML = `<div class="fenetre" onclick="if(event.target===this)fermer()"><div>${html}</div></div>`; }
+function bandeauFinDuel() { if (typeof S === 'undefined' || !S || !S.fini || S.auto || !finHTMLDuel || finSDuel !== S || document.getElementById('fen').innerHTML) return; const b = document.querySelector('.bas'); if (!b) return;
+  b.innerHTML = `<button class="finB" onclick="revoirFinDuel()">${S.fini === 'gagne' ? '🏆' : '💥'} Voir le résultat</button>`;
+  if (document.getElementById('carnet-pastille')) { b.style.height = 'auto'; b.style.paddingBottom = 'calc(54px + env(safe-area-inset-bottom))'; } } // la pastille « 📜 Journal de la partie » ne cache pas le bandeau
+function revoirFinDuel() { if (finHTMLDuel) fenetre(finHTMLDuel); }
+function fermer() { document.getElementById('fen').innerHTML = ''; setTimeout(bandeauFinDuel, 30);
   // 23/11 (l'utilisateur : « j'ai eu le message du mulligan mais je n'ai pas pu le faire ») : la main de départ se propose dès que le rappel est fermé, PAR N'IMPORTE QUEL MOYEN (croix comprise)
   if (typeof S !== 'undefined' && S && S.mullApres) { S.mullApres = false; setTimeout(() => { if (!document.getElementById('fen').innerHTML) mulligan(); }, 60); } }
 const mullDispo = () => typeof S !== 'undefined' && S && !S.auto && !S.fini && S.mullPossible && !S.mullFait && !S.deux && !S.coop && S.J.main.length && S.J.tours <= 1;
@@ -2450,6 +2503,13 @@ ${P} .barre { width:${p}cqw; height:${p}cqw; }
 ${P} .barre .cadre, ${P} .anneau { left:-${f(p * .3669)}cqw; top:-${f(p * .3669)}cqw; width:${f(p * 1.733)}cqw; height:${f(p * 1.733)}cqw; }
 ${cote('b-O', R.portrait_haut, R.etiquettes_haut, R.coeur_haut, R.bouclier_haut, R.cadre_haut, 'portrait_haut', 'cadre_haut', R.anneau_haut, 'anneau_haut', R.garde_haut)}
 ${cote('b-J', R.portrait_bas, R.etiquettes_bas, R.coeur_bas, R.bouclier_bas, R.cadre_bas, 'portrait_bas', 'cadre_bas', R.anneau_bas, 'anneau_bas', R.garde_bas)}`;
+  // 27/11 soir (l'utilisateur, Invasion : « les dés de la colonne de droite sont tout petits ») : sur les plateaux LONGS (étroits et hauts),
+  // les dés prennent toute la hauteur de leur colonne : 9,4 % de la largeur (≈ 37 px sur un téléphone de 390), au lieu de 5 à 6 %
+  if (/^long/.test(ile)) { const h6 = (dd[1] - dp[1] + 8.55) / 6, cote = Math.min(9.8, h6 * 1536 / 688 * .86);
+    // 27/11 soir (point 12) : la pastille de l'autre héros de l'Invasion était coupée en haut (le plateau long est rogné par le haut) : elle passe
+    // juste au-dessus du panneau de vie du boss, entière
+    if (R.coeur_haut) css += `\n${Q} .pastA { top:calc(${f(R.coeur_haut[1])}cqh - 19cqw); left:2.5cqw; font-size:3.4cqw; padding:1cqw 3cqw 1.6cqw 1cqw; } ${Q} .pastA img { width:11cqw; height:11cqw; } ${Q} .pastA b { font-size:3.2cqw; max-width:22cqw; }`;
+    css += `\n${P} .des { left:${f(dp[0] - 5.6)}cqw; width:11.2cqw; } ${P} .des .d { width:11.2cqw; scale:1; }\n${P} .d img, ${P} .d .cad { width:${f(cote)}cqw !important; height:${f(cote)}cqw !important; } ${P} .d.cache::after { font-size:${f(cote * .6)}cqw; }`; }
   if (R.champ_haut_gauche) { const a = R.champ_haut_gauche, b = R.champ_bas_droit, mil = (a[1] + b[1]) / 2;
     css += `\n${Q} .front { left:${f(a[0] + .5)}cqw !important; right:${f(100 - b[0] + .5)}cqw !important; }
 ${Q} #f-O { top:${f(a[1] + .6)}cqh; } ${Q} #f-J { top:calc(${f(b[1] - .8)}cqh - 23cqw); } /* 14/11 : les créatures collées aux bords du champ, le texte du milieu entre les deux */
@@ -2486,6 +2546,16 @@ function recaleCoeurs() {
     e.style.translate = `${(dx / sc).toFixed(1)}px ${(dy / sc).toFixed(1)}px`;
   } }
 }
+// 27/11 soir (l'utilisateur : « sur le duel contre l'Ombre, le cadre "3 en main" est recouvert par une icône ronde ») : les pastilles d'effets
+// (équipements, Meute, Épines…) ne recouvrent jamais le texte du panneau du héros : si elles le touchent, elles descendent juste en dessous
+function recaleEffets() {
+  for (const [id, c] of [['b-O', 'haut'], ['b-J', 'bas']]) {
+    const g = document.querySelector(`.effGr[data-cote="${c}"]`), pan = document.querySelector(`#${id} .pastilles`); if (!g || !pan) continue;
+    g.style.marginTop = ''; const a = g.getBoundingClientRect(), b = [...pan.children].filter(x => x.offsetParent && x.dataset.k !== 'pv' && x.dataset.k !== 'pc').reduce((r, x) => { const rg = document.createRange(); rg.selectNodeContents(x); const q = rg.getBoundingClientRect(); /* le vrai texte, même s'il déborde de sa boîte */ return { l:Math.min(r.l, q.left), r:Math.max(r.r, q.right), t:Math.min(r.t, q.top), b:Math.max(r.b, q.bottom) }; }, { l:1e9, r:-1e9, t:1e9, b:-1e9 });
+    if (a.left < b.r && a.right > b.l && a.top < b.b && a.bottom > b.t) g.style.marginTop = Math.ceil(b.b - a.top + 2) + 'px';
+  }
+}
+if (typeof document !== 'undefined') { let t2 = null; new MutationObserver(() => { cancelAnimationFrame(t2); t2 = requestAnimationFrame(() => { try { recaleEffets(); } catch (e) {} }); }).observe(document.documentElement, { childList:true, subtree:true }); }
 if (typeof document !== 'undefined') { let t = null; new MutationObserver(() => { cancelAnimationFrame(t); t = requestAnimationFrame(recaleCoeurs); }).observe(document.documentElement, { childList:true, subtree:true }); addEventListener('resize', () => requestAnimationFrame(recaleCoeurs)); }
 if (typeof document !== 'undefined') { let t2 = null; new MutationObserver(() => { cancelAnimationFrame(t2); t2 = requestAnimationFrame(calePlateauLong); }).observe(document.documentElement, { childList:true, subtree:true }); addEventListener('resize', () => requestAnimationFrame(calePlateauLong)); }
 // 23/11 : chaque plateau LONG placé (688 × 1536) prend toute la largeur ; sur un écran plus court, on perd au plus 18 % de sa hauteur (le décor), jamais l'interface
@@ -2720,7 +2790,7 @@ async function bandeauAction(s, html, ms) {
   const moi = bandeauPrec = { d, t:performance.now() };
   setTimeout(() => { if (bandeauPrec === moi) { d.classList.add('part'); setTimeout(() => d.remove(), 400); bandeauPrec = null; } }, lu + 1600);
 }
-const QUI = s => s === 'O' ? S.O.nom : 'Toi';
+const QUI = s => s === 'O' ? S.O.nom : S && S.coop && (VISE_P || S.J) && ((VISE_P || S.J).ordi || S.J.ordi) ? (VISE_P || S.J).nom : 'Toi'; // 27/11 soir : le compagnon a son nom (plus « Toi vend 1 dé »)
 // visée : ligne en pointillés de l'attaquant à la cible + mire rouge sur la cible
 async function mire(de, vers) {
   if (!de || !vers) return; const a = centre(de), b = centre(vers);
@@ -2741,7 +2811,7 @@ async function joue1(e) {
   if (e.t === 'recap') {
     const l = [...e.actions.map(x => `<li>${x}</li>`), ...e.gardes.map(x => `<li>🛡 ${x}</li>`)].join('') || '<li>Rien de spécial.</li>';
     const pv = e.perdu > 0 ? `<b style="color:#ff7a7a">Tu as perdu ${e.perdu} ❤</b>` : e.perdu < 0 ? `<b style="color:#7dffb0">Tu as regagné ${-e.perdu} ❤</b>` : '<b style="color:#7dffb0">Tu n’as perdu aucun ❤</b>';
-    await new Promise(ok => { fenetre(`<h2>Fin du tour de ${e.nom}</h2><ul style="padding-left:1.1em;margin:.3em 0">${l}</ul><p>${pv}${e.abs ? `<br>🛡 Ta Garde a bloqué <b>${e.abs}</b> dégât${e.abs > 1 ? 's' : ''}.` : ''}${e.morts > 0 ? `<br>💀 ${e.morts} de tes créatures est tombée.` : ''}${e.soinO > 0 ? `<br>💚 ${e.nom} s’est soignée de ${e.soinO}.` : ''}</p><div class="choixh"><button id="amoi">À moi ! ▶</button></div>`);
+    await new Promise(ok => { fenetre(`<h2>Fin du tour de ${e.nom}</h2><ul style="padding-left:1.1em;margin:.3em 0">${l}</ul><p>${pv}${e.absH ? Object.entries(e.absH).filter(([, n]) => n > 0).map(([q, n]) => `<br>🛡 La Garde de <b>${q}</b> a bloqué <b>${n}</b> dégât${n > 1 ? 's' : ''}.`).join('') : e.abs ? `<br>🛡 Ta Garde a bloqué <b>${e.abs}</b> dégât${e.abs > 1 ? 's' : ''}.` : ''}${e.morts > 0 ? `<br>💀 ${e.morts} de tes créatures est tombée.` : ''}${e.soinO > 0 ? `<br>💚 ${e.nom} s’est soignée de ${e.soinO}.` : ''}</p><div class="choixh"><button id="amoi">À moi ! ▶</button></div>`);
       document.getElementById('amoi').onclick = () => { fermer(); ok(); }; });
     return;
   }
@@ -2749,9 +2819,9 @@ async function joue1(e) {
     const t = document.createElement('div'); t.innerHTML = front(Object.assign({}, e.s === 'O' ? S.O : S.J, { front:[e.u] }), e.s === 'O'); const n = t.querySelector('.u'); if (!n) return;
     n.removeAttribute('onclick'); f.classList.remove('vide'); f.appendChild(n); n.animate([{ transform:'scale(.3)', opacity:0 }, { transform:'scale(1)', opacity:1 }], { duration:350 * fxVite, easing:'ease-out' }); await dodo(380); return; }
   if (e.t === 'finGarde') { const c = el({ s:e.s }); if (c) flotte(c, '🛡 Garde terminée', 'bleu'); await dodo(500); return; }
-  if (e.t === 'annonce') { son('tour'); const d = document.createElement('div'); d.className = 'annonce'; d.textContent = e.txt; couche().appendChild(d); await dodo(1100); d.remove(); return; }
+  if (e.t === 'annonce') { son('tour'); const d = document.createElement('div'); d.className = 'annonce'; if (e.html) d.innerHTML = e.txt; else d.textContent = e.txt; couche().appendChild(d); await dodo(e.html ? 2600 : 1100); d.remove(); return; }
   if (e.t === 'tour') {
-    son('tour'); const d = document.createElement('div'); d.className = 'annonce'; d.textContent = e.s === 'O' ? `Tour de ${e.nom}` : 'À toi de jouer !';
+    son('tour'); const d = document.createElement('div'); d.className = 'annonce'; d.textContent = e.s === 'O' ? `Tour de ${e.nom}` : e.comp ? `🤝 Tour de ${e.nom} (compagnon)` : S && S.coop && S.J && !S.J.ordi ? `⚔ À toi, ${S.J.nom} !` : 'À toi de jouer !';
     couche().appendChild(d); await dodo(e.s === 'O' ? 900 : 700); d.remove(); return;
   }
   if (e.t === 'carte' || e.t === 'ultime') {
@@ -2812,6 +2882,13 @@ async function joue1(e) {
     defile(sp[1], e.v0 ?? nb(sp[1] && sp[1].textContent), e.v1 ?? 1, v => `❤ ${v}`, 'r');
     await dodo(1500); c.style.zIndex = ''; return;
   }
+  if (e.t === 'eclatE') { const b = document.getElementById('b-' + e.s), t = document.querySelector(`[data-k="${e.k}"]`);
+    if (t) t.animate([{ transform:'none', filter:'none' }, { transform:'scale(1.3)', filter:'brightness(2) drop-shadow(0 0 6px #ffd54a)' }, { transform:'none', filter:'none' }], { duration:650 * fxVite });
+    if (b) flotte(b, e.txt, 'nom'); son('magie'); await dodo(450); return; }
+  if (e.t === 'atk') { const c = el(e.c); if (!c || c.classList.contains('mystere')) return; const sp = c.querySelector('.av span'); if (!sp) return;
+    son('choisir'); flotte(c, `${e.a1 > e.a0 ? '+' : '−'}${Math.abs(e.a1 - e.a0)} ⚔`, e.a1 > e.a0 ? 'nom' : 'rouge');
+    c.animate([{ transform:'none', filter:'none' }, { transform:'scale(1.12)', filter:'brightness(1.5) drop-shadow(0 0 8px #ffb347)' }, { transform:'none', filter:'none' }], { duration:600 * fxVite });
+    defile(sp, e.a0, e.a1, v => `⚔ ${v}`, 'r'); sp.classList.toggle('n2', e.a1 >= 10); await dodo(650); return; }
   if (e.t === 'nouveauDe') { son('tour'); const d = document.createElement('div'); d.className = 'annonce'; d.innerHTML = `🎲 Nouveau dé !<div style="font-size:.55em;color:#fff">Tu lances maintenant ${e.n} dés${e.n >= 5 ? ' (le maximum)' : ''}</div>`; couche().appendChild(d); await dodo(1300); d.remove(); return; }
   if (e.t === 'pc') { const c = el({ s:e.s }); if (!c) return; await bandeauAction(e.s, `◆ <b>${QUI(e.s)}</b> vend ${e.nb || 1} dé${(e.nb || 1) > 1 ? 's' : ''} : <b>+${e.n} PC</b>`, 1000); son('vendre'); effetImage('pc', c, .8); flotte(c, `+${e.n} PC`, 'bleu'); await dodo(350); return; }
   if (e.t === 'jauge') { const c = el({ s:e.s }); if (!c) return; ton(523, .4, 'triangle', .1); ton(784, .5, 'triangle', .1, null, .12); if (!effetImage('jauge', c, 1.2)) effet('lumiere', c); flotte(c, '⚡ Ultime prêt !', 'nom'); await dodo(700); return; }

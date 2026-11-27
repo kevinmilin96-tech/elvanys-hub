@@ -19,7 +19,7 @@ function deuxChoisir() {
 function deuxPrend(id) {
   deuxChoix.push(id);
   if (deuxChoix.length < 2) { deuxChoisir(); return; }
-  fermer(); nouvellePartie(deuxChoix[0], deuxChoix[1]);
+  fermer(); window._sansBuild = true; nouvellePartie(deuxChoix[0], deuxChoix[1]);
   S.deux = true; S.O.ordi = false; S.J.qui = 'Joueur 1'; S.O.qui = 'Joueur 2';
   log('Duel à deux sur le même téléphone.');
   deuxPasse(true);
@@ -40,6 +40,7 @@ const _finDeMonTourDeux = finDeMonTour;
 finDeMonTour = function () {
   if (!S || !S.deux) return _finDeMonTourDeux();
   if (S.fini) return;
+  if (S.J.aLancer) { if (typeof pasEncoreLance === 'function') pasEncoreLance(); return; } // 27/11 soir : jamais de fin de tour avant le lancer
   if (typeof finVu === 'function') finVu();
   if (roule || fxOn) { if (!S.deuxFinFaite || S.deuxFinFaite !== S.J) finEnAttente = S.J; return; } // 15/11 soir : appui gardé pendant une animation
   if (S.J.aLancer) { lancerMesDes(); return; }
@@ -64,4 +65,4 @@ montrerFin = function () {
     <h2>🏆 ${g.qui} gagne avec ${g.nom} !</h2><p>${p.nom} (${p.qui}) tombe après ${Math.max(S.J.tours, S.O.tours)} tours.</p>
     <div class="choixh"><button onclick="fermer();deuxRevanche('${p.id}', '${g.id}', '${p.qui}', '${g.qui}')">🔁 Revanche (le perdant commence)</button><button onclick="location.href='menu.html#arene'">⌂ Menu</button></div></div>`);
 };
-function deuxRevanche(a, b, qa, qb) { deuxChoix = [a, b]; fermer(); nouvellePartie(a, b); S.deux = true; S.O.ordi = false; S.J.qui = qa; S.O.qui = qb; deuxPasse(true); }
+function deuxRevanche(a, b, qa, qb) { deuxChoix = [a, b]; fermer(); window._sansBuild = true; nouvellePartie(a, b); S.deux = true; S.O.ordi = false; S.J.qui = qa; S.O.qui = qb; deuxPasse(true); }

@@ -644,16 +644,29 @@ function nouvelleOdyssee(heros, graine, acte, niveau, avent) {
   // 14/11 nuit : les étoiles et l'équipement du héros (heros-etoiles.js) ; la Grande aventure gère son équipement elle-même
   // 15/11 soir : les ennemis suivent la force du héros, à 30 % (mesuré : débutant 72 %, héros niveau 50 ≈ 83 %, niveau 250 ≈ 86 % ;
   // suivi entier = 8-58 %, beaucoup trop dur). Pas encore dans la Grande aventure (elle ne donne pas les PV du héros : à mesurer à part).
-  if (!avent && typeof forceSuiveuse === 'function' && typeof localStorage !== 'undefined') { const f = forceSuiveuse(run.av || heros); if (f > 1.05) run.fs = Math.round((1 + 0.4 * (f - 1)) * 100) / 100; }
   if (!avent && typeof bonusHerosPvE === 'function' && typeof localStorage !== 'undefined') { const b = bonusHerosPvE(run.av || heros); if (b.pv) { run.pvMax += b.pv; run.pv += b.pv; }
     run.equipH = equipHeros(run.av || heros); if (run.equipH.armure === 'heaume') { run.pvMax += valEquip('heaume'); run.pv += valEquip('heaume'); }
     if (run.equipH.armure === 'cape') run.vivres += valEquip('cape');
     if (b.pv || Object.values(run.equipH).some(Boolean)) run.journal.push(`⭐ ${NIVEAUX_H[niveauHeros(run.av || heros)]}${Object.values(run.equipH).filter(Boolean).length ? ' · équipement : ' + Object.values(run.equipH).filter(Boolean).map(k => EQUIP[k][2]).join(', ') : ''}.`); }
+  if (!avent) suiviOdyssee(run, run.av || heros, pv); // 27/11 soir : les ennemis suivent le héros monté (vie ET coups)
   // 14/11 nuit : bonus de départ gagnés avec le Rang de la Guilde (route des récompenses, rang.js)
   if (typeof bonusDepart === 'function' && typeof localStorage !== 'undefined') { const b = bonusDepart(); run.vivres += b.huile; run.or += b.or; run.pvMax += b.pv; run.pv += b.pv; if (b.potion && run.sacoche.length < 2) run.sacoche.push('soin'); run.relanceRang = b.relance; if (b.huile || b.or || b.pv || b.potion || b.relance) run.journal.push('🏆 Bonus de ton Rang de la Guilde : ' + [b.huile && `+${b.huile} huile`, b.or && `+${b.or} or`, b.pv && `+${b.pv} PV max`, b.potion && 'une potion de soin', b.relance && 'une relance de plus par combat'].filter(Boolean).join(', ') + '.'); }
   const nem = typeof localStorage !== 'undefined' ? lireNemesis()[heros] : null;
   if (nem && HEROS[nem.rival]) { const el = run.ile.flat().filter(c => c.t === 'elite'); const c = el.find(x => x.ennemi === 'heros') || el[0]; if (c) { c.nemesis = nem.rival; c.nemNiv = nem.niv; c.ennemi = nem.rival; run.journal.push(`😈 ${HEROS[nem.rival].nom}, ta Némésis, est sur l’île.`); } }
   return run;
+}
+// 27/11 soir (l'utilisateur : « mon personnage a +200 PV, certains modes sont faciles ») : LE SUIVI DU HÉROS MONTÉ, pour l'Odyssée, l'île du jour,
+// l'Odyssée sans fin, la Grande aventure et le Tour des épreuves. Avant : seule la VIE des ennemis suivait (×1 + 0,4 × (force − 1)),
+// les combats d'un héros très monté duraient deux fois plus longtemps et ses PV en plus ne risquaient rien.
+// Maintenant : run.fs = vie des ennemis (10 % de la force), run.fd = leurs COUPS sur le héros (27 % des PV gagnés, rapportés à 85 PV).
+// Le héros garde une avance (ses PV comptent en entier, les coups n'en rattrapent qu'une partie). Réglé au simulateur (Equilibrage-personnages.md, 27/11 soir).
+const ODY_SUIVI = { vie:0.1, deg:0.27, degMax:2, base:85 }; // base : les PV gagnés comptent par rapport à 85 PV (les PV de départ d'un héros en Odyssée), le même pour tous
+function suiviOdyssee(run, id, pvDepart) {
+  run.fs = 1; run.fd = 1;
+  if (typeof forceSuiveuse !== 'function' || typeof bonusHerosPvE !== 'function' || typeof localStorage === 'undefined') return;
+  const f = forceSuiveuse(id), b = bonusHerosPvE(id), base = ODY_SUIVI.base || pvDepart || 85;
+  if (f > 1.05) run.fs = Math.round((1 + ODY_SUIVI.vie * (f - 1)) * 100) / 100;
+  if (b.pv > 0) run.fd = Math.round(Math.min(ODY_SUIVI.degMax, 1 + ODY_SUIVI.deg * b.pv / base) * 100) / 100;
 }
 // la vie, bornée ; le deck effectif en combat = run.deck (les malédictions y sont déjà)
 const pvMaxEffectif = r => r.pvMax;

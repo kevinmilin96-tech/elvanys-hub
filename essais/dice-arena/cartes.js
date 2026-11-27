@@ -8,7 +8,14 @@ const CADRES_OK = ['pip', 'maelle', 'aldric', 'oria', 'gorm', 'zephine', 'guilde
 const CADRE_DE = k => { for (const h of ORDRE) if (HEROS[h].deck.includes(k)) return h; return 'guilde'; };
 const ICONE_SORTE = { u:'⚔', s:'✦', e:'⚒', r:'⛓' };
 const NOM_SORTE = { u:'Créature', s:'Sort', e:'Équipement', r:'Réaction' }; // 14/11 (l'utilisateur : « Note grave, c'est un équipement ? ») : la sorte est écrite sur la carte
+// 27/11 soir (l'utilisateur : « textes encore coupés : Racines entravante:, ort · 🎲 3 dés qui se suiv… ») : sur son téléphone, les lettres
+// minuscules d'une petite carte sont GROSSIES par le navigateur (taille minimale des polices) et sortent de leur zone. Une carte de
+// 110 à 239 px de large est donc dessinée en GRAND (240 px, lettres de 9 à 13 px) puis réduite d'un bloc : rien ne peut plus déborder.
+const CG_GRAND = 240;
 function carteGuilde(k, opt = {}) {
+  const w0 = opt.w || 216;
+  if (w0 >= 110 && w0 < CG_GRAND && !opt._grand) { const f = w0 / CG_GRAND;
+    return `<div class="cg-reduit" style="width:${w0}px;height:${(w0 * 1216 / 864).toFixed(1)}px"><div style="width:${CG_GRAND}px;transform:scale(${f.toFixed(4)});transform-origin:0 0">${carteGuilde(k, Object.assign({}, opt, { w:CG_GRAND, _grand:true }))}</div></div>`; }
   const c = CARTES[k], h = opt.heros || CADRE_DE(k), z = ZONES, pc = (a, i) => a[i] + '%';
   const cadre = `cadres/${h}.webp?v=1`, art = opt.art || (ARTS.includes(k) ? `cartes/${k}.webp?v=1` : null);
   return `<div class="carteG${opt.entiere ? ' entiere' : ''}" style="--w:${opt.w || 216}px">
@@ -23,6 +30,7 @@ function carteGuilde(k, opt = {}) {
   </div>`;
 }
 const CSS_CARTE = `
+.cg-reduit { position:relative; display:inline-block; vertical-align:top; overflow:visible; } .cg-reduit > div { position:absolute; left:0; top:0; }
 .carteG { position:relative; width:var(--w); aspect-ratio:864/1216; font-family:Georgia, serif; container-type:inline-size; }
 .carteG > * { position:absolute; box-sizing:border-box; }
 /* 22/11 (l'utilisateur : « la description des cartes dépasse quand elles sont petites ») : sur téléphone, Android grossit de lui-même les textes

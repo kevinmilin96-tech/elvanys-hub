@@ -74,7 +74,7 @@ const ETIQ = { 'Totem':'Tant qu’il est debout, le chef (le boss, ou le chef de
   'Soin':'Soigne l’allié le plus blessé à chaque round (2 chez le Faon, 3 chez les soigneurs ennemis).', 'Soin à tous':'Soigne de 1 tout l’équipage à chaque round.', '+1 atq':'Tous les autres membres de l’équipage ont +1 attaque (plusieurs Tambours ne s’additionnent pas).',
   'Épines':'Qui le frappe perd 1 PV.' };
 function etiquettes(u) { const r = RECRUES[u.key] || {};
-  return [u.barriere || r.barriere ? 'Barrière' : '', r.charge || u.charge ? 'Charge' : '', r.poison ? 'Poison' : '', r.soigneur || u.soigneur ? 'Soin' : '', u.totem ? 'Totem' : '', u.etendard ? 'Étendard' : '', u.invoque ? 'Invocateur' : '', r.soinTous ? 'Soin à tous' : '', r.tambour ? '+1 atq' : '', r.epines ? 'Épines' : ''].filter(Boolean); }
+  return [u.key === 'capitaine' && X && X.capAmelio && X.capAmelio.length ? `🎖 ${X.capAmelio.length}` : '', u.key === 'capitaine' && X && X.capMaitre ? `🎯 +${X.capMaitre}` : '', u.barriere || r.barriere ? 'Barrière' : '', r.charge || u.charge ? 'Charge' : '', r.poison ? 'Poison' : '', r.soigneur || u.soigneur ? 'Soin' : '', u.totem ? 'Totem' : '', u.etendard ? 'Étendard' : '', u.invoque ? 'Invocateur' : '', r.soinTous ? 'Soin à tous' : '', r.tambour ? '+1 atq' : '', r.epines ? 'Épines' : ''].filter(Boolean); }
 function uniteHTML(u, opt) {
   if (!u) return '';
   const cap = u.key === 'capitaine', fam = u.fam && FAMILLES[u.fam] ? FAMILLES[u.fam].e : '', tags = etiquettes(u);
@@ -323,8 +323,18 @@ async function partir() {
   const g = res.gagne; if (g) typeof guildeEvt === 'function' && guildeEvt('escale', 1, { heros:progX(), voie:X.heros });
   const lignes = [g ? '🏆 <b>Victoire !</b>' : '💔 <b>Défaite</b> : un cœur de moins.', res.forge ? `⚒ Forge : ${res.forge}.` : '', res.maelle ? `⚒ La forge du bord : ${res.maelle}.` : '', res.louve ? '🐺 La Louve rejoint l’équipage !' : '', res.elite ? `💀 ${res.elite}` : '', !X.fini && res.gain ? `💰 +${res.gain} pièces${res.interet ? ` (dont ${res.interet} d’intérêts)` : ''}.` : ''].filter(Boolean).map(t => `<p>${t}</p>`).join('');
   if (X.fini) { setTimeout(() => finExp(), 600 / vitesse); return; }
-  fenetre(`<h2>${g ? '🏆' : '💔'} ${esc.n}</h2>${lignes}<p class="doux">Les recrues tombées se relèvent au port : chaque combat commence à pleine vie.</p><div class="choixh"><button class="or" onclick="fermer();voyage()">⛵ Lever l’ancre</button></div>`);
+  fenetre(`<h2>${g ? '🏆' : '💔'} ${esc.n}</h2>${lignes}<p class="doux">Les recrues tombées se relèvent au port : chaque combat commence à pleine vie.</p><div class="choixh"><button class="or" onclick="fermer();${X.capChoix ? 'capitaineMonte()' : 'voyage()'}">${X.capChoix ? '🎖 Le capitaine progresse ▶' : '⛵ Lever l’ancre'}</button></div>`);
 }
+// 27/11 soir (décision de l'utilisateur) : après chaque combat gagné, le capitaine choisit 1 amélioration parmi 3 ; ses chiffres montent sur sa carte
+function capitaineMonte() {
+  const c = capitaineDe(X); if (!X.capChoix || !c) { voyage(); return; }
+  fenetre(`<h2>🎖 ${c.n} progresse</h2><p class="doux">Une victoire de plus : choisis ce que ton capitaine apprend. C’est pour tout le voyage.</p>
+  <div style="display:flex;align-items:center;gap:10px;margin:.4em 0"><img src="${capArt(c)}" alt="" style="width:64px;height:64px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 3px var(--or);flex:none"><div>⚔ <b>${c.a + c.bonusA}</b> attaque · ❤ <b>${c.v + c.bonusV}</b> vie${X.capMaitre ? `<br>🎯 Coup de maître +${X.capMaitre}` : ''}${X.capCri ? `<br>📣 Cri de ralliement +${X.capCri}` : ''}</div></div>
+  <div class="choixv">${X.capChoix.map((k, i) => { const a = AMELIO_CAP[k]; return `<button onclick="capChoisi(${i})" style="display:block;width:100%;margin:.3em 0;text-align:left">${a.e} <b>${a.n}</b> : ${a.d}</button>`; }).join('')}</div>`);
+  const f = document.querySelector('#fen .fenetre'); if (f) f.onclick = null; // on choisit, on ne ferme pas à côté
+}
+function capChoisi(i) { const k = choisitCapitaine(X, i); sauve(); fermer(); const c = capitaineDe(X);
+  fenetre(`<h2>${AMELIO_CAP[k].e} ${AMELIO_CAP[k].n}</h2><p>${c.n} : ⚔ <b>${c.a + c.bonusA}</b> · ❤ <b>${c.v + c.bonusV}</b>.</p><div class="choixh"><button class="or" onclick="fermer();voyage()">⛵ Lever l’ancre</button></div>`); }
 
 // 18/11 (l'utilisateur, « comme dans les jeux ») : LA CIBLE DU CAPITAINE : doigt maintenu sur un ennemi pendant le combat → 🎯 dessus, tout l'équipage le vise
 // en priorité dès le coup suivant (19/11 ; le moteur rejoue le même combat avec cette cible, voir partir()). Un simple toucher ouvre toujours sa fiche.
@@ -400,6 +410,8 @@ accueil = function () {
 };
 depart = function (id) { GM.retour(null); /* 22/11 : le voyage commence */ const i = haInfo(id); X = nouveauVoyage(haVoie(id), typeof flashChoisi !== 'undefined' && flashChoisi ? { mer:'nuages', asc:0, flash:true } : jourChoisi ? { mer:'nuages', asc:0, jour:true } : { mer:merChoisie, asc:ascChoisi }); if (X.flash) { const fm = lireMeta4().flash || {}; X.flashLibre = !!fm[new Date().toISOString().slice(0, 10)]; } // le voyage du jour : le même pour tous (Mer des nuages, sans ascension) X.diff = diffChoisie;
   if (i) { X.av = i.id; const cap = X.plateau.av[1]; if (cap && cap.key === 'capitaine') { cap.n = i.nom; cap.av = i.id; } }
+  // 27/11 soir (l'utilisateur : « les modes ne devaient-ils pas s'ajuster à mon personnage ? ») : le héros monté compte aussi en Expédition
+  try { if (typeof bonusHerosPvE === 'function' && typeof forceSuiveuse === 'function') { const hid = X.av || X.heros; appliqueHerosExp(X, bonusHerosPvE(hid), forceSuiveuse(hid)); } } catch (e) { console.warn(e); }
   sel = null; sauve(); introVoyage(); };
 function introVoyage() { const R = REGLES_V4[X.regle], B = BOSS_V4[X.boss];
   fenetre(`<h2>⛵ ${MERS[X.mer].e} ${MERS[X.mer].n}</h2><p class="doux">${MERS[X.mer].d}</p>

@@ -19,7 +19,7 @@ degats = function (k, n, ignore) {
   let r = n, abs = 0;
   if (!ignore) { const g = Math.min(O.gardeB, r); O.gardeB -= g; r -= g; const b = Math.min(O.bouclier || 0, r); O.bouclier = (O.bouclier || 0) - b; r -= b; abs = g + b; }
   // la répartition : le choix du joueur (k.g, ou S.O.viseG), ou celui de l'ordinateur
-  let v = k.g !== undefined ? k.g : (S.J && (S.J.ordi || S.auto)) ? viseAutoG(O, r) : (O.viseG !== undefined ? O.viseG : 0);
+  let v = k.g !== undefined ? k.g : (S.J && (S.J.ordi || S.auto) && !(globalThis.HUMAIN_A && S.J === S.equipe[0])) ? viseAutoG(O, r) : (O.viseChoisi && O.viseG !== undefined ? O.viseG : viseAutoG(O, r)); /* 27/11 soir (point 18) : tant que le joueur n'a pas choisi, ses coups (et ceux de ses créatures) vont au Garde le plus solide */ // HUMAIN_A : simulateur, le joueur laisse 🎯 sur A
   const vivant = i => O.g[i] > 0, parts = [0, 0];
   if (v === 'deux' && vivant(0) && vivant(1)) { const f = O.g[0] <= O.g[1] ? 0 : 1; parts[f] = Math.ceil(r / 2); parts[1 - f] = Math.floor(r / 2); }
   else { if (v === 'deux') v = vivant(0) ? 0 : 1; if (!vivant(v) && vivant(1 - v)) v = 1 - v; parts[v] = r; } // un Garde déjà au tapis : le coup va sur l'autre
@@ -33,7 +33,10 @@ degats = function (k, n, ignore) {
   fin();
 };
 // l'ordinateur (compagnon, simulateur) : finir un Garde s'il peut, sinon frapper le plus faible
-function viseAutoG(O, r) { const a = O.g[0], b = O.g[1]; if (a <= 0) return 1; if (b <= 0) return 0; return a <= b ? 0 : 1; }
+// 27/11 soir (l'utilisateur : « le compagnon ne frappe que le Garde A ») : il jouait « le plus faible d'abord », donc avec le joueur (🎯 sur A
+// par défaut) tout tombait sur A, A se couchait seul et se relevait. Maintenant il joue l'ÉQUIPE : un Garde au tapis → l'autre ; sinon le
+// Garde qui a le PLUS de vie (les deux descendent ensemble), pour finir les deux dans le même tour avec le joueur
+function viseAutoG(O, r) { const a = O.g[0], b = O.g[1]; if (a <= 0) return 1; if (b <= 0) return 0; if (globalThis.VISE_G_ANCIEN) return a <= b ? 0 : 1; return a >= b ? 0 : 1; }
 // la relève : SEULEMENT à la fin du tour des Gardes (livre p. 35-36), avec 15 PV
 const _finTourInv = finTour;
 finTour = function (J) {
@@ -49,7 +52,7 @@ debutTour = function (J) {
   return _debutTourJum(J);
 };
 // le choix de la cible : « 🎯 » sur le panneau du boss, et dans la fenêtre « Valider »
-function viseG(v, ev) { if (ev) ev.stopPropagation(); if (!S || !S.O) return; S.O.viseG = v; const z = document.getElementById('conf'); if (z && ciblage && ciblage.choisi) { montreConfirme(); return; } rendu(); }
+function viseG(v, ev) { if (ev) ev.stopPropagation(); if (!S || !S.O) return; S.O.viseG = v; S.O.viseChoisi = true; const z = document.getElementById('conf'); if (z && ciblage && ciblage.choisi) { montreConfirme(); return; } rendu(); }
 const txtViseG = v => v === 'deux' ? 'moitié-moitié' : `tout sur le ${NOM_G[v]}`;
 const _montreConfirmeJum = montreConfirme;
 montreConfirme = function () {
@@ -128,12 +131,12 @@ preparerTourEnnemis = function (suite) {
   dessine();
 };
 // le tour des ennemis : chaque attaque vise le héros du plan (S.J le temps du coup : adv(boss) = S.J)
-function cibleDe(x) { if (!x.inter) return x.cible; const a = autreHeros(x.cible); if (!a || a.aTerre || S.cohesion < 1) return x.cible; S.cohesion--; log(`🛡 Interception : ${a.nom} prend le coup de ${x.n} à la place de ${x.cible.nom} (−1 🤝).`); return a; }
+function cibleDe(x) { if (x.pris) { const a = S.equipe.find(h => h.nom === x.pris); if (a && !a.aTerre) return a; } if (!x.inter) return x.cible; const a = autreHeros(x.cible); if (!a || a.aTerre || S.cohesion < 1) return x.cible; S.cohesion--; x.inter = false; x.pris = a.nom; log(`🛡 Interception : ${a.nom} prend le coup de ${x.n} à la place de ${x.cible.nom} (−1 🤝).`); return a; } // 27/11 soir : une interception ne se paie qu'une fois, et le récapitulatif la cite
 function montreVise(x, h) {
   { const a = autreHeros(h); S.J = h; S.viseFait = true;
     fx({ t:'vise', i:S.equipe.indexOf(h), html:barre(h, false), front:front(h, false), past:pastilleHTML(a), txt:`🎲 ${x.d} : ${x.d % 2 ? 'impair' : 'pair'} → <b>${x.n}</b> vise <b>${h.nom}</b>${x.inter ? ' (interception)' : ''}` }); }
 }
-const _joueOrdiInv = joueOrdi;
+const _joueOrdiInv = joueOrdi; // (le plan est gardé jusqu'au récapitulatif : x.pris = qui a intercepté)
 joueOrdi = function () {
   if (!S || !S.coop || S.fini) return _joueOrdiInv();
   if (!S.plan) { S.plan = tirePlan(); decidePlanAuto(S.plan); }
@@ -141,7 +144,7 @@ joueOrdi = function () {
   const x0 = plan[0]; const h0 = cibleDe(x0); if (h0 && !h0.aTerre) montreVise(x0, h0);
   try { _joueOrdiInv(); } finally { S.plan = null; S.viseFait = false; }
   // le récapitulatif du tour : ce que CHAQUE héros a perdu
-  const rec = [...FX].reverse().find(e => e.t === 'recap'); if (rec) { rec.perdu = S.equipe.reduce((t, h, i) => t + pv0[i] - h.pv, 0); rec.actions = [...rec.actions, ...S.equipe.map((h, i) => `${h.nom} : ${pv0[i] - h.pv > 0 ? `−${pv0[i] - h.pv} ❤` : 'aucun ❤ perdu'}`)]; }
+  const rec = [...FX].reverse().find(e => e.t === 'recap'); if (rec) { rec.perdu = S.equipe.reduce((t, h, i) => t + pv0[i] - h.pv, 0); rec.actions = [...rec.actions, ...plan.filter(x => x.pris).map(x => `🛡 <b>${x.pris}</b> a pris le coup de ${x.n} à la place de ${x.cible.nom} (−1 🤝)`), ...S.equipe.map((h, i) => `${h.nom} : ${pv0[i] - h.pv > 0 ? `−${pv0[i] - h.pv} ❤` : 'aucun ❤ perdu'}`)]; }
 };
 const _attaquesRestantesInv = attaquesRestantes;
 attaquesRestantes = function (J) {
@@ -155,7 +158,7 @@ attaquesRestantes = function (J) {
 function pastilleHTML(h) { if (!h) return ''; return `<div class="pastA ${h.aTerre ? 'terre' : ''}" id="b-A" onclick="voirEquipe()"><img src="${h.img || HEROS[h.id].img || IMG(h.id)}"${h.imgSec ? ` onerror="this.onerror=null;this.src='${h.imgSec}'"` : ''} alt=""><span class="p pv">${Math.max(0, h.pv)}</span><small>${h.aTerre ? '💀' : '❤'}</small><div class="vie"><i style="width:${Math.max(0, h.pv) / h.pvMax * 100}%"></i></div><b>${h.nom}</b></div>`; }
 const _dessineInv = dessine;
 dessine = function () {
-  VISE_P = null; PAST_P = null; _dessineInv();
+  VISE_P = null; PAST_P = null; if (S && S.O && estJumeaux(S.O) && S.O.g && !S.O.viseChoisi) S.O.viseG = viseAutoG(S.O, 0); _dessineInv();
   if (!S || !S.coop) return; const pl = document.querySelector('.plateau.unique'), a = autreHeros(S.J); if (!pl || !a) return;
   const v = document.getElementById('b-A'); if (v) v.remove(); pl.insertAdjacentHTML('beforeend', pastilleHTML(a)); PAST_P = a;
 };
