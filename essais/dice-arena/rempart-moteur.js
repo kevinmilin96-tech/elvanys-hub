@@ -15,7 +15,7 @@ const R = {
   niv:[0, 1, 1.75, 2.8, 4.2], nivMax:4, etoileMax:5, etoile:0.35, pouvoirRecharge:20,
   runeBonus:0.25, pv:5, runeMax:3, puitsDelai:6, comboBonus:0.3, bowling:90,
   // 27/11 soir (plus d'action) : les runes ◆ à toucher, l'appel de la vague, le sort du héros
-  suivi:0.65, cristalVie:6, cristalPuits:2, cristalMonstre:2, cristalChance:1 / 3, puitsDelaiC:10, appelMin:3, appelMax:8, sortRecharge:30, sortDepart:12,
+  suivi:0.9, cristalVie:6, cristalPuits:2, cristalMonstre:2, cristalChance:1 / 3, puitsDelaiC:10, appelMin:3, appelMax:8, sortRecharge:30, sortDepart:12,
 };
 R.regenE = 3.0; // l'énergie qui monte seule baisse d'autant (3 s par ◆ au lieu de 2,4) : le reste vient des runes ramassées
 // les sortes de tours (une par face de dé) : prix en ◆, cadence (s), dégâts au niveau 1
