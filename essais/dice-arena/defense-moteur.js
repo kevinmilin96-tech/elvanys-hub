@@ -176,8 +176,9 @@ function fusionD(D, a, b) {
   if (ta.rune || tb.rune) {
     if (!(ta.rune && tb.rune) || ta.rv !== tb.rv) return 'Une Rune fusionne seulement avec une Rune du même niveau.';
     if (tb.rv >= RUNE_MAX) return 'La Rune légendaire est au plus haut.';
+    tb.enfants = [copieRuneD(ta), copieRuneD(tb)]; tb.pretT = Math.max(ta.pretT || 0, tb.pretT || 0); // 27/11 : de quoi la briser plus tard
     tb.rv++;
-  } else if (ta.niv >= NIV_MAX && tb.niv >= NIV_MAX) { tb.rune = true; tb.rv = 1; tb.v = 0; tb.bonus = 0; }
+  } else if (ta.niv >= NIV_MAX && tb.niv >= NIV_MAX) { tb.orig = [ta.v, tb.v]; tb.rune = true; tb.rv = 1; tb.v = 0; tb.bonus = 0; tb.et = 0; tb.pretT = 0; } // 27/11 : la Rune garde les sortes de ses deux tours
   else if (ta.v !== tb.v) return 'Il faut deux tours de la même sorte (ou deux tours au niveau max pour une Rune).';
   else if (ta.niv !== tb.niv) return 'Il faut deux tours du même niveau.';
   else { tb.niv++; tb.bonus = (tb.bonus || 0) + (ta.bonus || 0); }
@@ -185,6 +186,7 @@ function fusionD(D, a, b) {
   logD(D, tb.rune ? `✨ ${NOM_RUNE(tb.rv).toUpperCase()} ${DHEROS[D.heros].rune.n} !` : `Fusion : ${nomTourD(tb)}.`); fxD(D, { t:tb.rune ? 'rune' : 'fusion', c:b });
   echoGorm(D, b);
 }
+const copieRuneD = t => ({ id:t.id, v:0, niv:t.niv, rune:true, rv:t.rv, tmp:0, bonus:0, orig:t.orig ? [...t.orig] : null, enfants:t.enfants ? t.enfants.map(copieRuneD) : null, pretT:t.pretT || 0 });
 // 27/11 (demande de l'utilisateur) : démolir une tour pour libérer sa case (on récupère 1 PC)
 function demolirD(D, c) {
   if (D.fini) return 'Partie finie.'; const t = D.rempart[c]; if (!t) return 'Pas de tour ici.';
@@ -274,6 +276,74 @@ function pouvoirTourD(D, c, k) {
 }
 const teteD = (D, col, sauf) => D.monstres.filter(m => m.col === col && m !== sauf && !m.sous).sort((a, b) => b.row - a.row || a.id - b.id)[0];
 
+// 27/11 (décision de l'utilisateur : « la Rune est une impasse ») : LE POUVOIR DE LA RUNE, propre au héros, comme les pouvoirs des tours à 5 ★ :
+// lancé quand on veut pendant son tour, puis il se recharge pendant 3 tours. Une Rune ancienne (✦✦) ou légendaire (✦✦✦) le rend plus fort (× son niveau).
+// Une Rune ne prend jamais d'étoiles par les dés (décision : trop fort avec les relances). Les chiffres se règlent ici (simulateur).
+const RUNE_P = { aldric:{ dg:5, porte:0 }, pip:{ dg:80 }, oria:{ part:0.15, min:8 }, zephine:{ dg:15 }, gorm:{ fanfare:0.5 } }; // PROVISOIRE (27/11, en pause) : premiers essais au simulateur, stratégie « Runes » seule ; PAS encore branché à l'écran
+const POUVOIRS_RUNE = {
+  maelle:{ n:'Coup d’enclume', e:'🔨', d:rv => `Ses tours voisines tirent tout de suite${rv > 1 ? ` ${rv} fois` : ''}, en plus de leur tir de fin de tour.` },
+  gorm:{ n:'Fanfare', e:'📯', d:rv => `Jusqu’à la fin du tour, TOUTES tes tours tirent +${Math.round(rv * RUNE_P.gorm.fanfare * 100)}&nbsp;% (en plus du renfort de leurs Runes voisines).` },
+  aldric:{ n:'Lumière du phare', e:'🔆', d:rv => `Un rayon frappe chaque monstre de son chemin (${RUNE_P.aldric.dg * rv} dégâts, ×${REG.aldric.titan} aux boss), et la porte reprend ${RUNE_P.aldric.porte * rv}&nbsp;PV.` },
+  pip:{ n:'Ronces de l’Arbre-cœur', e:'🌿', d:rv => `Des ronces poussent sur les 3 chemins, juste devant le premier monstre : ${RUNE_P.pip.dg * rv} dégâts (+${Math.round((REG.pip.ronces - 1) * 100)}&nbsp;% avec les ronces vivantes), elles tiennent ${rv + 1} passages.` },
+  oria:{ n:'Conjonction', e:'✴', d:rv => `Le premier monstre de chaque chemin prend la force de ses tours voisines réunies (${Math.round(RUNE_P.oria.part * rv * 100)}&nbsp;%, ${RUNE_P.oria.min * rv} dégâts au moins).` },
+  zephine:{ n:'Bourrasque', e:'🌪', d:rv => `Les monstres de son chemin et des chemins voisins reculent de ${rv} case${rv > 1 ? 's' : ''} (sauf les boss). Un monstre repoussé s’accroche : il ne recule plus pendant ${DEF.pouvoirRecharge} tours.` },
+};
+const aPouvoirR = t => !!t && !!t.rune;
+const pouvoirPretR = (D, t) => aPouvoirR(t) && !D.fini && (t.pretT || 0) <= D.tour;
+const attenteR = (D, t) => Math.max(0, (t.pretT || 0) - D.tour);
+const rechargeR = D => Math.max(1, DEF.pouvoirRecharge - (D.bonus.recharge || 0));
+const voisinesTiresD = (D, c) => voisinsD(c).filter(x => D.rempart[x] && !D.rempart[x].rune);
+const forceOriaD = (D, c, rv) => Math.max(dgC(D, RUNE_P.oria.min * rv), Math.round(voisinesTiresD(D, c).reduce((a, x) => a + puissanceTour(D, x, D.rempart[x]), 0) * RUNE_P.oria.part * rv));
+// le texte du pouvoir de la Rune de la case c, avec les chiffres de la vague en cours
+const texteRuneD = (D, c) => { const t = D.rempart[c], P = POUVOIRS_RUNE[D.heros]; let x = P.d(t.rv);
+  if (D.heros === 'aldric') x = x.replace(/\((\d+) dégâts/, (z, n) => `(${dgC(D, +n)} dégâts`);
+  if (D.heros === 'pip') x = x.replace(/: (\d+) dégâts/, (z, n) => `: ${dgC(D, +n)} dégâts`);
+  if (D.heros === 'oria') x += ` Ici : <b>${forceOriaD(D, c, t.rv)} dégâts</b>.`;
+  return x; };
+// les monstres que touche (ou aide à toucher) le pouvoir de la Rune de la case c
+function ciblesPouvoirR(D, c) {
+  const t = D.rempart[c]; if (!aPouvoirR(t)) return []; const col = colD(c), vis = D.monstres.filter(m => !m.sous);
+  if (D.heros === 'maelle') { const cols = voisinesTiresD(D, c).map(colD); return vis.filter(m => cols.includes(m.col)); }
+  if (D.heros === 'gorm') return vis;
+  if (D.heros === 'aldric') return vis.filter(m => m.col === col);
+  if (D.heros === 'pip') return D.monstres.filter(m => !MONSTRES[m.t].boss && !MONSTRES[m.t].vol);
+  if (D.heros === 'oria') return [0, 1, 2].map(x => teteD(D, x)).filter(Boolean);
+  if (D.heros === 'zephine') return D.monstres.filter(m => !MONSTRES[m.t].boss && Math.abs(m.col - col) <= 1 && m.row > 0 && !((m.bourT || 0) > D.tour));
+  return [];
+}
+function pouvoirRuneD(D, c) {
+  if (D.fini) return 'Partie finie.';
+  const t = D.rempart[c]; if (!aPouvoirR(t)) return 'Il faut une Rune.';
+  if (!pouvoirPretR(D, t)) return `Le pouvoir de la Rune se recharge : encore ${attenteR(D, t)} tour${attenteR(D, t) > 1 ? 's' : ''}.`;
+  const P = POUVOIRS_RUNE[D.heros], rv = t.rv, col = colD(c), boss = m => MONSTRES[m.t].boss;
+  t.pretT = D.tour + rechargeR(D); D.pouvoirsR = (D.pouvoirsR || 0) + 1;
+  logD(D, `✨ ${P.e} ${P.n} (${NOM_RUNE(rv)}) !`); fxD(D, { t:'pouvoirR', c, heros:D.heros, n:P.n });
+  if (D.heros === 'maelle') { for (let f = 0; f < rv; f++) voisinesTiresD(D, c).forEach(x => tireTourD(D, x)); }
+  else if (D.heros === 'gorm') D.fanfare = { tour:D.tour, rv };
+  else if (D.heros === 'aldric') { const n = dgC(D, RUNE_P.aldric.dg * rv); D.monstres.filter(m => m.col === col && !m.sous).forEach(m => { fxD(D, { t:'tir', c, id:m.id, v:6, max5:true }); blesse(D, m, boss(m) ? Math.round(n * REG.aldric.titan) : n, false, true); }); D.porte = Math.min(D.porteMax, D.porte + RUNE_P.aldric.porte * rv); }
+  else if (D.heros === 'pip') [0, 1, 2].forEach(x => { const tt = D.monstres.filter(m => m.col === x && !boss(m)).sort((a, b) => b.row - a.row)[0];
+    for (let r = tt ? tt.row + 1 : 1; r < DEF.chemin; r++) { const k = cleP(r, x); if (D.pieges[k] || D.monstres.some(m => m.row === r && m.col === x)) continue; D.pieges[k] = { k:'ronces', v:0, dg:RUNE_P.pip.dg * rv, usages:rv + 1, rune:true }; fxD(D, { t:'piege', r, col:x }); break; } });
+  else if (D.heros === 'oria') { const n = forceOriaD(D, c, rv); [0, 1, 2].map(x => teteD(D, x)).filter(Boolean).forEach(m => { fxD(D, { t:'tir', c, id:m.id, v:5, max5:true }); blesse(D, m, n, true); }); }
+  else if (D.heros === 'zephine') D.monstres.filter(m => !boss(m) && Math.abs(m.col - col) <= 1 && m.row > 0 && !((m.bourT || 0) > D.tour)).forEach(m => { m.row = Math.max(0, m.row - rv); m.bourT = D.tour + DEF.pouvoirRecharge; fxD(D, { t:'recule', id:m.id }); if (RUNE_P.zephine.dg) { fxD(D, { t:'tir', c, id:m.id, v:1, max5:true }); blesse(D, m, dgC(D, RUNE_P.zephine.dg * rv), true); } });
+}
+// 27/11 (décision de l'utilisateur) : BRISER UNE RUNE, gratuitement. Elle redevient deux tours niv. 4 SANS étoiles (les sortes d'origine),
+// ou, pour une Rune ancienne / légendaire, deux Runes du niveau d'en dessous. La 1re reste sur sa case, la 2e va sur une case libre VOISINE
+// (sinon n'importe quelle case libre du rempart) ; sans case libre, on ne peut pas la briser.
+function caseBrisD(D, c) { const v = voisinsD(c).find(x => !D.rempart[x]); if (v != null) return v; const l = D.rempart.findIndex((t, x) => !t && x !== c); return l; }
+function briserRuneD(D, c) {
+  if (D.fini) return 'Partie finie.';
+  const t = D.rempart[c]; if (!aPouvoirR(t)) return 'Il faut une Rune.';
+  const c2 = caseBrisD(D, c); if (c2 < 0) return 'Pour la briser, il faut une case libre sur le rempart (démolis ou déplace une tour).';
+  const o = t.orig || [6, 6], tour = v => ({ id:++DID, v, niv:NIV_MAX, rune:false, rv:0, tmp:0, bonus:0, et:0 });
+  let x, y;
+  if (t.rv <= 1) { x = tour(o[1]); y = tour(o[0]); }
+  else if (t.enfants && t.enfants.length === 2 && t.enfants.every(e => e.rv === t.rv - 1)) { [y, x] = t.enfants.map(e => Object.assign(copieRuneD(e), { id:++DID, pretT:t.pretT || 0 })); }
+  else { x = { id:++DID, v:0, niv:NIV_MAX, rune:true, rv:t.rv - 1, tmp:0, bonus:0, orig:[...o], pretT:t.pretT || 0 }; y = Object.assign({}, x, { id:++DID, orig:[...o] }); }
+  D.rempart[c] = x; D.rempart[c2] = y; [x, y].forEach(u => { if (!u.rune && !D.sortesVues.includes(u.v)) D.sortesVues.push(u.v); });
+  logD(D, `💥 ${NOM_RUNE(t.rv)} brisée : ${[x, y].map(nomTourD).join(' + ')}.`); fxD(D, { t:'brise', c, c2 });
+  return null;
+}
+
 // ---------------------------------------------------------------- la fin du tour : les tours tirent, les monstres avancent, la vague continue
 function verifieFinD(D) {
   if (D.fini) return;
@@ -283,6 +353,7 @@ function verifieFinD(D) {
 }
 // les Runes voisines d'une case (elles ne tirent pas : elles renforcent)
 const runesVoisD = (D, c) => voisinsD(c).map(x => D.rempart[x]).filter(u => u && u.rune);
+const soutienRuneD = D => D.heros === 'gorm' ? 1 : DEF.runeSoutien; // le renfort d'une Rune par niveau (+50 %, Gorm +100 %)
 function puissanceTour(D, c, t) {
   if (t.rune) return 0;
   let n = BASE_NIV[t.niv] + (t.bonus || 0) + (t.tmp || 0) + D.cri + (D.bonus.forge || 0);
@@ -290,7 +361,8 @@ function puissanceTour(D, c, t) {
   if (D.heros === 'oria' && rangD(c) === 2) n += REG.oria.passif;
   if (D.heros === 'zephine' && t.v <= 3) n += REG.zephine.passif;
   let mul = SORTES[t.v].mul * (1 + ETOILE * (t.et || 0));
-  runesVoisD(D, c).forEach(u => { mul *= 1 + (D.heros === 'gorm' ? 1 : DEF.runeSoutien) * u.rv; });
+  const rv = runesVoisD(D, c); rv.forEach(u => { mul *= 1 + soutienRuneD(D) * u.rv; });
+  if (D.fanfare && D.fanfare.tour === D.tour) mul *= 1 + soutienRuneD(D) * D.fanfare.rv * RUNE_P.gorm.fanfare; // 27/11 : la Fanfare de la Rune de Gorm (ce tour, toutes les tours)
   return Math.max(1, Math.round(n * mul));
 }
 // un tir d'une tour sur un monstre, avec l'effet de sa sorte et celui des Runes voisines
@@ -310,20 +382,21 @@ function tirSurD(D, c, t, m, pw) {
     if (D.monstres.includes(m) && !boss) { if (D.heros === 'pip') m.colle = Math.max(m.colle || 0, 1); if (D.heros === 'zephine' && !m.recule) { m.row = Math.max(0, m.row - 1); m.recule = true; } }
   });
 }
+// le tir d'UNE tour (à la fin du tour, ou tout de suite avec le Coup d'enclume de la Rune de Maëlle)
+function tireTourD(D, c) {
+  const col = colD(c), t = D.rempart[c]; if (!t || t.rune || D.fini) return;
+  // la chauve-souris : la tour de devant (la première de la colonne) ne la voit pas, sauf les archers
+  const devant = [0, 1, 2].map(rr => rr * 3 + col).find(x => D.rempart[x] && !D.rempart[x].rune);
+  // 27/11 : sous terre (Mineur) = personne ne le voit ; le Spectre invisible = seule la foudre le voit ; les archers visent le Chaman d'abord
+  const vu = x => x.col === col && !x.sous && !(x.inv && t.v !== 5) && !(MONSTRES[x.t].vol && devant === c && t.v !== 3);
+  const cible = () => { const vs = D.monstres.filter(vu); return (t.v === 3 && vs.find(x => MONSTRES[x.t].soigne)) || vs.sort((a, b) => b.row - a.row || a.id - b.id)[0]; };
+  const pw = puissanceTour(D, c, t);
+  for (let k = 0; k < (t.v === 3 ? ((t.et || 0) >= ETOILES_MAX ? 3 : 2) : 1); k++) { const m = cible(); if (!m || D.fini) break; tirSurD(D, c, t, m, pw); }
+}
 function tirsD(D) {
   D.monstres.forEach(m => { m.recule = false; m.reculeG = false; m.fuite = false; });
   for (let fois = 0; fois < (D.double ? 2 : 1); fois++)
-    for (const r of [0, 1, 2]) for (const col of [0, 1, 2]) {
-      if (D.fini) return;
-      const c = r * 3 + col, t = D.rempart[c]; if (!t || t.rune) continue;
-      // la chauve-souris : la tour de devant (la première de la colonne) ne la voit pas, sauf les archers
-      const devant = [0, 1, 2].map(rr => rr * 3 + col).find(x => D.rempart[x] && !D.rempart[x].rune);
-      // 27/11 : sous terre (Mineur) = personne ne le voit ; le Spectre invisible = seule la foudre le voit ; les archers visent le Chaman d'abord
-      const vu = x => x.col === col && !x.sous && !(x.inv && t.v !== 5) && !(MONSTRES[x.t].vol && devant === c && t.v !== 3);
-      const cible = () => { const vs = D.monstres.filter(vu); return (t.v === 3 && vs.find(x => MONSTRES[x.t].soigne)) || vs.sort((a, b) => b.row - a.row || a.id - b.id)[0]; };
-      const pw = puissanceTour(D, c, t);
-      for (let k = 0; k < (t.v === 3 ? ((t.et || 0) >= ETOILES_MAX ? 3 : 2) : 1); k++) { const m = cible(); if (!m || D.fini) break; tirSurD(D, c, t, m, pw); }
-    }
+    for (const r of [0, 1, 2]) for (const col of [0, 1, 2]) { if (D.fini) return; tireTourD(D, r * 3 + col); }
   if (D.fini) return;
   // le poison ronge (il traverse l'armure), puis faiblit de moitié
   [...D.monstres].forEach(m => { if (m.poison > 0) { const n = m.poison; m.poison = Math.floor(m.poison / 2); m.poisonT = D.tour; fxD(D, { t:'poison', id:m.id }); blesse(D, m, n, false, true); } });
@@ -444,7 +517,7 @@ function marcheD(D, m) {
     return true;
   }
   else if (p && !M.vol && p.k === 'boue') { m.row = nr; m.colle = 1; usePiege(D, key); logD(D, `🟫 ${M.n} s’enlise dans la boue.`); fxD(D, { t:'boue', id:m.id }); return true; }
-  else if (p && !M.vol && p.k === 'ronces') { const n = Math.round((p.v * 3 + (D.bonus.ronces || 0)) * echelleD(D) * (D.heros === 'pip' ? REG.pip.ronces : 1)); usePiege(D, key); m.row = nr; logD(D, `🌿 Les ronces griffent ${M.n} : ${n}.`); fxD(D, { t:'ronces', r:nr, col:m.col }); blesse(D, m, n); return !D.monstres.includes(m); }
+  else if (p && !M.vol && p.k === 'ronces') { const n = Math.round((p.dg != null ? p.dg : p.v * 3 + (D.bonus.ronces || 0)) * echelleD(D) * (D.heros === 'pip' ? REG.pip.ronces : 1)); /* p.dg : les ronces de la Rune de Pip */ usePiege(D, key); m.row = nr; logD(D, `🌿 Les ronces griffent ${M.n} : ${n}.`); fxD(D, { t:'ronces', r:nr, col:m.col }); blesse(D, m, n); return !D.monstres.includes(m); }
   m.row = nr;
   if (m.sous && m.row >= DEF.sortieMineur) { m.sous = false; logD(D, `⛏ Le Mineur sort de terre sur le chemin ${m.col + 1} !`); fxD(D, { t:'surgit', id:m.id }); return true; }
   if (m.row >= DEF.chemin) { const dg = dgM(m); D.monstres = D.monstres.filter(x => x !== m); D.porte -= dg; D.degatsVague += dg; if (D.vague >= VAGUES.length - 1) D.degatsDerniere += dg; logD(D, `🚪 ${M.e} ${M.n} frappe la porte : −${dg >= 99 ? 'tout' : dg} PV.`); fxD(D, { t:'porte', n:dg }); verifieFinD(D); return true; }
