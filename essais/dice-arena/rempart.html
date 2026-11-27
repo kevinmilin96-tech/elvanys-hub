@@ -35,7 +35,13 @@
   .case { position:absolute; border-radius:12px; border:2px dashed #3d6b2f55; background:#ffffff1a; display:flex; align-items:center; justify-content:center; }
   .case.ok { border:2px solid var(--ok); background:#7dffb04d; box-shadow:0 0 10px #7dffb0; }
   .case.sel { border:2px solid var(--or); box-shadow:0 0 12px var(--or); }
-  .case .tour { position:relative; width:92%; height:92%; display:flex; align-items:center; justify-content:center; }
+  /* 27/11 (l'utilisateur : « un peu disproportionnées par rapport aux chemins ») : tours plus petites, posées au bas de la case */
+  .case.pose .tour { animation:tombe .5s cubic-bezier(.3,1.5,.5,1); } @keyframes tombe { 0% { transform:translateY(-70%) scale(1.15); opacity:0; } 55% { transform:translateY(5%) scale(1.06, .9); opacity:1; } 100% { transform:none; } }
+  .case.monte .tour { animation:saute .45s ease-out; } @keyframes saute { 40% { transform:translateY(-14%) scale(1.08); filter:brightness(1.4); } }
+  .poussiere { position:absolute; left:50%; bottom:12%; width:13px; height:13px; margin-left:-6px; border-radius:50%; background:radial-gradient(circle, #b8935add, #9c7a4588 55%, transparent 72%); pointer-events:none; opacity:0; animation:poudre .9s ease-out forwards; z-index:2; }
+  @keyframes poudre { 0% { opacity:.95; transform:translate(0, 0) scale(.6); } 100% { opacity:0; transform:translate(var(--dx), var(--dy)) scale(2.4); } }
+  #plateau.secousse { animation:secousse .25s .2s; } @keyframes secousse { 30% { transform:translateY(2px); } 60% { transform:translateY(-1px); } }
+  .case .tour { position:relative; width:76%; height:76%; align-self:flex-end; margin-bottom:6%; display:flex; align-items:center; justify-content:center; }
   .case img.canon { width:96%; height:96%; object-fit:contain; filter:drop-shadow(0 3px 2px #0007); transition:transform .12s; }
   .case .tour.tire img.canon { transform:scale(1.08) translateY(-3%); }
   .case .so { position:absolute; left:-2px; bottom:-2px; background:#000b; border-radius:8px; padding:0 3px; font-size:13px; line-height:1.35; }
@@ -193,6 +199,13 @@ const GUIDE = [
   ['#rempart', 'Le <b>rempart</b> : chaque monstre qui le touche lui fait perdre des PV. S’il tombe, c’est perdu. Miaou, courage !'],
 ];
 function lanceGuide() { try { Guide.lance('rempart-27-11', GUIDE); } catch (e) {} }
+function poseEffet(el, k) {
+  el.classList.remove('pose', 'monte'); void el.offsetWidth; el.classList.add(k); setTimeout(() => el.classList.remove(k), 700);
+  const n = k === 'pose' ? 10 : 6; for (let j = 0; j < n; j++) { const p = document.createElement('span'); p.className = 'poussiere';
+    const a = Math.PI * (j / (n - 1)), d = 22 + Math.random() * 16; p.style.setProperty('--dx', `${Math.cos(a) * d * (j % 2 ? 1 : -1)}px`); p.style.setProperty('--dy', `${-Math.sin(a) * d * .45}px`);
+    p.style.animationDelay = (k === 'pose' ? 180 : 0) + 'ms'; el.appendChild(p); setTimeout(() => p.remove(), 1100); }
+  if (k === 'pose') { const pl = document.getElementById('plateau'); if (pl) { pl.classList.remove('secousse'); void pl.offsetWidth; pl.classList.add('secousse'); } }
+}
 function dessinePlateau() {
   const pl = document.getElementById('plateau'); if (!pl || !G) return;
   let h = '';
@@ -223,7 +236,9 @@ function majPlateau(tout) {
   for (let i = 0; i < S.cases.length; i++) {
     const t = S.cases[i], el = document.getElementById('case' + i); if (!el) continue;
     const sig = t ? `${t.id}|${t.niv}|${t.et}|${t.rv}|${t.et >= 5 && t.pw <= 0}` : '';
-    if (tout || SIG[i] !== sig) { el.innerHTML = htmlCase(t); SIG[i] = sig; }
+    if (tout || SIG[i] !== sig) { const avant = SIG[i]; el.innerHTML = htmlCase(t); SIG[i] = sig;
+      // 27/11 (l'utilisateur : « un impact sur le sol avec de la poussière ») : une tour posée TOMBE sur sa case et soulève de la poussière ; une tour qui monte saute
+      if (!tout && t && avant !== undefined) poseEffet(el, !avant || avant.split('|')[0] !== String(t.id) ? 'pose' : 'monte'); }
     el.classList.toggle('ok', caseOk(i)); el.classList.toggle('sel', !!sel && sel.t === 'deplace' && sel.i === i);
   }
   document.querySelectorAll('.voie').forEach(v => v.classList.toggle('ok', !!sel && sel.t === 'bowling'));
