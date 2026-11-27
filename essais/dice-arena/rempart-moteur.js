@@ -129,7 +129,7 @@ const nomTour = t => t.puits ? PUITS.n : t.rune ? `Tour-rune ${EFFET_PAIRE[t.pai
 // une partie : heros (maelle…), niveau (1-5), o = { graine, force (forceSuiveuse du héros, 1 = débutant) }
 function nouvelle(heros, niveau, o) {
   o = o || {}; const L = NIVEAUX[niveau - 1], rng = graine(o.graine || (Date.now() & 0xffffff));
-  const fs = 1 + R.suivi * Math.max(0, (o.force || 1) - 1), f = L.f * R.pv * (o.pv || 1) * fs; // la maison : les monstres suivent la force du héros (27/11 soir : 65 % du gain au Rempart, 40 % avant : un héros très monté gagnait 100 %)
+  const fs = 1 + R.suivi * Math.max(0, (o.force || 1) - 1), f = L.f * R.pv * (o.pv || 1) * fs; // la maison : les monstres suivent la force du héros (27/11 soir : R.suivi = 90 % du gain au Rempart, 40 % avant : un héros très monté écrasait tout)
   const S = { heros, niveau, L, rng, f, puiss:Math.max(1, o.force || 1), fBoss:fs * (o.pvBoss || 1), t:0, energie:R.energieDepart, eAcc:0, rempart:R.rempart, rempartMax:R.rempart,
     cases:Array(NC * NR).fill(null), monstres:[], file:[], des:[], deT:R.deDelai, jauge:0, ultimes:0, bowling:L.bowling ? 1 : 0,
     kills:0, fini:null, fx:[], log:[], effets:{}, vus:{}, puitsGratuit:heros === 'pip', gelPartout:0,
