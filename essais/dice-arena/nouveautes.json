@@ -1,5 +1,9 @@
 [
 {
+"v": "20261128-001949",
+"m": "Rempart : toucher le ⬆+1, le ✦ ou une rune n'ouvre plus la fiche de la tour"
+},
+{
 "v": "20261128-001425",
 "m": "Rempart : un ⬆+1 vert apparaît sur les tours qu'un dé peut monter (un toucher suffit), le ✦ lance le pouvoir d'un toucher, et plus de calme entre les vagues"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261127-141025",
 "m": "Défense de la porte : plus de Frappe, Technique ni Pouvoir aux dés ; l'Ultime se lance d'un toucher quand la jauge est pleine ; à 5 étoiles chaque tour gagne un pouvoir à lancer (blizzard, nuage toxique, pluie de flèches, bombardement, tempête, tir perçant) ; en sans fin, un point de sauvegarde après chaque boss."
-},
-{
-"v": "20261127-135033",
-"m": "Défense de la porte : 8 nouveaux monstres (rat, feu follet, mineur, chaman, troll, spectre, porte-étendard, golem), des élites dès la vague 3, un boss différent toutes les 6 vagues en sans fin, une animation par sorte de tour, et déplacer une tour n'importe où pour 1 PC."
 }
 ]
