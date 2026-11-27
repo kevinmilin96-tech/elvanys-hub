@@ -23,6 +23,7 @@ const SORTES = {
   5:{ n:'Tour de foudre', e:'⚡', mul:0.9, saut:0.6, d:'L’éclair saute sur le monstre de tête d’un chemin voisin.' },
   6:{ n:'Grande tour', e:'🗼', mul:1.4, perce:true, d:'Le plus gros tir sur un seul monstre ; traverse l’armure.' },
 };
+const ETOILES_MAX = 5, ETOILE = 0.35; // 27/11 : étoiles de maîtrise (dé de la même face sur une tour au niveau max : +20 % par étoile, effet renforcé à 5)
 const NIV_MAX = DEF.nivMax, RUNE_MAX = 3, NOM_RUNE = rv => ({ 1:'Rune', 2:'Rune ancienne', 3:'Rune légendaire' })[rv] || '';
 const nomTourD = t => t.rune ? NOM_RUNE(t.rv) : `${SORTES[t.v].n} niv. ${t.niv}`;
 const MONSTRES = {
@@ -126,9 +127,10 @@ function batirD(D, d, c) {
   if (D.pc < DEF.coutBatir) return `Bâtir coûte ${DEF.coutBatir} PC (vends un dé pour en gagner).`;
   if (t && t.rune) return 'Une Rune ne prend pas de dé : fusionne-la avec une autre Rune du même niveau.';
   if (t && t.v !== d.v) return `Cette ${SORTES[t.v].n.toLowerCase()} monte avec un dé de ${t.v}.`;
-  if (t && t.niv >= NIV_MAX) return `Tour au niveau max : fusionne-la avec une voisine au niveau max pour une Rune.`;
+  if (t && t.niv >= NIV_MAX && (t.et || 0) >= ETOILES_MAX) return `Tour au maximum (${'★'.repeat(ETOILES_MAX)}) : elle ne peut plus monter.`;
   D.pc -= DEF.coutBatir; d.pose = true;
   if (!t) { poseTour(D, c, d.v); logD(D, `${SORTES[d.v].e} ${SORTES[d.v].n} bâtie.`); fxD(D, { t:'batit', c }); return; }
+  if (t.niv >= NIV_MAX) { t.et = (t.et || 0) + 1; logD(D, `${SORTES[t.v].e} ${SORTES[t.v].n} : étoile de maîtrise ${'★'.repeat(t.et)}${t.et >= ETOILES_MAX ? ' (effet renforcé !)' : ''}.`); fxD(D, { t:'fusion', c }); echoGorm(D, c); return; }
   t.niv++; logD(D, `${SORTES[t.v].e} ${SORTES[t.v].n} : niveau ${t.niv}.`); fxD(D, { t:'fusion', c }); echoGorm(D, c); return;
 }
 const echoGorm = (D, c) => { if (D.heros === 'gorm') voisinsD(c).forEach(x => { if (D.rempart[x]) D.rempart[x].tmp += D.bonus.echo ? REG.gorm.echoBonus : REG.gorm.echo; }); };
@@ -224,20 +226,21 @@ function puissanceTour(D, c, t) {
   if (D.heros === 'maelle' && t.v >= 5) n += D.bonus.acier ? REG.maelle.acier : REG.maelle.passif;
   if (D.heros === 'oria' && rangD(c) === 2) n += REG.oria.passif;
   if (D.heros === 'zephine' && t.v <= 3) n += REG.zephine.passif;
-  let mul = SORTES[t.v].mul;
+  let mul = SORTES[t.v].mul * (1 + ETOILE * (t.et || 0));
   runesVoisD(D, c).forEach(u => { mul *= 1 + (D.heros === 'gorm' ? 1 : DEF.runeSoutien) * u.rv; });
   return Math.max(1, Math.round(n * mul));
 }
 // un tir d'une tour sur un monstre, avec l'effet de sa sorte et celui des Runes voisines
 function tirSurD(D, c, t, m, pw) {
-  const S = SORTES[t.v], boss = MONSTRES[m.t].boss, col = m.col, row = m.row;
+  const S = SORTES[t.v], boss = MONSTRES[m.t].boss, col = m.col, row = m.row, max5 = (t.et || 0) >= ETOILES_MAX;
   fxD(D, { t:'tir', c, id:m.id });
   blesse(D, m, D.heros === 'aldric' && boss ? Math.round(pw * REG.aldric.titan) : pw, !S.perce);
   const vivant = D.monstres.includes(m);
-  if (S.poison && vivant) m.poison = (m.poison || 0) + Math.round(pw / S.mul * S.poison);
-  if (t.v === 1 && vivant && !boss) m.gel = 1;
-  if (S.eclats) D.monstres.filter(x => x !== m && x.col === col && Math.abs(x.row - row) <= 1).forEach(x => blesse(D, x, Math.round(pw * S.eclats), true));
-  if (S.saut) { const o = [col - 1, col + 1].filter(x => x >= 0 && x <= 2).map(x => teteD(D, x)).filter(Boolean).sort((a, b) => b.row - a.row)[0]; if (o) { fxD(D, { t:'tir', c, id:o.id }); blesse(D, o, Math.round(pw * S.saut), true); } }
+  if (S.poison && vivant) m.poison = (m.poison || 0) + Math.round(pw / S.mul * S.poison * (max5 ? 1.5 : 1));
+  if (t.v === 1 && vivant && !boss) m.gel = Math.max(m.gel || 0, max5 ? 2 : 1);
+  if (S.eclats) D.monstres.filter(x => x !== m && x.col === col && Math.abs(x.row - row) <= 1).forEach(x => blesse(D, x, Math.round(pw * (max5 ? 1 : S.eclats)), true));
+  if (S.saut) { const os = [col - 1, col + 1].filter(x => x >= 0 && x <= 2).map(x => teteD(D, x)).filter(Boolean).sort((a, b) => b.row - a.row).slice(0, max5 ? 2 : 1); os.forEach(o => { fxD(D, { t:'tir', c, id:o.id }); blesse(D, o, Math.round(pw * S.saut), true); }); }
+  if (S.perce && max5) { const o = D.monstres.filter(x => x !== m && x.col === col && x.row < row).sort((a, b) => b.row - a.row)[0]; if (o) { fxD(D, { t:'tir', c, id:o.id }); blesse(D, o, Math.round(pw * .5), false); } }
   runesVoisD(D, c).forEach(u => {
     if (D.heros === 'maelle') D.monstres.filter(x => x !== m && x.col === col).forEach(x => blesse(D, x, Math.round(pw * .5), true));
     if (D.heros === 'oria') [0, 1, 2].filter(x => x !== col).forEach(x => { const o = teteD(D, x); if (o) { fxD(D, { t:'tir', c, id:o.id }); blesse(D, o, Math.round(pw / REG.oria.eclat), true); } });
@@ -254,7 +257,7 @@ function tirsD(D) {
       const devant = [0, 1, 2].map(rr => rr * 3 + col).find(x => D.rempart[x] && !D.rempart[x].rune);
       const cible = () => D.monstres.filter(x => x.col === col && !(MONSTRES[x.t].vol && devant === c && t.v !== 3)).sort((a, b) => b.row - a.row || a.id - b.id)[0];
       const pw = puissanceTour(D, c, t);
-      for (let k = 0; k < (t.v === 3 ? 2 : 1); k++) { const m = cible(); if (!m || D.fini) break; tirSurD(D, c, t, m, pw); }
+      for (let k = 0; k < (t.v === 3 ? ((t.et || 0) >= ETOILES_MAX ? 3 : 2) : 1); k++) { const m = cible(); if (!m || D.fini) break; tirSurD(D, c, t, m, pw); }
     }
   if (D.fini) return;
   // le poison ronge (il traverse l'armure), puis faiblit de moitié
@@ -273,7 +276,7 @@ function avanceD(D) {
     }
     if (M.lent) { m.attente = (m.attente || 0) + 1; if (m.attente < M.lent) continue; m.attente = 0; }
     if (m.colle > 0) { m.colle--; continue; }
-    const vit = M.vit - (m.gel ? 1 : 0); m.gel = 0; // 25/11 (v3) : la tour de givre retire un pas
+    const vit = M.vit - (m.gel || 0); m.gel = 0; // 25/11 (v3) : la tour de givre retire un pas
     for (let pas = 0; pas < vit && D.monstres.includes(m) && m.row < DEF.chemin; pas++) { if (marcheD(D, m)) break; }
     if (D.fini) return;
     if (!D.monstres.includes(m)) continue;
