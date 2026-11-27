@@ -1,5 +1,9 @@
 [
 {
+"v": "20261127-234802",
+"m": "Rempart : les médailles déjà gagnées restent allumées, une rune sur un monstre ou sur le puits se ramasse d'un toucher, et le niveau 2 ne devient plus plus dur en cours de partie"
+},
+{
 "v": "20261127-233203",
 "m": "Les pages de récit de l'Invasion, du Campement et de l'Odyssée ont leurs illustrations"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261127-131452",
 "m": "Défense de la porte : avant de fusionner deux tours, une fenêtre montre ce qu'elles deviennent (niveau et dégâts, ou une Rune qui ne tire plus) et demande de confirmer."
-},
-{
-"v": "20261127-131026",
-"m": "Défense de la porte : touche une tour pour voir sa fiche (ce qu'elle fait, ses dégâts par niveau) ; le bouton ⓘ montre la tour avant de la bâtir, et 🏰 en haut les liste toutes."
 }
 ]

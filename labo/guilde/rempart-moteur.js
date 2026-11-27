@@ -144,6 +144,8 @@ function nouvelle(heros, niveau, o) {
   const NB = +(typeof process !== 'undefined' && process.env && process.env.NB) || R.nombre || 1;
   L.vagues.forEach(([t0, liste], iv) => { const n = Math.max(liste.length, Math.round(liste.length * NB)), pas = (iv === L.vagues.length - 1 ? 1.6 : 2.6) * liste.length / n;
     for (let j = 0; j < n; j++) { const m = liste[j % liste.length]; if (j >= liste.length && /titan/.test(m)) continue; S.file.push({ t:t0 + j * pas + rng() * 1.2, m, vague:iv }); } });
+  // 27/11 nuit : une vague compte TOUS ses monstres (avec R.nombre, elle en a 3 fois plus que sa liste) ; avant, elle était jugée finie au premier tiers
+  S.vStat.forEach((V, iv) => { V.n = S.file.filter(x => x.vague === iv).length; });
   S.file.sort((a, b) => a.t - b.t); S.nbVagues = L.vagues.length; S.fin = S.file[S.file.length - 1].t;
   S.vT = L.vagues.map((v, iv) => Math.min(...S.file.filter(x => x.vague === iv).map(x => x.t))); // le début de chaque vague (pour les drapeaux)
   return S;
@@ -293,6 +295,7 @@ function specialiser(S, i, k) {
 // sont morts (en cases du rempart). Idéal : 0 à 2 PV perdus et des monstres qui tombent dans les 1-2 dernières cases. S.adapt (vie des monstres
 // des vagues suivantes) monte doucement si tout est écrasé loin, descend si le rempart souffre ; bornes 0,8-1,25 (niveau 1 : jamais au-dessus de 1).
 // Rien n'est montré au joueur ; une ligne « ⚖ » par vague dans le journal de la partie.
+// 27/11 nuit : maxN1 vaut pour les niveaux 1 ET 2 (ils ne durcissent jamais, retour de l'utilisateur battu au niveau 2)
 const ADAPT = { min:.8, max:1.25, maxN1:1, monte:.08, monteDoux:.04, baisse:.07, baisseFort:.1 };
 function bilanVague(S, iv) {
   const V = S.vStat[iv]; if (V.fait) return; V.fait = true; if (!S.adaptOn) return;
@@ -303,7 +306,7 @@ function bilanVague(S, iv) {
   else if (V.pertes === 0 && loin > 2) { S.adapt += ADAPT.monteDoux; txt = 'pression un peu faible → monstres à peine plus forts'; }
   else if (V.pertes > 0 && loin < 1.5) { S.adapt -= ADAPT.monteDoux; txt = 'le rempart souffre un peu → monstres à peine moins forts'; }
   else txt = 'bonne pression → rien ne change';
-  S.adapt = Math.max(ADAPT.min, Math.min(S.niveau === 1 ? ADAPT.maxN1 : ADAPT.max, Math.round(S.adapt * 100) / 100));
+  S.adapt = Math.max(ADAPT.min, Math.min(S.niveau <= 2 ? ADAPT.maxN1 : ADAPT.max, Math.round(S.adapt * 100) / 100));
   const l = `⚖ vague ${iv + 1} : ${txt} (${V.pertes} PV perdus, morts à ${loin.toFixed(1).replace('.', ',')} cases ; ×${avant.toFixed(2).replace('.', ',')} → ×${S.adapt.toFixed(2).replace('.', ',')})`;
   S.adaptLog.push({ v:iv + 1, pertes:V.pertes, loin, adapt:S.adapt }); log(S, l);
 }
