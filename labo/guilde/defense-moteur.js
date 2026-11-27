@@ -127,7 +127,7 @@ function batirD(D, d, c) {
   if (D.pc < DEF.coutBatir) return `Bâtir coûte ${DEF.coutBatir} PC (vends un dé pour en gagner).`;
   if (t && t.rune) return 'Une Rune ne prend pas de dé : fusionne-la avec une autre Rune du même niveau.';
   if (t && t.v !== d.v) return `Cette ${SORTES[t.v].n.toLowerCase()} monte avec un dé de ${t.v}.`;
-  if (t && t.niv >= NIV_MAX && (t.et || 0) >= ETOILES_MAX) return `Tour au maximum (${'★'.repeat(ETOILES_MAX)}) : elle ne peut plus monter.`;
+  if (t && t.niv >= NIV_MAX && !D.sansFin && (t.et || 0) >= ETOILES_MAX) return `Tour au maximum (${'★'.repeat(ETOILES_MAX)}) : elle ne peut plus monter.`;
   D.pc -= DEF.coutBatir; d.pose = true;
   if (!t) { poseTour(D, c, d.v); logD(D, `${SORTES[d.v].e} ${SORTES[d.v].n} bâtie.`); fxD(D, { t:'batit', c }); return; }
   if (t.niv >= NIV_MAX) { t.et = (t.et || 0) + 1; logD(D, `${SORTES[t.v].e} ${SORTES[t.v].n} : étoile de maîtrise ${'★'.repeat(t.et)}${t.et >= ETOILES_MAX ? ' (effet renforcé !)' : ''}.`); fxD(D, { t:'fusion', c }); echoGorm(D, c); return; }
@@ -151,6 +151,11 @@ function fusionD(D, a, b) {
   D.rempart[a] = null;
   logD(D, tb.rune ? `✨ ${NOM_RUNE(tb.rv).toUpperCase()} ${DHEROS[D.heros].rune.n} !` : `Fusion : ${nomTourD(tb)}.`); fxD(D, { t:tb.rune ? 'rune' : 'fusion', c:b });
   echoGorm(D, b);
+}
+// 27/11 (demande de l'utilisateur) : démolir une tour pour libérer sa case (on récupère 1 PC)
+function demolirD(D, c) {
+  if (D.fini) return 'Partie finie.'; const t = D.rempart[c]; if (!t) return 'Pas de tour ici.';
+  D.rempart[c] = null; D.pc += 1; logD(D, `🔨 ${t.rune ? NOM_RUNE(t.rv) : nomTourD(t)} démolie (+1 PC).`); fxD(D, { t:'batit', c });
 }
 function deplacerD(D, a, b) {
   if (D.fini) return 'Partie finie.'; if (D.deplace) return 'Une seule tour déplacée par tour.';

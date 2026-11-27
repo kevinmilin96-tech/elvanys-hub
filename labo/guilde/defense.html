@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261127-132243"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
+<head><meta name="guilde-version" content="20261127-132447"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="robots" content="noindex">
@@ -138,7 +138,7 @@
 <script src="rang.js?v=baeef69b74"></script>
 <script src="heros-etoiles.js?v=bedc2c2c50"></script>
 <script src="donnees.js?v=8a39c05326"></script>
-<script src="defense-moteur.js?v=a5f504232f"></script>
+<script src="defense-moteur.js?v=34fee6ec52"></script>
 <script src="configurateur.js?v=a276a42cee"></script>
 <script src="heros-aventure.js?v=31db8c2ed4"></script>
 <script>
@@ -259,7 +259,7 @@ function rendu() {
   <div class="${PD ? 'rempartD' : 'rempart'}">${D.rempart.map((t, c) => { const okVide = !t && un && !attente && D.pc >= DEF.coutBatir; const okFus = t && ((!t.rune && un && un.v === t.v && t.niv < NIV_MAX && !attente) || (selTour >= 0 && selTour !== c && voisinsD(selTour).includes(c) && fusionPossible(D.rempart[selTour], t)));
       const okDep = !t && selTour >= 0 && !D.deplace && voisinsD(selTour).includes(c);
       if (!t) return `<div class="rc vide ${okVide || okDep ? 'ok' : ''}" data-c="${c}" style="${PD ? posRC(c) : ''}" onclick="toucheCase(${c})"></div>`;
-      return `<div class="rc ${t.rune ? 'rune' : ''} ${!t.rune && runesVoisD(D, c).length ? 'soutenue' : ''} ${selTour === c ? 'sel' : ''} ${okFus || besoinTour ? 'ok' : ''}" data-c="${c}" style="${PD ? posRC(c) : ''}" onclick="toucheCase(${c})">${t.rune ? (RUNE_IMG[D.heros] ? `<img class="runeimg niv${6 + t.rv}" src="${RUNE_IMG[D.heros]}" alt="">` : `<img class="runeimg niv${6 + t.rv}" src="${FACE(D.heros, 6)}" alt="" style="filter:drop-shadow(0 0 6px #c084fc) drop-shadow(0 0 2px #fff)">`) + (t.rv > 1 ? `<span class="nivr">${'✦'.repeat(t.rv)}</span>` : '') : `<img class="canon" src="tours/canon-${D.heros}-${Math.min(3, t.niv)}.webp?v=2" onerror="this.onerror=null;this.src='tours/canon-${['aldric', 'oria'].includes(D.heros) ? 'gorm' : 'maelle'}-${Math.min(3, t.niv)}.webp?v=2'" alt="${nomTourD(t)}" style="transform:rotate(${ANGLE[c] || 0}deg)"><span class="sorte">${SORTES[t.v].e}<small>${t.niv}</small></span>${t.et ? `<span class="etoiles">${'★'.repeat(t.et)}</span>` : ''}`}<span class="pw">${t.rune ? `+${Math.round((D.heros === 'gorm' ? 1 : DEF.runeSoutien) * t.rv * 100)} %` : puissanceTour(D, c, t)}</span>${t.bonus ? `<span class="bn">+${t.bonus}</span>` : ''}</div>`; }).join('')}</div>
+      return `<div class="rc ${t.rune ? 'rune' : ''} ${!t.rune && runesVoisD(D, c).length ? 'soutenue' : ''} ${selTour === c ? 'sel' : ''} ${okFus || besoinTour ? 'ok' : ''}" data-c="${c}" style="${PD ? posRC(c) : ''}" onclick="toucheCase(${c})">${t.rune ? (RUNE_IMG[D.heros] ? `<img class="runeimg niv${6 + t.rv}" src="${RUNE_IMG[D.heros]}" alt="">` : `<img class="runeimg niv${6 + t.rv}" src="${FACE(D.heros, 6)}" alt="" style="filter:drop-shadow(0 0 6px #c084fc) drop-shadow(0 0 2px #fff)">`) + (t.rv > 1 ? `<span class="nivr">${'✦'.repeat(t.rv)}</span>` : '') : `<img class="canon" src="tours/canon-${D.heros}-${Math.min(3, t.niv)}.webp?v=2" onerror="this.onerror=null;this.src='tours/canon-${['aldric', 'oria'].includes(D.heros) ? 'gorm' : 'maelle'}-${Math.min(3, t.niv)}.webp?v=2'" alt="${nomTourD(t)}" style="transform:rotate(${ANGLE[c] || 0}deg)"><span class="sorte">${SORTES[t.v].e}<small>${t.niv}</small></span>${t.et ? `<span class="etoiles">${etoilesTourTxt(t.et)}</span>` : ''}`}<span class="pw">${t.rune ? `+${Math.round((D.heros === 'gorm' ? 1 : DEF.runeSoutien) * t.rv * 100)} %` : puissanceTour(D, c, t)}</span>${t.bonus ? `<span class="bn">+${t.bonus}</span>` : ''}</div>`; }).join('')}</div>
   ${PD ? `<div class="porte porteD" id="porte" style="left:${PD.porte[0]}%;top:${PD.porte[1]}%">🚪 ${D.porte}/${D.porteMax}</div></div>` : '<div class="porte" id="porte">🚪 La porte de la Guilde</div>'}</div>
   <div class="msg ${err ? 'err' : ''}">${attente || sel.length || selTour >= 0 ? '<button class="annuleM" onclick="annule()">✖ Annuler</button> ' : ''}${msg}</div>
   <div class="des" id="desD">${D.lanceT !== D.tour ? D.des.map(() => `<div class="de cacheD" onclick="lanceDesD()"></div>`).join('') + `<button class="lancerD" onclick="lanceDesD()">🎲 Lancer</button>` : ''}${D.lanceT !== D.tour ? '' : D.des.map((d, i) => `<div class="de ${d.pose ? 'pose' : ''} ${sel.includes(d) ? 'sel' : ''} ${besoinDe && !d.pose && !sel.includes(d) ? 'cible' : ''}" onclick="toucheDe(${i})"><img src="${FACE(D.heros, d.v)}" alt="${d.v}"></div>`).join('')}</div>
@@ -322,16 +322,27 @@ function ficheTourH(v, c, t) {
   const S = SORTES[v], niv = t ? t.niv : 0;
   const lignes = [1, 2, 3, 4].slice(0, NIV_MAX).map(n => `<span class="ftN ${n === niv ? 'on' : ''}">niv.&nbsp;${n}<b>${degatsSorte(v, n, t ? c : null)}</b></span>`).join('');
   const et = t ? (t.et || 0) : 0;
-  return `<div class="ficheT"><h2>${S.e} ${S.n}${t ? ` <small>niv.&nbsp;${t.niv}${et ? ' ' + '★'.repeat(et) : ''}</small>` : ''}</h2>
+  return `<div class="ficheT"><h2>${S.e} ${S.n}${t ? ` <small>niv.&nbsp;${t.niv}${et ? ' ' + etoilesTourTxt(et) : ''}</small>` : ''}</h2>
     <p class="ftRole">${ROLE_T[v]}</p><p>${S.d}</p>
     <p class="doux">Dégâts par tir${t ? ' (ici, avec les bonus de cette case)' : ''} :</p><div class="ftNiv">${lignes}</div>
-    <p class="doux">🎲 Elle vient des dés qui font <b>${v}</b>. Bâtir : ${DEF.coutBatir}&nbsp;PC. Un autre dé de ${v} posé dessus la monte d’un niveau (${NIV_MAX} au plus).</p><p class="doux">⭐ <b>Au niveau ${NIV_MAX}</b>, chaque dé de ${v} posé dessus ajoute une <b>étoile de maîtrise</b> : +${Math.round(ETOILE * 100)}&nbsp;% de dégâts, ${ETOILES_MAX} étoiles au plus${t ? ` (elle en a ${et})` : ''}. À ${ETOILES_MAX}&nbsp;★ : ${ETOILE5[v]}.</p><p class="doux">✨ Ou bien, si tu le choisis : deux tours au niveau ${NIV_MAX} côte à côte fusionnent en une Rune (elle ne tire plus, elle renforce ses voisines).</p></div>`;
+    <p class="doux">🎲 Elle vient des dés qui font <b>${v}</b>. Bâtir : ${DEF.coutBatir}&nbsp;PC. Un autre dé de ${v} posé dessus la monte d’un niveau (${NIV_MAX} au plus).</p><p class="doux">⭐ <b>Au niveau ${NIV_MAX}</b>, chaque dé de ${v} posé dessus ajoute une <b>étoile de maîtrise</b> : +${Math.round(ETOILE * 100)}&nbsp;% de dégâts, ${D && D.sansFin ? 'sans limite en vagues sans fin' : `${ETOILES_MAX} étoiles au plus`}${t ? ` (elle en a ${et})` : ''}. À ${ETOILES_MAX}&nbsp;★ : ${ETOILE5[v]}.</p><p class="doux">✨ Ou bien, si tu le choisis : deux tours au niveau ${NIV_MAX} côte à côte fusionnent en une Rune (elle ne tire plus, elle renforce ses voisines).</p></div>`;
 }
 function infoTour(v, c) {
   const t = c != null && c >= 0 ? D.rempart[c] : null;
-  if (t && t.rune) return fenetre(`<div class="ficheT"><h2>✨ ${NOM_RUNE(t.rv)} ${DHEROS[D.heros].rune.n}</h2><p>Elle ne tire pas : elle renforce les tours voisines (+${Math.round((D.heros === 'gorm' ? 1 : DEF.runeSoutien) * t.rv * 100)}&nbsp;% de dégâts).</p><p>${DHEROS[D.heros].rune.d}</p></div><div class="choixh"><button onclick="fermer()">Compris</button></div>`);
-  fenetre(ficheTourH(v, c, t) + `<div class="choixh"><button class="or" onclick="fermer()">Compris</button></div>`);
+  if (t && t.rune) return fenetre(`<div class="ficheT"><h2>✨ ${NOM_RUNE(t.rv)} ${DHEROS[D.heros].rune.n}</h2><p>Elle ne tire pas : elle renforce les tours voisines (+${Math.round((D.heros === 'gorm' ? 1 : DEF.runeSoutien) * t.rv * 100)}&nbsp;% de dégâts).</p><p>${DHEROS[D.heros].rune.d}</p></div>` + boutonsTour(c));
+  fenetre(ficheTourH(v, c, t) + (t ? boutonsTour(c) : `<div class="choixh"><button class="or" onclick="fermer()">Compris</button></div>`));
 }
+// 27/11 : depuis la fiche d'une tour bâtie : la déplacer (case libre voisine, une fois par tour) ou la démolir (+1 PC), avec confirmation
+function boutonsTour(c) {
+  return `<p class="doux" style="font-size:.85em">↔ Pour la <b>déplacer</b> : ferme cette fiche, puis touche une case libre voisine (une fois par tour${D.deplace ? ' : déjà fait ce tour' : ''}).</p>
+  <div class="choixh"><button onclick="confirmeDemolir(${c})">🔨 Démolir</button><button class="or" onclick="fermer()">Compris</button></div>`;
+}
+function confirmeDemolir(c) {
+  const t = D.rempart[c]; if (!t) return fermer();
+  fenetre(`<h2>🔨 Démolir ?</h2><p>${t.rune ? '✨ ' + NOM_RUNE(t.rv) : nomTourD(t)}${t.et ? ' ' + etoilesTourTxt(t.et) : ''} disparaît et sa case se libère. Tu récupères <b>1&nbsp;PC</b>.</p><p class="doux">Ses niveaux${t.et ? ' et ses étoiles' : ''} sont perdus.</p>
+    <div class="choixh"><button onclick="selTour=-1;fermer();rendu()">Annuler</button><button class="or" onclick="fermer();selTour=-1;const e=demolirD(D,${c});dis(e||'Tour démolie : la case est libre.',!!e);rendu()">🔨 Démolir</button></div>`);
+}
+function etoilesTourTxt(n) { return n > ETOILES_MAX ? `★×${n}` : '★'.repeat(n); }
 function toutesTours() {
   fenetre(`<h2>🏰 Les tours</h2><div class="ficheL">${Object.entries(SORTES).map(([v, S]) => `<button onclick="infoTour(${v})"><span class="fe">${S.e}</span><span><b>${v} · ${S.n}</b><small>${ROLE_T[v]} · ${degatsSorte(+v, 1)} par tir au niv.&nbsp;1</small></span></button>`).join('')}</div><p class="doux" style="font-size:.85em">Touche une tour pour sa fiche complète. Sur le plateau, touche une tour bâtie pour voir la sienne.</p><div class="choixh"><button onclick="fermer()">Fermer</button></div>`);
 }
@@ -376,7 +387,7 @@ function toucheCase(c) {
   }
   if (t) { selTour = selTour === c ? -1 : c; sel = [];
     if (selTour >= 0) infoTour(t.v, c);
-    dis(selTour >= 0 ? `${t.rune ? `✨ ${NOM_RUNE(t.rv)} ${DHEROS[D.heros].rune.n} (ne tire pas) : ${DHEROS[D.heros].rune.d}` : `${SORTES[t.v].e} ${nomTourD(t)} : ${puissanceTour(D, c, t)} par tir. ${SORTES[t.v].d}${t.niv < NIV_MAX ? ` Un dé de ${t.v} la monte d’un niveau.` : (t.et || 0) < ETOILES_MAX ? ` Un dé de ${t.v} lui ajoute une étoile ★.` : ' Au maximum.'}`} Touche une tour voisine en vert pour fusionner${D.deplace ? '' : ', ou une case libre voisine pour la déplacer'}.` : ''); rendu(); return; }
+    dis(selTour >= 0 ? `${t.rune ? `✨ ${NOM_RUNE(t.rv)} ${DHEROS[D.heros].rune.n} (ne tire pas) : ${DHEROS[D.heros].rune.d}` : `${SORTES[t.v].e} ${nomTourD(t)} : ${puissanceTour(D, c, t)} par tir. ${SORTES[t.v].d}${t.niv < NIV_MAX ? ` Un dé de ${t.v} la monte d’un niveau.` : (D.sansFin || (t.et || 0) < ETOILES_MAX) ? ` Un dé de ${t.v} lui ajoute une étoile ★.` : ' Au maximum.'}`} Touche une tour voisine en vert pour fusionner${D.deplace ? '' : ', ou une case libre voisine pour la déplacer'}.` : ''); rendu(); return; }
   dis('Choisis d’abord UN dé, puis cette case pour bâtir.'); rendu();
 }
 function toucheMonstre(id) {
@@ -464,7 +475,7 @@ function regles() {
   <p><b>Ton tour :</b> 5 dés, 2 relances. Avec tes dés :</p>
   <ul style="padding-left:1.1em;margin:.3em 0">
   <li><b>Bâtir</b> (${DEF.coutBatir} PC) : un dé, puis une case verte. <b>Chaque face donne une sorte de tour</b> : ${Object.entries(SORTES).map(([v, S]) => `${S.e} ${v} ${S.n.toLowerCase()} (${S.d.charAt(0).toLowerCase() + S.d.slice(1, -1)})`).join(' ; ')}.</li>
-  <li><b>Étoiles de maîtrise</b> : au niveau ${NIV_MAX}, chaque dé de la même face posé sur la tour lui ajoute une étoile ★ (+${Math.round(ETOILE * 100)}&nbsp;% de dégâts, ${ETOILES_MAX} au plus) ; à ${ETOILES_MAX}&nbsp;★ son effet est renforcé. La Rune reste un choix : tu fusionnes seulement si tu le veux.</li>
+  <li><b>Étoiles de maîtrise</b> : au niveau ${NIV_MAX}, chaque dé de la même face posé sur la tour lui ajoute une étoile ★ (+${Math.round(ETOILE * 100)}&nbsp;% de dégâts, ${ETOILES_MAX} au plus, sans limite en vagues sans fin) ; à ${ETOILES_MAX}&nbsp;★ son effet est renforcé. La Rune reste un choix : tu fusionnes seulement si tu le veux.</li>
   <li><b>Monter de niveau</b> (1 à ${NIV_MAX}) : un dé de sa face posé sur la tour (${DEF.coutBatir} PC), ou deux tours pareilles du même niveau côte à côte (gratuit). La force grandit à chaque niveau : ${BASE_NIV.slice(1).join(', ')}.</li>
   <li><b>Les Runes</b> : deux tours au niveau ${NIV_MAX} qui se touchent (de n’importe quelle sorte) font une <b>Rune</b> de ton héros. Elle ne tire pas : elle <b>renforce ses tours voisines</b> (halo violet) et leur donne son pouvoir. Deux Runes du même niveau = <b>Rune ancienne ✦✦</b>, puis <b>légendaire ✦✦✦</b>.</li>
   <li><b>Piège</b> (${DEF.coutBatir} PC) : un dé, puis une case de chemin : 🟫 1 = boue (arrête un monstre un tour), 🌿 2 à 5 = ronces (valeur × 3), 🪨 6 = barricade (le monstre change de chemin). Les chauves-souris volent au-dessus de la boue et des ronces ; le Titan écrase tout.</li>

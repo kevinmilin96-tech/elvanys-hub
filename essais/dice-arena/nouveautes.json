@@ -1,5 +1,9 @@
 [
 {
+"v": "20261127-132447",
+"m": "Défense de la porte : on peut démolir une tour depuis sa fiche (+1 PC), et en vagues sans fin les étoiles de maîtrise n'ont plus de limite."
+},
+{
 "v": "20261127-132243",
 "m": "Défense de la porte : au niveau 4, un dé de la même face ajoute une étoile ★ à la tour (+35 % de dégâts, 5 au plus, effet renforcé à 5 étoiles). La Rune reste un choix."
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261125-214233",
 "m": "La Défense de la porte change : chaque face de dé donne sa sorte de tour (givre, poison, archers, canon, foudre, grande tour), les Runes renforcent leurs voisines, plus de cartes, et 1 PC tous les 3 monstres abattus"
-},
-{
-"v": "20261125-213840",
-"m": "Le carnet de la Guilde ne remonte plus en haut quand tu touches « Récupérer »"
 }
 ]
