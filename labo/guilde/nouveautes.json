@@ -1,5 +1,9 @@
 [
 {
+"v": "20261128-003009",
+"m": "Rempart : le niveau de chaque tour se lit en grand (couleur selon le niveau), et le ✦ du pouvoir n'apparaît plus que sur une tour par sorte"
+},
+{
 "v": "20261128-002827",
 "m": "Rempart : une tour neuve attend aussi la recharge du pouvoir de sa sorte"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261127-182104",
 "m": "Nouveau mode : le Rempart des runes (5 niveaux, tower defense en temps réel) ; le portail de la Descente a son image"
-},
-{
-"v": "20261127-174116",
-"m": "Saison 1 plus corsée : les monstres des Chroniques suivent la force de ton héros ; 2 quêtes de la semaine au forgeron"
 }
 ]
