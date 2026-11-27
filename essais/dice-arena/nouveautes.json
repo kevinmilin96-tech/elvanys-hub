@@ -1,5 +1,9 @@
 [
 {
+"v": "20261127-132243",
+"m": "Défense de la porte : au niveau 4, un dé de la même face ajoute une étoile ★ à la tour (+35 % de dégâts, 5 au plus, effet renforcé à 5 étoiles). La Rune reste un choix."
+},
+{
 "v": "20261127-131452",
 "m": "Défense de la porte : avant de fusionner deux tours, une fenêtre montre ce qu'elles deviennent (niveau et dégâts, ou une Rune qui ne tire plus) et demande de confirmer."
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261125-213840",
 "m": "Le carnet de la Guilde ne remonte plus en haut quand tu touches « Récupérer »"
-},
-{
-"v": "20261125-213137",
-"m": "La Chasse au boss : écran de fin clair (ton score, pas une « victoire »), l'or du défi vraiment donné, les paliers à récupérer 🎁 dans le carnet, et un nouveau mode « 💀 Chasse jusqu'à la mort » sans limite de tours"
 }
 ]
