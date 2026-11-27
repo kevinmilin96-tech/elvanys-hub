@@ -332,6 +332,24 @@ function infoTour(v, c) {
 function toutesTours() {
   fenetre(`<h2>🏰 Les tours</h2><div class="ficheL">${Object.entries(SORTES).map(([v, S]) => `<button onclick="infoTour(${v})"><span class="fe">${S.e}</span><span><b>${v} · ${S.n}</b><small>${ROLE_T[v]} · ${degatsSorte(+v, 1)} par tir au niv.&nbsp;1</small></span></button>`).join('')}</div><p class="doux" style="font-size:.85em">Touche une tour pour sa fiche complète. Sur le plateau, touche une tour bâtie pour voir la sienne.</p><div class="choixh"><button onclick="fermer()">Fermer</button></div>`);
 }
+// 27/11 (demande de l'utilisateur) : avant une fusion, on montre ce que deviennent les deux tours et on demande de confirmer
+function nomCourtT(x) { return x.rune ? `✨ ${NOM_RUNE(x.rv)}` : `${SORTES[x.v].e} ${SORTES[x.v].n} niv.&nbsp;${x.niv}`; }
+function confirmeFusion(a, c) {
+  const ta = D.rempart[a], tb = D.rempart[c], E = JSON.parse(JSON.stringify(D)); E.fx = []; E.log = [];
+  const e = fusionD(E, a, c);
+  if (e) { selTour = -1; dis(e, true); rendu(); return; }
+  const r = E.rempart[c], avant = puissanceTour(D, a, ta) + puissanceTour(D, c, tb);
+  const quoi = r.rune
+    ? `<p>Les deux tours <b>ne tireront plus</b> : elles deviennent une <b>${NOM_RUNE(r.rv)} ${DHEROS[D.heros].rune.n}</b>, à la place de la 2e.</p><p>Une Rune ne tire pas : elle renforce les tours voisines de <b>+${Math.round((D.heros === 'gorm' ? 1 : DEF.runeSoutien) * r.rv * 100)}&nbsp;%</b>. ${DHEROS[D.heros].rune.d}</p><p class="doux">Aujourd’hui, ces deux tours font ${avant} de dégâts par tir à elles deux.</p>`
+    : `<p>La tour de la 1re case disparaît ; celle de la 2e passe au <b>niveau ${r.niv}</b>.</p><p>Dégâts par tir : ${avant} à elles deux aujourd’hui → <b>${puissanceTour(E, c, r)}</b> pour la tour fusionnée.</p><p class="doux">Une case se libère : tu pourras y bâtir une autre tour.</p>`;
+  fenetre(`<h2>⚒ Fusionner ?</h2><p>${nomCourtT(ta)} + ${nomCourtT(tb)} → <b>${nomCourtT(r)}</b></p>${quoi}
+    <div class="choixh"><button onclick="selTour=-1;fermer();rendu()">Annuler</button><button class="or" onclick="fermer();faitFusion(${a},${c})">⚒ Fusionner</button></div>`);
+}
+function faitFusion(a, c) {
+  selTour = -1; const e = fusionD(D, a, c);
+  if (!e) GM.son(D.rempart[c].rune ? 'rune' : 'tour-fusion');
+  if (e) dis(e, true); else dis(D.rempart[c].rune ? `✨ ${NOM_RUNE(D.rempart[c].rv)} ${DHEROS[D.heros].rune.n} !` : `Fusion : ${nomTourD(D.rempart[c])}.`); rendu();
+}
 // ---------------------------------------------------------------- les gestes
 function toucheDe(i) {
   if (D.lanceT !== D.tour || animeD) return;
@@ -346,6 +364,7 @@ function toucheCase(c) {
   const t = D.rempart[c];
   if (attente) { if (attente.cible === 'tour' && t) finit({ t }); return; }
   if (sel.length === 1) { const e = batirD(D, sel[0], c); if (e) dis(e, true); else { sel = []; GM.son(t ? 'tour-fusion' : 'tour-batir'); dis(`${SORTES[D.rempart[c].v].e} ${nomTourD(D.rempart[c])}${t ? '' : ' bâtie'}. ${t ? '' : SORTES[D.rempart[c].v].d}`); } rendu(); return; }
+  if (selTour >= 0 && selTour !== c && t) return confirmeFusion(selTour, c); // 27/11 : la fusion se confirme, avec ce qu'elle donne
   if (selTour >= 0 && selTour !== c) {
     const a = selTour; selTour = -1;
     const e = t ? fusionD(D, a, c) : deplacerD(D, a, c);
