@@ -332,7 +332,7 @@ function construitCellules(S, R, G, salles, fin, D, sol, rnd) {
   for (const [x, y] of cases) { if (choix.length >= 4) break; if (choix.some(([a, b]) => a === x && b === y)) continue; bloque.add(x + ',' + y); const V = bfs(D0.cx, D0.cy, bloque); if (Object.keys(V).length >= tous - bloque.size) choix.push([x, y]); else bloque.delete(x + ',' + y); }
   choix.forEach(([x, y], i) => { R.murs[cle(x, y)] = 'L'; G[y][x] = 'L'; R.obj[cle(x, y)] = { t:'levierC', i, coul:LEVIERS_C[i][0], c:LEVIERS_C[i][1] }; });
   // l'air des cloches : 4 notes (1-2 héros) ou 5 (3-4 héros), jamais deux fois la même à la suite (décision de l'utilisateur, 27/11)
-  const nb = choix.length, nN = S.heros.length >= 3 ? 5 : 4; R.melodie = []; for (let i = 0; i < nN; i++) { let v; do { v = rnd(nb); } while (nb > 1 && v === R.melodie[i - 1]); R.melodie.push(v); }
+  const nb = choix.length, nN = S.heros.length >= 3 ? 5 : 4; for (let essai = 0; essai < 50; essai++) { R.melodie = []; for (let i = 0; i < nN; i++) { let v; do { v = rnd(nb); } while (nb > 1 && v === R.melodie[i - 1]); R.melodie.push(v); } if (new Set(R.melodie).size >= Math.min(3, nb)) break; } // au moins 3 couleurs différentes
   R.melProg = 0; R.chantN = 0;
   // la cellule d'Aubin : dans une salle À L'ÉCART du chemin (un détour : loin du départ ET loin du clocher), pour que l'escorte compte
   const DFin = bfs(fin.cx, fin.cy), detour = s => (D[s.cx + ',' + s.cy] || 0) + (DFin[s.cx + ',' + s.cy] || 0);
