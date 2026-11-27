@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261127-182533"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
+<head><meta name="guilde-version" content="20261127-183354"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="robots" content="noindex">
@@ -80,7 +80,7 @@
   .c .enclume { font-size:calc(var(--t) * .6); filter:drop-shadow(0 0 5px #ff9a3a); }
   .jeton.aubin { --c:#9fdcff; } .jeton.aubin img { width:100%; height:100%; border-radius:50%; object-fit:cover; } .jeton.aubin.cage::after { content:''; position:absolute; inset:-2px; border-radius:50%; background:repeating-linear-gradient(90deg, transparent 0 22%, #2a3346 22% 30%); opacity:.9; }
   .jeton.aubin.terre img { filter:grayscale(1) brightness(.6); }
-  .plateau .c.mur.fissure { filter:brightness(.8); box-shadow:inset 0 0 calc(var(--t) * .3) #9fdcffaa; } .c.fissure .fiss { position:absolute; inset:8%; pointer-events:none; filter:drop-shadow(0 0 3px #9fdcff) drop-shadow(0 0 2px #fff); }
+  .plateau .c.mur.fissure { background:url('decor/tuile-mur-fissure.webp?v=1') center/cover !important; box-shadow:inset 0 0 calc(var(--t) * .3) #9fdcffaa; } .c.fissure .fiss { position:absolute; inset:8%; pointer-events:none; filter:drop-shadow(0 0 3px #9fdcff) drop-shadow(0 0 2px #fff); }
   .c .note { position:absolute; top:6%; left:6%; width:38%; height:38%; border-radius:50%; background:var(--nc); box-shadow:0 0 6px var(--nc), inset 0 0 0 2px #fff8; }
   .simon { position:fixed; inset:0; z-index:60; display:flex; flex-direction:column; align-items:center; justify-content:center; background:#05081acc; pointer-events:none; transition:opacity .5s; }
   .simon h3 { color:#cfeeff; margin:0 0 4vw; padding:0 5vw; font-size:5vw; text-align:center; } .simon .pads { display:grid; grid-template-columns:1fr 1fr; gap:4vw; }
@@ -270,7 +270,7 @@ function objetRecu(icone, titre, texte) { const d = document.createElement('div'
   d.onclick = () => d.remove(); document.body.appendChild(d); setTimeout(() => d.classList.add('part'), 2300); setTimeout(() => d.remove(), 2900); }
 let statueBrille = []; // les deux statues qui viennent de tourner, allumées un instant
 const SOCLES = { '4,1':[-47, -24], '7,1':[44, -24], '4,3':[-35, 49], '7,3':[33, 49] }; // en % de l'image (88 % de la case)
-const OBJ_PEINTS = ['coffre', 'armoire', 'tonneaux', 'tombeau', 'etabli', 'cheminee', 'etagere', 'levier', 'rouage', 'axe', 'porte', 'statue', 'autel', 'grille', 'dalle', 'tasdos', 'autelrunes', 'fragment', 'cloche', 'corde'];
+const OBJ_PEINTS = ['levierchant', 'sarcophage', 'enclume', 'coffre', 'armoire', 'tonneaux', 'tombeau', 'etabli', 'cheminee', 'etagere', 'levier', 'rouage', 'axe', 'porte', 'statue', 'autel', 'grille', 'dalle', 'tasdos', 'autelrunes', 'fragment', 'cloche', 'corde'];
 // 16/11 : LES SALLES DESSINÉES de l'Horloger (Gemini, vues du dessus) : chaque salle reçoit son image, étalée sur ses cases de sol
 const SALLE_IMG = { A:'hall', C:'reserve', G:'crypte', B:'rouages', E:'atelier', F:'bibliotheque', H:'coeur', S:'galerie', P:'cagibi' };
 // 16/11 : la porte vue du dessus (poutre en travers du passage) : tournée d'un quart de tour quand le passage est horizontal
@@ -754,14 +754,14 @@ function dessine() {
           inner += bas || haut ? `<span class="bande h" style="${bas ? 'bottom' : 'top'}:0;background-position:calc(var(--t) * ${-x * .3}) 0"></span>` : `<span class="bande v" style="${dr ? 'right' : 'left'}:0;background-position:0 calc(var(--t) * ${-y * .3})"></span>`; }
         // 16/11 (l'utilisateur : « fermer l'angle proprement ») : un coin de mur qui ne touche le couloir qu'en diagonale reçoit un petit carré de pierres
         else if (!fondSalle(S, x, y)) { const dg = [[1, 1], [-1, 1], [1, -1], [-1, -1]].find(([dx, dy]) => cou(x + dx, y + dy)); if (dg) { cl += ' murc'; stMur = 'background:#0b0b14;'; inner += `<span class="bande c" style="${dg[0] > 0 ? 'right' : 'left'}:0;${dg[1] > 0 ? 'bottom' : 'top'}:0"></span>`; } } } } // 16/11 (l'utilisateur : « enlève ces murs rajoutés ») : plus de bordure de pierre ajoutée, les murs sont ceux peints dans les salles
-    else if (mur === 'F') { cl += ' mur fissure'; inner = '<svg class="fiss" viewBox="0 0 10 10"><polyline points="5,0 4,2.5 6,4 3.5,6 5.5,7.5 4.5,10" fill="none" stroke="#e8f7ff" stroke-width="1"/><polyline points="6,4 8,5" fill="none" stroke="#e8f7ff" stroke-width=".7"/></svg>'; }
-    else if (mur === 'L' && o && o.t === 'levierC') { inner = `${objImg('levier') || '<span class="o">🎚</span>'}<span class="note" style="--nc:${o.c}"></span>`; if (d && K.dist(h, { x, y }) <= 2 && Math.max(Math.abs(h.x - x), Math.abs(h.y - y)) <= 1) cl += ' cible'; }
+    else if (mur === 'F') { cl += ' mur fissure'; inner = ''; } // 27/11 : le mur fissuré peint (decor/tuile-mur-fissure.webp)
+    else if (mur === 'L' && o && o.t === 'levierC') { inner = `${objImg('levierchant') || '<span class="o">🎚</span>'}<span class="note" style="--nc:${o.c}"></span>`; if (d && K.dist(h, { x, y }) <= 2 && Math.max(Math.abs(h.x - x), Math.abs(h.y - y)) <= 1) cl += ' cible'; }
     else if (mur === '~') inner = `<span class="o">${S.scen === 'arene' ? '🌳' : '🪨'}</span>`; // 15/11 soir : les obstacles (arbres d'une embuscade, rochers) se voient
     // 16/11 (l'utilisateur : « nos propres images dénaturent ») : dans une salle PEINTE, on touche le meuble du dessin, sans icône ; une lueur dorée le montre
     else if (mur === 'M' && o && fondSalle(S, x, y)) { cl += ' meuble-peint' + (o.fouille ? ' fouille' : '') + (!o.fouille && K.dist(h, { x, y }) === 1 ? ' cible' : ''); if (o.fouille) inner = '<span class="fm">✓</span>'; else if (o.verrou && !o.crochete) inner = '<span class="fm">🔒</span>'; } // 16/11 : pas d'étiquette (les noms ne collaient pas au dessin), le nom vient au toucher
-    else if (mur === 'M' && o && o.sarco) { inner = (objImg('tombeau', o.fouille ? 'fait' : '') || `<span class="o">🪦</span>`) + '<span class="torche">🔥</span>' + (o.givre && !o.fouille ? '<span class="givre-s"></span>' : '<span class="fondu"></span>'); if (d && !o.fouille && K.dist(h, { x, y }) === 1) cl += ' cible'; } // 27/11 : chapitre 4, un sarcophage et sa torche ; le givre qui ne fond pas
+    else if (mur === 'M' && o && o.sarco) { inner = (objImg('sarcophage', o.fouille ? 'fait' : '') || `<span class="o">🪦</span><span class="torche">🔥</span>`) + (o.givre && !o.fouille ? '<span class="givre-s"></span>' : '<span class="fondu"></span>'); if (d && !o.fouille && K.dist(h, { x, y }) === 1) cl += ' cible'; } // 27/11 : chapitre 4, un sarcophage et sa torche ; le givre qui ne fond pas
     else if (mur === 'M' && o) inner = objImg(o.t, o.fouille ? 'fait' : '') || `<span class="o ${o.fouille ? 'fait' : ''}">${MEUBLE_E[o.t] || '📦'}</span>`;
-    else if (mur === 'Y') inner = '<span class="o enclume">⚒️</span>';
+    else if (mur === 'Y') inner = objImg('enclume') || '<span class="o enclume">⚒️</span>';
     else if (mur === 'L' && o) inner = `${objImg('levier', R.leviersTour[c] ? 'baisse' : '')}<span class="lv">≥${o.v}</span>`;
     else if (mur === 'B') inner = fondSalle(S, x, y) ? '' : objImg('etagere'); // 16/11 : dans une salle peinte, l'étagère est celle du dessin
     else if (mur === 'K' && fondSalle(S, x, y)) cl += ' meuble-peint' + (K.dist(h, { x, y }) === 1 ? ' cible' : ''); // le Livre des heures : une lueur sur le dessin, plus d'émoji
@@ -788,7 +788,7 @@ function dessine() {
     if (hi >= 0) { const z = S.heros[hi]; inner += `<div class="jeton ${hi === actif ? 'actif' : ''} ${z.aTerre ? 'terre' : ''}" id="j-h${hi}" style="--c:${coulH(z)}">${imgH(z)}<span class="pv">${z.aTerre ? '✋' : '❤' + z.pv}${z.bouclier ? '🛡' + z.bouclier : ''}${z.porte ? '⚙️' : ''}</span></div>`; }
     if (R.aubin && R.aubin.x === x && R.aubin.y === y && vu) { const A = R.aubin; inner += `<div class="jeton aubin ${A.libre ? '' : 'cage'} ${A.aTerre ? 'terre' : ''}" id="j-aubin"><img src="portraits/pnj-aubin.webp?v=1" alt="Frère Aubin"><span class="pv">${A.aTerre ? '✋' : '❤' + A.pv}</span></div>`;
       if (d && (!A.libre || A.aTerre || K.dansClocher(S, A)) && Math.max(Math.abs(h.x - x), Math.abs(h.y - y)) <= 1) cl += ' cible'; }
-    if (R.forgeron && R.forgeron.x === x && R.forgeron.y === y && vu) { const F = R.forgeron; inner += `<div class="jeton aubin bran ${F.aTerre ? 'terre' : ''}" id="j-bran"><img src="portraits/m-chevalierglace.webp?v=1" alt="Bran"><span class="pv">${F.aTerre ? '✋' : '❤' + F.pv}</span>${R.boss && !R.boss.dort && !S.runePrete ? `<span class="it">🔨${S.forge || 0}/3</span>` : S.runePrete ? '<span class="it">🔥</span>' : ''}</div>`;
+    if (R.forgeron && R.forgeron.x === x && R.forgeron.y === y && vu) { const F = R.forgeron; inner += `<div class="jeton aubin bran ${F.aTerre ? 'terre' : ''}" id="j-bran"><img src="portraits/pnj-bran.webp?v=1" alt="Bran"><span class="pv">${F.aTerre ? '✋' : '❤' + F.pv}</span>${R.boss && !R.boss.dort && !S.runePrete ? `<span class="it">🔨${S.forge || 0}/3</span>` : S.runePrete ? '<span class="it">🔥</span>' : ''}</div>`;
       if (d && (F.aTerre || (S.runePrete && !S.runePrise)) && Math.max(Math.abs(h.x - x), Math.abs(h.y - y)) <= 1) cl += ' cible'; }
     const mm = B || m;
     if (mm && vu && (B || vueForcee || eclaire(x, y))) { const it = mm.entrave >= R.tour ? '🌵' : mm.it === 'frappe' ? `⚔${mm.att}` : mm.it === 'garde' ? '🛡' : mm.it === 'soin' ? '💚' : mm.it === 'fuit' ? '🏃' : mm.it === 'remonte' ? '⏳' : mm.it === 'levier' ? '🎚' : mm.it === 'elan' ? '⚡' : mm.it === 'charge' ? `⚡${mm.att + 2}` : mm.it === 'gros' ? `💥${mm.att + 2}` : mm.it === 'hesite' ? '💬' : ''; const it2 = B && B.dort ? '💤' : B && B.b === 'roihiver' && K.bossIntouchable(S, B) ? '💠' : it;
@@ -1104,7 +1104,7 @@ function forgeronMenu() {
   if (d && F.aTerre && pres) b.push(`<button class="sec" onclick="fenetre('');son('soin');resultat(K.forgeron(S,actif,sel,'relever'))">✋ Relever Bran<small>Le dé entier. Il revient avec 4 PV et la forge repart.</small></button>`);
   if (d && S.runePrete && !S.runePrise && pres) b.push(`<button class="sec" onclick="fenetre('');son('rune');resultat(K.forgeron(S,actif,sel,'rune'))">🔥 Prendre la rune<small>Un pas de ce dé. Au contact du Roi, quand son cœur de glace se montre, un dé suffit à le briser.</small></button>`);
   const etat = F.aTerre ? 'Il est à terre : la forge est arrêtée. Un héros juste à côté le relève (un dé).' : S.runePrete ? (S.runePrise ? `La rune est prête : ${nomH(S.heros.find(z => z.rune) || h)} la porte.` : 'La rune est prête : un héros juste à côté la prend.') : R.boss && !R.boss.dort ? `Il forge la rune : ${S.forge || 0}/3. Protégez-le : les monstres peuvent le viser.${S.heros.some(z => z.id === 'maelle') ? ' Maëlle juste à côté de lui = la forge avance deux fois plus vite.' : ''}` : 'Il attend à l’enclume. Dès que le Roi se réveillera, il commencera à forger.';
-  fenetre(`<h2>🔨 Bran, le forgeron</h2><div style="display:flex;gap:10px;align-items:center"><img src="portraits/m-chevalierglace.webp?v=1" alt="" style="width:64px;height:64px;border-radius:50%;object-fit:cover;border:2px solid #ffb070;filter:saturate(.35) sepia(.35) brightness(1.15)"><p style="margin:0">Le père de Maëlle, libéré de son armure de givre. ❤ ${F.pv}/${F.pvmax}. Il ne frappe pas.</p></div><p style="text-align:center">${etat}</p>${b.join('')}<button class="sec" onclick="fenetre('')">${b.length ? 'Annuler' : 'Compris'}</button>`);
+  fenetre(`<h2>🔨 Bran, le forgeron</h2><div style="display:flex;gap:10px;align-items:center"><img src="portraits/pnj-bran.webp?v=1" alt="" style="width:64px;height:64px;border-radius:50%;object-fit:cover;border:2px solid #ffb070;filter:saturate(.35) sepia(.35) brightness(1.15)"><p style="margin:0">Le père de Maëlle, libéré de son armure de givre. ❤ ${F.pv}/${F.pvmax}. Il ne frappe pas.</p></div><p style="text-align:center">${etat}</p>${b.join('')}<button class="sec" onclick="fenetre('')">${b.length ? 'Annuler' : 'Compris'}</button>`);
 }
 // un levier chantant : on confirme avant de tirer (une fausse note coûte cher)
 function levierMenu(x, y) {
@@ -1132,7 +1132,7 @@ function sceneBran() {
   const avecM = S.heros.some(z => z.id === 'maelle');
   const txt = avecM ? 'L’armure de givre éclate. Dessous, un homme à genoux, la barbe blanche de givre. Il lève les yeux vers la forgeronne : « Maëlle ?… Tu as forgé ton marteau. Je le vois à tes mains. » Maëlle lui tend la lime trouvée au pied de la deuxième cloche ; sur le manche, son poinçon. Bran baisse la tête : « C’est moi qui ai limé les runes. Le Roi m’a gardé dix ans endormi dans la glace, et ma main lui obéissait. Pardonne-moi. » Il lui met une grosse clé de fer dans la paume : « La clé du clocher. Allez-y. Moi… je n’ai plus de forces. Je vous attends en bas. »'
     : 'L’armure de givre éclate. Dessous, un homme à genoux, la barbe blanche de givre, qui tremble de froid. « Merci… Je m’appelle Bran. Je suis forgeron. Ma fille… Maëlle… elle va bien ? Dites-lui que son père est vivant. » Il vous tend une grosse clé de fer : « La clé du clocher. Le Roi me l’avait confiée. Allez-y. Moi, je n’ai plus de forces : je vous attends en bas. »';
-  fenetre(`<div style="text-align:center"><img src="portraits/m-chevalierglace.webp?v=1" alt="" style="width:110px;height:110px;border-radius:50%;object-fit:cover;border:3px solid #9fdcff;filter:saturate(.4) brightness(1.2)"></div><h2 style="text-align:center">❄ Bran est libre</h2><p>${txt}</p><p style="text-align:center;color:var(--or)">🗝 La clé du clocher : les leviers chantants sont ouverts.</p><button class="go" onclick="fenetre('')">Continuer</button>`);
+  fenetre(`<div style="text-align:center"><img src="portraits/pnj-bran.webp?v=1" alt="" style="width:110px;height:110px;border-radius:50%;object-fit:cover;border:3px solid #9fdcff"></div><h2 style="text-align:center">❄ Bran est libre</h2><p>${txt}</p><p style="text-align:center;color:var(--or)">🗝 La clé du clocher : les leviers chantants sont ouverts.</p><button class="go" onclick="fenetre('')">Continuer</button>`);
 }
 function frappeMenu(m) {
   const d = deSel(); if (!d) return;
@@ -1504,7 +1504,7 @@ if (ESSAI) essaiAtelier(ESSAI); else if (sessionStorage.getItem('chron-en-jeu') 
 { const s = new URLSearchParams(location.search).get('salle'); if (s) { history.replaceState(null, '', location.pathname); const c = (typeof AMIS !== 'undefined' && AMIS.carte) || null, nom = (c && c.pseudo) || localStorage.getItem('guilde-pseudo');
     if (nom || moiCompte()) rejoindre(s, moiCompte() || { id:'j' + Math.random().toString(36).slice(2, 10), nom }); else { rejoindreForm(); setTimeout(() => { const i = $('fCode'); if (i) i.value = s; }, 150); } } }
 </script>
-<script src="chroniques-aventures.js?v=e384a2c41a"></script>
+<script src="chroniques-aventures.js?v=674b8d389d"></script>
 <script src="guide.js?v=ceb10204e9"></script>
 <script src="guides-modes.js?v=e111523360"></script>
 <script src="entrainement.js?v=854139c476"></script>
