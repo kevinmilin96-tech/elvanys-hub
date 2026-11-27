@@ -1,5 +1,9 @@
 [
 {
+"v": "20261128-005416",
+"m": "Rempart : plus de dés pour la besace (toutes les 2 vagues et après chaque grosse vague)"
+},
+{
 "v": "20261128-004856",
 "m": "Rempart : la besace ! Après chaque grosse vague, lance un dé pour gagner un objet (piège de givre, épines, barricade, souffle, détour, ou joker), et profite d'une vraie accalmie de 25 s pour bâtir"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261127-183740",
 "m": "Saison 1 : l'épilogue est entièrement peint"
-},
-{
-"v": "20261127-183354",
-"m": "Saison 1 : Bran, le mur fissuré, le levier chantant, les sarcophages et l'enclume sont peints ; 4 nouveaux monstres peints dans la Défense"
 }
 ]

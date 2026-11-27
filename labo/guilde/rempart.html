@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261128-004856"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde">
+<head><meta name="guilde-version" content="20261128-005416"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="robots" content="noindex">
@@ -176,7 +176,7 @@
 <script src="rang.js?v=4a53584921"></script>
 <script src="heros-etoiles.js?v=29ce68f57f"></script>
 <script src="donnees.js?v=8a39c05326"></script>
-<script src="rempart-moteur.js?v=a688276aa1"></script>
+<script src="rempart-moteur.js?v=80afc9be87"></script>
 <script src="configurateur.js?v=d5e9469a28"></script>
 <script src="heros-aventure.js?v=31db8c2ed4"></script>
 <script>
@@ -510,7 +510,7 @@ function regles() {
   <li>⏩ <b>Appeler la vague</b> : entre deux vagues, fais venir la suivante en avance ; tu gagnes des ◆ (et un peu de jauge d’Ultime).</li>
   <li>✦ <b>Spécialisation</b> : au niveau 4, une tour choisit une de ses deux spécialisations, pour toujours (dans sa fiche).</li>
   <li>🏅 <b>Les défis</b> : chaque niveau a 3 défis. Réussis-en pendant une victoire pour gagner leurs médailles.</li>
-  <li>🎒 <b>La besace</b> : après chaque grosse vague, un dé 🎲 apparaît en bas à gauche. Lance-le : sa face donne un objet (1 🧊 piège de givre, 2 🌵 piège d’épines, 3 🧱 barricade, 4 💨 souffle, 5 ↪️ détour, 6 🃏 joker au choix). 2 places ; touche l’objet puis le plateau.</li>
+  <li>🎒 <b>La besace</b> : après chaque grosse vague et toutes les 2 petites vagues, un dé 🎲 apparaît en bas à gauche. Lance-le : sa face donne un objet (1 🧊 piège de givre, 2 🌵 piège d’épines, 3 🧱 barricade, 4 💨 souffle, 5 ↪️ détour, 6 🃏 joker au choix). 2 places ; touche l’objet puis le plateau.</li>
   <li>Toucher une tour : sa fiche (déplacer 1 ◆, démolir). Toucher un monstre : ce qui le contre.</li></ul>
   <h2>Les tours</h2><ul class="liste">${Object.values(P.SORTES).map(x => `<li>${x.e} <b>${x.n}</b> (${x.prix} ◆) : ${x.d}</li>`).join('')}<li>🔮 <b>${P.PUITS.n}</b> (${P.PUITS.prix} ◆) : ${P.PUITS.d}</li></ul>`);
 }
@@ -537,6 +537,7 @@ function joueFx() {
     else if (f.t === 'puits') { const p = caseXY(f.i); gain(p.x, p.y - 18, '+◆ à toucher'); }
     else if (f.t === 'bowling') { const pl = document.getElementById('plateau'), b = document.createElement('div'); b.className = 'bowl'; b.textContent = '🎳'; b.style.left = xPx(f.c) + 'px'; b.style.top = (G.H - G.RH) + 'px'; pl.appendChild(b);
       b.animate([{ top:(G.H - G.RH) + 'px' }, { top:'0px' }], { duration:1000, easing:'ease-in' }).onfinish = () => b.remove(); }
+    else if (f.t === 'deObjet' && f.petit) { banniere('🎲 Un dé pour ta besace !', true); son('relance'); }
     else if (f.t === 'calme') { banniere(`🌿 Accalmie : ${f.dt} s pour bâtir · 🎲 un dé pour ta besace !`, true); }
     else if (f.t === 'annonce') { banniere(f.derniere ? '🚩 La dernière grosse vague approche !' : `🚩 Grosse vague ${f.n} sur ${f.sur} dans 8 s !`); son('vague'); try { navigator.vibrate && navigator.vibrate([40, 60, 40]); } catch (e) {} }
     // la grande vague : une musique plus intense (le lecteur commun ne sait pas accélérer une musique : on passe à celle des boss)
