@@ -284,9 +284,9 @@ const TOUR_IMG = { 1:'rempart3-givre', 2:'rempart3-poison', 3:'rempart3-archers'
 // 28/11 (l'utilisateur : « chercher quelle tour sélectionner en même temps, c'est trop stressant ») : une tour qu'un dé de la réserve peut monter
 // montre « ⬆+1 » ; un toucher dessus la monte, sans choisir le dé. Le ✦ du pouvoir se lance aussi d'un toucher, sans ouvrir la fiche.
 const deMonte = t => !t || t.puits || t.rune || (t.niv >= P.R.nivMax && t.et >= P.R.etoileMax) ? -1 : S.des.findIndex(d => d.v === t.v);
-function monteParDe(i) { if (!S || S.fini || pause || fen.innerHTML) return; const k = deMonte(S.cases[i]); if (k < 0) return;
+function monteParDe(i) { marqueGeste(); if (!S || S.fini || pause || fen.innerHTML) return; const k = deMonte(S.cases[i]); if (k < 0) return;
   const e = P.poserDe(S, k, i); if (e) { dis(e, true); return; } sel = null; son('tour-fusion'); dis(''); astucePouvoir(i); rafraichit(); }
-function pouvoirDirect(i) { if (!S || S.fini || pause || fen.innerHTML) return; const e = P.pouvoir(S, i); if (e) { dis(e, true); return; } son('ultime'); banniere('✦ ' + P.POUVOIRS[S.cases[i].v].n); rafraichit(); }
+function pouvoirDirect(i) { marqueGeste(); if (!S || S.fini || pause || fen.innerHTML) return; const e = P.pouvoir(S, i); if (e) { dis(e, true); return; } son('ultime'); banniere('✦ ' + P.POUVOIRS[S.cases[i].v].n); rafraichit(); }
 function htmlCase(t, i) {
   if (!t) return '';
   if (t.puits) return `<div class="tour"><img class="pu" src="decor/obj-puits-runes.webp?v=1" alt=""></div>`; // 27/11 : image reçue
@@ -324,7 +324,7 @@ function majMonstres() {
     let el = document.getElementById('m' + m.id); const B = P.MONSTRES[m.t], tl = B.boss ? G.cw * .95 : tailleN;
     if (!el) { el = document.createElement('div'); el.id = 'm' + m.id; el.className = 'mo' + (m.elite ? ' elite' : '') + (B.boss ? ' boss' : '');
       el.style.width = tl + 'px'; el.innerHTML = `<div class="p" style="height:${tl}px">${imgM(m.t)}</div><div class="vie"><i></i></div>${B.vol ? '<span class="x">🪽</span>' : B.armure ? '<span class="x">🛡</span>' : ''}`;
-      el.onclick = ev => { ev.stopPropagation(); if (runePres(ev)) return; ficheMonstre(m.t, m.elite); }; el.style.top = yPx(P.HAUT) + 'px'; box.appendChild(el); }
+      el.onclick = ev => { ev.stopPropagation(); if (gesteRecent() || runePres(ev)) return; ficheMonstre(m.t, m.elite); }; el.style.top = yPx(P.HAUT) + 'px'; box.appendChild(el); }
     el.style.left = xPx(m.c) + 'px'; el.style.top = Math.max(tl / 2, yPx(m.y)) + 'px';
     el.querySelector('.vie i').style.width = Math.max(0, 100 * m.pv / m.pvMax) + '%';
     el.classList.toggle('lent', m.lent > 0 || m.racine > 0); el.classList.toggle('poison', !!m.poison); el.classList.toggle('touche', m.touche > 0);
@@ -399,7 +399,7 @@ function runePres(ev) { const box = document.getElementById('monstres'); if (!bo
   const r = box.getBoundingClientRect(), x = ev.clientX - r.left, y = ev.clientY - r.top; let best = null, bd = G.cw * .6;
   for (const c of S.cristaux) { const d = Math.hypot(xPx(c.c) - x, yPx(c.y) - y); if (d < bd) { bd = d; best = c; } }
   if (!best) return false; ramasse(best.id); return true; }
-function ramasse(id) { if (!S || S.fini || pause || fen.innerHTML) return; const x = S.cristaux.find(c => c.id === id); if (!x) return; P.ramasser(S, id); son('rune'); try { navigator.vibrate && navigator.vibrate(15); } catch (e) {} joueFx(); rafraichit(); }
+function ramasse(id) { marqueGeste(); if (!S || S.fini || pause || fen.innerHTML) return; const x = S.cristaux.find(c => c.id === id); if (!x) return; P.ramasser(S, id); son('rune'); try { navigator.vibrate && navigator.vibrate(15); } catch (e) {} joueFx(); rafraichit(); }
 function appel() { if (!S || S.fini) return; const A = P.appelInfo(S); if (!A) return; P.appelVague(S); son('vague'); banniere(`⏩ Vague appelée ! +${A.bonus} ◆`, true); rafraichit(); }
 function choisitSort() { if (!S || S.fini) return; const h = P.SORTS_R[S.heros];
   if (S.sortT > 0) { dis(`${h.e} ${h.n} : encore ${Math.ceil(S.sortT)} s.`); return; }
@@ -416,7 +416,10 @@ function lanceSort(x, y) { const v = document.getElementById('visee'); if (v) v.
 function specialise(i, k) { const e = P.specialiser(S, i, k); fermer(); if (e) dis(e, true); else { son('tour-fusion'); banniere('✦ ' + P.SPE[S.cases[i].v][k].n); } rafraichit(); }
 function choisitBowling() { if (!S || !S.bowling) return; sel = sel && sel.t === 'bowling' ? null : { t:'bowling' }; dis(sel ? '🎳 Touche un chemin : le dé bowling y roule et écrase tout.' : ''); son('choisir'); rafraichit(); }
 function toucheVoie(c) { if (sel && sel.t === 'bowling') { P.bowling(S, c); sel = null; son('gros'); rafraichit(); return; } }
-function toucheCase(i) {
+// 28/11 : sur un téléphone, après un toucher sur ⬆+1, ✦ ou une rune (géré au « pointerdown »), le navigateur envoie quand même un « click »
+// à la case ou au monstre restés dessous : on l'ignore pendant 0,6 s, sinon la fiche s'ouvre par erreur
+let geste = 0; const marqueGeste = () => { geste = Date.now(); }; const gesteRecent = () => Date.now() - geste < 600;
+function toucheCase(i) { if (gesteRecent()) return;
   if (!S || S.fini) return; const t = S.cases[i]; let e = null;
   if (sel && sel.t === 'bowling') { toucheVoie(i % P.NC); return; }
   if (sel && sel.t === 'achat') { if (t) { e = 'Cette case est prise : choisis une case verte.'; } else { e = P.batir(S, sel.v, i); if (!e) { son('tour-batir'); dis(''); if (S.energie < P.prixDe(S, sel.v)) sel = null; } } }
