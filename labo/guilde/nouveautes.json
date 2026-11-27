@@ -1,5 +1,9 @@
 [
 {
+"v": "20261127-192437",
+"m": "Rempart : les tours et les monstres sont bien au milieu des chemins"
+},
+{
 "v": "20261127-192255",
 "m": "Rempart : les cases des tours s'arrêtent au-dessus du rempart"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261126-204239",
 "m": "Le carnet affiche ce que rapporte l'énigme du jour"
-},
-{
-"v": "20261126-204136",
-"m": "Le bouton Retour ramène au menu sans repasser par l'écran d'accueil"
 }
 ]
