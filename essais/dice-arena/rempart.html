@@ -161,7 +161,7 @@ const MOUSTACHE = {
 let G = null;
 function geometrie() {
   const pl = document.getElementById('plateau'); if (!pl) return null;
-  const W = pl.clientWidth, H = pl.clientHeight, RH = 26, cw = W / P.NC, ch = Math.min(cw * .92, (H - RH) * .52 / P.NR), TH = ch * P.NR, FH = H - RH - TH;
+  const W = pl.clientWidth, H = pl.clientHeight, RH = Math.round(H * .135), /* 27/11 : le rempart peint occupe le bas 13 % du fond : aucune case dessus */ cw = W / P.NC, ch = Math.min(cw * .92, (H - RH) * .52 / P.NR), TH = ch * P.NR, FH = H - RH - TH;
   return G = { W, H, RH, cw, ch, TH, FH };
 }
 const yPx = y => y >= 5 ? (P.HAUT - y) / (P.HAUT - 5) * G.FH : G.FH + (5 - y) / 5 * G.TH;
