@@ -12,7 +12,7 @@ const NC = 5, NR = 5;               // 5 chemins, 5 cases de tours par chemin (r
 const HAUT = 10;                    // les monstres naissent à y = 10 (cases), le rempart est à y = 0 ; les tours sont entre 0 et 5
 const R = {
   rempart:20, energieDepart:12 /* 27/11 nuit : 8 → 12, l'utilisateur manquait d'énergie au début */, energieMax:60, regenE:2.4 /* s par ◆ */, deDelai:8, desMax:3, jaugeMax:14,
-  niv:[0, 1, 1.75, 2.8, 4.2], nivMax:4, etoileMax:5, etoile:0.35, pouvoirRecharge:20, pouvoirNiv:2, etire:1.35 /* 28/11 : plus de calme entre les vagues (l'utilisateur : « j'ai besoin de temps de pause ») */,
+  niv:[0, 1, 1.75, 2.8, 4.2], nivMax:4, etoileMax:5, etoile:0.35, pouvoirRecharge:20, pouvoirNiv:2, etire:1 /* 28/11 : les temps de NIVEAUX sont écrits pour des niveaux de 4-5 min avec accalmies (avant : ×1,35) */,
   runeBonus:0.25, pv:5, nombre:3 /* 28/11 : 3 fois plus de monstres, chacun bien moins solide */, runeMax:3, puitsDelai:6, comboBonus:0.3, bowling:90,
   // 27/11 soir (plus d'action) : les runes ◆ à toucher, l'appel de la vague, le sort du héros
   suivi:0.9, cristalVie:6, cristalPuits:2, cristalMonstre:2, cristalChance:1 / 3, puitsDelaiC:10, appelMin:3, appelMax:8, sortRecharge:30, sortDepart:12,
@@ -107,19 +107,19 @@ const medailles = S => S.fini === 'gagne' ? (DEFIS[S.niveau] || []).filter(D => 
 const NIVEAUX = [
   { n:'La lisière', sortes:[3, 4], puits:false, bowling:false, runes:false, nouveau:'gobelin', f:0.68,
     debloque:'Tes premières tours : 🏹 les archers et 💣 le canon. Les dés font monter une tour de leur face.',
-    vagues:[[6, ['gobelin']], [20, ['gobelin', 'gobelin']], [38, ['gobelin', 'sanglier']], [58, ['gobelin', 'gobelin', 'gobelin']], [80, ['sanglier', 'gobelin', 'gobelin']], [104, ['sanglier', 'sanglier', 'gobelin', 'gobelin', 'gobelin']]] },
+    vagues:[[8, ['gobelin']], [24, ['gobelin', 'gobelin']], [42, ['gobelin', 'sanglier']], [62, ['gobelin', 'gobelin', 'gobelin', 'sanglier'], true], [100, ['gobelin', 'gobelin']], [118, ['sanglier', 'gobelin']], [136, ['gobelin', 'gobelin', 'sanglier']], [158, ['sanglier', 'sanglier', 'gobelin', 'gobelin', 'gobelin'], true], [200, ['gobelin', 'gobelin', 'sanglier']], [220, ['sanglier', 'gobelin', 'gobelin', 'gobelin']], [242, ['sanglier', 'sanglier', 'sanglier', 'gobelin', 'gobelin', 'gobelin'], true]] },
   { n:'Le gué des chauves-souris', sortes:[3, 4, 1], puits:true, bowling:false, runes:false, nouveau:'chauve', f:0.92,
     debloque:'Nouveau : ❄ la tour de givre, et 🔮 le puits de runes qui produit de l’énergie.',
-    vagues:[[6, ['gobelin']], [18, ['chauve', 'gobelin']], [34, ['sanglier', 'chauve']], [52, ['gobelin', 'gobelin', 'chauve']], [72, ['sanglier', 'chauve', 'chauve']], [94, ['sanglier', 'gobelin', 'gobelin', 'chauve']], [118, ['sanglier', 'sanglier', 'chauve', 'chauve', 'gobelin', 'gobelin']]] },
+    vagues:[[8, ['gobelin']], [24, ['chauve', 'gobelin']], [42, ['sanglier', 'chauve']], [62, ['gobelin', 'gobelin', 'chauve', 'sanglier'], true], [102, ['chauve', 'chauve']], [120, ['sanglier', 'gobelin', 'chauve']], [140, ['gobelin', 'gobelin', 'chauve', 'chauve']], [162, ['sanglier', 'chauve', 'chauve', 'gobelin', 'gobelin'], true], [205, ['sanglier', 'gobelin', 'gobelin', 'chauve']], [225, ['chauve', 'chauve', 'sanglier', 'gobelin']], [248, ['sanglier', 'sanglier', 'chauve', 'chauve', 'gobelin', 'gobelin'], true]] },
   { n:'Le pont du troll', sortes:[3, 4, 1, 2], puits:true, bowling:true, runes:false, nouveau:'bouclier', nouveaux:['bouclier', 'chaman'], miniBoss:'troll', f:0.47,
     debloque:'Nouveau : ☠ la tour de poison et 🎳 le dé bowling (un par niveau : il écrase tout un chemin). Et attention au chaman qui soigne !',
-    vagues:[[6, ['gobelin', 'gobelin']], [20, ['bouclier']], [36, ['chauve', 'bouclier', 'gobelin']], [54, ['chaman', 'sanglier', 'bouclier']], [74, ['sanglier*', 'chauve', 'gobelin']], [96, ['bouclier', 'chaman', 'bouclier', 'chauve']], [120, ['troll*', 'chaman', 'bouclier', 'gobelin', 'gobelin', 'chauve']]] },
+    vagues:[[8, ['gobelin', 'gobelin']], [24, ['bouclier']], [42, ['chauve', 'bouclier', 'gobelin']], [64, ['chaman', 'sanglier', 'bouclier', 'gobelin'], true], [104, ['sanglier*', 'chauve', 'gobelin']], [124, ['bouclier', 'chaman', 'chauve']], [146, ['bouclier', 'bouclier', 'gobelin', 'gobelin']], [168, ['troll', 'chaman', 'bouclier', 'chauve'], true], [212, ['sanglier', 'bouclier', 'chaman', 'gobelin']], [234, ['chauve', 'chauve', 'bouclier*', 'gobelin']], [258, ['troll*', 'chaman', 'bouclier', 'gobelin', 'gobelin', 'chauve'], true]] },
   { n:'La brume des spectres', sortes:[3, 4, 1, 2, 5, 6], puits:true, bowling:true, runes:false, nouveau:'spectre', nouveaux:['spectre'], f:0.6,
     debloque:'Nouveau : ⚡ la tour de foudre et 🗼 la grande tour.',
-    vagues:[[6, ['gobelin', 'chauve']], [20, ['spectre']], [36, ['bouclier', 'spectre']], [54, ['sanglier', 'chauve', 'spectre']], [74, ['troll', 'gobelin', 'gobelin']], [96, ['spectre', 'spectre', 'bouclier*']], [120, ['troll', 'sanglier*', 'spectre', 'chauve', 'gobelin', 'gobelin']], [146, ['bouclier', 'bouclier', 'spectre', 'spectre', 'chauve', 'chauve']]] },
+    vagues:[[8, ['gobelin', 'chauve']], [24, ['spectre']], [42, ['bouclier', 'spectre']], [64, ['sanglier', 'chauve', 'spectre', 'gobelin'], true], [104, ['troll', 'gobelin', 'gobelin']], [124, ['spectre', 'spectre', 'bouclier*']], [148, ['sanglier', 'chauve', 'chauve', 'spectre']], [172, ['troll', 'sanglier*', 'spectre', 'chauve', 'gobelin'], true], [216, ['bouclier', 'spectre', 'gobelin', 'gobelin']], [238, ['troll', 'spectre', 'chauve']], [262, ['bouclier', 'bouclier', 'spectre', 'spectre', 'chauve', 'chauve'], true]] },
   { n:'Le Titan de feu', sortes:[3, 4, 1, 2, 5, 6], puits:true, bowling:true, runes:true, nouveau:'golem', nouveaux:['mineur', 'golem'], boss:'titan', f:0.5,
     debloque:'Nouveau : les Tours-runes ! Une PAIRE de dés posée sur une case libre bâtit une Tour-rune qui renforce ses voisines. Et des mineurs qui creusent sous tes tours…',
-    vagues:[[6, ['gobelin', 'gobelin']], [20, ['golem']], [38, ['mineur', 'spectre', 'bouclier', 'chauve']], [58, ['troll', 'mineur', 'sanglier']], [80, ['golem', 'spectre', 'chaman', 'gobelin', 'gobelin']], [104, ['bouclier*', 'troll', 'mineur', 'chauve', 'chauve']], [130, ['titan', 'gobelin', 'gobelin']], [150, ['golem', 'spectre', 'mineur', 'bouclier']], [172, ['troll*', 'sanglier', 'chaman', 'chauve', 'gobelin']]] },
+    vagues:[[8, ['gobelin', 'gobelin']], [24, ['golem']], [44, ['mineur', 'spectre', 'bouclier', 'chauve']], [66, ['troll', 'mineur', 'sanglier', 'gobelin'], true], [108, ['golem', 'spectre', 'chaman', 'gobelin']], [130, ['bouclier*', 'troll', 'mineur', 'chauve']], [154, ['golem', 'spectre', 'mineur', 'bouclier', 'gobelin'], true], [198, ['troll*', 'sanglier', 'chaman', 'chauve']], [220, ['golem', 'mineur', 'spectre', 'gobelin']], [246, ['titan', 'gobelin', 'gobelin', 'chaman', 'chauve'], true]] },
 ];
 // ------------------------------------------------------------------------------- hasard à graine
 function graine(s) { let a = (s >>> 0) || 1; return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
@@ -146,6 +146,7 @@ function nouvelle(heros, niveau, o) {
     for (let j = 0; j < n; j++) { const m = liste[j % liste.length]; if (j >= liste.length && /titan/.test(m)) continue; S.file.push({ t:t0 * R.etire + j * pas + rng() * 1.2, m, vague:iv }); } });
   // 27/11 nuit : une vague compte TOUS ses monstres (avec R.nombre, elle en a 3 fois plus que sa liste) ; avant, elle était jugée finie au premier tiers
   S.vStat.forEach((V, iv) => { V.n = S.file.filter(x => x.vague === iv).length; });
+  S.grosses = L.vagues.map((v, k) => v[2] || k === L.vagues.length - 1 ? k : -1).filter(k => k >= 0); S.annoncees = [];
   S.file.sort((a, b) => a.t - b.t); S.nbVagues = L.vagues.length; S.fin = S.file[S.file.length - 1].t;
   S.vT = L.vagues.map((v, iv) => Math.min(...S.file.filter(x => x.vague === iv).map(x => x.t))); // le début de chaque vague (pour les drapeaux)
   return S;
@@ -302,8 +303,10 @@ function specialiser(S, i, k) {
 // Rien n'est montré au joueur ; une ligne « ⚖ » par vague dans le journal de la partie.
 // 27/11 nuit : maxN1 vaut pour les niveaux 1 ET 2 (ils ne durcissent jamais, retour de l'utilisateur battu au niveau 2)
 const ADAPT = { min:.8, max:1.25, maxN1:1, monte:.08, monteDoux:.04, baisse:.07, baisseFort:.1 };
+// 28/11 : après une grosse vague finie, si la suivante est encore loin, on annonce l'accalmie (le temps de bâtir)
+function calme(S, iv) { if (!S.grosses.includes(iv) || iv >= S.nbVagues - 1) return; const dt = Math.round(S.vT[iv + 1] - S.t); if (dt >= 10) { fx(S, { t:'calme', dt }); log(S, `🌿 Accalmie : ${dt} s avant la vague suivante.`); } }
 function bilanVague(S, iv) {
-  const V = S.vStat[iv]; if (V.fait) return; V.fait = true; if (!S.adaptOn) return;
+  const V = S.vStat[iv]; if (V.fait) return; V.fait = true; if (!S.adaptOn) { calme(S, iv); return; }
   const loin = V.morts.length ? V.morts.reduce((a, y) => a + y, 0) / V.morts.length : 0, avant = S.adapt; let txt;
   if (V.pertes >= 5) { S.adapt -= ADAPT.baisseFort; txt = 'pression forte → monstres moins forts'; }
   else if (V.pertes >= 3) { S.adapt -= ADAPT.baisse; txt = 'pression assez forte → monstres un peu moins forts'; }
@@ -314,6 +317,7 @@ function bilanVague(S, iv) {
   S.adapt = Math.max(ADAPT.min, Math.min(S.niveau <= 2 ? ADAPT.maxN1 : ADAPT.max, Math.round(S.adapt * 100) / 100));
   const l = `⚖ vague ${iv + 1} : ${txt} (${V.pertes} PV perdus, morts à ${loin.toFixed(1).replace('.', ',')} cases ; ×${avant.toFixed(2).replace('.', ',')} → ×${S.adapt.toFixed(2).replace('.', ',')})`;
   S.adaptLog.push({ v:iv + 1, pertes:V.pertes, loin, adapt:S.adapt }); log(S, l);
+  calme(S, iv);
 }
 const finiVague = (S, m) => { const V = S.vStat[m.vague]; if (!V) return; V.finis++; if (V.finis >= V.n) bilanVague(S, m.vague); };
 // 27/11 soir (retour de l'utilisateur : « quasiment jamais de dé flèche ») : un TIRAGE PLUS JUSTE.
@@ -417,7 +421,8 @@ function etape(S) {
   const eteintes = S.cristaux.filter(x => x.t <= 0); if (eteintes.length) { S.perdus += eteintes.length; S.cristaux = S.cristaux.filter(x => x.t > 0); eteintes.forEach(x => fx(S, { t:'eteint', id:x.id })); }
   for (const w of S.murs) w.t -= PAS; S.murs = S.murs.filter(w => w.t > 0);
   // les annonces de vague : « une énorme vague approche » 5 s avant la dernière
-  const tg = S.vT[S.nbVagues - 1]; if (!S.annonce && S.t >= tg - 5 && S.t < tg + 1) { S.annonce = true; fx(S, { t:'annonce' }); }
+  // 28/11 : chaque GROSSE vague (3e champ « true » dans NIVEAUX) est annoncée 8 s avant ; après elle, une accalmie (voir bilanVague)
+  S.grosses.forEach(k => { const tg = S.vT[k]; if (!S.annoncees.includes(k) && S.t >= tg - 8 && S.t < tg + 1) { S.annoncees.push(k); fx(S, { t:'annonce', derniere:k === S.nbVagues - 1, n:S.grosses.indexOf(k) + 1, sur:S.grosses.length }); } });
   // les apparitions (27/11 soir : chemin tiré à l'avance pour les monstres annoncés)
   for (const x of S.file) { if (x.t - S.t > ANNONCE_S) break; if (x.c == null && annonceOn(S, x)) x.c = Math.floor(S.rng() * NC); }
   while (S.file.length && S.file[0].t <= S.t) { const x = S.file.shift(); if (x.vague > S.vagueVue) { S.vagueVue = x.vague; fx(S, { t:'vague', n:x.vague + 1, sur:S.nbVagues }); } apparait(S, x); }
