@@ -471,7 +471,10 @@ const ENTRAINEMENTS = [['duel', 'Le Duel (le tutoriel)', 'duel.html?tuto=1'], ['
       // le bouton « Fermer » de la fenêtre est caché (pas supprimé) : la croix le déclenche, pour garder ce qu'il fait en plus (redessiner…)
       let fb = null; f.querySelectorAll('button').forEach(b => { if (b.classList.contains('xferme') || b.classList.contains('fh-x')) return; if (/^fermer$/i.test(b.textContent.trim())) { fb = fb || b; b.style.display = 'none'; const p = b.parentElement; if (p && p.classList.contains('choixh') && ![...p.querySelectorAll('button')].some(x => x.style.display !== 'none')) p.style.display = 'none'; } });
       const fx = f.querySelector(':scope > .fh-x'); if (fx && fb && !fx.dataset.relie) { fx.dataset.relie = '1'; fx.onclick = e => { e.stopPropagation(); fb.click(); }; }
-      if (!f.querySelector(':scope > .fh-x, :scope > .xferme')) { const b = document.createElement('button'); b.className = 'xferme'; b.setAttribute('aria-label', 'Fermer'); b.textContent = '✕'; b.onclick = e => { e.stopPropagation(); const h = [...f.querySelectorAll('button')].find(x => x.style.display === 'none' && /^fermer$/i.test(x.textContent.trim())); if (h) h.click(); else voile.click(); }; f.prepend(b); }
+      // 27/11 (l'utilisateur : « une croix dessinée sous l'autre ») : si la fenêtre a déjà SA croix (✕ propre à la page), on n'en ajoute pas une deuxième
+      const aSaCroix = [...f.querySelectorAll('button')].some(x => !x.classList.contains('xferme') && /^[✕×✖]$/.test(x.textContent.trim()));
+      f.querySelectorAll(':scope > .xferme').forEach(x => { if (aSaCroix) x.remove(); });
+      if (!aSaCroix && !f.querySelector(':scope > .fh-x, :scope > .xferme')) { const b = document.createElement('button'); b.className = 'xferme'; b.setAttribute('aria-label', 'Fermer'); b.textContent = '✕'; b.onclick = e => { e.stopPropagation(); const h = [...f.querySelectorAll('button')].find(x => x.style.display === 'none' && /^fermer$/i.test(x.textContent.trim())); if (h) h.click(); else voile.click(); }; f.prepend(b); }
     });
   };
   const go = () => { traite(); new MutationObserver(traite).observe(document.body, { childList:true, subtree:true }); };
