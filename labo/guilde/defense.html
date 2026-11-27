@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261127-125835"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
+<head><meta name="guilde-version" content="20261127-131026"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="robots" content="noindex">
@@ -92,6 +92,11 @@
   #app.jeu .main { padding:2px 52px 2px 0; } /* la place du ⚙️ en bas à droite */ #app.jeu .carte { flex-basis:30%; font-size:.6em; padding:3px 4px; }
   .msg { min-height:2.4em; text-align:center; font-size:.85em; color:var(--doux); margin:5px 0; }
   .msg.err { color:var(--rouge); }
+  .infoB { border:1px solid var(--or, #f5c451); background:rgba(245,196,81,.15); color:inherit; border-radius:9px; padding:1px 7px; font:inherit; font-weight:700; margin-right:4px; }
+  .ficheT h2 small { font-size:.6em; color:var(--doux); } .ftRole { font-weight:700; color:#f5c451; margin:2px 0 6px; }
+  .ftNiv { display:flex; gap:6px; justify-content:center; margin:4px 0 8px; } .ftN { display:flex; flex-direction:column; align-items:center; padding:4px 8px; border-radius:9px; background:rgba(255,255,255,.06); font-size:.8em; }
+  .ftN b { font-size:1.35em; } .ftN.on { background:rgba(245,196,81,.25); outline:2px solid #f5c451; }
+  .ficheL { display:grid; gap:6px; } .ficheL button { display:flex; gap:10px; align-items:center; text-align:left; padding:6px 10px; border-radius:11px; } .ficheL .fe { font-size:1.6em; } .ficheL small { display:block; opacity:.8; }
   .des { display:flex; gap:6px; justify-content:center; margin:4px 0; }
   .de { width:52px; height:52px; border-radius:10px; background:#0005; border:2px solid #3e3370; padding:3px; position:relative; }
   .de img { width:100%; height:100%; object-fit:contain; } .de.sel { border-color:var(--or); transform:translateY(-6px); box-shadow:0 0 10px var(--or); } .de.pose { opacity:.18; }
@@ -245,7 +250,7 @@ function rendu() {
   <div class="entete">${imgD()}
     <div class="bloc">🚪 Porte <b>${D.porte}</b>/${D.porteMax}<div class="barre"><i style="width:${D.porte / D.porteMax * 100}%"></i></div></div>
     <div class="bloc">⚡ Ultime ${D.ultimeFait ? '✔' : `${D.jauge}/${DEF.jaugeMax}`}<div class="barre jauge"><i style="width:${D.ultimeFait ? 100 : D.jauge / DEF.jaugeMax * 100}%"></i></div></div>
-    <div class="bas icones"><button onclick="regles()" title="Règles">📜</button><button onclick="journal()" title="Journal">📖</button><button onclick="quitter()" title="Quitter">⌂</button></div>
+    <div class="bas icones"><button onclick="toutesTours()" title="Les tours">🏰</button><button onclick="regles()" title="Règles">📜</button><button onclick="journal()" title="Journal">📖</button><button onclick="quitter()" title="Quitter">⌂</button></div>
     <div style="text-align:right"><span class="p">🌊 ${D.sansFin ? `${D.vague + 1} ♾` : `${Math.min(D.vague + 1, VAGUES.length)}/${VAGUES.length}`}</span><br><span class="p">◆ ${D.pc} PC</span></div></div>
   ${bandeVague()}
   <div class="zoneP">${PD ? '<div class="plateauD">' : ''}<div class="${PD ? 'cheminD' : 'chemin'}">${chemin.map(({ r, col }) => `<div class="cc ${okPiege(r, col) ? 'ok' : ''}" style="${PD ? posCC(r, col) : ''}" onclick="toucheChemin(event, ${r}, ${col})">${piegeHTML(r, col)}${D.monstres.filter(m => m.row === r && m.col === col).map(m => { const M = MONSTRES[m.t];
@@ -308,6 +313,25 @@ function joueFx() {
   });
 }
 
+// 27/11 (demande de l'utilisateur) : la fiche d'une tour, au toucher d'une tour et AVANT de la bâtir (bouton ⓘ du dé choisi, bouton 🏰 en haut)
+const ROLE_T = { 1:'Ralentit les monstres', 2:'Dégâts qui durent', 3:'Tire vite, voit les volants', 4:'Touche plusieurs monstres', 5:'L’éclair rebondit', 6:'Le plus gros coup' };
+function degatsSorte(v, niv, c) { return c != null && c >= 0 ? puissanceTour(D, c, { v, niv }) : Math.max(1, Math.round(BASE_NIV[niv] * SORTES[v].mul)); }
+function ficheTourH(v, c, t) {
+  const S = SORTES[v], niv = t ? t.niv : 0;
+  const lignes = [1, 2, 3, 4].slice(0, NIV_MAX).map(n => `<span class="ftN ${n === niv ? 'on' : ''}">niv.&nbsp;${n}<b>${degatsSorte(v, n, t ? c : null)}</b></span>`).join('');
+  return `<div class="ficheT"><h2>${S.e} ${S.n}${t ? ` <small>niv.&nbsp;${t.niv}</small>` : ''}</h2>
+    <p class="ftRole">${ROLE_T[v]}</p><p>${S.d}</p>
+    <p class="doux">Dégâts par tir${t ? ' (ici, avec les bonus de cette case)' : ''} :</p><div class="ftNiv">${lignes}</div>
+    <p class="doux">🎲 Elle vient des dés qui font <b>${v}</b>. Bâtir : ${DEF.coutBatir}&nbsp;PC. Un autre dé de ${v} posé dessus la monte d’un niveau (${NIV_MAX} au plus). Deux tours au niveau ${NIV_MAX} côte à côte deviennent une Rune.</p></div>`;
+}
+function infoTour(v, c) {
+  const t = c != null && c >= 0 ? D.rempart[c] : null;
+  if (t && t.rune) return fenetre(`<div class="ficheT"><h2>✨ ${NOM_RUNE(t.rv)} ${DHEROS[D.heros].rune.n}</h2><p>Elle ne tire pas : elle renforce les tours voisines (+${Math.round((D.heros === 'gorm' ? 1 : DEF.runeSoutien) * t.rv * 100)}&nbsp;% de dégâts).</p><p>${DHEROS[D.heros].rune.d}</p></div><div class="choixh"><button onclick="fermer()">Compris</button></div>`);
+  fenetre(ficheTourH(v, c, t) + `<div class="choixh"><button class="or" onclick="fermer()">Compris</button></div>`);
+}
+function toutesTours() {
+  fenetre(`<h2>🏰 Les tours</h2><div class="ficheL">${Object.entries(SORTES).map(([v, S]) => `<button onclick="infoTour(${v})"><span class="fe">${S.e}</span><span><b>${v} · ${S.n}</b><small>${ROLE_T[v]} · ${degatsSorte(+v, 1)} par tir au niv.&nbsp;1</small></span></button>`).join('')}</div><p class="doux" style="font-size:.85em">Touche une tour pour sa fiche complète. Sur le plateau, touche une tour bâtie pour voir la sienne.</p><div class="choixh"><button onclick="fermer()">Fermer</button></div>`);
+}
 // ---------------------------------------------------------------- les gestes
 function toucheDe(i) {
   if (D.lanceT !== D.tour || animeD) return;
@@ -315,7 +339,7 @@ function toucheDe(i) {
   if (attente && attente.cible === 'de') { if (sel.includes(d)) return; finit({ d }); return; }
   if (attente) return;
   selTour = -1; sel = sel.includes(d) ? sel.filter(x => x !== d) : [...sel, d];
-  dis(sel.length === 1 ? `Un ${d.v} = ${SORTES[d.v].e} ${SORTES[d.v].n.toLowerCase()} : touche une case verte pour la bâtir (${DEF.coutBatir} PC), une tour de la même sorte pour la monter d’un niveau, un chemin pour un piège, ou une action en vert.` : sel.length ? 'Les actions en vert acceptent ces dés.' : '');
+  dis(sel.length === 1 ? `<button class="infoB" onclick="infoTour(${d.v})">ⓘ ${SORTES[d.v].e} ${SORTES[d.v].n}</button> touche une case verte pour la bâtir (${DEF.coutBatir} PC), une tour de la même sorte pour la monter d’un niveau, un chemin pour un piège, ou une action en vert.` : sel.length ? 'Les actions en vert acceptent ces dés.' : '');
   rendu();
 }
 function toucheCase(c) {
@@ -329,6 +353,7 @@ function toucheCase(c) {
     if (e) dis(e, true); else dis(t ? (D.rempart[c].rune ? `✨ ${NOM_RUNE(D.rempart[c].rv)} ${DHEROS[D.heros].rune.n} !` : `Fusion : ${nomTourD(D.rempart[c])}.`) : 'Tour déplacée.'); rendu(); return;
   }
   if (t) { selTour = selTour === c ? -1 : c; sel = [];
+    if (selTour >= 0) infoTour(t.v, c);
     dis(selTour >= 0 ? `${t.rune ? `✨ ${NOM_RUNE(t.rv)} ${DHEROS[D.heros].rune.n} (ne tire pas) : ${DHEROS[D.heros].rune.d}` : `${SORTES[t.v].e} ${nomTourD(t)} : ${puissanceTour(D, c, t)} par tir. ${SORTES[t.v].d}${t.niv < NIV_MAX ? ` Un dé de ${t.v} la monte d’un niveau.` : ' Niveau max : à côté d’une autre tour au niveau max, elle devient une Rune.'}`} Touche une tour voisine en vert pour fusionner${D.deplace ? '' : ', ou une case libre voisine pour la déplacer'}.` : ''); rendu(); return; }
   dis('Choisis d’abord UN dé, puis cette case pour bâtir.'); rendu();
 }

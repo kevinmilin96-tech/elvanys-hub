@@ -1,5 +1,9 @@
 [
 {
+"v": "20261127-131026",
+"m": "Défense de la porte : touche une tour pour voir sa fiche (ce qu'elle fait, ses dégâts par niveau) ; le bouton ⓘ montre la tour avant de la bâtir, et 🏰 en haut les liste toutes."
+},
+{
 "v": "20261126-210246",
 "m": "Fenêtre des amis allégée"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261125-212330",
 "m": "Carnet : « Si tu as le temps » se récupère avec le cadeau (+30 XP, 30 or, 20 poussière par jour)"
-},
-{
-"v": "20261125-211242",
-"m": "Défense : le défi du jour demande 4 pièges au lieu de 6"
 }
 ]
