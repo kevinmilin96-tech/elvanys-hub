@@ -77,7 +77,9 @@ const FONDS = {
   neige:['Village enneigé', 'url(fonds/carte-neige.webp?v=1) center/cover, #1a2640', { alm:['fond', 'neige'], avenir:1 }],
 };
 // 25/11 : les cadres peints des titres (cadres/profil-<titre>.webp), posés par-dessus le portrait
-const CADRES_PEINTS = ['hiver1', 'veteran', 'abysses', 'diplome', 'odyssee', 'neant', 'traversee', 'rempart', 'sceaux', 'profondeurs', 'chroniques', 'fosse', 'sphinx', 'apprenti', 'compagnon', 'maitre', 'champion', 'legende', 'archimage'];
+const CADRES_PEINTS = ['serie7', 'serie30', 'serie100', 'fidele30', 'fidele100', 'hiver1', 'veteran', 'abysses', 'diplome', 'odyssee', 'neant', 'traversee', 'rempart', 'sceaux', 'profondeurs', 'chroniques', 'fosse', 'sphinx', 'apprenti', 'compagnon', 'maitre', 'champion', 'legende', 'archimage'];
+// 27/11 : un cadre peint par titre, sauf les titres des succès (s-…) qui partagent « succes » et ceux des points de succès (sp-…) qui partagent « archiviste »
+const cadrePeint = t => !t ? null : CADRES_PEINTS.includes(t) ? t : /^sp-/.test(t) ? 'archiviste' : /^s-/.test(t) ? 'succes' : null;
 // 26/11 : les cadres qui ont un ruban peint : le mot que le jeu écrit dessus (profil.html, .ruban)
 const CADRES_RUBAN = {}; // 26/11 (l'utilisateur) : pas de mot écrit par le jeu sur un ruban : rien, ou c'est Gemini qui l'écrit
 // 25/11 : les emblèmes peints (ui/emblemes/emb-<clé>.webp), l'émoji sinon
