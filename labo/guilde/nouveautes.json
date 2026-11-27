@@ -1,5 +1,9 @@
 [
 {
+"v": "20261127-235257",
+"m": "Rempart : plus d'énergie au départ (12 ◆) et des premières vagues moins nombreuses, le temps de bâtir"
+},
+{
 "v": "20261127-234802",
 "m": "Rempart : les médailles déjà gagnées restent allumées, une rune sur un monstre ou sur le puits se ramasse d'un toucher, et le niveau 2 ne devient plus plus dur en cours de partie"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261127-132243",
 "m": "Défense de la porte : au niveau 4, un dé de la même face ajoute une étoile ★ à la tour (+35 % de dégâts, 5 au plus, effet renforcé à 5 étoiles). La Rune reste un choix."
-},
-{
-"v": "20261127-131452",
-"m": "Défense de la porte : avant de fusionner deux tours, une fenêtre montre ce qu'elles deviennent (niveau et dégâts, ou une Rune qui ne tire plus) et demande de confirmer."
 }
 ]

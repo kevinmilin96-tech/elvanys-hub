@@ -11,7 +11,7 @@ const PAS = 0.1;                    // pas de temps fixe (secondes)
 const NC = 5, NR = 5;               // 5 chemins, 5 cases de tours par chemin (rangée 0 = contre le rempart, 4 = la plus haute)
 const HAUT = 10;                    // les monstres naissent à y = 10 (cases), le rempart est à y = 0 ; les tours sont entre 0 et 5
 const R = {
-  rempart:20, energieDepart:8, energieMax:60, regenE:2.4 /* s par ◆ */, deDelai:8, desMax:3, jaugeMax:14,
+  rempart:20, energieDepart:12 /* 27/11 nuit : 8 → 12, l'utilisateur manquait d'énergie au début */, energieMax:60, regenE:2.4 /* s par ◆ */, deDelai:8, desMax:3, jaugeMax:14,
   niv:[0, 1, 1.75, 2.8, 4.2], nivMax:4, etoileMax:5, etoile:0.35, pouvoirRecharge:20,
   runeBonus:0.25, pv:5, nombre:3 /* 28/11 : 3 fois plus de monstres, chacun bien moins solide */, runeMax:3, puitsDelai:6, comboBonus:0.3, bowling:90,
   // 27/11 soir (plus d'action) : les runes ◆ à toucher, l'appel de la vague, le sort du héros
@@ -142,7 +142,7 @@ function nouvelle(heros, niveau, o) {
   // 28/11 (l'utilisateur : « le gobelin passe large » devant une tour niveau 1) : des monstres MOINS SOLIDES mais PLUS NOMBREUX (R.nombre), comme
   // Plants vs Zombies : une tour de base tue un monstre de base sur son chemin ; la difficulté vient du nombre et des chemins à couvrir.
   const NB = +(typeof process !== 'undefined' && process.env && process.env.NB) || R.nombre || 1;
-  L.vagues.forEach(([t0, liste], iv) => { const n = Math.max(liste.length, Math.round(liste.length * NB)), pas = (iv === L.vagues.length - 1 ? 1.6 : 2.6) * liste.length / n;
+  L.vagues.forEach(([t0, liste], iv) => { const n = Math.max(liste.length, Math.round(liste.length * (iv < 2 ? Math.min(NB, 2) : NB))), /* 27/11 nuit : les 2 premières vagues ×2 seulement, le temps de bâtir */ pas = (iv === L.vagues.length - 1 ? 1.6 : 2.6) * liste.length / n;
     for (let j = 0; j < n; j++) { const m = liste[j % liste.length]; if (j >= liste.length && /titan/.test(m)) continue; S.file.push({ t:t0 + j * pas + rng() * 1.2, m, vague:iv }); } });
   // 27/11 nuit : une vague compte TOUS ses monstres (avec R.nombre, elle en a 3 fois plus que sa liste) ; avant, elle était jugée finie au premier tiers
   S.vStat.forEach((V, iv) => { V.n = S.file.filter(x => x.vague === iv).length; });
