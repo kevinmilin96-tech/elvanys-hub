@@ -13,7 +13,7 @@ const HAUT = 10;                    // les monstres naissent à y = 10 (cases), 
 const R = {
   rempart:20, energieDepart:8, energieMax:60, regenE:2.4 /* s par ◆ */, deDelai:8, desMax:3, jaugeMax:14,
   niv:[0, 1, 1.75, 2.8, 4.2], nivMax:4, etoileMax:5, etoile:0.35, pouvoirRecharge:20,
-  runeBonus:0.25, pv:5, runeMax:3, puitsDelai:6, comboBonus:0.3, bowling:90,
+  runeBonus:0.25, pv:5, nombre:3 /* 28/11 : 3 fois plus de monstres, chacun bien moins solide */, runeMax:3, puitsDelai:6, comboBonus:0.3, bowling:90,
   // 27/11 soir (plus d'action) : les runes ◆ à toucher, l'appel de la vague, le sort du héros
   suivi:0.9, cristalVie:6, cristalPuits:2, cristalMonstre:2, cristalChance:1 / 3, puitsDelaiC:10, appelMin:3, appelMax:8, sortRecharge:30, sortDepart:12,
 };
@@ -105,19 +105,19 @@ const medailles = S => S.fini === 'gagne' ? (DEFIS[S.niveau] || []).filter(D => 
 // ------------------------------------------------------------------------------- les 5 niveaux du premier monde
 // vagues : [début (s), [monstres…]] ; « * » = élite ; la dernière vague est la « grande vague » (et le boss au niveau 5)
 const NIVEAUX = [
-  { n:'La lisière', sortes:[3, 4], puits:false, bowling:false, runes:false, nouveau:'gobelin', f:2.1,
+  { n:'La lisière', sortes:[3, 4], puits:false, bowling:false, runes:false, nouveau:'gobelin', f:0.68,
     debloque:'Tes premières tours : 🏹 les archers et 💣 le canon. Les dés font monter une tour de leur face.',
     vagues:[[6, ['gobelin']], [20, ['gobelin', 'gobelin']], [38, ['gobelin', 'sanglier']], [58, ['gobelin', 'gobelin', 'gobelin']], [80, ['sanglier', 'gobelin', 'gobelin']], [104, ['sanglier', 'sanglier', 'gobelin', 'gobelin', 'gobelin']]] },
-  { n:'Le gué des chauves-souris', sortes:[3, 4, 1], puits:true, bowling:false, runes:false, nouveau:'chauve', f:2.05,
+  { n:'Le gué des chauves-souris', sortes:[3, 4, 1], puits:true, bowling:false, runes:false, nouveau:'chauve', f:0.92,
     debloque:'Nouveau : ❄ la tour de givre, et 🔮 le puits de runes qui produit de l’énergie.',
     vagues:[[6, ['gobelin']], [18, ['chauve', 'gobelin']], [34, ['sanglier', 'chauve']], [52, ['gobelin', 'gobelin', 'chauve']], [72, ['sanglier', 'chauve', 'chauve']], [94, ['sanglier', 'gobelin', 'gobelin', 'chauve']], [118, ['sanglier', 'sanglier', 'chauve', 'chauve', 'gobelin', 'gobelin']]] },
-  { n:'Le pont du troll', sortes:[3, 4, 1, 2], puits:true, bowling:true, runes:false, nouveau:'bouclier', nouveaux:['bouclier', 'chaman'], miniBoss:'troll', f:1.04,
+  { n:'Le pont du troll', sortes:[3, 4, 1, 2], puits:true, bowling:true, runes:false, nouveau:'bouclier', nouveaux:['bouclier', 'chaman'], miniBoss:'troll', f:0.47,
     debloque:'Nouveau : ☠ la tour de poison et 🎳 le dé bowling (un par niveau : il écrase tout un chemin). Et attention au chaman qui soigne !',
     vagues:[[6, ['gobelin', 'gobelin']], [20, ['bouclier']], [36, ['chauve', 'bouclier', 'gobelin']], [54, ['chaman', 'sanglier', 'bouclier']], [74, ['sanglier*', 'chauve', 'gobelin']], [96, ['bouclier', 'chaman', 'bouclier', 'chauve']], [120, ['troll*', 'chaman', 'bouclier', 'gobelin', 'gobelin', 'chauve']]] },
-  { n:'La brume des spectres', sortes:[3, 4, 1, 2, 5, 6], puits:true, bowling:true, runes:false, nouveau:'spectre', nouveaux:['spectre'], f:1.02,
+  { n:'La brume des spectres', sortes:[3, 4, 1, 2, 5, 6], puits:true, bowling:true, runes:false, nouveau:'spectre', nouveaux:['spectre'], f:0.6,
     debloque:'Nouveau : ⚡ la tour de foudre et 🗼 la grande tour.',
     vagues:[[6, ['gobelin', 'chauve']], [20, ['spectre']], [36, ['bouclier', 'spectre']], [54, ['sanglier', 'chauve', 'spectre']], [74, ['troll', 'gobelin', 'gobelin']], [96, ['spectre', 'spectre', 'bouclier*']], [120, ['troll', 'sanglier*', 'spectre', 'chauve', 'gobelin', 'gobelin']], [146, ['bouclier', 'bouclier', 'spectre', 'spectre', 'chauve', 'chauve']]] },
-  { n:'Le Titan de feu', sortes:[3, 4, 1, 2, 5, 6], puits:true, bowling:true, runes:true, nouveau:'golem', nouveaux:['mineur', 'golem'], boss:'titan', f:.85,
+  { n:'Le Titan de feu', sortes:[3, 4, 1, 2, 5, 6], puits:true, bowling:true, runes:true, nouveau:'golem', nouveaux:['mineur', 'golem'], boss:'titan', f:0.5,
     debloque:'Nouveau : les Tours-runes ! Une PAIRE de dés posée sur une case libre bâtit une Tour-rune qui renforce ses voisines. Et des mineurs qui creusent sous tes tours…',
     vagues:[[6, ['gobelin', 'gobelin']], [20, ['golem']], [38, ['mineur', 'spectre', 'bouclier', 'chauve']], [58, ['troll', 'mineur', 'sanglier']], [80, ['golem', 'spectre', 'chaman', 'gobelin', 'gobelin']], [104, ['bouclier*', 'troll', 'mineur', 'chauve', 'chauve']], [130, ['titan', 'gobelin', 'gobelin']], [150, ['golem', 'spectre', 'mineur', 'bouclier']], [172, ['troll*', 'sanglier', 'chaman', 'chauve', 'gobelin']]] },
 ];
@@ -139,7 +139,11 @@ function nouvelle(heros, niveau, o) {
   L.vagues.forEach((v, iv) => { S.vStat[iv].n = v[1].length; });
   if (heros === 'aldric') { S.rempart += 3; S.rempartMax += 3; }
   // la file des apparitions : chaque vague se répand sur quelques secondes, chemins au hasard
-  L.vagues.forEach(([t0, liste], iv) => liste.forEach((m, j) => S.file.push({ t:t0 + j * (iv === L.vagues.length - 1 ? 1.6 : 2.6) + rng() * 1.2, m, vague:iv })));
+  // 28/11 (l'utilisateur : « le gobelin passe large » devant une tour niveau 1) : des monstres MOINS SOLIDES mais PLUS NOMBREUX (R.nombre), comme
+  // Plants vs Zombies : une tour de base tue un monstre de base sur son chemin ; la difficulté vient du nombre et des chemins à couvrir.
+  const NB = +(typeof process !== 'undefined' && process.env && process.env.NB) || R.nombre || 1;
+  L.vagues.forEach(([t0, liste], iv) => { const n = Math.max(liste.length, Math.round(liste.length * NB)), pas = (iv === L.vagues.length - 1 ? 1.6 : 2.6) * liste.length / n;
+    for (let j = 0; j < n; j++) { const m = liste[j % liste.length]; if (j >= liste.length && /titan/.test(m)) continue; S.file.push({ t:t0 + j * pas + rng() * 1.2, m, vague:iv }); } });
   S.file.sort((a, b) => a.t - b.t); S.nbVagues = L.vagues.length; S.fin = S.file[S.file.length - 1].t;
   S.vT = L.vagues.map((v, iv) => Math.min(...S.file.filter(x => x.vague === iv).map(x => x.t))); // le début de chaque vague (pour les drapeaux)
   return S;
@@ -315,12 +319,20 @@ function tireDe(S) {
 }
 // ---------------------------------------------------------------------- le temps qui passe
 const M = m => MONSTRES[m.t];
+// un chemin défendu = au moins une tour qui tire (pas un puits, pas une Tour-rune)
+const defendu = (S, c) => { for (let r = 0; r < NR; r++) { const t = S.cases[ix(c, r)]; if (t && !t.puits && !t.rune) return true; } return false; };
+// 27/11 soir : le chemin du prochain monstre est annoncé 5 s avant (pour apprendre)
+const ANNONCE_S = 5;
+const annonceOn = () => true; // 28/11 (l'utilisateur : « aucune indication au début ») : à tous les niveaux
+function annonces(S) { return S.file.filter(x => x.c != null && x.t > S.t).map(x => ({ c:x.c, dt:x.t - S.t, m:x.m.replace('*', '') })); }
 function apparait(S, x) {
   const elite = x.m.endsWith('*'), t = elite ? x.m.slice(0, -1) : x.m, B = MONSTRES[t];
   const ad = B.boss ? Math.max(.9, Math.min(1.1, S.adapt)) : S.adapt; // la difficulté qui s'adapte (le boss : ±10 % au plus)
-  const c = Math.floor(S.rng() * NC), pv = Math.round(B.pv * (B.boss ? S.fBoss : S.f) * (elite ? ELITE.pv : 1) * ad);
+  const c = x.c != null ? x.c : Math.floor(S.rng() * NC), pv = Math.round(B.pv * (B.boss ? S.fBoss : S.f) * (elite ? ELITE.pv : 1) * ad);
   const m = { id:++MID, t, c, y:HAUT, pv, pvMax:pv, elite, lent:0, poison:null, racine:0, change:B.boss ? 14 : 0, vague:x.vague };
   S.monstres.push(m); fx(S, { t:'arrive', id:m.id });
+  // 27/11 soir (l'utilisateur perdait des PV sans comprendre) : un monstre qui descend un chemin SANS tour qui tire est signalé en haut du chemin
+  if (!B.boss && !defendu(S, c)) fx(S, { t:'vide', c });
   if (!S.vus[t]) { S.vus[t] = 1; fx(S, { t:'nouveau', m:t }); }
   if (x.vague === S.nbVagues - 1 && !S.grande) { S.grande = true; fx(S, { t:'grande' }); }
   if (B.boss) { fx(S, { t:'boss', m:t }); log(S, `👑 ${B.n} arrive !`); }
@@ -397,7 +409,8 @@ function etape(S) {
   for (const w of S.murs) w.t -= PAS; S.murs = S.murs.filter(w => w.t > 0);
   // les annonces de vague : « une énorme vague approche » 5 s avant la dernière
   const tg = S.vT[S.nbVagues - 1]; if (!S.annonce && S.t >= tg - 5 && S.t < tg + 1) { S.annonce = true; fx(S, { t:'annonce' }); }
-  // les apparitions
+  // les apparitions (27/11 soir : chemin tiré à l'avance pour les monstres annoncés)
+  for (const x of S.file) { if (x.t - S.t > ANNONCE_S) break; if (x.c == null && annonceOn(S, x)) x.c = Math.floor(S.rng() * NC); }
   while (S.file.length && S.file[0].t <= S.t) { const x = S.file.shift(); if (x.vague > S.vagueVue) { S.vagueVue = x.vague; fx(S, { t:'vague', n:x.vague + 1, sur:S.nbVagues }); } apparait(S, x); }
   // les tours
   S.cases.forEach((t, i) => {
@@ -445,6 +458,6 @@ const posVague = (S, k) => Math.min(1, S.vT[k] / (S.fin + 8)); // la place du dr
 const API = { PAS, NC, NR, HAUT, R, SORTES, PUITS, EFFET_PAIRE, POUVOIRS, MONSTRES, ELITE, HEROS_R, NIVEAUX, SORTS_R, SPE, DEFIS,
   nouvelle, batir, deplacer, demolir, rendDemolir, poserDe, poserPaire, jeterDe, bowling, ultime, pouvoir, etape, avance,
   ramasser, monterEnergie, acheterDe, prixMonter, PRIX_DE, appelInfo, appelVague, sort, specialiser, medailles, sousTerre, revele, posVague,
-  etoiles, avancement, prixDe, nomTour, voisins, comboChemin, runesAutour, degat, cadence, ix };
+  annonces, defendu, etoiles, avancement, prixDe, nomTour, voisins, comboChemin, runesAutour, degat, cadence, ix };
 if (typeof module !== 'undefined' && module.exports) module.exports = API; else racine.REMPART = API;
 })(typeof window !== 'undefined' ? window : globalThis);
