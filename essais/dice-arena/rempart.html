@@ -110,7 +110,18 @@
   #besace .bs { width:38px; height:38px; border-radius:10px; border:2px solid #c9a46a; background:#2a1d0ee6; font-size:21px; padding:0; color:#fff; position:relative; display:flex; align-items:center; justify-content:center; }
   #besace .bs.vide { opacity:.45; font-size:16px; border-style:dashed; } #besace .bs.on { border-color:var(--or); box-shadow:0 0 10px var(--or); }
   #besace .bs.de { border-color:#7dffb0; box-shadow:0 0 12px #7dffb0; animation:pulse 1s infinite; } #besace .bs small { position:absolute; right:-4px; top:-4px; font-size:11px; background:#000c; border-radius:6px; padding:0 3px; }
-  .deObjet { position:absolute; left:50%; top:45%; z-index:40; width:70px; height:70px; margin:-35px; pointer-events:none; animation:roulD .8s ease-out; } .deObjet img { width:100%; height:100%; }
+  .deObjet { position:absolute; left:50%; top:45%; z-index:40; width:80px; height:80px; margin:-40px; pointer-events:none; animation:deVol .75s cubic-bezier(.3,1.4,.5,1); filter:drop-shadow(0 6px 8px #000a); } .deObjet img { width:100%; height:100%; }
+  .deObjet.fini { animation:dePop .35s ease-out; filter:drop-shadow(0 0 18px #ffd76b); }
+  @keyframes deVol { 0% { transform:translate(-120px, 160px) rotate(-540deg) scale(.4); } 70% { transform:translate(6px, -10px) rotate(20deg) scale(1.1); } 100% { transform:none; } }
+  @keyframes dePop { 50% { transform:scale(1.35); } }
+  .vole { position:absolute; z-index:41; font-size:26px; pointer-events:none; }
+  .anneau { position:absolute; z-index:6; border:3px solid; border-radius:50%; transform:translate(-50%, -50%) scale(.2); pointer-events:none; animation:anneau .65s ease-out forwards; }
+  @keyframes anneau { to { transform:translate(-50%, -50%) scale(1); opacity:0; } }
+  .souffle { position:absolute; top:0; z-index:6; pointer-events:none; border-radius:12px; background:linear-gradient(0deg, #ffffff00, #e8f7ffaa 40%, #ffffff00 70%) 0 0 / 100% 200%; animation:souffle .8s linear forwards; }
+  @keyframes souffle { from { background-position:0 0; opacity:1; } to { background-position:0 -200%; opacity:0; } }
+  .fleche-detour { position:absolute; z-index:7; font-size:30px; transform:translate(-50%, -50%); pointer-events:none; }
+  .piege { animation:piegePop .4s cubic-bezier(.3,1.6,.5,1); } @keyframes piegePop { from { transform:translate(-50%, -50%) scale(0); } }
+  .mur { animation:murTombe .4s cubic-bezier(.4,1.5,.5,1); } @keyframes murTombe { from { transform:translateY(-60px); opacity:0; } }
   .piege { position:absolute; z-index:4; transform:translate(-50%, -50%); font-size:22px; pointer-events:none; filter:drop-shadow(0 0 4px #9fe3ff); } .piege.epines { filter:drop-shadow(0 0 4px #7ddc4a); }
   .detour { position:absolute; z-index:6; transform:translateX(-50%); font-size:22px; pointer-events:none; animation:pulse .8s infinite; }
   .choixObj { display:block; width:100%; text-align:left; margin:5px 0; padding:8px 10px; border-radius:10px; background:#ffffff12; border:1px solid #ffffff30; color:#fff; }
@@ -426,9 +437,13 @@ function majBesace() { const pl = document.getElementById('plateau'); if (!pl ||
   b.innerHTML = (S.deObjet ? `<button class="bs de" onpointerdown="event.preventDefault();lanceDeObjet()" title="Lancer le dé de la besace">🎲${S.deObjet > 1 ? `<small>${S.deObjet}</small>` : ''}</button>` : '')
     + [0, 1].map(n => { const o = S.besace[n]; return o ? `<button class="bs ${sel && sel.t === 'objet' && sel.n === n ? 'on' : ''}" onpointerdown="event.preventDefault();choisitObjet(${n})">${o.k === 'joker' ? '🃏' : P.OBJETS[o.k].e}</button>` : '<span class="bs vide">🎒</span>'; }).join(''); }
 function lanceDeObjet() { marqueGeste(); if (!S || S.fini || pause || fen.innerHTML) return; const e = P.lancerObjet(S); if (e) { dis(e, true); return; }
-  const o = S.besace[S.besace.length - 1]; son('relance');
-  const pl = document.getElementById('plateau'), d = document.createElement('div'); d.className = 'deObjet'; d.innerHTML = `<img src="${FACE(S.heros, o.f)}" alt="">`; pl.appendChild(d);
-  setTimeout(() => { d.remove(); banniere(o.k === 'joker' ? '🎲 6 : 🃏 Joker, l’objet de ton choix !' : `🎲 ${o.f} : ${P.OBJETS[o.k].e} ${P.OBJETS[o.k].n}`, true);
+  const o = S.besace[S.besace.length - 1]; son('des'); try { navigator.vibrate && navigator.vibrate([20, 40, 20]); } catch (e) {}
+  const pl = document.getElementById('plateau'), d = document.createElement('div'); d.className = 'deObjet'; d.innerHTML = `<img src="${FACE(S.heros, 1)}" alt="">`; pl.appendChild(d);
+  const img = d.querySelector('img'); let n = 0; const tic = setInterval(() => { img.src = FACE(S.heros, 1 + (n++ % 6)); if (n > 7) { clearInterval(tic); img.src = FACE(S.heros, o.f); d.classList.add('fini'); son('ok'); } }, 85);
+  setTimeout(() => { const b = document.querySelector('#besace .bs:not(.de):not(.vide):last-of-type') || document.getElementById('besace'), r = pl.getBoundingClientRect(), rb = b.getBoundingClientRect();
+    const v = document.createElement('div'); v.className = 'vole'; v.textContent = o.k === 'joker' ? '🃏' : P.OBJETS[o.k].e; pl.appendChild(v);
+    v.animate([{ left:'50%', top:'45%', transform:'translate(-50%,-50%) scale(2)' }, { left:(rb.left - r.left + rb.width / 2) + 'px', top:(rb.top - r.top + rb.height / 2) + 'px', transform:'translate(-50%,-50%) scale(1)' }], { duration:450, easing:'ease-in' }).onfinish = () => { v.remove(); son('poser'); }; }, 1150);
+  setTimeout(() => { d.remove(); }, 1150); setTimeout(() => { banniere(o.k === 'joker' ? '🎲 6 : 🃏 Joker, l’objet de ton choix !' : `🎲 ${o.f} : ${P.OBJETS[o.k].e} ${P.OBJETS[o.k].n}`, true);
     if (!localStorage.getItem('guilde-rempart-besace')) { localStorage.setItem('guilde-rempart-besace', '1'); dis(`🎒 ${o.k === 'joker' ? 'Le joker' : P.OBJETS[o.k].n} est dans ta besace (en bas à gauche) : touche-le, puis le plateau là où tu le veux.`); } rafraichit(); }, 800); }
 function choisitObjet(n, choix) { marqueGeste(); if (!S || S.fini || pause) return; const o = S.besace[n]; if (!o) return;
   if (sel && sel.t === 'objet' && sel.n === n && !choix) { sel = null; const v0 = document.getElementById('visee'); if (v0) v0.remove(); dis(''); rafraichit(); return; }
@@ -525,6 +540,8 @@ function projectile(i, id, v) {
   const ce = document.getElementById('case' + i); const tr = ce && ce.querySelector('.tour'); if (tr) { tr.classList.add('tire'); setTimeout(() => tr.classList.remove('tire'), 120); }
 }
 function gain(x, y, t) { const pl = document.getElementById('plateau'); if (!pl) return; const b = document.createElement('div'); b.className = 'gain'; b.textContent = nbsp(t); b.style.left = x + 'px'; b.style.top = y + 'px'; pl.appendChild(b); setTimeout(() => b.remove(), 820); }
+function anneau(x, y, coul, taille) { const pl = document.getElementById('plateau'); if (!pl) return; const a = document.createElement('div'); a.className = 'anneau'; const w = G.cw * (taille || 1.6);
+  a.style.cssText = `left:${x}px;top:${y}px;width:${w}px;height:${w}px;border-color:${coul};box-shadow:0 0 14px ${coul}`; pl.appendChild(a); setTimeout(() => a.remove(), 650); }
 function boom(x, y, e) { const pl = document.getElementById('plateau'); if (!pl) return; const b = document.createElement('div'); b.className = 'boom'; b.textContent = e; b.style.left = x + 'px'; b.style.top = y + 'px'; pl.appendChild(b); setTimeout(() => b.remove(), 520); }
 let tirsSon = 0;
 function joueFx() {
@@ -537,6 +554,17 @@ function joueFx() {
     else if (f.t === 'puits') { const p = caseXY(f.i); gain(p.x, p.y - 18, '+◆ à toucher'); }
     else if (f.t === 'bowling') { const pl = document.getElementById('plateau'), b = document.createElement('div'); b.className = 'bowl'; b.textContent = '🎳'; b.style.left = xPx(f.c) + 'px'; b.style.top = (G.H - G.RH) + 'px'; pl.appendChild(b);
       b.animate([{ top:(G.H - G.RH) + 'px' }, { top:'0px' }], { duration:1000, easing:'ease-in' }).onfinish = () => b.remove(); }
+    // 28/11 : animations et sons des objets de la besace
+    else if (f.t === 'pose') { const pl = document.getElementById('plateau'), x = xPx(f.c), y = yPx(f.y), H = G.H - G.RH;
+      if (f.k === 'givre' || f.k === 'epines') { son('poser'); boom(x, y, f.k === 'givre' ? '❄' : '🌿'); anneau(x, y, f.k === 'givre' ? '#9fe3ff' : '#7ddc4a'); }
+      else if (f.k === 'barricade') { son('tour-batir'); setTimeout(() => { boom(x, y + 6, '💨'); son('porte-frappee'); try { navigator.vibrate && navigator.vibrate(30); } catch (e) {} }, 380); }
+      else if (f.k === 'repousse') { son('vague'); const z = document.createElement('div'); z.className = 'souffle'; z.style.left = (x - G.cw * .45) + 'px'; z.style.width = (G.cw * .9) + 'px'; z.style.height = H + 'px'; pl.appendChild(z); setTimeout(() => z.remove(), 800);
+        S.monstres.filter(m => !m.mort && m.c === f.c).forEach(m => { const el = document.getElementById('m' + m.id); if (el) boom(parseFloat(el.style.left), parseFloat(el.style.top) + 14, '💨'); }); }
+      else if (f.k === 'detour') { son('magie'); const z = document.createElement('div'); z.className = 'fleche-detour'; z.textContent = f.v > f.c ? '➡️' : '⬅️'; z.style.top = (H * .45) + 'px'; pl.appendChild(z);
+        z.animate([{ left:x + 'px', opacity:1 }, { left:xPx(f.v) + 'px', opacity:.2 }], { duration:700, easing:'ease-in' }).onfinish = () => z.remove(); }
+      else if (f.k === 'appat') { son('coffre'); boom(x, y, '🥩'); anneau(x, y, '#ff9f43', 3); } }
+    else if (f.t === 'piege') { const el = document.getElementById('m' + f.id); if (el) { const x = parseFloat(el.style.left), y = parseFloat(el.style.top); boom(x, y, '🧊'); anneau(x, y, '#9fe3ff'); } son('bouclier'); }
+    else if (f.t === 'pique') { const el = document.getElementById('m' + f.id); if (el) boom(parseFloat(el.style.left), parseFloat(el.style.top), '🌵'); if (performance.now() - tirsSon > 150) { tirsSon = performance.now(); son('griffe'); } }
     else if (f.t === 'deObjet' && f.petit) { banniere('🎲 Un dé pour ta besace !', true); son('relance'); }
     else if (f.t === 'calme') { banniere(`🌿 Accalmie : ${f.dt} s pour bâtir · 🎲 un dé pour ta besace !`, true); }
     else if (f.t === 'annonce') { banniere(f.derniere ? '🚩 La dernière grosse vague approche !' : `🚩 Grosse vague ${f.n} sur ${f.sur} dans 8 s !`); son('vague'); try { navigator.vibrate && navigator.vibrate([40, 60, 40]); } catch (e) {} }
