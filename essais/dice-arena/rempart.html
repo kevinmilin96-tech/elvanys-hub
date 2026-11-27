@@ -26,6 +26,10 @@
   #plateau::before { content:''; position:absolute; left:0; right:0; top:0; height:12%; background:radial-gradient(ellipse at 20% 120%, #6aa84f 0 30%, transparent 31%), radial-gradient(ellipse at 70% 130%, #5f9e46 0 35%, transparent 36%); opacity:.9; }
   .voie { position:absolute; top:0; bottom:0; border-left:1px solid #ffffff22; border-right:1px solid #00000014;
     background:linear-gradient(180deg, #e7d3a1cc, #d6b97fcc); box-shadow:inset 0 0 12px #8a6a3a55; }
+  /* 27/11 : le fond peint par l'utilisateur (decor/fond-rempart.webp) : chemins et rempart dessinés, les voies du jeu deviennent transparentes */
+  #plateau { background:url('decor/fond-rempart.webp?v=1') center / 100% 100% no-repeat !important; } #plateau::before { display:none; }
+  .voie { background:none !important; box-shadow:none; border:0; } #rempart { background:#0000 !important; border-top:0 !important; }
+  .case .tour img.tr { width:100%; height:100%; object-fit:contain; filter:drop-shadow(0 2px 3px #0006); } .case img.pu { width:100%; height:100%; object-fit:contain; animation:pulse 2.2s infinite; }
   .voie.ok { box-shadow:inset 0 0 0 3px var(--ok), inset 0 0 18px #7dffb0aa; cursor:pointer; }
   .voie .combo { position:absolute; top:2px; left:50%; transform:translateX(-50%); font-size:11px; background:#000a; color:#ffe9b0; border-radius:8px; padding:0 4px; }
   .case { position:absolute; border-radius:12px; border:2px dashed #3d6b2f55; background:#ffffff1a; display:flex; align-items:center; justify-content:center; }
@@ -198,12 +202,14 @@ function dessinePlateau() {
   pl.innerHTML = h; SIG.length = 0; majPlateau(true);
 }
 const SIG = [];
+// 27/11 : les tours peintes reçues (les autres gardent le canon en attendant leur image)
+const TOUR_IMG = { 1:'givre', 3:'archers' };
 function htmlCase(t) {
   if (!t) return '';
-  if (t.puits) return `<div class="tour"><span class="puits">🔮</span></div>`;
+  if (t.puits) return `<div class="tour"><img class="pu" src="decor/obj-puits-runes.webp?v=1" alt=""></div>`; // 27/11 : image reçue
   if (t.rune) return `<div class="tour"><div class="runeT"><img src="${FACE(S.heros, t.paire)}" alt=""></div><span class="so">${P.EFFET_PAIRE[t.paire].e}<small>${t.rv}</small></span></div>`;
   const n = Math.min(3, t.niv);
-  return `<div class="tour"><img class="canon" src="tours/canon-${S.heros}-${n}.webp?v=2" onerror="this.onerror=null;this.src='tours/canon-maelle-${n}.webp?v=2'" alt=""><span class="so">${P.SORTES[t.v].e}<small>${t.niv}</small></span>${t.et ? `<span class="et">${'★'.repeat(t.et)}</span>` : ''}${t.et >= P.R.etoileMax && t.pw <= 0 ? '<span class="pw">✦</span>' : ''}</div>`;
+  const TI = TOUR_IMG[t.v]; return `<div class="tour">${TI ? `<img class="tr" src="tours/rempart-${TI}.webp?v=1" alt="">` : `<img class="canon" src="tours/canon-${S.heros}-${n}.webp?v=2" onerror="this.onerror=null;this.src='tours/canon-maelle-${n}.webp?v=2'" alt="">`}<span class="so">${P.SORTES[t.v].e}<small>${t.niv}</small></span>${t.et ? `<span class="et">${'★'.repeat(t.et)}</span>` : ''}${t.et >= P.R.etoileMax && t.pw <= 0 ? '<span class="pw">✦</span>' : ''}</div>`;
 }
 function caseOk(i) {
   if (!sel) return false; const t = S.cases[i];
@@ -407,9 +413,9 @@ function defRempart() {
       + haListe().map(a => haInfo('av:' + a.id)).filter(i => i && herosOk(i.cle)).map(i => `<button class="${choixH === i.cle ? 'on' : ''}" onclick="choisitH('${i.cle}')">${haImg(i, `box-shadow:0 0 0 2px ${i.couleur}`)}${haEsc(i.nom)}<small>voie de ${HEROS[i.voie].nom}</small></button>`).join(''),
     fiche:() => { const v = haVoie(choixH), H = P.HEROS_R[v]; return `🛡 <b>${haInfo(choixH) ? haEsc(haInfo(choixH).nom) : HEROS[v].nom}</b><br>${nbsp(H.passif)}<br>⚡ <b>Ultime : ${H.ultime}</b> · ${nbsp(H.ud)}<br><span class="doux">Les autres héros te rejoignent au fil des niveaux gagnés.</span>`; },
     modes:[
-      { k:'monde', e:'🌿', n:'Le premier monde', img:'menu-recu/mode-defense.webp', desc:() => nbsp('Les monstres descendent cinq chemins vers le rempart, sans s’arrêter. Bâtis tes tours avec ton énergie ◆, fais-les monter avec les dés qui roulent, et tiens jusqu’à la dernière vague. Cinq niveaux, le Titan de feu au bout.'),
+      { k:'monde', e:'🌿', n:'Le premier monde', img:'menu-recu/rempart-monde.webp', desc:() => nbsp('Les monstres descendent cinq chemins vers le rempart, sans s’arrêter. Bâtis tes tours avec ton énergie ◆, fais-les monter avec les dés qui roulent, et tiens jusqu’à la dernière vague. Cinq niveaux, le Titan de feu au bout.'),
         pas:() => [`🏰 Niveau ${Math.min(d.max, P.NIVEAUX.length)} sur ${P.NIVEAUX.length}`, `★ ${etT} étoile${etT > 1 ? 's' : ''} sur ${P.NIVEAUX.length * 3}`] },
-      { k:'sansfin', e:'♾', n:'Sans fin', img:'menu-recu/mode-defense.webp', desc:() => 'Les vagues ne s’arrêtent jamais. Bientôt !', verrou:() => 'Bientôt' } ],
+      { k:'sansfin', e:'♾', n:'Sans fin', img:'menu-recu/rempart-sansfin.webp', desc:() => 'Les vagues ne s’arrêtent jamais. Bientôt !', verrou:() => 'Bientôt' } ],
     options:m => [{ k:'niveau', titre:'🏰 Le niveau', aide:'Chaque niveau gagné ouvre le suivant et débloque quelque chose.',
       choix:P.NIVEAUX.map((L, i) => ({ v:i + 1, n:`${i + 1}${d.et[i + 1] ? ' ' + '★'.repeat(d.et[i + 1]) : ''}`, d:nbsp(`${L.n} · ${L.debloque}`), dis:i + 1 > d.max })), def:Math.min(d.max, P.NIVEAUX.length) }],
     resume:(m, o) => `🏰 Niveau ${o.niveau} · ${P.NIVEAUX[o.niveau - 1].n} · <b>${haInfo(choixH) ? haEsc(haInfo(choixH).nom) : HEROS[haVoie(choixH)].nom}</b>`,
