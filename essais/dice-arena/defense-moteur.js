@@ -209,7 +209,9 @@ function blesse(D, m, n, tir, secousse) {
     const vs = [m.col - 1, m.col + 1].filter(c => c >= 0 && c <= 2).sort((a, b) => D.monstres.filter(x => x.col === a).length - D.monstres.filter(x => x.col === b).length || D.rng() - .5);
     if (vs.length) { m.col = vs[0]; m.fuite = true; logD(D, `🐀 Le Rat blessé file sur le chemin ${m.col + 1}.`); fxD(D, { t:'fuit', id:m.id }); } }
   if (m.pv <= 0) { D.monstres = D.monstres.filter(x => x !== m); D.kills++; D.jauge = Math.min(DEF.jaugeMax, D.jauge + 1);
-    if (++D.killsPC >= DEF.killsPC) { D.killsPC = 0; if (D.pc < DEF.pcMax) { D.pc++; fxD(D, { t:'pc', n:1 }); logD(D, `◆ ${DEF.killsPC} monstres abattus : +1 PC.`); } } logD(D, `${M.e} ${M.n} tombe.`); fxD(D, { t:'mort', id:m.id }); verifieFinD(D); }
+    if (++D.killsPC >= DEF.killsPC) { D.killsPC = 0; if (D.pc < DEF.pcMax) { D.pc++; fxD(D, { t:'pc', n:1 }); logD(D, `◆ ${DEF.killsPC} monstres abattus : +1 PC.`); } } logD(D, `${M.e} ${M.n} tombe.`); fxD(D, { t:'mort', id:m.id });
+    if (M.boss && D.sansFin) D.pointSauv = m.vagueB || D.vague + 1; // 27/11 : boss vaincu en sans fin = POINT DE SAUVEGARDE (l'écran l'enregistre)
+    verifieFinD(D); }
   return r;
 }
 function utiliseD(D, ds) { ds.forEach(d => { d.pose = true; }); }
@@ -388,11 +390,11 @@ function apparitionsD(D) {
     const pv = M.boss ? Math.round(M.pv * Math.max(1, echelleD(D) / Math.pow(DEF.hpVague, VAGUES.length - 1))) /* 27/11 : en sans fin, le boss grandit comme les autres monstres (avant : il devenait plus faible qu'un sanglier) */ : Math.round(M.pv * DEF.hpBase * Math.pow(DEF.hpVague, D.sansFin && D.vague >= VAGUES.length ? VAGUES.length - 1 + (D.vague - VAGUES.length + 1) * DEF.sfPas : D.vague)); /* le boss a des PV fixes */
     const pvF = Math.round(pv * (D.fs || 1) * (elite ? ELITE.pv : 1)); /* 15/11 soir : × la force du héros */
     const m = { id:++DID, t, pv:pvF, pvMax:pvF, col:cols[i % 3], row:0 };
-    if (M.sous) m.sous = true;
+    if (M.sous) m.sous = true; if (M.boss) m.vagueB = D.vague + 1;
     if (elite) { m.elite = true; m.dg = Math.round(M.dg * ELITE.dg); const ps = Object.keys(POUVOIRS_ELITE).filter(k => !(k === 'regen' && M.regen) && !(k === 'meneur' && M.etendard)); m.pouv = ps[Math.floor(D.rng() * ps.length)]; }
     D.monstres.push(m); });
   D.pas++;
-  if (D.pas >= V.length) { if (!D.degatsVague) D.sansDegats++; D.vague++; if (D.heros === 'aldric') D.porte = Math.min(D.porteMax, D.porte + REG.aldric.porteVague); if (typeof guildeEvt === 'function') guildeEvt('defense_vague', 1); D.pas = 0; D.repit = DEF.repit; if (D.vague < VAGUES.length || D.sansFin) D.choix = tirageBonus(D); }
+  if (D.pas >= V.length) { if (!D.degatsVague) D.sansDegats++; D.vague++; if (D.heros === 'aldric') D.porte = Math.min(D.porteMax, D.porte + REG.aldric.porteVague); if (typeof guildeEvt === 'function' && D.vague > (D.xpDes || 0)) guildeEvt('defense_vague', 1); /* 27/11 : reparti d'un point de sauvegarde, les vagues déjà récompensées ne redonnent rien */ D.pas = 0; D.repit = DEF.repit; if (D.vague < VAGUES.length || D.sansFin) D.choix = tirageBonus(D); }
 }
 function finTourD(D) {
   if (D.fini) return;
@@ -476,7 +478,7 @@ function tirageBonus(D) {
 function choisirBonusD(D, k) { if (!D.choix || !D.choix.includes(k)) return 'Choisis un des bonus proposés.'; BONUS_D[k].f(D); D.choix = null; logD(D, `${BONUS_D[k].e} Bonus : ${BONUS_D[k].n}.`); }
 // ---- 4. Trois étoiles : la victoire, la porte à 15 PV ou plus, le défi du jour (le même pour tout le monde ce jour-là)
 const DEFIS_D = [
-  { id:'canons4', n:'Gagner avec 4 canons au plus en même temps', ok:D => D.maxCanons <= 4 },
+  { id:'canons4', n:'Gagner avec 4 tours au plus en même temps', ok:D => D.maxCanons <= 4 },
   { id:'sortes', n:'Bâtir au moins 4 sortes de tours différentes', ok:D => (D.sortesVues || []).length >= 4 },
   { id:'pieges', n:'Poser au moins 4 pièges', ok:D => D.piegesPoses >= 4 }, // 25/11 (l'utilisateur : « 3 pièges, impossible d'en avoir 6 »)
   { id:'boss', n:'Aucun dégât à la porte pendant la dernière vague', ok:D => D.degatsDerniere === 0 },

@@ -102,7 +102,7 @@
   .de { width:52px; height:52px; border-radius:10px; background:#0005; border:2px solid #3e3370; padding:3px; position:relative; }
   .de img { width:100%; height:100%; object-fit:contain; } .de.sel { border-color:var(--or); transform:translateY(-6px); box-shadow:0 0 10px var(--or); } .de.pose { opacity:.18; }
   .de.cible { border-color:var(--ok); box-shadow:0 0 10px var(--ok); }
-  .acts { display:grid; grid-template-columns:repeat(4, 1fr); gap:5px; margin:5px 0; }
+  .acts { display:grid; grid-template-columns:repeat(5, 1fr); gap:5px; margin:5px 0; }
   .acts button { background:#1e1838; color:#fff; border:2px solid #3e3370; border-radius:11px; padding:5px 2px; font-size:.74em; line-height:1.1; }
   .acts button.ok { border-color:var(--ok); color:var(--ok); } .acts button.attente { border-color:var(--or); color:var(--or); }
   .acts button:disabled { opacity:.35; }
@@ -157,6 +157,25 @@
   @keyframes rayon { from { opacity:1; filter:brightness(1.6); } to { opacity:0; height:2px; } }
   .soinM { position:absolute; left:50%; top:10%; transform:translateX(-50%); color:#7dffb0; font-weight:bold; font-size:1.1em; text-shadow:0 0 5px #000; animation:monte .9s forwards; pointer-events:none; z-index:3; }
   .fx5 { filter:drop-shadow(0 0 6px #ffd76b) drop-shadow(0 0 3px #fff); }
+  /* 27/11 : l'Ultime au toucher, les pouvoirs des tours à 5 ★ */
+  .ultB { position:relative; background:none; border:0; padding:0; border-radius:50%; } .ultB.pret img { box-shadow:0 0 0 2px #fff, 0 0 12px #f3c96b, 0 0 22px #6b2bd9; animation:pulseLD 1s infinite; }
+  .ultB.pret::after { content:'⚡'; position:absolute; right:-6px; bottom:-4px; font-size:1em; text-shadow:0 0 6px #f3c96b; }
+  .blocU { cursor:pointer; } .blocU.pret b { color:var(--or); text-shadow:0 0 8px var(--or); } .blocU.pret .barre i { animation:pulseLD .9s infinite; }
+  .acts button.ultA { background:linear-gradient(180deg, #6b2bd9, #3e1a8a); border-color:#c084fc; } .acts button.ultA.pret { background:linear-gradient(180deg, #f3c96b, #6b2bd9); color:#fff; border-color:#f3c96b; font-weight:bold; animation:pulseLD 1s infinite; }
+  .rc .pouvT { position:absolute; top:22%; right:-13px; z-index:4; min-width:21px; height:21px; padding:0 2px; border-radius:11px; background:#2a2448; border:2px solid #8a7ec4; color:#c9c1ea; font:bold .68em Georgia; display:flex; align-items:center; justify-content:center; box-shadow:0 1px 4px #000; cursor:pointer; }
+  .rc .pouvT.pret { background:radial-gradient(circle, #fff7c0, #f3c96b 55%, #c8902f); border-color:#fff; color:#2b1d0a; font-size:.95em; animation:pulseP 1.1s infinite; }
+  @keyframes pulseP { 50% { transform:scale(1.18); box-shadow:0 0 12px #f3c96b, 0 0 4px #fff; } }
+  .ftPouv { border:1px solid #f3c96b; border-radius:11px; padding:6px 9px; background:#f3c96b14; margin:6px 0; } .ftPouv button { margin-top:5px; }
+  .coupH.s1 { background:linear-gradient(180deg, transparent, #bfe8ff 20%, #fff 50%, #7cc8ff 80%, transparent); box-shadow:0 0 30px #9fd8ff; }
+  .coupH.s2 { background:linear-gradient(180deg, transparent, #b6ff9a 20%, #eaffd8 50%, #4fd94a 80%, transparent); box-shadow:0 0 30px #6aff5a; }
+  .coupH.s3 { background:linear-gradient(180deg, transparent, #e8d4a8 20%, #fff 50%, #b08a4a 80%, transparent); box-shadow:0 0 30px #e8d4a8; }
+  .coupH.s4 { background:radial-gradient(ellipse, #fff7c0, #ffb347 40%, #ff5a1a 70%, transparent 75%); box-shadow:0 0 30px #ff8a2a; }
+  .coupH.s5 { background:linear-gradient(180deg, transparent, #bfe0ff 20%, #fff 50%, #3aa0ff 80%, transparent); box-shadow:0 0 30px #8ad8ff; }
+  .coupH.s6 { background:linear-gradient(180deg, transparent, #ffe28a 20%, #fff 50%, #ff9a3c 80%, transparent); box-shadow:0 0 30px #ffd27a; }
+  .cc.vise { box-shadow:inset 0 0 0 2px #ff8a2a; background:#ff8a2a33 !important; }
+  .grandTitre { position:fixed; left:50%; top:38%; z-index:33; transform:translate(-50%, -50%); font:bold 1.9em Georgia; color:#fff; text-align:center; white-space:nowrap; text-shadow:0 0 10px #000, 0 0 18px var(--gc, #f3c96b); pointer-events:none; animation:coupN 1.5s ease-out forwards; }
+  .pointsS { display:grid; gap:6px; margin:6px 0; } .pointsS > div { display:flex; gap:6px; align-items:stretch; } .pointsS button.go { flex:1; background:#120f1f; color:#fff; border:2px solid var(--or); border-radius:12px; padding:6px 9px; text-align:left; } .pointsS button.go small { display:block; color:var(--doux); }
+  .pointsS button.sup { background:#3a1f1f; color:#ffb0b0; border:1px solid #7a3a3a; border-radius:10px; padding:0 10px; }
   .journal { font-size:.8em; color:var(--doux); max-height:55vh; overflow:auto; } .journal div { border-bottom:1px solid #ffffff12; padding:2px 0; }
 </style>
 </head>
@@ -189,12 +208,12 @@ function accueil() {
   app.classList.remove('jeu'); // 15/11 soir : l'écran de jeu seul est figé sur la hauteur du téléphone
   D = null;
   app.innerHTML = `<h1>🏰 La Défense de la porte</h1>
-  <p class="doux" style="text-align:center">Les monstres descendent trois chemins vers la porte de la Guilde. Tes dés deviennent des tours… ou des coups tout de suite. Deux tours identiques qui se touchent fusionnent ; deux 6 éveillent une Rune.</p>
+  <p class="doux" style="text-align:center">Les monstres descendent trois chemins vers la porte de la Guilde. Tes dés deviennent des tours. Deux tours pareilles qui se touchent fusionnent ; à 5&nbsp;★ une tour gagne un pouvoir ; deux tours au niveau 4 éveillent une Rune.</p>
   <div class="choixh" style="margin:8px 0"><button class="${!modeSF ? 'or' : ''}" onclick="modeSF=false;accueil()">🌊 6 vagues et le Titan</button><button class="${modeSF ? 'or' : ''}" onclick="modeSF=true;accueil()">♾ Vagues sans fin</button></div>
   ${modeSF ? `<p class="doux" style="text-align:center">♾ Les vagues ne s’arrêtent jamais, toujours plus fortes ; un boss différent toutes les 6 vagues (Titan, Colosse, Roi des Os, Roi de l’Hiver). Ton record : <b style="color:var(--or)">${(() => { try { return JSON.parse(localStorage.getItem('guilde-defense-sansfin') || '{}').vague || 0; } catch (e) { return 0; } })()} vagues</b>.</p>` : ''}
-  <div class="heros">${['maelle', 'gorm', 'aldric', 'pip', 'oria', 'zephine'].filter(h => h !== 'zephine' || localStorage.getItem('guilde-tuto') === 'fait').map(h => `<button onclick="demarre('${h}')"><img src="${IMG(h)}" alt=""><b>${HEROS[h].nom}</b><br>${DHEROS[h].passif}<br><br>✨ Rune : ${DHEROS[h].rune.n}<br><small>${DHEROS[h].rune.d}</small></button>`).join('')}${herosAventureD()}</div>
+  <div class="heros">${['maelle', 'gorm', 'aldric', 'pip', 'oria', 'zephine'].filter(h => h !== 'zephine' || localStorage.getItem('guilde-tuto') === 'fait').map(h => `<button onclick="demarre('${h}')"><img src="${IMG(h)}" alt=""><b>${HEROS[h].nom}</b><br>${DHEROS[h].passif}<br>⚡ Ultime : ${DHEROS[h].ultime.n}<br><br>✨ Rune : ${DHEROS[h].rune.n}<br><small>${DHEROS[h].rune.d}</small></button>`).join('')}${herosAventureD()}</div>
   <p class="doux" style="text-align:center">🎯 Défi du jour : <b style="color:var(--or)">${defiDuJourD().n}</b>${lesEtoiles()[jourCle()] ? ` · aujourd’hui : ${'★'.repeat(lesEtoiles()[jourCle()])}` : ''}</p>
-  <p class="doux" style="text-align:center">Chaque héros a son passif, son pouvoir, son ultime et sa Rune.</p>
+  <p class="doux" style="text-align:center">Chaque héros a son passif, son Ultime et sa Rune.</p>
   ${records()}
   <div class="choixh"><button onclick="regles()">📜 Les règles</button></div>`;
   GM.retour('menu.html'); // 22/11 (l'utilisateur) : le retour en haut à gauche ; plus de « ⌂ Menu » en bas
@@ -215,7 +234,7 @@ function demarre(h) { const i = haInfo(h); D = nouvelleDefense(haVoie(h)); D.av 
   // 15/11 : le système des héros : la porte gagne les PV du héros (niveau, rang, équipement), et ses PC de départ
   // 15/11 soir : PAS de suivi des monstres ici (mesuré : la force vient des tours, pas du héros ; monstres ×2 = 0 % de victoires) ;
   // le bonus de porte est plafonné à +20 (avec +81, la porte d'Aldric dépassait les 99 de dégâts du Titan : 100 % de victoires)
-  if (typeof bonusHerosPvE === 'function') { const B = bonusHerosPvE(haProg(h)), bp = Math.min(20, B.pv); D.porte += bp; D.porteMax += bp; D.pc += B.pc; } sel = []; selTour = -1; attente = null; dis('Touche 🎲 Lancer, puis choisis des dés : bâtis une tour (touche une case verte) ou frappe un monstre.'); vagueAnnonce(); rendu(); }
+  if (typeof bonusHerosPvE === 'function') { const B = bonusHerosPvE(haProg(h)), bp = Math.min(20, B.pv); D.porte += bp; D.porteMax += bp; D.pc += B.pc; } sel = []; selTour = -1; attente = null; dis('Touche 🎲 Lancer, puis choisis un dé : bâtis une tour (touche une case verte) ou pose un piège sur un chemin.'); vagueAnnonce(); rendu(); }
 function dis(t, e) { msg = t; err = !!e; }
 function vagueAnnonce() { const v = D.fx.find(f => f.t === 'vague'); if (v) GM.son('vague');
   const txt = v && (v.boss && (D.sansFin || v.n > VAGUES.length) ? MOUSTACHE_M[v.boss] : CORBIN[v.n]);
@@ -285,6 +304,7 @@ function ficheMonstreH(t, m) {
 function ficheMonstre(t, id) { const m = id != null && D ? D.monstres.find(x => x.id === id) : null; fenetre(ficheMonstreH(t, m) + '<div class="choixh"><button class="or" onclick="fermer()">Compris</button></div>'); }
 function toucheChemin(ev, r, col) {
   if (ev.target.closest('.mo')) return;
+  if (attente && attente.cible === 'case') { finit({ r, col }); return; }
   const p = D.pieges[cleP(r, col)];
   if (sel.length !== 1 || attente) { if (p) dis(`${PIEGES[p.k].e} ${PIEGES[p.k].n} : ${PIEGES[p.k].d}`); else dis('Choisis un dé, puis touche une case de chemin pour y poser un piège (1 = boue, 2 à 5 = ronces, 6 = barricade).'); rendu(); return; }
   const k = sortePiege(sel[0].v), e = poserPiegeD(D, sel[0], r, col);
@@ -324,34 +344,34 @@ function rendu() {
   const H = DHEROS[D.heros], vs = sel.map(d => d.v);
   const tete = new Set([0, 1, 2].map(col => (teteD(D, col) || {}).id));
   const chemin = []; for (let r = 0; r < DEF.chemin; r++) for (let col = 0; col < 3; col++) chemin.push({ r, col });
-  const besoinMonstre = attente && attente.cible === 'monstre', besoinTour = attente && attente.cible === 'tour', besoinDe = attente && attente.cible === 'de';
+  const besoinCase = attente && attente.cible === 'case', besoinMonstre = attente && (attente.cible === 'monstre' || attente.cible === 'case'), besoinTour = attente && attente.cible === 'tour', besoinDe = attente && attente.cible === 'de';
   const un = sel.length === 1 ? sel[0] : null;
   GM.retour(null); // 22/11 : la partie commence
   app.innerHTML = `
-  <div class="entete">${imgD()}
+  <div class="entete"><button class="ultB ${ultimePretD(D) ? 'pret' : ''}" onclick="confirmeUltime()" title="Ultime">${imgD()}</button>
     <div class="bloc">🚪 Porte <b>${D.porte}</b>/${D.porteMax}<div class="barre"><i style="width:${D.porte / D.porteMax * 100}%"></i></div></div>
-    <div class="bloc">⚡ Ultime ${D.ultimeFait ? '✔' : `${D.jauge}/${DEF.jaugeMax}`}<div class="barre jauge"><i style="width:${D.ultimeFait ? 100 : D.jauge / DEF.jaugeMax * 100}%"></i></div></div>
+    <div class="bloc blocU ${ultimePretD(D) ? 'pret' : ''}" onclick="confirmeUltime()">⚡ ${ultimePretD(D) ? '<b>Ultime prêt !</b>' : `Ultime ${D.jauge}/${DEF.jaugeMax}`}<div class="barre jauge"><i style="width:${Math.min(100, D.jauge / DEF.jaugeMax * 100)}%"></i></div></div>
     <div class="bas icones"><button onclick="toutesTours()" title="Les tours">🏰</button><button onclick="regles()" title="Règles">📜</button><button onclick="journal()" title="Journal">📖</button><button onclick="quitter()" title="Quitter">⌂</button></div>
     <div style="text-align:right"><span class="p">🌊 ${D.sansFin ? `${D.vague + 1} ♾` : `${Math.min(D.vague + 1, VAGUES.length)}/${VAGUES.length}`}</span><br><span class="p">◆ ${D.pc} PC</span></div></div>
   ${bandeVague()}
-  <div class="zoneP">${PD ? '<div class="plateauD">' : ''}<div class="${PD ? 'cheminD' : 'chemin'}">${chemin.map(({ r, col }) => `<div class="cc ${okPiege(r, col) ? 'ok' : ''}" style="${PD ? posCC(r, col) : ''}" onclick="toucheChemin(event, ${r}, ${col})">${piegeHTML(r, col)}${D.monstres.filter(m => m.row === r && m.col === col).map(m => { const M = MONSTRES[m.t];
+  <div class="zoneP">${PD ? '<div class="plateauD">' : ''}<div class="${PD ? 'cheminD' : 'chemin'}">${chemin.map(({ r, col }) => `<div class="cc ${okPiege(r, col) ? 'ok' : ''} ${besoinCase ? 'vise' : ''}" style="${PD ? posCC(r, col) : ''}" onclick="toucheChemin(event, ${r}, ${col})">${piegeHTML(r, col)}${D.monstres.filter(m => m.row === r && m.col === col).map(m => { const M = MONSTRES[m.t];
       return `<div class="mo ${M.boss ? 'boss' : ''} ${m.elite ? 'elite' : ''} ${m.gel ? 'gele' : ''} ${m.poison > 0 ? 'empoisonne' : ''} ${m.inv ? 'invisible' : ''} ${m.sous ? 'sous' : ''} ${besoinMonstre && !m.sous ? 'cible' : ''}" data-m="${m.id}" onclick="toucheMonstre(${m.id})">${IMG_D[m.t] ? `<img class="e" src="${IMG_D[m.t]}" alt="">` : `<span class="e">${M.e}</span>`}<span class="pv">${m.pv}</span>${tagsM(m)}</div>`; }).join('')}</div>`).join('')}</div>
   <div class="${PD ? 'rempartD' : 'rempart'}">${D.rempart.map((t, c) => { const okVide = !t && un && !attente && D.pc >= DEF.coutBatir; const okFus = t && ((!t.rune && un && un.v === t.v && t.niv < NIV_MAX && !attente) || (selTour >= 0 && selTour !== c && voisinsD(selTour).includes(c) && fusionPossible(D.rempart[selTour], t)));
       const okDep = !t && selTour >= 0 && !coutDeplaceD(D, selTour, c), payant = !t && selTour >= 0 && !okDep && D.pc >= DEF.coutDeplace;
       if (!t) return `<div class="rc vide ${okVide || okDep ? 'ok' : payant ? 'payant' : ''}" data-c="${c}" style="${PD ? posRC(c) : ''}" onclick="toucheCase(${c})"></div>`;
-      return `<div class="rc ${t.rune ? 'rune' : ''} ${!t.rune && runesVoisD(D, c).length ? 'soutenue' : ''} ${selTour === c ? 'sel' : ''} ${okFus || besoinTour ? 'ok' : ''}" data-c="${c}" style="${PD ? posRC(c) : ''}" onclick="toucheCase(${c})">${t.rune ? (RUNE_IMG[D.heros] ? `<img class="runeimg niv${6 + t.rv}" src="${RUNE_IMG[D.heros]}" alt="">` : `<img class="runeimg niv${6 + t.rv}" src="${FACE(D.heros, 6)}" alt="" style="filter:drop-shadow(0 0 6px #c084fc) drop-shadow(0 0 2px #fff)">`) + (t.rv > 1 ? `<span class="nivr">${'✦'.repeat(t.rv)}</span>` : '') : `<img class="canon" src="tours/canon-${D.heros}-${Math.min(3, t.niv)}.webp?v=2" onerror="this.onerror=null;this.src='tours/canon-${['aldric', 'oria'].includes(D.heros) ? 'gorm' : 'maelle'}-${Math.min(3, t.niv)}.webp?v=2'" alt="${nomTourD(t)}" style="transform:rotate(${ANGLE[c] || 0}deg)"><span class="sorte">${SORTES[t.v].e}<small>${t.niv}</small></span>${t.et ? `<span class="etoiles">${etoilesTourTxt(t.et)}</span>` : ''}`}<span class="pw">${t.rune ? `+${Math.round((D.heros === 'gorm' ? 1 : DEF.runeSoutien) * t.rv * 100)} %` : puissanceTour(D, c, t)}</span>${t.bonus ? `<span class="bn">+${t.bonus}</span>` : ''}</div>`; }).join('')}</div>
+      return `<div class="rc ${t.rune ? 'rune' : ''} ${!t.rune && runesVoisD(D, c).length ? 'soutenue' : ''} ${selTour === c ? 'sel' : ''} ${okFus || besoinTour ? 'ok' : ''}" data-c="${c}" style="${PD ? posRC(c) : ''}" onclick="toucheCase(${c})">${t.rune ? (RUNE_IMG[D.heros] ? `<img class="runeimg niv${6 + t.rv}" src="${RUNE_IMG[D.heros]}" alt="">` : `<img class="runeimg niv${6 + t.rv}" src="${FACE(D.heros, 6)}" alt="" style="filter:drop-shadow(0 0 6px #c084fc) drop-shadow(0 0 2px #fff)">`) + (t.rv > 1 ? `<span class="nivr">${'✦'.repeat(t.rv)}</span>` : '') : `<img class="canon" src="tours/canon-${D.heros}-${Math.min(3, t.niv)}.webp?v=2" onerror="this.onerror=null;this.src='tours/canon-${['aldric', 'oria'].includes(D.heros) ? 'gorm' : 'maelle'}-${Math.min(3, t.niv)}.webp?v=2'" alt="${nomTourD(t)}" style="transform:rotate(${ANGLE[c] || 0}deg)"><span class="sorte">${SORTES[t.v].e}<small>${t.niv}</small></span>${t.et ? `<span class="etoiles">${etoilesTourTxt(t.et)}</span>` : ''}${pastilleT(t, c)}`}<span class="pw">${t.rune ? `+${Math.round((D.heros === 'gorm' ? 1 : DEF.runeSoutien) * t.rv * 100)} %` : puissanceTour(D, c, t)}</span>${t.bonus ? `<span class="bn">+${t.bonus}</span>` : ''}</div>`; }).join('')}</div>
   ${PD ? `<div class="porte porteD" id="porte" style="left:${PD.porte[0]}%;top:${PD.porte[1]}%">🚪 ${D.porte}/${D.porteMax}</div></div>` : '<div class="porte" id="porte">🚪 La porte de la Guilde</div>'}</div>
   <div class="msg ${err ? 'err' : ''}">${attente || sel.length || selTour >= 0 ? '<button class="annuleM" onclick="annule()">✖ Annuler</button> ' : ''}${msg}</div>
   <div class="des" id="desD">${D.lanceT !== D.tour ? D.des.map(() => `<div class="de cacheD" onclick="lanceDesD()"></div>`).join('') + `<button class="lancerD" onclick="lanceDesD()">🎲 Lancer</button>` : ''}${D.lanceT !== D.tour ? '' : D.des.map((d, i) => `<div class="de ${d.pose ? 'pose' : ''} ${d.gele ? 'gele' : ''} ${sel.includes(d) ? 'sel' : ''} ${besoinDe && !d.pose && !sel.includes(d) ? 'cible' : ''}" onclick="toucheDe(${i})"><img src="${FACE(D.heros, d.v)}" alt="${d.v}"></div>`).join('')}</div>
   <div class="acts">
-    ${bouton('frappe', '⚔ Frappe', 'dés identiques')}${bouton('technique', '⚔⚔ Technique', 'suite')}${bouton('pouvoir', '✦ Pouvoir', H.pouvoir.txt)}${bouton('ultime', '⚡ Ultime', ultimeSous(H))}
-    <button class="${sel.length && !attente ? 'ok' : ''}" ${sel.length && !attente ? '' : 'disabled'} onclick="agir('vendre')">◆ Vendre<br><small>+1 PC / dé</small></button>
+    <button class="ultA ${ultimePretD(D) ? 'pret' : ''}" onclick="confirmeUltime()">⚡ Ultime<br><small>${ultimePretD(D) ? H.ultime.n : `jauge ${D.jauge}/${DEF.jaugeMax}`}</small></button>
+    <button class="${sel.length && !attente ? 'ok' : ''}" ${sel.length && !attente ? '' : 'disabled'} onclick="vendre()">◆ Vendre<br><small>+1 PC / dé</small></button>
     <button ${D.relance && sel.length && !attente ? '' : 'disabled'} onclick="relance()">🎲 Relancer<br><small>${D.relance} restante${D.relance > 1 ? 's' : ''}</small></button>
     <button class="fin" onclick="finTour()">Fin du tour ▶</button></div>
   `;
   app.classList.add('jeu');
   joueFx();
-  if (D.fini) setTimeout(fin, 700); else Guide.lance('defense', GUIDE_DEF);
+  if (D.fini) setTimeout(fin, 700); else Guide.lance('defense-27-11', GUIDE_DEF);
 }
 // 14/11 : le guide de Moustache à la première partie
 const GUIDE_DEF = [
@@ -359,29 +379,72 @@ const GUIDE_DEF = [
   ['.entete', 'En haut : 🚪 la vie de la porte (à zéro, c’est perdu), ⚡ ta jauge d’Ultime, 🌊 la vague en cours et ◆ tes <b>PC</b>, qui paient tout ce que tu construis.'],
   ['.bandeV', 'Ici, la <b>prochaine vague</b> : qui arrive et quand. Touche-la pour voir les monstres. Prépare-toi en avance !'],
   ['.des', 'Tes dés du tour. Touche un dé pour le choisir. Un dé posé sur une <b>case vide du rempart</b> devient un canon (1 PC) qui tire tout seul à chaque tour. Un dé sur un chemin pose un <b>piège</b>.'],
-  ['.acts', 'Ou bien tu frappes toi-même : dés identiques = <b>Frappe</b>, une suite = <b>Technique</b>, sur tout un chemin. ◆ Vendre un dé donne 1 PC. Puis <b>Fin du tour</b> : les monstres avancent.'],
-  ['.rempartD, .rempart', 'Chaque face de dé donne une sorte de tour : ❄ 1 givre, ☠ 2 poison, 🏹 3 archers, 💣 4 canon, ⚡ 5 foudre, 🗼 6 grande tour. Un dé de sa face posé dessus, ou deux tours pareilles côte à côte, la font monter d’un niveau. Deux tours au niveau 4 = une Rune qui renforce ses voisines. Bonne garde, miaou !'],
+  ['.acts', '◆ Vendre un dé donne 1 PC ; 🎲 Relancer cherche d’autres faces. ⚡ <b>Ultime</b> : quand la jauge est pleine (des monstres abattus), touche ton portrait ou ce bouton, sans dés. Puis <b>Fin du tour</b> : les tours tirent, les monstres avancent.'],
+  ['.rempartD, .rempart', 'Chaque face de dé donne une sorte de tour : ❄ 1 givre, ☠ 2 poison, 🏹 3 archers, 💣 4 canon, ⚡ 5 foudre, 🗼 6 grande tour. Un dé de sa face posé dessus, ou deux tours pareilles côte à côte, la font monter d’un niveau. Au niveau 4, chaque dé de sa face ajoute une étoile ★ ; à 5 ★ la tour gagne un <b>pouvoir</b> (pastille dorée) à lancer quand tu veux. Deux tours au niveau 4 = une Rune qui renforce ses voisines. Bonne garde, miaou !'],
 ];
-// 15/11 soir (l'utilisateur : « je ne peux pas lancer mon Ultime, il demande 3 dés de 4 ou plus ») : l'Ultime demande AUSSI la jauge pleine
-// (8 monstres tombés) et 3 PC, une fois par partie ; le bouton dit maintenant ce qui manque
-function ultimeSous(H) { if (D.ultimeFait) return 'déjà utilisé'; if (D.jauge < DEF.jaugeMax) return `jauge ${D.jauge}/${DEF.jaugeMax} · ${H.ultime.txt}`; if (D.pc < 3) return `il faut 3 PC (tu en as ${D.pc})`; return H.ultime.txt; }
-function bouton(q, titre, sous) { const ok = !attente && sel.length && permisD(D, q, sel); const at = attente && attente.quoi === q;
-  // 15/11 soir (l'utilisateur : « je ne peux pas cliquer sur les étiquettes pour savoir ce que je dois faire ») : un coup pas encore possible
-  // reste grisé, mais le toucher l'EXPLIQUE (ce qu'il demande, ce qu'il fait, et pour l'Ultime ce qui manque)
-  const coup = ['frappe', 'technique', 'pouvoir', 'ultime'].includes(q);
-  return `<button class="${ok ? 'ok' : ''} ${at ? 'attente' : ''}" ${ok || at || coup ? '' : 'disabled'} ${!ok && !at && coup ? 'style="opacity:.5"' : ''} onclick="${ok || at ? `agir('${q}')` : `expliqueCoup('${q}')`}">${titre}<br><small>${sous}</small></button>`; }
-function expliqueCoup(q) {
-  const H = DHEROS[D.heros], vs = sel.map(d => d && d.v).filter(Boolean), aide = '<p style="color:var(--doux);font-size:.9em">Choisis d’abord tes dés en les touchant : le bouton s’allume en vert quand ils conviennent.</p>';
-  const ok = b => b ? '✅' : '❌';
-  const T = {
-    frappe:`<h2>⚔ Frappe</h2><p><b>Il faut</b> : 2 dés identiques ou plus (deux 5, trois 3…).</p><p><b>Effet</b> : touche <b>tout un chemin</b> : valeur × nombre de dés × 2${echelleD(D) > 1.05 ? `, × ${echelleD(D).toFixed(1)} à cette vague` : ''}. Gratuit.</p>`,
-    technique:`<h2>⚔⚔ Technique</h2><p><b>Il faut</b> : une suite de 3 dés ou plus (2-3-4, 1-2-3-4…).</p><p><b>Effet</b> : touche <b>tout un chemin</b> (${texteCoupD(D, '22 dégâts')} avec 3 dés, ${dgC(D, 34)} avec 4, ${dgC(D, 50)} avec 5) et les monstres <b>reculent</b> d’une case. Gratuit.</p>`,
-    pouvoir:`<h2>✦ Pouvoir · ${H.pouvoir.n}</h2><p><b>Il faut</b> : ${H.pouvoir.txt}.</p><p><b>Effet</b> : ${texteCoupD(D, H.pouvoir.d)}</p><p>Gratuit, autant de fois que tu as les bons dés.</p>`,
-    ultime:`<h2>⚡ Ultime · ${H.ultime.n}</h2><p><b>Effet</b> : ${texteCoupD(D, H.ultime.d)}</p><p><b>Il faut les quatre</b> :</p>
-      <p>${ok(D.jauge >= DEF.jaugeMax)} la jauge pleine : ${DEF.jaugeMax} monstres tombés (tu en es à ${Math.min(D.jauge, DEF.jaugeMax)})<br>${ok(D.pc >= 3)} 3 PC pour la payer (tu en as ${D.pc})<br>${ok(!D.ultimeFait)} une seule fois par partie${D.ultimeFait ? ' (déjà utilisée)' : ''}<br>${ok(vs.length && H.ultime.cond(vs))} les dés : ${H.ultime.txt}</p>`,
-  };
-  fenetre(T[q] + aide + '<div class="choixh"><button onclick="fermer()">Compris</button></div>');
+function vendre() { if (!sel.length || attente) return; const e = agitD(D, 'vendre', sel); sel = []; dis(e || 'Vendu.', !!e); rendu(); }
+// 27/11 (décision de l'utilisateur : « on concentre le jeu sur les dés et la gestion des tours ») : L'ULTIME SANS DÉS.
+// La jauge se remplit en abattant des monstres ; pleine, un toucher sur le portrait (ou le bouton ⚡) ouvre la confirmation, puis la cible si besoin.
+function confirmeUltime() {
+  if (!D || D.fini || enAnim || animeD) return; const H = DHEROS[D.heros];
+  if (attente && attente.quoi === 'ultime') return annule();
+  if (!ultimePretD(D)) { fenetre(`<h2>⚡ Ultime · ${H.ultime.n}</h2><p>${texteCoupD(D, H.ultime.d)}</p><p>La jauge se remplit d’un cran à chaque monstre abattu : <b>${D.jauge}/${DEF.jaugeMax}</b>. Encore <b>${DEF.jaugeMax - D.jauge}</b> monstre${DEF.jaugeMax - D.jauge > 1 ? 's' : ''}.</p><p class="doux">Pas besoin de dés. Quand elle est pleine, touche ton portrait ou ⚡ Ultime. Ensuite la jauge repart de zéro : tu pourras le relancer.</p><div class="choixh"><button class="or" onclick="fermer()">Compris</button></div>`); return; }
+  fenetre(`<h2>⚡ Lancer l’Ultime ?</h2><p><b>${H.ultime.n}</b> : ${texteCoupD(D, H.ultime.d)}</p><p class="doux">${H.ultime.cible === 'monstre' ? 'Ensuite, touche le monstre à viser. ' : ''}La jauge repart de zéro.</p>
+    <div class="choixh"><button onclick="fermer()">Annuler</button><button class="or" onclick="fermer();goUltime()">⚡ ${H.ultime.cible === 'monstre' ? 'Choisir la cible' : 'Lancer'}</button></div>`);
 }
+function goUltime() { const H = DHEROS[D.heros]; sel = []; selTour = -1;
+  if (H.ultime.cible === 'monstre') { if (!D.monstres.some(m => !m.sous)) { dis('Aucun monstre à viser pour l’instant.', true); rendu(); return; } attente = { quoi:'ultime', cible:'monstre' }; dis(`⚡ ${H.ultime.n} : touche un monstre.`); rendu(); return; }
+  lanceUltime({}); }
+function lanceUltime(k) {
+  const H = DHEROS[D.heros], av = new Set(D.monstres.map(m => m.col)), e = ultimeD(D, k);
+  if (e) { dis(e, true); rendu(); return; }
+  grandTitre(`⚡ ${H.ultime.n}`, '#c084fc'); GM.son('ultime');
+  const cols = D.heros === 'oria' && k && k.m ? [k.m.col, k.m.col === 2 ? 1 : k.m.col + 1] : D.heros === 'maelle' && k && k.m ? [k.m.col] : [...av];
+  cols.forEach((col, i) => setTimeout(() => colonneFx(col, D.heros), i * 120));
+  document.body.classList.remove('secoue'); void document.body.offsetWidth; document.body.classList.add('secoue');
+  dis(`⚡ ${H.ultime.n} !`); setTimeout(rendu, 380);
+}
+function grandTitre(txt, c) { const n = document.createElement('div'); n.className = 'grandTitre'; n.style.setProperty('--gc', c || '#f3c96b'); n.textContent = txt; document.body.appendChild(n); setTimeout(() => n.remove(), 1500); }
+// une traînée de lumière sur tout un chemin (cls : le héros, ou « s4 » pour une sorte de tour) ; r = une case seulement (le Bombardement : 3 cases)
+function colonneFx(col, cls, r) {
+  const pl = app.querySelector('.plateauD'); if (!pl) return; const b = pl.getBoundingClientRect(), hc = (PD.chemin_bas - PD.chemin_haut) / 4;
+  const x = b.left + b.width * PD.voies[col] / 100, w = b.width * PD.largeur_chemin / 100;
+  const y0 = b.top + b.height * (PD.chemin_haut + (r != null ? Math.max(0, r - 1) * hc : 0)) / 100, h = b.height * (r != null ? (Math.min(3, r + 1) - Math.max(0, r - 1) + 1) * hc : PD.chemin_bas - PD.chemin_haut) / 100;
+  const t = document.createElement('div'); t.className = 'coupH ' + cls; t.style.cssText = `left:${x - w * .7}px;width:${w * 1.4}px;top:${y0}px;height:${h}px`; document.body.appendChild(t); setTimeout(() => t.remove(), 1100);
+}
+// 27/11 (décision de l'utilisateur, façon Bloons TD 6) : LES POUVOIRS DES TOURS à 5 ★
+function pastilleT(t, c) { if (!aPouvoirT(t)) return ''; const P = POUVOIRS_T[t.v], ok = pouvoirPretT(D, t);
+  return `<span class="pouvT ${ok ? 'pret' : ''}" title="${P.n}" onclick="event.stopPropagation();confirmePouvoir(${c})">${ok ? P.e : `⏳${attenteT(D, t)}`}</span>`; }
+function textePouvoirT(t, c) { const P = POUVOIRS_T[t.v], pw = puissanceTour(D, c, t), n = t.v === 3 ? `${P.fleches} × ${pw}` : Math.round(pw * P.mul);
+  return `${P.d} <b>Dégâts : ${n}</b> par monstre${t.v === 6 ? ' (sans l’armure)' : ''}.`; }
+function htmlPouvoirT(t, c, v) {
+  const P = POUVOIRS_T[t ? t.v : v];
+  if (!aPouvoirT(t)) return `<div class="ftPouv">${P.e} <b>Pouvoir à ${ETOILES_MAX}&nbsp;★ : ${P.n}</b><br><small>${P.d} Il se lance quand tu veux, puis se recharge pendant ${DEF.pouvoirRecharge} tours.${t ? ` Il manque ${ETOILES_MAX - (t.et || 0)} étoile${ETOILES_MAX - (t.et || 0) > 1 ? 's' : ''} à cette tour.` : ''}</small></div>`;
+  const ok = pouvoirPretT(D, t);
+  return `<div class="ftPouv">${P.e} <b>Pouvoir : ${P.n}</b> ${ok ? '<b style="color:var(--ok)">· prêt !</b>' : `· se recharge : encore ${attenteT(D, t)} tour${attenteT(D, t) > 1 ? 's' : ''}`}<br><small>${textePouvoirT(t, c)} Recharge : ${rechargeT(D, t)} tour${rechargeT(D, t) > 1 ? 's' : ''}${D.sansFin ? ' (plus courte au-delà de 5 ★ : 7 ★ = 2 tours, 9 ★ = 1 tour)' : ''}.</small>${ok ? `<br><button class="or" onclick="confirmePouvoir(${c})">${P.e} Lancer ${P.n}</button>` : ''}</div>`;
+}
+function confirmePouvoir(c) {
+  if (!D || D.fini || enAnim || animeD) return; const t = D.rempart[c]; if (!aPouvoirT(t)) return; const P = POUVOIRS_T[t.v];
+  if (!pouvoirPretT(D, t)) { fenetre(`<h2>${P.e} ${P.n}</h2><p>Le pouvoir se recharge : encore <b>${attenteT(D, t)} tour${attenteT(D, t) > 1 ? 's' : ''}</b>.</p><p class="doux">${textePouvoirT(t, c)}</p><div class="choixh"><button class="or" onclick="fermer()">Compris</button></div>`); return; }
+  const n = P.cible ? null : ciblesPouvoirT(D, c).length;
+  fenetre(`<h2>${P.e} Lancer ${P.n} ?</h2><p>${textePouvoirT(t, c)}</p><p>${P.cible ? 'Ensuite, <b>touche une case de chemin</b> (ou un monstre) : elle et ses deux voisines du même chemin sautent.' : n ? `<b>${n} monstre${n > 1 ? 's' : ''}</b> touché${n > 1 ? 's' : ''} maintenant.` : '⚠ Aucun monstre touché pour l’instant : attends peut-être qu’ils arrivent.'}</p><p class="doux">Puis il se recharge pendant ${rechargeT(D, t)} tour${rechargeT(D, t) > 1 ? 's' : ''}.</p>
+    <div class="choixh"><button onclick="fermer()">Annuler</button><button class="or" onclick="fermer();goPouvoir(${c})">${P.e} ${P.cible ? 'Choisir le point' : 'Lancer'}</button></div>`);
+}
+function goPouvoir(c) { const t = D.rempart[c], P = POUVOIRS_T[t.v]; sel = []; selTour = -1;
+  if (P.cible) { attente = { quoi:'pouvoirT', cible:'case', c }; dis(`${P.e} ${P.n} : touche une case de chemin (ou un monstre).`); rendu(); return; }
+  lancePouvoir(c, null); }
+function lancePouvoir(c, k) {
+  const t = D.rempart[c], P = POUVOIRS_T[t.v], v = t.v, pvAvant = Object.fromEntries(D.monstres.map(m => [m.id, m.pv]));
+  const e = pouvoirTourD(D, c, k); if (e) { dis(e, true); rendu(); return; }
+  grandTitre(`${P.e} ${P.n}`, ({ 1:'#9fd8ff', 2:'#6aff5a', 3:'#e8d4a8', 4:'#ff8a2a', 5:'#8ad8ff', 6:'#ffd27a' })[v]); GM.son(v === 4 || v === 6 ? 'gros' : 'ultime');
+  if (!CALME) { if (v === 4) colonneFx(k.col, 's4', k.r); else (v === 5 ? [0, 1, 2] : [colD(c)]).forEach((col, i) => setTimeout(() => colonneFx(col, 's' + v), i * 110)); }
+  animeTirs(pvAvant, () => { dis(`${P.e} ${P.n} ! Il se recharge pendant ${rechargeT(D, t)} tour${rechargeT(D, t) > 1 ? 's' : ''}.`); rendu(); });
+}
+// la première fois qu'une sorte de tour atteint 5 ★, Moustache présente son pouvoir (retenu sur le téléphone)
+const CLE_POUV = 'guilde-defense-pouvoirs-vus';
+function presentePouvoir(c) { const t = D.rempart[c]; if (!aPouvoirT(t)) return; let vus; try { vus = JSON.parse(localStorage.getItem(CLE_POUV) || '[]'); } catch (e) { vus = []; } if (vus.includes(t.v)) return; vus.push(t.v); try { localStorage.setItem(CLE_POUV, JSON.stringify(vus)); } catch (e) {}
+  const P = POUVOIRS_T[t.v];
+  montreF(() => fenetre(`<h2>${P.e} Nouveau pouvoir : ${P.n}</h2><p>${textePouvoirT(t, c)}</p><div class="corbin">Moustache : « ${ETOILES_MAX} étoiles ! Ta ${SORTES[t.v].n.toLowerCase()} a un pouvoir. Quand la pastille dorée brille sur elle, touche-la. Ensuite, elle souffle ${DEF.pouvoirRecharge} tours. Comme moi après la sieste. »</div><div class="choixh"><button onclick="fermer()">Plus tard</button><button class="or" onclick="fermer();confirmePouvoir(${c})">${P.e} Voir pour lancer</button></div>`)); }
 function joueFx() {
   const fx = D.fx; D.fx = [];
   // 13/11 soir : bruitages (une fois par tour, pas un par coup)
@@ -408,7 +471,7 @@ function ficheTourH(v, c, t) {
   return `<div class="ficheT"><h2>${S.e} ${S.n}${t ? ` <small>niv.&nbsp;${t.niv}${et ? ' ' + etoilesTourTxt(et) : ''}</small>` : ''}</h2>
     <p class="ftRole">${ROLE_T[v]}</p><p>${S.d}</p>
     <p class="doux">Dégâts par tir${t ? ' (ici, avec les bonus de cette case)' : ''} :</p><div class="ftNiv">${lignes}</div>
-    <p class="doux">🎲 Elle vient des dés qui font <b>${v}</b>. Bâtir : ${DEF.coutBatir}&nbsp;PC. Un autre dé de ${v} posé dessus la monte d’un niveau (${NIV_MAX} au plus).</p><p class="doux">⭐ <b>Au niveau ${NIV_MAX}</b>, chaque dé de ${v} posé dessus ajoute une <b>étoile de maîtrise</b> : +${Math.round(ETOILE * 100)}&nbsp;% de dégâts, ${D && D.sansFin ? 'sans limite en vagues sans fin' : `${ETOILES_MAX} étoiles au plus`}${t ? ` (elle en a ${et})` : ''}. À ${ETOILES_MAX}&nbsp;★ : ${ETOILE5[v]}.</p><p class="doux">✨ Ou bien, si tu le choisis : deux tours au niveau ${NIV_MAX} côte à côte fusionnent en une Rune (elle ne tire plus, elle renforce ses voisines).</p></div>`;
+    <p class="doux">🎲 Elle vient des dés qui font <b>${v}</b>. Bâtir : ${DEF.coutBatir}&nbsp;PC. Un autre dé de ${v} posé dessus la monte d’un niveau (${NIV_MAX} au plus).</p><p class="doux">⭐ <b>Au niveau ${NIV_MAX}</b>, chaque dé de ${v} posé dessus ajoute une <b>étoile de maîtrise</b> : +${Math.round(ETOILE * 100)}&nbsp;% de dégâts, ${D && D.sansFin ? 'sans limite en vagues sans fin' : `${ETOILES_MAX} étoiles au plus`}${t ? ` (elle en a ${et})` : ''}. À ${ETOILES_MAX}&nbsp;★ : ${ETOILE5[v]}, et la tour gagne un <b>pouvoir</b> à lancer quand tu veux :</p>${htmlPouvoirT(t && !t.rune ? t : null, c, v)}<p class="doux">✨ Ou bien, si tu le choisis : deux tours au niveau ${NIV_MAX} côte à côte fusionnent en une Rune (elle ne tire plus, elle renforce ses voisines).</p></div>`;
 }
 function infoTour(v, c) {
   const t = c != null && c >= 0 ? D.rempart[c] : null;
@@ -461,13 +524,13 @@ function toucheDe(i) {
   if (attente) return;
   selTour = -1; sel = sel.includes(d) ? sel.filter(x => x !== d) : [...sel, d];
   if (d.gele && sel.includes(d)) { dis('🧊 Ce dé est gelé par le blizzard du Roi de l’Hiver : il ne sert qu’à être vendu (◆ Vendre, +1 PC).'); rendu(); return; }
-  dis(sel.length === 1 ? `<button class="infoB" onclick="infoTour(${d.v})">ⓘ ${SORTES[d.v].e} ${SORTES[d.v].n}</button> touche une case verte pour la bâtir (${DEF.coutBatir} PC), une tour de la même sorte pour la monter d’un niveau, un chemin pour un piège, ou une action en vert.` : sel.length ? 'Les actions en vert acceptent ces dés.' : '');
+  dis(sel.length === 1 ? `<button class="infoB" onclick="infoTour(${d.v})">ⓘ ${SORTES[d.v].e} ${SORTES[d.v].n}</button> touche une case verte pour la bâtir (${DEF.coutBatir} PC), une tour de la même sorte pour la monter d’un niveau (ou une étoile ★), un chemin pour un piège, ou ◆ Vendre.` : sel.length ? 'Plusieurs dés : ◆ Vendre (+1 PC chacun) ou 🎲 Relancer.' : '');
   rendu();
 }
 function toucheCase(c) {
   const t = D.rempart[c];
   if (attente) { if (attente.cible === 'tour' && t) finit({ t }); return; }
-  if (sel.length === 1) { const e = batirD(D, sel[0], c); if (e) dis(e, true); else { sel = []; GM.son(t ? 'tour-fusion' : 'tour-batir'); dis(`${SORTES[D.rempart[c].v].e} ${nomTourD(D.rempart[c])}${t ? '' : ' bâtie'}. ${t ? '' : SORTES[D.rempart[c].v].d}`); } rendu(); return; }
+  if (sel.length === 1) { const e = batirD(D, sel[0], c); if (e) dis(e, true); else { sel = []; GM.son(t ? 'tour-fusion' : 'tour-batir'); dis(`${SORTES[D.rempart[c].v].e} ${nomTourD(D.rempart[c])}${t ? '' : ' bâtie'}. ${t ? '' : SORTES[D.rempart[c].v].d}`); presentePouvoir(c); } rendu(); return; }
   if (selTour >= 0 && selTour !== c && t) return confirmeFusion(selTour, c); // 27/11 : la fusion se confirme, avec ce qu'elle donne
   if (selTour >= 0 && selTour !== c && !t && coutDeplaceD(D, selTour, c)) return confirmeDeplace(selTour, c); // 27/11 : ailleurs sur le rempart = 1 PC, avec confirmation
   if (selTour >= 0 && selTour !== c) {
@@ -484,20 +547,13 @@ function toucheCase(c) {
 function toucheMonstre(id) {
   const m = D.monstres.find(x => x.id === id); if (!m) return;
   if (attente && attente.cible === 'monstre') { finit({ m }); return; }
+  if (attente && attente.cible === 'case') { finit({ r:m.row, col:m.col }); return; }
   if (attente) return; ficheMonstre(m.t, m.id);
-}
-function agir(q) {
-  if (attente && attente.quoi === q) { annule(); return; }
-  if (!sel.length) return;
-  const e0 = permisD(D, q, sel); if (!e0) { dis('Ces dés ne conviennent pas.', true); rendu(); return; }
-  const cible = cibleDe(D, q);
-  if (!cible) { const e = agitD(D, q, sel, {}); sel = []; dis(e || ''); if (e) err = true; rendu(); return; }
-  attente = { quoi:q, cible }; dis(cible === 'monstre' ? (q === 'frappe' || q === 'technique' ? 'Touche un monstre : tout son chemin prend le coup.' : 'Touche un monstre.') : cible === 'tour' ? 'Touche une de tes tours.' : 'Touche un autre de tes dés.'); rendu();
 }
 // 25/11 (v3) : la fusion possible entre deux tours voisines (mêmes règles que fusionD)
 function fusionPossible(a, b) { if (!a || !b) return false; if (a.rune || b.rune) return a.rune && b.rune && a.rv === b.rv && b.rv < RUNE_MAX;
   return (a.niv >= NIV_MAX && b.niv >= NIV_MAX) || (a.v === b.v && a.niv === b.niv && b.niv < NIV_MAX); }
-function finit(k) { const q = attente.quoi; attente = null; const e = agitD(D, q, sel, k); if (e) dis(e, true); else { sel = []; dis(''); } rendu(); }
+function finit(k) { const a = attente; attente = null; if (a.quoi === 'ultime') return lanceUltime(k); if (a.quoi === 'pouvoirT') return lancePouvoir(a.c, k); rendu(); }
 function annule() { attente = null; sel = []; selTour = -1; dis(''); rendu(); }
 function relance() { const e = relancerD(D, sel); sel = []; dis(e || 'Relancé.', !!e); rendu(); }
 function finTour() {
@@ -507,7 +563,7 @@ function finTour() {
   sel = []; selTour = -1; attente = null;
   const p0 = D.porte, pvAvant = Object.fromEntries(D.monstres.map(m => [m.id, m.pv])); finTourD(D);
   // 14/11 (demande de l'utilisateur) : les tours TIRENT à l'écran, une par une, avant que les monstres n'avancent
-  animeTirs(pvAvant, () => { dis(D.porte < p0 ? `Aïe : la porte a perdu ${p0 - D.porte} PV.` : 'Tes tours ont tiré. À toi.'); rendu(); vagueAnnonce(); setTimeout(proposeBonus, 500); });
+  animeTirs(pvAvant, () => { dis(D.porte < p0 ? `Aïe : la porte a perdu ${p0 - D.porte} PV.` : 'Tes tours ont tiré. À toi.'); notePoint(); rendu(); vagueAnnonce(); setTimeout(proposeBonus, 500); });
 }
 // Les tirs se jouent sur l'écran d'avant (les monstres n'ont pas encore bougé) : un projectile part de la tour vers le monstre,
 // le monstre tremble et montre ses dégâts, ou disparaît s'il tombe. Ensuite seulement, le nouvel état (avance, nouvelle vague).
@@ -579,11 +635,13 @@ function fin() {
   if (!D.journalEnvoye && typeof guildeJournal === 'function') { D.journalEnvoye = true; guildeJournal(D.sansFin ? 'defense-sansfin' : 'defense', { heros:D.heros, resultat:D.fini, journal:[...(D.log || [])].reverse(), resume:{ vague:D.vague, porte:D.porte, porteMax:D.porteMax, score:typeof scoreD === 'function' ? scoreD(D) : null } }); } // 15/11 soir : carnet des parties
   const g = D.fini === 'gagne', sc = scoreD(D), r = lesRecords();
   if (D.sansFin && !D.enregistre) { try { const sf = JSON.parse(localStorage.getItem('guilde-defense-sansfin') || '{}'); if ((D.vague || 0) > (sf.vague || 0)) localStorage.setItem('guilde-defense-sansfin', JSON.stringify({ vague:D.vague, heros:D.heros })); } catch (e) {} }
+  if (!D.enregistre && D.sansFin) majPointsMax();
   if (!D.enregistre) { D.enregistre = true; r.push({ heros:D.heros, av:D.av || null, gagne:g, porte:D.porte, score:g ? sc : 0, vague:D.vague, quand:new Date().toISOString() }); try { localStorage.setItem(REC, JSON.stringify(r.slice(-50))); } catch (e) {} }
   fenetre(`<h2>${g ? '🏆 La porte a tenu !' : '💥 La porte est tombée…'}</h2>
     <p>${g ? `Le Titan de feu est tombé. Porte : ${D.porte}/${D.porteMax} PV · vagues sans dégâts : ${D.sansDegats} · monstres abattus : ${D.kills}.<br><b>Score : ${sc}</b>` : (D.sansFin ? `♾ Tu as tenu ${D.vague} vague${D.vague > 1 ? 's' : ''} · monstres abattus : ${D.kills}.` : `Vague ${Math.min(D.vague + 1, VAGUES.length)} sur ${VAGUES.length} · monstres abattus : ${D.kills}.`)}</p>
     ${(() => { const e = etoilesD(D), df = defiDuJourD(); if (g) { const E = lesEtoiles(), n = e.filter(Boolean).length; if (!E[jourCle()] || E[jourCle()] < n) { E[jourCle()] = n; try { localStorage.setItem(ETO_CLE, JSON.stringify(E)); } catch (x) {} } }
       return `<div class="etoiles">${e.map(x => `<span class="${x ? 'on' : ''}">★</span>`).join('')}</div><p class="doux" style="text-align:center;font-size:.85em">★ la victoire · ★ la porte à 15 PV ou plus · ★ le défi du jour : ${df.n}</p>`; })()}
+    ${!g && D.sansFin && lesPoints()[cleD()] && lesPoints()[cleD()].length ? `<p><b>💾 Repartir d’un point de sauvegarde</b></p>${listePointsH(cleD())}` : ''}
     <div class="corbin">Moustache : « ${g ? 'Pas mal. La porte est encore là, mon coussin aussi. Tout le monde est content.' : 'Bon. On reconstruit la porte et on recommence ? Moi, je ne porte rien. Je suis un chat.'} »</div>
     <div class="choixh"><button class="or" onclick="fermer();demarre('${cleD()}')">↺ Rejouer</button><button onclick="fermer();accueil()">Changer de héros</button><button onclick="location.href='menu.html'">⌂ Menu</button></div>`);
 }
@@ -600,7 +658,8 @@ function regles() {
   <li><b>Les Runes</b> : deux tours au niveau ${NIV_MAX} qui se touchent (de n’importe quelle sorte) font une <b>Rune</b> de ton héros. Elle ne tire pas : elle <b>renforce ses tours voisines</b> (halo violet) et leur donne son pouvoir. Deux Runes du même niveau = <b>Rune ancienne ✦✦</b>, puis <b>légendaire ✦✦✦</b>.</li>
   <li><b>Piège</b> (${DEF.coutBatir} PC) : un dé, puis une case de chemin : 🟫 1 = boue (arrête un monstre un tour), 🌿 2 à 5 = ronces (valeur × 3), 🪨 6 = barricade (le monstre change de chemin). Les chauves-souris volent au-dessus de la boue et des ronces ; le Titan écrase tout.</li>
   <li><b>Déplacer</b> une tour : touche-la, puis une case libre. Le 1er déplacement du tour vers une case <b>voisine</b> est gratuit ; <b>n’importe où</b> ailleurs sur le rempart (ou un 2e déplacement) : ${DEF.coutDeplace}&nbsp;PC.</li>
-  <li><b>Coups de héros</b> : ⚔ <b>Frappe</b> (dés identiques) touche <b>tout un chemin</b> : valeur × nombre de dés × 2 ; ⚔⚔ <b>Technique</b> (suite) touche tout un chemin et fait <b>reculer</b> les monstres d’une case. Plus forts à chaque vague. Aussi : Pouvoir et Ultime.</li>
+  <li><b>Pouvoirs des tours</b> : une tour à ${ETOILES_MAX}&nbsp;★ gagne un pouvoir propre à sa sorte (pastille dorée sur la tour) :<br>${Object.values(POUVOIRS_T).map(P => `${P.e} <b>${P.n}</b> : ${P.d}`).join('<br>')}<br>Tu le lances quand tu veux pendant ton tour (touche la pastille, ou la tour puis « Lancer »), puis il se <b>recharge pendant ${DEF.pouvoirRecharge} tours</b>. En vagues sans fin, 7&nbsp;★ = 2 tours de recharge, 9&nbsp;★ = 1 tour.</li>
+  <li><b>⚡ Ultime</b> : sans dés. La jauge se remplit d’un cran à chaque monstre abattu ; à ${DEF.jaugeMax}, touche ton portrait (ou ⚡ Ultime) pour le lancer, puis elle repart de zéro. Ton héros : <b>${DHEROS[D ? D.heros : choixD.startsWith('av:') ? haVoie(choixD) : choixD].ultime.n}</b>, ${texteCoupD(D || { vague:0 }, DHEROS[D ? D.heros : choixD.startsWith('av:') ? haVoie(choixD) : choixD].ultime.d).replace(/\.$/, '')}.</li>
   <li><b>PC</b> : +1 à chaque tour, et <b>+1 tous les ${DEF.killsPC} monstres abattus</b>. <b>Vendre</b> un dé donne aussi 1 PC ; les dés pas utilisés sont vendus à la fin du tour. Tu as ${DEF.relances} relances par tour pour chercher les dés qui te manquent.</li></ul>
   <p>En haut, la bande 🌊 montre <b>la vague qui arrive</b>. Après chaque vague, tu choisis <b>un bonus parmi 3</b>. À la victoire : jusqu’à <b>3 étoiles</b> (porte à 15 PV ou plus, défi du jour).</p>
   <p><b>Les monstres</b> (touche un monstre sur le plateau pour sa fiche complète) :</p><ul style="padding-left:1.1em;margin:.3em 0">${Object.entries(MONSTRES).filter(([k, M]) => !M.boss && !M.invoque).map(([k, M]) => `<li>${M.e} <b>${M.n}</b> ${(M.ic || []).join('')} : ${M.d}</li>`).join('')}</ul>
@@ -613,6 +672,40 @@ function regles() {
 // 22/11 (carte de l'application : « la Défense n'a pas de reprise ») : la partie en cours est gardée sur le téléphone à chaque geste ;
 // à l'accueil, « ▶ Reprendre » la remet là où on s'est arrêté (le hasard repart de zéro, comme dans les autres modes)
 const CLE_EN_COURS = 'guilde-defense-en-cours';
+// 27/11 (décision de l'utilisateur) : LES POINTS DE SAUVEGARDE DU MODE SANS FIN. Chaque boss vaincu (vagues 6, 12, 18…) enregistre la partie
+// entière ; 3 points par héros (le plus récent remplace le plus ancien), sur le téléphone (clé guilde-, sauvegardée avec le compte).
+// « Repartir de la vague N » : la partie reprend là ; les vagues déjà récompensées (maxV) ne redonnent ni XP ni or.
+const CLE_POINTS = 'guilde-defense-points', POINTS_MAX = 3;
+const lesPoints = () => { try { return JSON.parse(localStorage.getItem(CLE_POINTS) || '{}'); } catch (e) { return {}; } };
+const gardePoints = P => { try { localStorage.setItem(CLE_POINTS, JSON.stringify(P)); } catch (e) {} };
+function notePoint() {
+  if (!D || !D.sansFin || !D.pointSauv || D.fini) return;
+  const v = D.pointSauv; D.pointSauv = 0;
+  const c = JSON.parse(JSON.stringify(Object.assign({}, D, { fx:[], rng:null, log:D.log.slice(0, 40) }))); delete c.rng; c.journalEnvoye = false; c.enregistre = false;
+  const P = lesPoints(), k = cleD(), L = (P[k] || []).filter(x => x.vague !== v);
+  L.unshift({ id:Date.now().toString(36), vague:v, repart:D.vague + 1, porte:D.porte, porteMax:D.porteMax, quand:new Date().toISOString(), maxV:Math.max(D.vague, D.xpDes || 0), D:c });
+  P[k] = L.slice(0, POINTS_MAX); gardePoints(P);
+  grandTitre(`💾 Point de sauvegarde : vague ${v}`, '#7dffb0'); logD(D, `💾 Point de sauvegarde : vague ${v}.`);
+  dis(`💾 Point de sauvegarde : vague ${v}. Tu pourras repartir d’ici.`);
+}
+// à la fin d'une partie sans fin : les points de ce héros jusqu'à la vague atteinte sont « récompensés » jusque-là
+function majPointsMax() { const P = lesPoints(), L = P[cleD()]; if (!L) return; L.forEach(x => { if (x.vague <= D.vague) x.maxV = Math.max(x.maxV || 0, D.vague); }); gardePoints(P); }
+const nomHerosCle = k => { const i = String(k).startsWith('av:') && typeof haInfo === 'function' ? haInfo(k) : null; return i ? haEsc(i.nom) : (HEROS[haVoie(k)] || HEROS[k] || {}).nom || k; };
+function listePointsH(seul) {
+  const P = lesPoints(), ks = Object.keys(P).filter(k => (!seul || k === seul) && P[k] && P[k].length);
+  if (!ks.length) return 'Aucun point pour l’instant : chaque boss vaincu (vagues 6, 12, 18…) en crée un, 3 par héros.';
+  return `<div class="pointsS">${ks.map(k => P[k].map(x => `<div><button class="go" onclick="confirmePoint('${k}','${x.id}')">▶ Repartir de la vague ${x.repart || x.vague + 1}<small>${nomHerosCle(k)} · boss de la vague ${x.vague} vaincu · porte ${x.porte}/${x.porteMax} · ${new Date(x.quand).toLocaleDateString('fr-FR')}</small></button><button class="sup" title="Supprimer" onclick="supprimePoint('${k}','${x.id}')">✕</button></div>`).join('')).join('')}</div><small>3 points par héros : le plus récent remplace le plus ancien. Les vagues déjà passées ne redonnent ni XP ni récompense.</small>`;
+}
+const trouvePoint = (k, id) => (lesPoints()[k] || []).find(x => x.id === id);
+function confirmePoint(k, id) { const x = trouvePoint(k, id); if (!x) return;
+  fenetre(`<h2>💾 Repartir de la vague ${x.repart || x.vague + 1} ?</h2><p><b>${nomHerosCle(k)}</b> · porte ${x.porte}/${x.porteMax} · tes tours, tes étoiles et tes bonus de ce moment-là.</p><p class="doux">${enCoursD() ? '⚠ Ta partie en cours (« Reprendre ») sera remplacée. ' : ''}Les vagues déjà passées (jusqu’à la ${x.maxV || x.vague}) ne redonnent ni XP ni récompense ; ton record garde le meilleur.</p>
+    <div class="choixh"><button onclick="fermer()">Annuler</button><button class="or" onclick="fermer();repartPoint('${k}','${id}')">▶ Repartir</button></div>`); }
+function repartPoint(k, id) { const x = trouvePoint(k, id); if (!x) return;
+  try { CFG.ferme(); } catch (e) {}
+  D = JSON.parse(JSON.stringify(x.D)); D.rng = Math.random; D.fx = []; D.fini = null; D.sansFin = true; D.pointSauv = 0; D.enregistre = false; D.journalEnvoye = false; D.xpDes = Math.max(x.maxV || 0, x.vague);
+  modeSF = true; sel = []; selTour = -1; attente = null; app.classList.add('jeu'); dis(`💾 Reparti de la vague ${x.repart || x.vague + 1}. À toi de jouer.`); rendu(); }
+function supprimePoint(k, id) { const x = trouvePoint(k, id); if (!x) return;
+  fenetre(`<h2>✕ Supprimer ce point ?</h2><p>${nomHerosCle(k)} · vague ${x.vague} · porte ${x.porte}/${x.porteMax}</p><p class="doux">Il ne pourra plus être repris.</p><div class="choixh"><button onclick="fermer()">Annuler</button><button class="or" onclick="(()=>{const P=lesPoints();P['${k}']=(P['${k}']||[]).filter(y=>y.id!=='${id}');gardePoints(P);})();fermer();if(D&&D.fini){fin()}else{try{CFG.dessine()}catch(e){}}">✕ Supprimer</button></div>`); }
 function gardeD() { try { if (D && !D.fini) { const c = Object.assign({}, D, { fx:[] }); delete c.rng; localStorage.setItem(CLE_EN_COURS, JSON.stringify({ quand:Date.now(), D:c, modeSF })); } else localStorage.removeItem(CLE_EN_COURS); } catch (e) {} }
 function enCoursD() { try { const g = JSON.parse(localStorage.getItem(CLE_EN_COURS) || 'null'); return g && g.D && !g.D.fini && g.D.v3 ? g : null; } catch (e) { return null; } } // 25/11 : une partie d'avant la v3 ne se reprend pas
 function reprendD() { const g = enCoursD(); if (!g) return; D = g.D; D.rng = Math.random; D.fx = []; modeSF = !!g.modeSF; sel = []; selTour = -1; attente = null; dis('Partie reprise : à toi de jouer.'); app.classList.add('jeu'); rendu(); }
@@ -635,14 +728,14 @@ function defDefense() {
     heros:() => ['maelle', 'gorm', 'aldric', 'pip', 'oria', 'zephine'].map(h => h === 'zephine' && !z ? `<button disabled><img src="${IMG(h)}" alt="" style="filter:grayscale(1)">🔒 ${HEROS[h].nom}</button>`
         : `<button class="${choixD === h ? 'on' : ''}" onclick="choisitD('${h}')"><img src="${IMG(h)}" alt="">${HEROS[h].nom}<small>✨ ${DHEROS[h].rune.n}</small></button>`).join('')
       + haListe().map(a => haInfo('av:' + a.id)).filter(i => i && (i.voie !== 'zephine' || z)).map(i => `<button class="${choixD === i.cle ? 'on' : ''}" onclick="choisitD('${i.cle}')">${haImg(i, `box-shadow:0 0 0 2px ${i.couleur}`)}${haEsc(i.nom)}<small>✨ ${DHEROS[i.voie].rune.n}</small></button>`).join(''),
-    fiche:() => { const v = haVoie(choixD), i = haInfo(choixD), H = DHEROS[v]; return `🛡 <b>${i ? haEsc(i.nom) : HEROS[v].nom}</b>${i ? ` · la voie de ${HEROS[v].nom}` : ''}<br>${H.passif}<br>✨ <b>Rune : ${H.rune.n}</b> · ${H.rune.d}`; },
+    fiche:() => { const v = haVoie(choixD), i = haInfo(choixD), H = DHEROS[v]; return `🛡 <b>${i ? haEsc(i.nom) : HEROS[v].nom}</b>${i ? ` · la voie de ${HEROS[v].nom}` : ''}<br>${H.passif}<br>⚡ <b>Ultime : ${H.ultime.n}</b> · ${texteCoupD({ vague:0 }, H.ultime.d)}<br>✨ <b>Rune : ${H.rune.n}</b> · ${H.rune.d}`; },
     modes:[
-      { k:'vagues', e:'🌊', n:'6 vagues', img:'menu-recu/mode-defense.webp', desc:() => 'Les monstres descendent trois chemins vers la porte de la Guilde. Tes dés deviennent des tours… ou des coups tout de suite. Six vagues, puis le Titan.',
+      { k:'vagues', e:'🌊', n:'6 vagues', img:'menu-recu/mode-defense.webp', desc:() => 'Les monstres descendent trois chemins vers la porte de la Guilde. Tes dés deviennent des tours qui fusionnent, gagnent des étoiles et des pouvoirs. Six vagues, puis le Titan.',
         pas:() => [`🎯 Défi du jour : ${defiDuJourD().n}${lesEtoiles()[jourCle()] ? ' · ' + '★'.repeat(lesEtoiles()[jourCle()]) : ''}`, `🏆 ${gg.length} victoire${gg.length > 1 ? 's' : ''} sur ${r.length}`], partie:() => partie(false) },
       { k:'sansfin', e:'♾', n:'Sans fin', img:'menu-recu/mode-defense.webp', desc:() => 'Les vagues ne s’arrêtent jamais, toujours plus fortes ; un boss différent toutes les 6 vagues (Titan, Colosse, Roi des Os, Roi de l’Hiver). Jusqu’où tiendras-tu ?',
         pas:() => [`Ton record : ${recSF} vague${recSF > 1 ? 's' : ''}`], partie:() => partie(true) } ],
     options:m => m === 'vagues' ? [{ k:'d', titre:`🎯 Le défi du jour : ${defiDuJourD().n}`, verrou:'le même pour tous', aide:'★ la victoire · ★ la porte à 15 PV ou plus · ★ le défi du jour.' }]
-      : [{ k:'r', titre:'♾ Les vagues sans fin', aide:`Ton record : ${recSF} vagues. Un boss différent toutes les 6 vagues.` }],
+      : [{ k:'r', titre:'♾ Les vagues sans fin', aide:`Ton record : ${recSF} vagues. Un boss différent toutes les 6 vagues.` }, { k:'p', titre:'💾 Tes points de sauvegarde', aide:listePointsH() }],
     resume:m => `${m === 'sansfin' ? '♾ Sans fin' : '🌊 6 vagues et le Titan'} · <b>${haInfo(choixD) ? haEsc(haInfo(choixD).nom) : HEROS[haVoie(choixD)].nom}</b>`,
     lancer:m => { if (!okD(choixD)) { alert('Choisis ton héros.'); return CFG.va(2); } modeSF = m === 'sansfin'; try { localStorage.removeItem(CLE_EN_COURS); } catch (e) {} demarre(choixD); } };
 }
