@@ -16,11 +16,11 @@ const DEF = {
 // la force d'une tour selon son niveau (1 à 4), avant le multiplicateur de sa sorte
 const BASE_NIV = [0, 10, 22, 46, 95];
 const SORTES = {
-  1:{ n:'Tour de givre', e:'❄', mul:0.6, d:'Gèle sa cible : au prochain pas, elle avance d’une case de moins (le Titan ne gèle pas).' },
-  2:{ n:'Tour de poison', e:'☠', mul:0.4, poison:0.8, d:'Empoisonne sa cible : le poison la ronge à chaque tour (il traverse l’armure, puis faiblit de moitié).' },
-  3:{ n:'Tour d’archers', e:'🏹', mul:0.6, d:'Tire deux flèches, et voit les chauves-souris même en première ligne.' },
-  4:{ n:'Canon', e:'💣', mul:1, eclats:0.5, d:'Touche sa cible et, à moitié, les monstres juste devant et derrière elle.' },
-  5:{ n:'Tour de foudre', e:'⚡', mul:0.9, saut:0.6, d:'L’éclair saute sur le monstre de tête d’un chemin voisin.' },
+  1:{ n:'Tour de givre', e:'❄', mul:0.6, d:'Gèle sa cible : au prochain pas, elle avance d’une case de moins (les boss ne gèlent pas ; le feu follet, lui, recule d’une case).' },
+  2:{ n:'Tour de poison', e:'☠', mul:0.4, poison:0.8, d:'Empoisonne sa cible : le poison la ronge à chaque tour (il traverse l’armure, puis faiblit de moitié). Un monstre empoisonné ne se soigne plus (troll, Colosse) ; le poison ne prend pas sur le golem de pierre.' },
+  3:{ n:'Tour d’archers', e:'🏹', mul:0.6, d:'Tire deux flèches, voit les chauves-souris même en première ligne, et vise d’abord le chaman de son chemin.' },
+  4:{ n:'Canon', e:'💣', mul:1, eclats:0.5, d:'Touche sa cible et, à moitié, les monstres juste devant et derrière elle, même le mineur sous terre.' },
+  5:{ n:'Tour de foudre', e:'⚡', mul:0.9, saut:0.6, d:'L’éclair saute sur le monstre de tête d’un chemin voisin, et voit le spectre même invisible.' },
   6:{ n:'Grande tour', e:'🗼', mul:1.4, perce:true, d:'Le plus gros tir sur un seul monstre ; traverse l’armure.' },
 };
 const ETOILES_MAX = 5, ETOILE = 0.35; // 27/11 : étoiles de maîtrise (dé de la même face sur une tour au niveau max : +20 % par étoile, effet renforcé à 5)
