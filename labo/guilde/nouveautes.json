@@ -1,5 +1,9 @@
 [
 {
+"v": "20261127-232914",
+"m": "Corrections de la soirée : Duel (Fin du tour, pouvoirs du build), Crypte (jumeaux), cartes lisibles, Expéditions (capitaine qui progresse, forge), Invasion (compagnon, Gardes jumeaux, héros à terre), équipements visibles, Rempart (monstres plus nombreux, chemin annoncé), modes qui suivent ton héros"
+},
+{
 "v": "20261127-222128",
 "m": "Rempart des runes : runes à toucher, appel de la vague, sort du héros, spécialisations, nouveaux monstres, défis à médailles, dés plus clairs, 6 tours peintes ; plus de double croix sur les fenêtres"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261126-210246",
 "m": "Fenêtre des amis allégée"
-},
-{
-"v": "20261126-205312",
-"m": "Le flash des Expéditions change de boss chaque jour"
 }
 ]

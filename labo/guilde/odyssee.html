@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261127-222128"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
+<head><meta name="guilde-version" content="20261127-232914"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="robots" content="noindex">
@@ -178,7 +178,7 @@ const herosAventureOdy = () => haListe().map(a => haInfo('av:' + a.id)).map(i =>
   ? `<button onclick="location.href='duel.html?tuto=1'" style="opacity:.55">${haImg(i, 'filter:grayscale(1)')}🔒 ${haEsc(i.nom)}<br><small style="color:var(--doux)">Fais le tutoriel</small></button>`
   : `<button onclick="commence('${i.cle}')">${haImg(i, `box-shadow:0 0 0 2px ${i.couleur}`)}${haEsc(i.nom)}<small class="ha-t">⚔ ${haEsc(i.titre)}</small><small style="color:var(--doux)">${Math.round(HEROS[i.voie].pv * (ODY_PV[i.voie] || 1.8))} PV en Odyssée</small></button>`).join('');
 
-const VERSION = '20261127-222128';
+const VERSION = '20261127-232914';
 function verifieVersion() {
   fetch('version.txt?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
     v = (v || '').trim(); if (!v || v === VERSION || document.getElementById('majbar')) return;
@@ -191,19 +191,19 @@ function verifieVersion() {
 setInterval(verifieVersion, 120000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verifieVersion(); });
 </script>
-<script src="cartes.js?v=94ea5cc1ba"></script>
+<script src="cartes.js?v=68497176d5"></script>
 <script src="musique.js?v=fb0b9da49e"></script>
 <script src="rang.js?v=4a53584921"></script>
 <script src="heros-etoiles.js?v=29ce68f57f"></script>
 <script src="heros-aventure.js?v=31db8c2ed4"></script>
 <script src="donnees.js?v=8a39c05326"></script>
 <script src="guide.js?v=ceb10204e9"></script>
-<script src="odyssee.js?v=c5228219fc"></script>
+<script src="odyssee.js?v=ebeeb32f46"></script>
 <script src="bestiaire.js?v=202461b072"></script>
-<script src="aventure.js?v=09133a6200"></script>
+<script src="aventure.js?v=78f58d0886"></script>
 <script src="odyssee-sansfin.js?v=7b3807249c"></script>
 <script src="pantheon.js?v=1a6f59e92e"></script>
-<script src="configurateur.js?v=a276a42cee"></script>
+<script src="configurateur.js?v=d5e9469a28"></script>
 <script src="odyssee-config.js?v=5efbd245a1"></script>
 <script src="chronique.js?v=ecf982cfcc"></script>
 <script>

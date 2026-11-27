@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261127-222128"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
+<head><meta name="guilde-version" content="20261127-232914"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="robots" content="noindex">
@@ -29,12 +29,12 @@
 <body>
 <div id="app"></div>
 <script src="guide.js?v=ceb10204e9"></script>
-<script src="cartes.js?v=94ea5cc1ba"></script>
+<script src="cartes.js?v=68497176d5"></script>
 <script src="heros-aventure.js?v=31db8c2ed4"></script>
 <script src="musique.js?v=fb0b9da49e"></script>
 <script src="rang.js?v=4a53584921"></script>
 <script src="donnees.js?v=8a39c05326"></script>
-<script src="odyssee.js?v=c5228219fc"></script>
+<script src="odyssee.js?v=ebeeb32f46"></script>
 <script src="chronique.js?v=ecf982cfcc"></script>
 <script>
 const ZOK = () => localStorage.getItem('guilde-tuto') === 'fait'; // Zéphine : débloquée par le tutoriel (12/11)
@@ -51,7 +51,11 @@ const avC = qui => haListe().map(a => haInfo('av:' + a.id)).map(i => {
 const INVP = (() => { try { return JSON.parse(localStorage.getItem('guilde-invasion') || '{}'); } catch (e) { return {}; } })();
 const bossOk = k => k === 'eveil' ? true : k === 'reveil' ? !!INVP.eveil : !!INVP.reveil;
 const bossCond = k => k === 'reveil' ? 'Gagne l’Acte I pour l’ouvrir.' : 'Gagne l’Acte II pour l’ouvrir.';
-{ const b = new URLSearchParams(location.search).get('boss'); if (b && HEROS[b]) C.boss = b; if (!bossOk(C.boss)) C.boss = 'eveil'; }
+// 27/11 (l'utilisateur : « je choisis l'Acte I et on me propose aussi l'Acte II, c'est absurde ») : le portail d'un acte n'affiche QUE cet acte ;
+// le portail « Les grands boss » (sans ?boss=) n'affiche que les grands boss.
+const ACTES_INV = ['eveil', 'reveil'];
+const BOSS_VUS = (() => { const b = new URLSearchParams(location.search).get('boss'); if (b && ACTES_INV.includes(b)) return [b]; return ['colosseracines', 'kraken', 'ignaros']; })();
+{ const b = new URLSearchParams(location.search).get('boss'); if (b && HEROS[b]) C.boss = b; if (!BOSS_VUS.includes(C.boss) || !bossOk(C.boss)) C.boss = BOSS_VUS.find(bossOk) || BOSS_VUS[0]; }
 // 23/11 (testeurs : « reprise par une fenêtre du navigateur après avoir rechoisi les héros ») : un combat gardé se reprend d'un toucher, ici
 try { sessionStorage.removeItem('guilde-inv-actif'); } catch (e) {} // revenu sur cette page : un nouveau lancement est une NOUVELLE partie
 const INV_SV = (() => { try { const s = JSON.parse(localStorage.getItem('guilde-invasion-combat') || 'null'); return s && s.coop && !s.fini && HEROS[s.choix] && Date.now() - (s.quand || 0) < 7 * 864e5 ? s : null; } catch (e) { return null; } })();
@@ -69,7 +73,7 @@ function dessine() {
   const b = HEROS[C.boss];
   document.getElementById('app').innerHTML = `<h1>⚔️ L’Invasion</h1>
   <p class="doux" style="text-align:center">Deux héros de la Guilde tiennent le front ensemble : les actes de l’Invasion (plusieurs vagues à la suite) ou un grand boss. Il faudra se serrer les coudes.</p>
-  ${repriseHTML()}${INV_SV ? '<h2>Ou une nouvelle partie</h2>' : ''}<h2>Le boss</h2>${Object.keys(BOSS_CAMP).map(k => { const x = HEROS[k]; if (!bossOk(k)) return `<div class="boss" style="opacity:.45;filter:grayscale(.8)"><div class="e">🔒</div><div><b>${x.nom}</b>, ${x.titre}<small>${bossCond(k)}</small></div></div>`; return `<div class="boss ${C.boss === k ? 'sel' : ''}" onclick="C.boss='${k}';dessine()" style="cursor:pointer;${C.boss === k ? 'outline:3px solid #7dffb0;' : 'opacity:.75;'}"><div class="e">${x.emoji}</div><div><b>${x.nom}</b>, ${x.titre} · ${x.pv} PV<small>${x.role}</small></div></div>`; }).join('')}
+  ${repriseHTML()}${INV_SV ? '<h2>Ou une nouvelle partie</h2>' : ''}<h2>${BOSS_VUS.length === 1 ? 'Le front' : 'Le boss'}</h2>${BOSS_VUS.map(k => { const x = HEROS[k]; if (!bossOk(k)) return `<div class="boss" style="opacity:.45;filter:grayscale(.8)"><div class="e">🔒</div><div><b>${x.nom}</b>, ${x.titre}<small>${bossCond(k)}</small></div></div>`; return `<div class="boss ${C.boss === k ? 'sel' : ''}" onclick="C.boss='${k}';dessine()" style="cursor:pointer;${C.boss === k ? 'outline:3px solid #7dffb0;' : 'opacity:.75;'}"><div class="e">${x.emoji}</div><div><b>${x.nom}</b>, ${x.titre} · ${x.pv} PV<small>${x.role}</small></div></div>`; }).join('')}
   <p class="doux">Pas encore de partie en ligne : on joue <b>à deux sur ce téléphone</b> (on se le passe à chaque tour), ou avec un <b>compagnon joué par l’ordinateur</b>. Le boss joue après les deux héros et se retourne contre le dernier qui l’a frappé. La <b>Cohésion</b> (réserve commune) permet de relever un héros à terre, de crier le ralliement ou de soigner l’autre.</p>
   <h2>1. Ton héros</h2><div class="heros6">${ORDRE.map(id => id === 'zephine' && !ZOK() ? `<button disabled style="opacity:.5"><img src="${IMG(id)}" alt="" style="filter:grayscale(1)">🔒 ${HEROS[id].nom}<br><small>Fais le tutoriel</small></button>` : `<button class="${C.a === id ? 'sel' : ''}" onclick="C.a='${id}';if(C.b===C.a)C.b=null;dessine()"><img src="${IMG(id)}" alt="">${HEROS[id].nom}</button>`).join('')}${avC('a')}</div>
   <h2>2. Le second héros</h2><div class="modes"><button class="${C.modeB === 'ordi' ? 'sel' : ''}" onclick="C.modeB='ordi';dessine()">🤖 Un compagnon (ordinateur)</button><button class="${C.modeB === 'humain' ? 'sel' : ''}" onclick="C.modeB='humain';dessine()">📱 Un ami, sur ce téléphone</button></div>

@@ -30,7 +30,7 @@ function bonusMode(id) {
 function texteBonus(id) {
   const B = bonusMode(id);
   const p = [B.pv && `❤ +${B.pv}`, B.bouclier && `🛡 ${B.bouclier}`, B.relance && `🎲 +${B.relance} relance`, B.des && `🎲 +${B.des} dé`].filter(Boolean);
-  if (B.fs > 1.05) p.push(`👹 monstres ×${String(B.fs).replace('.', ',')}`);
+  if (B.fs > 1.05) p.push('👹 les monstres suivent ton héros (plus solides, coups plus forts)'); // 27/11 soir : plus un « × force » trompeur
   return p.length ? `Ta progression : ${p.join(' · ')}` : 'Fais monter ton héros (niveau, rang, équipement) dans « Mes héros » : il sera plus fort ici aussi.';
 }
 // une récompense d'armurerie à la victoire : sûre avec 3 étoiles, 1 chance sur 4 sinon. Renvoie le nom de l'objet ou null.

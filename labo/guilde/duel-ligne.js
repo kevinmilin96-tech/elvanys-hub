@@ -96,7 +96,7 @@ function dlQuitte() { DL = null; DLOB = null; window.SALLE_ACTIVE = ''; try { lo
 async function dlLance(premier) {
   if (!DL) return; const duo = DL.joueurs.slice(0, 2); if (duo.length < 2) return;
   const choix = DLOB ? DLOB.choix : S.ligneChoix, a = premier || DLOB.hote, b = duo.find(j => j.id !== a).id;
-  nouvellePartie(choix[a], choix[b]);
+  window._sansBuild = true; nouvellePartie(choix[a], choix[b]);
   S.deux = true; S.ligne = true; S.O.ordi = false; S.J.joueur = a; S.O.joueur = b; S.J.qui = dlNomDe(a); S.O.qui = dlNomDe(b);
   S.ligneChoix = choix; S.ligneHote = DLOB ? DLOB.hote : S.ligneHote; S.manche = Date.now();
   log('Duel à distance : ' + S.J.qui + ' contre ' + S.O.qui + '.'); DLOB = null;

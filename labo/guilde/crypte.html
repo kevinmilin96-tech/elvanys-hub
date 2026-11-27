@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261127-222128"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
+<head><meta name="guilde-version" content="20261127-232914"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="robots" content="noindex">
@@ -153,14 +153,14 @@
 <script src="musique.js?v=fb0b9da49e"></script>
 <script src="rang.js?v=4a53584921"></script>
 <script src="heros-etoiles.js?v=29ce68f57f"></script>
-<script src="progression-modes.js?v=807b0f9ad5"></script>
+<script src="progression-modes.js?v=5beed3e8fc"></script>
 <script src="heros-aventure.js?v=31db8c2ed4"></script>
 <script src="succes.js?v=95cd2d064d"></script>
 <script src="profil.js?v=ea5bfe413a"></script>
 <script>window.AMIS_SANS_BOUTON = true; /* 15/11 soir : la crypte du jour se compare entre amis */</script>
 <script src="amis.js?v=0348982fc3"></script>
 <script src="defis-jour.js?v=7524fb7576"></script>
-<script src="crypte-moteur.js?v=732d84c838"></script>
+<script src="crypte-moteur.js?v=b3b1067147"></script>
 <script src="descente-moteur.js?v=783a91f811"></script>
 <script>
 // =============================================================================================== LA CRYPTE AUX SCEAUX (15/11, écran)
@@ -201,7 +201,7 @@ function sceauHTML(s, S_, ici, etat) {
     case 'imp': t = '<small>impair</small>'; break;
     case 'tot': t = `Σ ${s.reste}`; break;
     case 'any': t = '✶'; break;
-    case 'dbl': { const j = S_.find(x => x !== s && x.t === 'dbl' && x.g === s.g && x.ok); t = j ? `= ${j.val}` : '<small>jumeau</small>'; break; }
+    case 'dbl': { const j = S_.find(x => x !== s && x.t === 'dbl' && x.g === s.g && x.ok); t = j && j.val ? `= ${j.val}` : j ? '✶' : '<small>jumeau</small>'; break; } // 27/11 soir : jumeau brisé sans dé → ce sceau prend n'importe quel dé (✶)
   }
   return `<div class="sc ${s.ok ? 'ok' : ''} ${etat || ''}" ${ici ? `onclick="${ici}"` : ''}>${t}</div>`;
 }
@@ -444,7 +444,7 @@ function explique(id) {
   const T = c.trait && C.TRAITS[c.trait], x = C.intentions(S).find(y => y.id === c.id) || {}, it = x.it || 'frappe', I = C.INTENTIONS[it];
   const icone = it === 'frappe' ? `${x.vise === 'comp' ? '🐾' : c.double ? '⚔⚔' : '⚔'} ${x.v}` : I.e;
   const ceTour = it === 'frappe' ? `<b>frappe de ${x.v}</b>${c.double ? ' (coup DOUBLE : il avait préparé son coup ⏳)' : ''}${x.vise === 'comp' ? ' sur ton <b>compagnon</b> 🐾' : ' sur ton héros'}` : `<b>${I.n}</b> : ${I.d}`;
-  const SC = { ex:v => `un dé de <b>exactement ${v}</b>`, min:v => `un dé de <b>${v} ou plus</b>`, max:v => `un dé de <b>${v} ou moins</b>`, pair:() => 'un dé <b>pair</b> (2, 4, 6)', imp:() => 'un dé <b>impair</b> (1, 3, 5)', any:() => '<b>n’importe quel</b> dé', dbl:() => '<b>jumeau</b> : le même chiffre que son sceau jumeau' };
+  const SC = { ex:v => `un dé de <b>exactement ${v}</b>`, min:v => `un dé de <b>${v} ou plus</b>`, max:v => `un dé de <b>${v} ou moins</b>`, pair:() => 'un dé <b>pair</b> (2, 4, 6)', imp:() => 'un dé <b>impair</b> (1, 3, 5)', any:() => '<b>n’importe quel</b> dé', dbl:() => '<b>jumeau</b> : le même chiffre que son sceau jumeau (si son jumeau a été brisé sans dé, par un pouvoir ou une Rune : n’importe quel dé)' };
   const ligneSc = sc => `<li>${sceauHTML(sc, c.sceaux, '', '')} ${sc.ok ? '<span style="color:var(--ok)">brisé ✓</span>' : sc.t === 'tot' ? `un <b>total de ${sc.reste}</b> à atteindre : pose autant de dés que tu veux, le chiffre descend` : (SC[sc.t] || (() => ''))(sc.v)}</li>`;
   fenetre(`<div style="display:flex;gap:12px;align-items:center"><img src="portraits/m-${c.m}.webp" alt="" style="width:76px;height:76px;object-fit:cover;border-radius:12px;flex:none"><div><h2 style="margin:0">${c.nom}</h2><small style="color:var(--doux)">${c.gardien ? '♛ Le Gardien de la crypte' : c.elite ? '★ Une élite, au fond de sa colonne' : 'Niveau ' + c.niv} · force ${c.att}</small></div></div>
     <p><span style="display:inline-block;min-width:3em;text-align:center;font-weight:bold">${icone}</span> <b>À la fin du tour</b>, il ${ceTour}.</p>
@@ -613,7 +613,7 @@ function lance(j, o) {
 if (typeof GM !== 'undefined') { try { GM.musique('carte') /* 16/11 soir : la piste « exploration » n'existe pas (page sans musique) */; GM.bouton(); } catch (e) {} }
 // 22/11 : le premier accueil est lancé après descente-ecran.js (le configurateur montre aussi la Descente)
 </script>
-<script src="configurateur.js?v=a276a42cee"></script>
+<script src="configurateur.js?v=d5e9469a28"></script>
 <script src="descente-ecran.js?v=ccd00821a7"></script>
 <script src="guide.js?v=ceb10204e9"></script>
 <script src="guides-modes.js?v=e111523360"></script>

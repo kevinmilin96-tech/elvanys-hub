@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261127-222128"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
+<head><meta name="guilde-version" content="20261127-232914"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="robots" content="noindex">
@@ -185,13 +185,13 @@
 <div id="app"></div>
 <div id="fen"></div>
 <script src="guide.js?v=ceb10204e9"></script>
-<script src="cartes.js?v=94ea5cc1ba"></script>
+<script src="cartes.js?v=68497176d5"></script>
 <script src="musique.js?v=fb0b9da49e"></script>
 <script src="rang.js?v=4a53584921"></script>
 <script src="heros-etoiles.js?v=29ce68f57f"></script>
 <script src="donnees.js?v=8a39c05326"></script>
-<script src="defense-moteur.js?v=84ea701eea"></script>
-<script src="configurateur.js?v=a276a42cee"></script>
+<script src="defense-moteur.js?v=583dcf9df4"></script>
+<script src="configurateur.js?v=d5e9469a28"></script>
 <script src="heros-aventure.js?v=31db8c2ed4"></script>
 <script>
 // =============================================================================================== LA DÉFENSE DE LA PORTE · l'ÉCRAN (13/11)
@@ -234,9 +234,8 @@ const cleD = () => D && D.av && haInfo('av:' + D.av) ? 'av:' + D.av : D.heros;  
 const imgD = () => { const i = D && D.av ? haInfo('av:' + D.av) : null; return i ? haImg(i) : `<img src="${IMG(D.heros)}" alt="">`; };
 function demarre(h) { const i = haInfo(h); D = nouvelleDefense(haVoie(h)); D.av = i ? i.id : null; D.sansFin = modeSF;
   // 15/11 : le système des héros : la porte gagne les PV du héros (niveau, rang, équipement), et ses PC de départ
-  // 15/11 soir : PAS de suivi des monstres ici (mesuré : la force vient des tours, pas du héros ; monstres ×2 = 0 % de victoires) ;
-  // le bonus de porte est plafonné à +20 (avec +81, la porte d'Aldric dépassait les 99 de dégâts du Titan : 100 % de victoires)
-  if (typeof bonusHerosPvE === 'function') { const B = bonusHerosPvE(haProg(h)), bp = Math.min(20, B.pv); D.porte += bp; D.porteMax += bp; D.pc += B.pc; } sel = []; selTour = -1; attente = null; dis('Touche 🎲 Lancer, puis choisis un dé : bâtis une tour (touche une case verte) ou pose un piège sur un chemin.'); vagueAnnonce(); rendu(); }
+  // 15/11 soir : le bonus de porte est plafonné à +20 (avec +81, la porte d'Aldric dépassait les 99 de dégâts du Titan : 100 % de victoires)
+  if (typeof bonusHerosPvE === 'function') suiviDefense(D, bonusHerosPvE(haProg(h))); /* 27/11 soir : la porte suit le héros, et les monstres suivent la porte (defense-moteur.js) */ sel = []; selTour = -1; attente = null; dis('Touche 🎲 Lancer, puis choisis un dé : bâtis une tour (touche une case verte) ou pose un piège sur un chemin.'); vagueAnnonce(); rendu(); }
 function dis(t, e) { msg = t; err = !!e; }
 function vagueAnnonce() { const v = D.fx.find(f => f.t === 'vague'); if (v) GM.son('vague');
   const txt = v && (v.boss && (D.sansFin || v.n > VAGUES.length) ? MOUSTACHE_M[v.boss] : CORBIN[v.n]);

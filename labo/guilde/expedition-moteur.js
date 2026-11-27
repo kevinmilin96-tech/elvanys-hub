@@ -224,6 +224,8 @@ function combatExp(campJ, campE, R) {
   // 14/11 : les ordres du capitaine (les dés posés sur les recrues avant l'escale) : +PV, +attaque, coup sûr ; et le bonus de la combinaison
   const od = campJ.X && campJ.X.ordres;
   if (od) { J.liste.forEach(u => { const o = od.u[u.id] || {}, t = od.tous || {}, a = (o.a || 0) + (t.a || 0), v = (o.v || 0) + (t.v || 0); u.a += a; u.v += v; u.vmax += v; if (o.sur) u.coupSur = true; }); }
+  // 27/11 soir : la progression du capitaine (expedition-v4.js) : coup de maître, cri de ralliement au 1er round
+  { const X = campJ.X; if (X && (X.capMaitre || X.capCri)) J.liste.forEach(u => { if (u.role === 'capitaine' && X.capMaitre) u.maitre = X.capMaitre; if (X.capCri && u.rang === 'av') { u.a += X.capCri; u.criB = X.capCri; } }); }
   // 14/11 : l'écran affiche les forces réelles au début du combat (familles, ordres, Tambours… compris)
   ev.push({ t:'depart', l:[...J.liste, ...E.liste].map(u => ({ id:u.id, a:u.a + (u.tambourBonus || 0), v:u.v, sur:!!u.coupSur, o:od && od.u[u.id] ? 1 : 0 })) });
   const vivants = C => C.liste.filter(u => !u.mort);
@@ -253,6 +255,7 @@ function combatExp(campJ, campE, R) {
   for (let round = 1; round <= 25; round++) {
     if (!vivants(J).length || !vivants(E).length) break;
     ev.push({ t:'round', n:round }); nCoups = 0;
+    if (round === 2) J.liste.forEach(u => { if (u.criB) { u.a -= u.criB; u.criB = 0; } }); // 27/11 soir : le Cri de ralliement du capitaine ne dure qu'un round
     if (globalThis.__MECA4) globalThis.__MECA4(round, J, E, ev, tue);
     if (round % 2 === 0) [J, E].forEach(C => vivants(C).filter(u => u.invoque).forEach(u => { const t = C.liste.filter(x => x.mort && !x.boss && x !== u).pop(); if (t) { t.mort = false; t.v = Math.ceil(t.vmax / 2); ev.push({ t:'releve', id:t.id, v:t.v, txt:`💀 ${u.n} relève ${t.n} !` }); } })); // 17/11 nuit : les mécaniques des boss et élites des Expéditions v4 (rien en v3)
     const ordre = []; const ja = vivants(J), ea = vivants(E), premier = R() < .5;
@@ -271,6 +274,7 @@ function combatExp(campJ, campE, R) {
         const ds = [1, 2, 3].map(() => 1 + Math.floor(R() * 6)), s = [...ds].sort((a, b) => a - b);
         if (s[0] === s[2]) { dg = s[0] + 3; txt = 'Frappe ×3'; } else if (s[0] === s[1] || s[1] === s[2]) { dg = s[1]; txt = 'Frappe'; } else if (s[1] === s[0] + 1 && s[2] === s[1] + 1) { dg = 4; txt = 'Technique'; } else { dg = Math.max(1, s[2] - 2); txt = 'coup simple'; }
         if (u.coupSur && !u.coupSurFait) { u.coupSurFait = true; dg += 3; txt += ' + coup sûr'; }
+        if (u.maitre && !u.maitreFait) { u.maitreFait = true; dg += u.maitre; txt += ` + coup de maître (+${u.maitre})`; } // 27/11 soir : progression du capitaine
         dg += u.a - 3; de = ds; if (u.rang === 'ar') { dg = Math.ceil(dg / 2); txt += ' (de derrière : moitié)'; }
       } else {
         de = 1 + Math.floor(R() * 6); if (u.coupSur && !u.coupSurFait) { u.coupSurFait = true; de = 6; } dg = de === 6 ? u.a * 2 : de === 1 ? 0 : u.a; txt = de === 6 ? 'critique' : de === 1 ? 'raté' : ''; if (dg > 0 && u.rang === 'ar' && !u.tireur && u.role !== 'soutien') { dg = Math.ceil(dg / 2); txt += (txt ? ' · ' : '') + 'de derrière : moitié'; }

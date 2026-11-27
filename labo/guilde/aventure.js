@@ -58,6 +58,8 @@ function ileAventure(heros, acte, etat) {
   if (nbBonus(r, 'or')) { r.or += 30 * nbBonus(r, 'or'); plus.push(`+${30 * nbBonus(r, 'or')} or`); }
   r.journal.unshift(`🗺 Grande aventure · chapitre ${A.chapitre} sur 3 · ${odyNom(r)} niveau ${A.niveau}${plus.length ? ' · ' + plus.join(', ') : ''}.`);
   A.retour = etatHeros(r); // si le héros tombe, il repart d'ici
+  // 27/11 soir : les ennemis suivent le héros monté (vie et coups), comme dans l'Odyssée (odyssee.js suiviOdyssee) ; avant : rien ne suivait ici
+  if (typeof suiviOdyssee === 'function' && !r.simuSansSuivi) suiviOdyssee(r, odyProg(r), Math.round(HEROS[r.heros].pv * (ODY_PV[r.heros] || 1.8)));
   return r;
 }
 const nouvelleAventure = heros => ileAventure(heros, 'brulees', null);

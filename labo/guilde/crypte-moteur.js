@@ -37,7 +37,7 @@ function accepte(s, d, S, b) {
     case 'pair': return d % 2 === 0;
     case 'imp': return d % 2 === 1;
     case 'tot': case 'any': return true;
-    case 'dbl': { const j = S.find(x => x !== s && x.t === 'dbl' && x.g === s.g && x.ok); return !j || j.val === d; }
+    case 'dbl': { const j = S.find(x => x !== s && x.t === 'dbl' && x.g === s.g && x.ok); return !j || !j.val || j.val === d; } // 27/11 soir : un jumeau brisé SANS dé (Tempête, Rune, bombe…) laisse son jumeau libre = n'importe quel dé (avant : « = 0 », impossible, même sur le Gardien)
   }
   return false;
 }
@@ -251,7 +251,7 @@ function force(S, c, V) {
   V = V || visibles(S);
   let f = c.att + V.filter(x => x !== c && x.trait === 'chef').length + (S.obj && S.obj.diable ? 1 : 0) + (S.obj && S.obj.pactesang ? 1 : 0) + (S.obj && S.obj.forcePlus || 0);
   if (!S.gardien) { const i = V.indexOf(c), col = k => V[k]; [i - 1, i + 1].forEach(k => { if (col(k) && col(k).trait === 'voisins') f++; }); }
-  return f * (c.double ? 2 : 1);
+  return Math.round(f * (S.fd || 1)) * (c.double ? 2 : 1); // 27/11 soir : S.fd = les coups suivent les PV gagnés par le héros
 }
 // ce que chaque monstre visible fera à la fin du tour (pour l'écran : « Gobelin 2 + Harpie 1 »)
 function intentions(S) {
@@ -265,6 +265,9 @@ function intentions(S) {
 //   maitre:N (le Maître des cryptes arrive après N tours), couleur:chance de dé de couleur }
 // 15/11 soir : le suivi de la force du héros dans la Crypte (réglé au simulateur) : +SUIVI_FORCE de force par point de facteur au-dessus de 1,
 // +1 sceau par tranche de SUIVI_SCEAU (3 au plus)
+// 27/11 soir (l'utilisateur : « mon personnage a +200 PV, certains modes sont faciles ») : les COUPS des monstres suivent aussi les PV gagnés
+// par le héros (S.fd = 1 + SUIVI_COUPS × PV gagnés / PV de base, au plus FD_MAX) : ses PV en plus ne rendent plus la Crypte triviale
+let SUIVI_COUPS = 0.7, FD_MAX = 2; // simulateur 27/11 soir (héros façon Fez : +60 PV) : 0 → 89 % (Zéphine 100 %), 0,6 → 87 %, 0,8 → 78 %, 0,7 retenu
 let SUIVI_FORCE = 0.75, SUIVI_SCEAU = 3; // simulateur : héros montés 87-89 % (débutant 82 %)
 function nouvelle(heros, graine, bonus = {}, opts = {}) {
   const R = rng(graine); let n = 0;
@@ -301,6 +304,7 @@ function nouvelle(heros, graine, bonus = {}, opts = {}) {
   if (rg === 'lourd') { S.desPlus++; obj.forcePlus = (obj.forcePlus || 0) + 1; }
   if (rg === 'precis') { S.relanceBase = 0; S.runes = Math.min(RUNES_MAX, S.runes + 2); }
   if (fsPlus) S.fsPlus = fsPlus;
+  if (bonus.pv > 0 && !opts.pvmax) S.fd = Math.round(Math.min(FD_MAX, 1 + SUIVI_COUPS * bonus.pv / PV_HEROS) * 100) / 100;
   if (opts.gardien === 'seul') { S.gardien = gardien(R, etage, S.vies, S.fsPlus || 0); S.gardien.it = 'frappe'; for (let k = 0; k < (obj.bossDur || 0); k++) S.gardien.sceaux.push(sceau('min', 4)); }
   if (obj.eliteDur) cols.forEach(col => col.forEach(c => { if (c.elite) c.sceaux.push(sceau('tot', 9)); }));
   if (obj.talisman) { S.pouvoir.slice(0, obj.talisman).forEach(brise); if (S.pouvoir.every(x => x.ok)) S.pret = true; } // 15/11 soir : tout brisé = prêt
@@ -485,7 +489,7 @@ function finTour(S) {
 // 15/11 soir : avec des défis, une étoile par défi réussi (victoire obligatoire) ; sinon l'ancienne règle (la Descente)
 const etoiles = S => S.fin !== 'gagne' ? 0 : S.defis ? defisEtat(S).filter(x => x.ok).length : S.flash ? 1 + (S.fdefis ? S.fdefis.filter(k => FLASH_DEFIS[k] && FLASH_DEFIS[k].ok(S)).length : (S.pv >= 10 ? 1 : 0) + (S.tour <= 6 ? 1 : 0)) /* 23/11 : le flash du jour (30 PV) ; 24/11 (l'utilisateur) : 3e étoile = gagner en 6 tours ou moins */ : 1 + (S.pv >= 12 ? 1 : 0) + (S.pv >= 25 ? 1 : 0);
 
-const API = { choisirCreuset, reglerSuivi:(f, sc) => { SUIVI_FORCE = f; SUIVI_SCEAU = sc; }, INTENTIONS, intentions, NB_DES, NB_COL, PROF, RESERVE, RUNES_MAX, PV_HEROS, SCEAU_TXT, TRAITS, POUVOIRS, COMPAGNONS, COULEURS,
+const API = { choisirCreuset, reglerSuivi:(f, sc, co) => { SUIVI_FORCE = f; SUIVI_SCEAU = sc; if (co != null) SUIVI_COUPS = co; }, INTENTIONS, intentions, NB_DES, NB_COL, PROF, RESERVE, RUNES_MAX, PV_HEROS, SCEAU_TXT, TRAITS, POUVOIRS, COMPAGNONS, COULEURS,
   FLASH_DEFIS, REGLES, regleDuJour, VARIANTES, varianteDuJour, SPECIALES, GAINS_COFFRE, DEFIS, defisEtat, CONSOS, conso, nouvelle, lancer, relancer, placer, rune, pouvoir, competence, finTour, visibles, menace, menaceComp, accepte, etoiles, trouve, force, silence, plafond, rng };
 if (typeof module !== 'undefined' && module.exports) module.exports = API; else racine.CRYPTE = API;
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -139,7 +139,12 @@ const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&':'&amp
   function fige() {
     const cfg = document.querySelector('.cfg'), b = document.getElementById('cfg-bas'), H = document.documentElement;
     if (!cfg || !b) { H.classList.remove('cfg-fige'); return; }
-    let bas = 0; [...cfg.children].forEach(e => { bas = Math.max(bas, e.getBoundingClientRect().bottom + scrollY); });
+    const mesure = () => { let m = 0; [...cfg.children].forEach(e => { m = Math.max(m, e.getBoundingClientRect().bottom + scrollY); }); return m; };
+    // 27/11 (l'utilisateur : « je peux défiler, tu ne peux pas fixer sur un écran entier ? ») : la grande image du mode rétrécit juste ce qu'il faut
+    // pour que tout tienne au-dessus de la barre du bas (jamais moins de 14 % de l'écran)
+    const gi = document.querySelector('#cfg-grand .fond img'), place = innerHeight - b.getBoundingClientRect().height;
+    if (gi) { gi.style.height = ''; const trop = mesure() - place + 6; if (trop > 0) gi.style.height = Math.max(innerHeight * .14, gi.getBoundingClientRect().height - trop) + 'px'; }
+    let bas = mesure();
     const tient = bas <= innerHeight - b.getBoundingClientRect().height + 4;
     H.classList.toggle('cfg-fige', tient); if (tient) scrollTo(0, 0);
   }

@@ -135,13 +135,13 @@ const ASC_V4 = ['De base', '+4 % de vie aux monstres', 'les élites ont +1 attaq
 // Réglé au simulateur le 19/11 (40 voyages par capitaine) : avec 7 à 8 combats et 4 escales calmes, l'équipage gagne bien plus d'or et de ★★
 // qu'avant (≈ 2,4 ★★ par voyage au lieu de 0,6) : les vies des monstres sont donc environ deux fois plus grandes qu'avec l'ancienne carte.
 const SUITES_V4 = [
-  { combats:[[['monstres'], [0, 1], 2.2]], elite:2.0 }, // 24/11 : début adouci (2,6 / 2,6 avant : on butait sur la 1re élite)
-  { combats:[[['monstres'], [1, 2], 2.9], [['monstres', 'fantome'], [2, 3], 3.1]], elite:3.1, troisieme:true },
-  { combats:[[['monstres'], [3], 3.5]], elite:3.7 },
+  { combats:[[['monstres'], [0, 1], 2.2]], elite:1.6 }, // 27/11 soir : 1re élite 2,0 → 1,6 (« je me suis fait défoncer » : le Chef de guerre gobelin, 1re cause de défaite au simulateur) ; 24/11 : début adouci (2,6 / 2,6 avant : on butait sur la 1re élite)
+  { combats:[[['monstres'], [1, 2], 3.92], [['monstres', 'fantome'], [2, 3], 4.19]], elite:4.19, troisieme:true }, // 27/11 soir : ×1,35 (avant 2,9 / 3,1 / 3,1) : le capitaine progresse maintenant
+  { combats:[[['monstres'], [3], 4.73]], elite:5.0 }, // 27/11 soir : ×1,35 (avant 3,5 / 3,7)
 ];
-let DUR_BOSS4 = +(2.05 * 1.02 * 1.3 * 1.25).toFixed(3); // 24/11 : ×1,25 pour compenser le début adouci (simulateur ≈ 77 %, les défaites à la fin et plus à la 1re élite) // le boss : une seule chance (avant : ×2,09 et on le rejouait tant qu'il restait un cœur)
+let DUR_BOSS4 = +(2.05 * 1.02 * 1.3 * 1.25 * 1.35).toFixed(3); /* 27/11 soir : ×1,35 avec la progression du capitaine */ // 24/11 : ×1,25 pour compenser le début adouci (simulateur ≈ 77 %, les défaites à la fin et plus à la 1re élite) // le boss : une seule chance (avant : ×2,09 et on le rejouait tant qu'il restait un cœur)
 const DUR_V4 = [1.35, 1.3, 1.55, 1.5, 1.9, 2.05].map(x => +(x * 1.02).toFixed(3)); // ancienne carte (voyages commencés avant le 19/11)
-const CHOIX_V4 = ['evenement', 'evenement', 'tresor', 'port'];
+const CHOIX_V4 = ['evenement', 'evenement', 'tresor', 'port', 'forge']; // 27/11 soir : + la forge du capitaine (décision de l'utilisateur)
 function escaleDe(X, type, etape, R, tiers, dur) {
   const M = MERS[X.mer], cle = tire(R, M.decor[type] || ['crique']);
   if (type === 'monstres') { const tier = Math.min(4, tiers ? tire(R, tiers) : etape === 0 ? tire(R, [0, 1]) : etape === 1 ? 1 : etape === 2 ? tire(R, [2, 3]) : etape === 3 ? 3 : 4); const g = M.groupes[tier]; return { type, etape, n:g.n, e:g.e, cle:g.cle, g:tier, dur }; }
@@ -150,6 +150,7 @@ function escaleDe(X, type, etape, R, tiers, dur) {
   if (type === 'evenement') { const k = tire(R, Object.keys(EVENEMENTS_V4)), ev = EVENEMENTS_V4[k]; return { type, etape, n:ev.n, e:'❔', cle:ev.cle, ev:k }; }
   if (type === 'tresor') return { type, etape, n:'L’île au trésor', e:'💎', cle };
   if (type === 'port') return { type, etape, n:'Le port franc', e:'🏝', cle:'port' };
+  if (type === 'forge') return { type, etape, n:'La forge du capitaine', e:'⚒', cle:'port' };
   return { type:'boss', etape, n:BOSS_V4[X.boss].n, e:BOSS_V4[X.boss].e, cle:'nid' };
 }
 // un point de choix : 2 ou 3 escales sans combat, de sortes différentes (deux événements possibles, jamais le même) ; pas de port franc au départ
@@ -175,7 +176,7 @@ function carteV4(X) {
 }
 // 23/11 : LE FLASH DU JOUR (≈ 3 minutes, le même pour tous aujourd'hui) : 12 💰 au départ, 2 cœurs, une règle simple,
 // puis 3 combats à la suite (des monstres, une élite, le boss). FLASH_DUR = la vie des ennemis de chaque combat (réglée au simulateur)
-let FLASH_DUR = [1.3, 1.5, 1.0]; // simulateur 23/11 (/tmp/cfg/sim-expf.mjs, 60 voyages par héros) : 63-87 % de victoires, 42-75 % sans perdre de cœur
+let FLASH_DUR = [1.3, 1.75, 1.25]; // 27/11 soir : élite et boss plus solides (le capitaine progresse après chaque victoire) ; // simulateur 23/11 (/tmp/cfg/sim-expf.mjs, 60 voyages par héros) : 63-87 % de victoires, 42-75 % sans perdre de cœur
 const FLASH_REGLES = ['vent', 'marche', 'veterans', 'enrages'];
 // 25/11 (l'utilisateur, choix « défis du jour ») : les défis du FLASH ; 2 tirés chaque jour (defis-jour.js), +★ par défi réussi
 const bordFlash = X => [...X.plateau.av, ...X.plateau.ar, ...X.cale].filter(Boolean);
@@ -250,6 +251,7 @@ nouvelleOffre = function (X) {
 const DUR_FAM = 1.35; // simulateur 25/11 : 1,3 → ≈ 83 %, 1,45 → ≈ 75 %
 function plateauV4(X, def, mul) {
   if (X.familles && !X.flash) mul *= (globalThis.DURF || DUR_FAM);
+  mul *= X.fsE || 1; // 27/11 soir : le héros monté
   const P = { av:[null, null, null], ar:[null, null, null] }, M = MERS[X.mer];
   const asc = 1 + (X.asc >= 1 ? .04 : 0) + (X.asc >= 6 ? .05 : 0), atq = (X.regle === 'enrages' ? 1 : 0) + (X.asc >= 7 ? 1 : 0);
   const fait = ([n, a, v, tag]) => ({ id:uid(), key:'m', n, a:a + atq, v:Math.round(v * mul * M.pv * asc), star:0, bonusA:0, bonusV:0, ...tagsMonstre(tag) });
@@ -288,6 +290,7 @@ joueEscale = function (X, R) {
   if (!X.fini && X.regle === 'bourse') { X.or += 2; res.gain = (res.gain || 0) + 2; }
   if (!X.fini && X.regle === 'tempete') { X.or += 3; res.gain = (res.gain || 0) + 3; }
   if (res.gagne && esc.type === 'elite') { X.or += 4; res.elite = '+4 💰 (prime de l’élite)'; }
+  if (res.gagne && !X.fini && esc.type !== 'boss') { X.capChoix = offreCapitaine(X); res.capChoix = true; } // 27/11 soir : le capitaine progresse
   // 19/11 (décision de l'utilisateur) : perdre contre le boss = FIN DU VOYAGE (plus de nouvel essai avec les cœurs qui restent)
   // 24/11 (décision de l'utilisateur) : le boss aussi se rejoue tant qu'il reste des cœurs (comme tous les combats)
   if (X.coeurs > X.coeursMax) X.coeurs = X.coeursMax;
@@ -312,6 +315,11 @@ function escaleSansCombat(X) {
   if (esc.type === 'evenement') { const ev = EVENEMENTS_V4[esc.ev]; return { titre:`${ev.e} ${ev.n}`, texte:ev.texte, choix:ev.choix.map(c => ({ t:c.t, d:c.d + (X.asc >= 8 && /💰/.test(c.t) ? ' (Ascension : +1 💰)' : ''), possible:!c.ok || c.ok(X) })) }; }
   if (esc.type === 'tresor') return { titre:'💎 L’île au trésor', texte:'Une île minuscule, une croix peinte sur un rocher. Trois pistes mènent au trésor.', choix:[
     { t:'Le coffre doré', d:'+7 💰.', possible:true }, { t:'La caisse d’armes', d:'Une recrue ★ gratuite de ta famille la plus nombreuse (s’il reste une place).', possible:!!placeLibre(X) }, { t:'La carte ancienne', d:'Tu verras toutes les escales du reste du voyage, et +3 💰.', possible:true }] };
+  if (esc.type === 'forge') { const c = capitaineDe(X), p = PRIX_FORGE_CAP;
+    return { titre:'⚒ La forge du capitaine', texte:`Un vieux forgeron nain tend la main vers ${c ? c.n : 'le capitaine'} : « Ton équipage se bat bien. Toi, tu te bats nu. Paie, et je te refais. »`, choix:[
+      { t:`Une lame de maître (${p.lame} 💰)`, d:`Le capitaine : +${FORGE_CAP.lame} attaque pour tout le voyage.`, possible:X.or >= p.lame },
+      { t:`Une armure de capitaine (${p.armure} 💰)`, d:`Le capitaine : +${FORGE_CAP.armure} vie pour tout le voyage.`, possible:X.or >= p.armure },
+      { t:'Repartir sans rien', d:'+2 💰 (tu revends de la ferraille).', possible:true }] }; }
   return { titre:'🏝 Le port franc', texte:'Un port neutre, sans monstres ni rivaux. On y répare, on y recrute, on y boit.', choix:[
     { t:'Réparer la coque', d:'+1 cœur.', possible:X.coeurs < X.coeursMax }, { t:'Recruter à la taverne', d:'+5 💰 et une nouvelle offre au recruteur.', possible:true }] };
 }
@@ -323,6 +331,10 @@ function resoutChoix(X, i) {
     else if (i === 1) { const fam = compteFamilles(X, X.plateau), top = Object.keys(fam).sort((a, b) => fam[b] - fam[a])[0], R = hasardX(X), l = recruesDispo(X).filter(k => (!top || RECRUES[k].fam === top) && RECRUES[k].t <= 2), k = tire(R, l.length ? l : recruesDispo(X)), p = placeLibre(X, ['tireur', 'soutien'].includes(RECRUES[k].role) ? 'ar' : 'av');
       if (!p) return null; poseA(X, p, nouvelleRecrue(k, 1)); fusionne(X); txt = `Dans la caisse, ${RECRUES[k].n} ★ attendait son capitaine.`; }
     else { X.or += 3; X.carteVue = true; txt = 'La carte montre toute la route jusqu’au boss. Et quelques pièces dans le rouleau.'; } }
+  else if (esc.type === 'forge') { const c = capitaineDe(X), p = PRIX_FORGE_CAP;
+    if (i === 0) { if (X.or < p.lame || !c) return null; X.or -= p.lame; c.bonusA += FORGE_CAP.lame; X.capForge = (X.capForge || 0) + 1; txt = `Une lame de maître : ${c.n} +${FORGE_CAP.lame} attaque.`; }
+    else if (i === 1) { if (X.or < p.armure || !c) return null; X.or -= p.armure; c.bonusV += FORGE_CAP.armure; X.capForge = (X.capForge || 0) + 1; txt = `Une armure de capitaine : ${c.n} +${FORGE_CAP.armure} vie.`; }
+    else { X.or += 2; txt = 'Le forgeron rachète ta ferraille : 2 pièces.'; } }
   else { if (i === 0) { if (X.coeurs >= X.coeursMax) return null; X.coeurs++; txt = 'Les charpentiers du port font des miracles : un cœur de plus.'; } else { X.or += 5; nouvelleOffre(X); txt = 'La taverne est pleine de volontaires : nouvelle offre au recruteur, et 5 💰 de pourboires.'; } }
   X.journal.push(`${esc.e} ${esc.n} : ${txt}`);
   // l'escale est passée : on avance, on gagne la paie du port (moitié : on n'a pas combattu)
@@ -364,21 +376,49 @@ function finVoyageMeta(X) {
   ecritMeta4(m); return apport;
 }
 
+// ----------------------------------------------------------------------------------------------- 27/11 soir : LE CAPITAINE PROGRESSE (décision de l'utilisateur : « les deux »)
+// (a) après chaque combat gagné (sauf le boss) : 1 petite amélioration parmi 3 ; (b) une escale « ⚒ La forge du capitaine » sur la carte, où l'on paie
+// pour une grosse amélioration. (c) Le héros monté compte : son capitaine part avec une partie de ce que le héros a gagné (PV, attaque), et les
+// monstres suivent un peu (EXP_SUIVI), pour qu'un héros très monté garde une avance sans tout écraser. Réglé au simulateur (Equilibrage-personnages.md).
+const AMELIO_CAP = {
+  atq:   { e:'⚔', n:'Bras de fer', d:'+1 attaque', f:c => { c.bonusA += 1; } },
+  vie:   { e:'❤', n:'Cuir épais', d:'+5 vie', f:c => { c.bonusV += 5; } },
+  maitre:{ e:'🎯', n:'Coup de maître', d:'sa 1re frappe de chaque combat fait +3 (cumulable)', f:(c, X) => { X.capMaitre = (X.capMaitre || 0) + 3; } },
+  cri:   { e:'📣', n:'Cri de ralliement', d:'au 1er round, toute ta rangée de devant +1 attaque (cumulable, 2 au plus)', ok:X => (X.capCri || 0) < 2, f:(c, X) => { X.capCri = (X.capCri || 0) + 1; } },
+  garde: { e:'🛡', n:'Mur de boucliers', d:'tes Remparts et le capitaine +2 vie (pour tout le voyage)', f:(c, X) => { toutes(X).filter(u => u.key === 'capitaine' || (RECRUES[u.key] || {}).role === 'rempart').forEach(u => { u.bonusV += 2; }); } },
+};
+let FORGE_CAP = { lame:3, armure:15 }, PRIX_FORGE_CAP = { lame:6, armure:5 };
+let EXP_SUIVI = { vie:0.15, cap:0.6 }; // vie des monstres : +15 % du gain de force ; le capitaine reçoit 60 % des PV gagnés par le héros
+const capitaineDe = X => toutes(X).find(u => u && u.key === 'capitaine');
+function offreCapitaine(X) { const R = hasardX(X), l = Object.keys(AMELIO_CAP).filter(k => !AMELIO_CAP[k].ok || AMELIO_CAP[k].ok(X)); const o = [];
+  while (o.length < 3 && l.length) o.push(l.splice(Math.floor(R() * l.length), 1)[0]); return o; }
+function choisitCapitaine(X, i) { const k = X.capChoix && X.capChoix[i], c = capitaineDe(X); X.capChoix = null; if (!k || !c) return null;
+  AMELIO_CAP[k].f(c, X); (X.capAmelio = X.capAmelio || []).push(k); X.journal.push(`${AMELIO_CAP[k].e} Le capitaine progresse : ${AMELIO_CAP[k].n} (${AMELIO_CAP[k].d}).`); return k; }
+const piloteCap = X => { const l = X.capChoix || []; const pref = ['atq', 'vie', 'maitre', 'cri', 'garde']; let b = 0; l.forEach((k, i) => { if (pref.indexOf(k) < pref.indexOf(l[b])) b = i; }); return b; };
+// le héros monté (statsHeros / forceSuiveuse de heros-etoiles.js) : b = bonusHerosPvE(id), f = forceSuiveuse(id)
+function appliqueHerosExp(X, b, f) { const c = capitaineDe(X); if (!c || !b) return;
+  const v = Math.round(EXP_SUIVI.cap * (b.pv || 0) + 2 * (b.bouclier || 0) / 3), a = (b.att || 0) + ((b.main || 0) > 0 ? 1 : 0);
+  c.bonusV += v; c.bonusA += a; X.fsE = f > 1.05 ? Math.round((1 + EXP_SUIVI.vie * (f - 1)) * 100) / 100 : 1; X.capHeros = { v, a };
+  if (v || a) X.journal.push(`🎖 Le capitaine part avec son expérience de héros : +${a} attaque, +${v} vie.${X.fsE > 1 ? ` Les monstres de ce voyage sont plus solides (×${X.fsE}).` : ''}`); }
+
 // ----------------------------------------------------------------------------------------------- le pilote du simulateur (choix de route et d'événements)
 function piloteRoute(X, R) {
   const o = X.carte[X.escale]; if (o.length === 1) return choisitEscale(X, 0);
   // un joueur raisonnable : port franc si blessé, sinon combat facile ou trésor, élite si l'équipage est costaud
-  const force = surPlateau(X).reduce((s, u) => s + u.a + u.v + (u.star || 0) * 8, 0), note = e => e.type === 'port' ? (X.coeurs < X.coeursMax ? 9 : 2) : e.type === 'tresor' ? 6 : e.type === 'evenement' ? 4 : e.type === 'elite' ? (force > 70 + X.escale * 12 ? 7 : 1) : e.type === 'fantome' ? 3 : 5;
+  const force = surPlateau(X).reduce((s, u) => s + u.a + u.v + (u.star || 0) * 8, 0), note = e => e.type === 'port' ? (X.coeurs < X.coeursMax ? 9 : 2) : e.type === 'tresor' ? 6 : e.type === 'evenement' ? 4 : e.type === 'elite' ? (force > 70 + X.escale * 12 ? 7 : 1) : e.type === 'fantome' ? 3 : e.type === 'forge' ? (X.or >= PRIX_FORGE_CAP.armure ? 6 : 1) : 5;
   const i = o.map((e, k) => [note(e) + R() * 2, k]).sort((a, b) => b[0] - a[0])[0][1]; return choisitEscale(X, i);
 }
 function simuleVoyage(heros, graine, opts) {
   const X = nouveauVoyage(heros, Object.assign({ graine, debloques:0 }, opts || {})); if (globalThis.DIFF_SIM) X.diff = globalThis.DIFF_SIM;
+  if (opts && opts.hb) appliqueHerosExp(X, opts.hb, opts.hf || 1); // 27/11 soir : un héros monté fictif (simulateur)
   const types = [];
   for (let pas = 0; pas < 20 && !X.fini; pas++) {
     if (doitChoisir(X)) piloteRoute(X, hasardX(X));
     const esc = X.route[X.escale]; types.push(esc.type);
-    if (!ESCALE_COMBAT(esc.type)) { const s = escaleSansCombat(X); let i = s.choix.findIndex(c => c.possible); if (esc.type === 'tresor' && s.choix[1].possible) i = 1; resoutChoix(X, Math.max(0, i)); continue; }
+    if (!ESCALE_COMBAT(esc.type)) { const s = escaleSansCombat(X); let i = s.choix.findIndex(c => c.possible); if (esc.type === 'tresor' && s.choix[1].possible) i = 1; if (esc.type === 'forge') i = s.choix[0].possible ? 0 : s.choix[1].possible ? 1 : 2; resoutChoix(X, Math.max(0, i)); continue; }
+    if (X.capChoix) choisitCapitaine(X, piloteCap(X));
     pilotePort(X); piloteOrdres(X, hasardX(X)); piloteCible(X); joueEscale(X, hasardX(X));
+    if (X.capChoix && !X.fini) choisitCapitaine(X, piloteCap(X));
   }
   return { gagne:X.fini === 'gagne', coeurs:X.coeurs, escale:X.escale, victoires:X.victoires, boss:X.boss, regle:X.regle, types, score:scoreV4(X), fusions:toutes(X).filter(u => u.star).length, doubles:toutes(X).filter(u => u.star === 2).length };
 }
