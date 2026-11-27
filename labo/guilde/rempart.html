@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="fr">
+<head><meta name="guilde-version" content="20261127-182104"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="robots" content="noindex">
+<title>La Guilde des Runes · Le Rempart des runes</title>
+<style>
+  :root { --or:#f3c96b; --texte:#f1ecff; --doux:#c9c1ea; --ok:#7dffb0; --rouge:#ff6a5a; }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html, body { margin:0; height:100%; }
+  body { background:#120f1f; color:var(--texte); font:15px/1.3 Georgia, 'Times New Roman', serif; user-select:none; -webkit-user-select:none; }
+  #app { max-width:520px; margin:0 auto; min-height:100vh; }
+  #app.jeu { height:100dvh; min-height:0; overflow:hidden; display:flex; flex-direction:column; touch-action:manipulation; }
+  button { font:inherit; cursor:pointer; }
+  .doux { color:var(--doux); font-size:.86em; }
+  /* ---- le haut */
+  #haut { display:flex; align-items:center; gap:6px; padding:5px 7px; background:linear-gradient(180deg, #1d3a24, #16301d); border-bottom:2px solid #c8a44a; flex:none; }
+  #haut button { background:#00000044; border:1px solid #f3c96b66; color:#ffe9b0; border-radius:10px; padding:3px 9px; }
+  #haut .t { flex:1; min-width:0; font-size:.8em; } #haut .t b { color:var(--or); display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .prog { height:7px; background:#0006; border-radius:5px; position:relative; margin-top:3px; } .prog i { display:block; height:100%; border-radius:5px; background:linear-gradient(90deg, #7dffb0, #f3c96b); }
+  .prog span { position:absolute; right:-4px; top:-8px; font-size:12px; }
+  /* ---- le plateau : prairie lumineuse, chemins de terre claire, rempart de pierre dorée */
+  #plateau { position:relative; flex:1 1 auto; min-height:0; overflow:hidden;
+    background:radial-gradient(circle at 12% 40%, #fff6 0 2px, transparent 3px) 0 0 / 46px 38px, radial-gradient(circle at 70% 70%, #ffd76b99 0 2px, transparent 3px) 0 0 / 58px 44px, linear-gradient(180deg, #bfe6ff 0%, #d9f2d0 10%, #8fd07a 16%, #6fbf5c 60%, #5aa94a 100%); }
+  #plateau::before { content:''; position:absolute; left:0; right:0; top:0; height:12%; background:radial-gradient(ellipse at 20% 120%, #6aa84f 0 30%, transparent 31%), radial-gradient(ellipse at 70% 130%, #5f9e46 0 35%, transparent 36%); opacity:.9; }
+  .voie { position:absolute; top:0; bottom:0; border-left:1px solid #ffffff22; border-right:1px solid #00000014;
+    background:linear-gradient(180deg, #e7d3a1cc, #d6b97fcc); box-shadow:inset 0 0 12px #8a6a3a55; }
+  .voie.ok { box-shadow:inset 0 0 0 3px var(--ok), inset 0 0 18px #7dffb0aa; cursor:pointer; }
+  .voie .combo { position:absolute; top:2px; left:50%; transform:translateX(-50%); font-size:11px; background:#000a; color:#ffe9b0; border-radius:8px; padding:0 4px; }
+  .case { position:absolute; border-radius:12px; border:2px dashed #3d6b2f55; background:#ffffff1a; display:flex; align-items:center; justify-content:center; }
+  .case.ok { border:2px solid var(--ok); background:#7dffb04d; box-shadow:0 0 10px #7dffb0; }
+  .case.sel { border:2px solid var(--or); box-shadow:0 0 12px var(--or); }
+  .case .tour { position:relative; width:92%; height:92%; display:flex; align-items:center; justify-content:center; }
+  .case img.canon { width:96%; height:96%; object-fit:contain; filter:drop-shadow(0 3px 2px #0007); transition:transform .12s; }
+  .case .tour.tire img.canon { transform:scale(1.08) translateY(-3%); }
+  .case .so { position:absolute; left:-2px; bottom:-2px; background:#000b; border-radius:8px; padding:0 3px; font-size:13px; line-height:1.35; }
+  .case .so small { color:var(--or); font-weight:bold; font-size:.78em; }
+  .case .et { position:absolute; top:-4px; left:50%; transform:translateX(-50%); color:#ffd76b; font-size:10px; text-shadow:0 0 3px #000; letter-spacing:-1px; white-space:nowrap; }
+  .case .pw { position:absolute; right:-3px; top:-3px; font-size:14px; animation:pulse 1.2s infinite; }
+  .case .puits { font-size:34px; filter:drop-shadow(0 0 8px #c084fc); animation:pulse 2.2s infinite; }
+  .case .runeT { width:80%; height:80%; border-radius:50%; background:radial-gradient(circle, #f6e7ff, #c084fc 55%, #6b2bd9); display:flex; align-items:center; justify-content:center; box-shadow:0 0 14px #c084fc; animation:pulse 1.8s infinite; }
+  .case .runeT img { width:70%; height:70%; object-fit:contain; }
+  @keyframes pulse { 50% { transform:scale(1.08); filter:brightness(1.15); } }
+  #rempart { position:absolute; left:0; right:0; bottom:0; height:26px; background:repeating-linear-gradient(90deg, #cdb98a 0 22px, #b59d6c 22px 24px), #c8b07a; border-top:3px solid #8a6f3d; display:flex; align-items:center; justify-content:center; }
+  #rempart .pv { width:70%; height:12px; background:#0006; border-radius:6px; overflow:hidden; position:relative; }
+  #rempart .pv i { display:block; height:100%; background:linear-gradient(90deg, #c0392b, #f39c12, #7dffb0); transition:width .3s; }
+  #rempart .pv b { position:absolute; inset:0; text-align:center; font-size:10px; line-height:12px; color:#fff; text-shadow:0 0 3px #000; }
+  #rempart.touche { animation:tremble .35s; }
+  @keyframes tremble { 25% { transform:translateX(-4px); } 75% { transform:translateX(4px); } }
+  .mo { position:absolute; transform:translate(-50%, -50%); transition:top .1s linear, left .35s ease; z-index:5; display:flex; flex-direction:column; align-items:center; pointer-events:auto; }
+  .mo .p { width:100%; height:100%; border-radius:50%; overflow:hidden; border:2px solid #b84a3a; background:#2a1414; display:flex; align-items:center; justify-content:center; font-size:24px; box-shadow:0 3px 5px #0006; }
+  .mo .p img { width:100%; height:100%; object-fit:cover; }
+  .mo.elite .p { border-color:var(--or); box-shadow:0 0 10px var(--or); }
+  .mo.boss .p { border:3px solid var(--or); box-shadow:0 0 18px #ff7a3a; }
+  .mo .vie { width:90%; height:5px; background:#0008; border-radius:3px; margin-top:2px; overflow:hidden; } .mo .vie i { display:block; height:100%; background:#ff5a4a; }
+  .mo.lent .p { box-shadow:0 0 0 3px #9fe3ff; } .mo.poison .vie i { background:#7ddc4a; } .mo.cache { opacity:.35; }
+  .mo.touche .p { filter:brightness(1.7); } .mo.mort { transition:opacity .4s, transform .4s; opacity:0; transform:translate(-50%, -50%) scale(1.5); }
+  .mo .x { position:absolute; top:-6px; right:-8px; font-size:12px; }
+  .pj { position:absolute; width:10px; height:10px; border-radius:50%; z-index:6; pointer-events:none; transform:translate(-50%, -50%); }
+  .pj.v3 { width:4px; height:14px; border-radius:2px; background:#7a4a1a; box-shadow:0 0 4px #fff; }
+  .pj.v4 { width:13px; height:13px; background:radial-gradient(circle at 35% 35%, #888, #222); }
+  .pj.v1 { background:radial-gradient(circle, #fff, #9fe3ff); box-shadow:0 0 8px #9fe3ff; }
+  .pj.v2 { background:radial-gradient(circle, #e8ffd0, #6bd33a); box-shadow:0 0 8px #6bd33a; }
+  .pj.v5 { width:6px; height:20px; background:linear-gradient(#fff, #ffe14a); box-shadow:0 0 10px #ffe14a; border-radius:3px; }
+  .pj.v6 { width:8px; height:22px; background:linear-gradient(#fff, #f3c96b); box-shadow:0 0 12px #f3c96b; border-radius:4px; }
+  .boom { position:absolute; z-index:7; pointer-events:none; transform:translate(-50%, -50%); font-size:26px; animation:boom .5s ease-out forwards; }
+  @keyframes boom { from { opacity:1; transform:translate(-50%, -50%) scale(.6); } to { opacity:0; transform:translate(-50%, -80%) scale(1.5); } }
+  .bowl { position:absolute; z-index:8; font-size:34px; transform:translate(-50%, -50%); pointer-events:none; animation:roule 1s linear; }
+  @keyframes roule { from { transform:translate(-50%, -50%) rotate(0); } to { transform:translate(-50%, -50%) rotate(1080deg); } }
+  .banniere { position:absolute; left:50%; top:30%; transform:translate(-50%, -50%); z-index:20; pointer-events:none; white-space:nowrap; font-size:1.5em; font-weight:bold; color:#fff;
+    text-shadow:0 0 12px #000, 0 2px 0 #000; background:#0008; border:2px solid var(--or); border-radius:14px; padding:6px 14px; animation:ban 2.2s ease-out forwards; }
+  @keyframes ban { 0% { opacity:0; transform:translate(-50%, -50%) scale(.6); } 15% { opacity:1; transform:translate(-50%, -50%) scale(1.05); } 80% { opacity:1; } 100% { opacity:0; } }
+  #pause.on::after { content:'⏸ Pause'; }
+  /* ---- le bas */
+  #bas { flex:none; background:linear-gradient(180deg, #2a2050, #17132b); border-top:2px solid #c8a44a; padding:5px 6px calc(5px + env(safe-area-inset-bottom)); }
+  #bas .l1 { display:flex; align-items:center; gap:5px; }
+  .energie { flex:none; min-width:58px; text-align:center; background:#0006; border:1px solid #c084fc; border-radius:12px; padding:3px 5px; font-weight:bold; color:#e9d6ff; font-size:1.15em; }
+  .energie small { display:block; font-size:.55em; font-weight:normal; color:var(--doux); }
+  .boutique { flex:1; display:flex; gap:4px; overflow:hidden; }
+  .boutique button { flex:1; min-width:0; background:#1e1838; border:2px solid #4b4580; border-radius:10px; color:#fff; padding:3px 1px; font-size:18px; line-height:1.1; }
+  .boutique button small { display:block; font-size:10px; color:#e9d6ff; }
+  .boutique button.on { border-color:var(--or); background:#3a2f12; box-shadow:0 0 8px var(--or); }
+  .boutique button.cher { opacity:.45; }
+  #bas .l2 { display:flex; align-items:center; gap:6px; margin-top:5px; }
+  .des { display:flex; gap:5px; align-items:center; flex:1; }
+  .de { width:44px; height:44px; border-radius:10px; background:#0005; border:2px dashed #4b4580; display:flex; align-items:center; justify-content:center; position:relative; padding:0; }
+  .de img { width:40px; height:40px; object-fit:contain; } .de small { position:absolute; bottom:-6px; right:-5px; font-size:12px; background:#000a; border-radius:6px; padding:0 2px; }
+  .de.plein { border:2px solid #8a7ec4; background:#ffffff10; } .de.on { border-color:var(--or); box-shadow:0 0 10px var(--or); }
+  .de.roule img { animation:roulD .7s ease-out; } @keyframes roulD { 0% { transform:rotate(0) translateY(-18px) scale(.6); } 60% { transform:rotate(540deg) translateY(2px) scale(1.15); } 100% { transform:rotate(720deg); } }
+  .prochain { font-size:11px; color:var(--doux); width:44px; text-align:center; line-height:1.1; }
+  .bowling { width:46px; height:46px; border-radius:50%; border:2px solid #f3c96b; background:#3a2f12; font-size:24px; padding:0; position:relative; }
+  .bowling.on { box-shadow:0 0 12px var(--or); } .bowling:disabled { opacity:.3; }
+  .heros-u { position:relative; width:58px; height:58px; border-radius:50%; padding:0; border:0; background:conic-gradient(#c084fc var(--j, 0%), #ffffff22 0); }
+  .heros-u img { position:absolute; inset:4px; width:50px; height:50px; border-radius:50%; object-fit:cover; }
+  .heros-u.plein { animation:pulse 1s infinite; box-shadow:0 0 16px #c084fc; } .heros-u .u { position:absolute; bottom:-4px; left:50%; transform:translateX(-50%); font-size:10px; background:#000b; border-radius:6px; padding:0 4px; white-space:nowrap; }
+  #msg { min-height:16px; font-size:12px; color:#ffe9b0; text-align:center; margin-top:3px; } #msg.err { color:#ffb3a8; }
+  /* ---- fenêtres */
+  .fenetre { position:fixed; inset:0; z-index:100; background:#05020dcc; display:flex; align-items:center; justify-content:center; padding:14px; overscroll-behavior:contain; }
+  .fenetre > div { position:relative; width:100%; max-width:440px; max-height:88vh; overflow:auto; background:linear-gradient(180deg, #24402a, #1b1838 45%); border:2px solid var(--or); border-radius:16px; padding:16px 14px; }
+  .fenetre h2 { margin:0 26px 8px 0; color:var(--or); font-size:1.15em; } .fenetre .x { position:absolute; top:8px; right:10px; background:none; border:0; color:#fff; font-size:20px; }
+  .fenetre p { margin:.5em 0; font-size:.92em; }
+  .bts { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; } .bts button { flex:1; min-width:120px; border-radius:12px; padding:9px; border:0; background:#ffffff1a; color:#fff; }
+  .bts button.go { background:linear-gradient(#f7b23a, #e07a12); color:#2a1400; font-weight:bold; } .bts button:disabled { opacity:.4; }
+  .mous { display:flex; gap:10px; align-items:flex-start; } .mous img { width:58px; height:58px; border-radius:50%; border:2px solid var(--or); flex:none; object-fit:cover; }
+  .portraitM { width:84px; height:84px; border-radius:50%; object-fit:cover; border:3px solid #b84a3a; display:block; margin:6px auto; background:#2a1414; text-align:center; font-size:52px; line-height:84px; }
+  .etoiles { text-align:center; font-size:2.4em; letter-spacing:6px; color:#3e3370; } .etoiles .on { color:var(--or); text-shadow:0 0 12px var(--or); }
+  .liste { font-size:.88em; } .liste li { margin:.3em 0; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="fen"></div>
+<script src="guide.js?v=ceb10204e9"></script>
+<script src="musique.js?v=7df3b1a459"></script>
+<script src="rang.js?v=4a53584921"></script>
+<script src="heros-etoiles.js?v=515906a78b"></script>
+<script src="donnees.js?v=8a39c05326"></script>
+<script src="rempart-moteur.js?v=dd961a8143"></script>
+<script src="configurateur.js?v=a276a42cee"></script>
+<script src="heros-aventure.js?v=31db8c2ed4"></script>
+<script>
+// =============================================================================================== LE REMPART DES RUNES · l'ÉCRAN (27/11)
+// Règles : ~/perso/dice-arena/Rempart-des-runes-regles.md (décisions du 27/11). Moteur : rempart-moteur.js (REMPART).
+const P = REMPART, app = document.getElementById('app'), fen = document.getElementById('fen');
+const CLE = 'guilde-rempart', ORDRE_HEROS = ['maelle', 'gorm', 'aldric', 'pip', 'oria', 'zephine'];
+let S = null, cleH = 'maelle', sel = null, msgT = '', msgErr = false, pause = false, accu = 0, dernier = 0, boucle = 0, finMontree = false;
+const nbsp = s => String(s).replace(/ ([:;!?»])/g, ' $1').replace(/« /g, '« ');
+const lire = () => { let d; try { d = JSON.parse(localStorage.getItem(CLE) || '{}'); } catch (e) { d = {}; } return Object.assign({ max:1, et:{}, heros:['maelle'], vus:{}, parties:0 }, d); };
+const ecrire = d => { try { localStorage.setItem(CLE, JSON.stringify(d)); } catch (e) {} };
+const zOk = () => localStorage.getItem('guilde-tuto') === 'fait';
+const herosOk = k => { const v = haVoie(k), d = lire(); return d.heros.includes(v) && (v !== 'zephine' || zOk()) && (!haEst(k) || !!haInfo(k)); };
+const imgHeros = k => haEst(k) && haInfo(k) ? haInfo(k).img : `portraits/${haVoie(k)}.webp`;
+const IMG_M = { chauve:'portraits/d-chauve.webp?v=1', gobelin:'portraits/d-gobelin.webp?v=1', sanglier:'portraits/d-sanglier.webp?v=1', bouclier:'portraits/d-bouclier.webp?v=1',
+  titan:'portraits/m-titan.webp?v=1', spectre:'portraits/m-spectregivre.webp', golem:'portraits/m-golem.webp' }; // le troll : émoji en attendant son image
+const imgM = (t, cls = '') => IMG_M[t] ? `<img src="${IMG_M[t]}" alt="" class="${cls}">` : `<span>${P.MONSTRES[t].e}</span>`;
+const fenetre = h => { fen.innerHTML = `<div class="fenetre" onclick="if(event.target===this)fermer()"><div><button class="x" onclick="fermer()">✕</button>${nbsp(h)}</div></div>`; };
+const fileF = [];
+const fermer = () => { fen.innerHTML = ''; if (fileF.length) setTimeout(() => { if (!fen.innerHTML && fileF.length) fileF.shift()(); }, 150); else if (S && S.fini && !finMontree) fin(); };
+const montreF = f => { if (fen.innerHTML) fileF.push(f); else f(); };
+const son = k => { try { GM.son(k); } catch (e) {} };
+const dis = (t, e) => { msgT = nbsp(t || ''); msgErr = !!e; const m = document.getElementById('msg'); if (m) { m.textContent = msgT; m.className = msgErr ? 'err' : ''; } if (e) son('erreur'); };
+const MOUSTACHE = {
+  gobelin:'Miaou ! Des gobelins. Ils sont fragiles : une tour d’archers en bas de chaque chemin, et ils ne passeront pas.',
+  chauve:'Des chauves-souris ! Les boulets du canon passent dessous : garde des archers ou du givre sur leur chemin.',
+  bouclier:'Un porte-bouclier : chaque tir lui fait 3 de moins. Le poison, lui, passe sous le bouclier. Et attention au troll du pont : empoisonne-le, sinon il se soigne !',
+  spectre:'Brrr, des spectres. Une seconde sur deux, tes tours ne les voient pas… sauf la foudre. Moi, je reste sous le coussin.',
+  golem:'Un golem de pierre : lent, mais il encaisse tout. Et au bout de la route… le TITAN DE FEU. Il change de chemin et écrase tes tours. Tape fort !',
+};
+// ---------------------------------------------------------------- la géométrie du plateau
+let G = null;
+function geometrie() {
+  const pl = document.getElementById('plateau'); if (!pl) return null;
+  const W = pl.clientWidth, H = pl.clientHeight, RH = 26, cw = W / P.NC, ch = Math.min(cw * .92, (H - RH) * .52 / P.NR), TH = ch * P.NR, FH = H - RH - TH;
+  return G = { W, H, RH, cw, ch, TH, FH };
+}
+const yPx = y => y >= 5 ? (P.HAUT - y) / (P.HAUT - 5) * G.FH : G.FH + (5 - y) / 5 * G.TH;
+const xPx = c => (c + .5) * G.cw;
+const caseXY = i => ({ x:xPx(i % P.NC), y:G.FH + (P.NR - 1 - Math.floor(i / P.NC) + .5) * G.ch });
+// ---------------------------------------------------------------- l'écran de jeu
+function demarre(niveau, k) {
+  CFG.ferme(); cleH = k; const v = haVoie(k), info = haInfo(k);
+  let f = 1; try { f = typeof forceSuiveuse === 'function' ? forceSuiveuse(info ? info.id : v) : 1; } catch (e) {}
+  S = P.nouvelle(v, niveau, { force:f }); S.av = info ? info.id : null; sel = null; pause = false; finMontree = false; msgT = '';
+  app.classList.add('jeu');
+  app.innerHTML = `<div id="haut"><button onclick="quitter()">‹</button><div class="t"><b>${niveau}. ${S.L.n}</b><div class="prog"><i id="prog" style="width:0"></i><span>🚩</span></div></div>
+    <button id="pause" onclick="basculePause()">⏸</button><button onclick="regles()">❓</button></div>
+    <div id="plateau"></div>
+    <div id="bas"><div class="l1"><div class="energie" id="energie"></div><div class="boutique" id="boutique"></div></div>
+      <div class="l2"><div class="des" id="des"></div><button class="bowling" id="bowl" onclick="choisitBowling()" ${S.L.bowling ? '' : 'style="display:none"'}>🎳</button>
+      <button class="heros-u" id="hu" onclick="goUltime()"><img src="${imgHeros(k)}" onerror="this.src='portraits/${v}.webp'" alt=""><span class="u">⚡ Ultime</span></button></div>
+      <div id="msg"></div></div>`;
+  dessineBas(); geometrie(); dessinePlateau();
+  try { const ro = new ResizeObserver(() => { const pl = document.getElementById('plateau'); if (S && pl && G && (Math.abs(pl.clientHeight - G.H) > 2 || Math.abs(pl.clientWidth - G.W) > 2)) { geometrie(); dessinePlateau(); } }); ro.observe(document.getElementById('plateau')); } catch (e) {}
+  try { GM.musique('duel'); } catch (e) {}
+  const d = lire(); d.parties++; ecrire(d);
+  const intro = () => fenetre(`<h2>🏰 Niveau ${niveau} · ${S.L.n}</h2><div class="mous"><img src="ui/moustache.webp" alt=""><div><p>${S.L.debloque}</p>
+    <p class="doux">Le rempart a ${S.rempartMax} PV. ${niveau === 5 ? 'Au bout : le Titan de feu.' : 'Tiens jusqu’à la dernière vague 🚩.'}</p></div></div>
+    <p class="doux">🛡 ${info ? haEsc(info.nom) + ' · voie de ' + HEROS[v].nom : HEROS[v].nom} : ${P.HEROS_R[v].passif}</p>
+    <div class="bts"><button class="go" onclick="fermer();lanceGuide()">C’est parti !</button></div>`);
+  intro();
+  cancelAnimationFrame(boucle); dernier = performance.now(); accu = 0; boucle = requestAnimationFrame(tic);
+}
+const GUIDE = [
+  ['#boutique', 'Bienvenue au <b>Rempart des runes</b> ! Touche une tour ici (son prix en ◆ est dessous), puis une case verte d’un chemin : elle est bâtie.'],
+  ['#energie', 'Ton <b>énergie ◆</b> : elle monte toute seule, et +1 à chaque monstre abattu.'],
+  ['#des', 'Toutes les 8 secondes, un <b>dé</b> roule. Touche-le, puis une tour de sa face : elle monte d’un niveau. Tu en gardes 3 au plus.'],
+  ['#hu', 'Ton héros : chaque monstre abattu remplit sa jauge. Pleine, touche son portrait pour l’<b>Ultime</b>.'],
+  ['#rempart', 'Le <b>rempart</b> : chaque monstre qui le touche lui fait perdre des PV. S’il tombe, c’est perdu. Miaou, courage !'],
+];
+function lanceGuide() { try { Guide.lance('rempart-27-11', GUIDE); } catch (e) {} }
+function dessinePlateau() {
+  const pl = document.getElementById('plateau'); if (!pl || !G) return;
+  let h = '';
+  for (let c = 0; c < P.NC; c++) h += `<div class="voie" data-c="${c}" style="left:${c * G.cw + G.cw * .16}px;width:${G.cw * .68}px;bottom:${G.RH}px" onclick="toucheVoie(${c})"><span class="combo" id="combo${c}" style="display:none"></span></div>`;
+  for (let i = 0; i < P.NC * P.NR; i++) { const p = caseXY(i); h += `<div class="case" id="case${i}" style="left:${p.x - G.cw * .45}px;top:${p.y - G.ch * .45}px;width:${G.cw * .9}px;height:${G.ch * .9}px" onclick="toucheCase(${i})"></div>`; }
+  h += `<div id="monstres"></div><div id="rempart"><div class="pv"><i id="pvR"></i><b id="pvT"></b></div></div>`;
+  pl.innerHTML = h; SIG.length = 0; majPlateau(true);
+}
+const SIG = [];
+function htmlCase(t) {
+  if (!t) return '';
+  if (t.puits) return `<div class="tour"><span class="puits">🔮</span></div>`;
+  if (t.rune) return `<div class="tour"><div class="runeT"><img src="${FACE(S.heros, t.paire)}" alt=""></div><span class="so">${P.EFFET_PAIRE[t.paire].e}<small>${t.rv}</small></span></div>`;
+  const n = Math.min(3, t.niv);
+  return `<div class="tour"><img class="canon" src="tours/canon-${S.heros}-${n}.webp?v=2" onerror="this.onerror=null;this.src='tours/canon-maelle-${n}.webp?v=2'" alt=""><span class="so">${P.SORTES[t.v].e}<small>${t.niv}</small></span>${t.et ? `<span class="et">${'★'.repeat(t.et)}</span>` : ''}${t.et >= P.R.etoileMax && t.pw <= 0 ? '<span class="pw">✦</span>' : ''}</div>`;
+}
+function caseOk(i) {
+  if (!sel) return false; const t = S.cases[i];
+  if (sel.t === 'achat' || sel.t === 'deplace') return !t;
+  if (sel.t === 'de') { const d = S.des[sel.k]; return !!(d && t && t.v === d.v && !(t.niv >= 4 && t.et >= 5)); }
+  if (sel.t === 'paire') { const d = S.des[sel.k1]; return !!d && (!t || (t.rune && t.paire === d.v && t.rv < P.R.runeMax)); }
+  return false;
+}
+function majPlateau(tout) {
+  if (!S || !G) return;
+  for (let i = 0; i < S.cases.length; i++) {
+    const t = S.cases[i], el = document.getElementById('case' + i); if (!el) continue;
+    const sig = t ? `${t.id}|${t.niv}|${t.et}|${t.rv}|${t.et >= 5 && t.pw <= 0}` : '';
+    if (tout || SIG[i] !== sig) { el.innerHTML = htmlCase(t); SIG[i] = sig; }
+    el.classList.toggle('ok', caseOk(i)); el.classList.toggle('sel', !!sel && sel.t === 'deplace' && sel.i === i);
+  }
+  document.querySelectorAll('.voie').forEach(v => v.classList.toggle('ok', !!sel && sel.t === 'bowling'));
+  for (let c = 0; c < P.NC; c++) { const co = P.comboChemin(S, c), e = document.getElementById('combo' + c); if (e) { e.style.display = co ? '' : 'none'; e.textContent = co ? '🔗 ' + P.SORTES[co].e : ''; } }
+  const pv = document.getElementById('pvR'); if (pv) { pv.style.width = (100 * S.rempart / S.rempartMax) + '%'; document.getElementById('pvT').textContent = `🧱 ${Math.ceil(S.rempart)} / ${S.rempartMax}`; }
+  majMonstres();
+}
+function majMonstres() {
+  const box = document.getElementById('monstres'); if (!box) return;
+  const vus = new Set(), tailleN = G.cw * .62;
+  for (const m of S.monstres) {
+    if (m.arrive && m.mort) continue; vus.add('m' + m.id);
+    let el = document.getElementById('m' + m.id); const B = P.MONSTRES[m.t], tl = B.boss ? G.cw * .95 : tailleN;
+    if (!el) { el = document.createElement('div'); el.id = 'm' + m.id; el.className = 'mo' + (m.elite ? ' elite' : '') + (B.boss ? ' boss' : '');
+      el.style.width = tl + 'px'; el.innerHTML = `<div class="p" style="height:${tl}px">${imgM(m.t)}</div><div class="vie"><i></i></div>${B.vol ? '<span class="x">🪽</span>' : B.armure ? '<span class="x">🛡</span>' : ''}`;
+      el.onclick = ev => { ev.stopPropagation(); ficheMonstre(m.t, m.elite); }; el.style.top = yPx(P.HAUT) + 'px'; box.appendChild(el); }
+    el.style.left = xPx(m.c) + 'px'; el.style.top = Math.max(tl / 2, yPx(m.y)) + 'px';
+    el.querySelector('.vie i').style.width = Math.max(0, 100 * m.pv / m.pvMax) + '%';
+    el.classList.toggle('lent', m.lent > 0 || m.racine > 0); el.classList.toggle('poison', !!m.poison); el.classList.toggle('touche', m.touche > 0);
+    el.classList.toggle('cache', B.spectre && Math.floor(S.t) % 2 === 1); el.classList.toggle('mort', !!m.mort);
+  }
+  [...box.children].forEach(el => { if (!vus.has(el.id)) el.remove(); });
+}
+function dessineBas() {
+  if (!S) return;
+  document.getElementById('energie').innerHTML = `◆ ${Math.floor(S.energie)}<small>énergie</small>`;
+  const L = [...S.L.sortes.map(v => ({ v, e:P.SORTES[v].e, p:P.SORTES[v].prix })), ...(S.L.puits ? [{ v:'puits', e:'🔮', p:P.prixDe(S, 'puits') }] : [])];
+  const sigB = JSON.stringify([sel, L.map(x => S.energie < x.p), L.length]); const bo = document.getElementById('boutique');
+  if (bo.dataset.sig !== sigB) bo.dataset.sig = sigB, bo.innerHTML = L.map(x => `<button class="${sel && sel.t === 'achat' && sel.v === x.v ? 'on' : ''} ${S.energie < x.p ? 'cher' : ''}" onclick="choisitAchat(${JSON.stringify(x.v).replace(/"/g, "'")})">${x.e}<small>${x.p} ◆</small></button>`).join('');
+  const D = S.des, so = [0, 1, 2].map(k => { const d = D[k]; if (!d) return `<div class="de"></div>`;
+    const on = sel && ((sel.t === 'de' && sel.k === k) || (sel.t === 'paire' && (sel.k1 === k || sel.k2 === k)));
+    return `<button class="de plein ${on ? 'on' : ''} ${d.neuf ? 'roule' : ''}" onclick="choisitDe(${k})"><img src="${FACE(S.heros, d.v)}" alt="Dé ${d.v}"><small>${P.SORTES[d.v].e}</small></button>`; }).join('');
+  const sigD = JSON.stringify([sel, D.map(d => d.id)]), de = document.getElementById('des');
+  if (de.dataset.sig !== sigD) { de.dataset.sig = sigD; de.innerHTML = so + '<div class="prochain" id="prochain"></div>'; }
+  D.forEach(d => { d.neuf = false; });
+  document.getElementById('prochain').textContent = D.length >= P.R.desMax ? 'réserve pleine' : `🎲 dans ${Math.ceil(S.deT)} s`;
+  const b = document.getElementById('bowl'); if (b) { b.disabled = !S.bowling; b.classList.toggle('on', !!sel && sel.t === 'bowling'); }
+  const hu = document.getElementById('hu'); hu.style.setProperty('--j', (100 * S.jauge / P.R.jaugeMax) + '%'); hu.classList.toggle('plein', S.jauge >= P.R.jaugeMax);
+  const pr = document.getElementById('prog'); if (pr) pr.style.width = (100 * P.avancement(S)) + '%';
+}
+// ---------------------------------------------------------------- les touchers
+function choisitAchat(v) { if (!S || S.fini) return; sel = sel && sel.t === 'achat' && sel.v === v ? null : { t:'achat', v }; son('choisir');
+  dis(sel ? (v === 'puits' ? `🔮 ${P.PUITS.n} (${P.prixDe(S, 'puits')} ◆) : touche une case verte.` : `${P.SORTES[v].e} ${P.SORTES[v].n} (${P.SORTES[v].prix} ◆) : touche une case verte.`) : ''); rafraichit(); }
+function choisitDe(k) {
+  if (!S || S.fini || !S.des[k]) return; const d = S.des[k];
+  if (sel && sel.t === 'de' && sel.k === k) { sel = null; dis(''); }
+  else if (sel && sel.t === 'de' && S.des[sel.k] && S.des[sel.k].v === d.v && S.L.runes) { sel = { t:'paire', k1:sel.k, k2:k }; dis(`✨ Une paire de ${d.v} : touche une case libre pour bâtir une Tour-rune (${P.EFFET_PAIRE[d.v].d}).`); }
+  else if (sel && sel.t === 'paire') { sel = { t:'de', k }; }
+  else { sel = { t:'de', k }; }
+  if (sel && sel.t === 'de') { const ok = S.cases.some((t, i) => caseOk(i));
+    dis(ok ? `🎲 Dé de ${d.v} : touche une ${P.SORTES[d.v].n.toLowerCase()} pour la faire monter.${S.L.runes && S.des.filter(x => x.v === d.v).length > 1 ? ' Ou touche l’autre dé pareil pour une Tour-rune.' : ''}`
+      : `🎲 Dé de ${d.v} : bâtis d’abord une ${P.SORTES[d.v].n.toLowerCase()}, ou garde-le. (Toucher encore le dé : le lâcher.)`);
+    if (!ok) fenDe(k); }
+  son('choisir'); rafraichit();
+}
+// un dé qui ne sert à rien pour l'instant : le garder, ou le jeter pour 1 ◆
+function fenDe(k) { const d = S.des[k]; fenetre(`<h2>🎲 Dé de ${d.v} · ${P.SORTES[d.v].e}</h2><p>Il fait monter une ${P.SORTES[d.v].n.toLowerCase()}. Tu n’en as pas encore.</p>
+  <div class="bts"><button onclick="fermer()">Le garder</button><button onclick="jeter(${k})">Le jeter (+1 ◆)</button></div>`); }
+function jeter(k) { P.jeterDe(S, k); sel = null; fermer(); son('vendre'); rafraichit(); }
+function choisitBowling() { if (!S || !S.bowling) return; sel = sel && sel.t === 'bowling' ? null : { t:'bowling' }; dis(sel ? '🎳 Touche un chemin : le dé bowling y roule et écrase tout.' : ''); son('choisir'); rafraichit(); }
+function toucheVoie(c) { if (sel && sel.t === 'bowling') { P.bowling(S, c); sel = null; son('gros'); rafraichit(); return; } }
+function toucheCase(i) {
+  if (!S || S.fini) return; const t = S.cases[i]; let e = null;
+  if (sel && sel.t === 'bowling') { toucheVoie(i % P.NC); return; }
+  if (sel && sel.t === 'achat') { if (t) { e = 'Cette case est prise : choisis une case verte.'; } else { e = P.batir(S, sel.v, i); if (!e) { son('tour-batir'); dis(''); if (S.energie < P.prixDe(S, sel.v)) sel = null; } } }
+  else if (sel && sel.t === 'de') { e = P.poserDe(S, sel.k, i); if (!e) { sel = null; son('tour-fusion'); dis(''); } }
+  else if (sel && sel.t === 'paire') { e = P.poserPaire(S, sel.k1, sel.k2, i); if (!e) { sel = null; son('rune'); dis(''); } }
+  else if (sel && sel.t === 'deplace') { if (i === sel.i) { sel = null; dis(''); } else { e = P.deplacer(S, sel.i, i); if (!e) { sel = null; son('tour-batir'); dis(''); } } }
+  else if (t) { ficheTour(i); return; }
+  else { dis('Touche d’abord une tour en bas (son prix est dessous), puis cette case.'); return; }
+  if (e) dis(e, true); rafraichit();
+}
+function ficheTour(i) {
+  const t = S.cases[i]; if (!t) return; son('ouvrir');
+  let corps;
+  if (t.puits) corps = `<p>${P.PUITS.d}</p>`;
+  else if (t.rune) corps = `<p>Elle ne tire pas. Ses voisines (au-dessus, en dessous, à gauche, à droite) frappent +${Math.round(P.R.runeBonus * 100 * t.rv)} %, et ${P.EFFET_PAIRE[t.paire].d}.</p><p class="doux">Une autre paire de ${t.paire} la fait monter (niveau ${P.R.runeMax} au plus).</p>`;
+  else { const S0 = P.SORTES[t.v]; corps = `<p>${S0.d}</p><p>⚔ ${Math.round(P.degat(S, t, i))} par tir · un tir toutes les ${P.cadence(S, t, i).toFixed(1).replace('.', ',')} s</p>
+    <p class="doux">${t.niv < 4 ? `Un dé de ${t.v} la fait monter au niveau ${t.niv + 1}.` : t.et < 5 ? `Niveau maximum : chaque dé de ${t.v} lui donne une étoile ★ (+35 %). À 5 ★, elle gagne son pouvoir : ${P.POUVOIRS[t.v].n}.` : `✦ Pouvoir : ${P.POUVOIRS[t.v].n}. ${P.POUVOIRS[t.v].d}`}</p>`; }
+  const pw = !t.puits && !t.rune && t.et >= 5;
+  fenetre(`<h2>${t.puits ? '🔮' : t.rune ? '✨' : P.SORTES[t.v].e} ${P.nomTour(t)}</h2>${corps}
+    <div class="bts">${pw ? `<button class="go" ${t.pw > 0 ? 'disabled' : ''} onclick="lancePouvoir(${i})">✦ ${P.POUVOIRS[t.v].n}${t.pw > 0 ? ` (${Math.ceil(t.pw)} s)` : ''}</button>` : ''}
+    <button ${S.energie < 1 ? 'disabled' : ''} onclick="deplace(${i})">↔ Déplacer (1 ◆)</button><button onclick="demolirQ(${i})">🔨 Démolir (+${P.rendDemolir(t)} ◆)</button></div>`);
+}
+function lancePouvoir(i) { const e = P.pouvoir(S, i); fermer(); if (e) dis(e, true); else { son('ultime'); banniere('✦ ' + P.POUVOIRS[S.cases[i].v].n); } rafraichit(); }
+function deplace(i) { fermer(); sel = { t:'deplace', i }; dis('↔ Touche une case libre pour y déplacer la tour (1 ◆). Toucher la tour encore : annuler.'); rafraichit(); }
+function demolirQ(i) { const t = S.cases[i]; fenetre(`<h2>🔨 Démolir ?</h2><p>${P.nomTour(t)} : tu récupères <b>${P.rendDemolir(t)} ◆</b> et la case se libère.</p><div class="bts"><button onclick="fermer()">Annuler</button><button class="go" onclick="P.demolir(S, ${i});fermer();son('vendre');rafraichit()">Démolir</button></div>`); }
+function ficheMonstre(t, elite) { const B = P.MONSTRES[t]; son('ouvrir');
+  fenetre(`<h2>${B.e} ${B.n}${elite ? ' · élite' : ''}</h2>${IMG_M[t] ? `<img class="portraitM" src="${IMG_M[t]}" alt="">` : `<div class="portraitM">${B.e}</div>`}<p>${B.d}</p><p>✅ <b>Ce qui le contre</b> : ${B.contre}</p>${elite ? '<p class="doux">Élite : plus de vie, et il frappe plus fort le rempart.</p>' : ''}`); }
+function goUltime() {
+  if (!S || S.fini) return; const v = S.heros, H = P.HEROS_R[v];
+  if (S.jauge < P.R.jaugeMax) { dis(`⚡ ${H.ultime} : encore ${P.R.jaugeMax - S.jauge} monstre${P.R.jaugeMax - S.jauge > 1 ? 's' : ''} à abattre.`); return; }
+  fenetre(`<h2>⚡ ${H.ultime}</h2><p>${H.ud}</p><div class="bts"><button onclick="fermer()">Pas encore</button><button class="go" onclick="fermer();P.ultime(S);son('ultime');banniere('⚡ ${H.ultime.replace(/'/g, '’')}');rafraichit()">Lancer !</button></div>`);
+}
+function banniere(t) { const pl = document.getElementById('plateau'); if (!pl) return; const b = document.createElement('div'); b.className = 'banniere'; b.textContent = nbsp(t); pl.appendChild(b); setTimeout(() => b.remove(), 2300); }
+function basculePause() { pause = !pause; document.getElementById('pause').textContent = pause ? '▶' : '⏸'; if (pause) fenetre(`<h2>⏸ Pause</h2><p>Le temps est arrêté.</p><div class="bts"><button class="go" onclick="fermer();basculePause()">▶ Reprendre</button><button onclick="quitter()">Quitter le niveau</button></div>`); }
+function quitter() { if (!S || S.fini) return accueil(); fenetre(`<h2>Quitter le niveau ?</h2><p>Ta partie sera perdue.</p><div class="bts"><button onclick="fermer()">Continuer</button><button class="go" onclick="S=null;fermer();accueil()">Quitter</button></div>`); }
+function regles() {
+  fenetre(`<h2>🏰 Le Rempart des runes</h2><ul class="liste">
+  <li>Les monstres descendent <b>5 chemins</b> vers le rempart. Chaque tour tire tout droit vers le haut, sur son chemin.</li>
+  <li><b>Bâtir</b> : touche une tour en bas (son prix en ◆), puis une case verte. L’énergie ◆ monte toute seule, +1 par monstre abattu, et le 🔮 puits de runes en produit.</li>
+  <li><b>Les dés</b> : un dé toutes les 8 s, 3 gardés au plus. Un dé sur une tour de sa face = +1 niveau (4 au plus), puis des étoiles ★ ; à 5 ★, un pouvoir.</li>
+  <li><b>Une paire</b> de dés pareils (dès le niveau 5) : une Tour-rune qui renforce ses voisines.</li>
+  <li>🔗 <b>Combo de ligne</b> : 3 tours de la même sorte sur un chemin frappent 30 % plus fort (3 givres : le chemin ralentit ; 3 poisons : il empoisonne).</li>
+  <li>🎳 <b>Le dé bowling</b> : un par niveau, il écrase tout un chemin.</li>
+  <li>Toucher une tour : sa fiche (déplacer 1 ◆, démolir). Toucher un monstre : ce qui le contre.</li></ul>
+  <h2>Les tours</h2><ul class="liste">${Object.values(P.SORTES).map(x => `<li>${x.e} <b>${x.n}</b> (${x.prix} ◆) : ${x.d}</li>`).join('')}<li>🔮 <b>${P.PUITS.n}</b> (${P.PUITS.prix} ◆) : ${P.PUITS.d}</li></ul>`);
+}
+const rafraichit = () => { majPlateau(); dessineBas(); };
+// ---------------------------------------------------------------- les animations (événements du moteur)
+function projectile(i, id, v) {
+  const pl = document.getElementById('plateau'), el = document.getElementById('m' + id); if (!pl || !el) return;
+  const a = caseXY(i), bx = parseFloat(el.style.left), by = parseFloat(el.style.top), p = document.createElement('div'); p.className = 'pj v' + v;
+  const ang = Math.atan2(bx - a.x, a.y - by) * 180 / Math.PI;
+  p.style.left = a.x + 'px'; p.style.top = (a.y - G.ch * .3) + 'px'; p.style.transform = `translate(-50%, -50%) rotate(${ang}deg)`; pl.appendChild(p);
+  p.animate([{ left:a.x + 'px', top:(a.y - G.ch * .3) + 'px' }, { left:bx + 'px', top:by + 'px' }], { duration:Math.min(260, 60 + (a.y - by) * .5), easing:'linear' }).onfinish = () => p.remove();
+  const ce = document.getElementById('case' + i); const tr = ce && ce.querySelector('.tour'); if (tr) { tr.classList.add('tire'); setTimeout(() => tr.classList.remove('tire'), 120); }
+}
+function boom(x, y, e) { const pl = document.getElementById('plateau'); if (!pl) return; const b = document.createElement('div'); b.className = 'boom'; b.textContent = e; b.style.left = x + 'px'; b.style.top = y + 'px'; pl.appendChild(b); setTimeout(() => b.remove(), 520); }
+let tirsSon = 0;
+function joueFx() {
+  const L = S.fx.splice(0);
+  for (const f of L) {
+    if (f.t === 'tir') { projectile(f.i, f.id, f.v); if (performance.now() - tirsSon > 180) { tirsSon = performance.now(); son('tir'); } }
+    else if (f.t === 'meurt') { const el = document.getElementById('m' + f.id); if (el) boom(parseFloat(el.style.left), parseFloat(el.style.top), '💥'); }
+    else if (f.t === 'rempart') { const r = document.getElementById('rempart'); if (r) { r.classList.remove('touche'); void r.offsetWidth; r.classList.add('touche'); } son('porte-frappee'); try { navigator.vibrate && navigator.vibrate(60); } catch (e) {} }
+    else if (f.t === 'de') { const d = S.des[S.des.length - 1]; if (d) d.neuf = true; son('relance'); }
+    else if (f.t === 'puits') { const p = caseXY(f.i); boom(p.x, p.y - 20, '◆'); }
+    else if (f.t === 'bowling') { const pl = document.getElementById('plateau'), b = document.createElement('div'); b.className = 'bowl'; b.textContent = '🎳'; b.style.left = xPx(f.c) + 'px'; b.style.top = (G.H - G.RH) + 'px'; pl.appendChild(b);
+      b.animate([{ top:(G.H - G.RH) + 'px' }, { top:'0px' }], { duration:1000, easing:'ease-in' }).onfinish = () => b.remove(); }
+    else if (f.t === 'grande') { banniere('🚩 Une grande vague arrive !'); son('vague'); }
+    else if (f.t === 'boss') { banniere(`👑 ${P.MONSTRES[f.m].n} !`); son('titan-pas'); }
+    else if (f.t === 'demolit') { const p = caseXY(f.i); boom(p.x, p.y, '💨'); }
+    else if (f.t === 'monte' || f.t === 'rune') { const p = caseXY(f.i); boom(p.x, p.y - 10, f.t === 'rune' ? '✨' : '⬆'); }
+    else if (f.t === 'ultime') { const pl = document.getElementById('plateau'); if (pl) pl.animate([{ filter:'brightness(1.8)' }, { filter:'none' }], { duration:600 }); }
+    else if (f.t === 'nouveau' && f.m === S.L.nouveau) { const d = lire(); if (!d.vus[f.m]) { d.vus[f.m] = 1; ecrire(d); const m = f.m; montreF(() => presente(m)); } }
+  }
+}
+function presente(t) { const B = P.MONSTRES[t]; son('miaou');
+  fenetre(`<h2>🐱 Un nouveau monstre : ${B.n}</h2>${IMG_M[t] ? `<img class="portraitM" src="${IMG_M[t]}" alt="">` : `<div class="portraitM">${B.e}</div>`}<div class="mous"><img src="ui/moustache.webp" alt=""><p>${MOUSTACHE[t] || B.d}</p></div><p>✅ ${B.contre}</p><div class="bts"><button class="go" onclick="fermer()">Compris !</button></div>`); }
+// ---------------------------------------------------------------- la boucle
+function tic(now) {
+  boucle = requestAnimationFrame(tic);
+  const dt = Math.min(.25, (now - dernier) / 1000); dernier = now;
+  if (S && S.fini && !finMontree && !fen.innerHTML) { rafraichit(); setTimeout(() => { if (!fen.innerHTML) fin(); else finMontree = false; }, 600); finMontree = 'attente'; return; }
+  if (!S || S.fini || pause || fen.innerHTML || document.getElementById('guide') || document.hidden) return;
+  accu += dt; let n = 0;
+  while (accu >= P.PAS && n < 4) { accu -= P.PAS; P.etape(S); n++; if (S.fini) break; }
+  if (n) { joueFx(); if (sel && sel.t === 'de' && !S.des[sel.k]) sel = null; rafraichit(); }
+}
+addEventListener('resize', () => { if (S && document.getElementById('plateau')) { geometrie(); dessinePlateau(); } });
+// ---------------------------------------------------------------- la fin du niveau
+function fin() {
+  if (!S || finMontree === true) return; finMontree = true;
+  const g = S.fini === 'gagne', e = P.etoiles(S), n = S.niveau, d = lire(), avant = d.et[n] || 0, nouvHeros = [];
+  let xp = g ? 10 + 5 * e : 5, or = g ? 10 + 5 * e : 0;
+  if (g && !avant) { xp += 30 + 10 * n; or += 20 + 10 * n; }
+  if (g) { d.et[n] = Math.max(avant, e); if (n < P.NIVEAUX.length && d.max < n + 1) d.max = n + 1;
+    const h = ORDRE_HEROS[n]; if (h && !d.heros.includes(h)) { d.heros.push(h); nouvHeros.push(h); } }
+  ecrire(d);
+  try { if (typeof gagneXP === 'function') gagneXP(xp, g ? `Rempart des runes · niveau ${n}` : 'Rempart des runes'); } catch (x) {}
+  try { if (or && typeof donneRessources === 'function') donneRessources(or, 0); } catch (x) {}
+  try { if (g && typeof guildeEvt === 'function') guildeEvt('rempart', 1, { heros:S.av || S.heros, voie:S.heros }); } catch (x) {}
+  try { if (typeof guildeJournal === 'function') guildeJournal('rempart', { heros:S.av || S.heros, resultat:S.fini, journal:[...S.log].reverse(), resume:{ niveau:n, etoiles:e, rempart:Math.ceil(S.rempart), rempartMax:S.rempartMax, abattus:S.kills, duree:Math.round(S.t) } }); } catch (x) {}
+  try { GM.jingle(g ? 'victoire' : 'defaite'); } catch (x) {}
+  const suiv = g && n < P.NIVEAUX.length;
+  fen.innerHTML = '';
+  fenetre(`<h2>${g ? '🏆 Le rempart a tenu !' : '💥 Le rempart est tombé…'}</h2>
+    ${g ? `<div class="etoiles">${[1, 2, 3].map(k => `<span class="${k <= e ? 'on' : ''}">★</span>`).join('')}</div>` : ''}
+    <p>Niveau ${n} · ${S.L.n} · rempart ${Math.ceil(S.rempart)}/${S.rempartMax} PV · monstres abattus : ${S.kills}.</p>
+    <p>✨ +${xp} XP de la Guilde${or ? ` · 🪙 +${or} d’or` : ''}${g && !avant ? ' (première victoire !)' : ''}</p>
+    ${g ? '<p class="doux">★ la victoire · ★★ le rempart à 45 % ou plus · ★★★ à 75 % ou plus.</p>' : '<p class="doux">Astuce : touche un monstre pour savoir ce qui le contre.</p>'}
+    ${nouvHeros.map(h => `<p>🎉 <b>${HEROS[h].nom}</b> te rejoint au Rempart${h === 'zephine' && !zOk() ? ' (après le tutoriel du Duel)' : ''} !</p>`).join('')}
+    ${g && n === P.NIVEAUX.length ? '<p>👑 Le premier monde est sauvé ! Le mode sans fin arrive bientôt.</p>' : ''}
+    <div class="bts"><button onclick="rejouer()">↺ Rejouer</button>${suiv ? `<button class="go" onclick="suivant()">Niveau ${n + 1} ›</button>` : ''}<button onclick="fen.innerHTML='';accueil()">Retour</button></div>`);
+}
+function rejouer() { const n = S.niveau; fen.innerHTML = ''; demarre(n, cleH); }
+function suivant() { const n = S.niveau + 1; fen.innerHTML = ''; demarre(n, herosOk(cleH) ? cleH : 'maelle'); }
+// ---------------------------------------------------------------- l'accueil : le configurateur
+let choixH = localStorage.getItem('guilde-config-rempart-heros') || 'maelle';
+function choisitH(k) { if (!herosOk(k)) return; choixH = k; try { localStorage.setItem('guilde-config-rempart-heros', k); } catch (e) {} CFG.dessine(); }
+function defRempart() {
+  const d = lire(), etT = Object.values(d.et).reduce((a, x) => a + x, 0);
+  return { jeu:'rempart', racine:'app', titre:'🏰 Le Rempart des runes', retour:'menu.html', regles:'regles()',
+    heros:() => ORDRE_HEROS.map(h => herosOk(h) ? `<button class="${choixH === h ? 'on' : ''}" onclick="choisitH('${h}')"><img src="portraits/${h}.webp" alt="">${HEROS[h].nom}</button>`
+        : `<button disabled><img src="portraits/${h}.webp" alt="" style="filter:grayscale(1)">🔒 ${HEROS[h].nom}<small>${d.heros.includes(h) ? 'après le tutoriel' : `niveau ${ORDRE_HEROS.indexOf(h)} gagné`}</small></button>`).join('')
+      + haListe().map(a => haInfo('av:' + a.id)).filter(i => i && herosOk(i.cle)).map(i => `<button class="${choixH === i.cle ? 'on' : ''}" onclick="choisitH('${i.cle}')">${haImg(i, `box-shadow:0 0 0 2px ${i.couleur}`)}${haEsc(i.nom)}<small>voie de ${HEROS[i.voie].nom}</small></button>`).join(''),
+    fiche:() => { const v = haVoie(choixH), H = P.HEROS_R[v]; return `🛡 <b>${haInfo(choixH) ? haEsc(haInfo(choixH).nom) : HEROS[v].nom}</b><br>${nbsp(H.passif)}<br>⚡ <b>Ultime : ${H.ultime}</b> · ${nbsp(H.ud)}<br><span class="doux">Les autres héros te rejoignent au fil des niveaux gagnés.</span>`; },
+    modes:[
+      { k:'monde', e:'🌿', n:'Le premier monde', img:'menu-recu/mode-defense.webp', desc:() => nbsp('Les monstres descendent cinq chemins vers le rempart, sans s’arrêter. Bâtis tes tours avec ton énergie ◆, fais-les monter avec les dés qui roulent, et tiens jusqu’à la dernière vague. Cinq niveaux, le Titan de feu au bout.'),
+        pas:() => [`🏰 Niveau ${Math.min(d.max, P.NIVEAUX.length)} sur ${P.NIVEAUX.length}`, `★ ${etT} étoile${etT > 1 ? 's' : ''} sur ${P.NIVEAUX.length * 3}`] },
+      { k:'sansfin', e:'♾', n:'Sans fin', img:'menu-recu/mode-defense.webp', desc:() => 'Les vagues ne s’arrêtent jamais. Bientôt !', verrou:() => 'Bientôt' } ],
+    options:m => [{ k:'niveau', titre:'🏰 Le niveau', aide:'Chaque niveau gagné ouvre le suivant et débloque quelque chose.',
+      choix:P.NIVEAUX.map((L, i) => ({ v:i + 1, n:`${i + 1}${d.et[i + 1] ? ' ' + '★'.repeat(d.et[i + 1]) : ''}`, d:nbsp(`${L.n} · ${L.debloque}`), dis:i + 1 > d.max })), def:Math.min(d.max, P.NIVEAUX.length) }],
+    resume:(m, o) => `🏰 Niveau ${o.niveau} · ${P.NIVEAUX[o.niveau - 1].n} · <b>${haInfo(choixH) ? haEsc(haInfo(choixH).nom) : HEROS[haVoie(choixH)].nom}</b>`,
+    lancer:(m, o) => { if (!herosOk(choixH)) { choixH = 'maelle'; } demarre(o.niveau || 1, choixH); } };
+}
+function accueil() { cancelAnimationFrame(boucle); S = null; sel = null; app.classList.remove('jeu'); if (!herosOk(choixH)) choixH = 'maelle'; CFG.ouvre(defRempart()); try { GM.musique('menu'); GM.retour && GM.retour(null); } catch (e) {} }
+accueil();
+</script>
+</body>
+</html>

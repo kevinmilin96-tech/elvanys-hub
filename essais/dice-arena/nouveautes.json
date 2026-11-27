@@ -1,5 +1,9 @@
 [
 {
+"v": "20261127-182104",
+"m": "Nouveau mode : le Rempart des runes (5 niveaux, tower defense en temps réel) ; le portail de la Descente a son image"
+},
+{
 "v": "20261127-174116",
 "m": "Saison 1 plus corsée : les monstres des Chroniques suivent la force de ton héros ; 2 quêtes de la semaine au forgeron"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261126-074617",
 "m": "L’Almanach est prêt pour le 1er décembre : 30 paliers de récompenses pendant la saison « L’Hiver des runes ». Et le rang de la Guilde continue après le rang 30, avec un coffre à chaque rang."
-},
-{
-"v": "20261125-220230",
-"m": "La page des rangs a deux onglets : 🏆 Rang et 🗓️ Saison (l’Almanach arrive le 1er décembre). Les quêtes sont toutes dans le carnet."
 }
 ]
