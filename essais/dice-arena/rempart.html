@@ -132,7 +132,7 @@ const zOk = () => localStorage.getItem('guilde-tuto') === 'fait';
 const herosOk = k => { const v = haVoie(k), d = lire(); return d.heros.includes(v) && (v !== 'zephine' || zOk()) && (!haEst(k) || !!haInfo(k)); };
 const imgHeros = k => haEst(k) && haInfo(k) ? haInfo(k).img : `portraits/${haVoie(k)}.webp`;
 const IMG_M = { chauve:'portraits/d-chauve.webp?v=1', gobelin:'portraits/d-gobelin.webp?v=1', sanglier:'portraits/d-sanglier.webp?v=1', bouclier:'portraits/d-bouclier.webp?v=1',
-  titan:'portraits/m-titan.webp?v=1', spectre:'portraits/m-spectregivre.webp', golem:'portraits/m-golem.webp' }; // le troll : émoji en attendant son image
+  titan:'portraits/m-titan.webp?v=1', spectre:'portraits/m-spectregivre.webp', golem:'portraits/m-golem.webp', troll:'portraits/d-troll.webp?v=1' }; // le troll : émoji en attendant son image
 const imgM = (t, cls = '') => IMG_M[t] ? `<img src="${IMG_M[t]}" alt="" class="${cls}">` : `<span>${P.MONSTRES[t].e}</span>`;
 const fenetre = h => { fen.innerHTML = `<div class="fenetre" onclick="if(event.target===this)fermer()"><div><button class="x" onclick="fermer()">✕</button>${nbsp(h)}</div></div>`; };
 const fileF = [];
