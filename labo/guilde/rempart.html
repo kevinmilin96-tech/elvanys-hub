@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261127-193719"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde">
+<head><meta name="guilde-version" content="20261127-195035"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="robots" content="noindex">
@@ -218,13 +218,13 @@ function dessinePlateau() {
 }
 const SIG = [];
 // 27/11 : les tours peintes reçues (les autres gardent le canon en attendant leur image)
-const TOUR_IMG = { 1:'givre', 3:'archers' };
+const TOUR_IMG = { 1:'rempart3-givre', 2:'rempart3-poison', 3:'rempart-archers', 6:'rempart3-grande' };
 function htmlCase(t) {
   if (!t) return '';
   if (t.puits) return `<div class="tour"><img class="pu" src="decor/obj-puits-runes.webp?v=1" alt=""></div>`; // 27/11 : image reçue
   if (t.rune) return `<div class="tour"><div class="runeT"><img src="${FACE(S.heros, t.paire)}" alt=""></div><span class="so">${P.EFFET_PAIRE[t.paire].e}<small>${t.rv}</small></span></div>`;
   const n = Math.min(3, t.niv);
-  const TI = TOUR_IMG[t.v]; return `<div class="tour">${TI ? `<img class="tr" src="tours/rempart-${TI}.webp?v=1" alt="">` : `<img class="canon" src="tours/canon-${S.heros}-${n}.webp?v=2" onerror="this.onerror=null;this.src='tours/canon-maelle-${n}.webp?v=2'" alt="">`}<span class="so">${P.SORTES[t.v].e}<small>${t.niv}</small></span>${t.et ? `<span class="et">${'★'.repeat(t.et)}</span>` : ''}${t.et >= P.R.etoileMax && t.pw <= 0 ? '<span class="pw">✦</span>' : ''}</div>`;
+  const TI = TOUR_IMG[t.v]; return `<div class="tour">${TI ? `<img class="tr" src="tours/${TI}.webp?v=2" alt="">` : `<img class="canon" src="tours/canon-${S.heros}-${n}.webp?v=2" onerror="this.onerror=null;this.src='tours/canon-maelle-${n}.webp?v=2'" alt="">`}<span class="so">${P.SORTES[t.v].e}<small>${t.niv}</small></span>${t.et ? `<span class="et">${'★'.repeat(t.et)}</span>` : ''}${t.et >= P.R.etoileMax && t.pw <= 0 ? '<span class="pw">✦</span>' : ''}</div>`;
 }
 function caseOk(i) {
   if (!sel) return false; const t = S.cases[i];

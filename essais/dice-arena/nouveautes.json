@@ -1,5 +1,9 @@
 [
 {
+"v": "20261127-195035",
+"m": "Rempart des runes : nouvelles tours de glace, de poison et la grande tour"
+},
+{
 "v": "20261127-192437",
 "m": "Rempart : les tours et les monstres sont bien au milieu des chemins"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261126-204438",
 "m": "Mes decks : une nouvelle carte n'est plus « Nouveau » une fois vue"
-},
-{
-"v": "20261126-204239",
-"m": "Le carnet affiche ce que rapporte l'énigme du jour"
 }
 ]
