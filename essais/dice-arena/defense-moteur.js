@@ -363,7 +363,7 @@ function apparitionsD(D) {
   if (D.pas === 0) { const b = V.flat().map(typeV).find(t => MONSTRES[t].boss); logD(D, `🌊 Vague ${D.vague + 1}${D.sansFin ? '' : ` sur ${VAGUES.length}`}${b ? ` : ${MONSTRES[b].n} !` : ''}`); fxD(D, { t:'vague', n:D.vague + 1, boss:b || null }); D.degatsVague = 0; }
   const cols = melangeD([0, 1, 2], D.rng);
   (V[D.pas] || []).forEach((x, i) => { const t = typeV(x), M = MONSTRES[t], elite = String(x).endsWith('*') && !M.boss;
-    const pv = M.boss ? Math.round(M.pv * (1 + .6 * Math.floor(D.vague / 6))) : Math.round(M.pv * DEF.hpBase * Math.pow(DEF.hpVague, D.sansFin && D.vague >= VAGUES.length ? VAGUES.length - 1 + (D.vague - VAGUES.length + 1) * DEF.sfPas : D.vague)); /* le boss a des PV fixes */
+    const pv = M.boss ? Math.round(M.pv * Math.max(1, echelleD(D) / Math.pow(DEF.hpVague, VAGUES.length - 1))) /* 27/11 : en sans fin, le boss grandit comme les autres monstres (avant : il devenait plus faible qu'un sanglier) */ : Math.round(M.pv * DEF.hpBase * Math.pow(DEF.hpVague, D.sansFin && D.vague >= VAGUES.length ? VAGUES.length - 1 + (D.vague - VAGUES.length + 1) * DEF.sfPas : D.vague)); /* le boss a des PV fixes */
     const pvF = Math.round(pv * (D.fs || 1) * (elite ? ELITE.pv : 1)); /* 15/11 soir : × la force du héros */
     const m = { id:++DID, t, pv:pvF, pvMax:pvF, col:cols[i % 3], row:0 };
     if (M.sous) m.sous = true;
