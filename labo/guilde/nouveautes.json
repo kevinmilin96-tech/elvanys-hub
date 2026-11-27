@@ -1,5 +1,9 @@
 [
 {
+"v": "20261127-222128",
+"m": "Rempart des runes : runes à toucher, appel de la vague, sort du héros, spécialisations, nouveaux monstres, défis à médailles, dés plus clairs, 6 tours peintes ; plus de double croix sur les fenêtres"
+},
+{
 "v": "20261127-195035",
 "m": "Rempart des runes : nouvelles tours de glace, de poison et la grande tour"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261126-205312",
 "m": "Le flash des Expéditions change de boss chaque jour"
-},
-{
-"v": "20261126-204438",
-"m": "Mes decks : une nouvelle carte n'est plus « Nouveau » une fois vue"
 }
 ]
