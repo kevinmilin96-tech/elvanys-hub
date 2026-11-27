@@ -571,17 +571,22 @@ function sceauxBoss(S, k) {
   const L = phasesDe(S)[k].s(), n = S.nbHeros || S.heros.length; if (!L.length) return L;
   if (n <= 1) L.splice(-2, 2); else if (n === 2) L.pop(); else if (n >= 4) L.push(sceau('min', 4));
   if (k === 2 && S.livre) L.pop();
+  if ((S.fs || 1) > 1.05 && !S.ancien) L.push(sceau('tot', Math.round(SUIVI_CH.boss * (S.fs - 1)))); // 27/11 : le boss suit la force des héros
   if (n >= 2 && !S.ancien) L.push(sceau('tot', GRANDIT.boss * (n - 1))); // 17/11 (équilibrage mesuré) : l'Horloger grandit avec chaque héros en plus du premier
-  if (['labyrinthe', 'cloitre', 'refectoire', 'cellules', 'crypte'].includes(S.scen) && n <= 1 && L.length > 2) L.pop(); // seul dans un grand labyrinthe : un sceau de moins
+  if (S.scen === 'labyrinthe' && n <= 1 && L.length > 2) L.pop(); // 27/11 : plus de sceau en moins seul dans la Saison 1 (trop facile) // seul dans un grand labyrinthe : un sceau de moins
   return L;
 }
+// 27/11 (choix de l'utilisateur : « durcir à 1-2 héros ») : dans la Saison 1, la part des monstres gardés selon le nombre de héros
+// (avant : 35 % seul, 49 % à deux → parties de 16 tours gagnées à 93-98 % sans pouvoirs). Réglé au simulateur (fiche d'équilibrage).
+const SAISON_SCEN = ['cloitre', 'refectoire', 'cellules', 'crypte'];
+const SAISON_GARDE = typeof process !== 'undefined' && process.env && process.env.SG ? Object.fromEntries(process.env.SG.split(',').map((v, i) => [i + 1, +v])) : { 1:.6, 2:1, 3:1 }; // 27/11 : seul 60 % des monstres, à deux et plus tous
 function adapte(S) {
   const R = S.R, n = Math.max(1, Math.min(4, S.heros.length)), A = ADAPTE[n];
   S.nbHeros = n; S.dureeLevier = A.levier; S.sablier += A.sablier;
   // 16/11 (retour de l'utilisateur : « pas de mise en danger » à 4) : à 3 héros et plus, chaque monstre frappe 1 de plus
   S.forceM = n >= 3 ? 1 : 0; R.monstres.forEach(m => { m.att = BETES[m.b].att + S.forceM; grandit(S, m); });
-  if (['labyrinthe', 'cloitre', 'refectoire', 'cellules', 'crypte'].includes(S.scen)) { S.sablier += [0, 20, 10, 0, 0][n]; if (n <= 2 && !(S.scen === 'cellules' && n === 2)) R.monstres = R.monstres.filter(() => hasard(S) < .7); } // 27/11 : au chapitre 3, à deux, on garde un peu plus de monstres (réglé au simulateur) // un donjon plus grand : plus de temps aux petits groupes
-  if (A.garde < 1 && S.scen !== 'arene') R.monstres = R.monstres.filter(m => hasard(S) < A.garde); // une embuscade garde ses monstres (écrits pour l'aventure)
+  if (['labyrinthe', 'cloitre', 'refectoire', 'cellules', 'crypte'].includes(S.scen)) { S.sablier += [0, 20, 10, 0, 0][n]; if (SAISON_SCEN.includes(S.scen)) { const g = SAISON_GARDE[n]; if (g != null && g < 1) R.monstres = R.monstres.filter(() => hasard(S) < g); } else if (n <= 2) R.monstres = R.monstres.filter(() => hasard(S) < .7); } // 27/11 : au chapitre 3, à deux, on garde un peu plus de monstres (réglé au simulateur) // un donjon plus grand : plus de temps aux petits groupes
+  if (A.garde < 1 && S.scen !== 'arene' && !SAISON_SCEN.includes(S.scen)) R.monstres = R.monstres.filter(m => hasard(S) < A.garde); // une embuscade garde ses monstres (écrits pour l'aventure)
   if (A.renfort) { // à 4 : quelques monstres de plus, posés dans des couloirs (cases de sol hors salle, loin du départ)
     const libres = []; for (let y = 0; y < R.h; y++) for (let x = 0; x < R.w; x++) { const c = cle(x, y); if (!R.murs[c] && !R.salle[c] && !R.portes[c] && !R.obj[c] && !S.heros.some(h => dist(h, { x, y }) < 8) && !R.monstres.some(m => m.x === x && m.y === y)) libres.push([x, y]); }
     const sorte = S.scen === 'brulees' ? ['loup', 'gobelin', 'salamandre'] : S.scen === 'labyrinthe' ? ['gobelin', 'osclaque', 'page'] : S.scen === 'cloitre' ? ['spectregivre', 'loupblanc', 'spectregivre'] : S.scen === 'refectoire' ? ['goule', 'spectregivre', 'goule'] : S.scen === 'cellules' ? ['spectregivre', 'goule', 'loupblanc'] : S.scen === 'crypte' ? ['osclaque', 'spectregivre', 'goule'] : ['rouagelin', 'coucou', 'rouagelin'];
@@ -593,7 +598,7 @@ function adapte(S) {
 function nouvelle(heros, s, scen, opts = {}) {
   scen = SCEN[scen] ? scen : 'horloger';
   // un héros = le nom d'une voie (« maelle »…) ou un HÉROS D'AVENTURE { voie, nom, pv, faces, desPlus, av, c } (aventuriers.js)
-  if (heros.some(h => h && h.g)) heros = heros.map(h => h && h.g ? Object.assign({ __g:h.g, __B:h.B, pwSet:h.pwSet }) : h); // 15/11 : salle d'attente
+  if (heros.some(h => h && h.g)) heros = heros.map(h => h && h.g ? Object.assign({ __g:h.g, __B:h.B, pwSet:h.pwSet, fs:h.fs }) : h); // 15/11 : salle d'attente
   const fait = h => h && h.__g ? (B => ({ id:h.__g, pv:HEROS_C[h.__g].pv + (B.pv || 0), pvmax:HEROS_C[h.__g].pv + (B.pv || 0), objet:null, bouclier:0, att:B.att || 0, def:B.bouclier || 0, agi:B.agi || 0 }))(h.__B || {}) : typeof h === 'string' ? (B => ({ id:h, pv:HEROS_C[h].pv + B.pv, pvmax:HEROS_C[h].pv + B.pv, objet:null, bouclier:0, att:B.att || 0, def:B.bouclier || 0, agi:B.agi || 0 }))(typeof bonusHerosPvE === 'function' && !opts.sansBonus ? bonusHerosPvE(h) : { pv:0 }) // 15/11 : le système des héros (heros-etoiles.js)
     : { id:h.voie, nom:h.nom, av:h.av, c:h.c, portrait:h.portrait, faces:h.faces, bonusF:h.bonusF || null, talents:h.talents || [], desPlus:h.desPlus || 0, pv:h.pv, pvmax:h.pv, objet:null, bouclier:0, att:h.att || 0, def:h.def || 0, agi:h.agi || 0 }; // 16/11 : l'équipement (aventuriers.js)
   const S = { heros:heros.map(fait), scen, sablier:SCEN[scen].sablier, rs:graine(s), graine:s,
@@ -601,6 +606,12 @@ function nouvelle(heros, s, scen, opts = {}) {
   const R = { w:W, h:H, murs:{}, salle:{}, obj:{}, portes:{}, monstres:[], tour:0, vuSalle:{}, vu:{}, rouagesPoses:0, boss:null, bronze:false, leviersTour:{} };
   S.R = R;
   // 16/11 nuit : LES POUVOIRS DES HÉROS (pouvoirs-heros.js) : Groupe si 2 héros ou plus, sinon Solo ; sans eux (vieille partie) = comme avant
+  // 27/11 (l'utilisateur : « les monstres s'alignent sur la puissance du personnage choisi », il joue son héros d'aventure) : LA FORCE SUIVIE
+  // dans les Chroniques, comme la Crypte et l'Odyssée : chaque héros apporte son facteur de force (forceSuiveuse de heros-etoiles.js, 1 = débutant),
+  // la partie prend la moyenne ; les monstres gagnent sceaux et coups selon ce facteur (SUIVI_CH, voir grandit et sceauxBoss)
+  if (!opts.sansBonus) { const F = heros.map(src => { const f = src && typeof src === 'object' && src.fs; if (f) return +f;
+      const id = typeof src === 'string' ? src : src && (src.av || src.__g); return typeof racine.forceSuiveuse === 'function' && id ? +racine.forceSuiveuse(id) || 1 : 1; });
+    S.fs = Math.max(1, Math.round(F.reduce((t, f) => t + f, 0) / Math.max(1, F.length) * 100) / 100); }
   S.pre = S.heros.length >= 2 ? 'groupe' : 'solo';
   S.heros.forEach((z, i) => { const src = heros[i]; let set = src && typeof src === 'object' && src.pwSet || null;
     if (!set && !opts.sansPouvoirs && typeof racine.pwPourMoteur === 'function') set = racine.pwPourMoteur(typeof src === 'string' ? src : (src.__g || src.av || src.voie));
@@ -669,8 +680,17 @@ const log = (S, t) => { S.journal.unshift(t); S.journal.length = Math.min(S.jour
 // avec chaque héros EN PLUS du premier (seul : rien ne change). Élites : un sceau « Σ » de 5 par héros en plus et +1 à leurs coups ;
 // ordinaires : +1 sceau « n'importe quel dé » à 4 héros ; l'Horloger : un sceau « Σ » de 4 par héros en plus à chaque phase. (Equilibrage-pouvoirs-17-11.md)
 const GRANDIT = { elite:5, eliteAtt:1, ordDes:4, boss:4 }; // réglé au simulateur le 17/11 (6/3/5 : 4 héros à 65 %, trop dur ; 5/4/4 : 77-92 %) // ordDes : nombre de héros à partir duquel les ordinaires ont un sceau de plus
+// 27/11 : la force suivie (S.fs) : f = S.fs − 1. Élites : un sceau Σ de plus de SUIVI_CH.elite × f et +1 coup par tranche de SUIVI_CH.att ;
+// ordinaires : un sceau « ≥ 3 » de plus par tranche de SUIVI_CH.ord (3 au plus), +1 coup par tranche de SUIVI_CH.att ; boss : Σ de SUIVI_CH.boss × f par phase
+const SUIVI_CH = (e => e ? Object.assign({ elite:20, ord:.2, att:.3, boss:35 }, JSON.parse(e)) : { elite:20, ord:.2, att:.3, boss:35 })(typeof process !== 'undefined' && process.env && process.env.SUIVI_CH);
+function suitForce(S, m, B) {
+  const f = (S.fs || 1) - 1; if (f < .05 || !B || B.immobile) return;
+  const coups = Math.floor(f / SUIVI_CH.att); if (coups) m.att += coups;
+  if (B.elite || B.leviers) m.sceaux.push(sceau('tot', Math.max(1, Math.round(SUIVI_CH.elite * f))));
+  else for (let i = 0; i < Math.min(3, Math.floor(f / SUIVI_CH.ord)); i++) m.sceaux.push(sceau('min', 3));
+}
 function grandit(S, m) {
-  if (!m || m.grandi || !S.nbHeros || S.ancien) return; m.grandi = true; const B = BETES[m.b], n = S.nbHeros; if (!B || B.boss || B.immobile || n < 2) return;
+  if (!m || m.grandi || !S.nbHeros || S.ancien) return; m.grandi = true; const B = BETES[m.b], n = S.nbHeros; if (!B || B.boss) return; suitForce(S, m, B); if (B.immobile || n < 2) return;
   if (B.elite || B.leviers) { m.sceaux.push(sceau('tot', GRANDIT.elite * (n - 1))); m.att += GRANDIT.eliteAtt; }
   else for (let i = GRANDIT.ordDes - 1; i < n; i++) m.sceaux.push(sceau('any'));
 }

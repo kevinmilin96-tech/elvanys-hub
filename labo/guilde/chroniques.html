@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261127-164348"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
+<head><meta name="guilde-version" content="20261127-174116"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="robots" content="noindex">
@@ -241,14 +241,14 @@
 <div id="app"></div>
 <div id="fen"></div><div id="perso"></div>
 <script src="musique.js?v=7df3b1a459"></script>
-<script src="rang.js?v=baeef69b74"></script>
+<script src="rang.js?v=4a53584921"></script>
 <script>window.AMIS_SANS_BOUTON = true;</script>
 <script src="amis.js?v=0348982fc3"></script>
-<script src="heros-etoiles.js?v=bedc2c2c50"></script>
+<script src="heros-etoiles.js?v=515906a78b"></script>
 <script src="progression-modes.js?v=807b0f9ad5"></script>
 <script src="aventuriers.js?v=5679a4a045"></script>
 <script src="pouvoirs-heros.js?v=a14bbdf318"></script>
-<script src="chroniques-moteur.js?v=fd35808ac9"></script>
+<script src="chroniques-moteur.js?v=08e9c61b64"></script>
 <script src="chroniques-ambiance.js?v=cdc992dc3a"></script>
 <script src="configurateur.js?v=a276a42cee"></script>
 <script src="chroniques-config.js?v=446e56558d"></script>
@@ -1283,7 +1283,7 @@ function finPartie() {
   if (gagne) { son('victoire'); try { GM.jingle('victoire'); } catch (e) {} if (!dejaFait) S.heros.forEach((z, i) => { if (L && !mesHeros().includes(i)) return; if (typeof guildeEvt === 'function') guildeEvt('boss', 1, { heros:z.av || z.id }); }); objet = dejaFait ? null : butinArmurerie(S.sablier > 0 ? 3 : 1, S.score);
     if (S.scen === 'crypte' && typeof briseurHiver === 'function') briseurHiver();
     if ((S.scen === 'cloitre' || S.scen === 'refectoire' || S.scen === 'cellules' || S.scen === 'crypte') && !S.aventure && !dejaFait && typeof guildeEvt === 'function') { guildeEvt('chapitre_saison', 1, { sansXP:true }); if (typeof gagneXP === 'function') gagneXP(150, 'Chapitre de la saison'); } // 26/11 : le chapitre joué en salle compte pour la quête de saison
-    try { const D = JSON.parse(localStorage.getItem(CLE) || '{}'); D.horloger = (D.horloger || 0) + 1; if (S.sablier > 0) D.gardiens = true; localStorage.setItem(CLE, JSON.stringify(D)); } catch (e) {} }
+    try { const D = JSON.parse(localStorage.getItem(CLE) || '{}'); D.horloger = (D.horloger || 0) + 1; if (S.sablier > 0 && (S.scen || 'horloger') === 'horloger' && !S.textes) D.gardiens = true; localStorage.setItem(CLE, JSON.stringify(D)); } catch (e) {} }
   else { try { GM.jingle('defaite'); } catch (e) {} }
   const campagne = gagne && (!L || estHote()) ? campagneGagnee().replace('onclick="fin();chapitre()"', L ? 'onclick="retourSalle()"' : 'onclick="fin();chapitre()"') : '';
   const salleBt = L ? (estHote() ? '<button class="go" onclick="retourSalle()">↩ Ramener tout le monde dans la salle d’attente</button>' : '<p style="text-align:center;color:var(--doux)">L’hôte peut ramener tout le monde dans la salle d’attente pour la suite.</p>') : '';
@@ -1301,9 +1301,9 @@ function finPartie() {
     if (typeof donneRessources === 'function') donneRessources(0, pou, true); // 16/11 : la poussière de rune en plus (pour monter les héros)
     butin = `<p style="text-align:center">⚒ Pour tes héros : 🪙 +${or} or · 🔹 +${pou} poussière de rune${g.length ? ` · ${g.map(p => `<b style="color:${EQ_RARE[p.r].c}">${EQ_CASES.find(c => c.k === p.slot).e} ${p.nom}</b>`).join(', ')}` : ''}</p>`; }
   fenetre(gagne ? `<h2>${SCT().gagne[0]}</h2>${(S.scen || 'horloger') === 'horloger' ? '<img src="decor/chron-horloger-fin.webp?v=1" alt="" style="width:100%;border-radius:12px;margin:2px 0 8px;display:block">' : ''}<div class="moust"><img src="ui/moustache.webp" alt=""><div class="lu">${SCT().gagne[1]}</div></div>
-      <p style="text-align:center">Score : <b style="color:var(--or)">${S.score}</b> · ${S.tours} tours · ⌛ ${S.sablier} grains${S.sablier > 0 ? '<br>🏅 Titre « <b>Gardiens du temps</b> » : le sablier n’est jamais tombé à zéro !' : ''}</p>
+      <p style="text-align:center">Score : <b style="color:var(--or)">${S.score}</b> · ${S.tours} tours${(S.scen || 'horloger') === 'horloger' && !S.textes ? ` · ⌛ ${S.sablier} grains${S.sablier > 0 ? '<br>🏅 Titre « <b>Gardiens du temps</b> » : le sablier n’est jamais tombé à zéro !' : ''}` : ''}</p>
       <p style="text-align:center">✨ Chaque héros gagne des éclats et de l’XP${objet ? ` · 🎒 <b>${objet}</b> rejoint l’armurerie` : ''}.</p>${butin}${gagne && S.scen === 'crypte' && !S.aventure && typeof epilogueS1 === 'function' ? '<button class="go" onclick="fenetre(\'\');epilogueS1(fin)">📖 L’épilogue de la saison</button>' : ''}${campagne}${salleBt}<button class="${campagne || salleBt || (gagne && S.scen === 'crypte') ? 'sec' : 'go'}" onclick="fin()">Retour à la Guilde</button>`
-    : `<h2>❄ Figés…</h2><div class="moust"><img src="ui/moustache.webp" alt=""><div class="lu">« Figés. Tous. Comme des statues. Très jolies, d’ailleurs. L’Horloger vous remonte comme des jouets… On réessaie ? »</div></div>
+    : `<h2>${(S.scen || 'horloger') === 'horloger' && !S.textes ? '❄ Figés…' : '💀 Défaite…'}</h2><div class="moust"><img src="ui/moustache.webp" alt=""><div class="lu">${(S.scen || 'horloger') === 'horloger' && !S.textes ? '« Figés. Tous. Comme des statues. Très jolies, d’ailleurs. L’Horloger vous remonte comme des jouets… On réessaie ? »' : '« Tout le monde à terre… On se relève, on souffle, et on y retourne. Moi, je garde la porte. »'}</div></div>
       ${L ? (estHote() ? '<button class="go" onclick="retourSalle()">↩ Revenir dans la salle d’attente</button>' : '<p style="text-align:center;color:var(--doux)">L’hôte peut ramener tout le monde dans la salle d’attente.</p>') : '<button class="go" onclick="recommence()">↺ Repartir de la dernière porte ouverte</button>'}<button class="sec" onclick="fin()">Abandonner</button>`, false);
 }
 function recommence() { if (!S.passage) { const h = S.heros.map(z => z.id); S = K.nouvelle(h, 'chron-' + Date.now(), S.scen); } else S = JSON.parse(S.passage); actif = 0; sel = null; centrer = true; fenetre(''); dessine(); }
@@ -1363,7 +1363,7 @@ const nomChoix = k => k.startsWith('av:') ? ((avTrouve(k.slice(3)) || {}).nom ||
 function versMoteur(k) {
   if (!k.startsWith('av:')) return k;
   const a = avTrouve(k.slice(3)); if (!a) return null; const s = avStats(a);
-  return { voie:a.voie, nom:a.nom, pv:s.pv, faces:s.faces, bonusF:s.bonus, desPlus:s.desPlus, talents:s.talents, av:a.id, c:a.couleur, portrait:avPortrait(a), att:s.att || 0, def:s.def || 0, agi:s.agi || 0, pwSet:typeof pwPourMoteur === 'function' ? pwPourMoteur(a.id) : null };
+  return { voie:a.voie, nom:a.nom, pv:s.pv, faces:s.faces, bonusF:s.bonus, desPlus:s.desPlus, talents:s.talents, av:a.id, c:a.couleur, portrait:avPortrait(a), att:s.att || 0, def:s.def || 0, agi:s.agi || 0, fs:typeof forceSuiveuse === 'function' ? forceSuiveuse(a.id) : 1, pwSet:typeof pwPourMoteur === 'function' ? pwPourMoteur(a.id) : null };
 }
 const equipeChoisie = () => choisis.map(versMoteur).filter(Boolean);
 function basculeHeros(k) { if (choisis.includes(k)) choisis = choisis.filter(x => x !== k); else if (choisis.length < 4) choisis.push(k); else { bulle('4 héros au plus', true); return; } son('choisir'); accueil(); }
@@ -1415,7 +1415,7 @@ async function lobbyPousse(f) {
 function entreeLobby(k) {
   const id = 'e' + Math.random().toString(36).slice(2, 8);
   if (k.startsWith('av:')) { const a = avTrouve(k.slice(3)); if (!a) return null; return { id, cle:k, owner:L.moi.id, nom:a.nom, img:avPortrait(a), sec:avPortraitSecours(a), c:a.couleur, m:versMoteur(k) }; }
-  return { id, cle:k, owner:L.moi.id, nom:H[k].n, img:`portraits/${k}.webp`, sec:`portraits/${k}.webp`, c:(H[k] || {}).c, m:{ g:k, B:typeof bonusHerosPvE === 'function' ? bonusHerosPvE(k) : { pv:0 }, pwSet:typeof pwPourMoteur === 'function' ? pwPourMoteur(k) : null } };
+  return { id, cle:k, owner:L.moi.id, nom:H[k].n, img:`portraits/${k}.webp`, sec:`portraits/${k}.webp`, c:(H[k] || {}).c, m:{ g:k, B:typeof bonusHerosPvE === 'function' ? bonusHerosPvE(k) : { pv:0 }, fs:typeof forceSuiveuse === 'function' ? forceSuiveuse(k) : 1, pwSet:typeof pwPourMoteur === 'function' ? pwPourMoteur(k) : null } };
 }
 const nomJoueur = id => (L.joueurs.find(j => j.id === id) || {}).nom || '?';
 function ajouteLobby(k) {
