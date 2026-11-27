@@ -345,8 +345,8 @@ if (typeof S !== 'undefined' && !S && typeof accueil === 'function') accueil();
 function briseurHiver() { try { const d = JSON.parse(localStorage.getItem('guilde-saison1') || '{}'); if (!d.briseur) { d.briseur = Date.now(); localStorage.setItem('guilde-saison1', JSON.stringify(d)); } } catch (e) {} }
 const EPI_S1 = [
   { img:'decor/epi-1-chant.webp', titre:'Le chant des trois cloches', texte:'Le cœur de glace se brise avec un bruit de rivière qui dégèle. Le Roi de l’Hiver tombe en neige, et la neige ne remonte plus. Dehors, d’un coup, le blizzard s’arrête. Pour la première fois depuis des semaines, on entend… le silence. Puis un oiseau.' },
-  { img:'decor/scene-monastere.webp', chaud:true, titre:'La forge des Veilleurs', texte:'Au sommet du monastère, Bran et Maëlle rallument la vieille forge des Veilleurs. Trois nouvelles runes de braise, forgées à deux : celles-là tiendront bien plus de dix ans. Lance un dé pour chaque rune.', forge:true },
-  { img:'decor/scene-fin-hiver.webp', titre:'L’aube', texte:'À l’aube, les trois cloches sonnent ensemble, et la vallée entière sort sur le pas des portes. Frère Aubin rouvre les grandes portes du monastère : « Il y aura de nouveau des Veilleurs. Il le faut. » Au village, Bran pose sur les épaules de Maëlle son vieux manteau de fourrure : « Il est à toi. Il a assez attendu. » (le costume d’hiver de Maëlle, au palier 30 de l’Almanach). Et dans la foule, Gorm porte son grand cor à ses lèvres : « Et maintenant… LE GRAND CARNAVAL ! »', fin:true },
+  { img:'decor/epi-2-forge.webp', titre:'La forge des Veilleurs', texte:'Au sommet du monastère, Bran et Maëlle rallument la vieille forge des Veilleurs. Trois nouvelles runes de braise, forgées à deux : celles-là tiendront bien plus de dix ans. Lance un dé pour chaque rune.', forge:true },
+  { img:'decor/epi-3-aube.webp', titre:'L’aube', texte:'À l’aube, les trois cloches sonnent ensemble, et la vallée entière sort sur le pas des portes. Frère Aubin rouvre les grandes portes du monastère : « Il y aura de nouveau des Veilleurs. Il le faut. » Au village, Bran pose sur les épaules de Maëlle son vieux manteau de fourrure : « Il est à toi. Il a assez attendu. » (le costume d’hiver de Maëlle, au palier 30 de l’Almanach). Et dans la foule, Gorm porte son grand cor à ses lèvres : « Et maintenant… LE GRAND CARNAVAL ! »', fin:true },
 ];
 let EPI = null;
 function epilogueS1(fini) {
@@ -366,7 +366,7 @@ function epilogueS1(fini) {
     #epi .eclat { position:absolute; right:4vw; bottom:5vw; width:4.2vw; height:4.2vw; transform:rotate(45deg); background:linear-gradient(135deg, #fff, #9fdcff); box-shadow:0 0 8px #9fdcff; opacity:.75; animation:epiEc 2.4s infinite; cursor:pointer; }
     @keyframes epiEc { 0%, 100% { opacity:.35; } 50% { opacity:.9; } }
     #epi .zeph { position:absolute; inset:0; background:#0b0716f2; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:6vw; text-align:center; }
-    #epi .zeph img { width:34vw; height:34vw; border-radius:50%; object-fit:cover; border:3px solid #ff4040; box-shadow:0 0 30px #9fdcff; }`; document.head.appendChild(st); }
+    #epi .zeph img { width:86vw; max-height:45vh; border-radius:3vw; object-fit:cover; border:2px solid #ff404099; box-shadow:0 0 30px #9fdcff66; }`; document.head.appendChild(st); }
   epiDessine();
 }
 function epiDessine() {
@@ -389,7 +389,7 @@ function epiEclat() {
   EPI.eclat++; if (EPI.eclat < 3) return;
   const premiere = !localStorage.getItem('guilde-eclat-zephine'); localStorage.setItem('guilde-eclat-zephine', String(Date.now()));
   const z = document.createElement('div'); z.className = 'zeph';
-  z.innerHTML = `<img src="portraits/zephine.webp?v=1" alt=""><p style="font-size:4vw;line-height:1.45;margin:5vw 0">Bien plus tard, la nuit, dans un laboratoire plein de fioles. Zéphine est seule, penchée sur un petit éclat de glace posé sur sa table. Il ne fond pas. Il palpite, doucement, comme un cœur.</p><p style="font-size:5vw;color:#9fdcff"><i>« Intéressant… très intéressant. »</i></p>${premiere ? '<p style="color:#f3c96b">✨ Succès secret : « L’éclat qui ne fondait pas »</p>' : ''}<button class="lancer" onclick="this.parentElement.remove()">Fermer</button>`;
+  z.innerHTML = `<img src="decor/scene-zephine-labo.webp?v=1" alt=""><p style="font-size:4vw;line-height:1.45;margin:5vw 0">Bien plus tard, la nuit, dans un laboratoire plein de fioles. Zéphine est seule, penchée sur un petit éclat de glace posé sur sa table. Il ne fond pas. Il palpite, doucement, comme un cœur.</p><p style="font-size:5vw;color:#9fdcff"><i>« Intéressant… très intéressant. »</i></p>${premiere ? '<p style="color:#f3c96b">✨ Succès secret : « L’éclat qui ne fondait pas »</p>' : ''}<button class="lancer" onclick="this.parentElement.remove()">Fermer</button>`;
   document.getElementById('epi').appendChild(z); if (typeof son === 'function') try { son('magie'); } catch (e) {}
 }
 function epiFin() { const el = document.getElementById('epi'); if (el) el.remove(); const f = EPI && EPI.fini; EPI = null; if (f) f(); }
