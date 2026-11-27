@@ -1,5 +1,9 @@
 [
 {
+"v": "20261128-002348",
+"m": "Rempart : le pouvoir se recharge pour toutes les tours de la même sorte à la fois (un Grand gel toutes les 20 s au plus)"
+},
+{
 "v": "20261128-001949",
 "m": "Rempart : toucher le ⬆+1, le ✦ ou une rune n'ouvre plus la fiche de la tour"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261127-151123",
 "m": "Défense de la porte : les Runes deviennent des Tours-runes, bâties avec une paire de dés. Elles ne tirent pas, mais renforcent leurs voisines et leur donnent l'effet de la paire (gel, poison, flèche de plus, éclats, éclair, armure percée), avec le pouvoir de ton héros."
-},
-{
-"v": "20261127-141025",
-"m": "Défense de la porte : plus de Frappe, Technique ni Pouvoir aux dés ; l'Ultime se lance d'un toucher quand la jauge est pleine ; à 5 étoiles chaque tour gagne un pouvoir à lancer (blizzard, nuage toxique, pluie de flèches, bombardement, tempête, tir perçant) ; en sans fin, un point de sauvegarde après chaque boss."
 }
 ]

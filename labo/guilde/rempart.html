@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261128-001949"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde">
+<head><meta name="guilde-version" content="20261128-002348"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="robots" content="noindex">
@@ -166,7 +166,7 @@
 <script src="rang.js?v=4a53584921"></script>
 <script src="heros-etoiles.js?v=29ce68f57f"></script>
 <script src="donnees.js?v=8a39c05326"></script>
-<script src="rempart-moteur.js?v=93e121b803"></script>
+<script src="rempart-moteur.js?v=c357c0c913"></script>
 <script src="configurateur.js?v=d5e9469a28"></script>
 <script src="heros-aventure.js?v=31db8c2ed4"></script>
 <script>
@@ -438,7 +438,7 @@ function ficheTour(i) {
   if (t.puits) corps = `<p>${P.PUITS.d}</p>`;
   else if (t.rune) corps = `<p>Elle ne tire pas. Ses voisines (au-dessus, en dessous, à gauche, à droite) frappent +${Math.round(P.R.runeBonus * 100 * t.rv)} %, et ${P.EFFET_PAIRE[t.paire].d}.</p><p class="doux">Une autre paire de ${t.paire} la fait monter (niveau ${P.R.runeMax} au plus).</p>`;
   else { const S0 = P.SORTES[t.v]; corps = `<p>${S0.d}</p><p>⚔ ${Math.round(P.degat(S, t, i))} par tir · un tir toutes les ${P.cadence(S, t, i).toFixed(1).replace('.', ',')} s</p>
-    <p class="doux">${t.niv < 4 ? `Un dé de ${t.v} la fait monter au niveau ${t.niv + 1}. ${t.niv < P.R.pouvoirNiv ? `Au niveau ${P.R.pouvoirNiv}, elle gagne son pouvoir : ${P.POUVOIRS[t.v].n}.` : 'Au niveau 4, son pouvoir devient plus fort et elle choisit sa spécialisation.'}` : `Niveau maximum : chaque dé de ${t.v} lui donne une étoile ★ (+35 %, et son pouvoir +10 %).`}</p>${t.niv >= P.R.pouvoirNiv ? `<p>✦ <b>Pouvoir : ${P.POUVOIRS[t.v].n}</b> · ${P.POUVOIRS[t.v].d}${t.niv < 4 ? ' (plus petit avant le niveau 4)' : ''} Recharge ${P.R.pouvoirRecharge} s.</p>` : ''}`
+    <p class="doux">${t.niv < 4 ? `Un dé de ${t.v} la fait monter au niveau ${t.niv + 1}. ${t.niv < P.R.pouvoirNiv ? `Au niveau ${P.R.pouvoirNiv}, elle gagne son pouvoir : ${P.POUVOIRS[t.v].n}.` : 'Au niveau 4, son pouvoir devient plus fort et elle choisit sa spécialisation.'}` : `Niveau maximum : chaque dé de ${t.v} lui donne une étoile ★ (+35 %, et son pouvoir +10 %).`}</p>${t.niv >= P.R.pouvoirNiv ? `<p>✦ <b>Pouvoir : ${P.POUVOIRS[t.v].n}</b> · ${P.POUVOIRS[t.v].d}${t.niv < 4 ? ' (plus petit avant le niveau 4)' : ''} Recharge ${P.R.pouvoirRecharge} s, partagée par toutes tes tours de cette sorte.</p>` : ''}`
     + (t.niv >= 4 ? (t.spe ? `<p>✦ <b>${P.SPE[t.v][t.spe].n}</b> : ${P.SPE[t.v][t.spe].d}</p>`
       : `<div class="speC"><b>✦ Choisis sa spécialisation</b> <span class="doux">(une fois pour toutes)</span>${['a', 'b'].map(k => `<button onclick="specialise(${i}, '${k}')"><b>${P.SPE[t.v][k].n}</b><br><span class="doux">${P.SPE[t.v][k].d}</span></button>`).join('')}</div>`) : ''); }
   const pw = !t.puits && !t.rune && t.niv >= P.R.pouvoirNiv;
@@ -464,7 +464,7 @@ function regles() {
   fenetre(`<h2>🏰 Le Rempart des runes</h2><ul class="liste">
   <li>Les monstres descendent <b>5 chemins</b> vers le rempart. Chaque tour tire tout droit vers le haut, sur son chemin.</li>
   <li><b>Bâtir</b> : touche une tour en bas (son prix en ◆), puis une case verte. L’énergie ◆ monte toute seule, +1 par monstre abattu, et le 🔮 puits de runes en produit.</li>
-  <li><b>Les dés</b> : un dé toutes les 8 s, 3 gardés au plus. Un dé sur une tour de sa face = +1 niveau (4 au plus), puis des étoiles ★. <b>Dès le niveau 2</b>, une tour a un pouvoir ✦ : touche-la puis le bouton (recharge 20 s).</li>
+  <li><b>Les dés</b> : un dé toutes les 8 s, 3 gardés au plus. Un dé sur une tour de sa face = +1 niveau (4 au plus), puis des étoiles ★. <b>Dès le niveau 2</b>, une tour a un pouvoir ✦ : touche le ✦ (recharge 20 s, une seule pour toutes les tours de la même sorte).</li>
   <li><b>Une paire</b> de dés pareils (dès le niveau 5) : une Tour-rune qui renforce ses voisines.</li>
   <li>🔗 <b>Combo de ligne</b> : 3 tours de la même sorte sur un chemin frappent 30 % plus fort (3 givres : le chemin ralentit ; 3 poisons : il empoisonne).</li>
   <li>🎳 <b>Le dé bowling</b> : un par niveau, il écrase tout un chemin.</li>

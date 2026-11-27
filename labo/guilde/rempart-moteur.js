@@ -231,7 +231,9 @@ const pouvoirPret = t => !!t && !t.puits && !t.rune && t.niv >= R.pouvoirNiv && 
 function pouvoir(S, i) {
   const t = S.cases[i]; if (!t || t.puits || t.rune || t.niv < R.pouvoirNiv) return `Le pouvoir arrive au niveau ${R.pouvoirNiv}.`; if (t.pw > 0) return 'Le pouvoir se recharge.';
   const k = (t.niv >= R.nivMax ? 1 : .6) * (1 + .1 * (t.et || 0));
-  t.pw = R.pouvoirRecharge; const c = i % NC, dg = degat(S, t, i) * 3 * k, chemin = S.monstres.filter(m => m.c === c && atteint(m));
+  // 28/11 (l'utilisateur : « les pouvoirs sur chaque tour, ça va être un peu cheater ») : UNE recharge par sorte de tour, partagée par toutes les tours de cette sorte
+  S.cases.forEach(x => { if (x && !x.puits && !x.rune && x.v === t.v) x.pw = R.pouvoirRecharge; });
+  const c = i % NC, dg = degat(S, t, i) * 3 * k, chemin = S.monstres.filter(m => m.c === c && atteint(m));
   if (t.v === 1) S.monstres.filter(atteint).forEach(m => { if (!M(m).boss) m.racine = Math.max(m.racine, t.niv >= R.nivMax ? 1.5 : 1); else m.lent = Math.max(m.lent, 1.5); if (m.c === c) frappe(S, m, dg / 3, { voit:true }); });
   else if (t.v === 2) chemin.forEach(m => { frappe(S, m, dg / 3, { voit:true }); if (!M(m).antiPoison) m.poison = { dps:dg / 2, t:5 }; });
   else if (t.v === 3) chemin.forEach(m => { m.marque = 4; for (let n = 0; n < 4; n++) frappe(S, m, dg / 3, { voit:true }); });
