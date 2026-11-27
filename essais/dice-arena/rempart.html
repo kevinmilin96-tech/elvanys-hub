@@ -165,7 +165,9 @@ function geometrie() {
   return G = { W, H, RH, cw, ch, TH, FH };
 }
 const yPx = y => y >= 5 ? (P.HAUT - y) / (P.HAUT - 5) * G.FH : G.FH + (5 - y) / 5 * G.TH;
-const xPx = c => (c + .5) * G.cw;
+// 27/11 (l'utilisateur : « la colonne de gauche est à moitié dans l'herbe ») : les colonnes suivent les chemins PEINTS (mesurés sur decor/fond-rempart.webp)
+const COLX = [.125, .31, .5, .685, .865];
+const xPx = c => (P.NC === 5 ? COLX[c] : (c + .5) / P.NC) * G.W;
 const caseXY = i => ({ x:xPx(i % P.NC), y:G.FH + (P.NR - 1 - Math.floor(i / P.NC) + .5) * G.ch });
 // ---------------------------------------------------------------- l'écran de jeu
 function demarre(niveau, k) {
@@ -209,8 +211,8 @@ function poseEffet(el, k) {
 function dessinePlateau() {
   const pl = document.getElementById('plateau'); if (!pl || !G) return;
   let h = '';
-  for (let c = 0; c < P.NC; c++) h += `<div class="voie" data-c="${c}" style="left:${c * G.cw + G.cw * .16}px;width:${G.cw * .68}px;bottom:${G.RH}px" onclick="toucheVoie(${c})"><span class="combo" id="combo${c}" style="display:none"></span></div>`;
-  for (let i = 0; i < P.NC * P.NR; i++) { const p = caseXY(i); h += `<div class="case" id="case${i}" style="left:${p.x - G.cw * .45}px;top:${p.y - G.ch * .45}px;width:${G.cw * .9}px;height:${G.ch * .9}px" onclick="toucheCase(${i})"></div>`; }
+  for (let c = 0; c < P.NC; c++) h += `<div class="voie" data-c="${c}" style="left:${xPx(c) - G.cw * .34}px;width:${G.cw * .68}px;bottom:${G.RH}px" onclick="toucheVoie(${c})"><span class="combo" id="combo${c}" style="display:none"></span></div>`;
+  for (let i = 0; i < P.NC * P.NR; i++) { const p = caseXY(i); h += `<div class="case" id="case${i}" style="left:${p.x - G.cw * .44}px;top:${p.y - G.ch * .45}px;width:${G.cw * .88}px;height:${G.ch * .9}px" onclick="toucheCase(${i})"></div>`; }
   h += `<div id="monstres"></div><div id="rempart"><div class="pv"><i id="pvR"></i><b id="pvT"></b></div></div>`;
   pl.innerHTML = h; SIG.length = 0; majPlateau(true);
 }
