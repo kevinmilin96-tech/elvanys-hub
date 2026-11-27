@@ -1,5 +1,9 @@
 [
 {
+"v": "20261127-141025",
+"m": "Défense de la porte : plus de Frappe, Technique ni Pouvoir aux dés ; l'Ultime se lance d'un toucher quand la jauge est pleine ; à 5 étoiles chaque tour gagne un pouvoir à lancer (blizzard, nuage toxique, pluie de flèches, bombardement, tempête, tir perçant) ; en sans fin, un point de sauvegarde après chaque boss."
+},
+{
 "v": "20261127-135033",
 "m": "Défense de la porte : 8 nouveaux monstres (rat, feu follet, mineur, chaman, troll, spectre, porte-étendard, golem), des élites dès la vague 3, un boss différent toutes les 6 vagues en sans fin, une animation par sorte de tour, et déplacer une tour n'importe où pour 1 PC."
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261125-215416",
 "m": "Une nouvelle carte gagnée s'annonce : point rouge sur le Menu et sur « Mes decks », « ✨ Nouveau » et en tête de ta collection"
-},
-{
-"v": "20261125-215206",
-"m": "Mes decks : les cartes montrent à nouveau leur description"
 }
 ]
