@@ -1,5 +1,9 @@
 [
 {
+"v": "20261128-005605",
+"m": "Rempart : la besace a ses animations et ses sons (le dé roule, l'objet vole dans la besace, chaque objet a son effet)"
+},
+{
 "v": "20261128-005416",
 "m": "Rempart : plus de dés pour la besace (toutes les 2 vagues et après chaque grosse vague)"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261127-185426",
 "m": "Le Rempart des runes a son décor peint : prairie, portail, cartes, puits, tours de glace et d'archers"
-},
-{
-"v": "20261127-183740",
-"m": "Saison 1 : l'épilogue est entièrement peint"
 }
 ]

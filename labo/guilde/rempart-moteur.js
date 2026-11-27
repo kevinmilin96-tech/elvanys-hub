@@ -305,7 +305,7 @@ function poserObjet(S, n, c, y, choix) {
   else if (k === 'detour') { const v = voisinFort(S, c); S.detours.push({ c, v, t:8 }); vivants.filter(m => m.c === c && !M(m).boss).forEach(m => { m.c = v; }); }
   else if (k === 'appat') vivants.filter(m => !M(m).boss && Math.abs(m.y - y) <= 3).forEach(m => { m.c = c; });
   S.besace.splice(n, 1); S.objets = (S.objets || 0) + 1;
-  fx(S, { t:'pose', k, c, y }); log(S, `${OBJETS[k].e} ${OBJETS[k].n} posé${k === 'barricade' ? 'e' : ''} (chemin ${c + 1}).`); return null;
+  fx(S, { t:'pose', k, c, y, v:k === 'detour' ? S.detours[S.detours.length - 1].v : null }); log(S, `${OBJETS[k].e} ${OBJETS[k].n} posé${k === 'barricade' ? 'e' : ''} (chemin ${c + 1}).`); return null;
 }
 // 27/11 soir : le SORT du héros posé au doigt (c = chemin 0-4, y = hauteur en cases)
 function sort(S, c, y) {
@@ -492,7 +492,7 @@ function etape(S) {
     // 28/11 : les objets de la besace (pièges, détour)
     if (!sousTerre(m)) for (const x of S.pieges) if (x.c === m.c && !x.fini) {
       if (x.k === 'givre' && y0 >= x.y && m.y < x.y) { x.fini = true; if (B.boss) m.lent = Math.max(m.lent, 4); else m.racine = Math.max(m.racine, 4); m.y = x.y; fx(S, { t:'piege', id:m.id }); }
-      else if (x.k === 'epines' && Math.abs(m.y - x.y) <= .6) { m.lent = Math.max(m.lent, .3); frappe(S, m, S.f * 12 * PAS, { perce:true }); } }
+      else if (x.k === 'epines' && Math.abs(m.y - x.y) <= .6) { if (!(m.pique || (m.pique = [])).includes(x.id)) { m.pique.push(x.id); fx(S, { t:'pique', id:m.id }); } m.lent = Math.max(m.lent, .3); frappe(S, m, S.f * 12 * PAS, { perce:true }); } }
     if (!B.boss && m.y < HAUT - .5) for (const x of S.detours) if (x.c === m.c) m.c = x.v;
     if (!sousTerre(m)) for (const w of S.murs) if (w.c === m.c && y0 >= w.y && m.y < w.y) { if (B.boss) m.y = y0 - v * PAS * .3; else m.y = w.y; frappe(S, m, S.f * 6 * PAS, { perce:true }); }
     if (B.mineur && y0 > 5 && m.y <= 5) fx(S, { t:'creuse', id:m.id }); if (B.mineur && y0 > 3 && m.y <= 3) fx(S, { t:'ressort', id:m.id });
