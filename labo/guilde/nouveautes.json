@@ -1,5 +1,9 @@
 [
 {
+"v": "20261128-001425",
+"m": "Rempart : un ⬆+1 vert apparaît sur les tours qu'un dé peut monter (un toucher suffit), le ✦ lance le pouvoir d'un toucher, et plus de calme entre les vagues"
+},
+{
 "v": "20261128-000253",
 "m": "Rempart : chaque tour a son pouvoir dès le niveau 2 (touche-la quand le ✦ brille) ; le givre gèle toute la carte, les archers marquent les monstres (+25 % de dégâts)"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261127-135033",
 "m": "Défense de la porte : 8 nouveaux monstres (rat, feu follet, mineur, chaman, troll, spectre, porte-étendard, golem), des élites dès la vague 3, un boss différent toutes les 6 vagues en sans fin, une animation par sorte de tour, et déplacer une tour n'importe où pour 1 PC."
-},
-{
-"v": "20261127-132447",
-"m": "Défense de la porte : on peut démolir une tour depuis sa fiche (+1 PC), et en vagues sans fin les étoiles de maîtrise n'ont plus de limite."
 }
 ]

@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261128-000253"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde">
+<head><meta name="guilde-version" content="20261128-001425"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="robots" content="noindex">
@@ -54,7 +54,8 @@
   .case .so { position:absolute; left:-2px; bottom:-2px; background:#000b; border-radius:8px; padding:0 3px; font-size:13px; line-height:1.35; }
   .case .so small { color:var(--or); font-weight:bold; font-size:.78em; }
   .case .et { position:absolute; top:-4px; left:50%; transform:translateX(-50%); color:#ffd76b; font-size:10px; text-shadow:0 0 3px #000; letter-spacing:-1px; white-space:nowrap; }
-  .case .pw { position:absolute; right:-3px; top:-3px; font-size:14px; animation:pulse 1.2s infinite; }
+  .case .pw { position:absolute; right:-6px; top:-6px; width:30px; height:30px; border-radius:50%; border:2px solid #ffd76b; background:#3a1470e6; color:#ffd76b; font-size:16px; padding:0; z-index:3; animation:pulse 1.2s infinite; }
+  .case .plus1 { position:absolute; right:-6px; bottom:-6px; min-width:38px; height:26px; border-radius:13px; border:2px solid #fff; background:#2f9e44; color:#fff; font-weight:bold; font-size:13px; padding:0 4px; z-index:3; box-shadow:0 0 10px #7ddc4a; animation:pulse 1s infinite; }
   .case .puits { font-size:34px; filter:drop-shadow(0 0 8px #c084fc); animation:pulse 2.2s infinite; }
   .case .runeT { width:80%; height:80%; border-radius:50%; background:radial-gradient(circle, #f6e7ff, #c084fc 55%, #6b2bd9); display:flex; align-items:center; justify-content:center; box-shadow:0 0 14px #c084fc; animation:pulse 1.8s infinite; }
   .case .runeT img { width:70%; height:70%; object-fit:contain; }
@@ -165,7 +166,7 @@
 <script src="rang.js?v=4a53584921"></script>
 <script src="heros-etoiles.js?v=29ce68f57f"></script>
 <script src="donnees.js?v=8a39c05326"></script>
-<script src="rempart-moteur.js?v=36cf529bfe"></script>
+<script src="rempart-moteur.js?v=93e121b803"></script>
 <script src="configurateur.js?v=d5e9469a28"></script>
 <script src="heros-aventure.js?v=31db8c2ed4"></script>
 <script>
@@ -250,7 +251,7 @@ function demarre(niveau, k) {
 const GUIDE = [
   ['#boutique', 'Bienvenue au <b>Rempart des runes</b> ! Touche une tour ici (son prix en ◆ est dessous), puis une case verte d’un chemin : elle est bâtie.'],
   ['#energie', 'Ton <b>énergie ◆</b> : elle monte toute seule, et +1 à chaque monstre abattu.'],
-  ['#des', 'Toutes les 8 secondes, un <b>dé</b> roule. Touche-le, puis une tour de sa face : elle monte d’un niveau. Tu en gardes 3 au plus.'],
+  ['#des', 'Toutes les 8 secondes, un <b>dé</b> roule. Les tours qu’il peut monter montrent un <b>⬆+1</b> vert : touche-le, la tour monte d’un niveau. Tu gardes 3 dés au plus.'],
   ['#hu', 'Ton héros : chaque monstre abattu remplit sa jauge. Pleine, touche son portrait pour l’<b>Ultime</b>.'],
   ['#rempart', 'Le <b>rempart</b> : chaque monstre qui le touche lui fait perdre des PV. S’il tombe, c’est perdu. Miaou, courage !'],
 ];
@@ -280,12 +281,18 @@ function dessinePlateau() {
 const SIG = [];
 // 27/11 : les tours peintes reçues (les autres gardent le canon en attendant leur image)
 const TOUR_IMG = { 1:'rempart3-givre', 2:'rempart3-poison', 3:'rempart3-archers', 4:'rempart3-canon', 5:'rempart3-foudre', 6:'rempart3-grande' };
-function htmlCase(t) {
+// 28/11 (l'utilisateur : « chercher quelle tour sélectionner en même temps, c'est trop stressant ») : une tour qu'un dé de la réserve peut monter
+// montre « ⬆+1 » ; un toucher dessus la monte, sans choisir le dé. Le ✦ du pouvoir se lance aussi d'un toucher, sans ouvrir la fiche.
+const deMonte = t => !t || t.puits || t.rune || (t.niv >= P.R.nivMax && t.et >= P.R.etoileMax) ? -1 : S.des.findIndex(d => d.v === t.v);
+function monteParDe(i) { if (!S || S.fini || pause || fen.innerHTML) return; const k = deMonte(S.cases[i]); if (k < 0) return;
+  const e = P.poserDe(S, k, i); if (e) { dis(e, true); return; } sel = null; son('tour-fusion'); dis(''); astucePouvoir(i); rafraichit(); }
+function pouvoirDirect(i) { if (!S || S.fini || pause || fen.innerHTML) return; const e = P.pouvoir(S, i); if (e) { dis(e, true); return; } son('ultime'); banniere('✦ ' + P.POUVOIRS[S.cases[i].v].n); rafraichit(); }
+function htmlCase(t, i) {
   if (!t) return '';
   if (t.puits) return `<div class="tour"><img class="pu" src="decor/obj-puits-runes.webp?v=1" alt=""></div>`; // 27/11 : image reçue
   if (t.rune) return `<div class="tour"><div class="runeT"><img src="${FACE(S.heros, t.paire)}" alt=""></div><span class="so">${P.EFFET_PAIRE[t.paire].e}<small>${t.rv}</small></span></div>`;
   const n = Math.min(3, t.niv);
-  const TI = TOUR_IMG[t.v]; return `<div class="tour">${TI ? `<img class="tr" src="tours/${TI}.webp?v=2" alt="">` : `<img class="canon" src="tours/canon-${S.heros}-${n}.webp?v=2" onerror="this.onerror=null;this.src='tours/canon-maelle-${n}.webp?v=2'" alt="">`}<span class="so">${P.SORTES[t.v].e}<small>${t.niv}</small></span>${t.et ? `<span class="et">${'★'.repeat(t.et)}</span>` : ''}${P.pouvoirPret(t) ? '<span class="pw">✦</span>' : t.niv >= P.R.nivMax ? (t.spe ? `<span class="spe ok">${t.spe.toUpperCase()}</span>` : '<span class="spe">!</span>') : ''}</div>`;
+  const TI = TOUR_IMG[t.v]; return `<div class="tour">${TI ? `<img class="tr" src="tours/${TI}.webp?v=2" alt="">` : `<img class="canon" src="tours/canon-${S.heros}-${n}.webp?v=2" onerror="this.onerror=null;this.src='tours/canon-maelle-${n}.webp?v=2'" alt="">`}<span class="so">${P.SORTES[t.v].e}<small>${t.niv}</small></span>${t.et ? `<span class="et">${'★'.repeat(t.et)}</span>` : ''}${deMonte(t) >= 0 ? `<button class="plus1" onpointerdown="event.stopPropagation();event.preventDefault();monteParDe(${i})">⬆+1</button>` : ''}${P.pouvoirPret(t) ? `<button class="pw" onpointerdown="event.stopPropagation();event.preventDefault();pouvoirDirect(${i})">✦</button>` : t.niv >= P.R.nivMax ? (t.spe ? `<span class="spe ok">${t.spe.toUpperCase()}</span>` : '<span class="spe">!</span>') : ''}</div>`;
 }
 function caseOk(i) {
   if (!sel) return false; const t = S.cases[i];
@@ -298,8 +305,8 @@ function majPlateau(tout) {
   if (!S || !G) return;
   for (let i = 0; i < S.cases.length; i++) {
     const t = S.cases[i], el = document.getElementById('case' + i); if (!el) continue;
-    const sig = t ? `${t.id}|${t.niv}|${t.et}|${t.rv}|${P.pouvoirPret(t)}|${t.spe || ''}` : '';
-    if (tout || SIG[i] !== sig) { const avant = SIG[i]; el.innerHTML = htmlCase(t); SIG[i] = sig;
+    const sig = t ? `${t.id}|${t.niv}|${t.et}|${t.rv}|${P.pouvoirPret(t)}|${t.spe || ''}|${deMonte(t) >= 0}` : '';
+    if (tout || SIG[i] !== sig) { const avant = SIG[i]; el.innerHTML = htmlCase(t, i); SIG[i] = sig;
       // 27/11 (l'utilisateur : « un impact sur le sol avec de la poussière ») : une tour posée TOMBE sur sa case et soulève de la poussière ; une tour qui monte saute
       if (!tout && t && avant !== undefined) poseEffet(el, !avant || avant.split('|')[0] !== String(t.id) ? 'pose' : 'monte'); }
     el.classList.toggle('ok', caseOk(i)); el.classList.toggle('sel', !!sel && sel.t === 'deplace' && sel.i === i);
@@ -380,7 +387,7 @@ function choisitDe(k) {
 // un dé qui ne sert à rien pour l'instant : le garder, ou le jeter pour 1 ◆
 function fenDe(k) { const d = S.des[k]; fenetre(`<h2>🎲 Dé ${P.SORTES[d.v].e} · ${P.SORTES[d.v].n}</h2><img src="tours/${TOUR_IMG[d.v]}.webp?v=2" alt="" style="display:block;width:90px;height:90px;object-fit:contain;margin:4px auto"><p>Ce dé fait monter d’un niveau une ${P.SORTES[d.v].n.toLowerCase()}. Tu n’en as pas encore : bâtis-en une, ou garde-le.</p>
   <div class="bts"><button onclick="fermer()">Le garder</button><button onclick="jeter(${k})">Le jeter (+1 ◆)</button></div>`); }
-function achatDe() { if (!S || S.fini) return; const e = P.acheterDe(S); if (e) { dis(e, true); return; } son('relance'); joueFx(); dis('🎲 Dé acheté : touche-le, puis une tour de sa sorte.'); rafraichit(); }
+function achatDe() { if (!S || S.fini) return; const e = P.acheterDe(S); if (e) { dis(e, true); return; } son('relance'); joueFx(); dis('🎲 Dé acheté : touche le ⬆+1 vert sur une tour pour la monter.'); rafraichit(); }
 function monteE(i) { const e = P.monterEnergie(S, i); fermer(); if (e) dis(e, true); else { son('tour-fusion'); joueFx(); astucePouvoir(i); } rafraichit(); }
 // 28/11 : la première fois qu'une tour atteint le niveau 2, on dit qu'elle a un pouvoir (une fois par téléphone)
 function astucePouvoir(i) { const t = S.cases[i]; if (!t || !P.pouvoirPret(t) || localStorage.getItem('guilde-rempart-pouvoir')) return;
