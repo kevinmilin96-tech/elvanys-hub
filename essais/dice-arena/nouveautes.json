@@ -1,5 +1,9 @@
 [
 {
+"v": "20261127-192255",
+"m": "Rempart : les cases des tours s'arrêtent au-dessus du rempart"
+},
+{
 "v": "20261127-192128",
 "m": "Rempart : les tours tombent sur leur case dans un nuage de poussière, et elles sont mieux proportionnées"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261126-204136",
 "m": "Le bouton Retour ramène au menu sans repasser par l'écran d'accueil"
-},
-{
-"v": "20261126-203843",
-"m": "Mes decks : les cartes de la collection gardent leurs proportions"
 }
 ]
