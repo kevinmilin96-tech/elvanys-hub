@@ -106,6 +106,15 @@
   .zone { position:absolute; z-index:11; border-radius:50%; pointer-events:none; transform:translate(-50%, -50%); animation:zone .7s ease-out forwards;
     display:flex; align-items:center; justify-content:center; font-size:30px; }
   @keyframes zone { 0% { opacity:0; transform:translate(-50%, -50%) scale(.3); } 30% { opacity:1; } 100% { opacity:0; transform:translate(-50%, -50%) scale(1.15); } }
+  #besace { position:absolute; left:4px; bottom:30px; z-index:31; display:flex; gap:4px; }
+  #besace .bs { width:38px; height:38px; border-radius:10px; border:2px solid #c9a46a; background:#2a1d0ee6; font-size:21px; padding:0; color:#fff; position:relative; display:flex; align-items:center; justify-content:center; }
+  #besace .bs.vide { opacity:.45; font-size:16px; border-style:dashed; } #besace .bs.on { border-color:var(--or); box-shadow:0 0 10px var(--or); }
+  #besace .bs.de { border-color:#7dffb0; box-shadow:0 0 12px #7dffb0; animation:pulse 1s infinite; } #besace .bs small { position:absolute; right:-4px; top:-4px; font-size:11px; background:#000c; border-radius:6px; padding:0 3px; }
+  .deObjet { position:absolute; left:50%; top:45%; z-index:40; width:70px; height:70px; margin:-35px; pointer-events:none; animation:roulD .8s ease-out; } .deObjet img { width:100%; height:100%; }
+  .piege { position:absolute; z-index:4; transform:translate(-50%, -50%); font-size:22px; pointer-events:none; filter:drop-shadow(0 0 4px #9fe3ff); } .piege.epines { filter:drop-shadow(0 0 4px #7ddc4a); }
+  .detour { position:absolute; z-index:6; transform:translateX(-50%); font-size:22px; pointer-events:none; animation:pulse .8s infinite; }
+  .choixObj { display:block; width:100%; text-align:left; margin:5px 0; padding:8px 10px; border-radius:10px; background:#ffffff12; border:1px solid #ffffff30; color:#fff; }
+  .choixObj small { color:#cfc6ef; }
   #visee { position:absolute; inset:0; z-index:30; cursor:crosshair; background:#ffffff0d; box-shadow:inset 0 0 0 3px #f3c96b; }
   #visee span { position:absolute; left:50%; top:8px; transform:translateX(-50%); background:#000b; color:#ffe9b0; border-radius:10px; padding:3px 10px; font-size:12px; white-space:nowrap; pointer-events:none; }
   .sortB { position:relative; width:46px; height:46px; border-radius:50%; border:2px solid #7dffb0; background:#173b22; font-size:22px; padding:0; color:#fff; }
@@ -344,8 +353,13 @@ function majMonstres() {
     if (!el) { el = document.createElement('div'); el.id = id; el.className = 'annc'; el.style.left = xPx(a.c) + 'px'; el.style.top = (G.cw * .1) + 'px'; box.appendChild(el); }
     el.innerHTML = `<b>${P.MONSTRES[a.m] ? P.MONSTRES[a.m].e : '👹'}</b><i>▼</i>`; el.classList.toggle('vide', !P.defendu(S, a.c)); }
   // les murs de ronces
+  S.pieges.forEach(x => { const id = 'pg' + x.id; vus.add(id); let el = document.getElementById(id);
+    if (!el) { el = document.createElement('div'); el.id = id; el.className = 'piege ' + x.k; el.textContent = P.OBJETS[x.k].e; el.style.left = xPx(x.c) + 'px'; el.style.top = yPx(x.y) + 'px'; box.appendChild(el); } });
+  S.detours.forEach(x => { const id = 'dt' + x.c; vus.add(id); let el = document.getElementById(id);
+    if (!el) { el = document.createElement('div'); el.id = id; el.className = 'detour'; el.textContent = x.v > x.c ? '↪️' : '↩️'; el.style.left = xPx(x.c) + 'px'; el.style.top = (G.cw * .45) + 'px'; box.appendChild(el); } });
+  majBesace();
   S.murs.forEach((w, k) => { const id = 'mur' + w.c + '_' + Math.round(w.y * 10); vus.add(id); let el = document.getElementById(id);
-    if (!el) { el = document.createElement('div'); el.id = id; el.className = 'mur'; el.textContent = '🌿🌿🌿'; el.style.left = (xPx(w.c) - G.cw * .4) + 'px'; el.style.width = (G.cw * .8) + 'px'; el.style.top = yPx(w.y) + 'px'; box.appendChild(el); } });
+    if (!el) { el = document.createElement('div'); el.id = id; el.className = 'mur'; el.textContent = w.k === 'barricade' ? '🧱🧱🧱' : '🌿🌿🌿'; el.style.left = (xPx(w.c) - G.cw * .4) + 'px'; el.style.width = (G.cw * .8) + 'px'; el.style.top = yPx(w.y) + 'px'; box.appendChild(el); } });
   [...box.children].forEach(el => { if (!vus.has(el.id)) el.remove(); });
 }
 function dessineBas() {
@@ -405,6 +419,25 @@ function runePres(ev) { const box = document.getElementById('monstres'); if (!bo
   if (!best) return false; ramasse(best.id); return true; }
 function ramasse(id) { marqueGeste(); if (!S || S.fini || pause || fen.innerHTML) return; const x = S.cristaux.find(c => c.id === id); if (!x) return; P.ramasser(S, id); son('rune'); try { navigator.vibrate && navigator.vibrate(15); } catch (e) {} joueFx(); rafraichit(); }
 function appel() { if (!S || S.fini) return; const A = P.appelInfo(S); if (!A) return; P.appelVague(S); son('vague'); banniere(`⏩ Vague appelée ! +${A.bonus} ◆`, true); rafraichit(); }
+// 28/11 : LA BESACE (dé après chaque grosse vague → objet de contrôle, 2 places)
+function majBesace() { const pl = document.getElementById('plateau'); if (!pl || !S) return; let b = document.getElementById('besace');
+  if (!b) { b = document.createElement('div'); b.id = 'besace'; pl.appendChild(b); }
+  const sig = JSON.stringify([S.deObjet, S.besace.map(o => o.id), sel && sel.t === 'objet' ? sel.n : -1]); if (b.dataset.sig === sig) return; b.dataset.sig = sig;
+  b.innerHTML = (S.deObjet ? `<button class="bs de" onpointerdown="event.preventDefault();lanceDeObjet()" title="Lancer le dé de la besace">🎲${S.deObjet > 1 ? `<small>${S.deObjet}</small>` : ''}</button>` : '')
+    + [0, 1].map(n => { const o = S.besace[n]; return o ? `<button class="bs ${sel && sel.t === 'objet' && sel.n === n ? 'on' : ''}" onpointerdown="event.preventDefault();choisitObjet(${n})">${o.k === 'joker' ? '🃏' : P.OBJETS[o.k].e}</button>` : '<span class="bs vide">🎒</span>'; }).join(''); }
+function lanceDeObjet() { marqueGeste(); if (!S || S.fini || pause || fen.innerHTML) return; const e = P.lancerObjet(S); if (e) { dis(e, true); return; }
+  const o = S.besace[S.besace.length - 1]; son('relance');
+  const pl = document.getElementById('plateau'), d = document.createElement('div'); d.className = 'deObjet'; d.innerHTML = `<img src="${FACE(S.heros, o.f)}" alt="">`; pl.appendChild(d);
+  setTimeout(() => { d.remove(); banniere(o.k === 'joker' ? '🎲 6 : 🃏 Joker, l’objet de ton choix !' : `🎲 ${o.f} : ${P.OBJETS[o.k].e} ${P.OBJETS[o.k].n}`, true);
+    if (!localStorage.getItem('guilde-rempart-besace')) { localStorage.setItem('guilde-rempart-besace', '1'); dis(`🎒 ${o.k === 'joker' ? 'Le joker' : P.OBJETS[o.k].n} est dans ta besace (en bas à gauche) : touche-le, puis le plateau là où tu le veux.`); } rafraichit(); }, 800); }
+function choisitObjet(n, choix) { marqueGeste(); if (!S || S.fini || pause) return; const o = S.besace[n]; if (!o) return;
+  if (sel && sel.t === 'objet' && sel.n === n && !choix) { sel = null; const v0 = document.getElementById('visee'); if (v0) v0.remove(); dis(''); rafraichit(); return; }
+  if (o.k === 'joker' && !choix) { fenetre(`<h2>🃏 Le joker</h2><p>Choisis l’objet :</p>${Object.entries(P.OBJETS).map(([k, x]) => `<button class="choixObj" onclick="fermer();choisitObjet(${n}, '${k}')"><b>${x.e} ${x.n}</b><br><small>${x.d}</small></button>`).join('')}`); return; }
+  const k = choix || o.k, x = P.OBJETS[k]; sel = { t:'objet', n, k }; son('choisir'); dis(`${x.e} ${x.n} : ${x.d}`);
+  const pl = document.getElementById('plateau'), v0 = document.getElementById('visee'); if (v0) v0.remove();
+  const v = document.createElement('div'); v.id = 'visee'; v.innerHTML = nbsp(`<span>${x.e} Touche le chemin où le poser · ✕ pour annuler</span>`);
+  v.onclick = ev => { const r = pl.getBoundingClientRect(), p = versJeu(ev.clientX - r.left, ev.clientY - r.top); v.remove(); const s0 = sel; sel = null;
+    const e = P.poserObjet(S, s0.n, p.c, p.y, s0.k); if (e) dis(e, true); else { dis(''); son('magie'); joueFx(); } rafraichit(); }; pl.appendChild(v); rafraichit(); }
 function choisitSort() { if (!S || S.fini) return; const h = P.SORTS_R[S.heros];
   if (S.sortT > 0) { dis(`${h.e} ${h.n} : encore ${Math.ceil(S.sortT)} s.`); return; }
   sel = sel && sel.t === 'sort' ? null : { t:'sort' }; son('choisir'); dis(sel ? `${h.e} ${h.n} : touche le plateau là où tu le veux.` : '');
@@ -477,6 +510,7 @@ function regles() {
   <li>⏩ <b>Appeler la vague</b> : entre deux vagues, fais venir la suivante en avance ; tu gagnes des ◆ (et un peu de jauge d’Ultime).</li>
   <li>✦ <b>Spécialisation</b> : au niveau 4, une tour choisit une de ses deux spécialisations, pour toujours (dans sa fiche).</li>
   <li>🏅 <b>Les défis</b> : chaque niveau a 3 défis. Réussis-en pendant une victoire pour gagner leurs médailles.</li>
+  <li>🎒 <b>La besace</b> : après chaque grosse vague, un dé 🎲 apparaît en bas à gauche. Lance-le : sa face donne un objet (1 🧊 piège de givre, 2 🌵 piège d’épines, 3 🧱 barricade, 4 💨 souffle, 5 ↪️ détour, 6 🃏 joker au choix). 2 places ; touche l’objet puis le plateau.</li>
   <li>Toucher une tour : sa fiche (déplacer 1 ◆, démolir). Toucher un monstre : ce qui le contre.</li></ul>
   <h2>Les tours</h2><ul class="liste">${Object.values(P.SORTES).map(x => `<li>${x.e} <b>${x.n}</b> (${x.prix} ◆) : ${x.d}</li>`).join('')}<li>🔮 <b>${P.PUITS.n}</b> (${P.PUITS.prix} ◆) : ${P.PUITS.d}</li></ul>`);
 }
@@ -503,7 +537,7 @@ function joueFx() {
     else if (f.t === 'puits') { const p = caseXY(f.i); gain(p.x, p.y - 18, '+◆ à toucher'); }
     else if (f.t === 'bowling') { const pl = document.getElementById('plateau'), b = document.createElement('div'); b.className = 'bowl'; b.textContent = '🎳'; b.style.left = xPx(f.c) + 'px'; b.style.top = (G.H - G.RH) + 'px'; pl.appendChild(b);
       b.animate([{ top:(G.H - G.RH) + 'px' }, { top:'0px' }], { duration:1000, easing:'ease-in' }).onfinish = () => b.remove(); }
-    else if (f.t === 'calme') { banniere(`🌿 Accalmie : ${f.dt} s pour bâtir`, true); }
+    else if (f.t === 'calme') { banniere(`🌿 Accalmie : ${f.dt} s pour bâtir · 🎲 un dé pour ta besace !`, true); }
     else if (f.t === 'annonce') { banniere(f.derniere ? '🚩 La dernière grosse vague approche !' : `🚩 Grosse vague ${f.n} sur ${f.sur} dans 8 s !`); son('vague'); try { navigator.vibrate && navigator.vibrate([40, 60, 40]); } catch (e) {} }
     // la grande vague : une musique plus intense (le lecteur commun ne sait pas accélérer une musique : on passe à celle des boss)
     else if (f.t === 'vide') { const pl = document.getElementById('plateau'), z = document.createElement('div'); z.className = 'vide-al'; z.style.left = xPx(f.c) + 'px'; z.innerHTML = '⚠<small>Aucune tour<br>sur ce chemin</small>'; pl.appendChild(z); setTimeout(() => z.remove(), 2600); }
