@@ -340,8 +340,10 @@ function calme(S, iv) { if (!S.grosses.includes(iv) || iv >= S.nbVagues - 1) ret
   // une VRAIE accalmie : la vague suivante attend au moins R.accalmie s après la fin de la grosse vague (on décale toute la suite)
   const dec = Math.max(0, S.t + R.accalmie - S.vT[iv + 1]); if (dec > 0) { S.file.forEach(x => { if (x.vague > iv) x.t += dec; }); S.vT = S.vT.map((t, k) => k > iv ? t + dec : t); S.fin += dec; }
   const dt = Math.round(S.vT[iv + 1] - S.t); if (dt >= 10) { fx(S, { t:'calme', dt }); log(S, `🌿 Accalmie : ${dt} s avant la vague suivante.`); } }
+// 28/11 (choix de l'utilisateur) : aussi un dé de besace toutes les 2 petites vagues finies (≈ 5-6 dés par niveau avec les grosses)
+function deTous2(S, iv) { if (S.grosses.includes(iv) || iv >= S.nbVagues - 1) return; S.petites = (S.petites || 0) + 1; if (S.petites % 2 === 0) { S.deObjet++; fx(S, { t:'deObjet', petit:true }); log(S, '🎲 Un dé pour la besace !'); } }
 function bilanVague(S, iv) {
-  const V = S.vStat[iv]; if (V.fait) return; V.fait = true; if (!S.adaptOn) { calme(S, iv); return; }
+  const V = S.vStat[iv]; if (V.fait) return; V.fait = true; deTous2(S, iv); if (!S.adaptOn) { calme(S, iv); return; }
   const loin = V.morts.length ? V.morts.reduce((a, y) => a + y, 0) / V.morts.length : 0, avant = S.adapt; let txt;
   if (V.pertes >= 5) { S.adapt -= ADAPT.baisseFort; txt = 'pression forte → monstres moins forts'; }
   else if (V.pertes >= 3) { S.adapt -= ADAPT.baisse; txt = 'pression assez forte → monstres un peu moins forts'; }
