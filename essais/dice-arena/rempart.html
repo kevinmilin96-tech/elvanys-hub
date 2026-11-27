@@ -285,7 +285,7 @@ function htmlCase(t) {
   if (t.puits) return `<div class="tour"><img class="pu" src="decor/obj-puits-runes.webp?v=1" alt=""></div>`; // 27/11 : image reçue
   if (t.rune) return `<div class="tour"><div class="runeT"><img src="${FACE(S.heros, t.paire)}" alt=""></div><span class="so">${P.EFFET_PAIRE[t.paire].e}<small>${t.rv}</small></span></div>`;
   const n = Math.min(3, t.niv);
-  const TI = TOUR_IMG[t.v]; return `<div class="tour">${TI ? `<img class="tr" src="tours/${TI}.webp?v=2" alt="">` : `<img class="canon" src="tours/canon-${S.heros}-${n}.webp?v=2" onerror="this.onerror=null;this.src='tours/canon-maelle-${n}.webp?v=2'" alt="">`}<span class="so">${P.SORTES[t.v].e}<small>${t.niv}</small></span>${t.et ? `<span class="et">${'★'.repeat(t.et)}</span>` : ''}${t.et >= P.R.etoileMax && t.pw <= 0 ? '<span class="pw">✦</span>' : t.niv >= P.R.nivMax ? (t.spe ? `<span class="spe ok">${t.spe.toUpperCase()}</span>` : '<span class="spe">!</span>') : ''}</div>`;
+  const TI = TOUR_IMG[t.v]; return `<div class="tour">${TI ? `<img class="tr" src="tours/${TI}.webp?v=2" alt="">` : `<img class="canon" src="tours/canon-${S.heros}-${n}.webp?v=2" onerror="this.onerror=null;this.src='tours/canon-maelle-${n}.webp?v=2'" alt="">`}<span class="so">${P.SORTES[t.v].e}<small>${t.niv}</small></span>${t.et ? `<span class="et">${'★'.repeat(t.et)}</span>` : ''}${P.pouvoirPret(t) ? '<span class="pw">✦</span>' : t.niv >= P.R.nivMax ? (t.spe ? `<span class="spe ok">${t.spe.toUpperCase()}</span>` : '<span class="spe">!</span>') : ''}</div>`;
 }
 function caseOk(i) {
   if (!sel) return false; const t = S.cases[i];
@@ -298,7 +298,7 @@ function majPlateau(tout) {
   if (!S || !G) return;
   for (let i = 0; i < S.cases.length; i++) {
     const t = S.cases[i], el = document.getElementById('case' + i); if (!el) continue;
-    const sig = t ? `${t.id}|${t.niv}|${t.et}|${t.rv}|${t.et >= 5 && t.pw <= 0}|${t.spe || ''}` : '';
+    const sig = t ? `${t.id}|${t.niv}|${t.et}|${t.rv}|${P.pouvoirPret(t)}|${t.spe || ''}` : '';
     if (tout || SIG[i] !== sig) { const avant = SIG[i]; el.innerHTML = htmlCase(t); SIG[i] = sig;
       // 27/11 (l'utilisateur : « un impact sur le sol avec de la poussière ») : une tour posée TOMBE sur sa case et soulève de la poussière ; une tour qui monte saute
       if (!tout && t && avant !== undefined) poseEffet(el, !avant || avant.split('|')[0] !== String(t.id) ? 'pose' : 'monte'); }
@@ -381,7 +381,10 @@ function choisitDe(k) {
 function fenDe(k) { const d = S.des[k]; fenetre(`<h2>🎲 Dé ${P.SORTES[d.v].e} · ${P.SORTES[d.v].n}</h2><img src="tours/${TOUR_IMG[d.v]}.webp?v=2" alt="" style="display:block;width:90px;height:90px;object-fit:contain;margin:4px auto"><p>Ce dé fait monter d’un niveau une ${P.SORTES[d.v].n.toLowerCase()}. Tu n’en as pas encore : bâtis-en une, ou garde-le.</p>
   <div class="bts"><button onclick="fermer()">Le garder</button><button onclick="jeter(${k})">Le jeter (+1 ◆)</button></div>`); }
 function achatDe() { if (!S || S.fini) return; const e = P.acheterDe(S); if (e) { dis(e, true); return; } son('relance'); joueFx(); dis('🎲 Dé acheté : touche-le, puis une tour de sa sorte.'); rafraichit(); }
-function monteE(i) { const e = P.monterEnergie(S, i); fermer(); if (e) dis(e, true); else { son('tour-fusion'); joueFx(); } rafraichit(); }
+function monteE(i) { const e = P.monterEnergie(S, i); fermer(); if (e) dis(e, true); else { son('tour-fusion'); joueFx(); astucePouvoir(i); } rafraichit(); }
+// 28/11 : la première fois qu'une tour atteint le niveau 2, on dit qu'elle a un pouvoir (une fois par téléphone)
+function astucePouvoir(i) { const t = S.cases[i]; if (!t || !P.pouvoirPret(t) || localStorage.getItem('guilde-rempart-pouvoir')) return;
+  localStorage.setItem('guilde-rempart-pouvoir', '1'); setTimeout(() => dis(`✦ Ta ${P.nomTour(t).toLowerCase()} a un pouvoir : ${P.POUVOIRS[t.v].n} ! Touche-la quand le ✦ brille, puis le bouton.`), 50); }
 function jeter(k) { P.jeterDe(S, k); sel = null; fermer(); son('vendre'); rafraichit(); }
 // 27/11 soir : ramasser une rune, appeler la vague, lancer le sort du héros, spécialiser une tour
 // 27/11 nuit : une rune posée sur un monstre passe avant sa fiche (toucher à moins d'une demi-case d'une rune = la ramasser)
@@ -410,7 +413,7 @@ function toucheCase(i) {
   if (!S || S.fini) return; const t = S.cases[i]; let e = null;
   if (sel && sel.t === 'bowling') { toucheVoie(i % P.NC); return; }
   if (sel && sel.t === 'achat') { if (t) { e = 'Cette case est prise : choisis une case verte.'; } else { e = P.batir(S, sel.v, i); if (!e) { son('tour-batir'); dis(''); if (S.energie < P.prixDe(S, sel.v)) sel = null; } } }
-  else if (sel && sel.t === 'de') { e = P.poserDe(S, sel.k, i); if (!e) { sel = null; son('tour-fusion'); dis(''); } }
+  else if (sel && sel.t === 'de') { e = P.poserDe(S, sel.k, i); if (!e) { sel = null; son('tour-fusion'); dis(''); astucePouvoir(i); } }
   else if (sel && sel.t === 'paire') { e = P.poserPaire(S, sel.k1, sel.k2, i); if (!e) { sel = null; son('rune'); dis(''); } }
   else if (sel && sel.t === 'deplace') { if (i === sel.i) { sel = null; dis(''); } else { e = P.deplacer(S, sel.i, i); if (!e) { sel = null; son('tour-batir'); dis(''); } } }
   else if (t) { // 27/11 nuit : une rune ◆ sur la tour (ou juste à côté) se ramasse d'abord ; la fiche s'ouvre seulement s'il n'y en a pas
@@ -425,10 +428,10 @@ function ficheTour(i) {
   if (t.puits) corps = `<p>${P.PUITS.d}</p>`;
   else if (t.rune) corps = `<p>Elle ne tire pas. Ses voisines (au-dessus, en dessous, à gauche, à droite) frappent +${Math.round(P.R.runeBonus * 100 * t.rv)} %, et ${P.EFFET_PAIRE[t.paire].d}.</p><p class="doux">Une autre paire de ${t.paire} la fait monter (niveau ${P.R.runeMax} au plus).</p>`;
   else { const S0 = P.SORTES[t.v]; corps = `<p>${S0.d}</p><p>⚔ ${Math.round(P.degat(S, t, i))} par tir · un tir toutes les ${P.cadence(S, t, i).toFixed(1).replace('.', ',')} s</p>
-    <p class="doux">${t.niv < 4 ? `Un dé de ${t.v} la fait monter au niveau ${t.niv + 1}. Au niveau 4, elle choisira sa spécialisation.` : t.et < 5 ? `Niveau maximum : chaque dé de ${t.v} lui donne une étoile ★ (+35 %). À 5 ★, elle gagne son pouvoir : ${P.POUVOIRS[t.v].n}.` : `✦ Pouvoir : ${P.POUVOIRS[t.v].n}. ${P.POUVOIRS[t.v].d}`}</p>`
+    <p class="doux">${t.niv < 4 ? `Un dé de ${t.v} la fait monter au niveau ${t.niv + 1}. ${t.niv < P.R.pouvoirNiv ? `Au niveau ${P.R.pouvoirNiv}, elle gagne son pouvoir : ${P.POUVOIRS[t.v].n}.` : 'Au niveau 4, son pouvoir devient plus fort et elle choisit sa spécialisation.'}` : `Niveau maximum : chaque dé de ${t.v} lui donne une étoile ★ (+35 %, et son pouvoir +10 %).`}</p>${t.niv >= P.R.pouvoirNiv ? `<p>✦ <b>Pouvoir : ${P.POUVOIRS[t.v].n}</b> · ${P.POUVOIRS[t.v].d}${t.niv < 4 ? ' (plus petit avant le niveau 4)' : ''} Recharge ${P.R.pouvoirRecharge} s.</p>` : ''}`
     + (t.niv >= 4 ? (t.spe ? `<p>✦ <b>${P.SPE[t.v][t.spe].n}</b> : ${P.SPE[t.v][t.spe].d}</p>`
       : `<div class="speC"><b>✦ Choisis sa spécialisation</b> <span class="doux">(une fois pour toutes)</span>${['a', 'b'].map(k => `<button onclick="specialise(${i}, '${k}')"><b>${P.SPE[t.v][k].n}</b><br><span class="doux">${P.SPE[t.v][k].d}</span></button>`).join('')}</div>`) : ''); }
-  const pw = !t.puits && !t.rune && t.et >= 5;
+  const pw = !t.puits && !t.rune && t.niv >= P.R.pouvoirNiv;
   fenetre(`<h2>${t.puits ? '🔮' : t.rune ? '✨' : P.SORTES[t.v].e} ${P.nomTour(t)}</h2>${corps}
     <div class="bts">${pw ? `<button class="go" ${t.pw > 0 ? 'disabled' : ''} onclick="lancePouvoir(${i})">✦ ${P.POUVOIRS[t.v].n}${t.pw > 0 ? ` (${Math.ceil(t.pw)} s)` : ''}</button>` : ''}
     ${P.prixMonter(t) ? `<button class="go" ${S.energie < P.prixMonter(t) ? 'disabled' : ''} onclick="monteE(${i})">⬆ ${t.niv < P.R.nivMax ? `Monter au niveau ${t.niv + 1}` : 'Une étoile ★ de plus'} : ${P.prixMonter(t)} ◆</button>` : ''}
@@ -451,7 +454,7 @@ function regles() {
   fenetre(`<h2>🏰 Le Rempart des runes</h2><ul class="liste">
   <li>Les monstres descendent <b>5 chemins</b> vers le rempart. Chaque tour tire tout droit vers le haut, sur son chemin.</li>
   <li><b>Bâtir</b> : touche une tour en bas (son prix en ◆), puis une case verte. L’énergie ◆ monte toute seule, +1 par monstre abattu, et le 🔮 puits de runes en produit.</li>
-  <li><b>Les dés</b> : un dé toutes les 8 s, 3 gardés au plus. Un dé sur une tour de sa face = +1 niveau (4 au plus), puis des étoiles ★ ; à 5 ★, un pouvoir.</li>
+  <li><b>Les dés</b> : un dé toutes les 8 s, 3 gardés au plus. Un dé sur une tour de sa face = +1 niveau (4 au plus), puis des étoiles ★. <b>Dès le niveau 2</b>, une tour a un pouvoir ✦ : touche-la puis le bouton (recharge 20 s).</li>
   <li><b>Une paire</b> de dés pareils (dès le niveau 5) : une Tour-rune qui renforce ses voisines.</li>
   <li>🔗 <b>Combo de ligne</b> : 3 tours de la même sorte sur un chemin frappent 30 % plus fort (3 givres : le chemin ralentit ; 3 poisons : il empoisonne).</li>
   <li>🎳 <b>Le dé bowling</b> : un par niveau, il écrase tout un chemin.</li>
