@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261126-210246"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
+<head><meta name="guilde-version" content="20261127-125835"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="robots" content="noindex">
@@ -69,6 +69,15 @@
   .c.vide { background:transparent !important; pointer-events:none; }
   .c.mur.murc { filter:none; }
   .c .bande { position:absolute; pointer-events:none; z-index:1; filter:brightness(.55) saturate(.45); } .c .bande.h { left:0; right:0; height:30%; background:url('decor/couloir-mur-h.webp?v=1') 0 0 / auto 100% repeat-x; } .c .bande.c { width:30%; height:30%; background:url('decor/couloir-mur-h.webp?v=1') 45% 0 / auto 100%; filter:brightness(.55) saturate(.45); } .c .bande.v { top:0; bottom:0; width:30%; background:url('decor/couloir-mur-v.webp?v=1') 0 0 / 100% auto repeat-y; }
+  /* 27/11 : chapitre 3 : frère Aubin (escorte), le mur fissuré, les leviers chantants, l'air fredonné façon Simon */
+  .jeton.aubin { --c:#9fdcff; } .jeton.aubin img { width:100%; height:100%; border-radius:50%; object-fit:cover; } .jeton.aubin.cage::after { content:''; position:absolute; inset:-2px; border-radius:50%; background:repeating-linear-gradient(90deg, transparent 0 22%, #2a3346 22% 30%); opacity:.9; }
+  .jeton.aubin.terre img { filter:grayscale(1) brightness(.6); }
+  .plateau .c.mur.fissure { filter:brightness(.8); box-shadow:inset 0 0 calc(var(--t) * .3) #9fdcffaa; } .c.fissure .fiss { position:absolute; inset:8%; pointer-events:none; filter:drop-shadow(0 0 3px #9fdcff) drop-shadow(0 0 2px #fff); }
+  .c .note { position:absolute; top:6%; left:6%; width:38%; height:38%; border-radius:50%; background:var(--nc); box-shadow:0 0 6px var(--nc), inset 0 0 0 2px #fff8; }
+  .simon { position:fixed; inset:0; z-index:60; display:flex; flex-direction:column; align-items:center; justify-content:center; background:#05081acc; pointer-events:none; transition:opacity .5s; }
+  .simon h3 { color:#cfeeff; margin:0 0 4vw; padding:0 5vw; font-size:5vw; text-align:center; } .simon .pads { display:grid; grid-template-columns:1fr 1fr; gap:4vw; }
+  .simon .pad { width:28vw; height:28vw; max-width:150px; max-height:150px; border-radius:50%; background:var(--nc); opacity:.22; transition:opacity .15s, transform .15s; display:flex; align-items:center; justify-content:center; font-size:5vw; color:#0008; font-weight:bold; }
+  .simon .pad.on { opacity:1; transform:scale(1.08); box-shadow:0 0 30px var(--nc); }
   .jeton.pnj { --c:#c9a24a; } .jeton.pnj img { width:100%; height:100%; border-radius:50%; object-fit:cover; }
   .c .impasse { position:absolute; inset:0; background:url('decor/couloir-impasse.webp?v=1') center / 100% 100%; pointer-events:none; z-index:0; }
   .c.meuble-peint:not(.fouille)::before { content:''; position:absolute; inset:14%; border-radius:30%; box-shadow:0 0 0 1px #ffd36a66, 0 0 8px #ffd36a44; opacity:.6; animation:lueurM 3s ease-in-out infinite; pointer-events:none; }
@@ -231,7 +240,7 @@
 <script src="progression-modes.js?v=807b0f9ad5"></script>
 <script src="aventuriers.js?v=5679a4a045"></script>
 <script src="pouvoirs-heros.js?v=a14bbdf318"></script>
-<script src="chroniques-moteur.js?v=8525d6fb15"></script>
+<script src="chroniques-moteur.js?v=5554b1b0d3"></script>
 <script src="chroniques-ambiance.js?v=cdc992dc3a"></script>
 <script src="configurateur.js?v=a276a42cee"></script>
 <script src="chroniques-config.js?v=446e56558d"></script>
@@ -371,7 +380,7 @@ const SCX_TXT = {
 };
 // 26/11 : l'histoire de la saison se joue aussi EN LIGNE (salle) : le donjon du chapitre, ouvert par le récit d'Ilse ; visible seulement pendant la saison
 // 26/11 (l'utilisateur) : dans la salle, la saison a son propre bloc avec ses chapitres, à part des scénarios classiques
-const SAISON1_CHAP = [['cloitre', 'Chapitre 1 · Le blizzard qui ne s’arrête pas', '2026-12-01'], ['refectoire', 'Chapitre 2 · Le festin des goules', '2026-12-15'], [null, 'Chapitre 3 · Le dernier Veilleur', '2026-12-29'], [null, 'Chapitre 4 · Le Roi de l’Hiver', '2027-01-12']];
+const SAISON1_CHAP = [['cloitre', 'Chapitre 1 · Le blizzard qui ne s’arrête pas', '2026-12-01'], ['refectoire', 'Chapitre 2 · Le festin des goules', '2026-12-15'], ['cellules', 'Chapitre 3 · Le dernier Veilleur', '2026-12-29'], [null, 'Chapitre 4 · Le Roi de l’Hiver', '2027-01-12']];
 const scenVisible = k => { const c = SAISON1_CHAP.find(x => x[0] === k); return !c || typeof avOuverte !== 'function' || avOuverte({ saison:'s1', ouvre:c[2] }); };
 SCX_TXT.cloitre = { titre:'❄ Saison 1 · Chapitre 1 : Le blizzard', duree:'30-45 min · Saison 1 de l’Almanach',
   ouverture:'Ilse, la passeuse du col : « Là-haut, les Veilleurs sonnaient trois cloches pour tenir l’hiver loin de la vallée. Il y a sept nuits, elles se sont tues, et le blizzard ne s’arrête plus. » Maëlle, la forgeronne de la Guilde : « C’est ma famille qui les a coulées, et tous les dix ans l’un de nous monte retremper leurs runes. Cette fois, c’est moi. Trouvons la corde de la première, et faisons-la sonner. » Le cloître est tout blanc, tout craque…',
@@ -385,6 +394,13 @@ SCX_TXT.refectoire = { titre:'❄ Saison 1 · Chapitre 2 : Le festin', duree:'30
   but:'Trouvez <b>la corde 🪢</b> dans le bon <b>coffre gravé</b> (un seul dit vrai : le mauvais libère une goule), tournez les <b>quatre statues</b> vers la cloche, puis sonnez <b>la deuxième cloche 🔔</b>. <b>❄ Le froid</b> : un dé qui fait 1 gèle et revient tel quel au tour suivant.',
   porter:'Portez la corde jusqu’à la cloche 🔔 (les quatre statues doivent la regarder).',
   gagne:['🔔 La deuxième cloche sonne !', '« Deux cloches sur trois, et les loups remontent vers la montagne. Au pied de la cloche, une lime abandonnée : Maëlle reconnaît le poinçon de son père. Sous la terre, une voix glacée : « Qui ose ? » … Et là-haut, quelqu’un frappe contre des barreaux : le dernier Veilleur est vivant ! »'] };
+// 27/11 : chapitre 3 « Le dernier Veilleur » (à partir du 29 décembre)
+SCX_TXT.cellules = { titre:'❄ Saison 1 · Chapitre 3 : Le dernier Veilleur', duree:'30-45 min · Saison 1 de l’Almanach',
+  ouverture:'Précédemment : deux cloches sur trois ont sonné. Au pied de la deuxième, Maëlle a trouvé une lime marquée du poinçon de son père. Sous la terre, une voix glacée a demandé : « Qui ose ? » Et là-haut, dans les cellules, quelqu’un frappe contre des barreaux. Ilse : « C’est frère Aubin, le dernier Veilleur. Lui seul connaît l’air des cloches et les passages du monastère. Ramenez-le… et faites sonner la troisième. »',
+  entree:() => '« Frère Aubin est enfermé quelque part. Délivrez-le : ensuite il suit le héros le plus proche. S’il tombe, relevez-le (un dé, juste à côté). Les murs fissurés, lui seul sait les ouvrir. Et quand il entrera dans le clocher, il fredonnera l’air des cloches UNE SEULE FOIS : retenez bien les couleurs ! »',
+  but:'Délivrez <b>frère Aubin</b> de sa cellule et escortez-le, libérez <b>le Chevalier de glace</b> de son armure de givre pour prendre <b>la clé du clocher 🗝</b>, puis tirez <b>les leviers chantants</b> dans l’ordre de l’air qu’Aubin fredonne. <b>❄ Le froid</b> : un dé qui fait 1 gèle et revient tel quel au tour suivant.',
+  porter:'Tirez les leviers chantants dans l’ordre de l’air.',
+  gagne:['🔔 Les trois cloches sonnent ensemble !', '« Les trois cloches sonnent ensemble… le sol tremble : la crypte s’ouvre. » Frère Aubin, tout pâle : « Il dort sous nos pieds depuis cent ans. Vous l’avez réveillé tout à fait. Désolé. » Bran pose la main sur l’épaule de Maëlle : « Le Roi de l’Hiver. Cette fois, on descend ensemble. »<br><br><b>À suivre : chapitre 4, « Le Roi de l’Hiver », le 12 janvier.</b>'] };
 SCX_TXT.labyrinthe = { titre:'✦ Le Labyrinthe des Runes', duree:'30-60 min · un donjon NEUF à chaque partie',
   ouverture:'« Un escalier qui descend… et un labyrinthe que personne n’a jamais vu. Il change à chaque fois qu’on y entre, paraît-il. Trois fragments de rune dorment dans les meubles : rapportez-les à l’autel, tout au fond. Moi, je reste près de l’escalier. »',
   entree:() => '« On ne voit que ce qui est en vue. Avancez prudemment : chaque labyrinthe est différent. »',
@@ -618,8 +634,14 @@ function butTexte() { const R = S.R, posee = R.rouagesPoses, portes = S.heros.fi
 // 26/11 : chapitre 2, les inscriptions des deux coffres gravés et les statues, toujours relisibles dans le but
 function butMenteur() { const R = S.R; let t = '';
   if (R.menteur) t += `<br><br>📜 <b>Les deux coffres gravés</b>${R.menteur.regle ? ` (${R.menteur.regle})` : ''} :<br>· à gauche : <i>${R.menteur.gauche}</i><br>· à droite : <i>${R.menteur.droite}</i><br><small>Un seul cache la corde ; le mauvais libère une goule.</small>`;
+ if (R.aubin) t += chap3Etat();
   if (S.statuesBut && R.statues) t += `<br><br>🗿 <b>Les statues</b> : ${R.statues.filter(z => z.d === z.veut).length}/${R.statues.length} regardent la cloche${R.statuesOk ? ' ✅' : ' (un dé à côté d’une statue la fait tourner d’un quart de tour)'}.`;
   return t; }
+// 27/11 : chapitre 3, où on en est (dans 📋) ; la mélodie n'y est JAMAIS écrite (décision de l'utilisateur : on la retient)
+function chap3Etat() { const R = S.R, A = R.aubin, n = R.melodie.length, bran = R.monstres.some(m => m.b === 'bran');
+  return `<br><br>🧑‍🦳 <b>Frère Aubin</b> : ${!A.libre ? 'enfermé dans sa cellule (un dé, juste à côté, pour forcer la serrure)' : A.aTerre ? '<b style="color:#ff8a7a">à terre</b> : un héros juste à côté le relève (un dé)' : `libre, ❤ ${A.pv}/${A.pvmax} ; il suit le héros le plus proche et ouvre les murs fissurés`}.`
+    + `<br>🗝 <b>La clé du clocher</b> : ${S.cleClocher ? 'vous l’avez (Bran vous l’a donnée).' : bran ? 'chez le Chevalier de glace : brisez son armure de givre.' : 'chez le Chevalier de glace, quelque part entre vous et le clocher.'}`
+    + `<br>🎵 <b>Les leviers chantants</b> : ${R.melProg}/${n} notes justes. ${!R.chantN ? 'Sans frère Aubin dans le clocher, pas de mélodie : amenez-le jusque-là.' : 'Aubin a fredonné l’air. Pour le réécouter, touchez Aubin avec un dé (il doit être dans le clocher).'}`; }
 // 16/11 (l'utilisateur : « c'est quoi l'étoile, le livre ? ») : chaque compteur du haut s'explique d'un toucher
 function infoStat(k) {
   const SC = K.SCEN[S.scen || 'horloger'], T = {
@@ -666,7 +688,7 @@ function voirJournal() { fenetre(`<h2>📜 Le journal</h2><div class="journal" s
 function dessine() {
   if (S && !S.fin && fini(actif)) { const n = libres()[0]; if (n != null) actif = n; }
   if (!S) { document.body.classList.remove('jeu'); if (typeof AMB !== 'undefined') AMB.zone(null); return accueil(); }
-  document.body.classList.add('jeu'); sessionStorage.setItem('chron-en-jeu', '1'); // 16/11 : une page rechargée en pleine partie y revient
+  document.body.classList.add('jeu'); verifieChant(); sessionStorage.setItem('chron-en-jeu', '1'); // 16/11 : une page rechargée en pleine partie y revient
   const R = S.R, h = S.heros[actif], d = deSel();
   const atteint = d && !h.aTerre ? K.atteignables(S, h, d.v, d.pas) : {};
   // 16/11 (l'utilisateur) : les lunettes ne servent qu'à CELUI qui les porte (quand c'est lui qu'on joue) ; un piège signalé se voit de tous
@@ -711,6 +733,8 @@ function dessine() {
           inner += bas || haut ? `<span class="bande h" style="${bas ? 'bottom' : 'top'}:0;background-position:calc(var(--t) * ${-x * .3}) 0"></span>` : `<span class="bande v" style="${dr ? 'right' : 'left'}:0;background-position:0 calc(var(--t) * ${-y * .3})"></span>`; }
         // 16/11 (l'utilisateur : « fermer l'angle proprement ») : un coin de mur qui ne touche le couloir qu'en diagonale reçoit un petit carré de pierres
         else if (!fondSalle(S, x, y)) { const dg = [[1, 1], [-1, 1], [1, -1], [-1, -1]].find(([dx, dy]) => cou(x + dx, y + dy)); if (dg) { cl += ' murc'; stMur = 'background:#0b0b14;'; inner += `<span class="bande c" style="${dg[0] > 0 ? 'right' : 'left'}:0;${dg[1] > 0 ? 'bottom' : 'top'}:0"></span>`; } } } } // 16/11 (l'utilisateur : « enlève ces murs rajoutés ») : plus de bordure de pierre ajoutée, les murs sont ceux peints dans les salles
+    else if (mur === 'F') { cl += ' mur fissure'; inner = '<svg class="fiss" viewBox="0 0 10 10"><polyline points="5,0 4,2.5 6,4 3.5,6 5.5,7.5 4.5,10" fill="none" stroke="#e8f7ff" stroke-width="1"/><polyline points="6,4 8,5" fill="none" stroke="#e8f7ff" stroke-width=".7"/></svg>'; }
+    else if (mur === 'L' && o && o.t === 'levierC') { inner = `${objImg('levier') || '<span class="o">🎚</span>'}<span class="note" style="--nc:${o.c}"></span>`; if (d && K.dist(h, { x, y }) <= 2 && Math.max(Math.abs(h.x - x), Math.abs(h.y - y)) <= 1) cl += ' cible'; }
     else if (mur === '~') inner = `<span class="o">${S.scen === 'arene' ? '🌳' : '🪨'}</span>`; // 15/11 soir : les obstacles (arbres d'une embuscade, rochers) se voient
     // 16/11 (l'utilisateur : « nos propres images dénaturent ») : dans une salle PEINTE, on touche le meuble du dessin, sans icône ; une lueur dorée le montre
     else if (mur === 'M' && o && fondSalle(S, x, y)) { cl += ' meuble-peint' + (o.fouille ? ' fouille' : '') + (!o.fouille && K.dist(h, { x, y }) === 1 ? ' cible' : ''); if (o.fouille) inner = '<span class="fm">✓</span>'; else if (o.verrou && !o.crochete) inner = '<span class="fm">🔒</span>'; } // 16/11 : pas d'étiquette (les noms ne collaient pas au dessin), le nom vient au toucher
@@ -725,7 +749,7 @@ function dessine() {
       // regarde (verte quand c'est vers l'autel), un petit repère doré montre où elle doit regarder, la voisine qui tourne avec elle s'allume
       inner = `<div class="stat-socle" style="transform:translate(${dec[0]}%, ${dec[1]}%)"><img class="oi statue ${R.statuesOk ? 'fait-ok' : ''} ${statueBrille.includes(ti) ? 'brille' : ''}" src="decor/obj-statue.webp?v=1" alt="" style="transform:rotate(${a * 90}deg)">${R.statuesOk ? '' : `<span class="stat-but" style="transform:rotate(${t.veut * 90}deg)"></span><span class="stat-regard ${bon ? 'ok' : ''}" style="transform:rotate(${a * 90}deg)"></span>`}</div>`; }
     else if (mur === 'O') inner = R.plan === 2 && SALLE_MURS.includes('S') && !R.statuesOk ? '' : (R.plan === 2 && SALLE_MURS.includes('S') ? objImg('autel', R.statuesOk ? 'brille' : '').replace('<img ', '<img style="transform:translate(55%, 0)" ') : objImg('autel', R.statuesOk ? 'brille' : '')); // le cercle de laiton peint fait l'autel ; 16/11 soir (l'utilisateur : « feu à centrer ») : le feu posé au milieu du cercle peint, qui est à cheval sur deux cases
-    else if (mur === 'A') inner = `${(S.scen || 'horloger') === 'horloger' ? objImg('axe') : S.scen === 'labyrinthe' ? objImg('autelrunes') : S.scen === 'cloitre' || S.scen === 'refectoire' ? (objImg('cloche') || '<span class="o">🔔</span>') : `<span class="o">${K.SCEN[S.scen || 'horloger'].axeE}</span>`}<span class="lv">${R.rouagesPoses}/${K.SCEN[S.scen || 'horloger'].nbObj || 3}</span>`;
+    else if (mur === 'A') inner = `${(S.scen || 'horloger') === 'horloger' ? objImg('axe') : S.scen === 'labyrinthe' ? objImg('autelrunes') : S.scen === 'cloitre' || S.scen === 'refectoire' || S.scen === 'cellules' ? (objImg('cloche') || '<span class="o">🔔</span>') : `<span class="o">${K.SCEN[S.scen || 'horloger'].axeE}</span>`}<span class="lv">${R.melodie ? `${R.melProg}/${R.melodie.length}` : `${R.rouagesPoses}/${K.SCEN[S.scen || 'horloger'].nbObj || 3}`}</span>`;
     else { if (!R.salle[c]) { cl += ' couloir'; if (!fondSalle(S, x, y)) stMur += `background-position:calc(var(--t) * ${-x}) calc(var(--t) * ${-y});`; } // 17/11 (« pas d'escalier ») : pas sur le dessin de l'escalier, qui a sa propre position // 16/11 soir (l'utilisateur : « on voit chaque case ») : le sol du couloir continue d'une case à l'autre au lieu de répéter le même morceau
       if (o && o.t === 'piege' && !o.trouve && (o.vu || voitPieges || h.id === 'oria' && Math.abs(h.x - x) + Math.abs(h.y - y) <= 2)) inner = `<span class="o">${o.vu ? '⚠️' : '👓'}</span>`;
       if (o && o.t === 'rouage') inner = objImg('rouage');
@@ -739,8 +763,10 @@ function dessine() {
     if (atteint[c]) cl += ' peut';
     const hi = S.heros.findIndex(z => z.x === x && z.y === y), m = R.monstres.find(z => z.x === x && z.y === y), B = R.boss && R.boss.x === x && R.boss.y === y ? R.boss : null;
     if (hi >= 0) { const z = S.heros[hi]; inner += `<div class="jeton ${hi === actif ? 'actif' : ''} ${z.aTerre ? 'terre' : ''}" id="j-h${hi}" style="--c:${coulH(z)}">${imgH(z)}<span class="pv">${z.aTerre ? '✋' : '❤' + z.pv}${z.bouclier ? '🛡' + z.bouclier : ''}${z.porte ? '⚙️' : ''}</span></div>`; }
+    if (R.aubin && R.aubin.x === x && R.aubin.y === y && vu) { const A = R.aubin; inner += `<div class="jeton aubin ${A.libre ? '' : 'cage'} ${A.aTerre ? 'terre' : ''}" id="j-aubin"><img src="portraits/pnj-aubin.webp?v=1" alt="Frère Aubin"><span class="pv">${A.aTerre ? '✋' : '❤' + A.pv}</span></div>`;
+      if (d && (!A.libre || A.aTerre || K.dansClocher(S, A)) && Math.max(Math.abs(h.x - x), Math.abs(h.y - y)) <= 1) cl += ' cible'; }
     const mm = B || m;
-    if (mm && vu && (B || vueForcee || eclaire(x, y))) { const it = mm.entrave >= R.tour ? '🌵' : mm.it === 'frappe' ? `⚔${mm.att}` : mm.it === 'garde' ? '🛡' : mm.it === 'soin' ? '💚' : mm.it === 'fuit' ? '🏃' : mm.it === 'remonte' ? '⏳' : mm.it === 'levier' ? '🎚' : mm.it === 'elan' ? '⚡' : mm.it === 'charge' ? `⚡${mm.att + 2}` : mm.it === 'gros' ? `💥${mm.att + 2}` : '';
+    if (mm && vu && (B || vueForcee || eclaire(x, y))) { const it = mm.entrave >= R.tour ? '🌵' : mm.it === 'frappe' ? `⚔${mm.att}` : mm.it === 'garde' ? '🛡' : mm.it === 'soin' ? '💚' : mm.it === 'fuit' ? '🏃' : mm.it === 'remonte' ? '⏳' : mm.it === 'levier' ? '🎚' : mm.it === 'elan' ? '⚡' : mm.it === 'charge' ? `⚡${mm.att + 2}` : mm.it === 'gros' ? `💥${mm.att + 2}` : mm.it === 'hesite' ? '💬' : '';
       inner += `<div class="jeton ${B ? 'boss' : ''}" id="j-${mm.id}" style="--c:${B ? '#ff7a4a' : K.BETES[mm.b].elite ? '#f3c96b' : '#8a98b8'}"><img src="portraits/m-${mm.img}.webp" alt="" onerror="this.onerror=null;this.src='portraits/m-coucou.webp'"><span class="it">${it}</span><span class="sc">🔒${mm.sceaux.filter(s => !s.ok).length}</span></div>`;
       if (d && !d.pas && K.aPortee(S, h, mm)) cl += ' cible'; }
     if ((mur === 'O' || mur === 'o') && R.plan === 2 && R.statuesOk && !h.flamme) cl += ' autel-cible'; // 16/11 soir : on voit qu'on peut toucher le feu
@@ -762,7 +788,7 @@ function dessine() {
   $('app').innerHTML = `
     <div class="haut"><a href="#" onclick="quitter();return false">‹ Quitter</a><span class="t">${SCT().titre}</span>${L ? `<button onclick="equipeEnLigne()">🌐 ${L.code}</button>` : ''}<button class="hsab" onclick="infoStat('sablier')" title="Le sablier">⌛ <b>${S.sablier}</b></button>${R.boss ? `<button onclick="voirBut()" style="color:${R.boss.repos && R.boss.b === 'roios' ? 'var(--doux)' : '#ff8a7a'}">⏰${R.boss.repos && R.boss.b === 'roios' ? '' : ' !'}</button>` : ''}<button onclick="voirQuetes()" title="Les quêtes">📋 <b>${quetes().filter(q => q.ok).length}/${quetes().length}</b></button><button onclick="voirJournal()" title="Le journal">📜</button><button onclick="regles()">❓</button><button onclick="GM.parametres()" title="Paramètres">⚙️</button></div>
     <div class="zonebar"><span class="zt">${RZ ? `${esc(zoneNom(ZV))}${vueForcee ? ' · 👹 les monstres' : suivi != null && S.heros[suivi] ? ` · 👀 ${esc(nomH(S.heros[suivi]))} joue` : ''}` : ''}</span><button onclick="${RZ ? 'grandeCarte()' : 'petit=!petit;centrer=true;dessine()'}">${petit ? '🔍 Zoom' : '🗺 Carte'}</button></div>
-    <div style="position:relative"><div class="vue" id="vue"><div class="plateau ${S.froid ? 'givre ' : ''}${S.scen === 'labyrinthe' ? 'laby' : S.scen === 'cloitre' ? 'laby' : (S.scen || 'horloger') === 'horloger' ? 'horloge' : ''}${RZ ? ' zonee' : ''}" style="grid-template-columns:repeat(${nCol}, ${t});--t:${t};${peint ? `background:url('${SC.image}${SC.image.startsWith('data:') ? '' : '?v=1'}') 0 0/100% 100% no-repeat` : ''}">${cases}</div></div>
+    <div style="position:relative"><div class="vue" id="vue"><div class="plateau ${S.froid ? 'givre ' : ''}${S.scen === 'labyrinthe' ? 'laby' : S.scen === 'cloitre' || S.scen === 'cellules' ? 'laby' : (S.scen || 'horloger') === 'horloger' ? 'horloge' : ''}${RZ ? ' zonee' : ''}" style="grid-template-columns:repeat(${nCol}, ${t});--t:${t};${peint ? `background:url('${SC.image}${SC.image.startsWith('data:') ? '' : '?v=1'}') 0 0/100% 100% no-repeat` : ''}">${cases}</div></div>
 </div>
     ${(() => { const c = tourDe(); if (c == null) return ''; const moi = mesHeros().includes(c), o = initiative(); // 17/11 : à qui le tour (en ligne)
       return `<div class="tourbar ${moi ? 'moi' : ''}">${moi ? `🎲 À toi de jouer avec ${nomH(S.heros[c])}` : `⏳ Au tour de ${nomH(S.heros[c])}${proprio(c) ? ` (${proprio(c)})` : ' : personne ne le joue, touche 🌐 en haut pour le prendre'}`} · ${o.map(x => `${fini(x.i) ? '<s>' : ''}${nomH(S.heros[x.i]).replace('Sire ', '')} ${x.v}${fini(x.i) ? '</s>' : ''}`).join(' › ')}</div>`; })()}
@@ -928,6 +954,11 @@ function resultat(r) {
         const L1 = S.journal.slice(0, 4), quoi = L1.find(l => !/^(🔊|⌛|🔓)/.test(l)) || T[0]; bulle(quoi, e.quoi === 'piege' || e.quoi === 'monstre' || e.quoi === 'mimique', true);
         const suite = L1.filter(l => /^(🔊|⌛)/.test(l)); suite.forEach((l, k) => setTimeout(() => bulle(l, l.startsWith('🔊'), true), 3100 * (k + 1))); }
       if (e.t === 'salle') setTimeout(() => entreeSalle(e.salle), 350);
+      if (e.t === 'aubin') { son(e.quoi === 'libre' ? 'porte' : 'soin'); bulle(S.journal.find(l => /^(🗝|✋)/.test(l)) || '🧑‍🦳 Frère Aubin !', false, true); }
+      if (e.t === 'passage') { setTimeout(() => { son('porte'); bulle(S.journal.find(l => l.startsWith('🧱')) || '🧱 Un passage secret !', false, true); }, (r.ev || []).some(z => z.t === 'aubin' || z.t === 'chant') ? 3300 : 400); }
+      if (e.t === 'parle') { bulle(S.journal[0], false, true); }
+      if (e.t === 'levierC') { son(e.bon ? 'rune' : 'erreur'); if (!e.fini) bulle(e.bon ? S.journal[0] : S.journal.find(l => l.startsWith('❌')), !e.bon, true); }
+      if (e.t === 'bran') { son('ultime'); setTimeout(sceneBran, 500); }
       if (e.t === 'pouvoir') setTimeout(() => animPw(e), 60);
     });
     if (S.fin) return finPartie(); dessine(); return true; }
@@ -962,6 +993,11 @@ function touche(x, y) {
     if (!d && o && o.t === 'piege' && !o.trouve && !o.vu && (h.objet === 'lunettes' || h.id === 'oria' && Math.abs(h.x - x) + Math.abs(h.y - y) <= 2)) {
       o.vu = true; S.journal.unshift(`⚠️ ${nomH(h)} signale un piège : tout le groupe le voit maintenant.`); bulle(`⚠️ ${nomH(h)} signale le piège : tout le groupe le voit maintenant.`); dessine(); return; } }
   if ((R.murs[c] === 'O' || R.murs[c] === 'o') && R.plan === 2 && R.statuesOk) { const r = K.benir(S, actif); if (typeof r === 'string') { bulle(r, true); return; } son('magie'); return resultat(r); } // 16/11 soir : le feu sacré
+  // 27/11 : chapitre 3 : frère Aubin, les murs fissurés, les leviers chantants, la cloche
+  if (R.aubin && R.aubin.x === x && R.aubin.y === y) return aubinMenu();
+  if (R.murs[c] === 'F') { bulle('🧱 Un mur fissuré : seul frère Aubin connaît ce passage secret. Amenez-le juste à côté : il l’ouvrira tout seul.', false, true); return; }
+  if (R.murs[c] === 'L' && R.obj[c] && R.obj[c].t === 'levierC') return levierMenu(x, y);
+  if (S.scen === 'cellules' && R.murs[c] === 'A') { bulle('🔔 La troisième cloche. Elle ne se sonne pas à la corde : ce sont les quatre leviers chantants, à tirer dans l’ordre de l’air qu’Aubin fredonne.', false, true); return; }
   if (!d) { if (hi >= 0) return choisitHeros(hi); if (m || B) return infoMonstre(B || m);
     if (R.murs[c] === 'K') { bulle('📕 Le Livre des heures, tout en haut de l’étagère : mets-toi à côté du livre, avec un ami juste à côté de toi (courte échelle), puis pose un dé de 4 ou plus sur le livre.', false, true); return; }
     if (R.murs[c] === 'B') { bulle('Une étagère pleine de vieux livres d’horlogerie.'); return; }
@@ -1019,9 +1055,48 @@ function animPw(e) {
     fx.innerHTML = sym.map((t, i) => `<i style="left:${20 + 60 * i / Math.max(1, sym.length - 1)}%;--dx:${Math.round(Math.cos(i) * 40)}px;--dy:${Math.round(Math.sin(i) * 40)}px">${t}</i>`).join('');
     setTimeout(() => { el.appendChild(fx); setTimeout(() => fx.remove(), 1500); }, 120 * k); });
 }
+// 27/11 : chapitre 3. Toucher frère Aubin : sa fiche, ou ce qu'on peut faire avec le dé choisi (toujours avec confirmation)
+function aubinMenu() {
+  const R = S.R, A = R.aubin, h = S.heros[actif], d = deSel(), pres = Math.max(Math.abs(h.x - A.x), Math.abs(h.y - A.y)) <= 1, b = [];
+  const fiche = `<div style="display:flex;gap:10px;align-items:center"><img src="portraits/pnj-aubin.webp?v=1" alt="" style="width:64px;height:64px;border-radius:50%;object-fit:cover;border:2px solid #9fdcff"><p style="margin:0">Le dernier des Veilleurs du monastère. ❤ ${A.pv}/${A.pvmax}. Il ne frappe pas.${A.libre ? ' Il suit le héros le plus proche et ouvre les murs fissurés. Les monstres peuvent le viser (les spectres de givre surtout).' : ' Il est enfermé dans sa cellule.'}</p></div>`;
+  if (d && !A.libre && pres) b.push(`<button class="sec" onclick="fenetre('');son('porte');resultat(K.aubin(S,actif,sel,'cellule'))">🗝 Forcer la serrure de la cellule<small>Un pas de ce dé. Aubin est libre et vous suit.</small></button>`);
+  if (d && A.aTerre && pres) b.push(`<button class="sec" onclick="fenetre('');son('soin');resultat(K.aubin(S,actif,sel,'relever'))">✋ Relever frère Aubin<small>Le dé entier. Il revient avec 3 PV.</small></button>`);
+  if (d && A.libre && !A.aTerre && K.dansClocher(S, A)) b.push(`<button class="sec" onclick="fenetre('');resultat(K.aubin(S,actif,sel,'chant'))">🎵 Lui demander de fredonner l’air encore une fois<small>Un pas de ce dé. Regardez bien les couleurs : il ne le chantera qu’une fois.</small></button>`);
+  const quoi = !d ? (A.aTerre ? 'Il est à terre : choisis un dé, mets-toi juste à côté de lui, puis touche-le pour le relever.' : !A.libre ? 'Choisis un dé et mets-toi juste à côté de la cellule pour forcer la serrure.' : '') : !b.length ? (A.aTerre || !A.libre ? 'Il faut être juste à côté de lui.' : 'Rien à faire avec ce dé pour l’instant. Dans le clocher, tu pourras lui demander de fredonner l’air.') : '';
+  fenetre(`<h2>🧑‍🦳 Frère Aubin</h2>${fiche}${quoi ? `<p style="text-align:center;color:var(--doux)">${quoi}</p>` : ''}${b.join('')}<button class="sec" onclick="fenetre('')">${b.length ? 'Annuler' : 'Compris'}</button>`);
+}
+// un levier chantant : on confirme avant de tirer (une fausse note coûte cher)
+function levierMenu(x, y) {
+  const R = S.R, o = R.obj[K.cle(x, y)], d = deSel(), h = S.heros[actif];
+  if (!d) { bulle(`🎚 Le levier ${o.coul}. ${!S.cleClocher ? 'Il est cadenassé : la clé du clocher est chez le Chevalier de glace.' : 'Choisis un dé, mets-toi juste à côté, puis touche-le pour le tirer.'}`, false, true); return; }
+  if (!S.cleClocher) return resultat(K.agir(S, actif, sel, x, y));
+  if (Math.max(Math.abs(h.x - x), Math.abs(h.y - y)) > 1) { bulle(`${nomH(h)} doit être juste à côté du levier.`, true); return; }
+  fenetre(`<h2>🎚 Le levier ${o.coul}</h2><div style="text-align:center"><span style="display:inline-block;width:46px;height:46px;border-radius:50%;background:${o.c};box-shadow:0 0 12px ${o.c}"></span></div><p style="text-align:center">C’est la note n° <b>${R.melProg + 1}</b> sur ${R.melodie.length}. Tirer ce levier (un pas de ce dé) ?</p><p style="text-align:center;font-size:.9em;color:var(--doux)">${R.chantN ? '' : '<b style="color:#ff8a7a">Aubin n’a pas encore fredonné l’air : vous tirez au hasard.</b><br>'}Une fausse note : tous les leviers remontent, et un spectre de givre apparaît.</p><div class="choixh"><button onclick="fenetre('')">Annuler</button><button class="or" onclick="fenetre('');resultat(K.agir(S,actif,sel,${x},${y}))">🎚 Tirer</button></div>`);
+}
+// l'air des cloches, façon Simon : les couleurs s'allument une à une avec leur note, puis tout disparaît (aucune trace ensuite)
+let chantVu = null, chantEnCours = false;
+function verifieChant() { if (!S || !S.R || !S.R.melodie) return; const n = S.R.chantN || 0; if (chantVu == null || chantVu.g !== S.graine) { chantVu = { g:S.graine, n }; return; } if (n > chantVu.n && !chantEnCours) { chantVu.n = n; setTimeout(joueChant, 400); } }
+async function joueChant() {
+  if (!S || !S.R.melodie || chantEnCours) return; chantEnCours = true; const L0 = K.LEVIERS_C, nb = Object.values(S.R.obj).filter(o => o.t === 'levierC').length;
+  const el = document.createElement('div'); el.className = 'simon'; el.innerHTML = `<h3>🎵 Frère Aubin fredonne l’air des cloches…<br><small style="font-size:.6em">Retenez l’ordre des couleurs !</small></h3><div class="pads">${L0.slice(0, nb).map(([n, c], i) => `<div class="pad" id="pad${i}" style="--nc:${c}">${n}</div>`).join('')}</div>`; document.body.appendChild(el);
+  let ctx = null; try { ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {}
+  const FREQ = [392, 523.25, 659.25, 783.99];
+  const note = i => { if (!ctx) return; try { const o = ctx.createOscillator(), g = ctx.createGain(); o.type = 'triangle'; o.frequency.value = FREQ[i]; g.gain.setValueAtTime(.0001, ctx.currentTime); g.gain.exponentialRampToValueAtTime(.25, ctx.currentTime + .04); g.gain.exponentialRampToValueAtTime(.0001, ctx.currentTime + .55); o.connect(g); g.connect(ctx.destination); o.start(); o.stop(ctx.currentTime + .6); } catch (e) {} };
+  const w = ms => new Promise(r => setTimeout(r, ms)); await w(1200);
+  for (const i of S.R.melodie) { const p = $('pad' + i); if (p) p.classList.add('on'); note(i); await w(620); if (p) p.classList.remove('on'); await w(230); }
+  await w(500); el.style.opacity = '0'; await w(550); el.remove(); if (ctx) try { ctx.close(); } catch (e) {} chantEnCours = false;
+}
+// la libération de Bran : une courte scène
+function sceneBran() {
+  const avecM = S.heros.some(z => z.id === 'maelle');
+  const txt = avecM ? 'L’armure de givre éclate. Dessous, un homme à genoux, la barbe blanche de givre. Il lève les yeux vers la forgeronne : « Maëlle ?… Tu as forgé ton marteau. Je le vois à tes mains. » Maëlle lui tend la lime trouvée au pied de la deuxième cloche ; sur le manche, son poinçon. Bran baisse la tête : « C’est moi qui ai limé les runes. Le Roi m’a gardé dix ans endormi dans la glace, et ma main lui obéissait. Pardonne-moi. » Il lui met une grosse clé de fer dans la paume : « La clé du clocher. Allez-y. Moi… je n’ai plus de forces. Je vous attends en bas. »'
+    : 'L’armure de givre éclate. Dessous, un homme à genoux, la barbe blanche de givre, qui tremble de froid. « Merci… Je m’appelle Bran. Je suis forgeron. Ma fille… Maëlle… elle va bien ? Dites-lui que son père est vivant. » Il vous tend une grosse clé de fer : « La clé du clocher. Le Roi me l’avait confiée. Allez-y. Moi, je n’ai plus de forces : je vous attends en bas. »';
+  fenetre(`<div style="text-align:center"><img src="portraits/m-chevalierglace.webp?v=1" alt="" style="width:110px;height:110px;border-radius:50%;object-fit:cover;border:3px solid #9fdcff;filter:saturate(.4) brightness(1.2)"></div><h2 style="text-align:center">❄ Bran est libre</h2><p>${txt}</p><p style="text-align:center;color:var(--or)">🗝 La clé du clocher : les leviers chantants sont ouverts.</p><button class="go" onclick="fenetre('')">Continuer</button>`);
+}
 function frappeMenu(m) {
   const d = deSel(); if (!d) return;
-  fenetre(`<h2>${m.n}</h2><p style="text-align:center">Pose ton <b>${d.v}</b> sur un sceau (en vert ceux qui l’acceptent).</p>
+  const parle = m.b === 'bran' && S.heros[actif].id === 'maelle' ? `<button class="sec" onclick="fenetre('');son('magie');resultat(K.parler(S,actif,sel))">💬 Lui parler<small>Un pas de ce dé, une fois par tour (3 cases au plus) : il hésite et ne frappera pas ce tour.</small></button>` : '';
+  fenetre(`<h2>${m.n}</h2>${parle}<p style="text-align:center">Pose ton <b>${d.v}</b> sur un sceau (en vert ceux qui l’acceptent).</p>
     <div class="sceaux">${m.sceaux.map((s, k) => `<div class="sx ${s.ok ? 'ok' : K.accepte(s, d.v, m.sceaux) ? 'peut' : 'non'}" onclick="frappeSceau('${m.id}',${k})">${sceauTxt(s, m.sceaux)}</div>`).join('')}</div>
     <button class="sec" onclick="fenetre('')">Annuler</button>`);
 }
@@ -1039,7 +1114,7 @@ function amiMenu(i) {
   fenetre(`<h2>${nomH(z)}</h2>${b.join('')}<button class="sec" onclick="fenetre('')">Annuler</button>`);
 }
 function infoMonstre(m) {
-  const it = { frappe:`⚔ va frapper (${m.att})`, garde:'🛡 va refermer un de ses sceaux', soin:'💚 va réparer un autre monstre', fuit:'🏃 va s’enfuir', remonte:'⏳ reprend son souffle', levier:'🎚 va remonter un levier', elan:'⚡ prend son élan', charge:`⚡ IL CHARGE : au début de votre prochain tour, AVANT que vous jouiez, il frappera ${m.att + 2} chaque héros collé à lui. Pour l’éviter : ne finissez pas votre tour collé à lui (éloignez-vous), ou protégez-vous (le bouclier encaisse)`, gros:`💥 GROS COUP : frappe de ${m.att + 2}, sauf si vous lui brisez un sceau avant`, rien:'ne fait rien' }[m.it] || '';
+  const it = { frappe:`⚔ va frapper (${m.att})`, garde:'🛡 va refermer un de ses sceaux', soin:'💚 va réparer un autre monstre', fuit:'🏃 va s’enfuir', remonte:'⏳ reprend son souffle', levier:'🎚 va remonter un levier', elan:'⚡ prend son élan', charge:`⚡ IL CHARGE : au début de votre prochain tour, AVANT que vous jouiez, il frappera ${m.att + 2} chaque héros collé à lui. Pour l’éviter : ne finissez pas votre tour collé à lui (éloignez-vous), ou protégez-vous (le bouclier encaisse)`, gros:`💥 GROS COUP : frappe de ${m.att + 2}, sauf si vous lui brisez un sceau avant`, hesite:'💬 il hésite : il ne frappera pas ce tour', rien:'ne fait rien' }[m.it] || '';
   fenetre(`<h2>${m.n}</h2><p style="text-align:center">Ce tour-ci : <b>${it}</b>.</p><div class="sceaux">${m.sceaux.map(s => `<div class="sx ${s.ok ? 'ok' : ''}">${sceauTxt(s, m.sceaux)}</div>`).join('')}</div>${(() => { // 17/11 (l'utilisateur : « = 0, on fait comment ? ») : ce que demande chaque sorte de sceau, sous les sceaux
       const T = new Set(m.sceaux.filter(z => !z.ok).map(z => z.t)), D = { dbl:'<b>Jumeaux</b> : le premier se brise avec n’importe quel dé ; l’autre demande ensuite <b>la même valeur</b> (« = 4 »).', min:(v => `<b>≥ ${v}</b> : un dé de ${v} ou plus.`)(Math.min(...m.sceaux.filter(z => !z.ok && z.t === 'min').map(z => z.v))), tot:'<b>Σ</b> : plusieurs dés dont le total fait au moins ce chiffre.', ex:'<b>Chiffre seul</b> : exactement ce dé.', pair:'<b>Pair</b> : un dé pair.', imp:'<b>Impair</b> : un dé impair.' };
       const l = [...T].map(t => D[t]).filter(Boolean); return l.length ? `<p style="font-size:.88em;color:var(--doux);margin:.3em 0">${l.join('<br>')}</p>` : ''; })()}<p style="color:var(--doux);font-size:.9em">${m.id === 'boss' ? 'Il frappe au contact (une case autour, diagonales comprises), un tour sur deux.' : `Il avance de ${(K.BETES[m.b] || {}).mv || 1} case${((K.BETES[m.b] || {}).mv || 1) > 1 ? 's' : ''} par tour vers le héros le plus proche et frappe au contact (une case autour, diagonales comprises), seulement quand sa salle est dévoilée.`}</p>${Object.keys(K.CAPA).filter(k => (K.BETES[m.b] || {})[k]).map(k => `<p style="font-size:.9em;margin:4px 0">✦ ${K.CAPA[k]}</p>`).join('')}<p style="color:var(--doux);font-size:.9em">Choisis un dé, puis touche le monstre pour poser le dé sur un sceau. Tous ses sceaux brisés : il tombe.</p><button class="go" onclick="fenetre('')">Compris</button>`);
@@ -1079,6 +1154,7 @@ async function animeMonstres(ev) {
     iEv++; e.fait = true;
     if (e.t === 'pas') { const m = ou(e.m), el = $('j-' + e.m); if (!m || !el) continue; voisCase(m.x, m.y); el.style.transform = ''; son('pas'); await glisse('j-' + e.m, e.de, [m.x, m.y], 360); }
     else if (e.t === 'frappe') { await fonce('j-' + e.m, 'j-h' + e.h); son('coup'); flash('j-h' + e.h); bulle(`⚔ ${nomH(S.heros[e.h])} −${e.v}`, true); await attends(380); }
+    else if (e.t === 'frappeA') { await fonce('j-' + e.m, 'j-aubin'); son('coup'); flash('j-aubin'); bulle(`⚔ Frère Aubin −${e.v}${S.R.aubin && S.R.aubin.aTerre ? ' : il est à terre !' : ''}`, true); await attends(450); }
     else if (e.t === 'levierRemonte') { son('tour-batir'); flash('j-' + e.m); bulle(S.journal.find(l => l.startsWith('🗿')) || '🗿 Un levier remonte !', true, true); await attends(1400); }
     else if (e.t === 'garde') { flash('j-' + e.m); await attends(250); }
     else if (e.t === 'pouvoir') { animPw(e); await attends(900); }
@@ -1133,6 +1209,11 @@ function regles() {
     <li><b>Ordre libre</b> : jouez vos héros dans l’ordre que vous voulez, même en alternant (touchez un héros pour le prendre). Quand un héros a terminé, touchez « ✋ … a fini ». Quand tous ont fini, les monstres jouent.</li>
     <li><b>Fin du tour</b> (après le dernier héros) : les monstres réveillés font ce qu’ils annoncent ; le <b>sablier</b> perd un grain (vide : un dé de moins pour tous). Le <b>Livre des heures</b> (bibliothèque, à deux) affaiblit l’Horloger.</li>
     <li>🗺 <b>Carte</b> : voir tout le donjon dévoilé. La partie est gardée ; si tout le groupe tombe, on repart du dernier point de passage (la dernière porte ouverte).</li></ol>
+    ${S && S.scen === 'cellules' ? `<h3 style="color:#9fdcff">❄ Chapitre 3 : Le dernier Veilleur</h3><ul>
+      <li><b>Frère Aubin</b> est enfermé dans une cellule : un héros juste à côté force la serrure (touche Aubin avec un dé, un pas). Ensuite il <b>suit le héros le plus proche</b>. Il ne frappe pas ; les monstres peuvent le viser (les spectres de givre surtout). À 0 PV, il est <b>à terre</b> : un héros juste à côté le relève (un dé), il revient avec 3 PV. On ne perd jamais à cause de lui.</li>
+      <li><b>Les murs fissurés</b> 🧱 sont des passages secrets des Veilleurs : amenez Aubin juste à côté, il les ouvre tout seul. Raccourcis… et un coffre caché.</li>
+      <li><b>Le Chevalier de glace</b> garde la clé du clocher. Ses sceaux sont une <b>armure de givre</b> : brisez-les tous, elle éclate. Si Maëlle est là, elle peut <b>lui parler</b> (un dé, une fois par tour, 3 cases au plus) : il hésite et ne frappe pas ce tour.</li>
+      <li><b>Les leviers chantants</b> (dans le clocher, avec la clé) : quand Aubin entre dans le clocher, il <b>fredonne l’air une seule fois</b> (les couleurs s’allument une à une). Tirez les leviers dans cet ordre. Une fausse note : tout se remet en place et un spectre de givre apparaît. Sans Aubin dans le clocher, pas de mélodie. Pour réécouter l’air : touchez Aubin avec un dé (il doit être dans le clocher).</li></ul>` : ''}
     <h3 style="color:var(--or)">Les héros</h3>${Object.entries(H).map(([k, h]) => `<p style="margin:4px 0"><b>${h.n}</b> · ${h.t} : ${h.d}</p>`).join('')}
     <button class="go" onclick="fenetre('')">Compris</button>`);
 }
@@ -1149,7 +1230,7 @@ function finPartie() {
   if (!dejaFait) S.heros.forEach(z => { if (z.av && avTrouve(z.av)) { const g = avGagneXP(z.av, gagne ? 120 : 40, gagne); if (g) niv.push(nomH(z)); } });
   if (niv.length) setTimeout(() => bulle(`⬆ Niveau gagné : ${niv.join(', ')} ! (à forger dans la Forge des héros)`), 900);
   if (gagne) { son('victoire'); try { GM.jingle('victoire'); } catch (e) {} if (!dejaFait) S.heros.forEach((z, i) => { if (L && !mesHeros().includes(i)) return; if (typeof guildeEvt === 'function') guildeEvt('boss', 1, { heros:z.av || z.id }); }); objet = dejaFait ? null : butinArmurerie(S.sablier > 0 ? 3 : 1, S.score);
-    if ((S.scen === 'cloitre' || S.scen === 'refectoire') && !S.aventure && !dejaFait && typeof guildeEvt === 'function') { guildeEvt('chapitre_saison', 1, { sansXP:true }); if (typeof gagneXP === 'function') gagneXP(150, 'Chapitre de la saison'); } // 26/11 : le chapitre joué en salle compte pour la quête de saison
+    if ((S.scen === 'cloitre' || S.scen === 'refectoire' || S.scen === 'cellules') && !S.aventure && !dejaFait && typeof guildeEvt === 'function') { guildeEvt('chapitre_saison', 1, { sansXP:true }); if (typeof gagneXP === 'function') gagneXP(150, 'Chapitre de la saison'); } // 26/11 : le chapitre joué en salle compte pour la quête de saison
     try { const D = JSON.parse(localStorage.getItem(CLE) || '{}'); D.horloger = (D.horloger || 0) + 1; if (S.sablier > 0) D.gardiens = true; localStorage.setItem(CLE, JSON.stringify(D)); } catch (e) {} }
   else { try { GM.jingle('defaite'); } catch (e) {} }
   const campagne = gagne && (!L || estHote()) ? campagneGagnee().replace('onclick="fin();chapitre()"', L ? 'onclick="retourSalle()"' : 'onclick="fin();chapitre()"') : '';
@@ -1371,7 +1452,7 @@ if (ESSAI) essaiAtelier(ESSAI); else if (sessionStorage.getItem('chron-en-jeu') 
 { const s = new URLSearchParams(location.search).get('salle'); if (s) { history.replaceState(null, '', location.pathname); const c = (typeof AMIS !== 'undefined' && AMIS.carte) || null, nom = (c && c.pseudo) || localStorage.getItem('guilde-pseudo');
     if (nom || moiCompte()) rejoindre(s, moiCompte() || { id:'j' + Math.random().toString(36).slice(2, 10), nom }); else { rejoindreForm(); setTimeout(() => { const i = $('fCode'); if (i) i.value = s; }, 150); } } }
 </script>
-<script src="chroniques-aventures.js?v=39b764b5e7"></script>
+<script src="chroniques-aventures.js?v=3873b43f5c"></script>
 <script src="guide.js?v=ceb10204e9"></script>
 <script src="guides-modes.js?v=e111523360"></script>
 <script src="entrainement.js?v=854139c476"></script>
