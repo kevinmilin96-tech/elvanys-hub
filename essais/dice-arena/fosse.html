@@ -81,7 +81,7 @@ const HER = {
   zephine:{ n:'Zéphine', c:'#ff4040', t:'Vent de tempête', d:'Tes balles vont plus vite et partent plus souvent.' },
 };
 const W = 360, H = 600, DUREE = 300, BOSS_A = 240, PV0 = 25;
-const SUIVI_FOSSE = { pv:0.35, deg:0.45, vie:0.25, degMax:3, desMax:1 }; // 27/11 soir : le suivi du héros monté (voir nouvelle)
+const SUIVI_FOSSE = { pv:0.35, deg:0.22, vie:0.12, degMax:2, desMax:1 }; // 27/11 soir : le suivi du héros monté (voir nouvelle) ; 28/11 (choix de l'utilisateur) : suivi moitié moins fort (le simulateur donnait 21 % à un héros très monté)
 // ce que la progression du héros donne VRAIMENT ici (les chiffres de nouvelle), pour la fiche du configurateur
 function texteFosse(id) {
   const B = typeof bonusMode === 'function' ? bonusMode(id) : null; if (!B || !(B.pv + B.bouclier + B.des + B.relance)) return texteBonus(id);
