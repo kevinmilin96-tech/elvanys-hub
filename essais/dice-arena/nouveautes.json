@@ -1,5 +1,9 @@
 [
 {
+"v": "20261128-000253",
+"m": "Rempart : chaque tour a son pouvoir dès le niveau 2 (touche-la quand le ✦ brille) ; le givre gèle toute la carte, les archers marquent les monstres (+25 % de dégâts)"
+},
+{
 "v": "20261127-235257",
 "m": "Rempart : plus d'énergie au départ (12 ◆) et des premières vagues moins nombreuses, le temps de bâtir"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261127-132447",
 "m": "Défense de la porte : on peut démolir une tour depuis sa fiche (+1 PC), et en vagues sans fin les étoiles de maîtrise n'ont plus de limite."
-},
-{
-"v": "20261127-132243",
-"m": "Défense de la porte : au niveau 4, un dé de la même face ajoute une étoile ★ à la tour (+35 % de dégâts, 5 au plus, effet renforcé à 5 étoiles). La Rune reste un choix."
 }
 ]

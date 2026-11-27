@@ -12,7 +12,7 @@ const NC = 5, NR = 5;               // 5 chemins, 5 cases de tours par chemin (r
 const HAUT = 10;                    // les monstres naissent à y = 10 (cases), le rempart est à y = 0 ; les tours sont entre 0 et 5
 const R = {
   rempart:20, energieDepart:12 /* 27/11 nuit : 8 → 12, l'utilisateur manquait d'énergie au début */, energieMax:60, regenE:2.4 /* s par ◆ */, deDelai:8, desMax:3, jaugeMax:14,
-  niv:[0, 1, 1.75, 2.8, 4.2], nivMax:4, etoileMax:5, etoile:0.35, pouvoirRecharge:20,
+  niv:[0, 1, 1.75, 2.8, 4.2], nivMax:4, etoileMax:5, etoile:0.35, pouvoirRecharge:20, pouvoirNiv:2,
   runeBonus:0.25, pv:5, nombre:3 /* 28/11 : 3 fois plus de monstres, chacun bien moins solide */, runeMax:3, puitsDelai:6, comboBonus:0.3, bowling:90,
   // 27/11 soir (plus d'action) : les runes ◆ à toucher, l'appel de la vague, le sort du héros
   suivi:0.9, cristalVie:6, cristalPuits:2, cristalMonstre:2, cristalChance:1 / 3, puitsDelaiC:10, appelMin:3, appelMax:8, sortRecharge:30, sortDepart:12,
@@ -34,8 +34,8 @@ const EFFET_PAIRE = {
   5:{ e:'⚡', d:'les tirs de ses voisines sautent sur un chemin voisin' }, 6:{ e:'🗼', d:'les tirs de ses voisines traversent l’armure' },
 };
 const POUVOIRS = {
-  1:{ n:'Blizzard', d:'Tout son chemin est gelé 3 s.' }, 2:{ n:'Nuage toxique', d:'Tout son chemin est empoisonné, très fort.' },
-  3:{ n:'Pluie de flèches', d:'Quatre flèches sur chaque monstre de son chemin.' }, 4:{ n:'Bombardement', d:'Un très gros tir sur chaque monstre de son chemin.' },
+  1:{ n:'Grand gel', d:'Tous les monstres de la carte sont gelés 1 s (1,5 s au niveau 4).' }, 2:{ n:'Nuage toxique', d:'Tout son chemin est empoisonné, très fort.' },
+  3:{ n:'Flèches marquantes', d:'Quatre flèches sur chaque monstre de son chemin ; les monstres touchés prennent +25 % de dégâts de toutes les tours pendant 4 s.' }, 4:{ n:'Bombardement', d:'Un très gros tir sur chaque monstre de son chemin.' },
   5:{ n:'Tempête', d:'La foudre frappe chaque monstre des 5 chemins.' }, 6:{ n:'Tir perçant', d:'Un tir énorme traverse tout son chemin, boss compris.' },
 };
 // les monstres (vitesse en cases par seconde ; dg = coups au rempart)
@@ -180,14 +180,14 @@ function demolir(S, i) {
   return null;
 }
 const rendDemolir = t => Math.floor((t.paye || 0) / 2);
-// un dé sur une tour de sa face : +1 niveau (au niveau 4 : une étoile ; à 5 ★ : le pouvoir)
+// un dé sur une tour de sa face : +1 niveau (au niveau 4 : une étoile ★ qui renforce aussi le pouvoir)
 function poserDe(S, k, i) {
   if (S.fini) return 'Le niveau est fini.'; const d = S.des[k], t = S.cases[i];
   if (!d) return 'Choisis un dé.'; if (!t || t.puits || t.rune) return 'Un dé se pose sur une tour de sa face.';
   if (t.v !== d.v) return `Ce dé de ${d.v} fait monter une ${SORTES[d.v].n.toLowerCase()}.`;
   if (t.niv >= R.nivMax && t.et >= R.etoileMax) return 'Cette tour est au maximum.';
   S.des.splice(k, 1);
-  if (t.niv < R.nivMax) { t.niv++; log(S, `⬆ ${nomTour(t)}.`); } else { t.et++; log(S, `★ ${nomTour(t)}${t.et >= R.etoileMax ? ' : son pouvoir est prêt !' : ''}.`); }
+  if (t.niv < R.nivMax) { t.niv++; log(S, `⬆ ${nomTour(t)}.`); } else { t.et++; log(S, `★ ${nomTour(t)}.`); }
   fx(S, { t:'monte', i });
   if (S.heros === 'gorm') voisins(i).forEach(x => { if (S.cases[x]) S.cases[x].echo = 10; });
 }
@@ -225,13 +225,16 @@ function ultime(S) {
   else if (h === 'zephine') { vivants.forEach(m => { if (!M(m).boss) m.y = Math.min(HAUT, m.y + 2); frappe(S, m, F * 1.8, { perce:true, voit:true }); }); }
   fx(S, { t:'ultime', h }); log(S, `⚡ Ultime : ${HEROS_R[h].ultime} !`);
 }
-// le pouvoir d'une tour à 5 ★
+// le pouvoir d'une tour : 28/11 (l'utilisateur ne dépasse presque jamais le niveau 4 en une partie) dès le NIVEAU 2, à toucher, recharge 20 s ;
+// plus petit aux niveaux 2-3 (×0,6), entier au niveau 4, et chaque étoile ★ le renforce encore (+10 %)
+const pouvoirPret = t => !!t && !t.puits && !t.rune && t.niv >= R.pouvoirNiv && !(t.pw > 0);
 function pouvoir(S, i) {
-  const t = S.cases[i]; if (!t || t.puits || t.rune || t.et < R.etoileMax) return 'Il faut une tour à 5 ★.'; if (t.pw > 0) return 'Le pouvoir se recharge.';
-  t.pw = R.pouvoirRecharge; const c = i % NC, dg = degat(S, t, i) * 3, chemin = S.monstres.filter(m => m.c === c && atteint(m));
-  if (t.v === 1) chemin.forEach(m => { if (!M(m).boss) m.racine = 3; frappe(S, m, dg / 2, { voit:true }); });
+  const t = S.cases[i]; if (!t || t.puits || t.rune || t.niv < R.pouvoirNiv) return `Le pouvoir arrive au niveau ${R.pouvoirNiv}.`; if (t.pw > 0) return 'Le pouvoir se recharge.';
+  const k = (t.niv >= R.nivMax ? 1 : .6) * (1 + .1 * (t.et || 0));
+  t.pw = R.pouvoirRecharge; const c = i % NC, dg = degat(S, t, i) * 3 * k, chemin = S.monstres.filter(m => m.c === c && atteint(m));
+  if (t.v === 1) S.monstres.filter(atteint).forEach(m => { if (!M(m).boss) m.racine = Math.max(m.racine, t.niv >= R.nivMax ? 1.5 : 1); else m.lent = Math.max(m.lent, 1.5); if (m.c === c) frappe(S, m, dg / 3, { voit:true }); });
   else if (t.v === 2) chemin.forEach(m => { frappe(S, m, dg / 3, { voit:true }); if (!M(m).antiPoison) m.poison = { dps:dg / 2, t:5 }; });
-  else if (t.v === 3) chemin.forEach(m => { for (let k = 0; k < 4; k++) frappe(S, m, dg / 3, { voit:true }); });
+  else if (t.v === 3) chemin.forEach(m => { m.marque = 4; for (let n = 0; n < 4; n++) frappe(S, m, dg / 3, { voit:true }); });
   else if (t.v === 4) chemin.forEach(m => frappe(S, m, dg, { voit:true, perce:true }));
   else if (t.v === 5) S.monstres.filter(atteint).forEach(m => frappe(S, m, dg / 2, { voit:true }));
   else chemin.forEach(m => frappe(S, m, dg * 1.5, { voit:true, perce:true }));
@@ -372,6 +375,7 @@ function frappe(S, m, dg, o = {}) {
   if (m.mort) return; const B = M(m);
   if (B.armure && !o.perce) dg = Math.max(1, dg - B.armure * (m.elite ? 1.5 : 1));
   if ((m.elite || B.boss) && S.heros === 'aldric') dg *= 1.4;
+  if (m.marque > 0) dg *= 1.25; // 28/11 : marqué par les flèches marquantes
   m.pv -= dg; m.touche = 0.25;
   if (m.pv <= 0) meurt(S, m);
 }
@@ -432,6 +436,7 @@ function etape(S) {
     if (m.touche > 0) m.touche -= PAS;
     let v = B.vit; if (m.lent > 0) { m.lent -= PAS; v *= .5; }
     const combo = comboChemin(S, m.c); if (combo === 1 && !B.boss) v *= .65; if (combo === 2 && !B.antiPoison && !m.poison) m.poison = { dps:1 * S.f, t:1 };
+    if (m.marque > 0) m.marque -= PAS;
     if (m.racine > 0) { m.racine -= PAS; v = 0; }
     // le chaman soigne ses voisins (sauf s'il est empoisonné)
     if (B.soigneur) { m.soinT = (m.soinT || 0) + PAS; if (m.soinT >= 2.5) { m.soinT = 0; if (!m.poison && atteint(m)) { let n = 0;
@@ -458,7 +463,7 @@ const etoiles = S => S.fini !== 'gagne' ? 0 : S.rempart >= S.rempartMax * .75 ? 
 const avancement = S => Math.min(1, S.t / (S.fin + 8));
 const posVague = (S, k) => Math.min(1, S.vT[k] / (S.fin + 8)); // la place du drapeau de la vague k sur la barre
 
-const API = { PAS, NC, NR, HAUT, R, SORTES, PUITS, EFFET_PAIRE, POUVOIRS, MONSTRES, ELITE, HEROS_R, NIVEAUX, SORTS_R, SPE, DEFIS,
+const API = { pouvoirPret, PAS, NC, NR, HAUT, R, SORTES, PUITS, EFFET_PAIRE, POUVOIRS, MONSTRES, ELITE, HEROS_R, NIVEAUX, SORTS_R, SPE, DEFIS,
   nouvelle, batir, deplacer, demolir, rendDemolir, poserDe, poserPaire, jeterDe, bowling, ultime, pouvoir, etape, avance,
   ramasser, monterEnergie, acheterDe, prixMonter, PRIX_DE, appelInfo, appelVague, sort, specialiser, medailles, sousTerre, revele, posVague,
   annonces, defendu, etoiles, avancement, prixDe, nomTour, voisins, comboChemin, runesAutour, degat, cadence, ix };
