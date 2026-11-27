@@ -1,5 +1,9 @@
 [
 {
+"v": "20261127-135033",
+"m": "Défense de la porte : 8 nouveaux monstres (rat, feu follet, mineur, chaman, troll, spectre, porte-étendard, golem), des élites dès la vague 3, un boss différent toutes les 6 vagues en sans fin, une animation par sorte de tour, et déplacer une tour n'importe où pour 1 PC."
+},
+{
 "v": "20261127-132447",
 "m": "Défense de la porte : on peut démolir une tour depuis sa fiche (+1 PC), et en vagues sans fin les étoiles de maîtrise n'ont plus de limite."
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261125-215206",
 "m": "Mes decks : les cartes montrent à nouveau leur description"
-},
-{
-"v": "20261125-214233",
-"m": "La Défense de la porte change : chaque face de dé donne sa sorte de tour (givre, poison, archers, canon, foudre, grande tour), les Runes renforcent leurs voisines, plus de cartes, et 1 PC tous les 3 monstres abattus"
 }
 ]

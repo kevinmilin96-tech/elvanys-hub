@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261127-132447"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
+<head><meta name="guilde-version" content="20261127-135033"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="robots" content="noindex">
@@ -126,6 +126,37 @@
   .choixh { display:flex; gap:8px; justify-content:center; margin:10px 0 2px; flex-wrap:wrap; }
   .choixh button { background:#120f1f; color:#fff; border:2px solid #3e3370; border-radius:13px; padding:8px 12px; flex:1; min-width:110px; } .choixh button.or { border-color:var(--or); color:var(--or); }
   .corbin { font-style:italic; color:#e8dcc0; background:#0005; border-radius:10px; padding:6px 9px; margin:5px 0; font-size:.85em; }
+  /* 27/11 : les nouveaux monstres, les élites, les états, les animations par sorte de tour */
+  .mo .tags { position:absolute; top:-8px; left:-5px; font-size:.95em; line-height:1; background:#000b; border-radius:7px; padding:1px 2px; white-space:nowrap; pointer-events:none; }
+  .mo.elite { border-color:#ffd76b; box-shadow:0 0 0 1px #ffd76b, 0 0 9px #ffb347; background:linear-gradient(160deg, #4a3208, #2a1414); }
+  .mo.elite::before { content:'👑'; position:absolute; bottom:-7px; left:50%; transform:translateX(-50%); font-size:.9em; pointer-events:none; }
+  .mo.gele { background:#16304a; border-color:#9fd8ff; box-shadow:0 0 8px #9fd8ff; } .mo.gele img.e, .mo.gele .e { filter:saturate(.4) brightness(1.15) sepia(.3) hue-rotate(170deg); }
+  .mo.empoisonne::after { content:''; position:absolute; inset:-2px; border-radius:9px; pointer-events:none; background:radial-gradient(circle at 25% 85%, #7dff6a 0 3px, transparent 4px), radial-gradient(circle at 70% 70%, #7dff6a 0 2px, transparent 3px), radial-gradient(circle at 50% 95%, #a8ff7a 0 2px, transparent 3px); animation:bulles 1.4s linear infinite; }
+  @keyframes bulles { from { background-position:0 0, 0 0, 0 0; opacity:1; } to { background-position:0 -16px, 0 -22px, 0 -12px; opacity:.2; } }
+  .mo.invisible { opacity:.32; border-style:dashed; } .mo.sous { opacity:.5; background:#3a2a14; border-color:#8a6a3a; border-style:dashed; } .mo.sous img.e, .mo.sous .e { filter:grayscale(.8) brightness(.6); }
+  .icm { display:inline-block; position:relative; } .icm.el img, .icm.el { border-radius:50%; box-shadow:0 0 0 2px #ffd76b; }
+  .ficheM .fmTete { display:flex; gap:10px; align-items:center; } .ficheM .fmTete img, .ficheM .fmTete .fe { width:64px; height:64px; border-radius:12px; object-fit:cover; font-size:3em; text-align:center; flex:none; }
+  .ficheM .fmOk { color:#7dffb0; } .ficheM .fmNon { color:#ffb0a0; } .ficheM .fmEl { border:1px solid #ffd76b; border-radius:10px; padding:4px 8px; background:#ffd76b18; }
+  .moIntro { display:flex; gap:10px; align-items:center; margin:6px 0; } .moIntro img, .moIntro .fe { width:72px; height:72px; border-radius:14px; object-fit:cover; font-size:3.2em; text-align:center; flex:none; box-shadow:0 0 12px #b84a3a; }
+  .rc.vide.payant, .plateauD .rc.vide.payant { border-color:#f3c96bcc !important; border-style:dashed; box-shadow:inset 0 0 8px #f3c96b44; }
+  .de.gele { border-color:#9fd8ff; background:#16304a; } .de.gele::after { content:'❄'; position:absolute; top:-6px; right:-5px; font-size:1.1em; text-shadow:0 0 4px #9fd8ff; }
+  .fxA { position:fixed; z-index:31; pointer-events:none; }
+  .fleche { width:22px; height:3px; margin:-1.5px 0 0 -11px; background:linear-gradient(90deg, #8a6a3a 0 70%, #fff 70%); border-radius:2px; box-shadow:0 0 4px #fff8; }
+  .fleche::before { content:''; position:absolute; right:-5px; top:-3px; border-left:7px solid #e8e8e8; border-top:4.5px solid transparent; border-bottom:4.5px solid transparent; }
+  .boulet { width:13px; height:13px; margin:-6.5px 0 0 -6.5px; border-radius:50%; background:radial-gradient(circle at 35% 35%, #888, #111 70%); box-shadow:0 0 4px #000; }
+  .boom { width:46px; height:46px; margin:-23px 0 0 -23px; border-radius:50%; background:radial-gradient(circle, #fff7c0 0 15%, #ffb347 35%, #ff5a1a 60%, transparent 72%); animation:boom .38s ease-out forwards; }
+  @keyframes boom { from { transform:scale(.2); opacity:1; } to { transform:scale(1.5); opacity:0; } }
+  .bris { width:5px; height:5px; margin:-2.5px 0 0 -2.5px; background:#ffcf7a; border-radius:1px; box-shadow:0 0 4px #ff8a2a; }
+  .flocon { font-size:20px; margin:-12px 0 0 -10px; text-shadow:0 0 6px #9fd8ff, 0 0 2px #fff; }
+  .goutte { width:8px; height:11px; margin:-6px 0 0 -4px; border-radius:50% 50% 50% 50% / 60% 60% 40% 40%; background:radial-gradient(circle at 40% 35%, #d6ffc0, #4fd94a 60%, #1f7a1a); box-shadow:0 0 5px #6aff5a; }
+  .bulle { width:7px; height:7px; margin:-3.5px 0 0 -3.5px; border-radius:50%; border:2px solid #8aff7a; animation:bulle .7s ease-out forwards; }
+  @keyframes bulle { to { transform:translateY(-22px) scale(1.3); opacity:0; } }
+  .eclair { overflow:visible; } .eclair polyline { fill:none; stroke:#fff; stroke-width:2.5; filter:drop-shadow(0 0 4px #8ad8ff) drop-shadow(0 0 8px #3aa0ff); animation:eclair .32s steps(3) forwards; }
+  @keyframes eclair { 50% { opacity:.4; } 75% { opacity:1; } to { opacity:0; } }
+  .rayon { height:9px; margin-top:-4.5px; transform-origin:0 50%; border-radius:5px; background:linear-gradient(90deg, #fff3, #fff 30%, #ffe28a 70%, #ff9a3c); box-shadow:0 0 12px #ffd27a, 0 0 22px #ff9a3c; animation:rayon .42s ease-out forwards; }
+  @keyframes rayon { from { opacity:1; filter:brightness(1.6); } to { opacity:0; height:2px; } }
+  .soinM { position:absolute; left:50%; top:10%; transform:translateX(-50%); color:#7dffb0; font-weight:bold; font-size:1.1em; text-shadow:0 0 5px #000; animation:monte .9s forwards; pointer-events:none; z-index:3; }
+  .fx5 { filter:drop-shadow(0 0 6px #ffd76b) drop-shadow(0 0 3px #fff); }
   .journal { font-size:.8em; color:var(--doux); max-height:55vh; overflow:auto; } .journal div { border-bottom:1px solid #ffffff12; padding:2px 0; }
 </style>
 </head>
@@ -138,7 +169,7 @@
 <script src="rang.js?v=baeef69b74"></script>
 <script src="heros-etoiles.js?v=bedc2c2c50"></script>
 <script src="donnees.js?v=8a39c05326"></script>
-<script src="defense-moteur.js?v=34fee6ec52"></script>
+<script src="defense-moteur.js?v=854a2c2c58"></script>
 <script src="configurateur.js?v=a276a42cee"></script>
 <script src="heros-aventure.js?v=31db8c2ed4"></script>
 <script>
@@ -147,10 +178,12 @@
 let D = null, sel = [], selTour = -1, attente = null, msg = '', err = false;
 const app = document.getElementById('app'), fen = document.getElementById('fen');
 const fenetre = h => { fen.innerHTML = `<div class="fenetre" onclick="if(event.target===this)fermer()"><div>${h}</div></div>`; };
-const fermer = () => { fen.innerHTML = ''; };
+const fileF = []; // 27/11 : les fenêtres de fin de tour attendent leur tour (vague, nouveau monstre, bonus)
+const fermer = () => { fen.innerHTML = ''; if (fileF.length) setTimeout(() => { if (fen.innerHTML || !fileF.length) return; const f = fileF.shift(); f(); }, 160); };
+const montreF = f => { if (fen.innerHTML) fileF.push(f); else f(); };
 const CORBIN = {
-  1:'Miaou. Des gobelins. Rien de grave. Enfin, pas encore.', 2:'Des sangliers, maintenant. Garde-moi un morceau.', 3:'Des chauves-souris ! Elles volent par-dessus ta tour de devant. Sournoises. J’aime bien.',
-  4:'Ça se corse. Tu as pensé à fusionner, au moins ?', 5:'Ils sont nombreux. Moi, je surveille depuis le rempart. Le coussin du rempart. Courage.', 6:'LE TITAN. S’il touche la porte, c’est fini. Il fait fondre tes tours : tape fort, tape vite.' };
+  1:'Miaou. Des gobelins. Rien de grave. Enfin, pas encore.', 2:'Des sangliers, des chauves-souris, et… un rat ? Garde-moi le rat.', 3:'Ça se corse : des feux follets, et la première élite au cadre doré. Touche un monstre pour savoir ce qui le contre.',
+  4:'Ça gratte sous le chemin, et un chaman soigne tout le monde. Tu as pensé à fusionner, au moins ?', 5:'Un troll et des spectres. Moi, je surveille depuis le rempart. Le coussin du rempart. Courage.', 6:'LE TITAN, avec un porte-étendard et un golem. S’il touche la porte, c’est fini. Tape fort, tape vite.' };
 
 function accueil() {
   app.classList.remove('jeu'); // 15/11 soir : l'écran de jeu seul est figé sur la hauteur du téléphone
@@ -158,7 +191,7 @@ function accueil() {
   app.innerHTML = `<h1>🏰 La Défense de la porte</h1>
   <p class="doux" style="text-align:center">Les monstres descendent trois chemins vers la porte de la Guilde. Tes dés deviennent des tours… ou des coups tout de suite. Deux tours identiques qui se touchent fusionnent ; deux 6 éveillent une Rune.</p>
   <div class="choixh" style="margin:8px 0"><button class="${!modeSF ? 'or' : ''}" onclick="modeSF=false;accueil()">🌊 6 vagues et le Titan</button><button class="${modeSF ? 'or' : ''}" onclick="modeSF=true;accueil()">♾ Vagues sans fin</button></div>
-  ${modeSF ? `<p class="doux" style="text-align:center">♾ Les vagues ne s’arrêtent jamais, toujours plus fortes ; le Titan revient toutes les 6 vagues. Ton record : <b style="color:var(--or)">${(() => { try { return JSON.parse(localStorage.getItem('guilde-defense-sansfin') || '{}').vague || 0; } catch (e) { return 0; } })()} vagues</b>.</p>` : ''}
+  ${modeSF ? `<p class="doux" style="text-align:center">♾ Les vagues ne s’arrêtent jamais, toujours plus fortes ; un boss différent toutes les 6 vagues (Titan, Colosse, Roi des Os, Roi de l’Hiver). Ton record : <b style="color:var(--or)">${(() => { try { return JSON.parse(localStorage.getItem('guilde-defense-sansfin') || '{}').vague || 0; } catch (e) { return 0; } })()} vagues</b>.</p>` : ''}
   <div class="heros">${['maelle', 'gorm', 'aldric', 'pip', 'oria', 'zephine'].filter(h => h !== 'zephine' || localStorage.getItem('guilde-tuto') === 'fait').map(h => `<button onclick="demarre('${h}')"><img src="${IMG(h)}" alt=""><b>${HEROS[h].nom}</b><br>${DHEROS[h].passif}<br><br>✨ Rune : ${DHEROS[h].rune.n}<br><small>${DHEROS[h].rune.d}</small></button>`).join('')}${herosAventureD()}</div>
   <p class="doux" style="text-align:center">🎯 Défi du jour : <b style="color:var(--or)">${defiDuJourD().n}</b>${lesEtoiles()[jourCle()] ? ` · aujourd’hui : ${'★'.repeat(lesEtoiles()[jourCle()])}` : ''}</p>
   <p class="doux" style="text-align:center">Chaque héros a son passif, son pouvoir, son ultime et sa Rune.</p>
@@ -184,11 +217,44 @@ function demarre(h) { const i = haInfo(h); D = nouvelleDefense(haVoie(h)); D.av 
   // le bonus de porte est plafonné à +20 (avec +81, la porte d'Aldric dépassait les 99 de dégâts du Titan : 100 % de victoires)
   if (typeof bonusHerosPvE === 'function') { const B = bonusHerosPvE(haProg(h)), bp = Math.min(20, B.pv); D.porte += bp; D.porteMax += bp; D.pc += B.pc; } sel = []; selTour = -1; attente = null; dis('Touche 🎲 Lancer, puis choisis des dés : bâtis une tour (touche une case verte) ou frappe un monstre.'); vagueAnnonce(); rendu(); }
 function dis(t, e) { msg = t; err = !!e; }
-function vagueAnnonce() { const v = D.fx.find(f => f.t === 'vague'); if (v) GM.son('vague'); if (v && CORBIN[v.n]) setTimeout(() => fenetre(`<h2>🌊 Vague ${v.n}${D.sansFin ? ' ♾' : ` sur ${VAGUES.length}`}</h2><div class="corbin">Moustache : « ${CORBIN[v.n]} »</div><div class="choixh"><button class="or" onclick="fermer()">À la porte !</button></div>`), 450); }
+function vagueAnnonce() { const v = D.fx.find(f => f.t === 'vague'); if (v) GM.son('vague');
+  const txt = v && (v.boss && (D.sansFin || v.n > VAGUES.length) ? MOUSTACHE_M[v.boss] : CORBIN[v.n]);
+  if (v && txt) setTimeout(() => montreF(() => fenetre(`<h2>🌊 Vague ${v.n}${D.sansFin ? ' ♾' : ` sur ${VAGUES.length}`}</h2>${v.boss ? `<div class="moIntro">${IMG_D[v.boss] ? `<img src="${IMG_D[v.boss]}" alt="">` : `<span class="fe">${MONSTRES[v.boss].e}</span>`}<div><b>${MONSTRES[v.boss].n}</b><br><small>${MONSTRES[v.boss].d}</small></div></div>` : ''}<div class="corbin">Moustache : « ${txt} »</div><div class="choixh">${v.boss ? `<button onclick="ficheMonstre('${v.boss}')">Sa fiche</button>` : ''}<button class="or" onclick="fermer()">À la porte !</button></div>`)), 450);
+  setTimeout(presenteNouveaux, 470); }
+// 27/11 (décision de l'utilisateur) : Moustache présente chaque nouveau monstre en une phrase, la première fois qu'on le croise (retenu sur le téléphone)
+const MOUSTACHE_M = {
+  rat:'Un rat. Touche-le sans le tuer et il file sur le chemin d’à côté. La foudre, elle, saute de chemin en chemin. Moi, je dis ça…',
+  feufollet:'Un feu follet. Le givre ne le gèle pas : il le repousse d’une case à chaque tir. Ça, c’est de la tour de givre bien placée.',
+  mineur:'Tu entends gratter ? Un mineur creuse sous le chemin et ressort à la 3e case. Les éclats du canon le secouent même sous terre. Un piège à la sortie, miaou.',
+  chaman:'Un chaman ! Il soigne tous ceux de son chemin. Les archers le visent en premier : c’est lui qu’il faut faire taire.',
+  troll:'Un troll. Il se recoud tout seul à chaque tour… sauf s’il est empoisonné. Sors le poison.',
+  spectre:'Un spectre. Un tour sur deux, il devient invisible : tes tours ne le voient plus. Sauf la foudre. La foudre voit tout.',
+  etendard:'Le porte-étendard ! Tout ce qui marche derrière lui avance plus vite. Abats-le en premier, la grande tour adore ça.',
+  golem:'Un golem de pierre. Lent, énorme, et le poison glisse dessus. Gros tirs, canon et grande tour, et prends ton temps : lui aussi.',
+  squelette:'Des squelettes relevés par le Roi des Os. Peu de vie, mais ils passent par les autres chemins.',
+  elite:'Tu vois le cadre doré ? Une ÉLITE : beaucoup plus de vie, elle frappe la porte plus fort et elle a un pouvoir en plus. Touche-la pour le connaître.',
+  titan:'LE TITAN. S’il touche la porte, c’est fini. Il fait fondre tes tours : tape fort, tape vite.',
+  colosse:'Le Colosse des racines ! Il boit la terre et se soigne à chaque tour, sauf si le poison le ronge. Empoisonne-le, puis cogne.',
+  roios:'Le Roi des Os. Un tour sur deux, il relève des squelettes sur les autres chemins. Garde des tours partout !',
+  roihiver:'Le Roi de l’Hiver. Son blizzard gèle un de tes dés à chaque tour : vends-le et relance les autres. Brrr. Je déteste le froid.',
+};
+const CLE_VUS = 'guilde-defense-monstres-vus';
+function presenteNouveaux() {
+  if (!D || D.fini) return; let vus; try { vus = JSON.parse(localStorage.getItem(CLE_VUS) || '[]'); } catch (e) { vus = []; }
+  D.vusPartie = D.vusPartie || [];
+  const types = [...new Set(D.monstres.map(m => m.t))].filter(t => MOUSTACHE_M[t] && !MONSTRES[t].boss);
+  if (D.monstres.some(m => m.elite)) types.push('elite');
+  types.filter(t => !vus.includes(t) && !D.vusPartie.includes(t)).forEach(t => { vus.push(t); D.vusPartie.push(t); const M = MONSTRES[t];
+    montreF(() => fenetre(`<h2>${t === 'elite' ? '👑 Une élite !' : '🆕 Nouveau monstre'}</h2>${M ? `<div class="moIntro">${IMG_D[t] ? `<img src="${IMG_D[t]}" alt="">` : `<span class="fe">${M.e}</span>`}<div><b>${M.n}</b> ${(M.ic || []).join(' ')}<br><small class="fmOk">✅ ${M.contre}</small></div></div>` : ''}<div class="corbin">Moustache : « ${MOUSTACHE_M[t]} »</div><div class="choixh">${M ? `<button onclick="ficheMonstre('${t}')">Sa fiche</button>` : ''}<button class="or" onclick="fermer()">Compris</button></div>`)); });
+  try { localStorage.setItem(CLE_VUS, JSON.stringify(vus)); } catch (e) {}
+}
 
 // ---------------------------------------------------------------- le dessin
 // 14/11 : images Gemini reçues (sans image, l'émoji reste) ; Gobelin, Chauve-souris et Rune du Cor à refaire
-const IMG_D = { chauve:'portraits/d-chauve.webp?v=1', gobelin:'portraits/d-gobelin.webp?v=1', sanglier:'portraits/d-sanglier.webp?v=1', bouclier:'portraits/d-bouclier.webp?v=1', titan:'portraits/m-titan.webp?v=1' };
+const IMG_D = { chauve:'portraits/d-chauve.webp?v=1', gobelin:'portraits/d-gobelin.webp?v=1', sanglier:'portraits/d-sanglier.webp?v=1', bouclier:'portraits/d-bouclier.webp?v=1', titan:'portraits/m-titan.webp?v=1',
+  // 27/11 : portraits déjà peints pour d'autres modes ; rat, feu follet, mineur et troll en émoji en attendant leur image
+  chaman:'portraits/m-chaman.webp', etendard:'portraits/m22-etendard-gobelin.webp', spectre:'portraits/m-spectregivre.webp', golem:'portraits/m-golem.webp', squelette:'portraits/m-osclaque.webp',
+  colosse:'portraits/m-colosseracines.webp', roios:'portraits/m-roios.webp', roihiver:'portraits/m-roihiver.webp' };
 const RUNE_IMG = { maelle:'portraits/rune-enclume.webp?v=2', gorm:'portraits/rune-cor.webp?v=1' };
 // 14/11 : le fond peint de la Défense (decor/fond-defense.webp) ; chemins, dalles et porte placés par l'utilisateur (placer-defense.html → « PLACEMENT DEFENSE {…} », recopié ici tel quel)
 const PD = {"chemin_haut":0,"chemin_bas":49,"largeur_chemin":18,"voies":[18,50,82],"dalles":[[18,61],[50,61],[82,61],[18,74.5],[50,74.5],[82,74.5],[18,88],[50,88],[82,88]],"dalle":[19.5,10.2],"porte":[50,98]}; // PLACEMENT DEFENSE de l'utilisateur (14/11 ~16 h 15), recopié tel quel
@@ -196,14 +262,27 @@ const ANGLE = {}; // 14/11 : l'angle de chaque canon (il garde la direction de s
 const posCC = (r, col) => { const h = (PD.chemin_bas - PD.chemin_haut) / 4; return `left:${PD.voies[col] - PD.largeur_chemin / 2}%;width:${PD.largeur_chemin}%;top:${PD.chemin_haut + r * h}%;height:${h}%`; };
 const posRC = c => { const d = PD.dalles[c]; return `left:${d[0] - PD.dalle[0] / 2}%;width:${PD.dalle[0]}%;top:${d[1] - PD.dalle[1] / 2}%;height:${PD.dalle[1]}%`; };
 // ---------------------------------------------------------------- v2 (14/11) : pièges, prochaine vague, coups de héros, bonus, étoiles
+// 27/11 : les petites icônes sur le jeton (ce qu'il sait faire, ce qui le gêne), et l'état du moment
+const tagsM = m => { const M = MONSTRES[m.t], ic = [...(M.ic || [])]; if (m.elite && POUVOIRS_ELITE[m.pouv]) ic.push(POUVOIRS_ELITE[m.pouv].e); if (m.sous) ic.splice(0, ic.length, '⛏'); if (m.inv) ic.splice(0, ic.length, '👻');
+  return ic.length ? `<span class="tags">${ic.slice(0, 3).join('')}</span>` : ''; };
 const okPiege = (r, col) => { const un = sel.length === 1 ? sel[0] : null; return !!(un && !attente && D.pc >= DEF.coutBatir && !D.pieges[cleP(r, col)] && !D.monstres.some(m => m.row === r && m.col === col)); };
 const piegeHTML = (r, col) => { const p = D.pieges[cleP(r, col)]; if (!p) return ''; const P = PIEGES[p.k]; return `<span class="piege ${p.k}" title="${P.n}">${P.e}${p.k === 'ronces' ? `<small>${p.v}</small>` : p.usages > 1 ? `<small>×${p.usages}</small>` : ''}</span>`; };
-const ICONE_M = t => IMG_D[t] ? `<img src="${IMG_D[t]}" alt="">` : MONSTRES[t].e;
+const ICONE_M = x => { const t = typeV(x), el = String(x).endsWith('*'); return `<span class="icm ${el ? 'el' : ''}">${IMG_D[t] ? `<img src="${IMG_D[t]}" alt="">` : MONSTRES[t].e}</span>`; };
 function bandeVague() {
   const P = prochainesD(D); if (!P.tour.length && !P.reste.length) return `<div class="bandeV">🌋 ${D.vague >= VAGUES.length ? 'Dernière vague : tiens bon !' : ''}</div>`;
   return `<div class="bandeV" onclick="voirVague()"><b>🌊 Vague ${P.vague}</b> · ${P.attente ? `arrive dans ${P.attente + 1} tours` : P.neuve ? 'arrive au prochain tour' : 'au prochain tour'} : ${P.tour.map(ICONE_M).join('') || '—'}${P.reste.length ? ` <span class="doux">puis</span> ${P.reste.map(ICONE_M).join('')}` : ''}</div>`;
 }
-function voirVague() { const P = prochainesD(D), tous = [...new Set([...P.tour, ...P.reste])]; fenetre(`<h2>🌊 Vague ${P.vague}</h2>${tous.map(t => `<p><span class="icv">${ICONE_M(t)}</span> <b>${MONSTRES[t].n}</b> : ${MONSTRES[t].d}</p>`).join('')}<div class="choixh"><button onclick="fermer()">Compris</button></div>`); }
+function voirVague() { const P = prochainesD(D), tout = [...P.tour, ...P.reste], tous = [...new Set(tout.map(typeV))], nEl = tout.filter(x => String(x).endsWith('*')).length;
+  fenetre(`<h2>🌊 Vague ${P.vague}</h2><div class="ficheL">${tous.map(t => `<button onclick="ficheMonstre('${t}')"><span class="icv">${ICONE_M(t)}</span><span><b>${MONSTRES[t].n}</b> ${(MONSTRES[t].ic || []).join('')}<small>${MONSTRES[t].d}</small></span></button>`).join('')}</div>${nEl ? `<p class="doux">👑 Dont ${nEl} élite${nEl > 1 ? 's' : ''} (cadre doré) : beaucoup plus de vie et un pouvoir en plus.</p>` : ''}<p class="doux" style="font-size:.85em">Touche un monstre pour sa fiche : ce qui le contre, ce qui ne marche pas.</p><div class="choixh"><button onclick="fermer()">Compris</button></div>`); }
+// 27/11 : la fiche d'un monstre (touche un monstre sur le plateau, ou dans la bande de la vague)
+function ficheMonstreH(t, m) {
+  const M = MONSTRES[t], img = IMG_D[t] ? `<img src="${IMG_D[t]}" alt="">` : `<span class="fe">${M.e}</span>`, P = m && m.elite ? POUVOIRS_ELITE[m.pouv] : null;
+  const etat = m ? [m.sous ? '⛏ Sous terre : tes tours ne le voient pas (sauf les éclats du canon).' : '', m.inv ? '👻 Invisible ce tour-ci : seule la foudre le voit.' : '', m.gel ? '❄ Gelé : il fera un pas de moins.' : '', m.poison > 0 ? `☠ Empoisonné : ${m.poison} au prochain tour.` : '', m.colle ? '🌿 Retenu : il ne bougera pas ce tour.' : ''].filter(Boolean) : [];
+  return `<div class="ficheM"><div class="fmTete">${img}<div><h2 style="margin:0">${M.n}${m && m.elite ? ' 👑 élite' : ''}</h2>${m ? `<b>${m.pv}</b>/${m.pvMax} PV · ` : ''}frappe la porte : −${(m ? dgM(m) : M.dg) >= 99 ? 'tout' : (m ? dgM(m) : M.dg)}<br>${M.lent ? 'avance un tour sur deux' : M.vit > 1 ? `avance de ${M.vit} cases` : 'avance d’une case'} ${(M.ic || []).join(' ')}</div></div>
+    <p><b>Ce qu’il fait</b> : ${M.d}</p>${P ? `<p class="fmEl">👑 <b>Élite · ${P.e} ${P.n}</b> : ${P.d}. Beaucoup plus de vie, frappe la porte plus fort.</p>` : ''}
+    <p class="fmOk">✅ <b>Ce qui le contre</b> : ${M.contre}</p><p class="fmNon">❌ <b>Ce qui ne marche pas</b> : ${M.rate}</p>${etat.length ? `<p class="doux">${etat.join('<br>')}</p>` : ''}</div>`;
+}
+function ficheMonstre(t, id) { const m = id != null && D ? D.monstres.find(x => x.id === id) : null; fenetre(ficheMonstreH(t, m) + '<div class="choixh"><button class="or" onclick="fermer()">Compris</button></div>'); }
 function toucheChemin(ev, r, col) {
   if (ev.target.closest('.mo')) return;
   const p = D.pieges[cleP(r, col)];
@@ -213,7 +292,8 @@ function toucheChemin(ev, r, col) {
   rendu();
 }
 function proposeBonus() {
-  if (!D || !D.choix || D.fini) return;
+  if (!D || !D.choix || D.fini || fileF.includes(proposeBonus)) return;
+  if (fen.innerHTML) { fileF.push(proposeBonus); return; }
   fenetre(`<h2>🎁 Vague terminée : choisis un bonus</h2><div class="bonus3">${D.choix.map(k => { const b = BONUS_D[k]; return `<button onclick="prendBonus('${k}')"><span class="be">${b.e}</span><b>${b.n}</b><small>${b.d}</small></button>`; }).join('')}</div>`);
 }
 function prendBonus(k) { choisirBonusD(D, k); fermer(); GM.son('ok'); dis(`${BONUS_D[k].e} ${BONUS_D[k].n} !`); rendu(); }
@@ -255,14 +335,14 @@ function rendu() {
     <div style="text-align:right"><span class="p">🌊 ${D.sansFin ? `${D.vague + 1} ♾` : `${Math.min(D.vague + 1, VAGUES.length)}/${VAGUES.length}`}</span><br><span class="p">◆ ${D.pc} PC</span></div></div>
   ${bandeVague()}
   <div class="zoneP">${PD ? '<div class="plateauD">' : ''}<div class="${PD ? 'cheminD' : 'chemin'}">${chemin.map(({ r, col }) => `<div class="cc ${okPiege(r, col) ? 'ok' : ''}" style="${PD ? posCC(r, col) : ''}" onclick="toucheChemin(event, ${r}, ${col})">${piegeHTML(r, col)}${D.monstres.filter(m => m.row === r && m.col === col).map(m => { const M = MONSTRES[m.t];
-      return `<div class="mo ${M.boss ? 'boss' : ''} ${besoinMonstre ? 'cible' : ''}" data-m="${m.id}" onclick="toucheMonstre(${m.id})">${IMG_D[m.t] ? `<img class="e" src="${IMG_D[m.t]}" alt="">` : `<span class="e">${M.e}</span>`}<span class="pv">${m.pv}</span>${M.vit > 1 ? '<span class="vit">💨</span>' : M.vol ? '<span class="vit">🪽</span>' : M.armure ? '<span class="vit">🛡</span>' : ''}${tete.has(m.id) && !M.boss ? '' : ''}</div>`; }).join('')}</div>`).join('')}</div>
+      return `<div class="mo ${M.boss ? 'boss' : ''} ${m.elite ? 'elite' : ''} ${m.gel ? 'gele' : ''} ${m.poison > 0 ? 'empoisonne' : ''} ${m.inv ? 'invisible' : ''} ${m.sous ? 'sous' : ''} ${besoinMonstre && !m.sous ? 'cible' : ''}" data-m="${m.id}" onclick="toucheMonstre(${m.id})">${IMG_D[m.t] ? `<img class="e" src="${IMG_D[m.t]}" alt="">` : `<span class="e">${M.e}</span>`}<span class="pv">${m.pv}</span>${tagsM(m)}</div>`; }).join('')}</div>`).join('')}</div>
   <div class="${PD ? 'rempartD' : 'rempart'}">${D.rempart.map((t, c) => { const okVide = !t && un && !attente && D.pc >= DEF.coutBatir; const okFus = t && ((!t.rune && un && un.v === t.v && t.niv < NIV_MAX && !attente) || (selTour >= 0 && selTour !== c && voisinsD(selTour).includes(c) && fusionPossible(D.rempart[selTour], t)));
-      const okDep = !t && selTour >= 0 && !D.deplace && voisinsD(selTour).includes(c);
-      if (!t) return `<div class="rc vide ${okVide || okDep ? 'ok' : ''}" data-c="${c}" style="${PD ? posRC(c) : ''}" onclick="toucheCase(${c})"></div>`;
+      const okDep = !t && selTour >= 0 && !coutDeplaceD(D, selTour, c), payant = !t && selTour >= 0 && !okDep && D.pc >= DEF.coutDeplace;
+      if (!t) return `<div class="rc vide ${okVide || okDep ? 'ok' : payant ? 'payant' : ''}" data-c="${c}" style="${PD ? posRC(c) : ''}" onclick="toucheCase(${c})"></div>`;
       return `<div class="rc ${t.rune ? 'rune' : ''} ${!t.rune && runesVoisD(D, c).length ? 'soutenue' : ''} ${selTour === c ? 'sel' : ''} ${okFus || besoinTour ? 'ok' : ''}" data-c="${c}" style="${PD ? posRC(c) : ''}" onclick="toucheCase(${c})">${t.rune ? (RUNE_IMG[D.heros] ? `<img class="runeimg niv${6 + t.rv}" src="${RUNE_IMG[D.heros]}" alt="">` : `<img class="runeimg niv${6 + t.rv}" src="${FACE(D.heros, 6)}" alt="" style="filter:drop-shadow(0 0 6px #c084fc) drop-shadow(0 0 2px #fff)">`) + (t.rv > 1 ? `<span class="nivr">${'✦'.repeat(t.rv)}</span>` : '') : `<img class="canon" src="tours/canon-${D.heros}-${Math.min(3, t.niv)}.webp?v=2" onerror="this.onerror=null;this.src='tours/canon-${['aldric', 'oria'].includes(D.heros) ? 'gorm' : 'maelle'}-${Math.min(3, t.niv)}.webp?v=2'" alt="${nomTourD(t)}" style="transform:rotate(${ANGLE[c] || 0}deg)"><span class="sorte">${SORTES[t.v].e}<small>${t.niv}</small></span>${t.et ? `<span class="etoiles">${etoilesTourTxt(t.et)}</span>` : ''}`}<span class="pw">${t.rune ? `+${Math.round((D.heros === 'gorm' ? 1 : DEF.runeSoutien) * t.rv * 100)} %` : puissanceTour(D, c, t)}</span>${t.bonus ? `<span class="bn">+${t.bonus}</span>` : ''}</div>`; }).join('')}</div>
   ${PD ? `<div class="porte porteD" id="porte" style="left:${PD.porte[0]}%;top:${PD.porte[1]}%">🚪 ${D.porte}/${D.porteMax}</div></div>` : '<div class="porte" id="porte">🚪 La porte de la Guilde</div>'}</div>
   <div class="msg ${err ? 'err' : ''}">${attente || sel.length || selTour >= 0 ? '<button class="annuleM" onclick="annule()">✖ Annuler</button> ' : ''}${msg}</div>
-  <div class="des" id="desD">${D.lanceT !== D.tour ? D.des.map(() => `<div class="de cacheD" onclick="lanceDesD()"></div>`).join('') + `<button class="lancerD" onclick="lanceDesD()">🎲 Lancer</button>` : ''}${D.lanceT !== D.tour ? '' : D.des.map((d, i) => `<div class="de ${d.pose ? 'pose' : ''} ${sel.includes(d) ? 'sel' : ''} ${besoinDe && !d.pose && !sel.includes(d) ? 'cible' : ''}" onclick="toucheDe(${i})"><img src="${FACE(D.heros, d.v)}" alt="${d.v}"></div>`).join('')}</div>
+  <div class="des" id="desD">${D.lanceT !== D.tour ? D.des.map(() => `<div class="de cacheD" onclick="lanceDesD()"></div>`).join('') + `<button class="lancerD" onclick="lanceDesD()">🎲 Lancer</button>` : ''}${D.lanceT !== D.tour ? '' : D.des.map((d, i) => `<div class="de ${d.pose ? 'pose' : ''} ${d.gele ? 'gele' : ''} ${sel.includes(d) ? 'sel' : ''} ${besoinDe && !d.pose && !sel.includes(d) ? 'cible' : ''}" onclick="toucheDe(${i})"><img src="${FACE(D.heros, d.v)}" alt="${d.v}"></div>`).join('')}</div>
   <div class="acts">
     ${bouton('frappe', '⚔ Frappe', 'dés identiques')}${bouton('technique', '⚔⚔ Technique', 'suite')}${bouton('pouvoir', '✦ Pouvoir', H.pouvoir.txt)}${bouton('ultime', '⚡ Ultime', ultimeSous(H))}
     <button class="${sel.length && !attente ? 'ok' : ''}" ${sel.length && !attente ? '' : 'disabled'} onclick="agir('vendre')">◆ Vendre<br><small>+1 PC / dé</small></button>
@@ -310,6 +390,9 @@ function joueFx() {
     if (f.t === 'touche') { const e = app.querySelector(`[data-m="${f.id}"]`); if (e) { e.style.animation = 'tremble .35s'; const s = document.createElement('span'); s.className = 'dg'; s.textContent = '−' + f.n; e.appendChild(s); } }
     if (f.t === 'tir') { const e = app.querySelector(`[data-c="${f.c}"]`); if (e) e.classList.add('tire'); }
     if (f.t === 'coup') animeCoup(f);
+    if (f.t === 'soin') { const e = app.querySelector(`[data-m="${f.id}"]`); if (e) { const s = document.createElement('span'); s.className = 'soinM'; s.textContent = '+' + f.n; e.appendChild(s); } }
+    if (f.t === 'poison' && !CALME) { const e = app.querySelector(`[data-m="${f.id}"]`); if (e) { const r = e.getBoundingClientRect(); bulles(r.left + r.width / 2, r.top + r.height / 2); } }
+    if (['recule', 'surgit', 'fuit', 'resiste'].includes(f.t)) { const e = app.querySelector(`[data-m="${f.id}"]`); if (e) { const s = document.createElement('span'); s.className = 'dg'; s.style.color = f.t === 'resiste' ? '#ffd76b' : '#9fd8ff'; s.textContent = ({ recule:'❄↩', surgit:'⛏ !', fuit:'🔀', resiste:f.e })[f.t]; e.appendChild(s); } }
     if (f.t === 'porte') { const e = document.getElementById('porte'); if (e) { e.classList.add('touche'); e.textContent = `🚪 La porte encaisse −${f.n} !`; } }
   });
 }
@@ -334,8 +417,14 @@ function infoTour(v, c) {
 }
 // 27/11 : depuis la fiche d'une tour bâtie : la déplacer (case libre voisine, une fois par tour) ou la démolir (+1 PC), avec confirmation
 function boutonsTour(c) {
-  return `<p class="doux" style="font-size:.85em">↔ Pour la <b>déplacer</b> : ferme cette fiche, puis touche une case libre voisine (une fois par tour${D.deplace ? ' : déjà fait ce tour' : ''}).</p>
+  return `<p class="doux" style="font-size:.85em">↔ Pour la <b>déplacer</b> : ferme cette fiche, puis touche une case libre. Vers une case <b>voisine</b>, le 1er déplacement du tour est <b>gratuit</b>${D.deplace ? ' (déjà fait ce tour)' : ''} ; <b>n’importe où</b> ailleurs sur le rempart : <b>${DEF.coutDeplace}&nbsp;PC</b> (on te le demande avant).</p>
   <div class="choixh"><button onclick="confirmeDemolir(${c})">🔨 Démolir</button><button class="or" onclick="fermer()">Compris</button></div>`;
+}
+function confirmeDeplace(a, c) {
+  const t = D.rempart[a], cout = coutDeplaceD(D, a, c);
+  if (D.pc < cout) { selTour = -1; dis(`Déplacer ici coûte ${cout} PC : tu en as ${D.pc}. Gratuit : le 1er déplacement du tour, vers une case voisine.`, true); rendu(); return; }
+  fenetre(`<h2>↔ Déplacer ?</h2><p>${nomTourD(t)} part sur cette case du rempart.</p><p>Coût : <b>${cout}&nbsp;PC</b> (tu en as ${D.pc}).</p><p class="doux">${D.deplace ? 'Tu as déjà déplacé une tour gratuitement ce tour.' : 'Gratuit seulement vers une case voisine (une fois par tour).'}</p>
+    <div class="choixh"><button onclick="selTour=-1;fermer();rendu()">Annuler</button><button class="or" onclick="fermer();selTour=-1;const e=deplacerD(D,${a},${c});dis(e||'Tour déplacée (−${cout} PC).',!!e);rendu()">↔ Déplacer (${cout}&nbsp;PC)</button></div>`);
 }
 function confirmeDemolir(c) {
   const t = D.rempart[c]; if (!t) return fermer();
@@ -371,6 +460,7 @@ function toucheDe(i) {
   if (attente && attente.cible === 'de') { if (sel.includes(d)) return; finit({ d }); return; }
   if (attente) return;
   selTour = -1; sel = sel.includes(d) ? sel.filter(x => x !== d) : [...sel, d];
+  if (d.gele && sel.includes(d)) { dis('🧊 Ce dé est gelé par le blizzard du Roi de l’Hiver : il ne sert qu’à être vendu (◆ Vendre, +1 PC).'); rendu(); return; }
   dis(sel.length === 1 ? `<button class="infoB" onclick="infoTour(${d.v})">ⓘ ${SORTES[d.v].e} ${SORTES[d.v].n}</button> touche une case verte pour la bâtir (${DEF.coutBatir} PC), une tour de la même sorte pour la monter d’un niveau, un chemin pour un piège, ou une action en vert.` : sel.length ? 'Les actions en vert acceptent ces dés.' : '');
   rendu();
 }
@@ -379,6 +469,7 @@ function toucheCase(c) {
   if (attente) { if (attente.cible === 'tour' && t) finit({ t }); return; }
   if (sel.length === 1) { const e = batirD(D, sel[0], c); if (e) dis(e, true); else { sel = []; GM.son(t ? 'tour-fusion' : 'tour-batir'); dis(`${SORTES[D.rempart[c].v].e} ${nomTourD(D.rempart[c])}${t ? '' : ' bâtie'}. ${t ? '' : SORTES[D.rempart[c].v].d}`); } rendu(); return; }
   if (selTour >= 0 && selTour !== c && t) return confirmeFusion(selTour, c); // 27/11 : la fusion se confirme, avec ce qu'elle donne
+  if (selTour >= 0 && selTour !== c && !t && coutDeplaceD(D, selTour, c)) return confirmeDeplace(selTour, c); // 27/11 : ailleurs sur le rempart = 1 PC, avec confirmation
   if (selTour >= 0 && selTour !== c) {
     const a = selTour; selTour = -1;
     const e = t ? fusionD(D, a, c) : deplacerD(D, a, c);
@@ -387,13 +478,13 @@ function toucheCase(c) {
   }
   if (t) { selTour = selTour === c ? -1 : c; sel = [];
     if (selTour >= 0) infoTour(t.v, c);
-    dis(selTour >= 0 ? `${t.rune ? `✨ ${NOM_RUNE(t.rv)} ${DHEROS[D.heros].rune.n} (ne tire pas) : ${DHEROS[D.heros].rune.d}` : `${SORTES[t.v].e} ${nomTourD(t)} : ${puissanceTour(D, c, t)} par tir. ${SORTES[t.v].d}${t.niv < NIV_MAX ? ` Un dé de ${t.v} la monte d’un niveau.` : (D.sansFin || (t.et || 0) < ETOILES_MAX) ? ` Un dé de ${t.v} lui ajoute une étoile ★.` : ' Au maximum.'}`} Touche une tour voisine en vert pour fusionner${D.deplace ? '' : ', ou une case libre voisine pour la déplacer'}.` : ''); rendu(); return; }
+    dis(selTour >= 0 ? `${t.rune ? `✨ ${NOM_RUNE(t.rv)} ${DHEROS[D.heros].rune.n} (ne tire pas) : ${DHEROS[D.heros].rune.d}` : `${SORTES[t.v].e} ${nomTourD(t)} : ${puissanceTour(D, c, t)} par tir. ${SORTES[t.v].d}${t.niv < NIV_MAX ? ` Un dé de ${t.v} la monte d’un niveau.` : (D.sansFin || (t.et || 0) < ETOILES_MAX) ? ` Un dé de ${t.v} lui ajoute une étoile ★.` : ' Au maximum.'}`} Touche une tour voisine en vert pour fusionner, ou une case libre pour la déplacer (${D.deplace ? `${DEF.coutDeplace} PC` : `voisine : gratuit, ailleurs : ${DEF.coutDeplace} PC`}).` : ''); rendu(); return; }
   dis('Choisis d’abord UN dé, puis cette case pour bâtir.'); rendu();
 }
 function toucheMonstre(id) {
   const m = D.monstres.find(x => x.id === id); if (!m) return;
   if (attente && attente.cible === 'monstre') { finit({ m }); return; }
-  const M = MONSTRES[m.t]; dis(`${M.e} ${M.n} : ${m.pv}/${m.pvMax} PV. ${M.d} Frappe la porte : −${M.dg >= 99 ? 'tout' : M.dg}.`); rendu();
+  if (attente) return; ficheMonstre(m.t, m.id);
 }
 function agir(q) {
   if (attente && attente.quoi === q) { annule(); return; }
@@ -441,18 +532,47 @@ function animeTirs(pvAvant, ensuite) {
       const L = tour.getBoundingClientRect().width * .32; x0 += Math.sin(a * Math.PI / 180) * L; y0h = y0 - Math.cos(a * Math.PI / 180) * L;
       setTimeout(() => { can.classList.add('recul'); setTimeout(() => can.classList.remove('recul'), 120); }, 1); }
     else y0h = y0 - tour.getBoundingClientRect().height * .35;
-    (t.touches.length ? t.touches : [{ id:t.id }]).forEach(h => {
+    // 27/11 : une animation par sorte de tour (flèches, boulet et éclats, flocon, gouttes de poison, éclair, rayon) ; à 5 ★, un halo doré
+    const de = t.de != null ? app.querySelector(`[data-m="${t.de}"]`) : null; if (de) [x0, y0h] = centre(de); // l'éclair qui saute part du monstre touché
+    const touches = t.touches.length ? t.touches : [{ id:t.id }], main = app.querySelector(`[data-m="${touches[0].id}"]`), [xm, ym] = main ? centre(main) : [x0, y0h];
+    touches.forEach((h, idx) => {
       const m = app.querySelector(`[data-m="${h.id}"]`); if (!m) return; const [x1, y1] = centre(m);
-      const b = document.createElement('div'); b.className = 'projectile' + (t.rune ? ' rune' : '');
-      b.style.cssText = `left:${x0}px;top:${y0h}px;--c1:${couleur[0]};--c2:${couleur[1]};transition:transform ${vol}ms cubic-bezier(.3,.1,.6,1)`;
-      document.body.appendChild(b); requestAnimationFrame(() => requestAnimationFrame(() => { b.style.transform = `translate(${x1 - x0}px, ${y1 - y0h}px)`; }));
-      setTimeout(() => { b.remove(); const eclat = document.createElement('div'); eclat.className = 'eclat'; eclat.style.cssText = `left:${x1}px;top:${y1}px;--c1:${couleur[0]}`; document.body.appendChild(eclat); setTimeout(() => eclat.remove(), 400);
+      const arrivee = idx > 0 && t.v === 4 ? vol + 120 : vol; // les éclats du canon partent de l'explosion
+      const impact = () => {
         if (h.n) { m.style.animation = 'none'; void m.offsetWidth; m.style.animation = 'tremble .3s'; const d = document.createElement('span'); d.className = 'dg'; d.textContent = '−' + h.n; m.appendChild(d); }
-        recu[h.id] = (recu[h.id] || 0) + (h.n || 0); if (pvAvant[h.id] !== undefined && recu[h.id] >= pvAvant[h.id]) m.classList.add('meurt'); }, vol);
+        if (t.v === 1 && !CALME) m.classList.add('gele'); if (t.v === 2 && !CALME) bulles(x1, y1);
+        recu[h.id] = (recu[h.id] || 0) + (h.n || 0); if (pvAvant[h.id] !== undefined && recu[h.id] >= pvAvant[h.id]) m.classList.add('meurt'); };
+      if (idx > 0 && t.v === 4) { if (!CALME) setTimeout(() => { for (let q = 0; q < 3; q++) volFx('bris', xm, ym, x1 + (q - 1) * 6, y1 + (q - 1) * 4, 130); }, vol); setTimeout(impact, arrivee); return; }
+      if (CALME) { volFx('projectile', x0, y0h, x1, y1, vol, `--c1:${couleur[0]};--c2:${couleur[1]}`); setTimeout(impact, vol); return; }
+      animeSorte(t.v, x0, y0h, x1, y1, vol, t.max5, couleur); setTimeout(impact, arrivee);
     });
   }, k * pas));
   const total = (tirs.length - 1) * pas + vol + 450;
   setTimeout(() => { voile.remove(); enAnim = false; ensuite(); }, total);
+}
+// 27/11 : les petites animations (CSS + JS, sans image). « Mouvement réduit » du téléphone = un simple projectile, sans particules.
+const CALME = (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } })();
+function fxEl(cls, x, y, css) { const e = document.createElement('div'); e.className = 'fxA ' + cls; e.style.cssText = `left:${x}px;top:${y}px;${css || ''}`; document.body.appendChild(e); return e; }
+function volFx(cls, x0, y0, x1, y1, ms, css, rot, arc) {
+  const e = fxEl(cls, x0, y0, (css || '') + `;transition:transform ${ms}ms ${arc ? 'cubic-bezier(.2,.6,.4,1)' : 'linear'}`);
+  const r = rot != null ? ` rotate(${rot}deg)` : '';
+  e.style.transform = r.trim() || '';
+  requestAnimationFrame(() => requestAnimationFrame(() => { e.style.transform = `translate(${x1 - x0}px, ${y1 - y0}px)${r}`; }));
+  setTimeout(() => e.remove(), ms + 20); return e;
+}
+function bulles(x, y) { for (let q = 0; q < 4; q++) setTimeout(() => { const b = fxEl('bulle', x + (q - 1.5) * 6, y + 6); setTimeout(() => b.remove(), 720); }, q * 90); }
+function animeSorte(v, x0, y0, x1, y1, ms, max5, couleur) {
+  const ang = Math.atan2(y1 - y0, x1 - x0) * 180 / Math.PI, d5 = max5 ? ' fx5' : '';
+  if (v === 3) { [0, 70, max5 ? 140 : -1].filter(z => z >= 0).forEach(z => setTimeout(() => volFx('fleche' + d5, x0, y0, x1, y1, ms * .8, '', ang), z)); }
+  else if (v === 4) { const b = volFx('boulet' + d5, x0, y0, x1, y1, ms, '', null, true); b.animate([{ marginTop:'-6px' }, { marginTop:'-26px' }, { marginTop:'-6px' }], { duration:ms }); setTimeout(() => { const e = fxEl('boom' + d5, x1, y1); setTimeout(() => e.remove(), 400); for (let q = 0; q < 7; q++) { const a = q / 7 * Math.PI * 2; volFx('bris', x1, y1, x1 + Math.cos(a) * 26, y1 + Math.sin(a) * 26, 260); } }, ms); }
+  else if (v === 1) { const f = volFx('flocon' + d5, x0, y0, x1, y1, ms); f.textContent = '❄'; f.animate([{ rotate:'0deg' }, { rotate:'360deg' }], { duration:ms }); }
+  else if (v === 2) { [0, 60, 120].forEach(z => setTimeout(() => volFx('goutte' + d5, x0 + (z - 60) / 10, y0, x1 + (z - 60) / 8, y1, ms * .85, '', null, true), z)); }
+  else if (v === 5) { // l'éclair en zigzag
+    const pts = [[x0, y0]], n = 6; for (let q = 1; q < n; q++) { const k = q / n; pts.push([x0 + (x1 - x0) * k + (Math.random() - .5) * 18, y0 + (y1 - y0) * k + (Math.random() - .5) * 18]); } pts.push([x1, y1]);
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); svg.setAttribute('class', 'fxA eclair' + d5); svg.style.cssText = 'left:0;top:0;width:100vw;height:100vh';
+    svg.innerHTML = `<polyline points="${pts.map(p => p.join(',')).join(' ')}"${max5 ? ' style="stroke:#ffe28a;stroke-width:3.5"' : ''}/>`; document.body.appendChild(svg); setTimeout(() => svg.remove(), 340); }
+  else if (v === 6) { const L = Math.hypot(x1 - x0, y1 - y0), r = fxEl('rayon' + d5, x0, y0, `width:${L}px;transform:rotate(${ang}deg)${max5 ? ';height:13px' : ''}`); setTimeout(() => r.remove(), 440); }
+  else volFx('projectile', x0, y0, x1, y1, ms, `--c1:${couleur[0]};--c2:${couleur[1]}`);
 }
 function fin() {
   if (fen.innerHTML) return;
@@ -479,11 +599,14 @@ function regles() {
   <li><b>Monter de niveau</b> (1 à ${NIV_MAX}) : un dé de sa face posé sur la tour (${DEF.coutBatir} PC), ou deux tours pareilles du même niveau côte à côte (gratuit). La force grandit à chaque niveau : ${BASE_NIV.slice(1).join(', ')}.</li>
   <li><b>Les Runes</b> : deux tours au niveau ${NIV_MAX} qui se touchent (de n’importe quelle sorte) font une <b>Rune</b> de ton héros. Elle ne tire pas : elle <b>renforce ses tours voisines</b> (halo violet) et leur donne son pouvoir. Deux Runes du même niveau = <b>Rune ancienne ✦✦</b>, puis <b>légendaire ✦✦✦</b>.</li>
   <li><b>Piège</b> (${DEF.coutBatir} PC) : un dé, puis une case de chemin : 🟫 1 = boue (arrête un monstre un tour), 🌿 2 à 5 = ronces (valeur × 3), 🪨 6 = barricade (le monstre change de chemin). Les chauves-souris volent au-dessus de la boue et des ronces ; le Titan écrase tout.</li>
-  <li><b>Déplacer</b> une tour d’une case (une fois par tour) : touche-la, puis une case libre voisine.</li>
+  <li><b>Déplacer</b> une tour : touche-la, puis une case libre. Le 1er déplacement du tour vers une case <b>voisine</b> est gratuit ; <b>n’importe où</b> ailleurs sur le rempart (ou un 2e déplacement) : ${DEF.coutDeplace}&nbsp;PC.</li>
   <li><b>Coups de héros</b> : ⚔ <b>Frappe</b> (dés identiques) touche <b>tout un chemin</b> : valeur × nombre de dés × 2 ; ⚔⚔ <b>Technique</b> (suite) touche tout un chemin et fait <b>reculer</b> les monstres d’une case. Plus forts à chaque vague. Aussi : Pouvoir et Ultime.</li>
   <li><b>PC</b> : +1 à chaque tour, et <b>+1 tous les ${DEF.killsPC} monstres abattus</b>. <b>Vendre</b> un dé donne aussi 1 PC ; les dés pas utilisés sont vendus à la fin du tour. Tu as ${DEF.relances} relances par tour pour chercher les dés qui te manquent.</li></ul>
   <p>En haut, la bande 🌊 montre <b>la vague qui arrive</b>. Après chaque vague, tu choisis <b>un bonus parmi 3</b>. À la victoire : jusqu’à <b>3 étoiles</b> (porte à 15 PV ou plus, défi du jour).</p>
-  <p>Monstres : 👺 Gobelin (💨 avance de 2), 🐗 Sanglier (solide), 🛡 Porte-bouclier (−3 à chaque tir de tour), 🦇 Chauve-souris (🪽 ta tour de devant ne la voit pas), 🌋 le Titan (vague 6 : avance une case tous les 2 tours, fait fondre ta tour la plus faible de sa colonne ; s’il touche la porte, elle tombe).</p>
+  <p><b>Les monstres</b> (touche un monstre sur le plateau pour sa fiche complète) :</p><ul style="padding-left:1.1em;margin:.3em 0">${Object.entries(MONSTRES).filter(([k, M]) => !M.boss && !M.invoque).map(([k, M]) => `<li>${M.e} <b>${M.n}</b> ${(M.ic || []).join('')} : ${M.d}</li>`).join('')}</ul>
+  <p>👑 <b>Les élites</b> (dès la vague 3, cadre doré) : ×${String(ELITE.pv).replace('.', ',')} de vie, frappent la porte plus fort, et un pouvoir en plus (${Object.values(POUVOIRS_ELITE).map(P => `${P.e} ${P.n.toLowerCase()} : ${P.d}`).join(' ; ')}).</p>
+  <p><b>Les boss</b> (s’il touche la porte, elle tombe) : ${BOSS_SF.map(k => `${MONSTRES[k].e} <b>${MONSTRES[k].n}</b> : ${MONSTRES[k].d.replace('Le boss : ', '')}`).join('<br>')}<br>En 6 vagues : le Titan à la vague 6. En vagues sans fin : un boss différent toutes les 6 vagues, dans cet ordre.</p>
+  <p class="doux">Règle d’or : une résistance bloque seulement l’<b>effet</b> d’une tour (le poison, le gel…), jamais son tir ; chaque monstre a au moins une tour qui le contre bien.</p>
   <p class="doux">Règles complètes : <a href="defense-proposition.html" style="color:#7cc8ff">la page de la proposition</a>.</p>
   <div class="choixh"><button onclick="fermer()">Compris</button></div>`);
 }
@@ -516,10 +639,10 @@ function defDefense() {
     modes:[
       { k:'vagues', e:'🌊', n:'6 vagues', img:'menu-recu/mode-defense.webp', desc:() => 'Les monstres descendent trois chemins vers la porte de la Guilde. Tes dés deviennent des tours… ou des coups tout de suite. Six vagues, puis le Titan.',
         pas:() => [`🎯 Défi du jour : ${defiDuJourD().n}${lesEtoiles()[jourCle()] ? ' · ' + '★'.repeat(lesEtoiles()[jourCle()]) : ''}`, `🏆 ${gg.length} victoire${gg.length > 1 ? 's' : ''} sur ${r.length}`], partie:() => partie(false) },
-      { k:'sansfin', e:'♾', n:'Sans fin', img:'menu-recu/mode-defense.webp', desc:() => 'Les vagues ne s’arrêtent jamais, toujours plus fortes ; le Titan revient toutes les 6 vagues. Jusqu’où tiendras-tu ?',
+      { k:'sansfin', e:'♾', n:'Sans fin', img:'menu-recu/mode-defense.webp', desc:() => 'Les vagues ne s’arrêtent jamais, toujours plus fortes ; un boss différent toutes les 6 vagues (Titan, Colosse, Roi des Os, Roi de l’Hiver). Jusqu’où tiendras-tu ?',
         pas:() => [`Ton record : ${recSF} vague${recSF > 1 ? 's' : ''}`], partie:() => partie(true) } ],
     options:m => m === 'vagues' ? [{ k:'d', titre:`🎯 Le défi du jour : ${defiDuJourD().n}`, verrou:'le même pour tous', aide:'★ la victoire · ★ la porte à 15 PV ou plus · ★ le défi du jour.' }]
-      : [{ k:'r', titre:'♾ Les vagues sans fin', aide:`Ton record : ${recSF} vagues. Le Titan revient toutes les 6 vagues.` }],
+      : [{ k:'r', titre:'♾ Les vagues sans fin', aide:`Ton record : ${recSF} vagues. Un boss différent toutes les 6 vagues.` }],
     resume:m => `${m === 'sansfin' ? '♾ Sans fin' : '🌊 6 vagues et le Titan'} · <b>${haInfo(choixD) ? haEsc(haInfo(choixD).nom) : HEROS[haVoie(choixD)].nom}</b>`,
     lancer:m => { if (!okD(choixD)) { alert('Choisis ton héros.'); return CFG.va(2); } modeSF = m === 'sansfin'; try { localStorage.removeItem(CLE_EN_COURS); } catch (e) {} demarre(choixD); } };
 }
