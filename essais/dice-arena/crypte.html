@@ -144,6 +144,14 @@
   .fiche-sc li { display:flex; align-items:center; gap:8px; margin:4px 0; font-size:.92em; } .fiche-sc .sc { flex:none; min-width:3em; height:2.2em; display:grid; place-items:center; font-size:15px; }
   .carte .img { cursor:pointer; }
   .de .fb { position:absolute; right:-1cqw; bottom:-1cqw; background:#1f8a4a; color:#fff; font:bold 2.8cqw Georgia; border-radius:2cqw; padding:0 1cqw; box-shadow:0 0 0 .4cqw #0d0b18; } /* 22/11 : le bonus forgé de la face */
+  .combosL { display:flex; flex-wrap:wrap; gap:1cqw; justify-content:center; margin:1cqw 0; cursor:pointer; }
+  .combosL span { font-size:2.9cqw; padding:.6cqw 1.6cqw; border-radius:3cqw; border:1px solid #4b4580; color:#9a93c4; background:#1b1838; }
+  .combosL span.on { color:#2a1a08; background:linear-gradient(#ffe08a, #f3c96b); border-color:#ffd76b; box-shadow:0 0 10px #ffd76b; font-weight:bold; }
+  .comboFx { position:fixed; left:50%; top:38%; z-index:900; transform:translate(-50%, -50%); text-align:center; pointer-events:none; animation:comboIn 1.6s ease-out forwards; }
+  .comboFx .ce { font-size:18vw; filter:drop-shadow(0 0 18px #ffd76b); } .comboFx .cn { font:bold 9vw Georgia, serif; color:#ffe08a; text-shadow:0 0 14px #f3c96b, 0 3px 0 #6b3d08; }
+  .comboFx .cd { font:5vw Georgia, serif; color:#fff; text-shadow:0 2px 6px #000; }
+  .comboFx.suite5 .cn, .comboFx.carre .cn { color:#fff; text-shadow:0 0 18px #c084fc, 0 0 30px #ffd76b; }
+  @keyframes comboIn { 0% { transform:translate(-50%, -50%) scale(.2) rotate(-10deg); opacity:0; } 18% { transform:translate(-50%, -50%) scale(1.15) rotate(3deg); opacity:1; } 30% { transform:translate(-50%, -50%) scale(1); } 80% { opacity:1; } 100% { transform:translate(-50%, -70%) scale(.9); opacity:0; } }
 </style>
 </head>
 <body>
@@ -289,7 +297,7 @@ function dessine() {
     </div>
     <div class="plateau" id="plateau">${S.aLancer ? S.des.map(d => `<button class="de cache" onclick="lanceDes()"></button>`).join('') : S.des.map(d => `<button class="de ${sel === d.id ? 'sel' : ''} ${d.neuf ? 'roule' : ''} ${d.c ? 'c-' + d.c : ''}" onclick="choisit('${d.id}')"><img src="faces-${S.heros}/face-${d.v}.webp" alt="${d.v}">${S.bonusF && S.bonusF[d.v - 1] ? `<span class="fb">+${S.bonusF[d.v - 1]}</span>` : ''}${d.garde ? '<span class="g">🎒</span>' : ''}${d.c ? `<span class="cc">${C.COULEURS[d.c].e}</span>` : ''}</button>`).join('')}</div>
     ${btnEffet()}
-    <div class="consigne">${consigne()}</div>
+    ${combosHTML()}<div class="consigne">${consigne()}</div>
     <div class="actions">${S.aLancer ? `<button class="lancer" onclick="lanceDes()">🎲 Lancer les dés</button>` : `${histo.length ? '<button class="annule" onclick="annule()" title="Annuler le dernier dé posé">↩</button>' : ''}<button onclick="relance()" ${S.relance && S.des.some(d => !d.garde) ? '' : 'disabled'}>🎲 Relancer (${S.relance})</button><button class="fin" onclick="finTour()">Fin du tour ▶</button>`}</div>
     <div class="journal">${S.journal[0] || ''}</div>`);
   S.des.forEach(d => delete d.neuf); visibles().forEach(c => delete c.neuve);
@@ -310,6 +318,15 @@ function defisFen() {
 }
 // 15/11 : seules les cartes VISIBLES frappent, chacune de sa force ; on l'écrit en clair (« Scarabée 1 + Lutin 2 »)
 function detailMenace() { return C.intentions(S).filter(x => x.v).map(x => `${x.nom.split(' ')[0]} ${x.v}`).join(' + '); }
+// 28/11 : la ligne des COMBOS du tour (Descente) : allumée quand le combo est fait ; toucher = l'explication
+function combosHTML() { if (!S.combosOn) return ''; const f = S.combos || {};
+  return `<div class="combosL" onclick="combosFen()">${C.COMBOS.map(c => `<span class="${f[c.k] ? 'on' : ''}">${c.e} ${c.n}</span>`).join('')}</div>`; }
+function combosFen() { fenetre(`<h2>✨ Les combos de dés</h2><p>Un dé va toujours sur un seul sceau. Mais les dés que tu <b>poses dans le même tour</b> (sur les monstres, ton pouvoir ou ton compagnon) forment des combos, une fois chacun par tour :</p>
+  ${C.COMBOS.map(c => `<p>${c.e} <b>${c.n}</b> : ${c.k === 'paire' ? 'deux dés pareils' : c.k === 'brelan' ? 'trois dés pareils' : c.k === 'carre' ? 'quatre dés pareils' : c.k === 'suite3' ? 'trois valeurs qui se suivent (2-3-4…)' : 'cinq valeurs qui se suivent'} → ${c.d}.</p>`).join('')}<button class="go" onclick="fenetre('')">Compris</button>`); }
+function montreCombos() { const L = S.comboFx || []; if (!L.length) return; S.comboFx = [];
+  L.forEach((k, j) => setTimeout(() => { const c = C.COMBOS.find(x => x.k === k); if (!c) return; const b = document.createElement('div'); b.className = 'comboFx ' + k;
+    b.innerHTML = `<div class="ce">${c.e}</div><div class="cn">${c.n} !</div><div class="cd">${c.d}</div>`; document.body.appendChild(b); setTimeout(() => b.remove(), 1600);
+    son(k === 'suite5' || k === 'carre' ? 'ultime' : 'magie'); try { navigator.vibrate && navigator.vibrate(k === 'paire' ? 30 : [40, 40, 60]); } catch (e) {} }, j * 700)); }
 function consigne() {
   if (S.aLancer) return 'Un nouveau tour : touche <b>🎲 Lancer les dés</b>.';
   if (mode === 'rune') return '✦ Touche le <b>sceau</b> que la Rune doit briser (n’importe lequel).';
@@ -331,6 +348,7 @@ function annule() {
 }
 function choisit(id) { if (mode) mode = null; sel = sel === id ? null : id; son('choisir'); dessine(); }
 function resultat(r) {
+  if (r === 'ok' || r === 'rune') setTimeout(montreCombos, 50);
   if (r === 'ok' || r === 'rune') { son(r === 'rune' ? 'rune' : 'poser'); if (r === 'rune') bulle('✦ Une Rune !'); sel = null; return true; }
   if (typeof r === 'string' && r.length > 3) { son('erreur'); bulle(r.length < 26 ? r : '✗', true); }
   return false;

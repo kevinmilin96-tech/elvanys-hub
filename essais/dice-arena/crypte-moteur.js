@@ -287,7 +287,7 @@ function nouvelle(heros, graine, bonus = {}, opts = {}) {
   }
   const pvmax = opts.pvmax || PV_HEROS + (bonus.pv || 0);
   const obj = opts.obj || {};
-  const S = { heros, graine, cols, gardien:null, pv:opts.pv != null ? opts.pv : pvmax, pvmax, tour:0, des:[], relance:1, reserve:Array(Math.max(0, RESERVE + (obj.besace || 0))).fill(null),
+  const S = { combosOn:!!opts.combos, heros, graine, cols, gardien:null, pv:opts.pv != null ? opts.pv : pvmax, pvmax, tour:0, des:[], relance:1, reserve:Array(Math.max(0, RESERVE + (obj.besace || 0))).fill(null),
     bouclier:Math.min(14, (bonus.bouclier || 0) + 4 * (obj.aube || 0)), /* 28/11 : bouclier de départ plafonné (il n'avait plus jamais perdu un PV) */ relanceBase:1 + (bonus.relance || 0) + (obj.gobelet || 0), desPlus:(bonus.des || 0) + (obj.sac || 0) + (obj.diable || 0),
     creuset:Array(6).fill(false), runes:Math.min(RUNES_MAX, obj.rune || 0), pouvoir:POUVOIRS[heros].s(), pret:false, voile:false, taire:false, voitTout:false, score:0, chaine:0, chaineMax:0,
     tombes:0, fin:null, journal:[], seq:0, rs:Math.floor(R() * 4294967296),
@@ -322,7 +322,8 @@ const silence = S => visibles(S).some(c => c.trait === 'silence');
 const plafond = S => visibles(S).some(c => c.trait === 'plafond');
 
 function debutTour(S) {
-  S.tour++; S.relance = S.relanceBase == null ? 1 : S.relanceBase; // 15/11 soir : 0 relance = vraiment 0 (« Main sûre ») S.chaine = 0; S.voile = false; S.taire = false; S.paires = {};
+  S.tour++; S.relance = S.relanceBase == null ? 1 : S.relanceBase; // 15/11 soir : 0 relance = vraiment 0 (« Main sûre »)
+  S.chaine = 0; S.voile = false; S.taire = false; S.paires = {}; S.combos = {}; S.posesTour = []; // 28/11 : cette remise à zéro était tombée dans le commentaire au-dessus (mur d'Aldric et silence de la Chouette duraient tout le combat)
   // le Maître des cryptes (Dice & Fold) : après N tours, chaque nouveau tour rend tous les monstres plus forts
   if (S.maitre && S.tour > S.maitre) { visibles(S).forEach(c => c.att++); log(S, `👹 Le Maître des cryptes s’impatiente : tous les monstres +1 de force.`); S.maitreLa = true; }
   visibles(S).forEach(c => intention(S, c));
@@ -354,6 +355,26 @@ function choisirCreuset(S, quoi) {
   else { for (let k = 0; k < fois; k++) if (S.runes < RUNES_MAX) S.runes++; log(S, fois > 1 ? '✦ Creuset bouillant : deux Runes !' : '✦ Une Rune !'); }
   return true;
 }
+// 28/11 (choix de l'utilisateur, façon Balatro) : LES COMBOS DE DÉS (Descente : opts.combos). Un dé ne va toujours que sur un sceau,
+// mais les dés POSÉS dans le même tour (sur les monstres, le pouvoir, le compagnon) forment des combos ; chacun ne compte qu'une fois par tour.
+const COMBOS = [
+  { k:'paire', e:'👯', n:'Paire', d:'+2 bouclier', ok:c => Math.max(...c) >= 2 },
+  { k:'suite3', e:'📶', n:'Petite suite', d:'+1 relance', ok:(c, v) => suiteDe(v, 3) },
+  { k:'brelan', e:'🎲', n:'Brelan', d:'brise 1 sceau du monstre le plus fort', ok:c => Math.max(...c) >= 3 },
+  { k:'carre', e:'💎', n:'Carré', d:'+1 Rune', ok:c => Math.max(...c) >= 4 },
+  { k:'suite5', e:'🌈', n:'Grande suite', d:'brise 1 sceau sur chaque monstre visible', ok:(c, v) => suiteDe(v, 5) },
+];
+function suiteDe(v, n) { const u = [...new Set(v)].sort((a, b) => a - b); let l = 1, m = 1; for (let i = 1; i < u.length; i++) { l = u[i] === u[i - 1] + 1 ? l + 1 : 1; m = Math.max(m, l); } return m >= n; }
+function combos(S, v) {
+  if (!S.combosOn) return; S.posesTour = S.posesTour || []; S.posesTour.push(v); S.combos = S.combos || {};
+  const cpt = {}; S.posesTour.forEach(x => cpt[x] = (cpt[x] || 0) + 1); const n = Object.values(cpt);
+  for (const C of COMBOS) { if (S.combos[C.k] || !C.ok(n, S.posesTour)) continue; S.combos[C.k] = true; S.nbCombos = (S.nbCombos || 0) + 1;
+    if (C.k === 'paire') S.bouclier += 2;
+    else if (C.k === 'suite3') S.relance++;
+    else if (C.k === 'brelan') { const m = visibles(S).filter(c => c.sceaux.some(x => !x.ok)).sort((a, b) => b.att - a.att)[0]; if (m) { brise(m.sceaux.find(x => !x.ok)); verifie(S, m); } }
+    else if (C.k === 'carre') { if (S.runes < RUNES_MAX) S.runes++; }
+    else if (C.k === 'suite5') { visibles(S).forEach(c => { const x = c.sceaux.find(y => !y.ok); if (x) brise(x); }); visibles(S).slice().forEach(c => verifie(S, c)); }
+    log(S, `${C.e} Combo ${C.n} : ${C.d} !`); (S.comboFx = S.comboFx || []).push(C.k); } }
 // poser le dé id sur : { carte:id, s:index } · { pouvoir:index } · { comp:index } · { creuset:true } · { reserve:true } · { couleur:true } (effet spécial)
 function placer(S, idDe, ou) {
   if (S.fin) return 'fin';
@@ -365,9 +386,9 @@ function placer(S, idDe, ou) {
     if (S.creuset.every(Boolean)) { creusetPlein(S); return 'rune'; } return 'ok'; }
   if (ou.reserve) { const k = S.reserve.indexOf(null); if (k < 0) return 'La besace est pleine.'; S.reserve[k] = D.c ? { v, c:D.c } : v; S.des.splice(i, 1); compte(S, 'besace'); return 'ok'; }
   if (plafond(S) && v >= 5) return 'Chaînes lourdes : pas de 5 ni de 6 !';
-  if (ou.pouvoir != null) { const s = S.pouvoir[ou.pouvoir]; if (!s || !accepte(s, v, S.pouvoir)) return 'Ce dé ne va pas sur ce sceau.'; pose(s, v, S.obj.aiguise); S.des.splice(i, 1);
+  if (ou.pouvoir != null) { const s = S.pouvoir[ou.pouvoir]; if (!s || !accepte(s, v, S.pouvoir)) return 'Ce dé ne va pas sur ce sceau.'; pose(s, v, S.obj.aiguise); S.des.splice(i, 1); combos(S, v);
     if (S.pouvoir.every(x => x.ok)) { S.pret = true; log(S, `⚡ ${POUVOIRS[S.heros].n} est prêt !`); } return 'ok'; }
-  if (ou.comp != null) { const C = S.comp; if (!C || C.pv <= 0) return 'Pas de compagnon.'; const s = C.sceaux[ou.comp]; if (!s || !accepte(s, v, C.sceaux)) return 'Ce dé ne va pas sur ce sceau.'; pose(s, v, S.obj.aiguise); S.des.splice(i, 1);
+  if (ou.comp != null) { const C = S.comp; if (!C || C.pv <= 0) return 'Pas de compagnon.'; const s = C.sceaux[ou.comp]; if (!s || !accepte(s, v, C.sceaux)) return 'Ce dé ne va pas sur ce sceau.'; pose(s, v, S.obj.aiguise); S.des.splice(i, 1); combos(S, v);
     if (C.sceaux.every(x => x.ok)) { C.pret = true; log(S, `${COMPAGNONS[C.id].e} ${COMPAGNONS[C.id].n} est prêt !`); } return 'ok'; }
   const c = trouve(S, ou.carte); if (!c) return 'Ce monstre est caché.';
   const s = c.sceaux[ou.s], fb = S.bonusF ? S.bonusF[v - 1] | 0 : 0; if (!s || !accepte(s, v, c.sceaux, fb)) return 'Ce dé ne va pas sur ce sceau.';
@@ -376,7 +397,7 @@ function placer(S, idDe, ou) {
   if (c.trait === 'faible' && D.c === 'rouge') { c.sceaux.forEach(brise); log(S, `🎯 Point faible ! ${c.nom} s’effondre.`); }
   if (v === 6 && S.obj.six) S.bouclier += S.obj.six;
   S.paires[v] = (S.paires[v] || 0) + 1; if (S.paires[v] === 2 && S.obj.bourse) gagneOr(S, S.obj.bourse, 'paire');
-  verifie(S, c); return 'ok';
+  verifie(S, c); combos(S, v); return 'ok';
 }
 // un dé de couleur utilisé pour son effet spécial
 function effetCouleur(S, i) {
@@ -491,7 +512,7 @@ function finTour(S) {
 // 15/11 soir : avec des défis, une étoile par défi réussi (victoire obligatoire) ; sinon l'ancienne règle (la Descente)
 const etoiles = S => S.fin !== 'gagne' ? 0 : S.defis ? defisEtat(S).filter(x => x.ok).length : S.flash ? 1 + (S.fdefis ? S.fdefis.filter(k => FLASH_DEFIS[k] && FLASH_DEFIS[k].ok(S)).length : (S.pv >= 10 ? 1 : 0) + (S.tour <= 6 ? 1 : 0)) /* 23/11 : le flash du jour (30 PV) ; 24/11 (l'utilisateur) : 3e étoile = gagner en 6 tours ou moins */ : 1 + (S.pv >= 12 ? 1 : 0) + (S.pv >= 25 ? 1 : 0);
 
-const API = { choisirCreuset, reglerSuivi:(f, sc, co) => { SUIVI_FORCE = f; SUIVI_SCEAU = sc; if (co != null) SUIVI_COUPS = co; }, INTENTIONS, intentions, NB_DES, NB_COL, PROF, RESERVE, RUNES_MAX, PV_HEROS, SCEAU_TXT, TRAITS, POUVOIRS, COMPAGNONS, COULEURS,
+const API = { COMBOS, choisirCreuset, reglerSuivi:(f, sc, co) => { SUIVI_FORCE = f; SUIVI_SCEAU = sc; if (co != null) SUIVI_COUPS = co; }, INTENTIONS, intentions, NB_DES, NB_COL, PROF, RESERVE, RUNES_MAX, PV_HEROS, SCEAU_TXT, TRAITS, POUVOIRS, COMPAGNONS, COULEURS,
   FLASH_DEFIS, REGLES, regleDuJour, VARIANTES, varianteDuJour, SPECIALES, GAINS_COFFRE, DEFIS, defisEtat, CONSOS, conso, nouvelle, lancer, relancer, placer, rune, pouvoir, competence, finTour, visibles, menace, menaceComp, accepte, etoiles, trouve, force, silence, plafond, rng };
 if (typeof module !== 'undefined' && module.exports) module.exports = API; else racine.CRYPTE = API;
 })(typeof window !== 'undefined' ? window : globalThis);
