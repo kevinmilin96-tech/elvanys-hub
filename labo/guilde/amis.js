@@ -168,8 +168,13 @@ function amisVoir(code) {
 function amisCreePour(code, jeu) { try { sessionStorage.setItem('amis-inviter', JSON.stringify({ code, t:Date.now() })); } catch (e) {}
   location.href = jeu === 'duel' ? 'duel.html?ami=1' : 'chroniques.html?ligne=1'; }
 (function () { let x; try { x = JSON.parse(sessionStorage.getItem('amis-inviter') || 'null'); } catch (e) {} if (!x || Date.now() - x.t > 120000) return;
-  let n = 0; const tic = setInterval(async () => { if (++n > 90) { clearInterval(tic); return; } if (!amisSalle()) return; clearInterval(tic); sessionStorage.removeItem('amis-inviter');
-    const d = await amisAgir('invite', { code:x.code, salle:amisSalle() }); if (d) amisMsg('🎲 Salle créée : invitation envoyée à ton ami !'); }, 1000); })();
+  // 28/11 (l'utilisateur : « l'invitation n'arrive jamais ») : attendre la salle ET la carte d'ami, se signaler dans la salle d'abord, puis inviter (3 essais)
+  let n = 0, essais = 0, enCours = false; const tic = setInterval(async () => { if (++n > 120) { clearInterval(tic); amisMsg('L’invitation n’est pas partie : invite ton ami depuis la salle (👥 Inviter des amis).'); return; }
+    if (enCours || !amisSalle() || !AMIS.carte) return; enCours = true;
+    await amisAgir('signal'); const d = await amisAgir('invite', { code:x.code, salle:amisSalle() });
+    if (d) { clearInterval(tic); sessionStorage.removeItem('amis-inviter'); amisMsg('🎲 Salle créée : invitation envoyée à ton ami !'); }
+    else if (++essais >= 3) { clearInterval(tic); sessionStorage.removeItem('amis-inviter'); amisMsg('L’invitation n’est pas partie : invite ton ami depuis la salle (👥 Inviter des amis).'); }
+    enCours = false; }, 1500); })();
 const amisVuTxt = t => { const m = Math.round((Date.now() - t) / 60000); return m < 60 ? `vu il y a ${Math.max(1, m)} min` : m < 1440 ? `vu il y a ${Math.round(m / 60)} h` : `vu il y a ${Math.round(m / 1440)} j`; };
 async function amisFenetre() {
   AMIS.ouvert = true;
