@@ -160,8 +160,16 @@ function amisVoir(code) {
     <p class="doux" style="text-align:center">${a.enLigne ? (a.salle ? `🎲 dans la salle ${amisEsc(a.salle)}` : '🟢 en ligne') : amisVuTxt(a.vu)}</p>
     ${a.enLigne && a.salle && a.salle !== amisSalle() ? `<button class="am-bt go large" onclick="amisRejoindre('${amisEsc(a.salle)}')">▶ Rejoindre sa salle</button>` : ''}
     ${a.enLigne && amisSalle() && a.salle !== amisSalle() ? `<button class="am-bt or large" onclick="amisInvite('${a.code}')">🎲 L’inviter dans ma salle</button>` : ''}
+    ${!amisSalle() ? `<button class="am-bt go large" onclick="amisCreePour('${a.code}', 'duel')">⚔ Le défier en Duel</button><button class="am-bt or large" onclick="amisCreePour('${a.code}', 'chron')">📜 L’inviter aux Chroniques</button>${a.enLigne ? '' : '<p class="doux" style="text-align:center">Il n’est pas en ligne : il verra l’invitation à sa prochaine visite… s’il arrive avant qu’elle expire. Mieux vaut le prévenir.</p>'}` : ''}
     <button class="am-bt large" onclick="AMIS.ouvert=true;amisDessine()">‹ Mes amis</button>`);
 }
+// 28/11 (l'utilisateur : « j'aimerais inviter mon ami mais je n'arrive plus à créer un salon ») : depuis la fiche d'un ami, créer la salle
+// (Duel ou Chroniques) PUIS l'inviter tout seul dès que la salle existe
+function amisCreePour(code, jeu) { try { sessionStorage.setItem('amis-inviter', JSON.stringify({ code, t:Date.now() })); } catch (e) {}
+  location.href = jeu === 'duel' ? 'duel.html?ami=1' : 'chroniques.html?ligne=1'; }
+(function () { let x; try { x = JSON.parse(sessionStorage.getItem('amis-inviter') || 'null'); } catch (e) {} if (!x || Date.now() - x.t > 120000) return;
+  let n = 0; const tic = setInterval(async () => { if (++n > 90) { clearInterval(tic); return; } if (!amisSalle()) return; clearInterval(tic); sessionStorage.removeItem('amis-inviter');
+    const d = await amisAgir('invite', { code:x.code, salle:amisSalle() }); if (d) amisMsg('🎲 Salle créée : invitation envoyée à ton ami !'); }, 1000); })();
 const amisVuTxt = t => { const m = Math.round((Date.now() - t) / 60000); return m < 60 ? `vu il y a ${Math.max(1, m)} min` : m < 1440 ? `vu il y a ${Math.round(m / 60)} h` : `vu il y a ${Math.round(m / 1440)} j`; };
 async function amisFenetre() {
   AMIS.ouvert = true;
