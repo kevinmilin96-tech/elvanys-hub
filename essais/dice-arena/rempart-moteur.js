@@ -378,7 +378,7 @@ function specialiser(S, i, k) {
 // des vagues suivantes) monte doucement si tout est écrasé loin, descend si le rempart souffre ; bornes 0,8-1,25 (niveau 1 : jamais au-dessus de 1).
 // Rien n'est montré au joueur ; une ligne « ⚖ » par vague dans le journal de la partie.
 // 27/11 nuit : maxN1 vaut pour les niveaux 1 ET 2 (ils ne durcissent jamais, retour de l'utilisateur battu au niveau 2)
-const ADAPT = { min:.8, max:1.25, maxN1:1, monte:.08, monteDoux:.04, baisse:.07, baisseFort:.1 };
+const ADAPT = { min:.8, max:1.6 /* 28/11 : 1,25 → 1,6, l’utilisateur gagnait le niveau 3 sans perdre un PV au plafond */, maxN1:1, monte:.08, monteDoux:.04, baisse:.07, baisseFort:.1 };
 // 28/11 : après une grosse vague finie, si la suivante est encore loin, on annonce l'accalmie (le temps de bâtir)
 function calme(S, iv) { if (!S.grosses.includes(iv) || iv >= S.nbVagues - 1) return; S.deObjet++; fx(S, { t:'deObjet' }); log(S, '🎲 Un dé pour la besace !');
   // une VRAIE accalmie : la vague suivante attend au moins R.accalmie s après la fin de la grosse vague (on décale toute la suite)
