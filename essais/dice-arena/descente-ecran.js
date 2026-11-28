@@ -122,6 +122,7 @@ function descenteAccueil() {
 }
 function equipe(k) { const E = lireD(); E.equipee = k; ecrireD(E); descenteAccueil(); }
 function lanceDescente(duJ) {
+  if (!rangeActive()) return;
   const E = lireD(); const L = lire(); L.heros = choixH; ecrire(L);
   // 15/11 soir : la descente du jour ouvre toute la réserve (renommée ignorée), pour qu'elle soit la même pour tout le monde
   // 15/11 soir : le moteur joue la VOIE (vJ) ; la progression vient du héros d'aventure (pJ) ; DR.av le garde dans la sauvegarde
@@ -131,7 +132,18 @@ function lanceDescente(duJ) {
   son('melange'); descenteEcran();
   if (!localStorage.getItem('guilde-descente-guide')) { localStorage.setItem('guilde-descente-guide', '1'); descenteRegles(); }
 }
-function reprendDescente() { DR = descenteGardee(); if (!DR) return; S = DR.S || null; sel = null; mode = null; descenteEcran(); }
+// 28/11 (l'utilisateur : « trois emplacements, si je veux jouer avec un autre perso ») : jusqu'à 3 DESCENTES EN COURS : la partie active
+// (CLE_DP) + 2 rangées (CLE_DPR). Lancer une nouvelle descente range l'ancienne au lieu de l'effacer ; reprendre une rangée l'échange avec l'active.
+const CLE_DPR = 'guilde-descente-rangees';
+const descentesRangees = () => { try { const l = JSON.parse(localStorage.getItem(CLE_DPR) || '[]'); return Array.isArray(l) ? l.filter(p => p && !p.fin && p.heros) : []; } catch (e) { return []; } };
+const ecrireRangees = l => { try { localStorage.setItem(CLE_DPR, JSON.stringify(l.slice(0, 2))); } catch (e) {} };
+function rangeActive() { const g = descenteGardee(); if (!g) return true; const l = descentesRangees();
+  if (l.length >= 2 && !confirm('Tu as déjà 3 descentes en cours. Lancer celle-ci efface la plus ancienne (' + haEsc(herosS(l[l.length - 1]).nom) + ', étage ' + l[l.length - 1].etage + '). On continue ?')) return false;
+  l.unshift(g); ecrireRangees(l); try { localStorage.removeItem(CLE_DP); } catch (e) {} return true; }
+function oublieRangee(k) { const l = descentesRangees(); l.splice(k, 1); ecrireRangees(l); }
+function reprendDescente(k) {
+  if (k != null) { const l = descentesRangees(), x = l[k]; if (!x) return; l.splice(k, 1); const g = descenteGardee(); if (g) l.unshift(g); ecrireRangees(l); try { localStorage.setItem(CLE_DP, JSON.stringify(x)); } catch (e) {} }
+  DR = descenteGardee(); if (!DR) return; S = DR.S || null; sel = null; mode = null; descenteEcran(); }
 
 // ------------------------------------------------------------------ l'écran selon l'étape
 function descenteEcran() {

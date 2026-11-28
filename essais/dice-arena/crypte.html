@@ -557,7 +557,8 @@ function defCrypte() {
       { k:'descente', e:'🗺️', n:'La Descente', img:'menu-recu/mode-descente.webp',
         desc:() => 'Trois étages de cryptes : des combats obligatoires, des haltes au choix (marchand, feu de camp, événement, trésor), puis le boss de l’étage. Ta vie ne remonte presque pas toute seule !',
         pas:() => { const ren = lireRen(), P = D_PAL(); return [`🏅 Renommée ${ren} · ${P}`, `Étage le plus profond : ${E.etageMax || '—'}`]; },
-        partie:() => dg ? { texte:`${haEsc(herosS(dg).nom)} · étage ${dg.etage} · ❤ ${dg.S ? dg.S.pv : dg.pv}`, reprendre:'reprendDescente()', abandonner:"localStorage.removeItem('guilde-descente-partie')" } : null } ],
+        parties:() => [...(dg ? [{ texte:`${haEsc(herosS(dg).nom)} · étage ${dg.etage} · ❤ ${dg.S ? dg.S.pv : dg.pv}`, reprendre:'reprendDescente()', abandonner:"localStorage.removeItem('guilde-descente-partie')" }] : []),
+          ...(typeof descentesRangees === 'function' ? descentesRangees() : []).map((x, k) => ({ texte:`${haEsc(herosS(x).nom)} · étage ${x.etage} · ❤ ${x.S ? x.S.pv : x.pv}`, reprendre:`reprendDescente(${k})`, abandonner:`oublieRangee(${k})` }))] } ],
     options:m => m === 'jour' ? [
         { k:'p', titre:`${vj.e} Le plateau : ${vj.n}`, verrou:'imposé aujourd’hui', aide:vj.d },
         { k:'r', titre:`${rj.e} La règle du jour : ${rj.n}`, verrou:'imposée', aide:rj.d },
