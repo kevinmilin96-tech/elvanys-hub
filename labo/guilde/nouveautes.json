@@ -1,5 +1,9 @@
 [
 {
+"v": "20261128-010955",
+"m": "Rempart : le mode Héroïque ! Rejoue un niveau gagné en bien plus dur pour gagner sa couronne 👑"
+},
+{
 "v": "20261128-010620",
 "m": "Rempart : si tu joues très bien, les monstres peuvent devenir encore plus solides (à partir du niveau 3)"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261127-195035",
 "m": "Rempart des runes : nouvelles tours de glace, de poison et la grande tour"
-},
-{
-"v": "20261127-192437",
-"m": "Rempart : les tours et les monstres sont bien au milieu des chemins"
 }
 ]

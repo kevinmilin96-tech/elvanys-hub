@@ -129,14 +129,17 @@ const nomTour = t => t.puits ? PUITS.n : t.rune ? `Tour-rune ${EFFET_PAIRE[t.pai
 
 // une partie : heros (maelle…), niveau (1-5), o = { graine, force (forceSuiveuse du héros, 1 = débutant) }
 function nouvelle(heros, niveau, o) {
-  o = o || {}; const L = NIVEAUX[niveau - 1], rng = graine(o.graine || (Date.now() & 0xffffff));
-  const fs = 1 + R.suivi * Math.max(0, (o.force || 1) - 1), f = L.f * R.pv * (o.pv || 1) * fs; // la maison : les monstres suivent la force du héros (27/11 soir : R.suivi = 90 % du gain au Rempart, 40 % avant : un héros très monté écrasait tout)
+  o = o || {}; let L = NIVEAUX[niveau - 1]; const rng = graine(o.graine || (Date.now() & 0xffffff));
+  // 28/11 : le MODE HÉROÏQUE (un niveau déjà gagné, rejoué plus dur) : monstres +80 %, une grosse vague de plus avant la dernière, la difficulté ne baisse jamais
+  if (o.heroique) { const v = L.vagues, gs = v.map((w, k) => w[2] ? k : -1).filter(k => k >= 0), der = v[v.length - 1], mod = v[gs.length > 1 ? gs[1] : gs[0]];
+    L = Object.assign({}, L, { vagues:[...v.slice(0, -1), [der[0], mod[1].slice(), true], [der[0] + 45, der[1], true]] }); }
+  const fs = 1 + R.suivi * Math.max(0, (o.force || 1) - 1), f = L.f * R.pv * (o.pv || 1) * fs * (o.heroique ? 1.8 : 1); // la maison : les monstres suivent la force du héros (27/11 soir : R.suivi = 90 % du gain au Rempart, 40 % avant : un héros très monté écrasait tout)
   const S = { heros, niveau, L, rng, f, puiss:Math.max(1, o.force || 1), fBoss:fs * (o.pvBoss || 1), t:0, energie:R.energieDepart, eAcc:0, rempart:R.rempart, rempartMax:R.rempart,
     cases:Array(NC * NR).fill(null), monstres:[], file:[], des:[], deT:R.deDelai, jauge:0, ultimes:0, bowling:L.bowling ? 1 : 0,
     kills:0, fini:null, fx:[], log:[], effets:{}, vus:{}, puitsGratuit:heros === 'pip', gelPartout:0,
     cristaux:[], ramasses:0, perdus:0, sortT:R.sortDepart, sorts:0, evtT:30, cadeau:null, orage:0, defi:null, murs:[], pieges:[], detours:[], besace:[], deObjet:0, appels:0, bati:0, bowlings:0, perteMax:0,
     batiSortes:{}, passes:0, passe:{}, tues:{}, runesBaties:0, speFaites:0, annonce:false, vagueVue:-1,
-    adapt:1, adaptOn:o.adapt !== false, vStat:L.vagues.map(() => ({ pertes:0, morts:[], vus:0, finis:0, n:0 })), adaptLog:[] };
+    heroique:!!o.heroique, adapt:1, adaptOn:o.adapt !== false, vStat:L.vagues.map(() => ({ pertes:0, morts:[], vus:0, finis:0, n:0 })), adaptLog:[] };
   L.vagues.forEach((v, iv) => { S.vStat[iv].n = v[1].length; });
   if (heros === 'aldric') { S.rempart += 3; S.rempartMax += 3; }
   // la file des apparitions : chaque vague se répand sur quelques secondes, chemins au hasard
@@ -395,7 +398,7 @@ function bilanVague(S, iv) {
   else if (V.pertes === 0 && loin > 2) { S.adapt += ADAPT.monteDoux; txt = 'pression un peu faible → monstres à peine plus forts'; }
   else if (V.pertes > 0 && loin < 1.5) { S.adapt -= ADAPT.monteDoux; txt = 'le rempart souffre un peu → monstres à peine moins forts'; }
   else txt = 'bonne pression → rien ne change';
-  S.adapt = Math.max(ADAPT.min, Math.min(S.niveau <= 2 ? ADAPT.maxN1 : ADAPT.max, Math.round(S.adapt * 100) / 100));
+  S.adapt = Math.max(S.heroique ? 1 : ADAPT.min, Math.min(S.niveau <= 2 ? ADAPT.maxN1 : ADAPT.max, Math.round(S.adapt * 100) / 100));
   const l = `⚖ vague ${iv + 1} : ${txt} (${V.pertes} PV perdus, morts à ${loin.toFixed(1).replace('.', ',')} cases ; ×${avant.toFixed(2).replace('.', ',')} → ×${S.adapt.toFixed(2).replace('.', ',')})`;
   S.adaptLog.push({ v:iv + 1, pertes:V.pertes, loin, adapt:S.adapt }); log(S, l);
   calme(S, iv);

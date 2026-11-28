@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261128-010620"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde">
+<head><meta name="guilde-version" content="20261128-010955"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="robots" content="noindex">
@@ -198,7 +198,7 @@
 <script src="rang.js?v=aadc90c69b"></script>
 <script src="heros-etoiles.js?v=29ce68f57f"></script>
 <script src="donnees.js?v=8a39c05326"></script>
-<script src="rempart-moteur.js?v=7ca2eefc66"></script>
+<script src="rempart-moteur.js?v=335433bf25"></script>
 <script src="configurateur.js?v=d5e9469a28"></script>
 <script src="heros-aventure.js?v=31db8c2ed4"></script>
 <script>
@@ -208,7 +208,7 @@ const P = REMPART, app = document.getElementById('app'), fen = document.getEleme
 const CLE = 'guilde-rempart', ORDRE_HEROS = ['maelle', 'gorm', 'aldric', 'pip', 'oria', 'zephine'];
 let S = null, cleH = 'maelle', sel = null, msgT = '', msgErr = false, pause = false, accu = 0, dernier = 0, boucle = 0, finMontree = false;
 const nbsp = s => String(s).replace(/ ([:;!?»])/g, ' $1').replace(/« /g, '« ');
-const lire = () => { let d; try { d = JSON.parse(localStorage.getItem(CLE) || '{}'); } catch (e) { d = {}; } return Object.assign({ max:1, et:{}, med:{}, cent:{}, heros:['maelle'], vus:{}, parties:0 }, d); };
+const lire = () => { let d; try { d = JSON.parse(localStorage.getItem(CLE) || '{}'); } catch (e) { d = {}; } return Object.assign({ max:1, et:{}, med:{}, cent:{}, cour:{}, heros:['maelle'], vus:{}, parties:0 }, d); };
 // 27/11 soir : 3 étoiles + 3 médailles par niveau ; le pourcentage d'un niveau
 const ETOILES_D = ['Gagner le niveau', 'Garder le rempart à 45 % ou plus', 'Garder le rempart à 75 % ou plus'];
 const pctNiveau = (d, n) => Math.round(((d.et[n] || 0) + ((d.med[n] || []).length)) / 6 * 100);
@@ -257,12 +257,12 @@ const COLX = [.125, .31, .5, .685, .865];
 const xPx = c => (P.NC === 5 ? COLX[c] : (c + .5) / P.NC) * G.W;
 const caseXY = i => ({ x:xPx(i % P.NC), y:G.FH + (P.NR - 1 - Math.floor(i / P.NC) + .5) * G.ch });
 // ---------------------------------------------------------------- l'écran de jeu
-function demarre(niveau, k) {
+function demarre(niveau, k, heroique) {
   CFG.ferme(); cleH = k; const v = haVoie(k), info = haInfo(k);
   let f = 1; try { f = typeof forceSuiveuse === 'function' ? forceSuiveuse(info ? info.id : v) : 1; } catch (e) {}
-  S = P.nouvelle(v, niveau, { force:f }); S.av = info ? info.id : null; sel = null; pause = false; finMontree = false; msgT = '';
+  S = P.nouvelle(v, niveau, { force:f, heroique:!!heroique }); S.av = info ? info.id : null; sel = null; pause = false; finMontree = false; msgT = '';
   app.classList.add('jeu');
-  app.innerHTML = `<div id="haut"><button onclick="quitter()">‹</button><div class="t"><b>${niveau}. ${S.L.n}</b><div class="prog" id="progB"><i id="prog" style="width:0"></i></div></div>
+  app.innerHTML = `<div id="haut"><button onclick="quitter()">‹</button><div class="t"><b>${heroique ? "👑 " : ""}${niveau}. ${S.L.n}</b><div class="prog" id="progB"><i id="prog" style="width:0"></i></div></div>
     <button id="appel" onclick="appel()" style="display:none"></button><button id="pause" onclick="basculePause()">⏸</button><button onclick="regles()">❓</button></div>
     <div id="plateau"></div>
     <div id="bas"><div class="l1"><div class="energie" id="energie"></div><div class="boutique" id="boutique"></div></div>
@@ -273,7 +273,7 @@ function demarre(niveau, k) {
   try { const ro = new ResizeObserver(() => { const pl = document.getElementById('plateau'); if (S && pl && G && (Math.abs(pl.clientHeight - G.H) > 2 || Math.abs(pl.clientWidth - G.W) > 2)) { geometrie(); dessinePlateau(); } }); ro.observe(document.getElementById('plateau')); } catch (e) {}
   try { GM.musique('duel'); } catch (e) {}
   const d = lire(); d.parties++; ecrire(d);
-  const intro = () => fenetre(`<h2>🏰 Niveau ${niveau} · ${S.L.n}</h2><div class="mous"><img src="ui/moustache.webp" alt=""><div><p>${S.L.debloque}</p>
+  const intro = () => fenetre(`<h2>${heroique ? "👑 Héroïque · " : "🏰 "}Niveau ${niveau} · ${S.L.n}</h2>${heroique ? "<p><b>Mode Héroïque</b> : monstres 80 % plus solides, une grosse vague de plus, et la difficulté ne baisse jamais. Bonne chance !</p>" : ""}<div class="mous"><img src="ui/moustache.webp" alt=""><div><p>${S.L.debloque}</p>
     <p class="doux">Le rempart a ${S.rempartMax} PV. ${niveau === 5 ? 'Au bout : le Titan de feu.' : 'Tiens jusqu’à la dernière vague 🚩.'}</p></div></div>
     <p class="doux">🛡 ${info ? haEsc(info.nom) + ' · voie de ' + HEROS[v].nom : HEROS[v].nom} : ${P.HEROS_R[v].passif}</p>
     <div class="bts"><button class="go" onclick="fermer();if(!presentePuits())lanceGuide()">C’est parti !</button></div>`);
@@ -649,6 +649,7 @@ function fin() {
   const medsIci = P.medailles(S), dejaM = d.med[n] || [], nouvM = medsIci.filter(k => !dejaM.includes(k));
   if (nouvM.length) { d.med[n] = [...dejaM, ...nouvM]; xp += 15 * nouvM.length; or += 10 * nouvM.length; }
   if (g) d.et[n] = Math.max(avant, e);
+  const cour = g && S.heroique && !d.cour[n]; if (cour) { d.cour[n] = 1; xp += 100; or += 80; } if (g && S.heroique) { xp += 20; or += 15; } // 28/11 : la couronne 👑 du mode Héroïque
   const cent = g && pctNiveau(d, n) >= 100 && !d.cent[n]; if (cent) { d.cent[n] = 1; xp += 60; or += 50; }
   if (g) { if (n < P.NIVEAUX.length && d.max < n + 1) d.max = n + 1;
     const h = ORDRE_HEROS[n]; if (h && !d.heros.includes(h)) { d.heros.push(h); nouvHeros.push(h); } }
@@ -665,7 +666,8 @@ function fin() {
     <div class="meds">${P.DEFIS[n].map(D => `<span class="${medsIci.includes(D.k) || dejaM.includes(D.k) ? '' : 'off'}">🏅</span>`).join('')}</div>
     ${nouvM.map(k => `<p>🏅 <b>Nouveau défi relevé : ${P.DEFIS[n].find(D => D.k === k).n}</b> · ${P.DEFIS[n].find(D => D.k === k).d}</p>`).join('')}
     ${cent ? `<p>💯 <b>Niveau complété à 100 %</b> : 3 étoiles et 3 médailles !</p>` : `<p class="doux">Niveau complété à ${pctNiveau(d, n)} %.</p>`}` : ''}
-    <p>Niveau ${n} · ${S.L.n} · rempart ${Math.ceil(S.rempart)}/${S.rempartMax} PV · monstres abattus : ${S.kills}.</p>
+    ${cour ? '<p>👑 <b>Couronne héroïque gagnée !</b> Le niveau est vaincu en mode Héroïque.</p>' : g && S.heroique ? '<p>👑 Encore une victoire héroïque !</p>' : ''}
+    <p>${S.heroique ? '👑 Héroïque · ' : ''}Niveau ${n} · ${S.L.n} · rempart ${Math.ceil(S.rempart)}/${S.rempartMax} PV · monstres abattus : ${S.kills}.</p>
     <p>✨ +${xp} XP de la Guilde${or ? ` · 🪙 +${or} d’or` : ''}${g && !avant ? ' (première victoire !)' : ''}</p>
     ${g ? '<p class="doux">★ la victoire · ★★ le rempart à 45 % ou plus · ★★★ à 75 % ou plus.</p>' : '<p class="doux">Astuce : touche un monstre pour savoir ce qui le contre.</p>'}
     ${nouvHeros.map(h => `<p>🎉 <b>${HEROS[h].nom}</b> te rejoint au Rempart${h === 'zephine' && !zOk() ? ' (après le tutoriel du Duel)' : ''} !</p>`).join('')}
@@ -673,8 +675,8 @@ function fin() {
     <div class="bts"><button onclick="rejouer()">↺ Rejouer</button>${suiv ? `<button class="go" onclick="suivant()">Niveau ${n + 1} ›</button>` : ''}<button onclick="fen.innerHTML='';accueil()">Retour</button></div>`);
   finHTML = fen.querySelector('.fenetre > div').innerHTML.replace(/^<button class="x"[^>]*>✕<\/button>/, '');
 }
-function rejouer() { const n = S.niveau; fen.innerHTML = ''; demarre(n, cleH); }
-function suivant() { const n = S.niveau + 1; fen.innerHTML = ''; demarre(n, herosOk(cleH) ? cleH : 'maelle'); }
+function rejouer() { const n = S.niveau, h = S.heroique; fen.innerHTML = ''; demarre(n, cleH, h); }
+function suivant() { const n = S.niveau + 1, h = S.heroique && !!lire().et[n]; fen.innerHTML = ''; demarre(n, herosOk(cleH) ? cleH : 'maelle', h); }
 // ---------------------------------------------------------------- l'accueil : le configurateur
 let choixH = localStorage.getItem('guilde-config-rempart-heros') || 'maelle';
 function choisitH(k) { if (!herosOk(k)) return; choixH = k; try { localStorage.setItem('guilde-config-rempart-heros', k); } catch (e) {} CFG.dessine(); }
@@ -688,14 +690,18 @@ function defRempart() {
     modes:[
       { k:'monde', e:'🌿', n:'Le premier monde', img:'menu-recu/rempart-monde.webp', desc:() => nbsp('Les monstres descendent cinq chemins vers le rempart, sans s’arrêter. Bâtis tes tours avec ton énergie ◆, fais-les monter avec les dés qui roulent, et tiens jusqu’à la dernière vague. Cinq niveaux, le Titan de feu au bout.'),
         pas:() => { const mT = Object.values(d.med).reduce((a, x) => a + x.length, 0); return [`🏰 Niveau ${Math.min(d.max, P.NIVEAUX.length)} sur ${P.NIVEAUX.length}`, `★ ${etT} étoile${etT > 1 ? 's' : ''} sur ${P.NIVEAUX.length * 3}`, `🏅 ${mT} médaille${mT > 1 ? 's' : ''} sur ${P.NIVEAUX.length * 3}`]; } },
+      { k:'heroique', e:'👑', n:'Héroïque', img:'menu-recu/rempart-monde.webp', desc:() => nbsp('Les niveaux déjà gagnés, rejoués pour les meilleurs : monstres 80 % plus solides, une grosse vague de plus, et la difficulté ne baisse jamais. Une couronne 👑 par niveau vaincu.'),
+        verrou:() => Object.keys(d.et).length ? null : 'Gagne d’abord le niveau 1', pas:() => [`👑 ${Object.keys(d.cour).length} couronne${Object.keys(d.cour).length > 1 ? 's' : ''} sur ${P.NIVEAUX.length}`] },
       { k:'sansfin', e:'♾', n:'Sans fin', img:'menu-recu/rempart-sansfin.webp', desc:() => 'Les vagues ne s’arrêtent jamais. Bientôt !', verrou:() => 'Bientôt' } ],
-    options:m => [{ k:'niveau', titre:'🏰 Le niveau', aide:'Chaque niveau gagné ouvre le suivant et débloque quelque chose.',
+    options:m => m === 'heroique' ? [{ k:'niveau', titre:'👑 Le niveau héroïque', aide:'Seulement les niveaux déjà gagnés.',
+      choix:P.NIVEAUX.map((L, i) => { const n = i + 1; return { v:n, n:`${n}<br><small>${d.cour[n] ? '👑' : '○'}</small>`, dis:!d.et[n], d:nbsp(`<b>${L.n}</b> en Héroïque · ${d.cour[n] ? '👑 couronne déjà gagnée (+20 XP et +15 or par victoire).' : 'première victoire : 👑 couronne, +100 XP et +80 or.'}`) }; }),
+      def:Math.max(1, ...Object.keys(d.et).map(Number).filter(n => !d.cour[n]).slice(0, 1), 1) }] : [{ k:'niveau', titre:'🏰 Le niveau', aide:'Chaque niveau gagné ouvre le suivant et débloque quelque chose.',
       choix:P.NIVEAUX.map((L, i) => { const n = i + 1, et = d.et[n] || 0;
         return { v:n, n:`${n}<br><small style="color:#f3c96b">${'★'.repeat(et)}<span style="opacity:.35">${'★'.repeat(3 - et)}</span></small><br><small>${medsTexte(d, n)}</small>`, dis:n > d.max,
           d:nbsp(`<b>${L.n}</b> · ${L.debloque}<div class="detN" style="margin-top:6px">${ETOILES_D.map((t, k) => `<span class="${k < et ? 'on' : 'off'}">${k < et ? '★' : '☆'} ${t}</span>`).join('<br>')}<br>`
             + P.DEFIS[n].map(D => `${(d.med[n] || []).includes(D.k) ? '✅' : '○'} <b>${D.n}</b> : ${D.d}`).join('<br>') + `<br><b>Niveau complété à ${pctNiveau(d, n)} %</b></div>`) }; }), def:Math.min(d.max, P.NIVEAUX.length) }],
-    resume:(m, o) => `🏰 Niveau ${o.niveau} · ${P.NIVEAUX[o.niveau - 1].n} · <b>${haInfo(choixH) ? haEsc(haInfo(choixH).nom) : HEROS[haVoie(choixH)].nom}</b>`,
-    lancer:(m, o) => { if (!herosOk(choixH)) { choixH = 'maelle'; } demarre(o.niveau || 1, choixH); } };
+    resume:(m, o) => `${m === 'heroique' ? '👑 Héroïque · ' : '🏰 '}Niveau ${o.niveau} · ${P.NIVEAUX[o.niveau - 1].n} · <b>${haInfo(choixH) ? haEsc(haInfo(choixH).nom) : HEROS[haVoie(choixH)].nom}</b>`,
+    lancer:(m, o) => { if (!herosOk(choixH)) { choixH = 'maelle'; } demarre(o.niveau || 1, choixH, m === 'heroique'); } };
 }
 function accueil() { cancelAnimationFrame(boucle); S = null; sel = null; app.classList.remove('jeu'); if (!herosOk(choixH)) choixH = 'maelle'; CFG.ouvre(defRempart()); try { GM.musique('menu'); GM.retour && GM.retour(null); } catch (e) {} }
 accueil();
