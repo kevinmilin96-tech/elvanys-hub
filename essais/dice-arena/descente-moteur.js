@@ -210,7 +210,7 @@ const FORGE_CHOIX = ['plus', 'rouge', 'bleu', 'gris', 'orange'];
 // ------------------------------------------------------------------ une descente
 // bonus : la progression du héros (étoiles, équipement) ; opts : { breloque, pacte }
 function nouvelle(heros, graine, bonus = {}, opts = {}) {
-  const R = { heros, graine, rs:0, etage:1, pas:0, pvmax:C.PV_HEROS + (bonus.pv || 0), pv:0, or:0, obj:{}, comp:null, bonus,
+  const R = { bene:{}, heros, graine, rs:0, etage:1, pas:0, pvmax:C.PV_HEROS + (bonus.pv || 0), pv:0, or:0, obj:{}, comp:null, bonus,
     breloque:opts.breloque || null, pacte:opts.pacte || null, prof:Math.max(0, Math.min(10, opts.profondeur || 0)), consos:['potion'], ecran:'carte', choix:[], salle:null, S:null, fin:null, score:0, journal:[], combats:0, chemin:[], souffleUtilise:false };
   const h0 = C.rng(graine); R.rs = Math.floor(h0() * 4294967296); const h = RR(R);
   // 15/11 soir : renommée (null = tout ouvert : la descente du jour est la même pour tout le monde), thèmes des 3 étages (tirés par la graine), forge des dés
@@ -290,6 +290,7 @@ function optsCombat(R, type) {
   if (R.prof >= 5 && type === 'elite') obj.eliteDur = 1;
   if (R.prof >= 6) obj.moinsOr = 1;
   if (R.prof >= 10 && type === 'boss') obj.bossDur = 2;
+  Object.entries(R.bene || {}).forEach(([k, n]) => { const B = BENES[k]; if (B && B.o) Object.entries(B.o).forEach(([o, v]) => { obj[o] = (obj[o] || 0) + v * n; }); });
   // 15/11 soir : les bonus de FAMILLE (traduits en clés que crypte-moteur.js sait lire)
   if (fam(R, 'feu', 2)) obj.aiguise = (obj.aiguise || 0) + 1;
   if (fam(R, 'feu', 3)) obj.sac = (obj.sac || 0) + 1;
@@ -323,6 +324,7 @@ function prepareCombat(R, S, type) {
     if (k === 'glace') { S.bouclier += 6; cartes.forEach(c => { if (!c.trait && !c.elite && h() < .2) c.trait = 'gel'; }); }
     if (k === 'foret') cartes.forEach(c => { if (!c.trait && c.niv >= 2 && h() < .25) c.trait = 'repousse'; });
   }
+  if (R.bene && R.bene.vapeur) S.bouclier += 2; // (la Vapeur : +4 de l'aube +2 = +6)
   if (fam(R, 'garde', 2)) S.bouclier += 3;
   if (fam(R, 'garde', 3)) S.bouclier += 3;
   const brise1 = c => { const l = c.sceaux.filter(s => !s.ok); if (l.length < 2) return; const s = l[0]; s.ok = true; s.reste = 0; if (!s.val) s.val = s.t === 'ex' ? s.v : 0; };
@@ -409,12 +411,12 @@ function apresCombat(R) {
   if (R.comp && S.comp) R.comp.pv = S.comp.pv;
   if (S.fin === 'perdu') { R.pv = 0; R.fin = 'perdu'; R.ecran = 'fin'; R.S = null; return true; }
   const h = RR(R), t = R.salle.type, th = R.themes && R.themes[R.etage - 1];
-  R.victoires = (R.victoires || 0) + 1; if (t === 'boss') R.boss = (R.boss || 0) + 1;
+  R.victoires = (R.victoires || 0) + 1; if (t === 'boss') R.boss = (R.boss || 0) + 1; R.beneDue = true;
   const pvAvant = R.pv; // (pour le défi « sans te faire mal »)
   // 15/11 soir : bonus après une victoire (familles Or et Garde, Pied-de-biche, thèmes Cendres et Forêt)
   let orPlus = 3 * (fam(R, 'or', 2) ? 1 : 0) + 2 * (R.obj.pioche || 0) + (th === 'cendres' ? 4 : 0);
   const pvPlus = (fam(R, 'garde', 3) ? 3 : 0) + (th === 'foret' ? 5 : 0);
-  R.pv = S.pv + (R.prof >= 8 ? 0 : 2) + 3 * (R.obj.trophee || 0) + pvPlus; R.pv = Math.min(R.pv, R.pvmax); // on souffle un peu après chaque victoire (+2)
+  R.pv = S.pv + (R.prof >= 8 ? 0 : 2) + 3 * (R.obj.trophee || 0) + pvPlus + Object.entries(R.bene || {}).reduce((a, [k, n]) => a + ((BENES[k] && BENES[k].soin) || 0) * n, 0); R.pv = Math.min(R.pv, R.pvmax); // on souffle un peu après chaque victoire (+2)
   R.salle.texte = `Victoire ! +${S.orGagne} or ramassés${orPlus ? ` (+${orPlus} de bonus)` : ''}.`;
   if (t === 'combat') R.salle.recomp = [{ t:'or', n:4 + 2 * R.etage }, h() < .5 ? { t:'soin', n:8 } : { t:'conso', k:pick(h, Object.keys(C.CONSOS)) }, ...tireObjets(R, h, 1).map(k => ({ t:'objet', k }))];
   if (t === 'elite') R.salle.recomp = tireObjets(R, h, debloque(R).elite4 ? 4 : 3, true).map(k => ({ t:'objet', k }));
@@ -436,6 +438,45 @@ function recompense(R, k) {
   suite(R); return gain;
 }
 // passer à l'étape suivante (ou à l'étage suivant, ou à la victoire)
+// 28/11 (choix de l'utilisateur « 1+2 », façon Hades) : LES BÉNÉDICTIONS. Après chaque combat gagné : 1 bénédiction parmi 3 (relance du tirage
+// contre de l'or). Trois écoles (🔥 Braise attaque, ❄ Givre défense, 🌙 Ombre dés) ; avec 2 bénédictions dans deux écoles, une bénédiction DOUBLE peut sortir.
+// Chaque bénédiction se traduit en clés d'objets que crypte-moteur.js sait lire (o), ou en effet direct (pvmax, soin après victoire).
+const ECOLES = { braise:{ e:'🔥', n:'Braise', coul:'#ff7a4a' }, givre:{ e:'❄', n:'Givre', coul:'#7ad8ff' }, ombre:{ e:'🌙', n:'Ombre', coul:'#c084fc' } };
+const BENES = {
+  tranchant:{ ec:'braise', e:'🗡', n:'Tranchant', d:'Tes dés valent +1 sur les sceaux « total ».', o:{ aiguise:1 }, max:2 },
+  premier:  { ec:'braise', e:'⚔', n:'Premier sang', d:'Au début de chaque combat, brise 1 sceau sur chaque monstre visible.', o:{ entree:1 }, max:1 },
+  traque:   { ec:'braise', e:'🎯', n:'Traque', d:'Élites et boss commencent chaque combat avec 1 sceau déjà brisé.', o:{ braise:1 }, max:1 },
+  furie:    { ec:'braise', e:'🔥', n:'Furie', d:'+1 dé à chaque tour, mais −6 PV max.', o:{ sac:1 }, pvmax:-6, max:1, rare:true },
+  bouclier: { ec:'givre', e:'🛡', n:'Peau de givre', d:'+4 bouclier au début de chaque combat.', o:{ aube:1 }, max:3 },
+  sixglace: { ec:'givre', e:'❄', n:'Six de glace', d:'Chaque 6 posé sur un sceau te donne 1 bouclier.', o:{ six:1 }, max:3 },
+  souffle:  { ec:'givre', e:'💧', n:'Second souffle', d:'+4 PV après chaque combat gagné.', soin:4, max:3 },
+  roc:      { ec:'givre', e:'🪨', n:'Cœur de roc', d:'+8 PV max (et +8 PV).', pvmax:8, max:2 },
+  relance:  { ec:'ombre', e:'🌙', n:'Main d’ombre', d:'+1 relance à chaque tour.', o:{ gobelet:1 }, max:2 },
+  poche:    { ec:'ombre', e:'🎒', n:'Poche secrète', d:'+1 place dans ta besace (garder un dé).', o:{ besace:1 }, max:2 },
+  reflets:  { ec:'ombre', e:'🔮', n:'Reflets', d:'Deux fois plus de dés de couleur.', o:{ prisme:1 }, max:1 },
+  eveil:    { ec:'ombre', e:'✦', n:'Éveil', d:'Ton pouvoir commence chaque combat avec 1 sceau déjà brisé.', o:{ talisman:1 }, max:1, rare:true },
+  // les DOUBLES (2 bénédictions dans chacune des deux écoles)
+  vapeur:   { ec:'braise+givre', e:'♨', n:'Vapeur', d:'Début de combat : +6 bouclier et 1 sceau brisé sur chaque monstre visible.', o:{ aube:1, entree:1 }, bouclier:2, max:1, dbl:['braise', 'givre'] },
+  braisenoire:{ ec:'braise+ombre', e:'🌑', n:'Braise noire', d:'+1 dé et +1 relance à chaque tour.', o:{ sac:1, gobelet:1 }, max:1, dbl:['braise', 'ombre'] },
+  lunegelee:{ ec:'givre+ombre', e:'🌘', n:'Lune gelée', d:'Chaque combat commence avec 1 Rune, et +5 PV après chaque victoire.', o:{ rune:1 }, soin:5, max:1, dbl:['givre', 'ombre'] },
+};
+const nbEcole = (R, ec) => Object.entries(R.bene || {}).reduce((a, [k, n]) => a + (BENES[k] && BENES[k].ec === ec ? n : 0), 0);
+function offreBene(R) { const h = RR(R), dispo = Object.keys(BENES).filter(k => (R.bene[k] || 0) < BENES[k].max && (!BENES[k].dbl || BENES[k].dbl.every(ec => nbEcole(R, ec) >= 2)));
+  const dbl = dispo.filter(k => BENES[k].dbl), simples = dispo.filter(k => !BENES[k].dbl), l = [];
+  if (dbl.length && h() < .6) l.push(pick(h, dbl));
+  const pond = []; simples.forEach(k => { for (let i = 0; i < (BENES[k].rare ? 1 : 3); i++) pond.push(k); });
+  while (l.length < 3 && pond.length) { const k = pick(h, pond); if (!l.includes(k)) l.push(k); if (pond.every(x => l.includes(x))) break; }
+  return l; }
+function etapeBene(R) { R.ecran = 'benediction'; R.salle = { type:'benediction', offre:offreBene(R), relances:0 }; }
+const prixBene = R => prix(R, 4 + 4 * ((R.salle && R.salle.relances) || 0));
+function relancerBene(R) { if (R.ecran !== 'benediction') return null; const p = prixBene(R); if (R.or < p) return 'Pas assez d’or.'; R.or -= p; R.salle.relances++; R.salle.offre = offreBene(R); return null; }
+function choisirBene(R, k) {
+  if (R.ecran !== 'benediction') return null; let txt = 'Tu continues sans bénédiction.';
+  if (k != null && k >= 0) { const id = R.salle.offre[k], B = BENES[id]; if (!B) return null; R.bene[id] = (R.bene[id] || 0) + 1;
+    if (B.pvmax) { R.pvmax = Math.max(10, R.pvmax + B.pvmax); R.pv = Math.max(1, Math.min(R.pvmax, R.pv + Math.max(0, B.pvmax))); }
+    txt = `${B.e} ${B.n} : ${B.d}`; }
+  R.salle = null; R.ecran = 'carte'; R.apresBene = true; suite(R); return txt;
+}
 // 28/11 (l'utilisateur, d'après Dice & Fold) : L'ÉTAPE COMPAGNON au début de chaque étage : 1 compagnon parmi 3 (il remplace l'actuel),
 // ou garder le sien (vie pleine) ; sans compagnon, « continuer seul » rend 8 PV.
 function etapeComp(R) { const h = RR(R), l = melange(h, compsOuverts(R).filter(k => !R.comp || k !== R.comp.id)).slice(0, 3); R.ecran = 'compagnon'; R.salle = { type:'compagnon', offre:l }; }
@@ -447,6 +488,8 @@ function choisirComp(R, k) {
   R.journal && R.journal.push && R.journal.push('🐾 ' + txt); R.salle = null; R.ecran = 'carte'; tireChoix(R); return txt;
 }
 function suite(R) {
+  if (R.beneDue && !R.fin) { R.beneDue = false; R.salleAvant = R.salle; etapeBene(R); return true; }
+  if (R.apresBene) { R.apresBene = false; R.salle = R.salleAvant || null; R.salleAvant = null; }
   if (R.salle && R.salle.type === 'boss') {
     if (R.etage >= ETAGES) { R.fin = 'gagne'; R.ecran = 'fin'; R.score = Math.round((R.score + 50 * R.pv + 10 * R.or) * (R.pacte ? PACTES[R.pacte].score : 1) * (1 + .1 * R.prof)); return true; }
     R.etage++; R.pas = 0; R.salle = null; tireChoix(R); etapeComp(R); return true;
@@ -457,7 +500,7 @@ const etoiles = R => R.fin !== 'gagne' ? 0 : 1 + (R.pv >= R.pvmax * .3 ? 1 : 0) 
 // 15/11 soir : la rareté visible d'un objet (une gemme de couleur et le mot)
 const rarete = k => OBJETS[k] && OBJETS[k].rare ? { n:'Rare', coul:'#4aa8ff' } : { n:'Commun', coul:'#b8c0d0' };
 
-const API = { choisirComp, PROFONDEURS, ETAPES, ETAGES, SALLES, OBJETS, BRELOQUES, PACTES, EVENEMENTS, nouvelle, choisir, acheter, feu, evenement, apresCombat, recompense, suite, etoiles, prix,
+const API = { BENES, ECOLES, nbEcole, choisirBene, relancerBene, prixBene, choisirComp, PROFONDEURS, ETAPES, ETAGES, SALLES, OBJETS, BRELOQUES, PACTES, EVENEMENTS, nouvelle, choisir, acheter, feu, evenement, apresCombat, recompense, suite, etoiles, prix,
   FAMILLES, familles, bonusFamilles, THEMES, theme, PALIERS, palierDe, debloque, renommeeGagnee, DEFIS, FORGE_CHOIX, forger, relancerEtal, prixRelance, rarete };
 if (typeof module !== 'undefined' && module.exports) module.exports = API; else racine.DESCENTE = API;
 })(typeof window !== 'undefined' ? window : globalThis);

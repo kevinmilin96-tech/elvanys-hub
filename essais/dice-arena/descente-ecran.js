@@ -141,6 +141,12 @@ function rangeActive() { const g = descenteGardee(); if (!g) return true; const 
   if (l.length >= 2 && !confirm('Tu as déjà 3 descentes en cours. Lancer celle-ci efface la plus ancienne (' + haEsc(herosS(l[l.length - 1]).nom) + ', étage ' + l[l.length - 1].etage + '). On continue ?')) return false;
   l.unshift(g); ecrireRangees(l); try { localStorage.removeItem(CLE_DP); } catch (e) {} return true; }
 function oublieRangee(k) { const l = descentesRangees(); l.splice(k, 1); ecrireRangees(l); }
+function beneD(k) { D.choisirBene(DR, k); try { son(k >= 0 ? 'magie' : 'choisir'); } catch (e) {} sauveD(); descenteEcran(); }
+function beneRelance() { const e = D.relancerBene(DR); try { son(e ? 'erreur' : 'melange'); } catch (x) {} sauveD(); descenteEcran(); }
+// 28/11 : le « build » des bénédictions, sous l'en-tête (🔥 2 · ❄ 1 · 🌙 0) ; un toucher = la liste
+const buildD = () => { if (!DR || !DR.bene || !Object.keys(DR.bene).length) return ''; const E = D.ECOLES;
+  return `<div onclick="voirBenes()" style="text-align:center;margin:1cqw 0;font-size:3.4cqw;cursor:pointer">✨ ${Object.keys(E).map(ec => `<b style="color:${E[ec].coul}">${E[ec].e} ${D.nbEcole(DR, ec)}</b>`).join(' · ')} <small style="opacity:.7">(toucher)</small></div>`; };
+function voirBenes() { const B = D.BENES; confirmeD('✨ Tes bénédictions', Object.entries(DR.bene).map(([k, n]) => `${B[k].e} <b>${B[k].n}</b>${n > 1 ? ` ×${n}` : ''} : ${B[k].d}`).join('<br>'), () => {}); }
 function compD(k) { const t = D.choisirComp(DR, k); if (t) { try { son('choisir'); } catch (e) {} sauveD(); } descenteEcran(); }
 function reprendDescente(k) {
   if (k != null) { const l = descentesRangees(), x = l[k]; if (!x) return; l.splice(k, 1); const g = descenteGardee(); if (g) l.unshift(g); ecrireRangees(l); try { localStorage.setItem(CLE_DP, JSON.stringify(x)); } catch (e) {} }
@@ -202,6 +208,12 @@ function descenteEcran() {
       <button class="grosbtn" ${fs.face && fs.quoi && !F[fs.face] ? '' : 'disabled style="opacity:.4"'} onclick="forgeValide()">Valider ⚒</button>
       <button class="grosbtn b2" onclick="confirmeD('⚒ Partir sans forger ?', 'La forge restera derrière toi.', () => { window._forgeSel = null; D.forger(DR, 0, null); descenteEcran(); })">Partir sans rien</button>`;
   }
+  if (DR.ecran === 'benediction') { const B = D.BENES, E = D.ECOLES, p = D.prixBene(DR);
+    const ecoleTxt = b => b.dbl ? b.dbl.map(ec => E[ec].e + ' ' + E[ec].n).join(' + ') : E[b.ec].e + ' ' + E[b.ec].n;
+    corps = `<div class="moust"><img src="ui/moustache.webp" alt=""><p>« Bien joué ! Les anciennes forges te bénissent. Choisis-en une… et pense à les marier : deux écoles ensemble, ça donne des merveilles. »</p></div>
+      <div class="salles">${DR.salle.offre.map((id, k) => { const b = B[id], n = DR.bene[id] || 0; return `<button onclick="beneD(${k})" style="border-color:${b.dbl ? '#ffd76b' : E[b.ec].coul};${b.dbl ? 'box-shadow:0 0 12px #ffd76b88' : ''}"><span class="e">${b.e}</span><span><b>${b.n}${n ? ` · ${n + 1}ᵉ fois` : ''}${b.dbl ? ' ✨ double' : b.rare ? ' · rare' : ''}</b><small style="color:${b.dbl ? '#ffd76b' : E[b.ec].coul}">${ecoleTxt(b)}</small><small>${b.d}</small></span></button>`; }).join('')}</div>
+      <button class="grosbtn b2" ${DR.or < p ? 'disabled style="opacity:.4"' : ''} onclick="beneRelance()">🔄 Autres bénédictions (${p} 🪙)</button>
+      <button class="grosbtn b2" onclick="beneD(-1)">Continuer sans</button>`; }
   if (DR.ecran === 'compagnon') { const CC = C.COMPAGNONS, a = DR.comp, img = id => `<img src="portraits/comp-${id}.webp?v=1" alt="" style="width:15cqw;height:15cqw;border-radius:50%;object-fit:cover;flex:none" onerror="this.remove()">`;
     corps = `<div class="moust"><img src="ui/moustache.webp" alt=""><p>« Étage ${DR.etage} ! Des amis attendent au bas de l’escalier. Tu en prends un avec toi ? ${a ? `Le nouveau remplace ${CC[a.id].n}… ou tu gardes ${CC[a.id].n}, et je le soigne.` : 'Ou tu continues seul, et je te soigne un peu.'} »</p></div>
       <div class="salles">${DR.salle.offre.map((id, k) => `<button onclick="compD(${k})">${img(id)}<span><b>${CC[id].e} ${CC[id].n}</b><small>❤ ${CC[id].pv} · ${CC[id].d}</small></span></button>`).join('')}
@@ -224,7 +236,7 @@ function descenteEcran() {
       <button class="grosbtn ${r.length ? 'b2' : ''}" onclick="prendD(-1)">${r.length ? 'Ne rien prendre' : 'Continuer ▶'}</button>`;
   }
   if (DR.ecran === 'fin') return descenteFin();
-  $('jeu').innerHTML = `<div class="dsc">${tete}${corps}</div>`;
+  $('jeu').innerHTML = `<div class="dsc">${tete}${buildD()}${corps}</div>`;
   const cd = $('carteD'); if (cd) cd.scrollTop = cd.scrollHeight * Math.max(0, 1 - (DR.pas + 2.5) / (D.ETAPES + 1)) - cd.clientHeight / 2;
 }
 function sacHTML() {
