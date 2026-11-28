@@ -1,5 +1,9 @@
 [
 {
+"v": "20261128-010620",
+"m": "Rempart : si tu joues très bien, les monstres peuvent devenir encore plus solides (à partir du niveau 3)"
+},
+{
 "v": "20261128-010414",
 "m": "Rempart : des surprises environ une fois par minute ! Moustache et sa bourse, l'aigle et son dé d'or, l'étoile filante, le dé du destin, le gobelin doré, l'orage, la charge du sanglier et le défi du marchand"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261127-192437",
 "m": "Rempart : les tours et les monstres sont bien au milieu des chemins"
-},
-{
-"v": "20261127-192255",
-"m": "Rempart : les cases des tours s'arrêtent au-dessus du rempart"
 }
 ]
