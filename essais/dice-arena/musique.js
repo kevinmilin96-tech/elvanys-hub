@@ -356,7 +356,7 @@ const Carnet = (() => {
     reprendAnciens();
     const l = lit(); l.unshift({ quand:new Date().toISOString(), mode, heros:String(info.heros || ''), resultat:String(info.resultat || ''),
       version:typeof VERSION !== 'undefined' ? VERSION : '', resume:info.resume || {}, journal:(info.journal || []).map(String).slice(-400) });
-    ecrit(l); pastille();
+    ecrit(l); if (!/-combat$/.test(mode)) pastille(); // 28/11 : pas de pastille après chaque combat d'une descente (elle cachait « Relancer »), seulement à la fin
   }
   function pastille() { // à la fin d'une partie : une pastille discrète pour relire le journal tout de suite
     if (!document.body) return; let b = document.getElementById('carnet-pastille'); if (b) b.remove();
