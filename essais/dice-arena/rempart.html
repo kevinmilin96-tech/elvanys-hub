@@ -52,10 +52,10 @@
   .case img.canon { width:96%; height:96%; object-fit:contain; filter:drop-shadow(0 3px 2px #0007); transition:transform .12s; }
   .case .tour.tire img.canon { transform:scale(1.08) translateY(-3%); }
   .case .so { position:absolute; left:-6px; top:-6px; background:#000c; border:2px solid #888; border-radius:10px; padding:0 4px; font-size:12px; line-height:20px; z-index:2; white-space:nowrap; }
-  .case .so b { font-size:17px; color:#fff; } .case .so.n2 { border-color:#4ade80; } .case .so.n3 { border-color:#60a5fa; } .case .so.n4 { border-color:#ffd76b; background:#3a2a00e6; }
+  .case .so b { font-size:17px; color:#fff; } .case .so .ets { font-style:normal; color:#ffd76b; font-weight:bold; font-size:14px; margin-left:2px; text-shadow:0 0 4px #000; } .case .so.n2 { border-color:#4ade80; } .case .so.n3 { border-color:#60a5fa; } .case .so.n4 { border-color:#ffd76b; background:#3a2a00e6; }
   .case .so small { color:var(--or); font-weight:bold; font-size:.78em; }
   .case .et { position:absolute; top:-4px; left:50%; transform:translateX(-50%); color:#ffd76b; font-size:10px; text-shadow:0 0 3px #000; letter-spacing:-1px; white-space:nowrap; }
-  .case .pw { position:absolute; right:-6px; top:-6px; width:28px; height:28px; border-radius:50%; border:2px solid #ffd76b; background:#3a1470e6; color:#ffd76b; font-size:16px; padding:0; z-index:3; animation:pulse 1.2s infinite; }
+  .case .pw { position:absolute; left:-6px; bottom:-4px; width:28px; height:28px; border-radius:50%; border:2px solid #ffd76b; background:#3a1470e6; color:#ffd76b; font-size:16px; padding:0; z-index:3; animation:pulse 1.2s infinite; }
   .case .plus1 { position:absolute; right:-6px; bottom:-4px; min-width:30px; height:22px; border-radius:11px; border:2px solid #fff; background:#2f9e44; color:#fff; font-weight:bold; font-size:12px; padding:0 3px; z-index:3; box-shadow:0 0 10px #7ddc4a; animation:pulse 1s infinite; }
   .case .puits { font-size:34px; filter:drop-shadow(0 0 8px #c084fc); animation:pulse 2.2s infinite; }
   .case .runeT { width:80%; height:80%; border-radius:50%; background:radial-gradient(circle, #f6e7ff, #c084fc 55%, #6b2bd9); display:flex; align-items:center; justify-content:center; box-shadow:0 0 14px #c084fc; animation:pulse 1.8s infinite; }
@@ -327,7 +327,7 @@ function htmlCase(t, i) {
   if (t.puits) return `<div class="tour"><img class="pu" src="decor/obj-puits-runes.webp?v=1" alt=""></div>`; // 27/11 : image reçue
   if (t.rune) return `<div class="tour"><div class="runeT"><img src="${FACE(S.heros, t.paire)}" alt=""></div><span class="so">${P.EFFET_PAIRE[t.paire].e}<small>${t.rv}</small></span></div>`;
   const n = Math.min(3, t.niv);
-  const TI = TOUR_IMG[t.v]; return `<div class="tour">${TI ? `<img class="tr" src="tours/${TI}.webp?v=2" alt="">` : `<img class="canon" src="tours/canon-${S.heros}-${n}.webp?v=2" onerror="this.onerror=null;this.src='tours/canon-maelle-${n}.webp?v=2'" alt="">`}<span class="so n${Math.min(4, t.niv)}">${P.SORTES[t.v].e} <b>${t.niv}</b></span>${t.et ? `<span class="et">${'★'.repeat(t.et)}</span>` : ''}${deMonte(t) >= 0 ? `<button class="plus1" onpointerdown="event.stopPropagation();event.preventDefault();monteParDe(${i})">⬆+1</button>` : ''}${P.pouvoirPret(t) && porteur(t) ? `<button class="pw" onpointerdown="event.stopPropagation();event.preventDefault();pouvoirDirect(${i})">✦</button>` : t.niv >= P.R.nivMax ? (t.spe ? `<span class="spe ok">${t.spe.toUpperCase()}</span>` : '<span class="spe">!</span>') : ''}</div>`;
+  const TI = TOUR_IMG[t.v]; return `<div class="tour">${TI ? `<img class="tr" src="tours/${TI}.webp?v=2" alt="">` : `<img class="canon" src="tours/canon-${S.heros}-${n}.webp?v=2" onerror="this.onerror=null;this.src='tours/canon-maelle-${n}.webp?v=2'" alt="">`}<span class="so n${Math.min(4, t.niv)}">${P.SORTES[t.v].e} <b>${t.niv}</b>${t.et ? `<i class="ets">★${t.et}</i>` : ''}</span>${deMonte(t) >= 0 ? `<button class="plus1" onpointerdown="event.stopPropagation();event.preventDefault();monteParDe(${i})">⬆+1</button>` : ''}${P.pouvoirPret(t) && porteur(t) ? `<button class="pw" onpointerdown="event.stopPropagation();event.preventDefault();pouvoirDirect(${i})">✦</button>` : t.niv >= P.R.nivMax ? (t.spe ? `<span class="spe ok">${t.spe.toUpperCase()}</span>` : '<span class="spe">!</span>') : ''}</div>`;
 }
 function caseOk(i) {
   if (!sel) return false; const t = S.cases[i];
@@ -474,7 +474,7 @@ function lanceDeObjet() { marqueGeste(); if (!S || S.fini || pause || fen.innerH
     if (!localStorage.getItem('guilde-rempart-besace')) { localStorage.setItem('guilde-rempart-besace', '1'); dis(`🎒 ${o.k === 'joker' ? 'Le joker' : P.OBJETS[o.k].n} est dans ta besace (en bas à gauche) : touche-le, puis le plateau là où tu le veux.`); } rafraichit(); }, 800); }
 function choisitObjet(n, choix) { marqueGeste(); if (!S || S.fini || pause) return; const o = S.besace[n]; if (!o) return;
   if (sel && sel.t === 'objet' && sel.n === n && !choix) { sel = null; const v0 = document.getElementById('visee'); if (v0) v0.remove(); dis(''); rafraichit(); return; }
-  if (o.k === 'joker' && !choix) { fenetre(`<h2>🃏 Le joker</h2><p>Choisis l’objet :</p>${Object.entries(P.OBJETS).map(([k, x]) => `<button class="choixObj" onclick="fermer();choisitObjet(${n}, '${k}')"><b>${x.e} ${x.n}</b><br><small>${x.d}</small></button>`).join('')}`); return; }
+  if (o.k === 'joker' && !choix) { setTimeout(() => fenetre(`<h2>🃏 Le joker</h2><p>Choisis l’objet :</p>${Object.entries(P.OBJETS).map(([k, x]) => `<button class="choixObj" onclick="fermer();choisitObjet(${n}, '${k}')"><b>${x.e} ${x.n}</b><br><small>${x.d}</small></button>`).join('')}`), 350); return; } /* 28/11 : ouverte après le « clic » du doigt, sinon il la refermait aussitôt */
   const k = choix || o.k, x = P.OBJETS[k]; sel = { t:'objet', n, k }; son('choisir'); dis(`${x.e} ${x.n} : ${x.d}`);
   const pl = document.getElementById('plateau'), v0 = document.getElementById('visee'); if (v0) v0.remove();
   const v = document.createElement('div'); v.id = 'visee'; v.innerHTML = nbsp(`<span>${x.e} Touche le chemin où le poser · ✕ pour annuler</span>`);
