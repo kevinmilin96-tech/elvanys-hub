@@ -1,5 +1,9 @@
 [
 {
+"v": "20261128-080332",
+"m": "Rempart : le joker reste ouvert, les étoiles des tours se lisent (4 ★2), les runes restent dans l'écran, et le défi du marchand n'arrive plus pendant une accalmie"
+},
+{
 "v": "20261128-075453",
 "m": "Mes decks : tes héros d'aventure ont maintenant leurs propres decks"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261127-234802",
 "m": "Rempart : les médailles déjà gagnées restent allumées, une rune sur un monstre ou sur le puits se ramasse d'un toucher, et le niveau 2 ne devient plus plus dur en cours de partie"
-},
-{
-"v": "20261127-233203",
-"m": "Les pages de récit de l'Invasion, du Campement et de l'Odyssée ont leurs illustrations"
 }
 ]

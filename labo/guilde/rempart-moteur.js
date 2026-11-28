@@ -270,7 +270,7 @@ function ramasser(S, id) {
   const k = S.cristaux.findIndex(x => x.id === id); if (k < 0) return 'Trop tard : elle s’est éteinte.';
   const x = S.cristaux.splice(k, 1)[0]; S.energie = Math.min(R.energieMax, S.energie + x.v); S.ramasses++; fx(S, { t:'ramasse', id, v:x.v, c:x.c, y:x.y });
 }
-function jaillit(S, c, y, v) { S.cristaux.push({ id:++MID, c, y, v, t:R.cristalVie }); fx(S, { t:'cristal' }); }
+function jaillit(S, c, y, v) { y = Math.min(y, HAUT - 1.6); /* 28/11 : jamais hors de l'écran, en haut */ S.cristaux.push({ id:++MID, c, y, v, t:R.cristalVie }); fx(S, { t:'cristal' }); }
 // 27/11 soir : APPELER LA VAGUE en avance (entre deux vagues) : bonus ◆ = secondes gagnées / 2 (8 au plus) + un peu de jauge d'Ultime
 function appelInfo(S) {
   if (S.fini || !S.file.length) return null; const iv = S.file[0].vague, t0 = Math.min(...S.file.filter(x => x.vague === iv).map(x => x.t)), gain = t0 - S.t;
@@ -328,7 +328,9 @@ const EVTS = {
 };
 const grosseEnCours = S => S.grosses.some(k => S.t >= S.vT[k] - 8 && !(S.vStat[k] && S.vStat[k].fait));
 function lanceEvt(S) {
-  const L = Object.keys(EVTS).filter(k => k !== S.dernierEvt), k = L[Math.floor(S.rng() * L.length)], c = Math.floor(S.rng() * NC); S.dernierEvt = k; S.evts = (S.evts || 0) + 1;
+  // 28/11 : le défi du marchand seulement s'il y a assez de monstres à abattre (pas pendant une accalmie)
+  const aVenir = S.monstres.filter(atteint).length + S.file.filter(x => x.t < S.t + 16).length;
+  const L = Object.keys(EVTS).filter(k => k !== S.dernierEvt && (k !== 'defi' || aVenir >= 14)), k = L[Math.floor(S.rng() * L.length)], c = Math.floor(S.rng() * NC); S.dernierEvt = k; S.evts = (S.evts || 0) + 1;
   if (EVTS[k].cadeau) S.cadeau = { id:++MID, k, t:EVTS[k].cadeau, max:EVTS[k].cadeau, y:.2 + S.rng() * .3 };
   else if (k === 'dore') { S.file.push({ t:S.t + .5, m:'dore', c, vague:-1 }); S.file.sort((a, b) => a.t - b.t); }
   else if (k === 'charge') { S.file.push({ t:S.t + 4, m:'sanglier*', c, vague:-1, charge:true }); S.file.sort((a, b) => a.t - b.t); }
