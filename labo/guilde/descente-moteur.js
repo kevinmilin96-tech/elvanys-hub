@@ -217,7 +217,7 @@ const FORGE_CHOIX = ['plus', 'rouge', 'bleu', 'gris', 'orange'];
 // ------------------------------------------------------------------ une descente
 // bonus : la progression du héros (étoiles, équipement) ; opts : { breloque, pacte }
 function nouvelle(heros, graine, bonus = {}, opts = {}) {
-  const R = { bene:{}, heros, graine, rs:0, etage:1, pas:0, pvmax:C.PV_HEROS + (bonus.pv || 0), pv:0, or:0, obj:{}, comp:null, bonus,
+  const R = { reliques:{}, bene:{}, heros, graine, rs:0, etage:1, pas:0, pvmax:C.PV_HEROS + (bonus.pv || 0), pv:0, or:0, obj:{}, comp:null, bonus,
     breloque:opts.breloque || null, pacte:opts.pacte || null, prof:Math.max(0, Math.min(10, opts.profondeur || 0)), consos:['potion'], ecran:'carte', choix:[], salle:null, S:null, fin:null, score:0, journal:[], combats:0, chemin:[], souffleUtilise:false };
   const h0 = C.rng(graine); R.rs = Math.floor(h0() * 4294967296); const h = RR(R);
   // 15/11 soir : renommée (null = tout ouvert : la descente du jour est la même pour tout le monde), thèmes des 3 étages (tirés par la graine), forge des dés
@@ -299,7 +299,7 @@ function optsCombat(R, type) {
   if (R.prof >= 10 && type === 'boss') obj.bossDur = 2;
   Object.entries(R.bene || {}).forEach(([k, n]) => { const B = BENES[k]; if (B && B.o) Object.entries(B.o).forEach(([o, v]) => { obj[o] = (obj[o] || 0) + v * n; }); });
   // 28/11 : plus tu portes d'objets et de bénédictions, plus les monstres frappent (+1 tous les 5) : la descente reste un défi jusqu'au bout
-  { const n = Object.values(R.obj || {}).reduce((a, x) => a + (x > 0 ? x : 0), 0) + Object.values(R.bene || {}).reduce((a, x) => a + x, 0); obj.forcePlus = (obj.forcePlus || 0) + Math.floor(n / 5); }
+  { const n = Object.values(R.obj || {}).reduce((a, x) => a + (x > 0 ? x : 0), 0) + Object.values(R.bene || {}).reduce((a, x) => a + x, 0); obj.forcePlus = (obj.forcePlus || 0) + Math.floor(n / +(typeof process !== 'undefined' && process.env && process.env.DIV || 3)) + (e - 1) * +(typeof process !== 'undefined' && process.env && process.env.FE != null ? process.env.FE : 1); }
   // 15/11 soir : les bonus de FAMILLE (traduits en clés que crypte-moteur.js sait lire)
   if (fam(R, 'feu', 2)) obj.aiguise = (obj.aiguise || 0) + 1;
   if (fam(R, 'feu', 3)) obj.sac = (obj.sac || 0) + 1;
@@ -319,11 +319,13 @@ function optsCombat(R, type) {
   if (df === 'rage') obj.forcePlus = (obj.forcePlus || 0) + 1;
   obj.besace = Math.max(-C.RESERVE, obj.besace || 0); // jamais moins de 0 place (sinon le moteur plante)
   return { cols, gardien:type === 'boss' ? 'seul' : false, etage:e, vies:type === 'boss' ? [0, 2, 3, 3][e] : 1, pv:R.pv, pvmax:R.pvmax, obj, comp:R.comp && R.comp.pv > 0 ? R.comp : null, or:R.or,
-    combos:true, maitre, couleur, secours:!!R.obj.souffle && !R.souffleUtilise, consos:R.consos || [], regle:R.regle || null };
+    combos:true, fond:true, reliques:R.reliques || {}, maitre, couleur, secours:!!R.obj.souffle && !R.souffleUtilise, consos:R.consos || [], regle:R.regle || null };
 }
 // 15/11 soir : ce que crypte-moteur.js ne sait pas faire, ajouté juste après la création du combat : les monstres et le boss du thème,
 // le Gel / la Repousse des thèmes, le bouclier de la Garde et de la Glace, la Braise ardente, la forge des dés.
 // Règle de sûreté : on ne brise jamais le DERNIER sceau d'une carte (sinon elle resterait bloquée sans tomber).
+const GARD_SC = +(typeof process !== 'undefined' && process.env && process.env.GSC != null ? process.env.GSC : 5);
+const PUISS_SC = +(typeof process !== 'undefined' && process.env && process.env.PSC || 25), ETAGE_SC = +(typeof process !== 'undefined' && process.env && process.env.ESC != null ? process.env.ESC : 1);
 function prepareCombat(R, S, type) {
   const h = RR(R), k = R.themes && R.themes[R.etage - 1], T = THEMES[k];
   const cartes = []; (S.cols || []).forEach(col => col.forEach(c => { if (!c.special) cartes.push(c); })); // (les cartes spéciales de la Crypte restent telles quelles)
@@ -336,6 +338,11 @@ function prepareCombat(R, S, type) {
   if (R.bene && R.bene.vapeur) S.bouclier += 2; // (la Vapeur : +4 de l'aube +2 = +6)
   if (fam(R, 'garde', 2)) S.bouclier += 3;
   if (fam(R, 'garde', 3)) S.bouclier += 3;
+  // 28/11 (simulateur réparé : la Descente était gagnée 9 fois sur 10) : plus tu es équipé, plus les monstres ont de SCEAUX (+1 par tranche de PUISS_SC objets / bénédictions / reliques),
+  // et chaque étage en ajoute ; le Gardien aussi
+  { const nb = Object.values(R.obj || {}).reduce((a, x) => a + (x > 0 ? x : 0), 0) + Object.values(R.bene || {}).reduce((a, x) => a + x, 0) + Object.keys(R.reliques || {}).length;
+    const plus = Math.min(.85, nb / PUISS_SC + (R.etage - 1) * ETAGE_SC / 10); if (plus > 0) { cartes.forEach(c => { if (h() < plus) c.sceaux.push(C.sceau('min', 3 + Math.min(2, c.niv >> 1))); });
+    } if (S.gardien && GARD_SC) { const pg = Math.floor(nb / GARD_SC); for (let k = 0; k < pg; k++) S.gardien.sceaux.push(C.sceau('min', 4)); } }
   const brise1 = c => { const l = c.sceaux.filter(s => !s.ok); if (l.length < 2) return; const s = l[0]; s.ok = true; s.reste = 0; if (!s.val) s.val = s.t === 'ex' ? s.v : 0; };
   if (R.obj.braise) { cartes.filter(c => c.elite).forEach(brise1); if (S.gardien) brise1(S.gardien); }
   if (S.pouvoir && S.pouvoir.length && S.pouvoir.every(s => s.ok)) S.pret = true; // talisman + bonus des Runes : le pouvoir peut être chargé d'avance
@@ -357,7 +364,7 @@ function choisir(R, k) {
   if (t === 'feu') { R.ecran = 'feu'; return true; }
   if (t === 'enclume') { R.ecran = 'enclume'; return true; }
   if (t === 'evenement') { const D = debloque(R); const l = Object.keys(EVENEMENTS).filter(x => D.ev.has(x)); R.ecran = 'evenement'; R.salle.ev = pick(h, l.length ? l : Object.keys(EVENEMENTS)); return true; }
-  if (t === 'tresor') { const or = 6 + 4 * R.etage + Math.floor(h() * 6) + 8 * (R.obj.pioche || 0); R.or += or; R.ecran = 'recompense'; R.salle.texte = `💰 Le coffre contient ${or} pièces d’or.`; R.salle.recomp = h() < .5 ? [{ t:'objet', k:tireObjets(R, h, 1)[0] }].filter(x => x.k) : []; if (!R.salle.recomp.length) R.salle.recomp = [{ t:'or', n:6 }]; return true; }
+  if (t === 'tresor') { const or = (6 + 4 * R.etage + Math.floor(h() * 6) + 8 * (R.obj.pioche || 0)) * (R.reliques && R.reliques.aimant ? 2 : 1); R.or += or; R.ecran = 'recompense'; R.salle.texte = `💰 Le coffre contient ${or} pièces d’or.`; R.salle.recomp = h() < .5 ? [{ t:'objet', k:tireObjets(R, h, 1)[0] }].filter(x => x.k) : []; if (!R.salle.recomp.length) R.salle.recomp = [{ t:'or', n:6 }]; return true; }
   return false;
 }
 function tireObjets(R, h, n, rare) {
@@ -421,7 +428,7 @@ function apresCombat(R) {
   log(R, `⚔ Combat ${S.fin === 'gagne' ? 'gagné' : 'perdu'} en ${S.tour || '?'} tours · ❤ ${S.pv} · 🛡 restant ${S.bouclier || 0}${S.comp ? ` · compagnon ❤ ${S.comp.pv}` : ''}`);
   if (S.fin === 'perdu') { R.pv = 0; R.fin = 'perdu'; R.ecran = 'fin'; R.S = null; return true; }
   const h = RR(R), t = R.salle.type, th = R.themes && R.themes[R.etage - 1];
-  R.victoires = (R.victoires || 0) + 1; if (t === 'boss') R.boss = (R.boss || 0) + 1; R.beneDue = true;
+  R.victoires = (R.victoires || 0) + 1; if (t === 'boss') R.boss = (R.boss || 0) + 1; R.beneDue = true; if (t === 'elite' || t === 'boss') R.reliqueDue = t;
   const pvAvant = R.pv; // (pour le défi « sans te faire mal »)
   // 15/11 soir : bonus après une victoire (familles Or et Garde, Pied-de-biche, thèmes Cendres et Forêt)
   let orPlus = 3 * (fam(R, 'or', 2) ? 1 : 0) + 2 * (R.obj.pioche || 0) + (th === 'cendres' ? 4 : 0);
@@ -471,6 +478,31 @@ const BENES = {
   braisenoire:{ ec:'braise+ombre', e:'🌑', n:'Braise noire', d:'+1 dé et +1 relance à chaque tour.', o:{ sac:1, gobelet:1 }, max:1, dbl:['braise', 'ombre'] },
   lunegelee:{ ec:'givre+ombre', e:'🌘', n:'Lune gelée', d:'Chaque combat commence avec 1 Rune, et +5 PV après chaque victoire.', o:{ rune:1 }, soin:5, max:1, dbl:['givre', 'ombre'] },
 };
+// 28/11 (validé par l'utilisateur, « les 15 ») : LES RELIQUES MAJEURES, gagnées sur une élite (1 parmi 3) ou un boss (1 parmi 3, les plus fortes) ;
+// elles durent toute la descente et changent une règle du combat (crypte-moteur.js : S.rel).
+const RELIQUES = {
+  lanterne:{ e:'🏮', n:'Lanterne', d:'+1 dé au premier tour de chaque combat.', src:'Slay the Spire' },
+  sablier: { e:'⏳', n:'Sablier ancien', d:'Plus de dés avant la fin du tour ? Tu en tires un nouveau (une fois par tour).', src:'Slay the Spire' },
+  bronze:  { e:'🛡', n:'Bouclier de bronze', d:'Fin du tour sans bouclier : +6 bouclier.', src:'Slay the Spire' },
+  plomb:   { e:'🎲', n:'Dé de plomb', d:'Tes 6 ne sont jamais relancés.', src:'Slay the Spire' },
+  joker:   { e:'💰', n:'Joker de la paire', d:'Chaque combo Paire rapporte aussi +3 or.', src:'Balatro' },
+  echo:    { e:'🔁', n:'Écho', d:'Le premier combo de chaque tour compte double.', src:'Balatro' },
+  sansfin: { e:'♾', n:'Suite sans fin', d:'Les suites peuvent faire le tour : 5-6-1 compte.', src:'Balatro' },
+  totem:   { e:'🗿', n:'Totem du clan', d:'Chaque monstre abattu : +2 bouclier.', src:'Monster Train' },
+  croc:    { e:'🐺', n:'Croc de loup', d:'Chaque monstre abattu te rend 2 PV.', src:'Inscryption' },
+  aimant:  { e:'🧲', n:'Aimant', d:'+1 or par monstre abattu, et l’or des trésors doublé.', src:'Vampire Survivors' },
+  lien:    { e:'💞', n:'Lien du compagnon', d:'Ton compagnon commence chaque combat avec un sceau déjà rempli.', src:'Dice & Fold' },
+  fou:     { e:'🃏', n:'Le Fou', d:'Chaque combo peut se déclencher deux fois par tour.', src:'Balatro', boss:true },
+  braises: { e:'🔥', n:'Braises vives', d:'Ton bouclier ne fond plus à la fin du tour.', src:'Monster Train', boss:true },
+  critique:{ e:'⚡', n:'Coup critique', d:'Une fois par tour, un 6 posé sur un monstre brise aussi un 2e sceau.', src:'Hades', boss:true },
+  couteau: { e:'🔪', n:'Couteau du sacrifice', d:'Une fois par combat : −5 PV pour briser 2 sceaux du monstre le plus fort (bouton 🔪).', src:'Inscryption', boss:true },
+};
+function etapeRelique(R, boss) { const h = RR(R), l = Object.keys(RELIQUES).filter(k => !R.reliques[k] && (boss ? true : !RELIQUES[k].boss));
+  const fortes = l.filter(k => RELIQUES[k].boss), off = boss && fortes.length ? [pick(h, fortes)] : [];
+  melange(h, l.filter(k => !off.includes(k))).forEach(k => { if (off.length < 3) off.push(k); });
+  if (!off.length) return false; R.ecran = 'relique'; R.salle = { type:'relique', offre:off, boss:!!boss }; return true; }
+function choisirRelique(R, k) { if (R.ecran !== 'relique') return null; const id = R.salle.offre[k];
+  if (id) { R.reliques[id] = 1; log(R, `🏺 Relique : ${RELIQUES[id].e} ${RELIQUES[id].n} : ${RELIQUES[id].d}`); } R.salle = null; R.ecran = 'carte'; R.apresBene = true; suite(R); return id ? RELIQUES[id] : null; }
 const nbEcole = (R, ec) => Object.entries(R.bene || {}).reduce((a, [k, n]) => a + (BENES[k] && BENES[k].ec === ec ? n : 0), 0);
 function offreBene(R) { const h = RR(R), dispo = Object.keys(BENES).filter(k => (R.bene[k] || 0) < BENES[k].max && (!BENES[k].dbl || BENES[k].dbl.every(ec => nbEcole(R, ec) >= 2)));
   const dbl = dispo.filter(k => BENES[k].dbl), simples = dispo.filter(k => !BENES[k].dbl), l = [];
@@ -500,7 +532,8 @@ function choisirComp(R, k) {
   log(R, '🐾 ' + txt); R.salle = null; R.ecran = 'carte'; tireChoix(R); return txt;
 }
 function suite(R) {
-  if (R.beneDue && !R.fin) { R.beneDue = false; R.salleAvant = R.salle; etapeBene(R); return true; }
+  if (R.reliqueDue && !R.fin) { const b = R.reliqueDue === 'boss'; R.reliqueDue = null; if (!R.salleAvant) R.salleAvant = R.salle; if (etapeRelique(R, b)) return true; }
+  if (R.beneDue && !R.fin) { R.beneDue = false; if (!R.salleAvant) R.salleAvant = R.salle; etapeBene(R); return true; }
   if (R.apresBene) { R.apresBene = false; R.salle = R.salleAvant || null; R.salleAvant = null; }
   if (R.salle && R.salle.type === 'boss') {
     if (R.etage >= ETAGES) { R.fin = 'gagne'; R.ecran = 'fin'; R.score = Math.round((R.score + 50 * R.pv + 10 * R.or) * (R.pacte ? PACTES[R.pacte].score : 1) * (1 + .1 * R.prof)); return true; }
@@ -512,7 +545,7 @@ const etoiles = R => R.fin !== 'gagne' ? 0 : 1 + (R.pv >= R.pvmax * .3 ? 1 : 0) 
 // 15/11 soir : la rareté visible d'un objet (une gemme de couleur et le mot)
 const rarete = k => OBJETS[k] && OBJETS[k].rare ? { n:'Rare', coul:'#4aa8ff' } : { n:'Commun', coul:'#b8c0d0' };
 
-const API = { changerComp, BENES, ECOLES, nbEcole, choisirBene, relancerBene, prixBene, choisirComp, PROFONDEURS, ETAPES, ETAGES, SALLES, OBJETS, BRELOQUES, PACTES, EVENEMENTS, nouvelle, choisir, acheter, feu, evenement, apresCombat, recompense, suite, etoiles, prix,
+const API = { RELIQUES, choisirRelique, changerComp, BENES, ECOLES, nbEcole, choisirBene, relancerBene, prixBene, choisirComp, PROFONDEURS, ETAPES, ETAGES, SALLES, OBJETS, BRELOQUES, PACTES, EVENEMENTS, nouvelle, choisir, acheter, feu, evenement, apresCombat, recompense, suite, etoiles, prix,
   FAMILLES, familles, bonusFamilles, THEMES, theme, PALIERS, palierDe, debloque, renommeeGagnee, DEFIS, FORGE_CHOIX, forger, relancerEtal, prixRelance, rarete };
 if (typeof module !== 'undefined' && module.exports) module.exports = API; else racine.DESCENTE = API;
 })(typeof window !== 'undefined' ? window : globalThis);
