@@ -146,6 +146,8 @@ const SCEN = {
   atelier: { n:'Essai de l’atelier', boss:'titan', renfort:'rouagelin', objet:{ n:'rouage', e:'⚙️' }, axe:'', axeE:'', sablier:40, phases:['', '', ''], image:'', vue:0, hasard:true, objectif:'vaincre' },
   // 18/11 : L'ENTRAÎNEMENT DE MOUSTACHE (chroniques-entrainement.js) : un mini-donjon fait exprès, Maëlle seule, dés imposés
   entrainement: { n:'L’entraînement de Moustache', boss:'titan', renfort:'rouagelin', objet:{ n:'—', e:'🎓' }, axe:'', axeE:'', sablier:20, phases:['', '', ''], objectif:'vaincre' },
+  // 28/11 : une CARTE DE L'ATELIER avec la règle « vaincre tous les monstres » (les autres cartes prennent les règles d'un scénario existant)
+  carte: { n:'Une carte de l’atelier', boss:'titan', renfort:'gobelin', objet:{ n:'—', e:'⚔' }, axe:'', axeE:'', sablier:40, phases:['', '', ''], objectif:'vaincre' },
   arene: { n:'Embuscade', boss:'titan', renfort:'gobelin', objet:{ n:'—', e:'⚔' }, axe:'', axeE:'', sablier:40, phases:['', '', ''], vue:8, hasard:true, objectif:'vaincre' },
 };
 // 28/11 : LES TERRES BRÛLÉES v2, « Le Cœur de Braise » (scénario validé par l'utilisateur : ~/perso/dice-arena/Terres-brulees-v2-scenario.md).
@@ -231,6 +233,52 @@ function construitAtelier(S, R, C) {
   S.heros.forEach((h, i) => { const c = libres[i] || libres[0]; h.x = c[0]; h.y = c[1]; });
   (C.monstres || ['rouagelin', 'gobelin']).forEach((b, i) => { const c = libres[libres.length - 1 - i]; if (c && BETES[b]) ajouteMonstre(S, b, c[0], c[1]); });
 }
+// ------------------------------------------------------------------ 28/11 : UNE CARTE DE L'ATELIER (cartes-format.js compile la carte en un PLAN)
+// On pose EXACTEMENT ce que poseraient les scénarios écrits à la main (mêmes cases, mêmes objets, même ordre des tirages au hasard :
+// meubles, leviers, runes, statues) : la recopie des Terres brûlées et de l'Horloger se joue comme l'original (vérifié au simulateur).
+function construitPlan(S, R, P) {
+  const n = Math.max(1, Math.min(4, S.heros.length)), BR = P.regles === 'brulees', sal = P.sorte === 'salles';
+  R.w = P.w; R.h = P.h; R.carte = P.id || 'carte'; R.vision = P.vision || (sal ? 'salles' : 'vue');
+  Object.assign(R.murs, P.murs); Object.assign(R.salle, P.salle);
+  P.portes.forEach(([x, y, o]) => { const c = cle(x, y); delete R.murs[c];
+    R.portes[c] = Object.assign({ salle:o.salle, ouverte:false }, sal ? { bronze:!!o.bronze, entree:!!o.entree } : {}, o.basalte ? { basalte:true } : {}, !sal && o.bronze ? { bronze:true } : {}, !sal && o.entree ? { entree:true } : {}); });
+  if (sal) { R.plan = 2; R.depart = P.depart.map(c => c.slice()); R.liens = {}; const s0 = P.depart[0] && P.salle[cle(...P.depart[0])]; R.lus = s0 ? { [s0]:true } : {};
+    P.liens.forEach(([a, b]) => { R.liens[cle(...a)] = cle(...b); R.liens[cle(...b)] = cle(...a); });
+    R.sallesE = JSON.parse(JSON.stringify(P.salles)); R.rectsE = {}; R.nomsE = {}; Object.entries(P.salles).forEach(([id, z]) => { R.rectsE[id] = z.r.slice(); R.nomsE[id] = z.n; });
+    R.couloirsZ = JSON.parse(JSON.stringify(P.couloirsZ)); R.etages = JSON.parse(JSON.stringify(P.etages)); R.deborde = JSON.parse(JSON.stringify(P.deborde || {})); }
+  else R.imgCarte = P.image || null; // (une grande carte peinte n'a pas de « plan » : comme les Terres brûlées)
+  if (P.palier) R.palier = Object.assign({}, P.palier);
+  if (BR) { R.v2 = true; R.zones = JSON.parse(JSON.stringify(P.zones || {})); R.zonesVues = {}; }
+  const tirage = P.tirage || (BR ? ['potion', 'grains', 'or', 'piege', 'monstre', 'parchemin', 'fumee', 'rien', 'potion', 'or'] : ['potion', 'grains', 'objet', 'piege', 'monstre', 'parchemin', 'or', 'fumee', 'rien', 'mimique']);
+  P.meubles.forEach(m => { const c = cle(m.x, m.y), tire = !m.cache || m.tire ? tirage[Math.floor(hasard(S) * tirage.length)] : null; R.murs[c] = 'M';
+    R.obj[c] = Object.assign({ t:m.t }, m.nom ? { nom:m.nom } : {}, { meuble:true }, m.salle && sal ? { salle:m.salle } : {}, { fouille:false }, m.verrou != null ? { verrou:m.verrou } : {}, { cache:m.cache || tire }); });
+  (P.leviers || []).forEach(([x, y]) => { R.murs[cle(x, y)] = 'L'; R.obj[cle(x, y)] = { t:'levier', v:2 + Math.floor(hasard(S) * 4) }; });
+  if ((P.leviers || []).length) { const vus = []; Object.values(R.obj).filter(o => o.t === 'levier').forEach(o => { while (vus.includes(o.v)) o.v = 2 + Math.floor(hasard(S) * 4); vus.push(o.v); }); }
+  if (P.livre) { R.murs[cle(...P.livre)] = 'K'; R.obj[cle(...P.livre)] = { t:'livre' }; }
+  if (P.axe) { R.murs[cle(...P.axe)] = 'A'; R.axe = P.axe.slice(); }
+  R.bronze = !P.portes.some(p => p[2].bronze);
+  if (P.marchand) { R.murs[cle(...P.marchand)] = 'N'; R.obj[cle(...P.marchand)] = { t:'marchand' }; }
+  const quete = ([x, y], o) => { R.murs[cle(x, y)] = 'Q'; R.obj[cle(x, y)] = o; };
+  if (P.fontaine) quete(P.fontaine, { t:'fontaine', v:[] }); if (P.source) quete(P.source, { t:'source', bu:{} });
+  if ((P.runes || []).length) { const sym = ['🔥', '💧', '🌙', '⭐'], ordre = [0, 1, 2, 3].slice(0, P.runes.length).sort(() => hasard(S) - .5);
+    P.runes.forEach((p, i) => quete(p, { t:'rune', i, e:sym[i], on:true })); R.ordreRunes = ordre; R.runeProg = 0; }
+  (P.cristaux || []).forEach(p => quete(p, { t:'cristal', on:true }));
+  if (BR || (P.lave || []).length) { R.lave = {}; (P.lave || []).forEach(([x, y]) => R.lave[cle(x, y)] = 1); }
+  if ((P.laveEruption || []).length) R.laveEruption = P.laveEruption.map(c => c.slice());
+  if ((P.bossPos || []).length) R.bossPos = P.bossPos.map(c => c.slice());
+  (P.pieges || []).forEach(([x, y]) => R.obj[cle(x, y)] = { t:'piege', cache:true });
+  if (P.grille) { delete R.murs[cle(P.grille.x, P.grille.y)]; R.grille = Object.assign({}, P.grille); }
+  if (P.statues) { const A0 = P.statues.autel; R.autelS = A0.slice(); R.murs[cle(...A0)] = 'O'; R.murs[cle(A0[0] + 1, A0[1])] = 'o'; const veut = P.statues.veut;
+    R.statues = P.statues.cases.map(([x, y], i) => ({ x, y, d:veut[i], veut:veut[i] }));
+    for (let q = 0; q < 3; q++) { const i = Math.floor(hasard(S) * 4); tourneStatue(R, i); }
+    if (R.statues.every(t => t.d === t.veut)) tourneStatue(R, 0);
+    R.statues.forEach(t => R.murs[cle(t.x, t.y)] = 'T'); }
+  P.monstres.filter(m => (m[3] || 1) <= n).forEach(([b, x, y]) => { if (BETES[b]) ajouteMonstre(S, b, x, y); });
+}
+// les héros sur les cases de départ (s'il en manque : à côté de la première)
+function departPlan(S, P) { const L = P.depart.map(c => c.slice()), R = S.R;
+  for (let i = L.length; i < S.heros.length && L[0]; i++) { const p = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [-1, 1], [1, -1], [-1, -1]].map(([dx, dy]) => [L[0][0] + dx, L[0][1] + dy]).find(([x, y]) => !R.murs[cle(x, y)] && !R.portes[cle(x, y)] && !L.some(q => q[0] === x && q[1] === y)); if (p) L.push(p); }
+  S.heros.forEach((h, i) => { const c = L[i] || L[0]; if (c) { h.x = c[0]; h.y = c[1]; } }); }
 // ------------------------------------------------------------------ L'ENTRAÎNEMENT (18/11) : 9 × 12, deux salles dans le noir et un couloir
 //   y0  #########      T2 « La salle du Rouagelin » (x 1-7, y 1-2), le Rouagelin en (4,1)
 //   y3  ####B####      porte de bronze (4,3), ouverte par le levier
@@ -590,7 +638,7 @@ const COULOIRS_Z2 = {
 };
 const LIENS2 = [[[22, 5], [22, 8]], [[1, 8], [1, 17]], [[18, 17], [20, 25]]];
 const ETAGES2 = [[0, 6, 'Le sommet'], [7, 15, '1er étage'], [16, 23, 'Rez-de-chaussée'], [24, 30, 'Sous-sol']];
-const etageDe = (S, y) => { if (!S || !S.R || S.R.plan !== 2) return null; const e = ETAGES2.find(([a, b]) => y >= a && y <= b); return e ? e[2] : null; };
+const etageDe = (S, y) => { if (!S || !S.R || S.R.plan !== 2) return null; const e = (S.R.etages || ETAGES2).find(([a, b]) => y >= a && y <= b); return e ? e[2] : null; }; // 28/11 : une carte de l'atelier donne ses étages
 // 16/11 : portes de la Réserve, de la Bibliothèque et de la Galerie posées sur les portes PEINTES par Gemini (décalées d'une case)
 const PORTES = [[5, 4, 'S'], [15, 4, 'H', 'bronze'], [5, 9, 'B'], [11, 9, 'E'], [16, 9, 'F'], [5, 18, 'A'], [12, 18, 'C'], [13, 26, 'G'], [5, 22, 'A', 'entree']];
 // la grille du Cagibi s'ouvre tant qu'un héros se tient sur la dalle du couloir ; les 4 statues de la Galerie (autel au milieu)
@@ -642,7 +690,8 @@ function adapte(S) {
   // 16/11 (retour de l'utilisateur : « pas de mise en danger » à 4) : à 3 héros et plus, chaque monstre frappe 1 de plus
   S.forceM = n >= 3 && !R.v2 ? 1 : 0; /* 28/11 : pas dans les Terres brûlées v2, où les monstres jouent déjà entre les héros à 3 et 4 */ R.monstres.forEach(m => { m.att = BETES[m.b].att + S.forceM; grandit(S, m); });
   if (['labyrinthe', 'cloitre', 'refectoire', 'cellules', 'crypte'].includes(S.scen)) { S.sablier += [0, 20, 10, 0, 0][n]; if (SAISON_SCEN.includes(S.scen)) { const g = SAISON_GARDE[n]; if (g != null && g < 1) R.monstres = R.monstres.filter(() => hasard(S) < g); } else if (n <= 2) R.monstres = R.monstres.filter(() => hasard(S) < .7); } // 27/11 : au chapitre 3, à deux, on garde un peu plus de monstres (réglé au simulateur) // un donjon plus grand : plus de temps aux petits groupes
-  if (R.v2) { S.sablier += SAB_BR[n] - A.sablier; return; } // 28/11 : les Terres brûlées v2 ont leurs monstres à elles selon le nombre de héros (BRULEES.plus)
+  if (R.v2) { S.sablier += SAB_BR[n] - A.sablier; return; }
+  if (S.scen === 'carte') { S.sablier -= A.sablier; return; } // 28/11 : une carte de l'atelier « vaincre » : les monstres tels que l'auteur les a posés // 28/11 : les Terres brûlées v2 ont leurs monstres à elles selon le nombre de héros (BRULEES.plus)
   if (A.garde < 1 && S.scen !== 'arene' && !SAISON_SCEN.includes(S.scen)) R.monstres = R.monstres.filter(m => hasard(S) < A.garde); // une embuscade garde ses monstres (écrits pour l'aventure)
   if (A.renfort) { // à 4 : quelques monstres de plus, posés dans des couloirs (cases de sol hors salle, loin du départ)
     const libres = []; for (let y = 0; y < R.h; y++) for (let x = 0; x < R.w; x++) { const c = cle(x, y); if (!R.murs[c] && !R.salle[c] && !R.portes[c] && !R.obj[c] && !S.heros.some(h => dist(h, { x, y }) < 8) && !R.monstres.some(m => m.x === x && m.y === y)) libres.push([x, y]); }
@@ -676,6 +725,13 @@ function nouvelle(heros, s, scen, opts = {}) {
     if (!set && !opts.sansPouvoirs && typeof racine.pwPourMoteur === 'function') set = racine.pwPourMoteur(typeof src === 'string' ? src : (src.__g || src.av || src.voie));
     z.pw = set ? set[S.pre] : null;
     if (a_t(z, 'robuste')) { const b = 4 + pwB3(z, 'passif'); z.pv += b; z.pvmax += b; } }); // 19/11 : le talent Robuste (Passif d'un héros d'aventure)
+  if (opts.plan) { // 28/11 : une carte de l'atelier (le PLAN compilé par cartes-format.js ; scen = ses règles)
+    const P = opts.plan; S.carte = { id:P.id || null, titre:P.titre || '', regles:P.regles }; if (opts.essai) S.essai = true; if (P.sablier) S.sablier = +P.sablier;
+    construitPlan(S, R, P);
+    if (scen === 'brulees') { departPlan(S, P); S.eau = 0; S.recits = []; adapte(S); voir(S); R.zonesVues.camp = R.zonesVues.camp || false; log(S, P.ouverture || '🔥 Les Terres brûlées · Le Cœur de Braise : le feu de l’île s’éteint. Trois gardiens ont avalé les trois braises éternelles. Fouillez le camp pillé, trouvez la Clé de basalte et l’Eau sacrée, battez les gardiens, rallumez le grand brasier… et survivez à ce qui en sort.'); brVues(S); debutTour(S); return S; }
+    if (scen === 'horloger') { adapte(S); departPlan(S, P); voir(S); log(S, P.ouverture || '⏳ La grande porte se referme derrière vous. Le Sommeil de l’Horloger commence : trouvez 3 rouages dans les meubles des étages, montez au sommet, ouvrez la porte de bronze, réveillez l’Horloger.'); debutTour(S); return S; }
+    departPlan(S, P); adapte(S); voir(S); if (scen === 'carte') S.objectif = 'vaincre'; if (SCEN[scen].froid) S.froid = SCEN[scen].froid;
+    log(S, P.ouverture || `🗺 ${P.titre || 'Une carte de l’atelier'} : ${scen === 'carte' ? 'abattez tous les monstres.' : `trouvez ${SCEN[scen].nbObj === 1 ? objUn(S) : '3 ' + SCEN[scen].objet.n + 's'} dans les meubles et portez-${SCEN[scen].nbObj === 1 ? 'le' : 'les'} à ${axeN(S)}.`}`); debutTour(S); return S; }
   if (scen === 'atelier') { construitAtelier(S, R, opts.salle || { w:4, h:3 }); S.objectif = 'vaincre'; log(S, `🛠 Essai de « ${(opts.salle && opts.salle.nom) || 'la salle'} » : déplacez-vous, fouillez, battez les monstres.`); debutTour(S); return S; }
   if (scen === 'entrainement') { construitEntrainement(S, R); voir(S); log(S, '🎓 L’entraînement de Moustache : un petit donjon pour apprendre.'); debutTour(S); return S; }
   if (scen === 'arene') { construitArene(S, R, opts); adapte(S); S.objectif = 'vaincre'; log(S, '⚔ Embuscade ! Abattez tous les monstres.'); debutTour(S); return S; }
@@ -806,10 +862,10 @@ function majBibliotheque5(S) { const R = S.R; if (R.plan !== 2 || R.biblio5) ret
   if (de === '17,13') delete R.murs[de]; else R.murs[de] = '#';
   o.t = 'etagere'; if (!o.crochete) o.verrou = 0; R.obj['17,14'] = o; R.murs['17,14'] = 'M'; }
 // parties commencées avant : la 2e case de l'autel de la Galerie devient infranchissable (si personne n'est dessus)
-function majAutel2(S) { const R = S.R; if (R.plan !== 2 || R.autel2 || !R.statues) return; const c = cle(AUTEL_S[0] + 1, AUTEL_S[1]); if (herosEn(S, AUTEL_S[0] + 1, AUTEL_S[1]) || R.monstres.some(m => m.x === AUTEL_S[0] + 1 && m.y === AUTEL_S[1])) return; R.autel2 = true; if (!R.murs[c]) R.murs[c] = 'o'; }
+function majAutel2(S) { const R = S.R; if (R.plan !== 2 || R.autel2 || !R.statues) return; const AU = R.autelS || AUTEL_S, c = cle(AU[0] + 1, AU[1]); if (herosEn(S, AU[0] + 1, AU[1]) || R.monstres.some(m => m.x === AU[0] + 1 && m.y === AU[1])) return; R.autel2 = true; if (!R.murs[c]) R.murs[c] = 'o'; }
 function voir(S) {
   elargitPortes(S); majBibliotheque(S); majBibliotheque3(S); majBibliotheque5(S); majAutel2(S);
-  if (SCEN[S.scen || 'horloger'].image || SCEN[S.scen || 'horloger'].hasard) return voirAVue(S);
+  if (S.R.vision ? S.R.vision === 'vue' : SCEN[S.scen || 'horloger'].image || SCEN[S.scen || 'horloger'].hasard) return voirAVue(S); // 28/11 : une carte de l'atelier dit comment on voit
   const R = S.R; let neuves = [];
   S.heros.forEach(h => {
     const ici = R.salle[cle(h.x, h.y)]; if (ici && revele(S, ici)) neuves.push(ici);
@@ -888,7 +944,8 @@ const prendDe = (h, id) => { const i = h.des.findIndex(d => d.id === id); return
 // 16/11 (l'utilisateur) : une porte PEINTE déborde souvent sur la case de mur voisine : on l'ouvre aussi depuis cette case-là
 // 16/11 (l'utilisateur : « deux cases pour simuler la porte, pas trois ») : on note, porte par porte, de quel côté la porte PEINTE déborde
 const DEBORDE = { '12,18':[11, 18], '16,9':[15, 9], '5,4':[6, 4], '15,4':[16, 4] }; // 16/11 soir : la porte de bronze du Cœur est double aussi (RÈGLE : porte peinte double = 2 cases, voir Chroniques-Conception-cartes.md) // 16/11 soir : la porte peinte de la Galerie des statues fait aussi deux cases // + la Bibliothèque (16/11) : la porte peinte couvre aussi la case de gauche // la Réserve : la porte peinte couvre aussi la case de gauche
-function moitiesPorte(S, x, y) { if (S.R.plan !== 2) return []; const d = DEBORDE[cle(x, y)]; return d && S.R.murs[cle(...d)] === '#' ? [d] : []; }
+function moitiesPorte(S, x, y) { if (S.R.plan !== 2) return []; const d = (S.R.deborde || DEBORDE)[cle(x, y)]; // 28/11 : une carte de l'atelier donne ses grandes portes
+  return d && S.R.murs[cle(...d)] === '#' ? [d] : []; }
 // une porte peinte large, une fois OUVERTE : sa moitié de mur devient un passage (on traverse les deux cases)
 function elargitPortes(S) { const R = S.R; if (R.plan !== 2) return; Object.entries(R.portes).forEach(([c, p]) => { if (!p.ouverte || p.moitie) return; const [x, y] = c.split(',').map(Number);
   moitiesPorte(S, x, y).forEach(([a, b]) => { delete R.murs[cle(a, b)]; R.portes[cle(a, b)] = { salle:p.salle, ouverte:true, moitie:true }; R.vu[cle(a, b)] = 1; }); }); }
@@ -1064,7 +1121,7 @@ function fouiller(S, hi, idDe) {
 function benir(S, hi) { const h = S.heros[hi], R = S.R;
   if (!R.statuesOk) return 'Le feu ne s’allume que quand les quatre statues regardent l’autel.';
   if (h.flamme) return `${nm(h)} porte déjà la flamme.`;
-  const [ax, ay] = AUTEL_S; if (!contact(S, h, { x:ax, y:ay }) && !contact(S, h, { x:ax + 1, y:ay })) return 'Il faut être juste à côté du feu.';
+  const [ax, ay] = R.autelS || AUTEL_S; if (!contact(S, h, { x:ax, y:ay }) && !contact(S, h, { x:ax + 1, y:ay })) return 'Il faut être juste à côté du feu.';
   h.flamme = true; S.score += 10; log(S, `🔥 ${nm(h)} touche le feu sacré : sa main garde une petite flamme. +1 contre l’Horloger (sceaux « ≥ » et « Σ »).`);
   return { ok:true, ev:[{ t:'flamme', h:hi }] }; }
 function agir(S, hi, idDe, x, y) {
@@ -1185,7 +1242,7 @@ function fouilleMeuble(S, hi, idDe, x, y, o) {
 }
 function reveilBoss(S) {
   const R = S.R, [ax, ay] = R.axe;
-  const pos = (estBR(S) ? [BRULEES.titan, [12, 5], [15, 5], [11, 6]] : []).concat([[ax, ay - 1], [ax + 1, ay], [ax - 1, ay], [ax, ay + 1]]).find(([x, y]) => libre(S, x, y) && !herosEn(S, x, y)) || [ax + 2, ay];
+  const pos = (R.bossPos || (estBR(S) ? [BRULEES.titan, [12, 5], [15, 5], [11, 6]] : [])).concat([[ax, ay - 1], [ax + 1, ay], [ax - 1, ay], [ax, ay + 1]]).find(([x, y]) => libre(S, x, y) && !herosEn(S, x, y)) || [ax + 2, ay];
   const sc = SCEN[S.scen || 'horloger'], Bb = BETES[sc.boss];
   R.boss = { id:'boss', b:sc.boss, n:Bb.n, img:Bb.img, x:pos[0], y:pos[1], att:(S.nbHeros || 4) <= 2 ? 2 : (S.nbHeros || 4) >= 4 ? 4 : 3, phase:0, sceaux:sceauxBoss(S, 0), repos:false, it:'frappe' };
   if (estBR(S)) { recit(S, 'titan'); R.boss.feu = false; }
@@ -1330,7 +1387,7 @@ function titanPhase(S, ev) {
   Bo.sceaux = sceauxBoss(S, Bo.phase);
   if (Bo.phase === 1) { log(S, '🌫 LA FUMÉE ! Le brasier crache une fumée noire : le Titan ne voit plus qu’à 2 cases, et deux salamandres en sortent.');
     let n = 0; for (const [dx, dy] of [[1, 1], [-1, 1], [2, 0], [-2, 0], [0, 2], [1, 2]]) { if (n >= 2) break; const x = Bo.x + dx, y = Bo.y + dy; if (libre(S, x, y) && !herosEn(S, x, y)) { ajouteMonstre(S, 'salamandre', x, y).it = 'frappe'; R.vu[cle(x, y)] = 1; n++; } } }
-  if (Bo.phase === 2) { Bo.feu = true; Bo.feuT = 0; BRULEES.laveEruption.forEach(([x, y]) => { if (!R.murs[cle(x, y)]) R.lave[cle(x, y)] = 1; });
+  if (Bo.phase === 2) { Bo.feu = true; Bo.feuT = 0; (R.laveEruption || BRULEES.laveEruption).forEach(([x, y]) => { if (!R.murs[cle(x, y)]) R.lave[cle(x, y)] = 1; });
     log(S, '🌋 L’ÉRUPTION ! Le Titan se couvre d’un bouclier de feu (l’Eau sacrée, ou un dé posé sur le grand brasier, le fait tomber) ; la lave sort de nouvelles fissures et brûle de 3.'); }
   log(S, `🔥 ${Bo.n} passe à la phase « ${PHASES_TITAN[Bo.phase].n} » : il ${PHASES_TITAN[Bo.phase].d}.`); return ev;
 }
@@ -1417,7 +1474,7 @@ function finTour(S) {
       else if (Bo.phase === 1) { marche(Bo, c, 1); balancier(Bo.att); debout().filter(h => !contact(S, Bo, h) && dist(h, Bo) <= 2).forEach(h => { const perdu = blesseHeros(S, h, 2, true); ev.push({ t:'frappe', m:'boss', h:S.heros.indexOf(h), v:perdu }); });
         debout().forEach(h => { if (!S.heros.some(z => z !== h && !z.aTerre && voisins(z, h))) h.carillon = true; }); log(S, '🔔 Le Carillon sonne ! L’onde frappe à 2 cases (−2) ; ceux qui sont seuls perdront leur plus gros dé.'); }
       else { const bl = debout().length >= 2 ? debout().sort((a, b) => a.pv - b.pv)[0] : null; // 17/11 (bug mesuré) : le dernier héros debout n'est jamais renvoyé ; on renvoie sur le PALIER DU SOMMET, plus dans le hall
-        if (bl) { const pal = []; if (R.plan === 2) for (let x = 3; x <= 20; x++) if (libre(S, x, 5) && !herosEn(S, x, 5)) pal.push([x, 5]); pal.sort((a, b) => Math.abs(a[0] - 15) - Math.abs(b[0] - 15));
+        if (bl) { const pal = [], PL = R.palier || (R.plan === 2 && !R.carte ? { y:5, x0:3, x1:20, cx:15 } : null); if (PL) for (let x = PL.x0; x <= PL.x1; x++) if (libre(S, x, PL.y) && !herosEn(S, x, PL.y)) pal.push([x, PL.y]); pal.sort((a, b) => Math.abs(a[0] - PL.cx) - Math.abs(b[0] - PL.cx)); // 28/11 : le palier vient de la carte
           const p = pal[0] || (R.depart || [[1, 1], [2, 1], [1, 2], [2, 2], [3, 1], [3, 2]]).find(([x, y]) => !herosEn(S, x, y) && libre(S, x, y)) || (R.depart ? R.depart[0] : [1, 1]); bl.x = p[0]; bl.y = p[1]; blesseHeros(S, bl, Bo.att + 1, true); log(S, `⏳ La Dernière Heure : ${nm(bl)} est rejeté hors du Cœur, sur le palier (−${Bo.att + 1}).`); }
         marche(Bo, plusProche(Bo), 1); balancier(Bo.att); }
       ev.push({ t:'boss' });
@@ -1680,7 +1737,9 @@ function transmuter(S, hi, idDe) {
   if (h.id !== 'zephine' || !pwA(h, 'passif', 'A')) return 'Seule Zéphine (Transmutation) sait retourner un dé.'; if (h.transT === S.R.tour) return 'Une fois par tour.';
   const av = d.v; d.v = 7 - d.v; d.mod = true; h.transT = S.R.tour; log(S, `🔄 Transmutation : le ${av} de Zéphine devient un ${d.v}.`); return { ok:true, ev:[pwEv(h, hi, 'passif', ['h' + hi])] };
 }
-const API = { voir, entracte, eau, brVues, RECITS_BR, ZONE_DE, PHASES_TITAN, BRULEES, objUn, objE, axeN, verifieMonstre, forgeron, runeCoeur, bossIntouchable, dansCrypte, PHASES_HIVER, aubin, parler, suitAubin, dansClocher, LEVIERS_C, JAUGE_ULT, GRANDIT, miseAJour:S => { if (S && S.R && S.R.plan === 2) { elargitPortes(S); majBibliotheque(S); majBibliotheque3(S); majBibliotheque5(S); majAutel2(S); } return S; }, benir, ETAL, acheter, pause, echanger, prendreEscalier, moitiesPorte, presDePorte, rectSalle, etageDe, COULOIRS_Z2, CAPA, phasesDe, grilleOuverte, contact, pasDe, aPortee, SAC, utiliser, SCEN, HEROS_C, BETES, PHASES, SALLES, OBJETS, MEUBLE_N, nouvelle, atteignables, bouger, frapper, proteger, soigner, donner, relever, fouiller, agir, ouvrir,
+const API = { construitPlan, departPlan, voir, entracte, eau, brVues, RECITS_BR, ZONE_DE, PHASES_TITAN, BRULEES, objUn, objE, axeN, verifieMonstre, forgeron, runeCoeur, bossIntouchable, dansCrypte, PHASES_HIVER, aubin, parler, suitAubin, dansClocher, LEVIERS_C, JAUGE_ULT, GRANDIT, miseAJour:S => { if (S && S.R && S.R.plan === 2) { elargitPortes(S); majBibliotheque(S); majBibliotheque3(S); majBibliotheque5(S); majAutel2(S); } return S; }, benir, ETAL, acheter, pause, echanger, prendreEscalier, moitiesPorte, presDePorte, rectSalle, etageDe, COULOIRS_Z2, CAPA, phasesDe, grilleOuverte, contact, pasDe, aPortee, SAC, utiliser, SCEN, HEROS_C, BETES, PHASES, SALLES, OBJETS, MEUBLE_N, nouvelle, atteignables, bouger, frapper, proteger, soigner, donner, relever, fouiller, agir, ouvrir,
   finTour, visible, accepte, coutEchange, voisins, dist, herosEn, cle, libre, reveille, pwInfo, lancerPouvoir, transmuter, trouveCombo, PW_CO, COMBOS };
+// 28/11 : les cartes écrites à la main, lues par la recopie dans le format de l'atelier (outils/cartes-recopie.mjs)
+API._MAIN = { RECTS, NOMS_S, SALLES_LU, COULOIRS_Z2, LIENS2, ETAGES2, PORTES, DEBORDE, GRILLE, DALLE, AUTEL_S, STATUES, VEUT_S, MEUBLES, ROUAGES_CACHES, LEVIERS, LIVRE, AXE, MARCHAND, DEPART, MONSTRES_DEPART, GRILLE_BRULEES, BRULEES };
 if (typeof module !== 'undefined' && module.exports) module.exports = API; else racine.CHRON = API;
 })(typeof window !== 'undefined' ? window : globalThis);
