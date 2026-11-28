@@ -507,7 +507,7 @@ function touche(i) {
   if (courant === 'odyssee' && p.mode !== undefined) { odyMode = p.mode; odySlot = null; GM.son('choisir'); montre('odyssee'); return; } // 17/11 : le mode → ses emplacements
   if (!GM.son('portail')) souffle(); car.children[i].classList.add('entre'); document.getElementById('flash').classList.add('go');
   setTimeout(() => {
-    if (p.href) { sessionStorage.setItem('guilde-dans-mode', '1'); sessionStorage.setItem('guilde-etage-depart', courant); /* 22/11 (testeurs) : au retour, on revient à cet étage */ location.href = courant === 'odyssee' && odySlot && p.href.startsWith('odyssee.html') ? p.href + (p.href.includes('?') ? '&' : '?') + 'nouvelle=' + odySlot + (odyMode === 'jour' ? '&jour=1' : '') : p.href; return; } // l'île choisie, dans l'emplacement choisi
+    if (p.href) { sessionStorage.setItem('guilde-dans-mode', '1'); sessionStorage.setItem('guilde-etage-depart', courant); sessionStorage.setItem('guilde-etage-page', p.href.split(/[?#]/)[0]); /* 22/11 (testeurs) : au retour, on revient à cet étage */ location.href = courant === 'odyssee' && odySlot && p.href.startsWith('odyssee.html') ? p.href + (p.href.includes('?') ? '&' : '?') + 'nouvelle=' + odySlot + (odyMode === 'jour' ? '&jour=1' : '') : p.href; return; } // l'île choisie, dans l'emplacement choisi
     document.getElementById('flash').classList.remove('go'); location.hash = p.vers;
   }, 750);
 }
@@ -538,7 +538,7 @@ const revientDUnMode = sessionStorage.getItem('guilde-dans-mode'); sessionStorag
 addEventListener('click', e => { const a = e.target.closest && e.target.closest('#monde a'); if (a && !/^\/$|demo-hub/.test(a.getAttribute('href') || '') && !(a.getAttribute('href') || '').startsWith('#')) sessionStorage.setItem('guilde-dans-mode', '1'); }, true);
 // 22/11 (l'utilisateur : « le bouton Expéditions renvoie au portail principal ») : une adresse menu.html#étage va directement à l'étage, sans l'écran « Toucher pour entrer »
 if (revientDUnMode || location.hash.length > 1) { document.getElementById('titre').remove(); document.getElementById('monde').classList.add('vu');
-  const dep = location.hash.length > 1 ? location.hash.slice(1) : (revientDUnMode && MENU_ENVIE && sessionStorage.getItem('guilde-etage-depart')) || ''; sessionStorage.removeItem('guilde-etage-depart'); /* 28/11 (l'utilisateur : « je reviens systématiquement à Entre amis ») : l'étage retenu ne sert qu'au PREMIER retour */ if (dep && dep !== location.hash.slice(1)) history.replaceState(null, '', '#' + dep); montre(dep); }
+  const dep = location.hash.length > 1 ? location.hash.slice(1) : (revientDUnMode && MENU_ENVIE && (() => { const pg = sessionStorage.getItem('guilde-etage-page'), de = (document.referrer || '').split(/[?#]/)[0].split('/').pop(); return !pg || pg === de ? sessionStorage.getItem('guilde-etage-depart') : ''; })()) || ''; sessionStorage.removeItem('guilde-etage-depart'); sessionStorage.removeItem('guilde-etage-page'); /* 28/11 : on ne revient à la porte que si l'on revient DIRECTEMENT du jeu qu'elle a ouvert (pas du profil, des amis, de la boîte…) */ /* 28/11 (l'utilisateur : « je reviens systématiquement à Entre amis ») : l'étage retenu ne sert qu'au PREMIER retour */ if (dep && dep !== location.hash.slice(1)) history.replaceState(null, '', '#' + dep); montre(dep); }
 // 13/11 soir : musique (titre sur l'écran du portail, puis le monde de la Guilde)
 GM.musique(document.getElementById('titre') ? 'titre' : 'menu'); GM.bouton({ haut:true });
 // 14/11 nuit : le Rang de la Guilde et les quêtes, sous le titre
