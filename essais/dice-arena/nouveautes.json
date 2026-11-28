@@ -1,5 +1,9 @@
 [
 {
+"v": "20261128-202154",
+"m": "Héros d'aventure : bouton « Changer d'apparence » dans leur fiche"
+},
+{
 "v": "20261128-201335",
 "m": "Chroniques : boutons du bas toujours visibles, sceau jumeau plus clair, fin de partie qui arrive chez tout le monde"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261128-153921",
 "m": "Mes amis : l'invitation part bien quand on crée un salon depuis la fiche d'un ami"
-},
-{
-"v": "20261128-153815",
-"m": "Salon : la salle d'attente défile à nouveau, et un bouton « Retour au salon » ramène du Duel"
 }
 ]
