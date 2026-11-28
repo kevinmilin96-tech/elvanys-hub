@@ -51,6 +51,7 @@
   .case .tour { position:relative; width:76%; height:76%; align-self:flex-end; margin-bottom:6%; display:flex; align-items:center; justify-content:center; }
   .case img.canon { width:96%; height:96%; object-fit:contain; filter:drop-shadow(0 3px 2px #0007); transition:transform .12s; }
   .case .tour.tire img.canon { transform:scale(1.08) translateY(-3%); }
+  .case .hb { position:absolute; right:-5px; top:-5px; width:20px; height:20px; border-radius:50%; border:2px solid #f3c96b; object-fit:cover; z-index:3; box-shadow:0 0 6px #f3c96b99; pointer-events:none; }
   .case .so { position:absolute; left:-6px; top:-6px; background:#000c; border:2px solid #888; border-radius:10px; padding:0 4px; font-size:12px; line-height:20px; z-index:2; white-space:nowrap; }
   .case .so b { font-size:17px; color:#fff; } .case .so .ets { font-style:normal; color:#ffd76b; font-weight:bold; font-size:14px; margin-left:2px; text-shadow:0 0 4px #000; } .case .so.n2 { border-color:#4ade80; } .case .so.n3 { border-color:#60a5fa; } .case .so.n4 { border-color:#ffd76b; background:#3a2a00e6; }
   .case .so small { color:var(--or); font-weight:bold; font-size:.78em; }
@@ -279,6 +280,7 @@ function demarre(niveau, k, heroique) {
   const intro = () => fenetre(`<h2>${heroique ? "👑 Héroïque · " : "🏰 "}Niveau ${niveau} · ${S.L.n}</h2>${heroique ? "<p><b>Mode Héroïque</b> : monstres 80 % plus solides, une grosse vague de plus, et la difficulté ne baisse jamais. Bonne chance !</p>" : ""}<div class="mous"><img src="ui/moustache.webp" alt=""><div><p>${S.L.debloque}</p>
     <p class="doux">Le rempart a ${S.rempartMax} PV. ${niveau === 5 ? 'Au bout : le Titan de feu.' : 'Tiens jusqu’à la dernière vague 🚩.'}</p></div></div>
     <p class="doux">🛡 ${info ? haEsc(info.nom) + ' · voie de ' + HEROS[v].nom : HEROS[v].nom} : ${P.HEROS_R[v].passif}</p>
+    ${P.CONSEILS[niveau] ? `<p class="doux">🐱 ${P.CONSEILS[niveau].h.includes(v) ? 'Bon choix : ' : 'Conseil : '}${nbsp(P.CONSEILS[niveau].t)}</p>` : ''}
     <div class="bts"><button class="go" onclick="fermer();if(!presentePuits())lanceGuide()">C’est parti !</button></div>`);
   intro();
   cancelAnimationFrame(boucle); dernier = performance.now(); accu = 0; boucle = requestAnimationFrame(tic);
@@ -327,10 +329,10 @@ function pouvoirDirect(i) { marqueGeste(); if (!S || S.fini || pause || fen.inne
 const porteur = t => { let b = null; for (const x of S.cases) if (x && !x.puits && !x.rune && x.v === t.v && (!b || x.niv + (x.et || 0) / 10 > b.niv + (b.et || 0) / 10)) b = x; return b === t; };
 function htmlCase(t, i) {
   if (!t) return '';
-  if (t.puits) return `<div class="tour"><img class="pu" src="decor/obj-puits-runes.webp?v=1" alt=""></div>`; // 27/11 : image reçue
+  if (t.puits) return `<div class="tour">${S.heros === 'pip' ? `<img class="hb" src="portraits/pip.webp" alt="">` : ''}<img class="pu" src="decor/obj-puits-runes.webp?v=1" alt=""></div>`; // 27/11 : image reçue
   if (t.rune) return `<div class="tour"><div class="runeT"><img src="${FACE(S.heros, t.paire)}" alt=""></div><span class="so">${P.EFFET_PAIRE[t.paire].e}<small>${t.rv}</small></span></div>`;
-  const n = Math.min(3, t.niv);
-  const TI = TOUR_IMG[t.v]; return `<div class="tour">${TI ? `<img class="tr" src="tours/${TI}.webp?v=2" alt="">` : `<img class="canon" src="tours/canon-${S.heros}-${n}.webp?v=2" onerror="this.onerror=null;this.src='tours/canon-maelle-${n}.webp?v=2'" alt="">`}${t.reforge > 0 ? `<span class="rfg">⚒ ${Math.ceil(t.reforge)}</span>` : ''}<span class="so n${Math.min(4, t.niv)}">${P.SORTES[t.v].e} <b>${t.niv}</b>${t.et ? `<i class="ets">★${t.et}</i>` : ''}</span>${deMonte(t) >= 0 ? `<button class="plus1" onpointerdown="event.stopPropagation();event.preventDefault();monteParDe(${i})">⬆+1</button>` : ''}${P.pouvoirPret(t) && porteur(t) ? `<button class="pw" onpointerdown="event.stopPropagation();event.preventDefault();pouvoirDirect(${i})">✦</button>` : t.niv >= P.R.nivMax ? (t.spe ? `<span class="spe ok">${t.spe.toUpperCase()}</span>` : '<span class="spe">!</span>') : ''}</div>`;
+  const n = Math.min(3, t.niv), hb = P.bonusHeros(S, t) && S.heros !== 'aldric' ? `<img class="hb" src="portraits/${S.heros}.webp" alt="">` : '';
+  const TI = TOUR_IMG[t.v]; return `<div class="tour">${hb}${TI ? `<img class="tr" src="tours/${TI}.webp?v=2" alt="">` : `<img class="canon" src="tours/canon-${S.heros}-${n}.webp?v=2" onerror="this.onerror=null;this.src='tours/canon-maelle-${n}.webp?v=2'" alt="">`}${t.reforge > 0 ? `<span class="rfg">⚒ ${Math.ceil(t.reforge)}</span>` : ''}<span class="so n${Math.min(4, t.niv)}">${P.SORTES[t.v].e} <b>${t.niv}</b>${t.et ? `<i class="ets">★${t.et}</i>` : ''}</span>${deMonte(t) >= 0 ? `<button class="plus1" onpointerdown="event.stopPropagation();event.preventDefault();monteParDe(${i})">⬆+1</button>` : ''}${P.pouvoirPret(t) && porteur(t) ? `<button class="pw" onpointerdown="event.stopPropagation();event.preventDefault();pouvoirDirect(${i})">✦</button>` : t.niv >= P.R.nivMax ? (t.spe ? `<span class="spe ok">${t.spe.toUpperCase()}</span>` : '<span class="spe">!</span>') : ''}</div>`;
 }
 function caseOk(i) {
   if (!sel) return false; const t = S.cases[i];
@@ -523,6 +525,7 @@ function ficheTour(i) {
     <p class="doux">${t.niv < 4 ? `Un dé de ${t.v} la fait monter au niveau ${t.niv + 1}. ${t.niv < P.R.pouvoirNiv ? `Au niveau ${P.R.pouvoirNiv}, elle gagne son pouvoir : ${P.POUVOIRS[t.v].n}.` : 'Au niveau 4, son pouvoir devient plus fort et elle choisit sa spécialisation.'}` : `Niveau maximum : chaque dé de ${t.v} lui donne une étoile ★ (+35 %, et son pouvoir +10 %).`}</p>${t.niv >= P.R.pouvoirNiv ? `<p>✦ <b>Pouvoir : ${P.POUVOIRS[t.v].n}</b> · ${P.POUVOIRS[t.v].d}${t.niv < 4 ? ' (plus petit avant le niveau 4)' : ''} Recharge ${P.R.pouvoirRecharge} s, partagée par toutes tes tours de cette sorte.</p>` : ''}`
     + (t.niv >= 4 ? (t.spe ? `<p>✦ <b>${P.SPE[t.v][t.spe].n}</b> : ${P.SPE[t.v][t.spe].d}</p>`
       : `<div class="speC"><b>✦ Choisis sa spécialisation</b> <span class="doux">(une fois pour toutes)</span>${['a', 'b'].map(k => `<button onclick="specialise(${i}, '${k}')"><b>${P.SPE[t.v][k].n}</b><br><span class="doux">${P.SPE[t.v][k].d}</span></button>`).join('')}</div>`) : ''); }
+  { const b = P.bonusHeros(S, t); if (b) corps += `<p>🛡 <b>Bonus de ${HEROS[S.heros].nom}</b> : ${nbsp(b)}${t.puits ? '' : ' (déjà compté dans les chiffres ci-dessus)'}.</p>`; }
   const pw = !t.puits && !t.rune && t.niv >= P.R.pouvoirNiv;
   fenetre(`<h2>${t.puits ? '🔮' : t.rune ? '✨' : P.SORTES[t.v].e} ${P.nomTour(t)}</h2>${corps}
     <div class="bts">${pw ? `<button class="go" ${t.pw > 0 ? 'disabled' : ''} onclick="lancePouvoir(${i})">✦ ${P.POUVOIRS[t.v].n}${t.pw > 0 ? ` (${Math.ceil(t.pw)} s)` : ''}</button>` : ''}
@@ -713,7 +716,7 @@ function defRempart() {
         return { v:n, n:`${n}<br><small style="color:#f3c96b">${'★'.repeat(et)}<span style="opacity:.35">${'★'.repeat(3 - et)}</span></small><br><small>${medsTexte(d, n)}</small>`, dis:n > d.max,
           d:nbsp(`<b>${L.n}</b> · ${L.debloque}<div class="detN" style="margin-top:6px">${ETOILES_D.map((t, k) => `<span class="${k < et ? 'on' : 'off'}">${k < et ? '★' : '☆'} ${t}</span>`).join('<br>')}<br>`
             + P.DEFIS[n].map(D => `${(d.med[n] || []).includes(D.k) ? '✅' : '○'} <b>${D.n}</b> : ${D.d}`).join('<br>') + `<br><b>Niveau complété à ${pctNiveau(d, n)} %</b></div>`) }; }), def:Math.min(d.max, P.NIVEAUX.length) }],
-    resume:(m, o) => `${m === 'heroique' ? '👑 Héroïque · ' : '🏰 '}Niveau ${o.niveau} · ${P.NIVEAUX[o.niveau - 1].n} · <b>${haInfo(choixH) ? haEsc(haInfo(choixH).nom) : HEROS[haVoie(choixH)].nom}</b>`,
+    resume:(m, o) => `${m === 'heroique' ? '👑 Héroïque · ' : '🏰 '}Niveau ${o.niveau} · ${P.NIVEAUX[o.niveau - 1].n} · <b>${haInfo(choixH) ? haEsc(haInfo(choixH).nom) : HEROS[haVoie(choixH)].nom}</b>${P.CONSEILS[o.niveau] ? `<br><small>🐱 ${P.CONSEILS[o.niveau].h.includes(haVoie(choixH)) ? 'Bon choix pour ce niveau.' : 'Mieux placés ici : ' + P.CONSEILS[o.niveau].h.map(h => HEROS[h].nom).join(', ') + '.'}</small>` : ''}`,
     lancer:(m, o) => { if (!herosOk(choixH)) { choixH = 'maelle'; } demarre(o.niveau || 1, choixH, m === 'heroique'); } };
 }
 function accueil() { cancelAnimationFrame(boucle); S = null; sel = null; app.classList.remove('jeu'); if (!herosOk(choixH)) choixH = 'maelle'; CFG.ouvre(defRempart()); try { GM.musique('menu'); GM.retour && GM.retour(null); } catch (e) {} }

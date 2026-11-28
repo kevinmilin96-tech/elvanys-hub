@@ -587,9 +587,25 @@ const etoiles = S => S.fini !== 'gagne' ? 0 : S.rempart >= S.rempartMax * .75 ? 
 const avancement = S => Math.min(1, S.t / (S.fin + 8));
 const posVague = (S, k) => Math.min(1, S.vT[k] / (S.fin + 8)); // la place du drapeau de la vague k sur la barre
 
+// 28/11 soir (demande de l'utilisateur : « le héros n'a aucune influence ») : ce que le héros apporte à UNE tour, pour l'afficher
+function bonusHeros(S, t) { const h = S.heros; if (!t || t.rune) return null;
+  if (t.puits) return h === 'pip' ? 'produit 20 % plus vite' : null;
+  if (h === 'maelle' && (t.v === 4 || t.v === 6)) return '+25 % de dégâts';
+  if (h === 'zephine' && (t.v === 1 || t.v === 2)) return '+40 % de dégâts' + (t.v === 1 ? ', et le givre dure plus longtemps' : '');
+  if (h === 'oria' && t.v === 3) return 'tire 12 % plus vite';
+  if (h === 'aldric') return '+40 % contre les élites et le boss';
+  if (h === 'gorm' && t.echo > 0) return '+30 % : l’écho du cor (une voisine vient de monter)';
+  return null; }
+// le conseil de Moustache pour chaque niveau : quels héros y sont le mieux placés
+const CONSEILS = {
+  1:{ h:['maelle', 'oria'], t:'Des gobelins et des sangliers : les canons 💣 de Maëlle et les archers 🏹 d’Oria y font merveille.' },
+  2:{ h:['oria', 'zephine', 'pip'], t:'Des chauves-souris, que les canons ne touchent pas : les archers 🏹 d’Oria, le givre ❄ de Zéphine, ou Pip et ses puits, puisqu’ici seuls les puits donnent de l’énergie.' },
+  3:{ h:['zephine', 'aldric'], t:'Des boucliers, des chamans et un troll qui se soigne : le poison ☠ de Zéphine, ou Aldric, plus fort contre le troll.' },
+  4:{ h:['gorm', 'oria'], t:'Des spectres qui disparaissent : beaucoup de tours différentes, que l’écho du cor de Gorm renforce, ou les archers 🏹 d’Oria.' },
+  5:{ h:['aldric', 'maelle'], t:'Des golems de pierre et le Titan : Aldric, plus fort contre le boss et qui soigne le rempart, ou les grandes tours 🗼 de Maëlle.' } };
 const API = { reforger, prixReforge, EVTS, toucherCadeau, pouvoirPret, OBJETS, lancerObjet, poserObjet, voisinFort, PAS, NC, NR, HAUT, R, SORTES, PUITS, EFFET_PAIRE, POUVOIRS, MONSTRES, ELITE, HEROS_R, NIVEAUX, SORTS_R, SPE, DEFIS,
   nouvelle, batir, deplacer, demolir, rendDemolir, poserDe, poserPaire, jeterDe, bowling, ultime, pouvoir, etape, avance,
   ramasser, monterEnergie, acheterDe, prixMonter, PRIX_DE, appelInfo, appelVague, sort, specialiser, medailles, sousTerre, revele, posVague,
-  annonces, defendu, etoiles, avancement, prixDe, nomTour, voisins, comboChemin, runesAutour, degat, cadence, ix };
+  annonces, defendu, etoiles, avancement, prixDe, nomTour, voisins, comboChemin, runesAutour, degat, cadence, ix, bonusHeros, CONSEILS };
 if (typeof module !== 'undefined' && module.exports) module.exports = API; else racine.REMPART = API;
 })(typeof window !== 'undefined' ? window : globalThis);
