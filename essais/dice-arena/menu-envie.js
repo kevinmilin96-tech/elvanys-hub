@@ -132,6 +132,7 @@ function envieInstalle(E, PRO) {
     { nom:'Le Rempart des runes', pro:'rempart', href:'rempart.html', desc:'En temps réel : les monstres descendent cinq chemins, bâtis tes tours et fais-les monter avec les dés. Cinq niveaux, le Titan au bout.' }, // 27/11 : nouveau mode (tower defense en temps réel)
   ] };
   E.amis = { titre:'👥 Entre amis', sous:'Chacun sur son téléphone, ou à plusieurs sur le même.', portes:[
+    { nom:'Créer un salon', pro:'salon', href:'chroniques.html?ligne=1', desc:'Ouvre un salon, invite tes amis (👥 Inviter des amis), puis choisissez ensemble : les Chroniques, un Duel, ou reprendre une partie sauvegardée.' }, // 28/11 (l'utilisateur : « à part rejoindre avec un code, on n'a rien »)
     { nom:'Les Chroniques', pro:'chroniques', href:'chroniques.html', desc:'La soirée entre amis : jusqu’à 4 héros, un donjon dans le noir, des portes, des meubles à fouiller.' },
     { nom:'Duel contre un ami', pro:'duelami', href:'duel.html?ami=1', desc:'Chacun sur son téléphone : une salle, un code ou une invitation.' },
     { nom:'Contre un proche', pro:'proche', href:'duel.html?deux=1', desc:'À deux sur le même téléphone : chacun son héros, on se passe le téléphone à chaque tour.' },
