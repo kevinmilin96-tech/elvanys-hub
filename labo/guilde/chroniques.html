@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261128-194544"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
+<head><meta name="guilde-version" content="20261128-195050"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="robots" content="noindex">
@@ -534,6 +534,10 @@ function recoit(d) {
   if (d.etat.lobby) { LOB = d.etat.lobby; S = null; L.version = d.version; if (d.joueurs) L.joueurs = d.joueurs; L.dernier = ''; if (suisDuel()) return; fenetre(''); salleAttente(); return; }
   const depart = !S; LOB = null;
   const lancesAvant = S && S.lances ? { t:S.lances.t, l:S.lances.l.slice() } : null;
+  // 28/11 (l'utilisateur : « je vois les dés des autres, mais plus aucune animation sur les monstres ») : on garde l'état des monstres et des héros
+  // AVANT de recevoir le coup d'un ami, pour rejouer ensuite ses coups (sceaux brisés, monstres abattus, soins, dégâts)
+  const mAvant = S && S.R ? [...S.R.monstres, ...(S.R.boss ? [Object.assign({ id:'boss' }, S.R.boss)] : [])].map(m => ({ id:m.id, x:m.x, y:m.y, ok:(m.sceaux || []).filter(z => z.ok).length, img:m.img })) : null;
+  const pvAvant = S && S.heros ? S.heros.map(z => z.pv) : null, jAvant = S && S.journal ? S.journal.slice(0, 8) : [];
   const avant = S && S.journal ? S.journal[0] : null, posAvant = S && S.heros ? S.heros.map(z => [z.x, z.y]) : null, desAvant = S && S.heros ? S.heros.map(z => z.des.length) : null;
   S = d.etat; L.version = d.version; if (d.joueurs) L.joueurs = d.joueurs; L.dernier = JSON.stringify(S);
   if (!mesHeros().includes(actif)) { const m = mesHeros().find(i => !S.heros[i].aTerre); if (m != null) actif = m; }
@@ -547,7 +551,8 @@ function recoit(d) {
   if (depart) { son('portail'); dialogue(S.campagne != null ? CHAPITRES[S.campagne].titre : SCT().titre, [S.campagne != null ? CHAPITRES[S.campagne].avant : SCT().ouverture, SCT().entree()]); return; }
   // 17/11 (l'utilisateur : « pour les tours des amis, j'aimerais voir les lancers de dés ») : le lancer d'un ami se rejoue chez moi
   if (!depart && S.lances && S.lances.t === S.tours) S.lances.l.filter(i => !mesHeros().includes(i) && !(lancesAvant && lancesAvant.t === S.lances.t && lancesAvant.l.includes(i))).forEach(i => lancerAmi(i));
-  if (S.journal[0] && S.journal[0] !== avant) bulle(S.journal[0].replace(/^[^ ]+ /, ''));
+  if (!depart && mAvant && !(S.animM && S.animM.n === vuAnim && occupe)) coupsAmis(mAvant, pvAvant, jAvant);
+  else if (S.journal[0] && S.journal[0] !== avant) bulle(S.journal[0].replace(/^[^ ]+ /, ''));
   if (L) annonceTour();
   if (S.fin) finPartie();
 }
@@ -1205,6 +1210,22 @@ async function finTour(tousFinis) {
   son('relance'); dessine();
 }
 let vuAnim = 0;
+// 28/11 : rejouer chez moi les coups d'un ami : chaque sceau brisé fait clignoter le monstre (avec un « ✦ »), un monstre abattu explose,
+// les PV d'un héros qui changent s'affichent ; les nouvelles lignes du journal passent l'une après l'autre
+function coupsAmis(mAvant, pvAvant, jAvant) {
+  const ou = id => id === 'boss' ? S.R.boss && Object.assign({ id:'boss' }, S.R.boss) : S.R.monstres.find(z => z.id === id);
+  let k = 0;
+  mAvant.forEach(a => { const m = ou(a.id), el = $('j-' + a.id);
+    if (!m) { setTimeout(() => { son('gros'); eclat(`c-${a.x}-${a.y}`, '💥', 46); }, 120 * k++); return; }
+    const ok = (m.sceaux || []).filter(z => z.ok).length;
+    if (ok > a.ok) setTimeout(() => { son('coup'); flash('j-' + a.id); eclat('j-' + a.id, ok - a.ok > 1 ? `✦×${ok - a.ok}` : '✦', 30); }, 120 * k++); });
+  (pvAvant || []).forEach((pv, i) => { const z = S.heros[i]; if (!z || z.pv === pv) return; setTimeout(() => { flash('j-h' + i); eclat('j-h' + i, z.pv > pv ? `+${z.pv - pv} ❤` : `−${pv - z.pv}`, 24, z.pv > pv ? '#7dffb0' : '#ff8a7a'); if (z.pv < pv) son('coup'); }, 120 * k++); });
+  const nv = []; for (const l of S.journal) { if (jAvant.includes(l) || nv.length >= 3) break; nv.push(l); }
+  nv.reverse().forEach((l, j) => setTimeout(() => bulle(l.replace(/^[^ ]+ /, '')), 900 * j));
+}
+function eclat(id, txt, taille, coul) { const e = $(id); if (!e) return; const r = e.getBoundingClientRect(), b = document.createElement('div');
+  b.textContent = txt; b.style.cssText = `position:fixed;left:${r.left + r.width / 2}px;top:${r.top + r.height / 2}px;z-index:500;pointer-events:none;font:bold ${taille}px Georgia,serif;color:${coul || '#ffd76b'};text-shadow:0 0 8px #000,0 0 14px ${coul || '#ffd76b'};transform:translate(-50%,-50%)`;
+  document.body.appendChild(b); b.animate([{ transform:'translate(-50%,-50%) scale(.4)', opacity:0 }, { transform:'translate(-50%,-90%) scale(1.2)', opacity:1, offset:.25 }, { transform:'translate(-50%,-160%) scale(1)', opacity:0 }], { duration:1300, easing:'ease-out' }).onfinish = () => b.remove(); }
 async function animeMonstres(ev) {
   suivi = null; // le tour des monstres : la caméra part de son propre héros
   const voisCase = (x, y) => { const V = $('vue'), c = $(`c-${x}-${y}`); if (!V || !c) return; const r = V.getBoundingClientRect(), q = c.getBoundingClientRect(); if (q.left < r.left || q.right > r.right || q.top < r.top || q.bottom > r.bottom) V.scrollTo({ left:c.offsetLeft - V.clientWidth / 2, top:c.offsetTop - V.clientHeight / 2, behavior:'smooth' }); };
