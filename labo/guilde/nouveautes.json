@@ -1,5 +1,9 @@
 [
 {
+"v": "20261128-200208",
+"m": "Chroniques, Terres brûlées : le grand brasier se voit sur la carte, il s'allume quand on peut y poser sa braise"
+},
+{
 "v": "20261128-200025",
 "m": "Chroniques, Terres brûlées : on ramasse bien des braises éternelles, et le feu crépite en fond"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261128-153205",
 "m": "Mes amis : touche un ami pour le défier en Duel ou l'inviter aux Chroniques (la salle se crée et l'invitation part toute seule)"
-},
-{
-"v": "20261128-082614",
-"m": "Rempart : tu peux reforger une tour en une autre sorte depuis sa fiche (elle perd une étoile ou un niveau et se tait 6 s)"
 }
 ]
