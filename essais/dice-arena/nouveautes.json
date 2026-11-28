@@ -1,5 +1,9 @@
 [
 {
+"v": "20261128-185225",
+"m": "La Descente : après chaque victoire, choisis une bénédiction parmi 3 (Braise, Givre, Ombre) et combine-les pour débloquer des bénédictions doubles"
+},
+{
 "v": "20261128-180409",
 "m": "La Descente : au début de chaque étage, choisis un compagnon parmi 3 (ou garde le tien)"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261128-010620",
 "m": "Rempart : si tu joues très bien, les monstres peuvent devenir encore plus solides (à partir du niveau 3)"
-},
-{
-"v": "20261128-010414",
-"m": "Rempart : des surprises environ une fois par minute ! Moustache et sa bourse, l'aigle et son dé d'or, l'étoile filante, le dé du destin, le gobelin doré, l'orage, la charge du sanglier et le défi du marchand"
 }
 ]
