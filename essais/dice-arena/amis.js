@@ -160,7 +160,7 @@ function amisVoir(code) {
     <p class="doux" style="text-align:center">${a.enLigne ? (a.salle ? `🎲 dans la salle ${amisEsc(a.salle)}` : '🟢 en ligne') : amisVuTxt(a.vu)}</p>
     ${a.enLigne && a.salle && a.salle !== amisSalle() ? `<button class="am-bt go large" onclick="amisRejoindre('${amisEsc(a.salle)}')">▶ Rejoindre sa salle</button>` : ''}
     ${a.enLigne && amisSalle() && a.salle !== amisSalle() ? `<button class="am-bt or large" onclick="amisInvite('${a.code}')">🎲 L’inviter dans ma salle</button>` : ''}
-    ${!amisSalle() ? `<button class="am-bt go large" onclick="amisCreePour('${a.code}', 'duel')">⚔ Le défier en Duel</button><button class="am-bt or large" onclick="amisCreePour('${a.code}', 'chron')">📜 L’inviter aux Chroniques</button>${a.enLigne ? '' : '<p class="doux" style="text-align:center">Il n’est pas en ligne : il verra l’invitation à sa prochaine visite… s’il arrive avant qu’elle expire. Mieux vaut le prévenir.</p>'}` : ''}
+    ${!amisSalle() ? `<button class="am-bt go large" onclick="amisCreePour('${a.code}', 'chron')">🎲 Créer un salon et l’inviter</button><p class="doux" style="text-align:center">Dans le salon, tu choisis le jeu : les Chroniques ou un Duel.</p>${a.enLigne ? '' : '<p class="doux" style="text-align:center">Il n’est pas en ligne : il verra l’invitation à sa prochaine visite… s’il arrive avant qu’elle expire. Mieux vaut le prévenir.</p>'}` : ''}
     <button class="am-bt large" onclick="AMIS.ouvert=true;amisDessine()">‹ Mes amis</button>`);
 }
 // 28/11 (l'utilisateur : « j'aimerais inviter mon ami mais je n'arrive plus à créer un salon ») : depuis la fiche d'un ami, créer la salle
