@@ -226,7 +226,7 @@ function nouvelle(heros, graine, bonus = {}, opts = {}) {
   if (R.pacte === 'sang') R.or += 25;
   if (R.breloque === 'sifflet') donneComp(R, h);
   if (R.breloque === 'sac') donneObjet(R, h);
-  tireChoix(R); return R;
+  tireChoix(R); etapeComp(R); return R;
 }
 // les 2-3 salles proposées à l'étape suivante
 // 15/11 soir (retour de l'utilisateur : « j'ai pu aller au boss sans un seul combat ») : les COMBATS sont obligatoires.
@@ -436,10 +436,20 @@ function recompense(R, k) {
   suite(R); return gain;
 }
 // passer à l'étape suivante (ou à l'étage suivant, ou à la victoire)
+// 28/11 (l'utilisateur, d'après Dice & Fold) : L'ÉTAPE COMPAGNON au début de chaque étage : 1 compagnon parmi 3 (il remplace l'actuel),
+// ou garder le sien (vie pleine) ; sans compagnon, « continuer seul » rend 8 PV.
+function etapeComp(R) { const h = RR(R), l = melange(h, compsOuverts(R).filter(k => !R.comp || k !== R.comp.id)).slice(0, 3); R.ecran = 'compagnon'; R.salle = { type:'compagnon', offre:l }; }
+function choisirComp(R, k) {
+  if (R.ecran !== 'compagnon') return null; let txt;
+  if (k === 'garder') { if (R.comp) { R.comp.pv = C.COMPAGNONS[R.comp.id].pv; txt = `${C.COMPAGNONS[R.comp.id].e} ${C.COMPAGNONS[R.comp.id].n} reste avec toi, soigné.`; } else txt = 'Tu continues seul : ' + soin(R, 8); }
+  else { const id = R.salle.offre[k]; if (!id) return null; const avant = R.comp ? C.COMPAGNONS[R.comp.id].n : null; R.comp = { id, pv:C.COMPAGNONS[id].pv };
+    txt = `${C.COMPAGNONS[id].e} ${C.COMPAGNONS[id].n} te rejoint${avant ? ` (${avant} rentre à la Guilde)` : ''}.`; }
+  R.journal && R.journal.push && R.journal.push('🐾 ' + txt); R.salle = null; R.ecran = 'carte'; tireChoix(R); return txt;
+}
 function suite(R) {
   if (R.salle && R.salle.type === 'boss') {
     if (R.etage >= ETAGES) { R.fin = 'gagne'; R.ecran = 'fin'; R.score = Math.round((R.score + 50 * R.pv + 10 * R.or) * (R.pacte ? PACTES[R.pacte].score : 1) * (1 + .1 * R.prof)); return true; }
-    R.etage++; R.pas = 0;
+    R.etage++; R.pas = 0; R.salle = null; tireChoix(R); etapeComp(R); return true;
   }
   R.salle = null; R.ecran = 'carte'; tireChoix(R); return true;
 }
@@ -447,7 +457,7 @@ const etoiles = R => R.fin !== 'gagne' ? 0 : 1 + (R.pv >= R.pvmax * .3 ? 1 : 0) 
 // 15/11 soir : la rareté visible d'un objet (une gemme de couleur et le mot)
 const rarete = k => OBJETS[k] && OBJETS[k].rare ? { n:'Rare', coul:'#4aa8ff' } : { n:'Commun', coul:'#b8c0d0' };
 
-const API = { PROFONDEURS, ETAPES, ETAGES, SALLES, OBJETS, BRELOQUES, PACTES, EVENEMENTS, nouvelle, choisir, acheter, feu, evenement, apresCombat, recompense, suite, etoiles, prix,
+const API = { choisirComp, PROFONDEURS, ETAPES, ETAGES, SALLES, OBJETS, BRELOQUES, PACTES, EVENEMENTS, nouvelle, choisir, acheter, feu, evenement, apresCombat, recompense, suite, etoiles, prix,
   FAMILLES, familles, bonusFamilles, THEMES, theme, PALIERS, palierDe, debloque, renommeeGagnee, DEFIS, FORGE_CHOIX, forger, relancerEtal, prixRelance, rarete };
 if (typeof module !== 'undefined' && module.exports) module.exports = API; else racine.DESCENTE = API;
 })(typeof window !== 'undefined' ? window : globalThis);
