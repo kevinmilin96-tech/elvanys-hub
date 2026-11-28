@@ -137,7 +137,7 @@ function nouvelle(heros, niveau, o) {
   const S = { heros, niveau, L, rng, f, puiss:Math.max(1, o.force || 1), fBoss:fs * (o.pvBoss || 1), t:0, energie:R.energieDepart, eAcc:0, rempart:R.rempart, rempartMax:R.rempart,
     cases:Array(NC * NR).fill(null), monstres:[], file:[], des:[], deT:R.deDelai, jauge:0, ultimes:0, bowling:L.bowling ? 1 : 0,
     kills:0, fini:null, fx:[], log:[], effets:{}, vus:{}, puitsGratuit:heros === 'pip', gelPartout:0,
-    cristaux:[], ramasses:0, perdus:0, sortT:R.sortDepart, sorts:0, evtT:30, cadeau:null, orage:0, defi:null, murs:[], pieges:[], detours:[], besace:[], deObjet:0, appels:0, bati:0, bowlings:0, perteMax:0,
+    cristaux:[], ramasses:0, perdus:0, sortT:R.sortDepart, sorts:0, evtT:30, cadeau:null, orage:0, defi:null, murs:[], pieges:[], detours:[], appats:[], besace:[], deObjet:0, appels:0, bati:0, bowlings:0, perteMax:0,
     batiSortes:{}, passes:0, passe:{}, tues:{}, runesBaties:0, speFaites:0, annonce:false, vagueVue:-1,
     heroique:!!o.heroique, adapt:1, adaptOn:o.adapt !== false, vStat:L.vagues.map(() => ({ pertes:0, morts:[], vus:0, finis:0, n:0 })), adaptLog:[] };
   L.vagues.forEach((v, iv) => { S.vStat[iv].n = v[1].length; });
@@ -290,7 +290,7 @@ const OBJETS = {
   barricade:{ f:3, e:'🧱', n:'Barricade', d:'Un mur sur un chemin : il bloque les monstres 6 s (le boss passe, ralenti).' },
   repousse:{ f:4, e:'💨', n:'Souffle', d:'Les monstres du chemin touché remontent de 2 cases (le boss d’une demi-case).' },
   detour:{ f:5, e:'↪️', n:'Détour', d:'Les monstres du chemin touché passent sur le chemin voisin le mieux défendu, et ceux qui arrivent dans les 8 s aussi.' },
-  appat:{ f:6, e:'🥩', n:'Appât', d:'Les monstres tout autour (3 cases) viennent sur le chemin touché : regroupe-les sous tes meilleures tours.' },
+  appat:{ f:6, e:'🥩', n:'Appât', d:'Posé sur un chemin pendant 6 s : les monstres à 3 cases ou moins (sauf le boss) viennent sur ce chemin, même ceux qui arrivent. Regroupe-les sous tes meilleures tours.' },
 };
 const FACE_OBJET = ['', 'givre', 'epines', 'barricade', 'repousse', 'detour', 'joker'];
 function lancerObjet(S) {
@@ -310,7 +310,7 @@ function poserObjet(S, n, c, y, choix) {
   else if (k === 'barricade') S.murs.push({ c, y, t:6, k:'barricade' });
   else if (k === 'repousse') vivants.filter(m => m.c === c).forEach(m => { m.y = Math.min(HAUT, m.y + (M(m).boss ? .5 : 2)); });
   else if (k === 'detour') { const v = voisinFort(S, c); S.detours.push({ c, v, t:8 }); vivants.filter(m => m.c === c && !M(m).boss).forEach(m => { m.c = v; }); }
-  else if (k === 'appat') vivants.filter(m => !M(m).boss && Math.abs(m.y - y) <= 3).forEach(m => { m.c = c; });
+  else if (k === 'appat') { vivants.filter(m => !M(m).boss && Math.abs(m.y - y) <= 3).forEach(m => { m.c = c; }); S.appats.push({ id:++MID, c, y, t:6 }); } // 28/11 soir : il reste 6 s, visible, et attire ceux qui arrivent
   S.besace.splice(n, 1); S.objets = (S.objets || 0) + 1;
   fx(S, { t:'pose', k, c, y, v:k === 'detour' ? S.detours[S.detours.length - 1].v : null }); log(S, `${OBJETS[k].e} ${OBJETS[k].n} posé${k === 'barricade' ? 'e' : ''} (chemin ${c + 1}).`); return null;
 }
@@ -531,6 +531,7 @@ function etape(S) {
   for (const w of S.murs) w.t -= PAS; S.murs = S.murs.filter(w => w.t > 0);
   for (const x of S.pieges) x.t -= PAS; S.pieges = S.pieges.filter(x => x.t > 0 && !x.fini);
   for (const x of S.detours) x.t -= PAS; S.detours = S.detours.filter(x => x.t > 0);
+  S.appats = S.appats || []; for (const x of S.appats) x.t -= PAS; S.appats = S.appats.filter(x => x.t > 0);
   // les annonces de vague : « une énorme vague approche » 5 s avant la dernière
   // 28/11 : chaque GROSSE vague (3e champ « true » dans NIVEAUX) est annoncée 8 s avant ; après elle, une accalmie (voir bilanVague)
   S.grosses.forEach(k => { const tg = S.vT[k]; if (!S.annoncees.includes(k) && S.t >= tg - 8 && S.t < tg + 1) { S.annoncees.push(k); fx(S, { t:'annonce', derniere:k === S.nbVagues - 1, n:S.grosses.indexOf(k) + 1, sur:S.grosses.length }); } });
@@ -567,6 +568,7 @@ function etape(S) {
       if (x.k === 'givre' && y0 >= x.y && m.y < x.y) { x.fini = true; if (B.boss) m.lent = Math.max(m.lent, 4); else m.racine = Math.max(m.racine, 4); m.y = x.y; fx(S, { t:'piege', id:m.id }); }
       else if (x.k === 'epines' && Math.abs(m.y - x.y) <= .6) { if (!(m.pique || (m.pique = [])).includes(x.id)) { m.pique.push(x.id); fx(S, { t:'pique', id:m.id }); } m.lent = Math.max(m.lent, .3); frappe(S, m, S.f * 12 * PAS, { perce:true }); } }
     if (!B.boss && m.y < HAUT - .5) for (const x of S.detours) if (x.c === m.c) m.c = x.v;
+    if (!B.boss && S.appats) for (const x of S.appats) if (m.c !== x.c && Math.abs(m.y - x.y) <= 3) m.c = x.c;
     if (!sousTerre(m)) for (const w of S.murs) if (w.c === m.c && y0 >= w.y && m.y < w.y) { if (B.boss) m.y = y0 - v * PAS * .3; else m.y = w.y; frappe(S, m, S.f * 6 * PAS, { perce:true }); }
     if (B.mineur && y0 > 5 && m.y <= 5) fx(S, { t:'creuse', id:m.id }); if (B.mineur && y0 > 3 && m.y <= 3) fx(S, { t:'ressort', id:m.id });
     if (B.boss) {

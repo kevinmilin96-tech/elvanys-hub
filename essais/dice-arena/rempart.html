@@ -51,6 +51,8 @@
   .case .tour { position:relative; width:76%; height:76%; align-self:flex-end; margin-bottom:6%; display:flex; align-items:center; justify-content:center; }
   .case img.canon { width:96%; height:96%; object-fit:contain; filter:drop-shadow(0 3px 2px #0007); transition:transform .12s; }
   .case .tour.tire img.canon { transform:scale(1.08) translateY(-3%); }
+  .piege.appat { animation:appat .7s ease-in-out infinite alternate; filter:drop-shadow(0 0 8px #ff9f43); }
+  @keyframes appat { from { transform:translate(-50%,-50%) scale(1); } to { transform:translate(-50%,-50%) scale(1.25); } }
   .case .hb { position:absolute; right:-5px; top:-5px; width:20px; height:20px; border-radius:50%; border:2px solid #f3c96b; object-fit:cover; z-index:3; box-shadow:0 0 6px #f3c96b99; pointer-events:none; }
   .case .so { position:absolute; left:-6px; top:-6px; background:#000c; border:2px solid #888; border-radius:10px; padding:0 4px; font-size:12px; line-height:20px; z-index:2; white-space:nowrap; }
   .case .so b { font-size:17px; color:#fff; } .case .so .ets { font-style:normal; color:#ffd76b; font-weight:bold; font-size:14px; margin-left:2px; text-shadow:0 0 4px #000; } .case .so.n2 { border-color:#4ade80; } .case .so.n3 { border-color:#60a5fa; } .case .so.n4 { border-color:#ffd76b; background:#3a2a00e6; }
@@ -382,6 +384,8 @@ function majMonstres() {
   // les murs de ronces
   S.pieges.forEach(x => { const id = 'pg' + x.id; vus.add(id); let el = document.getElementById(id);
     if (!el) { el = document.createElement('div'); el.id = id; el.className = 'piege ' + x.k; el.textContent = P.OBJETS[x.k].e; el.style.left = xPx(x.c) + 'px'; el.style.top = yPx(x.y) + 'px'; box.appendChild(el); } });
+  (S.appats || []).forEach(x => { const id = 'ap' + x.id; vus.add(id); let el = document.getElementById(id);
+    if (!el) { el = document.createElement('div'); el.id = id; el.className = 'piege appat'; el.textContent = '🥩'; el.style.left = xPx(x.c) + 'px'; el.style.top = yPx(x.y) + 'px'; box.appendChild(el); } });
   S.detours.forEach(x => { const id = 'dt' + x.c; vus.add(id); let el = document.getElementById(id);
     if (!el) { el = document.createElement('div'); el.id = id; el.className = 'detour'; el.textContent = x.v > x.c ? '↪️' : '↩️'; el.style.left = xPx(x.c) + 'px'; el.style.top = (G.cw * .45) + 'px'; box.appendChild(el); } });
   majBesace();
