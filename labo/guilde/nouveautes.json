@@ -1,5 +1,9 @@
 [
 {
+"v": "20261128-153205",
+"m": "Mes amis : touche un ami pour le défier en Duel ou l'inviter aux Chroniques (la salle se crée et l'invitation part toute seule)"
+},
+{
 "v": "20261128-082614",
 "m": "Rempart : tu peux reforger une tour en une autre sorte depuis sa fiche (elle perd une étoile ou un niveau et se tait 6 s)"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261128-001949",
 "m": "Rempart : toucher le ⬆+1, le ✦ ou une rune n'ouvre plus la fiche de la tour"
-},
-{
-"v": "20261128-001425",
-"m": "Rempart : un ⬆+1 vert apparaît sur les tours qu'un dé peut monter (un toucher suffit), le ✦ lance le pouvoir d'un toucher, et plus de calme entre les vagues"
 }
 ]
