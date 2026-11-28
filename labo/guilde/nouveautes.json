@@ -1,5 +1,9 @@
 [
 {
+"v": "20261128-161658",
+"m": "Chroniques : les 6 héros de base lancent maintenant 4 dés (Gorm 5), plus les dés de leur équipement"
+},
+{
 "v": "20261128-154729",
 "m": "Chroniques entre amis : tu vois maintenant l'équipement des héros de tes amis dans leur fiche"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261128-005416",
 "m": "Rempart : plus de dés pour la besace (toutes les 2 vagues et après chaque grosse vague)"
-},
-{
-"v": "20261128-004856",
-"m": "Rempart : la besace ! Après chaque grosse vague, lance un dé pour gagner un objet (piège de givre, épines, barricade, souffle, détour, ou joker), et profite d'une vraie accalmie de 25 s pour bâtir"
 }
 ]

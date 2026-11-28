@@ -238,7 +238,7 @@ const forgeHeros = id => { try { const a = typeof avTrouve === 'function' ? avTr
 function gainHeros(id) { const S = statsHeros(id), base = PV_BASE[id] || 44; return Math.max(0, (S.pv + 1.5 * S.bouclier + 3 * S.def + 4 * S.att + 2 * S.agi + 8 * (S.des + S.main) + 5 * S.relance + 5 * S.pc + 1.5 * forgeHeros(id)) / base); }
 function forceSuiveuse(id) { if (typeof localStorage === 'undefined') return 1; try { return Math.round((1 + SUIVI * gainHeros(id)) * 100) / 100; } catch (e) { return 1; } }
 // (ancien nom) les bonus contre les monstres, utilisés par l'Odyssée, la Grande aventure, les épreuves…
-function bonusHerosPvE(id) { const S = statsHeros(id); return { pv:S.pv, bouclier:S.bouclier + S.def, pc:S.pc, relance:S.relance, main:S.main + S.des, att:S.att, agi:S.agi }; }
+function bonusHerosPvE(id) { const S = statsHeros(id); return { pv:S.pv, bouclier:S.bouclier + S.def, pc:S.pc, relance:S.relance, main:S.main + S.des, att:S.att, agi:S.agi, des:S.des }; }
 
 // ----------------------------------------------------------------------------------------------- l'armurerie
 const niveauEquip = k => { if (typeof localStorage === 'undefined') return 1; const c = lireEtoiles().armurerie[k] || 0; return c >= 5 ? 3 : c >= 3 ? 2 : 1; };
