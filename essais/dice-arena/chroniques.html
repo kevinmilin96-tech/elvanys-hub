@@ -919,7 +919,7 @@ function aFini() {
 function ficheHeros(i, choix) {
   const h = S.heros[i], pid = h.av || h.id, B = [];
   const tal = (() => { const D = pwDef(h, 'passif'); return D && D.talent ? `<li><b>${D.e} ${D.n}</b> (son passif) : ${D.chron}</li>` : ''; })(); // 19/11 : le talent = une version du Passif
-  let E = {}; try { if (typeof equipementDe === 'function') E = equipementDe(pid); } catch (e) { E = {}; }
+  let E = {}; try { if (h.eq) E = h.eq; else if (typeof equipementDe === 'function') E = equipementDe(pid); } catch (e) { E = {}; }
   const ico = (k, e) => `<img src="ui/heros/eq-${k}.webp?v=1" alt="" onerror="this.replaceWith(document.createTextNode('${e}'))">`;
   const slot = k => { const c = typeof EQ_CASES !== 'undefined' && EQ_CASES.find(z => z.k === k); if (!c) return ''; const q = E[k];
     return `<div class="ps-slot ${q ? '' : 'vide'}" ${q ? `style="--rc:${EQ_RARE[q.r].c}"` : ''} onclick="bulle('${q ? esc(q.nom).replace(/'/g, '’') + ' : ' + eqTexte(q).replace(/'/g, '’') : c.n + ' : rien (à équiper dans Mes héros)'}')">${ico(k, c.e)}<small>${q ? esc(q.nom) : c.n}</small>${q ? `<i>+${q.niv}</i>` : ''}</div>`; };
@@ -1412,7 +1412,12 @@ async function lobbyPousse(f) {
   envoi = false; if (LOB && !S && L && !L.part) salleAttente();
 }
 // une entrée d'équipe à partir d'un choix de l'accueil ('maelle' ou 'av:<id>')
-function entreeLobby(k) {
+// 28/11 (l'utilisateur : « je ne vois pas l'équipement des personnages de mon amie ») : l'équipement est rangé sur le téléphone de chacun ;
+// on en joint une copie à l'entrée du héros dans la salle, pour que tout le monde voie sa fiche complète
+const eqCopie = k => { try { if (typeof equipementDe !== 'function') return null; const E = equipementDe(k.startsWith('av:') ? k.slice(3) : k), C = {};
+  Object.keys(E).forEach(s => { if (E[s]) C[s] = JSON.parse(JSON.stringify(E[s])); }); return Object.keys(C).length ? C : null; } catch (e) { return null; } };
+function entreeLobby(k) { const e0 = entreeLobby0(k); if (e0) { const q = eqCopie(k); if (q) e0.eq = q; } return e0; }
+function entreeLobby0(k) {
   const id = 'e' + Math.random().toString(36).slice(2, 8);
   if (k.startsWith('av:')) { const a = avTrouve(k.slice(3)); if (!a) return null; return { id, cle:k, owner:L.moi.id, nom:a.nom, img:avPortrait(a), sec:avPortraitSecours(a), c:a.couleur, m:versMoteur(k) }; }
   return { id, cle:k, owner:L.moi.id, nom:H[k].n, img:`portraits/${k}.webp`, sec:`portraits/${k}.webp`, c:(H[k] || {}).c, m:{ g:k, B:typeof bonusHerosPvE === 'function' ? bonusHerosPvE(k) : { pv:0 }, fs:typeof forceSuiveuse === 'function' ? forceSuiveuse(k) : 1, pwSet:typeof pwPourMoteur === 'function' ? pwPourMoteur(k) : null } };
@@ -1481,7 +1486,7 @@ async function lanceSalle() {
   else if (LOB.camp != null) chap = LOB.camp;
   const scen = chap != null ? CHAPITRES[chap].scen : LOB.scen, c = chap != null ? lireCamp() : null;
   S = K.nouvelle(LOB.equipe.map(e => e.m), 'chron-' + Date.now(), scen);
-  S.hote = LOB.hote; S.equipeLob = LOB.equipe;
+  S.hote = LOB.hote; S.equipeLob = LOB.equipe; S.heros.forEach((h, i) => { const e = LOB.equipe[i]; if (e && e.eq) h.eq = e.eq; });
   S.sansIni = !!LOB.sansIni;
   if (chap != null) { S.campagne = chap; S.heros.forEach((h, i) => { h.pvmax += 2 * chap; h.pv += 2 * chap; if (c && c.sacs[i]) h.sac = c.sacs[i].slice(); }); }
   L.joueurs.forEach(j => { j.heros = LOB.equipe.map((e, i) => e.owner === j.id ? i : -1).filter(i => i >= 0); });
