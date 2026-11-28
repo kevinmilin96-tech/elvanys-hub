@@ -1,5 +1,9 @@
 [
 {
+"v": "20261128-180409",
+"m": "La Descente : au début de chaque étage, choisis un compagnon parmi 3 (ou garde le tien)"
+},
+{
 "v": "20261128-175827",
 "m": "La Descente : jusqu'à 3 parties en cours, une par héros si tu veux"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261128-010414",
 "m": "Rempart : des surprises environ une fois par minute ! Moustache et sa bourse, l'aigle et son dé d'or, l'étoile filante, le dé du destin, le gobelin doré, l'orage, la charge du sanglier et le défi du marchand"
-},
-{
-"v": "20261128-010040",
-"m": "Route des rangs : la Cotte de mailles, le Heaume du gardien et l'Anneau des runes arrivent maintenant dans le coffre de Mes héros (aussi pour ceux déjà récupérés)"
 }
 ]
