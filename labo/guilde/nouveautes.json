@@ -1,5 +1,9 @@
 [
 {
+"v": "20261128-195734",
+"m": "Chroniques : la Carte du monde d'Oria montre enfin les pièges ⚠️ partout (cartes peintes, noir, meubles piégés)"
+},
+{
 "v": "20261128-195050",
 "m": "Chroniques entre amis : tu vois maintenant les coups de tes amis (sceaux qui sautent, monstres qui tombent, soins et blessures)"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261128-081747",
 "m": "Rempart : les runes restent 6 secondes avant de filer seules vers ton énergie"
-},
-{
-"v": "20261128-081440",
-"m": "Rempart : les runes ◆ ne se perdent plus : si tu ne les touches pas, elles filent seules vers ton énergie (les toucher vite donne +1 ◆ de bonus)"
 }
 ]
