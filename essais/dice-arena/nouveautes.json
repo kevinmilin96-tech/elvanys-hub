@@ -1,5 +1,9 @@
 [
 {
+"v": "20261128-082614",
+"m": "Rempart : tu peux reforger une tour en une autre sorte depuis sa fiche (elle perd une étoile ou un niveau et se tait 6 s)"
+},
+{
 "v": "20261128-081747",
 "m": "Rempart : les runes restent 6 secondes avant de filer seules vers ton énergie"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261128-001425",
 "m": "Rempart : un ⬆+1 vert apparaît sur les tours qu'un dé peut monter (un toucher suffit), le ✦ lance le pouvoir d'un toucher, et plus de calme entre les vagues"
-},
-{
-"v": "20261128-000253",
-"m": "Rempart : chaque tour a son pouvoir dès le niveau 2 (touche-la quand le ✦ brille) ; le givre gèle toute la carte, les archers marquent les monstres (+25 % de dégâts)"
 }
 ]

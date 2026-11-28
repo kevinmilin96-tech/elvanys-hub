@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261128-081747"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde">
+<head><meta name="guilde-version" content="20261128-082614"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="robots" content="noindex">
@@ -106,6 +106,8 @@
   .zone { position:absolute; z-index:11; border-radius:50%; pointer-events:none; transform:translate(-50%, -50%); animation:zone .7s ease-out forwards;
     display:flex; align-items:center; justify-content:center; font-size:30px; }
   @keyframes zone { 0% { opacity:0; transform:translate(-50%, -50%) scale(.3); } 30% { opacity:1; } 100% { opacity:0; transform:translate(-50%, -50%) scale(1.15); } }
+  .case .rfg { position:absolute; inset:0; z-index:4; display:flex; align-items:center; justify-content:center; background:#0008; border-radius:10px; color:#ffb347; font-weight:bold; font-size:18px; animation:pulse .8s infinite; pointer-events:none; }
+  .reforge { display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; } .reforge button { flex:1 1 30%; padding:6px 4px; }
   .rvole { position:fixed; z-index:60; pointer-events:none; width:26px; height:26px; border-radius:50%; background:radial-gradient(circle at 40% 35%, #fff, #c084fc 60%, #6b2bd9); color:#3a1470; font-size:13px; font-weight:bold; display:flex; align-items:center; justify-content:center; box-shadow:0 0 12px #c084fc; }
   .cadeau { position:absolute; left:-70px; z-index:35; width:62px; height:62px; border:0; background:none; padding:0; animation:traverse linear forwards; filter:drop-shadow(0 0 10px #ffd76b); }
   .cadeau img { width:100%; height:100%; object-fit:contain; border-radius:50%; } .cadeau span { font-size:44px; } .cadeau b { position:absolute; right:-4px; bottom:-2px; font-size:24px; }
@@ -199,7 +201,7 @@
 <script src="rang.js?v=aadc90c69b"></script>
 <script src="heros-etoiles.js?v=29ce68f57f"></script>
 <script src="donnees.js?v=911da28260"></script>
-<script src="rempart-moteur.js?v=c69633048e"></script>
+<script src="rempart-moteur.js?v=feb363fd92"></script>
 <script src="configurateur.js?v=d5e9469a28"></script>
 <script src="heros-aventure.js?v=31db8c2ed4"></script>
 <script>
@@ -328,7 +330,7 @@ function htmlCase(t, i) {
   if (t.puits) return `<div class="tour"><img class="pu" src="decor/obj-puits-runes.webp?v=1" alt=""></div>`; // 27/11 : image reçue
   if (t.rune) return `<div class="tour"><div class="runeT"><img src="${FACE(S.heros, t.paire)}" alt=""></div><span class="so">${P.EFFET_PAIRE[t.paire].e}<small>${t.rv}</small></span></div>`;
   const n = Math.min(3, t.niv);
-  const TI = TOUR_IMG[t.v]; return `<div class="tour">${TI ? `<img class="tr" src="tours/${TI}.webp?v=2" alt="">` : `<img class="canon" src="tours/canon-${S.heros}-${n}.webp?v=2" onerror="this.onerror=null;this.src='tours/canon-maelle-${n}.webp?v=2'" alt="">`}<span class="so n${Math.min(4, t.niv)}">${P.SORTES[t.v].e} <b>${t.niv}</b>${t.et ? `<i class="ets">★${t.et}</i>` : ''}</span>${deMonte(t) >= 0 ? `<button class="plus1" onpointerdown="event.stopPropagation();event.preventDefault();monteParDe(${i})">⬆+1</button>` : ''}${P.pouvoirPret(t) && porteur(t) ? `<button class="pw" onpointerdown="event.stopPropagation();event.preventDefault();pouvoirDirect(${i})">✦</button>` : t.niv >= P.R.nivMax ? (t.spe ? `<span class="spe ok">${t.spe.toUpperCase()}</span>` : '<span class="spe">!</span>') : ''}</div>`;
+  const TI = TOUR_IMG[t.v]; return `<div class="tour">${TI ? `<img class="tr" src="tours/${TI}.webp?v=2" alt="">` : `<img class="canon" src="tours/canon-${S.heros}-${n}.webp?v=2" onerror="this.onerror=null;this.src='tours/canon-maelle-${n}.webp?v=2'" alt="">`}${t.reforge > 0 ? `<span class="rfg">⚒ ${Math.ceil(t.reforge)}</span>` : ''}<span class="so n${Math.min(4, t.niv)}">${P.SORTES[t.v].e} <b>${t.niv}</b>${t.et ? `<i class="ets">★${t.et}</i>` : ''}</span>${deMonte(t) >= 0 ? `<button class="plus1" onpointerdown="event.stopPropagation();event.preventDefault();monteParDe(${i})">⬆+1</button>` : ''}${P.pouvoirPret(t) && porteur(t) ? `<button class="pw" onpointerdown="event.stopPropagation();event.preventDefault();pouvoirDirect(${i})">✦</button>` : t.niv >= P.R.nivMax ? (t.spe ? `<span class="spe ok">${t.spe.toUpperCase()}</span>` : '<span class="spe">!</span>') : ''}</div>`;
 }
 function caseOk(i) {
   if (!sel) return false; const t = S.cases[i];
@@ -341,7 +343,7 @@ function majPlateau(tout) {
   if (!S || !G) return;
   for (let i = 0; i < S.cases.length; i++) {
     const t = S.cases[i], el = document.getElementById('case' + i); if (!el) continue;
-    const sig = t ? `${t.id}|${t.niv}|${t.et}|${t.rv}|${P.pouvoirPret(t) && porteur(t)}|${t.spe || ''}|${deMonte(t) >= 0}` : '';
+    const sig = t ? `${t.id}|${t.v}|${t.reforge > 0 ? Math.ceil(t.reforge) : 0}|${t.niv}|${t.et}|${t.rv}|${P.pouvoirPret(t) && porteur(t)}|${t.spe || ''}|${deMonte(t) >= 0}` : '';
     if (tout || SIG[i] !== sig) { const avant = SIG[i]; el.innerHTML = htmlCase(t, i); SIG[i] = sig;
       // 27/11 (l'utilisateur : « un impact sur le sol avec de la poussière ») : une tour posée TOMBE sur sa case et soulève de la poussière ; une tour qui monte saute
       if (!tout && t && avant !== undefined) poseEffet(el, !avant || avant.split('|')[0] !== String(t.id) ? 'pose' : 'monte'); }
@@ -525,8 +527,11 @@ function ficheTour(i) {
   fenetre(`<h2>${t.puits ? '🔮' : t.rune ? '✨' : P.SORTES[t.v].e} ${P.nomTour(t)}</h2>${corps}
     <div class="bts">${pw ? `<button class="go" ${t.pw > 0 ? 'disabled' : ''} onclick="lancePouvoir(${i})">✦ ${P.POUVOIRS[t.v].n}${t.pw > 0 ? ` (${Math.ceil(t.pw)} s)` : ''}</button>` : ''}
     ${P.prixMonter(t) ? `<button class="go" ${S.energie < P.prixMonter(t) ? 'disabled' : ''} onclick="monteE(${i})">⬆ ${t.niv < P.R.nivMax ? `Monter au niveau ${t.niv + 1}` : 'Une étoile ★ de plus'} : ${P.prixMonter(t)} ◆</button>` : ''}
-    <button ${S.energie < 1 ? 'disabled' : ''} onclick="deplace(${i})">↔ Déplacer (1 ◆)</button><button onclick="demolirQ(${i})">🔨 Démolir (+${P.rendDemolir(t)} ◆)</button></div>`);
+    <button ${S.energie < 1 ? 'disabled' : ''} onclick="deplace(${i})">↔ Déplacer (1 ◆)</button><button onclick="demolirQ(${i})">🔨 Démolir (+${P.rendDemolir(t)} ◆)</button></div>
+    ${!t.puits && !t.rune && S.L.sortes.length > 1 ? `<div class="speC"><b>⚒ Reforger en une autre tour</b> <span class="doux">(elle ${t.et ? 'perd une étoile ★' : t.niv > 1 ? 'perd un niveau' : 'reste au niveau 1'}${t.spe ? ', sa spécialisation est à refaire' : ''}, et elle ne tire plus pendant ${P.R.reforge} s)</span>
+      <div class="reforge">${S.L.sortes.filter(v => v !== t.v).map(v => `<button ${S.energie < P.prixReforge(t, v) ? 'disabled' : ''} onclick="reforge(${i}, ${v})">${P.SORTES[v].e} ${P.SORTES[v].n.replace('Tour de ', '').replace('Tour d’', '')}<br><small>${P.prixReforge(t, v)} ◆</small></button>`).join('')}</div></div>` : ''}`);
 }
+function reforge(i, v) { const e = P.reforger(S, i, v); fermer(); if (e) dis(e, true); else { son('tour-fusion'); dis(`⚒ Reforge en cours : elle reprend dans ${P.R.reforge} s.`); joueFx(); } rafraichit(); }
 function lancePouvoir(i) { const e = P.pouvoir(S, i); fermer(); if (e) dis(e, true); else { son('ultime'); banniere('✦ ' + P.POUVOIRS[S.cases[i].v].n); } rafraichit(); }
 function deplace(i) { fermer(); sel = { t:'deplace', i }; dis('↔ Touche une case libre pour y déplacer la tour (1 ◆). Toucher la tour encore : annuler.'); rafraichit(); }
 function demolirQ(i) { const t = S.cases[i]; fenetre(`<h2>🔨 Démolir ?</h2><p>${P.nomTour(t)} : tu récupères <b>${P.rendDemolir(t)} ◆</b> et la case se libère.</p><div class="bts"><button onclick="fermer()">Annuler</button><button class="go" onclick="P.demolir(S, ${i});fermer();son('vendre');rafraichit()">Démolir</button></div>`); }
@@ -594,6 +599,7 @@ function joueFx() {
       else if (f.k === 'appat') { son('coffre'); boom(x, y, '🥩'); anneau(x, y, '#ff9f43', 3); } }
     else if (f.t === 'piege') { const el = document.getElementById('m' + f.id); if (el) { const x = parseFloat(el.style.left), y = parseFloat(el.style.top); boom(x, y, '🧊'); anneau(x, y, '#9fe3ff'); } son('bouclier'); }
     else if (f.t === 'pique') { const el = document.getElementById('m' + f.id); if (el) boom(parseFloat(el.style.left), parseFloat(el.style.top), '🌵'); if (performance.now() - tirsSon > 150) { tirsSon = performance.now(); son('griffe'); } }
+    else if (f.t === 'reforge') { const p = caseXY(f.i); boom(p.x, p.y - 8, '⚒'); anneau(p.x, p.y, '#ff9f43', 1.3); setTimeout(() => son('coup'), 250); setTimeout(() => son('coup'), 600); }
     else if (f.t === 'evt') { const E = P.EVTS[f.k]; banniere(`${E.e} ${E.n} !`); dis(`${E.e} ${E.d}`); son(f.k === 'orage' ? 'coup' : f.k === 'charge' ? 'titan-pas' : 'portail'); try { navigator.vibrate && navigator.vibrate([30, 50, 30]); } catch (e) {}
       if (f.k === 'orage') { const pl = document.getElementById('plateau'); pl.animate([{ filter:'brightness(2.2)' }, { filter:'brightness(.6)' }, { filter:'none' }], { duration:500 }); } }
     else if (f.t === 'cadeauPerdu') { dis(`${P.EVTS[f.k].e} Trop tard, il est parti…`); }

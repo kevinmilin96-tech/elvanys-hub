@@ -12,7 +12,7 @@ const NC = 5, NR = 5;               // 5 chemins, 5 cases de tours par chemin (r
 const HAUT = 10;                    // les monstres naissent à y = 10 (cases), le rempart est à y = 0 ; les tours sont entre 0 et 5
 const R = {
   rempart:20, energieDepart:12 /* 27/11 nuit : 8 → 12, l'utilisateur manquait d'énergie au début */, energieMax:60, regenE:2.4 /* s par ◆ */, deDelai:8, desMax:3, jaugeMax:14,
-  niv:[0, 1, 1.75, 2.8, 4.2], nivMax:4, etoileMax:5, etoile:0.35, pouvoirRecharge:20, pouvoirNiv:2, besaceMax:2, accalmie:25, etire:1 /* 28/11 : les temps de NIVEAUX sont écrits pour des niveaux de 4-5 min avec accalmies (avant : ×1,35) */,
+  niv:[0, 1, 1.75, 2.8, 4.2], nivMax:4, etoileMax:5, etoile:0.35, pouvoirRecharge:20, pouvoirNiv:2, besaceMax:2, reforge:6, accalmie:25, etire:1 /* 28/11 : les temps de NIVEAUX sont écrits pour des niveaux de 4-5 min avec accalmies (avant : ×1,35) */,
   runeBonus:0.25, pv:5, nombre:3 /* 28/11 : 3 fois plus de monstres, chacun bien moins solide */, runeMax:3, puitsDelai:6, comboBonus:0.3, bowling:90,
   // 27/11 soir (plus d'action) : les runes ◆ à toucher, l'appel de la vague, le sort du héros
   suivi:0.9, cristalVie:6, cristalAuto:6 /* 28/11 : l'utilisateur : 6 s, pas de bonus au toucher */, cristalPuits:2, cristalMonstre:2, cristalChance:1 / 3, puitsDelaiC:10, appelMin:3, appelMax:8, sortRecharge:30, sortDepart:12,
@@ -374,6 +374,17 @@ function sort(S, c, y) {
   fx(S, { t:'sort', h, c, y }); log(S, `${SORTS_R[h].e} ${SORTS_R[h].n} !`);
 }
 // 27/11 soir : SPÉCIALISER une tour au niveau 4 (choix définitif)
+// 28/11 (idée de l'utilisateur) : REFORGER une tour en une autre sorte. Elle perd UNE étoile (ou un niveau si elle n'en a pas, jamais sous 1),
+// sa spécialisation est à refaire, elle se tait 6 s, et ça coûte de l'énergie selon son niveau (prix de la nouvelle sorte × niveau gardé).
+const prixReforge = (t, v) => SORTES[v].prix * Math.max(1, t.et ? t.niv : t.niv - 1);
+function reforger(S, i, v) {
+  const t = S.cases[i]; if (S.fini) return 'Le niveau est fini.'; if (!t || t.puits || t.rune) return 'Seule une tour se reforge.';
+  if (!S.L.sortes.includes(v) || v === t.v) return 'Choisis une autre sorte de tour.'; const p = prixReforge(t, v); if (S.energie < p) return `Il faut ${p} ◆.`;
+  S.energie -= p; const avant = nomTour(t); if (t.et) t.et--; else t.niv = Math.max(1, t.niv - 1);
+  t.v = v; t.spe = null; t.reforge = R.reforge; t.cd = R.reforge;
+  t.pw = Math.max(t.pw || 0, ...S.cases.filter(x => x && x !== t && x.v === v && !x.puits && !x.rune).map(x => x.pw || 0));
+  S.reforges = (S.reforges || 0) + 1; fx(S, { t:'reforge', i }); log(S, `⚒ ${avant} reforgée en ${nomTour(t)} (${p} ◆).`); return null;
+}
 function specialiser(S, i, k) {
   const t = S.cases[i]; if (!t || t.puits || t.rune) return 'Pas de tour ici.'; if (t.niv < R.nivMax) return 'Il faut une tour au niveau 4.';
   if (t.spe) return 'Cette tour est déjà spécialisée.'; if (k !== 'a' && k !== 'b') return 'Choisis une spécialisation.';
@@ -529,6 +540,7 @@ function etape(S) {
     if (t.rune) return;
     if (t.spe === 'a' && t.v === 1) { const r = Math.floor(i / NC); S.monstres.forEach(m => { if (m.c === i % NC && m.y > r + .5 && m.y < r + 4.5 && atteint(m) && !M(m).boss) m.lent = Math.max(m.lent, .2); }); }
     if (t.echo > 0) t.echo -= PAS; if (t.pw > 0) t.pw -= PAS; if (t.surch > 0) t.surch -= PAS;
+    if (t.reforge > 0) { t.reforge -= PAS; return; }
     t.cd -= PAS; if (t.cd <= 0) { if (tir(S, t, i)) t.cd = cadence(S, t, i); else t.cd = 0.1; }
   });
   // les monstres
@@ -571,7 +583,7 @@ const etoiles = S => S.fini !== 'gagne' ? 0 : S.rempart >= S.rempartMax * .75 ? 
 const avancement = S => Math.min(1, S.t / (S.fin + 8));
 const posVague = (S, k) => Math.min(1, S.vT[k] / (S.fin + 8)); // la place du drapeau de la vague k sur la barre
 
-const API = { EVTS, toucherCadeau, pouvoirPret, OBJETS, lancerObjet, poserObjet, voisinFort, PAS, NC, NR, HAUT, R, SORTES, PUITS, EFFET_PAIRE, POUVOIRS, MONSTRES, ELITE, HEROS_R, NIVEAUX, SORTS_R, SPE, DEFIS,
+const API = { reforger, prixReforge, EVTS, toucherCadeau, pouvoirPret, OBJETS, lancerObjet, poserObjet, voisinFort, PAS, NC, NR, HAUT, R, SORTES, PUITS, EFFET_PAIRE, POUVOIRS, MONSTRES, ELITE, HEROS_R, NIVEAUX, SORTS_R, SPE, DEFIS,
   nouvelle, batir, deplacer, demolir, rendDemolir, poserDe, poserPaire, jeterDe, bowling, ultime, pouvoir, etape, avance,
   ramasser, monterEnergie, acheterDe, prixMonter, PRIX_DE, appelInfo, appelVague, sort, specialiser, medailles, sousTerre, revele, posVague,
   annonces, defendu, etoiles, avancement, prixDe, nomTour, voisins, comboChemin, runesAutour, degat, cadence, ix };
