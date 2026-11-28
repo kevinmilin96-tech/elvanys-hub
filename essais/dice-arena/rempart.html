@@ -667,7 +667,7 @@ function fin() {
   try { if (typeof gagneXP === 'function') gagneXP(xp, g ? `Rempart des runes · niveau ${n}` : 'Rempart des runes'); } catch (x) {}
   try { if (or && typeof donneRessources === 'function') donneRessources(or, 0); } catch (x) {}
   try { if (g && typeof guildeEvt === 'function') guildeEvt('rempart', 1, { heros:S.av || S.heros, voie:S.heros }); } catch (x) {}
-  try { if (typeof guildeJournal === 'function') guildeJournal('rempart', { heros:S.av || S.heros, resultat:S.fini, journal:[...S.log].reverse(), resume:{ niveau:n, etoiles:e, medailles:medsIci, rempart:Math.ceil(S.rempart), rempartMax:S.rempartMax, abattus:S.kills, duree:Math.round(S.t), runes:S.ramasses + '/' + (S.ramasses + S.perdus), sorts:S.sorts, appels:S.appels, adapt:S.adapt } }); } catch (x) {}
+  try { if (typeof guildeJournal === 'function') guildeJournal('rempart', { heros:S.av || S.heros, resultat:S.fini, journal:[...S.log].reverse(), resume:{ niveau:n, heroique:!!S.heroique, etoiles:e, medailles:medsIci, rempart:Math.ceil(S.rempart), rempartMax:S.rempartMax, abattus:S.kills, duree:Math.round(S.t), runes:S.ramasses + '/' + (S.ramasses + S.perdus), sorts:S.sorts, appels:S.appels, adapt:S.adapt } }); } catch (x) {}
   try { GM.jingle(g ? 'victoire' : 'defaite'); } catch (x) {}
   const suiv = g && n < P.NIVEAUX.length;
   fen.innerHTML = '';

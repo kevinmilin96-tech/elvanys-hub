@@ -414,7 +414,11 @@ function bilanVague(S, iv) {
   else if (V.pertes === 0 && loin > 2) { S.adapt += ADAPT.monteDoux; txt = 'pression un peu faible → monstres à peine plus forts'; }
   else if (V.pertes > 0 && loin < 1.5) { S.adapt -= ADAPT.monteDoux; txt = 'le rempart souffre un peu → monstres à peine moins forts'; }
   else txt = 'bonne pression → rien ne change';
-  S.adapt = Math.max(S.heroique ? 1 : ADAPT.min, Math.min(S.niveau <= 2 ? ADAPT.maxN1 : ADAPT.max, Math.round(S.adapt * 100) / 100));
+  // 28/11 soir : en Héroïque, les niveaux 1-2 durcissent aussi (la règle « jamais durcis » est pour les débutants)
+  const plafond = S.niveau <= 2 && !S.heroique ? ADAPT.maxN1 : ADAPT.max, plancher = S.heroique ? 1 : ADAPT.min, voulu = Math.round(S.adapt * 100) / 100;
+  S.adapt = Math.max(plancher, Math.min(plafond, voulu));
+  if (S.adapt === avant && voulu > plafond) txt = 'pression faible, mais les monstres sont déjà au plus fort pour ce niveau';
+  else if (S.adapt === avant && voulu < plancher) txt = S.heroique ? 'pression forte, mais en Héroïque la difficulté ne baisse jamais' : 'pression forte, mais les monstres sont déjà au plus faible';
   const l = `⚖ vague ${iv + 1} : ${txt} (${V.pertes} PV perdus, morts à ${loin.toFixed(1).replace('.', ',')} cases ; ×${avant.toFixed(2).replace('.', ',')} → ×${S.adapt.toFixed(2).replace('.', ',')})`;
   S.adaptLog.push({ v:iv + 1, pertes:V.pertes, loin, adapt:S.adapt }); log(S, l);
   calme(S, iv);
