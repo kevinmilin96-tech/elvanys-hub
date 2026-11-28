@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261128-195734"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
+<head><meta name="guilde-version" content="20261128-200025"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="robots" content="noindex">
@@ -248,7 +248,7 @@
 <script src="progression-modes.js?v=5beed3e8fc"></script>
 <script src="aventuriers.js?v=5679a4a045"></script>
 <script src="pouvoirs-heros.js?v=a14bbdf318"></script>
-<script src="chroniques-moteur.js?v=a24768ee60"></script>
+<script src="chroniques-moteur.js?v=39b11e5441"></script>
 <script src="chroniques-ambiance.js?v=cdc992dc3a"></script>
 <script src="configurateur.js?v=d5e9469a28"></script>
 <script src="chroniques-config.js?v=446e56558d"></script>
@@ -660,7 +660,7 @@ function invLigne(h) {
   const L2 = [];
   const nDes = K.HEROS_C[h.id] ? K.HEROS_C[h.id].des : 3, plus = (h.desPlus || 0) + (h.objet === 'cle' ? 1 : 0);
   L2.push(`🎲 ${nDes + plus} dés par tour${plus ? ` (${nDes}${h.desPlus ? ` +${h.desPlus} héros` : ''}${h.objet === 'cle' ? ' +1 clé à molette' : ''})` : ''}`);
-  if (h.porte) L2.push('⚙ porte un rouage (un seul à la fois, −1 case)');
+  if (h.porte) L2.push(`${K.objE(S)} porte ${K.objUn(S)} (un seul à la fois, −1 case)`);
   if (h.flamme) L2.push('🔥 la flamme du feu sacré : +1 contre l’Horloger (sceaux « ≥ » et « Σ »)');
   if (h.objet) L2.push(`${OBJ_E[h.objet]} ${K.OBJETS[h.objet].n} : ${K.OBJETS[h.objet].d}`);
   if (h.att) L2.push(`⚔ +${h.att} sur les sceaux ≥ et Σ (équipement)`);
@@ -694,7 +694,7 @@ function chap3Etat() { const R = S.R, A = R.aubin, n = R.melodie.length, bran = 
 function infoStat(k) {
   const SC = K.SCEN[S.scen || 'horloger'], T = {
     sablier:`⌛ Le sablier : il reste ${S.sablier} tour${S.sablier > 1 ? 's' : ''}. Il descend à chaque tour des monstres ; à zéro, la partie est perdue.`,
-    objet:`${SC.objet.e} ${S.R.rouagesPoses} sur 3 posés sur l’axe de la Salle des rouages${S.heros.some(z => z.porte) ? ' (un héros en porte un)' : ''}. On les trouve en fouillant les meubles.`,
+    objet:`${SC.objet.e} ${S.R.rouagesPoses} sur ${SC.nbObj || 3} posé(s) sur ${K.axeN(S)} (${SC.objet.n})${S.heros.some(z => z.porte) ? ' ; un héros en porte un' : ''}. On les trouve en fouillant les meubles.`,
     bronze:S.R.bronze ? '🚪 La porte de bronze est ouverte : le Cœur de l’Horloge vous attend au sommet.' : '🔒 La porte de bronze (au sommet) est fermée : les 4 leviers de la Salle des rouages, baissés dans le même tour, l’ouvrent.',
     livre:S.livre ? '📕 Le livre de l’Horloger est trouvé : il aide contre l’Horloger.' : '📕 Le livre de l’Horloger n’est pas encore trouvé : il est rangé quelque part dans la Bibliothèque (1er étage).',
     score:`⭐ Le score de la partie : ${S.score} points (meubles fouillés, monstres vaincus, rouages posés…).` };
@@ -963,7 +963,7 @@ function ficheHeros(i, choix) {
   // l'inventaire : 10 cases (objet trouvé, rouage porté, puis le sac)
   const inv = [];
   if (h.objet) inv.push({ e:OBJ_E[h.objet], n:K.OBJETS[h.objet].n, d:K.OBJETS[h.objet].d });
-  if (h.porte) inv.push({ e:'⚙️', n:'Un rouage', d:'À poser sur l’axe de la Salle des rouages. On n’en porte qu’un à la fois (−1 case par déplacement).' });
+  if (h.porte) inv.push({ e:K.objE(S), n:K.objUn(S).replace(/^u/, 'U'), d:`À poser sur ${K.axeN(S)}. On n’en porte qu’un à la fois (−1 case par déplacement).` });
   (h.sac || []).forEach((it, k) => inv.push({ e:K.SAC[it].e, n:K.SAC[it].n, d:K.SAC[it].d, sac:k }));
   const cases = Array.from({ length:10 }, (_, k) => { const o = inv[k]; return `<div class="ps-inv ${o ? '' : 'vide'} ${choix === k ? 'on' : ''}" ${o ? `onclick="ficheHeros(${i}, ${k})"` : ''}>${o ? o.e : ''}</div>`; }).join('');
   const o = choix != null && inv[choix];
@@ -999,14 +999,14 @@ function resultat(r) {
       if (e.t === 'piege') { son('coup'); bulle('⚠ Un piège !', true); }
       if (e.t === 'livre') { son('livre'); bulle('📕 Le Livre des heures !'); }
       if (e.t === 'levier') { son('tour-batir'); if (e.bronze) { son('porte'); bulle('🚪 La porte de bronze s’ouvre !'); } }
-      if (e.t === 'rouage') { son('rune'); bulle(e.boss ? '⏰ L’Horloger se réveille !' : '⚙ Rouage posé !'); }
+      if (e.t === 'rouage') { son('rune'); bulle(e.boss ? ((S.scen || 'horloger') === 'horloger' ? '⏰ L’Horloger se réveille !' : `👹 ${S.R.boss ? S.R.boss.n : 'Le gardien'} se réveille !`) : `${K.objE(S)} ${K.objUn(S).replace(/^une? /, '').replace(/^./, c => c.toUpperCase())} posé${/^une /.test(K.objUn(S)) ? 'e' : ''} !`); }
       if (e.t === 'soin') son('soin');
       if (e.t === 'flamme') { son('magie'); objetRecu('🔥', `${nomH(S.heros[e.h])} emporte la flamme du feu sacré`, '+1 contre l’Horloger (sceaux « ≥ » et « Σ »)'); }
       if (e.t === 'statue' && S.R.statuesOk) setTimeout(() => objetRecu('✨', 'Les quatre statues regardent l’autel !', S.journal.find(l => l.startsWith('✨')) ? S.journal.find(l => l.startsWith('✨')).replace(/^✨ /, '') : ''), 600);
       if (e.t === 'statue') { son('tour-batir'); statueBrille = [e.i, e.j]; setTimeout(() => { statueBrille = []; dessine(); }, 1500); bulle(S.journal[0], false, true); }
       if (e.t === 'enigme') { son('ultime'); bulle(S.journal[0], false, true); }
       if (e.t === 'grille') { son('porte'); bulle(S.journal[0], false, true); }
-      if (e.t === 'fouille') { const T = { rouage:['⚙ UN ROUAGE !', 'rune'], potion:['🧪 Une potion !', 'soin'], parchemin:['📜 Un parchemin !', 'magie'], fumee:['💨 Une bombe fumigène !', 'magie'], equip:['🗡 De l’équipement !', 'magie'], grains:['⌛ +3 grains !', 'magie'], or:['💰 De l’or !', 'vendre'], objet:['🎁 Un objet !', 'magie'], piege:['⚠ Piégé !', 'coup'], monstre:['👹 Un monstre !', 'vague'], mimique:['👄 Une MIMIQUE !', 'vague'] }[e.quoi] || ['… rien.', 'pioche']; son(T[1]);
+      if (e.t === 'fouille') { const T = { rouage:[`${K.objE(S)} ${K.objUn(S).toUpperCase()} !`, 'rune'], potion:['🧪 Une potion !', 'soin'], parchemin:['📜 Un parchemin !', 'magie'], fumee:['💨 Une bombe fumigène !', 'magie'], equip:['🗡 De l’équipement !', 'magie'], grains:['⌛ +3 grains !', 'magie'], or:['💰 De l’or !', 'vendre'], objet:['🎁 Un objet !', 'magie'], piege:['⚠ Piégé !', 'coup'], monstre:['👹 Un monstre !', 'vague'], mimique:['👄 Une MIMIQUE !', 'vague'] }[e.quoi] || ['… rien.', 'pioche']; son(T[1]);
         if (['rouage', 'potion', 'parchemin', 'fumee', 'equip', 'objet'].includes(e.quoi)) objetRecu(T[0].split(' ')[0], T[0].replace(/^\S+ /, ''), '');
         const L1 = S.journal.slice(0, 4), quoi = L1.find(l => !/^(🔊|⌛|🔓)/.test(l)) || T[0]; bulle(quoi, e.quoi === 'piege' || e.quoi === 'monstre' || e.quoi === 'mimique', true);
         const suite = L1.filter(l => /^(🔊|⌛)/.test(l)); suite.forEach((l, k) => setTimeout(() => bulle(l, l.startsWith('🔊'), true), 3100 * (k + 1))); }
@@ -1566,7 +1566,8 @@ function commence() {
 }
 function reprend() { const g = gardee(); if (!g) return; S = g; actif = Math.max(0, S.heros.findIndex(z => !z.aTerre)); sel = null; centrer = true; dessine(); }
 // 16/11 (retour de l'utilisateur : pas de musique dans le donjon : la piste « exploration » n'existait pas) : « carte » en exploration, « boss » quand le boss est réveillé
-function musiqueDuMoment() { if (typeof GM === 'undefined') return; try { GM.musique(!S ? 'heros' : S.R && S.R.boss ? 'boss' : 'carte'); } catch (e) {} }
+// 28/11 (l'utilisateur : « pas de musique dans Terres brûlées ») : les Terres brûlées n'avaient pas les sons des salles (seul l'Horloger les a) : on ajoute le crépitement du feu
+function musiqueDuMoment() { if (typeof GM === 'undefined') return; try { GM.musique(!S ? 'heros' : S.R && S.R.boss ? 'boss' : 'carte'); GM.ambiance(S && S.scen === 'brulees' && !S.fin ? 'feu' : null); } catch (e) {} }
 if (typeof GM !== 'undefined') { try { musiqueDuMoment(); GM.bouton(); } catch (e) {} }
 // 16/11 : « ▶ Tester la salle » de l'atelier des cartes (editeur.html?…) : la salle seule, son image, 2 monstres ; rien n'est sauvegardé
 async function essaiAtelier(id) {

@@ -1,5 +1,9 @@
 [
 {
+"v": "20261128-200025",
+"m": "Chroniques, Terres brûlées : on ramasse bien des braises éternelles, et le feu crépite en fond"
+},
+{
 "v": "20261128-195734",
 "m": "Chroniques : la Carte du monde d'Oria montre enfin les pièges ⚠️ partout (cartes peintes, noir, meubles piégés)"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261128-082614",
 "m": "Rempart : tu peux reforger une tour en une autre sorte depuis sa fiche (elle perd une étoile ou un niveau et se tait 6 s)"
-},
-{
-"v": "20261128-081747",
-"m": "Rempart : les runes restent 6 secondes avant de filer seules vers ton énergie"
 }
 ]
