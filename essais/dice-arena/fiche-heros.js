@@ -322,7 +322,9 @@ function fhApparence(id) {
   v.innerHTML = `<div style="background:#1b1733;border:2px solid #f3c96b;border-radius:16px;padding:14px;max-width:420px;max-height:92vh;overflow:auto;text-align:center;color:#f1ecff"><h3 style="margin:0 0 6px;color:#f3c96b">🎭 L’apparence de ${a.nom}</h3>
     <p style="margin:0 0 10px;font-size:.9em">Touche un portrait : il change partout (combats, Chroniques, profil, amis). Niveaux, équipement et pouvoirs ne bougent pas.</p>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">${choix.map(([g, img, src, nom], k) => { const on = (a.img || null) === img && (img || a.genre === g);
-      return `<button style="background:${on ? '#3a2f10' : '#2a2550'};border:2px solid ${on ? '#f3c96b' : '#6a5fb0'};border-radius:12px;padding:6px;color:#f1ecff;font-family:inherit;font-size:.78em" onclick="avMaj('${id}', x => { x.genre = '${g}'; ${img ? `x.img = '${img}'` : 'delete x.img'}; });location.reload()"><img src="${src}" style="width:100%;aspect-ratio:1;border-radius:50%;object-fit:cover"><br>${on ? '✔ ' : ''}${nom}</button>`; }).join('')}</div>
+      return `<button style="background:${on ? '#3a2f10' : '#2a2550'};border:2px solid ${on ? '#f3c96b' : '#6a5fb0'};border-radius:12px;padding:6px;color:#f1ecff;font-family:inherit;font-size:.78em" onclick="avMaj('${id}', x => { x.genre = '${g}'; ${img ? `x.img = '${img}'` : 'delete x.img'}; });fhProfilSuit('${id}');location.reload()"><img src="${src}" style="width:100%;aspect-ratio:1;border-radius:50%;object-fit:cover"><br>${on ? '✔ ' : ''}${nom}</button>`; }).join('')}</div>
     <button style="margin-top:12px;background:#2a2550;color:#f1ecff;border:1px solid #6a5fb0;border-radius:10px;padding:10px 16px;font-family:inherit" onclick="this.closest('.fhapp-voile').remove()">Fermer</button></div>`;
   document.body.appendChild(v);
 }
+// 28/11 : le choix fait dans la fiche du héros devient aussi le portrait du profil (un seul choix, pas deux)
+function fhProfilSuit(id) { try { const K = 'guilde-profil', p = JSON.parse(localStorage.getItem(K) || '{}'); p.portrait = 'av:' + id; localStorage.setItem(K, JSON.stringify(p)); } catch (e) {} }

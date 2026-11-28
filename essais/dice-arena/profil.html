@@ -99,7 +99,11 @@ const dernier = (parties.length && parties[parties.length - 1].moi) || 'gorm';
 let onglet = null; // null = la page ; sinon l'onglet de l'atelier
 const ONGLETS = [['portrait', '🖼', 'Portrait'], ['cadre', '🔲', 'Cadre'], ['titre', '🎖', 'Titre'], ['embleme', '🦁', 'Emblème'], ['couleur', '🎨', 'Nom'],
   ['fond', '🌌', 'Fond'], ['devise', '💬', 'Devise'], ['vitrine', '🏅', 'Vitrine'], ['des', '🎲', 'Dés']];
-function choisir(quoi, k) { const p = lireProfil(); p[quoi] = k; ecrireProfil(p); if (typeof GM !== 'undefined') GM.son('clic'); const y = scrollY; dessine(); scrollTo(0, y); }
+function choisir(quoi, k) { const p = lireProfil(); p[quoi] = k; ecrireProfil(p);
+  // 28/11 (l'utilisateur : « si je le change depuis mon profil, pourquoi le rechanger depuis mon héros ? ») : UN SEUL CHOIX : un portrait du profil
+  // (avatar-NN) habille aussi ses héros d'aventure 
+  if (quoi === 'portrait' && typeof avLire === 'function' && typeof avEcrire === 'function') { const l = avLire(); if (l.length) {
+    l.forEach(a => { if (/^avatar-\d\d$/.test(k)) a.img = k; }); avEcrire(l); } } if (typeof GM !== 'undefined') GM.son('clic'); const y = scrollY; dessine(); scrollTo(0, y); }
 // 17/11 (l'utilisateur : « mes parties, mets-les dans le profil, un endroit où on retrouve l'historique de chaque mode, un récap global comme
 // dans beaucoup de jeux ») : MON PARCOURS = le récap des parties du carnet (les 60 dernières), mode par mode, et le journal de chacune
 function parcoursHTML() {
