@@ -93,7 +93,7 @@
   @keyframes lueurM { 50% { opacity:.15; } } .c.meuble-peint .fm { position:absolute; right:6%; bottom:6%; font-size:calc(var(--t) * .28); color:var(--ok); text-shadow:0 0 4px #000; }
   .escfl { position:absolute; inset:-6% -6% auto auto; z-index:7; background:#1c1c36ee; border:1px solid var(--or); color:var(--or); border-radius:8px; padding:0 .25em; font-size:calc(var(--t) * .2); pointer-events:none; line-height:1.25; text-align:center; } .escfl small { display:block; font-size:.62em; color:#fff; }
   .c.porte.peinte { box-shadow:none; filter:none; } .c.porte.peinte.cible { box-shadow:inset 0 0 0 3px #ffd36a, 0 0 14px #ffd36a; }
-  .c.noir { background:#05050a !important; filter:none; } .c.noir > * { display:none; } .c.noir > .piege-vu { display:block; } .c .o.piege-vu { position:relative; z-index:3; animation:piegeVu 1.6s ease-in-out infinite; } .c .o.meuble-p { position:absolute; right:0; top:0; font-size:calc(var(--t) * .4); } @keyframes piegeVu { 50% { transform:scale(1.15); filter:drop-shadow(0 0 .8cqw #ff5a3c); } }
+  .c.noir { background:#05050a !important; filter:none; } .c.noir > * { display:none; } .c.noir > .piege-vu { display:block; } .c.brasier .brasier-ic { font-size:calc(var(--t) * .9); animation:brasier 1.2s ease-in-out infinite; filter:drop-shadow(0 0 1.4cqw #ff7a1a); } @keyframes brasier { 50% { transform:scale(1.15) translateY(-4%); } } .c .o.piege-vu { position:relative; z-index:3; animation:piegeVu 1.6s ease-in-out infinite; } .c .o.meuble-p { position:absolute; right:0; top:0; font-size:calc(var(--t) * .4); } @keyframes piegeVu { 50% { transform:scale(1.15); filter:drop-shadow(0 0 .8cqw #ff5a3c); } }
   .c.porte { background:#5a3412; box-shadow:inset 0 0 0 .4cqw #2a1808; } .c.porte.bronze { background:#7a5a1a; } .c.porte.ouverte { background:url('decor/tuile-sol-brulees.webp') 0 0 / calc(var(--t) * 4) calc(var(--t) * 4); }
   .c .o { font-size:calc(var(--t) * .62); filter:drop-shadow(0 .4cqw .4cqw #000); }
   .c .o.fait { opacity:.35; filter:grayscale(1); }
@@ -383,7 +383,7 @@ const SCX_TXT = {
   brulees:{ titre:'🔥 Les Terres brûlées', duree:'45-60 min · carte peinte (essai)', ouverture:'« Une île de cendre et de lave. On a accosté en barque, tout en bas. Quelque part dans ces salles dorment trois braises éternelles : ramenez-les au grand brasier, tout en haut… Et préparez-vous : ce qui dort dans le feu n’aime pas qu’on le réveille. Moi, je garde la barque. »',
     entree:() => '« On ne voit que ce qui est devant nous : les murs cachent le reste. Avancez, regardez, fouillez. »',
     but:'Explorez (on ne voit que ce qui est en vue), fouillez les meubles (un dé) pour trouver <b>3 braises éternelles 🔥</b>, puis portez-les au <b>grand brasier</b> tout en haut.',
-    porter:'Portez les braises jusqu’au grand brasier 🔥, tout en haut de la carte.',
+    porter:'Portez les braises jusqu’au grand brasier 🔥 (la case qui brûle, tout en haut de la carte) : mettez-vous juste à côté, choisissez un dé et touchez le brasier.',
     gagne:['🏆 Le Titan de feu s’éteint !', '« Le Titan vacille, fume, et s’effondre en un tas de braises tièdes. Les trois braises éternelles brillent au cœur du brasier : l’île est sauvée. Je peux sortir de la barque ? Il fait encore un peu chaud, non ? »'] },
 };
 // 26/11 : l'histoire de la saison se joue aussi EN LIGNE (salle) : le donjon du chapitre, ouvert par le récit d'Ilse ; visible seulement pendant la saison
@@ -654,7 +654,7 @@ const imgH = (z, cl) => `<img ${cl || ''} src="${z.portrait || `portraits/${z.id
 const SCX = { ex:s => `${s.v}`, min:s => `≥ ${s.v}`, max:s => `≤ ${s.v}`, pair:() => '<small>pair</small>', imp:() => '<small>impair</small>', tot:s => `Σ ${s.reste}`, any:() => '✶' };
 function sceauTxt(s, L) { if (s.ok) return s.t === 'tot' ? `Σ ${s.val}` : (s.val || '✓'); if (s.t === 'dbl') { const j = L.find(x => x !== s && x.t === 'dbl' && x.g === s.g && x.ok); return j && j.val ? `= ${j.val}` : '<small>jumeau</small>'; } return SCX[s.t](s); }
 const OBJ_E = { bouclier:'🛡️', cle:'🔧', lunettes:'👓' };
-function invH(z) { return (z.porte ? '⚙️' : '') + (z.objet ? OBJ_E[z.objet] : '') + (z.sac || []).map(it => K.SAC[it].e).join('') + (z.flamme ? '🔥' : ''); }
+function invH(z) { return (z.porte ? K.objE(S) : '') + (z.objet ? OBJ_E[z.objet] : '') + (z.sac || []).map(it => K.SAC[it].e).join('') + (z.flamme ? '🔥' : ''); }
 // 16/11 (retour de l'utilisateur : « je ne retrouve nulle part mes objets ») : ce que porte le héros choisi, toujours visible
 function invLigne(h) {
   const L2 = [];
@@ -811,6 +811,9 @@ function dessine() {
     if (o && o.t === 'piege' && !o.trouve && o.vu && !inner.includes('⚠️')) inner += '<span class="o piege-vu">⚠️</span>';
     else if (o && o.t === 'piege' && !o.trouve && !inner.includes('👓') && !inner.includes('⚠️') && (voitPieges || h.id === 'oria' && Math.abs(h.x - x) + Math.abs(h.y - y) <= 2)) inner += '<span class="o">👓</span>';
     if (o && o.meuble && o.piegeVu && !o.fouille) inner += '<span class="o piege-vu meuble-p">⚠️</span>';
+    // 28/11 (l'utilisateur : « on doit les mettre où, le feu tout en haut on le trouve pas ») : sur une carte PEINTE, le grand brasier n'était pas montré :
+    // on le dessine (gros feu qui brûle), avec son compteur, et la case s'allume quand le héros qui porte une braise est juste à côté
+    if (peint && vu && mur === 'A') { const ok = h.porte && K.dist(h, { x, y }) === 1; cl += ' brasier' + (ok ? ' cible' : ''); inner = `<span class="o brasier-ic">${K.SCEN[S.scen].axeE || '🔥'}</span><span class="lv">${R.rouagesPoses}/${K.SCEN[S.scen].nbObj || 3}</span>`; }
     if (R.plan === 2 && R.liens[c] && vu) { const ly = +R.liens[c].split(',')[1]; inner += `<span class="escfl" title="${esc(K.etageDe(S, ly))}">${ly < y ? '⬆' : '⬇'}<small>${S.heros[actif].x === x && S.heros[actif].y === y ? (ly < y ? 'monter' : 'descendre') : esc(K.etageDe(S, ly).replace('Rez-de-chaussée', 'RDC').replace('Le sommet', 'sommet'))}</small></span>`; } // 16/11 : le sens de l'escalier écrit en clair
     // 16/11 : le BOUT d'un couloir sans issue (image Gemini couloir-impasse : mur à droite, tournée vers le côté fermé)
     if (R.plan === 2 && vu && !mur && !p && !R.salle[c] && !(R.liens && R.liens[c])) { const ouv = [[-1, 0, 0], [0, -1, 90], [1, 0, 180], [0, 1, 270]].filter(([dx, dy]) => { const q = K.cle(x + dx, y + dy); return x + dx >= 0 && y + dy >= 0 && x + dx < R.w && y + dy < R.h && !R.murs[q]; });
