@@ -1,5 +1,9 @@
 [
 {
+"v": "20261128-154729",
+"m": "Chroniques entre amis : tu vois maintenant l'équipement des héros de tes amis dans leur fiche"
+},
+{
 "v": "20261128-154026",
 "m": "Salon : choisir le Duel demande maintenant une confirmation"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261128-004856",
 "m": "Rempart : la besace ! Après chaque grosse vague, lance un dé pour gagner un objet (piège de givre, épines, barricade, souffle, détour, ou joker), et profite d'une vraie accalmie de 25 s pour bâtir"
-},
-{
-"v": "20261128-004102",
-"m": "Rempart : des niveaux plus longs (4 à 5 min) avec 3 grosses vagues annoncées et une accalmie pour bâtir après chacune"
 }
 ]
