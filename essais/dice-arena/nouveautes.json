@@ -1,5 +1,9 @@
 [
 {
+"v": "20261128-211237",
+"m": "Terres brûlées refaites : Le Cœur de Braise en 3 actes (camp pillé, fontaine, 3 gardiens, Titan de feu), monstres plus agressifs ; héros d'aventure : le portrait choisi dans le profil les habille ; retour au menu corrigé"
+},
+{
 "v": "20261128-202154",
 "m": "Héros d'aventure : bouton « Changer d'apparence » dans leur fiche"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261128-154026",
 "m": "Salon : choisir le Duel demande maintenant une confirmation"
-},
-{
-"v": "20261128-153921",
-"m": "Mes amis : l'invitation part bien quand on crée un salon depuis la fiche d'un ami"
 }
 ]
