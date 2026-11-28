@@ -106,6 +106,17 @@
   .zone { position:absolute; z-index:11; border-radius:50%; pointer-events:none; transform:translate(-50%, -50%); animation:zone .7s ease-out forwards;
     display:flex; align-items:center; justify-content:center; font-size:30px; }
   @keyframes zone { 0% { opacity:0; transform:translate(-50%, -50%) scale(.3); } 30% { opacity:1; } 100% { opacity:0; transform:translate(-50%, -50%) scale(1.15); } }
+  .cadeau { position:absolute; left:-70px; z-index:35; width:62px; height:62px; border:0; background:none; padding:0; animation:traverse linear forwards; filter:drop-shadow(0 0 10px #ffd76b); }
+  .cadeau img { width:100%; height:100%; object-fit:contain; border-radius:50%; } .cadeau span { font-size:44px; } .cadeau b { position:absolute; right:-4px; bottom:-2px; font-size:24px; }
+  .cadeau.destin img { border-radius:12px; animation:pulse .6s infinite; } .cadeau.etoile span { text-shadow:0 0 14px #fff; }
+  @keyframes traverse { 0% { left:-70px; transform:translateY(0); } 25% { transform:translateY(-14px); } 50% { transform:translateY(0); } 75% { transform:translateY(-14px); } 100% { left:calc(100% + 10px); transform:translateY(0); } }
+  #defiB { position:absolute; left:50%; top:8px; transform:translateX(-50%); z-index:32; background:#3a1d00e6; border:2px solid #ffb347; color:#ffe2b8; font-weight:bold; border-radius:12px; padding:3px 10px; font-size:15px; pointer-events:none; }
+  #plateau.orage::after { content:''; position:absolute; inset:0; z-index:5; pointer-events:none; background:#10183088; animation:orageF 3s infinite; }
+  @keyframes orageF { 0%, 90%, 100% { opacity:1; } 93% { opacity:.2; } }
+  #plateau.destin { box-shadow:inset 0 0 0 4px #ffd76b, inset 0 0 30px #ffd76b88; }
+  .foudre { position:absolute; top:0; width:6px; margin-left:-3px; z-index:9; pointer-events:none; background:linear-gradient(#fff, #ffe66b); box-shadow:0 0 12px #ffe66b, 0 0 4px #fff; clip-path:polygon(0 0, 100% 0, 30% 40%, 100% 45%, 0 100%, 50% 55%, 0 50%); }
+  .mo.dore .p img { filter:sepia(1) saturate(5) hue-rotate(-12deg) brightness(1.25) drop-shadow(0 0 8px #ffd76b); } .mo.charge .p { box-shadow:0 0 0 3px #ff5a3c, 0 0 14px #ff5a3c; border-radius:50%; }
+  .de.or { border-color:#ffd76b !important; box-shadow:0 0 12px #ffd76b; font-size:22px; }
   #besace { position:absolute; left:4px; bottom:30px; z-index:31; display:flex; gap:4px; }
   #besace .bs { width:38px; height:38px; border-radius:10px; border:2px solid #c9a46a; background:#2a1d0ee6; font-size:21px; padding:0; color:#fff; position:relative; display:flex; align-items:center; justify-content:center; }
   #besace .bs.vide { opacity:.45; font-size:16px; border-style:dashed; } #besace .bs.on { border-color:var(--or); box-shadow:0 0 10px var(--or); }
@@ -206,7 +217,7 @@ const ecrire = d => { try { localStorage.setItem(CLE, JSON.stringify(d)); } catc
 const zOk = () => localStorage.getItem('guilde-tuto') === 'fait';
 const herosOk = k => { const v = haVoie(k), d = lire(); return d.heros.includes(v) && (v !== 'zephine' || zOk()) && (!haEst(k) || !!haInfo(k)); };
 const imgHeros = k => haEst(k) && haInfo(k) ? haInfo(k).img : `portraits/${haVoie(k)}.webp`;
-const IMG_M = { chauve:'portraits/d-chauve.webp?v=1', gobelin:'portraits/d-gobelin.webp?v=1', sanglier:'portraits/d-sanglier.webp?v=1', bouclier:'portraits/d-bouclier.webp?v=1',
+const IMG_M = { dore:'portraits/d-gobelin.webp?v=1', chauve:'portraits/d-chauve.webp?v=1', gobelin:'portraits/d-gobelin.webp?v=1', sanglier:'portraits/d-sanglier.webp?v=1', bouclier:'portraits/d-bouclier.webp?v=1',
   titan:'portraits/m-titan.webp?v=1', spectre:'portraits/m-spectregivre.webp', golem:'portraits/m-golem.webp', troll:'portraits/d-troll.webp?v=1',
   chaman:'portraits/m-chaman.webp', mineur:'portraits/d-mineur.webp?v=1' }; // le troll : émoji en attendant son image
 const imgM = (t, cls = '') => IMG_M[t] ? `<img src="${IMG_M[t]}" alt="" class="${cls}">` : `<span>${P.MONSTRES[t].e}</span>`;
@@ -304,7 +315,7 @@ const SIG = [];
 const TOUR_IMG = { 1:'rempart3-givre', 2:'rempart3-poison', 3:'rempart3-archers', 4:'rempart3-canon', 5:'rempart3-foudre', 6:'rempart3-grande' };
 // 28/11 (l'utilisateur : « chercher quelle tour sélectionner en même temps, c'est trop stressant ») : une tour qu'un dé de la réserve peut monter
 // montre « ⬆+1 » ; un toucher dessus la monte, sans choisir le dé. Le ✦ du pouvoir se lance aussi d'un toucher, sans ouvrir la fiche.
-const deMonte = t => !t || t.puits || t.rune || (t.niv >= P.R.nivMax && t.et >= P.R.etoileMax) ? -1 : S.des.findIndex(d => d.v === t.v);
+const deMonte = t => !t || t.puits || t.rune || (t.niv >= P.R.nivMax && t.et >= P.R.etoileMax) ? -1 : (k => k >= 0 ? k : S.des.findIndex(d => d.or))(S.des.findIndex(d => d.v === t.v));
 function monteParDe(i) { marqueGeste(); if (!S || S.fini || pause || fen.innerHTML) return; const k = deMonte(S.cases[i]); if (k < 0) return;
   const e = P.poserDe(S, k, i); if (e) { dis(e, true); return; } sel = null; son('tour-fusion'); dis(''); astucePouvoir(i); rafraichit(); }
 function pouvoirDirect(i) { marqueGeste(); if (!S || S.fini || pause || fen.innerHTML) return; const e = P.pouvoir(S, i); if (e) { dis(e, true); return; } son('ultime'); banniere('✦ ' + P.POUVOIRS[S.cases[i].v].n); rafraichit(); }
@@ -321,7 +332,7 @@ function htmlCase(t, i) {
 function caseOk(i) {
   if (!sel) return false; const t = S.cases[i];
   if (sel.t === 'achat' || sel.t === 'deplace') return !t;
-  if (sel.t === 'de') { const d = S.des[sel.k]; return !!(d && t && t.v === d.v && !(t.niv >= 4 && t.et >= 5)); }
+  if (sel.t === 'de') { const d = S.des[sel.k]; return !!(d && t && !t.puits && !t.rune && (t.v === d.v || d.or) && !(t.niv >= 4 && t.et >= 5)); }
   if (sel.t === 'paire') { const d = S.des[sel.k1]; return !!d && (!t || (t.rune && t.paire === d.v && t.rv < P.R.runeMax)); }
   return false;
 }
@@ -346,7 +357,7 @@ function majMonstres() {
   for (const m of S.monstres) {
     if (m.arrive && m.mort) continue; vus.add('m' + m.id);
     let el = document.getElementById('m' + m.id); const B = P.MONSTRES[m.t], tl = B.boss ? G.cw * .95 : tailleN;
-    if (!el) { el = document.createElement('div'); el.id = 'm' + m.id; el.className = 'mo' + (m.elite ? ' elite' : '') + (B.boss ? ' boss' : '');
+    if (!el) { el = document.createElement('div'); el.id = 'm' + m.id; el.className = 'mo' + (m.t === 'dore' ? ' dore' : '') + (m.charge ? ' charge' : '') + (m.elite ? ' elite' : '') + (B.boss ? ' boss' : '');
       el.style.width = tl + 'px'; el.innerHTML = `<div class="p" style="height:${tl}px">${imgM(m.t)}</div><div class="vie"><i></i></div>${B.vol ? '<span class="x">🪽</span>' : B.armure ? '<span class="x">🛡</span>' : ''}`;
       el.onclick = ev => { ev.stopPropagation(); if (gesteRecent() || runePres(ev)) return; ficheMonstre(m.t, m.elite); }; el.style.top = yPx(P.HAUT) + 'px'; box.appendChild(el); }
     el.style.left = xPx(m.c) + 'px'; el.style.top = Math.max(tl / 2, yPx(m.y)) + 'px';
@@ -383,6 +394,7 @@ function dessineBas() {
   // Une case de dé vide : « 🎲 6 ◆ » pour en acheter un.
   const D = S.des, so = [0, 1, 2].map(k => { const d = D[k]; if (!d) return k === D.length ? `<button class="de achat ${S.energie < P.PRIX_DE ? 'cher' : ''}" onclick="achatDe()">🎲<small>${P.PRIX_DE} ◆</small></button>` : `<div class="de"></div>`;
     const on = sel && ((sel.t === 'de' && sel.k === k) || (sel.t === 'paire' && (sel.k1 === k || sel.k2 === k)));
+    if (d.or) return `<button class="de plein or ${on ? 'on' : ''} ${d.neuf ? 'roule' : ''}" onclick="choisitDe(${k})">🌟<small>or</small></button>`;
     return `<button class="de plein ${on ? 'on' : ''} ${d.neuf ? 'roule' : ''}" onclick="choisitDe(${k})"><img class="fond" src="${FACE(S.heros, d.v)}" alt=""><img class="tdi" src="tours/${TOUR_IMG[d.v]}.webp?v=2" alt="${P.SORTES[d.v].n}"><small>${P.SORTES[d.v].e}</small></button>`; }).join('');
   const sigD = JSON.stringify([sel, D.map(d => d.id), S.energie < P.PRIX_DE]), de = document.getElementById('des');
   if (de.dataset.sig !== sigD) { de.dataset.sig = sigD; de.innerHTML = so + '<div class="prochain" id="prochain"></div>'; }
@@ -431,7 +443,22 @@ function runePres(ev) { const box = document.getElementById('monstres'); if (!bo
 function ramasse(id) { marqueGeste(); if (!S || S.fini || pause || fen.innerHTML) return; const x = S.cristaux.find(c => c.id === id); if (!x) return; P.ramasser(S, id); son('rune'); try { navigator.vibrate && navigator.vibrate(15); } catch (e) {} joueFx(); rafraichit(); }
 function appel() { if (!S || S.fini) return; const A = P.appelInfo(S); if (!A) return; P.appelVague(S); son('vague'); banniere(`⏩ Vague appelée ! +${A.bonus} ◆`, true); rafraichit(); }
 // 28/11 : LA BESACE (dé après chaque grosse vague → objet de contrôle, 2 places)
-function majBesace() { const pl = document.getElementById('plateau'); if (!pl || !S) return; let b = document.getElementById('besace');
+function majEvts(pl) {
+  let c = document.getElementById('cadeau'); const x = S.cadeau;
+  if (x && (!c || c.dataset.id != x.id)) { if (c) c.remove(); const E = P.EVTS[x.k]; c = document.createElement('button'); c.id = 'cadeau'; c.dataset.id = x.id; c.className = 'cadeau ' + x.k;
+    c.innerHTML = x.k === 'moustache' ? '<img src="ui/moustache.webp" alt=""><b>💰</b>' : x.k === 'destin' ? `<img src="${FACE(S.heros, 6)}" alt="">` : `<span>${E.e}</span>`;
+    c.style.top = (x.y * 100) + '%'; c.style.animationDuration = x.max + 's'; c.onpointerdown = ev => { ev.preventDefault(); ev.stopPropagation(); toucheCadeau(); }; pl.appendChild(c); }
+  if (!x && c) c.remove();
+  let d = document.getElementById('defiB'); if (S.defi) { if (!d) { d = document.createElement('div'); d.id = 'defiB'; pl.appendChild(d); }
+    d.textContent = `🎯 ${Math.min(S.defi.but, S.kills - S.defi.k0)} / ${S.defi.but} · ${Math.ceil(S.defi.t)} s`; } else if (d) d.remove();
+  pl.classList.toggle('orage', S.orage > 0); pl.classList.toggle('destin', !!(S.effets.destin > 0)); }
+function toucheCadeau() { marqueGeste(); if (!S || S.fini || pause || fen.innerHTML) return; const x = S.cadeau, r = P.toucherCadeau(S); if (!r) return; const E = P.EVTS[r.k];
+  const c = document.getElementById('cadeau'); if (c) { const pl = document.getElementById('plateau'), rc = c.getBoundingClientRect(), rp = pl.getBoundingClientRect(); boom(rc.left - rp.left + rc.width / 2, rc.top - rp.top + rc.height / 2, '✨'); c.remove(); }
+  if (r.k === 'destin') { const pl = document.getElementById('plateau'), dd = document.createElement('div'); dd.className = 'deObjet'; dd.innerHTML = `<img src="${FACE(S.heros, 1)}" alt="">`; pl.appendChild(dd); son('des');
+    const img = dd.querySelector('img'); let n = 0; const tic = setInterval(() => { img.src = FACE(S.heros, 1 + (n++ % 6)); if (n > 7) { clearInterval(tic); img.src = FACE(S.heros, r.f); dd.classList.add('fini'); son(r.mal ? 'erreur' : 'victoire'); banniere(`🎲 ${r.f} : ${r.txt}`, true); setTimeout(() => dd.remove(), 900); } }, 85); }
+  else { son(r.k === 'etoile' ? 'jauge' : 'coffre'); banniere(`${E.e} ${r.txt}`, true); try { navigator.vibrate && navigator.vibrate(25); } catch (e) {} }
+  rafraichit(); }
+function majBesace() { const pl = document.getElementById('plateau'); if (!pl || !S) return; majEvts(pl); let b = document.getElementById('besace');
   if (!b) { b = document.createElement('div'); b.id = 'besace'; pl.appendChild(b); }
   const sig = JSON.stringify([S.deObjet, S.besace.map(o => o.id), sel && sel.t === 'objet' ? sel.n : -1]); if (b.dataset.sig === sig) return; b.dataset.sig = sig;
   b.innerHTML = (S.deObjet ? `<button class="bs de" onpointerdown="event.preventDefault();lanceDeObjet()" title="Lancer le dé de la besace">🎲${S.deObjet > 1 ? `<small>${S.deObjet}</small>` : ''}</button>` : '')
@@ -525,6 +552,7 @@ function regles() {
   <li>⏩ <b>Appeler la vague</b> : entre deux vagues, fais venir la suivante en avance ; tu gagnes des ◆ (et un peu de jauge d’Ultime).</li>
   <li>✦ <b>Spécialisation</b> : au niveau 4, une tour choisit une de ses deux spécialisations, pour toujours (dans sa fiche).</li>
   <li>🏅 <b>Les défis</b> : chaque niveau a 3 défis. Réussis-en pendant une victoire pour gagner leurs médailles.</li>
+  <li>✨ <b>Les surprises</b> : environ une par minute (jamais pendant une grosse vague) : 🐈 Moustache et 🦅 l’aigle à toucher au vol, ⭐ l’étoile filante (Ultime plein), 🎲 le dé du destin (un pari !), 🪙 le gobelin doré à abattre, 🌩 l’orage, 🐗 la charge, 🎯 le défi du marchand.</li>
   <li>🎒 <b>La besace</b> : après chaque grosse vague et toutes les 2 petites vagues, un dé 🎲 apparaît en bas à gauche. Lance-le : sa face donne un objet (1 🧊 piège de givre, 2 🌵 piège d’épines, 3 🧱 barricade, 4 💨 souffle, 5 ↪️ détour, 6 🃏 joker au choix). 2 places ; touche l’objet puis le plateau.</li>
   <li>Toucher une tour : sa fiche (déplacer 1 ◆, démolir). Toucher un monstre : ce qui le contre.</li></ul>
   <h2>Les tours</h2><ul class="liste">${Object.values(P.SORTES).map(x => `<li>${x.e} <b>${x.n}</b> (${x.prix} ◆) : ${x.d}</li>`).join('')}<li>🔮 <b>${P.PUITS.n}</b> (${P.PUITS.prix} ◆) : ${P.PUITS.d}</li></ul>`);
@@ -565,6 +593,16 @@ function joueFx() {
       else if (f.k === 'appat') { son('coffre'); boom(x, y, '🥩'); anneau(x, y, '#ff9f43', 3); } }
     else if (f.t === 'piege') { const el = document.getElementById('m' + f.id); if (el) { const x = parseFloat(el.style.left), y = parseFloat(el.style.top); boom(x, y, '🧊'); anneau(x, y, '#9fe3ff'); } son('bouclier'); }
     else if (f.t === 'pique') { const el = document.getElementById('m' + f.id); if (el) boom(parseFloat(el.style.left), parseFloat(el.style.top), '🌵'); if (performance.now() - tirsSon > 150) { tirsSon = performance.now(); son('griffe'); } }
+    else if (f.t === 'evt') { const E = P.EVTS[f.k]; banniere(`${E.e} ${E.n} !`); dis(`${E.e} ${E.d}`); son(f.k === 'orage' ? 'coup' : f.k === 'charge' ? 'titan-pas' : 'portail'); try { navigator.vibrate && navigator.vibrate([30, 50, 30]); } catch (e) {}
+      if (f.k === 'orage') { const pl = document.getElementById('plateau'); pl.animate([{ filter:'brightness(2.2)' }, { filter:'brightness(.6)' }, { filter:'none' }], { duration:500 }); } }
+    else if (f.t === 'cadeauPerdu') { dis(`${P.EVTS[f.k].e} Trop tard, il est parti…`); }
+    else if (f.t === 'eclair') { const el = document.getElementById('m' + f.id), pl = document.getElementById('plateau'); if (el) { const x = parseFloat(el.style.left), y = parseFloat(el.style.top); boom(x, y, '⚡');
+        const z = document.createElement('div'); z.className = 'foudre'; z.style.left = x + 'px'; z.style.height = y + 'px'; pl.appendChild(z); setTimeout(() => z.remove(), 260); }
+      pl.animate([{ filter:'brightness(1.7)' }, { filter:'none' }], { duration:180 }); if (performance.now() - tirsSon > 300) { tirsSon = performance.now(); son('gros'); } }
+    else if (f.t === 'surcharge') { const p = caseXY(f.i); boom(p.x, p.y - 10, '⚡'); anneau(p.x, p.y, '#ffe66b', 1.2); }
+    else if (f.t === 'dore') { const el = document.getElementById('m' + f.id); if (el) { const x = parseFloat(el.style.left), y = parseFloat(el.style.top); boom(x, y, '🪙'); anneau(x, y, '#ffd76b', 2.4); } son('victoire'); }
+    else if (f.t === 'defiOk') { banniere('🎯 Défi réussi : un dé pour ta besace !', true); son('victoire'); }
+    else if (f.t === 'defiRate') { dis('🎯 Défi raté, ce sera pour la prochaine fois.'); }
     else if (f.t === 'deObjet' && f.petit) { banniere('🎲 Un dé pour ta besace !', true); son('relance'); }
     else if (f.t === 'calme') { banniere(`🌿 Accalmie : ${f.dt} s pour bâtir · 🎲 un dé pour ta besace !`, true); }
     else if (f.t === 'annonce') { banniere(f.derniere ? '🚩 La dernière grosse vague approche !' : `🚩 Grosse vague ${f.n} sur ${f.sur} dans 8 s !`); son('vague'); try { navigator.vibrate && navigator.vibrate([40, 60, 40]); } catch (e) {} }
