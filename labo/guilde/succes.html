@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261128-011110"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
+<head><meta name="guilde-version" content="20261128-011414"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex">
@@ -35,6 +35,7 @@
   .pal span.ok { background:#3a2f12; color:var(--or); border-color:#f3c96b88; } .pal span.dispo { background:#f3c96b; color:#2b1d0a; font-weight:bold; }
   .s .fin { color:var(--ok); font-size:.85em; } .s .recup { margin-top:8px; width:100%; }
   .bulle { position:fixed; left:50%; top:18%; transform:translateX(-50%); z-index:50; background:#1d1838; border:2px solid var(--or); border-radius:14px; padding:12px 16px; max-width:90vw; text-align:center; box-shadow:0 10px 30px #000c; }
+  .recup.tout { display:block; width:100%; font-size:1.1em; padding:12px; margin:0 0 12px; position:sticky; top:6px; z-index:5; box-shadow:0 4px 14px #000a; }
 </style>
 </head>
 <body>
@@ -52,6 +53,10 @@ const ROMS = ['I', 'II', 'III', 'IV', 'V'];
 const ouvertes = new Set();
 function bulle(t) { const b = document.createElement('div'); b.className = 'bulle'; b.innerHTML = t; document.body.appendChild(b); setTimeout(() => b.remove(), 2600); }
 function recup(id) { const t = recuperePalier(id); if (t) { if (typeof GM !== 'undefined') GM.son('clic'); bulle('🏆 ' + t); } dessine(); }
+// 28/11 (l'utilisateur : « un bouton tout récupérer, quand j'ai 3-4 cadeaux c'est chiant de chercher ») : tous les paliers et coffres d'un coup
+function toutRecup() { const L = []; let t, k = 0;
+  do { t = null; for (const x of SUCCES) { const r = recuperePalier(x[0]); if (r) { L.push(r); t = r; } } const c = recupereCoffre(); if (c) { L.push(c); t = c; } } while (t && ++k < 50);
+  if (L.length) { if (typeof GM !== 'undefined') GM.son('coffre'); bulle(`🎁 ${L.length} récompense${L.length > 1 ? 's' : ''} récupérée${L.length > 1 ? 's' : ''} !<br><small>${L.slice(0, 6).join('<br>')}${L.length > 6 ? '<br>…' : ''}</small>`); } dessine(); }
 function coffre() { const t = recupereCoffre(); if (t) { if (typeof GM !== 'undefined') GM.son('clic'); bulle(t); } dessine(); }
 function ligne(s) {
   const v = succesValeur(s), a = succesAtteints(s, v), r = succesRecuperes(s), n = s[4].length, prochain = s[4][a], fini = a >= n;
@@ -84,7 +89,8 @@ function dessine() {
     <div class="barre"><i style="width:${Math.max(0, Math.min(100, pctF))}%"></i></div>
     <div class="pal">${PAL.map(p => `<span class="${p <= jours ? 'ok' : ''}">${p <= jours ? '✓ ' : ''}${p} j${p === 30 ? ' 🏅' : p === 100 ? ' 👑' : ''}</span>`).join('')}${jours >= 100 ? '<span>puis tous les 50</span>' : ''}</div>
     <p style="margin:6px 0 0;font-size:.85em">Prochain cadeau à <b>${proch} jours</b> (encore ${proch - jours}).${jours < 30 ? ' À 30 jours : le titre 🏅 Pilier de la Guilde.' : jours < 100 ? ' À 100 jours : le titre 👑 Légende fidèle.' : ''}</p></div>`;
-  document.getElementById('app').innerHTML = tete + fid + fams;
+  const nRec = succesARecuperer(), toutB = nRec ? `<button class="recup tout" onclick="toutRecup()">🎁 Tout récupérer (${nRec})</button>` : '';
+  document.getElementById('app').innerHTML = toutB + tete + fid + fams;
 }
 dessine();
 </script>
