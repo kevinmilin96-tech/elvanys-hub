@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261128-081440"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde">
+<head><meta name="guilde-version" content="20261128-081747"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="robots" content="noindex">
@@ -199,7 +199,7 @@
 <script src="rang.js?v=aadc90c69b"></script>
 <script src="heros-etoiles.js?v=29ce68f57f"></script>
 <script src="donnees.js?v=911da28260"></script>
-<script src="rempart-moteur.js?v=cff47b4a27"></script>
+<script src="rempart-moteur.js?v=c69633048e"></script>
 <script src="configurateur.js?v=d5e9469a28"></script>
 <script src="heros-aventure.js?v=31db8c2ed4"></script>
 <script>
@@ -290,7 +290,7 @@ const GUIDE = [
 ];
 // 27/11 soir : le guide des nouveautés (aussi pour ceux qui ont déjà vu le premier)
 const GUIDE2 = [
-  ['#energie', 'Nouveau : des <b>runes ◆</b> jaillissent des puits et de certains monstres abattus. <b>Touche-les</b> vite pour +1 ◆ de bonus ; sinon elles filent seules vers ton énergie au bout de 3 secondes.'],
+  ['#energie', 'Nouveau : des <b>runes ◆</b> jaillissent des puits et de certains monstres abattus. <b>Touche-les</b> pour les prendre ; sinon elles filent seules vers ton énergie au bout de 6 secondes.'],
   ['#sortB', 'Le <b>sort de ton héros</b> : touche ce bouton, puis l’endroit du plateau où tu veux le lancer. Il se recharge en 30 secondes.'],
   ['#appel', 'Entre deux vagues, <b>⏩ appelle la suivante</b> en avance : plus tu es en avance, plus tu gagnes de ◆.'],
 ];
@@ -548,7 +548,7 @@ function regles() {
   <li><b>Une paire</b> de dés pareils (dès le niveau 5) : une Tour-rune qui renforce ses voisines.</li>
   <li>🔗 <b>Combo de ligne</b> : 3 tours de la même sorte sur un chemin frappent 30 % plus fort (3 givres : le chemin ralentit ; 3 poisons : il empoisonne).</li>
   <li>🎳 <b>Le dé bowling</b> : un par niveau, il écrase tout un chemin.</li>
-  <li>◆ <b>Les runes</b> : les puits et certains monstres abattus en font jaillir. Touche-les vite (+1 ◆ de bonus) ; au bout de 3 s, elles filent seules vers ton énergie.</li>
+  <li>◆ <b>Les runes</b> : les puits et certains monstres abattus en font jaillir. Touche-les pour les prendre ; au bout de 6 s, elles filent seules vers ton énergie.</li>
   <li>${P.SORTS_R[S ? S.heros : haVoie(choixH)].e} <b>Le sort du héros</b> : touche son bouton, puis l’endroit du plateau. Recharge 30 s.</li>
   <li>⏩ <b>Appeler la vague</b> : entre deux vagues, fais venir la suivante en avance ; tu gagnes des ◆ (et un peu de jauge d’Ultime).</li>
   <li>✦ <b>Spécialisation</b> : au niveau 4, une tour choisit une de ses deux spécialisations, pour toujours (dans sa fiche).</li>

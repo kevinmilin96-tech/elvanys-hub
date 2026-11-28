@@ -1,5 +1,9 @@
 [
 {
+"v": "20261128-081747",
+"m": "Rempart : les runes restent 6 secondes avant de filer seules vers ton énergie"
+},
+{
 "v": "20261128-081440",
 "m": "Rempart : les runes ◆ ne se perdent plus : si tu ne les touches pas, elles filent seules vers ton énergie (les toucher vite donne +1 ◆ de bonus)"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261128-000253",
 "m": "Rempart : chaque tour a son pouvoir dès le niveau 2 (touche-la quand le ✦ brille) ; le givre gèle toute la carte, les archers marquent les monstres (+25 % de dégâts)"
-},
-{
-"v": "20261127-235257",
-"m": "Rempart : plus d'énergie au départ (12 ◆) et des premières vagues moins nombreuses, le temps de bâtir"
 }
 ]
