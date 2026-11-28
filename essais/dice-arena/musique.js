@@ -199,7 +199,7 @@ const GM = (() => {
         #gm-param .f{display:block;width:100%;margin-top:12px;padding:10px;border:none;border-radius:12px;background:#f3c96b;color:#2a1a08;font:bold 15px Georgia}`; document.head.appendChild(st); }
       const sonOn = () => localStorage.getItem('guilde-son') !== '0', rapide = () => localStorage.getItem('guilde-vitesse') === 'rapide';
       z = document.createElement('div'); z.id = 'gm-param';
-      const dessine = () => { z.innerHTML = `<div class="p"><h2>⚙️ Paramètres</h2>${window.GuildeMaj ? GuildeMaj.bloc() : ''}
+      const dessine = () => { z.innerHTML = `<div class="p"><h2>⚙️ Paramètres</h2>${typeof window.PARAM_JEU === 'function' ? window.PARAM_JEU() : ''}${window.GuildeMaj ? GuildeMaj.bloc() : ''}
         <div class="l"><span>🎵 Musique<input type="range" min="0" max="100" value="${Math.round(volM() * 100)}" data-v="guilde-vol-musique"></span><button class="t ${actif ? 'on' : ''}" data-k="m">${actif ? 'Allumée' : 'Éteinte'}</button></div>
         <div class="l"><span>🔊 Bruitages<input type="range" min="0" max="100" value="${Math.round(volS() * 100)}" data-v="guilde-vol-sons"></span><button class="t ${sonOn() ? 'on' : ''}" data-k="s">${sonOn() ? 'Allumés' : 'Éteints'}</button></div>
         <div class="l"><span>⚡ Vitesse des animations</span><button class="t on" data-k="v">${rapide() ? 'Rapide' : 'Normale'}</button></div>
