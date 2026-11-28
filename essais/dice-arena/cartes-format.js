@@ -67,7 +67,7 @@ const deP = s => { const i = s.indexOf(':'); const [x, y] = de(s.slice(i + 1).sp
 // Le plan : une seule grille (les étages posés les uns sous les autres, comme l'Horloge) ; murs { 'x,y': '#'|'~' }, sol des salles,
 // salles (rectangle intérieur, nom, image…), couloirs et escaliers (zones), portes, liens d'escalier, meubles, pièces.
 function compile(C) {
-  const err = [], aver = [], P = { regles:REGLES[C.regles] ? C.regles : 'vaincre', titre:C.titre || 'Ma carte', id:C.id, sablier:C.sablier || null, murs:{}, sol:{}, salle:{}, salles:{}, couloirsZ:{}, etages:[], portes:[], deborde:{},
+  const err = [], aver = [], P = { regles:REGLES[C.regles] ? C.regles : 'vaincre', titre:C.titre || 'Ma carte', id:C.id, recopie:C.recopie || null, sablier:C.sablier || null, murs:{}, sol:{}, salle:{}, salles:{}, couloirsZ:{}, etages:[], portes:[], deborde:{},
     liens:[], meubles:[], pieges:[], depart:[], monstres:[], leviers:[], fontaine:null, source:null, runes:[], cristaux:[], lave:[], laveEruption:[], zones:{}, textes:C.textes || {} };
   const off = {}; let W = 0, Y = 0;
   if (C.sorte === 'peinte') { const pe = C.peinte || { w:20, h:20, cases:{} }; off.e1 = 0; W = pe.w; Y = pe.h; P.etages.push([0, pe.h - 1, (C.etages[0] || {}).nom || 'La carte']); P.image = pe.img || null; P.vision = 'vue'; }

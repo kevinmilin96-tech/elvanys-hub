@@ -52,11 +52,42 @@
   .fenetre > div { background:#1c1c36; border:2px solid var(--or); border-radius:16px; padding:16px 18px; max-width:420px; width:100%; }
   .fenetre label { display:block; color:var(--doux); font-size:.85em; margin:8px 0 3px; } .fenetre input { width:100%; }
   .etapes { font-size:.85em; color:var(--doux); margin:0; padding-left:1.2em; } .etapes b { color:var(--texte); }
+  /* 28/11 : étapes B (le plan) et C (les pièces et le but) */
+  .onglets { display:flex; gap:6px; flex-wrap:wrap; } .onglets button { padding:6px 12px; } .onglets button.on { border-color:var(--or); color:var(--or); background:#3a2e10; }
+  .bc { display:grid; grid-template-columns:320px 1fr; gap:14px; padding:14px; max-width:1500px; margin:0 auto; }
+  .bc > div:first-child { max-height:calc(100vh - 80px); overflow:auto; padding-right:4px; } /* le panneau défile, le plan reste en place */
+  @media (max-width:820px) { .bc { grid-template-columns:1fr; } .bc > div:first-child { max-height:none; overflow:visible; } }
+  .planvue { position:relative; overflow:hidden; height:calc(100vh - 150px); min-height:360px; background:#06060d; border:1px solid #2a2a4a; border-radius:12px; touch-action:none; user-select:none; }
+  .plan { position:absolute; left:0; top:0; transform-origin:0 0; background-color:#0c0c18; background-image:linear-gradient(#ffffff14 1px, transparent 1px), linear-gradient(90deg, #ffffff14 1px, transparent 1px); background-size:var(--c) var(--c); }
+  .plan .ps { position:absolute; background:#2a2440 center/100% 100% no-repeat; outline:2px solid #8a7ab8; box-sizing:border-box; }
+  .plan .ps.sel { outline:3px solid var(--or); } .plan .ps .nm { position:absolute; left:0; right:0; top:2px; text-align:center; font-size:11px; color:#fff; text-shadow:0 0 3px #000, 0 0 3px #000; pointer-events:none; }
+  .plan .pk { position:absolute; width:var(--c); height:var(--c); box-sizing:border-box; pointer-events:none; }
+  .plan .pk.porte { background:#f3c96b88; } .plan .pk.meuble { background:#a0522d77; } .plan .pk.mur { background:#8a8aa877; } .plan .pk.obstacle { background:#2f6a3a99; } .plan .pk.sol { background:transparent; }
+  .plan .pc { position:absolute; width:var(--c); height:var(--c); background:#4a4438; box-shadow:inset 0 0 0 1px #6a6250; box-sizing:border-box; }
+  .plan .pc.esc { background:repeating-linear-gradient(90deg, #9a7a4a 0 5px, #4a3418 5px 8px); }
+  .plan .pd { position:absolute; width:var(--c); height:var(--c); border-radius:50%; box-sizing:border-box; border:3px solid #7dffb0; pointer-events:none; } .plan .pd.ko { border-color:#ff6a5a; box-shadow:0 0 8px #ff6a5a; }
+  .plan .pp { position:absolute; width:var(--c); height:var(--c); display:flex; align-items:center; justify-content:center; font-size:calc(var(--c) * .62); pointer-events:none; text-shadow:0 0 3px #000; }
+  .plan .pp small { position:absolute; right:1px; bottom:0; font-size:10px; color:#fff; background:#000a; border-radius:4px; padding:0 2px; }
+  .plan .pl { position:absolute; font-size:10px; color:#ffe9a8; background:#2f6a3acc; border-radius:4px; padding:0 3px; pointer-events:none; white-space:nowrap; }
+  .plan .pz { position:absolute; border:2px dashed #7cd4ff; color:#7cd4ff; font-size:11px; pointer-events:none; box-sizing:border-box; padding:1px 3px; }
+  .plan .pimg { position:absolute; left:0; top:0; background-size:100% 100%; pointer-events:none; }
+  .plan .hl { position:absolute; width:var(--c); height:var(--c); box-sizing:border-box; border:2px solid var(--or); pointer-events:none; }
+  .zoom { position:absolute; right:8px; top:8px; display:flex; flex-direction:column; gap:4px; z-index:5; } .zoom button { width:38px; height:38px; padding:0; font-size:1.1em; }
+  .outils { display:grid; grid-template-columns:1fr 1fr; gap:6px; } .outils button { text-align:left; font-size:.88em; } .outils button.on { border-color:var(--or); box-shadow:0 0 8px #f3c96b66; color:var(--or); }
+  .pal { display:grid; grid-template-columns:1fr 1fr; gap:5px; max-height:300px; overflow:auto; } .pal button { font-size:.82em; text-align:left; padding:5px 8px; } .pal button.on { border-color:var(--or); color:var(--or); }
+  .pal button.gris { opacity:.45; }
+  .etg { display:flex; gap:5px; flex-wrap:wrap; margin-bottom:6px; } .etg button { font-size:.85em; padding:5px 10px; } .etg button.on { border-color:var(--or); color:var(--or); }
+  .lst button { display:block; width:100%; text-align:left; margin:3px 0; font-size:.9em; } .lst button.on { border-color:var(--or); color:var(--or); }
+  .msgsBC div { padding:4px 9px; border-radius:8px; margin:3px 0; font-size:.86em; } .msgsBC .ko { background:#3a1414; color:#ffb4a8; } .msgsBC .ok { background:#14322a; color:var(--ok); } .msgsBC .av { background:#3a3214; color:#ffe9a8; }
+  .fenetre > div.large { max-width:560px; max-height:88vh; overflow:auto; }
+  .fenetre select, .fenetre textarea { width:100%; }
 </style>
 </head>
 <body>
-<div class="haut"><a href="chroniques.html">‹ Les Chroniques</a><h1>🛠 L'atelier des cartes</h1><span class="aide">Étape A : une salle à la fois.</span></div>
-<div class="page">
+<div class="haut"><a href="chroniques.html">‹ Les Chroniques</a><h1>🛠 L'atelier des cartes</h1>
+  <div class="onglets" id="onglets"><button class="on" data-e="A" onclick="etape('A')">A · Mes salles</button><button data-e="B" onclick="etape('B')">B · Le plan</button><button data-e="C" onclick="etape('C')">C · Pièces et but</button></div>
+  <span class="aide" id="etatSrv"></span></div>
+<div class="page" id="etapeA">
   <div>
     <div class="panneau"><h2>Comment ça marche</h2><ol class="etapes"><li><b>Crée une salle</b> (nom, taille).</li><li><b>Peins</b> ses portes, meubles, obstacles avec les pinceaux.</li><li>Écris le <b>décor</b>, puis <b>copie le prompt</b> (en bas) et colle-le dans Gemini.</li><li><b>Pose l’image</b> reçue : vérifie que les portes tombent juste.</li><li><b>▶ Tester la salle</b> pour la jouer.</li></ol></div>
     <div class="panneau"><h2>Mes salles</h2><div class="liste" id="liste"></div><button class="or" onclick="nouvelleSalle()">＋ Nouvelle salle</button></div>
@@ -76,6 +107,9 @@
       <textarea class="prompt" id="prompt" readonly></textarea><div class="ligne"><button class="or" onclick="copierPrompt()">📋 Copier le prompt</button><span class="aide" id="copie"></span></div></div>
   </div>
 </div>
+<div id="etapeBC" style="display:none"></div>
+<script src="cartes-format.js"></script>
+<script src="cartes-local.js"></script>
 <script>
 // ------------------------------------------------------------------ les données : une salle = sa taille intérieure, ses cases peintes, son image
 const CLE = 'guilde-editeur-salles'; // petit JSON gardé sur le téléphone (et dans la sauvegarde du compte) ; les images à part (IndexedDB)
@@ -144,9 +178,8 @@ Room: ${s.decor || s.nom}. ${s.lumiere === 'sombre' ? 'The room is dim, lit only
 No text, no letters, no numbers, no symbols, no characters, no monsters.`;
 }
 // ------------------------------------------------------------------ les images (IndexedDB, sur cet appareil : l'envoi au serveur perso viendra ensuite)
-const DB = () => new Promise((ok, ko) => { const r = indexedDB.open('guilde-editeur', 1); r.onupgradeneeded = () => r.result.createObjectStore('img'); r.onsuccess = () => ok(r.result); r.onerror = () => ko(r.error); });
-async function imgPose(id, data) { const d = await DB(); return new Promise(ok => { const t = d.transaction('img', 'readwrite'); t.objectStore('img').put(data, id); t.oncomplete = ok; }); }
-async function imgLit(id) { const d = await DB(); return new Promise(ok => { const r = d.transaction('img').objectStore('img').get(id); r.onsuccess = () => ok(r.result || null); r.onerror = () => ok(null); }); }
+// 28/11 : la base de l'appareil est partagée avec les cartes (cartes-local.js, version 2) ; les images d'une salle partent aussi au serveur avec la carte qui l'utilise
+const imgPose = (id, data) => CARTES_LOCAL.imgPose(id, data), imgLit = id => CARTES_LOCAL.imgLit(id);
 const imgCache = {};
 function choisirImage() { if (!S()) return; $('fichier').value = ''; $('fichier').click(); }
 function imageChoisie(inp) {
@@ -219,6 +252,8 @@ let ouiNonFn = null;
 function ouiNon(q, fn) { ouiNonFn = fn; fen(`<p>${q}</p><div class="ligne"><button class="or" onclick="fen('');ouiNonFn&&ouiNonFn()">Oui</button><button onclick="fen('')">Non</button></div>`); }
 tout();
 </script>
+<script src="editeur-plan.js"></script>
+<script src="editeur-pieces.js"></script>
 <script src="musique.js?v=60fb469496"></script>
 </body>
 </html>

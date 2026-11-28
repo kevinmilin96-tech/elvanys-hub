@@ -238,7 +238,7 @@ function construitAtelier(S, R, C) {
 // meubles, leviers, runes, statues) : la recopie des Terres brûlées et de l'Horloger se joue comme l'original (vérifié au simulateur).
 function construitPlan(S, R, P) {
   const n = Math.max(1, Math.min(4, S.heros.length)), BR = P.regles === 'brulees', sal = P.sorte === 'salles';
-  R.w = P.w; R.h = P.h; R.carte = P.id || 'carte'; R.vision = P.vision || (sal ? 'salles' : 'vue');
+  R.w = P.w; R.h = P.h; R.carte = P.id || 'carte'; if (P.recopie) R.recopie = P.recopie; R.vision = P.vision || (sal ? 'salles' : 'vue');
   Object.assign(R.murs, P.murs); Object.assign(R.salle, P.salle);
   P.portes.forEach(([x, y, o]) => { const c = cle(x, y); delete R.murs[c];
     R.portes[c] = Object.assign({ salle:o.salle, ouverte:false }, sal ? { bronze:!!o.bronze, entree:!!o.entree } : {}, o.basalte ? { basalte:true } : {}, !sal && o.bronze ? { bronze:true } : {}, !sal && o.entree ? { entree:true } : {}); });
@@ -726,7 +726,7 @@ function nouvelle(heros, s, scen, opts = {}) {
     z.pw = set ? set[S.pre] : null;
     if (a_t(z, 'robuste')) { const b = 4 + pwB3(z, 'passif'); z.pv += b; z.pvmax += b; } }); // 19/11 : le talent Robuste (Passif d'un héros d'aventure)
   if (opts.plan) { // 28/11 : une carte de l'atelier (le PLAN compilé par cartes-format.js ; scen = ses règles)
-    const P = opts.plan; S.carte = { id:P.id || null, titre:P.titre || '', regles:P.regles }; if (opts.essai) S.essai = true; if (P.sablier) S.sablier = +P.sablier;
+    const P = opts.plan; S.carte = { id:P.id || null, titre:P.titre || '', regles:P.regles, recopie:P.recopie || null }; if (opts.essai) S.essai = true; if (P.sablier) S.sablier = +P.sablier;
     construitPlan(S, R, P);
     if (scen === 'brulees') { departPlan(S, P); S.eau = 0; S.recits = []; adapte(S); voir(S); R.zonesVues.camp = R.zonesVues.camp || false; log(S, P.ouverture || '🔥 Les Terres brûlées · Le Cœur de Braise : le feu de l’île s’éteint. Trois gardiens ont avalé les trois braises éternelles. Fouillez le camp pillé, trouvez la Clé de basalte et l’Eau sacrée, battez les gardiens, rallumez le grand brasier… et survivez à ce qui en sort.'); brVues(S); debutTour(S); return S; }
     if (scen === 'horloger') { adapte(S); departPlan(S, P); voir(S); log(S, P.ouverture || '⏳ La grande porte se referme derrière vous. Le Sommeil de l’Horloger commence : trouvez 3 rouages dans les meubles des étages, montez au sommet, ouvrez la porte de bronze, réveillez l’Horloger.'); debutTour(S); return S; }

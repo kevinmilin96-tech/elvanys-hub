@@ -39,7 +39,8 @@ function defChron() {
   choisis = choisis.filter(k => k !== 'zephine' || ZEPH_OK());
   let D = {}; try { D = JSON.parse(localStorage.getItem(CLE) || '{}'); } catch (e) {}
   const ADV = typeof AVENTURES !== 'undefined' ? AVENTURES : {};
-  const scenChoix = () => Object.entries(SCX_TXT).filter(([k]) => typeof scenVisible !== 'function' || scenVisible(k)).map(([k, s]) => ({ v:k, n:s.titre, d:`<i>${s.duree}</i>${k === 'horloger' && D.horloger ? ` · ✓ réussi ${D.horloger} fois` : ''}<br>${s.but}` }));
+  const scenChoix = () => Object.entries(SCX_TXT).filter(([k]) => typeof scenVisible !== 'function' || scenVisible(k)).map(([k, s]) => ({ v:k, n:s.titre, d:`<i>${s.duree}</i>${k === 'horloger' && D.horloger ? ` · ✓ réussi ${D.horloger} fois` : ''}<br>${s.but}` }))
+    .concat((typeof MES_CARTES !== 'undefined' ? MES_CARTES : []).map(c => ({ v:'carte:' + c.id, n:'🗺 ' + chEsc(c.titre), d:`<i>Ma carte de l’atelier</i><br>${chEsc((CARTES.REGLES[c.regles] || {}).n || '')}` }))); // 28/11 : mes cartes de l'atelier
   return { jeu:'chroniques', titre:'📜 Les Chroniques', retour:'menu.html', regles:'regles()', racine:'app',
     heros:() => {
       const b = (k, img, sec, nom, sous, dis, coul) => `<button class="${choisis.includes(k) ? 'on' : ''}" ${dis ? 'disabled' : ''} onclick="chBascule('${k}')">${choisis.includes(k) ? `<span class="ch-n">${choisis.indexOf(k) + 1}</span>` : ''}<img src="${img}" onerror="this.onerror=null;this.src='${sec}'" alt=""${coul ? ` style="box-shadow:0 0 0 3px ${coul}"` : ''}>${nom}<small>${sous}</small></button>`;
@@ -96,19 +97,21 @@ function defChron() {
     },
     resume:(m, v) => {
       const eq = choisis.length ? `<b>${chEsc(chEquipeTxt())}</b>` : 'sans héros pour l’instant';
-      if (m === 'partie') return `⚔ ${SCX_TXT[v.scen].titre} · ${eq}`;
+      const tScen = k => String(k).startsWith('carte:') ? '🗺 ' + chEsc(((typeof MES_CARTES !== 'undefined' ? MES_CARTES : []).find(c => 'carte:' + c.id === k) || {}).titre || 'Ma carte') : (SCX_TXT[k] || {}).titre || k;
+      if (m === 'partie') return `⚔ ${tScen(v.scen)} · ${eq}`;
       if (m === 'campagne') return `📜 La campagne · ${eq}`;
       if (m === 'aventures') return `${ADV[v.av] ? ADV[v.av].titre : '📖'} · ${eq}`;
       if (v.action === 'rejoindre') return `🔑 Rejoindre une salle · ${eq}`;
-      return `👑 Ta salle · ${v.scen === 'camp' ? '📜 la campagne' : SCX_TXT[v.scen].titre} · ${v.ini === 'sans' ? 'sans' : 'avec'} initiative · ${eq}`;
+      return `👑 Ta salle · ${v.scen === 'camp' ? '📜 la campagne' : tScen(v.scen)} · ${v.ini === 'sans' ? 'sans' : 'avec'} initiative · ${eq}`;
     },
     lancer:(m, v) => {
+      if (m === 'partie' && String(v.scen).startsWith('carte:')) return jouerCarte(v.scen.slice(6), false); // 28/11 : une carte de l'atelier
       if (m === 'partie') { scenChoisi = v.scen; try { localStorage.removeItem(CLE_PARTIE); } catch (e) {} return commence(); }
       if (m === 'campagne') { try { const x = chGardee(); if (x && x.mode === 'campagne') localStorage.removeItem(CLE_PARTIE); } catch (e) {} return lanceCampagne(); }
       if (m === 'aventures') { try { const x = chGardee(); if (x && x.mode === 'aventures') localStorage.removeItem(CLE_PARTIE); } catch (e) {} return lanceAventure(v.av); }
       if (v.action === 'rejoindre') { chPre.apporte = true; accueil(); return rejoindreForm(); } // l'accueil d'abord : si on annule, on retrouve le configurateur
       const c = lireCamp();
-      if (v.scen === 'camp') { scenChoisi = c ? CHAPITRES[c.chap].scen : 'horloger'; chPre.camp = c ? c.chap : 'nouvelle'; } else { scenChoisi = v.scen; chPre.camp = null; }
+      if (v.scen === 'camp') { scenChoisi = c ? CHAPITRES[c.chap].scen : 'horloger'; chPre.camp = c ? c.chap : 'nouvelle'; } else if (String(v.scen).startsWith('carte:')) { scenChoisi = 'horloger'; chPre.camp = null; chPre.carte = v.scen.slice(6); } else { scenChoisi = v.scen; chPre.camp = null; }
       chPre.sansIni = v.ini === 'sans';
       accueil(); creerSalle();
     } };
