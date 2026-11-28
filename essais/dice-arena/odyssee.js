@@ -634,7 +634,7 @@ function nouvelleOdyssee(heros, graine, acte, niveau, avent) {
   const ile = genereIle(graine, null, acte); if (!ile) return null;
   const h = HEROS[heros], pv = Math.round(h.pv * (ODY_PV[heros] || 1.8)); // en Odyssée le héros a 1,8 × ses PV du Duel (le papier disait 75 pour 44) : il enchaîne 5 à 6 combats sans soin automatique
   const run = { v:1, heros, av:HA_.av, graine, acte, asc:Math.max(0, Math.min(10, niveau || 0)), ile:ile.cases, pos:{ ...ile.dep }, porte:ile.porte, bossPos:ile.boss, direct:ile.direct, debut:Date.now(),
-    pv, pvMax:pv, or:OR_DEPART, vivres:VIVRES_DEPART, deck:(typeof deckDe === 'function' ? deckDe(heros) : deckBase(heros)), reliques:[], sacoche:['soin'], benes:[], males:[], fragments:0, cles:0,
+    pv, pvMax:pv, or:OR_DEPART, vivres:VIVRES_DEPART, deck:(typeof deckDe === 'function' ? deckDe(HA_.av ? 'av:' + HA_.av : heros) : deckBase(heros)), /* 28/11 : un héros d'aventure part de SES decks */ reliques:[], sacoche:['soin'], benes:[], males:[], fragments:0, cles:0,
     stats:{ cases:1, combats:0, victoires:0, tours:0, defis:0, cartesVues:[] }, combat:null, journal:[`Débarquement sur ${ILES[acte].nom} (${HA_.nom})${niveau ? ` · Ascension ${niveau}` : ''}.`] };
   run.deckDepart = run.deck.slice(); // 22/11 : le deck choisi au départ (les cartes en plus vont à la collection en fin d'Odyssée)
   if (asc(run, 3)) run.vivres -= 4;
