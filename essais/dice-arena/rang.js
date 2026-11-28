@@ -38,20 +38,20 @@ const ROUTE = {
   8:['depart', 'or', '💰', 'Bourse de départ', 'Odyssée : +20 or au départ.'],
   9:['carte', 'n_pip', '🂠', 'Nouvelle carte', 'Une carte qu’on ne trouve nulle part ailleurs.'],
   10:['titre', 'veteran', '⚔️', 'Vétéran de la Guilde', 'Un titre et son cadre.'],
-  11:['equip', 'cotte', '🥋', 'Cotte de mailles', 'Grande aventure : un équipement de plus à trouver.'],
+  11:['equip', 'cotte', '🥋', 'Cotte de mailles', 'Une pièce épique pour tes héros (coffre de Mes héros), et un équipement de plus à trouver dans la Grande aventure.'],
   12:['des', 'cristal', '💠', 'Dés de cristal', 'Une nouvelle apparence pour tes dés.'],
   13:['carte', 'n_oria', '🂠', 'Nouvelle carte', 'Une carte qu’on ne trouve nulle part ailleurs.'],
   14:['depart', 'potion', '🧪', 'Potion de départ', 'Odyssée : une potion de soin dans la sacoche au départ.'],
   15:['titre', 'maitre', '🔮', 'Maître des runes', 'Un titre et son cadre.'],
   16:['carte', 'n_aldric', '🂠', 'Nouvelle carte', 'Une carte qu’on ne trouve nulle part ailleurs.'],
   17:['des', 'obsidienne', '⬛', 'Dés d’obsidienne', 'Une nouvelle apparence pour tes dés.'],
-  18:['equip', 'heaume', '⛑', 'Heaume du gardien', 'Grande aventure : un équipement de plus à trouver.'],
+  18:['equip', 'heaume', '⛑', 'Heaume du gardien', 'Une pièce épique pour tes héros (coffre de Mes héros), et un équipement de plus à trouver dans la Grande aventure.'],
   19:['carte', 'n_gorm', '🂠', 'Nouvelle carte', 'Une carte qu’on ne trouve nulle part ailleurs.'],
   20:['titre', 'champion', '🏅', 'Champion de la Guilde', 'Un titre et son cadre.'],
   21:['depart', 'pv', '❤', 'Cœur solide', 'Odyssée : +5 PV max au départ.'],
   22:['carte', 'n_zephine', '🂠', 'Nouvelle carte', 'Une carte qu’on ne trouve nulle part ailleurs.'],
   23:['des', 'braise', '🟥', 'Dés de braise', 'Une nouvelle apparence pour tes dés.'],
-  24:['equip', 'anneau', '💍', 'Anneau des runes', 'Grande aventure : un équipement de plus à trouver.'],
+  24:['equip', 'anneau', '💍', 'Anneau des runes', 'Une pièce légendaire pour tes héros (coffre de Mes héros), et un équipement de plus à trouver dans la Grande aventure.'],
   25:['titre', 'legende', '🌠', 'Légende de la Guilde', 'Un titre et son cadre.'],
   26:['carte', 'n_guilde', '🂠', 'Nouvelle carte', 'Une carte qu’on ne trouve nulle part ailleurs.'],
   27:['des', 'givre', '🟦', 'Dés de givre', 'Une nouvelle apparence pour tes dés.'],
@@ -78,7 +78,7 @@ function lireRang() { const d = Object.assign({ xp:0, journal:[], peau:'base' },
   return d; }
 const aRecuperer = () => { const d = lireRang(), L = Object.keys(ROUTE).map(Number); for (let n = RANG_MAX + 1; n <= d.info.rang; n++) L.push(n); return L.filter(n => n <= d.info.rang && !d.recup.includes(n)); };
 function recupererRang(n) { const d = lireRang(); n = +n; if (n > d.info.rang || d.recup.includes(n) || !routeDe(n)) return null; d.recup.push(n); ecrireRang(d); syncRecompenses();
-  const x = routeDe(n); if (x[0] === 'coffre' && typeof donneRessources === 'function') donneRessources(COFFRE_RANG.or, COFFRE_RANG.pou, true); if (typeof annonceRang === 'function') annonceRang(`${x[2]} ${x[3]} récupéré !`, true); return x; }
+  const x = routeDe(n); if (x[0] === 'coffre' && typeof donneRessources === 'function') donneRessources(COFFRE_RANG.or, COFFRE_RANG.pou, true); if (x[0] === 'equip') equipRangDonne(); if (typeof annonceRang === 'function') annonceRang(`${x[2]} ${x[3]} récupéré !`, true); return x; }
 function ecrireRang(d) { const { info, ...rest } = d; localStorage.setItem(RANG_CLE, JSON.stringify(rest)); }
 // récompenses gagnées : tout ce qui est sur la route jusqu'au rang atteint
 const recompensesGagnees = () => { const d = lireRang(), r = d.info.rang; return Object.entries(ROUTE).filter(([n]) => +n <= r && d.recup.includes(+n)).map(([n, x]) => ({ rang:+n, genre:x[0], cle:x[1], e:x[2], n:x[3], d:x[4] })); };
@@ -323,3 +323,17 @@ const butinFois = () => { const c = RJ('guilde-butin-compte', {}); return c.j ==
 function butinHTML() { const g = butinCalcule(), plein = g.h >= BUTIN_MAX_H;
   return `<button class="butin ${plein ? 'plein' : ''}" onclick="butinRamasse(); const rm = document.getElementById('rangmenu'); if (rm) rm.innerHTML = bandeauRangHTML() + butinHTML(); else this.outerHTML = butinHTML();">🎁 Butin de la Guilde : <span style="white-space:nowrap"><b>${g.xp} XP · 💠 ${g.eclats} · 🪙 ${g.or} · 🔹 ${g.pou}</b></span>${plein ? ' · plein !' : ` · <span style="white-space:nowrap">${Math.floor(g.h)} h / ${BUTIN_MAX_H} h</span>`}</button>`; }
 if (typeof document !== 'undefined') { const st = document.createElement('style'); st.textContent = `.butin { display:block; width:100%; margin-top:5px; font:12.5px Georgia, serif; color:#f1ecff; background:#1d1838e6; border:1px solid #4b4580; border-radius:12px; padding:5px 8px; } .butin b { color:#f3c96b; } .butin.plein { border-color:#f3c96b; box-shadow:0 0 12px #f3c96b88; animation:butinP 1.6s ease-in-out infinite; } @keyframes butinP { 50% { box-shadow:0 0 2px #f3c96b44; } }`; document.head.appendChild(st); }
+
+// 28/11 (l'utilisateur : « Heaume du gardien, jamais trouvé dans mon inventaire ») : les équipements de la route (rangs 11, 18, 24) ne servaient
+// qu'à l'ancienne Grande aventure. Ils arrivent maintenant AUSSI comme vraie pièce dans le coffre des héros (Mes héros), une seule fois chacun,
+// y compris pour ceux qui les avaient déjà récupérés.
+const EQUIP_RANG = { cotte:['torse', 2], heaume:['tete', 2], anneau:['anneau', 3] }; // case, rareté (2 épique, 3 légendaire)
+function equipRangDonne() {
+  if (typeof avSac !== 'function' || typeof avSacEcrire !== 'function') return; let deja; try { deja = JSON.parse(localStorage.getItem('guilde-rang-equip') || '[]'); } catch (e) { deja = []; }
+  const d = lireRang(), s = avSac(), gains = [];
+  Object.entries(ROUTE).forEach(([n, x]) => { if (x[0] !== 'equip' || !d.recup.includes(+n) || deja.includes(x[1]) || !EQUIP_RANG[x[1]]) return;
+    const [slot, r] = EQUIP_RANG[x[1]]; s.pieces.push({ id:'rg' + x[1] + Date.now().toString(36), slot, nom:x[3], r, niv:1 }); deja.push(x[1]); gains.push(x[2] + ' ' + x[3]); });
+  if (!gains.length) return; avSacEcrire(s); localStorage.setItem('guilde-rang-equip', JSON.stringify(deja));
+  if (typeof annonceRang === 'function') annonceRang(`${gains.join(', ')} : dans le coffre de Mes héros !`, true);
+}
+if (typeof window !== 'undefined') setTimeout(() => { try { equipRangDonne(); } catch (e) {} }, 800);
