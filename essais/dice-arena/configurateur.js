@@ -73,6 +73,7 @@ const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&':'&amp
 
   // ouvre le configurateur (def), en gardant l'étape si on redessine le même jeu ; o.mode = mode présélectionné, o.etape = étape
   CFG.ouvre = function (def, o) {
+    { const pa = document.getElementById('carnet-pastille'); if (pa) pa.remove(); } // 28/11 : la pastille « Journal de la partie » cachait « ▶ Jouer »
     o = o || {};
     if (!CFG.def || CFG.def.jeu !== def.jeu) {
       CFG.etape = 1; let m = null;
