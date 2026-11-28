@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261128-161658"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
+<head><meta name="guilde-version" content="20261128-171950"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <meta name="robots" content="noindex">
@@ -53,6 +53,6 @@ document.getElementById('bas').innerHTML = CURSEURS.map(([k, t, a, b, p]) => t =
 function copier() { const t = 'PLACEMENT MENU ' + JSON.stringify(R); document.getElementById('txt').value = t; (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => { document.getElementById('msg').textContent = '✅ Copié : colle-le dans la discussion avec Claude.'; }).catch(() => { document.getElementById('txt').select(); document.getElementById('msg').textContent = 'Sélectionne le texte ci-dessous et copie-le.'; }); }
 dessine();
 </script>
-<script src="musique.js?v=fb0b9da49e"></script>
+<script src="musique.js?v=66095aa322"></script>
 </body>
 </html>

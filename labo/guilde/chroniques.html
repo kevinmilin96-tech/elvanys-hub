@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261128-161658"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
+<head><meta name="guilde-version" content="20261128-171950"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="robots" content="noindex">
@@ -240,7 +240,7 @@
 <body>
 <div id="app"></div>
 <div id="fen"></div><div id="perso"></div>
-<script src="musique.js?v=fb0b9da49e"></script>
+<script src="musique.js?v=66095aa322"></script>
 <script src="rang.js?v=aadc90c69b"></script>
 <script>window.AMIS_SANS_BOUTON = true;</script>
 <script src="amis.js?v=836226b759"></script>
@@ -486,6 +486,28 @@ function rangeEnLigne() {
     heros:S.heros.map((z, i) => nomH(z) + (noms[i] ? ` (${noms[i]})` : '')).join(', '), S:copie });
   localStorage.setItem(CLE_ENLIGNE, JSON.stringify(l.slice(0, 3)));
 }
+// 28/11 (l'utilisateur : « un mode sauvegarde et trois emplacements dans les paramètres, car là on a peur de sortir ») : 3 EMPLACEMENTS
+// manuels, dans ⚙️ Paramètres (window.PARAM_JEU, lu par musique.js). Une partie en ligne se rouvre dans une nouvelle salle (comme les sauvegardes de l'hôte).
+const CLE_SLOTS = 'guilde-chroniques-slots';
+const lireSlots = () => { try { const l = JSON.parse(localStorage.getItem(CLE_SLOTS) || '[]'); return Array.isArray(l) ? l : []; } catch (e) { return []; } };
+window.PARAM_JEU = () => { const sl = lireSlots(), peut = S && !S.fin && S.scen !== 'atelier' && S.scen !== 'entrainement' && (!L || estHote());
+  const quand = t => new Date(t).toLocaleString('fr-FR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
+  return `<div style="border:1px solid #f3c96b66;border-radius:12px;padding:8px 10px;margin-bottom:8px"><b style="color:#f3c96b">💾 Mes sauvegardes (Chroniques)</b>
+    ${S && L && !estHote() ? '<p style="font-size:.85em;margin:4px 0">Seul l’hôte de la salle peut sauvegarder la partie.</p>' : ''}
+    ${[0, 1, 2].map(k => { const x = sl[k]; return `<div style="display:flex;align-items:center;gap:6px;padding:6px 0;border-top:1px solid #ffffff14"><div style="flex:1;font-size:.85em"><b>${k + 1}.</b> ${x ? `${x.titre}${x.enLigne ? ' 🌐' : ''}<br><small>${quand(x.quand)} · ${x.heros}</small>` : '<i>vide</i>'}</div>
+      ${peut ? `<button class="t" onclick="slotSauve(${k})">💾</button>` : ''}${x ? `<button class="t" onclick="slotCharge(${k})">▶</button><button class="t" style="min-width:34px" onclick="slotOublie(${k})">✕</button>` : ''}</div>`; }).join('')}
+    <p style="font-size:.78em;margin:6px 0 0;opacity:.8">💾 = enregistrer ici · ▶ = reprendre · la partie se sauvegarde aussi toute seule à chaque coup.</p></div>`; };
+const reParam = () => { try { GM.parametres(); GM.parametres(); } catch (e) {} };
+function slotSauve(k) { const sl = lireSlots(); if (sl[k] && !confirm('Remplacer la sauvegarde ' + (k + 1) + ' ?')) return;
+  const copie = JSON.parse(JSON.stringify(S)); delete copie.animM; let enLigne = false;
+  if (L) { enLigne = true; copie.anciens = S.heros.map((z, i) => proprio(i) || ''); copie.anciensId = S.heros.map((z, i) => (L.joueurs.find(j => (j.heros || []).includes(i)) || {}).id || ''); }
+  sl[k] = { quand:Date.now(), enLigne, titre:S.campagne != null ? CHAPITRES[S.campagne].titre : (SCX_TXT[S.scen] || {}).titre || S.scen, heros:S.heros.map(z => nomH(z)).join(', '), S:copie };
+  localStorage.setItem(CLE_SLOTS, JSON.stringify(sl)); bulle('💾 Partie sauvegardée dans l’emplacement ' + (k + 1) + '.'); reParam(); }
+function slotOublie(k) { if (!confirm('Effacer la sauvegarde ' + (k + 1) + ' ?')) return; const sl = lireSlots(); sl[k] = null; localStorage.setItem(CLE_SLOTS, JSON.stringify(sl)); reParam(); }
+function slotCharge(k) { const x = lireSlots()[k]; if (!x) return; if (S && !S.fin && !confirm('Reprendre la sauvegarde ' + (k + 1) + ' ? La partie en cours sera remplacée (pense à la sauvegarder avant).')) return;
+  try { const z = document.getElementById('gm-param'); if (z) z.remove(); } catch (e) {}
+  if (x.enLigne) { const id = 'slot' + Date.now().toString(36); const l = sauvesEnLigne(); l.unshift({ id, quand:x.quand, titre:x.titre, heros:x.heros, S:JSON.parse(JSON.stringify(x.S)) }); localStorage.setItem(CLE_ENLIGNE, JSON.stringify(l.slice(0, 4))); rouvrirEnLigne(id); return; }
+  S = JSON.parse(JSON.stringify(x.S)); L = null; LOB = null; actif = 0; sel = null; centrer = true; sauve(); dessine(); bulle('▶ Partie reprise.'); }
 function oublierEnLigne(id) { if (!confirm('Effacer cette sauvegarde ?')) return; localStorage.setItem(CLE_ENLIGNE, JSON.stringify(sauvesEnLigne().filter(x => x.id !== id))); accueil(); }
 async function rouvrirEnLigne(id, nomDonne) {
   const sv = sauvesEnLigne().find(x => x.id === id); if (!sv) return;

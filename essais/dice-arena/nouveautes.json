@@ -1,5 +1,9 @@
 [
 {
+"v": "20261128-171950",
+"m": "Chroniques : 3 emplacements de sauvegarde dans ⚙️ Paramètres pour enregistrer et reprendre tes parties"
+},
+{
 "v": "20261128-161658",
 "m": "Chroniques : les 6 héros de base lancent maintenant 4 dés (Gorm 5), plus les dés de leur équipement"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261128-005605",
 "m": "Rempart : la besace a ses animations et ses sons (le dé roule, l'objet vole dans la besace, chaque objet a son effet)"
-},
-{
-"v": "20261128-005416",
-"m": "Rempart : plus de dés pour la besace (toutes les 2 vagues et après chaque grosse vague)"
 }
 ]
