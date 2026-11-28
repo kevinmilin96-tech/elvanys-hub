@@ -287,7 +287,7 @@ function dessine() {
           `<div class="sceaux">${S.pouvoir.map((s, k) => sceauHTML(s, S.pouvoir, `touchePouvoir(${k})`, mode === 'rune' ? 'non' : etatSceau(s, S.pouvoir))).join('')}</div>`}
       </div>
     </div>
-    ${compHTML()}
+    ${compHTML()}${relHTML()}
     ${typeof DR !== 'undefined' && DR ? sacHTML() : ''}
     ${S.consos && S.consos.length ? `<div class="sac">🎒 ${S.consos.map((k, i) => `<span onclick="utiliseConso(${i})" style="border-color:var(--or)"><img src="objets/conso-${k}.webp?v=1" alt="" style="width:1.4em;height:1.4em;object-fit:contain;vertical-align:middle" onerror="this.outerHTML='${C.CONSOS[k].e}'"> <small>${C.CONSOS[k].n} : ${C.CONSOS[k].d}</small></span>`).join('')}</div>` : ''}
     <div class="rangee">
@@ -318,6 +318,11 @@ function defisFen() {
 }
 // 15/11 : seules les cartes VISIBLES frappent, chacune de sa force ; on l'écrit en clair (« Scarabée 1 + Lutin 2 »)
 function detailMenace() { return C.intentions(S).filter(x => x.v).map(x => `${x.nom.split(' ')[0]} ${x.v}`).join(' + '); }
+// 28/11 : les RELIQUES de la Descente pendant le combat (une ligne d'icônes, toucher = la liste) + le bouton du Couteau du sacrifice
+function relHTML() { const r = S.rel || {}, k = Object.keys(r); if (!k.length || typeof D === 'undefined') return '';
+  return `<div class="combosL" onclick="relFen()">🏺 ${k.map(x => D.RELIQUES[x] ? D.RELIQUES[x].e : '').join(' ')}</div>${r.couteau && !S.couteauUse ? `<div style="text-align:center"><button class="btn-pouv" style="background:#5a1b24;border-color:#c0392b" onclick="sacrifie()">🔪 Sacrifier 5 PV : 2 sceaux brisés</button></div>` : ''}`; }
+function relFen() { fenetre(`<h2>🏺 Tes reliques</h2>${Object.keys(S.rel).map(x => D.RELIQUES[x] ? `<p>${D.RELIQUES[x].e} <b>${D.RELIQUES[x].n}</b> : ${D.RELIQUES[x].d}</p>` : '').join('')}<button class="go" onclick="fenetre('')">Compris</button>`); }
+function sacrifie() { const avant = S.tombes; histo.push(JSON.stringify(S)); if (C.couteau(S)) { son('gros'); bulle('🔪 Sacrifice !'); apresCoup(avant); } else { histo.pop(); bulle('Impossible ici.', true); } dessine(); }
 // 28/11 : la ligne des COMBOS du tour (Descente) : allumée quand le combo est fait ; toucher = l'explication
 function combosHTML() { if (!S.combosOn) return ''; const f = S.combos || {};
   return `<div class="combosL" onclick="combosFen()">${C.COMBOS.map(c => `<span class="${f[c.k] ? 'on' : ''}">${c.e} ${c.n}</span>`).join('')}</div>`; }
