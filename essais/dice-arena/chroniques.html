@@ -93,7 +93,7 @@
   @keyframes lueurM { 50% { opacity:.15; } } .c.meuble-peint .fm { position:absolute; right:6%; bottom:6%; font-size:calc(var(--t) * .28); color:var(--ok); text-shadow:0 0 4px #000; }
   .escfl { position:absolute; inset:-6% -6% auto auto; z-index:7; background:#1c1c36ee; border:1px solid var(--or); color:var(--or); border-radius:8px; padding:0 .25em; font-size:calc(var(--t) * .2); pointer-events:none; line-height:1.25; text-align:center; } .escfl small { display:block; font-size:.62em; color:#fff; }
   .c.porte.peinte { box-shadow:none; filter:none; } .c.porte.peinte.cible { box-shadow:inset 0 0 0 3px #ffd36a, 0 0 14px #ffd36a; }
-  .c.noir { background:#05050a !important; filter:none; } .c.noir > * { display:none; }
+  .c.noir { background:#05050a !important; filter:none; } .c.noir > * { display:none; } .c.noir > .piege-vu { display:block; } .c .o.piege-vu { position:relative; z-index:3; animation:piegeVu 1.6s ease-in-out infinite; } .c .o.meuble-p { position:absolute; right:0; top:0; font-size:calc(var(--t) * .4); } @keyframes piegeVu { 50% { transform:scale(1.15); filter:drop-shadow(0 0 .8cqw #ff5a3c); } }
   .c.porte { background:#5a3412; box-shadow:inset 0 0 0 .4cqw #2a1808; } .c.porte.bronze { background:#7a5a1a; } .c.porte.ouverte { background:url('decor/tuile-sol-brulees.webp') 0 0 / calc(var(--t) * 4) calc(var(--t) * 4); }
   .c .o { font-size:calc(var(--t) * .62); filter:drop-shadow(0 .4cqw .4cqw #000); }
   .c .o.fait { opacity:.35; filter:grayscale(1); }
@@ -806,6 +806,11 @@ function dessine() {
       if (R.grille && x === R.grille.x && y === R.grille.y) inner = objImg('grille', K.grilleOuverte(S) ? 'ouverte' : '');
       if (R.grille && x === R.grille.dx && y === R.grille.dy) inner = objImg('dalle', 'dalle') + inner;
       if ((R.os || []).some(z => z.x === x && z.y === y)) inner += objImg('tasdos'); }
+    // 28/11 (l'utilisateur : « l'ultime d'Oria révèle tous les pièges : on n'a vu aucune icône, mon ami a pris un piège ») : un piège dévoilé se voit
+    // PARTOUT, même sur une carte peinte (Terres brûlées) et même dans le noir ; un meuble piégé dévoilé porte aussi un ⚠️
+    if (o && o.t === 'piege' && !o.trouve && o.vu && !inner.includes('⚠️')) inner += '<span class="o piege-vu">⚠️</span>';
+    else if (o && o.t === 'piege' && !o.trouve && !inner.includes('👓') && !inner.includes('⚠️') && (voitPieges || h.id === 'oria' && Math.abs(h.x - x) + Math.abs(h.y - y) <= 2)) inner += '<span class="o">👓</span>';
+    if (o && o.meuble && o.piegeVu && !o.fouille) inner += '<span class="o piege-vu meuble-p">⚠️</span>';
     if (R.plan === 2 && R.liens[c] && vu) { const ly = +R.liens[c].split(',')[1]; inner += `<span class="escfl" title="${esc(K.etageDe(S, ly))}">${ly < y ? '⬆' : '⬇'}<small>${S.heros[actif].x === x && S.heros[actif].y === y ? (ly < y ? 'monter' : 'descendre') : esc(K.etageDe(S, ly).replace('Rez-de-chaussée', 'RDC').replace('Le sommet', 'sommet'))}</small></span>`; } // 16/11 : le sens de l'escalier écrit en clair
     // 16/11 : le BOUT d'un couloir sans issue (image Gemini couloir-impasse : mur à droite, tournée vers le côté fermé)
     if (R.plan === 2 && vu && !mur && !p && !R.salle[c] && !(R.liens && R.liens[c])) { const ouv = [[-1, 0, 0], [0, -1, 90], [1, 0, 180], [0, 1, 270]].filter(([dx, dy]) => { const q = K.cle(x + dx, y + dy); return x + dx >= 0 && y + dy >= 0 && x + dx < R.w && y + dy < R.h && !R.murs[q]; });
