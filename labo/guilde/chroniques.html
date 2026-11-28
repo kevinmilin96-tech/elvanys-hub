@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261128-200921"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
+<head><meta name="guilde-version" content="20261128-201335"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="robots" content="noindex">
@@ -168,7 +168,8 @@
   .bulle.longue { font-size:min(4.2vw, 21px); width:88vw; text-align:center; animation-duration:3s; }
   .de.sel { transform:translateY(-2.5cqw) scale(1.08); } .de.sel img { filter:drop-shadow(0 0 2cqw var(--ok)); }
   .aide { text-align:center; font-size:2.9cqw; color:var(--doux); min-height:8cqw; } .aide b { color:var(--ok); }
-  .actions { display:flex; gap:2cqw; margin-top:1cqw; }
+  .actions { display:flex; flex-wrap:wrap; gap:2cqw; margin-top:1cqw; } /* 28/11 (l'utilisateur : « en bas on voit pas toutes les cases ») : les boutons passent à la ligne au lieu de sortir de l'écran */
+  .actions > button, .actions .pw, .actions .sec { flex:1 1 26% !important; min-width:0; } .pasinfo { overflow-wrap:anywhere; }
   .actions button { flex:1; border-radius:3cqw; padding:2.4cqw; font-size:3.4cqw; font-weight:bold; border:2px solid #45457a; background:#1c1c36; }
   .actions .fin { background:var(--or); color:#2b1d0a; border-color:var(--or); }
   .sac { display:flex; gap:1.5cqw; justify-content:center; flex-wrap:wrap; margin:0 0 1cqw; font-size:2.8cqw; } .sac button { background:#2a2a14; border:1px solid #8a7a3a; border-radius:2cqw; padding:1cqw 2cqw; color:#ffe9a8; }
@@ -551,7 +552,7 @@ function recoit(d) {
   if (depart) { son('portail'); dialogue(S.campagne != null ? CHAPITRES[S.campagne].titre : SCT().titre, [S.campagne != null ? CHAPITRES[S.campagne].avant : SCT().ouverture, SCT().entree()]); return; }
   // 17/11 (l'utilisateur : « pour les tours des amis, j'aimerais voir les lancers de dés ») : le lancer d'un ami se rejoue chez moi
   if (!depart && S.lances && S.lances.t === S.tours) S.lances.l.filter(i => !mesHeros().includes(i) && !(lancesAvant && lancesAvant.t === S.lances.t && lancesAvant.l.includes(i))).forEach(i => lancerAmi(i));
-  if (!depart && mAvant && !(S.animM && S.animM.n === vuAnim && occupe)) coupsAmis(mAvant, pvAvant, jAvant);
+  if (!depart && mAvant && !(S.animM && S.animM.n === vuAnim && occupe)) { try { coupsAmis(mAvant, pvAvant, jAvant); } catch (e) { console.warn('[chroniques] coups des amis', e); } } // 28/11 : une animation ratée ne doit jamais empêcher la fin de partie
   else if (S.journal[0] && S.journal[0] !== avant) bulle(S.journal[0].replace(/^[^ ]+ /, ''));
   if (L) annonceTour();
   if (S.fin) finPartie();
@@ -652,7 +653,7 @@ const imgH = (z, cl) => `<img ${cl || ''} src="${z.portrait || `portraits/${z.id
 
 // ------------------------------------------------------------------ le dessin
 const SCX = { ex:s => `${s.v}`, min:s => `≥ ${s.v}`, max:s => `≤ ${s.v}`, pair:() => '<small>pair</small>', imp:() => '<small>impair</small>', tot:s => `Σ ${s.reste}`, any:() => '✶' };
-function sceauTxt(s, L) { if (s.ok) return s.t === 'tot' ? `Σ ${s.val}` : (s.val || '✓'); if (s.t === 'dbl') { const j = L.find(x => x !== s && x.t === 'dbl' && x.g === s.g && x.ok); return j && j.val ? `= ${j.val}` : '<small>jumeau</small>'; } return SCX[s.t](s); }
+function sceauTxt(s, L) { if (s.ok) return s.t === 'tot' ? `Σ ${s.val}` : (s.val || '✓'); if (s.t === 'dbl') { const j = L.find(x => x !== s && x.t === 'dbl' && x.g === s.g && x.ok); return j && j.val ? `= ${j.val}` : j ? '<small>jumeau · tout dé</small>' : '<small>jumeau</small>'; } return SCX[s.t](s); }
 const OBJ_E = { bouclier:'🛡️', cle:'🔧', lunettes:'👓' };
 function invH(z) { return (z.porte ? K.objE(S) : '') + (z.objet ? OBJ_E[z.objet] : '') + (z.sac || []).map(it => K.SAC[it].e).join('') + (z.flamme ? '🔥' : ''); }
 // 16/11 (retour de l'utilisateur : « je ne retrouve nulle part mes objets ») : ce que porte le héros choisi, toujours visible

@@ -1,5 +1,9 @@
 [
 {
+"v": "20261128-201335",
+"m": "Chroniques : boutons du bas toujours visibles, sceau jumeau plus clair, fin de partie qui arrive chez tout le monde"
+},
+{
 "v": "20261128-200334",
 "m": "Chroniques, Terres brûlées : c'est bien le Titan de feu qui se réveille, riposte et tombe"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261128-153815",
 "m": "Salon : la salle d'attente défile à nouveau, et un bouton « Retour au salon » ramène du Duel"
-},
-{
-"v": "20261128-153351",
-"m": "Entre amis : crée un salon, invite ton ami, puis choisis dans le salon les Chroniques ou un Duel"
 }
 ]
