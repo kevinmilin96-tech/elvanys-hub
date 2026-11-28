@@ -40,6 +40,7 @@ const POUVOIRS = {
 };
 // les monstres (vitesse en cases par seconde ; dg = coups au rempart)
 const MONSTRES = {
+  dore:{ n:'Gobelin doré', e:'🪙', pv:40, vit:1.0, dg:0, d:'Il fonce sans s’arrêter et ne frappe pas le rempart. Abattu, il lâche une pluie de ◆.', contre:'Toutes les tours : vite, il est rapide !' },
   gobelin:{ n:'Gobelin', e:'👺', pv:16, vit:.55, dg:2, d:'Peu de vie, assez rapide.', contre:'N’importe quelle tour : il est fragile.' },
   sanglier:{ n:'Sanglier', e:'🐗', pv:48, vit:.32, dg:4, d:'Beaucoup de vie, lent.', contre:'Le canon 💣 et, plus tard, le poison ☠.' },
   chauve:{ n:'Chauve-souris', e:'🦇', pv:20, vit:.6, dg:2, vol:true, d:'Elle vole : les boulets du canon passent dessous.', contre:'Les archers 🏹 et le givre ❄ la touchent.' },
@@ -133,7 +134,7 @@ function nouvelle(heros, niveau, o) {
   const S = { heros, niveau, L, rng, f, puiss:Math.max(1, o.force || 1), fBoss:fs * (o.pvBoss || 1), t:0, energie:R.energieDepart, eAcc:0, rempart:R.rempart, rempartMax:R.rempart,
     cases:Array(NC * NR).fill(null), monstres:[], file:[], des:[], deT:R.deDelai, jauge:0, ultimes:0, bowling:L.bowling ? 1 : 0,
     kills:0, fini:null, fx:[], log:[], effets:{}, vus:{}, puitsGratuit:heros === 'pip', gelPartout:0,
-    cristaux:[], ramasses:0, perdus:0, sortT:R.sortDepart, sorts:0, murs:[], pieges:[], detours:[], besace:[], deObjet:0, appels:0, bati:0, bowlings:0, perteMax:0,
+    cristaux:[], ramasses:0, perdus:0, sortT:R.sortDepart, sorts:0, evtT:30, cadeau:null, orage:0, defi:null, murs:[], pieges:[], detours:[], besace:[], deObjet:0, appels:0, bati:0, bowlings:0, perteMax:0,
     batiSortes:{}, passes:0, passe:{}, tues:{}, runesBaties:0, speFaites:0, annonce:false, vagueVue:-1,
     adapt:1, adaptOn:o.adapt !== false, vStat:L.vagues.map(() => ({ pertes:0, morts:[], vus:0, finis:0, n:0 })), adaptLog:[] };
   L.vagues.forEach((v, iv) => { S.vStat[iv].n = v[1].length; });
@@ -185,7 +186,7 @@ const rendDemolir = t => Math.floor((t.paye || 0) / 2);
 function poserDe(S, k, i) {
   if (S.fini) return 'Le niveau est fini.'; const d = S.des[k], t = S.cases[i];
   if (!d) return 'Choisis un dé.'; if (!t || t.puits || t.rune) return 'Un dé se pose sur une tour de sa face.';
-  if (t.v !== d.v) return `Ce dé de ${d.v} fait monter une ${SORTES[d.v].n.toLowerCase()}.`;
+  if (t.v !== d.v && !d.or) return `Ce dé de ${d.v} fait monter une ${SORTES[d.v].n.toLowerCase()}.`;
   if (t.niv >= R.nivMax && t.et >= R.etoileMax) return 'Cette tour est au maximum.';
   S.des.splice(k, 1);
   if (t.niv < R.nivMax) { t.niv++; log(S, `⬆ ${nomTour(t)}.`); } else { t.et++; log(S, `★ ${nomTour(t)}.`); }
@@ -307,6 +308,49 @@ function poserObjet(S, n, c, y, choix) {
   S.besace.splice(n, 1); S.objets = (S.objets || 0) + 1;
   fx(S, { t:'pose', k, c, y, v:k === 'detour' ? S.detours[S.detours.length - 1].v : null }); log(S, `${OBJETS[k].e} ${OBJETS[k].n} posé${k === 'barricade' ? 'e' : ''} (chemin ${c + 1}).`); return null;
 }
+// 28/11 (idée de l'utilisateur : « des choses qui pop de temps en temps pour garder le joueur à l'affût ») : LES ÉVÉNEMENTS.
+// Un toutes les 25-40 s comptées hors grosses vagues (≈ 1 par minute en tout) (le premier vers 30 s), jamais pendant une grosse vague ; jamais deux fois le même de suite.
+const EVTS = {
+  moustache:{ e:'🐈', n:'Moustache et sa bourse', d:'Touche-le avant qu’il parte : de l’énergie ou un dé de besace.', cadeau:4 },
+  aigle:{ e:'🦅', n:'L’aigle messager', d:'Touche-le : un dé d’or 🌟 qui fait monter n’importe quelle tour.', cadeau:5 },
+  dore:{ e:'🪙', n:'Le gobelin doré', d:'Il fonce ! Abats-le pour une pluie de ◆ (il ne frappe pas le rempart).' },
+  orage:{ e:'🌩', n:'L’orage', d:'15 s : la foudre frappe des monstres au hasard ; une tour touchée tire deux fois plus vite.' },
+  charge:{ e:'🐗', n:'La charge', d:'Un chef sanglier fonce sur le chemin marqué ▼ : une barricade ou un piège l’arrête !' },
+  defi:{ e:'🎯', n:'Le défi du marchand', d:'Abats 10 monstres en 20 s : un dé de besace.' },
+  destin:{ e:'🎲', n:'Le dé du destin', d:'Touche-le pour le lancer ! 5-6 : tes tours frappent +40 % pendant 15 s · 3-4 : +10 ◆ · 1-2 : trois gobelins de plus.', cadeau:6 },
+  etoile:{ e:'⭐', n:'L’étoile filante', d:'Touche-la : ton Ultime se remplit d’un coup.', cadeau:4 },
+};
+const grosseEnCours = S => S.grosses.some(k => S.t >= S.vT[k] - 8 && !(S.vStat[k] && S.vStat[k].fait));
+function lanceEvt(S) {
+  const L = Object.keys(EVTS).filter(k => k !== S.dernierEvt), k = L[Math.floor(S.rng() * L.length)], c = Math.floor(S.rng() * NC); S.dernierEvt = k; S.evts = (S.evts || 0) + 1;
+  if (EVTS[k].cadeau) S.cadeau = { id:++MID, k, t:EVTS[k].cadeau, max:EVTS[k].cadeau, y:.2 + S.rng() * .3 };
+  else if (k === 'dore') { S.file.push({ t:S.t + .5, m:'dore', c, vague:-1 }); S.file.sort((a, b) => a.t - b.t); }
+  else if (k === 'charge') { S.file.push({ t:S.t + 4, m:'sanglier*', c, vague:-1, charge:true }); S.file.sort((a, b) => a.t - b.t); }
+  else if (k === 'orage') { S.orage = 15; S.orageAcc = 0; }
+  else if (k === 'defi') S.defi = { t:20, k0:S.kills, but:10 };
+  fx(S, { t:'evt', k, c }); log(S, `${EVTS[k].e} ${EVTS[k].n} !`);
+}
+function eclair(S) { const v = S.monstres.filter(atteint); if (v.length) { const m = v[Math.floor(S.rng() * v.length)]; frappe(S, m, S.f * 25, { perce:true, voit:true }); fx(S, { t:'eclair', id:m.id }); }
+  if (S.rng() < .35) { const L = S.cases.map((t, i) => t && !t.puits && !t.rune ? i : -1).filter(i => i >= 0); if (L.length) { const i = L[Math.floor(S.rng() * L.length)]; S.cases[i].surch = 6; fx(S, { t:'surcharge', i }); } } }
+function evenements(S) {
+  if (S.cadeau) { S.cadeau.t -= PAS; if (S.cadeau.t <= 0) { fx(S, { t:'cadeauPerdu', k:S.cadeau.k }); S.cadeau = null; } }
+  if (S.orage > 0) { S.orage -= PAS; S.orageAcc += PAS; if (S.orageAcc >= 1.5) { S.orageAcc = 0; eclair(S); } }
+  if (S.defi) { S.defi.t -= PAS; if (S.kills - S.defi.k0 >= S.defi.but) { S.deObjet++; fx(S, { t:'defiOk' }); log(S, '🎯 Défi réussi : un dé de besace !'); S.defi = null; }
+    else if (S.defi.t <= 0) { fx(S, { t:'defiRate' }); S.defi = null; } }
+  if (S.cadeau || S.orage > 0 || S.defi || grosseEnCours(S) || S.t > S.fin) return;
+  S.evtT -= PAS; if (S.evtT <= 0) { lanceEvt(S); S.evtT = 25 + S.rng() * 15; }
+}
+function toucherCadeau(S) {
+  const x = S.cadeau; if (!x || S.fini) return null; S.cadeau = null; const r = { k:x.k };
+  if (x.k === 'moustache') { if (S.rng() < .5) { S.energie = Math.min(R.energieMax, S.energie + 10); r.txt = '+10 ◆'; } else { S.deObjet++; r.txt = 'un dé de besace 🎲'; } }
+  else if (x.k === 'aigle') { if (S.des.length < R.desMax) { S.des.push({ id:++MID, v:0, or:true }); r.txt = 'un dé d’or 🌟 : il monte n’importe quelle tour'; } else { S.energie = Math.min(R.energieMax, S.energie + 10); r.txt = '+10 ◆ (réserve de dés pleine)'; } }
+  else if (x.k === 'etoile') { S.jauge = R.jaugeMax; r.txt = 'ton Ultime est plein !'; }
+  else if (x.k === 'destin') { const f = 1 + Math.floor(S.rng() * 6); r.f = f;
+    if (f >= 5) { S.effets.destin = 15; r.txt = 'tes tours frappent +40 % pendant 15 s !'; }
+    else if (f >= 3) { S.energie = Math.min(R.energieMax, S.energie + 10); r.txt = '+10 ◆'; }
+    else { for (let j = 0; j < 3; j++) S.file.push({ t:S.t + 1 + j * .8, m:'gobelin', vague:-1 }); S.file.sort((a, b) => a.t - b.t); r.txt = 'trois gobelins de plus… courage !'; r.mal = true; } }
+  log(S, `${EVTS[x.k].e} ${EVTS[x.k].n}${r.f ? ' (' + r.f + ')' : ''} : ${r.txt}`); return r;
+}
 // 27/11 soir : le SORT du héros posé au doigt (c = chemin 0-4, y = hauteur en cases)
 function sort(S, c, y) {
   if (S.fini) return 'Le niveau est fini.'; if (S.sortT > 0) return `Le sort se recharge (${Math.ceil(S.sortT)} s).`;
@@ -378,7 +422,7 @@ function apparait(S, x) {
   const elite = x.m.endsWith('*'), t = elite ? x.m.slice(0, -1) : x.m, B = MONSTRES[t];
   const ad = B.boss ? Math.max(.9, Math.min(1.1, S.adapt)) : S.adapt; // la difficulté qui s'adapte (le boss : ±10 % au plus)
   const c = x.c != null ? x.c : Math.floor(S.rng() * NC), pv = Math.round(B.pv * (B.boss ? S.fBoss : S.f) * (elite ? ELITE.pv : 1) * ad);
-  const m = { id:++MID, t, c, y:HAUT, pv, pvMax:pv, elite, lent:0, poison:null, racine:0, change:B.boss ? 14 : 0, vague:x.vague };
+  const m = { id:++MID, t, c, y:HAUT, pv, pvMax:pv, elite, lent:0, poison:null, racine:0, change:B.boss ? 14 : 0, vague:x.vague, vitX:x.charge ? 2.4 : 1, charge:!!x.charge };
   S.monstres.push(m); fx(S, { t:'arrive', id:m.id });
   // 27/11 soir (l'utilisateur perdait des PV sans comprendre) : un monstre qui descend un chemin SANS tour qui tire est signalé en haut du chemin
   if (!B.boss && !defendu(S, c)) fx(S, { t:'vide', c });
@@ -390,7 +434,7 @@ function mul(S, t, i) {
   let k = 1; const h = S.heros;
   if (h === 'maelle' && (t.v === 4 || t.v === 6)) k *= 1.25;
   if (h === 'zephine' && (t.v === 1 || t.v === 2)) k *= 1.4;
-  if (t.echo > 0) k *= 1.3; if (S.effets.cri > 0) k *= 1.5;
+  if (t.echo > 0) k *= 1.3; if (S.effets.cri > 0) k *= 1.5; if (S.effets.destin > 0) k *= 1.4;
   const rn = runesAutour(S, i); rn.forEach(r => { k *= 1 + R.runeBonus * r.rv; });
   if (comboChemin(S, i % NC) === t.v) k *= 1 + R.comboBonus;
   if (t.spe) k *= ({ '1b':1.5, '3b':1.25, '4b':1.7, '5b':1.5, '6a':1.3 })[t.v + t.spe] || 1;
@@ -402,7 +446,7 @@ const effetsPaire = (S, i) => new Set(runesAutour(S, i).map(r => r.paire));
 function comboChemin(S, c) { const n = {}; for (let r = 0; r < NR; r++) { const t = S.cases[ix(c, r)]; if (t && t.v) n[t.v] = (n[t.v] || 0) + 1; } const v = Object.keys(n).find(k => n[k] >= 3); return v ? +v : 0; }
 // la force du héros (niveau, rang, équipement : forceSuiveuse) rend ses tours plus fortes ; les monstres suivent à 40 % (règle de la maison)
 function degat(S, t, i) { return SORTES[t.v].dg * R.niv[t.niv] * (1 + R.etoile * t.et) * mul(S, t, i) * (S.puiss || 1); }
-function cadence(S, t, i) { let c = SORTES[t.v].cad; if (t.spe === 'a' && t.v === 3) c /= 1.6; if (t.spe === 'b' && t.v === 4) c *= 1.25; if (S.heros === 'oria' && t.v === 3) c /= 1.12; if (effetsPaire(S, i).has(3)) c /= 1.3; if (S.effets.rapide > 0) c /= 2; return c; }
+function cadence(S, t, i) { let c = SORTES[t.v].cad; if (t.spe === 'a' && t.v === 3) c /= 1.6; if (t.spe === 'b' && t.v === 4) c *= 1.25; if (S.heros === 'oria' && t.v === 3) c /= 1.12; if (effetsPaire(S, i).has(3)) c /= 1.3; if (S.effets.rapide > 0) c /= 2; if (t.surch > 0) c /= 2; return c; }
 // 27/11 soir : le mineur est SOUS TERRE sur 2 cases (en haut des tours) ; le spectre n'est visible que près d'une tour de foudre
 const sousTerre = m => M(m).mineur && m.y > 3 && m.y <= 5;
 const atteint = m => !m.mort && !sousTerre(m);
@@ -423,6 +467,7 @@ function frappe(S, m, dg, o = {}) {
   if (m.pv <= 0) meurt(S, m);
 }
 function meurt(S, m) { m.mort = true; m.mortT = S.t; S.kills++; S.energie += 1;
+  if (m.t === 'dore') { for (let j = 0; j < 4; j++) jaillit(S, Math.max(0, Math.min(NC - 1, m.c + (j % 3) - 1)), Math.max(.5, m.y + (j - 1.5) * .6), 3); fx(S, { t:'dore', id:m.id }); log(S, '🪙 Le gobelin doré est abattu : une pluie de ◆ !'); }
   if (m.t === 'chauve' && m.lent > 0) S.tues.chauveLent = (S.tues.chauveLent || 0) + 1; if (m.t === 'troll' && m.poison) S.tues.trollPoison = (S.tues.trollPoison || 0) + 1; if (S.vStat[m.vague]) S.vStat[m.vague].morts.push(m.y); finiVague(S, m);
   if (!M(m).boss && S.rng() < R.cristalChance) jaillit(S, m.c, Math.max(.4, m.y), R.cristalMonstre);
   if (m.poison && m.poison.peste) S.monstres.forEach(x => { if (atteint(x) && x !== m && !M(x).antiPoison && Math.hypot(x.c - m.c, x.y - m.y) <= 1.3) x.poison = { dps:m.poison.dps, t:4, peste:true }; }); S.jauge = Math.min(R.jaugeMax, S.jauge + (M(m).boss ? 4 : m.elite ? 2 : 1)); fx(S, { t:'meurt', id:m.id }); if (M(m).boss) log(S, `💥 ${M(m).n} est tombé !`); }
@@ -452,6 +497,7 @@ function etape(S) {
   // les dés : un toutes les 8 s, réserve de 3 (si la réserve est pleine, le dé attend)
   if (S.des.length < R.desMax) { S.deT -= PAS; if (S.deT <= 0) { S.deT = R.deDelai; const v = tireDe(S); S.des.push({ id:++MID, v }); fx(S, { t:'de', v }); } }
   for (const k in S.effets) if (S.effets[k] > 0) S.effets[k] -= PAS;
+  evenements(S);
   if (S.sortT > 0) S.sortT -= PAS;
   // les runes ◆ qui flottent : elles s'éteignent après 6 s
   for (const x of S.cristaux) x.t -= PAS;
@@ -471,7 +517,7 @@ function etape(S) {
     if (t.puits) { t.acc += PAS * (S.heros === 'pip' ? 1.2 : 1); if (t.acc >= R.puitsDelaiC) { t.acc -= R.puitsDelaiC; jaillit(S, i % NC, Math.floor(i / NC) + .5, R.cristalPuits); fx(S, { t:'puits', i }); } return; }
     if (t.rune) return;
     if (t.spe === 'a' && t.v === 1) { const r = Math.floor(i / NC); S.monstres.forEach(m => { if (m.c === i % NC && m.y > r + .5 && m.y < r + 4.5 && atteint(m) && !M(m).boss) m.lent = Math.max(m.lent, .2); }); }
-    if (t.echo > 0) t.echo -= PAS; if (t.pw > 0) t.pw -= PAS;
+    if (t.echo > 0) t.echo -= PAS; if (t.pw > 0) t.pw -= PAS; if (t.surch > 0) t.surch -= PAS;
     t.cd -= PAS; if (t.cd <= 0) { if (tir(S, t, i)) t.cd = cadence(S, t, i); else t.cd = 0.1; }
   });
   // les monstres
@@ -480,7 +526,7 @@ function etape(S) {
     if (m.poison) { m.pv -= m.poison.dps * PAS; m.poison.t -= PAS; if (m.poison.t <= 0) m.poison = null; if (m.pv <= 0) { meurt(S, m); continue; } }
     else if (B.regen) m.pv = Math.min(m.pvMax, m.pv + B.regen * S.f * PAS);
     if (m.touche > 0) m.touche -= PAS;
-    let v = B.vit; if (m.lent > 0) { m.lent -= PAS; v *= .5; }
+    let v = B.vit * (m.vitX || 1); if (m.lent > 0) { m.lent -= PAS; v *= .5; }
     const combo = comboChemin(S, m.c); if (combo === 1 && !B.boss) v *= .65; if (combo === 2 && !B.antiPoison && !m.poison) m.poison = { dps:1 * S.f, t:1 };
     if (m.marque > 0) m.marque -= PAS;
     if (m.racine > 0) { m.racine -= PAS; v = 0; }
@@ -514,7 +560,7 @@ const etoiles = S => S.fini !== 'gagne' ? 0 : S.rempart >= S.rempartMax * .75 ? 
 const avancement = S => Math.min(1, S.t / (S.fin + 8));
 const posVague = (S, k) => Math.min(1, S.vT[k] / (S.fin + 8)); // la place du drapeau de la vague k sur la barre
 
-const API = { pouvoirPret, OBJETS, lancerObjet, poserObjet, voisinFort, PAS, NC, NR, HAUT, R, SORTES, PUITS, EFFET_PAIRE, POUVOIRS, MONSTRES, ELITE, HEROS_R, NIVEAUX, SORTS_R, SPE, DEFIS,
+const API = { EVTS, toucherCadeau, pouvoirPret, OBJETS, lancerObjet, poserObjet, voisinFort, PAS, NC, NR, HAUT, R, SORTES, PUITS, EFFET_PAIRE, POUVOIRS, MONSTRES, ELITE, HEROS_R, NIVEAUX, SORTS_R, SPE, DEFIS,
   nouvelle, batir, deplacer, demolir, rendDemolir, poserDe, poserPaire, jeterDe, bowling, ultime, pouvoir, etape, avance,
   ramasser, monterEnergie, acheterDe, prixMonter, PRIX_DE, appelInfo, appelVague, sort, specialiser, medailles, sousTerre, revele, posVague,
   annonces, defendu, etoiles, avancement, prixDe, nomTour, voisins, comboChemin, runesAutour, degat, cadence, ix };
