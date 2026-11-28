@@ -1,5 +1,9 @@
 [
 {
+"v": "20261128-154026",
+"m": "Salon : choisir le Duel demande maintenant une confirmation"
+},
+{
 "v": "20261128-153921",
 "m": "Mes amis : l'invitation part bien quand on crée un salon depuis la fiche d'un ami"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261128-004102",
 "m": "Rempart : des niveaux plus longs (4 à 5 min) avec 3 grosses vagues annoncées et une accalmie pour bâtir après chacune"
-},
-{
-"v": "20261128-003009",
-"m": "Rempart : le niveau de chaque tour se lit en grand (couleur selon le niveau), et le ✦ du pouvoir n'apparaît plus que sur une tour par sorte"
 }
 ]
