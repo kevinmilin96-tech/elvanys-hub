@@ -89,6 +89,7 @@ function dlSalle() {
     <div class="choixh" style="flex-direction:column">
       ${dlHote() ? `<button class="or" ${pret ? '' : 'disabled style="opacity:.5"'} onclick="dlLance()">▶ Lancer le duel${pret ? '' : ' (chacun choisit son héros)'}</button>`
         : `<p style="text-align:center;color:#c9c1ea">⏳ ${pret ? `En attente du lancement par <b>${dlNomDe(DLOB.hote)}</b>…` : 'Choisis ton héros ; l’hôte lancera le duel.'}</p>`}
+      ${localStorage.getItem('guilde-salon-retour') ? `<button onclick="location.href='chroniques.html?salle=${localStorage.getItem('guilde-salon-retour')}'">↩ Retour au salon</button>` : ''}
       <button onclick="if(confirm('Quitter la salle ?')){dlQuitte()}">‹ Quitter la salle</button></div>`);
 }
 function dlQuitte() { DL = null; DLOB = null; window.SALLE_ACTIVE = ''; try { localStorage.removeItem(DL_SALLE); } catch (e) {} location.href = 'menu.html#enligne'; }

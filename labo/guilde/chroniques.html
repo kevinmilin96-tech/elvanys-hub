@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261128-153351"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
+<head><meta name="guilde-version" content="20261128-153815"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="robots" content="noindex">
@@ -1426,7 +1426,9 @@ function ajouteLobby(k) {
 function retireLobby(eid) { son('choisir'); lobbyPousse(X => { X.equipe = X.equipe.filter(x => x.id !== eid); }); }
 function choixScenLobby(scen, camp) { if (!estHote()) return; son('choisir'); lobbyPousse(X => { X.scen = scen; X.camp = camp == null ? null : camp; }); }
 function salleAttente() {
-  if (!L || !LOB) return;
+  if (!L || !LOB) return; if (typeof CFG !== 'undefined' && CFG.ferme) CFG.ferme(); // 28/11 : le configurateur resté ouvert (arrivée par « Créer un salon ») bloquait le défilement
+  if (estHote() && LOB.versDuel) lobbyPousse(l => { delete l.versDuel; }); // l'hôte revenu du Duel : le salon redevient le salon
+  if (!Array.isArray(LOB.equipe)) { if (LOB.mode === 'duel') { location.href = 'duel.html?salle=' + L.code; return; } LOB.equipe = []; }
   const hote = estHote(), c = hote ? lireCamp() : null, titreScen = LOB.camp != null ? (LOB.camp === 'nouvelle' ? CHAPITRES[0].titre : (CHAPITRES[LOB.camp] || {}).titre) : SCX_TXT[LOB.scen].titre;
   const pris = new Set(LOB.equipe.filter(e => e.owner === L.moi.id).map(e => e.cle));
   const dispo = Object.keys(H).filter(k => !(k === 'zephine' && !ZEPH_OK())).map(k => [k, H[k].n, `portraits/${k}.webp`, `portraits/${k}.webp`]).concat(avLire().map(a => ['av:' + a.id, a.nom, avPortrait(a), avPortraitSecours(a)]));
@@ -1465,10 +1467,10 @@ async function versDuel() {
   const moiD = { id:L.moi.id, nom:L.moi.nom || 'Hôte' };
   try { const { statut, d } = await api('POST', API, { mode:'duel', etat:{ lobby:{ mode:'duel', hote:moiD.id, choix:{} } }, joueurs:[{ id:moiD.id, nom:moiD.nom, heros:[] }] });
     if (statut !== 200) { bulle(d.message || 'Impossible de créer le duel.', true); return; }
-    localStorage.setItem('guilde-duel-salle', JSON.stringify({ code:d.code, moi:moiD, t:Date.now() }));
+    localStorage.setItem('guilde-duel-salle', JSON.stringify({ code:d.code, moi:moiD, t:Date.now() })); localStorage.setItem('guilde-salon-retour', L.code);
     await lobbyPousse(l => { l.versDuel = d.code; }); location.href = 'duel.html?ami=1';
   } catch (e) { bulle('Pas de réseau.', true); } }
-const suisDuel = () => { if (LOB && LOB.versDuel && !estHote()) { location.href = 'duel.html?salle=' + LOB.versDuel; return true; } return false; };
+const suisDuel = () => { if (LOB && LOB.versDuel && !estHote() && sessionStorage.getItem('guilde-duel-vu') !== LOB.versDuel) { sessionStorage.setItem('guilde-duel-vu', LOB.versDuel); localStorage.setItem('guilde-salon-retour', L.code); location.href = 'duel.html?salle=' + LOB.versDuel; return true; } return false; };
 // l'hôte lance : la partie est créée sur son téléphone et envoyée à tous
 async function lanceSalle() {
   if (!estHote() || !LOB.equipe.length) return;

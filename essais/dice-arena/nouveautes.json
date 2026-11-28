@@ -1,5 +1,9 @@
 [
 {
+"v": "20261128-153815",
+"m": "Salon : la salle d'attente défile à nouveau, et un bouton « Retour au salon » ramène du Duel"
+},
+{
 "v": "20261128-153351",
 "m": "Entre amis : crée un salon, invite ton ami, puis choisis dans le salon les Chroniques ou un Duel"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261128-002827",
 "m": "Rempart : une tour neuve attend aussi la recharge du pouvoir de sa sorte"
-},
-{
-"v": "20261128-002348",
-"m": "Rempart : le pouvoir se recharge pour toutes les tours de la même sorte à la fois (un Grand gel toutes les 20 s au plus)"
 }
 ]
