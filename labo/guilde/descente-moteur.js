@@ -319,7 +319,7 @@ function optsCombat(R, type) {
   if (df === 'rage') obj.forcePlus = (obj.forcePlus || 0) + 1;
   obj.besace = Math.max(-C.RESERVE, obj.besace || 0); // jamais moins de 0 place (sinon le moteur plante)
   return { cols, gardien:type === 'boss' ? 'seul' : false, etage:e, vies:type === 'boss' ? [0, 2, 3, 3][e] : 1, pv:R.pv, pvmax:R.pvmax, obj, comp:R.comp && R.comp.pv > 0 ? R.comp : null, or:R.or,
-    maitre, couleur, secours:!!R.obj.souffle && !R.souffleUtilise, consos:R.consos || [], regle:R.regle || null };
+    combos:true, maitre, couleur, secours:!!R.obj.souffle && !R.souffleUtilise, consos:R.consos || [], regle:R.regle || null };
 }
 // 15/11 soir : ce que crypte-moteur.js ne sait pas faire, ajouté juste après la création du combat : les monstres et le boss du thème,
 // le Gel / la Repousse des thèmes, le bouclier de la Garde et de la Glace, la Braise ardente, la forge des dés.

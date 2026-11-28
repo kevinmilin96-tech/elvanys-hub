@@ -1,5 +1,9 @@
 [
 {
+"v": "20261128-190656",
+"m": "La Descente : les combos de dés ! Une paire, un brelan ou une suite posés dans le même tour donnent un bonus, avec une animation"
+},
+{
 "v": "20261128-185807",
 "m": "La Descente : journal complet, objets rangés sur une ligne, réserve de compagnons, et un défi qui reste réel quand tu es très équipé"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261128-011110",
 "m": "Rempart : un début plus doux partout (Héroïque compris) : les premières vagues ne sont que des gobelins, le temps de t'installer"
-},
-{
-"v": "20261128-010955",
-"m": "Rempart : le mode Héroïque ! Rejoue un niveau gagné en bien plus dur pour gagner sa couronne 👑"
 }
 ]
