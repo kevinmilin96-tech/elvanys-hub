@@ -312,13 +312,17 @@ function fhZero(id) {
 }
 function fhZeroOk(id) { const r = remetAZero(id); fhFen(''); if (r === 'ok') { fhSon('magie'); fhBulle('🔄 Remis à zéro : tout est rendu'); } else fhBulle(r); FH.apres(); }
 
-// 28/11 (l'utilisateur : « mon portrait reste avec Zéphine partout ») : un héros d'aventure peut changer d'apparence (l'autre portrait de sa voie) depuis sa fiche
+// 28/11 (l'utilisateur : « mon portrait reste avec Zéphine partout » puis « j'aimerais que la capitaine soit partout ») : un héros d'aventure
+// choisit son apparence : les 2 portraits de sa voie, ou un des 10 portraits du profil (a.img) ; son portrait change partout
+const FH_AVATARS = [['01', 'La voyageuse', 'f'], ['02', 'Le forgeron', 'h'], ['03', 'L’archer elfe', 'h'], ['04', 'La cuisinière', 'f'], ['05', 'La mage des étoiles', 'f'], ['06', 'L’écuyer', 'h'], ['07', 'Le bricoleur', 'h'], ['08', 'Le nomade', 'h'], ['09', 'La capitaine', 'f'], ['10', 'La guerrière', 'f']];
 function fhApparence(id) {
-  const a = avTrouve(id); if (!a) return; const g = a.genre === 'f' ? 'h' : 'f', img = `portraits/av-${a.voie}-${g}.webp`;
-  const v = document.createElement('div'); v.className = 'fhapp-voile'; v.style.cssText = 'position:fixed;inset:0;z-index:2147483000;background:#000c;display:flex;align-items:center;justify-content:center;padding:16px';
-  v.innerHTML = `<div style="background:#1b1733;border:2px solid #f3c96b;border-radius:16px;padding:18px;max-width:360px;text-align:center;color:#f1ecff"><h3 style="margin:0 0 10px;color:#f3c96b">🎭 Nouvelle apparence pour ${a.nom}</h3>
-    <img src="${img}" style="width:200px;height:200px;border-radius:50%;object-fit:cover;border:3px solid #f3c96b"><p>Son portrait changera partout : combats, Chroniques, profil, amis. Ses niveaux, son équipement et ses pouvoirs ne bougent pas. On peut revenir en arrière quand on veut.</p>
-    <button style="background:#f3c96b;color:#2b1d0a;border:0;border-radius:10px;padding:10px 16px;font-weight:bold" onclick="avMaj('${id}', x => { x.genre = '${g}'; });location.reload()">Garder cette apparence</button>
-    <button style="margin-left:8px;background:#2a2550;color:#f1ecff;border:1px solid #6a5fb0;border-radius:10px;padding:10px 16px" onclick="this.closest('.fhapp-voile').remove()">Annuler</button></div>`;
+  const a = avTrouve(id); if (!a) return;
+  const choix = [['h', null, `portraits/av-${a.voie}-h.webp`, 'Lui'], ['f', null, `portraits/av-${a.voie}-f.webp`, 'Elle']].concat(FH_AVATARS.map(([n, nom, g]) => [g, 'avatar-' + n, `portraits/avatar-${n}.webp?v=1`, nom]));
+  const v = document.createElement('div'); v.className = 'fhapp-voile'; v.style.cssText = 'position:fixed;inset:0;z-index:2147483000;background:#000c;display:flex;align-items:center;justify-content:center;padding:12px';
+  v.innerHTML = `<div style="background:#1b1733;border:2px solid #f3c96b;border-radius:16px;padding:14px;max-width:420px;max-height:92vh;overflow:auto;text-align:center;color:#f1ecff"><h3 style="margin:0 0 6px;color:#f3c96b">🎭 L’apparence de ${a.nom}</h3>
+    <p style="margin:0 0 10px;font-size:.9em">Touche un portrait : il change partout (combats, Chroniques, profil, amis). Niveaux, équipement et pouvoirs ne bougent pas.</p>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">${choix.map(([g, img, src, nom], k) => { const on = (a.img || null) === img && (img || a.genre === g);
+      return `<button style="background:${on ? '#3a2f10' : '#2a2550'};border:2px solid ${on ? '#f3c96b' : '#6a5fb0'};border-radius:12px;padding:6px;color:#f1ecff;font-family:inherit;font-size:.78em" onclick="avMaj('${id}', x => { x.genre = '${g}'; ${img ? `x.img = '${img}'` : 'delete x.img'}; });location.reload()"><img src="${src}" style="width:100%;aspect-ratio:1;border-radius:50%;object-fit:cover"><br>${on ? '✔ ' : ''}${nom}</button>`; }).join('')}</div>
+    <button style="margin-top:12px;background:#2a2550;color:#f1ecff;border:1px solid #6a5fb0;border-radius:10px;padding:10px 16px;font-family:inherit" onclick="this.closest('.fhapp-voile').remove()">Fermer</button></div>`;
   document.body.appendChild(v);
 }

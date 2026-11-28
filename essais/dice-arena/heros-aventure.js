@@ -23,7 +23,7 @@ function haInfo(k) {
   const id = haEst(k) ? k.slice(3) : (typeof k === 'string' && k.startsWith('av') ? k : null);
   const a = haTrouve(id); if (!a) return null;
   return { cle:'av:' + a.id, id:a.id, av:a.id, voie:a.voie, nom:a.nom, genre:a.genre === 'f' ? 'f' : 'h', titre:haTitre(a), couleur:a.couleur || '#f3c96b',
-    img:`portraits/av-${a.voie}-${a.genre === 'f' ? 'f' : 'h'}.webp`, sec:`portraits/${a.voie}.webp` };
+    img:a.img ? `portraits/${a.img}.webp?v=1` : `portraits/av-${a.voie}-${a.genre === 'f' ? 'f' : 'h'}.webp`, sec:`portraits/${a.voie}.webp` };
 }
 // la VOIE jouée par le moteur ; un héros d'aventure disparu → défaut
 const haVoie = (k, defaut = 'maelle') => haEst(k) ? (haInfo(k) ? haInfo(k).voie : defaut) : (k || defaut);

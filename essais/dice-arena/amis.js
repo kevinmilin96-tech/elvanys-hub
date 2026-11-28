@@ -54,7 +54,7 @@ function amisMonProfil() {
   try {
     const p = lireProfil(), m = x => x ? { t:`${x[1]} ${x[2]}`, c:x[5] } : null;
     let portrait = p.portrait || '';
-    if (portrait.startsWith('av:')) { const a = typeof avTrouve === 'function' ? avTrouve(portrait.slice(3)) : null; portrait = a ? `av-${a.voie}-${a.genre}` : ''; }
+    if (portrait.startsWith('av:')) { const a = typeof avTrouve === 'function' ? avTrouve(portrait.slice(3)) : null; portrait = a ? (a.img || `av-${a.voie}-${a.genre}`) : ''; }
     if (!portrait) { try { const l = JSON.parse(localStorage.getItem('guilde-parties') || '[]'); portrait = (l.length && l[l.length - 1].moi) || ''; } catch (e) {} }
     const em = typeof EMBLEMES !== 'undefined' ? (EMBLEMES.find(x => x[0] === p.embleme) || [])[1] : '';
     let puissance = 0; if (typeof puissanceHeros === 'function') ['maelle', 'aldric', 'pip', 'oria', 'gorm', 'zephine'].forEach(id => { puissance = Math.max(puissance, puissanceHeros(id)); });

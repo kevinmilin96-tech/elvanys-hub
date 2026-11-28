@@ -63,7 +63,8 @@ function avStats(a) {
   return { niveau:n, pv:base + 2 * paliers, /* 19/11 : Robuste est devenu un Passif, compté par les Chroniques */ desPlus:n >= 10 ? 1 : 0, faces:[1, 2, 3, 4, 5, 6], bonus:(a.bonus || [0, 0, 0, 0, 0, 0]).slice(), talents:avTalents(a) };
 }
 // le portrait : ceux de la galerie (Gemini) s'ils existent, sinon le héros modèle de la voie
-const avPortrait = a => `portraits/av-${a.voie}-${a.genre}.webp`;
+// 28/11 (l'utilisateur : « j'aimerais que la capitaine soit partout ») : un héros d'aventure peut porter un des portraits du profil (a.img = 'avatar-NN')
+const avPortrait = a => a.img ? `portraits/${a.img}.webp?v=1` : `portraits/av-${a.voie}-${a.genre}.webp`;
 const avPortraitSecours = a => `portraits/${a.voie}.webp`;
 const avTitre = a => VOIES[a.voie] ? VOIES[a.voie][a.genre] : '';
 
