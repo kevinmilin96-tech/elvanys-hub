@@ -1,5 +1,9 @@
 [
 {
+"v": "20261128-010040",
+"m": "Route des rangs : la Cotte de mailles, le Heaume du gardien et l'Anneau des runes arrivent maintenant dans le coffre de Mes héros (aussi pour ceux déjà récupérés)"
+},
+{
 "v": "20261128-005605",
 "m": "Rempart : la besace a ses animations et ses sons (le dé roule, l'objet vole dans la besace, chaque objet a son effet)"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261127-192128",
 "m": "Rempart : les tours tombent sur leur case dans un nuage de poussière, et elles sont mieux proportionnées"
-},
-{
-"v": "20261127-185426",
-"m": "Le Rempart des runes a son décor peint : prairie, portail, cartes, puits, tours de glace et d'archers"
 }
 ]
