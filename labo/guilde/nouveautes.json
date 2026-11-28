@@ -1,5 +1,9 @@
 [
 {
+"v": "20261128-175827",
+"m": "La Descente : jusqu'à 3 parties en cours, une par héros si tu veux"
+},
+{
 "v": "20261128-171950",
 "m": "Chroniques : 3 emplacements de sauvegarde dans ⚙️ Paramètres pour enregistrer et reprendre tes parties"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261128-010040",
 "m": "Route des rangs : la Cotte de mailles, le Heaume du gardien et l'Anneau des runes arrivent maintenant dans le coffre de Mes héros (aussi pour ceux déjà récupérés)"
-},
-{
-"v": "20261128-005605",
-"m": "Rempart : la besace a ses animations et ses sons (le dé roule, l'objet vole dans la besace, chaque objet a son effet)"
 }
 ]

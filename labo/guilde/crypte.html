@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261128-171950"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
+<head><meta name="guilde-version" content="20261128-175827"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="robots" content="noindex">
@@ -557,7 +557,8 @@ function defCrypte() {
       { k:'descente', e:'🗺️', n:'La Descente', img:'menu-recu/mode-descente.webp',
         desc:() => 'Trois étages de cryptes : des combats obligatoires, des haltes au choix (marchand, feu de camp, événement, trésor), puis le boss de l’étage. Ta vie ne remonte presque pas toute seule !',
         pas:() => { const ren = lireRen(), P = D_PAL(); return [`🏅 Renommée ${ren} · ${P}`, `Étage le plus profond : ${E.etageMax || '—'}`]; },
-        partie:() => dg ? { texte:`${haEsc(herosS(dg).nom)} · étage ${dg.etage} · ❤ ${dg.S ? dg.S.pv : dg.pv}`, reprendre:'reprendDescente()', abandonner:"localStorage.removeItem('guilde-descente-partie')" } : null } ],
+        parties:() => [...(dg ? [{ texte:`${haEsc(herosS(dg).nom)} · étage ${dg.etage} · ❤ ${dg.S ? dg.S.pv : dg.pv}`, reprendre:'reprendDescente()', abandonner:"localStorage.removeItem('guilde-descente-partie')" }] : []),
+          ...(typeof descentesRangees === 'function' ? descentesRangees() : []).map((x, k) => ({ texte:`${haEsc(herosS(x).nom)} · étage ${x.etage} · ❤ ${x.S ? x.S.pv : x.pv}`, reprendre:`reprendDescente(${k})`, abandonner:`oublieRangee(${k})` }))] } ],
     options:m => m === 'jour' ? [
         { k:'p', titre:`${vj.e} Le plateau : ${vj.n}`, verrou:'imposé aujourd’hui', aide:vj.d },
         { k:'r', titre:`${rj.e} La règle du jour : ${rj.n}`, verrou:'imposée', aide:rj.d },
@@ -614,7 +615,7 @@ if (typeof GM !== 'undefined') { try { GM.musique('carte') /* 16/11 soir : la pi
 // 22/11 : le premier accueil est lancé après descente-ecran.js (le configurateur montre aussi la Descente)
 </script>
 <script src="configurateur.js?v=d5e9469a28"></script>
-<script src="descente-ecran.js?v=ccd00821a7"></script>
+<script src="descente-ecran.js?v=db4b201150"></script>
 <script src="guide.js?v=ceb10204e9"></script>
 <script src="guides-modes.js?v=e111523360"></script>
 <script>
