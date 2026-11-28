@@ -195,7 +195,10 @@ const POOL_PLUS = { pip:['rosee'], oria:['raccourci', 'guetteur'] };
 const DECK_TAILLE = 20, DECK_MAX = 2, DECKS_MAX = 3;
 // les 5 cartes de la Guilde du deck de base (avec les 15 du héros) : un soin, des Premiers soins, un ±1, un bouclier, une créature
 const BASE_GUILDE = ['potion', 'soins', 'ajuste', 'rond', 'chien'];
-const deckBase = id => HEROS[id].monstre ? [] : [...HEROS[id].deck, ...BASE_GUILDE].slice(0, DECK_TAILLE);
+// 28/11 (l'utilisateur : « je préfère » que Fez ait ses decks à lui) : un HÉROS D'AVENTURE ('av:<id>') a ses propres decks
+// (clé guilde-decks-av:<id>), mais ses cartes possibles sont celles de sa VOIE (le héros de base qu'il suit)
+const vDe = id => typeof id === 'string' && id.startsWith('av:') ? (typeof haVoie === 'function' ? haVoie(id) : (() => { try { const a = JSON.parse(localStorage.getItem('guilde-aventuriers') || '[]').find(x => x && 'av:' + x.id === id); return a ? a.voie : 'maelle'; } catch (e) { return 'maelle'; } })()) : id;
+const deckBase = id => (id = vDe(id), HEROS[id].monstre) ? [] : [...HEROS[id].deck, ...BASE_GUILDE].slice(0, DECK_TAILLE);
 const estLegendaire = k => !!(CARTES[k] && CARTES[k].leg);
 const maxDe = k => estLegendaire(k) ? 1 : DECK_MAX;
 // la collection : les cartes rencontrées pendant les Odyssées (gardées sur le téléphone), utilisables dans l'atelier du deck
@@ -204,9 +207,9 @@ const collectionCartes = () => { try { return JSON.parse(localStorage.getItem('g
 // est « nouvelle » ; au premier passage, tout ce qui est déjà là compte comme vu, sauf les cartes légendaires du Rang
 const VUES_CLE = 'guilde-cartes-vues';
 function cartesVues() { try { let v = JSON.parse(localStorage.getItem(VUES_CLE) || 'null'); if (!Array.isArray(v)) { v = collectionCartes().filter(k => !CARTES[k].leg); localStorage.setItem(VUES_CLE, JSON.stringify(v)); } return v; } catch (e) { return []; } }
-const cartesNouvelles = id => { const v = cartesVues(); return collectionCartes().filter(k => !v.includes(k) && (!id || !CARTES[k].heros || CARTES[k].heros === id)); };
+const cartesNouvelles = id => { const v = cartesVues(), h = id && typeof vDe === 'function' ? vDe(id) : id; return collectionCartes().filter(k => !v.includes(k) && (!h || !CARTES[k].heros || CARTES[k].heros === h)); };
 function marqueVues(ks) { if (!ks || !ks.length) return; try { const v = cartesVues(); ks.forEach(k => { if (!v.includes(k)) v.push(k); }); localStorage.setItem(VUES_CLE, JSON.stringify(v)); } catch (e) {} }
-const poolDe = id => [...new Set([...HEROS[id].deck, ...(POOL_PLUS[id] || []), ...GUILDE, ...collectionCartes().filter(k => !CARTES[k].heros || CARTES[k].heros === id)])];
+const poolDe = id => (id = vDe(id), [...new Set([...HEROS[id].deck, ...(POOL_PLUS[id] || []), ...GUILDE, ...collectionCartes().filter(k => !CARTES[k].heros || CARTES[k].heros === id)])]);
 function deckValide(id, d) {
   if (!Array.isArray(d) || d.length !== DECK_TAILLE) return false; const pool = poolDe(id), n = {};
   return d.every(k => { n[k] = (n[k] || 0) + 1; return pool.includes(k) && n[k] <= maxDe(k); });
@@ -215,6 +218,9 @@ function deckValide(id, d) {
 // L'ancien deck de 30 cartes (clé guilde-deck-<héros>) devient « Mon ancien deck », à ramener à 20 cartes.
 function lireDecks(id) {
   let D = null; try { D = JSON.parse(localStorage.getItem('guilde-decks-' + id) || 'null'); } catch (e) {}
+  if ((!D || !Array.isArray(D.decks)) && vDe(id) !== id) { // un héros d'aventure qui n'a pas encore de decks : il part d'une COPIE de ceux de sa voie
+    const V = lireDecks(vDe(id)); D = { decks:V.decks.map(d => Object.assign({}, d, { cartes:d.cartes.slice() })), actif:V.actif };
+    try { localStorage.setItem('guilde-decks-' + id, JSON.stringify(D)); } catch (e) {} }
   if (!D || !Array.isArray(D.decks)) {
     D = { decks:[], actif:-1 };
     try { const vieux = JSON.parse(localStorage.getItem('guilde-deck-' + id) || 'null'); if (Array.isArray(vieux) && vieux.length) D.decks.push({ nom:'Mon ancien deck', ic:'📜', cartes:vieux.filter(k => CARTES[k]) }); } catch (e) {}

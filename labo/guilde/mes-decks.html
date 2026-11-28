@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261128-011414"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
+<head><meta name="guilde-version" content="20261128-075453"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex">
@@ -75,7 +75,8 @@
 <div id="fen"></div>
 <script src="guide.js?v=ceb10204e9"></script>
 <script src="musique.js?v=fb0b9da49e"></script>
-<script src="donnees.js?v=8a39c05326"></script>
+<script src="heros-aventure.js?v=31db8c2ed4"></script>
+<script src="donnees.js?v=911da28260"></script>
 <script src="cartes.js?v=68497176d5"></script>
 <script>
 document.head.insertAdjacentHTML('beforeend', '<style>' + CSS_CARTE + '</style>');
@@ -84,7 +85,10 @@ const ICONES = ['🂠', '🔥', '🛡', '⚔', '🐺', '🌿', '⭐', '🎲', '�
 const q = new URLSearchParams(location.search);
 const ZOK = () => localStorage.getItem('guilde-tuto') === 'fait';
 const verrouille = id => id === 'zephine' && !ZOK();
-let actuel = HEROS[q.get('heros')] ? q.get('heros') : (localStorage.getItem('guilde-tour') || ORDRE[0]);
+// 28/11 : les HÉROS D'AVENTURE ont leurs propres decks ('av:<id>') ; HX(k) = la fiche à afficher (nom et couleur à lui, cartes de sa voie)
+const HX = k => { if (!haEst(k)) return HEROS[k]; const i = haInfo(k), v = haVoie(k); return Object.assign({}, HEROS[v], { nom:i ? i.nom : HEROS[v].nom, c:i ? i.couleur : HEROS[v].c }); };
+const okCle = k => !!(k && (HEROS[k] || (haEst(k) && haInfo(k))));
+let actuel = okCle(q.get('heros')) ? q.get('heros') : okCle(localStorage.getItem('guilde-tour-decks')) ? localStorage.getItem('guilde-tour-decks') : HEROS[localStorage.getItem('guilde-tour')] ? localStorage.getItem('guilde-tour') : ORDRE[0];
 let ed = null; // l'atelier ouvert : { i (n° du deck, -1 = nouveau), nom, ic, cartes }
 let filtre = 'tout';
 const compter = d => { const n = {}; d.forEach(k => n[k] = (n[k] || 0) + 1); return n; };
@@ -95,14 +99,15 @@ const fen = h => { document.getElementById('fen').innerHTML = h ? `<div class="f
 function carte(k, w) { return CADRES_OK.includes(CADRE_DE(k)) ? `<div style="width:${w}px;height:${Math.round(w * 1216 / 864)}px;overflow:hidden"><div class="cg-mini" style="transform:scale(${(w / 164).toFixed(4)})">${carteGuilde(k, { w:164 })}</div></div>` : `<div class="simple" style="width:${w}px"><span class="co">${CARTES[k].c}</span><span class="n">${CARTES[k].n}</span><span>${SORTE[CARTES[k].t]}</span><span>🎲 ${txtLisible(CARTES[k].txt)}</span><span>${CARTES[k].d}</span></div>`; }
 
 function bande() {
-  document.getElementById('bande').innerHTML = ORDRE.map(id => `<button class="${id === actuel ? 'on' : ''} ${verrouille(id) ? 'verrou' : ''}" style="--hc:${HEROS[id].c}" onclick="choisir('${id}')"><img src="portraits/${id}.webp" alt="">${!verrouille(id) && cartesNouvelles(id).filter(k => CARTES[k].heros === id).length ? '<span class="nv">!</span>' : ''}<span>${verrouille(id) ? '🔒 ' : ''}${HEROS[id].nom}</span></button>`).join('');
+  document.getElementById('bande').innerHTML = ORDRE.map(id => `<button class="${id === actuel ? 'on' : ''} ${verrouille(id) ? 'verrou' : ''}" style="--hc:${HEROS[id].c}" onclick="choisir('${id}')"><img src="portraits/${id}.webp" alt="">${!verrouille(id) && cartesNouvelles(id).filter(k => CARTES[k].heros === id).length ? '<span class="nv">!</span>' : ''}<span>${verrouille(id) ? '🔒 ' : ''}${HX(id).nom}</span></button>`).join('')
+    + haListe().map(a => haInfo('av:' + a.id)).filter(Boolean).map(i => `<button class="${i.cle === actuel ? 'on' : ''}" style="--hc:${i.couleur}" onclick="choisir('${i.cle}')">${haImg(i)}<span>${haEsc(i.nom)}</span></button>`).join('');
 }
 function choisir(id) {
-  if (verrouille(id)) { fen(`<h3>🔒 ${HEROS[id].nom}</h3><p>Elle se débloque en finissant le tutoriel.</p><div class="boutons"><button class="bt" onclick="fen('')">Compris</button></div>`); return; }
+  if (verrouille(id)) { fen(`<h3>🔒 ${HX(id).nom}</h3><p>Elle se débloque en finissant le tutoriel.</p><div class="boutons"><button class="bt" onclick="fen('')">Compris</button></div>`); return; }
   if (ed && !confirm('Quitter l’atelier sans enregistrer ?')) return;
-  ed = null; actuel = id; localStorage.setItem('guilde-tour', id); history.replaceState(null, '', '?heros=' + id); bande(); dessine();
+  ed = null; actuel = id; localStorage.setItem('guilde-tour-decks', id); if (!haEst(id)) localStorage.setItem('guilde-tour', id); history.replaceState(null, '', '?heros=' + id); bande(); dessine();
 }
-function dessine() { document.documentElement.style.setProperty('--c', HEROS[actuel].c); if (ed) atelier(); else liste(); }
+function dessine() { document.documentElement.style.setProperty('--c', HX(actuel).c); if (ed) atelier(); else liste(); }
 
 // ---------------------------------------------------------------- la liste des decks du héros
 // 26/11 (l'utilisateur : « je dois créer un deck et enregistrer pour enlever Nouveau ») : une nouvelle carte est marquée VUE dès qu'elle s'affiche
@@ -120,14 +125,14 @@ function liste() {
     ${ligneDeck(-1, 'Le deck de base', '📜', deckBase(id), true)}
     ${nouvVisite(id).length ? `<h3 style="margin:12px 0 4px;color:#ff8a8a">✨ ${nouvVisite(id).length === 1 ? 'Une nouvelle carte' : nouvVisite(id).length + ' nouvelles cartes'}</h3><p class="aide" style="text-align:left;margin:0 0 6px">Garde le doigt dessus pour la lire en grand ; ouvre un deck pour l’y mettre.</p><div class="coll">${nouvVisite(id).map(k => `<div class="c" data-zoom="${k}"><span class="nv">✨ Nouveau</span>${carte(k, 108)}</div>`).join('')}</div>` : ''}
     <div class="boutons">${D.decks.length < DECKS_MAX ? `<button class="bt" onclick="nouveau()">＋ Nouveau deck</button>` : `<span class="aide">${DECKS_MAX} decks au plus par héros : supprime-en un pour en faire un autre.</span>`}</div>
-    <p class="aide">⭐ = le deck qui part au combat (Duel, Odyssée, épreuves). On le choisit aussi juste avant un Duel.<br>${DECK_TAILLE} cartes par deck · 2 exemplaires au plus · <span style="color:#ffb347">1 seul pour une légendaire ★</span></p>
-    <div class="boutons"><button class="bt sombre" onclick="location.href='duel.html?h=${id}&retour=decks'">⚔ Jouer avec ${HEROS[id].nom}</button><button class="bt sombre" onclick="location.href='heros.html?h=${id}'">📖 Mes héros</button></div>`;
+    <p class="aide">${haEst(id) ? `🗺 ${haEsc(HX(id).nom)} a ses decks à lui (au début, une copie de ceux de ${HEROS[haVoie(id)].nom}) ; ses cartes possibles sont celles de ${HEROS[haVoie(id)].nom}.<br>` : ''}⭐ = le deck qui part au combat (${haEst(id) ? 'Odyssée, épreuves' : 'Duel, Odyssée, épreuves'}). On le choisit aussi juste avant un Duel.<br>${DECK_TAILLE} cartes par deck · 2 exemplaires au plus · <span style="color:#ffb347">1 seul pour une légendaire ★</span></p>
+    <div class="boutons">${haEst(id) ? '' : `<button class="bt sombre" onclick="location.href='duel.html?h=${id}&retour=decks'">⚔ Jouer avec ${HX(id).nom}</button>`}<button class="bt sombre" onclick="location.href='${haEst(id) ? "mes-heros.html" : "heros.html?h=" + id}'">📖 Mes héros</button></div>`;
 }
 function etoile(i) { const D = lireDecks(actuel); D.actif = i; ecrisDecks(actuel, D); if (typeof son === 'function') son('ok'); liste(); }
 function pasPret() { fen(`<h3>Ce deck n’est pas prêt</h3><p>Il doit avoir exactement ${DECK_TAILLE} cartes pour partir au combat. Ouvre-le pour le finir.</p><div class="boutons"><button class="bt" onclick="fen('')">Compris</button></div>`); }
 function voirBase() {
   const n = compter(deckBase(actuel)), u = Object.keys(n).sort((a, b) => CARTES[a].c - CARTES[b].c || CARTES[a].n.localeCompare(CARTES[b].n));
-  fen(`<h3>📜 Le deck de base de ${HEROS[actuel].nom}</h3><div class="liste">${u.map(k => `<div class="ligne"><span class="co">${CARTES[k].c}</span><span class="nm">${CARTES[k].n}</span><span class="x">×${n[k]}</span></div>`).join('')}</div>
+  fen(`<h3>📜 Le deck de base de ${HX(actuel).nom}</h3><div class="liste">${u.map(k => `<div class="ligne"><span class="co">${CARTES[k].c}</span><span class="nm">${CARTES[k].n}</span><span class="x">×${n[k]}</span></div>`).join('')}</div>
   <p class="aide">On ne peut pas le changer : fais un nouveau deck en partant de lui.</p><div class="boutons"><button class="bt" onclick="fen('')">Fermer</button></div>`);
 }
 function nouveau() {
@@ -146,8 +151,8 @@ function atelier() {
   const pool = poolDe(id).filter(k => {
     const c = CARTES[k]; if (filtre === 'tout') return true; if (filtre === 'heros') return !GUILDE.includes(k); if (filtre === 'guilde') return GUILDE.includes(k);
     if (filtre === '3') return c.c >= 3; if (/^\d$/.test(filtre)) return c.c === +filtre; return c.t === filtre; })
-    .sort((a, b) => (NOUV.includes(b) - NOUV.includes(a)) || (HEROS[id].deck.includes(b) - HEROS[id].deck.includes(a)) || CARTES[a].c - CARTES[b].c || CARTES[a].n.localeCompare(CARTES[b].n));
-  const F = [['tout', 'Tout'], ['heros', HEROS[id].nom], ['guilde', 'Guilde'], ['0', '0'], ['1', '1'], ['2', '2'], ['3', '3+'], ['u', '⚔ Créatures'], ['s', '✦ Sorts'], ['e', '⚒ Équipements'], ['r', '⛓ Pièges']];
+    .sort((a, b) => (NOUV.includes(b) - NOUV.includes(a)) || (HX(id).deck.includes(b) - HX(id).deck.includes(a)) || CARTES[a].c - CARTES[b].c || CARTES[a].n.localeCompare(CARTES[b].n));
+  const F = [['tout', 'Tout'], ['heros', HX(id).nom], ['guilde', 'Guilde'], ['0', '0'], ['1', '1'], ['2', '2'], ['3', '3+'], ['u', '⚔ Créatures'], ['s', '✦ Sorts'], ['e', '⚒ Équipements'], ['r', '⛓ Pièges']];
   document.getElementById('zone').innerHTML = `
     <div class="tete"><button class="bt sombre" onclick="ferme()">‹</button><input id="nom" value="${ed.nom.replace(/"/g, '&quot;')}" maxlength="28" oninput="ed.nom=this.value"></div>
     <div class="icones">${ICONES.map(c => `<button class="${ed.ic === c ? 'on' : ''}" onclick="ed.ic='${c}';atelier()">${c}</button>`).join('')}</div>
@@ -174,7 +179,7 @@ function retire(k) { const i = ed.cartes.lastIndexOf(k); if (i >= 0) ed.cartes.s
 function complete() {
   const id = actuel, n = compter(ed.cartes), prend = k => { if (ed.cartes.length < DECK_TAILLE && (n[k] || 0) < maxDe(k)) { ed.cartes.push(k); n[k] = (n[k] || 0) + 1; return true; } return false; };
   deckBase(id).forEach(prend);
-  const reste = poolDe(id).sort((a, b) => ((NOUV_VISITE[id] || []).includes(b) - (NOUV_VISITE[id] || []).includes(a)) || (HEROS[id].deck.includes(b) - HEROS[id].deck.includes(a)) || CARTES[a].c - CARTES[b].c);
+  const reste = poolDe(id).sort((a, b) => ((NOUV_VISITE[id] || []).includes(b) - (NOUV_VISITE[id] || []).includes(a)) || (HX(id).deck.includes(b) - HX(id).deck.includes(a)) || CARTES[a].c - CARTES[b].c);
   for (let tour = 0; tour < 2; tour++) reste.forEach(prend);
   atelier();
 }

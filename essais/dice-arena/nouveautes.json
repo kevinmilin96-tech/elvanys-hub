@@ -1,5 +1,9 @@
 [
 {
+"v": "20261128-075453",
+"m": "Mes decks : tes héros d'aventure ont maintenant leurs propres decks"
+},
+{
 "v": "20261128-011414",
 "m": "Mes succès : un bouton « Tout récupérer » en haut de la page"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261127-233203",
 "m": "Les pages de récit de l'Invasion, du Campement et de l'Odyssée ont leurs illustrations"
-},
-{
-"v": "20261127-232914",
-"m": "Corrections de la soirée : Duel (Fin du tour, pouvoirs du build), Crypte (jumeaux), cartes lisibles, Expéditions (capitaine qui progresse, forge), Invasion (compagnon, Gardes jumeaux, héros à terre), équipements visibles, Rempart (monstres plus nombreux, chemin annoncé), modes qui suivent ton héros"
 }
 ]
