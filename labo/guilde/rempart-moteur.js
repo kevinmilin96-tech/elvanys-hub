@@ -15,7 +15,7 @@ const R = {
   niv:[0, 1, 1.75, 2.8, 4.2], nivMax:4, etoileMax:5, etoile:0.35, pouvoirRecharge:20, pouvoirNiv:2, besaceMax:2, accalmie:25, etire:1 /* 28/11 : les temps de NIVEAUX sont écrits pour des niveaux de 4-5 min avec accalmies (avant : ×1,35) */,
   runeBonus:0.25, pv:5, nombre:3 /* 28/11 : 3 fois plus de monstres, chacun bien moins solide */, runeMax:3, puitsDelai:6, comboBonus:0.3, bowling:90,
   // 27/11 soir (plus d'action) : les runes ◆ à toucher, l'appel de la vague, le sort du héros
-  suivi:0.9, cristalVie:6, cristalPuits:2, cristalMonstre:2, cristalChance:1 / 3, puitsDelaiC:10, appelMin:3, appelMax:8, sortRecharge:30, sortDepart:12,
+  suivi:0.9, cristalVie:6, cristalAuto:3, cristalPuits:2, cristalMonstre:2, cristalChance:1 / 3, puitsDelaiC:10, appelMin:3, appelMax:8, sortRecharge:30, sortDepart:12,
 };
 R.regenE = 3.0; // l'énergie qui monte seule baisse d'autant (3 s par ◆ au lieu de 2,4) : le reste vient des runes ramassées
 // les sortes de tours (une par face de dé) : prix en ◆, cadence (s), dégâts au niveau 1
@@ -268,7 +268,7 @@ function acheterDe(S) {
 // 27/11 soir : RAMASSER une rune ◆ (toucher avant qu'elle s'éteigne)
 function ramasser(S, id) {
   const k = S.cristaux.findIndex(x => x.id === id); if (k < 0) return 'Trop tard : elle s’est éteinte.';
-  const x = S.cristaux.splice(k, 1)[0]; S.energie = Math.min(R.energieMax, S.energie + x.v); S.ramasses++; fx(S, { t:'ramasse', id, v:x.v, c:x.c, y:x.y });
+  const x = S.cristaux.splice(k, 1)[0]; S.energie = Math.min(R.energieMax, S.energie + x.v + 1); S.ramasses++; fx(S, { t:'ramasse', id, v:x.v + 1, c:x.c, y:x.y }); /* +1 : le bonus du toucher */
 }
 function jaillit(S, c, y, v) { y = Math.min(y, HAUT - 1.6); /* 28/11 : jamais hors de l'écran, en haut */ S.cristaux.push({ id:++MID, c, y, v, t:R.cristalVie }); fx(S, { t:'cristal' }); }
 // 27/11 soir : APPELER LA VAGUE en avance (entre deux vagues) : bonus ◆ = secondes gagnées / 2 (8 au plus) + un peu de jauge d'Ultime
@@ -509,7 +509,10 @@ function etape(S) {
   if (S.sortT > 0) S.sortT -= PAS;
   // les runes ◆ qui flottent : elles s'éteignent après 6 s
   for (const x of S.cristaux) x.t -= PAS;
-  const eteintes = S.cristaux.filter(x => x.t <= 0); if (eteintes.length) { S.perdus += eteintes.length; S.cristaux = S.cristaux.filter(x => x.t > 0); eteintes.forEach(x => fx(S, { t:'eteint', id:x.id })); }
+  // 28/11 (l'utilisateur : « viser une rune ouvre la fiche du monstre ») : une rune pas touchée S'ENVOLE SEULE vers le compteur au bout de 3 s ;
+  // la toucher avant rapporte +1 ◆ de bonus (ramasser). Plus aucune rune perdue.
+  const parties = S.cristaux.filter(x => x.t <= R.cristalVie - R.cristalAuto); if (parties.length) { S.cristaux = S.cristaux.filter(x => x.t > R.cristalVie - R.cristalAuto);
+    parties.forEach(x => { S.energie = Math.min(R.energieMax, S.energie + x.v); S.autoRunes = (S.autoRunes || 0) + 1; fx(S, { t:'vole', id:x.id, v:x.v, c:x.c, y:x.y }); }); }
   for (const w of S.murs) w.t -= PAS; S.murs = S.murs.filter(w => w.t > 0);
   for (const x of S.pieges) x.t -= PAS; S.pieges = S.pieges.filter(x => x.t > 0 && !x.fini);
   for (const x of S.detours) x.t -= PAS; S.detours = S.detours.filter(x => x.t > 0);

@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261128-080332"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde">
+<head><meta name="guilde-version" content="20261128-081440"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="robots" content="noindex">
@@ -106,6 +106,7 @@
   .zone { position:absolute; z-index:11; border-radius:50%; pointer-events:none; transform:translate(-50%, -50%); animation:zone .7s ease-out forwards;
     display:flex; align-items:center; justify-content:center; font-size:30px; }
   @keyframes zone { 0% { opacity:0; transform:translate(-50%, -50%) scale(.3); } 30% { opacity:1; } 100% { opacity:0; transform:translate(-50%, -50%) scale(1.15); } }
+  .rvole { position:fixed; z-index:60; pointer-events:none; width:26px; height:26px; border-radius:50%; background:radial-gradient(circle at 40% 35%, #fff, #c084fc 60%, #6b2bd9); color:#3a1470; font-size:13px; font-weight:bold; display:flex; align-items:center; justify-content:center; box-shadow:0 0 12px #c084fc; }
   .cadeau { position:absolute; left:-70px; z-index:35; width:62px; height:62px; border:0; background:none; padding:0; animation:traverse linear forwards; filter:drop-shadow(0 0 10px #ffd76b); }
   .cadeau img { width:100%; height:100%; object-fit:contain; border-radius:50%; } .cadeau span { font-size:44px; } .cadeau b { position:absolute; right:-4px; bottom:-2px; font-size:24px; }
   .cadeau.destin img { border-radius:12px; animation:pulse .6s infinite; } .cadeau.etoile span { text-shadow:0 0 14px #fff; }
@@ -198,7 +199,7 @@
 <script src="rang.js?v=aadc90c69b"></script>
 <script src="heros-etoiles.js?v=29ce68f57f"></script>
 <script src="donnees.js?v=911da28260"></script>
-<script src="rempart-moteur.js?v=377f3f9d13"></script>
+<script src="rempart-moteur.js?v=cff47b4a27"></script>
 <script src="configurateur.js?v=d5e9469a28"></script>
 <script src="heros-aventure.js?v=31db8c2ed4"></script>
 <script>
@@ -289,7 +290,7 @@ const GUIDE = [
 ];
 // 27/11 soir : le guide des nouveautés (aussi pour ceux qui ont déjà vu le premier)
 const GUIDE2 = [
-  ['#energie', 'Nouveau : des <b>runes ◆</b> jaillissent des puits et de certains monstres abattus. <b>Touche-les</b> vite : elles s’éteignent au bout de 6 secondes !'],
+  ['#energie', 'Nouveau : des <b>runes ◆</b> jaillissent des puits et de certains monstres abattus. <b>Touche-les</b> vite pour +1 ◆ de bonus ; sinon elles filent seules vers ton énergie au bout de 3 secondes.'],
   ['#sortB', 'Le <b>sort de ton héros</b> : touche ce bouton, puis l’endroit du plateau où tu veux le lancer. Il se recharge en 30 secondes.'],
   ['#appel', 'Entre deux vagues, <b>⏩ appelle la suivante</b> en avance : plus tu es en avance, plus tu gagnes de ◆.'],
 ];
@@ -369,7 +370,7 @@ function majMonstres() {
   for (const x of S.cristaux) { const id = 'cr' + x.id; vus.add(id); let el = document.getElementById(id);
     if (!el) { el = document.createElement('button'); el.id = id; el.className = 'cr'; el.textContent = '◆'; el.onpointerdown = ev => { ev.stopPropagation(); ev.preventDefault(); ramasse(x.id); };
       el.style.left = xPx(x.c) + 'px'; el.style.top = yPx(x.y) + 'px'; box.appendChild(el); }
-    el.classList.toggle('fin', x.t < 2); }
+    el.classList.toggle('fin', x.t < P.R.cristalVie - P.R.cristalAuto + 1); }
   // 27/11 soir : le chemin du prochain monstre annoncé 5 s avant (niveau 1 et début du niveau 2) : une flèche qui pulse en haut du chemin
   for (const a of P.annonces(S)) { const id = 'an' + a.c; if (vus.has(id)) continue; vus.add(id); let el = document.getElementById(id);
     if (!el) { el = document.createElement('div'); el.id = id; el.className = 'annc'; el.style.left = xPx(a.c) + 'px'; el.style.top = (G.cw * .1) + 'px'; box.appendChild(el); }
@@ -437,7 +438,7 @@ function jeter(k) { P.jeterDe(S, k); sel = null; fermer(); son('vendre'); rafrai
 // 27/11 soir : ramasser une rune, appeler la vague, lancer le sort du héros, spécialiser une tour
 // 27/11 nuit : une rune posée sur un monstre passe avant sa fiche (toucher à moins d'une demi-case d'une rune = la ramasser)
 function runePres(ev) { const box = document.getElementById('monstres'); if (!box || !S || !S.cristaux.length) return false;
-  const r = box.getBoundingClientRect(), x = ev.clientX - r.left, y = ev.clientY - r.top; let best = null, bd = G.cw * .6;
+  const r = box.getBoundingClientRect(), x = ev.clientX - r.left, y = ev.clientY - r.top; let best = null, bd = G.cw * 1.0;
   for (const c of S.cristaux) { const d = Math.hypot(xPx(c.c) - x, yPx(c.y) - y); if (d < bd) { bd = d; best = c; } }
   if (!best) return false; ramasse(best.id); return true; }
 function ramasse(id) { marqueGeste(); if (!S || S.fini || pause || fen.innerHTML) return; const x = S.cristaux.find(c => c.id === id); if (!x) return; P.ramasser(S, id); son('rune'); try { navigator.vibrate && navigator.vibrate(15); } catch (e) {} joueFx(); rafraichit(); }
@@ -547,7 +548,7 @@ function regles() {
   <li><b>Une paire</b> de dés pareils (dès le niveau 5) : une Tour-rune qui renforce ses voisines.</li>
   <li>🔗 <b>Combo de ligne</b> : 3 tours de la même sorte sur un chemin frappent 30 % plus fort (3 givres : le chemin ralentit ; 3 poisons : il empoisonne).</li>
   <li>🎳 <b>Le dé bowling</b> : un par niveau, il écrase tout un chemin.</li>
-  <li>◆ <b>Les runes</b> : les puits et certains monstres abattus en font jaillir. Touche-les avant qu’elles s’éteignent (6 s).</li>
+  <li>◆ <b>Les runes</b> : les puits et certains monstres abattus en font jaillir. Touche-les vite (+1 ◆ de bonus) ; au bout de 3 s, elles filent seules vers ton énergie.</li>
   <li>${P.SORTS_R[S ? S.heros : haVoie(choixH)].e} <b>Le sort du héros</b> : touche son bouton, puis l’endroit du plateau. Recharge 30 s.</li>
   <li>⏩ <b>Appeler la vague</b> : entre deux vagues, fais venir la suivante en avance ; tu gagnes des ◆ (et un peu de jauge d’Ultime).</li>
   <li>✦ <b>Spécialisation</b> : au niveau 4, une tour choisit une de ses deux spécialisations, pour toujours (dans sa fiche).</li>
@@ -611,6 +612,9 @@ function joueFx() {
     else if (f.t === 'grande') { banniere('🚩 La dernière vague !', true); try { GM.temporaire('boss'); } catch (e) {} }
     else if (f.t === 'vague' && f.n < f.sur) banniere(`⚑ Vague ${f.n} sur ${f.sur}`, true);
     else if (f.t === 'ramasse') { gain(xPx(f.c), yPx(f.y), `+${f.v} ◆`); }
+    else if (f.t === 'vole') { const pl = document.getElementById('plateau'), en = document.getElementById('energie'); if (pl && en) { const rp = pl.getBoundingClientRect(), re = en.getBoundingClientRect(), v = document.createElement('div');
+      v.className = 'rvole'; v.textContent = '◆'; document.body.appendChild(v); const x0 = rp.left + xPx(f.c), y0 = rp.top + yPx(f.y), x1 = re.left + re.width / 2, y1 = re.top + re.height / 2;
+      v.animate([{ left:x0 + 'px', top:y0 + 'px', transform:'translate(-50%,-50%) scale(1)' }, { left:x1 + 'px', top:y1 + 'px', transform:'translate(-50%,-50%) scale(.6)' }], { duration:550, easing:'ease-in' }).onfinish = () => { v.remove(); en.animate([{ transform:'scale(1.15)' }, { transform:'none' }], { duration:200 }); }; } }
     else if (f.t === 'soin') { const el = document.getElementById('m' + f.id); if (el) boom(parseFloat(el.style.left), parseFloat(el.style.top), '💚'); }
     else if (f.t === 'creuse' || f.t === 'ressort') { const el = document.getElementById('m' + f.id); if (el) boom(parseFloat(el.style.left), parseFloat(el.style.top), '💨'); }
     else if (f.t === 'sort') { const pl = document.getElementById('plateau'), z = document.createElement('div'), r = f.h === 'oria' ? 1.6 : f.h === 'gorm' ? 1 : 1.5;

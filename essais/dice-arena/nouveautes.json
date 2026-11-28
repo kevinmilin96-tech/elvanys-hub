@@ -1,5 +1,9 @@
 [
 {
+"v": "20261128-081440",
+"m": "Rempart : les runes ◆ ne se perdent plus : si tu ne les touches pas, elles filent seules vers ton énergie (les toucher vite donne +1 ◆ de bonus)"
+},
+{
 "v": "20261128-080332",
 "m": "Rempart : le joker reste ouvert, les étoiles des tours se lisent (4 ★2), les runes restent dans l'écran, et le défi du marchand n'arrive plus pendant une accalmie"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261127-235257",
 "m": "Rempart : plus d'énergie au départ (12 ◆) et des premières vagues moins nombreuses, le temps de bâtir"
-},
-{
-"v": "20261127-234802",
-"m": "Rempart : les médailles déjà gagnées restent allumées, une rune sur un monstre ou sur le puits se ramasse d'un toucher, et le niveau 2 ne devient plus plus dur en cours de partie"
 }
 ]
