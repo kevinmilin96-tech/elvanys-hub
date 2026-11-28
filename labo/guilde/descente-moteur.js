@@ -151,9 +151,9 @@ const PROFONDEURS = [
 // ------------------------------------------------------------------ les événements
 const EVENEMENTS = {
   fontaine: { e:'⛲', n:'La fontaine aux souhaits', t:'Une fontaine de pierre murmure. On voit des pièces au fond… et elles brillent un peu trop.',
-    choix:[{ n:'Boire (+12 PV)', f:R => soin(R, 12) }, { n:'Jeter 5 or : un objet au hasard', si:R => R.or >= 5, f:(R, h) => { R.or -= 5; donneObjet(R, h); } }, { n:'Passer son chemin', f:() => 'Tu passes. La fontaine soupire.' }] },
+    choix:[{ n:'Boire (+12 PV)', f:R => soin(R, 12) }, { n:'Jeter 5 or : un objet au hasard', si:R => R.or >= 5, f:(R, h) => { R.or -= 5; return donneObjet(R, h); } }, { n:'Passer son chemin', f:() => 'Tu passes. La fontaine soupire.' }] },
   autel:    { e:'🩸', n:'L’autel de sang', t:'Un autel réclame un peu de toi. En échange, il offre quelque chose de précieux.',
-    choix:[{ n:'Donner 8 PV : un objet rare', si:R => R.pv > 8, f:(R, h) => { R.pv -= 8; donneObjet(R, h, true); } }, { n:'Donner 4 PV max : +20 or', si:R => R.pvmax > 30, f:R => { R.pvmax -= 4; R.pv = Math.min(R.pv, R.pvmax); R.or += 20; return '+20 or.'; } }, { n:'Refuser', f:() => 'Tu recules. L’autel s’éteint.' }] },
+    choix:[{ n:'Donner 8 PV : un objet rare', si:R => R.pv > 8, f:(R, h) => { R.pv -= 8; return donneObjet(R, h, true); } }, { n:'Donner 4 PV max : +20 or', si:R => R.pvmax > 30, f:R => { R.pvmax -= 4; R.pv = Math.min(R.pv, R.pvmax); R.or += 20; return '+20 or.'; } }, { n:'Refuser', f:() => 'Tu recules. L’autel s’éteint.' }] },
   coffre:   { e:'🧰', n:'Le coffre piégé', t:'Un coffre, et un mécanisme bizarre. Tu lances un dé : 4 ou plus, il s’ouvre ; sinon, il mord.',
     choix:[{ n:'Lancer le dé', f:(R, h) => { const d = 1 + Math.floor(h() * 6); if (d >= 4) { R.or += 15; return `🎲 ${d} : le coffre s’ouvre, +15 or !`; } R.pv = Math.max(1, R.pv - 6); return `🎲 ${d} : il mord ! −6 PV.`; } }, { n:'Le laisser', f:() => 'Prudence est mère de sûreté.' }] },
   egare:    { e:'🐾', n:'Un compagnon égaré', t:'Une petite créature te suit depuis tout à l’heure. Elle a l’air d’avoir faim, et envie d’aventure.',
@@ -178,13 +178,20 @@ function soin(R, n) { const a = R.pv; R.pv = Math.min(R.pvmax, R.pv + n); return
 // 15/11 soir : les objets et compagnons tirés au hasard ne viennent que de la réserve débloquée
 const objetsOuverts = R => { const D = debloque(R); return Object.keys(OBJETS).filter(k => D.obj.has(k)); };
 const compsOuverts = R => { const D = debloque(R); const l = Object.keys(C.COMPAGNONS).filter(k => D.comp.has(k)); return l.length ? l : Object.keys(C.COMPAGNONS); };
+// 28/11 (l'utilisateur : « le journal n'est pas complet ») : chaque étape de la descente s'écrit dans R.journal
+function log(R, t) { R.journal = R.journal || []; R.journal.push(t); if (R.journal.length > 300) R.journal.shift(); }
 function donneObjet(R, h, rare) {
   const liste = objetsOuverts(R).filter(k => (R.obj[k] || 0) < OBJETS[k].max && (!rare || OBJETS[k].rare || h() < .4) && k !== 'diable');
   if (!liste.length) { R.or += 10; return '+10 or (plus rien à donner).'; }
   const k = pick(h, liste); R.obj[k] = (R.obj[k] || 0) + 1; return `${OBJETS[k].e} ${OBJETS[k].n} : ${OBJETS[k].d}`;
 }
+// 28/11 (l'utilisateur : « j'aimerais pouvoir changer si j'en récupère plusieurs ») : une RÉSERVE de compagnons (2 places) ; un nouveau compagnon
+// prend la place active et l'ancien va en réserve ; on les échange quand on veut sur la carte.
+function poseComp(R, id) { R.reserve = R.reserve || []; if (R.comp && R.comp.id !== id) { R.reserve = R.reserve.filter(x => x.id !== R.comp.id); R.reserve.unshift(R.comp); R.reserve = R.reserve.slice(0, 2); }
+  const deja = R.reserve.find(x => x.id === id); R.reserve = R.reserve.filter(x => x.id !== id); R.comp = deja || { id, pv:C.COMPAGNONS[id].pv }; }
+function changerComp(R, i) { const x = (R.reserve || [])[i]; if (!x || R.ecran === 'combat') return null; R.reserve.splice(i, 1); if (R.comp) R.reserve.unshift(R.comp); R.comp = x; log(R, `🐾 ${C.COMPAGNONS[x.id].n} reprend sa place.`); return x; }
 function donneComp(R, h) {
-  const k = pick(h, compsOuverts(R)); R.comp = { id:k, pv:C.COMPAGNONS[k].pv }; return `${C.COMPAGNONS[k].e} ${C.COMPAGNONS[k].n} te rejoint : ${C.COMPAGNONS[k].d}`;
+  const k = pick(h, compsOuverts(R)); poseComp(R, k); return `${C.COMPAGNONS[k].e} ${C.COMPAGNONS[k].n} te rejoint : ${C.COMPAGNONS[k].d}`;
 }
 const prix = (R, p) => Math.round(p * 1.4 * (R.breloque === 'remise' ? .75 : 1) * (R.prof >= 2 ? 1.2 : 1) * (fam(R, 'or', 3) ? .8 : 1));
 // relancer l'étal du marchand : le prix monte à chaque relance (6, 11, 17… or)
@@ -291,6 +298,8 @@ function optsCombat(R, type) {
   if (R.prof >= 6) obj.moinsOr = 1;
   if (R.prof >= 10 && type === 'boss') obj.bossDur = 2;
   Object.entries(R.bene || {}).forEach(([k, n]) => { const B = BENES[k]; if (B && B.o) Object.entries(B.o).forEach(([o, v]) => { obj[o] = (obj[o] || 0) + v * n; }); });
+  // 28/11 : plus tu portes d'objets et de bénédictions, plus les monstres frappent (+1 tous les 5) : la descente reste un défi jusqu'au bout
+  { const n = Object.values(R.obj || {}).reduce((a, x) => a + (x > 0 ? x : 0), 0) + Object.values(R.bene || {}).reduce((a, x) => a + x, 0); obj.forcePlus = (obj.forcePlus || 0) + Math.floor(n / 5); }
   // 15/11 soir : les bonus de FAMILLE (traduits en clés que crypte-moteur.js sait lire)
   if (fam(R, 'feu', 2)) obj.aiguise = (obj.aiguise || 0) + 1;
   if (fam(R, 'feu', 3)) obj.sac = (obj.sac || 0) + 1;
@@ -341,7 +350,7 @@ function choisir(R, k) {
   const t = R.choix[k]; if (!t) return false; const h = RR(R);
   const df = (R.choixDefi && R.choixDefi[k]) || null;
   if (R.carte && t !== 'boss') { R.carte.pos = R.choixIdx[k]; R.carte.chemin.push([R.pas, R.carte.pos]); }
-  R.pas++; R.salle = { type:t }; R.chemin.push(t);
+  R.pas++; R.salle = { type:t }; R.chemin.push(t); log(R, `— Étage ${R.etage} · salle ${R.pas} : ${(SALLES[t] && SALLES[t].n) || t} (❤ ${R.pv}/${R.pvmax}, 🪙 ${R.or})`);
   if (t === 'defi') R.salle.defi = df || pick(h, Object.keys(DEFIS));
   if (t === 'combat' || t === 'elite' || t === 'boss' || t === 'defi') { R.ecran = 'combat'; R.S = prepareCombat(R, C.nouvelle(R.heros, R.graine + '-' + R.etage + '-' + R.pas, R.bonus, optsCombat(R, t)), t); return true; }
   if (t === 'marchand') { R.ecran = 'marchand'; R.salle.etal = etal(R, h); R.salle.relances = 0; return true; }
@@ -372,10 +381,10 @@ function relancerEtal(R) {
 function acheter(R, i) {
   if (R.ecran !== 'marchand') return 'non';
   const x = R.salle.etal[i]; if (!x || x.vendu) return 'non'; if (R.or < x.prix) return 'Pas assez d’or.';
-  R.or -= x.prix; x.vendu = x.t !== 'soin';
+  R.or -= x.prix; x.vendu = x.t !== 'soin'; log(R, `🛒 Achat : ${x.t === 'objet' ? OBJETS[x.k].n : x.t === 'comp' ? C.COMPAGNONS[x.k].n : x.t} (${x.prix} 🪙)`);
   if (x.t === 'conso') { if ((R.consos || []).length >= 3) { R.or += x.prix; x.vendu = false; return 'Ta poche est pleine (3).'; } R.consos = R.consos || []; R.consos.push(x.k); x.vendu = false; }
   if (x.t === 'objet') R.obj[x.k] = (R.obj[x.k] || 0) + 1;
-  if (x.t === 'comp') R.comp = { id:x.k, pv:C.COMPAGNONS[x.k].pv };
+  if (x.t === 'comp') poseComp(R, x.k);
   if (x.t === 'reparer') R.comp.pv = C.COMPAGNONS[R.comp.id].pv;
   if (x.t === 'soin') soin(R, x.n);
   return 'ok';
@@ -401,7 +410,7 @@ function feu(R, k) {
 function evenement(R, k) {
   if (R.ecran !== 'evenement') return null;
   const E = EVENEMENTS[R.salle.ev], c = E.choix[k]; if (!c || (c.si && !c.si(R))) return null;
-  const t = c.f(R, RR(R)) || ''; R.ecran = 'recompense'; R.salle.texte = `${E.e} ${t}`; R.salle.recomp = []; return t;
+  const t = c.f(R, RR(R)) || ''; log(R, `${E.e} ${E.n} → ${c.n} : ${t}`); R.ecran = 'recompense'; R.salle.texte = `${E.e} ${t}`; R.salle.recomp = []; return t;
 }
 // fin d'un combat (R.S.fin posé) : on reprend la vie, l'or, le compagnon ; puis la récompense
 function apresCombat(R) {
@@ -409,6 +418,7 @@ function apresCombat(R) {
   R.or = S.or; R.combats++; R.score += S.score; if (S.consos) R.consos = S.consos.slice();
   if (S.secoursUtilise) R.souffleUtilise = true;
   if (R.comp && S.comp) R.comp.pv = S.comp.pv;
+  log(R, `⚔ Combat ${S.fin === 'gagne' ? 'gagné' : 'perdu'} en ${S.tour || '?'} tours · ❤ ${S.pv} · 🛡 restant ${S.bouclier || 0}${S.comp ? ` · compagnon ❤ ${S.comp.pv}` : ''}`);
   if (S.fin === 'perdu') { R.pv = 0; R.fin = 'perdu'; R.ecran = 'fin'; R.S = null; return true; }
   const h = RR(R), t = R.salle.type, th = R.themes && R.themes[R.etage - 1];
   R.victoires = (R.victoires || 0) + 1; if (t === 'boss') R.boss = (R.boss || 0) + 1; R.beneDue = true;
@@ -434,6 +444,7 @@ function apresCombat(R) {
 function recompense(R, k) {
   if (R.ecran !== 'recompense') return null;
   const x = R.salle.recomp && R.salle.recomp[k]; let gain = null;
+  if (x) log(R, `🎁 Pris : ${x.t === 'objet' ? OBJETS[x.k].n : x.t === 'breloque' ? 'breloque ' + x.k : x.t === 'conso' ? 'consommable ' + x.k : x.t + ' ' + (x.n || '')}`);
   if (x) { if (x.t === 'or') R.or += x.n; if (x.t === 'soin') soin(R, x.n); if (x.t === 'objet') R.obj[x.k] = (R.obj[x.k] || 0) + 1; if (x.t === 'conso') { R.consos = R.consos || []; if (R.consos.length < 3) R.consos.push(x.k); } if (x.t === 'breloque') gain = x.k; }
   suite(R); return gain;
 }
@@ -475,6 +486,7 @@ function choisirBene(R, k) {
   if (k != null && k >= 0) { const id = R.salle.offre[k], B = BENES[id]; if (!B) return null; R.bene[id] = (R.bene[id] || 0) + 1;
     if (B.pvmax) { R.pvmax = Math.max(10, R.pvmax + B.pvmax); R.pv = Math.max(1, Math.min(R.pvmax, R.pv + Math.max(0, B.pvmax))); }
     txt = `${B.e} ${B.n} : ${B.d}`; }
+  log(R, '✨ Bénédiction : ' + txt);
   R.salle = null; R.ecran = 'carte'; R.apresBene = true; suite(R); return txt;
 }
 // 28/11 (l'utilisateur, d'après Dice & Fold) : L'ÉTAPE COMPAGNON au début de chaque étage : 1 compagnon parmi 3 (il remplace l'actuel),
@@ -483,9 +495,9 @@ function etapeComp(R) { const h = RR(R), l = melange(h, compsOuverts(R).filter(k
 function choisirComp(R, k) {
   if (R.ecran !== 'compagnon') return null; let txt;
   if (k === 'garder') { if (R.comp) { R.comp.pv = C.COMPAGNONS[R.comp.id].pv; txt = `${C.COMPAGNONS[R.comp.id].e} ${C.COMPAGNONS[R.comp.id].n} reste avec toi, soigné.`; } else txt = 'Tu continues seul : ' + soin(R, 8); }
-  else { const id = R.salle.offre[k]; if (!id) return null; const avant = R.comp ? C.COMPAGNONS[R.comp.id].n : null; R.comp = { id, pv:C.COMPAGNONS[id].pv };
-    txt = `${C.COMPAGNONS[id].e} ${C.COMPAGNONS[id].n} te rejoint${avant ? ` (${avant} rentre à la Guilde)` : ''}.`; }
-  R.journal && R.journal.push && R.journal.push('🐾 ' + txt); R.salle = null; R.ecran = 'carte'; tireChoix(R); return txt;
+  else { const id = R.salle.offre[k]; if (!id) return null; const avant = R.comp ? C.COMPAGNONS[R.comp.id].n : null; poseComp(R, id);
+    txt = `${C.COMPAGNONS[id].e} ${C.COMPAGNONS[id].n} te rejoint${avant ? ` (${avant} passe en réserve)` : ''}.`; }
+  log(R, '🐾 ' + txt); R.salle = null; R.ecran = 'carte'; tireChoix(R); return txt;
 }
 function suite(R) {
   if (R.beneDue && !R.fin) { R.beneDue = false; R.salleAvant = R.salle; etapeBene(R); return true; }
@@ -500,7 +512,7 @@ const etoiles = R => R.fin !== 'gagne' ? 0 : 1 + (R.pv >= R.pvmax * .3 ? 1 : 0) 
 // 15/11 soir : la rareté visible d'un objet (une gemme de couleur et le mot)
 const rarete = k => OBJETS[k] && OBJETS[k].rare ? { n:'Rare', coul:'#4aa8ff' } : { n:'Commun', coul:'#b8c0d0' };
 
-const API = { BENES, ECOLES, nbEcole, choisirBene, relancerBene, prixBene, choisirComp, PROFONDEURS, ETAPES, ETAGES, SALLES, OBJETS, BRELOQUES, PACTES, EVENEMENTS, nouvelle, choisir, acheter, feu, evenement, apresCombat, recompense, suite, etoiles, prix,
+const API = { changerComp, BENES, ECOLES, nbEcole, choisirBene, relancerBene, prixBene, choisirComp, PROFONDEURS, ETAPES, ETAGES, SALLES, OBJETS, BRELOQUES, PACTES, EVENEMENTS, nouvelle, choisir, acheter, feu, evenement, apresCombat, recompense, suite, etoiles, prix,
   FAMILLES, familles, bonusFamilles, THEMES, theme, PALIERS, palierDe, debloque, renommeeGagnee, DEFIS, FORGE_CHOIX, forger, relancerEtal, prixRelance, rarete };
 if (typeof module !== 'undefined' && module.exports) module.exports = API; else racine.DESCENTE = API;
 })(typeof window !== 'undefined' ? window : globalThis);

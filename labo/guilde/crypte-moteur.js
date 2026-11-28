@@ -288,7 +288,7 @@ function nouvelle(heros, graine, bonus = {}, opts = {}) {
   const pvmax = opts.pvmax || PV_HEROS + (bonus.pv || 0);
   const obj = opts.obj || {};
   const S = { heros, graine, cols, gardien:null, pv:opts.pv != null ? opts.pv : pvmax, pvmax, tour:0, des:[], relance:1, reserve:Array(Math.max(0, RESERVE + (obj.besace || 0))).fill(null),
-    bouclier:(bonus.bouclier || 0) + 4 * (obj.aube || 0), relanceBase:1 + (bonus.relance || 0) + (obj.gobelet || 0), desPlus:(bonus.des || 0) + (obj.sac || 0) + (obj.diable || 0),
+    bouclier:Math.min(14, (bonus.bouclier || 0) + 4 * (obj.aube || 0)), /* 28/11 : bouclier de départ plafonné (il n'avait plus jamais perdu un PV) */ relanceBase:1 + (bonus.relance || 0) + (obj.gobelet || 0), desPlus:(bonus.des || 0) + (obj.sac || 0) + (obj.diable || 0),
     creuset:Array(6).fill(false), runes:Math.min(RUNES_MAX, obj.rune || 0), pouvoir:POUVOIRS[heros].s(), pret:false, voile:false, taire:false, voitTout:false, score:0, chaine:0, chaineMax:0,
     tombes:0, fin:null, journal:[], seq:0, rs:Math.floor(R() * 4294967296),
     // la Descente
@@ -314,7 +314,9 @@ function nouvelle(heros, graine, bonus = {}, opts = {}) {
 const log = (S, t) => { S.journal.unshift(t); S.journal.length = Math.min(S.journal.length, 30); };
 const visibles = S => S.gardien ? [S.gardien] : S.cols.filter(c => c.length).map(c => c[c.length - 1]);
 const trouve = (S, id) => visibles(S).find(c => c.id === id);
-const nbDes = S => NB_DES + (S.desPlus || 0) - visibles(S).filter(c => c.trait === 'gel').length;
+// 28/11 (l'utilisateur : « j'avais tellement de dés que je relançais en boucle ») : 7 dés par tour au plus
+const DES_MAX = 7;
+const nbDes = S => Math.min(DES_MAX, NB_DES + (S.desPlus || 0)) - visibles(S).filter(c => c.trait === 'gel').length;
 const tire = S => { const R = RS(S), d = { id:'d' + S.seq++, v:de6(R) }; if (R() < S.couleur) d.c = pick(R, Object.keys(COULEURS)); return d; };
 const silence = S => visibles(S).some(c => c.trait === 'silence');
 const plafond = S => visibles(S).some(c => c.trait === 'plafond');

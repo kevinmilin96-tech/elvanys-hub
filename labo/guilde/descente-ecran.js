@@ -159,7 +159,7 @@ function descenteEcran() {
   if (DR.ecran === 'combat') { S = DR.S; S.des.forEach(d => d.neuf = true); C.visibles(S).forEach(c => c.neuve = true); sel = null; mode = null; return dessine(); }
   S = null;
   const tete = `<div class="haut"><a href="#" onclick="if(confirm('Quitter ? Ta descente est gardée, tu pourras la reprendre.')){DR=null;descenteAccueil()}return false">‹ Quitter</a><span class="titre">🗺️ Étage ${DR.etage} · salle ${Math.min(DR.pas + (DR.ecran === 'carte' ? 1 : 0), D.ETAPES + 1)}/${D.ETAPES + 1}</span><button onclick="descenteRegles()">❓</button></div>
-    <div class="ressources"><span>❤ <b>${DR.pv}</b>/${DR.pvmax}</span><span>🪙 <b>${DR.or}</b></span>${DR.comp ? `<span>${icoComp(DR.comp.id)} <b>${DR.comp.pv}</b>/${C.COMPAGNONS[DR.comp.id].pv}</span>` : ''}${DR.breloque ? `<span>${icoBrel(DR.breloque)}</span>` : ''}${(DR.consos || []).length ? `<span>🎒 ${DR.consos.map(k => C.CONSOS[k].e).join('')}</span>` : ''}${DR.pacte ? `<span>${D.PACTES[DR.pacte].e}</span>` : ''}${DR.regle ? `<span onclick="bulle('${C.REGLES[DR.regle].n}')">${C.REGLES[DR.regle].e}</span>` : ''}${D.theme(DR) ? `<span onclick="infoTheme()" style="cursor:pointer">${D.theme(DR).e}</span>` : ''}${Object.keys(DR.forge || {}).length ? `<span onclick="infoForge()" style="cursor:pointer">⚒</span>` : ''}</div>
+    <div class="ressources"><span>❤ <b>${DR.pv}</b>/${DR.pvmax}</span><span>🪙 <b>${DR.or}</b></span>${DR.comp || (DR.reserve || []).length ? `<span onclick="voirComps()" style="cursor:pointer">${DR.comp ? `${icoComp(DR.comp.id)} <b>${DR.comp.pv}</b>/${C.COMPAGNONS[DR.comp.id].pv}` : '🐾'}${(DR.reserve || []).length ? `<small> +${DR.reserve.length}</small>` : ''}</span>` : ''}${DR.breloque ? `<span>${icoBrel(DR.breloque)}</span>` : ''}${(DR.consos || []).length ? `<span>🎒 ${DR.consos.map(k => C.CONSOS[k].e).join('')}</span>` : ''}${DR.pacte ? `<span>${D.PACTES[DR.pacte].e}</span>` : ''}${DR.regle ? `<span onclick="bulle('${C.REGLES[DR.regle].n}')">${C.REGLES[DR.regle].e}</span>` : ''}${D.theme(DR) ? `<span onclick="infoTheme()" style="cursor:pointer">${D.theme(DR).e}</span>` : ''}${Object.keys(DR.forge || {}).length ? `<span onclick="infoForge()" style="cursor:pointer">⚒</span>` : ''}</div>
     ${sacHTML()}`;
   let corps = '';
   if (DR.ecran === 'carte') {
@@ -245,9 +245,17 @@ function sacHTML() {
   // 15/11 soir : la pastille de FAMILLE devant chaque objet, et une ligne des familles (allumée quand le bonus marche) ; toucher = l'explication
   if (!o.length) return '';
   const n = D.familles(DR), fams = Object.keys(D.FAMILLES).filter(f => n[f] > 0);
-  return `<div class="sac">${o.map(([k, q]) => `<span onclick="infoObjet('${k}')">${pastFam(k)}${icoObj(k)}${q > 1 ? '×' + q : ''} <small>${D.OBJETS[k].c || D.OBJETS[k].n}</small></span>`).join('')}</div>
+  // 28/11 (l'utilisateur : « la page devient énorme, je dois défiler sans arrêt ») : une seule ligne d'icônes ; un toucher = la liste complète
+  return `<div class="sac" onclick="voirSac()" style="cursor:pointer">🎒 ${o.map(([k, q]) => `<span style="padding:1px 4px">${icoObj(k)}${q > 1 ? '<small>×' + q + '</small>' : ''}</span>`).join('')} <small style="opacity:.7">(toucher)</small></div>
     <div class="famL" onclick="infoFamilles()">${fams.map(f => `<span class="${n[f] >= 2 ? 'on' : ''}" style="--f:${D.FAMILLES[f].coul}">${D.FAMILLES[f].e} ${D.FAMILLES[f].n} ${n[f]}${n[f] >= 3 ? ' ✓✓' : n[f] >= 2 ? ' ✓' : ''}</span>`).join('')}</div>`;
 }
+function voirSac() { const o = Object.entries(DR.obj).filter(([k, n]) => n && D.OBJETS[k]);
+  fenetre(`<h2>🎒 Tes objets</h2><div class="sac">${o.map(([k, q]) => `<span onclick="infoObjet('${k}')">${pastFam(k)}${icoObj(k)}${q > 1 ? '×' + q : ''} <small>${D.OBJETS[k].c || D.OBJETS[k].n}</small></span>`).join('')}</div>`); }
+// 28/11 : la réserve de compagnons (toucher le compagnon en haut)
+function voirComps() { const CC = C.COMPAGNONS, r = DR.reserve || [];
+  fenetre(`<h2>🐾 Tes compagnons</h2>${DR.comp ? `<p style="text-align:center"><b>${CC[DR.comp.id].e} ${CC[DR.comp.id].n}</b> (avec toi) · ❤ ${DR.comp.pv}/${CC[DR.comp.id].pv}<br><small>${CC[DR.comp.id].d}</small></p>` : '<p style="text-align:center">Aucun compagnon avec toi.</p>'}
+    ${r.length ? '<h3 style="text-align:center;color:var(--or)">En réserve</h3>' + r.map((x, i) => `<button class="go" style="margin-top:2cqw" ${DR.ecran === 'combat' ? 'disabled' : ''} onclick="DR&&D.changerComp(DR, ${i});sauveD();fenetre('');descenteEcran()">${CC[x.id].e} Prendre ${CC[x.id].n} · ❤ ${x.pv}/${CC[x.id].pv}${x.pv <= 0 ? ' (à terre : soigne-le au feu de camp)' : ''}</button>`).join('') : '<p style="text-align:center;color:var(--doux)">La réserve est vide. Un nouveau compagnon y envoie l’ancien.</p>'}
+    ${DR.ecran === 'combat' ? '<p style="text-align:center;color:var(--doux)">On change de compagnon entre deux combats.</p>' : ''}`); }
 function infoObjet(k) { const O = D.OBJETS[k], F = D.FAMILLES[O.f]; fenetre(`<h2>${icoObj(k)} ${O.n}</h2><p style="text-align:center">${O.d}</p><p style="text-align:center">${etiqObj(k)}</p>${F ? `<p style="text-align:center;color:var(--doux);font-size:.9em">Famille ${F.e} ${F.n} : 2 objets différents = ${F.d2} ; 3 = ${F.d3}.</p>` : ''}${DR && DR.obj[k] > 1 ? `<p style="text-align:center;color:var(--doux)">Tu en as ${DR.obj[k]} : l’effet s’additionne.</p>` : ''}<button class="go" onclick="fenetre('')">Compris</button>`); }
 // 15/11 soir : l'explication des familles
 function infoFamilles() {
