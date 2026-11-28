@@ -83,7 +83,7 @@ function ficheHerosHTML(id) {
   const max10 = (() => { let n = H.niv, or = avSac().or, pou = poussiereH(), k = 0; while (k < 10 && n < R.max) { const c = coutNiveau(n); if (or < c.or || pou < c.pou) break; or -= c.or; pou -= c.pou; n++; k++; } return k; })();
   return `<div class="fh-scene" style="--hc:${I.c};--rc:${R.c}">
       <div class="fh-col">${['arme', 'tete', 'anneau'].map(k => slot(EQ_CASES.find(c => c.k === k))).join('')}</div>
-      <div class="fh-centre" id="fh-portrait">${fhImg(I)}<b>${I.nom}</b><small>${I.titre}</small>${typeof PW_CLASSES !== 'undefined' && typeof classeDe === 'function' && PW_CLASSES[classeDe(id)] ? `<br><small style="color:#f3c96b">${PW_CLASSES[classeDe(id)].e} ${PW_CLASSES[classeDe(id)].n} · ${PW_CLASSES[classeDe(id)].d}</small>` : ''}<br><span class="fh-rang">${R.n}</span></div>
+      <div class="fh-centre" id="fh-portrait">${fhImg(I)}<b>${I.nom}</b><small>${I.titre}</small>${typeof PW_CLASSES !== 'undefined' && typeof classeDe === 'function' && PW_CLASSES[classeDe(id)] ? `<br><small style="color:#f3c96b">${PW_CLASSES[classeDe(id)].e} ${PW_CLASSES[classeDe(id)].n} · ${PW_CLASSES[classeDe(id)].d}</small>` : ''}<br><span class="fh-rang">${R.n}</span>${typeof avTrouve === 'function' && avTrouve(id) && typeof avMaj === 'function' ? `<br><button style="margin-top:8px;font-size:.85em;padding:6px 12px;background:#2a2550;color:#f1ecff;border:1px solid #6a5fb0;border-radius:10px;font-family:inherit" onclick="fhApparence('${id}')">🎭 Changer d’apparence</button>` : ''}</div>
       <div class="fh-col">${['torse', 'pieds', 'talisman'].map(k => slot(EQ_CASES.find(c => c.k === k))).join('')}</div>
     </div>
     <div class="fh-puiss">✊ ${fhPuissance(id)}</div>
@@ -311,3 +311,14 @@ function fhZero(id) {
     <div class="fh-bts"><button class="fh-bt" onclick="fhFen('')">Annuler</button><button class="fh-bt or" onclick="fhZeroOk('${id}')">🔄 Remettre à zéro</button></div>`);
 }
 function fhZeroOk(id) { const r = remetAZero(id); fhFen(''); if (r === 'ok') { fhSon('magie'); fhBulle('🔄 Remis à zéro : tout est rendu'); } else fhBulle(r); FH.apres(); }
+
+// 28/11 (l'utilisateur : « mon portrait reste avec Zéphine partout ») : un héros d'aventure peut changer d'apparence (l'autre portrait de sa voie) depuis sa fiche
+function fhApparence(id) {
+  const a = avTrouve(id); if (!a) return; const g = a.genre === 'f' ? 'h' : 'f', img = `portraits/av-${a.voie}-${g}.webp`;
+  const v = document.createElement('div'); v.className = 'fhapp-voile'; v.style.cssText = 'position:fixed;inset:0;z-index:2147483000;background:#000c;display:flex;align-items:center;justify-content:center;padding:16px';
+  v.innerHTML = `<div style="background:#1b1733;border:2px solid #f3c96b;border-radius:16px;padding:18px;max-width:360px;text-align:center;color:#f1ecff"><h3 style="margin:0 0 10px;color:#f3c96b">🎭 Nouvelle apparence pour ${a.nom}</h3>
+    <img src="${img}" style="width:200px;height:200px;border-radius:50%;object-fit:cover;border:3px solid #f3c96b"><p>Son portrait changera partout : combats, Chroniques, profil, amis. Ses niveaux, son équipement et ses pouvoirs ne bougent pas. On peut revenir en arrière quand on veut.</p>
+    <button style="background:#f3c96b;color:#2b1d0a;border:0;border-radius:10px;padding:10px 16px;font-weight:bold" onclick="avMaj('${id}', x => { x.genre = '${g}'; });location.reload()">Garder cette apparence</button>
+    <button style="margin-left:8px;background:#2a2550;color:#f1ecff;border:1px solid #6a5fb0;border-radius:10px;padding:10px 16px" onclick="this.closest('.fhapp-voile').remove()">Annuler</button></div>`;
+  document.body.appendChild(v);
+}
