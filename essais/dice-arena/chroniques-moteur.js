@@ -578,6 +578,11 @@ function sceauxBoss(S, k) {
 }
 // 27/11 (choix de l'utilisateur : « durcir à 1-2 héros ») : dans la Saison 1, la part des monstres gardés selon le nombre de héros
 // (avant : 35 % seul, 49 % à deux → parties de 16 tours gagnées à 93-98 % sans pouvoirs). Réglé au simulateur (fiche d'équilibrage).
+// 28/11 (l'utilisateur : « dans Terres brûlées on récupère des rouages alors que c'est braise éternelle ») : le nom de l'objet de chaque scénario, avec son article
+const FEM_OBJ = ['braise éternelle', 'corde de la cloche', 'rune de braise', 'clé du clocher'];
+function objUn(S) { const o = SCEN[(S && S.scen) || 'horloger'].objet; return (FEM_OBJ.includes(o.n) ? 'une ' : 'un ') + o.n; }
+function objE(S) { return SCEN[(S && S.scen) || 'horloger'].objet.e; }
+function axeN(S) { return SCEN[(S && S.scen) || 'horloger'].axe || 'l’axe'; }
 const SAISON_SCEN = ['cloitre', 'refectoire', 'cellules', 'crypte'];
 const SAISON_GARDE = typeof process !== 'undefined' && process.env && process.env.SG ? Object.fromEntries(process.env.SG.split(',').map((v, i) => [i + 1, +v])) : { 1:.6, 2:1, 3:1 }; // 27/11 : seul 60 % des monstres, à deux et plus tous
 function adapte(S) {
@@ -885,8 +890,8 @@ function bouger(S, hi, idDe, x, y) {
   if (reste > 0 && !piegeEnRoute) h.des.push({ id:'d' + S.seq++, v:reste, pas:true });
   const o = S.R.obj[cle(x, y)];
   if (o && o.t === 'piege' && !o.trouve) { o.trouve = true; o.cache = false; blesseHeros(S, h, 3); ev.push({ t:'piege', h:hi }); log(S, piegeEnRoute ? `⚠ ${nm(h)} marche sur un piège caché en chemin : −3 PV, et s’arrête là.` : `⚠ ${nm(h)} tombe dans un piège : −3 PV.`); }
-  if (o && o.t === 'rouage' && !h.porte) { delete S.R.obj[cle(x, y)]; h.porte = true; log(S, `⚙ ${nm(h)} ramasse un rouage.`); }
-  else if (o && o.t === 'rouage') log(S, `⚙ ${nm(h)} porte déjà un rouage : il en laisse un par terre (un seul à la fois).`);
+  if (o && o.t === 'rouage' && !h.porte) { delete S.R.obj[cle(x, y)]; h.porte = true; log(S, `${objE(S)} ${nm(h)} ramasse ${objUn(S)}.`); }
+  else if (o && o.t === 'rouage') log(S, `${objE(S)} ${nm(h)} porte déjà ${objUn(S)} : il laisse l’autre par terre (un seul à la fois).`);
   if (S.R.grille && x === S.R.grille.dx && y === S.R.grille.dy) { log(S, `⬇ ${nm(h)} monte sur la dalle : CLONK… la grille du Cagibi remonte. Tant que ${nm(h)} reste dessus, elle reste ouverte.`); ev.push({ t:'grille' }); }
   else if (S.R.grille && x === S.R.grille.x && y === S.R.grille.y) log(S, `✋ ${nm(h)} se tient sous la grille et la retient : elle reste ouverte tant qu’il ou elle est dessous.`);
   if (S.R.grille && ((de0[0] === S.R.grille.dx && de0[1] === S.R.grille.dy) || (de0[0] === S.R.grille.x && de0[1] === S.R.grille.y)) && !grilleOuverte(S)) log(S, `⬆ ${nm(h)} s’en va : la grille retombe dans un grand bruit de fer.`);
@@ -1011,7 +1016,7 @@ function agir(S, hi, idDe, x, y) {
     if (S.statuesBut && !R.statuesOk) return 'La cloche est prise dans la glace : les quatre statues doivent d’abord la regarder.';
     unPas(S, h, idDe); h.porte = false; R.rouagesPoses++; S.sablier += 2;
     if (sc0.sansBoss && R.rouagesPoses >= nb) { S.fin = 'gagne'; S.score += 300 + S.sablier * 10; log(S, `${sc0.axeE} ${nm(h)} attache la corde et tire de toutes ses forces… DONG ! ${S.scen === 'refectoire' ? 'La deuxième cloche répond à la première.' : 'La cloche sonne à travers la montagne.'}`); return { ok:true, ev:[{ t:'rouage', boss:false }] }; }
-    log(S, `⚙ Rouage posé sur l’axe (${R.rouagesPoses}/${nb}) : +2 grains.`);
+    log(S, `${objE(S)} ${objUn(S).replace(/^un(e)? /, m => m[0].toUpperCase() + m.slice(1))} posé${FEM_OBJ.includes(SCEN[S.scen || 'horloger'].objet.n) ? 'e' : ''} sur ${axeN(S)} (${R.rouagesPoses}/${nb}) : +2 grains.`);
     if (R.rouagesPoses >= nb) reveilBoss(S); return { ok:true, ev:[{ t:'rouage', boss:R.rouagesPoses >= nb }] };
   }
   const st = R.statues ? R.statues.findIndex(t => t.x === x && t.y === y) : -1;
@@ -1065,7 +1070,7 @@ function levierChantant(S, hi, idDe, x, y, o) {
 // ce que cache un meuble (une seule fouille)
 function fouilleMeuble(S, hi, idDe, x, y, o) {
   const h = S.heros[hi], R = S.R; if (o.fouille) return `On a déjà fouillé ${MEUBLE_N[o.t]}.`;
-  if (o.cache === 'rouage' && h.porte) { log(S, `⚙ ${nm(h)} sent un rouage dans ${MEUBLE_N[o.t]}, mais ses mains sont prises : un héros ne porte qu’UN rouage à la fois.`); return `${nm(h)} porte déjà un rouage (un seul à la fois) : qu’un autre héros fouille ici.`; }
+  if (o.cache === 'rouage' && h.porte) { log(S, `${objE(S)} ${nm(h)} sent ${objUn(S)} dans ${MEUBLE_N[o.t]}, mais ses mains sont prises : un héros n’en porte qu’un à la fois.`); return `${nm(h)} porte déjà ${objUn(S)} (un seul à la fois) : qu’un autre héros fouille ici.`; }
   // 🔒 crochetage (16/11) : un meuble verrouillé demande un vrai dé de N ou plus, qui est utilisé en entier
   if (o.verrou && !o.crochete) { const d = h.des.find(z => z.id === idDe); if (!d || d.pas || d.v < o.verrou) return `🔒 ${MEUBLE_N[o.t][0].toUpperCase() + MEUBLE_N[o.t].slice(1)} est verrouillé : il faut un dé de ${o.verrou} ou plus pour le crocheter (le dé est utilisé en entier).`;
     prendDe(h, idDe); o.crochete = true; log(S, `🔓 ${nm(h)} crochète ${MEUBLE_N[o.t]}… CLIC !`); } else unPas(S, h, idDe);
@@ -1468,7 +1473,7 @@ function transmuter(S, hi, idDe) {
   if (h.id !== 'zephine' || !pwA(h, 'passif', 'A')) return 'Seule Zéphine (Transmutation) sait retourner un dé.'; if (h.transT === S.R.tour) return 'Une fois par tour.';
   const av = d.v; d.v = 7 - d.v; d.mod = true; h.transT = S.R.tour; log(S, `🔄 Transmutation : le ${av} de Zéphine devient un ${d.v}.`); return { ok:true, ev:[pwEv(h, hi, 'passif', ['h' + hi])] };
 }
-const API = { verifieMonstre, forgeron, runeCoeur, bossIntouchable, dansCrypte, PHASES_HIVER, aubin, parler, suitAubin, dansClocher, LEVIERS_C, JAUGE_ULT, GRANDIT, miseAJour:S => { if (S && S.R && S.R.plan === 2) { elargitPortes(S); majBibliotheque(S); majBibliotheque3(S); majBibliotheque5(S); majAutel2(S); } return S; }, benir, ETAL, acheter, pause, echanger, prendreEscalier, moitiesPorte, presDePorte, rectSalle, etageDe, COULOIRS_Z2, CAPA, phasesDe, grilleOuverte, contact, pasDe, aPortee, SAC, utiliser, SCEN, HEROS_C, BETES, PHASES, SALLES, OBJETS, MEUBLE_N, nouvelle, atteignables, bouger, frapper, proteger, soigner, donner, relever, fouiller, agir, ouvrir,
+const API = { objUn, objE, axeN, verifieMonstre, forgeron, runeCoeur, bossIntouchable, dansCrypte, PHASES_HIVER, aubin, parler, suitAubin, dansClocher, LEVIERS_C, JAUGE_ULT, GRANDIT, miseAJour:S => { if (S && S.R && S.R.plan === 2) { elargitPortes(S); majBibliotheque(S); majBibliotheque3(S); majBibliotheque5(S); majAutel2(S); } return S; }, benir, ETAL, acheter, pause, echanger, prendreEscalier, moitiesPorte, presDePorte, rectSalle, etageDe, COULOIRS_Z2, CAPA, phasesDe, grilleOuverte, contact, pasDe, aPortee, SAC, utiliser, SCEN, HEROS_C, BETES, PHASES, SALLES, OBJETS, MEUBLE_N, nouvelle, atteignables, bouger, frapper, proteger, soigner, donner, relever, fouiller, agir, ouvrir,
   finTour, visible, accepte, coutEchange, voisins, dist, herosEn, cle, libre, reveille, pwInfo, lancerPouvoir, transmuter, trouveCombo, PW_CO, COMBOS };
 if (typeof module !== 'undefined' && module.exports) module.exports = API; else racine.CHRON = API;
 })(typeof window !== 'undefined' ? window : globalThis);
