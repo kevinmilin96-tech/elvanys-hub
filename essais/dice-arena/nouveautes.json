@@ -1,5 +1,9 @@
 [
 {
+"v": "20261128-153351",
+"m": "Entre amis : crée un salon, invite ton ami, puis choisis dans le salon les Chroniques ou un Duel"
+},
+{
 "v": "20261128-153205",
 "m": "Mes amis : touche un ami pour le défier en Duel ou l'inviter aux Chroniques (la salle se crée et l'invitation part toute seule)"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261128-002348",
 "m": "Rempart : le pouvoir se recharge pour toutes les tours de la même sorte à la fois (un Grand gel toutes les 20 s au plus)"
-},
-{
-"v": "20261128-001949",
-"m": "Rempart : toucher le ⬆+1, le ✦ ou une rune n'ouvre plus la fiche de la tour"
 }
 ]

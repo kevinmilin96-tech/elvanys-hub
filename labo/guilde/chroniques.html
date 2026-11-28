@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta name="guilde-version" content="20261128-153205"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
+<head><meta name="guilde-version" content="20261128-153351"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="La Guilde"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="apple-touch-icon" href="icone-180.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="robots" content="noindex">
@@ -243,7 +243,7 @@
 <script src="musique.js?v=fb0b9da49e"></script>
 <script src="rang.js?v=aadc90c69b"></script>
 <script>window.AMIS_SANS_BOUTON = true;</script>
-<script src="amis.js?v=6e1db4a845"></script>
+<script src="amis.js?v=ddc5364e1a"></script>
 <script src="heros-etoiles.js?v=29ce68f57f"></script>
 <script src="progression-modes.js?v=5beed3e8fc"></script>
 <script src="aventuriers.js?v=5679a4a045"></script>
@@ -509,7 +509,7 @@ async function rouvrirEnLigne(id, nomDonne) {
 }
 function recoit(d) {
   if (!d || !d.etat) return;
-  if (d.etat.lobby) { LOB = d.etat.lobby; S = null; L.version = d.version; if (d.joueurs) L.joueurs = d.joueurs; L.dernier = ''; fenetre(''); salleAttente(); return; }
+  if (d.etat.lobby) { LOB = d.etat.lobby; S = null; L.version = d.version; if (d.joueurs) L.joueurs = d.joueurs; L.dernier = ''; if (suisDuel()) return; fenetre(''); salleAttente(); return; }
   const depart = !S; LOB = null;
   const lancesAvant = S && S.lances ? { t:S.lances.t, l:S.lances.l.slice() } : null;
   const avant = S && S.journal ? S.journal[0] : null, posAvant = S && S.heros ? S.heros.map(z => [z.x, z.y]) : null, desAvant = S && S.heros ? S.heros.map(z => z.des.length) : null;
@@ -583,7 +583,7 @@ async function rejoindre(code, moi) {
     L = { code, version:d.version, joueurs:d.joueurs || [], moi, dernier:'' };
     if (!L.joueurs.some(j => j.id === moi.id)) L.joueurs.push({ id:moi.id, nom:moi.nom, heros:[] });
     localStorage.setItem(SALLE, JSON.stringify({ code, moi, quand:Date.now() }));
-    if (d.etat && d.etat.lobby) { LOB = d.etat.lobby; S = null; son('portail'); salleAttente();
+    if (d.etat && d.etat.lobby) { LOB = d.etat.lobby; S = null; if (suisDuel()) return; son('portail'); salleAttente();
       // 23/11 : arrivé par le configurateur (« Rejoindre avec un code ») : les héros cochés entrent dans la salle avec moi, s'il reste de la place
       const apporte = chPre.apporte ? choisis.slice() : []; chPre.apporte = false;
       lobbyPousse(apporte.length ? X => { apporte.forEach(k => { if (X.equipe.length >= 4 || X.equipe.some(x => x.owner === L.moi.id && x.cle === k)) return; const e = entreeLobby(k); if (e) X.equipe.push(e); }); } : undefined); return; }
@@ -1439,6 +1439,7 @@ function salleAttente() {
     <p style="margin:0 0 2cqw">${L.joueurs.map(j => `${j.id === LOB.hote ? '👑 ' : '🙂 '}<b>${j.nom}</b>${j.id === L.moi.id ? ' (toi)' : ''}`).join(' · ')}</p>
     ${(() => { const E = typeof AMIS !== 'undefined' && AMIS.etat, enL = E ? E.amis.filter(x => x.enLigne && x.salle !== L.code) : [];
       return `<button class="gros" style="background:#14223a;border-color:#7cd4ff;color:#7cd4ff;margin-top:2cqw" onclick="amisFenetre()">👥 Inviter des amis<small>${!E ? 'Crée ta carte de joueur pour voir tes amis en ligne.' : enL.length ? `${enL.length} ami${enL.length > 1 ? 's' : ''} en ligne : ${enL.map(x => amisEsc(x.pseudo)).join(', ')}` : 'Aucun ami en ligne pour l’instant (le code de la salle marche aussi).'}</small></button>`; })()}
+    ${hote ? `<h3 style="color:var(--or);margin:3cqw 0 1.5cqw">🎲 À quoi on joue ?</h3><div style="display:flex;gap:2cqw"><button class="gros" style="flex:1;margin:0;border-color:var(--or);background:#3a2f12">📜 Les Chroniques<small>jusqu’à 4 héros, ensemble contre le donjon</small></button><button class="gros" style="flex:1;margin:0" onclick="versDuel()">⚔ Un Duel<small>toi contre un ami (2 joueurs)</small></button></div>` : ''}
     <h3 style="color:var(--or);margin:3cqw 0 1.5cqw">📖 Le scénario${hote ? '' : ' <small style="color:var(--doux);font-weight:normal">(choisi par l’hôte)</small>'}</h3>
     ${hote ? `${SAISON1_CHAP.some(c => scenVisible(c[0]) || (typeof saisonActive === 'function' && saisonActive())) && (typeof saisonActive === 'function' && saisonActive() || localStorage.getItem('guilde-atelier') === '1') ? `<h4 class="grpH">❄ Saison 1 · L’Hiver des runes <small>Les Cloches de givre</small></h4><div class="choixH saisonH" style="grid-template-columns:1fr 1fr">${SAISON1_CHAP.map(([k, n, date]) => { const ouvert = k && SCX_TXT[k] && scenVisible(k); return `<button class="${ouvert && LOB.camp == null && LOB.scen === k ? 'on' : ''}" ${ouvert ? `onclick="choixScenLobby('${k}')"` : 'disabled'} style="font-size:3.2cqw">${n}<small>${ouvert ? SCX_TXT[k].duree.split(' · ')[0] : '🔒 le ' + new Date(date + 'T12:00:00').toLocaleDateString('fr-FR', { day:'numeric', month:'long' })}</small></button>`; }).join('')}</div>` : ''}
       <h4 class="grpH">📖 Les scénarios classiques</h4><div class="choixH" style="grid-template-columns:1fr 1fr">${Object.entries(SCX_TXT).filter(([k]) => scenVisible(k) && !SAISON1_CHAP.some(c => c[0] === k)).map(([k, s]) => `<button class="${LOB.camp == null && LOB.scen === k ? 'on' : ''}" onclick="choixScenLobby('${k}')" style="font-size:3.4cqw">${s.titre}<small>${s.duree}</small></button>`).join('')}
@@ -1457,6 +1458,17 @@ function salleAttente() {
       : `<p class="sous" style="margin-top:4cqw;font-size:1.05em">⏳ En attente du lancement par <b>${nomJoueur(LOB.hote)}</b>… La partie démarrera toute seule sur ton téléphone.</p>`}
   </div>`;
 }
+// 28/11 (l'utilisateur : « juste besoin de créer une salle, après je sélectionne le mode une fois dans le salon ») : depuis la salle d'attente,
+// l'hôte peut choisir UN DUEL : une salle de duel est créée, l'hôte y va, et les autres téléphones de la salle le suivent tout seuls.
+async function versDuel() {
+  if (!estHote() || !L) return; if (L.joueurs.length > 2 && !confirm('Un Duel se joue à 2 : seul le premier ami arrivé pourra jouer. On y va ?')) return;
+  const moiD = { id:L.moi.id, nom:L.moi.nom || 'Hôte' };
+  try { const { statut, d } = await api('POST', API, { mode:'duel', etat:{ lobby:{ mode:'duel', hote:moiD.id, choix:{} } }, joueurs:[{ id:moiD.id, nom:moiD.nom, heros:[] }] });
+    if (statut !== 200) { bulle(d.message || 'Impossible de créer le duel.', true); return; }
+    localStorage.setItem('guilde-duel-salle', JSON.stringify({ code:d.code, moi:moiD, t:Date.now() }));
+    await lobbyPousse(l => { l.versDuel = d.code; }); location.href = 'duel.html?ami=1';
+  } catch (e) { bulle('Pas de réseau.', true); } }
+const suisDuel = () => { if (LOB && LOB.versDuel && !estHote()) { location.href = 'duel.html?salle=' + LOB.versDuel; return true; } return false; };
 // l'hôte lance : la partie est créée sur son téléphone et envoyée à tous
 async function lanceSalle() {
   if (!estHote() || !LOB.equipe.length) return;
