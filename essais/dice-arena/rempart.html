@@ -646,8 +646,11 @@ function tic(now) {
   if (!S || S.fini || pause || fen.innerHTML || document.getElementById('guide') || document.hidden) return;
   accu += dt; let n = 0;
   while (accu >= P.PAS && n < 4) { accu -= P.PAS; P.etape(S); n++; if (S.fini) break; }
-  if (n) { joueFx(); if (sel && sel.t === 'de' && !S.des[sel.k]) sel = null; rafraichit(); }
+  if (n) { joueFx(); if (sel && sel.t === 'de' && !S.des[sel.k]) sel = null; rafraichit(); rappelPuits(); }
 }
+// 28/11 soir : sur un niveau à puits, aucune rune ne tombe seule ; si le joueur manque d'énergie sans puits, Moustache le lui rappelle (une fois par partie)
+function rappelPuits() { if (!S || !S.L.puits || S.rapPuits || S.puitsBatis || S.t < 20 || S.energie >= 3) return; S.rapPuits = true;
+  banniere('🔮 Pas assez d’énergie ? Bâtis un puits de runes : ici, c’est lui qui fabrique les ◆.'); dis('🔮 Ici, seul le puits de runes fabrique de l’énergie : touche 🔮 en bas, puis une case verte, loin des monstres.'); son('miaou'); }
 addEventListener('resize', () => { if (S && document.getElementById('plateau')) { geometrie(); dessinePlateau(); } });
 // ---------------------------------------------------------------- la fin du niveau
 function fin() {
