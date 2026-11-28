@@ -916,7 +916,7 @@ function frapper(S, hi, idDe, mid, k) {
   const riposte = m === R.boss && m.b !== 'roios' && !(m.riposte || {})[hi] && contact(S, m, h); if (riposte) { m.riposte = m.riposte || {}; m.riposte[hi] = true; }
   R.frappeurs = R.frappeurs || {}; R.frappeurs[m.id] = (R.frappeurs[m.id] || []); if (!R.frappeurs[m.id].includes(hi)) R.frappeurs[m.id].push(hi);
   const ev = verifieMonstre(S, m).concat(evPw);
-  if (riposte && R.boss === m && !h.aTerre) { const perdu = blesseHeros(S, h, 2, true); log(S, `⚡ L’Horloger riposte sur ${nm(h)} (−${perdu}).`); ev.push({ t:'frappe', m:'boss', h:hi, v:perdu }); }
+  if (riposte && R.boss === m && !h.aTerre) { const perdu = blesseHeros(S, h, 2, true); log(S, `⚡ ${R.boss.n} riposte sur ${nm(h)} (−${perdu}).`); ev.push({ t:'frappe', m:'boss', h:hi, v:perdu }); }
   return { ok:true, ev };
 }
 const aPortee = (S, h, m) => { const p = h.id === 'zephine' ? (pwA(h, 'passif', 'B') && pwR(h, 'passif') >= 10 ? 3 : 2) : h.id === 'oria' && pwA(h, 'passif', 'B') ? 2 : 0; return p ? (contact(S, h, m) || dist(h, m) <= p) : contact(S, h, m); }; // 16/11 nuit : Archère, Vent renforcé
@@ -940,7 +940,7 @@ function bossPhaseSuivante(S, ev) {
   const R = S.R, P = phasesDe(S), roi = R.boss.b === 'roios';
   if (R.boss.b === 'roihiver') return phaseHiver(S, ev);
   R.boss.phase++; ev.push({ t:'phase', m:'boss' });
-  if (R.boss.phase >= P.length) { R.boss = null; S.fin = 'gagne'; S.score += 500 + S.sablier * 10; log(S, roi ? '🏆 Le Roi des Os tombe en poussière… et le Labyrinthe se tait.' : '🏆 L’Horloger s’arrête… et s’excuse !'); return ev; }
+  if (R.boss.phase >= P.length) { R.boss = null; S.fin = 'gagne'; S.score += 500 + S.sablier * 10; log(S, roi ? '🏆 Le Roi des Os tombe en poussière… et le Labyrinthe se tait.' : S.scen === 'brulees' ? '🏆 Le Titan de feu s’effondre en cendres… et le grand brasier brûle à nouveau, calme et clair.' : (S.scen || 'horloger') === 'horloger' ? '🏆 L’Horloger s’arrête… et s’excuse !' : `🏆 ${R.boss && R.boss.n || 'Le gardien'} est vaincu !`); return ev; }
   if (!roi) { S.heros.filter(h => !h.aTerre).forEach(h => { h.bouclier = Math.floor(h.bouclier / 2); }); log(S, '⏳ Le temps s’accélère : tous les boucliers fondent de moitié.'); } // 16/11 soir
   R.boss.sceaux = sceauxBoss(S, R.boss.phase); if (!roi && R.boss.phase === 2 && S.livre) log(S, '📕 Le Livre des heures : un sceau de moins pour la Dernière Heure.');
   log(S, `${roi ? '💀' : '⏰'} ${R.boss.n} passe à la phase « ${P[R.boss.phase].n} » : il ${P[R.boss.phase].d}.`);
@@ -1189,7 +1189,7 @@ function finTour(S) {
   if (R.boss && !S.fin && (S.mur === R.tour || R.boss.entrave >= R.tour)) log(S, S.mur === R.tour ? '🧱 Le mur de lumière tient : le boss ne frappe pas ce tour.' : '🌵 Le boss est entravé : il ne fait rien ce tour.');
   else if (R.boss && !S.fin) {
     const Bo = R.boss;
-    if (Bo.repos && Bo.b !== 'roihiver') { const s = Bo.sceaux.find(x => x.ok && x.t !== 'tot'); if (s) { s.ok = false; s.val = 0; } log(S, Bo.b === 'roios' ? '💀 Le Roi des Os reprend son souffle (un sceau se referme).' : '⏰ L’Horloger remonte son ressort (un sceau se referme)… et frappe quand même.'); ev.push({ t:'garde', m:'boss' }); }
+    if (Bo.repos && Bo.b !== 'roihiver') { const s = Bo.sceaux.find(x => x.ok && x.t !== 'tot'); if (s) { s.ok = false; s.val = 0; } log(S, Bo.b === 'roios' ? '💀 Le Roi des Os reprend son souffle (un sceau se referme).' : (Bo.b === 'horloger' ? '⏰ L’Horloger remonte son ressort (un sceau se referme)… et frappe quand même.' : `🔥 ${Bo.n} reprend des forces (un sceau se referme)… et frappe quand même.`)); ev.push({ t:'garde', m:'boss' }); }
     // 16/11 soir : l'Horloger ne se repose plus (comme les boss de Gloomhaven, il agit à chaque tour) ; il frappe TOUS les héros collés à lui (coup de balancier)
     const balancier = n => debout().filter(h => contact(S, Bo, h)).forEach(h => { const perdu = blesseHeros(S, h, Math.max(0, n - pwMoinsCoup(S, h)), true); pwApresCoup(S, Bo, h, ev); ev.push({ t:'frappe', m:'boss', h:S.heros.indexOf(h), v:perdu }); log(S, `⚔ Coup de balancier sur ${nm(h)} (−${perdu}, perce la moitié du bouclier).`); });
     if (Bo.repos && Bo.b === 'roios') {}
