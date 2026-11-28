@@ -1,5 +1,9 @@
 [
 {
+"v": "20261128-194544",
+"m": "Entre amis : un vrai bouton « Créer un salon » (dans la porte Entre amis et dans Mes amis)"
+},
+{
 "v": "20261128-194345",
 "m": "Salon des Chroniques : reprends une partie sauvegardée directement depuis le salon, et le choix « avec / sans initiative » se voit enfin"
 },
@@ -74,9 +78,5 @@
 {
 "v": "20261128-080332",
 "m": "Rempart : le joker reste ouvert, les étoiles des tours se lisent (4 ★2), les runes restent dans l'écran, et le défi du marchand n'arrive plus pendant une accalmie"
-},
-{
-"v": "20261128-075453",
-"m": "Mes decks : tes héros d'aventure ont maintenant leurs propres decks"
 }
 ]
