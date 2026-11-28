@@ -33,6 +33,13 @@
   .c { position:relative; width:var(--t); height:var(--t); display:flex; align-items:center; justify-content:center; font-size:calc(var(--t) * .55);
     background:url('decor/tuile-sol-brulees.webp') 0 0 / calc(var(--t) * 4) calc(var(--t) * 4); }
   .c.peint { background:none !important; filter:none !important; } .c.peint .o { font-size:calc(var(--t) * .42); opacity:.9; }
+  /* 28/11 : Terres brûlées v2 */
+  .c.peint.lave { box-shadow:inset 0 0 calc(var(--t) * .35) calc(var(--t) * .08) rgba(255,110,20,.85) !important; background:radial-gradient(circle, rgba(255,140,30,.32), rgba(255,60,0,.12)) !important; animation:lave 1.6s ease-in-out infinite alternate; }
+  @keyframes lave { to { box-shadow:inset 0 0 calc(var(--t) * .5) calc(var(--t) * .12) rgba(255,160,40,.95); } }
+  .c.peint.stal { background:rgba(255,40,40,.28) !important; } .c .stal-ic { color:#ff5a3a; font-weight:bold; animation:clign .5s infinite alternate; } @keyframes clign { to { opacity:.35; } }
+  .c.peint .o.q { font-size:calc(var(--t) * .6); opacity:1; filter:drop-shadow(0 0 4px #000); } .c.peint .o.q.off { opacity:.35; filter:grayscale(1); }
+  .c.peint .o.braise-sol { font-size:calc(var(--t) * .6); opacity:1; animation:clign .8s infinite alternate; }
+  .jeton .cara { position:absolute; bottom:-14%; left:-14%; font-size:calc(var(--t) * .24); background:#000c; border-radius:1cqw; padding:0 .3cqw; }
   .c.couloir { filter:brightness(.8) saturate(.8); }
   /* 15/11 soir : le Labyrinthe des Runes a son sol et ses murs (s'ils sont déjà peints ; sinon ceux des Terres brûlées) */
   .laby .c { background:url('decor/tuile-sol-labyrinthe.webp?v=1') 0 0 / calc(var(--t) * 4) calc(var(--t) * 4), url('decor/tuile-sol-brulees.webp') 0 0 / calc(var(--t) * 4) calc(var(--t) * 4); }
@@ -381,11 +388,13 @@ const SCX_TXT = {
     but:'Explorez : ouvrez les portes (gratuit, à côté), fouillez les meubles (un dé) pour trouver <b>3 rouages ⚙</b>. Les 4 leviers de la Salle des rouages ouvrent la porte de bronze.',
     porter:'Portez les rouages jusqu’à l’axe ✹ du Cœur de l’Horloge (derrière la porte de bronze).',
     gagne:['🏆 L’Horloger est réveillé !', '« L’Horloger s’arrête, cligne des yeux, et… s’excuse. Il dormait depuis cent ans, il a cru que vous étiez des voleurs. Là-haut, le pigeon finit son vol, le boulanger finit sa pâte. Et moi ? J’ai fini ma sieste. Personne ne me remercie, bien sûr. »'] },
-  brulees:{ titre:'🔥 Les Terres brûlées', duree:'45-60 min · carte peinte (essai)', ouverture:'« Une île de cendre et de lave. On a accosté en barque, tout en bas. Quelque part dans ces salles dorment trois braises éternelles : ramenez-les au grand brasier, tout en haut… Et préparez-vous : ce qui dort dans le feu n’aime pas qu’on le réveille. Moi, je garde la barque. »',
-    entree:() => '« On ne voit que ce qui est devant nous : les murs cachent le reste. Avancez, regardez, fouillez. »',
-    but:'Explorez (on ne voit que ce qui est en vue), fouillez les meubles (un dé) pour trouver <b>3 braises éternelles 🔥</b>, puis portez-les au <b>grand brasier</b> tout en haut.',
-    porter:'Portez les braises jusqu’au grand brasier 🔥 (la case qui brûle, tout en haut de la carte) : mettez-vous juste à côté, choisissez un dé et touchez le brasier.',
-    gagne:['🏆 Le Titan de feu s’éteint !', '« Le Titan vacille, fume, et s’effondre en un tas de braises tièdes. Les trois braises éternelles brillent au cœur du brasier : l’île est sauvée. Je peux sortir de la barque ? Il fait encore un peu chaud, non ? »'] },
+  // 28/11 : LES TERRES BRÛLÉES v2, « Le Cœur de Braise » (scénario validé par l'utilisateur : Terres-brulees-v2-scenario.md)
+  brulees:{ titre:'🔥 Les Terres brûlées · Le Cœur de Braise', duree:'45-60 min · 3 actes', ouverture:'« L’île fume encore, mais elle se refroidit. Sans ses braises, le grand brasier s’éteindra cette nuit, et avec lui la chaleur de toutes les forges de la Guilde. Des gobelins ont pillé le camp des gardiens du feu. Trouvez ce qui reste. Moi, je garde la barque. »',
+    entree:() => '« Acte I : le camp pillé est à gauche, la source chaude à droite, le petit sanctuaire de la fontaine au milieu. Attention : les fissures de lave qui brillent brûlent celui qui s’y arrête (−2), et un monstre qu’on découvre attaque tout de suite. »',
+    but:'<b>Acte I</b> : au camp pillé (à gauche), battez le chef gobelin pour prendre la <b>Clé de basalte 🗝</b> ; à la fontaine du sanctuaire, réussissez l’énigme des trois vasques pour l’<b>Eau sacrée 💧</b>. La Clé ouvre la porte du grand hall, au bout du couloir.<br><b>Acte II</b> : battez les trois gardiens (la Salamandre reine, le Chaman des cendres, le Golem de magma) : chacun lâche une <b>braise éternelle 🔥</b>.<br><b>Acte III</b> : posez les 3 braises sur le <b>grand brasier</b>, tout en haut… et battez le Titan de feu avant que le sablier soit vide.',
+    porter:'Portez les braises jusqu’au grand brasier 🔥 (tout en haut de la carte) : mettez-vous juste à côté, choisissez un dé et touchez le brasier.',
+    gagne:['🏆 Le grand brasier brûle !', '« Le Titan vacille, fume, et s’effondre en un tas de braises tièdes. Le grand brasier brûle clair, calme, chaud : les forges de la Guilde ne s’éteindront pas cette nuit. Moustache s’étire au bord de la barque… et ronronne. Je peux sortir, maintenant ? »'],
+    perdu:['🌑 L’île s’éteint…', '« Le brasier s’est éteint. L’île devient froide et grise, et toutes les forges de la Guilde avec elle. On rame jusqu’à la plage, on se réchauffe… et on revient. Ce feu-là, on le rallumera. »'] },
 };
 // 26/11 : l'histoire de la saison se joue aussi EN LIGNE (salle) : le donjon du chapitre, ouvert par le récit d'Ilse ; visible seulement pendant la saison
 // 26/11 (l'utilisateur) : dans la salle, la saison a son propre bloc avec ses chapitres, à part des scénarios classiques
@@ -672,7 +681,9 @@ function invLigne(h) {
 }
 const deSel = () => sel && S.heros[actif].des.find(d => d.id === sel);
 // 16/11 (l'utilisateur : « tout sur un écran, sans défiler ») : le but et le journal passent derrière des icônes du haut
-function butTexte() { const R = S.R, posee = R.rouagesPoses, portes = S.heros.filter(z => z.porte).length; return `${R.boss && !R.boss.dort && R.boss.b !== 'roihiver' ? `⏰ <b>${R.boss.n}</b> · « ${K.SCEN[S.scen || 'horloger'].phases[R.boss.phase]} » : il ${K.phasesDe(S)[R.boss.phase].d.replace('Rouagelins', 'renforts').replace('hall d’entrée', 'point de départ')}. ${R.boss.repos && R.boss.b === 'roios' ? 'Ce tour-ci il se repose.' : R.boss.repos ? '<b style="color:#ff8a7a">Ce tour-ci il remonte un sceau ET frappe tous ceux collés à lui !</b>' : '<b style="color:#ff8a7a">Ce tour-ci il frappe tous ceux collés à lui !</b>'} ${R.boss.b === 'roios' ? '' : 'Ses coups percent la moitié du bouclier ; il riposte (−2) au 1er coup de chaque héros.'}`
+function butTexte() { const R = S.R, posee = R.rouagesPoses, portes = S.heros.filter(z => z.porte).length;
+  if (S.scen === 'brulees' && R.v2 && R.boss) return `🔥 <b>${R.boss.n}</b> · phase ${R.boss.phase + 1}/3 « ${K.PHASES_TITAN[R.boss.phase].n} » : il ${K.PHASES_TITAN[R.boss.phase].d}. ${R.boss.feu ? '<b style="color:#ff8a7a">Son bouclier de feu est levé : faites-le tomber (💧 l’Eau sacrée, ou un dé posé sur le grand brasier, juste à côté).</b> ' : ''}Ses coups percent la moitié du bouclier${(S.nbHeros || 1) > 1 ? ' ; il riposte (−1) au 1er coup de chaque héros' : ''}. ⌛ Sablier vide = défaite.`;
+  return `${R.boss && !R.boss.dort && R.boss.b !== 'roihiver' ? `⏰ <b>${R.boss.n}</b> · « ${K.SCEN[S.scen || 'horloger'].phases[R.boss.phase]} » : il ${K.phasesDe(S)[R.boss.phase].d.replace('Rouagelins', 'renforts').replace('hall d’entrée', 'point de départ')}. ${R.boss.repos && R.boss.b === 'roios' ? 'Ce tour-ci il se repose.' : R.boss.repos ? '<b style="color:#ff8a7a">Ce tour-ci il remonte un sceau ET frappe tous ceux collés à lui !</b>' : '<b style="color:#ff8a7a">Ce tour-ci il frappe tous ceux collés à lui !</b>'} ${R.boss.b === 'roios' ? '' : 'Ses coups percent la moitié du bouclier ; il riposte (−2) au 1er coup de chaque héros.'}`
       : posee + portes >= (K.SCEN[S.scen || 'horloger'].nbObj || 3) || S.rouagesTrouves >= (K.SCEN[S.scen || 'horloger'].nbObj || 3) ? SCT().porter : SCT().but}${butMenteur()}`; }
 // 26/11 : chapitre 2, les inscriptions des deux coffres gravés et les statues, toujours relisibles dans le but
 function butMenteur() { const R = S.R; let t = '';
@@ -704,6 +715,18 @@ function infoStat(k) {
 // 16/11 (l'utilisateur : « comme dans les jeux vidéo, une icône de quêtes ») : la quête principale par étapes, et les quêtes secondaires
 function quetes() {
   const R = S.R, sc = S.scen || 'horloger', SC = K.SCEN[sc];
+  if (sc === 'brulees' && R.v2) { const G = ['reinesal', 'chaman', 'golemmagma'], vivant = b => R.monstres.some(m => m.b === b), runes = Object.values(R.obj).filter(o => o.t === 'rune');
+    return [
+      { p:1, t:'Acte I · Battre le chef gobelin du camp pillé (à gauche) et prendre la Clé de basalte 🗝', ok:!!S.cleBasalte },
+      { p:1, t:'Acte I · Ouvrir la porte de basalte du grand hall (au bout du couloir)', ok:Object.values(R.portes).some(q => q.basalte && q.ouverte) },
+      { p:1, t:`Acte II · Battre les trois gardiens (${S.gardiens || 0}/3) : la Salamandre reine (grotte aux stalactites), le Chaman des cendres (cercle rituel), le Golem de magma (grotte de cristal)`, ok:(S.gardiens || 0) >= 3 },
+      { p:1, t:`Acte III · Poser les 3 braises sur le grand brasier (${R.rouagesPoses}/3)`, ok:R.rouagesPoses >= 3 },
+      { p:1, t:`Acte III · Battre le Titan de feu${R.boss ? ` (phase ${R.boss.phase + 1}/3)` : ''}`, ok:S.fin === 'gagne' },
+      { p:0, t:`L’Eau sacrée 💧 : réussir l’énigme des trois vasques de la fontaine (pair, impair, puis la somme des deux)${S.eau > 0 ? ` · reste ${S.eau} usage${S.eau > 1 ? 's' : ''}` : ''}`, ok:Object.values(R.obj).some(o => o.t === 'fontaine' && o.fait) },
+      { p:0, t:'Lire le journal du gardien du feu (au camp pillé)', ok:(S.recits || []).includes('camp') },
+      { p:0, t:S.pageRunes ? `La page de la bibliothèque : éteindre les runes du chaman dans cet ordre : <b>${R.pageTexte}</b> (${R.runeProg || 0}/4)` : 'Trouver, dans la bibliothèque (à droite), l’ordre des runes du chaman', ok:!!S.pageRunes && (!vivant('chaman') || (R.runeProg || 0) >= 4) },
+      { p:0, t:'Se baigner une fois dans la source chaude (en bas à droite) : +5 PV par héros', ok:Object.values(R.obj).some(o => o.t === 'source' && Object.keys(o.bu).length >= S.heros.length) },
+    ]; }
   if (sc !== 'horloger') return [{ p:1, t:butTexte(), ok:S.fin === 'gagne' }];
   const portes = S.heros.filter(z => z.porte).length;
   return [
@@ -720,7 +743,7 @@ function voirQuetes() {
   fenetre(`<h2>📋 Les quêtes</h2><h3 style="color:var(--or);margin:.4em 0 .2em">⭐ Principale</h3><ul style="padding:0;margin:0">${Q.filter(q => q.p).map(li).join('')}</ul>
     ${Q.some(q => !q.p) ? `<h3 style="color:var(--or);margin:.8em 0 .2em">✨ Secondaires</h3><ul style="padding:0;margin:0">${Q.filter(q => !q.p).map(li).join('')}</ul>` : ''}
     <p style="color:var(--doux);margin-top:1em">⌛ Sablier : ${S.sablier} tour${S.sablier > 1 ? 's' : ''} · 💰 Bourse : ${S.orAv || 0} or · ⭐ Score : ${S.score} · ✋ Relèves : ${3 - (S.releves || 0)}/3</p>
-    <button class="sec" onclick="faitPause()" ${(S.pauses || 0) >= 2 ? 'disabled style="opacity:.45"' : ''}>🔥 Pause au feu de camp (${2 - (S.pauses || 0)} restante${2 - (S.pauses || 0) > 1 ? 's' : ''})<small>+4 PV pour chaque héros debout, mais le sablier perd 3 grains. Impossible avec des monstres tout près.</small></button>
+    ${S.scen === 'brulees' && S.R.v2 ? '<p style="color:var(--doux);font-size:.9em">♨ Pas de feu de camp sur cette île : le seul vrai repos, c’est la source chaude (+5 PV, une fois par héros).</p>' : `<button class="sec" onclick="faitPause()" ${(S.pauses || 0) >= 2 ? 'disabled style="opacity:.45"' : ''}>🔥 Pause au feu de camp (${2 - (S.pauses || 0)} restante${2 - (S.pauses || 0) > 1 ? 's' : ''})<small>+4 PV pour chaque héros debout, mais le sablier perd 3 grains. Impossible avec des monstres tout près.</small></button>`}
     <div class="choixh"><button onclick="fenetre('')">Fermer</button></div>`);
 }
 // 16/11 (choix de l'utilisateur) : le COLPORTEUR et la PAUSE AU FEU DE CAMP
@@ -815,20 +838,29 @@ function dessine() {
     // 28/11 (l'utilisateur : « on doit les mettre où, le feu tout en haut on le trouve pas ») : sur une carte PEINTE, le grand brasier n'était pas montré :
     // on le dessine (gros feu qui brûle), avec son compteur, et la case s'allume quand le héros qui porte une braise est juste à côté
     if (peint && vu && mur === 'A') { const ok = h.porte && K.dist(h, { x, y }) === 1; cl += ' brasier' + (ok ? ' cible' : ''); inner = `<span class="o brasier-ic">${K.SCEN[S.scen].axeE || '🔥'}</span><span class="lv">${R.rouagesPoses}/${K.SCEN[S.scen].nbObj || 3}</span>`; }
+    // 28/11 : les Terres brûlées v2 : fissures de lave, stalactites annoncées, objets de quête, porte de basalte, braises au sol, meubles fouillés
+    if (peint && vu && R.v2) { const q = o && ['fontaine', 'source', 'rune', 'cristal'].includes(o.t) ? o : null;
+      if (R.lave && R.lave[c]) cl += ' lave';
+      if ((R.stal || []).some(([a, b]) => a === x && b === y)) { cl += ' stal'; inner += '<span class="o stal-ic">⚠</span>'; }
+      if (q) { inner += `<span class="o q ${q.t === 'rune' && !q.on || q.t === 'cristal' && !q.on ? 'off' : ''}">${{ fontaine:'⛲', source:'♨', rune:q.e, cristal:'💎' }[q.t]}</span>${q.t === 'fontaine' && !q.fait ? `<span class="lv">${q.v.length}/3</span>` : ''}`;
+        if (d && Math.max(Math.abs(h.x - x), Math.abs(h.y - y)) <= 1 && (q.t !== 'rune' && q.t !== 'cristal' || q.on) && !(q.t === 'fontaine' && q.fait)) cl += ' cible'; }
+      if (p && !p.ouverte) inner += `<span class="o">🚪</span>${p.basalte && !S.cleBasalte ? '<span class="cad">🔒</span>' : ''}`;
+      if (o && o.t === 'rouage') inner += '<span class="o braise-sol">🔥</span>';
+      if (o && o.meuble && o.fouille) inner += '<span class="fm">✓</span>'; }
     if (R.plan === 2 && R.liens[c] && vu) { const ly = +R.liens[c].split(',')[1]; inner += `<span class="escfl" title="${esc(K.etageDe(S, ly))}">${ly < y ? '⬆' : '⬇'}<small>${S.heros[actif].x === x && S.heros[actif].y === y ? (ly < y ? 'monter' : 'descendre') : esc(K.etageDe(S, ly).replace('Rez-de-chaussée', 'RDC').replace('Le sommet', 'sommet'))}</small></span>`; } // 16/11 : le sens de l'escalier écrit en clair
     // 16/11 : le BOUT d'un couloir sans issue (image Gemini couloir-impasse : mur à droite, tournée vers le côté fermé)
     if (R.plan === 2 && vu && !mur && !p && !R.salle[c] && !(R.liens && R.liens[c])) { const ouv = [[-1, 0, 0], [0, -1, 90], [1, 0, 180], [0, 1, 270]].filter(([dx, dy]) => { const q = K.cle(x + dx, y + dy); return x + dx >= 0 && y + dy >= 0 && x + dx < R.w && y + dy < R.h && !R.murs[q]; });
       if (ouv.length === 1) inner = `<span class="impasse" style="transform:rotate(${ouv[0][2]}deg)"></span>` + inner; }
     if (atteint[c]) cl += ' peut';
     const hi = S.heros.findIndex(z => z.x === x && z.y === y), m = R.monstres.find(z => z.x === x && z.y === y), B = R.boss && R.boss.x === x && R.boss.y === y ? R.boss : null;
-    if (hi >= 0) { const z = S.heros[hi]; inner += `<div class="jeton ${hi === actif ? 'actif' : ''} ${z.aTerre ? 'terre' : ''}" id="j-h${hi}" style="--c:${coulH(z)}">${imgH(z)}<span class="pv">${z.aTerre ? '✋' : '❤' + z.pv}${z.bouclier ? '🛡' + z.bouclier : ''}${z.porte ? '⚙️' : ''}</span></div>`; }
+    if (hi >= 0) { const z = S.heros[hi]; inner += `<div class="jeton ${hi === actif ? 'actif' : ''} ${z.aTerre ? 'terre' : ''}" id="j-h${hi}" style="--c:${coulH(z)}">${imgH(z)}<span class="pv">${z.aTerre ? '✋' : '❤' + z.pv}${z.bouclier ? '🛡' + z.bouclier : ''}${z.porte ? K.objE(S) : ''}</span></div>`; }
     if (R.aubin && R.aubin.x === x && R.aubin.y === y && vu) { const A = R.aubin; inner += `<div class="jeton aubin ${A.libre ? '' : 'cage'} ${A.aTerre ? 'terre' : ''}" id="j-aubin"><img src="portraits/pnj-aubin.webp?v=1" alt="Frère Aubin"><span class="pv">${A.aTerre ? '✋' : '❤' + A.pv}</span></div>`;
       if (d && (!A.libre || A.aTerre || K.dansClocher(S, A)) && Math.max(Math.abs(h.x - x), Math.abs(h.y - y)) <= 1) cl += ' cible'; }
     if (R.forgeron && R.forgeron.x === x && R.forgeron.y === y && vu) { const F = R.forgeron; inner += `<div class="jeton aubin bran ${F.aTerre ? 'terre' : ''}" id="j-bran"><img src="portraits/pnj-bran.webp?v=1" alt="Bran"><span class="pv">${F.aTerre ? '✋' : '❤' + F.pv}</span>${R.boss && !R.boss.dort && !S.runePrete ? `<span class="it">🔨${S.forge || 0}/3</span>` : S.runePrete ? '<span class="it">🔥</span>' : ''}</div>`;
       if (d && (F.aTerre || (S.runePrete && !S.runePrise)) && Math.max(Math.abs(h.x - x), Math.abs(h.y - y)) <= 1) cl += ' cible'; }
     const mm = B || m;
-    if (mm && vu && (B || vueForcee || eclaire(x, y))) { const it = mm.entrave >= R.tour ? '🌵' : mm.it === 'frappe' ? `⚔${mm.att}` : mm.it === 'garde' ? '🛡' : mm.it === 'soin' ? '💚' : mm.it === 'fuit' ? '🏃' : mm.it === 'remonte' ? '⏳' : mm.it === 'levier' ? '🎚' : mm.it === 'elan' ? '⚡' : mm.it === 'charge' ? `⚡${mm.att + 2}` : mm.it === 'gros' ? `💥${mm.att + 2}` : mm.it === 'hesite' ? '💬' : ''; const it2 = B && B.dort ? '💤' : B && B.b === 'roihiver' && K.bossIntouchable(S, B) ? '💠' : it;
-      inner += `<div class="jeton ${B ? 'boss' : ''}" id="j-${mm.id}" style="--c:${B ? '#ff7a4a' : K.BETES[mm.b].elite ? '#f3c96b' : '#8a98b8'}"><img src="portraits/m-${mm.img}.webp" alt="" onerror="this.onerror=null;this.src='portraits/m-coucou.webp'"><span class="it">${it2}</span><span class="sc">🔒${mm.sceaux.filter(s => !s.ok).length}</span></div>`;
+    if (mm && vu && (B || vueForcee || eclaire(x, y))) { const it = mm.entrave >= R.tour ? '🌵' : mm.it === 'frappe' ? `⚔${mm.att}` : mm.it === 'garde' ? '🛡' : mm.it === 'soin' ? '💚' : mm.it === 'fuit' ? '🏃' : mm.it === 'remonte' ? '⏳' : mm.it === 'levier' ? '🎚' : mm.it === 'elan' ? '⚡' : mm.it === 'charge' ? `⚡${mm.att + 2}` : mm.it === 'gros' ? `💥${mm.att + 2}` : mm.it === 'hesite' ? '💬' : mm.it === 'cachee' ? '🌋' : mm.it === 'fonce' ? `💨${mm.att}` : ''; const it2 = B && B.dort ? '💤' : B && B.b === 'roihiver' && K.bossIntouchable(S, B) ? '💠' : it;
+      inner += `<div class="jeton ${B ? 'boss' : ''}" id="j-${mm.id}" style="--c:${B ? '#ff7a4a' : K.BETES[mm.b].elite ? '#f3c96b' : '#8a98b8'}"><img src="portraits/m-${mm.img}.webp" alt="" onerror="this.onerror=null;this.src='portraits/m-coucou.webp'"><span class="it">${it2}</span><span class="sc">🔒${mm.sceaux.filter(s => !s.ok).length}</span>${S.scen === 'brulees' && R.v2 && !B && K.BETES[mm.b].elite && mm.carT !== R.tour ? '<span class="cara" title="Carapace : le premier coup du tour ne compte pas">🪨</span>' : ''}${B && B.feu ? '<span class="cara" title="Bouclier de feu">🔥</span>' : ''}</div>`;
       if (d && !d.pas && K.aPortee(S, h, mm)) cl += ' cible'; }
     if ((mur === 'O' || mur === 'o') && R.plan === 2 && R.statuesOk && !h.flamme) cl += ' autel-cible'; // 16/11 soir : on voit qu'on peut toucher le feu
     if (d && vu && (p && !p.ouverte || (o && (o.meuble && !o.fouille || o.t === 'levier' || o.t === 'livre')) || mur === 'A') && K.dist(h, { x, y }) === 1 || (d && vu && mur === 'T' && !R.statuesOk && R.salle[c] && R.salle[K.cle(h.x, h.y)] === R.salle[c])) cl += ' cible';
@@ -847,7 +879,7 @@ function dessine() {
   const posee = R.rouagesPoses, portes = S.heros.filter(z => z.porte).length;
   const ancienne = $('vue') ? [$('vue').scrollLeft, $('vue').scrollTop] : null;
   $('app').innerHTML = `
-    <div class="haut"><a href="#" onclick="quitter();return false">‹ Quitter</a><span class="t">${SCT().titre}</span>${L ? `<button onclick="equipeEnLigne()">🌐 ${L.code}</button>` : ''}<button class="hsab" onclick="infoStat('sablier')" title="Le sablier">⌛ <b>${S.sablier}</b></button>${R.boss && !R.boss.dort ? `<button onclick="voirBut()" style="color:${R.boss.repos && R.boss.b === 'roios' ? 'var(--doux)' : '#ff8a7a'}">⏰${R.boss.repos && R.boss.b === 'roios' ? '' : ' !'}</button>` : ''}<button onclick="voirQuetes()" title="Les quêtes">📋 <b>${quetes().filter(q => q.ok).length}/${quetes().length}</b></button><button onclick="voirJournal()" title="Le journal">📜</button><button onclick="regles()">❓</button><button onclick="GM.parametres()" title="Paramètres">⚙️</button></div>
+    <div class="haut"><a href="#" onclick="quitter();return false">‹ Quitter</a><span class="t">${SCT().titre}</span>${L ? `<button onclick="equipeEnLigne()">🌐 ${L.code}</button>` : ''}<button class="hsab" onclick="infoStat('sablier')" title="Le sablier">⌛ <b>${S.sablier}</b></button>${R.boss && !R.boss.dort ? `<button onclick="voirBut()" style="color:${R.boss.repos && R.boss.b === 'roios' ? 'var(--doux)' : '#ff8a7a'}">${K.SCEN[S.scen || 'horloger'].bossE || '⏰'}${R.boss.repos && R.boss.b === 'roios' ? '' : ' !'}</button>` : ''}<button onclick="voirQuetes()" title="Les quêtes">📋 <b>${quetes().filter(q => q.ok).length}/${quetes().length}</b></button><button onclick="voirJournal()" title="Le journal">📜</button><button onclick="regles()">❓</button><button onclick="GM.parametres()" title="Paramètres">⚙️</button></div>
     <div class="zonebar"><span class="zt">${RZ ? `${esc(zoneNom(ZV))}${vueForcee ? ' · 👹 les monstres' : suivi != null && S.heros[suivi] ? ` · 👀 ${esc(nomH(S.heros[suivi]))} joue` : ''}` : ''}</span><button onclick="${RZ ? 'grandeCarte()' : 'petit=!petit;centrer=true;dessine()'}">${petit ? '🔍 Zoom' : '🗺 Carte'}</button></div>
     <div style="position:relative"><div class="vue" id="vue"><div class="plateau ${S.froid ? 'givre ' : ''}${S.froid >= 2 ? 'blizzard ' : ''}${S.scen === 'labyrinthe' ? 'laby' : S.scen === 'cloitre' || S.scen === 'cellules' || S.scen === 'crypte' ? 'laby' : (S.scen || 'horloger') === 'horloger' ? 'horloge' : ''}${RZ ? ' zonee' : ''}" style="grid-template-columns:repeat(${nCol}, ${t});--t:${t};${peint ? `background:url('${SC.image}${SC.image.startsWith('data:') ? '' : '?v=1'}') 0 0/100% 100% no-repeat` : ''}">${cases}</div></div>
 </div>
@@ -856,7 +888,7 @@ function dessine() {
     <div class="equipe">${S.heros.map((z, i) => `<button class="${i === actif ? 'on' : ''} ${z.aTerre ? 'terre' : ''} ${fini(i) ? 'fini' : ''}" onclick="choisitHeros(${i})">${fini(i) ? '<span class="ok-f">✓</span>' : ''}${(() => { const o = initiative(); if (!o) return ''; const e = o.find(x => x.i === i); return e ? `<span class="ini ${tourDe() === i ? 'joue' : ''}">${tourDe() === i ? '▶ ' : ''}🎯${e.v}</span>` : ''; })()}${imgH(z)}${nomH(z).replace('Sire ', '')}<br>${z.aTerre ? '✋ à terre' : `❤${z.pv}${z.bouclier ? ` · 🛡${z.bouclier}` : ''} · 🎲${z.des.length}`}${invH(z) ? `<small class="inv-h">${invH(z)}</small>` : ''}${z.pw && z.pw.ultime ? `<span class="jg ${(z.jauge || 0) >= (K.JAUGE_ULT || 12) ? 'plein' : ''}" title="Jauge d’Ultime" onclick="event.stopPropagation();infoJauge(${i})"><i style="width:${Math.min(100, (z.jauge || 0) / (K.JAUGE_ULT || 12) * 100)}%"></i></span>` : ''}${L ? `<small class="qui${mesHeros().includes(i) ? ' moi' : ''}">${mesHeros().includes(i) ? 'toi' : proprio(i) || 'libre'}</small>` : ''}</button>`).join('')}</div>
     <div class="des" id="desH">${L && !mesHeros().includes(actif) ? `<span class="aide">👤 ${nomH(h)} est joué par <b>${proprio(actif) || 'personne'}</b>${proprio(actif) ? '' : ' : touche 🌐 en haut pour le prendre'}.</span>` : h.aTerre ? `<span class="aide">${nomH(h)} est à terre : un ami à côté peut le relever avec un dé.</span>` : h.des.length && !lanceOK(actif) ? h.des.map(() => `<button class="de cache" onclick="lanceDesH()"></button>`).join('') + `<button class="lancerH" onclick="lanceDesH()">🎲 Lancer</button>` : h.des.map(z => z.pas ? `<button class="de pas ${sel === z.id ? 'sel' : ''}" onclick="choisitDe('${z.id}')" title="${z.v} pas qui restent">👣${z.v}</button>` : `<button class="de ${sel === z.id ? 'sel' : ''}" onclick="choisitDe('${z.id}')" style="position:relative"><img src="faces-${h.id}/face-${z.v}.webp" alt="${z.v}">${z.b ? `<span class="fb" title="Face forgée : +${z.b} sur les sceaux ≥ et Σ">+${z.b}</span>` : ''}${z.gel ? '<span class="gel" title="Gelé : ce dé reviendra tel quel au tour suivant"></span>' : z.degel ? '<span class="gel" style="opacity:.45" title="Ce dé était gelé : il est revenu tel quel"></span>' : ''}</button>`).join('') || '<span class="aide">Plus de dés pour ce héros : passe au suivant.</span>'}</div>
     ${d && !h.aTerre ? `<div class="pasinfo">${d.pas ? `👣 ${d.v} pas : 1 par case, ou 1 pour fouiller (porte gratuite)` : `👣 ce dé : <b>${K.pasDe(h, d.v).n} pas</b> (1 par case ou par fouille) · ou frapper`}</div>` : ''}
-    <div class="actions" ${L && !mesHeros().includes(actif) ? 'style="display:none"' : ''}>${pwBoutons(h, d)}${d ? '<button onclick="cherche()">🔍 Pièges (2 cases)</button>' : ''}<button class="fin" onclick="aFini()">${libres().length <= 1 ? `✋ ${nomH(S.heros[actif]).replace('Sire ', '')} a fini ▶ les monstres` : `✋ ${nomH(S.heros[actif]).replace('Sire ', '')} a fini`}</button>${libres().length > 1 ? `<button class="sec" style="flex:none" onclick="finTour()" title="Tout le groupe a fini">▶ Monstres</button>` : ''}</div>`;
+    <div class="actions" ${L && !mesHeros().includes(actif) ? 'style="display:none"' : ''}>${pwBoutons(h, d)}${d ? '<button onclick="cherche()">🔍 Pièges (2 cases)</button>' : ''}${S.eau > 0 && S.scen === 'brulees' ? `<button class="pw ${eauEnCours ? 'on' : ''}" style="--pc:#5fc8ff" onclick="eauSacree()">💧 Eau sacrée (${S.eau})</button>` : ''}<button class="fin" onclick="aFini()">${libres().length <= 1 ? `✋ ${nomH(S.heros[actif]).replace('Sire ', '')} a fini ▶ les monstres` : `✋ ${nomH(S.heros[actif]).replace('Sire ', '')} a fini`}</button>${libres().length > 1 ? `<button class="sec" style="flex:none" onclick="finTour()" title="Tout le groupe a fini">▶ Monstres</button>` : ''}</div>`;
   // la carte suit le héros actif (sauf si on vient de la déplacer à la main)
   const V = $('vue'), e = $(`c-${hv.x}-${hv.y}`);
   if (centrer && e) { V.scrollLeft = e.offsetLeft - V.clientWidth / 2 + e.offsetWidth / 2; V.scrollTop = e.offsetTop - V.clientHeight / 2 + e.offsetHeight / 2; centrer = false; }
@@ -946,6 +978,11 @@ function aFini() {
   S.finis.l.push(actif); h.des = []; sel = null;
   const reste = libres();
   if (!reste.length) return finTour(true);
+  // 28/11 : à 3 et 4 héros dans les Terres brûlées, les monstres agissent quand deux héros ont fini (avant les deux autres)
+  { const evE = K.entracte ? K.entracte(S) : null; if (evE) { occupe = true; bulle('⚔ Les monstres n’attendent pas : ils agissent entre vos héros !', true, true);
+      S.animM = { n:((S.animM && S.animM.n) || 0) + 1, ev:evE.filter(e => e.m).map(e => Object.assign({}, e)) }; vuAnim = S.animM.n; dessine();
+      animeMonstres(evE).then(() => { occupe = false; if (S.fin) return finPartie(); { const c = L ? tourDe() : null; const r2 = libres(); actif = c != null ? c : r2[0] != null ? r2[0] : actif; } centrer = true; if (L && typeof pousse === 'function') pousse(); dessine(); });
+      if (L && typeof pousse === 'function') pousse(); return; } }
   { const c = L ? tourDe() : null; actif = c != null ? c : reste[0]; } centrer = true; son('choisir');
   bulle(L && tourDe() != null ? `✋ ${nomH(h)} a fini · au tour de ${nomH(S.heros[tourDe()])}${proprio(tourDe()) ? ` (${proprio(tourDe())})` : ''}` : `✋ ${nomH(h)} a fini · à qui le tour ?`);
   if (L && typeof pousse === 'function') pousse();
@@ -999,7 +1036,13 @@ function resultat(r) {
     if (r.point) pointDePassage();
     (r.ev || []).forEach(e => {
       if (e.t === 'tombe') { son('tombe'); bulle(e.duo ? '🤝 Abattu à deux !' : '💀 Il tombe !'); }
-      if (e.t === 'phase') { son('ultime'); bulle('⏰ Nouvelle phase !'); }
+      if (e.t === 'phase') { son('ultime'); bulle(S.scen === 'brulees' ? `🔥 Nouvelle phase : ${S.R.boss ? K.PHASES_TITAN[S.R.boss.phase].n : ''} !` : '⏰ Nouvelle phase !'); }
+      if (e.t === 'embuscade') { son('vague'); bulle(S.journal.find(l => l.startsWith('⚠ EMBUSCADE')) || '⚠ Embuscade !', true, true); }
+      if (e.t === 'carapace') { son('bouclier'); bulle(S.journal[0], true, true); }
+      if (e.t === 'vasque' || e.t === 'rune') { son(e.bon ? (e.fini ? 'ultime' : 'rune') : 'erreur'); bulle(S.journal.find(l => /^(⛲|💧|❌|🔥|💧|⭐|🌙)/.test(l)) || S.journal[0], !e.bon, true); }
+      if (e.t === 'cristal' || e.t === 'eau') { son('magie'); bulle(S.journal.find(l => /^(💎|💧|🔥)/.test(l)) || S.journal[0], false, true); }
+      if (e.t === 'cle') { son('porte'); objetRecu('🗝', 'La Clé de basalte', 'Elle ouvre la porte du grand hall.'); }
+      if (e.t === 'braise') { son('rune'); bulle(S.journal.find(l => l.includes('BRAISE ÉTERNELLE roule')) || '🔥 Une braise éternelle !', false, true); }
       if (e.t === 'piege') { son('coup'); bulle('⚠ Un piège !', true); }
       if (e.t === 'livre') { son('livre'); bulle('📕 Le Livre des heures !'); }
       if (e.t === 'levier') { son('tour-batir'); if (e.bronze) { son('porte'); bulle('🚪 La porte de bronze s’ouvre !'); } }
@@ -1026,7 +1069,7 @@ function resultat(r) {
       if (e.t === 'rune') { son('gros'); flash('j-boss'); }
       if (e.t === 'pouvoir') setTimeout(() => animPw(e), 60);
     });
-    if (S.fin) return finPartie(); dessine(); return true; }
+    if (S.fin) return finPartie(); dessine(); setTimeout(montreRecits, 700); return true; }
   if (typeof r === 'string') { son('erreur'); bulle(r, true); } return false;
 }
 function touche(x, y) {
@@ -1052,6 +1095,7 @@ function touche(x, y) {
   if (R.liens && R.liens[c] && hi === actif) { son('pas'); centrer = true; return resultat(K.prendreEscalier(S, actif)); }
   if (R.murs[c] === 'N') return boutique(); // 16/11 : le colporteur
   if (m && !B && hi < 0 && !eclaire(x, y)) { bulle('Il fait trop noir par là : approche ta lanterne pour voir ce qui s’y cache.', true); return; }
+  if (eauEnCours) { eauEnCours = false; son('magie'); return resultat(K.eau(S, actif, B ? 'boss' : m ? m.id : { x, y })); }
   if (sacEnCours != null && (m || B)) { const k = sacEnCours; sacEnCours = null; son('ultime'); return resultat(K.utiliser(S, actif, k, B ? 'boss' : m.id)); }
   sacEnCours = null;
   { const o = R.obj[c]; // 16/11 : celui qui VOIT un piège (lunettes, Oria) peut le signaler au groupe d'un toucher
@@ -1071,16 +1115,23 @@ function touche(x, y) {
     if (R.murs[c] === 'B') { bulle('Une étagère pleine de vieux livres d’horlogerie.'); return; }
     if (R.murs[c] === 'T') { bulle(R.statuesOk ? 'Les statues regardent l’autel.' : 'Les flèches montrent où regarde chaque statue (verte = vers l’autel) ; le petit rond pointillé, où elle doit regarder. Choisis un dé (même un 👣), puis touche une statue : elle tourne d’un quart de tour, et sa voisine dans le sens des aiguilles d’une montre tourne avec elle. Il faut trouver le bon ordre.'); return; }
     if (R.grille && x === R.grille.dx && y === R.grille.dy) { bulle('La dalle : tant qu’un héros reste dessus, la grille du Cagibi est ouverte. Un héros qui se tient sous la grille la retient aussi.'); return; }
+    if (S.scen === 'brulees' && R.v2) { const q = R.obj[c], T = !q ? null : { fontaine:q.fait ? '⛲ La fontaine coule : vous avez l’Eau sacrée.' : `⛲ La fontaine tarie. Trois vasques : « Le pair d’abord. L’impair ensuite. Et dans la dernière, les deux réunis. » Juste à côté, choisis un dé et touche la fontaine (${q.v.length}/3${q.v.length ? ' : ' + q.v.join(', ') : ''}). Un mauvais dé vide les vasques… et réveille une salamandre.`,
+        source:'♨ La source chaude : juste à côté, un dé (un pas) rend 5 PV, une fois par héros. Un loup la garde.', rune:q.on ? `${q.e} Une rune du cercle, qui brûle. Juste à côté, un dé (un pas) l’éteint… si c’est la bonne, dans l’ordre. Sinon elles se rallument toutes.` : `${q.e} Une rune éteinte.`,
+        cristal:q.on ? '💎 Un cristal bleu, glacé. Juste à côté, un dé (un pas) envoie son froid au Golem de magma : un sceau saute.' : '💎 Un cristal éteint.' }[q.t];
+      if (T) { bulle(T, false, true); return; }
+      if (R.lave && R.lave[c]) { bulle('🌋 Une fissure de lave : finir son tour dessus brûle (−2, −3 pendant l’Éruption). L’Eau sacrée peut l’éteindre.', true, true); return; }
+      if (R.portes[c] && R.portes[c].basalte && !R.portes[c].ouverte) { bulle(S.cleBasalte ? '🚪 La porte de basalte : juste à côté, touche-la pour l’ouvrir avec la Clé.' : '🔒 La porte de basalte du grand hall : il faut la Clé de basalte (le chef des gobelins l’a prise).', false, true); return; } }
     const o = R.obj[c]; if (o && o.meuble) { const n = nomMeuble(o); bulle(o.fouille ? `${n} : déjà fouillé.` : o.verrou && !o.crochete ? `🔒 ${n} est verrouillé : un dé de ${o.verrou} ou plus pour le crocheter.` : `${n} : choisis un dé pour le fouiller.`); } return; }
   if (m || B) return frappeMenu(B || m);
   if (hi >= 0) return amiMenu(hi);
   const o = R.obj[c];
-  if ((o && (o.meuble || o.t === 'levier' || o.t === 'livre')) || R.murs[c] === 'A' || R.murs[c] === 'T') return resultat(K.agir(S, actif, sel, x, y));
+  if ((o && (o.meuble || o.t === 'levier' || o.t === 'livre' || ['fontaine', 'source', 'rune', 'cristal'].includes(o.t))) || R.murs[c] === 'A' || R.murs[c] === 'T') return resultat(K.agir(S, actif, sel, x, y));
   if (K.atteignables(S, h, d.v, d.pas)[c]) { son('pas'); centrer = true; const de0 = [h.x, h.y]; const ok = resultat(K.bouger(S, actif, sel, x, y)); if (ok) glisse('j-h' + actif, de0, [x, y]); return ok; }
   bulle(R.murs[c] ? 'On ne peut pas marcher là : c’est un mur ou un meuble.' : 'Trop loin pour ce dé.', true);
 }
 // le sac : potion (soi ou un ami à côté), parchemin (un monstre à 4 cases : on touche le monstre ensuite), fumigène (tout de suite)
-let sacEnCours = null;
+let sacEnCours = null, eauEnCours = false;
+function eauSacree() { if (!S || !(S.eau > 0)) return; eauEnCours = !eauEnCours; sel = null; bulle(eauEnCours ? '💧 Touche une fissure de lave (sur toi ou juste à côté), un gardien ou le Titan (2 cases au plus).' : 'Eau sacrée rangée.', false, true); dessine(); }
 function utiliseSac(k) {
   const h = S.heros[actif], it = h.sac[k];
   if (L && !mesHeros().includes(actif)) return bulle(`${nomH(h)} est joué par ${proprio(actif) || 'personne'}.`, true);
@@ -1194,10 +1245,10 @@ function amiMenu(i) {
   fenetre(`<h2>${nomH(z)}</h2>${b.join('')}<button class="sec" onclick="fenetre('')">Annuler</button>`);
 }
 function infoMonstre(m) {
-  const it = { frappe:`⚔ va frapper (${m.att})`, garde:'🛡 va refermer un de ses sceaux', soin:'💚 va réparer un autre monstre', fuit:'🏃 va s’enfuir', remonte:'⏳ reprend son souffle', levier:'🎚 va remonter un levier', elan:'⚡ prend son élan', charge:`⚡ IL CHARGE : au début de votre prochain tour, AVANT que vous jouiez, il frappera ${m.att + 2} chaque héros collé à lui. Pour l’éviter : ne finissez pas votre tour collé à lui (éloignez-vous), ou protégez-vous (le bouclier encaisse)`, gros:`💥 GROS COUP : frappe de ${m.att + 2}, sauf si vous lui brisez un sceau avant`, hesite:'💬 il hésite : il ne frappera pas ce tour', rien:'ne fait rien' }[m.it] || '';
+  const it = { frappe:`⚔ va frapper (${m.att})`, garde:'🛡 va refermer un de ses sceaux', soin:'💚 va réparer un autre monstre', fuit:'🏃 va s’enfuir', remonte:'⏳ reprend son souffle', levier:'🎚 va remonter un levier', elan:'⚡ prend son élan', charge:`⚡ IL CHARGE : au début de votre prochain tour, AVANT que vous jouiez, il frappera ${m.att + 2} chaque héros collé à lui. Pour l’éviter : ne finissez pas votre tour collé à lui (éloignez-vous), ou protégez-vous (le bouclier encaisse)`, gros:`💥 GROS COUP : frappe de ${m.att + 2}, sauf si vous lui brisez un sceau avant`, hesite:'💬 il hésite : il ne frappera pas ce tour', rien:'ne fait rien', cachee:'🌋 sous la lave : on ne peut pas la frapper ce tour-ci (elle sort un tour sur deux)', fonce:`💨 fonce en ligne droite sur le héros le plus LOIN et frappe (${m.att}, +2 s’il a couru 3 cases)` }[m.it] || '';
   fenetre(`<h2>${m.n}</h2><p style="text-align:center">Ce tour-ci : <b>${it}</b>.</p><div class="sceaux">${m.sceaux.map(s => `<div class="sx ${s.ok ? 'ok' : ''}">${sceauTxt(s, m.sceaux)}</div>`).join('')}</div>${(() => { // 17/11 (l'utilisateur : « = 0, on fait comment ? ») : ce que demande chaque sorte de sceau, sous les sceaux
       const T = new Set(m.sceaux.filter(z => !z.ok).map(z => z.t)), D = { dbl:'<b>Jumeaux</b> : le premier se brise avec n’importe quel dé ; l’autre demande ensuite <b>la même valeur</b> (« = 4 »).', min:(v => `<b>≥ ${v}</b> : un dé de ${v} ou plus.`)(Math.min(...m.sceaux.filter(z => !z.ok && z.t === 'min').map(z => z.v))), tot:'<b>Σ</b> : plusieurs dés dont le total fait au moins ce chiffre.', ex:'<b>Chiffre seul</b> : exactement ce dé.', pair:'<b>Pair</b> : un dé pair.', imp:'<b>Impair</b> : un dé impair.' };
-      const l = [...T].map(t => D[t]).filter(Boolean); return l.length ? `<p style="font-size:.88em;color:var(--doux);margin:.3em 0">${l.join('<br>')}</p>` : ''; })()}<p style="color:var(--doux);font-size:.9em">${m.id === 'boss' ? 'Il frappe au contact (une case autour, diagonales comprises), un tour sur deux.' : `Il avance de ${(K.BETES[m.b] || {}).mv || 1} case${((K.BETES[m.b] || {}).mv || 1) > 1 ? 's' : ''} par tour vers le héros le plus proche et frappe au contact (une case autour, diagonales comprises), seulement quand sa salle est dévoilée.`}</p>${Object.keys(K.CAPA).filter(k => (K.BETES[m.b] || {})[k]).map(k => `<p style="font-size:.9em;margin:4px 0">✦ ${K.CAPA[k]}</p>`).join('')}<p style="color:var(--doux);font-size:.9em">Choisis un dé, puis touche le monstre pour poser le dé sur un sceau. Tous ses sceaux brisés : il tombe.</p><button class="go" onclick="fenetre('')">Compris</button>`);
+      const l = [...T].map(t => D[t]).filter(Boolean); return l.length ? `<p style="font-size:.88em;color:var(--doux);margin:.3em 0">${l.join('<br>')}</p>` : ''; })()}<p style="color:var(--doux);font-size:.9em">${m.id === 'boss' ? 'Il frappe au contact (une case autour, diagonales comprises), un tour sur deux.' : `Il avance de ${(K.BETES[m.b] || {}).mv || 1} case${((K.BETES[m.b] || {}).mv || 1) > 1 ? 's' : ''} par tour vers le héros le plus proche et frappe au contact (une case autour, diagonales comprises), seulement quand sa salle est dévoilée.`}</p>${Object.keys(K.CAPA).filter(k => (K.BETES[m.b] || {})[k] || (k === 'carapace' && S.scen === 'brulees' && S.R.v2 && m.id !== 'boss' && (K.BETES[m.b] || {}).elite)).map(k => `<p style="font-size:.9em;margin:4px 0">✦ ${K.CAPA[k]}</p>`).join('')}${m.b === 'reinesal' ? '<p style="font-size:.9em;margin:4px 0">✦ Elle plonge dans la lave un tour sur deux (on ne peut pas la frapper) ; des stalactites tombent (⚠ annoncées un tour avant, −3 à qui reste dessous).</p>' : m.b === 'chaman' ? '<p style="font-size:.9em;margin:4px 0">✦ Il ne bouge pas. Tant que ses 4 runes brûlent, il referme un sceau par rune (deux au plus) à chaque tour : éteignez-les dans le bon ordre (la bibliothèque le dit). Il appelle des gobelins un tour sur deux.</p>' : m.b === 'golemmagma' ? '<p style="font-size:.9em;margin:4px 0">✦ Il fonce sur le héros le plus LOIN. Les cristaux bleus de sa grotte le refroidissent : un dé juste à côté d’un cristal fait sauter un de ses sceaux.</p>' : ''}<p style="color:var(--doux);font-size:.9em">Choisis un dé, puis touche le monstre pour poser le dé sur un sceau. Tous ses sceaux brisés : il tombe.</p><button class="go" onclick="fenetre('')">Compris</button>`);
 }
 async function finTour(tousFinis) {
   if (occupe || !S || S.fin) return;
@@ -1249,6 +1300,7 @@ async function animeMonstres(ev) {
       if (z && z !== cur) { vueForcee = z; dessine(); restePas(iEv); bulle(`📍 ${zoneNom(z)}`); await attends(700); } }
     iEv++; e.fait = true;
     if (e.t === 'pas') { const m = ou(e.m), el = $('j-' + e.m); if (!m || !el) continue; voisCase(m.x, m.y); el.style.transform = ''; son('pas'); await glisse('j-' + e.m, e.de, [m.x, m.y], 360); }
+    else if (e.t === 'frappe' && (e.m === 'lave' || e.m === 'stal')) { son('coup'); flash('j-h' + e.h); bulle(`${e.m === 'lave' ? '🌋 La lave brûle' : '🪨 Une stalactite tombe sur'} ${nomH(S.heros[e.h])} −${e.v}`, true); await attends(700); }
     else if (e.t === 'frappe') { await fonce('j-' + e.m, 'j-h' + e.h); son('coup'); flash('j-h' + e.h); bulle(`⚔ ${nomH(S.heros[e.h])} −${e.v}`, true); await attends(380); }
     else if (e.t === 'frappeA') { const q = e.qui === 'bran' ? 'bran' : 'aubin', P = q === 'bran' ? S.R.forgeron : S.R.aubin; await fonce('j-' + e.m, 'j-' + q); son('coup'); flash('j-' + q); bulle(`⚔ ${q === 'bran' ? 'Bran' : 'Frère Aubin'} −${e.v}${P && P.aTerre ? ' : il est à terre !' : ''}`, true); await attends(450); }
     else if (e.t === 'runePrete') { son('rune'); flash('j-bran'); bulle(S.journal.find(l => l.startsWith('🔥 CLANG')) || '🔥 La rune est prête !', false, true); await attends(2400); }
@@ -1258,7 +1310,7 @@ async function animeMonstres(ev) {
     else if (e.t === 'charge') { son(e.vide ? 'pas' : 'gros'); flash('j-' + e.m); bulle(S.journal.find(l => l.startsWith('⚡ La charge')) || '⚡ La charge !', true, true); await attends(e.vide ? 900 : 1100); }
     else if (e.t === 'jauge') { son('ultime'); flash('j-h' + e.h); bulle(`⚡ L’Ultime de ${nomH(S.heros[e.h])} est prêt !`, true); await attends(700); }
     else if (e.t === 'elan') { son('ultime'); flash('j-' + e.m); bulle(S.journal.find(l => l.startsWith('⚡')) || '⚡ Il prend son élan !', true, true); await attends(1300); }
-    else if (e.t === 'boss') { son('gros'); flash('j-boss'); bulle(S.R.boss && S.R.boss.b === 'roios' ? '💀 Le Roi des Os agit !' : '⏰ Le boss agit !'); await attends(600); }
+    else if (e.t === 'boss') { son('gros'); flash('j-boss'); bulle(S.R.boss && S.R.boss.b === 'roios' ? '💀 Le Roi des Os agit !' : S.R.boss && S.R.boss.b === 'titan' ? '🔥 Le Titan de feu agit !' : '⏰ Le boss agit !'); await attends(600); }
   }
   if (vueForcee) { await attends(400); vueForcee = null; }
 }
@@ -1288,6 +1340,15 @@ function fenetre(h, ferme = true) { $('fen').innerHTML = h ? `<div class="voile-
 function entreeSalle(id) {
   const D = K.SALLES[id]; if (!D) return;
   fenetre(`<h2>${D.n}</h2><div class="moust"><img src="ui/moustache.webp" alt=""><div class="lu">${D.lu}</div></div><button class="go" onclick="fenetre('')">On entre !</button>`, false);
+}
+// 28/11 : les pages de récit des Terres brûlées (S.recits, posées par le moteur ; chaque téléphone les lit une fois)
+function montreRecits() {
+  if (!S || !S.recits || !S.recits.length || occupe || ($('fen') && $('fen').innerHTML)) return;
+  const k = S.recits.find(x => { try { return !localStorage.getItem('guilde-recit-' + (S.graine || '') + '-' + x); } catch (e) { return false; } }); if (!k) return;
+  try { localStorage.setItem('guilde-recit-' + (S.graine || '') + '-' + k, '1'); } catch (e) {}
+  const T = K.RECITS_BR && K.RECITS_BR[k]; if (!T) return;
+  const txt = k === 'page' ? `« Une page arrachée, couverte de cendres : <i>Pour faire taire le cercle, éteindre ses runes dans cet ordre :</i> <b style="font-size:1.3em">${S.R.pageTexte || ''}</b>. » (La page reste dans les quêtes 📋.)` : T[1];
+  son('livre'); dialogue(T[0], [txt]);
 }
 function regles() {
   fenetre(`<h2>📜 Les Chroniques</h2><ol>
@@ -1355,7 +1416,7 @@ function finPartie() {
   fenetre(gagne ? `<h2>${SCT().gagne[0]}</h2>${(S.scen || 'horloger') === 'horloger' ? '<img src="decor/chron-horloger-fin.webp?v=1" alt="" style="width:100%;border-radius:12px;margin:2px 0 8px;display:block">' : ''}<div class="moust"><img src="ui/moustache.webp" alt=""><div class="lu">${SCT().gagne[1]}</div></div>
       <p style="text-align:center">Score : <b style="color:var(--or)">${S.score}</b> · ${S.tours} tours${(S.scen || 'horloger') === 'horloger' && !S.textes ? ` · ⌛ ${S.sablier} grains${S.sablier > 0 ? '<br>🏅 Titre « <b>Gardiens du temps</b> » : le sablier n’est jamais tombé à zéro !' : ''}` : ''}</p>
       <p style="text-align:center">✨ Chaque héros gagne des éclats et de l’XP${objet ? ` · 🎒 <b>${objet}</b> rejoint l’armurerie` : ''}.</p>${butin}${gagne && S.scen === 'crypte' && !S.aventure && typeof epilogueS1 === 'function' ? '<button class="go" onclick="fenetre(\'\');epilogueS1(fin)">📖 L’épilogue de la saison</button>' : ''}${campagne}${salleBt}<button class="${campagne || salleBt || (gagne && S.scen === 'crypte') ? 'sec' : 'go'}" onclick="fin()">Retour à la Guilde</button>`
-    : `<h2>${(S.scen || 'horloger') === 'horloger' && !S.textes ? '❄ Figés…' : '💀 Défaite…'}</h2><div class="moust"><img src="ui/moustache.webp" alt=""><div class="lu">${(S.scen || 'horloger') === 'horloger' && !S.textes ? '« Figés. Tous. Comme des statues. Très jolies, d’ailleurs. L’Horloger vous remonte comme des jouets… On réessaie ? »' : '« Tout le monde à terre… On se relève, on souffle, et on y retourne. Moi, je garde la porte. »'}</div></div>
+    : `<h2>${SCT().perdu ? SCT().perdu[0] : (S.scen || 'horloger') === 'horloger' && !S.textes ? '❄ Figés…' : '💀 Défaite…'}</h2><div class="moust"><img src="ui/moustache.webp" alt=""><div class="lu">${SCT().perdu ? SCT().perdu[1] : (S.scen || 'horloger') === 'horloger' && !S.textes ? '« Figés. Tous. Comme des statues. Très jolies, d’ailleurs. L’Horloger vous remonte comme des jouets… On réessaie ? »' : '« Tout le monde à terre… On se relève, on souffle, et on y retourne. Moi, je garde la porte. »'}</div></div>
       ${L ? (estHote() ? '<button class="go" onclick="retourSalle()">↩ Revenir dans la salle d’attente</button>' : '<p style="text-align:center;color:var(--doux)">L’hôte peut ramener tout le monde dans la salle d’attente.</p>') : '<button class="go" onclick="recommence()">↺ Repartir de la dernière porte ouverte</button>'}<button class="sec" onclick="fin()">Abandonner</button>`, false);
 }
 function recommence() { if (!S.passage) { const h = S.heros.map(z => z.id); S = K.nouvelle(h, 'chron-' + Date.now(), S.scen); } else S = JSON.parse(S.passage); actif = 0; sel = null; centrer = true; fenetre(''); dessine(); }
@@ -1366,7 +1427,7 @@ function fin() { try { localStorage.removeItem(CLE_PARTIE); } catch (e) {} if (L
 const CLE_CAMP = 'guilde-campagne';
 const CHAPITRES = [
   { scen:'horloger', titre:'Chapitre I · Le Sommeil de l’Horloger', avant:'« Tout commence ici : la Guilde est figée, le temps s’est arrêté. Une équipe, trois chapitres. Si on réveille l’Horloger, il paraît qu’il a quelque chose à nous dire… »' },
-  { scen:'brulees', titre:'Chapitre II · Les Terres brûlées', avant:'« L’Horloger s’est excusé, puis il a pointé le sud : “Le feu s’éteint sur l’île des Terres brûlées. Sans ses braises, plus rien ne chauffe, même pas mes rouages.” On reprend la barque. Gardez vos potions. »' },
+  { scen:'brulees', titre:'Chapitre II · Les Terres brûlées', avant:'« Une nouvelle est arrivée du sud : le feu s’éteint sur l’île des Terres brûlées. Sans ses braises, plus rien ne chauffera, même pas les forges de la Guilde. On reprend la barque. Gardez vos potions. »' },
   { scen:'labyrinthe', titre:'Chapitre III · Le Labyrinthe des Runes', avant:'« Sous le grand brasier, le Titan gardait un escalier. Il descend vers un labyrinthe qui change de forme à chaque fois. Tout au fond, l’autel des runes. Dernier chapitre. Je viens avec vous… jusqu’à l’escalier. »' },
 ];
 const lireCamp = () => { try { return JSON.parse(localStorage.getItem(CLE_CAMP) || 'null'); } catch (e) { return null; } };

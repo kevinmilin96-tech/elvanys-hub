@@ -137,7 +137,7 @@ const POUVOIRS_H = {
       P('C', 'Voix de la montagne', 'controle', 'onde', '#5f7fff', '⛰', null, 'Tes coups qui touchent tout le camp adverse (Grand Souffle, Coup de tonnerre) font +1 dégât à chaque cible.', 'Le Carillon ne le touche pas, et ses dés comptent +1 sur les sceaux « Σ ».', 'a snowy mountain peak with a voice echoing as blue waves'),
     ],
     ultime:[
-      P('A', 'Le Grand Souffle', 'controle', 'eclair', '#4f8bff', '🌪', 'pi3', '3 pairs ou impairs → 14 dégâts et 4 à chaque unité.', 'Trois dés pairs ou trois impairs → un sceau de chaque monstre à 3 cases se brise (deux à l’Horloger).', 'a colossal blast of wind and thunder from a giant horn'),
+      P('A', 'Le Grand Souffle', 'controle', 'eclair', '#4f8bff', '🌪', 'pi3', '3 pairs ou impairs → 14 dégâts et 4 à chaque unité.', 'Trois dés pairs ou trois impairs → un sceau de chaque monstre à 3 cases se brise (deux au boss).', 'a colossal blast of wind and thunder from a giant horn'),
       P('B', 'Le grand cor', 'soutien', 'onde', '#8ab4ff', '🎺', 'suite3', '4 dés qui se suivent → Tous tes dés reviennent et sont relancés, avec 2 relances : tu rejoues ton tour (Garde comprise).', 'Une suite de 3 → tout le groupe relance ses dés (ceux qui lui restent).', 'a giant ornate horn glowing with golden and blue light'),
     ],
   },
