@@ -150,6 +150,9 @@ function nouvelle(heros, niveau, o) {
     for (let j = 0; j < n; j++) { const m = liste[j % liste.length]; if (j >= liste.length && /titan/.test(m)) continue; S.file.push({ t:t0 * R.etire + j * pas + rng() * 1.2, m, vague:iv }); } });
   // 27/11 nuit : une vague compte TOUS ses monstres (avec R.nombre, elle en a 3 fois plus que sa liste) ; avant, elle était jugée finie au premier tiers
   S.vStat.forEach((V, iv) => { V.n = S.file.filter(x => x.vague === iv).length; });
+  // 28/11 (l'utilisateur : « les premières 30 secondes souples, avec des gobelins, pour s'installer ») : les 2 premières vagues de chaque niveau
+  // (et du mode Héroïque) ne sont QUE des gobelins de base, sans le bonus héroïque ni la difficulté qui s'adapte
+  S.file.forEach(x => { if (x.vague < 2) { x.m = 'gobelin'; x.doux = true; } }); S.fDoux = f / (o.heroique ? 1.8 : 1);
   S.grosses = L.vagues.map((v, k) => v[2] || k === L.vagues.length - 1 ? k : -1).filter(k => k >= 0); S.annoncees = [];
   S.file.sort((a, b) => a.t - b.t); S.nbVagues = L.vagues.length; S.fin = S.file[S.file.length - 1].t;
   S.vT = L.vagues.map((v, iv) => Math.min(...S.file.filter(x => x.vague === iv).map(x => x.t))); // le début de chaque vague (pour les drapeaux)
@@ -423,8 +426,8 @@ const annonceOn = () => true; // 28/11 (l'utilisateur : « aucune indication au 
 function annonces(S) { return S.file.filter(x => x.c != null && x.t > S.t).map(x => ({ c:x.c, dt:x.t - S.t, m:x.m.replace('*', '') })); }
 function apparait(S, x) {
   const elite = x.m.endsWith('*'), t = elite ? x.m.slice(0, -1) : x.m, B = MONSTRES[t];
-  const ad = B.boss ? Math.max(.9, Math.min(1.1, S.adapt)) : S.adapt; // la difficulté qui s'adapte (le boss : ±10 % au plus)
-  const c = x.c != null ? x.c : Math.floor(S.rng() * NC), pv = Math.round(B.pv * (B.boss ? S.fBoss : S.f) * (elite ? ELITE.pv : 1) * ad);
+  const ad = x.doux ? 1 : B.boss ? Math.max(.9, Math.min(1.1, S.adapt)) : S.adapt; // la difficulté qui s'adapte (le boss : ±10 % au plus)
+  const c = x.c != null ? x.c : Math.floor(S.rng() * NC), pv = Math.round(B.pv * (B.boss ? S.fBoss : x.doux ? S.fDoux : S.f) * (elite ? ELITE.pv : 1) * ad);
   const m = { id:++MID, t, c, y:HAUT, pv, pvMax:pv, elite, lent:0, poison:null, racine:0, change:B.boss ? 14 : 0, vague:x.vague, vitX:x.charge ? 2.4 : 1, charge:!!x.charge };
   S.monstres.push(m); fx(S, { t:'arrive', id:m.id });
   // 27/11 soir (l'utilisateur perdait des PV sans comprendre) : un monstre qui descend un chemin SANS tour qui tire est signalé en haut du chemin
